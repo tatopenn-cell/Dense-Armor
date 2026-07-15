@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dense-armor"
+version = "1.0.0"
+description = "The wearable Sentinel shield: two-stage adaptive anomaly damping (IIR + ABCollatz gating) for any AI signal - NaN-safe, drift-aware, dimension-agnostic"
+readme = "README.md"
+license = { text = "Business Source License 1.1" }
+authors = [{ name = "Salvatore Pennacchio", email = "jtatopenn@libero.it" }]
+requires-python = ">=3.10"
+keywords = ["anomaly-detection", "signal-processing", "drift-detection", "ai-safety", "robust-statistics", "jax"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Operating System :: OS Independent",
+]
+dependencies = ["numpy", "jax"]
+
+[project.optional-dependencies]
+audio = ["scipy"]
+data = ["h5py", "netCDF4"]
+quantum = ["dense-evolution"]
+chat = ["ollama", "anthropic", "z3-solver", "matplotlib", "scipy", "h5py", "netCDF4", "dense-evolution"]
+
+[project.urls]
+Homepage = "https://github.com/tatopenn-cell/Dense-Armor"
+Repository = "https://github.com/tatopenn-cell/Dense-Armor"
+"Sister project (Dense-Evolution)" = "https://github.com/tatopenn-cell/Dense-Evolution"
+
+[project.scripts]
+dense-armor = "dense_armor.armatura:main"
+
+[tool.setuptools.packages.find]
+include = ["dense_armor*"]

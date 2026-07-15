@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+build/
+dist/
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# esperimenti non parte del pacchetto pubblicabile (308MB, dataset/pesi modello)
+esperimenti con ia/
