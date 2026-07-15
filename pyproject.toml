@@ -23,7 +23,6 @@ dependencies = ["numpy", "jax"]
 audio = ["scipy"]
 data = ["h5py", "netCDF4"]
 quantum = ["dense-evolution"]
-chat = ["ollama", "anthropic", "z3-solver", "matplotlib", "scipy", "h5py", "netCDF4", "dense-evolution"]
 
 [project.urls]
 Homepage = "https://github.com/tatopenn-cell/Dense-Armor"
