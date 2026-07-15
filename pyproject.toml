@@ -23,6 +23,7 @@ dependencies = ["numpy", "jax", "psutil"]
 audio = ["scipy"]
 data = ["h5py", "netCDF4"]
 quantum = ["dense-evolution"]
+dev = ["pytest"]
 
 [project.urls]
 Homepage = "https://github.com/tatopenn-cell/Dense-Armor"

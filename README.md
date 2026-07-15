@@ -8,6 +8,8 @@
 ```
 
 <p align="center">
+  <img alt="tests" src="https://github.com/tatopenn-cell/Dense-Armor/actions/workflows/tests.yml/badge.svg">
+  <img alt="pypi" src="https://img.shields.io/pypi/v/dense-armor.svg">
   <img alt="license" src="https://img.shields.io/badge/license-BSL_1.1-blue.svg">
   <img alt="python" src="https://img.shields.io/badge/python-3.10%2B-blue.svg">
   <img alt="backend" src="https://img.shields.io/badge/backend-JAX-orange.svg">
