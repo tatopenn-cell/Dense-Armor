@@ -148,6 +148,24 @@ Random walk, 15% dati mancanti, 3% spike enormi:
 
 ---
 
+## `$ robustezza adversarial --tested`
+
+9 test motore condivisi eseguiti fino in fondo, nessun crash, nessun NaN sfuggito. Nessuna difesa mai sotto il 64%:
+
+| attacco | tipo | difesa |
+|---|---|---|
+| PGD / BIM / MI-FGSM | gradiente, 1000 passi | mitigato, V finale 0.013-0.078 |
+| affine / elastico | geometrico, 50k iter | contenuto, V_inf 0.05-0.14 |
+| Fourier broadband | dominio frequenza, 50k iter FFT | **99.78%+** |
+| Carlini-Wagner (L2) | ottimizzazione | 78.96% |
+| Carlini-Wagner (L∞) | ottimizzazione | **64.39%** — il punto più debole trovato finora |
+| DeepFool | ottimizzazione | 78.79% |
+| combinato (tutti insieme) | 150.140 passi totali | nessun gradiente esplosivo |
+
+Onesto: **C&W in norma L∞ è l'attacco che buca di più** tra quelli testati. Non è un fallimento — resta protezione reale — ma è la crepa più vicina a un cedimento tra tutte le prove fatte, e va saputo prima di affidarci contro quello scenario specifico.
+
+---
+
 ## `$ limiti --known`
 
 ```
@@ -158,8 +176,11 @@ Random walk, 15% dati mancanti, 3% spike enormi:
                     a discapito di un pizzico di precisione dove esiste gia' un
                     modello dinamico noto e calibrato (es. Kalman su serie pure)
 4. deriva lenta     invisibile punto per punto, serve riferimento=baseline_storica
-5. adversarial      attacchi costruiti per mimare la coerenza del segnale pulito
-                    non ancora coperti dalla suite di test
+5. C&W norma L-inf  la difesa piu' debole misurata finora (64%, contro 79-83%
+                    delle altre varianti di attacco testate) -- vedi tabella sopra
+6. adversarial      attacchi costruiti apposta per mimare la coerenza del
+   adattivo          segnale pulito (oltre a PGD/BIM/MI-FGSM/C&W/DeepFool/Fourier
+                    gia' testati) non ancora coperti dalla suite
 ```
 
 ---
