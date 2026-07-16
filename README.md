@@ -59,6 +59,13 @@ jax.config.update("jax_enable_x64", True)
 $env:JAX_ENABLE_X64="True"
 ```
 
+Per lanciare la suite di test in locale (clonando il repo, non serve se hai solo installato da pip):
+
+```bash
+pip install -e ".[dev]"
+pytest tests/ -v
+```
+
 ---
 
 ## `$ quickstart`
