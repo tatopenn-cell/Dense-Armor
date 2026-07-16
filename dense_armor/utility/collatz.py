@@ -32,6 +32,26 @@ class ABCollatz:
 
     @staticmethod
     @jax.jit
+    def execute_collatz_step_smooth(x: jnp.ndarray) -> jnp.ndarray:
+        """Estensione analitica continua della mappa di Collatz (nota in
+        letteratura, non un'invenzione di questa sessione):
+        C(x) = (x/2)*cos^2(pi*x/2) + (3x+1)*sin^2(pi*x/2)
+
+        NOTA: una prima versione di questa formula (con un /2 di troppo sul
+        secondo termine) NON coincideva con execute_collatz_step sugli interi
+        dispari (dava (3x+1)/2 invece di 3x+1) -- corretto dopo che un test
+        di regressione l'ha presa in fallo. Ora su interi coincide
+        esattamente con execute_collatz_step (cos^2/sin^2 valgono 0 o 1 su
+        interi pari/dispari); la differenza si vede solo su input NON
+        arrotondati -- va quindi usata insieme a n_indices grezzi, non con
+        jnp.round() a monte, altrimenti e' identica alla versione discreta e
+        non cambia nulla."""
+        c = jnp.cos(jnp.pi * x / 2.0) ** 2
+        s = jnp.sin(jnp.pi * x / 2.0) ** 2
+        return (x / 2.0) * c + (3.0 * x + 1.0) * s
+
+    @staticmethod
+    @jax.jit
     def calculate_jax_rad(n: jnp.ndarray) -> jnp.ndarray:
         """Pialla i doppioni e le molteplicità isolando il seme primo generatore."""
         # Griglia estesa a 256 per coprire le espansioni iperboliche di Collatz
@@ -53,8 +73,18 @@ class ABCollatz:
         a_safe = jnp.where(jnp.isnan(a), 1.0, a)
         b_safe = jnp.where(jnp.isnan(b), 1.0, b)
         c_safe = jnp.where(jnp.isnan(c), 1.0, c)
-        
-        radical_product = self.calculate_jax_rad(jnp.abs(a_safe * b_safe * c_safe))
+
+        # BUG CORRETTO: calcolare il radicale sul prodotto a*b*c (tre reali
+        # generici) restituiva quasi sempre 1.0, perche' un prodotto di float
+        # arbitrari non e' quasi mai divisibile esattamente per un intero
+        # piccolo -- il segnale generato da Collatz (b) veniva cosi' ignorato
+        # a valle, rendendo l'intera traiettoria Collatz inerte sul gating
+        # finale (verificato: b=7 e b=999999 davano lo stesso risultato).
+        # Il radicale si calcola invece su b da solo: e' l'unico dei tre
+        # argomenti che nasce davvero come intero dalla traiettoria di
+        # Collatz, quindi e' l'unico per cui "fattorizzazione in primi" ha
+        # un significato reale.
+        radical_product = self.calculate_jax_rad(jnp.abs(jnp.round(b_safe)))
         return jnp.abs(radical_product - (jnp.abs(c_safe) ** self.epsilon_target))
 
     @partial(jax.jit, static_argnums=(0,))
@@ -89,4 +119,34 @@ class ABCollatz:
         steering = 1.0 / (1.0 + jnp.exp(-discrepancy_epsilon))
         
         # Se l'elemento di ingresso era NaN, forza il gating al massimo coefficiente (0.85)
+        return jnp.where(is_nan_corrupted, 0.85, 0.10 + steering * (0.85 - 0.10))
+
+    @partial(jax.jit, static_argnums=(0,))
+    def compute_damping_gating_smooth(self, x_corrupted: jnp.ndarray, x_clean: jnp.ndarray) -> jnp.ndarray:
+        """Variante sperimentale di compute_damping_gating: usa la mappa di
+        Collatz continua (execute_collatz_step_smooth) su indici NON
+        arrotondati, invece dello scalino discreto su interi. Vedi il
+        benchmark in tests/test_collatz_smooth_experiment.py per il
+        confronto misurato prima/dopo -- non e' il default finche' non e'
+        dimostrato che migliora qualcosa di reale."""
+        orig_shape = x_corrupted.shape
+
+        is_nan_corrupted = jnp.isnan(x_corrupted)
+        x_corrupted_safe = jnp.where(is_nan_corrupted, x_clean, x_corrupted)
+
+        noise_b = jnp.abs(x_corrupted_safe - x_clean)
+
+        # NIENTE jnp.round qui: e' proprio il punto della versione continua
+        n_indices = noise_b * 100.0 + 3.0
+
+        collatz_wave = jax.vmap(self.execute_collatz_step_smooth)(n_indices.flatten()).reshape(orig_shape)
+
+        discrepancy_epsilon = jax.vmap(self.evaluate_abc_discrepancy)(
+            x_clean.flatten(),
+            collatz_wave.flatten(),
+            x_corrupted_safe.flatten()
+        ).reshape(orig_shape)
+
+        steering = 1.0 / (1.0 + jnp.exp(-discrepancy_epsilon))
+
         return jnp.where(is_nan_corrupted, 0.85, 0.10 + steering * (0.85 - 0.10))

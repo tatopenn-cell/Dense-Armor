@@ -10,3 +10,7 @@ venv/
 
 # esperimenti non parte del pacchetto pubblicabile (308MB, dataset/pesi modello)
 esperimenti con ia/
+
+# documenti di riferimento personali, non per il repo pubblico
+guida_sentinel.pdf
+*.pdf
