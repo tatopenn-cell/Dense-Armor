@@ -2,5 +2,5 @@
 Author: Salvatore Pennacchio (Napoli, 2026). Sister project: Dense-Evolution."""
 from .armatura import Armatura
 
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 __all__ = ["Armatura"]
