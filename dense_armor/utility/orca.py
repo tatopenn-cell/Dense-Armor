@@ -104,15 +104,28 @@ class Orca:
         return np.asarray(rif, dtype=np.float64)
 
     def _run_input_shield_kernel(
-        self, f1: jnp.ndarray, c_chunk: jnp.ndarray, gate: jnp.ndarray, initial_damping: jnp.ndarray
+        self,
+        f1: jnp.ndarray,
+        c_chunk: jnp.ndarray,
+        gate: jnp.ndarray,
+        initial_damping: jnp.ndarray,
+        hard_clamp_mask: jnp.ndarray,
     ) -> jnp.ndarray:
         """Solo la combinazione elementwise finale dello scudo entrata
         (jnp.where/aritmetica pura), precompilata una sola volta. f1 e gate
         restano calcolati con chiamate EAGER separate (filter_batch_scenarios/
         compute_damping_gating fanno calibrazione e conversioni numpy
         interne -- non sono componibili dentro un jax.jit esterno, provato:
-        TracerArrayConversionError)."""
+        TracerArrayConversionError).
+
+        hard_clamp_mask (calcolato dal chiamante su cl_chunk_raw/co_chunk_raw,
+        PRIMA di qualunque compressione log10): dove True, il gate ABC/Collatz
+        (potenzialmente ingannato da un segnale gia' ammortizzato) viene
+        bypassato e forzato alla blindatura massima 0.85 -- sbarramento
+        deterministico sulle macro-anomalie individuate sui dati originali,
+        non su quelli gia' compressi."""
         gt = jnp.where(jnp.isnan(gate), initial_damping, gate)
+        gt = jnp.where(hard_clamp_mask, 0.85, gt)
         diff = f1 - c_chunk
         candidate = f1 - (gt * diff)
         return jnp.where(jnp.isnan(candidate), c_chunk, candidate)
@@ -130,6 +143,11 @@ class Orca:
     def _execute_4_phase_input_shield(self, cl_chunk_raw: np.ndarray, co_chunk_raw: np.ndarray) -> tuple:
         """Le 4 fasi dello scudo entrata su un chunk flat gia' pronto; ritorna (decompresso, margine)."""
         v64_cl, v64_co = np.float64(cl_chunk_raw), np.float64(co_chunk_raw)
+        # Sbarramento di sicurezza: intensita' del rumore sui dati GREZZI
+        # originali, prima di qualunque compressione log10 -- la compressione
+        # rinormalizza ogni valore individualmente alla stessa scala target,
+        # quindi calcolata sui dati compressi la vera intensita' andrebbe persa.
+        raw_noise = np.abs(v64_co - v64_cl)
         # segno preservato: fact_* e' sempre positivo (10**x), quindi v64_* * fact_*
         # mantiene il segno originale -- la maschera deve includere anche i negativi,
         # altrimenti restano non compressi (scala incoerente col resto del batch)
@@ -143,8 +161,15 @@ class Orca:
 
         ref = self.stabilizer.filter_batch_scenarios(co_chunk)
         f1 = jnp.where(jnp.isnan(ref), c_chunk, ref)
-        gate = self.shield.compute_damping_gating(f1, c_chunk)
-        fh = self._compiled_input_shield_kernel(f1, c_chunk, gate, jnp.float32(self.initial_damping))
+        # Stadio 2 valutato sul segnale compresso PRIMA del Damping (co_chunk),
+        # non su f1 (gia' ammortizzato dallo Stadio 1) -- altrimenti l'ABC
+        # gating giudica quanto e' anomalo un segnale che e' gia' stato in
+        # parte corretto, sottostimando l'anomalia originale.
+        gate = self.shield.compute_damping_gating(co_chunk, c_chunk)
+        hard_clamp_mask = jnp.array(raw_noise > 0.05).reshape(1, -1)
+        fh = self._compiled_input_shield_kernel(
+            f1, c_chunk, gate, jnp.float32(self.initial_damping), hard_clamp_mask
+        )
 
         self.last_kappa = float(curvature(fh.flatten(), c_chunk.flatten()))
         jax.block_until_ready(fh)
