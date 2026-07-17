@@ -88,6 +88,30 @@ class AdaptiveSignalStabilizer:
                 in_axes=(0, None, None, None, None),
             )
         )
+        # Kernel 1D usato da filter_data_stream: thr/dmp/alp/noise_scalar
+        # passati come ARGOMENTI jit (come gia' fa _compiled_batch_filter
+        # sopra), non chiusi su self.* dentro la funzione -- altrimenti
+        # ogni jax.jit(lambda...) creato inline ad ogni chiamata sarebbe
+        # un oggetto Python nuovo, cache-miss garantito, ricompilazione
+        # XLA completa ad OGNI singola chiamata (~80ms fissi anche a
+        # regime, misurato: la cache non si scalda mai).
+        self._compiled_single_stream_filter = jax.jit(self._run_single_stream_scan)
+
+    def _run_single_stream_scan(self, init_state, rest, thr, dmp, alp, noise_scalar, init_val):
+        n = rest.shape[0]
+        thrs = jnp.full((n,), thr)
+        dmps = jnp.full((n,), dmp)
+        alps = jnp.full((n,), alp)
+        n_scalars = jnp.full((n,), noise_scalar)
+        left_neighbors = jnp.full((n,), init_val)
+        upper_neighbors = jnp.full((n,), init_val)
+        is_1d_array = jnp.full((n,), True)
+
+        def _wrapped_step(carry, step_inputs):
+            return self._step_kernel(carry, step_inputs)
+
+        scan_inputs = (rest, thrs, dmps, alps, n_scalars, left_neighbors, upper_neighbors, is_1d_array)
+        return jax.lax.scan(_wrapped_step, init_state, scan_inputs)
 
     def calibrate_macro_context(self, raw_batch: np.ndarray) -> None:
         """
@@ -366,21 +390,15 @@ class AdaptiveSignalStabilizer:
             init_val,
         )
 
-        def _wrapped_step(carry, current_val):
-            inputs = (
-                current_val,
-                jnp.float32(self.dyn_thr),
-                jnp.float32(self.dyn_dmp),
-                jnp.float32(self.dyn_alp),
-                jnp.float32(self.noise_scalar),
-                init_val,  # Left neighbor fittizio per array 1D
-                init_val,  # Upper neighbor fittizio per array 1D
-                True,      # is_1d flag attivata
-            )
-            return self._step_kernel(carry, inputs)
-
-        _run = jax.jit(lambda s, d: jax.lax.scan(_wrapped_step, s, d))
-        _, gated_stream = _run(init_state, j_raw[1:])
+        _, gated_stream = self._compiled_single_stream_filter(
+            init_state,
+            j_raw[1:],
+            jnp.float32(self.dyn_thr),
+            jnp.float32(self.dyn_dmp),
+            jnp.float32(self.dyn_alp),
+            jnp.float32(self.noise_scalar),
+            init_val,
+        )
         
         # Reinserimento del punto fisso iniziale preservando la topologia
         final_stream = jnp.insert(gated_stream, 0, init_val)
