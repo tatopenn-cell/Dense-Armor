@@ -12,7 +12,7 @@ Caratteristiche
 - Implementazione interamente JAX-compatibile, con kernel vmap + scan precompilati.
 """
 
-from typing import Callable, Tuple
+from typing import Callable, Optional, Tuple
 
 import jax
 import jax.numpy as jnp
@@ -86,7 +86,7 @@ class AdaptiveSignalStabilizer:
         self._compiled_batch_filter = jax.jit(
             jax.vmap(
                 self._process_single_scenario,
-                in_axes=(0, None, None, None, None),
+                in_axes=(0, None, None, None, None, 0),
             )
         )
         # Kernel 1D usato da filter_data_stream: thr/dmp/alp/noise_scalar
@@ -117,12 +117,16 @@ class AdaptiveSignalStabilizer:
         left_neighbors = jnp.full((n,), init_val)
         upper_neighbors = jnp.full((n,), init_val)
         is_1d_array = jnp.full((n,), True)
+        # filter_data_stream non ha (ancora) un riferimento grezzo esterno
+        # con cui calcolare un vero hard-clamp -- nessun cambio di
+        # comportamento su questo percorso, State Flush mai attivo qui.
+        hard_clamp_flags = jnp.full((n,), False)
 
         def _wrapped_step(carry: Tuple, step_inputs: Tuple) -> Tuple:
             """Adatta la firma di _step_kernel a quella richiesta da jax.lax.scan."""
             return self._step_kernel(carry, step_inputs)
 
-        scan_inputs = (rest, thrs, dmps, alps, n_scalars, left_neighbors, upper_neighbors, is_1d_array)
+        scan_inputs = (rest, thrs, dmps, alps, n_scalars, left_neighbors, upper_neighbors, is_1d_array, hard_clamp_flags)
         return jax.lax.scan(_wrapped_step, init_state, scan_inputs)
 
     def calibrate_macro_context(self, raw_batch: np.ndarray) -> None:
@@ -170,11 +174,24 @@ class AdaptiveSignalStabilizer:
     def _step_kernel(
         self,
         carry: Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray],
-        inputs: Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray],
+        inputs: Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray],
     ):
-        """Un passo dello scan causale: aggiorna stato/gain/volatilita' e produce il valore filtrato."""
+        """Un passo dello scan causale: aggiorna stato/gain/volatilita' e produce il valore filtrato.
+
+        hard_clamp_flag (nono elemento di inputs): stesso segnale autorevole
+        gia' usato dall'Hard-Clamp dello Stadio 2 in Orca (raw_noise > 0.05
+        sui dati grezzi originali, non una sua ricostruzione approssimata
+        qui dentro). Dove True, azzera istantaneamente il pavimento di
+        guadagno minimo (k_anom_min) per QUESTO passo -- altrimenti anche
+        uno shock enorme lascia sempre passare almeno k_anom_min (25% di
+        default) nello stato ricorsivo (prev_filtered/rolling_volatility),
+        e quel residuo contamina i passi successivi con un decadimento
+        lento (verificato: senza questo, 3 campioni normali dopo un picco
+        di 9999 restavano a >1000 invece di tornare vicino al valore vero).
+        Il design fluido normale (k_anom_min pieno) resta invariato sotto
+        soglia -- questo interviene SOLO quando l'Hard-Clamp e' gia' scattato."""
         prev_filtered, current_damping, rolling_volatility, local_mean = carry
-        current_val, thr, dmp, alp, n_scalar, left_neighbor, upper_neighbor, is_1d = inputs
+        current_val, thr, dmp, alp, n_scalar, left_neighbor, upper_neighbor, is_1d, hard_clamp_flag = inputs
 
         eps = 1e-7
 
@@ -231,11 +248,25 @@ class AdaptiveSignalStabilizer:
             jnp.float32(1.0 - (_ALPHA - _SIGMA)), # Soglia massima dinamica (~0.8958)
         )
 
-        k_anom_min = jnp.float32(self.k_anom_min)
+        # State Flush: sotto Hard-Clamp il pavimento minimo crolla a 0 per
+        # questo passo -- impedisce fisicamente allo shock di propagarsi
+        # nello stato ricorsivo (vedi docstring sopra).
+        k_anom_min = jnp.where(hard_clamp_flag, jnp.float32(0.0), jnp.float32(self.k_anom_min))
         k_anom_max = jnp.float32(self.k_anom_max)
-        
-        # Sostituzione del polo di anomalia grezza 0.30 con la contrazione aurea di banda
-        c_anom = jnp.float32(1.0 / (float(_PHI_128) ** 2)) # costante fissa (~0.3819), XLA-safe
+
+        # Sostituzione del polo di anomalia grezza 0.30 con la contrazione aurea di banda.
+        # c_anom scalata sulla magnitudine locale corrente (prev_filtered),
+        # non piu' una costante fissa assoluta: su dati grezzi (prev_filtered
+        # ~O(1-100)) il comportamento resta quello originale; su dati
+        # compressi da Orca (prev_filtered ~1e-4) c_anom scende alla stessa
+        # scala, cosi' K_anomalous_raw torna asintotico a zero per le
+        # macro-anomalie ANCHE in spazio compresso -- senza questo, una
+        # costante fissa da ~0.38 e' comparabile in grandezza al rumore
+        # compresso (~0.77 per uno shock), quindi K_anomalous_raw restava
+        # a ~0.33 invece di crollare a zero (verificato numericamente).
+        c_anom_base = jnp.float32(1.0 / (float(_PHI_128) ** 2))  # costante fissa (~0.3819), XLA-safe
+        local_scale_ref = jnp.maximum(jnp.abs(prev_filtered), jnp.float32(1e-8))
+        c_anom = c_anom_base * local_scale_ref
         K_anomalous_raw = c_anom / (c_anom + diff + eps)
         K_anomalous = jnp.clip(K_anomalous_raw, k_anom_min, k_anom_max)
 
@@ -285,11 +316,16 @@ class AdaptiveSignalStabilizer:
         dmp: jnp.ndarray,
         alp: jnp.ndarray,
         n_scalar: jnp.ndarray,
+        hard_clamp_mask: jnp.ndarray,
     ) -> jnp.ndarray:
-        """Filtra uno scenario 2D (H,W) tramite lo stesso scan causale usato per lo stream 1D."""
+        """Filtra uno scenario 2D (H,W) tramite lo stesso scan causale usato per lo stream 1D.
+
+        hard_clamp_mask: stessa shape di scenario_matrix, True dove il
+        chiamante (Orca) ha gia' rilevato una macro-anomalia sui dati
+        grezzi originali -- vedi _step_kernel per cosa fa (State Flush)."""
         h_dim, w_dim = scenario_matrix.shape
         is_1d_flag = h_dim == 1
-        
+
         flat_scen = scenario_matrix.flatten()
         
         left_neighbors = jnp.roll(scenario_matrix, shift=1, axis=1)
@@ -311,8 +347,9 @@ class AdaptiveSignalStabilizer:
         alps = jnp.full_like(flat_scen, alp)
         n_scalars = jnp.full_like(flat_scen, n_scalar)
         is_1d_array = jnp.full_like(flat_scen, is_1d_flag, dtype=jnp.bool_)
+        hard_clamp_flags = hard_clamp_mask.flatten()
 
-        scan_inputs = (flat_scen, thrs, dmps, alps, n_scalars, left_neighbors, upper_neighbors, is_1d_array)
+        scan_inputs = (flat_scen, thrs, dmps, alps, n_scalars, left_neighbors, upper_neighbors, is_1d_array, hard_clamp_flags)
 
         def _wrapped_step(carry: Tuple, step_inputs: Tuple) -> Tuple:
             """Adatta la firma di _step_kernel a quella richiesta da jax.lax.scan."""
@@ -426,14 +463,24 @@ class AdaptiveSignalStabilizer:
         final_stream = np.insert(gated_np, 0, np.asarray(init_val, dtype=np.float32))
         return final_stream
 
-    def filter_batch_scenarios(self, raw_batch: np.ndarray) -> np.ndarray:
+    def filter_batch_scenarios(
+        self, raw_batch: np.ndarray, hard_clamp_mask: Optional[np.ndarray] = None
+    ) -> np.ndarray:
         """
         Filtra in parallelo (vmap) un batch di scenari strutturati.
         Accetta tensori 2D nativi o array multidimensionali (3D/4D).
         Garantito XLA-Safe per l'esportazione binaria.
-        """
+
+        hard_clamp_mask: stessa shape di raw_batch, opzionale (default: nessuna
+        macro-anomalia, comportamento identico a prima). Dove True, attiva lo
+        State Flush dentro _step_kernel per quell'elemento -- vedi la sua
+        docstring. Pensato per essere lo STESSO segnale gia' calcolato a
+        monte da Orca (raw_noise sui dati grezzi > soglia critica), non una
+        sua ricostruzione approssimata qui dentro."""
         if raw_batch.size == 0:
             return np.zeros_like(raw_batch)
+        if hard_clamp_mask is None:
+            hard_clamp_mask = np.zeros_like(raw_batch, dtype=bool)
 
         original_shape = raw_batch.shape
         n_scenarios = int(original_shape[0])
@@ -447,17 +494,21 @@ class AdaptiveSignalStabilizer:
             h_dim = 1
             w_dim = int(original_shape[1])
             structured_batch = raw_batch.reshape(n_scenarios, h_dim, w_dim)
+            structured_mask = np.asarray(hard_clamp_mask).reshape(n_scenarios, h_dim, w_dim)
         elif len(original_shape) == 3:
             h_dim, w_dim = int(original_shape[1]), int(original_shape[2])
             structured_batch = raw_batch
+            structured_mask = np.asarray(hard_clamp_mask)
         elif len(original_shape) == 4:
             c_channels, h_dim, w_dim = int(original_shape[1]), int(original_shape[2]), int(original_shape[3])
             structured_batch = raw_batch.reshape(n_scenarios * c_channels, h_dim, w_dim)
+            structured_mask = np.asarray(hard_clamp_mask).reshape(n_scenarios * c_channels, h_dim, w_dim)
         else:
             raise ValueError(f"Geometria del tensore non supportata dall'engine: {original_shape}")
 
         # Conversione in array JAX esplicito a precisione singola standard per registri GPU/CPU
         j_batch = jnp.array(structured_batch, dtype=jnp.float32)
+        j_mask = jnp.array(structured_mask, dtype=jnp.bool_)
 
         # Esecuzione del kernel vettorizzato precompilato JAX
         filtered_structured = self._compiled_batch_filter(
@@ -466,6 +517,7 @@ class AdaptiveSignalStabilizer:
             jnp.float32(self.dyn_dmp),
             jnp.float32(self.dyn_alp),
             jnp.float32(self.noise_scalar),
+            j_mask,
         )
 
         # Conversione sicura in NumPy preservando la topologia

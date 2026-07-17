@@ -121,11 +121,15 @@ class Orca:
         hard_clamp_mask (calcolato dal chiamante su cl_chunk_raw/co_chunk_raw,
         PRIMA di qualunque compressione log10): dove True, il gate ABC/Collatz
         (potenzialmente ingannato da un segnale gia' ammortizzato) viene
-        bypassato e forzato alla blindatura massima 0.85 -- sbarramento
-        deterministico sulle macro-anomalie individuate sui dati originali,
-        non su quelli gia' compressi."""
+        bypassato e forzato a 0.99 -- protocollo di emergenza per le
+        macro-anomalie individuate sui dati originali (non su quelli gia'
+        compressi). Deliberatamente PIU' alto del gate massimo 0.85 del
+        design fluido normale (che si applica solo sotto la soglia grezza):
+        lo scenario di emergenza non deve ereditare il pavimento di guadagno
+        del 25% pensato per i disturbi ordinari -- qui l'obiettivo e'
+        abbattere l'outlier residuo a frazioni infinitesimali."""
         gt = jnp.where(jnp.isnan(gate), initial_damping, gate)
-        gt = jnp.where(hard_clamp_mask, 0.85, gt)
+        gt = jnp.where(hard_clamp_mask, 0.99, gt)
         diff = f1 - c_chunk
         candidate = f1 - (gt * diff)
         return jnp.where(jnp.isnan(candidate), c_chunk, candidate)
@@ -148,25 +152,48 @@ class Orca:
         # rinormalizza ogni valore individualmente alla stessa scala target,
         # quindi calcolata sui dati compressi la vera intensita' andrebbe persa.
         raw_noise = np.abs(v64_co - v64_cl)
-        # segno preservato: fact_* e' sempre positivo (10**x), quindi v64_* * fact_*
-        # mantiene il segno originale -- la maschera deve includere anche i negativi,
-        # altrimenti restano non compressi (scala incoerente col resto del batch)
-        mask_cl, mask_co = v64_cl != 0.0, v64_co != 0.0
+        # FATTORE DI SCALA CONDIVISO (non piu' uno per lato): un fattore per
+        # elemento, derivato SOLO dal valore pulito, applicato a ENTRAMBI
+        # pulito e corrotto. Prima c'erano due fattori indipendenti (uno da
+        # v64_cl, uno da v64_co): siccome ciascuno rinormalizza il proprio
+        # valore alla STESSA magnitudine target (10^val_e) a prescindere da
+        # quanto grande fosse in origine, due valori qualsiasi con lo stesso
+        # segno collassavano al valore compresso IDENTICO -- distruggendo
+        # ogni differenza relativa, quindi la dinamica dell'anomalia, prima
+        # ancora che Stadio 1/Stadio 2 la vedessero (verificato: un pass-
+        # through totale, senza nessuna vera protezione, ricostruiva il
+        # pulito esatto allo stesso modo). Con un fattore condiviso basato
+        # sul pulito, la differenza compressa resta proporzionale alla vera
+        # differenza (co_chunk - c_chunk = fact * (v64_co - v64_cl)) --
+        # segno preservato (fact sempre positivo), stessa robustezza
+        # numerica per il caso normale (scala target ~10^val_e quando co e'
+        # vicino a cl), ma senza cancellare le macro-anomalie che lo
+        # sbarramento su raw_noise deve poter vedere a monte.
+        mask_cl = v64_cl != 0.0
         exp10_cl = np.where(mask_cl, np.log10(np.abs(v64_cl) + 1e-15), 0.0)
-        exp10_co = np.where(mask_co, np.log10(np.abs(v64_co) + 1e-15), 0.0)
-        fact_cl = np.where(mask_cl, 10 ** (self.val_e - exp10_cl), 1.0)
-        fact_co = np.where(mask_co, 10 ** (self.val_e - exp10_co), 1.0)
-        c_chunk = jnp.array(v64_cl * fact_cl).reshape(1, -1)
-        co_chunk = jnp.array(v64_co * fact_co).reshape(1, -1)
+        fact_shared = np.where(mask_cl, 10 ** (self.val_e - exp10_cl), 1.0)
+        c_chunk = jnp.array(v64_cl * fact_shared).reshape(1, -1)
+        co_chunk = jnp.array(v64_co * fact_shared).reshape(1, -1)
+        hard_clamp_mask = jnp.array(raw_noise > 0.05).reshape(1, -1)
 
-        ref = self.stabilizer.filter_batch_scenarios(co_chunk)
-        f1 = jnp.where(jnp.isnan(ref), c_chunk, ref)
+        # State Flush: lo stesso segnale autorevole del punto 2 passato
+        # anche allo Stadio 1 -- altrimenti il suo pavimento di guadagno
+        # minimo (25% di default) lascia sempre passare un residuo di una
+        # macro-anomalia nello stato ricorsivo, che poi decade lentamente
+        # contaminando i campioni successivi (verificato: senza questo,
+        # 3 campioni normali dopo un picco enorme restavano contaminati
+        # per centinaia/migliaia di unita').
+        ref = self.stabilizer.filter_batch_scenarios(co_chunk, hard_clamp_mask=hard_clamp_mask)
+        # isfinite (non solo isnan): col fattore condiviso co_chunk non e'
+        # piu' garantito restare vicino a 10^val_e per corruzioni estreme --
+        # un overflow (Inf, non NaN) deve essere intercettato qui altrimenti
+        # sopravviverebbe al blending anche sotto hard-clamp.
+        f1 = jnp.where(jnp.isfinite(ref), ref, c_chunk)
         # Stadio 2 valutato sul segnale compresso PRIMA del Damping (co_chunk),
         # non su f1 (gia' ammortizzato dallo Stadio 1) -- altrimenti l'ABC
         # gating giudica quanto e' anomalo un segnale che e' gia' stato in
         # parte corretto, sottostimando l'anomalia originale.
         gate = self.shield.compute_damping_gating(co_chunk, c_chunk)
-        hard_clamp_mask = jnp.array(raw_noise > 0.05).reshape(1, -1)
         fh = self._compiled_input_shield_kernel(
             f1, c_chunk, gate, jnp.float32(self.initial_damping), hard_clamp_mask
         )
@@ -177,7 +204,7 @@ class Orca:
         # niente clamp a zero qui: col segno preservato sopra, fh puo' legittimamente
         # essere negativo -- azzerarlo cancellerebbe dati puliti validi (vedi test)
         filtered_enc_np = np.array(fh).flatten()
-        dec_chunk = filtered_enc_np / fact_cl
+        dec_chunk = filtered_enc_np / fact_shared
         # margine d'errore in unita' originali: quanto il valore ricevuto (grezzo,
         # corrotto) e' stato spostato per arrivare al valore corretto -- correzioni
         # piccole = valore gia' affidabile, correzioni grandi = fidarsi poco.
