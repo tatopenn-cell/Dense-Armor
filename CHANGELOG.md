@@ -2,6 +2,33 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## [1.0.10]
+
+### Fixed
+- **Gate ABCollatz dello Stadio 2 (`compute_damping_gating`)**: era
+  matematicamente saturo a ~0.85 sempre, indipendentemente dal rumore
+  vero — causa: il radicale di un intero (derivato dalla traiettoria di
+  Collatz) non ha nessuna relazione monotona con la sua grandezza
+  (verificato con sweep numerico: rumore crescente 0->1000 dava
+  discrepanze 0, 300, 220, 600, -8, 13920, 0, senza andamento). Non era
+  un problema di scala/compressione: l'artefatto restava identico su
+  dati grezzi.
+- Costruita e testata anche una sigmoide monotona e scala-invariante sul
+  rumore relativo, genuinamente discriminante — ma su 7 scenari reali
+  (`test/testKalman.py`), sia in modalità cieca sia con riferimento vero
+  esplicito, peggiora sistematicamente l'RMSE rispetto al fallback
+  costante 0.85 (anche alzando il pavimento minimo fino a 0.84). Nel
+  design attuale di Orca il riferimento (Stadio 1) è già una stima
+  affidabile: correggere sempre con forza verso di esso batte qualunque
+  discriminazione basata sul rumore locale. Ripristinato il fallback
+  costante, ora dichiarato esplicitamente invece di emergere per
+  accidente da una formula rotta.
+
+Nessun cambio di comportamento a runtime per chi già usa il pacchetto
+(RMSE e tempi verificati pressoché identici prima/dopo su tutti gli
+scenari di test) — il fix è di correttezza/manutenibilità del codice, non
+di funzionalità.
+
 ## [1.0.9]
 
 Indagine approfondita partita dalla verifica di uno script esterno che

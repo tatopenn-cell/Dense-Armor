@@ -17,7 +17,7 @@ from .visualizer import AIEngineVisualizer
 from .profiler  import PipelineProfiler
 from .damping_operator import apply_damping_blend
 
-__version__ = "1.0.9"
+__version__ = "1.0.10"
 __all__ = [
     "AIHardwareProfiler", 
     "StochasticAdversarialNoise",
