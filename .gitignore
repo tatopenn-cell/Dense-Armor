@@ -8,6 +8,9 @@ dist/
 venv/
 .pytest_cache/
 
+# output generato dai benchmark (CSV/PNG), non codice sorgente
+test/risultati/
+
 # esperimenti non parte del pacchetto pubblicabile (308MB, dataset/pesi modello)
 esperimenti con ia/
 
