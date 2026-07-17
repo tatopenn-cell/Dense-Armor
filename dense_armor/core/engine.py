@@ -12,7 +12,7 @@ Caratteristiche
 - Implementazione interamente JAX-compatibile, con kernel vmap + scan precompilati.
 """
 
-from typing import Tuple
+from typing import Callable, Tuple
 
 import jax
 import jax.numpy as jnp
@@ -62,6 +62,7 @@ class AdaptiveSignalStabilizer:
         window_radius: int = 1,
         smooth_l2_blend: float = 0.5,
     ) -> None:
+        """Configura soglie/gain iniziali e precompila i kernel JAX (scan 1D, batch vmap)."""
         # Parametri di configurazione (CPU side)
         self.threshold: float = float(static_threshold)
         self.damping: float = float(initial_damping)
@@ -97,7 +98,17 @@ class AdaptiveSignalStabilizer:
         # regime, misurato: la cache non si scalda mai).
         self._compiled_single_stream_filter = jax.jit(self._run_single_stream_scan)
 
-    def _run_single_stream_scan(self, init_state, rest, thr, dmp, alp, noise_scalar, init_val):
+    def _run_single_stream_scan(
+        self,
+        init_state: Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray],
+        rest: jnp.ndarray,
+        thr: jnp.ndarray,
+        dmp: jnp.ndarray,
+        alp: jnp.ndarray,
+        noise_scalar: jnp.ndarray,
+        init_val: jnp.ndarray,
+    ) -> Tuple:
+        """Corpo (non ancora jit-compilato qui, vedi _compiled_single_stream_filter) dello scan 1D."""
         n = rest.shape[0]
         thrs = jnp.full((n,), thr)
         dmps = jnp.full((n,), dmp)
@@ -107,7 +118,8 @@ class AdaptiveSignalStabilizer:
         upper_neighbors = jnp.full((n,), init_val)
         is_1d_array = jnp.full((n,), True)
 
-        def _wrapped_step(carry, step_inputs):
+        def _wrapped_step(carry: Tuple, step_inputs: Tuple) -> Tuple:
+            """Adatta la firma di _step_kernel a quella richiesta da jax.lax.scan."""
             return self._step_kernel(carry, step_inputs)
 
         scan_inputs = (rest, thrs, dmps, alps, n_scalars, left_neighbors, upper_neighbors, is_1d_array)
@@ -160,6 +172,7 @@ class AdaptiveSignalStabilizer:
         carry: Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray],
         inputs: Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray],
     ):
+        """Un passo dello scan causale: aggiorna stato/gain/volatilita' e produce il valore filtrato."""
         prev_filtered, current_damping, rolling_volatility, local_mean = carry
         current_val, thr, dmp, alp, n_scalar, left_neighbor, upper_neighbor, is_1d = inputs
 
@@ -273,6 +286,7 @@ class AdaptiveSignalStabilizer:
         alp: jnp.ndarray,
         n_scalar: jnp.ndarray,
     ) -> jnp.ndarray:
+        """Filtra uno scenario 2D (H,W) tramite lo stesso scan causale usato per lo stream 1D."""
         h_dim, w_dim = scenario_matrix.shape
         is_1d_flag = h_dim == 1
         
@@ -300,7 +314,8 @@ class AdaptiveSignalStabilizer:
 
         scan_inputs = (flat_scen, thrs, dmps, alps, n_scalars, left_neighbors, upper_neighbors, is_1d_array)
 
-        def _wrapped_step(carry, step_inputs):
+        def _wrapped_step(carry: Tuple, step_inputs: Tuple) -> Tuple:
+            """Adatta la firma di _step_kernel a quella richiesta da jax.lax.scan."""
             return self._step_kernel(carry, step_inputs)
 
         _, filtered_flat = jax.lax.scan(
@@ -314,13 +329,14 @@ class AdaptiveSignalStabilizer:
     # ------------------------------------------------------------------ #
     # Builder del filtro streaming legacy (single-vector) - ALLINEATO XLA
     # ------------------------------------------------------------------ #
-    def _build_stream_filter(self):
+    def _build_stream_filter(self) -> Callable:
         """
         Costruisce e compila il filtro per una singola serie temporale 1D.
         Fissato per compatibilità di esportazione binaria nativa.
         """
 
-        def _legacy_step(carry, current_val):
+        def _legacy_step(carry: Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray], current_val: jnp.ndarray) -> Tuple:
+            """Un passo dello scan legacy (path storico, precede il kernel a 4 canali)."""
             prev, dmp_state, vol = carry
 
             diff = jnp.abs(current_val - prev)
@@ -364,7 +380,8 @@ class AdaptiveSignalStabilizer:
             return (next_f, next_damping, new_vol), next_f
 
         @jax.jit
-        def _run(init_state, data):
+        def _run(init_state: Tuple, data: jnp.ndarray) -> Tuple:
+            """Esegue lo scan legacy precompilato sull'intera serie."""
             return jax.lax.scan(_legacy_step, init_state, data)
 
         return _run

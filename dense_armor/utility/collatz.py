@@ -12,7 +12,8 @@ class ABCollatz:
     Combina l'evoluzione di Collatz con il limite olografico ABC 
     per calcolare la sensibilità microscopica della molla di smorzamento.
     """
-    def __init__(self, epsilon_target: float = 1.0):
+    def __init__(self, epsilon_target: float = 1.0) -> None:
+        """epsilon_target — soglia target di discrepanza ABC usata dal gating."""
         self.epsilon_target = epsilon_target
 
     @staticmethod

@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 import os
+from typing import Dict, Optional, Union
+
 import numpy as np
 from scipy.io import wavfile
 
-def diag(iorig, ifilt):
+def diag(iorig: Union[str, np.ndarray], ifilt: Union[str, np.ndarray]) -> Optional[Dict[str, float]]:
     """Esegue un'analisi differenziale profonda accettando sia percorsi file (str) che array NumPy."""
     if isinstance(iorig, str) and isinstance(ifilt, str):
         if not os.path.exists(iorig) or not os.path.exists(ifilt):

@@ -7,6 +7,7 @@ MemoryPressureError  — eccezione lanciata quando la memoria è insufficiente.
 """
 
 import gc
+import logging
 import math
 import subprocess
 import psutil
@@ -16,6 +17,8 @@ try:
     HAS_JAX = True
 except ImportError:
     HAS_JAX = False
+
+logger = logging.getLogger(__name__)
 
 
 class MemoryPressureError(Exception):
@@ -32,7 +35,9 @@ class UniversalMemoryGuard:
         self,
         min_free_ram_percentage: float = 0.15,
         force_gc: bool = True,
-    ):
+    ) -> None:
+        """min_free_ram_percentage — soglia minima di RAM libera richiesta;
+        force_gc — se True tenta un soft garbage-collect prima di bloccare."""
         self.min_free_ram = min_free_ram_percentage
         self.force_gc     = force_gc
 
@@ -53,12 +58,16 @@ class UniversalMemoryGuard:
                 if total > 0:
                     min_free_ratio = min(min_free_ratio, free / total)
             return min_free_ratio
-        except Exception:
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired,
+                FileNotFoundError, OSError, ValueError):
+            # nvidia-smi assente, fallito, in timeout, o output di formato
+            # inatteso: nessuna GPU NVIDIA leggibile, non un bug -- si
+            # assume VRAM libera (nessun blocco).
             return 1.0
 
     # ── RAM check ─────────────────────────────────────────────────────────────
 
-    def check_memory_safety(self):
+    def check_memory_safety(self) -> None:
         """Verifica lo stato della RAM e della VRAM prima di allocazioni critiche."""
         vm             = psutil.virtual_memory()
         free_pct       = vm.available / vm.total
@@ -70,7 +79,11 @@ class UniversalMemoryGuard:
                 try:
                     jax.clear_caches()
                 except Exception:
-                    pass
+                    # pulizia best-effort e non critica: gli interni di JAX
+                    # possono fallire in troppi modi diversi per elencarli,
+                    # ma non deve bloccare il check di sicurezza memoria --
+                    # loggato (non piu' silenzioso) per restare tracciabile.
+                    logger.debug("jax.clear_caches() fallito durante il soft GC", exc_info=True)
             vm       = psutil.virtual_memory()
             free_pct = vm.available / vm.total
 
@@ -93,7 +106,11 @@ class UniversalMemoryGuard:
                             )
             except MemoryPressureError:
                 raise
-            except Exception:
+            except (RuntimeError, AttributeError):
+                # query driver/dispositivo JAX fallita (es. driver GPU non
+                # inizializzato correttamente): stesso principio del check
+                # RAM, non e' un errore dell'utente -- si prosegue senza
+                # bloccare su un dato VRAM che non si riesce a leggere.
                 pass
 
     # ── Chunk calculator ──────────────────────────────────────────────────────

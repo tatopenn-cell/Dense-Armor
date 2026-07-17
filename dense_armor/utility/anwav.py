@@ -3,7 +3,7 @@ import os
 import numpy as np
 from scipy.io import wavfile
 
-def anwav(fpath):
+def anwav(fpath: str) -> None:
     """Analizza il file wav verificando i parametri di picco e dinamica."""
     if not os.path.exists(fpath):
         print(f"[ERR] File {fpath} non trovato!")

@@ -22,6 +22,7 @@ class ImageChunker:
     """
 
     def __init__(self, chunk_size: int = 128) -> None:
+        """chunk_size — dimensione fissa di ogni blocco (batch o istruzioni)."""
         self.chunk_size = int(chunk_size)
 
     # ── SEZIONE SPAZIALE FOTO/BATCH (Per test21.py e main.py) ───────────────
@@ -77,7 +78,8 @@ class ImageChunker:
         punti di iniezione contrassegnati dal marcatore -1.0.
         """
 
-        def patch_single_op(carry, op):
+        def patch_single_op(carry: jnp.ndarray, op: jnp.ndarray) -> tuple:
+            """Un passo di scan: se op e' un marcatore -1.0 lo sostituisce col prossimo parametro dinamico."""
             idx = carry
             # Se rileva lo slot parametrico quantistico/lineare attivo (-1.0)
             is_parametric = op == -1.0

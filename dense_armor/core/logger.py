@@ -6,14 +6,16 @@ from datetime import datetime
 
 class MinimalConsoleFormatter(logging.Formatter):
 
-    def format(self, record):
+    def format(self, record: logging.LogRecord) -> str:
+        """Formatta un log record come `[HH:MM:SS] [LEVEL] messaggio`."""
         timestamp = datetime.fromtimestamp(record.created).strftime("%H:%M:%S")
         return f"[{timestamp}] [{record.levelname}] {record.getMessage()}"
 
 
 class CompactJsonFormatter(logging.Formatter):
 
-    def format(self, record):
+    def format(self, record: logging.LogRecord) -> str:
+        """Formatta un log record come riga JSON compatta (una per evento)."""
         log_payload = {
             "timestamp": datetime.fromtimestamp(record.created).isoformat(),
             "level": record.levelname,
@@ -30,6 +32,8 @@ class CompactJsonFormatter(logging.Formatter):
 
 
 def get_enterprise_logger(name: str = "sentinel") -> logging.Logger:
+    """Logger JSON su file (`sentinel_dashboard.log`), niente output su
+    console (vedi commento sotto). Non usato dal resto della libreria."""
     logger = logging.getLogger(name)
 
     if not logger.handlers:

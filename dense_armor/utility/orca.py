@@ -5,7 +5,8 @@ Sottosistema: Orchestratore Dinamico Selettivo Context-Aware a 4 Fasi
 Autore del Framework: Salvatore Pennacchio (Napoli, 2026)
 Percorso: shield_/utility/orca.py
 """
-import os, sys, time, gc
+import os, sys, time, gc, logging
+from typing import Callable, Optional
 import numpy as np
 import psutil
 import jax
@@ -17,9 +18,15 @@ from ..utility.collatz import ABCollatz
 from ..core.damping_operator import apply_damping_blend
 from ..utility.curvature import curvature
 
+logger = logging.getLogger(__name__)
+
+
 class Orca:
-    def __init__(self, static_threshold=0.15, initial_damping=0.85, alpha=0.05, val_e=-4.0,
-                 chunk_threshold=1000000, min_free_ram_percentage=0.15):
+    def __init__(self, static_threshold: float = 0.15, initial_damping: float = 0.85,
+                 alpha: float = 0.05, val_e: float = -4.0,
+                 chunk_threshold: int = 1000000, min_free_ram_percentage: float = 0.15) -> None:
+        """val_e — esponente di scala target per la compressione log10 in ingresso;
+        chunk_threshold — dimensione oltre la quale un batch viene processato a blocchi."""
         self.static_threshold = static_threshold
         self.initial_damping = initial_damping
         self.alpha = alpha
@@ -45,7 +52,7 @@ class Orca:
         self.margine_uscita_medio = 0.0
         self.margine_uscita_max = 0.0
 
-    def _gc_se_ram_bassa(self):
+    def _gc_se_ram_bassa(self) -> None:
         """gc.collect()+jax.clear_caches() SOLO se la RAM libera e' davvero
         sotto soglia (stessa logica di UniversalMemoryGuard.check_memory_safety).
         jax.clear_caches() svuota la cache di compilazione JIT di TUTTO il
@@ -57,7 +64,7 @@ class Orca:
             gc.collect()
             jax.clear_caches()
 
-    def _blind_reference(self, co_row_flat):
+    def _blind_reference(self, co_row_flat: np.ndarray) -> np.ndarray:
         """Riferimento pulito CIECO per una riga di batch, usato quando non e'
         stato fornito x_reference: stesso "trattamento" dato a Kalman nel
         confronto -- memoria causale reale invece di una finestra fissa cieca.
@@ -90,7 +97,9 @@ class Orca:
         rif = self.stabilizer.filter_data_stream(v_pre_cleaned)
         return np.asarray(rif, dtype=np.float64)
 
-    def _run_input_shield_kernel(self, f1, c_chunk, gate, initial_damping):
+    def _run_input_shield_kernel(
+        self, f1: jnp.ndarray, c_chunk: jnp.ndarray, gate: jnp.ndarray, initial_damping: jnp.ndarray
+    ) -> jnp.ndarray:
         """Solo la combinazione elementwise finale dello scudo entrata
         (jnp.where/aritmetica pura), precompilata una sola volta. f1 e gate
         restano calcolati con chiamate EAGER separate (filter_batch_scenarios/
@@ -102,7 +111,7 @@ class Orca:
         candidate = f1 - (gt * diff)
         return jnp.where(jnp.isnan(candidate), c_chunk, candidate)
 
-    def _run_output_shield_kernel(self, ai_output_flat, ref_flat):
+    def _run_output_shield_kernel(self, ai_output_flat: jnp.ndarray, ref_flat: jnp.ndarray) -> tuple:
         """Pipeline JAX pura dello scudo uscita, isolata per essere
         precompilata una sola volta (vedi _compiled_output_shield_kernel)."""
         final_hardened_flat = apply_damping_blend(ai_output_flat, ref_flat)
@@ -112,7 +121,8 @@ class Orca:
                              jnp.abs(final_hardened_flat))
         return final_hardened_flat, margine
 
-    def _execute_4_phase_input_shield(self, cl_chunk_raw, co_chunk_raw):
+    def _execute_4_phase_input_shield(self, cl_chunk_raw: np.ndarray, co_chunk_raw: np.ndarray) -> tuple:
+        """Le 4 fasi dello scudo entrata su un chunk flat gia' pronto; ritorna (decompresso, margine)."""
         v64_cl, v64_co = np.float64(cl_chunk_raw), np.float64(co_chunk_raw)
         # segno preservato: fact_* e' sempre positivo (10**x), quindi v64_* * fact_*
         # mantiene il segno originale -- la maschera deve includere anche i negativi,
@@ -149,7 +159,8 @@ class Orca:
         del c_chunk, co_chunk, fh, filtered_enc_np
         return dec_chunk, margine_chunk
 
-    def _execute_4_phase_output_shield(self, ai_output, output_reference):
+    def _execute_4_phase_output_shield(self, ai_output: jnp.ndarray, output_reference: jnp.ndarray) -> tuple:
+        """Le 4 fasi dello scudo uscita; ritorna (output_corretto, margine), stessa shape di ai_output."""
         orig_shape = ai_output.shape
         B = orig_shape[0]
         ai_output_flat, ref_flat = ai_output.reshape(B, -1), output_reference.reshape(B, -1)
@@ -166,11 +177,19 @@ class Orca:
         del ai_output_flat, ref_flat, final_hardened_flat
         return x_final, margine
 
-    def protect_and_forward(self, ai_model_callable, x_corrupted, x_reference=None, 
-                            use_input_shield=True, use_model_injection=True, use_output_shield=True):
+    def protect_and_forward(
+        self,
+        ai_model_callable: Optional[Callable],
+        x_corrupted: np.ndarray,
+        x_reference: Optional[np.ndarray] = None,
+        use_input_shield: bool = True,
+        use_model_injection: bool = True,
+        use_output_shield: bool = True,
+    ) -> np.ndarray:
+        """Esegue le 4 fasi (scudo entrata -> modello -> scudo uscita) e ritorna l'output protetto."""
         is_simple_data_test = ai_model_callable is None or not use_model_injection
         if is_simple_data_test:
-            print("[ORCA] CONTRAZIONE LOGICA DETECTED: Riconosciuto Test di Protezione Dati Semplice (No IA Model).")
+            logger.info("CONTRAZIONE LOGICA DETECTED: Riconosciuto Test di Protezione Dati Semplice (No IA Model).")
             use_model_injection = False
 
         # Un array 1D (es. una singola serie da sensore/pipeline) NON e' un
@@ -191,7 +210,7 @@ class Orca:
         t_start = time.time()
         
         if use_input_shield:
-            print(f"[ORCA] Attivazione SCUDO ENTRATA (4 Fasi) su Ipervolume: {orig_shape}")
+            logger.info("Attivazione SCUDO ENTRATA (4 Fasi) su Ipervolume: %s", orig_shape)
             x_corrupted_np = np.array(x_corrupted)
             if x_reference is None:
                 x_reference_np = np.zeros_like(x_corrupted_np)
@@ -219,10 +238,10 @@ class Orca:
             self.margine_ingresso = margine_batch
             self.margine_ingresso_medio = float(np.mean(margine_batch))
             self.margine_ingresso_max = float(np.max(margine_batch))
-            print(f"[ORCA] Input purificato in {time.time() - t_start:.3f}s. "
-                  f"Margine d'errore: medio={self.margine_ingresso_medio:.4g}, max={self.margine_ingresso_max:.4g}")
+            logger.info("Input purificato in %.3fs. Margine d'errore: medio=%.4g, max=%.4g",
+                        time.time() - t_start, self.margine_ingresso_medio, self.margine_ingresso_max)
         else:
-            print("[ORCA] SCUDO ENTRATA disattivato. I dati transitano senza pre-filtri.")
+            logger.info("SCUDO ENTRATA disattivato. I dati transitano senza pre-filtri.")
             x_for_model = jnp.array(x_corrupted)
             self.margine_ingresso = None
             self.margine_ingresso_medio = self.margine_ingresso_max = 0.0
@@ -231,14 +250,14 @@ class Orca:
             t_ia = time.time()
             ai_output = ai_model_callable(x_for_model)
             jax.block_until_ready(ai_output)
-            print(f"[ORCA] Risposta IA ottenuta in {time.time() - t_ia:.3f}s. Shape Output: {ai_output.shape}")
+            logger.info("Risposta IA ottenuta in %.3fs. Shape Output: %s", time.time() - t_ia, ai_output.shape)
         else:
-            print("[ORCA] INIEZIONE MODELLO bypassata. I dati purificati procedono verso la barriera spettrale.")
+            logger.info("INIEZIONE MODELLO bypassata. I dati purificati procedono verso la barriera spettrale.")
             ai_output = x_for_model
 
         if use_output_shield:
             t_out = time.time()
-            print(f"[ORCA] Attivazione SCUDO USCITA (4 Fasi) su Spettro Terminale...")
+            logger.info("Attivazione SCUDO USCITA (4 Fasi) su Spettro Terminale...")
             if use_model_injection and x_reference is not None:
                 # riferimento nello SPAZIO DI OUTPUT: risposta del modello al dato
                 # pulito, non l'input purificato (spazio diverso se il modello e'
@@ -254,10 +273,10 @@ class Orca:
             self.margine_uscita = np.array(margine_out)
             self.margine_uscita_medio = float(jnp.mean(margine_out))
             self.margine_uscita_max = float(jnp.max(margine_out))
-            print(f"[ORCA] Output rinormalizzato in {time.time() - t_out:.3f}s. "
-                  f"Margine d'errore: medio={self.margine_uscita_medio:.4g}, max={self.margine_uscita_max:.4g}")
+            logger.info("Output rinormalizzato in %.3fs. Margine d'errore: medio=%.4g, max=%.4g",
+                        time.time() - t_out, self.margine_uscita_medio, self.margine_uscita_max)
         else:
-            print("[ORCA] SCUDO USCITA disattivato. Emissione del flusso lineare.")
+            logger.info("SCUDO USCITA disattivato. Emissione del flusso lineare.")
             x_final = ai_output
             self.margine_uscita = None
             self.margine_uscita_medio = self.margine_uscita_max = 0.0
@@ -269,5 +288,5 @@ class Orca:
             if self.margine_uscita is not None:
                 self.margine_uscita = np.asarray(self.margine_uscita).reshape(-1)
 
-        print(f"[ORCA] Transito concluso. Sistema sigillato in {time.time() - t_start:.3f} secondi totali.")
+        logger.info("Transito concluso. Sistema sigillato in %.3f secondi totali.", time.time() - t_start)
         return x_final

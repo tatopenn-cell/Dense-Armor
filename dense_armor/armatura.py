@@ -16,6 +16,7 @@ Uso da codice (qualsiasi IA):
 """
 import os
 import sys
+from typing import Dict, List, Optional, Tuple, Union
 
 
 import numpy as np
@@ -42,25 +43,30 @@ class Armatura:
     passa la tua baseline storica come `riferimento`.
     """
 
-    def __init__(self, static_threshold=0.15, initial_damping=0.85, alpha=0.05,
-                 soglia_anomalia=None, livello_ia=1.0):
+    def __init__(self, static_threshold: float = 0.15, initial_damping: float = 0.85,
+                 alpha: float = 0.05, soglia_anomalia: Optional[float] = None,
+                 livello_ia: float = 1.0) -> None:
+        """soglia_anomalia — soglia fissa opzionale (None = calcolata dai dati);
+        livello_ia — 0=neonata (filtra) .. 1=matura (solo marca)."""
         self.stab = AdaptiveSignalStabilizer(static_threshold=static_threshold,
                                              initial_damping=initial_damping, alpha=alpha)
         self.shield = ABCollatz(epsilon_target=1.0)
         self.soglia = soglia_anomalia
         self.livello_ia = float(min(1.0, max(0.0, livello_ia)))
 
-    def set_livello(self, livello):
+    def set_livello(self, livello: float) -> None:
         """Aggiorna il livello dell'IA (0=debole -> filtra; 1=matura -> marca)."""
         self.livello_ia = float(min(1.0, max(0.0, livello)))
 
     @staticmethod
-    def livello_da_entropia(entropia, vocab_size):
+    def livello_da_entropia(entropia: float, vocab_size: int) -> float:
         """Livello MISURATO: 1 - entropia/log(V) (stessa formula dello sfogo dinamico)."""
         import math
         return max(0.0, min(1.0, 1.0 - entropia / (math.log(max(2, vocab_size)) + 1e-12)))
 
-    def analizza(self, serie, riferimento=None):
+    def analizza(
+        self, serie: np.ndarray, riferimento: Optional[np.ndarray] = None
+    ) -> Tuple[np.ndarray, np.ndarray, List[int]]:
         """serie: 1D (lista/array). Per tensori N-D: passare tensore.ravel()
         e rifare reshape dopo (lo scudo e' agnostico: la trasposizione basta).
         Ritorna (pulito, K, indici_anomalie)."""
@@ -107,7 +113,7 @@ class Armatura:
         anomalie |= {int(i) for i in np.where(~np.isfinite(grezza))[0]}
         return pulito, K, sorted(anomalie)
 
-    def deriva(self, serie):
+    def deriva(self, serie: np.ndarray) -> Tuple[float, bool, float]:
         """RILEVATORE DI DERIVA LENTA (usa METRO, come suggerito da Salvatore).
 
         La rana bollita: incrementi infinitesimi (es. +0.004/passo) invisibili
@@ -140,14 +146,17 @@ class Armatura:
         esponente = float(np.log10(fact)) - (-4.0) if fact > 0 else 0.0  # = -log10(|tasso|)
         return tasso, bool(significativa), esponente
 
-    def referto_json(self, serie, nome="serie", riferimento=None):
+    def referto_json(
+        self, serie: np.ndarray, nome: str = "serie", riferimento: Optional[np.ndarray] = None
+    ) -> Dict:
         """Referto MACCHINA-LEGGIBILE (dict pronto per json.dumps).
         Pensato per IA e altri programmi: niente prosa, solo dati.
         I valori non finiti diventano stringhe ("NaN") per dare JSON valido."""
         pulito, K, anomalie = self.analizza(serie, riferimento)
         s = np.asarray(serie, dtype=np.float64).ravel()
         tasso, sig, esp = self.deriva(serie)
-        def _num(v):
+        def _num(v: float) -> Union[float, str]:
+            """Converte in float, o in "NaN" (stringa, per restare JSON-valido) se non finito."""
             return float(v) if np.isfinite(v) else "NaN"
         return {
             "nome": nome,
@@ -160,7 +169,9 @@ class Armatura:
                        "esponente_metro": _num(esp)},
         }
 
-    def referto(self, serie, nome="serie", riferimento=None):
+    def referto(
+        self, serie: np.ndarray, nome: str = "serie", riferimento: Optional[np.ndarray] = None
+    ) -> List[int]:
         """Analisi + referto leggibile."""
         pulito, K, anomalie = self.analizza(serie, riferimento)
         s = np.asarray(serie, dtype=np.float64).ravel()
@@ -175,7 +186,8 @@ class Armatura:
         return anomalie
 
 
-def main():
+def main() -> None:
+    """Entry point CLI: `python armatura.py [--json] <file_o_numeri...>`."""
     import re as _re
     argv = sys.argv[1:]
     come_json = "--json" in argv

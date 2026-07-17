@@ -19,7 +19,8 @@ except ImportError:
 class TensorVault:
     """Vault ottimizzato e compatto per matrici statiche e parametriche."""
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Rileva il backend disponibile (JAX o NumPy) e la precisione attiva."""
         self.xp    = jnp if HAS_JAX else np
         # Lettura sicura di jax_enable_x64 senza usare il vecchio metodo .get()
         is_x64     = getattr(jax.config, "jax_enable_x64", False) if HAS_JAX else False
@@ -62,6 +63,7 @@ class TensorVault:
     # ── Info ──────────────────────────────────────────────────────────────────
 
     def get_backend_info(self) -> str:
+        """Descrizione leggibile del backend/precisione attivi (es. 'JAX / GPU Accelerato (32-bit)')."""
         precision = "64-bit" if self.dtype in (
             np.float64, getattr(jnp, "float64", None)
         ) else "32-bit"

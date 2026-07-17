@@ -28,6 +28,7 @@ class BitwisePermutationEngine:
     """
 
     def __init__(self, n_elements: int):
+        """n_elements — numero di bit del vettore combinatorio (spazio 2^n_elements)."""
         self.n    = n_elements
         self.size = 1 << n_elements     # 2^N stati possibili
 
@@ -61,7 +62,7 @@ class ParametricScenarioSimulator:
     """
 
     @staticmethod
-    def _simulation_step(carry, single_param):
+    def _simulation_step(carry: jnp.ndarray, single_param: jnp.ndarray) -> tuple:
         """Passo temporale scalare per jax.lax.scan."""
         current_state = carry
         next_state    = current_state * 0.95 + single_param * 0.05
@@ -85,7 +86,8 @@ class ParametricScenarioSimulator:
         -------
         np.ndarray di shape (N_scenari, T_steps)
         """
-        def simulate_single_instance(params_vector):
+        def simulate_single_instance(params_vector: jnp.ndarray) -> jnp.ndarray:
+            """Un singolo scenario (T_steps parametri) portato avanti nel tempo."""
             _, history = jax.lax.scan(
                 self._simulation_step, base_state, params_vector
             )

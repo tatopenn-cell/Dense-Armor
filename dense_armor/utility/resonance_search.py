@@ -6,6 +6,7 @@ from ..core.damping_operator import apply_damping_blend
 
 @jax.jit
 def _resonance_scores(database_matrix: jnp.ndarray, query_vector: jnp.ndarray, kappa: float, delta_eff: float, stress_segnale: float) -> jnp.ndarray:
+    """Punteggio di risonanza per riga di database_matrix rispetto a query_vector."""
     eps = 1e-8
     norms_M = jnp.linalg.norm(database_matrix, axis=1, keepdims=True)
     M_normed = database_matrix / jnp.maximum(norms_M, eps)
@@ -38,6 +39,7 @@ def apply_fast_resonance(
     delta_eff: float = 0.043410,
     stress_segnale: float = 9.42194e-04
 ) -> np.ndarray:
+    """Punteggio di risonanza tra ogni riga di matrix_np e query_np, gestendo input vuoti/degeneri."""
     if matrix_np is None or query_np is None:
         return np.array([], dtype=np.float32)
     if matrix_np.size == 0 or query_np.size == 0:
@@ -60,6 +62,7 @@ def apply_fast_resonance(
     return np.array(scores, dtype=np.float32)
 
 def smoke_test() -> bool:
+    """Auto-test rapido: True se apply_fast_resonance produce un risultato sensato su dati sintetici."""
     try:
         N, D = 4, 8
         rng = np.random.default_rng(42)
@@ -71,4 +74,7 @@ def smoke_test() -> bool:
         assert not np.all(s == 0.0)
         return True
     except Exception:
+        # broad by design: uno smoke test deve catturare QUALUNQUE
+        # fallimento (import, shape, NaN, assert) e ridurlo a True/False --
+        # non sta nascondendo un bug, e' la sua funzione.
         return False

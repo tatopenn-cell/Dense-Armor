@@ -18,7 +18,7 @@ import psutil
 try:
     from . import __version__ as _PKG_VERSION
 except ImportError:
-    _PKG_VERSION = "1.0.5"
+    _PKG_VERSION = "1.0.6"
 
 
 class AIEngineVisualizer:
@@ -29,7 +29,8 @@ class AIEngineVisualizer:
 
     ENGINE_SIGNATURE = f"TensorFlowEngine-Sentinel-v{_PKG_VERSION}"
 
-    def __init__(self, output_dir: str = "."):
+    def __init__(self, output_dir: str = ".") -> None:
+        """output_dir — cartella in cui scrivere archivi/report esportati."""
         self.output_dir = output_dir
 
     # ── Provenance archive ────────────────────────────────────────────────────
