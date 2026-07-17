@@ -4,7 +4,7 @@ import logging
 
 from .armatura import Armatura
 
-__version__ = "1.0.7"
+__version__ = "1.0.8"
 __all__ = ["Armatura"]
 
 # Nessun handler configurato di default (convenzione standard per librerie):

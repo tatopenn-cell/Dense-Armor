@@ -2,6 +2,27 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## [1.0.8]
+
+### Fixed
+- `Orca._execute_4_phase_input_shield`: lo Stadio 2 (gating ABC/Collatz)
+  valutava `f1`, l'output già ammortizzato dallo Stadio 1
+  (`AdaptiveSignalStabilizer`), invece del segnale originale — se lo
+  Stadio 1 riduceva parzialmente un outlier enorme, lo Stadio 2 poteva
+  sotto-stimare quanto fosse anomalo l'input reale. Ora valuta il segnale
+  compresso pre-Damping.
+
+### Added
+- Sbarramento deterministico (hard-clamping): la soglia di rumore critico
+  (0.05) è calcolata sui dati **grezzi originali**, prima di qualunque
+  compressione log10 (che rinormalizzerebbe ogni valore individualmente,
+  facendo perdere l'intensità reale del rumore). Se superata, il gate
+  finale viene forzato alla blindatura massima (0.85), bypassando il
+  calcolo ABC/Collatz solo per le macro-anomalie; sotto soglia la
+  pipeline sinergica originale resta invariata. Verificato: il leak
+  residuo su una macro-anomalia crolla a zero. `@jax.jit`/`jax.vmap`
+  intatti, nessuna nuova chiamata eager fuori dal kernel precompilato.
+
 ## [1.0.7]
 
 ### Fixed
