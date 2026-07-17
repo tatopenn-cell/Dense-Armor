@@ -100,12 +100,21 @@ class AdaptiveSignalStabilizer:
             return
 
         sample_diff = np.abs(np.diff(raw_batch))
-        max_jump = float(np.max(sample_diff))
-        mean_jump = float(np.mean(sample_diff))
         global_std = float(np.std(raw_batch))
 
         # Più lo std è alto, più riduciamo l'aggressività del filtro.
         self.noise_scalar = float(1.0 / (1.0 + global_std))
+
+        # Con un solo campione per riga (es. batch di forma (1, 1)) il diff
+        # è vuoto: non c'è un "salto" da misurare, quindi non possiamo
+        # decidere il panic mode su questa base. Usciamo qui mantenendo
+        # noise_scalar già calibrato sopra, invece di far esplodere
+        # np.max/np.mean su un array vuoto.
+        if sample_diff.size == 0:
+            return
+
+        max_jump = float(np.max(sample_diff))
+        mean_jump = float(np.mean(sample_diff))
 
         # Regime “panic mode” per shock estremi
         if max_jump > 3.0 and (max_jump / (mean_jump + 1e-5)) > 5.0:

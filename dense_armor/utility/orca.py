@@ -3,7 +3,7 @@
 Sentinel Metrology Framework - Universal AI Orchestrator Shield (ORCA)
 Sottosistema: Orchestratore Dinamico Selettivo Context-Aware a 4 Fasi
 Autore del Framework: Salvatore Pennacchio (Napoli, 2026)
-Percorso: sentinel02/utility/orca.py
+Percorso: shield_/utility/orca.py
 """
 import os, sys, time, gc
 import numpy as np
@@ -146,6 +146,19 @@ class Orca:
         if is_simple_data_test:
             print("[ORCA] CONTRAZIONE LOGICA DETECTED: Riconosciuto Test di Protezione Dati Semplice (No IA Model).")
             use_model_injection = False
+
+        # Un array 1D (es. una singola serie da sensore/pipeline) NON e' un
+        # batch di N scalari indipendenti: e' UNA istanza con N campioni
+        # correlati nel tempo. Senza questa promozione, B=N e ogni campione
+        # veniva processato da solo (slice_shape=()), azzerando il contesto
+        # su cui si basa il rilevamento outlier in modalita' cieca (senza
+        # x_reference) -- il caso d'uso principale documentato nel README.
+        was_1d = (x_corrupted.ndim == 1)
+        if was_1d:
+            x_corrupted = np.asarray(x_corrupted).reshape(1, -1)
+            if x_reference is not None:
+                x_reference = np.asarray(x_reference).reshape(1, -1)
+
         orig_shape = x_corrupted.shape
         B = orig_shape[0]
         slice_shape = orig_shape[1:]
@@ -222,6 +235,13 @@ class Orca:
             x_final = ai_output
             self.margine_uscita = None
             self.margine_uscita_medio = self.margine_uscita_max = 0.0
+
+        if was_1d:
+            x_final = x_final.reshape(-1)
+            if self.margine_ingresso is not None:
+                self.margine_ingresso = self.margine_ingresso.reshape(-1)
+            if self.margine_uscita is not None:
+                self.margine_uscita = np.asarray(self.margine_uscita).reshape(-1)
 
         print(f"[ORCA] Transito concluso. Sistema sigillato in {time.time() - t_start:.3f} secondi totali.")
         return x_final
