@@ -18,6 +18,7 @@ un jax.jit ricreato ad ogni chiamata, le chiamate successive alla prima
 torneranno a costare quanto la prima, e il rapporto crollera' vicino a 1.
 """
 import time
+from unittest.mock import MagicMock, patch
 
 import jax
 jax.config.update("jax_enable_x64", True)
@@ -27,6 +28,24 @@ import pytest
 
 from dense_armor.core.engine import AdaptiveSignalStabilizer
 from dense_armor.utility.orca import Orca
+
+
+def _ram_abbondante() -> MagicMock:
+    """psutil.virtual_memory() finto con RAM abbondante libera (90%).
+
+    Orca._gc_se_ram_bassa() chiama jax.clear_caches() sotto una soglia di
+    RAM libera -- svuota la cache di compilazione JIT di TUTTO il processo,
+    non solo di questo test. Se la macchina/CI reale scende sotto quella
+    soglia mentre gira questo test (dipende dal carico del momento, non dal
+    codice), il test diventa flaky: sembra un fallimento della cache JIT
+    quando e' solo pressione di RAM del momento. Fissare qui un valore
+    abbondante rende il test deterministico, indipendente dallo stato
+    reale della macchina.
+    """
+    finto = MagicMock()
+    finto.total = 16_000_000_000
+    finto.available = int(finto.total * 0.90)
+    return finto
 
 
 def test_filter_data_stream_usa_la_cache_jit_non_ricompila_ogni_volta():
@@ -58,7 +77,8 @@ def test_filter_data_stream_usa_la_cache_jit_non_ricompila_ogni_volta():
     )
 
 
-def test_orca_protect_and_forward_usa_la_cache_jit_non_ricompila_ogni_volta():
+@patch("dense_armor.utility.orca.psutil.virtual_memory", side_effect=_ram_abbondante)
+def test_orca_protect_and_forward_usa_la_cache_jit_non_ricompila_ogni_volta(_mock_ram):
     def modello_finto(x):
         return x * 2 + 1
 

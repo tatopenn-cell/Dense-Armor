@@ -53,15 +53,21 @@ class Orca:
         self.margine_uscita_max = 0.0
 
     def _gc_se_ram_bassa(self) -> None:
-        """gc.collect()+jax.clear_caches() SOLO se la RAM libera e' davvero
-        sotto soglia (stessa logica di UniversalMemoryGuard.check_memory_safety).
+        """gc.collect() se la RAM libera si avvicina alla soglia;
+        jax.clear_caches() SOLO se la si supera davvero (emergenza reale).
         jax.clear_caches() svuota la cache di compilazione JIT di TUTTO il
-        processo (non solo di Orca): chiamarlo incondizionatamente ad ogni
-        chunk/elemento del batch forza XLA a ricompilare tutto -- incluso il
-        training stesso -- anche quando non serve nessuna pulizia memoria."""
+        processo (non solo di Orca, non solo questo kernel): usarlo alla
+        stessa soglia morbida di gc.collect() vanifica la precompilazione
+        fatta una tantum in __init__ ad ogni volta che la RAM libera scende
+        anche di poco sotto il margine di sicurezza -- ogni chiamata
+        successiva ricompilerebbe XLA da zero, silenziosamente. Riservato
+        quindi al limite duro (min_free_ram), non al margine preventivo
+        (+0.10) usato solo per il gc.collect() piu' economico."""
         vm = psutil.virtual_memory()
-        if (vm.available / vm.total) < (self.min_free_ram + 0.10):
+        free_pct = vm.available / vm.total
+        if free_pct < (self.min_free_ram + 0.10):
             gc.collect()
+        if free_pct < self.min_free_ram:
             jax.clear_caches()
 
     def _blind_reference(self, co_row_flat: np.ndarray) -> np.ndarray:

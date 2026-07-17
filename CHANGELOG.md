@@ -21,6 +21,16 @@ Risolti i 3 punti lasciati aperti come Known Issues in 1.0.5.
   scopo e' stampare un referto.
 
 ### Fixed
+- **Test JIT flaky sotto pressione di RAM**: `Orca._gc_se_ram_bassa()`
+  chiamava `jax.clear_caches()` (svuota la cache di compilazione JIT di
+  TUTTO il processo) alla stessa soglia morbida di `gc.collect()` — se la
+  RAM libera scendeva anche solo temporaneamente sotto quel margine
+  preventivo, la precompilazione fatta in `__init__` veniva vanificata e
+  ogni chiamata successiva ricompilava XLA da zero. Ora `jax.clear_caches()`
+  scatta solo al limite duro (`min_free_ram`), non al margine preventivo.
+  Il test di regressione (`test_orca_protect_and_forward_usa_la_cache_jit_
+  non_ricompila_ogni_volta`) ora finge anche RAM abbondante via mock,
+  rendendolo indipendente dallo stato reale della macchina/CI.
 - **Copertura docstring/type hint**: dal 53.9%/58.8% (55/60 su 102
   funzioni) al 100% — tutte le funzioni/metodi pubblici e privati hanno
   ora una docstring one-line e annotazioni di tipo su argomenti/ritorno.
