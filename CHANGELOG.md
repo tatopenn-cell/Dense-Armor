@@ -2,6 +2,38 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## [1.0.6]
+
+Risolti i 3 punti lasciati aperti come Known Issues in 1.0.5.
+
+### Changed
+- **Logging** (comportamento cambiato, non solo interno): le ~14 chiamate
+  `print()` che stampavano lo stato di `Orca.protect_and_forward` ad ogni
+  inferenza (`[ORCA] Attivazione...`, `orca/utility/iodat.py`,
+  `core/compiler.py` save/load pipeline) sono ora `logging.getLogger(__name__)`.
+  **Di default sono silenziose** (nessun handler configurato dalla libreria,
+  convenzione standard) — per vederle di nuovo: `logging.basicConfig(level=logging.INFO)`
+  prima di usare la libreria. Le ~35 `print()` rimaste (in `armatura.py`
+  metodo `referto()` e CLI `main()`, `utility/anwav.py`, `utility/diagnostic.py`)
+  **non sono state toccate**: sono referti/output voluti quando l'utente
+  chiama esplicitamente quelle funzioni, non rumore di background —
+  convertirle avrebbe reso silenzioso per default uno strumento il cui
+  scopo e' stampare un referto.
+
+### Fixed
+- **Copertura docstring/type hint**: dal 53.9%/58.8% (55/60 su 102
+  funzioni) al 100% — tutte le funzioni/metodi pubblici e privati hanno
+  ora una docstring one-line e annotazioni di tipo su argomenti/ritorno.
+- **`except Exception:` generico**: ristretto a eccezioni specifiche dove
+  identificabili — `core/memory.py` (`subprocess`/parsing di `nvidia-smi`
+  a `(CalledProcessError, TimeoutExpired, FileNotFoundError, OSError,
+  ValueError)`; query VRAM `jax.devices()` a `(RuntimeError, AttributeError)`),
+  `core/noise.py` (`jax.default_backend()` a `RuntimeError`). Lasciati
+  broad-by-design, ma documentati con un commento: `memory.py` (pulizia
+  cache JIT best-effort, ora anche loggata a livello debug invece di
+  `pass` silenzioso) e `utility/resonance_search.py::smoke_test` (per
+  definizione uno smoke test deve catturare qualunque fallimento).
+
 ## [1.0.5]
 
 ### Fixed
