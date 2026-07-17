@@ -29,6 +29,12 @@ class Orca:
         self.stabilizer = AdaptiveSignalStabilizer(static_threshold, initial_damping, alpha)
         self.shield = ABCollatz(epsilon_target=1.0)
         self.last_kappa = 0.0
+        # Kernel JAX precompilati una sola volta (stesso principio del fix
+        # allo scan in AdaptiveSignalStabilizer.filter_data_stream): senza
+        # questo, la pipeline eager di _execute_4_phase_*_shield ridispaccia
+        # e ricompila ogni singola operazione JAX ad ogni chiamata.
+        self._compiled_input_shield_kernel = jax.jit(self._run_input_shield_kernel)
+        self._compiled_output_shield_kernel = jax.jit(self._run_output_shield_kernel)
         # margine d'errore (come la covarianza di Kalman, ma definito semplicemente
         # come |valore_ricevuto - valore_corretto|: quanto piu' lo scudo ha dovuto
         # spostare un valore, tanto meno ci si deve fidare del risultato in quel punto)
@@ -84,6 +90,28 @@ class Orca:
         rif = self.stabilizer.filter_data_stream(v_pre_cleaned)
         return np.asarray(rif, dtype=np.float64)
 
+    def _run_input_shield_kernel(self, f1, c_chunk, gate, initial_damping):
+        """Solo la combinazione elementwise finale dello scudo entrata
+        (jnp.where/aritmetica pura), precompilata una sola volta. f1 e gate
+        restano calcolati con chiamate EAGER separate (filter_batch_scenarios/
+        compute_damping_gating fanno calibrazione e conversioni numpy
+        interne -- non sono componibili dentro un jax.jit esterno, provato:
+        TracerArrayConversionError)."""
+        gt = jnp.where(jnp.isnan(gate), initial_damping, gate)
+        diff = f1 - c_chunk
+        candidate = f1 - (gt * diff)
+        return jnp.where(jnp.isnan(candidate), c_chunk, candidate)
+
+    def _run_output_shield_kernel(self, ai_output_flat, ref_flat):
+        """Pipeline JAX pura dello scudo uscita, isolata per essere
+        precompilata una sola volta (vedi _compiled_output_shield_kernel)."""
+        final_hardened_flat = apply_damping_blend(ai_output_flat, ref_flat)
+        final_hardened_flat = jnp.where(jnp.isnan(final_hardened_flat), 0.0, final_hardened_flat)
+        raw_out_noto = jnp.isfinite(ai_output_flat)
+        margine = jnp.where(raw_out_noto, jnp.abs(ai_output_flat - final_hardened_flat),
+                             jnp.abs(final_hardened_flat))
+        return final_hardened_flat, margine
+
     def _execute_4_phase_input_shield(self, cl_chunk_raw, co_chunk_raw):
         v64_cl, v64_co = np.float64(cl_chunk_raw), np.float64(co_chunk_raw)
         # segno preservato: fact_* e' sempre positivo (10**x), quindi v64_* * fact_*
@@ -97,10 +125,11 @@ class Orca:
         c_chunk = jnp.array(v64_cl * fact_cl).reshape(1, -1)
         co_chunk = jnp.array(v64_co * fact_co).reshape(1, -1)
 
-        f1 = jnp.where(jnp.isnan(self.stabilizer.filter_batch_scenarios(co_chunk)), c_chunk, self.stabilizer.filter_batch_scenarios(co_chunk))
-        gt = jnp.where(jnp.isnan(self.shield.compute_damping_gating(f1, c_chunk)), self.initial_damping, self.shield.compute_damping_gating(f1, c_chunk))
-        fh = jnp.where(jnp.isnan(f1 - (gt * (f1 - c_chunk))), c_chunk, f1 - (gt * (f1 - c_chunk)))
-        
+        ref = self.stabilizer.filter_batch_scenarios(co_chunk)
+        f1 = jnp.where(jnp.isnan(ref), c_chunk, ref)
+        gate = self.shield.compute_damping_gating(f1, c_chunk)
+        fh = self._compiled_input_shield_kernel(f1, c_chunk, gate, jnp.float32(self.initial_damping))
+
         self.last_kappa = float(curvature(fh.flatten(), c_chunk.flatten()))
         jax.block_until_ready(fh)
         
@@ -117,7 +146,7 @@ class Orca:
         # a NaN proprio nei casi in cui lo scudo dovrebbe essere piu' utile).
         raw_noto = np.isfinite(v64_co)
         margine_chunk = np.where(raw_noto, np.abs(v64_co - dec_chunk), np.abs(dec_chunk))
-        del c_chunk, co_chunk, f1, gt, fh, filtered_enc_np
+        del c_chunk, co_chunk, fh, filtered_enc_np
         return dec_chunk, margine_chunk
 
     def _execute_4_phase_output_shield(self, ai_output, output_reference):
@@ -127,15 +156,12 @@ class Orca:
         if ai_output_flat.shape != ref_flat.shape:
             # riferimento incompatibile: auto-consistenza cieca invece di azzerare tutto
             ref_flat = self.stabilizer.filter_batch_scenarios(ai_output_flat)
-        final_hardened_flat = apply_damping_blend(ai_output_flat, ref_flat)
-        final_hardened_flat = jnp.where(jnp.isnan(final_hardened_flat), 0.0, final_hardened_flat)
-        x_final = final_hardened_flat.reshape(orig_shape)
         # margine d'errore in SPAZIO OUTPUT: quanto la risposta grezza del modello
         # e' stata corretta dal blending -- stessa logica dello scudo entrata (mai
         # NaN anche se il modello produce output non finito)
-        raw_out_noto = jnp.isfinite(ai_output_flat)
-        margine = jnp.where(raw_out_noto, jnp.abs(ai_output_flat - final_hardened_flat),
-                             jnp.abs(final_hardened_flat)).reshape(orig_shape)
+        final_hardened_flat, margine_flat = self._compiled_output_shield_kernel(ai_output_flat, ref_flat)
+        x_final = final_hardened_flat.reshape(orig_shape)
+        margine = margine_flat.reshape(orig_shape)
         jax.block_until_ready(x_final)
         del ai_output_flat, ref_flat, final_hardened_flat
         return x_final, margine

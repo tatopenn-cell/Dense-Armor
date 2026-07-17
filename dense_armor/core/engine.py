@@ -400,9 +400,14 @@ class AdaptiveSignalStabilizer:
             init_val,
         )
         
-        # Reinserimento del punto fisso iniziale preservando la topologia
-        final_stream = jnp.insert(gated_stream, 0, init_val)
-        return np.array(final_stream, dtype=np.float32)
+        # Reinserimento del punto fisso iniziale preservando la topologia.
+        # np.insert (non jnp.insert): il valore lascia JAX qui comunque, e
+        # jnp.insert chiamato fuori da jit ricompila XLA da zero ad ogni
+        # chiamata (~25ms fissi anche a regime, stesso problema del kernel
+        # scan risolto sopra ma su un'operazione diversa).
+        gated_np = np.asarray(gated_stream, dtype=np.float32)
+        final_stream = np.insert(gated_np, 0, np.asarray(init_val, dtype=np.float32))
+        return final_stream
 
     def filter_batch_scenarios(self, raw_batch: np.ndarray) -> np.ndarray:
         """
