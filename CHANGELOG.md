@@ -2,6 +2,21 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## [1.0.7]
+
+### Fixed
+- `evaluate_abc_discrepancy` arrotondava sempre `b` prima di calcolare il
+  radicale, anche quando chiamata da `compute_damping_gating_smooth` — che
+  genera apposta valori `collatz_wave` non arrotondati tramite
+  `execute_collatz_step_smooth`. La variante smooth collassava così
+  silenziosamente sulla stessa matematica di quella discreta, un livello
+  più in basso di dove il docstring già avvertiva del rischio. Aggiunto
+  `smooth_mode: bool = False` (gestito con `jnp.where`, compatibile con
+  `jax.jit`/`vmap`); `compute_damping_gating_smooth` ora passa
+  `smooth_mode=True`. La variante discreta di default non è cambiata.
+  Verificato: prima del fix le due varianti davano risultati identici
+  anche su input non interi; ora divergono, come previsto.
+
 ## [1.0.6]
 
 Risolti i 3 punti lasciati aperti come Known Issues in 1.0.5.
