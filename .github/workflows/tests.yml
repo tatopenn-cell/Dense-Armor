@@ -30,7 +30,7 @@ jobs:
       - name: Run pytest
         env:
           JAX_ENABLE_X64: "True"
-        run: pytest tests/ -v
+        run: pytest test/ -v
 
   build-check:
     name: build sdist/wheel

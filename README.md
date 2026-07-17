@@ -63,7 +63,7 @@ Per lanciare la suite di test in locale (clonando il repo, non serve se hai solo
 
 ```bash
 pip install -e ".[dev]"
-pytest tests/ -v
+pytest test/ -v
 ```
 
 ---

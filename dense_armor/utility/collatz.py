@@ -126,7 +126,7 @@ class ABCollatz:
         """Variante sperimentale di compute_damping_gating: usa la mappa di
         Collatz continua (execute_collatz_step_smooth) su indici NON
         arrotondati, invece dello scalino discreto su interi. Vedi il
-        benchmark in tests/test_collatz_smooth_experiment.py per il
+        benchmark in test/test_collatz_smooth_experiment.py per il
         confronto misurato prima/dopo -- non e' il default finche' non e'
         dimostrato che migliora qualcosa di reale."""
         orig_shape = x_corrupted.shape
