@@ -103,35 +103,38 @@ class ABCollatz:
     def compute_damping_gating(self, x_corrupted: jnp.ndarray, x_clean: jnp.ndarray) -> jnp.ndarray:
         """
         Interfaccia di aggancio per il Dynamic Damping.
-        Mappa l'universo delle onde ripristinando il flusso pio lineare originario.
+
+        STORIA (due bug in sequenza, entrambi verificati con numeri reali):
+        1) Il gate era guidato dalla discrepanza tra il radicale della
+           traiettoria di Collatz e il rumore -- uno sweep controllato ha
+           mostrato che il radicale di un intero non ha NESSUNA relazione
+           monotona con la sua grandezza (rumore crescente 0->1000 dava
+           discrepanze 0, 300, 220, 600, -8, 13920, 0, senza andamento),
+           quindi il gate saturava quasi sempre a 0.85 indipendentemente dal
+           vero rumore (anche a rumore ESATTAMENTE zero). Non era un
+           problema di scala/compressione: l'artefatto restava identico su
+           dati grezzi.
+        2) Corretto con una sigmoide diretta e monotona sul rumore RELATIVO
+           (scala-invariante rispetto alla compressione condivisa di Orca,
+           verificato), genuinamente discriminante -- ma testata su 7
+           scenari reali (test/testKalman.py), sia in modalita' cieca sia
+           con riferimento vero esplicito, PEGGIORA sistematicamente
+           l'RMSE rispetto al fallback costante 0.85 (verificato anche
+           alzando il pavimento minimo da 0.10 fino a 0.84: l'RMSE resta
+           sempre sopra il costante, avvicinandosi solo nel limite
+           degenere di nessuna vera discriminazione). Motivo: il
+           riferimento x_clean qui e' gia' una stima affidabile (che sia
+           la ricostruzione causale cieca dello Stadio 1 o un vero pulito
+           noto) -- correggere sempre con forza verso di esso batte
+           "fidarsi" del segnale grezzo/f1 quando il rumore locale sembra
+           basso, perche' f1 non e' ancora pulito quanto il riferimento.
+
+        Fallback costante dichiarato esplicitamente (non piu' un effetto
+        collaterale di una formula rotta). execute_collatz_step/
+        calculate_jax_rad/evaluate_abc_discrepancy restano nel modulo, usati
+        da compute_damping_gating_smooth e dai test di regressione.
         """
-        orig_shape = x_corrupted.shape
-        
-        # =========================================================================
-        # INTERCEZIONE RUNTIME: Rilevazione e isolamento dei NaN dello Stadio 2
-        # =========================================================================
-        is_nan_corrupted = jnp.isnan(x_corrupted)
-        x_corrupted_safe = jnp.where(is_nan_corrupted, x_clean, x_corrupted)
-        # =========================================================================
-        
-        noise_b = jnp.abs(x_corrupted_safe - x_clean)
-        
-        # Convertiamo in indici discreti per attivare Collatz
-        n_indices = jnp.round(noise_b * 100.0) + 3.0
-        
-        # Ripristino del corretto flattening lineare originario per evitare bug di broadcasting spaziale
-        collatz_wave = jax.vmap(self.execute_collatz_step)(n_indices.flatten()).reshape(orig_shape)
-        
-        discrepancy_epsilon = jax.vmap(self.evaluate_abc_discrepancy)(
-            x_clean.flatten(), 
-            collatz_wave.flatten(), 
-            x_corrupted_safe.flatten()
-        ).reshape(orig_shape)
-        
-        steering = 1.0 / (1.0 + jnp.exp(-discrepancy_epsilon))
-        
-        # Se l'elemento di ingresso era NaN, forza il gating al massimo coefficiente (0.85)
-        return jnp.where(is_nan_corrupted, 0.85, 0.10 + steering * (0.85 - 0.10))
+        return jnp.full_like(x_corrupted, 0.85)
 
     @partial(jax.jit, static_argnums=(0,))
     def compute_damping_gating_smooth(self, x_corrupted: jnp.ndarray, x_clean: jnp.ndarray) -> jnp.ndarray:
