@@ -2,6 +2,55 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## [1.0.9]
+
+Indagine approfondita partita dalla verifica di uno script esterno che
+testava (male, con una reimplementazione a mano non fedele) il fix 1.0.8 —
+ha portato a scoprire e risolvere 4 bug distinti in cascata nello scudo
+entrata, ciascuno mascherato dal precedente.
+
+### Fixed
+- **Compressione log10 (`Orca._execute_4_phase_input_shield`)**: due fattori
+  di scala indipendenti (uno da pulito, uno da corrotto) collassavano
+  qualunque valore alla stessa magnitudine compressa, distruggendo ogni
+  differenza relativa prima ancora che Stadio 1/Stadio 2 la vedessero
+  (verificato: anche un pass-through totale senza nessuna vera protezione
+  ricostruiva il pulito esatto, allo stesso modo). Ora un solo fattore
+  condiviso, derivato dal pulito, applicato a entrambi.
+- **Stadio 2 ingannato dal segnale già ammortizzato**: `compute_damping_gating`
+  valutava `f1` (output dello Stadio 1) invece del segnale originale,
+  sotto-stimando l'anomalia se già parzialmente corretta a monte.
+- **Contaminazione post-shock dello Stadio 1**: il motore ricorsivo
+  (`AdaptiveSignalStabilizer`) lasciava sempre passare almeno il 25%
+  (`k_anom_min`) di un'anomalia enorme nel proprio stato interno, che poi
+  decadeva lentamente contaminando per diversi passi anche campioni
+  successivi perfettamente normali.
+- **Costante `c_anom` fissa non in scala con i dati compressi**: era
+  comparabile in grandezza al rumore in spazio compresso, impedendo alla
+  soppressione naturale delle anomalie di funzionare anche con lo State
+  Flush attivo.
+
+### Added
+- **Hard-clamp deterministico**: `raw_noise` (dati grezzi originali, prima
+  di qualunque compressione) > 0.05 forza il gate finale a 0.99 (non più
+  0.85, per non ereditare il pavimento pensato per i disturbi ordinari).
+- **State Flush**: lo stesso segnale hard-clamp, già autorevole, passato
+  anche allo Stadio 1 (nuovo parametro opzionale `hard_clamp_mask` su
+  `filter_batch_scenarios`/`_process_single_scenario`/`_step_kernel`) —
+  azzera il pavimento di guadagno minimo solo per il passo flaggato.
+- **`c_anom` scala-adattiva**: proporzionale alla magnitudine locale
+  corrente (`prev_filtered`, già nello stato ricorsivo) invece di una
+  costante fissa assoluta — si adatta da sola sia a dati grezzi
+  (`Armatura`, `filter_data_stream` diretto) sia a dati compressi (`Orca`),
+  senza imporre l'assunzione di scala di un solo chiamante nella classe
+  generica `AdaptiveSignalStabilizer`.
+
+Verificato con numeri reali: un outlier da 9999 in una serie di valori
+~1.3 è ora protetto a 3.61 (indistinguibile dagli altri campioni ~3.4-3.62
+dopo il modello), tutti i vicini tornano normali, margine d'errore corretto.
+Tutti i parametri nuovi sono opzionali con default che preservano il
+comportamento esistente per chi non li usa.
+
 ## [1.0.8]
 
 ### Fixed
