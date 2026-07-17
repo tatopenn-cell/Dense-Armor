@@ -66,8 +66,16 @@ class ABCollatz:
         return jnp.where(n == 0.0, 0.0, jnp.where(n == 1.0, 1.0, jnp.round(rad_value)))
 
     @partial(jax.jit, static_argnums=(0,))
-    def evaluate_abc_discrepancy(self, a: jnp.ndarray, b: jnp.ndarray, c: jnp.ndarray) -> jnp.ndarray:
-        """Calcola la violazione della barriera geometrica entro i limiti di indefinizione."""
+    def evaluate_abc_discrepancy(
+        self, a: jnp.ndarray, b: jnp.ndarray, c: jnp.ndarray, smooth_mode: bool = False
+    ) -> jnp.ndarray:
+        """Calcola la violazione della barriera geometrica entro i limiti di indefinizione.
+
+        smooth_mode=True disattiva l'arrotondamento forzato di b: serve
+        quando b arriva gia' non-intero da execute_collatz_step_smooth,
+        altrimenti il radicale veniva comunque calcolato sull'intero
+        arrotondato e la variante continua collassava silenziosamente
+        su quella discreta proprio a questo stadio."""
         # =========================================================================
         # FRACTAL PROTECTION: Sanificazione registri interni contro infezione NaN
         # =========================================================================
@@ -84,8 +92,11 @@ class ABCollatz:
         # Il radicale si calcola invece su b da solo: e' l'unico dei tre
         # argomenti che nasce davvero come intero dalla traiettoria di
         # Collatz, quindi e' l'unico per cui "fattorizzazione in primi" ha
-        # un significato reale.
-        radical_product = self.calculate_jax_rad(jnp.abs(jnp.round(b_safe)))
+        # un significato reale. In modalita' smooth b NON viene arrotondato:
+        # arrotondarlo comunque vanificherebbe i decimali fluidi generati da
+        # execute_collatz_step_smooth.
+        b_target = jnp.where(smooth_mode, b_safe, jnp.round(b_safe))
+        radical_product = self.calculate_jax_rad(jnp.abs(b_target))
         return jnp.abs(radical_product - (jnp.abs(c_safe) ** self.epsilon_target))
 
     @partial(jax.jit, static_argnums=(0,))
@@ -142,10 +153,16 @@ class ABCollatz:
 
         collatz_wave = jax.vmap(self.execute_collatz_step_smooth)(n_indices.flatten()).reshape(orig_shape)
 
-        discrepancy_epsilon = jax.vmap(self.evaluate_abc_discrepancy)(
+        # smooth_mode=True: non ri-arrotondare collatz_wave dentro
+        # evaluate_abc_discrepancy, altrimenti i decimali fluidi generati
+        # sopra da execute_collatz_step_smooth andrebbero persi comunque.
+        # in_axes=(0,0,0,None): smooth_mode e' uno scalare condiviso da ogni
+        # elemento del vmap, non un array da indicizzare.
+        discrepancy_epsilon = jax.vmap(self.evaluate_abc_discrepancy, in_axes=(0, 0, 0, None))(
             x_clean.flatten(),
             collatz_wave.flatten(),
-            x_corrupted_safe.flatten()
+            x_corrupted_safe.flatten(),
+            True,
         ).reshape(orig_shape)
 
         steering = 1.0 / (1.0 + jnp.exp(-discrepancy_epsilon))
