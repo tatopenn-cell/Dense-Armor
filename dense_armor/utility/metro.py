@@ -3,7 +3,7 @@
 Sentinel Metrology Framework - Logarithmic Scaling Module
 =========================================================
 Sottosistema: Protezione Differenziale dei Gradienti (Anti-Underflow)
-Percorso: sentinel02/utility/metro.py
+Percorso: shield_/utility/metro.py
 """
 
 import numpy as np

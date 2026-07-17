@@ -1,13 +1,14 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "dense-armor"
-version = "1.0.4"
+version = "1.0.5"
 description = "The wearable Sentinel shield: two-stage adaptive anomaly damping (IIR + ABCollatz gating) for any AI signal - NaN-safe, drift-aware, dimension-agnostic"
 readme = "README.md"
-license = { text = "Business Source License 1.1" }
+license = "BUSL-1.1"
+license-files = ["LICENSE.md"]
 authors = [{ name = "Salvatore Pennacchio", email = "jtatopenn@libero.it" }]
 requires-python = ">=3.10"
 keywords = ["anomaly-detection", "signal-processing", "drift-detection", "ai-safety", "robust-statistics", "jax"]

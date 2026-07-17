@@ -7,7 +7,7 @@ guadagno non lineare che dipende dalla loro distanza -- differenza piccola
 tra i due -> si preferisce il segnale grezzo; differenza grande -> si
 preferisce il riferimento, in modo smorzato e sempre limitato.
 Autore del Framework: Salvatore Pennacchio (Napoli, 2026)
-Percorso: sentinel02/core/damping_operator.py
+Percorso: shield_/core/damping_operator.py
 
 Nota: non e' calcolo quantistico. I nomi delle costanti (PHI, ecc.) sono
 iperparametri numerici fissi, non stati/operatori quantistici -- non c'e'
