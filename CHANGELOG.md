@@ -2,6 +2,33 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## [1.0.11]
+
+### Fixed
+- **`K_anomalous` in `apply_damping_blend` (`dense_armor/core/damping_operator.py`)**:
+  la formula `c_anom/(c_anom+diff)` dava K_anomalous massimo a differenza
+  quasi nulla (segnale già pulito, dovrebbe damparsi poco) e lo faceva
+  decrescere fino al pavimento `_ALPHA=0.25` al crescere della differenza —
+  l'opposto di quanto dichiarato nella docstring della funzione. Invertito
+  il rapporto (`diff/(c_anom+diff)`). Testato su 30 seed × 4 livelli di
+  rumore: il fix batte l'originale 30/30 a rumore medio/alto/molto alto
+  (RMSE fino a -0.137), ma peggiora sistematicamente a rumore molto basso
+  (limite noto, documentato e coperto da test di regressione dedicato).
+
+### Added
+- **`dense_armor/utility/healing.py` — `healing_filter`**: nuovo modulo,
+  a sé stante (non integrato in `armatura.py`/`orca.py`), porting
+  concettuale da `Dense-Evolution/dense_evolution/healing.py`. A differenza
+  di ABCollatz e del damping Stadio 1 (giudicano un punto dal proprio
+  residuo istantaneo), classifica ogni punto guardando quanti vicini
+  condividono la stessa deviazione dalla baseline locale — deviazione
+  isolata = rumore (sostituita con la mediana di una finestra più ampia),
+  deviazione sostenuta dai vicini = cambiamento vero (lasciata passare).
+  Batte una mediana mobile a raggio 2 su segnali con transizioni vere +
+  spike (40/40 e 30/30 su più varianti testate); perde su denoising puro
+  di segnali stazionari a basso/medio rumore (limite noto, non è il suo
+  caso d'uso primario).
+
 ## [1.0.10]
 
 ### Fixed

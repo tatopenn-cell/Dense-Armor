@@ -18,7 +18,7 @@ import psutil
 try:
     from . import __version__ as _PKG_VERSION
 except ImportError:
-    _PKG_VERSION = "1.0.10"
+    _PKG_VERSION = "1.0.11"
 
 
 class AIEngineVisualizer:
