@@ -64,9 +64,29 @@ def apply_damping_blend(gradient_state: jnp.ndarray, noise_matrix: jnp.ndarray) 
     steering = 1.0 / (1.0 + jnp.exp(-(x_steer - 2.0)))
     h_damping = steering * jnp.float32(_K_MAX_ZETA)
 
-    # 4. Guadagno anomalo: decresce iperbolicamente con la distanza, poi limitato
+    # 4. Guadagno anomalo
+    # BUG CORRETTO: la formula originale c_anom/(c_anom+diff) dava K_anomalous
+    # MASSIMO quando diff->0 (segnale gia' pulito, dovrebbe damparsi POCO) e
+    # lo faceva DECRESCERE con diff crescente fino al pavimento _ALPHA --
+    # esattamente l'opposto di quanto dichiarato nella docstring della funzione
+    # ("differenza piccola -> si preferisce il grezzo, K basso"). Verificato:
+    # diff=0 dava K_anomalous=1.0 (clippato a _K_MAX_ZETA se sopra, qui resta
+    # 1.0); diff=10 dava un rapporto grezzo pre-clip di 0.037, ma il jnp.clip
+    # lo portava comunque al pavimento _ALPHA=0.25 (satura li' gia' da
+    # diff~5) -- il vero comportamento a runtime era quindi K_anomalous=1.0
+    # per segnali coerenti degradante fino a 0.25 per segnali molto diversi,
+    # sempre nella direzione sbagliata.
+    # Fix: invertito il rapporto (diff/(c_anom+diff) invece di c_anom/(c_anom+diff)).
+    # Testato su 30 seed x 4 livelli di rumore (sinusoide+gaussiano, rif=mediana
+    # mobile): il fix batte l'originale 30/30 su rumore medio/alto/molto alto
+    # (RMSE fino a -0.137), ma PEGGIORA sistematicamente a basso rumore (30/30
+    # a favore dell'originale, margine piccolo ma statisticamente significativo
+    # ~0.0016, std 0.0004) -- limite noto, non ancora risolto: a basso rumore
+    # serve pesare di piu' coherence/h_damping invece di K_anomalous. Vedi
+    # test/test_damping_kanomalous_fix.py.
     c_anom = jnp.float32(1.0 / (_PHI ** 2))
-    K_anomalous_raw = c_anom / (c_anom + diff + eps)
+    K_anomalous_ratio = diff / (c_anom + diff + eps)   # 0 -> 0, inf -> 1 (direzione corretta)
+    K_anomalous_raw = jnp.float32(_ALPHA) + K_anomalous_ratio * (jnp.float32(_K_MAX_ZETA) - jnp.float32(_ALPHA))
     K_anomalous = jnp.clip(K_anomalous_raw, jnp.float32(_ALPHA), jnp.float32(_K_MAX_ZETA))
 
     # 5. Combinazione dei due guadagni pesata dalla coerenza
