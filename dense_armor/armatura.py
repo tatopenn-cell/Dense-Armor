@@ -20,11 +20,9 @@ from typing import Dict, List, Optional, Tuple, Union
 
 
 import numpy as np
-import jax.numpy as jnp
 
-from .core.engine import AdaptiveSignalStabilizer   # scudo originale, intatto
-from .utility.collatz import ABCollatz               # scudo originale, intatto
-from .utility.metro import Metro                     # scaler anti-underflow, intatto
+from .core.hybrid_engine import hybrid_shield         # motore phi_ab/trigger, vedi CHANGELOG 1.1.0
+from .utility.metro import Metro                      # scaler anti-underflow, intatto
 
 
 class Armatura:
@@ -46,11 +44,11 @@ class Armatura:
     def __init__(self, static_threshold: float = 0.15, initial_damping: float = 0.85,
                  alpha: float = 0.05, soglia_anomalia: Optional[float] = None,
                  livello_ia: float = 1.0) -> None:
-        """soglia_anomalia — soglia fissa opzionale (None = calcolata dai dati);
+        """static_threshold/initial_damping/alpha — mantenuti per compatibilità di
+        firma con le versioni precedenti, non usati dal motore hybrid (che non ha
+        stato/calibrazione: è una funzione pura, vedi CHANGELOG 1.1.0).
+        soglia_anomalia — soglia fissa opzionale (None = calcolata dai dati);
         livello_ia — 0=neonata (filtra) .. 1=matura (solo marca)."""
-        self.stab = AdaptiveSignalStabilizer(static_threshold=static_threshold,
-                                             initial_damping=initial_damping, alpha=alpha)
-        self.shield = ABCollatz(epsilon_target=1.0)
         self.soglia = soglia_anomalia
         self.livello_ia = float(min(1.0, max(0.0, livello_ia)))
 
@@ -70,39 +68,33 @@ class Armatura:
         """serie: 1D (lista/array). Per tensori N-D: passare tensore.ravel()
         e rifare reshape dopo (lo scudo e' agnostico: la trasposizione basta).
         Ritorna (pulito, K, indici_anomalie)."""
-        s = np.asarray(serie, dtype=np.float64).reshape(1, -1)
-        s_jnp = jnp.array(s)
+        grezza = np.asarray(serie, dtype=np.float64).ravel()
 
-        f1 = self.stab.filter_batch_scenarios(s_jnp)          # Stadio 1
-        f1 = jnp.where(jnp.isnan(f1), jnp.nan_to_num(s_jnp), f1)
-        if riferimento is not None:
-            rif = jnp.array(np.asarray(riferimento, dtype=np.float64).reshape(1, -1))
-        else:
-            # riferimento cieco = smoothing pesante (pattern SentinelCV2D):
-            # mediana mobile immune agli spike, bersaglio per lo Stadio 2
-            v = np.array(f1).ravel()
-            n = v.size
-            rif_np = np.empty(n)
-            for _i in range(n):
-                a, b = max(0, _i - 3), min(n, _i + 4)
-                rif_np[_i] = np.median(v[a:b])
-            rif = jnp.array(rif_np.reshape(1, -1))
-        gt = self.shield.compute_damping_gating(f1, rif)      # Stadio 2
-        gt = jnp.where(jnp.isnan(gt), 0.85, gt)
+        pulito_pieno, trigger, _meta = hybrid_shield(grezza, riferimento)
 
-        # PERCEZIONE a K pieno (pavimento: mai clippata)
-        K = np.array(gt).ravel()
-        pulito_pieno = np.array(f1 - gt * (f1 - rif)).ravel()
+        # PERCEZIONE a K pieno (pavimento: mai clippata) — binario per design:
+        # il trigger sottostante e' strettamente 0.0/1.0, non una sigmoide continua.
+        K = 1.0 - trigger
+
+        # grezza sanificata (solo NaN/Inf -> media finita), stessa sanificazione
+        # usata internamente da hybrid_shield: e' il "non tocca il dato" reale
+        # a clip zero, non un segnale gia' pre-filtrato da uno stadio a monte.
+        finite_mean = np.nanmean(np.where(np.isinf(grezza), np.nan, grezza))
+        if np.isnan(finite_mean):
+            finite_mean = 0.0
+        grezza_pulita = np.where(np.isfinite(grezza), grezza, finite_mean)
+
         # INTERVENTO clippato dal livello dell'IA
         clip = 1.0 - self.livello_ia
-        pulito = np.array(f1 - (gt * clip) * (f1 - rif)).ravel()
+        pulito = grezza_pulita - (K * clip) * (grezza_pulita - pulito_pieno)
 
-        grezza = s.ravel()
-        dev = np.abs(np.nan_to_num(grezza) - pulito_pieno)
+        dev = np.abs(grezza_pulita - pulito_pieno)
         soglia = self.soglia if self.soglia is not None else (dev.mean() + 2.0 * dev.std())
         anomalie = set(int(i) for i in np.where(dev > max(soglia, 1e-12))[0])
 
-        # rilevatore robusto (mediana/MAD) per gli spike che lo Stadio 1 insegue
+        # rilevatore robusto (mediana/MAD), indipendente dal motore hybrid —
+        # copre anche i primi 2 punti della serie, che il ciclo del trigger
+        # non valuta mai (vedi limite noto in hybrid_engine.hybrid_shield)
         finiti = grezza[np.isfinite(grezza)]
         if finiti.size >= 4:
             med = float(np.median(finiti))

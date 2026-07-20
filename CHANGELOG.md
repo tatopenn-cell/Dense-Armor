@@ -2,6 +2,43 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## [1.1.0]
+
+### Changed
+- **Motore di `Armatura` sostituito**: `Armatura.analizza()` non usa più
+  `AdaptiveSignalStabilizer` (Stadio 1) + `ABCollatz` (Stadio 2). Il gate
+  ABCollatz era già documentato in [1.0.10] come matematicamente non
+  discriminante (il radicale di una traiettoria di Collatz non ha relazione
+  monotona con l'intensità del rumore — verificato con sweep numerico, e una
+  sigmoide monotona alternativa, pur costruita e testata, peggiorava
+  sistematicamente su 7 scenari reali). Sostituito con un motore a trigger
+  binario (`dense_armor/core/hybrid_engine.py`), portato e adattato dalla
+  logica phi_ab/vettore-dinamico/trigger già verificata in Dense-Evolution
+  (`dense_evolution/healing.py`, oggi in produzione su PyPI dense-evolution
+  >= 8.1.9) e in `ia_utils.vector_healing.enhanced_dense_healing_hybrid`.
+  Tre adattamenti necessari per il nuovo dominio (serie scalari a scala
+  libera, non vettori di embedding normalizzati), tutti verificati con test
+  manuali mirati prima di essere accettati: (1) la baseline della finestra
+  locale usa i valori già guariti (`out`), non quelli grezzi, altrimenti un
+  outlier passato continua a spostare la baseline per `radius` passi dopo
+  di sé; (2) l'IPG (gradiente istantaneo) resta sui valori grezzi, non su
+  quelli guariti, altrimenti un punto respinto non lascia mai più traccia
+  e nessun gradino reale può essere riconosciuto in seguito; (3) la
+  distanza tra stati è normalizzata sulla volatilità locale del segnale
+  (deviazione standard delle differenze successive nella finestra), non su
+  una costante fissa né sulla grandezza assoluta dei valori — altrimenti
+  o qualunque cambiamento sopra ~1.4 unità restava permanentemente
+  appiattito, o (nel tentativo intermedio) anche uno spike isolato passava
+  intatto perché "proporzionalmente coerente" con la propria grandezza.
+  Contratto pubblico di `Armatura` invariato (`analizza`, `referto`,
+  `referto_json`, `deriva`, stessa firma del costruttore); `K` è ora
+  binario (0.0/1.0) invece di una sigmoide continua, coerente con la
+  natura binaria del trigger sottostante.
+- **`Orca` non è stata toccata in questa release**: continua a usare
+  `AdaptiveSignalStabilizer` + `ABCollatz` + `apply_damping_blend`. I
+  numeri di robustezza adversarial nel README (PGD/Carlini-Wagner/Fourier)
+  restano validi e non ricalcolati, perché misurati su quel motore.
+
 ## [1.0.11]
 
 ### Fixed

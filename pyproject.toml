@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dense-armor"
-version = "1.0.11"
+version = "1.1.0"
 description = "The wearable Sentinel shield: two-stage adaptive anomaly damping (IIR + ABCollatz gating) for any AI signal - NaN-safe, drift-aware, dimension-agnostic"
 readme = "README.md"
 license = "BUSL-1.1"

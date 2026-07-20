@@ -108,17 +108,22 @@ pulito, K, anomalie = a.analizza(serie)
 
 ## `$ internals`
 
-Due stadi in sequenza, nessuno dei due amplifica mai un errore — solo damping verso il pulito:
+Due motori distinti, a seconda di dove entri:
 
 ```
-STADIO 1  core/engine.py           STADIO 2  utility/collatz.py
-──────────────────────────         ──────────────────────────────
-stabilizzatore adattivo            gating basato su Collatz
-soglia dinamica su volatilità      decide QUANTO smorzare ogni punto
-recente, smorza chi la supera      verso il riferimento pulito
+Armatura (serie 1D: loss, metriche, sensori)   Orca (scudo entrata+uscita per un modello IA intero)
+─────────────────────────────────────────      ─────────────────────────────────────────────────────
+core/hybrid_engine.py                           STADIO 1  core/engine.py
+motore a trigger binario (phi_ab/vettore         stabilizzatore adattivo, soglia dinamica su
+dinamico), verificato in Dense-Evolution e       volatilità recente
+adattato a segnali scalari a scala libera        STADIO 2  utility/collatz.py
+                                                  gating basato su Collatz, decide QUANTO
+                                                  smorzare verso il riferimento pulito
 ```
 
-Senza riferimento pulito (modalità cieca): rigetto degli outlier gravi via mediana locale, poi Stadio 1 in versione causale — usa tutta la storia della serie, non solo i vicini immediati, per stimare cosa "dovrebbe" essere quel punto.
+`Armatura.analizza()` decide punto per punto, senza gradi intermedi: un valore o è un cambiamento genuino (passa) o è rumore/spike isolato (sostituito con la baseline locale — la finestra recente se non hai un riferimento, il tuo riferimento esplicito se lo passi).
+
+`Orca.protect_and_forward()` (scudo completo per un modello) usa ancora i due stadi originali. Senza riferimento pulito (modalità cieca): rigetto degli outlier gravi via mediana locale, poi Stadio 1 in versione causale — usa tutta la storia della serie, non solo i vicini immediati, per stimare cosa "dovrebbe" essere quel punto.
 
 ---
 

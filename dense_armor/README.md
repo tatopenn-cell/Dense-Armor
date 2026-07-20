@@ -1,6 +1,6 @@
 # `$ architettura interna`
 
-Riferimento per chi vuole contribuire al codice, non per chi vuole solo installare e usare il pacchetto — per quello vedi il [README principale](../README.md). Qui si mappano tutti i moduli di `core/` e `utility/`, oltre a quelli già coperti (`damping_operator.py`, `engine.py`, `orca.py`, `collatz.py`).
+Riferimento per chi vuole contribuire al codice, non per chi vuole solo installare e usare il pacchetto — per quello vedi il [README principale](../README.md). Qui si mappano tutti i moduli di `core/` e `utility/`, oltre a quelli già coperti (`damping_operator.py`, `hybrid_engine.py`, `engine.py`, `orca.py`, `collatz.py`).
 
 ---
 
@@ -9,7 +9,8 @@ Riferimento per chi vuole contribuire al codice, non per chi vuole solo installa
 | modulo | cosa fa |
 |---|---|
 | `damping_operator.py` | `apply_damping_blend` — fonde due tensori reali con un guadagno non lineare dipendente dalla loro distanza. Vedi README principale per i dettagli. |
-| `engine.py` | `AdaptiveSignalStabilizer` — stabilizzatore causale ricorsivo (via `jax.lax.scan`): segue il segnale nel tempo, smorza dove la volatilità recente supera una soglia dinamica. Nucleo dello Stadio 1. |
+| `hybrid_engine.py` | `hybrid_shield` — motore a trigger binario di `Armatura` (dalla v1.1.0), adattato dalla logica phi_ab/vettore-dinamico verificata in Dense-Evolution. Vedi CHANGELOG [1.1.0] per il dettaglio degli adattamenti (baseline su valori guariti, IPG su valori grezzi, distanza normalizzata sulla volatilità locale). |
+| `engine.py` | `AdaptiveSignalStabilizer` — stabilizzatore causale ricorsivo (via `jax.lax.scan`): segue il segnale nel tempo, smorza dove la volatilità recente supera una soglia dinamica. Nucleo dello Stadio 1 di **Orca** (dalla v1.1.0 `Armatura` non lo usa più, vedi `hybrid_engine.py`). |
 | `compiler.py` | `DynamicAICodegen` — traduce sequenze di operazioni (`identity`, `relu`, `sigmoid`, `tanh`, `scale`, `dropout`, `clip`, `l2_normalize`) in pipeline JAX eseguibili via `jax.lax.switch`, con calcolo gradienti differenziabile (`compute_gradients`). |
 | `chunk.py` | `ImageChunker` — spezza array/batch grandi in sotto-chunk (`split_array`/`merge_chunks`) per evitare colli di bottiglia di memoria; esegue pipeline del compilatore a blocchi fissi senza forzare ricompilazioni JIT. |
 | `memory.py` | `UniversalMemoryGuard` — controlla RAM libera (e VRAM via `nvidia-smi`, se disponibile) prima di allocazioni pesanti; solleva `MemoryPressureError` se sotto soglia. `calculate_optimal_chunks` stima il partizionamento sicuro. |
@@ -27,7 +28,7 @@ Riferimento per chi vuole contribuire al codice, non per chi vuole solo installa
 | modulo | cosa fa |
 |---|---|
 | `orca.py` | `Orca` — lo scudo input/output a 4 fasi. Vedi README principale. |
-| `collatz.py` | `ABCollatz` — gating basato sulla congettura di Collatz. Vedi sotto per il dettaglio dell'algoritmo. |
+| `collatz.py` | `ABCollatz` — gating basato sulla congettura di Collatz, Stadio 2 di **Orca** (dalla v1.1.0 `Armatura` non lo usa più). Vedi sotto per il dettaglio dell'algoritmo, e CHANGELOG [1.0.10]/[1.1.0] per i suoi limiti noti. |
 | `curvature.py` | `curvature(x_current, x_reference)` — calcola la derivata analitica esplicita di `sum((x-ref)²)`, normalizzata in `[0,1)`. Usata come misura di "quanto un punto si è allontanato" nello scudo di ingresso. |
 | `metro.py` | `Metro` — scaler logaritmico anti-underflow: proietta un valore infinitesimo in uno spazio numerico visibile (`enc`) e lo riporta indietro (`dec`). Usato dal rilevatore di deriva lenta di `Armatura`. |
 | `resonance_search.py` | `apply_fast_resonance` — cerca pattern noti confrontando un vettore query con una matrice di riferimento, pesando coseno-similarità "base" e "post-blend" (via `damping_operator`). |
