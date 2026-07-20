@@ -27,6 +27,22 @@ def test_referto_json_e_serializzabile():
     assert referto["punti"] == 4
 
 
+def test_nan_vicino_a_spike_non_viene_sanato_con_la_media_globale():
+    # Bug trovato dopo la pubblicazione di 1.1.0 testando l'esempio esatto
+    # del README con un utente vero: un NaN a 2 passi da uno spike enorme
+    # veniva sostituito con la media dell'INTERA serie (contaminata dallo
+    # spike ovunque fosse), non con una stima locale -- su serie brevi il
+    # sostituto risultava assurdo (es. 2000.81 invece di ~1.28). Riproduce
+    # esattamente l'esempio del README.
+    serie = [1.2, 1.3, 9999.0, 1.25, float("nan"), 1.3]
+    for livello in (0.0, 1.0):
+        a = Armatura(livello_ia=livello)
+        pulito, K, anomalie = a.analizza(serie)
+        assert 4 in anomalie, f"il NaN deve restare marcato anomalo (livello={livello})"
+        assert abs(pulito[4] - 1.28) < 1.0, \
+            f"pulito[4] deve essere vicino al vicinato reale (~1.28), non alla media globale (livello={livello}, pulito[4]={pulito[4]})"
+
+
 def test_gradino_sostenuto_non_viene_appiattito_ma_lo_spike_isolato_si():
     # Proprieta' centrale del motore hybrid (core/hybrid_engine.py) rispetto
     # al vecchio gate ABCollatz: un cambiamento VERO e sostenuto deve passare,

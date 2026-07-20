@@ -101,6 +101,33 @@ def evaluate_phi_trigger(deterministic_dq_dt_a: jnp.ndarray) -> jnp.ndarray:
     return jnp.where(trigger_active, 1.0, 0.0)
 
 
+def _local_nan_fill(x: np.ndarray, radius: int) -> np.ndarray:
+    """Sostituisce i NaN con la mediana dei vicini FINITI in una finestra
+    locale ±radius (mediana, non media: robusta a uno spike che capiti
+    nella stessa finestra) — non con la media dell'INTERA serie.
+
+    Verificato: con la media globale, un NaN a 2 passi da uno spike di
+    9999 in una serie di 200 punti veniva sanato a ~51 invece di ~1.0 —
+    lo spike, ovunque fosse nella serie, distorceva il sostituto di ogni
+    NaN, non solo quello vicino. Con la mediana locale, il sostituto
+    riflette il vicinato reale del punto, non l'intera serie.
+    """
+    x = np.copy(x)
+    nan_mask = np.isnan(x)
+    if not np.any(nan_mask):
+        return x
+    n = x.size
+    global_fallback = np.nanmedian(x)
+    if np.isnan(global_fallback):
+        global_fallback = 0.0
+    for idx in np.where(nan_mask)[0]:
+        lo_w, hi_w = max(0, idx - radius), min(n, idx + radius + 1)
+        window_finite = x[lo_w:hi_w]
+        window_finite = window_finite[~np.isnan(window_finite)]
+        x[idx] = np.median(window_finite) if window_finite.size > 0 else global_fallback
+    return x
+
+
 def hybrid_shield(
     serie: np.ndarray,
     riferimento: Optional[np.ndarray] = None,
@@ -140,27 +167,23 @@ def hybrid_shield(
     if n == 0:
         return np.empty(0), np.empty(0), {'fallback_triggered': False, 'adaptive_radius_used': 0}
 
+    if radius_baseline is None:
+        adaptive_radius_used = 0 if n < 3 else min(20, max(3, n // 3))
+    else:
+        adaptive_radius_used = radius_baseline
+    fill_radius = max(adaptive_radius_used, 3)
+
     processed = np.copy(s)
     processed[np.isinf(processed)] = np.nan
-    finite_mean = np.nanmean(processed)
-    if np.isnan(finite_mean):
-        finite_mean = 0.0
-    processed = np.where(np.isnan(processed), finite_mean, processed)
+    processed = _local_nan_fill(processed, fill_radius)
 
     rif = None
     if riferimento is not None:
         rif = np.asarray(riferimento, dtype=np.float64).ravel()
         if rif.size != n:
             raise ValueError(f"riferimento ha {rif.size} punti, serie ne ha {n}")
-        rif_mean = np.nanmean(rif)
-        if np.isnan(rif_mean):
-            rif_mean = finite_mean
-        rif = np.where(np.isfinite(rif), rif, rif_mean)
-
-    if radius_baseline is None:
-        adaptive_radius_used = 0 if n < 3 else min(20, max(3, n // 3))
-    else:
-        adaptive_radius_used = radius_baseline
+        rif = np.where(np.isinf(rif), np.nan, rif)
+        rif = _local_nan_fill(rif, fill_radius)
 
     out = np.copy(processed)
     trigger_arr = np.ones(n)  # punti 0,1 (mai valutati dal ciclo) restano pass-through

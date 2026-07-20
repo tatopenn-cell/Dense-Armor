@@ -2,6 +2,28 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## [1.1.1]
+
+### Fixed
+- **NaN sanato con la media globale della serie invece di una stima locale**
+  (`core/hybrid_engine.py`, `armatura.py`): trovato testando l'esempio esatto
+  del README con un'installazione pulita da PyPI subito dopo la 1.1.0. Un
+  `NaN` veniva sostituito con `np.nanmean` calcolata su TUTTA la serie —
+  se uno spike enorme era presente ovunque nella serie (anche lontanissimo),
+  contaminava il sostituto di ogni NaN, non solo di quelli vicini allo
+  spike. Su serie brevi il sostituto risultava assurdo (2000.81 invece di
+  ~1.28 sull'esempio del README, n=6); su serie più lunghe l'effetto si
+  attenuava ma non spariva (51.24 invece di ~1.0 su n=200) — non era un
+  caso limite di serie corte, era la logica stessa. Se il NaN cadeva anche
+  entro il raggio locale di uno spike (fino a 20 passi), la volatilità
+  locale gonfiata dallo spike impediva pure al trigger di ricorreggerlo
+  verso la baseline. Fix: nuova funzione `_local_nan_fill` — ogni NaN è
+  sostituito con la mediana dei vicini FINITI in una finestra locale
+  (mediana, non media: robusta a uno spike che capiti nella stessa
+  finestra), non con una statistica sull'intera serie. La marcatura come
+  anomalia (`anomalie`) era già sempre corretta anche col bug — solo il
+  valore restituito in `pulito` per quel punto era sbagliato.
+
 ## [1.1.0]
 
 ### Changed

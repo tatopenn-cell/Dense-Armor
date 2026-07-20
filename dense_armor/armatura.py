@@ -21,7 +21,7 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
-from .core.hybrid_engine import hybrid_shield         # motore phi_ab/trigger, vedi CHANGELOG 1.1.0
+from .core.hybrid_engine import hybrid_shield, _local_nan_fill  # motore phi_ab/trigger, vedi CHANGELOG 1.1.0
 from .utility.metro import Metro                      # scaler anti-underflow, intatto
 
 
@@ -76,13 +76,15 @@ class Armatura:
         # il trigger sottostante e' strettamente 0.0/1.0, non una sigmoide continua.
         K = 1.0 - trigger
 
-        # grezza sanificata (solo NaN/Inf -> media finita), stessa sanificazione
-        # usata internamente da hybrid_shield: e' il "non tocca il dato" reale
-        # a clip zero, non un segnale gia' pre-filtrato da uno stadio a monte.
-        finite_mean = np.nanmean(np.where(np.isinf(grezza), np.nan, grezza))
-        if np.isnan(finite_mean):
-            finite_mean = 0.0
-        grezza_pulita = np.where(np.isfinite(grezza), grezza, finite_mean)
+        # grezza sanificata (solo NaN/Inf -> mediana locale), stessa
+        # sanificazione usata internamente da hybrid_shield (vedi
+        # _local_nan_fill): e' il "non tocca il dato" reale a clip zero,
+        # non un segnale gia' pre-filtrato da uno stadio a monte. Mediana
+        # LOCALE, non media dell'intera serie: altrimenti uno spike altrove
+        # nella serie distorce il sostituto di ogni NaN, non solo quelli
+        # vicini (vedi CHANGELOG 1.1.1).
+        radius_fill = max(3 if len(grezza) < 3 else min(20, max(3, len(grezza) // 3)), 3)
+        grezza_pulita = _local_nan_fill(np.where(np.isinf(grezza), np.nan, grezza), radius_fill)
 
         # INTERVENTO clippato dal livello dell'IA
         clip = 1.0 - self.livello_ia
