@@ -96,8 +96,9 @@ def chauvenet_criterion(x: np.ndarray, radius: int = 10) -> Tuple[np.ndarray, Li
     documentato del criterio originale, non specifico di questa implementazione;
     per finestre con outlier multipli preferire hampel_filter o tukey_fences,
     che usano statistiche robuste)."""
+    x = np.asarray(x, dtype=float)
     n = len(x)
-    out = np.copy(x).astype(float)
+    out = np.copy(x)
     anomalie = []
     for i in range(n):
         w = _window(x, i, radius)
@@ -121,8 +122,9 @@ def tukey_fences(x: np.ndarray, radius: int = 10, k: float = 1.5) -> Tuple[np.nd
     outlier se fuori da [Q1 - k*IQR, Q3 + k*IQR] (k=1.5 e' lo standard, k=3.0
     la variante "extreme outliers"). Nessuna assunzione sulla distribuzione --
     l'unico dei quattro a non presupporre normalita'."""
+    x = np.asarray(x, dtype=float)
     n = len(x)
-    out = np.copy(x).astype(float)
+    out = np.copy(x)
     anomalie = []
     for i in range(n):
         w = _window(x, i, radius)
@@ -146,8 +148,9 @@ def hampel_filter(x: np.ndarray, radius: int = 10, n_sigmas: float = 3.0) -> Tup
     ma senza mai calcolare una media/std vera -- ogni singola statistica
     usata qui e' gia' robusta, a differenza di Chauvenet). Outlier se
     |x[i] - mediana| > n_sigmas * scaled_MAD."""
+    x = np.asarray(x, dtype=float)
     n = len(x)
-    out = np.copy(x).astype(float)
+    out = np.copy(x)
     anomalie = []
     for i in range(n):
         w = _window(x, i, radius)
@@ -177,8 +180,9 @@ def sigma_clip(x: np.ndarray, radius: int = 10, n_sigmas: float = 3.0, max_iters
     ripete fino a stabilita' o max_iters. Il punto i e' outlier se fuori da
     n_sigmas dalla media/std FINALI (ripulite dagli altri outlier della
     finestra, a differenza di chauvenet_criterion che usa mean/std grezze)."""
+    x = np.asarray(x, dtype=float)
     n = len(x)
-    out = np.copy(x).astype(float)
+    out = np.copy(x)
     anomalie = []
     for i in range(n):
         lo, hi = max(0, i - radius), min(n, i + radius + 1)
@@ -312,6 +316,7 @@ def pressure_valve(
     la deviazione combinata continua per ogni punto, `soglia_effettiva' la
     soglia realmente applicata in quel punto (>= soglia_pressione, si vede
     dove/quanto la molla ha ceduto)."""
+    x = np.asarray(x, dtype=float)
     n = len(x)
     pressione = np.zeros(n)
     soglia_effettiva = np.full(n, soglia_pressione)
