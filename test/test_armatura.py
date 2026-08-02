@@ -67,3 +67,36 @@ def test_gradino_sostenuto_non_viene_appiattito_ma_lo_spike_isolato_si():
     coda_plateau2 = slice(len(serie) - 5, len(serie))
     assert np.allclose(pulito[coda_plateau2], serie[coda_plateau2], atol=0.5), \
         "un gradino vero e sostenuto non deve restare appiattito sulla vecchia baseline"
+
+
+def test_gradino_genuino_non_si_blocca_su_un_equilibrio_intermedio_sbagliato():
+    # Bug reale trovato testando dal vivo: la finestra di baseline presa da
+    # `out` (gia' guarito) invece che da `processed` (grezzo) crea un loop di
+    # autocontaminazione. I primi 1-2 punti dopo un gradino vengono respinti
+    # (inevitabile per un rilevatore causale: al primissimo campione un
+    # gradino vero e' indistinguibile da uno spike), ma quei punti respinti
+    # finiscono in `out` e la finestra dei punti successivi li rimedia dentro
+    # il proprio calcolo -- producendo una baseline "a meta' strada" che
+    # respinge ANCHE i punti successivi genuini, che rientrano in `out`
+    # alimentando lo stesso problema per la finestra dopo. Risultato: un
+    # equilibrio stabile ma SBAGLIATO che non si risolve mai da solo (a
+    # differenza di uno spike isolato, che esce dalla finestra dopo `radius`
+    # passi). Il test precedente (`test_gradino_sostenuto_...`) non lo
+    # intercettava: controllava solo gli ultimi 5 punti con atol=0.5, una
+    # tolleranza/finestra troppo larghe per questo specifico fallimento.
+    # Qui si controlla OGNI punto di una coda lunga (oltre il raggio adattivo)
+    # con una tolleranza stretta.
+    rng = np.random.default_rng(0)
+    serie = np.concatenate([
+        1.0 + rng.normal(0, 0.03, 4),
+        5.0 + rng.normal(0, 0.03, 30),
+    ])
+
+    a = Armatura(livello_ia=0.0)
+    pulito, K, anomalie = a.analizza(serie)
+
+    coda = pulito[-15:]  # ben oltre il raggio adattivo (radius = min(20, max(3, 34//3)) = 11)
+    assert np.allclose(coda, 5.0, atol=0.3), (
+        f"la coda del plateau genuino deve stabilizzarsi vicino al vero livello (5.0), "
+        f"non restare bloccata su un equilibrio intermedio sbagliato: {coda}"
+    )

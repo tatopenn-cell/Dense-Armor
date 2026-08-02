@@ -191,13 +191,25 @@ def hybrid_shield(
 
     for i in range(2, n):
         lo = max(0, i - adaptive_radius_used)
-        # finestra baseline presa da `out` (già guarito), non da `processed`
-        # (grezzo): altrimenti un outlier passato (es. uno spike a i-3) resta
-        # nella finestra locale nella sua forma originale non sanata e continua
-        # a spostare la baseline verso l'alto/basso per `radius` passi dopo di
-        # sé (verificato: senza questo, un gradino subito dopo uno spike isolato
-        # veniva sovrastimato dalla baseline oltre il valore reale del gradino).
-        baseline = rif[i] if rif is not None else np.mean(out[lo:i])
+        # finestra presa da `processed` (grezzo), non da `out` (già guarito) --
+        # allineato a ia_utils.vector_healing.enhanced_dense_healing_hybrid,
+        # il riferimento che questa funzione dichiara di generalizzare (vedi
+        # il docstring del modulo). Usare `out` qui sembrava corretto (protegge
+        # da un outlier passato che sposta la baseline) ma introduce un bug
+        # peggiore su un gradino GENUINO e sostenuto: i primi 1-2 punti dopo
+        # la transizione vengono inevitabilmente respinti (nessun rilevatore
+        # causale può distinguere un gradino vero da uno spike al primissimo
+        # campione), quei punti respinti finiscono in `out`, e la finestra dei
+        # punti successivi li rimedia dentro il proprio calcolo -- producendo
+        # una baseline "a metà strada" che respinge ANCHE i punti successivi
+        # genuini, che rientrano in `out` alimentando lo stesso problema per
+        # la finestra dopo: un equilibrio stabile ma sbagliato che non si
+        # risolve mai da solo (verificato: 30 punti reali dopo un gradino di
+        # 1.0->5.0 restavano bloccati per sempre a ~4.0, mai a 5.0). La
+        # protezione dall'outlier passato non serve più il trucco `out`: la
+        # mediana (sotto, per il valore di fallback) è già robusta a un
+        # singolo spike nella finestra, senza il rischio di autocontaminazione.
+        baseline = rif[i] if rif is not None else np.mean(processed[lo:i])
 
         # volatilità locale = deviazione standard delle differenze successive
         # nella finestra GREZZA ("quanto si muove di solito, passo-passo").
@@ -247,7 +259,12 @@ def hybrid_shield(
         if trigger > GLOBAL_CONSTANTS['NON_STATIC_THRESHOLD_A']:
             out[i] = processed[i]
         else:
-            out[i] = baseline
+            # Mediana (non la `baseline` sopra, che è una media) della stessa
+            # finestra grezza -- di nuovo per parità con ia_utils's
+            # enhanced_dense_healing_hybrid, e perché la mediana ignora un
+            # singolo punto anomalo nella finestra invece di farsi spostare
+            # da esso come farebbe una media.
+            out[i] = np.median(processed[lo:i]) if rif is None else baseline
             fallback_triggered_at_all = True
 
     metadata = {
