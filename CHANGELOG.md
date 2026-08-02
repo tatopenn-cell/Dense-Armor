@@ -2,6 +2,36 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## [1.1.2]
+
+### Fixed
+- **`hybrid_shield` restava bloccato su un equilibrio sbagliato dopo un
+  cambiamento di livello genuino e sostenuto** (`core/hybrid_engine.py`):
+  trovato testando `Armatura(livello_ia=0.0)` dal vivo su uno scenario base
+  (salto da 1.0 a 5.0, poi 30 punti stabili al nuovo livello). La finestra
+  di baseline locale era presa da `out` (già guarito) invece che da
+  `processed` (grezzo) — una scelta deliberata per proteggere da uno spike
+  isolato passato che sposta la baseline, ma con un effetto collaterale
+  peggiore su un gradino vero: i primi 1-2 punti dopo la transizione
+  vengono inevitabilmente respinti (nessun rilevatore causale distingue un
+  gradino vero da uno spike al primo campione), quei punti respinti
+  finiscono in `out`, e la finestra dei punti successivi li rimedia dentro
+  il proprio calcolo — producendo una baseline "a metà strada" che respinge
+  ANCHE i punti successivi genuini, in un loop che si autoalimenta. Il
+  segnale restava bloccato per sempre su un valore intermedio sbagliato
+  (~4.0 invece di 5.0), non solo per una manciata di passi transitori.
+  Fix: la finestra torna a usare `processed` (grezzo), riallineata a
+  `ia_utils.vector_healing.enhanced_dense_healing_hybrid` (il riferimento
+  che questo modulo dichiara di generalizzare) — il valore di fallback è
+  ora la MEDIANA della finestra grezza, non la media: la mediana ignora già
+  da sola un singolo spike isolato nella finestra, quindi la protezione
+  originale resta valida senza bisogno del trucco `out` (riverificato
+  direttamente). Il test di regressione esistente
+  (`test_gradino_sostenuto_non_viene_appiattito_ma_lo_spike_isolato_si`)
+  non lo intercettava (tolleranza/finestra di controllo troppo larghe,
+  passava anche col bug) — aggiunto un nuovo test più severo che fallisce
+  sul codice vecchio e passa su quello corretto.
+
 ## [1.1.1]
 
 ### Fixed
