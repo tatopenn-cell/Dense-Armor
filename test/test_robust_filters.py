@@ -107,7 +107,7 @@ class TestPressureValve:
         rng = np.random.default_rng(42)
         x = rng.normal(0, 1.0, 100)
         x[50] = 50.0
-        pulito, anomalie, pressione = pressure_valve(x)
+        pulito, anomalie, pressione, _ = pressure_valve(x)
         assert 50 in anomalie
         assert abs(pulito[50]) < 5.0
         assert pressione[50] > 50.0  # ampio margine sopra soglia_pressione=8.0
@@ -115,13 +115,13 @@ class TestPressureValve:
     def test_pochi_falsi_positivi_su_rumore_puro(self):
         rng = np.random.default_rng(42)
         x = rng.normal(0, 1.0, 300)
-        _, anomalie, _ = pressure_valve(x)
+        _, anomalie, _, _ = pressure_valve(x)
         assert len(anomalie) / len(x) < 0.05
 
     def test_gradino_genuino_si_stabilizza_senza_restare_a_meta_strada(self):
         rng = np.random.default_rng(0)
         serie = np.concatenate([1.0 + rng.normal(0, 0.03, 15), 5.0 + rng.normal(0, 0.03, 15)])
-        pulito, anomalie, pressione = pressure_valve(serie, radius=10)
+        pulito, anomalie, pressione, _ = pressure_valve(serie, radius=10)
         coda = pulito[-5:]
         assert np.allclose(coda, 5.0, atol=0.3)
         assert not any(i >= 25 for i in anomalie)
@@ -134,13 +134,13 @@ class TestPressureValve:
         x = rng.normal(0, 1.0, 40)
         x[19] = 30.0
         x[20] = -30.0
-        _, anomalie, _ = pressure_valve(x, radius=10)
+        _, anomalie, _, _ = pressure_valve(x, radius=10)
         assert 19 in anomalie
         assert 20 in anomalie
 
     def test_serie_troppo_corta_non_solleva_eccezioni(self):
         for x in (np.array([]), np.array([1.0]), np.array([1.0, 2.0])):
-            pulito, anomalie, pressione = pressure_valve(x)
+            pulito, anomalie, pressione, _ = pressure_valve(x)
             assert len(pulito) == len(x)
             assert len(pressione) == len(x)
             assert anomalie == []
@@ -155,3 +155,28 @@ class TestPressureValve:
         assert pesi[0] == pytest.approx(0.8)
         assert pesi[1] == pytest.approx(0.2)
         assert pesi.sum() == pytest.approx(1.0)
+
+    def test_soglia_effettiva_mai_sotto_la_soglia_base(self):
+        # La molla JSD puo' solo allargare la soglia (JSD >= 0), mai
+        # restringerla sotto soglia_pressione.
+        rng = np.random.default_rng(11)
+        x = rng.normal(0, 1.0, 200)
+        _, _, _, soglia_effettiva = pressure_valve(x, soglia_pressione=8.0)
+        assert np.all(soglia_effettiva >= 8.0 - 1e-9)
+
+    def test_molla_si_allarga_di_piu_vicino_a_una_transizione_vera(self):
+        # Confronto sulla MEDIA, non su un singolo punto al confine esatto:
+        # la JSD e' un segnale rumoroso per natura (verificato: proprio al
+        # confine, finestra locale e di riferimento contengono gia' un mix
+        # simile dei due regimi e si somigliano, quindi non e' li' che la
+        # JSD e' piu' alta) -- ma sulla media della zona attorno alla
+        # transizione, la soglia deve essere piu' larga che su rumore
+        # stazionario puro alla stessa ampiezza.
+        rng = np.random.default_rng(3)
+        stazionaria = 1.0 + rng.normal(0, 0.05, 80)
+        transizione = np.concatenate([1.0 + rng.normal(0, 0.05, 40), 5.0 + rng.normal(0, 0.05, 40)])
+
+        _, _, _, soglia_stazionaria = pressure_valve(stazionaria, radius=10, ref_mult=3)
+        _, _, _, soglia_transizione = pressure_valve(transizione, radius=10, ref_mult=3)
+
+        assert soglia_transizione.mean() > soglia_stazionaria.mean()
