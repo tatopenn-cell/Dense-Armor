@@ -2,6 +2,38 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## [1.1.4]
+
+### Added
+- **`pressure_valve`**: orchestratore automatico dei quattro rilevatori
+  aggiunti in 1.1.3. Non un voto (quanti metodi segnalano un punto) ma la
+  combinazione classica a minima varianza (stimatore BLUE): ogni metodo
+  produce una coppia (centro, scala) locale, i pesi della combinazione
+  sono derivati con un moltiplicatore di Lagrange minimizzando la varianza
+  della combinazione pesata sotto il vincolo che i pesi sommino a 1 --
+  w_k proporzionale a 1/scala_k^2, un metodo la cui incertezza si gonfia
+  (es. Chauvenet quando la finestra contiene gia' un outlier) viene
+  automaticamente pesato meno, senza scartarlo esplicitamente. Decisione
+  finale sempre binaria (marcato/sostituito con la mediana locale, o
+  intatto). Soglia di default (`soglia_pressione=8.0`) calibrata
+  empiricamente -- 1/300 falsi positivi su rumore gaussiano puro,
+  rilevamento corretto di un outlier chiaro e di due outlier ravvicinati.
+- **Soglia dinamica via JSD ("la molla")**: `soglia_pressione` non e' piu'
+  fissa -- si confronta la finestra locale con una piu' ampia (Jensen-
+  Shannon divergence) e si allarga proporzionalmente quando le due
+  distribuzioni divergono (una vera transizione di regime in corso), senza
+  mai smettere di decidere in binario. La soglia puo' solo allargarsi
+  (JSD >= 0), mai restringersi sotto il valore base.
+  - **Bug reale trovato e corretto durante la calibrazione**: la JSD
+    "ingenua" (bin fissi, epsilon quasi-zero) risultava PIU' alta su
+    rumore stazionario puro che vicino a una vera transizione -- il
+    contrario esatto dello scopo del meccanismo, un artefatto da pochi
+    campioni per bin. Corretto con binning adattivo (~6 campioni/bin) e
+    smoothing di Laplace vero (pseudo-conteggio, non solo un epsilon per
+    evitare log(0)) -- riverificato: JSD media vicino a una vera
+    transizione 1.0->5.0 ora 2-3x piu' alta che su rumore stazionario alla
+    stessa ampiezza, la direzione corretta.
+
 ## [1.1.3]
 
 ### Added
