@@ -2,6 +2,34 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## [1.1.3]
+
+### Added
+- **`dense_armor/utility/robust_filters.py`**: quattro rilevatori di anomalie
+  "a basso costo" -- Chauvenet's criterion (1863), Tukey's fences/IQR, Hampel
+  filter, sigma-clipping iterativo. Statistiche classiche, note e usate da
+  decenni in telemetria/astronomia, nessun modello dinamico/stato -- solo
+  aritmetica su una finestra locale centrata (pensate per pulizia offline/
+  batch, non il ciclo causale real-time di `core/hybrid_engine.py`; adatte
+  anche a un futuro porting embedded/Arduino, dove non ci si potra' appoggiare
+  a dipendenze come numpy).
+- **`pressure_valve`**: orchestratore automatico dei quattro metodi sopra.
+  Non un voto (quanti metodi segnalano un punto) ma la combinazione classica
+  a minima varianza (stimatore BLUE): ogni metodo produce una coppia
+  (centro, scala) locale, e i pesi della combinazione sono derivati con un
+  moltiplicatore di Lagrange minimizzando la varianza della combinazione
+  pesata sotto il vincolo che i pesi sommino a 1 -- il risultato,
+  w_k proporzionale a 1/scala_k^2, pesa automaticamente meno un metodo la
+  cui incertezza si gonfia (es. Chauvenet quando la finestra contiene gia'
+  un outlier), senza doverlo scartare esplicitamente. Decisione finale
+  sempre binaria (marcato/sostituito con la mediana locale, o intatto) --
+  nessuno stato intermedio, coerente col resto dell'ecosistema. Soglia di
+  default (`soglia_pressione=8.0`) calibrata empiricamente (non "3 sigma":
+  la scala combinata e' sempre piu' stretta di ogni scala singola) --
+  verificato 1/300 falsi positivi su rumore gaussiano puro, rilevamento
+  corretto di un outlier chiaro e di due outlier ravvicinati (dove
+  Chauvenet da solo soffre), nessun tocco su un gradino genuino sostenuto.
+
 ## [1.1.2]
 
 ### Fixed
