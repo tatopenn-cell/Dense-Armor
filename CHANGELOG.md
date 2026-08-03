@@ -2,6 +2,56 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## [1.1.9]
+
+### Fixed
+- **`core/compiler.py` ricompilava ad ogni chiamata**: `run_dynamic_pipeline`,
+  `run_pipeline_with_chunking` e `compute_gradients` definivano il proprio kernel `@jax.jit`
+  DENTRO il metodo -- un nuovo oggetto `jax.jit` (quindi una cache di compilazione vuota) ad
+  ogni singola chiamata, mai riuso della compilazione XLA anche a parita' di shape tra una
+  chiamata e la successiva. Stesso bug gia' trovato e risolto nel motore di
+  `AdaptiveSignalStabilizer` (vedi [1.0.3]), mai corretto qui. Trovato scrivendo un test che
+  doveva dimostrare l'utilita' reale di `PipelineProfiler` (warm-up separato dal regime): con
+  il bug, warm-up e regime erano praticamente identici. Fix: i tre kernel spostati a livello di
+  modulo, compilati una sola volta. Verificato: 375ms -> 0.2ms a regime sulla stessa pipeline
+  (>1700x), test di regressione aggiunto.
+- **`utility/anwav.py` andava in crash su console Windows non-UTF-8**: i verdetti su volume
+  "troppo spinto"/"troppo silenzioso"/picco a rischio usavano emoji (`❌`, `⚠️`) nei `print()` --
+  su cp1252 (l'encoding di default della console Windows) sollevavano `UnicodeEncodeError`,
+  quindi qualunque uso reale della funzione fuori da pytest (che forza UTF-8 in
+  `test/conftest.py`) su un file rumoroso o silenzioso andava in crash. Rimosse le emoji dai
+  messaggi.
+- **Link rotto in questo stesso CHANGELOG bloccava il deploy del sito in silenzio**: la voce
+  1.1.8 linkava `[Toolkit](api/toolkit.md)`, un percorso relativo valido solo dentro `docs/` --
+  ma `CHANGELOG.md` vive nella root del repo e viene incluso cosi' com'e' in
+  `docs/changelog.md`. `mkdocs build --strict` rifiutava giustamente la build, e i due push
+  precedenti non erano mai arrivati sul sito pubblico (la sezione toolkit di
+  `getting-started.md` e gli esempi in `docs/api/toolkit.md` erano gia' su GitHub ma non ancora
+  online). Corretto con l'URL completo del sito; verificato dal vivo che il sito pubblico ora
+  li mostra davvero.
+
+### Changed
+- **`docs/api/toolkit.md` non vende piu' ogni modulo allo stesso modo**: aggiunte note oneste
+  dove l'utilita' e' effettivamente sottile (`TensorVault` sono matrici scrivibili in una riga,
+  l'euristica RAM di `AIHardwareProfiler` e' arbitraria, `BitwisePermutationEngine` fa un solo
+  swap controllato per chiamata non una permutazione generale, l'update di
+  `ParametricScenarioSimulator` e' una EMA fissa non un modello configurabile, i formatter di
+  logging sono wrapper sottili, `StochasticAdversarialNoise` si sovrappone alla suite
+  adversarial reale invece di aggiungerci qualcosa) e rafforzate quelle con prove reali
+  (`PipelineProfiler` ha scoperto il bug sopra; i preset producono filtraggio misurabilmente
+  diverso; `kappa` in `apply_fast_resonance` modula davvero il punteggio, non e' cosine
+  similarity travestita).
+
+### Added
+- **Test che dimostrano l'utilita' dichiarata dei moduli, non solo che "non crashano"**: preset
+  diversi (`SIGNAL_STABILIZER_PRESETS`) producono un filtraggio misurabilmente diverso quando
+  collegati a `AdaptiveSignalStabilizer`; `kappa` in `apply_fast_resonance` modula davvero il
+  punteggio; il warm-up di `PipelineProfiler` e' davvero piu' lento del regime (il test che ha
+  scoperto il bug di ricompilazione sopra).
+- **`docs/api/toolkit.md`**: ogni modulo del toolkit ha ora un esempio di codice reale
+  verificato (non solo la firma auto-generata dai docstring), preceduto da cosa fa e a cosa
+  serve.
+
 ## [1.1.8]
 
 ### Fixed
