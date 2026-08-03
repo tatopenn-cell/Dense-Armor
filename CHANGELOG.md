@@ -2,6 +2,44 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## [1.1.5]
+
+Nessuna modifica alla matematica/logica di `Armatura`/`Orca`/`robust_filters` in questa
+versione -- solo infrastruttura di test, documentazione e metadati.
+
+### Added
+- **Suite di test adversarial reale** (`test/test_boundA-E.py`): i test dietro la tabella
+  "robustezza adversarial" del README (PGD/BIM/MI-FGSM, affine/elastica, Carlini-Wagner L2/Linf,
+  DeepFool, Fourier a banda estesa) esistevano solo in un progetto precursore ("sentinel3", mai
+  parte di questo repository) da cui `AdaptiveSignalStabilizer` era stato estratto. Riportati
+  qui con una modifica sostanziale: l'import punta ora a
+  `dense_armor.core.engine.AdaptiveSignalStabilizer` (il pacchetto reale) invece del modulo
+  locale standalone del progetto precursore -- stessa classe, stessa API, ri-eseguiti e
+  confermati riprodurre esattamente i numeri gia' nel README (PGD 0.0130, BIM 0.0625, MI-FGSM
+  0.0784, C&W L2 78.96%, C&W Linf 64.39%, DeepFool 78.79%, Fourier 99.77%+): la tabella e' ora
+  una misura reale e riproducibile, non piu' un dato non tracciato.
+- **Sito di documentazione** (GitHub Pages, <https://tatopenn-cell.github.io/Dense-Armor/>):
+  home, guida rapida, riferimento API generato dai docstring reali dei 5 moduli pubblici
+  (`Armatura`, `Orca`, `hybrid_engine`, `engine`, `robust_filters`), changelog/licenza
+  sorgentati da `CHANGELOG.md`/`LICENSE.md` -- stesso impianto mkdocs-material gia' in uso su
+  Dense-Evolution.
+
+### Fixed
+- **Due assert instabili in CI**: `test_boundB.py`/`test_boundD.py` avevano un
+  `assert t_elapsed >= 5.0` che non verificava la correttezza della difesa, solo che il calcolo
+  fosse durato "abbastanza" sulla macchina di sviluppo originale -- falliva su ogni runner CI
+  piu' veloce (verificato: 4.41s invece dei 5.0s richiesti su GitHub Actions, riprodotto su
+  ubuntu/windows-latest, ogni versione Python). Rimosso: le assert reali (nessuna divergenza
+  numerica) sono l'unica verifica che conta.
+
+### Changed
+- **Rimosso "Sentinel"** (nome interno originale del progetto) dal testo rivolto
+  all'esterno: descrizione PyPI (`pyproject.toml`), README, home della documentazione,
+  docstring di `__init__.py`, e l'etichetta nella definizione di Software in `LICENSE.md`
+  (solo l'etichetta, nessuna modifica ai componenti elencati/coperti dalla licenza). Il
+  `CHANGELOG.md` (storia reale del progetto) e i commenti interni nel codice restano
+  invariati.
+
 ## [1.1.4]
 
 ### Added
