@@ -2,6 +2,39 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## [1.1.6]
+
+Nessuna modifica alla matematica/logica di `Armatura`/`Orca` in questa versione. Partita
+dalla richiesta di portare la coverage Codecov al 100%: 14 file in `core/`/`utility/`
+risultavano a 0% di coverage. Prima di cancellarli come "codice morto" (la prima ipotesi),
+trovato `dense_armor/README.md` (riferimento interno) che li documenta tutti come componenti
+reali e intenzionali — indagine invertita, modulo per modulo, invece di procedere con la
+cancellazione.
+
+### Fixed
+- **`core/__init__.py` vuoto**: il vero file di inizializzazione del pacchetto (import/export
+  di 9 classi: `AIHardwareProfiler`, `StochasticAdversarialNoise`, `UniversalMemoryGuard`,
+  `MemoryPressureError`, `ParametricScenarioSimulator`, `BitwisePermutationEngine`,
+  `DynamicAICodegen`, `CMD_MAP`, `TensorVault`, `AIEngineVisualizer`, `PipelineProfiler`)
+  esisteva ma era salvato come `core/init.py` (nome sbagliato, mai eseguito da Python) — il
+  file col nome giusto era vuoto. Nessuna di queste classi era importabile da
+  `dense_armor.core.*` nonostante il codice reale esistesse. Contenuto spostato nel file col
+  nome corretto, `init.py` eliminato.
+- **`core/preset.py`**: l'intero dizionario `SENTINEL_PRESETS` (4 profili calibrati) era
+  definito due volte verbatim nello stesso file. Rimossa la duplicazione.
+- **`utility/iodat.py`**: `lodat()` ritornava in silenzio un tensore di dati casuali finti se
+  il file richiesto non esisteva (solo un log di warning, nessun errore) — ora solleva
+  `FileNotFoundError`.
+
+### Added
+- **Test reali per tutti e 14 i moduli** precedentemente a 0% di coverage: `chunk.py`,
+  `compiler.py`, `memory.py`, `preset.py`, `logger.py`, `tensor.py`, `vector.py`, `noise.py`,
+  `profiler.py`, `visualizer.py` (`core/`); `anwav.py`, `diagnostic.py`, `iodat.py`
+  (`utility/`, con file WAV/HDF5/NetCDF reali generati nei test, non mock) — più le righe
+  ancora scoperte in `resonance_search.py`. Coverage totale del pacchetto: 54% -> 91%.
+- **README**: nuova sezione `$ toolkit --standalone` che documenta questi moduli come seconda
+  parte del pacchetto, indipendente dallo scudo anomalie di Armatura/Orca.
+
 ## [1.1.5]
 
 Nessuna modifica alla matematica/logica di `Armatura`/`Orca`/`robust_filters` in questa

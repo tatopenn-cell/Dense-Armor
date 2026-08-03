@@ -153,6 +153,35 @@ I quattro metodi singoli restano richiamabili anche uno per uno (`chauvenet_crit
 
 ---
 
+## `$ toolkit --standalone`
+
+Sotto `core/`/`utility/` c'è anche una seconda parte del pacchetto, indipendente da Armatura/Orca — nessuno di questi moduli partecipa allo scudo anomalie, sono strumenti a sé che condividono solo il backend JAX/NumPy:
+
+```python
+from dense_armor.core import (
+    DynamicAICodegen,             # compila nomi di operazioni (relu/sigmoid/tanh/scale/dropout/
+                                   # clip/l2_normalize) in una pipeline JAX JIT, gradiente via autodiff
+    UniversalMemoryGuard,          # controlla RAM/VRAM prima di un'allocazione pesante
+    TensorVault,                   # matrici di trasformazione statiche/parametriche, backend auto-rilevato
+    AIHardwareProfiler,             # profila CPU/RAM/backend per un limite sicuro di dimensione tensore
+    StochasticAdversarialNoise,    # inietta rumore/perturbazioni sintetiche per testare un rilevatore
+    ParametricScenarioSimulator,   # simulazioni Monte Carlo parallele via vmap
+    BitwisePermutationEngine,      # permutazioni su vettori combinatori via maschere di bit
+    PipelineProfiler,               # latenza JIT in microsecondi, warm-up separato
+    AIEngineVisualizer,             # esportazione provenance firmata SHA-256, report testuali
+)
+from dense_armor.core.chunk import ImageChunker           # split/merge a blocchi per batch grandi
+from dense_armor.core.preset import SENTINEL_PRESETS      # 4 configurazioni calibrate per AdaptiveSignalStabilizer
+from dense_armor.utility.anwav import anwav                # analisi picco/dinamica di un file WAV
+from dense_armor.utility.diagnostic import diag             # confronto differenziale tra due segnali audio
+from dense_armor.utility.iodat import lodat                 # lettura tensori da HDF5/NetCDF
+from dense_armor.utility.resonance_search import apply_fast_resonance   # ricerca per similarità coseno
+```
+
+Ognuno testato singolarmente (`test/test_chunk.py`, `test_compiler.py`, `test_memory.py`, `test_preset.py`, `test_tensor.py`, `test_noise.py`, `test_vector.py`, `test_profiler.py`, `test_visualizer.py`, `test_logger.py`, `test_anwav.py`, `test_diagnostic.py`, `test_iodat.py`, `test_resonance_search.py`). Richiede `pip install "dense-armor[audio,data]"` per `anwav`/`diagnostic` (scipy) e `iodat` (h5py/netCDF4).
+
+---
+
 ## `$ margine d'errore`
 
 ```python

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
 import os
-import sys
 import h5py
 import netCDF4
 import numpy as np
@@ -15,8 +14,7 @@ def lodat(fpath: str, dname: str) -> np.ndarray:
     garantendo la massima compatibilità di I/O.
     """
     if not os.path.exists(fpath):
-        logger.warning("File %s non trovato. Verrà simulata la pipeline di produzione.", fpath)
-        return np.random.normal(0.0, 1.0, (4, 3, 32, 32, 8, 4))
+        raise FileNotFoundError(f"File non trovato: {fpath}")
 
     exten = os.path.splitext(fpath)[1].lower()
 
