@@ -13,6 +13,7 @@ import jax
 import jax.numpy as jnp
 
 import dense_armor.core.memory as memory_module
+import dense_armor.utility.orca as orca_module
 from dense_armor.core.memory import MemoryPressureError
 from dense_armor.utility.orca import Orca
 
@@ -186,3 +187,39 @@ def test_protect_and_forward_ricorda_e_richiama_riferimento_end_to_end():
     mse_con_memoria = float(np.mean((np.array(out_con_memoria) - clean) ** 2))
     mse_senza_memoria = float(np.mean((np.array(out_senza_memoria) - clean) ** 2))
     assert mse_con_memoria <= mse_senza_memoria
+
+
+def _fake_profiler(max_tensor_dim):
+    fake = types.SimpleNamespace(
+        max_tensor_dim=max_tensor_dim,
+        get_profile_summary=lambda: f"fake profiler max_tensor_dim={max_tensor_dim}",
+    )
+    return fake
+
+
+def test_chunk_threshold_auto_su_host_baseline_ripete_il_vecchio_default(monkeypatch):
+    """Host 'base' (RAM<12GB, nessuna GPU/TPU): max_tensor_dim=2048, la stessa
+    baseline della classe -- chunk_threshold auto-derivato deve ricadere
+    esattamente sul vecchio valore fisso (nessuna regressione silenziosa sul
+    caso comune)."""
+    monkeypatch.setattr(orca_module, "AIHardwareProfiler", lambda: _fake_profiler(2048))
+    orca = Orca()
+    assert orca.chunk_threshold == Orca._CHUNK_THRESHOLD_BASELINE
+
+
+def test_chunk_threshold_auto_scala_con_hardware_migliore(monkeypatch):
+    """Host con piu' RAM/GPU (max_tensor_dim=8192, 4x la baseline 2048):
+    chunk_threshold deve scalare proporzionalmente (4x)."""
+    monkeypatch.setattr(orca_module, "AIHardwareProfiler", lambda: _fake_profiler(8192))
+    orca = Orca()
+    assert orca.chunk_threshold == Orca._CHUNK_THRESHOLD_BASELINE * 4
+
+
+def test_chunk_threshold_esplicito_non_viene_sovrascritto(monkeypatch):
+    """Se il chiamante passa un chunk_threshold esplicito, l'auto-tuning non
+    deve nemmeno istanziare AIHardwareProfiler."""
+    def _boom():
+        raise AssertionError("AIHardwareProfiler non doveva essere istanziato")
+    monkeypatch.setattr(orca_module, "AIHardwareProfiler", _boom)
+    orca = Orca(chunk_threshold=42)
+    assert orca.chunk_threshold == 42

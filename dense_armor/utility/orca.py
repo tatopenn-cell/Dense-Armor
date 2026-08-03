@@ -13,6 +13,7 @@ import jax.numpy as jnp
 
 from ..core.engine import AdaptiveSignalStabilizer
 from ..core.memory import UniversalMemoryGuard
+from ..core.noise import AIHardwareProfiler
 from ..utility.collatz import ABCollatz
 from ..core.damping_operator import apply_damping_blend
 from ..utility.curvature import curvature
@@ -22,12 +23,27 @@ logger = logging.getLogger(__name__)
 
 
 class Orca:
+    # chunk_threshold di riferimento (il vecchio default fisso) per un host
+    # "base" secondo AIHardwareProfiler: RAM < 12GB, nessuna GPU/TPU
+    # (max_tensor_dim=2048, vedi core/noise.py). chunk_threshold auto-derivato
+    # scala PROPORZIONALMENTE a questa baseline via max_tensor_dim, non lo
+    # rimpiazza con l'euristica RAM grezza presa da sola (che core/noise.py
+    # dichiara gia' arbitraria, non calibrata empiricamente, vedi CHANGELOG
+    # 1.1.8) -- cosi' un host "base" ottiene lo stesso valore di sempre
+    # (nessuna regressione silenziosa sul caso comune), mentre un host con
+    # piu' RAM o una GPU/TPU ottiene chunk piu' grandi in proporzione.
+    _CHUNK_THRESHOLD_BASELINE = 1_000_000
+    _CHUNK_THRESHOLD_BASELINE_TENSOR_DIM = 2048
+
     def __init__(self, static_threshold: float = 0.15, initial_damping: float = 0.85,
                  alpha: float = 0.05, val_e: float = -4.0,
-                 chunk_threshold: int = 1000000, min_free_ram_percentage: float = 0.15,
+                 chunk_threshold: Optional[int] = None, min_free_ram_percentage: float = 0.15,
                  reference_memory_size: int = 32, reference_recall_min_score: float = 0.90) -> None:
         """val_e — esponente di scala target per la compressione log10 in ingresso;
         chunk_threshold — dimensione oltre la quale un batch viene processato a blocchi;
+        None (default) lo auto-deriva da AIHardwareProfiler (RAM/backend
+        dell'host corrente, vedi _CHUNK_THRESHOLD_BASELINE* sopra) invece del
+        vecchio valore fisso uguale per qualunque macchina;
         reference_memory_size — quanti riferimenti puliti passati (per shape) tenere in
         memoria per il richiamo via risonanza in modalita' cieca (vedi _recall_reference);
         reference_recall_min_score — punteggio minimo di apply_fast_resonance sotto il
@@ -38,7 +54,15 @@ class Orca:
         self.static_threshold = static_threshold
         self.initial_damping = initial_damping
         self.alpha = alpha
-        self.chunk_threshold = chunk_threshold
+        if chunk_threshold is None:
+            profiler = AIHardwareProfiler()
+            scale = profiler.max_tensor_dim / self._CHUNK_THRESHOLD_BASELINE_TENSOR_DIM
+            chunk_threshold = int(self._CHUNK_THRESHOLD_BASELINE * scale)
+            logger.info(
+                "chunk_threshold auto-derivato da AIHardwareProfiler: %d (%s)",
+                chunk_threshold, profiler.get_profile_summary(),
+            )
+        self.chunk_threshold = int(chunk_threshold)
         self.val_e = float(val_e)
         self.min_free_ram = min_free_ram_percentage
         self.reference_recall_min_score = float(reference_recall_min_score)

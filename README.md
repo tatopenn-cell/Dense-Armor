@@ -129,7 +129,9 @@ adattato a segnali scalari a scala libera        STADIO 2  utility/collatz.py
 
 `Armatura.analizza()` decide punto per punto, senza gradi intermedi: un valore o è un cambiamento genuino (passa) o è rumore/spike isolato (sostituito con la baseline locale — la finestra recente se non hai un riferimento, il tuo riferimento esplicito se lo passi).
 
-`Orca.protect_and_forward()` (scudo completo per un modello) usa ancora i due stadi originali. Senza riferimento pulito (modalità cieca): rigetto degli outlier gravi via mediana locale, poi Stadio 1 in versione causale — usa tutta la storia della serie, non solo i vicini immediati, per stimare cosa "dovrebbe" essere quel punto.
+`Orca.protect_and_forward()` (scudo completo per un modello) usa ancora i due stadi originali. Senza riferimento pulito (modalità cieca), prima di ricadere sulla stima locale Orca cerca nella propria **memoria di riferimenti puliti passati** (per shape, via `apply_fast_resonance` — la stessa risonanza descritta più sotto nel toolkit) un riferimento simile all'input corrotto corrente; se non lo trova, rigetto degli outlier gravi via mediana locale, poi Stadio 1 in versione causale — usa tutta la storia della serie, non solo i vicini immediati, per stimare cosa "dovrebbe" essere quel punto. Ogni volta che un riferimento pulito viene passato esplicitamente, resta in memoria per le chiamate cieche successive (`reference_memory_size`, default 32 per shape).
+
+Prima di ogni chunk pesante, Orca verifica anche RAM/VRAM disponibili tramite `UniversalMemoryGuard` (vedi toolkit sotto): sotto la soglia critica solleva `MemoryPressureError` invece di rischiare un OOM silenzioso qualche chunk più avanti. La dimensione stessa dei chunk (`chunk_threshold`) è auto-derivata da `AIHardwareProfiler` — scala con RAM/backend dell'host invece di un valore fisso uguale per qualunque macchina — a meno che tu non ne passi uno esplicito al costruttore.
 
 Nota tecnica: `AdaptiveSignalStabilizer.filter_batch_scenarios` (usato ad es. dalla suite di test adversarial) accetta solo 2D/3D/4D. Lo scudo entrata di `Orca` e' un percorso diverso, senza quel limite.
 
@@ -155,17 +157,17 @@ I quattro metodi singoli restano richiamabili anche uno per uno (`chauvenet_crit
 
 ## `$ toolkit --standalone`
 
-Sotto `core/`/`utility/` c'è anche una seconda parte del pacchetto, indipendente da Armatura/Orca — nessuno di questi moduli partecipa allo scudo anomalie, sono strumenti a sé che condividono solo il backend JAX/NumPy. Documentazione completa (auto-generata dai docstring reali) sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/toolkit/); qui il riepilogo.
+Sotto `core/`/`utility/` c'è anche una seconda parte del pacchetto, in gran parte indipendente da Armatura/Orca — la maggior parte di questi moduli non partecipa allo scudo anomalie, sono strumenti a sé che condividono solo il backend JAX/NumPy. Tre eccezioni: `UniversalMemoryGuard`, `apply_fast_resonance` e `AIHardwareProfiler`, richiamati anche da Orca (vedi `$ internals` sopra) — restano comunque utilizzabili standalone. Documentazione completa (auto-generata dai docstring reali) sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/toolkit/); qui il riepilogo.
 
 **Pipeline e chunking** (`dense_armor.core`)
 
 - `DynamicAICodegen` — compila una lista di nomi di operazioni (`relu`, `sigmoid`, `tanh`, `scale`, `dropout`, `clip`, `l2_normalize`, `identity`) in una pipeline JAX JIT-compilata via `lax.switch`, con esecuzione a blocchi per liste lunghe e gradiente via autodiff (`compute_gradients`).
 - `ImageChunker` (`dense_armor.core.chunk`) — divide/ricompone un batch grande in blocchi a dimensione fissa, sia per array di dati sia per liste di istruzioni compilate.
-- `UniversalMemoryGuard` — controlla RAM (e VRAM, se c'è una GPU NVIDIA) prima di un'allocazione pesante, calcola il numero di blocchi necessari per starci; solleva `MemoryPressureError` sotto soglia.
+- `UniversalMemoryGuard` — controlla RAM (e VRAM, se c'è una GPU NVIDIA) prima di un'allocazione pesante, calcola il numero di blocchi necessari per starci; solleva `MemoryPressureError` sotto soglia. Usato anche da `Orca` prima di ogni chunk pesante.
 
 **Hardware e profiling** (`dense_armor.core`)
 
-- `AIHardwareProfiler` — rileva CPU/RAM/backend disponibili e calcola una dimensione massima sicura di tensore per l'host corrente.
+- `AIHardwareProfiler` — rileva CPU/RAM/backend disponibili e calcola una dimensione massima sicura di tensore per l'host corrente. Usato anche da `Orca` per auto-derivare `chunk_threshold` (scala proporzionalmente all'host invece di un valore fisso uguale per qualunque macchina; passare un valore esplicito lo sovrascrive senza nemmeno istanziare il profiler).
 - `StochasticAdversarialNoise` — inietta rumore sintetico (bitflip, dropout, blur gaussiano) in un tensore, preservandone la norma; utile per generare dati di attacco quando si vuole testare un rilevatore.
 - `PipelineProfiler` — misura la latenza JIT in microsecondi (warm-up di compilazione separato dal tempo a regime) di una pipeline `DynamicAICodegen` o di `AdaptiveSignalStabilizer`.
 
@@ -186,7 +188,7 @@ Sotto `core/`/`utility/` c'è anche una seconda parte del pacchetto, indipendent
 - `anwav(fpath)` — analizza un file WAV: picco, RMS, loudness stimata (LUFS), fattore di cresta, con verdetto di conformità.
 - `diag(iorig, ifilt)` — confronto differenziale tra due segnali audio (percorsi file o array NumPy): fedeltà strutturale, energia rimossa, picco di distorsione.
 - `lodat(fpath, dname)` (`dense_armor.utility.iodat`) — legge un tensore da un file HDF5 o NetCDF.
-- `apply_fast_resonance(matrix, query)` (`dense_armor.utility.resonance_search`) — punteggio di similarità coseno tra una query e le righe di una matrice, modulato da `apply_damping_blend` (lo stesso operatore usato da Orca).
+- `apply_fast_resonance(matrix, query)` (`dense_armor.utility.resonance_search`) — punteggio di similarità coseno tra una query e le righe di una matrice, modulato da `apply_damping_blend` (lo stesso operatore usato da Orca). Usato anche da `Orca` in modalità cieca per richiamare un riferimento pulito simile già visto in passato (vedi `$ internals` sopra).
 
 Ognuno testato singolarmente (`test/test_chunk.py`, `test_compiler.py`, `test_memory.py`, `test_preset.py`, `test_tensor.py`, `test_noise.py`, `test_vector.py`, `test_profiler.py`, `test_visualizer.py`, `test_logger.py`, `test_anwav.py`, `test_diagnostic.py`, `test_iodat.py`, `test_resonance_search.py`). Richiede `pip install "dense-armor[audio,data]"` per `anwav`/`diagnostic` (scipy) e `iodat` (h5py/netCDF4).
 
@@ -268,6 +270,11 @@ Onesto: **C&W in norma L∞ è l'attacco che buca di più** tra quelli testati. 
 6. adversarial      attacchi costruiti apposta per mimare la coerenza del
    adattivo          segnale pulito (oltre a PGD/BIM/MI-FGSM/C&W/DeepFool/Fourier
                     gia' testati) non ancora coperti dalla suite
+7. Orca, riferimento  con un riferimento pulito che attraversa lo zero (es. un
+   che attraversa      seno centrato in 0), la compressione log10 dello scudo
+   lo zero             entrata puo' esplodere numericamente e peggiorare il
+                       risultato rispetto alla modalita' cieca -- noto, non
+                       ancora risolto
 ```
 
 **Causa reale del punto 5, non solo il numero**: investigata a fondo, non ancora risolta. C&W
