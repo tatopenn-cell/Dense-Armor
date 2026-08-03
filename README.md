@@ -225,4 +225,4 @@ Business Source License 1.1 — uso gratuito non commerciale, converte in Apache
 
 `© 2026 Salvatore Pennacchio <jtatopenn@libero.it>`
 
-Parte dell'ecosistema **Sentinel**, insieme a [Dense-Evolution](https://github.com/tatopenn-cell/Dense-Evolution) (simulatore di circuiti quantistici NISQ).
+Progetto gemello di [Dense-Evolution](https://github.com/tatopenn-cell/Dense-Evolution) (simulatore di circuiti quantistici NISQ).

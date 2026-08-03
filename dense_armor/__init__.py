@@ -1,4 +1,4 @@
-"""Dense-Armor - the wearable Sentinel shield: two-stage anomaly damping for any AI.
+"""Dense-Armor - the wearable AI-safety shield: runtime anomaly damping for any AI.
 Author: Salvatore Pennacchio (Napoli, 2026). Sister project: Dense-Evolution."""
 import logging
 

@@ -8,7 +8,7 @@ La presente Business Source License (la "Licenza") si applica integralmente al c
 ## 1. Parametri della Licenza
 
 * **Licenziante:** Salvatore Pennacchio <jtatopenn@libero.it>
-* **Software:** Dense-Armor (incluso il nucleo Sentinel: stabilizzatore adattivo, gating ABCollatz, rilevatori di anomalia e deriva, utility e opere derivate fornite dal Licenziante).
+* **Software:** Dense-Armor (incluso il nucleo: stabilizzatore adattivo, gating ABCollatz, rilevatori di anomalia e deriva, utility e opere derivate fornite dal Licenziante).
 * **Data di Modifica:** 1 Giugno 2029
 * **Licenza di Modifica:** Apache License, Versione 2.0 (o successive, a esclusiva discrezione del Licenziante).
 * **Uso Consentito per la Produzione:** Uso strettamente non commerciale ed esecuzioni limitate ai parametri definiti nella Sezione 4. Per l'uso in ambienti di produzione commerciale, industriale o di consulenza tariffata che ecceda tali parametri, si applica l'obbligo inderogabile di licenza separata.

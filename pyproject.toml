@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "dense-armor"
 version = "1.1.4"
-description = "The wearable Sentinel shield: two-stage adaptive anomaly damping (IIR + ABCollatz gating) for any AI signal - NaN-safe, drift-aware, dimension-agnostic"
+description = "The wearable AI-safety shield: runtime anomaly damping for any AI signal - NaN-safe, drift-aware, dimension-agnostic, no retraining"
 readme = "README.md"
 license = "BUSL-1.1"
 license-files = ["LICENSE.md"]
@@ -25,6 +25,12 @@ audio = ["scipy"]
 data = ["h5py", "netCDF4"]
 quantum = ["dense-evolution"]
 dev = ["pytest", "filterpy", "matplotlib"]
+docs = [
+    "mkdocs>=1.6.0",
+    "mkdocs-material>=9.5.0",
+    "mkdocstrings[python]>=0.24.0",
+    "mkdocs-include-markdown-plugin>=6.0.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/tatopenn-cell/Dense-Armor"

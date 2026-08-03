@@ -1,0 +1,80 @@
+site_name: Dense-Armor
+site_description: The wearable Sentinel shield -- runtime anomaly damping for any AI input/output, no retraining.
+site_url: https://tatopenn-cell.github.io/Dense-Armor/
+repo_url: https://github.com/tatopenn-cell/Dense-Armor
+repo_name: tatopenn-cell/Dense-Armor
+edit_uri: edit/master/docs/
+
+theme:
+  name: material
+  custom_dir: overrides
+  palette:
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: cyan
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: black
+      accent: cyan
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.top
+    - navigation.indexes
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.action.edit
+  icon:
+    repo: fontawesome/brands/github
+    logo: material/shield-half-full
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+  - include-markdown
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: ["."]
+          options:
+            docstring_style: google
+            show_source: true
+            show_root_heading: true
+            show_root_full_path: false
+            merge_init_into_class: true
+            separate_signature: true
+            show_signature_annotations: true
+            members_order: source
+            heading_level: 2
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - API Reference:
+      - api/index.md
+      - Armatura (1D series shield): api/armatura.md
+      - Orca (full model shield): api/orca.md
+      - Hybrid engine (Armatura's core): api/hybrid_engine.md
+      - Adaptive engine (Orca Stage 1): api/engine.md
+      - Robust filters (standalone detectors): api/robust_filters.md
+  - Changelog: changelog.md
+  - License: license.md
