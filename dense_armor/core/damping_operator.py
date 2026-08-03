@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 r"""
-Sentinel Metrology Framework - Adaptive Damping Blend Operator
+core/damping_operator.py
 =========================================================
-Sottosistema: fonde due segnali (es. output grezzo e riferimento) con un
-guadagno non lineare che dipende dalla loro distanza -- differenza piccola
-tra i due -> si preferisce il segnale grezzo; differenza grande -> si
-preferisce il riferimento, in modo smorzato e sempre limitato.
-Autore del Framework: Salvatore Pennacchio (Napoli, 2026)
-Percorso: shield_/core/damping_operator.py
+Adaptive Damping Blend Operator -- fonde due segnali (es. output grezzo e
+riferimento) con un guadagno non lineare che dipende dalla loro distanza --
+differenza piccola tra i due -> si preferisce il segnale grezzo; differenza
+grande -> si preferisce il riferimento, in modo smorzato e sempre limitato.
 
 Nota: non e' calcolo quantistico. I nomi delle costanti (PHI, ecc.) sono
 iperparametri numerici fissi, non stati/operatori quantistici -- non c'e'

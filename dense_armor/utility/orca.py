@@ -1,18 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-Sentinel Metrology Framework - Universal AI Orchestrator Shield (ORCA)
-Sottosistema: Orchestratore Dinamico Selettivo Context-Aware a 4 Fasi
-Autore del Framework: Salvatore Pennacchio (Napoli, 2026)
-Percorso: shield_/utility/orca.py
+utility/orca.py
+Universal AI Orchestrator Shield (ORCA) -- orchestratore dinamico
+selettivo context-aware a 4 fasi.
 """
-import os, sys, time, gc, logging
+import time, gc, logging
 from typing import Callable, Optional
 import numpy as np
 import psutil
 import jax
 import jax.numpy as jnp
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from ..core.engine import AdaptiveSignalStabilizer
 from ..utility.collatz import ABCollatz
 from ..core.damping_operator import apply_damping_blend

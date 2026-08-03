@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-armatura.py — L'ARMATURA: istanza indossabile dello scudo Sentinel.
-Versione standalone: usa i core/ e utility/ di QUESTA cartella (shield_),
-nessuna dipendenza da BERT o da altri progetti.
+armatura.py — L'Armatura: istanza indossabile dello scudo per una serie 1D.
+Usa solo i moduli in core/ e utility/ di questo pacchetto.
 
-Uso rapido (PowerShell, da questa cartella):
-    python armatura.py 1.2 1.3 9999 1.25 nan 1.3
-    python armatura.py file_con_numeri.txt
+Uso rapido (CLI):
+    python -m dense_armor 1.2 1.3 9999 1.25 nan 1.3
+    python -m dense_armor file_con_numeri.txt
 
-Uso da codice (qualsiasi IA):
-    from armatura import Armatura
+Uso da codice:
+    from dense_armor import Armatura
     a = Armatura(livello_ia=0.0)        # 0=IA neonata (FILTRA) ... 1=matura (solo MARCA)
     pulito, K, anomalie = a.analizza(serie)
     pulito, K, anomalie = a.analizza(serie_oggi, riferimento=baseline_di_ieri)  # anti-deriva
@@ -181,13 +180,13 @@ class Armatura:
 
 
 def main() -> None:
-    """Entry point CLI: `python armatura.py [--json] <file_o_numeri...>`."""
+    """Entry point CLI: `python -m dense_armor [--json] <file_o_numeri...>`."""
     import re as _re
     argv = sys.argv[1:]
     come_json = "--json" in argv
     argv = [a for a in argv if a != "--json"]
     if not argv:
-        print("USO: python armatura.py [--json] <file_con_numeri>  oppure  python armatura.py [--json] n1 n2 n3 ...")
+        print("USO: python -m dense_armor [--json] <file_con_numeri>  oppure  python -m dense_armor [--json] n1 n2 n3 ...")
         sys.exit(0)
     if len(argv) == 1 and os.path.exists(argv[0]):
         testo = open(argv[0], encoding="utf-8", errors="ignore").read()
