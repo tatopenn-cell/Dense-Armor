@@ -2,6 +2,48 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## [1.1.7]
+
+Nessuna modifica alla matematica/logica di `Armatura`/`Orca` in questa versione. I 14 moduli
+del toolkit aggiunti a 1.1.6 sono ora davvero pubblici (documentati sul sito, `show_source:
+true`), quindi tutto quello che c'era di poco professionale nel codice sorgente -- non solo nel
+README -- ora si vede.
+
+### Added
+- **Sito**: nuova pagina `docs/api/toolkit.md` (mkdocstrings, pesca dai docstring reali) per i
+  14 moduli aggiunti in 1.1.6 -- prima invisibili sul sito, l'API Reference copriva solo i 5
+  moduli dello scudo. Linkata da `mkdocs.yml`, `docs/index.md`, `docs/api/index.md`.
+- **README**: la sezione `$ toolkit --standalone` (prima solo un blocco di import con commenti)
+  riscritta con prosa reale, raggruppata per categoria (pipeline/chunking, hardware/profiling,
+  tensori/configurazione, logging/provenance, audio/I/O dati, ricerca per similarità).
+
+### Changed
+- **Rimosso "Sentinel"/branding residuo dal codice sorgente** dei 14 moduli toolkit e dei 5
+  moduli originali dello scudo (`armatura.py`, `core/damping_operator.py`, `utility/metro.py`,
+  `utility/orca.py` -- mancati nel passaggio di de-branding di 1.1.5, che si era fermato al
+  testo rivolto all'esterno README/pyproject/sito, senza scendere nei singoli docstring con
+  `show_source: true`): banner "SENTINEL ENTERPRISE... BEAST MODE" e claim falsi di "logica
+  quantistica" in `core/chunk.py`, blocco "Fix applicati/BILANCIAMENTO AUREO" (contenuto da
+  changelog finito nel docstring) in `core/compiler.py`, riferimenti a file interni inesistenti
+  (`simulator.py`, `NoiseModel`, `test21.py`/`main.py`) in `core/vector.py`/`core/noise.py`/
+  `core/chunk.py`, intestazioni "Sentinel Metrology Framework" e vecchio percorso interno
+  `shield_/...` nei 4 moduli originali.
+- **Simboli pubblici rinominati** (uniche API realmente rotte da questa release, erano appena
+  diventate pubbliche in 1.1.6): `execute_pipeline_beast_mode` -> `execute_pipeline_chunked`
+  (`core/chunk.py`); `SENTINEL_PRESETS` -> `SIGNAL_STABILIZER_PRESETS` (`core/preset.py`);
+  `get_enterprise_logger` -> `get_json_file_logger`, nome logger/file di default
+  `sentinel*`/`sentinel_dashboard.log` -> `dense_armor*`/`dense_armor.log`, campo JSON
+  `"framework": "Sentinel-TensorFlowEngine"` -> `"dense-armor"` (`core/logger.py`);
+  `AIEngineVisualizer.ENGINE_SIGNATURE`/intestazione del trend report non dicono più
+  `TensorFlowEngine-Sentinel` (`core/visualizer.py`).
+- **`utility/orca.py`**: rimossa una `sys.path.insert(...)` morta (residuo di quando il modulo
+  girava come script standalone fuori dal pacchetto -- gli import relativi non ne hanno
+  bisogno, e nient'altro nel file usava `sys`/`os` dopo quella riga) e i relativi import
+  inutilizzati.
+- **`armatura.py`**: docstring e messaggi di uso CLI aggiornati da `python armatura.py`/`from
+  armatura import Armatura` (invocazione da script standalone) a `python -m dense_armor`/`from
+  dense_armor import Armatura` (pacchetto installato).
+
 ## [1.1.6]
 
 Nessuna modifica alla matematica/logica di `Armatura`/`Orca` in questa versione. Partita
