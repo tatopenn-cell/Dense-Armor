@@ -109,6 +109,48 @@ def _execute_ai_instruction_step(carry: tuple, instruction: jnp.ndarray) -> tupl
     return (result, next_key), None
 
 
+# ── kernel JIT precompilati una sola volta a livello di modulo ────────────────
+# (definire questi kernel dentro i metodi della classe, come faceva la
+# versione precedente, crea un nuovo oggetto jax.jit -- e quindi una nuova
+# cache di compilazione vuota -- ad ogni singola chiamata: la pipeline non
+# beneficia mai del riuso della compilazione XLA, anche a parita' di shape
+# tra una chiamata e la successiva. Stesso bug gia' trovato e risolto nel
+# motore di AdaptiveSignalStabilizer, vedi CHANGELOG 1.0.3.)
+
+@jax.jit
+def _run_pipeline_jit(d: jnp.ndarray, ops: jnp.ndarray, k: jnp.ndarray) -> tuple:
+    """Esegue l'intera pipeline di istruzioni in un unico scan JIT."""
+    (f_data, next_k), _ = jax.lax.scan(_execute_ai_instruction_step, (d, k), ops)
+    return f_data, next_k
+
+
+@jax.jit
+def _run_pipeline_chunked_jit(
+    data_state: jnp.ndarray, chunks_tensor: jnp.ndarray, base_key: jnp.ndarray
+) -> jnp.ndarray:
+    """Scan a due livelli sui macro-chunk, mantenendo intatto lo stato tra un chunk e il successivo."""
+
+    def _chunk_iterator(carry_state: jnp.ndarray, single_chunk: jnp.ndarray) -> tuple:
+        """Esegue un singolo chunk di istruzioni, propagando lo stato al chunk successivo."""
+        (f_data, next_k), _ = jax.lax.scan(
+            _execute_ai_instruction_step, (carry_state, base_key), single_chunk
+        )
+        return f_data, None
+
+    final_state, _ = jax.lax.scan(_chunk_iterator, data_state, chunks_tensor)
+    return final_state
+
+
+def _loss_fn(d: jnp.ndarray, ops: jnp.ndarray, k: jnp.ndarray) -> jnp.ndarray:
+    """Loss scalare (errore quadratico normalizzato) differenziata da jax.grad."""
+    (f_data, _), _ = jax.lax.scan(_execute_ai_instruction_step, (d, k), ops)
+    # Normalizzazione: l'errore quadratico e' scalato da una costante fissa
+    return jnp.sum(jnp.square(f_data)) / jnp.float64(_PHI_FOUR)
+
+
+_grad_engine = jax.jit(jax.grad(_loss_fn, argnums=0))
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # DynamicAICodegen (Inizio Classe)
 # ─────────────────────────────────────────────────────────────────────────────
@@ -161,16 +203,7 @@ class DynamicAICodegen:
         compiled_ops: np.ndarray,
     ) -> np.ndarray:
         """Esegue la pipeline compilata in un singolo lax.scan JIT."""
-
-        @jax.jit
-        def _run(d: jnp.ndarray, ops: jnp.ndarray, k: jnp.ndarray) -> tuple:
-            """Esegue l'intera pipeline di istruzioni in un unico scan JIT."""
-            (f_data, next_k), _ = jax.lax.scan(
-                _execute_ai_instruction_step, (d, k), ops
-            )
-            return f_data, next_k
-
-        res_data, updated_key = _run(
+        res_data, updated_key = _run_pipeline_jit(
             jnp.array(input_data, dtype=jnp.float64),
             jnp.array(compiled_ops, dtype=jnp.float64),
             self.base_key,
@@ -206,21 +239,7 @@ class DynamicAICodegen:
         j_data = jnp.array(input_data, dtype=jnp.float64)
         j_chunks = jnp.array(structured_chunks, dtype=jnp.float64)
 
-        @jax.jit
-        def _chunked_scan_compiler(data_state: jnp.ndarray, chunks_tensor: jnp.ndarray) -> jnp.ndarray:
-            """Scan a due livelli sui macro-chunk, mantenendo intatto lo stato tra un chunk e il successivo."""
-            # Scan a due livelli: itera sui macro-chunk mantenendo intatto lo stato d'onda JAX
-            def _chunk_iterator(carry_state: jnp.ndarray, single_chunk: jnp.ndarray) -> tuple:
-                """Esegue un singolo chunk di istruzioni, propagando lo stato al chunk successivo."""
-                (f_data, next_k), _ = jax.lax.scan(
-                    _execute_ai_instruction_step, (carry_state, self.base_key), single_chunk
-                )
-                return f_data, None
-            
-            final_state, _ = jax.lax.scan(_chunk_iterator, data_state, chunks_tensor)
-            return final_state
-
-        res_data = _chunked_scan_compiler(j_data, j_chunks)
+        res_data = _run_pipeline_chunked_jit(j_data, j_chunks, self.base_key)
         return np.array(res_data)
 
     # ── Gradients (autodiff) ───────────────────────────────────────────────
@@ -231,20 +250,10 @@ class DynamicAICodegen:
         compiled_ops: np.ndarray,
     ) -> np.ndarray:
         """Calcola i gradienti AD della loss, normalizzata da una costante fissa (_PHI_FOUR)."""
-
-        def _loss_fn(d: jnp.ndarray, ops: jnp.ndarray, k: jnp.ndarray) -> jnp.ndarray:
-            """Loss scalare (errore quadratico normalizzato) differenziata da jax.grad."""
-            (f_data, _), _ = jax.lax.scan(
-                _execute_ai_instruction_step, (d, k), ops
-            )
-            # Normalizzazione: l'errore quadratico e' scalato da una costante fissa
-            return jnp.sum(jnp.square(f_data)) / jnp.float64(_PHI_FOUR)
-
-        grad_engine = jax.jit(jax.grad(_loss_fn, argnums=0))
         j_input     = jnp.array(input_data, dtype=jnp.float64)
         j_ops       = jnp.array(compiled_ops, dtype=jnp.float64)
-        
-        grads       = grad_engine(j_input, j_ops, self.base_key)
+
+        grads       = _grad_engine(j_input, j_ops, self.base_key)
         self.base_key = jax.random.split(self.base_key)[0]
         return np.array(grads)
 

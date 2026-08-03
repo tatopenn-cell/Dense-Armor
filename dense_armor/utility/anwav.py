@@ -37,18 +37,18 @@ def anwav(fpath: str) -> None:
     
     print("[VERDETTO STANDARD]:")
     if p_db > -1.0:
-        print(" ❌ AVVISO: Il picco supera i -1.0 dB. Rischio distorsione.")
+        print("   AVVISO: Il picco supera i -1.0 dB. Rischio distorsione.")
     else:
         print("   CONFORME (Peak): Picco in sicurezza sotto i -1.0 dB.")
-        
+
     if lufs > -7.0:
-        print(" ⚠️ AVVISO: Volume molto spinto da Club.")
+        print("   AVVISO: Volume molto spinto da Club.")
     elif lufs < -16.0:
-        print(" ⚠️ AVVISO: Traccia troppo silenziosa.")
+        print("   AVVISO: Traccia troppo silenziosa.")
     else:
         print("   CONFORME (Loudness): Rispetta i target standard.")
-        
+
     if crest < 6.0:
-        print(" ❌ ERRORE: Traccia troppo schiacciata. Manca impatto.")
+        print("   AVVISO: Traccia troppo schiacciata. Manca impatto.")
     else:
         print("   CONFORME (Dinamica): Mantiene l'impatto analogico.")

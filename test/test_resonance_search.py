@@ -71,3 +71,23 @@ def test_apply_fast_resonance_query_a_norma_zero_ritorna_zeri():
     m = rng.standard_normal((5, 8)).astype(np.float32)
     out = apply_fast_resonance(m, np.zeros(8, dtype=np.float32))
     np.testing.assert_array_equal(out, np.zeros(5, dtype=np.float32))
+
+
+def test_apply_fast_resonance_kappa_modula_davvero_il_punteggio_non_solo_cosine():
+    """L'utilita' dichiarata (vedi README/docs) e' che il punteggio sia
+    modulato da apply_damping_blend -- lo stesso operatore di Orca -- non
+    una cosine similarity pura travestita. Se kappa (peso della componente
+    smorzata) non cambiasse il punteggio, la modulazione sarebbe solo
+    decorativa: qui si verifica che kappa=0 e kappa=1 diano punteggi
+    misurabilmente diversi sulla stessa matrice/query."""
+    rng = np.random.default_rng(3)
+    db = rng.standard_normal((4, 16)).astype(np.float32)
+    query = rng.standard_normal(16).astype(np.float32)
+
+    basso = apply_fast_resonance(db, query, kappa=0.0)
+    alto = apply_fast_resonance(db, query, kappa=1.0)
+
+    assert not np.allclose(basso, alto, atol=1e-3), (
+        "kappa non ha alcun effetto misurabile sul punteggio: la modulazione "
+        "via apply_damping_blend sarebbe puramente decorativa"
+    )
