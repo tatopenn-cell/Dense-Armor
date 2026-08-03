@@ -54,18 +54,36 @@ class BitwisePermutationEngine:
 # ParametricScenarioSimulator
 # ─────────────────────────────────────────────────────────────────────────────
 
+def _scenario_step(carry: jnp.ndarray, single_param: jnp.ndarray) -> tuple:
+    """Passo temporale scalare per jax.lax.scan."""
+    current_state = carry
+    next_state    = current_state * 0.95 + single_param * 0.05
+    return next_state, next_state
+
+
+def _simulate_single_instance(base_state: jnp.ndarray, params_vector: jnp.ndarray) -> jnp.ndarray:
+    """Un singolo scenario (T_steps parametri) portato avanti nel tempo."""
+    _, history = jax.lax.scan(_scenario_step, base_state, params_vector)
+    return history
+
+
+# Costruito UNA SOLA VOLTA al livello di modulo (non dentro il metodo): se
+# jax.jit(jax.vmap(...)) venisse ricreato ad ogni chiamata, la cache di
+# compilazione di JAX non potrebbe mai fare hit (una nuova closure Python ha
+# una identita' diversa ad ogni chiamata) e ogni invocazione ricompilerebbe
+# da zero il grafo XLA -- verificato: e' questo il costo dominante (~130ms a
+# chiamata), non il cast a np.array. base_state resta un argomento tracciato
+# (non statico) cosi' valori diversi non forzano una nuova compilazione.
+_parallel_engine = jax.jit(jax.vmap(_simulate_single_instance, in_axes=(None, 0)))
+
+
 class ParametricScenarioSimulator:
     """
     Simulazioni parallele massive (Monte Carlo) e collasso decisionale
     stocastico condizionato su distribuzione di probabilità reale.
     """
 
-    @staticmethod
-    def _simulation_step(carry: jnp.ndarray, single_param: jnp.ndarray) -> tuple:
-        """Passo temporale scalare per jax.lax.scan."""
-        current_state = carry
-        next_state    = current_state * 0.95 + single_param * 0.05
-        return next_state, next_state
+    _simulation_step = staticmethod(_scenario_step)
 
     def run_parallel_scenarios(
         self,
@@ -85,15 +103,8 @@ class ParametricScenarioSimulator:
         -------
         np.ndarray di shape (N_scenari, T_steps)
         """
-        def simulate_single_instance(params_vector: jnp.ndarray) -> jnp.ndarray:
-            """Un singolo scenario (T_steps parametri) portato avanti nel tempo."""
-            _, history = jax.lax.scan(
-                self._simulation_step, base_state, params_vector
-            )
-            return history
-
-        parallel_engine = jax.jit(jax.vmap(simulate_single_instance, in_axes=(0,)))
-        return np.array(parallel_engine(jnp.array(parameters_batch)))
+        result = _parallel_engine(jnp.float64(base_state), jnp.asarray(parameters_batch))
+        return np.array(result)
 
     def collapse_decision(
         self,
