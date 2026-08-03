@@ -17,9 +17,12 @@
   <img alt="nan" src="https://img.shields.io/badge/NaN--safe-yes-brightgreen.svg">
   <img alt="detectors" src="https://img.shields.io/badge/anomaly%20detectors-4%2B1-blueviolet.svg">
   <img alt="combination" src="https://img.shields.io/badge/combination-Lagrange%20(BLUE)-9cf.svg">
+  <a href="https://tatopenn-cell.github.io/Dense-Armor/"><img alt="docs" src="https://img.shields.io/badge/docs-tatopenn--cell.github.io-00e5ff?style=flat-square"></a>
 </p>
 
 <p align="center"><strong>Runtime shield per input/output di modelli IA. Nessun riaddestramento. Nessuna magia — solo damping adattivo verificato con test reali.</strong></p>
+
+<p align="center">📖 <a href="https://tatopenn-cell.github.io/Dense-Armor/"><strong>Documentazione completa, riferimento API, guida rapida →</strong></a></p>
 
 ---
 
@@ -184,7 +187,7 @@ Random walk, 15% dati mancanti, 3% spike enormi:
 
 ## `$ robustezza adversarial --tested`
 
-9 test motore condivisi eseguiti fino in fondo, nessun crash, nessun NaN sfuggito. Nessuna difesa mai sotto il 64%:
+9 test motore condivisi eseguiti fino in fondo, nessun crash, nessun NaN sfuggito. Nessuna difesa mai sotto il 64%. Codice reale, non solo numeri riportati: [`test/test_boundA.py`](test/test_boundA.py)–[`test_boundE.py`](test/test_boundE.py) — gli stessi attacchi (PGD/BIM/MI-FGSM, affine/elastico, Carlini-Wagner, DeepFool, Fourier) girano contro `dense_armor.core.engine.AdaptiveSignalStabilizer`, non un motore separato per il benchmark.
 
 | attacco | tipo | difesa |
 |---|---|---|
@@ -216,6 +219,17 @@ Onesto: **C&W in norma L∞ è l'attacco che buca di più** tra quelli testati. 
    adattivo          segnale pulito (oltre a PGD/BIM/MI-FGSM/C&W/DeepFool/Fourier
                     gia' testati) non ancora coperti dalla suite
 ```
+
+**Causa reale del punto 5, non solo il numero**: investigata a fondo, non ancora risolta. C&W
+in norma L-inf costruisce una perturbazione spazialmente liscia su tutta la griglia in un
+colpo solo (ottimizzazione a gradiente globale). Nessun controllo di coerenza puramente
+locale (confronto di un punto con i suoi vicini immediati, quello che questo motore usa) puo'
+distinguere una struttura spaziale genuinamente liscia da una costruita apposta per sembrarlo
+-- e' lo stesso identico segnale statistico. Tentati e verificati empiricamente tre
+interventi mirati (rate-limit sulla volatilita', ancora di coerenza a lungo termine, guinzaglio
+rigido sulla deriva massima): nessuno ha spostato il numero, uno lo ha persino peggiorato.
+Non e' un limite di taratura -- serve un riferimento esterno (non solo il contesto spaziale
+locale) per risolverlo davvero.
 
 ---
 
