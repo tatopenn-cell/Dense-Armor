@@ -9,7 +9,8 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   quickstart per Orca, Armatura e robust_filters, ma per il toolkit (14 moduli, aggiunti in
   1.1.6-1.1.7) solo un link nudo nella home del sito, nessun esempio eseguibile. Aggiunta una
   sezione "Standalone toolkit" con due esempi reali verificati (`DynamicAICodegen`,
-  `UniversalMemoryGuard`) e link a [Toolkit](api/toolkit.md) per il resto.
+  `UniversalMemoryGuard`) e link a [Toolkit](https://tatopenn-cell.github.io/Dense-Armor/api/toolkit/)
+  per il resto.
 
 ## [1.1.7]
 

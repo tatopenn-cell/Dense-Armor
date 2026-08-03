@@ -63,8 +63,9 @@ guard.check_memory_safety()  # raises MemoryPressureError if RAM is too low
 ## Hardware & profiling
 
 **`AIHardwareProfiler`** detects the host's CPU/RAM/JAX backend and computes a safe maximum
-tensor size for it. Useful for picking batch/tensor sizes automatically instead of hardcoding
-a limit that's wrong on a different machine.
+tensor size for it. Honest caveat: the RAM tiers behind `max_tensor_dim` (2048/4096/8192,
+doubled on GPU/TPU) are a rough heuristic, not calibrated against anything specific to this
+package -- treat it as a starting guess, not a guarantee.
 
 ```python
 from dense_armor.core import AIHardwareProfiler
@@ -75,8 +76,11 @@ print(profile.get_profile_summary())
 ```
 
 **`StochasticAdversarialNoise`** injects synthetic noise (bitflip, dropout, gaussian blur) into
-a tensor while preserving its norm. Useful for generating attack-like data to stress-test a
-detector, without needing a real adversarial-example generator.
+a tensor while preserving its norm. Honest caveat: this is a generic noise injector, not a real
+adversarial-example generator -- for actually testing the shield's robustness, the attacks in
+[`test/test_boundA.py`](https://github.com/tatopenn-cell/Dense-Armor/blob/master/test/test_boundA.py)–[`test_boundE.py`](https://github.com/tatopenn-cell/Dense-Armor/blob/master/test/test_boundE.py)
+(PGD/BIM/MI-FGSM, Carlini-Wagner, DeepFool, Fourier) are the real, calibrated benchmark; this
+module overlaps with that suite rather than adding to it.
 
 ```python
 from dense_armor.core import StochasticAdversarialNoise
@@ -93,8 +97,11 @@ out = StochasticAdversarialNoise.inject_noise(
 ---
 
 **`PipelineProfiler`** measures JIT latency in microseconds, with the first (compilation)
-call timed separately from steady-state calls. Useful for checking whether a pipeline is
-actually running at its compiled speed, or silently recompiling on every call.
+call timed separately from steady-state calls. This is the module that caught a real bug:
+`DynamicAICodegen`'s kernels used to be re-defined (and re-`jax.jit`-wrapped) on every single
+call, so they never reused XLA's compilation cache -- warm-up and steady-state timed almost
+identically. Once fixed, the split is real: warm-up is 1700x+ slower than steady-state on a
+small pipeline.
 
 ```python
 from dense_armor.core import DynamicAICodegen, PipelineProfiler
@@ -112,8 +119,9 @@ stats = PipelineProfiler.measure_microseconds(codegen, np.array([1.0, -2.0, 3.0]
 
 **`TensorVault`** is a small library of static (`invert`, `identity`, `edge_detector`, `blend`)
 and parametric (`scale_project`, `amplify`, `bias_shift`) transformation matrices, with backend
-(JAX/NumPy) and precision auto-detected. Useful when you need one of these common matrices
-without hand-writing it for both backends.
+(JAX/NumPy) and precision auto-detected. Honest caveat: these are tiny, fixed matrices (2x2 or
+a 3-element kernel) -- writing one inline is a single line of code. The real value here is the
+backend/precision auto-detection, not the matrix catalog itself.
 
 ```python
 from dense_armor.core import TensorVault
@@ -128,8 +136,10 @@ edge = vault.get_static_transform("edge_detector")
 ---
 
 **`ParametricScenarioSimulator`** runs parallel Monte Carlo simulations over time (via
-`jax.vmap`), plus a stochastic decision collapse driven by a probability distribution. Useful
-for scenario sweeps where each scenario evolves independently from the same starting state.
+`jax.vmap`), plus a stochastic decision collapse driven by a probability distribution. Honest
+caveat: the per-step update (`next_state = current_state * 0.95 + param * 0.05`) is a fixed
+exponential-moving-average weighting, not a configurable simulation model -- useful mainly if
+that specific dynamic matches your scenario, not as a general-purpose simulator.
 
 ```python
 from dense_armor.core import ParametricScenarioSimulator
@@ -141,8 +151,9 @@ result, collapsed = sim.collapse_decision(np.array([0.1, 0.2, 0.3, 0.4]), target
 ```
 
 **`BitwisePermutationEngine`** swaps elements of a combinatorial vector (a 2^n-sized space)
-based on target/control bit masks. Useful for combinatorial state manipulation where indices
-are addressed by bit position rather than a plain integer index.
+based on target/control bit masks. Honest caveat: each call performs exactly one
+controlled-swap between one pair of indices -- a single primitive, not a general permutation
+engine. Narrower than the name suggests.
 
 ```python
 from dense_armor.core import BitwisePermutationEngine
@@ -159,8 +170,10 @@ out = engine.apply_bitwise_swap(np.array([0., 1., 2., 3.]), target_bit=1, contro
 
 **`SIGNAL_STABILIZER_PRESETS`** are 4 empirically-calibrated parameter sets
 (`balanced_v2`, `cifar10_best_v1`, `pure_1d_time_v1`, `cifar10_hardened_lyapunov`) for
-[`AdaptiveSignalStabilizer`](engine.md) (Orca's Stage 1). Useful as a starting point instead of
-guessing thresholds/damping/alpha from scratch.
+[`AdaptiveSignalStabilizer`](engine.md) (Orca's Stage 1). Verified, not just declared: on the
+same noisy series with an outlier, `pure_1d_time_v1` (tuned for a more reactive regime) leaves
+over 2x the residual variance of `balanced_v2` -- the presets genuinely configure different
+filtering behavior, not just different numbers that happen to look distinct.
 
 ```python
 from dense_armor.core.preset import SIGNAL_STABILIZER_PRESETS
@@ -174,8 +187,10 @@ stabilizer = AdaptiveSignalStabilizer(**SIGNAL_STABILIZER_PRESETS["balanced_v2"]
 ## Logging & provenance
 
 **`MinimalConsoleFormatter`** / **`CompactJsonFormatter`** are two `logging.Formatter`
-subclasses — one human-readable for the console, one compact JSON for a log file. Useful to
-plug into standard `logging` when you want either format without writing a formatter by hand.
+subclasses — one human-readable for the console, one compact JSON for a log file. Honest
+caveat: fairly thin wrappers around `logging.Formatter` -- `CompactJsonFormatter`'s structured
+fields (module/filename/line number, one JSON object per event) are the main reason to reach
+for this over writing a one-line formatter yourself.
 
 ```python
 import logging
@@ -268,8 +283,10 @@ tensore = lodat("data.h5", "temperature")
 
 **`apply_fast_resonance(matrix, query)`** scores cosine similarity between a query vector and
 each row of a matrix, modulated by `apply_damping_blend` (the same operator Orca's gating
-uses). Useful for a quick nearest-neighbor-style lookup consistent with the rest of the
-package's math, rather than pulling in a separate similarity-search library.
+uses). Verified, not just declared: the modulation is load-bearing, not decorative --
+`kappa` (the damping weight) measurably changes the score (`kappa=0` vs. `kappa=1` differ well
+beyond floating-point noise on the same inputs), so this is genuinely different from plain
+cosine similarity, not a rebrand of it.
 
 ```python
 from dense_armor.utility.resonance_search import apply_fast_resonance
