@@ -8,6 +8,8 @@ dist/
 venv/
 .pytest_cache/
 _site/
+.coverage
+coverage.xml
 
 # output generato dai benchmark (CSV/PNG), non codice sorgente
 test/risultati/

@@ -9,6 +9,7 @@
 
 <p align="center">
   <img alt="tests" src="https://github.com/tatopenn-cell/Dense-Armor/actions/workflows/tests.yml/badge.svg">
+  <a href="https://codecov.io/gh/tatopenn-cell/Dense-Armor"><img alt="codecov" src="https://codecov.io/gh/tatopenn-cell/Dense-Armor/branch/master/graph/badge.svg"></a>
   <img alt="pypi" src="https://img.shields.io/pypi/v/dense-armor.svg">
   <img alt="license" src="https://img.shields.io/badge/license-BSL_1.1-blue.svg">
   <img alt="python" src="https://img.shields.io/badge/python-3.10%2B-blue.svg">
@@ -41,7 +42,7 @@ Un sensore che manda letture perse (`NaN`) o spara un valore assurdo (`1e6` inve
 - **Uscita**: verifica che la risposta del modello non sia a sua volta corrotta, confrontandola con la risposta che il modello darebbe al riferimento pulito.
 - **Margine d'errore**: per ogni valore corretto, restituisce quanto è stato spostato per ripulirlo. Correzione piccola → fidati. Correzione grande → tratta con cautela.
 
-Non tocca i pesi. Non riaddestra niente. Gira a runtime su qualunque tensore JAX/NumPy.
+Lascia i pesi intatti e gira a runtime, su qualunque tensore JAX/NumPy: lo scudo entrata appiattisce internamente ogni elemento del batch a 1D, applica il filtro causale, poi lo riporta alla forma originale qualunque essa sia. Testato direttamente su un tensore a 11 dimensioni (vedi `test/test_orca2.py`). `Armatura` (sotto) resta specifica per una singola serie 1D; `Orca` gestisce tensori a qualunque numero di assi.
 
 ---
 
@@ -129,6 +130,8 @@ adattato a segnali scalari a scala libera        STADIO 2  utility/collatz.py
 `Armatura.analizza()` decide punto per punto, senza gradi intermedi: un valore o è un cambiamento genuino (passa) o è rumore/spike isolato (sostituito con la baseline locale — la finestra recente se non hai un riferimento, il tuo riferimento esplicito se lo passi).
 
 `Orca.protect_and_forward()` (scudo completo per un modello) usa ancora i due stadi originali. Senza riferimento pulito (modalità cieca): rigetto degli outlier gravi via mediana locale, poi Stadio 1 in versione causale — usa tutta la storia della serie, non solo i vicini immediati, per stimare cosa "dovrebbe" essere quel punto.
+
+Nota per chi legge il codice: `AdaptiveSignalStabilizer.filter_batch_scenarios` (Stadio 1, chiamato direttamente ad es. dalla suite di test adversarial) è limitato a tensori 2D/3D/4D. Lo scudo entrata di `Orca` segue un percorso diverso -- appiattisce a 1D internamente prima di chiamare il filtro causale (vedi sopra), libero da quel limite.
 
 ---
 

@@ -88,3 +88,26 @@ def test_orca_2d_esplicito_resta_invariato():
     orca = Orca()
     out = orca.protect_and_forward(_modello_lineare, dato_corrotto, x_reference=None)
     assert out.shape == (1, 4)
+
+
+def test_orca_scudo_entrata_nessun_tetto_di_dimensionalita():
+    """Lo scudo entrata appiattisce ogni elemento del batch a 1D internamente
+    (vedi Orca.protect_and_forward) e lo riporta alla forma originale --
+    nessun limite reale di dimensioni, a differenza di
+    AdaptiveSignalStabilizer.filter_batch_scenarios (limitato a 2D/3D/4D,
+    usato direttamente dalla suite di test adversarial). Verificato qui su
+    un tensore a 11 dimensioni, non solo asserito nel README."""
+    shape = (1,) + (2,) * 10  # 11 dimensioni totali
+    rng = np.random.default_rng(0)
+    x_clean = rng.normal(size=shape)
+    x_corrupted = x_clean.copy()
+    outlier_idx = (0,) + (0,) * 10
+    x_corrupted[outlier_idx] = 9999.0
+
+    orca = Orca()
+    out = orca.protect_and_forward(
+        None, x_corrupted, x_reference=x_clean, use_model_injection=False, use_output_shield=False
+    )
+
+    assert out.shape == shape
+    assert abs(out[outlier_idx]) < 1000.0, "l'outlier a 11 dimensioni non e' stato ripulito"
