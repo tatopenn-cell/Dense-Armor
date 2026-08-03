@@ -42,7 +42,7 @@ Un sensore che manda letture perse (`NaN`) o spara un valore assurdo (`1e6` inve
 - **Uscita**: verifica che la risposta del modello non sia a sua volta corrotta, confrontandola con la risposta che il modello darebbe al riferimento pulito.
 - **Margine d'errore**: per ogni valore corretto, restituisce quanto è stato spostato per ripulirlo. Correzione piccola → fidati. Correzione grande → tratta con cautela.
 
-Lascia i pesi intatti e gira a runtime, su qualunque tensore JAX/NumPy: lo scudo entrata appiattisce internamente ogni elemento del batch a 1D, applica il filtro causale, poi lo riporta alla forma originale qualunque essa sia. Testato direttamente su un tensore a 11 dimensioni (vedi `test/test_orca2.py`). `Armatura` (sotto) resta specifica per una singola serie 1D; `Orca` gestisce tensori a qualunque numero di assi.
+Lascia i pesi intatti. Gira a runtime. Funziona da 1D fino a 11D, testato (vedi `test/test_orca2.py`).
 
 ---
 
@@ -131,7 +131,7 @@ adattato a segnali scalari a scala libera        STADIO 2  utility/collatz.py
 
 `Orca.protect_and_forward()` (scudo completo per un modello) usa ancora i due stadi originali. Senza riferimento pulito (modalità cieca): rigetto degli outlier gravi via mediana locale, poi Stadio 1 in versione causale — usa tutta la storia della serie, non solo i vicini immediati, per stimare cosa "dovrebbe" essere quel punto.
 
-Nota per chi legge il codice: `AdaptiveSignalStabilizer.filter_batch_scenarios` (Stadio 1, chiamato direttamente ad es. dalla suite di test adversarial) è limitato a tensori 2D/3D/4D. Lo scudo entrata di `Orca` segue un percorso diverso -- appiattisce a 1D internamente prima di chiamare il filtro causale (vedi sopra), libero da quel limite.
+Nota tecnica: `AdaptiveSignalStabilizer.filter_batch_scenarios` (usato ad es. dalla suite di test adversarial) accetta solo 2D/3D/4D. Lo scudo entrata di `Orca` e' un percorso diverso, senza quel limite.
 
 ---
 
