@@ -3,12 +3,12 @@ import pytest, numpy as np, jax, jax.numpy as jnp
 from dense_armor.core.engine import AdaptiveSignalStabilizer
 
 jax.config.update("jax_enable_x64", True)
-H, W, STEPS_LONG = 32, 32, 50000 
+H, W, STEPS_LONG = 32, 32, 50000
 rows, cols = jnp.arange(H, dtype=jnp.float64), jnp.arange(W, dtype=jnp.float64)
 R_grid, C_grid = jnp.meshgrid(rows, cols, indexing='ij')
 x_star = (R_grid + C_grid) / (H + W)
 
-def run_scan_with_sentinel(attack_seq):
+def run_filtered_scan(attack_seq):
     params = {
         "static_threshold": 0.10, "initial_damping": 0.1, "alpha": 0.25,
         "anomaly_sigma_mult": 2.0, "k_anom_min": 0.20, "k_anom_max": 0.80,
@@ -20,16 +20,10 @@ def run_scan_with_sentinel(attack_seq):
     _ = jax.block_until_ready(res)
     return jnp.mean((res - x_star[None, :, :]) ** 2, axis=(1, 2))
 
-# ╔══════════════════════════════════════════════════════════════╗
-# ║  CATEGORIA D — FREQUENCY DOMAIN (FOURIER) ATTACKS            ║
-# ╚══════════════════════════════════════════════════════════════╝
-
-# eps_freq spinto a 0.95 per un'iniezione di magnitudo estrema
+# Attacco nel dominio delle frequenze (Fourier), banda media.
 def build_fourier_midband_sequence(key, n_steps=50000, eps_freq=0.95):
-    # Banda allargata: da 0.05 (basse frequenze) a 0.85 (alte frequenze)
-    fmin, fmax = 0.05, 0.85     
-    
-    # Calcolo frequenze nello spazio di Fourier
+    fmin, fmax = 0.05, 0.85  # banda: da basse a alte frequenze
+
     f_rows = jnp.fft.fftfreq(H, d=1.0)
     f_cols = jnp.fft.fftfreq(W, d=1.0)
     FC, FR = jnp.meshgrid(f_cols, f_rows)
@@ -40,66 +34,49 @@ def build_fourier_midband_sequence(key, n_steps=50000, eps_freq=0.95):
     noise_r = jax.random.normal(k1, (n_steps, H, W), dtype=jnp.float64)
     noise_i = jax.random.normal(k2, (n_steps, H, W), dtype=jnp.float64)
 
-    # Spettro di riferimento calcolato staticamente
     X_fft = jnp.fft.fft2(x_star)
 
     def fourier_step(_, step_idx):
-        # FIX CORE: Sfasamento armonico estremizzato per massimizzare la deviazione IFFT
         dynamic_scale = eps_freq * (1.0 + 0.30 * jnp.sin(0.05 * step_idx))
-        
-        # Iniezione complessa filtrata in banda estesa
         pert_fft = (noise_r[step_idx] + 1j * noise_i[step_idx]) * band_mask * dynamic_scale
         X_perturbed = X_fft + pert_fft
-        
-        # Inversione spaziale 2D e calcolo delta
         x_adv = jnp.real(jnp.fft.ifft2(X_perturbed))
         return None, x_adv - x_star
 
     _, traj = jax.lax.scan(fourier_step, None, jnp.arange(n_steps))
     return traj
 
-def test_sentinel_fourier_domain_attacks():
+def test_fourier_domain_attacks():
+    """Rumore a banda media nel dominio delle frequenze: 50000 iterazioni FFT 2D
+    contro AdaptiveSignalStabilizer."""
     key = jax.random.PRNGKey(99)
     t_start = time.time()
-    print("\n=====================================================================================")
-    print("[XLA SYSTEM PROFILE] HARDWARE AGNOSTIC KERNEL OPERATING LAYER — CATEGORIA D LIVE")
-    print(f"HOST EXECUTION PLAN: {STEPS_LONG} Fourier 2D FFT Iterations | Mode: Complex128 Fields")
-    print("=====================================================================================")
-    print("[THREAD-01/THREAT] Iniezione di rumore a banda estesa nello spazio delle frequenze...")
-    
+    print(f"\n{STEPS_LONG} iterazioni FFT 2D (rumore Fourier a banda media)")
+
     fourier_seq = jax.block_until_ready(build_fourier_midband_sequence(key, STEPS_LONG))
-    
-    print("[THREAD-02/DEFENSE] Iniezione flussi spettrali nel core.engine di Sentinel...")
-    v_max_undefended = 1.20 
-    v_fourier = run_scan_with_sentinel(fourier_seq)
+
+    v_max_undefended = 1.20
+    v_fourier = run_filtered_scan(fourier_seq)
     t_elapsed = time.time() - t_start
-    
-    print("\n[DUAL-AGENT METRICS] BATTLEGROUND TELEMETRY STREAM (FOURIER BROADBAND INJECTION)")
-    print("-" * 85)
-    print("  Step  | V_Fourier   (Def %)")
-    print("-" * 85)
-    
+
+    print("\nErrore campionato (V = MSE, difesa % relativa a V_max_undefended=1.20):")
     checkpoints = [0, 10000, 20000, 30000, 40000, STEPS_LONG - 1]
     for check in checkpoints:
         eff_fourier = 100.0 * (1.0 - (float(v_fourier[check]) / v_max_undefended))
-        print(f"  {check:05d} | {float(v_fourier[check]):.5f} ({eff_fourier:.2f}%)")
-        if check == 0:
-            print("        | [STATUS] Iniezione in frequenza avviata. Spettro severamente compromesso.")
-        elif check == 20000:
-            print("        | [STATUS] Disturbo di Fourier intercettato: lo stabilizzatore forza il reset di fase.")
-        elif check == 40000:
-            print("        | [STATUS] Attenuazione asintotica L2 stabile contro distorsioni armoniche estreme.")
-        print(" " + "-"*80)
-            
-    print("=" * 85)
-    print(f"[METRICS] Tempo totale di calcolo reale: {t_elapsed:.2f} s")
-    print(f"[METRICS] Errore massimo reale (V_max) : {float(jnp.max(v_fourier)):.4f}")
-    print(f"[METRICS] Efficienza minima di Difesa garantita: {100.0 * (1.0 - (float(jnp.max(v_fourier)) / v_max_undefended)):.2f}%")
-    print("=" * 85)
-    
-    assert t_elapsed >= 5.0, "Carico computazionale basso!"
-    assert jnp.max(v_fourier) < 1.20, "Divergenza rilevata nell'hardware!"
-    print("\n[VERDETTO SCIENTIFICO] Corsa ad ostacoli conclusa. Sentinel-CV2D ha protetto le mappe convoluzionali in frequenza.")
+        print(f"  passo {check:05d} | V: {float(v_fourier[check]):.5f} (difesa {eff_fourier:.2f}%)")
+
+    print(f"\nTempo di calcolo totale: {t_elapsed:.2f} s")
+    print(f"V_max: {float(jnp.max(v_fourier)):.4f}")
+    print(f"Difesa minima: {100.0 * (1.0 - (float(jnp.max(v_fourier)) / v_max_undefended)):.2f}%")
+
+    # NOTA: era presente qui un `assert t_elapsed >= 5.0` -- non verificava
+    # nulla sulla correttezza della difesa, solo che il calcolo avesse
+    # impiegato "abbastanza tempo" su QUESTA macchina. Fragile per
+    # costruzione: fallisce ogni volta che l'hardware e' piu' veloce (CI
+    # verificato: 4.41s invece di 5+ su GitHub Actions), non un segnale di
+    # regressione reale. Rimosso -- l'unica cosa che conta davvero e'
+    # sotto: nessuna divergenza numerica.
+    assert jnp.max(v_fourier) < 1.20, "Divergenza numerica rilevata"
 
 if __name__ == "__main__":
-    test_sentinel_fourier_domain_attacks()
+    test_fourier_domain_attacks()

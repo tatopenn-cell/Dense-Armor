@@ -103,18 +103,19 @@ def build_deepfool_chunk(start_idx, end_idx, carry_state=None, overshoot=0.25, m
     return jax.block_until_ready(traj), final_state
 
 def calcola_chunk_ottimale():
-    """ Analizza le fluttuazioni della memoria host ed estrae la finestra di campionamento ideale. """
+    """Rileva la RAM libera e sceglie la dimensione di blocco per evitare OOM."""
     ram_libera_byte = psutil.virtual_memory().available
-    # 32x32 pixel * 8 byte * 6.0 (coefficiente maggiorato dovuto alla tripla derivata di jax.grad)
+    # 32x32 pixel * 8 byte * 6.0 (coefficiente maggiorato per la tripla derivata di jax.grad)
     costo_stimato_frame = 32 * 32 * 8 * 6.0
     chunk_calcolato = int(ram_libera_byte // costo_stimato_frame)
     return max(1000, min(10000, chunk_calcolato))
 
-def test_sentinel_optimization_boundary_attacks():
+def test_optimization_based_attacks():
+    """Carlini-Wagner (norma L2 e L-inf) e DeepFool: 50000 passi ciascuno
+    contro AdaptiveSignalStabilizer, tre stabilizzatori isolati in parallelo."""
     t_start = time.time()
-    print("\n" + "="*95 + "\n[XLA PROFILE] OPERATING LAYER — OPTIMIZATION METRICS COMPILATION\n" + "="*95)
-    print("[THREAD-CORE] Inizializzazione asse difensivo e allocazione dinamica dei segmenti...")
-    
+    print(f"\n{STEPS_LONG} passi per asse (C&W L2, C&W L-inf, DeepFool)")
+
     params = {
         "static_threshold": 0.10, "initial_damping": 0.1, "alpha": 0.25, 
         "anomaly_sigma_mult": 2.0, "k_anom_min": 0.20, "k_anom_max": 0.80, 
@@ -135,7 +136,7 @@ def test_sentinel_optimization_boundary_attacks():
         end_idx = min(start_idx + chunk_corrente, STEPS_LONG)
 
         ram_live = psutil.virtual_memory().available / (1024 ** 2)
-        print(f" -> Finestra [{start_idx:05d}:{end_idx:05d}] | Dimensione Blocco: {end_idx-start_idx} | VRAM/RAM Libera: {ram_live:.1f} MB")
+        print(f"  [{start_idx:05d}:{end_idx:05d}] blocco={end_idx-start_idx} RAM libera={ram_live:.1f} MB")
 
         # 1. Pipeline C&W L2 (stato incatenato tra i chunk)
         chunk_cw2, cw2_state = build_cw_l2_chunk(start_idx, end_idx, cw2_state)
@@ -163,22 +164,22 @@ def test_sentinel_optimization_boundary_attacks():
     v_df = jnp.concatenate(v_df_list, axis=0)
     t_elapsed = time.time() - t_start
     
-    v_max_undefended = 1.20 
-    print("\n  Step  | V_CW2   (Def %)       | V_CWinf (Def %)       | V_DF    (Def %)\n" + "-" * 95)
+    v_max_undefended = 1.20
+    print("\nErrore campionato (V = MSE, difesa % relativa a V_max_undefended=1.20):")
+    print("  Step  | V_CW2   (difesa)      | V_CWinf (difesa)      | V_DF    (difesa)")
     for check in [0, 10000, 20000, 30000, 40000, STEPS_LONG - 1]:
         print(f"  {check:05d} | {float(v_cw2[check]):.5f} ({100*(1-(float(v_cw2[check])/v_max_undefended)):.2f}%) | {float(v_cwinf[check]):.5f} ({100*(1-(float(v_cwinf[check])/v_max_undefended)):.2f}%) | {float(v_df[check]):.5f} ({100*(1-(float(v_df[check])/v_max_undefended)):.2f}%)")
-            
-    print("=" * 95 + f"\n[METRICS] Latency Time: {t_elapsed:.2f} s")
-    print(f"[METRICS] Global V_max C&W-L2   : {float(jnp.max(v_cw2)):.4f} | Defense: {100.0 * (1.0 - (float(jnp.max(v_cw2)) / v_max_undefended)):.2f}%")
-    print(f"[METRICS] Global V_max C&W-Linf : {float(jnp.max(v_cwinf)):.4f} | Defense: {100.0 * (1.0 - (float(jnp.max(v_cwinf)) / v_max_undefended)):.2f}%")
-    print(f"[METRICS] Global V_max DeepFool : {float(jnp.max(v_df)):.4f} | Defense: {100.0 * (1.0 - (float(jnp.max(v_df)) / v_max_undefended)):.2f}%")
 
-    # BUG-FIX: prima solo v_df veniva validato — un fallimento totale di C&W L2/Linf
+    print(f"\nTempo di calcolo totale: {t_elapsed:.2f} s")
+    print(f"V_max C&W-L2   : {float(jnp.max(v_cw2)):.4f} | difesa: {100.0 * (1.0 - (float(jnp.max(v_cw2)) / v_max_undefended)):.2f}%")
+    print(f"V_max C&W-Linf : {float(jnp.max(v_cwinf)):.4f} | difesa: {100.0 * (1.0 - (float(jnp.max(v_cwinf)) / v_max_undefended)):.2f}%")
+    print(f"V_max DeepFool : {float(jnp.max(v_df)):.4f} | difesa: {100.0 * (1.0 - (float(jnp.max(v_df)) / v_max_undefended)):.2f}%")
+
+    # BUG-FIX: prima solo v_df veniva validato -- un fallimento totale di C&W L2/Linf
     # sarebbe passato inosservato.
-    assert jnp.max(v_cw2) < 1.20, "Divergenza rilevata nell'hardware (C&W L2)!"
-    assert jnp.max(v_cwinf) < 1.20, "Divergenza rilevata nell'hardware (C&W Linf)!"
-    assert jnp.max(v_df) < 1.20, "Divergenza rilevata nell'hardware (DeepFool)!"
-    print("[VERDETTO SCIENTIFICO] Ottimizzazione asincrona completata. Barriere L2 e stabilità di Lyapunov confermate.")
+    assert jnp.max(v_cw2) < 1.20, "Divergenza numerica rilevata (C&W L2)"
+    assert jnp.max(v_cwinf) < 1.20, "Divergenza numerica rilevata (C&W Linf)"
+    assert jnp.max(v_df) < 1.20, "Divergenza numerica rilevata (DeepFool)"
 
 if __name__ == "__main__":
-    test_sentinel_optimization_boundary_attacks()
+    test_optimization_based_attacks()
