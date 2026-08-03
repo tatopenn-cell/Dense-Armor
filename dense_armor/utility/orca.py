@@ -4,17 +4,19 @@ utility/orca.py
 Universal AI Orchestrator Shield (ORCA) -- orchestratore dinamico
 selettivo context-aware a 4 fasi.
 """
-import time, gc, logging
+import time, logging
+from collections import deque
 from typing import Callable, Optional
 import numpy as np
-import psutil
 import jax
 import jax.numpy as jnp
 
 from ..core.engine import AdaptiveSignalStabilizer
+from ..core.memory import UniversalMemoryGuard
 from ..utility.collatz import ABCollatz
 from ..core.damping_operator import apply_damping_blend
 from ..utility.curvature import curvature
+from ..utility.resonance_search import apply_fast_resonance
 
 logger = logging.getLogger(__name__)
 
@@ -22,18 +24,38 @@ logger = logging.getLogger(__name__)
 class Orca:
     def __init__(self, static_threshold: float = 0.15, initial_damping: float = 0.85,
                  alpha: float = 0.05, val_e: float = -4.0,
-                 chunk_threshold: int = 1000000, min_free_ram_percentage: float = 0.15) -> None:
+                 chunk_threshold: int = 1000000, min_free_ram_percentage: float = 0.15,
+                 reference_memory_size: int = 32, reference_recall_min_score: float = 0.90) -> None:
         """val_e — esponente di scala target per la compressione log10 in ingresso;
-        chunk_threshold — dimensione oltre la quale un batch viene processato a blocchi."""
+        chunk_threshold — dimensione oltre la quale un batch viene processato a blocchi;
+        reference_memory_size — quanti riferimenti puliti passati (per shape) tenere in
+        memoria per il richiamo via risonanza in modalita' cieca (vedi _recall_reference);
+        reference_recall_min_score — punteggio minimo di apply_fast_resonance sotto il
+        quale un riferimento in memoria viene considerato non abbastanza simile e si
+        ricade su _blind_reference (calibrato empiricamente: su vettori correlati lo
+        score resta >0.95 anche con rumore moderato, su vettori scorrelati non supera
+        ~0.75 — 0.90 lascia margine da entrambi i lati)."""
         self.static_threshold = static_threshold
         self.initial_damping = initial_damping
         self.alpha = alpha
         self.chunk_threshold = chunk_threshold
         self.val_e = float(val_e)
         self.min_free_ram = min_free_ram_percentage
+        self.reference_recall_min_score = float(reference_recall_min_score)
         self.stabilizer = AdaptiveSignalStabilizer(static_threshold, initial_damping, alpha)
         self.shield = ABCollatz(epsilon_target=1.0)
         self.last_kappa = 0.0
+        # Guardia di memoria condivisa (RAM+VRAM), non piu' un check psutil
+        # ad-hoc duplicato qui dentro (vedi _gc_se_ram_bassa).
+        self._memory_guard = UniversalMemoryGuard(min_free_ram_percentage=min_free_ram_percentage)
+        # Banca di riferimenti puliti visti in passato, una deque per shape
+        # (le shape diverse non sono comparabili tra loro): quando il chiamante
+        # fornisce x_reference, le sue righe vengono ricordate qui; in modalita'
+        # cieca (x_reference=None) una richiesta futura con un input corrotto
+        # simile a uno gia' visto puo' riusare il riferimento vero invece di
+        # ripartire da zero con la sola stima locale (vedi _recall_reference).
+        self._reference_bank: dict = {}
+        self._reference_memory_size = int(reference_memory_size)
         # Kernel JAX precompilati una sola volta (stesso principio del fix
         # allo scan in AdaptiveSignalStabilizer.filter_data_stream): senza
         # questo, la pipeline eager di _execute_4_phase_*_shield ridispaccia
@@ -51,22 +73,41 @@ class Orca:
         self.margine_uscita_max = 0.0
 
     def _gc_se_ram_bassa(self) -> None:
-        """gc.collect() se la RAM libera si avvicina alla soglia;
-        jax.clear_caches() SOLO se la si supera davvero (emergenza reale).
-        jax.clear_caches() svuota la cache di compilazione JIT di TUTTO il
-        processo (non solo di Orca, non solo questo kernel): usarlo alla
-        stessa soglia morbida di gc.collect() vanifica la precompilazione
-        fatta una tantum in __init__ ad ogni volta che la RAM libera scende
-        anche di poco sotto il margine di sicurezza -- ogni chiamata
-        successiva ricompilerebbe XLA da zero, silenziosamente. Riservato
-        quindi al limite duro (min_free_ram), non al margine preventivo
-        (+0.10) usato solo per il gc.collect() piu' economico."""
-        vm = psutil.virtual_memory()
-        free_pct = vm.available / vm.total
-        if free_pct < (self.min_free_ram + 0.10):
-            gc.collect()
-        if free_pct < self.min_free_ram:
-            jax.clear_caches()
+        """Delega a UniversalMemoryGuard.check_memory_safety() il controllo
+        RAM/VRAM prima del prossimo chunk pesante (stesso soft-GC + hard
+        jax.clear_caches() che faceva prima questo metodo, ma condiviso col
+        resto della libreria invece di un check psutil ad-hoc duplicato qui).
+
+        Differenza di comportamento rispetto a prima: sotto la soglia dura
+        (min_free_ram) il Guard solleva MemoryPressureError invece di
+        continuare in silenzio -- fail-fast con un errore leggibile ora,
+        piuttosto che un OOM del processo qualche chunk piu' avanti."""
+        self._memory_guard.check_memory_safety()
+
+    def _recall_reference(self, row_corrupted_flat: np.ndarray, slice_shape: tuple) -> Optional[np.ndarray]:
+        """Cerca nella banca dei riferimenti puliti (stessa shape) quello piu'
+        simile all'input corrotto corrente via apply_fast_resonance. Ritorna
+        None (nessun richiamo) se la banca per questa shape e' vuota o se il
+        punteggio migliore resta sotto reference_recall_min_score -- in
+        entrambi i casi il chiamante ricade su _blind_reference, il
+        comportamento originale invariato."""
+        bank = self._reference_bank.get(slice_shape)
+        if not bank:
+            return None
+        candidates = np.stack(list(bank))
+        scores = apply_fast_resonance(candidates, row_corrupted_flat)
+        best_idx = int(np.argmax(scores))
+        if float(scores[best_idx]) < self.reference_recall_min_score:
+            return None
+        return candidates[best_idx]
+
+    def _remember_reference(self, x_reference_np: np.ndarray, slice_shape: tuple) -> None:
+        """Registra ogni riga di un riferimento pulito fornito dal chiamante
+        nella banca (una deque a dimensione fissa per shape, FIFO -- i piu'
+        vecchi escono quando se ne aggiungono di nuovi oltre reference_memory_size)."""
+        bank = self._reference_bank.setdefault(slice_shape, deque(maxlen=self._reference_memory_size))
+        for b in range(x_reference_np.shape[0]):
+            bank.append(np.asarray(x_reference_np[b].flatten(), dtype=np.float64))
 
     def _blind_reference(self, co_row_flat: np.ndarray) -> np.ndarray:
         """Riferimento pulito CIECO per una riga di batch, usato quando non e'
@@ -271,9 +312,15 @@ class Orca:
             if x_reference is None:
                 x_reference_np = np.zeros_like(x_corrupted_np)
                 for b in range(B):
-                    x_reference_np[b] = self._blind_reference(x_corrupted_np[b].flatten()).reshape(slice_shape)
+                    row_flat = x_corrupted_np[b].flatten()
+                    recalled = self._recall_reference(row_flat, slice_shape)
+                    if recalled is not None:
+                        x_reference_np[b] = recalled.reshape(slice_shape)
+                    else:
+                        x_reference_np[b] = self._blind_reference(row_flat).reshape(slice_shape)
             else:
                 x_reference_np = np.array(x_reference)
+                self._remember_reference(x_reference_np, slice_shape)
             purified_batch = np.zeros(orig_shape, dtype=np.float64)
             margine_batch = np.zeros(orig_shape, dtype=np.float64)
             for b in range(B):

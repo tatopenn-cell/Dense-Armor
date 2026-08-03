@@ -4,9 +4,16 @@
 2. Scudo di uscita confrontato con lo spazio sbagliato (input invece di output).
 3. Modalita' cieca (senza x_reference) che collassava tutto a zero.
 """
+import types
+from unittest.mock import patch
+
 import numpy as np
+import pytest
 import jax
 import jax.numpy as jnp
+
+import dense_armor.core.memory as memory_module
+from dense_armor.core.memory import MemoryPressureError
 from dense_armor.utility.orca import Orca
 
 
@@ -77,3 +84,105 @@ def test_margine_errore_popolato():
     assert orca.margine_ingresso is not None
     assert np.isfinite(orca.margine_ingresso_medio)
     assert np.isfinite(orca.margine_ingresso_max)
+
+
+def _fake_virtual_memory(total, available):
+    return types.SimpleNamespace(total=total, available=available)
+
+
+def test_gc_se_ram_bassa_delega_a_memory_guard_e_solleva_sotto_soglia(monkeypatch):
+    """Integrazione UniversalMemoryGuard: sotto la soglia dura di RAM libera,
+    _gc_se_ram_bassa deve sollevare MemoryPressureError invece di continuare
+    in silenzio come faceva il vecchio check psutil ad-hoc."""
+    monkeypatch.setattr(
+        memory_module.psutil, "virtual_memory",
+        lambda: _fake_virtual_memory(total=100, available=1),
+    )
+    orca = Orca(min_free_ram_percentage=0.15)
+    with pytest.raises(MemoryPressureError):
+        orca._gc_se_ram_bassa()
+
+
+def test_gc_se_ram_bassa_non_solleva_con_ram_abbondante(monkeypatch):
+    monkeypatch.setattr(
+        memory_module.psutil, "virtual_memory",
+        lambda: _fake_virtual_memory(total=100, available=90),
+    )
+    orca = Orca(min_free_ram_percentage=0.15)
+    orca._gc_se_ram_bassa()  # non deve sollevare
+
+
+def test_recall_reference_none_se_banca_vuota():
+    """Prima banca mai popolata (modalita' cieca al primissimo utilizzo):
+    nessun richiamo possibile, comportamento identico a prima dell'integrazione."""
+    orca = Orca()
+    row = np.random.default_rng(0).standard_normal(20)
+    assert orca._recall_reference(row, slice_shape=(20,)) is None
+
+
+def test_remember_e_recall_reference_richiama_il_piu_simile():
+    orca = Orca()
+    t = np.linspace(0, 4 * np.pi, 50)
+    rng = np.random.default_rng(3)
+
+    clean_A = np.sin(t)
+    clean_B = rng.standard_normal(50)  # riferimento scorrelato in banca
+
+    orca._remember_reference(np.stack([clean_A, clean_B]), slice_shape=(50,))
+
+    query_corrotta = clean_A + rng.standard_normal(50) * 0.1  # corrotta ma correlata ad A
+    recalled = orca._recall_reference(query_corrotta, slice_shape=(50,))
+
+    assert recalled is not None
+    np.testing.assert_allclose(recalled, clean_A)
+
+
+def test_recall_reference_none_se_nessun_candidato_abbastanza_simile():
+    orca = Orca(reference_recall_min_score=0.90)
+    rng = np.random.default_rng(4)
+    clean_scorrelato = rng.standard_normal(50)
+
+    orca._remember_reference(clean_scorrelato.reshape(1, -1), slice_shape=(50,))
+
+    query_non_correlata = rng.standard_normal(50)
+    assert orca._recall_reference(query_non_correlata, slice_shape=(50,)) is None
+
+
+def test_protect_and_forward_ricorda_e_richiama_riferimento_end_to_end():
+    """Wiring end-to-end: una chiamata con x_reference nota popola la banca;
+    una chiamata successiva IN MODALITA' CIECA con un input corrotto simile
+    deve produrre un risultato quantomeno buono quanto la stima cieca pura
+    (il richiamo del vero riferimento non deve mai peggiorare la ricostruzione).
+
+    Segnale spostato lontano dallo zero (+3.0): un riferimento che attraversa
+    lo zero fa esplodere la compressione log10 dello scudo entrata (bug
+    preesistente, non introdotto qui e non nello scope di questa modifica --
+    riprodotto e confermato anche sul codice precedente a questa sessione via
+    git stash). Non e' il caso d'uso che questo test vuole verificare.
+    """
+    t = np.linspace(0, 4 * np.pi, 60)
+    rng = np.random.default_rng(5)
+    clean = (np.sin(t) + 3.0).reshape(1, -1)
+
+    orca_con_memoria = Orca()
+    corrupted_1 = clean + rng.standard_normal(clean.shape) * 0.05
+    orca_con_memoria.protect_and_forward(
+        None, corrupted_1, x_reference=clean,
+        use_model_injection=False, use_output_shield=False,
+    )
+
+    corrupted_2 = clean + rng.standard_normal(clean.shape) * 0.05
+    out_con_memoria = orca_con_memoria.protect_and_forward(
+        None, corrupted_2, x_reference=None,
+        use_model_injection=False, use_output_shield=False,
+    )
+
+    orca_senza_memoria = Orca()
+    out_senza_memoria = orca_senza_memoria.protect_and_forward(
+        None, corrupted_2, x_reference=None,
+        use_model_injection=False, use_output_shield=False,
+    )
+
+    mse_con_memoria = float(np.mean((np.array(out_con_memoria) - clean) ** 2))
+    mse_senza_memoria = float(np.mean((np.array(out_senza_memoria) - clean) ** 2))
+    assert mse_con_memoria <= mse_senza_memoria
