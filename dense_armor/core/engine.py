@@ -19,13 +19,13 @@ import jax.numpy as jnp
 import numpy as np
 
 # =========================================================================
-# COSTANTI NUMERICHE FISSE (XLA BINARY SAFE) -- iperparametri di damping,
-# non hanno un significato fisico/matematico oltre a definire la curva di gain
+# COSTANTI NUMERICHE FISSE -- iperparametri di damping, non hanno un
+# significato fisico/matematico oltre a definire la curva di gain
 # =========================================================================
 _PHI_128        = np.longdouble(1.0 + np.sqrt(5.0)) / 2.0
 _ZETA_TOTAL_128 = np.longdouble(60.16762236065194)
 
-# Cast a float primitivo per non rompere la compilazione dei file binari (.bin)
+# Cast a float primitivo (np.longdouble non è supportato nei kernel JAX)
 _PHI        = float(_PHI_128)
 _ALPHA      = float(0.25)                           # Base simmetrica (1/4)
 _SIGMA      = float(np.longdouble(1.0) / (_PHI_128 ** 4)) # ~0.1458980337
@@ -221,10 +221,10 @@ class AdaptiveSignalStabilizer:
         local_scale = jnp.maximum(jnp.abs(local_ref), 1e-3)
         local_coherence = jnp.clip(1.0 - (local_diff / (2.0 * local_scale)), 0.0, 1.0)
 
-        alpha_j = jnp.float32(self.alpha)
+        alpha_j = jnp.float64(self.alpha)
         new_vol = (1.0 - alpha_j) * rolling_volatility + alpha_j * diff
 
-        sigma_mult = jnp.float32(self.anomaly_sigma_mult)
+        sigma_mult = jnp.float64(self.anomaly_sigma_mult)
         dyn_thr = thr + (new_vol * sigma_mult)
         
         # Se l'elemento originario era NaN, viene forzato come anomalia critica
@@ -234,25 +234,30 @@ class AdaptiveSignalStabilizer:
         coherence_x = 1.0 - (diff_spatial_x / 2.0)
         coherence_y = 1.0 - (diff_spatial_y / 2.0)
         
-        phi_ab_2d = jnp.clip(0.4 * coherence_t + 0.3 * coherence_x + 0.3 * coherence_y, 0.0, 1.0)
-        phi_ab_1d = jnp.clip(coherence_t, 0.0, 1.0)
-        phi_ab = jnp.where(is_1d, phi_ab_1d, phi_ab_2d)
+        # NOTA NAMING: "coherence_*" qui, non "phi_ab" -- core/hybrid_engine.py
+        # (motore di Armatura) usa gia' phi_ab per un concetto matematicamente
+        # diverso (allineamento semantico + coerenza pesati, su stato
+        # vettoriale). Nomi distinti apposta per non far credere che i due
+        # motori calcolino la stessa quantita'.
+        coherence_2d = jnp.clip(0.4 * coherence_t + 0.3 * coherence_x + 0.3 * coherence_y, 0.0, 1.0)
+        coherence_1d = jnp.clip(coherence_t, 0.0, 1.0)
+        coherence_signal = jnp.where(is_1d, coherence_1d, coherence_2d)
 
-        phi_mix = 0.5 * phi_ab + 0.5 * local_coherence
+        coherence_mix = 0.5 * coherence_signal + 0.5 * local_coherence
 
         # --- UNIFICAZIONE TOPOLOGICA DEI POLI DI COERENZA ---
-        c_gate = jnp.float32(_ALPHA + _SIGMA)  # Configurazione di banda aurea (~0.39589)
+        c_gate = jnp.float64(_ALPHA + _SIGMA)  # Configurazione di banda aurea (~0.39589)
         K_coherent = jnp.clip(
-            phi_mix * (c_gate / (c_gate + new_vol + eps)),
-            jnp.float32(_ALPHA - _SIGMA),       # Soglia minima dinamica (~0.1041)
-            jnp.float32(1.0 - (_ALPHA - _SIGMA)), # Soglia massima dinamica (~0.8958)
+            coherence_mix * (c_gate / (c_gate + new_vol + eps)),
+            jnp.float64(_ALPHA - _SIGMA),       # Soglia minima dinamica (~0.1041)
+            jnp.float64(1.0 - (_ALPHA - _SIGMA)), # Soglia massima dinamica (~0.8958)
         )
 
         # State Flush: sotto Hard-Clamp il pavimento minimo crolla a 0 per
         # questo passo -- impedisce fisicamente allo shock di propagarsi
         # nello stato ricorsivo (vedi docstring sopra).
-        k_anom_min = jnp.where(hard_clamp_flag, jnp.float32(0.0), jnp.float32(self.k_anom_min))
-        k_anom_max = jnp.float32(self.k_anom_max)
+        k_anom_min = jnp.where(hard_clamp_flag, jnp.float64(0.0), jnp.float64(self.k_anom_min))
+        k_anom_max = jnp.float64(self.k_anom_max)
 
         # Sostituzione del polo di anomalia grezza 0.30 con la contrazione aurea di banda.
         # c_anom scalata sulla magnitudine locale corrente (prev_filtered),
@@ -264,8 +269,8 @@ class AdaptiveSignalStabilizer:
         # costante fissa da ~0.38 e' comparabile in grandezza al rumore
         # compresso (~0.77 per uno shock), quindi K_anomalous_raw restava
         # a ~0.33 invece di crollare a zero (verificato numericamente).
-        c_anom_base = jnp.float32(1.0 / (float(_PHI_128) ** 2))  # costante fissa (~0.3819), XLA-safe
-        local_scale_ref = jnp.maximum(jnp.abs(prev_filtered), jnp.float32(1e-8))
+        c_anom_base = jnp.float64(1.0 / (float(_PHI_128) ** 2))  # costante fissa (~0.3819), XLA-safe
+        local_scale_ref = jnp.maximum(jnp.abs(prev_filtered), jnp.float64(1e-8))
         c_anom = c_anom_base * local_scale_ref
         K_anomalous_raw = c_anom / (c_anom + diff + eps)
         K_anomalous = jnp.clip(K_anomalous_raw, k_anom_min, k_anom_max)
@@ -290,7 +295,7 @@ class AdaptiveSignalStabilizer:
         raw_l2 = raw_next * l2_scale
         local_blend = smooth_weight_local * raw_smooth + l2_weight_local * raw_l2
 
-        g = jnp.float32(self.smooth_l2_blend)
+        g = jnp.float64(self.smooth_l2_blend)
         next_filtered = g * raw_smooth + (1.0 - g) * local_blend
 
         # Aggiornamento del gain di damping (curva sigmoide, vedi dynamic_damping_gain)
@@ -299,7 +304,7 @@ class AdaptiveSignalStabilizer:
 
         w_rad = max(self.window_radius, 1)
         ema_alpha = 1.0 / float(w_rad + 1)
-        ema_alpha_j = jnp.float32(ema_alpha)
+        ema_alpha_j = jnp.float64(ema_alpha)
         next_local_mean = (1.0 - ema_alpha_j) * local_mean + ema_alpha_j * next_filtered
 
         return (
@@ -334,11 +339,11 @@ class AdaptiveSignalStabilizer:
         upper_neighbors = jnp.roll(scenario_matrix, shift=1, axis=0)
         upper_neighbors = upper_neighbors.at[0, :].set(scenario_matrix[0, :]).flatten()
 
-        start_val = jnp.float32(flat_scen[0])
+        start_val = jnp.float64(flat_scen[0])
         init_state = (
             start_val,
-            jnp.float32(dmp),
-            jnp.float32(0.0),
+            jnp.float64(dmp),
+            jnp.float64(0.0),
             start_val,
         )
 
@@ -369,7 +374,6 @@ class AdaptiveSignalStabilizer:
     def _build_stream_filter(self) -> Callable:
         """
         Costruisce e compila il filtro per una singola serie temporale 1D.
-        Fissato per compatibilità di esportazione binaria nativa.
         """
 
         def _legacy_step(carry: Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray], current_val: jnp.ndarray) -> Tuple:
@@ -377,11 +381,17 @@ class AdaptiveSignalStabilizer:
             prev, dmp_state, vol = carry
 
             diff = jnp.abs(current_val - prev)
-            alpha_j = jnp.float32(self.alpha)
+            alpha_j = jnp.float64(self.alpha)
             new_vol = (1.0 - alpha_j) * vol + alpha_j * diff
 
+            # NOTA NAMING: "coherence_legacy"/"dynamic_shift_legacy"/
+            # "is_anomaly_legacy" qui, non "phi_ab"/"v_dinamic"/"trigger" --
+            # core/hybrid_engine.py usa gia' quei nomi per un calcolo
+            # matematicamente diverso. Suffisso "_legacy" perche' questo e'
+            # comunque un secondo path storico distinto da _step_kernel sopra,
+            # non solo da hybrid_engine.py.
             coherence = 1.0 - (diff / 2.0)
-            phi_ab = jnp.clip(coherence, 0.0, 1.0)
+            coherence_legacy = jnp.clip(coherence, 0.0, 1.0)
 
             safe_prev = jnp.where(jnp.abs(prev) > 1e-12, prev, 1e-12)
             ratio = jnp.abs(current_val / safe_prev)
@@ -390,29 +400,28 @@ class AdaptiveSignalStabilizer:
                 -5.0,
                 5.0,
             )
-            
-            # HARDENING DELLO STATO: cast a float32 per non corrompere la precompilazione XLA
-            c_lyap = jnp.float32((float(_PHI_128) ** 3) + 0.23606797)
-            v_dyn = c_lyap * log_ratio * phi_ab
 
-            trigger = jnp.abs(v_dyn) > jnp.float32(self.threshold)
+            c_lyap = jnp.float64((float(_PHI_128) ** 3) + 0.23606797)
+            dynamic_shift_legacy = c_lyap * log_ratio * coherence_legacy
 
-            c_gate = jnp.float32(_ALPHA + _SIGMA)
-            K_coherent = jnp.clip(phi_ab * c_gate, jnp.float32(_SIGMA), c_gate)
-            
-            c_anom_scale = jnp.float32(_ALPHA / 2.0)
+            is_anomaly_legacy = jnp.abs(dynamic_shift_legacy) > jnp.float64(self.threshold)
+
+            c_gate = jnp.float64(_ALPHA + _SIGMA)
+            K_coherent = jnp.clip(coherence_legacy * c_gate, jnp.float64(_SIGMA), c_gate)
+
+            c_anom_scale = jnp.float64(_ALPHA / 2.0)
             K_anomalous = jnp.clip(
-                c_anom_scale / (c_anom_scale + jnp.abs(v_dyn)),
-                jnp.float32(_ALPHA),
+                c_anom_scale / (c_anom_scale + jnp.abs(dynamic_shift_legacy)),
+                jnp.float64(_ALPHA),
                 c_gate,
             )
-            K = jnp.where(trigger, K_anomalous, K_coherent)
+            K = jnp.where(is_anomaly_legacy, K_anomalous, K_coherent)
 
             next_f = (1.0 - K) * prev + K * current_val
-            
+
             # AGGANCIO AL SERVOSTERZO DI DAMPING ANCHE NEL FLUSSO LEGACY STREAMING
             calculated_damping = dynamic_damping_gain(diff)
-            next_damping = jnp.where(trigger, calculated_damping, dmp_state)
+            next_damping = jnp.where(is_anomaly_legacy, calculated_damping, dmp_state)
 
             return (next_f, next_damping, new_vol), next_f
 
@@ -433,24 +442,24 @@ class AdaptiveSignalStabilizer:
         if raw_data.size == 0:
             return np.zeros_like(raw_data)
 
-        j_raw = jnp.array(raw_data, dtype=jnp.float32)
-        init_val = jnp.float32(j_raw[0])
+        j_raw = jnp.array(raw_data, dtype=jnp.float64)
+        init_val = jnp.float64(j_raw[0])
         
         # Allineamento definitivo del carry a 4 elementi identico al batch engine
         init_state = (
             init_val,
-            jnp.float32(self.damping),
-            jnp.float32(0.0),
+            jnp.float64(self.damping),
+            jnp.float64(0.0),
             init_val,
         )
 
         _, gated_stream = self._compiled_single_stream_filter(
             init_state,
             j_raw[1:],
-            jnp.float32(self.dyn_thr),
-            jnp.float32(self.dyn_dmp),
-            jnp.float32(self.dyn_alp),
-            jnp.float32(self.noise_scalar),
+            jnp.float64(self.dyn_thr),
+            jnp.float64(self.dyn_dmp),
+            jnp.float64(self.dyn_alp),
+            jnp.float64(self.noise_scalar),
             init_val,
         )
         
@@ -459,8 +468,8 @@ class AdaptiveSignalStabilizer:
         # jnp.insert chiamato fuori da jit ricompila XLA da zero ad ogni
         # chiamata (~25ms fissi anche a regime, stesso problema del kernel
         # scan risolto sopra ma su un'operazione diversa).
-        gated_np = np.asarray(gated_stream, dtype=np.float32)
-        final_stream = np.insert(gated_np, 0, np.asarray(init_val, dtype=np.float32))
+        gated_np = np.asarray(gated_stream, dtype=np.float64)
+        final_stream = np.insert(gated_np, 0, np.asarray(init_val, dtype=np.float64))
         return final_stream
 
     def filter_batch_scenarios(
@@ -469,7 +478,6 @@ class AdaptiveSignalStabilizer:
         """
         Filtra in parallelo (vmap) un batch di scenari strutturati.
         Accetta tensori 2D nativi o array multidimensionali (3D/4D).
-        Garantito XLA-Safe per l'esportazione binaria.
 
         hard_clamp_mask: stessa shape di raw_batch, opzionale (default: nessuna
         macro-anomalia, comportamento identico a prima). Dove True, attiva lo
@@ -507,21 +515,21 @@ class AdaptiveSignalStabilizer:
             raise ValueError(f"Geometria del tensore non supportata dall'engine: {original_shape}")
 
         # Conversione in array JAX esplicito a precisione singola standard per registri GPU/CPU
-        j_batch = jnp.array(structured_batch, dtype=jnp.float32)
+        j_batch = jnp.array(structured_batch, dtype=jnp.float64)
         j_mask = jnp.array(structured_mask, dtype=jnp.bool_)
 
         # Esecuzione del kernel vettorizzato precompilato JAX
         filtered_structured = self._compiled_batch_filter(
             j_batch,
-            jnp.float32(self.dyn_thr),
-            jnp.float32(self.dyn_dmp),
-            jnp.float32(self.dyn_alp),
-            jnp.float32(self.noise_scalar),
+            jnp.float64(self.dyn_thr),
+            jnp.float64(self.dyn_dmp),
+            jnp.float64(self.dyn_alp),
+            jnp.float64(self.noise_scalar),
             j_mask,
         )
 
         # Conversione sicura in NumPy preservando la topologia
-        filtered_np = np.array(filtered_structured, dtype=np.float32)
+        filtered_np = np.array(filtered_structured, dtype=np.float64)
 
         # Ripristino esatto della shape geometrica originale del chiamante
         return filtered_np.reshape(original_shape)
