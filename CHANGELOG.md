@@ -2,6 +2,15 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## [1.1.8]
+
+### Fixed
+- **`docs/getting-started.md` non spiegava come usare il toolkit**: la pagina aveva un
+  quickstart per Orca, Armatura e robust_filters, ma per il toolkit (14 moduli, aggiunti in
+  1.1.6-1.1.7) solo un link nudo nella home del sito, nessun esempio eseguibile. Aggiunta una
+  sezione "Standalone toolkit" con due esempi reali verificati (`DynamicAICodegen`,
+  `UniversalMemoryGuard`) e link a [Toolkit](api/toolkit.md) per il resto.
+
 ## [1.1.7]
 
 Nessuna modifica alla matematica/logica di `Armatura`/`Orca` in questa versione. I 14 moduli

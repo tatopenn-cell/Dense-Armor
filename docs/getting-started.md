@@ -75,3 +75,28 @@ No configuration needed beyond the defaults -- `pressure_valve` combines four cl
 detectors (Chauvenet, Tukey, Hampel, sigma-clipping) via a minimum-variance estimator and a
 Jensen-Shannon-modulated threshold. See [Robust filters](api/robust_filters.md) for the full
 math.
+
+### Standalone toolkit
+
+A second, independent part of the package (`core/`/`utility/`) -- none of it participates in
+the anomaly shield above. Two examples out of the 14 modules:
+
+```python
+from dense_armor.core import DynamicAICodegen
+
+codegen = DynamicAICodegen()
+ops = codegen.compile_pipeline(["relu", "l2_normalize"])
+out = codegen.run_dynamic_pipeline([-2.0, 3.0, -1.0, 4.0], ops)
+# out -> [0. 0.6 0. 0.8]  (relu clips negatives, then L2-normalized)
+```
+
+```python
+from dense_armor.core import UniversalMemoryGuard
+
+guard = UniversalMemoryGuard(min_free_ram_percentage=0.10)
+guard.check_memory_safety()  # raises MemoryPressureError if RAM is too low
+```
+
+See [Toolkit](api/toolkit.md) for the full list -- an op-compiler, chunking, hardware
+profiling, adversarial noise injection, presets, logging/provenance export, and audio/HDF5/
+NetCDF I/O helpers.
