@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 """core/chunk.py.
 
-===============================================================================
-SENTINEL ENTERPRISE CHUNKER: SPAZIALE, QUANTISTICO & BEAST MODE OPTIMIZATION
-===============================================================================
-Modulo per la segmentazione di batch d'immagini e l'esecuzione cached XLA
-delle ricette di compilazione senza overhead o ricompilazioni JIT.
+Segmentazione a blocchi (chunking) per batch di dati e per liste di
+istruzioni compilate, per evitare ricompilazioni JIT quando cambia il
+numero di elementi/istruzioni.
 """
 
 import jax
@@ -14,18 +12,18 @@ import numpy as np
 
 
 class ImageChunker:
-    """Gestore avanzato di chunking per tensori d'immagine e ricette JIT.
+    """Divide/ricompone batch di dati e liste di istruzioni in blocchi a dimensione fissa.
 
-    Risolve i colli di bottiglia della memoria XLA/JAX sia dividendo i grandi
-    batch di dati, sia spezzando le liste di istruzioni lunghe in blocchi a
-    dimensione fissa.
+    Utile quando un batch è troppo grande per stare in memoria in un colpo
+    solo, o quando una lista di istruzioni compilate è troppo lunga per
+    essere eseguita senza far ricompilare XLA ad ogni cambio di lunghezza.
     """
 
     def __init__(self, chunk_size: int = 128) -> None:
         """chunk_size — dimensione fissa di ogni blocco (batch o istruzioni)."""
         self.chunk_size = int(chunk_size)
 
-    # ── SEZIONE SPAZIALE FOTO/BATCH (Per test21.py e main.py) ───────────────
+    # ── Chunking di array/batch ──────────────────────────────────────────────
 
     def split_array(self, array: np.ndarray) -> list:
         """Spezza un array multidimensionale in una lista di sotto-chunk."""
@@ -47,15 +45,16 @@ class ImageChunker:
             return np.concatenate(chunks_list)
         return np.vstack(chunks_list)
 
-    # ── SEZIONE BEAST MODE COMPILER (Estratta dalla logica quantistica) ─────
+    # ── Chunking di pipeline compilate ───────────────────────────────────────
 
-    def execute_pipeline_beast_mode(
+    def execute_pipeline_chunked(
         self, codegen_engine, input_vector: np.ndarray, compiled_ops: list
     ) -> np.ndarray:
         """Esegue le istruzioni del compilatore a blocchi fissi (chunk_size).
 
-        Trapianto logico di 'run_circuit_with_chunking'. Impedisce a XLA di
-        ricompilare la ricetta IA se cambia il numero di istruzioni.
+        Impedisce a XLA di ricompilare la pipeline se cambia il numero di
+        istruzioni, delegando l'esecuzione di ogni blocco a
+        ``codegen_engine.run_pipeline_with_chunking``.
         """
         output = jnp.array(input_vector, dtype=jnp.float64)
 
@@ -72,16 +71,19 @@ class ImageChunker:
     def patch_and_scan_parameters(
         template_ops: jnp.ndarray, dynamic_parameters: jnp.ndarray
     ) -> jnp.ndarray:
-        """Iniezione dinamica di parametri e pesi in un ciclo nativo JAX JIT.
+        """Sostituisce i marcatori -1.0 in un template di operazioni con parametri dinamici.
 
-        Trapianto logico di 'patch_and_apply' tramite jax.lax.scan. Rileva i
-        punti di iniezione contrassegnati dal marcatore -1.0.
+        Ogni elemento di ``template_ops`` diverso da -1.0 viene ripetuto
+        com'è nelle 4 colonne dell'operazione patchata; ogni marcatore -1.0
+        viene sostituito, in ordine, col prossimo valore di
+        ``dynamic_parameters``. Implementato con ``jax.lax.scan`` per
+        restare compatibile con JIT.
         """
 
         def patch_single_op(carry: jnp.ndarray, op: jnp.ndarray) -> tuple:
             """Un passo di scan: se op e' un marcatore -1.0 lo sostituisce col prossimo parametro dinamico."""
             idx = carry
-            # Se rileva lo slot parametrico quantistico/lineare attivo (-1.0)
+            # Slot parametrico attivo, da riempire col prossimo valore dinamico
             is_parametric = op == -1.0
             final_param = jnp.where(is_parametric, dynamic_parameters[idx], op)
             next_idx = jnp.where(is_parametric, idx + jnp.int32(1), idx)

@@ -35,13 +35,13 @@ def test_merge_chunks_lista_vuota():
     assert merged.shape == (0,)
 
 
-def test_execute_pipeline_beast_mode_usa_il_chunking_del_codegen():
+def test_execute_pipeline_chunked_usa_il_chunking_del_codegen():
     codegen = DynamicAICodegen(seed=1)
     ops = codegen.compile_pipeline(["relu", "relu"])
     chunker = ImageChunker(chunk_size=1)
     input_vector = np.array([-1.0, 2.0, -3.0])
 
-    out = chunker.execute_pipeline_beast_mode(codegen, input_vector, list(ops))
+    out = chunker.execute_pipeline_chunked(codegen, input_vector, list(ops))
     direct = codegen.run_dynamic_pipeline(input_vector, ops)
     np.testing.assert_allclose(np.array(out), np.array(direct), atol=1e-6)
 

@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
+"""core/preset.py.
 
-SENTINEL_PRESETS = {
+Configurazioni calibrate empiricamente per i parametri di
+`AdaptiveSignalStabilizer` (Stage 1 di Orca), una per scenario/dominio.
+"""
+
+SIGNAL_STABILIZER_PRESETS = {
     "balanced_v2": {
         "static_threshold": 1e-05,
         "initial_damping": 0.05,

@@ -23,7 +23,7 @@ class CompactJsonFormatter(logging.Formatter):
             "filename": record.filename,
             "line_number": record.lineno,
             "message": record.getMessage(),
-            "framework": "Sentinel-TensorFlowEngine"
+            "framework": "dense-armor",
         }
         if record.exc_info:
             log_payload["exception"] = self.formatException(record.exc_info)
@@ -31,8 +31,8 @@ class CompactJsonFormatter(logging.Formatter):
         return json.dumps(log_payload, ensure_ascii=False)
 
 
-def get_enterprise_logger(name: str = "sentinel") -> logging.Logger:
-    """Logger JSON su file (`sentinel_dashboard.log`), niente output su
+def get_json_file_logger(name: str = "dense_armor") -> logging.Logger:
+    """Logger JSON su file (`dense_armor.log`), niente output su
     console (vedi commento sotto). Non usato dal resto della libreria."""
     logger = logging.getLogger(name)
 
@@ -42,7 +42,7 @@ def get_enterprise_logger(name: str = "sentinel") -> logging.Logger:
         # niente console_handler: le carte girano ad ogni passo del train,
         # duplicare ogni riga anche su stdout inonda il terminale -- il
         # file resta la fonte per il dashboard/i log.
-        file_handler = logging.FileHandler("sentinel_dashboard.log", encoding="utf-8")
+        file_handler = logging.FileHandler("dense_armor.log", encoding="utf-8")
         file_handler.setFormatter(CompactJsonFormatter())
         logger.addHandler(file_handler)
 

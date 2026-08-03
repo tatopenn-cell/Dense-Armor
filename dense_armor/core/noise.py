@@ -19,7 +19,7 @@ except ImportError:
 
 
 # =========================================================================
-# AIHARDWAREPROFILER (FIXED CLASS DEFINITION)
+# AIHARDWAREPROFILER
 # =========================================================================
 class AIHardwareProfiler:
     """
@@ -71,7 +71,6 @@ class AIHardwareProfiler:
 # =========================================================================
 class StochasticAdversarialNoise:
     """
-    Riadattamento industriale di NoiseModel.
     Inietta rumore probabilistico o perturbazioni avversariali nei tensori IA,
     con dispatch automatico CPU (NumPy) / GPU (JAX).
     """

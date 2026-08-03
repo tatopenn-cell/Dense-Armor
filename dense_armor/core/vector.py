@@ -5,11 +5,9 @@ core/vector.py
 ParametricScenarioSimulator — simulazioni Monte Carlo massive via JAX vmap.
 BitwisePermutationEngine    — manipolazione vettori combinatori via maschere di bit.
 
-Fix applicati
--------------
-- collapse_decision ora NON modifica in-place l'array del chiamante:
-  opera su una copia interna e restituisce (result, collapsed_vector).
-  Il chiamante può ignorare il vettore collassato se non gli serve.
+``collapse_decision`` non modifica in-place l'array del chiamante: opera su
+una copia interna e restituisce ``(result, collapsed_vector)`` — il
+chiamante può ignorare il vettore collassato se non gli serve.
 """
 
 import numpy as np
@@ -23,8 +21,9 @@ import jax.numpy as jnp
 
 class BitwisePermutationEngine:
     """
-    Riadattamento di simulator.py per la manipolazione di vettori combinatori.
-    Usa maschere di bit per scambiare e mutare stati in array multidimensionali.
+    Manipolazione di vettori combinatori (spazio 2^n) via maschere di bit.
+    Scambia elementi in array multidimensionali in base a coppie di bit
+    target/control.
     """
 
     def __init__(self, n_elements: int):

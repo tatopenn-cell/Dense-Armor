@@ -174,7 +174,7 @@ Sotto `core/`/`utility/` c'è anche una seconda parte del pacchetto, indipendent
 - `TensorVault` — libreria di matrici di trasformazione statiche (`invert`, `identity`, `edge_detector`, `blend`) e parametriche (`scale_project`, `amplify`, `bias_shift`), backend/precisione auto-rilevati.
 - `ParametricScenarioSimulator` — simulazioni Monte Carlo parallele (`jax.vmap`) su uno stato scalare nel tempo, più un collasso decisionale stocastico condizionato dalla distribuzione.
 - `BitwisePermutationEngine` — permuta gli elementi di un vettore combinatorio (spazio 2^n) via maschere di bit target/control.
-- `SENTINEL_PRESETS` (`dense_armor.core.preset`) — 4 configurazioni calibrate (`balanced_v2`, `cifar10_best_v1`, `pure_1d_time_v1`, `cifar10_hardened_lyapunov`) per i parametri di `AdaptiveSignalStabilizer`.
+- `SIGNAL_STABILIZER_PRESETS` (`dense_armor.core.preset`) — 4 configurazioni calibrate (`balanced_v2`, `cifar10_best_v1`, `pure_1d_time_v1`, `cifar10_hardened_lyapunov`) per i parametri di `AdaptiveSignalStabilizer`.
 
 **Logging e provenance** (`dense_armor.core`)
 
@@ -193,7 +193,7 @@ Ognuno testato singolarmente (`test/test_chunk.py`, `test_compiler.py`, `test_me
 ```python
 from dense_armor.core import DynamicAICodegen, UniversalMemoryGuard, TensorVault, AIHardwareProfiler
 from dense_armor.core.chunk import ImageChunker
-from dense_armor.core.preset import SENTINEL_PRESETS
+from dense_armor.core.preset import SIGNAL_STABILIZER_PRESETS
 from dense_armor.utility.anwav import anwav
 from dense_armor.utility.iodat import lodat
 ```

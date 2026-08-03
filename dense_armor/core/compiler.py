@@ -4,10 +4,10 @@ core/compiler.py
 ==============================
 DynamicAICodegen — compila ricette testuali in pipeline JAX eseguibili.
 
-Fix applicati
--------------
-- BILANCIAMENTO AUREO: Integrazione dei poli di accoppiamento basati sulla costante PHI.
-- INTEGRITÀ XLA: Tipi forzati lato CPU per prevenire eccezioni sui file binari (.bin).
+Le operazioni supportate (relu/sigmoid/tanh/scale/dropout/clip/l2_normalize)
+sono eseguite con ``jax.lax.switch`` dentro un unico kernel JIT, e i tipi
+sono forzati a float64 lato CPU prima di ogni esecuzione per evitare
+eccezioni quando la pipeline viene salvata/ricaricata da file binario.
 """
 
 import logging
@@ -18,13 +18,15 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
-# =========================================================================
-# ANCORAGGIO GEOMETRICO E BAKING DELLO SPETTRO (XLA BINARY SAFE)
-# =========================================================================
+# ── Costanti di default per l'operazione 'scale' ──────────────────────────
+# Valori arbitrari ma fissi (rapporto aureo) usati come default quando
+# 'scale' viene richiesta senza parametri espliciti (vedi compile_pipeline).
 _PHI_128   = np.longdouble(1.0 + np.sqrt(5.0)) / 2.0
 _PHI       = float(_PHI_128)
 _ALPHA     = float(0.25)
-_PHI_FOUR  = float(_PHI_128 ** 4)  # Moltiplicatore topologico della barriera (~6.854)
+# Costante di normalizzazione fissa per la loss usata in compute_gradients
+# (mantiene la magnitudine del gradiente in un range numericamente stabile).
+_PHI_FOUR  = float(_PHI_128 ** 4)  # ~6.854
 
 # ── Mappa comandi → branch index (contigui 0-N per lax.switch) ───────────────
 CMD_MAP = {
@@ -221,7 +223,7 @@ class DynamicAICodegen:
         res_data = _chunked_scan_compiler(j_data, j_chunks)
         return np.array(res_data)
 
-    # ── Gradients con Regolarizzazione Topologica Aurea ───────────────────────
+    # ── Gradients (autodiff) ───────────────────────────────────────────────
 
     def compute_gradients(
         self,
@@ -230,7 +232,7 @@ class DynamicAICodegen:
     ) -> np.ndarray:
         """Calcola i gradienti AD della loss, normalizzata da una costante fissa (_PHI_FOUR)."""
 
-        def _topological_loss_fn(d: jnp.ndarray, ops: jnp.ndarray, k: jnp.ndarray) -> jnp.ndarray:
+        def _loss_fn(d: jnp.ndarray, ops: jnp.ndarray, k: jnp.ndarray) -> jnp.ndarray:
             """Loss scalare (errore quadratico normalizzato) differenziata da jax.grad."""
             (f_data, _), _ = jax.lax.scan(
                 _execute_ai_instruction_step, (d, k), ops
@@ -238,7 +240,7 @@ class DynamicAICodegen:
             # Normalizzazione: l'errore quadratico e' scalato da una costante fissa
             return jnp.sum(jnp.square(f_data)) / jnp.float64(_PHI_FOUR)
 
-        grad_engine = jax.jit(jax.grad(_topological_loss_fn, argnums=0))
+        grad_engine = jax.jit(jax.grad(_loss_fn, argnums=0))
         j_input     = jnp.array(input_data, dtype=jnp.float64)
         j_ops       = jnp.array(compiled_ops, dtype=jnp.float64)
         

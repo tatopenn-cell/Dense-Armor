@@ -5,7 +5,7 @@ import logging
 from dense_armor.core.logger import (
     MinimalConsoleFormatter,
     CompactJsonFormatter,
-    get_enterprise_logger,
+    get_json_file_logger,
 )
 
 
@@ -29,7 +29,7 @@ def test_compact_json_formatter_produce_json_valido_con_i_campi_attesi():
     assert payload["message"] == "ciao"
     assert payload["filename"] == "modulo.py"
     assert payload["line_number"] == 42
-    assert payload["framework"] == "Sentinel-TensorFlowEngine"
+    assert payload["framework"] == "dense-armor"
 
 
 def test_compact_json_formatter_include_traceback_se_presente():
@@ -47,26 +47,26 @@ def test_compact_json_formatter_include_traceback_se_presente():
     assert "ValueError" in payload["exception"]
 
 
-def test_get_enterprise_logger_scrive_file_json(tmp_path, monkeypatch):
+def test_get_json_file_logger_scrive_file_json(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    logger_name = "sentinel_test_unico"
-    logger = get_enterprise_logger(logger_name)
+    logger_name = "dense_armor_test_unico"
+    logger = get_json_file_logger(logger_name)
     logger.info("evento di prova")
     for handler in logger.handlers:
         handler.flush()
 
-    log_file = tmp_path / "sentinel_dashboard.log"
+    log_file = tmp_path / "dense_armor.log"
     assert log_file.exists()
     lines = log_file.read_text(encoding="utf-8").strip().splitlines()
     payload = json.loads(lines[-1])
     assert payload["message"] == "evento di prova"
 
 
-def test_get_enterprise_logger_non_duplica_handler_se_richiamato(tmp_path, monkeypatch):
+def test_get_json_file_logger_non_duplica_handler_se_richiamato(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    logger_name = "sentinel_test_no_dup"
-    logger_a = get_enterprise_logger(logger_name)
+    logger_name = "dense_armor_test_no_dup"
+    logger_a = get_json_file_logger(logger_name)
     n_handlers = len(logger_a.handlers)
-    logger_b = get_enterprise_logger(logger_name)
+    logger_b = get_json_file_logger(logger_name)
     assert logger_a is logger_b
     assert len(logger_b.handlers) == n_handlers

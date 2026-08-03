@@ -9,7 +9,7 @@ from dense_armor.core.visualizer import AIEngineVisualizer
 
 
 def test_engine_signature_usa_la_versione_reale_del_pacchetto():
-    assert AIEngineVisualizer.ENGINE_SIGNATURE == f"TensorFlowEngine-Sentinel-v{core_pkg.__version__}"
+    assert AIEngineVisualizer.ENGINE_SIGNATURE == f"dense-armor-v{core_pkg.__version__}"
 
 
 def test_export_provenance_archive_scrive_file_con_hash_coerente(tmp_path):

@@ -27,7 +27,7 @@ class AIEngineVisualizer:
     Genera archivi JSON firmati SHA-256 e report testuali del filtro.
     """
 
-    ENGINE_SIGNATURE = f"TensorFlowEngine-Sentinel-v{_PKG_VERSION}"
+    ENGINE_SIGNATURE = f"dense-armor-v{_PKG_VERSION}"
 
     def __init__(self, output_dir: str = ".") -> None:
         """output_dir — cartella in cui scrivere archivi/report esportati."""
@@ -94,7 +94,7 @@ class AIEngineVisualizer:
             if var_raw > 0 else 0.0
         )
         with open(filename, "w", encoding="utf-8") as f:
-            f.write("=== TENSORFLOWENGINE SENTINEL — TELEMETRY REPORT ===\n")
+            f.write("=== DENSE-ARMOR TELEMETRY REPORT ===\n")
             f.write(f"Engine:                  {AIEngineVisualizer.ENGINE_SIGNATURE}\n")
             f.write(f"Timestamp UTC:           {time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())}\n")
             f.write(f"Scenari monitorati:      {raw_signal.shape[0]}\n")
