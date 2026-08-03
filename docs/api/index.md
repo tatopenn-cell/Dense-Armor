@@ -13,3 +13,6 @@ Plus a standalone toolkit, independent of both:
 - **[Robust filters](robust_filters.md)** -- four classic anomaly detectors (Chauvenet,
   Tukey, Hampel, sigma-clipping) and `pressure_valve`, a Lagrange-multiplier minimum-variance
   orchestrator with a Jensen-Shannon-modulated dynamic threshold.
+- **[Toolkit](toolkit.md)** -- generic JAX/NumPy pipeline tools that don't participate in the
+  anomaly shield: an op-compiler, a memory guard, hardware profiling, logging/provenance
+  export, and audio/HDF5/NetCDF I/O helpers.

@@ -38,6 +38,9 @@ No retraining, no weight changes. Runs at inference time on any JAX/NumPy tensor
   (Chauvenet's criterion, Tukey's fences, Hampel filter, iterative sigma-clipping) plus
   `pressure_valve`, an orchestrator combining all four via a Lagrange-multiplier-derived
   minimum-variance estimator, with a Jensen-Shannon-modulated dynamic threshold.
+- **[Toolkit](api/toolkit.md)** — a second, independent part of the package: an op-compiler,
+  memory guard, hardware profiler, logging/provenance export, and audio/HDF5/NetCDF I/O
+  helpers. None of it participates in the anomaly shield.
 
 ## Real, tested numbers
 

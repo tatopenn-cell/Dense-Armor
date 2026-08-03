@@ -155,30 +155,48 @@ I quattro metodi singoli restano richiamabili anche uno per uno (`chauvenet_crit
 
 ## `$ toolkit --standalone`
 
-Sotto `core/`/`utility/` c'è anche una seconda parte del pacchetto, indipendente da Armatura/Orca — nessuno di questi moduli partecipa allo scudo anomalie, sono strumenti a sé che condividono solo il backend JAX/NumPy:
+Sotto `core/`/`utility/` c'è anche una seconda parte del pacchetto, indipendente da Armatura/Orca — nessuno di questi moduli partecipa allo scudo anomalie, sono strumenti a sé che condividono solo il backend JAX/NumPy. Documentazione completa (auto-generata dai docstring reali) sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/toolkit/); qui il riepilogo.
 
-```python
-from dense_armor.core import (
-    DynamicAICodegen,             # compila nomi di operazioni (relu/sigmoid/tanh/scale/dropout/
-                                   # clip/l2_normalize) in una pipeline JAX JIT, gradiente via autodiff
-    UniversalMemoryGuard,          # controlla RAM/VRAM prima di un'allocazione pesante
-    TensorVault,                   # matrici di trasformazione statiche/parametriche, backend auto-rilevato
-    AIHardwareProfiler,             # profila CPU/RAM/backend per un limite sicuro di dimensione tensore
-    StochasticAdversarialNoise,    # inietta rumore/perturbazioni sintetiche per testare un rilevatore
-    ParametricScenarioSimulator,   # simulazioni Monte Carlo parallele via vmap
-    BitwisePermutationEngine,      # permutazioni su vettori combinatori via maschere di bit
-    PipelineProfiler,               # latenza JIT in microsecondi, warm-up separato
-    AIEngineVisualizer,             # esportazione provenance firmata SHA-256, report testuali
-)
-from dense_armor.core.chunk import ImageChunker           # split/merge a blocchi per batch grandi
-from dense_armor.core.preset import SENTINEL_PRESETS      # 4 configurazioni calibrate per AdaptiveSignalStabilizer
-from dense_armor.utility.anwav import anwav                # analisi picco/dinamica di un file WAV
-from dense_armor.utility.diagnostic import diag             # confronto differenziale tra due segnali audio
-from dense_armor.utility.iodat import lodat                 # lettura tensori da HDF5/NetCDF
-from dense_armor.utility.resonance_search import apply_fast_resonance   # ricerca per similarità coseno
-```
+**Pipeline e chunking** (`dense_armor.core`)
+
+- `DynamicAICodegen` — compila una lista di nomi di operazioni (`relu`, `sigmoid`, `tanh`, `scale`, `dropout`, `clip`, `l2_normalize`, `identity`) in una pipeline JAX JIT-compilata via `lax.switch`, con esecuzione a blocchi per liste lunghe e gradiente via autodiff (`compute_gradients`).
+- `ImageChunker` (`dense_armor.core.chunk`) — divide/ricompone un batch grande in blocchi a dimensione fissa, sia per array di dati sia per liste di istruzioni compilate.
+- `UniversalMemoryGuard` — controlla RAM (e VRAM, se c'è una GPU NVIDIA) prima di un'allocazione pesante, calcola il numero di blocchi necessari per starci; solleva `MemoryPressureError` sotto soglia.
+
+**Hardware e profiling** (`dense_armor.core`)
+
+- `AIHardwareProfiler` — rileva CPU/RAM/backend disponibili e calcola una dimensione massima sicura di tensore per l'host corrente.
+- `StochasticAdversarialNoise` — inietta rumore sintetico (bitflip, dropout, blur gaussiano) in un tensore, preservandone la norma; utile per generare dati di attacco quando si vuole testare un rilevatore.
+- `PipelineProfiler` — misura la latenza JIT in microsecondi (warm-up di compilazione separato dal tempo a regime) di una pipeline `DynamicAICodegen` o di `AdaptiveSignalStabilizer`.
+
+**Tensori e configurazioni** (`dense_armor.core`)
+
+- `TensorVault` — libreria di matrici di trasformazione statiche (`invert`, `identity`, `edge_detector`, `blend`) e parametriche (`scale_project`, `amplify`, `bias_shift`), backend/precisione auto-rilevati.
+- `ParametricScenarioSimulator` — simulazioni Monte Carlo parallele (`jax.vmap`) su uno stato scalare nel tempo, più un collasso decisionale stocastico condizionato dalla distribuzione.
+- `BitwisePermutationEngine` — permuta gli elementi di un vettore combinatorio (spazio 2^n) via maschere di bit target/control.
+- `SENTINEL_PRESETS` (`dense_armor.core.preset`) — 4 configurazioni calibrate (`balanced_v2`, `cifar10_best_v1`, `pure_1d_time_v1`, `cifar10_hardened_lyapunov`) per i parametri di `AdaptiveSignalStabilizer`.
+
+**Logging e provenance** (`dense_armor.core`)
+
+- `MinimalConsoleFormatter` / `CompactJsonFormatter` (`dense_armor.core.logger`) — due `logging.Formatter`: uno leggibile a console, uno JSON compatto per file.
+- `AIEngineVisualizer` — esporta un archivio di provenance firmato SHA-256 (parametri, ambiente di esecuzione, hash di integrità) e report testuali di varianza grezza/filtrata.
+
+**Audio e I/O dati** (`dense_armor.utility`)
+
+- `anwav(fpath)` — analizza un file WAV: picco, RMS, loudness stimata (LUFS), fattore di cresta, con verdetto di conformità.
+- `diag(iorig, ifilt)` — confronto differenziale tra due segnali audio (percorsi file o array NumPy): fedeltà strutturale, energia rimossa, picco di distorsione.
+- `lodat(fpath, dname)` (`dense_armor.utility.iodat`) — legge un tensore da un file HDF5 o NetCDF.
+- `apply_fast_resonance(matrix, query)` (`dense_armor.utility.resonance_search`) — punteggio di similarità coseno tra una query e le righe di una matrice, modulato da `apply_damping_blend` (lo stesso operatore usato da Orca).
 
 Ognuno testato singolarmente (`test/test_chunk.py`, `test_compiler.py`, `test_memory.py`, `test_preset.py`, `test_tensor.py`, `test_noise.py`, `test_vector.py`, `test_profiler.py`, `test_visualizer.py`, `test_logger.py`, `test_anwav.py`, `test_diagnostic.py`, `test_iodat.py`, `test_resonance_search.py`). Richiede `pip install "dense-armor[audio,data]"` per `anwav`/`diagnostic` (scipy) e `iodat` (h5py/netCDF4).
+
+```python
+from dense_armor.core import DynamicAICodegen, UniversalMemoryGuard, TensorVault, AIHardwareProfiler
+from dense_armor.core.chunk import ImageChunker
+from dense_armor.core.preset import SENTINEL_PRESETS
+from dense_armor.utility.anwav import anwav
+from dense_armor.utility.iodat import lodat
+```
 
 ---
 
