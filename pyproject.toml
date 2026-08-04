@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dense-armor"
-version = "1.1.9"
+version = "1.1.10"
 description = "The wearable AI-safety shield: runtime anomaly damping for any AI signal - NaN-safe, drift-aware, dimension-agnostic, no retraining"
 readme = "README.md"
 license = "BUSL-1.1"

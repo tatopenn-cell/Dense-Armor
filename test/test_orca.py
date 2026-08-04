@@ -156,10 +156,12 @@ def test_protect_and_forward_ricorda_e_richiama_riferimento_end_to_end():
     (il richiamo del vero riferimento non deve mai peggiorare la ricostruzione).
 
     Segnale spostato lontano dallo zero (+3.0): un riferimento che attraversa
-    lo zero fa esplodere la compressione log10 dello scudo entrata (bug
-    preesistente, non introdotto qui e non nello scope di questa modifica --
-    riprodotto e confermato anche sul codice precedente a questa sessione via
-    git stash). Non e' il caso d'uso che questo test vuole verificare.
+    lo zero era, all'epoca in cui questo test e' stato scritto, un bug
+    preesistente non ancora corretto (vedi test_riferimento_che_attraversa_lo_
+    zero_non_esplode_piu, aggiunto in una sessione successiva per quel caso
+    specifico). Offset mantenuto qui: questo test vuole verificare la memoria
+    di riferimenti, non la robustezza alla compressione log10 vicino allo
+    zero, gia' coperta altrove.
     """
     t = np.linspace(0, 4 * np.pi, 60)
     rng = np.random.default_rng(5)
@@ -223,3 +225,28 @@ def test_chunk_threshold_esplicito_non_viene_sovrascritto(monkeypatch):
     monkeypatch.setattr(orca_module, "AIHardwareProfiler", _boom)
     orca = Orca(chunk_threshold=42)
     assert orca.chunk_threshold == 42
+
+
+def test_riferimento_che_attraversa_lo_zero_non_esplode_piu():
+    """Regressione: un riferimento pulito che attraversa lo zero (es. un seno
+    centrato in 0) faceva esplodere numericamente la compressione log10 dello
+    scudo entrata -- un singolo punto quasi-zero (anche solo un residuo di
+    floating point, mai esattamente 0.0) produceva un fact_shared enorme,
+    applicato anche al corrotto (che NON e' vicino a zero), avvelenando la
+    calibrazione causale di AdaptiveSignalStabilizer per l'intero batch.
+    Prima del fix: MSE ~9 (peggio della modalita' cieca, MSE ~0.1, sullo
+    stesso identico segnale). Dopo il fix (floor su exp10_cl + clip su
+    co_chunk): deve restare in un ordine di grandezza compatibile col rumore
+    iniettato (std=0.05 -> varianza attesa ~0.0025), non esplodere."""
+    t = np.linspace(0, 4 * np.pi, 60)
+    rng = np.random.default_rng(5)
+    clean = np.sin(t).reshape(1, -1)  # attraversa lo zero piu' volte
+    corrupted = clean + rng.standard_normal(clean.shape) * 0.05
+
+    orca = Orca()
+    out = np.array(orca.protect_and_forward(
+        None, corrupted, x_reference=clean,
+        use_model_injection=False, use_output_shield=False,
+    ))
+    mse = float(np.mean((out - clean) ** 2))
+    assert mse < 0.5, f"MSE {mse:.4f} suggerisce che l'esplosione numerica e' tornata"

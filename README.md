@@ -270,11 +270,6 @@ Onesto: **C&W in norma L∞ è l'attacco che buca di più** tra quelli testati. 
 6. adversarial      attacchi costruiti apposta per mimare la coerenza del
    adattivo          segnale pulito (oltre a PGD/BIM/MI-FGSM/C&W/DeepFool/Fourier
                     gia' testati) non ancora coperti dalla suite
-7. Orca, riferimento  con un riferimento pulito che attraversa lo zero (es. un
-   che attraversa      seno centrato in 0), la compressione log10 dello scudo
-   lo zero             entrata puo' esplodere numericamente e peggiorare il
-                       risultato rispetto alla modalita' cieca -- noto, non
-                       ancora risolto
 ```
 
 **Causa reale del punto 5, non solo il numero**: investigata a fondo, non ancora risolta. C&W

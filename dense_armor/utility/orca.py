@@ -34,6 +34,9 @@ class Orca:
     # piu' RAM o una GPU/TPU ottiene chunk piu' grandi in proporzione.
     _CHUNK_THRESHOLD_BASELINE = 1_000_000
     _CHUNK_THRESHOLD_BASELINE_TENSOR_DIM = 2048
+    # Multiplo massimo della scala target (10^val_e) oltre il quale co_chunk
+    # viene tagliato, vedi _execute_4_phase_input_shield per il perche'.
+    _CO_CHUNK_CLIP_MULT = 20.0
 
     def __init__(self, static_threshold: float = 0.15, initial_damping: float = 0.85,
                  alpha: float = 0.05, val_e: float = -4.0,
@@ -234,9 +237,45 @@ class Orca:
         # sbarramento su raw_noise deve poter vedere a monte.
         mask_cl = v64_cl != 0.0
         exp10_cl = np.where(mask_cl, np.log10(np.abs(v64_cl) + 1e-15), 0.0)
+        # FLOOR SU exp10_cl: non amplificare oltre la scala target (10^val_e).
+        # Senza questo, un valore pulito quasi-zero (anche solo un residuo di
+        # floating point non esattamente 0.0 -- es. sin(4*pi) ~= -4.9e-16 in
+        # un riferimento che attraversa lo zero) fa esplodere fact_shared
+        # (10^(val_e - exp10_cl) con exp10_cl fortemente negativo), e siccome
+        # lo STESSO fattore condiviso si applica anche al corrotto (vedi sopra),
+        # il suo controvalore compresso schizza a valori enormi anche se il
+        # rumore grezzo era piccolo (verificato: un singolo punto del genere
+        # portava fact_shared a ~10^10 e il corrotto compresso a ~10^9). Quel
+        # singolo elemento fuori scala avvelena poi calibrate_macro_context
+        # (AdaptiveSignalStabilizer), che vede un salto enorme nel diff globale
+        # e attiva il "panic mode" per l'INTERO batch, non solo per quel punto
+        # -- degradando la ricostruzione ovunque, non solo alla transizione.
+        # Con il floor, un valore gia' alla scala target o piu' piccolo non
+        # viene amplificato ulteriormente (fact_shared si ferma a 1.0): non
+        # c'e' comunque modo di ricostruire con precisione un pulito
+        # indistinguibile da zero, ma il resto del batch non viene piu'
+        # trascinato giu' con lui.
+        exp10_cl = np.maximum(exp10_cl, self.val_e)
         fact_shared = np.where(mask_cl, 10 ** (self.val_e - exp10_cl), 1.0)
-        c_chunk = jnp.array(v64_cl * fact_shared).reshape(1, -1)
-        co_chunk = jnp.array(v64_co * fact_shared).reshape(1, -1)
+        c_chunk_np = v64_cl * fact_shared
+        co_chunk_np = v64_co * fact_shared
+        # SECONDO LIVELLO DI SICUREZZA: il floor sopra impedisce a fact_shared
+        # di esplodere, ma NON basta da solo. Quando il pulito e' zero esatto
+        # (mask_cl=False, fact_shared=1.0, nessuna compressione), il suo
+        # controvalore corrotto resta a scala GREZZA (es. ~0.04) mentre ogni
+        # altro punto del batch e' compresso alla scala target (~10^val_e,
+        # es. 1e-4) -- un salto di ~400x tra un elemento e i suoi vicini,
+        # abbastanza per far ripartire la memoria causale di
+        # AdaptiveSignalStabilizer da uno stato iniziale sballato e degradare
+        # la ricostruzione anche dei punti successivi (non solo di quello
+        # incriminato -- verificato). Clip diretto sul valore GIA' compresso
+        # a un multiplo ampio della scala target: la variazione normale
+        # (co vicino a cl) resta ben dentro il margine, il salto patologico
+        # viene spento qualunque ne sia la causa esatta.
+        clip_bound = self._CO_CHUNK_CLIP_MULT * (10.0 ** self.val_e)
+        co_chunk_np = np.clip(co_chunk_np, -clip_bound, clip_bound)
+        c_chunk = jnp.array(c_chunk_np).reshape(1, -1)
+        co_chunk = jnp.array(co_chunk_np).reshape(1, -1)
         hard_clamp_mask = jnp.array(raw_noise > 0.05).reshape(1, -1)
 
         # State Flush: lo stesso segnale autorevole del punto 2 passato

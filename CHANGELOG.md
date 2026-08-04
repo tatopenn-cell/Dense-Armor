@@ -2,6 +2,64 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## [1.1.10]
+
+### Fixed
+- **`core/vector.py`, `run_parallel_scenarios` ricompilava ad ogni chiamata**: `jax.jit(jax.vmap(...))`
+  veniva ricostruito DENTRO il metodo ad ogni invocazione -- una nuova closure Python ad ogni
+  chiamata, quindi un nuovo oggetto `jax.jit` la cui cache di compilazione non poteva mai fare
+  hit con la precedente. Il "warm run" restava bloccato a ~130ms invece di scendere ai pochi ms
+  attesi (la diagnosi originale, un report Colab, puntava al cast `np.array` come colpevole --
+  verificato e smentito: il vero costo era la ricompilazione ad ogni chiamata). Fix: motore
+  jit+vmap spostato a livello di modulo, costruito una sola volta; `base_state` passato come
+  argomento tracciato invece che chiuso in closure, cosi' valori diversi non forzano una nuova
+  compilazione. Verificato: da un plateau di ~140ms/chiamata a ~2.4ms/chiamata (~55x) su chiamate
+  ripetute al metodo pubblico.
+- **`utility/orca.py`, riferimento pulito che attraversa lo zero esplodeva la compressione log10**:
+  un valore pulito quasi-zero (anche solo un residuo di floating point, mai esattamente `0.0` --
+  es. `sin(4π) ≈ -4.9e-16`) faceva esplodere il fattore di scala condiviso `fact_shared`. Siccome
+  lo stesso fattore si applica anche al corrotto (che NON e' vicino a zero), il suo controvalore
+  compresso schizzava a ordini di grandezza sopra i punti vicini (misurato: da `~1e-4` tipico a
+  `~2e9` in un caso), sballando la memoria causale di `AdaptiveSignalStabilizer` per l'intero
+  batch, non solo per quel punto. Fix a due livelli: (1) l'esponente non viene piu' amplificato
+  oltre la scala target (`val_e`); (2) il valore compresso del corrotto resta comunque limitato a
+  un multiplo ampio (20x) della scala target, indipendentemente dalla causa esatta del salto.
+  Verificato: MSE su un riferimento sinusoidale che attraversa lo zero da ~9 (peggio della
+  modalita' cieca sullo stesso segnale) a ~0.02.
+
+### Changed
+- **`core/engine.py`, naming e precisione non armonizzati col resto della libreria**: le variabili
+  interne di `AdaptiveSignalStabilizer` (`_step_kernel` e la variante storica `_legacy_step`) si
+  chiamavano `phi_ab`/`v_dyn`/`trigger` -- stessi nomi di `core/hybrid_engine.py` (motore di
+  Armatura) per una formula matematicamente diversa. Rinominate in modo non ambiguo
+  (`coherence_signal`/`coherence_mix` e `coherence_legacy`/`dynamic_shift_legacy`/
+  `is_anomaly_legacy`). Il file usava anche `float32` esplicito ovunque, mentre il resto della
+  libreria richiede `jax_enable_x64` e gira in `float64` -- i commenti giustificavano il
+  `float32` con una "compatibilita' di esportazione binaria nativa" che non esiste da nessuna
+  parte nel repo (verificato con una ricerca sull'intero codebase). Convertito tutto a `float64`,
+  rimossi i commenti fuorvianti. Suite completa (189 test, inclusi i 5 file adversarial
+  `test_bound*.py`) invariata prima e dopo entrambe le modifiche.
+
+### Added
+- **`Orca` usa ora `UniversalMemoryGuard` invece di un check RAM ad-hoc**: `_gc_se_ram_bassa()`
+  duplicava a mano un check `psutil` gia' fatto meglio da `core/memory.py` (che copre anche la
+  VRAM, mai controllata prima). Cambio di comportamento onesto: sotto la soglia critica ora
+  solleva `MemoryPressureError` invece di continuare in silenzio -- fail-fast con un errore
+  leggibile invece di un OOM qualche chunk piu' avanti.
+- **`Orca` ricorda riferimenti puliti passati e li richiama via `apply_fast_resonance`**: in
+  modalita' cieca (`x_reference=None`), prima di ricadere sulla stima locale (`_blind_reference`),
+  Orca cerca nella propria memoria (per shape, fino a `reference_memory_size=32` per default) un
+  riferimento gia' visto simile all'input corrotto corrente (soglia `reference_recall_min_score=
+  0.90`, calibrata empiricamente: segnali correlati restano sopra 0.95 anche con rumore
+  moderato, segnali scorrelati non superano ~0.75). Banca vuota o nessun match abbastanza simile
+  -> comportamento identico a prima.
+- **`chunk_threshold` di `Orca` auto-tarato su `AIHardwareProfiler`**: default cambiato da un
+  intero fisso (`1_000_000`, uguale per qualunque host) a `None`, che auto-deriva il valore
+  scalando proporzionalmente a `max_tensor_dim` dell'host corrente (RAM/GPU-TPU). Su un host
+  "base" (RAM<12GB, nessuna GPU/TPU) il risultato e' identico al vecchio default fisso -- nessuna
+  regressione silenziosa sul caso comune. Un valore esplicito bypassa l'auto-tuning senza nemmeno
+  istanziare il profiler.
+
 ## [1.1.9]
 
 ### Fixed
