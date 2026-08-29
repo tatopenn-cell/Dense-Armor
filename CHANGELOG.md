@@ -2,7 +2,7 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
-## [1.1.10]
+## [1.1.11]
 
 ### Investigated (nessun candidato promosso)
 - **`compute_damping_gating_smooth` (Collatz continuo), mai benchmarkato,
