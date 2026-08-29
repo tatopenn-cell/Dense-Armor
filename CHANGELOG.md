@@ -153,6 +153,27 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   causale, la rilevazione e' diventata reale (indici 60-74 etichettati
   'regime', esattamente la transizione vera a 60) e l'RMSE reale scende
   a 6.0449 -- vedi `utility/arbiter.py` per il dettaglio completo.
+- **`dense_armor.mcp_server`, nuovo (extra `[mcp]`)**: server MCP con 5
+  tool (`dense_armor_health`, `dense_armor_clean_signal`,
+  `dense_armor_detect_anomalies`, `dense_armor_robust_filter`,
+  `dense_armor_heal_series`) cosi' un agente puo' ripulire una serie
+  senza scrivere Python. Diretto e in-process, non un proxy HTTP verso
+  un kernel separato come l'adattatore di Dense-Evolution -- Dense-Armor
+  non ha una web UI da condividere. Vive apposta sotto
+  `dense_armor.mcp_server`, non un semplice `mcp_server`: con
+  Dense-Evolution installato nello stesso ambiente (il suo adattatore si
+  chiama esattamente `mcp_server`), un nome non annidato e' una
+  collisione VERA, osservata direttamente (`from mcp_server.server
+  import mcp` risolveva ai 25 tool di Dense-Evolution invece dei 5 di
+  qui, a seconda dell'ordine di installazione), non un'ipotesi --
+  scoperta e corretta prima che questo finisse pubblicato. Nuovo script
+  console `dense-armor-mcp`, separato da `dense-armor` (la CLI di
+  Armatura, invariata). Un bug reale trovato e corretto nello sviluppo:
+  lo schema Pydantic di `values` dichiarava supporto NaN nel docstring
+  ma rifiutava silenziosamente `null` JSON dentro la lista (`List[float]`
+  invece di `List[Optional[float]]`). Verificato end-to-end via
+  `mcp.call_tool()` reale (non solo le funzioni Python dirette) in
+  `test/test_mcp_server.py`, 222/222 test verdi in totale.
 
 ## [1.1.9]
 
