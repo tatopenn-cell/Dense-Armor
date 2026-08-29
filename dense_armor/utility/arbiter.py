@@ -14,10 +14,16 @@ APPROCCIO: per ogni punto, si confronta con una finestra di riferimento
 LARGA (raggio*ref_mult, la stessa scala usata dalla "molla" JSD di
 pressure_valve) -- deliberatamente non con la finestra locale stretta,
 che nel benchmark si e' vista collassare (mediana/MAD/IQR esattamente 0)
-quando piu' outlier vicini finiscono nella stessa finestra piccola. Una
-volta segnati i punti "devianti", la LUNGHEZZA della sequenza consecutiva
-di punti devianti decide: corta (<= spike_run_max) = impulso isolato,
-lunga = cambio di regime genuino.
+quando piu' outlier vicini finiscono nella stessa finestra piccola.
+Questa finestra e' CAUSALE (_window_causal: solo punti PRIMA di i, mai
+dopo) -- una finestra simmetrica, usata proprio a cavallo di una
+transizione di livello, mescolerebbe vecchio e nuovo livello nella
+propria scala, diluendo la deviazione che dovrebbe far scattare la
+soglia (era cosi' nella prima versione di questo modulo, corretto dopo
+un caso reale non rilevato -- vedi cronologia in CHANGELOG.md [1.1.10]).
+Una volta segnati i punti "devianti", la LUNGHEZZA della sequenza
+consecutiva di punti devianti decide: corta (<= spike_run_max) = impulso
+isolato, lunga = cambio di regime genuino.
 
 CASO DEGENERE (baseline esattamente piatta, scala robusta = 0): non e'
 un problema di stimatore -- vedi il LIMITE NOTO nel docstring di
@@ -28,29 +34,28 @@ scostamento non nullo dalla mediana e' trattato come deviante senza
 bisogno di una soglia in sigma (su una baseline davvero costante, "diverso
 da costante" e' gia' la risposta, non serve altro).
 
-LIMITE NOTO (autocorrezione, verificato dopo l'integrazione in Orca --
-vedi test/test_arbiter_orca_integration.py): lo scenario F (rottura
-strutturale, salto di livello permanente) NON viene rilevato come
-'regime' da classify_segments -- deviazione[i] resta 0 su tutta la
-sequenza attorno alla transizione. Una prima verifica aveva scambiato
-questo per un successo (RMSE 0.0 con route_and_correct standalone), ma
-era un artefatto: i dati grezzi di quello scenario di test coincidono
-GIA' esattamente col target (la "corruzione" e' il salto stesso, non
-rumore aggiunto), quindi "passa tutto grezzo" da' RMSE 0 indipendentemente
-da come viene etichettato ogni punto. Causa reale della mancata
-rilevazione: la finestra di riferimento LARGA e simmetrica (raggio*3),
-usata proprio a cavallo della transizione, contiene meta' punti al
-vecchio livello e meta' al nuovo -- la sua "scala" (MAD) si gonfia con
-questa bimodalita' invece di restare piccola, diluendo la stessa
-deviazione che dovrebbe far scattare la soglia. Attraverso la pipeline
-reale di Orca (utility/orca.py, _applica_arbitro) questo si traduce in un
-comportamento SICURO ma non migliorativo: lo scenario F ricade
-sull'output gia' prodotto dallo scudo standard di Orca, identico
-(9.4007) con o senza l'arbitro -- non peggiora, ma non risolve nemmeno
-il problema che l'aveva motivato. Non risolto qui: servirebbe una
-finestra di riferimento ASIMMETRICA (solo il lato "prima" del punto
-candidato, causale) invece di una centrata, per non diluire la propria
-scala con l'altro lato della transizione.
+CRONOLOGIA (limite trovato e poi risolto nella stessa sessione): la prima
+versione usava una finestra di riferimento SIMMETRICA, e lo scenario F
+(rottura strutturale, salto di livello permanente) non veniva rilevato
+come 'regime' -- deviazione[i] restava 0 su tutta la sequenza attorno
+alla transizione, perche' la finestra simmetrica, usata proprio a
+cavallo del salto, conteneva meta' vecchio livello e meta' nuovo,
+gonfiando la propria scala (MAD) invece di restare piccola. Un primo
+test aveva scambiato questo per un successo (RMSE 0.0 con
+route_and_correct standalone), ma era un artefatto: i dati grezzi di
+quello scenario coincidono GIA' esattamente col target (la "corruzione"
+e' il salto stesso, non rumore aggiunto), quindi "passa tutto grezzo" da'
+RMSE 0 indipendentemente da come viene etichettato ogni punto -- il vero
+banco di prova era la pipeline integrata di Orca (utility/orca.py,
+_applica_arbitro), dove la mancata rilevazione si traduceva in
+comportamento SICURO ma non migliorativo (9.4007 identico con o senza
+l'arbitro). Passando alla finestra CAUSALE (sopra), la rilevazione
+diventa reale e verificabile: sullo scenario F, gli indici 60-74 (esatti,
+verificato -- la transizione vera e' a 60) vengono etichettati 'regime',
+e attraverso la pipeline reale di Orca l'RMSE scende da 9.4007 (default)
+a 6.0449 (use_arbiter=True) -- un miglioramento reale, non piu' un
+pareggio. Vedi test/test_arbiter_orca_integration.py per la verifica
+completa sui 7 scenari con questo fix.
 """
 from typing import Tuple
 
@@ -61,6 +66,21 @@ def _window(x: np.ndarray, i: int, radius: int) -> np.ndarray:
     n = len(x)
     lo, hi = max(0, i - radius), min(n, i + radius + 1)
     return x[lo:hi]
+
+
+def _window_causal(x: np.ndarray, i: int, span: int) -> np.ndarray:
+    """Solo punti PRIMA di i (mai i stesso, mai punti dopo) -- usata per il
+    riferimento di rilevazione (non per il valore di correzione, che resta
+    sulla finestra simmetrica: una volta che un punto e' gia' classificato
+    'spike', usare anche il contesto futuro per stimare il valore pulito
+    e' corretto, lo stesso principio non-causale gia' dichiarato per
+    pressure_valve). Il motivo di questa finestra causale e' solo la
+    rilevazione: vedi il LIMITE NOTO (ora risolto) piu' sotto -- una
+    finestra simmetrica a cavallo di una transizione mescola vecchio e
+    nuovo livello nella propria scala, diluendo la deviazione che dovrebbe
+    far scattare la soglia."""
+    lo = max(0, i - span)
+    return x[lo:i]
 
 
 def _robust_center_scale(w: np.ndarray) -> Tuple[float, float]:
@@ -91,7 +111,7 @@ def classify_segments(
     med_rif = np.zeros(n, dtype=np.float64)  # mediana della finestra di riferimento, per punto
 
     for i in range(n):
-        w_rif = _window(x, i, radius * ref_mult)
+        w_rif = _window_causal(x, i, radius * ref_mult)
         if w_rif.size < 4:
             continue
         med, scala = _robust_center_scale(w_rif)

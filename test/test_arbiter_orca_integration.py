@@ -2,14 +2,15 @@
 Verifies Orca(use_arbiter=True) against the same 7 scenarios testKalman.py
 uses, compared directly to Orca's own default (use_arbiter=False) output.
 
-Real, honest result (see CHANGELOG for the full writeup, including a
-correction to an earlier over-claim about scenario F): use_arbiter never
-makes RMSE worse than the default on any of the 7 scenarios, and improves
-it on 4 (A, B, E, G). It does NOT fix scenario F -- classify_segments'
-wide reference window straddles both sides of a sustained level change and
-its own scale inflates right at the transition, diluting the very signal
-it needs to detect the boundary; F passes through Orca's own default path
-unchanged in both modes, not from correct regime detection.
+Real, honest result (see CHANGELOG and utility/arbiter.py for the full
+writeup, including a real bug found and fixed in the same session):
+use_arbiter never makes RMSE worse than the default on any of the 7
+scenarios, and improves it on 5 (A, B, E, F, G). Getting F required
+switching classify_segments' reference window from symmetric to causal
+(only points before i) -- a symmetric window straddling a sustained level
+change mixed old and new level into its own scale, diluting the very
+transition it needed to detect (verified: with the symmetric window, F
+showed zero detection at all, deviation exactly 0 throughout).
 """
 import importlib.util
 import logging
@@ -74,10 +75,24 @@ def test_arbiter_never_worse_than_default():
 
 
 def test_arbiter_improves_on_isolated_anomaly_scenarios():
-    # A (impulsi), B (sub-soglia), E (Cauchy), G (buco NaN): miglioramento
-    # reale misurato, non solo parita'.
-    for key in ("A", "B", "E", "G"):
+    # A (impulsi), B (sub-soglia), E (Cauchy), F (rottura di livello,
+    # causal window fix), G (buco NaN): miglioramento reale misurato, non
+    # solo parita'.
+    for key in ("A", "B", "E", "F", "G"):
         assert rmse_arbiter[key] < rmse_default[key]
+
+
+def test_arbiter_detects_the_real_regime_transition_in_scenario_f():
+    # Verifica diretta della rilevazione (non solo l'effetto sull'RMSE):
+    # gli indici etichettati 'regime' devono includere la transizione
+    # vera (indice 60) -- prima del fix alla finestra causale, NESSUN
+    # punto veniva etichettato 'regime' qui (deviazione sempre 0).
+    from dense_armor.utility.arbiter import classify_segments
+    _, dati, _ = SCENARI["F"]
+    etichette, _, _ = classify_segments(dati)
+    regime_idx = np.where(etichette == "regime")[0]
+    assert regime_idx.size > 0
+    assert 60 in regime_idx
 
 
 def test_labels_and_uncertainty_are_populated():
