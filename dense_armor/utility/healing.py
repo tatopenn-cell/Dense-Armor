@@ -33,6 +33,21 @@ def healing_filter(x: np.ndarray, radius: int = 2, sustain_threshold: float = 0.
     - O(n * wide) per chiamata (loop Python, non vettorizzato/JIT) --
       prima di produzione va portato a JAX con jax.lax.scan o vmap su
       finestre, come il resto della codebase.
+    - collasso TEMPORANEO (alcuni punti consecutivi a un valore estremo,
+      poi ritorno al livello originale) scambiato per un cambiamento vero
+      e lasciato passare: misurato su uno scenario reale con 3 punti
+      consecutivi collassati a zero su un fondo costante (poi tornato al
+      livello originale), RMSE 20.8 invece di ~0 -- vedi
+      test/testKalman.py scenario C e
+      test/test_arbiter_orca_integration.py in Dense-Armor per lo stesso
+      scenario. Causa: questa funzione decide punto per punto (nessun
+      raggruppamento in sequenze), quindi non ha modo di controllare cosa
+      succede DOPO una deviazione sostenuta per distinguere un collasso
+      temporaneo da un regime che si assesta davvero -- lo stesso
+      controllo aggiunto a `utility/arbiter.py` (che invece raggruppa in
+      sequenze) risolve questo caso li', ma richiederebbe un cambio di
+      design qui, non ancora fatto per non rischiare la calibrazione a
+      140 seed gia' verificata sopra.
     """
     n = len(x)
     out = np.zeros(n)
