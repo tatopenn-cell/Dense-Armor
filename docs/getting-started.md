@@ -54,6 +54,27 @@ protected_output = orca.protect_and_forward(
 orca.margine_ingresso_medio, orca.margine_uscita_medio   # how much to trust the output
 ```
 
+### Routing each point to the right corrector (`use_arbiter`)
+
+```python
+orca = Orca()
+protected_output = orca.protect_and_forward(my_model, corrupted_data, use_arbiter=True)
+
+orca.etichette_arbitro          # 'clean'/'spike'/'regime' array, one per point
+orca.incertezza_arbitro_media   # 0..1: how ambiguous the classification itself was
+orca.tipi_corruzione_visti(corrupted_data.shape)   # Counter, filled once x_reference is known
+```
+
+Off by default. Each point is classified against a wide, causal reference window (only points
+before it), then routed: `spike` (isolated impulse) gets hard-rejected to that window's median;
+`regime` (a sustained level change, recognized by the length and internal coherence of the
+run of anomalous points) passes through raw, fully trusted; `clean` keeps whatever the standard
+4-phase shield already produced -- not the raw value, since a genuinely continuous signal still
+needs `AdaptiveSignalStabilizer`'s soft damping. Verified on the same 7 scenarios
+[`test/testKalman.py`](https://github.com/tatopenn-cell/Dense-Armor/blob/master/test/testKalman.py)
+uses: never worse than the default, better on 5/7. See [Arbiter](api/arbiter.md) for the full
+design and a real bug found and fixed along the way (symmetric reference window → causal).
+
 ### A 1D series (training loss, metrics, token stream)
 
 ```python

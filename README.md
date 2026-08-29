@@ -137,6 +137,25 @@ Nota tecnica: `AdaptiveSignalStabilizer.filter_batch_scenarios` (usato ad es. da
 
 ---
 
+## `$ orca --use_arbiter`
+
+`Orca.protect_and_forward(..., use_arbiter=True)` — opzionale, default `False` — instrada ogni punto verso il correttore giusto invece di forzarne uno solo su tutta la riga:
+
+```python
+orca = Orca()
+output_protetto = orca.protect_and_forward(mio_modello, dato_corrotto, use_arbiter=True)
+
+orca.etichette_arbitro       # array 'clean'/'spike'/'regime', uno per punto
+orca.incertezza_arbitro_media   # 0..1: quanto la classificazione stessa e' ambigua
+orca.tipi_corruzione_visti(dato_corrotto.shape)   # Counter, popolato quando x_reference e' noto
+```
+
+`spike` (impulso isolato) → rigetto duro verso la mediana di una finestra di riferimento larga; `regime` (cambio di livello sostenuto, riconosciuto guardando lunghezza e coerenza interna della sequenza di punti anomali) → valore grezzo, fiducia piena; `clean` → qualunque cosa lo scudo standard a 4 fasi abbia già prodotto, non il grezzo — un segnale continuo non anomalo ha comunque bisogno dello smorzamento morbido di `AdaptiveSignalStabilizer`.
+
+Verificato sui 7 scenari di `test/testKalman.py` (`test/test_arbiter_orca_integration.py`): **mai peggio del default, meglio su 5/7** (impulsi isolati, corruzione sotto soglia, rumore a code pesanti, rottura di livello, buco di dati NaN), pari su un caso, identico sul rimanente per design corretto (segnale strutturato continuo → ricade sullo scudo standard). Dettagli, cronologia di un bug reale trovato e risolto (finestra di riferimento simmetrica → causale) nel [changelog](https://tatopenn-cell.github.io/Dense-Armor/changelog/) e nel docstring di `utility/arbiter.py`.
+
+---
+
 ## `$ robust_filters --standalone`
 
 Quattro rilevatori di anomalie classici (`dense_armor.utility.robust_filters`), indipendenti da `Armatura`/`Orca` — nessun modello dinamico, nessuno stato, solo aritmetica su una finestra locale centrata (pensati per pulizia offline/batch, non il ciclo causale real-time; adatti anche a un futuro porting embedded, dove non ci si potrà appoggiare a numpy):
@@ -210,6 +229,8 @@ orca.margine_uscita        orca.margine_uscita_medio        orca.margine_uscita_
 ```
 
 `|valore ricevuto − valore corretto|` — quanto lo scudo ha dovuto spostare un dato per ripulirlo. Non è una covarianza calibrata in senso statistico stretto, ma correla bene nei test: basso quando la correzione è affidabile, alto quando lo scudo sta indovinando alla cieca.
+
+Segnale complementare, non ridondante, con `use_arbiter=True`: `orca.incertezza_arbitro`/`incertezza_arbitro_media` dice quanto la *classificazione* stessa è ambigua (vicino al confine deviante/pulito o spike/regime), non quanto è stata grande la correzione — una correzione piccola con incertezza alta è un caso ambiguo andato bene per caso, non uno davvero sicuro. Vedi `$ orca --use_arbiter` sopra.
 
 ---
 

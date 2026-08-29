@@ -28,7 +28,12 @@ No retraining, no weight changes. Runs at inference time on any JAX/NumPy tensor
   (replaced with the local baseline).
 - **[`Orca`](api/orca.md)** — the full input+output shield for an entire model:
   `Orca.protect_and_forward()` purifies the input, runs the model, and checks the response
-  isn't itself corrupted.
+  isn't itself corrupted. Optional `use_arbiter=True` routes each point to the right
+  corrector (see [Arbiter](api/arbiter.md)) instead of one gate for the whole signal.
+- **[Arbiter](api/arbiter.md)** — classifies each point as clean/spike/regime against a wide
+  causal reference window, then routes it: hard rejection for an isolated impulse, raw
+  pass-through for a genuine sustained level change, Orca's own soft damping for anything
+  that isn't a discrete anomaly at all.
 - **[Hybrid engine](api/hybrid_engine.md)** — the binary-trigger engine behind `Armatura`,
   ported and adapted from [Dense-Evolution](https://github.com/tatopenn-cell/Dense-Evolution)'s
   own verified `healing.py` primitives.
