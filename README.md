@@ -156,6 +156,19 @@ Verificato sui 7 scenari di `test/testKalman.py` (`test/test_arbiter_orca_integr
 
 ---
 
+## `$ mcp --server`
+
+Un server MCP (`dense_armor.mcp_server`) espone 5 tool — `dense_armor_health`, `dense_armor_clean_signal` (Orca completo, con `use_arbiter`), `dense_armor_detect_anomalies` (solo classificazione), `dense_armor_robust_filter`, `dense_armor_heal_series` — così un agente (Claude Code, Claude Desktop, o qualunque client MCP) può ripulire una serie senza scrivere Python. Diretto e in-process (niente kernel HTTP separato, a differenza dell'adattatore di Dense-Evolution — Dense-Armor non ha una web UI da condividere):
+
+```bash
+pip install -e ".[mcp]"
+claude mcp add dense_armor -- dense-armor-mcp
+```
+
+Vive apposta sotto `dense_armor.mcp_server`, non un semplice `mcp_server` — con Dense-Evolution installato nello stesso ambiente (il suo adattatore si chiama esattamente `mcp_server`), un nome non annidato è una collisione vera, verificata, non un'ipotesi. Vedi [`dense_armor/mcp_server/README.md`](dense_armor/mcp_server/README.md) per l'elenco completo dei tool e `test/test_mcp_server.py` per la verifica end-to-end di ognuno.
+
+---
+
 ## `$ robust_filters --standalone`
 
 Quattro rilevatori di anomalie classici (`dense_armor.utility.robust_filters`), indipendenti da `Armatura`/`Orca` — nessun modello dinamico, nessuno stato, solo aritmetica su una finestra locale centrata (pensati per pulizia offline/batch, non il ciclo causale real-time; adatti anche a un futuro porting embedded, dove non ci si potrà appoggiare a numpy):

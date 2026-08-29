@@ -24,6 +24,7 @@ dependencies = ["numpy", "jax", "psutil"]
 audio = ["scipy"]
 data = ["h5py", "netCDF4"]
 quantum = ["dense-evolution"]
+mcp = ["mcp>=2.0.0", "pydantic>=2.0"]
 dev = ["pytest", "pytest-cov", "filterpy", "matplotlib"]
 docs = [
     "mkdocs>=1.6.0",
@@ -39,6 +40,7 @@ Repository = "https://github.com/tatopenn-cell/Dense-Armor"
 
 [project.scripts]
 dense-armor = "dense_armor.armatura:main"
+dense-armor-mcp = "dense_armor.mcp_server.server:main"
 
 [tool.setuptools.packages.find]
 include = ["dense_armor*"]
