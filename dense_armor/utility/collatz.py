@@ -140,10 +140,15 @@ class ABCollatz:
     def compute_damping_gating_smooth(self, x_corrupted: jnp.ndarray, x_clean: jnp.ndarray) -> jnp.ndarray:
         """Variante sperimentale di compute_damping_gating: usa la mappa di
         Collatz continua (execute_collatz_step_smooth) su indici NON
-        arrotondati, invece dello scalino discreto su interi. Vedi il
-        benchmark in test/test_collatz_smooth_experiment.py per il
-        confronto misurato prima/dopo -- non e' il default finche' non e'
-        dimostrato che migliora qualcosa di reale."""
+        arrotondati, invece dello scalino discreto su interi.
+
+        RISULTATO (test/test_collatz_smooth_experiment.py, Orca reale sui 7
+        scenari di testKalman.py): perde 0/7, pareggia 6/7 (RMSE identico
+        alla costante entro 1e-4) e su Stealth sub-soglia (0.049) fa
+        PEGGIO (RMSE 0.0029 vs 0.0012 della costante, oltre il doppio).
+        Nessun vantaggio misurato in nessuno scenario -- non promosso,
+        rimane qui come storia dell'esperimento, non come alternativa
+        valida."""
         orig_shape = x_corrupted.shape
 
         is_nan_corrupted = jnp.isnan(x_corrupted)
