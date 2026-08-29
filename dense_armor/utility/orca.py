@@ -5,8 +5,8 @@ Universal AI Orchestrator Shield (ORCA) -- orchestratore dinamico
 selettivo context-aware a 4 fasi.
 """
 import time, logging
-from collections import deque
-from typing import Callable, Optional
+from collections import deque, Counter
+from typing import Callable, Optional, Tuple
 import numpy as np
 import jax
 import jax.numpy as jnp
@@ -18,6 +18,7 @@ from ..utility.collatz import ABCollatz
 from ..core.damping_operator import apply_damping_blend
 from ..utility.curvature import curvature
 from ..utility.resonance_search import apply_fast_resonance
+from ..utility.arbiter import route_and_correct
 
 logger = logging.getLogger(__name__)
 
@@ -99,6 +100,25 @@ class Orca:
         self.margine_uscita_medio = 0.0
         self.margine_uscita_max = 0.0
 
+        # Etichette/incertezza dell'arbitro (solo se use_arbiter=True in
+        # protect_and_forward) -- margine_ingresso dice GIA' quanto e' stato
+        # spostato un valore; incertezza_arbitro dice quanto l'arbitro stesso
+        # non e' sicuro di aver scelto la classificazione giusta (vicino al
+        # confine deviante/pulito o spike/regime), non quanto grande e' stata
+        # la correzione. I due segnali sono complementari, non ridondanti:
+        # una correzione piccola con incertezza alta e' un caso ambiguo che
+        # e' andato bene per caso, non uno davvero sicuro.
+        self.etichette_arbitro = None      # array di stringhe 'clean'/'spike'/'regime', stessa forma dell'input
+        self.incertezza_arbitro = None     # array 0..1, stessa forma dell'input
+        self.incertezza_arbitro_media = 0.0
+        # Memoria dei TIPI di corruzione gia' visti per ogni shape (non solo
+        # i riferimenti puliti per forma, gia' in _reference_bank) -- un
+        # Counter delle etichette dell'arbitro osservate quando x_reference
+        # era noto, cosi' una chiamata futura in modalita' cieca sulla stessa
+        # shape puo' sapere se quel sensore/flusso ha gia' mostrato spike
+        # isolati, cambi di regime, o entrambi, invece di ripartire da zero.
+        self._corruption_type_memory: dict = {}
+
     def _gc_se_ram_bassa(self) -> None:
         """Delega a UniversalMemoryGuard.check_memory_safety() il controllo
         RAM/VRAM prima del prossimo chunk pesante (stesso soft-GC + hard
@@ -135,6 +155,55 @@ class Orca:
         bank = self._reference_bank.setdefault(slice_shape, deque(maxlen=self._reference_memory_size))
         for b in range(x_reference_np.shape[0]):
             bank.append(np.asarray(x_reference_np[b].flatten(), dtype=np.float64))
+
+    def tipi_corruzione_visti(self, slice_shape: tuple) -> Counter:
+        """Quali etichette dell'arbitro ('clean'/'spike'/'regime') sono gia'
+        state osservate per questa shape, e quante volte -- Counter vuoto se
+        questa shape non e' mai stata vista con use_arbiter=True e
+        x_reference noto (l'unico modo in cui la memoria viene popolata,
+        vedi _aggiorna_memoria_corruzione)."""
+        return self._corruption_type_memory.get(slice_shape, Counter())
+
+    def _aggiorna_memoria_corruzione(self, etichette_riga: np.ndarray, slice_shape: tuple) -> None:
+        """Aggiorna il Counter dei tipi di corruzione per questa shape con le
+        etichette osservate in una riga -- chiamato solo quando x_reference
+        e' noto (l'unico caso in cui l'arbitro ha un bersaglio vero contro
+        cui classificare, non una stima cieca)."""
+        counter = self._corruption_type_memory.setdefault(slice_shape, Counter())
+        counter.update(etichette_riga.tolist())
+
+    def _applica_arbitro(
+        self, co_row_flat: np.ndarray, purified_row_flat: np.ndarray, radius: int = 10,
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Instrada ogni punto verso il correttore giusto invece di uno
+        solo per l'intera riga (vedi utility/arbiter.py e
+        test/test_arbiter_orca_integration.py per il confronto reale che
+        ha motivato questo):
+          'spike'  -> corretto con la mediana della finestra di riferimento
+                      larga dell'arbitro (respinge un impulso isolato anche
+                      quando la pipeline a 4 fasi standard lo lascerebbe
+                      passare in parte).
+          'regime' -> valore GREZZO (un cambio di livello sostenuto e'
+                      trattato come genuino, non come un'anomalia da
+                      respingere -- stessa filosofia del gate costante di
+                      Orca, ma applicata solo dove la sequenza si assesta
+                      davvero su un nuovo valore).
+          'clean'  -> QUALUNQUE cosa la pipeline a 4 fasi standard abbia
+                      gia' prodotto (purified_row_flat) -- non il grezzo:
+                      un segnale continuo non anomalo (es. un'oscillazione
+                      strutturata reale) ha ancora bisogno dello smorzamento
+                      morbido di AdaptiveSignalStabilizer, che l'arbitro non
+                      e' progettato per fare (vedi il suo stesso docstring).
+
+        Ritorna (corretto, etichette, incertezza), stessa shape di
+        co_row_flat."""
+        co_safe = np.where(np.isfinite(co_row_flat), co_row_flat, purified_row_flat)
+        arbiter_out, etichette, incertezza = route_and_correct(co_safe, radius=radius)
+        corretto = np.where(
+            etichette == "spike", arbiter_out,
+            np.where(etichette == "regime", co_safe, purified_row_flat),
+        )
+        return corretto, etichette, incertezza
 
     def _blind_reference(self, co_row_flat: np.ndarray) -> np.ndarray:
         """Riferimento pulito CIECO per una riga di batch, usato quando non e'
@@ -345,8 +414,19 @@ class Orca:
         use_input_shield: bool = True,
         use_model_injection: bool = True,
         use_output_shield: bool = True,
+        use_arbiter: bool = False,
     ) -> np.ndarray:
-        """Esegue le 4 fasi (scudo entrata -> modello -> scudo uscita) e ritorna l'output protetto."""
+        """Esegue le 4 fasi (scudo entrata -> modello -> scudo uscita) e ritorna l'output protetto.
+
+        use_arbiter — se True, dopo lo scudo entrata standard instrada ogni
+        punto verso il correttore giusto (utility/arbiter.py): impulso
+        isolato -> rigetto duro, cambio di regime sostenuto -> passa
+        grezzo, nessuna anomalia puntuale -> resta il risultato gia'
+        prodotto dallo scudo standard (il suo smorzamento morbido, non un
+        pass-through). Default False: comportamento e risultati identici a
+        prima di questa opzione su tutti i test esistenti. Popola
+        etichette_arbitro/incertezza_arbitro; se x_reference e' noto,
+        aggiorna anche tipi_corruzione_visti(slice_shape)."""
         is_simple_data_test = ai_model_callable is None or not use_model_injection
         if is_simple_data_test:
             logger.info("CONTRAZIONE LOGICA DETECTED: Riconosciuto Test di Protezione Dati Semplice (No IA Model).")
@@ -400,6 +480,23 @@ class Orca:
                     self._gc_se_ram_bassa()
                 purified_batch[b] = out_flat.reshape(slice_shape)
                 margine_batch[b] = margine_flat.reshape(slice_shape)
+
+            if use_arbiter:
+                etichette_batch = np.empty(orig_shape, dtype=object)
+                incertezza_batch = np.zeros(orig_shape, dtype=np.float64)
+                for b in range(B):
+                    co_flat = x_corrupted_np[b].flatten()
+                    pur_flat = purified_batch[b].flatten()
+                    corretto_flat, etichette_flat, incertezza_flat = self._applica_arbitro(co_flat, pur_flat)
+                    purified_batch[b] = corretto_flat.reshape(slice_shape)
+                    etichette_batch[b] = etichette_flat.reshape(slice_shape)
+                    incertezza_batch[b] = incertezza_flat.reshape(slice_shape)
+                    if x_reference is not None:
+                        self._aggiorna_memoria_corruzione(etichette_flat, slice_shape)
+                self.etichette_arbitro = etichette_batch
+                self.incertezza_arbitro = incertezza_batch
+                self.incertezza_arbitro_media = float(np.mean(incertezza_batch))
+
             x_for_model = jnp.array(purified_batch)
             self.margine_ingresso = margine_batch
             self.margine_ingresso_medio = float(np.mean(margine_batch))
@@ -453,6 +550,10 @@ class Orca:
                 self.margine_ingresso = self.margine_ingresso.reshape(-1)
             if self.margine_uscita is not None:
                 self.margine_uscita = np.asarray(self.margine_uscita).reshape(-1)
+            if self.etichette_arbitro is not None:
+                self.etichette_arbitro = self.etichette_arbitro.reshape(-1)
+            if self.incertezza_arbitro is not None:
+                self.incertezza_arbitro = self.incertezza_arbitro.reshape(-1)
 
         logger.info("Transito concluso. Sistema sigillato in %.3f secondi totali.", time.time() - t_start)
         return x_final

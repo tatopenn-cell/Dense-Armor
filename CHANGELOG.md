@@ -111,6 +111,43 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   "base" (RAM<12GB, nessuna GPU/TPU) il risultato e' identico al vecchio default fisso -- nessuna
   regressione silenziosa sul caso comune. Un valore esplicito bypassa l'auto-tuning senza nemmeno
   istanziare il profiler.
+- **`Orca(use_arbiter=True)`, opzione nuova, default `False`**: instrada ogni
+  punto verso il correttore giusto invece di forzarne uno solo su tutta la
+  riga -- nato dai tre esperimenti sopra (nessun gate unico batteva gli
+  altri due ovunque). Nuovo modulo `utility/arbiter.py`: classifica ogni
+  punto come 'clean'/'spike'/'regime' confrontandolo con una finestra di
+  riferimento larga (stessa scala della "molla" JSD di `pressure_valve`,
+  non la finestra locale stretta che si e' vista collassare sopra), poi
+  la lunghezza e la coerenza interna della sequenza di punti devianti
+  decide impulso isolato vs cambio di regime sostenuto. 'spike' -> rigetto
+  duro (mediana della finestra larga); 'regime' -> valore grezzo (fiducia,
+  stessa filosofia del gate costante); 'clean' -> quello che lo scudo
+  standard a 4 fasi ha gia' prodotto (il suo smorzamento morbido, non un
+  pass-through, altrimenti un segnale continuo non anomalo come
+  un'oscillazione strutturata verrebbe lasciato passare intatto).
+  Verificato su tutti i 7 scenari di `test/testKalman.py`
+  (`test/test_arbiter_orca_integration.py`): mai peggiore del default
+  (`use_arbiter=False`, garanzia testata), migliore su 4/7 (impulsi
+  isolati, sub-soglia, Cauchy, buco NaN), pari sul collasso a zero,
+  identico sugli altri due (segnale strutturato: ricade correttamente
+  sullo scudo standard; rottura di livello: vedi limite qui sotto).
+  Popola anche `Orca.etichette_arbitro`/`incertezza_arbitro` (l'incertezza
+  della classificazione, non la dimensione della correzione -- segnale
+  complementare a `margine_ingresso`, non ridondante) e
+  `Orca.tipi_corruzione_visti(slice_shape)`, un Counter dei tipi di
+  corruzione gia' osservati per quella shape quando `x_reference` era
+  noto -- memoria separata dalla banca dei riferimenti puliti gia'
+  esistente, che ricordava solo la FORMA, non il TIPO di corruzione.
+  LIMITE NOTO onesto (vedi il docstring di `utility/arbiter.py` per il
+  dettaglio): non risolve una rottura di livello permanente -- la
+  finestra di riferimento larga e simmetrica diluisce la propria scala
+  proprio a cavallo della transizione, e un apparente successo misurato
+  prima dell'integrazione in Orca era un artefatto (i dati grezzi di
+  quello scenario di test coincidono gia' col target). Attraverso Orca
+  questo si traduce in un comportamento sicuro (ricade sul default,
+  9.4007 in entrambi i casi) ma non nel miglioramento che ci si
+  aspettava -- richiederebbe una finestra causale asimmetrica, non
+  ancora implementata.
 
 ## [1.1.9]
 
