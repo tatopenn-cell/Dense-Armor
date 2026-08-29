@@ -312,6 +312,34 @@ def pressure_valve(
     gaussiano puro, rileva un vero outlier con pressione ben sopra soglia,
     non tocca un gradino genuino sostenuto.
 
+    LIMITE NOTO -- mascheramento reciproco tra outlier ravvicinati su una
+    baseline quasi piatta (test/test_pressure_valve_vs_orca_experiment.py,
+    scenario "impulsi alternati" +/-500 su fondo costante 120, zero rumore
+    reale): la finestra locale usata per ogni stima ESCLUDE gia' il punto i
+    stesso (fix applicato qui sotto), ma se altri outlier della stessa
+    esplosione restano nella finestra (qui: raggio 10, 3 picchi entro 2
+    passi l'uno dall'altro), mediana/IQR e mediana/MAD restano comunque
+    ESATTAMENTE 0 -- non e' un bug della loro implementazione, e'
+    matematicamente corretto: con 18/20 punti della finestra identici,
+    MAD e IQR (breakdown ~50%/~25%) non vedono niente di anomalo. Restano
+    scartati dal filtro `scale > 1e-12`, e l'unico stimatore superstite
+    (media/std, non robusto) e' a sua volta contaminato dagli stessi
+    picchi. Un M-estimator di Huber (IRLS, vedi Sung et al. 2019,
+    arXiv:1912.04982, usato li' per spettroscopia a 2 qubit con outlier
+    sperimentali) e' stato provato come alternativa e converge ANCH'ESSO a
+    scala 0, per lo stesso motivo di fondo: la sua scala finale e' a sua
+    volta una MAD dei residui, e MAD e' zero ogni volta che la baseline
+    locale e' ESATTAMENTE costante, indipendentemente da quanto sofisticato
+    sia lo stimatore di centro. Il problema non e' la scelta dello
+    stimatore -- e' che dividere per una scala locale legittimamente zero
+    e' indefinito per costruzione. Su dati con un minimo di rumore di fondo
+    reale (scenari B/D/E/G, dove pressure_valve vince o va alla pari) la
+    scala locale non collassa mai a zero e il problema non si presenta.
+    Non risolto qui -- richiederebbe una scala di fallback presa dalla
+    finestra di riferimento piu' ampia (gia' calcolata per il JSD sotto)
+    invece che dalla finestra locale quando questa e' degenere, non
+    ancora implementato ne' verificato.
+
     Ritorna (pulito, anomalie, pressione, soglia_effettiva): `pressione` e'
     la deviazione combinata continua per ogni punto, `soglia_effettiva' la
     soglia realmente applicata in quel punto (>= soglia_pressione, si vede
@@ -322,9 +350,18 @@ def pressure_valve(
     soglia_effettiva = np.full(n, soglia_pressione)
 
     for i in range(n):
-        w = _window(x, i, radius)
-        if w.size < 4:
+        w_self = _window(x, i, radius)
+        if w_self.size < 4:
             continue
+        # Punto i ESCLUSO dalla propria finestra (come gia' faceva solo il
+        # sotto-passo sigma-clipping sotto): includerlo permetteva a un
+        # outlier estremo di gonfiare la propria stessa scala di
+        # riferimento (mascheramento) -- verificato su impulsi isolati
+        # (+/-500 su fondo 120): con la finestra self-inclusive, pressione
+        # massima 4.6 (sotto qualunque soglia, zero anomalie rilevate);
+        # con la finestra esclusiva, l'outlier non contamina piu' la scala
+        # con cui viene giudicato.
+        w = np.delete(w_self, min(i - max(0, i - radius), w_self.size - 1))
 
         centri, scale = [], []
 

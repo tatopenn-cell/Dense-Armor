@@ -4,6 +4,58 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [1.1.10]
 
+### Investigated (nessun candidato promosso)
+- **`compute_damping_gating_smooth` (Collatz continuo), mai benchmarkato,
+  ora chiuso**: il suo stesso docstring rimandava a
+  `test/test_collatz_smooth_experiment.py` per il confronto misurato --
+  file mai esistito. Scritto ora, gira `Orca` per intero sui 7 scenari di
+  `test/testKalman.py` una volta con il gate costante (default) e una con
+  la variante smooth. Risultato: smooth vince 0/7, pareggia 6/7 (RMSE
+  identico entro 1e-4), perde su "Stealth sub-soglia" (RMSE 0.0029 vs
+  0.0012, oltre il doppio). Non promosso -- docstring aggiornato con il
+  risultato reale al posto del rimando a un file inesistente.
+- **`hybrid_shield` (phi_ab, gia' vendorizzato per Armatura) come possibile
+  gate per Orca**: non e' uno scambio diretto (motore binario a ciclo su
+  tutta la serie, non un gate continuo per elemento), quindi confrontato
+  come pipeline completa (`test/test_hybrid_shield_vs_orca_experiment.py`)
+  sugli stessi 7 scenari. Risultato misto, non un vincitore netto:
+  vince 4/7 su impulsi isolati/collasso a zero/buco NaN (in 3 casi RMSE
+  ~0.0000, quasi perfetto), ma perde nettamente su segnale sinusoidale
+  strutturato e rumore Cauchy pervasivo (RMSE 2-3x peggiore di Orca) --
+  ottimo per anomalie isolate, pessimo quando il cambiamento e' diffuso e
+  genuino, non un'anomalia da respingere.
+- **`pressure_valve` (JSD-adattivo, gia' in `robust_filters.py`, mai
+  collegato a nessuna pipeline) come terzo candidato**: stesso confronto
+  a 7 scenari (`test/test_pressure_valve_vs_orca_experiment.py`). Vince
+  1/7 ma in modo netto: RMSE 0.0000 esatto sulla rottura di livello
+  permanente (l'unico dei tre a riconoscere un vero cambio di regime),
+  ma fallisce clamorosamente sugli impulsi isolati (RMSE 86.6 su
+  "impulsi alternati", peggio di non fare nulla). Causa reale trovata
+  (non un'ipotesi): con 3 picchi ravvicinati in una finestra di 21 punti,
+  mediana/IQR e mediana/MAD restano ESATTAMENTE 0 (18/20 punti identici,
+  matematicamente corretto per stimatori con breakdown ~25-50%), quindi
+  vengono scartati e resta solo media/std -- non robusta, contaminata
+  dagli stessi picchi che dovrebbe rilevare. Fix parziale applicato: la
+  finestra locale ora esclude il punto stesso (come gia' faceva solo il
+  sotto-passo sigma-clipping), corretto in linea di principio ma
+  verificato non sufficiente quando PIU' outlier restano comunque vicini
+  tra loro nella stessa finestra (nessun cambiamento misurabile sui 7
+  scenari). Un M-estimator di Huber (IRLS, vedi Sung et al. 2019,
+  arXiv:1912.04982, ricerca bibliografica reale via RAG locale) e' stato
+  provato come alternativa piu' sofisticata e converge ANCH'ESSO a scala
+  0, per lo stesso motivo di fondo (la sua scala e' a sua volta una MAD
+  dei residui). Conclusione onesta: non e' un problema di scelta
+  dell'estimatore, e' che dividere per una scala locale legittimamente
+  zero (baseline quasi piatta) e' indefinito per costruzione, qualunque
+  stimatore si usi. Non risolto -- vedi il "LIMITE NOTO" nel docstring di
+  `pressure_valve` per la via di fix non ancora tentata (scala di
+  fallback dalla finestra di riferimento piu' ampia).
+- **Conclusione dei tre esperimenti**: nessuno dei tre candidati batte in
+  modo netto il gate costante 0.85 di Orca su tutti gli scenari --
+  ognuno (incluso il default) ha una nicchia precisa (impulsi isolati,
+  segnale diffuso/rumore pervasivo, cambio di regime permanente). Il
+  gate costante resta quello di default; nessuna promozione fatta.
+
 ### Fixed
 - **`core/vector.py`, `run_parallel_scenarios` ricompilava ad ogni chiamata**: `jax.jit(jax.vmap(...))`
   veniva ricostruito DENTRO il metodo ad ogni invocazione -- una nuova closure Python ad ogni
