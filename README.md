@@ -8,6 +8,10 @@
 ```
 
 <p align="center">
+  <a href="https://tatopenn-cell.github.io/Dense-Armor/mindmap/"><strong>🧠 New here? Start with the interactive Mind Map</strong></a> — click any module to see what it does and how it connects.
+</p>
+
+<p align="center">
   <img alt="tests" src="https://github.com/tatopenn-cell/Dense-Armor/actions/workflows/tests.yml/badge.svg">
   <a href="https://codecov.io/gh/tatopenn-cell/Dense-Armor"><img alt="codecov" src="https://codecov.io/gh/tatopenn-cell/Dense-Armor/branch/master/graph/badge.svg"></a>
   <img alt="pypi" src="https://img.shields.io/pypi/v/dense-armor.svg">

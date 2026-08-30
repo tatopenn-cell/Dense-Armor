@@ -1,0 +1,313 @@
+<title>Dense-Armor Mind Map</title>
+<style>
+  :root {
+    --bg: #f4f6fa;
+    --panel-bg: #ffffff;
+    --ink: #16202c;
+    --ink-dim: #55647a;
+    --line: #c7d0de;
+    --root: #16202c;
+    --engine: #2563a8;
+    --diag: #c9463f;
+    --signal: #0f9c92;
+    --iface: #b8860f;
+    --node-bg: #ffffff;
+    --node-stroke: #c7d0de;
+    --shadow: 0 10px 30px rgba(20, 30, 50, 0.12);
+    --font-label: "IBM Plex Mono", ui-monospace, monospace;
+    --font-body: "IBM Plex Sans", system-ui, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0b1120;
+      --panel-bg: #121a2b;
+      --ink: #e7ecf3;
+      --ink-dim: #93a2ba;
+      --line: #2a3550;
+      --root: #e7ecf3;
+      --engine: #6fa8dc;
+      --diag: #ff7a72;
+      --signal: #35e0d1;
+      --iface: #f0c34d;
+      --node-bg: #16213a;
+      --node-stroke: #2f3d5e;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #0b1120;
+    --panel-bg: #121a2b;
+    --ink: #e7ecf3;
+    --ink-dim: #93a2ba;
+    --line: #2a3550;
+    --root: #e7ecf3;
+    --engine: #6fa8dc;
+    --diag: #ff7a72;
+    --signal: #35e0d1;
+    --iface: #f0c34d;
+    --node-bg: #16213a;
+    --node-stroke: #2f3d5e;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  }
+
+  * { box-sizing: border-box; }
+
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); height: 100vh; overflow: hidden; }
+  .app { display: flex; height: 100vh; width: 100vw; }
+  .canvas-wrap { position: relative; flex: 1 1 auto; min-width: 0; overflow: hidden; }
+
+  header {
+    position: absolute; top: 0; left: 0; right: 0; padding: 18px 22px 10px;
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+    pointer-events: none; z-index: 5;
+  }
+  header .title { font-family: var(--font-label); font-size: 0.95rem; letter-spacing: 0.04em; color: var(--ink-dim); text-transform: uppercase; }
+  header .hint { font-size: 0.8rem; color: var(--ink-dim); pointer-events: none; }
+
+  svg#map { width: 100%; height: 100%; cursor: grab; touch-action: none; }
+  svg#map:active { cursor: grabbing; }
+
+  .edge { fill: none; stroke: var(--line); stroke-width: 1.4; opacity: 0.8; }
+  .node-circle { stroke-width: 2.5; fill: var(--node-bg); transition: r 0.15s ease, filter 0.15s ease; }
+  .node { cursor: pointer; }
+  .node:hover .node-circle { filter: brightness(1.08); }
+  .node.active .node-circle { fill: var(--cat-color, var(--ink)); }
+
+  .node-label { font-family: var(--font-label); fill: var(--ink); pointer-events: none; user-select: none; }
+  .node.root .node-label { font-size: 15px; font-weight: 600; }
+  .node.category .node-label { font-size: 13px; font-weight: 600; }
+  .node.leaf .node-label { font-size: 10.5px; fill: var(--ink-dim); }
+  .node.active .node-label { fill: var(--panel-bg); }
+
+  .legend { position: absolute; left: 22px; bottom: 20px; display: flex; flex-direction: column; gap: 6px; font-family: var(--font-label); font-size: 0.72rem; color: var(--ink-dim); z-index: 5; }
+  .legend-item { display: flex; align-items: center; gap: 8px; }
+  .swatch { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+  .zoom-controls { position: absolute; right: 22px; bottom: 20px; display: flex; gap: 6px; z-index: 5; }
+  .zoom-controls button { width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--node-stroke); background: var(--node-bg); color: var(--ink); font-size: 1rem; cursor: pointer; font-family: var(--font-body); }
+  .zoom-controls button:hover { filter: brightness(1.1); }
+
+  .panel { width: 380px; flex: none; background: var(--panel-bg); border-left: 1px solid var(--node-stroke); box-shadow: var(--shadow); padding: 26px 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+  .panel.empty { align-items: center; justify-content: center; text-align: center; color: var(--ink-dim); }
+  .panel .eyebrow { font-family: var(--font-label); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cat-color, var(--ink-dim)); }
+  .panel h2 { margin: 0; font-size: 1.25rem; font-family: var(--font-label); text-wrap: balance; }
+  .panel .path { font-family: var(--font-label); font-size: 0.78rem; color: var(--ink-dim); background: var(--bg); padding: 4px 8px; border-radius: 6px; display: inline-block; width: fit-content; }
+  .panel p { line-height: 1.55; font-size: 0.92rem; margin: 0; }
+  .panel .kids { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+  .panel .kids .kid-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-dim); font-family: var(--font-label); }
+  .panel .kid-btn { text-align: left; background: var(--bg); border: 1px solid var(--node-stroke); color: var(--ink); padding: 8px 10px; border-radius: 8px; font-family: var(--font-body); font-size: 0.85rem; cursor: pointer; }
+  .panel .kid-btn:hover { filter: brightness(1.06); }
+
+  @media (max-width: 760px) {
+    .app { flex-direction: column; }
+    .panel { width: 100%; height: 42vh; border-left: none; border-top: 1px solid var(--node-stroke); }
+    .canvas-wrap { height: 58vh; }
+  }
+</style>
+
+<div class="app">
+  <div class="canvas-wrap">
+    <header>
+      <div class="title">Dense-Armor &middot; mind map</div>
+      <div class="hint">click a node · drag to pan · scroll to zoom</div>
+    </header>
+    <svg id="map" viewBox="0 0 1200 900"></svg>
+    <div class="legend" id="legend"></div>
+    <div class="zoom-controls">
+      <button id="zoomOut" aria-label="Zoom out">&minus;</button>
+      <button id="zoomReset" aria-label="Reset view">&#8634;</button>
+      <button id="zoomIn" aria-label="Zoom in">+</button>
+    </div>
+  </div>
+  <aside class="panel empty" id="panel">
+    <div><p style="font-family: var(--font-label); font-size: 0.85rem;">Click any node to read what it does.</p></div>
+  </aside>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var CATS = {
+    engine: { name: "Core Engine" },
+    diag: { name: "Diagnostics & Arbiter" },
+    signal: { name: "Signal & Math Utilities" },
+    iface: { name: "Interfaces (CLI / MCP)" }
+  };
+
+  var DATA = {
+    id: "root", label: "dense_armor", kind: "root", path: "dense_armor/__init__.py",
+    detail: "Companion toolkit to Dense-Evolution: a real-time diagnostic arbiter, a resonance/signal-matching layer, and a lightweight compute engine, exposed both as a Python package and as an MCP server.",
+    children: [
+      {
+        id: "engine", cat: "engine", label: "Core Engine", kind: "category",
+        detail: "The compute layer: tensor/vector primitives, the simulation engine and its hybrid variant, gate compilation, noise injection, chunked execution, and supporting profiler/memory/logging infrastructure.",
+        children: [
+          { id: "eng", cat: "engine", label: "engine.py", kind: "leaf", path: "dense_armor/core/engine.py", detail: "The primary compute engine — runs the core simulation/compute loop that the rest of Dense-Armor's diagnostics and utilities operate on." },
+          { id: "heng", cat: "engine", label: "hybrid_engine.py", kind: "leaf", path: "dense_armor/core/hybrid_engine.py", detail: "A hybrid variant of the core engine, documented in the API reference alongside engine.py — combines two execution strategies rather than using one uniformly." },
+          { id: "tensor", cat: "engine", label: "tensor.py", kind: "leaf", path: "dense_armor/core/tensor.py", detail: "Tensor data-structure primitives underlying the engine's compute representation." },
+          { id: "vector", cat: "engine", label: "vector.py", kind: "leaf", path: "dense_armor/core/vector.py", detail: "Vector data-structure primitives underlying the engine's compute representation." },
+          { id: "chunk", cat: "engine", label: "chunk.py", kind: "leaf", path: "dense_armor/core/chunk.py", detail: "Chunked execution support for the engine — splitting work into pieces, mirroring the same anti-OOM philosophy as Dense-Evolution's own Chunk backend." },
+          { id: "compiler", cat: "engine", label: "compiler.py", kind: "leaf", path: "dense_armor/core/compiler.py", detail: "Compiles the engine's operations into an executable form ahead of running them." },
+          { id: "noise", cat: "engine", label: "noise.py", kind: "leaf", path: "dense_armor/core/noise.py", detail: "Noise injection for the core engine, used to stress-test or benchmark the diagnostics under deliberately degraded conditions." },
+          { id: "damping", cat: "engine", label: "damping_operator.py", kind: "leaf", path: "dense_armor/core/damping_operator.py", detail: "A damping operator used by the engine — attenuates a signal or state component, referenced by resonance_search.py's apply_damping_blend step." },
+          { id: "preset", cat: "engine", label: "preset.py", kind: "leaf", path: "dense_armor/core/preset.py", detail: "Predefined engine configuration presets." },
+          { id: "memory", cat: "engine", label: "memory.py", kind: "leaf", path: "dense_armor/core/memory.py", detail: "Memory management/tracking for the engine's runtime state." },
+          { id: "profiler", cat: "engine", label: "profiler.py", kind: "leaf", path: "dense_armor/core/profiler.py", detail: "Performance profiling instrumentation for engine runs — the tool behind this session's own real benchmark-noise investigation (orphaned processes skewing timings)." },
+          { id: "logger", cat: "engine", label: "logger.py", kind: "leaf", path: "dense_armor/core/logger.py", detail: "Logging infrastructure shared across the engine and diagnostics." },
+          { id: "visualizer", cat: "engine", label: "visualizer.py", kind: "leaf", path: "dense_armor/core/visualizer.py", detail: "Visualization helpers for engine output/state." }
+        ]
+      },
+      {
+        id: "diag", cat: "diag", label: "Diagnostics & Arbiter", kind: "category",
+        detail: "The real-time classifier that decides whether a signal segment is healthy or corrupted and routes it to correction — validated this session against real quantum-chemistry data (H2/LiH scans, wormhole-experiment noise) with zero false positives and correct glitch detection at 8.46 sigma.",
+        children: [
+          { id: "arbiter", cat: "diag", label: "arbiter.py", kind: "leaf", path: "dense_armor/utility/arbiter.py", detail: "classify_segments / route_and_correct — the core arbiter this session validated on real Dense-Evolution benchmarks and H2/LiH dissociation curves: 0 false positives across clean physics data, correctly flagged an injected glitch at 8.46σ with no retuning needed." },
+          { id: "orca", cat: "diag", label: "orca.py", kind: "leaf", path: "dense_armor/utility/orca.py", detail: "Orca — a named diagnostic/orchestration component documented in the API reference alongside the arbiter." },
+          { id: "healing", cat: "diag", label: "healing.py", kind: "leaf", path: "dense_armor/utility/healing.py", detail: "Correction/healing logic applied once the arbiter routes a segment as needing repair." },
+          { id: "diagnostic", cat: "diag", label: "diagnostic.py", kind: "leaf", path: "dense_armor/utility/diagnostic.py", detail: "General diagnostic measurement utilities supporting the arbiter's classification decisions." },
+          { id: "robust", cat: "diag", label: "robust_filters.py", kind: "leaf", path: "dense_armor/utility/robust_filters.py", detail: "Robust (outlier-resistant) filtering utilities — median/MAD-style statistics rather than plain mean, feeding the arbiter's thresholds." }
+        ]
+      },
+      {
+        id: "signal", cat: "signal", label: "Signal & Math Utilities", kind: "category",
+        detail: "The resonance/similarity-matching layer and supporting numeric utilities — JAX-jitted cosine-similarity matching blended with damping and Collatz-inspired modulation, plus curvature and time-series helpers.",
+        children: [
+          { id: "resonance", cat: "signal", label: "resonance_search.py", kind: "leaf", path: "dense_armor/utility/resonance_search.py", detail: "apply_fast_resonance — a JAX-jitted matcher blending cosine similarity with apply_damping_blend and a Collatz-style modulation term (kappa, delta_eff, stress_segnale parameters). Read in full this session as a candidate to speed up quantumrag's TF-IDF retrieval; not yet wired in." },
+          { id: "curvature", cat: "signal", label: "curvature.py", kind: "leaf", path: "dense_armor/utility/curvature.py", detail: "Curvature-based numeric diagnostics on a signal or trajectory." },
+          { id: "anwav", cat: "signal", label: "anwav.py", kind: "leaf", path: "dense_armor/utility/anwav.py", detail: "Analytic-waveform-style signal utilities." },
+          { id: "collatz", cat: "signal", label: "collatz.py", kind: "leaf", path: "dense_armor/utility/collatz.py", detail: "The Collatz-conjecture-inspired modulation function that resonance_search.py's apply_fast_resonance blends in." },
+          { id: "metro", cat: "signal", label: "metro.py", kind: "leaf", path: "dense_armor/utility/metro.py", detail: "Metropolis-style or metric/measurement utilities supporting the signal-processing layer." },
+          { id: "iodat", cat: "signal", label: "iodat.py", kind: "leaf", path: "dense_armor/utility/iodat.py", detail: "Input/output data-handling helpers shared across the utility layer." }
+        ]
+      },
+      {
+        id: "iface", cat: "iface", label: "Interfaces (CLI / MCP)", kind: "category",
+        detail: "The entry points: armatura.py's toolkit surface, the __main__ CLI, and a full MCP server exposing Dense-Armor's tools to an agent like Claude Code.",
+        children: [
+          { id: "armatura", cat: "iface", label: "armatura.py", kind: "leaf", path: "dense_armor/armatura.py", detail: "The \"toolkit\" surface documented as armatura.md / toolkit.md — the assembled set of Dense-Armor operations exposed as one importable API." },
+          { id: "main", cat: "iface", label: "__main__.py", kind: "leaf", path: "dense_armor/__main__.py", detail: "The console-script entry point — what runs when Dense-Armor is invoked directly rather than imported." },
+          { id: "mcpserver", cat: "iface", label: "mcp_server/server.py", kind: "leaf", path: "dense_armor/mcp_server/server.py", detail: "The MCP server this session registered as dense-armor-mcp — exposes Dense-Armor's tools (arbiter, engine, utilities) to an MCP client such as Claude Code." },
+          { id: "mcptools", cat: "iface", label: "mcp_server/tools.py", kind: "leaf", path: "dense_armor/mcp_server/tools.py", detail: "The individual MCP tool definitions the server exposes." },
+          { id: "mcpmodels", cat: "iface", label: "mcp_server/models.py", kind: "leaf", path: "dense_armor/mcp_server/models.py", detail: "Pydantic request/response models for the MCP server's tool schemas." }
+        ]
+      }
+    ]
+  };
+
+  var CX = 600, CY = 460, R_CAT = 150, R_LEAF = 330;
+  var nodes = [], edges = [];
+
+  function place(node, angle, radius, parentId) {
+    var x = CX + Math.cos(angle) * radius, y = CY + Math.sin(angle) * radius;
+    node.x = x; node.y = y;
+    nodes.push(node);
+    if (parentId) edges.push({ from: parentId, to: node.id, cat: node.cat });
+  }
+
+  place(DATA, 0, 0, null);
+  var catCount = DATA.children.length;
+  DATA.children.forEach(function (cat, i) {
+    var catAngle = -Math.PI / 2 + i * (2 * Math.PI / catCount);
+    place(cat, catAngle, R_CAT, DATA.id);
+    var n = cat.children.length;
+    var spread = Math.min(1.25, 0.2 * n);
+    cat.children.forEach(function (leaf, j) {
+      var t = n === 1 ? 0.5 : j / (n - 1);
+      var leafAngle = catAngle - spread / 2 + t * spread;
+      place(leaf, leafAngle, R_LEAF, cat.id);
+    });
+  });
+
+  var byId = {};
+  nodes.forEach(function (n) { byId[n.id] = n; });
+
+  var svg = document.getElementById("map");
+  var svgNS = "http://www.w3.org/2000/svg";
+  function el(tag, attrs) {
+    var e = document.createElementNS(svgNS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+
+  var world = el("g", { id: "world" });
+  svg.appendChild(world);
+
+  edges.forEach(function (e) {
+    var a = byId[e.from], b = byId[e.to];
+    var mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+    var dx = b.y - a.y, dy = -(b.x - a.x);
+    var norm = Math.sqrt(dx * dx + dy * dy) || 1;
+    var bend = 18;
+    var cx = mx + (dx / norm) * bend, cy = my + (dy / norm) * bend;
+    var path = el("path", {
+      class: "edge",
+      d: "M " + a.x + " " + a.y + " Q " + cx + " " + cy + " " + b.x + " " + b.y,
+      stroke: e.cat ? "var(--" + e.cat + ")" : "var(--line)",
+      "stroke-opacity": e.cat ? "0.45" : "0.7"
+    });
+    world.appendChild(path);
+  });
+
+  nodes.forEach(function (n) {
+    var r = n.kind === "root" ? 30 : n.kind === "category" ? 22 : 13;
+    var g = el("g", { class: "node " + n.kind, "data-id": n.id, transform: "translate(" + n.x + "," + n.y + ")" });
+    if (n.cat) g.style.setProperty("--cat-color", "var(--" + n.cat + ")");
+    var circle = el("circle", { class: "node-circle", r: r, stroke: n.cat ? "var(--" + n.cat + ")" : "var(--root)" });
+    g.appendChild(circle);
+    var label = el("text", { class: "node-label", x: 0, y: r + 15, "text-anchor": "middle" });
+    label.textContent = n.label;
+    if (n.kind === "root") { label.setAttribute("y", 4); label.setAttribute("dominant-baseline", "middle"); }
+    g.appendChild(label);
+    g.addEventListener("click", function () { selectNode(n.id); });
+    world.appendChild(g);
+  });
+
+  var panel = document.getElementById("panel");
+  function selectNode(id) {
+    document.querySelectorAll(".node.active").forEach(function (g) { g.classList.remove("active"); });
+    var g = svg.querySelector('.node[data-id="' + id + '"]');
+    if (g) g.classList.add("active");
+    var n = byId[id];
+    var catInfo = n.cat ? CATS[n.cat] : null;
+    var html = "";
+    html += '<div class="eyebrow" style="--cat-color:' + (n.cat ? "var(--" + n.cat + ")" : "var(--ink-dim)") + '">' +
+      (catInfo ? catInfo.name : (n.kind === "root" ? "Package root" : "")) + "</div>";
+    html += "<h2>" + n.label + "</h2>";
+    if (n.path) html += '<div class="path">' + n.path + "</div>";
+    html += "<p>" + n.detail + "</p>";
+    if (n.children && n.children.length) {
+      html += '<div class="kids"><div class="kid-label">Contains</div>';
+      n.children.forEach(function (c) { html += '<button class="kid-btn" data-goto="' + c.id + '">' + c.label + "</button>"; });
+      html += "</div>";
+    }
+    panel.className = "panel";
+    panel.innerHTML = html;
+    panel.querySelectorAll("[data-goto]").forEach(function (btn) {
+      btn.addEventListener("click", function () { selectNode(btn.getAttribute("data-goto")); });
+    });
+  }
+
+  var legend = document.getElementById("legend");
+  Object.keys(CATS).forEach(function (k) {
+    var item = document.createElement("div");
+    item.className = "legend-item";
+    item.innerHTML = '<span class="swatch" style="background:var(--' + k + ')"></span>' + CATS[k].name;
+    legend.appendChild(item);
+  });
+
+  var scale = 1, tx = 0, ty = 0, dragging = false, lastX = 0, lastY = 0;
+  function applyTransform() { world.setAttribute("transform", "translate(" + tx + "," + ty + ") scale(" + scale + ")"); }
+  svg.addEventListener("pointerdown", function (e) { dragging = true; lastX = e.clientX; lastY = e.clientY; svg.setPointerCapture(e.pointerId); });
+  svg.addEventListener("pointermove", function (e) { if (!dragging) return; tx += (e.clientX - lastX); ty += (e.clientY - lastY); lastX = e.clientX; lastY = e.clientY; applyTransform(); });
+  svg.addEventListener("pointerup", function () { dragging = false; });
+  svg.addEventListener("wheel", function (e) { e.preventDefault(); var delta = e.deltaY > 0 ? 0.9 : 1.1; scale = Math.max(0.35, Math.min(2.5, scale * delta)); applyTransform(); }, { passive: false });
+  document.getElementById("zoomIn").addEventListener("click", function () { scale = Math.min(2.5, scale * 1.2); applyTransform(); });
+  document.getElementById("zoomOut").addEventListener("click", function () { scale = Math.max(0.35, scale * 0.8); applyTransform(); });
+  document.getElementById("zoomReset").addEventListener("click", function () { scale = 1; tx = 0; ty = 0; applyTransform(); });
+
+  selectNode("root");
+})();
+</script>
