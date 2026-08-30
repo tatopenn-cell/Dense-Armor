@@ -68,7 +68,6 @@ plugins:
 
 nav:
   - Home: index.md
-  - Mind Map: mindmap.md
   - Getting Started: getting-started.md
   - MCP Server: mcp.md
   - API Reference:
