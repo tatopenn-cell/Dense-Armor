@@ -145,6 +145,30 @@ class TestPressureValve:
             assert len(pressione) == len(x)
             assert anomalie == []
 
+    def test_scenario_impulsi_alternati_su_baseline_piatta_ora_risolto(self):
+        # Il "LIMITE NOTO" originale (vedi docstring di pressure_valve):
+        # 3 picchi ravvicinati (+/-500) su un fondo costante 120, zero
+        # rumore reale -- IQR e MAD collassano a esattamente 0 in ogni
+        # finestra (locale E di riferimento, verificato: allargare la
+        # finestra non basta, riduce solo la frazione di outlier), quindi
+        # venivano scartati e l'unico stimatore superstite (media/std) era
+        # a sua volta contaminato. Prima del fix: pressione 3.16/5.19/3.16
+        # (sotto soglia 8.0), zero anomalie, RMSE=86.6. Con il fix (scala
+        # locale nulla + deviazione reale = pressione infinita): tutti e 3
+        # i picchi rilevati, RMSE=0.0 -- riprodotto qui esattamente come
+        # nello scenario "A" di test_pressure_valve_vs_orca_experiment.py.
+        x_clean = 120.0
+        n = 100
+        x = np.full(n, x_clean)
+        x[30:33] = [x_clean + 500.0, x_clean - 500.0, x_clean + 500.0]
+
+        pulito, anomalie, pressione, _ = pressure_valve(x)
+
+        assert anomalie == [30, 31, 32]
+        assert np.all(np.isinf(pressione[[30, 31, 32]]))
+        rmse = float(np.sqrt(np.mean((pulito - x_clean) ** 2)))
+        assert rmse < 1e-9, f"RMSE={rmse}, atteso ~0.0 dopo la correzione"
+
     def test_pesi_lagrange_sommano_a_uno_e_favoriscono_la_scala_minore(self):
         # Verifica diretta della formula w_k = (1/scala_k^2)/Sum(1/scala_j^2)
         # su un caso a mano: due "metodi" con scala 1.0 e 2.0 -> pesi attesi
