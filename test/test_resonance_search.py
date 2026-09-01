@@ -91,3 +91,67 @@ def test_apply_fast_resonance_kappa_modula_davvero_il_punteggio_non_solo_cosine(
         "kappa non ha alcun effetto misurabile sul punteggio: la modulazione "
         "via apply_damping_blend sarebbe puramente decorativa"
     )
+
+
+def test_apply_fast_resonance_ranking_e_indistinguibile_da_cosine_puro():
+    """Il test precedente mostra che kappa/delta_eff/stress_segnale spostano
+    i VALORI del punteggio -- ma per un motore di retrieval cio' che conta
+    davvero e' l'ORDINE (ranking), non il valore assoluto. Benchmark reale
+    su quantumrag (collection quantum_info, 1855 chunk, 12 query corte
+    etichettate con il documento corretto atteso, Mean Reciprocal Rank come
+    metrica) trovato 2026-09-01: cosine puro da' MRR=0.8125; apply_fast_
+    resonance con le sue costanti reali (kappa=0.86210, delta_eff=0.04341,
+    stress_segnale=9.42e-04) da' lo STESSO identico MRR=0.8125; 30 trial
+    indipendenti con kappa/delta_eff/stress_segnale COMPLETAMENTE
+    randomizzati (range ampi, incluso fuori scala) danno anch'essi
+    MRR=0.8125 in ognuno dei 30 trial, deviazione standard 0.0000 --
+    z-score del valore "reale" rispetto alla distribuzione randomizzata:
+    0.00. Causa root, verificata numericamente: apply_fast_resonance e
+    cosine puro correlano a 0.999996 sugli stessi dati (quasi-collineari)
+    -- il blend/K_ABC perturba i valori assoluti ma quella perturbazione e'
+    dominata cosi' fortemente dal termine cosine di base che non altera mai
+    l'ordine relativo dei risultati, ne' con le costanti "vere" ne' con
+    costanti arbitrarie.
+
+    Stesso schema di confondimento gia' trovato in Dense-Evolution-Discovery
+    Experiment 35 (zne_healing_sigma_provenance.py): una perturbazione
+    reale nei numeri che pero' non dipende in modo significativo da COSA la
+    guida, verificato con lo stesso disegno a controllo negativo (permutare/
+    randomizzare l'input "significativo" e verificare che il risultato non
+    cambi). Qui replicato su dati sintetici (non richiede quantumrag) per
+    tenere il test portabile e veloce."""
+    rng = np.random.default_rng(7)
+    n_docs, dim = 40, 24
+    db = rng.standard_normal((n_docs, dim)).astype(np.float32)
+
+    # Query costruita come un documento reale + rumore, cosi' il "corretto"
+    # top-1 e' noto per costruzione (indice 5), non arbitrario.
+    target_idx = 5
+    query = db[target_idx] + 0.15 * rng.standard_normal(dim).astype(np.float32)
+
+    def top1(scores):
+        return int(np.argmax(scores))
+
+    cosine_scores = db @ query / (
+        np.linalg.norm(db, axis=1) * np.linalg.norm(query) + 1e-8
+    )
+    assert top1(cosine_scores) == target_idx, "il benchmark sintetico stesso non e' valido: cosine non trova il target"
+
+    real_scores = apply_fast_resonance(db, query)
+    assert top1(real_scores) == target_idx
+
+    mismatches = 0
+    n_trials = 30
+    for trial in range(n_trials):
+        kappa = float(rng.uniform(0.01, 2.0))
+        delta_eff = float(rng.uniform(-1.0, 1.0))
+        stress = float(rng.uniform(1e-6, 1e-1))
+        random_scores = apply_fast_resonance(db, query, kappa=kappa, delta_eff=delta_eff, stress_segnale=stress)
+        if top1(random_scores) != target_idx:
+            mismatches += 1
+
+    assert mismatches == 0, (
+        f"{mismatches}/{n_trials} trial con parametri randomizzati hanno cambiato il ranking rispetto "
+        f"a cosine puro -- se questo fallisce in futuro, la modulazione avrebbe smesso di essere "
+        f"un confondimento puro e andrebbe rivalutata (non solo re-skippata)"
+    )
