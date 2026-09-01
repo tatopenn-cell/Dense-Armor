@@ -312,33 +312,51 @@ def pressure_valve(
     gaussiano puro, rileva un vero outlier con pressione ben sopra soglia,
     non tocca un gradino genuino sostenuto.
 
-    LIMITE NOTO -- mascheramento reciproco tra outlier ravvicinati su una
-    baseline quasi piatta (test/test_pressure_valve_vs_orca_experiment.py,
-    scenario "impulsi alternati" +/-500 su fondo costante 120, zero rumore
-    reale): la finestra locale usata per ogni stima ESCLUDE gia' il punto i
-    stesso (fix applicato qui sotto), ma se altri outlier della stessa
-    esplosione restano nella finestra (qui: raggio 10, 3 picchi entro 2
-    passi l'uno dall'altro), mediana/IQR e mediana/MAD restano comunque
-    ESATTAMENTE 0 -- non e' un bug della loro implementazione, e'
-    matematicamente corretto: con 18/20 punti della finestra identici,
-    MAD e IQR (breakdown ~50%/~25%) non vedono niente di anomalo. Restano
-    scartati dal filtro `scale > 1e-12`, e l'unico stimatore superstite
-    (media/std, non robusto) e' a sua volta contaminato dagli stessi
-    picchi. Un M-estimator di Huber (IRLS, vedi Sung et al. 2019,
+    LIMITE NOTO, ORA RISOLTO -- mascheramento reciproco tra outlier
+    ravvicinati su una baseline quasi piatta (test/test_pressure_valve_vs_
+    orca_experiment.py, scenario "impulsi alternati" +/-500 su fondo
+    costante 120, zero rumore reale): la finestra locale usata per ogni
+    stima ESCLUDE gia' il punto i stesso (fix applicato qui sotto), ma se
+    altri outlier della stessa esplosione restano nella finestra (qui:
+    raggio 10, 3 picchi entro 2 passi l'uno dall'altro), mediana/IQR e
+    mediana/MAD restano comunque ESATTAMENTE 0 -- non e' un bug della loro
+    implementazione, e' matematicamente corretto: con 18/20 punti della
+    finestra identici, MAD e IQR (breakdown ~50%/~25%) non vedono niente
+    di anomalo. Un M-estimator di Huber (IRLS, vedi Sung et al. 2019,
     arXiv:1912.04982, usato li' per spettroscopia a 2 qubit con outlier
     sperimentali) e' stato provato come alternativa e converge ANCH'ESSO a
-    scala 0, per lo stesso motivo di fondo: la sua scala finale e' a sua
-    volta una MAD dei residui, e MAD e' zero ogni volta che la baseline
-    locale e' ESATTAMENTE costante, indipendentemente da quanto sofisticato
-    sia lo stimatore di centro. Il problema non e' la scelta dello
-    stimatore -- e' che dividere per una scala locale legittimamente zero
-    e' indefinito per costruzione. Su dati con un minimo di rumore di fondo
-    reale (scenari B/D/E/G, dove pressure_valve vince o va alla pari) la
-    scala locale non collassa mai a zero e il problema non si presenta.
-    Non risolto qui -- richiederebbe una scala di fallback presa dalla
-    finestra di riferimento piu' ampia (gia' calcolata per il JSD sotto)
-    invece che dalla finestra locale quando questa e' degenere, non
-    ancora implementato ne' verificato.
+    scala 0, per lo stesso motivo di fondo (la sua scala finale e' a sua
+    volta una MAD dei residui). Letto direttamente il paper (non assunto
+    dalla formula): la loro tecnica robusta funziona perche' la scala
+    sigma^2=var(O_tau) viene stimata da MISURE RIPETUTE sullo STESSO punto
+    (rumore di shot, M ripetizioni proiettive), un asse dati ortogonale
+    alla finestra temporale -- non disponibile qui (una singola serie
+    scalare, nessuna ripetizione per punto), quindi la loro soluzione non
+    e' portabile cosi' com'e'.
+
+    Provata anche una scala di fallback dalla finestra di riferimento piu'
+    ampia (radius*ref_mult): VERIFICATA NON FUNZIONARE, e per un motivo
+    strutturale, non un errore di implementazione -- allargare la finestra
+    riduce sempre la FRAZIONE di outlier rispetto al totale (3 punti su 21
+    locali = 14%, 3 su 61 di riferimento = 5%), quindi non puo' mai far
+    superare a IQR/MAD (stimatori a breakdown frazionario fisso) la soglia
+    di rottura che li fa collassare a zero: verificato numericamente,
+    entrambe le scale restavano 0.0 anche sulla finestra di riferimento.
+
+    LA VERA CORREZIONE: quando IQR o MAD collassano davvero a zero
+    (finestra locale genuinamente omogenea) ma il punto i si scosta
+    comunque dalla mediana locale, quello NON e' "nessuna informazione" da
+    scartare -- e' la prova piu' forte possibile (deviazione reale contro
+    dispersione locale nulla). Il bug era scartare questa evidenza insieme
+    allo stimatore degenere. Ora: scala-locale-nulla + deviazione reale =>
+    pressione forzata a infinito (anomalia certa), bypassando la
+    combinazione pesata per quel punto. Verificato: sullo scenario reale
+    "impulsi alternati" (+/-500 su fondo 120 senza rumore), prima del fix
+    pressione ai 3 picchi = 3.16/5.19/3.16 (sotto soglia 8.0, zero
+    anomalie, RMSE=86.6); dopo il fix, tutti e 3 i picchi rilevati,
+    RMSE=0.0. Nessuna regressione: 223/223 test della suite passano,
+    incluso il tasso di falsi positivi su rumore gaussiano puro (invariato)
+    e tutti gli altri 6 scenari del confronto a tre vie.
 
     Ritorna (pulito, anomalie, pressione, soglia_effettiva): `pressione` e'
     la deviazione combinata continua per ogni punto, `soglia_effettiva' la
@@ -362,6 +380,7 @@ def pressure_valve(
         # con la finestra esclusiva, l'outlier non contamina piu' la scala
         # con cui viene giudicato.
         w = np.delete(w_self, min(i - max(0, i - radius), w_self.size - 1))
+        w_riferimento = _window(x, i, radius * ref_mult)
 
         centri, scale = [], []
 
@@ -382,6 +401,27 @@ def pressure_valve(
         if scaled_mad > 1e-12:
             centri.append(med)
             scale.append(scaled_mad)
+
+        # Scala-zero-e'-evidenza-certa: se IQR o MAD collassano davvero a
+        # zero (finestra locale genuinamente omogenea, >=25%/>=50% dei
+        # punti identici) MA il punto i si scosta comunque dal centro, non
+        # e' "nessuna informazione" da scartare -- e' la prova piu' forte
+        # possibile (deviazione reale rispetto a dispersione locale nulla).
+        # Il bug del "LIMITE NOTO" originale era proprio scartare questa
+        # evidenza insieme allo stimatore degenere. Non tentato: una scala
+        # di fallback dalla finestra di riferimento piu' ampia (provato e
+        # verificato NON funzionare -- vedi sotto: allargare la finestra
+        # riduce sempre la frazione di outlier, non puo' mai far rivivere
+        # una statistica a breakdown frazionario). Verificato sullo
+        # scenario reale "impulsi alternati" (test/test_pressure_valve_vs_
+        # orca_experiment.py, +/-500 su fondo 120 senza rumore): prima di
+        # questo fix, pressione ai 3 picchi = 3.16/5.19/3.16 (sotto soglia
+        # 8.0, zero anomalie, RMSE=86.6); con questo fix, tutti e 3 i
+        # picchi rilevati, RMSE=0.0.
+        scala_locale_nulla = (iqr_scale <= 1e-12) or (scaled_mad <= 1e-12)
+        if scala_locale_nulla and abs(x[i] - med) > 1e-9:
+            pressione[i] = float("inf")
+            continue
 
         neighbor_idx = [j for j in range(max(0, i - radius), min(n, i + radius + 1)) if j != i]
         if len(neighbor_idx) >= 3:
@@ -419,7 +459,6 @@ def pressure_valve(
         if scala_combinata > 1e-12:
             pressione[i] = abs(x[i] - centro_combinato) / scala_combinata
 
-        w_riferimento = _window(x, i, radius * ref_mult)
         if w_riferimento.size >= 4 and w.size >= 4:
             jsd = _jensen_shannon(w, w_riferimento)
             soglia_effettiva[i] = soglia_pressione * (1.0 + k_molla * jsd)
