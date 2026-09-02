@@ -2,6 +2,23 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## [1.1.13]
+
+### Added
+- **`utility/stable_frame_filter.py` (`velocity_gated_stable_mask`)**: filtro
+  che restringe l'analisi di un segnale ai punti dove un segnale di
+  riferimento COMPANION indica uno stato stabile/lento -- evita che un
+  detector interpreti come anomalia un transitorio spiegato da un
+  confondimento noto e indipendente (es. il comando/leader di un braccio
+  robotico che si muove veloce, causando un lag di tracking normale).
+  Parametro `already_rate` per riferimenti gia' di tipo velocita' (es.
+  magnitudine giroscopica) invece che posizione -- trovato necessario da
+  un fallimento reale su un secondo caso, non aggiunto preventivamente.
+  Promosso da Dense-Evolution-Discovery dopo validazione su due domini
+  fisici reali indipendenti (braccio robotico teleoperato SO-101, IMU
+  umano reale) -- stessa disciplina di promozione gia' usata per
+  `one_sided_upper_filter`.
+
 ## [1.1.12]
 
 ### Added
