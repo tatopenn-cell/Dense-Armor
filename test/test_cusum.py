@@ -79,6 +79,75 @@ def test_reset_after_flag_allows_detecting_a_second_later_shift():
     assert np.any(flagged[450:550]), "second shift must also be caught, not suppressed by the first"
 
 
+def test_nan_input_point_does_not_crash_or_propagate_nan():
+    """A NaN at x[i] must not turn into a NaN accumulator or a spurious
+    flag -- explicit guard, not reliant on Python's max(0.0, nan)==0.0 /
+    min(0.0, nan)==0.0 incidental argument-order behavior (verified
+    separately to exist, but not something this function should depend
+    on silently)."""
+    rng = np.random.default_rng(6)
+    x = rng.normal(0.0, 1.0, 200)
+    x[100] = np.nan
+    flagged, cusum = cusum_detector(x)
+    assert np.all(np.isfinite(cusum)), "cusum accumulator must never contain NaN/Inf"
+    assert not flagged[100], "the NaN point itself must not be flagged"
+
+
+def test_nan_point_does_not_corrupt_later_reference_windows():
+    """A NaN sitting inside a LATER point's causal reference window
+    (up to radius*ref_mult points back) must not turn that later point's
+    med/scale into NaN and silently break its own accumulator update."""
+    rng = np.random.default_rng(7)
+    x = rng.normal(0.0, 1.0, 200)
+    x[100] = np.nan
+    flagged, cusum = cusum_detector(x, radius=10, ref_mult=3)  # span=30
+    window_after = slice(101, 131)  # NaN still inside these points' windows
+    assert np.all(np.isfinite(cusum[window_after]))
+    assert not np.any(flagged[window_after])
+
+
+def test_inf_input_point_does_not_crash_or_propagate():
+    rng = np.random.default_rng(8)
+    x = rng.normal(0.0, 1.0, 200)
+    x[100] = np.inf
+    flagged, cusum = cusum_detector(x)
+    assert np.all(np.isfinite(cusum))
+    assert not flagged[100]
+
+
+def test_invalid_reference_raises():
+    x = np.zeros(50)
+    try:
+        cusum_detector(x, reference="bogus")
+        assert False, "expected ValueError"
+    except ValueError:
+        pass
+
+
+def test_fixed_reference_keeps_flagging_after_a_permanent_shift():
+    """The documented, real behavioral difference from 'adaptive': a
+    fixed target never updates, so a sustained shift keeps re-triggering
+    the accumulator almost every step, instead of the detector adapting
+    to the new level and going quiet."""
+    rng = np.random.default_rng(2)
+    x = rng.normal(0.0, 1.0, 400)
+    x[200:] += 10.0
+    flagged_fixed, _ = cusum_detector(x, reference="fixed")
+    flagged_adaptive, _ = cusum_detector(x, reference="adaptive")
+    assert flagged_fixed[200:].sum() > flagged_adaptive[200:].sum(), (
+        "fixed reference should keep re-flagging a permanent shift far more than adaptive"
+    )
+
+
+def test_fixed_reference_warmup_before_span_is_never_flagged():
+    rng = np.random.default_rng(9)
+    x = rng.normal(0.0, 1.0, 100)
+    flagged, cusum = cusum_detector(x, radius=10, ref_mult=3, reference="fixed")
+    span = 10 * 3
+    assert not np.any(flagged[:span])
+    assert not np.any(cusum[:span])
+
+
 def test_k_and_h_change_sensitivity_in_the_expected_direction():
     """Not a claim about which values are 'better' -- just that a smaller
     h (easier to trip) flags at least as much as a larger h on the same
