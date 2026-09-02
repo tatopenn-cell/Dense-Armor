@@ -2,6 +2,41 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## [1.1.12]
+
+### Added
+- **`utility/cusum.py` (`cusum_detector`)**: canale complementare a
+  `classify_segments` per il drift lento/sostenuto -- CUSUM a due code
+  (Page 1954), modalita' `adaptive` (default, finestra causale scorrevole,
+  dichiarata onestamente come variante non identica allo schema originale
+  a riferimento fisso) e `fixed` (lo schema classico). Gestione NaN/Inf
+  esplicita. Nato da un gap reale misurato in
+  `test/test_benchmark_v0_runtime_behavioral_drift.py`:
+  `classify_segments` rileva un glitch transitorio al 100% (latenza 0) ma
+  solo il 9-27% di un drift graduale nella finestra di transizione.
+- **`utility/one_sided.py` (`one_sided_upper_filter`)**: filtro a una
+  coda componibile con `classify_segments`/`cusum_detector` -- per segnali
+  dove solo un AUMENTO e' significativo (latenza, error rate). Riduce i
+  falsi positivi misurati su telemetria reale di un agente Qwen2 1.8B
+  (via Ollama) dal 22.5% al 12.5% (`classify_segments`) e dal 17.5% al
+  10.0% (`cusum_detector`), e il falso rifiuto su un cambio di
+  comportamento legittimo dal 24.0% al 4.0% su entrambi -- al costo reale
+  di una sensibilita' ridotta al drift persistente (non nascosto: vedi
+  `test/test_benchmark_v2_1_ablation.py`). Un log-transform provato in
+  parallelo non ha portato benefici misurabili ed e' stato scartato.
+
+### Investigated (percorso di validazione, non solo il risultato finale)
+- Benchmark sintetico congelato (`test/test_benchmark_v0_runtime_
+  behavioral_drift.py`): protocollo preregistrato, 4 condizioni (baseline,
+  drift, glitch, test negativo), mai ritoccato dopo aver visto i
+  risultati.
+- Benchmark su agente reale (`test/agent_v2/`, `test/test_benchmark_v2_*`):
+  prima validazione non sintetica -- loop minimale con Qwen2 1.8B via
+  Ollama (tool-calling manuale, il modello non restituisce `tool_calls`
+  strutturati nonostante il tag "tools"), 4 scenari con ground truth
+  esatta. Trovato: la latenza reale ha una coda molto piu' pesante del
+  rumore gaussiano sintetico, da cui il filtro one-sided sopra.
+
 ## [1.1.11]
 
 ### Investigated (nessun candidato promosso)
