@@ -18,6 +18,24 @@ it accumulates small, sustained deviations over time instead of judging
 each point in isolation, so a drift too gradual to trip an instantaneous
 threshold still eventually trips the accumulated sum.
 
+HONEST DEVIATION FROM THE CITED ALGORITHM: Page's original CUSUM (and
+the textbook treatment since) accumulates deviation against a FIXED
+reference mean, decided once from an in-control baseline and never
+updated. This implementation instead recomputes med/scale from a
+SLIDING causal window every step (same convention as arbiter.py), so
+the "reference" itself drifts along with the data over time. This is a
+deliberate choice (matching classify_segments' own adaptive-window
+convention, and needed for a streaming setting where there is no fixed
+known-good baseline to pin against) but it is NOT literally Page's
+fixed-reference scheme -- call this an adaptive-reference CUSUM, not an
+unqualified claim to be running the textbook algorithm unmodified. The
+practical effect, measured in test/test_benchmark_v0_runtime_behavioral_
+drift.py: it detects the LEADING EDGE of a sustained drift quickly
+(3-8 points into a 15-point ramp), then stops accumulating once its own
+reference window has caught up to the new level -- it will NOT keep
+accumulating forever against a genuinely fixed target the way Page's
+original scheme does.
+
 This is a NEW, SEPARATE detector, not a replacement for classify_segments
 and not a retuning of its shipped thresholds (radius=10, ref_mult=3,
 n_sigmas=3.0, spike_run_max=2 in arbiter.py are untouched by this file,

@@ -58,7 +58,7 @@ FOUR CONDITIONS (as specified in the review):
      production system using this arm's classification to decide
      reject-vs-pass would let it through".
 
-THREE DETECTOR ARMS, same frozen inputs for each:
+FOUR DETECTOR ARMS, same frozen inputs for each:
   - "none"       -- no detector at all (always 'clean'): the floor, what
                     an unprotected pipeline sees (nothing rejected, ever).
   - "global_3sigma" -- a naive, non-adaptive baseline: global mean/std
@@ -72,20 +72,31 @@ THREE DETECTOR ARMS, same frozen inputs for each:
                     n_sigmas=3.0, spike_run_max=2) -- using the library's
                     real defaults, not thresholds hand-picked for this
                     benchmark, is itself part of the preregistration.
+  - "cusum"       -- utility.cusum.cusum_detector (v0.1 addition), its
+                    OWN SHIPPED DEFAULTS (k=0.5, h=5.0) likewise unchanged
+                    from the classical textbook tuning. Binary alert only
+                    (no spike/regime distinction) -- see its own module
+                    docstring for how it differs from Page's original
+                    fixed-reference scheme.
 
 METRICS computed per scenario/arm: false-positive rate (baseline),
 detection rate (fraction of injected region flagged non-clean),
 detection latency (first flagged index after injection start, in points
--- glitch scenarios only), sigma reached at the injection point (glitch
-scenarios only, dense_armor arm only -- it is the only arm that reports
-a deviation magnitude), regime-vs-spike correctness (drift/negative-test
-scenarios, dense_armor arm only), overhead (wall-clock seconds per
-1000 points, dense_armor arm only -- "none"/"global_3sigma" are O(n) and
-not a meaningful comparison for a detector-overhead claim).
+-- glitch and drift scenarios, dense_armor and cusum arms, the only two
+that report a per-point label to search), sigma/cusum value reached at
+the injection point (glitch scenarios, dense_armor/cusum arms -- the
+only two that report a deviation magnitude), regime-vs-spike correctness
+(drift/negative-test scenarios, dense_armor arm only -- the only arm
+with that distinction), overhead (median wall-clock time per 1000
+points over repeated timed runs on the same frozen array -- median, not
+a single sample, because this machine has shown real non-reproducible
+timing jitter before; dense_armor/cusum arms only -- "none"/
+"global_3sigma" are trivially O(n) and not a meaningful comparison for a
+detector-overhead claim).
 """
 import time
-from dataclasses import dataclass, field
-from typing import Dict, List, Tuple
+from dataclasses import dataclass
+from typing import Tuple
 
 import numpy as np
 
@@ -163,14 +174,12 @@ def _run_cusum(x: np.ndarray) -> Tuple[ScenarioResult, float]:
     t0 = time.perf_counter()
     flagged, cusum = cusum_detector(x, **CUSUM_KW)
     elapsed = time.perf_counter() - t0
-    labels = np.where(flagged, "spike", "clean").astype(object)  # binary alert, no spike/regime concept
+    # "alert", not "spike": cusum's binary flag has no relation to arbiter's
+    # own "spike" (short transient, gets corrected) vs "regime" (sustained,
+    # passed through) vocabulary -- reusing "spike" here would suggest the
+    # opposite of what cusum is actually built to catch (sustained drift).
+    labels = np.where(flagged, "alert", "clean").astype(object)
     return ScenarioResult("cusum", labels, cusum), elapsed
-
-
-ARMS = {
-    "none": _run_none,
-    "global_3sigma": _run_global_3sigma,
-}
 
 
 def _false_positive_rate(labels: np.ndarray, valid_from: int = 40) -> float:
@@ -207,16 +216,23 @@ def _regime_fraction(labels: np.ndarray, start: int, length: int) -> float:
 
 # ---------------------------------------------------------------------
 # Frozen dataset: built once at import time, never regenerated per test.
+# ONE shared noise realization (_baseline_only, single seed) underlies
+# condition 1 AND every severity of conditions 2/3/4 -- so the injected
+# magnitude is the ONLY thing that differs across severities, not also a
+# different random draw. (v0.1 fix: the original version drew a
+# different seed, SEED+i, per severity, confounding "severity" with
+# "which noise realization" -- caught during a rigor review before this
+# was trusted as public-library-quality code, not caught by the numbers
+# alone.)
 # ---------------------------------------------------------------------
-_baseline = {sev: _baseline_noise(SEED + i) for i, sev in enumerate(SEVERITIES)}
-_baseline_only = _baseline_noise(SEED)  # condition 1
+_baseline_only = _baseline_noise(SEED)  # condition 1, and the shared base for 2/3/4 below
 
 _drift = {
-    sev: _inject_ramp(_baseline[sev], INJECT_AT, RAMP_LEN, mag)
+    sev: _inject_ramp(_baseline_only, INJECT_AT, RAMP_LEN, mag)
     for sev, mag in SEVERITIES.items()
 }
 _glitch = {
-    sev: _inject_spike(_baseline[sev], INJECT_AT, SPIKE_WIDTH, mag)
+    sev: _inject_spike(_baseline_only, INJECT_AT, SPIKE_WIDTH, mag)
     for sev, mag in SEVERITIES.items()
 }
 _negative = dict(_drift)  # condition 4: same arrays as condition 2, different question asked of them
@@ -307,11 +323,22 @@ def test_benchmark_v0_report():
         print(f"    {sev:8s}   {flagged_at_all:21.3f} {regime_frac:18.3f} {false_reject_frac:24.3f}"
               f"   {alert_rate_cs:17.3f}")
 
-    # --- Overhead --------------------------------------------------------
-    per_1k_da = 1000.0 * t_da / N_POINTS
-    per_1k_cs = 1000.0 * t_cs / N_POINTS
-    print(f"\n[overhead] dense_armor: {t_da*1000:.2f} ms / {N_POINTS} pts ({per_1k_da*1000:.2f} ms/1k)"
-          f"   cusum: {t_cs*1000:.2f} ms / {N_POINTS} pts ({per_1k_cs*1000:.2f} ms/1k)")
+    # --- Overhead: median over repeated timed runs, not one sample -------
+    # (this machine has shown real non-reproducible timing jitter before,
+    # see project memory on dense_armor benchmark noise -- a single
+    # wall-clock sample is not a reliable overhead number)
+    N_REPEATS = 11
+    times_da = [_run_dense_armor(_baseline_only)[1] for _ in range(N_REPEATS)]
+    times_cs = [_run_cusum(_baseline_only)[1] for _ in range(N_REPEATS)]
+    med_da, std_da = float(np.median(times_da)), float(np.std(times_da))
+    med_cs, std_cs = float(np.median(times_cs)), float(np.std(times_cs))
+    per_1k_da = 1000.0 * med_da / N_POINTS
+    per_1k_cs = 1000.0 * med_cs / N_POINTS
+    print(f"\n[overhead, median of {N_REPEATS} runs] "
+          f"dense_armor: {med_da*1000:.2f}+-{std_da*1000:.2f} ms / {N_POINTS} pts "
+          f"({per_1k_da*1000:.2f} ms/1k)   "
+          f"cusum: {med_cs*1000:.2f}+-{std_cs*1000:.2f} ms / {N_POINTS} pts "
+          f"({per_1k_cs*1000:.2f} ms/1k)")
 
     print("\n" + "=" * 78)
 
