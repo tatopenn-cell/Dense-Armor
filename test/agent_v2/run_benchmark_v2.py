@@ -94,7 +94,7 @@ PERSISTENT_FROM = 25
 PERSISTENT_EXTRA_S = 2.0
 TRANSIENT_MULT = 8.0
 
-OUT_PATH = _THIS_DIR / "telemetry_v2_frozen.jsonl"
+OUT_PATH = _THIS_DIR / (sys.argv[1] if len(sys.argv) > 1 else "telemetry_v2_frozen.jsonl")
 
 
 def _pool_cycle(pool, n):
