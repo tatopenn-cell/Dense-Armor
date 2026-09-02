@@ -69,6 +69,7 @@ plugins:
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
+  - Live Demo: demo.md
   - MCP Server: mcp.md
   - API Reference:
       - api/index.md
