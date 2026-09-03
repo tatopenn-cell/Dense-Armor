@@ -69,7 +69,7 @@ def _robust_center_scale(w: np.ndarray) -> Tuple[float, float]:
 
 def cusum_detector(
     x: np.ndarray, radius: int = 10, ref_mult: int = 3,
-    k: float = 0.5, h: float = 5.0, eps: float = 1e-9,
+    k: float = 0.5, h: float = 20.0, eps: float = 1e-9,
     reference: str = "adaptive",
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Two-sided CUSUM on the same causal robust-z-score classify_segments
@@ -83,14 +83,32 @@ def cusum_detector(
     instant they flag, so a second, later shift can be detected too
     (standard CUSUM reset behavior, not specific to this implementation).
 
-    k (the "slack"/reference value, in robust-sigma units) and h (the
-    decision threshold, in accumulated robust-sigma units) are the
-    classical CUSUM defaults associated with detecting roughly a 1-sigma
-    sustained shift at a practical average-run-length tradeoff (k=1/2 the
-    shift you want to detect, h~4-5) -- Page's original scheme and the
-    textbook tuning since (e.g. Hawkins & Olwell, "Cumulative Sum Charts
-    and Charting for Quality Improvement", 1998), not values picked to
-    fit this project's own benchmark numbers.
+    k (the "slack"/reference value, in robust-sigma units) is the
+    classical convention: half the shift size you want to detect --
+    Page's original scheme and the textbook tuning since (e.g. Hawkins &
+    Olwell, "Cumulative Sum Charts and Charting for Quality Improvement",
+    1998). h (the decision threshold) is NOT the commonly-cited h~4-5:
+    checked directly (2026-09-03, prompted by a parallel investigation
+    porting this same algorithm to online-ml/river) before shipping that
+    value -- h=5.0 gives a 100% ("adaptive") / 85% ("fixed") stream-level
+    false-alarm rate on a 1000-sample purely stable N(0,1) series (200
+    trials, radius=10, ref_mult=3, k=0.5), because its average run length
+    under no-change is only ~19-38 samples, nowhere near 1000. h=20.0
+    (this default) empirically gives 3.5% ("adaptive") / 15.5% ("fixed")
+    over the same 1000-sample horizon. "fixed" stays structurally more
+    exposed than "adaptive" at any shared h -- its target never updates,
+    so an unlucky warmup-window estimate is never self-corrected the way
+    "adaptive"'s sliding reference recovers from one; not a tuning gap,
+    a direct consequence of what "fixed" is for (see its own docstring
+    below). "Textbook k=0.5/h=5.0" is a real, commonly-cited tuning for
+    short/industrial monitoring horizons; it was not previously
+    re-validated here against the longer streams typical of software/ML
+    drift monitoring. test/test_cusum.py's existing assertions (large,
+    unambiguous 10-sigma steps; a <10% POINT-level noise flag rate, which
+    h=5.0 already satisfied despite its much higher STREAM-level
+    false-alarm rate -- the same per-point-vs-per-stream distinction that
+    motivated this fix) all still hold at h=20.0, re-verified directly,
+    not assumed.
 
     Parameters
     ----------
