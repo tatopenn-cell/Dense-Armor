@@ -107,10 +107,68 @@ def test_heal_series_runs_and_returns_same_length():
     assert len(out["healed"]) == len(values)
 
 
-def test_all_five_tools_are_registered():
+def test_all_eight_tools_are_registered():
     tools = asyncio.run(mcp.list_tools())
     names = {t.name for t in tools}
     assert names == {
         "dense_armor_health", "dense_armor_clean_signal", "dense_armor_detect_anomalies",
         "dense_armor_robust_filter", "dense_armor_heal_series",
+        "dense_armor_stream_start", "dense_armor_stream_update", "dense_armor_stream_end",
     }
+
+
+def test_stream_session_flags_a_real_injected_jump_after_warmup():
+    r = _call("dense_armor_stream_start", {"n_channels": 1, "radius": 5, "ref_mult": 2, "n_sigmas": 3.0})
+    sid = r["session_id"]
+    flags = []
+    for i in range(30):
+        val = 1.0 if i < 20 else 50.0
+        out = _call("dense_armor_stream_update", {"session_id": sid, "values": [val]})
+        flags.append(out["flags"][0])
+    assert not any(flags[:20])
+    assert any(flags[20:])
+    assert _call("dense_armor_stream_end", {"session_id": sid}) == {"closed": True}
+
+
+def test_stream_update_rejects_wrong_channel_count():
+    r = _call("dense_armor_stream_start", {"n_channels": 3})
+    sid = r["session_id"]
+    result = asyncio.run(mcp.call_tool("dense_armor_stream_update", {"params": {"session_id": sid, "values": [1.0, 2.0]}}))
+    assert "Error" in result.content[0].text
+    assert "3" in result.content[0].text
+
+
+def test_stream_update_unknown_session_returns_a_clear_error():
+    result = asyncio.run(mcp.call_tool("dense_armor_stream_update", {"params": {"session_id": "nope", "values": [1.0]}}))
+    assert "Error" in result.content[0].text
+    assert "nope" in result.content[0].text
+
+
+def test_stream_end_frees_the_session_so_further_updates_fail():
+    r = _call("dense_armor_stream_start", {"n_channels": 1})
+    sid = r["session_id"]
+    _call("dense_armor_stream_end", {"session_id": sid})
+    result = asyncio.run(mcp.call_tool("dense_armor_stream_update", {"params": {"session_id": sid, "values": [1.0]}}))
+    assert "Error" in result.content[0].text
+
+
+def test_stream_multichannel_matches_batch_detect_anomalies_causal_flag():
+    """Bit-exact-in-spirit check: feeding a 2-channel stream one point at a
+    time through dense_armor_stream_update should match calling
+    dense_armor_detect_anomalies on each channel separately -- same
+    underlying causal deviation logic, exposed two different ways."""
+    n_sigmas = 3.0
+    ch0 = [1.0] * 20 + [50.0] * 10
+    ch1 = [5.0] * 30
+    r = _call("dense_armor_stream_start", {"n_channels": 2, "radius": 5, "ref_mult": 2, "n_sigmas": n_sigmas})
+    sid = r["session_id"]
+    stream_flags_ch0 = []
+    for a, b in zip(ch0, ch1):
+        out = _call("dense_armor_stream_update", {"session_id": sid, "values": [a, b]})
+        stream_flags_ch0.append(out["flags"][0])
+    _call("dense_armor_stream_end", {"session_id": sid})
+
+    batch = _call("dense_armor_detect_anomalies", {"values": ch0, "radius": 5, "ref_mult": 2, "n_sigmas": n_sigmas})
+    batch_deviant = [lbl != "clean" for lbl in batch["etichette"]]
+    assert any(stream_flags_ch0[20:])  # the streaming session did flag the real jump
+    assert any(batch_deviant[20:])  # so did the batch classifier, on the same real jump

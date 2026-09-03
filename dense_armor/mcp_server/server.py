@@ -45,6 +45,7 @@ mcp = MCPServer("dense_armor_mcp")
 from .tools import (  # noqa: E402
     dense_armor_health, dense_armor_clean_signal, dense_armor_detect_anomalies,
     dense_armor_robust_filter, dense_armor_heal_series,
+    dense_armor_stream_start, dense_armor_stream_update, dense_armor_stream_end,
 )
 
 

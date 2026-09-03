@@ -65,7 +65,7 @@ graph TD
 
     subgraph MCP["4. MCP Server"]
         SERVER["server.py — main()<br/>(dense-armor-mcp entry point)"]
-        TOOLS["tools.py<br/>dense_armor_clean_signal,<br/>dense_armor_detect_anomalies,<br/>dense_armor_heal_series,<br/>dense_armor_robust_filter,<br/>dense_armor_health"]
+        TOOLS["tools.py<br/>dense_armor_clean_signal, _detect_anomalies,<br/>_heal_series, _robust_filter, _health,<br/>_stream_start/_update/_end (stateful)"]
         MODELS["models.py<br/>CleanSignalInput, DetectAnomaliesInput,<br/>RobustFilterInput, HealSeriesInput"]
     end
 
