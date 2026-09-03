@@ -168,7 +168,7 @@ for x in flusso_sensore:
     is_deviante = det.update(x)
 ```
 
-`MultiChannelStreamingDeviationDetector` e `classify_segments_multichannel` applicano la stessa logica già validata a più canali indipendenti (i giunti di un braccio robotico, gli assi di un IMU) senza richiedere un ciclo manuale — ogni canale mantiene la propria finestra di riferimento. Promosso da Dense-Evolution-Discovery dopo validazione su due domini fisici reali indipendenti (braccio robotico SO-101, IMU umano reale) — stessa disciplina già usata per `stable_frame_filter.py` e `velocity_gated_stable_mask`.
+`MultiChannelStreamingDeviationDetector` e `classify_segments_multichannel` applicano la stessa logica già validata a più canali indipendenti (i giunti di un braccio robotico, gli assi di un IMU) senza richiedere un ciclo manuale — ogni canale mantiene la propria finestra di riferimento. Promosso da Dense-Evolution-Discovery dopo validazione su due domini fisici reali indipendenti (braccio robotico SO-101, IMU umano reale) — stessa disciplina già usata per `stable_frame_filter.py` e `velocity_gated_stable_mask`. Documentazione completa (auto-generata dai docstring reali) sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/streaming/).
 
 ---
 
@@ -185,7 +185,7 @@ report = detectability_report(local_noise_scale=mad_locale, k=0.5, h=5.0, candid
 # {'false_alarm_arl': ..., 'detection_arl': ..., 'shift_in_sigma': ...}
 ```
 
-`detectability_report` stima *prima* di lanciare un benchmark quanti campioni servono per rilevare uno shift dato il rumore locale reale del detector -- teoria Reynolds (1975)/Siegmund (1985), promossa da Dense-Evolution-Discovery dopo validazione su due domini fisici reali indipendenti (lidar, accelerometro): sul lidar la latenza reale batte sempre la stima teorica; sull'accelerometro il risultato è genuinamente misto -- documentato così com'è, non forzato a coincidere.
+`detectability_report` stima *prima* di lanciare un benchmark quanti campioni servono per rilevare uno shift dato il rumore locale reale del detector -- teoria Reynolds (1975)/Siegmund (1985), promossa da Dense-Evolution-Discovery dopo validazione su due domini fisici reali indipendenti (lidar, accelerometro): sul lidar la latenza reale batte sempre la stima teorica; sull'accelerometro il risultato è genuinamente misto -- documentato così com'è, non forzato a coincidere. Documentazione completa (auto-generata dai docstring reali) sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/cusum/).
 
 ---
 
