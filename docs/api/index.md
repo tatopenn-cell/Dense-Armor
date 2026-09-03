@@ -21,6 +21,9 @@ Plus a standalone toolkit, independent of both:
   instantaneous threshold is structurally blind to, plus a closed-form pre-flight estimate
   (`detectability_report`) of expected detection/false-alarm latency, validated on two real
   physical domains.
+- **[Rate limiter](rate_limiter.md)** -- bounds how fast a command can physically change instead
+  of classifying whether a deviation is real; a safety bound for real-time command damping (e.g.
+  LLM-to-motor), not a signal cleaner. Validated on two real physical domains (SO-101, ALOHA).
 - **[Robust filters](robust_filters.md)** -- four classic anomaly detectors (Chauvenet,
   Tukey, Hampel, sigma-clipping) and `pressure_valve`, a Lagrange-multiplier minimum-variance
   orchestrator with a Jensen-Shannon-modulated dynamic threshold.

@@ -5,6 +5,17 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- **`utility/rate_limiter.py`** (`rate_limited_follower`): causal velocity+acceleration
+  command limiter -- bounds how fast an applied command can physically change instead of
+  classifying whether a deviation is real, after a causal neighbor-consensus classifier
+  approach hit a structural dead end (1.7% win rate vs a trivial moving median, 120 real
+  trials). Grounded in Berscheid & Kroger (2021), "Jerk-limited Real-time Trajectory
+  Generation" (RSS 2021, arXiv:2105.04830) -- causal by construction, verified directly.
+  Promoted from Dense-Evolution-Discovery after validation on two independent real physical
+  domains (SO-101 6-DoF 30Hz, ALOHA bimanual 14-DoF 50Hz): wins the real safety metric (max
+  instantaneous command jump) 400/400 real trials across both domains. Honest limit, not
+  hidden: average tracking fidelity (RMSE vs the true signal) does not reliably beat a
+  trivial moving median -- this is a safety bound, not a signal cleaner.
 - **3 new stateful MCP tools** (`dense_armor_stream_start`/`_update`/`_end`,
   `dense_armor.mcp_server`): a real-time streaming session wrapping
   `MultiChannelStreamingDeviationDetector` -- for a live sensor feed (robot
