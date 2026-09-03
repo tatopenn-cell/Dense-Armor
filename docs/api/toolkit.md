@@ -283,10 +283,19 @@ tensore = lodat("data.h5", "temperature")
 
 **`apply_fast_resonance(matrix, query)`** scores cosine similarity between a query vector and
 each row of a matrix, modulated by `apply_damping_blend` (the same operator Orca's gating
-uses). Verified, not just declared: the modulation is load-bearing, not decorative --
-`kappa` (the damping weight) measurably changes the score (`kappa=0` vs. `kappa=1` differ well
-beyond floating-point noise on the same inputs), so this is genuinely different from plain
-cosine similarity, not a rebrand of it.
+uses). `kappa` (the damping weight) does measurably change the score values -- `kappa=0` vs.
+`kappa=1` differ well beyond floating-point noise on the same inputs.
+
+Honest caveat, found and kept rather than quietly dropped: for retrieval, what matters is
+*ranking*, not the absolute score, and there the modulation is a confound, not a real effect.
+A real benchmark on quantumrag (1855 chunks, 12 labeled queries, Mean Reciprocal Rank) gave
+MRR=0.8125 for plain cosine and the identical MRR=0.8125 for `apply_fast_resonance` with its
+real constants; 30 trials with `kappa`/`delta_eff`/`stress_segnale` fully randomized (wide
+ranges, some out of the intended scale) all landed on MRR=0.8125 too, std=0.0000 -- the
+modulation correlates with plain cosine at 0.999996 and never once changed which row ranked
+first. Use this for the same job plain cosine similarity does; the modulation is not adding
+retrieval value. See `test_apply_fast_resonance_ranking_e_indistinguibile_da_cosine_puro` in
+`test/test_resonance_search.py` for the full numbers.
 
 ```python
 from dense_armor.utility.resonance_search import apply_fast_resonance
