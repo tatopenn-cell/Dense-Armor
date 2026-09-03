@@ -79,6 +79,7 @@ nav:
       - Streaming (real-time, multi-channel): api/streaming.md
       - CUSUM (slow-drift detection) + ARL theory: api/cusum.md
       - Rate limiter (causal command damping): api/rate_limiter.md
+      - CBF filter (geometric command safety): api/cbf_filter.md
       - Hybrid engine (Armatura's core): api/hybrid_engine.md
       - Adaptive engine (Orca Stage 1): api/engine.md
       - Robust filters (standalone detectors): api/robust_filters.md

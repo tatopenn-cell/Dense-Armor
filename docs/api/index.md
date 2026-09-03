@@ -24,6 +24,10 @@ Plus a standalone toolkit, independent of both:
 - **[Rate limiter](rate_limiter.md)** -- bounds how fast a command can physically change instead
   of classifying whether a deviation is real; a safety bound for real-time command damping (e.g.
   LLM-to-motor), not a signal cleaner. Validated on two real physical domains (SO-101, ALOHA).
+- **[CBF filter](cbf_filter.md)** -- bounds WHERE a command can go (never enter a forbidden
+  region), complementing the rate limiter's WHEN/HOW FAST guarantee. Same underlying theory
+  as SAFER-Splat, without its GPU-bound perception requirement. Validated on two real
+  physical domains (SO-101, ALOHA).
 - **[Robust filters](robust_filters.md)** -- four classic anomaly detectors (Chauvenet,
   Tukey, Hampel, sigma-clipping) and `pressure_valve`, a Lagrange-multiplier minimum-variance
   orchestrator with a Jensen-Shannon-modulated dynamic threshold.

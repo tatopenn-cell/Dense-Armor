@@ -199,6 +199,19 @@ applicato = rate_limited_follower(comando_grezzo, max_vel=2.0, max_accel=1.0)
 
 Fondato su Berscheid & Kroger (2021), "Jerk-limited Real-time Trajectory Generation" (RSS 2021, arXiv:2105.04830) — causale per costruzione, verificato direttamente. Promosso da Dense-Evolution-Discovery dopo validazione su due domini fisici reali indipendenti (SO-101, ALOHA bimanuale 14-DOF): vince sempre (400/400 trial reali) sulla metrica di sicurezza reale (salto massimo istantaneo), ma **non** è un ripulitore di segnale — su fedeltà media (RMSE) il quadro è genuinamente misto tra i due domini, non nascosto. Documentazione completa (auto-generata dai docstring reali) sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/rate_limiter/).
 
+## `$ cbf_filter --spatial`
+
+Un comando che si muove a velocità perfettamente sicura ma dritto verso un ostacolo resta pericoloso — `rate_limiter` limita QUANTO VELOCE, `cbf_filter` limita DOVE:
+
+```python
+from dense_armor.utility.cbf_filter import cbf_filtered_trajectory
+
+applicato = cbf_filtered_trajectory(comando_grezzo, obstacle=5.0, safe_dist=2.0, alpha_gain=2.0)
+```
+
+Fondato su Ames et al. (2019), "Control Barrier Functions: Theory and Applications" (2019 ECC, arXiv:1903.11199) — stessa teoria di SAFER-Splat, applicata a un ostacolo geometrico noto invece della percezione Gaussian-Splatting via GPU (non disponibile su ogni macchina). Un problema numerico reale trovato e risolto lungo il percorso: la garanzia CBF è continua nel tempo, servono sotto-passi (20/campione, default) per reggere in discreto su comandi reali che possono saltare parecchio tra un campione e l'altro. Promosso da Dense-Evolution-Discovery dopo validazione su due domini fisici reali indipendenti (SO-101, ALOHA): invarianza 100% da partenze sicure su entrambi, minima invasività praticamente esatta (99.9%+ su SO-101, perfettamente esatta su ALOHA). Documentazione completa (auto-generata dai docstring reali) sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/cbf_filter/).
+
+
 
 ---
 
