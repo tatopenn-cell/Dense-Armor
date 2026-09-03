@@ -187,6 +187,19 @@ report = detectability_report(local_noise_scale=mad_locale, k=0.5, h=5.0, candid
 
 `detectability_report` stima *prima* di lanciare un benchmark quanti campioni servono per rilevare uno shift dato il rumore locale reale del detector -- teoria Reynolds (1975)/Siegmund (1985), promossa da Dense-Evolution-Discovery dopo validazione su due domini fisici reali indipendenti (lidar, accelerometro): sul lidar la latenza reale batte sempre la stima teorica; sull'accelerometro il risultato è genuinamente misto -- documentato così com'è, non forzato a coincidere. Documentazione completa (auto-generata dai docstring reali) sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/cusum/).
 
+## `$ rate_limiter --damping`
+
+Un braccio robotico non può eseguire un salto istantaneo illimitato senza rischio -- `rate_limited_follower` (`dense_armor.utility.rate_limiter`) limita quanto velocemente un comando applicato può cambiare fisicamente (velocità + accelerazione), invece di cercare di classificare se una deviazione è reale:
+
+```python
+from dense_armor.utility.rate_limiter import rate_limited_follower
+
+applicato = rate_limited_follower(comando_grezzo, max_vel=2.0, max_accel=1.0)
+```
+
+Fondato su Berscheid & Kroger (2021), "Jerk-limited Real-time Trajectory Generation" (RSS 2021, arXiv:2105.04830) — causale per costruzione, verificato direttamente. Promosso da Dense-Evolution-Discovery dopo validazione su due domini fisici reali indipendenti (SO-101, ALOHA bimanuale 14-DOF): vince sempre (400/400 trial reali) sulla metrica di sicurezza reale (salto massimo istantaneo), ma **non** è un ripulitore di segnale — su fedeltà media (RMSE) il quadro è genuinamente misto tra i due domini, non nascosto. Documentazione completa (auto-generata dai docstring reali) sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/rate_limiter/).
+
+
 ---
 
 ## `$ mcp --server`

@@ -52,6 +52,7 @@ graph TD
         CUSUM["cusum.py<br/>cusum_detector,<br/>one_sided_arl, two_sided_arl, detectability_report"]
         SFF["stable_frame_filter.py<br/>velocity_gated_stable_mask"]
         ONESIDED["one_sided.py — one_sided_upper_filter"]
+        RATELIM["rate_limiter.py — rate_limited_follower"]
         UHEAL["healing.py — healing_filter"]
         METRO["metro.py — class Metro (scaler)"]
         DIAG["diagnostic.py — diag"]
