@@ -14,6 +14,9 @@ Plus a standalone toolkit, independent of both:
 - **[Arbiter](arbiter.md)** -- classifies each point as clean/spike/regime against a wide
   causal reference window, then routes it to the right corrector. Also callable on its own
   (`classify_segments`/`route_and_correct`), not only through `Orca(use_arbiter=True)`.
+- **[Streaming](streaming.md)** -- a zero-latency, one-point-at-a-time port of Arbiter's
+  causal deviation check (not the spike/regime label, which needs lookahead and stays
+  batch-only), plus native multi-channel wrappers for real-time and multi-sensor use.
 - **[Robust filters](robust_filters.md)** -- four classic anomaly detectors (Chauvenet,
   Tukey, Hampel, sigma-clipping) and `pressure_valve`, a Lagrange-multiplier minimum-variance
   orchestrator with a Jensen-Shannon-modulated dynamic threshold.

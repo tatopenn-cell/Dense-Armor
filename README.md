@@ -156,6 +156,22 @@ Verificato sui 7 scenari di `test/testKalman.py` (`test/test_arbiter_orca_integr
 
 ---
 
+## `$ streaming --realtime`
+
+Un robot reale gira a 30-100Hz e non può aspettare un array già registrato. `StreamingDeviationDetector` (`dense_armor.utility.streaming`) porta a latenza zero solo la metà causale di `classify_segments` — il flag di deviazione per-punto, non l'etichetta finale spike/regime, che richiede di guardare avanti nella sequenza e resta una domanda batch per design:
+
+```python
+from dense_armor.utility.streaming import StreamingDeviationDetector
+
+det = StreamingDeviationDetector(radius=10, ref_mult=3, n_sigmas=3.0)
+for x in flusso_sensore:
+    is_deviante = det.update(x)
+```
+
+`MultiChannelStreamingDeviationDetector` e `classify_segments_multichannel` applicano la stessa logica già validata a più canali indipendenti (i giunti di un braccio robotico, gli assi di un IMU) senza richiedere un ciclo manuale — ogni canale mantiene la propria finestra di riferimento. Promosso da Dense-Evolution-Discovery dopo validazione su due domini fisici reali indipendenti (braccio robotico SO-101, IMU umano reale) — stessa disciplina già usata per `stable_frame_filter.py` e `velocity_gated_stable_mask`.
+
+---
+
 ## `$ mcp --server`
 
 Un server MCP (`dense_armor.mcp_server`) espone 5 tool — `dense_armor_health`, `dense_armor_clean_signal` (Orca completo, con `use_arbiter`), `dense_armor_detect_anomalies` (solo classificazione), `dense_armor_robust_filter`, `dense_armor_heal_series` — così un agente (Claude Code, Claude Desktop, o qualunque client MCP) può ripulire una serie senza scrivere Python. Diretto e in-process (niente kernel HTTP separato, a differenza dell'adattatore di Dense-Evolution — Dense-Armor non ha una web UI da condividere):

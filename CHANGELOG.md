@@ -2,6 +2,28 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## [Unreleased]
+
+### Added
+- **`utility/streaming.py`** (`StreamingDeviationDetector`,
+  `MultiChannelStreamingDeviationDetector`, `classify_segments_
+  multichannel`): porta a latenza zero solo la meta' causale di
+  `classify_segments` (arbiter.py) -- il flag di deviazione per-punto,
+  non l'etichetta finale spike/regime, che guarda `radius` punti avanti
+  alla fine di una sequenza deviante e resta una domanda batch/offline
+  per design, non una svista. Buffer semplice (deque, O(span)), non una
+  struttura a due heap -- misurato a ~18.6kHz sostenibile per le
+  finestre gia' usate in tutto il progetto (10-100 punti), oltre 180x
+  il tasso reale di un anello di controllo robotico (30-100Hz). Il
+  supporto multi-canale rimuove il bisogno di un ciclo manuale
+  per-canale (giunti di un braccio robotico, assi di un IMU), ogni
+  canale con la propria finestra di riferimento indipendente. Promosso
+  da Dense-Evolution-Discovery (Esperimenti 48-49) dopo validazione su
+  due domini fisici reali indipendenti (braccio robotico teleoperato
+  SO-101, IMU umano reale UCI HAR) -- stessa disciplina di promozione
+  gia' usata per `stable_frame_filter.py`. Corrispondenza bit-per-bit
+  con `classify_segments` verificata direttamente, non assunta.
+
 ## [1.1.13]
 
 ### Fixed
