@@ -20,6 +20,14 @@ def test_one_sided_arl_matches_known_monte_carlo_value():
     assert one_sided_arl(delta=0.5, h=5.0, corrected=True) == pytest.approx(10.34, abs=0.05)
 
 
+def test_one_sided_arl_delta_zero_uses_the_squared_boundary_formula():
+    """delta=0 (mu exactly equals k) is a distinct closed-form branch
+    (ARL = hh**2, the pure-random-walk boundary-crossing time), not
+    covered by the delta!=0 cases above -- exercised directly here."""
+    assert one_sided_arl(delta=0.0, h=5.0, corrected=True) == pytest.approx((5.0 + 1.166) ** 2)
+    assert one_sided_arl(delta=0.0, h=5.0, corrected=False) == pytest.approx(25.0)
+
+
 def test_uncorrected_formula_underestimates_at_small_h():
     """Reynolds' 1975 finding, reproduced: the boundary correction is
     not optional at realistic h -- the uncorrected value is ~20% low."""
