@@ -2,10 +2,7 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
-## [Unreleased]
-
-Modifiche già pushate su `master`, non ancora rilasciate su PyPI -- nessun
-numero di versione assegnato finché non parte un vero rilascio.
+## [1.1.13]
 
 ### Fixed
 - **`utility/cusum.py` (`cusum_detector`)**: il default `h=5.0` ("classico
