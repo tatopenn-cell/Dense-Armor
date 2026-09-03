@@ -1,4 +1,4 @@
-"""The 5 dense_armor_mcp tools, registered against the shared `mcp`
+"""The 8 dense_armor_mcp tools, registered against the shared `mcp`
 instance created in server.py (see that module's docstring for why
 importing `mcp` back from there is safe despite looking circular).
 
@@ -11,7 +11,10 @@ import json
 
 import numpy as np
 
-from .models import CleanSignalInput, DetectAnomaliesInput, HealSeriesInput, RobustFilterInput
+from .models import (
+    CleanSignalInput, DetectAnomaliesInput, HealSeriesInput, RobustFilterInput,
+    StreamEndInput, StreamStartInput, StreamUpdateInput,
+)
 from .server import mcp
 
 READ_ONLY_IDEMPOTENT = {
@@ -25,6 +28,26 @@ READ_ONLY_IDEMPOTENT = {
 # COMPUTE preset (its floating-point reduction order can vary run-to-run on
 # a real accelerator backend). Same numpy/JAX inputs give the same outputs.
 COMPUTE_IDEMPOTENT = READ_ONLY_IDEMPOTENT
+
+STATEFUL = {
+    "readOnlyHint": False,
+    "destructiveHint": False,
+    "idempotentHint": False,
+    "openWorldHint": False,
+}
+# The 3 streaming session tools below hold real server-side state (a live
+# MultiChannelStreamingDeviationDetector instance per session_id, in a
+# module-level dict) -- calling dense_armor_stream_update twice with the
+# same arguments does NOT give the same result the second time (the
+# detector's internal buffer has advanced), unlike every other tool above.
+
+_STREAM_SESSIONS = {}
+# In-process dict, same lifetime as this MCP server process (see
+# server.py's module docstring for why everything here is direct
+# in-process, no separate kernel) -- a session's detector state is lost
+# if the server restarts, same as any other in-memory server state.
+# Sessions are NOT garbage-collected automatically: a real caller must
+# call dense_armor_stream_end when a real sensor stream ends.
 
 
 def catch_errors(func):
@@ -216,3 +239,79 @@ async def dense_armor_heal_series(params: HealSeriesInput) -> str:
     x = _to_array(params.values)
     healed = healing_filter(x, radius=params.radius, sustain_threshold=params.sustain_threshold, wide_mult=params.wide_mult)
     return json.dumps({"healed": _nan_to_none(healed)}, indent=2)
+
+
+@mcp.tool(name="dense_armor_stream_start", annotations={"title": "Start a real-time multi-channel deviation-detection session", **STATEFUL})
+@catch_errors
+async def dense_armor_stream_start(params: StreamStartInput) -> str:
+    """Open a new streaming session: a live MultiChannelStreamingDeviationDetector
+    kept in server memory, one per session_id, fed one real-time reading at
+    a time via dense_armor_stream_update -- for a real sensor stream (robot
+    joints, IMU axes) where waiting to collect a full array first isn't an
+    option, unlike dense_armor_detect_anomalies's batch mode.
+
+    Zero-latency, one-point-at-a-time port of the same causal deviation
+    check dense_armor_detect_anomalies uses (see utility/streaming.py) --
+    NOT the spike-vs-regime label, which needs to look ahead and stays a
+    batch-only question by design.
+
+    Args:
+        params (StreamStartInput): n_channels, radius, ref_mult, n_sigmas.
+
+    Returns:
+        str: JSON with {session_id} -- pass this to every following
+        dense_armor_stream_update call for this same real stream.
+    """
+    import uuid
+    from dense_armor.utility.streaming import MultiChannelStreamingDeviationDetector
+
+    session_id = uuid.uuid4().hex
+    _STREAM_SESSIONS[session_id] = MultiChannelStreamingDeviationDetector(
+        n_channels=params.n_channels, radius=params.radius, ref_mult=params.ref_mult, n_sigmas=params.n_sigmas,
+    )
+    return json.dumps({"session_id": session_id}, indent=2)
+
+
+@mcp.tool(name="dense_armor_stream_update", annotations={"title": "Feed one real-time reading into a streaming session", **STATEFUL})
+@catch_errors
+async def dense_armor_stream_update(params: StreamUpdateInput) -> str:
+    """Feed one real-time reading (one value per channel) into an open
+    streaming session and get back that instant's deviation flag per
+    channel -- call this once per real sensor reading as it arrives, in
+    order; the detector's internal state advances with every call.
+
+    Args:
+        params (StreamUpdateInput): session_id, values.
+
+    Returns:
+        str: JSON with {flags: [bool, ...]}, one per channel, same order
+        as 'values'.
+    """
+    det = _STREAM_SESSIONS.get(params.session_id)
+    if det is None:
+        return f"Error: unknown session_id '{params.session_id}' -- call dense_armor_stream_start first"
+    x = _to_array(params.values)
+    if x.size != det.n_channels:
+        return f"Error: expected {det.n_channels} values (n_channels given to dense_armor_stream_start), got {x.size}"
+    flags = det.update(x)
+    return json.dumps({"flags": [bool(f) for f in flags]}, indent=2)
+
+
+@mcp.tool(name="dense_armor_stream_end", annotations={"title": "Close a streaming session and free its state", **STATEFUL})
+@catch_errors
+async def dense_armor_stream_end(params: StreamEndInput) -> str:
+    """Close a streaming session and free its server-side detector state --
+    call this when a real sensor stream ends. Sessions are not garbage-
+    collected automatically; an agent that opens many sessions without
+    closing them will leak server memory for the lifetime of this process.
+
+    Args:
+        params (StreamEndInput): session_id.
+
+    Returns:
+        str: JSON with {closed: true} on success.
+    """
+    if params.session_id not in _STREAM_SESSIONS:
+        return f"Error: unknown session_id '{params.session_id}'"
+    del _STREAM_SESSIONS[params.session_id]
+    return json.dumps({"closed": True}, indent=2)

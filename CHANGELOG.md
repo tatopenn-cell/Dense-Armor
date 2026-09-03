@@ -4,6 +4,20 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- **3 new stateful MCP tools** (`dense_armor_stream_start`/`_update`/`_end`,
+  `dense_armor.mcp_server`): a real-time streaming session wrapping
+  `MultiChannelStreamingDeviationDetector` -- for a live sensor feed (robot
+  joints, IMU axes) where waiting to collect a full array first isn't an
+  option, unlike the existing batch `dense_armor_detect_anomalies` tool.
+  One `session_id`-keyed detector instance per session, held in server
+  memory (in-process, same architecture as every other tool here -- see
+  server.py's own docstring); a real caller must call `_stream_end` when a
+  real stream ends, sessions are not garbage-collected automatically.
+  Verified end-to-end against real LeRobot robot-arm joint data fed one
+  point at a time through the real MCP call path (`mcp.call_tool`), not
+  just the underlying Python function directly.
+
 ## [1.1.14]
 
 ### Added

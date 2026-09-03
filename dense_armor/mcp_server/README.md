@@ -57,6 +57,13 @@ same environment a bare top-level name is a real, observed collision, not a hypo
 | `dense_armor_detect_anomalies` | Classifies each point as `clean`/`spike`/`regime` without correcting anything -- the routing logic behind `use_arbiter`, exposed standalone. |
 | `dense_armor_robust_filter` | One of the four classic detectors (Chauvenet, Tukey, Hampel, sigma-clipping) or their combined `pressure_valve` orchestrator. |
 | `dense_armor_heal_series` | The neighbor-consensus `healing_filter` -- strong on pervasive noise and genuine sustained jumps, standalone. |
+| `dense_armor_stream_start` | Opens a real-time streaming session (one `MultiChannelStreamingDeviationDetector` kept in server memory) -- for a live sensor stream where waiting to collect a full array first isn't an option. Returns a `session_id`. |
+| `dense_armor_stream_update` | Feeds one real-time reading (one value per channel) into an open session, returns that instant's deviation flag per channel. Call once per real sensor reading, in order -- the detector's state advances with every call. |
+| `dense_armor_stream_end` | Closes a session and frees its state. Sessions are not garbage-collected automatically. |
+
+The 3 streaming tools are **stateful** (session-based), unlike every other tool above, which
+are pure functions of their inputs. See `utility/streaming.py`/`docs/api/streaming.md` for the
+underlying detector, validated on two independent real physical domains before promotion.
 
 Every tool takes/returns plain JSON (`None`/`null` for a missing reading -- converted to/from
 NaN internally, since raw JSON has no NaN literal). See `models.py` for the exact input schema

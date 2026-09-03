@@ -54,3 +54,22 @@ class HealSeriesInput(BaseModel):
     radius: int = Field(default=2, ge=1, description="Narrow window (samples) used for the neighbor-consensus check.")
     sustain_threshold: float = Field(default=0.7, gt=0.0, le=1.0, description="Fraction of neighbors that must share a deviation's sign/magnitude for it to count as a genuine, sustained change.")
     wide_mult: int = Field(default=3, ge=1, description="Wide baseline window = radius * wide_mult samples.")
+
+
+class StreamStartInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    n_channels: int = Field(..., ge=1, description="Number of independent channels (e.g. robot joints, IMU axes) this session will receive one real-time reading per, per update call.")
+    radius: int = Field(default=10, ge=1, description="Causal reference window span (in samples) before ref_mult scaling -- same convention as dense_armor_detect_anomalies.")
+    ref_mult: int = Field(default=3, ge=1, description="Reference window = radius * ref_mult samples.")
+    n_sigmas: float = Field(default=3.0, gt=0.0, description="Deviation threshold, in scaled MAD units, above which a point is flagged.")
+
+
+class StreamUpdateInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    session_id: str = Field(..., min_length=1, description="Session id returned by dense_armor_stream_start.")
+    values: List[float] = Field(..., min_length=1, description="One real-time reading per channel (same order, same length as n_channels given to dense_armor_stream_start) -- no NaN.")
+
+
+class StreamEndInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    session_id: str = Field(..., min_length=1, description="Session id to close and free -- call this when a real sensor stream ends, sessions are not garbage-collected automatically.")

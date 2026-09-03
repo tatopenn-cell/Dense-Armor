@@ -191,7 +191,7 @@ report = detectability_report(local_noise_scale=mad_locale, k=0.5, h=5.0, candid
 
 ## `$ mcp --server`
 
-Un server MCP (`dense_armor.mcp_server`) espone 5 tool — `dense_armor_health`, `dense_armor_clean_signal` (Orca completo, con `use_arbiter`), `dense_armor_detect_anomalies` (solo classificazione), `dense_armor_robust_filter`, `dense_armor_heal_series` — così un agente (Claude Code, Claude Desktop, o qualunque client MCP) può ripulire una serie senza scrivere Python. Diretto e in-process (niente kernel HTTP separato, a differenza dell'adattatore di Dense-Evolution — Dense-Armor non ha una web UI da condividere):
+Un server MCP (`dense_armor.mcp_server`) espone 8 tool — `dense_armor_health`, `dense_armor_clean_signal` (Orca completo, con `use_arbiter`), `dense_armor_detect_anomalies` (solo classificazione), `dense_armor_robust_filter`, `dense_armor_heal_series`, più `dense_armor_stream_start`/`_update`/`_end` (sessione stateful per un flusso sensore in tempo reale, un canale multiplo alla volta) — così un agente (Claude Code, Claude Desktop, o qualunque client MCP) può ripulire una serie, o seguire un flusso sensore live, senza scrivere Python. Diretto e in-process (niente kernel HTTP separato, a differenza dell'adattatore di Dense-Evolution — Dense-Armor non ha una web UI da condividere):
 
 ```bash
 pip install -e ".[mcp]"
