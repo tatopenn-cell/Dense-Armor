@@ -2,6 +2,31 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## [1.1.14]
+
+### Fixed
+- **`utility/cusum.py` (`cusum_detector`)**: il default `h=5.0` ("classico
+  da manuale", mai validato contro una lunghezza di serie pratica) dava
+  un tasso di falso allarme a livello di STREAM del 100% (`adaptive`) /
+  85% (`fixed`) su una serie stabile di 1000 campioni -- invisibile al
+  test esistente, che controllava solo il tasso di falso allarme per
+  PUNTO (molto più basso e fuorviante). Trovato come sottoprodotto
+  diretto di un porting parallelo dello stesso algoritmo per
+  online-ml/river, dove lo stesso identico problema è emerso per primo.
+  Nuovo default `h=20.0`: 3.5% (`adaptive`) / 15.5% (`fixed`) sulla
+  stessa serie di 1000 campioni. `fixed` resta strutturalmente più
+  esposto (il suo riferimento non si aggiorna mai, quindi una stima di
+  warmup sfortunata non si autocorregge) -- non un difetto di taratura,
+  conseguenza diretta di cosa `fixed` è pensato per fare. Nuovo test di
+  regressione (`test_default_h_keeps_stream_level_false_alarm_rate_low_
+  on_a_practical_length`) per non ricadere silenziosamente nello stesso
+  problema. Nessun benchmark preregistrato è stato toccato: tutti e
+  quattro (`test_benchmark_v0_runtime_behavioral_drift.py`,
+  `test_benchmark_v2_1_ablation.py`, `test_benchmark_v2_1_log_
+  onesided.py`, `test_benchmark_v2_agent_runtime.py`) passano `h=5.0`
+  esplicitamente nel proprio `CUSUM_KW` congelato, indipendentemente dal
+  default della funzione.
+
 ## [1.1.13]
 
 ### Added

@@ -148,6 +148,35 @@ def test_fixed_reference_warmup_before_span_is_never_flagged():
     assert not np.any(cusum[:span])
 
 
+def test_default_h_keeps_stream_level_false_alarm_rate_low_on_a_practical_length():
+    """Regression test for a real bug found 2026-09-03 (while porting this
+    same algorithm to online-ml/river): the OLD default h=5.0 gave a
+    STREAM-level false-alarm rate of 100% ("adaptive") / 85% ("fixed") on
+    a 1000-sample purely stable N(0,1) series -- invisible to
+    test_pure_noise_has_low_alert_rate above, which only checks the much
+    weaker POINT-level flag rate (a detector can flag nearly every stream
+    at least once while still flagging <10% of individual points). This
+    test checks the metric that actually matters for a practical
+    monitoring horizon: the fraction of ENTIRELY STABLE streams that
+    raise at least one flag anywhere."""
+    n_trials = 40  # kept small for CI runtime; the real 200-trial sweep
+    # this default was calibrated against is documented in cusum.py's own
+    # docstring
+    for mode in ("adaptive", "fixed"):
+        rng = np.random.default_rng(42)
+        n_with_flag = 0
+        for _ in range(n_trials):
+            x = rng.normal(0.0, 1.0, 1000)
+            flagged, _ = cusum_detector(x, radius=10, ref_mult=3, k=0.5, reference=mode)  # default h
+            if flagged.any():
+                n_with_flag += 1
+        rate = n_with_flag / n_trials
+        assert rate < 0.30, (
+            f"reference={mode!r}: stream-level false-alarm rate {rate:.2f} over {n_trials} "
+            f"trials is too high for the default h -- the whole point of this test"
+        )
+
+
 def test_k_and_h_change_sensitivity_in_the_expected_direction():
     """Not a claim about which values are 'better' -- just that a smaller
     h (easier to trip) flags at least as much as a larger h on the same
