@@ -48,6 +48,10 @@ graph TD
     subgraph UTIL["3. Utility — Statistics &amp; Signal Processing"]
         ROBUST["robust_filters.py<br/>chauvenet_criterion, tukey_fences,<br/>hampel_filter (Lagrange-multiplier BLUE combination)"]
         ARBITER["arbiter.py<br/>classify_segments, route_and_correct"]
+        STREAM["streaming.py<br/>StreamingDeviationDetector,<br/>MultiChannelStreamingDeviationDetector"]
+        CUSUM["cusum.py<br/>cusum_detector,<br/>one_sided_arl, two_sided_arl, detectability_report"]
+        SFF["stable_frame_filter.py<br/>velocity_gated_stable_mask"]
+        ONESIDED["one_sided.py — one_sided_upper_filter"]
         UHEAL["healing.py — healing_filter"]
         METRO["metro.py — class Metro (scaler)"]
         DIAG["diagnostic.py — diag"]
@@ -75,6 +79,8 @@ graph TD
     TOOLS --> MODELS
     TOOLS -.->|"calls"| ARMATURA
     TOOLS -.->|"calls"| ROBUST
+    STREAM -.->|"reuses causal window logic from"| ARBITER
+    CUSUM -.->|"shares robust median/MAD convention with"| ARBITER
 
     ROOT --> CORE
     ROOT --> UTIL
@@ -100,6 +106,13 @@ graph TD
   as 5 MCP tools (`clean_signal`, `detect_anomalies`, `heal_series`, `robust_filter`,
   `health`) — not a 1:1 mirror of the full public API, unlike Dense-Evolution's MCP server
   which exposes closer to the complete surface.
+- **`utility/streaming.py`** and **`utility/cusum.py`** were both promoted from
+  Dense-Evolution-Discovery after validation on two independent real physical domains each
+  (robot arm + IMU for streaming; lidar + accelerometer for the CUSUM ARL theory) — not
+  written fresh inside this repo. `streaming.py` reuses `arbiter.py`'s causal-window
+  convention directly (`_robust_center_scale`); `cusum.py`'s own `_robust_center_scale` is a
+  separate copy of the same logic, not a shared import, so the two modules can evolve
+  independently.
 
 ## Maintenance
 
