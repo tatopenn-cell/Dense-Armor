@@ -2,7 +2,10 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
-## [1.1.14]
+## [Unreleased]
+
+Modifiche già pushate su `master`, non ancora rilasciate su PyPI -- nessun
+numero di versione assegnato finché non parte un vero rilascio.
 
 ### Fixed
 - **`utility/cusum.py` (`cusum_detector`)**: il default `h=5.0` ("classico
@@ -26,8 +29,6 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   onesided.py`, `test_benchmark_v2_agent_runtime.py`) passano `h=5.0`
   esplicitamente nel proprio `CUSUM_KW` congelato, indipendentemente dal
   default della funzione.
-
-## [1.1.13]
 
 ### Added
 - **`utility/stable_frame_filter.py` (`velocity_gated_stable_mask`)**: filtro
