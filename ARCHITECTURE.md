@@ -53,6 +53,7 @@ graph TD
         SFF["stable_frame_filter.py<br/>velocity_gated_stable_mask"]
         ONESIDED["one_sided.py — one_sided_upper_filter"]
         RATELIM["rate_limiter.py — rate_limited_follower"]
+        CBF["cbf_filter.py — cbf_safety_filter, cbf_filtered_trajectory"]
         UHEAL["healing.py — healing_filter"]
         METRO["metro.py — class Metro (scaler)"]
         DIAG["diagnostic.py — diag"]
