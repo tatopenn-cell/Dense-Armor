@@ -17,6 +17,10 @@ Plus a standalone toolkit, independent of both:
 - **[Streaming](streaming.md)** -- a zero-latency, one-point-at-a-time port of Arbiter's
   causal deviation check (not the spike/regime label, which needs lookahead and stays
   batch-only), plus native multi-channel wrappers for real-time and multi-sensor use.
+- **[CUSUM + ARL theory](cusum.md)** -- accumulates small, sustained deviations Arbiter's
+  instantaneous threshold is structurally blind to, plus a closed-form pre-flight estimate
+  (`detectability_report`) of expected detection/false-alarm latency, validated on two real
+  physical domains.
 - **[Robust filters](robust_filters.md)** -- four classic anomaly detectors (Chauvenet,
   Tukey, Hampel, sigma-clipping) and `pressure_valve`, a Lagrange-multiplier minimum-variance
   orchestrator with a Jensen-Shannon-modulated dynamic threshold.

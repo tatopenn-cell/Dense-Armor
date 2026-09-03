@@ -77,6 +77,7 @@ nav:
       - Orca (full model shield): api/orca.md
       - Arbiter (per-point routing for Orca): api/arbiter.md
       - Streaming (real-time, multi-channel): api/streaming.md
+      - CUSUM (slow-drift detection) + ARL theory: api/cusum.md
       - Hybrid engine (Armatura's core): api/hybrid_engine.md
       - Adaptive engine (Orca Stage 1): api/engine.md
       - Robust filters (standalone detectors): api/robust_filters.md

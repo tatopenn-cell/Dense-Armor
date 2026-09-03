@@ -219,3 +219,130 @@ def cusum_detector(
             s_neg = 0.0
 
     return flagged, cusum
+BOUNDARY_CORRECTION = 1.166  # Siegmund (1985) refinement of Reynolds' (1975) empirical ~1.2
+
+
+def one_sided_arl(delta: float, h: float, corrected: bool = True) -> float:
+    """Wald/Brownian-motion approximation to the Average Run Length (ARL)
+    of a one-sided CUSUM with standardized drift `delta` (true mean minus
+    reference value k) and decision boundary `h`.
+
+    THEORY: Page, E.S. (1954), "Continuous Inspection Schemes", Biometrika
+    41(1-2):100-115 (this module's own citation) introduced CUSUM. The
+    closed-form Brownian-motion/Wald-type ARL approximation used here
+    follows Reynolds, M.R. Jr. (1975), "Approximations to the Average Run
+    Length in Cumulative Sum Control Charts", Technometrics 17(1):65-71,
+    with the boundary/continuity correction refined by Siegmund, D.
+    (1985), Sequential Analysis: Tests and Confidence Intervals, Theorem
+    10.16, to ~1.166 (Reynolds' own empirical value was ~1.2). Verified
+    directly against Monte Carlo simulation of the exact idealized
+    process before use (see Dense-Evolution-Discovery's
+    scripts/cusum_detectability_theory/validate_arl_theory.py): the
+    corrected formula matches to ~1%, the uncorrected one underestimates
+    by ~20% at realistic h -- Reynolds' own 1975 finding, reproduced.
+
+    Parameters
+    ----------
+    delta : float
+        Standardized drift (true mean - k). delta=0 is the in-control
+        (null) case for that branch.
+    h : float
+        CUSUM decision boundary, standardized (robust-sigma) units, same
+        as this module's own `h` parameter.
+    corrected : bool, default True
+        Apply Siegmund's boundary correction (h -> h + 1.166) -- leave
+        True unless deliberately reproducing the plain, uncorrected
+        textbook Wald formula.
+
+    Returns
+    -------
+    float
+        Approximate average run length, in samples.
+    """
+    hh = h + BOUNDARY_CORRECTION if corrected else h
+    if abs(delta) < 1e-12:
+        return hh ** 2
+    return (np.exp(-2 * delta * hh) - 1 + 2 * delta * hh) / (2 * delta ** 2)
+
+
+def two_sided_arl(mu: float, k: float, h: float, corrected: bool = True) -> float:
+    """ARL of this module's symmetric two-sided CUSUM (same k, h on both
+    the S+/S- accumulators, matching `cusum_detector`'s own convention)
+    under a true standardized mean shift `mu`. Combines the two one-sided
+    branches via 1/ARL = 1/ARL+ + 1/ARL- (standard two-sided-from-
+    one-sided combination rule, e.g. Reynolds 1975 eq. 13)."""
+    arl_pos = one_sided_arl(mu - k, h, corrected=corrected)
+    arl_neg = one_sided_arl(-mu - k, h, corrected=corrected)
+    return 1.0 / (1.0 / arl_pos + 1.0 / arl_neg)
+
+
+def detectability_report(local_noise_scale: float, k: float, h: float, candidate_shift: float) -> dict:
+    """Convert the standardized-units ARL theory above into REAL units
+    for a specific `cusum_detector` deployment -- a pre-flight estimate
+    of how long detection/false-alarms should take, computable BEFORE
+    running a benchmark, from a detector's real local noise level and a
+    candidate shift size.
+
+    VALIDATED, honestly, on TWO independent real physical domains (not
+    just synthetic Monte Carlo), promoted from Dense-Evolution-Discovery
+    after both checks (see scripts/cusum_detectability_theory/ there):
+    - Real lidar (Sydney Urban Objects, 7 real independent points): in
+      all 7 cases, real detection latency was LOWER than the predicted
+      mean ARL -- a consistent one-directional bias (real threshold
+      crossings happen faster than the idealized iid-Gaussian model
+      predicts), not scatter.
+    - Real accelerometer (UCI HAR, 5 real independent points): a
+      genuinely MIXED result at moderate SNR (2/5 points faster than
+      predicted, 3/5 slower) -- NOT the same one-directional bias lidar
+      showed. Documented as found, not forced to match. Also surfaced
+      the extreme-SNR floor issue below: this domain's real local noise
+      was quiet enough that the raw formula predicted a fractional,
+      physically meaningless ARL.
+
+    HONEST TAKEAWAY: this is a pre-flight estimate under classical
+    iid-Gaussian assumptions, not an oracle for real, non-Gaussian
+    sensor data -- use it to reason about detectability before running a
+    benchmark, then measure the real false-positive/detection rate for
+    the real deployment, don't trust the number alone. The DIRECTION of
+    the theory-vs-reality gap is not guaranteed to be consistent across
+    physically different domains (confirmed: lidar biased one way,
+    accelerometer gave a mixed result) -- do not assume a single
+    correction factor transfers between domains.
+
+    Parameters
+    ----------
+    local_noise_scale : float
+        The detector's own real local noise scale (e.g. a causal
+        window's median/MAD*1.4826, the same quantity `cusum_detector`
+        computes internally) -- real units (e.g. meters, g, seconds).
+    k, h : float
+        The CUSUM's own k, h parameters, in STANDARDIZED (robust-sigma)
+        units, matching `cusum_detector`'s own convention.
+    candidate_shift : float
+        A real-unit shift magnitude to evaluate detectability for (e.g.
+        "a +10m persistent offset").
+
+    Returns
+    -------
+    dict with:
+        false_alarm_arl : expected samples between false alarms (mu=0),
+                           floored at 1.0.
+        detection_arl    : expected samples to detect `candidate_shift`,
+                            floored at 1.0.
+        shift_in_sigma   : candidate_shift / local_noise_scale.
+
+    FLOOR AT 1.0: at extreme shift_in_sigma (real local noise tiny
+    relative to candidate_shift -- the real accelerometer check above
+    hit this at >1000 sigma), the raw Wald/Siegmund formula returns a
+    fractional ARL below 1, which has no physical meaning (a detector
+    cannot flag in under one real sample). Both ARLs are floored at 1.0
+    here; treat any raw value that needed flooring as "near-instant
+    detection", not a precise number -- the formula is an asymptotic
+    approximation, least trustworthy exactly in this regime.
+    """
+    mu_std = candidate_shift / local_noise_scale
+    return dict(
+        false_alarm_arl=max(1.0, two_sided_arl(0.0, k, h)),
+        detection_arl=max(1.0, two_sided_arl(mu_std, k, h)),
+        shift_in_sigma=mu_std,
+    )

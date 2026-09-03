@@ -4,6 +4,8 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+## [1.1.14]
+
 ### Added
 - **`utility/streaming.py`** (`StreamingDeviationDetector`,
   `MultiChannelStreamingDeviationDetector`, `classify_segments_
@@ -23,6 +25,16 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   SO-101, IMU umano reale UCI HAR) -- stessa disciplina di promozione
   gia' usata per `stable_frame_filter.py`. Corrispondenza bit-per-bit
   con `classify_segments` verificata direttamente, non assunta.
+- **`utility/cusum.py`** (`one_sided_arl`, `two_sided_arl`, `detectability_report`): stima
+  pre-flight, teoria classica Reynolds (1975)/Siegmund (1985), di quanti campioni servono
+  per rilevare uno shift dato il rumore locale reale di `cusum_detector` -- senza dover
+  lanciare un benchmark prima. Promossa da Dense-Evolution-Discovery dopo validazione su
+  due domini fisici reali indipendenti: lidar (7/7 punti reali, latenza sempre sotto la
+  stima) e accelerometro (5 punti reali, risultato genuinamente misto 2/5 -- non forzato a
+  coincidere con il lidar). L'accelerometro ha anche fatto emergere un limite reale della
+  formula grezza a SNR estremo (ARL frazionario, privo di senso fisico sotto 1 campione) --
+  corretto qui con un floor a 1.0 su entrambi gli ARL.
+
 
 ## [1.1.13]
 

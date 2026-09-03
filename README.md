@@ -172,6 +172,23 @@ for x in flusso_sensore:
 
 ---
 
+## `$ cusum --detectability`
+
+Un drift troppo lento per superare, punto per punto, la soglia istantanea di `classify_segments` sfugge ad Arbiter per design. `cusum_detector` (`dense_armor.utility.cusum`) accumula le piccole deviazioni nel tempo invece di giudicare ogni punto isolatamente:
+
+```python
+from dense_armor.utility.cusum import cusum_detector, detectability_report
+
+flagged, cusum = cusum_detector(x, radius=10, ref_mult=3, k=0.5, h=20.0)
+
+report = detectability_report(local_noise_scale=mad_locale, k=0.5, h=5.0, candidate_shift=10.0)
+# {'false_alarm_arl': ..., 'detection_arl': ..., 'shift_in_sigma': ...}
+```
+
+`detectability_report` stima *prima* di lanciare un benchmark quanti campioni servono per rilevare uno shift dato il rumore locale reale del detector -- teoria Reynolds (1975)/Siegmund (1985), promossa da Dense-Evolution-Discovery dopo validazione su due domini fisici reali indipendenti (lidar, accelerometro): sul lidar la latenza reale batte sempre la stima teorica; sull'accelerometro il risultato è genuinamente misto -- documentato così com'è, non forzato a coincidere.
+
+---
+
 ## `$ mcp --server`
 
 Un server MCP (`dense_armor.mcp_server`) espone 5 tool — `dense_armor_health`, `dense_armor_clean_signal` (Orca completo, con `use_arbiter`), `dense_armor_detect_anomalies` (solo classificazione), `dense_armor_robust_filter`, `dense_armor_heal_series` — così un agente (Claude Code, Claude Desktop, o qualunque client MCP) può ripulire una serie senza scrivere Python. Diretto e in-process (niente kernel HTTP separato, a differenza dell'adattatore di Dense-Evolution — Dense-Armor non ha una web UI da condividere):
