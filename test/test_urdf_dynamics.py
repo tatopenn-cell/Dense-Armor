@@ -96,3 +96,30 @@ def test_branching_tree_and_prismatic_joints_parse_correctly():
     assert joint_types["panda_finger_joint2"] == "prismatic"
     assert m.link_parent_joint["panda_leftfinger"]["parent"] == "panda_hand"
     assert m.link_parent_joint["panda_rightfinger"]["parent"] == "panda_hand"
+
+
+@pytest.mark.parametrize("urdf_file,expected_n", ROBOTS)
+def test_link_jacobian_matches_autodiff_of_link_position(urdf_file, expected_n):
+    """Cross-check: model.link_jacobian must equal jax.jacfwd of model.link_position,
+    for every link, not only an end-effector -- a real correctness check, not just a
+    coverage exercise."""
+    import jax
+
+    m = RigidBodyModel(os.path.join(FIXTURES, urdf_file))
+    rng = np.random.default_rng(3)
+    q = jnp.array(rng.uniform(-1.0, 1.0, m.n))
+
+    for link_name in m.link_names:
+        jac_analytic = np.array(m.link_jacobian(q, link_name))
+        jac_autodiff = np.array(jax.jacfwd(lambda qq: m.link_position(qq, link_name))(q))
+        assert np.max(np.abs(jac_analytic - jac_autodiff)) < 1e-8
+
+
+@pytest.mark.parametrize("urdf_file,expected_n", ROBOTS)
+def test_com_positions_shape_and_finite(urdf_file, expected_n):
+    m = RigidBodyModel(os.path.join(FIXTURES, urdf_file))
+    rng = np.random.default_rng(4)
+    q = jnp.array(rng.uniform(-1.0, 1.0, m.n))
+    com = np.array(m.com_positions(q))
+    assert com.shape == (len(m.link_names), 3)
+    assert np.all(np.isfinite(com))
