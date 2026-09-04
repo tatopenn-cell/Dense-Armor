@@ -2,6 +2,19 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## [Unreleased]
+
+### Added
+- **`utility/cbf_filter.py`** (`cbf_safety_filter_live`): single-control-tick counterpart to
+  `cbf_filtered_trajectory` -- for a real-time loop reacting to one sensor callback at a time
+  (a real `dt` per tick) instead of filtering a whole pre-recorded array offline. Promoted
+  after a real live ROS2/Ignition safety loop (Dense-Evolution-Discovery Experiment 58)
+  needed exactly this and had to reconstruct it by hand from `cbf_filtered_trajectory`.
+  Reuses the same substep math already validated on SO-101/ALOHA -- not a new validation
+  domain, an ergonomic single-tick wrapper around it. Verified directly: converges exactly
+  to the declared safety boundary and never crosses it (max reached 2.199999999999889 for a
+  2.2 boundary).
+
 ## [1.1.16] - 2026-09-04
 
 ### Fixed

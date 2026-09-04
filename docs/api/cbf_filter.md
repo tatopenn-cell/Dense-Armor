@@ -4,7 +4,11 @@ A command moving at a perfectly safe, bounded velocity straight into an obstacle
 dangerous -- `rate_limiter.md` bounds rate of change, this module bounds WHERE a command can
 go. `cbf_safety_filter`/`cbf_filtered_trajectory` implement a Control Barrier Function (CBF)
 safety filter: never let the applied command enter a forbidden region, with a minimally
-invasive correction when it would. Grounded in Ames et al. (2019)'s CBF-QP theory
+invasive correction when it would. `cbf_safety_filter_live` is the same math packaged for a
+real-time control loop that reacts to one sensor callback at a time (a real `dt` per tick)
+instead of filtering a whole pre-recorded array offline -- promoted after a real live ROS2/
+Ignition loop needed exactly this and had to reconstruct it by hand from
+`cbf_filtered_trajectory` (Dense-Evolution-Discovery, Experiment 58). Grounded in Ames et al. (2019)'s CBF-QP theory
 (2019 ECC, arXiv:1903.11199) -- the same theory SAFER-Splat uses, applied to a known
 geometric obstacle instead of SAFER-Splat's GPU-bound Gaussian-Splatting perception (not
 available on every machine -- see the module's own docstring). Promoted from
