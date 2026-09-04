@@ -2,6 +2,16 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## [1.1.16] - 2026-09-04
+
+### Fixed
+- **`dense_armor/__init__.py`**: `__version__` was still hardcoded to `"1.1.14"` after the
+  1.1.15 release -- it drives `dense_armor_health`'s `dense_armor_version` field in the MCP
+  server, so the running package misreported its own version. Real regression found by
+  checking `dense_armor.__version__` right after installing 1.1.15 from PyPI, not caught
+  before that release. `pyproject.toml`'s `version` field was already correct; only the
+  Python-level constant was stale.
+
 ## [1.1.15] - 2026-09-04
 
 ### Added
