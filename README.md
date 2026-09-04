@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/banner.svg" alt="Dense Armor -- runtime anomaly shield for AI and robot I/O, JAX-native" width="900">
+  <img src="docs/assets/banner.svg" alt="Dense Armor -- shield for AI and robot I/O" width="900">
 </p>
 
 <p align="center">
