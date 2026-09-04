@@ -14,6 +14,16 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   domain, an ergonomic single-tick wrapper around it. Verified directly: converges exactly
   to the declared safety boundary and never crosses it (max reached 2.199999999999889 for a
   2.2 boundary).
+- **`utility/trajectory.py`** (`quintic_trajectory`): closed-form, minimum-jerk-continuous
+  point-to-point trajectory generator for any number of joints -- fills the gap
+  `rate_limiter`/`cbf_filter` don't cover (neither generates a reference to track).
+  Deliberately scoped down from two real papers proposing much larger URDF/dynamics-aware
+  optimizers (Lozer et al., Robotics and Autonomous Systems; Fried & Paternain,
+  arXiv:2412.07859 -- both read in full before writing any code). Promoted from
+  Dense-Evolution-Discovery after validation on two independent real physical domains
+  (SO-101, ALOHA, 20 real joint excursions): quintic peak velocity always lower than the
+  real recorded peak velocity for the same start/end/duration -- expected, since it is the
+  smoothest possible path, not a bug.
 
 ## [1.1.16] - 2026-09-04
 
