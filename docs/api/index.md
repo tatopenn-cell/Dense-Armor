@@ -31,6 +31,10 @@ Plus a standalone toolkit, independent of both:
 - **[Trajectory](trajectory.md)** -- generates the reference the rate limiter and CBF filter
   keep safe in the first place: a closed-form, minimum-jerk-continuous point-to-point path
   for any number of joints. Validated on two real physical domains (SO-101, ALOHA).
+- **[Kinematic controller](kinematic_controller.md)** -- turns a reference from Trajectory
+  into an actual velocity command: closed-form feedforward-plus-proportional tracking with
+  an exact exponential convergence guarantee. Validated on two real physical domains
+  (SO-101, ALOHA), chained with Trajectory.
 - **[Robust filters](robust_filters.md)** -- four classic anomaly detectors (Chauvenet,
   Tukey, Hampel, sigma-clipping) and `pressure_valve`, a Lagrange-multiplier minimum-variance
   orchestrator with a Jensen-Shannon-modulated dynamic threshold.
