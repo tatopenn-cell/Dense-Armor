@@ -41,6 +41,18 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   point at a time through the real MCP call path (`mcp.call_tool`), not
   just the underlying Python function directly.
 
+### Fixed
+- **`utility/curvature.py`** (`curvature`): added a `scale` parameter (default `1.0`,
+  reproduces the exact previous behavior -- `Orca`'s existing call site unaffected). Real
+  finding, checked directly against real SO-101 joint data (Dense-Evolution-Discovery):
+  the unscaled formula saturates to ~1.0 within ~5 raw units of any reference regardless
+  of the caller's physical units, making it a near-binary near/far indicator rather than a
+  graded proximity signal when used in real degrees (`elbow_flex`, whose real distance to
+  its real physical limit spans 0.1-66.9 degrees in one real episode: correlation with raw
+  distance only 0.235 at the old fixed scale, vs 0.932 with a physically meaningful
+  `scale=15.0`). Not a promotion (no second-domain validation attempted -- this fixes an
+  existing internal utility's own parameterization, not a new one).
+
 ## [1.1.14]
 
 ### Added
