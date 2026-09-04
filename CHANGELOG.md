@@ -24,6 +24,18 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   (SO-101, ALOHA, 20 real joint excursions): quintic peak velocity always lower than the
   real recorded peak velocity for the same start/end/duration -- expected, since it is the
   smoothest possible path, not a bug.
+- **`utility/kinematic_controller.py`** (`kinematic_tracking_controller`): closed-form
+  feedforward-plus-proportional kinematic tracking controller -- turns a reference from
+  `trajectory.py` into a velocity command for `rate_limiter`/`cbf_filter`. Searched for a
+  real "universal controller" paper first (Wu & Tan 2025 -- best fit, paywalled; Scruggs --
+  real, needs infinite-dimensional convex Youla optimization; Califano et al. -- real, needs
+  Hamiltonian mechanics; classical PD+gravity-compensation -- needs a real dynamics model,
+  contradicting this stack's single-integrator scope). What ships instead: `u = qd_ref +
+  kp*(q_ref - q)`, with an exact closed-form exponential convergence guarantee, verified
+  numerically. Promoted from Dense-Evolution-Discovery after validation on two independent
+  real physical domains (SO-101, ALOHA, 20 real joint excursions), chained with
+  `quintic_trajectory`: every real excursion recovers from a real disclosed nonzero initial
+  tracking error and converges.
 
 ## [1.1.16] - 2026-09-04
 

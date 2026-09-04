@@ -218,6 +218,18 @@ t, q, v, a = quintic_trajectory(q0=[0.0], qf=[10.0], T=2.0)
 
 Ridotto deliberatamente rispetto a due paper reali che propongono ottimizzatori molto più grandi (dinamica completa, URDF, coppie) — Lozer, Scalera, Boscariol & Gasparetto (*Robotics and Autonomous Systems*) e Fried & Paternain (arXiv:2412.07859), entrambi letti per intero prima di scrivere codice — al pezzo più semplice e universale: nessun URDF, nessuna dinamica, nessuna connessione al robot. Promosso da Dense-Evolution-Discovery dopo validazione su due domini fisici reali indipendenti (SO-101, ALOHA, 20 escursioni articolari reali): la velocità di picco del quintico è sempre più bassa di quella reale registrata per lo stesso inizio/fine/durata — atteso, non un bug, essendo il percorso più liscio possibile. Documentazione completa (auto-generata dai docstring reali) sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/trajectory/).
 
+## `$ kinematic_controller --tracking`
+
+`trajectory` genera un riferimento liscio, ma qualcosa deve trasformarlo in un comando reale — `kinematic_tracking_controller` fa questo, alla stessa scala a singolo integratore di `rate_limiter`/`cbf_filter`:
+
+```python
+from dense_armor.utility.kinematic_controller import kinematic_tracking_controller
+
+u_des = kinematic_tracking_controller(q=[0.2], q_ref=[0.5], qd_ref=[1.0], kp=5.0)
+```
+
+`u = qd_ref + kp*(q_ref - q)` — per il sistema `qdot = u` questo rende l'errore di inseguimento esattamente `edot = -kp*e`: convergenza esponenziale in forma chiusa, per qualunque traiettoria di riferimento, verificata numericamente. Non è "basato su passività" nel senso dei paper che hanno motivato questa ricerca (Wu & Tan 2025, il vero bersaglio, dietro paywall senza copia aperta trovata; Scruggs, reale ma serve ottimizzazione convessa in dimensione infinita; Califano et al., reale ma serve meccanica Hamiltoniana) — onesto su questo, è più semplice. Promosso da Dense-Evolution-Discovery dopo validazione su due domini fisici reali (SO-101, ALOHA), incatenato con `quintic_trajectory`: ogni escursione reale recupera da un errore iniziale reale dichiarato e converge. Documentazione completa (auto-generata dai docstring reali) sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/kinematic_controller/).
+
 
 
 ---
