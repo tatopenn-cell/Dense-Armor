@@ -100,6 +100,40 @@ def cbf_safety_filter(x: float, u_des: float, obstacle: float, safe_dist: float,
     return rhs / Lgh
 
 
+def cbf_safety_filter_live(x: float, u_des: float, dt: float, obstacle: float, safe_dist: float,
+                            alpha_gain: float = 1.0, n_substeps: int = 20) -> float:
+    """Single-control-tick counterpart to `cbf_filtered_trajectory`, for a live
+    loop that reacts to a real sensor callback every real `dt` instead of
+    filtering a whole pre-recorded array offline. Internally sub-steps the
+    SAME `u_des` (held constant, unlike `cbf_filtered_trajectory`'s inner
+    loop which re-aims at a fixed target position every sub-step) across
+    `n_substeps` mini-steps of size dt/n_substeps, for the same real reason
+    given in the module docstring: a single raw evaluation at a real,
+    coarse control-tick `dt` can overshoot the barrier.
+
+    Promoted from Dense-Evolution-Discovery Experiment 58 (`docs/
+    live_safety_loop.md`), where this exact pattern -- reconstructed by
+    hand via `cbf_filtered_trajectory([x, x + u_des*dt], ...)` -- was
+    needed to hold the CBF's guarantee in a real live ROS2/Ignition
+    control loop; a single un-substepped `cbf_safety_filter` call per real
+    tick let a real joint blow through its declared safety boundary and
+    hit its real hard mechanical limit (see that doc for the full,
+    diagnosed failure). Not a new validation domain: the underlying
+    substep math is the same already validated on SO-101 and ALOHA (see
+    module docstring); this is an ergonomic single-tick wrapper around it.
+
+    Returns the average safe velocity to command for this tick (not a
+    position), so it composes directly with a velocity-controlled motor
+    the same way `cbf_safety_filter` does.
+    """
+    sub_dt = dt / n_substeps
+    x_sub = x
+    for _ in range(n_substeps):
+        u_safe = cbf_safety_filter(x_sub, u_des, obstacle, safe_dist, alpha_gain)
+        x_sub = x_sub + u_safe * sub_dt
+    return (x_sub - x) / dt
+
+
 def cbf_filtered_trajectory(x_raw: np.ndarray, obstacle: float, safe_dist: float, alpha_gain: float = 1.0, n_substeps: int = 20) -> np.ndarray:
     """Applies cbf_safety_filter causally along a raw command stream,
     sub-stepping each real sample (see module docstring for why this

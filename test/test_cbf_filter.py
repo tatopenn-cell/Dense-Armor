@@ -9,7 +9,7 @@ docstring for the real numbers).
 """
 import numpy as np
 
-from dense_armor.utility.cbf_filter import cbf_safety_filter, cbf_filtered_trajectory
+from dense_armor.utility.cbf_filter import cbf_safety_filter, cbf_filtered_trajectory, cbf_safety_filter_live
 
 
 def test_safe_command_passes_through_unchanged():
@@ -60,3 +60,44 @@ def test_default_substeps_is_20():
     import inspect
     sig = inspect.signature(cbf_filtered_trajectory)
     assert sig.parameters["n_substeps"].default == 20
+
+
+def test_live_converges_exactly_at_the_safety_boundary():
+    obstacle, safe_dist, alpha, dt = 2.5, 0.3, 2.0, 0.02
+    x = 0.0
+    max_x = 0.0
+    for _ in range(3000):
+        u_safe = cbf_safety_filter_live(x, 0.8, dt, obstacle, safe_dist, alpha, n_substeps=20)
+        x = x + u_safe * dt
+        max_x = max(max_x, x)
+    assert abs(x - (obstacle - safe_dist)) < 1e-6
+    assert max_x <= (obstacle - safe_dist) + 1e-9
+
+
+def test_live_safe_command_passes_through_unchanged():
+    u_safe = cbf_safety_filter_live(x=0.0, u_des=1.0, dt=0.02, obstacle=100.0, safe_dist=1.0, alpha_gain=1.0)
+    assert abs(u_safe - 1.0) < 1e-9
+
+
+def test_live_moving_away_is_never_blocked():
+    u_safe = cbf_safety_filter_live(x=1.0, u_des=5.0, dt=0.02, obstacle=0.0, safe_dist=2.0, alpha_gain=1.0)
+    assert abs(u_safe - 5.0) < 1e-9
+
+
+def test_live_default_substeps_is_20():
+    import inspect
+    sig = inspect.signature(cbf_safety_filter_live)
+    assert sig.parameters["n_substeps"].default == 20
+
+
+def test_live_single_substep_can_overshoot_many_substeps_do_not():
+    obstacle, safe_dist, alpha, dt = 0.0, 2.0, 2.0, 1.0
+    x = 3.0
+    u_one = cbf_safety_filter_live(x, -10.0, dt, obstacle, safe_dist, alpha, n_substeps=1)
+    u_many = cbf_safety_filter_live(x, -10.0, dt, obstacle, safe_dist, alpha, n_substeps=20)
+    x_one = x + u_one * dt
+    x_many = x + u_many * dt
+    h_one = (x_one - obstacle) ** 2 - safe_dist ** 2
+    h_many = (x_many - obstacle) ** 2 - safe_dist ** 2
+    assert h_many >= -1e-6, "20 substeps must hold the real invariance guarantee"
+    assert h_one < -1e-3, "1 substep must actually violate here, or this test proves nothing"
