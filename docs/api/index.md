@@ -31,6 +31,10 @@ Plus a standalone toolkit, independent of both:
 - **[Robust filters](robust_filters.md)** -- four classic anomaly detectors (Chauvenet,
   Tukey, Hampel, sigma-clipping) and `pressure_valve`, a Lagrange-multiplier minimum-variance
   orchestrator with a Jensen-Shannon-modulated dynamic threshold.
+- **[Curvature](curvature.md)** -- a bounded, saturating proximity-to-reference score in
+  `[0,1)`, used internally by `Orca`'s input shield. Takes a `scale` parameter (default 1.0,
+  backward compatible) tying its saturation point to real physical units -- see its own docs
+  for a real finding on why the unscaled default is a near-binary indicator, not a graded one.
 - **[Toolkit](toolkit.md)** -- generic JAX/NumPy pipeline tools that don't participate in the
   anomaly shield: an op-compiler, a memory guard, hardware profiling, logging/provenance
   export, and audio/HDF5/NetCDF I/O helpers.
