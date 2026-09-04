@@ -2,7 +2,7 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
-## [Unreleased]
+## [1.1.15] - 2026-09-04
 
 ### Added
 - **`utility/cbf_filter.py`** (`cbf_safety_filter`, `cbf_filtered_trajectory`): geometric
