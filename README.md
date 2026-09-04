@@ -206,6 +206,18 @@ applicato = cbf_filtered_trajectory(comando_grezzo, obstacle=5.0, safe_dist=2.0,
 
 Fondato su Ames et al. (2019), "Control Barrier Functions: Theory and Applications" (2019 ECC, arXiv:1903.11199) — stessa teoria di SAFER-Splat, applicata a un ostacolo geometrico noto invece della percezione Gaussian-Splatting via GPU (non disponibile su ogni macchina). Un problema numerico reale trovato e risolto lungo il percorso: la garanzia CBF è continua nel tempo, servono sotto-passi (20/campione, default) per reggere in discreto su comandi reali che possono saltare parecchio tra un campione e l'altro. Promosso da Dense-Evolution-Discovery dopo validazione su due domini fisici reali indipendenti (SO-101, ALOHA): invarianza 100% da partenze sicure su entrambi, minima invasività praticamente esatta (99.9%+ su SO-101, perfettamente esatta su ALOHA). `cbf_safety_filter_live` è la stessa matematica per un loop di controllo reale che reagisce a un tick sensore alla volta (un `dt` reale, non un array pre-registrato) — promossa dopo che un vero loop live ROS2/Ignition ne aveva bisogno e l'aveva dovuta ricostruire a mano. Documentazione completa (auto-generata dai docstring reali) sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/cbf_filter/).
 
+## `$ trajectory --quintic`
+
+`rate_limiter` limita QUANTO VELOCE, `cbf_filter` limita DOVE — ma nessuno dei due genera un riferimento da seguire. `quintic_trajectory` copre esattamente questo: un percorso liscio, a jerk minimo, tra due punti, per qualunque numero di giunti in una sola chiamata:
+
+```python
+from dense_armor.utility.trajectory import quintic_trajectory
+
+t, q, v, a = quintic_trajectory(q0=[0.0], qf=[10.0], T=2.0)
+```
+
+Ridotto deliberatamente rispetto a due paper reali che propongono ottimizzatori molto più grandi (dinamica completa, URDF, coppie) — Lozer, Scalera, Boscariol & Gasparetto (*Robotics and Autonomous Systems*) e Fried & Paternain (arXiv:2412.07859), entrambi letti per intero prima di scrivere codice — al pezzo più semplice e universale: nessun URDF, nessuna dinamica, nessuna connessione al robot. Promosso da Dense-Evolution-Discovery dopo validazione su due domini fisici reali indipendenti (SO-101, ALOHA, 20 escursioni articolari reali): la velocità di picco del quintico è sempre più bassa di quella reale registrata per lo stesso inizio/fine/durata — atteso, non un bug, essendo il percorso più liscio possibile. Documentazione completa (auto-generata dai docstring reali) sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/trajectory/).
+
 
 
 ---

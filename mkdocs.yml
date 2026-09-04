@@ -80,6 +80,7 @@ nav:
       - CUSUM (slow-drift detection) + ARL theory: api/cusum.md
       - Rate limiter (causal command damping): api/rate_limiter.md
       - CBF filter (geometric command safety): api/cbf_filter.md
+      - Trajectory (closed-form point-to-point generator): api/trajectory.md
       - Curvature (scaled distance-to-reference): api/curvature.md
       - Hybrid engine (Armatura's core): api/hybrid_engine.md
       - Adaptive engine (Orca Stage 1): api/engine.md

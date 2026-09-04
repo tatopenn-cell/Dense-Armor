@@ -28,6 +28,9 @@ Plus a standalone toolkit, independent of both:
   region), complementing the rate limiter's WHEN/HOW FAST guarantee. Same underlying theory
   as SAFER-Splat, without its GPU-bound perception requirement. Validated on two real
   physical domains (SO-101, ALOHA).
+- **[Trajectory](trajectory.md)** -- generates the reference the rate limiter and CBF filter
+  keep safe in the first place: a closed-form, minimum-jerk-continuous point-to-point path
+  for any number of joints. Validated on two real physical domains (SO-101, ALOHA).
 - **[Robust filters](robust_filters.md)** -- four classic anomaly detectors (Chauvenet,
   Tukey, Hampel, sigma-clipping) and `pressure_valve`, a Lagrange-multiplier minimum-variance
   orchestrator with a Jensen-Shannon-modulated dynamic threshold.
