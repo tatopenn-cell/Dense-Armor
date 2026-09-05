@@ -16,7 +16,7 @@
   <a href="https://tatopenn-cell.github.io/Dense-Armor/"><img alt="docs" src="https://img.shields.io/badge/docs-tatopenn--cell.github.io-00e5ff?style=flat-square"></a>
 </p>
 
-<p align="center"><strong>Runtime shield per input/output di modelli IA. Nessun riaddestramento. Nessuna magia — solo damping adattivo verificato con test reali.</strong></p>
+<p align="center"><strong>Runtime shield per segnali IA e comandi robotici. Nessun riaddestramento. Nessuna magia — solo damping adattivo e controllo verificato con test reali.</strong></p>
 
 <p align="center">📖 <a href="https://tatopenn-cell.github.io/Dense-Armor/"><strong>Documentazione completa, riferimento API, guida rapida →</strong></a></p>
 
@@ -38,6 +38,8 @@ Un sensore che manda letture perse (`NaN`) o spara un valore assurdo (`1e6` inve
 - **Margine d'errore**: per ogni valore corretto, restituisce quanto è stato spostato per ripulirlo. Correzione piccola → fidati. Correzione grande → tratta con cautela.
 
 Lascia i pesi intatti. Gira a runtime. Funziona da 1D fino a 11D, testato (vedi `test/test_orca2.py`).
+
+**Stessa disciplina, un secondo dominio**: da `$ rate_limiter` in poi il pacchetto copre anche la sicurezza di comandi e traiettorie per robot reali — limiti di velocità/accelerazione, control barrier function spaziali, generazione di traiettorie a jerk minimo, dinamica rigida da URDF vero (anche `.xacro`, anche giunti `<mimic>`), controllori passività+CBF fino a 6-DoF. Backend JAX condiviso con `Armatura`/`Orca`, stessa disciplina di verifica su dati/robot reali — un dominio applicativo diverso, non un pacchetto diverso.
 
 ---
 
@@ -230,7 +232,80 @@ u_des = kinematic_tracking_controller(q=[0.2], q_ref=[0.5], qd_ref=[1.0], kp=5.0
 
 `u = qd_ref + kp*(q_ref - q)` — per il sistema `qdot = u` questo rende l'errore di inseguimento esattamente `edot = -kp*e`: convergenza esponenziale in forma chiusa, per qualunque traiettoria di riferimento, verificata numericamente. Non è "basato su passività" nel senso dei paper che hanno motivato questa ricerca (Wu & Tan 2025, il vero bersaglio, dietro paywall senza copia aperta trovata; Scruggs, reale ma serve ottimizzazione convessa in dimensione infinita; Califano et al., reale ma serve meccanica Hamiltoniana) — onesto su questo, è più semplice. Promosso da Dense-Evolution-Discovery dopo validazione su due domini fisici reali (SO-101, ALOHA), incatenato con `quintic_trajectory`: ogni escursione reale recupera da un errore iniziale reale dichiarato e converge. Documentazione completa (auto-generata dai docstring reali) sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/kinematic_controller/).
 
+## `$ rigid_body --urdf`
 
+`rate_limiter`/`cbf_filter`/`trajectory`/`kinematic_controller` lavorano tutti a livello di singolo integratore: dai una velocità di giunto, ricevi una velocità di giunto sicura. `RigidBodyModel` (`dense_armor.dynamics.urdf_dynamics`) è diverso — richiede una vera descrizione fisica del robot (un URDF reale, anche `.xacro`) e restituisce dinamica vera a livello di coppia:
+
+```python
+from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
+import jax.numpy as jnp
+
+model = RigidBodyModel("panda.urdf")   # o un percorso .xacro, espanso automaticamente
+q = jnp.zeros(model.n)
+M = model.mass_matrix(q)
+qdd = model.forward_dynamics(q, jnp.zeros(model.n), jnp.zeros(model.n))
+```
+
+`model.n` è il numero di gradi di libertà reali e indipendenti (un giunto con `<mimic>` non conta a parte). `mass_matrix`, `gravity_forces`, `bias_forces` e `forward_dynamics` (risolve `M(q)*qdd + C(q,qd)*qd + g(q) = tau`) usano la costruzione Lagrangiana standard via autodiff (`jax.grad`/`jax.jvp`), non simboli di Christoffel scritti a mano. `link_position`/`link_jacobian`/`link_pose`/`link_spatial_jacobian` funzionano per qualunque link nominato nell'URDF, non solo l'end effector.
+
+Promosso da Dense-Evolution-Discovery (Experiment 62) dopo validazione su tre robot reali indipendenti (Kinova Gen3 7-DoF, Kinova Gen3 6-DoF, Franka Emika Panda — manufacturer diverso, giunti prismatici): matrice di massa simmetrica/positiva-definita e conservazione dell'energia con la convergenza RK4 corretta su tutti e tre. Documentazione completa sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/urdf_dynamics/).
+
+## `$ passivity_cbf --controller`
+
+`RigidBodyModel` dà M(q), gravità e dinamica in avanti per qualunque robot — `solve_control_qp` (`dense_armor.dynamics.passivity_cbf_controller`) li usa per guidare quel robot verso un target nello spazio operativo in sicurezza, garantendo passività dell'errore di inseguimento e distanza dalle singolarità cinematiche, entrambe come vincoli in un piccolo QP:
+
+```python
+from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
+from dense_armor.dynamics.passivity_cbf_controller import solve_control_qp
+
+model = RigidBodyModel("panda.urdf")
+qdd, tau, mu, h = solve_control_qp(model, "panda_hand", q, qd, p_des, pd_des, pdd_des, eps=0.03)
+```
+
+`eps` è l'indice di manipolabilità minimo che il controllore mantiene — `mu` (restituito) non scende mai molto sotto, anche quando il target comandato spingerebbe altrimenti il robot dritto in una singolarità. I limiti reali di posizione/velocità di ogni giunto (dal tag `<limit>` dell'URDF) sono un terzo vincolo, aggiunto solo dove il robot li dichiara davvero.
+
+Fondato su Kurtz, Wensing & Lin (2021, arXiv:2109.13349). Promosso da Dense-Evolution-Discovery (Experiment 61→63) dopo validazione sugli stessi tre robot di `RigidBodyModel`, ognuno spinto verso la propria vera singolarità: manipolabilità mantenuta entro lo 0.1-1.8% della soglia dichiarata in ogni caso. Un bug OSQP reale trovato e risolto lungo il percorso (infeasibility del QP passività+CBF, risolta ricadendo sul solo CBF). Documentazione completa sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/passivity_cbf_controller/).
+
+## `$ six_dof_cbf --pose`
+
+`passivity_cbf_controller` insegue solo la posizione di un link. `six_dof_pbc_cbf_controller.solve_control_qp` estende lo stesso QP alla posa intera — posizione e orientamento insieme — usando lo Jacobiano spaziale 6xN del link invece del solo Jacobiano di traslazione:
+
+```python
+from dense_armor.dynamics.six_dof_pbc_cbf_controller import solve_control_qp
+
+qdd, tau, mu, h = solve_control_qp(model, "panda_hand", q, qd, p_des, pd_des, pdd_des,
+                                    r_des, w_des, wd_des, eps=0.03)
+```
+
+`r_des` è l'orientamento desiderato (matrice di rotazione), `w_des`/`wd_des` la velocità/accelerazione angolare desiderata in world frame. L'errore di orientamento usa la formula SO(3) di Lee, Leok & McClamroch (2010) — liscia ovunque, senza il gimbal-lock reale di una formulazione roll-pitch-yaw.
+
+Promosso da Dense-Evolution-Discovery (Experiment 65). Validato con compensazione di gravità esatta a errore zero (precisione macchina) e convergenza reale in anello chiuso (offset iniziale 10cm/30°, RK4 su 1000 tick, errore finale 1e-6 m / 1e-4 rad) — poi sugli stessi tre robot di `passivity_cbf_controller`, dove è emersa una seconda infeasibility OSQP reale (la manipolabilità 6-DoF può essere ben sotto quella 3-DoF alla stessa configurazione) risolta con un terzo livello di fallback (CBF da solo, senza box). Documentazione completa sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/six_dof_pbc_cbf_controller/).
+
+## `$ xacro --macros`
+
+I produttori pubblicano le descrizioni robot come macro `.xacro` (blocchi parametrizzati, espressioni matematiche, `xacro:include`), non come URDF piatto. `RigidBodyModel` ora accetta `.xacro` direttamente:
+
+```python
+model = RigidBodyModel("panda_arm_hand.urdf.xacro")
+model.n   # 8 -- 7 giunti braccio + 1 coordinata pinza indipendente
+```
+
+Il pacchetto reale `xacro` (lo stesso espansore dell'ecosistema ROS, nessuna installazione ROS richiesta) fa l'espansione — nulla su macro/math/condizionali è reimplementato qui.
+
+Promosso da Dense-Evolution-Discovery (Experiment 66), che ha trovato e risolto un'inconsistenza reale nelle macro pubblicate del Franka Panda (`clvrai/furniture`): un link di attacco della mano commentato nella macro del braccio ma richiesto da quella della mano. Nuova dipendenza: `xacro`. Documentazione completa sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/xacro_support/).
+
+## `$ mimic --joints`
+
+Le due dita di una pinza si muovono insieme: chiuderne una chiude anche l'altra. URDF lo esprime con un tag `<mimic joint="..." multiplier="..." offset="..."/>` — l'angolo del giunto slave è sempre `multiplier * angolo_master + offset`, mai una variabile libera. `RigidBodyModel` ora lo rispetta invece di dare al giunto slave una coordinata indipendente propria:
+
+```python
+model.n                                    # 8, non 9 -- le due dita condividono un solo DOF reale
+model.mimic_map["panda_finger_joint2"]     # (master_dof_idx, multiplier, offset)
+```
+
+La cinematica diretta sostituisce `q[master] * multiplier + offset` per l'angolo del giunto mimic; lo Jacobiano geometrico costruito a mano scala la colonna locale del giunto mimic per `multiplier` e la somma nella colonna del suo master, invece di darle una colonna propria.
+
+Promosso da Dense-Evolution-Discovery (Experiment 67), verificato contro una differenza finita centrale reale di `link_pose` (non solo plausibilità): muovere il master di 0.02 sposta entrambe le punte delle dita di esattamente 0.02 in direzioni opposte, e lo Jacobiano scritto a mano corrisponde alla derivata numerica entro 1e-5. Documentazione completa sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/mimic_joints/).
 
 ---
 

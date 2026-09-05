@@ -7,8 +7,37 @@ on:
     branches: [master]
 
 jobs:
+  changes:
+    name: Detect docs-only changes
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          # code == true whenever anything OTHER than docs/README/CHANGELOG
+          # changed -- same mechanism validated in Dense-Evolution's own CI.
+          # predicate-quantifier MUST be "every" (AND across patterns), not
+          # paths-filter's default "some" (OR): '**' matches every file
+          # unconditionally, so under "some" the '!'-exclusions below never
+          # exclude anything and `code` would be true even for a pure
+          # README-only change.
+          predicate-quantifier: 'every'
+          filters: |
+            code:
+              - '**'
+              - '!docs/**'
+              - '!mkdocs.yml'
+              - '!README.md'
+              - '!CHANGELOG.md'
+              - '!LICENSE.md'
+
   pytest:
     name: pytest (Python ${{ matrix.python-version }}, ${{ matrix.os }})
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -45,6 +74,8 @@ jobs:
 
   build-check:
     name: build sdist/wheel
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
