@@ -28,6 +28,8 @@ operational-space PD command, subject to two constraints:
   the closed loop doesn't inject energy it shouldn't.
 - **Singularity avoidance**: an exponential CBF keeping the manipulability index `mu(q)` above
   `eps`.
+- **Joint limits**: `model`'s own real per-joint position/velocity bounds (parsed from the
+  URDF's `<limit>` tags), added only for joints the URDF actually declares a limit for.
 
 Both constraints are affine in `qdd`; their coefficients are extracted by evaluating the
 constraint function and its gradient at `qdd=0` (exact, since the function is affine), not by
@@ -67,3 +69,11 @@ that triggered this.
 **Scope**: task-space position tracking only (3 DoF), not full 6-DoF pose. Mimic-joint
 constraints (e.g. a gripper's two fingers tied together) are not modeled by `RigidBodyModel`
 underneath this, so each non-fixed joint is treated as independently controllable.
+
+**Joint limits, real numbers**: Franka Panda `joint4` (real range `[-3.1416, 0.0]`) sitting
+right at its bound with velocity driving past it -- unconstrained nominal command `qdd=-205.8`,
+real CBF box `[-7.175, -4.999]`, solved `qdd=-7.175` (the box's own edge). The box rows are
+only added when a robot's URDF has a real finite limit somewhere: an unconditional (but
+mathematically inert) row was tried first and rejected, since it measurably perturbed OSQP's
+internal scaling and broke the machine-precision cross-check above for a robot with no real
+limits declared.

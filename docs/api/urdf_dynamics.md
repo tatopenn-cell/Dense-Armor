@@ -10,10 +10,14 @@ from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 
 model = RigidBodyModel("panda.urdf")
 model.n
+model.q_min, model.q_max, model.qd_max
 ```
 
 `model.n` is the number of real, non-fixed joints the file describes -- read from the file,
-not assumed. Point `RigidBodyModel` at any real URDF and it builds the same thing: a mass
+not assumed. `model.q_min`/`model.q_max`/`model.qd_max` are each joint's real position/velocity
+limit from the URDF's own `<limit>` tag (`+/-inf` wherever the URDF declares none), used by
+[the passivity+CBF controller](passivity_cbf_controller.md) to keep every command inside them.
+Point `RigidBodyModel` at any real URDF and it builds the same thing: a mass
 matrix, a gravity vector, and everything you need to simulate or control that specific robot.
 
 ## The mass matrix
