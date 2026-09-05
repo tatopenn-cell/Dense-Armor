@@ -2,6 +2,21 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## [Unreleased]
+
+### Added
+- **`dynamics/passivity_cbf_controller.py`** (`solve_control_qp`): task-space passivity +
+  singularity-avoidance CBF controller (Kurtz, Wensing & Lin 2021, arXiv:2109.13349) for any
+  robot `RigidBodyModel` can load. A small QP over joint acceleration, constrained by `Vdot<=0`
+  (passivity) and an exponential CBF keeping the manipulability index above a declared floor.
+  Two-step promotion from Dense-Evolution-Discovery, same as `RigidBodyModel`: Experiment 61
+  built the same controller hardcoded to one Kinova Gen3; Experiment 63 replaced the hardcoded
+  calls with `RigidBodyModel`'s API and re-validated on the same three robots (Kinova Gen3
+  7-DoF, Kinova Gen3 6-DoF, Franka Emika Panda), each driven toward its own true singularity,
+  manipulability held within 0.1-1.8% of the declared floor in every case. Found and fixed a
+  real OSQP-infeasibility bug along the way (soft passivity constraint dropped in favor of the
+  hard CBF one when the solver reports infeasible). New dependency: `osqp`.
+
 ## [1.1.18] - 2026-09-05
 
 ### Added

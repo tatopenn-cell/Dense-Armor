@@ -9,5 +9,6 @@ single-integrator utility/ modules (rate_limiter, cbf_filter, trajectory,
 kinematic_controller).
 """
 from .urdf_dynamics import RigidBodyModel
+from .passivity_cbf_controller import solve_control_qp
 
-__all__ = ["RigidBodyModel"]
+__all__ = ["RigidBodyModel", "solve_control_qp"]
