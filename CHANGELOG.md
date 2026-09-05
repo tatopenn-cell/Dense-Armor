@@ -4,6 +4,8 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+## [1.1.19] - 2026-09-05
+
 ### Added
 - **`dynamics/passivity_cbf_controller.py`** (`solve_control_qp`): task-space passivity +
   singularity-avoidance CBF controller (Kurtz, Wensing & Lin 2021, arXiv:2109.13349) for any
