@@ -66,7 +66,8 @@ safety-critical CBF constraint -- the regression test
 `test_controller_stays_finite_near_a_documented_infeasible_state` reproduces the exact state
 that triggered this.
 
-**Scope**: task-space position tracking only (3 DoF), not full 6-DoF pose. Mimic-joint
+**Scope**: task-space position tracking only (3 DoF). For full 6-DoF (position + orientation)
+tracking, see [six_dof_pbc_cbf_controller](six_dof_pbc_cbf_controller.md). Mimic-joint
 constraints (e.g. a gripper's two fingers tied together) are not modeled by `RigidBodyModel`
 underneath this, so each non-fixed joint is treated as independently controllable.
 

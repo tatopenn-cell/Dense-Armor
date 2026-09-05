@@ -58,7 +58,14 @@ J = model.link_jacobian(q, "panda_hand")
 ```
 
 Any link name from the URDF works -- useful for checking an elbow's position, not only the
-end effector.
+end effector. For a link's full pose (position and orientation) and its 6xN spatial Jacobian --
+needed by [the full 6-DoF controller](six_dof_pbc_cbf_controller.md) -- use `link_pose` and
+`link_spatial_jacobian` instead:
+
+```python
+p, r = model.link_pose(q, "panda_hand")
+Jspatial = model.link_spatial_jacobian(q, "panda_hand")   # 6xN: [angular; linear]
+```
 
 ::: dense_armor.dynamics.urdf_dynamics.RigidBodyModel
 
