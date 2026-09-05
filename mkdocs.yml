@@ -84,6 +84,7 @@ nav:
       - Kinematic controller (closed-form tracking): api/kinematic_controller.md
       - Rigid-body dynamics (real URDF, any robot): api/urdf_dynamics.md
       - Passivity + singularity-CBF controller (any robot): api/passivity_cbf_controller.md
+      - Full 6-DoF passivity + singularity-CBF controller: api/six_dof_pbc_cbf_controller.md
       - Curvature (scaled distance-to-reference): api/curvature.md
       - Hybrid engine (Armatura's core): api/hybrid_engine.md
       - Adaptive engine (Orca Stage 1): api/engine.md

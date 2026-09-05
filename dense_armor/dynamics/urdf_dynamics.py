@@ -304,3 +304,25 @@ class RigidBodyModel:
                 p_joint = self._joint_origin_world(j, pos, rot)
                 jv = jv.at[:, dof_idx].set(jnp.cross(axis_w, pos[link_name] - p_joint))
         return jv
+
+    def link_pose(self, q, link_name):
+        """Real (position, rotation matrix) of the named link's own frame, in world frame."""
+        pos, rot, _ = self.forward_kinematics(q)
+        return pos[link_name], rot[link_name]
+
+    def link_spatial_jacobian(self, q, link_name):
+        """Real 6xN spatial Jacobian [angular; linear] of the named link, in world frame."""
+        pos, rot, joint_axis_world = self.forward_kinematics(q)
+        p_link = pos[link_name]
+        jv = jnp.zeros((3, self.n))
+        jw = jnp.zeros((3, self.n))
+        for dof_idx in self.link_ancestor_dofs[link_name]:
+            j = self.dof_joints[dof_idx]
+            axis_w = joint_axis_world[j["name"]]
+            if j["type"] == "prismatic":
+                jv = jv.at[:, dof_idx].set(axis_w)
+            else:
+                p_joint = self._joint_origin_world(j, pos, rot)
+                jv = jv.at[:, dof_idx].set(jnp.cross(axis_w, p_link - p_joint))
+                jw = jw.at[:, dof_idx].set(axis_w)
+        return jnp.concatenate([jw, jv], axis=0)

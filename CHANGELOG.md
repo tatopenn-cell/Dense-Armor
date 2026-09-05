@@ -22,6 +22,17 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   has a real finite limit somewhere. Real number, Franka Panda `joint4` (range `[-3.1416,
   0.0]`) at its bound with velocity driving past it: unconstrained command `qdd=-205.8` clamped
   to the real box `[-7.175, -4.999]`.
+- **`dynamics/six_dof_pbc_cbf_controller.py`** (`solve_control_qp`): full 6-DoF (position +
+  orientation) generalization of `passivity_cbf_controller.py`, tracking a link's full pose via
+  `RigidBodyModel`'s new `link_pose`/`link_spatial_jacobian`. Attitude error uses Lee, Leok &
+  McClamroch (2010)'s SO(3) formula instead of an RPY-based one, avoiding gimbal lock. Promoted
+  from Dense-Evolution-Discovery Experiment 65: validated with an exact gravity-compensation
+  check at zero position and orientation error (machine precision), and a real closed-loop run
+  converging a 10cm/30-degree offset to near-zero (position 1e-6 m, orientation 1e-4) over 1000
+  control ticks; also validated on the same 3-robot bar as `passivity_cbf_controller.py`, which
+  surfaced a real second-level OSQP infeasibility (the 6-DoF manipulability measure can be well
+  below the 3-DoF one at the same configuration, making CBF+box jointly infeasible) -- fixed
+  with a third fallback level that drops the box and keeps only the CBF.
 
 ## [1.1.18] - 2026-09-05
 
