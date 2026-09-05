@@ -9,10 +9,12 @@ Panda -- see dynamics/passivity_cbf_controller.py's own docstring for the
 real numbers).
 """
 import os
+from unittest.mock import patch
 
 import jax.numpy as jnp
 import numpy as np
 
+import dense_armor.dynamics.passivity_cbf_controller as pcc
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 from dense_armor.dynamics.passivity_cbf_controller import solve_control_qp, manipulability
 
@@ -22,10 +24,14 @@ FIXTURES = os.path.join(os.path.dirname(__file__), "fixtures", "urdf")
 def test_controller_stays_finite_near_a_documented_infeasible_state():
     """
     Regression test for the real OSQP-infeasibility bug found in Discovery
-    Experiment 61/63: at this joint state, the joint QP (Vdot<=0 passivity
-    constraint together with the singularity CBF constraint) is primal
-    infeasible under OSQP's default tolerances. The fix drops the soft
-    passivity constraint and re-solves with only the hard CBF constraint.
+    Experiment 61/63: at this exact joint state, the joint QP was primal
+    infeasible under OSQP 1.1.3 as run in Discovery's environment. Re-verified
+    here: with this repo's own OSQP 1.1.3 install, the same state solves
+    successfully instead (a razor-edge numerical case, sensitive to tiny
+    floating-point differences between environments/BLAS builds -- not
+    reliably reproducible everywhere). Kept as a real-world sanity check;
+    see test_osqp_infeasibility_fallback_path_is_exercised below for a
+    deterministic test of the fallback branch itself.
     """
     model = RigidBodyModel(os.path.join(FIXTURES, "GEN3_URDF_V12.urdf"))
     q = jnp.array([0.024434754271692588, 0.21033097888352037, -0.013211504941075125,
@@ -81,3 +87,45 @@ def test_manipulability_zero_at_a_true_singularity():
     q_straight = jnp.zeros(model.n)
     mu = float(manipulability(model.link_jacobian(q_straight, "end_effector_link")))
     assert mu < 1e-6
+
+
+def test_osqp_infeasibility_fallback_path_is_exercised():
+    """
+    Deterministic test of the infeasibility-fallback branch itself: forces
+    OSQP to report the first solve as not-solved (regardless of what it
+    actually computed), verifying solve_control_qp genuinely re-solves with
+    only the hard CBF constraint and still returns a finite, valid result --
+    without depending on a real robot state that may or may not trigger
+    genuine infeasibility on a given OSQP version/environment (see the razor
+    edge documented above).
+    """
+    real_osqp_cls = pcc.osqp.OSQP
+    calls = {"n": 0}
+
+    class ForcedInfeasibleFirstCallOSQP:
+        def __init__(self):
+            self._real = real_osqp_cls()
+
+        def setup(self, *args, **kwargs):
+            self._real.setup(*args, **kwargs)
+
+        def solve(self):
+            calls["n"] += 1
+            res = self._real.solve()
+            if calls["n"] == 1:
+                res.info.status_val = -999
+            return res
+
+    model = RigidBodyModel(os.path.join(FIXTURES, "GEN3_URDF_V12.urdf"))
+    q = jnp.array([0.3, -0.6, 0.2, -1.1, 0.4, 0.8, -0.3])
+    qd = jnp.array([0.4, -0.2, 0.5, 0.1, -0.3, 0.2, 0.6])
+    p_des = jnp.array([0.5, 0.1, 0.9])
+    pd_des = jnp.zeros(3)
+    pdd_des = jnp.zeros(3)
+
+    with patch.object(pcc.osqp, "OSQP", ForcedInfeasibleFirstCallOSQP):
+        qdd, tau, mu, h = solve_control_qp(model, "end_effector_link", q, qd, p_des, pd_des, pdd_des, eps=0.03)
+
+    assert calls["n"] == 2, "expected exactly one fallback re-solve after the forced infeasibility"
+    assert np.all(np.isfinite(qdd))
+    assert np.all(np.isfinite(tau))
