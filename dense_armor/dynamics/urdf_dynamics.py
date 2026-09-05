@@ -79,8 +79,16 @@ def _parse_urdf(path):
         rpy = np.array(_floats(origin.get("rpy", "0 0 0"))) if origin is not None else np.zeros(3)
         axis_el = joint_el.find("axis")
         axis = np.array(_floats(axis_el.get("xyz"))) if axis_el is not None else np.array([1.0, 0.0, 0.0])
+        limit_el = joint_el.find("limit")
+        if limit_el is not None:
+            q_min = float(limit_el.get("lower")) if limit_el.get("lower") is not None else -np.inf
+            q_max = float(limit_el.get("upper")) if limit_el.get("upper") is not None else np.inf
+            qd_max = float(limit_el.get("velocity")) if limit_el.get("velocity") is not None else np.inf
+        else:
+            q_min, q_max, qd_max = -np.inf, np.inf, np.inf
         joints.append(dict(name=name, type=jtype, parent=parent, child=child,
-                            xyz=xyz, rpy=rpy, axis=axis))
+                            xyz=xyz, rpy=rpy, axis=axis,
+                            q_min=q_min, q_max=q_max, qd_max=qd_max))
 
     children_names = {j["child"] for j in joints}
     root_candidates = [name for name in links if name not in children_names]
@@ -128,6 +136,9 @@ class RigidBodyModel:
     n : int
         Number of non-fixed joints (degrees of freedom), in a canonical
         depth-first order from the URDF's root link.
+    q_min, q_max, qd_max : ndarray, shape (n,)
+        Real per-joint position/velocity limits from the URDF's own <limit>
+        tags (+/-inf wherever the URDF declares none).
     """
 
     def __init__(self, urdf_path):
@@ -160,6 +171,13 @@ class RigidBodyModel:
         collect(root_link, [])
 
         self.link_names = list(links.keys())
+
+        # Real per-joint limits from the URDF's own <limit> tags (±inf where
+        # the URDF declares none, e.g. a "continuous" joint's position, or a
+        # joint with no <limit> element at all -- never invented).
+        self.q_min = jnp.array([j["q_min"] for j in self.dof_joints])
+        self.q_max = jnp.array([j["q_max"] for j in self.dof_joints])
+        self.qd_max = jnp.array([j["qd_max"] for j in self.dof_joints])
 
     def _children_joints(self, link_name):
         return [j for j in self.link_parent_joint.values() if j["parent"] == link_name]

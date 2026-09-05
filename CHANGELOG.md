@@ -16,6 +16,12 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   manipulability held within 0.1-1.8% of the declared floor in every case. Found and fixed a
   real OSQP-infeasibility bug along the way (soft passivity constraint dropped in favor of the
   hard CBF one when the solver reports infeasible). New dependency: `osqp`.
+- **Real per-joint position/velocity limits**: `RigidBodyModel` now parses each joint's real
+  `<limit>` tag (`+/-inf` where the URDF declares none); `solve_control_qp` enforces them as an
+  additional CBF (Kurtz et al.'s own "joint" constraint type), added only when a robot's URDF
+  has a real finite limit somewhere. Real number, Franka Panda `joint4` (range `[-3.1416,
+  0.0]`) at its bound with velocity driving past it: unconstrained command `qdd=-205.8` clamped
+  to the real box `[-7.175, -4.999]`.
 
 ## [1.1.18] - 2026-09-05
 

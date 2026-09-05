@@ -122,10 +122,25 @@ def _qp_ingredients(model, link_name, q, qd, p_des, pd_des, pdd_des,
     a2 = -j_mu
     u2 = ka0 * h + ka1 * hd + jdot_mu_qd
 
+    # Joint limit CBFs (Kurtz, Wensing & Lin 2021's own "joint" constraint
+    # type, AddJointVelCBFConstraint applied twice): a relative-degree-1 CBF
+    # for the velocity limit, and a relative-degree-2 (nested class-K) CBF
+    # for the position limit, both real URDF <limit> values, class-K gains=1
+    # (identity), matching their own published code -- inert (+/-inf)
+    # wherever the URDF declares no limit for that joint.
+    qd_min = -model.qd_max
+    ah_qd_min = qd - qd_min
+    ah_qd_max = model.qd_max - qd
+    ah_q_min = qd + (q - model.q_min)
+    ah_q_max = (model.q_max - q) - qd
+
+    qdd_lb = jnp.maximum(-ah_qd_min, -ah_q_min)
+    qdd_ub = jnp.minimum(ah_qd_max, ah_q_max)
+
     bias = model.bias_forces(q, qd)
     grav = model.gravity_forces(q)
 
-    return m, bias, grav, qdd_nom, a1, u1, a2, u2, mu, h
+    return m, bias, grav, qdd_nom, a1, u1, a2, u2, mu, h, qdd_lb, qdd_ub
 
 
 def solve_control_qp(model, link_name, q, qd, p_des, pd_des, pdd_des,
@@ -165,9 +180,13 @@ def solve_control_qp(model, link_name, q, qd, p_des, pd_des, pdd_des,
         Manipulability index at the current configuration.
     h : float
         CBF value (mu - eps); negative means the declared floor was crossed.
+
+    Real per-joint position/velocity limits from `model`'s own URDF <limit>
+    tags are enforced too (Kurtz et al.'s own "joint" CBF constraint type),
+    inert for any joint the URDF declares no limit for.
     """
     n = model.n
-    m, bias, grav, qdd_nom, a1, u1, a2, u2, mu, h = _qp_ingredients(
+    m, bias, grav, qdd_nom, a1, u1, a2, u2, mu, h, qdd_lb, qdd_ub = _qp_ingredients(
         model, link_name, jnp.asarray(q), jnp.asarray(qd), jnp.asarray(p_des),
         jnp.asarray(pd_des), jnp.asarray(pdd_des), kp_task, kd_task, kd_null,
         eps, ka[0], ka[1])
@@ -175,20 +194,48 @@ def solve_control_qp(model, link_name, q, qd, p_des, pd_des, pdd_des,
     p_mat = sparse.csc_matrix(np.eye(n) * (1.0 + w_reg))
     q_vec = -np.asarray(qdd_nom)
 
-    a_full = sparse.csc_matrix(np.vstack([np.asarray(a1).reshape(1, n),
-                                           np.asarray(a2).reshape(1, n)]))
-    l_full = np.array([-1e20, -1e20])
-    u_full = np.array([float(u1), float(u2)])
+    qdd_lb_raw = np.asarray(qdd_lb)
+    qdd_ub_raw = np.asarray(qdd_ub)
+    # Only add the joint-limit box rows when the URDF actually declares a
+    # real limit somewhere -- an all-unbounded robot gets the exact same
+    # 2-row QP as before this feature existed. A literally-inert box row
+    # (bounds clipped to +/-1e20) still perturbs OSQP's internal scaling by
+    # ~1e-4, which would otherwise break the machine-precision cross-check
+    # this module was validated with for zero physical reason.
+    has_real_limits = not (np.all(np.isneginf(qdd_lb_raw)) and np.all(np.isposinf(qdd_ub_raw)))
+
+    rows_a1a2 = [sparse.csc_matrix(np.asarray(a1).reshape(1, n)),
+                 sparse.csc_matrix(np.asarray(a2).reshape(1, n))]
+    l_a1a2 = [-1e20, -1e20]
+    u_a1a2 = [float(u1), float(u2)]
+
+    if has_real_limits:
+        qdd_lb_np = np.clip(qdd_lb_raw, -1e20, 1e20)
+        qdd_ub_np = np.clip(qdd_ub_raw, -1e20, 1e20)
+        identity_n = sparse.csc_matrix(np.eye(n))
+        a_full = sparse.vstack(rows_a1a2 + [identity_n]).tocsc()
+        l_full = np.concatenate([l_a1a2, qdd_lb_np])
+        u_full = np.concatenate([u_a1a2, qdd_ub_np])
+    else:
+        a_full = sparse.vstack(rows_a1a2).tocsc()
+        l_full = np.array(l_a1a2)
+        u_full = np.array(u_a1a2)
 
     prob = osqp.OSQP()
     prob.setup(p_mat, q_vec, a_full, l_full, u_full, verbose=False, polish=True)
     res = prob.solve()
 
     if res.info.status_val != osqp.constant("OSQP_SOLVED"):
-        # Soft passivity constraint dropped; hard safety-critical CBF kept.
-        a_cbf = sparse.csc_matrix(np.asarray(a2).reshape(1, n))
-        l_cbf = np.array([-1e20])
-        u_cbf = np.array([float(u2)])
+        # Soft passivity constraint dropped; hard CBF + joint-limit constraints kept.
+        if has_real_limits:
+            a_cbf = sparse.vstack([sparse.csc_matrix(np.asarray(a2).reshape(1, n)),
+                                    sparse.csc_matrix(np.eye(n))]).tocsc()
+            l_cbf = np.concatenate([[-1e20], qdd_lb_np])
+            u_cbf = np.concatenate([[float(u2)], qdd_ub_np])
+        else:
+            a_cbf = sparse.csc_matrix(np.asarray(a2).reshape(1, n))
+            l_cbf = np.array([-1e20])
+            u_cbf = np.array([float(u2)])
         prob = osqp.OSQP()
         prob.setup(p_mat, q_vec, a_cbf, l_cbf, u_cbf, verbose=False, polish=True)
         res = prob.solve()
