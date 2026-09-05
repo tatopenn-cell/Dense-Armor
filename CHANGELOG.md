@@ -2,20 +2,20 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
-## [Unreleased]
+## [1.1.18] - 2026-09-05
 
 ### Added
-- **`dynamics/urdf_dynamics.py`** (`RigidBodyModel`): real Euler-Lagrange rigid-body dynamics
-  -- M(q), C(q,qdot)qdot, g(q) -- parsed from any real URDF file (stdlib xml.etree, no new
-  dependency), not one hardcoded robot. New `dynamics/` subpackage, separate from `utility/`,
-  since it needs an actual physical model file and returns real torque-level quantities.
-  Two-step promotion from Dense-Evolution-Discovery: Experiment 61 built the same dynamics
-  (JAX autodiff, not hand-derived Christoffel symbols) but hand-transcribed from one Kinova
-  Gen3's URDF -- the reason it wasn't promoted then. Experiment 62 replaced the hardcoded
-  tables with a real parser and re-validated on three independent real robots (Kinova Gen3
-  7-DoF, Kinova Gen3 6-DoF, Franka Emika Panda -- different manufacturer, prismatic joints):
-  cross-checked to machine precision against Experiment 61's own numbers, then mass-matrix
-  SPD and energy-conservation (correct 4th-order RK4 convergence) verified fresh on all three.
+- **`dynamics/urdf_dynamics.py`** (`RigidBodyModel`): Euler-Lagrange rigid-body dynamics --
+  M(q), C(q,qdot)qdot, g(q) -- parsed from any URDF file (stdlib xml.etree, no new dependency),
+  not one hardcoded robot. New `dynamics/` subpackage, separate from `utility/`, since it needs
+  an actual physical model file and returns torque-level quantities. Two-step promotion from
+  Dense-Evolution-Discovery: Experiment 61 built the same dynamics (JAX autodiff, not
+  hand-derived Christoffel symbols) but hand-transcribed from one Kinova Gen3's URDF -- the
+  reason it wasn't promoted then. Experiment 62 replaced the hardcoded tables with a parser and
+  re-validated on three independent robots (Kinova Gen3 7-DoF, Kinova Gen3 6-DoF, Franka Emika
+  Panda -- different manufacturer, prismatic joints): cross-checked to machine precision
+  against Experiment 61's own numbers, then mass-matrix SPD and energy-conservation (correct
+  4th-order RK4 convergence) verified fresh on all three.
 
 ## [1.1.17] - 2026-09-04
 
