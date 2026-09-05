@@ -163,3 +163,45 @@ def test_joint_limit_cbf_brakes_a_joint_at_its_real_limit():
     # zero-order-hold discretization gap documented for the singularity CBF).
     assert float(qdd_nom[3]) < float(qdd_lb[3])
     assert float(qdd_lb[3]) - 1e-6 <= float(qdd[3]) <= float(qdd_ub[3]) + 1e-6
+
+
+def test_osqp_infeasibility_fallback_with_real_joint_limits():
+    """
+    Same deterministic infeasibility-forcing technique as above, but on a
+    robot with real joint limits (Panda): exercises the fallback branch's
+    has_real_limits=True path (dropping the soft passivity constraint while
+    keeping BOTH the hard singularity-CBF and the hard joint-limit CBF),
+    which the GEN3_URDF_V12.urdf-based test above (no real limits) cannot
+    reach.
+    """
+    real_osqp_cls = pcc.osqp.OSQP
+    calls = {"n": 0}
+
+    class ForcedInfeasibleFirstCallOSQP:
+        def __init__(self):
+            self._real = real_osqp_cls()
+
+        def setup(self, *args, **kwargs):
+            self._real.setup(*args, **kwargs)
+
+        def solve(self):
+            calls["n"] += 1
+            res = self._real.solve()
+            if calls["n"] == 1:
+                res.info.status_val = -999
+            return res
+
+    model = RigidBodyModel(os.path.join(FIXTURES, "panda.urdf"))
+    link = "panda_hand"
+    q = jnp.array([0.0, 0.5, 0.0, -0.5, 0.0, 1.5, 0.0, 0.0, 0.0])
+    qd = jnp.array([0.1, -0.1, 0.1, 0.5, -0.1, 0.2, 0.1, 0.0, 0.0])
+    p_des = model.link_position(q, link) + jnp.array([0.05, 0.0, 0.1])
+    pd_des = jnp.zeros(3)
+    pdd_des = jnp.zeros(3)
+
+    with patch.object(pcc.osqp, "OSQP", ForcedInfeasibleFirstCallOSQP):
+        qdd, tau, mu, h = solve_control_qp(model, link, q, qd, p_des, pd_des, pdd_des, eps=0.03)
+
+    assert calls["n"] == 2
+    assert np.all(np.isfinite(qdd))
+    assert np.all(np.isfinite(tau))
