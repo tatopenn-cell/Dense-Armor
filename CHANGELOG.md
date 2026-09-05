@@ -33,6 +33,16 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   surfaced a real second-level OSQP infeasibility (the 6-DoF manipulability measure can be well
   below the 3-DoF one at the same configuration, making CBF+box jointly infeasible) -- fixed
   with a third fallback level that drops the box and keeps only the CBF.
+- **`.xacro` file support**: `RigidBodyModel` now accepts `.xacro` macro files directly,
+  expanding them via the real `xacro` package before parsing. Promoted from Dense-Evolution-
+  Discovery Experiment 66, which found and fixed a real inconsistency in the Franka Panda's own
+  published macros (`clvrai/furniture`): a hand-attachment link commented out in the arm macro
+  but required by the hand macro. New dependency: `xacro`.
+- **`<mimic>` joint support**: a joint with a `<mimic joint="..." multiplier="..."
+  offset="..."/>` tag no longer gets its own independent coordinate -- its motion is computed
+  from its master's, chain-ruled onto the master's own column in the hand-built geometric
+  Jacobian. Promoted from Dense-Evolution-Discovery Experiment 67, checked against a real
+  central finite difference of `link_pose` (Franka Panda gripper fingers) to under 1e-5.
 
 ## [1.1.18] - 2026-09-05
 

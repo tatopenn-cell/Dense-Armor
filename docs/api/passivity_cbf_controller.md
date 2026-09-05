@@ -68,8 +68,9 @@ that triggered this.
 
 **Scope**: task-space position tracking only (3 DoF). For full 6-DoF (position + orientation)
 tracking, see [six_dof_pbc_cbf_controller](six_dof_pbc_cbf_controller.md). Mimic-joint
-constraints (e.g. a gripper's two fingers tied together) are not modeled by `RigidBodyModel`
-underneath this, so each non-fixed joint is treated as independently controllable.
+constraints (e.g. a gripper's two fingers tied together) are modeled by `RigidBodyModel` --
+see [coupled joints via mimic](mimic_joints.md) -- so a mimic joint contributes no independent
+column of its own to this controller's QP.
 
 **Joint limits, real numbers**: Franka Panda `joint4` (real range `[-3.1416, 0.0]`) sitting
 right at its bound with velocity driving past it -- unconstrained nominal command `qdd=-205.8`,

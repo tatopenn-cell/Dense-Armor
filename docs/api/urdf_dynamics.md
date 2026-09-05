@@ -67,6 +67,13 @@ p, r = model.link_pose(q, "panda_hand")
 Jspatial = model.link_spatial_jacobian(q, "panda_hand")   # 6xN: [angular; linear]
 ```
 
+## Xacro files and coupled joints
+
+A `.xacro` path is expanded automatically -- see [xacro support](xacro_support.md). A joint's
+`<mimic>` tag (e.g. a gripper's two fingers tied together) is respected too -- see
+[coupled joints via mimic](mimic_joints.md); `model.n` counts real independent DOF, not raw
+`<joint>` tags.
+
 ::: dense_armor.dynamics.urdf_dynamics.RigidBodyModel
 
 ---
@@ -96,8 +103,7 @@ conserve energy with the correct 4th-order RK4 convergence as the integration st
 the Panda's converges tighter (rel. drift 5.9e-7 -> 6.0e-11 -> 5.5e-15) since its published
 inertia tensors are simpler placeholder values, not a difference in correctness.
 
-**Mimic joints are not modeled.** The Panda's real URDF ties its two finger joints together
-with a `<mimic>` tag; this parser doesn't read it, so each non-fixed joint (including both
-fingers) is treated as an independent DOF -- a real, disclosed limitation, not a silent one.
+**Mimic joints and xacro files**: see their own pages, [coupled joints via mimic](mimic_joints.md)
+and [xacro support](xacro_support.md).
 
 **Reproducing this**: `pytest test/test_urdf_dynamics.py`.
