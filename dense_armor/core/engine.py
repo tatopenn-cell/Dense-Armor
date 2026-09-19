@@ -89,6 +89,19 @@ class AdaptiveSignalStabilizer:
                 in_axes=(0, None, None, None, None, 0),
             )
         )
+        # Variante INDIPENDENTE PER SCENARIO: stesso _process_single_scenario,
+        # ma thr/dmp/alp/n_scalar vmappati (in_axes=0) invece di broadcast
+        # (None) -- ogni scenario riceve la PROPRIA calibrazione invece di
+        # una condivisa sull'intero batch. Vedi filter_batch_scenarios_
+        # independent per il perche' serve un secondo kernel invece di
+        # riusare _compiled_batch_filter con argomenti diversi (in_axes e'
+        # fissato alla compilazione, non e' un parametro a runtime).
+        self._compiled_batch_filter_independent = jax.jit(
+            jax.vmap(
+                self._process_single_scenario,
+                in_axes=(0, 0, 0, 0, 0, 0),
+            )
+        )
         # Kernel 1D usato da filter_data_stream: thr/dmp/alp/noise_scalar
         # passati come ARGOMENTI jit (come gia' fa _compiled_batch_filter
         # sopra), non chiusi su self.* dentro la funzione -- altrimenti
@@ -167,6 +180,97 @@ class AdaptiveSignalStabilizer:
         self.dyn_thr = float(0.10 * global_std)
         self.dyn_dmp = float(_SIGMA * (1.0 + self.noise_scalar))
         self.dyn_alp = float(0.75 + (_SIGMA * self.noise_scalar))
+
+    def calibrate_macro_context_independent(self, raw_batch: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        """Stesse formule di calibrate_macro_context, ma calcolate PER RIGA
+        (axis=-1) invece che sull'intero batch appiattito insieme -- ritorna
+        (dyn_thr, dyn_dmp, dyn_alp, noise_scalar), ciascuno shape
+        (n_scenarios,). Non muta self.* (pura, sicura da vmappare a valle) --
+        a differenza di calibrate_macro_context, che e' condivisa/con stato
+        per design (vedi la sua docstring) e resta invariata per i chiamanti
+        esistenti (test_boundA.py e la suite adversarial la usano cosi'
+        apposta: scenari correlati che devono condividere un contesto).
+
+        raw_batch: shape (n_scenarios, F). Se F<2 (nessun "salto" da
+        misurare in nessuna riga) ritorna i default di __init__
+        (self.threshold/damping/alpha) per ogni riga invece di provare a
+        replicare l'early-return con stato residuo di calibrate_macro_context
+        (che dipende dalla cronologia delle chiamate precedenti -- non
+        replicabile in una funzione pura, e comunque irrilevante per F>=2,
+        il caso reale di Orca)."""
+        n_scenarios = int(raw_batch.shape[0])
+        per_row_std = np.std(raw_batch, axis=-1)
+        noise_scalar = 1.0 / (1.0 + per_row_std)
+        F = raw_batch.shape[-1] if raw_batch.ndim > 1 else 0
+        if F < 2:
+            return (np.full(n_scenarios, self.threshold), np.full(n_scenarios, self.damping),
+                    np.full(n_scenarios, self.alpha), noise_scalar)
+        sample_diff = np.abs(np.diff(raw_batch, axis=-1))
+        max_jump = np.max(sample_diff, axis=-1)
+        mean_jump = np.mean(sample_diff, axis=-1)
+        panic = (max_jump > 3.0) & ((max_jump / (mean_jump + 1e-5)) > 5.0)
+        dyn_thr = np.where(panic, 1e-5, 0.10 * per_row_std)
+        dyn_dmp = np.where(panic, 1e-3, _SIGMA * (1.0 + noise_scalar))
+        dyn_alp = np.where(panic, 0.999, 0.75 + (_SIGMA * noise_scalar))
+        return dyn_thr, dyn_dmp, dyn_alp, noise_scalar
+
+    def filter_batch_scenarios_independent(
+        self, raw_batch: np.ndarray, hard_clamp_mask: Optional[np.ndarray] = None
+    ) -> np.ndarray:
+        """Come filter_batch_scenarios, ma ogni scenario riceve la PROPRIA
+        calibrazione (calibrate_macro_context_independent) invece di una
+        condivisa sull'intero batch -- stesso risultato numerico che si
+        otterrebbe chiamando filter_batch_scenarios una volta per scenario
+        (n_scenarios=1 ciascuna), ma in UNA sola chiamata vmap invece di N
+        dispatch JAX separati. Aggiunta per Orca.protect_and_forward (vedi
+        _execute_4_phase_input_shield_batch): la libreria non ha mai
+        esercitato n_scenarios>1 su scenari INDIPENDENTI prima d'ora (l'unico
+        chiamante multi-scenario esistente, la suite adversarial di
+        test_boundA.py, vuole apposta la calibrazione condivisa)."""
+        if raw_batch.size == 0:
+            return np.zeros_like(raw_batch)
+        if hard_clamp_mask is None:
+            hard_clamp_mask = np.zeros_like(raw_batch, dtype=bool)
+
+        original_shape = raw_batch.shape
+        n_scenarios = int(original_shape[0])
+
+        if len(original_shape) == 2:
+            h_dim = 1
+            w_dim = int(original_shape[1])
+            structured_batch = raw_batch.reshape(n_scenarios, h_dim, w_dim)
+            structured_mask = np.asarray(hard_clamp_mask).reshape(n_scenarios, h_dim, w_dim)
+        elif len(original_shape) == 3:
+            h_dim, w_dim = int(original_shape[1]), int(original_shape[2])
+            structured_batch = raw_batch
+            structured_mask = np.asarray(hard_clamp_mask)
+        elif len(original_shape) == 4:
+            c_channels, h_dim, w_dim = int(original_shape[1]), int(original_shape[2]), int(original_shape[3])
+            structured_batch = raw_batch.reshape(n_scenarios * c_channels, h_dim, w_dim)
+            structured_mask = np.asarray(hard_clamp_mask).reshape(n_scenarios * c_channels, h_dim, w_dim)
+        else:
+            raise ValueError(f"Geometria del tensore non supportata dall'engine: {original_shape}")
+
+        # calibrazione per-riga sulla STESSA unita' di vmap usata sotto
+        # (n_scenarios*c_channels per il caso 4D, non n_scenarios da solo --
+        # ogni "riga" vmappata deve avere la sua calibrazione indipendente)
+        flat_per_unit = structured_batch.reshape(structured_batch.shape[0], -1)
+        dyn_thr, dyn_dmp, dyn_alp, noise_scalar = self.calibrate_macro_context_independent(flat_per_unit)
+
+        j_batch = jnp.array(structured_batch, dtype=jnp.float64)
+        j_mask = jnp.array(structured_mask, dtype=jnp.bool_)
+
+        filtered_structured = self._compiled_batch_filter_independent(
+            j_batch,
+            jnp.array(dyn_thr, dtype=jnp.float64),
+            jnp.array(dyn_dmp, dtype=jnp.float64),
+            jnp.array(dyn_alp, dtype=jnp.float64),
+            jnp.array(noise_scalar, dtype=jnp.float64),
+            j_mask,
+        )
+
+        filtered_np = np.array(filtered_structured, dtype=np.float64)
+        return filtered_np.reshape(original_shape)
 
     # ------------------------------------------------------------------ #
     # Kernel di step interno (scan) -- filtro causale ricorsivo con gain adattivo

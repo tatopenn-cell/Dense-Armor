@@ -388,6 +388,54 @@ class Orca:
         del c_chunk, co_chunk, fh, filtered_enc_np
         return dec_chunk, margine_chunk
 
+    def _execute_4_phase_input_shield_batch(self, cl_batch_raw: np.ndarray, co_batch_raw: np.ndarray) -> tuple:
+        """Versione vettorizzata di _execute_4_phase_input_shield: cl_batch_raw/
+        co_batch_raw hanno shape (B, F) -- B righe indipendenti processate in
+        UNA chiamata invece di B chiamate separate (era il collo di bottiglia
+        di latenza documentato: ~87% dispatch JAX, non calcolo reale, stesso
+        pattern gia' risolto in core/hybrid_engine.hybrid_shield per Armatura).
+        Usa filter_batch_scenarios_independent (calibrazione per-riga) invece
+        di filter_batch_scenarios (calibrazione condivisa sull'intero batch)
+        -- altrimenti righe con scala/rumore diversi si contaminerebbero a
+        vicenda, un risultato silenziosamente diverso dalla versione a loop.
+        Verificato bit-per-bit contro _execute_4_phase_input_shield chiamata
+        riga per riga, vedi test_orca_vectorized_batch_matches_loop."""
+        v64_cl, v64_co = np.float64(cl_batch_raw), np.float64(co_batch_raw)
+        raw_noise = np.abs(v64_co - v64_cl)
+        mask_cl = v64_cl != 0.0
+        exp10_cl = np.where(mask_cl, np.log10(np.abs(v64_cl) + 1e-15), 0.0)
+        exp10_cl = np.maximum(exp10_cl, self.val_e)
+        fact_shared = np.where(mask_cl, 10 ** (self.val_e - exp10_cl), 1.0)
+        c_chunk_np = v64_cl * fact_shared
+        co_chunk_np = v64_co * fact_shared
+        clip_bound = self._CO_CHUNK_CLIP_MULT * (10.0 ** self.val_e)
+        co_chunk_np = np.clip(co_chunk_np, -clip_bound, clip_bound)
+        c_chunk = jnp.array(c_chunk_np)
+        co_chunk = jnp.array(co_chunk_np)
+        hard_clamp_mask = jnp.array(raw_noise > 0.05)
+
+        ref = self.stabilizer.filter_batch_scenarios_independent(co_chunk, hard_clamp_mask=hard_clamp_mask)
+        f1 = jnp.where(jnp.isfinite(ref), ref, c_chunk)
+        gate = self.shield.compute_damping_gating(co_chunk, c_chunk)
+        fh = self._compiled_input_shield_kernel(
+            f1, c_chunk, gate, jnp.float32(self.initial_damping), hard_clamp_mask
+        )
+
+        # su un batch multi-riga questa e' la curvatura sull'INTERO batch
+        # appiattito insieme, non solo sull'ultima riga come capitava di
+        # fatto nel path a loop (self.last_kappa veniva sovrascritto ad ogni
+        # iterazione) -- un valore diagnostico, non usato per correggere
+        # l'output, quindi il cambio non tocca la correttezza numerica.
+        self.last_kappa = float(curvature(fh.flatten(), c_chunk.flatten()))
+        jax.block_until_ready(fh)
+
+        filtered_enc_np = np.array(fh)
+        dec_batch = filtered_enc_np / fact_shared
+        raw_noto = np.isfinite(v64_co)
+        margine_batch = np.where(raw_noto, np.abs(v64_co - dec_batch), np.abs(dec_batch))
+        del c_chunk, co_chunk, fh, filtered_enc_np
+        return dec_batch, margine_batch
+
     def _execute_4_phase_output_shield(self, ai_output: jnp.ndarray, output_reference: jnp.ndarray) -> tuple:
         """Le 4 fasi dello scudo uscita; ritorna (output_corretto, margine), stessa shape di ai_output."""
         orig_shape = ai_output.shape
@@ -466,20 +514,38 @@ class Orca:
                 self._remember_reference(x_reference_np, slice_shape)
             purified_batch = np.zeros(orig_shape, dtype=np.float64)
             margine_batch = np.zeros(orig_shape, dtype=np.float64)
-            for b in range(B):
-                flat_cl, flat_co = x_reference_np[b].flatten(), x_corrupted_np[b].flatten()
-                total_elements = flat_cl.size
-                out_flat = np.zeros_like(flat_cl)
-                margine_flat = np.zeros_like(flat_cl)
-                c_size = self.chunk_threshold if total_elements > self.chunk_threshold else total_elements
-                for start_idx in range(0, total_elements, c_size):
-                    end_idx = min(start_idx + c_size, total_elements)
-                    purified_chunk, margine_chunk = self._execute_4_phase_input_shield(flat_cl[start_idx:end_idx], flat_co[start_idx:end_idx])
-                    out_flat[start_idx:end_idx] = purified_chunk
-                    margine_flat[start_idx:end_idx] = margine_chunk
-                    self._gc_se_ram_bassa()
-                purified_batch[b] = out_flat.reshape(slice_shape)
-                margine_batch[b] = margine_flat.reshape(slice_shape)
+            flat_cl_all = x_reference_np.reshape(B, -1)
+            flat_co_all = x_corrupted_np.reshape(B, -1)
+            total_elements = flat_cl_all.shape[1]
+            if total_elements <= self.chunk_threshold:
+                # Percorso vettorizzato: le B righe sono processate in UNA
+                # chiamata (jax.vmap sotto, calibrazione indipendente per
+                # riga) invece di B dispatch JAX separati -- vedi
+                # _execute_4_phase_input_shield_batch e CHANGELOG per il
+                # guadagno misurato. Ogni riga e' completamente indipendente
+                # dalle altre a questo stadio (nessuno stato condiviso tra
+                # righe qui: _reference_bank/_corruption_type_memory non
+                # sono toccati in questo blocco).
+                out_batch, marg_batch = self._execute_4_phase_input_shield_batch(flat_cl_all, flat_co_all)
+                purified_batch = out_batch.reshape(orig_shape)
+                margine_batch = marg_batch.reshape(orig_shape)
+                self._gc_se_ram_bassa()
+            else:
+                # Fallback invariato: una singola riga eccede da sola
+                # chunk_threshold (raro), va comunque spezzata in blocchi.
+                for b in range(B):
+                    flat_cl, flat_co = flat_cl_all[b], flat_co_all[b]
+                    out_flat = np.zeros_like(flat_cl)
+                    margine_flat = np.zeros_like(flat_cl)
+                    c_size = self.chunk_threshold
+                    for start_idx in range(0, total_elements, c_size):
+                        end_idx = min(start_idx + c_size, total_elements)
+                        purified_chunk, margine_chunk = self._execute_4_phase_input_shield(flat_cl[start_idx:end_idx], flat_co[start_idx:end_idx])
+                        out_flat[start_idx:end_idx] = purified_chunk
+                        margine_flat[start_idx:end_idx] = margine_chunk
+                        self._gc_se_ram_bassa()
+                    purified_batch[b] = out_flat.reshape(slice_shape)
+                    margine_batch[b] = margine_flat.reshape(slice_shape)
 
             if use_arbiter:
                 etichette_batch = np.empty(orig_shape, dtype=object)

@@ -5,6 +5,24 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 ## [Unreleased]
 
 ### Changed
+- **`utility/orca.Orca.protect_and_forward`**: vectorized the entry-shield stage -- the
+  previous `for b in range(B)` Python loop called `_execute_4_phase_input_shield` once per
+  row (once per element of the batch), each a separate JAX dispatch. Same dispatch-dominated
+  pattern already found and fixed in `core/hybrid_engine.hybrid_shield` for Armatura. New
+  `_execute_4_phase_input_shield_batch` processes all B rows in one call via a new
+  `AdaptiveSignalStabilizer.filter_batch_scenarios_independent` (`core/engine.py`): each row
+  gets its OWN calibration (`calibrate_macro_context_independent`), not one shared across the
+  whole batch like the existing `filter_batch_scenarios` -- rows with different scale/noise no
+  longer contaminate each other's threshold, matching the old loop's per-row-independent
+  behavior exactly. Verified bit-for-bit (float64) against the loop version, including a test
+  that specifically checks one row's huge injected spike does not change another row's output
+  (`test/test_orca_vectorized_batch.py`). Real measured latency, synthetic B=500/F=10 batch
+  (same shape as the APT29 + AI-shield experiment): median of 10 calls after JIT warmup,
+  **750.6ms -> 2.3ms (~321x)**. `chunk_threshold` behavior unchanged for the one case this
+  doesn't cover (a single row's own flattened size exceeding `chunk_threshold`, which falls
+  back to the original per-row/per-chunk loop, untouched). No public API change.
+
+### Changed
 - **`core/hybrid_engine.hybrid_shield`**: vectorized with `jax.vmap` -- the previous
   `for i in range(2, n)` Python loop called `calculate_phi_ab`/`calculate_vettore_dinamico`/
   `evaluate_phi_trigger` once per point. Profiling on a real 500-point security-telemetry
