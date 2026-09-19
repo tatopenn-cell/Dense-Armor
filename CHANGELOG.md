@@ -4,6 +4,20 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- **`core/hybrid_engine.hybrid_shield`**: vectorized with `jax.vmap` -- the previous
+  `for i in range(2, n)` Python loop called `calculate_phi_ab`/`calculate_vettore_dinamico`/
+  `evaluate_phi_trigger` once per point. Profiling on a real 500-point security-telemetry
+  series (Sysmon EventID10, APT29) showed 87% of the time in JAX dispatch itself (~2000
+  `jnp.array` constructions, 3.2M `isinstance` calls), not in the actual per-point math --
+  pure Python-orchestration overhead, not a real compute limit. Verified bit-for-bit against
+  the original loop on that same real series and on synthetic edge cases (isolated spike,
+  sustained step, with/without an external reference, n=0..3): identical output and trigger
+  in every case. Real measured latency on that 500-point series (median of 20 calls after JIT
+  warmup): **292.4ms -> 29.8ms (~9.8x)**. No public API change; `baseline`/`scale`/`ipg` still
+  read only `processed` (the sanitized raw series), never `out` from a previous step, per the
+  no-self-contamination invariant this function has always documented.
+
 ## [1.1.19] - 2026-09-05
 
 ### Added
