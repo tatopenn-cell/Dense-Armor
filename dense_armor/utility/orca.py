@@ -400,7 +400,13 @@ class Orca:
         vicenda, un risultato silenziosamente diverso dalla versione a loop.
         Verificato bit-per-bit contro _execute_4_phase_input_shield chiamata
         riga per riga, vedi test_orca_vectorized_batch_matches_loop."""
-        v64_cl, v64_co = np.float64(cl_batch_raw), np.float64(co_batch_raw)
+        # np.float64(arr) su un array a un solo elemento lo collassa in uno
+        # scalare 0-d invece di castare il dtype (da cui il Deprecation
+        # Warning: "Conversion of an array with ndim > 0 to a scalar") --
+        # rompeva il caso B=1,F=1 (shape (1,1) -> () -> IndexError piu' a
+        # valle in filter_batch_scenarios_independent su original_shape[0]).
+        # astype preserva sempre la shape, per qualunque n di elementi.
+        v64_cl, v64_co = cl_batch_raw.astype(np.float64), co_batch_raw.astype(np.float64)
         raw_noise = np.abs(v64_co - v64_cl)
         mask_cl = v64_cl != 0.0
         exp10_cl = np.where(mask_cl, np.log10(np.abs(v64_cl) + 1e-15), 0.0)
