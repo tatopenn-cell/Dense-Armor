@@ -16,30 +16,31 @@
   <a href="https://tatopenn-cell.github.io/Dense-Armor/"><img alt="docs" src="https://img.shields.io/badge/docs-tatopenn--cell.github.io-00e5ff?style=flat-square"></a>
 </p>
 
-<p align="center"><strong>Runtime shield per segnali IA e comandi robotici. Nessun riaddestramento. Nessuna magia — solo damping adattivo e controllo verificato con test reali.</strong></p>
+<p align="center"><strong>Runtime shield for AI signals and robotic commands. No retraining. No magic — just adaptive damping and control verified with real tests.</strong></p>
 
-<p align="center">📖 <a href="https://tatopenn-cell.github.io/Dense-Armor/"><strong>Documentazione completa, riferimento API, guida rapida →</strong></a></p>
+<p align="center">📖 <a href="https://tatopenn-cell.github.io/Dense-Armor/"><strong>Full documentation, API reference, quick guide →</strong></a></p>
 
 ---
 
-## `$ cosa fa`
+## `$ what it does`
 
-Un sensore che manda letture perse (`NaN`) o spara un valore assurdo (`1e6` invece di `1.2`) rompe silenziosamente qualunque pipeline a valle. Dense-Armor si mette in mezzo, tra il dato grezzo e il modello che lo consuma:
+A sensor that sends lost readings (`NaN`) or spits out an absurd value (`1e6` instead of `1.2`) silently breaks any downstream pipeline. Dense-Armor steps in between the raw data and the model that consumes it:
 
 ```
-  dato corrotto ──► [ SCUDO INGRESSO ] ──► modello IA ──► [ SCUDO USCITA ] ──► output pulito
-                     purifica vs               │             purifica vs
-                     riferimento                │             risposta-al-riferimento
-                     (o stima cieca robusta)    │             (o auto-consistenza)
+  corrupted data ──► [ INPUT SHIELD ] ──► AI model ──► [ OUTPUT SHIELD ] ──► clean output
+                     purifies vs             │             purifies vs
+                     reference               │             response-to-reference
+                     (or robust blind        │             (or self-consistency)
+                     estimate)
 ```
 
-- **Ingresso**: ripulisce il dato corrotto verso un riferimento pulito, se lo hai — o verso una stima robusta ricavata dal dato stesso, se non lo hai.
-- **Uscita**: verifica che la risposta del modello non sia a sua volta corrotta, confrontandola con la risposta che il modello darebbe al riferimento pulito.
-- **Margine d'errore**: per ogni valore corretto, restituisce quanto è stato spostato per ripulirlo. Correzione piccola → fidati. Correzione grande → tratta con cautela.
+- **Input**: cleans the corrupted data toward a clean reference, if you have one — or toward a robust estimate derived from the data itself, if you do not.
+- **Output**: checks that the model's response is not itself corrupted, comparing it with the response the model would give to the clean reference.
+- **Error margin**: for each corrected value, returns how much it was shifted to clean it. Small correction → trust it. Large correction → treat with caution.
 
-Lascia i pesi intatti. Gira a runtime. Funziona da 1D fino a 11D, testato (vedi `test/test_orca2.py`).
+It leaves the weights untouched. It runs at runtime. It works from 1D up to 11D, tested (see `test/test_orca2.py`).
 
-**Stessa disciplina, un secondo dominio**: da `$ rate_limiter` in poi il pacchetto copre anche la sicurezza di comandi e traiettorie per robot reali — limiti di velocità/accelerazione, control barrier function spaziali, generazione di traiettorie a jerk minimo, dinamica rigida da URDF vero (anche `.xacro`, anche giunti `<mimic>`), controllori passività+CBF fino a 6-DoF. Backend JAX condiviso con `Armatura`/`Orca`, stessa disciplina di verifica su dati/robot reali — un dominio applicativo diverso, non un pacchetto diverso.
+**Same discipline, a second domain**: from `$ rate_limiter` onward the package also covers command and trajectory safety for real robots — velocity/acceleration limits, spatial control barrier functions, minimum-jerk trajectory generation, rigid dynamics from real URDF (including `.xacro`, including `<mimic>` joints), passivity+CBF controllers up to 6-DoF. JAX backend shared with `Armatura`/`Orca`, same verification discipline on real data/robots — a different application domain, not a different package.
 
 ---
 
@@ -47,22 +48,22 @@ Lascia i pesi intatti. Gira a runtime. Funziona da 1D fino a 11D, testato (vedi 
 
 ```bash
 pip install dense-armor                 # core: numpy + jax
-pip install "dense-armor[quantum]"      # + Dense-Evolution (simulatore NISQ)
+pip install "dense-armor[quantum]"      # + Dense-Evolution (NISQ simulator)
 pip install "dense-armor[audio,data]"   # + WAV, HDF5, NetCDF
 ```
 
 ```python
-# obbligatorio prima di ogni import — richiesto dal gating a 64-bit
+# mandatory before every import — required by 64-bit gating
 import jax
 jax.config.update("jax_enable_x64", True)
 ```
 
 ```powershell
-# equivalente da PowerShell, prima del lancio
+# equivalent from PowerShell, before launch
 $env:JAX_ENABLE_X64="True"
 ```
 
-Per lanciare la suite di test in locale (clonando il repo, non serve se hai solo installato da pip):
+To run the test suite locally (by cloning the repo; not needed if you only installed from pip):
 
 ```bash
 pip install -e ".[dev]"
@@ -78,139 +79,139 @@ python -m dense_armor --json 1.2 1.3 9999 1.25 nan 1.3
 ```
 
 ```
-> anomalia @ indice 2 (picco 9999)
-> anomalia @ indice 4 (NaN)
-> tutto il resto: intatto
+> anomaly @ index 2 (peak 9999)
+> anomaly @ index 4 (NaN)
+> everything else: intact
 ```
 
-Collegato a un modello vero:
+Connected to a real model:
 
 ```python
 from dense_armor.utility.orca import Orca
 
 orca = Orca()
-output_protetto = orca.protect_and_forward(
-    mio_modello,                              # callable: x -> output (JAX/NumPy)
-    dato_corrotto,                            # tensore dal sensore/pipeline
-    x_reference=dato_pulito_di_riferimento,   # opzionale ma consigliato
+protected_output = orca.protect_and_forward(
+    my_model,                                 # callable: x -> output (JAX/NumPy)
+    corrupted_data,                           # tensor from the sensor/pipeline
+    x_reference=clean_reference_data,         # optional but recommended
 )
 
-orca.margine_ingresso_medio, orca.margine_uscita_medio   # quanto fidarsi
+orca.margine_ingresso_medio, orca.margine_uscita_medio   # how much to trust
 ```
 
-Serie 1D (loss di training, metriche, token stream):
+1D series (training loss, metrics, token stream):
 
 ```python
 from dense_armor import Armatura
 
-a = Armatura(livello_ia=0.0)   # 0 = filtra attivamente · 1 = solo segnala
-pulito, K, anomalie = a.analizza(serie)
+a = Armatura(livello_ia=0.0)   # 0 = actively filters · 1 = only flags
+clean, K, anomalies = a.analizza(series)
 ```
 
 ---
 
 ## `$ internals`
 
-Due motori distinti, a seconda di dove entri:
+Two distinct engines, depending on where you enter:
 
 ```
-Armatura (serie 1D: loss, metriche, sensori)   Orca (scudo entrata+uscita per un modello IA intero)
+Armatura (1D series: loss, metrics, sensors)   Orca (input+output shield for an entire AI model)
 ─────────────────────────────────────────      ─────────────────────────────────────────────────────
-core/hybrid_engine.py                           STADIO 1  core/engine.py
-motore a trigger binario (phi_ab/vettore         stabilizzatore adattivo, soglia dinamica su
-dinamico), verificato in Dense-Evolution e       volatilità recente
-adattato a segnali scalari a scala libera        STADIO 2  utility/collatz.py
-                                                  gating basato su Collatz, decide QUANTO
-                                                  smorzare verso il riferimento pulito
+core/hybrid_engine.py                           STAGE 1  core/engine.py
+binary-trigger engine (phi_ab/dynamic           adaptive stabilizer, dynamic threshold on
+vector), verified in Dense-Evolution and        recent volatility
+adapted to scalar signals at free scale         STAGE 2  utility/collatz.py
+                                                  Collatz-based gating, decides HOW MUCH
+                                                  to damp toward the clean reference
 ```
 
-`Armatura.analizza()` decide punto per punto, senza gradi intermedi: un valore o è un cambiamento genuino (passa) o è rumore/spike isolato (sostituito con la baseline locale — la finestra recente se non hai un riferimento, il tuo riferimento esplicito se lo passi).
+`Armatura.analizza()` decides point by point, with no intermediate degrees: a value is either a genuine change (it passes) or isolated noise/spike (replaced with the local baseline — the recent window if you have no reference, your explicit reference if you pass one).
 
-`Orca.protect_and_forward()` (scudo completo per un modello) usa ancora i due stadi originali. Senza riferimento pulito (modalità cieca), prima di ricadere sulla stima locale Orca cerca nella propria **memoria di riferimenti puliti passati** (per shape, via `apply_fast_resonance` — la stessa risonanza descritta più sotto nel toolkit) un riferimento simile all'input corrotto corrente; se non lo trova, rigetto degli outlier gravi via mediana locale, poi Stadio 1 in versione causale — usa tutta la storia della serie, non solo i vicini immediati, per stimare cosa "dovrebbe" essere quel punto. Ogni volta che un riferimento pulito viene passato esplicitamente, resta in memoria per le chiamate cieche successive (`reference_memory_size`, default 32 per shape).
+`Orca.protect_and_forward()` (complete shield for a model) still uses the two original stages. Without a clean reference (blind mode), before falling back to the local estimate Orca searches its own **memory of past clean references** (by shape, via `apply_fast_resonance` — the same resonance described later in the toolkit) for a reference similar to the current corrupted input; if it does not find one, rejection of severe outliers via local median, then Stage 1 in causal version — it uses the entire history of the series, not only immediate neighbors, to estimate what that point "should" be. Every time a clean reference is passed explicitly, it stays in memory for subsequent blind calls (`reference_memory_size`, default 32 per shape).
 
-Prima di ogni chunk pesante, Orca verifica anche RAM/VRAM disponibili tramite `UniversalMemoryGuard` (vedi toolkit sotto): sotto la soglia critica solleva `MemoryPressureError` invece di rischiare un OOM silenzioso qualche chunk più avanti. La dimensione stessa dei chunk (`chunk_threshold`) è auto-derivata da `AIHardwareProfiler` — scala con RAM/backend dell'host invece di un valore fisso uguale per qualunque macchina — a meno che tu non ne passi uno esplicito al costruttore.
+Before every heavy chunk, Orca also checks available RAM/VRAM via `UniversalMemoryGuard` (see toolkit below): below the critical threshold it raises `MemoryPressureError` instead of risking a silent OOM a few chunks later. The chunk size itself (`chunk_threshold`) is auto-derived from `AIHardwareProfiler` — it scales with the host's RAM/backend instead of a fixed value equal for every machine — unless you pass an explicit one to the constructor.
 
-Nota tecnica: `AdaptiveSignalStabilizer.filter_batch_scenarios` (usato ad es. dalla suite di test adversarial) accetta solo 2D/3D/4D. Lo scudo entrata di `Orca` e' un percorso diverso, senza quel limite.
+Technical note: `AdaptiveSignalStabilizer.filter_batch_scenarios` (used e.g. by the adversarial test suite) accepts only 2D/3D/4D. `Orca`'s input shield is a different path, without that limit.
 
 ---
 
 ## `$ orca --use_arbiter`
 
-`Orca.protect_and_forward(..., use_arbiter=True)` — opzionale, default `False` — instrada ogni punto verso il correttore giusto invece di forzarne uno solo su tutta la riga:
+`Orca.protect_and_forward(..., use_arbiter=True)` — optional, default `False` — routes each point to the right corrector instead of forcing a single one over the whole row:
 
 ```python
 orca = Orca()
-output_protetto = orca.protect_and_forward(mio_modello, dato_corrotto, use_arbiter=True)
+protected_output = orca.protect_and_forward(my_model, corrupted_data, use_arbiter=True)
 
-orca.etichette_arbitro       # array 'clean'/'spike'/'regime', uno per punto
-orca.incertezza_arbitro_media   # 0..1: quanto la classificazione stessa e' ambigua
-orca.tipi_corruzione_visti(dato_corrotto.shape)   # Counter, popolato quando x_reference e' noto
+orca.etichette_arbitro       # array 'clean'/'spike'/'regime', one per point
+orca.incertezza_arbitro_media   # 0..1: how ambiguous the classification itself is
+orca.tipi_corruzione_visti(corrupted_data.shape)   # Counter, populated when x_reference is known
 ```
 
-`spike` (impulso isolato) → rigetto duro verso la mediana di una finestra di riferimento larga; `regime` (cambio di livello sostenuto, riconosciuto guardando lunghezza e coerenza interna della sequenza di punti anomali) → valore grezzo, fiducia piena; `clean` → qualunque cosa lo scudo standard a 4 fasi abbia già prodotto, non il grezzo — un segnale continuo non anomalo ha comunque bisogno dello smorzamento morbido di `AdaptiveSignalStabilizer`.
+`spike` (isolated impulse) → hard rejection toward the median of a wide reference window; `regime` (sustained level change, recognized by looking at length and internal consistency of the sequence of anomalous points) → raw value, full trust; `clean` → whatever the standard 4-phase shield has already produced, not the raw value — a continuous non-anomalous signal still needs the soft damping of `AdaptiveSignalStabilizer`.
 
-Verificato sui 7 scenari di `test/testKalman.py` (`test/test_arbiter_orca_integration.py`): **mai peggio del default, meglio su 5/7** (impulsi isolati, corruzione sotto soglia, rumore a code pesanti, rottura di livello, buco di dati NaN), pari su un caso, identico sul rimanente per design corretto (segnale strutturato continuo → ricade sullo scudo standard). Dettagli, cronologia di un bug reale trovato e risolto (finestra di riferimento simmetrica → causale) nel [changelog](https://tatopenn-cell.github.io/Dense-Armor/changelog/) e nel docstring di `utility/arbiter.py`.
+Verified on the 7 scenarios of `test/testKalman.py` (`test/test_arbiter_orca_integration.py`): **never worse than the default, better on 5/7** (isolated impulses, below-threshold corruption, heavy-tailed noise, level break, NaN data gap), equal on one case, identical on the remaining one by correct design (continuous structured signal → falls back to the standard shield). Details, chronology of a real bug found and fixed (symmetric → causal reference window) in the [changelog](https://tatopenn-cell.github.io/Dense-Armor/changelog/) and in the docstring of `utility/arbiter.py`.
 
 ---
 
 ## `$ streaming --realtime`
 
-Un robot reale gira a 30-100Hz e non può aspettare un array già registrato. `StreamingDeviationDetector` (`dense_armor.utility.streaming`) porta a latenza zero solo la metà causale di `classify_segments` — il flag di deviazione per-punto, non l'etichetta finale spike/regime, che richiede di guardare avanti nella sequenza e resta una domanda batch per design:
+A real robot runs at 30-100Hz and cannot wait for an already-recorded array. `StreamingDeviationDetector` (`dense_armor.utility.streaming`) brings to zero latency only the causal half of `classify_segments` — the per-point deviation flag, not the final spike/regime label, which requires looking ahead in the sequence and remains a batch question by design:
 
 ```python
 from dense_armor.utility.streaming import StreamingDeviationDetector
 
 det = StreamingDeviationDetector(radius=10, ref_mult=3, n_sigmas=3.0)
-for x in flusso_sensore:
-    is_deviante = det.update(x)
+for x in sensor_stream:
+    is_deviant = det.update(x)
 ```
 
-`MultiChannelStreamingDeviationDetector` e `classify_segments_multichannel` applicano la stessa logica già validata a più canali indipendenti (i giunti di un braccio robotico, gli assi di un IMU) senza richiedere un ciclo manuale — ogni canale mantiene la propria finestra di riferimento. Promosso da Dense-Evolution-Discovery dopo validazione su due domini fisici reali indipendenti (braccio robotico SO-101, IMU umano reale) — stessa disciplina già usata per `stable_frame_filter.py` e `velocity_gated_stable_mask`. Documentazione completa (auto-generata dai docstring reali) sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/streaming/).
+`MultiChannelStreamingDeviationDetector` and `classify_segments_multichannel` apply the same already-validated logic to multiple independent channels (the joints of a robotic arm, the axes of an IMU) without requiring a manual loop — each channel keeps its own reference window. Promoted by Dense-Evolution-Discovery after validation on two independent real physical domains (SO-101 robotic arm, real human IMU) — the same discipline already used for `stable_frame_filter.py` and `velocity_gated_stable_mask`. Full documentation (auto-generated from the real docstrings) on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/streaming/).
 
 ---
 
 ## `$ cusum --detectability`
 
-Un drift troppo lento per superare, punto per punto, la soglia istantanea di `classify_segments` sfugge ad Arbiter per design. `cusum_detector` (`dense_armor.utility.cusum`) accumula le piccole deviazioni nel tempo invece di giudicare ogni punto isolatamente:
+A drift too slow to exceed, point by point, the instantaneous threshold of `classify_segments` escapes Arbiter by design. `cusum_detector` (`dense_armor.utility.cusum`) accumulates small deviations over time instead of judging each point in isolation:
 
 ```python
 from dense_armor.utility.cusum import cusum_detector, detectability_report
 
 flagged, cusum = cusum_detector(x, radius=10, ref_mult=3, k=0.5, h=20.0)
 
-report = detectability_report(local_noise_scale=mad_locale, k=0.5, h=5.0, candidate_shift=10.0)
+report = detectability_report(local_noise_scale=local_mad, k=0.5, h=5.0, candidate_shift=10.0)
 # {'false_alarm_arl': ..., 'detection_arl': ..., 'shift_in_sigma': ...}
 ```
 
-`detectability_report` stima *prima* di lanciare un benchmark quanti campioni servono per rilevare uno shift dato il rumore locale reale del detector -- teoria Reynolds (1975)/Siegmund (1985), promossa da Dense-Evolution-Discovery dopo validazione su due domini fisici reali indipendenti (lidar, accelerometro): sul lidar la latenza reale batte sempre la stima teorica; sull'accelerometro il risultato è genuinamente misto -- documentato così com'è, non forzato a coincidere. Documentazione completa (auto-generata dai docstring reali) sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/cusum/).
+`detectability_report` estimates *before* running a benchmark how many samples are needed to detect a given shift given the detector's real local noise -- Reynolds (1975)/Siegmund (1985) theory, promoted by Dense-Evolution-Discovery after validation on two independent real physical domains (lidar, accelerometer): on the lidar the real latency always beats the theoretical estimate; on the accelerometer the result is genuinely mixed -- documented as is, not forced to coincide. Full documentation (auto-generated from the real docstrings) on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/cusum/).
 
 ## `$ rate_limiter --damping`
 
-Un braccio robotico non può eseguire un salto istantaneo illimitato senza rischio -- `rate_limited_follower` (`dense_armor.utility.rate_limiter`) limita quanto velocemente un comando applicato può cambiare fisicamente (velocità + accelerazione), invece di cercare di classificare se una deviazione è reale:
+A robotic arm cannot execute an unlimited instantaneous jump without risk -- `rate_limited_follower` (`dense_armor.utility.rate_limiter`) limits how fast an applied command can physically change (velocity + acceleration), instead of trying to classify whether a deviation is real:
 
 ```python
 from dense_armor.utility.rate_limiter import rate_limited_follower
 
-applicato = rate_limited_follower(comando_grezzo, max_vel=2.0, max_accel=1.0)
+applied = rate_limited_follower(raw_command, max_vel=2.0, max_accel=1.0)
 ```
 
-Fondato su Berscheid & Kroger (2021), "Jerk-limited Real-time Trajectory Generation" (RSS 2021, arXiv:2105.04830) — causale per costruzione, verificato direttamente. Promosso da Dense-Evolution-Discovery dopo validazione su due domini fisici reali indipendenti (SO-101, ALOHA bimanuale 14-DOF): vince sempre (400/400 trial reali) sulla metrica di sicurezza reale (salto massimo istantaneo), ma **non** è un ripulitore di segnale — su fedeltà media (RMSE) il quadro è genuinamente misto tra i due domini, non nascosto. Documentazione completa (auto-generata dai docstring reali) sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/rate_limiter/).
+Based on Berscheid & Kroger (2021), "Jerk-limited Real-time Trajectory Generation" (RSS 2021, arXiv:2105.04830) — causal by construction, verified directly. Promoted by Dense-Evolution-Discovery after validation on two independent real physical domains (SO-101, 14-DOF bimanual ALOHA): it always wins (400/400 real trials) on the real safety metric (maximum instantaneous jump), but it is **not** a signal cleaner — on average fidelity (RMSE) the picture is genuinely mixed between the two domains, not hidden. Full documentation (auto-generated from the real docstrings) on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/rate_limiter/).
 
 ## `$ cbf_filter --spatial`
 
-Un comando che si muove a velocità perfettamente sicura ma dritto verso un ostacolo resta pericoloso — `rate_limiter` limita QUANTO VELOCE, `cbf_filter` limita DOVE:
+A command that moves at a perfectly safe speed but straight toward an obstacle remains dangerous — `rate_limiter` limits HOW FAST, `cbf_filter` limits WHERE:
 
 ```python
 from dense_armor.utility.cbf_filter import cbf_filtered_trajectory
 
-applicato = cbf_filtered_trajectory(comando_grezzo, obstacle=5.0, safe_dist=2.0, alpha_gain=2.0)
+applied = cbf_filtered_trajectory(raw_command, obstacle=5.0, safe_dist=2.0, alpha_gain=2.0)
 ```
 
-Fondato su Ames et al. (2019), "Control Barrier Functions: Theory and Applications" (2019 ECC, arXiv:1903.11199) — stessa teoria di SAFER-Splat, applicata a un ostacolo geometrico noto invece della percezione Gaussian-Splatting via GPU (non disponibile su ogni macchina). Un problema numerico reale trovato e risolto lungo il percorso: la garanzia CBF è continua nel tempo, servono sotto-passi (20/campione, default) per reggere in discreto su comandi reali che possono saltare parecchio tra un campione e l'altro. Promosso da Dense-Evolution-Discovery dopo validazione su due domini fisici reali indipendenti (SO-101, ALOHA): invarianza 100% da partenze sicure su entrambi, minima invasività praticamente esatta (99.9%+ su SO-101, perfettamente esatta su ALOHA). `cbf_safety_filter_live` è la stessa matematica per un loop di controllo reale che reagisce a un tick sensore alla volta (un `dt` reale, non un array pre-registrato) — promossa dopo che un vero loop live ROS2/Ignition ne aveva bisogno e l'aveva dovuta ricostruire a mano. Documentazione completa (auto-generata dai docstring reali) sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/cbf_filter/).
+Based on Ames et al. (2019), "Control Barrier Functions: Theory and Applications" (2019 ECC, arXiv:1903.11199) — same theory as SAFER-Splat, applied to a known geometric obstacle instead of GPU Gaussian-Splatting perception (not available on every machine). A real numerical problem found and solved along the way: the CBF guarantee is continuous in time, sub-steps are needed (20/sample, default) to hold in discrete time on real commands that can jump a lot between one sample and the next. Promoted by Dense-Evolution-Discovery after validation on two independent real physical domains (SO-101, ALOHA): 100% invariance from safe starts on both, minimal invasiveness practically exact (99.9%+ on SO-101, perfectly exact on ALOHA). `cbf_safety_filter_live` is the same mathematics for a real control loop that reacts to one sensor tick at a time (a real `dt`, not a pre-recorded array) — promoted after a real ROS2/Ignition live loop needed it and had to rebuild it by hand. Full documentation (auto-generated from the real docstrings) on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/cbf_filter/).
 
 ## `$ trajectory --quintic`
 
-`rate_limiter` limita QUANTO VELOCE, `cbf_filter` limita DOVE — ma nessuno dei due genera un riferimento da seguire. `quintic_trajectory` copre esattamente questo: un percorso liscio, a jerk minimo, tra due punti, per qualunque numero di giunti in una sola chiamata:
+`rate_limiter` limits HOW FAST, `cbf_filter` limits WHERE — but neither generates a reference to follow. `quintic_trajectory` covers exactly this: a smooth, minimum-jerk path between two points, for any number of joints in a single call:
 
 ```python
 from dense_armor.utility.trajectory import quintic_trajectory
@@ -218,11 +219,11 @@ from dense_armor.utility.trajectory import quintic_trajectory
 t, q, v, a = quintic_trajectory(q0=[0.0], qf=[10.0], T=2.0)
 ```
 
-Ridotto deliberatamente rispetto a due paper reali che propongono ottimizzatori molto più grandi (dinamica completa, URDF, coppie) — Lozer, Scalera, Boscariol & Gasparetto (*Robotics and Autonomous Systems*) e Fried & Paternain (arXiv:2412.07859), entrambi letti per intero prima di scrivere codice — al pezzo più semplice e universale: nessun URDF, nessuna dinamica, nessuna connessione al robot. Promosso da Dense-Evolution-Discovery dopo validazione su due domini fisici reali indipendenti (SO-101, ALOHA, 20 escursioni articolari reali): la velocità di picco del quintico è sempre più bassa di quella reale registrata per lo stesso inizio/fine/durata — atteso, non un bug, essendo il percorso più liscio possibile. Documentazione completa (auto-generata dai docstring reali) sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/trajectory/).
+Deliberately reduced compared to two real papers that propose much larger optimizers (full dynamics, URDF, torques) — Lozer, Scalera, Boscariol & Gasparetto (*Robotics and Autonomous Systems*) and Fried & Paternain (arXiv:2412.07859), both read in full before writing code — to the simplest and most universal piece: no URDF, no dynamics, no connection to the robot. Promoted by Dense-Evolution-Discovery after validation on two independent real physical domains (SO-101, ALOHA, 20 real joint excursions): the quintic's peak velocity is always lower than the real one recorded for the same start/end/duration — expected, not a bug, since it is the smoothest possible path. Full documentation (auto-generated from the real docstrings) on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/trajectory/).
 
 ## `$ kinematic_controller --tracking`
 
-`trajectory` genera un riferimento liscio, ma qualcosa deve trasformarlo in un comando reale — `kinematic_tracking_controller` fa questo, alla stessa scala a singolo integratore di `rate_limiter`/`cbf_filter`:
+`trajectory` generates a smooth reference, but something must turn it into a real command — `kinematic_tracking_controller` does this, at the same single-integrator scale as `rate_limiter`/`cbf_filter`:
 
 ```python
 from dense_armor.utility.kinematic_controller import kinematic_tracking_controller
@@ -230,29 +231,29 @@ from dense_armor.utility.kinematic_controller import kinematic_tracking_controll
 u_des = kinematic_tracking_controller(q=[0.2], q_ref=[0.5], qd_ref=[1.0], kp=5.0)
 ```
 
-`u = qd_ref + kp*(q_ref - q)` — per il sistema `qdot = u` questo rende l'errore di inseguimento esattamente `edot = -kp*e`: convergenza esponenziale in forma chiusa, per qualunque traiettoria di riferimento, verificata numericamente. Non è "basato su passività" nel senso dei paper che hanno motivato questa ricerca (Wu & Tan 2025, il vero bersaglio, dietro paywall senza copia aperta trovata; Scruggs, reale ma serve ottimizzazione convessa in dimensione infinita; Califano et al., reale ma serve meccanica Hamiltoniana) — onesto su questo, è più semplice. Promosso da Dense-Evolution-Discovery dopo validazione su due domini fisici reali (SO-101, ALOHA), incatenato con `quintic_trajectory`: ogni escursione reale recupera da un errore iniziale reale dichiarato e converge. Documentazione completa (auto-generata dai docstring reali) sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/kinematic_controller/).
+`u = qd_ref + kp*(q_ref - q)` — for the system `qdot = u` this makes the tracking error exactly `edot = -kp*e`: exponential convergence in closed form, for any reference trajectory, verified numerically. It is not "passivity-based" in the sense of the papers that motivated this research (Wu & Tan 2025, the real target, behind a paywall with no open copy found; Scruggs, real but requires convex optimization in infinite dimension; Califano et al., real but requires Hamiltonian mechanics) — honest about this, it is simpler. Promoted by Dense-Evolution-Discovery after validation on two real physical domains (SO-101, ALOHA), chained with `quintic_trajectory`: every real excursion recovers from a declared real initial error and converges. Full documentation (auto-generated from the real docstrings) on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/kinematic_controller/).
 
 ## `$ rigid_body --urdf`
 
-`rate_limiter`/`cbf_filter`/`trajectory`/`kinematic_controller` lavorano tutti a livello di singolo integratore: dai una velocità di giunto, ricevi una velocità di giunto sicura. `RigidBodyModel` (`dense_armor.dynamics.urdf_dynamics`) è diverso — richiede una vera descrizione fisica del robot (un URDF reale, anche `.xacro`) e restituisce dinamica vera a livello di coppia:
+`rate_limiter`/`cbf_filter`/`trajectory`/`kinematic_controller` all work at the single-integrator level: you give a joint velocity, you receive a safe joint velocity. `RigidBodyModel` (`dense_armor.dynamics.urdf_dynamics`) is different — it requires a real physical description of the robot (a real URDF, including `.xacro`) and returns true torque-level dynamics:
 
 ```python
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 import jax.numpy as jnp
 
-model = RigidBodyModel("panda.urdf")   # o un percorso .xacro, espanso automaticamente
+model = RigidBodyModel("panda.urdf")   # or a .xacro path, expanded automatically
 q = jnp.zeros(model.n)
 M = model.mass_matrix(q)
 qdd = model.forward_dynamics(q, jnp.zeros(model.n), jnp.zeros(model.n))
 ```
 
-`model.n` è il numero di gradi di libertà reali e indipendenti (un giunto con `<mimic>` non conta a parte). `mass_matrix`, `gravity_forces`, `bias_forces` e `forward_dynamics` (risolve `M(q)*qdd + C(q,qd)*qd + g(q) = tau`) usano la costruzione Lagrangiana standard via autodiff (`jax.grad`/`jax.jvp`), non simboli di Christoffel scritti a mano. `link_position`/`link_jacobian`/`link_pose`/`link_spatial_jacobian` funzionano per qualunque link nominato nell'URDF, non solo l'end effector.
+`model.n` is the number of real, independent degrees of freedom (a joint with `<mimic>` does not count separately). `mass_matrix`, `gravity_forces`, `bias_forces` and `forward_dynamics` (solves `M(q)*qdd + C(q,qd)*qd + g(q) = tau`) use the standard Lagrangian construction via autodiff (`jax.grad`/`jax.jvp`), not hand-written Christoffel symbols. `link_position`/`link_jacobian`/`link_pose`/`link_spatial_jacobian` work for any link named in the URDF, not only the end effector.
 
-Promosso da Dense-Evolution-Discovery (Experiment 62) dopo validazione su tre robot reali indipendenti (Kinova Gen3 7-DoF, Kinova Gen3 6-DoF, Franka Emika Panda — manufacturer diverso, giunti prismatici): matrice di massa simmetrica/positiva-definita e conservazione dell'energia con la convergenza RK4 corretta su tutti e tre. Documentazione completa sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/urdf_dynamics/).
+Promoted by Dense-Evolution-Discovery (Experiment 62) after validation on three independent real robots (Kinova Gen3 7-DoF, Kinova Gen3 6-DoF, Franka Emika Panda — different manufacturer, prismatic joints): symmetric/positive-definite mass matrix and energy conservation with correct RK4 convergence on all three. Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/urdf_dynamics/).
 
 ## `$ passivity_cbf --controller`
 
-`RigidBodyModel` dà M(q), gravità e dinamica in avanti per qualunque robot — `solve_control_qp` (`dense_armor.dynamics.passivity_cbf_controller`) li usa per guidare quel robot verso un target nello spazio operativo in sicurezza, garantendo passività dell'errore di inseguimento e distanza dalle singolarità cinematiche, entrambe come vincoli in un piccolo QP:
+`RigidBodyModel` gives M(q), gravity and forward dynamics for any robot — `solve_control_qp` (`dense_armor.dynamics.passivity_cbf_controller`) uses them to drive that robot toward an operational-space target safely, guaranteeing passivity of the tracking error and distance from kinematic singularities, both as constraints in a small QP:
 
 ```python
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
@@ -262,13 +263,13 @@ model = RigidBodyModel("panda.urdf")
 qdd, tau, mu, h = solve_control_qp(model, "panda_hand", q, qd, p_des, pd_des, pdd_des, eps=0.03)
 ```
 
-`eps` è l'indice di manipolabilità minimo che il controllore mantiene — `mu` (restituito) non scende mai molto sotto, anche quando il target comandato spingerebbe altrimenti il robot dritto in una singolarità. I limiti reali di posizione/velocità di ogni giunto (dal tag `<limit>` dell'URDF) sono un terzo vincolo, aggiunto solo dove il robot li dichiara davvero.
+`eps` is the minimum manipulability index that the controller maintains — `mu` (returned) never drops much below it, even when the commanded target would otherwise push the robot straight into a singularity. The real position/velocity limits of each joint (from the URDF `<limit>` tag) are a third constraint, added only where the robot actually declares them.
 
-Fondato su Kurtz, Wensing & Lin (2021, arXiv:2109.13349). Promosso da Dense-Evolution-Discovery (Experiment 61→63) dopo validazione sugli stessi tre robot di `RigidBodyModel`, ognuno spinto verso la propria vera singolarità: manipolabilità mantenuta entro lo 0.1-1.8% della soglia dichiarata in ogni caso. Un bug OSQP reale trovato e risolto lungo il percorso (infeasibility del QP passività+CBF, risolta ricadendo sul solo CBF). Documentazione completa sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/passivity_cbf_controller/).
+Based on Kurtz, Wensing & Lin (2021, arXiv:2109.13349). Promoted by Dense-Evolution-Discovery (Experiment 61→63) after validation on the same three robots as `RigidBodyModel`, each pushed toward its own real singularity: manipulability maintained within 0.1-1.8% of the declared threshold in every case. A real OSQP bug found and solved along the way (infeasibility of the passivity+CBF QP, solved by falling back to CBF alone). Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/passivity_cbf_controller/).
 
 ## `$ six_dof_cbf --pose`
 
-`passivity_cbf_controller` insegue solo la posizione di un link. `six_dof_pbc_cbf_controller.solve_control_qp` estende lo stesso QP alla posa intera — posizione e orientamento insieme — usando lo Jacobiano spaziale 6xN del link invece del solo Jacobiano di traslazione:
+`passivity_cbf_controller` tracks only the position of a link. `six_dof_pbc_cbf_controller.solve_control_qp` extends the same QP to the full pose — position and orientation together — using the link's 6xN spatial Jacobian instead of only the translation Jacobian:
 
 ```python
 from dense_armor.dynamics.six_dof_pbc_cbf_controller import solve_control_qp
@@ -277,105 +278,105 @@ qdd, tau, mu, h = solve_control_qp(model, "panda_hand", q, qd, p_des, pd_des, pd
                                     r_des, w_des, wd_des, eps=0.03)
 ```
 
-`r_des` è l'orientamento desiderato (matrice di rotazione), `w_des`/`wd_des` la velocità/accelerazione angolare desiderata in world frame. L'errore di orientamento usa la formula SO(3) di Lee, Leok & McClamroch (2010) — liscia ovunque, senza il gimbal-lock reale di una formulazione roll-pitch-yaw.
+`r_des` is the desired orientation (rotation matrix), `w_des`/`wd_des` the desired angular velocity/acceleration in world frame. The orientation error uses the SO(3) formula of Lee, Leok & McClamroch (2010) — smooth everywhere, without the real gimbal lock of a roll-pitch-yaw formulation.
 
-Promosso da Dense-Evolution-Discovery (Experiment 65). Validato con compensazione di gravità esatta a errore zero (precisione macchina) e convergenza reale in anello chiuso (offset iniziale 10cm/30°, RK4 su 1000 tick, errore finale 1e-6 m / 1e-4 rad) — poi sugli stessi tre robot di `passivity_cbf_controller`, dove è emersa una seconda infeasibility OSQP reale (la manipolabilità 6-DoF può essere ben sotto quella 3-DoF alla stessa configurazione) risolta con un terzo livello di fallback (CBF da solo, senza box). Documentazione completa sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/six_dof_pbc_cbf_controller/).
+Promoted by Dense-Evolution-Discovery (Experiment 65). Validated with exact gravity compensation at zero error (machine precision) and real closed-loop convergence (initial offset 10cm/30°, RK4 over 1000 ticks, final error 1e-6 m / 1e-4 rad) — then on the same three robots as `passivity_cbf_controller`, where a second real OSQP infeasibility emerged (6-DoF manipulability can be well below the 3-DoF one at the same configuration) solved with a third fallback level (CBF alone, without box). Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/six_dof_pbc_cbf_controller/).
 
 ## `$ xacro --macros`
 
-I produttori pubblicano le descrizioni robot come macro `.xacro` (blocchi parametrizzati, espressioni matematiche, `xacro:include`), non come URDF piatto. `RigidBodyModel` ora accetta `.xacro` direttamente:
+Manufacturers publish robot descriptions as `.xacro` macros (parameterized blocks, mathematical expressions, `xacro:include`), not as flat URDF. `RigidBodyModel` now accepts `.xacro` directly:
 
 ```python
 model = RigidBodyModel("panda_arm_hand.urdf.xacro")
-model.n   # 8 -- 7 giunti braccio + 1 coordinata pinza indipendente
+model.n   # 8 -- 7 arm joints + 1 independent gripper coordinate
 ```
 
-Il pacchetto reale `xacro` (lo stesso espansore dell'ecosistema ROS, nessuna installazione ROS richiesta) fa l'espansione — nulla su macro/math/condizionali è reimplementato qui.
+The real `xacro` package (the same expander from the ROS ecosystem, no ROS installation required) does the expansion — nothing about macros/math/conditionals is reimplemented here.
 
-Promosso da Dense-Evolution-Discovery (Experiment 66), che ha trovato e risolto un'inconsistenza reale nelle macro pubblicate del Franka Panda (`clvrai/furniture`): un link di attacco della mano commentato nella macro del braccio ma richiesto da quella della mano. Nuova dipendenza: `xacro`. Documentazione completa sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/xacro_support/).
+Promoted by Dense-Evolution-Discovery (Experiment 66), which found and solved a real inconsistency in the published Franka Panda macros (`clvrai/furniture`): a hand attachment link commented out in the arm macro but required by the hand one. New dependency: `xacro`. Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/xacro_support/).
 
 ## `$ mimic --joints`
 
-Le due dita di una pinza si muovono insieme: chiuderne una chiude anche l'altra. URDF lo esprime con un tag `<mimic joint="..." multiplier="..." offset="..."/>` — l'angolo del giunto slave è sempre `multiplier * angolo_master + offset`, mai una variabile libera. `RigidBodyModel` ora lo rispetta invece di dare al giunto slave una coordinata indipendente propria:
+The two fingers of a gripper move together: closing one also closes the other. URDF expresses this with a `<mimic joint="..." multiplier="..." offset="..."/>` tag — the slave joint angle is always `multiplier * master_angle + offset`, never a free variable. `RigidBodyModel` now respects this instead of giving the slave joint its own independent coordinate:
 
 ```python
-model.n                                    # 8, non 9 -- le due dita condividono un solo DOF reale
+model.n                                    # 8, not 9 -- the two fingers share a single real DOF
 model.mimic_map["panda_finger_joint2"]     # (master_dof_idx, multiplier, offset)
 ```
 
-La cinematica diretta sostituisce `q[master] * multiplier + offset` per l'angolo del giunto mimic; lo Jacobiano geometrico costruito a mano scala la colonna locale del giunto mimic per `multiplier` e la somma nella colonna del suo master, invece di darle una colonna propria.
+Forward kinematics substitutes `q[master] * multiplier + offset` for the mimic joint angle; the hand-built geometric Jacobian scales the mimic joint's local column by `multiplier` and sums it into its master's column, instead of giving it its own column.
 
-Promosso da Dense-Evolution-Discovery (Experiment 67), verificato contro una differenza finita centrale reale di `link_pose` (non solo plausibilità): muovere il master di 0.02 sposta entrambe le punte delle dita di esattamente 0.02 in direzioni opposte, e lo Jacobiano scritto a mano corrisponde alla derivata numerica entro 1e-5. Documentazione completa sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/mimic_joints/).
+Promoted by Dense-Evolution-Discovery (Experiment 67), verified against a real central finite difference of `link_pose` (not just plausibility): moving the master by 0.02 moves both fingertips by exactly 0.02 in opposite directions, and the hand-written Jacobian matches the numerical derivative within 1e-5. Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/mimic_joints/).
 
 ---
 
 ## `$ mcp --server`
 
-Un server MCP (`dense_armor.mcp_server`) espone 8 tool — `dense_armor_health`, `dense_armor_clean_signal` (Orca completo, con `use_arbiter`), `dense_armor_detect_anomalies` (solo classificazione), `dense_armor_robust_filter`, `dense_armor_heal_series`, più `dense_armor_stream_start`/`_update`/`_end` (sessione stateful per un flusso sensore in tempo reale, un canale multiplo alla volta) — così un agente (Claude Code, Claude Desktop, o qualunque client MCP) può ripulire una serie, o seguire un flusso sensore live, senza scrivere Python. Diretto e in-process (niente kernel HTTP separato, a differenza dell'adattatore di Dense-Evolution — Dense-Armor non ha una web UI da condividere):
+An MCP server (`dense_armor.mcp_server`) exposes 8 tools — `dense_armor_health`, `dense_armor_clean_signal` (full Orca, with `use_arbiter`), `dense_armor_detect_anomalies` (classification only), `dense_armor_robust_filter`, `dense_armor_heal_series`, plus `dense_armor_stream_start`/`_update`/`_end` (stateful session for a real-time sensor stream, one multiple channel at a time) — so an agent (Claude Code, Claude Desktop, or any MCP client) can clean a series, or follow a live sensor stream, without writing Python. Direct and in-process (no separate HTTP kernel, unlike the Dense-Evolution adapter — Dense-Armor has no web UI to share):
 
 ```bash
 pip install -e ".[mcp]"
 claude mcp add dense_armor -- dense-armor-mcp
 ```
 
-Vive apposta sotto `dense_armor.mcp_server`, non un semplice `mcp_server` — con Dense-Evolution installato nello stesso ambiente (il suo adattatore si chiama esattamente `mcp_server`), un nome non annidato è una collisione vera, verificata, non un'ipotesi. Vedi [`dense_armor/mcp_server/README.md`](dense_armor/mcp_server/README.md) per l'elenco completo dei tool e `test/test_mcp_server.py` per la verifica end-to-end di ognuno.
+It intentionally lives under `dense_armor.mcp_server`, not a simple `mcp_server` — with Dense-Evolution installed in the same environment (its adapter is named exactly `mcp_server`), a non-nested name is a real, verified collision, not a hypothesis. See [`dense_armor/mcp_server/README.md`](dense_armor/mcp_server/README.md) for the complete tool list and `test/test_mcp_server.py` for the end-to-end verification of each one.
 
 ---
 
 ## `$ robust_filters --standalone`
 
-Quattro rilevatori di anomalie classici (`dense_armor.utility.robust_filters`), indipendenti da `Armatura`/`Orca` — nessun modello dinamico, nessuno stato, solo aritmetica su una finestra locale centrata (pensati per pulizia offline/batch, non il ciclo causale real-time; adatti anche a un futuro porting embedded, dove non ci si potrà appoggiare a numpy):
+Four classic anomaly detectors (`dense_armor.utility.robust_filters`), independent of `Armatura`/`Orca` — no dynamic model, no state, only arithmetic on a centered local window (intended for offline/batch cleaning, not the real-time causal loop; also suitable for a future embedded port, where one will not be able to rely on numpy):
 
 ```python
 from dense_armor.utility.robust_filters import pressure_valve
 
-pulito, anomalie, pressione, soglia_effettiva = pressure_valve(serie)
+clean, anomalies, pressure, effective_threshold = pressure_valve(series)
 ```
 
-`pressure_valve` combina Chauvenet's criterion (1863), Tukey's fences/IQR, l'Hampel filter e il sigma-clipping iterativo — non con un voto (quanti dei 4 segnalano un punto), ma con la combinazione classica a minima varianza (stimatore BLUE): ogni metodo produce una coppia (centro, scala) locale, e i pesi sono derivati con un moltiplicatore di Lagrange (minimizza la varianza della combinazione pesata, vincolo Σw=1 → w_k ∝ 1/scala_k²) — un metodo la cui incertezza si gonfia (es. Chauvenet quando la finestra contiene già un outlier, la sua media/std non sono robuste) viene pesato automaticamente meno, senza scartarlo a mano. Decisione finale sempre binaria (marcato/sostituito con la mediana locale, o intatto).
+`pressure_valve` combines Chauvenet's criterion (1863), Tukey's fences/IQR, the Hampel filter and iterative sigma-clipping — not with a vote (how many of the 4 flag a point), but with the classic minimum-variance combination (BLUE estimator): each method produces a local (center, scale) pair, and the weights are derived with a Lagrange multiplier (minimizes the variance of the weighted combination, constraint Σw=1 → w_k ∝ 1/scale_k²) — a method whose uncertainty inflates (e.g. Chauvenet when the window already contains an outlier, its mean/std are not robust) is automatically weighted less, without discarding it by hand. Final decision always binary (flagged/replaced with the local median, or intact).
 
-La soglia stessa non è fissa: si confronta la finestra locale con una più ampia via divergenza di Jensen-Shannon, e si allarga quando le due distribuzioni divergono (una vera transizione di regime, non rumore) — mai il contrario, `soglia_effettiva >= soglia_pressione` sempre.
+The threshold itself is not fixed: the local window is compared with a wider one via Jensen-Shannon divergence, and it widens when the two distributions diverge (a real regime transition, not noise) — never the opposite, `effective_threshold >= pressure_threshold` always.
 
-I quattro metodi singoli restano richiamabili anche uno per uno (`chauvenet_criterion`, `tukey_fences`, `hampel_filter`, `sigma_clip`) se serve un solo criterio invece della combinazione.
+The four individual methods also remain callable one by one (`chauvenet_criterion`, `tukey_fences`, `hampel_filter`, `sigma_clip`) if a single criterion is needed instead of the combination.
 
 ---
 
 ## `$ toolkit --standalone`
 
-Sotto `core/`/`utility/` c'è anche una seconda parte del pacchetto, in gran parte indipendente da Armatura/Orca — la maggior parte di questi moduli non partecipa allo scudo anomalie, sono strumenti a sé che condividono solo il backend JAX/NumPy. Tre eccezioni: `UniversalMemoryGuard`, `apply_fast_resonance` e `AIHardwareProfiler`, richiamati anche da Orca (vedi `$ internals` sopra) — restano comunque utilizzabili standalone. Documentazione completa (auto-generata dai docstring reali) sul [sito](https://tatopenn-cell.github.io/Dense-Armor/api/toolkit/); qui il riepilogo.
+Under `core/`/`utility/` there is also a second part of the package, largely independent of Armatura/Orca — most of these modules do not participate in the anomaly shield, they are tools in their own right that only share the JAX/NumPy backend. Three exceptions: `UniversalMemoryGuard`, `apply_fast_resonance` and `AIHardwareProfiler`, also called by Orca (see `$ internals` above) — they remain usable standalone anyway. Full documentation (auto-generated from the real docstrings) on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/toolkit/); here is the summary.
 
-**Pipeline e chunking** (`dense_armor.core`)
+**Pipeline and chunking** (`dense_armor.core`)
 
-- `DynamicAICodegen` — compila una lista di nomi di operazioni (`relu`, `sigmoid`, `tanh`, `scale`, `dropout`, `clip`, `l2_normalize`, `identity`) in una pipeline JAX JIT-compilata via `lax.switch`, con esecuzione a blocchi per liste lunghe e gradiente via autodiff (`compute_gradients`).
-- `ImageChunker` (`dense_armor.core.chunk`) — divide/ricompone un batch grande in blocchi a dimensione fissa, sia per array di dati sia per liste di istruzioni compilate.
-- `UniversalMemoryGuard` — controlla RAM (e VRAM, se c'è una GPU NVIDIA) prima di un'allocazione pesante, calcola il numero di blocchi necessari per starci; solleva `MemoryPressureError` sotto soglia. Usato anche da `Orca` prima di ogni chunk pesante.
+- `DynamicAICodegen` — compiles a list of operation names (`relu`, `sigmoid`, `tanh`, `scale`, `dropout`, `clip`, `l2_normalize`, `identity`) into a JAX JIT-compiled pipeline via `lax.switch`, with block execution for long lists and gradient via autodiff (`compute_gradients`).
+- `ImageChunker` (`dense_armor.core.chunk`) — splits/recomposes a large batch into fixed-size blocks, both for data arrays and for compiled instruction lists.
+- `UniversalMemoryGuard` — checks RAM (and VRAM, if there is an NVIDIA GPU) before a heavy allocation, computes the number of blocks needed to fit; raises `MemoryPressureError` below threshold. Also used by `Orca` before every heavy chunk.
 
-**Hardware e profiling** (`dense_armor.core`)
+**Hardware and profiling** (`dense_armor.core`)
 
-- `AIHardwareProfiler` — rileva CPU/RAM/backend disponibili e calcola una dimensione massima sicura di tensore per l'host corrente. Usato anche da `Orca` per auto-derivare `chunk_threshold` (scala proporzionalmente all'host invece di un valore fisso uguale per qualunque macchina; passare un valore esplicito lo sovrascrive senza nemmeno istanziare il profiler).
-- `StochasticAdversarialNoise` — inietta rumore sintetico (bitflip, dropout, blur gaussiano) in un tensore, preservandone la norma; utile per generare dati di attacco quando si vuole testare un rilevatore.
-- `PipelineProfiler` — misura la latenza JIT in microsecondi (warm-up di compilazione separato dal tempo a regime) di una pipeline `DynamicAICodegen` o di `AdaptiveSignalStabilizer`.
+- `AIHardwareProfiler` — detects available CPU/RAM/backend and computes a safe maximum tensor size for the current host. Also used by `Orca` to auto-derive `chunk_threshold` (scales proportionally to the host instead of a fixed value equal for every machine; passing an explicit value overrides it without even instantiating the profiler).
+- `StochasticAdversarialNoise` — injects synthetic noise (bitflip, dropout, Gaussian blur) into a tensor, preserving its norm; useful for generating attack data when one wants to test a detector.
+- `PipelineProfiler` — measures JIT latency in microseconds (compilation warm-up separated from steady-state time) of a `DynamicAICodegen` pipeline or of `AdaptiveSignalStabilizer`.
 
-**Tensori e configurazioni** (`dense_armor.core`)
+**Tensors and configurations** (`dense_armor.core`)
 
-- `TensorVault` — libreria di matrici di trasformazione statiche (`invert`, `identity`, `edge_detector`, `blend`) e parametriche (`scale_project`, `amplify`, `bias_shift`), backend/precisione auto-rilevati.
-- `ParametricScenarioSimulator` — simulazioni Monte Carlo parallele (`jax.vmap`) su uno stato scalare nel tempo, più un collasso decisionale stocastico condizionato dalla distribuzione.
-- `BitwisePermutationEngine` — permuta gli elementi di un vettore combinatorio (spazio 2^n) via maschere di bit target/control.
-- `SIGNAL_STABILIZER_PRESETS` (`dense_armor.core.preset`) — 4 configurazioni calibrate (`balanced_v2`, `cifar10_best_v1`, `pure_1d_time_v1`, `cifar10_hardened_lyapunov`) per i parametri di `AdaptiveSignalStabilizer`.
+- `TensorVault` — library of static (`invert`, `identity`, `edge_detector`, `blend`) and parametric (`scale_project`, `amplify`, `bias_shift`) transformation matrices, auto-detected backend/precision.
+- `ParametricScenarioSimulator` — parallel Monte Carlo simulations (`jax.vmap`) on a scalar state over time, plus a stochastic decision collapse conditioned by the distribution.
+- `BitwisePermutationEngine` — permutes the elements of a combinatorial vector (2^n space) via target/control bit masks.
+- `SIGNAL_STABILIZER_PRESETS` (`dense_armor.core.preset`) — 4 calibrated configurations (`balanced_v2`, `cifar10_best_v1`, `pure_1d_time_v1`, `cifar10_hardened_lyapunov`) for the parameters of `AdaptiveSignalStabilizer`.
 
-**Logging e provenance** (`dense_armor.core`)
+**Logging and provenance** (`dense_armor.core`)
 
-- `MinimalConsoleFormatter` / `CompactJsonFormatter` (`dense_armor.core.logger`) — due `logging.Formatter`: uno leggibile a console, uno JSON compatto per file.
-- `AIEngineVisualizer` — esporta un archivio di provenance firmato SHA-256 (parametri, ambiente di esecuzione, hash di integrità) e report testuali di varianza grezza/filtrata.
+- `MinimalConsoleFormatter` / `CompactJsonFormatter` (`dense_armor.core.logger`) — two `logging.Formatter`s: one readable at the console, one compact JSON for files.
+- `AIEngineVisualizer` — exports a SHA-256 signed provenance archive (parameters, execution environment, integrity hashes) and textual reports of raw/filtered variance.
 
-**Audio e I/O dati** (`dense_armor.utility`)
+**Audio and data I/O** (`dense_armor.utility`)
 
-- `anwav(fpath)` — analizza un file WAV: picco, RMS, loudness stimata (LUFS), fattore di cresta, con verdetto di conformità.
-- `diag(iorig, ifilt)` — confronto differenziale tra due segnali audio (percorsi file o array NumPy): fedeltà strutturale, energia rimossa, picco di distorsione.
-- `lodat(fpath, dname)` (`dense_armor.utility.iodat`) — legge un tensore da un file HDF5 o NetCDF.
-- `apply_fast_resonance(matrix, query)` (`dense_armor.utility.resonance_search`) — punteggio di similarità coseno tra una query e le righe di una matrice, modulato da `apply_damping_blend` (lo stesso operatore usato da Orca). Usato anche da `Orca` in modalità cieca per richiamare un riferimento pulito simile già visto in passato (vedi `$ internals` sopra).
+- `anwav(fpath)` — analyzes a WAV file: peak, RMS, estimated loudness (LUFS), crest factor, with a compliance verdict.
+- `diag(iorig, ifilt)` — differential comparison between two audio signals (file paths or NumPy arrays): structural fidelity, removed energy, distortion peak.
+- `lodat(fpath, dname)` (`dense_armor.utility.iodat`) — reads a tensor from an HDF5 or NetCDF file.
+- `apply_fast_resonance(matrix, query)` (`dense_armor.utility.resonance_search`) — cosine similarity score between a query and the rows of a matrix, modulated by `apply_damping_blend` (the same operator used by Orca). Also used by `Orca` in blind mode to recall a similar clean reference already seen in the past (see `$ internals` above).
 
-Ognuno testato singolarmente (`test/test_chunk.py`, `test_compiler.py`, `test_memory.py`, `test_preset.py`, `test_tensor.py`, `test_noise.py`, `test_vector.py`, `test_profiler.py`, `test_visualizer.py`, `test_logger.py`, `test_anwav.py`, `test_diagnostic.py`, `test_iodat.py`, `test_resonance_search.py`). Richiede `pip install "dense-armor[audio,data]"` per `anwav`/`diagnostic` (scipy) e `iodat` (h5py/netCDF4).
+Each tested individually (`test/test_chunk.py`, `test_compiler.py`, `test_memory.py`, `test_preset.py`, `test_tensor.py`, `test_noise.py`, `test_vector.py`, `test_profiler.py`, `test_visualizer.py`, `test_logger.py`, `test_anwav.py`, `test_diagnostic.py`, `test_iodat.py`, `test_resonance_search.py`). Requires `pip install "dense-armor[audio,data]"` for `anwav`/`diagnostic` (scipy) and `iodat` (h5py/netCDF4).
 
 ```python
 from dense_armor.core import DynamicAICodegen, UniversalMemoryGuard, TensorVault, AIHardwareProfiler
@@ -387,95 +388,86 @@ from dense_armor.utility.iodat import lodat
 
 ---
 
-## `$ margine d'errore`
+## `$ error margin`
 
 ```python
 orca.margine_ingresso      orca.margine_ingresso_medio      orca.margine_ingresso_max
 orca.margine_uscita        orca.margine_uscita_medio        orca.margine_uscita_max
 ```
 
-`|valore ricevuto − valore corretto|` — quanto lo scudo ha dovuto spostare un dato per ripulirlo. Non è una covarianza calibrata in senso statistico stretto, ma correla bene nei test: basso quando la correzione è affidabile, alto quando lo scudo sta indovinando alla cieca.
+`|received value − corrected value|` — how much the shield had to shift a datum to clean it. It is not a covariance calibrated in the strict statistical sense, but it correlates well in tests: low when the correction is reliable, high when the shield is guessing blindly.
 
-Segnale complementare, non ridondante, con `use_arbiter=True`: `orca.incertezza_arbitro`/`incertezza_arbitro_media` dice quanto la *classificazione* stessa è ambigua (vicino al confine deviante/pulito o spike/regime), non quanto è stata grande la correzione — una correzione piccola con incertezza alta è un caso ambiguo andato bene per caso, non uno davvero sicuro. Vedi `$ orca --use_arbiter` sopra.
+Complementary signal, not redundant, with `use_arbiter=True`: `orca.incertezza_arbitro`/`incertezza_arbitro_media` tells how ambiguous the *classification* itself is (near the deviant/clean or spike/regime boundary), not how large the correction was — a small correction with high uncertainty is an ambiguous case that went well by chance, not a truly safe one. See `$ orca --use_arbiter` above.
 
 ---
 
 ## `$ vs kalman-filter --honest`
 
-Non sostituisce un Kalman filter — risolvono problemi diversi, punto.
+It does not replace a Kalman filter — they solve different problems, period.
 
-Random walk, 15% dati mancanti, 3% spike enormi:
+Random walk, 15% missing data, 3% huge spikes:
 
-| metodo | MSE |
+| method | MSE |
 |---|---|
-| nessuna protezione | ~21000 |
-| Kalman *senza* gating anti-outlier (il caso comune) | ~7300 |
-| Kalman *con* gating anti-outlier e dinamica nota | **~0.12** |
-| Dense-Armor, modalità cieca | ~0.23 |
+| no protection | ~21000 |
+| Kalman *without* anti-outlier gating (the common case) | ~7300 |
+| Kalman *with* anti-outlier gating and known dynamics | **~0.12** |
+| Dense-Armor, blind mode | ~0.23 |
 
 ```diff
-+ contro un Kalman non protetto (lo scenario piu' comune in pratica): vince nettamente
-+ un solo spike enorme manda in tilt il gain di Kalman e lo trascina dietro di se'
-+ zero setup: nessun modello di processo da conoscere, stimare o calibrare (niente Q/R)
-+ funziona anche dove Kalman non si applica per niente: immagini, embedding, tensori generici
++ against an unprotected Kalman (the most common scenario in practice): wins clearly
++ a single huge spike throws off the Kalman gain and drags it along behind itself
++ zero setup: no process model to know, estimate or calibrate (no Q/R)
++ also works where Kalman does not apply at all: images, embeddings, generic tensors
 ```
 
-**Il vantaggio è la libertà, non la specializzazione.** Un Kalman filter ben progettato, calibrato su un processo dinamico *noto*, resta più preciso su quel singolo caso d'uso — ma richiede di conoscere in anticipo il modello del sistema e ricalibrarlo per ogni nuovo tipo di dato. Dense-Armor è un **filtro generale**: nessuna personalizzazione, nessuna conoscenza a priori richiesta, si applica così com'è a qualunque tensore (temporale o no). Il prezzo di questa libertà è un po' di precisione in meno nel caso specifico in cui esiste già un modello dinamico noto e calibrato — una perdita piccola (~0.23 vs ~0.12 di MSE nel nostro test) rispetto al vantaggio di non dover mai configurare nulla.
+**The advantage is freedom, not specialization.** A well-designed Kalman filter, calibrated on a *known* dynamic process, remains more precise on that single use case — but it requires knowing the system model in advance and recalibrating it for every new type of data. Dense-Armor is a **general filter**: no customization, no a priori knowledge required, it applies as is to any tensor (temporal or not). The price of this freedom is a bit less precision in the specific case where a known and calibrated dynamic model already exists — a small loss (~0.23 vs ~0.12 MSE in our test) compared to the advantage of never having to configure anything.
 
 ---
 
-## `$ robustezza adversarial --tested`
+## `$ adversarial robustness --tested`
 
-9 test motore condivisi eseguiti fino in fondo, nessun crash, nessun NaN sfuggito. Nessuna difesa mai sotto il 64%. Codice reale, non solo numeri riportati: [`test/test_boundA.py`](test/test_boundA.py)–[`test_boundE.py`](test/test_boundE.py) — gli stessi attacchi (PGD/BIM/MI-FGSM, affine/elastico, Carlini-Wagner, DeepFool, Fourier) girano contro `dense_armor.core.engine.AdaptiveSignalStabilizer`, non un motore separato per il benchmark.
+9 shared engine tests run all the way through, no crash, no NaN escaped. No defense ever below 64%. Real code, not just reported numbers: [`test/test_boundA.py`](test/test_boundA.py)–[`test_boundE.py`](test/test_boundE.py) — the same attacks (PGD/BIM/MI-FGSM, affine/elastic, Carlini-Wagner, DeepFool, Fourier) run against `dense_armor.core.engine.AdaptiveSignalStabilizer`, not a separate engine for the benchmark.
 
-| attacco | tipo | difesa |
+| attack | type | defense |
 |---|---|---|
-| PGD / BIM / MI-FGSM | gradiente, 1000 passi | mitigato, V finale 0.013-0.078 |
-| affine / elastico | geometrico, 50k iter | contenuto, V_inf 0.05-0.14 |
-| Fourier broadband | dominio frequenza, 50k iter FFT | **99.78%+** |
-| Carlini-Wagner (L2) | ottimizzazione | 78.96% |
-| Carlini-Wagner (L∞) | ottimizzazione | **64.39%** — il punto più debole trovato finora |
-| DeepFool | ottimizzazione | 78.79% |
-| combinato (tutti insieme) | 150.140 passi totali | nessun gradiente esplosivo |
+| PGD / BIM / MI-FGSM | gradient, 1000 steps | mitigated, final V 0.013-0.078 |
+| affine / elastic | geometric, 50k iter | contained, V_inf 0.05-0.14 |
+| Fourier broadband | frequency domain, 50k FFT iter | **99.78%+** |
+| Carlini-Wagner (L2) | optimization | 78.96% |
+| Carlini-Wagner (L∞) | optimization | **64.39%** — the weakest point found so far |
+| DeepFool | optimization | 78.79% |
+| combined (all together) | 150,140 total steps | no exploding gradient |
 
-Onesto: **C&W in norma L∞ è l'attacco che buca di più** tra quelli testati. Non è un fallimento — resta protezione reale — ma è la crepa più vicina a un cedimento tra tutte le prove fatte, e va saputo prima di affidarci contro quello scenario specifico.
+Honest: **C&W in L∞ norm is the attack that breaks through the most** among those tested. It is not a failure — it remains real protection — but it is the crack closest to a failure among all the tests done, and it must be known before relying on it against that specific scenario.
 
 ---
 
-## `$ limiti --known`
+## `$ limits --known`
 
 ```
-1. semantica       distingue deviazioni geometriche, non significati
-2. modalita' cieca senza riferimento: buona per evitare collassi/NaN, non per
-                    ricostruire con precisione un dato realmente perso
-3. generalita'      zero calibrazione richiesta, si applica a qualunque tensore --
-                    a discapito di un pizzico di precisione dove esiste gia' un
-                    modello dinamico noto e calibrato (es. Kalman su serie pure)
-4. deriva lenta     invisibile punto per punto, serve riferimento=baseline_storica
-5. C&W norma L-inf  la difesa piu' debole misurata finora (64%, contro 79-83%
-                    delle altre varianti di attacco testate) -- vedi tabella sopra
-6. adversarial      attacchi costruiti apposta per mimare la coerenza del
-   adattivo          segnale pulito (oltre a PGD/BIM/MI-FGSM/C&W/DeepFool/Fourier
-                    gia' testati) non ancora coperti dalla suite
+1. semantics       distinguishes geometric deviations, not meanings
+2. blind mode without reference: good for avoiding collapses/NaNs, not for
+                    accurately reconstructing data that is truly lost
+3. generality      zero calibration required, applies to any tensor --
+                    at the cost of a pinch of precision where there already is a
+                    known and calibrated dynamic model (e.g. Kalman on pure series)
+4. slow drift      invisible point by point, requires reference=historical_baseline
+5. C&W L-inf norm  the weakest defense measured so far (64%, against 79-83%
+                    of the other attack variants tested) -- see table above
+6. adaptive        attacks built specifically to mimic the coherence of the
+   adversarial      clean signal (in addition to PGD/BIM/MI-FGSM/C&W/DeepFool/Fourier
+                    already tested) not yet covered by the suite
 ```
 
-**Causa reale del punto 5, non solo il numero**: investigata a fondo, non ancora risolta. C&W
-in norma L-inf costruisce una perturbazione spazialmente liscia su tutta la griglia in un
-colpo solo (ottimizzazione a gradiente globale). Nessun controllo di coerenza puramente
-locale (confronto di un punto con i suoi vicini immediati, quello che questo motore usa) puo'
-distinguere una struttura spaziale genuinamente liscia da una costruita apposta per sembrarlo
--- e' lo stesso identico segnale statistico. Tentati e verificati empiricamente tre
-interventi mirati (rate-limit sulla volatilita', ancora di coerenza a lungo termine, guinzaglio
-rigido sulla deriva massima): nessuno ha spostato il numero, uno lo ha persino peggiorato.
-Non e' un limite di taratura -- serve un riferimento esterno (non solo il contesto spaziale
-locale) per risolverlo davvero.
+**Real cause of point 5, not just the number**: investigated in depth, not yet solved. C&W in L-inf norm constructs a spatially smooth perturbation over the entire grid in one shot (global gradient optimization). No purely local coherence check (comparing a point with its immediate neighbors, what this engine uses) can distinguish a genuinely smooth spatial structure from one built specifically to look like it -- it is the exact same statistical signal. Three targeted interventions were tried and empirically verified (rate-limit on volatility, long-term coherence anchor, rigid leash on maximum drift): none moved the number, one even made it worse. It is not a tuning limit -- an external reference is needed (not only local spatial context) to truly solve it.
 
 ---
 
 ## `$ license`
 
-Business Source License 1.1 — uso gratuito non commerciale, converte in Apache 2.0 il `2029-06-01`. Vedi [LICENSE.md](LICENSE.md).
+Business Source License 1.1 — free non-commercial use, converts to Apache 2.0 on `2029-06-01`. See [LICENSE.md](LICENSE.md).
 
 `© 2026 Salvatore Pennacchio <jtatopenn@libero.it>`
 
-Progetto gemello di [Dense-Evolution](https://github.com/tatopenn-cell/Dense-Evolution) (simulatore di circuiti quantistici NISQ).
+Twin project of [Dense-Evolution](https://github.com/tatopenn-cell/Dense-Evolution) (NISQ quantum circuit simulator).
