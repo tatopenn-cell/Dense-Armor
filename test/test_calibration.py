@@ -8,10 +8,12 @@ import random
 
 import pytest
 
-from river import base, metrics
+pytest.importorskip("river")
 
-import dense_armor.utility.calibration as calibration
-from dense_armor.utility.calibration import OnlinePlattScaling
+from river import base, metrics  # noqa: E402
+
+import dense_armor.utility.calibration as calibration  # noqa: E402
+from dense_armor.utility.calibration import OnlinePlattScaling  # noqa: E402
 
 
 class Fixed(base.Classifier):
