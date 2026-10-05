@@ -185,6 +185,18 @@ report = detectability_report(local_noise_scale=local_mad, k=0.5, h=5.0, candida
 
 `detectability_report` estimates *before* running a benchmark how many samples are needed to detect a given shift given the detector's real local noise -- Reynolds (1975)/Siegmund (1985) theory, promoted by Dense-Evolution-Discovery after validation on two independent real physical domains (lidar, accelerometer): on the lidar the real latency always beats the theoretical estimate; on the accelerometer the result is genuinely mixed -- documented as is, not forced to coincide. Full documentation (auto-generated from the real docstrings) on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/cusum/).
 
+## `$ calibration --platt`
+
+`OnlinePlattScaling` (`dense_armor.utility.calibration`, `pip install dense-armor[river]`) wraps any river classifier and recalibrates its probabilities one sample at a time, following Algorithm 1 of Gupta and Ramdas (ICML 2023, arXiv:2305.00070):
+
+```python
+from dense_armor.utility.calibration import OnlinePlattScaling
+
+model = OnlinePlattScaling(tree.HoeffdingTreeClassifier())
+```
+
+On Phishing the log-loss of a Hoeffding tree drops from 0.4535 to 0.3502. Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/calibration/).
+
 ## `$ rate_limiter --damping`
 
 A robotic arm cannot execute an unlimited instantaneous jump without risk -- `rate_limited_follower` (`dense_armor.utility.rate_limiter`) limits how fast an applied command can physically change (velocity + acceleration), instead of trying to classify whether a deviation is real:

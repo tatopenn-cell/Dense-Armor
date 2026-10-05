@@ -78,6 +78,7 @@ nav:
       - Arbiter (per-point routing for Orca): api/arbiter.md
       - Streaming (real-time, multi-channel): api/streaming.md
       - CUSUM (slow-drift detection) + ARL theory: api/cusum.md
+      - Calibration (online Platt scaling): api/calibration.md
       - Rate limiter (causal command damping): api/rate_limiter.md
       - CBF filter (geometric command safety): api/cbf_filter.md
       - Trajectory (closed-form point-to-point generator): api/trajectory.md
