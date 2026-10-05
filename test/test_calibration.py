@@ -109,3 +109,17 @@ def test_missing_river_raises_clear_error(monkeypatch):
     monkeypatch.delitem(sys.modules, "dense_armor.utility.calibration", raising=False)
     with pytest.raises(ModuleNotFoundError, match=r"dense-armor\[river\]"):
         importlib.import_module("dense_armor.utility.calibration")
+
+
+def test_projection_onto_small_ball():
+    m = OnlinePlattScaling(Fixed(0.9), radius=0.5)
+    for y in [False, True, False, False]:
+        m.learn_one({}, y)
+        assert float(m._theta @ m._theta) ** 0.5 <= 0.5 + 1e-9
+
+
+def test_river_check_estimator():
+    from river import linear_model
+    from river.checks import check_estimator
+
+    check_estimator(OnlinePlattScaling(linear_model.LogisticRegression()))
