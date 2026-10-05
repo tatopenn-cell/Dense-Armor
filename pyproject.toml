@@ -25,7 +25,8 @@ audio = ["scipy"]
 data = ["h5py", "netCDF4"]
 quantum = ["dense-evolution"]
 mcp = ["mcp>=2.0.0", "pydantic>=2.0"]
-dev = ["pytest", "pytest-cov", "filterpy", "matplotlib"]
+river = ["river>=0.26; python_version >= '3.11'"]
+dev = ["pytest", "pytest-cov", "filterpy", "matplotlib", "river>=0.26; python_version >= '3.11'", "scikit-learn; python_version >= '3.11'"]
 docs = [
     "mkdocs>=1.6.0",
     "mkdocs-material>=9.5.0",
