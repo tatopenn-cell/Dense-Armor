@@ -15,3 +15,22 @@ its own independent reference window and baseline.
 
 **See also**: [Arbiter](arbiter.md) -- the batch `classify_segments` this module ports the
 causal half of.
+
+## River-compatible scorer
+
+`StreamingDeviationScorer` (`dense_armor.utility.river_anomaly`, `pip install dense-armor[river]`)
+exposes the same causal deviation as a [river](https://riverml.xyz) anomaly detector:
+`score_one` returns `|x - median| / scale` over the window learned so far, `learn_one` adds the
+value. A score above `n_sigmas` is exactly a `StreamingDeviationDetector.update` flag, so it
+plugs into river pipelines and `anomaly.ThresholdFilter`.
+
+```python
+from dense_armor.utility.river_anomaly import StreamingDeviationScorer
+
+model = StreamingDeviationScorer(radius=5, ref_mult=2)
+for v in [1.0, 1.2, 0.9, 1.1, 1.0, 0.8, 1.05]:
+    model.learn_one({"v": v})
+model.score_one({"v": 50.0})
+```
+
+::: dense_armor.utility.river_anomaly
