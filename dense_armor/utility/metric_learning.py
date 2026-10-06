@@ -5,6 +5,7 @@ Needs the optional dependency: pip install dense-armor[river].
 """
 from __future__ import annotations
 
+import random
 from collections import deque
 
 import numpy as np
@@ -268,28 +269,35 @@ class POLA(MetricLearner):
 
 
 class MetricKNNClassifier(base.Classifier):
-    """K-nearest-neighbours classifier using a trained `MetricLearner`.
+    """K-nearest-neighbours classifier that learns its metric online.
 
     Stores the last `window_size` samples and classifies a new sample by
     majority vote of its `n_neighbors` nearest neighbours under the metric
-    learned by `metric_learner`. The metric learner itself is trained
-    separately, via `learn_triplet` or `learn_pair`.
+    learned by `metric_learner`. When `learn_metric=True`, every `learn_one`
+    (every `update_every` steps) also feeds the metric learner with a pair
+    or triplet built from the current window, so the metric adapts as the
+    stream unfolds.
 
     Parameters
     ----------
     metric_learner
-        A fitted `MetricLearner` (OASIS, LEGO or POLA).
+        A `MetricLearner` (OASIS, LEGO or POLA).
     n_neighbors
         Number of nearest neighbours to vote.
     window_size
         Maximum number of stored samples (FIFO).
+    learn_metric
+        If True, `learn_one` also updates the metric learner. If False, the
+        learner is only used as-is (frozen metric).
+    seed
+        Seed for the internal `random.Random` used to pick window samples.
+    update_every
+        Update the metric once every `update_every` calls to `learn_one`.
 
     Examples
     --------
     >>> from dense_armor.utility.metric_learning import MetricKNNClassifier, OASIS
-    >>> learner = OASIS(C=0.1)
-    >>> _ = learner.learn_triplet({"x": 1.0}, {"x": 0.9}, {"x": 0.1})
-    >>> knn = MetricKNNClassifier(learner, n_neighbors=1)
+    >>> knn = MetricKNNClassifier(OASIS(C=1e6), n_neighbors=1, learn_metric=False)
     >>> _ = knn.learn_one({"x": 1.0}, "A")
     >>> _ = knn.learn_one({"x": 0.0}, "B")
     >>> knn.predict_one({"x": 0.95})
@@ -297,12 +305,19 @@ class MetricKNNClassifier(base.Classifier):
     """
 
     def __init__(self, metric_learner: MetricLearner, n_neighbors: int = 5,
-                 window_size: int = 1000):
+                 window_size: int = 1000, learn_metric: bool = True,
+                 seed: int = 42, update_every: int = 1):
         self.metric_learner = metric_learner
         self.n_neighbors = n_neighbors
         self.window_size = window_size
+        self.learn_metric = learn_metric
+        self.seed = seed
+        self.update_every = update_every
         self._window = deque(maxlen=window_size)
         self.classes = set()
+        self._rng = random.Random(seed)
+        self._step = 0
+        self._lego_targets_fixed = None
 
     @property
     def _multiclass(self) -> bool:
@@ -312,15 +327,69 @@ class MetricKNNClassifier(base.Classifier):
     def _unit_test_params(cls):
         yield {"metric_learner": OASIS(C=0.1)}
 
-    def learn_one(self, x, y) -> None:
+    def _euclidean_d2(self, x: dict, xi: dict) -> float:
+        keys = sorted(set(x.keys()) | set(xi.keys()), key=str)
+        z = np.array([float(x.get(k, 0)) - float(xi.get(k, 0)) for k in keys])
+        return float(z @ z)
+
+    def _ensure_lego_targets(self) -> None:
+        if self._lego_targets_fixed is not None:
+            return
+        if len(self._window) < 30:
+            return
+        items = list(self._window)
+        same, diff = [], []
+        for _ in range(50):
+            i = self._rng.randrange(len(items))
+            j = self._rng.randrange(len(items))
+            if i == j:
+                continue
+            xi, yi = items[i]
+            xj, yj = items[j]
+            d2 = self._euclidean_d2(xi, xj)
+            if yi == yj:
+                same.append(d2)
+            else:
+                diff.append(d2)
+        if same and diff:
+            self._lego_targets_fixed = (
+                float(np.percentile(same, 5)),
+                float(np.percentile(diff, 95)),
+            )
+
+    def _pick_and_learn(self, x: dict, y) -> None:
+        same = [(xi, yi) for xi, yi in self._window if yi == y]
+        diff = [(xi, yi) for xi, yi in self._window if yi != y]
+        if not same or not diff:
+            return
+        learner = self.metric_learner
+        if isinstance(learner, OASIS):
+            x_pos = self._rng.choice(same)[0]
+            x_neg = self._rng.choice(diff)[0]
+            learner.learn_triplet(x, x_pos, x_neg)
+        elif isinstance(learner, POLA):
+            xi, yi = self._rng.choice(list(self._window))
+            learner.learn_pair(x, xi, +1 if yi == y else -1)
+        elif isinstance(learner, LEGO):
+            self._ensure_lego_targets()
+            if self._lego_targets_fixed is None:
+                return
+            near, far = self._lego_targets_fixed
+            xi, yi = self._rng.choice(list(self._window))
+            learner.learn_pair(x, xi, near if yi == y else far)
+
+    def learn_one(self, x: dict, y) -> None:
+        if self.learn_metric:
+            self._step += 1
+            if self._step % self.update_every == 0:
+                self._pick_and_learn(x, y)
         self._window.append((dict(x), y))
         self.classes.add(y)
 
-    def predict_proba_one(self, x) -> dict:
+    def predict_proba_one(self, x: dict) -> dict:
         if not self._window:
             return {}
-        dists = [(self.metric_learner.distance(x, xi), yi)
-                 for xi, yi in self._window]
+        dists = [(self.metric_learner.distance(x, xi), yi) for xi, yi in self._window]
         dists.sort(key=lambda t: t[0])
         k = min(self.n_neighbors, len(dists))
         proba = {c: 0.0 for c in self.classes}
