@@ -197,6 +197,18 @@ model = OnlinePlattScaling(tree.HoeffdingTreeClassifier())
 
 On Phishing the log-loss of a Hoeffding tree drops from 0.4535 to 0.3502. Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/calibration/).
 
+## `$ metric_learning --knn`
+
+`dense_armor.utility.metric_learning` (`pip install dense-armor[river]`) learns a k-NN distance online with OASIS, LEGO or POLA, ported from their papers, and plugs it into river through `MetricKNNClassifier`:
+
+```python
+from dense_armor.utility.metric_learning import MetricKNNClassifier, POLA
+
+model = MetricKNNClassifier(POLA(), n_neighbors=5)
+```
+
+Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/metric_learning/).
+
 ## `$ rate_limiter --damping`
 
 A robotic arm cannot execute an unlimited instantaneous jump without risk -- `rate_limited_follower` (`dense_armor.utility.rate_limiter`) limits how fast an applied command can physically change (velocity + acceleration), instead of trying to classify whether a deviation is real:
