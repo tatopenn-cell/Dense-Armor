@@ -118,11 +118,15 @@ def test_missing_river_raises_clear_error(monkeypatch):
     with pytest.raises(ModuleNotFoundError, match=r"dense-armor\[river\]"):
         importlib.import_module("dense_armor.utility.metric_learning")
 
+
 def test_base_class_methods_are_abstract():
     from dense_armor.utility.metric_learning import MetricLearner
-
     m = MetricLearner()
-    for call in (lambda: m.learn_triplet({}, {}, {}), lambda: m.learn_pair({}, {}, 1), lambda: m.distance({}, {})):
+    for call in (
+        lambda: m.learn_triplet({}, {}, {}),
+        lambda: m.learn_pair({}, {}, 1),
+        lambda: m.distance({}, {}),
+    ):
         with pytest.raises(NotImplementedError):
             call()
 
@@ -154,3 +158,40 @@ def test_pola_projects_negative_eigenvalue():
     pola = POLA(b_init=0.5)
     pola.learn_pair({"x": 0.0, "y": 0.0}, {"x": 1.0, "y": 1.0}, +1)
     assert np.linalg.eigvalsh(pola.A).min() >= -1e-9
+
+
+def test_metric_knn_learns_online_when_enabled():
+    learner = OASIS(C=0.5)
+    knn = MetricKNNClassifier(learner, n_neighbors=1, learn_metric=True, seed=42)
+    for i in range(30):
+        x = {"x": float(i % 5), "y": float((i * 2) % 7)}
+        knn.learn_one(x, i % 2)
+    assert learner.W is not None
+
+
+def test_metric_knn_does_not_learn_when_disabled():
+    learner = OASIS(C=0.5)
+    knn = MetricKNNClassifier(learner, n_neighbors=1, learn_metric=False, seed=42)
+    for i in range(30):
+        x = {"x": float(i % 5), "y": float((i * 2) % 7)}
+        knn.learn_one(x, i % 2)
+    assert learner.W is None
+
+
+def test_metric_knn_same_seed_reproducible():
+    def run():
+        learner = OASIS(C=0.5)
+        knn = MetricKNNClassifier(learner, n_neighbors=1, learn_metric=True, seed=42)
+        preds = []
+        for i in range(30):
+            x = {"x": float(i % 5), "y": float((i * 2) % 7)}
+            preds.append(knn.predict_one(x))
+            knn.learn_one(x, i % 2)
+        return preds
+    assert run() == run()
+
+
+@pytest.mark.parametrize("learner_cls", [OASIS, LEGO, POLA])
+def test_check_estimator_all_learners(learner_cls):
+    from river.checks import check_estimator
+    check_estimator(MetricKNNClassifier(learner_cls()))
