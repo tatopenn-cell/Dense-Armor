@@ -6,8 +6,6 @@ import sys
 import numpy as np
 import pytest
 
-pytest.importorskip("river")
-
 import dense_armor.utility.learn.metric_learning as ml  # noqa: E402
 from dense_armor.utility.learn.metric_learning import (  # noqa: E402
     LEGO, MetricKNNClassifier, OASIS, POLA,
@@ -104,19 +102,13 @@ def test_metric_knn_window_is_fifo():
 
 
 def test_metric_knn_passes_check_estimator():
-    from river.checks import check_estimator
+    from dense_armor.checks import check_estimator
     check_estimator(MetricKNNClassifier(OASIS(C=0.1)))
 
 
 def test_docstring_examples():
     assert doctest.testmod(ml).failed == 0
 
-
-def test_missing_river_raises_clear_error(monkeypatch):
-    monkeypatch.setitem(sys.modules, "river", None)
-    monkeypatch.delitem(sys.modules, "dense_armor.utility.learn.metric_learning", raising=False)
-    with pytest.raises(ModuleNotFoundError, match=r"dense-armor\[river\]"):
-        importlib.import_module("dense_armor.utility.learn.metric_learning")
 
 
 def test_base_class_methods_are_abstract():
@@ -193,5 +185,5 @@ def test_metric_knn_same_seed_reproducible():
 
 @pytest.mark.parametrize("learner_cls", [OASIS, LEGO, POLA])
 def test_check_estimator_all_learners(learner_cls):
-    from river.checks import check_estimator
+    from dense_armor.checks import check_estimator
     check_estimator(MetricKNNClassifier(learner_cls()))

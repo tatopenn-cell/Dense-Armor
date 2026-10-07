@@ -10,13 +10,15 @@ import pytest
 
 pytest.importorskip("river")
 
-from river import base, metrics  # noqa: E402
+from river import metrics  # noqa: E402
+from dense_armor.base import Classifier  # noqa: E402
 
 import dense_armor.utility.learn.calibration as calibration  # noqa: E402
 from dense_armor.utility.learn.calibration import OnlinePlattScaling  # noqa: E402
+from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB  # noqa: E402
 
 
-class Fixed(base.Classifier):
+class Fixed(Classifier):
     def __init__(self, p: float = 0.7):
         self.p = p
 
@@ -27,7 +29,7 @@ class Fixed(base.Classifier):
         return {False: 1.0 - self.p, True: self.p}
 
 
-class Overconfident(base.Classifier):
+class Overconfident(Classifier):
     def __init__(self, power: float = 4.0):
         self.power = power
 
@@ -104,12 +106,6 @@ def test_docstring_example():
     assert doctest.testmod(calibration).failed == 0
 
 
-def test_missing_river_raises_clear_error(monkeypatch):
-    monkeypatch.setitem(sys.modules, "river", None)
-    monkeypatch.delitem(sys.modules, "dense_armor.utility.learn.calibration", raising=False)
-    with pytest.raises(ModuleNotFoundError, match=r"dense-armor\[river\]"):
-        importlib.import_module("dense_armor.utility.learn.calibration")
-
 
 def test_projection_onto_small_ball():
     m = OnlinePlattScaling(Fixed(0.9), radius=0.5)
@@ -118,8 +114,7 @@ def test_projection_onto_small_ball():
         assert float(m._theta @ m._theta) ** 0.5 <= 0.5 + 1e-9
 
 
-def test_river_check_estimator():
-    from river import linear_model
-    from river.checks import check_estimator
+def test_check_estimator():
+    from dense_armor.checks import check_estimator
 
-    check_estimator(OnlinePlattScaling(linear_model.LogisticRegression()))
+    check_estimator(OnlinePlattScaling(OnlineGaussianNB()))

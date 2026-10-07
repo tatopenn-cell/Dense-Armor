@@ -32,13 +32,7 @@ from typing import Optional, Sequence
 
 import numpy as np
 
-try:
-    from river import base
-except ModuleNotFoundError as exc:
-    raise ModuleNotFoundError(
-        "dense_armor.utility.learn.online_dynamics needs river: "
-        "pip install dense-armor[river]"
-    ) from exc
+from dense_armor.base import Regressor
 
 import jax.numpy as jnp
 
@@ -47,7 +41,7 @@ from dense_armor.utility.drift.detector import CUSUMDriftDetector
 from dense_armor.utility.anomaly.filters import HampelScorer
 
 
-class RecursiveLeastSquares(base.Regressor):
+class RecursiveLeastSquares(Regressor):
     """Recursive least squares with exponential forgetting.
 
     After each step the weights ``w`` minimize the exponentially weighted

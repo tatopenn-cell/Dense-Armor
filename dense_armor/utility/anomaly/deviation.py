@@ -6,18 +6,13 @@ from __future__ import annotations
 
 import numpy as np
 
-try:
-    from river import base
-except ModuleNotFoundError as exc:
-    raise ModuleNotFoundError(
-        "dense_armor.utility.anomaly.deviation needs river: pip install dense-armor[river]"
-    ) from exc
+from dense_armor.base import AnomalyDetector
 
 from dense_armor.utility.protect.arbiter import _robust_center_scale
 from dense_armor.utility.anomaly.streaming import StreamingDeviationDetector
 
 
-class StreamingDeviationScorer(base.AnomalyDetector):
+class StreamingDeviationScorer(AnomalyDetector):
     """`StreamingDeviationDetector` as a river anomaly detector.
 
     `score_one` returns the robust deviation of a value from the causal window of the values

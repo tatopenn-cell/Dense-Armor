@@ -15,8 +15,6 @@ import sys
 import numpy as np
 import pytest
 
-pytest.importorskip("river")
-
 import dense_armor.utility.anomaly.filters as streaming_filters  # noqa: E402
 from dense_armor.utility.anomaly.filters import (  # noqa: E402
     HampelScorer, TukeyScorer, ChauvenetScorer, SigmaClipScorer, HampelFilter,
@@ -220,19 +218,12 @@ def test_docstring_examples():
     assert doctest.testmod(streaming_filters).failed == 0
 
 
-def test_river_check_estimator():
-    from river.checks import check_estimator
+def test_check_estimator():
+    from dense_armor.checks import check_estimator
     for cls in (HampelScorer, TukeyScorer, ChauvenetScorer, SigmaClipScorer,
                 HampelFilter):
         check_estimator(cls())
 
-
-def test_missing_river_raises_clear_error(monkeypatch):
-    monkeypatch.setitem(sys.modules, "river", None)
-    monkeypatch.delitem(sys.modules,
-                       "dense_armor.utility.anomaly.filters", raising=False)
-    with pytest.raises(ModuleNotFoundError, match=r"dense-armor\[river\]"):
-        importlib.import_module("dense_armor.utility.anomaly.filters")
 
 
 def _detect(cls, stream, truth, **kwargs):

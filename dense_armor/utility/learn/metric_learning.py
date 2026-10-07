@@ -10,15 +10,10 @@ from collections import deque
 
 import numpy as np
 
-try:
-    from river import base
-except ModuleNotFoundError as exc:
-    raise ModuleNotFoundError(
-        "dense_armor.utility.learn.metric_learning needs river: pip install dense-armor[river]"
-    ) from exc
+from dense_armor.base import Base, Classifier
 
 
-class MetricLearner(base.Base):
+class MetricLearner(Base):
     """Base class for online metric learners.
 
     A metric learner is trained from pairs or triplets and exposes a
@@ -268,7 +263,7 @@ class POLA(MetricLearner):
         return float(np.sqrt(max(z @ self.A @ z, 1e-12)))
 
 
-class MetricKNNClassifier(base.Classifier):
+class MetricKNNClassifier(Classifier):
     """K-nearest-neighbours classifier that learns its metric online.
 
     Stores the last `window_size` samples and classifies a new sample by
