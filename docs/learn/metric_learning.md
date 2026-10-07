@@ -232,6 +232,10 @@ On the running data:
 
 Its prequential accuracy on the same stream is the last line of the block above.
 
+In the original paper OASIS already beat LEGO and the Euclidean metric on image retrieval: see
+Figure 2 of Chechik et al. (2009), precision at top k on 10, 20 and 50 image classes, where OASIS is
+the highest curve in all three.
+
 ## 5. Results on river streams
 
 `progressive_val_score` (predict, then learn), `StandardScaler` in front, k = 5,

@@ -7,6 +7,11 @@ residual detects the labelled anomaly with 15 s latency and no false
 alarms in the normal hour before it; the point-anomaly estimators do not
 separate the two regimes.
 
+
+The recording comes from a Universal Robots UR3e arm that repeats one cycle: it picks a ball, drops
+it on an inclined platform and lets it roll (Kayan et al. 2023, Figures 1–2). Because the motion
+repeats, a cycle residual works well on this data.
+
 ## Data
 
 `right_arm.csv` — 1,762,650 rows, 24.481 h at 20 Hz, 19.6 % of rows
