@@ -37,7 +37,6 @@ jobs:
   pytest:
     name: pytest (Python ${{ matrix.python-version }}, ${{ matrix.os }})
     needs: changes
-    if: needs.changes.outputs.code == 'true'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -47,16 +46,20 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        if: needs.changes.outputs.code == 'true'
 
       - name: Set up Python ${{ matrix.python-version }}
+        if: needs.changes.outputs.code == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Install package + dev deps
+        if: needs.changes.outputs.code == 'true'
         run: pip install -e ".[dev,audio,data,mcp]"
 
       - name: Run pytest
+        if: needs.changes.outputs.code == 'true'
         env:
           JAX_ENABLE_X64: "True"
         run: pytest test/ -v --cov=dense_armor --cov-report=xml --cov-report=term-missing
@@ -65,7 +68,7 @@ jobs:
       # (uno per combinazione OS/Python) non aggiungono informazione, solo
       # rumore nella cronologia di Codecov.
       - name: Upload coverage to Codecov
-        if: matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest'
+        if: needs.changes.outputs.code == 'true' && matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest'
         uses: codecov/codecov-action@v4
         with:
           files: coverage.xml
@@ -75,21 +78,25 @@ jobs:
   build-check:
     name: build sdist/wheel
     needs: changes
-    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        if: needs.changes.outputs.code == 'true'
 
       - name: Set up Python
+        if: needs.changes.outputs.code == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
       - name: Install build tools
+        if: needs.changes.outputs.code == 'true'
         run: pip install build twine
 
       - name: Build package
+        if: needs.changes.outputs.code == 'true'
         run: python -m build
 
       - name: Validate package metadata
+        if: needs.changes.outputs.code == 'true'
         run: python -m twine check dist/*
