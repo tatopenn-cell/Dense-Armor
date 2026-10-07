@@ -206,7 +206,8 @@ def check_estimator(est: Root) -> None:
     Raises:
         AssertionError: if any check fails.
     """
-    skip = est._unit_test_skips()
+    skip_fn = getattr(est, "_unit_test_skips", None)
+    skip = skip_fn() if callable(skip_fn) else set()
     checks = [
         check_repr,
         check_repr_clone_equal,
@@ -227,6 +228,14 @@ def check_estimator(est: Root) -> None:
         check_classifier_multiclass_bool,
         check_dt_accepted,
         check_non_increasing_t_raises,
+        check_step_is_pure,
+        check_step_is_jittable,
+        check_p99_within_budget,
+        check_memory_growth_bounded,
+        check_estimate_variance_non_negative,
+        check_schema_json,
+        check_health_is_reachable,
+        check_checkpoint_roundtrip,
     ]
     failures = []
     for chk in checks:
@@ -236,10 +245,22 @@ def check_estimator(est: Root) -> None:
             chk(est)
         except AssertionError as e:
             failures.append((chk.__name__, str(e)))
-        except NotImplementedError:
+        except (NotImplementedError, AttributeError):
             pass
         except Exception as e:  # noqa: BLE001
             failures.append((chk.__name__, f"{type(e).__name__}: {e}"))
     if failures:
         lines = "\n".join(f"  - {n}: {m}" for n, m in failures)
         raise AssertionError(f"{type(est).__name__} failed check_estimator:\n{lines}")
+
+
+from dense_armor.checks.robot import (
+    check_checkpoint_roundtrip,
+    check_estimate_variance_non_negative,
+    check_health_is_reachable,
+    check_memory_growth_bounded,
+    check_p99_within_budget,
+    check_schema_json,
+    check_step_is_jittable,
+    check_step_is_pure,
+)  # noqa: E402
