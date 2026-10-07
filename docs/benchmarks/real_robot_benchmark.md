@@ -210,4 +210,7 @@ anomalous" baseline of 0.571.
   Theory and Application. Prentice Hall. (CUSUM on the squared residual
   as a variance-change detector.)
 
-Every number on this page is printed by `benchmarks/casper_benchmark.py` (run on a Kaggle CPU notebook with the dataset attached).
+---
+
+Every number on this page is printed by `benchmarks/casper_benchmark.py`
+(run on a Kaggle CPU notebook with the dataset attached).

@@ -1,12 +1,14 @@
-# Live Demo: Runtime Behavioral Monitor
+# Live demo: runtime behavioral monitor
 
 Four real scenarios below, computed once from `dense-armor`'s actual detectors
 (`classify_segments` + `cusum_detector` + `one_sided_upper_filter`, radius=5,
-ref_mult=2 -- the same call you'd make yourself) against the **real telemetry** of a
-Qwen2 1.8B agent (via Ollama), not synthetic noise -- see
+ref_mult=2 — the same call you would make yourself) against the **real telemetry** of a
+Qwen2 1.8B agent (via Ollama), not synthetic noise. See
 [`test/agent_v2/`](https://github.com/tatopenn-cell/Dense-Armor/tree/master/test/agent_v2)
-for how it was generated. Pick a scenario; the red points are exactly what the
-library flagged, nothing hand-picked.
+for how it was generated.
+
+Pick a scenario; the red points are exactly what the library flagged, nothing
+hand-picked.
 
 <div id="dam-demo">
   <div class="dam-tabs">
@@ -98,19 +100,25 @@ const DAM_DATA = {
 
 ---
 
-**What this does not show**: whether Dense-Armor catches a *security* attack, not just a
-timing anomaly. It does not -- a real indirect prompt injection against the same agent
-succeeded 10/10 times and was flagged 0/10 times by this exact detector stack. See
+## What this does not show
+
+Whether Dense-Armor catches a **security** attack, not just a timing anomaly. It does
+not: a real indirect prompt injection against the same agent succeeded 10/10 times and
+was flagged 0/10 times by this exact detector stack. See
 [Experiment 40](https://tatopenn-cell.github.io/Dense-Evolution-Discovery/agent_indirect_prompt_injection/)
-for that real, honest negative result. Dense-Armor is a runtime behavioral-drift/glitch
-monitor, not a semantic security layer.
+for that real, honest negative result. Dense-Armor is a **runtime behavioral-drift /
+glitch monitor**, not a semantic security layer.
 
-**Have an agent in production with this problem?** Open a
-[GitHub Discussion](https://github.com/tatopenn-cell/Dense-Armor/discussions) -- two
-things worth knowing: does your pipeline have silent drift/glitches today, and what
-would you actually want a runtime monitor like this to catch that isn't shown above?
+## Have an agent in production with this problem?
 
-```python
+Open a
+[GitHub Discussion](https://github.com/tatopenn-cell/Dense-Armor/discussions) — two
+things worth knowing: does your pipeline have silent drift / glitches today, and what
+would you actually want a runtime monitor like this to catch that is not shown above?
+
+## Reproduce the demo locally
+
+```bash
 pip install dense-armor
 ```
 
@@ -118,4 +126,3 @@ pip install dense-armor
 from dense_armor.protect.arbiter import classify_segments
 from dense_armor.drift.cusum import cusum_detector
 from dense_armor.anomaly.one_sided import one_sided_upper_filter
-```
