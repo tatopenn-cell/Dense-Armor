@@ -96,6 +96,13 @@ nav:
       - Metric learning: learn/metric_learning.md
       - Online classifiers: learn/online_classifiers.md
       - Online dynamics: learn/online_dynamics.md
+  - Statistics:
+      - stats/index.md
+      - Moments: stats/moments.md
+      - Robust statistics: stats/robust.md
+      - Streaming quantiles: stats/streaming.md
+      - Dependence: stats/dependence.md
+      - Sketches: stats/sketches.md
   - Control:
       - control/index.md
       - Rate limiter: control/rate_limiter.md
