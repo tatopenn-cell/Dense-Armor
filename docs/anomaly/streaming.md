@@ -207,6 +207,13 @@ by the distance means one absurd sample moves the estimate by at most $\gamma$, 
 size: that is what makes it robust. Source: Guillot, Godichon-Baggioni, Robin and Sansonnet
 (arXiv:2601.03957), the online scheme of section 2.2.
 
+![Density of the Mahalanobis distance of an outlier under four contamination scenarios, from Guillot et al.](../assets/streaming/guillot_fig2.png)
+
+*From Guillot et al. (arXiv:2601.03957), Figure 2: density of the (log10) Mahalanobis distance of
+an outlier under four contamination scenarios (A–D); the dotted line is the inlier threshold. The
+further a curve sits to the right of the line, the easier the outlier is to flag. Reproduced under
+the paper's CC BY 4.0 licence.*
+
 ## API reference
 
 ::: dense_armor.utility.anomaly.streaming
