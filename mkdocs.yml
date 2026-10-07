@@ -69,7 +69,7 @@ plugins:
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
-  - Overview: overview.md
+  - API Reference: api/index.md
   - Shields:
       - shields/index.md
       - Armatura: shields/armatura.md
