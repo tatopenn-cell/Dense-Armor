@@ -16,24 +16,27 @@ A joint is commanded to go from 0 to 1.5 rad in a single tick. The control loop 
 100 Hz, so a tick is 10 ms. The motor's real limit is 5 rad/s of velocity and 20 rad/s²
 of acceleration.
 
-```python
-import numpy as np
-fs = 100
-dt = 1.0 / fs
-u_des = np.zeros(300)
-u_des[100] = 1.5
-```
-
 The jump from 0 to 1.5 rad/s in one tick is a 150 rad/s² acceleration — more than
 seven times the motor's real limit.
 
 ## 1. Apply the limiter
 
 ```python
+import numpy as np
 from dense_armor.utility.control.rate_limiter import rate_limited_follower
 
-u = rate_limited_follower(u_des, max_vel=5.0, max_accel=20.0, dt=dt)
+u_des = np.zeros(300)
+u_des[100:] = 1.5
+u = rate_limited_follower(u_des, max_vel=5.0, max_accel=20.0, dt=0.01)
+print(u[99:104].round(4), int(np.argmax(u >= 1.5)))
 ```
+
+```
+[0.    0.002 0.006 0.012 0.02 ] 141
+```
+
+The desired command jumps from 0 to 1.5 at sample 100; the applied command rises smoothly (0.002, 0.006,
+0.012, …, acceleration limited to 20) and reaches 1.5 at sample 141.
 
 `u` is the applied command. It is 0 before the step, then ramps up at 20 rad/s² until
 it hits 1.5 rad/s. The ramp takes `1.5 / 20 = 0.075 s` — about 7.5 ticks. The command
@@ -111,10 +114,23 @@ guarantee safety. They only need the rate bound.
 The limiter sits between the kinematic controller and the CBF filter:
 
 ```python
-u_des = kinematic_tracking_controller(q, q_ref, qd_ref, kp=5.0)
-u = rate_limited_follower(u_des, max_vel=5.0, max_accel=20.0, dt=dt)
-u_safe = cbf_safety_filter(u, obstacle=obs, dt=dt)
+import numpy as np
+from dense_armor.utility.control.trajectory import quintic_trajectory
+from dense_armor.utility.control.kinematic_controller import kinematic_tracking_controller
+
+t, q, v, a = quintic_trajectory(np.zeros(2), np.array([0.5, 1.0]), T=2.0)
+dt, qa = t[1] - t[0], np.array([0.05, -0.05])
+for i in range(len(t)):
+    qa = qa + dt * kinematic_tracking_controller(qa, q[i], v[i], kp=5.0)
+print(np.abs(qa - q[-1]).round(4))
 ```
+
+```
+[0.0007 0.0014]
+```
+
+The kinematic controller follows a 2-joint quintic path starting 0.05 rad off; at the end the error is
+below 0.0015 rad.
 
 The kinematic controller produces a velocity that tracks the reference; the limiter
 makes sure that velocity never asks the motor to change faster than it can; the CBF

@@ -12,38 +12,28 @@ me out of the forbidden region?" and applies it.
 
 ## The command and the obstacle
 
-A joint is commanded toward a position that is inside a forbidden region. Forbidden
-regions are described by a function `h(q)`: positive inside the safe set, zero on its
-boundary, negative outside.
-
-```python
-import numpy as np
-x = 0.0
-u_des = 1.0
-```
-
-`q_des` is the desired joint configuration. Somewhere between `q` and `q_des` there is
-a wall.
+A joint at position `x` is commanded to move with velocity `u_des`. Somewhere ahead there is
+an obstacle at position `obstacle`, and the joint must stay at least `safe_dist` away from it.
 
 ## 1. Apply the filter
 
 ```python
 from dense_armor.utility.control.cbf_filter import cbf_safety_filter
 
-u = cbf_safety_filter(x, u_des, obstacle=0.5, safe_dist=0.1)
+print(cbf_safety_filter(0.0, 1.0, obstacle=0.5, safe_dist=0.1))
+print(cbf_safety_filter(0.35, 1.0, obstacle=0.5, safe_dist=0.1))
 ```
 
-`obstacle` is a callable that returns `h(q)` for a candidate joint configuration `q`.
-The filter takes the desired joint configuration, the current one, and returns a
-velocity command `u` that will not enter the region `h(q) < 0`.
+```
+0.24
+0.04166666666666667
+```
 
-If the desired configuration is on the safe side, the filter returns the same command
-a naive controller would: `u = (q_des − q) / dt`, clamped by whatever velocity bound
-the caller applies afterwards.
+Far from the obstacle (x = 0) the command 1.0 is only trimmed to 0.24; at x = 0.35, close to the safety
+boundary 0.5 − 0.1 = 0.4, it is cut to 0.042.
 
-If the desired configuration would take the robot through the wall, the filter returns
-a *modified* command — the closest one to `(q_des − q) / dt` that still keeps the robot
-on the safe side of the wall.
+When the desired command is already safe, the filter returns it unchanged. When it would bring
+the joint too close, the filter returns the smallest change that keeps it safe.
 
 ## 2. What a Control Barrier Function is
 
@@ -61,71 +51,45 @@ constraint in a quadratic program.
 
 ### Symbols
 
-- `h(q)` — the barrier function; the sign tells you which side of the boundary you are
-  on.
-- `L_f h(q)`, `L_g h(q)` — the Lie derivatives of `h` along the drift and along the
-  input. For the single-integrator plant `q̇ = u`, `L_f h = 0` and `L_g h = ∇h(q)`.
-- `α` — a strictly increasing function with `α(0) = 0`. The simplest choice is
-  `α(s) = k · s`, with `k > 0` a gain that controls how aggressively the filter
-  approaches the boundary. Larger `k` allows a faster approach.
-- `u` — the joint velocity command (the module's output).
+- `h` — the barrier function; its sign tells you which side of the boundary you are on.
+- `L_f h`, `L_g h` — how `h` changes along the drift and along the input. For the
+  single-integrator joint $\dot x = u$ used here, $L_f h = 0$.
+- `α` — a strictly increasing function with `α(0) = 0`; here $\alpha(h) = k\,h$ with
+  `k = alpha_gain`: larger `k` lets the joint approach the boundary faster.
+- `u` — the joint velocity command (the output).
 
-### The QP
+### The QP and its closed form
 
-At each tick the filter solves
+At each call the filter solves
 
-```
-minimize_u   ‖ u − u_des ‖²
-subject to   ∇h(q) · u ≥ −α(h(q))
-```
+$$\min_u \tfrac12 \lVert u - u_{des}\rVert^2 \quad \text{s.t.} \quad L_f h + L_g h\, u \ge -\alpha(h),$$
 
-The objective says "stay as close as possible to the desired command"; the constraint
-says "keep the barrier function from falling through zero". The solution is the
-minimally invasive safe command.
+the CBF-QP of Ames et al. (2019). With one input and one constraint it has a closed form, the
+min-norm controller. In this module the safe set is "at least `safe_dist` from `obstacle`":
+
+$$h(x) = (x - o)^2 - d^2, \qquad L_g h = 2(x - o), \qquad u = \begin{cases} u_{des} & \text{if } L_g h\,u_{des} \ge -k\,h \ -k\,h / L_g h & \text{otherwise,} \end{cases}$$
+
+with $o$ = `obstacle`, $d$ = `safe_dist`, $k$ = `alpha_gain`.
 
 ## 3. Hand case
 
-`q = (0, 0)`, `q_des = (1, 1)`, `dt = 0.01`, `h(q) = 0.2 − ‖q‖`, `α(s) = 10 s`.
+The two calls of step 1, with $o = 0.5$, $d = 0.1$, $k = 1$, $u_{des} = 1$:
 
-```
-u_des = (q_des − q) / dt = (100, 100)
-∇h(q) = −q / ‖q‖         (undefined at q = 0; use (0, 0) by convention)
-h(q) = 0.2
-α(h(q)) = 10 · 0.2 = 2.0
-```
+- $x = 0$: $h = 0.25 - 0.01 = 0.24$, $L_g h = -1$. The test $L_g h\,u_{des} = -1 \ge -0.24$ fails, so
+  $u = -0.24 / -1 = 0.24$.
+- $x = 0.35$: $h = 0.0225 - 0.01 = 0.0125$, $L_g h = -0.3$, $u = -0.0125 / -0.3 = 0.0417$.
 
-The constraint is `∇h(q) · u ≥ −2.0`. If `q` is at the origin, `∇h = (0, 0)` and the
-constraint is `0 ≥ −2.0`, which is trivially satisfied. The filter returns
-`u = (100, 100)` as-is.
-
-Move the joint to `q = (0.15, 0)`, so the boundary is close: `h(q) = 0.2 − 0.15 = 0.05`,
-`α(h) = 0.5`, `∇h(q) = (−1, 0)`. The constraint is `−u_x ≥ −0.5`, i.e. `u_x ≤ 0.5`.
-
-```
-u_des = (100, 100)
-u_x is clamped from 100 down to 0.5
-u = (0.5, 100)
-```
-
-The command still moves fast along `y` (no wall in that direction) but is now bounded
-along `x` (the wall is in that direction). The command is not blocked; it is bent
-around the obstacle.
+The closer the joint gets to the boundary at 0.4, the smaller the allowed velocity: exactly the
+numbers printed in step 1.
 
 ## 4. The discrete-time issue
 
-A CBF guarantees `h(q) ≥ 0` **in continuous time**. In discrete time, one tick is
-`dt` long, and a single step can cross the boundary even if the constraint was satisfied
-at the start of the tick. The filter handles this by:
-
-1. Evaluating `h` not at the current `q` but at the *predicted* `q + u · dt`.
-2. Solving the QP for the velocity that keeps the *predicted* `h` non-negative.
-3. Applying a sub-stepping scheme internally when the boundary is close enough that a
-   single `dt` step could cross it.
-
-Without the sub-stepping the filter would occasionally let the joint cross the boundary
-by a small amount when it started close. This is a real numerical finding from the
-validation on SO-101 and ALOHA — the filter bounds the *predicted* violation, not the
-*current* one, and the sub-stepping handles the small residual.
+A CBF guarantees $h \ge 0$ **in continuous time**. In a control loop one tick lasts `dt`, and a
+single step with a constant command can cross the boundary even if the constraint held at the
+start of the tick. `cbf_safety_filter_live` therefore splits the tick into `n_substeps`
+(default 20) sub-steps, applies the filter at each one, and returns the average velocity over
+the tick. Without the sub-steps the joint could cross the boundary by a small amount when it
+started close to it; this was found in the validation on SO-101 and ALOHA.
 
 ## 5. Real-time use
 
@@ -136,8 +100,18 @@ of filtering a whole pre-recorded array off-line.
 ```python
 from dense_armor.utility.control.cbf_filter import cbf_safety_filter_live
 
-u = cbf_safety_filter_live(x, u_des, dt=0.01, obstacle=0.5, safe_dist=0.1)
+x = 0.0
+for _ in range(200):
+    x += 0.01 * cbf_safety_filter_live(x, 1.0, dt=0.01, obstacle=0.5, safe_dist=0.1)
+print(round(x, 4))
 ```
+
+```
+0.2939
+```
+
+Two seconds of a control loop at 100 Hz that keeps asking for velocity 1.0: the position creeps towards
+the boundary 0.4 (0.2939 after 200 ticks) and never crosses it.
 
 This module was promoted after a real live ROS2 / Ignition loop needed exactly this and
 had to reconstruct it by hand from `cbf_filtered_trajectory` (Dense-Evolution-Discovery,
