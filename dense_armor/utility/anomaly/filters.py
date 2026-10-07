@@ -32,12 +32,7 @@ from collections import deque
 
 import numpy as np
 
-try:
-    from river import base
-except ModuleNotFoundError as exc:
-    raise ModuleNotFoundError(
-        "dense_armor.utility.anomaly.filters needs river: pip install dense-armor[river]"
-    ) from exc
+from dense_armor.base import AnomalyDetector, Transformer
 
 
 def _scaled_mad(w: np.ndarray) -> float:
@@ -69,7 +64,7 @@ def _clean_stats(w: np.ndarray, n_sigmas: float, max_iters: int = 5,
     return float(np.mean(subset)), float(np.std(subset))
 
 
-class HampelScorer(base.AnomalyDetector):
+class HampelScorer(AnomalyDetector):
     """Hampel outlier scorer on the causal window.
 
     The score is ``|x - med| / (1.4826 * MAD)``, where ``med`` and ``MAD``
@@ -147,7 +142,7 @@ class HampelScorer(base.AnomalyDetector):
         return {"check_roc_auc"}
 
 
-class TukeyScorer(base.AnomalyDetector):
+class TukeyScorer(AnomalyDetector):
     """Tukey-fences outlier scorer on the causal window.
 
     The score is how far the value lies beyond the fences
@@ -226,7 +221,7 @@ class TukeyScorer(base.AnomalyDetector):
         return {"check_roc_auc"}
 
 
-class ChauvenetScorer(base.AnomalyDetector):
+class ChauvenetScorer(AnomalyDetector):
     """Chauvenet outlier scorer on the causal window.
 
     The score is ``N * P(|Z| >= z)``, the expected number of observations
@@ -316,7 +311,7 @@ class ChauvenetScorer(base.AnomalyDetector):
         return {"check_roc_auc"}
 
 
-class SigmaClipScorer(base.AnomalyDetector):
+class SigmaClipScorer(AnomalyDetector):
     """Iterative sigma-clipping outlier scorer on the causal window.
 
     On the ``2 * radius`` samples strictly preceding the value, the mean and
@@ -394,7 +389,7 @@ class SigmaClipScorer(base.AnomalyDetector):
         return {"check_roc_auc"}
 
 
-class HampelFilter(base.Transformer):
+class HampelFilter(Transformer):
     """Streaming Hampel filter: replaces outliers with the causal-window median.
 
     ``transform_one`` returns the value itself when it is not an outlier

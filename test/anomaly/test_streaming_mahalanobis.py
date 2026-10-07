@@ -24,8 +24,6 @@ from copy import deepcopy
 import numpy as np
 import pytest
 
-pytest.importorskip("river")
-
 import dense_armor.utility.anomaly.mahalanobis as streaming_mahalanobis  # noqa: E402
 from dense_armor.utility.anomaly.mahalanobis import (  # noqa: E402
     OnlineRobustMahalanobis,
@@ -91,13 +89,10 @@ def test_doctest():
     assert doctest.testmod(streaming_mahalanobis).failed == 0
 
 
-def test_missing_river_raises_clear_error(monkeypatch):
-    monkeypatch.setitem(sys.modules, "river", None)
-    monkeypatch.delitem(sys.modules,
-                       "dense_armor.utility.anomaly.mahalanobis",
-                       raising=False)
-    with pytest.raises(ModuleNotFoundError, match=r"dense-armor\[river\]"):
-        importlib.import_module("dense_armor.utility.anomaly.mahalanobis")
+def test_check_estimator():
+    from dense_armor.checks import check_estimator
+    check_estimator(OnlineRobustMahalanobis(feature_keys=["a", "b"]))
+
 
 
 def test_mcm_eigenvalues_underestimate_true_variance():

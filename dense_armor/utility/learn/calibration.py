@@ -8,15 +8,10 @@ import math
 
 import numpy as np
 
-try:
-    from river import base
-except ModuleNotFoundError as exc:
-    raise ModuleNotFoundError(
-        "dense_armor.utility.learn.calibration needs river: pip install dense-armor[river]"
-    ) from exc
+from dense_armor.base import Classifier, Wrapper
 
 
-class OnlinePlattScaling(base.Wrapper, base.Classifier):
+class OnlinePlattScaling(Wrapper, Classifier):
     """Online Platt scaling.
 
     Recalibrates the probabilities of a classifier. The update happens at every new example, so
@@ -75,7 +70,7 @@ class OnlinePlattScaling(base.Wrapper, base.Classifier):
 
     >>> model = OnlinePlattScaling(tree.HoeffdingTreeClassifier())
     >>> evaluate.progressive_val_score(dataset, model, metrics.LogLoss())
-    LogLoss: 0.35021471255578124
+    LogLoss: 0.34994014692887654
 
     References
     ----------
@@ -120,6 +115,9 @@ class OnlinePlattScaling(base.Wrapper, base.Classifier):
         return f(hi)
 
     def predict_proba_one(self, x, **kwargs):
+        inner = self.classifier.predict_proba_one(x, **kwargs)
+        if not inner:
+            return {}
         p = 1.0 / (1.0 + math.exp(-float(self._theta @ self._u(x, **kwargs))))
         return {False: 1.0 - p, True: p}
 
@@ -132,5 +130,5 @@ class OnlinePlattScaling(base.Wrapper, base.Classifier):
 
     @classmethod
     def _unit_test_params(cls):
-        from river import linear_model
-        yield {"classifier": linear_model.LogisticRegression()}
+        from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
+        yield {"classifier": OnlineGaussianNB()}

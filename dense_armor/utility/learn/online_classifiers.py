@@ -15,16 +15,10 @@ from typing import Optional
 
 import numpy as np
 
-try:
-    from river import base
-except ModuleNotFoundError as exc:
-    raise ModuleNotFoundError(
-        "dense_armor.utility.learn.online_classifiers needs river: "
-        "pip install dense-armor[river]"
-    ) from exc
+from dense_armor.base import Classifier
 
 
-class OnlineGaussianNB(base.Classifier):
+class OnlineGaussianNB(Classifier):
     """Gaussian naive Bayes updated one sample at a time.
 
     Running mean and variance per class and feature, updated by Welford's
@@ -132,7 +126,7 @@ class OnlineGaussianNB(base.Classifier):
         return set()
 
 
-class OnlineSoftmaxRegression(base.Classifier):
+class OnlineSoftmaxRegression(Classifier):
     """Multinomial logistic regression with AdaGrad.
 
     Online softmax over ``W^T z`` where ``z = [features..., 1]``. Classes
@@ -235,10 +229,10 @@ class OnlineSoftmaxRegression(base.Classifier):
         return set()
 
 
-class DriftAdaptiveClassifier(base.Classifier):
+class DriftAdaptiveClassifier(Classifier):
     """Classifier with a background copy swapped in on drift detection.
 
-    Wraps any ``base.Classifier`` with a drift detector. Per sample:
+    Wraps any ``Classifier`` with a drift detector. Per sample:
     predict, compute the log-loss ``-log(p_correct)``, feed the (smoothed)
     log-loss to the detector, learn, and if the detector fires start a
     background copy trained only on new samples. Main and background are

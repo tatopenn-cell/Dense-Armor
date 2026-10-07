@@ -6,8 +6,6 @@ import sys
 import numpy as np
 import pytest
 
-pytest.importorskip("river")
-
 from dense_armor.utility.drift.cusum import cusum_detector
 from dense_armor.utility.drift.detector import CUSUMDriftDetector
 
@@ -74,8 +72,8 @@ def test_clone_and_pickle_keep_parameters():
     assert pickle.loads(pickle.dumps(det)).h == 12.0
 
 
-def test_missing_river_raises_clear_error(monkeypatch):
-    monkeypatch.setitem(sys.modules, "river", None)
-    monkeypatch.delitem(sys.modules, "dense_armor.utility.drift.detector", raising=False)
-    with pytest.raises(ModuleNotFoundError, match=r"dense-armor\[river\]"):
-        importlib.import_module("dense_armor.utility.drift.detector")
+def test_check_estimator():
+    from dense_armor.checks import check_estimator
+    check_estimator(CUSUMDriftDetector(reference="adaptive"))
+
+

@@ -4,18 +4,13 @@ from __future__ import annotations
 from collections import deque
 import numpy as np
 
-try:
-    from river import base
-except ModuleNotFoundError as exc:
-    raise ModuleNotFoundError(
-        "dense_armor.utility.drift.detector needs river: pip install dense-armor[river]"
-    ) from exc
+from dense_armor.base import DriftDetector
 
 from dense_armor.utility.protect.arbiter import _robust_center_scale
 from dense_armor.utility.drift.cusum import one_sided_arl, two_sided_arl
 
 
-class CUSUMDriftDetector(base.DriftDetector):
+class CUSUMDriftDetector(DriftDetector):
     """CUSUM drift detector for river, matching the batch `cusum_detector` behaviour.
 
     Parameters

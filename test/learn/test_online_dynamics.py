@@ -9,8 +9,6 @@ from copy import deepcopy
 import numpy as np
 import pytest
 
-pytest.importorskip("river")
-
 import jax
 import jax.numpy as jnp
 
@@ -100,13 +98,6 @@ def test_rls_p_symmetrised():
     assert np.max(np.abs(rls._P - rls._P.T)) < 1e-12
 
 
-def test_rls_missing_river_raises_clear_error(monkeypatch):
-    monkeypatch.setitem(sys.modules, "river", None)
-    monkeypatch.delitem(sys.modules, "dense_armor.utility.learn.online_dynamics",
-                       raising=False)
-    with pytest.raises(ModuleNotFoundError, match=r"dense-armor\[river\]"):
-        importlib.import_module("dense_armor.utility.learn.online_dynamics")
-
 
 def test_rls_clone_pickle_repr():
     m = RecursiveLeastSquares(lam=0.99, delta=1e4, feature_keys=["a", "b"])
@@ -120,6 +111,12 @@ def test_rls_clone_pickle_repr():
 
 def test_doctest():
     assert doctest.testmod(online_dynamics).failed == 0
+
+
+def test_check_estimator():
+    from dense_armor.checks import check_estimator
+    check_estimator(RecursiveLeastSquares(lam=1.0, delta=1e6,
+                                          feature_keys=["a", "b"]))
 
 
 def test_residual_learner_reduces_rmse():

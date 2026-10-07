@@ -8,8 +8,6 @@ import time
 import numpy as np
 import pytest
 
-pytest.importorskip("river")
-
 import dense_armor.utility.learn.online_classifiers as online_classifiers  # noqa: E402
 from dense_armor.utility.learn.online_classifiers import (  # noqa: E402
     OnlineGaussianNB, OnlineSoftmaxRegression, DriftAdaptiveClassifier,
@@ -208,17 +206,9 @@ def test_doctest():
     assert doctest.testmod(online_classifiers).failed == 0
 
 
-def test_missing_river_raises_clear_error(monkeypatch):
-    monkeypatch.setitem(sys.modules, "river", None)
-    monkeypatch.delitem(sys.modules,
-                       "dense_armor.utility.learn.online_classifiers",
-                       raising=False)
-    with pytest.raises(ModuleNotFoundError, match=r"dense-armor\[river\]"):
-        importlib.import_module("dense_armor.utility.learn.online_classifiers")
-
 
 def test_check_estimator():
-    from river.checks import check_estimator
+    from dense_armor.checks import check_estimator
     check_estimator(OnlineGaussianNB())
     check_estimator(OnlineSoftmaxRegression())
     check_estimator(DriftAdaptiveClassifier(

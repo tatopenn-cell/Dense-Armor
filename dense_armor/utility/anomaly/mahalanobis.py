@@ -28,16 +28,10 @@ from typing import List, Optional, Sequence
 
 import numpy as np
 
-try:
-    from river import base
-except ModuleNotFoundError as exc:
-    raise ModuleNotFoundError(
-        "dense_armor.utility.anomaly.mahalanobis needs river: "
-        "pip install dense-armor[river]"
-    ) from exc
+from dense_armor.base import AnomalyDetector
 
 
-class OnlineRobustMahalanobis(base.AnomalyDetector):
+class OnlineRobustMahalanobis(AnomalyDetector):
     """Online robust Mahalanobis scorer for multichannel signals.
 
     ``learn_one(x)`` accepts a dict of features (one per channel) and
