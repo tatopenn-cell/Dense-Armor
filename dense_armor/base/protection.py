@@ -33,8 +33,10 @@ class Protected(Estimator):
         return 0.0
 
     def _flagged(self, x: dict) -> bool:
+        if hasattr(self.detector, "classify"):
+            return bool(self.detector.classify(self._score(x)))
         if hasattr(self.detector, "drift_detected"):
-            self.detector.update(x.get("v", 0.0))
+            self.detector.update(float(next(iter(x.values()), 0.0)))
             return bool(self.detector.drift_detected)
         return False
 

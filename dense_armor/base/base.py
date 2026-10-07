@@ -28,9 +28,9 @@ _VERSION_KEY = "_dense_armor_version"
 def _get_version() -> str:
     """Installed dense-armor version, or "unknown" if unavailable."""
     try:
-        from importlib.metadata import version
+        from dense_armor import __version__
 
-        return version("dense-armor")
+        return str(__version__)
     except Exception:  # noqa: BLE001
         return "unknown"
 
@@ -202,7 +202,7 @@ class Base:
         inst = type(self)(**kwargs)
         if include_attributes:
             for k, v in self.__dict__.items():
-                if k in kwargs or k in inst.__dict__:
+                if k in kwargs:
                     continue
                 setattr(inst, k, copy.deepcopy(v))
         return inst
@@ -245,7 +245,7 @@ class Base:
         return state
 
     def __setstate__(self, state: Any) -> None:
-        from dense_armor import __version__ as ver
+        ver = _get_version()
 
         if isinstance(state, tuple):
             dict_state, slots_state = state
@@ -302,6 +302,7 @@ class Base:
                     queue.append(r)
         return total
 
+    @property
     def _memory_usage(self) -> str:
         n: float = float(self._raw_memory_usage)
         for unit in ("B", "KiB", "MiB", "GiB"):
