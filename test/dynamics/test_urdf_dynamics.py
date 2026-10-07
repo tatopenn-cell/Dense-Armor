@@ -16,7 +16,7 @@ import pytest
 
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 
-FIXTURES = os.path.join(os.path.dirname(__file__), "fixtures", "urdf")
+FIXTURES = os.path.join(os.path.dirname(os.path.dirname(__file__)), "fixtures", "urdf")
 
 ROBOTS = [
     ("GEN3_URDF_V12.urdf", 7),
