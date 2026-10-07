@@ -85,6 +85,7 @@ nav:
       - Trajectory (closed-form point-to-point generator): api/trajectory.md
       - Kinematic controller (closed-form tracking): api/kinematic_controller.md
       - Rigid-body dynamics (real URDF, any robot): api/urdf_dynamics.md
+      - Online dynamics (residual torque learning): api/online_dynamics.md
       - Passivity + singularity-CBF controller (any robot): api/passivity_cbf_controller.md
       - Full 6-DoF passivity + singularity-CBF controller: api/six_dof_pbc_cbf_controller.md
       - Loading robots from xacro macros: api/xacro_support.md
