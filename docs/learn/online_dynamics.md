@@ -3,7 +3,7 @@
 Learns the gap between a URDF-nominal rigid-body model and the real robot's
 measured joint torques, one sample at a time, using one recursive least
 squares per joint on a five-feature basis `[qdd, qd, sign(qd), g, 1]`. The
-nominal model comes from [`urdf_dynamics`](urdf_dynamics.md); the learner
+nominal model comes from [`urdf_dynamics`](../dynamics/urdf_dynamics.md); the learner
 adds a residual torque on top so the controller does not need exact masses
 or friction coefficients. A CUSUM/Hampel-triggered drift-aware variant is
 also provided, kept as an API but not recommended as the default (see the

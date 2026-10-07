@@ -22,28 +22,28 @@ No retraining, no weight changes. Runs at inference time on any JAX/NumPy tensor
 
 ## What's in here
 
-- **[`Armatura`](api/armatura.md)** — the wearable shield for 1D series (loss, sensor
+- **[`Armatura`](shields/armatura.md)** — the wearable shield for 1D series (loss, sensor
   telemetry, token streams): `Armatura.analizza()` decides, point by point, without an
   intermediate state -- a value is either a genuine change (passes) or noise/an isolated spike
   (replaced with the local baseline).
-- **[`Orca`](api/orca.md)** — the full input+output shield for an entire model:
+- **[`Orca`](shields/orca.md)** — the full input+output shield for an entire model:
   `Orca.protect_and_forward()` purifies the input, runs the model, and checks the response
   isn't itself corrupted. Optional `use_arbiter=True` routes each point to the right
-  corrector (see [Arbiter](api/arbiter.md)) instead of one gate for the whole signal.
-- **[Arbiter](api/arbiter.md)** — classifies each point as clean/spike/regime against a wide
+  corrector (see [Arbiter](protect/arbiter.md)) instead of one gate for the whole signal.
+- **[Arbiter](protect/arbiter.md)** — classifies each point as clean/spike/regime against a wide
   causal reference window, then routes it: hard rejection for an isolated impulse, raw
   pass-through for a genuine sustained level change, Orca's own soft damping for anything
   that isn't a discrete anomaly at all.
-- **[Hybrid engine](api/hybrid_engine.md)** — the binary-trigger engine behind `Armatura`,
+- **[Hybrid engine](shields/hybrid_engine.md)** — the binary-trigger engine behind `Armatura`,
   ported and adapted from [Dense-Evolution](https://github.com/tatopenn-cell/Dense-Evolution)'s
   own verified `healing.py` primitives.
-- **[Adaptive engine](api/engine.md)** — `AdaptiveSignalStabilizer`, Orca's Stage 1: a causal,
+- **[Adaptive engine](shields/engine.md)** — `AdaptiveSignalStabilizer`, Orca's Stage 1: a causal,
   `jax.lax.scan`-based recursive filter with a sigmoid damping curve.
-- **[Robust filters](api/robust_filters.md)** — four classic, low-cost anomaly detectors
+- **[Robust filters](anomaly/robust_filters.md)** — four classic, low-cost anomaly detectors
   (Chauvenet's criterion, Tukey's fences, Hampel filter, iterative sigma-clipping) plus
   `pressure_valve`, an orchestrator combining all four via a Lagrange-multiplier-derived
   minimum-variance estimator, with a Jensen-Shannon-modulated dynamic threshold.
-- **[Toolkit](api/toolkit.md)** — a second, independent part of the package: an op-compiler,
+- **[Toolkit](toolkit/toolkit.md)** — a second, independent part of the package: an op-compiler,
   memory guard, hardware profiler, logging/provenance export, and audio/HDF5/NetCDF I/O
   helpers. None of it participates in the anomaly shield.
 

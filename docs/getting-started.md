@@ -72,7 +72,7 @@ run of anomalous points) passes through raw, fully trusted; `clean` keeps whatev
 4-phase shield already produced -- not the raw value, since a genuinely continuous signal still
 needs `AdaptiveSignalStabilizer`'s soft damping. Verified on the same 7 scenarios
 [`test/testKalman.py`](https://github.com/tatopenn-cell/Dense-Armor/blob/master/test/testKalman.py)
-uses: never worse than the default, better on 5/7. See [Arbiter](api/arbiter.md) for the full
+uses: never worse than the default, better on 5/7. See [Arbiter](protect/arbiter.md) for the full
 design and a real bug found and fixed along the way (symmetric reference window → causal).
 
 ### A 1D series (training loss, metrics, token stream)
@@ -94,7 +94,7 @@ pulito, anomalie, pressione, soglia_effettiva = pressure_valve(serie)
 
 No configuration needed beyond the defaults -- `pressure_valve` combines four classic
 detectors (Chauvenet, Tukey, Hampel, sigma-clipping) via a minimum-variance estimator and a
-Jensen-Shannon-modulated threshold. See [Robust filters](api/robust_filters.md) for the full
+Jensen-Shannon-modulated threshold. See [Robust filters](anomaly/robust_filters.md) for the full
 math.
 
 ### Standalone toolkit
@@ -118,6 +118,6 @@ guard = UniversalMemoryGuard(min_free_ram_percentage=0.10)
 guard.check_memory_safety()  # raises MemoryPressureError if RAM is too low
 ```
 
-See [Toolkit](api/toolkit.md) for the full list -- an op-compiler, chunking, hardware
+See [Toolkit](toolkit/toolkit.md) for the full list -- an op-compiler, chunking, hardware
 profiling, adversarial noise injection, presets, logging/provenance export, and audio/HDF5/
 NetCDF I/O helpers.

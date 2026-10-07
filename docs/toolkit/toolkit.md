@@ -1,7 +1,7 @@
 # Toolkit (standalone utilities)
 
-A second part of the package, under `core/`/`utility/`, independent of [`Armatura`](armatura.md)
-and [`Orca`](orca.md) — none of it participates in the anomaly shield. Generic tools for JAX/NumPy
+A second part of the package, under `core/`/`utility/`, independent of [`Armatura`](../shields/armatura.md)
+and [`Orca`](../shields/orca.md) — none of it participates in the anomaly shield. Generic tools for JAX/NumPy
 pipelines. Each is tested on its own (`test/test_chunk.py`, `test_compiler.py`, `test_memory.py`,
 `test_preset.py`, `test_tensor.py`, `test_noise.py`, `test_vector.py`, `test_profiler.py`,
 `test_visualizer.py`, `test_logger.py`, `test_anwav.py`, `test_diagnostic.py`, `test_iodat.py`,
@@ -170,7 +170,7 @@ out = engine.apply_bitwise_swap(np.array([0., 1., 2., 3.]), target_bit=1, contro
 
 **`SIGNAL_STABILIZER_PRESETS`** are 4 empirically-calibrated parameter sets
 (`balanced_v2`, `cifar10_best_v1`, `pure_1d_time_v1`, `cifar10_hardened_lyapunov`) for
-[`AdaptiveSignalStabilizer`](engine.md) (Orca's Stage 1). Verified, not just declared: on the
+[`AdaptiveSignalStabilizer`](../shields/engine.md) (Orca's Stage 1). Verified, not just declared: on the
 same noisy series with an outlier, `pure_1d_time_v1` (tuned for a more reactive regime) leaves
 over 2x the residual variance of `balanced_v2` -- the presets genuinely configure different
 filtering behavior, not just different numbers that happen to look distinct.

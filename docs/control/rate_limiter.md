@@ -14,5 +14,5 @@ docstring for the honest safety-vs-fidelity tradeoff found there.
 
 ---
 
-**See also**: [CUSUM + ARL theory](cusum.md) -- if the real goal is recovering/classifying a signal
+**See also**: [CUSUM + ARL theory](../drift/cusum.md) -- if the real goal is recovering/classifying a signal
 rather than bounding a command's rate of change, a detector is the right tool, not this module.

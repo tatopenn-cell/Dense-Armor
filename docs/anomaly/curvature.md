@@ -31,7 +31,7 @@ a boundary -- and how wide a "getting close" warning zone should be in those uni
 
 ---
 
-**See also**: [Rate limiter](rate_limiter.md) and [CBF filter](cbf_filter.md) -- if the
+**See also**: [Rate limiter](../control/rate_limiter.md) and [CBF filter](../control/cbf_filter.md) -- if the
 real goal is bounding or correcting a command near a limit, not just scoring proximity to
 one, those modules are the right tool.
 

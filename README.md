@@ -166,7 +166,7 @@ for x in sensor_stream:
     is_deviant = det.update(x)
 ```
 
-`MultiChannelStreamingDeviationDetector` and `classify_segments_multichannel` apply the same already-validated logic to multiple independent channels (the joints of a robotic arm, the axes of an IMU) without requiring a manual loop — each channel keeps its own reference window. Promoted by Dense-Evolution-Discovery after validation on two independent real physical domains (SO-101 robotic arm, real human IMU) — the same discipline already used for `stable_frame_filter.py` and `velocity_gated_stable_mask`. Full documentation (auto-generated from the real docstrings) on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/streaming/).
+`MultiChannelStreamingDeviationDetector` and `classify_segments_multichannel` apply the same already-validated logic to multiple independent channels (the joints of a robotic arm, the axes of an IMU) without requiring a manual loop — each channel keeps its own reference window. Promoted by Dense-Evolution-Discovery after validation on two independent real physical domains (SO-101 robotic arm, real human IMU) — the same discipline already used for `stable_frame_filter.py` and `velocity_gated_stable_mask`. Full documentation (auto-generated from the real docstrings) on the [site](https://tatopenn-cell.github.io/Dense-Armor/anomaly/streaming/).
 
 ---
 
@@ -183,7 +183,7 @@ report = detectability_report(local_noise_scale=local_mad, k=0.5, h=5.0, candida
 # {'false_alarm_arl': ..., 'detection_arl': ..., 'shift_in_sigma': ...}
 ```
 
-`detectability_report` estimates *before* running a benchmark how many samples are needed to detect a given shift given the detector's real local noise -- Reynolds (1975)/Siegmund (1985) theory, promoted by Dense-Evolution-Discovery after validation on two independent real physical domains (lidar, accelerometer): on the lidar the real latency always beats the theoretical estimate; on the accelerometer the result is genuinely mixed -- documented as is, not forced to coincide. Full documentation (auto-generated from the real docstrings) on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/cusum/).
+`detectability_report` estimates *before* running a benchmark how many samples are needed to detect a given shift given the detector's real local noise -- Reynolds (1975)/Siegmund (1985) theory, promoted by Dense-Evolution-Discovery after validation on two independent real physical domains (lidar, accelerometer): on the lidar the real latency always beats the theoretical estimate; on the accelerometer the result is genuinely mixed -- documented as is, not forced to coincide. Full documentation (auto-generated from the real docstrings) on the [site](https://tatopenn-cell.github.io/Dense-Armor/drift/cusum/).
 
 ## `$ calibration --platt`
 
@@ -195,7 +195,7 @@ from dense_armor.learn.calibration import OnlinePlattScaling
 model = OnlinePlattScaling(tree.HoeffdingTreeClassifier())
 ```
 
-On Phishing the log-loss of a Hoeffding tree drops from 0.4535 to 0.3502. Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/calibration/).
+On Phishing the log-loss of a Hoeffding tree drops from 0.4535 to 0.3502. Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/learn/calibration/).
 
 ## `$ metric_learning --knn`
 
@@ -207,7 +207,7 @@ from dense_armor.learn.metric_learning import MetricKNNClassifier, POLA
 model = MetricKNNClassifier(POLA(), n_neighbors=5)
 ```
 
-Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/metric_learning/).
+Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/learn/metric_learning/).
 
 ## `$ rate_limiter --damping`
 
@@ -219,7 +219,7 @@ from dense_armor.control.rate_limiter import rate_limited_follower
 applied = rate_limited_follower(raw_command, max_vel=2.0, max_accel=1.0)
 ```
 
-Based on Berscheid & Kroger (2021), "Jerk-limited Real-time Trajectory Generation" (RSS 2021, arXiv:2105.04830) — causal by construction, verified directly. Promoted by Dense-Evolution-Discovery after validation on two independent real physical domains (SO-101, 14-DOF bimanual ALOHA): it always wins (400/400 real trials) on the real safety metric (maximum instantaneous jump), but it is **not** a signal cleaner — on average fidelity (RMSE) the picture is genuinely mixed between the two domains, not hidden. Full documentation (auto-generated from the real docstrings) on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/rate_limiter/).
+Based on Berscheid & Kroger (2021), "Jerk-limited Real-time Trajectory Generation" (RSS 2021, arXiv:2105.04830) — causal by construction, verified directly. Promoted by Dense-Evolution-Discovery after validation on two independent real physical domains (SO-101, 14-DOF bimanual ALOHA): it always wins (400/400 real trials) on the real safety metric (maximum instantaneous jump), but it is **not** a signal cleaner — on average fidelity (RMSE) the picture is genuinely mixed between the two domains, not hidden. Full documentation (auto-generated from the real docstrings) on the [site](https://tatopenn-cell.github.io/Dense-Armor/control/rate_limiter/).
 
 ## `$ cbf_filter --spatial`
 
@@ -231,7 +231,7 @@ from dense_armor.control.cbf_filter import cbf_filtered_trajectory
 applied = cbf_filtered_trajectory(raw_command, obstacle=5.0, safe_dist=2.0, alpha_gain=2.0)
 ```
 
-Based on Ames et al. (2019), "Control Barrier Functions: Theory and Applications" (2019 ECC, arXiv:1903.11199) — same theory as SAFER-Splat, applied to a known geometric obstacle instead of GPU Gaussian-Splatting perception (not available on every machine). A real numerical problem found and solved along the way: the CBF guarantee is continuous in time, sub-steps are needed (20/sample, default) to hold in discrete time on real commands that can jump a lot between one sample and the next. Promoted by Dense-Evolution-Discovery after validation on two independent real physical domains (SO-101, ALOHA): 100% invariance from safe starts on both, minimal invasiveness practically exact (99.9%+ on SO-101, perfectly exact on ALOHA). `cbf_safety_filter_live` is the same mathematics for a real control loop that reacts to one sensor tick at a time (a real `dt`, not a pre-recorded array) — promoted after a real ROS2/Ignition live loop needed it and had to rebuild it by hand. Full documentation (auto-generated from the real docstrings) on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/cbf_filter/).
+Based on Ames et al. (2019), "Control Barrier Functions: Theory and Applications" (2019 ECC, arXiv:1903.11199) — same theory as SAFER-Splat, applied to a known geometric obstacle instead of GPU Gaussian-Splatting perception (not available on every machine). A real numerical problem found and solved along the way: the CBF guarantee is continuous in time, sub-steps are needed (20/sample, default) to hold in discrete time on real commands that can jump a lot between one sample and the next. Promoted by Dense-Evolution-Discovery after validation on two independent real physical domains (SO-101, ALOHA): 100% invariance from safe starts on both, minimal invasiveness practically exact (99.9%+ on SO-101, perfectly exact on ALOHA). `cbf_safety_filter_live` is the same mathematics for a real control loop that reacts to one sensor tick at a time (a real `dt`, not a pre-recorded array) — promoted after a real ROS2/Ignition live loop needed it and had to rebuild it by hand. Full documentation (auto-generated from the real docstrings) on the [site](https://tatopenn-cell.github.io/Dense-Armor/control/cbf_filter/).
 
 ## `$ trajectory --quintic`
 
@@ -243,7 +243,7 @@ from dense_armor.control.trajectory import quintic_trajectory
 t, q, v, a = quintic_trajectory(q0=[0.0], qf=[10.0], T=2.0)
 ```
 
-Deliberately reduced compared to two real papers that propose much larger optimizers (full dynamics, URDF, torques) — Lozer, Scalera, Boscariol & Gasparetto (*Robotics and Autonomous Systems*) and Fried & Paternain (arXiv:2412.07859), both read in full before writing code — to the simplest and most universal piece: no URDF, no dynamics, no connection to the robot. Promoted by Dense-Evolution-Discovery after validation on two independent real physical domains (SO-101, ALOHA, 20 real joint excursions): the quintic's peak velocity is always lower than the real one recorded for the same start/end/duration — expected, not a bug, since it is the smoothest possible path. Full documentation (auto-generated from the real docstrings) on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/trajectory/).
+Deliberately reduced compared to two real papers that propose much larger optimizers (full dynamics, URDF, torques) — Lozer, Scalera, Boscariol & Gasparetto (*Robotics and Autonomous Systems*) and Fried & Paternain (arXiv:2412.07859), both read in full before writing code — to the simplest and most universal piece: no URDF, no dynamics, no connection to the robot. Promoted by Dense-Evolution-Discovery after validation on two independent real physical domains (SO-101, ALOHA, 20 real joint excursions): the quintic's peak velocity is always lower than the real one recorded for the same start/end/duration — expected, not a bug, since it is the smoothest possible path. Full documentation (auto-generated from the real docstrings) on the [site](https://tatopenn-cell.github.io/Dense-Armor/control/trajectory/).
 
 ## `$ kinematic_controller --tracking`
 
@@ -255,7 +255,7 @@ from dense_armor.control.kinematic_controller import kinematic_tracking_controll
 u_des = kinematic_tracking_controller(q=[0.2], q_ref=[0.5], qd_ref=[1.0], kp=5.0)
 ```
 
-`u = qd_ref + kp*(q_ref - q)` — for the system `qdot = u` this makes the tracking error exactly `edot = -kp*e`: exponential convergence in closed form, for any reference trajectory, verified numerically. It is not "passivity-based" in the sense of the papers that motivated this research (Wu & Tan 2025, the real target, behind a paywall with no open copy found; Scruggs, real but requires convex optimization in infinite dimension; Califano et al., real but requires Hamiltonian mechanics) — honest about this, it is simpler. Promoted by Dense-Evolution-Discovery after validation on two real physical domains (SO-101, ALOHA), chained with `quintic_trajectory`: every real excursion recovers from a declared real initial error and converges. Full documentation (auto-generated from the real docstrings) on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/kinematic_controller/).
+`u = qd_ref + kp*(q_ref - q)` — for the system `qdot = u` this makes the tracking error exactly `edot = -kp*e`: exponential convergence in closed form, for any reference trajectory, verified numerically. It is not "passivity-based" in the sense of the papers that motivated this research (Wu & Tan 2025, the real target, behind a paywall with no open copy found; Scruggs, real but requires convex optimization in infinite dimension; Califano et al., real but requires Hamiltonian mechanics) — honest about this, it is simpler. Promoted by Dense-Evolution-Discovery after validation on two real physical domains (SO-101, ALOHA), chained with `quintic_trajectory`: every real excursion recovers from a declared real initial error and converges. Full documentation (auto-generated from the real docstrings) on the [site](https://tatopenn-cell.github.io/Dense-Armor/control/kinematic_controller/).
 
 ## `$ rigid_body --urdf`
 
@@ -273,7 +273,7 @@ qdd = model.forward_dynamics(q, jnp.zeros(model.n), jnp.zeros(model.n))
 
 `model.n` is the number of real, independent degrees of freedom (a joint with `<mimic>` does not count separately). `mass_matrix`, `gravity_forces`, `bias_forces` and `forward_dynamics` (solves `M(q)*qdd + C(q,qd)*qd + g(q) = tau`) use the standard Lagrangian construction via autodiff (`jax.grad`/`jax.jvp`), not hand-written Christoffel symbols. `link_position`/`link_jacobian`/`link_pose`/`link_spatial_jacobian` work for any link named in the URDF, not only the end effector.
 
-Promoted by Dense-Evolution-Discovery (Experiment 62) after validation on three independent real robots (Kinova Gen3 7-DoF, Kinova Gen3 6-DoF, Franka Emika Panda — different manufacturer, prismatic joints): symmetric/positive-definite mass matrix and energy conservation with correct RK4 convergence on all three. Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/urdf_dynamics/).
+Promoted by Dense-Evolution-Discovery (Experiment 62) after validation on three independent real robots (Kinova Gen3 7-DoF, Kinova Gen3 6-DoF, Franka Emika Panda — different manufacturer, prismatic joints): symmetric/positive-definite mass matrix and energy conservation with correct RK4 convergence on all three. Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/dynamics/urdf_dynamics/).
 
 ## `$ passivity_cbf --controller`
 
@@ -289,7 +289,7 @@ qdd, tau, mu, h = solve_control_qp(model, "panda_hand", q, qd, p_des, pd_des, pd
 
 `eps` is the minimum manipulability index that the controller maintains — `mu` (returned) never drops much below it, even when the commanded target would otherwise push the robot straight into a singularity. The real position/velocity limits of each joint (from the URDF `<limit>` tag) are a third constraint, added only where the robot actually declares them.
 
-Based on Kurtz, Wensing & Lin (2021, arXiv:2109.13349). Promoted by Dense-Evolution-Discovery (Experiment 61→63) after validation on the same three robots as `RigidBodyModel`, each pushed toward its own real singularity: manipulability maintained within 0.1-1.8% of the declared threshold in every case. A real OSQP bug found and solved along the way (infeasibility of the passivity+CBF QP, solved by falling back to CBF alone). Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/passivity_cbf_controller/).
+Based on Kurtz, Wensing & Lin (2021, arXiv:2109.13349). Promoted by Dense-Evolution-Discovery (Experiment 61→63) after validation on the same three robots as `RigidBodyModel`, each pushed toward its own real singularity: manipulability maintained within 0.1-1.8% of the declared threshold in every case. A real OSQP bug found and solved along the way (infeasibility of the passivity+CBF QP, solved by falling back to CBF alone). Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/dynamics/passivity_cbf_controller/).
 
 ## `$ six_dof_cbf --pose`
 
@@ -304,7 +304,7 @@ qdd, tau, mu, h = solve_control_qp(model, "panda_hand", q, qd, p_des, pd_des, pd
 
 `r_des` is the desired orientation (rotation matrix), `w_des`/`wd_des` the desired angular velocity/acceleration in world frame. The orientation error uses the SO(3) formula of Lee, Leok & McClamroch (2010) — smooth everywhere, without the real gimbal lock of a roll-pitch-yaw formulation.
 
-Promoted by Dense-Evolution-Discovery (Experiment 65). Validated with exact gravity compensation at zero error (machine precision) and real closed-loop convergence (initial offset 10cm/30°, RK4 over 1000 ticks, final error 1e-6 m / 1e-4 rad) — then on the same three robots as `passivity_cbf_controller`, where a second real OSQP infeasibility emerged (6-DoF manipulability can be well below the 3-DoF one at the same configuration) solved with a third fallback level (CBF alone, without box). Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/six_dof_pbc_cbf_controller/).
+Promoted by Dense-Evolution-Discovery (Experiment 65). Validated with exact gravity compensation at zero error (machine precision) and real closed-loop convergence (initial offset 10cm/30°, RK4 over 1000 ticks, final error 1e-6 m / 1e-4 rad) — then on the same three robots as `passivity_cbf_controller`, where a second real OSQP infeasibility emerged (6-DoF manipulability can be well below the 3-DoF one at the same configuration) solved with a third fallback level (CBF alone, without box). Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/dynamics/six_dof_pbc_cbf_controller/).
 
 ## `$ xacro --macros`
 
@@ -317,7 +317,7 @@ model.n   # 8 -- 7 arm joints + 1 independent gripper coordinate
 
 The real `xacro` package (the same expander from the ROS ecosystem, no ROS installation required) does the expansion — nothing about macros/math/conditionals is reimplemented here.
 
-Promoted by Dense-Evolution-Discovery (Experiment 66), which found and solved a real inconsistency in the published Franka Panda macros (`clvrai/furniture`): a hand attachment link commented out in the arm macro but required by the hand one. New dependency: `xacro`. Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/xacro_support/).
+Promoted by Dense-Evolution-Discovery (Experiment 66), which found and solved a real inconsistency in the published Franka Panda macros (`clvrai/furniture`): a hand attachment link commented out in the arm macro but required by the hand one. New dependency: `xacro`. Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/dynamics/xacro_support/).
 
 ## `$ mimic --joints`
 
@@ -330,7 +330,7 @@ model.mimic_map["panda_finger_joint2"]     # (master_dof_idx, multiplier, offset
 
 Forward kinematics substitutes `q[master] * multiplier + offset` for the mimic joint angle; the hand-built geometric Jacobian scales the mimic joint's local column by `multiplier` and sums it into its master's column, instead of giving it its own column.
 
-Promoted by Dense-Evolution-Discovery (Experiment 67), verified against a real central finite difference of `link_pose` (not just plausibility): moving the master by 0.02 moves both fingertips by exactly 0.02 in opposite directions, and the hand-written Jacobian matches the numerical derivative within 1e-5. Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/mimic_joints/).
+Promoted by Dense-Evolution-Discovery (Experiment 67), verified against a real central finite difference of `link_pose` (not just plausibility): moving the master by 0.02 moves both fingertips by exactly 0.02 in opposite directions, and the hand-written Jacobian matches the numerical derivative within 1e-5. Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/dynamics/mimic_joints/).
 
 ---
 
@@ -367,7 +367,7 @@ The four individual methods also remain callable one by one (`chauvenet_criterio
 
 ## `$ toolkit --standalone`
 
-Under `core/`/`utility/` there is also a second part of the package, largely independent of Armatura/Orca — most of these modules do not participate in the anomaly shield, they are tools in their own right that only share the JAX/NumPy backend. Three exceptions: `UniversalMemoryGuard`, `apply_fast_resonance` and `AIHardwareProfiler`, also called by Orca (see `$ internals` above) — they remain usable standalone anyway. Full documentation (auto-generated from the real docstrings) on the [site](https://tatopenn-cell.github.io/Dense-Armor/api/toolkit/); here is the summary.
+Under `core/`/`utility/` there is also a second part of the package, largely independent of Armatura/Orca — most of these modules do not participate in the anomaly shield, they are tools in their own right that only share the JAX/NumPy backend. Three exceptions: `UniversalMemoryGuard`, `apply_fast_resonance` and `AIHardwareProfiler`, also called by Orca (see `$ internals` above) — they remain usable standalone anyway. Full documentation (auto-generated from the real docstrings) on the [site](https://tatopenn-cell.github.io/Dense-Armor/toolkit/toolkit/); here is the summary.
 
 **Pipeline and chunking** (`dense_armor.core`)
 

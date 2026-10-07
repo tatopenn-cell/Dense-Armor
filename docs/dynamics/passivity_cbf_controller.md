@@ -15,7 +15,7 @@ qdd, tau, mu, h = solve_control_qp(model, "panda_hand", q, qd, p_des, pd_des, pd
 
 `link_name` is any link in the URDF; `p_des`/`pd_des`/`pdd_des` are the desired
 position/velocity/acceleration of that link at the current instant (e.g. from
-[quintic_trajectory](trajectory.md)). `eps` is the minimum manipulability index the controller
+[quintic_trajectory](../control/trajectory.md)). `eps` is the minimum manipulability index the controller
 will maintain -- `mu` (returned) never drops far below it, even when the commanded target would
 otherwise drive the robot through a singularity.
 

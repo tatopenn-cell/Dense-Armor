@@ -2,7 +2,7 @@
 
 Promoted from Dense-Evolution-Discovery after validation on two independent real physical
 domains (SO-101 robot arm, real UCI HAR IMU). `StreamingDeviationDetector` is a zero-latency
-port of [`classify_segments`](arbiter.md)' own per-point causal deviation check -- not the
+port of [`classify_segments`](../protect/arbiter.md)' own per-point causal deviation check -- not the
 spike-vs-regime label, which looks ahead of a deviant run's end and stays a batch/offline
 question by design. `MultiChannelStreamingDeviationDetector` and
 `classify_segments_multichannel` remove the need to hand-loop over independent channels
@@ -13,7 +13,7 @@ its own independent reference window and baseline.
 
 ---
 
-**See also**: [Arbiter](arbiter.md) -- the batch `classify_segments` this module ports the
+**See also**: [Arbiter](../protect/arbiter.md) -- the batch `classify_segments` this module ports the
 causal half of.
 
 ## River-compatible scorer

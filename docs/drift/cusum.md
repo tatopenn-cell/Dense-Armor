@@ -1,6 +1,6 @@
 # CUSUM (slow-drift detection) + ARL theory
 
-A drift too small, at any single step, to cross [Arbiter](arbiter.md)'s instantaneous
+A drift too small, at any single step, to cross [Arbiter](../protect/arbiter.md)'s instantaneous
 threshold still accumulates: `cusum_detector` sums small deviations over time instead of
 judging each point in isolation, so a slow sustained shift eventually trips it even when no
 single point ever would. `one_sided_arl`/`two_sided_arl`/`detectability_report` are a
@@ -14,7 +14,7 @@ docstring for the honest, mixed real-world result.
 
 ---
 
-**See also**: [Arbiter](arbiter.md) -- the instantaneous per-point detector this module is
+**See also**: [Arbiter](../protect/arbiter.md) -- the instantaneous per-point detector this module is
 the slow-drift complement to.
 
 ## Streaming CUSUM for river
