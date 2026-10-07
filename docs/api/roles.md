@@ -9,7 +9,7 @@ and river's one-sample-at-a-time interface
 
 ## What the base gives you
 
-A class deriving from `dense_armor.base.Base` automatically has:
+A class deriving from `dense_armor.roles.Base` automatically has:
 
 - **Hyper-parameters from the constructor.** `get_params()` walks the
   `__init__` signature and reads each parameter from the attribute of
@@ -32,7 +32,7 @@ A class deriving from `dense_armor.base.Base` automatically has:
 
 ## Roles
 
-One file per role under `dense_armor/base/`:
+One file per role under `dense_armor/roles/`:
 
 | Role | File | Key methods |
 |------|------|-------------|
@@ -41,7 +41,7 @@ One file per role under `dense_armor/base/`:
 | `Transformer` | `transformer.py` | `learn_one(x)`, `transform_one(x)`, `a + b`, `a * b` |
 | `AnomalyDetector` | `anomaly_detector.py` | `learn_one(x)`, `score_one(x)` (high = anomalous) |
 | `DriftDetector` | `drift_detector.py` | `update(x)`, `drift_detected` (bool) |
-| `Wrapper` | `wrapper.py` | delegates to `_wrapped_model` |
+| `ModelWrapper` | `wrapper.py` | delegates to `_wrapped_model` |
 
 Every classifier returns `predict_one(x) is None` and
 `predict_proba_one(x) == {}` until the first `learn_one`, for every
@@ -69,7 +69,7 @@ Subclass a role, set hyper-parameters in `__init__`, store learned
 state in attributes with a trailing underscore:
 
 ```python
-from dense_armor.base import Classifier
+from dense_armor.roles import Classifier
 
 class RunningMean(Classifier):
     """Predict the majority label seen so far."""
@@ -115,7 +115,7 @@ flagged samples are not learned and the prediction is the fallback (or
 the last prediction made on an unflagged sample).
 
 ```python
-from dense_armor.base import Protected
+from dense_armor.roles import Protected
 from dense_armor.utility.anomaly.filters import HampelScorer
 
 safe = Protected(OnlineGaussianNB(), HampelScorer(radius=5), fallback=0)

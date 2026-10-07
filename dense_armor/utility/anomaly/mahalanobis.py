@@ -28,7 +28,7 @@ from typing import List, Optional, Sequence
 
 import numpy as np
 
-from dense_armor.base import AnomalyDetector
+from dense_armor.roles import AnomalyDetector
 
 
 class OnlineRobustMahalanobis(AnomalyDetector):

@@ -8,10 +8,10 @@ import math
 
 import numpy as np
 
-from dense_armor.base import Classifier, Wrapper
+from dense_armor.roles import Classifier, ModelWrapper
 
 
-class OnlinePlattScaling(Wrapper, Classifier):
+class OnlinePlattScaling(ModelWrapper, Classifier):
     """Online Platt scaling.
 
     Recalibrates the probabilities of a classifier. The update happens at every new example, so

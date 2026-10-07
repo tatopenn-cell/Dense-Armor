@@ -1,14 +1,12 @@
 """Run every applicable check on an estimator."""
 
-from __future__ import annotations
-
 import json
 import pickle
 from typing import Any
 
-from dense_armor.base import (
+from dense_armor.roles import (
     AnomalyDetector,
-    Base,
+    Root,
     Classifier,
     DriftDetector,
     Regressor,
@@ -16,27 +14,27 @@ from dense_armor.base import (
 )
 
 
-def _unit_params(est: Base) -> list[dict]:
+def _unit_params(est: Root) -> list[dict]:
     return list(type(est)._unit_test_params())
 
 
-def check_repr(est: Base) -> None:
+def check_repr(est: Root) -> None:
     assert isinstance(repr(est), str) and repr(est)
     assert str(est) == type(est).__name__
 
 
-def check_repr_clone_equal(est: Base) -> None:
+def check_repr_clone_equal(est: Root) -> None:
     assert repr(est.clone()) == repr(est)
 
 
-def check_clone(est: Base) -> None:
+def check_clone(est: Root) -> None:
     c = est.clone()
     assert type(c) is type(est)
     assert c is not est
     assert c.get_params() == est.get_params()
 
 
-def check_clone_new_params(est: Base) -> None:
+def check_clone_new_params(est: Root) -> None:
     for name, p in est._init_signature().parameters.items():
         if name == "self" or p.kind in (
             p.VAR_POSITIONAL,
@@ -62,7 +60,7 @@ def check_clone_new_params(est: Base) -> None:
         return
 
 
-def check_clone_independent(est: Base) -> None:
+def check_clone_independent(est: Root) -> None:
     c = est.clone()
     for k in list(est.__dict__):
         if k.endswith("_") and not k.startswith("__"):
@@ -70,7 +68,7 @@ def check_clone_independent(est: Base) -> None:
             assert getattr(est, k) != "sentinel"
 
 
-def check_get_params_signature(est: Base) -> None:
+def check_get_params_signature(est: Root) -> None:
     sig = est._init_signature()
     expected = {
         n
@@ -81,7 +79,7 @@ def check_get_params_signature(est: Base) -> None:
     assert expected <= got, f"missing params: {expected - got}"
 
 
-def check_default_params_non_mutable(est: Base) -> None:
+def check_default_params_non_mutable(est: Root) -> None:
     for kwargs in _unit_params(est):
         for k, v in kwargs.items():
             assert not isinstance(v, (list, dict, set)), (
@@ -89,7 +87,7 @@ def check_default_params_non_mutable(est: Base) -> None:
             )
 
 
-def check_mutate_idempotent(est: Base) -> None:
+def check_mutate_idempotent(est: Root) -> None:
     cur = {k: getattr(est, k) for k in est._mutable_attributes if hasattr(est, k)}
     for k in est._mutable_attributes:
         assert hasattr(est, k), f"declared mutable {k} does not exist"
@@ -97,23 +95,23 @@ def check_mutate_idempotent(est: Base) -> None:
         est.mutate(cur)
 
 
-def check_pickle_roundtrip(est: Base) -> None:
+def check_pickle_roundtrip(est: Root) -> None:
     blob = pickle.dumps(est)
     est2 = pickle.loads(blob)
     assert type(est2) is type(est)
     assert repr(est2) == repr(est)
 
 
-def check_docstring(est: Base) -> None:
+def check_docstring(est: Root) -> None:
     assert type(est).__doc__, f"{type(est).__name__} has no docstring"
 
 
-def check_describe_serializable(est: Base) -> None:
+def check_describe_serializable(est: Root) -> None:
     d = est.describe()
     json.dumps(d)
 
 
-def check_state_dict_roundtrip(est: Base) -> None:
+def check_state_dict_roundtrip(est: Root) -> None:
     s = est.state_dict()
     est.load_state_dict(s)
 
@@ -122,7 +120,7 @@ def _sample_x() -> dict:
     return {"a": 1.0, "b": 2.0, "c": 3.0}
 
 
-def check_learn_one_does_not_modify_x(est: Base) -> None:
+def check_learn_one_does_not_modify_x(est: Root) -> None:
     x = _sample_x()
     snapshot = dict(x)
     try:
@@ -141,7 +139,7 @@ def check_learn_one_does_not_modify_x(est: Base) -> None:
     assert x == snapshot, "learn_one modified the input dict"
 
 
-def check_predict_before_learning(est: Base) -> None:
+def check_predict_before_learning(est: Root) -> None:
     fresh = est.clone() if not est._has_learned() else None
     if fresh is None:
         return
@@ -151,11 +149,11 @@ def check_predict_before_learning(est: Base) -> None:
         assert fresh.predict_proba_one(x) == {}
 
 
-def check_shuffle_features(est: Base) -> None:
+def check_shuffle_features(est: Root) -> None:
     return
 
 
-def check_classifier_proba_sum(est: Base) -> None:
+def check_classifier_proba_sum(est: Root) -> None:
     if not isinstance(est, Classifier):
         return
     x = _sample_x()
@@ -174,12 +172,12 @@ def check_classifier_proba_sum(est: Base) -> None:
     assert abs(s - 1.0) < 1e-9, f"proba sums to {s}"
 
 
-def check_classifier_multiclass_bool(est: Base) -> None:
+def check_classifier_multiclass_bool(est: Root) -> None:
     if isinstance(est, Classifier):
         assert isinstance(est._multiclass, bool)
 
 
-def check_dt_accepted(est: Base) -> None:
+def check_dt_accepted(est: Root) -> None:
     est._time_step(0.0)
     est._time_step(0.01)
     est._time_step(0.02)
@@ -188,7 +186,7 @@ def check_dt_accepted(est: Base) -> None:
     assert est.jitter is not None
 
 
-def check_non_increasing_t_raises(est: Base) -> None:
+def check_non_increasing_t_raises(est: Root) -> None:
     fresh = est.clone()
     fresh._time_step(0.0)
     fresh._time_step(0.1)
@@ -199,7 +197,7 @@ def check_non_increasing_t_raises(est: Base) -> None:
     raise AssertionError("non-increasing t did not raise")
 
 
-def check_estimator(est: Base) -> None:
+def check_estimator(est: Root) -> None:
     """Run every applicable check on ``est``.
 
     Args:

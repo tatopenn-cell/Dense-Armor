@@ -9,15 +9,15 @@ subclasses of river's ABCs, so our models work inside river's
 pipelines, checks and evaluators without the core depending on river.
 """
 
-from dense_armor.base.anomaly_detector import AnomalyDetector, AnomalyFilter
-from dense_armor.base.base import Base, InconsistentVersionWarning
-from dense_armor.base.classifier import Classifier
-from dense_armor.base.drift_detector import DriftDetector
-from dense_armor.base.estimator import Estimator
-from dense_armor.base.protection import Protected
-from dense_armor.base.regressor import Regressor
-from dense_armor.base.transformer import Transformer, TransformerSupervised
-from dense_armor.base.wrapper import Wrapper
+from dense_armor.roles.anomaly_detector import AnomalyDetector, AnomalyGate
+from dense_armor.roles.root import Root, InconsistentVersionWarning
+from dense_armor.roles.classifier import Classifier
+from dense_armor.roles.drift_detector import DriftDetector
+from dense_armor.roles.estimator import Estimator
+from dense_armor.roles.protection import Protected
+from dense_armor.roles.regressor import Regressor
+from dense_armor.roles.transformer import Transformer, TransformerSupervised
+from dense_armor.roles.wrapper import ModelWrapper
 
 _ROLE_MAP = (
     ("Classifier", Classifier),
@@ -25,7 +25,7 @@ _ROLE_MAP = (
     ("Transformer", Transformer),
     ("AnomalyDetector", AnomalyDetector),
     ("DriftDetector", DriftDetector),
-    ("Wrapper", Wrapper),
+    ("ModelWrapper", ModelWrapper),
 )
 
 try:
@@ -47,8 +47,8 @@ del _ROLE_MAP
 
 __all__ = [
     "AnomalyDetector",
-    "AnomalyFilter",
-    "Base",
+    "AnomalyGate",
+    "Root",
     "Classifier",
     "DriftDetector",
     "Estimator",
@@ -57,5 +57,5 @@ __all__ = [
     "Regressor",
     "Transformer",
     "TransformerSupervised",
-    "Wrapper",
+    "ModelWrapper",
 ]

@@ -1,9 +1,7 @@
 """Drift detector role."""
 
-from __future__ import annotations
-
-from dense_armor.base._util import call_with_t
-from dense_armor.base.estimator import Estimator
+from dense_armor.roles._util import call_with_t
+from dense_armor.roles.estimator import Estimator
 
 
 class DriftDetector(Estimator):
@@ -23,14 +21,14 @@ class DriftDetector(Estimator):
     def warning_detected(self) -> bool:
         return self._warning_detected
 
-    def update(self, x: float, t: float | None = None) -> DriftDetector:
+    def update(self, x: float, t: float | None = None) -> 'DriftDetector':
         raise NotImplementedError
 
     def _reset(self) -> None:
         self._drift_detected = False
         self._warning_detected = False
 
-    def update_many(self, X, t=None) -> DriftDetector:
+    def update_many(self, X, t=None) -> 'DriftDetector':
         for x in X:
             call_with_t(self.update, x, t=t)
         return self

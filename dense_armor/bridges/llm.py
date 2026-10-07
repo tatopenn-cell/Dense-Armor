@@ -11,12 +11,10 @@ The bridge has no extra dependency: ``embed`` is supplied by the caller.
 ``pip install dense-armor[llm]`` is declared in ``pyproject.toml`` for
 forward compatibility, but the module imports without it.
 """
-from __future__ import annotations
-
 import json
 from typing import Any, Callable, Dict, Optional, Sequence
 
-from dense_armor.base.estimator import Estimator
+from dense_armor.roles.estimator import Estimator
 
 
 class LLMEmbeddingClassifier(Estimator):

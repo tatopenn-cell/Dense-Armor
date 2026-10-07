@@ -10,11 +10,11 @@ from collections import deque
 
 import numpy as np
 
-from dense_armor.base import Base, Classifier
+from dense_armor.roles import Root, Classifier
 
 
-class MetricLearner(Base):
-    """Base class for online metric learners.
+class MetricLearner(Root):
+    """Root class for online metric learners.
 
     A metric learner is trained from pairs or triplets and exposes a
     `distance(x, x2)` method. Unlike river's `Classifier`, `Regressor`, and

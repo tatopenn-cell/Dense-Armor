@@ -26,14 +26,12 @@ Tukey, J. W. (1977). Exploratory Data Analysis. Addison-Wesley.
 Hyndman, R. J., Fan, Y. (1996). Sample quantiles in statistical
     packages. The American Statistician 50(4), 361-365.
 """
-from __future__ import annotations
-
 import math
 from bisect import bisect_left, insort
 from collections import deque
 from typing import Any
 
-from dense_armor.base import Transformer
+from dense_armor.roles import Transformer
 
 MAD_SCALE = 1.4826
 IQR_SCALE = 1.0 / 1.349

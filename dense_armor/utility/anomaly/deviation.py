@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from dense_armor.base import AnomalyDetector
+from dense_armor.roles import AnomalyDetector
 
 from dense_armor.utility.protect.arbiter import _robust_center_scale
 from dense_armor.utility.anomaly.streaming import StreamingDeviationDetector

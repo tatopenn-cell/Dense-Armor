@@ -32,7 +32,7 @@ from collections import deque
 
 import numpy as np
 
-from dense_armor.base import AnomalyDetector, Transformer
+from dense_armor.roles import AnomalyDetector, Transformer
 
 
 def _scaled_mad(w: np.ndarray) -> float:

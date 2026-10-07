@@ -1,7 +1,5 @@
 """Small internal helpers shared by the role base classes."""
 
-from __future__ import annotations
-
 import inspect
 from typing import Any
 
