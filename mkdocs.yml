@@ -81,6 +81,7 @@ nav:
       - Calibration (online Platt scaling): api/calibration.md
       - Metric learning (OASIS, LEGO, POLA): api/metric_learning.md
       - Online classifiers (robot states, drift adaptation): api/online_classifiers.md
+      - Real robot benchmark (CASPER, UR3e arm): api/real_robot_benchmark.md
       - Rate limiter (causal command damping): api/rate_limiter.md
       - CBF filter (geometric command safety): api/cbf_filter.md
       - Trajectory (closed-form point-to-point generator): api/trajectory.md
