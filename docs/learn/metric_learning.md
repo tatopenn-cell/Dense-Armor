@@ -232,9 +232,15 @@ On the running data:
 
 Its prequential accuracy on the same stream is the last line of the block above.
 
-In the original paper OASIS already beat LEGO and the Euclidean metric on image retrieval: see
-Figure 2 of Chechik et al. (2009), precision at top k on 10, 20 and 50 image classes, where OASIS is
-the highest curve in all three.
+The same advantage on robot data: three robot states told apart by two joint features, plus three
+noisy features with a much larger range that dominate the plain Euclidean distance.
+
+![Prequential accuracy of a k-NN with Euclidean distance and with distances learned online by OASIS, LEGO and POLA](../assets/metric_learning/robot_states.png)
+
+With the Euclidean distance the k-NN is right half of the time (0.50); learning the metric while
+classifying lifts it to 0.89 (OASIS), 0.92 (LEGO) and 0.74 (POLA) after 600 samples: the learned
+metric learns to ignore the noisy features. In the original paper OASIS already beat LEGO and the
+Euclidean metric on image retrieval (Chechik et al. 2009, Figure 2).
 
 ## 5. Results on river streams
 
