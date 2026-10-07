@@ -34,3 +34,45 @@ model.score_one({"v": 50.0})
 ```
 
 ::: dense_armor.utility.river_anomaly
+
+## Streaming robust filters
+
+`dense_armor.utility.streaming_filters` brings the four batch filters of
+[`robust_filters`](robust_filters.md) — Hampel, Tukey fences, Chauvenet and iterative sigma
+clipping — to one sample at a time. Each scorer looks only at the `2 * radius` samples
+before the value being scored (the causal window), scores the new value in the method's own
+robust scale, and exposes `is_outlier`. The batch filters use a centred window, which looks at
+future samples; a live robot loop cannot, and that is the only difference.
+`HampelFilter` also replaces an outlier with the window median.
+
+```python
+from dense_armor.utility.streaming_filters import HampelScorer
+
+s = HampelScorer(radius=15, n_sigmas=3.0)
+for v in [1.0, 1.2, 0.9, 1.1, 1.0, 0.8, 1.05]:
+    s.learn_one({"v": v})
+s.is_outlier({"v": 50.0})
+```
+
+```
+True
+```
+
+Precision and recall on 5,000 seeded samples with 50 spikes of size 5–15 (1 % contamination),
+window 30 (radius 15):
+
+| Scorer | stationary noise (σ = 0.5): precision / recall | sine (amplitude 5, period 500) + same noise: precision / recall | µs per sample |
+|---|---|---|---|
+| Hampel | 0.459 / 1.000 | 0.318 / 1.000 | 90 |
+| Tukey | 0.303 / 1.000 | 0.195 / 1.000 | 75 |
+| Chauvenet | 0.282 / 0.980 | 0.167 / 1.000 | 28 |
+| SigmaClip | 0.588 / 1.000 | 0.370 / 1.000 | 72 |
+
+Every scorer catches the spikes; precision is the tuning knob. Two things lower it: a trend
+inside the window (the sine moves about 1.9 units over 30 samples, and no scorer models a local
+slope), and the short window, whose robust scale estimate fluctuates from one window to the
+next, so a 3-sigma rule fires on some ordinary noise. To raise precision, increase `n_sigmas`
+or combine the scores as [`pressure_valve`](robust_filters.md) does. At 100 Hz (10 ms per
+cycle) the cost is under 1 % of the loop budget.
+
+::: dense_armor.utility.streaming_filters
