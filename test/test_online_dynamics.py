@@ -14,8 +14,8 @@ pytest.importorskip("river")
 import jax
 import jax.numpy as jnp
 
-import dense_armor.dynamics.online_dynamics as online_dynamics  # noqa: E402
-from dense_armor.dynamics.online_dynamics import (  # noqa: E402
+import dense_armor.learn.online_dynamics as online_dynamics  # noqa: E402
+from dense_armor.learn.online_dynamics import (  # noqa: E402
     RecursiveLeastSquares, ResidualDynamicsLearner,
     DriftAwareResidualDynamicsLearner, write_minimal_urdf,
 )
@@ -102,10 +102,10 @@ def test_rls_p_symmetrised():
 
 def test_rls_missing_river_raises_clear_error(monkeypatch):
     monkeypatch.setitem(sys.modules, "river", None)
-    monkeypatch.delitem(sys.modules, "dense_armor.dynamics.online_dynamics",
+    monkeypatch.delitem(sys.modules, "dense_armor.learn.online_dynamics",
                        raising=False)
     with pytest.raises(ModuleNotFoundError, match=r"dense-armor\[river\]"):
-        importlib.import_module("dense_armor.dynamics.online_dynamics")
+        importlib.import_module("dense_armor.learn.online_dynamics")
 
 
 def test_rls_clone_pickle_repr():

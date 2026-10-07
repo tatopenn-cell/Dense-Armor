@@ -8,8 +8,8 @@ import pytest
 
 pytest.importorskip("river")
 
-import dense_armor.utility.metric_learning as ml  # noqa: E402
-from dense_armor.utility.metric_learning import (  # noqa: E402
+import dense_armor.learn.metric_learning as ml  # noqa: E402
+from dense_armor.learn.metric_learning import (  # noqa: E402
     LEGO, MetricKNNClassifier, OASIS, POLA,
 )
 
@@ -114,13 +114,13 @@ def test_docstring_examples():
 
 def test_missing_river_raises_clear_error(monkeypatch):
     monkeypatch.setitem(sys.modules, "river", None)
-    monkeypatch.delitem(sys.modules, "dense_armor.utility.metric_learning", raising=False)
+    monkeypatch.delitem(sys.modules, "dense_armor.learn.metric_learning", raising=False)
     with pytest.raises(ModuleNotFoundError, match=r"dense-armor\[river\]"):
-        importlib.import_module("dense_armor.utility.metric_learning")
+        importlib.import_module("dense_armor.learn.metric_learning")
 
 
 def test_base_class_methods_are_abstract():
-    from dense_armor.utility.metric_learning import MetricLearner
+    from dense_armor.learn.metric_learning import MetricLearner
     m = MetricLearner()
     for call in (
         lambda: m.learn_triplet({}, {}, {}),

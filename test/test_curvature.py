@@ -13,7 +13,7 @@ physically meaningful scale=15.0 -- see the function's own docstring).
 import jax.numpy as jnp
 import numpy as np
 
-from dense_armor.utility.curvature import curvature
+from dense_armor.anomaly.curvature import curvature
 
 
 def test_zero_distance_returns_zero():

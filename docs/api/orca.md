@@ -1,6 +1,6 @@
 # Orca (full model shield)
 
-::: dense_armor.utility.orca
+::: dense_armor.protect.orca
 
 ---
 

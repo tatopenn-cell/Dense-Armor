@@ -10,7 +10,7 @@ needs to detect it), then the run-length and internal coherence of consecutive d
 decides isolated impulse vs genuine regime change. Wired into
 [`Orca.protect_and_forward(..., use_arbiter=True)`](orca.md); off by default.
 
-::: dense_armor.utility.arbiter
+::: dense_armor.protect.arbiter
 
 ---
 
@@ -18,7 +18,7 @@ decides isolated impulse vs genuine regime change. Wired into
 
 ## Streaming Arbiter
 
-`StreamingArbiter` (`dense_armor.utility.streaming_arbiter`) runs the same spike / regime
+`StreamingArbiter` (`dense_armor.protect.streaming_arbiter`) runs the same spike / regime
 decision one sample at a time. A spike and the start of a regime look the same when they
 begin, so each sample gets its final label within at most `max_delay` samples, as soon as its
 run of anomalous points either returns (spike) or stays consistent (regime). With
@@ -28,7 +28,7 @@ run of anomalous points either returns (spike) or stays consistent (regime). Wit
 
 ```python
 import numpy as np
-from dense_armor.utility.streaming_arbiter import StreamingArbiter
+from dense_armor.protect.streaming_arbiter import StreamingArbiter
 
 rng = np.random.default_rng(0)
 x = list(rng.normal(0, 0.5, 200))
@@ -48,4 +48,4 @@ print(labels[120], labels[150], labels[160])
 spike regime regime
 ```
 
-::: dense_armor.utility.streaming_arbiter
+::: dense_armor.protect.streaming_arbiter

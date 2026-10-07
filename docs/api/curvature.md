@@ -6,7 +6,7 @@ between 0 (no drift) and 1 (very far). `Orca`'s input shield uses it internally
 
 ```python
 import jax.numpy as jnp
-from dense_armor.utility.curvature import curvature
+from dense_armor.anomaly.curvature import curvature
 
 x_now = jnp.array([5.0])
 x_ref = jnp.array([0.0])
@@ -27,7 +27,7 @@ score comes back closer to the middle of the range instead of near 1. Pick `scal
 the real units of `x_current`/`x_reference` -- e.g. degrees from a joint limit, meters from
 a boundary -- and how wide a "getting close" warning zone should be in those units.
 
-::: dense_armor.utility.curvature
+::: dense_armor.anomaly.curvature
 
 ---
 

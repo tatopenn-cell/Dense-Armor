@@ -7,7 +7,7 @@ between two points, for any number of joints at once.
 
 ```python
 import numpy as np
-from dense_armor.utility.trajectory import quintic_trajectory
+from dense_armor.control.trajectory import quintic_trajectory
 
 t, q, v, a = quintic_trajectory(q0=[0.0], qf=[10.0], T=2.0)
 ```
@@ -23,7 +23,7 @@ t, q, v, a = quintic_trajectory([0.0], [10.0], T=2.0, v0=[1.0], vf=[-2.0])
 Works for any number of joints in one call -- pass `q0`/`qf` as arrays and every joint gets
 its own independent polynomial over the same real time `T`.
 
-::: dense_armor.utility.trajectory
+::: dense_armor.control.trajectory
 
 ---
 

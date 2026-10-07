@@ -10,11 +10,11 @@ import pytest
 
 pytest.importorskip("river")
 
-import dense_armor.utility.online_classifiers as online_classifiers  # noqa: E402
-from dense_armor.utility.online_classifiers import (  # noqa: E402
+import dense_armor.learn.online_classifiers as online_classifiers  # noqa: E402
+from dense_armor.learn.online_classifiers import (  # noqa: E402
     OnlineGaussianNB, OnlineSoftmaxRegression, DriftAdaptiveClassifier,
 )
-from dense_armor.utility.river_drift import CUSUMDriftDetector  # noqa: E402
+from dense_armor.drift.detector import CUSUMDriftDetector  # noqa: E402
 
 
 def _batch_nb(X, y):
@@ -191,7 +191,7 @@ def test_per_sample_time():
 
 
 def test_platt_wraps_binary_gaussian_nb():
-    from dense_armor.utility.calibration import OnlinePlattScaling
+    from dense_armor.learn.calibration import OnlinePlattScaling
     base = OnlineGaussianNB(alpha=0.0)
     wrapped = OnlinePlattScaling(base)
     rng = np.random.default_rng(0)
@@ -211,10 +211,10 @@ def test_doctest():
 def test_missing_river_raises_clear_error(monkeypatch):
     monkeypatch.setitem(sys.modules, "river", None)
     monkeypatch.delitem(sys.modules,
-                       "dense_armor.utility.online_classifiers",
+                       "dense_armor.learn.online_classifiers",
                        raising=False)
     with pytest.raises(ModuleNotFoundError, match=r"dense-armor\[river\]"):
-        importlib.import_module("dense_armor.utility.online_classifiers")
+        importlib.import_module("dense_armor.learn.online_classifiers")
 
 
 def test_check_estimator():

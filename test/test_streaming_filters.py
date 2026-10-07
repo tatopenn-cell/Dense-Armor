@@ -17,8 +17,8 @@ import pytest
 
 pytest.importorskip("river")
 
-import dense_armor.utility.streaming_filters as streaming_filters  # noqa: E402
-from dense_armor.utility.streaming_filters import (  # noqa: E402
+import dense_armor.anomaly.filters as streaming_filters  # noqa: E402
+from dense_armor.anomaly.filters import (  # noqa: E402
     HampelScorer, TukeyScorer, ChauvenetScorer, SigmaClipScorer, HampelFilter,
 )
 
@@ -230,9 +230,9 @@ def test_river_check_estimator():
 def test_missing_river_raises_clear_error(monkeypatch):
     monkeypatch.setitem(sys.modules, "river", None)
     monkeypatch.delitem(sys.modules,
-                       "dense_armor.utility.streaming_filters", raising=False)
+                       "dense_armor.anomaly.filters", raising=False)
     with pytest.raises(ModuleNotFoundError, match=r"dense-armor\[river\]"):
-        importlib.import_module("dense_armor.utility.streaming_filters")
+        importlib.import_module("dense_armor.anomaly.filters")
 
 
 def _detect(cls, stream, truth, **kwargs):
@@ -300,7 +300,7 @@ def test_flat_window_scores(cls):
 
 
 def test_sigma_clip_stats_edge_cases():
-    from dense_armor.utility.streaming_filters import _clean_stats
+    from dense_armor.anomaly.filters import _clean_stats
 
     assert _clean_stats(np.array([1.0, 1.0, 1.0, 1.0]), 3.0) == (1.0, 0.0)
     mu, sigma = _clean_stats(np.array([0.0, 0.0, 0.0, 100.0]), 0.5)

@@ -11,8 +11,8 @@ pip install dense-armor[river]
 ```
 
 ```python
-from dense_armor.utility.online_classifiers import OnlineGaussianNB, DriftAdaptiveClassifier
-from dense_armor.utility.river_drift import CUSUMDriftDetector
+from dense_armor.learn.online_classifiers import OnlineGaussianNB, DriftAdaptiveClassifier
+from dense_armor.drift.detector import CUSUMDriftDetector
 
 det = CUSUMDriftDetector(reference="fixed", radius=20, ref_mult=5, two_sided=False)
 clf = DriftAdaptiveClassifier(OnlineGaussianNB(), det, window=50, smooth_window=50)
@@ -54,7 +54,7 @@ With `alpha = 0`, `OnlineGaussianNB` gives the same probabilities as a batch Gau
 fitted on the same samples (maximum difference 1.8e-15 on 500 samples). Per sample, on one CPU
 core: 10.5 µs (`OnlineGaussianNB`), 36.8 µs (`OnlineSoftmaxRegression`), 75.8 µs (wrapped NB).
 
-::: dense_armor.utility.online_classifiers
+::: dense_armor.learn.online_classifiers
 
 ---
 

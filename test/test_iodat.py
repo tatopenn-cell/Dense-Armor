@@ -4,7 +4,7 @@ import netCDF4
 import numpy as np
 import pytest
 
-from dense_armor.utility.iodat import lodat
+from dense_armor.misc.iodat import lodat
 
 
 def test_lodat_file_assente_solleva_filenotfounderror(tmp_path):

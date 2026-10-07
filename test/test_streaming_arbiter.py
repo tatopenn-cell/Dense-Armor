@@ -21,10 +21,10 @@ import doctest
 import numpy as np
 import pytest
 
-import dense_armor.utility.streaming_arbiter as streaming_arbiter
-from dense_armor.utility.arbiter import classify_segments, route_and_correct
-from dense_armor.utility.healing import healing_filter
-from dense_armor.utility.streaming_arbiter import StreamingArbiter, StreamingHealing
+import dense_armor.protect.streaming_arbiter as streaming_arbiter
+from dense_armor.protect.arbiter import classify_segments, route_and_correct
+from dense_armor.protect.healing import healing_filter
+from dense_armor.protect.streaming_arbiter import StreamingArbiter, StreamingHealing
 
 
 def _seeded_spike_signal(seed=0, n=400):

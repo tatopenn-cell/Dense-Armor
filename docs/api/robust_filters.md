@@ -6,4 +6,4 @@ centered local window (offline/batch cleanup, not the causal real-time loop
 minimum-variance estimator (derived with a Lagrange multiplier) instead of a vote, plus a
 Jensen-Shannon-modulated dynamic threshold.
 
-::: dense_armor.utility.robust_filters
+::: dense_armor.anomaly.robust_filters

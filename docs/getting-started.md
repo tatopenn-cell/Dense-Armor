@@ -42,7 +42,7 @@ python -m dense_armor --json 1.2 1.3 9999 1.25 nan 1.3
 ### Protecting a real model
 
 ```python
-from dense_armor.utility.orca import Orca
+from dense_armor.protect.orca import Orca
 
 orca = Orca()
 protected_output = orca.protect_and_forward(
@@ -87,7 +87,7 @@ pulito, K, anomalie = a.analizza(serie)
 ### Standalone robust filters
 
 ```python
-from dense_armor.utility.robust_filters import pressure_valve
+from dense_armor.anomaly.robust_filters import pressure_valve
 
 pulito, anomalie, pressione, soglia_effettiva = pressure_valve(serie)
 ```

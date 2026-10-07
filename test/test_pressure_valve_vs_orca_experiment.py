@@ -18,8 +18,8 @@ jax.config.update("jax_enable_x64", True)
 import numpy as np
 
 from dense_armor.core.hybrid_engine import hybrid_shield
-from dense_armor.utility.orca import Orca
-from dense_armor.utility.robust_filters import pressure_valve
+from dense_armor.protect.orca import Orca
+from dense_armor.anomaly.robust_filters import pressure_valve
 
 _TEST_DIR = pathlib.Path(__file__).resolve().parent
 

@@ -19,7 +19,7 @@ pip install dense-armor[river]
 ```
 
 ```python
-from dense_armor.utility.metric_learning import MetricKNNClassifier, OASIS
+from dense_armor.learn.metric_learning import MetricKNNClassifier, OASIS
 
 learner = OASIS(C=0.1)
 learner.learn_triplet({"x": 1.0}, {"x": 0.9}, {"x": 0.1})
@@ -53,7 +53,7 @@ pairs of the window after the first 30 samples, and then kept fixed.
 On ImageSegments (7 classes, 18 features) all three learned metrics beat the Euclidean k-NN by
 about 4 points; on Phishing the gains are under one point and LEGO is level with the baseline.
 
-::: dense_armor.utility.metric_learning
+::: dense_armor.learn.metric_learning
 
 ---
 

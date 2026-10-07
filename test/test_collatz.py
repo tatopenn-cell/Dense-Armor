@@ -2,7 +2,7 @@
 import numpy as np
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.collatz import ABCollatz
+from dense_armor.misc.collatz import ABCollatz
 
 
 def test_gating_range_limitato():

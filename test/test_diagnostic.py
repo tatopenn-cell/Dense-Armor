@@ -2,7 +2,7 @@
 import numpy as np
 from scipy.io import wavfile
 
-from dense_armor.utility.diagnostic import diag
+from dense_armor.misc.diagnostic import diag
 
 
 def _write_wav(path, data, sr=44100):
