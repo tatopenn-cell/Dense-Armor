@@ -207,20 +207,30 @@ as its distance and — with `learn_metric=True`, the default — trains it onli
 for OASIS, a similar / dissimilar pair for POLA, a pair with a target distance for LEGO.
 
 ```python
+import numpy as np
 from dense_armor.utility.learn.metric_learning import MetricKNNClassifier, OASIS
 
+rng = np.random.default_rng(0)
+y = rng.integers(0, 2, 400)
+X = np.c_[y + 0.3 * rng.standard_normal(400), rng.standard_normal(400)]
 knn = MetricKNNClassifier(OASIS(C=0.1), n_neighbors=1, window_size=1000)
-for i in range(len(X)):
-    knn.learn_one({"x0": float(X[i, 0]), "x1": float(X[i, 1])}, y[i])
-knn.predict_one({"x0": 0.9, "x1": 0.1})
+hits = 0
+for x, t in zip(X, y):
+    hits += knn.predict_one({"x0": x[0], "x1": x[1]}) == t
+    knn.learn_one({"x0": x[0], "x1": x[1]}, t)
+print(hits / len(y))
 ```
+
+```
+0.9375
+```
+
+Two classes that differ only in the first feature; the k-NN learns its similarity with OASIS while it
+classifies, and gets 93.75 % of the 400 samples right, each predicted before it is learned.
 
 On the running data:
 
-```python
-correct = sum(knn.predict_one({"x0": float(X[i, 0]), "x1": float(X[i, 1])}) == y[i]
-              for i in range(len(X)))
-```
+Its prequential accuracy on the same stream is the last line of the block above.
 
 ## 5. Results on river streams
 
@@ -245,16 +255,26 @@ the baseline.
 ## Details
 
 **OASIS** (Chechik, Sharma, Shalit, Bengio, 2009). W is not symmetric; the distance
-uses `M = WᵀW`. The proof of the update rule uses the Sherman–Morrison formula; the
-resulting step is exact for the passive-aggressive objective with hinge loss and a
-Frobenius regularizer on the parameter matrix.
+uses `M = WᵀW`. The similarity is the bilinear form $S_W(p_i, p_j) = p_i^	op W p_j$ (eq. 2 of the
+paper) and the update is the passive-aggressive step $W \leftarrow W + 	au V$ with
+$	au = \min(C,\; \ell_W / \lVert V
+Vert^2)$ (eq. 5): "a gradient descent step with a step size τ
+that can be computed exactly", in the paper's words.
 
 **POLA** (Shalev-Shwartz, Singer, Ng, 2004). The `1 + ‖z‖⁴` in the denominator is not a
-typo: the squared gradient of the hinge loss with respect to `A`, in Frobenius norm,
-is `‖z zᵀ‖_F² = ‖z‖⁴`. The `+ 1` is the projection-onto-PSD contribution.
+typo: the update is a projection of the pair $(A, b)$ onto a half-space, whose normal vector
+$\chi = (-y\, z z^	op,\; y)$ has squared norm $\lVert z z^	op
+Vert_F^2 + 1 = \lVert z
+Vert^4 + 1$; the
+`+ 1` comes from the threshold coordinate `b`. This gives $\alpha = \ell / (\lVert z
+Vert^4 + 1)$ and the
+update of eq. 4 of the paper; a second projection onto the positive semi-definite cone
+(section 3.2) removes negative eigenvalues.
 
 **LEGO** (Jain, Kulis, Dhillon, Grauman, 2008). The `ȳ` formula is equation (2.3) of
-the paper, solved by setting `dA/dȳ = 0` on the LogDet objective with a squared loss.
+the paper: the update (2.2) is the exact minimiser of the LogDet-regularised loss, written in
+closed form with the Sherman–Morrison formula; multiplying it on both sides by $z$ gives a
+quadratic equation in $\bar y$, whose positive root is (2.3).
 The LogDet step keeps `A` positive definite without projection: this is the difference
 between LEGO and POLA in the same online setting, and the reason LEGO has no separate
 "enforce PSD" step.

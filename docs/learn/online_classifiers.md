@@ -21,34 +21,10 @@ samples), 4 joint features with unit noise:
 From sample 3000 the contact load **moves to the other two joints**: contact becomes
 `(0, 0, 2, 2)`. The classifier was trained on the old signature.
 
-```python
-import numpy as np
-rng = np.random.default_rng(42)
-
-state_means = {
-    "free":      np.array([0, 0, 0, 0], dtype=float),
-    "contact":   np.array([2, 2, 0, 0], dtype=float),
-    "collision": np.array([4, 4, 4, 4], dtype=float),
-}
-states = ["free", "contact", "collision"]
-p_stay = 0.95
-n = 6000
-y = np.empty(n, dtype=object)
-s = "free"
-for i in range(n):
-    if rng.random() > p_stay:
-        s = rng.choice(states)
-    y[i] = s
-    if i >= 3000 and s == "contact":
-        y[i] = "contact"
-X = np.zeros((n, 4))
-for i in range(n):
-    if y[i] == "contact" and i >= 3000:
-        mean = np.array([0.0, 0.0, 2.0, 2.0])
-    else:
-        mean = state_means[y[i]]
-    X[i] = mean + rng.standard_normal(4)
-```
+The stream: three states (0 free, 1 contact, 2 collision) that change like a Markov chain
+(stay with probability 0.95, mean stay 20 samples); four joint features with mean (0,0,0,0),
+(2,2,0,0), (4,4,4,4) and unit noise; from sample 3000 the contact load moves to the other two
+joints, (0,0,2,2). Every block below builds it in its first lines.
 
 ## 1. Gaussian naive Bayes, one sample at a time
 
@@ -86,13 +62,27 @@ old counts are multiplied by `(1 − α)` before the new sample is added, so the
 adapts when the class-conditional distributions change.
 
 ```python
+import numpy as np
 from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
 
-clf = OnlineGaussianNB(alpha=0.0)
-for i in range(n):
-    features = {f"j{k}": float(X[i, k]) for k in range(4)}
-    clf.learn_one(features, y[i])
+rng = np.random.default_rng(42)
+s = np.zeros(6000, int)
+for t in range(1, 6000):
+    s[t] = s[t - 1] if rng.random() < 0.95 else (s[t - 1] + rng.integers(1, 3)) % 3
+mu = np.array([[0, 0, 0, 0], [2, 2, 0, 0], [4, 4, 4, 4]], float)
+X = mu[s] + rng.standard_normal((6000, 4))
+X[3000:][s[3000:] == 1] += [-2, -2, 2, 2]
+clf, hit = OnlineGaussianNB(), []
+for x, y in zip(X, s):
+    f = dict(zip("abcd", x)); hit.append(clf.predict_one(f) == y); clf.learn_one(f, y)
+print(np.mean(hit[500:3000]).round(3), np.mean(hit[3000:3200]).round(3), np.mean(hit[5000:5900]).round(3))
 ```
+
+```
+0.952 0.48 0.879
+```
+
+Prequential accuracy (predict first, then learn) before the change, right after it, and late.
 
 ## 2. What happens when the signature changes
 
@@ -139,15 +129,26 @@ fires on almost every error — hundreds of alarms in 6,000 samples. The rolling
 gives the detector a stable scale.
 
 ```python
+import numpy as np
 from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB, DriftAdaptiveClassifier
 from dense_armor.utility.drift.detector import CUSUMDriftDetector
 
+rng = np.random.default_rng(42)
+s = np.zeros(6000, int)
+for t in range(1, 6000):
+    s[t] = s[t - 1] if rng.random() < 0.95 else (s[t - 1] + rng.integers(1, 3)) % 3
+mu = np.array([[0, 0, 0, 0], [2, 2, 0, 0], [4, 4, 4, 4]], float)
+X = mu[s] + rng.standard_normal((6000, 4))
+X[3000:][s[3000:] == 1] += [-2, -2, 2, 2]
 det = CUSUMDriftDetector(reference="fixed", radius=20, ref_mult=5, two_sided=False)
-clf = DriftAdaptiveClassifier(OnlineGaussianNB(), det, window=50, smooth_window=50)
-for i in range(n):
-    features = {f"j{k}": float(X[i, k]) for k in range(4)}
-    pred = clf.predict_one(features)
-    clf.learn_one(features, y[i])
+clf, hit = DriftAdaptiveClassifier(OnlineGaussianNB(), det, window=50, smooth_window=50), []
+for x, y in zip(X, s):
+    f = dict(zip("abcd", x)); hit.append(clf.predict_one(f) == y); clf.learn_one(f, y)
+print(np.mean(hit[500:3000]).round(3), np.mean(hit[3000:3200]).round(3), np.mean(hit[5000:5900]).round(3))
+```
+
+```
+0.952 0.48 0.931
 ```
 
 On the running data the wrapper leaves its pre-drift accuracy untouched (0.952), fires
