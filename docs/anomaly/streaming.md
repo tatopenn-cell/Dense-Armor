@@ -39,7 +39,7 @@ score is `z = |30 − 10| / 1.4826 = 13.49`. The window is quiet (MAD = 1) and t
 sample is 20 units away: the detector says "far".
 
 ```python
-from dense_armor.anomaly.streaming import StreamingDeviationDetector
+from dense_armor.utility.anomaly.streaming import StreamingDeviationDetector
 
 det = StreamingDeviationDetector(radius=5, ref_mult=3)
 for x in v[:200]:
@@ -82,7 +82,7 @@ scored). Only Hampel is shown here; the other three are in Details.
 case above, `20 > 3 × 1.4826 = 4.4478`, so the sample is flagged.
 
 ```python
-from dense_armor.anomaly.filters import HampelScorer
+from dense_armor.utility.anomaly.filters import HampelScorer
 
 s = HampelScorer(radius=15, n_sigmas=3.0)
 for x in v[:200]:
@@ -103,7 +103,7 @@ detectors. `MultiChannelStreamingDeviationDetector` runs one detector per channe
 returns a per-channel verdict on each sample.
 
 ```python
-from dense_armor.anomaly.streaming import MultiChannelStreamingDeviationDetector
+from dense_armor.utility.anomaly.streaming import MultiChannelStreamingDeviationDetector
 
 det = MultiChannelStreamingDeviationDetector(n_channels=6, radius=5, ref_mult=3)
 for qd in qd_stream:
@@ -124,7 +124,7 @@ its Mahalanobis distance from them.
 
 ```python
 import numpy as np
-from dense_armor.anomaly.mahalanobis import OnlineRobustMahalanobis
+from dense_armor.utility.anomaly.mahalanobis import OnlineRobustMahalanobis
 
 m = OnlineRobustMahalanobis(feature_keys=["j0", "j1"])
 for qd in two_joint_stream:
@@ -170,7 +170,7 @@ Flag when the value is outside. On the hand case window above, sorted
 `[8.5, 12.5]`, and the new sample 30 is outside.
 
 ```python
-from dense_armor.anomaly.filters import TukeyScorer
+from dense_armor.utility.anomaly.filters import TukeyScorer
 
 s = TukeyScorer(radius=15)
 for x in v[:200]:
@@ -187,7 +187,7 @@ case window, `mean = 10.222`, `std = 0.916`, `z = 21.59`, `N = 10`,
 returns `N · P`, so use `is_outlier`, or threshold `score < 0.5`.
 
 ```python
-from dense_armor.anomaly.filters import ChauvenetScorer
+from dense_armor.utility.anomaly.filters import ChauvenetScorer
 
 s = ChauvenetScorer(radius=15)
 for x in v[:200]:
@@ -201,7 +201,7 @@ Iteratively removes points beyond `n_sigmas`, recomputes mean and std, until sta
 `max_iters`; then scores `|x − mean_clean| / std_clean`.
 
 ```python
-from dense_armor.anomaly.filters import SigmaClipScorer
+from dense_armor.utility.anomaly.filters import SigmaClipScorer
 
 s = SigmaClipScorer(radius=15, n_sigmas=3.0)
 for x in v[:200]:
@@ -211,13 +211,13 @@ s.is_outlier({"v": 30.0})
 
 ### River-compatible scorer
 
-`StreamingDeviationScorer` (`dense_armor.anomaly.deviation`,
+`StreamingDeviationScorer` (`dense_armor.utility.anomaly.deviation`,
 `pip install dense-armor[river]`) exposes the same causal deviation as a river anomaly
 detector: `score_one` returns `|x − med| / S` on the window learned so far, `learn_one`
 adds the value. A score above `n_sigmas` is exactly a `StreamingDeviationDetector` flag.
 
 ```python
-from dense_armor.anomaly.deviation import StreamingDeviationScorer
+from dense_armor.utility.anomaly.deviation import StreamingDeviationScorer
 
 model = StreamingDeviationScorer(radius=5, ref_mult=2)
 for x in v[:200]:

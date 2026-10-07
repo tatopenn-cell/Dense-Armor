@@ -2,6 +2,10 @@
 Author: Salvatore Pennacchio (Napoli, 2026). Sister project: Dense-Evolution."""
 import logging
 
+from . import _compat
+
+_compat.install()
+
 from .armatura import Armatura
 
 __version__ = "1.1.22"

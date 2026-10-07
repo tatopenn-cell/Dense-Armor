@@ -7,7 +7,7 @@ causale real-time di core/hybrid_engine.py).
 import numpy as np
 import pytest
 
-from dense_armor.anomaly.robust_filters import (
+from dense_armor.utility.anomaly.robust_filters import (
     chauvenet_criterion, tukey_fences, hampel_filter, sigma_clip, pressure_valve,
 )
 

@@ -23,7 +23,7 @@ jax.config.update("jax_enable_x64", True)
 import jax.numpy as jnp
 import numpy as np
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.learn.online_dynamics import ResidualDynamicsLearner
+from dense_armor.utility.learn.online_dynamics import ResidualDynamicsLearner
 
 model = RigidBodyModel("panda.urdf")
 model.mass_matrix = jax.jit(model.mass_matrix)
@@ -144,7 +144,7 @@ react quickly to a real change without paying the noise cost of a permanently sm
 `λ`.
 
 ```python
-from dense_armor.learn.online_dynamics import DriftAwareResidualDynamicsLearner
+from dense_armor.utility.learn.online_dynamics import DriftAwareResidualDynamicsLearner
 
 learner = DriftAwareResidualDynamicsLearner(model, lam=0.99)
 ```
@@ -194,7 +194,7 @@ RLS update itself.
 
 ## API reference
 
-::: dense_armor.dynamics.online_dynamics
+::: dense_armor.utility.learn.online_dynamics
 
 ---
 

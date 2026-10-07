@@ -8,8 +8,8 @@ import pytest
 
 pytest.importorskip("river")
 
-from dense_armor.drift.cusum import cusum_detector
-from dense_armor.drift.detector import CUSUMDriftDetector
+from dense_armor.utility.drift.cusum import cusum_detector
+from dense_armor.utility.drift.detector import CUSUMDriftDetector
 
 
 def test_equivalence_with_batch_adaptive():
@@ -76,6 +76,6 @@ def test_clone_and_pickle_keep_parameters():
 
 def test_missing_river_raises_clear_error(monkeypatch):
     monkeypatch.setitem(sys.modules, "river", None)
-    monkeypatch.delitem(sys.modules, "dense_armor.drift.detector", raising=False)
+    monkeypatch.delitem(sys.modules, "dense_armor.utility.drift.detector", raising=False)
     with pytest.raises(ModuleNotFoundError, match=r"dense-armor\[river\]"):
-        importlib.import_module("dense_armor.drift.detector")
+        importlib.import_module("dense_armor.utility.drift.detector")

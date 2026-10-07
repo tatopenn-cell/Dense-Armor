@@ -30,7 +30,7 @@ also drifted slightly ahead on joint 2. The reference is moving at about 0.2 rad
 ## 1. Compute the command
 
 ```python
-from dense_armor.control.kinematic_controller import kinematic_tracking_controller
+from dense_armor.utility.control.kinematic_controller import kinematic_tracking_controller
 
 u_des = kinematic_tracking_controller(q=q_actual, q_ref=q_ref, qd_ref=qd_ref, kp=kp)
 ```
@@ -126,7 +126,7 @@ tracking error and converges.
 
 ## API reference
 
-::: dense_armor.control.kinematic_controller
+::: dense_armor.utility.control.kinematic_controller
 
 ---
 

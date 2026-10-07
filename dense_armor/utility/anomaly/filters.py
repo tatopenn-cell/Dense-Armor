@@ -36,7 +36,7 @@ try:
     from river import base
 except ModuleNotFoundError as exc:
     raise ModuleNotFoundError(
-        "dense_armor.anomaly.filters needs river: pip install dense-armor[river]"
+        "dense_armor.utility.anomaly.filters needs river: pip install dense-armor[river]"
     ) from exc
 
 
@@ -95,7 +95,7 @@ class HampelScorer(base.AnomalyDetector):
 
     Examples
     --------
-    >>> from dense_armor.anomaly.filters import HampelScorer
+    >>> from dense_armor.utility.anomaly.filters import HampelScorer
     >>> import numpy as np
     >>> rng = np.random.default_rng(0)
     >>> s = HampelScorer(radius=5, n_sigmas=3.0)
@@ -174,7 +174,7 @@ class TukeyScorer(base.AnomalyDetector):
 
     Examples
     --------
-    >>> from dense_armor.anomaly.filters import TukeyScorer
+    >>> from dense_armor.utility.anomaly.filters import TukeyScorer
     >>> import numpy as np
     >>> rng = np.random.default_rng(0)
     >>> s = TukeyScorer(radius=5)
@@ -265,7 +265,7 @@ class ChauvenetScorer(base.AnomalyDetector):
 
     Examples
     --------
-    >>> from dense_armor.anomaly.filters import ChauvenetScorer
+    >>> from dense_armor.utility.anomaly.filters import ChauvenetScorer
     >>> import numpy as np
     >>> rng = np.random.default_rng(0)
     >>> s = ChauvenetScorer(radius=10)
@@ -344,7 +344,7 @@ class SigmaClipScorer(base.AnomalyDetector):
 
     Examples
     --------
-    >>> from dense_armor.anomaly.filters import SigmaClipScorer
+    >>> from dense_armor.utility.anomaly.filters import SigmaClipScorer
     >>> import numpy as np
     >>> rng = np.random.default_rng(0)
     >>> s = SigmaClipScorer(radius=10, n_sigmas=3.0)
@@ -416,7 +416,7 @@ class HampelFilter(base.Transformer):
 
     Examples
     --------
-    >>> from dense_armor.anomaly.filters import HampelFilter
+    >>> from dense_armor.utility.anomaly.filters import HampelFilter
     >>> import numpy as np
     >>> rng = np.random.default_rng(0)
     >>> f = HampelFilter(radius=5)

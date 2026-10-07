@@ -14,7 +14,7 @@ try:
     from river import base
 except ModuleNotFoundError as exc:
     raise ModuleNotFoundError(
-        "dense_armor.learn.metric_learning needs river: pip install dense-armor[river]"
+        "dense_armor.utility.learn.metric_learning needs river: pip install dense-armor[river]"
     ) from exc
 
 
@@ -77,7 +77,7 @@ class OASIS(MetricLearner):
 
     Examples
     --------
-    >>> from dense_armor.learn.metric_learning import OASIS
+    >>> from dense_armor.utility.learn.metric_learning import OASIS
     >>> oasis = OASIS(C=0.1)
     >>> x     = {"a": 1.0, "b": 0.0}
     >>> x_pos = {"a": 0.9, "b": 0.1}
@@ -139,7 +139,7 @@ class LEGO(MetricLearner):
 
     Examples
     --------
-    >>> from dense_armor.learn.metric_learning import LEGO
+    >>> from dense_armor.utility.learn.metric_learning import LEGO
     >>> lego = LEGO(eta=0.1)
     >>> u = {"a": 1.0, "b": 0.0}
     >>> v = {"a": 0.0, "b": 1.0}
@@ -213,7 +213,7 @@ class POLA(MetricLearner):
 
     Examples
     --------
-    >>> from dense_armor.learn.metric_learning import POLA
+    >>> from dense_armor.utility.learn.metric_learning import POLA
     >>> pola = POLA()
     >>> a = {"x": 0.0}
     >>> b = {"x": 1.0}
@@ -296,7 +296,7 @@ class MetricKNNClassifier(base.Classifier):
 
     Examples
     --------
-    >>> from dense_armor.learn.metric_learning import MetricKNNClassifier, OASIS
+    >>> from dense_armor.utility.learn.metric_learning import MetricKNNClassifier, OASIS
     >>> knn = MetricKNNClassifier(OASIS(C=1e6), n_neighbors=1, learn_metric=False)
     >>> _ = knn.learn_one({"x": 1.0}, "A")
     >>> _ = knn.learn_one({"x": 0.0}, "B")

@@ -59,7 +59,7 @@ sensor briefly went haywire and came back".
 ## 2. Classify the whole series
 
 ```python
-from dense_armor.protect.arbiter import classify_segments
+from dense_armor.utility.protect.arbiter import classify_segments
 
 labels = classify_segments(v, radius=20, ref_mult=3, n_sigmas=3.0,
                            spike_run_max=2)
@@ -76,7 +76,7 @@ On the running example:
 ## 3. Route the labels
 
 ```python
-from dense_armor.protect.arbiter import route_and_correct
+from dense_armor.utility.protect.arbiter import route_and_correct
 
 corrected, labels, dev = route_and_correct(v, radius=20, ref_mult=3)
 ```
@@ -108,7 +108,7 @@ scenarios `test/testKalman.py` uses: never worse than the default (no Arbiter), 
 on 5 of 7.
 
 ```python
-from dense_armor.protect.orca import Orca
+from dense_armor.utility.protect.orca import Orca
 
 orca = Orca()
 protected = orca.protect_and_forward(my_model, corrupted, use_arbiter=True)
@@ -124,7 +124,7 @@ answer with a bounded delay: each sample's final label is committed at most `max
 samples after it arrives, once the run has closed and enough context is available.
 
 ```python
-from dense_armor.protect.streaming_arbiter import StreamingArbiter
+from dense_armor.utility.protect.streaming_arbiter import StreamingArbiter
 
 arb = StreamingArbiter(radius=20, ref_mult=3, max_delay=40)
 labels = {}
@@ -146,13 +146,13 @@ Smaller `max_delay` trades exactness for latency: labels near run boundaries may
 ## 7. StreamingHealing
 
 `StreamingHealing` is the same bounded-delay idea applied to the healing filter
-(`dense_armor.protect.healing.healing_filter`): a point is judged against a wide local
+(`dense_armor.utility.protect.healing.healing_filter`): a point is judged against a wide local
 baseline and replaced when the deviation is not shared by the majority of a narrow
 window of neighbours. Each sample gets its corrected value as soon as the wide symmetric
 window around it is fully available.
 
 ```python
-from dense_armor.protect.streaming_arbiter import StreamingHealing
+from dense_armor.utility.protect.streaming_arbiter import StreamingHealing
 
 sh = StreamingHealing(radius=2, wide_mult=3, max_delay=30)
 out = []
@@ -182,9 +182,9 @@ replaced by the pre-run median (10).
 
 ## API reference
 
-::: dense_armor.protect.arbiter
+::: dense_armor.utility.protect.arbiter
 
-::: dense_armor.protect.streaming_arbiter
+::: dense_armor.utility.protect.streaming_arbiter
 
 ---
 

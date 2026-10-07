@@ -9,7 +9,7 @@ docstring for the real numbers).
 """
 import numpy as np
 
-from dense_armor.control.trajectory import quintic_trajectory
+from dense_armor.utility.control.trajectory import quintic_trajectory
 
 
 def test_boundary_conditions_satisfied_exactly():

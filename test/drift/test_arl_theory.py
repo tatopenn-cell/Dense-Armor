@@ -9,7 +9,7 @@ one_sided_arl, two_sided_arl, detectability_report (utility/cusum.py).
 import numpy as np
 import pytest
 
-from dense_armor.drift.cusum import one_sided_arl, two_sided_arl, detectability_report
+from dense_armor.utility.drift.cusum import one_sided_arl, two_sided_arl, detectability_report
 
 
 def test_one_sided_arl_matches_known_monte_carlo_value():

@@ -10,11 +10,11 @@ try:
     from river import base
 except ModuleNotFoundError as exc:
     raise ModuleNotFoundError(
-        "dense_armor.anomaly.deviation needs river: pip install dense-armor[river]"
+        "dense_armor.utility.anomaly.deviation needs river: pip install dense-armor[river]"
     ) from exc
 
-from dense_armor.protect.arbiter import _robust_center_scale
-from dense_armor.anomaly.streaming import StreamingDeviationDetector
+from dense_armor.utility.protect.arbiter import _robust_center_scale
+from dense_armor.utility.anomaly.streaming import StreamingDeviationDetector
 
 
 class StreamingDeviationScorer(base.AnomalyDetector):
@@ -41,7 +41,7 @@ class StreamingDeviationScorer(base.AnomalyDetector):
 
     Examples
     --------
-    >>> from dense_armor.anomaly.deviation import StreamingDeviationScorer
+    >>> from dense_armor.utility.anomaly.deviation import StreamingDeviationScorer
     >>> model = StreamingDeviationScorer(radius=5, ref_mult=2)
     >>> for v in [1.0, 1.2, 0.9, 1.1, 1.0, 0.8, 1.05]:
     ...     model.learn_one({"v": v})

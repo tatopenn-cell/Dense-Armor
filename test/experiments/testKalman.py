@@ -24,7 +24,7 @@ import numpy as np
 import jax
 jax.config.update("jax_enable_x64", True)
 
-from dense_armor.protect.orca import Orca
+from dense_armor.utility.protect.orca import Orca
 from filterpy.kalman import KalmanFilter
 
 np.random.seed(42)

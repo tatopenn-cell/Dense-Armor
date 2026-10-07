@@ -17,7 +17,7 @@ import numpy as np
 import jax
 jax.config.update("jax_enable_x64", True)
 
-from dense_armor.protect.orca import Orca
+from dense_armor.utility.protect.orca import Orca
 
 from testKalman import genera_scenari, kalman_1d, modello_a_valle, X_CLEAN, N
 from algoritmi_essenziali import damping_essenziale, abcollatz_essenziale, combinato_essenziale

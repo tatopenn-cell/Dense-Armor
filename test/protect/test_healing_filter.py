@@ -26,7 +26,7 @@ conteggio vittorie (deterministico, riprodotto esattamente) come criterio
 primario, non un rapporto statistico che fallirebbe anche sul caso corretto.
 """
 import numpy as np
-from dense_armor.protect.healing import healing_filter
+from dense_armor.utility.protect.healing import healing_filter
 
 N = 200
 

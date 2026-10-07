@@ -9,7 +9,7 @@ cusum.py as ready to be public library surface.
 """
 import numpy as np
 
-from dense_armor.drift.cusum import cusum_detector
+from dense_armor.utility.drift.cusum import cusum_detector
 
 
 def test_pure_noise_has_low_alert_rate():

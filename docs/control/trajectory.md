@@ -31,7 +31,7 @@ acceleration.
 ## 1. Generate the trajectory
 
 ```python
-from dense_armor.control.trajectory import quintic_trajectory
+from dense_armor.utility.control.trajectory import quintic_trajectory
 
 t, q, v, a = quintic_trajectory(q0=q0, qf=qf, T=T)
 ```
@@ -101,9 +101,9 @@ velocity level.
 The output is the reference. Two standard consumers:
 
 ```python
-from dense_armor.control.kinematic_controller import kinematic_tracking_controller
-from dense_armor.control.rate_limiter import rate_limited_follower
-from dense_armor.control.cbf_filter import cbf_safety_filter
+from dense_armor.utility.control.kinematic_controller import kinematic_tracking_controller
+from dense_armor.utility.control.rate_limiter import rate_limited_follower
+from dense_armor.utility.control.cbf_filter import cbf_safety_filter
 
 dt = t[1] - t[0]
 qa = q0.copy()
@@ -118,7 +118,7 @@ safe in speed and space.
 
 ## API reference
 
-::: dense_armor.control.trajectory
+::: dense_armor.utility.control.trajectory
 
 ---
 

@@ -16,7 +16,7 @@ diversa (fattore 0.1x-20x) apposta per far emergere quella contaminazione se
 mai tornasse."""
 import numpy as np
 
-from dense_armor.protect.orca import Orca
+from dense_armor.utility.protect.orca import Orca
 
 
 def _batch_scale_diversa(seed: int, B: int, F: int):

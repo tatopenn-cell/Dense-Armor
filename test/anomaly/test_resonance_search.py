@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import dense_armor.anomaly.resonance_search as resonance_search
-from dense_armor.anomaly.resonance_search import smoke_test, apply_fast_resonance
+import dense_armor.utility.anomaly.resonance_search as resonance_search
+from dense_armor.utility.anomaly.resonance_search import smoke_test, apply_fast_resonance
 import numpy as np
 
 

@@ -87,7 +87,7 @@ python -m dense_armor --json 1.2 1.3 9999 1.25 nan 1.3
 Connected to a real model:
 
 ```python
-from dense_armor.protect.orca import Orca
+from dense_armor.utility.protect.orca import Orca
 
 orca = Orca()
 protected_output = orca.protect_and_forward(
@@ -156,10 +156,10 @@ Verified on the 7 scenarios of `test/testKalman.py` (`test/test_arbiter_orca_int
 
 ## `$ streaming --realtime`
 
-A real robot runs at 30-100Hz and cannot wait for an already-recorded array. `StreamingDeviationDetector` (`dense_armor.anomaly.streaming`) brings to zero latency only the causal half of `classify_segments` — the per-point deviation flag, not the final spike/regime label, which requires looking ahead in the sequence and remains a batch question by design:
+A real robot runs at 30-100Hz and cannot wait for an already-recorded array. `StreamingDeviationDetector` (`dense_armor.utility.anomaly.streaming`) brings to zero latency only the causal half of `classify_segments` — the per-point deviation flag, not the final spike/regime label, which requires looking ahead in the sequence and remains a batch question by design:
 
 ```python
-from dense_armor.anomaly.streaming import StreamingDeviationDetector
+from dense_armor.utility.anomaly.streaming import StreamingDeviationDetector
 
 det = StreamingDeviationDetector(radius=10, ref_mult=3, n_sigmas=3.0)
 for x in sensor_stream:
@@ -172,10 +172,10 @@ for x in sensor_stream:
 
 ## `$ cusum --detectability`
 
-A drift too slow to exceed, point by point, the instantaneous threshold of `classify_segments` escapes Arbiter by design. `cusum_detector` (`dense_armor.drift.cusum`) accumulates small deviations over time instead of judging each point in isolation:
+A drift too slow to exceed, point by point, the instantaneous threshold of `classify_segments` escapes Arbiter by design. `cusum_detector` (`dense_armor.utility.drift.cusum`) accumulates small deviations over time instead of judging each point in isolation:
 
 ```python
-from dense_armor.drift.cusum import cusum_detector, detectability_report
+from dense_armor.utility.drift.cusum import cusum_detector, detectability_report
 
 flagged, cusum = cusum_detector(x, radius=10, ref_mult=3, k=0.5, h=20.0)
 
@@ -187,10 +187,10 @@ report = detectability_report(local_noise_scale=local_mad, k=0.5, h=5.0, candida
 
 ## `$ calibration --platt`
 
-`OnlinePlattScaling` (`dense_armor.learn.calibration`, `pip install dense-armor[river]`) wraps any river classifier and recalibrates its probabilities one sample at a time, following Algorithm 1 of Gupta and Ramdas (ICML 2023, arXiv:2305.00070):
+`OnlinePlattScaling` (`dense_armor.utility.learn.calibration`, `pip install dense-armor[river]`) wraps any river classifier and recalibrates its probabilities one sample at a time, following Algorithm 1 of Gupta and Ramdas (ICML 2023, arXiv:2305.00070):
 
 ```python
-from dense_armor.learn.calibration import OnlinePlattScaling
+from dense_armor.utility.learn.calibration import OnlinePlattScaling
 
 model = OnlinePlattScaling(tree.HoeffdingTreeClassifier())
 ```
@@ -199,10 +199,10 @@ On Phishing the log-loss of a Hoeffding tree drops from 0.4535 to 0.3502. Full d
 
 ## `$ metric_learning --knn`
 
-`dense_armor.learn.metric_learning` (`pip install dense-armor[river]`) learns a k-NN distance online with OASIS, LEGO or POLA, ported from their papers, and plugs it into river through `MetricKNNClassifier`:
+`dense_armor.utility.learn.metric_learning` (`pip install dense-armor[river]`) learns a k-NN distance online with OASIS, LEGO or POLA, ported from their papers, and plugs it into river through `MetricKNNClassifier`:
 
 ```python
-from dense_armor.learn.metric_learning import MetricKNNClassifier, POLA
+from dense_armor.utility.learn.metric_learning import MetricKNNClassifier, POLA
 
 model = MetricKNNClassifier(POLA(), n_neighbors=5)
 ```
@@ -211,10 +211,10 @@ Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/lea
 
 ## `$ rate_limiter --damping`
 
-A robotic arm cannot execute an unlimited instantaneous jump without risk -- `rate_limited_follower` (`dense_armor.control.rate_limiter`) limits how fast an applied command can physically change (velocity + acceleration), instead of trying to classify whether a deviation is real:
+A robotic arm cannot execute an unlimited instantaneous jump without risk -- `rate_limited_follower` (`dense_armor.utility.control.rate_limiter`) limits how fast an applied command can physically change (velocity + acceleration), instead of trying to classify whether a deviation is real:
 
 ```python
-from dense_armor.control.rate_limiter import rate_limited_follower
+from dense_armor.utility.control.rate_limiter import rate_limited_follower
 
 applied = rate_limited_follower(raw_command, max_vel=2.0, max_accel=1.0)
 ```
@@ -226,7 +226,7 @@ Based on Berscheid & Kroger (2021), "Jerk-limited Real-time Trajectory Generatio
 A command that moves at a perfectly safe speed but straight toward an obstacle remains dangerous — `rate_limiter` limits HOW FAST, `cbf_filter` limits WHERE:
 
 ```python
-from dense_armor.control.cbf_filter import cbf_filtered_trajectory
+from dense_armor.utility.control.cbf_filter import cbf_filtered_trajectory
 
 applied = cbf_filtered_trajectory(raw_command, obstacle=5.0, safe_dist=2.0, alpha_gain=2.0)
 ```
@@ -238,7 +238,7 @@ Based on Ames et al. (2019), "Control Barrier Functions: Theory and Applications
 `rate_limiter` limits HOW FAST, `cbf_filter` limits WHERE — but neither generates a reference to follow. `quintic_trajectory` covers exactly this: a smooth, minimum-jerk path between two points, for any number of joints in a single call:
 
 ```python
-from dense_armor.control.trajectory import quintic_trajectory
+from dense_armor.utility.control.trajectory import quintic_trajectory
 
 t, q, v, a = quintic_trajectory(q0=[0.0], qf=[10.0], T=2.0)
 ```
@@ -250,7 +250,7 @@ Deliberately reduced compared to two real papers that propose much larger optimi
 `trajectory` generates a smooth reference, but something must turn it into a real command — `kinematic_tracking_controller` does this, at the same single-integrator scale as `rate_limiter`/`cbf_filter`:
 
 ```python
-from dense_armor.control.kinematic_controller import kinematic_tracking_controller
+from dense_armor.utility.control.kinematic_controller import kinematic_tracking_controller
 
 u_des = kinematic_tracking_controller(q=[0.2], q_ref=[0.5], qd_ref=[1.0], kp=5.0)
 ```
@@ -349,10 +349,10 @@ It intentionally lives under `dense_armor.mcp_server`, not a simple `mcp_server`
 
 ## `$ robust_filters --standalone`
 
-Four classic anomaly detectors (`dense_armor.anomaly.robust_filters`), independent of `Armatura`/`Orca` — no dynamic model, no state, only arithmetic on a centered local window (intended for offline/batch cleaning, not the real-time causal loop; also suitable for a future embedded port, where one will not be able to rely on numpy):
+Four classic anomaly detectors (`dense_armor.utility.anomaly.robust_filters`), independent of `Armatura`/`Orca` — no dynamic model, no state, only arithmetic on a centered local window (intended for offline/batch cleaning, not the real-time causal loop; also suitable for a future embedded port, where one will not be able to rely on numpy):
 
 ```python
-from dense_armor.anomaly.robust_filters import pressure_valve
+from dense_armor.utility.anomaly.robust_filters import pressure_valve
 
 clean, anomalies, pressure, effective_threshold = pressure_valve(series)
 ```
@@ -397,8 +397,8 @@ Under `core/`/`utility/` there is also a second part of the package, largely ind
 
 - `anwav(fpath)` — analyzes a WAV file: peak, RMS, estimated loudness (LUFS), crest factor, with a compliance verdict.
 - `diag(iorig, ifilt)` — differential comparison between two audio signals (file paths or NumPy arrays): structural fidelity, removed energy, distortion peak.
-- `lodat(fpath, dname)` (`dense_armor.misc.iodat`) — reads a tensor from an HDF5 or NetCDF file.
-- `apply_fast_resonance(matrix, query)` (`dense_armor.anomaly.resonance_search`) — cosine similarity score between a query and the rows of a matrix, modulated by `apply_damping_blend` (the same operator used by Orca). Also used by `Orca` in blind mode to recall a similar clean reference already seen in the past (see `$ internals` above).
+- `lodat(fpath, dname)` (`dense_armor.utility.misc.iodat`) — reads a tensor from an HDF5 or NetCDF file.
+- `apply_fast_resonance(matrix, query)` (`dense_armor.utility.anomaly.resonance_search`) — cosine similarity score between a query and the rows of a matrix, modulated by `apply_damping_blend` (the same operator used by Orca). Also used by `Orca` in blind mode to recall a similar clean reference already seen in the past (see `$ internals` above).
 
 Each tested individually (`test/test_chunk.py`, `test_compiler.py`, `test_memory.py`, `test_preset.py`, `test_tensor.py`, `test_noise.py`, `test_vector.py`, `test_profiler.py`, `test_visualizer.py`, `test_logger.py`, `test_anwav.py`, `test_diagnostic.py`, `test_iodat.py`, `test_resonance_search.py`). Requires `pip install "dense-armor[audio,data]"` for `anwav`/`diagnostic` (scipy) and `iodat` (h5py/netCDF4).
 
@@ -406,8 +406,8 @@ Each tested individually (`test/test_chunk.py`, `test_compiler.py`, `test_memory
 from dense_armor.core import DynamicAICodegen, UniversalMemoryGuard, TensorVault, AIHardwareProfiler
 from dense_armor.core.chunk import ImageChunker
 from dense_armor.core.preset import SIGNAL_STABILIZER_PRESETS
-from dense_armor.misc.anwav import anwav
-from dense_armor.misc.iodat import lodat
+from dense_armor.utility.misc.anwav import anwav
+from dense_armor.utility.misc.iodat import lodat
 ```
 
 ---

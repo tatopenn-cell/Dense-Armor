@@ -28,7 +28,7 @@ a wall.
 ## 1. Apply the filter
 
 ```python
-from dense_armor.control.cbf_filter import cbf_safety_filter
+from dense_armor.utility.control.cbf_filter import cbf_safety_filter
 
 u = cbf_safety_filter(x, u_des, obstacle=0.5, safe_dist=0.1)
 ```
@@ -134,7 +134,7 @@ For a live ROS2 or Ignition loop that reacts to one sensor callback at a time,
 of filtering a whole pre-recorded array off-line.
 
 ```python
-from dense_armor.control.cbf_filter import cbf_safety_filter_live
+from dense_armor.utility.control.cbf_filter import cbf_safety_filter_live
 
 u = cbf_safety_filter_live(x, u_des, dt=0.01, obstacle=0.5, safe_dist=0.1)
 ```
@@ -160,7 +160,7 @@ scene from raw pixels, SAFER-Splat is the right tool. They are not redundant.
 
 ## API reference
 
-::: dense_armor.control.cbf_filter
+::: dense_armor.utility.control.cbf_filter
 
 ---
 
