@@ -76,3 +76,27 @@ or combine the scores as [`pressure_valve`](robust_filters.md) does. At 100 Hz (
 cycle) the cost is under 1 % of the loop budget.
 
 ::: dense_armor.utility.streaming_filters
+
+## Multichannel: online robust Mahalanobis distance
+
+`OnlineRobustMahalanobis` (`dense_armor.utility.streaming_mahalanobis`) scores several
+channels together: it tracks the geometric median and the median covariance online
+(Guillot, Godichon-Baggioni, Robin & Sansonnet, arXiv:2601.03957) and scores each sample by
+its Mahalanobis distance from them, so a fault that shows up as an unusual combination of
+channels is caught even when each channel alone looks normal.
+
+```python
+import numpy as np
+from dense_armor.utility.streaming_mahalanobis import OnlineRobustMahalanobis
+
+m = OnlineRobustMahalanobis(feature_keys=["a", "b"])
+for v in np.random.default_rng(1).normal(0, 1, (300, 2)):
+    m.learn_one({"a": float(v[0]), "b": float(v[1])})
+print(m.is_outlier({"a": 40.0, "b": -40.0}), m.is_outlier({"a": 0.0, "b": 0.0}))
+```
+
+```
+True False
+```
+
+::: dense_armor.utility.streaming_mahalanobis
