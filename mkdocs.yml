@@ -69,33 +69,50 @@ plugins:
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
+  - API Reference: api/index.md
+  - Shields:
+      - shields/index.md
+      - Armatura: shields/armatura.md
+      - Orca: shields/orca.md
+      - Hybrid engine: shields/hybrid_engine.md
+      - Adaptive engine: shields/engine.md
+  - Anomaly detection:
+      - anomaly/index.md
+      - Streaming: anomaly/streaming.md
+      - Robust filters: anomaly/robust_filters.md
+      - Curvature: anomaly/curvature.md
+  - Drift detection:
+      - drift/index.md
+      - CUSUM and ARL theory: drift/cusum.md
+  - Protection:
+      - protect/index.md
+      - Arbiter: protect/arbiter.md
+  - Online learning:
+      - learn/index.md
+      - Calibration: learn/calibration.md
+      - Metric learning: learn/metric_learning.md
+      - Online classifiers: learn/online_classifiers.md
+      - Online dynamics: learn/online_dynamics.md
+  - Control:
+      - control/index.md
+      - Rate limiter: control/rate_limiter.md
+      - CBF filter: control/cbf_filter.md
+      - Trajectory: control/trajectory.md
+      - Kinematic controller: control/kinematic_controller.md
+  - Robot dynamics:
+      - dynamics/index.md
+      - Rigid-body dynamics: dynamics/urdf_dynamics.md
+      - Passivity + singularity-CBF controller: dynamics/passivity_cbf_controller.md
+      - Full 6-DoF controller: dynamics/six_dof_pbc_cbf_controller.md
+      - Xacro files: dynamics/xacro_support.md
+      - Mimic joints: dynamics/mimic_joints.md
+  - Benchmarks:
+      - benchmarks/index.md
+      - Real robot arm (CASPER, UR3e): benchmarks/real_robot_benchmark.md
+  - Toolkit:
+      - toolkit/index.md
+      - Toolkit: toolkit/toolkit.md
   - Live Demo: demo.md
   - MCP Server: mcp.md
-  - API Reference:
-      - api/index.md
-      - Armatura (1D series shield): api/armatura.md
-      - Orca (full model shield): api/orca.md
-      - Arbiter (per-point routing for Orca): api/arbiter.md
-      - Streaming (real-time, multi-channel): api/streaming.md
-      - CUSUM (slow-drift detection) + ARL theory: api/cusum.md
-      - Calibration (online Platt scaling): api/calibration.md
-      - Metric learning (OASIS, LEGO, POLA): api/metric_learning.md
-      - Online classifiers (robot states, drift adaptation): api/online_classifiers.md
-      - Real robot benchmark (CASPER, UR3e arm): api/real_robot_benchmark.md
-      - Rate limiter (causal command damping): api/rate_limiter.md
-      - CBF filter (geometric command safety): api/cbf_filter.md
-      - Trajectory (closed-form point-to-point generator): api/trajectory.md
-      - Kinematic controller (closed-form tracking): api/kinematic_controller.md
-      - Rigid-body dynamics (real URDF, any robot): api/urdf_dynamics.md
-      - Online dynamics (residual torque learning): api/online_dynamics.md
-      - Passivity + singularity-CBF controller (any robot): api/passivity_cbf_controller.md
-      - Full 6-DoF passivity + singularity-CBF controller: api/six_dof_pbc_cbf_controller.md
-      - Loading robots from xacro macros: api/xacro_support.md
-      - Coupled joints via mimic: api/mimic_joints.md
-      - Curvature (scaled distance-to-reference): api/curvature.md
-      - Hybrid engine (Armatura's core): api/hybrid_engine.md
-      - Adaptive engine (Orca Stage 1): api/engine.md
-      - Robust filters (standalone detectors): api/robust_filters.md
-      - Toolkit (standalone utilities): api/toolkit.md
   - Changelog: changelog.md
   - License: license.md

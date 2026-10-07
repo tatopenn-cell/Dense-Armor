@@ -1,0 +1,86 @@
+# Armatura (1D series shield)
+
+A loss curve that suddenly jumps to 10⁶. A sensor channel that drops a reading and
+returns NaN. A token-likelihood stream that goes from 0.9 to 0 for one sample. These are
+the kinds of single-value glitches that break a downstream pipeline silently: the model
+does not complain, it just produces wrong numbers from that point on.
+
+`Armatura` is the shield for a **single 1D series**. You give it an array; you get back
+the same array, with the broken samples replaced by the local baseline, plus the list of
+indices that were replaced.
+
+## The signal
+
+One sensor channel, sampled at 100 Hz: nominal noise around 0.5, one absurd value
+(9999) at sample 100, one NaN at sample 200.
+
+```python
+import numpy as np
+rng = np.random.default_rng(42)
+fs = 100
+x = 0.5 + 0.1 * rng.standard_normal(300)
+x[100] = 9999.0
+x[200] = float("nan")
+```
+
+## 1. Protect the series
+
+```python
+from dense_armor import Armatura
+
+a = Armatura(livello_ia=0.0)
+clean, K, anomalies = a.analizza(x)
+```
+
+`clean` is a NumPy array of the same shape as `x`. The two broken samples are replaced by
+the median of the surrounding window; the rest of the signal is left as-is.
+
+`anomalies` is the list of indices that were replaced: `[100, 200]` on the running
+example.
+
+`livello_ia = 0` means "actively filter". `livello_ia = 1` means "only mark, do not
+change the values" — useful when you want to log what the shield *would* have done
+without altering the stream.
+
+## 2. What "local baseline" means
+
+`Armatura` looks at a **causal window** of samples before the one being scored (never
+after), computes a robust centre and scale, and decides. If the sample is far enough
+from the centre to be a genuine impulse, it is replaced with the centre; otherwise it
+passes through unchanged. The rule is the same one the [Arbiter](../protect/arbiter.md)
+uses on the batch side.
+
+The consequence, on the running example:
+
+- The value 9999 at sample 100 is many hundreds of robust sigmas above the window's
+  median, so it is replaced. Index 100 appears in `anomalies`.
+- The NaN at sample 200 never enters the window (the shield drops non-finite samples
+  before the comparison), so the next finite sample is scored against the window ending
+  at sample 199. Index 200 appears in `anomalies`, and `clean[200]` is the window's
+  median.
+
+## 3. What it is not for
+
+`Armatura` is a **point-level** shield. It removes isolated spikes and non-finite values.
+It does not remove a slow drift, and it does not classify a regime change: those need a
+different tool (see [CUSUM](../drift/cusum.md) and [Arbiter](../protect/arbiter.md)).
+If your signal is a step change that is genuinely intended, `Armatura` will leave it
+alone after the first few samples, because after those samples the step is the new local
+baseline.
+
+## 4. The engine inside
+
+`Armatura` is built on `core.hybrid_engine`, the binary-trigger engine that generalises
+the logic already verified in Dense-Evolution's own
+`ia_utils.vector_healing.enhanced_dense_healing_hybrid`. See
+[Hybrid engine](hybrid_engine.md) for the internals.
+
+## API reference
+
+::: dense_armor.armatura
+
+---
+
+**See also**: [Hybrid engine](hybrid_engine.md) — the `core/hybrid_engine.py` module
+`Armatura` is built on. [Orca](orca.md) — the full input + output shield for an entire
+model, if you have a model rather than a bare series.
