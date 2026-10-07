@@ -12,6 +12,13 @@ The recording comes from a Universal Robots UR3e arm that repeats one cycle: it 
 it on an inclined platform and lets it roll (Kayan et al. 2023, Figures 1–2). Because the motion
 repeats, a cycle residual works well on this data.
 
+![A simulated repetitive joint motion, its cycle residual and the residual energy with the CUSUM alarm](../assets/real_robot_benchmark/cycle_residual.png)
+
+*Illustration on a simulated repetitive motion (period 200 samples): the raw velocity hides a small
+change of the cycle shape at sample 3000; the cycle residual $x(t) - x(t - T)$ is almost zero until
+then and grows after; a one-sided CUSUM on its energy raises the alarm 15 samples after the
+change. Figure generated with the library.*
+
 ## Data
 
 `right_arm.csv` — 1,762,650 rows, 24.481 h at 20 Hz, 19.6 % of rows
