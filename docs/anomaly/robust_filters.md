@@ -1,111 +1,128 @@
 # Robust filters (standalone detectors)
 
 The four classic anomaly detectors of the previous page give one score per sample; on a
-**recorded** series you can also run them as batch filters, and combine them into a
-single verdict. `pressure_valve` does that: it takes the four scores and returns one
-corrected value, one flag, and one effective threshold, using the physical units of the
-input.
+**recorded** series you can also run them as batch filters, and combine them into a single
+verdict. `pressure_valve` does that: it merges the four into one cleaned value, one flag, one
+pressure score and one threshold per sample.
 
-This page is for off-line cleanup. The causal streaming versions on
+This page is for off-line cleanup of a series already recorded. The causal streaming versions on
 [Streaming](streaming.md) are the real-time counterparts.
-
-## The signal
-
-The same joint velocity used everywhere: 100 Hz, one collision spike, one slow drift.
-
-```python
-import numpy as np
-rng = np.random.default_rng(42)
-fs = 100
-t = np.arange(3000) / fs
-v = 0.5 + 0.1 * rng.standard_normal(len(t))
-v[1500] = 2.5
-v[2000:] += 0.2 * (np.arange(1000) / 1000)
-```
 
 ## 1. Hampel filter
 
-The batch Hampel filter uses a window centred on each point (it sees the future) and
-replaces outliers with the window median. It is the off-line counterpart of the
-[HampelScorer](streaming.md).
+The batch Hampel filter uses a window centred on each point (it sees the future) and replaces
+outliers with the window median.
 
 ```python
 import numpy as np
-rng = np.random.default_rng(42)
-fs = 100
-t = np.arange(3000) / fs
-v = 0.5 + 0.1 * rng.standard_normal(len(t))
-v[1500] = 2.5
-v[2000:] += 0.2 * (np.arange(1000) / 1000)
 from dense_armor.utility.anomaly.robust_filters import hampel_filter
 
-clean = hampel_filter(v, radius=15, n_sigmas=3.0)
+rng = np.random.default_rng(42)
+v = 0.5 + 0.1 * rng.standard_normal(3000)
+v[1500] = 2.5
+clean, idx = hampel_filter(v, radius=15, n_sigmas=3.0)
+print(1500 in idx, round(float(clean[1500]), 3), len(idx))
 ```
 
-On the running example, `clean` removes the collision spike (index 1500 goes back to
-about 0.5) and leaves the drift untouched, because the drift is a slow change of the
-average and the local median follows it.
+```
+True 0.498 35
+```
+
+A joint velocity at 100 Hz around 0.5 with noise 0.1 and one collision at sample 1500. The
+collision is flagged and replaced by the local median, 0.498. The filter also flags 35 samples in
+total: with a window of 31 points and 3 sigma, some ordinary noise values fall out. Every function
+on this page returns `(clean, idx)`: the cleaned series (raw value where normal, local median
+where flagged) and the list of flagged indices. The rule is the Hampel identifier
+$|x_k - m_k| > t\,S_k$ with $S_k = 1.4826 \cdot \mathrm{MAD}$ (Pearson et al., 2016, eqs. 3 and 4;
+explained step by step on [Streaming](streaming.md)).
 
 ## 2. The other three
 
-`tukey_fences`, `chauvenet_criterion` and `sigma_clip` in the same module do the same for
-the other three classic rules. Each returns a cleaned series and the indices flagged.
+`tukey_fences`, `chauvenet_criterion` and `sigma_clip` do the same for the other three classic
+rules.
 
 ```python
 import numpy as np
-rng = np.random.default_rng(42)
-fs = 100
-t = np.arange(3000) / fs
-v = 0.5 + 0.1 * rng.standard_normal(len(t))
-v[1500] = 2.5
-v[2000:] += 0.2 * (np.arange(1000) / 1000)
-from dense_armor.utility.anomaly.robust_filters import hampel_filter
-
-clean = hampel_filter(v, radius=15, n_sigmas=3.0)
 from dense_armor.utility.anomaly.robust_filters import (
-    tukey_fences, chauvenet_criterion, sigma_clip,
-)
+    hampel_filter, tukey_fences, chauvenet_criterion, sigma_clip)
 
-clean_t, flag_t = tukey_fences(v, radius=15)
-clean_c, flag_c = chauvenet_criterion(v, radius=15)
-clean_s, flag_s = sigma_clip(v, radius=15, n_sigmas=3.0)
+rng = np.random.default_rng(42)
+v = 0.5 + 0.1 * rng.standard_normal(3000)
+v[1500] = 2.5
+for f in (hampel_filter, tukey_fences, chauvenet_criterion, sigma_clip):
+    clean, idx = f(v, radius=15)
+    print(f.__name__, 1500 in idx, len(idx))
 ```
 
-## 3. pressure_valve
+```
+hampel_filter True 35
+tukey_fences True 65
+chauvenet_criterion True 48
+sigma_clip True 24
+```
 
-`pressure_valve` combines the four detectors into one. It is a *minimum-variance*
-combination (weights derived from each detector's residual variance), with a dynamic
-threshold modulated by the Jensen–Shannon divergence between the four detectors'
-verdicts. When the four detectors agree, the threshold tightens; when they disagree, it
-loosens, so the filter is more conservative on ambiguous samples.
+All four catch the collision; they differ in how many ordinary samples they also flag. Tukey uses
+the quartiles (outside $[Q_1 - 1.5\,\mathrm{IQR},\, Q_3 + 1.5\,\mathrm{IQR}]$), Chauvenet rejects
+when the expected number of samples that far out, $N \cdot P$, is below 0.5, sigma clipping
+removes values beyond `n_sigmas` standard deviations and repeats on what remains.
+
+## 3. pressure_valve: four estimates combined
+
+Each of the four methods gives its own estimate of the local centre and of its uncertainty
+(scale). `pressure_valve` combines them with the weights that make the combination as precise as
+possible.
 
 ```python
 import numpy as np
-rng = np.random.default_rng(42)
-fs = 100
-t = np.arange(3000) / fs
-v = 0.5 + 0.1 * rng.standard_normal(len(t))
-v[1500] = 2.5
-v[2000:] += 0.2 * (np.arange(1000) / 1000)
-from dense_armor.utility.anomaly.robust_filters import hampel_filter
 
-clean = hampel_filter(v, radius=15, n_sigmas=3.0)
-from dense_armor.utility.anomaly.robust_filters import (
-    tukey_fences, chauvenet_criterion, sigma_clip,
-)
+s = np.array([0.10, 0.12, 0.10, 0.30])
+w = (1 / s**2) / np.sum(1 / s**2)
+print(np.round(w, 3), round(float(1 / np.sqrt(np.sum(1 / s**2))), 4))
+```
 
-clean_t, flag_t = tukey_fences(v, radius=15)
-clean_c, flag_c = chauvenet_criterion(v, radius=15)
-clean_s, flag_s = sigma_clip(v, radius=15, n_sigmas=3.0)
+```
+[0.356 0.248 0.356 0.04 ] 0.0597
+```
+
+The weights minimise the variance of $\sum_k w_k c_k$ under $\sum_k w_k = 1$ (Lagrange
+multiplier):
+
+$$w_k = \frac{1/s_k^2}{\sum_j 1/s_j^2}, \qquad s = \frac{1}{\sqrt{\sum_j 1/s_j^2}}, \qquad p = \frac{|x - \sum_k w_k c_k|}{s},$$
+
+where $c_k$ and $s_k$ are the centre and scale of method $k$ (Chauvenet: mean and standard
+deviation; sigma clipping: clipped mean and standard deviation; Hampel: median and
+$1.4826 \cdot \mathrm{MAD}$; Tukey: median and $\mathrm{IQR}/1.349$), $s$ is the scale of the
+combination and $p$ the pressure of the sample. In the example four methods have scales 0.10,
+0.12, 0.10, 0.30: the noisy fourth one gets weight 0.04, and the combined scale 0.0597 is
+narrower than any single one. This is the minimum-variance (Gauss–Markov) combination of
+independent estimates; no weight is chosen by hand.
+
+## 4. pressure_valve on the joint signal
+
+```python
+import numpy as np
 from dense_armor.utility.anomaly.robust_filters import pressure_valve
 
-clean, flags, pressure, threshold = pressure_valve(v)
+rng = np.random.default_rng(42)
+v = 0.5 + 0.1 * rng.standard_normal(3000)
+v[1500] = 2.5
+clean, idx, p, thr = pressure_valve(v, radius=15)
+print(idx, round(float(p[1500]), 1), round(float(np.median(thr)), 2))
 ```
 
-`pressure` is the per-sample pressure the four detectors exert; `threshold` is the
-effective threshold at each sample. The four-detector combination beats every single
-detector on the running example's collision spike, because it does not rely on any one
-window's MAD being well-behaved.
+```
+[949, 1500, 2707] 42.7 8.46
+```
+
+Three samples flagged out of 3,000: the collision (pressure 42.7) and two noise values. The
+threshold is not fixed: at each sample the local window is compared with a wider reference window
+(`radius * ref_mult`) by their Jensen–Shannon divergence $\mathrm{JSD} \in [0, 1]$, and
+
+$$\text{threshold}_i = \text{soglia\_pressione} \cdot (1 + k_{\text{molla}} \cdot \mathrm{JSD}_i).$$
+
+When the two windows look alike (steady noise) JSD is near 0 and the threshold stays at its base
+value 8.0; when they differ (a real change of level is under way) the threshold widens, so the
+filter does not attack a genuine transition. Here the median threshold is 8.46.
 
 ## API reference
 
@@ -115,15 +132,15 @@ window's MAD being well-behaved.
 
 ## Details
 
-The Jensen–Shannon modulation is what makes `pressure_valve` useful when the four
-detectors disagree: on a genuinely ambiguous sample (spike or regime change?) the
-threshold rises, so the filter errs on the side of not flagging. On a clear sample, the
-threshold falls. This is why the "effective threshold" is a per-sample array and not a
-single number.
-
-The weights are the Lagrange-multiplier solution of the minimum-variance combination:
-each detector gets a weight inversely proportional to its own residual variance on the
-window. On quiet signals the four weights end up close to 1/4; on a signal where one
-detector's residual is much larger (Chauvenet on a signal whose mean is itself drifting,
-for example), that detector gets a smaller weight and the combination is dominated by
-the other three.
+- **Base threshold 8.0.** On pure stationary noise (N = 300, fixed seed) the pressure percentiles
+  are 50 % = 1.4, 95 % = 4.6, 99 % = 6.0, 99.9 % = 7.6, so 8.0 leaves about one false positive in
+  300 while a true outlier (pressure about 88) stays far above it.
+- **Why Chauvenet keeps its non-robust scale.** It is the original 1863 formulation (mean and
+  standard deviation); when its window already contains an outlier its scale inflates, and the
+  minimum-variance weights lower its influence automatically, without discarding it.
+- **Jensen–Shannon on small windows.** `_jensen_shannon` uses adaptive bins and Laplace smoothing;
+  a naive version with fixed bins gave a higher divergence on stationary noise than near a real
+  transition.
+- **Sources.** Pearson, R. K. et al. (2016), "Generalized Hampel filters", *EURASIP J. Adv. Signal
+  Process.*, eqs. 3–4. Chauvenet, W. (1863), *A Manual of Spherical and Practical Astronomy*,
+  vol. 2. Tukey, J. W. (1977), *Exploratory Data Analysis*.

@@ -18,23 +18,29 @@ model predicts what a *perfect* robot would have applied: the nominal torque. Th
 difference is what the learner has to model.
 
 ```python
-import jax
-jax.config.update("jax_enable_x64", True)
-import jax.numpy as jnp
 import numpy as np
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.utility.learn.online_dynamics import ResidualDynamicsLearner
+from dense_armor.utility.learn.online_dynamics import ResidualDynamicsLearner, write_minimal_urdf
 
-model = RigidBodyModel("panda.urdf")
-model.mass_matrix = jax.jit(model.mass_matrix)
-model.bias_forces = jax.jit(model.bias_forces)
-model.gravity_forces = jax.jit(model.gravity_forces)
-
-learner = ResidualDynamicsLearner(model, lam=1.0, delta=1e6)
-for q, qd, qdd, tau_measured in stream:
-    tau_hat = learner.predict_torque(q, qd, qdd)
-    learner.learn_one(q, qd, qdd, tau_measured)
+nom = RigidBodyModel(write_minimal_urdf())
+real = RigidBodyModel(write_minimal_urdf(payload_mass=0.5))
+tau = lambda m, q, qd, qdd: np.asarray(m.mass_matrix(q)) @ qdd + np.asarray(m.bias_forces(q, qd))
+learner, rng = ResidualDynamicsLearner(nom), np.random.default_rng(0)
+for q, qd, qdd in rng.uniform(-1, 1, (40, 3, 2)):
+    learner.learn_one(q, qd, qdd, tau(real, q, qd, qdd))
+q, qd, qdd = rng.uniform(-1, 1, (3, 2))
+print(np.round(tau(real, q, qd, qdd), 3), np.round(tau(nom, q, qd, qdd), 3), np.round(learner.predict_torque(q, qd, qdd), 3))
 ```
+
+```
+[1.496 0.558] [0.85  0.287] [1.422 0.478]
+```
+
+Two copies of the same 2-link arm, one with a 0.5 kg payload in the gripper (the "real" robot)
+and one without (the URDF the controller knows). After 40 random moves the learner, starting
+from the payload-free URDF, predicts torques of 1.422 and 0.478 N·m where the real arm needs 1.496
+and 0.558; the URDF alone says 0.85 and 0.287. `write_minimal_urdf` writes this small test robot
+to a file, so the example runs anywhere.
 
 ## 1. The five features per joint
 
@@ -98,6 +104,18 @@ w₀ = (0, 0), so xᵀ w₀ = 0, and the error is y − 0 = 5
 w ← (0, 0) + 5 · (0.2, 0.4) = (1.0, 2.0)
 ```
 
+```python
+from dense_armor.utility.learn.online_dynamics import RecursiveLeastSquares
+
+rls = RecursiveLeastSquares(lam=1.0, delta=1e6)
+rls.learn_one({"a": 1.0, "b": 2.0}, 5.0)
+print(round(rls.predict_one({"a": 1.0, "b": 2.0}), 4), round(rls.predict_one({"a": 1.0, "b": 0.0}), 4))
+```
+
+```
+5.0 1.0
+```
+
 After one sample the weights are exactly `(1, 2)`: `w · x = 1·1 + 2·2 = 5`. That is the
 point of the large `δ`: with no prior information, the first sample determines the fit
 completely.
@@ -113,9 +131,26 @@ starts from the URDF prediction and adds the residual. Test check: the learner's
 predicted torques have lower RMSE than the nominal URDF prediction on held-out data.
 
 ```python
-rmse_nominal = np.sqrt(np.mean((tau_true - tau_nominal) ** 2))
-rmse_learned = np.sqrt(np.mean((tau_true - tau_predicted) ** 2))
+import numpy as np
+from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
+from dense_armor.utility.learn.online_dynamics import ResidualDynamicsLearner, write_minimal_urdf
+
+nom, real = RigidBodyModel(write_minimal_urdf()), RigidBodyModel(write_minimal_urdf(payload_mass=0.5))
+tau = lambda m, s: np.asarray(m.mass_matrix(s[0])) @ s[2] + np.asarray(m.bias_forces(s[0], s[1]))
+learner, rng = ResidualDynamicsLearner(nom), np.random.default_rng(0)
+for s in rng.uniform(-1, 1, (40, 3, 2)):
+    learner.learn_one(*s, tau(real, s))
+test = rng.uniform(-1, 1, (20, 3, 2))
+err = lambda f: np.sqrt(np.mean([(tau(real, s) - f(s)) ** 2 for s in test]))
+print(round(err(lambda s: tau(nom, s)), 3), round(err(lambda s: learner.predict_torque(*s)), 3))
 ```
+
+```
+0.403 0.193
+```
+
+On 20 new moves the torque error (RMSE, N·m) is 0.403 for the URDF alone and 0.193 for the
+learner after 40 samples: half the error.
 
 The nominal model misses the payload; the learner picks it up in the five weights
 (the `qdd` coefficient absorbs the payload's inertia, the `1` absorbs the constant
@@ -128,7 +163,17 @@ keeps the old weights and gets the new regime wrong. A `λ = 0.99` learner forge
 pre-change samples over ~100 samples and tracks the new regime.
 
 ```python
-learner = ResidualDynamicsLearner(model, lam=0.99, delta=1e6)
+from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
+from dense_armor.utility.learn.online_dynamics import ResidualDynamicsLearner, DriftAwareResidualDynamicsLearner, write_minimal_urdf
+
+model = RigidBodyModel(write_minimal_urdf())
+fast = ResidualDynamicsLearner(model, lam=0.99, delta=1e6)
+aware = DriftAwareResidualDynamicsLearner(model, lam=0.99)
+print(type(fast).__name__, type(aware).__name__)
+```
+
+```
+ResidualDynamicsLearner DriftAwareResidualDynamicsLearner
 ```
 
 The choice of `λ` is a trade-off: too small and the learner is noisy (it always fits
@@ -143,11 +188,7 @@ temporarily lowered to `fast_lam` for `warmup_steps` samples, then restored. The
 react quickly to a real change without paying the noise cost of a permanently small
 `λ`.
 
-```python
-from dense_armor.utility.learn.online_dynamics import DriftAwareResidualDynamicsLearner
-
-learner = DriftAwareResidualDynamicsLearner(model, lam=0.99)
-```
+The drift-aware learner is built the same way (it is constructed in the block of step 4).
 
 **Honest result from the 2-link benchmark** (payload / friction step at sample 200 of
 400, `lam=0.99`):
@@ -170,9 +211,19 @@ graph on every call, so `jax.jit` on the model does **not** cache across calls t
 it does for a pure function. In a control loop, patch the model once at construction:
 
 ```python
+import jax
+from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
+from dense_armor.utility.learn.online_dynamics import write_minimal_urdf
+
+model = RigidBodyModel(write_minimal_urdf())
 model.mass_matrix = jax.jit(model.mass_matrix)
 model.bias_forces = jax.jit(model.bias_forces)
 model.gravity_forces = jax.jit(model.gravity_forces)
+print(model.n)
+```
+
+```
+2
 ```
 
 Without this, the learner's per-sample cost is in the millisecond range rather than
@@ -206,7 +257,7 @@ Experiment 62 replaced the hardcoded tables with a real URDF parser and re-valid
 The learner itself was re-validated on the 2-link benchmark after that.
 
 **RLS references**: Ljung, L., Soderstrom, T. (1983). *Theory and Practice of Recursive
-Identification*. MIT Press. RLS with exponential forgetting, equation 11.4.
+Identification*. MIT Press. RLS with exponential forgetting.
 
 **Triggers**: Page, E. S. (1954). Continuous inspection schemes. *Biometrika* 41,
 100–114. Hampel, F. R. (1974). The influence curve and its role in robust estimation.

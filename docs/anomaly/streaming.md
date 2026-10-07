@@ -1,233 +1,126 @@
-# Streaming detection
+# Streaming anomaly detection
 
-A streaming detector answers, for each new sample, one question: **is this sample further
-from the recent past than normal noise would explain?** It looks only at the samples
-*before* the new one, never at the future. On a robot that runs at 100 Hz this is the
-only honest option: the sample at time *t* has to be judged at time *t*.
+A robot joint sends its velocity 100 times a second. Most readings are ordinary noise; once in a
+while one is absurd, because the arm bumped into something or a cable gave a false reading. The
+controller must know *right now*, on that very sample, without waiting for the future. The tools
+on this page give every new sample a score that says how unusual it is compared with the recent
+past, and a yes/no flag when it is too unusual.
 
-## The signal
+![A joint velocity stream at 100 Hz with the collision spike flagged](../assets/streaming/spike.png)
 
-A joint velocity at 100 Hz, nominal 0.5 rad/s. At 15 s a collision gives one large spike;
-from 20 s a worn gear makes the signal drift upward.
+## 1. Flag a strange sample the moment it arrives
+
+`StreamingDeviationDetector` takes one value per call and answers `True` when it deviates.
 
 ```python
 import numpy as np
-rng = np.random.default_rng(42)
-fs = 100
-t = np.arange(3000) / fs
-v = 0.5 + 0.1 * rng.standard_normal(len(t))
-v[1500] = 2.5
-v[2000:] += 0.2 * (np.arange(1000) / 1000)
-```
-
-## 1. Score one sample
-
-The detector keeps the last `radius * ref_mult` samples in a window. For each new sample
-`x`, it computes:
-
-- `med` — the median of the window,
-- `S` — the *scaled median absolute deviation*: `S = 1.4826 × median(|w − med|)`.
-
-The score is `z = |x − med| / S`. The 1.4826 factor makes `S` equal to the standard
-deviation when the window is normal noise; without it the score would be in units of MAD
-instead of sigmas, and the thresholds would be unreadable.
-
-**Hand case.** Window of 9 samples `[10, 11, 9, 10, 12, 10, 11, 9, 10]`, new sample
-`x = 30`. The median is 10. The absolute deviations from 10 are
-`[0, 1, 1, 0, 2, 0, 1, 1, 0]`; their median is 1. So `S = 1.4826 × 1 = 1.4826`, and the
-score is `z = |30 − 10| / 1.4826 = 13.49`. The window is quiet (MAD = 1) and the new
-sample is 20 units away: the detector says "far".
-
-```python
 from dense_armor.utility.anomaly.streaming import StreamingDeviationDetector
 
-det = StreamingDeviationDetector(radius=5, ref_mult=3)
-for x in v[:200]:
-    det.update(x)
-det.update(v[1500])
+rng = np.random.default_rng(42)
+v = 0.5 + 0.1 * rng.standard_normal(3000)
+v[1500] = 2.5
+det = StreamingDeviationDetector(radius=30, ref_mult=3, n_sigmas=4.0)
+flags = np.array([det.update(x) for x in v])
+print(np.flatnonzero(flags))
 ```
 
-The window holds `5 × 3 = 15` samples; on normal operation the score is under 3, on the
-collision spike (2.5 rad/s against a 0.5-rad/s window) it is in the tens.
+```
+[   4  949 1500]
+```
 
-## 2. Score the whole stream
+The stream is 30 seconds of a joint velocity around 0.5 with noise 0.1, and one collision at
+sample 1500 (value 2.5). The detector flags sample 1500. Sample 4 is the warm-up: with almost
+nothing in memory every value looks new, so ignore the first few samples. Sample 949 is one
+ordinary noise value that happened to fall far out: one false alarm in 3,000 samples with these
+settings. Each call to `update` looks only at the past, so the answer is available on the same
+sample, inside the control loop.
 
-To score every sample, feed the same detector one value at a time and store the flags.
-Because the window grows one sample at a time and never looks ahead, the cost per sample
-is `O(window)`.
+## 2. How "unusual" is measured
+
+The detector compares the new value with the median of a window of past samples, in units of
+the window's own spread.
 
 ```python
-det = StreamingDeviationDetector(radius=5, ref_mult=3)
-flags = np.zeros_like(v, dtype=bool)
-for i, x in enumerate(v):
-    flags[i] = det.is_outlier(x)
-    det.update(x)
+import numpy as np
 
-t[flags]
+w = np.array([10, 11, 9, 10, 12, 10, 11, 9, 10])
+x = 30.0
+med = np.median(w)
+mad = np.median(np.abs(w - med))
+s = 1.4826 * mad
+print(med, mad, round(s, 4), round(abs(x - med) / s, 2))
 ```
 
-On the running example the flags are a single sample at index 1500 (the collision) and,
-later, a few clustered points around the start of the drift. The exact list is printed by
-the code; the point is that the collision is one sample, the drift is a run.
+```
+10.0 1.0 1.4826 13.49
+```
 
-## 3. The four causal filters
+The score is
 
-The score above is the robust deviation used by `classify_segments` in the batch
-[Arbiter](../protect/arbiter.md). The four classic robust filters of the package (Hampel,
-Tukey, Chauvenet, sigma clipping) are available as streaming scorers with the *same*
-interface, on the same causal window (`2 * radius` samples before the value being
-scored). Only Hampel is shown here; the other three are in Details.
+$$z = \frac{|x - \mathrm{med}(w)|}{S}, \qquad S = 1.4826 \cdot \mathrm{MAD}(w), \qquad \mathrm{MAD}(w) = \mathrm{med}\big(|w - \mathrm{med}(w)|\big),$$
 
-**Hampel** flags a sample when `|x − med| > n · S`, with `n = 3` by default. On the hand
-case above, `20 > 3 × 1.4826 = 4.4478`, so the sample is flagged.
+where:
+
+- $w$ is the window of past samples: `2 * radius * ref_mult` values before the new one;
+- $\mathrm{med}(w)$ is its median, the "usual" value; unlike the mean, one absurd sample cannot
+  drag it away;
+- $\mathrm{MAD}(w)$ is the median distance of the samples from that median, a robust width;
+- $1.4826$ turns the MAD into the standard deviation when the noise is normal (it is
+  $1/\Phi^{-1}(3/4)$), so $z$ reads as "how many standard deviations away";
+- the sample is flagged when $z$ is larger than `n_sigmas`.
+
+In the example the past window is around 10 with MAD 1, so $S = 1.4826$ and the new value 30 is
+13.49 standard deviations away: clearly flagged. This robust score is the Hampel identifier
+(Pearson et al., 2016, "Generalized Hampel filters", *EURASIP J. Adv. Signal Process.*, eqs. 3 and 4).
+
+## 3. The score itself, as a learn/score estimator
+
+`StreamingDeviationScorer` gives the number instead of the flag, with the `learn_one` /
+`score_one` interface used by online-learning pipelines.
+
+```python
+from dense_armor.utility.anomaly.deviation import StreamingDeviationScorer
+
+sc = StreamingDeviationScorer(radius=5, ref_mult=2)
+for v in [1.0, 1.2, 0.9, 1.1, 1.0, 0.8, 1.05]:
+    sc.learn_one({"v": v})
+print(round(sc.score_one({"v": 50.0}), 1), round(sc.score_one({"v": 1.1}), 2))
+```
+
+```
+330.5 0.67
+```
+
+A reading of 50 scores 330.5 standard deviations; a reading of 1.1 scores 0.67, ordinary.
+`score_one` never changes the estimator; `learn_one` adds the value to the window. A score above
+`n_sigmas` is exactly a flag of `StreamingDeviationDetector`. It needs the streaming extra:
+`pip install dense-armor[river]`.
+
+## 4. The classic robust filters, one sample at a time
+
+`dense_armor.utility.anomaly.filters` gives the four classic outlier rules as streaming scorers:
+Hampel, Tukey fences, Chauvenet and sigma clipping.
 
 ```python
 from dense_armor.utility.anomaly.filters import HampelScorer
 
 s = HampelScorer(radius=15, n_sigmas=3.0)
-for x in v[:200]:
-    s.learn_one({"v": float(x)})
-s.is_outlier({"v": 30.0})
+for v in [1.0, 1.2, 0.9, 1.1, 1.0, 0.8, 1.05]:
+    s.learn_one({"v": v})
+print(s.is_outlier({"v": 50.0}), s.is_outlier({"v": 1.1}))
 ```
 
-`radius=15` is the *half*-width: the window holds `30` past samples. The threshold
-`n_sigmas` is the tuning knob; higher values flag fewer points, at the price of missing
-smaller anomalies.
-
-## 4. Many channels at once
-
-A robot has six joints, an IMU has three axes. Scoring each channel with its own detector
-works, but a fault that shows up as an unusual *combination* of channels (joint 1 high
-and joint 2 low at the same time, each alone plausible) is invisible to per-channel
-detectors. `MultiChannelStreamingDeviationDetector` runs one detector per channel and
-returns a per-channel verdict on each sample.
-
-```python
-from dense_armor.utility.anomaly.streaming import MultiChannelStreamingDeviationDetector
-
-det = MultiChannelStreamingDeviationDetector(n_channels=6, radius=5, ref_mult=3)
-for qd in qd_stream:
-    flags = det.update(qd)
+```
+True False
 ```
 
-`qd_stream` is a stream of 6-element joint velocity arrays, one per sample. This is
-ergonomics, not a new algorithm: each channel keeps its own window and its own baseline.
+Each scorer looks only at the `2 * radius` samples before the value being scored. The batch
+versions on the [robust filters](robust_filters.md) page use a window centred on the value,
+which looks at future samples; a live robot loop cannot, and that is the only difference.
+Hampel is shown here; the other three rules are in the Details below.
 
-## 5. Many channels together: online robust Mahalanobis
-
-To catch *combinations* of channels rather than individual channels, use the online robust
-Mahalanobis distance. It tracks, one sample at a time, the *geometric median* (a robust
-centre) and the *median covariation matrix* (a robust spread), and scores each sample by
-its Mahalanobis distance from them.
-
-![Two joints, in-distribution and outlier](../assets/streaming/mahalanobis.png)
-
-```python
-import numpy as np
-from dense_armor.utility.anomaly.mahalanobis import OnlineRobustMahalanobis
-
-m = OnlineRobustMahalanobis(feature_keys=["j0", "j1"])
-for qd in two_joint_stream:
-    m.learn_one({"j0": qd[0], "j1": qd[1]})
-m.is_outlier({"j0": 0.0, "j1": 0.0})
-```
-
-The score is the Mahalanobis distance from the sample to the tracked geometric median,
-in the metric of the tracked covariance. On well-behaved 2-channel normal data it stays
-around 3; a sample that is far in *both* channels at once goes above the threshold
-(`threshold=7.0` by default).
-
-### Hand case, two channels
-
-Two channels, 100 samples of `N(0, I)`. The geometric median converges to `(0, 0)` and
-the covariation matrix to `I`. A new sample `(0, 0)` scores about 0; a new sample
-`(40, −40)` scores `sqrt(40² + 40²) = 56.6` — far over any plausible threshold.
-
-## Performance
-
-On one CPU core, µs per sample, window 30:
-
-| detector | µs / sample |
-|---|---|
-| streaming deviation | 15 |
-| Hampel | 90 |
-| Tukey | 75 |
-| Chauvenet | 28 |
-| sigma clipping | 72 |
-| online robust Mahalanobis, 6 channels | 95 |
-
-At 100 Hz a control loop has 10 ms per cycle; all of them fit with three orders of
-magnitude to spare. The window size dominates the cost: doubling `radius` roughly
-doubles the per-sample time.
-
-## Details
-
-### Tukey fences
-
-`Q1`, `Q3` of the window, `IQR = Q3 − Q1`, normal range `[Q1 − 1.5·IQR, Q3 + 1.5·IQR]`.
-Flag when the value is outside. On the hand case window above, sorted
-`[9, 9, 10, 10, 10, 10, 11, 11, 12]`, `Q1 = 10`, `Q3 = 11`, `IQR = 1`, fences
-`[8.5, 12.5]`, and the new sample 30 is outside.
-
-```python
-from dense_armor.utility.anomaly.filters import TukeyScorer
-
-s = TukeyScorer(radius=15)
-for x in v[:200]:
-    s.learn_one({"v": float(x)})
-s.is_outlier({"v": 30.0})
-```
-
-### Chauvenet
-
-Score is `N · P(|Z| ≥ z)` with `z = |x − mean| / std` on the window. Unlike the other
-three, **low means anomalous**: the criterion rejects when `N · P < 0.5`. On the hand
-case window, `mean = 10.222`, `std = 0.916`, `z = 21.59`, `N = 10`,
-`N · erfc(z/√2) ≈ 2.4e-102 < 0.5`, so the new sample is rejected. The `score_one` method
-returns `N · P`, so use `is_outlier`, or threshold `score < 0.5`.
-
-```python
-from dense_armor.utility.anomaly.filters import ChauvenetScorer
-
-s = ChauvenetScorer(radius=15)
-for x in v[:200]:
-    s.learn_one({"v": float(x)})
-s.is_outlier({"v": 30.0})
-```
-
-### Sigma clipping
-
-Iteratively removes points beyond `n_sigmas`, recomputes mean and std, until stable or
-`max_iters`; then scores `|x − mean_clean| / std_clean`.
-
-```python
-from dense_armor.utility.anomaly.filters import SigmaClipScorer
-
-s = SigmaClipScorer(radius=15, n_sigmas=3.0)
-for x in v[:200]:
-    s.learn_one({"v": float(x)})
-s.is_outlier({"v": 30.0})
-```
-
-### River-compatible scorer
-
-`StreamingDeviationScorer` (`dense_armor.utility.anomaly.deviation`,
-`pip install dense-armor[river]`) exposes the same causal deviation as a river anomaly
-detector: `score_one` returns `|x − med| / S` on the window learned so far, `learn_one`
-adds the value. A score above `n_sigmas` is exactly a `StreamingDeviationDetector` flag.
-
-```python
-from dense_armor.utility.anomaly.deviation import StreamingDeviationScorer
-
-model = StreamingDeviationScorer(radius=5, ref_mult=2)
-for x in v[:200]:
-    model.learn_one({"v": float(x)})
-model.score_one({"v": 30.0})
-```
-
-### Precision and recall on the four causal filters
-
-5,000 seeded samples, 50 spikes of size 5–15 (1 % contamination), window 30 (radius 15):
+Precision and recall on 5,000 seeded samples with 50 spikes of size 5–15 (1 % contamination),
+window 30 (radius 15):
 
 | Scorer | stationary noise (σ = 0.5): precision / recall | sine (amplitude 5, period 500) + same noise: precision / recall | µs per sample |
 |---|---|---|---|
@@ -236,8 +129,114 @@ model.score_one({"v": 30.0})
 | Chauvenet | 0.282 / 0.980 | 0.167 / 1.000 | 28 |
 | SigmaClip | 0.588 / 1.000 | 0.370 / 1.000 | 72 |
 
-Every scorer catches the spikes; precision is the tuning knob. Two things lower it: a
-trend inside the window (the sine moves about 1.9 units over 30 samples, and no scorer
-models a local slope), and the short window, whose robust scale estimate fluctuates.
-To raise precision, increase `n_sigmas` or combine the scores as
-[`pressure_valve`](robust_filters.md) does.
+Every scorer catches the spikes; precision is the tuning knob. Two things lower it: a trend
+inside the window (the sine moves about 1.9 units over 30 samples, and no scorer models a local
+slope), and the short window, whose robust scale fluctuates from one window to the next, so a
+3-sigma rule fires on some ordinary noise. To raise precision, increase `n_sigmas` or combine
+the scores as [`pressure_valve`](robust_filters.md) does. At 100 Hz (10 ms per cycle) the cost
+is under 1 % of the loop budget.
+
+## 5. All the joints at once
+
+A robot has several joints; `MultiChannelStreamingDeviationDetector` watches each one with its
+own window.
+
+```python
+import numpy as np
+from dense_armor.utility.anomaly.streaming import MultiChannelStreamingDeviationDetector
+
+rng = np.random.default_rng(0)
+qd = 0.1 * rng.standard_normal((500, 6))
+qd[300, 2] = 3.0
+det = MultiChannelStreamingDeviationDetector(n_channels=6, radius=30, ref_mult=3, n_sigmas=4.0)
+flags = np.array([det.update(row) for row in qd])
+print(flags[300], np.argwhere(flags[10:]).tolist())
+```
+
+```
+[False False  True False False False] [[58, 5], [274, 4], [290, 2]]
+```
+
+Six joints, one fault on joint 2 at sample 300: row 300 flags only joint 2. After the warm-up
+(the first 10 samples are skipped in the print) the list holds `[sample − 10, joint]`: `[290, 2]`
+is the fault, and `[58, 5]`, `[274, 4]` are two noise values out of 2,940 checks. Each joint keeps
+its own independent window; this is the same rule as step 1, without writing the loop over
+joints by hand.
+
+## 6. Two joints that must agree: online robust Mahalanobis
+
+Some faults are visible only in the *combination* of channels: each joint alone looks normal,
+but together they disagree. `OnlineRobustMahalanobis` learns how the channels usually move
+together and scores how far a sample is from that pattern.
+
+```python
+import numpy as np
+from dense_armor.utility.anomaly.mahalanobis import OnlineRobustMahalanobis
+
+rng = np.random.default_rng(3)
+a = rng.normal(0, 1, 500)
+b = a + 0.1 * rng.normal(0, 1, 500)
+m = OnlineRobustMahalanobis(feature_keys=["a", "b"])
+for x, y in zip(a, b):
+    m.learn_one({"a": float(x), "b": float(y)})
+print(round(m.score_one({"a": 1.0, "b": 1.0}), 1), round(m.score_one({"a": 1.0, "b": -1.0}), 1))
+```
+
+```
+1.4 16.4
+```
+
+Two joints that always move together (`b` follows `a`). The sample `(1, 1)` moves them together:
+score 1.4, normal. The sample `(1, −1)` moves them in opposite directions: each value alone is
+ordinary (one standard deviation), but the pair is unusual, score 16.4.
+
+The score is the Mahalanobis distance
+
+$$D(x) = \sqrt{\sum_{j=1}^{d} \frac{\langle x - \bar m,\; P_j\rangle^2}{\delta_j}},$$
+
+where $\bar m$ is the robust centre (the geometric median, the point with the smallest total
+distance to all samples), $P_j$ are the main directions in which the channels vary together and
+$\delta_j$ how much they vary along each one (eigenvectors and eigenvalues of the *median
+covariation matrix*, a robust version of the covariance). Both are updated at every sample by a
+small step towards the new data:
+
+$$m_{n+1} = m_n + \gamma_{n+1}\,\frac{X_{n+1} - m_n}{\lVert X_{n+1} - m_n\rVert}, \qquad \gamma_n = c_\gamma\,(n + n_0)^{-\gamma},$$
+
+and the same for the covariation matrix with the outer product $(X - m)(X - m)^\top$. Dividing
+by the distance means one absurd sample moves the estimate by at most $\gamma$, whatever its
+size: that is what makes it robust. Source: Guillot, Godichon-Baggioni, Robin and Sansonnet
+(arXiv:2601.03957), the online scheme of section 2.2.
+
+## API reference
+
+::: dense_armor.utility.anomaly.streaming
+
+::: dense_armor.utility.anomaly.deviation
+
+::: dense_armor.utility.anomaly.filters
+
+::: dense_armor.utility.anomaly.mahalanobis
+
+## Details
+
+- **The other three rules.** `TukeyScorer`: the normal range is
+  $[Q_1 - 1.5\,\mathrm{IQR},\; Q_3 + 1.5\,\mathrm{IQR}]$ with $Q_1, Q_3$ the quartiles of the window
+  and $\mathrm{IQR} = Q_3 - Q_1$ (window `[10, 11, 9, 10, 12, 10, 11, 9, 10]`: range
+  $[8.5, 12.5]$). `ChauvenetScorer`: rejects when $N \cdot \mathrm{erfc}(z/\sqrt 2) < 0.5$; its
+  `score_one` returns $N \cdot P$, so for Chauvenet a **low** score means anomalous.
+  `SigmaClipScorer`: repeatedly removes values beyond `n_sigmas` standard deviations and scores
+  against what remains. `HampelFilter` also replaces an outlier with the window median.
+- **Window size.** A short window reacts faster but its median and MAD are noisier, so more
+  ordinary samples are flagged (step 1 with `radius=5` flags dozens of noise samples; with
+  `radius=30, n_sigmas=4.0` one in 3,000).
+- **Online robust Mahalanobis, differences from the paper.** This module is the minimal version
+  of Guillot et al.: it scores with the eigenvalues $\delta_j$ of the median covariation matrix
+  and does not run the Robbins–Monro step that reconstructs the true variances $\lambda_j$, so
+  the scale of the score is larger than the classical chi-squared one (threshold 7.0 by
+  default). It also centres the outer product on the averaged median $\bar m$ and averages with
+  weight $1/n$ (the paper uses $m_n$ and $1/(n+2)$).
+- **Provenance.** `StreamingDeviationDetector` is the causal, zero-latency half of the
+  [Arbiter](../protect/arbiter.md)'s per-point deviation check; the spike-versus-regime label
+  needs to see the end of a run and stays batch-only. It was promoted from
+  Dense-Evolution-Discovery after validation on two real physical domains (SO-101 robot arm,
+  UCI HAR inertial data).

@@ -11,20 +11,8 @@ The Arbiter decides, point by point, which is which. It labels every sample
 - `spike` — hard-rejected to the median of the recent causal window.
 - `regime` — passed through **raw**, fully trusted.
 
-## The signal
-
-The same 100 Hz joint velocity. Two events: a single-sample collision spike at 15 s, and
-a slow drift that starts at 20 s and stabilises at a new level.
-
-```python
-import numpy as np
-rng = np.random.default_rng(42)
-fs = 100
-t = np.arange(3000) / fs
-v = 0.5 + 0.1 * rng.standard_normal(len(t))
-v[1500] = 2.5
-v[2000:] += 0.2
-```
+The examples use a joint velocity at 100 Hz (noise 0.1 around 0.5) with a one-sample collision
+at sample 1500 and a step to a new level, +1.0, from sample 2000.
 
 ## 1. The three labels
 
@@ -59,26 +47,42 @@ sensor briefly went haywire and came back".
 ## 2. Classify the whole series
 
 ```python
+import numpy as np
+rng = np.random.default_rng(42)
+v = 0.5 + 0.1 * rng.standard_normal(3000)
+v[1500] = 2.5
+v[2000:] += 1.0
 from dense_armor.utility.protect.arbiter import classify_segments
 
-labels = classify_segments(v, radius=20, ref_mult=3, n_sigmas=3.0,
-                           spike_run_max=2)
+lab, dev, unc = classify_segments(v, radius=20, ref_mult=3)
+print(lab[1500], np.flatnonzero(lab == "regime")[[0, -1]], (lab == "spike").sum())
 ```
 
-`labels` is an array of `"clean"`, `"spike"` or `"regime"`, one per sample.
+```
+spike [1999 2026] 26
+```
 
-On the running example:
-
-- index 1500 → `"spike"` (single-sample run, `run length 1 ≤ 2`)
-- indices 2000..2099 → `"regime"` (long run, coherent, persists)
-- everything else → `"clean"`
+It returns the label of each sample, its robust deviation `z`, and an uncertainty in [0, 1]
+(highest near the `n_sigmas` boundary). The collision is a spike; samples 1999–2026 are one long,
+coherent, persistent run, so a regime; afterwards the reference has caught up and samples are clean
+again. The other 26 spikes are isolated noise values beyond 3 sigma, out of 3,000.
 
 ## 3. Route the labels
 
 ```python
+import numpy as np
+rng = np.random.default_rng(42)
+v = 0.5 + 0.1 * rng.standard_normal(3000)
+v[1500] = 2.5
+v[2000:] += 1.0
 from dense_armor.utility.protect.arbiter import route_and_correct
 
-corrected, labels, dev = route_and_correct(v, radius=20, ref_mult=3)
+corrected, lab, dev = route_and_correct(v, radius=20, ref_mult=3)
+print(round(float(corrected[1500]), 3), np.array_equal(corrected[lab == "regime"], v[lab == "regime"]))
+```
+
+```
+0.489 True
 ```
 
 `corrected` is the same array with each label handled by its rule:
@@ -87,8 +91,7 @@ corrected, labels, dev = route_and_correct(v, radius=20, ref_mult=3)
 - `regime` → unchanged.
 - `clean` → unchanged.
 
-On the running example, `corrected[1500]` is about 0.5 (the collision removed) and
-`corrected[2000:2100]` is identical to `v[2000:2100]` (the new level kept).
+The collision becomes 0.489, the median before it; regime samples are left exactly as measured.
 
 ## 4. The reference window is causal
 
@@ -110,10 +113,13 @@ on 5 of 7.
 ```python
 from dense_armor.utility.protect.orca import Orca
 
-orca = Orca()
-protected = orca.protect_and_forward(my_model, corrupted, use_arbiter=True)
-orca.etichette_arbitro
-orca.incertezza_arbitro_media
+import numpy as np
+rng = np.random.default_rng(0)
+data = np.sin(np.linspace(0, 6, 200))[None, :] + 0.01 * rng.standard_normal((4, 200))
+data[0, 50] = 999.0
+orca = Orca(min_free_ram_percentage=0.05)
+out = orca.protect_and_forward(lambda z: 2.0 * z, data, use_arbiter=True)
+print(out.shape, orca.etichette_arbitro.shape)
 ```
 
 ## 6. Streaming Arbiter (bounded delay)
@@ -124,15 +130,17 @@ answer with a bounded delay: each sample's final label is committed at most `max
 samples after it arrives, once the run has closed and enough context is available.
 
 ```python
+import numpy as np
+rng = np.random.default_rng(42)
+v = 0.5 + 0.1 * rng.standard_normal(3000)
+v[1500] = 2.5
+v[2000:] += 1.0
 from dense_armor.utility.protect.streaming_arbiter import StreamingArbiter
 
-arb = StreamingArbiter(radius=20, ref_mult=3, max_delay=40)
-labels = {}
-for i, x in enumerate(v):
-    for j, lab, _ in arb.update(x):
-        labels[j] = lab
-for j, lab, _ in arb.flush():
-    labels[j] = lab
+arb = StreamingArbiter(radius=20, ref_mult=3, max_delay=200)
+lab = {j: l for x in v for j, l, _ in arb.update(x)}
+lab.update({j: l for j, l, _ in arb.flush()})
+print(len(lab), lab[1500], lab[2000])
 ```
 
 `update(x)` returns a list of `(index, label, corrected_value)` for the samples whose
@@ -152,13 +160,16 @@ window of neighbours. Each sample gets its corrected value as soon as the wide s
 window around it is fully available.
 
 ```python
+import numpy as np
+rng = np.random.default_rng(42)
+v = 0.5 + 0.1 * rng.standard_normal(3000)
+v[1500] = 2.5
+v[2000:] += 1.0
 from dense_armor.utility.protect.streaming_arbiter import StreamingHealing
 
 sh = StreamingHealing(radius=2, wide_mult=3, max_delay=30)
-out = []
-for x in v:
-    out.extend(sh.update(x))
-out.extend(sh.flush())
+out = [o for x in v for o in sh.update(x)] + sh.flush()
+print(len(out), out[0])
 ```
 
 ## Hand case
@@ -170,15 +181,15 @@ Window of 9 samples `[10, 11, 9, 10, 12, 10, 11, 9, 10]`, then a run of 3 sample
 - Score for the first run sample: `|15 − 10| / 1.4826 = 3.37 > 3` → deviating.
 - Same for the other two run samples.
 - Run length = 3 > `spike_run_max = 2`: it is not a spike.
-- `std(run) = std([15, 16, 15.5]) = 0.5`, `|median(run) − med| = |15.5 − 10| = 5.5`,
-  `0.5 · 5.5 = 2.75`; `0.5 < 2.75`, so the run is internally coherent.
+- `std(run) = std([15, 16, 15.5]) = 0.41`, `|median(run) − med| = |15.5 − 10| = 5.5`,
+  `0.5 · 5.5 = 2.75`; `0.41 < 2.75`, so the run is internally coherent.
 - Median of 4 post-run samples is 15; `|15 − 15.5| = 0.5 < |15 − 10| = 5`: it
   persists.
 - Label: **regime**. The 3 samples pass through unchanged.
 
-Change the run to `[15, 8, 16]` (same length, incoherent): `std = 3.6 > 0.5 · |11 − 10| =
-0.5`, so the run is **not** internally coherent → label **spike**. All three samples are
-replaced by the pre-run median (10).
+Change the three samples to `[15, 8, 16]`: 15 and 16 deviate, but 8 does not
+(`|8 − 10| / 1.4826 = 1.35 < 3`), so there are two runs of length 1, not one run of three.
+Labels: **spike, clean, spike**: 15 and 16 are replaced by 10, the 8 is kept.
 
 ## API reference
 
