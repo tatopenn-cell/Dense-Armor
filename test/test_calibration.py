@@ -12,8 +12,8 @@ pytest.importorskip("river")
 
 from river import base, metrics  # noqa: E402
 
-import dense_armor.utility.calibration as calibration  # noqa: E402
-from dense_armor.utility.calibration import OnlinePlattScaling  # noqa: E402
+import dense_armor.learn.calibration as calibration  # noqa: E402
+from dense_armor.learn.calibration import OnlinePlattScaling  # noqa: E402
 
 
 class Fixed(base.Classifier):
@@ -106,9 +106,9 @@ def test_docstring_example():
 
 def test_missing_river_raises_clear_error(monkeypatch):
     monkeypatch.setitem(sys.modules, "river", None)
-    monkeypatch.delitem(sys.modules, "dense_armor.utility.calibration", raising=False)
+    monkeypatch.delitem(sys.modules, "dense_armor.learn.calibration", raising=False)
     with pytest.raises(ModuleNotFoundError, match=r"dense-armor\[river\]"):
-        importlib.import_module("dense_armor.utility.calibration")
+        importlib.import_module("dense_armor.learn.calibration")
 
 
 def test_projection_onto_small_ball():

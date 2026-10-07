@@ -10,7 +10,7 @@ reimplementation of Ruckig's full time-optimal jerk synthesis. Promoted from Den
 after validation on two independent real physical domains (SO-101, ALOHA) -- see the module's own
 docstring for the honest safety-vs-fidelity tradeoff found there.
 
-::: dense_armor.utility.rate_limiter
+::: dense_armor.control.rate_limiter
 
 ---
 

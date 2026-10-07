@@ -5,7 +5,7 @@ to turn that reference into an actual command -- `kinematic_tracking_controller`
 piece, at the same single-integrator level `rate_limiter`/`cbf_filter` already use.
 
 ```python
-from dense_armor.utility.kinematic_controller import kinematic_tracking_controller
+from dense_armor.control.kinematic_controller import kinematic_tracking_controller
 
 u_des = kinematic_tracking_controller(q=[0.2], q_ref=[0.5], qd_ref=[1.0], kp=5.0)
 ```
@@ -22,7 +22,7 @@ exactly -- closed-form exponential convergence to zero tracking error, for any r
 trajectory, not only a fixed setpoint. `kp` sets the real convergence rate (`1/kp` is the
 time constant).
 
-::: dense_armor.utility.kinematic_controller
+::: dense_armor.control.kinematic_controller
 
 ---
 

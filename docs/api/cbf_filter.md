@@ -16,7 +16,7 @@ Dense-Evolution-Discovery after validation on two independent real physical doma
 (SO-101, ALOHA) -- see the module's own docstring for the real numbers, including a real
 numerical finding about discrete-time sub-stepping.
 
-::: dense_armor.utility.cbf_filter
+::: dense_armor.control.cbf_filter
 
 ---
 

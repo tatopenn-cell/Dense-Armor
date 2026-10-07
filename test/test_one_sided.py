@@ -7,7 +7,7 @@ Qwen telemetry analysis.
 import numpy as np
 import pytest
 
-from dense_armor.utility.one_sided import one_sided_upper_filter
+from dense_armor.anomaly.one_sided import one_sided_upper_filter
 
 
 def test_keeps_flags_above_median_drops_flags_below():
@@ -41,7 +41,7 @@ def test_mismatched_shapes_raise():
 def test_real_detector_composition_smoke():
     """Composes with an actual detector (classify_segments), not just a
     synthetic flags array -- the real intended usage pattern."""
-    from dense_armor.utility.arbiter import classify_segments
+    from dense_armor.protect.arbiter import classify_segments
 
     rng = np.random.default_rng(1)
     x = rng.normal(2.0, 0.3, 200)

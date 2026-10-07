@@ -157,7 +157,7 @@ def solve_control_qp(model, link_name, q, qd, p_des, pd_des, pdd_des,
         Current joint position/velocity.
     p_des, pd_des, pdd_des : array-like, shape (3,)
         Desired task-space position/velocity/acceleration at the current time
-        (e.g. from `utility.trajectory.quintic_trajectory`, mapped to the
+        (e.g. from `control.trajectory.quintic_trajectory`, mapped to the
         tracked link's task space).
     kp_task, kd_task : float
         Task-space PD gains for the nominal (unconstrained) command.

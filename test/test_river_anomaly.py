@@ -8,9 +8,9 @@ import pytest
 
 pytest.importorskip("river")
 
-import dense_armor.utility.river_anomaly as river_anomaly  # noqa: E402
-from dense_armor.utility.river_anomaly import StreamingDeviationScorer  # noqa: E402
-from dense_armor.utility.streaming import StreamingDeviationDetector  # noqa: E402
+import dense_armor.anomaly.deviation as river_anomaly  # noqa: E402
+from dense_armor.anomaly.deviation import StreamingDeviationScorer  # noqa: E402
+from dense_armor.anomaly.streaming import StreamingDeviationDetector  # noqa: E402
 
 
 def test_score_matches_streaming_detector_flags():
@@ -57,6 +57,6 @@ def test_river_check_estimator():
 
 def test_missing_river_raises_clear_error(monkeypatch):
     monkeypatch.setitem(sys.modules, "river", None)
-    monkeypatch.delitem(sys.modules, "dense_armor.utility.river_anomaly", raising=False)
+    monkeypatch.delitem(sys.modules, "dense_armor.anomaly.deviation", raising=False)
     with pytest.raises(ModuleNotFoundError, match=r"dense-armor\[river\]"):
-        importlib.import_module("dense_armor.utility.river_anomaly")
+        importlib.import_module("dense_armor.anomaly.deviation")

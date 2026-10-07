@@ -2,7 +2,7 @@
 import numpy as np
 from scipy.io import wavfile
 
-from dense_armor.utility.anwav import anwav
+from dense_armor.misc.anwav import anwav
 
 
 def _write_wav(path, amplitude=0.5, sr=44100, seconds=1, dtype=np.float32):

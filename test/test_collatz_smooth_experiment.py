@@ -18,8 +18,8 @@ jax.config.update("jax_enable_x64", True)
 
 import numpy as np
 
-from dense_armor.utility.collatz import ABCollatz
-from dense_armor.utility.orca import Orca
+from dense_armor.misc.collatz import ABCollatz
+from dense_armor.protect.orca import Orca
 
 _TEST_DIR = pathlib.Path(__file__).resolve().parent
 

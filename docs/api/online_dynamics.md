@@ -13,7 +13,7 @@ honest result below).
 import jax
 import jax.numpy as jnp
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.dynamics.online_dynamics import ResidualDynamicsLearner
+from dense_armor.learn.online_dynamics import ResidualDynamicsLearner
 
 model = RigidBodyModel("robot.urdf")
 model.mass_matrix = jax.jit(model.mass_matrix)      # see performance note
@@ -77,4 +77,4 @@ the RLS update.
 - Hampel, F. R. (1974). The influence curve and its role in robust estimation.
   *JASA* 69(346), 383-393. (Hampel trigger.)
 
-::: dense_armor.dynamics.online_dynamics
+::: dense_armor.learn.online_dynamics

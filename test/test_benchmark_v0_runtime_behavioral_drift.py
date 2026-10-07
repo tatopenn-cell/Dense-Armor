@@ -67,12 +67,12 @@ FOUR DETECTOR ARMS, same frozen inputs for each:
                     cannot make that distinction) -- the honest "simple
                     statistical baseline" comparison the review asked
                     for, before any comparison to commercial competitors.
-  - "dense_armor" -- utility.arbiter.classify_segments, called with its
+  - "dense_armor" -- protect.arbiter.classify_segments, called with its
                     OWN SHIPPED DEFAULTS (radius=10, ref_mult=3,
                     n_sigmas=3.0, spike_run_max=2) -- using the library's
                     real defaults, not thresholds hand-picked for this
                     benchmark, is itself part of the preregistration.
-  - "cusum"       -- utility.cusum.cusum_detector (v0.1 addition), its
+  - "cusum"       -- drift.cusum.cusum_detector (v0.1 addition), its
                     OWN SHIPPED DEFAULTS (k=0.5, h=5.0) likewise unchanged
                     from the classical textbook tuning. Binary alert only
                     (no spike/regime distinction) -- see its own module
@@ -100,8 +100,8 @@ from typing import Tuple
 
 import numpy as np
 
-from dense_armor.utility.arbiter import classify_segments
-from dense_armor.utility.cusum import cusum_detector
+from dense_armor.protect.arbiter import classify_segments
+from dense_armor.drift.cusum import cusum_detector
 
 SEED = 20260901
 N_POINTS = 600

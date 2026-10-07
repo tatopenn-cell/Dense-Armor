@@ -21,7 +21,7 @@ from typing import Dict, List, Optional, Tuple, Union
 import numpy as np
 
 from .core.hybrid_engine import hybrid_shield, _local_nan_fill  # motore phi_ab/trigger, vedi CHANGELOG 1.1.0
-from .utility.metro import Metro                      # scaler anti-underflow, intatto
+from .misc.metro import Metro                      # scaler anti-underflow, intatto
 
 
 class Armatura:

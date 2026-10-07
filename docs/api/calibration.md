@@ -13,7 +13,7 @@ pip install dense-armor[river]
 
 ```python
 from river import datasets, evaluate, metrics, tree
-from dense_armor.utility.calibration import OnlinePlattScaling
+from dense_armor.learn.calibration import OnlinePlattScaling
 
 dataset = datasets.Phishing()
 evaluate.progressive_val_score(dataset, tree.HoeffdingTreeClassifier(), metrics.LogLoss())
@@ -37,7 +37,7 @@ model.
 | Projection | `‖(a, b)‖₂ ≤ 100` | `radius` |
 | Clipping | `f(x)` in `[0.01, 0.99]` | `clip` |
 
-::: dense_armor.utility.calibration
+::: dense_armor.learn.calibration
 
 ---
 

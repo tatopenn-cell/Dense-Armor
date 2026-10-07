@@ -42,8 +42,8 @@ from collections import defaultdict
 
 import numpy as np
 
-from dense_armor.utility.arbiter import classify_segments
-from dense_armor.utility.cusum import cusum_detector
+from dense_armor.protect.arbiter import classify_segments
+from dense_armor.drift.cusum import cusum_detector
 
 _DATA_PATH = pathlib.Path(__file__).resolve().parent / "agent_v2" / "telemetry_v2_1_fresh.jsonl"
 

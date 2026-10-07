@@ -10,7 +10,7 @@ before running a benchmark. Promoted from Dense-Evolution-Discovery after valida
 independent real physical domains (lidar, accelerometer); see `detectability_report`'s own
 docstring for the honest, mixed real-world result.
 
-::: dense_armor.utility.cusum
+::: dense_armor.drift.cusum
 
 ---
 
@@ -19,14 +19,14 @@ the slow-drift complement to.
 
 ## Streaming CUSUM for river
 
-`CUSUMDriftDetector` (`dense_armor.utility.river_drift`, `pip install dense-armor[river]`)
+`CUSUMDriftDetector` (`dense_armor.drift.detector`, `pip install dense-armor[river]`)
 is `cusum_detector` one sample at a time, as a river `DriftDetector`: `update(x)` returns
 the detector and sets `drift_detected`. On the same series it fires at exactly the same
 indices as `cusum_detector`, for both `reference="adaptive"` and `reference="fixed"`.
 
 ```python
 import numpy as np
-from dense_armor.utility.river_drift import CUSUMDriftDetector
+from dense_armor.drift.detector import CUSUMDriftDetector
 
 rng = np.random.default_rng(0)
 stream = np.concatenate([rng.normal(0, 1, 500), rng.normal(1.5, 1, 500)])
