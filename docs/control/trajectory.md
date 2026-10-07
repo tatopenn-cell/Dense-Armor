@@ -18,23 +18,26 @@ overshoot, no oscillation.
 A 6-joint arm has to move from its current joint configuration to a target one, in 2
 seconds.
 
-```python
-import numpy as np
-q0 = np.array([0.0, 0.5, -0.3, 0.1, 0.0, 0.0])
-qf = np.array([0.5, 1.0, -0.1, 0.2, 0.0, 0.0])
-T = 2.0
-```
-
 The arm is at rest before and after the move: no residual velocity, no residual
 acceleration.
 
 ## 1. Generate the trajectory
 
 ```python
+import numpy as np
 from dense_armor.utility.control.trajectory import quintic_trajectory
 
-t, q, v, a = quintic_trajectory(q0=q0, qf=qf, T=T)
+q0 = np.array([0.0, 0.5, -0.3, 0.1, 0.0, 0.0])
+qf = np.array([0.5, 1.0, -0.1, 0.2, 0.0, 0.0])
+t, q, v, a = quintic_trajectory(q0=q0, qf=qf, T=2.0)
+print(q[0].round(3), q[-1].round(3), np.abs(v).max(axis=0).round(3))
 ```
+
+```
+[ 0.   0.5 -0.3  0.1  0.   0. ] [ 0.5  1.  -0.1  0.2  0.   0. ] [0.469 0.469 0.187 0.094 0.    0.   ]
+```
+
+The path starts exactly at `q0`, ends exactly at `qf`, and the largest joint speed is 0.469 rad/s.
 
 `t` is a time vector; `q`, `v`, `a` are the position, velocity and acceleration
 profiles, all with shape `(len(t), 6)`. Every joint gets its own independent polynomial
@@ -75,11 +78,21 @@ makes it possible to chain several segments without the robot stopping at every
 intermediate waypoint:
 
 ```python
+import numpy as np
+from dense_armor.utility.control.trajectory import quintic_trajectory
+
+q0, qf = np.array([0.0, 0.5]), np.array([0.5, 1.0])
 q_mid = 0.5 * (q0 + qf)
 t1, q1, v1, a1 = quintic_trajectory(q0, q_mid, T=1.0)
-t2, q2, v2, a2 = quintic_trajectory(q_mid, qf, T=1.0,
-                                     v0=v1[-1], a0=a1[-1])
+t2, q2, v2, a2 = quintic_trajectory(q_mid, qf, T=1.0, v0=v1[-1], a0=a1[-1])
+print(q1[-1].round(3), q2[0].round(3), v1[-1].round(3), v2[0].round(3))
 ```
+
+```
+[0.25 0.75] [0.25 0.75] [0. 0.] [0. 0.]
+```
+
+Two quintic pieces joined at the midpoint: same position (0.25, 0.75) and same velocity (0) at the joint.
 
 The end velocity of the first segment becomes the start velocity of the second, so the
 velocity profile is continuous across the join. The acceleration too. The result is a
@@ -101,16 +114,23 @@ velocity level.
 The output is the reference. Two standard consumers:
 
 ```python
+import numpy as np
+from dense_armor.utility.control.trajectory import quintic_trajectory
 from dense_armor.utility.control.kinematic_controller import kinematic_tracking_controller
-from dense_armor.utility.control.rate_limiter import rate_limited_follower
-from dense_armor.utility.control.cbf_filter import cbf_safety_filter
 
-dt = t[1] - t[0]
-qa = q0.copy()
+t, q, v, a = quintic_trajectory(np.zeros(2), np.array([0.5, 1.0]), T=2.0)
+dt, qa = t[1] - t[0], np.array([0.05, -0.05])
 for i in range(len(t)):
-    u = kinematic_tracking_controller(qa, q[i], v[i], kp=5.0)
-    qa = qa + dt * u
+    qa = qa + dt * kinematic_tracking_controller(qa, q[i], v[i], kp=5.0)
+print(np.abs(qa - q[-1]).round(4))
 ```
+
+```
+[0.0007 0.0014]
+```
+
+The kinematic controller follows a 2-joint quintic path starting 0.05 rad off; at the end the error is
+below 0.0015 rad.
 
 The trajectory says *where to go*; the kinematic controller says *how to get there on
 a single-integrator plant*; the rate limiter and CBF filter keep the resulting command

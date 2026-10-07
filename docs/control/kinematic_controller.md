@@ -16,24 +16,26 @@ API works.
 
 Take the trajectory from the [previous page](trajectory.md). At some sample `i`:
 
-```python
-import numpy as np
-q_actual = np.array([0.05, 0.5, -0.25, 0.1, 0.0, 0.0])
-q_ref    = np.array([0.10, 0.6, -0.20, 0.1, 0.0, 0.0])
-qd_ref   = np.array([0.20, 0.20, 0.10, 0.0, 0.0, 0.0])
-kp = 5.0
-```
-
 The joint has fallen behind the reference (`q_actual < q_ref` on joints 0 and 1); it has
 also drifted slightly ahead on joint 2. The reference is moving at about 0.2 rad/s.
 
 ## 1. Compute the command
 
 ```python
+import numpy as np
 from dense_armor.utility.control.kinematic_controller import kinematic_tracking_controller
 
-u_des = kinematic_tracking_controller(q=q_actual, q_ref=q_ref, qd_ref=qd_ref, kp=kp)
+q = np.array([0.05, 0.5, -0.25, 0.1, 0.0, 0.0])
+q_ref = np.array([0.10, 0.6, -0.20, 0.1, 0.0, 0.0])
+qd_ref = np.array([0.20, 0.20, 0.10, 0.0, 0.0, 0.0])
+print(kinematic_tracking_controller(q=q, q_ref=q_ref, qd_ref=qd_ref, kp=5.0))
 ```
+
+```
+[0.45 0.7  0.35 0.   0.   0.  ]
+```
+
+The command is $u = \dot q_{ref} + k_p (q_{ref} - q)$: for the first joint $0.20 + 5\,(0.10 - 0.05) = 0.45$.
 
 `u_des` is a joint-velocity command. Feed it into the [rate limiter](rate_limiter.md)
 and the [CBF filter](cbf_filter.md) before sending it to the motor, exactly as you
