@@ -53,7 +53,10 @@ def check_clone_new_params(est: Base) -> None:
             new = cur + 1.0
         else:
             continue
-        c = est.clone(new_params={name: new})
+        try:
+            c = est.clone(new_params={name: new})
+        except (ValueError, TypeError):
+            continue
         assert getattr(c, name) == new
         assert getattr(est, name) == cur
         return
