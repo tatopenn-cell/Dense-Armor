@@ -44,7 +44,7 @@ import numpy as np
 from dense_armor.protect.arbiter import classify_segments
 from dense_armor.drift.cusum import cusum_detector
 
-_DATA_PATH = pathlib.Path(__file__).resolve().parent / "agent_v2" / "telemetry_v2_frozen.jsonl"
+_DATA_PATH = pathlib.Path(__file__).resolve().parent.parent / "agent_v2" / "telemetry_v2_frozen.jsonl"
 
 ARBITER_KW = dict(radius=5, ref_mult=2, n_sigmas=3.0, spike_run_max=2)
 CUSUM_KW = dict(radius=5, ref_mult=2, k=0.5, h=5.0)

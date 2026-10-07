@@ -18,7 +18,7 @@ import dense_armor.dynamics.passivity_cbf_controller as pcc
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 from dense_armor.dynamics.passivity_cbf_controller import solve_control_qp, manipulability
 
-FIXTURES = os.path.join(os.path.dirname(__file__), "fixtures", "urdf")
+FIXTURES = os.path.join(os.path.dirname(os.path.dirname(__file__)), "fixtures", "urdf")
 
 
 def test_controller_stays_finite_near_a_documented_infeasible_state():

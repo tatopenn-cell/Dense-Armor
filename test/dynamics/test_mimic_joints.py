@@ -13,7 +13,7 @@ import pytest
 
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 
-XACRO_PATH = os.path.join(os.path.dirname(__file__), "fixtures", "urdf",
+XACRO_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "fixtures", "urdf",
                            "xacro_panda", "panda_arm_hand.urdf.xacro")
 
 

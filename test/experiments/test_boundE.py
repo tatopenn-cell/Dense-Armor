@@ -3,7 +3,7 @@ import os
 import time
 import jax
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 # Alias con underscore iniziale (non "test_*"): altrimenti pytest li
 # raccoglie ANCHE come test a se' stanti (qualunque nome "test_*" a livello
