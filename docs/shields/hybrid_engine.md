@@ -5,98 +5,90 @@ array. Behind it sits `hybrid_engine`, the module that actually decides, sample 
 sample, whether a value is a genuine reading or a bad one — and if bad, what to put
 in its place.
 
-The engine is called *hybrid* because it combines two answers to the same question
-("is this value abnormal?") and only replaces a sample when they agree: a **fixed
-threshold** on the value itself, and a **binary trigger** that fires when the sample
-enters a narrow band far from the local baseline.
+Each sample is in one of two states: **dynamic** (a genuine movement of the signal, kept as
+measured) or **static** (replaced by the median of the previous window). A binary trigger decides,
+from how the sample relates to the recent past.
 
-## The signal
-
-Same as on the previous page: a 100 Hz channel with one absurd value (9999) at sample
-100 and one NaN at 200.
+## 1. Call the engine
 
 ```python
 import numpy as np
-rng = np.random.default_rng(42)
-x = 0.5 + 0.1 * rng.standard_normal(300)
-x[100] = 9999.0
-x[200] = float("nan")
-```
-
-## 1. Two thresholds, one decision
-
-The engine keeps a causal window of past samples. For each new sample it computes a
-robust centre `med` and a robust scale `S` (median and scaled MAD, same as everywhere
-else in the library), then applies two rules:
-
-- **Rule A (fixed threshold)**: replace the sample if `|x − med| > t · S`, with `t`
-  a fixed constant chosen at construction.
-- **Rule B (binary trigger)**: replace the sample if it falls inside a narrow band
-  centred on a value far from `med`, expressed as an interval of width `w`.
-
-The output value is the window median, but only when *both* rules agree. This is what
-makes the engine robust to the two failure modes of a single rule:
-
-- A fixed `t` alone catches big spikes but fails when the noise level itself changes:
-  the same `t` becomes too tight or too loose.
-- The binary trigger alone is scale-free but flags too aggressively on smooth signals
-  that happen to have narrow peaks.
-
-Together, they agree exactly on the samples that are unambiguously bad (a value
-thousands of times the local scale, or NaN), and disagree on the ambiguous ones, which
-pass through untouched.
-
-## 2. Calling the engine directly
-
-```python
 from dense_armor.core.hybrid_engine import hybrid_shield
 
-clean, k, info = hybrid_shield(x)
+rng = np.random.default_rng(42)
+x = 0.5 + 0.1 * rng.standard_normal(300)
+x[100], x[200] = 9999.0, float("nan")
+clean, trigger, info = hybrid_shield(x)
+print(round(float(clean[100]), 3), trigger[100], round(float(trigger.mean()), 2), info)
 ```
 
-`clean` is the same array with the two broken samples replaced by the local median.
-Everything else is bit-identical to `x`.
+```
+0.463 0.0 0.88 {'fallback_triggered': True, 'adaptive_radius_used': 20}
+```
 
-`radius=15` means the causal window holds 30 samples before the one being scored. The
-same window convention as the anomaly detectors on [Streaming](../anomaly/streaming.md):
-the sample being judged is never part of its own window.
+The engine returns the cleaned series, the trigger per sample (1 = dynamic, kept; 0 = static,
+replaced) and a small dict: whether any sample fell back, and the window radius used,
+`min(20, max(3, n // 3))` (20 here). The spike at 100 has trigger 0 and becomes 0.463.
 
-## 3. Why "hybrid" is not "two detectors in series"
+## 2. The trigger, symbol by symbol
 
-The two rules run *simultaneously*, on the same window, and their verdicts are combined
-with a logical AND. The engine does not use the fixed threshold as a pre-filter and the
-trigger as a post-check: if it did, the fixed threshold would silently disable the
-trigger whenever the noise level fluctuated enough to make `t · S` bigger than the
-band, which is exactly the failure mode this design avoids.
+For sample $x_i$, with $b_i$ the mean of the previous `R` samples (or `riferimento[i]` if a
+reference series is given), $s_i$ the local scale (standard deviation of the differences in the
+window) and $g_i$ the sign of the previous step $x_{i-1} - x_{i-2}$:
 
-The AND is also why the engine never over-corrects a smooth signal. If the fixed
-threshold fires but the trigger does not (a smooth but fast-moving signal that briefly
-exceeds `t · S`), the value passes through. If the trigger fires but the threshold does
-not (a narrow peak that stays inside `t · S` because the window scale is large), the
-value also passes through. Only the both-fire case is a spike.
+$$\Phi_i = \mathrm{clip}\Big(0.6\,\tfrac{1 + \mathrm{sign}(x_i - b_i)\,g_i}{2} + 0.4\,\big(1 - \tfrac{|x_i - b_i|}{s_i}\big),\; 0,\; 1\Big),$$
 
-## 4. The nan handling
+$$v_i = 5\,\mathrm{clip}\big(\ln(|x_i| / |b_i|),\, -5,\, 5\big)\,\Phi_i, \qquad \text{trigger}_i = \big[\,|v_i| > 0.01\,\big].$$
 
-Non-finite values never enter the window. When the engine sees a NaN, it does not push
-it into the buffer, does not compute a score for it, and returns the current window
-median as the cleaned value. The next finite sample is then scored against the window
-ending at the last finite sample — the NaN leaves no trace in the statistics.
+- $\Phi_i$ mixes **alignment** (does the change continue the direction of the last step?) and
+  **coherence** (is the change small compared with the local scale?).
+- $v_i$, the *dynamic vector*, is the logarithmic change of magnitude weighted by $\Phi_i$.
+- A huge spike has $|x_i - b_i| \gg s_i$, so the coherence term drives $\Phi_i$ to 0, $v_i = 0$,
+  trigger 0: the sample is replaced by the window median.
 
-This is why `Armatura.analizza` reports index 200 in `anomalies` even though the NaN
-"never happened" from the engine's point of view: the index is reported, the value is
-replaced, the window is untouched.
+The first two samples are never tested (the step direction needs two previous points).
 
-## 5. Provenance
+## 3. What the trigger also replaces
 
-The engine generalises the logic already verified in Dense-Evolution's own
-`ia_utils.vector_healing.enhanced_dense_healing_hybrid`. The two rules, the AND, and
-the NaN handling are the same; what changed is the interface (`process(value)` instead
-of an array in, array out) and the window management (causal only).
+On the example the trigger is 1 on 88 % of the samples. Besides the spike and the NaN, it also
+classifies as static ordinary samples that hardly differ from the baseline ($v_i$ below 0.01),
+and replaces them with the window median:
+
+```python
+import numpy as np
+from dense_armor.core.hybrid_engine import hybrid_shield
+
+rng = np.random.default_rng(42)
+x = 0.5 + 0.1 * rng.standard_normal(300)
+x[100], x[200] = 9999.0, float("nan")
+clean, trigger, info = hybrid_shield(x)
+d = np.abs(clean - x)[np.isfinite(x) & (np.arange(300) != 100)]
+print(int((d > 1e-12).sum()), round(float(d.max()), 4))
+```
+
+```
+35 0.2935
+```
+
+35 ordinary samples out of 298 change, by up to 0.29 (about three times the noise level), and they
+are not counted as anomalies by `Armatura`. Keep this in mind on smooth signals.
+
+## 4. Non-finite values
+
+`Inf` is turned into NaN and every NaN is filled from its local neighbourhood **before** the
+trigger runs, so the windows never contain a non-finite value.
 
 ## API reference
 
 ::: dense_armor.core.hybrid_engine
 
 ---
+
+## Details
+
+The engine generalises the logic already verified in Dense-Evolution's own
+`ia_utils.vector_healing.enhanced_dense_healing_hybrid`. The trigger and
+the NaN handling are the same as there; this version computes all samples in one vectorised
+call (`jax.vmap`).
 
 **See also**: [`Armatura`](armatura.md) — the wearable class built on this engine.

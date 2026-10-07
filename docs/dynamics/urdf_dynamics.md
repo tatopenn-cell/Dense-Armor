@@ -11,24 +11,33 @@ and the kinematics of any link in the chain. Everything downstream — from grav
 compensation to the CBF controllers that need the Jacobian — is built on this.
 
 ```python
-import jax
-jax.config.update("jax_enable_x64", True)
 import jax.numpy as jnp
-import numpy as np
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 
 model = RigidBodyModel("panda.urdf")
-model.n
+print(model.n)
+```
+
+```
+9
 ```
 
 `model.n` is the number of real, non-fixed joints the file describes — read from the
-file, not assumed. For a Franka Panda it is 7 (the arm) or 9 (arm + 2 gripper fingers),
-depending on which URDF you load.
+file, not assumed. For a Franka Panda it is 7 (the arm) or 9 (arm plus the two gripper
+fingers), depending on which URDF you load. The file used here has the hand, so it is 9.
 
 ## 1. Joint limits
 
 ```python
-model.q_min, model.q_max, model.qd_max
+import jax.numpy as jnp
+from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
+
+model = RigidBodyModel("panda.urdf")
+print(model.q_min[:3], model.q_max[:3], model.qd_max[:3])
+```
+
+```
+[-2.9671 -1.8326 -2.9671] [2.9671 1.8326 2.9671] [2.175 2.175 2.175]
 ```
 
 Each joint's real position and velocity limits, from the URDF's own `<limit>` tag, or
@@ -40,38 +49,49 @@ row is added to the constraint.
 ## 2. The mass matrix
 
 ```python
-q = jnp.zeros(model.n)
-M = model.mass_matrix(q)
+import jax.numpy as jnp
+from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
+
+model = RigidBodyModel("panda.urdf")
+M = model.mass_matrix(jnp.zeros(model.n))
+print(M.shape, bool(jnp.allclose(M, M.T)), float(jnp.linalg.eigvalsh(M).min()) > 0)
+```
+
+```
+(9, 9) True True
 ```
 
 `M(q)` is the joint-space mass matrix at configuration `q`. It is symmetric and
 positive-definite by construction, built from the link masses and inertia tensors in the
 file via the standard Lagrangian construction: the kinetic energy is the sum over links
-of `½ · q̇ᵀ Jᵀ M_link J q̇`, where `J` is each link's own center-of-mass Jacobian.
+of `½ m vᵀv + ½ ωᵀ I ω` (each link's mass `m` and inertia tensor `I`, with `v` and `ω` the
+velocity of its centre of mass and its angular velocity, both linear in `q̇`).
 The `jax.grad` / `jax.jvp` machinery does the differentiation; no Christoffel symbols
 are hand-derived.
 
-**Numerical check.** For the Panda, `M(q)` is symmetric to `1e-16` at 20 random
-configurations. Both eigenvalues are positive. Both properties hold without any
-explicit symmetrization or fix-ups: they come out of the derivation.
+Both properties — symmetric and positive-definite — hold without any explicit
+symmetrization or fix-ups: they come out of the derivation, at every configuration.
 
 ## 3. Gravity and Coriolis terms
 
 ```python
-g = model.gravity_forces(q)
-c_qd = model.bias_forces(q, qd)
+import jax.numpy as jnp
+from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
+
+model = RigidBodyModel("panda.urdf")
+q, qd, q_ref = jnp.zeros(model.n), jnp.zeros(model.n), jnp.full(model.n, 0.1)
+tau = model.gravity_forces(q) + 50.0 * (q_ref - q) - 10.0 * qd
+print(jnp.round(tau[:4], 3))
+```
+
+```
+[5.    2.174 5.    1.483]
 ```
 
 `gravity_forces(q)` is the gravity torque at each joint. `bias_forces(q, qd)` is the
 `C(q, qd) qd` term — Coriolis and centrifugal together, as they always are in the
-Lagrangian form.
-
-Both are available independently so a custom controller can build its own compensation.
-The most common use is a gravity-compensating PD:
-
-```python
-tau = model.gravity_forces(q) + kp * (q_ref - q) - kd * qd
-```
+Lagrangian form. The block above builds a **gravity-compensating PD**: the gravity term
+plus a proportional term toward a reference plus a derivative term on velocity.
 
 Without gravity compensation, a PD controller on the joint positions needs a large
 `kp` to hold the arm against gravity, and that `kp` produces overshoot when the arm
@@ -80,25 +100,44 @@ moves. With it, the PD is a small correction on top of a physical baseline.
 ## 4. Forward dynamics
 
 ```python
-tau = jnp.zeros(model.n)
-qdd = model.forward_dynamics(q, qd, tau)
+import jax.numpy as jnp
+from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
+
+model = RigidBodyModel("panda.urdf")
+q, qd = jnp.zeros(model.n), jnp.zeros(model.n)
+qdd = model.forward_dynamics(q, qd, model.gravity_forces(q))
+print(float(jnp.abs(qdd).max()))
+```
+
+```
+0.0
 ```
 
 `forward_dynamics` solves `M(q) qdd + C(q, qd) qd + g(q) = tau` for `qdd` — the joint
-acceleration that a torque command `tau` would produce at this state. With `tau = 0`
-it is the free (torque-free) dynamics, useful for verifying the model: the total energy
-`½ q̇ᵀ M(q) q̇ + U(q)` should be conserved.
+acceleration that a torque command `tau` would produce at this state. Feeding it exactly
+`gravity_forces(q)` at zero velocity yields zero acceleration: the model is in
+equilibrium. With `tau = 0` it is the free (torque-free) dynamics, useful for verifying
+the model: the total energy `½ q̇ᵀ M(q) q̇ + U(q)` should be conserved.
 
-**Energy conservation.** With RK4 and `tau = 0`, the relative energy drift decreases as
-`dt⁴` as the integration step shrinks: `5.9e-7 → 6.0e-11 → 5.5e-15` on the Panda for
-`dt = 10⁻², 10⁻³, 10⁻⁴ s`. The convergence order is what confirms the equations are
-correct; a wrong sign or a transposed inertia tensor would give a much worse ratio.
+With RK4 and `tau = 0`, the relative energy drift decreases as `dt⁴` as the integration
+step shrinks: `5.9e-7 → 6.0e-11 → 5.5e-15` on the Panda for `dt = 10⁻², 10⁻³, 10⁻⁴ s`.
+The convergence order is what confirms the equations are correct; a wrong sign or a
+transposed inertia tensor would give a much worse ratio.
 
 ## 5. Kinematics of any link
 
 ```python
-p = model.link_position(q, "panda_hand")
-J = model.link_jacobian(q, "panda_hand")
+import jax.numpy as jnp
+from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
+
+model = RigidBodyModel("panda.urdf")
+q = jnp.zeros(model.n)
+p, J = model.link_position(q, "panda_hand"), model.link_jacobian(q, "panda_hand")
+print(jnp.round(p, 3), J.shape)
+```
+
+```
+[ 0.088 -0.     0.926] (3, 9)
 ```
 
 Any link name from the URDF works — useful for checking the elbow's position, or for
@@ -110,35 +149,23 @@ For a link's **full pose** (position and orientation) and its 6×N **spatial Jac
 `link_pose` and `link_spatial_jacobian`:
 
 ```python
+import jax.numpy as jnp
+from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
+
+model = RigidBodyModel("panda.urdf")
+q = jnp.zeros(model.n)
 p, R = model.link_pose(q, "panda_hand")
-Jspatial = model.link_spatial_jacobian(q, "panda_hand")
+print(R.shape, model.link_spatial_jacobian(q, "panda_hand").shape)
+```
+
+```
+(3, 3) (6, 9)
 ```
 
 `Jspatial` has shape `(6, N)`: the top three rows are angular, the bottom three are
 linear. The order matches `Twist = [ω; v]`, the standard spatial-velocity convention.
 
-## 6. Numerical example
-
-Take the Panda at the zero configuration.
-
-```python
-q = jnp.zeros(model.n)
-qd = jnp.zeros(model.n)
-M = model.mass_matrix(q)
-g = model.gravity_forces(q)
-```
-
-`g` is the torque needed to hold the arm in this pose against gravity. It is nonzero
-for every joint whose link is not perfectly balanced — most of them. `M` is the
-instantaneous inertia in joint space; it changes as the arm moves because a link's
-distance from the joint axis changes.
-
-The `forward_dynamics` result at `q = 0`, `qd = 0`, `tau = 0` is the joint acceleration
-produced by gravity alone: `qdd = −M⁻¹ g`. On a real robot this is what "let go of the
-arm" would do. In simulation it is the correct initial condition for an unpowered
-trajectory.
-
-## 7. Xacro files and mimic joints
+## 6. Xacro files and mimic joints
 
 A `.xacro` path is expanded automatically. A joint's `<mimic>` tag (a gripper's two
 fingers tied together) is respected: `model.n` counts real independent DOF, not raw
@@ -182,5 +209,6 @@ correctness.
 **Reproducing this**: `pytest test/test_urdf_dynamics.py`.
 
 **See also**: [Passivity + singularity-CBF controller](passivity_cbf_controller.md) —
-the task-space controller built on this model. [Online dynamics](../learn/online_dynamics.md) —
-the module that learns what the URDF does not model (payload, friction, wear).
+the task-space controller built on this model.
+[Online dynamics](../learn/online_dynamics.md) — the module that learns what the URDF
+does not model (payload, friction, wear).

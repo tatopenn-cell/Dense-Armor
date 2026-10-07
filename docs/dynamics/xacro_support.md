@@ -20,10 +20,16 @@ includes them. Loading the top-level file gives the full arm + hand.
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 
 model = RigidBodyModel("panda_arm_hand.urdf.xacro")
-model.n
+print(model.n)
 ```
 
-`model.n` is `8` — 7 arm joints plus 1 independent gripper coordinate.
+```
+8
+```
+
+`model.n` is `8` — 7 arm joints plus 1 independent gripper coordinate. The two finger
+joints are counted as one real DOF because of the `<mimic>` tag on the second one
+(see [coupled joints via mimic](mimic_joints.md)).
 
 ## 1. What happens under the hood
 
@@ -98,7 +104,7 @@ should not be treated as one.
 To see the expanded URDF without loading it into the model, call `xacro` directly:
 
 ```bash
-python -m xacro panda_arm_hand.urdf.xacro > panda_expanded.urdf
+python -c "import xacro; print(xacro.process_file('panda_arm_hand.urdf.xacro').toxml())" > panda_expanded.urdf
 ```
 
 The result is a plain URDF. It can be inspected, diffed against the source, and — if
@@ -127,5 +133,5 @@ of the same macro. Restoring that block (same real values: mass 0.005, inertia
 **Reproducing this**: `pytest test/test_xacro_support.py`.
 
 **See also**: [Mimic joints](mimic_joints.md) — coupled joints (a gripper's two
-fingers) also need special handling, and the two features are independent:
-a robot can have both xacro files and mimic joints, or just one of them.
+fingers) also need special handling, and the two features are independent: a robot can
+have both xacro files and mimic joints, or just one of them.
