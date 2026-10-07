@@ -11,7 +11,7 @@ import pytest
 pytest.importorskip("river")
 
 from river import metrics  # noqa: E402
-from dense_armor.base import Classifier  # noqa: E402
+from dense_armor.roles import Classifier  # noqa: E402
 
 import dense_armor.utility.learn.calibration as calibration  # noqa: E402
 from dense_armor.utility.learn.calibration import OnlinePlattScaling  # noqa: E402

@@ -1,11 +1,11 @@
-"""Direct tests of dense_armor.base roles, Protected and Base utilities."""
+"""Direct tests of dense_armor.roles roles, Protected and Root utilities."""
 import pickle
 
 import numpy as np
 import pytest
 
-from dense_armor.base import (
-    AnomalyDetector, AnomalyFilter, Base, Classifier, DriftDetector, Protected,
+from dense_armor.roles import (
+    AnomalyDetector, AnomalyGate, Root, Classifier, DriftDetector, Protected,
     Regressor, Transformer, TransformerSupervised,
 )
 
@@ -51,7 +51,7 @@ class Abs(AnomalyDetector):
         return abs(float(next(iter(x.values()))))
 
 
-class Gate(AnomalyFilter):
+class Gate(AnomalyGate):
     def classify(self, score):
         return score > 3.0
 
@@ -148,7 +148,7 @@ def test_base_params_clone_mutate_pickle_state():
 
 
 def test_time_base_and_describe():
-    b = Base()
+    b = Root()
     assert isinstance(b.describe(), dict)
 
 
@@ -166,7 +166,7 @@ def test_time_step_dt_rate_jitter_and_windows():
 
 
 def test_repr_floats_nested_and_stochastic():
-    class P(Base):
+    class P(Root):
         def __init__(self, a=0.0, b=100000.0, c=-2e-7, inner=None, seed=None):
             self.a, self.b, self.c, self.inner, self.seed = a, b, c, inner, seed
     r = repr(P(inner=MeanReg()))
@@ -185,7 +185,7 @@ def test_union_and_product_of_transformers():
 
 def test_call_logger_logs_public_calls(caplog):
     import logging
-    with caplog.at_level(logging.DEBUG, logger="dense_armor.base"):
-        with Base._call_logger(klass=MeanReg):
+    with caplog.at_level(logging.DEBUG, logger="dense_armor.roles"):
+        with Root._call_logger(klass=MeanReg):
             MeanReg().learn_one({"a": 0.0}, 1.0)
     assert any("learn_one" in m for m in caplog.messages)

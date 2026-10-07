@@ -29,12 +29,10 @@ Pébay, P. (2008). Formulas for robust, one-pass parallel computation of
 West, D. H. D. (1979). Updating mean and variance estimates: an improved
     method. Communications of the ACM 22(9), 532-535.
 """
-from __future__ import annotations
-
 import math
 from typing import Any
 
-from dense_armor.base import Transformer
+from dense_armor.roles import Transformer
 
 
 class RunningMoments(Transformer):

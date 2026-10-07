@@ -27,13 +27,11 @@ Chan, T. F., Golub, G. H., LeVeque, R. J. (1979). Updating formulae and
 Chatfield, C. (2003). The Analysis of Time Series: An Introduction,
     6th ed. Chapman & Hall/CRC.
 """
-from __future__ import annotations
-
 import math
 from collections import deque
 from typing import Any
 
-from dense_armor.base import Transformer
+from dense_armor.roles import Transformer
 
 
 class RunningCovariance(Transformer):

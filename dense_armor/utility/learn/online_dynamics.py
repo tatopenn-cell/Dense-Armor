@@ -32,7 +32,7 @@ from typing import Optional, Sequence
 
 import numpy as np
 
-from dense_armor.base import Regressor
+from dense_armor.roles import Regressor
 
 import jax.numpy as jnp
 

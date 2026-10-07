@@ -1,11 +1,9 @@
-"""Wrapper role: an estimator that delegates to a wrapped model."""
+"""ModelWrapper role: an estimator that delegates to a wrapped model."""
 
-from __future__ import annotations
-
-from dense_armor.base.estimator import Estimator
+from dense_armor.roles.estimator import Estimator
 
 
-class Wrapper(Estimator):
+class ModelWrapper(Estimator):
     """Delegates ``_supervised`` and ``_multiclass`` to the wrapped
     model. Subclasses must implement ``_wrapped_model``.
     """

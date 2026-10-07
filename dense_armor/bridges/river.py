@@ -9,8 +9,6 @@ river objects).
 Needs the optional dependency: ``pip install dense-armor[river]``.
 """
 
-from __future__ import annotations
-
 try:
     from river import base as _river_base  # noqa: F401
     from river import checks as _river_checks  # noqa: F401

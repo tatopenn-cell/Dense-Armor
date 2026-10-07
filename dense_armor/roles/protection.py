@@ -1,10 +1,8 @@
 """Protected learning: skip flagged samples, fall back to last good prediction."""
 
-from __future__ import annotations
-
 from typing import Any
 
-from dense_armor.base.estimator import Estimator
+from dense_armor.roles.estimator import Estimator
 
 
 class Protected(Estimator):

@@ -1,9 +1,7 @@
 """Anomaly detector role (high score = anomalous)."""
 
-from __future__ import annotations
-
-from dense_armor.base._util import call_with_t
-from dense_armor.base.estimator import Estimator
+from dense_armor.roles._util import call_with_t
+from dense_armor.roles.estimator import Estimator
 
 
 class AnomalyDetector(Estimator):
@@ -11,13 +9,13 @@ class AnomalyDetector(Estimator):
 
     _supervised = False
 
-    def learn_one(self, x: dict, t: float | None = None) -> AnomalyDetector:
+    def learn_one(self, x: dict, t: float | None = None) -> 'AnomalyDetector':
         raise NotImplementedError
 
     def score_one(self, x: dict, t: float | None = None) -> float:
         raise NotImplementedError
 
-    def learn_many(self, X, t=None) -> AnomalyDetector:
+    def learn_many(self, X, t=None) -> 'AnomalyDetector':
         for x in X:
             call_with_t(self.learn_one, x, t=t)
         return self
@@ -26,7 +24,7 @@ class AnomalyDetector(Estimator):
         return [call_with_t(self.score_one, x, t=t) for x in X]
 
 
-class AnomalyFilter(Estimator):
+class AnomalyGate(Estimator):
     """Detector + classification, with optional protection of the detector.
 
     Args:
@@ -37,14 +35,14 @@ class AnomalyFilter(Estimator):
 
     _supervised = False
 
-    def __init__(self, detector: AnomalyDetector, protect: bool = True):
+    def __init__(self, detector: 'AnomalyDetector', protect: bool = True):
         self.detector = detector
         self.protect = protect
 
     def classify(self, score: float) -> bool:
         return score > getattr(self.detector, "threshold", 0.0)
 
-    def learn_one(self, x: dict, t: float | None = None) -> AnomalyFilter:
+    def learn_one(self, x: dict, t: float | None = None) -> 'AnomalyGate':
         s = call_with_t(self.detector.score_one, x, t=t)
         if not (self.protect and self.classify(s)):
             call_with_t(self.detector.learn_one, x, t=t)

@@ -15,7 +15,7 @@ from typing import Optional
 
 import numpy as np
 
-from dense_armor.base import Classifier
+from dense_armor.roles import Classifier
 
 
 class OnlineGaussianNB(Classifier):

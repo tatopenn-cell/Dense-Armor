@@ -31,13 +31,11 @@ Bloom, B. H. (1970). Space/time trade-offs in hash coding with
 Metwally, A., Agrawal, D., El Abbadi, A. (2005). Efficient computation
     of frequent and top-k elements in data streams. In ICDE.
 """
-from __future__ import annotations
-
 import hashlib
 import math
 from typing import Any
 
-from dense_armor.base import Transformer
+from dense_armor.roles import Transformer
 
 
 def _hash64(item: Any, seed: int) -> int:

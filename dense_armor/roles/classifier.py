@@ -1,11 +1,9 @@
 """Classifier role."""
 
-from __future__ import annotations
-
 from typing import Any
 
-from dense_armor.base._util import call_with_t
-from dense_armor.base.estimator import Estimator
+from dense_armor.roles._util import call_with_t
+from dense_armor.roles.estimator import Estimator
 
 
 class Classifier(Estimator):
@@ -21,7 +19,7 @@ class Classifier(Estimator):
     def _multiclass(self) -> bool:
         return False
 
-    def learn_one(self, x: dict, y: Any, t: float | None = None) -> Classifier:
+    def learn_one(self, x: dict, y: Any, t: float | None = None) -> 'Classifier':
         raise NotImplementedError
 
     def predict_proba_one(self, x: dict, t: float | None = None) -> dict[Any, float]:
@@ -35,7 +33,7 @@ class Classifier(Estimator):
             return None
         return max(proba, key=proba.get)
 
-    def learn_many(self, X, y, t=None) -> Classifier:
+    def learn_many(self, X, y, t=None) -> 'Classifier':
         for i in range(len(X)):
             call_with_t(self.learn_one, X[i], y[i], t=t)
         return self

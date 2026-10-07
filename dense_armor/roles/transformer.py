@@ -1,11 +1,9 @@
 """Transformer role: feature union (+) and product (*)."""
 
-from __future__ import annotations
-
 from typing import Any
 
-from dense_armor.base._util import call_with_t
-from dense_armor.base.estimator import Estimator
+from dense_armor.roles._util import call_with_t
+from dense_armor.roles.estimator import Estimator
 
 
 class _UnionTransformer(Estimator):
@@ -59,19 +57,19 @@ class Transformer(Estimator):
 
     _supervised = False
 
-    def learn_one(self, x: dict, y: Any = None, t: float | None = None) -> Transformer:
+    def learn_one(self, x: dict, y: Any = None, t: float | None = None) -> 'Transformer':
         return self
 
     def transform_one(self, x: dict, t: float | None = None) -> dict[str, Any]:
         raise NotImplementedError
 
-    def __add__(self, other: Transformer) -> Estimator:
+    def __add__(self, other: 'Transformer') -> Estimator:
         return _UnionTransformer(self, other)
 
-    def __mul__(self, other: Transformer) -> Estimator:
+    def __mul__(self, other: 'Transformer') -> Estimator:
         return _ProductTransformer(self, other)
 
-    def learn_many(self, X, t=None) -> Transformer:
+    def learn_many(self, X, t=None) -> 'Transformer':
         for x in X:
             call_with_t(self.learn_one, x, t=t)
         return self
@@ -85,5 +83,5 @@ class TransformerSupervised(Transformer):
 
     _supervised = True
 
-    def learn_one(self, x: dict, y: Any = None, t: float | None = None) -> Transformer:
+    def learn_one(self, x: dict, y: Any = None, t: float | None = None) -> 'Transformer':
         raise NotImplementedError

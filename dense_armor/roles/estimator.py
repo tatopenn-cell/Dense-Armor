@@ -5,11 +5,9 @@ arXiv:2012.04740) and the sklearn parameter / clone / inspect contract
 (Buitinck et al., arXiv:1309.0238).
 """
 
-from __future__ import annotations
-
 from typing import Any
 
-from dense_armor.base.base import Base
+from dense_armor.roles.root import Root
 
 
 class _PipelineAwareMeta(type):
@@ -24,15 +22,15 @@ class _PipelineAwareMeta(type):
         return type.__instancecheck__(cls, instance)
 
 
-class _Pipeline(Base):
+class _Pipeline(Root):
     """Sequential composition; the last step defines the pipeline role."""
 
     _is_pipeline = True
 
-    def __init__(self, steps: list[tuple[str, Base]]):
+    def __init__(self, steps: list[tuple[str, Root]]):
         self.steps = list(steps)
 
-    def __or__(self, other) -> _Pipeline:
+    def __or__(self, other) -> '_Pipeline':
         if not hasattr(other, "learn_one"):
             return NotImplemented
         return _Pipeline(self.steps + [(type(other).__name__, other)])
@@ -43,7 +41,7 @@ class _Pipeline(Base):
             x = s_any.transform_one(x)
         return x
 
-    def learn_one(self, x: dict, y: Any = None, t: float | None = None) -> _Pipeline:
+    def learn_one(self, x: dict, y: Any = None, t: float | None = None) -> '_Pipeline':
         h = self._forward(x)
         last: Any = self.steps[-1][1]
         if y is None:
@@ -76,12 +74,12 @@ class _Pipeline(Base):
         return " | ".join(f"{name}({type(s).__name__})" for name, s in self.steps)
 
 
-class Estimator(Base, metaclass=_PipelineAwareMeta):
-    """Base class for every Dense-Armor estimator."""
+class Estimator(Root, metaclass=_PipelineAwareMeta):
+    """Root class for every Dense-Armor estimator."""
 
     _supervised: bool = True
 
-    def __or__(self, other) -> _Pipeline:
+    def __or__(self, other) -> '_Pipeline':
         if not hasattr(other, "learn_one"):
             return NotImplemented
         return _Pipeline([(type(self).__name__, self), (type(other).__name__, other)])

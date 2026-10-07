@@ -28,12 +28,10 @@ Masson, C., Rim, J. E., Lee, H. K. (2019). DDSketch: a fast and
 Dunning, T., Ertl, O. (2019). Computing extremely accurate quantiles
     using t-digests. arXiv:1902.04023.
 """
-from __future__ import annotations
-
 import math
 from typing import Any
 
-from dense_armor.base import Transformer
+from dense_armor.roles import Transformer
 
 
 class DDSketch(Transformer):

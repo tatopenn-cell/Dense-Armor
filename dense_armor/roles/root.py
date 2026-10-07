@@ -6,8 +6,6 @@ lives in attributes with a trailing underscore. Adds robot/LLM extras
 (time base, state_dict, describe).
 """
 
-from __future__ import annotations
-
 import copy
 import gc
 import inspect
@@ -59,7 +57,7 @@ def _format_float(v: float) -> str:
 
 
 def _short_repr(v: Any, depth: int, module_prefix: bool = False) -> str:
-    if isinstance(v, Base):
+    if isinstance(v, Root):
         return v._repr_at_depth(depth + 1, module_prefix)
     if isinstance(v, float):
         return _format_float(v)
@@ -89,7 +87,7 @@ def _short_repr(v: Any, depth: int, module_prefix: bool = False) -> str:
     return repr(v)
 
 
-class Base:
+class Root:
     """Root of the Dense-Armor online-learning stack."""
 
     _mutable_attributes: frozenset = frozenset()
@@ -101,7 +99,7 @@ class Base:
     def _get_params(self) -> dict[str, Any]:
         """Walk ``__init__`` and read each kwarg from the matching attribute.
 
-        A parameter that is itself a :class:`Base` is stored as
+        A parameter that is itself a :class:`Root` is stored as
         ``(class, its_params)`` recursively. ``*args`` goes under
         ``_args``; ``**kwargs`` is expanded.
         """
@@ -121,7 +119,7 @@ class Base:
             if not hasattr(self, name):
                 continue
             val = getattr(self, name)
-            if isinstance(val, Base):
+            if isinstance(val, Root):
                 out[name] = (type(val), val._get_params())
             else:
                 out[name] = val
@@ -133,7 +131,7 @@ class Base:
         """Return the estimator's hyper-parameters.
 
         Args:
-            deep: if True (default), nested ``Base`` parameters are
+            deep: if True (default), nested ``Root`` parameters are
                 expanded to ``(class, params_dict)``. If False, they are
                 returned as the estimator instance.
 
@@ -153,7 +151,7 @@ class Base:
                 out[name] = getattr(self, name)
         return out
 
-    def set_params(self, **params: Any) -> Base:
+    def set_params(self, **params: Any) -> 'Root':
         """Set hyper-parameters in place and return ``self``."""
         valid = set(self._init_signature().parameters) - {"self"}
         for k, v in params.items():
@@ -167,11 +165,11 @@ class Base:
         self,
         new_params: dict[str, Any] | None = None,
         include_attributes: bool = False,
-    ) -> Base:
+    ) -> 'Root':
         """Build a fresh instance from the constructor parameters.
 
         Args:
-            new_params: overrides; a nested ``Base`` parameter may receive
+            new_params: overrides; a nested ``Root`` parameter may receive
                 a dict of its own parameters.
             include_attributes: also deep-copy non-parameter attributes.
 
@@ -189,11 +187,11 @@ class Base:
             cur = getattr(self, name, None)
             if name in new_params:
                 ov = new_params.pop(name)
-                if isinstance(cur, Base) and isinstance(ov, dict):
+                if isinstance(cur, Root) and isinstance(ov, dict):
                     kwargs[name] = cur.clone(new_params=ov)
                 else:
                     kwargs[name] = copy.deepcopy(ov)
-            elif isinstance(cur, Base):
+            elif isinstance(cur, Root):
                 kwargs[name] = cur.clone()
             else:
                 kwargs[name] = copy.deepcopy(cur)
@@ -208,7 +206,7 @@ class Base:
         return inst
 
     # ── mutate ────────────────────────────────────────────────────
-    def mutate(self, new_attrs: dict[str, Any]) -> Base:
+    def mutate(self, new_attrs: dict[str, Any]) -> 'Root':
         """Change declared-mutable attributes in place.
 
         Recursive into nested estimators. Names not listed in
@@ -220,7 +218,7 @@ class Base:
             if not hasattr(self, k):
                 raise ValueError(f"{type(self).__name__}: {k!r} does not exist")
             cur = getattr(self, k)
-            if isinstance(cur, Base) and isinstance(v, dict):
+            if isinstance(cur, Root) and isinstance(v, dict):
                 cur.mutate(v)
             else:
                 setattr(self, k, v)
@@ -233,7 +231,7 @@ class Base:
             if name == "seed" and getattr(self, name, None) is None:
                 return True
             v = getattr(self, name, None)
-            if isinstance(v, Base) and v._is_stochastic():
+            if isinstance(v, Root) and v._is_stochastic():
                 return True
         return False
 
@@ -349,7 +347,7 @@ class Base:
             klass: restrict logging to instances of this class if given.
             method: restrict logging to calls of this method name if given.
         """
-        log = logging.getLogger("dense_armor.base")
+        log = logging.getLogger("dense_armor.roles")
         old_level = log.level
         log.setLevel(logging.DEBUG)
 
@@ -382,7 +380,7 @@ class Base:
 
             return patched
 
-        targets = list(collect(Base))
+        targets = list(collect(Root))
         saved: dict[type, Any] = {}
         for k in targets:
             saved[k] = k.__dict__.get("__getattribute__")
@@ -429,7 +427,7 @@ class Base:
             if k.endswith("_") and not (k.startswith("__") and k.endswith("__"))
         }
 
-    def load_state_dict(self, state: dict[str, Any]) -> Base:
+    def load_state_dict(self, state: dict[str, Any]) -> 'Root':
         """Restore the learned state from ``state_dict()``."""
         for k, v in state.items():
             setattr(self, k, copy.deepcopy(v))
