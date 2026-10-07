@@ -454,39 +454,3 @@ class HampelFilter(base.Transformer):
 
     def _unit_test_skips(self):
         return {"check_roc_auc"}
-
-
-if __name__ == "__main__":
-    import time
-
-    rng = np.random.default_rng(42)
-    n = 5000
-    t = np.arange(n)
-    signal = 5.0 * np.sin(2.0 * np.pi * t / 500.0) + rng.normal(0.0, 0.5, n)
-    n_spikes = 50
-    spike_idx = rng.choice(n - 100, size=n_spikes, replace=False) + 50
-    truth = np.zeros(n, dtype=bool)
-    truth[spike_idx] = True
-    sign = rng.choice([-1.0, 1.0], size=n_spikes)
-    mag = rng.uniform(5.0, 15.0, n_spikes)
-    signal[spike_idx] += sign * mag
-
-    print(f"{'Scorer':<12} {'Precision':>10} {'Recall':>10} {'FP':>6} "
-          f"{'FN':>6} {'us/sample':>12}")
-    for name, cls in [("Hampel", HampelScorer), ("Tukey", TukeyScorer),
-                      ("Chauvenet", ChauvenetScorer),
-                      ("SigmaClip", SigmaClipScorer)]:
-        s = cls(radius=15)
-        preds = np.empty(n, dtype=bool)
-        t0 = time.perf_counter()
-        for i, v in enumerate(signal):
-            preds[i] = s.is_outlier({"v": float(v)})
-            s.learn_one({"v": float(v)})
-        dt = time.perf_counter() - t0
-        tp = int(np.sum(preds & truth))
-        fp = int(np.sum(preds & ~truth))
-        fn = int(np.sum(~preds & truth))
-        prec = tp / (tp + fp) if (tp + fp) > 0 else float("nan")
-        rec = tp / (tp + fn) if (tp + fn) > 0 else float("nan")
-        print(f"{name:<12} {prec:>10.3f} {rec:>10.3f} {fp:>6} {fn:>6} "
-              f"{dt / n * 1e6:>12.2f}")

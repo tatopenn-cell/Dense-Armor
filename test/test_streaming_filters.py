@@ -288,3 +288,20 @@ def test_per_sample_time_budget():
         s.learn_one({"v": float(v)})
     dt = time.perf_counter() - t0
     print(f"Hampel per-sample: {dt / len(stream) * 1e6:.2f} us")
+
+
+@pytest.mark.parametrize("cls", [TukeyScorer, ChauvenetScorer, SigmaClipScorer])
+def test_flat_window_scores(cls):
+    s = cls(radius=5)
+    for _ in range(10):
+        s.learn_one({"v": 2.0})
+    assert s.score_one({"v": 2.0}) >= 0.0
+    assert s.score_one({"v": 9.0}) != s.score_one({"v": 2.0})
+
+
+def test_sigma_clip_stats_edge_cases():
+    from dense_armor.utility.streaming_filters import _clean_stats
+
+    assert _clean_stats(np.array([1.0, 1.0, 1.0, 1.0]), 3.0) == (1.0, 0.0)
+    mu, sigma = _clean_stats(np.array([0.0, 0.0, 0.0, 100.0]), 0.5)
+    assert np.isfinite(mu) and np.isfinite(sigma)
