@@ -30,7 +30,7 @@ class LLMEmbeddingClassifier(Estimator):
 
     Examples:
         >>> from dense_armor.bridges.llm import LLMEmbeddingClassifier
-        >>> from dense_armor.learn.online_classifiers import OnlineGaussianNB
+        >>> from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
         >>> def fake_embed(text):
         ...     return [len(text), sum(map(ord, text)) % 7, 1.0]
         >>> clf = LLMEmbeddingClassifier(fake_embed, OnlineGaussianNB())

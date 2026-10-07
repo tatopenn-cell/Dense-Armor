@@ -53,8 +53,8 @@ Transformers compose with `+` (union) and `*` (product); anything
 composes with `|`:
 
 ```python
-from dense_armor.learn.online_classifiers import OnlineGaussianNB
-from dense_armor.anomaly.filters import HampelFilter
+from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
+from dense_armor.utility.anomaly.filters import HampelFilter
 
 model = HampelFilter(radius=5, feature="v") | OnlineGaussianNB()
 model.learn_one({"v": 1.0, "other": 2.0}, 0)
@@ -116,7 +116,7 @@ the last prediction made on an unflagged sample).
 
 ```python
 from dense_armor.base import Protected
-from dense_armor.anomaly.filters import HampelScorer
+from dense_armor.utility.anomaly.filters import HampelScorer
 
 safe = Protected(OnlineGaussianNB(), HampelScorer(radius=5), fallback=0)
 ```
