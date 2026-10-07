@@ -36,15 +36,15 @@ try:
     from river import base
 except ModuleNotFoundError as exc:
     raise ModuleNotFoundError(
-        "dense_armor.learn.online_dynamics needs river: "
+        "dense_armor.utility.learn.online_dynamics needs river: "
         "pip install dense-armor[river]"
     ) from exc
 
 import jax.numpy as jnp
 
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.drift.detector import CUSUMDriftDetector
-from dense_armor.anomaly.filters import HampelScorer
+from dense_armor.utility.drift.detector import CUSUMDriftDetector
+from dense_armor.utility.anomaly.filters import HampelScorer
 
 
 class RecursiveLeastSquares(base.Regressor):
@@ -79,7 +79,7 @@ class RecursiveLeastSquares(base.Regressor):
     Examples
     --------
     >>> import numpy as np
-    >>> from dense_armor.learn.online_dynamics import RecursiveLeastSquares
+    >>> from dense_armor.utility.learn.online_dynamics import RecursiveLeastSquares
     >>> rls = RecursiveLeastSquares(lam=1.0, delta=1e10,
     ...                              feature_keys=["a", "b"])
     >>> X = np.array([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])
@@ -165,7 +165,7 @@ class ResidualDynamicsLearner:
     --------
     >>> import numpy as np
     >>> from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-    >>> from dense_armor.learn.online_dynamics import (
+    >>> from dense_armor.utility.learn.online_dynamics import (
     ...     ResidualDynamicsLearner, write_minimal_urdf,
     ... )
     >>> path = write_minimal_urdf()
@@ -278,7 +278,7 @@ class DriftAwareResidualDynamicsLearner(ResidualDynamicsLearner):
     --------
     >>> import numpy as np
     >>> from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-    >>> from dense_armor.learn.online_dynamics import (
+    >>> from dense_armor.utility.learn.online_dynamics import (
     ...     DriftAwareResidualDynamicsLearner, write_minimal_urdf,
     ... )
     >>> path = write_minimal_urdf()

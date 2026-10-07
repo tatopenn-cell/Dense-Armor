@@ -85,7 +85,7 @@ The `(0, 0)` entry of `W` and the off-diagonal entry increased. The next time th
 triplet arrives, `s(xa, xp)` is `1.02`, `s(xa, xn)` is `0.816`: the margin grew.
 
 ```python
-from dense_armor.learn.metric_learning import OASIS
+from dense_armor.utility.learn.metric_learning import OASIS
 
 learner = OASIS(C=0.1)
 learner.learn_triplet({"x0": 1.0, "x1": 0.0},
@@ -136,7 +136,7 @@ LogDet regularizer resists large single steps. This is what makes LEGO's paramet
 updates stable without any tuning of a projection radius.
 
 ```python
-from dense_armor.learn.metric_learning import LEGO
+from dense_armor.utility.learn.metric_learning import LEGO
 
 learner = LEGO(eta=0.1)
 learner.learn_pair({"x0": 1.0, "x1": 0.0},
@@ -189,7 +189,7 @@ threshold, so the pair was violating), and the update shrank `A` along the direc
 `z` to make that direction's distance smaller next time.
 
 ```python
-from dense_armor.learn.metric_learning import POLA
+from dense_armor.utility.learn.metric_learning import POLA
 
 learner = POLA()
 learner.learn_pair({"x0": 1.0, "x1": 0.0},
@@ -207,7 +207,7 @@ as its distance and — with `learn_metric=True`, the default — trains it onli
 for OASIS, a similar / dissimilar pair for POLA, a pair with a target distance for LEGO.
 
 ```python
-from dense_armor.learn.metric_learning import MetricKNNClassifier, OASIS
+from dense_armor.utility.learn.metric_learning import MetricKNNClassifier, OASIS
 
 knn = MetricKNNClassifier(OASIS(C=0.1), n_neighbors=1, window_size=1000)
 for i in range(len(X)):
@@ -238,7 +238,7 @@ the baseline.
 
 ## API reference
 
-::: dense_armor.learn.metric_learning
+::: dense_armor.utility.learn.metric_learning
 
 ---
 

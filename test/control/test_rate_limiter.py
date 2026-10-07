@@ -9,7 +9,7 @@ own docstring for the real numbers).
 """
 import numpy as np
 
-from dense_armor.control.rate_limiter import rate_limited_follower
+from dense_armor.utility.control.rate_limiter import rate_limited_follower
 
 
 def test_causal_output_unaffected_by_truncating_future_data():

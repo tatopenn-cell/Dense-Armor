@@ -37,7 +37,7 @@ t = np.arange(3000) / fs
 v = 0.5 + 0.1 * rng.standard_normal(len(t))
 v[1500] = 2.5
 v[2000:] += 0.2 * (np.arange(1000) / 1000)
-from dense_armor.anomaly.robust_filters import hampel_filter
+from dense_armor.utility.anomaly.robust_filters import hampel_filter
 
 clean = hampel_filter(v, radius=15, n_sigmas=3.0)
 ```
@@ -59,10 +59,10 @@ t = np.arange(3000) / fs
 v = 0.5 + 0.1 * rng.standard_normal(len(t))
 v[1500] = 2.5
 v[2000:] += 0.2 * (np.arange(1000) / 1000)
-from dense_armor.anomaly.robust_filters import hampel_filter
+from dense_armor.utility.anomaly.robust_filters import hampel_filter
 
 clean = hampel_filter(v, radius=15, n_sigmas=3.0)
-from dense_armor.anomaly.robust_filters import (
+from dense_armor.utility.anomaly.robust_filters import (
     tukey_fences, chauvenet_criterion, sigma_clip,
 )
 
@@ -87,17 +87,17 @@ t = np.arange(3000) / fs
 v = 0.5 + 0.1 * rng.standard_normal(len(t))
 v[1500] = 2.5
 v[2000:] += 0.2 * (np.arange(1000) / 1000)
-from dense_armor.anomaly.robust_filters import hampel_filter
+from dense_armor.utility.anomaly.robust_filters import hampel_filter
 
 clean = hampel_filter(v, radius=15, n_sigmas=3.0)
-from dense_armor.anomaly.robust_filters import (
+from dense_armor.utility.anomaly.robust_filters import (
     tukey_fences, chauvenet_criterion, sigma_clip,
 )
 
 clean_t, flag_t = tukey_fences(v, radius=15)
 clean_c, flag_c = chauvenet_criterion(v, radius=15)
 clean_s, flag_s = sigma_clip(v, radius=15, n_sigmas=3.0)
-from dense_armor.anomaly.robust_filters import pressure_valve
+from dense_armor.utility.anomaly.robust_filters import pressure_valve
 
 clean, flags, pressure, threshold = pressure_valve(v)
 ```
@@ -109,7 +109,7 @@ window's MAD being well-behaved.
 
 ## API reference
 
-::: dense_armor.anomaly.robust_filters
+::: dense_armor.utility.anomaly.robust_filters
 
 ---
 

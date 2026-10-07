@@ -28,7 +28,7 @@ def my_model(z):
 ## 1. Protect the forward pass
 
 ```python
-from dense_armor.protect.orca import Orca
+from dense_armor.utility.protect.orca import Orca
 
 orca = Orca()
 protected = orca.protect_and_forward(my_model, x)
@@ -105,7 +105,7 @@ point by point, which of the two Stage-1 behaviours to use.
 
 ## API reference
 
-::: dense_armor.protect.orca
+::: dense_armor.utility.protect.orca
 
 ---
 

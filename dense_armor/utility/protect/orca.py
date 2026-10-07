@@ -14,11 +14,11 @@ import jax.numpy as jnp
 from dense_armor.core.engine import AdaptiveSignalStabilizer
 from dense_armor.core.memory import UniversalMemoryGuard
 from dense_armor.core.noise import AIHardwareProfiler
-from dense_armor.misc.collatz import ABCollatz
+from dense_armor.utility.misc.collatz import ABCollatz
 from dense_armor.core.damping_operator import apply_damping_blend
-from dense_armor.anomaly.curvature import curvature
-from dense_armor.anomaly.resonance_search import apply_fast_resonance
-from dense_armor.protect.arbiter import route_and_correct
+from dense_armor.utility.anomaly.curvature import curvature
+from dense_armor.utility.anomaly.resonance_search import apply_fast_resonance
+from dense_armor.utility.protect.arbiter import route_and_correct
 
 logger = logging.getLogger(__name__)
 

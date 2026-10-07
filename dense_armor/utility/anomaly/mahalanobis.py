@@ -32,7 +32,7 @@ try:
     from river import base
 except ModuleNotFoundError as exc:
     raise ModuleNotFoundError(
-        "dense_armor.anomaly.mahalanobis needs river: "
+        "dense_armor.utility.anomaly.mahalanobis needs river: "
         "pip install dense-armor[river]"
     ) from exc
 
@@ -83,7 +83,7 @@ class OnlineRobustMahalanobis(base.AnomalyDetector):
     Examples
     --------
     >>> import numpy as np
-    >>> from dense_armor.anomaly.mahalanobis import (
+    >>> from dense_armor.utility.anomaly.mahalanobis import (
     ...     OnlineRobustMahalanobis,
     ... )
     >>> rng = np.random.default_rng(0)

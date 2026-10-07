@@ -30,7 +30,7 @@ seven times the motor's real limit.
 ## 1. Apply the limiter
 
 ```python
-from dense_armor.control.rate_limiter import rate_limited_follower
+from dense_armor.utility.control.rate_limiter import rate_limited_follower
 
 u = rate_limited_follower(u_des, max_vel=5.0, max_accel=20.0, dt=dt)
 ```
@@ -123,7 +123,7 @@ module bounds a different aspect of the same command.
 
 ## API reference
 
-::: dense_armor.control.rate_limiter
+::: dense_armor.utility.control.rate_limiter
 
 ---
 

@@ -23,7 +23,7 @@ x_ref = 0.5
 x_now = 2.5
 x_ref = 0.5
 import jax.numpy as jnp
-from dense_armor.anomaly.curvature import curvature
+from dense_armor.utility.anomaly.curvature import curvature
 
 curvature(jnp.array([x_now]), jnp.array([x_ref]))
 ```
@@ -41,7 +41,7 @@ means "within 2 rad/s of nominal":
 x_now = 2.5
 x_ref = 0.5
 import jax.numpy as jnp
-from dense_armor.anomaly.curvature import curvature
+from dense_armor.utility.anomaly.curvature import curvature
 
 curvature(jnp.array([x_now]), jnp.array([x_ref]))
 curvature(jnp.array([x_now]), jnp.array([x_ref]), scale=2.0)
@@ -79,7 +79,7 @@ something in the units of the problem.**
 
 ## API reference
 
-::: dense_armor.anomaly.curvature
+::: dense_armor.utility.anomaly.curvature
 
 ---
 

@@ -15,12 +15,12 @@ from collections import defaultdict
 
 import numpy as np
 
-from dense_armor.anomaly.streaming import (
+from dense_armor.utility.anomaly.streaming import (
     StreamingDeviationDetector,
     MultiChannelStreamingDeviationDetector,
     classify_segments_multichannel,
 )
-from dense_armor.protect.arbiter import classify_segments
+from dense_armor.utility.protect.arbiter import classify_segments
 
 _AGENT_TELEMETRY = pathlib.Path(__file__).resolve().parent.parent / "agent_v2" / "telemetry_v2_frozen.jsonl"
 RADIUS, REF_MULT, N_SIGMAS = 5, 2, 3.0

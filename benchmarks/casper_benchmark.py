@@ -18,12 +18,12 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from dense_armor.drift.detector import CUSUMDriftDetector
-from dense_armor.anomaly.deviation import StreamingDeviationScorer
-from dense_armor.anomaly.filters import (
+from dense_armor.utility.drift.detector import CUSUMDriftDetector
+from dense_armor.utility.anomaly.deviation import StreamingDeviationScorer
+from dense_armor.utility.anomaly.filters import (
     HampelScorer, TukeyScorer, ChauvenetScorer, SigmaClipScorer,
 )
-from dense_armor.anomaly.mahalanobis import OnlineRobustMahalanobis
+from dense_armor.utility.anomaly.mahalanobis import OnlineRobustMahalanobis
 
 
 FS = 20.0

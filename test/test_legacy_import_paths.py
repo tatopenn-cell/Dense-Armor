@@ -1,4 +1,4 @@
-"""Old import paths (dense_armor.utility.*, dense_armor.dynamics.online_dynamics) stay valid."""
+"""Old import paths (dense_armor.utility.*, dense_armor.utility.learn.online_dynamics) stay valid."""
 import importlib
 
 import pytest
@@ -42,3 +42,15 @@ def test_old_path_is_the_same_module(old, new):
     except ModuleNotFoundError as exc:
         pytest.skip(f"optional dependency missing: {exc.name}")
     assert importlib.import_module(f"dense_armor.{old}") is mod_new
+
+
+def test_every_alias_resolves_to_the_same_module():
+    from dense_armor._compat import ALIASES
+    for old, new in ALIASES.items():
+        try:
+            mod_new = importlib.import_module(new)
+        except ModuleNotFoundError as exc:
+            if exc.name and exc.name.startswith("dense_armor"):
+                raise
+            continue
+        assert importlib.import_module(old) is mod_new

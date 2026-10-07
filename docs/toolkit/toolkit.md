@@ -262,7 +262,7 @@ sha256 = viz.export_provenance_archive([{"step": 1, "value": 0.5}], filename="ar
 factor, with a plain-text compliance verdict.
 
 ```python
-from dense_armor.misc.anwav import anwav
+from dense_armor.utility.misc.anwav import anwav
 
 anwav("track.wav")
 ```
@@ -270,7 +270,7 @@ anwav("track.wav")
 Prints a summary table and a verdict line (`CONFORME (Peak): Picco in sicurezza sotto
 i -1.0 dB` or similar).
 
-::: dense_armor.misc.anwav
+::: dense_armor.utility.misc.anwav
 
 ---
 
@@ -280,7 +280,7 @@ audio filter / process actually changed a signal, beyond just listening to it.
 
 ```python
 import numpy as np
-from dense_armor.misc.diagnostic import diag
+from dense_armor.utility.misc.diagnostic import diag
 
 rng = np.random.default_rng(0)
 originale = rng.normal(size=2000).astype(np.float32)
@@ -291,7 +291,7 @@ risultato = diag(originale, filtrato)
 `risultato["fedelta"]` is close to 99.96 — the percent of structural fidelity
 preserved.
 
-::: dense_armor.misc.diagnostic
+::: dense_armor.utility.misc.diagnostic
 
 ---
 
@@ -301,7 +301,7 @@ branching on the caller's side.
 
 ```python
 import h5py, numpy as np
-from dense_armor.misc.iodat import lodat
+from dense_armor.utility.misc.iodat import lodat
 
 with h5py.File("data.h5", "w") as f:
     f.create_dataset("temperature", data=np.arange(12).reshape(3, 4))
@@ -311,7 +311,7 @@ tensore = lodat("data.h5", "temperature")
 
 `tensore.shape` is `(3, 4)`.
 
-::: dense_armor.misc.iodat
+::: dense_armor.utility.misc.iodat
 
 ## Similarity search
 
@@ -321,7 +321,7 @@ Orca's gating uses).
 
 ```python
 import numpy as np
-from dense_armor.anomaly.resonance_search import apply_fast_resonance
+from dense_armor.utility.anomaly.resonance_search import apply_fast_resonance
 
 rng = np.random.default_rng(0)
 db = rng.standard_normal((5, 8)).astype(np.float32)
@@ -350,7 +350,7 @@ retrieval value. See
 `test_apply_fast_resonance_ranking_e_indistinguibile_da_cosine_puro` in
 `test/test_resonance_search.py` for the full numbers.
 
-::: dense_armor.anomaly.resonance_search
+::: dense_armor.utility.anomaly.resonance_search
 
 ---
 

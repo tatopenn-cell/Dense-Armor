@@ -31,7 +31,7 @@ spike / regime and routes it to the right corrector instead of one gate for the 
 signal.
 
 ```python
-from dense_armor.protect.orca import Orca
+from dense_armor.utility.protect.orca import Orca
 
 orca = Orca()
 protected = orca.protect_and_forward(my_model, corrupted_data, x_reference=ref)

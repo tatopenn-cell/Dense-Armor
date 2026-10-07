@@ -53,7 +53,7 @@ class StreamingArbiter:
     Examples
     --------
     >>> import numpy as np
-    >>> from dense_armor.protect.streaming_arbiter import StreamingArbiter
+    >>> from dense_armor.utility.protect.streaming_arbiter import StreamingArbiter
     >>> rng = np.random.default_rng(0)
     >>> x = list(rng.normal(0, 1, 100)) + [50.0] + list(rng.normal(0, 1, 100))
     >>> sa = StreamingArbiter(radius=10, max_delay=200)
@@ -195,7 +195,7 @@ class StreamingHealing:
     Examples
     --------
     >>> import numpy as np
-    >>> from dense_armor.protect.streaming_arbiter import StreamingHealing
+    >>> from dense_armor.utility.protect.streaming_arbiter import StreamingHealing
     >>> rng = np.random.default_rng(0)
     >>> x = list(rng.normal(0, 0.1, 50)) + [5.0] + list(rng.normal(0, 0.1, 50))
     >>> sh = StreamingHealing(radius=2, wide_mult=3, max_delay=100)

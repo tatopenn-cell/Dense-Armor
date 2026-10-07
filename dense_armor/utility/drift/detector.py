@@ -8,11 +8,11 @@ try:
     from river import base
 except ModuleNotFoundError as exc:
     raise ModuleNotFoundError(
-        "dense_armor.drift.detector needs river: pip install dense-armor[river]"
+        "dense_armor.utility.drift.detector needs river: pip install dense-armor[river]"
     ) from exc
 
-from dense_armor.protect.arbiter import _robust_center_scale
-from dense_armor.drift.cusum import one_sided_arl, two_sided_arl
+from dense_armor.utility.protect.arbiter import _robust_center_scale
+from dense_armor.utility.drift.cusum import one_sided_arl, two_sided_arl
 
 
 class CUSUMDriftDetector(base.DriftDetector):
@@ -44,7 +44,7 @@ class CUSUMDriftDetector(base.DriftDetector):
 
     Examples
     --------
-    >>> from dense_armor.drift.detector import CUSUMDriftDetector
+    >>> from dense_armor.utility.drift.detector import CUSUMDriftDetector
     >>> import numpy as np
     >>> det = CUSUMDriftDetector(reference="fixed")
     >>> rng = np.random.default_rng(0)

@@ -13,9 +13,9 @@ import jax
 import jax.numpy as jnp
 
 import dense_armor.core.memory as memory_module
-import dense_armor.protect.orca as orca_module
+import dense_armor.utility.protect.orca as orca_module
 from dense_armor.core.memory import MemoryPressureError
-from dense_armor.protect.orca import Orca
+from dense_armor.utility.protect.orca import Orca
 
 
 def test_segno_preservato_con_riferimento():

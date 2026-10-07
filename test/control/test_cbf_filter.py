@@ -9,7 +9,7 @@ docstring for the real numbers).
 """
 import numpy as np
 
-from dense_armor.control.cbf_filter import cbf_safety_filter, cbf_filtered_trajectory, cbf_safety_filter_live
+from dense_armor.utility.control.cbf_filter import cbf_safety_filter, cbf_filtered_trajectory, cbf_safety_filter_live
 
 
 def test_safe_command_passes_through_unchanged():

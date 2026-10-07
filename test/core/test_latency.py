@@ -27,7 +27,7 @@ import numpy as np
 import pytest
 
 from dense_armor.core.engine import AdaptiveSignalStabilizer
-from dense_armor.protect.orca import Orca
+from dense_armor.utility.protect.orca import Orca
 
 
 def _ram_abbondante() -> MagicMock:

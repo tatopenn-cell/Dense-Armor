@@ -19,7 +19,7 @@ try:
     from river import base
 except ModuleNotFoundError as exc:
     raise ModuleNotFoundError(
-        "dense_armor.learn.online_classifiers needs river: "
+        "dense_armor.utility.learn.online_classifiers needs river: "
         "pip install dense-armor[river]"
     ) from exc
 
@@ -49,7 +49,7 @@ class OnlineGaussianNB(base.Classifier):
 
     Examples
     --------
-    >>> from dense_armor.learn.online_classifiers import OnlineGaussianNB
+    >>> from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
     >>> nb = OnlineGaussianNB()
     >>> for x, y in [({"a": 0.0, "b": 0.0}, 0),
     ...              ({"a": 0.1, "b": 0.1}, 0),
@@ -154,7 +154,7 @@ class OnlineSoftmaxRegression(base.Classifier):
 
     Examples
     --------
-    >>> from dense_armor.learn.online_classifiers import OnlineSoftmaxRegression
+    >>> from dense_armor.utility.learn.online_classifiers import OnlineSoftmaxRegression
     >>> sr = OnlineSoftmaxRegression(eta=0.5)
     >>> for _ in range(20):
     ...     _ = sr.learn_one({"a": 0.0, "b": 0.0}, 0)
@@ -267,10 +267,10 @@ class DriftAdaptiveClassifier(base.Classifier):
 
     Examples
     --------
-    >>> from dense_armor.learn.online_classifiers import (
+    >>> from dense_armor.utility.learn.online_classifiers import (
     ...     OnlineGaussianNB, DriftAdaptiveClassifier,
     ... )
-    >>> from dense_armor.drift.detector import CUSUMDriftDetector
+    >>> from dense_armor.utility.drift.detector import CUSUMDriftDetector
     >>> clf = DriftAdaptiveClassifier(
     ...     OnlineGaussianNB(alpha=0.01),
     ...     CUSUMDriftDetector(reference="adaptive", radius=10, ref_mult=3),
@@ -335,7 +335,7 @@ class DriftAdaptiveClassifier(base.Classifier):
 
     @classmethod
     def _unit_test_params(cls):
-        from dense_armor.drift.detector import CUSUMDriftDetector
+        from dense_armor.utility.drift.detector import CUSUMDriftDetector
         yield {"classifier": OnlineGaussianNB(),
                "detector": CUSUMDriftDetector(reference="adaptive")}
 

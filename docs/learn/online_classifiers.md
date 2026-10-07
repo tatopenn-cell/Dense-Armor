@@ -86,7 +86,7 @@ old counts are multiplied by `(1 − α)` before the new sample is added, so the
 adapts when the class-conditional distributions change.
 
 ```python
-from dense_armor.learn.online_classifiers import OnlineGaussianNB
+from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
 
 clf = OnlineGaussianNB(alpha=0.0)
 for i in range(n):
@@ -139,8 +139,8 @@ fires on almost every error — hundreds of alarms in 6,000 samples. The rolling
 gives the detector a stable scale.
 
 ```python
-from dense_armor.learn.online_classifiers import OnlineGaussianNB, DriftAdaptiveClassifier
-from dense_armor.drift.detector import CUSUMDriftDetector
+from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB, DriftAdaptiveClassifier
+from dense_armor.utility.drift.detector import CUSUMDriftDetector
 
 det = CUSUMDriftDetector(reference="fixed", radius=20, ref_mult=5, two_sided=False)
 clf = DriftAdaptiveClassifier(OnlineGaussianNB(), det, window=50, smooth_window=50)
@@ -192,7 +192,7 @@ after each drift alarm.
 
 ## API reference
 
-::: dense_armor.learn.online_classifiers
+::: dense_armor.utility.learn.online_classifiers
 
 ---
 

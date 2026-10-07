@@ -51,7 +51,7 @@ from typing import List, Optional, Tuple
 
 import numpy as np
 
-from dense_armor.protect.arbiter import _robust_center_scale, classify_segments
+from dense_armor.utility.protect.arbiter import _robust_center_scale, classify_segments
 
 
 class StreamingDeviationDetector:

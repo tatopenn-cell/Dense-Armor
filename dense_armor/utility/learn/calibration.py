@@ -12,7 +12,7 @@ try:
     from river import base
 except ModuleNotFoundError as exc:
     raise ModuleNotFoundError(
-        "dense_armor.learn.calibration needs river: pip install dense-armor[river]"
+        "dense_armor.utility.learn.calibration needs river: pip install dense-armor[river]"
     ) from exc
 
 
@@ -66,7 +66,7 @@ class OnlinePlattScaling(base.Wrapper, base.Classifier):
     >>> from river import evaluate
     >>> from river import metrics
     >>> from river import tree
-    >>> from dense_armor.learn.calibration import OnlinePlattScaling
+    >>> from dense_armor.utility.learn.calibration import OnlinePlattScaling
 
     >>> dataset = datasets.Phishing()
 
