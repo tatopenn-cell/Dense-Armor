@@ -12,7 +12,7 @@ from typing import Any
 from dense_armor.base.base import Base
 
 
-class _EstimatorMeta(type):
+class _PipelineAwareMeta(type):
     """Instance check that follows the last step of a pipeline."""
 
     def __instancecheck__(cls, instance: Any) -> bool:
@@ -76,7 +76,7 @@ class _Pipeline(Base):
         return " | ".join(f"{name}({type(s).__name__})" for name, s in self.steps)
 
 
-class Estimator(Base, metaclass=_EstimatorMeta):
+class Estimator(Base, metaclass=_PipelineAwareMeta):
     """Base class for every Dense-Armor estimator."""
 
     _supervised: bool = True
