@@ -9,34 +9,34 @@ does not complain, it just produces wrong numbers from that point on.
 the same array, with the broken samples replaced by the local baseline, plus the list of
 indices that were replaced.
 
-## The signal
+## 1. Protect the series
 
-One sensor channel, sampled at 100 Hz: nominal noise around 0.5, one absurd value
-(9999) at sample 100, one NaN at sample 200.
+One sensor channel at 100 Hz: noise around 0.5, one absurd value (9999) at sample 100, one NaN
+at sample 200.
 
 ```python
 import numpy as np
-rng = np.random.default_rng(42)
-fs = 100
-x = 0.5 + 0.1 * rng.standard_normal(300)
-x[100] = 9999.0
-x[200] = float("nan")
-```
-
-## 1. Protect the series
-
-```python
 from dense_armor import Armatura
 
-a = Armatura(livello_ia=0.0)
-clean, K, anomalies = a.analizza(x)
+rng = np.random.default_rng(42)
+x = 0.5 + 0.1 * rng.standard_normal(300)
+x[100], x[200] = 9999.0, float("nan")
+clean, K, anomalies = Armatura(livello_ia=0.0).analizza(x)
+print(len(clean), anomalies, round(float(clean[100]), 3), K[100], K[50])
 ```
 
-`clean` is a NumPy array of the same shape as `x`. The two broken samples are replaced by
-the median of the surrounding window; the rest of the signal is left as-is.
+```
+300 [100, 200] 0.463 1.0 0.0
+```
 
-`anomalies` is the list of indices that were replaced: `[100, 200]` on the running
-example.
+
+`clean` has the same shape as `x`: the two broken samples are replaced by the local baseline
+(9999 becomes 0.463). Ordinary samples are kept, except those the engine's trigger classifies
+as static, which are replaced by the local median without being listed in `anomalies` (35 of the
+300 here, see [Hybrid engine](hybrid_engine.md), step 3). `anomalies` lists the replaced indices,
+`[100, 200]`. `K` is one flag per sample from the engine's trigger: 1 where the spike rule fired
+(sample 100), 0 elsewhere; the NaN is cleaned before the trigger, so sample 200 is in `anomalies`
+with `K = 0`.
 
 `livello_ia = 0` means "actively filter". `livello_ia = 1` means "only mark, do not
 change the values" — useful when you want to log what the shield *would* have done
@@ -44,28 +44,27 @@ without altering the stream.
 
 ## 2. What "local baseline" means
 
-`Armatura` looks at a **causal window** of samples before the one being scored (never
-after), computes a robust centre and scale, and decides. If the sample is far enough
-from the centre to be a genuine impulse, it is replaced with the centre; otherwise it
-passes through unchanged. The rule is the same one the [Arbiter](../protect/arbiter.md)
-uses on the batch side.
+`Armatura` looks at a window of samples **before** the one being scored (never after): its
+baseline is the mean of those previous samples (radius `min(20, max(3, n // 3))`), and a
+binary trigger decides whether the sample is an impulse. If it is, it is replaced by the
+baseline; otherwise it passes through unchanged. The first two samples are never tested (the
+trigger needs two previous points), so a glitch there must be caught by another check.
 
 The consequence, on the running example:
 
-- The value 9999 at sample 100 is many hundreds of robust sigmas above the window's
-  median, so it is replaced. Index 100 appears in `anomalies`.
+- The value 9999 at sample 100 is far above the baseline of the previous samples, so it is
+  replaced. Index 100 appears in `anomalies`.
 - The NaN at sample 200 never enters the window (the shield drops non-finite samples
   before the comparison), so the next finite sample is scored against the window ending
-  at sample 199. Index 200 appears in `anomalies`, and `clean[200]` is the window's
-  median.
+  at sample 199. Index 200 appears in `anomalies`, and `clean[200]` is the baseline.
 
 ## 3. What it is not for
 
 `Armatura` is a **point-level** shield. It removes isolated spikes and non-finite values.
 It does not remove a slow drift, and it does not classify a regime change: those need a
 different tool (see [CUSUM](../drift/cusum.md) and [Arbiter](../protect/arbiter.md)).
-If your signal is a step change that is genuinely intended, `Armatura` will leave it
-alone after the first few samples, because after those samples the step is the new local
+If your signal is a step change that is genuinely intended, `Armatura` leaves it alone
+after the first few samples, because after those samples the step is the new local
 baseline.
 
 ## 4. The engine inside

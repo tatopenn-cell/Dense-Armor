@@ -28,7 +28,11 @@ one mimic (`panda_finger_joint2`).
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 
 model = RigidBodyModel("panda_arm_hand.urdf.xacro")
-model.n
+print(model.n, model.mimic_map["panda_finger_joint2"])
+```
+
+```
+8 (7, 1.0, 0.0)
 ```
 
 `model.n` is `8` — 7 arm joints plus 1 independent gripper coordinate, not 9. The two
@@ -37,10 +41,6 @@ fingers are counted as one real DOF.
 ## 1. How mimic joints are represented
 
 The model keeps a map from each mimic joint to `(master_dof_idx, multiplier, offset)`:
-
-```python
-model.mimic_map["panda_finger_joint2"]
-```
 
 ```
 (7, 1.0, 0.0)
@@ -56,14 +56,12 @@ own coordinate. The mimic joint contributes no independent column of its own.
 
 ## 2. Why this matters for the mass matrix
 
-Without the mimic handling, a 9-joint model has a 9×9 mass matrix, and the two finger
-rows / columns are supposed to be coupled by construction but the model treats them as
-independent. The result: the mass matrix is not symmetric at numerical noise levels
-(some entries that should match do not), and the forward dynamics produces accelerations
-for the mimic joint that contradict the master's motion.
+Without the mimic handling the model would have 9 coordinates: a 9×9 mass matrix and a ninth
+torque channel for a finger that no motor drives on its own, and the dynamics could move the two
+fingers independently, which the real gripper cannot do.
 
-With the mimic handling, the model is 8×8, symmetric, positive-definite. The finger
-pair behaves as one rigid DOF.
+With the mimic handling the model is 8×8: the finger pair is one coordinate, and its mass enters
+the matrix through the master joint.
 
 ## 3. How mimic joints are handled in the Jacobian
 
@@ -85,23 +83,18 @@ Drive the master finger joint by a small amount and check that both fingertips m
 the same amount in opposite directions (their local closing axes point opposite ways):
 
 ```python
-import jax
-jax.config.update("jax_enable_x64", True)
 import jax.numpy as jnp
-import numpy as np
+from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 
+model = RigidBodyModel("panda_arm_hand.urdf.xacro")
 q = jnp.zeros(model.n)
-q_plus = q.at[7].set(0.02)
-p1, _ = model.link_pose(q, "panda_leftfinger")
-p2, _ = model.link_pose(q, "panda_rightfinger")
-p1p, _ = model.link_pose(q_plus, "panda_leftfinger")
-p2p, _ = model.link_pose(q_plus, "panda_rightfinger")
-
-(np.linalg.norm(p1p - p1), np.linalg.norm(p2p - p2))
+p1, p2 = (model.link_pose(q, k)[0] for k in ("panda_leftfinger", "panda_rightfinger"))
+q1, q2 = (model.link_pose(q.at[7].set(0.02), k)[0] for k in ("panda_leftfinger", "panda_rightfinger"))
+print(round(float(jnp.linalg.norm(q1 - p1)), 4), round(float(jnp.linalg.norm(q2 - p2)), 4))
 ```
 
 ```
-(0.02, 0.02)
+0.02 0.02
 ```
 
 Both fingers moved by exactly the master's displacement. In the Jacobian, the mimic

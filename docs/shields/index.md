@@ -16,9 +16,16 @@ intermediate state, no model, no reference needed.
 ```python
 from dense_armor import Armatura
 
-a = Armatura(livello_ia=0.0)
-clean, K, anomalies = a.analizza([1.2, 1.3, 9999, 1.25, float("nan"), 1.3])
+clean, K, anomalies = Armatura(livello_ia=0.0).analizza([1.2, 1.3, 9999, 1.25, float("nan"), 1.3])
+print(clean.round(3), anomalies)
 ```
+
+```
+[1.2  1.3  1.25 1.25 1.3  1.3 ] [2, 4]
+```
+
+The 9999 at index 2 and the NaN at index 4 are replaced (by 1.25 and 1.3); `anomalies` lists
+their indices.
 
 See **[Armatura](armatura.md)**.
 
@@ -31,11 +38,26 @@ spike / regime and routes it to the right corrector instead of one gate for the 
 signal.
 
 ```python
+import numpy as np
 from dense_armor.utility.protect.orca import Orca
 
-orca = Orca()
-protected = orca.protect_and_forward(my_model, corrupted_data, x_reference=ref)
+rng = np.random.default_rng(0)
+ref = np.sin(np.linspace(0, 6, 200))[None, :] + 0.01 * rng.standard_normal((4, 200))
+data = ref.copy()
+data[0, 50] = 999.0
+
+orca = Orca(min_free_ram_percentage=0.05)
+protected = orca.protect_and_forward(lambda z: 2.0 * z, data, x_reference=ref)
+print(protected.shape)
 ```
+
+```
+(4, 200)
+```
+
+The input to the model is the cleaned version of `data`: the value 999 at `(0, 50)` is
+replaced before the model ever sees it. The model itself is the simplest possible
+callable (identity times two), chosen here so the shield is the only thing acting.
 
 See **[Orca](orca.md)**.
 

@@ -14,7 +14,9 @@ This module is a **task-space controller** that guarantees two things at once:
 - **Singularity avoidance** — the manipulability index stays above a user-chosen floor,
   so the arm never reaches a configuration from which it cannot move in the task space.
 
-Both properties hold simultaneously, and the controller never becomes infeasible.
+In theory the QP always has a solution away from singular configurations (Proposition 2 of the
+paper); numerically, when the solver reports it infeasible, the controller keeps the safety
+constraint and relaxes passivity (step 6).
 
 ## The robot
 
@@ -22,19 +24,37 @@ Any robot loaded from its URDF. Here a Franka Panda, the same robot used everywh
 this section.
 
 ```python
-import jax
-jax.config.update("jax_enable_x64", True)
-import numpy as np
+import jax.numpy as jnp
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 from dense_armor.dynamics.passivity_cbf_controller import solve_control_qp
 
 model = RigidBodyModel("panda.urdf")
+q = jnp.array([0.0, -0.5, 0.0, -1.5, 0.0, 1.0, 0.5, 0.02, 0.02])
+p_des, z = jnp.array([0.5, 0.0, 0.5]), jnp.zeros(3)
+qdd, tau, mu, h = solve_control_qp(model, "panda_hand", q, jnp.zeros(model.n), p_des, z, z, eps=0.03)
+print(tau.shape, round(float(mu), 4), round(float(h), 4))
+```
+
+```
+(9,) 0.0921 0.0621
 ```
 
 The controller is called `solve_control_qp` because it is a **quadratic program**
 solver: at every control tick, it takes the current state, the desired task-space
 target, and returns the joint torque that meets both guarantees with minimum deviation
 from the standard passivity-based control command.
+
+The four return values:
+
+- `qdd` — the joint acceleration command.
+- `tau` — the joint torque command.
+- `mu` — the manipulability index at the current configuration.
+- `h` — the barrier function value, `h(q) = μ(q) − ε`. Positive means "inside the safe
+  set"; the controller keeps it non-negative.
+
+`"panda_hand"` is the **name of the link being tracked** — the same name the URDF uses.
+`p_des`, `pd_des`, `pdd_des` are the desired position, velocity, and acceleration of
+that link at this instant. `eps` is the manipulability floor.
 
 ## 1. What "manipulability" means
 
@@ -49,87 +69,63 @@ task space, `μ > 0`; when the arm is at a singularity (fully extended, or in a 
 singularity), `μ = 0`. The index is a smooth function of `q` and gives a single number
 for "how far from singularity we are right now".
 
-The controller enforces `μ(q) ≥ ε` with a user-chosen floor `ε` (typically `0.03`).
+The controller enforces `μ(q) ≥ ε` with a user-chosen floor `ε`. The call above uses
+`eps=0.03`, the value the paper's own simulations use (Kurtz, Wensing & Lin 2021,
+Section IV). At the configuration in the example the index is `0.0921`, well above the
+floor, and the barrier `h = 0.0921 − 0.03 = 0.0621` is correspondingly positive.
 
-## 2. The controller call
+## 2. What the QP actually solves
 
-```python
-q = jnp.array([0.0, -0.5, 0.0, -1.5, 0.0, 1.0, 0.5])
-qd = jnp.zeros(model.n)
-p_des = jnp.array([0.5, 0.0, 0.5])
-pd_des = jnp.zeros(3)
-pdd_des = jnp.zeros(3)
+At each call the controller first computes a nominal joint acceleration $\ddot q_{nom}$ (task-space
+PD with gains `kp_task`, `kd_task`, plus damping `kd_null` in the redundant null space), then
+finds the acceleration closest to it that satisfies the constraints:
 
-qdd, tau, mu, h = solve_control_qp(
-    model, "panda_hand", q, qd, p_des, pd_des, pdd_des, eps=0.03,
-)
-```
-
-`solve_control_qp` returns four values:
-
-- `qdd` — the joint acceleration command.
-- `tau` — the joint torque command.
-- `mu` — the manipulability index at the current configuration.
-- `h` — the barrier function value at the current configuration, `h(q) = μ(q) − ε`.
-  Positive means "inside the safe set"; the controller keeps it non-negative.
-
-The first argument `model` is the `RigidBodyModel`. The second `"panda_hand"` is the
-**name of the link being tracked** — the same name the URDF uses. `p_des`, `pd_des`,
-`pdd_des` are the desired position, velocity, and acceleration of that link at this
-instant (typically from the [trajectory generator](../control/trajectory.md)).
-`eps` is the manipulability floor.
-
-## 3. What the QP actually solves
-
-At each call, the QP is:
-
-```
-minimize_qdd   ‖ M(q) qdd + C(q, qd) qd + g(q) − tau_pd ‖²
-subject to     V̇(q, q̇, qdd) ≤ 0                    (passivity)
-               μ̇(q, q̇, qdd) + α · (μ(q) − ε) ≥ 0   (singularity CBF)
-               q_min ≤ q + qd · dt ≤ q_max         (joint limits, if declared)
-```
+$$\min_{\ddot q}\; \tfrac12 \lVert \ddot q - \ddot q_{nom} \rVert^2 \quad \text{s.t.} \quad a_1^\top \ddot q \le u_1 \;(\text{passivity}),\quad a_2^\top \ddot q \le u_2 \;(\text{singularity CBF}),\quad \ddot q_{lb} \le \ddot q \le \ddot q_{ub} \;(\text{joint limits}).$$
 
 ### Symbols
 
-- `M(q)`, `C(q, qd)`, `g(q)` — the mass matrix, Coriolis term, gravity vector from
-  the [URDF dynamics](urdf_dynamics.md).
-- `tau_pd` — the nominal task-space PD command: `Kp (p_des − p) + Kd (pd_des − pd)`,
-  mapped through the transposed Jacobian `Jᵀ`. The QP finds the `qdd` that realizes
-  this torque **as closely as possible** while still satisfying the constraints.
-- `V` — the tracking-error storage function (a Lyapunov-like function). Passivity
-  means `V̇ ≤ 0`, computed from the current state and the requested `qdd`.
-- `μ` — the manipulability index above.
-- `α` — the CBF gain. Larger `α` pushes the arm away from the floor more aggressively;
-  smaller `α` allows getting closer to it.
-- `q_min`, `q_max` — the joint limits from the URDF's own `<limit>` tags. Rows are
-  added **only** for joints that declare a real limit; for unlimited joints no row
-  is added.
+- $\ddot q_{nom}$ — what an unconstrained task-space PD controller would command.
+- $a_1^\top \ddot q \le u_1$ — the passivity row: the storage function of the tracking error
+  does not grow.
+- $a_2^\top \ddot q \le u_2$ — the singularity row, an *exponential* CBF on $h = \mu(q) - \varepsilon$:
+  because $h$ depends on $q$ only, the constraint acts on its second derivative,
+  $\ddot h + k_1 \dot h + k_0 h \ge 0$, with the gains `ka = (k0, k1) = (100, 20)`.
+- $\ddot q_{lb}, \ddot q_{ub}$ — the joint-limit box, from the URDF's own `<limit>` tags; rows are
+  added **only** when the robot declares a real limit.
+- The torque is then $\tau = M(q)\ddot q + C(q,\dot q)\dot q + g(q)$ from the
+  [URDF dynamics](urdf_dynamics.md).
 
-The four constraint families are all affine in `qdd`, so this is a small QP. On a
-desktop it solves in well under a millisecond; the module uses OSQP
+All rows are affine in $\ddot q$, so this is a small QP, solved with OSQP
 ([Stellato et al. 2020](https://doi.org/10.1007/s12532-020-00179-2)).
 
-## 4. Hand case: joint limit CBF in action
+## 3. Hand case: joint limit CBF in action
 
-Franka Panda, joint `joint4`, real range `[−3.1416, 0.0]`. Put the joint right at its
-bound with velocity driving past it:
+Franka Panda, `panda_joint4`, real range `[−3.1416, 0.0]`. The joint sits right at its upper
+bound (`q[3] = −0.001`) and moves further up (`qd[3] = 5.0`):
+
+```python
+import jax.numpy as jnp
+from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
+from dense_armor.dynamics.passivity_cbf_controller import solve_control_qp
+
+model, z = RigidBodyModel("panda.urdf"), jnp.zeros(3)
+q = jnp.array([0.0, 0.5, 0.0, -0.001, 0.0, 1.5, 0.0, 0.0, 0.0])
+qd = jnp.zeros(9).at[3].set(5.0)
+p_des = model.link_position(q, "panda_hand") + jnp.array([0.0, 0.0, 0.3])
+qdd, tau, mu, h = solve_control_qp(model, "panda_hand", q, qd, p_des, z, z, eps=0.03)
+print(round(float(qdd[3]), 3))
+```
 
 ```
-q[3] = 0.0        (at the upper edge of the range)
-qd[3] = 1.0       (moving further up, past the limit)
+-7.175
 ```
 
-The nominal (unconstrained) PD command would produce `qdd[3] = −205.8`. Without the
-CBF row, the QP would return this value, and the joint would immediately overshoot its
-hard limit. With the joint-limit CBF active, the constraint box for `qdd[3]` at this
-state is `[−7.175, −4.999]` (computed from the URDF limit, the current position, and
-the CBF recovery rate). The solver returns `qdd[3] = −7.175` — the box's own edge.
+The nominal PD command alone would ask `qdd[3] = −205.8`. At this state the joint-limit box for
+`qdd[3]` is `[−7.175, −4.999]` (from the URDF limit, the position and the velocity); the solver
+returns `−7.175`, the edge of the box. The motor is never commanded past the joint limit,
+whatever the PD command wants.
 
-The motor will not be commanded to violate the joint limit, no matter what the PD
-command wants.
-
-## 5. On three real robots
+## 4. On three real robots
 
 At each robot's own true kinematic singularity, the minimum manipulability over a
 200-step trajectory under the controller:
@@ -146,7 +142,7 @@ Without the CBF, the controller reaches it: `μ` drops to near zero. With the CB
 arm from approaching the singular configuration (that would be over-restrictive);
 it stops the arm from *being* singular.
 
-## 6. What "passivity" means here
+## 5. What "passivity" means here
 
 The tracking-error storage function `V` is a scalar measuring how far the joint is
 from the reference, weighted by the mass matrix. The passivity constraint is `V̇ ≤ 0`
@@ -158,9 +154,13 @@ pushed.
 Without the passivity constraint, the singularity CBF alone would still prevent
 singularities but would allow configurations where the arm is doing work on the
 tracking error, which is exactly the failure mode passivity-based control was
-designed to avoid.
+designed to avoid. The paper's own Section II-C shows why a standard constrained PBC
+(the classic QP with `Jᵀτ = f_des` plus additional constraints, equation (15) of the
+paper) loses its passivity guarantee the moment any additional constraint becomes
+active. The controller here keeps it: the passivity constraint is inside the QP, not
+assumed.
 
-## 7. A real bug, found and fixed
+## 6. A real bug, found and fixed
 
 OSQP can report the passivity + CBF QP **jointly infeasible**. The passivity
 constraint's coefficients go numerically near-zero exactly when tracking is already
@@ -189,6 +189,14 @@ Wensing & Lin's (2021, [arXiv:2109.13349](https://arxiv.org/abs/2109.13349)) con
 but hardcoded to one Kinova Gen3's kinematics. Experiment 63 replaced the hardcoded
 calls with `RigidBodyModel`'s API and re-validated on the same three robots
 `RigidBodyModel` itself was validated on.
+
+**Source of the two guarantees.** The controllability of the singularity barrier — the
+fact that `J_μ q̈ ≥ b` always has a solution for any real `b`, because `J_μ` is a
+nonzero `1×n` row — is Proposition 1 of the paper (the barrier (22) is an exponential CBF).
+Proposition 2 states that the QP (24) has a feasible solution for any non-singular joint
+configuration. The joint
+limits are an additional CBF row on top of the paper's singularity constraint, added
+in this implementation and validated separately.
 
 **Scope**: task-space **position** tracking only (3 DoF). For full 6-DoF (position +
 orientation) tracking, see [six_dof_pbc_cbf_controller](six_dof_pbc_cbf_controller.md).
