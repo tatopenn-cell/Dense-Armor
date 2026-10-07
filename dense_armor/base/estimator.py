@@ -102,3 +102,8 @@ class Estimator(Base, metaclass=_PipelineAwareMeta):
             if isinstance(mt, dict):
                 tags.update(mt)
         return tags
+
+    @property
+    def _tags(self) -> set:
+        """Names of the tags that are set, as a set (the interoperable form)."""
+        return {k for k, v in self._get_tags().items() if v}
