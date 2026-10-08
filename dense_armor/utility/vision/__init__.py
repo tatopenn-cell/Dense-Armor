@@ -70,6 +70,10 @@ and it prints the score before and after the change.
 """
 
 from dense_armor.utility.vision.features import FrameFeatures
+from dense_armor.utility.vision.patches import (
+    PatchFeatures,
+    PatchMemory,
+)
 from dense_armor.utility.vision.reduce import (
     IncrementalPCA,
     RandomProjection,
@@ -88,5 +92,7 @@ __all__ = [
     "FrameFeatures",
     "ImageFolderStream",
     "IncrementalPCA",
+    "PatchFeatures",
+    "PatchMemory",
     "RandomProjection",
 ]
