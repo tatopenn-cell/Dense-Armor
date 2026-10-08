@@ -105,6 +105,8 @@ nav:
       - Streaming quantiles: stats/streaming.md
       - Dependence: stats/dependence.md
       - Sketches: stats/sketches.md
+  - Preprocessing:
+      - preprocessing/index.md
   - Metrics and evaluation: metrics/index.md
   - Vision:
       - vision/index.md
