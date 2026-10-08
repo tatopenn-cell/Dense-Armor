@@ -209,6 +209,10 @@ model = MetricKNNClassifier(POLA(), n_neighbors=5)
 
 Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/learn/metric_learning/).
 
+## `$ metrics --online`
+
+Online metrics, predict-then-learn evaluation with delayed labels, and event metrics for robots (detection delay, false alarms per hour, range-based F1, NAB). Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/metrics/).
+
 ## `$ rate_limiter --damping`
 
 A robotic arm cannot execute an unlimited instantaneous jump without risk -- `rate_limited_follower` (`dense_armor.utility.control.rate_limiter`) limits how fast an applied command can physically change (velocity + acceleration), instead of trying to classify whether a deviation is real:

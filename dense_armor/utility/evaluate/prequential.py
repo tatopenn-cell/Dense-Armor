@@ -20,6 +20,7 @@ from collections.abc import Iterable
 from typing import Any
 
 from dense_armor.roles import Classifier, Signal
+from dense_armor.roles._util import call_with_t
 from dense_armor.utility.metrics.base import Metric
 
 _PENDING = tuple[Any, Any, Any, float | None]
@@ -64,7 +65,7 @@ def _learn_or_score(
 ) -> None:
     if metric is not None:
         metric.update(y, pred, t=t)
-    model.learn_one(x, y, t=t)
+    call_with_t(model.learn_one, x, y, t=t)
 
 
 def progressive_val_score(
@@ -123,7 +124,7 @@ def progressive_val_score(
     for i, (x, y) in enumerate(stream, 1):
         t = _timestamp_of(x)
         pred = (
-            model.predict_one(x, t=t)
+            call_with_t(model.predict_one, x, t=t)
             if hasattr(model, "predict_one")
             else None
         )
@@ -171,18 +172,18 @@ def progressive_val_proba_score(
     trace: list[float] = []
     for i, (x, y) in enumerate(stream, 1):
         t = _timestamp_of(x)
-        proba = classifier.predict_proba_one(x, t=t)
+        proba = call_with_t(classifier.predict_proba_one, x, t=t)
         p = proba.get(1, proba.get(True, 0.5)) if proba else 0.5
         buffer.append((x, y, p, t))
         ready, buffer = _split_ready(buffer, delay, t)
         for rx, ry, rp, rt in ready:
             metric.update(ry, rp, t=rt)
-            classifier.learn_one(rx, ry, t=rt)
+            call_with_t(classifier.learn_one, rx, ry, t=rt)
         if every is not None and i % every == 0:
             trace.append(metric.get())
     for rx, ry, rp, rt in buffer:
         metric.update(ry, rp, t=rt)
-        classifier.learn_one(rx, ry, t=rt)
+        call_with_t(classifier.learn_one, rx, ry, t=rt)
     if every is None:
         return metric
     return metric, trace
