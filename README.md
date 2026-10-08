@@ -185,6 +185,10 @@ report = detectability_report(local_noise_scale=local_mad, k=0.5, h=5.0, candida
 
 `detectability_report` estimates *before* running a benchmark how many samples are needed to detect a given shift given the detector's real local noise -- Reynolds (1975)/Siegmund (1985) theory, promoted by Dense-Evolution-Discovery after validation on two independent real physical domains (lidar, accelerometer): on the lidar the real latency always beats the theoretical estimate; on the accelerometer the result is genuinely mixed -- documented as is, not forced to coincide. Full documentation (auto-generated from the real docstrings) on the [site](https://tatopenn-cell.github.io/Dense-Armor/drift/cusum/).
 
+## `$ drift_detectors --online`
+
+Four streaming drift detectors with one interface, `update(x)` and `drift_detected`: CUSUM with a fixed reference (safe on a NaN or flat start), Page-Hinkley (unit-independent), ADWIN (Hoeffding bound) and KSWIN (Kolmogorov–Smirnov), compared on the CASPER robot stream. Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/drift/detectors/).
+
 ## `$ calibration --platt`
 
 `OnlinePlattScaling` (`dense_armor.utility.learn.calibration`, `pip install dense-armor[river]`) wraps any river classifier and recalibrates its probabilities one sample at a time, following Algorithm 1 of Gupta and Ramdas (ICML 2023, arXiv:2305.00070):
