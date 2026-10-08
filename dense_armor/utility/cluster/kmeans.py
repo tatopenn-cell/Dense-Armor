@@ -44,19 +44,6 @@ et al. 2021, eq. 5), and the buffered points are then assigned in order.
 Starting from the first ``k`` points instead can put two centres in the
 same group and leave another group without one.
 
-Args:
-    k: number of clusters.
-    halflife: exponential half-life in samples. ``None`` (default)
-        uses the ``1 / n_j`` step; a positive number uses
-        ``1 - 2 ** (-1 / halflife)``.
-    seed: reserved for future random initialisation; kept for the
-        ``Root`` interface.
-    warmup: number of points buffered before the centres are chosen.
-        Default ``10 * k``.
-
-Raises:
-    ValueError: if ``k < 1``, or ``halflife`` is not positive.
-
 Examples:
     >>> from dense_armor.utility.cluster.kmeans import OnlineKMeans
     >>> km = OnlineKMeans(k=2, warmup=4)
@@ -110,11 +97,17 @@ class OnlineKMeans(Transformer):
 
     Args:
         k: number of clusters.
-        halflife: see the module docstring.
-        seed: reserved for the ``Root`` interface.
+        halflife: exponential half-life in samples. ``None`` (default)
+            uses the ``1 / n_j`` step; a positive number uses
+            ``1 - 2 ** (-1 / halflife)``.
+        seed: reserved for future random initialisation; kept for the
+            ``Root`` interface.
+        warmup: number of points buffered before the centres are chosen.
+            Default ``10 * k``.
 
     Raises:
-        ValueError: if ``k < 1`` or ``halflife <= 0``.
+        ValueError: if ``k < 1``, ``halflife`` is not positive, or
+            ``warmup < k``.
     """
 
     budget_s = 2e-3

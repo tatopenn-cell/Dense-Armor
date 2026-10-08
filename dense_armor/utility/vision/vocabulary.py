@@ -13,15 +13,6 @@ missing piece of the visual pipeline.
 The vocabulary is grown online, so the same estimator can be fed
 patch descriptors from many frames without ever storing them.
 
-Args:
-    n_words: size of the visual vocabulary.
-    patch_size: side of a square patch in pixels.
-    n_bins: number of gradient orientation bins inside a patch.
-    seed: passed to the internal :class:`OnlineKMeans`.
-
-Raises:
-    ValueError: if any parameter is not positive.
-
 Examples:
     >>> import numpy as np
     >>> from dense_armor.utility.vision.vocabulary import BagOfVisualWords
@@ -77,6 +68,15 @@ class BagOfVisualWords(Transformer):
     Memory grows with the vocabulary (``n_words`` centres of
     ``2 * n_bins`` floats each) and the number of patches per frame,
     both bounded, so the footprint is fixed.
+
+    Args:
+        n_words: size of the visual vocabulary.
+        patch_size: side of a square patch in pixels.
+        n_bins: number of gradient orientation bins inside a patch.
+        seed: passed to the internal :class:`OnlineKMeans`.
+
+    Raises:
+        ValueError: if any parameter is not positive.
     """
 
     budget_s = 1e-3

@@ -41,16 +41,6 @@ mean of its pMCs.
 The weights and centres use the real timestamps passed to
 ``learn_one``.
 
-Args:
-    eps: neighbourhood radius.
-    beta: multiplier that separates pMCs from oMCs.
-    mu: minimum weight of a pMC.
-    decay: decay rate ``lam`` of the damped window.
-
-Raises:
-    ValueError: if any parameter is not positive, or ``beta`` is not
-        in ``(0, 1]``.
-
 Examples:
     >>> from dense_armor.utility.cluster.denstream import DenStream
     >>> ds = DenStream(eps=0.5, beta=0.4, mu=1.0, decay=0.1)
@@ -111,6 +101,16 @@ class DenStream(Transformer):
     Memory grows with the number of micro-clusters kept: bounded by
     the effective window set by ``decay`` and ``mu``, so the footprint
     is the size of the current micro-cluster lists.
+
+    Args:
+        eps: neighbourhood radius.
+        beta: multiplier that separates pMCs from oMCs.
+        mu: minimum weight of a pMC.
+        decay: decay rate ``lam`` of the damped window.
+
+    Raises:
+        ValueError: if any parameter is not positive, or ``beta`` is not
+            in ``(0, 1]``.
     """
 
     budget_s = 1e-3
