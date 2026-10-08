@@ -20,6 +20,12 @@ class OnlinePlattScaling(ModelWrapper, Classifier):
     updated online via Online Newton Step. If the base is already calibrated, the mapping tends to
     the identity and the probabilities remain almost unchanged.
 
+    While the base classifier has no opinion yet (an empty ``predict_proba_one``, as a tree
+    returns before it has seen a class), the wrapper returns an empty dict too, and ``learn_one``
+    passes the sample to the base classifier without updating ``a`` and ``b``: the mapping is
+    never fitted on a probability the base did not give. A base that knows only the negative
+    class gives ``p = 1 - p(False)``.
+
     When the base classifies well but gives wrong numbers: the base classifier produces
     miscalibrated probabilities, typically because it is overconfident in its own predictions.
     This is the classic case of decision trees and random forests, which tend to output
@@ -70,7 +76,7 @@ class OnlinePlattScaling(ModelWrapper, Classifier):
 
     >>> model = OnlinePlattScaling(tree.HoeffdingTreeClassifier())
     >>> evaluate.progressive_val_score(dataset, model, metrics.LogLoss())
-    LogLoss: 0.34994014692887654
+    LogLoss: 0.34989900648729855
 
     References
     ----------
@@ -98,7 +104,8 @@ class OnlinePlattScaling(ModelWrapper, Classifier):
         return False
 
     def _u(self, x, **kwargs):
-        p = self.classifier.predict_proba_one(x, **kwargs).get(True, 0.5)
+        inner = self.classifier.predict_proba_one(x, **kwargs)
+        p = inner.get(True, 1.0 - inner.get(False, 0.5))
         p = min(max(p, self.clip), 1.0 - self.clip)
         return np.array([math.log(p / (1.0 - p)), 1.0])
 
@@ -122,6 +129,9 @@ class OnlinePlattScaling(ModelWrapper, Classifier):
         return {False: 1.0 - p, True: p}
 
     def learn_one(self, x, y, **kwargs):
+        if not self.classifier.predict_proba_one(x, **kwargs):
+            self.classifier.learn_one(x, y, **kwargs)
+            return
         u = self._u(x, **kwargs)
         g = (1.0 / (1.0 + math.exp(-float(self._theta @ u))) - float(y)) * u
         self._A += np.outer(g, g)
