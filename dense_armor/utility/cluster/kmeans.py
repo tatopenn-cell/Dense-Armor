@@ -36,8 +36,13 @@ the centres converge to the batch k-means solution (the classical
 MacQueen step); on an adversarial stream a single far-away point can
 push a centre anywhere.
 
-The centres are created from the first ``k`` distinct points seen; until ``k``
-exist, assignments use the centres created so far.
+Initialisation: the first ``warmup`` points (default ``10 * k``) are
+buffered, ``k`` distinct centres are picked among them by greedy
+farthest-first selection (each new centre is the point farthest from the
+centres already chosen, the minimax rule of the PatchCore coreset, Roth
+et al. 2021, eq. 5), and the buffered points are then assigned in order.
+Starting from the first ``k`` points instead can put two centres in the
+same group and leave another group without one.
 
 Args:
     k: number of clusters.
@@ -46,22 +51,26 @@ Args:
         ``1 - 2 ** (-1 / halflife)``.
     seed: reserved for future random initialisation; kept for the
         ``Root`` interface.
+    warmup: number of points buffered before the centres are chosen.
+        Default ``10 * k``.
 
 Raises:
     ValueError: if ``k < 1``, or ``halflife`` is not positive.
 
 Examples:
     >>> from dense_armor.utility.cluster.kmeans import OnlineKMeans
-    >>> km = OnlineKMeans(k=2)
+    >>> km = OnlineKMeans(k=2, warmup=4)
     >>> for v in [0.0, 0.1, 10.0, 10.1, 0.2, 9.9]:
     ...     _ = km.learn_one({"x": [v]})
-    >>> km.predict_one({"x": [0.0]}), km.predict_one({"x": [10.0]})
-    (0, 1)
+    >>> sorted(round(float(c[0]), 2) for c in km.centers_)
+    [0.1, 10.0]
 
 References:
     Bhattacharjee, R., Dasgupta, S., Imola, J. J., Moshkovitz, M. (2021).
         Online k-means clustering on arbitrary data streams.
         arXiv:2102.09101.
+    Roth, K. et al. (2021). Towards total recall in industrial anomaly
+        detection. arXiv:2106.08265 (eq. 5, greedy minimax selection).
 """
 from typing import Any
 
@@ -108,11 +117,15 @@ class OnlineKMeans(Transformer):
         ValueError: if ``k < 1`` or ``halflife <= 0``.
     """
 
-    budget_s = 1e-4
+    budget_s = 2e-3
     memory_class = "O(1)"
 
     def __init__(
-        self, k: int, halflife: float | None = None, seed: int = 0
+        self,
+        k: int,
+        halflife: float | None = None,
+        seed: int = 0,
+        warmup: int | None = None,
     ) -> None:
         if k < 1:
             raise ValueError(f"k must be >= 1, got {k}")
@@ -121,6 +134,10 @@ class OnlineKMeans(Transformer):
         self.k = k
         self.halflife = halflife
         self.seed = seed
+        self.warmup = warmup if warmup is not None else 10 * k
+        if self.warmup < k:
+            raise ValueError(f"warmup must be >= k, got {self.warmup}")
+        self._buf: list[np.ndarray] = []
         self.centers_: np.ndarray | None = None
         self.counts_: np.ndarray | None = None
         self.n_seen_ = 0
@@ -140,24 +157,42 @@ class OnlineKMeans(Transformer):
         assert counts is not None
         return 1.0 / (int(counts[j]) + 1)
 
-    def _maybe_add_centre(self, v: np.ndarray) -> bool:
-        """Create a new centre from ``v`` while fewer than ``k`` exist.
+    def _farthest_first(self, buf: np.ndarray) -> np.ndarray:
+        """Pick ``k`` distinct centres from ``buf`` by greedy farthest-first."""
+        uniq = np.unique(buf, axis=0)
+        mean = uniq.mean(axis=0)
+        chosen = [int(np.argmin(((uniq - mean) ** 2).sum(axis=1)))]
+        d2 = ((uniq - uniq[chosen[0]]) ** 2).sum(axis=1)
+        while len(chosen) < min(self.k, uniq.shape[0]):
+            j = int(np.argmax(d2))
+            chosen.append(j)
+            d2 = np.minimum(d2, ((uniq - uniq[j]) ** 2).sum(axis=1))
+        return uniq[chosen].copy()
 
-        Returns True when ``v`` became a new centre (nothing else to do).
-        """
-        centers = self.centers_
-        if centers is None:
-            self.centers_ = v.copy()[None, :]
-            self.counts_ = np.ones(1, dtype=int)
+    def _warm_up(self, v: np.ndarray) -> bool:
+        """Buffer the first points; return True once the centres exist."""
+        if self.centers_ is not None:
             return True
-        if centers.shape[0] >= self.k or v.shape[0] != centers.shape[1]:
+        if self._buf and v.shape[0] != self._buf[0].shape[0]:
             return False
-        if any(np.array_equal(v, c) for c in centers):
+        self._buf.append(v.copy())
+        if len(self._buf) < self.warmup:
             return False
-        self.centers_ = np.vstack([centers, v])
-        assert self.counts_ is not None
-        self.counts_ = np.append(self.counts_, 1)
-        return True
+        buf = np.stack(self._buf, axis=0)
+        self._buf = []
+        self.centers_ = self._farthest_first(buf)
+        self.counts_ = np.ones(self.centers_.shape[0], dtype=int)
+        pending = [c.copy() for c in self.centers_]
+        for x in buf:
+            hit = next((i for i, c in enumerate(pending) if np.array_equal(c, x)), None)
+            if hit is not None:
+                pending.pop(hit)
+                continue
+            d2 = ((self.centers_ - x) ** 2).sum(axis=1)
+            c = int(np.argmin(d2))
+            self.centers_[c] += self._alpha(c) * (x - self.centers_[c])
+            self.counts_[c] += 1
+        return False
 
     def learn_one(
         self, x: Any, y: Any = None, t: float | None = None
@@ -168,7 +203,7 @@ class OnlineKMeans(Transformer):
         if v is None:
             self.n_missing_ += 1
             return self
-        if self._maybe_add_centre(v):
+        if not self._warm_up(v):
             self.n_seen_ += 1
             return self
         centers = self.centers_

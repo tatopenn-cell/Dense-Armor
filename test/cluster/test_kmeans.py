@@ -55,11 +55,11 @@ def test_kmeans_halflife_follows_moving_blobs():
 
 
 def test_kmeans_predict_and_transform():
-    km = OnlineKMeans(k=2)
+    km = OnlineKMeans(k=2, warmup=4)
     for v in [0.0, 0.1, 10.0, 10.1, 0.2, 9.9]:
         km.learn_one({"x": [v]})
-    assert km.predict_one({"x": [0.0]}) == 0
-    assert km.predict_one({"x": [10.0]}) == 1
+    assert km.predict_one({"x": [0.0]}) != km.predict_one({"x": [10.0]})
+    assert sorted(round(float(c[0]), 1) for c in km.centers_) == [0.1, 10.0]
     out = km.transform_one({"x": [0.0]})
     assert "cluster" in out and "distances" in out
     assert len(out["distances"]) == 2
