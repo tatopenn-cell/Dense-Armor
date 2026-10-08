@@ -5,13 +5,13 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "dense-armor"
 version = "1.1.23"
-description = "The wearable AI-safety shield: runtime anomaly damping for any AI signal - NaN-safe, drift-aware, dimension-agnostic, no retraining"
+description = "Online learning and runtime shielding for robots and AI signals: streaming estimators, statistics, metrics, drift and anomaly detection, robot control - NaN-safe, JAX"
 readme = "README.md"
 license = "BUSL-1.1"
 license-files = ["LICENSE.md"]
 authors = [{ name = "Salvatore Pennacchio", email = "jtatopenn@libero.it" }]
 requires-python = ">=3.10"
-keywords = ["anomaly-detection", "signal-processing", "drift-detection", "ai-safety", "robust-statistics", "jax"]
+keywords = ["online-learning", "streaming", "robotics", "anomaly-detection", "drift-detection", "ai-safety", "robust-statistics", "jax"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Intended Audience :: Science/Research",
