@@ -104,6 +104,7 @@ nav:
       - Streaming quantiles: stats/streaming.md
       - Dependence: stats/dependence.md
       - Sketches: stats/sketches.md
+  - Metrics and evaluation: metrics/index.md
   - Control:
       - control/index.md
       - Rate limiter: control/rate_limiter.md

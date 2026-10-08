@@ -4,6 +4,10 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+## [1.1.23] - 2026-10-08
+- Online metrics (`dense_armor.utility.metrics`) and evaluation (`dense_armor.utility.evaluate`): classification, regression, intervals, rolling windows and ROC-AUC, prequential with delayed labels, model selection, event metrics (range-based precision/recall, NAB, detection delay, false alarms per hour).
+- `AdaptiveConformalRegressor` passes `t` only to models that accept it.
+
 ### Changed
 - **`utility/orca.Orca.protect_and_forward`**: vectorized the entry-shield stage -- the
   previous `for b in range(B)` Python loop called `_execute_4_phase_input_shield` once per

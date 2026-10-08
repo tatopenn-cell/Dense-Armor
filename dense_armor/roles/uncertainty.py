@@ -42,6 +42,7 @@ from dataclasses import dataclass
 from typing import Any, Optional
 
 from dense_armor.roles import Regressor
+from dense_armor.roles._util import call_with_t
 from dense_armor.roles.signal import Signal
 from dense_armor.learn.calibration import OnlinePlattScaling
 
@@ -143,7 +144,7 @@ class AdaptiveConformalRegressor(Regressor):
             alpha_{t+1} = alpha_t + gamma * (alpha - err_t)
         """
         self._time_step(t)
-        yhat = float(self.model.predict_one(x, t=t))
+        yhat = float(call_with_t(self.model.predict_one, x, t=t))
         q = self._quantile(1.0 - self.alpha_t_)
         lo, hi = yhat - q, yhat + q
         err = 0.0 if lo <= float(y) <= hi else 1.0
@@ -152,7 +153,7 @@ class AdaptiveConformalRegressor(Regressor):
         self.alpha_t_ = min(1.0, max(0.0, self.alpha_t_))
         self.residuals_.append(abs(float(y) - yhat))
         try:
-            self.model.learn_one(x, y, t=t)
+            call_with_t(self.model.learn_one, x, y, t=t)
         except TypeError:
             self.model.learn_one(x, y)
         self.n_ += 1
@@ -163,7 +164,7 @@ class AdaptiveConformalRegressor(Regressor):
     ) -> tuple[float, float]:
         """Return the current conformal interval ``(lo, hi)``."""
         self._time_step(t)
-        proba = float(self.model.predict_one(x, t=t))
+        proba = float(call_with_t(self.model.predict_one, x, t=t))
         q = self._quantile(1.0 - self.alpha_t_)
         lo, hi = proba - q, proba + q
         self._last_lo_, self._last_hi_ = lo, hi
@@ -178,7 +179,7 @@ class AdaptiveConformalRegressor(Regressor):
     ) -> Any:
         """Predict one value, optionally with an uncertainty."""
         self._time_step(t)
-        mean = float(self.model.predict_one(x, t=t))
+        mean = float(call_with_t(self.model.predict_one, x, t=t))
         if return_estimate or return_std:
             std = self._quantile(1.0 - self.alpha_t_)
             if return_estimate:
