@@ -29,7 +29,7 @@ accuracy guarantee. Two sketches are provided:
 Both are mergeable: two sketches of the same kind combine into one
 sketch of the union.
 
-![Relative error of DDSketch and TDigest on a Pareto stream at several quantiles. Both stay within the alpha tolerance down to q = 0.999.](../assets/quantiles/quantiles_stream.png)
+![Relative error of DDSketch and TDigest on a Pareto stream at several quantiles. DDSketch stays within the alpha tolerance at all four quantiles; TDigest stays within it up to q = 0.99 and is about 16 % off at q = 0.999.](../assets/quantiles/quantiles_stream.png)
 
 The figure shows the relative error of the two sketches on a
 heavy-tailed Pareto stream at quantiles `0.5`, `0.9`, `0.99` and
