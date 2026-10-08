@@ -42,7 +42,7 @@ It leaves the weights untouched. It runs at runtime. It works from 1D up to 11D,
 
 **Same discipline, a second domain**: from `$ rate_limiter` onward the package also covers command and trajectory safety for real robots — velocity/acceleration limits, spatial control barrier functions, minimum-jerk trajectory generation, rigid dynamics from real URDF (including `.xacro`, including `<mimic>` joints), passivity+CBF controllers up to 6-DoF. JAX backend shared with `Armatura`/`Orca`, same verification discipline on real data/robots — a different application domain, not a different package.
 
-**A third domain, online learning**: estimators that learn one sample at a time on a robot or next to an LLM, all on the same foundation (`dense_armor.roles`): `learn_one` / `predict_one` / `score_one`, timestamped `Signal` samples with units, a real-time contract (p99 latency within the control period), conformal uncertainty, `SafeEstimator` with health and checksummed checkpoints, unit checks and URDF joint limits. On top of it: online statistics and sketches, metrics with predict-then-learn evaluation and event metrics for robots (detection delay, false alarms per hour), and four drift detectors (CUSUM, Page-Hinkley, ADWIN, KSWIN). LLM side: embeddings as features and estimators exposed as JSON tools for agents. This layer is being built for robots from the ground up: it takes the best-established online-learning techniques from the original papers (streaming statistics, predict-then-learn evaluation, sequential change detection, conformal prediction) and extends them with time, units, real-time budgets, uncertainty and safety. Native vision is the next block.
+**A third domain, online learning**: estimators that learn one sample at a time on a robot or next to an LLM, all on the same foundation (`dense_armor.roles`): `learn_one` / `predict_one` / `score_one`, timestamped `Signal` samples with units, a real-time contract (p99 latency within the control period), conformal uncertainty, `SafeEstimator` with health and checksummed checkpoints, unit checks and URDF joint limits. On top of it: online statistics and sketches, metrics with predict-then-learn evaluation and event metrics for robots (detection delay, false alarms per hour), and four drift detectors (CUSUM, Page-Hinkley, ADWIN, KSWIN). LLM side: embeddings as features and estimators exposed as JSON tools for agents. This layer is being built for robots from the ground up: it takes the best-established online-learning techniques from the original papers (streaming statistics, predict-then-learn evaluation, sequential change detection, conformal prediction) and extends them with time, units, real-time budgets, uncertainty and safety. Native vision has started: frame streams, frame features and online reduction.
 
 ---
 
@@ -190,6 +190,10 @@ report = detectability_report(local_noise_scale=local_mad, k=0.5, h=5.0, candida
 ## `$ drift_detectors --online`
 
 Four streaming drift detectors with one interface, `update(x)` and `drift_detected`: CUSUM with a fixed reference (safe on a NaN or flat start), Page-Hinkley (unit-independent), ADWIN (Hoeffding bound) and KSWIN (Kolmogorov–Smirnov), compared on the CASPER robot stream. Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/drift/detectors/).
+
+## `$ vision --native`
+
+A camera, a folder of images or an array of frames becomes a stream of timestamped frames; `FrameFeatures` turns each frame into oriented-gradient histograms, intensity moments and Lucas–Kanade flow, and `RandomProjection` / `IncrementalPCA` reduce them, all computed by the library, one frame at a time. Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/vision/).
 
 ## `$ calibration --platt`
 
