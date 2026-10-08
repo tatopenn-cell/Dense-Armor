@@ -117,9 +117,7 @@ class RandomProjection(Transformer):
             self._ensure(x)
         return self
 
-    def transform_one(
-        self, x: dict, t: float | None = None
-    ) -> dict[str, float]:
+    def transform_one(self, x: dict, t: float | None = None) -> dict[str, float]:
         """Project one feature dict onto the random matrix.
 
         Args:
@@ -139,7 +137,9 @@ class RandomProjection(Transformer):
         if not np.isfinite(v).all():
             self.n_missing_ += 1
             return {f"p{j}": 0.0 for j in range(self.k)}
-        proj = self._W.T @ v
+        W = self._W
+        assert W is not None
+        proj = W.T @ v
         return {f"p{j}": float(proj[j]) for j in range(self.k)}
 
 
@@ -266,9 +266,7 @@ class IncrementalPCA(Transformer):
         self._V = q[:, : self.k]
         return self
 
-    def transform_one(
-        self, x: dict, t: float | None = None
-    ) -> dict[str, float]:
+    def transform_one(self, x: dict, t: float | None = None) -> dict[str, float]:
         """Project one feature dict onto the current components.
 
         Args:

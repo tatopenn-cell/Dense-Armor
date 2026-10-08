@@ -231,6 +231,140 @@ adds a smoothness term over the whole image and solves one large system;
 Dense-Armor stays local because a robot needs the answer in a few
 milliseconds, and a small least-squares per cell delivers that.
 
+## 4b. Bigger motions: the pyramid
+
+Lucas–Kanade assumes that what moved between two frames moved by a small
+amount, one or two pixels at most. The assumption is buried in the
+first-order Taylor expansion of the brightness constancy equation, and it
+is not optional: when the motion is bigger, the linearisation is wrong and
+the least-squares lands on the wrong answer. On a robot moving at 30
+frames per second this rarely matters for slow motions, but a fast arm
+sweeping across the field of view, or a hand waving close to the camera,
+produce jumps of ten or twenty pixels per frame. For those, the library
+builds a small pyramid of images and works from the top down.
+
+```python
+import numpy as np
+from dense_armor.utility.vision import FrameFeatures
+
+a = np.zeros((64, 64), dtype=np.float32)
+a[24:40, 20:36] = 1.0
+b = np.roll(a, 6, axis=1)
+for levels in (1, 3):
+    ff = FrameFeatures(flow_cells=(1, 1), flow_levels=levels)
+    ff.learn_one(a)
+    print(levels, round(ff.transform_one(b)["flow_u_0_0"], 2))
+```
+
+```
+1 1.0
+3 6.0
+```
+
+The square jumped 6 pixels to the right. With a single level the library
+sees a flow of 1.0, six times too small: the equation was linearised at
+the original position and the gradient of the square's edge only supports
+a small correction. With three levels the answer is 6.0, exactly right.
+The pyramid did not make the code smarter; it made the motion look smaller
+at first.
+
+The scheme has three steps, all of them classical:
+
+- **Build the pyramid.** Each level is the level below, averaged over 2×2
+  blocks, so the image at level `l+1` has half the height and half the
+  width of level `l`. The square's jump of 6 pixels at the finest level is
+  a jump of 3 at the second level and a jump of 1.5 at the third; at the
+  coarsest, Lucas–Kanade is back inside its comfort zone.
+- **Solve at the coarsest level.** The least-squares of section 4 is run
+  on the smallest image, with zero initial flow. It gives an approximate
+  motion, small in the coarse pixels but already pointing the right way.
+- **Go down one level and refine.** The flow is doubled (the pixels are
+  twice as big at the level above, so a motion in those pixels is a motion
+  twice as large in the pixels below), the previous image is shifted by it
+  and compared to the current one, and Lucas–Kanade solves for what is
+  left. The refinement is added to the coarse flow, and the process
+  repeats until the finest level.
+
+The shift of the previous image is called *warping*, and it is where the
+bilinear interpolation comes in. The flow is fractional, so the shifted
+image is sampled at non-integer coordinates; the value at a point `(x, y)`
+between pixels `(i, j)` and `(i+1, j+1)` is a weighted average of the four
+surrounding pixels, with weights that depend on how far the point sits
+from each. Writing `a = x - i` and `b = y - j` for the fractional parts,
+the interpolation of Ziani (2025), equation 9, is
+
+$$f(x, y) \approx (1-a)(1-b)\,f(i,j) + a(1-b)\,f(i+1,j) + (1-a)\,b\,f(i,j+1) + ab\,f(i+1,j+1)$$
+
+If `(x, y)` lands exactly on a pixel, three of the four weights are zero
+and the formula returns that pixel. If it lands in the middle of a 2×2
+block, all four weights are 0.25 and the value is the average. Everything
+else is between the two.
+
+```python
+import numpy as np
+from dense_armor.utility.vision import FrameFeatures
+
+a = np.zeros((64, 64), dtype=np.float32)
+a[24:40, 20:36] = 1.0
+b = np.roll(a, 1, axis=1)
+for levels in (1, 3):
+    ff = FrameFeatures(flow_cells=(1, 1), flow_levels=levels)
+    ff.learn_one(a)
+    print(levels, round(ff.transform_one(b)["flow_u_0_0"], 2))
+```
+
+```
+1 1.0
+3 1.0
+```
+
+The same experiment with a one-pixel motion: both levels give 1.0. The
+pyramid does not lose precision on small motions, it only adds robustness
+on large ones. On a robot, this means the same detector works whether the
+arm is moving slowly or fast, and the parameter can be set once and
+forgotten.
+
+## 4c. Colour
+
+By default everything on this page is computed on the grey version of the
+frame: the luminance, `0.299 R + 0.587 G + 0.114 B`, the standard luminance weights. Grey is enough for edges and for flow,
+because a moving shape carries its edges with it whether it is red, green
+or blue. But a robot that needs to distinguish a red light from a green
+one, or to notice that a lamp has changed colour, benefits from knowing the
+three channels separately. Turning `gray=False` adds six numbers and leaves
+the rest of the descriptor untouched.
+
+```python
+import numpy as np
+from dense_armor.utility.vision import FrameFeatures
+
+img = np.zeros((20, 20, 3), dtype=np.float32)
+img[:, :10, 0] = 1.0
+img[:, 10:, 2] = 0.5
+out = FrameFeatures(gray=False).transform_one(img)
+print({k: round(out[k], 3) for k in ("mean_R", "mean_G", "mean_B", "contrast_R", "mean")})
+```
+
+```
+{'mean_R': 0.5, 'mean_G': 0.0, 'mean_B': 0.25, 'contrast_R': 0.5, 'mean': 0.178}
+```
+
+The left half of the image is red, the right half is half-bright blue. The
+red channel is 1.0 on the left and 0.0 on the right, so its mean is 0.5;
+the contrast, the standard deviation, is also 0.5 because the values are
+split in two equal halves. Green is zero everywhere, so its mean and
+contrast are both 0. Blue is 0.5 on the right half and 0.0 elsewhere,
+giving a mean of 0.25. The last number is the grey mean, which is the
+luminance averaged over the whole image: 0.299 times 0.5 for the red half,
+plus 0.114 times 0.25 for the blue half, plus zero for the green, equals
+0.178.
+
+The six colour keys are `mean_R`, `mean_G`, `mean_B`, `contrast_R`,
+`contrast_G`, `contrast_B`. The edges (HOG) and the flow still run on the
+grey image, so a change in the room lights does not ripple through every
+other number. A robot that does not care about colour never pays for the
+three extra channels.
+
 ## 5. Fewer numbers, same distances: random projection
 
 Multiplying by a fixed random matrix shrinks a vector from 256 numbers to
@@ -439,6 +573,24 @@ than a tenth of the 33 ms frame budget at 30 frames per second.
 - Pipelines built with `|` train every step: each intermediate step first
   transforms the sample, then learns from it, so `FrameFeatures` keeps the
   previous frame for the flow.
+- `flow_levels`: the pyramid is built by 2×2 averaging; Ziani (2025,
+  section 3.2) builds Gaussian pyramids and uses the coarse-to-fine scheme
+  for Horn–Schunck; the library applies the same scheme to Lucas–Kanade.
+  `flow_levels=1` gives exactly the single-level flow.
+- `gray=False`: keys `mean_R`, `mean_G`, `mean_B`, `contrast_R`,
+  `contrast_G`, `contrast_B` are always present; for a grey input they
+  repeat the luminance moments.
+- `RandomProjection` uses a dense Gaussian matrix with variance `1 / k`
+  (the matrix of equation 21). Sparse projections (Achlioptas 2003, Li et
+  al. 2006) are named in the same survey but not defined there; they are
+  not implemented yet.
+- `IncrementalPCA` with several components updates all of them with the
+  same step and re-orthonormalises with a QR decomposition after each
+  sample (a stochastic subspace iteration); the paper analyses the
+  one-component rule.
+- Pipelines built with `|` train every step: each intermediate step first
+  transforms the sample, then learns from it, so `FrameFeatures` keeps the
+  previous frame for the flow.
 - Sources:
   - Huang, C., Huang, J. (2017). A fast HOG descriptor using lookup table
     and integral image. arXiv:1703.06256. The HOG construction used in
@@ -448,7 +600,8 @@ than a tenth of the 33 ms frame budget at 30 frames per second.
     Recognition*. The original HOG paper, cited in the opening.
   - Ziani, H. (2025). Investigating optical flow computation: from local
     methods to a multiresolution Horn–Schunck implementation.
-    arXiv:2511.16535. The Lucas–Kanade least squares of section 4.
+    arXiv:2511.16535. The Lucas–Kanade least squares of section 4, the
+    bilinear interpolation of section 4b, and the coarse-to-fine scheme.
   - Lucas, B. D., Kanade, T. (1981). An iterative image registration
     technique with an application to stereo vision. In *Proceedings of the
     7th International Joint Conference on Artificial Intelligence*.
