@@ -7,6 +7,7 @@ arXiv:2012.04740) and the sklearn parameter / clone / inspect contract
 
 from typing import Any
 
+from dense_armor.roles._util import call_with_t
 from dense_armor.roles.root import Root
 
 
@@ -42,27 +43,29 @@ class _Pipeline(Root):
         return x
 
     def learn_one(self, x: dict, y: Any = None, t: float | None = None) -> '_Pipeline':
-        h = self._forward(x)
+        h = x
+        for _, s in self.steps[:-1]:
+            s_any: Any = s
+            out = s_any.transform_one(h)
+            if hasattr(s_any, "learn_one"):
+                call_with_t(s_any.learn_one, h, t=t)
+            h = out
         last: Any = self.steps[-1][1]
         if y is None:
-            last.learn_one(h, t=t) if t is not None else last.learn_one(h)
+            call_with_t(last.learn_one, h, t=t)
         else:
-            last.learn_one(h, y, t=t) if t is not None else last.learn_one(h, y)
+            call_with_t(last.learn_one, h, y, t=t)
         return self
 
     def predict_one(self, x: dict, t: float | None = None):
         h = self._forward(x)
         last: Any = self.steps[-1][1]
-        return last.predict_one(h, t=t) if t is not None else last.predict_one(h)
+        return call_with_t(last.predict_one, h, t=t)
 
     def predict_proba_one(self, x: dict, t: float | None = None):
         h = self._forward(x)
         last: Any = self.steps[-1][1]
-        return (
-            last.predict_proba_one(h, t=t)
-            if t is not None
-            else last.predict_proba_one(h)
-        )
+        return call_with_t(last.predict_proba_one, h, t=t)
 
     def transform_one(self, x: dict, t: float | None = None) -> dict:
         for _, s in self.steps:

@@ -106,6 +106,8 @@ nav:
       - Dependence: stats/dependence.md
       - Sketches: stats/sketches.md
   - Metrics and evaluation: metrics/index.md
+  - Vision:
+      - vision/index.md
   - Control:
       - control/index.md
       - Rate limiter: control/rate_limiter.md

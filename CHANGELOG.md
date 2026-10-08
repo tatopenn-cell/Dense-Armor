@@ -4,6 +4,9 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+- Native online vision (`dense_armor.utility.vision`): `CameraStream` (OpenCV, extra `[vision]`), `ImageFolderStream`, `ArrayStream`; `FrameFeatures` (oriented-gradient histograms, intensity moments, Lucas–Kanade flow); `RandomProjection` and `IncrementalPCA`.
+- Pipelines built with `|` now train every intermediate step (transform, then learn) and pass `t` only to steps that accept it.
+
 ## [1.1.23] - 2026-10-08
 - Online metrics (`dense_armor.utility.metrics`) and evaluation (`dense_armor.utility.evaluate`): classification, regression, intervals, rolling windows and ROC-AUC, prequential with delayed labels, model selection, event metrics (range-based precision/recall, NAB, detection delay, false alarms per hour).
 - `AdaptiveConformalRegressor` passes `t` only to models that accept it.
