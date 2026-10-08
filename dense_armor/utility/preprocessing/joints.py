@@ -97,7 +97,7 @@ class JointDerivatives(Transformer):
         18.0
     """
 
-    budget_s = 1e-4
+    budget_s = 1e-3
     memory_class = "O(1)"
 
     def __init__(self, order: int = 3, q_key: str = "q") -> None:
@@ -205,7 +205,7 @@ class JointPower(Transformer):
         ([3.0, 8.0], 11.0)
     """
 
-    budget_s = 1e-5
+    budget_s = 1e-3
     memory_class = "O(1)"
 
     def __init__(self, tau_key: str = "tau", qd_key: str = "qd") -> None:

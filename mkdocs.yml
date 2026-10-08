@@ -107,6 +107,8 @@ nav:
       - Sketches: stats/sketches.md
   - Preprocessing:
       - preprocessing/index.md
+  - Clustering:
+      - cluster/index.md
   - Metrics and evaluation: metrics/index.md
   - Vision:
       - vision/index.md

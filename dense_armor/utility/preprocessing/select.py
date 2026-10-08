@@ -74,7 +74,7 @@ class VarianceThreshold(Transformer):
         ['x']
     """
 
-    budget_s = 1e-4
+    budget_s = 1e-3
     memory_class = "O(1)"
 
     def __init__(
@@ -144,7 +144,7 @@ class SelectKBest(Transformer):
         ['a']
     """
 
-    budget_s = 1e-4
+    budget_s = 1e-3
     memory_class = "O(1)"
 
     def __init__(

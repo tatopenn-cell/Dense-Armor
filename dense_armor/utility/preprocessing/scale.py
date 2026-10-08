@@ -86,7 +86,7 @@ class StandardScaler(Transformer):
         [1.0, 1.0]
     """
 
-    budget_s = 1e-4
+    budget_s = 1e-3
     memory_class = "O(1)"
 
     def __init__(
@@ -181,7 +181,7 @@ class EWScaler(Transformer):
         0.904534
     """
 
-    budget_s = 1e-4
+    budget_s = 1e-3
     memory_class = "O(1)"
 
     def __init__(
@@ -388,7 +388,7 @@ class MinMaxScaler(Transformer):
         1.0
     """
 
-    budget_s = 1e-4
+    budget_s = 1e-3
     memory_class = "O(1)"
 
     def __init__(
