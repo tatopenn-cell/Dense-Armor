@@ -195,6 +195,10 @@ Four streaming drift detectors with one interface, `update(x)` and `drift_detect
 
 A camera, a folder of images or an array of frames becomes a stream of timestamped frames; `FrameFeatures` turns each frame into oriented-gradient histograms, intensity moments and Lucas–Kanade flow, and `RandomProjection` / `IncrementalPCA` reduce them, all computed by the library, one frame at a time. Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/vision/).
 
+## `$ vision --patches`
+
+`PatchFeatures` cuts each frame into patches and `PatchMemory` keeps the patches of normal images, online (bounded reservoir) or reduced once to a coreset; an image is scored by its most unusual patch, and the per-patch distances show where the anomaly is (PatchCore with descriptors computed by the library). Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/vision/patches/).
+
 ## `$ preprocessing --online`
 
 Online scalers per feature and per joint, joint velocity, acceleration, jerk and power on real timestamps, text features (tokens, TF-IDF, signed hashing), feature selection and queue resampling for rare events, one sample at a time. Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/preprocessing/).

@@ -9,6 +9,7 @@ gets the new checks for free.
 The checks use only duck typing — no import of :mod:`dense_armor.roles`
 — so the module has no circular dependency with the robot layer.
 """
+import inspect
 import json
 import tempfile
 import time
@@ -19,8 +20,16 @@ import numpy as np
 
 
 def _learn(est: Any, sig: Any) -> None:
-    """Call ``learn_one`` with ``y=0.0`` when the signature requires it."""
+    """Call ``learn_one`` with ``y=0.0`` when the signature requires it.
+
+    An anomaly detector's second parameter is the timestamp ``t``: it
+    receives the sample alone.
+    """
     learn = est.learn_one
+    names = list(inspect.signature(learn).parameters)
+    if len(names) > 1 and names[1] == "t":
+        learn(sig)
+        return
     try:
         learn(sig, 0.0)
     except TypeError:
