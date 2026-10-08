@@ -397,3 +397,37 @@ def test_reduce_missing_reset_and_arguments():
     assert pca.n_missing == 4
     pca._reset()
     assert pca.n_missing == 0 and pca.components_ is None
+
+
+def test_vision_small_edge_branches(monkeypatch):
+    import dense_armor.utility.vision.features as fmod
+
+    odd = np.zeros((4, 4, 2), dtype=np.float32)
+    assert fmod._to_gray(odd) is odd
+    tiny = np.zeros((3, 3), dtype=np.float32)
+    assert fmod._downsample(tiny) is tiny
+    out = FrameFeatures(gray=False).transform_one(np.full((8, 8), np.nan, dtype=np.float32))
+    assert out["mean_R"] == 0.0 and out["contrast_B"] == 0.0
+
+    def boom(*a, **k):
+        raise np.linalg.LinAlgError
+
+    ff = FrameFeatures(flow_cells=(1, 1))
+    a = np.zeros((16, 16), dtype=np.float32)
+    a[4:8, 4:8] = 1.0
+    ff.learn_one(a)
+    monkeypatch.setattr(fmod.np.linalg, "lstsq", boom)
+    assert ff.transform_one(np.roll(a, 1, axis=1))["flow_u_0_0"] == 0.0
+
+
+def test_reduce_ensure_is_idempotent():
+    rp = RandomProjection(k=2, seed=0)
+    rp._ensure({"a": 1.0, "b": 2.0})
+    w = rp._W
+    rp._ensure({"a": 1.0, "b": 2.0, "c": 3.0})
+    assert rp._W is w
+    pca = IncrementalPCA(k=1)
+    pca._ensure({"a": 1.0, "b": 2.0})
+    v = pca._V
+    pca._ensure({"a": 1.0})
+    assert pca._V is v

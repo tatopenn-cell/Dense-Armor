@@ -591,7 +591,21 @@ than a tenth of the 33 ms frame budget at 30 frames per second.
 - Pipelines built with `|` train every step: each intermediate step first
   transforms the sample, then learns from it, so `FrameFeatures` keeps the
   previous frame for the flow.
+- Real robot images, RAD (Chang et al. 2024; MIT licence): 13 objects photographed by a Franka
+  arm from many viewpoints, normal and defective. `benchmarks/vision_rad.py` learns
+  `FrameFeatures | IncrementalPCA(k=8) | OnlineRobustMahalanobis` on the normal training views
+  and scores each test image (160×120, grey, same parameters for every category, no tuning).
+  Image-level AUROC: binderclip 0.531, bowl 0.461, box 0.428, can 0.599, charger 0.508,
+  cup1 0.443, cup2 0.488, gluebottle 0.492, phonecase 0.458, rubberduck 0.552, spoon 0.569,
+  spraybottle 0.464, tennisball 0.473; mean **0.497**, chance level. The paper reports 0.833
+  for PatchCore and 0.803 for EfficientAD (p. 10), both built on pretrained networks. Global
+  features (gradients, moments) notice changes of the scene; they do not separate a small
+  defect from a change of viewpoint. Each category has only 9–27 normal test images, so the
+  per-category values are uncertain; the mean is the number to read. Latency 4.5 ms p50 per
+  image (score only).
 - Sources:
+  - Chang, X. et al. (2024). RAD: a dataset and benchmark for real-life anomaly detection
+    with robotic observations. arXiv:2410.00713. The robot images of the Details.
   - Huang, C., Huang, J. (2017). A fast HOG descriptor using lookup table
     and integral image. arXiv:1703.06256. The HOG construction used in
     section 2.
