@@ -151,3 +151,39 @@ def test_doctests():
 
     for mod in (m1, m2, m3, m4):
         assert doctest.testmod(mod).failed == 0
+
+
+@pytest.mark.parametrize("cls", [CUSUMDriftDetector, PageHinkley, ADWIN, KSWIN])
+def test_reset_and_nan_counting(cls):
+    det = cls()
+    for x in [1.0, float("nan"), 2.0]:
+        det.update(x)
+    assert det.n_missing == 1
+    det._reset()
+    assert det.n_missing == 0
+    assert not det.drift_detected
+
+
+def test_invalid_arguments():
+    with pytest.raises(ValueError):
+        CUSUMDriftDetector(reference="other")
+    with pytest.raises(ValueError):
+        ADWIN(delta=1.5)
+    with pytest.raises(ValueError):
+        ADWIN(max_window=4, min_sub=2)
+    with pytest.raises(ValueError):
+        KSWIN(window_size=30, stat_size=30)
+
+
+def test_adwin_flat_window_does_not_fire():
+    assert _n_alarms(ADWIN(), [2.0] * 300) == 0
+
+
+def test_kswin_small_pool_never_tests():
+    det = KSWIN(window_size=40, stat_size=30, seed=0)
+    assert _n_alarms(det, _stream(100, 0.0, 100, 5.0, seed=5)) == 0
+
+
+def test_cusum_two_sided_catches_downward_step():
+    det = CUSUMDriftDetector(reference="fixed", radius=5, ref_mult=4)
+    assert _first_alarm(det, _stream(200, 0.0, 200, -3.0, seed=6)) is not None
