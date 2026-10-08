@@ -19,6 +19,7 @@ from casper_benchmark import (
     find_dataset,
     load_slice,
     parse_joint,
+    run_cusum,
     shift_residual_fixed,
     trailing_mean,
 )
@@ -71,10 +72,12 @@ def _latency_us(make_det, values, warmup=50, n=2000):
 
 def main():
     stream, events, n_anom = _stream_for_comparison()
-    normal_time_s = events[0][0] - stream[0][0]
+    ev0, ev1 = events[0]
+    normal_time_s = (stream[-1][0] - stream[0][0]) - (ev1 - ev0)
+    change_idx = round((ev0 - stream[0][0]) * FS)
     print(f"stream: {len(stream)} samples, "
           f"event {events[0]}, anomaly samples {n_anom}")
-    print(f"normal_time_s = event_start - stream_start = "
+    print(f"normal_time_s = stream length - event length = "
           f"{normal_time_s:.1f} s = {normal_time_s / 3600.0:.3f} h")
     print(f"{'detector':<22} {'delay_s':>9} {'missed':>7} "
           f"{'FA/h':>9} {'rangeF1':>9} {'NAB':>8} {'p50us':>9} {'p99us':>9}")
@@ -91,6 +94,10 @@ def main():
     ts = [t for t, _ in stream]
     for label, vals in (("e2", raw), ("trailing_mean(e2, 2T)", trailing_mean(raw, 2 * T))):
         print(f"--- signal: {label}")
+        d_ref, fa_ref = run_cusum(vals, change_idx)
+        print(f"{'run_cusum (reference)':<22} "
+              f"{(d_ref / FS if d_ref is not None else float('nan')):>9.3f} "
+              f"{'pre-change FA/h':>17} {fa_ref:>9.3f}")
         s = list(zip(ts, (float(v) for v in vals)))
         for name, make in makers:
             report = evaluate_events(
