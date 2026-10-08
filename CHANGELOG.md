@@ -4,6 +4,8 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+- Preprocessing (`dense_armor.utility.preprocessing`): online scalers per feature and per joint (standard, exponentially weighted, robust, min-max); joint velocity, acceleration and jerk on real timestamps without lag, joint power; text tokenizer, bag of words, TF-IDF (Silajev 2026), signed feature hashing (Weinberger 2009); variance threshold and k-best selection; queue-based resampling for imbalanced streams (Malialis 2018).
+
 - Native online vision (`dense_armor.utility.vision`): `CameraStream` (OpenCV, extra `[vision]`), `ImageFolderStream`, `ArrayStream`; `FrameFeatures` (oriented-gradient histograms, intensity moments, Lucas–Kanade flow); `RandomProjection` and `IncrementalPCA`.
 - `benchmarks/vision_rad.py`: native vision on real robot images (RAD); mean image-level AUROC 0.497 (chance level), reported as a baseline.
 - `FrameFeatures(flow_levels=n)`: coarse-to-fine Lucas–Kanade on a 2×2-average pyramid with bilinear warping (Ziani 2025, section 3.2, eq. 9); `gray=False` adds per-channel colour moments.
