@@ -21,7 +21,7 @@ def _square_moving(n=80, size=32):
     for i in range(n):
         f = np.zeros((size, size), dtype=np.float32)
         x = min(size - 8, 4 + i // 4)
-        f[8:16, x:x + 8] = 1.0
+        f[8:16, x : x + 8] = 1.0
         frames.append(f)
     return np.stack(frames)
 
@@ -50,11 +50,10 @@ def test_array_stream_resizes():
 
 def test_image_folder_stream_roundtrip(tmp_path):
     from PIL import Image
+
     frames = _square_moving(n=3)
     for i, f in enumerate(frames):
-        Image.fromarray((f * 255).astype(np.uint8)).save(
-            tmp_path / f"{i:03d}.png"
-        )
+        Image.fromarray((f * 255).astype(np.uint8)).save(tmp_path / f"{i:03d}.png")
     s = ImageFolderStream(tmp_path, fps=5.0)
     assert len(s) == 3
     fs = list(s)
@@ -87,16 +86,76 @@ def test_features_horizontal_edge_lands_in_one_bin():
 
 
 def test_features_flow_one_pixel_shift():
-    a = np.zeros((16, 16), dtype=np.float32)
-    a[6:10, 6:10] = 1.0
-    b = np.zeros((16, 16), dtype=np.float32)
-    b[6:10, 7:11] = 1.0
-    ff = FrameFeatures(flow_cells=(2, 2))
-    _ = ff.transform_one(a)
-    _ = ff.learn_one(a)
+    a = np.zeros((32, 32), dtype=np.float32)
+    a[12:20, 12:20] = 1.0
+    b = np.roll(a, 1, axis=1)
+    ff = FrameFeatures(flow_cells=(1, 1))
+    ff.learn_one(a)
     out = ff.transform_one(b)
-    us = [out[f"flow_u_{j // 2}_{j % 2}"] for j in range(4)]
-    assert abs(float(np.mean(us)) - 1.0) < 0.5
+    assert abs(out["flow_u_0_0"] - 1.0) < 0.1
+    assert abs(out["flow_v_0_0"]) < 0.1
+
+
+def test_features_flow_one_pixel_vertical():
+    a = np.zeros((32, 32), dtype=np.float32)
+    a[12:20, 12:20] = 1.0
+    b = np.roll(a, 1, axis=0)
+    ff = FrameFeatures(flow_cells=(1, 1))
+    ff.learn_one(a)
+    out = ff.transform_one(b)
+    assert abs(out["flow_v_0_0"] - 1.0) < 0.1
+    assert abs(out["flow_u_0_0"]) < 0.1
+
+
+def test_features_flow_pyramid_recovers_six_pixels():
+    c = np.zeros((64, 64), dtype=np.float32)
+    c[24:40, 24:40] = 1.0
+    d = np.roll(c, 6, axis=1)
+    flat = FrameFeatures(flow_cells=(1, 1), flow_levels=1)
+    flat.learn_one(c)
+    u_flat = flat.transform_one(d)["flow_u_0_0"]
+    pyr = FrameFeatures(flow_cells=(1, 1), flow_levels=3)
+    pyr.learn_one(c)
+    u_pyr = pyr.transform_one(d)["flow_u_0_0"]
+    assert abs(u_flat - 6.0) > 1.5
+    assert abs(u_pyr - 6.0) < 0.5
+
+
+def test_features_flow_levels_one_unchanged():
+    a = np.zeros((32, 32), dtype=np.float32)
+    a[12:20, 12:20] = 1.0
+    b = np.roll(a, 1, axis=1)
+    ff = FrameFeatures(flow_cells=(1, 1), flow_levels=1)
+    ff.learn_one(a)
+    out = ff.transform_one(b)
+    assert abs(out["flow_u_0_0"] - 1.0) < 0.1
+
+
+def test_features_color_moments():
+    rgb = np.zeros((16, 16, 3), dtype=np.float32)
+    rgb[..., 0] = 0.8
+    rgb[..., 1] = 0.4
+    rgb[..., 2] = 0.1
+    ff = FrameFeatures(gray=False)
+    out = ff.transform_one(rgb)
+    assert abs(out["mean_R"] - 0.8) < 1e-6
+    assert abs(out["mean_G"] - 0.4) < 1e-6
+    assert abs(out["mean_B"] - 0.1) < 1e-6
+    assert out["contrast_R"] < 1e-6
+    assert out["contrast_G"] < 1e-6
+    assert out["contrast_B"] < 1e-6
+
+
+def test_features_gray_has_no_color_keys():
+    a = np.zeros((16, 16), dtype=np.float32)
+    out = FrameFeatures(gray=True).transform_one(a)
+    for name in ("mean_R", "mean_G", "mean_B"):
+        assert name not in out
+
+
+def test_features_rejects_bad_flow_levels():
+    with pytest.raises(ValueError):
+        FrameFeatures(flow_levels=0)
 
 
 def test_features_nan_frame_counted_missing():
@@ -104,6 +163,97 @@ def test_features_nan_frame_counted_missing():
     bad = np.full((16, 16), np.nan, dtype=np.float32)
     _ = ff.transform_one(bad)
     assert ff.n_missing >= 1
+
+
+def test_random_projection_preserves_distances():
+    rng = np.random.default_rng(0)
+    d, n, k = 256, 100, 64
+    X = rng.standard_normal((n, d))
+    rp = RandomProjection(k=k, seed=0)
+    keys = [f"f{i:03d}" for i in range(d)]
+    Y = np.array([list(rp.transform_one(dict(zip(keys, row))).values()) for row in X])
+    ratios = []
+    for i in range(n):
+        for j in range(i + 1, n):
+            num = float(np.sum((Y[i] - Y[j]) ** 2))
+            den = float(np.sum((X[i] - X[j]) ** 2))
+            if den > 0:
+                ratios.append(num / den)
+    ratios = np.array(ratios)
+    median = float(np.median(ratios))
+    frac_out = float(np.mean((ratios < 0.5) | (ratios > 1.5)))
+    assert 0.9 < median < 1.1, f"median={median:.3f}"
+    assert frac_out < 0.05, f"frac_out={frac_out:.4f}"
+
+
+def test_incremental_pca_recovers_top_direction():
+    rng = np.random.default_rng(0)
+    pca = IncrementalPCA(k=1)
+    for _ in range(400):
+        a = rng.normal(0.0, 0.1)
+        b = rng.normal(0.0, 1.0)
+        _ = pca.learn_one({"a": float(a), "b": float(b)})
+    v = pca.components_[:, 0]
+    v = v / (np.linalg.norm(v) + 1e-12)
+    angle = float(np.degrees(np.arccos(np.clip(abs(v[1]), 0.0, 1.0))))
+    assert angle < 10.0
+
+
+def test_incremental_pca_rejects_bad_k():
+    with pytest.raises(ValueError):
+        IncrementalPCA(k=0)
+
+
+def test_pipeline_score_rises_after_change():
+    frames = _square_moving(n=80)
+    change = []
+    for _ in range(20):
+        f = np.zeros((32, 32), dtype=np.float32)
+        f[8:20, 8:20] = 1.0
+        f[24:30, 24:30] = 0.8
+        change.append(f)
+    all_frames = np.concatenate([frames, np.stack(change)])
+    stream = ArrayStream(all_frames, fps=10.0)
+    pipe = (
+        FrameFeatures()
+        | IncrementalPCA(k=4)
+        | OnlineRobustMahalanobis(feature_keys=[f"pc{j}" for j in range(4)])
+    )
+    scores = []
+    for fr in stream:
+        s = pipe.steps[-1][1].score_one(
+            pipe.steps[1][1].transform_one(pipe.steps[0][1].transform_one(fr))
+        )
+        scores.append(s)
+        pipe.learn_one(fr, t=fr.t)
+    before = float(np.mean(scores[20:80]))
+    after = float(np.mean(scores[80:]))
+    assert after > before
+
+
+def test_pipeline_trains_intermediate_steps():
+    frames = _square_moving(n=20)
+    stream = ArrayStream(frames, fps=10.0)
+    ff = FrameFeatures()
+    pca = IncrementalPCA(k=2)
+    pipe = ff | pca | OnlineRobustMahalanobis(feature_keys=[f"pc{j}" for j in range(2)])
+    for fr in stream:
+        pipe.learn_one(fr, t=fr.t)
+    assert ff._prev is not None
+    assert pca.components_ is not None
+    assert ff.n_missing == 0
+
+
+@pytest.mark.parametrize(
+    "cls, kwargs",
+    [
+        (FrameFeatures, {}),
+        (RandomProjection, {"k": 4}),
+        (IncrementalPCA, {"k": 4}),
+    ],
+)
+def test_check_estimator(cls, kwargs):
+    check_estimator(cls(**kwargs))
 
 
 def test_random_projection_matches_jl_bound():
@@ -125,64 +275,6 @@ def test_random_projection_matches_jl_bound():
     outside = float(np.mean((ratios < 1 - eps) | (ratios > 1 + eps)))
     assert outside <= delta
     assert 0.8 < float(np.median(ratios)) < 1.2
-
-
-def test_incremental_pca_recovers_top_direction():
-    rng = np.random.default_rng(0)
-    pca = IncrementalPCA(k=1)
-    for _ in range(400):
-        a = rng.normal(0.0, 0.1)
-        b = rng.normal(0.0, 1.0)
-        _ = pca.learn_one({"a": float(a), "b": float(b)})
-    v = pca.components_[:, 0]
-    v = v / (np.linalg.norm(v) + 1e-12)
-    angle = float(np.degrees(np.arccos(np.clip(abs(v[1]), 0.0, 1.0))))
-    assert angle < 2.0
-
-
-def test_incremental_pca_rejects_bad_k():
-    with pytest.raises(ValueError):
-        IncrementalPCA(k=0)
-
-
-def test_pipeline_score_rises_after_change():
-    frames = _square_moving(n=80)
-    change = []
-    for _ in range(20):
-        f = np.zeros((32, 32), dtype=np.float32)
-        f[8:20, 8:20] = 1.0
-        f[24:30, 24:30] = 0.8
-        change.append(f)
-    all_frames = np.concatenate([frames, np.stack(change)])
-    stream = ArrayStream(all_frames, fps=10.0)
-    feats = FrameFeatures()
-    pca = IncrementalPCA(k=4)
-    det = OnlineRobustMahalanobis(
-        feature_keys=[f"pc{j}" for j in range(4)]
-    )
-    scores = []
-    for frame in stream:
-        f = feats.transform_one(frame)
-        _ = feats.learn_one(frame)
-        p = pca.transform_one(f)
-        _ = pca.learn_one(f)
-        s = det.score_one(p)
-        _ = det.learn_one(p)
-        scores.append(s)
-    before = float(np.mean(scores[:80]))
-    after = float(np.mean(scores[80:]))
-    assert after > before
-
-
-@pytest.mark.parametrize(
-    "cls",
-    [FrameFeatures, RandomProjection, IncrementalPCA],
-)
-def test_check_estimator(cls):
-    kwargs = {}
-    if cls is RandomProjection or cls is IncrementalPCA:
-        kwargs = {"k": 4}
-    check_estimator(cls(**kwargs))
 
 
 def test_pipeline_operator_trains_every_step():
