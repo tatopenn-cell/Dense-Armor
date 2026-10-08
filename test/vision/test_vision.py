@@ -196,3 +196,112 @@ def test_pipeline_operator_trains_every_step():
     assert pca._n == 40
     out = ff.transform_one(np.roll(frames[-1], 1, axis=1))
     assert any(abs(v) > 0 for k, v in out.items() if k.startswith("flow_u"))
+
+
+class _FakeCap:
+    def __init__(self, device, n=3, opened=True):
+        self.n, self.opened, self.released = n, opened, False
+
+    def isOpened(self):
+        return self.opened
+
+    def set(self, prop, value):
+        self.fps = value
+
+    def read(self):
+        if self.n == 0:
+            return False, None
+        self.n -= 1
+        img = np.zeros((4, 6, 3), dtype=np.uint8)
+        img[..., 2] = 255
+        return True, img
+
+    def release(self):
+        self.released = True
+
+
+def _fake_cv2(opened=True):
+    import types
+
+    m = types.ModuleType("cv2")
+    m.CAP_PROP_FPS = 5
+    m.VideoCapture = lambda device: _FakeCap(device, opened=opened)
+    return m
+
+
+def test_camera_stream_with_fake_driver(monkeypatch):
+    import sys
+
+    from dense_armor.utility.vision.streams import CameraStream
+
+    monkeypatch.setitem(sys.modules, "cv2", _fake_cv2())
+    frames = list(CameraStream(fps=10.0, size=(3, 2), max_frames=2))
+    assert len(frames) == 2
+    assert frames[0].array.shape == (2, 3)
+    assert abs(float(frames[0].array.mean()) - 0.299) < 1e-3
+    assert len(list(CameraStream(size=None))) == 3
+    with pytest.raises(ValueError):
+        CameraStream(fps=0.0)
+    monkeypatch.setitem(sys.modules, "cv2", _fake_cv2(opened=False))
+    with pytest.raises(RuntimeError):
+        list(CameraStream())
+    monkeypatch.setitem(sys.modules, "cv2", None)
+    with pytest.raises(ImportError):
+        CameraStream()
+
+
+def test_stream_conversions_and_paths(tmp_path):
+    from PIL import Image
+
+    from dense_armor.utility.vision.streams import Frame, _resize_nearest, _to_float01
+
+    rgba = np.zeros((2, 2, 4), dtype=np.uint8)
+    rgba[..., 0] = 255
+    assert abs(float(_to_float01(rgba, gray=True).max()) - 0.299) < 1e-3
+    assert _to_float01(rgba, gray=False).shape == (2, 2, 3)
+    a = np.ones((4, 4), dtype=np.float32)
+    assert _resize_nearest(a, (4, 4)) is a
+    assert Frame(array=a, t=1.0).to_dict()["t"] == 1.0
+    p = tmp_path / "x.png"
+    Image.fromarray(np.full((8, 8), 255, dtype=np.uint8)).save(p)
+    fr = next(iter(ImageFolderStream([p], size=(4, 4))))
+    assert fr.array.shape == (4, 4) and float(fr.array.max()) == 1.0
+
+
+def test_features_inputs_and_arguments():
+    ff = FrameFeatures()
+    img = np.zeros((8, 8), dtype=np.float32)
+    assert ff.transform_one({"frame": img})["mean"] == 0.0
+    ff.transform_one({"other": 1})
+    ff.transform_one(object())
+    assert ff.n_missing == 2
+    ff.learn_one({"other": 1})
+    ff._reset()
+    assert ff.n_missing == 0
+    for kw in ({"n_bins": 0}, {"cells": (0, 1)}, {"flow_cells": (1, 0)}):
+        with pytest.raises(ValueError):
+            FrameFeatures(**kw)
+
+
+def test_reduce_missing_reset_and_arguments():
+    with pytest.raises(ValueError):
+        RandomProjection(k=0)
+    with pytest.raises(ValueError):
+        IncrementalPCA(k=1, lr=0.0)
+    rp = RandomProjection(k=2, seed=0)
+    rp.learn_one({"a": 1.0, "b": 2.0})
+    rp.learn_one({"a": 1.0, "b": 2.0})
+    assert rp.transform_one({"a": 1.0}) == {"p0": 0.0, "p1": 0.0}
+    assert rp.transform_one({"a": float("nan"), "b": 1.0}) == {"p0": 0.0, "p1": 0.0}
+    assert rp.n_missing == 2
+    rp._reset()
+    assert rp.n_missing == 0
+    pca = IncrementalPCA(k=1, lr=0.5)
+    pca.learn_one({"a": 1.0, "b": 2.0})
+    pca.learn_one({"a": 1.0})
+    pca.learn_one({"a": float("nan"), "b": 1.0})
+    assert pca.transform_one({"a": 1.0}) == {"pc0": 0.0}
+    assert pca.transform_one({"a": float("inf"), "b": 1.0}) == {"pc0": 0.0}
+    assert pca.n_missing == 4
+    pca._reset()
+    assert pca.n_missing == 0 and pca.components_ is None
