@@ -41,7 +41,7 @@ class Tokenizer(Transformer):
         ['hello', 'world', 'hello world']
     """
 
-    budget_s = 1e-4
+    budget_s = 1e-3
     memory_class = "O(1)"
 
     def __init__(
@@ -98,7 +98,7 @@ class BagOfWords(Transformer):
         {'a': 2, 'b': 1}
     """
 
-    budget_s = 1e-4
+    budget_s = 1e-3
     memory_class = "O(1)"
 
     def __init__(
@@ -173,7 +173,7 @@ class TFIDF(Transformer):
             divergences. arXiv:2609.14016, section 1.
     """
 
-    budget_s = 1e-4
+    budget_s = 1e-3
     memory_class = "O(window)"
 
     def __init__(
@@ -295,7 +295,7 @@ class FeatureHasher(Transformer):
         learning. ICML, Theorem 3 and equation 4.
     """
 
-    budget_s = 1e-4
+    budget_s = 1e-3
     memory_class = "O(1)"
 
     def __init__(
