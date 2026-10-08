@@ -15,7 +15,7 @@ Compares four runs on the same 13-category protocol:
 
 Baseline of ``vision_rad.py`` (global frame features, incremental PCA,
 robust Mahalanobis): mean image-level AUROC 0.497. Paper number of
-PatchCore (WideResNet50 backbone): 0.833.
+PatchCore in the RAD paper (Anomalib configuration, Chang et al. 2024): 0.833.
 
 The images are separate views of the same object, not a video: no
 optical flow, no previous frame. Same parameters for every category,
@@ -233,7 +233,7 @@ def main():
     print(
         f"baseline vision_rad.py (global features + PCA + Mahalanobis): {BASELINE:.3f}"
     )
-    print(f"paper PatchCore (WideResNet50 backbone): {PAPER:.3f}")
+    print(f"PatchCore in the RAD paper (Anomalib): {PAPER:.3f}")
 
 
 if __name__ == "__main__":
