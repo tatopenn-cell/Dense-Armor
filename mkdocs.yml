@@ -112,6 +112,7 @@ nav:
   - Metrics and evaluation: metrics/index.md
   - Vision:
       - vision/index.md
+      - vision/patches.md
   - Control:
       - control/index.md
       - Rate limiter: control/rate_limiter.md
