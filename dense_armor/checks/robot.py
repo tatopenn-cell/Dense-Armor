@@ -109,8 +109,7 @@ def check_memory_growth_bounded(est: Any) -> None:
     learn = getattr(est, "learn_one", None)
     if learn is None:
         return
-    raw = getattr(est, "_raw_memory_usage", None)
-    if raw is None:
+    if getattr(est, "_raw_memory_usage", None) is None:
         return
     from dense_armor.roles.signal import Signal
     import jax.numpy as jnp
@@ -120,10 +119,10 @@ def check_memory_growth_bounded(est: Any) -> None:
 
     for i in range(32):
         _learn(est, _sig(i))
-    start = int(raw)
+    start = int(est._raw_memory_usage)
     for i in range(32, 64):
         _learn(est, _sig(i))
-    end = int(raw)
+    end = int(est._raw_memory_usage)
     slack = 8192
     if mc == "O(1)":
         assert end - start <= slack, (

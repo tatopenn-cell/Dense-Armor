@@ -156,3 +156,100 @@ def test_physical_limits_guard_margin_shrinks_bounds():
 
 def test_doctests():
     assert doctest.testmod(phys_mod).failed == 0
+
+
+class _Last:
+    units = UnitSpec(inputs={"q": "rad"}, outputs={"q": "rad"})
+
+    def __init__(self):
+        self.got = []
+
+    def transform_one(self, x, t=None):
+        return dict(x)
+
+    def learn_one(self, x, y=None, t=None):
+        self.got.append((x, y))
+
+
+class _NoT:
+    def __init__(self):
+        self.got = []
+
+    def learn_one(self, x, y=None):
+        self.got.append((x, y))
+
+
+def _limits():
+    return JointLimits(
+        joint_names=("a", "b"),
+        lower=np.array([-1.0, -1.0]),
+        upper=np.array([1.0, 1.0]),
+        velocity=np.array([1.0, 1.0]),
+        effort=np.array([1.0, 1.0]),
+    )
+
+
+def test_unit_spec_of_tuple_and_other():
+    class _T:
+        units = ({"q": "deg"}, {"q": "rad"})
+
+    class _O:
+        units = "rad"
+
+    assert unit_spec_of(_T()).outputs == {"q": "rad"}
+    assert unit_spec_of(_O()) is None
+
+
+def test_pipeline_learn_one_with_and_without_target():
+    last = _Last()
+    p = UnitCheckedPipeline([_Deg2Rad(), last])
+    p.learn_one({"q": 180.0})
+    p.learn_one({"q": 180.0}, 1.0, t=0.1)
+    assert last.got[0][0]["q"] == pytest.approx(np.pi)
+    assert last.got[1][1] == 1.0
+
+
+def test_pipeline_learn_one_falls_back_without_t():
+    last = _NoT()
+    p = UnitCheckedPipeline([_Untyped(), last])
+    p.learn_one({"q": 1.0}, t=0.1)
+    p.learn_one({"q": 1.0}, 2.0, t=0.1)
+    assert [g[1] for g in last.got] == [None, 2.0]
+
+
+def test_joint_limits_as_guard():
+    g = _limits().as_guard()
+    assert g({"q": [0.0, 0.0]}) is False
+    assert g({"q0": 2.0, "q1": 0.0}) is True
+
+
+def test_physical_limits_guard_keyed_joints():
+    guard = PhysicalLimitsGuard(_limits())
+    assert not guard({"q0": 0.5, "q1": -0.5})
+    assert guard({"q0": 1.5})
+
+
+def test_limits_from_urdf_object_with_path_and_edge_cases(tmp_path):
+    f = tmp_path / "r.urdf"
+    f.write_text(
+        '<robot name="r">'
+        '<joint name="fix" type="fixed"/>'
+        '<joint name="free" type="continuous"/>'
+        '<joint name="j" type="revolute"><limit effort="5"/></joint>'
+        "</robot>"
+    )
+
+    class _Src:
+        path = f
+
+    lim = limits_from_urdf(_Src())
+    assert lim.joint_names == ("j",)
+    assert lim.lower[0] == -np.inf and lim.upper[0] == np.inf
+    assert lim.velocity[0] == np.inf and lim.effort[0] == 5.0
+
+
+def test_limits_from_urdf_without_limits(tmp_path):
+    f = tmp_path / "e.urdf"
+    f.write_text('<robot name="e"><joint name="fix" type="fixed"/></robot>')
+    with pytest.raises(ValueError, match="no joint"):
+        limits_from_urdf(f)
