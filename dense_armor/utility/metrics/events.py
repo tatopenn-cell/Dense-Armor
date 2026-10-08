@@ -174,9 +174,12 @@ class EventMetrics:
             event durations.
         threshold_window: two alarms within this many seconds are the
             same detection. Default ``0.0``.
-        a_tp, a_fp, a_fn: NAB profile weights of Lavin and Ahmad
-            (2015). ``a_tp`` in ``[0, 1]``, ``a_fp`` and ``a_fn`` in
-            ``[-1, 0]``. Default standard ``(1.0, -0.11, -1.0)``.
+        a_tp: NAB weight of a true positive (Lavin and Ahmad 2015), in
+            ``[0, 1]``; standard profile ``1.0``.
+        a_fp: NAB weight of a false positive, in ``[-1, 0]``; standard
+            profile ``-0.11``.
+        a_fn: NAB weight of a missed window, in ``[-1, 0]``; standard
+            profile ``-1.0``.
 
     Raises:
         ValueError: on a bad bias, an empty ``events``, or out-of-range
