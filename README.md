@@ -195,6 +195,10 @@ Four streaming drift detectors with one interface, `update(x)` and `drift_detect
 
 A camera, a folder of images or an array of frames becomes a stream of timestamped frames; `FrameFeatures` turns each frame into oriented-gradient histograms, intensity moments and Lucas–Kanade flow, and `RandomProjection` / `IncrementalPCA` reduce them, all computed by the library, one frame at a time. Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/vision/).
 
+## `$ preprocessing --online`
+
+Online scalers per feature and per joint, joint velocity, acceleration, jerk and power on real timestamps, text features (tokens, TF-IDF, signed hashing), feature selection and queue resampling for rare events, one sample at a time. Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/preprocessing/).
+
 ## `$ calibration --platt`
 
 `OnlinePlattScaling` (`dense_armor.utility.learn.calibration`, `pip install dense-armor[river]`) wraps any river classifier and recalibrates its probabilities one sample at a time, following Algorithm 1 of Gupta and Ramdas (ICML 2023, arXiv:2305.00070):
