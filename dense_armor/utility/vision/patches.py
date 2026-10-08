@@ -135,9 +135,6 @@ class PatchFeatures(Transformer):
         self.eps = eps
         self.n_missing_ = 0
 
-    def _reset(self) -> None:
-        self.n_missing_ = 0
-
     def _unit_test_skips(self) -> set:
         return set()
 
@@ -157,8 +154,6 @@ class PatchFeatures(Transformer):
             return None
         ny = (h - p) // s + 1
         nx = (w - p) // s + 1
-        if ny < 1 or nx < 1:
-            return None
         return ny, nx
 
     def _describe_all(self, lum: np.ndarray, ny: int, nx: int) -> np.ndarray:
@@ -318,18 +313,6 @@ class PatchMemory(AnomalyDetector):
         self._rng = np.random.default_rng(seed)
         self.last_patch_scores_: np.ndarray | None = None
         self.last_positions_: np.ndarray | None = None
-        self.n_missing_ = 0
-        self.n_reductions_ = 0
-
-    def _reset(self) -> None:
-        self._bank = None
-        self._sq_bank = None
-        self._accumulator = None
-        self._n_seen = 0
-        self._finalized = False
-        self._rng = np.random.default_rng(self.seed)
-        self.last_patch_scores_ = None
-        self.last_positions_ = None
         self.n_missing_ = 0
         self.n_reductions_ = 0
 
@@ -518,13 +501,10 @@ class PatchMemory(AnomalyDetector):
 
     def _nn_distances(self, q: np.ndarray, chunk: int = 512) -> np.ndarray:
         bank = self._bank
-        if bank is None:
-            return np.zeros(q.shape[0], dtype=np.float64)
+        assert bank is not None
         if self._sq_bank is None:
             self._sq_bank = np.einsum("ij,ij->i", bank, bank)
         sq_bank = self._sq_bank
-        if sq_bank is None:
-            return np.zeros(q.shape[0], dtype=np.float64)
         out = np.empty(q.shape[0], dtype=np.float64)
         for i in range(0, q.shape[0], chunk):
             qi = q[i : i + chunk]

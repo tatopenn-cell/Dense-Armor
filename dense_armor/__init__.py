@@ -8,7 +8,7 @@ _compat.install()
 
 from .armatura import Armatura
 
-__version__ = "1.1.23"
+__version__ = "1.1.24"
 __all__ = ["Armatura"]
 
 # Nessun handler configurato di default (convenzione standard per librerie):
