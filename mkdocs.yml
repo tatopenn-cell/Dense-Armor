@@ -88,6 +88,7 @@ nav:
   - Drift detection:
       - drift/index.md
       - CUSUM and ARL theory: drift/cusum.md
+      - Drift detectors: drift/detectors.md
   - Protection:
       - protect/index.md
       - Arbiter: protect/arbiter.md

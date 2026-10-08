@@ -1,41 +1,45 @@
+"""CUSUM drift detector for the streaming interface."""
 
-"""River-compatible CUSUM drift detector built on Dense-Armor's CUSUM implementation."""
-from __future__ import annotations
 from collections import deque
+
 import numpy as np
 
 from dense_armor.roles import DriftDetector
-
+from dense_armor.utility.drift.cusum import two_sided_arl
 from dense_armor.utility.protect.arbiter import _robust_center_scale
-from dense_armor.utility.drift.cusum import one_sided_arl, two_sided_arl
 
 
 class CUSUMDriftDetector(DriftDetector):
-    """CUSUM drift detector for river, matching the batch `cusum_detector` behaviour.
+    """CUSUM drift detector matching the batch `cusum_detector` behaviour.
 
     Parameters
     ----------
     radius, ref_mult
-        Causal window span = radius * ref_mult, same convention as `cusum_detector`.
+        Causal window span = radius * ref_mult, same convention as
+        `cusum_detector`.
     k
         CUSUM slack, in robust-sigma units.
     h
         Decision threshold, in accumulated robust-sigma units.
     two_sided
-        If True, both upward and downward shifts are monitored. If False, only
-        upward shifts are monitored.
+        If True, both upward and downward shifts are monitored. If False,
+        only upward shifts are monitored.
     eps
         Degenerate-scale guard, same convention as `cusum_detector`.
     reference
-        "adaptive" recomputes median and scale from a sliding causal window every
-        step, matching `cusum_detector(reference="adaptive")`. The reference drifts
-        with the data, so a sustained shift is caught at its leading edge, then
-        stops accumulating once the window catches up. The detection floor for a
-        sustained step is roughly 2.2 robust sigmas at h=20.
-        "fixed" computes median and scale once from the first `span` values and
-        never updates, matching `cusum_detector(reference="fixed")` and Page's
-        original scheme. Detects smaller sustained shifts at the cost of a higher
-        false-alarm rate on stationary data.
+        "adaptive" recomputes median and scale from a sliding causal
+        window every step, matching `cusum_detector(reference="adaptive")`.
+        The reference drifts with the data, so a sustained shift is
+        caught at its leading edge, then stops accumulating once the
+        window catches up. The detection floor for a sustained step is
+        roughly 2.2 robust sigmas at h=20.
+        "fixed" computes median and scale once from the first `span`
+        usable (finite, non-flat) values and never updates, matching
+        `cusum_detector(reference="fixed")` and Page's original scheme.
+        Non-finite samples do not count towards `span`; the fixed buffer
+        keeps only the last `span` finite values, so a long flat start
+        does not make the buffer grow without bound, and the reference
+        is retried on every new sample until a usable one is found.
 
     Examples
     --------
@@ -54,7 +58,7 @@ class CUSUMDriftDetector(DriftDetector):
 
     def __init__(self, radius: int = 10, ref_mult: int = 3, k: float = 0.5,
                  h: float = 20.0, two_sided: bool = True, eps: float = 1e-9,
-                 reference: str = "adaptive"):
+                 reference: str = "adaptive") -> None:
         super().__init__()
         if reference not in ("adaptive", "fixed"):
             raise ValueError(
@@ -68,26 +72,32 @@ class CUSUMDriftDetector(DriftDetector):
         self.eps = eps
         self.reference = reference
         self._span = radius * ref_mult
-        self._buffer = deque(maxlen=self._span)
+        self._buffer: deque[float] = deque(maxlen=self._span)
+        self._fixed_buffer: deque[float] = deque(maxlen=self._span)
         self._s_pos = 0.0
         self._s_neg = 0.0
-        self._seen = 0
         self._fixed_ready = False
-        self._fixed_med = None
-        self._fixed_scale = None
+        self._fixed_med = 0.0
+        self._fixed_scale = 1.0
+        self.n_missing_ = 0
 
-    def _reset(self):
+    def _reset(self) -> None:
         super()._reset()
         self._buffer.clear()
+        self._fixed_buffer.clear()
         self._s_pos = 0.0
         self._s_neg = 0.0
-        self._seen = 0
         self._fixed_ready = False
-        self._fixed_med = None
-        self._fixed_scale = None
+        self._fixed_med = 0.0
+        self._fixed_scale = 1.0
+        self.n_missing_ = 0
 
-    def _unit_test_skips(self):
+    def _unit_test_skips(self) -> set:
         return set()
+
+    @property
+    def n_missing(self) -> int:
+        return self.n_missing_
 
     def _accumulate(self, z: float) -> None:
         self._s_pos = max(0.0, self._s_pos + z - self.k)
@@ -100,37 +110,40 @@ class CUSUMDriftDetector(DriftDetector):
             self._drift_detected = True
             self._s_neg = 0.0
 
-    def update(self, x: float):
+    def _try_build_fixed_reference(self) -> bool:
+        if len(self._fixed_buffer) < self._span:
+            return False
+        arr = np.asarray(self._fixed_buffer, dtype=float)
+        med, scale = _robust_center_scale(arr)
+        if not np.isfinite(scale) or scale < self.eps:
+            return False
+        self._fixed_med = med
+        self._fixed_scale = scale
+        return True
+
+    def update(self, x: float, t: float | None = None) -> "CUSUMDriftDetector":
         self._drift_detected = False
 
+        if not np.isfinite(x):
+            self.n_missing_ += 1
+            return self
+        x = float(x)
+
         if self.reference == "fixed":
-            self._seen += 1
-            if not self._fixed_ready:
-                self._buffer.append(x)
-                if self._seen == self._span:
-                    arr = np.array(self._buffer)
-                    if np.all(np.isfinite(arr)):
-                        med, scale = _robust_center_scale(arr)
-                        if np.isfinite(scale) and scale >= self.eps:
-                            self._fixed_med = med
-                            self._fixed_scale = scale
-                    self._fixed_ready = True
+            if self._fixed_ready:
+                z = (x - self._fixed_med) / self._fixed_scale
+                self._accumulate(z)
                 return self
-            if self._fixed_med is None:
-                return self
-            if not np.isfinite(x):
-                return self
-            z = (x - self._fixed_med) / self._fixed_scale
-            self._accumulate(z)
+            self._fixed_buffer.append(x)
+            if self._try_build_fixed_reference():
+                self._fixed_ready = True
+                self._fixed_buffer.clear()
             return self
 
-        if not np.isfinite(x):
-            self._buffer.append(x)
-            return self
         if len(self._buffer) < 4:
             self._buffer.append(x)
             return self
-        arr = np.array(self._buffer)
+        arr = np.asarray(self._buffer, dtype=float)
         med, scale = _robust_center_scale(arr)
         if not np.isfinite(scale) or scale < self.eps:
             self._buffer.append(x)
