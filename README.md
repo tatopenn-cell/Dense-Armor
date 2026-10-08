@@ -6,7 +6,7 @@
   <img alt="tests" src="https://github.com/tatopenn-cell/Dense-Armor/actions/workflows/tests.yml/badge.svg">
   <a href="https://codecov.io/gh/tatopenn-cell/Dense-Armor"><img alt="codecov" src="https://codecov.io/gh/tatopenn-cell/Dense-Armor/branch/master/graph/badge.svg"></a>
   <a href="https://pypi.org/project/dense-armor"><img alt="pypi" src="https://img.shields.io/pypi/v/dense-armor.svg"></a>
-  <a href="https://doi.org/10.5281/zenodo.22163460"><img alt="DOI" src="https://zenodo.org/badge/DOI/10.5281/zenodo.22163460.svg"></a>
+  <a href="https://doi.org/10.5281/zenodo.23247521"><img alt="DOI" src="https://zenodo.org/badge/DOI/10.5281/zenodo.23247521.svg"></a>
   <img alt="license" src="https://img.shields.io/badge/license-BSL_1.1-blue.svg">
   <img alt="python" src="https://img.shields.io/badge/python-3.10%2B-blue.svg">
   <img alt="backend" src="https://img.shields.io/badge/backend-JAX-orange.svg">
