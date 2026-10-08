@@ -46,6 +46,19 @@ if _river_base is not None:
 del _ROLE_MAP
 
 __all__ = [
+    "Signal",
+    "AdaptiveConformalRegressor",
+    "Estimate",
+    "PureEW",
+    "RealtimePipeline",
+    "SafeEstimator",
+    "UnitCheckedPipeline",
+    "UnitSpec",
+    "call_json",
+    "limits_from_urdf",
+    "profile",
+    "schema",
+
     "AnomalyDetector",
     "AnomalyGate",
     "Root",
@@ -59,3 +72,12 @@ __all__ = [
     "TransformerSupervised",
     "ModelWrapper",
 ]
+
+from dense_armor.roles.signal import Signal  # noqa: E402
+from dense_armor.roles.agents import call_json, schema  # noqa: E402
+from dense_armor.roles.physics import UnitCheckedPipeline, UnitSpec, limits_from_urdf  # noqa: E402
+from dense_armor.roles.realtime import PureEW, RealtimePipeline, profile  # noqa: E402
+from dense_armor.roles.safety import SafeEstimator  # noqa: E402
+from dense_armor.roles.uncertainty import AdaptiveConformalRegressor, Estimate  # noqa: E402
+from dense_armor.roles.safety import Health  # noqa: E402
+from dense_armor.roles.physics import PhysicalLimitsGuard  # noqa: E402
