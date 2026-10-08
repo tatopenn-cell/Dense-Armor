@@ -16,7 +16,7 @@
   <a href="https://tatopenn-cell.github.io/Dense-Armor/"><img alt="docs" src="https://img.shields.io/badge/docs-tatopenn--cell.github.io-00e5ff?style=flat-square"></a>
 </p>
 
-<p align="center"><strong>Runtime shield for AI signals and robotic commands. No retraining. No magic — just adaptive damping and control verified with real tests.</strong></p>
+<p align="center"><strong>Online learning, runtime shielding and robot control in one JAX library: estimators that learn one sample at a time, with uncertainty, drift and anomaly detection, adaptive damping for AI signals and verified safety for robotic commands.</strong></p>
 
 <p align="center">📖 <a href="https://tatopenn-cell.github.io/Dense-Armor/"><strong>Full documentation, API reference, quick guide →</strong></a></p>
 
@@ -41,6 +41,8 @@ A sensor that sends lost readings (`NaN`) or spits out an absurd value (`1e6` in
 It leaves the weights untouched. It runs at runtime. It works from 1D up to 11D, tested (see `test/test_orca2.py`).
 
 **Same discipline, a second domain**: from `$ rate_limiter` onward the package also covers command and trajectory safety for real robots — velocity/acceleration limits, spatial control barrier functions, minimum-jerk trajectory generation, rigid dynamics from real URDF (including `.xacro`, including `<mimic>` joints), passivity+CBF controllers up to 6-DoF. JAX backend shared with `Armatura`/`Orca`, same verification discipline on real data/robots — a different application domain, not a different package.
+
+**A third domain, online learning**: estimators that learn one sample at a time on a robot or next to an LLM, all on the same foundation (`dense_armor.roles`): `learn_one` / `predict_one` / `score_one`, timestamped `Signal` samples with units, a real-time contract (p99 latency within the control period), conformal uncertainty, `SafeEstimator` with health and checksummed checkpoints, unit checks and URDF joint limits. On top of it: online statistics and sketches, metrics with predict-then-learn evaluation and event metrics for robots (detection delay, false alarms per hour), and four drift detectors (CUSUM, Page-Hinkley, ADWIN, KSWIN). LLM side: embeddings as features and estimators exposed as JSON tools for agents. This layer is being built for robots from the ground up: it takes the best-established online-learning techniques from the original papers (streaming statistics, predict-then-learn evaluation, sequential change detection, conformal prediction) and extends them with time, units, real-time budgets, uncertainty and safety. Native vision is the next block.
 
 ---
 
@@ -184,6 +186,10 @@ report = detectability_report(local_noise_scale=local_mad, k=0.5, h=5.0, candida
 ```
 
 `detectability_report` estimates *before* running a benchmark how many samples are needed to detect a given shift given the detector's real local noise -- Reynolds (1975)/Siegmund (1985) theory, promoted by Dense-Evolution-Discovery after validation on two independent real physical domains (lidar, accelerometer): on the lidar the real latency always beats the theoretical estimate; on the accelerometer the result is genuinely mixed -- documented as is, not forced to coincide. Full documentation (auto-generated from the real docstrings) on the [site](https://tatopenn-cell.github.io/Dense-Armor/drift/cusum/).
+
+## `$ drift_detectors --online`
+
+Four streaming drift detectors with one interface, `update(x)` and `drift_detected`: CUSUM with a fixed reference (safe on a NaN or flat start), Page-Hinkley (unit-independent), ADWIN (Hoeffding bound) and KSWIN (Kolmogorov–Smirnov), compared on the CASPER robot stream. Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/drift/detectors/).
 
 ## `$ calibration --platt`
 
