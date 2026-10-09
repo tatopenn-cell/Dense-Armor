@@ -27,6 +27,7 @@ quantum = ["dense-evolution"]
 mcp = ["mcp>=2.0.0", "pydantic>=2.0"]
 river = ["river>=0.26; python_version >= '3.11'"]
 vision = ["opencv-python"]
+ros = ["rosbags>=0.9.18"]
 llm = []  # the LLM bridge needs no extra package
 dev = ["pytest", "pytest-cov", "filterpy", "matplotlib", "river>=0.26; python_version >= '3.11'", "scikit-learn"]
 docs = [

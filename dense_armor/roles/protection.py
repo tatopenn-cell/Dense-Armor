@@ -2,6 +2,7 @@
 
 from typing import Any
 
+from dense_armor.roles._util import call_with_t
 from dense_armor.roles.estimator import Estimator
 
 
@@ -43,16 +44,16 @@ class Protected(Estimator):
             return self
         m: Any = self.model
         if y is None:
-            m.learn_one(x, t=t)
+            call_with_t(m.learn_one, x, t=t)
         else:
-            m.learn_one(x, y, t=t)
+            call_with_t(m.learn_one, x, y, t=t)
         return self
 
     def predict_one(self, x: dict, t: float | None = None):
         if self._flagged(x):
             return self._last_good
         m: Any = self.model
-        out = m.predict_one(x, t=t)
+        out = call_with_t(m.predict_one, x, t=t)
         self._last_good = out
         return out
 
@@ -60,4 +61,4 @@ class Protected(Estimator):
         if self._flagged(x):
             return float("inf")
         m: Any = self.model
-        return m.score_one(x, t=t)
+        return call_with_t(m.score_one, x, t=t)

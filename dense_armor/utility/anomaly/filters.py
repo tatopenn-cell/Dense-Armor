@@ -25,6 +25,7 @@ Conventions: see `SKILL.md`. Causal window = `2 * radius` samples strictly
 before the value being scored; the value is never part of its own window.
 See `ISTRUZIONI.md`, section "Important: centred vs causal windows".
 """
+
 from __future__ import annotations
 
 import math
@@ -42,8 +43,9 @@ def _scaled_mad(w: np.ndarray) -> float:
     return 1.4826 * mad
 
 
-def _clean_stats(w: np.ndarray, n_sigmas: float, max_iters: int = 5,
-                 eps: float = 1e-12):
+def _clean_stats(
+    w: np.ndarray, n_sigmas: float, max_iters: int = 5, eps: float = 1e-12
+):
     """Iterative sigma-clipping on `w`: mean and std of the surviving points."""
     mask = np.ones(w.shape, dtype=bool)
     for _ in range(max_iters):
@@ -109,8 +111,13 @@ class HampelScorer(AnomalyDetector):
     JASA 88(423), 782-792.
     """
 
-    def __init__(self, radius: int = 10, n_sigmas: float = 3.0,
-                 feature: str | None = None, eps: float = 1e-9):
+    def __init__(
+        self,
+        radius: int = 10,
+        n_sigmas: float = 3.0,
+        feature: str | None = None,
+        eps: float = 1e-9,
+    ):
         self.radius = radius
         self.n_sigmas = n_sigmas
         self.feature = feature
@@ -137,6 +144,11 @@ class HampelScorer(AnomalyDetector):
 
     def is_outlier(self, x) -> bool:
         return self.score_one(x) > self.n_sigmas
+
+    @property
+    def threshold(self) -> float:
+        """Score above which a sample is an outlier (``n_sigmas``)."""
+        return self.n_sigmas
 
     def _unit_test_skips(self):
         return {"check_roc_auc"}
@@ -183,8 +195,13 @@ class TukeyScorer(AnomalyDetector):
     Tukey, J. W. (1977). Exploratory Data Analysis. Addison-Wesley.
     """
 
-    def __init__(self, radius: int = 10, k: float = 1.5,
-                 feature: str | None = None, eps: float = 1e-9):
+    def __init__(
+        self,
+        radius: int = 10,
+        k: float = 1.5,
+        feature: str | None = None,
+        eps: float = 1e-9,
+    ):
         self.radius = radius
         self.k = k
         self.feature = feature
@@ -275,8 +292,13 @@ class ChauvenetScorer(AnomalyDetector):
     Vol. II, Appendix on the Method of Least Squares.
     """
 
-    def __init__(self, radius: int = 10, threshold: float = 0.5,
-                 feature: str | None = None, eps: float = 1e-9):
+    def __init__(
+        self,
+        radius: int = 10,
+        threshold: float = 0.5,
+        feature: str | None = None,
+        eps: float = 1e-9,
+    ):
         self.radius = radius
         self.threshold = threshold
         self.feature = feature
@@ -355,9 +377,14 @@ class SigmaClipScorer(AnomalyDetector):
     intrinsic scatter. ApJ 470, 706.
     """
 
-    def __init__(self, radius: int = 10, n_sigmas: float = 3.0,
-                 max_iters: int = 5, feature: str | None = None,
-                 eps: float = 1e-9):
+    def __init__(
+        self,
+        radius: int = 10,
+        n_sigmas: float = 3.0,
+        max_iters: int = 5,
+        feature: str | None = None,
+        eps: float = 1e-9,
+    ):
         self.radius = radius
         self.n_sigmas = n_sigmas
         self.max_iters = max_iters
@@ -422,14 +449,20 @@ class HampelFilter(Transformer):
     True
     """
 
-    def __init__(self, radius: int = 10, n_sigmas: float = 3.0,
-                 feature: str | None = None, eps: float = 1e-9):
+    def __init__(
+        self,
+        radius: int = 10,
+        n_sigmas: float = 3.0,
+        feature: str | None = None,
+        eps: float = 1e-9,
+    ):
         self.radius = radius
         self.n_sigmas = n_sigmas
         self.feature = feature
         self.eps = eps
-        self._scorer = HampelScorer(radius=radius, n_sigmas=n_sigmas,
-                                    feature=feature, eps=eps)
+        self._scorer = HampelScorer(
+            radius=radius, n_sigmas=n_sigmas, feature=feature, eps=eps
+        )
 
     def _key(self, x):
         return self.feature if self.feature is not None else min(x)
