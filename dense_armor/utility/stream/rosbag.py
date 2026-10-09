@@ -6,6 +6,10 @@ inside :func:`iter_rosbag`. Every ``sensor_msgs/msg/JointState`` message
 becomes one :class:`Signal` with channels ``q_<joint>``,
 ``qd_<joint>``, ``tau_<joint>``.
 
+On Windows the ``rosbags`` package cannot generate ROS 1 message
+definitions (it builds them with ``PosixPath``), so ROS 1 bags are
+tested on Linux and macOS.
+
 Examples:
     >>> from dense_armor.utility.stream import iter_rosbag
     >>> stream = iter_rosbag("/path/to/bag")  # doctest: +SKIP
