@@ -56,7 +56,7 @@ jobs:
 
       - name: Install package + dev deps
         if: needs.changes.outputs.code == 'true'
-        run: pip install -e ".[dev,audio,data,mcp]"
+        run: pip install -e ".[dev,audio,data,mcp,ros]"
 
       - name: Run pytest
         if: needs.changes.outputs.code == 'true'
