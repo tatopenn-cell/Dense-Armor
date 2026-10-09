@@ -113,6 +113,8 @@ nav:
         - Online dynamics: learn/online_dynamics.md
     - Clustering:
         - cluster/index.md
+    - Trees:
+        - tree/index.md
   - Vision:
       - vision/index.md
       - vision/patches.md
