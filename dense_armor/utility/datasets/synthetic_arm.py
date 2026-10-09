@@ -196,7 +196,9 @@ class SyntheticArm:
         """Inverse dynamics of the arm, without noise or fault.
 
         Args:
-            q, qd, qdd: joint positions, velocities and accelerations.
+            q: joint positions.
+            qd: joint velocities.
+            qdd: joint accelerations.
 
         Returns:
             ``mass_matrix(q) @ qdd + bias_forces(q, qd)
