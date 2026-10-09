@@ -57,7 +57,10 @@ from dense_armor.roles import Classifier, Regressor
 def _as_dict(x: Any) -> dict:
     if hasattr(x, "to_dict"):
         return dict(x.to_dict())
-    return dict(x)
+    try:
+        return dict(x)
+    except (TypeError, ValueError):
+        return {}
 
 
 def _betacf(a: float, b: float, x: float) -> float:
@@ -352,12 +355,8 @@ class _SGTBase:
         for f in self._buf[0]:
             vals = []
             for x in self._buf:
-                if f not in x or x[f] is None:
-                    continue
-                try:
+                if f in x:
                     vals.append(float(x[f]))
-                except (TypeError, ValueError):
-                    continue
             if vals:
                 self._ranges[f] = (min(vals), max(vals))
         self._buf.clear()
@@ -376,18 +375,11 @@ class _SGTBase:
     def _descend(self, node: _Node, d: dict) -> _Node | None:
         f = node.split_feature_
         s = node.split_threshold_
-        if f is None or s is None:
-            return None
+        assert f is not None and s is not None
         v = d.get(f)
         if v is None:
             return None
-        try:
-            fv = float(v)
-        except (TypeError, ValueError):
-            return None
-        if not math.isfinite(fv):
-            return None
-        return node.left_ if fv <= s else node.right_
+        return node.left_ if float(v) <= s else node.right_
 
     def _path(self, d: dict) -> list:
         if self.root_ is None:
@@ -429,15 +421,9 @@ class _SGTBase:
         node.g_sum_ += g
         node.h_sum_ += h
         for f, v in d.items():
-            if f not in self._ranges or v is None:
+            if f not in self._ranges:
                 continue
-            try:
-                fv = float(v)
-            except (TypeError, ValueError):
-                continue
-            if not math.isfinite(fv):
-                continue
-            b = self._bin(f, fv)
+            b = self._bin(f, float(v))
             per_bin = node.stats_.setdefault(f, {})
             bs = per_bin.get(b)
             if bs is None:

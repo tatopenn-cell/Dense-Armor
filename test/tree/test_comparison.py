@@ -85,7 +85,7 @@ def test_comparison_table():
         ),
         (
             "MondrianForestRegressor",
-            lambda: MondrianForestRegressor(n_trees=10, seed=0, min_samples_split=5),
+            lambda: MondrianForestRegressor(n_trees=10, seed=0),
         ),
     ):
         m, dt = _score_reg(ctor(), list(reg_stat))
@@ -111,7 +111,7 @@ def test_comparison_table():
         ),
         (
             "MondrianForestClassifier",
-            lambda: MondrianForestClassifier(n_trees=10, seed=0, min_samples_split=5),
+            lambda: MondrianForestClassifier(n_trees=10, seed=0),
         ),
     ):
         a, dt = _score_cls(ctor(), list(cls_stat))

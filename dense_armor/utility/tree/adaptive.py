@@ -180,21 +180,11 @@ class HoeffdingAdaptiveTreeClassifier(HoeffdingTreeClassifier):
     def _descend(self, node: _ANode, x: dict) -> _ANode | None:
         f = node.split_feature_
         s = node.split_threshold_
-        if f is None or s is None:
-            return None
+        assert f is not None and s is not None
         v = x.get(f)
         if v is None:
             return None
-        try:
-            fv = float(v)
-        except (TypeError, ValueError):
-            return None
-        if not math.isfinite(fv):
-            return None
-        nxt = node.left_ if fv <= s else node.right_
-        if nxt is None:
-            return None
-        return cast(_ANode, nxt)
+        return cast(_ANode, node.left_ if float(v) <= s else node.right_)
 
     def _path_of(self, root: _ANode, d: dict) -> list:
         path: list = []

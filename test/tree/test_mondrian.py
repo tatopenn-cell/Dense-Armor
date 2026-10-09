@@ -16,7 +16,7 @@ def _stream(rng, n):
 
 def test_mondrian_regressor_estimate_var():
     rng = np.random.default_rng(0)
-    f = MondrianForestRegressor(n_trees=10, seed=0, min_samples_split=5)
+    f = MondrianForestRegressor(n_trees=10, seed=0)
     for _ in range(500):
         x = float(rng.uniform(-1.0, 1.0))
         y = float(np.sin(3.0 * x))
@@ -31,7 +31,7 @@ def test_mondrian_regressor_estimate_var():
 
 def test_mondrian_split_times_are_valid():
     rng = np.random.default_rng(1)
-    f = MondrianForestRegressor(n_trees=3, seed=0, min_samples_split=2)
+    f = MondrianForestRegressor(n_trees=3, seed=0)
     for _ in range(200):
         x = float(rng.uniform(0.0, 1.0))
         f.learn_one({"x": x}, y=x)
@@ -52,7 +52,7 @@ def test_mondrian_online_root_split_feature_stable():
     stream = [{"x0": float(i)} for i in range(1, 8)]
     feat_set = set()
     for seed in range(n_seeds):
-        f = MondrianForestRegressor(n_trees=1, seed=seed, min_samples_split=2)
+        f = MondrianForestRegressor(n_trees=1, seed=seed)
         for d in stream:
             f.learn_one(d, y=float(d["x0"]))
         r = f.trees_[0].root
@@ -65,7 +65,7 @@ def test_mondrian_online_root_split_feature_stable():
 
 def test_mondrian_classifier_smoke():
     rng = np.random.default_rng(2)
-    f = MondrianForestClassifier(n_trees=15, seed=0, min_samples_split=5)
+    f = MondrianForestClassifier(n_trees=15, seed=0)
     for x, y in _stream(rng, 800):
         f.learn_one(x, y=y)
     p0 = f.predict_one({"x0": 0.0})
@@ -103,7 +103,7 @@ def _walk(node):
 
 def test_mondrian_extension_inserts_parent_with_cut_in_extension():
     rng = np.random.default_rng(0)
-    f = MondrianForestRegressor(n_trees=5, seed=0, min_samples_split=10**6)
+    f = MondrianForestRegressor(n_trees=5, seed=0)
     for _ in range(50):
         f.learn_one({"a": float(rng.random()), "b": float(rng.random())}, y=0.0)
     f.learn_one({"a": 10.0, "b": 0.5}, y=1.0)

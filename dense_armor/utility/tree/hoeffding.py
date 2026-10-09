@@ -61,7 +61,10 @@ from dense_armor.roles import Classifier
 def _as_dict(x: Any) -> dict:
     if hasattr(x, "to_dict"):
         return dict(x.to_dict())
-    return dict(x)
+    try:
+        return dict(x)
+    except (TypeError, ValueError):
+        return {}
 
 
 def _phi(z: float) -> float:
@@ -198,8 +201,7 @@ class HoeffdingTreeClassifier(Classifier):
         return node
 
     def _path(self, x: dict) -> list:
-        if self.root_ is None:
-            self.root_ = self._new_leaf(0)
+        """Nodes from the root to the leaf of ``x`` (inputs already validated)."""
         path: list = []
         cur: _Node | None = self.root_
         while cur is not None:
@@ -208,32 +210,16 @@ class HoeffdingTreeClassifier(Classifier):
                 return path
             f = cur.split_feature_
             s = cur.split_threshold_
-            if f is None or s is None or f not in x:
+            if f not in x:
                 return path
-            try:
-                v = float(x[f])
-            except (TypeError, ValueError):
-                return path
-            if not math.isfinite(v):
-                return path
-            nxt = cur.left_ if v <= s else cur.right_
-            if nxt is None:
-                return path
-            cur = nxt
+            cur = cur.left_ if float(x[f]) <= s else cur.right_
         return path
 
     def _update_leaf(self, node: _Node, x: dict, y: Any) -> None:
         node.n_ += 1
         node.class_counts_[y] = node.class_counts_.get(y, 0) + 1
         for f, v in x.items():
-            if v is None:
-                continue
-            try:
-                fv = float(v)
-            except (TypeError, ValueError):
-                continue
-            if not math.isfinite(fv):
-                continue
+            fv = float(v)
             self.features_.add(f)
             per_class = node.feature_stats_.setdefault(f, {})
             g = per_class.get(y)
@@ -380,12 +366,7 @@ class HoeffdingTreeClassifier(Classifier):
             total = sum(leaf.class_counts_.values()) + len(classes)
             lp = math.log(prior / total)
             for f, v in x.items():
-                if v is None:
-                    continue
-                try:
-                    fv = float(v)
-                except (TypeError, ValueError):
-                    continue
+                fv = float(v)
                 g = leaf.feature_stats_.get(f, {}).get(c)
                 if g is None or g.n_ < 2:
                     continue
@@ -423,8 +404,7 @@ class HoeffdingTreeClassifier(Classifier):
         while cur is not None and not cur.is_leaf:
             f = cur.split_feature_
             s = cur.split_threshold_
-            if f is None or s is None:
-                break
+            assert f is not None and s is not None
             v = d.get(f)
             if v is None:
                 break
