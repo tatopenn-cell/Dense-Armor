@@ -25,17 +25,6 @@ node contributes the weight of that node's posterior. The predictive
 variance is the mixture variance, so it grows as the query moves away
 from the training data.
 
-Args:
-    n_trees: number of trees in the forest.
-    lifetime: lifetime parameter of the Mondrian process. ``inf``
-        (default) means the tree can grow as deep as the data allows.
-    max_nodes: maximum number of nodes per tree. Default ``10000``.
-    seed: base random seed; tree ``i`` uses ``seed + i``.
-    task: ``"regression"`` or ``"classification"``.
-
-Raises:
-    ValueError: on a non-positive parameter or a bad ``task``.
-
 Examples:
     >>> from dense_armor.utility.tree.mondrian import MondrianForestRegressor
     >>> f = MondrianForestRegressor(n_trees=5, seed=0)
@@ -457,6 +446,16 @@ class MondrianForestRegressor(Regressor, _MondrianBase):
     ``budget_s`` = 2e-2 s: p99 of ``learn_one`` measured at 1.3e-3 s on a
     2000-sample, two-feature stream on a desktop CPU (default
     parameters); the budget leaves room for slower machines.
+
+    Args:
+        n_trees: number of trees in the forest.
+        lifetime: lifetime parameter of the Mondrian process. ``inf``
+            (default) means the tree can grow as deep as the data allows.
+        max_nodes: maximum number of nodes per tree. Default ``10000``.
+        seed: base random seed; tree ``i`` uses ``seed + i``.
+
+    Raises:
+        ValueError: on a non-positive parameter .
     """
 
     budget_s = 2e-2
@@ -538,6 +537,16 @@ class MondrianForestClassifier(Classifier, _MondrianBase):
     ``budget_s`` = 2e-2 s: p99 of ``learn_one`` measured at 1.6e-3 s on a
     2000-sample, two-feature stream on a desktop CPU (default
     parameters); the budget leaves room for slower machines.
+
+    Args:
+        n_trees: number of trees in the forest.
+        lifetime: lifetime parameter of the Mondrian process. ``inf``
+            (default) means the tree can grow as deep as the data allows.
+        max_nodes: maximum number of nodes per tree. Default ``10000``.
+        seed: base random seed; tree ``i`` uses ``seed + i``.
+
+    Raises:
+        ValueError: on a non-positive parameter .
     """
 
     budget_s = 2e-2

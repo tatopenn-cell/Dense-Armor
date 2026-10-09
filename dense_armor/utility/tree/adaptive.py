@@ -9,21 +9,6 @@ accurate than the main one, it replaces the corresponding branch.
 The detector and the error counters live on the node, not in a dict
 keyed by ``id(node)``, so clone, pickle and state round-trips work.
 
-Args:
-    grace_period: minimum samples at a node before a split attempt.
-    delta: one minus the confidence of the Hoeffding bound for splits.
-    tau: tie threshold.
-    max_depth: maximum depth, or ``None``.
-    max_nodes: maximum number of nodes. Default ``10000``.
-    leaf: ``"nb"`` or ``"majority"``.
-    drift_detector: a fresh ``DriftDetector`` instance, cloned per node.
-    delta_alt: one minus the confidence of the alternate bound.
-    kappa_alt: minimum samples for an alternate to be considered.
-    error_alpha: smoothing of the per-node error estimate.
-
-Raises:
-    ValueError: on a bad ``leaf`` or a non-positive parameter.
-
 Examples:
     >>> import numpy as np
     >>> from dense_armor.utility.drift.adwin import ADWIN
@@ -108,6 +93,21 @@ class HoeffdingAdaptiveTreeClassifier(HoeffdingTreeClassifier):
     ``budget_s`` = 5e-3 s: p99 of ``learn_one`` measured at 3.7e-4 s on a
     2000-sample, two-feature stream on a desktop CPU (default
     parameters); the budget leaves room for slower machines.
+
+    Args:
+        grace_period: minimum samples at a node before a split attempt.
+        delta: one minus the confidence of the Hoeffding bound for splits.
+        tau: tie threshold.
+        max_depth: maximum depth, or ``None``.
+        max_nodes: maximum number of nodes. Default ``10000``.
+        leaf: ``"nb"`` or ``"majority"``.
+        drift_detector: a fresh ``DriftDetector`` instance, cloned per node.
+        delta_alt: one minus the confidence of the alternate bound.
+        kappa_alt: minimum samples for an alternate to be considered.
+        error_alpha: smoothing of the per-node error estimate.
+
+    Raises:
+        ValueError: on a bad ``leaf`` or a non-positive parameter.
     """
 
     budget_s = 5e-3
