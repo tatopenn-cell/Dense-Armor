@@ -60,8 +60,6 @@ class Select(Transformer):
     def __init__(self, keys: tuple[str, ...] = ()) -> None:
         self.keys = list(keys)
 
-    def _reset(self) -> None:
-        pass
 
     def _unit_test_skips(self) -> set:
         return set()
@@ -104,8 +102,6 @@ class Discard(Transformer):
     def __init__(self, keys: tuple[str, ...] = ()) -> None:
         self.keys = list(keys)
 
-    def _reset(self) -> None:
-        pass
 
     def _unit_test_skips(self) -> set:
         return set()

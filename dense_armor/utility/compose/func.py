@@ -56,8 +56,6 @@ class FuncTransformer(Transformer):
         self.keys = None if keys is None else list(keys)
         self.whole = bool(whole)
 
-    def _reset(self) -> None:
-        pass
 
     def _unit_test_skips(self) -> set:
         return set()
