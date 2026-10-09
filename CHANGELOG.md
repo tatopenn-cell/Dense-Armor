@@ -5,6 +5,7 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 ## [Unreleased]
 
 - Incremental trees and online forests (`dense_armor.utility.tree`): `HoeffdingTreeClassifier` (Hoeffding bound, `explain_one`), `HoeffdingAnytimeTreeClassifier` (statistics on every node, splits revisited and replaced or collapsed; Manapragada 2018), `HoeffdingAdaptiveTreeClassifier` (a drift detector on each node, alternate subtrees), `SGTRegressor` / `SGTClassifier` (stochastic gradient trees with the t-test of Gouk 2019, eq. 16 and 18), `MondrianForestRegressor` / `MondrianForestClassifier` (online Mondrian trees, Algorithms 2 and 4 of Lakshminarayanan 2014, predictive mixture of eq. 3 of the 2016 paper, variance growing away from the data).
+- `OnlinePlattScaling`: while the base classifier has no opinion yet (empty `predict_proba_one`), `learn_one` trains the base only and leaves the calibration untouched; a base that knows only the negative class gives `p = 1 - p(False)` instead of 0.5. Phishing log-loss of the docstring example: 0.3499.
 
 ## [1.1.24] - 2026-10-08
 

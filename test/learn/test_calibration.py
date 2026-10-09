@@ -118,3 +118,26 @@ def test_check_estimator():
     from dense_armor.checks import check_estimator
 
     check_estimator(OnlinePlattScaling(OnlineGaussianNB()))
+
+
+class Late(Classifier):
+    def __init__(self):
+        self.seen = []
+
+    def learn_one(self, x, y):
+        self.seen.append(y)
+
+    def predict_proba_one(self, x):
+        if not self.seen:
+            return {}
+        if all(not v for v in self.seen):
+            return {False: 1.0}
+        return {False: 0.3, True: 0.7}
+
+
+def test_no_opinion_leaves_calibration_untouched():
+    cal = OnlinePlattScaling(Late())
+    cal.learn_one({"x": 1.0}, False)
+    assert cal.classifier.seen == [False]
+    assert cal._theta.tolist() == [1.0, 0.0]
+    assert cal.predict_proba_one({"x": 1.0})[True] < 0.05
