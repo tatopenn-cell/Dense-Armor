@@ -4,6 +4,8 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+## [1.1.25] - 2026-10-09
+
 - Streams, datasets and pipelines: `dense_armor.utility.stream` (`iter_array`, `iter_csv` with constant memory and list-valued columns, `iter_rosbag` for ROS 1 and ROS 2 bags with the new extra `[ros]`, `merge_by_time`, `shuffle`); `dense_armor.utility.datasets` (`Casper` reader for a local copy of the CASPER UR3e dataset, `DriftStream` with sudden, gradual and incremental drift after Ksieniewicz and Zyblewski 2020, `SyntheticArm` labelled joint stream from a URDF with friction or payload faults); `dense_armor.utility.compose` (`Select`, `Discard`, `FuncTransformer`). `Protected` passes `t` only to models that accept it; `HampelScorer.threshold` exposes `n_sigmas` for `AnomalyGate`.
 
 - Incremental trees and online forests (`dense_armor.utility.tree`): `HoeffdingTreeClassifier` (Hoeffding bound, `explain_one`), `HoeffdingAnytimeTreeClassifier` (statistics on every node, splits revisited and replaced or collapsed; Manapragada 2018), `HoeffdingAdaptiveTreeClassifier` (a drift detector on each node, alternate subtrees), `SGTRegressor` / `SGTClassifier` (stochastic gradient trees with the t-test of Gouk 2019, eq. 16 and 18), `MondrianForestRegressor` / `MondrianForestClassifier` (online Mondrian trees, Algorithms 2 and 4 of Lakshminarayanan 2014, predictive mixture of eq. 3 of the 2016 paper, variance growing away from the data).
