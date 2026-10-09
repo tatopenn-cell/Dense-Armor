@@ -128,3 +128,24 @@ def test_check_estimator_hat():
     check_estimator(
         HoeffdingAdaptiveTreeClassifier(grace_period=20, drift_detector=ADWIN())
     )
+
+
+def test_hat_recovers_when_classes_swap_under_the_same_split():
+    from dense_armor.utility.tree.hoeffding import HoeffdingTreeClassifier
+
+    rng = np.random.default_rng(1)
+    ht = HoeffdingTreeClassifier(grace_period=100)
+    hat = HoeffdingAdaptiveTreeClassifier(grace_period=100, drift_detector=ADWIN())
+    ok_ht = ok_hat = 0
+    for i in range(6000):
+        y = int(rng.random() < 0.5)
+        c = 3.0 * y if i < 3000 else 3.0 * (1 - y)
+        x = {"tau": rng.normal(2.0 + c, 0.5), "qd": rng.normal(0.0, 1.0)}
+        if i >= 3000:
+            ok_ht += ht.predict_one(x) == y
+            ok_hat += hat.predict_one(x) == y
+        ht.learn_one(x, y)
+        hat.learn_one(x, y)
+    assert ok_ht / 3000 < 0.2
+    assert ok_hat / 3000 > 0.8
+    assert hat.n_swaps_ >= 1

@@ -79,11 +79,12 @@ class _ANode(_Node):
 
     __slots__ = (
         "alt_",
-        "alt_err_",
         "alt_n_",
+        "alt_wrong_",
         "detector_",
         "err_",
         "err_n_",
+        "main_wrong_",
     )
 
     def __init__(self, depth: int, detector: Any) -> None:
@@ -92,8 +93,9 @@ class _ANode(_Node):
         self.err_ = 0.0
         self.err_n_ = 0
         self.alt_: _ANode | None = None
-        self.alt_err_ = 0.5
         self.alt_n_ = 0
+        self.alt_wrong_ = 0
+        self.main_wrong_ = 0
 
 
 class HoeffdingAdaptiveTreeClassifier(HoeffdingTreeClassifier):
@@ -158,45 +160,22 @@ class HoeffdingAdaptiveTreeClassifier(HoeffdingTreeClassifier):
         a = self.error_alpha
         node.err_ = (1.0 - a) * node.err_ + a * r
 
-    def _update_alt_error(self, node: _ANode, correct: bool) -> None:
-        node.alt_n_ += 1
-        r = 0.0 if correct else 1.0
-        a = self.error_alpha
-        node.alt_err_ = (1.0 - a) * node.alt_err_ + a * r
+    def _alt_bound(self, n: int) -> float:
+        """Hoeffding bound on the difference of two error rates over ``n``."""
+        return math.sqrt(math.log(2.0 / self.delta_alt) / n)
 
     def _alt_more_accurate(self, node: _ANode) -> bool:
-        if node.alt_ is None:
+        """Swap test on the errors counted since the alternate started."""
+        n = node.alt_n_
+        if node.alt_ is None or n < self.kappa_alt:
             return False
-        if node.err_n_ < 1 or node.alt_n_ < self.kappa_alt:
-            return False
-        e = node.err_
-        e_alt = node.alt_err_
-        r = math.sqrt(
-            2.0
-            * e
-            * (1.0 - e_alt)
-            * (node.err_n_ + node.alt_n_)
-            * math.log(2.0 / self.delta_alt)
-            / (node.err_n_ * node.alt_n_)
-        )
-        return (e - e_alt) > r
+        return (node.main_wrong_ - node.alt_wrong_) / n > self._alt_bound(n)
 
     def _alt_worse(self, node: _ANode) -> bool:
-        if node.alt_ is None:
+        n = node.alt_n_
+        if node.alt_ is None or n < self.kappa_alt:
             return False
-        if node.err_n_ < 1 or node.alt_n_ < 1:
-            return False
-        e = node.err_
-        e_alt = node.alt_err_
-        r = math.sqrt(
-            2.0
-            * e
-            * (1.0 - e_alt)
-            * (node.err_n_ + node.alt_n_)
-            * math.log(2.0 / self.delta_alt)
-            / (node.err_n_ * node.alt_n_)
-        )
-        return (e_alt - e) > r
+        return (node.alt_wrong_ - node.main_wrong_) / n > self._alt_bound(n)
 
     def _descend(self, node: _ANode, x: dict) -> _ANode | None:
         f = node.split_feature_
@@ -239,8 +218,9 @@ class HoeffdingAdaptiveTreeClassifier(HoeffdingTreeClassifier):
         main.err_n_ = alt.err_n_
         main.detector_ = _clone_detector(self.drift_detector)
         main.alt_ = None
-        main.alt_err_ = 0.5
         main.alt_n_ = 0
+        main.alt_wrong_ = 0
+        main.main_wrong_ = 0
 
     def _grow_alt_on(self, node: _ANode, d: dict, y: Any) -> None:
         if node.alt_ is None:
@@ -251,16 +231,17 @@ class HoeffdingAdaptiveTreeClassifier(HoeffdingTreeClassifier):
         if leaf.is_leaf:
             self._try_split(leaf)
         pred = self._predict_proba_leaf(leaf, d)
-        if pred:
-            chosen = max(pred.items(), key=lambda kv: kv[1])[0]
-            self._update_alt_error(node, chosen == y)
+        chosen = max(pred.items(), key=lambda kv: kv[1])[0] if pred else None
+        node.alt_n_ += 1
+        node.alt_wrong_ += 0 if chosen == y else 1
         if self._alt_more_accurate(node):
             self._copy_alt_into(node, node.alt_)
             self.n_swaps_ += 1
         elif self._alt_worse(node):
             node.alt_ = None
-            node.alt_err_ = 0.5
             node.alt_n_ = 0
+            node.alt_wrong_ = 0
+            node.main_wrong_ = 0
 
     def learn_one(
         self, x: Any, y: Any, t: float | None = None
@@ -306,10 +287,12 @@ class HoeffdingAdaptiveTreeClassifier(HoeffdingTreeClassifier):
                     n.detector_ = _clone_detector(self.drift_detector)
                     if n.alt_ is None:
                         n.alt_ = _ANode(n.depth, self.drift_detector)
-                        n.alt_err_ = 0.5
                         n.alt_n_ = 0
+                        n.alt_wrong_ = 0
+                        n.main_wrong_ = 0
                         self.n_alt_starts_ += 1
         for n in path:
-            if isinstance(n, _ANode):
+            if isinstance(n, _ANode) and n.alt_ is not None:
+                n.main_wrong_ += 0 if correct else 1
                 self._grow_alt_on(n, d, y)
         return self
