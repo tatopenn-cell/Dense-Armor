@@ -202,6 +202,10 @@ A camera, a folder of images or an array of frames becomes a stream of timestamp
 
 `PatchFeatures` cuts each frame into patches and `PatchMemory` keeps the patches of normal images, online (bounded reservoir) or reduced once to a coreset; an image is scored by its most unusual patch, and the per-patch distances show where the anomaly is (PatchCore with descriptors computed by the library). Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/vision/patches/).
 
+## `$ stream --online`
+
+CSV logs, ROS bags and arrays become one stream of timestamped samples, sensors at different rates are merged in time order, and test streams come with changes at a known time: concept drift after Ksieniewicz and Zyblewski, and a robot arm from its URDF with a friction or payload fault. Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/stream/).
+
 ## `$ preprocessing --online`
 
 Online scalers per feature and per joint, joint velocity, acceleration, jerk and power on real timestamps, text features (tokens, TF-IDF, signed hashing), feature selection and queue resampling for rare events, one sample at a time. Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/preprocessing/).

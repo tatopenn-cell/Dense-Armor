@@ -75,6 +75,8 @@ nav:
         - Roles (estimator foundation): api/roles.md
         - Robot layer (signals, real time, safety): api/robot_roles.md
   - Signals:
+    - Streams and datasets:
+        - stream/index.md
     - Statistics:
         - stats/index.md
         - Moments: stats/moments.md
