@@ -208,6 +208,10 @@ Online scalers per feature and per joint, joint velocity, acceleration, jerk and
 
 Online k-means (farthest-first start, optional half-life for moving groups), DenStream micro-clusters with a fading window and outliers kept apart, and a visual vocabulary over image patches, one sample at a time. Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/cluster/).
 
+## `$ tree --online`
+
+Incremental decision trees that grow one sample at a time and explain their decisions (Hoeffding, Hoeffding Anytime, Hoeffding Adaptive with a drift detector on each node), stochastic gradient trees, and online Mondrian forests whose predictive variance grows away from the training data. Full documentation on the [site](https://tatopenn-cell.github.io/Dense-Armor/tree/).
+
 ## `$ calibration --platt`
 
 `OnlinePlattScaling` (`dense_armor.utility.learn.calibration`, `pip install dense-armor[river]`) wraps any river classifier and recalibrates its probabilities one sample at a time, following Algorithm 1 of Gupta and Ramdas (ICML 2023, arXiv:2305.00070):
