@@ -83,10 +83,10 @@ evaluate.progressive_val_score(dataset, OnlinePlattScaling(tree.HoeffdingTreeCla
 
 ```
 LogLoss: 0.4535476064322544
-LogLoss: 0.35021471255578124
+LogLoss: 0.34989900648729855
 ```
 
-The calibrated tree's log-loss on Phishing drops from 0.4535 to 0.3502. The wrapper
+The calibrated tree's log-loss on Phishing drops from 0.4535 to 0.3499. The wrapper
 passes river's own `check_estimator` and runs at about 32,000 samples per second on top
 of the base model.
 
@@ -114,5 +114,9 @@ on seven streams is in Dense-Evolution-Discovery,
 
 This is the same Online Newton Step as the paper's Algorithm 1 with the same
 hyperparameters; no tuning was done on Phishing or on any of the other streams. The
-0.3502 is what the paper's algorithm gives on this dataset, not a number that was
+0.3499 is what the paper's algorithm gives on this dataset, not a number that was
 fished for.
+
+While the base model has no opinion yet (a tree returns an empty probability dict before it has
+seen a class), the calibration is not updated: the sample goes to the base model only, so
+`(a, b)` is never fitted on a probability the base model did not give.

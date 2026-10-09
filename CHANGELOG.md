@@ -4,6 +4,8 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+- `OnlinePlattScaling`: while the base classifier has no opinion yet (empty `predict_proba_one`), `learn_one` trains the base only and leaves the calibration untouched; a base that knows only the negative class gives `p = 1 - p(False)` instead of 0.5. Phishing log-loss of the docstring example: 0.3499.
+
 ## [1.1.24] - 2026-10-08
 
 - Patch-level anomaly detection in the vision package: `PatchFeatures` (oriented-gradient histogram, mean and contrast per patch, averaged over a 3×3 neighbourhood) and `PatchMemory` (bank of normal patches, image score = largest nearest-neighbour distance, PatchCore eq. 6), online with a bounded reservoir or reduced once with the greedy coreset of eq. 5 (Roth 2021); `benchmarks/vision_rad_patches.py`: mean image-level AUROC 0.748 on RAD at 320×240 (baseline 0.497).
