@@ -18,18 +18,6 @@ Every node on the path of a sample updates its own sufficient
 statistics in ``learn_one`` (Algorithm 3.1, the ``foreach node in
 path`` loop).
 
-Args:
-    grace_period: minimum samples at a node before a split attempt and
-        the interval between re-evaluations of an internal node.
-    delta: one minus the confidence of the Hoeffding bound.
-    tau: tie threshold.
-    max_depth: maximum depth, or ``None``.
-    max_nodes: maximum number of nodes. Default ``10000``.
-    leaf: ``"nb"`` or ``"majority"``.
-
-Raises:
-    ValueError: on a bad ``leaf`` or a non-positive parameter.
-
 Examples:
     >>> import numpy as np
     >>> from dense_armor.utility.tree.efdt import HoeffdingAnytimeTreeClassifier
@@ -69,6 +57,18 @@ class HoeffdingAnytimeTreeClassifier(HoeffdingTreeClassifier):
     ``budget_s`` = 1e-3 s: p99 of ``learn_one`` measured at 2.8e-5 s on a
     2000-sample, two-feature stream on a desktop CPU (default
     parameters); the budget leaves room for slower machines.
+
+    Args:
+        grace_period: minimum samples at a node before a split attempt and
+            the interval between re-evaluations of an internal node.
+        delta: one minus the confidence of the Hoeffding bound.
+        tau: tie threshold.
+        max_depth: maximum depth, or ``None``.
+        max_nodes: maximum number of nodes. Default ``10000``.
+        leaf: ``"nb"`` or ``"majority"``.
+
+    Raises:
+        ValueError: on a bad ``leaf`` or a non-positive parameter.
     """
 
     budget_s = 1e-3

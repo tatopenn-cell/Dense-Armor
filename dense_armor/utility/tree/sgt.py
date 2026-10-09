@@ -16,24 +16,6 @@ logistic log loss with a single logistic output; the first derivative
 is ``g = p - y`` and the second is ``h = p (1 - p)`` where
 ``p = sigmoid(f(x))``.
 
-Args:
-    delta: one minus the confidence of the t-test that decides a
-        split.
-    min_samples_split: minimum number of samples at a leaf before a
-        split is attempted.
-    grace_period: interval in samples between two split attempts on
-        the same leaf.
-    n_bins: number of equal-width bins per numeric feature.
-    bin_samples: number of initial samples used to estimate the range
-        of each feature.
-    lambda_: L2 penalty on the leaf values.
-    gamma: cost per new node.
-    max_depth: maximum depth, or ``None``.
-    max_nodes: maximum number of nodes. Default ``10000``.
-
-Raises:
-    ValueError: on a non-positive parameter.
-
 Examples:
     >>> from dense_armor.utility.tree.sgt import SGTRegressor
     >>> s = SGTRegressor(min_samples_split=20, n_bins=16, bin_samples=50)

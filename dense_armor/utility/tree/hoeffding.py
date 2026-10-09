@@ -21,18 +21,6 @@ class and per feature inside each leaf. A candidate threshold is the
 midpoint between two consecutive class means; the fraction of each
 class on each side is estimated with the normal CDF.
 
-Args:
-    grace_period: minimum number of samples at a leaf before a split
-        is attempted.
-    delta: one minus the confidence of the Hoeffding bound.
-    tau: tie threshold.
-    max_depth: maximum depth, or ``None``.
-    max_nodes: maximum number of nodes. Default ``10000``.
-    leaf: ``"nb"`` or ``"majority"``.
-
-Raises:
-    ValueError: on a bad ``leaf`` or a non-positive parameter.
-
 Examples:
     >>> import numpy as np
     >>> from dense_armor.utility.tree.hoeffding import HoeffdingTreeClassifier
@@ -143,6 +131,18 @@ class HoeffdingTreeClassifier(Classifier):
     ``budget_s`` = 1e-3 s: p99 of ``learn_one`` measured at 2.3e-5 s on a
     2000-sample, two-feature stream on a desktop CPU (default
     parameters); the budget leaves room for slower machines.
+
+    Args:
+        grace_period: minimum number of samples at a leaf before a split
+            is attempted.
+        delta: one minus the confidence of the Hoeffding bound.
+        tau: tie threshold.
+        max_depth: maximum depth, or ``None``.
+        max_nodes: maximum number of nodes. Default ``10000``.
+        leaf: ``"nb"`` or ``"majority"``.
+
+    Raises:
+        ValueError: on a bad ``leaf`` or a non-positive parameter.
     """
 
     budget_s = 1e-3

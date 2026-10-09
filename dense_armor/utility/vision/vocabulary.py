@@ -79,7 +79,7 @@ class BagOfVisualWords(Transformer):
         ValueError: if any parameter is not positive.
     """
 
-    budget_s = 1e-3
+    budget_s = 5e-3
     memory_class = "O(window)"
 
     def __init__(
