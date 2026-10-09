@@ -4,12 +4,18 @@ The test writes a small ROS 1 bag with the rosbags writer and reads it
 back with the library reader; skipped if rosbags is not installed.
 """
 
+import sys
 from pathlib import Path
 
 import numpy as np
 import pytest
 
 from dense_armor.utility.stream import iter_rosbag
+
+ROS1_WRITER_WINDOWS = pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="rosbags builds ROS 1 message definitions with PosixPath, unavailable on Windows",
+)
 
 
 def _write_bag(path: Path) -> None:
@@ -47,6 +53,7 @@ def _write_bag(path: Path) -> None:
             w.write(conn, i * 1_000_000_000, _serialize(msg))
 
 
+@ROS1_WRITER_WINDOWS
 def test_iter_rosbag_joint_state(tmp_path):
     pytest.importorskip("rosbags")
     path = tmp_path / "test.bag"
@@ -63,6 +70,7 @@ def test_iter_rosbag_joint_state(tmp_path):
     assert sig2.t == 2.0
 
 
+@ROS1_WRITER_WINDOWS
 def test_iter_rosbag_topic_filter(tmp_path):
     pytest.importorskip("rosbags")
     path = tmp_path / "test.bag"
