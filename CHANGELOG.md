@@ -4,6 +4,8 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+- Incremental trees and online forests (`dense_armor.utility.tree`): `HoeffdingTreeClassifier` (Hoeffding bound, `explain_one`), `HoeffdingAnytimeTreeClassifier` (statistics on every node, splits revisited and replaced or collapsed; Manapragada 2018), `HoeffdingAdaptiveTreeClassifier` (a drift detector on each node, alternate subtrees), `SGTRegressor` / `SGTClassifier` (stochastic gradient trees with the t-test of Gouk 2019, eq. 16 and 18), `MondrianForestRegressor` / `MondrianForestClassifier` (online Mondrian trees, Algorithms 2 and 4 of Lakshminarayanan 2014, predictive mixture of eq. 3 of the 2016 paper, variance growing away from the data).
+
 ## [1.1.24] - 2026-10-08
 
 - Patch-level anomaly detection in the vision package: `PatchFeatures` (oriented-gradient histogram, mean and contrast per patch, averaged over a 3×3 neighbourhood) and `PatchMemory` (bank of normal patches, image score = largest nearest-neighbour distance, PatchCore eq. 6), online with a bounded reservoir or reduced once with the greedy coreset of eq. 5 (Roth 2021); `benchmarks/vision_rad_patches.py`: mean image-level AUROC 0.748 on RAD at 320×240 (baseline 0.497).
