@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/banner.jpg" alt="Dense Armor -- shield for AI and robot I/O" width="900">
+  <img src="docs/assets/banner.jpg" alt="Dense-Armor — Robot-AI Online Shielding &amp; Learning" width="900">
 </p>
 
 <p align="center">
@@ -17,7 +17,9 @@
   <a href="https://tatopenn-cell.github.io/Dense-Armor/"><img alt="docs" src="https://img.shields.io/badge/docs-tatopenn--cell.github.io-00e5ff?style=flat-square"></a>
 </p>
 
-<p align="center"><strong>Online learning, runtime shielding and robot control in one JAX library: estimators that learn one sample at a time, with uncertainty, drift and anomaly detection, adaptive damping for AI signals and verified safety for robotic commands.</strong></p>
+<h3 align="center">Robot-AI Online Shielding &amp; Learning</h3>
+
+<p align="center"><strong>A JAX library where every estimator learns one sample at a time from robot and AI data: streams from CSV logs and ROS bags, preprocessing, incremental trees and online forests, clustering, native vision, uncertainty, drift and anomaly detection, a shield that keeps faulty samples out of what the models learn, and verified safety for robot commands.</strong></p>
 
 <p align="center">📖 <a href="https://tatopenn-cell.github.io/Dense-Armor/"><strong>Full documentation, API reference, quick guide →</strong></a></p>
 
