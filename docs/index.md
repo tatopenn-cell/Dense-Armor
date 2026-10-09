@@ -1,6 +1,6 @@
 # Dense-Armor
 
-**The wearable AI-safety shield: runtime anomaly damping for any AI input/output.**
+**Robot-AI Online Shielding & Learning: estimators that learn one sample at a time from robot and AI data, with a shield that keeps faulty samples out of what they learn.**
 
 A sensor that drops readings, or fires an absurd value, silently breaks any pipeline
 that consumes it. Dense-Armor sits between the raw data and the model: it purifies the

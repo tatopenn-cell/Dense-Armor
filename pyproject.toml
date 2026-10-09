@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "dense-armor"
 version = "1.1.24"
-description = "Online learning and runtime shielding for robots and AI signals: streaming estimators, statistics, metrics, drift and anomaly detection, robot control - NaN-safe, JAX"
+description = "Robot-AI Online Shielding & Learning: JAX estimators that learn one sample at a time, with streams, trees and forests, clustering, vision, uncertainty, drift and anomaly detection, protected learning and robot command safety"
 readme = "README.md"
 license = "BUSL-1.1"
 license-files = ["LICENSE.md"]
