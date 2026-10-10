@@ -93,6 +93,11 @@ nav:
         - Streaming: anomaly/streaming.md
         - Robust filters: anomaly/robust_filters.md
         - Curvature: anomaly/curvature.md
+        - Half-Space Trees: anomaly/hst.md
+        - LODA: anomaly/loda.md
+        - One-Class SGD (SONAR): anomaly/ocsvm.md
+        - Online Isolation Forest: anomaly/oiforest.md
+        - Online Robust Mahalanobis: anomaly/mahalanobis.md
     - Drift detection:
         - drift/index.md
         - CUSUM and ARL theory: drift/cusum.md
