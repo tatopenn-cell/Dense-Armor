@@ -217,7 +217,17 @@ def test_pipeline_score_rises_after_change():
     pipe = (
         FrameFeatures()
         | IncrementalPCA(k=4)
-        | OnlineRobustMahalanobis(feature_keys=[f"pc{j}" for j in range(4)])
+        # n_init=50 covers the whole movement of the square in the
+        # first 80 frames: the MCM estimate is wide enough that the
+        # moving square does not look anomalous, and the change
+        # (a translation with much smaller variance) is the
+        # anomaly. The paper's default n_init=100 would leave the
+        # detector cold for the whole stream (Guillot et al. 2025,
+        # section 3.2.1).
+        | OnlineRobustMahalanobis(
+            feature_keys=[f"pc{j}" for j in range(4)],
+            n_init=50,
+        )
     )
     scores = []
     for fr in stream:
@@ -262,15 +272,22 @@ def test_random_projection_matches_jl_bound():
     X = rng.standard_normal((n, d))
     rp = RandomProjection(k=k, seed=0)
     keys = [f"f{i:03d}" for i in range(d)]
-    Y = np.array([
-        [rp.transform_one({keys[i]: float(X[j, i]) for i in range(d)})[f"p{t}"]
-         for t in range(k)]
-        for j in range(n)
-    ])
-    ratios = np.array([
-        np.sum((Y[i] - Y[j]) ** 2) / np.sum((X[i] - X[j]) ** 2)
-        for i in range(n) for j in range(i + 1, n)
-    ])
+    Y = np.array(
+        [
+            [
+                rp.transform_one({keys[i]: float(X[j, i]) for i in range(d)})[f"p{t}"]
+                for t in range(k)
+            ]
+            for j in range(n)
+        ]
+    )
+    ratios = np.array(
+        [
+            np.sum((Y[i] - Y[j]) ** 2) / np.sum((X[i] - X[j]) ** 2)
+            for i in range(n)
+            for j in range(i + 1, n)
+        ]
+    )
     delta = 2.0 * np.exp(-(eps**2 - eps**3) * k / 4.0)
     outside = float(np.mean((ratios < 1 - eps) | (ratios > 1 + eps)))
     assert outside <= delta
@@ -279,8 +296,10 @@ def test_random_projection_matches_jl_bound():
 
 def test_pipeline_operator_trains_every_step():
     frames = _square_moving(n=40)
-    pipe = FrameFeatures() | IncrementalPCA(k=4) | OnlineRobustMahalanobis(
-        feature_keys=[f"pc{j}" for j in range(4)]
+    pipe = (
+        FrameFeatures()
+        | IncrementalPCA(k=4)
+        | OnlineRobustMahalanobis(feature_keys=[f"pc{j}" for j in range(4)])
     )
     for frame in ArrayStream(frames, fps=10.0):
         pipe.learn_one(frame, t=frame.t)
@@ -406,7 +425,9 @@ def test_vision_small_edge_branches(monkeypatch):
     assert fmod._to_gray(odd) is odd
     tiny = np.zeros((3, 3), dtype=np.float32)
     assert fmod._downsample(tiny) is tiny
-    out = FrameFeatures(gray=False).transform_one(np.full((8, 8), np.nan, dtype=np.float32))
+    out = FrameFeatures(gray=False).transform_one(
+        np.full((8, 8), np.nan, dtype=np.float32)
+    )
     assert out["mean_R"] == 0.0 and out["contrast_B"] == 0.0
 
     def boom(*a, **k):
