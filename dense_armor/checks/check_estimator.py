@@ -4,6 +4,8 @@ import json
 import pickle
 from typing import Any
 
+import numpy as np
+
 from dense_armor.roles import (
     AnomalyDetector,
     Root,
@@ -149,10 +151,6 @@ def check_predict_before_learning(est: Root) -> None:
         assert fresh.predict_proba_one(x) == {}
 
 
-def check_shuffle_features(est: Root) -> None:
-    return
-
-
 def check_classifier_proba_sum(est: Root) -> None:
     if not isinstance(est, Classifier):
         return
@@ -175,6 +173,51 @@ def check_classifier_proba_sum(est: Root) -> None:
 def check_classifier_multiclass_bool(est: Root) -> None:
     if isinstance(est, Classifier):
         assert isinstance(est._multiclass, bool)
+
+
+def check_roc_auc(est: Root) -> None:
+    """An AnomalyDetector must rank obvious anomalies above inliers.
+
+    The detector is trained on a small synthetic inlier stream, then
+    scored on a mixture of inliers and anomalies. ROC-AUC must be
+    above 0.5 (better than chance); a value at or below 0.5 means the
+    score anti-correlates with the truth, which is never correct for a
+    detector whose contract is "higher = more anomalous". The check is
+    skipped when scikit-learn is not installed.
+    """
+    if not isinstance(est, AnomalyDetector):
+        return
+    try:
+        from sklearn.metrics import roc_auc_score
+    except ImportError:
+        return
+
+    fk = getattr(est, "feature_keys", None)
+    keys = ["f0", "f1", "f2"] if fk is None else list(fk)
+    d = len(keys)
+
+    rng = np.random.default_rng(0)
+    for _ in range(200):
+        x = {k: float(v) for k, v in zip(keys, rng.normal(0.0, 1.0, d))}
+        est.learn_one(x)
+
+    X = []
+    y = []
+    for i in range(60):
+        if i % 2 == 0:
+            vals = rng.normal(0.0, 1.0, d)
+            y.append(0)
+        else:
+            vals = rng.normal(8.0, 1.0, d)
+            y.append(1)
+        X.append({k: float(v) for k, v in zip(keys, vals)})
+
+    scores = [float(est.score_one(x)) for x in X]
+    auc = roc_auc_score(y, scores)
+    assert auc > 0.5, (
+        f"{type(est).__name__} ROC-AUC {auc:.3f} <= 0.5 on an obvious "
+        f"inlier/anomaly split"
+    )
 
 
 def check_dt_accepted(est: Root) -> None:
@@ -223,9 +266,9 @@ def check_estimator(est: Root) -> None:
         check_state_dict_roundtrip,
         check_learn_one_does_not_modify_x,
         check_predict_before_learning,
-        check_shuffle_features,
         check_classifier_proba_sum,
         check_classifier_multiclass_bool,
+        check_roc_auc,
         check_dt_accepted,
         check_non_increasing_t_raises,
         check_step_is_pure,
