@@ -7,9 +7,8 @@ needs: typed readings, a latency budget, an uncertainty around each
 prediction, a health state, physical units, and a schema an LLM agent
 can call.
 
-The classes live in `dense_armor.roles`, on top of `dense_armor.roles`.
-`dense_armor.roles.Root` is `dense_armor.roles.Base`; the alias is what
-robot code imports. Nothing under `dense_armor.roles` was modified.
+The classes live in `dense_armor.roles`. Nothing else in the package
+was modified to make them available.
 
 ## What this layer gives you
 
@@ -171,7 +170,7 @@ seen so far. `predict_one(x, return_estimate=True)` returns an
 
 Probabilities are calibrated online with `OnlinePlattScaling`, the
 method of Gupta & Ramdas (2023), re-exported here from
-`dense_armor.learn.calibration`.
+`dense_armor.utility.learn.calibration`.
 
 ## 5. Safety as a role
 
@@ -340,27 +339,24 @@ feed typed readings without a separate protocol.
   `AdaptiveConformalRegressor.learn_one`.
 - Gupta, C., Ramdas, A. (2023). *Online Platt scaling with
   calibeating.* ICML. arXiv:2305.00070. The calibration method
-  re-exported from `dense_armor.learn.calibration`.
+  re-exported from `dense_armor.utility.learn.calibration`.
 - Page, E. S. (1954). *Continuous inspection schemes.* Biometrika 41,
-  100–114. The residual-based drift check in `HealthMonitor`.
+  100-114. The residual-based drift check in `HealthMonitor`.
 - Fitzpatrick, R. (2008). *Maxwell's equations and the principles of
   electromagnetism.* Jones & Bartlett. The unit vocabulary.
 
 ### Where the classes live
 
 ```
-dense_armor/roles/signal.py       Signal
-dense_armor/roles/realtime.py     ProfileResult, profile, RealtimePipeline, PureEW
-dense_armor/roles/uncertainty.py  Estimate, AdaptiveConformalRegressor, OnlinePlattScaling
-dense_armor/roles/safety.py       Health, HealthMonitor, SafeEstimator, CHECKPOINT_VERSION
-dense_armor/roles/physics.py      UnitSpec, UnitCheckedPipeline, JointLimits, PhysicalLimitsGuard, limits_from_urdf
-dense_armor/roles/agents.py       schema, call_json
-dense_armor/checks/robot.py       robot-native checks
+dense_armor/roles/signal.py            Signal
+dense_armor/roles/realtime.py          ProfileResult, profile, RealtimePipeline, PureEW
+dense_armor/roles/uncertainty.py       Estimate, AdaptiveConformalRegressor, OnlinePlattScaling
+dense_armor/roles/safety.py            Health, HealthMonitor, SafeEstimator, CHECKPOINT_VERSION
+dense_armor/roles/physics.py           UnitSpec, UnitCheckedPipeline, JointLimits, PhysicalLimitsGuard, limits_from_urdf
+dense_armor/roles/agents.py            schema, call_json
+dense_armor/roles/anomaly_detector.py  AnomalyDetector, AnomalyGate, Protected
+dense_armor/checks/robot.py            robot-native checks
 ```
-
-`dense_armor.roles.Root` is `dense_armor.roles.Base`. `AnomalyGate` is
-`dense_armor.roles.AnomalyFilter`. `ModelWrapper` is
-`dense_armor.roles.Wrapper`. The robot layer is a layer, not a fork.
 
 ### Tests and numbers
 
@@ -370,8 +366,8 @@ All numbers on this page were produced by running the code:
 |---|---|
 | `test/roles/` (signal, realtime, uncertainty, safety, physics, agents) | 65 passed |
 | `test/stats/` (Task 02 statistics) | 111 passed |
-| `test/test_online_classifiers.py` | 8 passed |
-| `test/test_calibration.py` | 10 passed |
+| `test/learn/test_online_classifiers.py` | 8 passed |
+| `test/learn/test_calibration.py` | 10 passed |
 | ruff check on `dense_armor/checks/`, `dense_armor/roles/` | clean |
 | mypy on the same | clean |
 
@@ -391,69 +387,3 @@ checks:
 
 Each check auto-activates only when the feature it tests is present.
 A pure statistics estimator passes untouched.
-''', encoding="utf-8")
-print(f"wrote {DOC} ({DOC.stat().st_size} bytes)")
-
-# ── mkdocs nav ──────────────────────────────────────────────────────────
-mk = ROOT / "mkdocs.yml"
-if mk.is_file():
-    src = mk.read_text(encoding="utf-8")
-    if "api/robot_roles.md" not in src and "nav:\n" in src:
-        src = src.replace(
-            "nav:\n",
-            "nav:\n"
-            "  - Home: index.md\n"
-            "  - API:\n"
-            "      - Base: api/base.md\n"
-            "      - Robot roles: api/robot_roles.md\n",
-            1,
-        )
-        mk.write_text(src, encoding="utf-8")
-        print("mkdocs.yml: robot_roles.md added to nav")
-    else:
-        print("mkdocs.yml: already updated or missing nav")
-
-# ── build strict ────────────────────────────────────────────────────────
-print()
-print("=" * 70)
-print("mkdocs build --strict")
-print("=" * 70)
-subprocess.run([sys.executable, "-m", "pip", "install", "-q",
-                "mkdocs", "mkdocs-material",
-                "mkdocstrings[python]", "mkdocs-include-markdown-plugin"],
-               check=True)
-r = subprocess.run(
-    [sys.executable, "-m", "mkdocs", "build", "--strict", "-d", "/tmp/mkdocs_site"],
-    cwd=str(ROOT), capture_output=True, text=True,
-)
-print("returncode:", r.returncode)
-print(r.stdout.strip() or "(no stdout)")
-print(r.stderr.strip() or "(no stderr)")
-
-# ── summary ─────────────────────────────────────────────────────────────
-print()
-print("=" * 70)
-print("summary: files under dense_armor/roles and dense_armor/checks")
-print("=" * 70)
-for sub in ("dense_armor/roles", "dense_armor/checks"):
-    d = ROOT / sub
-    print(f"  {sub}/:")
-    for f in sorted(d.glob("*.py")):
-        print(f"    {f.name} ({len(f.read_text().splitlines())} lines)")
-print(f"  docs/api/robot_roles.md ({len(DOC.read_text().splitlines())} lines)")
-```
-
-### Cosa contiene la pagina
-
-Struttura identica a `docs/stats/*.md`:
-
-1. **What this layer gives you** — tabella need → feature → modulo.
-2. **Signals, not dicts** — `Signal`, unità, `NaN` tracciato.
-3. **The real-time contract** — `budget_s`, `memory_class`, `RealtimePipeline`, `profile`.
-4. **A pure step for the whole stream** — `PureEW.scan` con `jax.lax.scan`.
-5. **Every output with its variance** — `Estimate`, `AdaptiveConformalRegressor` con eq. 2 di Gibbs & Candès, re-export di `OnlinePlattScaling`.
-6. **Safety as a role** — `Health`, `HealthMonitor`, `SafeEstimator`, guard, checkpoint.
-7. **Physical units and robot limits** — `UnitSpec`, `UnitCheckedPipeline`, `limits_from_urdf`, `PhysicalLimitsGuard`.
-8. **Tools for an LLM agent** — `schema`, `call_json`.
-9. **Details** — riferimenti (4 paper), file mappa, numeri dei test reali (65 + 111 + 8 + 10), check_estimator esteso.
-
