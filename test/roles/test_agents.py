@@ -2,7 +2,6 @@
 import doctest
 import json
 
-import jax.numpy as jnp
 import pytest
 
 import dense_armor.roles.agents as agents_mod
@@ -19,9 +18,11 @@ class _TypedReg(Regressor):
 
     def __init__(self) -> None:
         self._last = 0.0
+        self.last_x = None
 
     def learn_one(self, x, y, t=None):
         self._last = float(y)
+        self.last_x = x
         return self
 
     def predict_one(self, x, t=None, return_std=False):
@@ -90,6 +91,10 @@ def test_call_json_with_signal_block():
     out = call_json(est, payload)
     assert json.loads(out)["ok"] is True
     assert est._last == 0.5
+    x = est.last_x
+    assert x is not None
+    assert x["q0"] == pytest.approx(0.1, abs=1e-6)
+    assert x["q1"] == pytest.approx(0.2, abs=1e-6)
 
 
 def test_call_json_unknown_method():
@@ -102,7 +107,9 @@ def test_call_json_unknown_method():
 
 def test_call_json_missing_method():
     out = call_json(RunningMoments(), {"x": {}})
-    assert json.loads(out)["ok"] is False
+    parsed = json.loads(out)
+    assert parsed["ok"] is False
+    assert "method" in parsed["error"].lower()
 
 
 def test_call_json_invalid_json_string():
@@ -137,3 +144,4 @@ def test_call_json_result_is_jsonable_for_transform():
 
 def test_doctests():
     assert doctest.testmod(agents_mod).failed == 0
+
