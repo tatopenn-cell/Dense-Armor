@@ -9,6 +9,8 @@ Start from what you have in front of you:
 - You have a **1D series** (a loss curve, one sensor channel, a token stream) → `Armatura`.
 - You have a **model and a corrupted input** → `Orca`.
 - You need **one score per sample** → the anomaly detectors.
+- You have **several channels that interact** (a robot joint's torque and position, a
+  sensor bank) → the **multivariate detectors**.
 - You need **one alarm for a slow drift** → CUSUM.
 - You need **a safe command for a real robot** → the control modules.
 - You need **the physical model of a robot** → the dynamics modules.
@@ -38,6 +40,27 @@ Start from what you have in front of you:
   Arbiter's instantaneous threshold is structurally blind to, plus a closed-form
   pre-flight estimate (`detectability_report`) of expected detection / false-alarm
   latency.
+
+## Multivariate detectors
+
+Five detectors for when a fault touches several channels at once. Each has a different
+bias — pick by the shape of the fault and by the cost you can pay per sample — and all
+five go through `AnomalyGate` and `Protected` unchanged.
+
+| Detector | Bias | Cost |
+|---|---|---|
+| `HalfSpaceTrees` (`anomaly.hst`) | sparse regions of the space | O(1) |
+| `OnlineIsolationForest` (`anomaly.oiforest`) | depth to isolate a point | O(window) |
+| `LODA` (`anomaly.loda`) | rare bins in random 1D projections | O(1) |
+| `OneClassSGD` (`anomaly.ocsvm`) | distance from a learned kernel boundary (SONAR) | O(1) |
+| `OnlineRobustMahalanobis` (`anomaly.mahalanobis`) | distance from a robust median under the MCM | O(1) |
+
+On the streams of the repository (SyntheticArm payload fault and one sudden drift),
+`OnlineRobustMahalanobis` and `LODA` are the strongest, `HalfSpaceTrees` follows, and
+`OneClassSGD` needs more samples than a few hundred healthy points to converge. The full
+table is in the anomaly benchmark. Narrative pages come with the docs task; for now the
+classes are reachable from the API reference and from the source modules under
+`dense_armor.utility.anomaly`.
 
 ## Control
 
@@ -81,7 +104,7 @@ The same pages, grouped the way the package is organised (`dense_armor.<section>
 | Section | What it is for | Pages |
 |---|---|---|
 | [Shields](../shields/index.md) | one object that cleans a whole series or a whole model | Armatura, Orca, their engines |
-| [Anomaly detection](../anomaly/index.md) | a score per sample: high means it does not look like the recent past | Streaming, Robust filters, Curvature |
+| [Anomaly detection](../anomaly/index.md) | a score per sample: high means it does not look like the recent past | Streaming, Robust filters, Curvature; multivariate: HalfSpaceTrees, OnlineIsolationForest, LODA, OneClassSGD, OnlineRobustMahalanobis |
 | [Drift detection](../drift/index.md) | one alarm when a slow, sustained change is real | CUSUM and ARL theory |
 | [Protection](../protect/index.md) | what to do with a wrong-looking sample: pass, repair, or route | Arbiter (batch and streaming) |
 | [Online learning](../learn/index.md) | models that learn one sample at a time while the robot runs | Calibration, Metric learning, Classifiers, Dynamics |
