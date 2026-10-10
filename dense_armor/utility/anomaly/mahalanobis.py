@@ -187,5 +187,4 @@ class OnlineRobustMahalanobis(AnomalyDetector):
     def is_outlier(self, x) -> bool:
         return self.score_one(x) > self.threshold
 
-    def _unit_test_skips(self):
-        return {"check_roc_auc"}
+
