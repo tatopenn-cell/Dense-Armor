@@ -82,6 +82,14 @@ def check_p99_within_budget(est: Any) -> None:
     budget = getattr(est, "budget_s", None)
     if budget is None:
         return
+    # The skill sets a hard floor of 1e-3 s on `budget_s`: a smaller
+    # declared budget is a contract violation, not a measurement. Reject
+    # it before measuring, so the check is deterministic.
+    if budget < 1e-3:
+        raise AssertionError(
+            f"declared budget {budget:.3e} s exceeds the 1e-3 s "
+            f"lower bound"
+        )
     learn = getattr(est, "learn_one", None)
     if learn is None:
         return
