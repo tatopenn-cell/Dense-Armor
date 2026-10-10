@@ -1,31 +1,24 @@
 # -*- coding: utf-8 -*-
-"""Unit tests for dense_armor/utility/streaming_mahalanobis.py.
+"""Unit tests for dense_armor/utility/anomaly/mahalanobis.py.
 
 The online robust Mahalanobis detector (minimal version, no Robbins-Monro
 reconstruction) is built on the geometric median and the median
 covariation matrix, both updated by averaged stochastic gradient (Cardot
 et al. 2013, Cardot and Godichon-Baggioni 2017). Tests cover warm-up,
 feature selection, separation on a seeded Gaussian ellipsoid with
-injected outliers, basic river integration (clone, pickle, repr), the
-missing-river error, and the doctest.
+injected outliers, the MCM eigenvalue under-estimate, cloning, pickling
+and repr, and the doctest.
 
-`check_estimator` is not used: it feeds dicts whose keys vary between
-rows (e.g. river's credit-card benchmark), incompatible with a
-multichannel estimator that fixes its feature keys from the first dict
-seen. `_unit_test_skips` in the module declares this, as the other
-Dense-Armor scorers already do.
+``check_estimator`` is run and passes without skips.
 """
 import doctest
-import importlib
 import pickle
-import sys
 from copy import deepcopy
 
 import numpy as np
-import pytest
 
-import dense_armor.utility.anomaly.mahalanobis as streaming_mahalanobis  # noqa: E402
-from dense_armor.utility.anomaly.mahalanobis import (  # noqa: E402
+import dense_armor.utility.anomaly.mahalanobis as streaming_mahalanobis
+from dense_armor.utility.anomaly.mahalanobis import (
     OnlineRobustMahalanobis,
 )
 
@@ -94,13 +87,7 @@ def test_check_estimator():
     check_estimator(OnlineRobustMahalanobis(feature_keys=["a", "b"]))
 
 
-
 def test_mcm_eigenvalues_underestimate_true_variance():
-    # The MCM eigenvalues under-estimate the true-covariance eigenvalues
-    # (Guillot et al.). On a well-conditioned Gaussian this is what the
-    # minimal version leaves uncorrected; the test asserts the property
-    # explicitly so that changing to the full version (which reconstructs
-    # the true eigenvalues) would be caught here.
     x, sigmas_sq = _seeded_ellipsoid(n=3000, d=2, seed=3)
     model = OnlineRobustMahalanobis(feature_keys=["a", "b"])
     for row in x:
@@ -146,10 +133,7 @@ def test_single_channel_degenerate_does_not_crash():
     assert np.isfinite(score)
 
 
-def test_river_clone_pickle_repr():
-    # River-compatible surface: clone (via deepcopy), pickle round-trip
-    # and repr. check_estimator itself is skipped for the reason in the
-    # module docstring.
+def test_clone_pickle_repr():
     m = OnlineRobustMahalanobis(feature_keys=["a", "b"])
     m2 = deepcopy(m)
     assert m2.feature_keys == m.feature_keys
@@ -162,12 +146,10 @@ def test_river_clone_pickle_repr():
 
 
 def test_is_outlier_uses_threshold():
-    from dense_armor.utility.anomaly.mahalanobis import OnlineRobustMahalanobis
-
     rng = np.random.default_rng(1)
     m = OnlineRobustMahalanobis(feature_keys=["a", "b"])
     for v in rng.normal(0, 1, (300, 2)):
         m.learn_one({"a": float(v[0]), "b": float(v[1])})
     assert m.is_outlier({"a": 40.0, "b": -40.0})
     assert not m.is_outlier({"a": 0.0, "b": 0.0})
-    assert "check_roc_auc" in m._unit_test_skips()
+
