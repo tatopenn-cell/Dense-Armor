@@ -179,21 +179,6 @@ class OnlineRobustMahalanobis(AnomalyDetector):
         self._init_buf: list[np.ndarray] = []
         self.n_missing_: int = 0
 
-    def _reset(self) -> None:
-        self._dim = None
-        self._m = None
-        self._m_bar = None
-        self._V = None
-        self._V_bar = None
-        self._delta = None
-        self._P = None
-        self._n = 0
-        self._n_after_init = 0
-        self._ready = False
-        self._keys = None
-        self._init_buf = []
-        self.n_missing_ = 0
-
     def _unit_test_skips(self) -> set:
         return set()
 
