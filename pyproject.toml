@@ -35,6 +35,7 @@ docs = [
     "mkdocs-material>=9.5.0",
     "mkdocstrings[python]>=0.24.0",
     "mkdocs-include-markdown-plugin>=6.0.0",
+    "pymdown-extensions>=10.0,<11.0",
 ]
 
 [project.urls]
@@ -48,3 +49,4 @@ dense-armor-mcp = "dense_armor.mcp_server.server:main"
 
 [tool.setuptools.packages.find]
 include = ["dense_armor*"]
+
