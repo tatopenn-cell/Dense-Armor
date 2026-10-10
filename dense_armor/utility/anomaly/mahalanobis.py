@@ -69,10 +69,12 @@ class OnlineRobustMahalanobis(AnomalyDetector):
     ``0.0`` until the offline initialisation is complete.
 
     Args:
-        c_gamma, gamma_exp, n0: step size
+        c_gamma: numerator of the step size
             ``gamma_n = c_gamma * (n + n0) ** (-gamma_exp)`` for the
-            averaged stochastic gradient updates. ``gamma_exp`` must be
-            in ``(1/2, 1)`` for convergence (Cardot et al. 2013).
+            averaged stochastic gradient updates.
+        gamma_exp: exponent of the step size; must be in ``(1/2, 1)``
+            for convergence (Cardot et al. 2013).
+        n0: warm-up offset in the step size.
         n_init: number of samples accumulated before the offline
             initialisation. The paper uses 100 in the simulations
             (section 4.1). Must be at least ``d + 1`` where ``d`` is
@@ -243,7 +245,7 @@ class OnlineRobustMahalanobis(AnomalyDetector):
             self._ready = False
         self._n_after_init = 0
 
-    def learn_one(self, x, t=None) -> "OnlineRobustMahalanobis":
+    def learn_one(self, x: dict, t: float | None = None) -> "OnlineRobustMahalanobis":
         """Learn one sample.
 
         Args:
@@ -314,7 +316,7 @@ class OnlineRobustMahalanobis(AnomalyDetector):
                 pass
         return self
 
-    def score_one(self, x, t=None) -> float:
+    def score_one(self, x: dict, t: float | None = None) -> float:
         """Score one sample.
 
         Args:
@@ -342,7 +344,7 @@ class OnlineRobustMahalanobis(AnomalyDetector):
         d2 = float(np.sum((proj**2) / self._delta))
         return float(np.sqrt(max(d2, 0.0)))
 
-    def is_outlier(self, x, threshold: float | None = None) -> bool:
+    def is_outlier(self, x: dict, threshold: float | None = None) -> bool:
         """Boolean wrapper around :meth:`score_one`."""
         thr = self.threshold if threshold is None else float(threshold)
         return self.score_one(x) > thr
