@@ -1,54 +1,50 @@
 # API — Robot
 
-The Dense-Armor APIs, read from the physical side: the real Panda
-skeleton from `test/fixtures/urdf/panda.urdf`, with every joint
+The Dense-Armor APIs, read from the physical side. The robot is the real
+Panda arm described in `test/fixtures/urdf/panda.urdf`, and every joint is
 mapped to the modules that work with it.
+
+A **joint** is one moving axis of the arm: a motor, a hinge, or a finger.
+This robot has nine of them.
+
+Two maps show the same picture. A **flat interactive map** shows where each
+API touches the body: click a part and read which modules use it. A **3D
+map** shows the physical volume of the robot, so the shape is recognisable
+from any angle. Read them together: the flat map answers *which modules*,
+the 3D map answers *where in space*.
 
 ## Interactive map
 
-Clicca una parte del corpo per leggere cosa fa e quali API la riguardano. Il pannello a destra non copre l'immagine.
+Click a body part to read what it does and which APIs concern it. The side
+panel does not overlap the image.
 
-<iframe src="../../assets/api/robot_interactive.html" style="width:100%;height:640px;border:0" loading="lazy"></iframe>
-
+<iframe src="../../assets/api/robot_interactive.html"
+        style="width:100%;height:640px;border:0"
+        loading="lazy"></iframe>
 
 ## Robot map
 
 Hover a joint to see which modules use it. Rotate with the mouse.
 
-<iframe src="../../assets/api/robot_3d.html" style="width:100%;height:640px;border:0" loading="lazy"></iframe>
+<iframe src="../../assets/api/robot_3d.html"
+        style="width:100%;height:640px;border:0"
+        loading="lazy"></iframe>
 
+To interact with the 3D model:
 
-**What this model shows.** The solid below is a reconstruction of the same
-concept robot that opens this page, generated from the 1024x1024 source image.
-Every pixel of the source has been lifted into a height and the surface has
-been closed into a volume. Unlike the flat coloured map at the top, this
-model can be rotated and inspected from the back: the two arms, the
-shoulders, and the ground rays are all visible as three-dimensional shapes.
-
-**How it was made.** The geometry was reconstructed from a single image by
-Meshy AI. The mesh has roughly 59 700 vertices and 119 300 triangles, about
-half the density of the head model. The reconstruction is monochrome: the
-source image was not projected onto the surface. This is intentional. The
-coloured map at the top of this page is where the API hotspots live; the
-3D model is where the volume lives.
-
-**How to read it.** Ignore the colour. Look at the silhouette: the separation
-between the two arms, the curvature of the shoulders, the shape of the
-pelvis, the length of the rays that connect the body to the ground. The
-connections that appear in the flat map as lines are, in this model,
-physical extensions of the body.
-
-**How to interact.**
 - Drag with the mouse to rotate.
 - Use the arrow keys (left, right, up, down) to rotate.
-- Use + and - to zoom in and out.
+- Use `+` and `-` to zoom in and out.
 - Auto-rotation is on until you interact.
 
-*The joint-to-API mapping is the author's curation, not a fact
-extracted from the code: it says which modules use or talk about
-that joint.*
+Ignore the colour on the 3D model and look at the silhouette: the separation
+between the two arms, the curvature of the shoulders, the shape of the
+pelvis. The connections that appear in the flat map as lines are, in the 3D
+model, physical extensions of the body.
 
 ## APIs by joint
+
+For each joint, the modules that work with it, grouped by purpose.
 
 ### panda_finger_joint1
 
@@ -286,3 +282,20 @@ that joint.*
 **Protection**
 
 - [`SafeEstimator`](../api/robot_roles.md)
+
+## Details
+
+### How the 3D model was made
+
+The geometry was reconstructed from a single 1024×1024 image by Meshy AI.
+The mesh has roughly 59 700 vertices and 119 300 triangles, about half the
+density of the head model on the AI page. The reconstruction is monochrome:
+the source image was not projected onto the surface. This is intentional.
+The coloured flat map is where the API hotspots live; the 3D model is where
+the volume lives.
+
+### Joint-to-API mapping
+
+The mapping from each joint to the modules that use it is the author's
+curation, not a fact extracted from the code: it says which modules talk
+about that joint, not which modules are guaranteed to run on it.
