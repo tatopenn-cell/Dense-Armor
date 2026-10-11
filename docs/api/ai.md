@@ -8,14 +8,14 @@ representations and models, to the decision and protection layer.
 
 Clicca una zona dell'immagine per leggere cosa fa e quali API la riguardano. Il pannello a destra non copre l'immagine: si aggiorna a ogni click.
 
-<iframe src="../assets/api/ai_interactive.html" style="width:100%;height:640px;border:0" loading="lazy"></iframe>
+<iframe src="../../assets/api/ai_interactive.html" style="width:100%;height:640px;border:0" loading="lazy"></iframe>
 
 
 ## IA map
 
 Rotate with the mouse, hover a node to see its level and the guide.
 
-<iframe src="../assets/api/ai_3d.html" style="width:100%;height:640px;border:0" loading="lazy"></iframe>
+<iframe src="../../assets/api/ai_3d.html" style="width:100%;height:640px;border:0" loading="lazy"></iframe>
 
 
 **What this model shows.** The solid below is a reconstruction of the same
