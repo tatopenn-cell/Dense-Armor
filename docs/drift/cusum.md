@@ -4,6 +4,8 @@ A robot joint wears out a little every day. Each single reading still looks norm
 detector that judges one sample at a time never complains. Together, though, the readings have
 moved. CUSUM ("cumulative sum") notices this: it keeps a running total of the small surprises,
 like coins dropped one by one into a piggy bank, and raises an alarm when the bank is full.
+For the other three detectors and a benchmark on a real robot arm, see
+[Drift detectors](detectors.md).
 
 ![A joint signal whose mean shifts at sample 500, and the CUSUM total that fills up and raises the alarm at sample 511](../assets/cusum/drift.png)
 
@@ -181,7 +183,7 @@ print(np.flatnonzero(flags)[:4], [i for i, v in enumerate(x) if det.update(v).dr
 Use the batch function to study a recording, and the streaming detector inside the control loop:
 the alarms are the same.
 
-## Results: CUSUM against two classic drift detectors
+## 7. Results: CUSUM against two classic drift detectors
 
 20 seeded streams of 1,000 N(0, 1) samples per row, mean shift at sample 500. Each cell is
 recall (fraction of streams where the shift was found) / delay in samples / false alarms per
