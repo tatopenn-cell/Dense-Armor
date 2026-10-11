@@ -188,7 +188,7 @@ temporarily lowered to `fast_lam` for `warmup_steps` samples, then restored. The
 react quickly to a real change without paying the noise cost of a permanently small
 `λ`.
 
-The drift-aware learner is built the same way (it is constructed in the block of step 4).
+The drift-aware learner is built the same way (it is constructed in the block of step 5).
 
 **Honest result from the 2-link benchmark** (payload / friction step at sample 200 of
 400, `lam=0.99`):
@@ -231,7 +231,7 @@ tens of microseconds. For a 2-DoF arm the difference is roughly 1.9 ms vs 2.7 ms
 sample depending on JAX cache state; the bottleneck is `forward_kinematics`, not the
 RLS update itself.
 
-## Parameters
+## 8. Parameters
 
 - `lam` (default 1.0): forgetting factor in `(0, 1]`. `lam = 1.0` weights all past
   samples equally and matches batch least squares; smaller values weight recent samples
