@@ -77,6 +77,10 @@ the accumulator falls back to zero and the detector forgets the small
 fluctuations. Only a sustained deviation can push the sum high enough to
 cross $h$.
 
+For the full ARL derivation (average run length, how long before an alarm),
+the streaming API and the batch version, see
+[CUSUM and ARL theory](cusum.md).
+
 ## 2. Page-Hinkley: the same idea, units do not matter
 
 The second detector, Page-Hinkley, compares each sample with the running mean,
