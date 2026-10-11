@@ -6,7 +6,7 @@ representations and models, to the decision and protection layer.
 
 ## Interactive map
 
-Clicca una zona dell'immagine per leggere cosa fa e quali API la riguardano. Il pannello a destra non copre l'immagine: si aggiorna a ogni click.
+Click a zone of the image to read what it does and which APIs concern it. The side panel does not overlap the image: it updates on each click.
 
 <iframe src="../../assets/api/ai_interactive.html" style="width:100%;height:640px;border:0" loading="lazy"></iframe>
 
