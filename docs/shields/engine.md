@@ -130,6 +130,8 @@ the rows come from different sensors with different amplitudes.
 
 ---
 
+## Details
+
 **See also**: [`Orca`](orca.md), which uses `AdaptiveSignalStabilizer` as Stage 1,
 followed by a Collatz-based gate (Stage 2) deciding how much to damp toward the clean
 reference. This is also the engine exercised directly by the adversarial test suite

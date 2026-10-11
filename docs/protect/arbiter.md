@@ -172,7 +172,7 @@ out = [o for x in v for o in sh.update(x)] + sh.flush()
 print(len(out), out[0])
 ```
 
-## Hand case
+## 8. Hand case
 
 Window of 9 samples `[10, 11, 9, 10, 12, 10, 11, 9, 10]`, then a run of 3 samples
 `[15, 16, 15.5]`, then 4 samples `[15, 15, 15, 15]`.

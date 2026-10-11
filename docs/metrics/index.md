@@ -296,7 +296,7 @@ None [0.91, 0.94, 0.95, 0.95, 0.92, 0.54, 0.66, 0.76, 0.84, 0.84]
 The task is "is the joint moving fast?", and at sample 1000 the meaning of "fast" changes from
 $|\dot q| > 0.5$ to $|\dot q| > 1.5$. With labels on time the rolling accuracy drops to 0.54 and
 recovers to 0.84. With labels 300 samples late the drop comes later and goes deeper (0.38),
-because the model keeps answering with the old rule until the new labels reach it. The first
+because the model keeps answering with the old rule until the new labels reach it. For `delay=300` the first
 three values are 0.0 because no label has arrived yet and nothing has been scored. `every=200`
 returns the trace of the metric.
 
