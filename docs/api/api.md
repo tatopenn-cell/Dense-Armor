@@ -17,6 +17,17 @@ The depth axis is the inheritance depth from `Root`.
         style="width:100%;height:820px;border:0"
         loading="lazy"></iframe>
 
+## Mind-robot: the APIs seen from the robot
+
+The same APIs, read from the physical side. The 3D skeleton below is the real Panda arm from `test/fixtures/urdf/panda.urdf`. Hover a joint to see which modules work with it; the link opens the guide page.
+
+<iframe src="../assets/api/robot_3d.html"
+        style="width:100%;height:680px;border:0"
+        loading="lazy"></iframe>
+
+*The joint-to-API mapping is the author's curation, not a fact extracted from the code: it says which modules use or talk about that joint. A second section (Mind-AI) will follow with the same idea on the AI side.*
+
+
 ## Classes by subsystem
 
 **Jump to:** [Roles](#roles) &nbsp;·&nbsp; [Metrics](#metrics) &nbsp;·&nbsp; [Core](#core) &nbsp;·&nbsp; [Mcp_server](#mcp_server) &nbsp;·&nbsp; [Vision](#vision) &nbsp;·&nbsp; [Datasets](#datasets) &nbsp;·&nbsp; [Protect](#protect) &nbsp;·&nbsp; [Misc](#misc) &nbsp;·&nbsp; [Learn](#learn) &nbsp;·&nbsp; [Anomaly](#anomaly) &nbsp;·&nbsp; [Armatura](#armatura) &nbsp;·&nbsp; [Dynamics](#dynamics)
