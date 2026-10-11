@@ -67,7 +67,7 @@ $$\min_u \tfrac12 \lVert u - u_{des}\rVert^2 \quad \text{s.t.} \quad L_f h + L_g
 the CBF-QP of Ames et al. (2019). With one input and one constraint it has a closed form, the
 min-norm controller. In this module the safe set is "at least `safe_dist` from `obstacle`":
 
-$$h(x) = (x - o)^2 - d^2, \qquad L_g h = 2(x - o), \qquad u = \begin{cases} u_{des} & \text{if } L_g h\,u_{des} \ge -k\,h \ -k\,h / L_g h & \text{otherwise,} \end{cases}$$
+$$h(x) = (x - o)^2 - d^2, \qquad L_g h = 2(x - o), \qquad u = \begin{cases} u_{des} & \text{if } L_g h\,u_{des} \ge -k\,h \\ -k\,h / L_g h & \text{otherwise,} \end{cases}$$
 
 with $o$ = `obstacle`, $d$ = `safe_dist`, $k$ = `alpha_gain`.
 
