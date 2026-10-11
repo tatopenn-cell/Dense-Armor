@@ -4,7 +4,7 @@ Half-Space Trees score each sample by how sparse the region of space around it i
 control loop they answer one question per joint reading: does this torque residual come from
 a part of the space we usually see, or from a region we almost never visit?
 
-## What it is
+## 1. What it is
 
 A robot's torque residual is the difference between the torque the motors actually deliver
 and the torque the URDF model predicts. On a healthy joint this residual is small, always
@@ -18,7 +18,7 @@ each side. The regions where samples rarely fall are the anomalies: a payload fa
 arm moves the residual to a region the healthy run never visited, and the counter there
 stays low.
 
-## How it works
+## 2. How it works
 
 The detector keeps an ensemble of `n_trees` complete binary trees, each `depth` levels
 deep. Every tree owns the same domain — the working range of each feature — but each tree
@@ -50,9 +50,9 @@ The three trees own the same plane but cut it differently: different dimensions,
 positions, different first levels. A sample falls into one leaf per tree. The mean depth
 across the trees, mapped through `-log2`, is the score.
 
-## Smallest example
+## 3. Smallest example
 
-~~~python
+```python
 import numpy as np
 from dense_armor.utility.anomaly.hst import HalfSpaceTrees
 
@@ -67,19 +67,19 @@ for _ in range(200):
 
 print(f"healthy  {det.score_one({'a': 0.0, 'b': 0.0}):.3f}")
 print(f"anomaly  {det.score_one({'a': 10.0, 'b': 10.0}):.3f}")
-~~~
+```
 
 The first score is close to zero: the point sits where the healthy samples sit. The second
 is close to `log2(101) ~= 6.7`: the point falls in a leaf the healthy samples never
 visited.
 
-## On a real arm
+## 4. On a real arm
 
 The residual of joints 1-4 on a `SyntheticArm` payload fault. The fault (5 kg added at
 t = 2 s) shifts the residual on joints 1-5 by tens of N·m; the healthy run stays within
 ±0.15 N·m.
 
-~~~python
+```python
 from pathlib import Path
 import numpy as np
 from dense_armor.utility.anomaly.hst import HalfSpaceTrees
@@ -103,7 +103,7 @@ for sig, _ in ds.stream():
     x = {f"r{j}": float(sig[f"tau_{j}"] - tau_nom[j]) for j in range(4)}
     _ = det.score_one(x)
     _ = det.learn_one(x)
-~~~
+```
 
 ![HalfSpaceTrees score on the SyntheticArm payload fault](../assets/hst/score_vs_time.png)
 
@@ -112,7 +112,7 @@ quantile of the last 500 scores, with the detector deciding itself where to put 
 Both score the fault (the red dotted line at t = 2 s) above their own threshold on
 almost every post-fault sample, and both leave the healthy part below.
 
-## Numbers
+## 5. Numbers
 
 `SyntheticArm` (400 samples, 100 healthy, 300 fault) and `DriftStream` (2000 samples, one
 sudden drift at half), feature ranges calibrated on the healthy part with a 10 % margin.

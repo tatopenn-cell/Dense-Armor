@@ -5,7 +5,7 @@ healthy joint residual, measured in units of the residual's own spread. In a con
 it answers one question per reading: how many standard deviations of the healthy
 distribution away is this point, in the joint-space metric the healthy arm actually has?
 
-## What it is
+## 1. What it is
 
 The healthy residuals of a robot joint form a cloud around zero. Its shape is not a
 sphere: the joints are correlated, and a fault along one direction costs more than a fault
@@ -32,7 +32,7 @@ averaged MCM `V_bar`, and `delta_j` the corresponding eigenvalue. The sum is ove
 eigenvalues: it is the Mahalanobis distance written without inverting the matrix, using
 the eigendecomposition instead.
 
-## How it works
+## 2. How it works
 
 Two running estimates are maintained. `m` tracks the geometric median, `V` tracks the MCM.
 Both are updated by averaged stochastic gradient, one sample at a time.
@@ -66,9 +66,9 @@ buffer and used to compute an initial estimate of the location and scatter, from
 ASGD starts. Without the initialisation the ASGD gradients, whose scale is unit and not
 the scale of the data, would never reach the data.
 
-## Smallest example
+## 3. Smallest example
 
-~~~python
+```python
 import numpy as np
 from dense_armor.utility.anomaly.mahalanobis import (
     OnlineRobustMahalanobis,
@@ -83,20 +83,20 @@ for _ in range(500):
 
 print(f"healthy  {det.score_one({'a': 0.0, 'b': 0.0}):.3f}")
 print(f"far      {det.score_one({'a': 10.0, 'b': 10.0}):.3f}")
-~~~
+```
 
 The healthy point sits at the centre of the cloud. Under a standard bivariate Gaussian its
 Mahalanobis distance is small; the score here is close to zero. The far point is ten units
 away along both axes: the distance is large, and the score reflects that. The default
 `threshold` of `7.0` is the classical value for low-dimensional Gaussians.
 
-## On a real arm
+## 4. On a real arm
 
 The residual of joints 1-4 on a `SyntheticArm` payload fault. The fault (5 kg added at
 t = 2 s) shifts the residual on joints 1-5 by tens of N·m; the healthy run stays within
 ±0.15 N·m.
 
-~~~python
+```python
 from pathlib import Path
 from dense_armor.utility.anomaly.mahalanobis import (
     OnlineRobustMahalanobis,
@@ -122,7 +122,7 @@ for sig, _ in ds.stream():
     x = {f"r{j}": float(sig[f"tau_{j}"] - tau_nom[j]) for j in range(4)}
     _ = det.score_one(x)
     _ = det.learn_one(x)
-~~~
+```
 
 ![OnlineRobustMahalanobis score on the SyntheticArm payload fault and DriftStream](../assets/mahalanobis/score_vs_time.png)
 
@@ -132,7 +132,7 @@ towards the new distribution — but the detector has already flagged every post
 sample until the update catches up. Bottom: `DriftStream`. The score rises cleanly at the
 drift and stays above the threshold.
 
-## The learned 95 % region
+## 5. The learned 95 % region
 
 The Mahalanobis distance is a scalar, but the metric it uses is a `d`-dimensional ellipsoid.
 Plotting it in two dimensions makes the shape visible.
@@ -144,7 +144,7 @@ samples (red crosses). The black ellipse is the 95 % quantile of the MCM current
 estimated: a new sample inside the ellipse has Mahalanobis distance below `chi2_2(0.95)`,
 outside it is flagged. The fault samples all fall outside.
 
-## Numbers
+## 6. Numbers
 
 `SyntheticArm` (400 samples, 100 healthy, 300 fault) and `DriftStream` (2000 samples, one
 sudden drift at half), feature ranges calibrated on the healthy part with a 10 % margin.
@@ -162,7 +162,7 @@ the second fastest (`0.045 ms` per sample at the arm's parameters).
 
 ### Where the rules come from
 
-Guillot, Godichon-Baggioni and Robin (2025) introduce the online median and MCM in
+Guillot, Godichon-Baggioni, Robin and Sansonnet (arXiv:2601.03957) introduce the online median and MCM in
 Section 3. The recurrence for the geometric median is equation 8, for the MCM equation 10.
 The Mahalanobis distance under the MCM is equation from Section 2.2. The step size
 `gamma_n = c * n ** -gamma` with `gamma` in `(1/2, 1)` is from Cardot, Cénac and Zitt
@@ -175,7 +175,7 @@ MCM by a Robbins-Monro scheme (equations 4-5) and scales the distances by
 ### Choices stated explicitly
 
 - **Offline initialisation.** The geometric median is initialised by the Weiszfeld
-  algorithm (Guillot et al. 2025, equation 6). The MCM is initialised by the empirical
+  algorithm (Guillot et al., equation 6). The MCM is initialised by the empirical
   average of the centred outer products, not the Weiszfeld offline MCM of Section A.2:
   with `n_init` of tens of samples the average is more stable than the Weiszfeld iteration,
   which for small samples can converge to a rank-one solution. The online ASGD refines the

@@ -47,7 +47,7 @@ no longer saturated. The plot shows the whole curve for scale 1 and scale 15.
 
 ![curvature score against distance, two scales](../assets/curvature/curves.png)
 
-## The formula, symbol by symbol
+## 3. The formula, symbol by symbol
 
 Let `d = x − ref` and let `scale` be the width of the zone. Define
 `g = 2·d / scale`, then:
@@ -60,7 +60,7 @@ with `δ` a small positive constant (default 1e-6, a numerical guard). `κ` is
 **almost 0 at d = 0** (exactly $\sqrt{\delta}/\sqrt{1+\delta} \approx 0.001$), **increases smoothly** as `|d|` grows, and **saturates to 1** for
 `|d| ≫ scale`. `δ` keeps the function away from exactly 0 and 1 so gradients stay finite.
 
-## Hand cases
+## 4. Hand cases
 
 Distance `d = 0.5` from the reference.
 

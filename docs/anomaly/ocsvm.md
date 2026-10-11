@@ -5,7 +5,7 @@ sample by its signed distance from that boundary. In a control loop it answers o
 per reading: does this residual look like the healthy run, or does it fall outside the
 region the detector has learned to call normal?
 
-## What it is
+## 1. What it is
 
 The healthy residuals of a robot joint cluster around zero. When the payload changes, or a
 joint wears, the residuals move outside that cluster. A One-Class SVM finds the smallest
@@ -24,7 +24,7 @@ turns the SGD convergence into a `1/T` guarantee instead of the slower `1/sqrt(T
 plain formulation. The resulting algorithm is called SONAR: SGD-based One-Class Novelty
 detection with Approximate RBFs.
 
-## How it works
+## 2. How it works
 
 The objective, from Suk and Kpotufe (2025), equation 9, is
 
@@ -59,9 +59,9 @@ Positive means the sample is outside the boundary (anomalous), negative means in
 (normal). The class flag `threshold` defaults to `0.0`: any point on the wrong side of the
 boundary is flagged.
 
-## Smallest example
+## 3. Smallest example
 
-~~~python
+```python
 import numpy as np
 from dense_armor.utility.anomaly.ocsvm import OneClassSGD
 
@@ -76,7 +76,7 @@ for _ in range(2000):
 
 print(f"healthy   {det.score_one({'a': 0.5, 'b': 0.5}):+.4f}")
 print(f"anomaly   {det.score_one({'a': 5.0, 'b': 5.0}):+.4f}")
-~~~
+```
 
 The healthy score is a small negative number: the point is just inside the boundary. The
 anomaly score is less negative (or positive): the point is closer to, or past, the boundary.
@@ -84,12 +84,12 @@ The contrast is small on purpose — OCSVM gives a signed distance, not a probab
 detector needs thousands of samples for the boundary to settle. The section "Convergence"
 below shows what that looks like.
 
-## On a real arm
+## 4. On a real arm
 
 The residual of joints 1-4 on a `SyntheticArm` payload fault. The fault (5 kg added at
 t = 2 s) shifts the residual on joints 1-5 by tens of N·m.
 
-~~~python
+```python
 from pathlib import Path
 from dense_armor.utility.anomaly.ocsvm import OneClassSGD
 from dense_armor.utility.datasets import SyntheticArm
@@ -112,7 +112,7 @@ for sig, _ in ds.stream():
     x = {f"r{j}": float(sig[f"tau_{j}"] - tau_nom[j]) for j in range(4)}
     _ = det.score_one(x)
     _ = det.learn_one(x)
-~~~
+```
 
 ![OneClassSGD score on the SyntheticArm payload fault and DriftStream](../assets/ocsvm/score_vs_time.png)
 
@@ -120,7 +120,7 @@ Top: SyntheticArm. Bottom: `DriftStream`. The score stays close to zero for most
 stream. The boundary has not yet moved away from the origin, so healthy and faulty samples
 get similar scores. This is what the next section explains.
 
-## Convergence
+## 5. Convergence
 
 The paper proves (Lemma 5, Theorem 6, Corollary 7) that the distance between the SGD
 iterate and the population minimiser shrinks like `1/T`, but the constant depends on
@@ -135,7 +135,7 @@ The score on one fixed healthy point, plotted against the number of samples lear
 statistics. After that the score oscillates around a value that slowly moves toward its
 asymptotic position, but the oscillations are still wide after a few thousand samples.
 
-## Numbers
+## 6. Numbers
 
 `SyntheticArm` (400 samples, 100 healthy, 300 fault) and `DriftStream` (2000 samples, one
 sudden drift at half), feature ranges calibrated on the healthy part with a 10 % margin.

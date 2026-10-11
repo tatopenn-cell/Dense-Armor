@@ -5,7 +5,7 @@ the rest. In a control loop it answers one question per reading: does this joint
 sit in a dense part of the space, or is it a point the tree can peel off with just a few
 splits?
 
-## What it is
+## 1. What it is
 
 An Isolation Forest is a random forest whose trees are built by recursive random cuts. A
 point that lands in a leaf reached by very few cuts is anomalous: the tree isolated it
@@ -18,7 +18,7 @@ and never changes them. Online Isolation Forest keeps the same idea but works in
 the trees grow as new samples arrive and shrink as old samples leave a sliding window, so
 the forest tracks whatever distribution is current.
 
-## How it works
+## 2. How it works
 
 The forest is an ensemble of `n_trees` Online-iTrees. Each tree is a complete binary
 histogram: every node counts the samples that crossed it (`h`, the bin height) and
@@ -55,9 +55,9 @@ paper and the reference implementation.
 A sample isolated in a shallow leaf has small `E(D)` and score close to 1. A sample that
 needs many cuts has large `E(D)` and score close to 0.
 
-## Smallest example
+## 3. Smallest example
 
-~~~python
+```python
 import numpy as np
 from dense_armor.utility.anomaly.oiforest import OnlineIsolationForest
 
@@ -72,19 +72,19 @@ for _ in range(600):
 
 print(f"healthy  {det.score_one({'a': 0.5, 'b': 0.5}):.3f}")
 print(f"far      {det.score_one({'a': 50.0, 'b': 50.0}):.3f}")
-~~~
+```
 
 The healthy point sits at the centre of the dense cluster: the tree needs many splits to
 isolate it, so `E(D)` is large and the score is well below one. The far point falls into
 a leaf the tree reaches after very few cuts: the score is close to one.
 
-## On a real arm
+## 4. On a real arm
 
 The residual of joints 1-4 on a `SyntheticArm` payload fault. The fault (5 kg added at
 t = 2 s) shifts the residual on joints 1-5 by tens of N·m; the healthy run stays within
 ±0.15 N·m.
 
-~~~python
+```python
 from pathlib import Path
 from dense_armor.utility.anomaly.oiforest import OnlineIsolationForest
 from dense_armor.utility.datasets import SyntheticArm
@@ -107,7 +107,7 @@ for sig, _ in ds.stream():
     x = {f"r{j}": float(sig[f"tau_{j}"] - tau_nom[j]) for j in range(4)}
     _ = det.score_one(x)
     _ = det.learn_one(x)
-~~~
+```
 
 ![OnlineIsolationForest score on the SyntheticArm payload fault and DriftStream](../assets/oiforest/score_vs_time.png)
 
@@ -116,7 +116,7 @@ Top: SyntheticArm. The score does not separate the fault from the healthy part; 
 with one sudden drift at the half of the stream. Here the score rises cleanly after the
 drift and stays above the threshold.
 
-## Depth of healthy and faulty samples
+## 5. Depth of healthy and faulty samples
 
 The score is a decreasing function of the average leaf depth. A plot of the depth
 distribution on the arm shows what the two populations look like.
@@ -128,7 +128,7 @@ tree cannot tell them apart because the fault region is far from the healthy one
 sparse: the tree splits it as it splits any other region with enough samples. This is the
 structural reason the detector is below chance on this stream.
 
-## Numbers
+## 6. Numbers
 
 `SyntheticArm` (400 samples, 100 healthy, 300 fault) and `DriftStream` (2000 samples, one
 sudden drift at half), feature ranges calibrated on the healthy part with a 10 % margin.
