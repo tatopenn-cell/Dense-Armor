@@ -17,6 +17,33 @@ Rotate with the mouse, hover a node to see its level and the guide.
 
 <iframe src="../assets/api/ai_3d.html" style="width:100%;height:640px;border:0" loading="lazy"></iframe>
 
+
+**What this model shows.** The solid below is a reconstruction of the same
+concept head that opens this page, generated from the 1024x1024 source image.
+Every pixel of the source has been lifted to a height and the surface has been
+closed into a volume. The result can be rotated and inspected from any angle,
+including the back, which does not exist in the flat image above.
+
+**How it was made.** The geometry was reconstructed from a single image by
+Meshy AI, a feed-forward image-to-3D model. The mesh has roughly 107 500
+vertices and 215 800 triangles, about the density of a game-ready hero asset.
+The reconstruction is monochrome: the source image was not projected onto the
+surface, so the model is shown as a single material rather than a textured
+one. This is deliberate. The coloured map at the top of this page keeps the
+colours and the API hotspots; the 3D model keeps the shape and the volume.
+
+**How to read it.** The colour of the surface carries no information. What
+matters is the silhouette: where the surface is convex, where it is concave,
+how thick the neck is, how far the eyes are recessed. Compare this solid
+against the flat image at the top of the page: the same shape, but the
+volume is now visible.
+
+**How to interact.**
+- Drag with the mouse to rotate.
+- Use the arrow keys (left, right, up, down) to rotate.
+- Use + and - to zoom in and out.
+- Auto-rotation is on until you interact.
+
 *The levels are: input (raw data), feature (perception), repr
 (compression), model (learners), decision (gate + protection).*
 
