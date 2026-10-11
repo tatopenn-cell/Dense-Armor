@@ -243,7 +243,7 @@ its docstring.
 
 ## See also
 
-- `docs/api/base.md` — the `Base` / `Transformer` interface that every
-  statistic in this module shares.
+- [`docs/api/roles.md`](../api/roles.md) — the `Base` / `Transformer` interface
+  that every statistic in this module shares.
 - `docs/stats/moments.md`, `robust.md`, `quantiles.md`, `dependence.md`,
   `sketches.md` — the family guides.

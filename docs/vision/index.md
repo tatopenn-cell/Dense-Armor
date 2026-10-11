@@ -513,7 +513,7 @@ compresses those into four. The third step measures how far the four
 numbers sit from the running centre of mass of the previous ones; a large
 distance means the frame does not look like the ones the library has seen,
 and the robot has a signal to react to. The third step is the online
-robust Mahalanobis distance from Guillot et al. (2026), which uses the
+robust Mahalanobis distance from Guillot et al. (arXiv:2601.03957), which uses the
 geometric median and the median covariation matrix of the projected
 features; Cardot, Cénac and Zitt (2013) and Cardot and Godichon-Baggioni
 (2017) prove the averaged stochastic gradient updates that keep both up
@@ -580,17 +580,6 @@ than a tenth of the 33 ms frame budget at 30 frames per second.
 - `gray=False`: keys `mean_R`, `mean_G`, `mean_B`, `contrast_R`,
   `contrast_G`, `contrast_B` are always present; for a grey input they
   repeat the luminance moments.
-- `RandomProjection` uses a dense Gaussian matrix with variance `1 / k`
-  (the matrix of equation 21). Sparse projections (Achlioptas 2003, Li et
-  al. 2006) are named in the same survey but not defined there; they are
-  not implemented yet.
-- `IncrementalPCA` with several components updates all of them with the
-  same step and re-orthonormalises with a QR decomposition after each
-  sample (a stochastic subspace iteration); the paper analyses the
-  one-component rule.
-- Pipelines built with `|` train every step: each intermediate step first
-  transforms the sample, then learns from it, so `FrameFeatures` keeps the
-  previous frame for the flow.
 - Real robot images, RAD (Chang et al. 2024; MIT licence): 13 objects photographed by a Franka
   arm from many viewpoints, normal and defective. `benchmarks/vision_rad.py` learns
   `FrameFeatures | IncrementalPCA(k=8) | OnlineRobustMahalanobis` on the normal training views
@@ -604,8 +593,8 @@ than a tenth of the 33 ms frame budget at 30 frames per second.
   per-category values are uncertain; the mean is the number to read. Latency 4.5 ms p50 per
   image (score only).
 - Sources:
-  - Chang, X. et al. (2024). RAD: a dataset and benchmark for real-life anomaly detection
-    with robotic observations. arXiv:2410.00713. The robot images of the Details.
+  - Chang, X. et al. (2024). RAD: A Realistic Multi-View Benchmark for
+    Pose-Agnostic Anomaly Detection. arXiv:2410.00713. The robot images of the Details.
   - Huang, C., Huang, J. (2017). A fast HOG descriptor using lookup table
     and integral image. arXiv:1703.06256. The HOG construction used in
     section 2.

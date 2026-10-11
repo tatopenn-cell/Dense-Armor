@@ -92,7 +92,7 @@ print(profile.get_profile_summary())
 ```
 
 ```
-Processor: x86_64 | RAM: 12.7 GB | Engine: CPU (JAX Accelerato) | SafeMaxDim: 40
+Processor: x86_64 | RAM: 12.7 GB | Engine: CPU (JAX Accelerated) | SafeMaxDim: 40
 ```
 
 **Honest caveat**: the RAM tiers behind `max_tensor_dim` are a rough heuristic, not
@@ -283,11 +283,11 @@ handler.setFormatter(MinimalConsoleFormatter())
 log = logging.getLogger("demo")
 log.addHandler(handler)
 log.setLevel(logging.INFO)
-log.info("esempio")
+log.info("hello")
 ```
 
 ```
-[19:33:28] [INFO] esempio
+[19:33:28] [INFO] hello
 ```
 
 **Honest caveat**: fairly thin wrappers around `logging.Formatter` —
