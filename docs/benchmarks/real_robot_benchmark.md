@@ -3,23 +3,15 @@
 The Dense-Armor streaming stack was run unchanged on the CASPER dataset
 (Kayan et al., 2023), a 24.5 h recording at 20 Hz of a Universal Robots
 UR3e industrial arm. A one-sided CUSUM on the smoothed energy of the cycle
-residual detects the labelled anomaly with 15 s latency and no false
+residual detects the labelled anomaly with 15.00 s latency and no false
 alarms in the normal hour before it; the point-anomaly estimators do not
 separate the two regimes.
-
 
 The recording comes from a Universal Robots UR3e arm that repeats one cycle: it picks a ball, drops
 it on an inclined platform and lets it roll (Kayan et al. 2023, Figures 1–2). Because the motion
 repeats, a cycle residual works well on this data.
 
-![A simulated repetitive joint motion, its cycle residual and the residual energy with the CUSUM alarm](../assets/real_robot_benchmark/cycle_residual.png)
-
-*Illustration on a simulated repetitive motion (period 200 samples): the raw velocity hides a small
-change of the cycle shape at sample 3000; the cycle residual $x(t) - x(t - T)$ is almost zero until
-then and grows after; a one-sided CUSUM on its energy raises the alarm 15 samples after the
-change. Figure generated with the library.*
-
-## Data
+## 1. Data
 
 `right_arm.csv` — 1,762,650 rows, 24.481 h at 20 Hz, 19.6 % of rows
 labelled anomalous. Columns are string-encoded 6-element lists for the
@@ -30,7 +22,14 @@ joint positions / velocities / currents. First `Anomaly State = 1` at
 `GyroX/Y/Z`, `MagX/Y/Z`. The file has no timestamp column and its row
 count differs from the arm file; there is no key to align the two streams.
 
-## Cycle period
+![A simulated repetitive joint motion, its cycle residual and the residual energy with the CUSUM alarm](../assets/real_robot_benchmark/cycle_residual.png)
+
+*Illustration on a simulated repetitive motion (period 200 samples): the raw velocity hides a small
+change of the cycle shape at sample 3000; the cycle residual $x(t) - x(t - T)$ is almost zero until
+then and grows after; a one-sided CUSUM on its energy raises the alarm 15 samples after the
+change. Figure generated with the library.*
+
+## 2. Cycle period
 
 The arm repeats one pick-and-place cycle. On the first hour of normal
 data, the autocorrelation of each joint velocity has one dominant peak at
@@ -45,7 +44,7 @@ the same lag across all six joints:
 | 4 | 760 | 38.00 | 0.9866 | 0.00027 |
 | 5 | 760 | 38.00 | 0.9893 | 0.01215 |
 
-## Cycle residual
+## 3. Cycle residual
 
 Two residuals were built from `T = 760` and the first hour of normal
 data:
@@ -59,7 +58,7 @@ template over `[−40, +40]` samples (92 cycles): mean 0.26, std 2.90,
 min −4, max +5, 9.8 % of cycles at offset 0. The shift residual carries
 no phase error; the template residual carries a few-sample error.
 
-## RMS on three windows
+## 4. RMS on three windows
 
 Residual computed from a slice that loads `T` extra samples before the
 window, so the first residual sample is real.
@@ -76,7 +75,7 @@ pre-change to post-change (0.0038 → 0.1214). The template residual stays
 around 0.55 in all windows; the phase error dominates the amplitude of
 the underlying change.
 
-## CUSUM on the residual energy
+## 5. CUSUM on the residual energy
 
 Change window `[14 h, 16 h]`, 144,001 rows, first `Anomaly State = 1`
 at row 72,005 (hour 15.000). One-sided CUSUM (`two_sided=False`),
@@ -129,7 +128,7 @@ false alarms on the 1 h pre-change window**. Higher `h` and `k` only
 delay the detection (400 → 16.35 s, 1000 → 17.90 s) and do not reduce the
 false alarms further.
 
-## Point estimators
+## 6. Point estimators
 
 The five scorers on the shift residual, on its energy `e²`, and on the
 smoothed energy `trailing mean(e², 2T)`. Window `[14.5 h, 16 h]`,
@@ -176,7 +175,7 @@ Per-sample time on this data: 802 µs (shift residual), 804 µs (shift
 energy), 730 µs (smoothed energy), dominated by the scorer window of
 size 380 and one `numpy` median/MAD/percentile per call.
 
-## IMU
+## 7. IMU
 
 `OnlineRobustMahalanobis` on accelerometer + gyroscope, 6 channels,
 1,751,682 rows, `threshold = 7.0`:
@@ -194,7 +193,7 @@ distribution only. The 99th percentile is two orders of magnitude above
 the median, so no single threshold in that range would both catch the
 anomaly and keep the false-alarm rate low.
 
-## Comparison with CASPER
+## 8. Comparison with CASPER
 
 CASPER (Kayan et al., 2023) trains a 1D-CNN on labelled normal IMU data
 with min-max normalization from the train set only, chooses its input
@@ -205,7 +204,7 @@ classification result on a dataset that is 50 % anomalous in validation
 and test.
 
 The Dense-Armor stack is causal and label-free. On the same dataset it
-detects the labelled change with 15 s latency and no false alarms in the
+detects the labelled change with 15.00 s latency and no false alarms in the
 1 h before it, using a one-sided CUSUM on the smoothed energy of the
 cycle residual with a fixed reference (span one cycle) and
 `k = 2.0, h = 20`. The point estimators (Hampel, Tukey, Chauvenet,
@@ -223,6 +222,8 @@ anomalous" baseline of 0.571.
   as a variance-change detector.)
 
 ---
+
+## Details
 
 Every number on this page is printed by `benchmarks/casper_benchmark.py`
 (run on a Kaggle CPU notebook with the dataset attached).
