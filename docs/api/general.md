@@ -6,28 +6,6 @@ the link leads there for the full explanation and examples.
 
 **164 classes**, 1530 public methods, 111 public modules.
 
-## Hierarchical map
-
-The 3D map below shows every class, grouped by subsystem: each colour
-is one macro-branch (Roles, Anomaly, Trees, Stats, Vision, …). Rotate
-with the mouse, hover a node to read the class name and its module.
-The depth axis is the inheritance depth from `Root`.
-
-<iframe src="../assets/api/hierarchy_3d.html"
-        style="width:100%;height:820px;border:0"
-        loading="lazy"></iframe>
-
-## Mind-robot: the APIs seen from the robot
-
-The same APIs, read from the physical side. The 3D skeleton below is the real Panda arm from `test/fixtures/urdf/panda.urdf`. Hover a joint to see which modules work with it; the link opens the guide page.
-
-<iframe src="../assets/api/robot_3d.html"
-        style="width:100%;height:680px;border:0"
-        loading="lazy"></iframe>
-
-*The joint-to-API mapping is the author's curation, not a fact extracted from the code: it says which modules use or talk about that joint. A second section (Mind-AI) will follow with the same idea on the AI side.*
-
-
 ## Classes by subsystem
 
 **Jump to:** [Roles](#roles) &nbsp;·&nbsp; [Metrics](#metrics) &nbsp;·&nbsp; [Core](#core) &nbsp;·&nbsp; [Mcp_server](#mcp_server) &nbsp;·&nbsp; [Vision](#vision) &nbsp;·&nbsp; [Datasets](#datasets) &nbsp;·&nbsp; [Protect](#protect) &nbsp;·&nbsp; [Misc](#misc) &nbsp;·&nbsp; [Learn](#learn) &nbsp;·&nbsp; [Anomaly](#anomaly) &nbsp;·&nbsp; [Armatura](#armatura) &nbsp;·&nbsp; [Dynamics](#dynamics)
@@ -1066,7 +1044,7 @@ Public methods:
 *Module:* `dense_armor.roles.wrapper`
 *Bases:* Estimator
 
-Delegates ``_supervised`` and ``_multiclass`` to the wrapped
+Delegates ``_supervised`` and ``_multiclass`` to the wrapped estimator. estimator.
 
 Public methods:
 
@@ -2727,7 +2705,7 @@ Public methods:
 *Module:* `dense_armor.core.visualizer`
 *Guide:* [toolkit/toolkit.md](../toolkit/toolkit.md)
 
-Strumenti di esportazione per la tracciabilità scientifica.
+Export tools for scientific traceability.
 
 Public methods:
 
@@ -2740,7 +2718,7 @@ Public methods:
 *Module:* `dense_armor.core.noise`
 *Guide:* [toolkit/toolkit.md](../toolkit/toolkit.md)
 
-Profila l'architettura host (CPU/GPU/JAX) per impostare le soglie di
+Profiles the host architecture (CPU/GPU/JAX) to set the thresholds.
 
 Public methods:
 
@@ -2752,7 +2730,7 @@ Public methods:
 *Module:* `dense_armor.core.engine`
 *Guide:* [shields/engine.md](../shields/engine.md)
 
-Filtro antipanico adattivo per segnali IA caotici.
+Adaptive anti-panic filter for chaotic AI signals.
 
 Public methods:
 
@@ -2768,7 +2746,7 @@ Public methods:
 *Module:* `dense_armor.core.vector`
 *Guide:* [toolkit/toolkit.md](../toolkit/toolkit.md)
 
-Manipolazione di vettori combinatori (spazio 2^n) via maschere di bit.
+Bit-mask manipulation of combinatorial vectors (2^n space).
 
 Public methods:
 
@@ -2798,7 +2776,7 @@ Public methods:
 *Module:* `dense_armor.core.compiler`
 *Guide:* [toolkit/toolkit.md](../toolkit/toolkit.md)
 
-Compila ricette testuali in matrici di istruzioni JAX ed esegue pipeline
+Compiles textual recipes into JAX instruction matrices and runs the resulting pipeline.
 
 Public methods:
 
@@ -2815,7 +2793,7 @@ Public methods:
 *Module:* `dense_armor.core.chunk`
 *Guide:* [toolkit/toolkit.md](../toolkit/toolkit.md)
 
-Divide/ricompone batch di dati e liste di istruzioni in blocchi a dimensione fissa.
+Splits and rejoins data batches and instruction lists into fixed-size chunks.
 
 Public methods:
 
@@ -2831,7 +2809,7 @@ Public methods:
 *Bases:* Exception
 *Guide:* [toolkit/toolkit.md](../toolkit/toolkit.md)
 
-Eccezione lanciata quando la memoria di sistema (RAM/VRAM) è insufficiente.
+Raised when system memory (RAM/VRAM) is insufficient.
 
 ### MinimalConsoleFormatter
 
@@ -2857,7 +2835,7 @@ Public methods:
 *Module:* `dense_armor.core.vector`
 *Guide:* [toolkit/toolkit.md](../toolkit/toolkit.md)
 
-Simulazioni parallele massive (Monte Carlo) e collasso decisionale
+Massive parallel Monte Carlo simulations and decision collapse.
 
 Public methods:
 
@@ -2870,7 +2848,7 @@ Public methods:
 *Module:* `dense_armor.core.profiler`
 *Guide:* [toolkit/toolkit.md](../toolkit/toolkit.md)
 
-Profila le prestazioni della pipeline e del filtro in microsecondi.
+Profile pipeline and filter performance in microseconds.
 
 Public methods:
 
@@ -2883,7 +2861,7 @@ Public methods:
 *Module:* `dense_armor.core.noise`
 *Guide:* [toolkit/toolkit.md](../toolkit/toolkit.md)
 
-Inietta rumore probabilistico o perturbazioni avversariali nei tensori IA,
+Injects probabilistic noise or adversarial perturbations into AI tensors.
 
 Public methods:
 
@@ -2895,7 +2873,7 @@ Public methods:
 *Module:* `dense_armor.core.tensor`
 *Guide:* [toolkit/toolkit.md](../toolkit/toolkit.md)
 
-Vault ottimizzato e compatto per matrici statiche e parametriche.
+Compact, optimized vault for static and parametric matrices.
 
 Public methods:
 
@@ -2909,7 +2887,7 @@ Public methods:
 *Module:* `dense_armor.core.memory`
 *Guide:* [toolkit/toolkit.md](../toolkit/toolkit.md)
 
-Monitora preventivamente RAM e VRAM prima di ogni allocazione pesante.
+Pre-flight RAM and VRAM check before every heavy allocation.
 
 Public methods:
 
@@ -2926,31 +2904,7 @@ Public methods:
 
 !!! abstract "Usage Documentation"
 
-Public methods:
-
-- `construct(_fields_set=None, values: Any)`
-- `copy(include=None, exclude=None, update=None, deep=False)`
-- `dict(include=None, exclude=None, by_alias=False, exclude_unset=False, exclude_defaults=False, exclude_none=False)`
-- `from_orm(obj: Any)`
-- `json(include=None, exclude=None, by_alias=False, exclude_unset=False, exclude_defaults=False, exclude_none=False, encoder=PydanticUndefined, models_as_dict=PydanticUndefined, dumps_kwargs: Any)`
-- `model_construct(_fields_set=None, values: Any)`
-- `model_copy(update=None, deep=False)`
-- `model_dump(mode='python', include=None, exclude=None, context=None, by_alias=None, exclude_unset=False, exclude_defaults=False, exclude_none=False, exclude_computed_fields=False, round_trip=False, warnings=True, fallback=None, serialize_as_any=False, polymorphic_serialization=None)`
-- `model_dump_json(indent=None, ensure_ascii=False, include=None, exclude=None, context=None, by_alias=None, exclude_unset=False, exclude_defaults=False, exclude_none=False, exclude_computed_fields=False, round_trip=False, warnings=True, fallback=None, serialize_as_any=False, polymorphic_serialization=None)`
-- `model_json_schema(by_alias=True, ref_template='#/$defs/{model}', schema_generator=<class 'pydantic.json_schema.GenerateJsonSchema'>, mode='validation', union_format='any_of')`
-- `model_parametrized_name(params: tuple[type[Any], ...])`
-- `model_post_init(context: Any)`
-- `model_rebuild(force=False, raise_errors=True, _parent_namespace_depth=2, _types_namespace=None)`
-- `model_validate(obj: Any, strict=None, extra=None, from_attributes=None, context=None, by_alias=None, by_name=None)`
-- `model_validate_json(json_data: str | bytes | bytearray, strict=None, extra=None, context=None, by_alias=None, by_name=None)`
-- `model_validate_strings(obj: Any, strict=None, extra=None, context=None, by_alias=None, by_name=None)`
-- `parse_file(path: str | Path, content_type=None, encoding='utf8', proto=None, allow_pickle=False)`
-- `parse_obj(obj: Any)`
-- `parse_raw(b: str | bytes, content_type=None, encoding='utf8', proto=None, allow_pickle=False)`
-- `schema(by_alias=True, ref_template='#/$defs/{model}')`
-- `schema_json(by_alias=True, ref_template='#/$defs/{model}', dumps_kwargs: Any)`
-- `update_forward_refs(localns: Any)`
-- `validate(value: Any)`
+*Inherits the full pydantic* ``BaseModel`` *API* (``model_validate``, ``model_dump``, ``model_json_schema``, ...).
 
 ### DetectAnomaliesInput
 
@@ -2960,31 +2914,7 @@ Public methods:
 
 !!! abstract "Usage Documentation"
 
-Public methods:
-
-- `construct(_fields_set=None, values: Any)`
-- `copy(include=None, exclude=None, update=None, deep=False)`
-- `dict(include=None, exclude=None, by_alias=False, exclude_unset=False, exclude_defaults=False, exclude_none=False)`
-- `from_orm(obj: Any)`
-- `json(include=None, exclude=None, by_alias=False, exclude_unset=False, exclude_defaults=False, exclude_none=False, encoder=PydanticUndefined, models_as_dict=PydanticUndefined, dumps_kwargs: Any)`
-- `model_construct(_fields_set=None, values: Any)`
-- `model_copy(update=None, deep=False)`
-- `model_dump(mode='python', include=None, exclude=None, context=None, by_alias=None, exclude_unset=False, exclude_defaults=False, exclude_none=False, exclude_computed_fields=False, round_trip=False, warnings=True, fallback=None, serialize_as_any=False, polymorphic_serialization=None)`
-- `model_dump_json(indent=None, ensure_ascii=False, include=None, exclude=None, context=None, by_alias=None, exclude_unset=False, exclude_defaults=False, exclude_none=False, exclude_computed_fields=False, round_trip=False, warnings=True, fallback=None, serialize_as_any=False, polymorphic_serialization=None)`
-- `model_json_schema(by_alias=True, ref_template='#/$defs/{model}', schema_generator=<class 'pydantic.json_schema.GenerateJsonSchema'>, mode='validation', union_format='any_of')`
-- `model_parametrized_name(params: tuple[type[Any], ...])`
-- `model_post_init(context: Any)`
-- `model_rebuild(force=False, raise_errors=True, _parent_namespace_depth=2, _types_namespace=None)`
-- `model_validate(obj: Any, strict=None, extra=None, from_attributes=None, context=None, by_alias=None, by_name=None)`
-- `model_validate_json(json_data: str | bytes | bytearray, strict=None, extra=None, context=None, by_alias=None, by_name=None)`
-- `model_validate_strings(obj: Any, strict=None, extra=None, context=None, by_alias=None, by_name=None)`
-- `parse_file(path: str | Path, content_type=None, encoding='utf8', proto=None, allow_pickle=False)`
-- `parse_obj(obj: Any)`
-- `parse_raw(b: str | bytes, content_type=None, encoding='utf8', proto=None, allow_pickle=False)`
-- `schema(by_alias=True, ref_template='#/$defs/{model}')`
-- `schema_json(by_alias=True, ref_template='#/$defs/{model}', dumps_kwargs: Any)`
-- `update_forward_refs(localns: Any)`
-- `validate(value: Any)`
+*Inherits the full pydantic* ``BaseModel`` *API* (``model_validate``, ``model_dump``, ``model_json_schema``, ...).
 
 ### HealSeriesInput
 
@@ -2994,31 +2924,7 @@ Public methods:
 
 !!! abstract "Usage Documentation"
 
-Public methods:
-
-- `construct(_fields_set=None, values: Any)`
-- `copy(include=None, exclude=None, update=None, deep=False)`
-- `dict(include=None, exclude=None, by_alias=False, exclude_unset=False, exclude_defaults=False, exclude_none=False)`
-- `from_orm(obj: Any)`
-- `json(include=None, exclude=None, by_alias=False, exclude_unset=False, exclude_defaults=False, exclude_none=False, encoder=PydanticUndefined, models_as_dict=PydanticUndefined, dumps_kwargs: Any)`
-- `model_construct(_fields_set=None, values: Any)`
-- `model_copy(update=None, deep=False)`
-- `model_dump(mode='python', include=None, exclude=None, context=None, by_alias=None, exclude_unset=False, exclude_defaults=False, exclude_none=False, exclude_computed_fields=False, round_trip=False, warnings=True, fallback=None, serialize_as_any=False, polymorphic_serialization=None)`
-- `model_dump_json(indent=None, ensure_ascii=False, include=None, exclude=None, context=None, by_alias=None, exclude_unset=False, exclude_defaults=False, exclude_none=False, exclude_computed_fields=False, round_trip=False, warnings=True, fallback=None, serialize_as_any=False, polymorphic_serialization=None)`
-- `model_json_schema(by_alias=True, ref_template='#/$defs/{model}', schema_generator=<class 'pydantic.json_schema.GenerateJsonSchema'>, mode='validation', union_format='any_of')`
-- `model_parametrized_name(params: tuple[type[Any], ...])`
-- `model_post_init(context: Any)`
-- `model_rebuild(force=False, raise_errors=True, _parent_namespace_depth=2, _types_namespace=None)`
-- `model_validate(obj: Any, strict=None, extra=None, from_attributes=None, context=None, by_alias=None, by_name=None)`
-- `model_validate_json(json_data: str | bytes | bytearray, strict=None, extra=None, context=None, by_alias=None, by_name=None)`
-- `model_validate_strings(obj: Any, strict=None, extra=None, context=None, by_alias=None, by_name=None)`
-- `parse_file(path: str | Path, content_type=None, encoding='utf8', proto=None, allow_pickle=False)`
-- `parse_obj(obj: Any)`
-- `parse_raw(b: str | bytes, content_type=None, encoding='utf8', proto=None, allow_pickle=False)`
-- `schema(by_alias=True, ref_template='#/$defs/{model}')`
-- `schema_json(by_alias=True, ref_template='#/$defs/{model}', dumps_kwargs: Any)`
-- `update_forward_refs(localns: Any)`
-- `validate(value: Any)`
+*Inherits the full pydantic* ``BaseModel`` *API* (``model_validate``, ``model_dump``, ``model_json_schema``, ...).
 
 ### RobustFilterInput
 
@@ -3028,31 +2934,7 @@ Public methods:
 
 !!! abstract "Usage Documentation"
 
-Public methods:
-
-- `construct(_fields_set=None, values: Any)`
-- `copy(include=None, exclude=None, update=None, deep=False)`
-- `dict(include=None, exclude=None, by_alias=False, exclude_unset=False, exclude_defaults=False, exclude_none=False)`
-- `from_orm(obj: Any)`
-- `json(include=None, exclude=None, by_alias=False, exclude_unset=False, exclude_defaults=False, exclude_none=False, encoder=PydanticUndefined, models_as_dict=PydanticUndefined, dumps_kwargs: Any)`
-- `model_construct(_fields_set=None, values: Any)`
-- `model_copy(update=None, deep=False)`
-- `model_dump(mode='python', include=None, exclude=None, context=None, by_alias=None, exclude_unset=False, exclude_defaults=False, exclude_none=False, exclude_computed_fields=False, round_trip=False, warnings=True, fallback=None, serialize_as_any=False, polymorphic_serialization=None)`
-- `model_dump_json(indent=None, ensure_ascii=False, include=None, exclude=None, context=None, by_alias=None, exclude_unset=False, exclude_defaults=False, exclude_none=False, exclude_computed_fields=False, round_trip=False, warnings=True, fallback=None, serialize_as_any=False, polymorphic_serialization=None)`
-- `model_json_schema(by_alias=True, ref_template='#/$defs/{model}', schema_generator=<class 'pydantic.json_schema.GenerateJsonSchema'>, mode='validation', union_format='any_of')`
-- `model_parametrized_name(params: tuple[type[Any], ...])`
-- `model_post_init(context: Any)`
-- `model_rebuild(force=False, raise_errors=True, _parent_namespace_depth=2, _types_namespace=None)`
-- `model_validate(obj: Any, strict=None, extra=None, from_attributes=None, context=None, by_alias=None, by_name=None)`
-- `model_validate_json(json_data: str | bytes | bytearray, strict=None, extra=None, context=None, by_alias=None, by_name=None)`
-- `model_validate_strings(obj: Any, strict=None, extra=None, context=None, by_alias=None, by_name=None)`
-- `parse_file(path: str | Path, content_type=None, encoding='utf8', proto=None, allow_pickle=False)`
-- `parse_obj(obj: Any)`
-- `parse_raw(b: str | bytes, content_type=None, encoding='utf8', proto=None, allow_pickle=False)`
-- `schema(by_alias=True, ref_template='#/$defs/{model}')`
-- `schema_json(by_alias=True, ref_template='#/$defs/{model}', dumps_kwargs: Any)`
-- `update_forward_refs(localns: Any)`
-- `validate(value: Any)`
+*Inherits the full pydantic* ``BaseModel`` *API* (``model_validate``, ``model_dump``, ``model_json_schema``, ...).
 
 ### StreamEndInput
 
@@ -3062,31 +2944,7 @@ Public methods:
 
 !!! abstract "Usage Documentation"
 
-Public methods:
-
-- `construct(_fields_set=None, values: Any)`
-- `copy(include=None, exclude=None, update=None, deep=False)`
-- `dict(include=None, exclude=None, by_alias=False, exclude_unset=False, exclude_defaults=False, exclude_none=False)`
-- `from_orm(obj: Any)`
-- `json(include=None, exclude=None, by_alias=False, exclude_unset=False, exclude_defaults=False, exclude_none=False, encoder=PydanticUndefined, models_as_dict=PydanticUndefined, dumps_kwargs: Any)`
-- `model_construct(_fields_set=None, values: Any)`
-- `model_copy(update=None, deep=False)`
-- `model_dump(mode='python', include=None, exclude=None, context=None, by_alias=None, exclude_unset=False, exclude_defaults=False, exclude_none=False, exclude_computed_fields=False, round_trip=False, warnings=True, fallback=None, serialize_as_any=False, polymorphic_serialization=None)`
-- `model_dump_json(indent=None, ensure_ascii=False, include=None, exclude=None, context=None, by_alias=None, exclude_unset=False, exclude_defaults=False, exclude_none=False, exclude_computed_fields=False, round_trip=False, warnings=True, fallback=None, serialize_as_any=False, polymorphic_serialization=None)`
-- `model_json_schema(by_alias=True, ref_template='#/$defs/{model}', schema_generator=<class 'pydantic.json_schema.GenerateJsonSchema'>, mode='validation', union_format='any_of')`
-- `model_parametrized_name(params: tuple[type[Any], ...])`
-- `model_post_init(context: Any)`
-- `model_rebuild(force=False, raise_errors=True, _parent_namespace_depth=2, _types_namespace=None)`
-- `model_validate(obj: Any, strict=None, extra=None, from_attributes=None, context=None, by_alias=None, by_name=None)`
-- `model_validate_json(json_data: str | bytes | bytearray, strict=None, extra=None, context=None, by_alias=None, by_name=None)`
-- `model_validate_strings(obj: Any, strict=None, extra=None, context=None, by_alias=None, by_name=None)`
-- `parse_file(path: str | Path, content_type=None, encoding='utf8', proto=None, allow_pickle=False)`
-- `parse_obj(obj: Any)`
-- `parse_raw(b: str | bytes, content_type=None, encoding='utf8', proto=None, allow_pickle=False)`
-- `schema(by_alias=True, ref_template='#/$defs/{model}')`
-- `schema_json(by_alias=True, ref_template='#/$defs/{model}', dumps_kwargs: Any)`
-- `update_forward_refs(localns: Any)`
-- `validate(value: Any)`
+*Inherits the full pydantic* ``BaseModel`` *API* (``model_validate``, ``model_dump``, ``model_json_schema``, ...).
 
 ### StreamStartInput
 
@@ -3096,31 +2954,7 @@ Public methods:
 
 !!! abstract "Usage Documentation"
 
-Public methods:
-
-- `construct(_fields_set=None, values: Any)`
-- `copy(include=None, exclude=None, update=None, deep=False)`
-- `dict(include=None, exclude=None, by_alias=False, exclude_unset=False, exclude_defaults=False, exclude_none=False)`
-- `from_orm(obj: Any)`
-- `json(include=None, exclude=None, by_alias=False, exclude_unset=False, exclude_defaults=False, exclude_none=False, encoder=PydanticUndefined, models_as_dict=PydanticUndefined, dumps_kwargs: Any)`
-- `model_construct(_fields_set=None, values: Any)`
-- `model_copy(update=None, deep=False)`
-- `model_dump(mode='python', include=None, exclude=None, context=None, by_alias=None, exclude_unset=False, exclude_defaults=False, exclude_none=False, exclude_computed_fields=False, round_trip=False, warnings=True, fallback=None, serialize_as_any=False, polymorphic_serialization=None)`
-- `model_dump_json(indent=None, ensure_ascii=False, include=None, exclude=None, context=None, by_alias=None, exclude_unset=False, exclude_defaults=False, exclude_none=False, exclude_computed_fields=False, round_trip=False, warnings=True, fallback=None, serialize_as_any=False, polymorphic_serialization=None)`
-- `model_json_schema(by_alias=True, ref_template='#/$defs/{model}', schema_generator=<class 'pydantic.json_schema.GenerateJsonSchema'>, mode='validation', union_format='any_of')`
-- `model_parametrized_name(params: tuple[type[Any], ...])`
-- `model_post_init(context: Any)`
-- `model_rebuild(force=False, raise_errors=True, _parent_namespace_depth=2, _types_namespace=None)`
-- `model_validate(obj: Any, strict=None, extra=None, from_attributes=None, context=None, by_alias=None, by_name=None)`
-- `model_validate_json(json_data: str | bytes | bytearray, strict=None, extra=None, context=None, by_alias=None, by_name=None)`
-- `model_validate_strings(obj: Any, strict=None, extra=None, context=None, by_alias=None, by_name=None)`
-- `parse_file(path: str | Path, content_type=None, encoding='utf8', proto=None, allow_pickle=False)`
-- `parse_obj(obj: Any)`
-- `parse_raw(b: str | bytes, content_type=None, encoding='utf8', proto=None, allow_pickle=False)`
-- `schema(by_alias=True, ref_template='#/$defs/{model}')`
-- `schema_json(by_alias=True, ref_template='#/$defs/{model}', dumps_kwargs: Any)`
-- `update_forward_refs(localns: Any)`
-- `validate(value: Any)`
+*Inherits the full pydantic* ``BaseModel`` *API* (``model_validate``, ``model_dump``, ``model_json_schema``, ...).
 
 ### StreamUpdateInput
 
@@ -3130,31 +2964,7 @@ Public methods:
 
 !!! abstract "Usage Documentation"
 
-Public methods:
-
-- `construct(_fields_set=None, values: Any)`
-- `copy(include=None, exclude=None, update=None, deep=False)`
-- `dict(include=None, exclude=None, by_alias=False, exclude_unset=False, exclude_defaults=False, exclude_none=False)`
-- `from_orm(obj: Any)`
-- `json(include=None, exclude=None, by_alias=False, exclude_unset=False, exclude_defaults=False, exclude_none=False, encoder=PydanticUndefined, models_as_dict=PydanticUndefined, dumps_kwargs: Any)`
-- `model_construct(_fields_set=None, values: Any)`
-- `model_copy(update=None, deep=False)`
-- `model_dump(mode='python', include=None, exclude=None, context=None, by_alias=None, exclude_unset=False, exclude_defaults=False, exclude_none=False, exclude_computed_fields=False, round_trip=False, warnings=True, fallback=None, serialize_as_any=False, polymorphic_serialization=None)`
-- `model_dump_json(indent=None, ensure_ascii=False, include=None, exclude=None, context=None, by_alias=None, exclude_unset=False, exclude_defaults=False, exclude_none=False, exclude_computed_fields=False, round_trip=False, warnings=True, fallback=None, serialize_as_any=False, polymorphic_serialization=None)`
-- `model_json_schema(by_alias=True, ref_template='#/$defs/{model}', schema_generator=<class 'pydantic.json_schema.GenerateJsonSchema'>, mode='validation', union_format='any_of')`
-- `model_parametrized_name(params: tuple[type[Any], ...])`
-- `model_post_init(context: Any)`
-- `model_rebuild(force=False, raise_errors=True, _parent_namespace_depth=2, _types_namespace=None)`
-- `model_validate(obj: Any, strict=None, extra=None, from_attributes=None, context=None, by_alias=None, by_name=None)`
-- `model_validate_json(json_data: str | bytes | bytearray, strict=None, extra=None, context=None, by_alias=None, by_name=None)`
-- `model_validate_strings(obj: Any, strict=None, extra=None, context=None, by_alias=None, by_name=None)`
-- `parse_file(path: str | Path, content_type=None, encoding='utf8', proto=None, allow_pickle=False)`
-- `parse_obj(obj: Any)`
-- `parse_raw(b: str | bytes, content_type=None, encoding='utf8', proto=None, allow_pickle=False)`
-- `schema(by_alias=True, ref_template='#/$defs/{model}')`
-- `schema_json(by_alias=True, ref_template='#/$defs/{model}', dumps_kwargs: Any)`
-- `update_forward_refs(localns: Any)`
-- `validate(value: Any)`
+*Inherits the full pydantic* ``BaseModel`` *API* (``model_validate``, ``model_dump``, ``model_json_schema``, ...).
 
 ## Vision
 
@@ -3280,7 +3090,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.misc.collatz`
 
-Funttore d'asse discreto per la particolarizzazione del rumore binario.
+Discrete-axis functor for binarizing noise.
 
 ### Metro
 
@@ -3301,7 +3111,7 @@ Public methods:
 *Bases:* ResidualDynamicsLearner
 *Guide:* [learn/online_dynamics.md](../learn/online_dynamics.md)
 
-``ResidualDynamicsLearner`` with a per-joint drift trigger on the
+``ResidualDynamicsLearner`` with a per-joint drift trigger on the residual. residual.
 
 Public methods:
 
@@ -3329,7 +3139,7 @@ Public methods:
 *Module:* `dense_armor.utility.anomaly.streaming`
 *Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
 
-N istanze indipendenti di `StreamingDeviationDetector`, una per
+N independent ``StreamingDeviationDetector`` instances, one per channel.
 
 Public methods:
 
@@ -3341,7 +3151,7 @@ Public methods:
 *Module:* `dense_armor.utility.anomaly.streaming`
 *Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
 
-Flag di deviazione causale a latenza zero, un punto alla volta --
+Zero-latency causal deviation flag, one point at a time.
 
 Public methods:
 
@@ -3355,7 +3165,7 @@ Public methods:
 *Module:* `dense_armor.armatura`
 *Guide:* [shields/armatura.md](../shields/armatura.md)
 
-Scudo indossabile con CLIP DINAMICO universale.
+Wearable shield with universal DYNAMIC CLIP.
 
 Public methods:
 
