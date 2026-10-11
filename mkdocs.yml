@@ -38,6 +38,7 @@ theme:
     logo: material/shield-half-full
 
 markdown_extensions:
+  - md_in_html
   - admonition
   - pymdownx.details
   - pymdownx.superfences
@@ -68,6 +69,10 @@ plugins:
 
 nav:
   - Home: index.md
+  - API:
+      - Generale: api/general.md
+      - Robot: api/robot.md
+      - IA: api/ai.md
   - Start:
     - Getting Started: getting-started.md
     - API Reference: api/index.md
