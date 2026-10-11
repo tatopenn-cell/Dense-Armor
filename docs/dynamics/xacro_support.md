@@ -10,7 +10,7 @@ keep two files in sync.
 `RigidBodyModel` accepts either. Point it at a `.xacro` file and the expansion happens
 inside the loader.
 
-## The robot
+## 1. The robot
 
 The Franka Panda from `clvrai/furniture`. Its description ships as two xacro files
 (`panda_arm.xacro` and `hand.xacro`) plus a top-level `panda_arm_hand.urdf.xacro` that
@@ -31,7 +31,7 @@ print(model.n)
 joints are counted as one real DOF because of the `<mimic>` tag on the second one
 (see [coupled joints via mimic](mimic_joints.md)).
 
-## 1. What happens under the hood
+## 2. What happens under the hood
 
 If the path ends in `.xacro`, the loader calls the real `xacro` package —
 `xacro.process_file(path).toxml()` — and parses the resulting XML. If the path ends in
@@ -41,7 +41,7 @@ The `xacro` package is the same expander the ROS ecosystem uses. Nothing about m
 math expressions, conditionals, or includes is reimplemented here: a xacro file is
 expanded by xacro, and the resulting URDF is parsed by `RigidBodyModel`.
 
-## 2. Install
+## 3. Install
 
 ```bash
 pip install xacro
@@ -50,13 +50,13 @@ pip install xacro
 The `xacro` package is a small pure-Python dependency. It does not require a ROS
 installation.
 
-## 3. Flat URDF files are unchanged
+## 4. Flat URDF files are unchanged
 
 If your URDF is already expanded (no `<xacro:...>` tags, no `.xacro` extension), the
 loader reads it exactly the same as before. There is no cost and no change in
 behaviour for the common case.
 
-## 4. Common cases
+## 5. Common cases
 
 **Parameters.** A manufacturer ships the same arm with different payloads, and
 parametrizes the mass:
@@ -94,7 +94,7 @@ The include is resolved relative to the including file. This is what makes the P
 `panda_arm_hand.urdf.xacro` work: it includes `panda_arm.xacro` and `hand.xacro`
 in the right order.
 
-## 5. Debugging an expansion
+## 6. Debugging an expansion
 
 When the expansion fails — a missing parameter, a macro recursion, an include path the
 `xacro` package cannot resolve — the error comes from `xacro` and the traceback points
