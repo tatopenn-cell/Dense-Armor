@@ -18,7 +18,7 @@ In theory the QP always has a solution away from singular configurations (Propos
 paper); numerically, when the solver reports it infeasible, the controller keeps the safety
 constraint and relaxes passivity (step 6).
 
-## The robot
+## 1. The robot
 
 Any robot loaded from its URDF. Here a Franka Panda, the same robot used everywhere in
 this section.
@@ -56,7 +56,7 @@ The four return values:
 `p_des`, `pd_des`, `pdd_des` are the desired position, velocity, and acceleration of
 that link at this instant. `eps` is the manipulability floor.
 
-## 1. What "manipulability" means
+## 2. What "manipulability" means
 
 The **manipulability index** at a configuration `q` is
 
@@ -74,7 +74,7 @@ The controller enforces `μ(q) ≥ ε` with a user-chosen floor `ε`. The call a
 Section IV). At the configuration in the example the index is `0.0921`, well above the
 floor, and the barrier `h = 0.0921 − 0.03 = 0.0621` is correspondingly positive.
 
-## 2. What the QP actually solves
+## 3. What the QP actually solves
 
 At each call the controller first computes a nominal joint acceleration $\ddot q_{nom}$ (task-space
 PD with gains `kp_task`, `kd_task`, plus damping `kd_null` in the redundant null space), then
@@ -98,7 +98,7 @@ $$\min_{\ddot q}\; \tfrac12 \lVert \ddot q - \ddot q_{nom} \rVert^2 \quad \text{
 All rows are affine in $\ddot q$, so this is a small QP, solved with OSQP
 ([Stellato et al. 2020](https://doi.org/10.1007/s12532-020-00179-2)).
 
-## 3. Hand case: joint limit CBF in action
+## 4. Hand case: joint limit CBF in action
 
 Franka Panda, `panda_joint4`, real range `[−3.1416, 0.0]`. The joint sits right at its upper
 bound (`q[3] = −0.001`) and moves further up (`qd[3] = 5.0`):
@@ -125,7 +125,7 @@ The nominal PD command alone would ask `qdd[3] = −205.8`. At this state the jo
 returns `−7.175`, the edge of the box. The motor is never commanded past the joint limit,
 whatever the PD command wants.
 
-## 4. On three real robots
+## 5. On three real robots
 
 At each robot's own true kinematic singularity, the minimum manipulability over a
 200-step trajectory under the controller:
@@ -142,7 +142,7 @@ Without the CBF, the controller reaches it: `μ` drops to near zero. With the CB
 arm from approaching the singular configuration (that would be over-restrictive);
 it stops the arm from *being* singular.
 
-## 5. What "passivity" means here
+## 6. What "passivity" means here
 
 The tracking-error storage function `V` is a scalar measuring how far the joint is
 from the reference, weighted by the mass matrix. The passivity constraint is `V̇ ≤ 0`
@@ -160,7 +160,7 @@ paper) loses its passivity guarantee the moment any additional constraint become
 active. The controller here keeps it: the passivity constraint is inside the QP, not
 assumed.
 
-## 6. A real bug, found and fixed
+## 7. A real bug, found and fixed
 
 OSQP can report the passivity + CBF QP **jointly infeasible**. The passivity
 constraint's coefficients go numerically near-zero exactly when tracking is already

@@ -9,7 +9,7 @@ The 6-DoF controller extends the same QP structure to the link's **full pose** �
 position and orientation together — by using its 6×N spatial Jacobian instead of the
 3×N translational one. Everything else is unchanged.
 
-## The robot and the target
+## 1. The robot and the target
 
 Same Franka Panda, same URDF. This time the target is a full pose: position *and*
 orientation.
@@ -46,7 +46,7 @@ gives `mu = 0.0641` here. The spatial manipulability is a **stricter** measure t
 positional one: it takes the angular rows of the Jacobian into account, and the arm at
 this configuration is further from singularity in position than in orientation.
 
-## 1. The attitude error
+## 2. The attitude error
 
 The orientation error uses Lee, Leok & McClamroch (2010)'s SO(3) formula:
 
@@ -73,7 +73,7 @@ real singularity at the poles (`pitch = ±90°`), where two of the three angles 
 undefined and the error signal is meaningless. The SO(3) formulation avoids that
 entirely.
 
-## 2. The QP, symbol by symbol
+## 3. The QP, symbol by symbol
 
 The QP has the same structure as the position-only controller:
 
@@ -82,14 +82,14 @@ $$\min_{\ddot q}\; \tfrac12 \lVert \ddot q - \ddot q_{nom} \rVert^2 \quad \text{
 The difference is inside $\ddot q_{nom}$: the nominal task-space command now contains a position
 error and an orientation error, stacked in a 6-vector and mapped through the 6×N spatial Jacobian,
 
-$$\begin{bmatrix} K_{p,R}\, e_R + K_{d,R}(\omega_{des} - \omega) \ K_{p,p}(p_{des} - p) + K_{d,p}(\dot p_{des} - \dot p) \end{bmatrix},$$
+$$\begin{bmatrix} K_{p,R}\, e_R + K_{d,R}(\omega_{des} - \omega) \\ K_{p,p}(p_{des} - p) + K_{d,p}(\dot p_{des} - \dot p) \end{bmatrix},$$
 
 angular rows first, as in the Jacobian's `[ω; v]` order. The passivity row uses a storage function
 with both the linear and the angular tracking error, and the manipulability $\mu$ of the CBF row
 is computed from the **spatial** Jacobian: this is what lets the controller see the wrist
 singularities the position-only version does not.
 
-## 3. Hand case: exact gravity compensation
+## 4. Hand case: exact gravity compensation
 
 At the exact desired pose (position **and** orientation), with zero velocity, the
 tracking error is zero. The QP should then return a `qdd` of zero and a `tau` equal
@@ -117,7 +117,7 @@ Jacobian, the rotation error, the task-space Lambda — not just "does not crash
 only torque the controller should ask for at the desired pose is the one holding the
 arm against gravity.
 
-## 4. Real closed-loop convergence
+## 5. Real closed-loop convergence
 
 Start the arm 10 cm away in position and 30° away in orientation (rotation about world
 `z`). Integrate under the real rigid-body dynamics with RK4 for 1000 control ticks at
@@ -132,7 +132,7 @@ Both errors converge to zero. This is the same order of magnitude that the posit
 controller reaches for position alone — extending to full pose does not degrade the
 convergence.
 
-## 5. A second real bug, found by the 6-DoF validation
+## 6. A second real bug, found by the 6-DoF validation
 
 The 6-DoF (spatial) manipulability measure can be **well below the 3-DoF one** at the
 same configuration. Concretely, on the Kinova Gen3 6-DoF at a certain
@@ -158,7 +158,7 @@ guaranteed feasible in `ℝⁿ` as long as the manipulability gradient is nonzer
 preventing an actual kinematic singularity is the harder safety constraint of the two.
 The joint-limit box is the one that gives.
 
-## 6. On real robots
+## 7. On real robots
 
 | robot | link | μ | h = μ − ε | qdd norm |
 |---|---|---|---|---|
@@ -191,8 +191,8 @@ Experiment 63's `RigidBodyModel`-based controller
   task-space Lambda together.
 - **Real closed-loop convergence**: a 10 cm position offset plus a 30° orientation
   offset (about world `z`), RK4-integrated for 1000 control ticks, converges to
-  position error below `1e-6` m and orientation error below `1e-4` rad (the bounds the
-regression test asserts).
+  position error below `1e-6` m and orientation error below `1e-4` rad (the bounds
+  the regression test asserts).
 
 **Source of the theory**: Kurtz, Wensing & Lin (2021,
 [arXiv:2109.13349](https://arxiv.org/abs/2109.13349)). The manipulability barrier is an

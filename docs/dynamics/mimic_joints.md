@@ -19,7 +19,7 @@ and one extra torque channel that does not correspond to any real actuator. Ever
 downstream computation — the mass matrix, the gravity vector, the Jacobian, the
 controllers — is silently wrong.
 
-## The robot
+## 1. The robot
 
 The Franka Panda with the hand. Two finger joints, one master (`panda_finger_joint1`),
 one mimic (`panda_finger_joint2`).
@@ -38,7 +38,7 @@ print(model.n, model.mimic_map["panda_finger_joint2"])
 `model.n` is `8` — 7 arm joints plus 1 independent gripper coordinate, not 9. The two
 fingers are counted as one real DOF.
 
-## 1. How mimic joints are represented
+## 2. How mimic joints are represented
 
 The model keeps a map from each mimic joint to `(master_dof_idx, multiplier, offset)`:
 
@@ -54,7 +54,7 @@ Wherever the model needs the mimic joint's own angle (forward kinematics, Jacobi
 mass matrix), it computes `q[master] · multiplier + offset` instead of indexing its
 own coordinate. The mimic joint contributes no independent column of its own.
 
-## 2. Why this matters for the mass matrix
+## 3. Why this matters for the mass matrix
 
 Without the mimic handling the model would have 9 coordinates: a 9×9 mass matrix and a ninth
 torque channel for a finger that no motor drives on its own, and the dynamics could move the two
@@ -63,7 +63,7 @@ fingers independently, which the real gripper cannot do.
 With the mimic handling the model is 8×8: the finger pair is one coordinate, and its mass enters
 the matrix through the master joint.
 
-## 3. How mimic joints are handled in the Jacobian
+## 4. How mimic joints are handled in the Jacobian
 
 Forward kinematics is exact: `q[master] · multiplier + offset` is substituted
 wherever the mimic joint's own angle would appear. Since the rest of the kinematics
@@ -77,7 +77,7 @@ column (computed from its own axis and origin, same as any other joint) is
 **scaled by the multiplier** and **added into its master's column**, instead of getting
 a column of its own.
 
-## 4. Verifying the handling
+## 5. Verifying the handling
 
 Drive the master finger joint by a small amount and check that both fingertips move by
 the same amount in opposite directions (their local closing axes point opposite ways):
@@ -100,7 +100,7 @@ print(round(float(jnp.linalg.norm(q1 - p1)), 4), round(float(jnp.linalg.norm(q2 
 Both fingers moved by exactly the master's displacement. In the Jacobian, the mimic
 column matches the finite-difference derivative of `link_pose` to under `1e-5`.
 
-## 5. What is not supported
+## 6. What is not supported
 
 **One master per mimic.** A mimic joint's `joint=` attribute must name an
 **independent** (non-mimic) joint. Mimicking another mimic joint is not supported.
