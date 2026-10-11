@@ -1044,7 +1044,7 @@ Public methods:
 *Module:* `dense_armor.roles.wrapper`
 *Bases:* Estimator
 
-Delegates ``_supervised`` and ``_multiclass`` to the wrapped estimator. estimator.
+Delegates ``_supervised`` and ``_multiclass`` to the wrapped estimator.
 
 Public methods:
 
@@ -2718,7 +2718,7 @@ Public methods:
 *Module:* `dense_armor.core.noise`
 *Guide:* [toolkit/toolkit.md](../toolkit/toolkit.md)
 
-Profiles the host architecture (CPU/GPU/JAX) to set the thresholds.
+Profiles the host architecture (CPU/GPU/JAX) to set the damping thresholds.
 
 Public methods:
 
@@ -3111,7 +3111,7 @@ Public methods:
 *Bases:* ResidualDynamicsLearner
 *Guide:* [learn/online_dynamics.md](../learn/online_dynamics.md)
 
-``ResidualDynamicsLearner`` with a per-joint drift trigger on the residual. residual.
+``ResidualDynamicsLearner`` with a per-joint drift trigger on the residual.
 
 Public methods:
 
