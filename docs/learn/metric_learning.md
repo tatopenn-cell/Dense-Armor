@@ -17,7 +17,7 @@ the robot works. It uses one of three algorithms ported from their papers:
 - **LEGO** (Jain et al. 2008) — LogDet-regularized Mahalanobis matrix from pairs with a target distance.
 - **POLA** (Shalev-Shwartz et al. 2004) — pseudo-metric from similar / dissimilar pairs, kept positive semi-definite.
 
-## The data
+## 1. The data
 
 A stream of grasp features, one per attempt. Each sample is a 2-D vector: two joint
 torques at the moment of contact. Label: which grasp type succeeded.
@@ -34,7 +34,7 @@ y = np.array(["A"] * 200 + ["B"] * 200)
 Euclidean distance on this data works, because the clusters are far apart. On a real
 robot they are not.
 
-## 1. Learn a distance from triplets: OASIS
+## 2. Learn a distance from triplets: OASIS
 
 OASIS takes three samples at a time: an anchor `xa`, a similar sample `xp`, and a
 different sample `xn`. It learns a matrix `W` such that the bilinear similarity
@@ -96,7 +96,7 @@ learner.learn_triplet({"x0": 1.0, "x1": 0.0},
 OASIS's learned `W` is not required to be symmetric. The distance used downstream is
 built from `M = WᵀW`, which is always positive semi-definite.
 
-## 2. Learn from pairs with a target distance: LEGO
+## 3. Learn from pairs with a target distance: LEGO
 
 LEGO takes two samples and a target squared distance `y`. It updates a PSD matrix `A`
 toward that target using a LogDet-regularized gradient step.
@@ -148,7 +148,7 @@ LEGO needs a target squared distance per pair. `LEGO.percentile_targets` compute
 5th/95th percentiles of same-class / different-class distances, as in Section 4 of the
 paper.
 
-## 3. Learn a pseudo-metric from similar/dissimilar pairs: POLA
+## 4. Learn a pseudo-metric from similar/dissimilar pairs: POLA
 
 POLA learns a pseudo-metric from a stream of pairs labelled `y = +1` (similar) or
 `y = −1` (different). It keeps a matrix `A` and a threshold `b`; a pair is predicted
@@ -197,7 +197,7 @@ learner.learn_pair({"x0": 1.0, "x1": 0.0},
                    1)
 ```
 
-## 4. The k-NN classifier that learns its metric
+## 5. The k-NN classifier that learns its metric
 
 A metric learner does not fit river's `Classifier` / `Regressor` / `Transformer` types:
 it learns from two or three samples at a time and outputs a distance. `MetricLearner` is
@@ -228,10 +228,6 @@ print(hits / len(y))
 Two classes that differ only in the first feature; the k-NN learns its similarity with OASIS while it
 classifies, and gets 93.75 % of the 400 samples right, each predicted before it is learned.
 
-On the running data:
-
-Its prequential accuracy on the same stream is the last line of the block above.
-
 The same advantage on robot data: three robot states told apart by two joint features, plus three
 noisy features with a much larger range that dominate the plain Euclidean distance.
 
@@ -242,7 +238,7 @@ classifying lifts it to 0.89 (OASIS), 0.92 (LEGO) and 0.74 (POLA) after 600 samp
 metric learns to ignore the noisy features. In the original paper OASIS already beat LEGO and the
 Euclidean metric on image retrieval (Chechik et al. 2009, Figure 2).
 
-## 5. Results on river streams
+## 6. Results on river streams
 
 `progressive_val_score` (predict, then learn), `StandardScaler` in front, k = 5,
 `window_size=1000`, metric learned online with the default parameters:
@@ -265,19 +261,15 @@ the baseline.
 ## Details
 
 **OASIS** (Chechik, Sharma, Shalit, Bengio, 2009). W is not symmetric; the distance
-uses `M = WᵀW`. The similarity is the bilinear form $S_W(p_i, p_j) = p_i^	op W p_j$ (eq. 2 of the
-paper) and the update is the passive-aggressive step $W \leftarrow W + 	au V$ with
-$	au = \min(C,\; \ell_W / \lVert V
-Vert^2)$ (eq. 5): "a gradient descent step with a step size τ
+uses `M = WᵀW`. The similarity is the bilinear form $S_W(p_i, p_j) = p_i^\top W p_j$ (eq. 2 of the
+paper) and the update is the passive-aggressive step $W \leftarrow W + \tau V$ with
+$\tau = \min(C,\; \ell_W / \lVert V\Vert^2)$ (eq. 5): "a gradient descent step with a step size τ
 that can be computed exactly", in the paper's words.
 
 **POLA** (Shalev-Shwartz, Singer, Ng, 2004). The `1 + ‖z‖⁴` in the denominator is not a
 typo: the update is a projection of the pair $(A, b)$ onto a half-space, whose normal vector
-$\chi = (-y\, z z^	op,\; y)$ has squared norm $\lVert z z^	op
-Vert_F^2 + 1 = \lVert z
-Vert^4 + 1$; the
-`+ 1` comes from the threshold coordinate `b`. This gives $\alpha = \ell / (\lVert z
-Vert^4 + 1)$ and the
+$\chi = (-y\, z z^\top,\; y)$ has squared norm $\lVert z z^\top\Vert_F^2 + 1 = \lVert z\Vert^4 + 1$; the
+`+ 1` comes from the threshold coordinate `b`. This gives $\alpha = \ell / (\lVert z\Vert^4 + 1)$ and the
 update of eq. 4 of the paper; a second projection onto the positive semi-definite cone
 (section 3.2) removes negative eigenvalues.
 

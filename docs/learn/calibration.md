@@ -11,7 +11,7 @@ wraps any [river](https://riverml.xyz) classifier and corrects its probabilities
 sample at a time, using the map `sigmoid(a · logit(p) + b)` learned by Online Newton
 Step.
 
-## The idea, in one line
+## 1. The idea, in one line
 
 The base classifier's probability `p` is transformed into
 `σ(a · logit(p) + b)`, with `a` and `b` learned online. If the base model is
@@ -19,7 +19,7 @@ over-confident (probabilities pushed toward 0 and 1), `a < 1` shrinks them towar
 If it is under-confident, `a > 1` stretches them out. If it is systematically biased
 toward one side, `b ≠ 0` shifts them. Both numbers adapt as new samples arrive.
 
-## The formula, symbol by symbol
+## 2. The formula, symbol by symbol
 
 Let `p` be the base model's probability for a sample, and `y ∈ {0, 1}` its true label.
 
@@ -42,7 +42,7 @@ infinite, and the paper's regret bound (Theorem 2.1 of Gupta–Ramdas 2023,
 [arXiv:2305.00070](https://arxiv.org/abs/2305.00070)) assumes the base model never
 outputs exactly 0 or 1.
 
-## Hand case
+## 3. Hand case
 
 Base model says `p = 0.8` on a sample whose true label is `y = 0`. Start
 `(a, b) = (1, 0)`, so `θ = (1, 0)`.
@@ -70,7 +70,7 @@ The base model was wrong and confident; after one sample of feedback, the calibr
 model says 0.760. It **lowered its confidence** after being wrong — exactly what
 calibration is supposed to do.
 
-## The result
+## 4. The result
 
 ```python
 from river import datasets, evaluate, metrics, tree
@@ -90,7 +90,7 @@ The calibrated tree's log-loss on Phishing drops from 0.4535 to 0.3499. The wrap
 passes river's own `check_estimator` and runs at about 32,000 samples per second on top
 of the base model.
 
-## The parameters
+## 5. The parameters
 
 | Element | Paper (Algorithm 1) | Parameter |
 |---|---|---|

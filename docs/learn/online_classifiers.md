@@ -9,7 +9,7 @@ different surface.
 `DriftAdaptiveClassifier` wraps either of them with a drift detector on its own
 prediction loss and swaps in a fresh copy when the old one goes stale.
 
-## The data
+## 1. The data
 
 6,000 samples, 3 states from a Markov chain (stay probability 0.95, mean dwell 20
 samples), 4 joint features with unit noise:
@@ -21,12 +21,7 @@ samples), 4 joint features with unit noise:
 From sample 3000 the contact load **moves to the other two joints**: contact becomes
 `(0, 0, 2, 2)`. The classifier was trained on the old signature.
 
-The stream: three states (0 free, 1 contact, 2 collision) that change like a Markov chain
-(stay with probability 0.95, mean stay 20 samples); four joint features with mean (0,0,0,0),
-(2,2,0,0), (4,4,4,4) and unit noise; from sample 3000 the contact load moves to the other two
-joints, (0,0,2,2). Every block below builds it in its first lines.
-
-## 1. Gaussian naive Bayes, one sample at a time
+## 2. Gaussian naive Bayes, one sample at a time
 
 For each class and each feature, the classifier keeps a running mean and variance,
 updated by Welford's algorithm:
@@ -84,7 +79,7 @@ print(np.mean(hit[500:3000]).round(3), np.mean(hit[3000:3200]).round(3), np.mean
 
 Prequential accuracy (predict first, then learn) before the change, right after it, and late.
 
-## 2. What happens when the signature changes
+## 3. What happens when the signature changes
 
 The contact state moves from joints 0–1 to joints 2–3 at sample 3000. A classifier
 without forgetting keeps the old contact mean and gets every post-change contact sample
@@ -111,7 +106,7 @@ late phase (0.913 instead of 0.941).
 The drift-adaptive wrapper is the third option: it does not need a forgetting factor
 chosen in advance.
 
-## 3. The drift-adaptive wrapper
+## 4. The drift-adaptive wrapper
 
 `DriftAdaptiveClassifier` wraps any classifier with a drift detector on the classifier's
 own prediction loss. Per sample:
@@ -156,7 +151,7 @@ about 55 samples after the change, and recovers in 145 samples. It reaches 0.931
 late phase — better than the no-forgetting baseline (0.879) and close to the tuned
 `alpha = 0.1` (0.913).
 
-## 4. The softmax regression alternative
+## 5. The softmax regression alternative
 
 `OnlineSoftmaxRegression` is a multinomial logistic regression with AdaGrad. It uses
 the same interface and is often better when the class boundaries are not Gaussian.
@@ -177,7 +172,7 @@ learning rate (default 0.1); `l2` adds a small penalty.
 
 Classes are added on the fly when a new label arrives.
 
-## 5. Cost
+## 6. Cost
 
 Per sample, on one CPU core:
 
