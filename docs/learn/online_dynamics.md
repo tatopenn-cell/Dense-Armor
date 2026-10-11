@@ -11,7 +11,7 @@ same direction, and on a heavy payload that "slightly" is enough to miss the tar
 from [`urdf_dynamics`](../dynamics/urdf_dynamics.md); the learner adds a residual torque
 on top so the controller does not need exact masses or friction coefficients.
 
-## The two torques
+## 1. The two torques
 
 A joint reports what it actually applied: the measured torque `tau_measured`. The URDF
 model predicts what a *perfect* robot would have applied: the nominal torque. The
@@ -42,7 +42,7 @@ from the payload-free URDF, predicts torques of 1.422 and 0.478 N·m where the r
 and 0.558; the URDF alone says 0.85 and 0.287. `write_minimal_urdf` writes this small test robot
 to a file, so the example runs anywhere.
 
-## 1. The five features per joint
+## 2. The five features per joint
 
 For each joint `j`, the learner regresses the residual torque on five features:
 
@@ -71,7 +71,7 @@ tau_residual = tau_measured − M(q) qdd − C(q, qd) qd − g(q)
 
 so the learner only has to model what the URDF does not.
 
-## 2. Recursive Least Squares
+## 3. Recursive Least Squares
 
 ### The formula, symbol by symbol
 
@@ -124,7 +124,7 @@ With `λ < 1` the same update happens but the effective count of past samples is
 at `1 / (1 − λ)`. `λ = 0.99` means roughly 100 samples of memory; `λ = 0.9` means
 roughly 10.
 
-## 3. On a simulated arm with a payload
+## 4. On a simulated arm with a payload
 
 A 2-link URDF, true torques = URDF torques + payload + viscous friction. The learner
 starts from the URDF prediction and adds the residual. Test check: the learner's
@@ -156,7 +156,7 @@ The nominal model misses the payload; the learner picks it up in the five weight
 (the `qdd` coefficient absorbs the payload's inertia, the `1` absorbs the constant
 offset, the `sign(qd)` coefficient absorbs Coulomb friction).
 
-## 4. When a parameter changes mid-run
+## 5. When a parameter changes mid-run
 
 If the payload changes at sample 200 of 400, a `λ = 1` learner (batch least squares)
 keeps the old weights and gets the new regime wrong. A `λ = 0.99` learner forgets the
@@ -180,7 +180,7 @@ The choice of `λ` is a trade-off: too small and the learner is noisy (it always
 the last few samples), too large and it is slow to adapt. `0.99` is a reasonable default
 for a joint that changes over seconds.
 
-## 5. The drift-aware variant (available, not default)
+## 6. The drift-aware variant (available, not default)
 
 `DriftAwareResidualDynamicsLearner` extends the above with a drift detector on the
 standardized prediction error. When the detector fires, the RLS forgetting factor is
@@ -204,7 +204,7 @@ The class is kept as an API so users can try their own parameters on their own d
 but for a plain payload change the recommended default is the plain
 `ResidualDynamicsLearner` with a suitable `λ`.
 
-## 6. Performance note
+## 7. Performance note
 
 `RigidBodyModel` methods are pure-Python recursive walks over dicts and retrace the JAX
 graph on every call, so `jax.jit` on the model does **not** cache across calls the way
