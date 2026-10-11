@@ -4,11 +4,18 @@ The Dense-Armor APIs, read from the physical side: the real Panda
 skeleton from `test/fixtures/urdf/panda.urdf`, with every joint
 mapped to the modules that work with it.
 
+## Interactive map
+
+Clicca una parte del corpo per leggere cosa fa e quali API la riguardano. Il pannello a destra non copre l'immagine.
+
+<iframe src="../assets/api/robot_interactive.html" style="width:100%;height:640px;border:0" loading="lazy"></iframe>
+
+
 ## Robot map
 
 Hover a joint to see which modules use it. Rotate with the mouse.
 
-<iframe src="../assets/api/robot_3d.html" style="width:100%;height:700px;border:0" loading="lazy"></iframe>
+<iframe src="../assets/api/robot_3d.html" style="width:100%;height:640px;border:0" loading="lazy"></iframe>
 
 *The joint-to-API mapping is the author's curation, not a fact
 extracted from the code: it says which modules use or talk about

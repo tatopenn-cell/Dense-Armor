@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AI layer — interactive map</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #05070c; color: #e6eef5;
+               font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  .wrap { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 0;
+          max-width: 1280px; margin: 0 auto; height: 100vh; overflow: hidden; }
+  .stage { display: flex; align-items: center; justify-content: center;
+           padding: 16px; min-height: 0; }
+  .img-wrap { position: relative; max-height: 90vh; max-width: 100%;
+              aspect-ratio: 1 / 1; }
+  .img-wrap img { width: 100%; height: 100%; display: block;
+                  object-fit: contain; }
+  .hotspot {
+    position: absolute; cursor: pointer; border-radius: 50%;
+    border: 1px solid rgba(94, 197, 197, 0.0);
+    transition: background .15s, border-color .15s, box-shadow .15s;
+  }
+  .hotspot:hover {
+    background: rgba(94, 197, 197, 0.20);
+    border-color: rgba(94, 197, 197, 0.75);
+    box-shadow: 0 0 18px rgba(94, 197, 197, 0.55);
+  }
+  .hotspot.active {
+    background: rgba(232, 155, 74, 0.25);
+    border-color: rgba(232, 155, 74, 0.9);
+    box-shadow: 0 0 22px rgba(232, 155, 74, 0.7);
+  }
+  .panel {
+    padding: 1.4rem 1.6rem; background: #0a121b; overflow-y: auto;
+    height: 100vh;
+  }
+  .panel h3 { margin: 0 0 .4rem; color: #5ec5c5; font-size: 1.15rem; }
+  .panel p.lead { margin: 0 0 1rem; color: #9fb3c2; font-size: .9rem; }
+  .panel .cat { margin: 1rem 0 .3rem; color: #e89b4a; font-weight: 600;
+                font-size: .85rem; text-transform: uppercase; letter-spacing: .05em; }
+  .panel ul { margin: 0; padding-left: 1.1rem; }
+  .panel li { margin: .25rem 0; }
+  .panel a { color: #7fcfff; text-decoration: none; }
+  .panel a:hover { text-decoration: underline; }
+  .panel code { background: #1a2530; padding: 1px 5px; border-radius: 4px;
+                font-size: .85rem; }
+  @media (max-width: 900px) {
+    .wrap { grid-template-columns: 1fr; }
+    .panel { max-height: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="stage">
+   <div class="img-wrap">
+    <img src="ai_hero.png" alt="AI concept map">
+    <!-- hotspots in % rispetto all'immagine 1024x1024 -->
+    <div class="hotspot" data-zone="eyes"     style="left:38%;top:27%;width:24%;height:9%"></div>
+    <div class="hotspot" data-zone="ear"      style="left:29%;top:35%;width:8%;height:12%"></div>
+    <div class="hotspot" data-zone="crown"    style="left:44%;top:7%;width:18%;height:15%"></div>
+    <div class="hotspot" data-zone="mouth"    style="left:45%;top:44%;width:14%;height:8%"></div>
+    <div class="hotspot" data-zone="sat"      style="left:66%;top:12%;width:19%;height:12%"></div>
+    <div class="hotspot" data-zone="neck"     style="left:45%;top:54%;width:15%;height:15%"></div>
+    <div class="hotspot" data-zone="torso"    style="left:34%;top:69%;width:38%;height:28%"></div>
+   </div>
+  </div>
+
+  <div class="panel" id="panel">
+    <h3>Scegli una zona</h3>
+    <p class="lead">Ogni cerchio invisibile sull'immagine è una parte del
+    sistema IA. Passaci sopra per vederlo, clicca per leggere cosa fa e
+    quali API lo riguardano.</p>
+    <p class="lead"><strong>Occhi</strong> · percezione visiva<br>
+    <strong>Orecchio</strong> · segnali 1D<br>
+    <strong>Vertice</strong> · apprendimento<br>
+    <strong>Bocca</strong> · output strutturato<br>
+    <strong>Nodi a destra</strong> · rappresentazioni<br>
+    <strong>Collo</strong> · ruoli base<br>
+    <strong>Torace</strong> · sicurezza e protezione</p>
+  </div>
+</div>
+
+<script>
+const INFO = {
+  eyes: {
+    title: "Occhi — percezione visiva",
+    lead: "Dai pixel grezzi alle feature apprese: strati di estrazione e compressione prima che un modello possa dire se quello che vede è normale.",
+    cats: [
+      ["Feature extraction", [
+        ["FrameFeatures", "vision/index.md"],
+        ["PatchFeatures", "vision/patches.md"],
+      ]],
+      ["Compressione", [
+        ["RandomProjection", "vision/index.md"],
+        ["IncrementalPCA", "vision/index.md"],
+      ]],
+      ["Memoria visiva", [
+        ["BagOfVisualWords", "vision/index.md"],
+        ["PatchMemory", "vision/patches.md"],
+      ]],
+    ],
+  },
+  ear: {
+    title: "Orecchio — segnali 1D",
+    lead: "Un flusso scalare che arriva campione per campione. Momenti, quantili, deviazioni, cambi di regime: tutto quello che si applica a una serie temporale.",
+    cats: [
+      ["Statistiche", [
+        ["RunningMoments", "stats/moments.md"],
+        ["RobustMoments", "stats/robust.md"],
+        ["TDigest", "stats/streaming.md"],
+        ["DDSketch", "stats/streaming.md"],
+      ]],
+      ["Anomalia single-channel", [
+        ["ChauvenetScorer", "anomaly/robust_filters.md"],
+        ["HampelScorer", "anomaly/robust_filters.md"],
+        ["StreamingDeviationDetector", "anomaly/streaming.md"],
+      ]],
+      ["Drift", [
+        ["CUSUMDriftDetector", "drift/cusum.md"],
+        ["ADWIN", "drift/detectors.md"],
+        ["KSWIN", "drift/detectors.md"],
+      ]],
+    ],
+  },
+  crown: {
+    title: "Vertice — apprendimento",
+    lead: "La parte che impara. Classificatori e regressori online: un campione alla volta, con la capacita di cambiare idea quando i dati cambiano.",
+    cats: [
+      ["Classificatori", [
+        ["HoeffdingTreeClassifier", "tree/index.md"],
+        ["HoeffdingAdaptiveTreeClassifier", "tree/index.md"],
+        ["SGTClassifier", "tree/index.md"],
+        ["MetricKNNClassifier", "learn/metric_learning.md"],
+      ]],
+      ["Calibrazione", [
+        ["OnlinePlattScaling", "learn/calibration.md"],
+      ]],
+      ["Concetti", [
+        ["BagOfVisualWords", "vision/index.md"],
+        ["LLMEmbeddingClassifier", "api/general.md"],
+      ]],
+    ],
+  },
+  mouth: {
+    title: "Bocca — output strutturato",
+    lead: "Il punto in cui il modello diventa qualcosa che un altro sistema, o un LLM, può leggere. Non solo un numero, una risposta in formato JSON con schema.",
+    cats: [
+      ["Interfaccia LLM", [
+        ["schema", "api/robot_roles.md"],
+        ["call_json", "api/robot_roles.md"],
+        ["LLMEmbeddingClassifier", "api/general.md"],
+      ]],
+    ],
+  },
+  sat: {
+    title: "Nodi a destra — rappresentazioni",
+    lead: "Il modello non vede il mondo direttamente. Lo vede attraverso una rappresentazione: proiezioni casuali, embedding, hash, token. Scegliere la rappresentazione giusta è meta del lavoro.",
+    cats: [
+      ["Embedding", [
+        ["LLMEmbeddingClassifier", "api/general.md"],
+        ["FeatureHasher", "preprocessing/index.md"],
+      ]],
+      ["Testo", [
+        ["Tokenizer", "preprocessing/index.md"],
+        ["TFIDF", "preprocessing/index.md"],
+        ["BagOfWords", "preprocessing/index.md"],
+      ]],
+      ["Proiezione", [
+        ["RandomProjection", "vision/index.md"],
+        ["IncrementalPCA", "vision/index.md"],
+      ]],
+    ],
+  },
+  neck: {
+    title: "Collo — ruoli base",
+    lead: "Il contratto che ogni cosa sopra deve rispettare. Un estimatore non è un oggetto qualsiasi: ha un metodo learn_one, uno score_one, uno stato salvabile e ricaricabile.",
+    cats: [
+      ["Radice", [
+        ["Root", "api/roles.md"],
+        ["Estimator", "api/roles.md"],
+      ]],
+      ["Ruoli", [
+        ["AnomalyDetector", "api/roles.md"],
+        ["Classifier", "api/roles.md"],
+        ["Regressor", "api/roles.md"],
+        ["Transformer", "api/roles.md"],
+        ["DriftDetector", "api/roles.md"],
+      ]],
+      ["Dati", [
+        ["Signal", "api/robot_roles.md"],
+        ["Estimate", "api/robot_roles.md"],
+      ]],
+    ],
+  },
+  torso: {
+    title: "Torace — sicurezza e protezione",
+    lead: "Sotto la testa, la parte che tiene insieme tutto e decide quando fermarsi. Il gate che scarta un campione, il fallback quando qualcosa non va, la protezione fisica dei limiti del robot.",
+    cats: [
+      ["Gate", [
+        ["AnomalyGate", "api/robot_roles.md"],
+        ["Protected", "api/roles.md"],
+      ]],
+      ["Fallback e salute", [
+        ["SafeEstimator", "api/robot_roles.md"],
+        ["HealthMonitor", "api/robot_roles.md"],
+      ]],
+      ["Limiti fisici", [
+        ["PhysicalLimitsGuard", "api/robot_roles.md"],
+        ["JointLimits", "api/robot_roles.md"],
+      ]],
+      ["Shield", [
+        ["Armatura", "shields/armatura.md"],
+        ["Orca", "shields/orca.md"],
+      ]],
+    ],
+  },
+};
+
+function guideUrl(p) { return "../../" + p; }
+
+document.querySelectorAll(".hotspot").forEach(el => {
+  el.addEventListener("click", () => {
+    document.querySelectorAll(".hotspot").forEach(h => h.classList.remove("active"));
+    el.classList.add("active");
+    const z = el.dataset.zone;
+    const info = INFO[z];
+    let html = "<h3>" + info.title + "</h3><p class=\"lead\">" + info.lead + "</p>";
+    info.cats.forEach(([cat, items]) => {
+      html += "<div class=\"cat\">" + cat + "</div><ul>";
+      items.forEach(([name, page]) => {
+        html += "<li><a href=\"" + guideUrl(page) + "\">" + name + "</a></li>";
+      });
+      html += "</ul>";
+    });
+    document.getElementById("panel").innerHTML = html;
+  });
+});
+</script>
+</body>
+</html>
