@@ -4,7 +4,7 @@ LODA scores each sample by how rare its position is in a few random one-dimensio
 projections of the joint residual. In a control loop it answers one question per reading:
 does this residual land in a part of the space the healthy run almost never visits?
 
-## What it is
+## 1. What it is
 
 A robot produces, per joint, a torque residual — the difference between the measured torque
 and the torque the URDF model predicts. On a healthy arm this residual stays within a
@@ -21,7 +21,7 @@ The idea is that some fault directions are visible in one projection and invisib
 another. A single histogram over the raw `d`-dimensional space would need an exponential
 number of bins; `d`-dimensional histograms over many 1-D projections need a linear number.
 
-## How it works
+## 2. How it works
 
 For each of `n_projections` random directions `w_j`, the detector computes a 1-D value
 
@@ -58,9 +58,9 @@ green line is where a healthy sample falls; the red line is where an out-of-dist
 sample falls. The healthy one lands in a bin with hundreds of samples, the anomaly in a
 bin the window never visits.
 
-## Smallest example
+## 3. Smallest example
 
-~~~python
+```python
 import numpy as np
 from dense_armor.utility.anomaly.loda import LODA
 
@@ -75,18 +75,18 @@ for _ in range(300):
 
 print(f"healthy      {det.score_one({'a': 0.5, 'b': 0.5}):.3f}")
 print(f"far outlier  {det.score_one({'a': 5.0, 'b': 5.0}):.3f}")
-~~~
+```
 
 The first score is low: the point sits where the healthy samples sit. The second is close
 to the saturation value: the point falls in bins the healthy run rarely or never visited.
 
-## On a real arm
+## 4. On a real arm
 
 The residual of joints 1-4 on a `SyntheticArm` payload fault. The fault (5 kg added at
 t = 2 s) shifts the residual on joints 1-5 by tens of N·m; the healthy run stays within
 ±0.15 N·m.
 
-~~~python
+```python
 from pathlib import Path
 from dense_armor.utility.anomaly.loda import LODA
 from dense_armor.utility.datasets import SyntheticArm
@@ -109,7 +109,7 @@ for sig, _ in ds.stream():
     x = {f"r{j}": float(sig[f"tau_{j}"] - tau_nom[j]) for j in range(4)}
     _ = det.score_one(x)
     _ = det.learn_one(x)
-~~~
+```
 
 ![LODA score on the SyntheticArm payload fault and DriftStream](../assets/loda/score_vs_time.png)
 
@@ -118,7 +118,7 @@ Bottom: `DriftStream` with one sudden drift at the half of the stream. Both scor
 change above the threshold (4.0) on nearly every post-change sample, with no false alarms
 on the healthy part.
 
-## Numbers
+## 5. Numbers
 
 `SyntheticArm` (400 samples, 100 healthy, 300 fault) and `DriftStream` (2000 samples, one
 sudden drift at half), feature ranges calibrated on the healthy part with a 10 % margin.
