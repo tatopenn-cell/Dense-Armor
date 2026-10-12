@@ -83,6 +83,8 @@ shield actively filters; with `livello_ia=1.0` it only marks.
 input and its output.
 
 ```python
+import jax
+jax.config.update("jax_enable_x64", True)
 import numpy as np
 from dense_armor.utility.protect.orca import Orca
 
