@@ -183,12 +183,12 @@ print(round(m.score_one({"a": 1.0, "b": 1.0}), 1), round(m.score_one({"a": 1.0, 
 ```
 
 ```
-1.4 16.4
+1.5 24.7
 ```
 
 Two joints that always move together (`b` follows `a`). The sample `(1, 1)` moves them together:
-score 1.4, normal. The sample `(1, −1)` moves them in opposite directions: each value alone is
-ordinary (one standard deviation), but the pair is unusual, score 16.4.
+score 1.5, normal. The sample `(1, −1)` moves them in opposite directions: each value alone is
+ordinary (one standard deviation), but the pair is unusual, score 24.7.
 
 The score is the Mahalanobis distance
 
