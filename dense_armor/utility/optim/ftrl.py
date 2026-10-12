@@ -34,10 +34,14 @@ class FTRLProximal:
         Orabona, F. (2019). A Modern Introduction to Online Learning.
         Chapter 7, Algorithm 7.2 (FTRL with linearized losses). The
         soft-threshold update is the proximal operator of the L1 norm,
-        Section 7.8, Example 7.24. The source's Example 7.24 uses a
-        time-varying L1 coefficient lambda*t; this implementation uses a
-        constant l1, which is the original FTRL-Proximal form
-        (McMahan 2011, Section 3.1).
+        Section 7.8, Example 7.24, which uses a time-varying L1
+        coefficient lambda*t. McMahan, H. B. (2011). Follow-the-
+        Regularized-Leader and Mirror Descent. AISTATS, page 2, Table 1,
+        defines FTRL-Proximal with a cumulative L1 penalty t*lambda, so
+        the L1 coefficient grows linearly with t. This implementation
+        uses a constant l1 instead, and centres the quadratic term at 0
+        rather than at the previous iterate. Both deviations preserve
+        the sparse structure but change the schedule of the L1 penalty.
 
     Examples:
         >>> import numpy as np

@@ -100,8 +100,10 @@ step to the gradient history of each coordinate.
   The L1 term sets to zero every weight whose accumulated evidence has not
   crossed `l1`. That makes the weights sparse. The source of the soft
   threshold is Example 7.24 of Orabona (2019), which uses a time-varying L1
-  coefficient `lambda * t`; this implementation keeps `l1` constant, which is
-  the FTRL-Proximal form of McMahan (2011), Section 3.1.
+  coefficient `lambda * t`. The FTRL-Proximal of McMahan (2011), page 2,
+  Table 1, also uses a cumulative L1 penalty `t * lambda`; this
+  implementation keeps `l1` constant, which changes the schedule of the
+  L1 penalty.
 - **`OnlineNewtonStep(gamma, eps)`** keeps a running approximation of the
   Hessian. It uses the inverse of that approximation as a preconditioner. The
   update follows Algorithm 1 of Hazan, Agarwal and Kale (2007); Orabona

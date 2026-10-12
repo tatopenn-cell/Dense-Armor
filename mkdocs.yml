@@ -109,6 +109,7 @@ nav:
           - SGD: optim/sgd.md
           - AdaGrad: optim/adagrad.md
           - Adam: optim/adam.md
+          - FTRLProximal: optim/ftrl.md
       - Clustering: cluster/index.md
       - Trees: tree/index.md
 
