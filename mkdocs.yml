@@ -114,6 +114,7 @@ nav:
       - Linear models:
           - GLM: linear/glm.md
           - Bayesian linear regression: linear/bayes.md
+          - Payload estimator: linear/payload.md
       - Clustering: cluster/index.md
       - Trees: tree/index.md
 
