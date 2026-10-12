@@ -157,8 +157,5 @@ nav:
       - General: api/general.md
       - Robot: api/robot.md
       - IA: api/ai.md
-
-  - About:
-      - About: about.md
       - Changelog: changelog.md
       - License: license.md
