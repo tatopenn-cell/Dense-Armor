@@ -17,6 +17,32 @@ from dense_armor.utility.timeseries import (
     VBAdaptiveKalman,
 )
 
+
+@pytest.fixture(scope="module")
+def arm_series():
+    """The tau_1 stream of a SyntheticArm payload fault, cached per module.
+
+    Building the SyntheticArm compiles the JAX dynamics once (~45 s).
+    Both cycle tests need the same stream, so the fixture builds it a
+    single time and hands the cached array to each test.
+    """
+    from pathlib import Path
+
+    from dense_armor.utility.datasets import SyntheticArm
+
+    ds = SyntheticArm(
+        Path("test/fixtures/urdf/panda.urdf"),
+        period_s=1.0,
+        rate_hz=50.0,
+        n_cycles=16,
+        fault_at_s=12.0,
+        fault="payload",
+        payload_mass=5.0,
+        seed=0,
+    )
+    return np.asarray([float(sig["tau_1"]) for sig, _ in ds.stream()])
+
+
 MODULES = [
     "dense_armor.utility.timeseries.ar",
     "dense_armor.utility.timeseries.kalman",
@@ -152,29 +178,9 @@ def test_kalman_adaptive_follows_R_jump():
     assert err_inno < err_fixed, (err_inno, err_fixed)
 
 
-def _arm_series(n_cycles=16, fault_at_s=12.0):
-    from pathlib import Path
-
-    from dense_armor.utility.datasets import SyntheticArm
-
-    ds = SyntheticArm(
-        Path("test/fixtures/urdf/panda.urdf"),
-        period_s=1.0,
-        rate_hz=50.0,
-        n_cycles=n_cycles,
-        fault_at_s=fault_at_s,
-        fault="payload",
-        payload_mass=5.0,
-        seed=0,
-    )
-    taus = []
-    for sig, _ in ds.stream():
-        taus.append(float(sig["tau_1"]))
-    return np.asarray(taus)
-
-
-def test_cycle_period_detected():
-    taus = _arm_series()
+@pytest.mark.slow
+def test_cycle_period_detected(arm_series):
+    taus = arm_series
     cr = CycleResidual(period=None, max_period=250, n_cycles=4)
     for v in taus[:800]:
         cr.transform_one({"x": float(v)})
@@ -182,10 +188,11 @@ def test_cycle_period_detected():
     assert 190 <= cr.period <= 210, f"detected {cr.period}"
 
 
-def test_cycle_residual_rises_after_fault():
+@pytest.mark.slow
+def test_cycle_residual_rises_after_fault(arm_series):
     from dense_armor.utility.drift.detector import CUSUMDriftDetector
 
-    taus = _arm_series()
+    taus = arm_series
     cr = CycleResidual(period=200, n_cycles=2)
     residuals = []
     for v in taus:
@@ -253,3 +260,86 @@ def test_online_var_group_lasso_shrinks_only_off_diagonal():
     assert diag_diff < 1e-3, f"diagonal moved by {diag_diff}"
     # the off-diagonal blocks are shrunk visibly
     assert off_diff > 1e-3, f"off-diagonal did not move ({off_diff})"
+
+
+def test_kalman_n_missing_property():
+    kf = KalmanFilter(F=np.eye(2), H=np.eye(2), Q=1e-3 * np.eye(2), R=1e-2 * np.eye(2))
+    assert kf.n_missing == 0
+    kf.learn_one(None, 0.0)
+    kf.learn_one({"a": "abc", "b": 1.0}, 0.0)
+    assert kf.n_missing == 2
+
+
+def test_kalman_meas_empty_dict():
+    kf = KalmanFilter(F=np.eye(2), H=np.eye(2), Q=1e-3 * np.eye(2), R=1e-2 * np.eye(2))
+    kf.learn_one({}, 0.0)
+    assert kf.n_missing == 0
+
+
+def test_kalman_transform_before_learning():
+    kf = KalmanFilter(F=np.eye(2), H=np.eye(2), Q=1e-3 * np.eye(2), R=1e-2 * np.eye(2))
+    out = kf.transform_one({})
+    assert "innovation" in out and "S" in out
+    assert out["innovation"].shape == (2,)
+    assert out["S"].shape == (2, 2)
+
+
+def test_vbkalman_rejects_bad_n_iter():
+    import pytest
+
+    with pytest.raises(ValueError):
+        VBAdaptiveKalman(
+            F=np.eye(2), H=np.eye(2), Q=1e-3 * np.eye(2), R=1e-2 * np.eye(2), n_iter=0
+        )
+
+
+def test_innovation_adaptive_rejects_bad_window():
+    import pytest
+
+    with pytest.raises(ValueError):
+        InnovationAdaptiveKalman(
+            F=np.eye(2), H=np.eye(2), Q=1e-3 * np.eye(2), R=1e-2 * np.eye(2), window=1
+        )
+
+
+def test_vbkalman_step_jittable_atol():
+    """step exists and returns a scalar for a scalar input."""
+    import jax.numpy as jnp
+
+    est = VBAdaptiveKalman(
+        F=np.eye(2), H=np.eye(2), Q=1e-3 * np.eye(2), R=1e-2 * np.eye(2)
+    )
+    state = est.init_state()
+    _, out = est.step(state, jnp.array(1.5))
+    assert np.isfinite(float(out))
+
+
+def test_innovation_adaptive_step_runs():
+    """step advances the ring buffer and returns a scalar."""
+    import jax.numpy as jnp
+
+    est = InnovationAdaptiveKalman(
+        F=np.eye(2), H=np.eye(2), Q=1e-3 * np.eye(2), R=1e-2 * np.eye(2), window=5
+    )
+    state = est.init_state()
+    for _ in range(3):
+        state, out = est.step(state, jnp.array(1.5))
+    assert np.isfinite(float(out))
+    _, _, _buf_inn, _buf_res, fill, head = state
+    assert int(fill) == 3
+    assert int(head) == 3
+
+
+def test_kalman_predict_one_with_none():
+    kf = KalmanFilter(F=np.eye(2), H=np.eye(2), Q=1e-3 * np.eye(2), R=1e-2 * np.eye(2))
+    est = kf.predict_one(None)
+    assert est.shape == (2,)
+
+
+def test_kalman_transform_after_learning():
+    kf = KalmanFilter(F=np.eye(2), H=np.eye(2), Q=1e-3 * np.eye(2), R=1e-2 * np.eye(2))
+    kf.learn_one({"a": 1.0, "b": 2.0}, 0.0)
+    out = kf.transform_one({})
+    assert out["innovation"].shape == (2,)
+    assert out["S"].shape == (2, 2)
+    assert np.all(np.isfinite(out["innovation"]))
