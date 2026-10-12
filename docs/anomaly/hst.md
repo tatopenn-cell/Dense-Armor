@@ -115,17 +115,21 @@ almost every post-fault sample, and both leave the healthy part below.
 ## 5. Numbers
 
 `SyntheticArm` (400 samples, 100 healthy, 300 fault) and `DriftStream` (2000 samples, one
-sudden drift at half), feature ranges calibrated on the healthy part with a 10 % margin.
+sudden drift at half). Feature ranges are learned online from the first 50 samples, the
+same setting as Section 4. The script `benchmarks/anomaly_streaming.py` regenerates these
+numbers with three protocols (learn-on-healthy, learn-on-all, learn-on-all-online-ranges);
+the table reports the third one.
 
 | Stream | threshold | ROC-AUC | False alarms on the healthy part |
 |---|---|---|---|
-| SyntheticArm | fixed 4.0 | 0.966 | 0.140 |
-| SyntheticArm | adaptive quantile 0.95 | 0.966 | 0.030 |
-| DriftStream | fixed 4.0 | 0.934 | 0.350 |
+| SyntheticArm | fixed 4.0 | 0.720 | 0.140 |
+| SyntheticArm | adaptive quantile 0.95 | 0.720 | 0.300 |
+| DriftStream | fixed 4.0 | 0.394 | 0.350 |
 
 The adaptive threshold costs a small amount of warm-up (it uses the 500 most recent
-scores) and takes the false-alarm rate on the healthy part from 14 % to 3 % on the arm.
-Both thresholds leave the ROC-AUC unchanged: they only decide where to place the line.
+scores) and, on the arm stream, raises the false-alarm rate from 14 % to 30 %: the 0.95
+quantile of the scores sits inside the healthy tail, so the line moves below it. Both
+thresholds leave the ROC-AUC unchanged: they only decide where to place the line.
 
 ## Details
 
