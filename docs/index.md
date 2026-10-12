@@ -1,7 +1,8 @@
 # Dense-Armor
 
-**Robot-AI Online Learning with Shielding: estimators that learn one sample at a time from
-robot and AI data, and a shield that keeps faulty samples out of what they learn.**
+**A library for online learning on robot, vision, and AI streams, one sample at a time,
+with streaming statistics and protection, drift and anomaly detection, and safe robot
+commands.**
 
 Dense-Armor is an online learning library with a shielding layer on top. Everything that
 learns does it one sample at a time, at control-loop speed, and everything that is
@@ -135,6 +136,10 @@ payload fault no longer poisons the model's state.
 
 **Online learning** — the core. Models that learn one sample at a time.
 
+- **[Optimizers](optim/index.md)** — SGD, AdaGrad, Adam, FTRLProximal,
+  OnlineNewtonStep, each in object and pure JAX form.
+- **[Linear models](linear/glm.md)** — LinearRegression, LogisticRegression,
+  BayesianLinearRegression, PayloadEstimator.
 - **[Calibration](learn/calibration.md)** — online Platt scaling: honest probabilities
   from any classifier.
 - **[Metric learning](learn/metric_learning.md)** — OASIS, LEGO, POLA, and a k-NN
@@ -232,7 +237,7 @@ yet fixed: it builds a spatially-smooth perturbation across the whole grid in on
 and no purely local coherence check (comparing a point to its immediate neighbours) can
 distinguish genuinely-smooth structure from adversarially-smooth structure without an
 external reference. See the
-[README](https://github.com/tatopenn-cell/Dense-Armor#-limiti---known) for the full
+[README](https://github.com/tatopenn-cell/Dense-Armor#-limits---known) for the full
 "known limits" list.
 
 ## Citation

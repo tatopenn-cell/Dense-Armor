@@ -19,7 +19,7 @@
 
 <h3 align="center">Robot-AI Online Shielding &amp; Learning</h3>
 
-<p align="center"><strong>A JAX library where every estimator learns one sample at a time from robot and AI data: streams from CSV logs and ROS bags, preprocessing, incremental trees and online forests, clustering, native vision, uncertainty, drift and anomaly detection, a shield that keeps faulty samples out of what the models learn, and verified safety for robot commands.</strong></p>
+<p align="center"><strong>A library for online learning on robot, vision, and AI streams, one sample at a time, with streaming statistics and protection, drift and anomaly detection, and safe robot commands.</strong></p>
 
 <p align="center">📖 <a href="https://tatopenn-cell.github.io/Dense-Armor/"><strong>Full documentation, API reference, quick guide →</strong></a></p>
 
