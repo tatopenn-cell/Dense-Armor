@@ -23,11 +23,13 @@ class OnlineNewtonStep:
         eps: initial scale of the Hessian, strictly positive.
 
     References:
-        Orabona, F. (2019). A Modern Introduction to Online Learning,
-        Chapter 7, Section 7.10 (Online Newton Step).
         Hazan, E., Agarwal, A., Kale, S. (2007). Logarithmic regret
         algorithms for online convex optimization. Machine Learning 69,
-        Algorithm 1.
+        Algorithm 1. The update A_t = A_{t-1} + g_t g_t^T,
+        w_{t+1} = w_t - (1/gamma) A_t^{-1} g_t follows this Algorithm.
+        Orabona, F. (2019), Chapter 7, Section 7.10 states the same
+        algorithm in FTRL form (w = -S^{-1} sum g), which is a different
+        but equivalent iteration.
 
     Examples:
         >>> import numpy as np

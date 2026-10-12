@@ -31,9 +31,13 @@ class FTRLProximal:
         l2: L2 coefficient, non negative.
 
     References:
-        Orabona, F. (2019). A Modern Introduction to Online Learning,
-        Chapter 7, Algorithm 7.2 (FTRL with linearized losses) and
-        Section 7.8 (composite losses and proximal operators).
+        Orabona, F. (2019). A Modern Introduction to Online Learning.
+        Chapter 7, Algorithm 7.2 (FTRL with linearized losses). The
+        soft-threshold update is the proximal operator of the L1 norm,
+        Section 7.8, Example 7.24. The source's Example 7.24 uses a
+        time-varying L1 coefficient lambda*t; this implementation uses a
+        constant l1, which is the original FTRL-Proximal form
+        (McMahan 2011, Section 3.1).
 
     Examples:
         >>> import numpy as np
