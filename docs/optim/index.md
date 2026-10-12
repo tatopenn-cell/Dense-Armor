@@ -88,19 +88,27 @@ step to the gradient history of each coordinate.
 - **`AdaGrad(lr, eps)`** accumulates the squared gradient per coordinate. It
   divides the step by the square root of that accumulator. A coordinate with
   a large past gradient moves less. It is the first choice when some features
-  are rarely informative.
+  are rarely informative. This is a variant of Algorithm 4.1 of Orabona
+  (2019): the source uses a per-coordinate step size that depends on the
+  diameter along each coordinate `D_i`; here a single scalar `lr` is shared
+  by all coordinates.
 - **`Adam(lr, beta1, beta2, eps)`** keeps a running mean and a running
   variance of the gradient. Both are bias-corrected. It behaves like AdaGrad
   on sparse gradients and like a momentum method on dense ones.
 - **`FTRLProximal(alpha, beta, l1, l2)`** minimises a regularised version of
   the accumulated losses. It does not follow the current gradient directly.
   The L1 term sets to zero every weight whose accumulated evidence has not
-  crossed `l1`. That makes the weights sparse.
+  crossed `l1`. That makes the weights sparse. The source of the soft
+  threshold is Example 7.24 of Orabona (2019), which uses a time-varying L1
+  coefficient `lambda * t`; this implementation keeps `l1` constant, which is
+  the FTRL-Proximal form of McMahan (2011), Section 3.1.
 - **`OnlineNewtonStep(gamma, eps)`** keeps a running approximation of the
-  Hessian. It uses the inverse of that approximation as a preconditioner. On
-  the losses the source paper covers (exp-concave, Orabona 2019, Section
-  7.10) it has a logarithmic regret. On a generic squared loss it has no
-  guarantee.
+  Hessian. It uses the inverse of that approximation as a preconditioner. The
+  update follows Algorithm 1 of Hazan, Agarwal and Kale (2007); Orabona
+  (2019), Section 7.10 states the same algorithm in FTRL form. Both give a
+  logarithmic regret on exp-concave losses. On a generic squared loss there
+  is no guarantee, and the table below shows a case where the method does not
+  converge.
 
 ## 4. On a real arm
 
@@ -168,10 +176,17 @@ which prints it at every run.
 ### References
 
 Orabona, F. (2019). *A Modern Introduction to Online Learning*. `SGD` is
-Chapter 2, Algorithm 2.1. `AdaGrad` is Chapter 4, Algorithm 4.1.
-`FTRLProximal` is Chapter 7, Algorithm 7.2, with Section 7.8 for the proximal
-operator. `OnlineNewtonStep` is Chapter 7, Section 7.10. `Adam` is Kingma,
-D. P. and Ba, J. (2014), arXiv:1412.6980, Algorithm 1.
+Chapter 2, Algorithm 2.1, with regret Theorem 2.13. `AdaGrad` is Chapter 4,
+Algorithm 4.1, with regret Theorem 4.32; this implementation uses a scalar
+learning rate in place of the source's per-coordinate `D_i`. `FTRLProximal`
+is Chapter 7, Algorithm 7.2; the soft threshold is the proximal operator of
+the L1 norm, Section 7.8, Example 7.24. The constant `l1` form is from
+McMahan, H. B. (2011), *Follow-the-Regularized-Leader and Mirror Descent*,
+AISTATS, Section 3.1. `OnlineNewtonStep` is Algorithm 1 of Hazan, E.,
+Agarwal, A., Kale, S. (2007), *Logarithmic regret algorithms for online
+convex optimization*, Machine Learning 69, and equivalently Section 7.10 of
+Orabona (2019) in FTRL form. `Adam` is Kingma, D. P. and Ba, J. (2014),
+arXiv:1412.6980, Algorithm 1.
 
 ### Choices stated explicitly
 
