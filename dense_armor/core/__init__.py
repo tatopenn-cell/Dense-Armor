@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 core/__init__.py
 ================
@@ -6,29 +5,29 @@ Mappa di produzione del pacchetto core/.
 """
 
 # Importazioni allineate rigorosamente al file system reale della cartella core/
-from .noise     import AIHardwareProfiler, StochasticAdversarialNoise
-from .memory    import UniversalMemoryGuard, MemoryPressureError
-from .vector    import ParametricScenarioSimulator, BitwisePermutationEngine
-from .engine    import AdaptiveSignalStabilizer
-from .compiler  import DynamicAICodegen, CMD_MAP
-from .tensor    import TensorVault
-from .visualizer import AIEngineVisualizer
-from .profiler  import PipelineProfiler
+from .compiler import CMD_MAP, DynamicAICodegen
 from .damping_operator import apply_damping_blend
+from .engine import AdaptiveSignalStabilizer
+from .memory import MemoryPressureError, UniversalMemoryGuard
+from .noise import AIHardwareProfiler, StochasticAdversarialNoise
+from .profiler import PipelineProfiler
+from .tensor import TensorVault
+from .vector import BitwisePermutationEngine, ParametricScenarioSimulator
+from .visualizer import AIEngineVisualizer
 
 __version__ = "1.0.11"
 __all__ = [
+    "CMD_MAP",
+    "AIEngineVisualizer",
     "AIHardwareProfiler",
-    "StochasticAdversarialNoise",
-    "UniversalMemoryGuard",
+    "AdaptiveSignalStabilizer",
+    "BitwisePermutationEngine",
+    "DynamicAICodegen",
     "MemoryPressureError",
     "ParametricScenarioSimulator",
-    "BitwisePermutationEngine",
-    "AdaptiveSignalStabilizer",
-    "DynamicAICodegen",
-    "CMD_MAP",
-    "TensorVault",
-    "AIEngineVisualizer",
     "PipelineProfiler",
+    "StochasticAdversarialNoise",
+    "TensorVault",
+    "UniversalMemoryGuard",
     "apply_damping_blend",
 ]

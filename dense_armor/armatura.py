@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 armatura.py — L'Armatura: istanza indossabile dello scudo per una serie 1D.
 Usa solo i moduli in core/ e utility/ di questo pacchetto.
@@ -15,13 +14,14 @@ Uso da codice:
 """
 import os
 import sys
-from typing import Dict, List, Optional, Tuple, Union
-
 
 import numpy as np
 
-from .core.hybrid_engine import hybrid_shield, _local_nan_fill  # motore phi_ab/trigger, vedi CHANGELOG 1.1.0
-from .misc.metro import Metro                      # scaler anti-underflow, intatto
+from .core.hybrid_engine import (  # motore phi_ab/trigger, vedi CHANGELOG 1.1.0
+    _local_nan_fill,
+    hybrid_shield,
+)
+from .misc.metro import Metro  # scaler anti-underflow, intatto
 
 
 class Armatura:
@@ -41,7 +41,7 @@ class Armatura:
     """
 
     def __init__(self, static_threshold: float = 0.15, initial_damping: float = 0.85,
-                 alpha: float = 0.05, soglia_anomalia: Optional[float] = None,
+                 alpha: float = 0.05, soglia_anomalia: float | None = None,
                  livello_ia: float = 1.0) -> None:
         """static_threshold/initial_damping/alpha — mantenuti per compatibilità di
         firma con le versioni precedenti, non usati dal motore hybrid (che non ha
@@ -62,8 +62,8 @@ class Armatura:
         return max(0.0, min(1.0, 1.0 - entropia / (math.log(max(2, vocab_size)) + 1e-12)))
 
     def analizza(
-        self, serie: np.ndarray, riferimento: Optional[np.ndarray] = None
-    ) -> Tuple[np.ndarray, np.ndarray, List[int]]:
+        self, serie: np.ndarray, riferimento: np.ndarray | None = None
+    ) -> tuple[np.ndarray, np.ndarray, list[int]]:
         """serie: 1D (lista/array). Per tensori N-D: passare tensore.ravel()
         e rifare reshape dopo (lo scudo e' agnostico: la trasposizione basta).
         Ritorna (pulito, K, indici_anomalie)."""
@@ -91,7 +91,7 @@ class Armatura:
 
         dev = np.abs(grezza_pulita - pulito_pieno)
         soglia = self.soglia if self.soglia is not None else (dev.mean() + 2.0 * dev.std())
-        anomalie = set(int(i) for i in np.where(dev > max(soglia, 1e-12))[0])
+        anomalie = {int(i) for i in np.where(dev > max(soglia, 1e-12))[0]}
 
         # rilevatore robusto (mediana/MAD), indipendente dal motore hybrid —
         # copre anche i primi 2 punti della serie, che il ciclo del trigger
@@ -101,12 +101,12 @@ class Armatura:
             med = float(np.median(finiti))
             mad = float(np.median(np.abs(finiti - med))) or 1e-12
             z_rob = np.abs((np.nan_to_num(grezza, nan=med) - med) / (1.4826 * mad))
-            anomalie |= set(int(i) for i in np.where(z_rob > 6.0)[0])
+            anomalie |= {int(i) for i in np.where(z_rob > 6.0)[0]}
 
         anomalie |= {int(i) for i in np.where(~np.isfinite(grezza))[0]}
         return pulito, K, sorted(anomalie)
 
-    def deriva(self, serie: np.ndarray) -> Tuple[float, bool, float]:
+    def deriva(self, serie: np.ndarray) -> tuple[float, bool, float]:
         """RILEVATORE DI DERIVA LENTA (usa METRO, come suggerito da Salvatore).
 
         La rana bollita: incrementi infinitesimi (es. +0.004/passo) invisibili
@@ -140,15 +140,15 @@ class Armatura:
         return tasso, bool(significativa), esponente
 
     def referto_json(
-        self, serie: np.ndarray, nome: str = "serie", riferimento: Optional[np.ndarray] = None
-    ) -> Dict:
+        self, serie: np.ndarray, nome: str = "serie", riferimento: np.ndarray | None = None
+    ) -> dict:
         """Referto MACCHINA-LEGGIBILE (dict pronto per json.dumps).
         Pensato per IA e altri programmi: niente prosa, solo dati.
         I valori non finiti diventano stringhe ("NaN") per dare JSON valido."""
         pulito, K, anomalie = self.analizza(serie, riferimento)
         s = np.asarray(serie, dtype=np.float64).ravel()
         tasso, sig, esp = self.deriva(serie)
-        def _num(v: float) -> Union[float, str]:
+        def _num(v: float) -> float | str:
             """Converte in float, o in "NaN" (stringa, per restare JSON-valido) se non finito."""
             return float(v) if np.isfinite(v) else "NaN"
         return {
@@ -163,8 +163,8 @@ class Armatura:
         }
 
     def referto(
-        self, serie: np.ndarray, nome: str = "serie", riferimento: Optional[np.ndarray] = None
-    ) -> List[int]:
+        self, serie: np.ndarray, nome: str = "serie", riferimento: np.ndarray | None = None
+    ) -> list[int]:
         """Analisi + referto leggibile."""
         pulito, K, anomalie = self.analizza(serie, riferimento)
         s = np.asarray(serie, dtype=np.float64).ravel()
@@ -189,18 +189,20 @@ def main() -> None:
         print("USO: python -m dense_armor [--json] <file_con_numeri>  oppure  python -m dense_armor [--json] n1 n2 n3 ...")
         sys.exit(0)
     if len(argv) == 1 and os.path.exists(argv[0]):
-        testo = open(argv[0], encoding="utf-8", errors="ignore").read()
+        with open(argv[0], encoding="utf-8", errors="ignore") as fh:
+            testo = fh.read()
         numeri = [float(x) if x.lower() != "nan" else float("nan")
                   for x in _re.findall(r"[-+]?(?:\d+\.?\d*(?:[eE][-+]?\d+)?|nan|NaN)", testo)]
         nome = os.path.basename(argv[0])
     else:
         numeri = [float(x) if x.lower() != "nan" else float("nan") for x in argv]
         nome = "serie da riga di comando"
+    serie = np.asarray(numeri, dtype=np.float64)
     if come_json:
         import json as _json
-        print(_json.dumps(Armatura().referto_json(numeri, nome), ensure_ascii=False))
+        print(_json.dumps(Armatura().referto_json(serie, nome), ensure_ascii=False))
     else:
-        Armatura().referto(numeri, nome)
+        Armatura().referto(serie, nome)
 
 
 if __name__ == "__main__":

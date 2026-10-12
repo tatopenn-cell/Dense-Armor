@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """core/chunk.py.
 
 Segmentazione a blocchi (chunking) per batch di dati e per liste di
@@ -94,7 +93,8 @@ class ImageChunker:
             )
             return next_idx, patched_op
 
-        _, patched_compiled_ops = jax.lax.scan(
+        scan_out: tuple = jax.lax.scan(
             patch_single_op, jnp.int32(0), template_ops
         )
+        patched_compiled_ops: jnp.ndarray = scan_out[1]
         return patched_compiled_ops

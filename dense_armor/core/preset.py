@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """core/preset.py.
 
 Configurazioni calibrate empiricamente per i parametri di

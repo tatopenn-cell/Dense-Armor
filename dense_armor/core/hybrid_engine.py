@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 core/hybrid_engine.py
 ======================
@@ -45,7 +44,6 @@ a una serie scalare 1D, con lo stesso schema a 2 stati (mai 3): per ogni
 punto, `trigger` deciso da evaluate_phi_trigger è strettamente binario
 (0.0 statico/rumore, 1.0 dinamico/genuino) — non esiste un ramo intermedio.
 """
-from typing import Dict, Optional, Tuple
 
 import jax
 import jax.numpy as jnp
@@ -130,9 +128,9 @@ def _local_nan_fill(x: np.ndarray, radius: int) -> np.ndarray:
 
 def hybrid_shield(
     serie: np.ndarray,
-    riferimento: Optional[np.ndarray] = None,
-    radius_baseline: Optional[int] = None,
-) -> Tuple[np.ndarray, np.ndarray, Dict]:
+    riferimento: np.ndarray | None = None,
+    radius_baseline: int | None = None,
+) -> tuple[np.ndarray, np.ndarray, dict]:
     """
     Applica lo schema a 2 stati (pass-through / fallback a baseline) punto
     per punto su una serie scalare 1D.

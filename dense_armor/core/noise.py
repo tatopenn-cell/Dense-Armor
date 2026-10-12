@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 core/noise.py
 ================================
@@ -7,8 +6,10 @@ StochasticAdversarialNoise — inietta perturbazioni avversariali su CPU e GPU.
 """
 
 import platform
-import psutil
+from typing import ClassVar
+
 import numpy as np
+import psutil
 
 try:
     import jax
@@ -75,7 +76,9 @@ class StochasticAdversarialNoise:
     con dispatch automatico CPU (NumPy) / GPU (JAX).
     """
 
-    SUPPORTED = {"bitflip", "dropout_noise", "gaussian_blur", "clean"}
+    SUPPORTED: ClassVar[set[str]] = {
+        "bitflip", "dropout_noise", "gaussian_blur", "clean"
+    }
 
     @staticmethod
     def inject_noise(
