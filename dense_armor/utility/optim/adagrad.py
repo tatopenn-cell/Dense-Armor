@@ -46,7 +46,9 @@ class AdaGrad:
     def __eq__(self, other: object) -> Any:
         if type(other) is not type(self):
             return NotImplemented
-        return self.__dict__ == other.__dict__
+        a = {k: v for k, v in self.__dict__.items() if not k.startswith("_")}
+        b = {k: v for k, v in other.__dict__.items() if not k.startswith("_")}
+        return a == b
 
     def __repr__(self) -> str:
         return f"AdaGrad(lr={self.lr}, eps={self.eps})"
