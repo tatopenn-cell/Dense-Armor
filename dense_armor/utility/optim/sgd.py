@@ -20,9 +20,11 @@ class SGD:
         lr: learning rate, strictly positive.
 
     References:
-        Orabona, F. (2019). A Modern Introduction to Online Learning,
+        Orabona, F. (2019). A Modern Introduction to Online Learning.
         Chapter 2, Algorithm 2.1 (Online Gradient Descent) with a
-        constant step size.
+        constant step size. Theorem 2.13 gives the regret bound
+        D^2 / (2 eta_T) + (eta / 2) sum_t ||g_t||^2 for a non-increasing
+        step size, with D the diameter of the feasible set.
 
     Examples:
         >>> import numpy as np

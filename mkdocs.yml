@@ -104,6 +104,17 @@ nav:
           - Metric learning: learn/metric_learning.md
           - Online classifiers: learn/online_classifiers.md
           - Online dynamics: learn/online_dynamics.md
+      - Optimizers:
+          - optim/index.md
+          - SGD: optim/sgd.md
+          - AdaGrad: optim/adagrad.md
+          - Adam: optim/adam.md
+          - FTRLProximal: optim/ftrl.md
+          - OnlineNewtonStep: optim/newton.md
+      - Linear models:
+          - GLM: linear/glm.md
+          - Bayesian linear regression: linear/bayes.md
+          - Payload estimator: linear/payload.md
       - Clustering: cluster/index.md
       - Trees: tree/index.md
 

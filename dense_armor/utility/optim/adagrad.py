@@ -22,8 +22,13 @@ class AdaGrad:
         eps: numerical guard added to the square root, strictly positive.
 
     References:
-        Orabona, F. (2019). A Modern Introduction to Online Learning,
-        Chapter 4, Algorithm 4.1 (AdaGrad).
+        Orabona, F. (2019). A Modern Introduction to Online Learning.
+        Chapter 4, Algorithm 4.1 (AdaGrad). The source uses a
+        per-coordinate step size eta_{t,i} = sqrt(2) D_i /
+        (2 sqrt(sum g^2)), where D_i is the diameter along coordinate i.
+        This implementation uses a single scalar lr shared by all
+        coordinates and no projection, so Theorem 4.32 does not
+        apply: it bounds the source algorithm, not this variant.
 
     Examples:
         >>> import numpy as np

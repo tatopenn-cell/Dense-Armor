@@ -28,7 +28,9 @@ class Adam:
 
     References:
         Kingma, D. P., Ba, J. (2014). Adam: a method for stochastic
-        optimization. arXiv:1412.6980, Algorithm 1.
+        optimization. arXiv:1412.6980, Algorithm 1, page 2. Theorem 4.1,
+        page 4, bounds the regret with rate O(sqrt(T)) under bounded
+        gradients, bounded iterates, and beta1^2 / sqrt(beta2) < 1.
 
     Examples:
         >>> import numpy as np
