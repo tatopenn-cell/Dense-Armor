@@ -8,7 +8,9 @@ underlying algorithm is TIRSO from Zaman et al. (2019): recursive
 least squares with a group-lasso penalty that selects which
 channel-lag blocks matter. Set ``group_lambda=0.0`` to disable the
 penalty and recover plain recursive least squares on the stacked
-history.
+history. The penalty follows equation (25) of the source, with the
+indicator ``1{n != n'}``: only the cross-channel blocks are shrunk,
+the diagonal blocks (a channel's own lags) pass through unchanged.
 
 References:
     Zaman, B., Lopez Ramos, L. M., Romero, D., Beferull-Lozano, B.
@@ -19,6 +21,7 @@ References:
     (page 6); the static regret bound is Theorem 3 (page 7) under
     assumptions A1, A2, A3 (bounded min/max eigenvalue of Phi).
 """
+
 from collections.abc import Sequence
 from typing import Any
 
@@ -68,8 +71,6 @@ class OnlineAR(Transformer):
             raise ValueError(f"order must be >= 1, got {order}")
         if not 0.0 < lam <= 1.0:
             raise ValueError(f"lam must be in (0, 1], got {lam}")
-        if delta <= 0.0:
-            raise ValueError(f"delta must be > 0, got {delta}")
         self.order = int(order)
         self.lam = float(lam)
         self.delta = float(delta)
@@ -119,9 +120,7 @@ class OnlineAR(Transformer):
         """
         return {"check_step_is_pure"}
 
-    def learn_one(
-        self, x: dict, y: Any = None, t: float | None = None
-    ) -> "OnlineAR":
+    def learn_one(self, x: dict, y: Any = None, t: float | None = None) -> "OnlineAR":
         """One sample: predict, update, push to history."""
         v = self._read(x)
         if v is None:
@@ -202,7 +201,6 @@ class OnlineVAR(Transformer):
         alpha: base step size of the RLS update, used as
             ``alpha / (1 + n)`` at step ``n`` (the ``O(1/t)`` schedule
             of Theorem 4 in the source paper).
-        delta: initial value of the inverse-Hessian matrix.
         feature_keys: explicit channel order. ``None`` sorts the keys
             of the first dict seen.
 
@@ -225,7 +223,6 @@ class OnlineVAR(Transformer):
         lam: float = 1.0,
         group_lambda: float = 0.0,
         alpha: float = 0.1,
-        delta: float = 1e6,
         feature_keys: Sequence[str] | None = None,
     ) -> None:
         if order < 1:
@@ -236,13 +233,10 @@ class OnlineVAR(Transformer):
             raise ValueError(f"group_lambda must be >= 0, got {group_lambda}")
         if alpha <= 0.0:
             raise ValueError(f"alpha must be > 0, got {alpha}")
-        if delta <= 0.0:
-            raise ValueError(f"delta must be > 0, got {delta}")
         self.order = int(order)
         self.lam = float(lam)
         self.group_lambda = float(group_lambda)
         self.alpha = float(alpha)
-        self.delta = float(delta)
         self.feature_keys = feature_keys
         self._keys: list | None = None
         self._hist: np.ndarray | None = None
@@ -281,13 +275,14 @@ class OnlineVAR(Transformer):
     def _init(self, n: int) -> None:
         np_dim = n * self.order
         self._hist = np.zeros((self.order, n))
-        self._phi = self.delta * np.eye(np_dim)
+        # Phi[t] = sum_{tau} lam^{t-tau} g[tau] g[tau]^T, starts at
+        # zero and accumulates outer products (Zaman et al. 2019,
+        # eq. 21a). No ridge delta: it is not part of this algorithm.
+        self._phi = np.zeros((np_dim, np_dim))
         self._r = np.zeros((n, np_dim))
         self._a = np.zeros((n, np_dim))
 
-    def learn_one(
-        self, x: dict, y: Any = None, t: float | None = None
-    ) -> "OnlineVAR":
+    def learn_one(self, x: dict, y: Any = None, t: float | None = None) -> "OnlineVAR":
         """One sample: predict, update, push to history."""
         v = self._vec(x)
         if v is None:
@@ -310,6 +305,8 @@ class OnlineVAR(Transformer):
             a_new = a_f.copy()
             for n in range(n_ch):
                 for npc in range(n_ch):
+                    if n == npc:
+                        continue
                     lo = npc * self.order
                     hi = lo + self.order
                     blk = a_f[n, lo:hi]
@@ -329,8 +326,10 @@ class OnlineVAR(Transformer):
 
     def predict_one(self, x: dict, t: float | None = None) -> dict:
         """Forecast the whole vector one step ahead."""
-        keys = self._keys if self._keys is not None else (
-            list(self.feature_keys) if self.feature_keys is not None else None
+        keys = (
+            self._keys
+            if self._keys is not None
+            else (list(self.feature_keys) if self.feature_keys is not None else None)
         )
         if keys is None:
             keys = sorted(x) if isinstance(x, dict) else None

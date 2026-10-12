@@ -1,4 +1,5 @@
 """Tests for dense_armor.utility.timeseries."""
+
 import doctest
 import importlib
 
@@ -123,7 +124,7 @@ def _run_kalman_on_jump(cls, seed=0):
     F = np.array([[1.0, 0.1], [0.0, 1.0]])
     H = np.array([[1.0, 0.0]])
     Q = 1e-4 * np.eye(2)
-    R0 = np.array([[0.1 ** 2]])
+    R0 = np.array([[0.1**2]])
     kf = cls(F=F, H=H, Q=Q, R=R0)
     rng = np.random.default_rng(seed)
     n = 400
@@ -150,10 +151,12 @@ def test_kalman_adaptive_follows_R_jump():
     assert err_vb < err_fixed, (err_vb, err_fixed)
     assert err_inno < err_fixed, (err_inno, err_fixed)
 
+
 def _arm_series(n_cycles=16, fault_at_s=12.0):
     from pathlib import Path
 
     from dense_armor.utility.datasets import SyntheticArm
+
     ds = SyntheticArm(
         Path("test/fixtures/urdf/panda.urdf"),
         period_s=1.0,
@@ -181,6 +184,7 @@ def test_cycle_period_detected():
 
 def test_cycle_residual_rises_after_fault():
     from dense_armor.utility.drift.detector import CUSUMDriftDetector
+
     taus = _arm_series()
     cr = CycleResidual(period=200, n_cycles=2)
     residuals = []
@@ -194,8 +198,7 @@ def test_cycle_residual_rises_after_fault():
     mean_before = float(np.mean(np.abs(before)))
     mean_after = float(np.mean(np.abs(after)))
     assert mean_after > 2.0 * mean_before, (mean_before, mean_after)
-    det = CUSUMDriftDetector(radius=30, ref_mult=3, k=0.5, h=20.0,
-                             reference="adaptive")
+    det = CUSUMDriftDetector(radius=30, ref_mult=3, k=0.5, h=20.0, reference="adaptive")
     first_after = None
     fa_before = 0
     for i, r in enumerate(residuals):
@@ -207,3 +210,46 @@ def test_cycle_residual_rises_after_fault():
                 first_after = i
     assert first_after is not None
     assert first_after >= fault_idx
+
+
+def test_online_var_group_lasso_shrinks_only_off_diagonal():
+    """Equation (25) of Zaman 2019: `1{n != n'}` keeps the diagonal free."""
+    import numpy as np
+
+    from dense_armor.utility.timeseries import OnlineVAR
+
+    # two independent AR(1) channels with strong auto-regression
+    rng = np.random.default_rng(0)
+    series = np.zeros((400, 2))
+    for t in range(1, 400):
+        series[t, 0] = 0.9 * series[t - 1, 0] + 0.05 * rng.normal()
+        series[t, 1] = 0.9 * series[t - 1, 1] + 0.05 * rng.normal()
+
+    var0 = OnlineVAR(order=1, lam=0.99, group_lambda=0.0, feature_keys=["a", "b"])
+    var1 = OnlineVAR(order=1, lam=0.99, group_lambda=0.05, feature_keys=["a", "b"])
+
+    # at step 1 the two must be identical on the diagonal, bit for bit
+    var0.learn_one({"a": float(series[0, 0]), "b": float(series[0, 1])})
+    var1.learn_one({"a": float(series[0, 0]), "b": float(series[0, 1])})
+    assert var0._a[0, 0] == var1._a[0, 0]
+    assert var0._a[1, 1] == var1._a[1, 1]
+
+    # run the rest of the stream
+    for t in range(1, 400):
+        var0.learn_one({"a": float(series[t, 0]), "b": float(series[t, 1])})
+        var1.learn_one({"a": float(series[t, 0]), "b": float(series[t, 1])})
+
+    diag0 = np.array([var0._a[0, 0], var0._a[1, 1]])
+    diag1 = np.array([var1._a[0, 0], var1._a[1, 1]])
+    off0 = np.array([var0._a[0, 1], var0._a[1, 0]])
+    off1 = np.array([var1._a[0, 1], var1._a[1, 0]])
+
+    diag_diff = float(np.max(np.abs(diag0 - diag1)))
+    off_diff = float(np.max(np.abs(off0 - off1)))
+
+    # the shrinkage does not touch the diagonal: any difference there is
+    # feedback from the changed off-diagonal blocks, an order of magnitude
+    # smaller than the direct shrinkage
+    assert diag_diff < 1e-3, f"diagonal moved by {diag_diff}"
+    # the off-diagonal blocks are shrunk visibly
+    assert off_diff > 1e-3, f"off-diagonal did not move ({off_diff})"

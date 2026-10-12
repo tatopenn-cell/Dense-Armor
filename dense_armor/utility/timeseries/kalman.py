@@ -18,6 +18,7 @@ References:
     noise. The window size used here follows the paper's recommendation
     of one second of samples.
 """
+
 from typing import Any
 
 import jax.numpy as jnp
@@ -258,11 +259,7 @@ class VBAdaptiveKalman(KalmanFilter):
             P_cur = (np.eye(P_cur.shape[0]) - K @ H) @ P_pred
             P_cur = 0.5 * (P_cur + P_cur.T)
             inn = z - H @ x_cur
-            V = (
-                self.rho * self._V
-                + np.outer(inn, inn)
-                + H @ P_cur @ H.T
-            )
+            V = self.rho * self._V + np.outer(inn, inn) + H @ P_cur @ H.T
         self._nu = nu
         self._V = V
         self._x = x_cur
@@ -413,8 +410,7 @@ class InnovationAdaptiveKalman(KalmanFilter):
             den = float(np.trace(H @ P_pred @ H.T))
             if den > 0.0:
                 alpha = num / den
-                alpha = min(max(alpha, self.q_scale_min),
-                            self.q_scale_max)
+                alpha = min(max(alpha, self.q_scale_min), self.q_scale_max)
                 self.Q = self.Q0 * float(np.sqrt(max(alpha, 0.0)))
                 self.Q = 0.5 * (self.Q + self.Q.T)
         self._x = x_upd
