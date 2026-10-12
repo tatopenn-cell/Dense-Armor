@@ -108,8 +108,18 @@ against a causal reference window (only points before it). It is off by
 default.
 
 ```python
+import numpy as np
+from dense_armor.utility.protect.orca import Orca
+
+rng = np.random.default_rng(0)
+ref = np.sin(np.linspace(0, 6, 200))[None, :] + 0.01 * rng.standard_normal((4, 200))
+data = ref.copy()
+data[0, 50] = 999.0
+
 orca = Orca(min_free_ram_percentage=0.05)
-protected = orca.protect_and_forward(lambda z: 2.0 * z, data, x_reference=ref, use_arbiter=True)
+protected = orca.protect_and_forward(
+    lambda z: 2.0 * z, data, x_reference=ref, use_arbiter=True,
+)
 labels = orca.etichette_arbitro
 ```
 
@@ -146,6 +156,7 @@ Two standalone control utilities: a closed-form trajectory and a
 rate-limited follower.
 
 ```python
+import numpy as np
 from dense_armor.utility.control.trajectory import quintic_trajectory
 
 q0 = np.zeros(7)
@@ -157,8 +168,10 @@ t, q, v, a = quintic_trajectory(q0, qf, T=2.0, n_samples=200)
 of the `n_samples` time steps, starting and ending at rest by default.
 
 ```python
+import numpy as np
 from dense_armor.utility.control.rate_limiter import rate_limited_follower
 
+q_raw = np.linspace(0.0, 0.1, 20)
 cmd = rate_limited_follower(q_raw, max_vel=1.0, max_accel=2.0, dt=0.01)
 ```
 
