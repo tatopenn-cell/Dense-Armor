@@ -171,11 +171,17 @@ estimator (RLS, not EKF), no covariance matrix on the parameters, no
 log-Cholesky. On the case the paper considers, a known payload on a
 known link, the two agree on the answer.
 
-The reference for the recursive least-squares update with forgetting is
+The recursive least-squares update with an exponential forgetting
+factor is a textbook estimator, present in every introduction to
+adaptive filtering and system identification. The rank-one
+Sherman-Morrison update without the forgetting term appears in
 Orabona, F. (2019). *A Modern Introduction to Online Learning*,
-Section 7.11 (Vovk-Azoury-Warmuth forecaster), where the same
-Sherman-Morrison form is derived in the context of online linear
-regression with a squared loss.
+Section 7.11 (Vovk-Azoury-Warmuth forecaster), which uses a ridge-style
+regularization instead of a decay; the two share the same
+Sherman-Morrison structure. The source cited here does not cover the
+forgetting factor itself, which is why the docstring of `payload.py`
+describes the estimator as standard rather than as derived from a
+specific paper.
 
 ### Choices stated explicitly
 
