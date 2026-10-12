@@ -104,6 +104,7 @@ nav:
           - Metric learning: learn/metric_learning.md
           - Online classifiers: learn/online_classifiers.md
           - Online dynamics: learn/online_dynamics.md
+      - Optimizers: optim/index.md
       - Clustering: cluster/index.md
       - Trees: tree/index.md
 
@@ -159,6 +160,5 @@ nav:
       - IA: api/ai.md
 
   - About:
-      - About: about.md
       - Changelog: changelog.md
       - License: license.md
