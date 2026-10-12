@@ -177,8 +177,9 @@ which prints it at every run.
 
 Orabona, F. (2019). *A Modern Introduction to Online Learning*. `SGD` is
 Chapter 2, Algorithm 2.1, with regret Theorem 2.13. `AdaGrad` is Chapter 4,
-Algorithm 4.1, with regret Theorem 4.32; this implementation uses a scalar
-learning rate in place of the source's per-coordinate `D_i`. `FTRLProximal`
+Algorithm 4.1, pages 45-46, with regret Theorem 4.32; this implementation
+uses a scalar learning rate in place of the source's per-coordinate `D_i`,
+and Theorem 4.32 does not apply to it. `FTRLProximal`
 is Chapter 7, Algorithm 7.2; the soft threshold is the proximal operator of
 the L1 norm, Section 7.8, Example 7.24. The constant `l1` form is from
 McMahan, H. B. (2011), *Follow-the-Regularized-Leader and Mirror Descent*,

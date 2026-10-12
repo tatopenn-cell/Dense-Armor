@@ -27,8 +27,8 @@ class AdaGrad:
         per-coordinate step size eta_{t,i} = sqrt(2) D_i /
         (2 sqrt(sum g^2)), where D_i is the diameter along coordinate i.
         This implementation uses a single scalar lr shared by all
-        coordinates; Theorem 4.32 still bounds the regret for this
-        variant, with a coordinate-wise term instead of a global one.
+        coordinates and no projection, so Theorem 4.32 does not
+        apply: it bounds the source algorithm, not this variant.
 
     Examples:
         >>> import numpy as np
