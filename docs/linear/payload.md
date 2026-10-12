@@ -67,7 +67,7 @@ print(round(est.predict_one(), 3))
 ```
 
 ```
-5.059
+5.002
 ```
 
 The estimator also accepts a dict with the same channels, `{"q_0": ...,

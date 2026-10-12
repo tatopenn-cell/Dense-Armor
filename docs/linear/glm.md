@@ -135,15 +135,15 @@ for opt, lr in [(SGD(lr=1e-3), 1e-3), (AdaGrad(lr=10.0), 10.0),
 ```
 SGD -2.158
 AdaGrad -2.824
-Adam -2.273
+Adam -4.999
 ```
 
-The three values are close: all three optimizers converge to the same
-neighbourhood on this single-feature problem, after enough samples. The
-last one needs `n_cycles=8` (400 samples) and a non-default `beta1=0.99`
-to get there, because Adam has two running moments to estimate. The
-choice of optimizer is what changes the trajectory; the model is the
-same three lines of code.
+`SGD` and `AdaGrad` converge to the same neighbourhood. `Adam` on the
+same 100-sample stream with the same parameters moves further: it
+carries two running averages instead of one, and on 100 samples it has
+not settled yet. With more samples (400) and a longer memory
+`beta1=0.99`, `Adam` converges to `-2.273`. The choice of optimizer is
+what changes the trajectory; the model is the same three lines of code.
 
 ## Details
 

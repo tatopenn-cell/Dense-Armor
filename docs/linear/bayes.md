@@ -53,35 +53,19 @@ print(round(model.predict_one({"x": 3.0}), 3))
 ```
 
 ```
-6.0
+5.893
 ```
 
-The pure form is the pair `init_state(dim)` and `step(state, v)`. It
-takes the same dict as `learn_one`, with the target under the key `"y"`,
-and returns the new state together with the prediction before the update:
+Unlike `LinearRegression` and `LogisticRegression`, this estimator does
+not expose a pure `init_state` / `step` pair. The Bayesian update is not
+a gradient step: it is a closed-form update of the posterior, and it is
+not used inside `jax.lax.scan` by the rest of the package. The estimator
+runs through `learn_one` only.
 
-```python
-import jax
-import jax.numpy as jnp
-from dense_armor.utility.linear.bayes import BayesianLinearRegression
-
-model = BayesianLinearRegression(alpha=1.0, beta=1.0,
-                                 intercept=False, feature_keys=["x"])
-state = model.init_state(1)
-state, out = jax.jit(model.step)(state, {"x": jnp.asarray(3.0),
-                                          "y": jnp.asarray(6.0)})
-print(out)
-```
-
-```
-0.0
-```
-
-The two forms are algebraically identical: the streaming update of the
-mean is the Kalman-filter form of the batch posterior. On the same stream
-the two produce the same `m` and the same `S` up to numerical precision
-(`max|dm| ~ 1e-16`, `max|dS| ~ 1e-19` on a 20-sample test). The tests in
-`test/linear/test_bayes.py` check this equivalence.
+The streaming update is algebraically identical to the batch posterior:
+on the same stream the two produce the same `m` and the same `S` up to
+numerical precision (`max|dm| ~ 1e-16`, `max|dS| ~ 1e-19` on a 20-sample
+test). The tests in `test/linear/test_bayes.py` check this equivalence.
 
 ## 3. The predictive interval
 
@@ -114,12 +98,14 @@ print(round(out.mean, 3), round(out.std, 6))
 ```
 
 ```
-6.0 0.010003
+5.893 1.077365
 ```
 
-The standard deviation `0.010` is what the model believes about the
-prediction on `x = 3` after five samples. On a far away `x` the same
-number would be much larger. This is the object the caller can use to
+The standard deviation `1.077` is what the model believes about the
+prediction on `x = 3` after five samples with `alpha = beta = 1`. The
+value is large because the prior is loose and the noise is large. With
+more samples, or a larger `beta`, the interval shrinks. On a far away
+`x` the same number would be much larger. This is the object the caller can use to
 decide whether to trust the prediction, something LinearRegression cannot
 provide.
 
@@ -210,6 +196,9 @@ that statement.
   applications where the prediction alone is not enough.
 - **`return_std=True` returns the standard deviation alone.** For callers
   that only need the width of the interval, without the mean.
+- **No pure `init_state` / `step` form.** The estimator is used through
+  `learn_one` only. The Bayesian update is closed form and does not need
+  the `jax.lax.scan` machinery.
 
 ### Measured cost
 
