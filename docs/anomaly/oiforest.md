@@ -135,13 +135,14 @@ sudden drift at half), feature ranges calibrated on the healthy part with a 10 %
 
 | Stream | threshold | ROC-AUC | False alarms on the healthy part |
 |---|---|---|---|
-| SyntheticArm | 0.6 | 0.360 | 0.600 |
-| DriftStream | 0.6 | 0.734 | 0.063 |
+| SyntheticArm | 0.6 | 0.417 | 0.590 |
+| DriftStream | 0.6 | 0.667 | 0.057 |
 
-The arm number is below chance and the false-alarm rate is 60 %: on this stream the
+The arm number is below chance and the false-alarm rate is 59 %: on this stream the
 detector does not work. The drift number is in line with the paper's own benchmark: on a
 stream whose distribution changes slowly, the forest tracks the new distribution and the
-score rises.
+score rises. The values come from `benchmarks/anomaly_streaming.py`, protocol
+`learn-on-healthy` (same protocol as `anomaly/index.md`).
 
 ## Details
 
