@@ -104,7 +104,9 @@ nav:
           - Metric learning: learn/metric_learning.md
           - Online classifiers: learn/online_classifiers.md
           - Online dynamics: learn/online_dynamics.md
-      - Optimizers: optim/index.md
+      - Optimizers:
+          - optim/index.md
+          - SGD: optim/sgd.md
       - Clustering: cluster/index.md
       - Trees: tree/index.md
 
