@@ -25,8 +25,14 @@ class OnlineNewtonStep:
     References:
         Hazan, E., Agarwal, A., Kale, S. (2007). Logarithmic regret
         algorithms for online convex optimization. Machine Learning 69,
-        Algorithm 1. The update A_t = A_{t-1} + g_t g_t^T,
+        Algorithm 1, page 10. The update A_t = A_{t-1} + g_t g_t^T,
         w_{t+1} = w_t - (1/gamma) A_t^{-1} g_t follows this Algorithm.
+        Theorem 2, page 11, gives Regret_T <= 5((1/alpha) + G D) n log T
+        under alpha-exp-concave losses, bounded gradients ||grad f|| <= G,
+        and bounded feasible set of diameter D. This implementation omits
+        the projection step of Algorithm 1, leaves gamma and eps as
+        free hyperparameters, and does not use the source's formulas
+        gamma = (1/2) min(1/(4 G D), alpha), eps = 1/(gamma^2 D^2).
         Orabona, F. (2019), Chapter 7, Section 7.10 states the same
         algorithm in FTRL form (w = -S^{-1} sum g), which is a different
         but equivalent iteration.
