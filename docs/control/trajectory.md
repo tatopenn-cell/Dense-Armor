@@ -146,8 +146,11 @@ safe in speed and space.
 
 Scoped down from two papers proposing much larger URDF- and dynamics-aware trajectory
 optimizers (Lozer, Scalera, Boscariol & Gasparetto, *Robotics and Autonomous Systems*;
-Fried & Paternain, [arXiv:2412.07859](https://arxiv.org/abs/2412.07859)). Both were
-read in full before writing this. They solve the problem the same way in principle —
+Fried & Paternain, [arXiv:2412.07859](https://arxiv.org/abs/2412.07859) — *A Bi-Level
+Optimization Approach to Joint Trajectory Optimization*, Section V uses a polynomial
+basis of degree five for the joint trajectory and a time-scaling variable `θ` on top;
+the closed form here uses the quintic only, no inner optimization). Both were read in
+full before writing this. They solve the problem the same way in principle —
 generate a smooth trajectory from a boundary-value problem — but they integrate the
 robot's real dynamics into the generation, which requires the full mass matrix and
 Coriolis terms. That is the scope of the
