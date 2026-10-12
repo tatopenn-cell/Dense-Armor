@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 core/engine.py
 =========================
@@ -12,7 +11,7 @@ Caratteristiche
 - Implementazione interamente JAX-compatibile, con kernel vmap + scan precompilati.
 """
 
-from typing import Callable, Optional, Tuple
+from collections.abc import Callable
 
 import jax
 import jax.numpy as jnp
@@ -27,7 +26,7 @@ _ZETA_TOTAL_128 = np.longdouble(60.16762236065194)
 
 # Cast a float primitivo (np.longdouble non è supportato nei kernel JAX)
 _PHI        = float(_PHI_128)
-_ALPHA      = float(0.25)                           # Base simmetrica (1/4)
+_ALPHA      = 0.25                           # Base simmetrica (1/4)
 _SIGMA      = float(np.longdouble(1.0) / (_PHI_128 ** 4)) # ~0.1458980337
 _K_MAX_ZETA = float(_ZETA_TOTAL_128 / (_PHI_128 ** 4))  # Limite di damping superiore (~8.778)
 
@@ -113,14 +112,14 @@ class AdaptiveSignalStabilizer:
 
     def _run_single_stream_scan(
         self,
-        init_state: Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray],
+        init_state: tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray],
         rest: jnp.ndarray,
         thr: jnp.ndarray,
         dmp: jnp.ndarray,
         alp: jnp.ndarray,
         noise_scalar: jnp.ndarray,
         init_val: jnp.ndarray,
-    ) -> Tuple:
+    ) -> tuple:
         """Corpo (non ancora jit-compilato qui, vedi _compiled_single_stream_filter) dello scan 1D."""
         n = rest.shape[0]
         thrs = jnp.full((n,), thr)
@@ -135,7 +134,7 @@ class AdaptiveSignalStabilizer:
         # comportamento su questo percorso, State Flush mai attivo qui.
         hard_clamp_flags = jnp.full((n,), False)
 
-        def _wrapped_step(carry: Tuple, step_inputs: Tuple) -> Tuple:
+        def _wrapped_step(carry: tuple, step_inputs: tuple) -> tuple:
             """Adatta la firma di _step_kernel a quella richiesta da jax.lax.scan."""
             return self._step_kernel(carry, step_inputs)
 
@@ -181,7 +180,7 @@ class AdaptiveSignalStabilizer:
         self.dyn_dmp = float(_SIGMA * (1.0 + self.noise_scalar))
         self.dyn_alp = float(0.75 + (_SIGMA * self.noise_scalar))
 
-    def calibrate_macro_context_independent(self, raw_batch: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    def calibrate_macro_context_independent(self, raw_batch: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """Stesse formule di calibrate_macro_context, ma calcolate PER RIGA
         (axis=-1) invece che sull'intero batch appiattito insieme -- ritorna
         (dyn_thr, dyn_dmp, dyn_alp, noise_scalar), ciascuno shape
@@ -215,7 +214,7 @@ class AdaptiveSignalStabilizer:
         return dyn_thr, dyn_dmp, dyn_alp, noise_scalar
 
     def filter_batch_scenarios_independent(
-        self, raw_batch: np.ndarray, hard_clamp_mask: Optional[np.ndarray] = None
+        self, raw_batch: np.ndarray, hard_clamp_mask: np.ndarray | None = None
     ) -> np.ndarray:
         """Come filter_batch_scenarios, ma ogni scenario riceve la PROPRIA
         calibrazione (calibrate_macro_context_independent) invece di una
@@ -277,8 +276,8 @@ class AdaptiveSignalStabilizer:
     # ------------------------------------------------------------------ #
     def _step_kernel(
         self,
-        carry: Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray],
-        inputs: Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray],
+        carry: tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray],
+        inputs: tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray],
     ):
         """Un passo dello scan causale: aggiorna stato/gain/volatilita' e produce il valore filtrato.
 
@@ -295,7 +294,7 @@ class AdaptiveSignalStabilizer:
         Il design fluido normale (k_anom_min pieno) resta invariato sotto
         soglia -- questo interviene SOLO quando l'Hard-Clamp e' gia' scattato."""
         prev_filtered, current_damping, rolling_volatility, local_mean = carry
-        current_val, thr, dmp, alp, n_scalar, left_neighbor, upper_neighbor, is_1d, hard_clamp_flag = inputs
+        current_val, thr, _dmp, _alp, _n_scalar, left_neighbor, upper_neighbor, is_1d, hard_clamp_flag = inputs
 
         eps = 1e-7
 
@@ -460,16 +459,17 @@ class AdaptiveSignalStabilizer:
 
         scan_inputs = (flat_scen, thrs, dmps, alps, n_scalars, left_neighbors, upper_neighbors, is_1d_array, hard_clamp_flags)
 
-        def _wrapped_step(carry: Tuple, step_inputs: Tuple) -> Tuple:
+        def _wrapped_step(carry: tuple, step_inputs: tuple) -> tuple:
             """Adatta la firma di _step_kernel a quella richiesta da jax.lax.scan."""
             return self._step_kernel(carry, step_inputs)
 
-        _, filtered_flat = jax.lax.scan(
+        scan_out: tuple = jax.lax.scan(
             _wrapped_step,
             init_state,
             scan_inputs,
         )
-        
+        filtered_flat: jnp.ndarray = scan_out[1]
+
         return filtered_flat.reshape(h_dim, w_dim)
 
     # ------------------------------------------------------------------ #
@@ -480,7 +480,7 @@ class AdaptiveSignalStabilizer:
         Costruisce e compila il filtro per una singola serie temporale 1D.
         """
 
-        def _legacy_step(carry: Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray], current_val: jnp.ndarray) -> Tuple:
+        def _legacy_step(carry: tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray], current_val: jnp.ndarray) -> tuple:
             """Un passo dello scan legacy (path storico, precede il kernel a 4 canali)."""
             prev, dmp_state, vol = carry
 
@@ -530,7 +530,7 @@ class AdaptiveSignalStabilizer:
             return (next_f, next_damping, new_vol), next_f
 
         @jax.jit
-        def _run(init_state: Tuple, data: jnp.ndarray) -> Tuple:
+        def _run(init_state: tuple, data: jnp.ndarray) -> tuple:
             """Esegue lo scan legacy precompilato sull'intera serie."""
             return jax.lax.scan(_legacy_step, init_state, data)
 
@@ -577,7 +577,7 @@ class AdaptiveSignalStabilizer:
         return final_stream
 
     def filter_batch_scenarios(
-        self, raw_batch: np.ndarray, hard_clamp_mask: Optional[np.ndarray] = None
+        self, raw_batch: np.ndarray, hard_clamp_mask: np.ndarray | None = None
     ) -> np.ndarray:
         """
         Filtra in parallelo (vmap) un batch di scenari strutturati.

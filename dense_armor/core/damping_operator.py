@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 r"""
 core/damping_operator.py
 =========================================================
@@ -24,7 +23,7 @@ _ZETA_TOTAL_128 = np.longdouble(60.16762236065194)          # costante numerica 
 
 # Cast a tipi primitivi per prevenire eccezioni hardware nei file binari (.bin)
 _PHI        = float(_PHI_128)
-_ALPHA      = float(0.25)                           # Base simmetrica (1/4)
+_ALPHA      = 0.25                           # Base simmetrica (1/4)
 _SIGMA      = float(np.longdouble(1.0) / (_PHI_128 ** 4)) # ~0.1458980337
 _K_MAX_ZETA = float(_ZETA_TOTAL_128 / (_PHI_128 ** 4))  # Limite di damping superiore (~8.778)
 
@@ -54,7 +53,6 @@ def apply_damping_blend(gradient_state: jnp.ndarray, noise_matrix: jnp.ndarray) 
     diff = jnp.abs(gradient_state_safe - noise_matrix_safe)
 
     # 2. Coerenza relativa: quanto la distanza e' piccola rispetto alla scala del segnale
-    c_gate = jnp.float32(_ALPHA + _SIGMA)
     coherence = jnp.clip(1.0 - (diff / (2.0 * jnp.maximum(jnp.abs(gradient_state_safe), 1e-3))), 0.0, 1.0)
 
     # 3. Curva di damping a sigmoide: sale gradualmente con la distanza, satura a _K_MAX_ZETA

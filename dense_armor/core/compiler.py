@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 core/compiler.py
 ==============================
@@ -12,6 +11,7 @@ eccezioni quando la pipeline viene salvata/ricaricata da file binario.
 
 import logging
 import os
+
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 # 'scale' viene richiesta senza parametri espliciti (vedi compile_pipeline).
 _PHI_128   = np.longdouble(1.0 + np.sqrt(5.0)) / 2.0
 _PHI       = float(_PHI_128)
-_ALPHA     = float(0.25)
+_ALPHA     = 0.25
 # Costante di normalizzazione fissa per la loss usata in compute_gradients
 # (mantiene la magnitudine del gradiente in un range numericamente stabile).
 _PHI_FOUR  = float(_PHI_128 ** 4)  # ~6.854
@@ -132,7 +132,7 @@ def _run_pipeline_chunked_jit(
 
     def _chunk_iterator(carry_state: jnp.ndarray, single_chunk: jnp.ndarray) -> tuple:
         """Esegue un singolo chunk di istruzioni, propagando lo stato al chunk successivo."""
-        (f_data, next_k), _ = jax.lax.scan(
+        (f_data, _next_k), _ = jax.lax.scan(
             _execute_ai_instruction_step, (carry_state, base_key), single_chunk
         )
         return f_data, None

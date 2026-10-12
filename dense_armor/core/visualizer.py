@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 core/visualizer.py
 ==================
@@ -49,7 +48,7 @@ class AIEngineVisualizer:
         """
         filepath = os.path.join(self.output_dir, filename)
 
-        provenance_payload = {
+        provenance_payload: dict = {
             "metadata": {
                 # FIX BUG: engine_signature non più hardcoded, usa la versione del package
                 "engine_signature":    self.ENGINE_SIGNATURE,

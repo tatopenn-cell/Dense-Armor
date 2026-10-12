@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 core/vector.py
 ======================
@@ -10,10 +9,9 @@ una copia interna e restituisce ``(result, collapsed_vector)`` — il
 chiamante può ignorare il vettore collassato se non gli serve.
 """
 
-import numpy as np
 import jax
 import jax.numpy as jnp
-
+import numpy as np
 
 # ─────────────────────────────────────────────────────────────────────────────
 # BitwisePermutationEngine
@@ -63,7 +61,8 @@ def _scenario_step(carry: jnp.ndarray, single_param: jnp.ndarray) -> tuple:
 
 def _simulate_single_instance(base_state: jnp.ndarray, params_vector: jnp.ndarray) -> jnp.ndarray:
     """Un singolo scenario (T_steps parametri) portato avanti nel tempo."""
-    _, history = jax.lax.scan(_scenario_step, base_state, params_vector)
+    scan_out: tuple = jax.lax.scan(_scenario_step, base_state, params_vector)
+    history: jnp.ndarray = scan_out[1]
     return history
 
 
