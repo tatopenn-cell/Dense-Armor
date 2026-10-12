@@ -111,6 +111,7 @@ nav:
           - Adam: optim/adam.md
           - FTRLProximal: optim/ftrl.md
           - OnlineNewtonStep: optim/newton.md
+      - Linear models: linear/glm.md
       - Clustering: cluster/index.md
       - Trees: tree/index.md
 
