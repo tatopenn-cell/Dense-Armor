@@ -140,6 +140,12 @@ scene from raw pixels, SAFER-Splat is the right tool. They are not redundant.
 
 ## Details
 
+The QP form `min_u ½ ||u − u_des||² s.t. L_f h + L_g h·u ≥ −α(h)` matches the CBF-QP
+of Ames et al. (2019), *Control Barrier Functions: Theory and Applications*, IEEE ECC,
+Section II-C (the program labelled CBF-QP in that paper). The paper's `k(x)` is the
+desired command; the closed form here is the same projection onto the half-space that
+makes the constraint active.
+
 The filter was promoted from Dense-Evolution-Discovery after validation on two
 independent real physical domains (SO-101, ALOHA). On every scenario the joint stays on
 the safe side of the boundary, and the modification of the desired command is

@@ -307,6 +307,10 @@ json.dumps(s)
 print(s["name"], s["memory_class"], s["methods"][:2])
 ```
 
+```
+RunningMoments unknown ['learn_one', 'transform_one']
+```
+
 The schema extends `describe()` with `units`, `budget_s`,
 `memory_class`, `input_schema`, `output_schema`.
 
@@ -364,10 +368,10 @@ All numbers on this page were produced by running the code:
 
 | Suite | Result |
 |---|---|
-| `test/roles/` (signal, realtime, uncertainty, safety, physics, agents) | 65 passed |
-| `test/stats/` (Task 02 statistics) | 111 passed |
+| `test/roles/` (signal, realtime, uncertainty, safety, physics, agents) | 120 passed |
+| `test/stats/` (Task 02 statistics) | 142 passed |
 | `test/learn/test_online_classifiers.py` | 8 passed |
-| `test/learn/test_calibration.py` | 10 passed |
+| `test/learn/test_calibration.py` (needs `river`) | 11 passed |
 | ruff check on `dense_armor/checks/`, `dense_armor/roles/` | clean |
 | mypy on the same | clean |
 

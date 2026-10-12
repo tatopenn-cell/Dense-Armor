@@ -214,7 +214,10 @@ those 9.
 At 320×240 each image gives 1131 patches, so between 70 % (59 training images) and 90 % (cup2, 177
 images) of the patches must be dropped. There the coreset is ahead, 0.748 against 0.711.
 
-The latency is per image (patches + scoring) on a Colab CPU.
+The latency is per image (patches + scoring) on a Colab CPU. The RAD dataset is
+not committed to this repository: `benchmarks/vision_rad_patches.py` expects it under
+`RAD_ROOT = /content/rad/Anomaly_refine_msk`, so the numbers above are from the run
+where the dataset was present, and cannot be regenerated in a Colab that lacks it.
 
 ## API reference
 

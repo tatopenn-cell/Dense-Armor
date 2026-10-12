@@ -14,7 +14,7 @@ compensation to the CBF controllers that need the Jacobian — is built on this.
 import jax.numpy as jnp
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 
-model = RigidBodyModel("panda.urdf")
+model = RigidBodyModel("test/fixtures/urdf/panda.urdf")
 print(model.n)
 ```
 
@@ -32,7 +32,7 @@ fingers), depending on which URDF you load. The file used here has the hand, so 
 import jax.numpy as jnp
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 
-model = RigidBodyModel("panda.urdf")
+model = RigidBodyModel("test/fixtures/urdf/panda.urdf")
 print(model.q_min[:3], model.q_max[:3], model.qd_max[:3])
 ```
 
@@ -52,7 +52,7 @@ row is added to the constraint.
 import jax.numpy as jnp
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 
-model = RigidBodyModel("panda.urdf")
+model = RigidBodyModel("test/fixtures/urdf/panda.urdf")
 M = model.mass_matrix(jnp.zeros(model.n))
 print(M.shape, bool(jnp.allclose(M, M.T)), float(jnp.linalg.eigvalsh(M).min()) > 0)
 ```
@@ -78,7 +78,7 @@ symmetrization or fix-ups: they come out of the derivation, at every configurati
 import jax.numpy as jnp
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 
-model = RigidBodyModel("panda.urdf")
+model = RigidBodyModel("test/fixtures/urdf/panda.urdf")
 q, qd, q_ref = jnp.zeros(model.n), jnp.zeros(model.n), jnp.full(model.n, 0.1)
 tau = model.gravity_forces(q) + 50.0 * (q_ref - q) - 10.0 * qd
 print(jnp.round(tau[:4], 3))
@@ -103,7 +103,7 @@ moves. With it, the PD is a small correction on top of a physical baseline.
 import jax.numpy as jnp
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 
-model = RigidBodyModel("panda.urdf")
+model = RigidBodyModel("test/fixtures/urdf/panda.urdf")
 q, qd = jnp.zeros(model.n), jnp.zeros(model.n)
 qdd = model.forward_dynamics(q, qd, model.gravity_forces(q))
 print(float(jnp.abs(qdd).max()))
@@ -130,7 +130,7 @@ transposed inertia tensor would give a much worse ratio.
 import jax.numpy as jnp
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 
-model = RigidBodyModel("panda.urdf")
+model = RigidBodyModel("test/fixtures/urdf/panda.urdf")
 q = jnp.zeros(model.n)
 p, J = model.link_position(q, "panda_hand"), model.link_jacobian(q, "panda_hand")
 print(jnp.round(p, 3), J.shape)
@@ -152,7 +152,7 @@ For a link's **full pose** (position and orientation) and its 6×N **spatial Jac
 import jax.numpy as jnp
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 
-model = RigidBodyModel("panda.urdf")
+model = RigidBodyModel("test/fixtures/urdf/panda.urdf")
 q = jnp.zeros(model.n)
 p, R = model.link_pose(q, "panda_hand")
 print(R.shape, model.link_spatial_jacobian(q, "panda_hand").shape)

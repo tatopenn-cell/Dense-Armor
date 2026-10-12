@@ -212,6 +212,14 @@ sigma clipping, robust deviation) do not separate the two regimes: on
 the sample-scored task their F1 stays below the trivial "predict all
 anomalous" baseline of 0.571.
 
+## Provenance
+
+The CASPER dataset (Kayan et al. 2023) is not committed to this repository.
+The script `benchmarks/casper_benchmark.py` expects it under a local Kaggle
+path (`industrial-robotic-arm-anomaly-detection`), so the numbers above come
+from the run where the dataset was present and cannot be regenerated in a
+fresh environment.
+
 ## References
 
 - Kayan, H., Rana, O., Burnap, P., Perera, C. (2023). CASPER:

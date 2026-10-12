@@ -17,15 +17,17 @@ These detectors look at the joint vector, one sample at a time.
 
 | Detector | Bias | Cost | Arm ROC-AUC | Drift ROC-AUC |
 |---|---|---|---|---|
-| [OnlineRobustMahalanobis](mahalanobis.md) | distance from a robust median under the MCM | 0.045 ms | 1.000 | 0.994 |
-| [LODA](loda.md) | rare bins in random 1D projections | 0.16 ms | 1.000 | 0.983 |
-| [Half-Space Trees](hst.md) | sparse regions of the space | 0.42 ms | 0.966 | 0.934 |
-| [OnlineIsolationForest](oiforest.md) | depth to isolate a point | 0.21 ms | 0.360 | 0.734 |
-| [OneClassSGD](ocsvm.md) | distance from a learned kernel boundary | 0.04 ms | 0.394 | 0.523 |
+| [OnlineRobustMahalanobis](mahalanobis.md) | distance from a robust median under the MCM | 0.090 ms | 1.000 | 0.994 |
+| [LODA](loda.md) | rare bins in random 1D projections | 0.62 ms | 1.000 | 0.988 |
+| [Half-Space Trees](hst.md) | sparse regions of the space | 0.90 ms | 0.920 | 0.944 |
+| [OnlineIsolationForest](oiforest.md) | depth to isolate a point | 0.27 ms | 0.417 | 0.667 |
+| [OneClassSGD](ocsvm.md) | distance from a learned kernel boundary | 0.09 ms | 0.394 | 0.523 |
 
 The two benchmark streams are `SyntheticArm` (payload fault, 400 samples, 100 healthy) and
-`DriftStream` (one sudden drift at half, 2000 samples). The full table, with false alarms
-and per-sample latency for each detector, is in
+`DriftStream` (one sudden drift at half, 2000 samples). The table reports the
+**learn-on-healthy** protocol: each detector learns only from the healthy part of the
+stream and is scored on the whole stream. The other two protocols the benchmark computes
+(learn-on-all, learn-on-all-online-ranges) and the full table with false alarms are in
 [`benchmarks/anomaly_streaming.py`](https://github.com/tatopenn-cell/Dense-Armor/blob/master/benchmarks/anomaly_streaming.py).
 
 Each detector has its own bias and its own cost. On a stream whose fault is a shift of the

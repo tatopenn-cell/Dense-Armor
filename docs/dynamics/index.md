@@ -21,7 +21,7 @@ import jax
 jax.config.update("jax_enable_x64", True)
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 
-model = RigidBodyModel("panda.urdf")
+model = RigidBodyModel("test/fixtures/urdf/panda.urdf")
 model.n
 ```
 

@@ -73,12 +73,15 @@ calibration is supposed to do.
 ## 4. The result
 
 ```python
+import dense_armor.roles
 from river import datasets, evaluate, metrics, tree
 from dense_armor.utility.learn.calibration import OnlinePlattScaling
 
 dataset = datasets.Phishing()
-evaluate.progressive_val_score(dataset, tree.HoeffdingTreeClassifier(), metrics.LogLoss())
-evaluate.progressive_val_score(dataset, OnlinePlattScaling(tree.HoeffdingTreeClassifier()), metrics.LogLoss())
+print(evaluate.progressive_val_score(
+    dataset, tree.HoeffdingTreeClassifier(), metrics.LogLoss()))
+print(evaluate.progressive_val_score(
+    dataset, OnlinePlattScaling(tree.HoeffdingTreeClassifier()), metrics.LogLoss()))
 ```
 
 ```

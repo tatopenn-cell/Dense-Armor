@@ -27,7 +27,7 @@ one mimic (`panda_finger_joint2`).
 ```python
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 
-model = RigidBodyModel("panda_arm_hand.urdf.xacro")
+model = RigidBodyModel("test/fixtures/urdf/xacro_panda/panda_arm_hand.urdf.xacro")
 print(model.n, model.mimic_map["panda_finger_joint2"])
 ```
 
@@ -86,7 +86,7 @@ the same amount in opposite directions (their local closing axes point opposite 
 import jax.numpy as jnp
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 
-model = RigidBodyModel("panda_arm_hand.urdf.xacro")
+model = RigidBodyModel("test/fixtures/urdf/xacro_panda/panda_arm_hand.urdf.xacro")
 q = jnp.zeros(model.n)
 p1, p2 = (model.link_pose(q, k)[0] for k in ("panda_leftfinger", "panda_rightfinger"))
 q1, q2 = (model.link_pose(q.at[7].set(0.02), k)[0] for k in ("panda_leftfinger", "panda_rightfinger"))

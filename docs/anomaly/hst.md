@@ -115,30 +115,40 @@ almost every post-fault sample, and both leave the healthy part below.
 ## 5. Numbers
 
 `SyntheticArm` (400 samples, 100 healthy, 300 fault) and `DriftStream` (2000 samples, one
-sudden drift at half), feature ranges calibrated on the healthy part with a 10 % margin.
+sudden drift at half). Feature ranges are learned online from the first 50 samples, the
+same setting as Section 4. The script `benchmarks/anomaly_streaming.py` regenerates these
+numbers with three protocols (learn-on-healthy, learn-on-all, learn-on-all-online-ranges);
+the table reports the third one.
 
 | Stream | threshold | ROC-AUC | False alarms on the healthy part |
 |---|---|---|---|
-| SyntheticArm | fixed 4.0 | 0.966 | 0.140 |
-| SyntheticArm | adaptive quantile 0.95 | 0.966 | 0.030 |
-| DriftStream | fixed 4.0 | 0.934 | 0.350 |
+| SyntheticArm | fixed 4.0 | 0.720 | 0.140 |
+| SyntheticArm | adaptive quantile 0.95 | 0.720 | 0.300 |
+| DriftStream | fixed 4.0 | 0.394 | 0.350 |
 
 The adaptive threshold costs a small amount of warm-up (it uses the 500 most recent
-scores) and takes the false-alarm rate on the healthy part from 14 % to 3 % on the arm.
-Both thresholds leave the ROC-AUC unchanged: they only decide where to place the line.
+scores) and, on the arm stream, raises the false-alarm rate from 14 % to 30 %: the 0.95
+quantile of the scores sits inside the healthy tail, so the line moves below it. Both
+thresholds leave the ROC-AUC unchanged: they only decide where to place the line.
 
 ## Details
 
 ### Where the rules come from
 
-Leveni et al. (2024) describe Half-Space Trees in section 3 as the streaming alternative
-their method compares to: complete binary trees, mid-point splits of the current range,
-node masses as the score. The original algorithm is Tan, Ting and Liu (2011), *Fast
-anomaly detection for streaming data*, IJCAI.
+The algorithm is from Tan, Ting and Liu (2011), *Fast anomaly detection for streaming
+data*, IJCAI, section 3: an ensemble of full binary trees, each one splitting the space
+of the current node at the mid-point of a randomly chosen dimension. The score of a
+sample in the paper is `Score(x, T) = mass_r(node*) · 2^depth`, where `mass_r` is the
+number of reference samples that reached the same leaf and `depth` is the depth of that
+leaf; the ensemble score is the sum over the trees. In their experiments the trees have
+`maxDepth = 15` and the reference mass is updated in a sliding window.
 
-The working range of each feature, the exact sliding-window policy, the count on both
-sides of the ratio and the score's `-log2` are this module's choices. The paper describes
-the shape of the method (ensemble, mid-point splits, node masses), not the numbers.
+This module uses a slightly different score, `mean(-log2((c_leaf + 1) / (N + 1)))`.
+The reasons for the change are stated in "Choices stated explicitly" below. The
+reference implementation the score was checked against is the one used by the PySAD
+library (Yilmaz and Kozat, 2020), the same one Leveni et al. (2024) use for their
+comparison in Section 5.2; that paper cites HST as one of the experimental baselines,
+not as the source of its own algorithm.
 
 ### Choices stated explicitly
 
@@ -153,7 +163,10 @@ the shape of the method (ensemble, mid-point splits, node masses), not the numbe
   as a circular buffer of leaf paths. When a sample leaves the window, the counts along
   its path decrease by one. No periodic retraining: the window itself is the forgetting.
 - **Score.** `mean(-log2((c_leaf + 1) / (N + 1)))` over the trees, with `+1` on both sides
-  to keep empty leaves and empty windows finite.
+  to keep empty leaves and empty windows finite. This is a variant of the original
+  `mass_r · 2^depth` in Tan et al. (2011): the log makes the two bounds of a tree
+  (empty leaf, leaf visited by everything) symmetric around 0, and the `+1` removes the
+  `log(0)` on the first sample.
 - **Threshold.** `None` means adaptive: the `threshold_quantile`-quantile (default 0.95) of
   the last `threshold_window` scores (default 500); until `threshold_warmup` scores
   (default 50) have been seen the effective threshold is `1e9`, so nothing is flagged. A

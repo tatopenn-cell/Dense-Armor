@@ -96,15 +96,23 @@ for the classifier role.
 
 ### Time base
 
-Pass `t` (seconds) to any `learn_one` / `predict_one` / `update`. The
-base keeps the last 64 intervals and exposes `dt` (median, robust to
-scheduler jitter), `rate = 1 / dt`, `jitter = 1.4826 * MAD(dt)`.
-`window_samples(W)` converts a window in seconds to samples. A
-non-increasing `t` raises `ValueError`.
+The base keeps the last 64 intervals between consecutive samples and
+exposes `dt` (median, robust to scheduler jitter), `rate = 1 / dt`,
+`jitter = 1.4826 * MAD(dt)`. `window_samples(W)` converts a window in
+seconds to samples. A non-increasing `t` raises `ValueError`. The
+time-keeping estimator classes (the `Rolling*` and `Running*` families,
+`EWStats`, the anomaly detectors, the drift detectors, the preprocessing
+scalers, the trees) accept an optional `t` keyword in their `update` or
+`learn_one`; a few classes (the online classifiers of the `learn`
+subpackage, the `Hampel*` filters, the `Protected` wrapper) currently do
+not.
 
 ```python
+from dense_armor.utility.stats.robust import RollingMedian
+
+model = RollingMedian(window=5)
 for i in range(100):
-    model.learn_one(x, y, t=i * 0.01)
+    model.learn_one({"v": 1.0}, t=i * 0.01)
 print(round(model.dt, 4), round(model.rate, 1))
 ```
 
@@ -117,6 +125,7 @@ the last prediction made on an unflagged sample).
 ```python
 from dense_armor.roles import Protected
 from dense_armor.utility.anomaly.filters import HampelScorer
+from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
 
 safe = Protected(OnlineGaussianNB(), HampelScorer(radius=5), fallback=0)
 ```
@@ -129,6 +138,10 @@ attributes); `load_state_dict(s)` restores it. Separate from
 losing its hyper-parameters.
 
 ```python
+from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
+
+model = OnlineGaussianNB()
+model.learn_one({"v": 1.0}, 0)
 snap = model.state_dict()
 model.load_state_dict(snap)
 ```

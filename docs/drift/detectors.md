@@ -263,6 +263,10 @@ here and produces the most false alarms per hour, because once the level has
 moved, the fixed reference is permanently wrong and the detector keeps
 re-arming on every fluctuation.
 
+The CASPER dataset is not committed to this repository: `benchmarks/casper_benchmark.py`
+expects it under a Kaggle path (`industrial-robotic-arm-anomaly-detection`), so the
+numbers above are from the run where the dataset was present.
+
 The right choice depends on the cost of a missed change against the cost of a
 spurious alarm. For a robot, a false alarm may mean stopping the line for
 inspection; a missed change may mean a worn joint that keeps degrading for
