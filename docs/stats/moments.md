@@ -124,8 +124,8 @@ n &\leftarrow n + 1 \\
 \delta &= x - \text{mean} \\
 \delta_n &= \delta / n \\
 \text{mean} &\leftarrow \text{mean} + \delta_n \\
-M4 &\leftarrow M4 + \delta\,\delta_n^3\,(n^3 - 3n^2 + 3n) + 6\,\delta_n^2\,M2 - 4\,\delta_n\,M3 \\
-M3 &\leftarrow M3 + \delta\,\delta_n^2\,(n - 2) - 3\,\delta_n\,M2 \\
+M4 &\leftarrow M4 + \delta\,\delta_n^3\,(n - 1)(n^2 - 3n + 3) + 6\,\delta_n^2\,M2 - 4\,\delta_n\,M3 \\
+M3 &\leftarrow M3 + \delta\,\delta_n^2\,(n - 1)(n - 2) - 3\,\delta_n\,M2 \\
 M2 &\leftarrow M2 + \delta\,\delta_n\,(n - 1)
 \end{aligned}
 $$
