@@ -164,7 +164,7 @@ the second fastest (`0.045 ms` per sample at the arm's parameters).
 
 Guillot, Godichon-Baggioni, Robin and Sansonnet (arXiv:2601.03957) introduce the online median and MCM in
 Section 3. The recurrence for the geometric median is equation 8, for the MCM equation 10.
-The Mahalanobis distance under the MCM is equation from Section 2.2. The step size
+The Mahalanobis distance under the MCM is Equation (1) in Section 2.2. The step size
 `gamma_n = c * n ** -gamma` with `gamma` in `(1/2, 1)` is from Cardot, Cénac and Zitt
 (2013) and Cardot and Godichon-Baggioni (2017).
 
