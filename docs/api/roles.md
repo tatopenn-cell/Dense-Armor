@@ -103,8 +103,12 @@ scheduler jitter), `rate = 1 / dt`, `jitter = 1.4826 * MAD(dt)`.
 non-increasing `t` raises `ValueError`.
 
 ```python
+from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
+from dense_armor.utility.anomaly.filters import HampelFilter
+
+model = HampelFilter(radius=5, feature="v") | OnlineGaussianNB()
 for i in range(100):
-    model.learn_one(x, y, t=i * 0.01)
+    model.learn_one({"v": 1.0}, 0, t=i * 0.01)
 print(round(model.dt, 4), round(model.rate, 1))
 ```
 
@@ -117,6 +121,7 @@ the last prediction made on an unflagged sample).
 ```python
 from dense_armor.roles import Protected
 from dense_armor.utility.anomaly.filters import HampelScorer
+from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
 
 safe = Protected(OnlineGaussianNB(), HampelScorer(radius=5), fallback=0)
 ```
@@ -129,6 +134,10 @@ attributes); `load_state_dict(s)` restores it. Separate from
 losing its hyper-parameters.
 
 ```python
+from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
+
+model = OnlineGaussianNB()
+model.learn_one({"v": 1.0}, 0)
 snap = model.state_dict()
 model.load_state_dict(snap)
 ```

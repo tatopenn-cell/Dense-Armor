@@ -19,7 +19,7 @@ import jax.numpy as jnp
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 from dense_armor.dynamics.six_dof_pbc_cbf_controller import solve_control_qp
 
-model = RigidBodyModel("panda.urdf")
+model = RigidBodyModel("test/fixtures/urdf/panda.urdf")
 q, z = jnp.array([0.0, -0.5, 0.0, -1.5, 0.0, 1.0, 0.5, 0.02, 0.02]), jnp.zeros(3)
 qdd, tau, mu, h = solve_control_qp(model, "panda_hand", q, jnp.zeros(model.n),
                                    jnp.array([0.5, 0.0, 0.5]), z, z, jnp.eye(3), z, z, eps=0.03)
@@ -100,7 +100,7 @@ import jax.numpy as jnp
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 from dense_armor.dynamics.six_dof_pbc_cbf_controller import solve_control_qp
 
-model = RigidBodyModel("panda.urdf")
+model = RigidBodyModel("test/fixtures/urdf/panda.urdf")
 q, z = jnp.array([0.0, -0.3, 0.0, -2.0, 0.0, 1.5, 0.5, 0.02, 0.02]), jnp.zeros(3)
 p, R = model.link_pose(q, "panda_hand")
 qdd, tau, mu, h = solve_control_qp(model, "panda_hand", q, jnp.zeros(model.n), p, z, z, R, z, z, eps=0.03)

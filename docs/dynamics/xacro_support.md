@@ -19,7 +19,7 @@ includes them. Loading the top-level file gives the full arm + hand.
 ```python
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 
-model = RigidBodyModel("panda_arm_hand.urdf.xacro")
+model = RigidBodyModel("test/fixtures/urdf/xacro_panda/panda_arm_hand.urdf.xacro")
 print(model.n)
 ```
 
