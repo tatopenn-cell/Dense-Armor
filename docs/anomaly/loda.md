@@ -49,7 +49,10 @@ windows. With `window = 200` and an empty bin, the score saturates at `log2(201)
 
 The implementation follows Lou et al. (2024), fSEAD, section on Loda: random projection of
 the input, one histogram per projection, score `-mean(log2(c / W))`. The original LODA
-paper is Pevny (2016).
+paper is Pevny (2016), whose Eq. 3 is `f(x) = -mean_i(log h_i(x))` with `log` natural and
+`h_i(x)` the histogram probability. The implementation uses `log2` and a `+1` smoothing on
+numerator and denominator. The base change is a constant factor that does not affect the
+ordering of the scores; the smoothing keeps the first samples from scoring infinite.
 
 ![One LODA projection: histogram over the window and the bins of two samples](../assets/loda/histogram.png)
 
@@ -140,7 +143,7 @@ Lou et al. (2024) describe Loda in section 2.1 as one of the three streaming ens
 detectors the fSEAD library supports: random projection, one histogram per projection,
 score `-mean(log2(c / W))`. The original algorithm and the sparse random projection are
 from Pevny (2016), *LODA: Lightweight on-line detector of anomalies*, Machine Learning
-102(2).
+102(2), 275-304.
 
 The number of non-zero entries per projection (`max(1, d // 2)`) and the range learning
 policy are this module's choices. The paper does not fix them.
