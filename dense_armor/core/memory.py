@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 core/memory.py
 ====================
@@ -10,6 +9,7 @@ import gc
 import logging
 import math
 import subprocess
+
 import psutil
 
 try:
