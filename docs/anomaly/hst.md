@@ -135,14 +135,20 @@ thresholds leave the ROC-AUC unchanged: they only decide where to place the line
 
 ### Where the rules come from
 
-Leveni et al. (2024) describe Half-Space Trees in section 3 as the streaming alternative
-their method compares to: complete binary trees, mid-point splits of the current range,
-node masses as the score. The original algorithm is Tan, Ting and Liu (2011), *Fast
-anomaly detection for streaming data*, IJCAI.
+The algorithm is from Tan, Ting and Liu (2011), *Fast anomaly detection for streaming
+data*, IJCAI, section 3: an ensemble of full binary trees, each one splitting the space
+of the current node at the mid-point of a randomly chosen dimension. The score of a
+sample in the paper is `Score(x, T) = mass_r(node*) · 2^depth`, where `mass_r` is the
+number of reference samples that reached the same leaf and `depth` is the depth of that
+leaf; the ensemble score is the sum over the trees. In their experiments the trees have
+`maxDepth = 15` and the reference mass is updated in a sliding window.
 
-The working range of each feature, the exact sliding-window policy, the count on both
-sides of the ratio and the score's `-log2` are this module's choices. The paper describes
-the shape of the method (ensemble, mid-point splits, node masses), not the numbers.
+This module uses a slightly different score, `mean(-log2((c_leaf + 1) / (N + 1)))`.
+The reasons for the change are stated in "Choices stated explicitly" below. The
+reference implementation the score was checked against is the one used by the PySAD
+library (Yilmaz and Kozat, 2020), the same one Leveni et al. (2024) use for their
+comparison in Section 5.2; that paper cites HST as one of the experimental baselines,
+not as the source of its own algorithm.
 
 ### Choices stated explicitly
 
@@ -157,7 +163,10 @@ the shape of the method (ensemble, mid-point splits, node masses), not the numbe
   as a circular buffer of leaf paths. When a sample leaves the window, the counts along
   its path decrease by one. No periodic retraining: the window itself is the forgetting.
 - **Score.** `mean(-log2((c_leaf + 1) / (N + 1)))` over the trees, with `+1` on both sides
-  to keep empty leaves and empty windows finite.
+  to keep empty leaves and empty windows finite. This is a variant of the original
+  `mass_r · 2^depth` in Tan et al. (2011): the log makes the two bounds of a tree
+  (empty leaf, leaf visited by everything) symmetric around 0, and the `+1` removes the
+  `log(0)` on the first sample.
 - **Threshold.** `None` means adaptive: the `threshold_quantile`-quantile (default 0.95) of
   the last `threshold_window` scores (default 500); until `threshold_warmup` scores
   (default 50) have been seen the effective threshold is `1e9`, so nothing is flagged. A

@@ -345,8 +345,12 @@ fixed memory for the entire stream.
   Compstat — the exact merge of two partial states.
 - Pébay, P. (2008). *Formulas for robust, one-pass parallel computation
   of covariances and arbitrary-order statistical moments.* Sandia
-  Report SAND2008-6212 — extension of the pairwise merge to the third
-  and fourth moments.
+  Report SAND2008-6212 — equations 1.5 and 1.6 give the pairwise merge
+  of M3 and M4; Corollary 2.2 (page 10) specializes them to the
+  incremental update of a single new sample. Equations 2.13 and 2.16
+  are the closed forms for M3 and M4, and they are the formulas
+  implemented here: `M3 += (n-1)(n-2) δ³/n² - 3 M2 δ/n` and
+  `M4 += (n-1)(n²-3n+3) δ⁴/n³ + 6 M2 δ²/n² - 4 M3 δ/n`.
 - West, D. H. D. (1979). *Updating mean and variance estimates: an
   improved method.* Communications of the ACM 22(9), 532–535 — the
   exponentially weighted variance.
