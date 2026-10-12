@@ -199,22 +199,26 @@ the farther the point, the wider the mixture.
 
 ## 6. Which tree for which job
 
-The same streams for every model, 4000 samples each; "change" = the meaning of the signal
-changes at sample 2000 (classes swap; for the torque, gravity grows by 50 %). Tested before
-learning each sample.
+The same streams for every model, 4000 samples each, tested before learning each sample.
+Classifiers see two features `a`, `b`; the target `y` is 0 or 1; `a ~ N(3y, 0.5)` and
+`b ~ N(0, 0.5)`; at sample 2000 `a` switches to `N(3(1-y), 0.5)`. Regressors see two joint
+angles `q1`, `q2 ~ U(-pi, pi)` and target `tau = 9.81 (2 cos q1 + cos(q1+q2))` scaled by 1.0
+before sample 2000 and 1.5 after. The script `docs/assets/tree/make_table.py` regenerates the
+table below with these streams; `ms per sample` is measured on the machine that runs the
+script.
 
 | model | task | stationary | with a change | ms per sample |
 |---|---|---|---|---|
-| `HoeffdingTreeClassifier` | accuracy | 0.986 | 0.542 | 0.015 |
-| `HoeffdingAnytimeTreeClassifier` | accuracy | 0.986 | 0.654 | 0.013 |
-| `HoeffdingAdaptiveTreeClassifier` (`ADWIN`) | accuracy | 0.986 | 0.756 | 0.451 |
-| `SGTClassifier` | accuracy | 0.844 | 0.774 | 0.023 |
-| `MondrianForestClassifier` | accuracy | 0.997 | 0.591 | 0.959 |
-| `SGTRegressor` | mean abs. error | 10.146 | 12.344 | 0.022 |
-| `MondrianForestRegressor` | mean abs. error | 1.113 | 3.265 | 0.944 |
+| `HoeffdingTreeClassifier` | accuracy | 0.992 | 0.524 | 0.030 |
+| `HoeffdingAnytimeTreeClassifier` | accuracy | 0.992 | 0.659 | 0.031 |
+| `HoeffdingAdaptiveTreeClassifier` (`ADWIN`) | accuracy | 0.992 | 0.962 | 0.496 |
+| `SGTClassifier` | accuracy | 0.842 | 0.773 | 0.061 |
+| `MondrianForestClassifier` | accuracy | 0.998 | 0.605 | 1.272 |
+| `SGTRegressor` | mean abs. error | 10.218 | 12.392 | 0.035 |
+| `MondrianForestRegressor` | mean abs. error | 1.161 | 3.343 | 1.314 |
 
 On a stable stream the three Hoeffding trees and the Mondrian forest classify almost perfectly;
-after a change, the adaptive tree recovers best among the trees, at about 30 times the cost per
+after a change, the adaptive tree recovers best among the trees, at about 16 times the cost per
 sample of the plain tree; the Mondrian forest is the most accurate regressor here and the only
 model with an uncertainty, at about 1 ms per sample; the stochastic gradient tree is the
 cheapest regressor. Accuracy "with a change" counts the whole stream, before and after the
