@@ -18,7 +18,7 @@ These detectors look at the joint vector, one sample at a time.
 | Detector | Bias | Cost | Arm ROC-AUC | Drift ROC-AUC |
 |---|---|---|---|---|
 | [OnlineRobustMahalanobis](mahalanobis.md) | distance from a robust median under the MCM | 0.090 ms | 1.000 | 0.994 |
-| [LODA](loda.md) | rare bins in random 1D projections | 0.62 ms | 1.000 | 0.988 |
+| [LODA](loda.md) | rare bins in random 1D projections | 0.62 ms | 1.000 | 0.992 |
 | [Half-Space Trees](hst.md) | sparse regions of the space | 0.90 ms | 0.920 | 0.944 |
 | [OnlineIsolationForest](oiforest.md) | depth to isolate a point | 0.27 ms | 0.417 | 0.667 |
 | [OneClassSGD](ocsvm.md) | distance from a learned kernel boundary | 0.09 ms | 0.394 | 0.523 |
