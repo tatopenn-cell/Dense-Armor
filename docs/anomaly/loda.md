@@ -23,14 +23,25 @@ number of bins; `d`-dimensional histograms over many 1-D projections need a line
 
 ## 2. How it works
 
-For each of `n_projections` random directions `w_j`, the detector computes a 1-D value
+For each of `n_projections` random directions `w_j`, the detector normalises the sample
+feature by feature,
 
-    proj_j = <w_j, (x - lo) / (hi - lo)>
+    x_norm = (x - lo) / (hi - lo)
 
-where `lo` and `hi` are the working ranges of the features (learned from the first
-`range_init` samples, or given as `feature_ranges`). The projection is clipped to `[0, 1]`
-and mapped to one of `n_bins` histogram bins, whose counts are updated every sample inside
-a sliding window of the last `window` samples.
+with `lo` and `hi` the working ranges of the features (learned from the first `range_init`
+samples, or given as `feature_ranges`), and then projects it onto the direction:
+
+    proj_j = <w_j, x_norm>
+
+Because `w_j` is L2-normalised with `k` Gaussian non-zero entries and `x_norm` lives in
+`[0, 1]^d`, the projection is bounded by the theoretical interval `[pmin_j, pmax_j]`,
+where `pmin_j` is the sum of the negative entries of `w_j` and `pmax_j` the sum of the
+positive ones. That interval spreads the projections over all the bins: the bin index is
+
+    bin_j = floor(n_bins * (proj_j - pmin_j) / (pmax_j - pmin_j))
+
+clipped to `[0, n_bins - 1]`. The counts of the bins are updated every sample inside a
+sliding window of the last `window` samples.
 
 The score of a sample is the mean over the projections of
 
@@ -80,8 +91,17 @@ print(f"healthy      {det.score_one({'a': 0.5, 'b': 0.5}):.3f}")
 print(f"far outlier  {det.score_one({'a': 5.0, 'b': 5.0}):.3f}")
 ```
 
-The first score is low: the point sits where the healthy samples sit. The second is close
-to the saturation value: the point falls in bins the healthy run rarely or never visited.
+```
+healthy      2.380
+far outlier  4.648
+```
+
+The healthy point sits where the healthy samples sit, and falls in bins the window
+visits often, so its score is low. The far point is outside the working range and is
+clipped to the outermost bin of every projection; those bins are the ones the window
+almost never visits, so the score rises to `4.648`. That value is below `log2(201) =
+7.651`, the score of an empty bin in every projection, because some projections still
+land the far point in a bin the window visits.
 
 ## 4. On a real arm
 
@@ -123,30 +143,31 @@ on the healthy part.
 
 ## 5. Numbers
 
-`SyntheticArm` (400 samples, 100 healthy, 300 fault) and `DriftStream` (2000 samples, one
-sudden drift at half), feature ranges calibrated on the healthy part with a 10 % margin.
+`SyntheticArm` (200 samples, 100 healthy, 100 fault) and `DriftStream` (2000 samples, one
+sudden drift at half), every detector built with its defaults.
 
-| Stream | threshold | ROC-AUC | False alarms on the healthy part |
-|---|---|---|---|
-| SyntheticArm | 4.0 | 1.000 | 0.000 |
-| DriftStream | 4.0 | 0.983 | 0.000 |
+| Stream | Protocol | ROC-AUC | False alarms on the healthy part | Threshold at the last healthy sample |
+|---|---|---|---|---|
+| SyntheticArm | learn-on-healthy | 1.000 | 0.000 | 4.0000 |
+| SyntheticArm | learn-on-all | 0.456 | 0.000 | 4.0000 |
+| DriftStream | learn-on-healthy | 0.989 | 0.000 | 4.0000 |
+| DriftStream | learn-on-all | 0.332 | 0.000 | 4.0000 |
 
-The two streams are the same used for every other detector on this page. LODA is the
-second-fastest detector in the comparison (`0.16 ms` per sample at the arm's parameters)
-and the second most accurate on the arm after `OnlineRobustMahalanobis`.
+The two streams are the same used for every other detector on this page. LODA reaches the
+best ROC-AUC on the arm among the tree and projection detectors (`1.000` learn-on-healthy)
+and stays above `0.98` on the drift stream, at `0.525 ms` per sample on the arm with the
+benchmark defaults.
 
 ## Details
 
-### Where the rules come from
+### References
 
-Lou et al. (2024) describe Loda in section 2.1 as one of the three streaming ensemble
-detectors the fSEAD library supports: random projection, one histogram per projection,
-score `-mean(log2(c / W))`. The original algorithm and the sparse random projection are
-from Pevny (2016), *LODA: Lightweight on-line detector of anomalies*, Machine Learning
-102(2), 275-304.
+Lou, B., Boland, D., Leong, P. H. W. (2024). fSEAD: a Composable FPGA-based Streaming
+Ensemble Anomaly Detection Library. arXiv:2406.05999. Section 2.1 (Streaming Anomaly
+Detection, Loda), Algorithm 1 line 14.
 
-The number of non-zero entries per projection (`max(1, d // 2)`) and the range learning
-policy are this module's choices. The paper does not fix them.
+Pevny, T. (2016). LODA: Lightweight on-line detector of anomalies. Machine Learning
+102(2), 275-304. Eq. 3.
 
 ### Choices stated explicitly
 
@@ -154,10 +175,16 @@ policy are this module's choices. The paper does not fix them.
   without replacement, L2-normalised. `k = max(1, d // 2)` by default. The paper writes
   `-log2(v)`; the sign is inverted here so that a high score means anomalous, the
   convention of `AnomalyDetector`.
-- **Histogram.** Fixed bin edges on `[0, 1]` after min-max normalisation. When
-  `feature_ranges` is `None`, the first `range_init` samples set the range (min and max
-  per feature, with a 10 % margin). Points outside are clipped to `[0, 1]`: they land in
-  the outermost bin on that side, which is the rarest region.
+- **Histogram.** The projection is mapped to `[0, 1]` with its theoretical minimum and
+  maximum before the bin is chosen: `pmin_j` the sum of the negative entries of `w_j` and
+  `pmax_j` the sum of the positive ones. Lou et al. (Algorithm 1, line 14) write
+  `(prj_X - loda_min) / (loda_max - loda_min)` without defining `loda_min` and `loda_max`;
+  this implementation uses the theoretical interval above, because minimum and maximum
+  observed on the window would make the bin depend on the order of the samples. When
+  `feature_ranges` is `None`, the first `range_init` samples set the working range (min and
+  max per feature, with a 10 % margin).
+- **Defaults.** Lou et al. use 20 bins and a window of 128 (Table 4); the defaults here are
+  `n_bins=10` and `window=256`; the difference is a choice of this implementation.
 - **Score.** `mean(-log2((c + 1) / (W + 1)))` over the projections. The `+ 1` on both
   sides smooths empty bins and empty windows, so the score stays finite.
 - **Threshold.** A single float (default 4.0), because the score is bounded in
@@ -166,9 +193,11 @@ policy are this module's choices. The paper does not fix them.
 
 ### Measured cost
 
-At `n_projections=100, n_bins=10, window=200`, on one CPU thread:
+At the benchmark defaults (`n_projections=100, n_bins=10, window=256, range_init=20`), on
+one CPU thread:
 
-- `0.16 ms` per sample for `learn_one` + `score_one` on the arm stream;
+- `0.525 ms` per sample for `learn_one` + `score_one` on the arm stream (`learn-on-healthy`,
+  100 healthy samples) and `0.609 ms` on DriftStream;
 - memory flat: `100 * 10` counters + `window * n_projections` bin indices, independent of
   the stream length.
 
