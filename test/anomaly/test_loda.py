@@ -102,6 +102,33 @@ def test_loda_before_ready_returns_zero():
     assert ds.score_one({"a": 0.5, "b": 0.5}) == 0.0
 
 
+def test_loda_counts_spread_over_bins():
+    rng = np.random.default_rng(1)
+    ds = LODA(seed=0)
+    for x in rng.normal(size=(300, 4)):
+        ds.learn_one({f"f{i}": float(v) for i, v in enumerate(x)})
+    c = ds._counts
+    assert (c[:, 0] + c[:, -1]).sum() / c.sum() < 0.2
+    assert ((c.max(axis=1) / c.sum(axis=1)) >= 0.9).sum() < 10
+    assert (c > 0).sum(axis=1).mean() > 8.5
+
+
+def test_loda_bin_uses_theoretical_projection_range():
+    ds = LODA(
+        n_projections=20,
+        n_bins=10,
+        window=32,
+        feature_ranges=[(0.0, 1.0)] * 4,
+        seed=0,
+    )
+    ds.learn_one({f"f{i}": 0.5 for i in range(4)})
+    assert ds._pmin is not None and ds._pmax is not None
+    assert (ds._bin_index(ds._pmin) == 0).all()
+    assert (ds._bin_index(ds._pmax) == 9).all()
+    mid = ds._bin_index(0.5 * (ds._pmin + ds._pmax))
+    assert ((mid >= 4) & (mid <= 5)).all()
+
+
 def test_loda_check_estimator():
     check_estimator(
         LODA(

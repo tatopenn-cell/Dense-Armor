@@ -122,6 +122,8 @@ class LODA(AnomalyDetector):
         self._lo: np.ndarray | None = None
         self._hi: np.ndarray | None = None
         self._W: np.ndarray | None = None
+        self._pmin: np.ndarray | None = None
+        self._pmax: np.ndarray | None = None
         self._counts: np.ndarray | None = None
         self._buf: np.ndarray | None = None
         self._buf_head = 0
@@ -170,6 +172,8 @@ class LODA(AnomalyDetector):
             if nrm > self.eps:
                 W[j] /= nrm
         self._W = W
+        self._pmin = np.minimum(W, 0.0).sum(axis=1)
+        self._pmax = np.maximum(W, 0.0).sum(axis=1)
         self._counts = np.zeros((self.n_projections, self.n_bins), dtype=np.int64)
         self._buf = np.zeros((self.window, self.n_projections), dtype=np.intp)
         self._buf_head = 0
@@ -186,7 +190,18 @@ class LODA(AnomalyDetector):
         return (v - lo) / span
 
     def _bin_index(self, proj: np.ndarray) -> np.ndarray:
-        u = np.clip(proj, 0.0, 1.0)
+        """Map each projection value to a histogram bin.
+
+        The fSEAD paper (Alg. 1) uses loda_min/loda_max without defining
+        them. This implementation uses the theoretical min/max of w.x
+        with x in [0,1]^d: the sum of the negative weights and the sum
+        of the positive weights. The choice is declared because the
+        paper does not specify it; the alternative (min/max observed on
+        the window) would make the bin depend on the order of the
+        samples.
+        """
+        u = (proj - self._pmin) / np.maximum(self._pmax - self._pmin, self.eps)
+        u = np.clip(u, 0.0, 1.0)
         idx = np.floor(u * self.n_bins).astype(np.intp)
         return np.clip(idx, 0, self.n_bins - 1)
 
