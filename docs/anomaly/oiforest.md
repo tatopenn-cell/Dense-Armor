@@ -190,12 +190,9 @@ The `budget_s` declared by the class is `0.07 s`.
 
 ### What the detector does not do
 
-It needs the anomaly to be sparse. On a stream where the anomaly is the majority — the
-arm benchmark has 50 % positives after the fault — the "sparse" region of the tree is the
-healthy one, and the depth score measures the wrong side. Leveni et al. Table 2 lists
-anomaly proportions between 0.03 % (Smtp) and 32 % (Satellite): the arm stream of the
-benchmark, with 50 %, is far above the range the paper covers. The paper assumes
-anomalies are few (`P(X ~ Phi_1) << P(X ~ Phi_0)`, Section 2).
+The paper assumes that anomalies are few (`P(X ~ Phi_1) << P(X ~ Phi_0)`, Section 2).
+Leveni et al. Table 2 lists anomaly proportions between 0.03 % (Smtp) and 32 % (Satellite);
+the arm benchmark has 50 % positives after the fault, above that range.
 
 Measured on the arm with the defaults, ROC-AUC is `0.337` with `0.690` false alarms at
 the default threshold; on `DriftStream`, `0.724`. In
@@ -205,10 +202,6 @@ the default threshold; on `DriftStream`, `0.724`. In
 paper reports ROC-AUC `0.572` to `0.998` for Online-iForest, on the datasets the paper
 covers.
 
-On a stream whose healthy part is long, the trees grow to their depth limit and the
-score behaves as the paper describes. On a stream whose healthy part is a few hundred
-samples and whose fault is a sharp step, the trees do not have room to grow, and the
-detector is not the right choice.
-
-[LODA](loda.md) and [Half-Space Trees](hst.md) handle the sharp-step case; both are
-included in the same benchmark.
+The two benchmark streams give `0.337` (100 healthy samples) and `0.724` (1000 healthy
+samples). On the same streams [LODA](loda.md) gives `1.000` and `0.989`, and
+[OnlineRobustMahalanobis](mahalanobis.md) `1.000` and `0.995`.
