@@ -85,10 +85,15 @@ print(f"healthy  {det.score_one({'a': 0.0, 'b': 0.0}):.3f}")
 print(f"far      {det.score_one({'a': 10.0, 'b': 10.0}):.3f}")
 ```
 
-The healthy point sits at the centre of the cloud. Under a standard bivariate Gaussian its
-Mahalanobis distance is small; the score here is close to zero. The far point is ten units
-away along both axes: the distance is large, and the score reflects that. The default
-`threshold` of `7.0` is the classical value for low-dimensional Gaussians.
+```
+healthy  0.085
+far      19.932
+```
+
+The healthy point sits at the centre of the cloud: under a standard bivariate Gaussian its
+Mahalanobis distance is small, and the score is `0.085`. The far point is ten units away
+along both axes: the distance is large, and the score rises to `19.932`, well past the
+default `threshold` of `7.0`, the classical value for low-dimensional Gaussians.
 
 ## 4. On a real arm
 
@@ -111,7 +116,6 @@ ds = SyntheticArm(
 )
 
 det = OnlineRobustMahalanobis(
-    n_init=50,
     feature_keys=["r0", "r1", "r2", "r3"],
     threshold=7.0,
 )
@@ -146,17 +150,22 @@ outside it is flagged. The fault samples all fall outside.
 
 ## 6. Numbers
 
-`SyntheticArm` (400 samples, 100 healthy, 300 fault) and `DriftStream` (2000 samples, one
-sudden drift at half), feature ranges calibrated on the healthy part with a 10 % margin.
+`SyntheticArm` (200 samples, 100 healthy, 100 fault) and `DriftStream` (2000 samples, one
+sudden drift at half), every detector built with its defaults.
 
-| Stream | threshold | ROC-AUC | False alarms on the healthy part |
-|---|---|---|---|
-| SyntheticArm | 7.0 | 1.000 | 0.000 |
-| DriftStream | 7.0 | 0.994 | 0.000 |
+| Stream | Protocol | ROC-AUC | False alarms on the healthy part | Threshold at the last healthy sample |
+|---|---|---|---|---|
+| SyntheticArm | learn-on-healthy | 1.000 | 0.000 | 7.0000 |
+| SyntheticArm | learn-on-all | 1.000 | 0.000 | 7.0000 |
+| DriftStream | learn-on-healthy | 0.995 | 0.000 | 7.0000 |
+| DriftStream | learn-on-all | 0.930 | 0.000 | 7.0000 |
 
-On both streams the detector separates the two populations perfectly, with no false
-alarms. It is the most accurate of the five detectors on this repository's benchmarks and
-the second fastest (`0.045 ms` per sample at the arm's parameters).
+The default `n_init` is `100`, and on `SyntheticArm` the healthy part has exactly `100`
+samples: in the benchmark run the detector is still in its initialisation when the healthy
+part ends, so every healthy score is `0.0` and the false-alarm value `0.000` on
+`SyntheticArm` follows from that, not from a decision of the detector. The class is the
+most accurate of the five on this repository's benchmark and the fastest (`0.036 ms` per
+sample on the arm).
 
 ## Details
 
@@ -192,31 +201,44 @@ MCM by a Robbins-Monro scheme (equations 4-5) and scales the distances by
   the past distances, so that the calibrated threshold is the median of a `chi2_d`
   distribution. This module does not apply the scaling: the threshold is the one the user
   calibrates, and the default `7.0` is the classical value for low-dimensional Gaussians.
+- **Step index.** Guillot et al. use `gamma_n = c_gamma (n + n0)^(-gamma)` with `n` counted
+  from the first sample (`0.0395 c_gamma` for the first update after `n_init = 100` with
+  `gamma = 0.7`). Here `n` counts the updates since the initialisation and
+  `gamma_n = c_gamma (n + n0 + 1)^(-gamma)` (`0.6156 c_gamma` for the first update). The
+  difference is a choice of this implementation.
 - **Threshold.** A fixed float, default `7.0`.
 
 ### Measured cost
 
-At `n_init=50` and 4 features, on one CPU thread:
+At the benchmark defaults (`n_init=100`, 4 features), on one CPU thread:
 
-- `0.045 ms` per sample for `learn_one` + `score_one` on the arm stream;
+- `0.036 ms` per sample for `learn_one` + `score_one` on the arm stream;
 - memory flat: `d + d^2` arrays, independent of the stream length.
 
 The `budget_s` declared by the class is `0.005 s`.
 
 ### The bug the module fixes
 
-An earlier version of this module produced scores in the thousands on the arm's healthy
-residuals. The cause: no offline initialisation. The ASGD gradients are unit-norm
-normalised, so starting from the identity matrix they never reached the scale of the data
-(the healthy residual is ~0.15 N·m, the identity has unit diagonal), and the ratio
-`<x - m_bar, P_j>^2 / delta_j` grew without bound.
+The literal Section 3.2 update of Guillot et al. (page 7) without the step cap and
+without the eigenvalue floor was reimplemented outside the library and run on the 80
+healthy residuals that follow `n_init = 20`, on the issue scenario (joint 1 of the
+`SyntheticArm` payload fault, `period_s=2.0`, `rate_hz=50.0`, `n_cycles=2`,
+`payload_mass=5.0`, seed 0).
 
-The fix is the offline initialisation described above: the first `n_init` samples estimate
-the location and the scatter at the right scale, and the ASGD starts from there. On the
-same 40 healthy residuals the score now stays below the threshold. The reproduction is
-the module's test
-`test_mahalanobis_healthy_scores_stay_below_threshold`, which asserts the maximum over the
-healthy samples is below `7.0`.
+With `c_gamma = 1.0` the running average `V_bar` crosses the zero matrix: the final
+`trace(V_bar)` is `-2.88e-04`. Scoring each sample before the update, 19 of the 80 steps
+have a non-positive eigenvalue and the maximum score is `11.36`; scoring after the
+update, 20 steps and a maximum of `5.96`. The cause is the scale of the normalised step
+against the scale of `V`: the step has Frobenius norm ~`0.04`, while `V` itself is of
+order `2.6e-03`, so `V_bar` moves through the origin and `1 / delta` diverges. With
+`c_gamma` equal to the variance of the residual (`2.57e-03`): 0 steps, `trace(V_bar) =
++1.37e-03`, maximum `3.70`.
+
+The two guards are `max_step_frac = 0.1` and the eigenvalue floor `trace(V_bar) / d *
+1e-3`. On the same 80 samples with the guards the maximum stays below the threshold. The
+reproduction is the module's test `test_mahalanobis_healthy_scores_stay_below_threshold`,
+which uses the 100 healthy residuals of the issue scenario with `n_init = 20` and asserts
+the maximum is `3.983 < 7` (80 of the 100 scores non-zero).
 
 [OCSVM](ocsvm.md) is the alternative when the fault is not a shift but a change of the
 distribution's shape.

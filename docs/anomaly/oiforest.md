@@ -74,9 +74,15 @@ print(f"healthy  {det.score_one({'a': 0.5, 'b': 0.5}):.3f}")
 print(f"far      {det.score_one({'a': 50.0, 'b': 50.0}):.3f}")
 ```
 
+```
+healthy  0.405
+far      0.594
+```
+
 The healthy point sits at the centre of the dense cluster: the tree needs many splits to
-isolate it, so `E(D)` is large and the score is well below one. The far point falls into
-a leaf the tree reaches after very few cuts: the score is close to one.
+isolate it, so `E(D)` is large and the score is `0.405`. The far point falls into a leaf
+the tree reaches after fewer cuts, and the score rises to `0.594`. That value is below
+the default `threshold` of `0.6`: with the defaults neither point is flagged.
 
 ## 4. On a real arm
 
@@ -91,7 +97,7 @@ from dense_armor.utility.datasets import SyntheticArm
 
 ds = SyntheticArm(
     Path("test/fixtures/urdf/panda.urdf"),
-    period_s=2.0, rate_hz=50.0, n_cycles=4,
+    period_s=2.0, rate_hz=50.0, n_cycles=2,
     fault_at_s=2.0, fault="payload", payload_mass=5.0,
     noise_std=(1e-3, 5e-3, 5e-2), seed=0,
 )
@@ -130,15 +136,17 @@ structural reason the detector is below chance on this stream.
 
 ## 6. Numbers
 
-`SyntheticArm` (400 samples, 100 healthy, 300 fault) and `DriftStream` (2000 samples, one
-sudden drift at half), feature ranges calibrated on the healthy part with a 10 % margin.
+`SyntheticArm` (200 samples, 100 healthy, 100 fault) and `DriftStream` (2000 samples, one
+sudden drift at half), every detector built with its defaults.
 
-| Stream | threshold | ROC-AUC | False alarms on the healthy part |
-|---|---|---|---|
-| SyntheticArm | 0.6 | 0.417 | 0.590 |
-| DriftStream | 0.6 | 0.667 | 0.057 |
+| Stream | Protocol | ROC-AUC | False alarms on the healthy part | Threshold at the last healthy sample |
+|---|---|---|---|---|
+| SyntheticArm | learn-on-healthy | 0.337 | 0.690 | 0.6000 |
+| SyntheticArm | learn-on-all | 0.072 | 0.690 | 0.6000 |
+| DriftStream | learn-on-healthy | 0.724 | 0.076 | 0.6000 |
+| DriftStream | learn-on-all | 0.133 | 0.076 | 0.6000 |
 
-The arm number is below chance and the false-alarm rate is 59 %: on this stream the
+The arm number is below chance and the false-alarm rate is 69 %: on this stream the
 detector does not work. The drift number is in line with the paper's own benchmark: on a
 stream whose distribution changes slowly, the forest tracks the new distribution and the
 score rises. The values come from `benchmarks/anomaly_streaming.py`, protocol
@@ -182,17 +190,18 @@ The `budget_s` declared by the class is `0.07 s`.
 
 ### What the detector does not do
 
-It needs the anomaly to be sparse. On a stream where the anomaly is the majority — the
-arm benchmark has 75 % positives after the fault — the "sparse" region of the tree is the
-healthy one, and the depth score measures the wrong side. The paper assumes anomalies are
-few (`P(X ~ Phi_1) << P(X ~ Phi_0)`, Section 2), which is exactly the case its benchmark
+The paper assumes that anomalies are few (`P(X ~ Phi_1) << P(X ~ Phi_0)`, Section 2).
+Leveni et al. Table 2 lists anomaly proportions between 0.03 % (Smtp) and 32 % (Satellite);
+the arm benchmark has 50 % positives after the fault, above that range.
+
+Measured on the arm with the defaults, ROC-AUC is `0.337` with `0.690` false alarms at
+the default threshold; on `DriftStream`, `0.724`. In
+`test/protect/test_protected_anomaly_stream.py` (5 kg payload) the detector flags 16 of
+100 faulty samples and the protected model ends worse than the bare one (`err_prot`
+`3.9550`, `err_bare` `3.2886`); the test excludes it for that reason. Table 4 of the
+paper reports ROC-AUC `0.572` to `0.998` for Online-iForest, on the datasets the paper
 covers.
 
-Measured on the arm, the score does not separate the two populations, and the ROC-AUC is
-0.36. On a stream whose healthy part is long, the trees grow to their depth limit and the
-score behaves as the paper describes. On a stream whose healthy part is a few hundred
-samples and whose fault is a sharp step, the trees do not have room to grow, and the
-detector is not the right choice.
-
-[LODA](loda.md) and [Half-Space Trees](hst.md) handle the sharp-step case; both are
-included in the same benchmark.
+The two benchmark streams give `0.337` (100 healthy samples) and `0.724` (1000 healthy
+samples). On the same streams [LODA](loda.md) gives `1.000` and `0.989`, and
+[OnlineRobustMahalanobis](mahalanobis.md) `1.000` and `0.995`.

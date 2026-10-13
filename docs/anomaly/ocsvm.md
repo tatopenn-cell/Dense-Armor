@@ -78,11 +78,15 @@ print(f"healthy   {det.score_one({'a': 0.5, 'b': 0.5}):+.4f}")
 print(f"anomaly   {det.score_one({'a': 5.0, 'b': 5.0}):+.4f}")
 ```
 
-The healthy score is a small negative number: the point is just inside the boundary. The
-anomaly score is less negative (or positive): the point is closer to, or past, the boundary.
-The contrast is small on purpose — OCSVM gives a signed distance, not a probability, and the
-detector needs thousands of samples for the boundary to settle. The section "Convergence"
-below shows what that looks like.
+```
+healthy   -0.0013
+anomaly   +0.0088
+```
+
+The healthy point lies just inside the boundary: its signed distance is slightly negative
+(`-0.0013`). The anomaly lies outside: its score is positive (`+0.0088`). OCSVM returns a
+signed distance, not a probability, so the numerical contrast is small even when the two
+points are on opposite sides of the boundary.
 
 ## 4. On a real arm
 
@@ -96,15 +100,12 @@ from dense_armor.utility.datasets import SyntheticArm
 
 ds = SyntheticArm(
     Path("test/fixtures/urdf/panda.urdf"),
-    period_s=2.0, rate_hz=50.0, n_cycles=4,
+    period_s=2.0, rate_hz=50.0, n_cycles=2,
     fault_at_s=2.0, fault="payload", payload_mass=5.0,
     noise_std=(1e-3, 5e-3, 5e-2), seed=0,
 )
 
-det = OneClassSGD(
-    n_features_rff=64, nu=0.05, step=0.1, n_init=50,
-    feature_keys=["r0", "r1", "r2", "r3"], threshold=0.0, seed=0,
-)
+det = OneClassSGD(feature_keys=["r0", "r1", "r2", "r3"], seed=0)
 
 for sig, _ in ds.stream():
     q, qd, qdd = ds.trajectory(sig.t)
@@ -116,46 +117,48 @@ for sig, _ in ds.stream():
 
 ![OneClassSGD score on the SyntheticArm payload fault and DriftStream](../assets/ocsvm/score_vs_time.png)
 
-Top: SyntheticArm. Bottom: `DriftStream`. The score stays close to zero for most of the
-stream. The boundary has not yet moved away from the origin, so healthy and faulty samples
-get similar scores. This is what the next section explains.
+Top: SyntheticArm with `n_cycles=2` (200 samples, 100 healthy, 100 fault). Bottom:
+`DriftStream` with one sudden drift at half. The boundary separates the fault on both
+streams: the score of the faulty samples is above the adaptive 0.95-quantile threshold
+from the very first post-fault sample.
 
 ## 5. Convergence
 
 The paper proves (Lemma 5, Theorem 6, Corollary 7) that the distance between the SGD
-iterate and the population minimiser shrinks like `1/T`, but the constant depends on
-`(eps * lambda)^-2`, where `eps` is the margin of the healthy cluster and `lambda` the
-target outlier proportion. On a few hundred healthy samples the boundary has not moved far
-enough from the origin to separate the fault.
+iterate and the population minimiser shrinks like `1/T`, and Lemma 5 gives the explicit
+schedule `eta_t = 1/t` that makes the bound hold. The default `step=1.0` of the detector
+reproduces exactly that schedule.
 
 ![OneClassSGD: score of one point as the boundary converges](../assets/ocsvm/convergence.png)
 
-The score on one fixed healthy point, plotted against the number of samples learned. Before
-`n_init = 50` the detector returns zero: it is still collecting the standardisation
+The score on one fixed healthy point, plotted against the number of samples learned.
+Before `n_init` the detector returns zero: it is still collecting the standardisation
 statistics. After that the score oscillates around a value that slowly moves toward its
-asymptotic position, but the oscillations are still wide after a few thousand samples.
+asymptotic position.
 
 ## 6. Numbers
 
-`SyntheticArm` (400 samples, 100 healthy, 300 fault) and `DriftStream` (2000 samples, one
-sudden drift at half), feature ranges calibrated on the healthy part with a 10 % margin.
+`SyntheticArm` (200 samples, 100 healthy, 100 fault) and `DriftStream` (2000 samples, one
+sudden drift at half), every detector built with its defaults.
 
-| Stream | threshold | ROC-AUC | False alarms on the healthy part |
-|---|---|---|---|
-| SyntheticArm | 0.0 | 0.394 | 0.000 |
-| DriftStream | 0.0 | 0.523 | 0.000 |
+| Stream | Protocol | ROC-AUC | False alarms on the healthy part | Threshold at the last healthy sample |
+|---|---|---|---|---|
+| SyntheticArm | learn-on-healthy | 0.856 | 0.010 | -0.0008 |
+| SyntheticArm | learn-on-all | 0.671 | 0.010 | -0.0008 |
+| DriftStream | learn-on-healthy | 0.987 | 0.054 | -0.0002 |
+| DriftStream | learn-on-all | 0.769 | 0.054 | -0.0002 |
 
-The arm number is below chance (`0.5`) and the drift number is at chance. This is not a
-bug: the algorithm converges, but only after a few thousand healthy samples, and these
-streams have 100. On a longer stream with a few thousand healthy samples before the first
-fault, the same code separates the fault with a large margin. The module docstring says
-this explicitly under "Known limitation on short one-pass streams".
+The default `step` of `1.0` reproduces the paper's schedule `eta_t = 1/t`: the boundary
+moves on every healthy sample and the fault is separated on both streams. The default
+`threshold` of `None` uses the 0.95 quantile of the last 500 scores; while fewer than 50
+scores have been seen the effective threshold is `1e9` and nothing is flagged.
 
-SONAR is included here because its guarantee is the strongest of the five detectors — it is
-the only one with a formal bound on both Type I and Type II errors — and because when it
-does converge, it does so with a margin that the other methods do not have. On the
-benchmarks of this repository it is the slowest to start and the last to help. It is the
-detector to reach for when the healthy stream is long.
+The arm run has 100 healthy samples: after `n_init = 20` they give 80 SGD steps, not the
+few thousand the paper's experiments use, and the ROC-AUC is `0.856`. On `DriftStream`
+the 1000 healthy samples before the drift give the boundary enough updates to reach
+`0.987`. SONAR is included here because its guarantee is the strongest of the five
+detectors — it is the only one with a formal bound on both Type I and Type II errors — and
+because when the healthy stream is long enough the separation is crisp.
 
 ## Details
 
@@ -182,15 +185,20 @@ step.
   margin; this module does not use it as a formula.
 - **Step size.** `eta_t = step / t`, with `step` a user constant. `1.0` recovers the
   paper's `eta_t = 1/t`; the paper's own experiments use AdaGrad.
-- **Threshold.** A fixed float, default `0.0`: the signed distance is already the natural
-  scale of the problem, and any positive value means outside the boundary. An adaptive
-  quantile is available by passing `threshold=None`.
+- **Embedding.** The prefactor `sqrt(2/d)` is the one printed by Suk and Kpotufe
+  (Section 3). With `d` cos-sin pairs it gives `||z(x)||^2 = 2` and `z(x)^T z(y)`
+  approximates `2 K(x, y)`, while the paper states `z(x)^T z(y) = K(x, y)` in expectation;
+  for `d = 1` the printed prefactor gives `z^T z = 2` where that identity needs 1. The
+  implementation keeps the printed prefactor.
+- **Threshold.** Default `None`: the detector uses the 0.95 quantile of the last 500
+  scores, with `1e9` while fewer than 50 scores have been seen. A single float can be
+  passed instead (e.g. `0.0`, the signed distance from the boundary).
 
 ### Measured cost
 
-At `n_features_rff=64, n_init=50`, on one CPU thread:
+At the benchmark defaults (`n_features_rff=128, n_init=20`), on one CPU thread:
 
-- `0.04 ms` per sample for `learn_one` + `score_one` on the arm stream;
+- `0.131 ms` per sample for `learn_one` + `score_one` on the arm stream;
 - memory flat: two `2 * n_features_rff` vectors, independent of the stream length.
 
 The `budget_s` declared by the class is `0.001 s`.
