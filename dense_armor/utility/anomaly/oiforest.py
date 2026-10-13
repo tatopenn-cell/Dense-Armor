@@ -39,12 +39,13 @@ Details not fixed by the paper, stated explicitly:
   points currently in the tree. This module uses the dynamic cap.
 - Point depth for a leaf is ``k + log2(h / eta)``, that is
   Algorithm 4's ``k + c(h, eta)`` with ``c(h, eta) =
-  log(num_samples / max_leaf_samples) / log(2 * branching_factor)``
-  from the reference implementation, ``branching_factor = 2``. The
-  paper writes ``c(h, eta)`` in Algorithm 4 without giving the closed
-  form; the reference implementation is used here.
+  log2(num_samples / max_leaf_samples)``. The paper writes
+  ``c(h, eta)`` in Algorithm 4 without giving the closed form; the
+  code uses base-2 logarithm, which is what the rest of the module
+  uses and what makes the score unit-consistent with the
+  ``2^(-E(D)/c)`` of Algorithm 1.
 - The score's adjustment factor is ``c(window, eta) =
-  log2(window / eta)``; the paper writes it in Algorithm 1 line 1 and
+  log2(window / eta)``; the paper writes it in Algorithm 1 and
   in Section 4.2.
 
 Known limitation on streams with many positives. The paper assumes
@@ -65,7 +66,7 @@ The trend is monotonic in the number of healthy samples: with more
 data the trees grow and the score improves, but the anomaly
 proportion never falls inside the assumption of the paper. On the
 paper's own datasets (Cardio, HTTP, Shuttle, ... with 0.03 % to 10 %
-anomalies) the reported ROC-AUC is 0.65 to 0.99 (Table 4). On the
+anomalies) the reported ROC-AUC is 0.572 to 0.998 (Table 4). On the
 ``DriftStream`` of this benchmark (50 % positives) the protocol
 ``learn-on-healthy`` gives 0.67.
 
@@ -152,7 +153,7 @@ class OnlineIsolationForest(AnomalyDetector):
     """
 
     budget_s = 0.07
-    memory_class = "O(1)"
+    memory_class = "O(window)"
 
     def __init__(
         self,
@@ -321,6 +322,9 @@ class OnlineIsolationForest(AnomalyDetector):
             ``self``.
         """
         self._time_step(t)
+        if not isinstance(x, dict) or not x:
+            self.n_missing_ += 1
+            return self
         if not self._ready:
             self._lazy_init(x)
         try:

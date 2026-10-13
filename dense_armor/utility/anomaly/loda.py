@@ -200,6 +200,7 @@ class LODA(AnomalyDetector):
         the window) would make the bin depend on the order of the
         samples.
         """
+        assert self._pmin is not None and self._pmax is not None
         u = (proj - self._pmin) / np.maximum(self._pmax - self._pmin, self.eps)
         u = np.clip(u, 0.0, 1.0)
         idx = np.floor(u * self.n_bins).astype(np.intp)
@@ -216,6 +217,9 @@ class LODA(AnomalyDetector):
             ``self``.
         """
         self._time_step(t)
+        if not isinstance(x, dict) or not x:
+            self.n_missing_ += 1
+            return self
         if not self._ready:
             self._lazy_init(x)
             if not self._ready:

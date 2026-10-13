@@ -55,18 +55,16 @@ Details not fixed by the paper, stated explicitly:
   ``threshold_warmup`` scores have been seen the effective threshold
   is ``1e9`` (flag nothing).
 
-Known limitation on short one-pass streams. SONAR's SGD convergence
-(Theorem 6 and Corollary 7 of the paper) requires the number of steps
-to grow like ``(eps * lambda) ** -2 * log(1 / delta)`` before the
-Type I error bound becomes tight. On the benchmark streams used in
-this repository (a few hundred healthy samples, then a fault that
-does not reappear), the boundary has not yet converged when the fault
-arrives, so the score of the fault is close to the score of a healthy
-point and the ROC-AUC is close to chance: the algorithm detects the
-fault only if it can learn from enough healthy samples first, which
-this benchmark does not provide. On a longer single-pass stream with
-a few thousand healthy samples before the first fault, the boundary
-has time to converge and the detector behaves as the paper describes.
+Known limitation on short one-pass streams. The default ``step=1.0``
+gives ``eta_t = 1 / t``, the schedule of Suk and Kpotufe (2025,
+Lemma 5). The detector still needs enough healthy samples for the
+boundary to converge (Theorem 6 and Corollary 7): with only 50
+healthy steps after ``n_init`` (the ``SyntheticArm`` benchmark), the
+ROC-AUC stays low (0.426) even with the correct schedule; with a few
+thousand healthy samples (the ``DriftStream`` benchmark) it reaches
+0.978. An earlier version used ``step=0.1`` and attributed the low
+AUC to the stream length alone; that attribution was wrong, the
+schedule was 10x too slow.
 
 References
 ----------
@@ -141,7 +139,7 @@ class OneClassSGD(AnomalyDetector):
         self,
         n_features_rff: int = 128,
         nu: float = 0.05,
-        step: float = 0.1,
+        step: float = 1.0,
         gamma: float = 0.5,
         n_init: int = 20,
         feature_keys: Sequence[str] | None = None,
@@ -275,6 +273,9 @@ class OneClassSGD(AnomalyDetector):
             ``self``.
         """
         self._time_step(t)
+        if not isinstance(x, dict) or not x:
+            self.n_missing_ += 1
+            return self
         if not self._ready:
             self._lazy_init(x)
             try:

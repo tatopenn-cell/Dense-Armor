@@ -20,7 +20,7 @@ updates, whose gradients are normalised to unit Frobenius norm, start
 from the identity matrix and never reach the scale of the data.
 
 Two steps of the full method are not implemented. First, Guillot et
-al. (2025, Section 3.2 and eqs. 4-5) reconstruct the eigenvalues of
+al. (2025, Section 3.3 and eqs. 4-5) reconstruct the eigenvalues of
 the true covariance from the eigenvalues of the MCM by a Robbins-Monro
 scheme; that step refines the absolute scale of the distance, because
 the MCM eigenvalues under-estimate the variance. Second, eq. 1 scales
@@ -274,7 +274,7 @@ class OnlineRobustMahalanobis(AnomalyDetector):
             return self
 
         self._n_after_init += 1
-        n = self._n_after_init
+        n = self.n_init + self._n_after_init
         gamma = self._gamma(n)
 
         assert self._m is not None and self._m_bar is not None

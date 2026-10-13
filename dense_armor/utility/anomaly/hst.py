@@ -280,6 +280,9 @@ class HalfSpaceTrees(AnomalyDetector):
             ValueError: if a feature is not finite.
         """
         self._time_step(t)
+        if not isinstance(x, dict) or not x:
+            self.n_missing_ += 1
+            return self
         if not self._ready:
             self._lazy_init(x)
             if not self._ready:
