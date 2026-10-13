@@ -4,6 +4,43 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+## [1.1.27] - 2026-10-13
+
+### Added
+- Time series package (`dense_armor.utility.timeseries`): `OnlineAR`, `OnlineVAR`
+  (TIRSO, Zaman 2019 eq. 25 with the `1{n != n'}` indicator on the group-lasso
+  penalty), `KalmanFilter`, `VBAdaptiveKalman` (Mbalawata 2013 Algorithm 1),
+  `InnovationAdaptiveKalman` (Popescu 2026), `CycleResidual` (period detection
+  by autocorrelation, median template, bounded buffer). Four new docs pages
+  under `docs/timeseries/` and three figures.
+- Linear models (`dense_armor.utility.linear`): `LinearRegression`,
+  `LogisticRegression`, `BayesianLinearRegression` (predictive interval),
+  `PayloadEstimator` (tracking figure). Docs under `docs/linear/`.
+- Online optimizers (`dense_armor.utility.optim`): `SGD`, `AdaGrad`, `Adam`,
+  `FTRLProximal` (McMahan 2011), `OnlineNewtonStep`. Each with a learning-rate
+  choice figure and a docstring regret bound. Index page under `docs/optim/`.
+- Three new comparison pages: `docs/vs_kalman.md`, `docs/robustness.md`
+  (adversarial attacks on the shields, weakest point stated), `docs/limits.md`.
+
+### Changed
+- `core/` (14 files): docstrings in English, inline `#` comments removed,
+  missing type hints added (`chunk.py`, `profiler.py`, `vector.py`). No
+  behavioural change.
+- README restructured: short answers at the top ("Who is this for",
+  "Use cases", "What it expects from you", "What changes when you use it")
+  before the long part. Quickstart is now a 5-feature online classifier on a
+  drift stream with the measured accuracy, followed by a rate-limiter example
+  on a real Panda URDF.
+- `pyproject.toml`: `ruff` added to the `[docs]` extra so `mkdocstrings`
+  formats signatures without the "install Black or Ruff" warning.
+
+### Fixed
+- `griffe` warnings in `mkdocs build --strict` for `codegen_engine`,
+  `codegen_instance`, `stabilizer_instance`, `base_state`: missing parameter
+  annotations. Strict build now passes.
+- `dense_armor/__init__.py`: `__version__` was at `1.1.25` while
+  `pyproject.toml` was at `1.1.26`. Both now at `1.1.27`.
+
 ## [1.1.25] - 2026-10-09
 
 - Streams, datasets and pipelines: `dense_armor.utility.stream` (`iter_array`, `iter_csv` with constant memory and list-valued columns, `iter_rosbag` for ROS 1 and ROS 2 bags with the new extra `[ros]`, `merge_by_time`, `shuffle`); `dense_armor.utility.datasets` (`Casper` reader for a local copy of the CASPER UR3e dataset, `DriftStream` with sudden, gradual and incremental drift after Ksieniewicz and Zyblewski 2020, `SyntheticArm` labelled joint stream from a URDF with friction or payload faults); `dense_armor.utility.compose` (`Select`, `Discard`, `FuncTransformer`). `Protected` passes `t` only to models that accept it; `HampelScorer.threshold` exposes `n_sigmas` for `AnomalyGate`.
