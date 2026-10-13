@@ -28,6 +28,20 @@
 
 Python developers working on systems where data arrives one sample at a time and the model has to learn or stay stable *while it runs*: robot control loops, sensor pipelines, agent runtimes, any streaming workload. If you train on a fixed dataset and then deploy, this library is probably not what you need.
 
+## Use cases
+
+The primitives are domain-agnostic: anything that ingests data one sample at a time and has to react when the stream changes. Robotics is where the library has been tested most, but the layers above and below the model are the same shape everywhere.
+
+| domain | what Dense-Armor brings |
+|---|---|
+| Robot control loops | bounded commands (rate limits, CBF), drift and anomaly on joint streams, calibrated intervals |
+| Deployed ML models | input drift detection, runtime shielding of `NaN` and spikes, no retraining required |
+| Antivirus / security | event stream statistics, behavioural drift, anomaly scoring one event at a time |
+| Fraud detection | per-transaction scoring, drift on the user profile, streaming statistics |
+| Search / ranking | monitoring layer around the ranker: drift on user behaviour, streaming metrics |
+| Live monitoring | Prometheus-style metrics with drift detection, sketches, quantiles in constant memory |
+| IoT / sensor fusion | the same shape as a robot joint: noisy multichannel input, drift, anomalies, shields |
+
 ## What it expects from you
 
 No specific model. Any estimator that follows the same contract: `learn_one(x, y)` updates the model from one sample, `predict_one(x)` returns a prediction, `transform_one(x)` returns a transform or a residual, `score_one(x)` returns an anomaly score (high = anomalous), `update(x)` advances a drift detector. Inputs and outputs are dicts of numpy-compatible scalars or arrays. Runs on CPU or GPU through JAX. A shield can wrap any callable from tensor to tensor.
