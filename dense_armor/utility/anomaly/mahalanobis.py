@@ -62,6 +62,14 @@ bounded without changing the algorithm: on the same 80 samples, with
 the guards, the maximum score is below the threshold (see
 ``test_mahalanobis_healthy_scores_stay_below_threshold``).
 
+Step index. In Guillot et al. (page 7) ``gamma_n = c_gamma (n + n0)^(-gamma)``
+with ``n`` counted from the first sample, so the first update after
+``n_init = 100`` uses ``gamma_101 = 0.0395 c_gamma`` for ``gamma = 0.7``.
+Here ``n`` counts the updates since the initialisation and
+``gamma_n = c_gamma (n + n0 + 1)^(-gamma)``: the first update uses
+``2^(-0.7) c_gamma = 0.6156 c_gamma``. This is a choice of this
+implementation; the step cap ``max_step_frac`` bounds those first steps.
+
 References
 ----------
 Guillot, A., Godichon-Baggioni, A., Robin, S. (2025). Online robust

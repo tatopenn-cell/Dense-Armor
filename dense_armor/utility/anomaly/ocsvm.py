@@ -32,6 +32,14 @@ RFF embedding (Rahimi and Recht 2007, cos-sin pair):
 with ``w_j ~ N(0, 2 * gamma * I)`` for the RBF kernel
 ``K(x, y) = exp(-gamma * ||x - y||^2)``.
 
+Normalisation of the embedding. The prefactor ``sqrt(2/d)`` is the one
+printed by Suk and Kpotufe (2025, Section 3). With ``d`` cos-sin pairs
+it gives ``||z(x)||^2 = 2`` and ``z(x)^T z(y)`` approximates
+``2 K(x, y)``, while the paper states ``z(x)^T z(y) = K(x, y)`` in
+expectation; for ``d = 1`` the printed prefactor gives ``z^T z = 2``
+where that identity needs 1. The implementation keeps the printed
+prefactor.
+
 Details not fixed by the paper, stated explicitly:
 
 - The paper assumes the data lie on the unit sphere; that assumption
