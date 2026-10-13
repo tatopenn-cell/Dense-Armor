@@ -5,6 +5,8 @@ steady-state runs, so the compilation cost does not pollute the per-call
 latency.
 """
 
+from typing import Any
+
 import time
 
 import jax
@@ -16,7 +18,7 @@ class PipelineProfiler:
 
     @staticmethod
     def measure_microseconds(
-        codegen_instance,
+        codegen_instance: Any,
         input_data: np.ndarray,
         compiled_ops: np.ndarray,
         repetitions: int = 100,
@@ -56,7 +58,7 @@ class PipelineProfiler:
 
     @staticmethod
     def measure_stabilizer_microseconds(
-        stabilizer_instance,
+        stabilizer_instance: Any,
         raw_batch: np.ndarray,
         repetitions: int = 100,
     ) -> dict:

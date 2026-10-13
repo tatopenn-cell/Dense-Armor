@@ -4,6 +4,8 @@ Chunking keeps the number of items per JIT call constant, so XLA does not
 recompile when the batch or the operation list length changes.
 """
 
+from typing import Any
+
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -63,7 +65,7 @@ class ImageChunker:
         return np.vstack(chunks_list)
 
     def execute_pipeline_chunked(
-        self, codegen_engine, input_vector: np.ndarray, compiled_ops: list
+        self, codegen_engine: Any, input_vector: np.ndarray, compiled_ops: list
     ) -> np.ndarray:
         """Run the compiled operations in fixed-size blocks of ``chunk_size``.
 

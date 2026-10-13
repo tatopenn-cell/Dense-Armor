@@ -86,11 +86,7 @@ _parallel_engine = jax.jit(jax.vmap(_simulate_single_instance, in_axes=(None, 0)
 
 
 class ParametricScenarioSimulator:
-    """Massive parallel Monte Carlo simulation with stochastic collapse.
-
-    Args:
-        base_state: initial scalar state shared by every scenario.
-    """
+    """Massive parallel Monte Carlo simulation with stochastic collapse."""
 
     _simulation_step = staticmethod(_scenario_step)
 
