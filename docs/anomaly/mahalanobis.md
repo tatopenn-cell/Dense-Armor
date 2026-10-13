@@ -86,13 +86,13 @@ print(f"far      {det.score_one({'a': 10.0, 'b': 10.0}):.3f}")
 ```
 
 ```
-healthy  0.085
-far      19.932
+healthy  0.080
+far      15.880
 ```
 
 The healthy point sits at the centre of the cloud: under a standard bivariate Gaussian its
-Mahalanobis distance is small, and the score is `0.085`. The far point is ten units away
-along both axes: the distance is large, and the score rises to `19.932`, well past the
+Mahalanobis distance is small, and the score is `0.080`. The far point is ten units away
+along both axes: the distance is large, and the score rises to `15.880`, well past the
 default `threshold` of `7.0`, the classical value for low-dimensional Gaussians.
 
 ## 4. On a real arm
@@ -157,8 +157,8 @@ sudden drift at half), every detector built with its defaults.
 |---|---|---|---|---|
 | SyntheticArm | learn-on-healthy | 1.000 | 0.000 | 7.0000 |
 | SyntheticArm | learn-on-all | 1.000 | 0.000 | 7.0000 |
-| DriftStream | learn-on-healthy | 0.995 | 0.000 | 7.0000 |
-| DriftStream | learn-on-all | 0.930 | 0.000 | 7.0000 |
+| DriftStream | learn-on-healthy | 0.993 | 0.000 | 7.0000 |
+| DriftStream | learn-on-all | 0.938 | 0.000 | 7.0000 |
 
 The default `n_init` is `100`, and on `SyntheticArm` the healthy part has exactly `100`
 samples: in the benchmark run the detector is still in its initialisation when the healthy
@@ -203,9 +203,11 @@ MCM by a Robbins-Monro scheme (equations 4-5) and scales the distances by
   calibrates, and the default `7.0` is the classical value for low-dimensional Gaussians.
 - **Step index.** Guillot et al. use `gamma_n = c_gamma (n + n0)^(-gamma)` with `n` counted
   from the first sample (`0.0395 c_gamma` for the first update after `n_init = 100` with
-  `gamma = 0.7`). Here `n` counts the updates since the initialisation and
-  `gamma_n = c_gamma (n + n0 + 1)^(-gamma)` (`0.6156 c_gamma` for the first update). The
-  difference is a choice of this implementation.
+  `gamma = 0.7`). Here `n` also counts from the first sample (`n = n_init + k` at the `k`-th
+  update) and the offset is one larger, `gamma_n = c_gamma (n + n0 + 1)^(-gamma)`: the first
+  update after `n_init = 100` uses `0.0393 c_gamma`. The averaged estimates use the weight
+  `1 / (n + 1)` with the same `n`, which is the paper's `1 / (n + 2)` for the previous step
+  index. The offset of one in `gamma_n` is a choice of this implementation.
 - **Threshold.** A fixed float, default `7.0`.
 
 ### Measured cost
@@ -238,7 +240,7 @@ The two guards are `max_step_frac = 0.1` and the eigenvalue floor `trace(V_bar) 
 1e-3`. On the same 80 samples with the guards the maximum stays below the threshold. The
 reproduction is the module's test `test_mahalanobis_healthy_scores_stay_below_threshold`,
 which uses the 100 healthy residuals of the issue scenario with `n_init = 20` and asserts
-the maximum is `3.983 < 7` (80 of the 100 scores non-zero).
+the maximum is `3.739 < 7` (80 of the 100 scores non-zero).
 
 [OCSVM](ocsvm.md) is the alternative when the fault is not a shift but a change of the
 distribution's shape.

@@ -271,3 +271,23 @@ def test_mahalanobis_cap_bounds_the_step():
     m_uncapped = _run(1.0)
     assert m_capped < 7.0, f"capped max = {m_capped:.3f}"
     assert m_uncapped > 7.0, f"uncapped max = {m_uncapped:.3f}"
+
+
+def test_mahalanobis_step_index_counts_from_the_first_sample():
+    """The first update after the initialisation uses ``n = n_init + 1``.
+
+    With the cap off and a median far from zero, the median moves by
+    exactly ``gamma_n = c_gamma (n + n0 + 1)^(-gamma_exp)`` along the unit
+    direction of the new sample, with ``n`` counted from the first sample
+    as in Guillot et al. (page 7).
+    """
+    d = OnlineRobustMahalanobis(
+        feature_keys=["r"], n_init=20, c_gamma=1.0, max_step_frac=1.0
+    )
+    for i in range(20):
+        d.learn_one({"r": 10.0 + 0.1 * i})
+    m0 = d._m.copy()
+    d.learn_one({"r": 30.0})
+    step = float(np.linalg.norm(d._m - m0))
+    expected = (d.n_init + 1 + d.n0 + 1) ** (-d.gamma_exp)
+    assert abs(step - expected) < 1e-12, f"step {step} != gamma {expected}"

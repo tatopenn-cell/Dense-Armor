@@ -204,4 +204,4 @@ covers.
 
 The two benchmark streams give `0.337` (100 healthy samples) and `0.724` (1000 healthy
 samples). On the same streams [LODA](loda.md) gives `1.000` and `0.989`, and
-[OnlineRobustMahalanobis](mahalanobis.md) `1.000` and `0.995`.
+[OnlineRobustMahalanobis](mahalanobis.md) `1.000` and `0.993`.

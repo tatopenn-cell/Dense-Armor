@@ -65,10 +65,13 @@ the guards, the maximum score is below the threshold (see
 Step index. In Guillot et al. (page 7) ``gamma_n = c_gamma (n + n0)^(-gamma)``
 with ``n`` counted from the first sample, so the first update after
 ``n_init = 100`` uses ``gamma_101 = 0.0395 c_gamma`` for ``gamma = 0.7``.
-Here ``n`` counts the updates since the initialisation and
+Here ``n`` also counts from the first sample (``n = n_init + k`` at the
+``k``-th update) and the offset is one larger,
 ``gamma_n = c_gamma (n + n0 + 1)^(-gamma)``: the first update uses
-``2^(-0.7) c_gamma = 0.6156 c_gamma``. This is a choice of this
-implementation; the step cap ``max_step_frac`` bounds those first steps.
+``102^(-0.7) c_gamma = 0.0393 c_gamma``. The averaged estimates use the
+weight ``1 / (n + 1)`` with the same ``n``, which is the paper's
+``1 / (n + 2)`` for the previous step index. The offset of one in
+``gamma_n`` is a choice of this implementation.
 
 References
 ----------
@@ -316,7 +319,7 @@ class OnlineRobustMahalanobis(AnomalyDetector):
             return self
 
         self._n_after_init += 1
-        n = self._n_after_init
+        n = self.n_init + self._n_after_init
         gamma = self._gamma(n)
 
         assert self._m is not None and self._m_bar is not None

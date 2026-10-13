@@ -38,7 +38,10 @@ it gives ``||z(x)||^2 = 2`` and ``z(x)^T z(y)`` approximates
 ``2 K(x, y)``, while the paper states ``z(x)^T z(y) = K(x, y)`` in
 expectation; for ``d = 1`` the printed prefactor gives ``z^T z = 2``
 where that identity needs 1. The implementation keeps the printed
-prefactor.
+prefactor. With the prefactor ``sqrt(1/d)``, which gives
+``z(x)^T z(y)`` close to ``K(x, y)``, the benchmark ROC-AUC
+(``learn-on-healthy``) moves from 0.856 to 0.871 on SyntheticArm and
+from 0.987 to 0.972 on DriftStream, so the printed prefactor stays.
 
 Details not fixed by the paper, stated explicitly:
 
