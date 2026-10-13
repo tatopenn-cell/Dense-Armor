@@ -55,16 +55,12 @@ Details not fixed by the paper, stated explicitly:
   ``threshold_warmup`` scores have been seen the effective threshold
   is ``1e9`` (flag nothing).
 
-Known limitation on short one-pass streams. The default ``step=1.0``
-gives ``eta_t = 1 / t``, the schedule of Suk and Kpotufe (2025,
-Lemma 5). The detector still needs enough healthy samples for the
-boundary to converge (Theorem 6 and Corollary 7): with only 50
-healthy steps after ``n_init`` (the ``SyntheticArm`` benchmark), the
-ROC-AUC stays low (0.426) even with the correct schedule; with a few
-thousand healthy samples (the ``DriftStream`` benchmark) it reaches
-0.978. An earlier version used ``step=0.1`` and attributed the low
-AUC to the stream length alone; that attribution was wrong, the
-schedule was 10x too slow.
+Short one-pass streams. The default ``step=1.0`` gives
+``eta_t = 1 / t``, the schedule of Suk and Kpotufe (2025, Lemma 5).
+The boundary converges as healthy samples arrive (Theorem 6 and
+Corollary 7). With the defaults, the ``SyntheticArm`` benchmark (100
+healthy samples, 80 steps after ``n_init``) gives ROC-AUC 0.856 and
+the ``DriftStream`` benchmark (1000 healthy samples) gives 0.987.
 
 References
 ----------

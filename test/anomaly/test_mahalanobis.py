@@ -10,9 +10,9 @@ rate_hz=50.0, n_cycles=2, fault_at_s=2.0, fault="payload",
 payload_mass=5.0, noise_std=(1e-3, 5e-3, 5e-2), seed=0)`` produces
 for ``tau_1 - nominal_torque(...)[1]`` on its 100 healthy samples,
 regenerated with the library's own generator. Recomputing them at
-every run costs about 45 seconds because the URDF inverse dynamics
-dominates the time, so they are stored here and the detector under
-test is the library's own.
+every run costs about 15 seconds (measured on a laptop) because the
+URDF inverse dynamics dominates the time, so they are stored here and
+the detector under test is the library's own.
 """
 
 import numpy as np

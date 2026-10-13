@@ -274,10 +274,8 @@ class HalfSpaceTrees(AnomalyDetector):
             t: unused.
 
         Returns:
-            ``self``.
-
-        Raises:
-            ValueError: if a feature is not finite.
+            ``self``. A sample that is not a dict, is empty, or has a
+            missing or non-finite feature is counted in ``n_missing``.
         """
         self._time_step(t)
         if not isinstance(x, dict) or not x:
