@@ -208,34 +208,35 @@ class HalfSpaceTrees(AnomalyDetector):
         self._ready = True
 
     def _build_midpoints(self) -> np.ndarray:
-        """Punto di taglio di ogni nodo interno, uno per tree e node.
+        """Split value of every internal node, one per tree and node.
 
-        Il range di un nodo sulla sua feature di split dipende solo
-        dalle feature scelte lungo il path dalla radice, mai dai dati.
-        Si propaga dalla radice con lo stesso range di ``self._lo`` /
-        ``self._hi``: se il nodo ``n`` e' figlio sinistro del padre
-        ``p`` che splitta su ``f`` con punto ``m``, la feature ``f`` in
-        ``n`` ha range ``[lo_p[f], m]``; se e' figlio destro, ``[m,
-        hi_p[f]]``. Le altre feature restano invariate.
+        The split values live in the normalised space of ``_to_norm``,
+        where every feature of the root ranges over ``[0, 1]``, because
+        ``_path_one`` and ``_leaf_one`` compare them with the normalised
+        sample. The range of a node on its split feature depends only on
+        the features chosen along the path from the root, never on the
+        data: if node ``n`` is the left child of ``p``, which splits
+        feature ``f`` at ``m``, the range of ``f`` in ``n`` is
+        ``[lo_p[f], m]``; for the right child it is ``[m, hi_p[f]]``.
+        The other features keep the range of the parent.
 
-        Regola di Tan et al. 2011, Section 3.2 ("the split point is
-        the mid-point of the current range of q") e di Ulrich 2025,
-        Section 5.2 ("s = (x + y) / 2"). La formula dal solo indice BFS
-        del nodo vale solo per ``d = 1``.
+        Rule of Tan et al. 2011, Section 3.2 ("the split point is the
+        mid-point of the current range of q") and of Ulrich 2025,
+        Section 5.2 ("s = (x + y) / 2"). The formula from the BFS index
+        of the node alone holds for ``d = 1`` only.
 
         Returns:
-            Array ``(n_trees, 2 ** depth - 1)`` di float, con il punto
-            di taglio di ogni nodo interno sull'ultima dimensione.
+            Array ``(n_trees, 2 ** depth - 1)`` with the split value of
+            every internal node.
         """
-        assert self._lo is not None and self._hi is not None
         assert self._feature is not None
         feature = self._feature
         n_internal = 2**self.depth - 1
         midpoints = np.zeros((self.n_trees, n_internal), dtype=float)
         d = len(self._keys)
         t_idx = np.arange(self.n_trees)[:, None]
-        lo_cur = np.broadcast_to(self._lo[None, None, :], (self.n_trees, 1, d)).copy()
-        hi_cur = np.broadcast_to(self._hi[None, None, :], (self.n_trees, 1, d)).copy()
+        lo_cur = np.zeros((self.n_trees, 1, d))
+        hi_cur = np.ones((self.n_trees, 1, d))
         for level in range(self.depth):
             n_at_level = 2**level
             start = n_at_level - 1

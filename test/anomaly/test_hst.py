@@ -16,16 +16,15 @@ def test_hst_shapes():
 
 
 def test_hst_outlier_scores_higher():
-    """An out-of-range point scores higher than the centre of the range.
+    """An out-of-range point scores higher than the centre of dense data.
 
-    The working range is given explicitly: when the range is learned
-    online from the first samples of a narrow distribution, a point
-    far outside the working range is mapped to the same outermost leaf
-    as a point at the centre (with the range learned from
-    ``N(0, 0.05)`` both ``(0, 0)`` and ``(10, 10)`` reach the rightmost
-    leaf of every tree), so the test would not measure the geometry.
-    The range ``[-1, 1]`` on both features puts the centre and the far
-    point in different leaves.
+    The working range is given explicitly. When it is learned from the
+    first ``range_init`` samples of ``N(0, 0.05)``, the samples that
+    later fall outside that range are mapped to the outermost leaves,
+    so those leaves are not empty: in this configuration the far point
+    ``(10, 10)`` lands in leaves with a mean count of 1.27 per tree and
+    the centre ``(0, 0)`` in leaves with a mean count of 0.80, and the
+    far point does not score higher.
     """
     hst = HalfSpaceTrees(
         n_trees=15,
@@ -48,47 +47,45 @@ def test_hst_outlier_scores_higher():
 
 
 def _walk_node_ranges(hst, tr):
-    """Restituisce (split_att, split_val, mid_of_range) per ogni nodo interno.
+    """Return (feature, split value used, expected mid-point) per internal node.
 
-    Cammina l'albero ricostruendo il range del nodo feature per feature,
-    come il codice fa in _path_one. Il range dipende solo dall'albero,
-    non dai dati.
+    The walk rebuilds the range of every node in the normalised space of
+    the detector, where the root ranges over ``[0, 1]`` on every feature,
+    and descends with the split values the detector stores in
+    ``_midpoints``. The expected value is the middle of the node's range
+    on its split feature.
     """
-    assert hst._lo is not None and hst._hi is not None
-    assert hst._feature is not None
-    lo_root = hst._lo.copy()
-    hi_root = hst._hi.copy()
+    assert hst._feature is not None and hst._midpoints is not None
     n_internal = 2**hst.depth - 1
+    lo_root = np.zeros(len(hst._keys))
+    hi_root = np.ones(len(hst._keys))
     out = []
-    # BFS: per ogni nodo, tengo traccia del range su ogni feature
     queue = [(0, lo_root, hi_root)]
     while queue:
         node, lo, hi = queue.pop(0)
         if node >= n_internal:
             continue
         feat = int(hst._feature[tr, node])
-        mid = 0.5 * (lo[feat] + hi[feat])
-        out.append((feat, mid, lo.copy(), hi.copy()))
-        lo_l = lo.copy()
+        used = float(hst._midpoints[tr, node])
+        out.append((feat, used, 0.5 * (lo[feat] + hi[feat])))
         hi_l = hi.copy()
-        hi_l[feat] = mid
+        hi_l[feat] = used
         lo_r = lo.copy()
-        hi_r = hi.copy()
-        lo_r[feat] = mid
-        queue.append((2 * node + 1, lo_l, hi_l))
-        queue.append((2 * node + 2, lo_r, hi_r))
+        lo_r[feat] = used
+        queue.append((2 * node + 1, lo.copy(), hi_l))
+        queue.append((2 * node + 2, lo_r, hi.copy()))
     return out
 
 
 @pytest.mark.parametrize("d", [1, 2, 4])
 def test_hst_split_is_midpoint_of_node_range(d):
-    """Ogni split e' il punto medio del range del suo nodo sulla sua feature.
+    """Every split value is the mid-point of its node's range on its feature.
 
-    Regola di Tan et al. 2011, Section 3.2 ("the split point is the
-    mid-point of the current range of q") e Ulrich 2025, Section 5.2
-    ("s = (x + y) / 2"). Nel codice precedente il punto di taglio era
-    ``(2k+1) / 2^(level+1)`` dalla posizione BFS del nodo, corretto solo
-    per ``d = 1``.
+    Rule of Tan et al. 2011, Section 3.2 ("the split point is the
+    mid-point of the current range of q") and Ulrich 2025, Section 5.2
+    ("s = (x + y) / 2"). The earlier code used ``(2k+1) / 2^(level+1)``
+    from the BFS position of the node, which is the mid-point only for
+    ``d = 1``.
     """
     ranges = [(-1.0, 1.0)] * d
     for seed in (0, 1, 7):
@@ -100,12 +97,30 @@ def test_hst_split_is_midpoint_of_node_range(d):
             seed=seed,
         )
         hst.learn_one({chr(ord("a") + i): 0.0 for i in range(d)})
-        walks = _walk_node_ranges(hst, 0)
-        for feat, mid_used, lo, hi in walks:
-            expected = 0.5 * (lo[feat] + hi[feat])
-            assert abs(mid_used - expected) < 1e-12, (
-                f"d={d} seed={seed} feat={feat}: mid={mid_used} != {expected}"
+        for feat, used, expected in _walk_node_ranges(hst, 0):
+            assert abs(used - expected) < 1e-12, (
+                f"d={d} seed={seed} feat={feat}: split {used} != {expected}"
             )
+
+
+@pytest.mark.parametrize("lo,hi", [(0.0, 1.0), (-1.0, 1.0), (-0.1, 0.1), (10.0, 20.0)])
+def test_hst_root_split_is_the_middle_of_the_working_range(lo, hi):
+    """The root splits the working range in two halves, whatever its units.
+
+    The split values are compared with the normalised sample, so the
+    root split of a single feature is 0.5 for every working range.
+    """
+    hst = HalfSpaceTrees(
+        n_trees=3, depth=4, window=20, feature_ranges=[(lo, hi)], seed=0
+    )
+    hst.learn_one({"a": 0.5 * (lo + hi)})
+    assert np.allclose(hst._midpoints[:, 0], 0.5)
+    left = [
+        x
+        for x in np.linspace(lo, hi, 20)
+        if hst._to_norm({"a": float(x)})[0] <= hst._midpoints[0, 0]
+    ]
+    assert len(left) == 10
 
 
 def test_hst_nan_counted_missing():
