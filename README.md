@@ -227,7 +227,7 @@ Contributions are welcome. The library is built to be extended one estimator at 
   title     = {Dense-Armor: Robot-AI Online Shielding \\& Learning},
   year      = 2026,
   publisher = {Zenodo},
-  doi       = {10.5281/zenodo.23265098}
+  doi       = {10.5281/zenodo.23340608}
 }
 ```
 
