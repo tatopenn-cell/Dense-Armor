@@ -24,6 +24,22 @@
 
 ---
 
+## Who is this for
+
+Python developers working on systems where data arrives one sample at a time and the model has to learn or stay stable *while it runs*: robot control loops, sensor pipelines, agent runtimes, any streaming workload. If you train on a fixed dataset and then deploy, this library is probably not what you need.
+
+## What it expects from you
+
+No specific model. Any estimator that follows the same contract: `learn_one(x, y)` updates the model from one sample, `predict_one(x)` returns a prediction, `transform_one(x)` returns a transform or a residual, `score_one(x)` returns an anomaly score (high = anomalous), `update(x)` advances a drift detector. Inputs and outputs are dicts of numpy-compatible scalars or arrays. Runs on CPU or GPU through JAX. A shield can wrap any callable from tensor to tensor.
+
+## What changes when you use it
+
+- The model keeps learning even when the stream has `NaN`, spikes, or missing samples — they are cleaned before the model sees them, and every correction reports how far it moved.
+- Concept drift is caught by an explicit detector instead of silently degrading accuracy.
+- Anomalies come back as a score, one sample at a time.
+- Robot commands are bounded (rate limits, control barrier functions) before they reach the actuator.
+- Predictions can carry a calibrated uncertainty interval.
+
 ## What it does
 
 Dense-Armor is a Python library for online learning. Every estimator learns one sample at a time, at control-loop speed, on JAX: nothing is retrained in batch, nothing revisits the past. The same `learn_one` / `predict_one` / `transform_one` contract runs on a table, a time series, a robot joint stream, a video frame, a token stream, and a shield can sit in front of any of them.
