@@ -103,7 +103,7 @@ def test_check_memory_safety_vram_esaurita_solleva_errore(monkeypatch):
     guard = UniversalMemoryGuard(min_free_ram_percentage=0.05, force_gc=False)
     monkeypatch.setattr(guard, "_get_gpu_free_memory_nvidia", lambda: 0.01)
 
-    with pytest.raises(MemoryPressureError, match="VRAM esaurita"):
+    with pytest.raises(MemoryPressureError, match="VRAM exhausted"):
         guard.check_memory_safety()
 
 

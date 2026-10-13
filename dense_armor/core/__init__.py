@@ -1,10 +1,5 @@
-"""
-core/__init__.py
-================
-Mappa di produzione del pacchetto core/.
-"""
+"""Public surface of the :mod:`dense_armor.core` package."""
 
-# Importazioni allineate rigorosamente al file system reale della cartella core/
 from .compiler import CMD_MAP, DynamicAICodegen
 from .damping_operator import apply_damping_blend
 from .engine import AdaptiveSignalStabilizer

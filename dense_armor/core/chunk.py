@@ -1,8 +1,7 @@
-"""core/chunk.py.
+"""Block chunking for data batches and compiled operation lists.
 
-Segmentazione a blocchi (chunking) per batch di dati e per liste di
-istruzioni compilate, per evitare ricompilazioni JIT quando cambia il
-numero di elementi/istruzioni.
+Chunking keeps the number of items per JIT call constant, so XLA does not
+recompile when the batch or the operation list length changes.
 """
 
 import jax
@@ -11,21 +10,30 @@ import numpy as np
 
 
 class ImageChunker:
-    """Divide/ricompone batch di dati e liste di istruzioni in blocchi a dimensione fissa.
+    """Split and rebuild data batches and compiled operation lists in fixed-size blocks.
 
-    Utile quando un batch è troppo grande per stare in memoria in un colpo
-    solo, o quando una lista di istruzioni compilate è troppo lunga per
-    essere eseguita senza far ricompilare XLA ad ogni cambio di lunghezza.
+    Chunking is useful when a batch is too large to fit in memory in one
+    allocation, or when a compiled operation list is long enough that
+    changing its length would force XLA to recompile at every call.
+
+    Args:
+        chunk_size: fixed size of every block, for both batches and
+            operation lists.
     """
 
     def __init__(self, chunk_size: int = 128) -> None:
-        """chunk_size — dimensione fissa di ogni blocco (batch o istruzioni)."""
+        """Initialize the chunker with a fixed block size."""
         self.chunk_size = int(chunk_size)
 
-    # ── Chunking di array/batch ──────────────────────────────────────────────
-
     def split_array(self, array: np.ndarray) -> list:
-        """Spezza un array multidimensionale in una lista di sotto-chunk."""
+        """Split a multidimensional array into a list of sub-chunks.
+
+        Args:
+            array: the input array; chunking runs on the first axis.
+
+        Returns:
+            A list of arrays, each with ``chunk_size`` rows except the last.
+        """
         total_samples = array.shape[0]
         num_chunks = int(np.ceil(total_samples / self.chunk_size))
         chunks = []
@@ -36,28 +44,44 @@ class ImageChunker:
         return chunks
 
     def merge_chunks(self, chunks_list: list) -> np.ndarray:
-        """Ricombina una lista di sotto-chunk in un unico array compatto."""
+        """Rebuild a single array from a list of sub-chunks.
+
+        Flat 1D chunks are concatenated; 2D and higher chunks are stacked
+        on the first axis with ``np.vstack``.
+
+        Args:
+            chunks_list: the list produced by :meth:`split_array`.
+
+        Returns:
+            The rebuilt array, or an empty float32 array when the input
+            list is empty.
+        """
         if not chunks_list:
             return np.array([], dtype=np.float32)
-        # Se l'input è monodimensionale flat, usa concatenate invece di vstack
         if chunks_list[0].ndim == 1:
             return np.concatenate(chunks_list)
         return np.vstack(chunks_list)
 
-    # ── Chunking di pipeline compilate ───────────────────────────────────────
-
     def execute_pipeline_chunked(
         self, codegen_engine, input_vector: np.ndarray, compiled_ops: list
     ) -> np.ndarray:
-        """Esegue le istruzioni del compilatore a blocchi fissi (chunk_size).
+        """Run the compiled operations in fixed-size blocks of ``chunk_size``.
 
-        Impedisce a XLA di ricompilare la pipeline se cambia il numero di
-        istruzioni, delegando l'esecuzione di ogni blocco a
+        Splitting the operation list into fixed blocks prevents XLA from
+        recompiling the pipeline when the number of operations changes.
+        Each block is delegated to
         ``codegen_engine.run_pipeline_with_chunking``.
+
+        Args:
+            codegen_engine: an object exposing ``run_pipeline_with_chunking``.
+            input_vector: the input array.
+            compiled_ops: the list of compiled operations.
+
+        Returns:
+            The output array, in float64.
         """
         output = jnp.array(input_vector, dtype=jnp.float64)
 
-        # Spezza ed esegue la lista di comandi/operazioni
         for i in range(0, len(compiled_ops), self.chunk_size):
             chunk_ops = compiled_ops[i : i + self.chunk_size]
             output = codegen_engine.run_pipeline_with_chunking(
@@ -70,31 +94,30 @@ class ImageChunker:
     def patch_and_scan_parameters(
         template_ops: jnp.ndarray, dynamic_parameters: jnp.ndarray
     ) -> jnp.ndarray:
-        """Sostituisce i marcatori -1.0 in un template di operazioni con parametri dinamici.
+        """Replace the -1.0 markers of an operation template with dynamic parameters.
 
-        Ogni elemento di ``template_ops`` diverso da -1.0 viene ripetuto
-        com'è nelle 4 colonne dell'operazione patchata; ogni marcatore -1.0
-        viene sostituito, in ordine, col prossimo valore di
-        ``dynamic_parameters``. Implementato con ``jax.lax.scan`` per
-        restare compatibile con JIT.
+        Every element of ``template_ops`` different from -1.0 is repeated in
+        the four columns of the patched operation. Every -1.0 marker is
+        replaced, in order, with the next value of ``dynamic_parameters``.
+        Implemented with ``jax.lax.scan`` to stay JIT-compatible.
+
+        Args:
+            template_ops: the operation template with -1.0 markers.
+            dynamic_parameters: the parameter values, in order.
+
+        Returns:
+            The patched operation array.
         """
 
         def patch_single_op(carry: jnp.ndarray, op: jnp.ndarray) -> tuple:
-            """Un passo di scan: se op e' un marcatore -1.0 lo sostituisce col prossimo parametro dinamico."""
+            """Scan step: replace a -1.0 marker with the next dynamic parameter."""
             idx = carry
-            # Slot parametrico attivo, da riempire col prossimo valore dinamico
             is_parametric = op == -1.0
             final_param = jnp.where(is_parametric, dynamic_parameters[idx], op)
             next_idx = jnp.where(is_parametric, idx + jnp.int32(1), idx)
-
-            # Restituisce l'operazione patchata a basso livello XLA
-            patched_op = jnp.array(
-                [op, op, op, final_param], dtype=jnp.float64
-            )
+            patched_op = jnp.array([op, op, op, final_param], dtype=jnp.float64)
             return next_idx, patched_op
 
-        scan_out: tuple = jax.lax.scan(
-            patch_single_op, jnp.int32(0), template_ops
-        )
+        scan_out: tuple = jax.lax.scan(patch_single_op, jnp.int32(0), template_ops)
         patched_compiled_ops: jnp.ndarray = scan_out[1]
         return patched_compiled_ops

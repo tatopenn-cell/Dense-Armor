@@ -15,7 +15,6 @@
   <img alt="training" src="https://img.shields.io/badge/training%20required-no-brightgreen.svg">
   <img alt="nan" src="https://img.shields.io/badge/NaN--safe-yes-brightgreen.svg">
   <img alt="detectors" src="https://img.shields.io/badge/anomaly%20detectors-12-blueviolet.svg">
-  <img alt="combination" src="https://img.shields.io/badge/combination-Lagrange%20(BLUE)-9cf.svg">
   <a href="https://tatopenn-cell.github.io/Dense-Armor/"><img alt="docs" src="https://img.shields.io/badge/docs-tatopenn--cell.github.io-00e5ff?style=flat-square"></a>
 </p>
 
@@ -27,9 +26,9 @@
 
 ---
 
-## `$ what it does`
+## What it does
 
-A sensor that sends lost readings (`NaN`) or spits out an absurd value (`1e6` instead of `1.2`) silently breaks any downstream pipeline. Dense-Armor steps in between the raw data and the model that consumes it:
+A sensor that sends a lost reading (`NaN`) or an absurd value (`1e6` instead of `1.2`) silently breaks any downstream model. Dense-Armor sits between the raw data and the model that consumes it, and learns from the clean stream one sample at a time:
 
 ```
   corrupted data ──► [ INPUT SHIELD ] ──► AI model ──► [ OUTPUT SHIELD ] ──► clean output
@@ -39,16 +38,103 @@ A sensor that sends lost readings (`NaN`) or spits out an absurd value (`1e6` in
                      estimate)
 ```
 
-- **Input**: cleans the corrupted data toward a clean reference, if you have one — or toward a robust estimate derived from the data itself, if you do not.
-- **Output**: checks that the model's response is not itself corrupted, comparing it with the response the model would give to the clean reference.
-- **Error margin**: for each corrected value, returns how much it was shifted to clean it. Small correction → trust it. Large correction → treat with caution.
+- **Learning**: every estimator (`learn_one` / `predict_one` / `transform_one`) updates its state from one sample at a time. No batch retraining, no revisiting the past, fit for a control loop.
+- **Shield**: the corrupted sample goes toward a clean reference if one exists, toward a robust blind estimate if it does not. Every correction carries an error margin: small correction → trust it, large correction → flag it.
+- **Robot**: command-side safety on the same foundation — rate limits, control barrier functions, minimum-jerk trajectories, rigid dynamics from a real URDF, passivity + CBF controllers up to 6-DoF.
+- **Vision**: frame streams, frame features and patches, online vocabulary and reduction.
 
-It leaves the weights untouched. It runs at runtime. It works from 1D up to 11D, tested (see `test/test_orca2.py`).
+Same interface everywhere, JAX-native (CPU, GPU, TPU), NaN-safe.
 
-**Same discipline, a second domain**: from `$ rate_limiter` onward the package also covers command and trajectory safety for real robots — velocity/acceleration limits, spatial control barrier functions, minimum-jerk trajectory generation, rigid dynamics from real URDF (including `.xacro`, including `<mimic>` joints), passivity+CBF controllers up to 6-DoF. JAX backend shared with `Armatura`/`Orca`, same verification discipline on real data/robots — a different application domain, not a different package.
+---
 
-**A third domain, online learning**: estimators that learn one sample at a time on a robot or next to an LLM, all on the same foundation (`dense_armor.roles`): `learn_one` / `predict_one` / `score_one`, timestamped `Signal` samples with units, a real-time contract (p99 latency within the control period), conformal uncertainty, `SafeEstimator` with health and checksummed checkpoints, unit checks and URDF joint limits. On top of it: online statistics and sketches, metrics with predict-then-learn evaluation and event metrics for robots (detection delay, false alarms per hour), and four drift detectors (CUSUM, Page-Hinkley, ADWIN, KSWIN). LLM side: embeddings as features and estimators exposed as JSON tools for agents. This layer is being built for robots from the ground up: it takes the best-established online-learning techniques from the original papers (streaming statistics, predict-then-learn evaluation, sequential change detection, conformal prediction) and extends them with time, units, real-time budgets, uncertainty and safety. Native vision has started: frame streams, frame features and online reduction.
+## Quickstart
 
+Two classes of frames (`16x16`) stream at 30 fps. Two samples are corrupted on the way: a `1e6` spike at sample 100 and a `NaN` at sample 150. The shield cleans them, an online Hoeffding tree learns one sample at a time from the frame features, and accuracy updates after every prediction:
+
+```python
+import numpy as np
+import jax.numpy as jnp
+from dense_armor.utility.vision import ArrayStream, FrameFeatures
+from dense_armor.utility.tree.hoeffding import HoeffdingTreeClassifier
+from dense_armor.utility.metrics import Accuracy
+from dense_armor.utility.protect.orca import Orca
+
+rng = np.random.default_rng(0)
+frames = np.zeros((200, 16, 16), dtype=np.float32)
+labels = np.zeros(200, dtype=int)
+for i in range(200):
+    label = i % 2
+    f = rng.normal(size=(16, 16)).astype(np.float32) * 0.5
+    if label:
+        f[6:10, 6:10] += 3.0
+    frames[i] = f
+    labels[i] = label
+
+frames[100, 0, 0] = 1e6
+frames[150, 0, 0] = np.nan
+
+stream = ArrayStream(frames, fps=30.0, gray=True)
+feat = FrameFeatures(n_bins=4, cells=(1, 1))
+model = HoeffdingTreeClassifier()
+metric = Accuracy()
+shield = Orca()
+
+k = 0
+for frame in stream:
+    x_in = jnp.asarray(frame.array[None, :, :])
+    x_ref = jnp.asarray(frames[k][None, :, :])
+    clean = shield.protect_and_forward(None, x_in, x_reference=x_ref,
+                                       use_model_injection=False,
+                                       use_output_shield=False)
+    f = feat.transform_one(np.asarray(clean[0]))
+    x = {"mean": float(f["mean"]), "contrast": float(f["contrast"])}
+    y = int(labels[k])
+    y_pred = model.predict_one(x)
+    if k > 0 and y_pred is not None:
+        metric.update(y, y_pred)
+    model.learn_one(x, y)
+    k += 1
+
+print(metric)
+```
+
+```
+Accuracy(n=199, value=0.9899497487437185)
+```
+
+Every estimator in the library uses the same shape: `learn_one(x, y)` updates the model, `predict_one(x)` returns the prediction, `transform_one(x)` returns a transform or a residual, `update(x)` advances a drift detector, `score_one(x)` scores an anomaly (high = anomalous). The shields use the same interface, so a shield can sit in front of any model without a wrapper.
+
+The same code runs on a robot stream (`SyntheticArm`, `Casper`), on a drift stream (`DriftStream`), on a text stream, or next to an LLM: the estimator does not need to know where the sample comes from.
+
+---
+
+## On a robot
+
+A joint torque stream from `SyntheticArm` carries a `1e6` spike at sample 50; a rate-limited follower caps the applied jump at `max_vel` per step, so a downstream controller never sees the spike:
+
+```python
+from pathlib import Path
+import numpy as np
+from dense_armor.utility.datasets import SyntheticArm
+from dense_armor.utility.control.rate_limiter import rate_limited_follower
+
+ds = SyntheticArm(
+    Path("test/fixtures/urdf/panda.urdf"),
+    period_s=1.0, rate_hz=50.0, n_cycles=2,
+    fault_at_s=None, fault=None, seed=0,
+)
+tau = np.array([float(sig["tau_1"]) for sig, _ in ds.stream()])
+tau[50] = 1e6
+
+safe = rate_limited_follower(tau, max_vel=2.0, max_accel=1.0)
+print(round(float(np.max(np.abs(tau))), 1), round(float(np.max(np.abs(safe))), 1))
+```
+
+```
+1000000.0 272.2
+```
+
+The same `learn_one` / `predict_one` contract runs on the robot side: `RigidBodyModel` loads dynamics from a real URDF (`.xacro` and `<mimic>` joints included), `quintic_trajectory` generates a minimum-jerk path, `cbf_safety_filter` enforces a spatial barrier around an obstacle, and drift and anomaly detectors run on the joint stream at the same time as the model learns.
 
 ---
 
@@ -56,112 +142,61 @@ It leaves the weights untouched. It runs at runtime. It works from 1D up to 11D,
 
 ```bash
 pip install dense-armor                 # core: numpy + jax
-pip install "dense-armor[quantum]"      # + Dense-Evolution (NISQ simulator)
-pip install "dense-armor[audio,data]"   # + WAV, HDF5, NetCDF
 pip install "dense-armor[vision]"       # + OpenCV frame readers
 pip install "dense-armor[ros]"          # + rosbag readers
+pip install "dense-armor[audio,data]"   # + WAV, HDF5, NetCDF
+pip install "dense-armor[mcp]"          # + MCP server for LLM agents
+pip install "dense-armor[quantum]"      # + Dense-Evolution (NISQ simulator)
 ```
 
 Works on Python 3.10+. JAX is the backend for every estimator.
 
 ---
 
-## Quickstart
-
-A joint torque stream with a NaN and a spike. A shield cleans the samples
-before a downstream estimator sees them, and reports how far each sample
-was moved:
-
-```python
-import numpy as np
-from dense_armor import Armatura
-
-serie = np.array([1.0, 1.1, 1.2, 9999.0, 1.15, np.nan, 1.2, 1.25])
-arm = Armatura(livello_ia=0.0)
-pulito, K, anomalie = arm.analizza(serie)
-print([round(float(v), 2) for v in pulito])
-print(anomalie)
-```
-
-```
-[1.0, 1.1, 1.05, 1.1, 1.15, 1.2, 1.2, 1.2]
-[3, 5]
-```
-
-Every estimator in the library shares the same interface (`learn_one` /
-`predict_one` / `transform_one`). The shields use it too, so a shield can
-sit in front of any model without a wrapper.
-
----
-
 ## Features
 
-### Online learning (the core)
+Dense-Armor provides online implementations of the following families of algorithms:
 
-- Linear models with a wide array of optimizers (`optim/`)
-- Decision trees, online forests (`tree/`)
-- Clustering, including online k-means (`cluster/`)
-- Calibration (Platt, isotonic), metric learning (`learn/`)
-- Time series: online AR, VAR, Kalman filters, adaptive Kalman, cycle residual (`timeseries/`)
-- Anomaly detection: half-space trees, LODA, one-class SGD, online isolation forest, robust Mahalanobis (`anomaly/`)
-- Drift detection: CUSUM, Page-Hinkley, ADWIN, KSWIN (`drift/`)
-- Online statistics, sketches, quantiles (`stats/`)
-- Metrics with predict-then-learn evaluation, event metrics for robots (`metrics/`)
+- Linear models, with a wide array of optimizers
+- Decision trees and online forests
+- Clustering
+- Anomaly detection
+- Drift detection
+- Time series (AR, VAR, Kalman, adaptive Kalman, cycle residual)
+- Online classifiers
+- Online dynamics
+- Calibration and metric learning
+- Imbalanced learning
+- Vision (frame features, patches, vocabulary, online reduction)
+- Robot control (rate limits, control barrier functions, trajectories, kinematic tracking)
+- Robot dynamics (URDF, passivity + CBF controllers)
+- Shielding (1D series cleanup, input/output shield, per-point routing)
 
-### Robot control (`control/`)
+Dense-Armor also provides other online utilities:
 
-- Velocity and acceleration rate limiter
-- Spatial control barrier function filter
-- Minimum-jerk and quintic trajectory generation
-- Kinematic controller with tracking
+- Feature extraction and selection
+- Online statistics and sketches
+- Metrics for streams and robots
+- Preprocessing
+- Built-in datasets
+- Progressive model validation
+- Model pipelines
+- LLM bridge (embeddings as features, estimators as JSON tools)
 
-### Robot dynamics (`dynamics/`)
-
-- Rigid-body dynamics loaded from a real URDF file (including `.xacro`)
-- `<mimic>` joints handled natively
-- Passivity + CBF controllers up to 6-DoF
-- Same JAX backend, same verification discipline as the rest of the library
-
-### Vision (`vision/`)
-
-- Frame streams from a camera
-- Frame features and patches
-- Online vocabulary and reduction for real-time use
-- Live demo available (`demo.md`)
-
-### Shielding (optional, on top)
-
-- `Armatura`: 1D series cleanup with a reference or a robust blind estimate
-- `Orca`: input and output shield, with the error margin of every correction
-- `Arbiter`: per-point routing between clean and observed values
-- Robust filters, curvature-based streaming check
-
-### Evaluation and tools
-
-- Model validation with predict-then-learn (`utility/evaluate/`)
-- Calibration and metric learning (`learn/`)
-- Streaming estimators exposed as JSON tools for LLM agents (`mcp.md`)
-- Toolkit for benchmark and diagnostic scripts (`toolkit/`)
-- Preprocessing pipeline (`preprocessing/`)
-- Signal abstraction with units and timestamps (`stream/`)
-
-
+Check out [the API](https://tatopenn-cell.github.io/Dense-Armor/api/) for a comprehensive overview.
 
 ---
 
 ## Should I be using Dense-Armor?
 
-The answer is probably no. Most of the time, batch learning does the job just
-fine. An online approach fits when:
+The answer is probably no. Most of the time, batch learning does the job just fine. An online approach fits when:
 
 - you want a model that learns from new data without revisiting past data
 - you want a model that is robust to concept drift
-- you want the code to look like the production context, which is
-  event-based, not batch-based
-- you want the model to be protected from corrupted input, NaN, spikes, or
-  slow drift without retraining it
-- you work with a real robot and need command-side safety (rate limits, CBF,
-  minimum-jerk trajectories) in the same library that learns the model
+- the production context is event-based, not batch-based, and you want the code to look like it
+- you want the model to be protected from corrupted input, NaN, spikes, or slow drift without retraining it
+- you work with a real robot and need command-side safety in the same library that learns the model
+- you need a prediction with an online-calibrated uncertainty interval
 
 Some specifics:
 
@@ -185,14 +220,11 @@ Some specifics:
 
 ## Contributing
 
-Contributions are welcome. The library is built to be extended one estimator
-at a time, following the same interface (`learn_one` / `predict_one` /
-`transform_one`) and the same checks (`dense_armor.checks`).
+Contributions are welcome. The library is built to be extended one estimator at a time, following the same interface (`learn_one` / `predict_one` / `transform_one`) and the same checks (`dense_armor.checks`).
 
 - open a discussion on the repository for questions or ideas
 - open an issue if you spot a bug or a performance problem
-- check [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow and the code
-  style, if the file exists in the repository
+- check `CONTRIBUTING.md` for the workflow and the code style, if the file exists in the repository
 
 ---
 
