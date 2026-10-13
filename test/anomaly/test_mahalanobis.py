@@ -129,16 +129,16 @@ def test_mahalanobis_two_features():
 def test_mahalanobis_check_estimator():
     check_estimator(OnlineRobustMahalanobis(feature_keys=["r"], n_init=20))
 
-def test_mahalanobis_cap_bounds_the_step():
-    """Prova che il cap ``max_step_frac`` serve: sullo stesso stream di
-    gaussiane strette, con il cap di default (0.1) il massimo resta sotto
-    la soglia 7; con il cap disattivato (1.0) supera 7. Senza questo test
-    il cap non era provato da nessuno: il caso del segnale reale di
-    SyntheticArm resta sotto 7 anche senza cap (6.86), quindi non
-    discrimina."""
-    import numpy as _np
 
-    rng = _np.random.default_rng(0)
+def test_mahalanobis_cap_bounds_the_step():
+    """The step cap ``max_step_frac`` keeps healthy scores below 7.
+
+    On the same 40 samples of N(0, 0.05^2), the default cap (0.1) keeps
+    the maximum score below 7, and with the cap disabled (1.0) the
+    maximum exceeds 7. A detector that ignores the cap fails the first
+    assertion.
+    """
+    rng = np.random.default_rng(0)
     series = rng.normal(0.0, 0.05, size=40).tolist()
 
     def _run(max_step_frac):
@@ -153,6 +153,5 @@ def test_mahalanobis_cap_bounds_the_step():
 
     m_capped = _run(0.1)
     m_uncapped = _run(1.0)
-    assert m_capped < 7.0, f"cap non basta, max = {m_capped:.3f}"
-    assert m_uncapped > 7.0, f"senza cap il test non prova niente: {m_uncapped:.3f}"
-
+    assert m_capped < 7.0, f"capped max = {m_capped:.3f}"
+    assert m_uncapped > 7.0, f"uncapped max = {m_uncapped:.3f}"
