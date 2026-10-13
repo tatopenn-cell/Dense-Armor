@@ -275,7 +275,7 @@ class OnlineRobustMahalanobis(AnomalyDetector):
             return self
 
         self._n_after_init += 1
-        n = self.n_init + self._n_after_init
+        n = self._n_after_init
         gamma = self._gamma(n)
 
         assert self._m is not None and self._m_bar is not None
