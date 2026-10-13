@@ -168,6 +168,11 @@ nav:
       - Live Demo: demo.md
       - MCP Server: mcp.md
 
+  - Comparisons & limits:
+      - Dense-Armor vs Kalman: vs_kalman.md
+      - Adversarial robustness: robustness.md
+      - Known limits: limits.md
+
   - API Reference:
       - api/index.md
       - General: api/general.md
