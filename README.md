@@ -28,7 +28,9 @@
 
 ## What it does
 
-A sensor that sends a lost reading (`NaN`) or an absurd value (`1e6` instead of `1.2`) silently breaks any downstream model. Dense-Armor sits between the raw data and the model that consumes it, and learns from the clean stream one sample at a time:
+Dense-Armor is a Python library for online learning on robot, vision, and AI streams. Every estimator learns one sample at a time, at control-loop speed, on JAX: nothing is retrained in batch, nothing revisits the past.
+
+It carries the full online-learning toolbox (linear models, trees, clustering, anomaly, drift, time series, calibration, metric learning, vision, robot control and dynamics) and a shielding layer on top. A corrupted sample (`NaN`, a spike) goes toward a clean reference if one exists, toward a robust blind estimate if it does not, and every correction carries its error margin:
 
 ```
   corrupted data ──► [ INPUT SHIELD ] ──► AI model ──► [ OUTPUT SHIELD ] ──► clean output
@@ -38,73 +40,37 @@ A sensor that sends a lost reading (`NaN`) or an absurd value (`1e6` instead of 
                      estimate)
 ```
 
-- **Learning**: every estimator (`learn_one` / `predict_one` / `transform_one`) updates its state from one sample at a time. No batch retraining, no revisiting the past, fit for a control loop.
-- **Shield**: the corrupted sample goes toward a clean reference if one exists, toward a robust blind estimate if it does not. Every correction carries an error margin: small correction → trust it, large correction → flag it.
-- **Robot**: command-side safety on the same foundation — rate limits, control barrier functions, minimum-jerk trajectories, rigid dynamics from a real URDF, passivity + CBF controllers up to 6-DoF.
-- **Vision**: frame streams, frame features and patches, online vocabulary and reduction.
-
-Same interface everywhere, JAX-native (CPU, GPU, TPU), NaN-safe.
+Same interface everywhere: `learn_one(x, y)` updates a model, `predict_one(x)` returns a prediction, `transform_one(x)` returns a transform or a residual, `update(x)` advances a drift detector, `score_one(x)` scores an anomaly. The shields use the same interface, so a shield can sit in front of any model without a wrapper.
 
 ---
 
 ## Quickstart
 
-Two classes of frames (`16x16`) stream at 30 fps. Two samples are corrupted on the way: a `1e6` spike at sample 100 and a `NaN` at sample 150. The shield cleans them, an online Hoeffding tree learns one sample at a time from the frame features, and accuracy updates after every prediction:
+A drift stream with 2000 samples and one sudden concept change. A standard scaler and an online Gaussian naive Bayes classifier are chained with `|` into a single pipeline; the model learns one sample at a time and accuracy updates after every prediction:
 
 ```python
-import numpy as np
-import jax.numpy as jnp
-from dense_armor.utility.vision import ArrayStream, FrameFeatures
-from dense_armor.utility.tree.hoeffding import HoeffdingTreeClassifier
+from dense_armor.utility.datasets import DriftStream
+from dense_armor.utility.preprocessing.scale import StandardScaler
+from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
 from dense_armor.utility.metrics import Accuracy
-from dense_armor.utility.protect.orca import Orca
 
-rng = np.random.default_rng(0)
-frames = np.zeros((200, 16, 16), dtype=np.float32)
-labels = np.zeros(200, dtype=int)
-for i in range(200):
-    label = i % 2
-    f = rng.normal(size=(16, 16)).astype(np.float32) * 0.5
-    if label:
-        f[6:10, 6:10] += 3.0
-    frames[i] = f
-    labels[i] = label
-
-frames[100, 0, 0] = 1e6
-frames[150, 0, 0] = np.nan
-
-stream = ArrayStream(frames, fps=30.0, gray=True)
-feat = FrameFeatures(n_bins=4, cells=(1, 1))
-model = HoeffdingTreeClassifier()
+dataset = DriftStream(n_samples=2000, n_features=2, n_drifts=1, kind="sudden", seed=0)
+model = StandardScaler() | OnlineGaussianNB()
 metric = Accuracy()
-shield = Orca()
 
-k = 0
-for frame in stream:
-    x_in = jnp.asarray(frame.array[None, :, :])
-    x_ref = jnp.asarray(frames[k][None, :, :])
-    clean = shield.protect_and_forward(None, x_in, x_reference=x_ref,
-                                       use_model_injection=False,
-                                       use_output_shield=False)
-    f = feat.transform_one(np.asarray(clean[0]))
-    x = {"mean": float(f["mean"]), "contrast": float(f["contrast"])}
-    y = int(labels[k])
+for x, y in dataset.stream():
     y_pred = model.predict_one(x)
-    if k > 0 and y_pred is not None:
-        metric.update(y, y_pred)
+    metric.update(y, y_pred)
     model.learn_one(x, y)
-    k += 1
 
 print(metric)
 ```
 
 ```
-Accuracy(n=199, value=0.9899497487437185)
+Accuracy(n=1999, value=0.9929964982491246)
 ```
 
-Every estimator in the library uses the same shape: `learn_one(x, y)` updates the model, `predict_one(x)` returns the prediction, `transform_one(x)` returns a transform or a residual, `update(x)` advances a drift detector, `score_one(x)` scores an anomaly (high = anomalous). The shields use the same interface, so a shield can sit in front of any model without a wrapper.
-
-The same code runs on a robot stream (`SyntheticArm`, `Casper`), on a drift stream (`DriftStream`), on a text stream, or next to an LLM: the estimator does not need to know where the sample comes from.
+The same code runs on a robot stream (`SyntheticArm`, `Casper`), on a frame stream (`ArrayStream`), on a text stream, or next to an LLM: the estimator does not need to know where the sample comes from.
 
 ---
 
