@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Dense-Armor: Robot-AI Online Shielding & Learning"
+abstract: >-
+  A library for online learning on robot, vision, and AI streams, one sample
+  at a time, with streaming statistics and protection, drift and anomaly
+  detection, and safe robot commands.
+type: software
+authors:
+  - family-names: Pennacchio
+    given-names: Salvatore
+    email: jtatopenn@libero.it
+repository-code: "https://github.com/tatopenn-cell/Dense-Armor"
+url: "https://tatopenn-cell.github.io/Dense-Armor/"
+license: BUSL-1.1
+version: "1.1.27"
+date-released: "2026-10-13"
+doi: "10.5281/zenodo.23340608"
+keywords:
+  - online-learning
+  - streaming
+  - robotics
+  - anomaly-detection
+  - drift-detection
+  - ai-safety
+  - robust-statistics
+  - jax

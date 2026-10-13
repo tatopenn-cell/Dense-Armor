@@ -249,7 +249,7 @@ If you use Dense-Armor in a paper, cite the Zenodo release:
   author  = {tatopenn-cell},
   title   = {Dense-Armor: Robot-AI Online Learning with Shielding},
   year    = {2026},
-  doi     = {10.5281/zenodo.23265098},
+  doi     = {10.5281/zenodo.23340608},
   url     = {https://github.com/tatopenn-cell/Dense-Armor}
 }
 ```
