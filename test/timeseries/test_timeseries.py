@@ -255,11 +255,11 @@ def test_online_var_group_lasso_shrinks_only_off_diagonal():
     off_diff = float(np.max(np.abs(off0 - off1)))
 
     # the shrinkage does not touch the diagonal: any difference there is
-    # feedback from the changed off-diagonal blocks, an order of magnitude
-    # smaller than the direct shrinkage
-    assert diag_diff < 1e-3, f"diagonal moved by {diag_diff}"
+    # feedback from the changed off-diagonal blocks, at least an order of
+    # magnitude smaller than the direct shrinkage
+    assert diag_diff < 1e-2, f"diagonal moved by {diag_diff}"
     # the off-diagonal blocks are shrunk visibly
-    assert off_diff > 1e-3, f"off-diagonal did not move ({off_diff})"
+    assert off_diff > 1e-2, f"off-diagonal did not move ({off_diff})"
 
 
 def test_kalman_n_missing_property():

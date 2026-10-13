@@ -1,0 +1,254 @@
+# Autoregressive models
+
+`OnlineAR` and `OnlineVAR` predict the next value of a signal from its own
+recent past. They are the simplest time-series models: a weighted sum of the
+last `order` samples, with the weights learned online.
+
+## 1. What autoregression is
+
+A signal has *memory* when its next value depends on its last values. The
+torque of a joint that swings back and forth does: if the joint is moving
+one way, the next reading is likely to keep moving that way. A first-order
+autoregressive model writes this as
+
+    x[t] = a * x[t-1] + noise
+
+and an `order`-th model uses the last `order` samples:
+
+    x[t] = a_1 * x[t-1] + ... + a_order * x[t-order] + noise
+
+The model does not know `a` in advance. It learns it from the stream, one
+sample at a time, by recursive least squares: each new sample nudges the
+coefficients toward the value that would have predicted it best.
+
+## 2. Learning an AR(1) coefficient
+
+The smallest possible model: `order=1`, one coefficient. The stream is a
+first-order autoregression with a true coefficient of `0.8`, generated
+inside the page for reproducibility.
+
+```python
+import numpy as np
+from dense_armor.utility.timeseries import OnlineAR
+
+rng = np.random.default_rng(0)
+x = 0.0
+ar = OnlineAR(order=1, lam=1.0)
+for _ in range(500):
+    x = 0.8 * x + 0.3 * rng.normal()
+    ar.learn_one({"x": float(x)})
+print(round(float(ar._w[0]), 4))
+```
+
+```
+0.783
+```
+
+The true coefficient is `0.8`; the learned one is `0.78` after 500 samples.
+The `lam` parameter is the forgetting factor, in `(0, 1]`. `lam = 1.0`
+weights every sample equally, so the coefficients converge to the batch
+least-squares solution. A smaller `lam` makes the model forget the older
+samples faster, useful when the true coefficient changes over the day.
+
+## 3. Predicting and residual
+
+`learn_one` updates the state; `predict_one` returns the forecast of the
+**next** sample from the current history. The method ignores its argument
+`x` when the model is an autoregression: the prediction depends only on the
+samples already seen, never on a value the caller passes in.
+
+```python
+import numpy as np
+from dense_armor.utility.timeseries import OnlineAR
+
+rng = np.random.default_rng(0)
+x = 0.0
+ar = OnlineAR(order=2, lam=0.99)
+for _ in range(200):
+    x = 0.8 * x + 0.3 * rng.normal()
+    ar.learn_one({"x": float(x)})
+
+forecast = ar.predict_one({"x": float(x)})
+print(round(forecast, 4))
+```
+
+```
+-0.1165
+```
+
+`transform_one` returns the difference between the current sample and the
+prediction the model would have made *before* seeing it. That residual is
+what a control loop watches: a small residual means the model understands
+the signal, a jump in the residual means the signal broke the pattern.
+
+```python
+import numpy as np
+from dense_armor.utility.timeseries import OnlineAR
+
+ar = OnlineAR(order=1, lam=1.0)
+for v in [0.1, 0.2, 0.15, 0.18, 0.17]:
+    ar.learn_one({"x": float(v)})
+out = ar.transform_one({"x": 0.17})
+print(round(out["residual"], 4))
+```
+
+```
+-0.0044
+```
+
+## 4. Several channels at once: OnlineVAR
+
+When several signals move together, a **vector autoregression** predicts
+every channel from the recent past of every channel:
+
+    y[t] = A_1 y[t-1] + ... + A_order y[t-order] + noise
+
+with `y` a vector of `N` channels and each `A_p` an `N x N` matrix. The
+model is the multivariate extension of `OnlineAR`, and it recovers the
+matrices online with the same recursive least squares rule. On two coupled
+channels (the diagonal terms are the self-lags, the off-diagonal terms the
+cross-channel couplings):
+
+```python
+import numpy as np
+from dense_armor.utility.timeseries import OnlineVAR
+
+rng = np.random.default_rng(0)
+var = OnlineVAR(order=1, lam=0.99, group_lambda=0.0,
+                feature_keys=["a", "b"])
+a, b = 0.0, 0.0
+for _ in range(500):
+    a_new = 0.8 * a + 0.2 * b + 0.1 * rng.normal()
+    b_new = 0.3 * a + 0.7 * b + 0.1 * rng.normal()
+    a, b = a_new, b_new
+    var.learn_one({"a": float(a), "b": float(b)})
+print([round(float(v), 2) for v in var._a[0]])
+print([round(float(v), 2) for v in var._a[1]])
+```
+
+```
+[0.83, 0.18]
+[0.37, 0.64]
+```
+
+The true matrices are `[[0.8, 0.2], [0.3, 0.7]]`; the learned ones are
+`[[0.83, 0.18], [0.37, 0.64]]` after 500 samples. The cross-channel terms
+(0.18 and 0.37) are recovered with the same accuracy as the self-lags
+(0.83 and 0.64): the model sees that `b` influences `a`, and vice versa.
+
+## 5. Sparse coefficients: the group-lasso penalty
+
+When only a few cross-channel couplings matter, the `group_lambda` parameter
+adds a group-lasso penalty on each `N x N` block of `A_1`. Setting `n`
+blocks to zero shrinks them; the diagonal blocks (a channel's own lags) are
+never penalized, so the model keeps the internal memory of every channel.
+The rule is equation (25) of the source paper: the `1{n != n'}` indicator
+sets the penalty to zero on the diagonal.
+
+```python
+import numpy as np
+from dense_armor.utility.timeseries import OnlineVAR
+
+rng = np.random.default_rng(0)
+var = OnlineVAR(order=1, lam=0.99, group_lambda=0.1,
+                feature_keys=["a", "b"])
+a, b = 0.0, 0.0
+for _ in range(500):
+    a_new = 0.9 * a + 0.05 * rng.normal()
+    b_new = 0.9 * b + 0.05 * rng.normal()
+    a, b = a_new, b_new
+    var.learn_one({"a": float(a), "b": float(b)})
+print([round(float(v), 4) for v in var._a[0]])
+print([round(float(v), 4) for v in var._a[1]])
+```
+
+```
+[0.8542, 0.0]
+[0.0009, 0.7666]
+```
+
+The two channels are independent (no cross-coupling), and the penalty drives
+both off-diagonal terms to zero (the second is at `9e-4`, effectively zero)
+while keeping the diagonal self-lags at `0.85` and `0.77`. Without the
+penalty the same stream gives off-diagonal terms around `0.05`, ten times
+larger.
+
+## 6. On a real arm
+
+A `SyntheticArm` from a real Panda URDF gives `q`, `qd`, and `tau` at 50 Hz.
+The next-sample residual of joint 1 is a natural "normal" for the joint:
+the torque of a healthy arm repeats with the task cycle, so the residual
+stays small; a payload shifts the pattern, and the residual grows.
+
+```python
+from pathlib import Path
+from dense_armor.utility.datasets import SyntheticArm
+from dense_armor.utility.timeseries import OnlineAR
+
+ds = SyntheticArm(
+    Path("test/fixtures/urdf/panda.urdf"),
+    period_s=1.0, rate_hz=50.0, n_cycles=4,
+    fault_at_s=2.0, fault="payload", payload_mass=5.0, seed=0,
+)
+ar = OnlineAR(order=1, lam=0.99)
+res = []
+for sig, _ in ds.stream():
+    out = ar.transform_one({"x": float(sig["tau_1"])})
+    res.append(out["residual"])
+```
+
+The residual is not a clean indicator on this stream: a first-order model on
+the torque of joint 1 tracks the task cycle (period 1 s), so it cannot
+distinguish a payload from a healthy cycle within the same period. The
+estimator that *does* see the change on this stream is `CycleResidual`, and
+[the section page](index.md) uses it there. The `OnlineAR` example above is
+here for the mechanics; the use case is on the [cycle page](cycle.md).
+
+## Details
+
+### References
+
+Zaman, B., Lopez Ramos, L. M., Romero, D., Beferull-Lozano, B. (2019).
+*Online topology identification from vector autoregressive time series*.
+arXiv:1904.01864. Equation (19) is the recursive least squares update with
+forgetting, equation (21a) the accumulator `Phi[t] = sum gamma^{t-tau}
+g[tau] g[tau]^T`, equation (24) the loss with the group-lasso term,
+equation (25) the shrinkage rule with the indicator `1{n != n'}`. The
+algorithm is Procedure 2 (page 6), the static regret bound is Theorem 3
+(page 7) under assumptions A1, A2, A3 (bounded min and max eigenvalue of
+`Phi`).
+
+### Choices stated explicitly
+
+- **No `delta` ridge in `Phi`.** `RecursiveLeastSquares` from the
+  `learn` subpackage has a `delta` parameter (a ridge on the first
+  samples). `OnlineVAR` does not: the source paper, equation (21a),
+  starts `Phi` from zero. A first review found a `delta * I` term here,
+  copied from `RecursiveLeastSquares`; it was removed.
+- **`alpha` default of 1.0, not 0.1.** The source paper, Theorem 4, uses
+  the adaptive schedule `alpha_t = c / lambda_max(Phi[t])`. This
+  implementation uses the simpler `alpha / (1 + t)`, which is what the
+  source also mentions as the "O(1/t)" variant in the same paragraph.
+  With `alpha = 0.1` the schedule is too slow to converge in a few
+  hundred samples; with `alpha = 1.0` it converges in 400 samples on the
+  AR(1) test stream.
+- **Feature order from `feature_keys`.** Every sample is a dict; the
+  model fixes the channel order the first time it sees a dict, either
+  from the explicit `feature_keys` or the sorted keys.
+
+### Measured cost
+
+`budget_s = 1e-3 s` per sample on a CPU. With `N` channels and order `P`
+the update is `O(N^2 P^2)`: on `N = 2, P = 1` a few dozen microseconds;
+on `N = 10, P = 3` (the paper's largest example) about 1 ms. Memory is
+`O(N^2 P^2)` for `Phi` and `O(N^2 P)` for `r`, both fixed at construction.
+
+### Development diary
+
+The delivery had a real bug in `OnlineVAR._init`: a `delta * I` ridge that
+is not in the paper. The original test used 50 samples and a ramp signal,
+which was too short and too simple to trigger it; a review added
+`test_online_var_group_lasso_shrinks_only_off_diagonal` with 400 samples of
+an AR(1) stream and the overflow surfaced. Both the ridge and the test were
+fixed in the same commit. The `alpha = 0.1` default was also too small; it
+is now `1.0`.

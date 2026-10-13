@@ -222,7 +222,7 @@ class OnlineVAR(Transformer):
         order: int = 1,
         lam: float = 1.0,
         group_lambda: float = 0.0,
-        alpha: float = 0.1,
+        alpha: float = 1.0,
         feature_keys: Sequence[str] | None = None,
     ) -> None:
         if order < 1:

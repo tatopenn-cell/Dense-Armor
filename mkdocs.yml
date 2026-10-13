@@ -115,6 +115,11 @@ nav:
           - GLM: linear/glm.md
           - Bayesian linear regression: linear/bayes.md
           - Payload estimator: linear/payload.md
+      - Time series:
+          - timeseries/index.md
+          - Autoregressive models: timeseries/ar.md
+          - Kalman filters: timeseries/kalman.md
+          - Cycle residual: timeseries/cycle.md
       - Clustering: cluster/index.md
       - Trees: tree/index.md
 
@@ -162,6 +167,11 @@ nav:
           - Toolkit: toolkit/toolkit.md
       - Live Demo: demo.md
       - MCP Server: mcp.md
+
+  - Comparisons & limits:
+      - Dense-Armor vs Kalman: vs_kalman.md
+      - Adversarial robustness: robustness.md
+      - Known limits: limits.md
 
   - API Reference:
       - api/index.md
