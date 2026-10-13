@@ -189,7 +189,10 @@ step.
   (Section 3). With `d` cos-sin pairs it gives `||z(x)||^2 = 2` and `z(x)^T z(y)`
   approximates `2 K(x, y)`, while the paper states `z(x)^T z(y) = K(x, y)` in expectation;
   for `d = 1` the printed prefactor gives `z^T z = 2` where that identity needs 1. The
-  implementation keeps the printed prefactor.
+  implementation keeps the printed prefactor. With the prefactor `sqrt(1/d)`, which gives
+  `z(x)^T z(y)` close to `K(x, y)`, the benchmark ROC-AUC (`learn-on-healthy`) moves from
+  `0.856` to `0.871` on SyntheticArm and from `0.987` to `0.972` on DriftStream, so the
+  printed prefactor stays.
 - **Threshold.** Default `None`: the detector uses the 0.95 quantile of the last 500
   scores, with `1e9` while fewer than 50 scores have been seen. A single float can be
   passed instead (e.g. `0.0`, the signed distance from the boundary).
