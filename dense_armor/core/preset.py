@@ -1,7 +1,7 @@
-"""core/preset.py.
+"""Preset parameter configurations for :class:`AdaptiveSignalStabilizer`.
 
-Configurazioni calibrate empiricamente per i parametri di
-`AdaptiveSignalStabilizer` (Stage 1 di Orca), una per scenario/dominio.
+Each preset is a dictionary of hyper-parameters tuned empirically for one
+scenario or input domain (Stage 1 of Orca).
 """
 
 SIGNAL_STABILIZER_PRESETS = {
@@ -11,7 +11,7 @@ SIGNAL_STABILIZER_PRESETS = {
         "alpha": 0.05,
         "anomaly_sigma_mult": 1.0,
         "k_anom_min": 0.18,
-        "k_anom_max": 0.28
+        "k_anom_max": 0.28,
     },
     "cifar10_best_v1": {
         "static_threshold": 4.384205263047182e-06,
@@ -19,7 +19,7 @@ SIGNAL_STABILIZER_PRESETS = {
         "alpha": 0.04590571010729771,
         "anomaly_sigma_mult": 0.8,
         "k_anom_min": 0.19814386535420334,
-        "k_anom_max": 0.2945784399322787
+        "k_anom_max": 0.2945784399322787,
     },
     "pure_1d_time_v1": {
         "static_threshold": 0.08,
@@ -27,7 +27,7 @@ SIGNAL_STABILIZER_PRESETS = {
         "alpha": 0.35,
         "anomaly_sigma_mult": 1.2,
         "k_anom_min": 0.25,
-        "k_anom_max": 0.55
+        "k_anom_max": 0.55,
     },
     "cifar10_hardened_lyapunov": {
         "static_threshold": 0.12,
@@ -35,6 +35,6 @@ SIGNAL_STABILIZER_PRESETS = {
         "alpha": 0.05,
         "anomaly_sigma_mult": 1.0,
         "k_anom_min": 0.18,
-        "k_anom_max": 0.28
-    }
+        "k_anom_max": 0.28,
+    },
 }

@@ -23,7 +23,7 @@ def test_export_provenance_archive_scrive_file_con_hash_coerente(tmp_path):
     payload = json.loads(archive_path.read_text(encoding="utf-8"))
     assert payload["records"] == run_history
     assert payload["metadata"]["integrity_sha256"] == sha256
-    assert len(sha256) == 64  # hex digest di sha256
+    assert len(sha256) == 64
 
 
 def test_export_provenance_archive_hash_cambia_con_dati_diversi(tmp_path):
@@ -41,9 +41,9 @@ def test_export_trend_report_text_scrive_metriche_leggibili(tmp_path):
     AIEngineVisualizer.export_trend_report_text(raw, filtered, filename=filename)
 
     content = open(filename, encoding="utf-8").read()
-    assert "Scenari monitorati:      3" in content
-    assert "Passi temporali:         20" in content
-    assert "Smorzamento rumore:" in content
+    assert "Scenarios monitored:     3" in content
+    assert "Time steps:              20" in content
+    assert "Noise damping:" in content
 
 
 def test_export_trend_report_text_varianza_zero_non_solleva_eccezioni(tmp_path):
@@ -54,4 +54,4 @@ def test_export_trend_report_text_varianza_zero_non_solleva_eccezioni(tmp_path):
     AIEngineVisualizer.export_trend_report_text(raw, filtered, filename=filename)
 
     content = open(filename, encoding="utf-8").read()
-    assert "Smorzamento rumore:      0.00%" in content
+    assert "Noise damping:           0.00%" in content

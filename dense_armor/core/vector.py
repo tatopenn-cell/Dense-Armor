@@ -1,42 +1,60 @@
-"""
-core/vector.py
-======================
-ParametricScenarioSimulator — simulazioni Monte Carlo massive via JAX vmap.
-BitwisePermutationEngine    — manipolazione vettori combinatori via maschere di bit.
+"""Parallel Monte Carlo simulation and combinatorial bit-mask manipulation.
 
-``collapse_decision`` non modifica in-place l'array del chiamante: opera su
-una copia interna e restituisce ``(result, collapsed_vector)`` — il
-chiamante può ignorare il vettore collassato se non gli serve.
+:class:`ParametricScenarioSimulator` runs massive Monte Carlo scenarios with
+JAX ``vmap`` and a stochastic decision collapse. :class:`BitwisePermutationEngine`
+swaps elements of a combinatorial vector through bit masks.
+
+The ``_parallel_engine`` is built **once** at module import, not inside the
+method: when ``jax.jit(jax.vmap(...))`` is recreated at every call, the JAX
+compilation cache can never hit (a new Python closure has a different
+identity at every call) and every invocation recompiles the XLA graph from
+scratch. The measured cost is dominated by that recompilation (~130 ms per
+call), not by the ``np.array`` cast. ``base_state`` is a traced argument
+(not static), so different values do not force a new compilation.
+
+``collapse_decision`` does not modify the caller array in place: it works
+on an internal copy and returns ``(result, collapsed_vector)``. The caller
+can ignore the collapsed vector when it is not needed.
 """
 
 import jax
 import jax.numpy as jnp
 import numpy as np
 
-# ─────────────────────────────────────────────────────────────────────────────
-# BitwisePermutationEngine
-# ─────────────────────────────────────────────────────────────────────────────
 
 class BitwisePermutationEngine:
-    """
-    Manipolazione di vettori combinatori (spazio 2^n) via maschere di bit.
-    Scambia elementi in array multidimensionali in base a coppie di bit
-    target/control.
+    """Swap elements of a combinatorial vector (space 2^n) through bit masks.
+
+    Elements are swapped in a multidimensional array according to
+    target/control bit pairs.
+
+    Args:
+        n_elements: number of bits of the combinatorial vector, so the
+            addressable space has ``2 ** n_elements`` states.
     """
 
     def __init__(self, n_elements: int):
-        """n_elements — numero di bit del vettore combinatorio (spazio 2^n_elements)."""
-        self.n    = n_elements
-        self.size = 1 << n_elements     # 2^N stati possibili
+        """Store the number of bits and the derived state count."""
+        self.n = n_elements
+        self.size = 1 << n_elements
 
     def apply_bitwise_swap(
         self,
-        data:         np.ndarray,
-        target_bit:   int,
-        control_bit:  int,
+        data: np.ndarray,
+        target_bit: int,
+        control_bit: int,
     ) -> np.ndarray:
-        """Permuta gli elementi del vettore in base a maschere binarie."""
-        output   = data.copy()
+        """Permute the vector elements according to binary masks.
+
+        Args:
+            data: the input vector.
+            target_bit: the bit whose pairs are swapped.
+            control_bit: the bit that gates the swap.
+
+        Returns:
+            The permuted vector, with the same shape as ``data``.
+        """
+        output = data.copy()
         t_stride = 1 << (self.n - 1 - target_bit)
         c_stride = 1 << (self.n - 1 - control_bit)
 
@@ -48,61 +66,51 @@ class BitwisePermutationEngine:
         return output
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# ParametricScenarioSimulator
-# ─────────────────────────────────────────────────────────────────────────────
-
 def _scenario_step(carry: jnp.ndarray, single_param: jnp.ndarray) -> tuple:
-    """Passo temporale scalare per jax.lax.scan."""
+    """Scalar time step for ``jax.lax.scan``."""
     current_state = carry
-    next_state    = current_state * 0.95 + single_param * 0.05
+    next_state = current_state * 0.95 + single_param * 0.05
     return next_state, next_state
 
 
-def _simulate_single_instance(base_state: jnp.ndarray, params_vector: jnp.ndarray) -> jnp.ndarray:
-    """Un singolo scenario (T_steps parametri) portato avanti nel tempo."""
+def _simulate_single_instance(
+    base_state: jnp.ndarray, params_vector: jnp.ndarray
+) -> jnp.ndarray:
+    """Single scenario (T_steps parameters) advanced through time."""
     scan_out: tuple = jax.lax.scan(_scenario_step, base_state, params_vector)
     history: jnp.ndarray = scan_out[1]
     return history
 
 
-# Costruito UNA SOLA VOLTA al livello di modulo (non dentro il metodo): se
-# jax.jit(jax.vmap(...)) venisse ricreato ad ogni chiamata, la cache di
-# compilazione di JAX non potrebbe mai fare hit (una nuova closure Python ha
-# una identita' diversa ad ogni chiamata) e ogni invocazione ricompilerebbe
-# da zero il grafo XLA -- verificato: e' questo il costo dominante (~130ms a
-# chiamata), non il cast a np.array. base_state resta un argomento tracciato
-# (non statico) cosi' valori diversi non forzano una nuova compilazione.
 _parallel_engine = jax.jit(jax.vmap(_simulate_single_instance, in_axes=(None, 0)))
 
 
 class ParametricScenarioSimulator:
-    """
-    Simulazioni parallele massive (Monte Carlo) e collasso decisionale
-    stocastico condizionato su distribuzione di probabilità reale.
+    """Massive parallel Monte Carlo simulation with stochastic collapse.
+
+    Args:
+        base_state: initial scalar state shared by every scenario.
     """
 
     _simulation_step = staticmethod(_scenario_step)
 
     def run_parallel_scenarios(
         self,
-        base_state:        float,
-        parameters_batch:  np.ndarray,
+        base_state: float,
+        parameters_batch: np.ndarray,
     ) -> np.ndarray:
-        """
-        Esegue in parallelo (vmap) tutti i batch con jax.lax.scan per l'asse
-        temporale.
+        """Run every batch in parallel through ``jax.lax.scan`` on time.
 
-        Parameters
-        ----------
-        base_state        — stato scalare iniziale per tutti gli scenari
-        parameters_batch  — array (N_scenari, T_steps) di parametri temporali
+        Args:
+            base_state: initial scalar state for all scenarios.
+            parameters_batch: array of shape ``(N_scenarios, T_steps)``.
 
-        Returns
-        -------
-        np.ndarray di shape (N_scenari, T_steps)
+        Returns:
+            An array of shape ``(N_scenarios, T_steps)``.
         """
-        result = _parallel_engine(jnp.float64(base_state), jnp.asarray(parameters_batch))
+        result = _parallel_engine(
+            jnp.float64(base_state), jnp.asarray(parameters_batch)
+        )
         return np.array(result)
 
     def collapse_decision(
@@ -110,33 +118,38 @@ class ParametricScenarioSimulator:
         distribution_vector: np.ndarray,
         target_idx: int,
     ) -> tuple:
-        """
-        Collasso decisionale stocastico condizionato dalla distribuzione.
+        """Stochastic decision collapse conditioned on the input distribution.
 
-        FIX BUG: non modifica più l'array originale in-place.
-        Opera su una copia interna.
+        The input array is not modified in place: the method works on an
+        internal copy.
 
-        Returns
-        -------
-        (result: int, collapsed_vector: np.ndarray)
-            result            — 0 o 1 (scelta stocastica)
-            collapsed_vector  — vettore normalizzato post-collasso
+        Args:
+            distribution_vector: the probability-like vector to collapse.
+            target_idx: the index that splits the two branches.
+
+        Returns:
+            A tuple ``(result, collapsed_vector)`` where ``result`` is 0 or
+            1 and ``collapsed_vector`` is the normalized vector after the
+            collapse.
+
+        Raises:
+            RuntimeError: when the input vector has zero energy.
         """
         vec = np.array(distribution_vector, copy=True, dtype=np.float64)
 
         prob_0 = np.sum(np.abs(vec[:target_idx]))
         prob_1 = np.sum(np.abs(vec[target_idx:]))
-        total  = prob_0 + prob_1
+        total = prob_0 + prob_1
 
         if total < 1e-12:
             raise RuntimeError(
-                "Vettore decisionale a energia zero — impossibile calcolare la scelta."
+                "Zero-energy decision vector: cannot compute the choice."
             )
 
         prob_0 /= total
         prob_1 /= total
 
-        result    = int(np.random.choice([0, 1], p=[prob_0, prob_1]))
+        result = int(np.random.choice([0, 1], p=[prob_0, prob_1]))
         zero_slot = 1 - result
 
         if zero_slot == 0:
