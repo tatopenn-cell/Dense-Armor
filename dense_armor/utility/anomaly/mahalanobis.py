@@ -20,7 +20,7 @@ updates, whose gradients are normalised to unit Frobenius norm, start
 from the identity matrix and never reach the scale of the data.
 
 Two steps of the full method are not implemented. First, Guillot et
-al. (2025, Section 3.3 and eqs. 4-5) reconstruct the eigenvalues of
+al. (2025, Section 2.3 and eqs. 4-5) reconstruct the eigenvalues of
 the true covariance from the eigenvalues of the MCM by a Robbins-Monro
 scheme; that step refines the absolute scale of the distance, because
 the MCM eigenvalues under-estimate the variance. Second, eq. 1 scales
@@ -35,9 +35,10 @@ one the user calibrates, not the ``chi2_d(0.5)`` one of eq. 1.
 References
 ----------
 Guillot, A., Godichon-Baggioni, A., Robin, S. (2025). Online robust
-    covariance and outlier detection. arXiv:2601.03957. Sections 3.2.1
-    (online algorithm and initialisation), 3.2.2 (streaming version),
-    and 3.4 (outlier detection).
+    covariance and outlier detection. arXiv:2601.03957. Section 2.3
+    (offline reconstruction of the eigenvalues), Section 3.2 (online
+    algorithm and initialisation), Section 3.3 (streaming version),
+    Section 3.4 (outlier detection).
 Cardot, H., Cenac, P., Zitt, P.-A. (2013). Bernoulli 19(1), 18-43.
 Cardot, H., Godichon-Baggioni, A. (2017). TEST 26(3), 461-480.
 """
@@ -130,7 +131,7 @@ class OnlineRobustMahalanobis(AnomalyDetector):
 
     References:
         Guillot, A., Godichon-Baggioni, A., Robin, S. (2025).
-        arXiv:2601.03957. Sections 3.2.1, 3.2.2, 3.4.
+        arXiv:2601.03957. Sections 2.3, 3.2, 3.3, 3.4.
     """
 
     budget_s = 0.005

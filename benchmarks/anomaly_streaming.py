@@ -179,7 +179,6 @@ def build_one(name, keys, ranges, online_ranges):
         return OneClassSGD(
             n_features_rff=64,
             nu=0.05,
-            step=0.1,
             n_init=50,
             feature_keys=keys,
             threshold=0.0,
