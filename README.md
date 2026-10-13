@@ -26,60 +26,54 @@
 
 ## What it does
 
-Dense-Armor is a Python library for online learning. Every estimator learns one sample at a time, at control-loop speed, on JAX: nothing is retrained in batch, nothing revisits the past. The same `learn_one` / `predict_one` / `transform_one` contract runs on a table, a time series, a video frame, an audio buffer, a robot joint stream, a token stream, and a shield can sit in front of any of them.
+Dense-Armor is a Python library for online learning. Every estimator learns one sample at a time, at control-loop speed, on JAX: nothing is retrained in batch, nothing revisits the past. The same `learn_one` / `predict_one` / `transform_one` contract runs on a table, a time series, a robot joint stream, a video frame, a token stream, and a shield can sit in front of any of them.
 
 ---
 
 ## Quickstart
 
-A table, a video and an audio stream. One model, one metric, one loop. Everything is one sample at a time:
+As a quick example, we'll train an online Gaussian naive Bayes classifier to classify a drift stream with 5 features and one sudden concept change. Here's a look at the first observation in the dataset.
 
 ```python
-import numpy as np
-from dense_armor.utility.datasets import DriftStream
-from dense_armor.utility.vision import ArrayStream, FrameFeatures
-from dense_armor.utility.preprocessing.scale import StandardScaler
-from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
-from dense_armor.utility.metrics import Accuracy
+>>> from dense_armor.utility.datasets import DriftStream
 
-rng = np.random.default_rng(0)
+>>> dataset = DriftStream(n_samples=2000, n_features=5, n_drifts=1, kind="sudden", seed=0)
 
-tabular = DriftStream(n_samples=2000, n_features=2, n_drifts=1, kind="sudden", seed=0).stream()
-video = ArrayStream(rng.normal(size=(200, 16, 16)), fps=30.0)
-audio = rng.normal(size=200).cumsum()
-
-model = StandardScaler() | OnlineGaussianNB()
-metric = Accuracy()
-ff = FrameFeatures(n_bins=4, cells=(1, 1))
-
-for x, y in tabular:
-    metric.update(y, model.predict_one(x))
-    model.learn_one(x, y)
-
-for i, frame in enumerate(video):
-    x = ff.transform_one(frame.array)
-    metric.update(i % 2, model.predict_one(x))
-    model.learn_one(x, i % 2)
-
-for i, v in enumerate(audio):
-    x = {"a": float(v)}
-    metric.update(i % 2, model.predict_one(x))
-    model.learn_one(x, i % 2)
-
-print(metric)
+>>> for x, y in dataset.stream():
+...     print(x.to_dict())
+...     print(y)
+...     break
+{'x0': 0.00889176732883129, 'x1': 0.7559062648510446, 'x2': -2.788269695138754, 'x3': 0.0168051027297742, 'x4': 1.9630566360240487}
+0
 ```
 
-```
-Accuracy(n=2399, value=0.9107961650687787)
+Now let's run the model on the dataset in a streaming fashion. We sequentially interleave predictions and model updates. Meanwhile, we update a performance metric to see how well the model is doing.
+
+```python
+>>> from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
+>>> from dense_armor.utility.metrics import Accuracy
+
+>>> model = OnlineGaussianNB()
+
+>>> metric = Accuracy()
+
+>>> for x, y in dataset.stream():
+...     y_pred = model.predict_one(x)
+...     if y_pred is not None:
+...         metric.update(y, y_pred)
+...     model.learn_one(x, y)
+
+>>> metric
+Accuracy(n=1999, value=0.9989994997498749)
 ```
 
-Every estimator in the library uses the same shape. `predict_one(x)` returns a prediction, `metric.update(y, y_pred)` tracks the score, `learn_one(x, y)` updates the model from that one sample, then the sample is gone. Add a new kind of stream and the loop does not change: read the sample, predict, score, learn.
+Of course, this is just a contrived example. Check the [getting started](https://tatopenn-cell.github.io/Dense-Armor/getting-started/) section of the documentation for a more thorough tutorial.
 
 ---
 
 ## On a robot
 
-The same interface on a real Panda arm. A joint torque stream carries a `1e6` spike at sample 50; a rate-limited follower caps the applied jump at `max_vel` per step, so a downstream controller never sees the spike:
+A joint torque stream from `SyntheticArm` (real Panda URDF, real rigid-body dynamics) carries a `1e6` spike at sample 50. A rate-limited follower caps the applied jump at `max_vel` per step, so a downstream controller never sees the spike:
 
 ```python
 from pathlib import Path
@@ -103,7 +97,7 @@ print(round(float(np.max(np.abs(tau))), 1), round(float(np.max(np.abs(safe))), 1
 1000000.0 272.2
 ```
 
-`RigidBodyModel` loads dynamics from a real URDF (`.xacro` and `<mimic>` joints included), `quintic_trajectory` generates a minimum-jerk path, `cbf_safety_filter` enforces a spatial barrier around an obstacle, and drift and anomaly detectors run on the joint stream at the same time as the model learns.
+`RigidBodyModel` loads dynamics from the same URDF (`.xacro` and `<mimic>` joints included), `quintic_trajectory` generates a minimum-jerk path, and `cbf_safety_filter` enforces a spatial barrier around an obstacle.
 
 ---
 
@@ -153,6 +147,7 @@ Dense-Armor also provides other online utilities:
 - Model pipelines
 - LLM bridge (embeddings as features, estimators as JSON tools)
 - Checks (`check_estimator`, p99 budget, memory growth, clone, pickle, state dict, roc_auc)
+- Core engine (`DynamicAICodegen` JIT compiler, `ImageChunker`, `UniversalMemoryGuard`, `AdaptiveSignalStabilizer`, `AIHardwareProfiler`, `StochasticAdversarialNoise`)
 
 Check out [the API](https://tatopenn-cell.github.io/Dense-Armor/api/) for a comprehensive overview.
 
@@ -199,7 +194,7 @@ Contributions are welcome. The library is built to be extended one estimator at 
 ```bibtex
 @software{pennacchio_dense_armor,
   author    = {Pennacchio, Salvatore},
-  title     = {Dense-Armor: Robot-AI Online Shielding \& Learning},
+  title     = {Dense-Armor: Robot-AI Online Shielding \\& Learning},
   year      = 2026,
   publisher = {Zenodo},
   doi       = {10.5281/zenodo.23265098}
