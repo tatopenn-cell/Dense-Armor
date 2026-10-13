@@ -69,10 +69,10 @@ def _detectors(keys):
         "hst": HalfSpaceTrees(
             n_trees=15,
             depth=6,
-            window=100,
+            window=50,
             range_init=10,
             feature_keys=keys,
-            threshold=4.0,
+            threshold=0.5,
             seed=0,
         ),
         "oiforest": OnlineIsolationForest(
