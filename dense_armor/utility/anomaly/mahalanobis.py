@@ -32,6 +32,34 @@ already usable, and the scaling constant would only shift the number
 at which the calibration is done. The threshold in this module is the
 one the user calibrates, not the ``chi2_d(0.5)`` one of eq. 1.
 
+Why the guards are needed.  The literal Section 3.2 update of Guillot
+et al. (page 7) was reimplemented outside the library (no cap, no
+eigenvalue floor) and run on the 100 healthy residuals of the
+``ISSUE_mahalanobis_punteggio_esplode.md`` scenario (joint 1 of the
+SyntheticArm payload fault, ``period_s=2.0``, ``rate_hz=50.0``,
+``n_cycles=2``, ``payload_mass=5.0``, seed 0), initialised as this
+class does with ``n_init=20`` and evaluated on the 80 samples that
+follow the initialisation:
+
+- ``c_gamma=1.0``: 20 of the 80 steps end with a non-positive
+  eigenvalue of ``V_bar``, the final ``trace(V_bar)`` is ``-2.88e-04``
+  (the matrix crossed zero) and the maximum score is ``5.96``.  The
+  reviewer who first measured this saw 19 steps, ``-2.88e-04`` and
+  ``11.4`` on a different 80-sample set.
+- ``c_gamma=variance of the residual`` (``2.57e-03``): 0 steps with a
+  non-positive eigenvalue, ``trace(V_bar)=+1.37e-03``, maximum score
+  ``3.70``.
+
+The cause is the scale of the normalised ASGD step against the scale
+of the MCM.  With ``c_gamma=1`` the step has Frobenius norm ~0.04 while
+``V`` itself is of order ``2.6e-03``; the running average ``V_bar``
+therefore crosses the zero matrix and ``1 / delta`` blows up.  The
+``max_step_frac=0.1`` cap and the eigenvalue floor
+``trace(V_bar) / d * 1e-3`` are the two guards that keep the score
+bounded without changing the algorithm: on the same 80 samples, with
+the guards, the maximum score is below the threshold (see
+``test_mahalanobis_healthy_scores_stay_below_threshold``).
+
 References
 ----------
 Guillot, A., Godichon-Baggioni, A., Robin, S. (2025). Online robust

@@ -17,11 +17,11 @@ These detectors look at the joint vector, one sample at a time.
 
 | Detector | Bias | Cost | Arm ROC-AUC | Drift ROC-AUC |
 |---|---|---|---|---|
-| [OnlineRobustMahalanobis](mahalanobis.md) | distance from a robust median under the MCM | 0.090 ms | 1.000 | 0.994 |
-| [LODA](loda.md) | rare bins in random 1D projections | 0.62 ms | 1.000 | 0.992 |
-| [Half-Space Trees](hst.md) | sparse regions of the space | 0.90 ms | 0.920 | 0.944 |
-| [OnlineIsolationForest](oiforest.md) | depth to isolate a point | 0.27 ms | 0.417 | 0.667 |
-| [OneClassSGD](ocsvm.md) | distance from a learned kernel boundary | 0.09 ms | 0.426 | 0.978 |
+| [OnlineRobustMahalanobis](mahalanobis.md) | distance from a robust median under the MCM | 0.036 ms | 1.000 | 0.995 |
+| [LODA](loda.md) | rare bins in random 1D projections | 0.571 ms | 1.000 | 0.989 |
+| [Half-Space Trees](hst.md) | sparse regions of the space | 1.311 ms | 0.941 | 0.907 |
+| [OnlineIsolationForest](oiforest.md) | depth to isolate a point | 0.701 ms | 0.337 | 0.724 |
+| [OneClassSGD](ocsvm.md) | distance from a learned kernel boundary | 0.131 ms | 0.856 | 0.987 |
 
 The two benchmark streams are `SyntheticArm` (payload fault, 400 samples, 100 healthy) and
 `DriftStream` (one sudden drift at half, 2000 samples). The table reports the
@@ -36,9 +36,8 @@ fault is a change of the distribution's shape, `Half-Space Trees` and `LODA` see
 mean-shift detector misses. On a stream whose fault proportion is well above the paper's
 "anomalies are few" assumption, `OnlineIsolationForest` needs a longer healthy run to
 converge — its own page documents the assumption. `OneClassSGD` reaches 0.978 on
-`DriftStream` and 0.426 on the arm. The arm stream gives 50 healthy steps after
-`n_init`, and 0.426 is what the detector reaches on those. The default `step=1.0`
-gives the `eta_t = 1 / t` of Suk and Kpotufe (2025, Lemma 5).
+`DriftStream` and 0.856 on the arm (200 samples, 100 healthy). The default
+`step=1.0` gives the `eta_t = 1 / t` of Suk and Kpotufe (2025, Lemma 5).
 
 All five detectors go through `AnomalyGate` and `Protected` unchanged: each exposes a
 `threshold`, and any of them can drive the protection of an estimator that learns online.
