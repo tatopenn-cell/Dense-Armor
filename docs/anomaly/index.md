@@ -23,11 +23,11 @@ These detectors look at the joint vector, one sample at a time.
 | [OnlineIsolationForest](oiforest.md) | depth to isolate a point | 0.701 ms | 0.337 | 0.724 |
 | [OneClassSGD](ocsvm.md) | distance from a learned kernel boundary | 0.131 ms | 0.856 | 0.987 |
 
-The two benchmark streams are `SyntheticArm` (payload fault, 400 samples, 100 healthy) and
+The two benchmark streams are `SyntheticArm` (payload fault, 200 samples, 100 healthy) and
 `DriftStream` (one sudden drift at half, 2000 samples). The table reports the
 **learn-on-healthy** protocol: each detector learns only from the healthy part of the
-stream and is scored on the whole stream. The other two protocols the benchmark computes
-(learn-on-all, learn-on-all-online-ranges) and the full table with false alarms are in
+stream and is scored on the whole stream. The other protocol the benchmark computes
+(learn-on-all) and the full table with false alarms are in
 [`benchmarks/anomaly_streaming.py`](https://github.com/tatopenn-cell/Dense-Armor/blob/master/benchmarks/anomaly_streaming.py).
 
 Each detector has its own bias and its own cost. On a stream whose fault is a shift of the

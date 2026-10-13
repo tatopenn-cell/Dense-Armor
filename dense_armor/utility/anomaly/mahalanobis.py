@@ -41,14 +41,16 @@ SyntheticArm payload fault, ``period_s=2.0``, ``rate_hz=50.0``,
 class does with ``n_init=20`` and evaluated on the 80 samples that
 follow the initialisation:
 
-- ``c_gamma=1.0``: 20 of the 80 steps end with a non-positive
-  eigenvalue of ``V_bar``, the final ``trace(V_bar)`` is ``-2.88e-04``
-  (the matrix crossed zero) and the maximum score is ``5.96``.  The
-  reviewer who first measured this saw 19 steps, ``-2.88e-04`` and
-  ``11.4`` on a different 80-sample set.
+- ``c_gamma=1.0``: the final ``trace(V_bar)`` is ``-2.88e-04`` (the
+  matrix crossed zero).  The number of steps with a non-positive
+  eigenvalue and the maximum score depend on the order of scoring and
+  updating inside a step, on the same 80 samples.  Scoring each sample
+  before the update, which is how the detector is used on a stream:
+  19 of the 80 steps and maximum score ``11.36``.  Scoring after the
+  update: 20 of the 80 steps and maximum score ``5.96``.
 - ``c_gamma=variance of the residual`` (``2.57e-03``): 0 steps with a
   non-positive eigenvalue, ``trace(V_bar)=+1.37e-03``, maximum score
-  ``3.70``.
+  ``3.70`` with either order.
 
 The cause is the scale of the normalised ASGD step against the scale
 of the MCM.  With ``c_gamma=1`` the step has Frobenius norm ~0.04 while
