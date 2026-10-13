@@ -20,8 +20,12 @@ Choices not given by Leveni et al. (2024), stated explicitly:
   position and lands in the outermost leaf on that side, which is the
   rarest region.
 - Tree depth is fixed at construction; splits are at the mid-point of
-  the *current* node's range, which is entirely determined by the BFS
-  position of the node.
+  the *current* node's range on the split feature. The range is derived
+  from the working range of the root by following the split values
+  along the path, never from the data (Tan et al. 2011, Section 3.2:
+  ``the split point is the mid-point of the current range of q``;
+  Ulrich 2025, Section 5.2: ``s = (x + y) / 2``). The BFS position of
+  the node is not sufficient when the feature varies along the path.
 - Sliding window: exact window of the last ``window`` samples, kept as
   a circular buffer of the node paths (not a decay). No periodic
   retraining; the window itself is the forgetting mechanism.
@@ -191,9 +195,7 @@ class HalfSpaceTrees(AnomalyDetector):
         self._feature = rng.integers(
             0, d, size=(self.n_trees, n_internal), dtype=np.intp
         )
-        levels = np.repeat(np.arange(self.depth), 2 ** np.arange(self.depth))
-        k = np.concatenate([np.arange(2**j) for j in range(self.depth)])
-        self._midpoints = (2.0 * k + 1.0) / (2.0 ** (levels + 1))
+        self._midpoints = self._build_midpoints()
         self._counts = np.zeros(
             (self.n_trees, 2 ** (self.depth + 1) - 1), dtype=np.int64
         )
@@ -204,6 +206,54 @@ class HalfSpaceTrees(AnomalyDetector):
         self._buf_size = 0
         self._range_buf = []
         self._ready = True
+
+    def _build_midpoints(self) -> np.ndarray:
+        """Punto di taglio di ogni nodo interno, uno per tree e node.
+
+        Il range di un nodo sulla sua feature di split dipende solo
+        dalle feature scelte lungo il path dalla radice, mai dai dati.
+        Si propaga dalla radice con lo stesso range di ``self._lo`` /
+        ``self._hi``: se il nodo ``n`` e' figlio sinistro del padre
+        ``p`` che splitta su ``f`` con punto ``m``, la feature ``f`` in
+        ``n`` ha range ``[lo_p[f], m]``; se e' figlio destro, ``[m,
+        hi_p[f]]``. Le altre feature restano invariate.
+
+        Regola di Tan et al. 2011, Section 3.2 ("the split point is
+        the mid-point of the current range of q") e di Ulrich 2025,
+        Section 5.2 ("s = (x + y) / 2"). La formula dal solo indice BFS
+        del nodo vale solo per ``d = 1``.
+
+        Returns:
+            Array ``(n_trees, 2 ** depth - 1)`` di float, con il punto
+            di taglio di ogni nodo interno sull'ultima dimensione.
+        """
+        assert self._lo is not None and self._hi is not None
+        assert self._feature is not None
+        feature = self._feature
+        n_internal = 2**self.depth - 1
+        midpoints = np.zeros((self.n_trees, n_internal), dtype=float)
+        d = len(self._keys)
+        t_idx = np.arange(self.n_trees)[:, None]
+        lo_cur = np.broadcast_to(self._lo[None, None, :], (self.n_trees, 1, d)).copy()
+        hi_cur = np.broadcast_to(self._hi[None, None, :], (self.n_trees, 1, d)).copy()
+        for level in range(self.depth):
+            n_at_level = 2**level
+            start = n_at_level - 1
+            f_at = feature[:, start : start + n_at_level]
+            n_idx = np.arange(n_at_level)[None, :]
+            lo_f = lo_cur[t_idx, n_idx, f_at]
+            hi_f = hi_cur[t_idx, n_idx, f_at]
+            mid = 0.5 * (lo_f + hi_f)
+            midpoints[:, start : start + n_at_level] = mid
+            new_lo = np.repeat(lo_cur, 2, axis=1)
+            new_hi = np.repeat(hi_cur, 2, axis=1)
+            even_idx = np.arange(0, 2 * n_at_level, 2)[None, :]
+            odd_idx = np.arange(1, 2 * n_at_level, 2)[None, :]
+            new_hi[t_idx, even_idx, f_at] = mid
+            new_lo[t_idx, odd_idx, f_at] = mid
+            lo_cur = new_lo
+            hi_cur = new_hi
+        return midpoints
 
     def _to_norm(self, x: dict) -> np.ndarray:
         v = np.array([float(x[k]) for k in self._keys], dtype=float)
@@ -219,8 +269,8 @@ class HalfSpaceTrees(AnomalyDetector):
         path = np.zeros(self.depth + 1, dtype=np.intp)
         node = 0
         for lv in range(self.depth):
-            feat = self._feature[tr, node]
-            if x_norm[feat] <= self._midpoints[node]:
+            feat = int(self._feature[tr, node])
+            if x_norm[feat] <= self._midpoints[tr, node]:
                 node = 2 * node + 1
             else:
                 node = 2 * node + 2
@@ -232,8 +282,8 @@ class HalfSpaceTrees(AnomalyDetector):
         assert self._midpoints is not None
         node = 0
         for _ in range(self.depth):
-            feat = self._feature[tr, node]
-            if x_norm[feat] <= self._midpoints[node]:
+            feat = int(self._feature[tr, node])
+            if x_norm[feat] <= self._midpoints[tr, node]:
                 node = 2 * node + 1
             else:
                 node = 2 * node + 2
