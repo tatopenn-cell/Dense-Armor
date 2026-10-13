@@ -305,7 +305,7 @@ class HalfSpaceTrees(AnomalyDetector):
                     self._finalise_range()
                 return self
         try:
-            v_check = np.array([x[k] for k in sorted(x)], dtype=float)
+            v_check = np.array([x[k] for k in self._keys], dtype=float)
         except (KeyError, TypeError, ValueError):
             self.n_missing_ += 1
             return self

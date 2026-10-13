@@ -36,10 +36,9 @@ fault is a change of the distribution's shape, `Half-Space Trees` and `LODA` see
 mean-shift detector misses. On a stream whose fault proportion is well above the paper's
 "anomalies are few" assumption, `OnlineIsolationForest` needs a longer healthy run to
 converge — its own page documents the assumption. `OneClassSGD` reaches 0.978 on
-`DriftStream` and 0.426 on the arm; the arm number is low because only 50 healthy
-steps follow `n_init`, not because the schedule is slow. The default `step=1.0` gives
-the `eta_t = 1 / t` of Suk and Kpotufe (2025, Lemma 5); the earlier `step=0.1` was
-10x slower and reached only 0.523 on `DriftStream`.
+`DriftStream` and 0.426 on the arm. The arm stream gives 50 healthy steps after
+`n_init`, and 0.426 is what the detector reaches on those. The default `step=1.0`
+gives the `eta_t = 1 / t` of Suk and Kpotufe (2025, Lemma 5).
 
 All five detectors go through `AnomalyGate` and `Protected` unchanged: each exposes a
 `threshold`, and any of them can drive the protection of an estimator that learns online.

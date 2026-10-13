@@ -42,6 +42,13 @@ from dense_armor.roles import AnomalyDetector
 class LODA(AnomalyDetector):
     """Lightweight Online Detector of Anomalies.
 
+    Defaults versus the paper. Lou et al. (2024, Table 4) use 20 bins
+    per histogram and a window of 128 samples. This implementation
+    defaults to ``n_bins=10`` and ``window=256``: a smaller number of
+    bins and a larger window give a smoother histogram on short robot
+    streams, where 128 samples are barely two task cycles. The paper's
+    values are accepted as parameters.
+
     Args:
         n_projections: number of random one-dimensional projections.
         n_bins: number of histogram bins per projection.

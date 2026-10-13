@@ -257,6 +257,9 @@ class OnlineRobustMahalanobis(AnomalyDetector):
             ``self``.
         """
         self._time_step(t)
+        if not isinstance(x, dict) or not x:
+            self.n_missing_ += 1
+            return self
         try:
             y = self._to_vec(x)
         except (KeyError, TypeError, ValueError):
