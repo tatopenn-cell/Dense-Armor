@@ -115,6 +115,11 @@ nav:
           - GLM: linear/glm.md
           - Bayesian linear regression: linear/bayes.md
           - Payload estimator: linear/payload.md
+      - Time series:
+          - timeseries/index.md
+          - Autoregressive models: timeseries/ar.md
+          - Kalman filters: timeseries/kalman.md
+          - Cycle residual: timeseries/cycle.md
       - Clustering: cluster/index.md
       - Trees: tree/index.md
 
