@@ -32,6 +32,14 @@ RFF embedding (Rahimi and Recht 2007, cos-sin pair):
 with ``w_j ~ N(0, 2 * gamma * I)`` for the RBF kernel
 ``K(x, y) = exp(-gamma * ||x - y||^2)``.
 
+Normalisation of the embedding. The prefactor ``sqrt(2/d)`` is the one
+printed by Suk and Kpotufe (2025, Section 3). With ``d`` cos-sin pairs
+it gives ``||z(x)||^2 = 2`` and ``z(x)^T z(y)`` approximates
+``2 K(x, y)``, while the paper states ``z(x)^T z(y) = K(x, y)`` in
+expectation; for ``d = 1`` the printed prefactor gives ``z^T z = 2``
+where that identity needs 1. The implementation keeps the printed
+prefactor.
+
 Details not fixed by the paper, stated explicitly:
 
 - The paper assumes the data lie on the unit sphere; that assumption
@@ -55,18 +63,12 @@ Details not fixed by the paper, stated explicitly:
   ``threshold_warmup`` scores have been seen the effective threshold
   is ``1e9`` (flag nothing).
 
-Known limitation on short one-pass streams. SONAR's SGD convergence
-(Theorem 6 and Corollary 7 of the paper) requires the number of steps
-to grow like ``(eps * lambda) ** -2 * log(1 / delta)`` before the
-Type I error bound becomes tight. On the benchmark streams used in
-this repository (a few hundred healthy samples, then a fault that
-does not reappear), the boundary has not yet converged when the fault
-arrives, so the score of the fault is close to the score of a healthy
-point and the ROC-AUC is close to chance: the algorithm detects the
-fault only if it can learn from enough healthy samples first, which
-this benchmark does not provide. On a longer single-pass stream with
-a few thousand healthy samples before the first fault, the boundary
-has time to converge and the detector behaves as the paper describes.
+Short one-pass streams. The default ``step=1.0`` gives
+``eta_t = 1 / t``, the schedule of Suk and Kpotufe (2025, Lemma 5).
+The boundary converges as healthy samples arrive (Theorem 6 and
+Corollary 7). With the defaults, the ``SyntheticArm`` benchmark (100
+healthy samples, 80 steps after ``n_init``) gives ROC-AUC 0.856 and
+the ``DriftStream`` benchmark (1000 healthy samples) gives 0.987.
 
 References
 ----------
@@ -141,7 +143,7 @@ class OneClassSGD(AnomalyDetector):
         self,
         n_features_rff: int = 128,
         nu: float = 0.05,
-        step: float = 0.1,
+        step: float = 1.0,
         gamma: float = 0.5,
         n_init: int = 20,
         feature_keys: Sequence[str] | None = None,
@@ -275,6 +277,9 @@ class OneClassSGD(AnomalyDetector):
             ``self``.
         """
         self._time_step(t)
+        if not isinstance(x, dict) or not x:
+            self.n_missing_ += 1
+            return self
         if not self._ready:
             self._lazy_init(x)
             try:

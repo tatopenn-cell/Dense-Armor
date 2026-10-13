@@ -17,25 +17,27 @@ These detectors look at the joint vector, one sample at a time.
 
 | Detector | Bias | Cost | Arm ROC-AUC | Drift ROC-AUC |
 |---|---|---|---|---|
-| [OnlineRobustMahalanobis](mahalanobis.md) | distance from a robust median under the MCM | 0.090 ms | 1.000 | 0.994 |
-| [LODA](loda.md) | rare bins in random 1D projections | 0.62 ms | 1.000 | 0.988 |
-| [Half-Space Trees](hst.md) | sparse regions of the space | 0.90 ms | 0.920 | 0.944 |
-| [OnlineIsolationForest](oiforest.md) | depth to isolate a point | 0.27 ms | 0.417 | 0.667 |
-| [OneClassSGD](ocsvm.md) | distance from a learned kernel boundary | 0.09 ms | 0.394 | 0.523 |
+| [OnlineRobustMahalanobis](mahalanobis.md) | distance from a robust median under the MCM | 0.036 ms | 1.000 | 0.995 |
+| [LODA](loda.md) | rare bins in random 1D projections | 0.571 ms | 1.000 | 0.989 |
+| [Half-Space Trees](hst.md) | sparse regions of the space | 2.692 ms | 1.000 | 0.756 |
+| [OnlineIsolationForest](oiforest.md) | depth to isolate a point | 0.701 ms | 0.337 | 0.724 |
+| [OneClassSGD](ocsvm.md) | distance from a learned kernel boundary | 0.131 ms | 0.856 | 0.987 |
 
-The two benchmark streams are `SyntheticArm` (payload fault, 400 samples, 100 healthy) and
+The two benchmark streams are `SyntheticArm` (payload fault, 200 samples, 100 healthy) and
 `DriftStream` (one sudden drift at half, 2000 samples). The table reports the
 **learn-on-healthy** protocol: each detector learns only from the healthy part of the
-stream and is scored on the whole stream. The other two protocols the benchmark computes
-(learn-on-all, learn-on-all-online-ranges) and the full table with false alarms are in
+stream and is scored on the whole stream. The other protocol the benchmark computes
+(learn-on-all) and the full table with false alarms are in
 [`benchmarks/anomaly_streaming.py`](https://github.com/tatopenn-cell/Dense-Armor/blob/master/benchmarks/anomaly_streaming.py).
 
 Each detector has its own bias and its own cost. On a stream whose fault is a shift of the
 mean (the arm benchmark), `OnlineRobustMahalanobis` is the strongest. On a stream whose
 fault is a change of the distribution's shape, `Half-Space Trees` and `LODA` see things the
 mean-shift detector misses. On a stream whose fault proportion is well above the paper's
-"anomalies are few" assumption, `OnlineIsolationForest` and `OneClassSGD` need a longer
-healthy run to converge — their own pages document the assumption.
+"anomalies are few" assumption, `OnlineIsolationForest` needs a longer healthy run to
+converge — its own page documents the assumption. `OneClassSGD` reaches 0.978 on
+`DriftStream` and 0.856 on the arm (200 samples, 100 healthy). The default
+`step=1.0` gives the `eta_t = 1 / t` of Suk and Kpotufe (2025, Lemma 5).
 
 All five detectors go through `AnomalyGate` and `Protected` unchanged: each exposes a
 `threshold`, and any of them can drive the protection of an estimator that learns online.

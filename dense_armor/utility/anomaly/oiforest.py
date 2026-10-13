@@ -39,35 +39,29 @@ Details not fixed by the paper, stated explicitly:
   points currently in the tree. This module uses the dynamic cap.
 - Point depth for a leaf is ``k + log2(h / eta)``, that is
   Algorithm 4's ``k + c(h, eta)`` with ``c(h, eta) =
-  log(num_samples / max_leaf_samples) / log(2 * branching_factor)``
-  from the reference implementation, ``branching_factor = 2``. The
-  paper writes ``c(h, eta)`` in Algorithm 4 without giving the closed
-  form; the reference implementation is used here.
+  log2(num_samples / max_leaf_samples)``. The paper writes
+  ``c(h, eta)`` in Algorithm 4 without giving the closed form; the
+  code uses base-2 logarithm, which is what the rest of the module
+  uses and what makes the score unit-consistent with the
+  ``2^(-E(D)/c)`` of Algorithm 1.
 - The score's adjustment factor is ``c(window, eta) =
-  log2(window / eta)``; the paper writes it in Algorithm 1 line 1 and
+  log2(window / eta)``; the paper writes it in Algorithm 1 and
   in Section 4.2.
 
 Known limitation on streams with many positives. The paper assumes
 "anomalous data are few" (Section 2, ``P(X_i ~ Phi_1) << P(X_i ~
 Phi_0)``) and its benchmark (Table 2) has anomalies between 0.03 %
-and 10 %. The SyntheticArm benchmark of this repository has 75 % of
-positives after the fault (100 healthy, 300 faulty), far outside that
-assumption: when the anomalies are the majority, the "sparse" region
-of the tree is the healthy one, and the depth score measures the
-wrong side. Measured on SyntheticArm, protocol ``learn-on-healthy``,
-n_trees=32, eta=8/32:
-
-- 400 samples, 100 healthy (window 200, eta 8): ROC-AUC 0.36
-- 1600 samples, 400 healthy (window 2048, eta 32): ROC-AUC 0.54
-- 3200 samples, 800 healthy (window 2048, eta 32): ROC-AUC 0.66
-
-The trend is monotonic in the number of healthy samples: with more
-data the trees grow and the score improves, but the anomaly
-proportion never falls inside the assumption of the paper. On the
-paper's own datasets (Cardio, HTTP, Shuttle, ... with 0.03 % to 10 %
-anomalies) the reported ROC-AUC is 0.65 to 0.99 (Table 4). On the
-``DriftStream`` of this benchmark (50 % positives) the protocol
-``learn-on-healthy`` gives 0.67.
+(Smtp) and 32 % (Satellite). The SyntheticArm benchmark of this
+repository has 50 % of positives after the fault (100 healthy, 100
+faulty) and the ``DriftStream`` benchmark has 50 % as well, above that
+range. Measured with the defaults on ``benchmarks/anomaly_streaming.py``,
+protocol ``learn-on-healthy``: SyntheticArm ROC-AUC 0.337 with 0.690
+false alarms at the default threshold 0.6; DriftStream ROC-AUC 0.724.
+In the protection test (SyntheticArm, 5 kg payload) the detector flags
+16 of the 100 faulty samples and the protected model ends worse than
+the bare one (``err_prot`` 3.9550, ``err_bare`` 3.2886). On the paper's
+own datasets (Http, Smtp, Shuttle, ... in Table 2) the reported ROC-AUC
+of Online-iForest is 0.572 to 0.998 (Table 4).
 
 References
 ----------
@@ -152,7 +146,7 @@ class OnlineIsolationForest(AnomalyDetector):
     """
 
     budget_s = 0.07
-    memory_class = "O(1)"
+    memory_class = "O(window)"
 
     def __init__(
         self,
@@ -321,6 +315,9 @@ class OnlineIsolationForest(AnomalyDetector):
             ``self``.
         """
         self._time_step(t)
+        if not isinstance(x, dict) or not x:
+            self.n_missing_ += 1
+            return self
         if not self._ready:
             self._lazy_init(x)
         try:

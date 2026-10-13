@@ -20,7 +20,7 @@ updates, whose gradients are normalised to unit Frobenius norm, start
 from the identity matrix and never reach the scale of the data.
 
 Two steps of the full method are not implemented. First, Guillot et
-al. (2025, Section 3.2 and eqs. 4-5) reconstruct the eigenvalues of
+al. (2025, Section 2.3 and eqs. 4-5) reconstruct the eigenvalues of
 the true covariance from the eigenvalues of the MCM by a Robbins-Monro
 scheme; that step refines the absolute scale of the distance, because
 the MCM eigenvalues under-estimate the variance. Second, eq. 1 scales
@@ -32,12 +32,51 @@ already usable, and the scaling constant would only shift the number
 at which the calibration is done. The threshold in this module is the
 one the user calibrates, not the ``chi2_d(0.5)`` one of eq. 1.
 
+Why the guards are needed.  The literal Section 3.2 update of Guillot
+et al. (page 7) was reimplemented outside the library (no cap, no
+eigenvalue floor) and run on the 100 healthy residuals of the
+``ISSUE_mahalanobis_punteggio_esplode.md`` scenario (joint 1 of the
+SyntheticArm payload fault, ``period_s=2.0``, ``rate_hz=50.0``,
+``n_cycles=2``, ``payload_mass=5.0``, seed 0), initialised as this
+class does with ``n_init=20`` and evaluated on the 80 samples that
+follow the initialisation:
+
+- ``c_gamma=1.0``: the final ``trace(V_bar)`` is ``-2.88e-04`` (the
+  matrix crossed zero).  The number of steps with a non-positive
+  eigenvalue and the maximum score depend on the order of scoring and
+  updating inside a step, on the same 80 samples.  Scoring each sample
+  before the update, which is how the detector is used on a stream:
+  19 of the 80 steps and maximum score ``11.36``.  Scoring after the
+  update: 20 of the 80 steps and maximum score ``5.96``.
+- ``c_gamma=variance of the residual`` (``2.57e-03``): 0 steps with a
+  non-positive eigenvalue, ``trace(V_bar)=+1.37e-03``, maximum score
+  ``3.70`` with either order.
+
+The cause is the scale of the normalised ASGD step against the scale
+of the MCM.  With ``c_gamma=1`` the step has Frobenius norm ~0.04 while
+``V`` itself is of order ``2.6e-03``; the running average ``V_bar``
+therefore crosses the zero matrix and ``1 / delta`` blows up.  The
+``max_step_frac=0.1`` cap and the eigenvalue floor
+``trace(V_bar) / d * 1e-3`` are the two guards that keep the score
+bounded without changing the algorithm: on the same 80 samples, with
+the guards, the maximum score is below the threshold (see
+``test_mahalanobis_healthy_scores_stay_below_threshold``).
+
+Step index. In Guillot et al. (page 7) ``gamma_n = c_gamma (n + n0)^(-gamma)``
+with ``n`` counted from the first sample, so the first update after
+``n_init = 100`` uses ``gamma_101 = 0.0395 c_gamma`` for ``gamma = 0.7``.
+Here ``n`` counts the updates since the initialisation and
+``gamma_n = c_gamma (n + n0 + 1)^(-gamma)``: the first update uses
+``2^(-0.7) c_gamma = 0.6156 c_gamma``. This is a choice of this
+implementation; the step cap ``max_step_frac`` bounds those first steps.
+
 References
 ----------
 Guillot, A., Godichon-Baggioni, A., Robin, S. (2025). Online robust
-    covariance and outlier detection. arXiv:2601.03957. Sections 3.2.1
-    (online algorithm and initialisation), 3.2.2 (streaming version),
-    and 3.4 (outlier detection).
+    covariance and outlier detection. arXiv:2601.03957. Section 2.3
+    (offline reconstruction of the eigenvalues), Section 3.2 (online
+    algorithm and initialisation), Section 3.3 (streaming version),
+    Section 3.4 (outlier detection).
 Cardot, H., Cenac, P., Zitt, P.-A. (2013). Bernoulli 19(1), 18-43.
 Cardot, H., Godichon-Baggioni, A. (2017). TEST 26(3), 461-480.
 """
@@ -130,7 +169,7 @@ class OnlineRobustMahalanobis(AnomalyDetector):
 
     References:
         Guillot, A., Godichon-Baggioni, A., Robin, S. (2025).
-        arXiv:2601.03957. Sections 3.2.1, 3.2.2, 3.4.
+        arXiv:2601.03957. Sections 2.3, 3.2, 3.3, 3.4.
     """
 
     budget_s = 0.005
@@ -256,6 +295,9 @@ class OnlineRobustMahalanobis(AnomalyDetector):
             ``self``.
         """
         self._time_step(t)
+        if not isinstance(x, dict) or not x:
+            self.n_missing_ += 1
+            return self
         try:
             y = self._to_vec(x)
         except (KeyError, TypeError, ValueError):

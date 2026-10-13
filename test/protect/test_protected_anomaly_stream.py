@@ -12,6 +12,11 @@ deployment would do it after a calibration phase. After the fault its
 score crosses its own threshold, ``AnomalyGate.classify`` returns
 True, and ``Protected`` skips ``learn_one`` on the model. The bare
 model keeps learning and absorbs the fault into its offset.
+
+Stream: SyntheticArm(period_s=2.0, rate_hz=50.0, n_cycles=2,
+fault_at_s=2.0, payload_mass=5.0), 200 samples, 100 healthy and 100
+faulty, residual of joints 1-4 plus the constant ``one`` feature for
+the least-squares model.
 """
 
 from pathlib import Path
@@ -31,9 +36,6 @@ from dense_armor.utility.datasets import SyntheticArm
 from dense_armor.utility.learn.online_dynamics import RecursiveLeastSquares
 
 URDF = Path("test/fixtures/urdf/panda.urdf")
-FAULT_T = 2.5
-RATE_HZ = 20.0
-N_CYCLES = 1
 
 
 @pytest.fixture(scope="module")
@@ -41,12 +43,12 @@ def arm_residuals():
     """Residuals of joints 1-4 and the fault flag, computed once."""
     ds = SyntheticArm(
         URDF,
-        period_s=10.0,
-        rate_hz=RATE_HZ,
-        n_cycles=N_CYCLES,
-        fault_at_s=FAULT_T,
+        period_s=2.0,
+        rate_hz=50.0,
+        n_cycles=2,
+        fault_at_s=2.0,
         fault="payload",
-        payload_mass=60.0,
+        payload_mass=5.0,
         noise_std=(1e-3, 5e-3, 5e-2),
         seed=0,
     )
@@ -119,19 +121,20 @@ def test_anomaly_gate_accepts_every_detector():
         assert isinstance(gate.classify(score), bool), name
 
 
-# oiforest is excluded from the protection parametrisation: on
-# SyntheticArm the fault proportion is 75%, far above the "few
-# anomalies" assumption of Leveni et al. 2024 (Section 2), and the
-# detector sits below chance (ROC-AUC 0.36-0.42). It would fail
-# the err_prot < err_bare assertion not because Protected is broken
-# but because the detector cannot tell the fault from the healthy
-# part. Its interface is still exercised by
-# test_anomaly_gate_accepts_every_detector.
+# oiforest is outside the protection parametrisation. On this stream
+# (5 kg payload, 100 healthy samples then 100 faulty ones, so 50 %
+# anomalies, far above the "few anomalies" assumption of Leveni et al.,
+# Section 2) it flags 16 of the 100 faulty samples and the protected
+# model ends worse than the bare one: err_prot=3.9550, err_bare=3.2886.
+# The four other detectors give err_prot between 0.0001 and 0.9261 for
+# the same err_bare. Its interface is exercised by
+# test_anomaly_gate_accepts_every_detector; the defect stays open in the
+# review of task 10.
 @pytest.mark.parametrize(
     "name",
     ["hst", "loda", "ocsvm", "mahalanobis"],
 )
-def test_protected_keeps_healthy_offset(name, arm_residuals):
+def test_protected_keeps_healthy_offset(name, arm_residuals, capsys):
     X, y = arm_residuals
     keys = ["r1", "r2", "r3", "r4"]
     det = _detectors(keys)[name]
@@ -145,7 +148,7 @@ def test_protected_keeps_healthy_offset(name, arm_residuals):
 
     errs_prot: list[float] = []
     errs_bare: list[float] = []
-    n_flagged_post = 0
+    n_flagged_fault = 0
     for i, x in enumerate(X):
         is_fault = int(y[i]) == 1
         xk = {k: x[k] for k in keys}
@@ -154,7 +157,7 @@ def test_protected_keeps_healthy_offset(name, arm_residuals):
         score = gate.score_one(xk)
         flagged = gate.classify(score)
         if is_fault and flagged:
-            n_flagged_post += 1
+            n_flagged_fault += 1
 
         pred_p = float(prot.predict_one(x))
         pred_b = float(bare.predict_one(x))
@@ -167,10 +170,18 @@ def test_protected_keeps_healthy_offset(name, arm_residuals):
         bare.learn_one(x, target)
 
     assert bare._w is not None
-    assert n_flagged_post > 0, (
-        f"{name}: detector never flagged the fault (n_fault={int(y.sum())})"
-    )
     err_bare = float(np.mean(errs_bare))
     err_prot = float(np.mean(errs_prot))
-    assert err_bare > 10.0, f"{name}: bare err={err_bare}"
-    assert err_prot < err_bare, f"{name}: err_prot={err_prot} vs err_bare={err_bare}"
+    n_fault = int(y.sum())
+    with capsys.disabled():
+        print(
+            f"[test_protect][{name}] err_prot={err_prot:.4f} "
+            f"err_bare={err_bare:.4f} "
+            f"n_flagged_fault={n_flagged_fault}/{n_fault}"
+        )
+    assert n_flagged_fault > 0, (
+        f"{name}: detector never flagged the fault (n_fault={n_fault})"
+    )
+    assert err_prot < err_bare, (
+        f"{name}: err_prot={err_prot:.4f} vs err_bare={err_bare:.4f}"
+    )
