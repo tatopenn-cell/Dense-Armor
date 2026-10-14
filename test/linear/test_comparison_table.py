@@ -101,5 +101,44 @@ def test_comparison_table():
         print(f"{name:32s}  {pre_mae:9.4f}  {post_mae:9.4f}  {t * 1e6:10.1f}")
     print()
 
+    by_name = {r[0]: r for r in rows}
+
+    # Every number is finite
     assert all(np.isfinite([r[1] for r in rows]))
     assert all(np.isfinite([r[2] for r in rows]))
+
+    # Learners that forget: after the change they adapt, error below 0.1.
+    #   SGD(lr=0.05)          post 0.0401
+    #   FTRLProximal(l2=0.1)  post 0.0536
+    assert by_name["SGD(lr=0.05)"][2] < 0.1
+    assert by_name["FTRLProximal(l2=0.1)"][2] < 0.1
+
+    # Learners that do not forget: after the change the error stays high.
+    #   AdaGrad(lr=0.5)              post 0.9610
+    #     AdaGrad accumulates the squared gradients and never discards
+    #     them; after the change the accumulated sum keeps the step
+    #     small and the learner cannot move to the new weights.
+    #   BayesianLinearRegression     post 2.5703
+    #     The posterior keeps the likelihood of all past samples;
+    #     with alpha=beta=1e-6 there is no forgetting and the new
+    #     regime is drowned by the old evidence.
+    assert by_name["AdaGrad(lr=0.5)"][2] > 0.5
+    assert by_name["BayesianLinearRegression"][2] > 0.5
+
+    # Every median per-sample latency is under the budget of its class
+    # (or, for RecursiveLeastSquares, under 1e-2 as a safe upper bound,
+    # since the class does not declare one).
+    budgets = {
+        "SGD(lr=0.05)": LinearRegression.budget_s,
+        "AdaGrad(lr=0.5)": LinearRegression.budget_s,
+        "Adam(lr=0.05)": LinearRegression.budget_s,
+        "FTRLProximal(l2=0.1)": LinearRegression.budget_s,
+        "OnlineNewtonStep": LinearRegression.budget_s,
+        "BayesianLinearRegression": BayesianLinearRegression.budget_s,
+        "RecursiveLeastSquares(0.99)": 1e-2,
+    }
+    for name, budget in budgets.items():
+        assert by_name[name][3] < budget, (
+            f"{name}: median {by_name[name][3] * 1e6:.1f} us "
+            f">= budget {budget * 1e6:.1f} us"
+        )

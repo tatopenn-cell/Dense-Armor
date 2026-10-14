@@ -42,14 +42,36 @@ def test_synthetic_payload_fault():
     times = np.asarray(times)
     masses = np.asarray(masses)
 
+    # First sample: the estimator skips it, no qdd yet.
+    assert masses[0] == 0.0
+
+    # Before the fault the estimate stays at the clamp floor.
+    before = masses[times < 2.0]
+    assert np.abs(before).max() < 0.01
+
+    # After the fault. lam=0.99 now means 100 samples of memory
+    # (2 s at 50 Hz), not 11, so the convergence is slower than with
+    # the old per-joint forgetting. Measured on this stream:
+    #   final       4.9555
+    #   mean        3.7974
+    #   min         0.0000
+    #   max         5.0894
+    #   within +-10% of 5 kg: 36.7% of the post-fault samples
+    #   stays within +-10% from t = 3.80 s after the fault
     after = masses[times >= 2.0]
     assert after.size > 0
-    assert 0.5 * 5.0 < after.mean() < 1.5 * 5.0
+    assert 3.0 < after.mean() < 5.0
+    assert 4.5 < after[-1] < 5.5
 
-    settled = np.where((times >= 2.0) & (np.abs(masses - 5.0) <= 0.5))[0]
-    assert settled.size > 0
-    t_settle = float(times[settled[0]] - 2.0)
-    assert t_settle < 5.0
+    within_10 = np.abs(after - 5.0) <= 0.5
+    stay_start = None
+    for k in range(len(after)):
+        if within_10[k:].all():
+            stay_start = k
+            break
+    assert stay_start is not None
+    t_stay = float(times[times >= 2.0][stay_start] - 2.0)
+    assert t_stay < 5.0
 
 
 @pytest.mark.slow
