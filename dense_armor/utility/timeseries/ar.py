@@ -1,25 +1,39 @@
 """Autoregressive models learned one sample at a time.
 
 ``OnlineAR`` predicts the next value of one channel from its last
-``order`` values with recursive least squares with forgetting.
+``order`` values with recursive least squares with forgetting
+(:class:`~dense_armor.utility.learn.online_dynamics.RecursiveLeastSquares`).
 
-``OnlineVAR`` extends the same idea to several channels at once. The
-underlying algorithm is TIRSO from Zaman et al. (2019): recursive
-least squares with a group-lasso penalty that selects which
-channel-lag blocks matter. Set ``group_lambda=0.0`` to disable the
-penalty and recover plain recursive least squares on the stacked
-history. The penalty follows equation (25) of the source, with the
-indicator ``1{n != n'}``: only the cross-channel blocks are shrunk,
-the diagonal blocks (a channel's own lags) pass through unchanged.
+``OnlineVAR`` extends the same idea to several channels at once with
+TIRSO, Procedure 2 of Zaman et al. (2019): at every sample it takes one
+proximal-gradient step on the exponentially weighted quadratic loss of
+the stacked history, followed by a group-lasso shrinkage of the
+cross-channel blocks. ``group_lambda=0.0`` disables the shrinkage.
+
+Differences from Procedure 2 that are kept on purpose:
+
+- ``Phi`` and ``r`` are accumulated as ``lam * Phi + g g'`` and
+  ``lam * r + y g'``, without the factor ``mu = 1 - gamma`` of
+  equations (21a) and (21b); ``lam = 1.0`` is allowed (with ``mu = 0``
+  the paper's recursion would be zero).
+- The recursion starts at the first sample with a zero history. The
+  paper starts at ``t = P``, after ``P`` samples have filled ``g[t]``.
+- The step size is ``alpha / (1 + t)``. Theorem 3 (page 8) needs the
+  step ``O(1 / sqrt(t0 2^(m-1)))`` in doubling windows and gives
+  ``O(L B^2 sqrt(T))``; Theorem 4 (page 8) needs ``alpha_t = 1 / (beta t)``
+  with ``beta`` a lower bound of ``lambda_min(Phi[t])`` and gives a
+  logarithmic bound. The default schedule here is neither, so no regret
+  bound is claimed for it.
 
 References:
     Zaman, B., Lopez Ramos, L. M., Romero, D., Beferull-Lozano, B.
     (2019). Online topology identification from vector autoregressive
-    time series. arXiv:1904.01864. Equations (19) and (21) are the
-    recursive least squares update with forgetting; equations (24)
-    and (25) are the group-lasso update; the algorithm is Procedure 2
-    (page 6); the static regret bound is Theorem 3 (page 7) under
-    assumptions A1, A2, A3 (bounded min/max eigenvalue of Phi).
+    time series. arXiv:1904.01864. Equations (19) and (21) define the
+    weighted loss and the recursions of ``Phi`` and ``r``; equations
+    (24) and (25) are the group-lasso update; Procedure 2 is on page 7
+    and initialises ``Phi[P - 1] = sigma^2 I`` (``sigma2`` here);
+    Theorems 3 and 4 are on page 8 under assumptions A1, A2, A3 (bounded
+    samples, bounded minimum and maximum eigenvalue of ``Phi``).
 """
 
 from collections.abc import Sequence
@@ -29,14 +43,21 @@ import jax.numpy as jnp
 import numpy as np
 
 from dense_armor.roles import Transformer
+from dense_armor.utility.learn.online_dynamics import RecursiveLeastSquares
 
 
 class OnlineAR(Transformer):
     """Online univariate autoregressive model of order ``order``.
 
-    At every sample the model predicts the value of the channel from
-    its last ``order`` values and updates its coefficients by
-    recursive least squares with a forgetting factor.
+    The model predicts the next value of the channel from its last
+    ``order`` values with recursive least squares with a forgetting
+    factor. The coefficients in ``coef_`` run from the oldest lag to the
+    newest: ``coef_[-1]`` multiplies the latest value.
+
+    Call order: ``predict_one`` returns the forecast of the sample that
+    comes next, so ``transform_one(x)`` is the residual of ``x`` only
+    when it is called before ``learn_one(x)``. After ``learn_one(x)`` it
+    compares ``x`` with the forecast of the following sample.
 
     Args:
         order: number of past values used in the prediction.
@@ -58,7 +79,7 @@ class OnlineAR(Transformer):
     """
 
     budget_s: float | None = 1e-3
-    memory_class: str = "O(1)"
+    memory_class: str = "O(order^2)"
 
     def __init__(
         self,
@@ -77,8 +98,7 @@ class OnlineAR(Transformer):
         self.feature = feature
         self._key: str | None = None
         self._hist: np.ndarray | None = None
-        self._w: np.ndarray | None = None
-        self._P: np.ndarray | None = None
+        self._rls: RecursiveLeastSquares | None = None
         self._n: int = 0
         self.n_missing_: int = 0
 
@@ -86,6 +106,13 @@ class OnlineAR(Transformer):
     def n_missing(self) -> int:
         """Count of samples skipped because of a missing or bad value."""
         return self.n_missing_
+
+    @property
+    def coef_(self) -> np.ndarray:
+        """Coefficients from the oldest lag to the newest."""
+        if self._rls is None or self._rls._w is None:
+            return np.zeros(self.order)
+        return np.asarray(self._rls._w, dtype=float).copy()
 
     def _key_of(self, x: dict) -> str:
         if self.feature is not None:
@@ -95,10 +122,15 @@ class OnlineAR(Transformer):
         return self._key
 
     def _init(self) -> None:
-        d = self.order
-        self._hist = np.zeros(d)
-        self._w = np.zeros(d)
-        self._P = self.delta * np.eye(d)
+        self._hist = np.zeros(self.order)
+        keys = [f"h{j:04d}" for j in range(self.order)]
+        self._rls = RecursiveLeastSquares(
+            lam=self.lam, delta=self.delta, feature_keys=keys
+        )
+
+    def _hist_dict(self) -> dict:
+        assert self._hist is not None
+        return {f"h{j:04d}": float(v) for j, v in enumerate(self._hist)}
 
     def _read(self, x: Any) -> float | None:
         if not isinstance(x, dict):
@@ -121,36 +153,30 @@ class OnlineAR(Transformer):
         return {"check_step_is_pure"}
 
     def learn_one(self, x: dict, y: Any = None, t: float | None = None) -> "OnlineAR":
-        """One sample: predict, update, push to history."""
+        """One sample: update the coefficients, then push it to the history."""
         v = self._read(x)
         if v is None:
             self.n_missing_ += 1
             return self
-        if self._w is None:
+        if self._rls is None:
             self._init()
         assert self._hist is not None
-        assert self._w is not None
-        assert self._P is not None
+        assert self._rls is not None
         if self._n >= self.order:
-            Px = self._P @ self._hist
-            K = Px / (self.lam + float(self._hist @ Px))
-            err = v - float(self._w @ self._hist)
-            self._w = self._w + K * err
-            self._P = (self._P - np.outer(K, Px)) / self.lam
-            self._P = 0.5 * (self._P + self._P.T)
+            self._rls.learn_one(self._hist_dict(), v)
         self._hist = np.concatenate([self._hist[1:], [v]])
         self._n += 1
         return self
 
     def predict_one(self, x: dict, t: float | None = None) -> float:
         """Forecast the next sample from the current history."""
-        if self._w is None or self._n < self.order:
+        if self._rls is None or self._n < self.order:
             return 0.0
         assert self._hist is not None
-        return float(self._w @ self._hist)
+        return float(self.coef_ @ self._hist)
 
     def transform_one(self, x: dict, t: float | None = None) -> dict:
-        """One-step-ahead residual of the current sample."""
+        """Residual of ``x`` against the forecast; call it before ``learn_one``."""
         v = self._read(x)
         if v is None:
             return {"residual": float("nan")}
@@ -188,19 +214,34 @@ class OnlineVAR(Transformer):
     """Online vector autoregressive model, TIRSO of Zaman et al. 2019.
 
     Every sample is a dict of ``N`` channels; the model predicts the
-    whole vector at time ``t`` from the previous ``order`` vectors. The
-    underlying update is a recursive least squares on the stacked
-    history with an exponential forgetting factor ``lam`` and an
-    optional group-lasso penalty ``group_lambda`` on each channel-lag
-    block. With ``group_lambda = 0`` the model is plain RLS.
+    whole vector at time ``t`` from the previous ``order`` vectors. Each
+    sample updates the weighted autocorrelation ``Phi`` and
+    cross-correlation ``r`` of the stacked history (equations 21a and
+    21b, see the module docstring for the differences) and takes one
+    proximal-gradient step of size ``alpha / (1 + t)`` on the loss of
+    equation (19), followed by the group-lasso shrinkage of equation
+    (25) on the cross-channel blocks when ``group_lambda > 0``.
+
+    Memory is constant in the stream length and quadratic in
+    ``N * order`` (the matrix ``Phi``).
+
+    Stability: the step is a gradient step on a quadratic whose
+    curvature is ``Phi``, so it needs ``alpha * lambda_max(Phi) / (1 + t)
+    < 2`` where ``lambda_max(Phi) / t`` is about the variance of the
+    stacked samples. With ``lam = 1`` and independent channels of
+    standard deviation 1.5 the default ``alpha = 1.0`` diverges (values
+    of order 1e265 after 2000 samples), while ``alpha = 0.1`` stays
+    bounded up to a standard deviation of 3. Scale the channels to
+    unit variance or lower ``alpha`` in proportion to the variance.
 
     Args:
         order: number of past vectors used in the prediction.
         lam: forgetting factor in ``(0, 1]``.
         group_lambda: group-lasso strength. ``0.0`` disables it.
-        alpha: base step size of the RLS update, used as
-            ``alpha / (1 + n)`` at step ``n`` (the ``O(1/t)`` schedule
-            of Theorem 4 in the source paper).
+        alpha: base step size, used as ``alpha / (1 + t)`` at sample
+            ``t``.
+        sigma2: initial ridge, ``Phi`` starts at ``sigma2 * I`` as in
+            Procedure 2 of the source. ``0.0`` starts from zero.
         feature_keys: explicit channel order. ``None`` sorts the keys
             of the first dict seen.
 
@@ -215,7 +256,7 @@ class OnlineVAR(Transformer):
     """
 
     budget_s: float | None = 1e-3
-    memory_class: str = "O(1)"
+    memory_class: str = "O((N * order)^2)"
 
     def __init__(
         self,
@@ -223,6 +264,7 @@ class OnlineVAR(Transformer):
         lam: float = 1.0,
         group_lambda: float = 0.0,
         alpha: float = 1.0,
+        sigma2: float = 0.0,
         feature_keys: Sequence[str] | None = None,
     ) -> None:
         if order < 1:
@@ -233,10 +275,13 @@ class OnlineVAR(Transformer):
             raise ValueError(f"group_lambda must be >= 0, got {group_lambda}")
         if alpha <= 0.0:
             raise ValueError(f"alpha must be > 0, got {alpha}")
+        if sigma2 < 0.0:
+            raise ValueError(f"sigma2 must be >= 0, got {sigma2}")
         self.order = int(order)
         self.lam = float(lam)
         self.group_lambda = float(group_lambda)
         self.alpha = float(alpha)
+        self.sigma2 = float(sigma2)
         self.feature_keys = feature_keys
         self._keys: list | None = None
         self._hist: np.ndarray | None = None
@@ -275,10 +320,7 @@ class OnlineVAR(Transformer):
     def _init(self, n: int) -> None:
         np_dim = n * self.order
         self._hist = np.zeros((self.order, n))
-        # Phi[t] = sum_{tau} lam^{t-tau} g[tau] g[tau]^T, starts at
-        # zero and accumulates outer products (Zaman et al. 2019,
-        # eq. 21a). No ridge delta: it is not part of this algorithm.
-        self._phi = np.zeros((np_dim, np_dim))
+        self._phi = self.sigma2 * np.eye(np_dim)
         self._r = np.zeros((n, np_dim))
         self._a = np.zeros((n, np_dim))
 

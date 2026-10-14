@@ -30,8 +30,8 @@ themselves when the noise changes.
 
 `CycleResidual` predicts the value of a repetitive motion at the current
 phase: it finds the period of the signal, keeps a median template of the last
-cycles, and returns the difference between the current sample and the
-template. When the motion repeats, the residual is small; when something
+complete cycles, and returns the difference between the current sample and the
+template (`nan` until the template exists). When the motion repeats, the residual is small; when something
 breaks the pattern, the residual jumps.
 
 ## 2. Which one on which stream
@@ -60,7 +60,7 @@ ar = OnlineAR(order=1, lam=1.0)
 for _ in range(300):
     x = 0.8 * x + 0.3 * rng.normal()
     ar.learn_one({"x": float(x)})
-print(round(float(ar._w[0]), 4))
+print(round(float(ar.coef_[0]), 4))
 ```
 
 ```
@@ -164,7 +164,9 @@ only one with a `memory_class` of `O(window)`: the raw buffer is capped at
 This section was promoted from the `benchmarks/anomaly_streaming.py` script
 that used a cycle residual on the CASPER dataset, the review of the
 `task13-timeseries` branch, and the four papers listed above. The first
-delivery had a bug in `OnlineVAR._init` (a `delta * I` term not in the
-paper, eq. 21a) and a `CycleResidual` buffer that grew without bound; both
-were fixed in the same review round, and the test that catches the first one
-runs 400 samples of an AR(1) stream instead of the 50 the original test used.
+delivery had a `delta * I` term in `OnlineVAR._init` and a `CycleResidual`
+buffer that grew without bound; both were fixed in the first review round. A
+second review compared the code with the three papers: `OnlineVAR` gained the
+`sigma2` ridge of Procedure 2, `VBAdaptiveKalman` now equals Algorithm 1 at
+`rho = 1`, `InnovationAdaptiveKalman` keeps its constructor arguments and has
+an adaptive `step`, and `CycleResidual` keeps a rolling template.
