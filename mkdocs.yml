@@ -135,6 +135,15 @@ nav:
       - Clustering: cluster/index.md
       - Trees: tree/index.md
 
+  - Distributions:
+      - proba/index.md
+
+  - Classification:
+      - bayes/index.md
+      - neighbors/index.md
+      - multiclass/index.md
+      - multioutput/index.md
+
   - Roles:
       - Estimator foundation: api/roles.md
       - Robot layer (signals, real time, safety): api/robot_roles.md
