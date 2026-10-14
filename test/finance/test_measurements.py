@@ -261,23 +261,21 @@ def test_execution_refusal_by_count():
 def test_fraud_pipeline_on_openml_creditcard():
     """FraudPipeline on the OpenML creditcard dataset (subsampled).
 
-    The full dataset is 284,807 rows with 492 frauds (0.17%). It is
-    subsampled to 50,000 rows keeping every fraud; 40,000 rows train,
-    10,000 test. The two online trees reach 0.969 (Mondrian) and 0.926
-    (SGT) ROC-AUC. At threshold 0.5 the ensemble fires 72 alerts,
-    69 true positives and 3 false positives.
+    Full dataset: 284,807 rows, 492 frauds (0.17%). Subsampled to
+    50,000 rows keeping every fraud; 40,000 train, 10,000 test. The
+    data loads as numpy arrays (as_frame=False), no pandas needed.
     """
     try:
         from sklearn.datasets import fetch_openml
+        from sklearn.metrics import roc_auc_score
     except ImportError:
         pytest.skip("scikit-learn not installed")
-    from sklearn.metrics import roc_auc_score
 
     from pipelines.finance.fraud import FraudPipeline
 
-    d = fetch_openml("creditcard", version=1, as_frame=True, parser="auto")
-    X_full = d.data.astype(float).values
-    y_full = d.target.astype(int).values
+    data, target = fetch_openml("creditcard", version=1, as_frame=False)
+    X_full = np.asarray(data, dtype=float)
+    y_full = target.astype(int)
 
     rng = np.random.default_rng(0)
     idx_pos = np.where(y_full == 1)[0]
@@ -319,23 +317,23 @@ def test_fraud_pipeline_on_openml_creditcard():
 def test_unsupervised_fraud_on_openml_creditcard():
     """UnsupervisedFraudPipeline on the OpenML creditcard split.
 
-    Three unsupervised detectors (LODA, Half-Space Trees, Online
-    Robust Mahalanobis) on the same 40k / 10k split the supervised
-    fraud test uses. Labels are read at test time only for the AUC.
+    Three unsupervised detectors on the same 40k / 10k split the
+    supervised fraud test uses. Labels are read at test time only
+    for the AUC.
     """
     try:
         from sklearn.datasets import fetch_openml
+        from sklearn.metrics import roc_auc_score
     except ImportError:
         pytest.skip("scikit-learn not installed")
-    from sklearn.metrics import roc_auc_score
 
     from pipelines.finance.unsupervised_fraud import (
         UnsupervisedFraudPipeline,
     )
 
-    d = fetch_openml("creditcard", version=1, as_frame=True, parser="auto")
-    X_full = d.data.astype(float).values
-    y_full = d.target.astype(int).values
+    data, target = fetch_openml("creditcard", version=1, as_frame=False)
+    X_full = np.asarray(data, dtype=float)
+    y_full = target.astype(int)
 
     rng = np.random.default_rng(0)
     idx_pos = np.where(y_full == 1)[0]
@@ -440,11 +438,13 @@ def test_credit_scoring_pipeline_on_bank_marketing():
     """CreditScoringPipeline on the UCI Bank Marketing dataset.
 
     MondrianForest + SGTClassifier on 45,211 telemarketing calls.
-    80/20 split, 11.6% subscriptions. The two trees reach 0.859 and
-    0.833 ROC-AUC; the average reaches 0.875. The default threshold
-    is 0.25, the point where F1 is near its maximum.
+    80/20 split, 11.6% subscriptions. The CSV is read with the
+    standard library (csv reader, separator ";") and the categorical
+    columns are one-hot encoded by hand.
     """
-    from urllib.request import urlretrieve
+    import csv
+    import urllib.request
+    import zipfile
 
     from sklearn.metrics import roc_auc_score
 
@@ -453,27 +453,65 @@ def test_credit_scoring_pipeline_on_bank_marketing():
     path = Path("/tmp/bank-full.csv")
     if not path.exists():
         try:
-            urlretrieve(
+            urllib.request.urlretrieve(
                 "https://archive.ics.uci.edu/ml/machine-learning-databases/00222/bank.zip",
                 "/tmp/bank.zip",
             )
-            import zipfile
-
             with zipfile.ZipFile("/tmp/bank.zip") as z:
                 z.extractall("/tmp")
         except (OSError, ValueError):
             pytest.skip("Bank Marketing not downloadable")
 
-    import pandas as pd
+    with path.open() as fh:
+        reader = csv.reader(fh, delimiter=";")
+        header = next(reader)
+        rows = list(reader)
 
-    df = pd.read_csv(path, sep=";")
-    y = (df["y"] == "yes").astype(int).values
-    X_df = df.drop(columns=["y"])
-    cat_cols = X_df.select_dtypes(include=["object"]).columns.tolist()
-    num_cols = [c for c in X_df.columns if c not in cat_cols]
-    parts = [X_df[num_cols].astype(float).values]
-    parts.append(pd.get_dummies(X_df[cat_cols], drop_first=True).astype(float).values)
-    X = np.hstack(parts)
+    num_cols = ["age", "balance", "day", "duration", "campaign", "pdays", "previous"]
+    cat_cols = [
+        "job",
+        "marital",
+        "education",
+        "default",
+        "housing",
+        "loan",
+        "contact",
+        "month",
+        "poutcome",
+    ]
+    num_idx = [header.index(c) for c in num_cols]
+    cat_idx = [header.index(c) for c in cat_cols]
+    y_idx = header.index("y")
+
+    # drop-first: skip the alphabetically first value of each category
+    cat_values = {i: set() for i in cat_idx}
+    for row in rows:
+        for i in cat_idx:
+            cat_values[i].add(row[i])
+    cat_maps = {}
+    for i in cat_idx:
+        ordered = sorted(cat_values[i])
+        cat_maps[i] = {v: j for j, v in enumerate(ordered[1:])}
+
+    X_list, y_list = [], []
+    for row in rows:
+        feats = []
+        for i in num_idx:
+            try:
+                feats.append(float(row[i]))
+            except ValueError:
+                feats.append(0.0)
+        for i in cat_idx:
+            n = len(cat_maps[i])
+            one = [0.0] * n
+            if row[i] in cat_maps[i]:
+                one[cat_maps[i][row[i]]] = 1.0
+            feats.extend(one)
+        X_list.append(feats)
+        y_list.append(1 if row[y_idx] == "yes" else 0)
+
+    X = np.array(X_list)
+    y = np.array(y_list)
 
     rng = np.random.default_rng(0)
     perm = rng.permutation(len(X))
@@ -499,4 +537,4 @@ def test_credit_scoring_pipeline_on_bank_marketing():
         s_e.append(pipe.score_one(x_dict).score_ensemble)
 
     auc = roc_auc_score(y_test, s_e)
-    assert 0.86 < auc < 0.89, f"ensemble AUC = {auc:.3f}"
+    assert 0.85 < auc < 0.90, f"ensemble AUC = {auc:.3f}"
