@@ -39,7 +39,7 @@ ar = OnlineAR(order=1, lam=1.0)
 for _ in range(500):
     x = 0.8 * x + 0.3 * rng.normal()
     ar.learn_one({"x": float(x)})
-print(round(float(ar._w[0]), 4))
+print(round(float(ar.coef_[0]), 4))
 ```
 
 ```
@@ -51,6 +51,8 @@ The `lam` parameter is the forgetting factor, in `(0, 1]`. `lam = 1.0`
 weights every sample equally, so the coefficients converge to the batch
 least-squares solution. A smaller `lam` makes the model forget the older
 samples faster, useful when the true coefficient changes over the day.
+With `order > 1` the coefficients in `coef_` run from the oldest lag to the
+newest.
 
 ## 3. Predicting and residual
 
@@ -78,24 +80,26 @@ print(round(forecast, 4))
 -0.1165
 ```
 
-`transform_one` returns the difference between the current sample and the
-prediction the model would have made *before* seeing it. That residual is
-what a control loop watches: a small residual means the model understands
-the signal, a jump in the residual means the signal broke the pattern.
+`transform_one` returns the difference between a sample and the forecast of
+the model. Call it **before** `learn_one` on the same sample: the forecast is
+then the one the model made before seeing it. After `learn_one`, the forecast
+already refers to the next sample. That residual is what a control loop
+watches: a small residual means the model understands the signal, a jump in
+the residual means the signal broke the pattern.
 
 ```python
 import numpy as np
 from dense_armor.utility.timeseries import OnlineAR
 
 ar = OnlineAR(order=1, lam=1.0)
-for v in [0.1, 0.2, 0.15, 0.18, 0.17]:
+for v in [0.1, 0.2, 0.15, 0.18]:
     ar.learn_one({"x": float(v)})
 out = ar.transform_one({"x": 0.17})
 print(round(out["residual"], 4))
 ```
 
 ```
--0.0044
+-0.0212
 ```
 
 ## 4. Several channels at once: OnlineVAR
@@ -212,28 +216,35 @@ here for the mechanics; the use case is on the [cycle page](cycle.md).
 
 Zaman, B., Lopez Ramos, L. M., Romero, D., Beferull-Lozano, B. (2019).
 *Online topology identification from vector autoregressive time series*.
-arXiv:1904.01864. Equation (19) is the recursive least squares update with
-forgetting, equation (21a) the accumulator `Phi[t] = sum gamma^{t-tau}
-g[tau] g[tau]^T`, equation (24) the loss with the group-lasso term,
-equation (25) the shrinkage rule with the indicator `1{n != n'}`. The
-algorithm is Procedure 2 (page 6), the static regret bound is Theorem 3
-(page 7) under assumptions A1, A2, A3 (bounded min and max eigenvalue of
-`Phi`).
+arXiv:1904.01864. Equation (19) is the exponentially weighted loss, equation
+(21a) the accumulator `Phi[t]` and (21b) the cross-correlation `r[t]`, equation
+(24) the loss with the group-lasso term, equation (25) the shrinkage rule with
+the indicator `1{n != n'}`. The algorithm is Procedure 2 (page 7) and starts
+from `Phi[P - 1] = sigma^2 I`. Theorem 3 (page 8) bounds the static regret by
+`O(L B^2 sqrt(T))` for the step `O(1 / sqrt(t0 2^(m-1)))` in doubling windows;
+Theorem 4 (page 8) gives a logarithmic bound for `alpha_t = 1 / (beta t)`,
+with `beta` a lower bound of `lambda_min(Phi[t])`. Both need the assumptions
+A1, A2, A3 (bounded samples, bounded minimum and maximum eigenvalue of
+`Phi`). The adaptive step `alpha_t = c / lambda_max(Phi[t])` is discussed on
+page 9, at the end of section IV-C.
 
 ### Choices stated explicitly
 
-- **No `delta` ridge in `Phi`.** `RecursiveLeastSquares` from the
-  `learn` subpackage has a `delta` parameter (a ridge on the first
-  samples). `OnlineVAR` does not: the source paper, equation (21a),
-  starts `Phi` from zero. A first review found a `delta * I` term here,
-  copied from `RecursiveLeastSquares`; it was removed.
-- **`alpha` default of 1.0, not 0.1.** The source paper, Theorem 4, uses
-  the adaptive schedule `alpha_t = c / lambda_max(Phi[t])`. This
-  implementation uses the simpler `alpha / (1 + t)`, which is what the
-  source also mentions as the "O(1/t)" variant in the same paragraph.
-  With `alpha = 0.1` the schedule is too slow to converge in a few
-  hundred samples; with `alpha = 1.0` it converges in 400 samples on the
-  AR(1) test stream.
+- **The ridge is `sigma2`, default `0.0`.** Procedure 2 starts from
+  `Phi[P - 1] = sigma^2 I`. `OnlineVAR` has the argument `sigma2` for it and
+  starts from zero when it is `0.0`.
+- **Three differences from Procedure 2 are kept.** `Phi` and `r` are
+  accumulated without the factor `mu = 1 - gamma` of equations (21a) and
+  (21b), so `lam = 1.0` is allowed; the recursion starts at the first sample
+  with a zero history, while the paper starts at `t = P`; the step is
+  `alpha / (1 + t)`.
+- **The step `alpha / (1 + t)` has no regret bound.** Theorem 3 needs the
+  doubling-window step and Theorem 4 needs `alpha_t = 1 / (beta t)`.
+- **`alpha = 1.0` needs data of variance below 2.** The step is stable while
+  `alpha * lambda_max(Phi) / (1 + t) < 2`. With independent channels of
+  standard deviation 1.5, `alpha = 1.0` diverges (values of order `1e265`
+  after 2000 samples) and `alpha = 0.1` stays bounded up to a standard
+  deviation of 3. Scale the channels or lower `alpha`.
 - **Feature order from `feature_keys`.** Every sample is a dict; the
   model fixes the channel order the first time it sees a dict, either
   from the explicit `feature_keys` or the sorted keys.
@@ -247,10 +258,9 @@ on `N = 10, P = 3` (the paper's largest example) about 1 ms. Memory is
 
 ### Development diary
 
-The delivery had a real bug in `OnlineVAR._init`: a `delta * I` ridge that
-is not in the paper. The original test used 50 samples and a ramp signal,
-which was too short and too simple to trigger it; a review added
-`test_online_var_group_lasso_shrinks_only_off_diagonal` with 400 samples of
-an AR(1) stream and the overflow surfaced. Both the ridge and the test were
-fixed in the same commit. The `alpha = 0.1` default was also too small; it
-is now `1.0`.
+The first delivery had a `delta * I` ridge in `OnlineVAR._init`, copied from
+`RecursiveLeastSquares`; a review removed it with a test on 400 samples of an
+AR(1) stream. A later review found that Procedure 2 starts from
+`sigma^2 I` and added the argument `sigma2` (default `0.0`). The same review
+made `OnlineAR` use `RecursiveLeastSquares`, and measured the divergence of
+`alpha = 1.0` on data of large variance.

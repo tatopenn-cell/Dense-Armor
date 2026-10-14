@@ -29,7 +29,7 @@ ar = OnlineAR(order=1, lam=1.0)
 w_hist = []
 for v in series[:-1]:
     ar.learn_one({"x": float(v)})
-    w_hist.append(float(ar._w[0]))
+    w_hist.append(float(ar.coef_[0]))
 
 fig, ax = plt.subplots(figsize=(8, 3.2))
 ax.plot(w_hist, color="tab:blue", lw=1.2)
@@ -64,7 +64,7 @@ for cls, color, name in [
         if cls is VBAdaptiveKalman:
             r_hist.append(float(kf.R_estimate[0, 0]))
         else:
-            r_hist.append(float(kf.R[0, 0]))
+            r_hist.append(float(kf.R_estimate[0, 0]))
     ax.plot(r_hist, color=color, lw=1.2, label=name)
 
 ax.axvline(half, color="0.3", lw=0.8, ls="--")

@@ -67,9 +67,9 @@ practice the sensor noise changes: a robot that moves from a smooth floor
 to a carpet picks up more vibration, and `R` grows. Two classes follow the
 noise from the data.
 
-`VBAdaptiveKalman` puts a Wishart prior on the measurement covariance `R`
-and updates its parameters `nu` and `V` at every sample by a fixed-point
-iteration, following Algorithm 1 of Mbalawata et al. (2013). On a target
+`VBAdaptiveKalman` puts an inverse-Wishart prior on the measurement
+covariance `R` and updates its parameters `nu` and `V` at every sample by a
+fixed-point iteration, following Algorithm 1 of Mbalawata et al. (2013). On a target
 whose noise jumps from `0.1` to `1.0` halfway through, the estimate of `R`
 follows:
 
@@ -92,10 +92,10 @@ print(round(float(kf.R_estimate[0, 0]), 4))
 ```
 
 ```
-0.8055
+0.787
 ```
 
-The true `R` after the jump is `1.0`; the estimate is `0.81`, which is what
+The true `R` after the jump is `1.0`; the estimate is `0.79`, which is what
 the filter has seen in the last samples. The fixed filter would still
 believe `R = 0.01` and would over-trust the noisy measurements.
 
@@ -119,14 +119,14 @@ for i in range(400):
     std = 0.1 if i < 200 else 1.0
     pos = 1.0 + 0.1 * i + std * rng.normal()
     kf.learn_one({"pos": float(pos)})
-print(round(float(kf.R[0, 0]), 4))
+print(round(float(kf.R_estimate[0, 0]), 4))
 ```
 
 ```
 0.8264
 ```
 
-The two adaptive filters give the same order of magnitude (`0.81` and
+The two adaptive filters give the same order of magnitude (`0.79` and
 `0.83`) on the same stream. They differ in what they adapt: `VBAdaptiveKalman`
 adapts only `R`, `InnovationAdaptiveKalman` adapts both `Q` and `R`.
 
@@ -192,14 +192,15 @@ joint.
 
 Mbalawata, I. S., Sarkka, S., Vihola, M., Haario, H. (2013). *Adaptive
 Metropolis algorithm using variational Bayesian adaptive Kalman filter*.
-arXiv:1308.5875 - Algorithm 1, page 4, gives the fixed-point iteration on
-`nu` and `V` used by `VBAdaptiveKalman`.
+arXiv:1308.5875 - Algorithm 1 with equation (22), page 9, gives the
+fixed-point iteration on `nu` and `V` used by `VBAdaptiveKalman`; the
+inverse-Wishart distribution is equation (19) on page 8.
 
 Popescu, M., Mronga, D., Kumar, S., Kirchner, F. (2026). *Residual-based
 adaptive Kalman filtering for legged robot state estimation*.
-arXiv:2608.02316 - the innovation covariance `S` and the residual
-covariance over a sliding window are the update rule of
-`InnovationAdaptiveKalman`.
+arXiv:2608.02316 - equations (13) to (16): the residual covariance over a
+sliding window gives `R`, the innovation covariance gives the scale of `Q`.
+The window of one second is the paper's choice (section 5.3.2).
 
 Kalman, R. E. (1960). *A new approach to linear filtering and prediction
 problems*. Journal of Basic Engineering, 82(1), 35-45. The standard form of
@@ -211,13 +212,25 @@ the prediction and correction equations used by the fixed `KalmanFilter`.
   never changes them.** No auto-tuning, no default model. The caller
   chooses the dynamics.
 - **The two adaptive variants adapt different things.** `VBAdaptiveKalman`
-  adapts only `R` via a Wishart prior with parameters `nu` and `V`;
+  adapts only `R` via an inverse-Wishart prior with parameters `nu` and `V`;
   `InnovationAdaptiveKalman` adapts both `Q` and `R` from the innovation
   and residual covariances over a sliding window of `window` samples.
 - **`VBAdaptiveKalman` uses a fixed-point iteration with `n_iter`
-  passes** (default `5`). The paper's Algorithm 1 uses a full VB-EM
-  schedule; this implementation stops at a fixed number of iterations per
-  sample for latency reasons.
+  passes** (default `5`, the number the paper used). With `rho = 1` it
+  equals Algorithm 1 to `1e-9`; the test compares it with a literal
+  implementation. For `rho < 1` (default `0.99`) equation (22) as printed
+  weights the previous covariance by `nu_prev - d - 1` and the code by
+  `rho * (nu_prev - d - 1)`: on this page's stream the printed equation
+  gives `2.18` and the code `0.79` for a true `R` of `1.0`. That
+  comparison is this page's own computation, not a statement of the paper.
+- **`InnovationAdaptiveKalman` differs from the paper in four points.**
+  `R` is forced diagonal (the paper keeps the full matrix), `alpha` is
+  clipped to `[0.1, 10]`, the whole `Q` is scaled (the paper scales only the
+  IMU terms), and the rotation and the average over the legs of equations
+  (14) and (16) are left out because they belong to a legged-robot filter.
+  The adapted `Q` and `R` are read with `Q_estimate` and `R_estimate`; the
+  constructor arguments keep their values, so `clone()` returns the starting
+  filter. `step` carries `Q` and `R` in its state and equals `learn_one`.
 - **The `q_0` example uses a harmonic transition matrix**, physically
   correct for the specific SyntheticArm motion (`period_s = 1.0`). The
   period is a property of the trajectory, not of the robot.
@@ -226,11 +239,12 @@ the prediction and correction equations used by the fixed `KalmanFilter`.
 
 | estimator | per sample | state memory |
 |---|---|---|
-| `KalmanFilter` | < 1 ms | `O(n^2)` with `n` the state size |
-| `VBAdaptiveKalman` | ~ 5 iterations, < 1 ms | `O(n^2)` |
-| `InnovationAdaptiveKalman` | < 1 ms | `O(n^2 + window)` |
+| `KalmanFilter` | 71 us | `O(n^2)` with `n` the state size |
+| `VBAdaptiveKalman` | 309 us (5 iterations) | `O(n^2)` |
+| `InnovationAdaptiveKalman` | 161 us | `O(n^2 + window)` |
 
-All measured on a desktop CPU as the p99 of `learn_one` over 400 samples.
+All measured as the p99 of `predict_one` plus `learn_one` over 3000 samples
+on a Windows desktop CPU, with `n = 2` and one measured value.
 `budget_s = 1e-3 s` for every class.
 
 ### Development diary
