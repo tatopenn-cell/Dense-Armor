@@ -101,6 +101,7 @@ nav:
           - One-Class SGD (SONAR): anomaly/ocsvm.md
           - Online Isolation Forest: anomaly/oiforest.md
           - Online Robust Mahalanobis: anomaly/mahalanobis.md
+          - Local Outlier Factor: anomaly/lof.md
       - Drift detection:
           - drift/index.md
           - CUSUM and ARL theory: drift/cusum.md
