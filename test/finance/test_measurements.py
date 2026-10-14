@@ -273,9 +273,9 @@ def test_fraud_pipeline_on_openml_creditcard():
 
     from pipelines.finance.fraud import FraudPipeline
 
-    data, target = fetch_openml("creditcard", version=1, as_frame=False)
-    X_full = np.asarray(data, dtype=float)
-    y_full = target.astype(int)
+    bunch = fetch_openml("creditcard", version=1, as_frame=False)
+    X_full = np.asarray(bunch.data, dtype=float)
+    y_full = bunch.target.astype(int)
 
     rng = np.random.default_rng(0)
     idx_pos = np.where(y_full == 1)[0]
@@ -331,9 +331,9 @@ def test_unsupervised_fraud_on_openml_creditcard():
         UnsupervisedFraudPipeline,
     )
 
-    data, target = fetch_openml("creditcard", version=1, as_frame=False)
-    X_full = np.asarray(data, dtype=float)
-    y_full = target.astype(int)
+    bunch = fetch_openml("creditcard", version=1, as_frame=False)
+    X_full = np.asarray(bunch.data, dtype=float)
+    y_full = bunch.target.astype(int)
 
     rng = np.random.default_rng(0)
     idx_pos = np.where(y_full == 1)[0]
