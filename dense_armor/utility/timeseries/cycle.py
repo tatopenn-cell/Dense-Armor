@@ -132,8 +132,6 @@ class CycleResidual(Transformer):
     def _find_period(self) -> int | None:
         n = len(self._buf)
         max_lag = min(self.max_period, n - 2)
-        if max_lag < 2:
-            return None
         y = np.asarray(self._buf, dtype=float)
         y = y - y.mean()
         F = np.fft.rfft(y, n=2 * n)

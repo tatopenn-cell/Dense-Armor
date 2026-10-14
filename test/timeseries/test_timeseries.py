@@ -541,3 +541,75 @@ def test_kalman_transform_after_learning():
     assert out["innovation"].shape == (2,)
     assert out["S"].shape == (2, 2)
     assert np.all(np.isfinite(out["innovation"]))
+
+
+@pytest.mark.parametrize("kwargs", [{"order": 0}, {"lam": 0.0}, {"lam": 1.5}])
+def test_online_ar_rejects_bad_arguments(kwargs):
+    with pytest.raises(ValueError):
+        OnlineAR(**kwargs)
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [{"order": 0}, {"lam": 0.0}, {"group_lambda": -1.0}, {"alpha": 0.0}],
+)
+def test_online_var_rejects_bad_arguments(kwargs):
+    with pytest.raises(ValueError):
+        OnlineVAR(**kwargs)
+
+
+def test_online_ar_before_any_sample_and_with_bad_input():
+    ar = OnlineAR(order=2, feature="x")
+    assert ar.coef_.tolist() == [0.0, 0.0]
+    assert ar.predict_one({"x": 1.0}) == 0.0
+    ar.learn_one("not a dict")
+    ar.learn_one({"y": 1.0})
+    assert ar.n_missing == 2
+    assert np.isnan(ar.transform_one({"x": float("nan")})["residual"])
+    ar.learn_one({"x": 1.0})
+    assert ar.predict_one({"x": 1.0}) == 0.0
+
+
+def test_online_var_with_sorted_keys_and_bad_input():
+    var = OnlineVAR(order=1)
+    assert var.predict_one("not a dict") == {}
+    assert var.predict_one({"b": 0.0, "a": 0.0}) == {"a": 0.0, "b": 0.0}
+    var.learn_one({"b": 2.0, "a": 1.0})
+    var.learn_one("not a dict")
+    assert var.n_missing == 1
+    assert var.transform_one({"a": None, "b": 1.0}) == {}
+    out = var.transform_one({"a": 1.0, "b": 2.0})
+    assert set(out) == {"a", "b"} and all(np.isfinite(v) for v in out.values())
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [{"period": 0}, {"max_period": 1}, {"n_cycles": 0}, {"search": -1}],
+)
+def test_cycle_residual_rejects_bad_arguments(kwargs):
+    with pytest.raises(ValueError):
+        CycleResidual(**kwargs)
+
+
+def test_cycle_residual_counts_missing_samples():
+    cr = CycleResidual(period=5, n_cycles=2, feature="x")
+    assert cr.n_missing == 0 and not cr.ready
+    out = cr.transform_one({"x": float("nan")})
+    assert np.isnan(out["residual"]) and out["ready"] == 0.0
+    cr.transform_one("not a dict")
+    cr.transform_one({"y": 1.0})
+    assert cr.n_missing == 3
+    for i in range(10):
+        cr.transform_one({"x": float(i % 5)})
+    assert cr.ready
+
+
+def test_cycle_residual_without_a_period_keeps_a_bounded_buffer():
+    cr = CycleResidual(period=None, max_period=10, n_cycles=2)
+    for v in np.arange(300.0):
+        cr.transform_one({"x": float(v)})
+    assert cr.period is None and len(cr._buf) <= 20
+    flat = CycleResidual(period=None, max_period=10, n_cycles=2)
+    for _ in range(60):
+        flat.transform_one({"x": 1.0})
+    assert flat.period is None
