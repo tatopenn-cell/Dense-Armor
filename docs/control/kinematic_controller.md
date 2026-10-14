@@ -1,5 +1,7 @@
 # Kinematic controller (closed-form tracking)
 
+**In plain words:** This tool turns the path you want a joint to follow into the speed command that makes the joint follow it. It is a single short formula, and the joint gets closer to the path at a rate you choose.
+
 The [trajectory](trajectory.md) generator gives a smooth reference to follow. Something
 has to turn that reference into an actual command. On a joint-velocity plant, the
 something is the **kinematic controller**: a closed-form feedback law that drives the

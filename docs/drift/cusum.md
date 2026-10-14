@@ -1,5 +1,7 @@
 # CUSUM: catching a slow drift
 
+**In plain words:** A robot part can wear out a little every day, so that no single reading looks wrong but the readings have slowly moved. CUSUM adds up the small differences until the total is too big to be chance, and then raises an alarm.
+
 A robot joint wears out a little every day. Each single reading still looks normal, so a
 detector that judges one sample at a time never complains. Together, though, the readings have
 moved. CUSUM ("cumulative sum") notices this: it keeps a running total of the small surprises,

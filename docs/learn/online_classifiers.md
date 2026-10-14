@@ -1,5 +1,7 @@
 # Online classifiers (robot states)
 
+**In plain words:** These tools learn to tell, from the robot's own joint readings, which state it is in (moving freely, touching, colliding), and they keep learning when the robot's conditions change.
+
 A robot has to tell, sample by sample, which state it is in: free motion, contact,
 collision. It has to do this **from its own joint signals**, and it has to keep doing it
 right when the robot's world changes — a different payload, a worn gripper, a slightly

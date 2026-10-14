@@ -1,5 +1,7 @@
 # Benchmarks
 
+**In plain words:** This section shows how the library behaves on recordings from real robots, with every number produced by a script in the repository. The unit tests only check the maths; these runs check that it works on real, messy data.
+
 Every module in this library has unit tests. Those tests verify the math, not the
 behaviour on real signals. Real signals are messy: noise is not Gaussian, drift is not
 a clean step, the frequencies are not the ones the synthetic benchmark chose. This

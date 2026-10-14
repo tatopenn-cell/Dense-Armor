@@ -1,5 +1,7 @@
 # Robot dynamics
 
+**In plain words:** This section gives the library a physical model of the robot, read from its description file: how heavy each part is, how gravity pulls and how the arm moves when pushed. From that model come two controllers that keep the arm away from positions where it cannot move in some directions.
+
 The control modules on [Control](../control/index.md) work at the single-integrator
 level: you send a joint velocity, they bound it. That is enough for a robot whose
 driver already implements an inner torque loop.

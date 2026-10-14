@@ -1,5 +1,7 @@
 # Protection
 
+**In plain words:** When a reading looks wrong, what should you do with it? This section explains the cases (a single glitch, a real change, a slow drift) and which tool handles each.
+
 Once a sample looks wrong, what do you do with it?
 
 There are three honest answers, and they are not the same:

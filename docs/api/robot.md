@@ -1,5 +1,7 @@
 # API — Robot
 
+**In plain words:** A map of the robot arm used in the examples, showing which parts of the library work with each joint. A joint is one moving part of the arm: a motor, a hinge or a finger.
+
 The Dense-Armor APIs, read from the physical side. The robot is the real
 Panda arm described in `test/fixtures/urdf/panda.urdf`, and every joint is
 mapped to the modules that work with it.

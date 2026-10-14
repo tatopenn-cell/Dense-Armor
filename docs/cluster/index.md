@@ -1,5 +1,7 @@
 # Clustering
 
+**In plain words:** Clustering sorts readings into groups of similar ones, without being told the groups in advance, one reading at a time. A robot can use it to discover its own situations (idle, reaching, carrying) and to notice a new one.
+
 A robot meets situations nobody labelled: idle, reaching, carrying, a joint behaving oddly.
 Clustering groups similar samples without labels, one sample at a time, so the robot can
 discover its own states and notice a new one. The sections below build up the picture: a

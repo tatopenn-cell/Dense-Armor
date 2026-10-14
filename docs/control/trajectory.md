@@ -1,5 +1,7 @@
 # Trajectory (closed-form point-to-point generator)
 
+**In plain words:** This tool plans a smooth movement from one position to another in a time you choose, for any number of joints at once. The movement starts and ends gently, without jerks.
+
 The [rate limiter](rate_limiter.md) bounds how fast a command can change and the
 [CBF filter](cbf_filter.md) bounds where it can go, but neither generates a reference
 to track in the first place. Something has to say "go from configuration A to

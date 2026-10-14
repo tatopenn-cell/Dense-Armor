@@ -1,5 +1,7 @@
 # MCP Server
 
+**In plain words:** This is a small program that lets an AI assistant use Dense-Armor's tools directly, as if they were its own, without importing the library.
+
 Dense-Armor ships a Model Context Protocol server: a small process that exposes the
 library's shields and detectors over the MCP protocol, so an LLM agent that already
 speaks MCP can call them as tools without importing anything.

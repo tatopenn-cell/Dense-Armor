@@ -1,5 +1,7 @@
 # Online dynamics (residual torque learning)
 
+**In plain words:** A robot's description file is almost right but misses things such as friction or a carried object. This tool learns the missing part from the robot's own readings, one reading at a time, so the controller can correct for it.
+
 A robot's URDF file describes its rigid-body dynamics: mass matrix, Coriolis terms,
 gravity. That model is *almost* right. But a real robot also carries a payload in its
 gripper, has friction in its joints, wears down over months. None of that is in the

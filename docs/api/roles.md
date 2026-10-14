@@ -1,5 +1,7 @@
 # The Dense-Armor base
 
+**In plain words:** Every learning tool in Dense-Armor is used in the same way, so you can swap one for another without changing the rest of your code. This page describes that common way of using them.
+
 Every Dense-Armor estimator shares one small API, so you can swap one
 algorithm for another without changing the code around it. The design
 follows scikit-learn's parameter / clone / inspect contract

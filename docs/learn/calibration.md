@@ -1,5 +1,7 @@
 # Calibration (online Platt scaling)
 
+**In plain words:** A model can rank things correctly and still give the wrong confidence numbers: it says 99% sure when it is right only 80% of the time. Calibration fixes those numbers, one reading at a time, without changing the ranking.
+
 A classifier can rank its predictions well and still attach the wrong numbers to them.
 A decision tree that has 80 % accuracy on some region will happily output 0.99 on every
 sample of that region — the ranking is fine, the numbers are lies. On a robot, the

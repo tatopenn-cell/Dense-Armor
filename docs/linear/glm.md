@@ -1,5 +1,7 @@
 # Linear models
 
+**In plain words:** Two basic prediction tools that learn from one example at a time: one predicts a number (LinearRegression), the other says which of two answers is more likely (LogisticRegression).
+
 LinearRegression and LogisticRegression are the two supervised models of the
 package. Both fit a linear function one sample at a time, and both take any
 optimizer from `dense_armor.utility.optim` as the whole learning rule. This

@@ -1,5 +1,7 @@
 # Dependence between channels
 
+**In plain words:** These tools tell you whether two signals move together, and whether one signal repeats with a regular rhythm, using only the readings seen so far.
+
 ## What this is
 
 A robot has two joints on the same arm. When the operator moves the

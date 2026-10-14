@@ -1,5 +1,7 @@
 # Online learning
 
+**In plain words:** This section is about models that keep learning while the robot works, because the world does not stay the same: honest confidence numbers, finding similar past situations, telling which state the robot is in, and learning what the physics model misses.
+
 A robot arm picks objects. While it works, four things need to keep learning, because
 the world will not stay the same:
 

@@ -1,5 +1,7 @@
 # Dense-Armor
 
+**In plain words:** Dense-Armor is a library that learns from a robot's numbers (and from images and text) while they arrive, one at a time. It can spot strange readings, notice slow changes, protect against bad data and keep robot commands safe.
+
 **A library for online learning on robot, vision, and AI streams, one sample at a time,
 with streaming statistics and protection, drift and anomaly detection, and safe robot
 commands.**

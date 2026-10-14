@@ -1,5 +1,7 @@
 # Sketches
 
+**In plain words:** A sketch is a tiny memory that answers questions about a huge stream, such as how many times something appeared or how many different ones there were, with a good estimate instead of an exact count.
+
 ## What this is
 
 A monitoring system collects events from thousands of machines. Each

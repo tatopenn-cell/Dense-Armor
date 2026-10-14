@@ -1,5 +1,7 @@
 # API
 
+**In plain words:** A complete list of everything the library offers: every class, what it does and its methods. When a class has a guide page, the link takes you to it.
+
 Complete map of every public class in Dense-Armor: description,
 base classes, public methods. When a class has a guide page,
 the link leads there for the full explanation and examples.

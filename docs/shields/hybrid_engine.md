@@ -1,5 +1,7 @@
 # Hybrid engine (Armatura's core)
 
+**In plain words:** This is the part inside Armatura that decides, reading by reading, whether a value is genuine or broken, and what to put in place of a broken one: the middle value of the previous readings.
+
 `Armatura` is the front door for a 1D series: it takes an array, returns a cleaned
 array. Behind it sits `hybrid_engine`, the module that actually decides, sample by
 sample, whether a value is a genuine reading or a bad one — and if bad, what to put

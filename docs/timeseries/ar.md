@@ -1,5 +1,7 @@
 # Autoregressive models
 
+**In plain words:** These tools predict the next value of a signal from its last few values, which works when the signal has memory: where it was a moment ago tells you where it goes next.
+
 `OnlineAR` and `OnlineVAR` predict the next value of a signal from its own
 recent past. They are the simplest time-series models: a weighted sum of the
 last `order` samples, with the weights learned online.
