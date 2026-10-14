@@ -117,3 +117,40 @@ def test_payload_nan_is_skipped_and_counted():
     est.learn_one(d2)
     assert est.n_missing == n_before + 2
     assert est.predict_one({}) == mass_before
+
+
+def test_target_that_is_not_a_number_is_counted_and_skipped():
+    bayes = BayesianLinearRegression(feature_keys=["x"])
+    bayes.learn_one({"x": 1.0}, 2.0)
+    before = bayes.predict_one({"x": 1.0})
+    bayes.learn_one({"x": 1.0}, "not a number")
+    assert bayes.n_missing == 1
+    assert bayes.predict_one({"x": 1.0}) == before
+
+    for cls in (LinearRegression, LogisticRegression):
+        est = cls(optimizer=SGD(lr=0.1), feature_keys=["x"])
+        est.learn_one({"x": 1.0}, 1)
+        w = est._w.copy()
+        est.learn_one({"x": 1.0}, "not a number")
+        assert est.n_missing == 1
+        assert np.array_equal(est._w, w)
+
+
+def test_payload_sample_with_non_increasing_time_does_not_learn():
+    model = RigidBodyModel(URDF)
+    est = PayloadEstimator(model, link="panda_link7", lam=0.99)
+
+    def sample(t):
+        d = {"t": t}
+        for j in range(est._n):
+            d[f"q_{j}"] = 0.1 * j
+            d[f"qd_{j}"] = 0.01 * j
+            d[f"tau_{j}"] = 1.0
+        return d
+
+    est.learn_one(sample(1.0))
+    est.learn_one(sample(1.0))
+    est.learn_one(sample(0.5))
+    assert est._m == 0.0
+    assert est._prev_t == 0.5
+    assert est.n_missing == 0
