@@ -63,7 +63,7 @@ def fig_paper_example():
         alpha=0.8,
         label="sparse cluster (400)",
     )
-    sc2 = ax.scatter(
+    ax.scatter(
         C2[:, 0],
         C2[:, 1],
         c=lof_C2,
@@ -156,7 +156,6 @@ def fig_comparison():
     with open("/tmp/lof_comparison.json") as f:
         comp = json.load(f)
     names = ["LOF", "HST", "LODA", "OIForest", "OCSVM", "Mahalanobis"]
-    protocols = ["learn-on-healthy", "learn-on-all"]
     fig, ax = plt.subplots(figsize=(11, 6))
     x = np.arange(len(names))
     w = 0.38
