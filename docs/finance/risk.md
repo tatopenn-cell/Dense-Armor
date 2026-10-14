@@ -53,7 +53,9 @@ You get a VaR 99% around `0.02`, a VaR 99.9% slightly above it, and `oltre_limit
 - Intraday stress: call `process_day` on a rolling window of the last hour to get an updated VaR.
 - Regulatory limits: the `oltre_limite` flag is the first thing the desk sees.
 
-## References
+## Details
+
+### References
 
 - Masson, C., Rim, J. E., Lee, H. K. (2019). *DDSketch: A Fast and Fully-Mergeable Quantile Sketch with Relative-Error Guarantees.* Proceedings of the VLDB Endowment, 12(12), 2195-2205. arXiv:1908.10693.
 - Reynolds, M. R. Jr., Stoumbos, Z. G. (1975). *A CUSUM for monitoring the process mean.*

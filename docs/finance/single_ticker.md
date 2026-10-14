@@ -62,7 +62,9 @@ You get a LODA score well above 1, an HST score above its adaptive threshold, an
 - A pair trade where one leg is watched and the other is hedged.
 - A retail investor who wants one number a day for one ticker.
 
-## References
+## Details
+
+### References
 
 - Lou, B., Boland, D., Leong, P. H. W. (2024). *fSEAD.* arXiv:2406.05999. Section 2.1 (Loda).
 - Tan, S. C., Ting, K. M., Liu, T. F. (2011). *Fast anomaly detection for streaming data.* IJCAI.

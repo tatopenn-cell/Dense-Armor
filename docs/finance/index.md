@@ -83,7 +83,9 @@ Detection delay is the most expensive thing. Across 2.7 million consumer-credit 
 
 Payment fraud costs **45 billion dollars** a year worldwide (Huang et al., 2025). The real weakness of current systems is not accuracy: it is **the cost of false alarms**. A fixed threshold floods reviewers during benign peaks. Five tools passing the baton reduce the useless alarms, not just the missed ones.
 
-## References
+## Details
+
+### References
 
 - Li, E., Thompson, D., Chen, M. (2026). *Real-Time Early-Default Detection Using Streaming Machine Learning with Multi-Source Behavioral Signals.* Preprint, 12 January 2026, doi: 10.20944/preprints202601.0866.v1. Not peer-reviewed. Numbers: 2.7 million accounts, −9.2 days of delay, ROC-AUC 0.89.
 - Huang, A., Wang, Y., Zhou, P., Zhang, X. (2025). *Dynamic Calibration of Decision Thresholds for Financial Anomaly Detection.* Journal of Global Information Management 33(1), doi: 10.4018/JGIM.395852. Numbers: 45 billion USD of global payment-fraud losses in 2022, static threshold and the cost of false positives.

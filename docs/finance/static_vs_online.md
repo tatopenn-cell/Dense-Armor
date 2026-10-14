@@ -115,7 +115,9 @@ Each of these was a real market event, and each stayed below 3%. The fixed cutof
 
 The two are not in competition. The static pipeline is the baseline; the online pipeline is the answer to the case the baseline cannot cover.
 
-## References
+## Details
+
+### References
 
 - Market data: Yahoo Finance, S&P 500 (^GSPC), 14 October 2021 – 13 October 2026, 1,254 trading days.
 - Lou, B., Boland, D., Leong, P. H. W. (2024). fSEAD. arXiv:2406.05999. Section 2.1 (Loda).

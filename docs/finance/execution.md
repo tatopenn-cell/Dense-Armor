@@ -51,7 +51,9 @@ You get `True`, `False`, and the reason `size > max_size_molteplice * mean`.
 - A broker that wants a last line of defence against a runaway model.
 - A compliance team that needs a log of every refused or dampened order.
 
-## References
+## Details
+
+### References
 
 - Orca: see [docs/shields/orca.md](../shields/orca.md) for the damping algorithm.
 - Running mean: Welford, B. P. (1962). *Note on a method for calculating corrected sums of squares and products.* Technometrics 4(3), 419-420.
