@@ -15,6 +15,10 @@ At 7:01 a single call to the pipeline gives the number. At 9:00 the committee ha
 | DDSketch | Remember how big the tail is | The worst 1% loss of the year, in one number |
 | CUSUM | Add up small changes until a bell rings | The loss series is drifting upward, and nobody sees it yet |
 
+![Daily loss of the S&P 500 over five years with the 99% risk line in red](../assets/finance/risk.png)
+
+*Each grey bar is the loss of one day. The red line is the VaR at 99%: the loss that 99 days out of 100 stay below.*
+
 ## 1. Sizing the worst day (DDSketch)
 
 Every bank, every fund, every trading desk has to know: if today is a bad day, how bad. The answer is a single number, the loss that 99 days out of 100 stay below.
@@ -41,11 +45,13 @@ Tested on 1,253 real trading days. One call per day.
 
 | Metric | Value |
 |---|---|
-| VaR 99% | 2.87% |
-| VaR 99.9% | 4.20% |
-| Days above a 5% loss | 1 out of 1,253 (7 April 2025) |
-| Days with a volatility-drift alarm | 53 out of 1,253 (4.2%) |
-| Time per day | 116 microseconds |
+| VaR 99% | 2.93% |
+| VaR 99.9% | 4.28% |
+| Days with a loss above the final VaR 99% | 14 out of 1,253 (1.1%) |
+| Days with a loss above the final VaR 99.9% | 3 out of 1,253 (0.24%) |
+| Days above a 5% loss | 1 out of 1,253 (4 April 2025, −5.97%) |
+| Days with a volatility-drift alarm | 49 out of 1,253 (3.9%) |
+| Time per day | 98 microseconds (median, Kaggle CPU) |
 
 ## When you need it
 

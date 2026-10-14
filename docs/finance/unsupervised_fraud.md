@@ -16,6 +16,10 @@ Now the numbers. Trained with **no labels at all** on 40,000 real credit card tr
 | Half-Space Trees | Cut the space into rectangles | A transaction ends in a rectangle with one sample |
 | Online Robust Mahalanobis | Distance from the robust median | A transaction far outside the cloud |
 
+![Quality score of the label-free detectors against the supervised one on the same 10,000 transactions](../assets/finance/unsupervised_fraud.png)
+
+*Longer bar, better ranking of the frauds. The dashed line is a coin flip (0.5).*
+
 ## 1. Rare bins in random projections (LODA)
 
 For each of 50 random directions, LODA keeps a histogram of recent transactions. A transaction falls in a bin. If the bin is almost empty, the transaction is strange.
@@ -46,7 +50,10 @@ Same split as the supervised `FraudPipeline`: 40,000 train, 10,000 test, 102 rea
 | ROC-AUC, Half-Space Trees | 0.935 |
 | ROC-AUC, Mahalanobis | 0.957 |
 | ROC-AUC, ensemble | **0.959** |
-| Training time (one core, no labels) | 32 s |
+| Alerts at the 0.99 cutoff (out of 10,000) | 83 |
+| Real frauds among the alerts | 33 (precision 39.8%) |
+| Recall on frauds | 32.4% |
+| Training time (Kaggle CPU, no labels) | 28 s |
 
 For comparison, the supervised `FraudPipeline` (Mondrian forest + SGD tree, needs every label) reaches **0.969** on the same split. **One point of AUC difference, without a single label.**
 

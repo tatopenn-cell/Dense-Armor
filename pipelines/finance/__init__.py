@@ -1,20 +1,20 @@
-"""Finance pipelines — four standard use cases on stock-market data.
+"""Finance pipelines: standard use cases on market, payment and network data.
 
 Every class in this package consumes a stream of prices and volumes
 (or a stream of orders) and returns a structured verdict. Four cases
 are covered, one per file:
 
-- :class:`~pipelines.finance.sorveglianza.FinancePipeline`
+- :class:`~pipelines.finance.surveillance.FinancePipeline`
   Watch a market index in real time. Five Dense-Armor tools run in
   sequence: Armatura cleans the tick, CUSUM watches the trend, LODA
   and Half-Space Trees score the day, Orca dampens oversized orders.
 
-- :class:`~pipelines.finance.rischio.RiskPipeline`
+- :class:`~pipelines.finance.risk.RiskPipeline`
   Daily risk snapshot. DDSketch keeps the tail, CUSUM watches the
   volatility. Reports VaR at 99% and 99.9% plus an alarm on the
   volatility trend.
 
-- :class:`~pipelines.finance.esecuzione.ExecutionPipeline`
+- :class:`~pipelines.finance.execution.ExecutionPipeline`
   Decide whether an order leaves and how big. Size check against a
   rolling mean, then Orca on the suspicious orders only.
 

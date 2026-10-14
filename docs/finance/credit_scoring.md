@@ -1,4 +1,4 @@
-# Credit scoring: will this borrower repay?
+# Credit scoring: who should we call first?
 
 **In plain words:** A bank calls 45,000 customers a year. Two online trees learn who is likely to sign and who is not, one call at a time.
 
@@ -14,6 +14,10 @@ The credit scoring pipeline watches the historical stream of calls and answers t
 |---|---|---|
 | MondrianForest | Random rectangles over the customer features | Long calls and good past campaigns land in the same region |
 | SGTClassifier | Newton-step splits | A second opinion on the same customer |
+
+![Telemarketing on 9,043 test calls: 779 of 1,048 customers who would sign are reached, 779 of 1,991 calls end in a signature](../assets/finance/credit_scoring.png)
+
+*Green: right. Red: wrong. Top bar: the 1,048 customers who would sign. Bottom bar: the 1,991 calls made.*
 
 ## 1. Random rectangles over the features (MondrianForest)
 
@@ -48,9 +52,9 @@ UCI Bank Marketing: 45,211 real telemarketing calls, 11.6% subscriptions. Split 
 | Recall | 74.3% |
 | Precision | 39.1% |
 | F1 | 51.3% |
-| Training time (one core) | 259 s |
+| Training time (Kaggle CPU) | 166 s |
 
-**Why threshold 0.25 and not 0.5**: with the classic threshold the model catches only 19% of the customers who would sign. Lowering the threshold to 0.25 pushes recall to 74% while precision stays at 39%. One call out of three is a signature. This is what a marketing desk wants.
+**Why threshold 0.25 and not 0.5**: with the classic threshold of 0.5 the model reaches 19% of the customers who would sign (198 of 1,048), with 59% precision. Lowering the threshold to 0.25 pushes recall to 74% while precision stays at 39%. About two calls out of five end in a signature. This is what a marketing desk wants.
 
 ## When you need it
 
@@ -65,8 +69,8 @@ UCI Bank Marketing: 45,211 real telemarketing calls, 11.6% subscriptions. Split 
 The pipeline is in `pipelines/finance/credit_scoring.py`.
 Primitives chained, each with its own page:
 
-- [Mondrian Forest](../tree/index.md)
-- [Stochastic Gradient Trees](../tree/index.md)
+- [Mondrian Forest](../tree/index.md#5-a-prediction-with-its-uncertainty-mondrian-forests)
+- [Stochastic Gradient Trees](../tree/index.md#4-predicting-a-number-the-torque-of-a-two-link-arm)
 
 ### References
 

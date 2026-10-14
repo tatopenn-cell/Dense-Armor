@@ -8,11 +8,9 @@ Cliente: analista fondamentale, retail avanzato.
 Note:
     LODA and HST keep their own adaptive thresholds. On a volatile
     ticker the HST threshold stabilises at a low value, and the
-    number of flagged days is high: 43 on Apple over five years.
-    That is the correct behaviour of an online detector on raw
-    data. To reduce the noise, filter the input with Hampel before
-    LODA and HST: that is what ``FinancePipeline`` does, and the
-    count drops to a handful.
+    number of flagged days is high: 50 on Apple over five years of
+    daily closes (38 on Tesla, 66 on Microsoft). That is the behaviour
+    of an online detector on raw data, with no filter before it.
 """
 
 from dataclasses import dataclass
