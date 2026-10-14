@@ -385,7 +385,7 @@ def test_intrusion_pipeline_on_nsl_kdd():
                 "https://raw.githubusercontent.com/defcom17/NSL_KDD/master/KDDTrain%2B.txt",
                 path,
             )
-        except Exception:
+        except (OSError, ValueError, RuntimeError):
             pytest.skip("NSL-KDD not downloadable")
 
     with path.open() as fh:
@@ -407,7 +407,7 @@ def test_intrusion_pipeline_on_nsl_kdd():
             else:
                 try:
                     row.append(float(r[j]))
-                except Exception:
+                except (ValueError, TypeError):
                     row.append(0.0)
         X_list.append(row)
         y_list.append(0 if r[41] == "normal" else 1)
