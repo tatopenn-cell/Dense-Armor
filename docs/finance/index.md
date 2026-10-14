@@ -12,6 +12,7 @@
 | **Single ticker** | Is today strange for this one stock? | [Single ticker](single_ticker.md) |
 | **Static vs online** | How does a fixed cutoff compare to the adaptive detectors? | [Static vs online](static_vs_online.md) |
 | **Fraud detection** | Is this transaction real? | [Fraud detection](fraud.md) |
+| **Unsupervised fraud** | Is this transaction strange, even without labels? | [Unsupervised fraud](unsupervised_fraud.md) |
 
 ## What they have in common
 

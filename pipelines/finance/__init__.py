@@ -40,6 +40,10 @@ from pipelines.finance.risk import RiskPipeline, RiskResult
 from pipelines.finance.single_ticker import SingleTickerPipeline
 from pipelines.finance.static_analysis import StaticAnalysis, StaticResult
 from pipelines.finance.surveillance import FinancePipeline, TickResult
+from pipelines.finance.unsupervised_fraud import (
+    UnsupervisedFraudPipeline,
+    UnsupervisedResult,
+)
 
 __all__ = [
     "ExecutionPipeline",
@@ -55,4 +59,6 @@ __all__ = [
     "StaticResult",
     "TickResult",
     "TransactionResult",
+    "UnsupervisedFraudPipeline",
+    "UnsupervisedResult",
 ]

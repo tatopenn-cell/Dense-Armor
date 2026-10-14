@@ -314,3 +314,51 @@ def test_fraud_pipeline_on_openml_creditcard():
     assert 0.960 < auc_e < 0.975, f"ensemble AUC = {auc_e:.3f}"
     assert tp == 69, f"true positives = {tp}"
     assert fp == 3, f"false positives = {fp}"
+
+
+def test_unsupervised_fraud_on_openml_creditcard():
+    """UnsupervisedFraudPipeline on the OpenML creditcard split.
+
+    Three unsupervised detectors (LODA, Half-Space Trees, Online
+    Robust Mahalanobis) on the same 40k / 10k split the supervised
+    fraud test uses. Labels are read at test time only for the AUC.
+    """
+    try:
+        from sklearn.datasets import fetch_openml
+    except ImportError:
+        pytest.skip("scikit-learn not installed")
+    from sklearn.metrics import roc_auc_score
+
+    from pipelines.finance.unsupervised_fraud import (
+        UnsupervisedFraudPipeline,
+    )
+
+    d = fetch_openml("creditcard", version=1, as_frame=True, parser="auto")
+    X_full = d.data.astype(float).values
+    y_full = d.target.astype(int).values
+
+    rng = np.random.default_rng(0)
+    idx_pos = np.where(y_full == 1)[0]
+    idx_neg = np.where(y_full == 0)[0]
+    n_neg = 50000 - len(idx_pos)
+    idx = np.concatenate([idx_pos, rng.choice(idx_neg, size=n_neg, replace=False)])
+    rng.shuffle(idx)
+    X, y = X_full[idx], y_full[idx]
+
+    n_train = int(len(X) * 0.8)
+    X_train = X[:n_train]
+    X_test, y_test = X[n_train:], y[n_train:]
+    nf = X_train.shape[1]
+
+    p = UnsupervisedFraudPipeline(history_size=500, threshold=0.99, seed=0)
+    for i in range(len(X_train)):
+        x_dict = {f"f{j}": float(X_train[i, j]) for j in range(nf)}
+        p.learn_one(x_dict)
+
+    s_e = []
+    for i in range(len(X_test)):
+        x_dict = {f"f{j}": float(X_test[i, j]) for j in range(nf)}
+        s_e.append(p.score_one(x_dict).score_ensemble)
+
+    auc = roc_auc_score(y_test, s_e)
+    assert 0.95 < auc < 0.97, f"ensemble AUC = {auc:.3f}"

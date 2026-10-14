@@ -79,6 +79,7 @@ nav:
           - Single ticker: finance/single_ticker.md
           - Static vs online: finance/static_vs_online.md
           - Fraud detection: finance/fraud.md
+          - Unsupervised fraud: finance/unsupervised_fraud.md
 
   - Shields:
       - shields/index.md
