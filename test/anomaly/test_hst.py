@@ -16,23 +16,8 @@ def test_hst_shapes():
 
 
 def test_hst_outlier_scores_higher():
-    """An out-of-range point scores higher than the centre of dense data.
-
-    The working range is given explicitly. When it is learned from the
-    first ``range_init`` samples of ``N(0, 0.05)``, the samples that
-    later fall outside that range are mapped to the outermost leaves,
-    so those leaves are not empty: in this configuration the far point
-    ``(10, 10)`` lands in leaves with a mean count of 1.27 per tree and
-    the centre ``(0, 0)`` in leaves with a mean count of 0.80, and the
-    far point does not score higher.
-    """
-    hst = HalfSpaceTrees(
-        n_trees=15,
-        depth=8,
-        window=100,
-        feature_ranges=[(-1.0, 1.0), (-1.0, 1.0)],
-        seed=0,
-    )
+    """The far point scores above 0.5 (uniform mass), the centre below it."""
+    hst = HalfSpaceTrees(n_trees=15, depth=8, window=100, range_init=10, seed=0)
     rng = np.random.default_rng(0)
     for _ in range(200):
         hst.learn_one(
@@ -43,22 +28,23 @@ def test_hst_outlier_scores_higher():
         )
     s_in = hst.score_one({"a": 0.0, "b": 0.0})
     s_out = hst.score_one({"a": 10.0, "b": 10.0})
-    assert s_out > s_in
+    assert s_in < 0.5 < s_out
 
 
 def _walk_node_ranges(hst, tr):
     """Return (feature, split value used, expected mid-point) per internal node.
 
-    The walk rebuilds the range of every node in the normalised space of
-    the detector, where the root ranges over ``[0, 1]`` on every feature,
-    and descends with the split values the detector stores in
-    ``_midpoints``. The expected value is the middle of the node's range
-    on its split feature.
+    The walk starts from the work space of the tree (``_work_lo``,
+    ``_work_hi``, in the normalised space of the detector), rebuilds the
+    range of every node, and descends with the split values the detector
+    stores in ``_midpoints``. The expected value is the middle of the
+    node's range on its split feature.
     """
     assert hst._feature is not None and hst._midpoints is not None
+    assert hst._work_lo is not None and hst._work_hi is not None
     n_internal = 2**hst.depth - 1
-    lo_root = np.zeros(len(hst._keys))
-    hi_root = np.ones(len(hst._keys))
+    lo_root = hst._work_lo[tr].copy()
+    hi_root = hst._work_hi[tr].copy()
     out = []
     queue = [(0, lo_root, hi_root)]
     while queue:
@@ -103,24 +89,36 @@ def test_hst_split_is_midpoint_of_node_range(d):
             )
 
 
-@pytest.mark.parametrize("lo,hi", [(0.0, 1.0), (-1.0, 1.0), (-0.1, 0.1), (10.0, 20.0)])
-def test_hst_root_split_is_the_middle_of_the_working_range(lo, hi):
-    """The root splits the working range in two halves, whatever its units.
+@pytest.mark.parametrize("d", [1, 3])
+def test_hst_work_space_follows_the_paper(d):
+    """Work space of Tan et al. 2011, page 3: ``s_q +- 2 * max(s_q, 1 - s_q)``.
 
-    The split values are compared with the normalised sample, so the
-    root split of a single feature is 0.5 for every working range.
+    ``s_q`` is uniform in ``[0, 1]``, one value per tree and dimension.
     """
     hst = HalfSpaceTrees(
-        n_trees=3, depth=4, window=20, feature_ranges=[(lo, hi)], seed=0
+        n_trees=20,
+        depth=3,
+        window=10,
+        feature_ranges=[(0.0, 1.0)] * d,
+        seed=3,
     )
-    hst.learn_one({"a": 0.5 * (lo + hi)})
-    assert np.allclose(hst._midpoints[:, 0], 0.5)
-    left = [
-        x
-        for x in np.linspace(lo, hi, 20)
-        if hst._to_norm({"a": float(x)})[0] <= hst._midpoints[0, 0]
-    ]
-    assert len(left) == 10
+    hst.learn_one({chr(ord("a") + i): 0.5 for i in range(d)})
+    centre = 0.5 * (hst._work_lo + hst._work_hi)
+    half = 0.5 * (hst._work_hi - hst._work_lo)
+    assert np.all((centre >= 0.0) & (centre <= 1.0))
+    assert np.allclose(half, 2.0 * np.maximum(centre, 1.0 - centre), atol=1e-12)
+    assert len(np.unique(centre)) > 1
+
+
+@pytest.mark.parametrize("lo,hi", [(-1.0, 1.0), (-0.1, 0.1), (10.0, 20.0)])
+def test_hst_split_values_do_not_depend_on_the_units(lo, hi):
+    """The split values live in the normalised space: units do not change them."""
+    kw = {"n_trees": 3, "depth": 5, "window": 20, "seed": 0}
+    ref = HalfSpaceTrees(feature_ranges=[(0.0, 1.0)] * 2, **kw)
+    other = HalfSpaceTrees(feature_ranges=[(lo, hi)] * 2, **kw)
+    ref.learn_one({"a": 0.5, "b": 0.5})
+    other.learn_one({"a": 0.5 * (lo + hi), "b": 0.5 * (lo + hi)})
+    assert np.array_equal(ref._midpoints, other._midpoints)
 
 
 def test_hst_nan_counted_missing():
@@ -138,6 +136,10 @@ def test_hst_rejects_bad_params():
         HalfSpaceTrees(window=0)
     with pytest.raises(ValueError):
         HalfSpaceTrees(range_init=0)
+    with pytest.raises(ValueError):
+        HalfSpaceTrees(size_limit_frac=0.0)
+    with pytest.raises(ValueError):
+        HalfSpaceTrees(size_limit_frac=1.5)
     with pytest.raises(ValueError):
         HalfSpaceTrees(threshold_quantile=0.0)
     with pytest.raises(ValueError):
@@ -182,11 +184,77 @@ def test_hst_adaptive_threshold_flags_nothing_at_warmup():
     assert not hst.is_outlier({"a": 0.5, "b": 0.5})
 
 
-def test_hst_window_bounds_memory():
+def test_hst_memory_does_not_grow():
     hst = HalfSpaceTrees(n_trees=3, depth=5, window=10, range_init=5, seed=0)
-    for i in range(100):
+    for i in range(30):
         hst.learn_one({"a": float(i % 10) / 10.0})
-    assert hst._buf_size == 10
+    shape = (hst._r.shape, hst._l.shape)
+    for i in range(500):
+        hst.learn_one({"a": float(i % 10) / 10.0})
+    assert (hst._r.shape, hst._l.shape) == shape
+    assert hst._count < hst.window
+
+
+def test_hst_scores_zero_until_the_reference_window_is_full():
+    """The ranges take ``range_init`` samples, the reference ``window`` more."""
+    hst = HalfSpaceTrees(n_trees=3, depth=4, window=10, range_init=5, seed=0)
+    x = {"a": 0.5, "b": 0.5}
+    scores = []
+    for i in range(16):
+        scores.append(hst.score_one(x))
+        hst.learn_one({"a": 0.1 * (i % 5), "b": 0.2})
+    assert scores[:15] == [0.0] * 15
+    assert scores[15] > 0.0
+
+
+def test_hst_profiles_follow_algorithm_3():
+    """Tan et al. 2011, Algorithm 3: ``r`` is the reference, ``l`` the latest.
+
+    The first ``window`` samples fill ``r``; afterwards each sample goes to
+    ``l`` and at the end of every window ``r`` takes the value of ``l`` and
+    ``l`` is reset.
+    """
+    hst = HalfSpaceTrees(
+        n_trees=2, depth=3, window=8, feature_ranges=[(0.0, 1.0)], seed=0
+    )
+
+    def learn(n):
+        for _ in range(n):
+            hst.learn_one({"a": 0.3})
+
+    learn(8)
+    assert np.all(hst._r[:, 0] == 8) and np.all(hst._l[:, 0] == 0)
+    learn(3)
+    assert np.all(hst._r[:, 0] == 8) and np.all(hst._l[:, 0] == 3)
+    learn(5)
+    assert np.all(hst._r[:, 0] == 8) and np.all(hst._l[:, 0] == 0)
+    learn(2)
+    assert np.all(hst._r[:, 0] == 8) and np.all(hst._l[:, 0] == 2)
+
+
+def test_hst_score_matches_a_hand_computation():
+    """``r * 2^k`` of the terminal node, ``M / (M + S)`` with ``M = n_trees * window``.
+
+    One tree of depth 2 on one feature with split values 0.5 (root), 0.25
+    and 0.75, window 4 and ``sizeLimit = 1``; the four reference samples are
+    0.1, 0.1, 0.2 and 0.9.
+    """
+    hst = HalfSpaceTrees(
+        n_trees=1,
+        depth=2,
+        window=4,
+        feature_ranges=[(0.0, 1.0)],
+        size_limit_frac=0.25,
+        seed=0,
+    )
+    hst._lazy_init({"a": 0.0})
+    hst._midpoints[0, :] = [0.5, 0.25, 0.75]
+    for v in (0.1, 0.1, 0.2, 0.9):
+        hst.learn_one({"a": v})
+    assert list(hst._r[0, :3]) == [4, 3, 1]
+    assert hst.score_one({"a": 0.15}) == pytest.approx(4.0 / (4.0 + 3 * 2**2))
+    assert hst.score_one({"a": 0.9}) == pytest.approx(4.0 / (4.0 + 1 * 2**1))
+    assert hst.score_one({"a": 0.4}) == pytest.approx(1.0)
 
 
 def test_hst_check_estimator():

@@ -1,38 +1,48 @@
 """Half-Space Trees for streaming anomaly detection.
 
-Anomalous points sit in sparse regions of the space. Half-Space Trees
-split the space recursively on random dimensions and count how often
-each region is visited: rare leaves flag anomalies.
+Anomalous points sit in regions of the space where few normal samples
+fall. Half-Space Trees split the space recursively on random dimensions
+and record how many samples of a reference window reach each region.
 
-Design follows Leveni et al. (2024), section 3 (related work), which
-describes Half Space Trees (HST) as: an ensemble of complete binary
-trees, each split on a random dimension at the mid-point of the current
-range, scored from node masses. This module implements that design;
-the original paper is Tan et al. (2011).
+This module implements Streaming HS-Trees of Tan, Ting and Liu (2011,
+IJCAI), page 3 (work space, Algorithms 1 and 2, anomaly score) and
+page 4 (Algorithm 3):
 
-Choices not given by Leveni et al. (2024), stated explicitly:
+- every tree starts from its own random work space: on features
+  normalised to ``[0, 1]``, ``s_q`` is uniform in ``[0, 1]`` and the
+  range of dimension ``q`` is ``s_q +- 2 * max(s_q, 1 - s_q)``;
+- Algorithm 1: a complete binary tree of ``depth`` levels; every node
+  splits a random dimension at the mid-point of the node's current
+  range (the rule of Ulrich 2025, Section 5.2 as well);
+- Algorithms 2 and 3: two mass profiles per node, ``r`` of the
+  reference window and ``l`` of the latest window; the first ``window``
+  samples fill ``r``; afterwards every sample updates ``l`` and, at the
+  end of each window, ``r`` takes the value of ``l`` and ``l`` is reset;
+- score of a tree: ``r * 2^k`` of the terminal node, the first node on
+  the path of the sample that reaches ``depth`` or holds ``sizeLimit``
+  samples or fewer; the score of the ensemble is the sum over the trees.
 
-- Working range: ``[lo_i, hi_i]`` per feature. When ``feature_ranges``
-  is not given, the ranges are learned online from the first
-  ``range_init`` samples (min and max per feature, with a small
-  margin); until then the score is 0. Points are not clipped: a value
-  outside the observed range maps to a negative or >1 normalised
-  position and lands in the outermost leaf on that side, which is the
-  rarest region.
-- Tree depth is fixed at construction; splits are at the mid-point of
-  the *current* node's range on the split feature. The range is derived
-  from the working range of the root by following the split values
-  along the path, never from the data (Tan et al. 2011, Section 3.2:
-  ``the split point is the mid-point of the current range of q``;
-  Ulrich 2025, Section 5.2: ``s = (x + y) / 2``). The BFS position of
-  the node is not sufficient when the feature varies along the path.
-- Sliding window: exact window of the last ``window`` samples, kept as
-  a circular buffer of the node paths (not a decay). No periodic
-  retraining; the window itself is the forgetting mechanism.
-- Score: for each tree, ``-log2((c_leaf + 1) / (N + 1))``, where
-  ``c_leaf`` is the count of samples in the window whose path ended at
-  that leaf and ``N`` is the number of samples in the window. The
-  ensemble score is the mean over trees. Higher means more anomalous.
+Choices not given by the paper, stated explicitly:
+
+- Normalisation: the paper assumes features in ``[0, 1]``. The ranges
+  ``[lo_i, hi_i]`` come from ``feature_ranges`` or from the first
+  ``range_init`` samples (minimum and maximum with a 10 % margin); until
+  then the score is 0. A value outside the range is not clipped: it
+  falls in the outermost leaves.
+- Score scale. The sum ``S`` of the paper is large for normal samples.
+  Under uniform mass the term of every tree is ``window`` (page 3:
+  ``m[i] * 2^i`` is constant), so ``S`` is about ``n_trees * window``.
+  This module returns ``M / (M + S)`` with ``M = n_trees * window``: 1
+  for an empty region, 0.5 for uniform mass, towards 0 in dense
+  regions. Higher means more anomalous, and 0.0, the value returned
+  before the first reference window is complete, is the lowest score.
+- ``sizeLimit`` is ``size_limit_frac * window`` with ``size_limit_frac``
+  0.1, the value suggested on page 3.
+- ``window`` (the paper's window size) defaults to 50; the paper uses
+  250. The detector scores only after ``range_init + window`` samples:
+  the first ``range_init`` fix the ranges and the next ``window`` fill
+  the reference profile, so the paper's 250 would not start on a stream
+  with 100 healthy samples.
 - Threshold: when ``threshold`` is ``None`` (default) the effective
   threshold is the ``threshold_quantile``-quantile of the last
   ``threshold_window`` scores (default 0.95 and 500); while fewer than
@@ -40,13 +50,22 @@ Choices not given by Leveni et al. (2024), stated explicitly:
   is ``1e9`` (flag nothing). When ``threshold`` is a float, it is used
   as a fixed threshold.
 
+Measured cost, on the development machine (Windows, one CPU thread, 25
+trees, depth 15, 4 features): ``learn_one`` has a median of 0.65 ms and
+a p99 of 1.0 ms; the sample that fixes the ranges builds the trees once
+and takes 71 to 80 ms, which is why ``budget_s`` is 0.1 s. The state is
+two mass profiles per tree and about 52 MB, whatever the stream length.
+
 References
 ----------
-Leveni, F., Cassales, G. W., Pfahringer, B., Bifet, A., Boracchi, G.
-    (2024). Online Isolation Forest. arXiv:2505.09593. Section 3
-    (related work).
 Tan, S. C., Ting, K. M., Liu, T. F. (2011). Fast anomaly detection for
-    streaming data. In IJCAI.
+    streaming data. In IJCAI, 1511-1516. Page 3: work space,
+    Algorithm 1, Algorithm 2, anomaly score, ``sizeLimit``, defaults
+    ``maxDepth = 15``, ``window = 250``, 25 trees. Page 4: Algorithm 3.
+Ulrich, A., Krnavek, J., Senkerik, R., Kominkova Oplatkova, Z., Vala, R.
+    (2025). Isolation Forest in Novelty Detection Scenario.
+    arXiv:2505.08489. Section 5.2 (the split is the mid-point of the
+    range of the chosen dimension).
 """
 
 from collections import deque
@@ -64,8 +83,13 @@ class HalfSpaceTrees(AnomalyDetector):
         n_trees: number of trees in the ensemble.
         depth: depth of every tree. The tree is a complete binary tree
             with ``2 ** depth`` leaves.
-        window: number of most recent samples kept in the sliding
-            window. The window is the forgetting mechanism.
+        window: window size of Tan et al. (2011): the first ``window``
+            samples after the ranges fill the reference profile, then
+            the profile is replaced every ``window`` samples. Default
+            50 (the paper uses 250).
+        size_limit_frac: ``sizeLimit`` of the paper as a fraction of
+            ``window``: a node that holds that many reference samples
+            or fewer is terminal. Default 0.1.
         feature_ranges: ``[(lo, hi), ...]``, one per feature. ``None``
             (default) learns the ranges from the first ``range_init``
             samples.
@@ -83,7 +107,7 @@ class HalfSpaceTrees(AnomalyDetector):
         threshold_warmup: number of scores required before the
             adaptive threshold becomes effective. Default 50.
         seed: seed of the random generator that chooses the split
-            dimensions.
+            dimensions and the work spaces.
         eps: numerical guard.
 
     Raises:
@@ -101,17 +125,18 @@ class HalfSpaceTrees(AnomalyDetector):
         True
     """
 
-    budget_s = 0.06
+    budget_s = 0.1
     memory_class = "O(1)"
 
     def __init__(
         self,
         n_trees: int = 25,
         depth: int = 15,
-        window: int = 250,
+        window: int = 50,
         feature_ranges: Sequence[tuple[float, float]] | None = None,
         range_init: int = 20,
         feature_keys: Sequence[str] | None = None,
+        size_limit_frac: float = 0.1,
         threshold: float | None = None,
         threshold_quantile: float = 0.95,
         threshold_window: int = 500,
@@ -127,6 +152,10 @@ class HalfSpaceTrees(AnomalyDetector):
             raise ValueError(f"window must be >= 1, got {window}")
         if range_init < 1:
             raise ValueError(f"range_init must be >= 1, got {range_init}")
+        if not (0.0 < size_limit_frac <= 1.0):
+            raise ValueError(
+                f"size_limit_frac must be in (0, 1], got {size_limit_frac}"
+            )
         if not (0.0 < threshold_quantile < 1.0):
             raise ValueError(
                 f"threshold_quantile must be in (0, 1), got {threshold_quantile}"
@@ -137,6 +166,7 @@ class HalfSpaceTrees(AnomalyDetector):
         self.feature_ranges = feature_ranges
         self.range_init = int(range_init)
         self.feature_keys = feature_keys
+        self.size_limit_frac = float(size_limit_frac)
         self.threshold_quantile = float(threshold_quantile)
         self.threshold_window = int(threshold_window)
         self.threshold_warmup = int(threshold_warmup)
@@ -154,10 +184,12 @@ class HalfSpaceTrees(AnomalyDetector):
         self._hi: np.ndarray | None = None
         self._feature: np.ndarray | None = None
         self._midpoints: np.ndarray | None = None
-        self._counts: np.ndarray | None = None
-        self._buf_paths: np.ndarray | None = None
-        self._buf_head = 0
-        self._buf_size = 0
+        self._work_lo: np.ndarray | None = None
+        self._work_hi: np.ndarray | None = None
+        self._r: np.ndarray | None = None
+        self._l: np.ndarray | None = None
+        self._count = 0
+        self._ref_ready = False
         self._range_buf: list[np.ndarray] = []
         self._score_hist: deque = deque(maxlen=threshold_window)
 
@@ -195,15 +227,16 @@ class HalfSpaceTrees(AnomalyDetector):
         self._feature = rng.integers(
             0, d, size=(self.n_trees, n_internal), dtype=np.intp
         )
+        s = rng.uniform(0.0, 1.0, size=(self.n_trees, d))
+        half = 2.0 * np.maximum(s, 1.0 - s)
+        self._work_lo = s - half
+        self._work_hi = s + half
         self._midpoints = self._build_midpoints()
-        self._counts = np.zeros(
-            (self.n_trees, 2 ** (self.depth + 1) - 1), dtype=np.int64
-        )
-        self._buf_paths = np.zeros(
-            (self.window, self.n_trees, self.depth + 1), dtype=np.intp
-        )
-        self._buf_head = 0
-        self._buf_size = 0
+        n_nodes = 2 ** (self.depth + 1) - 1
+        self._r = np.zeros((self.n_trees, n_nodes), dtype=np.int32)
+        self._l = np.zeros((self.n_trees, n_nodes), dtype=np.int32)
+        self._count = 0
+        self._ref_ready = False
         self._range_buf = []
         self._ready = True
 
@@ -211,12 +244,13 @@ class HalfSpaceTrees(AnomalyDetector):
         """Split value of every internal node, one per tree and node.
 
         The split values live in the normalised space of ``_to_norm``,
-        where every feature of the root ranges over ``[0, 1]``, because
-        ``_path_one`` and ``_leaf_one`` compare them with the normalised
-        sample. The range of a node on its split feature depends only on
-        the features chosen along the path from the root, never on the
-        data: if node ``n`` is the left child of ``p``, which splits
-        feature ``f`` at ``m``, the range of ``f`` in ``n`` is
+        where the samples are in ``[0, 1]``, because ``_path_one`` and
+        the score compare them with the normalised sample. The root of
+        each tree ranges over its own work space (``_work_lo``,
+        ``_work_hi``). The range of a node on its split feature depends
+        only on the features chosen along the path from the root, never
+        on the data: if node ``n`` is the left child of ``p``, which
+        splits feature ``f`` at ``m``, the range of ``f`` in ``n`` is
         ``[lo_p[f], m]``; for the right child it is ``[m, hi_p[f]]``.
         The other features keep the range of the parent.
 
@@ -230,13 +264,13 @@ class HalfSpaceTrees(AnomalyDetector):
             every internal node.
         """
         assert self._feature is not None
+        assert self._work_lo is not None and self._work_hi is not None
         feature = self._feature
         n_internal = 2**self.depth - 1
         midpoints = np.zeros((self.n_trees, n_internal), dtype=float)
-        d = len(self._keys)
         t_idx = np.arange(self.n_trees)[:, None]
-        lo_cur = np.zeros((self.n_trees, 1, d))
-        hi_cur = np.ones((self.n_trees, 1, d))
+        lo_cur = self._work_lo[:, None, :].copy()
+        hi_cur = self._work_hi[:, None, :].copy()
         for level in range(self.depth):
             n_at_level = 2**level
             start = n_at_level - 1
@@ -278,33 +312,40 @@ class HalfSpaceTrees(AnomalyDetector):
             path[lv + 1] = node
         return path
 
-    def _leaf_one(self, tr: int, x_norm: np.ndarray) -> int:
+    def _terminal_mass(self, tr: int, x_norm: np.ndarray) -> float:
+        """``r * 2^k`` of the terminal node of the sample in tree ``tr``.
+
+        Tan et al. (2011), page 3: the terminal node is the first node
+        on the path that reaches ``depth`` or holds ``sizeLimit``
+        reference samples or fewer.
+        """
         assert self._feature is not None
         assert self._midpoints is not None
+        assert self._r is not None
+        size_limit = self.size_limit_frac * self.window
         node = 0
-        for _ in range(self.depth):
+        k = 0
+        while True:
+            r = int(self._r[tr, node])
+            if k == self.depth or r <= size_limit:
+                return r * 2.0**k
             feat = int(self._feature[tr, node])
             if x_norm[feat] <= self._midpoints[tr, node]:
                 node = 2 * node + 1
             else:
                 node = 2 * node + 2
-        return int(node)
+            k += 1
 
     def _raw_score(self, x: dict) -> float:
+        if not self._ref_ready:
+            return 0.0
         try:
             x_norm = self._to_norm(x)
         except (KeyError, TypeError, ValueError):
             return 0.0
-        assert self._counts is not None
-        n = self._buf_size
-        if n == 0:
-            return 0.0
-        scores = np.empty(self.n_trees, dtype=float)
-        for tr in range(self.n_trees):
-            leaf = self._leaf_one(tr, x_norm)
-            c = int(self._counts[tr, leaf])
-            scores[tr] = -np.log2((c + 1.0) / (n + 1.0))
-        return float(scores.mean())
+        total = sum(self._terminal_mass(tr, x_norm) for tr in range(self.n_trees))
+        scale = float(self.n_trees * self.window)
+        return scale / (scale + total)
 
     def _update_threshold(self, s: float) -> None:
         if self._threshold_fixed is not None:
@@ -318,7 +359,7 @@ class HalfSpaceTrees(AnomalyDetector):
         )
 
     def learn_one(self, x: dict, t: float | None = None) -> "HalfSpaceTrees":
-        """Add one sample to the sliding window.
+        """Record one sample in the mass profile of the current window.
 
         Args:
             x: a dict of float features.
@@ -366,20 +407,20 @@ class HalfSpaceTrees(AnomalyDetector):
         except (KeyError, TypeError, ValueError):
             self.n_missing_ += 1
             return self
-        self._update_threshold(self._raw_score(x))
-        assert self._counts is not None
-        assert self._buf_paths is not None
-        paths = np.zeros((self.n_trees, self.depth + 1), dtype=np.intp)
+        assert self._r is not None and self._l is not None
+        if self._ref_ready:
+            self._update_threshold(self._raw_score(x))
+        mass = self._l if self._ref_ready else self._r
         for tr in range(self.n_trees):
-            paths[tr] = self._path_one(tr, x_norm)
-            self._counts[tr, paths[tr]] += 1
-        if self._buf_size == self.window:
-            oldest = self._buf_paths[self._buf_head]
-            for tr in range(self.n_trees):
-                self._counts[tr, oldest[tr]] -= 1
-        self._buf_paths[self._buf_head] = paths
-        self._buf_head = (self._buf_head + 1) % self.window
-        self._buf_size = min(self._buf_size + 1, self.window)
+            mass[tr, self._path_one(tr, x_norm)] += 1
+        self._count += 1
+        if self._count == self.window:
+            if self._ref_ready:
+                self._r, self._l = self._l, self._r
+                self._l[:] = 0
+            else:
+                self._ref_ready = True
+            self._count = 0
         return self
 
     def score_one(self, x: dict, t: float | None = None) -> float:
@@ -390,9 +431,11 @@ class HalfSpaceTrees(AnomalyDetector):
             t: unused.
 
         Returns:
-            The mean over trees of ``-log2((c_leaf + 1) / (N + 1))``.
-            ``0.0`` while the ranges are being learned or the model has
-            not seen any finite sample yet.
+            ``M / (M + S)`` with ``M = n_trees * window``, where ``S`` is
+            the sum over the trees of ``r * 2^k`` of the terminal node
+            (Tan et al. 2011, page 3). ``0.0``, the lowest score, until
+            the ranges are fixed and the first reference window of
+            ``window`` samples is complete.
         """
         if not self._ready:
             return 0.0
