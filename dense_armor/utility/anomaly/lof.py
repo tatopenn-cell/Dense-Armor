@@ -84,16 +84,19 @@ class LocalOutlierFactor(AnomalyDetector):
         ``learn_one`` is O(1): it appends to the deque and drops the
         oldest when the window is full. The state is a deque of
         ``window`` vectors of ``d`` floats, so it is constant in the
-        stream length n and linear in window and in d. Measured p99 of
-        one ``score_one`` plus one ``learn_one`` on 1000 samples
-        (Python 3.13, one core):
+        stream length n and linear in window and in d. Measured on
+        3000 samples (Python 3.13, one core), p50 / p99 / max of
+        one ``score_one`` plus one ``learn_one``:
 
-            window=100, n_neighbors=20:  2.3 ms
-            window=200, n_neighbors=20:  5.4 ms
-            window=200, n_neighbors=50:  6.2 ms
+            window=100, n_neighbors=20:  p50 1 120 us   p99 2 130 us   max 3 747 us
+            window=200, n_neighbors=20:  p50 3 768 us   p99 6 570 us   max 8 160 us
+            window=300, n_neighbors=20:  p50 7 540 us   p99 12 466 us  max 15 041 us
 
-        The declared budget_s = 0.01 s holds for window up to about
-        300 at n_neighbors=20.
+        The declared budget_s = 0.01 s (10 000 us) holds at window up
+        to about 200 at n_neighbors=20. At window=300 the p99 exceeds
+        the budget. A caller who needs a bigger window is over the
+        declared budget and should either lower the window or raise
+        the budget.
 
         On the benchmark streams of ``benchmarks/anomaly_streaming.py``
         (SyntheticArm payload fault, joints 0-3, 200 samples, 100 healthy
