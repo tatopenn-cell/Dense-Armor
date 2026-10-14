@@ -14,8 +14,8 @@ Two votes, not one. A day that looks strange only to LODA is not flagged.
 
 ## The tools behind it
 
-- **LODA** ([dense_armor.utility.anomaly.loda](../../anomaly/loda.md)) projects the (return, volume) point onto random 1-D directions and histograms each projection. Rare bins give a high score.
-- **Half-Space Trees** ([dense_armor.utility.anomaly.hst](../../anomaly/hst.md)) splits the space with an ensemble of trees and scores by how isolated the point is.
+- **LODA** ([dense_armor.utility.anomaly.loda](../anomaly/loda.md)) projects the (return, volume) point onto random 1-D directions and histograms each projection. Rare bins give a high score.
+- **Half-Space Trees** ([dense_armor.utility.anomaly.hst](../anomaly/hst.md)) splits the space with an ensemble of trees and scores by how isolated the point is.
 
 Both tools keep their own adaptive thresholds, the way they were designed. The pipeline only takes the AND of the two.
 

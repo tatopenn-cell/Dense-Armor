@@ -53,7 +53,7 @@ You get `True`, `False`, and the reason `size > max_size_molteplice * mean`.
 
 ## References
 
-- Orca: see [docs/shields/orca.md](../../shields/orca.md) for the damping algorithm.
+- Orca: see [docs/shields/orca.md](../shields/orca.md) for the damping algorithm.
 - Running mean: Welford, B. P. (1962). *Note on a method for calculating corrected sums of squares and products.* Technometrics 4(3), 419-420.
 - Trade data: Coinbase Exchange public API, endpoint `/products/BTC-USD/trades`, 14 October 2026, 1,000 rows.
 

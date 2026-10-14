@@ -13,8 +13,8 @@ You give it one number a day: how much you lost. It gives back two numbers and t
 
 ## The tools behind it
 
-- **DDSketch** ([dense_armor.utility.stats.quantiles](../../stats/sketches.md)) keeps the tail of the loss distribution with a relative-error guarantee of 1%. It stores a fixed number of buckets, no matter how long the stream is.
-- **CUSUM** ([dense_armor.utility.drift.cusum](../../drift/cusum.md)) adds up the small moves in the loss series and rings when the sum stops looking like noise.
+- **DDSketch** ([dense_armor.utility.stats.quantiles](../stats/sketches.md)) keeps the tail of the loss distribution with a relative-error guarantee of 1%. It stores a fixed number of buckets, no matter how long the stream is.
+- **CUSUM** ([dense_armor.utility.drift.cusum](../drift/cusum.md)) adds up the small moves in the loss series and rings when the sum stops looking like noise.
 
 ## What it does on five years of S&P 500
 
