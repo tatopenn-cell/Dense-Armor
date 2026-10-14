@@ -2,6 +2,16 @@
 
 **In plain words:** Five Dense-Armor tools read five years of real stock-market data. Three days out of 1,254 they all flagged together.
 
+## In this section
+
+This page covers the **surveillance** pipeline (watch a market index, flag anomalous days). Three more pipelines live in this section:
+
+| Page | Client | Question it answers |
+|---|---|---|
+| [Risk](rischio.md) | risk manager, fund, bank | How much can we lose today, and is volatility rising? |
+| [Execution](esecuzione.md) | trading desk, broker | Does this order leave, and how big? |
+| [Single ticker](anomalia_titolo.md) | analyst, advanced retail | Is today strange for this one stock? |
+
 ## The scene
 
 On August 5th, 2024, Japan opens the week with the worst crash in its recent history. Within hours the panic crosses the ocean: the S&P 500 loses 4.19% in a single day. Traders call it "Black Monday". Days later, the market recovers as if nothing happened.

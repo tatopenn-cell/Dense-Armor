@@ -71,7 +71,9 @@ nav:
   - Home: index.md
   - Getting Started: getting-started.md
   - Applications:
-      - Finance: finance.md
+      - Finance:
+          - finance/index.md
+          - Static vs online: finance/statico_vs_online.md
 
   - Shields:
       - shields/index.md
