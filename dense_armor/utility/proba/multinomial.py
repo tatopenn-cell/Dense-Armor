@@ -110,3 +110,34 @@ class Multinomial:
         """Draw one category from the posterior predictive."""
         p = self.mean()
         return int(rng.choice(self.n_categories, p=p / p.sum()))
+
+    def init_state(self):
+        """Return the counters as a tuple of scalar JAX arrays.
+
+        A tuple of scalars is a pytree whose leaves are scalars, so the
+        standard checks ``check_step_is_pure`` and
+        ``check_step_is_jittable`` can inspect the state element by
+        element. A bare 1-D array would put a vector in a leaf, and the
+        checks compare leaves with ``float``.
+        """
+        import jax.numpy as jnp
+
+        return tuple(jnp.asarray(float(a)) for a in self.alpha_)
+
+    def step(self, state, v: object) -> tuple:
+        """One pure update: counters + category -> (counters, top category).
+
+        ``v`` is interpreted as a category index via ``floor(v)``,
+        clipped to ``[0, K - 1]``. The output is the index of the most
+        probable category, as a scalar. Pure function of its arguments,
+        safe under ``jax.jit`` and ``jax.lax.scan``.
+        """
+        import jax.numpy as jnp
+
+        alpha = jnp.stack(state)
+        k = alpha.size
+        idx = jnp.clip(jnp.floor(jnp.asarray(v)).astype(jnp.int32), 0, k - 1)
+        one_hot = (jnp.arange(k) == idx).astype(alpha.dtype)
+        alpha_new = alpha + one_hot
+        top = jnp.argmax(alpha_new).astype(jnp.float32)
+        return tuple(a for a in alpha_new), top

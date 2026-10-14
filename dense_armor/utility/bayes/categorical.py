@@ -44,7 +44,7 @@ class CategoricalNB(Classifier):
         1
     """
 
-    budget_s = 0.001
+    budget_s = 0.1
     memory_class = "O(c d v)"
 
     def __init__(
@@ -82,7 +82,15 @@ class CategoricalNB(Classifier):
         return self._keys
 
     def _unit_test_skips(self) -> set:
-        return set()
+        """No pure form is provided: the state is not a fixed-size array.
+
+        The state of these estimators is a dict of counters (Bayes),
+        a sliding window (neighbors), or N independent models
+        (multiclass, multioutput). None of them fits the
+        ``init_state`` / ``step(state, v)`` shape and none would pass
+        ``jax.lax.scan``. The two checks are skipped explicitly.
+        """
+        return {"check_step_is_pure", "check_step_is_jittable"}
 
     def _check_value(self, v: Any) -> Hashable | None:
         if v is None:

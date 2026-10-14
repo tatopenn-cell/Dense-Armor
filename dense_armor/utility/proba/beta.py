@@ -100,3 +100,25 @@ class Beta:
     def sample(self, rng: np.random.Generator) -> float:
         """Draw one sample from the Beta with the current parameters."""
         return float(rng.beta(self.a, self.b))
+
+    def init_state(self) -> tuple:
+        """Return the current state (a, b) as JAX scalars."""
+        import jax.numpy as jnp
+
+        return (jnp.asarray(self.a), jnp.asarray(self.b))
+
+    def step(self, state: tuple, v: object) -> tuple:
+        """One pure update: (a, b) + observation -> ((a, b), mean).
+
+        ``v`` is treated as 1 when ``v >= 0.5`` and as 0 otherwise,
+        matching the :meth:`update` convention. Pure function of its
+        arguments, safe under ``jax.jit`` and ``jax.lax.scan``.
+        """
+        import jax.numpy as jnp
+
+        a, b = state
+        is_one = jnp.asarray(v) >= 0.5
+        a_new = jnp.where(is_one, a + 1.0, a)
+        b_new = jnp.where(is_one, b, b + 1.0)
+        mean = a_new / (a_new + b_new)
+        return (a_new, b_new), mean

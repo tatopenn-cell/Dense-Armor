@@ -109,3 +109,29 @@ class Gaussian:
         """Draw one sample from the Gaussian with the current parameters."""
         var = self._m2 / max(self._n, 1.0)
         return float(rng.normal(self._mean, sqrt(max(var, 0.0))))
+
+    def init_state(self) -> tuple:
+        """Return the current state (n, mean, m2) as JAX scalars."""
+        import jax.numpy as jnp
+
+        return (
+            jnp.asarray(self._n),
+            jnp.asarray(self._mean),
+            jnp.asarray(self._m2),
+        )
+
+    def step(self, state: tuple, v: object) -> tuple:
+        """One pure Welford step: (n, mean, m2) + sample -> (state, mean).
+
+        Pure function of its arguments, safe under ``jax.jit`` and
+        ``jax.lax.scan``.
+        """
+        import jax.numpy as jnp
+
+        n, mean, m2 = state
+        v = jnp.asarray(v)
+        n_new = n + 1.0
+        delta = v - mean
+        mean_new = mean + delta / n_new
+        m2_new = m2 + delta * (v - mean_new)
+        return (n_new, mean_new, m2_new), mean_new

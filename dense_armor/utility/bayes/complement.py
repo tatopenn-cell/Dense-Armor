@@ -96,7 +96,15 @@ class ComplementNB(Classifier):
         return self._keys
 
     def _unit_test_skips(self) -> set:
-        return set()
+        """No pure form is provided: the state is not a fixed-size array.
+
+        The state of these estimators is a dict of counters (Bayes),
+        a sliding window (neighbors), or N independent models
+        (multiclass, multioutput). None of them fits the
+        ``init_state`` / ``step(state, v)`` shape and none would pass
+        ``jax.lax.scan``. The two checks are skipped explicitly.
+        """
+        return {"check_step_is_pure", "check_step_is_jittable"}
 
     def learn_one(self, x: dict, y: Any, t: float | None = None) -> "ComplementNB":
         """Add one sample with label ``y``."""
