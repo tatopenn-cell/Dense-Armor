@@ -18,7 +18,7 @@ are covered, one per file:
   Decide whether an order leaves and how big. Size check against a
   rolling mean, then Orca on the suspicious orders only.
 
-- :class:`~pipelines.finance.anomalia_titolo.SingleTickerPipeline`
+- :class:`~pipelines.finance.single_ticker.SingleTickerPipeline`
   Single-ticker strangeness. LODA and Half-Space Trees on the
   (return, volume) pair of one stock.
 

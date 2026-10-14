@@ -48,7 +48,7 @@ class TickResult:
             this tick.
         loda_score: LODA strangeness score on the (return, volume) pair.
         hst_score: Half-Space Trees strangeness score on the same pair.
-        anomalia: True if both LODA and HST are above their own
+        anomalous: True if both LODA and HST are above their own
             adaptive thresholds.
         orca_reduction: fraction of the norm removed by Orca on the
             simulated order. 0.0 if Orca was not invoked.
@@ -64,7 +64,7 @@ class TickResult:
     drift_flagged: bool
     loda_score: float
     hst_score: float
-    anomalia: bool
+    anomalous: bool
     orca_reduction: float
     orca_dampened: bool
 
@@ -104,7 +104,7 @@ class FinancePipeline:
         >>> p = FinancePipeline(range_ret=(-0.05, 0.05),
         ...                     range_vol=(0.5, 2.0), seed=0)
         >>> e = p.process_tick(100.0, 1.0)
-        >>> e.tick, e.discarded_by_armatura, e.anomalia
+        >>> e.tick, e.discarded_by_armatura, e.anomalous
         (0, False, False)
         >>> e2 = p.process_tick(99999.0, 1.0)
         >>> e2.discarded_by_armatura
@@ -144,7 +144,7 @@ class FinancePipeline:
         self.orca = Orca()
         self.orca_threshold = orca_threshold
         self.storico: list[float] = []
-        self.n_tick = 0
+        self.n_ticks = 0
 
     def process_tick(self, price: float, relative_volume: float) -> TickResult:
         """Process one tick through all five stages.
@@ -178,7 +178,7 @@ class FinancePipeline:
 
         if not scartato:
             self.storico.append(cleaned_price)
-        self.n_tick += 1
+        self.n_ticks += 1
 
         deriva = False
         if not scartato:
@@ -192,7 +192,7 @@ class FinancePipeline:
         x = {"a": float(ret), "b": float(relative_volume)}
         s_loda = self.loda.score_one(x)
         s_hst = self.hst.score_one(x)
-        anomalia = bool(s_loda > self.loda.threshold and s_hst > self.hst.threshold)
+        anomalous = bool(s_loda > self.loda.threshold and s_hst > self.hst.threshold)
         self.loda.learn_one(x)
         self.hst.learn_one(x)
 
@@ -215,7 +215,7 @@ class FinancePipeline:
         smorzato = reduction > self.orca_threshold
 
         return TickResult(
-            tick=self.n_tick - 1,
+            tick=self.n_ticks - 1,
             price=float(price),
             volume=float(relative_volume),
             cleaned_price=cleaned_price,
@@ -223,7 +223,7 @@ class FinancePipeline:
             drift_flagged=deriva,
             loda_score=float(s_loda),
             hst_score=float(s_hst),
-            anomalia=anomalia,
+            anomalous=anomalous,
             orca_reduction=float(reduction),
             orca_dampened=bool(smorzato),
         )

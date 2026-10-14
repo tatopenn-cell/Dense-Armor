@@ -25,7 +25,7 @@ def test_finanza_un_tick_normale(pipeline):
     e = pipeline.process_tick(100.0, 1.0)
     assert e.tick == 0
     assert not e.discarded_by_armatura
-    assert not e.anomalia
+    assert not e.anomalous
 
 
 def test_finanza_scarta_picco(pipeline):

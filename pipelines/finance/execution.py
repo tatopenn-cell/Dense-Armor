@@ -70,21 +70,21 @@ class ExecutionPipeline:
         self.max_size_multiple = max_size_multiple
         self.orca_pre_threshold = orca_pre_threshold
         self.warmup = warmup
-        self.n_ordini = 0
+        self.n_orders = 0
         self.n_dampened = 0
-        self.n_rifiutati = 0
-        self.n_passati_diretti = 0
-        self.n_via_orca = 0
+        self.n_refused = 0
+        self.n_passed_directly = 0
+        self.n_through_orca = 0
 
     def process_order(self, size: float, tipo: float = 0.0) -> OrderResult:
         """Process one order and decide its fate."""
-        self.n_ordini += 1
+        self.n_orders += 1
 
         mu = self.moments.mean if self.moments.count >= self.warmup else float(size)
 
         # troppo grande: rifiuto diretto
         if mu > 0 and size > self.max_size_multiple * mu:
-            self.n_rifiutati += 1
+            self.n_refused += 1
             self.moments.learn_one({"x": float(size)})
             return OrderResult(
                 original_size=size,
@@ -96,7 +96,7 @@ class ExecutionPipeline:
 
         # below the threshold: pass without Orca (which costs 20 ms)
         if mu > 0 and size <= self.orca_pre_threshold * mu:
-            self.n_passati_diretti += 1
+            self.n_passed_directly += 1
             self.moments.learn_one({"x": float(size)})
             return OrderResult(
                 original_size=size,
@@ -107,7 +107,7 @@ class ExecutionPipeline:
             )
 
         # sopra threshold: passa da Orca
-        self.n_via_orca += 1
+        self.n_through_orca += 1
         x_ord = np.array([float(size), float(tipo), 1.0])
         try:
             out = self.orca.protect_and_forward(
