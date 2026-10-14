@@ -55,34 +55,14 @@ Tested on 1,253 real trading days. One call per day.
 
 ## Details
 
-### The pipeline
+### Implementation
 
-The class is `RiskPipeline`, in `pipelines/finance/risk.py`. It chains two primitives:
-
-- **DDSketch** from `dense_armor.utility.stats.quantiles`. Relative-error target set by `alpha`, default 0.01 (1%).
-- **CUSUM** from `dense_armor.utility.drift.detector`. The loss series is fed to the same detector used for drift in sensors.
-
-```python
-import numpy as np
-from pipelines.finance.risk import RiskPipeline
-
-rp = RiskPipeline(alpha=0.01, loss_limit=0.05, seed=0)
-rng = np.random.default_rng(0)
-for _ in range(200):
-    rp.process_day(float(abs(rng.normal(0.01, 0.005))))
-
-e = rp.process_day(0.10)
-print(round(e.var_99, 4), round(e.var_999, 4), e.over_limit)
-```
-
-### Measured cost
-
-About 116 microseconds per day, one core. Memory flat: DDSketch has a fixed number of buckets, CUSUM keeps a running sum.
+The class is `RiskPipeline`, in `pipelines/finance/risk.py`. It chains two Dense-Armor primitives: [DDSketch](../stats/sketches.md) for the tail of the loss distribution, and [CUSUM](../drift/cusum.md) on the loss series. See the linked pages for the algorithms; this page shows how they are combined and what the numbers are on real market data.
 
 ### References
 
-- Masson, C., Rim, J. E., Lee, H. K. (2019). *DDSketch: A Fast and Fully-Mergeable Quantile Sketch with Relative-Error Guarantees.* PVLDB 12(12), 2195-2205. arXiv:1908.10693.
+- Masson, C., Rim, J. E., Lee, H. K. (2019). *DDSketch.* PVLDB 12(12), 2195-2205. arXiv:1908.10693.
 - Reynolds, M. R. Jr., Stoumbos, Z. G. (1975). *A CUSUM for monitoring the process mean.*
-- Market data: Yahoo Finance, S&P 500 (^GSPC), 14 October 2021 to 13 October 2026, 1,253 trading days.
+- Market data: Yahoo Finance, S&P 500 (^GSPC), 14 October 2021 to 13 October 2026.
 
-*The numbers on this page come from a single run on real historical data. Not a forecast, not financial advice.*
+*These pages describe measurements on historical data. Not a forecast, not financial advice.*

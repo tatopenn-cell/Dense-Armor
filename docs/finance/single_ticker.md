@@ -53,33 +53,15 @@ The 43 days include June 2022 and September 2023 crashes, plus the quarterly-exp
 
 ## Details
 
-### The pipeline
+### Implementation
 
-The class is `SingleTickerPipeline`, in `pipelines/finance/single_ticker.py`. Two primitives:
-
-- **LODA** from `dense_armor.utility.anomaly.loda`. Adaptive threshold: the 0.95 quantile of the recent scores.
-- **HalfSpaceTrees** from `dense_armor.utility.anomaly.hst`. Adaptive threshold: same rule.
-
-```python
-from pipelines.finance.single_ticker import SingleTickerPipeline
-
-t = SingleTickerPipeline(range_ret=(-0.05, 0.05), range_vol=(0.5, 2.0), seed=0)
-for _ in range(7):
-    t.process_day(0.001, 1.0)
-
-e = t.process_day(-0.05, 3.0)
-print(round(e.loda_score, 3), round(e.hst_score, 3), e.anomalous)
-```
-
-### Why the two thresholds are adaptive
-
-The thresholds are not fixed numbers: the tools learn them from the data. On a volatile stock the HST threshold settles at a low value, and the count is high. On a quiet stock the opposite. This is by design: the same detector should flag the unusual day for that specific stock, not the unusual day for a generic market.
+The class is `SingleTickerPipeline`, in `pipelines/finance/single_ticker.py`. It chains [LODA](../anomaly/loda.md) and [Half-Space Trees](../anomaly/hst.md) on the (return, volume) pair of one stock. Each detector keeps its adaptive threshold; the pipeline only takes the AND of the two. See the linked pages for the algorithms.
 
 ### References
 
 - Lou, B., Boland, D., Leong, P. H. W. (2024). *fSEAD.* arXiv:2406.05999. Section 2.1 (Loda).
 - Tan, S. C., Ting, K. M., Liu, T. F. (2011). *Fast anomaly detection for streaming data.* IJCAI. (Half-Space Trees.)
 - Ulrich (2025). *Half-Space Trees for Novelty Detection.* arXiv:2505.08489.
-- Market data: Yahoo Finance, Apple (AAPL), 14 October 2021 to 13 October 2026, 1,253 trading days.
+- Market data: Yahoo Finance, Apple (AAPL), 14 October 2021 to 13 October 2026.
 
-*The numbers on this page come from a single run on real historical data. Not a forecast, not financial advice.*
+*These pages describe measurements on historical data. Not a forecast, not financial advice.*

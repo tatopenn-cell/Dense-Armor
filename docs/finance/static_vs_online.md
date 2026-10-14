@@ -94,33 +94,15 @@ The two are not in competition. The static pipeline is the baseline; the online 
 
 ## Details
 
-### The two pipelines
+### Implementation
 
-- `StaticAnalysis` in `pipelines/finance/static_analysis.py`. One line: `abs(return) > threshold`.
-- `OnlineAnalysis` in `pipelines/finance/online_analysis.py`. Two adaptive detectors, LODA and Half-Space Trees, combined with AND.
-
-```python
-from pipelines.finance.static_analysis import StaticAnalysis
-from pipelines.finance.online_analysis import OnlineAnalysis
-
-sa = StaticAnalysis(threshold=0.03)
-r_static = sa.analyze(returns)
-
-oa = OnlineAnalysis(range_ret=(-0.05, 0.05), range_vol=(0.5, 2.0), seed=0)
-r_online = oa.analyze(returns, relative_volumes)
-
-print(r_static.n_anomalous, r_online.n_anomalous)
-```
-
-### What the numbers mean
-
-The comparison on this page was run on one instrument (the S&P 500) over one period (five years). The exact numbers will be different on another instrument, but the shape is general: the static method finds only the large moves, the online method finds the large moves plus the structural ones.
+Two pipelines. `StaticAnalysis` in `pipelines/finance/static_analysis.py` applies a fixed cutoff to the daily return: one line, no dependency. `OnlineAnalysis` in `pipelines/finance/online_analysis.py` chains [LODA](../anomaly/loda.md) and [Half-Space Trees](../anomaly/hst.md) with their adaptive thresholds. See the linked pages for the algorithms; this page compares the two on the same real series.
 
 ### References
 
-- Market data: Yahoo Finance, S&P 500 (^GSPC), 14 October 2021 to 13 October 2026, 1,254 trading days.
+- Market data: Yahoo Finance, S&P 500 (^GSPC), 14 October 2021 to 13 October 2026.
 - Lou, B., Boland, D., Leong, P. H. W. (2024). *fSEAD.* arXiv:2406.05999. Section 2.1 (Loda).
 - Tan, S. C., Ting, K. M., Liu, T. F. (2011). *Fast anomaly detection for streaming data.* IJCAI. (Half-Space Trees.)
 - Ulrich (2025). *Half-Space Trees for Novelty Detection.* arXiv:2505.08489.
 
-*The numbers on this page come from a single run on real historical data. Not a forecast, not financial advice.*
+*These pages describe measurements on historical data. Not a forecast, not financial advice.*

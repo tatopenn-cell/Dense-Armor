@@ -83,49 +83,18 @@ Detection delay is the most expensive thing. Across 2.7 million consumer-credit 
 
 Payment fraud costs **45 billion dollars** a year worldwide (Huang et al., 2025). The real weakness of current systems is not accuracy: it is **the cost of false alarms**. A fixed threshold floods reviewers during benign peaks. Five tools passing the baton reduce the useless alarms, not just the missed ones.
 
-
 ## Details
 
-### The pipeline
+### Implementation
 
-The class is `FinancePipeline`, in `pipelines/finance/surveillance.py`. Five Dense-Armor primitives, one per stage:
-
-- **Armatura** (`HampelScorer` from `dense_armor.utility.anomaly.filters`) drops absurd ticks.
-- **CUSUM** (`CUSUMDriftDetector` from `dense_armor.utility.drift.detector`) flags a change of trend.
-- **LODA** (`dense_armor.utility.anomaly.loda`) and **Half-Space Trees** (`dense_armor.utility.anomaly.hst`) score the (return, volume) pair; a day is flagged when both pass their adaptive thresholds.
-- **Orca** (`dense_armor.utility.protect.orca`) dampens the simulated order derived from the tick.
-
-```python
-from pipelines.finance.surveillance import FinancePipeline
-
-p = FinancePipeline(range_ret=(-0.05, 0.05), range_vol=(0.5, 2.0), seed=0)
-e = p.process_tick(100.0, 1.0)
-print(e.anomalous)
-```
-
-### The working ranges
-
-The number of flagged days depends on `range_ret` and `range_vol`. With wide ranges only the extreme days are flagged (3 on the S&P 500 over five years). With ranges calibrated on the first year, the quarterly-expiration Fridays and the month-end days are flagged too (42 on the same series). Both numbers are documented in [Static vs online](static_vs_online.md).
-
-### Measured cost
-
-About 5 milliseconds per tick on one core, at the default settings. Memory bounded by the sliding windows of the two detectors (200 for LODA, 100 for HST) plus the Hampel buffer.
-
-### What the papers say
-
-Detection delay is the most expensive thing. Across 2.7 million consumer-credit accounts, a continuous monitoring system reduced the average delay by **9.2 days** against the traditional periodic review (Li, Thompson and Chen, 2026). Nine days is the difference between recovering a loan and losing it.
-
-Payment fraud costs **45 billion dollars** a year worldwide (Huang et al., 2025). The real weakness of current systems is not accuracy: it is **the cost of false alarms**. A fixed threshold floods reviewers during benign peaks. Five tools passing the baton reduce the useless alarms, not just the missed ones.
+The class is `FinancePipeline`, in `pipelines/finance/surveillance.py`. It chains five Dense-Armor primitives in one pass: [Armatura](../shields/armatura.md), [CUSUM](../drift/cusum.md), [LODA](../anomaly/loda.md), [Half-Space Trees](../anomaly/hst.md), [Orca](../shields/orca.md). Each primitive keeps its own page; this page only shows how they are chained and what the result is on real market data.
 
 ### References
 
-- Lou, B., Boland, D., Leong, P. H. W. (2024). *fSEAD: a Composable FPGA-based Streaming Ensemble Anomaly Detection Library.* arXiv:2406.05999. Section 2.1 (Loda).
+- Lou, B., Boland, D., Leong, P. H. W. (2024). *fSEAD.* arXiv:2406.05999. Section 2.1 (Loda).
 - Tan, S. C., Ting, K. M., Liu, T. F. (2011). *Fast anomaly detection for streaming data.* IJCAI. (Half-Space Trees.)
 - Ulrich (2025). *Half-Space Trees for Novelty Detection.* arXiv:2505.08489.
 - Pearson, R. K., Neuvo, Y., Astola, J., Gabbouj, M. (2016). *Generalized Hampel Filters.* EURASIP JASP 2016:87.
-- Li, E., Thompson, D., Chen, M. (2026). *Real-Time Early-Default Detection Using Streaming Machine Learning with Multi-Source Behavioral Signals.* Preprint, 12 January 2026, doi: 10.20944/preprints202601.0866.v1. Not peer-reviewed. Numbers: 2.7 million accounts, -9.2 days of delay, ROC-AUC 0.89.
-- Huang, A., Wang, Y., Zhou, P., Zhang, X. (2025). *Dynamic Calibration of Decision Thresholds for Financial Anomaly Detection.* Journal of Global Information Management 33(1), doi: 10.4018/JGIM.395852. Numbers: 45 billion USD of global payment-fraud losses in 2022, static threshold and the cost of false positives.
-- Market data: Yahoo Finance, S&P 500 (^GSPC), Apple (AAPL), Microsoft (MSFT), Tesla (TSLA). Period 14 October 2021 to 13 October 2026, 1,254 trading days.
-- August 5th 2024 (Japanese Black Monday) and April 7th 2025 (American tariffs) are documented public events. The other anomalous dates were picked by the pipeline and match exceptional market days.
+- Market data: Yahoo Finance, S&P 500 (^GSPC), Apple (AAPL), Microsoft (MSFT), Tesla (TSLA), 14 October 2021 to 13 October 2026.
 
-*This page describes measurements on historical data. It is not financial advice.*
+*These pages describe measurements on historical data. Not a forecast, not financial advice.*

@@ -56,38 +56,14 @@ Zero dampened is not a bug: on a natural distribution the 5x-10x range is almost
 
 ## Details
 
-### The pipeline
+### Implementation
 
-The class is `ExecutionPipeline`, in `pipelines/finance/execution.py`. Two primitives:
-
-- `RunningMoments` from `dense_armor.utility.stats.moments`, for the rolling mean and standard deviation of order sizes.
-- `Orca` from `dense_armor.utility.protect.orca`, for the damping step.
-
-```python
-from pipelines.finance.execution import ExecutionPipeline
-
-ep = ExecutionPipeline(seed=0)
-for _ in range(30):
-    ep.process_order(5.0)
-
-print(ep.process_order(6.0).approved)
-print(ep.process_order(500.0).approved)
-print(ep.process_order(500.0).reason)
-```
-
-### Parameters you can tune
-
-| Name | Default | Meaning |
-|---|---|---|
-| `damping_threshold` | 0.30 | reduction above which Orca counts as dampened |
-| `max_size_multiple` | 10.0 | size above this times the mean: refused |
-| `orca_pre_threshold` | 5.0 | size above this times the mean: goes through Orca |
-| `warmup` | 20 | orders before the rolling mean is trusted |
+The class is `ExecutionPipeline`, in `pipelines/finance/execution.py`. It chains [RunningMoments](../stats/moments.md) for the rolling order size and [Orca](../shields/orca.md) for the damping step. See the linked pages for the primitives; this page shows the three-check rule and what it does on real trade data.
 
 ### References
 
-- Orca: see [docs/shields/orca.md](../shields/orca.md).
-- Running mean: Welford, B. P. (1962). *Note on a method for calculating corrected sums of squares and products.* Technometrics 4(3), 419-420.
+- Orca: see [the Orca page](../shields/orca.md).
+- Running moments: Welford, B. P. (1962). Technometrics 4(3), 419-420.
 - Trade data: Coinbase Exchange public API, endpoint `/products/BTC-USD/trades`, 14 October 2026, 1,000 rows.
 
-*The numbers on this page come from a single run on real trade data. Not a forecast, not financial advice.*
+*These pages describe measurements on historical data. Not a forecast, not financial advice.*
