@@ -14,6 +14,7 @@
 | **Fraud detection** | Is this transaction real? | [Fraud detection](fraud.md) |
 | **Unsupervised fraud** | Is this transaction strange, even without labels? | [Unsupervised fraud](unsupervised_fraud.md) |
 | **Intrusion detection** | Is this network packet an attack? | [Intrusion detection](intrusion.md) |
+| **Credit scoring** | Will this borrower repay? | [Credit scoring](credit_scoring.md) |
 
 ## What they have in common
 

@@ -33,6 +33,10 @@ Examples:
     False
 """
 
+from pipelines.finance.credit_scoring import (
+    CreditScoringPipeline,
+    LoanResult,
+)
 from pipelines.finance.execution import ExecutionPipeline, OrderResult
 from pipelines.finance.fraud import FraudPipeline, TransactionResult
 from pipelines.finance.intrusion import FlowResult, IntrusionPipeline
@@ -47,11 +51,13 @@ from pipelines.finance.unsupervised_fraud import (
 )
 
 __all__ = [
+    "CreditScoringPipeline",
     "ExecutionPipeline",
     "FinancePipeline",
     "FlowResult",
     "FraudPipeline",
     "IntrusionPipeline",
+    "LoanResult",
     "OnlineAnalysis",
     "OnlineResult",
     "OrderResult",

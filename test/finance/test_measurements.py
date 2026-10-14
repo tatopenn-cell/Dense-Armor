@@ -434,3 +434,69 @@ def test_intrusion_pipeline_on_nsl_kdd():
 
     auc = roc_auc_score(y_test, s_e)
     assert 0.96 < auc < 0.99, f"ensemble AUC = {auc:.3f}"
+
+
+def test_credit_scoring_pipeline_on_bank_marketing():
+    """CreditScoringPipeline on the UCI Bank Marketing dataset.
+
+    MondrianForest + SGTClassifier on 45,211 telemarketing calls.
+    80/20 split, 11.6% subscriptions. The two trees reach 0.859 and
+    0.833 ROC-AUC; the average reaches 0.875. The default threshold
+    is 0.25, the point where F1 is near its maximum.
+    """
+    from urllib.request import urlretrieve
+
+    from sklearn.metrics import roc_auc_score
+
+    from pipelines.finance.credit_scoring import CreditScoringPipeline
+
+    path = Path("/tmp/bank-full.csv")
+    if not path.exists():
+        try:
+            urlretrieve(
+                "https://archive.ics.uci.edu/ml/machine-learning-databases/00222/bank.zip",
+                "/tmp/bank.zip",
+            )
+            import zipfile
+
+            with zipfile.ZipFile("/tmp/bank.zip") as z:
+                z.extractall("/tmp")
+        except (OSError, ValueError):
+            pytest.skip("Bank Marketing not downloadable")
+
+    import pandas as pd
+
+    df = pd.read_csv(path, sep=";")
+    y = (df["y"] == "yes").astype(int).values
+    X_df = df.drop(columns=["y"])
+    cat_cols = X_df.select_dtypes(include=["object"]).columns.tolist()
+    num_cols = [c for c in X_df.columns if c not in cat_cols]
+    parts = [X_df[num_cols].astype(float).values]
+    parts.append(pd.get_dummies(X_df[cat_cols], drop_first=True).astype(float).values)
+    X = np.hstack(parts)
+
+    rng = np.random.default_rng(0)
+    perm = rng.permutation(len(X))
+    X, y = X[perm], y[perm]
+    n_train = int(len(X) * 0.8)
+    X_train, y_train = X[:n_train], y[:n_train]
+    X_test, y_test = X[n_train:], y[n_train:]
+    nf = X_train.shape[1]
+
+    pipe = CreditScoringPipeline(
+        n_trees=10,
+        min_samples_split_sgt=50,
+        threshold=0.25,
+        seed=0,
+    )
+    for i in range(len(X_train)):
+        x_dict = {f"f{j}": float(X_train[i, j]) for j in range(nf)}
+        pipe.learn_one(x_dict, int(y_train[i]))
+
+    s_e = []
+    for i in range(len(X_test)):
+        x_dict = {f"f{j}": float(X_test[i, j]) for j in range(nf)}
+        s_e.append(pipe.score_one(x_dict).score_ensemble)
+
+    auc = roc_auc_score(y_test, s_e)
+    assert 0.86 < auc < 0.89, f"ensemble AUC = {auc:.3f}"
