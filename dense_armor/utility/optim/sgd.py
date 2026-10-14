@@ -21,10 +21,24 @@ class SGD:
 
     References:
         Orabona, F. (2019). A Modern Introduction to Online Learning.
-        Chapter 2, Algorithm 2.1 (Online Gradient Descent) with a
-        constant step size. Theorem 2.13 gives the regret bound
-        D^2 / (2 eta_T) + (eta / 2) sum_t ||g_t||^2 for a non-increasing
-        step size, with D the diameter of the feasible set.
+        Chapter 2. Algorithm 2.1 is "Projected Online Gradient Descent
+        (OGD)", page 24: the update is
+        x_{t+1} = Pi_V(x_t - eta_t g_t), with Pi_V the projection on a
+        non-empty closed convex set V of diameter D.
+
+        Theorem 2.13, page 25, gives the regret bound
+            sum_t (l_t(x_t) - l_t(u)) <=
+                D^2 / (2 eta_T) + sum_t (eta_t / 2) ||g_t||^2
+                - (1 / (2 eta_T)) ||x_{T+1} - u||^2,
+        with a non-increasing step size (0 < eta_{t+1} <= eta_t). When
+        the step size is constant the last negative term drops and the
+        bound becomes ||u - x_1||^2 / (2 eta) + (eta / 2) sum_t
+        ||g_t||^2.
+
+        This implementation does not project: it returns w - lr * g
+        directly. The theorem is stated for the projected algorithm, so
+        it does not apply here as is. The update rule of the projected
+        algorithm without the projection matches the code.
 
     Examples:
         >>> import numpy as np

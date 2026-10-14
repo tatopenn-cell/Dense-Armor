@@ -35,13 +35,26 @@ import numpy as np
 from dense_armor.roles import Classifier, Regressor
 
 
+def _nan_in_input(xv, y) -> bool:
+    """True if any feature in xv or the target y is NaN."""
+    if np.any(np.isnan(xv)):
+        return True
+    try:
+        yv = float(y)
+    except (TypeError, ValueError):
+        return True
+    return bool(np.isnan(yv))
+
+
 class LinearRegression(Regressor):
     """Online linear regression with squared loss.
 
     Prediction: y_hat = b + w^T x (b = 0 when intercept is False).
-    Loss on one sample: L = (y_hat - y)^2 + l2 * ||w||^2.
+    Loss on one sample: L = (y_hat - y)^2 + (l2 / 2) * ||w||^2.
     Gradient with respect to the augmented weight vector:
     2 * (y_hat - y) * [1, x] + l2 * w.
+    The penalty acts on the whole augmented weight vector,
+    intercept included, when intercept is True.
 
     Args:
         optimizer: any optimizer from dense_armor.utility.optim.
@@ -59,6 +72,22 @@ class LinearRegression(Regressor):
         ...     _ = reg.learn_one({"x": 1.0}, 3.0)
         >>> round(reg.predict_one({"x": 1.0}), 3)
         3.0
+
+    Notes:
+        The pure form ``step(state, v)`` uses the same gradient and the
+        same optimizer update as the object form. The two forms agree
+        on the same stream up to the dtype of the JAX backend: with
+        JAX in 32-bit mode (the default) the pure form is float32 and
+        the object form float64, with X64 enabled both are float64.
+        The difference is measured in
+        test/optim/test_glm_object_vs_pure.py: below 1e-5 over 30
+        samples with ``intercept=True`` and Adam.
+
+        The ``check_step_is_pure`` check from ``dense_armor.checks`` is
+        skipped (see ``_unit_test_skips``): the check passes a bare
+        scalar to ``step``, and the model expects a dict with the
+        feature keys. The skip is a known limitation of the check, not
+        a bug in the estimator.
     """
 
     budget_s: float = 1e-3
@@ -77,6 +106,7 @@ class LinearRegression(Regressor):
         self.feature_keys = feature_keys
         self._keys: list | None = None
         self._w: np.ndarray | None = None
+        self.n_missing: int = 0
 
     @staticmethod
     def _as_dict(x):
@@ -123,6 +153,9 @@ class LinearRegression(Regressor):
             self.
         """
         xv = self._row(x)
+        if _nan_in_input(xv, y):
+            self.n_missing += 1
+            return self
         self._ensure_weights(xv.size)
         assert self._w is not None
         pred = float(self._w @ xv)
@@ -178,7 +211,7 @@ class LinearRegression(Regressor):
         if isinstance(v, dict):
             keys = self._keys if self._keys is not None else self.feature_keys
             if keys is None:
-                keys = sorted(v)
+                keys = sorted(k for k in v if k != "y")
             feats = jnp.asarray([v[k] for k in keys])
             y = jnp.asarray(v.get("y", 0.0))
         else:
@@ -189,12 +222,18 @@ class LinearRegression(Regressor):
         else:
             xv = feats
         pred = jnp.dot(w, xv)
+        has_nan = jnp.isnan(y) | jnp.any(jnp.isnan(xv))
         err = pred - y
         grad = 2.0 * err * xv
         if self.l2 > 0.0:
             grad = grad + self.l2 * w
         new_opt_state, new_w = self.optimizer.update(opt_state, w, grad)
-        return (new_w, new_opt_state), pred
+        new_state = jax.lax.cond(
+            has_nan,
+            lambda: (w, opt_state),
+            lambda: (new_w, new_opt_state),
+        )
+        return new_state, pred
 
     def _unit_test_skips(self) -> set:
         return {
@@ -208,9 +247,11 @@ class LogisticRegression(Classifier):
     Prediction: p(y=1|x) = sigma(b + w^T x) with
     sigma(z) = 1 / (1 + exp(-z)).
     Loss on one sample with target y in {0, 1}:
-    L = -y log p - (1 - y) log(1 - p) + l2 * ||w||^2.
+    L = -y log p - (1 - y) log(1 - p) + (l2 / 2) * ||w||^2.
     Gradient with respect to the augmented weight vector:
     (sigma(z) - y) * [1, x] + l2 * w.
+    The penalty acts on the whole augmented weight vector,
+    intercept included, when intercept is True.
 
     Args:
         optimizer: any optimizer from dense_armor.utility.optim.
@@ -229,6 +270,22 @@ class LogisticRegression(Classifier):
         ...     _ = clf.learn_one({"x": 1.0}, 1)
         >>> bool(clf.predict_proba_one({"x": 1.0})[1] > 0.5)
         True
+
+    Notes:
+        The pure form ``step(state, v)`` uses the same gradient and the
+        same optimizer update as the object form. The two forms agree
+        on the same stream up to the dtype of the JAX backend: with
+        JAX in 32-bit mode (the default) the pure form is float32 and
+        the object form float64, with X64 enabled both are float64.
+        The difference is measured in
+        test/optim/test_glm_object_vs_pure.py: below 1e-5 over 30
+        samples with ``intercept=True`` and Adam.
+
+        The ``check_step_is_pure`` check from ``dense_armor.checks`` is
+        skipped (see ``_unit_test_skips``): the check passes a bare
+        scalar to ``step``, and the model expects a dict with the
+        feature keys. The skip is a known limitation of the check, not
+        a bug in the estimator.
     """
 
     budget_s: float = 5e-3
@@ -247,6 +304,7 @@ class LogisticRegression(Classifier):
         self.feature_keys = feature_keys
         self._keys: list | None = None
         self._w: np.ndarray | None = None
+        self.n_missing: int = 0
 
     @staticmethod
     def _as_dict(x):
@@ -295,6 +353,9 @@ class LogisticRegression(Classifier):
             self.
         """
         xv = self._row(x)
+        if _nan_in_input(xv, y):
+            self.n_missing += 1
+            return self
         self._ensure_weights(xv.size)
         assert self._w is not None
         z = float(self._w @ xv)
@@ -362,7 +423,7 @@ class LogisticRegression(Classifier):
         if isinstance(v, dict):
             keys = self._keys if self._keys is not None else self.feature_keys
             if keys is None:
-                keys = sorted(v)
+                keys = sorted(k for k in v if k != "y")
             feats = jnp.asarray([v[k] for k in keys])
             y = jnp.asarray(v.get("y", 0.0))
         else:
@@ -374,11 +435,17 @@ class LogisticRegression(Classifier):
             xv = feats
         z = jnp.dot(w, xv)
         p = jax.nn.sigmoid(z)
+        has_nan = jnp.isnan(y) | jnp.any(jnp.isnan(xv))
         grad = (p - y) * xv
         if self.l2 > 0.0:
             grad = grad + self.l2 * w
         new_opt_state, new_w = self.optimizer.update(opt_state, w, grad)
-        return (new_w, new_opt_state), p
+        new_state = jax.lax.cond(
+            has_nan,
+            lambda: (w, opt_state),
+            lambda: (new_w, new_opt_state),
+        )
+        return new_state, p
 
     def _unit_test_skips(self) -> set:
         return {

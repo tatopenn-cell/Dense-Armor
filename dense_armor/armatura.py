@@ -21,7 +21,7 @@ from .core.hybrid_engine import (  # motore phi_ab/trigger, vedi CHANGELOG 1.1.0
     _local_nan_fill,
     hybrid_shield,
 )
-from .misc.metro import Metro  # scaler anti-underflow, intatto
+from .utility.misc.metro import Metro  # scaler anti-underflow, intatto
 
 
 class Armatura:

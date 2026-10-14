@@ -44,7 +44,7 @@ from typing import Any, Optional
 from dense_armor.roles import Regressor
 from dense_armor.roles._util import call_with_t
 from dense_armor.roles.signal import Signal
-from dense_armor.learn.calibration import OnlinePlattScaling
+from dense_armor.utility.learn.calibration import OnlinePlattScaling
 
 __all__ = [
     "Estimate",
