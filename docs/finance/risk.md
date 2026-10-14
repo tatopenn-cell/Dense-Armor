@@ -1,63 +1,88 @@
 # Risk: how much can we lose today?
 
-**In plain words:** Every morning a bank has to answer one question. This pipeline answers it in a thousandth of a second, without reading a single line of history.
+**In plain words:** Every morning a bank has to answer one question. This page shows the tool that answers it in a thousandth of a second.
 
-## What it does
+## The scene
 
-You give it one number a day: how much you lost. It gives back two numbers and two flags:
+It is 7:00 in the morning at a European fund. The risk committee meets at 9:00 and wants one number: **how much can we lose today, if the market turns ugly**. The old way is to open ten years of returns, compute percentiles in Excel, save the sheet. It takes half an hour and the market has already moved.
 
-- **VaR 99%** — the loss that 99 days out of 100 stay below.
-- **VaR 99.9%** — the same, for the top 0.1% of days. The once-every-four-years number.
-- **oltre_limite** — true when today's loss crossed the absolute limit you set.
-- **deriva_volatilita** — true when the loss series is shifting upward. CUSUM on the loss series, gradual, not one big day.
+At 7:01 a single call to the pipeline gives the number. At 9:00 the committee has it, refreshed with yesterday's session.
 
-## The tools behind it
+## What is in the box
 
-- **DDSketch** ([dense_armor.utility.stats.quantiles](../stats/sketches.md)) keeps the tail of the loss distribution with a relative-error guarantee of 1%. It stores a fixed number of buckets, no matter how long the stream is.
-- **CUSUM** ([dense_armor.utility.drift.cusum](../drift/cusum.md)) adds up the small moves in the loss series and rings when the sum stops looking like noise.
+| Tool | Its one job | Real example |
+|---|---|---|
+| DDSketch | Remember how big the tail is | The worst 1% loss of the year, in one number |
+| CUSUM | Add up small changes until a bell rings | The loss series is drifting upward, and nobody sees it yet |
 
-## What it does on five years of S&P 500
+## 1. Sizing the worst day (DDSketch)
 
-Tested on 1,253 real trading days (October 2021 to October 2026). One call per day.
+Every bank, every fund, every trading desk has to know: if today is a bad day, how bad. The answer is a single number, the loss that 99 days out of 100 stay below.
+
+The classic way is to keep every return and compute the percentile at the end. With millions of days the file does not fit anywhere. **DDSketch keeps the tail in a fixed number of buckets, and the answer is accurate to 1%.**
+
+## 2. Noticing that losses are rising (CUSUM)
+
+The VaR number is a snapshot. If it starts moving up week after week, the mood of the market is changing, and you want to know before the committee reads the number.
+
+CUSUM adds up the small moves in the loss series. When the sum stops looking like noise, it rings the bell.
+
+## The chain
+
+For every new day:
+
+1. The day's loss goes to **DDSketch**. The tail is updated, and the VaR at 99% and 99.9% is ready.
+2. The same loss goes to **CUSUM**. If the recent losses are systematically larger than the older ones, the alarm fires.
+3. The committee gets two numbers and one flag. No history re-scan, no file to open.
+
+## What you get on five years of S&P 500
+
+Tested on 1,253 real trading days. One call per day.
 
 | Metric | Value |
 |---|---|
 | VaR 99% | 2.87% |
 | VaR 99.9% | 4.20% |
-| Days above a 5% loss | 1 out of 1,253 |
+| Days above a 5% loss | 1 out of 1,253 (7 April 2025) |
 | Days with a volatility-drift alarm | 53 out of 1,253 (4.2%) |
-| Time per day | about 116 microseconds |
+| Time per day | 116 microseconds |
 
-The one day above 5% is **7 April 2025**, the first session of the tariff-announcement week. The 5 August 2024 "Black Monday" stayed at −4.19%, below the limit: the risk pipeline reports it as a large day, not as a limit breach.
+## When you need it
 
-## Smallest example
+- Risk committee reporting: one number a day, no history re-scan.
+- Intraday stress: call `process_day` on a rolling window of the last hour for an updated VaR.
+- Regulatory limits: the `over_limit` flag is the first thing the desk sees.
+
+## Details
+
+### The pipeline
+
+The class is `RiskPipeline`, in `pipelines/finance/risk.py`. It chains two primitives:
+
+- **DDSketch** from `dense_armor.utility.stats.quantiles`. Relative-error target set by `alpha`, default 0.01 (1%).
+- **CUSUM** from `dense_armor.utility.drift.detector`. The loss series is fed to the same detector used for drift in sensors.
 
 ```python
 import numpy as np
-from pipelines.finance.rischio import RischioPipeline
+from pipelines.finance.risk import RiskPipeline
 
-rp = RischioPipeline(alpha=0.01, limite_perdita=0.05, seed=0)
+rp = RiskPipeline(alpha=0.01, loss_limit=0.05, seed=0)
 rng = np.random.default_rng(0)
 for _ in range(200):
     rp.process_day(float(abs(rng.normal(0.01, 0.005))))
 
 e = rp.process_day(0.10)
-print(round(e.var_99, 4), round(e.var_999, 4), e.oltre_limite)
+print(round(e.var_99, 4), round(e.var_999, 4), e.over_limit)
 ```
 
-You get a VaR 99% around `0.02`, a VaR 99.9% slightly above it, and `oltre_limite=True` because 10% is above the 5% limit.
+### Measured cost
 
-## When you need it
-
-- Risk committee reporting: one number a day, no history re-scan.
-- Intraday stress: call `process_day` on a rolling window of the last hour to get an updated VaR.
-- Regulatory limits: the `oltre_limite` flag is the first thing the desk sees.
-
-## Details
+About 116 microseconds per day, one core. Memory flat: DDSketch has a fixed number of buckets, CUSUM keeps a running sum.
 
 ### References
 
-- Masson, C., Rim, J. E., Lee, H. K. (2019). *DDSketch: A Fast and Fully-Mergeable Quantile Sketch with Relative-Error Guarantees.* Proceedings of the VLDB Endowment, 12(12), 2195-2205. arXiv:1908.10693.
+- Masson, C., Rim, J. E., Lee, H. K. (2019). *DDSketch: A Fast and Fully-Mergeable Quantile Sketch with Relative-Error Guarantees.* PVLDB 12(12), 2195-2205. arXiv:1908.10693.
 - Reynolds, M. R. Jr., Stoumbos, Z. G. (1975). *A CUSUM for monitoring the process mean.*
+- Market data: Yahoo Finance, S&P 500 (^GSPC), 14 October 2021 to 13 October 2026, 1,253 trading days.
 
-*The numbers on this page come from a single run on real historical data. They are not a forecast, and not financial advice.*
+*The numbers on this page come from a single run on real historical data. Not a forecast, not financial advice.*
