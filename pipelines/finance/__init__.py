@@ -35,6 +35,7 @@ Examples:
 
 from pipelines.finance.execution import ExecutionPipeline, OrderResult
 from pipelines.finance.fraud import FraudPipeline, TransactionResult
+from pipelines.finance.intrusion import FlowResult, IntrusionPipeline
 from pipelines.finance.online_analysis import OnlineAnalysis, OnlineResult
 from pipelines.finance.risk import RiskPipeline, RiskResult
 from pipelines.finance.single_ticker import SingleTickerPipeline
@@ -48,7 +49,9 @@ from pipelines.finance.unsupervised_fraud import (
 __all__ = [
     "ExecutionPipeline",
     "FinancePipeline",
+    "FlowResult",
     "FraudPipeline",
+    "IntrusionPipeline",
     "OnlineAnalysis",
     "OnlineResult",
     "OrderResult",

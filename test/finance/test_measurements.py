@@ -362,3 +362,75 @@ def test_unsupervised_fraud_on_openml_creditcard():
 
     auc = roc_auc_score(y_test, s_e)
     assert 0.95 < auc < 0.97, f"ensemble AUC = {auc:.3f}"
+
+
+def test_intrusion_pipeline_on_nsl_kdd():
+    """IntrusionPipeline on NSL-KDD (125,973 labelled network flows).
+
+    Two online Hoeffding trees, one with a drift detector at each
+    node. Split 80/20. The attacks are 46% of the stream, so this is
+    not an imbalanced problem: the classifier must genuinely separate
+    normal from attack.
+    """
+    import urllib.request
+
+    from sklearn.metrics import roc_auc_score
+
+    from pipelines.finance.intrusion import IntrusionPipeline
+
+    path = Path("/tmp/KDDTrain+.txt")
+    if not path.exists():
+        try:
+            urllib.request.urlretrieve(
+                "https://raw.githubusercontent.com/defcom17/NSL_KDD/master/KDDTrain%2B.txt",
+                path,
+            )
+        except Exception:
+            pytest.skip("NSL-KDD not downloadable")
+
+    with path.open() as fh:
+        righe = [ln.strip().split(",") for ln in fh if ln.strip()]
+
+    cat_cols = [1, 2, 3]
+    vocabs = {c: set() for c in cat_cols}
+    for r in righe:
+        for c in cat_cols:
+            vocabs[c].add(r[c])
+    maps = {c: {v: i for i, v in enumerate(sorted(vocabs[c]))} for c in cat_cols}
+
+    X_list, y_list = [], []
+    for r in righe:
+        row = []
+        for j in range(41):
+            if j in cat_cols:
+                row.append(float(maps[j][r[j]]))
+            else:
+                try:
+                    row.append(float(r[j]))
+                except Exception:
+                    row.append(0.0)
+        X_list.append(row)
+        y_list.append(0 if r[41] == "normal" else 1)
+
+    X = np.array(X_list)
+    y = np.array(y_list)
+    rng = np.random.default_rng(0)
+    perm = rng.permutation(len(X))
+    X, y = X[perm], y[perm]
+    n_train = int(len(X) * 0.8)
+    X_train, y_train = X[:n_train], y[:n_train]
+    X_test, y_test = X[n_train:], y[n_train:]
+    nf = X_train.shape[1]
+
+    pipe = IntrusionPipeline(grace_period=100, threshold=0.5, seed=0)
+    for i in range(len(X_train)):
+        x_dict = {f"f{j}": float(X_train[i, j]) for j in range(nf)}
+        pipe.learn_one(x_dict, int(y_train[i]))
+
+    s_e = []
+    for i in range(len(X_test)):
+        x_dict = {f"f{j}": float(X_test[i, j]) for j in range(nf)}
+        s_e.append(pipe.score_one(x_dict).score_ensemble)
+
+    auc = roc_auc_score(y_test, s_e)
+    assert 0.96 < auc < 0.99, f"ensemble AUC = {auc:.3f}"

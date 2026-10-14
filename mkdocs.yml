@@ -80,6 +80,7 @@ nav:
           - Static vs online: finance/static_vs_online.md
           - Fraud detection: finance/fraud.md
           - Unsupervised fraud: finance/unsupervised_fraud.md
+          - Intrusion detection: finance/intrusion.md
 
   - Shields:
       - shields/index.md
