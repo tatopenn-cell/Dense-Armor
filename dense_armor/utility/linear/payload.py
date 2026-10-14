@@ -178,6 +178,7 @@ class PayloadEstimator(Regressor):
         d = self._as_dict(x)
         extracted = self._extract(d)
         if extracted is None:
+            self.n_missing += 1
             return self
         q, qd, tau = extracted
         if np.any(np.isnan(q)) or np.any(np.isnan(qd)) or np.any(np.isnan(tau)):
@@ -188,9 +189,6 @@ class PayloadEstimator(Regressor):
             t_sample = t
         if t_sample is None:
             t_sample = d.get("t")
-        # no previous sample, or dt not usable: the qdd of this
-        # sample cannot be computed and the residual is wrong. Skip
-        # the update but remember qd and t for the next call.
         if self._prev_qd is None or self._prev_t is None or t_sample is None:
             self._prev_qd = qd
             self._prev_t = t_sample
@@ -213,7 +211,6 @@ class PayloadEstimator(Regressor):
         jz = np.asarray(self._lj(q), dtype=float)[2]
         phi = self.g * jz
 
-        # forgetting once per sample, before the joint loop
         self._P = self._P / self.lam
         for i in range(self._n):
             pi = float(phi[i])

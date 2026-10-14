@@ -106,11 +106,13 @@ step to the gradient history of each coordinate.
   Table 1, also uses a cumulative L1 penalty `t * lambda`; this
   implementation keeps `l1` constant, which changes the schedule of the
   L1 penalty.
-- **`OnlineNewtonStep(gamma, eps)`** keeps a running approximation of the
+- **`OnlineNewtonStep(gamma, eps, D)`** keeps a running approximation of the
   Hessian. It uses the inverse of that approximation as a preconditioner. The
-  update follows Algorithm 1 of Hazan, Agarwal and Kale (2007); Orabona
-  (2019), Section 7.10 states the same algorithm in FTRL form. Both give a
-  logarithmic regret on exp-concave losses. On a generic squared loss there
+  update follows Figure 3 (page 10 of the manuscript) of Hazan, Agarwal and
+  Kale (2007); Orabona (2019), Algorithm 7.6 (Section 7.10), states the
+  algorithm in argmin form. Hazan et al. give a logarithmic regret on
+  exp-concave losses on a bounded set; `OnlineNewtonStep.from_bounds` builds
+  the optimizer with their constants and the projection. On a generic squared loss there
   is no guarantee, and the table below shows a case where the method does not
   converge.
 
@@ -187,10 +189,10 @@ and Theorem 4.32 does not apply to it. `FTRLProximal`
 is Chapter 7, Algorithm 7.2; the soft threshold is the proximal operator of
 the L1 norm, Section 7.8, Example 7.24. The constant `l1` form is from
 McMahan, H. B. (2011), *Follow-the-Regularized-Leader and Mirror Descent*,
-AISTATS, Section 3.1. `OnlineNewtonStep` is Algorithm 1 of Hazan, E.,
-Agarwal, A., Kale, S. (2007), *Logarithmic regret algorithms for online
-convex optimization*, Machine Learning 69, and equivalently Section 7.10 of
-Orabona (2019) in FTRL form. `Adam` is Kingma, D. P. and Ba, J. (2014),
+AISTATS, Section 3.1. `OnlineNewtonStep` is Figure 3 (page 10 of the 2008 manuscript) of
+Hazan, E., Agarwal, A., Kale, S. (2007), *Logarithmic regret algorithms for
+online convex optimization*, Machine Learning 69, and Algorithm 7.6 (Section
+7.10, page 122) of Orabona (2019). `Adam` is Kingma, D. P. and Ba, J. (2014),
 arXiv:1412.6980, Algorithm 1.
 
 ### Choices stated explicitly

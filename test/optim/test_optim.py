@@ -137,3 +137,29 @@ def test_pure_inside_lax_scan(cls, kw, n, tol):
     (_, w_final), ws = jax.lax.scan(body, (opt.init_state(dim), jnp.zeros(dim)), grads)
     assert ws.shape == (10, dim)
     assert jnp.all(jnp.isfinite(w_final))
+
+
+@pytest.mark.parametrize("diameter", [None, 4.0, 10.0])
+def test_newton_step_projection_object_equals_pure(diameter):
+    rng = np.random.default_rng(0)
+    A = rng.normal(size=(60, 5))
+    y = A @ np.array([1.0, -2.0, 3.0, 0.5, -1.0])
+    o = OnlineNewtonStep(gamma=0.1, eps=1.0, D=diameter)
+    p = OnlineNewtonStep(gamma=0.1, eps=1.0, D=diameter)
+    w = np.zeros(5)
+    wp = jnp.zeros(5)
+    state = p.init_state(5)
+    for i in range(60):
+        w = o.step(w, 2.0 * (A[i] @ w - y[i]) * A[i])
+        g = 2.0 * (A[i] @ np.asarray(wp, dtype=float) - y[i]) * A[i]
+        state, wp = p.update(state, wp, jnp.asarray(g))
+        if diameter is not None:
+            assert float(np.linalg.norm(w)) <= 0.5 * diameter + 1e-6
+    assert float(np.max(np.abs(w - np.asarray(wp)))) < 1e-3
+
+
+def test_newton_step_rejects_non_positive_diameter():
+    with pytest.raises(ValueError):
+        OnlineNewtonStep(D=0.0)
+    with pytest.raises(ValueError):
+        OnlineNewtonStep.from_bounds(G=1.0, D=-1.0, alpha=0.1)

@@ -30,17 +30,21 @@ assumes:
     r_i ~ m * phi_i,  with phi_i = g * Jz(q)_i
 
 The unknown is a single scalar `m`. The estimator updates it with the
-standard recursive least squares with forgetting, one joint at a time:
+standard recursive least squares with forgetting. At every sample `P` is
+divided by `lam` once, then the nine joints update `m` one after the other:
 
-    K = P * phi / (lam + phi * P * phi)
+    P = P / lam
+    K = P * phi / (1 + phi * P * phi)
     m = m + K * (r - phi * m)
-    P = (P - K * phi * P) / lam
+    P = P - K * phi * P
 
 `P` is the scalar covariance of the estimate. `lam` is the forgetting
 factor, in `(0, 1]`. `lam = 1` treats all past samples with the same
 weight; `lam < 1` discounts older samples, so the estimate follows a
-payload that changes over time. The update is applied once per joint, so
-one sample contributes nine scalar updates to the same `m`.
+payload that changes over time. The forgetting is applied once per sample,
+so `lam = 0.99` means a memory of about 100 samples (2 s at 50 Hz); the nine
+joints of a sample then contribute nine scalar updates to the same `m`. The
+first sample is skipped, because there is no previous `qd` to compute `qdd`.
 
 `predict_one()` returns `max(m, 0)`, so the estimate is never negative.
 
@@ -69,7 +73,7 @@ print(round(est.predict_one(), 3))
 ```
 
 ```
-5.002
+3.362
 ```
 
 The estimator also accepts a dict with the same channels, `{"q_0": ...,
@@ -94,9 +98,13 @@ of `5.0 kg` appearing at `t = 2.0 s`:
 
 ![Estimated payload mass versus time for three forgetting factors](../assets/linear/payload_tracking.png)
 
-With `lam = 0.99` the estimate moves from `0` to `5.06` between `t = 2.0`
-and `t = 3.5`. Before the fault it stays near zero: at `t = 1.5` it is
-`0.0000 kg`, which is the correct estimate on an unloaded arm.
+With `lam = 0.99` the estimate is `2.88 kg` at `t = 3.5` and enters the band
+of 10 % around `5.0 kg` `4.26 s` after the fault (it is `4.87 kg` at the end
+of the 8 s stream). With `lam = 0.95` (a memory of about 20 samples) it enters
+the band `0.96 s` after the fault and ends at `5.00 kg`; with `lam = 0.999` it
+has not entered it at the end (`3.94 kg`). Before the fault the largest value
+is `0.054 kg`, and at `t = 1.5` it is `0.0000 kg`, which is the correct
+estimate on an unloaded arm.
 
 The forgetting is what makes the estimator adapt to a payload that
 appears, disappears, or changes. Without it, `lam = 1`, the estimate
@@ -134,14 +142,17 @@ The trajectory of `ms` over `ts`:
 
 | `t` | estimated mass |
 |---|---|
-| `0.50` | `+0.0166 kg` |
+| `0.50` | `+0.0000 kg` |
 | `1.50` | `+0.0000 kg` |
-| `2.50` | `+4.2877 kg` |
-| `3.50` | `+5.0588 kg` |
+| `2.50` | `+1.4057 kg` |
+| `3.50` | `+2.8762 kg` |
+| `5.00` | `+3.8170 kg` |
+| `7.00` | `+4.7582 kg` |
 
 The full trajectory over the 400 samples of the stream has
-`min = +0.0000` and `max = +5.1754`, and it is never negative. The
-estimate settles on the true mass `5.0 kg` within `1.5 s` of the fault.
+`min = +0.0000` and `max = +4.8713`, and it is never negative. The
+estimate enters the band of 10 % around the true mass `5.0 kg` `4.26 s` after
+the fault and stays there.
 
 Two properties are important here. First, the estimator is **online**:
 it does not need a pre-recorded identification experiment, and it
@@ -202,17 +213,23 @@ specific paper.
   residuals seen so far, with weights decaying as `lam^k` for `k`
   samples in the past. Values close to `1` give a stable but slow
   estimate; values closer to `0` give a reactive but noisy estimate.
-  The default `0.99` is the usual value for a slowly changing payload.
+  The default `0.99` has a memory of about 100 samples: on the stream of
+  section 3 it enters the 10 % band `4.26 s` after the fault, while
+  `lam = 0.95` takes `0.96 s`.
 - **Non-negative output.** `predict_one()` returns `max(m, 0)`. This is
   a hard constraint on the output, not on the internal state: the
   internal `m` can be negative, and only the returned value is clamped.
   This keeps the downstream controller from receiving a negative mass
   during the initial transient, when the residual is dominated by noise.
-- **One update per joint and per sample.** The same scalar `m` is
-  updated nine times per sample, once per joint of the Panda. This
-  treats the nine joints as nine independent measurements of the same
-  quantity, and it is what gives the estimator a fast convergence on a
-  short stream.
+- **Forgetting once per sample, one update per joint.** The covariance is
+  divided by `lam` once per sample; the same scalar `m` is then updated nine
+  times, once per joint of the Panda, as nine independent measurements of the
+  same quantity. An earlier version divided by `lam` at every joint update,
+  which made the forgetting `lam^9` per sample (`0.91` for `lam = 0.99`, a
+  memory of about 12 samples).
+- **Skipped samples.** The first sample (no previous `qd`), a sample with
+  `dt <= 0`, a sample with a NaN in `q`, `qd` or `tau`, and a sample without
+  the nine channels are not used; the last two are counted in `n_missing`.
 
 ### Measured cost
 

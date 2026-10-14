@@ -28,6 +28,14 @@ for lam, color in [(0.999, "tab:blue"), (0.99, "tab:orange"),
         ts.append(float(getattr(sig, "t", 0.0)))
         ms.append(float(est.predict_one()))
     ax.plot(ts, ms, color=color, lw=1.2, label=f"lam = {lam}")
+    t_arr, m_arr = np.asarray(ts), np.asarray(ms)
+    i15 = int(np.argmin(np.abs(t_arr - 1.5)))
+    after = np.where((t_arr >= 2.0) & (np.abs(m_arr - 5.0) <= 0.5))[0]
+    print(
+        f"lam {lam}: t=1.5 -> {m_arr[i15]:.4f} kg | pre-fault max {m_arr[t_arr < 2.0].max():.4f} | "
+        f"first within 10% after {None if after.size == 0 else round(float(t_arr[after[0]] - 2.0), 2)} s | "
+        f"at t=3.5 {m_arr[int(np.argmin(np.abs(t_arr - 3.5)))]:.3f} | final {m_arr[-1]:.3f}"
+    )
 
 ax.axvline(2.0, color="0.5", lw=0.8, ls="--")
 ax.axhline(5.0, color="0.5", lw=0.8, ls=":")

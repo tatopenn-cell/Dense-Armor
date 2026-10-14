@@ -166,14 +166,16 @@ generic regression task the first-order methods are the safer choice.
 ### References
 
 Hazan, E., Agarwal, A., Kale, S. (2007). *Logarithmic regret algorithms
-for online convex optimization*. Machine Learning 69, Algorithm 1, page
-10. The update
+for online convex optimization*. Machine Learning 69. In the manuscript of
+20 November 2008 (`log-regret.pdf`) the algorithm is "Figure 3: The Online
+Newton Step algorithm", page 10; the journal version may number it
+differently. The update
 
     A_t = A_{t-1} + g_t g_t^T
     w_{t+1} = w_t - (1/gamma) A_t^{-1} g_t
 
-follows Algorithm 1 with the projection step omitted. Theorem 2, page 11,
-gives the regret bound
+follows Figure 3; the projection step is applied when `D` is given.
+Theorem 2, page 11, gives the regret bound
 
     Regret_T <= 5 ((1/alpha) + G D) n log T
 
@@ -181,33 +183,35 @@ under the assumptions that the losses are `alpha`-exp-concave, that the
 gradients are bounded by `G`, and that the feasible set has diameter `D`.
 
 Orabona, F. (2019). *A Modern Introduction to Online Learning*. Chapter 7,
-Section 7.10 states the same algorithm in FTRL form,
-`w = -S_t^{-1} (sum g)`, with `S_t = lambda I + mu sum g g^T`, which is a
-different but equivalent iteration.
+Section 7.10, Algorithm 7.6 (page 122), defines the Online Newton Step by
+`x_t = argmin (lambda/2) ||x||^2 + sum_i ( <g_i, x> + (mu/2) <g_i, x - x_i>^2 )`.
+The book does not state that it gives the same iterates as Figure 3.
 
 ### Choices stated explicitly
 
-- **No projection.** Algorithm 1 of Hazan 2007 projects onto a convex
-  feasible set using the norm induced by `A_{t-1}`. This implementation
-  takes `V = R^d`, so the projection is the identity. The source's
-  argument needs the projection because the Newton-like step
-  `A_t^{-1} g_t` can leave the feasible set; without a bounded feasible
-  set there is nothing to project onto.
-- **`gamma` and `eps` as free parameters.** The source fixes them from
-  the problem's constants: `gamma = (1/2) min(1/(4 G D), alpha)` and
-  `eps = 1/(gamma^2 D^2)`. This implementation leaves both free, so the
-  caller is responsible for choosing them. The default `gamma = 1.0`,
-  `eps = 1e-6` works on small problems but is not what the source would
+- **The projection is optional.** Figure 3 projects onto a convex feasible
+  set in the norm induced by `A`. With `D = None` (default) the feasible set
+  is `R^d` and the projection is the identity. With `D` given, both the
+  object form and the pure form project on the ball of diameter `D` centred
+  at 0, by bisection on the Lagrange multiplier.
+- **`gamma` and `eps` are free parameters, or come from the constants.**
+  The source fixes them from the problem's constants:
+  `gamma = (1/2) min(1/(4 G D), alpha)` and `eps = 1/(gamma^2 D^2)`.
+  `OnlineNewtonStep.from_bounds(G, D, alpha)` builds the optimizer with
+  those two formulas and the projection. The constructor leaves them free,
+  and the default `gamma = 1.0`, `eps = 1e-6` is not what the source would
   pick.
 - **Sherman-Morrison for the inverse.** The source inverts `A_t`
   explicitly at every step. This implementation keeps `A_t^{-1}` in the
   state and updates it with the rank-one Sherman-Morrison formula, so
   the per-sample cost is quadratic in the number of features rather than
   cubic.
-- **No convergence on non exp-concave losses.** The regret bound only
-  covers exp-concave losses. On the squared loss of the joint-torque
-  regression, the method converges to a value that is not the minimum
-  of the regression. Section 4 shows the effect.
+- **No convergence guarantee on a generic squared loss.** The regret bound
+  covers exp-concave losses on a bounded set. On a 5-dimensional least
+  squares of 200 rows (500 steps, largest error on the weights), the free
+  defaults give `2.7147` and `1.8344`, while `from_bounds` gives `0.0000`
+  with `G = 55.76` and `0.0110` with `G = 184.26`. Section 4 shows the
+  effect on the joint-torque regression.
 
 ### Measured cost
 
@@ -220,9 +224,12 @@ most expensive of the five optimizers in the package.
 
 ### Development diary
 
-The docstring was verified line by line against Algorithm 1 of Hazan
-2007, page 10. The update rule matches. The regret bound of Theorem 2,
-page 11, was added after an earlier version of the docstring cited the
+A review compared the code with the manuscript of Hazan et al.: the
+algorithm is Figure 3 and not "Algorithm 1", the projection and the
+formulas of `gamma` and `eps` were missing, and the pure form did not
+project. The projection (object form and pure form), `from_bounds` and the
+measured table of the docstring were added. The regret bound of Theorem 2,
+page 11, had been added after an earlier version of the docstring cited the
 algorithm without its guarantee. The `SyntheticArm` example shows the
 method converging to a value with the wrong sign relative to the true
 torque; this is not a bug but the expected behaviour on a non exp-concave

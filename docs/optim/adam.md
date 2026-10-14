@@ -76,7 +76,7 @@ print(w)
 ```
 
 ```
-[-0.1 -0.1]
+[-0.09999935 -0.09999935]
 ```
 
 Adam keeps the two running averages and the step counter in the state, so
@@ -165,8 +165,12 @@ Optimization*. arXiv:1412.6980, ICLR 2015. Algorithm 1, page 2. Theorem
 4.1, page 4, bounds the regret with rate `O(sqrt(T))` under bounded
 gradients `||grad f_t(theta)||_2 <= G`, `||grad f_t(theta)||_inf <= G_inf`,
 bounded iterates `||theta_m - theta_n||_2 <= D`, `||theta_m - theta_n||_inf
-<= D_inf`, and `beta1^2 / sqrt(beta2) < 1`. Corollary 4.2, page 4, gives
-the average regret `R(T) / T = O(1 / sqrt(T))`.
+<= D_inf`, and `beta1^2 / sqrt(beta2) < 1`, and with the step
+`alpha_t = alpha / sqrt(t)` and `beta_{1,t} = beta1 * lambda^(t-1)`,
+`lambda` in `(0, 1)`. This implementation uses a constant `lr` and a
+constant `beta1`, so the theorem does not apply to it. Corollary 4.2, page 4,
+gives the average regret `R(T) / T = O(1 / sqrt(T))` under the same
+schedules.
 
 The update rule in this implementation is Algorithm 1 line by line. The
 only rename is `theta -> w`, `alpha -> lr`, `beta -> beta`, `epsilon ->
@@ -200,9 +204,9 @@ updated with a multiply-add per coordinate.
 
 ### Development diary
 
-The docstring was verified line by line against Algorithm 1 on page 2 of
-the paper. The five update lines match exactly. This is the only optimizer
-in the package whose docstring does not need a "variant" note. The
+The docstring was compared with Algorithm 1 on page 2 of the paper: the
+five update lines match exactly. The regret theorem needs the decreasing
+schedules listed in the references, which this implementation does not use. The
 `SyntheticArm` example in Section 4 uses `lr=0.5` and `beta1=0.99`
 instead of the paper's defaults, because on a 400-sample stream the
 default `lr=0.001` produces a prediction `-0.012` that is

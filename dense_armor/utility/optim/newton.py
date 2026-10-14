@@ -2,6 +2,7 @@
 
 from typing import Any
 
+import jax
 import jax.numpy as jnp
 import numpy as np
 
@@ -23,13 +24,14 @@ class OnlineNewtonStep:
             Corresponds to beta in the paper.
         eps: initial scale of the Hessian, strictly positive.
             A_0 = eps * I. Corresponds to epsilon in the paper.
-        D: radius of the feasible ball for the projection, or None to
-            disable the projection (default). The paper projects x_t
-            onto the feasible set P after each update, in the norm
-            induced by A_{t-1}. Setting D > 0 enables the same
-            projection here, on the euclidean ball of radius D centred
-            at 0. With D = None the update is the unprojected one,
-            which is the form used by the tests before this change.
+        D: diameter of the feasible set, or None to disable the
+            projection (default). The paper projects x_t onto the
+            feasible set P after each update, in the norm induced by the
+            matrix A of the update. Setting D > 0 enables the same
+            projection here, on the euclidean ball of radius D / 2
+            centred at 0, which has diameter D. The object form
+            ``step`` and the pure form ``update`` both project. With
+            D = None the update is the unprojected one.
 
     References:
         Hazan, E., Agarwal, A., Kale, S. (2007). Logarithmic regret
@@ -44,12 +46,13 @@ class OnlineNewtonStep:
         w_{t+1} = w_t - (1/gamma) A_t^{-1} g_t follows Figure 3.
         Theorem 2, page 11, gives Regret_T <= 5((1/alpha) + G D) n log T
         under alpha-exp-concave losses, bounded gradients ||grad f|| <= G,
-        and bounded feasible set of diameter D. This implementation omits
-        the projection step of Figure 3, leaves gamma and eps as free
-        hyperparameters, and does not use the source's formulas
+        and bounded feasible set of diameter D. The projection of
+        Figure 3 is applied only when D is given; gamma and eps are free
+        hyperparameters unless the object is built with from_bounds,
+        which uses the source's formulas
         gamma = (1/2) min(1/(4 G D), alpha), eps = 1/(gamma^2 D^2).
 
-        Orabona, F. (2019). Modern Online Learning: A Modern Introduction.
+        Orabona, F. (2019). A Modern Introduction to Online Learning.
         Algorithm 7.6 (Section 7.10, page 122). The same algorithm is
         stated there in the argmin form
         x_t = argmin_{x in V} (lambda / 2) ||x||^2 +
@@ -61,18 +64,24 @@ class OnlineNewtonStep:
         (A 200x5, w* = [1, -2, 3, 0.5, -1], squared loss), 500 steps,
         max absolute error on the weights:
 
-            gamma = 1.0, eps = 1.0, no projection    2.7147
-            gamma = 0.1, eps = 1.0, no projection    1.8344
-            gamma = 1.0, eps = 1.0, D = 10           2.7147
-            gamma = 0.1, eps = 1e-6, D = 10          2.7 (approx.)
+            gamma = 1.0, eps = 1.0, no projection       2.7147
+            gamma = 0.1, eps = 1.0, no projection       1.8344
+            gamma = 1.0, eps = 1.0, D = 10              2.7147
+            gamma = 0.1, eps = 1e-6, D = 10             0.0466
+            from_bounds(G = 55.76, D = 10, alpha = 1)   0.0000
+            from_bounds(G = 184.26, D = 10, alpha = 1)  0.0110
 
-        With the paper's gamma and eps from from_bounds (G = 55.76 the
-        gradient norm at w = 0, D = 10, any alpha in the range tested),
-        the algorithm reaches the solution: error 0.0000 at 500 steps.
-        The projection alone does not fix the slow convergence; the
-        paper's gamma and eps do. With the free-parameter defaults the
-        algorithm has no convergence guarantee on the generic squared
-        loss, and the test uses from_bounds for this reason.
+        Here G = 55.76 is the largest gradient norm at w = 0 and
+        G = 184.26 is a bound of the gradient norm on the whole ball of
+        radius D / 2 = 5; the norm of w* is 3.905. With the free
+        parameters the unprojected algorithm does not reach the
+        solution and the paper's gamma and eps from from_bounds do. The
+        convergence guarantee of Theorem 2 needs losses that are
+        alpha-exp-concave on the feasible set; no such guarantee is
+        claimed for the free-parameter defaults on a generic squared loss.
+        The object form and the pure form give the same weights:
+        the largest difference over 60 steps is 6e-7 with from_bounds
+        and 2e-6 without projection (float32 in the pure form).
 
         Memory: the state is a matrix d x d, where d is the number of
         features. It is constant in the stream length n, and quadratic
@@ -122,11 +131,12 @@ class OnlineNewtonStep:
             gamma = (1/2) min(1 / (4 G D), alpha)
             eps   = 1 / (gamma^2 D^2)
 
-        and enables the projection on the euclidean ball of radius D.
+        and enables the projection on the euclidean ball of diameter D.
 
         Args:
             G: bound on the gradient norm, ||grad f|| <= G.
-            D: diameter of the feasible set (here, ball radius).
+            D: diameter of the feasible set; the projection is on the
+                euclidean ball of radius D / 2 centred at 0.
             alpha: exp-concavity parameter of the losses.
 
         Returns:
@@ -154,7 +164,7 @@ class OnlineNewtonStep:
         return f"OnlineNewtonStep(gamma={self.gamma}, eps={self.eps}, D={self.D})"
 
     def _project(self, y: np.ndarray, A_inv: np.ndarray, D: float) -> np.ndarray:
-        """Project y on the ball of radius D, in the norm induced by A.
+        """Project y on the ball of diameter D, in the norm induced by A.
 
         Solves ``argmin_{||x||<=D} (y - x)^T A (y - x)``. With
         ``A_inv = A^{-1}`` the solution has the form
@@ -163,7 +173,8 @@ class OnlineNewtonStep:
         already inside the ball, ``lambda = 0`` and x = y. Otherwise
         lambda is found by bisection.
         """
-        if float(y @ y) <= D * D:
+        radius = 0.5 * D
+        if float(y @ y) <= radius * radius:
             return y
         d = y.size
         eye = np.eye(d)
@@ -174,11 +185,11 @@ class OnlineNewtonStep:
             return float(x @ x)
 
         lo, hi = 0.0, 1.0
-        while norm_sq(hi) > D * D and hi < 1e15:
+        while norm_sq(hi) > radius * radius and hi < 1e15:
             hi *= 2.0
         for _ in range(80):
             mid = 0.5 * (lo + hi)
-            if norm_sq(mid) > D * D:
+            if norm_sq(mid) > radius * radius:
                 lo = mid
             else:
                 hi = mid
@@ -190,7 +201,7 @@ class OnlineNewtonStep:
         """One update, keeping A^{-1} via Sherman-Morrison.
 
         If ``D`` is not None, the result is projected on the ball of
-        radius D in the norm induced by the updated ``A``.
+        diameter D in the norm induced by the updated ``A``.
         """
         if self._A_inv.size == 0:
             self._A_inv = np.eye(weights.size) / self.eps
@@ -218,4 +229,38 @@ class OnlineNewtonStep:
         denom = 1.0 + gradient @ v
         A_inv_new = A_inv - jnp.outer(v, v) / denom
         w_new = weights - (A_inv_new @ gradient) / self.gamma
+        if self.D is not None:
+            w_new = self._project_jax(w_new, A_inv_new, 0.5 * self.D)
         return {"A_inv": A_inv_new}, w_new
+
+    @staticmethod
+    def _project_jax(y: jnp.ndarray, A_inv: jnp.ndarray, radius: float) -> jnp.ndarray:
+        """Pure projection on the ball of the given radius, in the norm of A.
+
+        Same problem as ``_project``: the multiplier is found with 60
+        doublings and 60 bisections, so the shapes are fixed and the
+        function runs under ``jax.jit`` and ``jax.lax.scan``.
+        """
+        eye = jnp.eye(y.shape[0], dtype=y.dtype)
+        r2 = radius * radius
+
+        def norm_sq(lam):
+            x = jnp.linalg.solve(eye + lam * A_inv, y)
+            return x @ x
+
+        hi = jax.lax.fori_loop(
+            0,
+            60,
+            lambda _, h: jnp.where(norm_sq(h) > r2, 2.0 * h, h),
+            jnp.asarray(1.0, y.dtype),
+        )
+
+        def bisect(_, lohi):
+            lo, hi_ = lohi
+            mid = 0.5 * (lo + hi_)
+            above = norm_sq(mid) > r2
+            return jnp.where(above, mid, lo), jnp.where(above, hi_, mid)
+
+        lo, hi = jax.lax.fori_loop(0, 60, bisect, (jnp.asarray(0.0, y.dtype), hi))
+        projected = jnp.linalg.solve(eye + 0.5 * (lo + hi) * A_inv, y)
+        return jnp.where(y @ y <= r2, y, projected)

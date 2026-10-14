@@ -122,3 +122,4 @@ def test_payload_extract_returns_none_on_missing_channels():
     est = PayloadEstimator(model, link="panda_link7")
     assert est.learn_one({"x": 1.0}) is est
     assert est.predict_one({}) == 0.0
+    assert est.n_missing == 1
