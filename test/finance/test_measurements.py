@@ -13,13 +13,25 @@ import csv
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from pipelines.finance import (
     ExecutionPipeline,
     FinancePipeline,
+    OnlineAnalysis,
     RiskPipeline,
     SingleTickerPipeline,
+    StaticAnalysis,
 )
+
+# Tutti i test di questo modulo leggono CSV da disco e fanno girare una
+# pipeline su centinaia o migliaia di campioni reali. Sono i "benchmark",
+# non i test unitari. Si marcano `slow` cosi' in locale basta
+#     pytest -m "not slow"
+# per girare solo i test veloci. La CI li fa girare tutti, perche' e' da
+# loro che viene la copertura di OnlineAnalysis, StaticAnalysis e del
+# metodo calibra.
+pytestmark = pytest.mark.slow
 
 FIXT = Path(__file__).resolve().parents[2] / "test" / "fixtures" / "finance"
 
@@ -146,3 +158,101 @@ def test_single_ticker_on_real_apple():
             n_anom += 1
 
     assert n_anom == 43, f"anomalies={n_anom}, expected 43"
+
+
+def test_static_analysis_on_real_sp500():
+    """StaticAnalysis with a 3% fixed threshold on the S&P 500.
+
+    Reads the same GSPC fixture, applies the fixed-cutoff baseline,
+    and checks the number of flagged days matches the
+    static_vs_online page (20 days over the whole series).
+    """
+    prices, _volume = _leggi_azioni("^GSPC")
+    returns = [
+        (prices[i] - prices[i - 1]) / prices[i - 1] for i in range(1, len(prices))
+    ]
+
+    sa = StaticAnalysis(threshold=0.03)
+    r = sa.analyze(np.array(returns))
+
+    assert r.n_days == len(returns)
+    assert r.n_anomalous == 20, f"static 3% flag = {r.n_anomalous}"
+
+
+def test_online_analysis_on_real_sp500():
+    """OnlineAnalysis on the same S&P 500 series, both detectors.
+
+    Checks that the pipeline runs end to end and returns the
+    structure promised by the class docstring.
+    """
+    prices, volume = _leggi_azioni("^GSPC")
+    vol_mean = float(np.mean(volume))
+    relative_volume = [v / vol_mean for v in volume]
+    returns = [0.0] + [
+        (prices[i] - prices[i - 1]) / prices[i - 1] for i in range(1, len(prices))
+    ]
+
+    n_cal = 250
+    ret_cal = np.array(returns[1:n_cal])
+    range_ret = (
+        float(np.percentile(ret_cal, 0.5)),
+        float(np.percentile(ret_cal, 99.5)),
+    )
+    vol_cal = np.array(relative_volume[:n_cal])
+    range_vol = (
+        float(np.percentile(vol_cal, 0.5)),
+        float(np.percentile(vol_cal, 99.5)),
+    )
+
+    oa = OnlineAnalysis(range_ret=range_ret, range_vol=range_vol, seed=0)
+    r = oa.analyze(returns, relative_volume)
+
+    assert r.n_days == len(returns)
+    assert isinstance(r.n_anomalous, int)
+    assert isinstance(r.final_loda_threshold, float)
+    assert isinstance(r.final_hst_threshold, float)
+
+
+def test_finance_pipeline_calibra():
+    """Static method calibra returns ranges from the first fraction of a series."""
+    prices, volume = _leggi_azioni("^GSPC")
+    vol_mean = float(np.mean(volume))
+    relative_volume = np.array([v / vol_mean for v in volume])
+    prices = np.array(prices)
+
+    range_ret, range_vol = FinancePipeline.calibra(
+        prices, relative_volume, fraction=0.2
+    )
+    low, high = range_ret
+    assert low < 0 < high
+    assert range_vol[0] > 0
+    assert range_vol[1] > range_vol[0]
+
+
+def test_execution_dampened_branch():
+    """Exercise the middle branch of the ExecutionPipeline (Orca on a 6x order).
+
+    Warms the rolling mean to a known value, then feeds one order big
+    enough to go through Orca but below the 10x refusal threshold.
+    The purpose is to cover the Orca path (which the tests on real
+    data alone never reach).
+    """
+    ep = ExecutionPipeline(seed=0)
+    for _ in range(30):
+        ep.process_order(5.0)
+    # rolling mean ~ 5, so 6x = 30 goes through Orca but not refused
+    e = ep.process_order(30.0)
+    assert e.approved
+    assert ep.n_through_orca >= 1
+
+
+def test_execution_refusal_by_count():
+    """Confirm the refusal counter and the direct-pass counter are consistent."""
+    ep = ExecutionPipeline(seed=0)
+    for _ in range(30):
+        ep.process_order(5.0)
+    ep.process_order(500.0)  # refused
+    ep.process_order(6.0)  # passes directly
+    assert ep.n_orders == 32
+    assert ep.n_refused == 1
+    assert ep.n_passed_directly >= 29
