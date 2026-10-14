@@ -57,7 +57,11 @@ Tested on 1,253 real trading days. One call per day.
 
 ### Implementation
 
-The class is `RiskPipeline`, in `pipelines/finance/risk.py`. It chains two Dense-Armor primitives: [DDSketch](../stats/sketches.md) for the tail of the loss distribution, and [CUSUM](../drift/cusum.md) on the loss series. See the linked pages for the algorithms; this page shows how they are combined and what the numbers are on real market data.
+The pipeline is in `pipelines/finance/risk.py`.
+Primitives chained, each with its own page:
+
+- [DDSketch](../stats/sketches.md)
+- [CUSUM](../drift/cusum.md)
 
 ### References
 

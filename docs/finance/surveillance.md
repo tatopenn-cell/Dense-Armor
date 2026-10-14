@@ -87,7 +87,14 @@ Payment fraud costs **45 billion dollars** a year worldwide (Huang et al., 2025)
 
 ### Implementation
 
-The class is `FinancePipeline`, in `pipelines/finance/surveillance.py`. It chains five Dense-Armor primitives in one pass: [Armatura](../shields/armatura.md), [CUSUM](../drift/cusum.md), [LODA](../anomaly/loda.md), [Half-Space Trees](../anomaly/hst.md), [Orca](../shields/orca.md). Each primitive keeps its own page; this page only shows how they are chained and what the result is on real market data.
+The pipeline is in `pipelines/finance/surveillance.py`.
+Primitives chained, each with its own page:
+
+- [Armatura](../shields/armatura.md)
+- [CUSUM](../drift/cusum.md)
+- [LODA](../anomaly/loda.md)
+- [Half-Space Trees](../anomaly/hst.md)
+- [Orca](../shields/orca.md)
 
 ### References
 

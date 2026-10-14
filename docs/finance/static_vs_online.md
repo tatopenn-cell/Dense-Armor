@@ -96,7 +96,11 @@ The two are not in competition. The static pipeline is the baseline; the online 
 
 ### Implementation
 
-Two pipelines. `StaticAnalysis` in `pipelines/finance/static_analysis.py` applies a fixed cutoff to the daily return: one line, no dependency. `OnlineAnalysis` in `pipelines/finance/online_analysis.py` chains [LODA](../anomaly/loda.md) and [Half-Space Trees](../anomaly/hst.md) with their adaptive thresholds. See the linked pages for the algorithms; this page compares the two on the same real series.
+The pipelines are in `pipelines/finance/static_analysis.py` and `pipelines/finance/online_analysis.py`.
+The online one chains two primitives, each with its own page:
+
+- [LODA](../anomaly/loda.md)
+- [Half-Space Trees](../anomaly/hst.md)
 
 ### References
 

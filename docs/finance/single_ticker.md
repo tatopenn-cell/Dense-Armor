@@ -55,7 +55,11 @@ The 43 days include June 2022 and September 2023 crashes, plus the quarterly-exp
 
 ### Implementation
 
-The class is `SingleTickerPipeline`, in `pipelines/finance/single_ticker.py`. It chains [LODA](../anomaly/loda.md) and [Half-Space Trees](../anomaly/hst.md) on the (return, volume) pair of one stock. Each detector keeps its adaptive threshold; the pipeline only takes the AND of the two. See the linked pages for the algorithms.
+The pipeline is in `pipelines/finance/single_ticker.py`.
+Primitives chained, each with its own page:
+
+- [LODA](../anomaly/loda.md)
+- [Half-Space Trees](../anomaly/hst.md)
 
 ### References
 

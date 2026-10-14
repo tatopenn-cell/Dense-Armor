@@ -58,11 +58,14 @@ Zero dampened is not a bug: on a natural distribution the 5x-10x range is almost
 
 ### Implementation
 
-The class is `ExecutionPipeline`, in `pipelines/finance/execution.py`. It chains [RunningMoments](../stats/moments.md) for the rolling order size and [Orca](../shields/orca.md) for the damping step. See the linked pages for the primitives; this page shows the three-check rule and what it does on real trade data.
+The pipeline is in `pipelines/finance/execution.py`.
+Primitives chained, each with its own page:
+
+- [RunningMoments](../stats/moments.md)
+- [Orca](../shields/orca.md)
 
 ### References
 
-- Orca: see [the Orca page](../shields/orca.md).
 - Running moments: Welford, B. P. (1962). Technometrics 4(3), 419-420.
 - Trade data: Coinbase Exchange public API, endpoint `/products/BTC-USD/trades`, 14 October 2026, 1,000 rows.
 
