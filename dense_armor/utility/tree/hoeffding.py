@@ -395,7 +395,15 @@ class HoeffdingTreeClassifier(Classifier):
         return max(proba.items(), key=lambda kv: kv[1])[0]
 
     def explain_one(self, x: Any, t: float | None = None) -> list:
-        """Return the path from root to leaf as a list of dicts."""
+        """Return the path from root to leaf as a list of dicts.
+
+        Returns an empty list when the root itself is a leaf, that is
+        when the tree never split from the root. This happens on
+        small datasets where the Hoeffding bound (or the t-test for
+        SGT) is never satisfied, so no split is statistically
+        significant. The prediction is then a constant prior over the
+        classes and there is no path to explain.
+        """
         if self.root_ is None:
             return []
         d = _as_dict(x)
