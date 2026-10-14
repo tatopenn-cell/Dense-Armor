@@ -62,8 +62,7 @@ class FraudPipeline:
         seed: int = 0,
     ):
         self.mondrian = MondrianForestClassifier(n_trees=n_trees, seed=seed)
-        self.sgt = SGTClassifier(min_samples_split=min_samples_split_sgt,
-                                 n_bins=32)
+        self.sgt = SGTClassifier(min_samples_split=min_samples_split_sgt, n_bins=32)
         self.threshold = float(threshold)
         self.n_transactions = 0
 

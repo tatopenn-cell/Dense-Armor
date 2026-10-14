@@ -42,10 +42,9 @@ from pipelines.finance.static_analysis import StaticAnalysis, StaticResult
 from pipelines.finance.surveillance import FinancePipeline, TickResult
 
 __all__ = [
-    "FraudPipeline",
-    "TransactionResult",
     "ExecutionPipeline",
     "FinancePipeline",
+    "FraudPipeline",
     "OnlineAnalysis",
     "OnlineResult",
     "OrderResult",
@@ -55,4 +54,5 @@ __all__ = [
     "StaticAnalysis",
     "StaticResult",
     "TickResult",
+    "TransactionResult",
 ]

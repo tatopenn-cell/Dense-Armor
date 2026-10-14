@@ -314,4 +314,3 @@ def test_fraud_pipeline_on_openml_creditcard():
     assert 0.960 < auc_e < 0.975, f"ensemble AUC = {auc_e:.3f}"
     assert tp == 69, f"true positives = {tp}"
     assert fp == 3, f"false positives = {fp}"
-
