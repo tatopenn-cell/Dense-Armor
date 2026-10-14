@@ -96,18 +96,32 @@ class LocalOutlierFactor(AnomalyDetector):
     300 at n_neighbors=20.
 
     On the benchmark streams of ``benchmarks/anomaly_streaming.py``
-    (SyntheticArm payload fault, joints 0-3, 200 samples; DriftStream
-    sudden drift, 4 features, 2000 samples), at the default
-    ``n_neighbors=20``, ``window=100``:
+    (SyntheticArm payload fault, joints 0-3, 200 samples, 100 healthy
+    then 100 faulty; DriftStream sudden drift, 4 features, 2000
+    samples, one step at half), at the default ``n_neighbors=20``,
+    ``window=100``, ``threshold=1.5``:
 
         stream   protocol          ROC-AUC   FA@thr   ms/sample
-        arm      learn-on-healthy   0.XXX     0.XXX    X.XXX
-        arm      learn-on-all       0.XXX     0.XXX    X.XXX
-        drift    learn-on-healthy   0.XXX     0.XXX    X.XXX
-        drift    learn-on-all       0.XXX     0.XXX    X.XXX
+        arm      learn-on-healthy    1.000    0.000       1.675
+        arm      learn-on-all        0.778    0.000       0.855
+        drift    learn-on-healthy    0.997    0.007       2.277
+        drift    learn-on-all        0.519    0.007       1.153
 
-    Numbers are updated when the benchmark is re-run; see
-    test/anomaly/test_lof.py for the assertions on the same streams.
+    The large gap between learn-on-healthy and learn-on-all is the
+    expected behaviour of LOF on a stream where half the samples are
+    anomalies: the window is filled with the anomalous samples
+    during the second half, the local density around the fault is no
+    longer anomalous, and the score drops. The detector is meant to
+    be trained on the healthy phase and used afterwards, which is
+    the deployment the library targets.
+
+    Protection. The same detector, wrapped in AnomalyGate + Protected
+    on the arm residuals, keeps the offset of the least-squares model
+    at err_prot = 0.0015 against err_bare = 3.2886 (bare model), with
+    100 of the 100 fault samples flagged. See
+    test/protect/test_protected_anomaly_stream.py.
+
+PLACEHOLDER_REPLACE_ME
 
     No pure form. The exact k-NN search inside a sliding window is
     not naturally expressible as a pure function of a small state
