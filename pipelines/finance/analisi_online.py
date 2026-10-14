@@ -73,17 +73,24 @@ class AnalisiOnline:
         seed: int = 0,
     ):
         self.loda = LODA(
-            n_projections=50, n_bins=10, window=200,
-            range_init=50, seed=seed,
+            n_projections=50,
+            n_bins=10,
+            window=200,
+            range_init=50,
+            seed=seed,
         )
         self.hst = HalfSpaceTrees(
-            n_trees=15, depth=8, window=100,
-            feature_ranges=[range_ret, range_vol], seed=seed,
+            n_trees=15,
+            depth=8,
+            window=100,
+            feature_ranges=[range_ret, range_vol],
+            seed=seed,
         )
 
     def analizza(
         self,
-        rendimenti, volumi_rel,
+        rendimenti,
+        volumi_rel,
     ) -> RisultatoOnline:
         """Run LODA and HST on the whole series, one day at a time.
 

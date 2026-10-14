@@ -15,7 +15,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from pipelines.finance import (
     AnomaliaTitoloPipeline,
@@ -41,7 +40,8 @@ def carica_trade_coinbase():
 
 
 def test_sorveglianza_su_sp500_reale():
-    """Su 1,254 giorni di S&P 500, tre anomalie LODA+HST."""
+    """Su 1,254 giorni di S&P 500 con range calibrati, 42 anomalie LODA+HST
+    (include terzi venerdì e fine mese). Vedi statico_vs_online.md."""
     df = carica_azioni("^GSPC")
     prezzi = df["Close"].values.astype(float)
     vol_rel = df["Volume"].values.astype(float)
@@ -49,11 +49,15 @@ def test_sorveglianza_su_sp500_reale():
 
     n_cal = 250
     ret_cal = np.diff(prezzi[:n_cal]) / prezzi[:n_cal][:-1]
-    range_ret = (float(np.percentile(ret_cal, 0.5)),
-                 float(np.percentile(ret_cal, 99.5)))
+    range_ret = (
+        float(np.percentile(ret_cal, 0.5)),
+        float(np.percentile(ret_cal, 99.5)),
+    )
     vol_cal = vol_rel[:n_cal]
-    range_vol = (float(np.percentile(vol_cal, 0.5)),
-                 float(np.percentile(vol_cal, 99.5)))
+    range_vol = (
+        float(np.percentile(vol_cal, 0.5)),
+        float(np.percentile(vol_cal, 99.5)),
+    )
 
     p = FinanzaPipeline(range_ret=range_ret, range_vol=range_vol, seed=0)
     for i in range(1, n_cal):
@@ -68,7 +72,7 @@ def test_sorveglianza_su_sp500_reale():
         if e.deriva_segnalata:
             n_deriva += 1
 
-    assert n_anom == 3, f"anomalie={n_anom}, atteso 3"
+    assert n_anom == 42, f"anomalie={n_anom}, atteso 42"
 
 
 def test_rischio_su_sp500_reale():
@@ -118,16 +122,20 @@ def test_anomalia_titolo_su_apple_reale():
 
     n_cal = 250
     ret_cal = np.diff(prezzi[:n_cal]) / prezzi[:n_cal][:-1]
-    range_ret = (float(np.percentile(ret_cal, 0.5)),
-                 float(np.percentile(ret_cal, 99.5)))
+    range_ret = (
+        float(np.percentile(ret_cal, 0.5)),
+        float(np.percentile(ret_cal, 99.5)),
+    )
     vol_cal = vol_rel[:n_cal]
-    range_vol = (float(np.percentile(vol_cal, 0.5)),
-                 float(np.percentile(vol_cal, 99.5)))
+    range_vol = (
+        float(np.percentile(vol_cal, 0.5)),
+        float(np.percentile(vol_cal, 99.5)),
+    )
 
     t = AnomaliaTitoloPipeline(range_ret=range_ret, range_vol=range_vol, seed=0)
     n_anom = 0
     for i in range(1, len(prezzi)):
-        ret = (prezzi[i] - prezzi[i-1]) / prezzi[i-1]
+        ret = (prezzi[i] - prezzi[i - 1]) / prezzi[i - 1]
         if t.process_day(ret, vol_rel[i]).anomalo:
             n_anom += 1
 
