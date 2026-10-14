@@ -1,10 +1,9 @@
 # Trees that grow while the robot works
 
-A decision tree answers with a chain of questions ("is the joint torque above 3.5 N·m?"), so a
-person can read why it decided. Trained in a batch, a tree needs all the data at once. The trees
-on this page grow one sample at a time, while the robot works: they split a leaf only when
-enough samples show that the split is real, they can change their mind when the robot's
-behaviour changes, and one family also says how sure it is.
+A decision tree makes choices by asking a chain of questions (for example, "Is the joint torque above 3.5 N·m?"), allowing humans to easily understand the reasoning behind its decisions.
+Traditionally, these trees are trained in batches, meaning they require all the data to be available at once. In contrast, the trees described on this page grow dynamically—one single sample at a time—while the robot is actively working. They create a new branch (split a leaf) only when they have gathered enough data to prove the change is statistically accurate.
+Furthermore, they can adapt and change their mind if the robot's behavior shifts, and one specific family of trees can even communicate how confident it is in its own predictions.
+
 
 ## 1. A tree that learns a robot state
 
