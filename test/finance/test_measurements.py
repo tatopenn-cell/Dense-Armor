@@ -113,8 +113,8 @@ def test_execution_on_real_coinbase_trades():
     assert ep.n_refused >= 15, (
         f"refused={ep.n_refused}, expected at least 15 on the real distribution"
     )
-    assert ep.n_passed_direct > 900, (
-        f"passed direct={ep.n_passed_direct}, expected >900"
+    assert ep.n_passed_directly > 900, (
+        f"passed direct={ep.n_passed_directly}, expected >900"
     )
     # ogni ordine e' o approvato o rifiutato
     n_ok = sum(1 for e in esiti if e.approved)

@@ -18,7 +18,7 @@ def pipeline():
 
 def test_finanza_import(pipeline):
     assert pipeline is not None
-    assert pipeline.n_tick == 0
+    assert pipeline.n_ticks == 0
 
 
 def test_finanza_un_tick_normale(pipeline):
