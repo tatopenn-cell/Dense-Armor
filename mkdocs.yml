@@ -70,6 +70,18 @@ plugins:
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
+  - Applications:
+      - Finance:
+          - finance/index.md
+          - Surveillance: finance/surveillance.md
+          - Risk: finance/risk.md
+          - Execution: finance/execution.md
+          - Single ticker: finance/single_ticker.md
+          - Static vs online: finance/static_vs_online.md
+          - Fraud detection: finance/fraud.md
+          - Unsupervised fraud: finance/unsupervised_fraud.md
+          - Intrusion detection: finance/intrusion.md
+          - Credit scoring: finance/credit_scoring.md
 
   - Shields:
       - shields/index.md
