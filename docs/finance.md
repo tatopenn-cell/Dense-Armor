@@ -2,32 +2,32 @@
 
 **In plain words:** Dense-Armor is like a box of building blocks. Each block does one small job with numbers, for example fixing a wrong price or warning you when the market changes. This page is the instruction sheet: it shows which blocks to take for finance and how to snap them together, first a small build, then bigger ones.
 
-Every piece in this library does one small job on numbers that arrive one by one: clean a
-broken value, notice a slow change, give a strange reading a score, keep a running summary.
-Finance produces such numbers all day: prices, returns, volumes, order sizes. The pieces
-need no changes; only the names of the signals change. An algorithm page tells you how a
-piece works inside. This page tells you where it goes.
+## What is in the box
 
-All the numbers below come from a synthetic market (random returns with fixed seeds), so
-that every result can be re-run. Nothing here is trading advice.
+Each block has one job. Pick only the ones you need.
 
-## 1. The pieces, and what each does for finance
-
-| Piece | What it does | In finance it can be |
+| Block | Its one job | Where it goes in finance |
 |---|---|---|
-| [`Armatura`](shields/armatura.md) | replaces broken values in one series | a bad tick, a missing quote |
-| [CUSUM](drift/cusum.md) | adds up small differences until the total is too big to be chance | a change of regime: the average return has moved |
-| [Quantile sketch](stats/streaming.md) | keeps a percentile of a stream without storing it | the size of a move that 99% of days stay below |
-| [LODA](anomaly/loda.md) | scores how strange a reading with several numbers is | a day with an odd mix of return and volume |
-| [Half-Space Trees](anomaly/hst.md) | the same job as LODA with a different method | the same, as a second opinion |
-| [Moments](stats/moments.md) | running mean and spread | a rolling average and volatility |
-| [Arbiter](protect/arbiter.md) | tells a single glitch from a real change | a one-tick spike versus a gap that stays |
-| [Orca](shields/orca.md) | cleans what goes into a model and checks what comes out | a protected pricing or signal model |
+| [`Armatura`](shields/armatura.md) | Replace a broken number with a sensible one | A wrong price tick, a missing quote |
+| [CUSUM](drift/cusum.md) | Add up small differences and ring a bell when the total is too big to be chance | The average return has changed: the market is in a new mood |
+| [Quantile sketch](stats/streaming.md) | Remember how big a "big" value is, without keeping all the values | How large a move is on the worst 1% of days |
+| [LODA](anomaly/loda.md) | Give a score to a day described by several numbers: the higher, the stranger | A day with an unusual mix of return and volume |
+| [Half-Space Trees](anomaly/hst.md) | Same job as LODA, done another way | A second opinion on a strange day |
+| [Moments](stats/moments.md) | Keep the running average and spread | Rolling average and volatility |
+| [Arbiter](protect/arbiter.md) | Tell a one-time glitch from a change that stays | A one-tick spike versus a price gap that stays |
+| [Orca](shields/orca.md) | Clean what goes into a model and check what comes out | A protected pricing or signal model |
 
-## 2. Build one: clean the price feed
+The four builds below use the first four blocks. Every example uses a made-up market
+(random returns with a fixed seed), so you get exactly the same numbers when you run it.
+Nothing here is trading advice.
 
-A price series of 500 ticks with one absurd tick (9999) at position 120 and one missing
-quote at position 300.
+## Build 1: clean the prices
+
+**You need:** `Armatura`.
+
+**The situation:** 500 price ticks. At position 120 the feed sent 9999 by mistake. At position 300 a quote is missing.
+
+**Do this:**
 
 ```python
 import numpy as np
@@ -41,17 +41,21 @@ clean, K, bad = Armatura(livello_ia=0.0).analizza(p)
 print(bad, round(float(clean[120]), 2))
 ```
 
+**You get:**
+
 ```
 [120, 300] 88.96
 ```
 
-`bad` lists the two replaced positions, and the 9999 became 88.96, next to the 89.07 of the
-tick before it. Every later piece in this page should read `clean`, not `p`.
+`bad` is the list of the two positions that were fixed. The 9999 became 88.96, next to the 89.07 of the tick before it. From now on use `clean` and forget `p`.
 
-## 3. Build two: notice that the market changed
+## Build 2: notice that the market changed
 
-Returns are calm for 500 days, then the average turns negative. The piece reads the losses
-(minus the return), so a rise in losses is what fills it up.
+**You need:** `CUSUMDriftDetector`. It needs the streaming extra: `pip install dense-armor[river]`.
+
+**The situation:** 500 calm days, then the average return turns negative. No single day looks wrong. The block reads losses (the return with its sign flipped), so a rise in losses is what it watches for.
+
+**Do this:**
 
 ```python
 import numpy as np
@@ -65,17 +69,21 @@ det = CUSUMDriftDetector(reference="fixed")
 print(next(i for i, v in enumerate(loss) if det.update(v).drift_detected))
 ```
 
+**You get:**
+
 ```
 512
 ```
 
-The change starts at day 500 and the alarm comes at day 512. No single day looked wrong; the
-piece noticed that the small differences kept adding up in the same direction. The detector
-needs the streaming extra: `pip install dense-armor[river]`.
+The change starts at day 500. The bell rings at day 512. The block did not wait for one big day: it kept adding small differences until the total was too big to be chance.
 
-## 4. Build three: a daily risk level without storing history
+## Build 3: know how big a bad day is
 
-The 99th percentile of the size of a daily move, kept by a sketch that never stores the days.
+**You need:** `DDSketch`.
+
+**The situation:** 2000 daily moves. You want the size that 99% of days stay below, but you do not want to keep all 2000 days.
+
+**Do this:**
 
 ```python
 import numpy as np
@@ -89,17 +97,21 @@ for v in move:
 print(round(sk.quantile(0.99), 4), round(float(np.quantile(move, 0.99)), 4))
 ```
 
+**You get:**
+
 ```
 0.0255 0.0252
 ```
 
-The first number is the sketch, the second is the exact percentile of the 2000 values: they
-differ by 1.2%. The sketch is updated one day at a time and does not store the days.
+The first number comes from the sketch, the second from keeping every day and computing exactly. They differ by 1.2%. The sketch took one day at a time and did not store the days.
 
-## 5. Build four: a strange day, judged on several numbers together
+## Build 4: spot a strange day
 
-A day is described by its return and its volume (traded amount relative to normal). The
-detector learns 400 ordinary days, then scores two new ones. The higher the score, the stranger.
+**You need:** `LODA`.
+
+**The situation:** each day is described by two numbers: the return and the volume (1.0 means a usual amount). The block first learns 400 ordinary days. Then you show it two new days.
+
+**Do this:**
 
 ```python
 import numpy as np
@@ -113,32 +125,28 @@ print(round(det.score_one({"ret": 0.001, "vol": 1.0}), 3))
 print(round(det.score_one({"ret": -0.05, "vol": 3.0}), 3))
 ```
 
+**You get:**
+
 ```
 1.367
 4.837
 ```
 
-An ordinary day scores 1.367. A day with a 5% drop and three times the usual volume scores
-4.837. The detector judges the return and the volume together, in one score.
+The first day is ordinary and scores 1.367. The second day, a 5% drop with three times the usual volume, scores 4.837. The higher the score, the stranger the day.
 
-## 6. How the builds fit together
+## Put the builds together
 
-The four builds are one chain, read from left to right on every new tick:
+The four builds work as one chain. For every new tick:
 
 1. `Armatura` cleans the tick.
-2. The cleaned return goes to CUSUM (has the average moved?) and to the sketch (how big is a bad day?).
-3. The cleaned return and volume go to LODA (is today's pair strange?).
+2. The clean return goes to `CUSUM` (did the average change?) and to the sketch (how big is a bad day?).
+3. The clean return and the volume go to `LODA` (is today strange?).
 
-A pipeline that asks all three questions per tick, with a time limit per step, is described
-in the [Estimator foundation](api/roles.md) page.
+To run all of this inside one pipeline with a time limit for each step, see the [Estimator foundation](api/roles.md) page.
 
 ## Details
 
-- Data: synthetic returns, normal with a mean of 0.0005 and a spread of 0.01, and a fall to a
-  mean of -0.012 for the regime change. Real markets have heavier tails and changing
-  volatility, so thresholds should be set on real history before any use.
-- Each block is self-contained and was run alone; the printed lines are its output.
-- `Armatura` also replaces some ordinary-looking samples by the local median, see
-  [Armatura](shields/armatura.md) for how many and why.
-- The next steps for this page (not done yet): a real price file, Half-Space Trees and
-  Arbiter shown as builds, and a protected model with Orca.
+- The made-up market has returns with a mean of 0.0005 and a spread of 0.01. For the change of mood the mean falls to -0.012. Real markets have heavier tails and a spread that moves, so set thresholds on real history before any use.
+- Each code block is complete on its own and was run alone; the lines under "You get" are its output.
+- `Armatura` also replaces some ordinary-looking values with the local median. [Armatura](shields/armatura.md) explains how many and why.
+- Still to do on this page: a real price file, Half-Space Trees and Arbiter as builds, and a protected model with Orca.
