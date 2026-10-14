@@ -1,5 +1,7 @@
 # Drift detection
 
+**In plain words:** The tools in the anomaly section notice a single strange reading. The tools in this section notice that the usual level itself has slowly changed, even though no single reading looks wrong.
+
 Anomaly detection flags samples. Drift detection flags **a change of the average** —
 something that happens over many samples, each of which looks plausible on its own.
 

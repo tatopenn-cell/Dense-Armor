@@ -1,5 +1,7 @@
 # One-Class SGD (SONAR)
 
+**In plain words:** One-Class SGD learns where the normal readings are and draws a boundary around them. For every new reading it gives back a number: negative means inside the boundary (normal), positive means outside (strange), and the bigger the number, the further outside. It learns one reading at a time, so it can follow the robot while it works.
+
 One-Class SGD learns a boundary around the healthy joint residual and scores each new
 sample by its signed distance from that boundary. In a control loop it answers one question
 per reading: does this residual look like the healthy run, or does it fall outside the

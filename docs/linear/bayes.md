@@ -1,5 +1,7 @@
 # BayesianLinearRegression
 
+**In plain words:** A prediction tool that gives not only one number but also a range around it: the range is wide when it has seen few examples and narrow when it has seen many. It learns one example at a time.
+
 BayesianLinearRegression is the Bayesian companion of LinearRegression. It
 learns the same linear function on the same stream, but it returns not a
 single prediction, it returns an interval. The width of the interval grows

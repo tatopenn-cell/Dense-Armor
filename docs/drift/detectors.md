@@ -1,5 +1,7 @@
 # Drift detectors
 
+**In plain words:** Drift is a slow change in what the robot's numbers look like, for example a joint that slowly gets warmer. These tools notice such a change and tell you when it has happened.
+
 A robot that has been working fine for hours can start to behave differently
 without failing outright: a joint gets warmer and its torque creeps up, a new
 payload changes the load, a screw loosens and the vibration grows. The

@@ -1,5 +1,7 @@
 # PayloadEstimator
 
+**In plain words:** This tool works out how heavy the object a robot is carrying is, while the arm is moving, from the forces on its joints. It needs no special weighing test beforehand.
+
 PayloadEstimator estimates the mass of a payload attached to a link of the
 robot, while the robot is moving. It does not use a pre-recorded
 identification experiment. It reads the joint torques from the live stream,

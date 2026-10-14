@@ -1,5 +1,7 @@
 # Loading robots from xacro macros
 
+**In plain words:** Robot makers often publish a robot's description as a template file (xacro) that has to be filled in first. This tool reads such a file directly and does the filling in for you.
+
 Real robot descriptions are rarely shipped as a single flat URDF. Manufacturers publish
 them as `.xacro` macro files: parametrized building blocks (`xacro:macro`), math
 expressions (`${-pi/2}`), conditionals (`xacro:unless`) and includes (`xacro:include`)

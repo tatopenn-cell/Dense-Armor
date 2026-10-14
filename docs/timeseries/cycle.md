@@ -1,5 +1,7 @@
 # Cycle residual
 
+**In plain words:** When a robot repeats the same movement, its signals repeat too. This tool learns the usual shape of one repeat and tells you how much the current reading differs from it: small when all is normal, large when something breaks the pattern.
+
 `CycleResidual` returns the difference between the current sample of a
 periodic signal and the value the template predicts for the current phase.
 When the motion repeats, the residual is small; when something breaks the

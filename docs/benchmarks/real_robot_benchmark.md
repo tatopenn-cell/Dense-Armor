@@ -1,5 +1,7 @@
 # Benchmark on a real industrial robot arm (CASPER dataset)
 
+**In plain words:** We ran the library, unchanged, on a 24.5-hour recording of a real industrial robot arm. This page shows what it noticed: a labelled anomaly was detected 15 seconds after it began, with no false alarm in the hour before it.
+
 The Dense-Armor streaming stack was run unchanged on the CASPER dataset
 (Kayan et al., 2023), a 24.5 h recording at 20 Hz of a Universal Robots
 UR3e industrial arm. A one-sided CUSUM on the smoothed energy of the cycle

@@ -1,5 +1,7 @@
 # Metric learning (online)
 
+**In plain words:** To find which past situations look like the current one, you need a way to measure how far apart two situations are. This tool learns that distance from examples, one at a time, so that situations that really are alike come out close.
+
 A robot arm picks objects. It has seen thousands of grasps: some worked, some did not.
 When a new situation arrives, the first thing any retrieval or imitation step needs to
 answer is **"which past situations look like this one?"**

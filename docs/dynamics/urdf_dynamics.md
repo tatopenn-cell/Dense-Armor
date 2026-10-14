@@ -1,5 +1,7 @@
 # Rigid-body dynamics (real URDF, any robot)
 
+**In plain words:** You give this tool the description file of a robot (a URDF file) and it works out the physics of the arm: how heavy it is, how gravity pulls on it and how it moves when pushed.
+
 The control modules on [Control](../control/index.md) treat the robot as a
 single-integrator plant: they take a joint velocity, they return a joint velocity. That
 is the level of the driver's API and it is enough for bounding commands, but it is not

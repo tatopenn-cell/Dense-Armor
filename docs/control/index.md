@@ -1,5 +1,7 @@
 # Control
 
+**In plain words:** This section is about the commands sent to a robot: where it may go, how fast a command may change, which path to follow and how to follow it. It has four small tools that are used together.
+
 Commands for a robot: **where it may go, how fast a command may change, along which
 path, and the velocity that follows it**. Four modules, each bounding a different aspect
 of a desired velocity command on the same single-integrator joint model, and they

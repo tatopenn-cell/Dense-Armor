@@ -1,5 +1,7 @@
 # API Reference
 
+**In plain words:** A starting point for finding the right tool. Say what you have in front of you (a single series of numbers, a model, several signals that interact) and this page tells you which part of the library to use.
+
 Dense-Armor has two kinds of entry point. A **shield** cleans a whole series or a whole
 model in one call. A **single-purpose module** does one thing (score a sample, detect a
 drift, bound a command) and composes with the others.

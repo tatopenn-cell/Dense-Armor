@@ -1,5 +1,7 @@
 # LODA
 
+**In plain words:** LODA tells you when a new reading from your robot looks strange. It looks at the numbers from many different points of view: each one squeezes the readings into a single number and keeps a tally of the values it saw recently. A new reading that lands on a value almost never seen looks strange from that point of view. LODA averages all the points of view and gives back a score: the higher it is, the stranger the reading.
+
 LODA scores each sample by how rare its position is in a few random one-dimensional
 projections of the joint residual. In a control loop it answers one question per reading:
 does this residual land in a part of the space the healthy run almost never visits?

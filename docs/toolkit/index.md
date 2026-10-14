@@ -1,5 +1,7 @@
 # Toolkit
 
+**In plain words:** Besides cleaning and detecting, the library has a toolbox of helpers for people writing fast number-crunching programs: speeding up a pipeline, avoiding running out of memory, timing, logging. They do not change your data.
+
 Dense-Armor has two parts. The first is the shields and detectors — everything that
 touches a signal and cleans it. The second is the toolkit: generic tools for JAX and
 NumPy pipelines that the shields use internally and that work on their own.

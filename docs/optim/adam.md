@@ -1,5 +1,7 @@
 # Adam
 
+**In plain words:** Adam decides how much a learning model should change its numbers after each example. It remembers how the changes have been going recently and uses that to take steps of a similar size for every number.
+
 Adam is the optimizer that keeps two running averages of the gradient: the
 first moment, and the second moment. It uses the ratio of the two to build a
 step that has roughly the same size for every coordinate, on every sample.

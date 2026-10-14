@@ -1,5 +1,7 @@
 # Known limits
 
+**In plain words:** A short list of the things Dense-Armor cannot do, or does only partly, so you know them before relying on it. For example, a very slow drift that is smaller than the noise in each reading can go unseen by tools that look at one reading at a time.
+
 This page is the honest list of what Dense-Armor does *not* do. It is kept
 short on purpose: every line is a real limit that a user should know before
 relying on the shields.

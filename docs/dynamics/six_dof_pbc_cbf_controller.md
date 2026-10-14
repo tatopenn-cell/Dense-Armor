@@ -1,5 +1,7 @@
 # Full 6-DoF passivity + singularity-CBF controller
 
+**In plain words:** This is the same controller as the previous page, but it controls both where the robot's hand is and which way it points, for example a drill that must stay straight against a surface.
+
 The [passivity + singularity-CBF controller](passivity_cbf_controller.md) tracks a
 link's **position only**. Many robot tasks need more: a drill that has to stay
 perpendicular to a surface, a gripper that has to approach an object at a specific

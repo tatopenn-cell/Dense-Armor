@@ -1,5 +1,7 @@
 # Getting Started
 
+**In plain words:** Dense-Armor is a toolbox of programs that learn from a robot's numbers as they arrive, one reading at a time. It can spot strange readings and slow changes, protect a model from bad data and keep robot commands safe. This page is a guided tour, from one reading to a whole robot.
+
 Dense-Armor is a library of online estimators that learn one sample at a
 time from robot and AI data. It detects anomalies and drift, protects a
 model's inputs and outputs, and bounds the commands sent to a real robot.

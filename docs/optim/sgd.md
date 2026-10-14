@@ -1,5 +1,7 @@
 # SGD
 
+**In plain words:** SGD is the simplest rule for changing a learning model's numbers after each example: it moves them a little in the direction that reduces the error. The other rules in this section are built on it.
+
 SGD is the simplest online optimizer in the package. It follows the raw
 gradient, with no memory of the past. Every other optimizer on this page
 is built on top of it. This page shows the update, the effect of the

@@ -1,5 +1,7 @@
 # Coupled joints via `<mimic>`
 
+**In plain words:** Some parts of a robot always move together, like the two fingers of a gripper. This page shows how the library understands that one joint simply follows another, so a gripper counts as one moving part and not two.
+
 A gripper's two fingers usually move together: closing one closes the other, at the
 same rate, in the opposite direction. URDF expresses this with a `<mimic>` tag inside
 the slaved joint:

@@ -1,5 +1,7 @@
 # Toolkit (standalone utilities)
 
+**In plain words:** A set of general-purpose helpers for fast number-crunching programs, usable on their own. This page shows each one with an example.
+
 A second part of the package, under `core/` and `utility/`, independent of
 [`Armatura`](../shields/armatura.md) and [`Orca`](../shields/orca.md) — none of it
 participates in the anomaly shield. Generic tools for JAX / NumPy pipelines.

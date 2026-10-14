@@ -1,5 +1,7 @@
 # Rate limiter (causal command damping)
 
+**In plain words:** This tool makes sure a robot motor is never asked to change speed faster than it can. When a command jumps too fast, the tool lets it change only by an allowed amount at each step.
+
 A robot's real motor cannot execute an unbounded instantaneous jump safely. If the
 command stream says "joint 1 goes from 0.1 to 1.5 rad/s between this tick and the next",
 the motor will either refuse, saturate, or dangerously approximate it. The **rate

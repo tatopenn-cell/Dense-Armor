@@ -1,5 +1,7 @@
 # Streaming anomaly detection
 
+**In plain words:** These tools give every new reading a score that says how unusual it is compared with the last few readings, and a yes/no flag when it is too unusual. They answer at once, one reading at a time, without waiting for what comes next.
+
 A robot joint sends its velocity 100 times a second. Most readings are ordinary noise; once in a
 while one is absurd, because the arm bumped into something or a cable gave a false reading. The
 controller must know *right now*, on that very sample, without waiting for the future. The tools
