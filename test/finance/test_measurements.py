@@ -256,3 +256,62 @@ def test_execution_refusal_by_count():
     assert ep.n_orders == 32
     assert ep.n_refused == 1
     assert ep.n_passed_directly >= 29
+
+
+def test_fraud_pipeline_on_openml_creditcard():
+    """FraudPipeline on the OpenML creditcard dataset (subsampled).
+
+    The full dataset is 284,807 rows with 492 frauds (0.17%). It is
+    subsampled to 50,000 rows keeping every fraud; 40,000 rows train,
+    10,000 test. The two online trees reach 0.969 (Mondrian) and 0.926
+    (SGT) ROC-AUC. At threshold 0.5 the ensemble fires 72 alerts,
+    69 true positives and 3 false positives.
+    """
+    try:
+        from sklearn.datasets import fetch_openml
+    except ImportError:
+        pytest.skip("scikit-learn not installed")
+    from sklearn.metrics import roc_auc_score
+
+    from pipelines.finance.fraud import FraudPipeline
+
+    d = fetch_openml("creditcard", version=1, as_frame=True, parser="auto")
+    X_full = d.data.astype(float).values
+    y_full = d.target.astype(int).values
+
+    rng = np.random.default_rng(0)
+    idx_pos = np.where(y_full == 1)[0]
+    idx_neg = np.where(y_full == 0)[0]
+    n_neg = 50000 - len(idx_pos)
+    idx = np.concatenate([idx_pos, rng.choice(idx_neg, size=n_neg, replace=False)])
+    rng.shuffle(idx)
+    X, y = X_full[idx], y_full[idx]
+
+    n_train = int(len(X) * 0.8)
+    X_train, y_train = X[:n_train], y[:n_train]
+    X_test, y_test = X[n_train:], y[n_train:]
+    nf = X_train.shape[1]
+
+    p = FraudPipeline(n_trees=10, min_samples_split_sgt=50, threshold=0.5, seed=0)
+    for i in range(len(X_train)):
+        x_dict = {f"f{j}": float(X_train[i, j]) for j in range(nf)}
+        p.learn_one(x_dict, int(y_train[i]))
+
+    s_m, s_e, y_pred = [], [], []
+    for i in range(len(X_test)):
+        x_dict = {f"f{j}": float(X_test[i, j]) for j in range(nf)}
+        r = p.score_one(x_dict)
+        s_m.append(r.score_mondrian)
+        s_e.append(r.score_ensemble)
+        y_pred.append(1 if r.flagged else 0)
+
+    auc_m = roc_auc_score(y_test, s_m)
+    auc_e = roc_auc_score(y_test, s_e)
+    tp = sum(1 for i in range(len(y_test)) if y_test[i] == 1 and y_pred[i] == 1)
+    fp = sum(1 for i in range(len(y_test)) if y_test[i] == 0 and y_pred[i] == 1)
+
+    assert 0.960 < auc_m < 0.975, f"Mondrian AUC = {auc_m:.3f}"
+    assert 0.960 < auc_e < 0.975, f"ensemble AUC = {auc_e:.3f}"
+    assert tp == 69, f"true positives = {tp}"
+    assert fp == 3, f"false positives = {fp}"
+

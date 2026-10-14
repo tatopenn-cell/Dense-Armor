@@ -78,6 +78,7 @@ nav:
           - Execution: finance/execution.md
           - Single ticker: finance/single_ticker.md
           - Static vs online: finance/static_vs_online.md
+          - Fraud detection: finance/fraud.md
 
   - Shields:
       - shields/index.md

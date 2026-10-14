@@ -34,6 +34,7 @@ Examples:
 """
 
 from pipelines.finance.execution import ExecutionPipeline, OrderResult
+from pipelines.finance.fraud import FraudPipeline, TransactionResult
 from pipelines.finance.online_analysis import OnlineAnalysis, OnlineResult
 from pipelines.finance.risk import RiskPipeline, RiskResult
 from pipelines.finance.single_ticker import SingleTickerPipeline
@@ -41,6 +42,8 @@ from pipelines.finance.static_analysis import StaticAnalysis, StaticResult
 from pipelines.finance.surveillance import FinancePipeline, TickResult
 
 __all__ = [
+    "FraudPipeline",
+    "TransactionResult",
     "ExecutionPipeline",
     "FinancePipeline",
     "OnlineAnalysis",
