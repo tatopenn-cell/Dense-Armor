@@ -1,6 +1,6 @@
 # Finance: assembly instructions
 
-**In plain words:** Dense-Armor is a box of building pieces that watch a stream of numbers one reading at a time, and a stream of prices and trades is exactly that kind of stream. This page is the instruction sheet: it shows which pieces to pick for prices and trades, and how to snap them together, from the simplest build to a bigger one.
+**In plain words:** Dense-Armor is like a box of building blocks. Each block does one small job with numbers, for example fixing a wrong price or warning you when the market changes. This page is the instruction sheet: it shows which blocks to take for finance and how to snap them together, first a small build, then bigger ones.
 
 Every piece in this library does one small job on numbers that arrive one by one: clean a
 broken value, notice a slow change, give a strange reading a score, keep a running summary.
