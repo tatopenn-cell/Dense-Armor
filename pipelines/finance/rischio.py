@@ -9,8 +9,6 @@ Cliente: risk manager, fund, bank.
 
 from dataclasses import dataclass
 
-import numpy as np
-
 from dense_armor.utility.drift.detector import CUSUMDriftDetector
 from dense_armor.utility.stats.quantiles import DDSketch
 
@@ -18,6 +16,7 @@ from dense_armor.utility.stats.quantiles import DDSketch
 @dataclass
 class EsitoRischio:
     """Risk snapshot at one day."""
+
     giorno: int
     perdita: float
     var_99: float
@@ -36,13 +35,11 @@ class RischioPipeline:
         seed: random seed (unused here, kept for interface symmetry).
     """
 
-    def __init__(self,
-                 alpha: float = 0.01,
-                 limite_perdita: float = 0.05,
-                 seed: int = 0):
+    def __init__(
+        self, alpha: float = 0.01, limite_perdita: float = 0.05, seed: int = 0
+    ):
         self.sketch = DDSketch(alpha=alpha)
-        self.cusum_vol = CUSUMDriftDetector(radius=20, ref_mult=3,
-                                             k=0.5, h=40.0)
+        self.cusum_vol = CUSUMDriftDetector(radius=20, ref_mult=3, k=0.5, h=40.0)
         self.limite_perdita = limite_perdita
         self.n_giorni = 0
 

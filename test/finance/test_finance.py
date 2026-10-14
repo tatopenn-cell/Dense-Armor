@@ -13,8 +13,7 @@ from pipelines.finance import (
 
 @pytest.fixture
 def pipeline():
-    return FinanzaPipeline(range_ret=(-0.05, 0.05),
-                           range_vol=(0.5, 2.0), seed=0)
+    return FinanzaPipeline(range_ret=(-0.05, 0.05), range_vol=(0.5, 2.0), seed=0)
 
 
 def test_finanza_import(pipeline):
@@ -71,18 +70,15 @@ def test_rischio_giorno_grande_segnalato():
 
 
 def test_titolo_un_giorno():
-    t = AnomaliaTitoloPipeline(range_ret=(-0.05, 0.05),
-                                range_vol=(0.5, 2.0), seed=0)
+    t = AnomaliaTitoloPipeline(range_ret=(-0.05, 0.05), range_vol=(0.5, 2.0), seed=0)
     e = t.process_day(0.001, 1.0)
     assert e.giorno == 0
     assert not e.anomalo
 
 
 def test_titolo_200_giorni_non_crasha():
-    t = AnomaliaTitoloPipeline(range_ret=(-0.05, 0.05),
-                                range_vol=(0.5, 2.0), seed=0)
+    t = AnomaliaTitoloPipeline(range_ret=(-0.05, 0.05), range_vol=(0.5, 2.0), seed=0)
     rng = np.random.default_rng(0)
     for _ in range(200):
-        e = t.process_day(float(rng.normal(0, 0.01)),
-                          float(1.0 + rng.normal(0, 0.1)))
+        e = t.process_day(float(rng.normal(0, 0.01)), float(1.0 + rng.normal(0, 0.1)))
         assert isinstance(e.anomalo, bool)

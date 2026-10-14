@@ -8,15 +8,15 @@ AnomaliaTitolo:    AnomaliaTitoloPipeline single-ticker strangeness
 
 from pipelines.finance.anomalia_titolo import AnomaliaTitoloPipeline
 from pipelines.finance.esecuzione import EsecuzionePipeline, EsitoOrdine
-from pipelines.finance.sorveglianza import FinanzaPipeline, TickEsito
 from pipelines.finance.rischio import EsitoRischio, RischioPipeline
+from pipelines.finance.sorveglianza import FinanzaPipeline, TickEsito
 
 __all__ = [
-    "FinanzaPipeline",
-    "TickEsito",
+    "AnomaliaTitoloPipeline",
     "EsecuzionePipeline",
     "EsitoOrdine",
-    "RischioPipeline",
     "EsitoRischio",
-    "AnomaliaTitoloPipeline",
+    "FinanzaPipeline",
+    "RischioPipeline",
+    "TickEsito",
 ]

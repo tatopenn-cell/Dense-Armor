@@ -29,6 +29,7 @@ from dense_armor.utility.stats.moments import RunningMoments
 @dataclass
 class EsitoOrdine:
     """What the execution pipeline did with one order."""
+
     size_originale: float
     size_inviata: float
     riduzione: float
@@ -55,12 +56,14 @@ class EsecuzionePipeline:
         seed: unused, kept for interface stability.
     """
 
-    def __init__(self,
-                 soglia_damping: float = 0.30,
-                 max_size_molteplice: float = 10.0,
-                 soglia_pre_orca: float = 5.0,
-                 warmup: int = 20,
-                 seed: int = 0):
+    def __init__(
+        self,
+        soglia_damping: float = 0.30,
+        max_size_molteplice: float = 10.0,
+        soglia_pre_orca: float = 5.0,
+        warmup: int = 20,
+        seed: int = 0,
+    ):
         self.orca = Orca()
         self.moments = RunningMoments()
         self.soglia_damping = soglia_damping
@@ -108,9 +111,13 @@ class EsecuzionePipeline:
         x_ord = np.array([float(size), float(tipo), 1.0])
         try:
             out = self.orca.protect_and_forward(
-                ai_model_callable=None, x_corrupted=x_ord, x_reference=x_ord,
-                use_input_shield=True, use_model_injection=False,
-                use_output_shield=True, use_arbiter=False,
+                ai_model_callable=None,
+                x_corrupted=x_ord,
+                x_reference=x_ord,
+                use_input_shield=True,
+                use_model_injection=False,
+                use_output_shield=True,
+                use_arbiter=False,
             )
             size_out = float(out[0])
             riduzione = 1.0 - size_out / max(size, 1e-12)

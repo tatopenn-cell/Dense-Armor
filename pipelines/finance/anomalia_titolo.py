@@ -17,8 +17,6 @@ Note:
 
 from dataclasses import dataclass
 
-import numpy as np
-
 from dense_armor.utility.anomaly.hst import HalfSpaceTrees
 from dense_armor.utility.anomaly.loda import LODA
 
@@ -26,6 +24,7 @@ from dense_armor.utility.anomaly.loda import LODA
 @dataclass
 class EsitoTitolo:
     """Today's verdict on one ticker."""
+
     giorno: int
     rendimento: float
     volume_rel: float
@@ -43,15 +42,22 @@ class AnomaliaTitoloPipeline:
         seed: random seed for projections and splits.
     """
 
-    def __init__(self,
-                 range_ret: tuple[float, float],
-                 range_vol: tuple[float, float],
-                 seed: int = 0):
-        self.loda = LODA(n_projections=50, n_bins=10, window=200,
-                        range_init=50, seed=seed)
-        self.hst = HalfSpaceTrees(n_trees=15, depth=8, window=100,
-                                  feature_ranges=[range_ret, range_vol],
-                                  seed=seed)
+    def __init__(
+        self,
+        range_ret: tuple[float, float],
+        range_vol: tuple[float, float],
+        seed: int = 0,
+    ):
+        self.loda = LODA(
+            n_projections=50, n_bins=10, window=200, range_init=50, seed=seed
+        )
+        self.hst = HalfSpaceTrees(
+            n_trees=15,
+            depth=8,
+            window=100,
+            feature_ranges=[range_ret, range_vol],
+            seed=seed,
+        )
         self.n_giorni = 0
 
     def process_day(self, rendimento: float, volume_rel: float) -> EsitoTitolo:
@@ -59,8 +65,7 @@ class AnomaliaTitoloPipeline:
         x = {"ret": float(rendimento), "vol": float(volume_rel)}
         s_loda = float(self.loda.score_one(x))
         s_hst = float(self.hst.score_one(x))
-        anomalo = bool(s_loda > self.loda.threshold and
-                        s_hst > self.hst.threshold)
+        anomalo = bool(s_loda > self.loda.threshold and s_hst > self.hst.threshold)
         self.loda.learn_one(x)
         self.hst.learn_one(x)
         self.n_giorni += 1
