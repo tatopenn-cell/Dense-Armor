@@ -45,6 +45,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from dense_armor.utility.anomaly.hst import HalfSpaceTrees
 from dense_armor.utility.anomaly.loda import LODA
+from dense_armor.utility.anomaly.lof import LocalOutlierFactor
 from dense_armor.utility.anomaly.mahalanobis import (
     OnlineRobustMahalanobis,
 )
@@ -60,6 +61,7 @@ DETECTOR_NAMES = [
     "LODA",
     "OneClassSGD",
     "OnlineRobustMahalanobis",
+    "LocalOutlierFactor",
 ]
 
 
@@ -155,6 +157,8 @@ def build_one(name, keys):
         return OneClassSGD(feature_keys=keys, seed=0)
     if name == "OnlineRobustMahalanobis":
         return OnlineRobustMahalanobis(feature_keys=keys)
+    if name == "LocalOutlierFactor":
+        return LocalOutlierFactor(feature_keys=keys, seed=0)
     raise ValueError(f"unknown detector {name!r}")
 
 

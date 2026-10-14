@@ -27,6 +27,7 @@ import pytest
 from dense_armor.roles import AnomalyGate, Protected
 from dense_armor.utility.anomaly.hst import HalfSpaceTrees
 from dense_armor.utility.anomaly.loda import LODA
+from dense_armor.utility.anomaly.lof import LocalOutlierFactor
 from dense_armor.utility.anomaly.mahalanobis import (
     OnlineRobustMahalanobis,
 )
@@ -106,6 +107,13 @@ def _detectors(keys):
             feature_keys=keys,
             threshold=7.0,
         ),
+        "lof": LocalOutlierFactor(
+            n_neighbors=20,
+            window=100,
+            feature_keys=keys,
+            threshold=1.5,
+            seed=0,
+        ),
     }
 
 
@@ -132,7 +140,7 @@ def test_anomaly_gate_accepts_every_detector():
 # review of task 10.
 @pytest.mark.parametrize(
     "name",
-    ["hst", "loda", "ocsvm", "mahalanobis"],
+    ["hst", "loda", "ocsvm", "mahalanobis", "lof"],
 )
 def test_protected_keeps_healthy_offset(name, arm_residuals, capsys):
     X, y = arm_residuals
