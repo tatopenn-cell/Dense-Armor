@@ -107,20 +107,49 @@ def test_small_window_returns_one():
     assert np.isfinite(s)
 
 
-def test_duplicates_return_one():
-    """A sample duplicated n_neighbors + 1 times: LOF undefined, returns 1.
-
-    All the reachability distances of the neighbors of the duplicated
-    point are zero; the local density is infinite and the ratio is
-    not defined.
-    """
+def test_duplicates_give_finite_scores():
+    """Duplicated points: the density is capped by the 1e-10 term."""
     model = LocalOutlierFactor(n_neighbors=5, window=50)
     for _ in range(6):
         model.learn_one({"a": 1.0, "b": 1.0})
     for i in range(20):
         model.learn_one({"a": float(i) * 10.0, "b": float(i) * 10.0})
     s = model.score_one({"a": 1.0, "b": 1.0})
-    assert s == 1.0
+    assert s == pytest.approx(1.0)
+
+
+def test_far_query_on_window_of_duplicates_is_very_high():
+    model = LocalOutlierFactor(n_neighbors=5, window=30)
+    for _ in range(30):
+        model.learn_one({"a": 1.0, "b": 1.0})
+    assert model.score_one({"a": 1.0, "b": 1.0}) == pytest.approx(1.0)
+    far = model.score_one({"a": 9.0, "b": 9.0})
+    assert np.isfinite(far)
+    assert far > 1e9
+
+
+def test_malformed_input_scores_zero():
+    model = LocalOutlierFactor(n_neighbors=5, window=20, feature_keys=["a", "b"])
+    for i in range(20):
+        model.learn_one({"a": float(i), "b": float(i)})
+    assert model.score_one({"a": 1.0}) == 0.0
+    assert model.score_one("x") == 0.0
+    assert model.score_one({"a": float("nan"), "b": 0.0}) == 0.0
+
+
+@pytest.mark.parametrize("d,k,w", [(2, 20, 100), (5, 10, 150), (3, 5, 60)])
+def test_matches_scikit_learn(d, k, w):
+    sk = pytest.importorskip("sklearn.neighbors")
+    rng = np.random.default_rng(0)
+    X = rng.normal(size=(w, d))
+    keys = [f"f{j}" for j in range(d)]
+    model = LocalOutlierFactor(n_neighbors=k, window=w, feature_keys=keys)
+    for r in X:
+        model.learn_one(dict(zip(keys, map(float, r))))
+    ref = sk.LocalOutlierFactor(n_neighbors=k, novelty=True).fit(X)
+    Q = rng.normal(size=(50, d)) * 1.7
+    mine = np.array([model.score_one(dict(zip(keys, map(float, q)))) for q in Q])
+    assert np.max(np.abs(mine + ref.score_samples(Q))) < 1e-8
 
 
 def test_nan_and_missing_counted_in_n_missing():
