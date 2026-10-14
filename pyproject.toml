@@ -49,5 +49,5 @@ dense-armor = "dense_armor.armatura:main"
 dense-armor-mcp = "dense_armor.mcp_server.server:main"
 
 [tool.setuptools.packages.find]
-include = ["dense_armor*"]
+include = ["dense_armor*", "pipelines*"]
 

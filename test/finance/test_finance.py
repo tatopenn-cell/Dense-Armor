@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from dense_armor.utility.finance import (
+from pipelines.finance import (
     AnomaliaTitoloPipeline,
     EsecuzionePipeline,
     FinanzaPipeline,

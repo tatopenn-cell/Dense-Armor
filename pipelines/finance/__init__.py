@@ -6,10 +6,10 @@ Rischio:           RischioPipeline        daily VaR and volatility alarm
 AnomaliaTitolo:    AnomaliaTitoloPipeline single-ticker strangeness
 """
 
-from dense_armor.utility.finance.anomalia_titolo import AnomaliaTitoloPipeline
-from dense_armor.utility.finance.esecuzione import EsecuzionePipeline, EsitoOrdine
-from dense_armor.utility.finance.pipeline import FinanzaPipeline, TickEsito
-from dense_armor.utility.finance.rischio import EsitoRischio, RischioPipeline
+from pipelines.finance.anomalia_titolo import AnomaliaTitoloPipeline
+from pipelines.finance.esecuzione import EsecuzionePipeline, EsitoOrdine
+from pipelines.finance.sorveglianza import FinanzaPipeline, TickEsito
+from pipelines.finance.rischio import EsitoRischio, RischioPipeline
 
 __all__ = [
     "FinanzaPipeline",
