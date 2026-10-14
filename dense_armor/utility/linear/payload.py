@@ -12,16 +12,21 @@ estimator. Without that, every call to mass_matrix, bias_forces or
 gravity_forces retraces the whole kinematic recursion in Python and the
 per-sample cost is seconds on a nine-joint arm.
 
-Relation to Foster et al. 2024. Their log-Cholesky parametrisation of
-the rigid-body inertia (Rucker and Wensing 2022) makes the full 10
-inertial parameters of a link physically consistent by construction,
-so a downstream whole-body controller can use them safely even while
-they are being estimated online. This estimator is a narrow special
-case: it covers only the mass of a point load attached to a link whose
-own inertial parameters are known, and it makes no attempt to estimate
-the first moment or the rotational inertia of the load. Use it when
-the load is a point mass (a tool, a weight) and the rest of the robot
-is identified offline.
+Relation to Foster et al. 2024. Their method estimates the full 10
+inertial parameters of a link online with an extended Kalman filter
+(EKF) on a log-Cholesky parametrisation (Rucker and Wensing 2022). The
+log-Cholesky parametrisation keeps the inertia matrix physically
+consistent by construction, so a whole-body controller can use the
+estimate safely while it converges.
+
+This estimator is a narrow special case and uses a different
+algorithm: it covers only the mass of a point load attached to a
+link whose own inertial parameters are known, and it estimates that
+single scalar with recursive least squares with exponential
+forgetting, not with an EKF. It makes no attempt to estimate the
+first moment or the rotational inertia of the load. Use it when the
+load is a point mass (a tool, a weight) and the rest of the robot is
+identified offline.
 
 References:
     Foster, J., McCrory, S., DeBuys, C., Bertrand, S., Griffin, R.
@@ -56,7 +61,16 @@ class PayloadEstimator(Regressor):
         r_i ~ m * phi_i
 
     The recursive update is the standard RLS with exponential
-    forgetting on the scalar m, applied once per joint and per sample.
+    forgetting on the scalar m. The forgetting factor ``lam`` is
+    applied once per sample, before the joint loop; the loop itself
+    does not divide the covariance by ``lam`` again. The clamp to
+    non-negative is applied only by :meth:`predict_one`; the internal
+    state ``_m`` can be negative between updates.
+
+    The first sample is skipped: with no previous sample there is no
+    ``qdd`` to compute, and the residual would be wrong. The state is
+    updated to remember the previous ``qd`` and ``t``, but no learning
+    step is taken until a valid ``qdd`` can be computed.
 
     Args:
         model: the unloaded rigid-body model. Its inertial parameters
@@ -115,6 +129,7 @@ class PayloadEstimator(Regressor):
         self._P = float(delta)
         self._prev_qd: np.ndarray | None = None
         self._prev_t: float | None = None
+        self.n_missing: int = 0
         self._mm = jax.jit(model.mass_matrix)
         self._bf = jax.jit(model.bias_forces)
         self._gf = jax.jit(model.gravity_forces)
@@ -163,21 +178,27 @@ class PayloadEstimator(Regressor):
         d = self._as_dict(x)
         extracted = self._extract(d)
         if extracted is None:
+            self.n_missing += 1
             return self
         q, qd, tau = extracted
+        if np.any(np.isnan(q)) or np.any(np.isnan(qd)) or np.any(np.isnan(tau)):
+            self.n_missing += 1
+            return self
         t_sample = getattr(x, "t", None)
         if t_sample is None:
             t_sample = t
         if t_sample is None:
             t_sample = d.get("t")
         if self._prev_qd is None or self._prev_t is None or t_sample is None:
-            qdd = np.zeros(self._n)
-        else:
-            dt = float(t_sample) - float(self._prev_t)
-            if dt <= 0.0:
-                qdd = np.zeros(self._n)
-            else:
-                qdd = (qd - self._prev_qd) / dt
+            self._prev_qd = qd
+            self._prev_t = t_sample
+            return self
+        dt = float(t_sample) - float(self._prev_t)
+        if dt <= 0.0:
+            self._prev_qd = qd
+            self._prev_t = t_sample
+            return self
+        qdd = (qd - self._prev_qd) / dt
         self._prev_qd = qd
         self._prev_t = t_sample
 
@@ -190,13 +211,14 @@ class PayloadEstimator(Regressor):
         jz = np.asarray(self._lj(q), dtype=float)[2]
         phi = self.g * jz
 
+        self._P = self._P / self.lam
         for i in range(self._n):
             pi = float(phi[i])
             ri = float(residual[i])
-            denom = self.lam + pi * self._P * pi
+            denom = 1.0 + pi * self._P * pi
             K = self._P * pi / denom
             self._m = self._m + K * (ri - pi * self._m)
-            self._P = (self._P - K * pi * self._P) / self.lam
+            self._P = self._P - K * pi * self._P
         return self
 
     def predict_one(

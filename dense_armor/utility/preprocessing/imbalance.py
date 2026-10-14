@@ -78,12 +78,19 @@ class QueueResampler(Classifier):
         >>> qr.classifier.n_seen_ > 10
         True
 
+    Cost: 25 microseconds per call (median of 9600 calls, one Windows
+    CPU thread). ``budget_s`` is 5 ms because ``check_p99_within_budget``
+    takes the p99 of 24 calls, which is their maximum: over 400 runs of
+    that check the value was 27 microseconds at the median and 166
+    microseconds at the 99th percentile, with one run at 2.4 ms and one
+    CI run at 2.75 ms, a pause of the runner and not the cost of the code.
+
     References:
         Malialis, K., Panayiotou, C., Polycarpou, M. M. (2018). ICANN,
         Algorithm 1 on p. 5.
     """
 
-    budget_s = 1e-3
+    budget_s = 5e-3
     memory_class = "O(window)"
 
     def __init__(

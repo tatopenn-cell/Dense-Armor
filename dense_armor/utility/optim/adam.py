@@ -28,9 +28,23 @@ class Adam:
 
     References:
         Kingma, D. P., Ba, J. (2014). Adam: a method for stochastic
-        optimization. arXiv:1412.6980, Algorithm 1, page 2. Theorem 4.1,
-        page 4, bounds the regret with rate O(sqrt(T)) under bounded
-        gradients, bounded iterates, and beta1^2 / sqrt(beta2) < 1.
+        optimization. arXiv:1412.6980. Algorithm 1, page 2.
+
+        Theorem 4.1, page 4, bounds the regret with rate O(sqrt(T))
+        under these conditions: bounded gradients (||grad f||_2 <= G
+        and ||grad f||_inf <= G_inf at every step), bounded iterates
+        (||theta_n - theta_m||_2 <= D and ||theta_m - theta_n||_inf <=
+        D_inf for any two steps), beta1^2 / sqrt(beta2) < 1, a learning
+        rate decaying as alpha_t = alpha / sqrt(t), and a first moment
+        coefficient decaying as beta_{1,t} = beta1 * lambda^(t-1) with
+        lambda in (0, 1). The paper uses lambda = 1 - 1e-8 in the
+        experiments and states that decaying beta_{1,t} towards zero is
+        required by the proof.
+
+        This implementation uses a constant ``lr`` and a constant
+        ``beta1``, so the conditions on alpha_t and beta_{1,t} do not
+        hold and Theorem 4.1 does not apply to it. The update rule
+        (Algorithm 1) is the same.
 
     Examples:
         >>> import numpy as np

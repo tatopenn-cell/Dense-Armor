@@ -70,10 +70,12 @@ def test_optimizer_eq_and_repr():
         (SGD(lr=0.1), SGD(lr=0.1), SGD(lr=0.2)),
         (AdaGrad(lr=0.5), AdaGrad(lr=0.5), AdaGrad(lr=0.6)),
         (Adam(lr=0.01), Adam(lr=0.01), Adam(lr=0.02)),
-        (FTRLProximal(alpha=1.0), FTRLProximal(alpha=1.0),
-         FTRLProximal(alpha=2.0)),
-        (OnlineNewtonStep(gamma=1.0), OnlineNewtonStep(gamma=1.0),
-         OnlineNewtonStep(gamma=2.0)),
+        (FTRLProximal(alpha=1.0), FTRLProximal(alpha=1.0), FTRLProximal(alpha=2.0)),
+        (
+            OnlineNewtonStep(gamma=1.0),
+            OnlineNewtonStep(gamma=1.0),
+            OnlineNewtonStep(gamma=2.0),
+        ),
     ]:
         assert opt == other_same
         assert opt != other_diff
@@ -120,3 +122,4 @@ def test_payload_extract_returns_none_on_missing_channels():
     est = PayloadEstimator(model, link="panda_link7")
     assert est.learn_one({"x": 1.0}) is est
     assert est.predict_one({}) == 0.0
+    assert est.n_missing == 1
