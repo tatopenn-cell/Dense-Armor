@@ -630,7 +630,15 @@ class SGTRegressor(Regressor, _SGTBase):
         return v
 
     def explain_one(self, x: Any, t: float | None = None) -> list:
-        """Return the path from root to leaf."""
+        """Return the path from root to leaf as a list of dicts.
+
+        Returns an empty list when the root itself is a leaf, that is
+        when the tree never split from the root. This happens on small
+        datasets where the t-test on the loss reduction (Gouk et al.
+        2019, eq. 16) never accepts a split. The prediction is then a
+        constant Newton step at the root and there is no path to
+        explain.
+        """
         return self._explain_path(x)
 
 
