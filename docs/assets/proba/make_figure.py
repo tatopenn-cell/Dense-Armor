@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
@@ -36,8 +37,11 @@ def fig_beta():
         ax.plot(xs, ys, lw=2.2, color=color, label=label)
     ax.set_xlabel("probability of heads")
     ax.set_ylabel("density")
-    ax.set_title("The beta prior becomes the posterior, one toss at a time",
-                 fontsize=12, weight="bold")
+    ax.set_title(
+        "The beta prior becomes the posterior, one toss at a time",
+        fontsize=12,
+        weight="bold",
+    )
     ax.legend(fontsize=10)
     ax.grid(alpha=0.3)
     fig.tight_layout()
@@ -68,8 +72,11 @@ def fig_gaussian():
     ax2.axhline(0.25, color="#27ae60", ls="--", lw=1.4, label="true variance 0.25")
     ax2.set_ylabel("variance", color="#c0392b")
     ax2.tick_params(axis="y", labelcolor="#c0392b")
-    ax1.set_title("Welford: mean and variance of the stream, one sample at a time",
-                  fontsize=12, weight="bold")
+    ax1.set_title(
+        "Welford: mean and variance of the stream, one sample at a time",
+        fontsize=12,
+        weight="bold",
+    )
     fig.tight_layout()
     fig.savefig(HERE / "gaussian_welford.png", dpi=140, facecolor="#fafafa")
     plt.close(fig)
@@ -82,18 +89,23 @@ def fig_dirichlet():
     ax.set_facecolor("#fafafa")
     x = np.arange(3)
     w = 0.28
-    for j, (label, alpha) in enumerate([
-        ("prior (1, 1, 1)", [1, 1, 1]),
-        ("after (3, 1, 0)", [4, 2, 1]),
-        ("after (8, 3, 1)", [9, 4, 2]),
-    ]):
+    for j, (label, alpha) in enumerate(
+        [
+            ("prior (1, 1, 1)", [1, 1, 1]),
+            ("after (3, 1, 0)", [4, 2, 1]),
+            ("after (8, 3, 1)", [9, 4, 2]),
+        ]
+    ):
         m = Multinomial(alpha=[float(a) for a in alpha])
         ax.bar(x + (j - 1) * w, m.mean(), w, label=label)
     ax.set_xticks(x)
     ax.set_xticklabels(["A", "B", "C"])
     ax.set_ylabel("posterior mean probability")
-    ax.set_title("The counters ARE the parameters: every observation moves one bar",
-                 fontsize=12, weight="bold")
+    ax.set_title(
+        "The counters ARE the parameters: every observation moves one bar",
+        fontsize=12,
+        weight="bold",
+    )
     ax.legend(fontsize=10)
     ax.grid(alpha=0.3, axis="y")
     fig.tight_layout()

@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,7 +17,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 
-from dense_armor.utility.neighbors import KNNClassifier, KNNRegressor
+from dense_armor.utility.neighbors import KNNClassifier
 
 HERE = Path(__file__).resolve().parent
 
@@ -43,11 +44,16 @@ def fig_decision_boundary():
 
     fig, ax = plt.subplots(figsize=(8, 7), facecolor="#fafafa")
     ax.set_facecolor("#fafafa")
-    ax.contourf(gx, gy, Z, levels=[-0.5, 0.5, 1.5], colors=["#cfe3f3", "#f3cfcf"], alpha=0.7)
+    ax.contourf(
+        gx, gy, Z, levels=[-0.5, 0.5, 1.5], colors=["#cfe3f3", "#f3cfcf"], alpha=0.7
+    )
     ax.scatter(A[:, 0], A[:, 1], c="#2c6fa6", edgecolor="white", s=30, label="class A")
     ax.scatter(B[:, 0], B[:, 1], c="#c0392b", edgecolor="white", s=30, label="class B")
-    ax.set_title("k-NN with k=5: the boundary follows the data, not a shape",
-                 fontsize=12, weight="bold")
+    ax.set_title(
+        "k-NN with k=5: the boundary follows the data, not a shape",
+        fontsize=12,
+        weight="bold",
+    )
     ax.set_xlabel("feature a")
     ax.set_ylabel("feature b")
     ax.legend(loc="upper left")
@@ -75,22 +81,26 @@ def fig_forget():
         xy=(n_show - window_size / 2, 0.05),
         xytext=(n_show - window_size / 2, 0.25),
         ha="center",
-        arrowprops=dict(arrowstyle="->"),
-        fontsize=11, weight="bold",
+        arrowprops={"arrowstyle": "->"},
+        fontsize=11,
+        weight="bold",
     )
     ax.annotate(
         "forgotten: one pop, no recomputation",
         xy=(0, 0.05),
         xytext=(2, 0.25),
         ha="center",
-        arrowprops=dict(arrowstyle="->"),
+        arrowprops={"arrowstyle": "->"},
         fontsize=11,
     )
     ax.set_ylim(-0.4, 0.5)
     ax.set_xlim(-1, n_show)
     ax.axis("off")
-    ax.set_title("A sliding window: add on the right, forget on the left, O(1) both ways",
-                 fontsize=12, weight="bold")
+    ax.set_title(
+        "A sliding window: add on the right, forget on the left, O(1) both ways",
+        fontsize=12,
+        weight="bold",
+    )
     fig.tight_layout()
     fig.savefig(HERE / "forget_window.png", dpi=140, facecolor="#fafafa")
     plt.close(fig)

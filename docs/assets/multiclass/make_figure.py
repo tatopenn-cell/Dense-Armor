@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
@@ -18,7 +19,9 @@ sys.path.insert(0, str(ROOT))
 
 from dense_armor.utility.linear.glm import LogisticRegression
 from dense_armor.utility.multiclass import (
-    OneVsOneClassifier, OneVsRestClassifier, OutputCodeClassifier,
+    OneVsOneClassifier,
+    OneVsRestClassifier,
+    OutputCodeClassifier,
 )
 from dense_armor.utility.optim import SGD
 
@@ -60,12 +63,24 @@ def fig_decision_regions():
                 Z[i, j] = int(p) if p is not None else 0
         fig, ax = plt.subplots(figsize=(8, 7), facecolor="#fafafa")
         ax.set_facecolor("#fafafa")
-        ax.contourf(gx, gy, Z, levels=[-0.5, 0.5, 1.5, 2.5],
-                    colors=["#cfe3f3", "#f3cfcf", "#d5f0d5"], alpha=0.7)
+        ax.contourf(
+            gx,
+            gy,
+            Z,
+            levels=[-0.5, 0.5, 1.5, 2.5],
+            colors=["#cfe3f3", "#f3cfcf", "#d5f0d5"],
+            alpha=0.7,
+        )
         for c, color in zip(range(3), ["#2c6fa6", "#c0392b", "#27ae60"]):
             pts = np.array([[X[i]["a"], X[i]["b"]] for i in range(len(X)) if y[i] == c])
-            ax.scatter(pts[:, 0], pts[:, 1], c=color, edgecolor="white", s=25,
-                       label=f"class {c}")
+            ax.scatter(
+                pts[:, 0],
+                pts[:, 1],
+                c=color,
+                edgecolor="white",
+                s=25,
+                label=f"class {c}",
+            )
         ax.set_title(name, fontsize=12, weight="bold")
         ax.legend(loc="upper left")
         ax.set_xlabel("feature a")
