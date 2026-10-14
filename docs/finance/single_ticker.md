@@ -15,6 +15,10 @@ Two detectors answer the question together. Only when **both** agree, the day is
 | LODA | Score how strange a day is, given several numbers | Price and volume together, not just price |
 | Half-Space Trees | Same job as LODA, done another way | A second opinion on the same day |
 
+![Apple daily return over five years with the flagged days in red](../assets/finance/single_ticker.png)
+
+*Each red dot is a day flagged by both LODA and Half-Space Trees on Apple.*
+
 ## 1. A strangeness score (LODA)
 
 Price and volume usually move together. When they do not, something is off. LODA looks at the pair and gives a score: low for an ordinary day, high for a strange one.
@@ -38,12 +42,12 @@ Apple, 1,253 trading days. Ranges calibrated on the first 250 days.
 | Metric | Value |
 |---|---|
 | Days tested | 1,253 |
-| Days flagged anomalous | 43 |
-| Time per day | about 1.1 ms |
+| Days flagged anomalous | 50 (47 after the 250-day calibration) |
+| Time per day | 0.59 ms median (Kaggle CPU) |
 
-The 43 days include June 2022 and September 2023 crashes, plus the quarterly-expiration Fridays, when volume moves without the price moving much.
+The 50 days include the crashes of April 3rd and 4th 2025 (−9.25% and −7.29%), the rebound of April 9th 2025 (+15.33%), the rise of June 11th 2024 (+7.26%, the day after the Apple Intelligence announcement), and 7 quarterly-expiration Fridays, when volume moves without the price moving much.
 
-**Why 43 and not a handful.** Same two detectors used on the S&P 500 would flag about 40 days too, if the input is raw. The surveillance page filters the tick with Armatura before the detectors see it, and the count drops. Both behaviours are correct: they answer different questions.
+**The same detectors on other stocks.** Over the same 1,253 days, Microsoft has 66 flagged days and Tesla 38. Each stock is compared with its own recent past.
 
 ## When you need it
 

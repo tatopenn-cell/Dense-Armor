@@ -37,7 +37,11 @@ FIXT = Path(__file__).resolve().parents[2] / "test" / "fixtures" / "finance"
 
 
 def _leggi_azioni(ticker):
-    """Read a Yahoo-Finance CSV with three header rows (Price, Ticker, Date)."""
+    """Read a Yahoo-Finance CSV with three header rows (Price, Ticker, Date).
+
+    Columns are Date, Close, High, Low, Open, Volume: the price is the
+    Close (index 1), the volume is index 5.
+    """
     fname = ticker.replace("^", "").replace("/", "_")
     close = []
     volume = []
@@ -50,7 +54,7 @@ def _leggi_azioni(ticker):
         for row in reader:
             if not row or not row[0]:
                 continue
-            close.append(float(row[4]))
+            close.append(float(row[1]))
             volume.append(float(row[5]))
     return np.array(close), np.array(volume)
 
@@ -66,9 +70,9 @@ def _leggi_trade_coinbase():
 
 
 def test_surveillance_on_real_sp500():
-    """On 1,254 days of S&P 500 with calibrated ranges, 42 LODA+HST
-    anomalies, including quarterly-expiration Fridays and month-end.
-    See docs/finance/static_vs_online.md."""
+    """On the S&P 500 daily closes, calibrated on the first 250 days: 43 LODA+HST
+    anomalies on the 1,004 remaining days, including 12 quarterly-expiration
+    Fridays. See docs/finance/surveillance.md."""
     prezzi, vol = _leggi_azioni("^GSPC")
     vol_rel = vol / np.nanmean(vol)
 
@@ -94,7 +98,7 @@ def test_surveillance_on_real_sp500():
         if e.anomalous:
             n_anom += 1
 
-    assert n_anom == 42, f"anomalies={n_anom}, expected 42"
+    assert n_anom == 43, f"anomalies={n_anom}, expected 43"
 
 
 def test_risk_on_real_sp500():
@@ -116,25 +120,24 @@ def test_risk_on_real_sp500():
 
 
 def test_execution_on_real_coinbase_trades():
-    """On 1,000 real BTC/USD Coinbase trades: most pass, some refused."""
+    """On 1,000 real BTC/USD Coinbase trades: 967 direct, 11 through Orca, 22 refused."""
     sizes = _leggi_trade_coinbase()
     ep = ExecutionPipeline(seed=0)
     esiti = [ep.process_order(float(s)) for s in sizes]
 
     assert ep.n_orders == 1000
-    assert ep.n_refused >= 15, (
-        f"refused={ep.n_refused}, expected at least 15 on the real distribution"
+    assert ep.n_refused == 22, f"refused={ep.n_refused}, expected 22"
+    assert ep.n_passed_directly == 967, (
+        f"passed direct={ep.n_passed_directly}, expected 967"
     )
-    assert ep.n_passed_directly > 900, (
-        f"passed direct={ep.n_passed_directly}, expected >900"
-    )
+    assert ep.n_through_orca == 11, f"through Orca={ep.n_through_orca}, expected 11"
     # ogni ordine e' o approvato o rifiutato
     n_ok = sum(1 for e in esiti if e.approved)
     assert n_ok + ep.n_refused == 1000
 
 
 def test_single_ticker_on_real_apple():
-    """On Apple over 5 years, 43 anomalous days (HST/LODA adaptive)."""
+    """On Apple over 5 years of daily closes, 50 anomalous days (HST/LODA adaptive)."""
     prezzi, vol = _leggi_azioni("AAPL")
     vol_rel = vol / np.nanmean(vol)
 
@@ -157,7 +160,7 @@ def test_single_ticker_on_real_apple():
         if t.process_day(float(ret), float(vol_rel[i])).anomalous:
             n_anom += 1
 
-    assert n_anom == 43, f"anomalies={n_anom}, expected 43"
+    assert n_anom == 50, f"anomalies={n_anom}, expected 50"
 
 
 def test_static_analysis_on_real_sp500():
@@ -165,7 +168,7 @@ def test_static_analysis_on_real_sp500():
 
     Reads the same GSPC fixture, applies the fixed-cutoff baseline,
     and checks the number of flagged days matches the
-    static_vs_online page (20 days over the whole series).
+    static_vs_online page (17 days over the whole series).
     """
     prices, _volume = _leggi_azioni("^GSPC")
     returns = [
@@ -176,7 +179,7 @@ def test_static_analysis_on_real_sp500():
     r = sa.analyze(np.array(returns))
 
     assert r.n_days == len(returns)
-    assert r.n_anomalous == 20, f"static 3% flag = {r.n_anomalous}"
+    assert r.n_anomalous == 17, f"static 3% flag = {r.n_anomalous}"
 
 
 def test_online_analysis_on_real_sp500():
@@ -208,9 +211,9 @@ def test_online_analysis_on_real_sp500():
     r = oa.analyze(returns, relative_volume)
 
     assert r.n_days == len(returns)
-    assert isinstance(r.n_anomalous, int)
-    assert isinstance(r.final_loda_threshold, float)
-    assert isinstance(r.final_hst_threshold, float)
+    assert r.n_anomalous == 46, f"online flagged = {r.n_anomalous}"
+    assert abs(r.final_loda_threshold - 4.0) < 0.01
+    assert abs(r.final_hst_threshold - 0.467) < 0.005
 
 
 def test_finance_pipeline_calibra():
@@ -360,6 +363,9 @@ def test_unsupervised_fraud_on_openml_creditcard():
 
     auc = roc_auc_score(y_test, s_e)
     assert 0.95 < auc < 0.97, f"ensemble AUC = {auc:.3f}"
+    tp = sum(1 for yi, sc in zip(y_test, s_e) if yi == 1 and sc >= 0.99)
+    fp = sum(1 for yi, sc in zip(y_test, s_e) if yi == 0 and sc >= 0.99)
+    assert (tp, fp) == (33, 50), f"tp={tp} fp={fp}"
 
 
 def test_intrusion_pipeline_on_nsl_kdd():
@@ -432,6 +438,9 @@ def test_intrusion_pipeline_on_nsl_kdd():
 
     auc = roc_auc_score(y_test, s_e)
     assert 0.96 < auc < 0.99, f"ensemble AUC = {auc:.3f}"
+    tp = sum(1 for yi, sc in zip(y_test, s_e) if yi == 1 and sc >= 0.5)
+    fp = sum(1 for yi, sc in zip(y_test, s_e) if yi == 0 and sc >= 0.5)
+    assert (tp, fp) == (10954, 1921), f"tp={tp} fp={fp}"
 
 
 def test_credit_scoring_pipeline_on_bank_marketing():
@@ -538,3 +547,6 @@ def test_credit_scoring_pipeline_on_bank_marketing():
 
     auc = roc_auc_score(y_test, s_e)
     assert 0.85 < auc < 0.90, f"ensemble AUC = {auc:.3f}"
+    tp = sum(1 for yi, sc in zip(y_test, s_e) if yi == 1 and sc >= 0.25)
+    fp = sum(1 for yi, sc in zip(y_test, s_e) if yi == 0 and sc >= 0.25)
+    assert (tp, fp) == (779, 1212), f"tp={tp} fp={fp}"

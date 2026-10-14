@@ -12,10 +12,16 @@ The user-facing entry point is always::
 Currently available domains:
 
     finance/
-        sorveglianza.py    watch a market index, flag anomalous days
-        rischio.py         daily VaR and volatility alarm
-        esecuzione.py      decide whether an order leaves, and how big
-        anomalia_titolo.py single-ticker strangeness
+        surveillance.py        watch a market index, flag anomalous days
+        risk.py                daily VaR and volatility alarm
+        execution.py           decide whether an order leaves, and how big
+        single_ticker.py       single-ticker strangeness
+        static_analysis.py     fixed-cutoff baseline
+        online_analysis.py     adaptive detectors on a return series
+        fraud.py               supervised card-fraud detection
+        unsupervised_fraud.py  card-fraud detection without labels
+        intrusion.py           network intrusion detection
+        credit_scoring.py      score customers for a telemarketing campaign
 
 Each domain gets its own subfolder. Adding a new domain means creating
 a new subfolder here, with the same structure: one file per pipeline,

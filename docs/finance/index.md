@@ -1,8 +1,8 @@
 # Finance
 
-**In plain words:** Five Dense-Armor pipelines cover the questions a market analyst asks every day. This page is the index.
+**In plain words:** Nine Dense-Armor pipelines cover the questions a market analyst, a bank or a payment desk asks every day. This page is the index.
 
-## The five pipelines
+## The nine pipelines
 
 | Pipeline | Question it answers | Page |
 |---|---|---|
@@ -14,7 +14,7 @@
 | **Fraud detection** | Is this transaction real? | [Fraud detection](fraud.md) |
 | **Unsupervised fraud** | Is this transaction strange, even without labels? | [Unsupervised fraud](unsupervised_fraud.md) |
 | **Intrusion detection** | Is this network packet an attack? | [Intrusion detection](intrusion.md) |
-| **Credit scoring** | Will this borrower repay? | [Credit scoring](credit_scoring.md) |
+| **Credit scoring** | Who is likely to sign if we call? | [Credit scoring](credit_scoring.md) |
 
 ## What they have in common
 
@@ -25,13 +25,16 @@ Every pipeline chains primitives from `dense_armor.utility` in a documented orde
 
 ## The data behind every number
 
-All the numbers on these pages come from one of the two real datasets shipped with the tests:
+All the numbers on these pages come from real data. Two datasets are checked in with the tests; three more are downloaded when the measurement tests run:
 
-| Data | Coverage | File |
+| Data | Coverage | Where |
 |---|---|---|
 | S&P 500, Apple, Microsoft, Tesla | 1,254 trading days each, 14 Oct 2021 to 13 Oct 2026 | `test/fixtures/finance/*.csv` |
 | BTC/USD trades | 1,000 trades, 14 Oct 2026 | `test/fixtures/finance/coinbase_btcusd_trades.csv` |
+| Card transactions (Fraud, Unsupervised fraud) | 284,807 transactions, 492 frauds | OpenML `creditcard`, downloaded |
+| Network flows (Intrusion detection) | 125,973 flows, NSL-KDD | downloaded |
+| Telemarketing calls (Credit scoring) | 45,211 calls, UCI Bank Marketing | downloaded |
 
-The fixture files are checked in, so the numbers can be reproduced by running `pytest test/finance/`.
+The market numbers can be reproduced by running `pytest test_slow/finance/`; the three downloaded datasets need a network connection.
 
 *These pages describe measurements on historical data. Not a forecast, not financial advice.*

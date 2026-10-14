@@ -6,7 +6,7 @@
 
 3:14 in the morning, a card that has never left Italy is used in Malaysia for 470 dollars. Then again in Brazil. Then again in Poland.
 
-The bank's system has one second to decide. If it says no and the card is fine, the customer is angry. If it says yes and the card is stolen, the money is gone. In 2022 the world lost **45 billion dollars** to payment fraud (Huang et al., 2025).
+The bank's system has one second to decide. If it says no and the card is fine, the customer is angry. If it says yes and the card is stolen, the money is gone. In 2022 the world lost **more than 45 billion dollars** to payment fraud (Huang et al., 2025).
 
 Most fraud systems use a static threshold: the score passes a cutoff, the transaction is blocked. That works until the fraudsters change their behaviour and the threshold that was right last year is wrong this year.
 
@@ -18,6 +18,10 @@ The fraud pipeline changes this. Two online trees learn from every transaction, 
 |---|---|---|
 | MondrianForest | Partition the space into random rectangles | A transaction very far from everything else is flagged |
 | SGTClassifier | Split the space with Newton steps and t-tests | A second opinion on the same transaction |
+
+![Fraud detection on 10,000 test transactions: 69 of 102 frauds caught, 69 of 72 alerts real](../assets/finance/fraud.png)
+
+*Green: right. Red: wrong. Top bar: what happened to the 102 real frauds. Bottom bar: what the 72 alerts were.*
 
 ## 1. A random partition of the space (MondrianForest)
 
@@ -52,7 +56,7 @@ The pipeline was trained on 40,000 real credit card transactions from the OpenML
 | False positives | 3 |
 | Recall on frauds | 67.6% |
 | Precision | 95.8% |
-| Training time (one core) | 227 s |
+| Training time (Kaggle CPU) | 189 s |
 
 **What this means**: the system catches 2 out of 3 frauds, and when it raises an alert 19 times out of 20 the alert is real. The customers whose cards are wrongfully blocked are 3 in 10,000 transactions.
 
@@ -69,8 +73,8 @@ The pipeline was trained on 40,000 real credit card transactions from the OpenML
 The pipeline is in `pipelines/finance/fraud.py`.
 Primitives chained, each with its own page:
 
-- [Mondrian Forest](../tree/index.md)
-- [Stochastic Gradient Trees](../tree/index.md)
+- [Mondrian Forest](../tree/index.md#5-a-prediction-with-its-uncertainty-mondrian-forests)
+- [Stochastic Gradient Trees](../tree/index.md#4-predicting-a-number-the-torque-of-a-two-link-arm)
 
 ### References
 

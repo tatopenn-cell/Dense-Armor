@@ -15,6 +15,10 @@ Two online Hoeffding trees learn from every packet. The adaptive one has a drift
 | HoeffdingAdaptiveTree | A tree with a drift detector at every node | When the attack shape changes, a new branch grows |
 | HoeffdingTree | A tree that never revises a split | The stable baseline on the same traffic |
 
+![Intrusion detection on 25,195 test network flows: 10,954 of 11,704 attacks caught, 10,954 of 12,875 alerts real](../assets/finance/intrusion.png)
+
+*Green: right. Red: wrong. Top bar: the 11,704 real attacks. Bottom bar: the 12,875 alerts.*
+
 ## 1. Splits that survive the change (HoeffdingAdaptiveTree)
 
 A classic Hoeffding tree chooses a split once and never revisits it. The adaptive version puts an ADWIN detector at every node. When the detector warns, a new subtree grows on the recent samples. When the new subtree is significantly more accurate, it replaces the old branch. The rest of the tree stays as it was.
@@ -39,9 +43,9 @@ The pipeline was trained on **125,973 real labelled network flows** from the NSL
 
 | Metric | Value |
 |---|---|
-| ROC-AUC, adaptive tree | 0.955 |
-| ROC-AUC, base tree | 0.950 |
-| ROC-AUC, ensemble | **0.975** |
+| ROC-AUC, adaptive tree | 0.9553 |
+| ROC-AUC, base tree | 0.9503 |
+| ROC-AUC, ensemble | **0.9755** |
 | Threshold | 0.5 |
 | Attacks predicted (out of 25,195) | 12,875 |
 | True positives | 10,954 |
@@ -49,7 +53,7 @@ The pipeline was trained on **125,973 real labelled network flows** from the NSL
 | False negatives | 750 |
 | Recall on attacks | 93.6% |
 | Precision | 85.1% |
-| Training time (one core) | 75 s |
+| Training time (Kaggle CPU) | 65 s |
 
 **What this means**: out of every 100 attacks, 93 are caught. Of every 100 alerts raised, 85 are real. The two trees together beat either alone.
 
@@ -66,8 +70,8 @@ The pipeline was trained on **125,973 real labelled network flows** from the NSL
 The pipeline is in `pipelines/finance/intrusion.py`.
 Primitives chained, each with its own page:
 
-- [Hoeffding Adaptive Tree](../tree/index.md)
-- [Hoeffding Tree](../tree/index.md)
+- [Hoeffding Adaptive Tree](../tree/index.md#3-following-a-sudden-change-the-adaptive-tree)
+- [Hoeffding Tree](../tree/index.md#1-a-tree-that-learns-a-robot-state)
 
 ### References
 

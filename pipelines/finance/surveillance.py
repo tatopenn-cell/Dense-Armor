@@ -13,11 +13,12 @@ human would point to after the fact.
 
 Note:
     The five stages are used as they are, thresholds included. On five
-    years of real S&P 500 data (1,254 trading days) the pipeline flags
-    3 anomalous days, all matching known events (August 5th 2024 the
-    Japanese Black Monday, November 6th 2024 the day after the US
-    election, and one in the April 2025 tariff weeks). Cost per tick
-    on a single core: about 5 milliseconds.
+    years of real S&P 500 daily closes (1,253 returns, 250 of them used
+    as warm-up) the pipeline flags 43 of the 1,004 remaining days, among
+    them August 5th 2024 (-3.00%), November 6th 2024 (the day after the
+    US election, +2.53%) and April 3rd, 4th, 9th and 10th 2025 (the tariff
+    weeks). Cost per tick: 3.85 ms median, 5.27 ms at the 99th
+    percentile, on a 4-core CPU with 31 GB of RAM.
 """
 
 from dataclasses import dataclass
