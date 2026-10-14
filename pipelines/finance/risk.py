@@ -35,9 +35,7 @@ class RiskPipeline:
         seed: random seed (unused here, kept for interface symmetry).
     """
 
-    def __init__(
-        self, alpha: float = 0.01, loss_limit: float = 0.05, seed: int = 0
-    ):
+    def __init__(self, alpha: float = 0.01, loss_limit: float = 0.05, seed: int = 0):
         self.sketch = DDSketch(alpha=alpha)
         self.cusum_vol = CUSUMDriftDetector(radius=20, ref_mult=3, k=0.5, h=40.0)
         self.loss_limit = loss_limit

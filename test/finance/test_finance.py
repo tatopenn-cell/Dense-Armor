@@ -4,10 +4,10 @@ import numpy as np
 import pytest
 
 from pipelines.finance import (
-    SingleTickerPipeline,
     ExecutionPipeline,
     FinancePipeline,
     RiskPipeline,
+    SingleTickerPipeline,
 )
 
 

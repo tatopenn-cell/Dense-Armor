@@ -17,10 +17,10 @@ import numpy as np
 import pandas as pd
 
 from pipelines.finance import (
-    SingleTickerPipeline,
     ExecutionPipeline,
     FinancePipeline,
     RiskPipeline,
+    SingleTickerPipeline,
 )
 
 FIXT = Path(__file__).resolve().parents[2] / "test" / "fixtures" / "finance"
