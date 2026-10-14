@@ -73,10 +73,10 @@ nav:
   - Applications:
       - Finance:
           - finance/index.md
-          - Risk: finance/rischio.md
-          - Execution: finance/esecuzione.md
-          - Single ticker: finance/anomalia_titolo.md
-          - Static vs online: finance/statico_vs_online.md
+          - Risk: finance/risk.md
+          - Execution: finance/execution.md
+          - Single ticker: finance/single_ticker.md
+          - Static vs online: finance/static_vs_online.md
 
   - Shields:
       - shields/index.md

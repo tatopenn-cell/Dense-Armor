@@ -2,7 +2,7 @@
 
 The pipeline chains five primitive tools of :mod:`dense_armor.utility`
 to watch a stock-market index in real time. Each tick is passed through
-all five stages; the result is a :class:`TickEsito` with the verdict of
+all five stages; the result is a :class:`TickResult` with the verdict of
 every stage. No stage modifies the next one: they share the same tick
 and produce independent signals.
 
@@ -32,44 +32,44 @@ from dense_armor.utility.protect.orca import Orca
 
 
 @dataclass
-class TickEsito:
+class TickResult:
     """Verdict of every stage on a single tick.
 
     Attributes:
         tick: zero-based index of the tick in this pipeline run.
-        prezzo: the price as it arrived.
+        price: the price as it arrived.
         volume: relative volume (volume divided by the mean volume of
             the calibration window).
-        prezzo_pulito: the price after Armatura. ``nan`` if the tick was
+        cleaned_price: the price after Armatura. ``nan`` if the tick was
             discarded.
-        scartato_da_armatura: True if Armatura considered the tick
+        discarded_by_armatura: True if Armatura considered the tick
             absurd and dropped it.
-        deriva_segnalata: True if CUSUM flagged a change of trend on
+        drift_flagged: True if CUSUM flagged a change of trend on
             this tick.
         loda_score: LODA strangeness score on the (return, volume) pair.
         hst_score: Half-Space Trees strangeness score on the same pair.
         anomalia: True if both LODA and HST are above their own
             adaptive thresholds.
-        orca_riduzione: fraction of the norm removed by Orca on the
+        orca_reduction: fraction of the norm removed by Orca on the
             simulated order. 0.0 if Orca was not invoked.
-        orca_smorzato: True if the reduction is above the configured
+        orca_dampened: True if the reduction is above the configured
             threshold.
     """
 
     tick: int
-    prezzo: float
+    price: float
     volume: float
-    prezzo_pulito: float
-    scartato_da_armatura: bool
-    deriva_segnalata: bool
+    cleaned_price: float
+    discarded_by_armatura: bool
+    drift_flagged: bool
     loda_score: float
     hst_score: float
     anomalia: bool
-    orca_riduzione: float
-    orca_smorzato: bool
+    orca_reduction: float
+    orca_dampened: bool
 
 
-class FinanzaPipeline:
+class FinancePipeline:
     """Five Dense-Armor stages on a stream of (price, relative volume).
 
     Stages, in order:
@@ -89,9 +89,9 @@ class FinanzaPipeline:
             known working range.
         range_vol: (min, max) of the relative volume, from the same
             calibration window.
-        soglia_armatura: Hampel score above which the tick is discarded.
+        armatura_threshold: Hampel score above which the tick is discarded.
             Default 5.0 (about five robust sigmas).
-        soglia_orca: norm-reduction fraction above which the simulated
+        orca_threshold: norm-reduction fraction above which the simulated
             order counts as dampened. Default 0.50.
         seed: seed for the random projections and the tree splits.
 
@@ -100,14 +100,14 @@ class FinanzaPipeline:
             2-tuple, or if the minimum is not below the maximum.
 
     Example:
-        >>> from pipelines.finance import FinanzaPipeline
-        >>> p = FinanzaPipeline(range_ret=(-0.05, 0.05),
+        >>> from pipelines.finance import FinancePipeline
+        >>> p = FinancePipeline(range_ret=(-0.05, 0.05),
         ...                     range_vol=(0.5, 2.0), seed=0)
         >>> e = p.process_tick(100.0, 1.0)
-        >>> e.tick, e.scartato_da_armatura, e.anomalia
+        >>> e.tick, e.discarded_by_armatura, e.anomalia
         (0, False, False)
         >>> e2 = p.process_tick(99999.0, 1.0)
-        >>> e2.scartato_da_armatura
+        >>> e2.discarded_by_armatura
         True
 
     References:
@@ -125,11 +125,11 @@ class FinanzaPipeline:
         self,
         range_ret: tuple[float, float],
         range_vol: tuple[float, float],
-        soglia_armatura: float = 5.0,
-        soglia_orca: float = 0.50,
+        armatura_threshold: float = 5.0,
+        orca_threshold: float = 0.50,
         seed: int = 0,
     ):
-        self.hampel = HampelScorer(radius=20, n_sigmas=soglia_armatura)
+        self.hampel = HampelScorer(radius=20, n_sigmas=armatura_threshold)
         self.cusum = CUSUMDriftDetector(radius=20, ref_mult=3, k=0.5, h=30.0)
         self.loda = LODA(
             n_projections=50, n_bins=10, window=200, range_init=50, seed=seed
@@ -142,61 +142,61 @@ class FinanzaPipeline:
             seed=seed,
         )
         self.orca = Orca()
-        self.soglia_orca = soglia_orca
+        self.orca_threshold = orca_threshold
         self.storico: list[float] = []
         self.n_tick = 0
 
-    def process_tick(self, prezzo: float, volume_rel: float) -> TickEsito:
+    def process_tick(self, price: float, relative_volume: float) -> TickResult:
         """Process one tick through all five stages.
 
         The stages see the same tick in the same order as described in
         the class docstring. Each stage updates its own internal state
-        and contributes a field to the returned :class:`TickEsito`.
+        and contributes a field to the returned :class:`TickResult`.
 
         Args:
-            prezzo: the price of the tick.
-            volume_rel: relative volume (volume divided by the mean
+            price: the price of the tick.
+            relative_volume: relative volume (volume divided by the mean
                 volume of the calibration window).
 
         Returns:
-            A :class:`TickEsito` with the verdict of every stage.
+            A :class:`TickResult` with the verdict of every stage.
 
         Example:
-            >>> from pipelines.finance import FinanzaPipeline
-            >>> p = FinanzaPipeline(range_ret=(-0.05, 0.05),
+            >>> from pipelines.finance import FinancePipeline
+            >>> p = FinancePipeline(range_ret=(-0.05, 0.05),
             ...                     range_vol=(0.5, 2.0), seed=0)
             >>> e = p.process_tick(100.0, 1.0)
             >>> e.tick
             0
-            >>> e.scartato_da_armatura
+            >>> e.discarded_by_armatura
             False
         """
-        sc_h = self.hampel.score_one({"x": float(prezzo)})
+        sc_h = self.hampel.score_one({"x": float(price)})
         scartato = sc_h > 5.0
-        prezzo_pulito = float("nan") if scartato else float(prezzo)
-        self.hampel.learn_one({"x": float(prezzo)})
+        cleaned_price = float("nan") if scartato else float(price)
+        self.hampel.learn_one({"x": float(price)})
 
         if not scartato:
-            self.storico.append(prezzo_pulito)
+            self.storico.append(cleaned_price)
         self.n_tick += 1
 
         deriva = False
         if not scartato:
-            self.cusum.update(prezzo_pulito)
+            self.cusum.update(cleaned_price)
             deriva = bool(getattr(self.cusum, "drift_detected", False))
 
         if len(self.storico) > 2 and not scartato:
-            ret = (prezzo_pulito - self.storico[-2]) / self.storico[-2]
+            ret = (cleaned_price - self.storico[-2]) / self.storico[-2]
         else:
             ret = 0.0
-        x = {"a": float(ret), "b": float(volume_rel)}
+        x = {"a": float(ret), "b": float(relative_volume)}
         s_loda = self.loda.score_one(x)
         s_hst = self.hst.score_one(x)
         anomalia = bool(s_loda > self.loda.threshold and s_hst > self.hst.threshold)
         self.loda.learn_one(x)
         self.hst.learn_one(x)
 
-        x_ord = np.array([float(volume_rel), float(ret), 1.0])
+        x_ord = np.array([float(relative_volume), float(ret), 1.0])
         try:
             out = self.orca.protect_and_forward(
                 ai_model_callable=None,
@@ -207,41 +207,41 @@ class FinanzaPipeline:
                 use_output_shield=True,
                 use_arbiter=False,
             )
-            riduzione = 1.0 - float(
+            reduction = 1.0 - float(
                 np.linalg.norm(out) / max(np.linalg.norm(x_ord), 1e-12)
             )
         except (ValueError, TypeError, RuntimeError):
-            riduzione = 0.0
-        smorzato = riduzione > self.soglia_orca
+            reduction = 0.0
+        smorzato = reduction > self.orca_threshold
 
-        return TickEsito(
+        return TickResult(
             tick=self.n_tick - 1,
-            prezzo=float(prezzo),
-            volume=float(volume_rel),
-            prezzo_pulito=prezzo_pulito,
-            scartato_da_armatura=scartato,
-            deriva_segnalata=deriva,
+            price=float(price),
+            volume=float(relative_volume),
+            cleaned_price=cleaned_price,
+            discarded_by_armatura=scartato,
+            drift_flagged=deriva,
             loda_score=float(s_loda),
             hst_score=float(s_hst),
             anomalia=anomalia,
-            orca_riduzione=float(riduzione),
-            orca_smorzato=bool(smorzato),
+            orca_reduction=float(reduction),
+            orca_dampened=bool(smorzato),
         )
 
     @staticmethod
     def calibra(
-        prezzi: np.ndarray, volumi_rel: np.ndarray, frazione: float = 0.2
+        prices: np.ndarray, relative_volumes: np.ndarray, fraction: float = 0.2
     ) -> tuple[tuple[float, float], tuple[float, float]]:
-        """Return ``(range_ret, range_vol)`` from the first ``frazione`` days.
+        """Return ``(range_ret, range_vol)`` from the first ``fraction`` days.
 
         The two ranges are the 0.5th and 99.5th percentiles of the
         return and of the relative volume on the calibration window.
         They are the working range Half-Space Trees needs.
 
         Args:
-            prezzi: closing-price series.
-            volumi_rel: relative-volume series (volume / mean volume).
-            frazione: fraction of the series used to calibrate.
+            prices: closing-price series.
+            relative_volumes: relative-volume series (volume / mean volume).
+            fraction: fraction of the series used to calibrate.
                 Default 0.2 (first 20%).
 
         Returns:
@@ -250,19 +250,19 @@ class FinanzaPipeline:
 
         Example:
             >>> import numpy as np
-            >>> from pipelines.finance import FinanzaPipeline
+            >>> from pipelines.finance import FinancePipeline
             >>> rng = np.random.default_rng(0)
-            >>> prezzi = 100 + np.cumsum(rng.normal(0, 0.5, 500))
+            >>> prices = 100 + np.cumsum(rng.normal(0, 0.5, 500))
             >>> vol = 1 + rng.normal(0, 0.1, 500)
-            >>> rr, rv = FinanzaPipeline.calibra(prezzi, vol, frazione=0.3)
+            >>> rr, rv = FinancePipeline.calibra(prices, vol, fraction=0.3)
             >>> rr[0] < 0 < rr[1]
             True
             >>> rv[0] > 0
             True
         """
-        n_cal = max(20, int(len(prezzi) * frazione))
-        ret = np.diff(prezzi[:n_cal]) / prezzi[:n_cal][:-1]
-        vol = volumi_rel[:n_cal]
+        n_cal = max(20, int(len(prices) * fraction))
+        ret = np.diff(prices[:n_cal]) / prices[:n_cal][:-1]
+        vol = relative_volumes[:n_cal]
         range_ret = (float(np.percentile(ret, 0.5)), float(np.percentile(ret, 99.5)))
         range_vol = (float(np.percentile(vol, 0.5)), float(np.percentile(vol, 99.5)))
         return range_ret, range_vol

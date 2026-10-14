@@ -8,7 +8,7 @@ On August 5th, 2024, Japan opens the week with the worst crash in its recent his
 
 A year later, on April 7th, 2025, the American tariffs are announced. Apple drops 8.61% in one session. Anyone reading the news caught up **after** the fact.
 
-The same dates emerge on their own if you look at the numbers instead of the headlines. Five Dense-Armor tools, run in sequence on **1,254 real trading days**, flagged **42 days** as anomalous on the S&P 500: the big crashes, but also the quarterly-expiration Fridays and the month-end rebalancings that a fixed cutoff never sees. (See [Static vs online](statico_vs_online.md) for the comparison.) Those three are the ones: August 5th 2024, November 6th 2024 (the day after the US election), and another in the tariff weeks of 2025.
+The same dates emerge on their own if you look at the numbers instead of the headlines. Five Dense-Armor tools, run in sequence on **1,254 real trading days**, flagged **42 days** as anomalous on the S&P 500: the big crashes, but also the quarterly-expiration Fridays and the month-end rebalancings that a fixed cutoff never sees. (See [Static vs online](static_vs_online.md) for the comparison.) Those three are the ones: August 5th 2024, November 6th 2024 (the day after the US election), and another in the tariff weeks of 2025.
 
 Not because someone told them what to look for. Because the market, on those days, behaved differently from usual. And the numbers noticed.
 

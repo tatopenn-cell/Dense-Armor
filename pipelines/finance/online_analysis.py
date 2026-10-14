@@ -22,30 +22,30 @@ from dense_armor.utility.anomaly.loda import LODA
 
 
 @dataclass
-class RisultatoOnline:
+class OnlineResult:
     """Result of one online analysis.
 
     Attributes:
-        n_giorni: total days processed.
-        n_anomali: days where both LODA and HST were above
+        n_days: total days processed.
+        n_anomalous: days where both LODA and HST were above
             their own adaptive thresholds.
-        indici_anomali: indices of those days.
-        rendimenti: the return of those days.
-        soglia_loda_finale: the adaptive LODA threshold at the
+        anomalous_indices: indices of those days.
+        returns_: the return of those days.
+        final_loda_threshold: the adaptive LODA threshold at the
             end of the run.
-        soglia_hst_finale: the adaptive HST threshold at the
+        final_hst_threshold: the adaptive HST threshold at the
             end of the run.
     """
 
-    n_giorni: int
-    n_anomali: int
-    indici_anomali: list[int]
-    rendimenti: list[float]
-    soglia_loda_finale: float
-    soglia_hst_finale: float
+    n_days: int
+    n_anomalous: int
+    anomalous_indices: list[int]
+    returns_: list[float]
+    final_loda_threshold: float
+    final_hst_threshold: float
 
 
-class AnalisiOnline:
+class OnlineAnalysis:
     """Adaptive anomaly detection on a full return series.
 
     Args:
@@ -57,12 +57,12 @@ class AnalisiOnline:
         seed: seed for the random projections and tree splits.
 
     Example:
-        >>> from pipelines.finance.analisi_online import AnalisiOnline
-        >>> a = AnalisiOnline(range_ret=(-0.05, 0.05),
+        >>> from pipelines.finance.analisi_online import OnlineAnalysis
+        >>> a = OnlineAnalysis(range_ret=(-0.05, 0.05),
         ...                   range_vol=(0.5, 2.0), seed=0)
-        >>> r = a.analizza([0.001, -0.04, 0.002, 0.05, -0.001],
+        >>> r = a.analyze([0.001, -0.04, 0.002, 0.05, -0.001],
         ...                [1.0, 1.5, 1.0, 1.2, 1.0])
-        >>> isinstance(r.n_anomali, int)
+        >>> isinstance(r.n_anomalous, int)
         True
     """
 
@@ -87,39 +87,39 @@ class AnalisiOnline:
             seed=seed,
         )
 
-    def analizza(
+    def analyze(
         self,
-        rendimenti,
-        volumi_rel,
-    ) -> RisultatoOnline:
+        returns_,
+        relative_volumes,
+    ) -> OnlineResult:
         """Run LODA and HST on the whole series, one day at a time.
 
         Args:
-            rendimenti: iterable of daily returns.
-            volumi_rel: iterable of relative volumes.
+            returns_: iterable of daily returns.
+            relative_volumes: iterable of relative volumes.
 
         Returns:
-            A :class:`RisultatoOnline`.
+            A :class:`OnlineResult`.
         """
-        r = np.asarray(rendimenti, dtype=float)
-        v = np.asarray(volumi_rel, dtype=float)
+        r = np.asarray(returns_, dtype=float)
+        v = np.asarray(relative_volumes, dtype=float)
         n = r.size
-        indici_anomali: list[int] = []
+        anomalous_indices: list[int] = []
         rend_anomali: list[float] = []
         for i in range(n):
             x = {"ret": float(r[i]), "vol": float(v[i])}
             sl = float(self.loda.score_one(x))
             sh = float(self.hst.score_one(x))
             if sl > self.loda.threshold and sh > self.hst.threshold:
-                indici_anomali.append(i)
+                anomalous_indices.append(i)
                 rend_anomali.append(float(r[i]))
             self.loda.learn_one(x)
             self.hst.learn_one(x)
-        return RisultatoOnline(
-            n_giorni=n,
-            n_anomali=len(indici_anomali),
-            indici_anomali=indici_anomali,
-            rendimenti=rend_anomali,
-            soglia_loda_finale=float(self.loda.threshold),
-            soglia_hst_finale=float(self.hst.threshold),
+        return OnlineResult(
+            n_days=n,
+            n_anomalous=len(anomalous_indices),
+            anomalous_indices=anomalous_indices,
+            returns_=rend_anomali,
+            final_loda_threshold=float(self.loda.threshold),
+            final_hst_threshold=float(self.hst.threshold),
         )

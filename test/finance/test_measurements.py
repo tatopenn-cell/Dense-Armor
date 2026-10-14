@@ -17,10 +17,10 @@ import numpy as np
 import pandas as pd
 
 from pipelines.finance import (
-    AnomaliaTitoloPipeline,
-    EsecuzionePipeline,
-    FinanzaPipeline,
-    RischioPipeline,
+    SingleTickerPipeline,
+    ExecutionPipeline,
+    FinancePipeline,
+    RiskPipeline,
 )
 
 FIXT = Path(__file__).resolve().parents[2] / "test" / "fixtures" / "finance"
@@ -43,12 +43,12 @@ def test_sorveglianza_su_sp500_reale():
     """Su 1,254 giorni di S&P 500 con range calibrati, 42 anomalie LODA+HST
     (include terzi venerdì e fine mese). Vedi statico_vs_online.md."""
     df = carica_azioni("^GSPC")
-    prezzi = df["Close"].values.astype(float)
+    prices = df["Close"].values.astype(float)
     vol_rel = df["Volume"].values.astype(float)
     vol_rel = vol_rel / np.nanmean(vol_rel)
 
     n_cal = 250
-    ret_cal = np.diff(prezzi[:n_cal]) / prezzi[:n_cal][:-1]
+    ret_cal = np.diff(prices[:n_cal]) / prices[:n_cal][:-1]
     range_ret = (
         float(np.percentile(ret_cal, 0.5)),
         float(np.percentile(ret_cal, 99.5)),
@@ -59,17 +59,17 @@ def test_sorveglianza_su_sp500_reale():
         float(np.percentile(vol_cal, 99.5)),
     )
 
-    p = FinanzaPipeline(range_ret=range_ret, range_vol=range_vol, seed=0)
+    p = FinancePipeline(range_ret=range_ret, range_vol=range_vol, seed=0)
     for i in range(1, n_cal):
-        p.process_tick(prezzi[i], vol_rel[i])
+        p.process_tick(prices[i], vol_rel[i])
 
     n_anom = 0
     n_deriva = 0
-    for i in range(n_cal, len(prezzi)):
-        e = p.process_tick(prezzi[i], vol_rel[i])
+    for i in range(n_cal, len(prices)):
+        e = p.process_tick(prices[i], vol_rel[i])
         if e.anomalia:
             n_anom += 1
-        if e.deriva_segnalata:
+        if e.drift_flagged:
             n_deriva += 1
 
     assert n_anom == 42, f"anomalie={n_anom}, atteso 42"
@@ -78,16 +78,16 @@ def test_sorveglianza_su_sp500_reale():
 def test_rischio_su_sp500_reale():
     """Su 1,253 giorni di S&P 500: VaR 99%, VaR 99.9%, giorni oltre 5%."""
     df = carica_azioni("^GSPC")
-    prezzi = df["Close"].values.astype(float)
-    rend = np.diff(prezzi) / prezzi[:-1]
+    prices = df["Close"].values.astype(float)
+    rend = np.diff(prices) / prices[:-1]
     perdite = np.maximum(-rend, 0.0)
 
-    r = RischioPipeline(alpha=0.01, limite_perdita=0.05, seed=0)
+    r = RiskPipeline(alpha=0.01, loss_limit=0.05, seed=0)
     esiti = [r.process_day(float(p)) for p in perdite]
 
     var99 = esiti[-1].var_99
     var999 = esiti[-1].var_999
-    n_oltre = sum(1 for e in esiti if e.oltre_limite)
+    n_oltre = sum(1 for e in esiti if e.over_limit)
 
     assert 0.025 < var99 < 0.032, f"var99={var99:.4f}"
     assert 0.038 < var999 < 0.045, f"var999={var999:.4f}"
@@ -99,13 +99,13 @@ def test_esecuzione_su_trade_coinbase_reali():
     trades = carica_trade_coinbase()
     sizes = trades["size"].values.astype(float)
 
-    ep = EsecuzionePipeline(seed=0)
+    ep = ExecutionPipeline(seed=0)
     esiti = [ep.process_order(float(s)) for s in sizes]
 
     assert ep.n_ordini == 1000
     assert ep.n_rifiutati >= 0
     assert ep.n_via_orca == ep.n_dampened + (
-        sum(1 for e in esiti if "passed through Orca" in e.motivo)
+        sum(1 for e in esiti if "passed through Orca" in e.reason)
     )
     # Con dati reali il rolling mean si adatta, quindi quasi tutto passa diretto
     assert ep.n_passati_diretti > 900, (
@@ -116,12 +116,12 @@ def test_esecuzione_su_trade_coinbase_reali():
 def test_anomalia_titolo_su_apple_reale():
     """Su Apple 5 anni: 43 giorni anomali (soglie adattive HST/LODA)."""
     df = carica_azioni("AAPL")
-    prezzi = df["Close"].values.astype(float)
+    prices = df["Close"].values.astype(float)
     vol_rel = df["Volume"].values.astype(float)
     vol_rel = vol_rel / np.nanmean(vol_rel)
 
     n_cal = 250
-    ret_cal = np.diff(prezzi[:n_cal]) / prezzi[:n_cal][:-1]
+    ret_cal = np.diff(prices[:n_cal]) / prices[:n_cal][:-1]
     range_ret = (
         float(np.percentile(ret_cal, 0.5)),
         float(np.percentile(ret_cal, 99.5)),
@@ -132,11 +132,11 @@ def test_anomalia_titolo_su_apple_reale():
         float(np.percentile(vol_cal, 99.5)),
     )
 
-    t = AnomaliaTitoloPipeline(range_ret=range_ret, range_vol=range_vol, seed=0)
+    t = SingleTickerPipeline(range_ret=range_ret, range_vol=range_vol, seed=0)
     n_anom = 0
-    for i in range(1, len(prezzi)):
-        ret = (prezzi[i] - prezzi[i - 1]) / prezzi[i - 1]
-        if t.process_day(ret, vol_rel[i]).anomalo:
+    for i in range(1, len(prices)):
+        ret = (prices[i] - prices[i - 1]) / prices[i - 1]
+        if t.process_day(ret, vol_rel[i]).anomalous:
             n_anom += 1
 
     assert n_anom == 43, f"giorni anomali={n_anom}, atteso 43"

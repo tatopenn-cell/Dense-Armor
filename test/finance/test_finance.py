@@ -4,16 +4,16 @@ import numpy as np
 import pytest
 
 from pipelines.finance import (
-    AnomaliaTitoloPipeline,
-    EsecuzionePipeline,
-    FinanzaPipeline,
-    RischioPipeline,
+    SingleTickerPipeline,
+    ExecutionPipeline,
+    FinancePipeline,
+    RiskPipeline,
 )
 
 
 @pytest.fixture
 def pipeline():
-    return FinanzaPipeline(range_ret=(-0.05, 0.05), range_vol=(0.5, 2.0), seed=0)
+    return FinancePipeline(range_ret=(-0.05, 0.05), range_vol=(0.5, 2.0), seed=0)
 
 
 def test_finanza_import(pipeline):
@@ -24,7 +24,7 @@ def test_finanza_import(pipeline):
 def test_finanza_un_tick_normale(pipeline):
     e = pipeline.process_tick(100.0, 1.0)
     assert e.tick == 0
-    assert not e.scartato_da_armatura
+    assert not e.discarded_by_armatura
     assert not e.anomalia
 
 
@@ -32,27 +32,27 @@ def test_finanza_scarta_picco(pipeline):
     for _ in range(30):
         pipeline.process_tick(100.0, 1.0)
     e = pipeline.process_tick(9999.0, 1.0)
-    assert e.scartato_da_armatura
+    assert e.discarded_by_armatura
 
 
 def test_esecuzione_ordine_piccolo():
-    ep = EsecuzionePipeline(seed=0)
+    ep = ExecutionPipeline(seed=0)
     e = ep.process_order(1.0)
-    assert e.approvato
-    assert e.riduzione == 0.0
+    assert e.approved
+    assert e.reduction == 0.0
 
 
 def test_esecuzione_rifiuta_ordine_enorme():
-    ep = EsecuzionePipeline(seed=0)
+    ep = ExecutionPipeline(seed=0)
     for _ in range(30):
         ep.process_order(5.0)
     e = ep.process_order(5000.0)
-    assert not e.approvato
-    assert "max_size_molteplice" in e.motivo
+    assert not e.approved
+    assert "max_size_multiple" in e.reason
 
 
 def test_rischio_var_cresce():
-    rp = RischioPipeline(alpha=0.01, limite_perdita=0.05, seed=0)
+    rp = RiskPipeline(alpha=0.01, loss_limit=0.05, seed=0)
     rng = np.random.default_rng(0)
     for _ in range(200):
         rp.process_day(float(abs(rng.normal(0.01, 0.005))))
@@ -62,23 +62,23 @@ def test_rischio_var_cresce():
 
 
 def test_rischio_giorno_grande_segnalato():
-    rp = RischioPipeline(alpha=0.01, limite_perdita=0.05, seed=0)
+    rp = RiskPipeline(alpha=0.01, loss_limit=0.05, seed=0)
     for _ in range(50):
         rp.process_day(0.005)
     e = rp.process_day(0.10)
-    assert e.oltre_limite
+    assert e.over_limit
 
 
 def test_titolo_un_giorno():
-    t = AnomaliaTitoloPipeline(range_ret=(-0.05, 0.05), range_vol=(0.5, 2.0), seed=0)
+    t = SingleTickerPipeline(range_ret=(-0.05, 0.05), range_vol=(0.5, 2.0), seed=0)
     e = t.process_day(0.001, 1.0)
-    assert e.giorno == 0
-    assert not e.anomalo
+    assert e.day == 0
+    assert not e.anomalous
 
 
 def test_titolo_200_giorni_non_crasha():
-    t = AnomaliaTitoloPipeline(range_ret=(-0.05, 0.05), range_vol=(0.5, 2.0), seed=0)
+    t = SingleTickerPipeline(range_ret=(-0.05, 0.05), range_vol=(0.5, 2.0), seed=0)
     rng = np.random.default_rng(0)
     for _ in range(200):
         e = t.process_day(float(rng.normal(0, 0.01)), float(1.0 + rng.normal(0, 0.1)))
-        assert isinstance(e.anomalo, bool)
+        assert isinstance(e.anomalous, bool)
