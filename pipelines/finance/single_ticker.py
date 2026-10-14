@@ -6,13 +6,13 @@ pair of a single ticker.
 Cliente: analista fondamentale, retail avanzato.
 
 Note:
-    Le soglie di LODA e HST sono quelle adattive, cosi' come gli
-    strumenti le calcolano. Su un ticker volatile la threshold adattiva di
-    HST si stabilizza su valori bassi, e il numero di giorni segnalati
-    e' alto (43 su Apple nei 5 anni). E' il comportamento corretto di un
-    rilevatore online su dati grezzi. Se si vuole meno rumore, va
-    filtrato l'ingresso con Hampel prima di LODA e HST: e' quello che fa
-    ``FinancePipeline`` e il conteggio scende a 4.
+    LODA and HST keep their own adaptive thresholds. On a volatile
+    ticker the HST threshold stabilises at a low value, and the
+    number of flagged days is high: 43 on Apple over five years.
+    That is the correct behaviour of an online detector on raw
+    data. To reduce the noise, filter the input with Hampel before
+    LODA and HST: that is what ``FinancePipeline`` does, and the
+    count drops to a handful.
 """
 
 from dataclasses import dataclass

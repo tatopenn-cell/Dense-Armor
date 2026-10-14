@@ -49,14 +49,14 @@ class RiskPipeline:
         """
         self.n_days += 1
 
-        # aggiorna la coda con la loss di oggi
+        # update the tail with today's loss
         self.sketch.learn_one({"x": float(loss)})
         var99 = float(self.sketch.quantile(0.99))
         var999 = float(self.sketch.quantile(0.999))
 
         oltre = loss > self.loss_limit
 
-        # CUSUM sulla loss: se le perdite aumentano, allarme
+        # CUSUM on the loss series: if losses grow, alarm
         self.cusum_vol.update(float(loss))
         deriva = bool(getattr(self.cusum_vol, "drift_detected", False))
 

@@ -40,8 +40,9 @@ def carica_trade_coinbase():
 
 
 def test_sorveglianza_su_sp500_reale():
-    """Su 1,254 giorni di S&P 500 con range calibrati, 42 anomalie LODA+HST
-    (include terzi venerdì e fine mese). Vedi statico_vs_online.md."""
+    """On 1,254 days of S&P 500 with calibrated ranges, 42 LODA+HST
+    anomalies, including quarterly-expiration Fridays and month-end.
+    See docs/finance/static_vs_online.md."""
     df = carica_azioni("^GSPC")
     prices = df["Close"].values.astype(float)
     vol_rel = df["Volume"].values.astype(float)
@@ -107,7 +108,7 @@ def test_esecuzione_su_trade_coinbase_reali():
     assert ep.n_via_orca == ep.n_dampened + (
         sum(1 for e in esiti if "passed through Orca" in e.reason)
     )
-    # Con dati reali il rolling mean si adatta, quindi quasi tutto passa diretto
+    # On real data the rolling mean adapts, so almost everything passes directly
     assert ep.n_passati_diretti > 900, (
         f"passati diretti={ep.n_passati_diretti}, atteso >900"
     )

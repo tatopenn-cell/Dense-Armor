@@ -7,15 +7,15 @@ order sizes.
 Cliente: trading desk, broker, market maker.
 
 Note:
-    Orca costa circa 20 ms a chiamata, troppo per un desk che deve
-    decidere in microsecondi. La pipeline lo chiama solo sugli ordini
-    che superano ``orca_pre_threshold`` volte la media: sotto quella
-    threshold l'ordine passa direttamente, sopra passa da Orca. Con una
-    distribuzione naturale degli ordini Orca non viene quasi mai
-    invocato: resta uno scatto di sicurezza per i casi fuori scala.
-    Un protettore per-ordine non e' l'uso tipico di Orca (che protegge
-    un modello, non un singolo ordine); qui serve solo come controllo
-    finale su ordini gia' ritenuti sospetti dalla threshold di dimensione.
+    Orca costs about 20 ms per call, too slow for a desk that
+    decides in microseconds. The pipeline calls it only on orders
+    above ``orca_pre_threshold`` times the rolling mean: below
+    that, the order passes without Orca; above, it goes through
+    Orca. On a natural distribution of order sizes, Orca is almost
+    never invoked: it stays as a safety catch for the out-of-scale
+    cases. A per-order protector is not the typical use of Orca
+    (which protects a model, not a single order); here it is a
+    final check on orders the size rule has already flagged.
 """
 
 from dataclasses import dataclass
@@ -94,7 +94,7 @@ class ExecutionPipeline:
                 reason="size > max_size_multiple * mean",
             )
 
-        # sotto threshold: passa senza Orca (che costa 20 ms)
+        # below the threshold: pass without Orca (which costs 20 ms)
         if mu > 0 and size <= self.orca_pre_threshold * mu:
             self.n_passati_diretti += 1
             self.moments.learn_one({"x": float(size)})
