@@ -4,6 +4,49 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+## [1.1.28] - 2026-10-15
+
+### Added
+- Naive Bayes (`dense_armor.utility.bayes`): `MultinomialNB`, `BernoulliNB`,
+  `ComplementNB`, `CategoricalNB`; distributions (`proba`): `Beta`, `Gaussian`,
+  `Multinomial` with a pure `init_state` / `step` form; nearest neighbours
+  (`neighbors`): `KNNClassifier`, `KNNRegressor`, `LazySearch`; multiclass
+  wrappers (`multiclass`): `OneVsRestClassifier`, `OneVsOneClassifier`,
+  `OutputCodeClassifier`; multi-output estimators (`multioutput`): per-output
+  models and classifier, regressor and probabilistic chains. Five docs pages
+  with figures (#167).
+- Forests (`dense_armor.utility.forest`): `AdaptiveRandomForestClassifier`,
+  `AggregatedMondrianForestClassifier` and `AggregatedMondrianForestRegressor`
+  (#168), with a bound on the size of every tree (#170);
+  `OnlineExtraTreesRegressor` (#173). Docs page `docs/forest/`.
+- Rules (`dense_armor.utility.rules`): `AMRulesRegressor` (#172). Docs page
+  `docs/rules/`.
+- Anomaly detection: `LocalOutlierFactor` (#166) and the Streaming Half-Space
+  Trees of Tan et al. 2011 (#157).
+- Finance: five pipelines, five questions, nine pages (#161), with the numbers
+  remeasured on closing prices and figures (#162).
+- README: a five-feature online classifier quickstart, "Who is this for", "What
+  it expects", "What changes" and a use-cases section (#147, #148, #149).
+- One plain-words sentence at the top of every docs page (#160).
+
+### Changed
+- `check_estimator` runs with no declared skip on the classes of `bayes`,
+  `neighbors`, `multiclass`, `multioutput` (#171) and `forest` (#169).
+- API reference grouped by the real module (#152); docs of the anomaly pages
+  aligned with the code (#154).
+
+### Fixed
+- LODA: the projection is normalised with its theoretical minimum and maximum
+  (#153). `OnlineRobustMahalanobis`: the step index counts from the first sample
+  (#156).
+- Time series: code matched to the three papers, with a rolling cycle template
+  (#163). Optimizers, linear models and payload estimator: fixes from the review
+  (#165).
+- `LocalOutlierFactor` gives finite scores on duplicates and a documented value
+  on malformed input (#166).
+
+Every commit since 1.1.27 is listed in the release notes on GitHub.
+
 ## [1.1.27] - 2026-10-13
 
 ### Added
