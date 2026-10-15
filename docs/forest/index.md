@@ -1,8 +1,6 @@
 # Streaming forests: adaptive ensembles and online structural aggregation
 
-This section evaluates the computational scalability, architectural recovery bounds, and statistical convergence of online ensemble methods (Adaptive Random Forests, Aggregated Mondrian Forests, and Online Extra Trees) optimized to track non-stationary concepts in streaming data.
-
-**In plain words:** A single decision tree relies on a single rule, which breaks the moment a robot's conditions change. A forest combines multiple trees to outvote single-tree errors, using background adaptive detectors to replace failing branches or weighting different tree depths based on their recent prediction accuracy to handle noise and sudden shifts instantly.
+A single decision tree relies on a single rule, which breaks the moment a robot's conditions change. A forest combines multiple trees to outvote single-tree errors, using background adaptive detectors to replace failing branches or weighting different tree depths based on their recent prediction accuracy to handle noise and sudden shifts.
 
 
 ## 1. Why a forest

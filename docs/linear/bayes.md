@@ -1,8 +1,6 @@
 # Bayesian linear regression: closed-form sequential posterior estimation
 
-This section defines the analytical formulation and closed-form update laws of a Bayesian linear regression architecture, utilizing recursive Gaussian posterior estimation to derive time-varying predictive variances and epistemic uncertainty boundaries.
-
-**In plain words:** A standard prediction tool gives you a single number, guessing the outcome but hiding how sure it actually is. This tool learns one example at a time in closed form, returning both a prediction and a precise range around it: the range stays wide where data is scarce and shrinks beautifully where examples are abundant, giving real-world control systems an honest measure of confidence.
+A standard prediction tool gives you a single number, guessing the outcome but hiding how sure it actually is. This tool learns one example at a time in closed form, returning both a prediction and a range around it: the range stays wide where data is scarce and shrinks where examples are abundant, giving a control system a measure of confidence.
 
 
 BayesianLinearRegression is the Bayesian companion of LinearRegression. It

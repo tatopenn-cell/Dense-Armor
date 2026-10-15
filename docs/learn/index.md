@@ -1,8 +1,6 @@
 # Online learning: sequential models and incremental architectures for real-time adaptation
 
-This section defines the analytical framework for incremental streaming algorithms integrated within the robot's real-time control loop, evaluating sequential probability calibration, dynamic metric learning, adaptive state classification, and recursive parameter identification.
-
-**In plain words:** This section covers models that continuously learn while the robot is working, ensuring that the software adapts as the physical world changes. It handles four critical tasks: generating honest confidence numbers, finding similar past situations from custom distances, recognizing the robot's exact operational state, and learning the physical behaviors that the digital design file misses.
+This section covers models that continuously learn while the robot is working, so that the software adapts as the physical world changes. It covers four tasks: giving confidence numbers that match the observed accuracy, finding similar past situations from custom distances, recognizing the robot's operational state, and learning the physical behaviors that the digital design file misses.
 
 
 A robot arm picks objects. While it works, four things need to keep learning, because

@@ -1,8 +1,6 @@
 # Linear models: first-order online optimization for streaming regression and classification
 
-This section establishes the algorithmic framework and convergence trajectories of incremental linear models (Linear Regression and Logistic Regression), evaluating first-order optimization dynamics and localized gradient scaling under streaming loss formulations.
-
-**In plain words:** These are two fundamental prediction tools designed to learn from data one example at a time, without needing a huge offline database. One predicts continuous real numbers by minimizing squared errors, while the other calculates binary probabilities to tell which of two answers is more likely, both completely adapting their behavior based on the specific optimizer you plug into them.
+These are two fundamental prediction tools designed to learn from data one example at a time, without needing a huge offline database. One predicts continuous real numbers by minimizing squared errors, while the other calculates binary probabilities to tell which of two answers is more likely, and how each one learns depends on the optimizer you plug into it.
 
 
 LinearRegression and LogisticRegression are the two supervised models of the
