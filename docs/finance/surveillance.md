@@ -1,6 +1,9 @@
-# Surveillance: is the market behaving differently today?
+# Market surveillance: multi-stage statistical processing and online anomaly consensus orchestration
+
+This section evaluates the algorithmic synchronization, latency bounds, and statistical convergence of a sequential multi-stage processing pipeline integrating digital filtering, sequential drift isolation, and dual-model anomaly consensus across high-frequency financial streams.
 
 **In plain words:** The Dense-Armor pipeline, composed of five tools, was tested on five years of historical market data. Following a 250-day warm-up period, the two integrated anomaly detectors isolated 43 of the remaining 1,004 days, accurately identifying the market crashes of August 2024 and April 2025.
+
 
 ## The scene
 
