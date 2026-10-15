@@ -1,6 +1,9 @@
-# Fraud detection: is this transaction real?
+# Fraud detection: sequential ensemble tree architectures for real-time transaction classification
 
-**In plain words:** A card is used, somewhere in the world. Two online trees decide in less than a second if the transaction is normal or stolen.
+This section evaluates the statistical convergence and classification precision of an online supervised pipeline combining a Mondrian Forest with a Stochastic Gradient Tree (SGT), optimized to isolate fraudulent card transactions within high-throughput streaming datasets.
+
+**In plain words:** When a credit card is stolen and used across the globe, banks have less than a second to approve or block the transaction. Instead of relying on rigid, static rules that quickly become outdated, this tool learns from every single payment in real time, sample by sample, combining random geometric space partitioning with loss-optimized decision trees to catch fraudulent activities instantly while minimizing false alarms for legitimate users.
+
 
 ## The scene
 
