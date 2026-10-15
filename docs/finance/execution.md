@@ -1,6 +1,6 @@
 # Execution: should this order leave?
 
-**In plain words:** A trading desk sends thousands of orders a day. This page shows the check that runs on each one before it goes out.
+**In plain words:** Trading desks execute thousands of orders daily. This section describes the real-time protective filters applied to each order prior to the execution phase.
 
 ## The scene
 
