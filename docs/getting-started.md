@@ -1,286 +1,140 @@
-# Getting Started
+# Getting started
 
-**In plain words:** Dense-Armor is a toolbox of programs that learn from a robot's numbers as they arrive, one reading at a time. It can spot strange readings and slow changes, protect a model from bad data and keep robot commands safe. This page is a guided tour, from one reading to a whole robot.
-
-Dense-Armor is a library of online estimators that learn one sample at a
-time from robot and AI data. It detects anomalies and drift, protects a
-model's inputs and outputs, and bounds the commands sent to a real robot.
-Everything runs on JAX, so the same code runs on CPU, GPU or TPU.
-
-This page is a guided tour, from the smallest unit (one sample) to a full
-robot loaded from its URDF file. Every example is runnable as-is.
+Dense-Armor learns from data that arrives one sample at a time. This page starts with one model learning from a stream and ends with a command that cannot jump. Each step uses what the step before it showed.
 
 ## 1. Install
 
 ```bash
 pip install dense-armor
-pip install "dense-armor[quantum]"
-pip install "dense-armor[audio,data]"
 ```
 
-`[quantum]` adds the Dense-Evolution NISQ simulator; `[audio,data]` adds
-WAV, HDF5 and NetCDF readers.
+Python 3.10 or newer. The computation runs on JAX, which is installed with it.
 
-Then, in Python, enable 64-bit floats before importing anything else:
+## 2. A model that learns one sample at a time
+
+A normal model is trained once on a table and then used. An online model reads one sample, answers, and only then learns from it. Three methods describe every estimator in the library: `predict_one(x)` answers, `learn_one(x, y)` learns, `score_one(x)` says how strange `x` is.
 
 ```python
-import jax
-jax.config.update("jax_enable_x64", True)
+from dense_armor.utility.datasets import DriftStream
+from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
+from dense_armor.utility.metrics import Accuracy
+
+ds = DriftStream(n_samples=2000, n_features=5, n_drifts=1, kind="sudden", seed=0)
+nb = OnlineGaussianNB()
+acc = Accuracy()
+for x, y in ds.stream():
+    p = nb.predict_one(x)
+    if p is not None:
+        acc.update(y, p)
+    nb.learn_one(x, y)
+print(acc)
 ```
 
-The JAX configuration must run before any other `dense_armor` import. The
-shields work in double precision, and JAX defaults to 32-bit floats.
-
-## 2. Quickstart: flag an anomaly in one line
-
-From the command line:
-
-```bash
-python -m dense_armor --json 1.2 1.3 9999 1.25 nan 1.3
+```
+Accuracy(n=1999, value=0.9989994997498749)
 ```
 
-The CLI reads a small JSON array and prints one line per anomaly found.
+`DriftStream` makes 2,000 samples with 5 features and one sudden change of the rule that links them to the label. The model predicts first and learns second, so the accuracy is measured on samples it has never seen. The first sample has no prediction (`None`), so 1,999 are counted. The model made 2 mistakes, both in the first four samples.
 
-## 3. Score one sample at a time
+## 3. Notice that the data changed
 
-The smallest useful tool: a detector that reads a scalar stream and flags
-whether the current sample looks like a deviation from the recent past.
-
-```python
-from dense_armor.utility.anomaly.streaming import StreamingDeviationDetector
-
-det = StreamingDeviationDetector()
-xs = [1.0] * 20 + [9999.0] + [1.0] * 10
-flags = [bool(det.update(x)) for x in xs]
-```
-
-`update(x)` returns `True` at the one sample that stands out and `False`
-everywhere else. The detector keeps a causal window of the recent past;
-no future value is used. The window defaults are wide enough that a single
-isolated spike does not shift the baseline.
-
-## 4. Clean a whole 1D series
-
-When the input is a full array (a loss curve, a sensor channel, a token
-stream), the `Armatura` shield cleans it in one call and tells you where
-the anomalies were.
+A model can fail quietly when the world changes. A drift detector watches one number and says when its average has moved. `PageHinkley` takes one value per sample and raises `drift_detected` when the mean shifts.
 
 ```python
 import numpy as np
+from dense_armor.utility.drift.page_hinkley import PageHinkley
+
+rng = np.random.default_rng(0)
+xs = np.concatenate([rng.normal(0, 1, 500), rng.normal(3, 1, 500)])
+ph = PageHinkley()
+hits = []
+for i, v in enumerate(xs):
+    ph.update(float(v))
+    if ph.drift_detected:
+        hits.append(i)
+print(hits[0])
+```
+
+```
+515
+```
+
+The mean of the stream moves from 0 to 3 at sample 500. The detector fires at sample 515: it needed 15 samples of the new level to be sure. In a real system the number to watch is often the error of the model from step 2. The [drift page](drift/index.md) lists the other detectors.
+
+## 4. Score how strange a point is
+
+Some data has no label. Anomaly detectors learn what normal looks like and give each new point a score: high means far from normal. They follow the same `learn_one` / `score_one` pair.
+
+```python
+from dense_armor.utility.anomaly.mahalanobis import OnlineRobustMahalanobis
+
+rng = np.random.default_rng(0)
+det = OnlineRobustMahalanobis()
+for _ in range(1000):
+    det.learn_one({"a": float(rng.normal()), "b": float(rng.normal())})
+print(round(det.score_one({"a": 0.1, "b": -0.2}), 2))
+print(round(det.score_one({"a": 5.0, "b": 5.0}), 2))
+```
+
+```
+0.35
+9.9
+```
+
+The detector learned from 1,000 points of a standard normal distribution on two channels. A point near the centre scores 0.35. The point (5, 5) scores 9.9; the default alarm threshold is 7.0. The score stays at 0.0 during the first samples while the detector builds its first estimate: with 50 samples the same two points both score 0.0, with 200 they score 0.40 and 8.83. Give a detector a few hundred samples before reading its scores. The [anomaly page](anomaly/index.md) compares the detectors.
+
+## 5. Clean a series before the model sees it
+
+A broken sensor sends `NaN` or a value of 9999 and the model learns from it. `Armatura` is a shield that finds such points and replaces them.
+
+```python
 from dense_armor import Armatura
 
 serie = np.array([1.0, 1.1, 1.2, 9999.0, 1.15, np.nan, 1.2, 1.25])
-arm = Armatura(livello_ia=0.0)
-pulito, K, anomalie = arm.analizza(serie)
+pulito, K, anomalie = Armatura(livello_ia=0.0).analizza(serie)
+print(pulito)
+print(anomalie)
 ```
 
-`pulito` is the cleaned series with the same length as the input,
-`K` is a per-sample indicator array (`1.0` where the point was flagged),
-and `anomalie` is the list of flagged indices. With `livello_ia=0.0` the
-shield actively filters; with `livello_ia=1.0` it only marks.
-
-## 5. Protect a real model
-
-`Orca` wraps any callable from a tensor to a tensor and shields both its
-input and its output.
-
-```python
-import jax
-jax.config.update("jax_enable_x64", True)
-import numpy as np
-from dense_armor.utility.protect.orca import Orca
-
-rng = np.random.default_rng(0)
-ref = np.sin(np.linspace(0, 6, 200))[None, :] + 0.01 * rng.standard_normal((4, 200))
-data = ref.copy()
-data[0, 50] = 999.0
-
-orca = Orca(min_free_ram_percentage=0.05)
-protected = orca.protect_and_forward(lambda z: 2.0 * z, data, x_reference=ref)
+```
+[1.   1.1  1.05 1.1  1.15 1.2  1.2  1.2 ]
+[3, 5]
 ```
 
-`x_reference` is optional but recommended: if a clean reference is
-available (the previous reading, a nominal trajectory), the input shield
-uses it; otherwise it falls back to a robust blind estimate.
-`orca.margine_ingresso_medio` and `orca.margine_uscita_medio` report how
-much the shield trusts the input and the output.
+The names are Italian: `analizza` is "analyse", `livello_ia=0.0` means the shield filters actively (1.0 only marks, and the 9999 stays in the series). It returns three things: the cleaned series, `K`, and the list `anomalie` of replaced positions, here 3 (the 9999) and 5 (the `NaN`). Both are replaced and the series keeps its length. `K` is the flag of the internal trigger, one per sample, and it is not the same list: the `NaN` is cleaned before the trigger, so `K` is 0 at position 5, and the trigger also marks positions 2 and 7. The sample at position 2 is replaced by the local median (1.2 becomes 1.05) without being listed in `anomalie`. The [Armatura page](shields/armatura.md) explains the trigger. [Shields](shields/index.md) shows the others, including `Orca`, which wraps a whole model.
 
-## 6. Route each point to the right corrector
+## 6. Keep a command from jumping
 
-The **Arbiter** classifies each point as `clean`, `spike` or `regime`
-against a causal reference window (only points before it). It is off by
-default.
+A controller that receives a spike can send it to a motor. `rate_limited_follower` follows a command but never changes faster than the limits you give.
 
 ```python
-import numpy as np
-from dense_armor.utility.protect.orca import Orca
-
-rng = np.random.default_rng(0)
-ref = np.sin(np.linspace(0, 6, 200))[None, :] + 0.01 * rng.standard_normal((4, 200))
-data = ref.copy()
-data[0, 50] = 999.0
-
-orca = Orca(min_free_ram_percentage=0.05)
-protected = orca.protect_and_forward(
-    lambda z: 2.0 * z, data, x_reference=ref, use_arbiter=True,
-)
-labels = orca.etichette_arbitro
-```
-
-- `spike` (an isolated impulse) is hard-rejected to the window median.
-- `regime` (a sustained level change) is passed through raw, fully trusted.
-- `clean` is whatever the standard four-phase shield produced.
-
-## 7. Load a real robot from its URDF
-
-The dynamics module reads the robot's own URDF file. For the Panda arm of
-`test/fixtures/urdf/panda.urdf`, the model has nine degrees of freedom
-(seven revolute joints plus two prismatic finger joints).
-
-```python
-import numpy as np
-from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-
-m = RigidBodyModel("test/fixtures/urdf/panda.urdf")
-q = np.zeros(m.n)
-qd = np.zeros(m.n)
-M = m.mass_matrix(q)
-g = m.gravity_forces(q)
-fk = m.forward_kinematics(q)
-```
-
-`m.mass_matrix(q)` returns the joint-space inertia as a `(9, 9)` matrix.
-`m.gravity_forces(q)` returns the torque needed to hold the arm still as a
-`(9,)` vector. `m.forward_kinematics(q)` returns a dictionary with the
-position, orientation and axis of every link, keyed by link name.
-
-## 8. Plan and bound a joint command
-
-Two standalone control utilities: a closed-form trajectory and a
-rate-limited follower.
-
-```python
-import numpy as np
-from dense_armor.utility.control.trajectory import quintic_trajectory
-
-q0 = np.zeros(7)
-qf = np.ones(7)
-t, q, v, a = quintic_trajectory(q0, qf, T=2.0, n_samples=200)
-```
-
-`quintic_trajectory` returns position, velocity and acceleration at each
-of the `n_samples` time steps, starting and ending at rest by default.
-
-```python
-import numpy as np
 from dense_armor.utility.control.rate_limiter import rate_limited_follower
 
-q_raw = np.linspace(0.0, 0.1, 20)
-cmd = rate_limited_follower(q_raw, max_vel=1.0, max_accel=2.0, dt=0.01)
+raw = np.sin(np.linspace(0, 6, 200))
+raw[50] = 1e6
+safe = rate_limited_follower(raw, max_vel=2.0, max_accel=1.0, dt=0.01)
+print(raw.max(), round(np.abs(safe).max(), 2))
 ```
 
-`rate_limited_follower` tracks a raw incoming command stream and returns
-the applied command, whose velocity and acceleration never exceed the
-limits. It uses only the previous applied state and the current target;
-future values are never used.
-
-## 9. Learn online
-
-A classifier that learns one sample at a time and answers immediately.
-
-```python
-from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
-
-clf = OnlineGaussianNB()
-for _ in range(20):
-    clf.learn_one({"x": 0.0}, "a")
-    clf.learn_one({"x": 1.0}, "b")
-
-pred = clf.predict_one({"x": 0.1})
-proba = clf.predict_proba_one({"x": 0.1})
+```
+1000000.0 0.81
 ```
 
-With well-separated classes, `pred` is `"a"` and `proba` is
-`{"a": 1.0, "b": 0.0}`.
+The command is a slow sine with one spike of 1,000,000 at sample 50. The applied command never goes above 0.81 and never changes faster than 0.9 per second, under the limit of 2.0. It uses only the previous applied value and the current target, so it works the same way on a live stream. The [control pages](control/index.md) add trajectories and a barrier filter for obstacles.
 
-## 10. Detect a multivariate anomaly
+## Where to go next
 
-When a fault touches several channels at once, use a multivariate
-detector. All five share the same `learn_one` / `score_one` interface.
-
-```python
-import numpy as np
-from dense_armor.utility.anomaly.mahalanobis import OnlineRobustMahalanobis
-
-det = OnlineRobustMahalanobis()
-rng = np.random.default_rng(0)
-for _ in range(50):
-    det.learn_one({"a": float(rng.normal()), "b": float(rng.normal())})
-
-sc = det.score_one({"a": 5.0, "b": 5.0})
-```
-
-`sc` is high for a point far from the learned distribution. `5.0` on both
-channels against a standard-normal training set gives a score around
-`9.2`. The default flagging threshold is `7.0`.
-
-## 11. See a frame in patches
-
-For vision streams, cut a frame into patches and describe each one.
-
-```python
-import numpy as np
-from dense_armor.utility.vision.patches import PatchFeatures
-
-pf = PatchFeatures(patch=8, stride=8)
-img = np.random.default_rng(0).random((32, 32))
-out = pf.transform_one(img)
-```
-
-For a `32x32` frame with `patch=8` and `stride=8`, `out["descriptors"]`
-has shape `(16, 11)`: 16 patches, 11 features each. `out["positions"]`
-has shape `(16, 2)`: the row and column of each patch.
-
-## 12. Toolkit
-
-A second, independent part of the package. Two examples out of 14 modules.
-
-```python
-from dense_armor.core import DynamicAICodegen
-
-codegen = DynamicAICodegen()
-ops = codegen.compile_pipeline(["relu", "l2_normalize"])
-out = codegen.run_dynamic_pipeline([-2.0, 3.0, -1.0, 4.0], ops)
-```
-
-`out` is `[0., 0.6, 0., 0.8]`: relu clips negatives, then L2-normalize.
-
-```python
-from dense_armor.core import UniversalMemoryGuard
-
-guard = UniversalMemoryGuard(min_free_ram_percentage=0.10)
-guard.check_memory_safety()
-```
-
-Raises `MemoryPressureError` if free RAM drops below 10 %.
-
-See [Toolkit](toolkit/toolkit.md) for the full list.
+- [Finance pipelines](finance/index.md): nine complete examples on markets, fraud, intrusion and credit scoring, each opening with the question it answers.
+- [Online trees and forests](tree/index.md) and [forests](forest/index.md): models that grow as the data arrives.
+- [Linear models](linear/glm.md) and [calibration](learn/calibration.md): the simplest learners and honest probabilities.
+- [API reference](api/index.md): every class.
 
 ## Details
 
-### What changed from the previous version
+### What this page replaced
 
-The earlier version of this page was written before the robot, learning
-and vision modules existed. This rewrite adds them, moves the examples
-from the old `panda_joint1..7` naming to the current URDF-driven
-`RigidBodyModel`, and replaces two functions that no longer exist
-(`RateLimiter`, `Trajectory`) with their current forms
-(`rate_limited_follower`, `quintic_trajectory`).
+The first version was written before the learning, robot and vision modules existed. A second version added them as a list of tools. This one follows one thread, from learning to protection, and drops the examples that needed files from the repository (`panda.urdf`, vision patches, the toolkit). Those have their own pages: [dynamics](dynamics/index.md), [vision](vision/index.md), [toolkit](toolkit/toolkit.md).
 
-### Verified numbers
+### Numbers on this page
 
-All outputs printed in this page were produced by the installed package
-at the time of writing: `m.mass_matrix` is `(9, 9)`, `m.gravity_forces`
-is `(9,)`, `OnlineRobustMahalanobis.score_one` on a 5-sigma outlier is
-about `9.2` against a default threshold of `7.0`, `PatchFeatures` on a
-`32x32` frame with `patch=8, stride=8` yields `(16, 11)` descriptors.
+Every printed result was produced by running the code above with `numpy.random.default_rng(0)` or `DriftStream(seed=0)`. The earlier page stated that `OnlineRobustMahalanobis` gives a score of about 9.2 after 50 training points; the detector scores 0.0 at that size (step 4).
