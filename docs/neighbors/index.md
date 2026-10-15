@@ -117,7 +117,7 @@ p99 of one `learn_one` plus one `predict_one` over 3000 samples, window_size=200
 
 ### No pure form
 
-Neither class provides an `init_state` / `step` pair. The state is the sliding window itself, a deque of variable length and dict keys, which is not a fixed-size array and would not survive `jax.lax.scan`. The two checks `check_step_is_pure` and `check_step_is_jittable` are skipped explicitly, with the reason stated in `_unit_test_skips`.
+Neither class provides an `init_state` / `step` pair. The state is the sliding window itself, a deque of variable length and dict keys, which is not a fixed-size array and would not survive `jax.lax.scan`. `check_estimator` runs `check_step_is_pure` and `check_step_is_jittable` on them with no check skipped, and both pass.
 
 ### Development diary
 

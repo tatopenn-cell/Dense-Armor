@@ -100,7 +100,7 @@ p99 of one `learn_one` plus one `predict_one` over 3000 samples, 4 features, 3 t
 
 ### No pure form
 
-None of the five estimators provides an `init_state` / `step` pair. The state is a set of independent models (one per target or one per chain link), each with its own internal state; the whole set is not a fixed-size array and would not survive `jax.lax.scan`. The two checks `check_step_is_pure` and `check_step_is_jittable` are skipped explicitly, with the reason in `_unit_test_skips`.
+None of the five estimators provides an `init_state` / `step` pair. The state is a set of independent models (one per target or one per chain link), each with its own internal state; the whole set is not a fixed-size array and would not survive `jax.lax.scan`. `check_estimator` runs `check_step_is_pure` and `check_step_is_jittable` on them with no check skipped, and both pass.
 
 ### Development diary
 

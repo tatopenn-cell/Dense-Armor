@@ -235,3 +235,8 @@ def test_probabilistic_chain_refuses_more_than_15_targets():
     m.learn_one({"a": 0.5}, {f"y{i}": i % 2 for i in range(16)})
     with pytest.raises(ValueError):
         m.joint_proba_one({"a": 0.5})
+
+
+def test_no_check_is_skipped():
+    for cls, fac, _ in ALL_MO:
+        assert cls(factory=fac)._unit_test_skips() == set()

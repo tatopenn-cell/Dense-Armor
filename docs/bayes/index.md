@@ -116,7 +116,7 @@ p99 of one `learn_one` plus one `predict_one` over 3000 samples, 4 features, one
 
 ### No pure form
 
-The four classes do not provide an `init_state` / `step` pair. The state is a dict of counters per class, and its shape changes when a new class or a new feature appears; it is not a fixed-size array and would not survive `jax.lax.scan`. The two checks `check_step_is_pure` and `check_step_is_jittable` are skipped explicitly, with the reason stated in `_unit_test_skips`.
+The four classes do not provide an `init_state` / `step` pair. The state is a dict of counters per class, and its shape changes when a new class or a new feature appears; it is not a fixed-size array and would not survive `jax.lax.scan`. `check_estimator` runs `check_step_is_pure` and `check_step_is_jittable` on them with no check skipped, and both pass.
 
 ### Development diary
 

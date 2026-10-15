@@ -149,3 +149,8 @@ def test_unusable_query_gives_an_empty_answer():
         assert clf.predict_proba_one({"x": "word"}) == {}
         assert clf.predict_proba_one({"y": 1.0}) == {}
         assert clf.predict_proba_one({"x": float("nan")}) == {}
+
+
+def test_no_check_is_skipped():
+    for cls in (OneVsRestClassifier, OneVsOneClassifier, OutputCodeClassifier):
+        assert cls(binary_factory=factory)._unit_test_skips() == set()

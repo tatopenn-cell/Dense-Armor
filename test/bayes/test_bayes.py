@@ -265,3 +265,8 @@ def test_class_prior_replaces_the_observed_frequency():
         x_heavy = _fitted(cls(class_prior={"X": 0.9, "Y": 0.1}))
         y_heavy = _fitted(cls(class_prior={"X": 0.1, "Y": 0.9}))
         assert x_heavy.predict_proba_one(q)["X"] > y_heavy.predict_proba_one(q)["X"]
+
+
+def test_no_check_is_skipped():
+    for cls in ALL_NB:
+        assert cls()._unit_test_skips() == set()
