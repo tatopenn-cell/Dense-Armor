@@ -1,6 +1,9 @@
-# Single ticker: is today strange?
+# Single ticker: dual-model online anomaly isolation for individual equity monitoring
 
-**In plain words:** For the monitoring of a single financial asset, this section demonstrates the efficacy of the two integrated detectors in identifying anomalous deviations from ordinary market conditions.
+This section establishes the algorithmic orchestration and multi-dimensional calibration of a real-time equity-monitoring pipeline, deploying concurrent LODA and Half-Space Trees architectures to isolate statistical outliers within joint asset return and volume streams.
+
+**In plain words:** For the monitoring of a single financial asset, this section demonstrates the efficacy of the two integrated detectors in identifying anomalous deviations from ordinary market conditions. Instead of just looking at price changes, this tool processes price and trading volume together day by day, requiring a strict consensus from two different algorithms before marking a day as truly unusual to shield analysts from false alarms.
+
 
 ## The scene
 
