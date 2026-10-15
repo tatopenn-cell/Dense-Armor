@@ -1,6 +1,9 @@
-# BayesianLinearRegression
+# Bayesian linear regression: closed-form sequential posterior estimation
 
-**In plain words:** A prediction tool that gives not only one number but also a range around it: the range is wide when it has seen few examples and narrow when it has seen many. It learns one example at a time.
+This section defines the analytical formulation and closed-form update laws of a Bayesian linear regression architecture, utilizing recursive Gaussian posterior estimation to derive time-varying predictive variances and epistemic uncertainty boundaries.
+
+**In plain words:** A standard prediction tool gives you a single number, guessing the outcome but hiding how sure it actually is. This tool learns one example at a time in closed form, returning both a prediction and a precise range around it: the range stays wide where data is scarce and shrinks beautifully where examples are abundant, giving real-world control systems an honest measure of confidence.
+
 
 BayesianLinearRegression is the Bayesian companion of LinearRegression. It
 learns the same linear function on the same stream, but it returns not a
