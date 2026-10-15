@@ -1,6 +1,9 @@
-# Kinematic controller (closed-form tracking)
+# Kinematic controller: closed-form tracking feedback laws
 
-**In plain words:** This tool turns the path you want a joint to follow into the speed command that makes the joint follow it. It is a single short formula, and the joint gets closer to the path at a rate you choose.
+This section establishes the analytical framework and stability properties of a velocity-level kinematic tracking controller, operating via a closed-form feedback law to guarantee exponential error convergence.
+
+**In plain words:** This tool translates the target path you want a robotic joint to follow into the exact speed commands needed to keep it on track. It uses a single, straightforward equation that forces the joint to close the gap at a predictable, user-defined rate, working directly at the velocity level required by most modern robot drivers.
+
 
 The [trajectory](trajectory.md) generator gives a smooth reference to follow. Something
 has to turn that reference into an actual command. On a joint-velocity plant, the
