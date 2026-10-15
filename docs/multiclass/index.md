@@ -87,7 +87,7 @@ All three reach an accuracy above 0.99 on this easy binary stream. One-vs-one is
 
 ### References
 
-- Fuerkranz, J. (2002). Round Robin Classification. Journal of Machine Learning Research 2, 721-747. Definition 2 (unordered, one-against-all binarization) and Definition 4 (round robin, pairwise binarization), Section 3 (voting).
+- Fuerkranz, J. (2002). Round Robin Classification. Journal of Machine Learning Research 2, 721-747. Definition 2 (unordered, one-against-all binarization) and Definition 4 (round robin, pairwise binarization), both on printed page 723; the simple voting technique for the pairwise case is described in Section 3, Round Robin Classification (printed pages 723-726).
 - Dietterich, T. G., Bakiri, G. (1995). Solving multiclass learning problems via error-correcting output codes. Journal of Artificial Intelligence Research 2, 263-286. Section 2 (the distributed output code).
 
 ### Choices stated explicitly

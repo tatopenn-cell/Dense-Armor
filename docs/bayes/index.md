@@ -89,13 +89,13 @@ On `DriftStream` sudden drift, 2000 samples, 4 continuous features, median of 5 
 
 | classifier | accuracy | accuracy IQR | p99 | state |
 |---|---|---|---|---|
-| MultinomialNB | 0.088 | 0.157 | 0.036 ms | 421 B |
-| BernoulliNB | 0.088 | 0.150 | 0.041 ms | 380 B |
-| ComplementNB | 0.088 | 0.154 | 0.047 ms | 408 B |
-| CategoricalNB | 0.943 | 0.000 | 21.5 ms | 244 311 B |
-| OnlineGaussianNB (existing) | 0.970 | 0.042 | 32.0 us | -- |
+| MultinomialNB | 0.089 | 0.214 | 0.034 ms | 421 B |
+| BernoulliNB | 0.089 | 0.214 | 0.035 ms | 380 B |
+| ComplementNB | 0.089 | 0.214 | 0.045 ms | 408 B |
+| CategoricalNB | 0.504 | 0.022 | 29.9 ms | 244 311 B |
+| OnlineGaussianNB (existing) | 0.996 | 0.030 | 0.087 ms | -- |
 
-The three count-based classifiers are at chance on this stream, and that is expected: `DriftStream` produces continuous features, and the count-based models assume each feature is a count of something. Their domain is text, events, contact flags, not real-valued signals. `CategoricalNB` handles the stream better because it treats each distinct value as a category, but then every continuous sample creates a new category, the map grows, and the p99 cost rises above 20 ms. On this stream the right tool is `OnlineGaussianNB`, not the naive Bayes family; the family here is a text and event classifier.
+The three count-based classifiers score 0.089 on this stream, **below** the chance level of 0.50. The reason is visible in the number of `None` returns: on 1823 of 2000 samples `predict_proba_one` is empty and `predict_one` returns `None`. The count-based update treats a feature value as a count, and a negative value (which `DriftStream` produces on most samples) is skipped as missing; the class has then seen no evidence and returns nothing. `None == y` is never true, so the accuracy collapses to the fraction of samples whose features all happen to be non-negative. This is not chance, it is the boundary of the family: count-based models assume the inputs are counts (text, events, contact flags), never real-valued signals. `CategoricalNB` handles the stream because it treats each distinct value as a category, and on a balanced binary stream that gives 0.504, which *is* the chance level; the price is that every continuous sample creates a new category, the map grows, and the p99 cost rises to 29.9 ms. On this stream the right tool is `OnlineGaussianNB` at 0.996 accuracy and 0.087 ms p99; the count-based family here is a text and event classifier, not a real-valued one.
 
 ## Details
 
@@ -115,7 +115,7 @@ The three count-based classifiers are at chance on this stream, and that is expe
 
 ### Measured cost
 
-p99 of one `learn_one` plus one `predict_one` over 3000 samples, 4 features, one CPU thread: 0.036 ms (MultinomialNB), 0.041 ms (BernoulliNB), 0.047 ms (ComplementNB), 21.5 ms (CategoricalNB). `budget_s` is 0.001 s for the first three, 0.1 s for CategoricalNB. State size after 3000 samples: 421 B, 380 B, 408 B, 244 311 B. The three count-based classifiers are `O(c d)` in the state (one counter per class and feature). CategoricalNB is `O(c d v)` where `v` is the number of distinct values seen, which on continuous inputs grows with the number of samples; the declared `memory_class` is `"O(c d v)"`, honest about the growth.
+p99 of one `learn_one` plus one `predict_one` over 3000 samples, 4 features, one CPU thread: 0.034 ms (MultinomialNB), 0.035 ms (BernoulliNB), 0.045 ms (ComplementNB), 29.9 ms (CategoricalNB). `budget_s` is 0.001 s for the first three, 0.1 s for CategoricalNB. State size after 3000 samples: 421 B, 380 B, 408 B, 244 311 B. The three count-based classifiers are `O(c d)` in the state (one counter per class and feature). CategoricalNB is `O(c d v)` where `v` is the number of distinct values seen, which on continuous inputs grows with the number of samples; the declared `memory_class` is `"O(c d v)"`, honest about the growth.
 
 ### No pure form
 
@@ -123,4 +123,4 @@ The four classes do not provide an `init_state` / `step` pair. The state is a di
 
 ### Development diary
 
-The three count-based classifiers are at chance on `DriftStream` because that stream has continuous features. This is not a bug: it is the boundary of the family. When the count-based model is the right tool (text, events, contact states), it is also the fastest: 0.036 ms per sample against 32 us for `OnlineGaussianNB`. The benchmark uses the same stream for every classifier, so the numbers are comparable even when the domain is wrong; the wrong-domain result is stated in the table rather than hidden by a different stream.
+The three count-based classifiers score 0.089 on `DriftStream` because that stream has continuous features and negative values, which the count-based update skips as missing. This is not a bug: it is the boundary of the family. When the count-based model is the right tool (text, events, contact states), it is also the fastest of the five: 0.034 ms p99 per sample against 0.087 ms for `OnlineGaussianNB`, 2.5 times faster, and against 29.9 ms for `CategoricalNB`, three orders of magnitude faster. The benchmark uses the same stream for every classifier, so the numbers are comparable even when the domain is wrong; the wrong-domain result is stated in the table rather than hidden by a different stream.

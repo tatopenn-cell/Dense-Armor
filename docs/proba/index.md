@@ -74,7 +74,7 @@ The gray curve is the prior: every bias between 0 and 1 is equally likely before
 
 ![Welford running mean and variance over 200 samples from N(2, 0.5)](../assets/proba/gaussian_welford.png)
 
-Two hundred samples drawn from a Gaussian with mean 2.0 and variance 0.25. The blue line is the running mean, the red line the running variance. Both converge to the true values (the dashed lines) within the first few dozen samples. The variance is `m2 / (n - 1)`, the unbiased estimate; the `pdf` uses `m2 / n`, the maximum-likelihood one, so a density evaluated on a small window does not divide by zero.
+Two hundred samples drawn from a Gaussian with mean 2.0 and variance 0.25. The blue line is the running mean, the red line the running variance. After 200 samples the running variance is 0.21 against a true 0.25: the estimate approaches the true value and has not yet settled at it. The variance is `m2 / (n - 1)`, the unbiased estimate; the `pdf` uses `m2 / n`, the maximum-likelihood one, once at least one observation has been seen. Before any observation the density falls back on the `var` passed to the constructor, so an empty `Gaussian(var=2.0)` still returns a meaningful density.
 
 ![Dirichlet posterior mean under three different count vectors](../assets/proba/dirichlet_counts.png)
 
@@ -96,7 +96,7 @@ For the Gaussian, `revert` is the Welford update run backwards; for the beta and
 
 ### Choices stated explicitly
 
-- **Gaussian variance.** The `variance()` method returns the unbiased `m2 / (n - 1)`, matching numpy's `ddof=1`. The `pdf` uses the maximum-likelihood `m2 / n`; on a single sample it would divide by zero otherwise. The two numbers differ by `n / (n - 1)`, and the choice is stated in each method's docstring.
+- **Gaussian variance.** The `variance()` method returns the unbiased `m2 / (n - 1)`, matching numpy's `ddof=1`. The `pdf` uses the maximum-likelihood `m2 / n` once at least one sample has been seen; before the first sample it uses the `var` passed to the constructor. On a single sample with no spread the MLE is zero and `pdf` returns `0.0` through the same guard that protects against a degenerate variance. The two numbers differ by `n / (n - 1)`, and the choice is stated in each method's docstring.
 - **Multinomial mode.** The posterior mode `(alpha - 1) / (alpha_0 - K)` is defined only when every counter is > 1. The method raises `ValueError` otherwise, instead of returning a degenerate value.
 - **Beta mode.** Same: defined only when both `a` and `b` are > 1. `ValueError` otherwise.
 - **Weight.** `update(x, w=1.0)` and `revert(x, w=1.0)` accept a positive weight, so one call can count as several observations. `w <= 0` raises `ValueError`.
