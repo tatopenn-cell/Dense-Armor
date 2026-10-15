@@ -280,15 +280,15 @@ class _AmfTree:
         _, leaf, _, _ = self._descend(x)
         return self.fc.predict(leaf.stat)
 
-    def predict(self, x: np.ndarray, temporary: bool = True) -> Any:
+    def predict(self, x: np.ndarray) -> Any:
         """Aggregated prediction at ``x`` (Algorithm 3).
 
-        With ``temporary`` the splits that would separate ``x`` from the
-        sample of its cell are drawn and discarded, as the paper does.
+        The splits that would separate ``x`` from the sample of its cell
+        are drawn and discarded, as the paper does.
         """
         path, leaf, lo, hi = self._descend(x)
         out = self.fc.predict(leaf.stat)
-        if temporary and leaf.point is not None and not np.array_equal(leaf.point, x):
+        if leaf.point is not None and not np.array_equal(leaf.point, x):
             m = 0
             xp = leaf.point
             separated = False
@@ -333,9 +333,6 @@ class _Forest:
     @property
     def n_missing(self) -> int:
         return self.n_missing_
-
-    def _unit_test_skips(self) -> set:
-        return {"check_step_is_pure", "check_step_is_jittable"}
 
     def _vector(self, d: dict) -> np.ndarray | None:
         if self._keys is None:
@@ -426,7 +423,7 @@ class AggregatedMondrianForestClassifier(_Forest, Classifier):
         Mourtada, Gaiffas, Scornet, Algorithms 2 and 3, Corollary 1.
     """
 
-    budget_s = 0.02
+    budget_s = 0.04
     memory_class = "O(n)"
 
     def __init__(
@@ -472,6 +469,7 @@ class AggregatedMondrianForestClassifier(_Forest, Classifier):
         if not self.trees_:
             self.alphabet_.extend(self.classes if self.classes is not None else [])
             self._make_trees(len(v), _Frequency(self.dirichlet, self.alphabet_))
+        self._share_alphabet()
         if y not in self.alphabet_:
             self.alphabet_.append(y)
         for tree in self.trees_:
@@ -480,10 +478,14 @@ class AggregatedMondrianForestClassifier(_Forest, Classifier):
         self.n_seen_ += 1
         return self
 
+    def _share_alphabet(self) -> None:
+        self.trees_[0].fc.alphabet = self.alphabet_
+
     def _proba(self, x: Any, aggregated: bool) -> dict:
         v = self._vector(_as_dict(x)) if self.trees_ else None
         if v is None or not self.alphabet_:
             return {}
+        self._share_alphabet()
         outs = [
             t.predict(v) if aggregated else t.leaf_prediction(v) for t in self.trees_
         ]
@@ -545,7 +547,7 @@ class AggregatedMondrianForestRegressor(_Forest, Regressor):
         Mourtada, Gaiffas, Scornet, Algorithms 2 and 3, Corollary 2.
     """
 
-    budget_s = 0.02
+    budget_s = 0.04
     memory_class = "O(n)"
 
     def __init__(

@@ -317,3 +317,56 @@ def test_the_dirichlet_forecaster_is_the_kt_forecaster_by_default():
     assert p["a"] == pytest.approx((2 + 0.5) / (3 + 1.0))
     assert p["b"] == pytest.approx((1 + 0.5) / (3 + 1.0))
     assert sum(p.values()) == pytest.approx(1.0)
+
+
+def test_no_check_is_skipped():
+    for f in (
+        AggregatedMondrianForestClassifier(),
+        AggregatedMondrianForestRegressor(),
+    ):
+        assert f._unit_test_skips() == set()
+
+
+def test_none_input_is_counted_and_answered_empty():
+    c = AggregatedMondrianForestClassifier(n_trees=1, seed=0)
+    c.learn_one(None, 0)
+    assert c.n_missing == 1
+    c.learn_one({"x": 0.2}, 0)
+    assert c.predict_proba_one(None) == {}
+    r = AggregatedMondrianForestRegressor(n_trees=1, seed=0)
+    r.learn_one(None, 1.0)
+    assert r.n_missing == 1
+    r.learn_one({"x": 0.2}, 1.0)
+    assert r.predict_one(None) == 0.0
+
+
+def test_unaggregated_label_is_the_leaf_label():
+    f = AggregatedMondrianForestClassifier(n_trees=3, seed=0)
+    for i in range(40):
+        x = (i % 20) / 19.0
+        f.learn_one({"x": x}, 0 if x < 0.5 else 1)
+    assert f.predict_unaggregated_one({"x": 0.05}) == 0
+    assert f.predict_unaggregated_one({"x": 0.95}) == 1
+    assert (
+        AggregatedMondrianForestClassifier().predict_unaggregated_one({"x": 0.1})
+        is None
+    )
+
+
+def test_a_new_label_is_seen_by_the_forecasters_after_a_restore():
+    import pickle
+
+    f = AggregatedMondrianForestClassifier(n_trees=2, seed=0)
+    for i in range(30):
+        f.learn_one({"x": (i % 10) / 10.0}, i % 2)
+    via_state = AggregatedMondrianForestClassifier(n_trees=2, seed=0)
+    via_state.load_state_dict(f.state_dict())
+    for g in (
+        via_state,
+        pickle.loads(pickle.dumps(f)),
+        f.clone(include_attributes=True),
+    ):
+        g.learn_one({"x": 0.5}, "new")
+        p = g.predict_proba_one({"x": 0.5})
+        assert set(p) == {0, 1, "new"}
+        assert sum(p.values()) == pytest.approx(1.0)

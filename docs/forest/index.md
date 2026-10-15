@@ -1,6 +1,6 @@
 # Forests that follow a changing stream
 
-**In plain words:** One decision tree answers with one opinion. A forest asks many trees and combines them, so a single bad tree stops mattering and the spread of the answers says how sure the forest is. This page has two forests: one that replaces its trees when the stream changes, and one that never picks a single tree depth but averages all of them, weighting each by how well it has predicted so far.
+**In plain words:** One decision tree answers with one opinion. A forest asks many trees and combines them, so the mistakes of a single tree are outvoted and the spread of the answers says how sure the forest is. This page has two forests: one that replaces its trees when the stream changes, and one that averages every tree depth, weighting each by how well it has predicted so far.
 
 ## 1. Why a forest
 
@@ -41,7 +41,7 @@ A longer test makes the effect visible. `DriftStream` produces four numbers per 
 
 ![Accuracy of one adaptive tree and of the forest around a sudden change](../assets/forest/change_recovery.png)
 
-Both fall when the rule changes, and both come back to 1.0. The forest falls less and returns sooner. In the first 100 samples after the change the forest is right 0.910 of the time and the single tree 0.540.
+Both fall when the rule changes, and both come back to 1.0. In the median of the five seeds the forest falls less and returns sooner: in the first 100 samples after the change it is right 0.910 of the time and the single tree 0.540. Seed by seed the forest scores 0.90, 0.98, 0.96, 0.91 and 0.84 and the tree 0.12, 1.00, 0.98, 0.53 and 0.54, so the tree is the better one on two seeds and the difference is not significant (Section 4).
 
 The detectors tell the same story from the inside. The next figure counts, for one seed, how many warnings and drifts the ten trees raised.
 
@@ -49,7 +49,7 @@ The detectors tell the same story from the inside. The next figure counts, for o
 
 Before the change there are two warnings and no drift: a warning alone replaces nothing. At the change the drift line jumps as the trees are replaced one after another. The forest raised 29 warnings and 23 drifts in total on this stream, and a second burst appears between samples 1550 and 1700, when the rule is no longer changing. With the fast detector setting that is the price of reacting quickly: a tree may be replaced without need. Slower detectors, passed as `drift_detector` and `warning_detector`, trade reaction time for fewer false replacements.
 
-The price in time is real: about 4.3 ms per sample for ten trees against 0.24 ms for the single tree, roughly eighteen times more.
+The forest costs about 4.3 ms per sample for ten trees against 0.24 ms for the single tree, roughly eighteen times more.
 
 ## 3. Aggregated Mondrian forest: average every depth
 
@@ -89,7 +89,7 @@ The paper bounds how much worse the aggregate can be than any single pruning. Fo
 
 ![Loss of the forest minus loss of the root alone, on two kinds of targets](../assets/forest/regret.png)
 
-On the left the targets carry no information about `x`, so the root is the best answer, and the forest stays within a fraction of a unit of it, far below the bound of 5.5. On the right the targets follow a curve of `x`, the aggregate beats the root by more and more, and after 600 samples the difference is between -180 and -225. The bound only limits the damage; it says nothing about how much better the forest can be.
+On the left the targets are independent of `x`, so the root is the best answer, and the forest stays within a fraction of a unit of it, far below the bound of 5.5. On the right the targets follow a curve of `x`, the aggregate beats the root by more and more, and after 600 samples the difference is between -180 and -225. The bound only limits the damage; it says nothing about how much better the forest can be.
 
 ## 4. Numbers
 
@@ -104,7 +104,7 @@ On the left the targets carry no information about `x`, so the root is the best 
 | AggregatedMondrianForestRegressor (MSE) | 0.002 | 0.084 | 0.009 | 3.26 |
 | MondrianForestRegressor (MSE) | 0.000 | 0.029 | 0.001 | 1.41 |
 
-The adaptive random forest follows the change much faster than the single adaptive tree. On this stream the aggregated Mondrian forests are not better than the Mondrian forests already in the library, and they cost more per sample; the aggregation also needs a box around the inputs, taken here from the range of the whole stream.
+The adaptive random forest has a higher median accuracy than the single adaptive tree in the first 100 samples after the change, but on five seeds the difference is not significant: the forest is better on three seeds and the tree on two (paired Wilcoxon signed-rank, one-sided, p = 0.156; A12 = 0.62, below the 0.71 of a large effect). The forest also has ten trees against one, which is part of the difference. On this stream the aggregated Mondrian forests score the same as or below the Mondrian forests already in the library and cost more per sample; the aggregation also needs a box around the inputs, taken here from the range of the whole stream.
 
 ## Details
 
@@ -129,18 +129,19 @@ The adaptive random forest follows the change much faster than the single adapti
 
 The aggregated forests implement the version of Section 2 of the paper, on an unrestricted Mondrian partition (Algorithm 2). The restricted partition of Section 4, which the paper uses in its experiments and for which it states no guarantee, is not implemented. The regret bounds quoted above are those of the implemented version.
 
-`OnlineExtraTreesRegressor` and `AMRules` are not part of the package: their papers are not available.
+`OnlineExtraTreesRegressor` and `AMRules` are left out of the package until their papers are available.
 
 ### Checks
 
 - The collapsed weights equal the exponentially weighted sum of equation 6 taken over every pruning of a small tree, with a difference below 1e-9 for `step` from 0.125 to 200 (a leaf of the finished tree stands for all its refinements, which have the same loss, so its prior mass is 1).
 - Lemma 1, Corollary 1 and Corollary 2 hold on the prequential streams of `test/forest/test_amf.py`.
-- On a noiseless step function the aggregated prediction with `step = 1e4` equals the leaf prediction. On a noisy curve it does not: with one tree, 300 training samples, queries at 100 of them, and a large `step`, the two differ by at most 0.19 (median 0.04). A large `step` selects the best pruning in hindsight, which is the deepest tree only when the data is clean.
-- `check_estimator` passes for the three classes; the pure `init_state` / `step` form is skipped, since the state is a set of trees of changing shape.
+- On a noiseless step function the aggregated prediction with `step = 1e4` equals the leaf prediction. On a noisy curve the two differ: with one tree, 300 training samples, queries at 100 of them, and a large `step`, the two differ by at most 0.19 (median 0.04). A large `step` selects the best pruning in hindsight, which is the deepest tree only when the data is clean.
+- `check_estimator` passes for the three classes with no check skipped. They have no pure `init_state` / `step` form, since the state is a set of trees of changing shape.
+- After `load_state_dict`, a pickle round trip and `clone(include_attributes=True)`, an aggregated classifier still accepts a label it has not seen and returns probabilities that sum to one.
 
 ### Cost and memory
 
-p99 of one `learn_one` plus one `predict_one` over 3000 samples with four features, on a Kaggle CPU: 9.4 ms for the adaptive random forest of ten trees, 4.3 ms for the aggregated classifier and 4.0 ms for the aggregated regressor; `budget_s` is 0.02 s for the three.
+p99 of one `learn_one` plus one `predict_one` over 3000 samples with four features, on a Kaggle CPU: 9.4 ms for the adaptive random forest of ten trees, 4.3 ms for the aggregated classifier and 4.0 ms for the aggregated regressor; `budget_s` is 0.1 s for the adaptive forest and 0.04 s for the two aggregated forests, about ten times the measured p99.
 
 The trees of the adaptive forest are bounded by `max_nodes`, so the state is constant in the length of the stream. The aggregated trees keep two weights per node and, on uniform inputs with 1, 2 and 4 features, between 3.6 and 4.0 nodes per sample, so their memory grows with the stream. The depth of a tree on two features was 21, 30 and 43 after 100, 1000 and 4000 samples.
 

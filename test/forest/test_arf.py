@@ -309,3 +309,21 @@ def test_follows_a_sudden_change_on_drift_stream():
     ok = np.array(ok)
     assert ok[400:600].mean() > 0.9
     assert ok[900:].mean() > 0.9
+
+
+def test_no_check_is_skipped():
+    assert AdaptiveRandomForestClassifier()._unit_test_skips() == set()
+
+
+def test_none_input_is_counted():
+    arf = AdaptiveRandomForestClassifier(n_models=2, seed=0)
+    arf.learn_one(None, 0)
+    assert arf.n_missing == 1 and arf.n_seen_ == 0
+
+
+def test_no_answer_when_no_tree_has_one():
+    arf = AdaptiveRandomForestClassifier(n_models=1, seed=0)
+    arf.learn_one({"x": 1.0}, 0)
+    arf.members_ = [_Member(_Stub({}), None, None)]
+    assert arf.predict_proba_one({"x": 1.0}) == {}
+    assert arf.predict_one({"x": 1.0}) is None

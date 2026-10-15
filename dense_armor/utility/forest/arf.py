@@ -241,7 +241,7 @@ class AdaptiveRandomForestClassifier(Classifier):
         Algorithm 1 (page 7) and Algorithm 2 (page 8).
     """
 
-    budget_s = 0.02
+    budget_s = 0.1
     memory_class = "O(window)"
 
     def __init__(
@@ -280,9 +280,6 @@ class AdaptiveRandomForestClassifier(Classifier):
     @property
     def n_missing(self) -> int:
         return self.n_missing_
-
-    def _unit_test_skips(self) -> set:
-        return {"check_step_is_pure", "check_step_is_jittable"}
 
     def _new_tree(self) -> SubspaceHoeffdingTree:
         return SubspaceHoeffdingTree(
@@ -368,8 +365,6 @@ class AdaptiveRandomForestClassifier(Classifier):
             for c, v in p.items():
                 total[c] = total.get(c, 0.0) + w * v
         z = sum(total.values())
-        if z <= 0.0:
-            return {}
         return {c: v / z for c, v in total.items()}
 
     def predict_one(self, x: Any, t: float | None = None) -> Any:
