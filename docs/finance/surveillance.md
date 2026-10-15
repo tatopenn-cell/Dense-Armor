@@ -1,6 +1,6 @@
 # Surveillance: is the market behaving differently today?
 
-**In plain words:** Five Dense-Armor tools read five years of real stock-market data. After a 250-day warm-up, two of them flagged 43 of the remaining 1,004 days, among them the crashes of August 2024 and April 2025.
+**In plain words:** The Dense-Armor pipeline, composed of five tools, was tested on five years of historical market data. Following a 250-day warm-up period, the two integrated anomaly detectors isolated 43 of the remaining 1,004 days, accurately identifying the market crashes of August 2024 and April 2025.
 
 ## The scene
 
