@@ -11,22 +11,22 @@ The pieces, as the thesis states them:
   predict, feed the absolute deviation to a warning detector and a drift
   detector, start a background tree on a warning, replace the tree by the
   background tree on a drift, skip the sample for this tree with chance
-  ``1 - p`` (sub-bagging, ``p = 0.5``, page 116), otherwise train the tree
+  ``1 - p`` (sub-bagging, ``p = 0.5``, page 115), otherwise train the tree
   and its background tree on it. The prediction is the mean of the trees
   (page 110).
 - Random splitter (Algorithm 4, page 111). A leaf keeps, for each feature
-  of a random subset of size ``sqrt(M)`` (page 110, page 116), a buffer of
+  of a random subset of size ``sqrt(M)`` (page 110, page 115), a buffer of
   its first ``s = 5`` observations; the range of the buffer gives a split
   point ``phi`` drawn uniformly in it; from then on only the incremental
   variance of the target on each side of ``phi`` is kept. There is one
   split candidate per monitored feature.
 - Split attempts every ``grace_period = 50`` samples with the split
   significance ``delta = 0.05``; the pre-pruning test is disabled (page
-  116).
+  115).
 - Detectors: ADWIN with confidence 0.01 for the warning and 0.001 for the
-  drift, on the absolute deviation (pages 110 and 115).
+  drift, on the absolute deviation (pages 109 and 114).
 - Leaves predict with the target mean or a linear model, whichever has the
-  lower faded error, with fading factor 0.95 (page 115). 20 trees in the
+  lower faded error, with fading factor 0.95 (page 114). 20 trees in the
   experiments (page 115).
 
 Stated as my choice, because the passages read do not give them:
