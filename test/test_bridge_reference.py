@@ -1,4 +1,4 @@
-"""River bridge tests: interop and the missing-river error message."""
+"""Bridge tests: interop and the error message when the reference library is missing."""
 import importlib
 import sys
 

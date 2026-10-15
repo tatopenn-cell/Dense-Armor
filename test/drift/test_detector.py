@@ -1,4 +1,4 @@
-"""Unit tests for dense_armor/utility/river_drift.py."""
+"""Unit tests for dense_armor/utility/drift/detector.py."""
 import numpy as np
 import pytest
 

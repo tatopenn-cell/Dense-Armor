@@ -1,4 +1,4 @@
-"""Unit tests for dense_armor/utility/river_anomaly.py."""
+"""Unit tests for dense_armor/utility/anomaly/deviation.py."""
 import doctest
 import importlib
 import sys
