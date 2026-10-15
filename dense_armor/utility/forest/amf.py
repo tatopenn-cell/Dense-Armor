@@ -5,8 +5,7 @@ cell predicts from the samples that fell in it. A deep tree fits well
 and a shallow one is stable, and which one is right is not known in
 advance. AMF does not choose: it answers with the average of the
 predictions of every pruning of the tree, each pruning weighted by how
-well it has predicted so far, following Mourtada, Gaiffas and Scornet
-(2021).
+well it has predicted so far, following Mourtada, Gaiffas and Scornet.
 
 For a tree with cell forecasters ``y_v``, the prediction at ``x`` is
 the exponentially weighted average over all finite subtrees ``T``
@@ -99,10 +98,9 @@ Examples:
     (0, 1)
 
 References:
-    Mourtada, J., Gaiffas, S., Scornet, E. (2021). AMF: Aggregated
-        Mondrian forests for online learning. Journal of the Royal
-        Statistical Society B 83(3), 505-533 (arXiv:1906.10529v2,
-        a manuscript version). Equations 1, 5, 6, 7 and 9 to 11,
+    Mourtada, J., Gaiffas, S., Scornet, E. AMF: Aggregated Mondrian
+        forests for online learning. arXiv:1906.10529v2, the manuscript
+        version of the PDF used. Equations 1, 5, 6, 7 and 9 to 11,
         Algorithms 2 and 3, Lemma 1, Corollaries 1 and 2.
     Lakshminarayanan, B., Roy, D. M., Teh, Y. W. (2014). Mondrian
         forests: efficient online random forests. In NIPS.
@@ -425,7 +423,7 @@ class AggregatedMondrianForestClassifier(_Forest, Classifier):
         1
 
     References:
-        Mourtada, Gaiffas, Scornet (2021), Algorithms 2 and 3, Corollary 1.
+        Mourtada, Gaiffas, Scornet, Algorithms 2 and 3, Corollary 1.
     """
 
     budget_s = 0.02
@@ -544,7 +542,7 @@ class AggregatedMondrianForestRegressor(_Forest, Regressor):
         True
 
     References:
-        Mourtada, Gaiffas, Scornet (2021), Algorithms 2 and 3, Corollary 2.
+        Mourtada, Gaiffas, Scornet, Algorithms 2 and 3, Corollary 2.
     """
 
     budget_s = 0.02
