@@ -1,6 +1,9 @@
-# Online learning
+# Online learning: sequential models and incremental architectures for real-time adaptation
 
-**In plain words:** This section is about models that keep learning while the robot works, because the world does not stay the same: honest confidence numbers, finding similar past situations, telling which state the robot is in, and learning what the physics model misses.
+This section defines the analytical framework for incremental streaming algorithms integrated within the robot's real-time control loop, evaluating sequential probability calibration, dynamic metric learning, adaptive state classification, and recursive parameter identification.
+
+**In plain words:** This section covers models that continuously learn while the robot is working, ensuring that the software adapts as the physical world changes. It handles four critical tasks: generating honest confidence numbers, finding similar past situations from custom distances, recognizing the robot's exact operational state, and learning the physical behaviors that the digital design file misses.
+
 
 A robot arm picks objects. While it works, four things need to keep learning, because
 the world will not stay the same:
