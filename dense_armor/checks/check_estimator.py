@@ -183,7 +183,7 @@ def check_roc_auc(est: Root) -> None:
     above 0.5 (better than chance); a value at or below 0.5 means the
     score anti-correlates with the truth, which is never correct for a
     detector whose contract is "higher = more anomalous". The check is
-    skipped when scikit-learn is not installed.
+    skipped when a general-purpose machine-learning library is not installed.
     """
     if not isinstance(est, AnomalyDetector):
         return

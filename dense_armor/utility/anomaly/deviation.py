@@ -1,5 +1,7 @@
-
-
+"""
+Anomaly detectors compatible with an existing online-learning library, built on Dense-Armor's streaming detectors.
+Needs the optional dependency: the streaming extra
+"""
 from __future__ import annotations
 
 import numpy as np
@@ -11,7 +13,7 @@ from dense_armor.utility.anomaly.streaming import StreamingDeviationDetector
 
 
 class StreamingDeviationScorer(AnomalyDetector):
-    """`StreamingDeviationDetector` as a river anomaly detector.
+    """`StreamingDeviationDetector` as an anomaly detector of an existing online-learning library.
 
     `score_one` returns the robust deviation of a value from the causal window of the values
     learned before it: `|x - median| / scale` (median/MAD, as in `arbiter.classify_segments`),
@@ -26,7 +28,7 @@ class StreamingDeviationScorer(AnomalyDetector):
         Window length multiplier.
     feature
         Key of the feature to watch; `None` takes the feature with the smallest key, so the
-        result does not depend on the order of the keys. River's `check_roc_auc` (a
+        result does not depend on the order of the keys. The `check_roc_auc` of that library (a
         multi-feature fraud dataset, downloaded at test time) is skipped: this scorer watches
         one feature.
     eps

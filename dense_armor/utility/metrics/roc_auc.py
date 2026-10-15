@@ -10,7 +10,7 @@ counted as half (Mann and Whitney 1947; Bamber 1975):
 The estimator keeps a sliding window of the last ``window`` pairs
 ``(y_true, y_score)`` and recomputes the sum on demand. Cost is
 ``O(n_pos * n_neg)`` per query, which for a window of a few hundred
-samples is negligible. The result equals ``sklearn.metrics.roc_auc_score``
+samples is negligible. The result equals the ROC-AUC of a general-purpose machine-learning library
 on the same window, including ties.
 
 References

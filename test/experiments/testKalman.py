@@ -3,7 +3,7 @@ Dense-Armor (Orca, pipeline reale) vs Kalman Filter -- benchmark professionale.
 
 Chiama DAVVERO Orca.protect_and_forward() del pacchetto pubblicato su PyPI
 (dense-armor>=1.0.9), non una reimplementazione approssimata, e lo confronta
-con un Kalman filter vero (filterpy), calibrato onestamente sullo stesso
+with a real Kalman filter from a general-purpose filtering library, honestly calibrated on the same
 processo generatore -- stesso spirito del confronto gia' documentato nel
 README (~0.12 MSE Kalman calibrato vs ~0.23 MSE Dense-Armor su random walk),
 esteso a scenari pensati per trovare dove ciascuno dei due cede, non solo
@@ -113,7 +113,7 @@ def esegui_benchmark(verbose: bool = False) -> list:
     righe_report = []
 
     print("=" * 92)
-    print("  DENSE-ARMOR (Orca, pipeline REALE) vs KALMAN FILTER (filterpy) -- benchmark")
+    print("  DENSE-ARMOR (Orca, REAL pipeline) vs KALMAN FILTER (reference) -- benchmark")
     print("=" * 92)
 
     # Istanza Orca unica, pre-scaldata una sola volta: il tempo misurato per

@@ -1,7 +1,7 @@
 """Estimator base with pipeline composition and tags.
 
 Estimators share dict-in / dict-out semantics (Montiel et al.,
-arXiv:2012.04740) and the sklearn parameter / clone / inspect contract
+arXiv:2012.04740) and the parameter / clone / inspect contract of a general-purpose machine-learning library
 (Buitinck et al., arXiv:1309.0238).
 """
 

@@ -1,7 +1,7 @@
 """
-Online metric learning: OASIS, LEGO and POLA, as river-compatible estimators.
+Online metric learning: OASIS, LEGO and POLA, as estimators compatible with an existing online-learning library.
 
-Needs the optional dependency: pip install dense-armor[river].
+Needs the optional dependency: the streaming extra.
 """
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ class MetricLearner(Root):
     """Root class for online metric learners.
 
     A metric learner is trained from pairs or triplets and exposes a
-    `distance(x, x2)` method. Unlike river's `Classifier`, `Regressor`, and
+    `distance(x, x2)` method. Unlike the `Classifier`, `Regressor`, and
     `Transformer`, it learns from relative information (two or three samples
     at a time) and does not predict labels or transform features directly.
 

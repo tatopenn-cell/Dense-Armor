@@ -4,7 +4,7 @@ Every metric keeps a small set of counters and updates them in constant
 time per sample. ``merge`` combines two partial states exactly, so the
 same metric can be computed over sharded streams.
 
-The definitions follow scikit-learn: ``F1`` is the harmonic mean of
+The definitions follow the standard machine-learning references: ``F1`` is the harmonic mean of
 precision and recall (Sasaki 2007), Cohen's kappa is
 ``(p_o - p_e) / (1 - p_e)`` (Cohen 1960), and the log-loss and Brier
 score are the standard proper losses (Brier 1950; Good 1952).
