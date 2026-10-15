@@ -10,7 +10,7 @@ the link leads there for the full explanation and examples.
 
 ## Classes by subsystem
 
-**Jump to:** [Roles](#roles) &nbsp;·&nbsp; [Metrics](#metrics) &nbsp;·&nbsp; [Evaluate](#evaluate) &nbsp;·&nbsp; [Core](#core) &nbsp;·&nbsp; [Mcp_server](#mcp_server) &nbsp;·&nbsp; [Anomaly](#anomaly) &nbsp;·&nbsp; [Drift](#drift) &nbsp;·&nbsp; [Trees](#trees) &nbsp;·&nbsp; [Forests](#forests) &nbsp;·&nbsp; [Clustering](#clustering) &nbsp;·&nbsp; [Stats](#stats) &nbsp;·&nbsp; [Preprocessing](#preprocessing) &nbsp;·&nbsp; [Compose](#compose) &nbsp;·&nbsp; [Vision](#vision) &nbsp;·&nbsp; [Learn](#learn) &nbsp;·&nbsp; [Datasets](#datasets) &nbsp;·&nbsp; [Protect](#protect) &nbsp;·&nbsp; [Bridges](#bridges) &nbsp;·&nbsp; [Armatura](#armatura) &nbsp;·&nbsp; [Misc](#misc) &nbsp;·&nbsp; [Dynamics](#dynamics)
+**Jump to:** [Roles](#roles) &nbsp;·&nbsp; [Metrics](#metrics) &nbsp;·&nbsp; [Evaluate](#evaluate) &nbsp;·&nbsp; [Core](#core) &nbsp;·&nbsp; [Mcp_server](#mcp_server) &nbsp;·&nbsp; [Anomaly](#anomaly) &nbsp;·&nbsp; [Drift](#drift) &nbsp;·&nbsp; [Trees](#trees) &nbsp;·&nbsp; [Forests](#forests) &nbsp;·&nbsp; [Rules](#rules) &nbsp;·&nbsp; [Clustering](#clustering) &nbsp;·&nbsp; [Stats](#stats) &nbsp;·&nbsp; [Preprocessing](#preprocessing) &nbsp;·&nbsp; [Compose](#compose) &nbsp;·&nbsp; [Vision](#vision) &nbsp;·&nbsp; [Learn](#learn) &nbsp;·&nbsp; [Datasets](#datasets) &nbsp;·&nbsp; [Protect](#protect) &nbsp;·&nbsp; [Bridges](#bridges) &nbsp;·&nbsp; [Armatura](#armatura) &nbsp;·&nbsp; [Misc](#misc) &nbsp;·&nbsp; [Dynamics](#dynamics)
 
 ---
 
@@ -1783,6 +1783,33 @@ Public methods:
 - `state_dict()`
 - `window_samples(seconds: float)`
 
+
+## Rules
+
+### AMRulesRegressor
+
+
+*Module:* `dense_armor.utility.rules.amrules`
+*Bases:* Regressor
+*Guide:* [rules/index.md](../rules/index.md)
+
+Adaptive Model Rules regressor (Duarte, Gama and Bifet).
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `explain_one(x: Any)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: Any, y: Any, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None, return_std=False)`
+- `predict_one(x: Any, t: float | None = None, return_std: bool = False)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
 
 ## Clustering
 
