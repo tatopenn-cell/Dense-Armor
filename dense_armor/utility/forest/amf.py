@@ -204,7 +204,9 @@ class _AmfTree:
         step: float,
         forecaster: Any,
         rng: np.random.Generator,
+        max_nodes: int | None = None,
     ) -> None:
+        self.max_nodes = max_nodes
         self.d = d
         self.low = np.full(d, low, dtype=float)
         self.high = np.full(d, high, dtype=float)
@@ -230,6 +232,9 @@ class _AmfTree:
                 node = right
         return path, node, lo, hi
 
+    def _can_grow(self) -> bool:
+        return self.max_nodes is None or self.n_nodes + 2 <= self.max_nodes
+
     def _cut(self, lo: np.ndarray, hi: np.ndarray) -> tuple:
         width = hi - lo
         j = int(self.rng.choice(self.d, p=width / width.sum()))
@@ -238,7 +243,11 @@ class _AmfTree:
     def add_point(self, x: np.ndarray) -> None:
         """Update the partition with ``x`` (lines 2 to 10 of Algorithm 2)."""
         _, node, lo, hi = self._descend(x)
-        while node.point is not None and not np.array_equal(node.point, x):
+        while (
+            node.point is not None
+            and not np.array_equal(node.point, x)
+            and self._can_grow()
+        ):
             xp = node.point
             j, s = self._cut(lo, hi)
             node.j, node.s = j, s
@@ -288,7 +297,11 @@ class _AmfTree:
         """
         path, leaf, lo, hi = self._descend(x)
         out = self.fc.predict(leaf.stat)
-        if leaf.point is not None and not np.array_equal(leaf.point, x):
+        if (
+            leaf.point is not None
+            and not np.array_equal(leaf.point, x)
+            and self._can_grow()
+        ):
             m = 0
             xp = leaf.point
             separated = False
@@ -322,6 +335,7 @@ class _Forest:
     high: float
     seed: int | None
     feature_keys: list | None
+    max_nodes: int | None
 
     def _setup(self) -> None:
         self.trees_: list = []
@@ -357,11 +371,16 @@ class _Forest:
                 self.step,
                 forecaster,
                 np.random.default_rng(int(self._rng.integers(2**31 - 1))),
+                self.max_nodes,
             )
             for _ in range(self.n_trees)
         ]
 
-    def _check(self, n_trees: int, step: float, low: float, high: float) -> None:
+    def _check(
+        self, n_trees: int, step: float, low: float, high: float, max_nodes: int | None
+    ) -> None:
+        if max_nodes is not None and max_nodes < 1:
+            raise ValueError(f"max_nodes must be >= 1, got {max_nodes}")
         if n_trees < 1:
             raise ValueError(f"n_trees must be >= 1, got {n_trees}")
         if step <= 0.0:
@@ -383,10 +402,10 @@ class AggregatedMondrianForestClassifier(_Forest, Classifier):
     the number of samples (the paper states it for the restricted
     partition, page 11). A tree keeps two weights and a forecaster per
     node, and measured on uniform inputs in 1, 2 and 4 features it has
-    3.6 to 4.0 nodes per sample, so memory grows with the stream:
-    ``memory_class`` is
-    ``"O(n)"`` in the number of samples, linear in ``n_trees`` and in
-    the number of features. There is no pure ``init_state`` / ``step``
+    3.6 to 4.0 nodes per sample until ``max_nodes`` is reached. The
+    limit bounds each tree, so the state is constant in the length of
+    the stream and linear in ``n_trees``, in ``max_nodes`` and in the
+    number of features. There is no pure ``init_state`` / ``step``
     form: the state is a tree that changes shape.
 
     Args:
@@ -402,6 +421,12 @@ class AggregatedMondrianForestClassifier(_Forest, Classifier):
         seed: seed of the generator of the partitions.
         feature_keys: names of the features. ``None`` takes the sorted
             keys of the first sample.
+        max_nodes: largest number of nodes of one tree. Default 10000.
+            Once a tree has it, a new sample falls into the leaf of its
+            cell, which keeps updating its weights and its forecaster,
+            and the tree stops splitting. ``None`` lifts the limit.
+            Below the limit the bounds of the paper hold; above it
+            they are not claimed.
 
     Raises:
         ValueError: on a non-positive ``n_trees``, ``step`` or
@@ -424,7 +449,7 @@ class AggregatedMondrianForestClassifier(_Forest, Classifier):
     """
 
     budget_s = 0.04
-    memory_class = "O(n)"
+    memory_class = "O(window)"
 
     def __init__(
         self,
@@ -436,10 +461,12 @@ class AggregatedMondrianForestClassifier(_Forest, Classifier):
         classes: list | None = None,
         seed: int | None = None,
         feature_keys: list | None = None,
+        max_nodes: int | None = 10000,
     ) -> None:
-        self._check(n_trees, step, low, high)
+        self._check(n_trees, step, low, high, max_nodes)
         if dirichlet <= 0.0:
             raise ValueError(f"dirichlet must be > 0, got {dirichlet}")
+        self.max_nodes = max_nodes
         self.n_trees = n_trees
         self.step = step
         self.dirichlet = dirichlet
@@ -525,10 +552,12 @@ class AggregatedMondrianForestRegressor(_Forest, Regressor):
         seed: seed of the generator of the partitions.
         feature_keys: names of the features. ``None`` takes the sorted
             keys of the first sample.
+        max_nodes: largest number of nodes of one tree. Default 10000;
+            see :class:`AggregatedMondrianForestClassifier`.
 
     Raises:
-        ValueError: on a non-positive ``n_trees`` or ``step``, or
-            ``low >= high``.
+        ValueError: on a non-positive ``n_trees`` or ``step``, on
+            ``max_nodes < 1``, or ``low >= high``.
 
     Examples:
         >>> from dense_armor.utility.forest.amf import (
@@ -548,7 +577,7 @@ class AggregatedMondrianForestRegressor(_Forest, Regressor):
     """
 
     budget_s = 0.04
-    memory_class = "O(n)"
+    memory_class = "O(window)"
 
     def __init__(
         self,
@@ -558,8 +587,10 @@ class AggregatedMondrianForestRegressor(_Forest, Regressor):
         high: float = 1.0,
         seed: int | None = None,
         feature_keys: list | None = None,
+        max_nodes: int | None = 10000,
     ) -> None:
-        self._check(n_trees, step, low, high)
+        self._check(n_trees, step, low, high, max_nodes)
+        self.max_nodes = max_nodes
         self.n_trees = n_trees
         self.step = step
         self.low = low

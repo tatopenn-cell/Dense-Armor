@@ -127,7 +127,7 @@ The adaptive random forest has a higher median accuracy than the single adaptive
 
 ### What is implemented
 
-The aggregated forests implement the version of Section 2 of the paper, on an unrestricted Mondrian partition (Algorithm 2). The restricted partition of Section 4, which the paper uses in its experiments and for which it states no guarantee, is not implemented. The regret bounds quoted above are those of the implemented version.
+The aggregated forests implement the version of Section 2 of the paper, on an unrestricted Mondrian partition (Algorithm 2). The restricted partition of Section 4, which the paper uses in its experiments and for which it states no guarantee, is not implemented. The regret bounds quoted above are those of the implemented version, for a tree below its `max_nodes` (default 10000 per tree); once a tree has that many nodes it stops splitting, and the bounds are not claimed for what it predicts after that.
 
 `OnlineExtraTreesRegressor` and `AMRules` are left out of the package until their papers are available.
 
@@ -143,7 +143,7 @@ The aggregated forests implement the version of Section 2 of the paper, on an un
 
 p99 of one `learn_one` plus one `predict_one` over 3000 samples with four features, on a Kaggle CPU: 9.4 ms for the adaptive random forest of ten trees, 4.3 ms for the aggregated classifier and 4.0 ms for the aggregated regressor; `budget_s` is 0.1 s for the adaptive forest and 0.04 s for the two aggregated forests, about ten times the measured p99.
 
-The trees of the adaptive forest are bounded by `max_nodes`, so the state is constant in the length of the stream. The aggregated trees keep two weights per node and, on uniform inputs with 1, 2 and 4 features, between 3.6 and 4.0 nodes per sample, so their memory grows with the stream. The depth of a tree on two features was 21, 30 and 43 after 100, 1000 and 4000 samples.
+The trees of both forests are bounded by `max_nodes`, so the state is constant in the length of the stream. The aggregated trees keep two weights per node and, on uniform inputs with 1, 2 and 4 features, between 3.6 and 4.0 nodes per sample until they reach the limit. The depth of a tree on two features was 21, 30 and 43 after 100, 1000 and 4000 samples.
 
 ### Development diary
 

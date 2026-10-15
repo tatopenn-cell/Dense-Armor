@@ -319,6 +319,44 @@ def test_the_dirichlet_forecaster_is_the_kt_forecaster_by_default():
     assert sum(p.values()) == pytest.approx(1.0)
 
 
+def test_max_nodes_bounds_every_tree_and_learning_goes_on():
+    rng = np.random.default_rng(0)
+    for cls, y_of in (
+        (AggregatedMondrianForestClassifier, lambda a: int(a > 0.5)),
+        (AggregatedMondrianForestRegressor, lambda a: 1.0 if a > 0.5 else -1.0),
+    ):
+        f = cls(n_trees=2, max_nodes=21, seed=0)
+        for _ in range(300):
+            a = float(rng.random())
+            f.learn_one({"a": a, "b": float(rng.random())}, y_of(a))
+        assert f.n_seen_ == 300
+        assert all(t.n_nodes <= 21 for t in f.trees_)
+        assert max(t.n_nodes for t in f.trees_) >= 19
+        for t in f.trees_:
+            assert math.isfinite(t.root.lw) and math.isfinite(t.root.lwb)
+        p = f.predict_one({"a": 0.9, "b": 0.5})
+        assert p == 1 if cls is AggregatedMondrianForestClassifier else p > 0.0
+
+
+def test_max_nodes_of_one_keeps_a_single_leaf_that_averages():
+    f = AggregatedMondrianForestRegressor(n_trees=1, max_nodes=1, seed=0)
+    for i in range(10):
+        f.learn_one({"a": i / 10.0}, float(i))
+    assert f.trees_[0].n_nodes == 1
+    assert f.predict_one({"a": 0.3}) == pytest.approx(4.5)
+
+
+def test_max_nodes_none_lifts_the_limit_and_zero_is_refused():
+    f = AggregatedMondrianForestRegressor(n_trees=1, max_nodes=None, seed=0)
+    rng = np.random.default_rng(1)
+    for _ in range(200):
+        f.learn_one({"a": float(rng.random())}, 0.0)
+    assert f.trees_[0].n_nodes > 300
+    for cls in (AggregatedMondrianForestClassifier, AggregatedMondrianForestRegressor):
+        with pytest.raises(ValueError):
+            cls(max_nodes=0)
+
+
 def test_no_check_is_skipped():
     for f in (
         AggregatedMondrianForestClassifier(),
