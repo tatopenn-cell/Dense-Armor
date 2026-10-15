@@ -16,18 +16,17 @@ out = Path(__file__).parent
 N, D = 2000, 4
 
 LEARNERS = {
-    "OXT": lambda s: OnlineExtraTreesRegressor(seed=s),
-    "MondrianForest": lambda s: MondrianForestRegressor(n_trees=10, seed=s),
-    "AMRules": lambda s: AMRulesRegressor(seed=s),
+    "OXT":              (lambda s: OnlineExtraTreesRegressor(seed=s),             "tab:blue"),
+    "MondrianForest":   (lambda s: MondrianForestRegressor(n_trees=10, seed=s),   "tab:green"),
+    "AMRules":          (lambda s: AMRulesRegressor(seed=s),                      "tab:orange"),
 }
-COLORS = {"OXT": "tab:blue", "MondrianForest": "tab:green", "AMRules": "tab:orange"}
 
 curves = {k: [] for k in LEARNERS}
 for seed in range(5):
     X, y = DriftStream(n_samples=N, n_features=D, n_drifts=1,
                        kind="sudden", seed=seed).data()
     names = [f"x{i}" for i in range(D)]
-    for name, make in LEARNERS.items():
+    for name, (make, _) in LEARNERS.items():
         est = make(seed)
         err = np.empty(N)
         for i, (xi, yi) in enumerate(zip(X, y)):
@@ -37,21 +36,38 @@ for seed in range(5):
         curves[name].append(err)
 
 win = 50
-fig, ax = plt.subplots(figsize=(8, 3.4))
+smooth_curves = {}
 for name, errs in curves.items():
     smooth = np.median(
         [np.convolve(e, np.ones(win) / win, mode="valid") for e in errs],
         axis=0,
     )
-    ax.plot(np.arange(len(smooth)) + win // 2, smooth,
-            color=COLORS[name], lw=1.3, label=name)
+    smooth_curves[name] = smooth
 
-ax.axvline(N // 2, color="0.5", lw=0.8, ls="--")
-ax.text(N // 2 + 8, ax.get_ylim()[1] * 0.92, "rule changes",
-        fontsize=8, color="0.4")
+fig, ax = plt.subplots(figsize=(9, 3.6))
+
+for name, (_, color) in LEARNERS.items():
+    s = smooth_curves[name]
+    x = np.arange(len(s)) + win // 2
+    ax.plot(x, s, color=color, lw=1.6, label=name)
+
+# zona intorno al cambio
+ax.axvspan(N // 2, N // 2 + 200, color="0.9", zorder=0)
+ax.axvline(N // 2, color="0.4", lw=1.0, ls="--", zorder=1)
+ax.text(N // 2 + 8, ax.get_ylim()[1] * 0.96, "rule changes",
+        fontsize=8, color="0.35", va="top")
+
+# etichette degli assi corte
 ax.set_xlabel("sample")
-ax.set_ylabel("median |error| over five seeds (50-sample window)")
-ax.legend(loc="upper left", fontsize=8)
+ax.set_ylabel("median absolute error")
+
+ax.grid(True, which="major", axis="y", alpha=0.25, lw=0.6)
+ax.set_axisbelow(True)
+ax.spines["top"].set_visible(False)
+ax.spines["right"].set_visible(False)
+
+ax.legend(loc="upper right", fontsize=9, frameon=False)
+
 fig.tight_layout()
 fig.savefig(out / "oxt_recovery.png", dpi=130)
 print("scritto:", out / "oxt_recovery.png")
