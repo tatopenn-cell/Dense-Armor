@@ -1,4 +1,11 @@
-"""OXT against the library regressors it competes with.
+"""OXT measured against the library regressors it shares the online
+regression task with.
+
+The stream is small enough that the numbers are indicative, not
+conclusive: at 2000 samples and 5 seeds the Wilcoxon test cannot
+reject the null below about 0.06 on either side, and on this
+particular DriftStream OXT is slower and slightly less accurate
+than MondrianForest.
 
 Stream: ``DriftStream`` with one sudden change at half, 2000 samples, 4
 features, seeds 0 to 4, label as target, prequential protocol. Reported:
