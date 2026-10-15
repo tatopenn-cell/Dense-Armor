@@ -1,6 +1,9 @@
-# CUSUM: catching a slow drift
+# CUSUM: sequential analysis for sub-clinical data stream drift detection
 
-**In plain words:** A robot part can wear out a little every day, so that no single reading looks wrong but the readings have slowly moved. CUSUM adds up the small differences until the total is too big to be chance, and then raises an alarm.
+This section evaluates the statistical properties, Average Run Length (ARL) formulations, and detection latency of the cumulative sum (CUSUM) architecture designed to isolate persistent, low-amplitude non-stationary drift within sequential streaming signals.
+
+**In plain words:** This page explains how to detect slow, gradual changes in a system—like a mechanical part wearing out bit by bit. While a standard detector looks at one reading at a time and misses small shifts, CUSUM accumulates these tiny anomalies over time and triggers an alert as soon as the total deviation confirms a real structural trend.
+
 
 A robot joint wears out a little every day. Each single reading still looks normal, so a
 detector that judges one sample at a time never complains. Together, though, the readings have
