@@ -5,6 +5,7 @@ This section evaluates the statistical efficacy of an ensemble of three parallel
 **In plain words:** When you launch a new product or open a new market, you have no historical data of past frauds. This page shows how three detectors can spot suspicious transactions from day one, without needing any pre-classified labels.
 
 
+
 ## The scene
 
 A bank opens a new corridor to a foreign market. On day one, transactions arrive. Zero labels. The supervised detector, trained on the old corridor, knows nothing about this market. The unsupervised detector, which watched the same stream from the start, already knows what 'normal' looks like here.
