@@ -206,3 +206,8 @@ def test_regressor_distance_weights_and_bad_parameters():
         KNNRegressor(weights="other")
     with pytest.raises(ValueError):
         KNNRegressor(eps=0.0)
+
+
+def test_no_check_is_skipped():
+    assert KNNClassifier()._unit_test_skips() == set()
+    assert KNNRegressor()._unit_test_skips() == set()
