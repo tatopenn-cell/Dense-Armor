@@ -1,6 +1,9 @@
-# Calibration (online Platt scaling)
+# Calibration: online Platt scaling via sequential Newton optimization
 
-**In plain words:** A model can rank things correctly and still give the wrong confidence numbers: it says 99% sure when it is right only 80% of the time. Calibration fixes those numbers, one reading at a time, without changing the ranking.
+This section defines the analytical formulation and algorithmic implementation of an online calibration wrapper, using Online Newton Step (ONS) optimization to minimize log-loss without altering the foundational classification ranking.
+
+**In plain words:** A model can be great at ranking outcomes but still report the wrong confidence numbers—stating it is 99% sure when it is only right 80% of the time. This tool corrects those probabilities in real time, sample by sample, ensuring that a robot's control policy acts only with true, scientifically calibrated certainty.
+
 
 A classifier can rank its predictions well and still attach the wrong numbers to them.
 A decision tree that has 80 % accuracy on some region will happily output 0.99 on every
