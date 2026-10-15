@@ -247,15 +247,35 @@ def check_non_increasing_t_raises(est: Root) -> None:
     raise AssertionError("non-increasing t did not raise")
 
 
-def check_estimator(est: Root) -> None:
+def check_estimator(
+    est: Root,
+    allow_not_applicable: dict[str, str] | None = None,
+) -> dict:
     """Run every applicable check on ``est``.
+
+    A check that raises ``AttributeError`` or ``NotImplementedError`` is
+    reported as "not applicable", not silently passed. A not-applicable
+    check must be listed in ``allow_not_applicable`` with its reason,
+    otherwise it counts as a failure: this prevents a check from being
+    dropped by a local factory that cannot be pickled, or by a missing
+    attribute that hides a real defect.
 
     Args:
         est: the estimator to check.
+        allow_not_applicable: mapping from check name to the written
+            reason the check does not apply to this estimator.
+
+    Returns:
+        A dict with keys ``run`` (checks that executed and passed),
+        ``not_applicable`` (check, reason), ``skipped`` (declared
+        skips), ``failed`` (always empty here; failures raise).
 
     Raises:
-        AssertionError: if any check fails.
+        AssertionError: if any check fails, or if a check raised
+            ``AttributeError`` / ``NotImplementedError`` and is not in
+            ``allow_not_applicable``.
     """
+    allow_not_applicable = dict(allow_not_applicable or {})
     skip_fn = getattr(est, "_unit_test_skips", None)
     skip = skip_fn() if callable(skip_fn) else set()
     checks = [
@@ -288,21 +308,40 @@ def check_estimator(est: Root) -> None:
         check_checkpoint_roundtrip,
     ]
     failures = []
+    ran: list = []
+    not_applicable: list = []
     skip_names = {s.removeprefix("check_") for s in skip}
     for chk in checks:
         if chk.__name__.removeprefix("check_") in skip_names:
             continue
         try:
             chk(est)
+            ran.append(chk.__name__)
         except AssertionError as e:
             failures.append((chk.__name__, str(e)))
-        except (NotImplementedError, AttributeError):
-            pass
+        except (NotImplementedError, AttributeError) as e:
+            not_applicable.append(
+                (chk.__name__, f"{type(e).__name__}: {e}")
+            )
         except Exception as e:  # noqa: BLE001
             failures.append((chk.__name__, f"{type(e).__name__}: {e}"))
     if failures:
         lines = "\n".join(f"  - {n}: {m}" for n, m in failures)
         raise AssertionError(f"{type(est).__name__} failed check_estimator:\n{lines}")
+    unallowed = [n for n, _ in not_applicable if n not in allow_not_applicable]
+    if unallowed:
+        lines = "\n".join(
+            f"  - {n}: {r}" for n, r in not_applicable if n in unallowed
+        )
+        raise AssertionError(
+            f"{type(est).__name__}: not-applicable checks not in the allow-list:\n{lines}"
+        )
+    return {
+        "run": ran,
+        "not_applicable": not_applicable,
+        "skipped": sorted(skip),
+        "failed": [],
+    }
 
 
 from dense_armor.checks.robot import (
