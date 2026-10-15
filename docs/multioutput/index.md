@@ -12,7 +12,7 @@ The simplest baseline is to ignore the dependence and train one independent mode
 
 - **PerOutputClassifier / PerOutputRegressor**: one model per target, learned independently. This is the single-target baseline (ST) of Spyromitros-Xioufis, Tsoumakas, Groves and Vlahavas (2016), Section 2. Fast, simple, and often hard to beat.
 
-- **ClassifierChain / RegressorChain**: one model per target, chained in an order. The model for target `j` sees `x` plus the targets of the previous links. At training it sees the *true* values of the previous targets; at prediction it sees the *predicted* values. Read, Pfahringer, Holmes and Frank (2009) introduced the classifier chain; Dembczynski, Cheng and Huellermeier (2010), Section 4.1, formalised it; Spyromitros-Xioufis et al. (2016), Section 2.2, adapted it to regression.
+- **ClassifierChain / RegressorChain**: one model per target, chained in an order. The model for target `j` sees `x` plus the targets of the previous links. At training it sees the *true* values of the previous targets; at prediction it sees the *predicted* values. Read, Pfahringer, Holmes and Frank (2009) introduced the classifier chain; Dembczynski, Cheng and Huellermeier (2010), Section 4, formalised it; Spyromitros-Xioufis et al. (2016), Section 2.2, adapted it to regression.
 
 - **ProbabilisticClassifierChain**: estimates the joint distribution of all targets by the product rule and predicts the most probable joint combination. Dembczynski et al. (2010), Section 4, eq. 10-12. On the right loss function it is the Bayes-optimal decision, but it costs `2**m` label evaluations per prediction, where `m` is the number of targets.
 
@@ -28,7 +28,7 @@ The **order of the chain is a hyperparameter**. It is a permutation of the targe
 
 ## 4. Smallest example
 
-Three targets, two features, a logistic regression as the base learner.
+Two targets, one feature, a logistic regression as the base learner.
 
 ```python
 from dense_armor.utility.linear.glm import LogisticRegression
@@ -75,13 +75,14 @@ To see the effect, consider a small stream where `y0` depends on `x0` alone, and
 | y0 -> y1 | 0.934 | 0.006 |
 | y1 -> y0 | 0.836 | 0.003 |
 
-The forward order is about ten accuracy points better, with five seeds each. This is the order effect: same targets, same base learner, same stream, but the chain links one direction helpful and the other direction harmful. Dembczynski et al. (2010), Section 4.3, note that the product rule does not depend on the order of the labels, but two chains train *different models* on different expanded inputs, and only the useful direction helps.
+The forward order is about ten accuracy points better, with five seeds each. This is the order effect: same targets, same base learner, same stream, but the chain links one direction helpful and the other direction harmful. Dembczynski et al. (2010), Section 4, note that the product rule does not depend on the order of the labels, but two chains train *different models* on different expanded inputs, and only the useful direction helps.
 
 ## Details
 
 ### References
 
-- Read, J., Pfahringer, B., Holmes, G., Frank, E. (2020). Classifier chains: a review and perspectives. arXiv:1912.13405v2. Sections 1-2 (definition and motivation of the classifier chain).
+- Read, J., Pfahringer, B., Holmes, G., Frank, E. (2009). Classifier chains for multi-label classification. ECML PKDD, and Machine Learning 85(3), 333-359 (2011). The original chain formulation.
+- Read, J. (2020). Classifier chains: a review and perspectives. arXiv:1912.13405v2. Sections 1-2 (definition and motivation of the classifier chain).
 - Dembczynski, K., Cheng, W., Huellermeier, E. (2010). Bayes optimal multilabel classification via probabilistic classifier chains. ICML. Section 4, eq. 10 (Bayes-optimal decision for the subset zero-one loss), eq. 11 (product rule for the joint), eq. 12 (probabilistic classifier chain).
 - Spyromitros-Xioufis, E., Tsoumakas, G., Groves, W., Vlahavas, I. (2016). Multi-target regression via input space expansion: treating targets as inputs. Machine Learning 104(1), 55-98. Section 2 (per-output baseline, Regressor Chains), Section 2.2 (the discrepancy between training and prediction on the meta-inputs).
 
@@ -96,7 +97,7 @@ The forward order is about ten accuracy points better, with five seeds each. Thi
 
 ### Measured cost
 
-p99 of one `learn_one` plus one `predict_one` over 3000 samples, 4 features, 3 targets, one CPU thread: 0.124 ms, 0.121 ms, 0.284 ms, 0.168 ms, 0.879 ms for the five estimators. `budget_s` is 0.005 s for the two per-output baselines, 0.01 s for the two deterministic chains, and 0.05 s for the probabilistic chain, which pays the `2**m` enumeration at prediction. State size between 789 B and 949 B, independent of the stream length.
+p99 of one `learn_one` plus one `predict_one` over 3000 samples, 4 features, 3 targets, one CPU thread: 0.124 ms, 0.121 ms, 0.284 ms, 0.168 ms, 0.879 ms for the five estimators. `budget_s` is 0.005 s for the two per-output baselines and 0.01 s for the two deterministic chains; both are independent of the number of targets. For the probabilistic chain `budget_s` is 0.05 s **at three targets**, and scales with `2**m`: at the documented limit of 15 targets the enumeration is `2**15 = 32768` labelings, three orders of magnitude more than at 3 targets, and the budget would be correspondingly larger. State size between 789 B and 949 B, independent of the stream length.
 
 ### No pure form
 

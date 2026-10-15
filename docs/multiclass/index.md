@@ -55,7 +55,7 @@ B
 C
 ```
 
-The same pattern works with `OneVsRestClassifier` and `OutputCodeClassifier`. The three give the same answer on this easy problem; on harder ones they differ, and the figures below show why.
+The same pattern works with `OneVsRestClassifier` and `OutputCodeClassifier`. The three give the same answer on this easy problem. The figures below show each strategy on the same designed stream; because the classes are well separated, the three regions are close to each other, and the differences appear only on harder data.
 
 ## 4. The three strategies, seen
 
@@ -69,7 +69,7 @@ One-vs-one with three classes. The pairwise boundaries cross and form a more irr
 
 ![Output-code decision regions in 2-D](../assets/multiclass/output_regions.png)
 
-Error-correcting output codes with a code matrix of size 8. The regions are again irregular, but they come from a different mechanism: every column of the code matrix is a binary problem, and the answer is the class whose codeword is closest to the bits the columns predict. The redundancy of the code lets the method correct a wrong bit: if one column misclassifies, the Hamming distance to the correct class is still the smallest among all the rows, provided the other columns vote consistently. This is the meaning of the word error-correcting.
+Error-correcting output codes with the default code matrix of size 6. The regions are again irregular, but they come from a different mechanism: every column of the code matrix is a binary problem, and the answer is the class whose codeword is closest to the bits the columns predict. The redundancy of the code lets the method correct a wrong bit: if one column misclassifies, the Hamming distance to the correct class is still the smallest among all the rows, provided the other columns vote consistently. This is the meaning of the word error-correcting.
 
 ## 5. Numbers
 
@@ -81,13 +81,13 @@ On `DriftStream` sudden drift, 2000 samples, 4 features, median of 5 seeds, p99 
 | OneVsOneClassifier | 0.998 | 0.000 | 0.049 ms | 562 B |
 | OutputCodeClassifier | 0.991 | 0.001 | 0.357 ms | 1 462 B |
 
-All three reach an accuracy above 0.99 on this easy binary stream. One-vs-one is both the most accurate and the fastest, because three logistic regressions on a pair of classes each are cheap, and the vote is a simple count. Output-code is the slowest, because it trains eight binary problems instead of two or three, and every prediction queries all eight. The wrappers are cheap in memory: under 1.5 KB of state, independent of the stream length.
+All three reach an accuracy above 0.99 on this easy binary stream. One-vs-one is both the most accurate and the fastest, because the stream has two classes, so there is a single pair and one logistic regression is trained (two for one-vs-rest), and the vote is a simple count. Output-code is the slowest, because it trains six binary problems (the default `code_size = 6`) instead of one or two, and every prediction queries all six. The wrappers are cheap in memory: under 1.5 KB of state, independent of the stream length.
 
 ## Details
 
 ### References
 
-- Fuerkranz, J. (2002). Round Robin Classification. Journal of Machine Learning Research 2, 721-747. Definition 2 (unordered, one-against-all binarization) and Definition 4 (round robin, pairwise binarization), Section 3 (voting).
+- Fuerkranz, J. (2002). Round Robin Classification. Journal of Machine Learning Research 2, 721-747. Definition 2 (unordered, one-against-all binarization) and Definition 4 (round robin, pairwise binarization), both on printed page 723; the simple voting technique for the pairwise case is described in Section 3, Round Robin Classification (printed pages 723-726).
 - Dietterich, T. G., Bakiri, G. (1995). Solving multiclass learning problems via error-correcting output codes. Journal of Artificial Intelligence Research 2, 263-286. Section 2 (the distributed output code).
 
 ### Choices stated explicitly

@@ -93,13 +93,13 @@ On `DriftStream` sudden drift, 2000 samples, 4 continuous features, median of 5 
 | KNNClassifier | 0.996 | 0.002 | 0.164 ms | 13 224 B |
 | KNNRegressor | -- | -- | 0.142 ms | 14 600 B |
 
-On this stream the k-NN classifier is the most accurate of the eight learners compared (see the `multioutput` page for the full table), and it is the second fastest of the strong ones, after `OneVsOne`. The price is memory: 13 KB against the few hundred bytes of the naive Bayes classifiers. The window keeps 200 samples of 4 features; the same sample count in higher dimension would scale linearly.
+On this stream the k-NN classifier scores 0.998, essentially tied with the existing `OnlineGaussianNB` (0.996) and far above the count-based naive Bayes variants (0.089, bounded by their domain, see the `bayes` page). It is slower than `OnlineGaussianNB` (0.244 ms against 0.087 ms p99) because it scans the window at every prediction, and its state is larger (13 KB against a few hundred bytes) because the window keeps the raw samples. The window holds 200 samples of 4 features; the same sample count in higher dimension scales linearly.
 
 ## Details
 
 ### References
 
-No paper in this folder defines the k-nearest-neighbour rule. The definition in section 1 is the standard one, stated in words with no equation number, as the task asks. The rule appears in the classical literature (Fix and Hodges 1951, Cover and Hart 1967) but neither PDF is here, so no page or equation number is cited.
+No paper in this folder defines the k-nearest-neighbour rule. The definition in section 1 is the standard one, stated in words. The rule appears in the classical literature (Fix and Hodges 1951, Cover and Hart 1967) but neither PDF is here, so no page or equation number is cited.
 
 ### Choices stated explicitly
 
@@ -121,4 +121,4 @@ Neither class provides an `init_state` / `step` pair. The state is the sliding w
 
 ### Development diary
 
-The first version of the Minkowski distance had a subtle mistake in the `p = 1` branch: the code summed absolute differences and then took a square root, which silently returned the Euclidean norm divided by `sqrt(d)`. The test `test_minkowski_p1_vs_p2` caught it by checking that the two distances to `(3, 4)` from `(6, 8)` are 5 (Euclidean) and 7 (Manhattan), not the same number. The two branches now compute the two norms directly.
+The first version of the Minkowski distance had a subtle mistake in the `p = 1` branch: the branch applied the same square root as `p = 2`, so the two norms were not distinguished. The test `test_minkowski_p1_vs_p2` caught it by checking that the distances from `(6, 8)` to `(3, 4)` are `5` at `p = 2` and `7` at `p = 1`, not the same number. The two branches now compute the two norms directly.

@@ -44,6 +44,7 @@ class Gaussian:
         if n < 0.0:
             raise ValueError(f"n must be >= 0, got {n}")
         self._mean = float(mean)
+        self._var0 = float(var)
         self._m2 = float(var) * float(n)
         self._n = float(n)
 
@@ -86,8 +87,14 @@ class Gaussian:
         return self._n
 
     def pdf(self, x: float) -> float:
-        """Density at ``x``, Bishop eq. 2.42."""
-        var = self._m2 / max(self._n, 1.0)
+        """Density at ``x``, Bishop eq. 2.42.
+
+        Before any observation the density uses the ``var`` passed to the
+        constructor; from the first observation onward it uses the
+        maximum-likelihood estimate ``m2 / n``. The fallback to ``var0``
+        keeps the constructor's ``var`` meaningful for an empty Gaussian.
+        """
+        var = self._m2 / self._n if self._n > 0.0 else self._var0
         if var <= 0.0:
             return 0.0
         c = 1.0 / sqrt(2.0 * pi * var)

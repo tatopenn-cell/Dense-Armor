@@ -1,5 +1,7 @@
 """Aggregated Mondrian forests (AMF) for classification and regression.
 
+Page numbers below are PDF page indices of the paper's PDF, not the printed page numbers of the journal.
+
 A Mondrian tree cuts the input box into cells; a forecaster in every
 cell predicts from the samples that fell in it. A deep tree fits well
 and a shallow one is stable, and which one is right is not known in

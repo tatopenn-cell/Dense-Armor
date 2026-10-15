@@ -55,6 +55,22 @@ import numpy as np
 from dense_armor.roles import Classifier, Regressor
 
 
+def _unit_test_clf_factory():
+    """Picklable classifier factory used by _unit_test_params (module level)."""
+    from dense_armor.utility.linear.glm import LogisticRegression
+    from dense_armor.utility.optim import SGD
+
+    return LogisticRegression(optimizer=SGD(lr=0.1), intercept=True)
+
+
+def _unit_test_reg_factory():
+    """Picklable regressor factory used by _unit_test_params (module level)."""
+    from dense_armor.utility.linear.glm import LinearRegression
+    from dense_armor.utility.optim import SGD
+
+    return LinearRegression(optimizer=SGD(lr=0.1), intercept=True)
+
+
 class _BaseMultiOutput:
     """Shared helpers: feature keys, target order, NaN check."""
 
@@ -162,13 +178,7 @@ class PerOutputClassifier(_BaseMultiOutput, Classifier):
 
     @classmethod
     def _unit_test_params(cls):
-        from dense_armor.utility.linear.glm import LogisticRegression
-        from dense_armor.utility.optim import SGD
-
-        def factory():
-            return LogisticRegression(optimizer=SGD(lr=0.1), intercept=True)
-
-        yield {"factory": factory}
+        yield {"factory": _unit_test_clf_factory}
 
     def learn_one(
         self, x: dict, y: dict, t: float | None = None
@@ -236,13 +246,7 @@ class PerOutputRegressor(_BaseMultiOutput, Regressor):
 
     @classmethod
     def _unit_test_params(cls):
-        from dense_armor.utility.linear.glm import LinearRegression
-        from dense_armor.utility.optim import SGD
-
-        def factory():
-            return LinearRegression(optimizer=SGD(lr=0.1), intercept=True)
-
-        yield {"factory": factory}
+        yield {"factory": _unit_test_reg_factory}
 
     def learn_one(
         self, x: dict, y: dict, t: float | None = None
@@ -331,13 +335,7 @@ class ClassifierChain(_BaseMultiOutput, Classifier):
 
     @classmethod
     def _unit_test_params(cls):
-        from dense_armor.utility.linear.glm import LogisticRegression
-        from dense_armor.utility.optim import SGD
-
-        def factory():
-            return LogisticRegression(optimizer=SGD(lr=0.1), intercept=True)
-
-        yield {"factory": factory}
+        yield {"factory": _unit_test_clf_factory}
 
     def _expanded(self, x: dict, prev: dict) -> dict:
         return {**x, **{f"__prev_{k}": float(v) for k, v in prev.items()}}
@@ -425,13 +423,7 @@ class RegressorChain(_BaseMultiOutput, Regressor):
 
     @classmethod
     def _unit_test_params(cls):
-        from dense_armor.utility.linear.glm import LinearRegression
-        from dense_armor.utility.optim import SGD
-
-        def factory():
-            return LinearRegression(optimizer=SGD(lr=0.1), intercept=True)
-
-        yield {"factory": factory}
+        yield {"factory": _unit_test_reg_factory}
 
     def _expanded(self, x: dict, prev: dict) -> dict:
         return {**x, **{f"__prev_{k}": float(v) for k, v in prev.items()}}
@@ -533,13 +525,7 @@ class ProbabilisticClassifierChain(_BaseMultiOutput, Classifier):
 
     @classmethod
     def _unit_test_params(cls):
-        from dense_armor.utility.linear.glm import LogisticRegression
-        from dense_armor.utility.optim import SGD
-
-        def factory():
-            return LogisticRegression(optimizer=SGD(lr=0.1), intercept=True)
-
-        yield {"factory": factory}
+        yield {"factory": _unit_test_clf_factory}
 
     def _expanded(self, x: dict, prev: dict) -> dict:
         return {**x, **{f"__prev_{k}": int(v) for k, v in prev.items()}}

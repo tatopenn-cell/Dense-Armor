@@ -30,6 +30,14 @@ import numpy as np
 from dense_armor.roles import Classifier
 
 
+def _unit_test_binary_factory():
+    """Picklable factory used by _unit_test_params (module level)."""
+    from dense_armor.utility.linear.glm import LogisticRegression
+    from dense_armor.utility.optim import SGD
+
+    return LogisticRegression(optimizer=SGD(lr=0.1), intercept=True)
+
+
 class _BaseMulticlass(Classifier):
     """Shared state and helpers of the three strategies."""
 
@@ -51,13 +59,7 @@ class _BaseMulticlass(Classifier):
 
     @classmethod
     def _unit_test_params(cls):
-        from dense_armor.utility.linear.glm import LogisticRegression
-        from dense_armor.utility.optim import SGD
-
-        def factory():
-            return LogisticRegression(optimizer=SGD(lr=0.1), intercept=True)
-
-        yield {"binary_factory": factory}
+        yield {"binary_factory": _unit_test_binary_factory}
 
     def _resolve_keys(self, x: dict) -> list:
         self._keys = sorted(x, key=str)

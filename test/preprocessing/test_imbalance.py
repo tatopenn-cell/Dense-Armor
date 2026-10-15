@@ -2,6 +2,7 @@ import random
 
 import pytest
 
+from dense_armor.roles import Classifier
 from dense_armor.utility.evaluate import progressive_val_score
 from dense_armor.utility.metrics import Recall
 from dense_armor.utility.preprocessing.imbalance import QueueResampler
@@ -58,29 +59,18 @@ def test_queue_resampler_boosts_minority_recall():
     assert qr_recall > base_recall
 
 
+class _StubClf(Classifier):
+    def learn_one(self, x, y, t=None):
+        return self
+
+    def predict_one(self, x, t=None):
+        return 0
+
+    def predict_proba_one(self, x, t=None):
+        return {0: 1.0}
+
+
 def test_check_estimator_queue():
     from dense_armor.checks import check_estimator
-
-    class _Stub:
-        def learn_one(self, x, y, t=None):
-            return self
-
-        def predict_one(self, x, t=None):
-            return 0
-
-        def predict_proba_one(self, x, t=None):
-            return {0: 1.0}
-
-    from dense_armor.roles import Classifier
-
-    class _StubClf(Classifier):
-        def learn_one(self, x, y, t=None):
-            return self
-
-        def predict_one(self, x, t=None):
-            return 0
-
-        def predict_proba_one(self, x, t=None):
-            return {0: 1.0}
 
     check_estimator(QueueResampler(_StubClf(), queue_size=5))

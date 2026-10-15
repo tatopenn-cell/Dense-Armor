@@ -227,7 +227,11 @@ def test_gaussian_edge_cases():
     g = Gaussian()
     with pytest.raises(ValueError):
         g.variance()
-    assert g.pdf(0.0) == 0.0
+    # the pdf of an empty Gaussian uses the constructor's var
+    from math import sqrt, pi
+    assert abs(g.pdf(0.0) - 1.0 / sqrt(2.0 * pi)) < 1e-12
+    g2 = Gaussian(var=2.0)
+    assert abs(g2.pdf(0.0) - 1.0 / sqrt(2.0 * pi * 2.0)) < 1e-12
     assert g.cdf(-1.0) == 0.0 and g.cdf(1.0) == 1.0
     for v in (1.0, 2.0, 3.0):
         g.update(v)
@@ -265,3 +269,26 @@ def test_pure_form_through_scan_gives_the_same_state_as_update():
     for k in cats:
         ref.update(int(k))
     assert [float(a) for a in state] == pytest.approx(list(ref.alpha_))
+
+def test_gaussian_pdf_uses_constructor_var():
+    """pdf of an empty Gaussian uses var0, not the MLE of zero samples.
+
+    Regression: __init__ stored ``_m2 = var * n`` with ``n = 0``, so
+    ``pdf`` saw variance zero and returned 0.0 for any input. The fix
+    keeps ``var0`` for the empty case.
+    """
+    from math import pi, sqrt
+    from dense_armor.utility.proba.gaussian import Gaussian
+
+    for v in (0.5, 1.0, 2.0, 5.0):
+        g = Gaussian(var=v)
+        want = 1.0 / sqrt(2.0 * pi * v)
+        assert abs(g.pdf(0.0) - want) < 1e-12
+
+    # from the first sample onward the MLE m2/n takes over; a single
+    # sample with no spread gives var = 0 and pdf returns 0.0, the same
+    # early-return used for any degenerate variance
+    g = Gaussian(var=1.0)
+    g._n = 1.0
+    g._m2 = 0.0
+    assert g.pdf(0.0) == 0.0
