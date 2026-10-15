@@ -1811,6 +1811,32 @@ Public methods:
 - `state_dict()`
 - `window_samples(seconds: float)`
 
+## Forests
+
+### OnlineExtraTreesRegressor
+
+
+*Module:* `dense_armor.utility.forest.oxt`
+*Bases:* Regressor
+*Guide:* [forest/index.md](../forest/index.md)
+
+Online Extra Trees regressor (Mastelini, Nakano, Vens and de Carvalho).
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: Any, y: Any, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None, return_std=False)`
+- `predict_one(x: Any, t: float | None = None, return_std: bool = False)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
 ## Clustering
 
 ### DenStream
