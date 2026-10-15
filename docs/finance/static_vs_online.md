@@ -1,6 +1,9 @@
-# Static vs online: what changes when the thresholds move
+# Static vs online: analysis of dynamic threshold variability
 
-**In plain words:** A fixed cutoff and an adaptive detector look at the same five years of market data and disagree on 38 of the 1,004 days after the warm-up. This page shows both, side by side.
+This section analyzes the statistical divergence between a fixed-threshold model and an online adaptive system operating on the same five-year historical market dataset.
+
+**In plain words:** A fixed cutoff rule and an adaptive system look at the same five years of market data but give different answers on 38 days. This page shows you why.
+
 
 ## The scene
 
