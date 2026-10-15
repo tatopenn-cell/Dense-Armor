@@ -1,6 +1,9 @@
-# Forests that follow a changing stream
+# Streaming forests: adaptive ensembles and online structural aggregation
 
-**In plain words:** One decision tree answers with one opinion. A forest asks many trees and combines them, so the mistakes of a single tree are outvoted and the spread of the answers says how sure the forest is. This page has three forests: one that replaces its trees when the stream changes, one that averages every tree depth weighting each by how well it has predicted so far, and one that draws the split of every tree at random.
+This section evaluates the computational scalability, architectural recovery bounds, and statistical convergence of online ensemble methods (Adaptive Random Forests, Aggregated Mondrian Forests, and Online Extra Trees) optimized to track non-stationary concepts in streaming data.
+
+**In plain words:** A single decision tree relies on a single rule, which breaks the moment a robot's conditions change. A forest combines multiple trees to outvote single-tree errors, using background adaptive detectors to replace failing branches or weighting different tree depths based on their recent prediction accuracy to handle noise and sudden shifts instantly.
+
 
 ## 1. Why a forest
 
