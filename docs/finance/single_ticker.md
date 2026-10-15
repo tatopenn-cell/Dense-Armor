@@ -1,19 +1,17 @@
 # Single ticker: dual-model online anomaly isolation for individual equity monitoring
 
-This section establishes the algorithmic orchestration and multi-dimensional calibration of a real-time equity-monitoring pipeline, deploying concurrent LODA and Half-Space Trees architectures to isolate statistical outliers within joint asset return and volume streams.
-
-**In plain words:** For the monitoring of a single financial asset, this section demonstrates the efficacy of the two integrated detectors in identifying anomalous deviations from ordinary market conditions. Instead of just looking at price changes, this tool processes price and trading volume together day by day, requiring a strict consensus from two different algorithms before marking a day as truly unusual to shield analysts from false alarms.
+For a single financial asset, two detectors look for days that differ from ordinary market conditions. Instead of just looking at price changes, this tool processes price and trading volume together day by day, requiring a strict consensus from two different algorithms before marking a day as truly unusual to shield analysts from false alarms.
 
 
 ## The scene
 
 A portfolio manager follows Apple. Every morning she opens the charts and wants one thing: is today one of those days when Apple behaves differently, or is it a normal Thursday?
 
-Two detectors answer the question together. Only when **both** agree, the day is flagged. A single detector is not enough: one can be wrong, two rarely are.
+Two detectors answer the question together. Only when **both** agree, the day is flagged.
 
 ## What is in the box
 
-| Tool | Its one job | Real example |
+| Tool | Its one job | Example |
 |---|---|---|
 | LODA | Score how strange a day is, given several numbers | Price and volume together, not just price |
 | Half-Space Trees | Same job as LODA, done another way | A second opinion on the same day |

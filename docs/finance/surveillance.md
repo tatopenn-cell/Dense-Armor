@@ -1,8 +1,6 @@
 # Market surveillance: multi-stage statistical processing and online anomaly consensus orchestration
 
-This section evaluates the algorithmic synchronization, latency bounds, and statistical convergence of a sequential multi-stage processing pipeline integrating digital filtering, sequential drift isolation, and dual-model anomaly consensus across high-frequency financial streams.
-
-**In plain words:** The Dense-Armor pipeline, composed of five tools, was tested on five years of historical market data. Following a 250-day warm-up period, the two integrated anomaly detectors isolated 43 of the remaining 1,004 days, accurately identifying the market crashes of August 2024 and April 2025.
+The Dense-Armor pipeline, composed of five tools, was tested on five years of historical market data. Following a 250-day warm-up period, the two integrated anomaly detectors isolated 43 of the remaining 1,004 days, accurately identifying the market crashes of August 2024 and April 2025.
 
 
 ## The scene
@@ -18,7 +16,7 @@ To benchmark this capability on historical data, the Dense-Armor multi-stage pip
 
 | Tool | Strategic Function | Operational Impact |
 |---|---|---|
-| **Armatura** | Real-time data sanitization | Instantly discards and patches anomalous price ticks caused by data-feed glitches or network dropouts before they trigger algorithmic execution loops. |
+| **Armatura** | Real-time data sanitization | Discards and patches anomalous price ticks caused by data-feed glitches or network dropouts before they trigger algorithmic execution loops. |
 | **CUSUM** | Sub-clinical drift detection | Tracks continuous micro-movements in asset behavior, triggering alerts when cumulative variations confirm a systemic shift in market sentiment. |
 | **Quantile sketch** | Bounded risk estimation | Maintains a dynamic, constant-memory summary of extreme risk tails, calculating daily Value-at-Risk parameters in under 100 microseconds. |
 | **LODA** | Multi-dimensional outlier profiling | Projects joint asset attributes onto sparse sub-spaces to score complex, concurrent price and volume anomalies. |
@@ -27,11 +25,11 @@ To benchmark this capability on historical data, the Dense-Armor multi-stage pip
 
 ![S&P 500 daily return over five years with the 43 flagged days in red](../assets/finance/surveillance.png)
 
-*Higher metric density highlights superior alignment with macroeconomic structural breaks. The grey band denotes the 250-day operational warm-up phase.*
+*Grey line: the daily return of the S&P 500. Red dots: the 43 flagged days. The grey band is the 250-day warm-up.*
 
 
 ## 1. High-speed input sanitization (Armatura)
-High-frequency execution streams are highly vulnerable to corrupt data packages and network artifacts that distort nominal price spreads. Armatura operates as a real-time digital filtering layer, automatically evaluating the immediate historical envelope to intercept and sanitize absurd price points. Across the five-year S&P 500 benchmark, the filter isolated and neutralized 1 systemic data corruption instance out of 1,253 sessions, preventing immediate downstream execution errors.
+High-frequency execution streams are highly vulnerable to corrupt data packages and network artifacts that distort nominal price spreads. Armatura operates as a real-time digital filtering layer, automatically evaluating the immediate historical envelope to intercept and sanitize absurd price points. Across the five-year S&P 500 benchmark, the filter isolated and neutralized 1 systemic data corruption instance out of 1,253 sessions.
 
 
 ## 2. Structural market sentiment tracking (CUSUM)
@@ -72,8 +70,8 @@ For every arriving asset tick, the multi-stage surveillance architecture process
 
 ## Strategic Business Takeaway
 
-- **Early-Warning Advantage:** Empirical streaming models tracking multi-source behavioral signals demonstrate a **9.2-day detection lead** over traditional batch-processed gradient-boosting architectures at equivalent false-positive thresholds, identifying potential default indicators a full billing cycle prior to settlement failure (Li et al., 2026).
-- **Asymmetric Loss Prevention:** Global payment and market fraud overhead amounted to over **45 billion USD** in 2022 (Huang et al., 2025). Deploying dynamic, adaptive decision thresholds significantly minimizes false-alarm rates relative to legacy static rules while maintaining perfect sensitivity to systemic structural breaks.
+- **Context:** A preprint on streaming detection of early defaults reports a 9.2-day lead over batch gradient boosting at equal false-positive rates (Li et al., 2026, not peer reviewed). It is a different task on different data, not a result of this pipeline.
+- **Why it matters:** Payment and market fraud cost over **45 billion USD** in 2022 (Huang et al., 2025). On these five years a fixed 3% cutoff flags 7 days and the adaptive pipeline 43 (see [static vs online](static_vs_online.md)).
 
 
 ## Details

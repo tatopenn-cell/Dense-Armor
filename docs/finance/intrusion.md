@@ -1,8 +1,6 @@
 # Intrusion detection: drift-adaptive streaming tree architectures for real-time network security
 
-This section evaluates the statistical stability and structural convergence of an online ensemble pipeline pairing a classic Hoeffding Tree with a drift-adaptive Hoeffding Tree, optimized to isolate non-stationary malicious traffic and intrusion signatures within streaming network flows.
-
-**In plain words:** A data center handles millions of network packets every day, but cybercriminals continuously change the shape of their attacks to bypass traditional security. Instead of using a static filter that becomes blind to new threats over time, this tool learns from every single packet in real time, sample by sample, deploying embedded drift detectors to dynamically grow new classification branches as soon as a new mutation in traffic behavior is identified.
+A data center handles millions of network packets every day, but cybercriminals continuously change the shape of their attacks to bypass traditional security. Instead of using a static filter that becomes blind to new threats over time, this tool learns from every single packet in real time, sample by sample, deploying embedded drift detectors to dynamically grow new classification branches as soon as a new mutation in traffic behavior is identified.
 
 
 ## The scene
@@ -11,7 +9,7 @@ When an institutional data center undergoes a cyberattack, adversaries continuou
 
 To maintain perimeter integrity, network security systems must process incoming streams dynamically, adapting to shifting malicious footprints without relying on full model retraining intervals.
 
-To benchmark this resilience on a public dataset, the online dual-tree pipeline was deployed on **125,973 labelled network flows** from the industry-standard NSL-KDD dataset. Malicious traffic accounts for 46% of the continuous stream, establishing a balanced statistical framework that demands genuine multidimensional separation between benign operations and active exploit variants. The integrated ensemble successfully isolated evolving zero-day attack families in real time, processing the entire high-throughput dataset in 65 seconds on standard hardware.
+To benchmark this resilience on a public dataset, the online dual-tree pipeline was deployed on **125,973 labelled network flows** from the industry-standard NSL-KDD dataset. Malicious traffic accounts for 46% of the continuous stream, establishing a balanced statistical framework that demands genuine multidimensional separation between benign operations and active exploit variants. The training stream took 65 seconds on a Kaggle CPU.
 
 
 ## Core Capabilities
@@ -24,7 +22,7 @@ To benchmark this resilience on a public dataset, the online dual-tree pipeline 
 
 ![Intrusion detection on 25,195 test network flows: 10,954 of 11,704 attacks caught, 10,954 of 12,875 alerts real](../assets/finance/intrusion.png)
 
-*Higher metric density denotes superior ranking accuracy in isolating intrusion instances. The dashed baseline represents a random classification reference (0.5 AUC).*
+*Green: right. Red: wrong. Top bar: what happened to the 11,704 attacks. Bottom bar: what the 12,875 alerts were.*
 
 
 ## 1. Dynamic structural branch adaptation (HoeffdingAdaptiveTree)
@@ -32,7 +30,7 @@ Standard incremental decision trees lock in division attributes permanently, deg
 
 
 ## 2. High-throughput statistical reference (HoeffdingTree)
-Operating as the stable reference layer of the ensemble, the classic Hoeffding tree utilizes strict mathematical bounds to control structural growth. Attribute splits are validated and executed only when the leading information gain parameter outperforms the secondary attribute by a margin exceeding the formal Hoeffding probability bound. This design guarantees constant-memory execution stability and protects the composite pipeline against localized transactional noise.
+Operating as the stable reference layer of the ensemble, the classic Hoeffding tree utilizes strict mathematical bounds to control structural growth. Attribute splits are validated and executed only when the leading information gain parameter outperforms the secondary attribute by a margin exceeding the formal Hoeffding probability bound. This keeps the splits to the ones the data supports and protects the pipeline against localized noise.
 
 
 ## Execution Workflow
@@ -40,11 +38,11 @@ Operating as the stable reference layer of the ensemble, the classic Hoeffding t
 For every incoming network packet, the streaming security pipeline executes a parallel verification sequence:
 
 1. **Parallel Stream Ingestion:** The 41 quantitative network features of the packet are routed simultaneously to both decision layers.
-2. **Multi-Model Anomaly Scoring:** **HoeffdingAdaptiveTree** generates an instant risk score adapted to current traffic regimes, while **HoeffdingTree** outputs an independent baseline evaluation.
-3. **Consensus Voting Optimization:** The final threat probability is computed as the geometric average of both scores. Vetting boundaries exceeding the 0.5 classification threshold immediately trigger a localized perimeter alert.
+2. **Multi-Model Anomaly Scoring:** **HoeffdingAdaptiveTree** generates a risk score adapted to current traffic regimes, while **HoeffdingTree** outputs an independent baseline evaluation.
+3. **Consensus Voting Optimization:** The final threat probability is computed as the arithmetic mean of both scores. Vetting boundaries exceeding the 0.5 classification threshold raise an alert.
 
 
-## Empirical Performance & ROI
+## Empirical Performance
 
 The unified ensemble was rigorously evaluated against a chronological testing stream of 25,195 network flows containing 11,704 verified security breaches.
 
@@ -66,7 +64,7 @@ The unified ensemble was rigorously evaluated against a chronological testing st
 
 Relying on standalone detection models creates an operational trade-off between false alarms and missed exploits. By orchestrating a parallel voting consensus, this pipeline achieves a **ROC-AUC of 0.9755**, outperforming either constituent architecture. 
 
-For enterprise infrastructure, this translates into a **93.6% Recall rate**, ensuring that 93 out of every 100 malicious flows are intercepted instantly, while the optimized **85.1% Precision score** prevents security operation centers (SOC) from experiencing operational fatigue driven by false alerts.
+For enterprise infrastructure, this translates into a **93.6% Recall rate**, so 93 out of every 100 malicious flows are caught, while the **85.1% Precision** means that 15 alerts out of 100 are false (1,921 of 12,875).
 
 
 ## Target Enterprise Use Cases
@@ -74,8 +72,8 @@ For enterprise infrastructure, this translates into a **93.6% Recall rate**, ens
 This streaming security architecture is optimized for high-volume network environments:
 
 - **Live Security Operations Centers (SOC):** Provides continuous, packet-by-packet traffic profiling for live network operations monitoring high-throughput infrastructure.
-- **Financial & Payment Processing Perimeters:** Safeguards banking transaction interfaces and core payment gateways requiring immediate, inline threat isolation without latency overhead.
-- **Zero-Day Exploit Defense:** Ideal for distributed topologies vulnerable to morphing attack patterns, ensuring automated adaptation without manual rule updates or scheduled downtime.
+- **Financial & Payment Processing Perimeters:** Scores each flow that reaches a banking or payment gateway.
+- **Changing attack patterns:** The adaptive tree replaces a branch when the traffic drifts, with no manual rule updates.
 
 
 ## Details
@@ -95,4 +93,4 @@ Primitives chained, each with its own page:
 - Tavallaee, M., Bagheri, E., Lu, W., Ghorbani, A. (2009). *A Detailed Analysis of the KDD CUP 99 Data Set.* IEEE CISDA. NSL-KDD is the cleaned version.
 - Dataset: NSL-KDD, KDDTrain+ file. 125,973 labelled network flows.
 
-*The numbers on this page come from a single run on real historical data. Not a forecast, not financial advice.*
+*The numbers on this page come from a single run on historical data. Not a forecast, not financial advice.*

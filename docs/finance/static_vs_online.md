@@ -1,8 +1,6 @@
 # Static vs online: analysis of dynamic threshold variability
 
-This section analyzes the statistical divergence between a fixed-threshold model and an online adaptive system operating on the same five-year historical market dataset.
-
-**In plain words:** A fixed cutoff rule and an adaptive system look at the same five years of market data but give different answers on 38 days. This page shows you why.
+A fixed cutoff rule and an adaptive system look at the same five years of market data but give different answers on 38 days. This page shows you why.
 
 
 
@@ -14,7 +12,7 @@ Five years of S&P 500 data show the limit of that approach. On August 5th 2024 t
 
 ## What is in the box
 
-| Tool | Its one job | Real example |
+| Tool | Its one job | Example |
 |---|---|---|
 | StaticAnalysis | Flag days above a fixed cutoff | 7 days above 3% after the warm-up |
 | OnlineAnalysis | Same job, adaptive thresholds | 43 days flagged by LODA and HST together |

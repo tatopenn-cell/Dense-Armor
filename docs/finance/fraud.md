@@ -1,8 +1,6 @@
 # Fraud detection: sequential ensemble tree architectures for real-time transaction classification
 
-This section evaluates the statistical convergence and classification precision of an online supervised pipeline combining a Mondrian Forest with a Stochastic Gradient Tree (SGT), optimized to isolate fraudulent card transactions within high-throughput streaming datasets.
-
-**In plain words:** When a credit card is stolen and used across the globe, banks have less than a second to approve or block the transaction. Instead of relying on rigid, static rules that quickly become outdated, this tool learns from every single payment in real time, sample by sample, combining random geometric space partitioning with loss-optimized decision trees to catch fraudulent activities instantly while minimizing false alarms for legitimate users.
+When a credit card is stolen and used across the globe, banks have less than a second to approve or block the transaction. Instead of relying on rigid, static rules that quickly become outdated, this tool learns from every single payment in real time, sample by sample, combining random geometric space partitioning with loss-optimized decision trees to flag fraudulent transactions while keeping false alarms for legitimate users low.
 
 
 ## The scene
@@ -17,7 +15,7 @@ The fraud pipeline changes this. Two online trees learn from every transaction, 
 
 ## What is in the box
 
-| Tool | Its one job | Real example |
+| Tool | Its one job | Example |
 |---|---|---|
 | MondrianForest | Partition the space into random rectangles | A transaction very far from everything else is flagged |
 | SGTClassifier | Split the space with Newton steps and t-tests | A second opinion on the same transaction |
@@ -34,7 +32,7 @@ The Mondrian forest builds ten of these sheets at once. Each one is different. T
 
 ## 2. A second opinion (SGTClassifier)
 
-The SGD tree does the same job but each rectangle is chosen carefully, not randomly. It uses the gradient of the loss to decide where to cut, and a t-test to decide when a cut is worth it. Slower to learn, but sharper.
+The SGD tree does the same job but each rectangle is chosen carefully, not randomly. It uses the gradient of the loss to decide where to cut, and a t-test to decide when a cut is worth it. Slower to learn. On this data it scores lower than the Mondrian forest (ROC-AUC 0.926 against 0.969), and averaging the two leaves the ensemble at 0.969.
 
 ## The chain
 

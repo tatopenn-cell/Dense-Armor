@@ -1,8 +1,6 @@
 # Credit scoring: ensemble online tree architectures for real-time conversion optimization
 
-This section evaluates the statistical convergence and predictive efficacy of a streaming ensemble pipeline combining a Mondrian Forest with a Stochastic Gradient Tree (SGT) classifier, optimized for online customer lifetime value and conversion scoring.
-
-**In plain words:** A bank or a sales desk has thousands of potential customers to contact but limited time to make the calls. This tool learns one completed interaction at a time to predict exactly who is likely to subscribe to a product, combining random structural partitioning with adaptive loss-driven trees to generate an analytical ranking that prioritizes high-probability clients in real time.
+A bank or a sales desk has thousands of potential customers to contact but limited time to make the calls. This tool learns one completed interaction at a time to estimate who is likely to subscribe to a product, combining random structural partitioning with adaptive loss-driven trees to generate an analytical ranking that prioritizes high-probability clients in real time.
 
 
 ## The scene
@@ -11,7 +9,7 @@ When an institutional banking desk or marketing division executes large-scale cu
 
 To maximize customer lifetime value and optimize outbound conversion funnels, engagement strategies must utilize real-time analytical ranking engines. 
 
-To benchmark this capability on historical data, the dual-tree streaming pipeline was run on **45,211 telemarketing interactions** from the industry-standard UCI Bank Marketing dataset. Subscriptions account for 11.6% of the continuous historical stream. The model operates within a strict predictive framework, learning incrementally from each finalized customer interaction to dynamically score and rank subsequent leads as soon as they interface with the system.
+To benchmark this capability on historical data, the dual-tree streaming pipeline was run on **45,211 telemarketing interactions** from the industry-standard UCI Bank Marketing dataset. In the test stream, 1,048 of 9,043 calls (11.6%) end in a subscription. The model operates within a strict predictive framework, learning incrementally from each finalized customer interaction to dynamically score and rank subsequent leads as soon as they interface with the system.
 
 
 ## Core Capabilities
@@ -19,12 +17,12 @@ To benchmark this capability on historical data, the dual-tree streaming pipelin
 | Tool | Strategic Function | Operational Impact |
 |---|---|---|
 | **MondrianForest** | Online structural partitioning | Segments the multi-dimensional customer attribute space using stochastic geometric partitions, providing immediate probability scores for incoming profiles. |
-| **SGTClassifier** | Loss-driven adaptive tracking | Utilizes regularized second-order Taylor expansions to optimize decision splits, delivering an independent, high-precision evaluation layer. |
+| **SGTClassifier** | Loss-driven adaptive tracking | Utilizes regularized second-order Taylor expansions to optimize decision splits, delivering an independent evaluation layer. |
 
 
 ![Telemarketing on 9,043 test calls: 779 of 1,048 customers who would sign are reached, 779 of 1,991 calls end in a signature](../assets/finance/credit_scoring.png)
 
-*Higher metric density denotes superior precision in conversion ranking. The dashed baseline represents a random classification reference (0.5 AUC).*
+*Green: right. Red: wrong. Top bar: what happened to the 1,048 customers who would sign. Bottom bar: what the 1,991 calls produced.*
 
 
 ## 1. Stochastic spatial feature partitioning (MondrianForest)
@@ -41,10 +39,10 @@ For every newly processed customer profile or live communication event, the stre
 
 1. **Parallel Feature Ingestion:** The client attribute vector is fed simultaneously to both streaming tree layers.
 2. **Dual-Model Scoring Consensus:** **MondrianForest** evaluates spatial density to assess profile affinity, while **SGTClassifier** outputs an independent score driven by loss optimization.
-3. **Calibrated Threshold Enforcement:** The final conversion probability is computed as the arithmetic mean of both metrics. Profiles exceeding the customized 0.25 operational threshold are instantly routed to active engagement queues.
+3. **Calibrated Threshold Enforcement:** The final conversion probability is computed as the arithmetic mean of both metrics. Profiles exceeding the customized 0.25 operational threshold are routed to active engagement queues.
 
 
-## Empirical Performance & ROI
+## Empirical Performance
 
 The processing pipeline was verified using a chronological data split consisting of a 36,168-sample training stream and a 9,043-sample active test stream containing 1,048 verified conversions.
 
@@ -53,7 +51,7 @@ The processing pipeline was verified using a chronological data split consisting
 | ROC-AUC, MondrianForest | 0.859 |
 | ROC-AUC, SGT | 0.833 |
 | ROC-AUC, ensemble | **0.875** |
-| Default threshold | 0.25 |
+| Threshold | 0.25 |
 | Calls made (out of 9,043) | 1,991 |
 | True positives | 779 |
 | False positives | 1,212 |
@@ -65,18 +63,18 @@ The processing pipeline was verified using a chronological data split consisting
 
 ### Strategic Decision Threshold Optimization
 
-Traditional model deployments rely mechanically on a generic 0.5 classification cutoff. On this dataset, a 0.5 threshold restricts the system to capturing only 19% of converting customers (198 out of 1,048), introducing severe opportunity costs. 
+Traditional model deployments rely mechanically on a generic 0.5 classification cutoff. On this dataset, a 0.5 threshold reaches only 19% of the customers who would sign (198 out of 1,048): the other 81% are never called. 
 
-Calibrating the operational threshold down to **0.25 pushes the Recall rate to 74.3%** with a Precision of 39.1%. This strategic calibration ensures that approximately **two out of every five automated recommendations yield a verified product signature**, which reaches 779 of the 1,048 customers who would sign with 1,991 calls.
+Calibrating the operational threshold down to **0.25 pushes the Recall rate to 74.3%** with a Precision of 39.1%. Roughly **two out of every five calls end in a signature**: 779 of the 1,048 customers who would sign are reached with 1,991 calls.
 
 
 ## Target Enterprise Use Cases
 
 This streaming predictive architecture is optimized for retail banking and enterprise sales desks:
 
-- **Live Outbound Campaign Optimization:** Prioritizes real-time telemarketing and digital engagement streams, maximizing conversion rates for active sales desks.
-- **Instant Inline Credit Verification:** Generates instantaneous conversion and risk profiles while a customer interfaces with online portals or call-center representatives.
-- **Dynamic Product Adherence Tracking:** Automatically calibrates classification structures to new financial products without requiring scheduled batch retrainings or model downtime.
+- **Live Outbound Campaign Optimization:** Ranks the customers to call next, so a sales desk spends its calls on the profiles most likely to sign.
+- **Scoring a profile before the call:** Each customer gets a score from the two trees before anyone dials.
+- **Dynamic Product Adherence Tracking:** Keeps learning from each completed call, with no scheduled batch retraining.
 
 
 ## Details
