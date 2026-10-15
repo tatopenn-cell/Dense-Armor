@@ -1,8 +1,6 @@
 # Online classifiers: non-stationary state estimation and drift-adaptive architectures
 
-This section evaluates the statistical convergence and architectural adaptation of incremental streaming classifiers (Online Gaussian Naive Bayes and Online Softmax Regression) coupled with structural meta-wrappers designed to isolate distribution shifts via prequential loss monitoring.
-
-**In plain words:** These tools analyze a robot's real-time joint signals to instantly determine its operational state—such as moving freely, making intentional contact, or experiencing a collision. Rather than failing when external conditions change, these models continuously adapt their internal statistics or deploy background copies to ensure reliable state estimation.
+These tools analyze a robot's real-time joint signals to determine its operational state—such as moving freely, making intentional contact, or experiencing a collision. Rather than failing when external conditions change, these models continuously adapt their internal statistics or deploy background copies to keep the state estimate usable.
 
 
 A robot has to tell, sample by sample, which state it is in: free motion, contact,

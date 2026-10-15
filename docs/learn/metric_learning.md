@@ -1,8 +1,6 @@
 # Online metric learning: sequential Mahalanobis distance optimization
 
-This section defines the analytical formulations and streaming update laws of three online metric learning algorithms (OASIS, LEGO, and POLA) designed to optimize pseudo-metrics and Mahalanobis distance matrices dynamically from real-time pairs and triplets.
-
-**In plain words:** To find which past situations look like the current one, you need a way to measure the distance between them. Instead of assuming standard Euclidean formulas that get confused by noise, this tool learns a custom distance metric in real time from examples, ensuring that situations that are functionally identical stay close together.
+To find which past situations look like the current one, you need a way to measure the distance between them. Instead of assuming standard Euclidean formulas that get confused by noise, this tool learns a custom distance metric in real time from examples, so that situations that behave the same stay close together.
 
 
 A robot arm picks objects. It has seen thousands of grasps: some worked, some did not.
