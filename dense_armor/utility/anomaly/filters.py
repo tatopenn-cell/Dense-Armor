@@ -10,20 +10,13 @@ scorer here looks only at the `2 * radius` samples strictly *preceding* the
 value being scored (the causal window) and scores the new value against the
 robust centre/scale of that window, in the method's own scale.
 
-The four scorers share the interface of
-`river_anomaly.StreamingDeviationScorer` (`learn_one` / `score_one`, feature
-selection, `is_outlier`), so they plug into river pipelines and
-`anomaly.ThresholdFilter` the same way, but each uses its own method's scale
-and threshold rather than the median/MAD robust deviation of
-`StreamingDeviationDetector` alone.
 
 `HampelFilter` is a transformer: `learn_one(x)` then `transform_one(x)`
 returns the value, or the causal-window median when the value is an outlier
 (the same replacement rule as the batch `hampel_filter`).
 
-Conventions: see `SKILL.md`. Causal window = `2 * radius` samples strictly
+Causal window = `2 * radius` samples strictly
 before the value being scored; the value is never part of its own window.
-See `ISTRUZIONI.md`, section "Important: centred vs causal windows".
 """
 
 from __future__ import annotations
