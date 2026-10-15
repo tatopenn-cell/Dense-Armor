@@ -1,6 +1,9 @@
-# Intrusion detection: is this packet an attack?
+# Intrusion detection: drift-adaptive streaming tree architectures for real-time network security
 
-**In plain words:** A bank sees millions of network packets a day. Most are normal. A few are an attack. Two online trees learn the difference, one packet at a time, and the attack shape keeps changing.
+This section evaluates the statistical stability and structural convergence of an online ensemble pipeline pairing a classic Hoeffding Tree with a drift-adaptive Hoeffding Tree, optimized to isolate non-stationary malicious traffic and intrusion signatures within streaming network flows.
+
+**In plain words:** A data center handles millions of network packets every day, but cybercriminals continuously change the shape of their attacks to bypass traditional security. Instead of using a static filter that becomes blind to new threats over time, this tool learns from every single packet in real time, sample by sample, deploying embedded drift detectors to dynamically grow new classification branches as soon as a new mutation in traffic behavior is identified.
+.
 
 ## The scene
 
