@@ -4,9 +4,9 @@
 
 Every Dense-Armor estimator shares one small API, so you can swap one
 algorithm for another without changing the code around it. The design
-follows scikit-learn's parameter / clone / inspect contract
+follows the parameter / clone / inspect contract of a general-purpose machine-learning library
 (Buitinck et al., [arXiv:1309.0238](https://arxiv.org/abs/1309.0238))
-and river's one-sample-at-a-time interface
+and the one-sample-at-a-time interface of an existing online-learning library
 (Montiel et al., [arXiv:2012.04740](https://arxiv.org/abs/2012.04740)).
 
 ## What the base gives you
@@ -164,11 +164,11 @@ default), methods and input/output schema — ready for an LLM agent.
 The core has no external online-learning dependency. `dense_armor.bridges`
 holds optional interop layers, each installing as an extra:
 
-- `dense_armor.bridges.river` (`pip install dense-armor[river]`):
-  our estimators and river's share `learn_one` / `predict_one` /
+- `dense_armor.bridges.river` (the streaming extra, see the bridge page):
+  our estimators and the other library's share `learn_one` / `predict_one` /
   `predict_proba_one`, so pipelines and evaluators interoperate
-  without wrapping. If river is installed, our role classes are
-  registered as virtual subclasses of river's ABCs at import time.
+  without wrapping. If the other library is installed, our role classes are
+  registered as virtual subclasses of its ABCs at import time.
 - `dense_armor.bridges.llm` (`pip install dense-armor[llm]`):
   an estimator whose features come from any `embed(text) -> vector`
   callable, with JSON-in / JSON-out calls built on `describe()`.

@@ -96,7 +96,7 @@ print(round(sc.score_one({"v": 50.0}), 1), round(sc.score_one({"v": 1.1}), 2))
 A reading of 50 scores 330.5 standard deviations; a reading of 1.1 scores 0.67, ordinary.
 `score_one` never changes the estimator; `learn_one` adds the value to the window. A score above
 `n_sigmas` is exactly a flag of `StreamingDeviationDetector`. It needs the streaming extra:
-`pip install dense-armor[river]`.
+needs the streaming extra; the install command is on the bridge page of the API reference.
 
 ## 4. The classic robust filters, one sample at a time
 

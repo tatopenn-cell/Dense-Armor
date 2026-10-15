@@ -202,9 +202,9 @@ learner.learn_pair({"x0": 1.0, "x1": 0.0},
 
 ## 5. The k-NN classifier that learns its metric
 
-A metric learner does not fit river's `Classifier` / `Regressor` / `Transformer` types:
+A metric learner does not fit the `Classifier` / `Regressor` / `Transformer` types of an existing online-learning library:
 it learns from two or three samples at a time and outputs a distance. `MetricLearner` is
-the base class; `MetricKNNClassifier` is a river k-NN classifier that uses the learner
+the base class; `MetricKNNClassifier` is a k-NN classifier that uses the base classes of an existing online-learning library that uses the learner
 as its distance and — with `learn_metric=True`, the default — trains it online inside
 `learn_one`. Each new sample is paired with random samples from the window: a triplet
 for OASIS, a similar / dissimilar pair for POLA, a pair with a target distance for LEGO.
@@ -241,12 +241,12 @@ classifying lifts it to 0.89 (OASIS), 0.92 (LEGO) and 0.74 (POLA) after 600 samp
 metric learns to ignore the noisy features. In the original paper OASIS already beat LEGO and the
 Euclidean metric on image retrieval (Chechik et al. 2009, Figure 2).
 
-## 6. Results on river streams
+## 6. Results on streams from an existing online-learning library
 
 `progressive_val_score` (predict, then learn), `StandardScaler` in front, k = 5,
 `window_size=1000`, metric learned online with the default parameters:
 
-| Stream | river `KNNClassifier` (Euclidean) | OASIS | LEGO | POLA |
+| Stream | the other library's `KNNClassifier` (Euclidean) | OASIS | LEGO | POLA |
 |---|---|---|---|---|
 | Phishing (1,250 samples) | 0.8823 | **0.8911 (+0.88)** | 0.8815 (−0.08) | 0.8871 (+0.48) |
 | ImageSegments (2,310 samples) | 0.8705 | 0.9082 (+3.77) | 0.9112 (+4.07) | **0.9138 (+4.33)** |

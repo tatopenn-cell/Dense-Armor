@@ -36,7 +36,7 @@ The first 500 samples are normal noise; from sample 500 the mean moves up by 1.5
 deviations, the kind of step a worn gear or a new payload produces. The detector raises its
 first alarm at sample 511, eleven samples after the change. `update(v)` returns the detector
 itself, and `drift_detected` is `True` only on the sample where the alarm fires. The detector
-needs the streaming extra: `pip install dense-armor[river]`.
+needs the streaming extra; the install command is on the bridge page of the API reference.
 
 ## 2. The piggy bank, as a formula
 

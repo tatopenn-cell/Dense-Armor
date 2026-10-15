@@ -106,7 +106,7 @@ section, see [anomaly/mahalanobis.md](anomaly/mahalanobis.md).
 
 `OnlineRobustMahalanobis` runs in `< 1 ms` per sample (`budget_s = 1e-3 s`),
 memory `O(n^2)` with `n` the number of features. The Kalman filter in the
-comparison is the standard `filterpy.KalmanFilter`, no JIT.
+comparison is a standard Kalman filter from a general-purpose filtering library, no JIT.
 
 ### Development diary
 
