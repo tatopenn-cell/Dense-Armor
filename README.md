@@ -30,7 +30,7 @@ Python developers working on systems where data arrives one sample at a time and
 
 ## Use cases
 
-The primitives are domain-agnostic: anything that ingests data one sample at a time and has to react when the stream changes. Robotics is where the library has been tested most, but the layers above and below the model are the same shape everywhere.
+The primitives are domain-agnostic: anything that ingests data one sample at a time and has to react when the stream changes. It has been measured on a robot arm (CASPER on a UR3e), on stock and crypto prices, card transactions, network flows and a telemarketing log (the [finance pages](https://tatopenn-cell.github.io/Dense-Armor/finance/)), and on synthetic streams with known drift; the layers above and below the model are the same shape everywhere.
 
 | domain | what Dense-Armor brings |
 |---|---|
@@ -53,6 +53,8 @@ No specific model. Any estimator that follows the same contract: `learn_one(x, y
 - Anomalies come back as a score, one sample at a time.
 - Robot commands are bounded (rate limits, control barrier functions) before they reach the actuator.
 - Predictions can carry a calibrated uncertainty interval.
+
+In this library, *shielding* means cleaning the data a model sees (NaN, spikes, anomalous samples) and bounding the commands a robot receives, around any online learner that follows the `learn_one` / `score_one` contract. It is not the formal shield of safe reinforcement learning.
 
 ## What it does
 
@@ -151,9 +153,10 @@ Works on Python 3.10+. JAX is the backend for every estimator.
 Dense-Armor provides online implementations of the following families of algorithms:
 
 - Linear models, with a wide array of optimizers
-- Decision trees and online forests
+- Decision trees, online forests (adaptive random forest, aggregated Mondrian forests, online extra trees) and rule sets (adaptive model rules)
+- Naive Bayes, nearest neighbours, multiclass and multi-output wrappers, conjugate distributions
 - Clustering
-- Anomaly detection
+- Anomaly detection (including the local outlier factor)
 - Drift detection
 - Time series (AR, VAR, Kalman, adaptive Kalman, cycle residual)
 - Online classifiers
@@ -164,6 +167,7 @@ Dense-Armor provides online implementations of the following families of algorit
 - Robot control (rate limits, control barrier functions, trajectories, kinematic tracking)
 - Robot dynamics (URDF, passivity + CBF controllers)
 - Shielding (1D series cleanup, input/output shield, per-point routing)
+- [Finance pipelines](https://tatopenn-cell.github.io/Dense-Armor/finance/): nine pipelines for markets, fraud, intrusion and credit scoring, each page opening with the question it answers
 
 Dense-Armor also provides other online utilities:
 

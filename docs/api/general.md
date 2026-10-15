@@ -10,7 +10,7 @@ the link leads there for the full explanation and examples.
 
 ## Classes by subsystem
 
-**Jump to:** [Roles](#roles) &nbsp;·&nbsp; [Metrics](#metrics) &nbsp;·&nbsp; [Evaluate](#evaluate) &nbsp;·&nbsp; [Core](#core) &nbsp;·&nbsp; [Mcp_server](#mcp_server) &nbsp;·&nbsp; [Anomaly](#anomaly) &nbsp;·&nbsp; [Drift](#drift) &nbsp;·&nbsp; [Trees](#trees) &nbsp;·&nbsp; [Forests](#forests) &nbsp;·&nbsp; [Rules](#rules) &nbsp;·&nbsp; [Clustering](#clustering) &nbsp;·&nbsp; [Stats](#stats) &nbsp;·&nbsp; [Preprocessing](#preprocessing) &nbsp;·&nbsp; [Compose](#compose) &nbsp;·&nbsp; [Vision](#vision) &nbsp;·&nbsp; [Learn](#learn) &nbsp;·&nbsp; [Datasets](#datasets) &nbsp;·&nbsp; [Protect](#protect) &nbsp;·&nbsp; [Bridges](#bridges) &nbsp;·&nbsp; [Armatura](#armatura) &nbsp;·&nbsp; [Misc](#misc) &nbsp;·&nbsp; [Dynamics](#dynamics)
+**Jump to:** [Roles](#roles) &nbsp;·&nbsp; [Metrics](#metrics) &nbsp;·&nbsp; [Evaluate](#evaluate) &nbsp;·&nbsp; [Core](#core) &nbsp;·&nbsp; [Mcp_server](#mcp_server) &nbsp;·&nbsp; [Anomaly](#anomaly) &nbsp;·&nbsp; [Drift](#drift) &nbsp;·&nbsp; [Trees](#trees) &nbsp;·&nbsp; [Naive Bayes](#naive-bayes) &nbsp;·&nbsp; [Distributions](#distributions) &nbsp;·&nbsp; [Nearest neighbours](#nearest-neighbours) &nbsp;·&nbsp; [Multiclass](#multiclass) &nbsp;·&nbsp; [Multi-output](#multi-output) &nbsp;·&nbsp; [Forests](#forests) &nbsp;·&nbsp; [Rules](#rules) &nbsp;·&nbsp; [Clustering](#clustering) &nbsp;·&nbsp; [Stats](#stats) &nbsp;·&nbsp; [Preprocessing](#preprocessing) &nbsp;·&nbsp; [Compose](#compose) &nbsp;·&nbsp; [Vision](#vision) &nbsp;·&nbsp; [Learn](#learn) &nbsp;·&nbsp; [Datasets](#datasets) &nbsp;·&nbsp; [Protect](#protect) &nbsp;·&nbsp; [Bridges](#bridges) &nbsp;·&nbsp; [Armatura](#armatura) &nbsp;·&nbsp; [Misc](#misc) &nbsp;·&nbsp; [Dynamics](#dynamics)
 
 ---
 
@@ -1399,6 +1399,30 @@ Public methods:
 
 - `update(x: float)`
 
+### LocalOutlierFactor
+
+
+*Module:* `dense_armor.utility.anomaly.lof`
+*Bases:* AnomalyDetector
+*Guide:* [anomaly/lof.md](../anomaly/lof.md)
+
+Local Outlier Factor over a sliding window of the last samples.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x: dict, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `score_many(X, t=None)`
+- `score_one(x: dict, t: float | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
 ## Drift
 
 ### ADWIN
@@ -1676,6 +1700,451 @@ Public methods:
 - `state_dict()`
 - `window_samples(seconds: float)`
 
+## Naive Bayes
+
+### MultinomialNB
+
+
+*Module:* `dense_armor.utility.bayes.multinomial`
+*Bases:* Classifier
+*Guide:* [bayes/index.md](../bayes/index.md)
+
+Multinomial naive Bayes with Laplace smoothing.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: dict, y: Any, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None)`
+- `predict_one(x: dict, t: float | None = None)`
+- `predict_proba_many(X, t=None)`
+- `predict_proba_one(x: dict, t: float | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### BernoulliNB
+
+
+*Module:* `dense_armor.utility.bayes.bernoulli`
+*Bases:* Classifier
+*Guide:* [bayes/index.md](../bayes/index.md)
+
+Bernoulli naive Bayes with Laplace smoothing.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: dict, y: Any, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None)`
+- `predict_one(x: dict, t: float | None = None)`
+- `predict_proba_many(X, t=None)`
+- `predict_proba_one(x: dict, t: float | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### ComplementNB
+
+
+*Module:* `dense_armor.utility.bayes.complement`
+*Bases:* Classifier
+*Guide:* [bayes/index.md](../bayes/index.md)
+
+Complement naive Bayes with Laplace smoothing.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: dict, y: Any, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None)`
+- `predict_one(x: dict, t: float | None = None)`
+- `predict_proba_many(X, t=None)`
+- `predict_proba_one(x: dict, t: float | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### CategoricalNB
+
+
+*Module:* `dense_armor.utility.bayes.categorical`
+*Bases:* Classifier
+*Guide:* [bayes/index.md](../bayes/index.md)
+
+Categorical naive Bayes with Laplace smoothing.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: dict, y: Any, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None)`
+- `predict_one(x: dict, t: float | None = None)`
+- `predict_proba_many(X, t=None)`
+- `predict_proba_one(x: dict, t: float | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+## Distributions
+
+### Beta
+
+
+*Module:* `dense_armor.utility.proba.beta`
+*Bases:* object
+*Guide:* [proba/index.md](../proba/index.md)
+
+Beta distribution with online update and revert.
+
+Public methods:
+
+- `init_state()`
+- `mean()`
+- `mode()`
+- `pdf(x: float)`
+- `revert(x: Any, w: float = 1.0)`
+- `sample(rng: numpy.random._generator.Generator)`
+- `step(state: tuple, v: object)`
+- `update(x: Any, w: float = 1.0)`
+- `variance()`
+
+### Gaussian
+
+
+*Module:* `dense_armor.utility.proba.gaussian`
+*Bases:* object
+*Guide:* [proba/index.md](../proba/index.md)
+
+Univariate Gaussian updated online by Welford's algorithm.
+
+Public methods:
+
+- `cdf(x: float)`
+- `init_state()`
+- `mean()`
+- `mode()`
+- `n()`
+- `pdf(x: float)`
+- `revert(x: float, w: float = 1.0)`
+- `sample(rng: numpy.random._generator.Generator)`
+- `step(state: tuple, v: object)`
+- `update(x: float, w: float = 1.0)`
+- `variance()`
+
+### Multinomial
+
+
+*Module:* `dense_armor.utility.proba.multinomial`
+*Bases:* object
+*Guide:* [proba/index.md](../proba/index.md)
+
+Dirichlet count model over K categories.
+
+Public methods:
+
+- `init_state()`
+- `mean()`
+- `mode()`
+- `pmf(k: Any)`
+- `revert(k: Any, w: float = 1.0)`
+- `sample(rng: numpy.random._generator.Generator)`
+- `step(state, v: object)`
+- `update(k: Any, w: float = 1.0)`
+
+## Nearest neighbours
+
+### KNNClassifier
+
+
+*Module:* `dense_armor.utility.neighbors.knn`
+*Bases:* Classifier
+*Guide:* [neighbors/index.md](../neighbors/index.md)
+
+k-nearest-neighbour classifier on a sliding window.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: dict, y: Any, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None)`
+- `predict_one(x: dict, t: float | None = None)`
+- `predict_proba_many(X, t=None)`
+- `predict_proba_one(x: dict, t: float | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### KNNRegressor
+
+
+*Module:* `dense_armor.utility.neighbors.knn`
+*Bases:* Regressor
+*Guide:* [neighbors/index.md](../neighbors/index.md)
+
+k-nearest-neighbour regressor on a sliding window.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: dict, y: Any, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None, return_std=False)`
+- `predict_one(x: dict, t: float | None = None, return_std: bool = False)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### LazySearch
+
+
+*Module:* `dense_armor.utility.neighbors.knn`
+*Bases:* object
+*Guide:* [neighbors/index.md](../neighbors/index.md)
+
+Sliding window of recent samples with an exact k-NN scan.
+
+Public methods:
+
+- `add(x: dict, y: Any)`
+- `forget()`
+- `neighbours(x: dict)`
+
+## Multiclass
+
+### OneVsRestClassifier
+
+
+*Module:* `dense_armor.utility.multiclass.multiclass`
+*Guide:* [multiclass/index.md](../multiclass/index.md)
+
+One-vs-all multiclass wrapper.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: dict, y: Any, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None)`
+- `predict_one(x: dict, t: float | None = None)`
+- `predict_proba_many(X, t=None)`
+- `predict_proba_one(x: dict, t: float | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### OneVsOneClassifier
+
+
+*Module:* `dense_armor.utility.multiclass.multiclass`
+*Guide:* [multiclass/index.md](../multiclass/index.md)
+
+Round-robin (pairwise) multiclass wrapper.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: dict, y: Any, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None)`
+- `predict_one(x: dict, t: float | None = None)`
+- `predict_proba_many(X, t=None)`
+- `predict_proba_one(x: dict, t: float | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### OutputCodeClassifier
+
+
+*Module:* `dense_armor.utility.multiclass.multiclass`
+*Guide:* [multiclass/index.md](../multiclass/index.md)
+
+Error-correcting output code wrapper.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: dict, y: Any, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None)`
+- `predict_one(x: dict, t: float | None = None)`
+- `predict_proba_many(X, t=None)`
+- `predict_proba_one(x: dict, t: float | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+## Multi-output
+
+### PerOutputClassifier
+
+
+*Module:* `dense_armor.utility.multioutput.multioutput`
+*Bases:* Classifier
+*Guide:* [multioutput/index.md](../multioutput/index.md)
+
+One binary classifier per target, learned independently.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: dict, y: dict, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None)`
+- `predict_one(x: dict, t: float | None = None)`
+- `predict_proba_many(X, t=None)`
+- `predict_proba_one(x: dict, t: float | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### PerOutputRegressor
+
+
+*Module:* `dense_armor.utility.multioutput.multioutput`
+*Bases:* Regressor
+*Guide:* [multioutput/index.md](../multioutput/index.md)
+
+One regressor per target, learned independently.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: dict, y: dict, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None, return_std=False)`
+- `predict_one(x: dict, t: float | None = None, return_std: bool = False)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### ClassifierChain
+
+
+*Module:* `dense_armor.utility.multioutput.multioutput`
+*Bases:* Classifier
+*Guide:* [multioutput/index.md](../multioutput/index.md)
+
+Classifier chain: chained binary classifiers.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: dict, y: dict, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None)`
+- `predict_one(x: dict, t: float | None = None)`
+- `predict_proba_many(X, t=None)`
+- `predict_proba_one(x: dict, t: float | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### RegressorChain
+
+
+*Module:* `dense_armor.utility.multioutput.multioutput`
+*Bases:* Regressor
+*Guide:* [multioutput/index.md](../multioutput/index.md)
+
+Regressor chain: chained regressors.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: dict, y: dict, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None, return_std=False)`
+- `predict_one(x: dict, t: float | None = None, return_std: bool = False)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### ProbabilisticClassifierChain
+
+
+*Module:* `dense_armor.utility.multioutput.multioutput`
+*Bases:* Classifier
+*Guide:* [multioutput/index.md](../multioutput/index.md)
+
+Probabilistic classifier chain (Bayes-optimal for 0/1 subset loss).
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `get_params(deep: bool = True)`
+- `joint_proba_one(x: dict, t: float | None = None)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: dict, y: dict, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None)`
+- `predict_one(x: dict, t: float | None = None)`
+- `predict_proba_many(X, t=None)`
+- `predict_proba_one(x: dict, t: float | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
 ## Forests
 
 ### AdaptiveRandomForestClassifier
@@ -1784,6 +2253,30 @@ Public methods:
 - `window_samples(seconds: float)`
 
 
+### OnlineExtraTreesRegressor
+
+
+*Module:* `dense_armor.utility.forest.oxt`
+*Bases:* Regressor
+*Guide:* [forest/index.md](../forest/index.md)
+
+Online Extra Trees regressor (Mastelini, Nakano, Vens and de Carvalho).
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: Any, y: Any, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None, return_std=False)`
+- `predict_one(x: Any, t: float | None = None, return_std: bool = False)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
 ## Rules
 
 ### AMRulesRegressor
@@ -1800,32 +2293,6 @@ Public methods:
 - `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
 - `describe()`
 - `explain_one(x: Any)`
-- `get_params(deep: bool = True)`
-- `learn_many(X, y, t=None)`
-- `learn_one(x: Any, y: Any, t: float | None = None)`
-- `load_state_dict(state: dict[str, typing.Any])`
-- `mutate(new_attrs: dict[str, typing.Any])`
-- `predict_many(X, t=None, return_std=False)`
-- `predict_one(x: Any, t: float | None = None, return_std: bool = False)`
-- `set_params(**params: Any)`
-- `state_dict()`
-- `window_samples(seconds: float)`
-
-## Forests
-
-### OnlineExtraTreesRegressor
-
-
-*Module:* `dense_armor.utility.forest.oxt`
-*Bases:* Regressor
-*Guide:* [forest/index.md](../forest/index.md)
-
-Online Extra Trees regressor (Mastelini, Nakano, Vens and de Carvalho).
-
-Public methods:
-
-- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
-- `describe()`
 - `get_params(deep: bool = True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: Any, y: Any, t: float | None = None)`
