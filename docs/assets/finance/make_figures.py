@@ -106,7 +106,7 @@ def _two_rows(fname, title, rows):
             fontsize=9,
             fontweight="bold",
         )
-        if bad / total > 0.06:
+        if bad / total > 0.15:
             ax.text(
                 good + bad / 2,
                 y,
@@ -134,6 +134,7 @@ def _two_rows(fname, title, rows):
     ax.spines["left"].set_visible(False)
     ax.spines["bottom"].set_visible(False)
     ax.set_ylim(-0.5, len(rows) - 0.1)
+    ax.set_xlim(0, max(g + b for _, g, b, _, _ in rows) * 1.2)
     ax.set_title(title, loc="left")
     fig.tight_layout()
     fig.savefig(HERE / fname, dpi=DPI)

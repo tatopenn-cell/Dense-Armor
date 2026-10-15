@@ -29,7 +29,7 @@ To benchmark this capability on historical data, the Dense-Armor multi-stage pip
 
 
 ## 1. High-speed input sanitization (Armatura)
-High-frequency execution streams are highly vulnerable to corrupt data packages and network artifacts that distort nominal price spreads. Armatura operates as a real-time digital filtering layer, automatically evaluating the immediate historical envelope to intercept and sanitize absurd price points. Across the five-year S&P 500 benchmark, the filter isolated and neutralized 1 systemic data corruption instance out of 1,253 sessions.
+High-frequency execution streams are highly vulnerable to corrupt data packages and network artifacts that distort nominal price spreads. Armatura operates as a real-time digital filtering layer, automatically evaluating the immediate historical envelope to intercept and sanitize absurd price points. Across the five-year S&P 500 benchmark, the filter discarded 1 tick out of 1,253 sessions.
 
 
 ## 2. Structural market sentiment tracking (CUSUM)
@@ -53,7 +53,7 @@ When scaled to individual asset monitoring, the baseline parameters automaticall
 
 
 ## 5. Algorithmic trade execution shielding (Orca)
-During verified anomalous volatility windows, downstream execution strategies face heightened slippage risks. Orca monitors the final output layer, automatically applying adaptive damping constraints to incoming order sizes to mitigate market-impact costs. Over the five-year deployment simulation, the shield dynamically throttled 1 high-risk automated execution order.
+During verified anomalous volatility windows, downstream execution strategies face heightened slippage risks. Orca monitors the final output layer, automatically applying adaptive damping constraints to incoming order sizes to mitigate market-impact costs. In the five-year run, the shield throttled 1 simulated order.
 
 
 ## Execution Workflow
