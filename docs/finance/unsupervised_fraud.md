@@ -24,7 +24,9 @@ To quantify this advantage, the pipeline was benchmarked using **zero classifica
 
 ![Quality score of the label-free detectors against the supervised one on the same 10,000 transactions](../assets/finance/unsupervised_fraud.png)
 
-*Higher metric variance denotes superior ranking accuracy in isolating fraud instances. The dashed baseline represents a random classification reference (0.5 AUC).*
+
+*Higher metric values denote superior ranking accuracy in isolating fraud instances. The dashed baseline represents a random classification reference (0.5 AUC).*
+
 
 ## 1. Multi-dimensional outlier profiling (LODA)
 LODA evaluates incoming transactions across multiple sparse sub-spaces simultaneously. By maintaining real-time density scores for historical attributes, it instantly flags transactions that fall into low-frequency operational brackets, isolating anomalous behavior without requiring pre-existing fraud labels.
