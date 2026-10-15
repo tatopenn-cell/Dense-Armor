@@ -973,7 +973,7 @@ Public methods:
 *Module:* `dense_armor.core.vector`
 *Guide:* [toolkit/toolkit.md](../toolkit/toolkit.md)
 
-Massive parallel Monte Carlo simulations and decision collapse.
+Parallel Monte Carlo simulations and decision collapse.
 
 Public methods:
 
@@ -1393,7 +1393,7 @@ Public methods:
 *Module:* `dense_armor.utility.anomaly.streaming`
 *Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
 
-Zero-latency causal deviation flag, one point at a time.
+Causal per-sample deviation flag, one point at a time.
 
 Public methods:
 

@@ -300,4 +300,4 @@ the volume lives.
 
 The mapping from each joint to the modules that use it is the author's
 curation, not a fact extracted from the code: it says which modules talk
-about that joint, not which modules are guaranteed to run on it.
+about that joint, not which modules run on it.

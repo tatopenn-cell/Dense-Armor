@@ -166,7 +166,7 @@ past.
 
 - **[Arbiter](protect/arbiter.md)** — classifies each point as clean / spike / regime
   against a wide causal reference window, then routes it.
-- **[Streaming](anomaly/streaming.md)** — a zero-latency, one-point-at-a-time port of
+- **[Streaming](anomaly/streaming.md)** — a per-sample port of
   Arbiter's causal deviation check, plus native multi-channel wrappers.
 - **[Robust filters](anomaly/robust_filters.md)** — Chauvenet, Tukey, Hampel, sigma
   clipping on whole series, plus `pressure_valve`.

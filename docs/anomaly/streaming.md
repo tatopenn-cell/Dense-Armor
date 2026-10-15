@@ -244,7 +244,7 @@ the paper's CC BY 4.0 licence.*
   the scale of the score is larger than the classical chi-squared one (threshold 7.0 by
   default). It also centres the outer product on the averaged median $\bar m$ and averages with
   weight $1/n$ (the paper uses $m_n$ and $1/(n+2)$).
-- **Provenance.** `StreamingDeviationDetector` is the causal, zero-latency half of the
+- **Provenance.** `StreamingDeviationDetector` is the causal per-sample half of the
   [Arbiter](../protect/arbiter.md)'s per-point deviation check; the spike-versus-regime label
   needs to see the end of a run and stays batch-only. It was promoted from
   Dense-Evolution-Discovery after validation on two real physical domains (SO-101 robot arm,

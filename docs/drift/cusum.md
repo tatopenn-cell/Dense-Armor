@@ -225,7 +225,7 @@ step changes. ADWIN never raised a false alarm here but is the slowest on small 
   fractional ARL, which has no physical meaning; the docstring of `detectability_report` explains
   the floor applied.
 - **Relation to the Arbiter.** The [Arbiter](../protect/arbiter.md) judges each point against an
-  instantaneous threshold; CUSUM is its complement for slow, sustained changes.
+  per-point threshold; CUSUM is its complement for slow, sustained changes.
 - **Sources.** Reynolds, M. R. (1975), "Approximations to the Average Run Length in Cumulative Sum
   Control Charts", *Technometrics* 17(1), equation (6). Siegmund, D. (1985), *Sequential
   Analysis*, for the 1.166 boundary correction. Page, E. S. (1954), "Continuous inspection

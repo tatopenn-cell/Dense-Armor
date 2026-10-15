@@ -1,6 +1,6 @@
 # Execution: high-frequency pre-trade risk validation and algorithmic order damping
 
-When an automated trading strategy accidentally tries to buy an enormous amount of crypto or stock in a single shot, it can move the market and cause massive financial losses. This pipeline acts as a high-speed protective shield: it compares each incoming order size against historical averages, allowing safe trades to pass in microseconds while safely shrinking suspicious volumes or blocking extreme anomalies before they hit the exchange.
+When an automated trading strategy accidentally tries to buy an enormous amount of crypto or stock in a single shot, it can move the market and cause large financial losses. This pipeline acts as a high-speed protective shield: it compares each incoming order size against historical averages, allowing safe trades to pass in microseconds while safely shrinking suspicious volumes or blocking extreme anomalies before they hit the exchange.
 
 
 ## The scene
