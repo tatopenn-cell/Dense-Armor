@@ -1,6 +1,9 @@
-# Unsupervised fraud: no labels needed
+# Unsupervised fraud: multi-model anomalous transaction detection
 
-**In plain words:** A new country, a new merchant, a new payment type has no history. This page shows three detectors that flag a strange transaction even if nobody has ever labelled a fraud before.
+This section evaluates the statistical efficacy of an ensemble of three parallel unsupervised anomaly detectors deployed on unlabelled, streaming financial transaction datasets.
+
+**In plain words:** When you launch a new product or open a new market, you have no historical data of past frauds. This page shows how three detectors can spot suspicious transactions from day one, without needing any pre-classified labels.
+
 
 ## The scene
 
