@@ -1,8 +1,6 @@
 # Execution: high-frequency pre-trade risk validation and algorithmic order damping
 
-This section evaluates the computational latency and structural risk mitigation of a pre-trade validation pipeline, combining recursive rolling statistics with non-linear command damping (Orca) to enforce real-time volume constraints on automated execution streams.
-
-**In plain words:** When an automated trading strategy accidentally tries to buy an enormous amount of crypto or stock in a single shot, it can move the market and cause massive financial losses. This pipeline acts as a high-speed protective shield: it instantly compares each incoming order size against historical averages, allowing safe trades to pass in microseconds while safely shrinking suspicious volumes or blocking extreme anomalies before they hit the exchange.
+When an automated trading strategy accidentally tries to buy an enormous amount of crypto or stock in a single shot, it can move the market and cause massive financial losses. This pipeline acts as a high-speed protective shield: it compares each incoming order size against historical averages, allowing safe trades to pass in microseconds while safely shrinking suspicious volumes or blocking extreme anomalies before they hit the exchange.
 
 
 ## The scene
@@ -13,7 +11,7 @@ The pipeline sees the size, compares it to the usual one, and either sends it sm
 
 ## What is in the box
 
-| Tool | Its one job | Real example |
+| Tool | Its one job | Example |
 |---|---|---|
 | Rolling mean | Remember the usual order size | Size 5 is normal, 50 is suspicious |
 | Orca | Dampen a suspicious order before it leaves | A 6x order goes out at 3x, smaller but valid |

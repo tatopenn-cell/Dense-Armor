@@ -1,8 +1,6 @@
 # Risk: sequential quantile sketch architectures for streaming value-at-risk estimation
 
-This section evaluates the computational efficiency and statistical precision of an online risk-monitoring pipeline, combining a fully bounded quantile sketch (DDSketch) with a sequential change-detection framework (CUSUM) to estimate dynamic Value-at-Risk (VaR) and isolate volatility drift in high-frequency streams.
-
-**In plain words:** Every morning, a bank or investment fund needs to know exactly how much money it could lose if the market turns bad. Instead of loading decades of historical files into slow spreadsheets, this tool processes new market returns one day at a time in less than a millisecond, using compact mathematical buckets to calculate risk percentiles with 1% accuracy while instantly flagging if overall market volatility is starting to rise.
+Every morning, a bank or investment fund needs an estimate of how much money it could lose if the market turns bad. Instead of loading decades of historical files into slow spreadsheets, this tool processes new market returns one day at a time in less than a millisecond, using compact mathematical buckets to calculate risk percentiles with 1% accuracy while flagging if overall market volatility is starting to rise.
 
 
 ## The scene
@@ -11,7 +9,7 @@ Before daily market operations commence, corporate risk committees and capital a
 
 To maintain institutional compliance and defensive capital positioning, risk metrics must be calculated continuously and incrementally, updating perimeter exposure boundaries in real time as new sessions settle.
 
-To validate this approach against international regulatory baselines, the online risk pipeline was benchmarked over **1,253 historical trading days** of the S&P 500 index (spanning 14 October 2021 to 13 October 2026). The system updates distribution parameters sample by sample, delivering refreshed risk percentiles at opening intervals without requiring expensive data history re-scans or historical file management.
+The online risk pipeline was benchmarked over **1,253 historical trading days** of the S&P 500 index (spanning 14 October 2021 to 13 October 2026). The system updates distribution parameters sample by sample, delivering refreshed risk percentiles at opening intervals without requiring expensive data history re-scans or historical file management.
 
 
 ## Core Capabilities
@@ -24,7 +22,7 @@ To validate this approach against international regulatory baselines, the online
 
 ![Daily loss of the S&P 500 over five years with the 99% risk line in red](../assets/finance/risk.png)
 
-*Higher metric density denotes superior precision in extreme tail estimation. The red boundary line maps the dynamic 99% Value-at-Risk threshold.*
+*Each bar is the loss of one day. The red line is the 99% Value-at-Risk at the end of the run: 14 days lose more.*
 
 
 ## 1. High-accuracy tail-risk estimation (DDSketch)
@@ -32,19 +30,19 @@ Quantifying exposure boundaries within severe market corrections requires tracki
 
 
 ## 2. Proactive regime shift identification (CUSUM)
-Value-at-Risk boundaries represent an isolated snapshot of historical distributions. If structural market conditions undergo a slow, sub-clinical degradation, single-sample checks fail to register the risk change until major capital drawdowns occur. This module utilizes a sequential cumulative sum framework, continuously aggregating marginal directional shifts over time. When this statistical accumulation diverges from nominal white noise, a regime alarm triggers, alerting execution desks before systemic volatility breaches standard regulatory thresholds.
+Value-at-Risk boundaries represent an isolated snapshot of historical distributions. If structural market conditions undergo a slow, sub-clinical degradation, single-sample checks fail to register the risk change until major capital drawdowns occur. This module utilizes a sequential cumulative sum framework, continuously aggregating marginal directional shifts over time. When this statistical accumulation diverges from nominal white noise, a regime alarm triggers.
 
 
 ## Execution Workflow
 
 For every newly settled asset session or intra-day rolling window, the streaming risk pipeline runs a linear evaluation protocol:
 
-1. **Quantile Mapping:** The session return vector is fed into **DDSketch**, instantly updating distribution statistics and emitting calibrated 99% and 99.9% VaR thresholds.
+1. **Quantile Mapping:** The session return vector is fed into **DDSketch**, updating distribution statistics and emitting calibrated 99% and 99.9% VaR thresholds.
 2. **Sequential Drift Assessment:** The same vector passes to **CUSUM**, which evaluates whether cumulative structural losses are shifting systematically relative to earlier baseline windows.
-3. **Institutional Reporting Output:** The unified component instantly returns two risk limits and one automated operational warning flag, bypassing retrospective database rescans.
+3. **Institutional Reporting Output:** The pipeline returns two risk limits and one warning flag, with no rescan of past data.
 
 
-## Empirical Performance & ROI
+## Empirical Performance
 
 The processing pipeline was rigorously verified against 1,253 active trading sessions, running a single streaming call per operational session.
 
@@ -60,9 +58,9 @@ The processing pipeline was rigorously verified against 1,253 active trading ses
 
 ### Strategic Business Takeaway
 
-The empirical results demonstrate high statistical adherence to the theoretical target boundaries: the 99% VaR model captured empirical exceptions on exactly **1.1% of trading days**, while the 99.9% tail bound captured exceptions on **0.24% of sessions**. 
+The final VaR 99% is the 99th percentile of these same 1,253 days, so about 1% of them fall above it: **1.1% of trading days** (14 days), and **0.24%** (3 days) above the 99.9% line. This checks the sketch against its target; it is not a forecast of future losses.
 
-From an infrastructure perspective, the engine achieves this accuracy with a median execution latency of just **98 microseconds per day**, entirely stripping out the hardware and computational overhead of daily backtesting sweeps.
+The median time is **98 microseconds per day**, with no daily sweep over past data.
 
 
 ## Target Enterprise Use Cases
@@ -71,7 +69,7 @@ This streaming risk architecture is designed for institutional deployment:
 
 - **Automated Executive Risk Reporting:** Generates opening capital-at-risk statistics for portfolio committees without technical data-wrangling overhead.
 - **Intraday Stress Testing:** Can be called via `process_day` across a rolling window (e.g., 60-minute slices) to evaluate intra-day structural regime deterioration.
-- **Regulatory Limit Enforcement:** Plugs directly into live execution desks, where the instantaneous `over_limit` flag serves as an automated circuit breaker.
+- **Regulatory Limit Enforcement:** The `over_limit` flag can be used as an automatic stop in an execution desk.
 
 
 ## Details
