@@ -1,7 +1,5 @@
-"""
-River-compatible anomaly detectors built on Dense-Armor's streaming detectors.
-Needs the optional dependency: pip install dense-armor[river]
-"""
+
+
 from __future__ import annotations
 
 import numpy as np
