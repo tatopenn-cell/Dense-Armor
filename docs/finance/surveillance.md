@@ -11,7 +11,7 @@ During systemic macro-economic shifts—such as the Tokyo stock market contracti
 
 An institutional surveillance framework must bypass text-based sentiment and isolate structural market anomalies directly from raw quantitative parameters. 
 
-To benchmark this capability under real conditions, the Dense-Armor multi-stage pipeline was deployed over **1,253 production trading days** (spanning 14 October 2021 to 13 October 2026). Following a standard 250-day warm-up period, the dual-model consensus engine independently isolated **43 anomalous sessions** out of the remaining 1,004 days on the S&P 500 without prior manual rule injection. The detected sessions comprise 11 extreme price movements exceeding 2%, 12 high-volume quarterly-expiration Fridays, and 20 low-volatility structural shifts where joint price-volume distributions deviated from established historical baselines.
+To benchmark this capability on historical data, the Dense-Armor multi-stage pipeline was deployed over **1,253 historical trading days** (spanning 14 October 2021 to 13 October 2026). Following a standard 250-day warm-up period, the dual-model consensus engine independently isolated **43 anomalous sessions** out of the remaining 1,004 days on the S&P 500 without prior manual rule injection. The detected sessions comprise 11 extreme price movements exceeding 2%, 12 high-volume quarterly-expiration Fridays, and 20 low-volatility structural shifts where joint price-volume distributions deviated from established historical baselines.
 
 
 ## Core Capabilities
@@ -39,7 +39,7 @@ While macroeconomic culls are immediately visible, slow and systemic modificatio
 
 
 ## 3. Real-time value-at-risk estimation (Quantile sketch)
-Calculating capital risk distribution under strict regulatory frameworks typically demands exhaustive retrospective database sweeps. The integrated quantile sketch updates dynamic percentile boundaries sample by sample while maintaining a bounded memory footprint. On live production streams, it generates updated 99% and 99.9% VaR percentiles within a median latency of 98 microseconds per session.
+Calculating capital risk distribution under strict regulatory frameworks typically demands exhaustive retrospective database sweeps. The integrated quantile sketch updates dynamic percentile boundaries sample by sample while maintaining a bounded memory footprint. Run one session at a time, it generates updated 99% and 99.9% VaR percentiles within a median latency of 98 microseconds per session.
 
 
 ## 4. Multi-model consensus anomaly isolation (LODA + Half-Space Trees)
@@ -67,7 +67,7 @@ For every arriving asset tick, the multi-stage surveillance architecture process
 3. **Consensus Profiling:** Joint price-volume attributes are evaluated by **LODA** and **Half-Space Trees** to detect multi-dimensional outliers.
 4. **Execution Damping:** If downstream algorithms attempt execution, **Orca** scales or clamps order sizes based on current anomaly scores.
 
-**Compute Footprint:** The complete sequence guarantees an ultra-low latency profile, maintaining a **3.85 milliseconds** median execution time and a 5.27 milliseconds tail at the 99th percentile on standard 4-core production hardware.
+**Compute Footprint:** The complete sequence has a median execution time of **3.85 milliseconds** and 5.27 milliseconds at the 99th percentile on standard 4-core hardware.
 
 
 ## Strategic Business Takeaway

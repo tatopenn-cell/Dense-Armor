@@ -10,7 +10,7 @@ This section evaluates the statistical efficacy of an ensemble of three parallel
 
 When a financial institution opens a new transaction corridor or launches a product in a foreign market, historical training data is unavailable. A traditional supervised fraud model, calibrated on legacy markets, cannot adapt to the baseline dynamics of this new environment. In contrast, an unsupervised detection architecture analyzes the live stream from the first transaction, dynamically establishing a baseline of operational normalcy without requiring historical labels.
 
-To quantify this advantage, the pipeline was benchmarked using **zero classification labels** during the training phase on 40,000 production transactions. It was then evaluated against a testing stream of 10,000 transactions containing 102 verified fraud instances, deploying three parallel anomaly detection layers.
+To quantify this advantage, the pipeline was benchmarked using **zero classification labels** during the training phase on 40,000 historical transactions. It was then evaluated against a testing stream of 10,000 transactions containing 102 verified fraud instances, deploying three parallel anomaly detection layers.
 
 
 ## Core Capabilities

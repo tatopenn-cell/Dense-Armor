@@ -11,7 +11,7 @@ When an institutional data center undergoes a cyberattack, adversaries continuou
 
 To maintain perimeter integrity, network security systems must process incoming streams dynamically, adapting to shifting malicious footprints without relying on full model retraining intervals.
 
-To benchmark this resilience under production conditions, the online dual-tree pipeline was deployed on **125,973 real labelled network flows** from the industry-standard NSL-KDD dataset. Malicious traffic accounts for 46% of the continuous stream, establishing a balanced statistical framework that demands genuine multidimensional separation between benign operations and active exploit variants. The integrated ensemble successfully isolated evolving zero-day attack families in real time, processing the entire high-throughput dataset in 65 seconds on standard hardware.
+To benchmark this resilience on a public dataset, the online dual-tree pipeline was deployed on **125,973 labelled network flows** from the industry-standard NSL-KDD dataset. Malicious traffic accounts for 46% of the continuous stream, establishing a balanced statistical framework that demands genuine multidimensional separation between benign operations and active exploit variants. The integrated ensemble successfully isolated evolving zero-day attack families in real time, processing the entire high-throughput dataset in 65 seconds on standard hardware.
 
 
 ## Core Capabilities
@@ -46,7 +46,7 @@ For every incoming network packet, the streaming security pipeline executes a pa
 
 ## Empirical Performance & ROI
 
-The unified ensemble was rigorously evaluated against a production-simulated testing stream of 25,195 network flows containing 11,704 verified security breaches.
+The unified ensemble was rigorously evaluated against a chronological testing stream of 25,195 network flows containing 11,704 verified security breaches.
 
 | Metric | Value |
 |---|---|
