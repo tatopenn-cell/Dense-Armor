@@ -1,6 +1,8 @@
 # Market surveillance: multi-stage statistical processing and online anomaly consensus orchestration
 
-The Dense-Armor pipeline, composed of five tools, was tested on five years of historical market data. Following a 250-day warm-up period, the two integrated anomaly detectors isolated 43 of the remaining 1,004 days, accurately identifying the market crashes of August 2024 and April 2025.
+
+*All numbers on this page come from `python docs/assets/finance/measure_market.py`, run in Colab on an Intel Xeon at 1.6 GHz, 2 cores, Python 3.13.*
+The Dense-Armor pipeline, composed of five tools, was tested on five years of historical market data. Following a 249-day warm-up period, the two integrated anomaly detectors isolated 43 of the remaining 1,004 days, accurately identifying the market crashes of August 2024 and April 2025.
 
 
 ## The scene
@@ -25,11 +27,11 @@ To benchmark this capability on historical data, the Dense-Armor multi-stage pip
 
 ![S&P 500 daily return over five years with the 43 flagged days in red](../assets/finance/surveillance.png)
 
-*Grey line: the daily return of the S&P 500. Red dots: the 43 flagged days. The grey band is the 250-day warm-up.*
+*Grey line: the daily return of the S&P 500. Red dots: the 43 flagged days. The grey band is the 249-day warm-up.*
 
 
 ## 1. High-speed input sanitization (Armatura)
-High-frequency execution streams are highly vulnerable to corrupt data packages and network artifacts that distort nominal price spreads. Armatura operates as a real-time digital filtering layer, automatically evaluating the immediate historical envelope to intercept and sanitize absurd price points. Across the five-year S&P 500 benchmark, the filter discarded 1 tick out of 1,253 sessions.
+High-frequency execution streams are highly vulnerable to corrupt data packages and network artifacts that distort nominal price spreads. Armatura operates as a real-time digital filtering layer, automatically evaluating the immediate historical envelope to intercept and sanitize absurd price points. Across the five-year S&P 500 benchmark the filter discarded 1 tick out of 1,253 sessions (command: `python docs/assets/finance/measure_market.py`, line `armatura_all 1`).
 
 
 ## 2. Structural market sentiment tracking (CUSUM)
@@ -43,17 +45,17 @@ Calculating capital risk distribution under strict regulatory frameworks typical
 ## 4. Multi-model consensus anomaly isolation (LODA + Half-Space Trees)
 Price modifications cannot be evaluated accurately without conditioning them against concurrent liquidity parameters. This pipeline forces a strict consensus architecture between two independent density estimators. LODA evaluates feature vectors across sparse projections, while Half-Space Trees partitions the joint distribution space orthogonally. An anomaly is validated only upon simultaneous threshold violation by both layers.
 
-Across the 1,004-day active monitoring window, the consensus engine successfully isolated 43 anomalous sessions, including:
+Across the 1,004-day active monitoring window (1,253 trading days minus the 249-day warm-up), the consensus engine successfully isolated 43 anomalous sessions, including:
 - **August 5th, 2024:** Institutional liquidation ("Black Monday"), S&P 500 contraction at −3.00%
 - **November 6th, 2024:** Post-election macroeconomic readjustment, +2.53%
 - **April 3rd and 4th, 2025:** Tariff implementation response, −4.84% and −5.97%
 - **April 9th, 2025:** Operational pause rebound, +9.52%
 
-When scaled to individual asset monitoring, the baseline parameters automatically adapt to specific ticker volatility envelopes: Apple (AAPL) yielded 50 anomalies (including the June 11th, 2024, structural expansion following product announcements), Microsoft (MSFT) yielded 66 anomalies, and Tesla (TSLA) yielded 38 anomalies.
+When scaled to individual asset monitoring, the baseline parameters automatically adapt to specific ticker volatility envelopes: Apple (AAPL) yielded 50 anomalies (including the June 11th, 2024, structural expansion following product announcements), Microsoft (MSFT) yielded 66 anomalies (65 after the warm-up), and Tesla (TSLA) yielded 38 anomalies (35 after the warm-up). All three from the same command above.
 
 
 ## 5. Algorithmic trade execution shielding (Orca)
-During verified anomalous volatility windows, downstream execution strategies face heightened slippage risks. Orca monitors the final output layer, automatically applying adaptive damping constraints to incoming order sizes to mitigate market-impact costs. In the five-year run, the shield throttled 1 simulated order.
+During verified anomalous volatility windows, downstream execution strategies face heightened slippage risks. Orca monitors the final output layer, automatically applying adaptive damping constraints to incoming order sizes to mitigate market-impact costs. On the S&P 500 stream the shield dampened 1 order out of 1,253; on the BTC/USD execution stream, `python docs/assets/finance/measure_market.py` reports `execution orders 1000 direct 967 orca 11 refused 22 dampened 9`, so 9 of the 11 orders that reached Orca went out smaller.
 
 
 ## Execution Workflow
