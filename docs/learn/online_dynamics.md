@@ -1,6 +1,9 @@
-# Online dynamics (residual torque learning)
+# Online dynamics: sequential recursive least squares for residual torque estimation
 
-**In plain words:** A robot's description file is almost right but misses things such as friction or a carried object. This tool learns the missing part from the robot's own readings, one reading at a time, so the controller can correct for it.
+This section establishes the mathematical formulation and convergence metrics of an online dynamics estimator, utilizing Recursive Least Squares (RLS) with exponential forgetting factors to regress unmodeled multi-joint residual torques onto a second-order kinematic feature basis.
+
+**In plain words:** A robot's digital description file is almost always slightly inaccurate because it misses real-world factors like joint friction or a newly picked-up object. This tool continuously learns those missing dynamics in real time, sample by sample, allowing the control system to instantly calculate and inject the exact corrective torque needed to hit its targets precisely.
+
 
 A robot's URDF file describes its rigid-body dynamics: mass matrix, Coriolis terms,
 gravity. That model is *almost* right. But a real robot also carries a payload in its
