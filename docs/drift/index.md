@@ -1,6 +1,9 @@
-# Drift detection
+# Drift detection: statistical methods for non-stationary process drift isolation
 
-**In plain words:** The tools in the anomaly section notice a single strange reading. The tools in this section notice that the usual level itself has slowly changed, even though no single reading looks wrong.
+This section defines the analytical boundaries between localized point-anomaly detection and macro-level drift monitoring, focusing on statistical methodologies designed to isolate persistent shifts in the structural mean of data streams.
+
+**In plain words:** While anomaly detection tools spot a single, sudden weird reading, drift detection tools look at the bigger picture. They notice when the baseline level of a system is slowly drifting over time, accumulating tiny, subtle changes that would look perfectly normal if judged on their own.
+
 
 Anomaly detection flags samples. Drift detection flags **a change of the average** —
 something that happens over many samples, each of which looks plausible on its own.
