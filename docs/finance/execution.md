@@ -1,6 +1,9 @@
-# Execution: should this order leave?
+# Execution: high-frequency pre-trade risk validation and algorithmic order damping
 
-**In plain words:** Trading desks execute thousands of orders daily. This section describes the real-time protective filters applied to each order prior to the execution phase.
+This section evaluates the computational latency and structural risk mitigation of a pre-trade validation pipeline, combining recursive rolling statistics with non-linear command damping (Orca) to enforce real-time volume constraints on automated execution streams.
+
+**In plain words:** When an automated trading strategy accidentally tries to buy an enormous amount of crypto or stock in a single shot, it can move the market and cause massive financial losses. This pipeline acts as a high-speed protective shield: it instantly compares each incoming order size against historical averages, allowing safe trades to pass in microseconds while safely shrinking suspicious volumes or blocking extreme anomalies before they hit the exchange.
+
 
 ## The scene
 
