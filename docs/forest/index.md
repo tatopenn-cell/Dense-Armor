@@ -1,6 +1,6 @@
 # Forests that follow a changing stream
 
-**In plain words:** One decision tree answers with one opinion. A forest asks many trees and combines them, so the mistakes of a single tree are outvoted and the spread of the answers says how sure the forest is. This page has two forests: one that replaces its trees when the stream changes, and one that averages every tree depth, weighting each by how well it has predicted so far.
+**In plain words:** One decision tree answers with one opinion. A forest asks many trees and combines them, so the mistakes of a single tree are outvoted and the spread of the answers says how sure the forest is. This page has three forests: one that replaces its trees when the stream changes, one that averages every tree depth weighting each by how well it has predicted so far, and one that draws the split of every tree at random.
 
 ## 1. Why a forest
 
@@ -91,7 +91,63 @@ The paper bounds how much worse the aggregate can be than any single pruning. Fo
 
 On the left the targets are independent of `x`, so the root is the best answer, and the forest stays within a fraction of a unit of it, far below the bound of 5.5. On the right the targets follow a curve of `x`, the aggregate beats the root by more and more, and after 600 samples the difference is between -180 and -225. The bound only limits the damage; it says nothing about how much better the forest can be.
 
-## 4. Numbers
+## 4. Online extra trees: draw the split at random
+
+The random forest and the adaptive random forest ask, for every feature of every leaf,
+where the best split would be. That is a search: every observed `(feature, target)` pair
+is stored, sorted, and scanned. A tree with many leaves, on a stream with many samples,
+pays for the search at every attempt.
+
+`OnlineExtraTreesRegressor` (OXT) skips the search. Each leaf draws a small buffer of its
+first `s = 5` observations per candidate feature, takes the minimum and the maximum of
+that buffer, and picks the split point `phi` uniformly in that range. From that sample
+onward, the leaf only keeps two small accumulators, one for the targets below `phi` and
+one for the targets above it, and evaluates the variance reduction from those. One
+candidate per feature, no sorting, no storage of the inputs.
+
+The forest keeps the drift machinery of the adaptive random forest. Every tree sees
+every sample with probability `p = 0.5` (sub-bagging, without replacement). Every tree
+has two detectors on its own absolute error: a warning, easier to trigger, and a drift,
+harder. A warning starts a background tree that trains on the same stream but does not
+vote. If a drift fires, the background tree takes the place of the old one.
+
+```python
+import numpy as np
+from dense_armor.utility.forest import OnlineExtraTreesRegressor
+
+rng = np.random.default_rng(0)
+f = OnlineExtraTreesRegressor(n_models=5, seed=0)
+for _ in range(1500):
+    a = float(rng.uniform(-1.0, 1.0))
+    b = float(rng.uniform(-1.0, 1.0))
+    f.learn_one({"a": a, "b": b}, 4.0 * (a > 0.0))
+print(round(f.predict_one({"a": 0.5, "b": 0.0}), 1),
+      round(f.predict_one({"a": -0.5, "b": 0.0}), 1))
+```
+
+```
+4.0 0.2
+```
+
+The target is `4` when `a > 0` and `0` when `a < 0`; the feature `b` never matters.
+After 1500 samples the forest answers close to `4` on the positive side and close to
+`0` on the negative side, using only random split points and a buffer of five samples
+per candidate feature.
+
+### What the random split costs and buys
+
+The next figure uses the same `DriftStream` of Section 2, one sudden change at sample
+1000, 2000 samples, four features, median of five seeds. The line is the median
+absolute error, smoothed over 50 samples, for OXT, for `MondrianForestRegressor` with
+ten trees, and for `AMRulesRegressor`.
+
+![Absolute error of OXT, Mondrian forest and AMRules around a sudden change](../assets/forest/oxt_recovery.png)
+
+All three fall when the rule changes. OXT recovers more slowly than the Mondrian forest,
+and its error after the change stays above the Mondrian line. Against AMRules the OXT line stays below the AMRules line both before and after the change.
+
+## 5. Numbers
+
 
 `DriftStream`, one sudden change at half, 2000 samples, four features, median of five seeds, test-then-train. Accuracy (mean squared error of the label for the regressors) on the 300 samples before the change, on the first 100 after it, and on 300 samples starting 200 after it.
 
@@ -103,8 +159,12 @@ On the left the targets are independent of `x`, so the root is the best answer, 
 | MondrianForestClassifier | 1.000 | 0.980 | 1.000 | 1.39 |
 | AggregatedMondrianForestRegressor (MSE) | 0.002 | 0.084 | 0.009 | 3.26 |
 | MondrianForestRegressor (MSE) | 0.000 | 0.029 | 0.001 | 1.41 |
+| OnlineExtraTreesRegressor (MSE) | 0.004 | 0.053 | 0.007 | 7.44 |
+| AMRulesRegressor (MSE) | 0.019 | 0.213 | 0.151 | 0.08 |
 
 The adaptive random forest has a higher median accuracy than the single adaptive tree in the first 100 samples after the change, but on five seeds the difference is not significant: the forest is better on three seeds and the tree on two (paired Wilcoxon signed-rank, one-sided, p = 0.156; A12 = 0.62, below the 0.71 of a large effect). The forest also has ten trees against one, which is part of the difference. On this stream the aggregated Mondrian forests score the same as or below the Mondrian forests already in the library and cost more per sample; the aggregation also needs a box around the inputs, taken here from the range of the whole stream.
+
+On the same stream OXT scores slightly above the plain Mondrian forest in every window and costs about five times more per sample (7.44 ms against 1.41 ms, twenty trees against ten). Against AMRules the comparison flips: OXT has a lower error after the change (0.053 against 0.213 in the first 100 samples) but is slower (7.44 ms against 0.08 ms). The Mondrian forest has the lower error on all five seeds (A12 = 0.32 for OXT; one-sided paired Wilcoxon with OXT lower, p = 1.000; with five seeds no two-sided p-value can fall below 0.0625). Against AMRules OXT has the lower error on four seeds out of five (p = 0.094, A12 = 0.72), which is not significant at 0.05. The random split is not the winner on this benchmark; its purpose is to remove the split search, and its cost is visible in the millisecond column.
 
 ## Details
 
