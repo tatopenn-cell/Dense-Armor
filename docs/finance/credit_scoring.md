@@ -11,7 +11,7 @@ When an institutional banking desk or marketing division executes large-scale cu
 
 To maximize customer lifetime value and optimize outbound conversion funnels, engagement strategies must utilize real-time analytical ranking engines. 
 
-To benchmark this capability under real operational conditions, the dual-tree streaming pipeline was deployed on **45,211 real production telemarketing interactions** from the industry-standard UCI Bank Marketing dataset. Subscriptions account for 11.6% of the continuous historical stream. The model operates within a strict predictive framework, learning incrementally from each finalized customer interaction to dynamically score and rank subsequent leads as soon as they interface with the system.
+To benchmark this capability on historical data, the dual-tree streaming pipeline was run on **45,211 telemarketing interactions** from the industry-standard UCI Bank Marketing dataset. Subscriptions account for 11.6% of the continuous historical stream. The model operates within a strict predictive framework, learning incrementally from each finalized customer interaction to dynamically score and rank subsequent leads as soon as they interface with the system.
 
 
 ## Core Capabilities
@@ -46,7 +46,7 @@ For every newly processed customer profile or live communication event, the stre
 
 ## Empirical Performance & ROI
 
-The processing pipeline was verified using a production-simulated data split consisting of a 36,168-sample training stream and a 9,043-sample active test stream containing 1,048 verified conversions.
+The processing pipeline was verified using a chronological data split consisting of a 36,168-sample training stream and a 9,043-sample active test stream containing 1,048 verified conversions.
 
 | Metric | Value |
 |---|---|
@@ -67,7 +67,7 @@ The processing pipeline was verified using a production-simulated data split con
 
 Traditional model deployments rely mechanically on a generic 0.5 classification cutoff. On this dataset, a 0.5 threshold restricts the system to capturing only 19% of converting customers (198 out of 1,048), introducing severe opportunity costs. 
 
-Calibrating the operational threshold down to **0.25 pushes the Recall rate to 74.3%** while maintaining an optimal Precision score of 39.1%. This strategic calibration ensures that approximately **two out of every five automated recommendations yield a verified product signature**, maximizing conversion volume while effectively protecting execution teams against operational fatigue.
+Calibrating the operational threshold down to **0.25 pushes the Recall rate to 74.3%** with a Precision of 39.1%. This strategic calibration ensures that approximately **two out of every five automated recommendations yield a verified product signature**, which reaches 779 of the 1,048 customers who would sign with 1,991 calls.
 
 
 ## Target Enterprise Use Cases

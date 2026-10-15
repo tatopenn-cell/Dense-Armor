@@ -11,7 +11,7 @@ Before daily market operations commence, corporate risk committees and capital a
 
 To maintain institutional compliance and defensive capital positioning, risk metrics must be calculated continuously and incrementally, updating perimeter exposure boundaries in real time as new sessions settle.
 
-To validate this approach against international regulatory baselines, the online risk pipeline was benchmarked over **1,253 real production trading days** of the S&P 500 index (spanning 14 October 2021 to 13 October 2026). The system updates distribution parameters sample by sample, delivering refreshed risk percentiles at opening intervals without requiring expensive data history re-scans or historical file management.
+To validate this approach against international regulatory baselines, the online risk pipeline was benchmarked over **1,253 historical trading days** of the S&P 500 index (spanning 14 October 2021 to 13 October 2026). The system updates distribution parameters sample by sample, delivering refreshed risk percentiles at opening intervals without requiring expensive data history re-scans or historical file management.
 
 
 ## Core Capabilities
@@ -28,7 +28,7 @@ To validate this approach against international regulatory baselines, the online
 
 
 ## 1. High-accuracy tail-risk estimation (DDSketch)
-Quantifying exposure boundaries within severe market corrections requires tracking the exact shape of distribution tails. Traditional frequentist methods demand complete historical transaction persistence, creating massive database scaling challenges. DDSketch bypasses this constraint by mapping incoming asset distributions into a logically indexed matrix of relative-error logarithmic buckets. This guarantees an exact quantile evaluation with a maximum 1% relative error bound while maintaining a completely static, constant-memory footprint.
+Quantifying exposure boundaries within severe market corrections requires tracking the exact shape of distribution tails. Traditional frequentist methods demand complete historical transaction persistence, creating massive database scaling challenges. DDSketch bypasses this constraint by mapping incoming asset distributions into a logically indexed matrix of relative-error logarithmic buckets. This gives a quantile estimate with a maximum 1% relative error bound while maintaining a completely static, constant-memory footprint.
 
 
 ## 2. Proactive regime shift identification (CUSUM)

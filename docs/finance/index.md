@@ -1,6 +1,6 @@
 # Financial pipelines: multi-model streaming architectures for risk, execution, and fraud detection
 
-This section establishes the comparative framework and analytical infrastructure of nine production-ready pipelines, evaluating automated market surveillance, pre-trade risk validation, real-time transaction classification, and incremental network security protocols deployed on live financial streams.
+This section establishes the comparative framework and analytical infrastructure of nine pipelines, evaluating automated market surveillance, pre-trade risk validation, real-time transaction classification, and incremental network security protocols run on historical financial streams.
 
 **In plain words:** This page serves as the index for nine software pipelines that handle the daily data challenges faced by market analysts, banking infrastructure, and payment desks. Every pipeline chains together the core mathematical blocks of the package to solve practical business questions—like identifying market anomalies, filtering out fraudulent transactions, or sizing trade orders safely before execution.
 
@@ -30,7 +30,7 @@ Every operational pipeline is engineered by chaining algorithmic primitives dire
 
 ## Data Benchmark & Verification Infrastructure
 
-To ensure rigorous validation, all empirical performance metrics and mathematical convergence trajectories are calculated using real production datasets. Two baseline fixture suites are distributed natively within the test architecture, while three high-capacity industrial benchmarks are ingested dynamically during continuous integration execution passes:
+To ensure rigorous validation, all empirical performance metrics and mathematical convergence trajectories are calculated using public historical datasets. Two baseline fixture suites are distributed natively within the test architecture, while three high-capacity industrial benchmarks are ingested dynamically during continuous integration execution passes:
 
 | Target Domain | Dataset Temporal & Volumetric Coverage | System Deployment Path |
 |---|---|---|
