@@ -1,6 +1,9 @@
-# Credit scoring: who should we call first?
+# Credit scoring: ensemble online tree architectures for real-time conversion optimization
 
-**In plain words:** A bank calls 45,000 customers a year. Two online trees learn who is likely to sign and who is not, one call at a time.
+This section evaluates the statistical convergence and predictive efficacy of a streaming ensemble pipeline combining a Mondrian Forest with a Stochastic Gradient Tree (SGT) classifier, optimized for online customer lifetime value and conversion scoring.
+
+**In plain words:** A bank or a sales desk has thousands of potential customers to contact but limited time to make the calls. This tool learns one completed interaction at a time to predict exactly who is likely to subscribe to a product, combining random structural partitioning with adaptive loss-driven trees to generate an analytical ranking that prioritizes high-probability clients in real time.
+
 
 ## The scene
 
