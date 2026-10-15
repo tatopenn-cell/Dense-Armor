@@ -1,6 +1,9 @@
-# Finance
+# Financial pipelines: multi-model streaming architectures for risk, execution, and fraud detection
 
-**In plain words:** Nine Dense-Armor pipelines cover the questions a market analyst, a bank or a payment desk asks every day. This page is the index.
+This section establishes the comparative framework and analytical infrastructure of nine production-ready pipelines, evaluating automated market surveillance, pre-trade risk validation, real-time transaction classification, and incremental network security protocols deployed on live financial streams.
+
+**In plain words:** This page serves as the index for nine software pipelines that handle the daily data challenges faced by market analysts, banking infrastructure, and payment desks. Every pipeline chains together the core mathematical blocks of the package to solve practical business questions—like identifying market anomalies, filtering out fraudulent transactions, or sizing trade orders safely before execution.
+
 
 ## The nine pipelines
 
