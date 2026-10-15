@@ -1,6 +1,9 @@
-# Rate limiter (causal command damping)
+# Rate limiter: causal command damping and second-order kinematic bounding
 
-**In plain words:** This tool makes sure a robot motor is never asked to change speed faster than it can. When a command jumps too fast, the tool lets it change only by an allowed amount at each step.
+This section defines the mathematical implementation and operational constraints of a causal rate limiter designed to enforce bounded velocity and acceleration profiles on robotic command streams.
+
+**In plain words:** This tool ensures that a robot's motor is never ordered to change its speed faster than it physically can. When a control command makes a sudden, unrealistic jump, this module automatically smooths it out into a safe acceleration ramp, clamping the inputs within the motor's actual physical envelope.
+
 
 A robot's real motor cannot execute an unbounded instantaneous jump safely. If the
 command stream says "joint 1 goes from 0.1 to 1.5 rad/s between this tick and the next",
