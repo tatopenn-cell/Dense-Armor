@@ -1,6 +1,9 @@
-# Naive Bayes
+# Naive Bayes: algorithmic variants for streaming classification
 
-**In plain words:** Four cheap classifiers that learn from counts. You show them a sample and its label, and they remember how often each feature goes with each class. When a new sample arrives, they add up those counts and answer with the most likely class. They never forget, they never grow with the stream, and they answer in microseconds.
+This section analyzes the statistical and computational performance of four event-model variants of the Naive Bayes architecture optimized for incremental, real-time streaming data.
+
+**In plain words:** This page explains four simple, fast classifiers that learn by counting how often features and categories appear together. They operate in microseconds, adapt instantly to new data, and are designed specifically for text, events, and categorical logs rather than continuous numerical data.
+
 
 ## 1. What they are
 
