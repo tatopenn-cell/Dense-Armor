@@ -1,5 +1,7 @@
 """Adaptive Model Rules (AMRules) for regression on data streams.
 
+Page numbers below are PDF page indices of the paper's PDF, not the printed page numbers of the journal.
+
 A rule is an "if" part, a conjunction of conditions on the features
 (``x2 <= 1.5 and x0 > 3``), and a "then" part, a model that predicts the
 target for the samples the rule covers. The rule set starts with one

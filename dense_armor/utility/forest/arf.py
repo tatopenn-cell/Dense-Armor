@@ -1,5 +1,7 @@
 """Adaptive Random Forest classifier for evolving data streams.
 
+Page numbers below are PDF page indices of the paper's PDF, not the printed page numbers of the journal.
+
 A forest of Hoeffding trees, each trained on a Poisson-weighted copy of
 the stream and each watched by its own pair of change detectors, after
 Gomes et al. (2017). A single Hoeffding tree follows a change through
