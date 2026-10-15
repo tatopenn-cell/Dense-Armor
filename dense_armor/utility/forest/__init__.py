@@ -8,10 +8,12 @@ from dense_armor.utility.forest.arf import (
     AdaptiveRandomForestClassifier,
     SubspaceHoeffdingTree,
 )
+from dense_armor.utility.forest.oxt import OnlineExtraTreesRegressor
 
 __all__ = [
     "AdaptiveRandomForestClassifier",
     "AggregatedMondrianForestClassifier",
     "AggregatedMondrianForestRegressor",
+    "OnlineExtraTreesRegressor",
     "SubspaceHoeffdingTree",
 ]
