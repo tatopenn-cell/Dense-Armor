@@ -1,6 +1,9 @@
-# Linear models
+# Linear models: first-order online optimization for streaming regression and classification
 
-**In plain words:** Two basic prediction tools that learn from one example at a time: one predicts a number (LinearRegression), the other says which of two answers is more likely (LogisticRegression).
+This section establishes the algorithmic framework and convergence trajectories of incremental linear models (Linear Regression and Logistic Regression), evaluating first-order optimization dynamics and localized gradient scaling under streaming loss formulations.
+
+**In plain words:** These are two fundamental prediction tools designed to learn from data one example at a time, without needing a huge offline database. One predicts continuous real numbers by minimizing squared errors, while the other calculates binary probabilities to tell which of two answers is more likely, both completely adapting their behavior based on the specific optimizer you plug into them.
+
 
 LinearRegression and LogisticRegression are the two supervised models of the
 package. Both fit a linear function one sample at a time, and both take any
