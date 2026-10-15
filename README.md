@@ -54,6 +54,8 @@ No specific model. Any estimator that follows the same contract: `learn_one(x, y
 - Robot commands are bounded (rate limits, control barrier functions) before they reach the actuator.
 - Predictions can carry a calibrated uncertainty interval.
 
+In this library, *shielding* means cleaning the data a model sees (NaN, spikes, anomalous samples) and bounding the commands a robot receives, around any online learner that follows the `learn_one` / `score_one` contract. It is not the formal shield of safe reinforcement learning.
+
 ## What it does
 
 Dense-Armor is a Python library for online learning. Every estimator learns one sample at a time, at control-loop speed, on JAX: nothing is retrained in batch, nothing revisits the past. The same `learn_one` / `predict_one` / `transform_one` contract runs on a table, a time series, a robot joint stream, a video frame, a token stream, and a shield can sit in front of any of them.
