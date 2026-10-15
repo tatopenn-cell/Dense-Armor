@@ -144,8 +144,7 @@ ten trees, and for `AMRulesRegressor`.
 ![Absolute error of OXT, Mondrian forest and AMRules around a sudden change](../assets/forest/oxt_recovery.png)
 
 All three fall when the rule changes. OXT recovers more slowly than the Mondrian forest,
-and its error after the change stays above the Mondrian line. Against AMRules the two
-trade places: AMRules has a lower error before the change and a higher one after.
+and its error after the change stays above the Mondrian line. Against AMRules the OXT line stays below the AMRules line both before and after the change.
 
 ## 5. Numbers
 
@@ -165,7 +164,7 @@ trade places: AMRules has a lower error before the change and a higher one after
 
 The adaptive random forest has a higher median accuracy than the single adaptive tree in the first 100 samples after the change, but on five seeds the difference is not significant: the forest is better on three seeds and the tree on two (paired Wilcoxon signed-rank, one-sided, p = 0.156; A12 = 0.62, below the 0.71 of a large effect). The forest also has ten trees against one, which is part of the difference. On this stream the aggregated Mondrian forests score the same as or below the Mondrian forests already in the library and cost more per sample; the aggregation also needs a box around the inputs, taken here from the range of the whole stream.
 
-On the same stream OXT scores slightly above the plain Mondrian forest in every window and costs about five times more per sample (7.44 ms against 1.41 ms, ten trees against ten). Against AMRules the comparison flips: OXT has a lower error after the change (0.053 against 0.213 in the first 100 samples) but is slower (7.44 ms against 0.08 ms). Neither difference is significant on five seeds: paired Wilcoxon one-sided p = 1.000 against the Mondrian forest (A12 = 0.32, OXT worse) and p = 0.094 against AMRules (A12 = 0.72, OXT better). The random split is not the winner on this benchmark; its purpose is to remove the split search, and its cost is visible in the millisecond column.
+On the same stream OXT scores slightly above the plain Mondrian forest in every window and costs about five times more per sample (7.44 ms against 1.41 ms, twenty trees against ten). Against AMRules the comparison flips: OXT has a lower error after the change (0.053 against 0.213 in the first 100 samples) but is slower (7.44 ms against 0.08 ms). The Mondrian forest has the lower error on all five seeds (A12 = 0.32 for OXT; one-sided paired Wilcoxon with OXT lower, p = 1.000; with five seeds no two-sided p-value can fall below 0.0625). Against AMRules OXT has the lower error on four seeds out of five (p = 0.094, A12 = 0.72), which is not significant at 0.05. The random split is not the winner on this benchmark; its purpose is to remove the split search, and its cost is visible in the millisecond column.
 
 ## Details
 
