@@ -135,6 +135,7 @@ nav:
           - Cycle residual: timeseries/cycle.md
       - Clustering: cluster/index.md
       - Trees: tree/index.md
+      - Forests: forest/index.md
 
   - Distributions:
       - proba/index.md

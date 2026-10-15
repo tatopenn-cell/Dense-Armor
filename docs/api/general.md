@@ -10,7 +10,7 @@ the link leads there for the full explanation and examples.
 
 ## Classes by subsystem
 
-**Jump to:** [Roles](#roles) &nbsp;·&nbsp; [Metrics](#metrics) &nbsp;·&nbsp; [Evaluate](#evaluate) &nbsp;·&nbsp; [Core](#core) &nbsp;·&nbsp; [Mcp_server](#mcp_server) &nbsp;·&nbsp; [Anomaly](#anomaly) &nbsp;·&nbsp; [Drift](#drift) &nbsp;·&nbsp; [Trees](#trees) &nbsp;·&nbsp; [Clustering](#clustering) &nbsp;·&nbsp; [Stats](#stats) &nbsp;·&nbsp; [Preprocessing](#preprocessing) &nbsp;·&nbsp; [Compose](#compose) &nbsp;·&nbsp; [Vision](#vision) &nbsp;·&nbsp; [Learn](#learn) &nbsp;·&nbsp; [Datasets](#datasets) &nbsp;·&nbsp; [Protect](#protect) &nbsp;·&nbsp; [Bridges](#bridges) &nbsp;·&nbsp; [Armatura](#armatura) &nbsp;·&nbsp; [Misc](#misc) &nbsp;·&nbsp; [Dynamics](#dynamics)
+**Jump to:** [Roles](#roles) &nbsp;·&nbsp; [Metrics](#metrics) &nbsp;·&nbsp; [Evaluate](#evaluate) &nbsp;·&nbsp; [Core](#core) &nbsp;·&nbsp; [Mcp_server](#mcp_server) &nbsp;·&nbsp; [Anomaly](#anomaly) &nbsp;·&nbsp; [Drift](#drift) &nbsp;·&nbsp; [Trees](#trees) &nbsp;·&nbsp; [Forests](#forests) &nbsp;·&nbsp; [Clustering](#clustering) &nbsp;·&nbsp; [Stats](#stats) &nbsp;·&nbsp; [Preprocessing](#preprocessing) &nbsp;·&nbsp; [Compose](#compose) &nbsp;·&nbsp; [Vision](#vision) &nbsp;·&nbsp; [Learn](#learn) &nbsp;·&nbsp; [Datasets](#datasets) &nbsp;·&nbsp; [Protect](#protect) &nbsp;·&nbsp; [Bridges](#bridges) &nbsp;·&nbsp; [Armatura](#armatura) &nbsp;·&nbsp; [Misc](#misc) &nbsp;·&nbsp; [Dynamics](#dynamics)
 
 ---
 
@@ -1675,6 +1675,114 @@ Public methods:
 - `set_params(params: Any)`
 - `state_dict()`
 - `window_samples(seconds: float)`
+
+## Forests
+
+### AdaptiveRandomForestClassifier
+
+
+*Module:* `dense_armor.utility.forest.arf`
+*Bases:* Classifier
+*Guide:* [forest/index.md](../forest/index.md)
+
+Adaptive Random Forest of Gomes et al. (2017).
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: Any, y: Any, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None)`
+- `predict_one(x: Any, t: float | None = None)`
+- `predict_proba_many(X, t=None)`
+- `predict_proba_one(x: Any, t: float | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### AggregatedMondrianForestClassifier
+
+
+*Module:* `dense_armor.utility.forest.amf`
+*Bases:* Classifier
+*Guide:* [forest/index.md](../forest/index.md)
+
+Aggregated Mondrian forest classifier (Mourtada et al.).
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: Any, y: Any, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None)`
+- `predict_one(x: Any, t: float | None = None)`
+- `predict_proba_many(X, t=None)`
+- `predict_proba_one(x: Any, t: float | None = None)`
+- `predict_unaggregated_one(x: Any)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### AggregatedMondrianForestRegressor
+
+
+*Module:* `dense_armor.utility.forest.amf`
+*Bases:* Regressor
+*Guide:* [forest/index.md](../forest/index.md)
+
+Aggregated Mondrian forest regressor (Mourtada et al.).
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: Any, y: Any, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None, return_std=False)`
+- `predict_one(x: Any, t: float | None = None, return_std: bool = False)`
+- `predict_unaggregated_one(x: Any)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### SubspaceHoeffdingTree
+
+
+*Module:* `dense_armor.utility.forest.arf`
+*Bases:* HoeffdingTreeClassifier
+*Guide:* [forest/index.md](../forest/index.md)
+
+Hoeffding tree whose split attempts see a random subset of features.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `explain_one(x: Any, t: float | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: Any, y: Any, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None)`
+- `predict_one(x: Any, t: float | None = None)`
+- `predict_proba_many(X, t=None)`
+- `predict_proba_one(x: Any, t: float | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
 
 ## Clustering
 
