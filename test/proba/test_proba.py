@@ -197,3 +197,71 @@ def test_multinomial_bad_arguments():
         Multinomial(alpha=1.0, n_categories=2).update(5)
     with pytest.raises(ValueError, match="category"):
         Multinomial(alpha=1.0, n_categories=2).update("x")
+
+
+def test_weights_must_be_positive_and_revert_cannot_empty_a_counter():
+    for d in (Beta(), Gaussian(), Multinomial(alpha=1.0, n_categories=2)):
+        with pytest.raises(ValueError):
+            d.update(1, w=0.0)
+        with pytest.raises(ValueError):
+            d.revert(1, w=0.0)
+    with pytest.raises(ValueError):
+        Beta(1.0, 1.0).revert(0)
+    with pytest.raises(ValueError):
+        Multinomial(alpha=1.0, n_categories=2).revert(0)
+    with pytest.raises(ValueError):
+        Multinomial(alpha=np.ones((2, 2)))
+    with pytest.raises(ValueError):
+        Multinomial(alpha=[])
+
+
+def test_beta_density_and_multinomial_pmf():
+    b = Beta(2.0, 3.0)
+    assert b.pdf(0.5) == pytest.approx(1.5)
+    assert b.pdf(0.0) == 0.0 and b.pdf(1.0) == 0.0
+    m = Multinomial(alpha=[1.0, 3.0])
+    assert m.pmf(1) == pytest.approx(0.75)
+
+
+def test_gaussian_edge_cases():
+    g = Gaussian()
+    with pytest.raises(ValueError):
+        g.variance()
+    assert g.pdf(0.0) == 0.0
+    assert g.cdf(-1.0) == 0.0 and g.cdf(1.0) == 1.0
+    for v in (1.0, 2.0, 3.0):
+        g.update(v)
+    assert g.mode() == g.mean() == pytest.approx(2.0)
+    draws = [g.sample(np.random.default_rng(0)) for _ in range(3)]
+    assert all(np.isfinite(draws))
+
+
+def test_pure_form_through_scan_gives_the_same_state_as_update():
+    import jax
+    import jax.numpy as jnp
+
+    stream = np.array([1.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0])
+    b = Beta()
+    (a_s, b_s), _ = jax.lax.scan(b.step, b.init_state(), jnp.asarray(stream))
+    ref = Beta()
+    for v in stream:
+        ref.update(int(v))
+    assert (float(a_s), float(b_s)) == pytest.approx((ref.a, ref.b))
+
+    g = Gaussian()
+    vals = np.array([0.5, 1.5, 2.5, -1.0, 4.0, 3.0])
+    (n_s, mean_s, m2_s), _ = jax.lax.scan(g.step, g.init_state(), jnp.asarray(vals))
+    ref = Gaussian()
+    for v in vals:
+        ref.update(float(v))
+    assert float(n_s) == ref.n()
+    assert float(mean_s) == pytest.approx(ref.mean(), rel=1e-5)
+    assert float(m2_s) / (float(n_s) - 1.0) == pytest.approx(ref.variance(), rel=1e-4)
+
+    m = Multinomial(alpha=1.0, n_categories=3)
+    cats = np.array([0, 2, 2, 1, 2, 0])
+    state, _ = jax.lax.scan(m.step, m.init_state(), jnp.asarray(cats))
+    ref = Multinomial(alpha=1.0, n_categories=3)
+    for k in cats:
+        ref.update(int(k))
+    assert [float(a) for a in state] == pytest.approx(list(ref.alpha_))

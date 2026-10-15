@@ -101,3 +101,51 @@ def test_bad_binary_factory():
 def test_output_code_bad_code_size():
     with pytest.raises(ValueError, match="code_size"):
         OutputCodeClassifier(binary_factory=factory, code_size=1)
+
+
+def _stub(answer):
+    from dense_armor.roles import Classifier
+
+    class Stub(Classifier):
+        def __init__(self, answer=None):
+            self.answer = answer
+
+        def learn_one(self, x, y, t=None):
+            return self
+
+        def predict_proba_one(self, x, t=None):
+            return dict(self.answer or {})
+
+    return lambda: Stub(answer)
+
+
+def test_unit_test_params_build_binary_classifiers():
+    for cls in (OneVsRestClassifier, OneVsOneClassifier, OutputCodeClassifier):
+        for params in cls._unit_test_params():
+            assert params["binary_factory"]() is not None
+
+
+def test_one_vs_rest_is_uniform_when_no_binary_classifier_says_yes():
+    clf = OneVsRestClassifier(binary_factory=_stub({0: 1.0, 1: 0.0}))
+    for c in ("a", "b", "c"):
+        clf.learn_one({"x": 1.0}, c)
+    p = clf.predict_proba_one({"x": 1.0})
+    assert all(v == pytest.approx(1.0 / 3.0) for v in p.values())
+
+
+def test_one_vs_one_skips_a_pair_that_gives_no_answer():
+    clf = OneVsOneClassifier(binary_factory=_stub({}))
+    for c in ("a", "b", "c"):
+        clf.learn_one({"x": 1.0}, c)
+    assert set(clf.predict_proba_one({"x": 1.0})) == {"a", "b", "c"}
+
+
+def test_unusable_query_gives_an_empty_answer():
+    for cls in (OneVsRestClassifier, OneVsOneClassifier, OutputCodeClassifier):
+        clf = cls(binary_factory=factory)
+        for _ in range(5):
+            clf.learn_one({"x": 0.0}, "a")
+            clf.learn_one({"x": 1.0}, "b")
+        assert clf.predict_proba_one({"x": "word"}) == {}
+        assert clf.predict_proba_one({"y": 1.0}) == {}
+        assert clf.predict_proba_one({"x": float("nan")}) == {}

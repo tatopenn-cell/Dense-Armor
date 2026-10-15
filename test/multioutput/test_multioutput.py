@@ -189,3 +189,49 @@ def test_bad_order_name():
     clf = ClassifierChain(factory=clf_factory, order=["unknown"])
     with pytest.raises(ValueError, match="unknown target"):
         clf.learn_one({"a": 0.0}, {"y0": 0, "y1": 1})
+
+
+ALL_MO = [
+    (PerOutputClassifier, clf_factory, {"y0": 1, "y1": 0}),
+    (PerOutputRegressor, reg_factory, {"y0": 1.0, "y1": 0.0}),
+    (ClassifierChain, clf_factory, {"y0": 1, "y1": 0}),
+    (RegressorChain, reg_factory, {"y0": 1.0, "y1": 0.0}),
+    (ProbabilisticClassifierChain, clf_factory, {"y0": 1, "y1": 0}),
+]
+
+
+def test_empty_answers_before_learning_and_on_unusable_input():
+    for cls, fac, y in ALL_MO:
+        m = cls(factory=fac)
+        assert m.predict_one({"a": 0.5}) == {}
+        for _ in range(5):
+            m.learn_one({"a": 0.0}, y)
+        assert m.predict_one({}) == {}
+        assert m.predict_one({"a": "word"}) == {}
+        assert m.predict_one({"b": 1.0}) == {}
+        if hasattr(m, "predict_proba_one"):
+            assert m.predict_proba_one({"a": "word"}) == {}
+
+
+def test_unusable_samples_are_counted_in_n_missing():
+    for cls, fac, y in ALL_MO:
+        m = cls(factory=fac)
+        m.learn_one({"a": "word"}, y)
+        m.learn_one({"a": 0.0}, {"y0": "word", "y1": 0})
+        m.learn_one({"a": 0.0}, {"y0": float("nan"), "y1": 0})
+        assert m.n_missing == 3
+
+
+def test_unit_test_params_build_models():
+    for cls, _, _ in ALL_MO:
+        for params in cls._unit_test_params():
+            for v in params.values():
+                if callable(v):
+                    assert v() is not None
+
+
+def test_probabilistic_chain_refuses_more_than_15_targets():
+    m = ProbabilisticClassifierChain(factory=clf_factory)
+    m.learn_one({"a": 0.5}, {f"y{i}": i % 2 for i in range(16)})
+    with pytest.raises(ValueError):
+        m.joint_proba_one({"a": 0.5})

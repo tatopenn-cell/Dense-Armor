@@ -75,19 +75,13 @@ class _BaseMultiOutput:
         return self.n_missing_
 
     def _resolve_keys(self, x: dict) -> list:
-        if self._keys is not None:
-            return self._keys
         self._keys = sorted(x, key=str)
         return self._keys
 
     def _check_x(self, x: Any) -> dict | None:
         if not isinstance(x, dict) or not x:
             return None
-        if self._keys is None:
-            self._resolve_keys(x)
-        keys = self._keys
-        if keys is None:
-            return None
+        keys = self._keys if self._keys is not None else self._resolve_keys(x)
         for k in keys:
             if k not in x:
                 return None

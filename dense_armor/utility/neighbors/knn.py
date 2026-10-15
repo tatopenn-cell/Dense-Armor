@@ -254,8 +254,6 @@ class KNNClassifier(Classifier):
             if not np.isfinite(fv):
                 return {}
         ys, ds = self._search.neighbours(x)
-        if not ys:
-            return {}
         if self.weights == "uniform":
             w = np.ones(len(ys))
         else:
@@ -389,8 +387,6 @@ class KNNRegressor(Regressor):
             if not np.isfinite(fv):
                 return 0.0
         ys, ds = self._search.neighbours(x)
-        if not ys:
-            return 0.0
         y_arr = np.asarray([float(yv) for yv in ys], dtype=float)
         if self.weights == "uniform":
             out = float(y_arr.mean())

@@ -71,19 +71,13 @@ class _BaseMulticlass(Classifier):
         return {"check_step_is_pure", "check_step_is_jittable"}
 
     def _resolve_keys(self, x: dict) -> list:
-        if self._keys is not None:
-            return self._keys
         self._keys = sorted(x, key=str)
         return self._keys
 
     def _check(self, x: Any) -> dict | None:
         if not isinstance(x, dict) or not x:
             return None
-        if self._keys is None:
-            self._resolve_keys(x)
-        keys = self._keys
-        if keys is None:
-            return None
+        keys = self._keys if self._keys is not None else self._resolve_keys(x)
         for k in keys:
             if k not in x:
                 return None
@@ -327,8 +321,6 @@ class OutputCodeClassifier(_BaseMulticlass):
     def predict_proba_one(self, x: dict, t: float | None = None) -> dict:
         self._time_step(t)
         if not self._codes or self._check(x) is None:
-            return {}
-        if not hasattr(self, "_binary"):
             return {}
         bits = np.zeros(self.code_size)
         for j in range(self.code_size):

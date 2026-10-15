@@ -2,6 +2,7 @@
 
 import doctest
 
+import numpy as np
 import pytest
 
 from dense_armor.checks import check_estimator
@@ -151,3 +152,57 @@ def test_optional_metric():
     clf.learn_one({"a": 0.0}, "A")
     clf.learn_one({"a": 1.0}, "B")
     assert clf.predict_one({"a": 0.5}) in ("A", "B")
+
+
+def test_lazy_search_edge_cases():
+    with pytest.raises(ValueError):
+        LazySearch(n_neighbors=0)
+    s = LazySearch(window_size=5, n_neighbors=1, p=3.0)
+    assert s.forget() is None
+    assert s.neighbours({"a": 0.0}) == ([], [])
+    assert s._distance_to_window(np.zeros(1)).size == 0
+    s.add({"a": 0.0, "b": 0.0}, "A")
+    ys, ds = s.neighbours({"a": 1.0, "b": 1.0})
+    assert ys == ["A"] and ds[0] == pytest.approx(2.0 ** (1.0 / 3.0))
+    assert s.forget() == "A"
+
+
+def test_classifier_skips_unusable_samples_and_answers_empty():
+    clf = KNNClassifier(window_size=5, n_neighbors=1)
+    assert clf.predict_proba_one({"a": 1.0}) == {}
+    for bad in ({}, "a", {"a": "word"}, {"a": float("nan")}):
+        clf.learn_one(bad, "A")
+    assert clf.n_missing == 4
+    clf.learn_one({"a": 0.0}, "A")
+    assert clf.predict_proba_one({"a": "word"}) == {}
+    assert clf.predict_proba_one({"a": float("nan")}) == {}
+    assert clf.predict_one({"a": 0.1}) == "A"
+
+
+def test_regressor_skips_unusable_samples_and_answers_zero():
+    reg = KNNRegressor(window_size=5, n_neighbors=2)
+    assert reg.predict_one({"a": 1.0}) == 0.0
+    for x, y in (
+        ({}, 1.0),
+        ({"a": "word"}, 1.0),
+        ({"a": 1.0}, "word"),
+        ({"a": 1.0}, float("nan")),
+    ):
+        reg.learn_one(x, y)
+    assert reg.n_missing == 4
+    reg.learn_one({"a": 0.0}, 1.0)
+    reg.learn_one({"a": 2.0}, 3.0)
+    assert reg.predict_one({"a": "word"}) == 0.0
+    assert reg.predict_one({"a": float("nan")}) == 0.0
+    assert reg.predict_one({"a": 1.0}) == pytest.approx(2.0)
+
+
+def test_regressor_distance_weights_and_bad_parameters():
+    reg = KNNRegressor(window_size=5, n_neighbors=2, weights="distance")
+    reg.learn_one({"a": 0.0}, 0.0)
+    reg.learn_one({"a": 4.0}, 4.0)
+    assert reg.predict_one({"a": 1.0}) == pytest.approx(1.0)
+    with pytest.raises(ValueError):
+        KNNRegressor(weights="other")
+    with pytest.raises(ValueError):
+        KNNRegressor(eps=0.0)

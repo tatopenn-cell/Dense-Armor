@@ -214,3 +214,54 @@ def test_clone_not_overwritten(Cls):
 def test_bad_alpha(Cls):
     with pytest.raises(ValueError, match="alpha"):
         Cls(alpha=0.0)
+
+
+ALL_NB = (BernoulliNB, CategoricalNB, ComplementNB, MultinomialNB)
+COUNT_NB = (BernoulliNB, ComplementNB, MultinomialNB)
+
+
+def _fitted(model):
+    for x, y in FIXTURE_DOCS:
+        model.learn_one(x, y)
+    return model
+
+
+def test_explicit_feature_keys_are_used():
+    for cls in ALL_NB:
+        assert _fitted(cls(feature_keys=["a", "b"]))._keys == ["a", "b"]
+
+
+def test_empty_or_non_dict_sample_is_counted_in_n_missing():
+    for cls in ALL_NB:
+        m = cls()
+        m.learn_one({}, "X")
+        m.learn_one("a", "X")
+        assert m.n_missing == 2
+
+
+def test_prediction_is_empty_before_learning_and_on_unusable_input():
+    for cls in COUNT_NB:
+        assert cls().predict_proba_one({"a": 1}) == {}
+        m = _fitted(cls())
+        assert m.predict_proba_one({}) == {}
+        assert m.predict_proba_one("a") == {}
+        assert m.predict_proba_one({"a": "word", "b": 0, "c": 0}) == {}
+        assert m.predict_proba_one({"a": -1.0, "b": 0, "c": 0}) == {}
+        assert m.predict_proba_one({"a": float("nan"), "b": 0, "c": 0}) == {}
+
+
+def test_categorical_prediction_is_empty_on_unusable_input():
+    assert CategoricalNB().predict_one({"a": 1}) is None
+    m = _fitted(CategoricalNB())
+    assert m.predict_proba_one({}) == {}
+    assert m.predict_proba_one({"a": 1}) == {}
+    assert m.predict_proba_one({"a": 1, "b": None, "c": 1}) == {}
+    assert m.predict_proba_one({"a": 1, "b": float("nan"), "c": 1}) == {}
+
+
+def test_class_prior_replaces_the_observed_frequency():
+    q = {"a": 1, "b": 1, "c": 1}
+    for cls in (BernoulliNB, CategoricalNB, MultinomialNB):
+        x_heavy = _fitted(cls(class_prior={"X": 0.9, "Y": 0.1}))
+        y_heavy = _fitted(cls(class_prior={"X": 0.1, "Y": 0.9}))
+        assert x_heavy.predict_proba_one(q)["X"] > y_heavy.predict_proba_one(q)["X"]
