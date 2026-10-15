@@ -1,6 +1,9 @@
-# PayloadEstimator
+# Payload estimator: sequential recursive least squares for online inertial adaptation
 
-**In plain words:** This tool works out how heavy the object a robot is carrying is, while the arm is moving, from the forces on its joints. It needs no special weighing test beforehand.
+This section defines the analytical framework and algorithmic implementation of a payload mass estimator, utilizing a scalar Recursive Least Squares (RLS) update with exponential forgetting to identify unknown inertial parameters dynamically from multi-joint rigid-body torque residuals.
+
+**In plain words:** This tool works out exactly how heavy an object the robot is carrying while the arm is moving, without needing any special weighing tests beforehand. It looks at the real-time forces on the joints, compares them to what an empty robot should feel, and uses a smart mathematical filter to guess the mass instantly, adapting smoothly if the object is dropped or replaced.
+
 
 PayloadEstimator estimates the mass of a payload attached to a link of the
 robot, while the robot is moving. It does not use a pre-recorded
