@@ -1,6 +1,8 @@
-# Risk: how much can we lose today?
+# Risk: sequential quantile sketch architectures for streaming value-at-risk estimation
 
-**In plain words:** Every morning a bank has to answer one question. This page shows the tool that answers it in a thousandth of a second.
+This section evaluates the computational efficiency and statistical precision of an online risk-monitoring pipeline, combining a fully bounded quantile sketch (DDSketch) with a sequential change-detection framework (CUSUM) to estimate dynamic Value-at-Risk (VaR) and isolate volatility drift in high-frequency streams.
+
+**In plain words:** Every morning, a bank or investment fund needs to know exactly how much money it could lose if the market turns bad. Instead of loading decades of historical files into slow spreadsheets, this tool processes new market returns one day at a time in less than a millisecond, using compact mathematical buckets to calculate risk percentiles with 1% accuracy while instantly flagging if overall market volatility is starting to rise.
 
 ## The scene
 
