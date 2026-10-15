@@ -30,7 +30,7 @@ Python developers working on systems where data arrives one sample at a time and
 
 ## Use cases
 
-The primitives are domain-agnostic: anything that ingests data one sample at a time and has to react when the stream changes. Robotics is where the library has been tested most, but the layers above and below the model are the same shape everywhere.
+The primitives are domain-agnostic: anything that ingests data one sample at a time and has to react when the stream changes. It has been measured on a robot arm (CASPER on a UR3e), on stock and crypto prices, card transactions, network flows and a telemarketing log (the [finance pages](https://tatopenn-cell.github.io/Dense-Armor/finance/)), and on synthetic streams with known drift; the layers above and below the model are the same shape everywhere.
 
 | domain | what Dense-Armor brings |
 |---|---|
