@@ -1,6 +1,6 @@
 # Single ticker: is today strange?
 
-**In plain words:** If you follow one stock, this page shows two detectors that tell you when a day is different from the usual.
+**In plain words:** For the monitoring of a single financial asset, this section demonstrates the efficacy of the two integrated detectors in identifying anomalous deviations from ordinary market conditions.
 
 ## The scene
 
