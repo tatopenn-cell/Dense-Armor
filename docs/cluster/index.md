@@ -1,13 +1,9 @@
-# Clustering
+# Clustering: incremental partitioning and density-based data stream models
 
-**In plain words:** Clustering sorts readings into groups of similar ones, without being told the groups in advance, one reading at a time. A robot can use it to discover its own situations (idle, reaching, carrying) and to notice a new one.
+This section evaluates the algorithmic efficiency and statistical accuracy of online k-means, non-stationary drifting stream estimators, and density-based spatial partitioning algorithms (DenStream) for real-time unsupervised data stream clustering.
 
-A robot meets situations nobody labelled: idle, reaching, carrying, a joint behaving oddly.
-Clustering groups similar samples without labels, one sample at a time, so the robot can
-discover its own states and notice a new one. The sections below build up the picture: a
-simple online k-means, the same method following groups that move, a denser method that keeps
-outliers out and shapes of any kind, and a use of clustering on image patches, a visual
-vocabulary.
+**In plain words:** This page shows how a system can automatically group similar data points together in real time, one by one, without needing any pre-assigned categories. It covers standard tracking, groups that shift positions over time, filtering out noise, and translating image patches into visual signatures.
+
 
 ## 1. Online k-means: k groups, one point at a time
 
