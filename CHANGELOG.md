@@ -23,8 +23,8 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   `docs/rules/`.
 - Anomaly detection: `LocalOutlierFactor` (#166) and the Streaming Half-Space
   Trees of Tan et al. 2011 (#157).
-- Finance: five pipelines, five questions, nine pages (#161), with the numbers
-  remeasured on closing prices and figures (#162).
+- Finance: nine pipelines (markets, fraud, intrusion, credit scoring), one page
+  each (#161), with the numbers remeasured on closing prices and figures (#162).
 - README: a five-feature online classifier quickstart, "Who is this for", "What
   it expects", "What changes" and a use-cases section (#147, #148, #149).
 - One plain-words sentence at the top of every docs page (#160).

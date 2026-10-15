@@ -167,7 +167,7 @@ Dense-Armor provides online implementations of the following families of algorit
 - Robot control (rate limits, control barrier functions, trajectories, kinematic tracking)
 - Robot dynamics (URDF, passivity + CBF controllers)
 - Shielding (1D series cleanup, input/output shield, per-point routing)
-- [Finance pipelines](https://tatopenn-cell.github.io/Dense-Armor/finance/): five questions on price streams, from a one-sentence start to the full pipeline, with nine pages
+- [Finance pipelines](https://tatopenn-cell.github.io/Dense-Armor/finance/): nine pipelines for markets, fraud, intrusion and credit scoring, each page opening with the question it answers
 
 Dense-Armor also provides other online utilities:
 
