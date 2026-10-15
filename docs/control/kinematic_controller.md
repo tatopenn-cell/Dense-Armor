@@ -1,7 +1,5 @@
 # Kinematic controller: closed-form tracking feedback laws
 
-This section establishes the analytical framework and stability properties of a velocity-level kinematic tracking controller, operating via a closed-form feedback law to guarantee exponential error convergence.
-
 **In plain words:** This tool translates the target path you want a robotic joint to follow into the exact speed commands needed to keep it on track. It uses a single, straightforward equation that forces the joint to close the gap at a predictable, user-defined rate, working directly at the velocity level required by most modern robot drivers.
 
 

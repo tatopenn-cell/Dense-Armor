@@ -1,7 +1,5 @@
 # CUSUM: sequential analysis for sub-clinical data stream drift detection
 
-This section evaluates the statistical properties, Average Run Length (ARL) formulations, and detection latency of the cumulative sum (CUSUM) architecture designed to isolate persistent, low-amplitude non-stationary drift within sequential streaming signals.
-
 **In plain words:** This page explains how to detect slow, gradual changes in a system—like a mechanical part wearing out bit by bit. While a standard detector looks at one reading at a time and misses small shifts, CUSUM accumulates these tiny anomalies over time and triggers an alert as soon as the total deviation confirms a real structural trend.
 
 

@@ -1,7 +1,5 @@
 # Online learning: sequential models and incremental architectures for real-time adaptation
 
-This section covers models that continuously learn while the robot is working, so that the software adapts as the physical world changes. It covers four tasks: giving confidence numbers that match the observed accuracy, finding similar past situations from custom distances, recognizing the robot's operational state, and learning the physical behaviors that the digital design file misses.
-
 
 A robot arm picks objects. While it works, four things need to keep learning, because
 the world will not stay the same:

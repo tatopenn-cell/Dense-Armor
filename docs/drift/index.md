@@ -1,7 +1,5 @@
 # Drift detection: statistical methods for non-stationary process drift isolation
 
-This section defines the analytical boundaries between localized point-anomaly detection and macro-level drift monitoring, focusing on statistical methodologies designed to isolate persistent shifts in the structural mean of data streams.
-
 **In plain words:** While anomaly detection tools spot a single, sudden weird reading, drift detection tools look at the bigger picture. They notice when the baseline level of a system is slowly drifting over time, accumulating tiny, subtle changes that would look perfectly normal if judged on their own.
 
 

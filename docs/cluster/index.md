@@ -1,7 +1,5 @@
 # Clustering: incremental partitioning and density-based data stream models
 
-This section evaluates the algorithmic efficiency and statistical accuracy of online k-means, non-stationary drifting stream estimators, and density-based spatial partitioning algorithms (DenStream) for real-time unsupervised data stream clustering.
-
 **In plain words:** This page shows how a system can automatically group similar data points together in real time, one by one, without needing any pre-assigned categories. It covers standard tracking, groups that shift positions over time, filtering out noise, and translating image patches into visual signatures.
 
 

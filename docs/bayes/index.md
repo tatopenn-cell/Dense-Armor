@@ -1,7 +1,5 @@
 # Naive Bayes: algorithmic variants for streaming classification
 
-This section analyzes the statistical and computational performance of four event-model variants of the Naive Bayes architecture optimized for incremental, real-time streaming data.
-
 **In plain words:** This page explains four simple, fast classifiers that learn by counting how often features and categories appear together. They update in a few microseconds, adapt to new data one sample at a time, and are designed specifically for text, events, and categorical logs rather than continuous numerical data.
 
 
