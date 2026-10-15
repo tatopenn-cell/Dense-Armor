@@ -221,14 +221,15 @@ class _AmfTree:
         hi = self.high.copy()
         path: list = []
         node = self.root
-        while node.left is not None:
+        while node.left is not None and node.right is not None:
             path.append(node)
+            left, right = node.left, node.right
             if x[node.j] <= node.s:
                 hi[node.j] = node.s
-                node = node.left
+                node = left
             else:
                 lo[node.j] = node.s
-                node = node.right
+                node = right
         return path, node, lo, hi
 
     def _cut(self, lo: np.ndarray, hi: np.ndarray) -> tuple:
@@ -316,6 +317,13 @@ class _AmfTree:
 
 class _Forest:
     """Shared machinery of the two forests: keys, box, trees, counters."""
+
+    n_trees: int
+    step: float
+    low: float
+    high: float
+    seed: int | None
+    feature_keys: list | None
 
     def _setup(self) -> None:
         self.trees_: list = []
