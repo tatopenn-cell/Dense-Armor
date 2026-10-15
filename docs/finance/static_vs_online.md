@@ -5,6 +5,7 @@ This section analyzes the statistical divergence between a fixed-threshold model
 **In plain words:** A fixed cutoff rule and an adaptive system look at the same five years of market data but give different answers on 38 days. This page shows you why.
 
 
+
 ## The scene
 
 The simplest way to find an anomalous day is a fixed number: if the return is bigger than 3%, call it anomalous. It is one line of code, it is what every tutorial does, and it works until the market regime changes.
