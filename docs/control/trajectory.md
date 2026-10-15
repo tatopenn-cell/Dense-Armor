@@ -1,6 +1,9 @@
-# Trajectory (closed-form point-to-point generator)
+# Trajectory: closed-form quintic polynomial reference generation
 
-**In plain words:** This tool plans a smooth movement from one position to another in a time you choose, for any number of joints at once. The movement starts and ends gently, without jerks.
+This section defines the mathematical implementation and boundary-value formulations of a point-to-point trajectory generator utilizing quintic polynomials to ensure $C^2$ continuity across position, velocity, and acceleration profiles.
+
+**In plain words:** This tool calculates a smooth, continuous path to move any number of robotic joints from an initial position to a target destination within a set time frame. By using a fifth-degree equation, it guarantees that the movement starts and stops seamlessly, preventing sudden jerks or mechanical vibrations at the endpoints.
+
 
 The [rate limiter](rate_limiter.md) bounds how fast a command can change and the
 [CBF filter](cbf_filter.md) bounds where it can go, but neither generates a reference
