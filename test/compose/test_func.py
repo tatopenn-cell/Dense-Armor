@@ -44,7 +44,11 @@ def test_pipe_with_select():
     assert out == {"a": 10.0}
 
 
+def _identity(v):
+    return v
+
+
 def test_check_estimator():
     from dense_armor.checks import check_estimator
 
-    check_estimator(FuncTransformer(lambda v: v))
+    check_estimator(FuncTransformer(_identity))
