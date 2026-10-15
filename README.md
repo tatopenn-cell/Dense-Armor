@@ -151,9 +151,10 @@ Works on Python 3.10+. JAX is the backend for every estimator.
 Dense-Armor provides online implementations of the following families of algorithms:
 
 - Linear models, with a wide array of optimizers
-- Decision trees and online forests
+- Decision trees, online forests (adaptive random forest, aggregated Mondrian forests, online extra trees) and rule sets (adaptive model rules)
+- Naive Bayes, nearest neighbours, multiclass and multi-output wrappers, conjugate distributions
 - Clustering
-- Anomaly detection
+- Anomaly detection (including the local outlier factor)
 - Drift detection
 - Time series (AR, VAR, Kalman, adaptive Kalman, cycle residual)
 - Online classifiers
@@ -164,6 +165,7 @@ Dense-Armor provides online implementations of the following families of algorit
 - Robot control (rate limits, control barrier functions, trajectories, kinematic tracking)
 - Robot dynamics (URDF, passivity + CBF controllers)
 - Shielding (1D series cleanup, input/output shield, per-point routing)
+- [Finance pipelines](https://tatopenn-cell.github.io/Dense-Armor/finance/): five questions on price streams, from a one-sentence start to the full pipeline, with nine pages
 
 Dense-Armor also provides other online utilities:
 
