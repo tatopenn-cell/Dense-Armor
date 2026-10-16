@@ -409,7 +409,9 @@ class VideoFileStream(VideoStream):
         size: ``(width, height)`` to resize each frame to, or ``None``.
         gray: convert color frames to grayscale.
         dtype: target dtype; see :class:`ArrayStream`.
-        start, stop, stride: as in :class:`VideoStream`.
+        start: first frame index.
+        stop: last frame index, exclusive.
+        stride: one frame every this many.
         max_frames: stop after this many yielded frames (``None`` = all).
         rotate: ``"auto"`` (default) reads the rotation from the
             container metadata when present; ``False`` ignores it; a
@@ -453,7 +455,7 @@ class VideoFileStream(VideoStream):
 
     def __init__(
         self,
-        source,
+        source: str | Path | Sequence[str | Path],
         fps: float = 30.0,
         size: tuple[int, int] | None = None,
         gray: bool = True,
@@ -462,7 +464,7 @@ class VideoFileStream(VideoStream):
         stop: int | None = None,
         stride: int = 1,
         max_frames: int | None = None,
-        rotate="auto",
+        rotate: str | int | float | bool = "auto",
         follow: bool = False,
         wait_s: float = 0.05,
         max_waits: int | None = 200,
@@ -598,7 +600,10 @@ class CubeStream(VideoStream):
             channel count different from 3 is left untouched.
         dtype: target dtype; ``"uint16"`` keeps a 16-bit thermal readout
             without loss.
-        start, stop, stride, max_frames: as in :class:`VideoStream`.
+        start: first frame index.
+        stop: last frame index, exclusive.
+        stride: one frame every this many.
+        max_frames: stop after this many yielded frames.
 
     Raises:
         ValueError: on a cube whose first dimension is not the time, or

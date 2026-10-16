@@ -654,3 +654,87 @@ than a tenth of the 33 ms frame budget at 30 frames per second.
     median covariation matrix with application to online robust principal
     components analysis. *TEST* 26(3), 461-480. The median covariation
     matrix update of section 7.
+
+## Reading any video
+
+A video is a stream of frames in time, and it comes from a file, an
+URL, a glob of files, a camera, or a cube of multi-channel samples.
+Whatever the source, every stream yields the same object, a
+:class:`~dense_armor.utility.vision.streams.Frame`, with the image and
+the timestamp of the frame. The time of each frame is the container's
+own clock, not ``index / fps``: a recording whose frame rate changes
+with time keeps the true time of every frame.
+
+    >>> import tempfile, pathlib
+    >>> import numpy as np
+    >>> import cv2
+    >>> d = pathlib.Path(tempfile.mkdtemp()) / "clip.mp4"
+    >>> w = cv2.VideoWriter(str(d), cv2.VideoWriter_fourcc(*"mp4v"), 10.0, (8, 8))
+    >>> for i in range(5):
+    ...     _ = w.write(np.full((8, 8, 3), i * 50, dtype=np.uint8))
+    >>> w.release()
+    >>> from dense_armor.utility.vision.streams import VideoFileStream
+    >>> for fr in VideoFileStream(str(d)):
+    ...     print(round(fr.t, 2))
+    0.0
+    0.1
+    0.2
+    0.3
+    0.4
+
+A cube of multi-channel samples (a thermal sequence, a multispectral
+stack, a depth map) reads with
+:class:`~dense_armor.utility.vision.streams.CubeStream`. A cube with a
+16-bit depth keeps every value of the sensor without loss.
+
+## Motion in time
+
+Two frames in a row carry the movement that a single frame does not.
+:class:`~dense_armor.utility.vision.motion.MotionEnergy` measures the
+amount of change (a filtered difference, summarised per frame) and
+:class:`~dense_armor.utility.vision.motion.GlobalMotion` estimates the
+*global* shift of the scene with phase correlation, which separates the
+motion of the camera from the motion of the objects. On a pure
+translation the shift is exact to the tenth of a pixel.
+
+## Scene changes and temporal anomalies
+
+A hard cut in a video is a level shift in the difference between
+consecutive frames, which is what a drift detector for a scalar stream
+was built for. :class:`~dense_armor.utility.vision.scene.SceneChange`
+turns a frame into a scalar distance (histogram distance plus mean
+absolute difference) and feeds it to a
+:class:`~dense_armor.utility.drift.adwin.ADWIN` or to any other drift
+detector of the library. :class:`~dense_armor.utility.vision.scene.FrameAnomaly`
+scores a frame against a memory of the patches the library has already
+seen, following the PatchCore idea.
+
+## Sliding window
+
+:class:`~dense_armor.utility.vision.window.FrameWindow` keeps the last
+``n`` frames, or the last ``s`` seconds, in a ring buffer, and
+summarises them with streaming mean, standard deviation, motion energy
+and quantiles of the DDSketch sketch. The memory is ``O(n)``, so a
+stream of any length keeps the same footprint.
+
+## Tracking without a detector
+
+:class:`~dense_armor.utility.vision.tracking.MovingObjectTracker`
+builds a running robust background, groups the changed pixels into
+connected components, and follows every component with a Kalman filter.
+The association is two-round, high confidence first and low confidence
+second, the idea of ByteTrack. The same class accepts boxes from an
+external detector with ``update(boxes)``.
+
+## Video to signal, joints to video
+
+:class:`~dense_armor.utility.vision.adapters.TrackToSignal` and
+:class:`~dense_armor.utility.vision.adapters.FeatureToSignal` turn a
+track or a dict of features into a
+:class:`~dense_armor.roles.Signal`, so the drift detectors, the anomaly
+detectors and the metrics of the library work on video without any new
+code. :class:`~dense_armor.utility.vision.fusion.FrameJointFusion`
+aligns the video with the joint readings and estimates the latency of
+the camera by correlating the motion in the video with the joint speed,
+within the frame rate of the source.
+
