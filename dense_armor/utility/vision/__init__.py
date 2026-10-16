@@ -78,6 +78,7 @@ from dense_armor.utility.vision.patches import (
     PatchFeatures,
     PatchMemory,
 )
+from dense_armor.utility.vision.window import FrameWindow
 from dense_armor.utility.vision.scene import (
     FrameAnomaly,
     SceneChange,
@@ -95,6 +96,7 @@ from dense_armor.utility.vision.streams import (
 
 __all__ = [
     "ArrayStream",
+    "FrameWindow",
     "FrameAnomaly",
     "SceneChange",
     "GlobalMotion",
