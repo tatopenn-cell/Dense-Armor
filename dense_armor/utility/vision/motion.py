@@ -191,9 +191,9 @@ class GlobalMotion(Transformer):
 
     The sub-pixel part is the slope of the residual phase against the
     spatial frequency, fitted by weighted least squares on the bins with
-    a magnitude above the noise. On a smooth scene the error is below
-    0.1 px for a fractional shift; a shift of more than half a pixel is
-    recovered to about 0.1 px in the worst case.
+    a magnitude above the noise. On 20 smooth scenes with shifts between
+    0.05 and 3 px the error is 0.1 px at the median, 0.4 px at the 90th
+    percentile and 0.45 px at most.
 
     Args:
         window: Hann window size in pixels applied to both frames before

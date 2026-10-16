@@ -22,8 +22,13 @@ alpha gives a smoother field.
 The iteration runs in JAX so the whole image is one jitted call; the
 per-pixel Python loop is left only for the direct comparison with the
 scalar reference. The method assumes small motion between the two
-frames, which is the hypothesis of Horn and Schunck; on a shift of half
-a pixel the estimated flow is about 0.03 px (the paper's own limit).
+frames, which is the hypothesis of Horn and Schunck. The size of the
+estimate depends on the intensity scale of the image, because ``alpha``
+weighs the smoothness against the image gradient: on a smooth scene
+shifted by half a pixel, with ``alpha=1`` and 100 iterations, an image
+with intensities of order 0.1 gives a flow of about 0.03 px, and the same
+image multiplied by 10 gives about 0.4 px. Scale the frames, or ``alpha``,
+to the gradient of the scene.
 
 :class:`MotionMask` takes the flow field of two consecutive frames,
 compensates the global shift estimated by
