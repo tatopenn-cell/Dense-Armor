@@ -298,63 +298,43 @@ class HalfSpaceTrees(AnomalyDetector):
         span = np.maximum(hi - lo, self.eps)
         return (v - lo) / span
 
-    def _paths_all(self, x_norm: np.ndarray) -> np.ndarray:
-        """Paths of every tree for one sample, shape ``(n_trees, depth+1)``.
-
-        Node ``0`` is the root, node ``2*i+1`` and ``2*i+2`` are the
-        children of node ``i``; the descent uses the feature and the
-        midpoint stored at the current node (Tan et al. 2011, Section 3:
-        each node splits on one feature at a random midpoint of the
-        range).
-        """
+    def _path_one(self, tr: int, x_norm: np.ndarray) -> np.ndarray:
         assert self._feature is not None
         assert self._midpoints is not None
-        n = self.n_trees
-        trs = np.arange(n)
-        paths = np.empty((n, self.depth + 1), dtype=np.intp)
-        paths[:, 0] = 0
-        nodes = np.zeros(n, dtype=np.intp)
-        for lv in range(1, self.depth + 1):
-            feats = self._feature[trs, nodes]
-            mids = self._midpoints[trs, nodes]
-            x_vals = x_norm[feats]
-            go_right = (x_vals > mids).astype(np.intp)
-            nodes = 2 * nodes + 1 + go_right
-            paths[:, lv] = nodes
-        return paths
+        path = np.zeros(self.depth + 1, dtype=np.intp)
+        node = 0
+        for lv in range(self.depth):
+            feat = int(self._feature[tr, node])
+            if x_norm[feat] <= self._midpoints[tr, node]:
+                node = 2 * node + 1
+            else:
+                node = 2 * node + 2
+            path[lv + 1] = node
+        return path
 
-    def _terminal_mass_all(self, x_norm: np.ndarray) -> float:
-        """Sum of ``r * 2^k`` over the terminal node of every tree.
+    def _terminal_mass(self, tr: int, x_norm: np.ndarray) -> float:
+        """``r * 2^k`` of the terminal node of the sample in tree ``tr``.
 
-        Tan et al. (2011), page 3: the terminal node of a tree is the
-        first node on the path that reaches ``depth`` or holds
-        ``sizeLimit`` reference samples or fewer.
+        Tan et al. (2011), page 3: the terminal node is the first node
+        on the path that reaches ``depth`` or holds ``sizeLimit``
+        reference samples or fewer.
         """
         assert self._feature is not None
         assert self._midpoints is not None
         assert self._r is not None
         size_limit = self.size_limit_frac * self.window
-        n = self.n_trees
-        trs = np.arange(n)
-        nodes = np.zeros(n, dtype=np.intp)
-        k_arr = np.zeros(n, dtype=np.intp)
-        masses = np.zeros(n, dtype=float)
-        done = np.zeros(n, dtype=bool)
-        for step in range(self.depth + 1):
-            r_here = self._r[trs, nodes]
-            stop = (r_here <= size_limit) | (k_arr == self.depth)
-            newly = stop & (~done)
-            masses = np.where(newly, r_here * 2.0**k_arr, masses)
-            done = done | newly
-            if done.all():
-                break
-            feats = self._feature[trs, nodes]
-            mids = self._midpoints[trs, nodes]
-            x_vals = x_norm[feats]
-            go_right = (x_vals > mids).astype(np.intp)
-            nodes = 2 * nodes + 1 + go_right
-            k_arr = k_arr + 1
-        return float(masses.sum())
+        node = 0
+        k = 0
+        while True:
+            r = int(self._r[tr, node])
+            if k == self.depth or r <= size_limit:
+                return r * 2.0**k
+            feat = int(self._feature[tr, node])
+            if x_norm[feat] <= self._midpoints[tr, node]:
+                node = 2 * node + 1
+            else:
+                node = 2 * node + 2
+            k += 1
 
     def _raw_score(self, x: dict) -> float:
         if not self._ref_ready:
@@ -363,7 +343,7 @@ class HalfSpaceTrees(AnomalyDetector):
             x_norm = self._to_norm(x)
         except (KeyError, TypeError, ValueError):
             return 0.0
-        total = self._terminal_mass_all(x_norm)
+        total = sum(self._terminal_mass(tr, x_norm) for tr in range(self.n_trees))
         scale = float(self.n_trees * self.window)
         return scale / (scale + total)
 
@@ -431,9 +411,8 @@ class HalfSpaceTrees(AnomalyDetector):
         if self._ref_ready:
             self._update_threshold(self._raw_score(x))
         mass = self._l if self._ref_ready else self._r
-        paths = self._paths_all(x_norm)
-        trs = np.arange(self.n_trees)[:, None]
-        mass[trs, paths] += 1
+        for tr in range(self.n_trees):
+            mass[tr, self._path_one(tr, x_norm)] += 1
         self._count += 1
         if self._count == self.window:
             if self._ref_ready:

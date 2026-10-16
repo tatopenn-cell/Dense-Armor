@@ -90,6 +90,12 @@ reference has a heavy tail on this stream. Ours is more stable at the
 tail by a factor of 81. Reported: the median target is not reached in
 pure Python, the tail target is met by a wide margin.
 
+The before and after runs on two other machines (see "Second and third
+machine") gave 0.97x and 1.14x slower, so there is no gain from the
+vectorised descent. It was reverted: `hst.py` is the version before
+this change, and the Half-Space Trees rows above were measured with
+the vectorised code that was removed.
+
 ## How to reproduce
 
 From a Colab session:
