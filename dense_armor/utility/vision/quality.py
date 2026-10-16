@@ -193,6 +193,7 @@ class Sync(Transformer):
         best_shift = 0
         best = -2.0
         n = len(ts)
+        max_shift = min(max_shift, n - 4)
         for sh in range(-max_shift, max_shift + 1):
             if sh > 0:
                 aa = a[sh:]; bb = b[:n - sh]
