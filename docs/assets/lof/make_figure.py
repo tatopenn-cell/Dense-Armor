@@ -8,7 +8,6 @@ Every figure comes from the library's own classes on the same streams
 the tests use. No external data, no hard-coded numbers.
 """
 
-import json
 import sys
 from pathlib import Path
 
@@ -23,8 +22,13 @@ sys.path.insert(0, str(ROOT))
 
 from sklearn.metrics import roc_auc_score
 
+from dense_armor.utility.anomaly.hst import HalfSpaceTrees
+from dense_armor.utility.anomaly.loda import LODA
 from dense_armor.utility.anomaly.lof import LocalOutlierFactor
-from dense_armor.utility.datasets import SyntheticArm
+from dense_armor.utility.anomaly.mahalanobis import OnlineRobustMahalanobis
+from dense_armor.utility.anomaly.ocsvm import OneClassSGD
+from dense_armor.utility.anomaly.oiforest import OnlineIsolationForest
+from dense_armor.utility.datasets import DriftStream, SyntheticArm
 
 HERE = Path(__file__).resolve().parent
 URDF = ROOT / "test/fixtures/urdf/panda.urdf"
@@ -151,18 +155,59 @@ def fig_arm_trajectory():
     print(f"  lof_arm_trajectory.png: AUC={auc:.3f}")
 
 
+def _comparison_run():
+    """Run 6 detectors x 2 protocols x 5 seeds on DriftStream sudden."""
+    import time
+
+    builders = {
+        "HST": lambda k: HalfSpaceTrees(feature_keys=k, seed=0),
+        "LODA": lambda k: LODA(feature_keys=k, seed=0),
+        "OIForest": lambda k: OnlineIsolationForest(feature_keys=k, seed=0),
+        "OCSVM": lambda k: OneClassSGD(feature_keys=k, seed=0),
+        "Mahalanobis": lambda k: OnlineRobustMahalanobis(feature_keys=k),
+        "LOF": lambda k: LocalOutlierFactor(feature_keys=k, seed=0),
+    }
+    out = {n: {"learn-on-healthy": [], "learn-on-all": []} for n in builders}
+    for seed in range(5):
+        ds = DriftStream(
+            n_samples=2000, n_features=4, n_drifts=1,
+            kind="sudden", spacing=999.0, seed=seed,
+        )
+        X = [{k: float(sig[k]) for k in sig.names} for sig, _ in ds.stream()]
+        y = (ds.concepts_ == 1).astype(int)
+        keys = list(X[0].keys())
+        healthy = y == 0
+        for name, make in builders.items():
+            for proto, on_all in (
+                ("learn-on-healthy", False), ("learn-on-all", True)
+            ):
+                det = make(keys)
+                sc = np.empty(len(X))
+                for i, xi in enumerate(X):
+                    sc[i] = det.score_one(xi)
+                    if on_all or healthy[i]:
+                        det.learn_one(xi)
+                out[name][proto].append(float(roc_auc_score(y, sc)))
+    return out
+
+
 def fig_comparison():
     """AUC mediana su 5 seed, 6 detector x 2 protocolli, DriftStream sudden."""
-    with open("/tmp/lof_comparison.json") as f:
-        comp = json.load(f)
+    comp_seeds = _comparison_run()
     names = ["LOF", "HST", "LODA", "OIForest", "OCSVM", "Mahalanobis"]
+
+    def _med(name, proto):
+        vals = comp_seeds[name][proto]
+        return float(np.median(vals)), float(np.percentile(vals, 75) - np.percentile(vals, 25))
+
+    h_med = [_med(n, "learn-on-healthy")[0] for n in names]
+    a_med = [_med(n, "learn-on-all")[0] for n in names]
+    h_iqr = [_med(n, "learn-on-healthy")[1] for n in names]
+    a_iqr = [_med(n, "learn-on-all")[1] for n in names]
+
     fig, ax = plt.subplots(figsize=(11, 6))
     x = np.arange(len(names))
     w = 0.38
-    h_med = [comp[n]["learn-on-healthy"]["auc_med"] for n in names]
-    a_med = [comp[n]["learn-on-all"]["auc_med"] for n in names]
-    h_iqr = [comp[n]["learn-on-healthy"]["auc_iqr"] for n in names]
-    a_iqr = [comp[n]["learn-on-all"]["auc_iqr"] for n in names]
     ax.bar(
         x - w / 2,
         h_med,
@@ -201,12 +246,29 @@ def fig_comparison():
 
 def fig_budget():
     """p50 / p99 / max vs window, on 3000 samples."""
-    with open("/tmp/lof_budget.json") as f:
-        res = json.load(f)
-    W = [r[0] for r in res]
-    p50 = [r[2] for r in res]
-    p99 = [r[3] for r in res]
-    mx = [r[4] for r in res]
+    import time
+
+    rng = np.random.default_rng(0)
+    X = [
+        {"a": float(rng.normal()), "b": float(rng.normal()),
+         "c": float(rng.normal()), "d": float(rng.normal())}
+        for _ in range(3000)
+    ]
+    W = [25, 50, 100, 200, 400, 800]
+    p50 = []
+    p99 = []
+    mx = []
+    for w in W:
+        model = LocalOutlierFactor(n_neighbors=20, window=w)
+        lat = np.empty(len(X))
+        for i, xi in enumerate(X):
+            t0 = time.perf_counter()
+            model.score_one(xi)
+            model.learn_one(xi)
+            lat[i] = (time.perf_counter() - t0) * 1e6
+        p50.append(float(np.percentile(lat, 50)))
+        p99.append(float(np.percentile(lat, 99)))
+        mx.append(float(lat.max()))
     fig, ax = plt.subplots(figsize=(9, 5))
     ax.plot(W, p50, "-o", color="#2c6fa6", lw=2, label="p50")
     ax.plot(W, p99, "-s", color="#c0392b", lw=2, label="p99")
@@ -222,7 +284,7 @@ def fig_budget():
     fig.tight_layout()
     fig.savefig(HERE / "lof_budget.png", dpi=140)
     plt.close(fig)
-    print(f"  lof_budget.png: p99 at W=100 is {p99[0]:.0f} us")
+    print(f"  lof_budget.png: p99 at W=25 is {p99[0]:.0f} us")
 
 
 if __name__ == "__main__":
