@@ -78,6 +78,10 @@ from dense_armor.utility.vision.patches import (
     PatchFeatures,
     PatchMemory,
 )
+from dense_armor.utility.vision.scene import (
+    FrameAnomaly,
+    SceneChange,
+)
 from dense_armor.utility.vision.reduce import (
     IncrementalPCA,
     RandomProjection,
@@ -91,6 +95,8 @@ from dense_armor.utility.vision.streams import (
 
 __all__ = [
     "ArrayStream",
+    "FrameAnomaly",
+    "SceneChange",
     "GlobalMotion",
     "MotionEnergy",
     "CameraStream",
