@@ -38,8 +38,6 @@ Memory: O(max_buckets * log W).
 
 import math
 
-import numpy as np
-
 from dense_armor.roles import DriftDetector
 
 
@@ -53,7 +51,7 @@ class _Bucket:
         size: bucket level; ``2**size`` samples fit in the bucket.
     """
 
-    __slots__ = ("total", "total_sq", "n", "size")
+    __slots__ = ("n", "size", "total", "total_sq")
 
     def __init__(self, total: float, total_sq: float, n: int, size: int) -> None:
         self.total = total
@@ -143,10 +141,8 @@ class ADWIN(DriftDetector):
         self._total += x
         self._total_sq += x * x
         self._n += 1
-        if x < self._min:
-            self._min = x
-        if x > self._max:
-            self._max = x
+        self._min = min(self._min, x)
+        self._max = max(self._max, x)
         i = 0
         while i < len(self._buckets) and len(self._buckets[i]) > self.max_buckets:
             b1 = self._buckets[i].pop(0)
