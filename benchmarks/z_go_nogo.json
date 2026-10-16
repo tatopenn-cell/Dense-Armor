@@ -1,0 +1,202 @@
+{
+  "machine": {
+    "cpu": "Intel(R) Xeon(R) CPU @ 2.20GHz",
+    "cores": 4,
+    "python": "3.13.15",
+    "cpu_detail": {
+      "CPU(s)": "4",
+      "Vendor ID": "GenuineIntel",
+      "Model name": "Intel(R) Xeon(R) CPU @ 2.20GHz",
+      "CPU family": "6",
+      "Model": "79",
+      "Thread(s) per core": "2",
+      "Core(s) per socket": "2",
+      "Socket(s)": "1",
+      "Stepping": "0",
+      "BogoMIPS": "4399.99",
+      "avx2": true,
+      "avx512f": false,
+      "Hypervisor vendor": "KVM",
+      "L1d cache": "64 KiB (2 instances)",
+      "L2 cache": "512 KiB (2 instances)",
+      "L3 cache": "55 MiB (1 instance)",
+      "MemTotal_kB": 32869448
+    }
+  },
+  "samples": 1000,
+  "seeds": 20,
+  "metric": "mean squared error over the second half of the stream, prequential",
+  "rule": "GO: lower error than the Mondrian forest with two-sided paired Wilcoxon p < 0.05 and the 95% bootstrap interval of A12 above 0.5, or the same error (interval contains 0.5) at no more than half the ms per sample",
+  "regimes": {
+    "d20_2relevant": {
+      "pairs": {
+        "AMF": {
+          "median_error": 0.35836510145133627,
+          "mondrian_median_error": 0.26567435118417626,
+          "p_two_sided": 1.9073486328125e-06,
+          "a12": 0.035,
+          "a12_ci95": [
+            0.0,
+            0.09256249999999994
+          ],
+          "seeds_better": 0,
+          "ms_per_sample": 2.9216638044999854,
+          "mondrian_ms_per_sample": 3.908144443499964,
+          "verdict": "NO-GO"
+        },
+        "OXT": {
+          "median_error": 0.18393849900326384,
+          "mondrian_median_error": 0.26567435118417626,
+          "p_two_sided": 1.9073486328125e-06,
+          "a12": 0.975,
+          "a12_ci95": [
+            0.94,
+            1.0
+          ],
+          "seeds_better": 20,
+          "ms_per_sample": 4.150850476999949,
+          "mondrian_ms_per_sample": 3.908144443499964,
+          "verdict": "GO"
+        }
+      },
+      "minutes": 3.75656125942866
+    },
+    "d100_2relevant": {
+      "pairs": {
+        "AMF": {
+          "median_error": 0.41223154429639286,
+          "mondrian_median_error": 0.3911805525086145,
+          "p_two_sided": 0.00830841064453125,
+          "a12": 0.3425,
+          "a12_ci95": [
+            0.21,
+            0.46
+          ],
+          "seeds_better": 4,
+          "ms_per_sample": 2.9278592455000307,
+          "mondrian_ms_per_sample": 16.849641158000168,
+          "verdict": "NO-GO"
+        },
+        "OXT": {
+          "median_error": 0.35119672370077115,
+          "mondrian_median_error": 0.3911805525086145,
+          "p_two_sided": 0.2773551940917969,
+          "a12": 0.66,
+          "a12_ci95": [
+            0.5025,
+            0.8225625
+          ],
+          "seeds_better": 14,
+          "ms_per_sample": 4.724500397499924,
+          "mondrian_ms_per_sample": 16.849641158000168,
+          "verdict": "NO-GO"
+        }
+      },
+      "minutes": 8.24681377808253
+    },
+    "piecewise_one_feature": {
+      "pairs": {
+        "AMF": {
+          "median_error": 0.059333740288362115,
+          "mondrian_median_error": 0.03126674880250085,
+          "p_two_sided": 1.9073486328125e-06,
+          "a12": 0.0,
+          "a12_ci95": [
+            0.0,
+            0.0
+          ],
+          "seeds_better": 0,
+          "ms_per_sample": 2.85741818099973,
+          "mondrian_ms_per_sample": 1.3184963045000586,
+          "verdict": "NO-GO"
+        },
+        "OXT": {
+          "median_error": 0.03229848047857915,
+          "mondrian_median_error": 0.03126674880250085,
+          "p_two_sided": 0.069580078125,
+          "a12": 0.365,
+          "a12_ci95": [
+            0.2275,
+            0.4925
+          ],
+          "seeds_better": 5,
+          "ms_per_sample": 3.9218096275001244,
+          "mondrian_ms_per_sample": 1.3184963045000586,
+          "verdict": "NO-GO"
+        }
+      },
+      "minutes": 2.7242431640625
+    },
+    "outliers_5pct": {
+      "pairs": {
+        "AMF": {
+          "median_error": 1.4646903940444802,
+          "mondrian_median_error": 1.466226121443671,
+          "p_two_sided": 0.001689910888671875,
+          "a12": 0.445,
+          "a12_ci95": [
+            0.365,
+            0.48
+          ],
+          "seeds_better": 3,
+          "ms_per_sample": 2.8067399430001387,
+          "mondrian_ms_per_sample": 1.3219436004999352,
+          "verdict": "NO-GO"
+        },
+        "OXT": {
+          "median_error": 1.452572017819611,
+          "mondrian_median_error": 1.466226121443671,
+          "p_two_sided": 0.069580078125,
+          "a12": 0.515,
+          "a12_ci95": [
+            0.455,
+            0.5800624999999999
+          ],
+          "seeds_better": 14,
+          "ms_per_sample": 3.8905224679997445,
+          "mondrian_ms_per_sample": 1.3219436004999352,
+          "verdict": "NO-GO"
+        }
+      },
+      "minutes": 2.6968931674957277
+    },
+    "cost_limit_1ms": {
+      "pairs": {
+        "AMF": {
+          "median_error": 0.11387514031789199,
+          "mondrian_median_error": 0.04326548959108982,
+          "p_two_sided": 1.9073486328125e-06,
+          "a12": 0.0,
+          "a12_ci95": [
+            0.0,
+            0.0
+          ],
+          "seeds_better": 0,
+          "ms_per_sample": 0.9418515835000107,
+          "mondrian_ms_per_sample": 0.6916123445000721,
+          "verdict": "NO-GO"
+        },
+        "OXT": {
+          "median_error": 0.08017925778340733,
+          "mondrian_median_error": 0.04326548959108982,
+          "p_two_sided": 1.9073486328125e-06,
+          "a12": 0.0025,
+          "a12_ci95": [
+            0.0,
+            0.015
+          ],
+          "seeds_better": 0,
+          "ms_per_sample": 1.2602926405002108,
+          "mondrian_ms_per_sample": 0.6916123445000721,
+          "verdict": "NO-GO"
+        }
+      },
+      "minutes": 0.9792020559310913
+    }
+  },
+  "cost_limit_trees": {
+    "AMF": 3,
+    "OXT": 3,
+    "MON": 5
+  }
+}
