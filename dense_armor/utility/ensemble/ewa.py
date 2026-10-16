@@ -98,6 +98,15 @@ class ExponentiallyWeightedAverageRegressor(Regressor):
         ...     _ = r.learn_one({"x": 0.0}, 1.0)
         >>> round(r.predict_one({"x": 0.0}), 2)
         1.0
+
+    References:
+        Freund, Y., Schapire, R. E. (1997). A decision-theoretic
+            generalization of on-line learning and an application to
+            boosting. Journal of Computer and System Sciences 55(1),
+            119-139. Section 2.1 (Hedge) and Theorem 2, equation 9.
+        Kivinen, J., Warmuth, M. K. (1997). Exponentiated gradient versus
+            gradient descent for linear predictors. Information and
+            Computation 132(1), 1-63. The exponentiated update.
     """
 
     budget_s = 1e-3
