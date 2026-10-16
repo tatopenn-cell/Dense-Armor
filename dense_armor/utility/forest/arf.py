@@ -362,11 +362,15 @@ class AdaptiveRandomForestClassifier(Classifier):
             return {}
         if sum(w for w, _ in votes) <= 0.0:
             votes = [(1.0, p) for _, p in votes]
-        total: dict = dict.fromkeys(self.classes_, 0.0)
+        total: dict = {}
         for w, p in votes:
             for c, v in p.items():
                 total[c] = total.get(c, 0.0) + w * v
-        z = sum(total.values())
+        z = 0.0
+        for v in total.values():
+            z += v
+        if z <= 0.0:
+            return {}
         return {c: v / z for c, v in total.items()}
 
     def predict_one(self, x: Any, t: float | None = None) -> Any:

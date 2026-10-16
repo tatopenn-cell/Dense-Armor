@@ -401,12 +401,53 @@ class HoeffdingTreeClassifier(Classifier):
         path = self._path(d)
         return self._predict_proba_leaf(path[-1], d)
 
+    def _predict_class_leaf(self, leaf: _Node, x: dict) -> Any:
+        """Argmax of the leaf posterior, without building the dict."""
+        classes = self.classes_
+        if not classes:
+            return None
+        cc = leaf.class_counts_
+        if self.leaf == "majority" or not leaf.feature_stats_:
+            best_c = None
+            best_n = -1
+            for c in classes:
+                n_c = cc.get(c, 0)
+                if n_c > best_n:
+                    best_n = n_c
+                    best_c = c
+            return best_c
+        fs = leaf.feature_stats_
+        total = float(len(classes))
+        for v in cc.values():
+            total += v
+        log_pi = math.log(6.283185307179586)
+        best_c = None
+        best_lp = -1e300
+        for c in classes:
+            prior = cc.get(c, 0) + 1.0
+            lp = math.log(prior / total)
+            for f, v in x.items():
+                per_class = fs.get(f)
+                if per_class is None:
+                    continue
+                g = per_class.get(c)
+                if g is None or g.n_ < 2:
+                    continue
+                var = g.m2_ / g.n_ + 1e-9
+                dd = float(v) - g.mean_
+                lp -= 0.5 * (log_pi + math.log(var)) + 0.5 * dd * dd / var
+            if lp > best_lp:
+                best_lp = lp
+                best_c = c
+        return best_c
+
     def predict_one(self, x: Any, t: float | None = None) -> Any:
         """Return the most likely class."""
-        proba = self.predict_proba_one(x, t=t)
-        if not proba:
+        if self.root_ is None:
             return None
-        return max(proba.items(), key=lambda kv: kv[1])[0]
+        d = _as_dict(x)
+        path = self._path(d)
+        return self._predict_class_leaf(path[-1], d)
 
     def explain_one(self, x: Any, t: float | None = None) -> list:
         """Return the path from root to leaf as a list of dicts.
