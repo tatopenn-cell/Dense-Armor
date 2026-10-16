@@ -70,6 +70,10 @@ and it prints the score before and after the change.
 """
 
 from dense_armor.utility.vision.features import FrameFeatures
+from dense_armor.utility.vision.motion import (
+    GlobalMotion,
+    MotionEnergy,
+)
 from dense_armor.utility.vision.patches import (
     PatchFeatures,
     PatchMemory,
@@ -87,6 +91,8 @@ from dense_armor.utility.vision.streams import (
 
 __all__ = [
     "ArrayStream",
+    "GlobalMotion",
+    "MotionEnergy",
     "CameraStream",
     "Frame",
     "FrameFeatures",
