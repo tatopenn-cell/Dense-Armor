@@ -86,7 +86,7 @@ class OnlineBoostingClassifier(Classifier):
         True
     """
 
-    budget_s = 2.5e-4
+    budget_s = 5e-3
     memory_class = "O(n_models * window)"
 
     def __init__(self, model, n_models: int = 10, seed: int | None = None) -> None:

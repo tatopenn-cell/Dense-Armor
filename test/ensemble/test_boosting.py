@@ -1,4 +1,4 @@
-"""Online boosting: the lambda accumulators, the vote, NaN handling."""
+"""Online boosting: lambda accumulators, vote, NaN handling."""
 
 import numpy as np
 
@@ -6,13 +6,13 @@ from dense_armor.utility.ensemble.boosting import OnlineBoostingClassifier
 from dense_armor.utility.tree.hoeffding import HoeffdingTreeClassifier
 
 
-def _clf():
+def _tree():
     return HoeffdingTreeClassifier(grace_period=20)
 
 
 def test_learns_a_simple_split():
     rng = np.random.default_rng(0)
-    clf = OnlineBoostingClassifier(_clf, n_models=3, seed=0)
+    clf = OnlineBoostingClassifier(_tree, n_models=3, seed=0)
     for _ in range(400):
         x = float(rng.normal(0.0 if rng.random() < 0.5 else 4.0, 0.5))
         y = int(x > 2.0)
@@ -23,7 +23,7 @@ def test_learns_a_simple_split():
 
 def test_lambda_accumulators_are_finite():
     rng = np.random.default_rng(0)
-    clf = OnlineBoostingClassifier(_clf, n_models=3, seed=0)
+    clf = OnlineBoostingClassifier(_tree, n_models=3, seed=0)
     for _ in range(200):
         x = float(rng.normal(0.0, 1.0))
         y = int(x > 0.0)
@@ -35,7 +35,7 @@ def test_lambda_accumulators_are_finite():
 
 
 def test_nan_is_skipped_and_counted():
-    clf = OnlineBoostingClassifier(_clf, n_models=2, seed=0)
+    clf = OnlineBoostingClassifier(_tree, n_models=2, seed=0)
     _ = clf.learn_one({"x": 0.0}, 0)
     _ = clf.learn_one({"x": float("nan")}, 0)
     assert clf.n_missing == 1
@@ -43,7 +43,7 @@ def test_nan_is_skipped_and_counted():
 
 
 def test_clone_preserves_constructor():
-    clf = OnlineBoostingClassifier(_clf, n_models=4, seed=1)
+    clf = OnlineBoostingClassifier(_tree, n_models=4, seed=1)
     c = clf.clone()
     assert c.n_models == 4
     assert c.seed == 1

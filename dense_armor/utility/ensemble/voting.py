@@ -80,7 +80,7 @@ class VotingClassifier(Classifier):
         'soft'
     """
 
-    budget_s = 3e-4
+    budget_s = 5e-3
     memory_class = "O(n_models * window)"
 
     def __init__(self, models, mode: str = "hard", weights=None) -> None:

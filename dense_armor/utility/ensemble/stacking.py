@@ -84,7 +84,7 @@ class StackingClassifier(Classifier):
         0
     """
 
-    budget_s = 2.5e-4
+    budget_s = 5e-3
     memory_class = "O(n_models * window)"
 
     def __init__(self, models, meta_model) -> None:

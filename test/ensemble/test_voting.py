@@ -5,6 +5,10 @@ from dense_armor.utility.ensemble.voting import VotingClassifier
 from dense_armor.utility.tree.hoeffding import HoeffdingTreeClassifier
 
 
+def _tree_factory():
+    return HoeffdingTreeClassifier(grace_period=20)
+
+
 class _Fixed(Classifier):
     def __init__(self, value=0, proba=None):
         self.value = value

@@ -6,6 +6,10 @@ from dense_armor.utility.ensemble.bagging import OnlineBaggingClassifier
 from dense_armor.utility.tree.hoeffding import HoeffdingTreeClassifier
 
 
+def _clf_factory():
+    return HoeffdingTreeClassifier(grace_period=20)
+
+
 def _clf():
     return HoeffdingTreeClassifier(grace_period=20)
 
@@ -20,7 +24,7 @@ def test_poisson_draw_mean_and_variance():
 
 def test_learns_a_simple_split():
     rng = np.random.default_rng(0)
-    clf = OnlineBaggingClassifier(_clf, n_models=3, seed=0)
+    clf = OnlineBaggingClassifier(_clf_factory, n_models=3, seed=0)
     for _ in range(400):
         x = float(rng.normal(0.0 if rng.random() < 0.5 else 4.0, 0.5))
         y = int(x > 2.0)
@@ -30,7 +34,7 @@ def test_learns_a_simple_split():
 
 
 def test_nan_sample_is_skipped_and_counted():
-    clf = OnlineBaggingClassifier(_clf, n_models=2, seed=0)
+    clf = OnlineBaggingClassifier(_clf_factory, n_models=2, seed=0)
     _ = clf.learn_one({"x": 0.0}, 0)
     _ = clf.learn_one({"x": float("nan")}, 0)
     _ = clf.learn_one({"x": float("inf")}, 1)
@@ -41,7 +45,7 @@ def test_nan_sample_is_skipped_and_counted():
 
 
 def test_clone_preserves_constructor():
-    clf = OnlineBaggingClassifier(_clf, n_models=5, seed=42)
+    clf = OnlineBaggingClassifier(_clf_factory, n_models=5, seed=42)
     c = clf.clone()
     assert type(c) is OnlineBaggingClassifier
     assert c.n_models == 5
@@ -50,7 +54,7 @@ def test_clone_preserves_constructor():
 
 
 def test_no_nan_in_weights_after_a_nan_sample():
-    clf = OnlineBaggingClassifier(_clf, n_models=2, seed=0)
+    clf = OnlineBaggingClassifier(_clf_factory, n_models=2, seed=0)
     for _ in range(20):
         _ = clf.learn_one({"x": 0.5}, 0)
     _ = clf.learn_one({"x": float("nan")}, 0)

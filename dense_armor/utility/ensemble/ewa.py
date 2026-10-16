@@ -100,7 +100,7 @@ class ExponentiallyWeightedAverageRegressor(Regressor):
         1.0
     """
 
-    budget_s = 5e-5
+    budget_s = 1e-3
     memory_class = "O(n_models)"
 
     def __init__(self, models, eta: float = 0.5, loss=None) -> None:

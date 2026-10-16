@@ -1,4 +1,4 @@
-"""EWA: the Hedge bound holds on a stream where one member is best."""
+"""EWA: the Hedge bound of Freund-Schapire 1997 (Eq. 9)."""
 
 import numpy as np
 
@@ -17,36 +17,44 @@ class _Const(Regressor):
         return self.v
 
 
-def test_bound_holds_on_a_stream_where_one_member_is_best():
-    """L_ensemble <= (eta/(1-exp(-eta))) * min L_i + ln(K)/(1-exp(-eta))."""
-    rng = np.random.default_rng(0)
-    members = [_Const(0.0), _Const(0.5), _Const(1.0)]
-    eta = 0.5
-    ewa = ExponentiallyWeightedAverageRegressor(members, eta=eta)
-    losses = [0.0, 0.0, 0.0]
-    for _ in range(200):
-        y = 1.0 + float(rng.normal(0, 0.05))
-        _ = ewa.predict_one({"x": 0.0})
-        losses[0] += min((y - 0.0) ** 2, 1.0)  # clipped to [0,1]
-        losses[1] += min((y - 0.5) ** 2, 1.0)
-        losses[2] += min((y - 1.0) ** 2, 1.0)
-        _ = ewa.learn_one({"x": 0.0}, y)
-    denom = 1.0 - np.exp(-eta)
-    bound = (eta / denom) * min(losses) + np.log(3) / denom
-    # la loss cumulativa dell'ensemble è quella che il paper chiama L_ensemble
-    # in pratica l'ensemble è ~= il miglior membro; verifichiamo il bound
-    assert bound > 0
-    # il miglior membro è _Const(1.0)
-    assert ewa.predict_one({"x": 0.0}) > 0.9
+def test_bound_matches_paper_formula():
+    """``bound()`` equals Eq. 9 of the paper for the given losses."""
+    ewa = ExponentiallyWeightedAverageRegressor([_Const(0.0), _Const(1.0)], eta=0.5)
+    for _ in range(30):
+        _ = ewa.learn_one({"x": 0.0}, 1.0)
+    expected = (
+        (0.5 / (1.0 - np.exp(-0.5))) * min(ewa.losses_)
+        + np.log(2) / (1.0 - np.exp(-0.5))
+    )
+    assert abs(ewa.bound() - expected) < 1e-9
 
 
-def test_learns_to_trust_the_best_member():
+def test_bound_responds_to_eta():
+    """Changing eta changes the bound (catches a constant return)."""
+    a = ExponentiallyWeightedAverageRegressor([_Const(0.0), _Const(1.0)], eta=0.1)
+    b = ExponentiallyWeightedAverageRegressor([_Const(0.0), _Const(1.0)], eta=1.0)
+    for _ in range(30):
+        _ = a.learn_one({"x": 0.0}, 1.0)
+        _ = b.learn_one({"x": 0.0}, 1.0)
+    assert a.bound() != b.bound()
+
+
+def test_best_member_wins():
     ewa = ExponentiallyWeightedAverageRegressor([_Const(0.0), _Const(1.0)], eta=0.5)
     for _ in range(30):
         _ = ewa.learn_one({"x": 0.0}, 1.0)
     assert ewa.predict_one({"x": 0.0}) > 0.99
     assert ewa.losses_[0] > 10.0
     assert ewa.losses_[1] == 0.0
+
+
+def test_bound_is_finite_and_positive():
+    ewa = ExponentiallyWeightedAverageRegressor([_Const(0.0), _Const(1.0)], eta=0.5)
+    for _ in range(10):
+        _ = ewa.learn_one({"x": 0.0}, 1.0)
+    b = ewa.bound()
+    assert np.isfinite(b)
+    assert b >= 0
 
 
 def test_nan_counted():
@@ -59,12 +67,3 @@ def test_clone():
     ewa = ExponentiallyWeightedAverageRegressor([_Const(0.0)], eta=0.3)
     c = ewa.clone()
     assert c.eta == 0.3
-
-
-def test_bound_is_finite_and_positive():
-    ewa = ExponentiallyWeightedAverageRegressor([_Const(0.0), _Const(1.0)], eta=0.5)
-    for _ in range(10):
-        _ = ewa.learn_one({"x": 0.0}, 1.0)
-    b = ewa.bound()
-    assert np.isfinite(b)
-    assert b >= 0
