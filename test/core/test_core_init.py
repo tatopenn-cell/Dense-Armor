@@ -22,7 +22,9 @@ def test_import_diretto_dal_pacchetto_core():
         __version__,
     )
 
-    assert __version__ == "1.0.11"
+    import dense_armor
+
+    assert __version__ == dense_armor.__version__
     assert callable(apply_damping_blend)
     assert isinstance(CMD_MAP, dict) and "relu" in CMD_MAP
 

@@ -42,6 +42,9 @@ STATEFUL = {
 # detector's internal buffer has advanced), unlike every other tool above.
 
 _STREAM_SESSIONS = {}
+_STREAM_LAST_SEEN = {}
+MAX_STREAM_SESSIONS = 256
+STREAM_SESSION_TTL_S = 3600.0
 # In-process dict, same lifetime as this MCP server process (see
 # server.py's module docstring for why everything here is direct
 # in-process, no separate kernel) -- a session's detector state is lost
@@ -262,10 +265,18 @@ async def dense_armor_stream_start(params: StreamStartInput) -> str:
         str: JSON with {session_id} -- pass this to every following
         dense_armor_stream_update call for this same real stream.
     """
+    import time
     import uuid
     from dense_armor.utility.anomaly.streaming import MultiChannelStreamingDeviationDetector
 
+    now = time.monotonic()
+    for sid in [s for s, t in _STREAM_LAST_SEEN.items() if now - t > STREAM_SESSION_TTL_S]:
+        _STREAM_SESSIONS.pop(sid, None)
+        _STREAM_LAST_SEEN.pop(sid, None)
+    if len(_STREAM_SESSIONS) >= MAX_STREAM_SESSIONS:
+        return f"Error: {MAX_STREAM_SESSIONS} streaming sessions are open -- close one with dense_armor_stream_end"
     session_id = uuid.uuid4().hex
+    _STREAM_LAST_SEEN[session_id] = now
     _STREAM_SESSIONS[session_id] = MultiChannelStreamingDeviationDetector(
         n_channels=params.n_channels, radius=params.radius, ref_mult=params.ref_mult, n_sigmas=params.n_sigmas,
     )
@@ -287,12 +298,15 @@ async def dense_armor_stream_update(params: StreamUpdateInput) -> str:
         str: JSON with {flags: [bool, ...]}, one per channel, same order
         as 'values'.
     """
+    import time
+
     det = _STREAM_SESSIONS.get(params.session_id)
     if det is None:
         return f"Error: unknown session_id '{params.session_id}' -- call dense_armor_stream_start first"
     x = _to_array(params.values)
     if x.size != det.n_channels:
         return f"Error: expected {det.n_channels} values (n_channels given to dense_armor_stream_start), got {x.size}"
+    _STREAM_LAST_SEEN[params.session_id] = time.monotonic()
     flags = det.update(x)
     return json.dumps({"flags": [bool(f) for f in flags]}, indent=2)
 
@@ -301,9 +315,8 @@ async def dense_armor_stream_update(params: StreamUpdateInput) -> str:
 @catch_errors
 async def dense_armor_stream_end(params: StreamEndInput) -> str:
     """Close a streaming session and free its server-side detector state --
-    call this when a real sensor stream ends. Sessions are not garbage-
-    collected automatically; an agent that opens many sessions without
-    closing them will leak server memory for the lifetime of this process.
+    call this when a real sensor stream ends. At most 256 sessions stay
+    open, and a session idle for an hour is dropped on the next start.
 
     Args:
         params (StreamEndInput): session_id.
@@ -314,4 +327,5 @@ async def dense_armor_stream_end(params: StreamEndInput) -> str:
     if params.session_id not in _STREAM_SESSIONS:
         return f"Error: unknown session_id '{params.session_id}'"
     del _STREAM_SESSIONS[params.session_id]
+    _STREAM_LAST_SEEN.pop(params.session_id, None)
     return json.dumps({"closed": True}, indent=2)

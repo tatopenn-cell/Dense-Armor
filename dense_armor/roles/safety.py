@@ -13,7 +13,10 @@ Two things make an estimator safe inside a control loop:
 
 Checkpoints are versioned and checksummed. A corrupted file, or one
 written with a different format version, is refused with a clear error,
-so a control loop never silently restores a bad state.
+so a control loop never silently restores a bad state. The checksum
+detects accidental corruption. For authenticity pass the same secret
+``key`` to ``save`` and ``restore`` (HMAC-SHA256). The model state is
+stored with pickle: restore only checkpoints from a source you trust.
 
 References
 ----------
@@ -21,6 +24,8 @@ Page, E. S. (1954). Continuous inspection schemes. Biometrika 41,
     100-114.
 """
 import hashlib
+import hmac
+import io
 import pickle
 import time
 from enum import Enum
@@ -31,6 +36,11 @@ from dense_armor.roles import Root, Estimator
 
 
 CHECKPOINT_VERSION = 1
+
+
+class _EnvelopeUnpickler(pickle.Unpickler):
+    def find_class(self, module, name):
+        raise pickle.UnpicklingError(f"checkpoint envelope may not reference {module}.{name}")
 
 
 class Health(str, Enum):
@@ -223,11 +233,18 @@ class SafeEstimator(Estimator):
             return float("nan")
         return float(m.score_one(x, t=t))
 
-    def save(self, path: str | Path) -> Path:
+    @staticmethod
+    def _digest(blob: bytes, key: bytes | None) -> str:
+        if key is None:
+            return hashlib.sha256(blob).hexdigest()
+        return hmac.new(key, blob, hashlib.sha256).hexdigest()
+
+    def save(self, path: str | Path, key: bytes | None = None) -> Path:
         """Save the learned state with format version and SHA-256.
 
         Args:
             path: destination file.
+            key: optional secret; the digest becomes an HMAC-SHA256.
 
         Returns:
             The path written.
@@ -243,17 +260,22 @@ class SafeEstimator(Estimator):
             else {},
         }
         blob = pickle.dumps(state, protocol=pickle.HIGHEST_PROTOCOL)
-        digest = hashlib.sha256(blob).hexdigest()
+        digest = self._digest(blob, key)
         payload = {"sha256": digest, "blob": blob}
         p = Path(path)
         p.write_bytes(pickle.dumps(payload, protocol=pickle.HIGHEST_PROTOCOL))
         return p
 
-    def restore(self, path: str | Path) -> "SafeEstimator":
+    def restore(self, path: str | Path, key: bytes | None = None) -> "SafeEstimator":
         """Restore the learned state from a saved checkpoint.
+
+        The envelope is read with an unpickler that refuses every global,
+        and the digest is verified before the model state is unpickled.
+        The state itself is a pickle: restore only trusted checkpoints.
 
         Args:
             path: source file.
+            key: the secret given to ``save``, if any.
 
         Returns:
             ``self``, for chaining.
@@ -264,10 +286,10 @@ class SafeEstimator(Estimator):
             TypeError: if the stored model class does not match.
         """
         p = Path(path)
-        payload = pickle.loads(p.read_bytes())
+        payload = _EnvelopeUnpickler(io.BytesIO(p.read_bytes())).load()
         blob = payload["blob"]
-        digest = hashlib.sha256(blob).hexdigest()
-        if digest != payload["sha256"]:
+        digest = self._digest(blob, key)
+        if not hmac.compare_digest(digest, str(payload["sha256"])):
             raise ValueError(f"checkpoint {p} is corrupted: SHA-256 mismatch")
         state = pickle.loads(blob)
         if state.get("version") != CHECKPOINT_VERSION:

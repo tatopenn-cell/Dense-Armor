@@ -1,5 +1,6 @@
 """Public surface of the :mod:`dense_armor.core` package."""
 
+from .. import __version__
 from .compiler import CMD_MAP, DynamicAICodegen
 from .damping_operator import apply_damping_blend
 from .engine import AdaptiveSignalStabilizer
@@ -10,7 +11,6 @@ from .tensor import TensorVault
 from .vector import BitwisePermutationEngine, ParametricScenarioSimulator
 from .visualizer import AIEngineVisualizer
 
-__version__ = "1.0.11"
 __all__ = [
     "CMD_MAP",
     "AIEngineVisualizer",

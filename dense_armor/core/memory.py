@@ -58,10 +58,8 @@ class UniversalMemoryGuard:
             A fraction in ``[0.0, 1.0]``.
         """
         try:
-            cmd = "nvidia-smi --query-gpu=memory.total,memory.free --format=csv,nounits,noheader"
-            output = (
-                subprocess.check_output(cmd, shell=True, timeout=5).decode().strip()
-            )
+            cmd = ["nvidia-smi", "--query-gpu=memory.total,memory.free", "--format=csv,nounits,noheader"]
+            output = subprocess.check_output(cmd, timeout=5).decode().strip()
 
             lines = [line.strip() for line in output.split("\n") if line.strip()]
             min_free_ratio = 1.0
