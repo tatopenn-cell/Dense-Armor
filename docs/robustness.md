@@ -1,6 +1,6 @@
 # Adversarial robustness
 
-**In plain words:** We attacked the library's cleaning tools with nine kinds of deliberately bad data, to see how well they hold up. This page shows what held, what did not and the known weak point.
+We attacked the library's cleaning tools with nine kinds of deliberately bad data, to see how well they hold up. This page shows what held, what did not and the known weak point.
 
 The shielding engines were tested against nine families of adversarial
 attacks. This page is the honest result: what held, what did not, and which

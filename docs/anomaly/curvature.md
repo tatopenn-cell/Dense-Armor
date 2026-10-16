@@ -1,6 +1,6 @@
 # Curvature
 
-**In plain words:** This tool tells you how far one value is from a target value, as a score from 0 (right on the target) towards 1 (far away). You give it the current value and the target; it measures the distance in the units of your problem.
+This tool tells you how far one value is from a target value, as a score from 0 (right on the target) towards 1 (far away). You give it the current value and the target; it measures the distance in the units of your problem.
 
 `curvature(x, ref, scale)` answers one question with one number in `[0, 1)`: **how far is
 `x` from `ref`, in the physical units of the problem?** It is not an anomaly detector;

@@ -1,6 +1,6 @@
 # Multiclass from binary classifiers
 
-**In plain words:** Three ways to make a two-class classifier answer a three-class question. One trains a classifier per class, one trains a classifier per pair of classes and lets them vote, one gives every class a binary code and reads the answer off the closest code. You pass in the binary classifier, the wrapper handles the rest.
+Three ways to make a two-class classifier answer a three-class question. One trains a classifier per class, one trains a classifier per pair of classes and lets them vote, one gives every class a binary code and reads the answer off the closest code. You pass in the binary classifier, the wrapper handles the rest.
 
 ## 1. What they are
 

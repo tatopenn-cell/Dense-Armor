@@ -1,6 +1,6 @@
 # Anomaly detection
 
-**In plain words:** This section is about spotting readings that look strange. Each tool learns from the recent readings what is usual, and gives every new reading a score: the higher the score, the less it looks like the recent past.
+This section is about spotting readings that look strange. Each tool learns from the recent readings what is usual, and gives every new reading a score: the higher the score, the less it looks like the recent past.
 
 An anomaly detector gives every sample a score: high means the sample does not look like the
 recent past. These detectors work one sample at a time, so they run inside a control loop.

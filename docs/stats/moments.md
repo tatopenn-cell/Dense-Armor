@@ -1,6 +1,6 @@
 # Moments
 
-**In plain words:** These tools keep the average, the wobble and a few other summary numbers of a signal, updated with every new reading, without storing the readings.
+These tools keep the average, the wobble and a few other summary numbers of a signal, updated with every new reading, without storing the readings.
 
 ## What this is
 

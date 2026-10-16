@@ -1,6 +1,6 @@
 # Robot roles
 
-**In plain words:** A robot's control program runs on a fixed clock, so the learning tools need a few extra things: a time limit for each step, a margin of error around each prediction, a health status and physical units. This page describes the layer that adds them.
+A robot's control program runs on a fixed clock, so the learning tools need a few extra things: a time limit for each step, a margin of error around each prediction, a health status and physical units. This page describes the layer that adds them.
 
 A control loop is not a training script. It runs at a fixed period, on
 real hardware, with real consequences. The layer described on this page

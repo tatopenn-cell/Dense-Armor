@@ -1,6 +1,6 @@
 # Trajectory: closed-form quintic polynomial reference generation
 
-**In plain words:** This tool calculates a smooth, continuous path to move any number of robotic joints from an initial position to a target destination within a set time frame. By using a fifth-degree equation, it guarantees that the movement starts and stops seamlessly, preventing sudden jerks or mechanical vibrations at the endpoints.
+This tool calculates a smooth, continuous path to move any number of robotic joints from an initial position to a target destination within a set time frame. By using a fifth-degree equation, it guarantees that the movement starts and stops seamlessly, preventing sudden jerks or mechanical vibrations at the endpoints.
 
 
 The [rate limiter](rate_limiter.md) bounds how fast a command can change and the

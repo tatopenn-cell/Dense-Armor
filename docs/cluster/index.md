@@ -1,6 +1,6 @@
 # Clustering: incremental partitioning and density-based data stream models
 
-**In plain words:** This page shows how a system can automatically group similar data points together in real time, one by one, without needing any pre-assigned categories. It covers standard tracking, groups that shift positions over time, filtering out noise, and translating image patches into visual signatures.
+This page shows how a system can automatically group similar data points together in real time, one by one, without needing any pre-assigned categories. It covers standard tracking, groups that shift positions over time, filtering out noise, and translating image patches into visual signatures.
 
 
 ## 1. Online k-means: k groups, one point at a time

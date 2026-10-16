@@ -1,6 +1,6 @@
 # Robust statistics
 
-**In plain words:** The average can be pulled far off by one bad reading; the middle value (the median) cannot. These tools compute summary numbers that a few bad readings cannot spoil.
+The average can be pulled far off by one bad reading; the middle value (the median) cannot. These tools compute summary numbers that a few bad readings cannot spoil.
 
 ## What this is
 

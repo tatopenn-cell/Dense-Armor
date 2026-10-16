@@ -1,6 +1,6 @@
 # Kinematic controller: closed-form tracking feedback laws
 
-**In plain words:** This tool translates the target path you want a robotic joint to follow into the exact speed commands needed to keep it on track. It uses a single, straightforward equation that forces the joint to close the gap at a predictable, user-defined rate, working directly at the velocity level required by most modern robot drivers.
+This tool translates the target path you want a robotic joint to follow into the exact speed commands needed to keep it on track. It uses a single, straightforward equation that forces the joint to close the gap at a predictable, user-defined rate, working directly at the velocity level required by most modern robot drivers.
 
 
 The [trajectory](trajectory.md) generator gives a smooth reference to follow. Something

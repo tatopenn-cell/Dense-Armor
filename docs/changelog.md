@@ -1,6 +1,6 @@
 # Changelog
 
-**In plain words:** The list of what changed in each version of Dense-Armor: new features and fixes.
+The list of what changed in each version of Dense-Armor: new features and fixes.
 
 Included directly from the repository [`CHANGELOG.md`](https://github.com/tatopenn-cell/Dense-Armor/blob/master/CHANGELOG.md)
 so it never goes stale relative to the single source of truth.

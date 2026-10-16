@@ -1,6 +1,6 @@
 # Nearest neighbours
 
-**In plain words:** Two estimators that answer a new sample by looking at the most similar samples they have seen. A classifier returns the most common label among the closest neighbours; a regressor returns their average. They keep only the last few hundred samples, so they are fast and cheap, and old samples drop out on their own.
+Two estimators that answer a new sample by looking at the most similar samples they have seen. A classifier returns the most common label among the closest neighbours; a regressor returns their average. They keep only the last few hundred samples, so they are fast and cheap, and old samples drop out on their own.
 
 ## 1. What they are
 

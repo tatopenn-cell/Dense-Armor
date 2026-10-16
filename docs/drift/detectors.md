@@ -1,6 +1,6 @@
 # Drift detectors: sequential statistical architectures for concept drift isolation
 
-**In plain words:** This page explains how a system can notice slow, gradual changes in a robot's operational numbers before an outright mechanical failure occurs. By accumulating small deviations over time rather than looking at individual readings, these four tools can pinpoint exactly when a shift has happened, each trading off reaction delay against the rate of false alarms.
+This page explains how a system can notice slow, gradual changes in a robot's operational numbers before an outright mechanical failure occurs. By accumulating small deviations over time rather than looking at individual readings, these four tools can pinpoint exactly when a shift has happened, each trading off reaction delay against the rate of false alarms.
 
 
 A robot that has been working fine for hours can start to behave differently

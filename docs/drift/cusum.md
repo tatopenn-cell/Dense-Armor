@@ -1,6 +1,6 @@
 # CUSUM: sequential analysis for sub-clinical data stream drift detection
 
-**In plain words:** This page explains how to detect slow, gradual changes in a system—like a mechanical part wearing out bit by bit. While a standard detector looks at one reading at a time and misses small shifts, CUSUM accumulates these tiny anomalies over time and triggers an alert as soon as the total deviation confirms a real structural trend.
+This page explains how to detect slow, gradual changes in a system—like a mechanical part wearing out bit by bit. While a standard detector looks at one reading at a time and misses small shifts, CUSUM accumulates these tiny anomalies over time and triggers an alert as soon as the total deviation confirms a real structural trend.
 
 
 A robot joint wears out a little every day. Each single reading still looks normal, so a

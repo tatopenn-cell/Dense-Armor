@@ -1,6 +1,6 @@
 # Online Isolation Forest
 
-**In plain words:** Online Isolation Forest tells you when a new reading looks strange by asking how hard it is to set it apart from the normal ones. It cuts the space of numbers at random, again and again. A strange reading is alone after a few cuts; a normal one, surrounded by many others, needs many cuts. Few cuts give a high score, many cuts a low one.
+Online Isolation Forest tells you when a new reading looks strange by asking how hard it is to set it apart from the normal ones. It cuts the space of numbers at random, again and again. A strange reading is alone after a few cuts; a normal one, surrounded by many others, needs many cuts. Few cuts give a high score, many cuts a low one.
 
 Online Isolation Forest scores each sample by how quickly a random tree isolates it from
 the rest. In a control loop it answers one question per reading: does this joint residual

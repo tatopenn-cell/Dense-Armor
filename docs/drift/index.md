@@ -1,6 +1,6 @@
 # Drift detection: statistical methods for non-stationary process drift isolation
 
-**In plain words:** While anomaly detection tools spot a single, sudden weird reading, drift detection tools look at the bigger picture. They notice when the baseline level of a system is slowly drifting over time, accumulating tiny, subtle changes that would look perfectly normal if judged on their own.
+While anomaly detection tools spot a single, sudden weird reading, drift detection tools look at the bigger picture. They notice when the baseline level of a system is slowly drifting over time, accumulating tiny, subtle changes that would look perfectly normal if judged on their own.
 
 
 Anomaly detection flags samples. Drift detection flags **a change of the average** —

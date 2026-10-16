@@ -1,6 +1,6 @@
 # Local Outlier Factor (LOF)
 
-**In plain words:** Local Outlier Factor gives each reading a score of how isolated it is from the readings around it. A reading surrounded by similar readings scores about 1; a reading far from its neighbours scores higher. It is *local*: the comparison is against the readings that happen to be near it, not against the whole dataset, so a strange reading next to a dense cluster is caught even when its distance to the cluster is small.
+Local Outlier Factor gives each reading a score of how isolated it is from the readings around it. A reading surrounded by similar readings scores about 1; a reading far from its neighbours scores higher. It is *local*: the comparison is against the readings that happen to be near it, not against the whole dataset, so a strange reading next to a dense cluster is caught even when its distance to the cluster is small.
 
 Imagine following the residual of a robot joint as the arm moves. Most of the time the residual stays in a small cloud near zero, the region the arm visits on every cycle. Occasionally it drifts into a corner of the space the arm reaches only rarely. A point in that corner is not necessarily a fault, because the arm passes through it normally every few cycles. It is a fault only when it is more isolated than the points that are normally around it. LOF measures exactly that.
 

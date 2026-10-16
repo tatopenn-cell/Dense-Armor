@@ -1,6 +1,6 @@
 # Armatura (1D series shield)
 
-**In plain words:** Armatura cleans one series of numbers: it finds the readings that are obviously broken (a sudden huge value, a missing reading) and replaces them with sensible values. You get back the cleaned series and the list of places it changed.
+Armatura cleans one series of numbers: it finds the readings that are obviously broken (a sudden huge value, a missing reading) and replaces them with sensible values. You get back the cleaned series and the list of places it changed.
 
 A loss curve that suddenly jumps to 10⁶. A sensor channel that drops a reading and
 returns NaN. A token-likelihood stream that goes from 0.9 to 0 for one sample. These are

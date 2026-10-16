@@ -1,6 +1,6 @@
 # OnlineNewtonStep
 
-**In plain words:** OnlineNewtonStep decides how much to change a learning model's numbers after each example. Unlike the simple rules, it also takes into account how sharply the error curves.
+OnlineNewtonStep decides how much to change a learning model's numbers after each example. Unlike the simple rules, it also takes into account how sharply the error curves.
 
 OnlineNewtonStep is the only second-order optimizer in the package. It
 keeps a running approximation of the Hessian of the loss, and it uses the

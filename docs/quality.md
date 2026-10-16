@@ -24,7 +24,7 @@ Rows: 106. Supported by the benchmark: 4. Kept (technical): 57. Rows needing rew
 | 7 | `control/cbf_filter.md`:60 | `k = alpha_gain`: larger `k` lets the joint approach the boundary faster. | kept | word is technical, definition, or a measurement inside the page |
 | 8 | `control/kinematic_controller.md`:78 | The controller asks the joints to move faster than the reference, to catch up. It is | kept | word is technical, definition, or a measurement inside the page |
 | 9 | `control/kinematic_controller.md`:129 | that module: every real excursion recovers from a real disclosed nonzero initial | kept | word is technical, definition, or a measurement inside the page |
-| 10 | `control/rate_limiter.md`:3 | **In plain words:** This tool ensures that a robot's motor is never ordered to change its speed faster than it | kept | word is technical, definition, or a measurement inside the page |
+| 10 | `control/rate_limiter.md`:3 |  This tool ensures that a robot's motor is never ordered to change its speed faster than it | kept | word is technical, definition, or a measurement inside the page |
 | 11 | `control/rate_limiter.md`:13 | does not need to: it just refuses to move faster than the motors allow. The bound is on | kept | word is technical, definition, or a measurement inside the page |
 | 12 | `control/rate_limiter.md`:139 | makes sure that velocity never asks the motor to change faster than it can; the CBF | kept | word is technical, definition, or a measurement inside the page |
 | 13 | `drift/cusum.md`:218 | Urban Objects, 7 independent points) the real detection was always faster than the predicted | kept | word is technical, definition, or a measurement inside the page |
@@ -69,7 +69,7 @@ Rows: 106. Supported by the benchmark: 4. Kept (technical): 57. Rows needing rew
 | 52 | `quality.md`:19 | / 7 / control/cbf_filter.md:60 / `k = alpha_gain`: larger `k` lets the joint approach the boundary faster. / k | kept | not a comparison A vs B |
 | 53 | `quality.md`:20 | / 8 / control/kinematic_controller.md:78 / The controller asks the joints to move faster than the reference, t | kept | not a comparison A vs B |
 | 54 | `quality.md`:21 | / 9 / control/kinematic_controller.md:129 / that module: every real excursion recovers from a real disclosed n | kept | not a comparison A vs B |
-| 55 | `quality.md`:22 | / 10 / control/rate_limiter.md:3 / **In plain words:** This tool ensures that a robot's motor is never ordered | kept | not a comparison A vs B |
+| 55 | `quality.md`:22 | / 10 / control/rate_limiter.md:3 /  This tool ensures that a robot's motor is never ordered | kept | not a comparison A vs B |
 | 56 | `quality.md`:23 | / 11 / control/rate_limiter.md:13 / does not need to: it just refuses to move faster than the motors allow. Th | kept | not a comparison A vs B |
 | 57 | `quality.md`:24 | / 12 / control/rate_limiter.md:139 / makes sure that velocity never asks the motor to change faster than it ca | kept | not a comparison A vs B |
 | 58 | `quality.md`:25 | / 13 / drift/cusum.md:218 / Urban Objects, 7 independent points) the real detection was always faster than the | kept | not a comparison A vs B |
@@ -118,7 +118,7 @@ Rows: 106. Supported by the benchmark: 4. Kept (technical): 57. Rows needing rew
 | 101 | `tree/index.md`:49 | every `grace_period` samples and replaces its split when another one wins by the bound. | kept | word is technical, definition, or a measurement inside the page |
 | 102 | `tree/index.md`:74 | faster. | kept | word is technical, definition, or a measurement inside the page |
 | 103 | `tree/index.md`:222 | after a change, the adaptive tree recovers best among the trees, at about 16 times the cost per | kept | word is technical, definition, or a measurement inside the page |
-| 104 | `vs_kalman.md`:3 | **In plain words:** A comparison between Dense-Armor and a Kalman filter. They solve different problems: the K | kept | word is technical, definition, or a measurement inside the page |
+| 104 | `vs_kalman.md`:3 |  A comparison between Dense-Armor and a Kalman filter. They solve different problems: the K | kept | word is technical, definition, or a measurement inside the page |
 | 105 | `vs_kalman.md`:8 | Neither is strictly better; they lose in different regimes. | kept | word is technical, definition, or a measurement inside the page |
 | 106 | `vs_kalman.md`:117 | Kalman *wins* (0.12 vs 0.23), not only the case where Dense-Armor wins. | kept | word is technical, definition, or a measurement inside the page |
 

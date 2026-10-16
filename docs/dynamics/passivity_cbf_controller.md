@@ -1,6 +1,6 @@
 # Passivity + singularity-CBF controller
 
-**In plain words:** This is a controller that moves a robot's hand to where you want it, without letting the arm stretch out so far that it loses control. It watches for that fully extended position and keeps the arm away from it.
+This is a controller that moves a robot's hand to where you want it, without letting the arm stretch out so far that it loses control. It watches for that fully extended position and keeps the arm away from it.
 
 A robot arm moving at full speed is easy to control when everything goes well. The hard
 part is the moment when the arm is **fully extended**: at that configuration, the

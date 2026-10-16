@@ -1,6 +1,6 @@
 # Half-Space Trees
 
-**In plain words:** Half-Space Trees tell you when a new reading from your robot looks strange. A robot sends you numbers all the time, for example how hard each joint is pushing; when everything is fine they stay in a familiar range. Half-Space Trees learn that range from healthy readings. For every new reading they check how many recent healthy readings were close to it, and give back a score between 0 and 1: close to 0 means 'normal', close to 1 means 'I have almost never seen anything like this'.
+Half-Space Trees tell you when a new reading from your robot looks strange. A robot sends you numbers all the time, for example how hard each joint is pushing; when everything is fine they stay in a familiar range. Half-Space Trees learn that range from healthy readings. For every new reading they check how many recent healthy readings were close to it, and give back a score between 0 and 1: close to 0 means 'normal', close to 1 means 'I have almost never seen anything like this'.
 
 Half-Space Trees score each sample by how few normal samples fall in the region around it.
 In a control loop they answer one question per joint reading: does this torque residual come

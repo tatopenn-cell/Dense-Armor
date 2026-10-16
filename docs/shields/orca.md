@@ -1,6 +1,6 @@
 # Orca (full model shield)
 
-**In plain words:** Orca protects a whole model: it cleans the input before the model sees it, runs the model, and checks that the model's answer is not broken either.
+Orca protects a whole model: it cleans the input before the model sees it, runs the model, and checks that the model's answer is not broken either.
 
 `Armatura` protects one series. But if you have a model — any callable that takes a
 tensor and returns a tensor — the corruption can happen twice: once on the way in

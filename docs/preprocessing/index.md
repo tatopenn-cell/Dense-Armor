@@ -1,6 +1,6 @@
 # Preprocessing
 
-**In plain words:** Raw sensor numbers come in different sizes and units. These tools put them on a common scale and turn them into the numbers that matter (such as speed or power), one reading at a time, so that a model can learn from them.
+Raw sensor numbers come in different sizes and units. These tools put them on a common scale and turn them into the numbers that matter (such as speed or power), one reading at a time, so that a model can learn from them.
 
 Raw sensor numbers come in different units and sizes — a joint position in radians, a torque in
 newton-metres, a word in a sentence. Before a model can learn from them they are put on a common

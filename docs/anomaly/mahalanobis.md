@@ -1,6 +1,6 @@
 # Online Robust Mahalanobis
 
-**In plain words:** Online Robust Mahalanobis tells you how far a new reading is from the usual. It learns from healthy readings where the numbers usually are and how much they usually move, and it measures the distance in units of that usual movement. A distance of 0 means exactly usual; the default alarm level is 7. 'Robust' means that a few strange readings do not spoil what it has learned.
+Online Robust Mahalanobis tells you how far a new reading is from the usual. It learns from healthy readings where the numbers usually are and how much they usually move, and it measures the distance in units of that usual movement. A distance of 0 means exactly usual; the default alarm level is 7. 'Robust' means that a few strange readings do not spoil what it has learned.
 
 Online Robust Mahalanobis scores each sample by how far it is from the centre of the
 healthy joint residual, measured in units of the residual's own spread. In a control loop

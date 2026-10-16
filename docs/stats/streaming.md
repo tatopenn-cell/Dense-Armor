@@ -1,6 +1,6 @@
 # Streaming quantiles
 
-**In plain words:** These tools estimate percentiles (for example the value that 99% of the readings stay below) of a stream that never stops, without keeping all of it.
+These tools estimate percentiles (for example the value that 99% of the readings stay below) of a stream that never stops, without keeping all of it.
 
 ## What this is
 

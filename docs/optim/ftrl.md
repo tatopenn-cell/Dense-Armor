@@ -1,6 +1,6 @@
 # FTRLProximal
 
-**In plain words:** FTRLProximal decides the values of a learning model's numbers by looking at all the examples seen so far, and it sets to exactly zero the numbers that do not matter. The result is a simpler model.
+FTRLProximal decides the values of a learning model's numbers by looking at all the examples seen so far, and it sets to exactly zero the numbers that do not matter. The result is a simpler model.
 
 FTRLProximal is the optimizer that decides each weight by minimising the sum
 of all the linearized losses seen so far, plus a regularizer that mixes a

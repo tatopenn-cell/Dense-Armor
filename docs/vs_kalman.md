@@ -1,6 +1,6 @@
 # Dense-Armor vs a Kalman filter
 
-**In plain words:** A comparison between Dense-Armor and a Kalman filter. They solve different problems: the Kalman filter needs a model of how the system moves, while Dense-Armor's tools check each reading against its recent neighbours and a reference. Neither is always better.
+A comparison between Dense-Armor and a Kalman filter. They solve different problems: the Kalman filter needs a model of how the system moves, while Dense-Armor's tools check each reading against its recent neighbours and a reference. Neither is always better.
 
 Dense-Armor does not replace a Kalman filter. They solve different problems:
 the Kalman filter reconstructs a signal through a **known dynamic model**, the

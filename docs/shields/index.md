@@ -1,6 +1,6 @@
 # Shields
 
-**In plain words:** A shield is a tool that cleans: you give it a series of numbers or a model, and you get back a cleaned series or a protected answer. There are two shields: one for a single series and one for a whole model.
+A shield is a tool that cleans: you give it a series of numbers or a model, and you get back a cleaned series or a protected answer. There are two shields: one for a single series and one for a whole model.
 
 A **shield** is the shortest path from "I have a signal" to "I have a clean signal". It
 sits between the data and whoever uses it, and it cleans what passes through. You give

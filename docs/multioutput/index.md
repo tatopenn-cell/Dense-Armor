@@ -1,6 +1,6 @@
 # Multi-output prediction
 
-**In plain words:** Sometimes you want to predict more than one thing at once. A joint angle and its velocity, a stock price and its volume, three contact states of a foot. Five estimators do this. The simplest trains one model per target and ignores the others. The chains add the targets of the earlier models as inputs to the later ones, so the prediction of one target can help another.
+Sometimes you want to predict more than one thing at once. A joint angle and its velocity, a stock price and its volume, three contact states of a foot. Five estimators do this. The simplest trains one model per target and ignores the others. The chains add the targets of the earlier models as inputs to the later ones, so the prediction of one target can help another.
 
 ## 1. What they are
 
