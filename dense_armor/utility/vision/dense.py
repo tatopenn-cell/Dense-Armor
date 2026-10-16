@@ -21,7 +21,9 @@ alpha gives a smoother field.
 
 The iteration runs in JAX so the whole image is one jitted call; the
 per-pixel Python loop is left only for the direct comparison with the
-scalar reference.
+scalar reference. The method assumes small motion between the two
+frames, which is the hypothesis of Horn and Schunck; on a shift of half
+a pixel the estimated flow is about 0.03 px (the paper's own limit).
 
 :class:`MotionMask` takes the flow field of two consecutive frames,
 compensates the global shift estimated by

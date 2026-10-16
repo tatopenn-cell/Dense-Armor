@@ -793,8 +793,8 @@ annotated video and one summary image with the signals in time.
 ## Benchmark
 
 ``benchmarks/video_quality.py`` measures every module above at 640x360
-and 1280x720 on three synthetic streams (a smooth motion, a sudden cut,
-a multi-channel thermal sequence). The JSON next to the script carries
-the numbers and the machine. The 1080p run exceeds the Colab free
-session; the 360p numbers are reported.
+on three synthetic streams (a smooth motion, a sudden cut, a
+multi-channel thermal sequence). The JSON next to the script carries
+the numbers and the machine. The 1280x720 and 1920x1080 runs exceed
+the free Colab session, and are reported as not measured.
 

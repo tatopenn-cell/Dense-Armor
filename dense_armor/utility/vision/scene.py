@@ -153,15 +153,13 @@ class SceneChange(Transformer):
         return g
 
     def learn_one(self, x, y=None, t=None):
-        arr = x.array if hasattr(x, "array") else x
-        g = self._prep(np.asarray(arr))
+        g = self._prep(x)
         self._prev = g
         self._prev_hist = _histogram(g, self.bins, 0.0, 1.0)
         return self
 
     def transform_one(self, x, t=None):
-        arr = x.array if hasattr(x, "array") else x
-        g = self._prep(np.asarray(arr))
+        g = self._prep(x)
         if self._prev is None or self._prev.shape != g.shape:
             d = 0.0
         else:

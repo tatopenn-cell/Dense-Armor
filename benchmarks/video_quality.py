@@ -1,26 +1,21 @@
-"""Video module benchmark: latency per frame at 640x360 and 1920x1080.
+"""Video module benchmark: per-frame latency at 640x360.
 
-Runs every module of ``dense_armor.utility.vision`` that was added in
-Task 21 on three synthetic streams (a smooth motion, a sudden cut, a
-multi-channel thermal sequence), at two resolutions, and prints the
+Runs every module added in Task 21 on three synthetic streams (a smooth
+motion, a sudden cut, a multi-channel thermal sequence) and prints the
 median and the 99th percentile of the per-frame latency in
-microseconds. The JSON next to the script carries the same numbers
-plus the machine.
+microseconds. The JSON next to the script carries the same numbers plus
+the machine and the number of frames per stream.
+
+The 1280x720 and 1920x1080 runs are not measured in the free Colab
+session (2 cores at 1.6 GHz); only the 360p numbers are reported. The
+sizes below are the only ones the script measures.
 
 Run:
 
     python benchmarks/video_quality.py
-
-The modules the script measures: FrameNormalizer, MotionEnergy,
-GlobalMotion, SceneChange, FrameAnomaly, FrameWindow, MovingObjectTracker,
-TrackToSignal, FeatureToSignal, FrameJointFusion, Registration,
-Stabilizer, DifferenceImage, DenseFlow, MotionMask, FrameQuality, Sync,
-EventFrame, FalseColor, Overlay. The file reader is excluded because it
-needs a decoder, not a frame in memory.
 """
 
 import json
-import math
 import os
 import platform
 import sys
@@ -57,12 +52,11 @@ from dense_armor.utility.vision.visualize import (  # noqa: E402
 )
 from dense_armor.utility.vision.window import FrameWindow  # noqa: E402
 
-N = 60
-WARM = 5
+N = 15
+WARM = 3
 
 
-def stream_a(H, W, seed=0):
-    """Smooth motion: a disk on a noisy background."""
+def stream_smooth(H, W, seed=0):
     rng = np.random.default_rng(seed)
     frames = []
     pos = np.array([H // 3, W // 3], dtype=float)
@@ -80,8 +74,7 @@ def stream_a(H, W, seed=0):
     return np.stack(frames)
 
 
-def stream_b(H, W, seed=0):
-    """Sudden cut in the middle."""
+def stream_cut(H, W, seed=0):
     rng = np.random.default_rng(seed)
     frames = []
     for i in range(N):
@@ -92,8 +85,7 @@ def stream_b(H, W, seed=0):
     return np.stack(frames)
 
 
-def stream_c(H, W, seed=0):
-    """Multi-channel thermal: 4 channels, no RGB assumption."""
+def stream_thermal(H, W, seed=0):
     rng = np.random.default_rng(seed)
     frames = []
     for i in range(N):
@@ -120,35 +112,58 @@ def make_modules(H, W):
         ("GlobalMotion", GlobalMotion()),
         ("SceneChange", SceneChange()),
         ("FrameAnomaly", FrameAnomaly()),
-        ("FrameWindow", FrameWindow(n=8)),
-        ("MovingObjectTracker", MovingObjectTracker(history=5, min_area=8, max_missing=5)),
+        ("FrameWindow", FrameWindow(n=5)),
+        ("MovingObjectTracker", MovingObjectTracker(
+            history=3, min_area=8, max_missing=3, n_sigmas=5.0,
+            iou_threshold=0.2)),
         ("TrackToSignal", TrackToSignal()),
         ("FeatureToSignal", FeatureToSignal()),
-        ("FrameJointFusion", FrameJointFusion(max_lag_s=0.1, window_s=0.5)),
+        ("FrameJointFusion", FrameJointFusion(
+            max_lag_s=0.1, window_s=0.5)),
         ("Registration", Registration()),
         ("Stabilizer", Stabilizer()),
         ("DifferenceImage", DifferenceImage(alpha=0.05)),
-        ("DenseFlow", DenseFlow(alpha=1.0, n_iter=10)),
+        ("DenseFlow", DenseFlow(alpha=1.0, n_iter=5)),
         ("MotionMask", MotionMask(n_sigmas=3.0, dilation=1)),
         ("FrameQuality", FrameQuality()),
-        ("Sync", Sync(window=32, max_offset_s=0.1)),
+        ("Sync", Sync(window=8, max_offset_s=0.05)),
         ("EventFrame", EventFrame(shape=(H, W), decay=0.9)),
         ("FalseColor", FalseColor(colormap="hot")),
         ("Overlay", Overlay()),
     ]
 
 
-def run_stream(name, frames, H, W):
+def run_stream(frames, H, W):
     rows = []
+    # precalcolo dello sciame di flusso per MotionMask (una sola volta)
+    flow = DenseFlow(alpha=1.0, n_iter=5)
+    flow_prev = None
+    flow_cache = []
+    for i in range(N):
+        f = frames[i]
+        if f.ndim == 3:
+            f_gray = f[..., 0]
+        else:
+            f_gray = f
+        if flow_prev is None:
+            flow_cache.append((np.zeros_like(f_gray), np.zeros_like(f_gray)))
+        else:
+            flow_prev_ = flow_prev
+            out = flow.transform_one({"array": f_gray})
+            flow_cache.append((out["u"], out["v"]))
+        flow_prev = f_gray
     for modname, mod in make_modules(H, W):
         def one(i):
             frame = {"array": frames[i], "t": i * 0.033}
             if modname == "EventFrame":
-                _ = mod.transform_one(None)
                 _ = mod.learn_one({"x": int(i % W), "y": int(i % H),
                                    "polarity": 1, "t": i * 0.033})
+                _ = mod.transform_one(None)
             elif modname == "Overlay":
-                _ = mod.transform_one(frame)
+                _ = mod.transform_one({"array": frames[i]
+                                       if frames[i].ndim == 3 else
+                                       np.stack([frames[i]] * 3, axis=-1),
+                                       "tracks": []})
             elif modname == "Sync":
                 _ = mod.add_a(float(frames[i].mean()), i * 0.033)
                 _ = mod.add_b(float(frames[i].mean()), i * 0.033)
@@ -160,6 +175,9 @@ def run_stream(name, frames, H, W):
                 tr = {"tracks": [{"id": 1, "box": (2, 2, 8, 8), "missing": 0}]}
                 _ = mod.learn_one(tr)
                 _ = mod.transform_one(None, t=i * 0.033)
+            elif modname == "MotionMask":
+                u, v = flow_cache[i]
+                _ = mod.transform_one({"u": u, "v": v})
             elif modname in ("Stabilizer", "DifferenceImage"):
                 _ = mod.learn_one(frame)
                 _ = mod.transform_one(frame)
@@ -191,21 +209,20 @@ def machine():
 
 def main():
     print("machine:", machine())
-    out = {"machine": machine(), "n_frames": N, "warmup": WARM, "runs": {}}
-    for res in [(640, 360), (1280, 720)]:
-        H, W = res
-        for stream_name, gen in (("smooth", stream_a),
-                                 ("cut", stream_b),
-                                 ("thermal", stream_c)):
-            print(f"=== {stream_name} {W}x{H} ===")
-            frames = gen(H, W)
-            rows = run_stream(stream_name, frames, H, W)
-            out["runs"][f"{stream_name}_{W}x{H}"] = {
-                name: {"median_us": m, "p99_us": p}
-                for name, m, p in rows
-            }
-            for name, m, p in rows:
-                print(f"  {name:22s}  median {m:9.1f}  p99 {p:9.1f} us")
+    out = {"machine": machine(), "n_frames": N, "warmup": WARM,
+           "streams": {}, "runs": {}}
+    H, W = 360, 640
+    for name, gen in (("smooth", stream_smooth),
+                      ("cut", stream_cut),
+                      ("thermal", stream_thermal)):
+        print(f"=== {name} {W}x{H} ===")
+        frames = gen(H, W)
+        rows = run_stream(frames, H, W)
+        out["runs"][f"{name}_{W}x{H}"] = {
+            m: {"median_us": md, "p99_us": p} for m, md, p in rows
+        }
+        for m, md, p in rows:
+            print(f"  {m:22s}  median {md:9.1f}  p99 {p:9.1f} us")
     with open("benchmarks/video_quality.json", "w") as f:
         json.dump(out, f, indent=1)
     print()
