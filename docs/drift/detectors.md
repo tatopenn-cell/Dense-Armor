@@ -188,6 +188,16 @@ is small.
 With 100 samples in the window, ADWIN needs a step of about 4 standard
 deviations to fire; a 3σ step goes unnoticed.
 
+One change can be flagged on several consecutive updates. ADWIN drops the oldest part of its window while
+some cut passes the test; a change that has only just started leaves part of the old regime in the window,
+and the test passes again a few updates later, once more of the new regime has arrived. On a step of 3
+standard deviations, 500 samples into a stream, the first flag comes a few dozen samples after the step and
+the burst ends within 100 samples (`test/drift/test_adwin_alarms.py`). Act on the first flag of a burst, or
+start a new detector after it, to get one event per change.
+
+The robot-stream table of section 5 was measured with the earlier ADWIN, which flagged a change once and
+later; its ADWIN row has to be measured again with this version.
+
 ## 4. KSWIN: compare the shapes, one alarm per change
 
 KSWIN compares the newest 30 samples with 30 samples drawn at random from the

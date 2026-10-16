@@ -1,9 +1,28 @@
 # Speed log
 
-One row per component per commit. Criterion of the task: ratio of our
-median to the reference median at or below 1.0, and at or below 1.0 at
-the 99th percentile. The reference is named only inside the Colab
-session; the log calls it "the reference".
+Speed is counted in seconds per call. The thing to beat is the previous version of this
+repository, measured on the same machine; the machine is chosen by whoever runs the
+comparison and is written next to every number. The table against a reference
+implementation, measured in one run on one machine, is kept for information.
+
+## Before and after, this repository against itself
+
+Speed is counted in seconds per call. The thing to beat is the previous version of this repository, measured on the
+same machine, in the same session. The machine is chosen by whoever runs the comparison; to repeat it, export the old
+and the new tree, run the same stream through both and compare the medians.
+
+Machine: Intel(R) Core(TM) i5-8250U CPU @ 1.60GHz, 8 threads, Python 3.12.10, Windows 11. Stream: `DriftStream` sudden, 4 features, 2000 samples, first 200 discarded, 3 seeds, median of the per-seed medians (ADWIN: a Bernoulli stream with a change at 1000). Calls timed: predict plus learn (score plus learn for Half-Space Trees, `update` for ADWIN). Before = `master` of the day this table was made; after = this branch.
+
+| component | before median µs | after median µs | before p99 µs | after p99 µs | change at the median |
+|---|---|---|---|---|---|
+| Gaussian NB | 35.6 | 36.4 | 49.5 | 57.3 | same, within noise |
+| Hoeffding tree | 11.2 | 7.2 | 45.6 | 13.0 | 1.6x faster |
+| Adaptive random forest (10 models) | 4092.1 | 601.5 | 11246.3 | 1103.1 | 6.8x faster |
+| Half-Space Trees (25 trees) | 1034.5 | 1070.8 | 1438.3 | 1404.1 | same, within noise |
+| ADWIN (update) | 316.1 | 8.2 | 510.8 | 10.5 | 38.5x faster |
+
+Gaussian naive Bayes and Half-Space Trees did not change on this machine (the differences are inside the run-to-run noise).
+
 
 ## Machine and versions
 
@@ -30,14 +49,17 @@ session; the log calls it "the reference".
 
 ## Notes per component
 
+The "started at" figures below were measured earlier on a 4-core machine; the table above was measured
+on a 2-core machine. Only the ratios in the table, taken in the same run on the same machine, are comparable.
+
 ### ADWIN
 Started at 167.8 µs median (pure list of samples, O(W) scan of every
 cut) and 354.0 µs at the 99th percentile. Rewritten as ADWIN2 with
 exponential buckets (Bifet & Gavalda 2006, Section 3.3): the window is
 stored as O(log W) buckets, the cut scan touches O(log W) boundaries,
 the threshold uses the multiple-hypothesis correction delta' =
-delta / ln(n) of the same section. Result: 9.5 µs median (17.7x faster
-than the original), 16.2 µs p99 (21.9x faster). The reference is a
+delta / ln(n) of the same section. Result: 9.5 µs median and 16.2 µs p99. The starting figures come from another
+machine, so no speed-up factor is claimed. The reference is a
 compiled extension (its median is 0.32 µs, close to a bare function
 call in a native language); a pure-Python implementation cannot match
 it without a compiled dependency, which the task does not allow.

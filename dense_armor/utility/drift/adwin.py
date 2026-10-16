@@ -25,6 +25,14 @@ is dropped when
 Both sides carry the units of the data, so the detector is scale-
 invariant.
 
+One change can be flagged on several consecutive updates. At each update
+the oldest buckets are dropped while some cut passes the test (Algorithm 1
+of the paper); a change that has only just started leaves part of the old
+regime in the window, and as more samples of the new regime arrive the
+test passes again a few updates later. Act on the first flag of a burst,
+or start a new detector after it, if one event per change is wanted. Before
+this version the detector flagged a change once, later.
+
 Memory: O(max_buckets * log W).
 """
 

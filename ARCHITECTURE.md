@@ -272,6 +272,7 @@ graph TD
 | file | public names | what it is |
 |---|---|---|
 | `llm.py` | `LLMEmbeddingClassifier` | classifier over LLM embeddings |
+| `river.py` | `to_river`, `from_river` | bridge to existing online-learning libraries |
 
 ## 6. core/ and armatura.py
 
