@@ -1,6 +1,6 @@
 # Dense-Armor
 
-**In plain words:** Dense-Armor is a library that learns from a robot's numbers (and from images and text) while they arrive, one at a time. It can spot strange readings, notice slow changes, protect against bad data and keep robot commands safe.
+Dense-Armor is a library that learns from a robot's numbers (and from images and text) while they arrive, one at a time. It can spot strange readings, notice slow changes, protect against bad data and keep robot commands safe.
 
 **A library for online learning on robot, vision, and AI streams, one sample at a time,
 with streaming statistics and protection, drift and anomaly detection, and safe robot
@@ -166,7 +166,7 @@ past.
 
 - **[Arbiter](protect/arbiter.md)** — classifies each point as clean / spike / regime
   against a wide causal reference window, then routes it.
-- **[Streaming](anomaly/streaming.md)** — a zero-latency, one-point-at-a-time port of
+- **[Streaming](anomaly/streaming.md)** — a per-sample port of
   Arbiter's causal deviation check, plus native multi-channel wrappers.
 - **[Robust filters](anomaly/robust_filters.md)** — Chauvenet, Tukey, Hampel, sigma
   clipping on whole series, plus `pressure_valve`.

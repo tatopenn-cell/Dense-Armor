@@ -1,8 +1,6 @@
 # Clustering: incremental partitioning and density-based data stream models
 
-This section evaluates the algorithmic efficiency and statistical accuracy of online k-means, non-stationary drifting stream estimators, and density-based spatial partitioning algorithms (DenStream) for real-time unsupervised data stream clustering.
-
-**In plain words:** This page shows how a system can automatically group similar data points together in real time, one by one, without needing any pre-assigned categories. It covers standard tracking, groups that shift positions over time, filtering out noise, and translating image patches into visual signatures.
+This page shows how a system can automatically group similar data points together in real time, one by one, without needing any pre-assigned categories. It covers standard tracking, groups that shift positions over time, filtering out noise, and translating image patches into visual signatures.
 
 
 ## 1. Online k-means: k groups, one point at a time
@@ -41,15 +39,13 @@ $$c_j \leftarrow c_j + \frac{1}{n_j}\,(x - c_j)$$
 where $c_j$ is the centre of group $j$, $x$ is the new point, and $n_j$ is how many points have
 already joined group $j$.
 
-## 2. Three groups, compared with the batch method
+## 2. Three groups, recovered in one pass
 
-The online method, which sees each point once, agrees with the true groups as well as the batch
-method, which sees all the points at once.
+The online method sees each point once and recovers the three groups of a synthetic stream.
 
 ```python
 import numpy as np
-from sklearn.cluster import KMeans
-from sklearn.metrics import adjusted_rand_score
+from collections import Counter
 from dense_armor.utility.cluster.kmeans import OnlineKMeans
 
 rng = np.random.default_rng(0)
@@ -59,13 +55,14 @@ X = centres[y] + rng.normal(0, 0.5, (600, 2))
 km = OnlineKMeans(k=3)
 for x in X:
     km.learn_one({"x": x.tolist()})
-pred = [km.predict_one({"x": x.tolist()}) for x in X]
-batch = KMeans(n_clusters=3, n_init=10, random_state=0).fit_predict(X)
-print(round(adjusted_rand_score(y, pred), 4), round(adjusted_rand_score(y, batch), 4))
+pred = np.array([km.predict_one({"x": x.tolist()}) for x in X])
+mapping = {p: Counter(y[pred == p]).most_common(1)[0][0] for p in set(pred)}
+mapped = np.array([mapping[p] for p in pred])
+print(round(float((mapped == y).mean()), 4))
 ```
 
 ```
-1.0 1.0
+1.0
 ```
 
 The adjusted Rand index measures how well two groupings agree: 1 is identical, 0 is chance, and

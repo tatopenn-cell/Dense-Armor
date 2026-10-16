@@ -1,6 +1,6 @@
 # Streaming anomaly detection
 
-**In plain words:** These tools give every new reading a score that says how unusual it is compared with the last few readings, and a yes/no flag when it is too unusual. They answer at once, one reading at a time, without waiting for what comes next.
+These tools give every new reading a score that says how unusual it is compared with the last few readings, and a yes/no flag when it is too unusual. They answer at once, one reading at a time, without waiting for what comes next.
 
 A robot joint sends its velocity 100 times a second. Most readings are ordinary noise; once in a
 while one is absurd, because the arm bumped into something or a cable gave a false reading. The
@@ -96,7 +96,7 @@ print(round(sc.score_one({"v": 50.0}), 1), round(sc.score_one({"v": 1.1}), 2))
 A reading of 50 scores 330.5 standard deviations; a reading of 1.1 scores 0.67, ordinary.
 `score_one` never changes the estimator; `learn_one` adds the value to the window. A score above
 `n_sigmas` is exactly a flag of `StreamingDeviationDetector`. It needs the streaming extra:
-`pip install dense-armor[river]`.
+needs the streaming extra; the install command is on the bridge page of the API reference.
 
 ## 4. The classic robust filters, one sample at a time
 
@@ -244,7 +244,7 @@ the paper's CC BY 4.0 licence.*
   the scale of the score is larger than the classical chi-squared one (threshold 7.0 by
   default). It also centres the outer product on the averaged median $\bar m$ and averages with
   weight $1/n$ (the paper uses $m_n$ and $1/(n+2)$).
-- **Provenance.** `StreamingDeviationDetector` is the causal, zero-latency half of the
+- **Provenance.** `StreamingDeviationDetector` is the causal per-sample half of the
   [Arbiter](../protect/arbiter.md)'s per-point deviation check; the spike-versus-regime label
   needs to see the end of a run and stays batch-only. It was promoted from
   Dense-Evolution-Discovery after validation on two real physical domains (SO-101 robot arm,

@@ -1,6 +1,6 @@
 # Live demo: runtime behavioral monitor
 
-**In plain words:** A live demo of the library watching the behaviour of an AI program while it runs. Pick one of four real recordings: the red points are the moments the library flagged as strange, and none was chosen by hand.
+A live demo of the library watching the behaviour of an AI program while it runs. Pick one of four real recordings: the red points are the moments the library flagged as strange, and none was chosen by hand.
 
 Four real scenarios below, computed once from `dense-armor`'s actual detectors
 (`classify_segments` + `cusum_detector` + `one_sided_upper_filter`, radius=5,

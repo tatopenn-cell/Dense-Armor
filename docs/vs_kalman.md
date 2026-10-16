@@ -1,6 +1,6 @@
 # Dense-Armor vs a Kalman filter
 
-**In plain words:** A comparison between Dense-Armor and a Kalman filter. They solve different problems: the Kalman filter needs a model of how the system moves, while Dense-Armor's tools check each reading against its recent neighbours and a reference. Neither is always better.
+A comparison between Dense-Armor and a Kalman filter. They solve different problems: the Kalman filter needs a model of how the system moves, while Dense-Armor's tools check each reading against its recent neighbours and a reference. Neither is always better.
 
 Dense-Armor does not replace a Kalman filter. They solve different problems:
 the Kalman filter reconstructs a signal through a **known dynamic model**, the
@@ -106,7 +106,7 @@ section, see [anomaly/mahalanobis.md](anomaly/mahalanobis.md).
 
 `OnlineRobustMahalanobis` runs in `< 1 ms` per sample (`budget_s = 1e-3 s`),
 memory `O(n^2)` with `n` the number of features. The Kalman filter in the
-comparison is the standard `filterpy.KalmanFilter`, no JIT.
+comparison is a standard Kalman filter from a general-purpose filtering library, no JIT.
 
 ### Development diary
 

@@ -1,6 +1,6 @@
 # Adaptive engine (Orca Stage 1)
 
-**In plain words:** This tool follows a signal that drifts slowly, keeps updating what it considers normal and pulls the signal gently toward it, so that a slow drift is not mistaken for a glitch.
+This tool follows a signal that drifts slowly, keeps updating what it considers normal and pulls the signal gently toward it, so that a slow drift is not mistaken for a glitch.
 
 A signal that drifts slowly is not a spike. It is a sequence of samples, each of them
 plausible on its own, that together move the average. A purely local detector misses

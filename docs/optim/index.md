@@ -1,6 +1,6 @@
 # Online optimizers
 
-**In plain words:** When a model learns, it changes its numbers a little after every example. An optimizer is the rule that decides how big each change is. This page compares the five rules in the library and helps you choose one.
+When a model learns, it changes its numbers a little after every example. An optimizer is the rule that decides how big each change is. This page compares the five rules in the library and helps you choose one.
 
 An optimizer is the algorithm that decides how much to change the weights of
 a linear model on each new sample. It is the only place where the learning

@@ -1,6 +1,6 @@
 # AdaGrad
 
-**In plain words:** A learning model changes its numbers a little after each example. AdaGrad decides how big each change is, and it makes smaller changes for the numbers that have been changing a lot.
+A learning model changes its numbers a little after each example. AdaGrad decides how big each change is, and it makes smaller changes for the numbers that have been changing a lot.
 
 AdaGrad is the first optimizer in the package that adapts its step to each
 coordinate. It divides the step by the square root of the gradient energy it

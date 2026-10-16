@@ -1,12 +1,12 @@
 """Dense-Armor online-learning base (Task 01).
 
-Scikit-learn API design (Buitinck et al., arXiv:1309.0238) with
-river-style dict inputs and _one / _many split (Montiel et al.,
+General-purpose machine-learning API design (Buitinck et al., arXiv:1309.0238) with
+dict-input, one-sample-at-a-time style (Montiel et al.,
 arXiv:2012.04740). One file per role.
 
-If river is installed, the role classes are registered as virtual
-subclasses of river's ABCs, so our models work inside river's
-pipelines, checks and evaluators without the core depending on river.
+If the optional online-learning dependency is installed, the role classes are registered as virtual
+subclasses of its ABCs, so our models work inside its
+pipelines, checks and evaluators without the core depending on it.
 """
 
 from dense_armor.roles.anomaly_detector import AnomalyDetector, AnomalyGate

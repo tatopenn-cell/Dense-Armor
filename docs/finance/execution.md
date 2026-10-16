@@ -1,6 +1,9 @@
 # Execution: high-frequency pre-trade risk validation and algorithmic order damping
 
-When an automated trading strategy accidentally tries to buy an enormous amount of crypto or stock in a single shot, it can move the market and cause massive financial losses. This pipeline acts as a high-speed protective shield: it compares each incoming order size against historical averages, allowing safe trades to pass in microseconds while safely shrinking suspicious volumes or blocking extreme anomalies before they hit the exchange.
+
+*All timings on this page were measured on a Kaggle CPU with 4 cores.*
+
+When an automated trading strategy accidentally tries to buy an enormous amount of crypto or stock in a single shot, it can move the market and cause large financial losses. This pipeline acts as a high-speed protective shield: it compares each incoming order size against historical averages, allowing safe trades to pass in microseconds while safely shrinking suspicious volumes or blocking extreme anomalies before they hit the exchange.
 
 
 ## The scene
@@ -51,7 +54,7 @@ One thousand trades from the Coinbase public API on 14 October 2026. Sizes from 
 | Dampened by Orca (went out smaller) | 9 |
 | Time per order | 2 microseconds median; 3 milliseconds at the 99th percentile (the Orca calls) |
 
-Of the 11 orders sent to Orca, 9 went out smaller. The 5x-10x range is thin on real trades, and Orca covers it. The times were measured on a Kaggle CPU with 4 cores.
+Of the 11 orders sent to Orca, 9 went out smaller. The 5x-10x range is thin on real trades, and Orca covers it. 
 
 ## When you need it
 

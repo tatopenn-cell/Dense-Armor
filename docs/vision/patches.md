@@ -1,6 +1,6 @@
 # Where is the anomaly: patch memory
 
-**In plain words:** This tool tells you not only that a picture looks wrong but where: it cuts the picture into small squares, remembers what the squares of normal pictures look like, and marks the squares that look unfamiliar.
+This tool tells you not only that a picture looks wrong but where: it cuts the picture into small squares, remembers what the squares of normal pictures look like, and marks the squares that look unfamiliar.
 
 Section 7 of the Vision page ends with a camera that notices a change: one number per frame.
 A robot inspecting an object needs more: which part of the image is wrong. This page cuts each

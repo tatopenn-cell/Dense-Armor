@@ -1,6 +1,6 @@
 # Distributions
 
-**In plain words:** Three small probability distributions that update themselves one observation at a time. A beta that learns the bias of a coin, a Gaussian that learns the mean and the spread of a signal, a multinomial that learns how often each category shows up. Each one can also *forget* a single observation it saw before.
+Three small probability distributions that update themselves one observation at a time. A beta that learns the bias of a coin, a Gaussian that learns the mean and the spread of a signal, a multinomial that learns how often each category shows up. Each one can also *forget* a single observation it saw before.
 
 ## 1. What they are
 

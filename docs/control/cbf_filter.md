@@ -1,6 +1,6 @@
 # CBF filter (geometric command safety)
 
-**In plain words:** This tool stops a robot command from taking the robot into a forbidden area. It changes the command as little as possible, and only when the command would otherwise cross the line.
+This tool stops a robot command from taking the robot into a forbidden area. It changes the command as little as possible, and only when the command would otherwise cross the line.
 
 The rate limiter bounds **how fast** a command can change. It does not bound **where**
 the command can take the robot. A command moving at a perfectly safe, bounded velocity

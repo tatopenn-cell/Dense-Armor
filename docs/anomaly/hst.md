@@ -1,6 +1,6 @@
 # Half-Space Trees
 
-**In plain words:** Half-Space Trees tell you when a new reading from your robot looks strange. A robot sends you numbers all the time, for example how hard each joint is pushing; when everything is fine they stay in a familiar range. Half-Space Trees learn that range from healthy readings. For every new reading they check how many recent healthy readings were close to it, and give back a score between 0 and 1: close to 0 means 'normal', close to 1 means 'I have almost never seen anything like this'.
+Half-Space Trees tell you when a new reading from your robot looks strange. A robot sends you numbers all the time, for example how hard each joint is pushing; when everything is fine they stay in a familiar range. Half-Space Trees learn that range from healthy readings. For every new reading they check how many recent healthy readings were close to it, and give back a score between 0 and 1: close to 0 means 'normal', close to 1 means 'I have almost never seen anything like this'.
 
 Half-Space Trees score each sample by how few normal samples fall in the region around it.
 In a control loop they answer one question per joint reading: does this torque residual come
@@ -11,9 +11,9 @@ from a part of the space we usually see, or from a region we almost never visit?
 ### 💡 Quick Overview (TL;DR)
 Imagine a digital "security guard" living inside a robot's computer. Its only job is to monitor the robot's motors and ask one simple question: *"Is this movement normal, or is something strange happening?"*
 
-Instead of reading a massive database all at once, this algorithm works **live, in real-time, while the robot is moving**. It divides the robot's movement data into physical "boxes" (or spaces). Every time the robot performs a healthy, normal action, the guard drops a token into that specific box. 
+Instead of reading the whole database at once, this algorithm works while the robot is moving. It divides the robot's movement data into physical "boxes" (or spaces). Every time the robot performs a healthy, normal action, the guard drops a token into that specific box. 
 
-Over time, boxes representing normal behavior become packed with tokens, while areas representing broken gears, loose cables, or sudden overloads remain completely empty. If a new movement falls into an empty box, the guard instantly triggers an anomaly score close to **1.0** (Alarm!). If it falls into a crowded box, the score stays near **0.0** (All good!). 
+Over time, boxes representing normal behavior become packed with tokens, while areas representing broken gears, loose cables, or sudden overloads remain completely empty. If a new movement falls into an empty box, the score rises close to **1.0** (Alarm!). If it falls into a crowded box, the score stays near **0.0** (All good!). 
 
 This allows a robot to detect if it is damaged or carrying the wrong payload within milliseconds, protecting itself before a mechanical failure happens.
 

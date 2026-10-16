@@ -1,6 +1,6 @@
 # Control
 
-**In plain words:** This section is about the commands sent to a robot: where it may go, how fast a command may change, which path to follow and how to follow it. It has four small tools that are used together.
+This section is about the commands sent to a robot: where it may go, how fast a command may change, which path to follow and how to follow it. It has four small tools that are used together.
 
 Commands for a robot: **where it may go, how fast a command may change, along which
 path, and the velocity that follows it**. Four modules, each bounding a different aspect
@@ -33,7 +33,7 @@ Each module answers a different "what could go wrong":
 
 - The trajectory is *what the robot should do* in the ideal world.
 - The kinematic controller is *how to get there* on a single-integrator plant.
-- The rate limiter is *the real motors cannot execute an instantaneous jump*. A
+- The rate limiter is *the real motors cannot execute an unbounded jump*. A
   command that changes 10 rad/s in one tick is a command the motor will either refuse
   or dangerously approximate.
 - The CBF filter is *even a slowly-changing command that goes straight into an obstacle

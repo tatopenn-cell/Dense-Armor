@@ -1,7 +1,7 @@
 """
 Confronto sperimentale: damping_essenziale, abcollatz_essenziale e la loro
 combinazione (test/algoritmi_essenziali.py, versioni "all'osso" senza JAX)
-contro Dense-Armor (Orca, pipeline reale) e Kalman (filterpy), sugli stessi
+against Dense-Armor (Orca, real pipeline) and a reference Kalman filter, on the same
 7 scenari di testKalman.py.
 
 Domanda a cui risponde: i due meccanismi essenziali funzionano meglio da
@@ -42,7 +42,7 @@ def main() -> None:
         "Damping essenziale": lambda s: damping_essenziale(s),
         "ABCollatz essenziale": lambda s: abcollatz_essenziale(s),
         "Combinato essenziale": lambda s: combinato_essenziale(s),
-        "Kalman (filterpy)": lambda s: kalman_1d(s, x0=X_CLEAN, q=0.01, r=1.0),
+        "Kalman (reference)": lambda s: kalman_1d(s, x0=X_CLEAN, q=0.01, r=1.0),
         "Dense-Armor (Orca)": lambda s: np.array(orca.protect_and_forward(modello_a_valle, s, x_reference=None)),
     }
 

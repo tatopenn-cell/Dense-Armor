@@ -1,6 +1,6 @@
 # Kalman filters
 
-**In plain words:** A Kalman filter works out where something really is, and how fast it is moving, from sensor readings that are noisy. It updates its estimate with every new reading.
+A Kalman filter works out where something really is, and how fast it is moving, from sensor readings that are noisy. It updates its estimate with every new reading.
 
 `KalmanFilter` estimates the hidden state of a system from noisy
 measurements, one sample at a time. It is not the same kind of estimator as

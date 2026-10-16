@@ -1,6 +1,6 @@
 # Time series
 
-**In plain words:** Robot signals change over time. These tools learn how a signal usually moves, so that they can predict the next value or notice when it behaves differently.
+Robot signals change over time. These tools learn how a signal usually moves, so that they can predict the next value or notice when it behaves differently.
 
 Robot signals are time series. A joint torque repeats with the task cycle, a
 sensor reading has noise that changes over the day, and the next value of a

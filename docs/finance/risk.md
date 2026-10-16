@@ -26,7 +26,7 @@ The online risk pipeline was benchmarked over **1,253 historical trading days** 
 
 
 ## 1. High-accuracy tail-risk estimation (DDSketch)
-Quantifying exposure boundaries within severe market corrections requires tracking the exact shape of distribution tails. Traditional frequentist methods demand complete historical transaction persistence, creating massive database scaling challenges. DDSketch bypasses this constraint by mapping incoming asset distributions into a logically indexed matrix of relative-error logarithmic buckets. This gives a quantile estimate with a maximum 1% relative error bound while maintaining a completely static, constant-memory footprint.
+Quantifying exposure boundaries within severe market corrections requires tracking the exact shape of distribution tails. Traditional frequentist methods demand complete historical transaction persistence, creating large database scaling challenges. DDSketch bypasses this constraint by mapping incoming asset distributions into a logically indexed matrix of relative-error logarithmic buckets. This gives a quantile estimate with a maximum 1% relative error bound while maintaining a completely static, constant-memory footprint.
 
 
 ## 2. Proactive regime shift identification (CUSUM)

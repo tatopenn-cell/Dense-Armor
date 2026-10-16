@@ -1,6 +1,6 @@
 # API — IA
 
-**In plain words:** A picture map of the library seen from the AI side, from raw inputs such as images and text to the final decision. Click a part of the picture to read what it does and which parts of the library are involved.
+A picture map of the library seen from the AI side, from raw inputs such as images and text to the final decision. Click a part of the picture to read what it does and which parts of the library are involved.
 
 The Dense-Armor APIs, read from the AI side. A logical flow from raw
 input (images, text, embeddings) through feature extraction, learned

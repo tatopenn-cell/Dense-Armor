@@ -337,7 +337,7 @@ Every commit since 1.1.27 is listed in the release notes on GitHub.
   test esistente, che controllava solo il tasso di falso allarme per
   PUNTO (molto più basso e fuorviante). Trovato come sottoprodotto
   diretto di un porting parallelo dello stesso algoritmo per
-  online-ml/river, dove lo stesso identico problema è emerso per primo.
+  the same problem first appeared in an existing online-learning library.
   Nuovo default `h=20.0`: 3.5% (`adaptive`) / 15.5% (`fixed`) sulla
   stessa serie di 1000 campioni. `fixed` resta strutturalmente più
   esposto (il suo riferimento non si aggiorna mai, quindi una stima di

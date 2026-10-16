@@ -1,6 +1,6 @@
 """
 Online Platt scaling (Gupta and Ramdas, ICML 2023, arXiv:2305.00070) as a
-river classifier wrapper. Needs the optional dependency: pip install dense-armor[river]
+classifier wrapper for an existing online-learning library. Needs the optional dependency: the streaming extra
 """
 from __future__ import annotations
 
@@ -63,20 +63,26 @@ class OnlinePlattScaling(ModelWrapper, Classifier):
     Examples
     --------
 
-    >>> from river import datasets
-    >>> from river import evaluate
-    >>> from river import metrics
-    >>> from river import tree
+    >>> import numpy as np
     >>> from dense_armor.utility.learn.calibration import OnlinePlattScaling
+    >>> from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
+    >>> from dense_armor.utility.metrics import LogLoss
 
-    >>> dataset = datasets.Phishing()
-
-    >>> evaluate.progressive_val_score(dataset, tree.HoeffdingTreeClassifier(), metrics.LogLoss())
-    LogLoss: 0.4535476064322544
-
-    >>> model = OnlinePlattScaling(tree.HoeffdingTreeClassifier())
-    >>> evaluate.progressive_val_score(dataset, model, metrics.LogLoss())
-    LogLoss: 0.34989900648729855
+    >>> rng = np.random.default_rng(0)
+    >>> base = OnlineGaussianNB()
+    >>> cal = OnlinePlattScaling(OnlineGaussianNB())
+    >>> base_loss, cal_loss = LogLoss(), LogLoss()
+    >>> for _ in range(1500):
+    ...     x = float(rng.uniform(-1.0, 1.0))
+    ...     y = int(x > 0.0)
+    ...     p_base = base.predict_proba_one({"x": x}).get(1, 0.5)
+    ...     p_cal = cal.predict_proba_one({"x": x}).get(1, 0.5)
+    ...     _ = base_loss.update(y, p_base)
+    ...     _ = cal_loss.update(y, p_cal)
+    ...     _ = base.learn_one({"x": x}, y)
+    ...     _ = cal.learn_one({"x": x}, y)
+    >>> round(base_loss.get(), 4), round(cal_loss.get(), 4)
+    (0.1146, 0.0417)
 
     References
     ----------

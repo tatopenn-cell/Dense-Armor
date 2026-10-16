@@ -1,6 +1,6 @@
 # Metrics and evaluation
 
-**In plain words:** A robot that keeps learning needs to know whether it is learning well. These tools keep a small running score that is updated every time a new reading arrives and its answer can be compared with what really happened.
+A robot that keeps learning needs to know whether it is learning well. These tools keep a small running score that is updated every time a new reading arrives and its answer can be compared with what really happened.
 
 ## What this is
 

@@ -1,6 +1,6 @@
 # Vision
 
-**In plain words:** A camera delivers thousands of numbers for every picture. This page shows how the library turns each picture into a few dozen numbers that describe it (brightness, edges, movement), so that a robot can learn from images quickly.
+A camera delivers thousands of numbers for every picture. This page shows how the library turns each picture into a few dozen numbers that describe it (brightness, edges, movement), so that a robot can learn from images quickly.
 
 A robot with a camera sees thousands of numbers per frame: one per pixel,
 and with three colour channels, three per pixel. A modern camera at 160 by

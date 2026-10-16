@@ -1,6 +1,6 @@
 # API Reference
 
-**In plain words:** A starting point for finding the right tool. Say what you have in front of you (a single series of numbers, a model, several signals that interact) and this page tells you which part of the library to use.
+A starting point for finding the right tool. Say what you have in front of you (a single series of numbers, a model, several signals that interact) and this page tells you which part of the library to use.
 
 Dense-Armor has two kinds of entry point. A **shield** cleans a whole series or a whole
 model in one call. A **single-purpose module** does one thing (score a sample, detect a
@@ -31,7 +31,7 @@ Start from what you have in front of you:
 - **[Arbiter](../protect/arbiter.md)** — classifies each point as clean / spike / regime
   against a wide causal reference window, then routes it. Also callable on its own
   (`classify_segments` / `route_and_correct`), not only through `Orca(use_arbiter=True)`.
-- **[Streaming](../anomaly/streaming.md)** — a zero-latency, one-point-at-a-time port of
+- **[Streaming](../anomaly/streaming.md)** — a per-sample port of
   Arbiter's causal deviation check (not the spike/regime label, which needs lookahead and
   stays batch-only), plus native multi-channel wrappers.
 - **[Robust filters](../anomaly/robust_filters.md)** — the same four classic detectors
@@ -39,7 +39,7 @@ Start from what you have in front of you:
 - **[Curvature](../anomaly/curvature.md)** — a bounded proximity-to-reference score in
   `[0, 1)`, used internally by `Orca`'s input shield.
 - **[CUSUM and ARL theory](../drift/cusum.md)** — accumulates small, sustained deviations
-  Arbiter's instantaneous threshold is structurally blind to, plus a closed-form
+  Arbiter's per-point threshold is structurally blind to, plus a closed-form
   pre-flight estimate (`detectability_report`) of expected detection / false-alarm
   latency.
 

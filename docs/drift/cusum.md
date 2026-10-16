@@ -1,8 +1,6 @@
 # CUSUM: sequential analysis for sub-clinical data stream drift detection
 
-This section evaluates the statistical properties, Average Run Length (ARL) formulations, and detection latency of the cumulative sum (CUSUM) architecture designed to isolate persistent, low-amplitude non-stationary drift within sequential streaming signals.
-
-**In plain words:** This page explains how to detect slow, gradual changes in a system—like a mechanical part wearing out bit by bit. While a standard detector looks at one reading at a time and misses small shifts, CUSUM accumulates these tiny anomalies over time and triggers an alert as soon as the total deviation confirms a real structural trend.
+This page explains how to detect slow, gradual changes in a system—like a mechanical part wearing out bit by bit. While a standard detector looks at one reading at a time and misses small shifts, CUSUM accumulates these tiny anomalies over time and triggers an alert as soon as the total deviation confirms a real structural trend.
 
 
 A robot joint wears out a little every day. Each single reading still looks normal, so a
@@ -36,7 +34,7 @@ The first 500 samples are normal noise; from sample 500 the mean moves up by 1.5
 deviations, the kind of step a worn gear or a new payload produces. The detector raises its
 first alarm at sample 511, eleven samples after the change. `update(v)` returns the detector
 itself, and `drift_detected` is `True` only on the sample where the alarm fires. The detector
-needs the streaming extra: `pip install dense-armor[river]`.
+needs the streaming extra; the install command is on the bridge page of the API reference.
 
 ## 2. The piggy bank, as a formula
 
@@ -225,7 +223,7 @@ step changes. ADWIN never raised a false alarm here but is the slowest on small 
   fractional ARL, which has no physical meaning; the docstring of `detectability_report` explains
   the floor applied.
 - **Relation to the Arbiter.** The [Arbiter](../protect/arbiter.md) judges each point against an
-  instantaneous threshold; CUSUM is its complement for slow, sustained changes.
+  per-point threshold; CUSUM is its complement for slow, sustained changes.
 - **Sources.** Reynolds, M. R. (1975), "Approximations to the Average Run Length in Cumulative Sum
   Control Charts", *Technometrics* 17(1), equation (6). Siegmund, D. (1985), *Sequential
   Analysis*, for the 1.166 boundary correction. Page, E. S. (1954), "Continuous inspection

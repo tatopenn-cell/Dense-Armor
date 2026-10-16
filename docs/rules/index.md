@@ -1,6 +1,6 @@
 # Rules that learn a number
 
-**In plain words:** A rule says "if these conditions hold, the answer is about this number". A set of rules is a model you can read: each rule names the features it looks at and the range where it applies. These rules start with one rule that covers everything, split it into narrower rules as the data shows where the answer changes, and throw away a rule whose predictions start to fail.
+A rule says "if these conditions hold, the answer is about this number". A set of rules is a model you can read: each rule names the features it looks at and the range where it applies. These rules start with one rule that covers everything, split it into narrower rules as the data shows where the answer changes, and throw away a rule whose predictions start to fail.
 
 ## 1. What a rule is
 

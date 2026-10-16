@@ -38,7 +38,7 @@ Degenerate cases:
   ``n_missing`` without touching the window.
 - Duplicates: the reachability distances in a neighborhood of
   duplicates are 0 and the density of Definition 6 is infinite. As
-  scikit-learn does, the mean reachability distance gets a term
+  a general-purpose machine-learning library does, the mean reachability distance gets a term
   1e-10, so the density is at most 1e10 and every score is finite.
   A window of identical samples gives 1.0 to the same point and a
   value of the order of 1e10 times the distance to a far point.

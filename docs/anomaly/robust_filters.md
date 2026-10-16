@@ -1,6 +1,6 @@
 # Robust filters (standalone detectors)
 
-**In plain words:** This page cleans up a series of readings that you have already recorded: it finds the strange readings and replaces them with sensible values. It uses the same four checks as the previous page and combines them into one verdict for each reading.
+This page cleans up a series of readings that you have already recorded: it finds the strange readings and replaces them with sensible values. It uses the same four checks as the previous page and combines them into one verdict for each reading.
 
 The four classic anomaly detectors of the previous page give one score per sample; on a
 **recorded** series you can also run them as batch filters, and combine them into a single

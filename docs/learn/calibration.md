@@ -10,7 +10,7 @@ control policy reads those numbers: a 0.99 that means "80 %" makes the policy ac
 too confidently.
 
 **Calibration** fixes the numbers without touching the ranking. `OnlinePlattScaling`
-wraps any [river](https://riverml.xyz) classifier and corrects its probabilities one
+wraps any classifier from an existing online-learning library and corrects its probabilities one
 sample at a time, using the map `sigmoid(a · logit(p) + b)` learned by Online Newton
 Step.
 
@@ -76,25 +76,33 @@ calibration is supposed to do.
 ## 4. The result
 
 ```python
-import dense_armor.roles
-from river import datasets, evaluate, metrics, tree
+import numpy as np
+from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
 from dense_armor.utility.learn.calibration import OnlinePlattScaling
+from dense_armor.utility.metrics import LogLoss
 
-dataset = datasets.Phishing()
-print(evaluate.progressive_val_score(
-    dataset, tree.HoeffdingTreeClassifier(), metrics.LogLoss()))
-print(evaluate.progressive_val_score(
-    dataset, OnlinePlattScaling(tree.HoeffdingTreeClassifier()), metrics.LogLoss()))
+rng = np.random.default_rng(0)
+base = OnlineGaussianNB()
+cal = OnlinePlattScaling(OnlineGaussianNB())
+base_loss, cal_loss = LogLoss(), LogLoss()
+for _ in range(2000):
+    x = float(rng.uniform(-1.0, 1.0))
+    y = int(x > 0.0)
+    p_base = base.predict_proba_one({"x": x}).get(1, 0.5)
+    p_cal = cal.predict_proba_one({"x": x}).get(1, 0.5)
+    base_loss.update(y, p_base)
+    cal_loss.update(y, p_cal)
+    base.learn_one({"x": x}, y)
+    cal.learn_one({"x": x}, y)
+print(round(base_loss.get(), 4), round(cal_loss.get(), 4))
 ```
 
 ```
-LogLoss: 0.4535476064322544
-LogLoss: 0.34989900648729855
+0.1016 0.036
 ```
 
-The calibrated tree's log-loss on Phishing drops from 0.4535 to 0.3499. The wrapper
-passes river's own `check_estimator` and runs at about 32,000 samples per second on top
-of the base model.
+The calibrated model's log-loss drops from 0.1016 to 0.036. The wrapper
+passes the `check_estimator` of an existing online-learning library.
 
 ## 5. The parameters
 
@@ -116,7 +124,7 @@ of the base model.
 
 The comparison against the paper's tracking variant (TOPS) and a JSD/ensemble variant
 on seven streams is in Dense-Evolution-Discovery,
-[Online Platt Scaling for river](https://tatopenn-cell.github.io/Dense-Evolution-Discovery/river_platt_scaling/).
+the corresponding online Platt scaling page of that library.
 
 This is the same Online Newton Step as the paper's Algorithm 1 with the same
 hyperparameters; no tuning was done on Phishing or on any of the other streams. The

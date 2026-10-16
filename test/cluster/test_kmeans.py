@@ -30,9 +30,9 @@ def test_kmeans_three_blobs_ari():
     ari_sk = adjusted_rand_score(y_true, sk.labels_)
 
     print(f"ARI OnlineKMeans = {ari:.4f}")
-    print(f"ARI sklearn KMeans = {ari_sk:.4f}")
+    print(f"ARI reference KMeans = {ari_sk:.4f}")
     assert ari >= 0.9, f"ARI too low: {ari:.4f}"
-    assert ari >= ari_sk - 0.1, f"OnlineKMeans {ari:.4f} vs sklearn {ari_sk:.4f}"
+    assert ari >= ari_sk - 0.1, f"OnlineKMeans {ari:.4f} vs reference {ari_sk:.4f}"
 
 
 def test_kmeans_halflife_follows_moving_blobs():

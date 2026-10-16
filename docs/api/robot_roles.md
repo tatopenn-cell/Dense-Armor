@@ -1,6 +1,6 @@
 # Robot roles
 
-**In plain words:** A robot's control program runs on a fixed clock, so the learning tools need a few extra things: a time limit for each step, a margin of error around each prediction, a health status and physical units. This page describes the layer that adds them.
+A robot's control program runs on a fixed clock, so the learning tools need a few extra things: a time limit for each step, a margin of error around each prediction, a health status and physical units. This page describes the layer that adds them.
 
 A control loop is not a training script. It runs at a fixed period, on
 real hardware, with real consequences. The layer described on this page
@@ -373,7 +373,7 @@ All numbers on this page were produced by running the code:
 | `test/roles/` (signal, realtime, uncertainty, safety, physics, agents) | 120 passed |
 | `test/stats/` (Task 02 statistics) | 142 passed |
 | `test/learn/test_online_classifiers.py` | 8 passed |
-| `test/learn/test_calibration.py` (needs `river`) | 11 passed |
+| `test/learn/test_calibration.py` (needs the online-learning extra) | 11 passed |
 | ruff check on `dense_armor/checks/`, `dense_armor/roles/` | clean |
 | mypy on the same | clean |
 

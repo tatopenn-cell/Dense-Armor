@@ -1,6 +1,6 @@
 # Data in, one sample at a time
 
-**In plain words:** Robot data comes in many forms: files, recordings, arrays, live sensors. This page turns all of them into the same stream of readings, which every tool in the library then reads one at a time.
+Robot data comes in many forms: files, recordings, arrays, live sensors. This page turns all of them into the same stream of readings, which every tool in the library then reads one at a time.
 
 Every estimator in the library learns from a stream of samples: a `Signal` (named channels with
 units and a timestamp) and, when there is one, a target `y`. Robot data arrive in many shapes:

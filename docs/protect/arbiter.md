@@ -1,6 +1,6 @@
 # Arbiter (per-point routing)
 
-**In plain words:** When a reading looks wrong, there are different right answers: a single glitch should be replaced, a real change should be kept. The Arbiter decides, reading by reading, which case it is, and treats it accordingly.
+When a reading looks wrong, there are different right answers: a single glitch should be replaced, a real change should be kept. The Arbiter decides, reading by reading, which case it is, and treats it accordingly.
 
 A shield that always replaces deviating samples looks wrong on a real robot: it will
 smooth out the intentional step change the operator just commanded. A shield that never

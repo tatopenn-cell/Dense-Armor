@@ -1,8 +1,6 @@
 # Drift detectors: sequential statistical architectures for concept drift isolation
 
-This section establishes a comparative analytical framework evaluating four sequential change-detection algorithms (CUSUM, Page-Hinkley, ADWIN, and KSWIN) optimized to isolate non-stationary process drift within real-time streaming datasets.
-
-**In plain words:** This page explains how a system can notice slow, gradual changes in a robot's operational numbers before an outright mechanical failure occurs. By accumulating small deviations over time rather than looking at individual readings, these four tools can pinpoint exactly when a shift has happened, each trading off reaction delay against the rate of false alarms.
+This page explains how a system can notice slow, gradual changes in a robot's operational numbers before an outright mechanical failure occurs. By accumulating small deviations over time rather than looking at individual readings, these four tools can pinpoint exactly when a shift has happened, each trading off reaction delay against the rate of false alarms.
 
 
 A robot that has been working fine for hours can start to behave differently

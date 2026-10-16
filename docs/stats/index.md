@@ -1,6 +1,6 @@
 # Online statistics and sketches
 
-**In plain words:** When readings never stop arriving, you cannot keep all of them to compute averages afterwards. These tools keep a few numbers that summarise everything seen so far and update them with every new reading.
+When readings never stop arriving, you cannot keep all of them to compute averages afterwards. These tools keep a few numbers that summarise everything seen so far and update them with every new reading.
 
 ## What this is
 
