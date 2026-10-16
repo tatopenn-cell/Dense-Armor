@@ -272,7 +272,6 @@ graph TD
 | file | public names | what it is |
 |---|---|---|
 | `llm.py` | `LLMEmbeddingClassifier` | classifier over LLM embeddings |
-| `bridges/<extra>.py` | the bridge module | bridge to existing online-learning libraries |
 
 ## 6. core/ and armatura.py
 

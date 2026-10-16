@@ -28,21 +28,6 @@ _ROLE_MAP = (
     ("ModelWrapper", ModelWrapper),
 )
 
-try:
-    from river import base as _river_base
-except ModuleNotFoundError:
-    _river_base = None  # type: ignore[assignment]
-
-if _river_base is not None:
-    for _name, _cls in _ROLE_MAP:
-        _rcls = getattr(_river_base, _name, None)
-        if _rcls is None:
-            continue
-        try:
-            _rcls.register(_cls)
-        except (TypeError, AttributeError):
-            pass
-    del _name, _cls, _rcls
 del _ROLE_MAP
 
 __all__ = [

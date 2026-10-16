@@ -78,3 +78,24 @@ The harness writes /content/speed.json with the per-seed stats and the
 pairwise comparison. The reference is imported only if the environment
 variable SPEED_REF names the module to import; the repository never
 writes that name.
+
+
+## Second tranche (E): measured, no reference comparison in this session
+
+| component | our median µs | our p99 µs | note |
+|---|---|---|---|
+| LODA (100 projections, 10 bins, window 256) | 650.0 | 1853.6 | — |
+| LocalOutlierFactor (n_neighbors=10, window=100) | 2336.9 | 4468.8 | — |
+| OneClassSGD (n_features_rff=128, nu=0.1) | 357.9 | 1205.4 | — |
+| OnlineRobustMahalanobis | 97.0 | 185.0 | — |
+| PageHinkley | (see A/B block) | — | — |
+| KSWIN | (see A/B block) | — | — |
+| LinearRegression (SGD) | 33.6 | 88.3 | — |
+| LogisticRegression (AdaGrad) | 48.7 | 127.0 | — |
+| BayesianLinearRegression | 60.9 | 102.3 | — |
+| KNNClassifier (window=100, k=5) | 135.5 | 214.0 | — |
+| AggregatedMondrianForestClassifier (10 trees) | 4459.5 | 36097.6 | p99 36 ms, worst tail |
+| HoeffdingAdaptiveTreeClassifier | 62.0 | 151.5 | — |
+
+Machine: Intel Xeon 2.20 GHz, 2 cores, Python 3.13.16. 3 seeds, 1000 samples, 100 warm-up.
+The pairwise reference comparison for these components is not done in this session: the counterparts exist but with different default parameters; the one-to-one parameter match is left for a second round. Reported.

@@ -164,11 +164,9 @@ default), methods and input/output schema — ready for an LLM agent.
 The core has no external online-learning dependency. `dense_armor.bridges`
 holds optional interop layers, each installing as an extra:
 
-- the bridge module (the streaming extra, see the bridge page):
   our estimators and the other library's share `learn_one` / `predict_one` /
   `predict_proba_one`, so pipelines and evaluators interoperate
   without wrapping. If the other library is installed, our role classes are
   registered as virtual subclasses of its ABCs at import time.
-- `dense_armor.bridges.llm` (`pip install dense-armor[llm]`):
   an estimator whose features come from any `embed(text) -> vector`
   callable, with JSON-in / JSON-out calls built on `describe()`.
