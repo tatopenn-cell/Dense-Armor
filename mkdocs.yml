@@ -68,12 +68,9 @@ plugins:
             heading_level: 2
 
 nav:
-  - Speed: speed.md
-  - Numbers: numbers.md
-  - Quality: quality.md
-  - Speed: speed.md
   - Home: index.md
   - Getting Started: getting-started.md
+  - Speed: speed.md
   - Applications:
       - Finance:
           - finance/index.md
