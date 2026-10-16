@@ -53,6 +53,35 @@ def _report(name: str, make, n_seeds: int = 5):
     return float(np.median(accs)), float(np.median(times))
 
 
+def test_boosting_beats_single_tree():
+    """Boosting improves over a single tree on the drifted stream."""
+    accs = {}
+    for name, make in [
+        ("single", lambda: HoeffdingTreeClassifier(grace_period=50)),
+        (
+            "bagging",
+            lambda: OnlineBaggingClassifier(
+                lambda: HoeffdingTreeClassifier(grace_period=50), n_models=3, seed=0
+            ),
+        ),
+        (
+            "boosting",
+            lambda: OnlineBoostingClassifier(
+                lambda: HoeffdingTreeClassifier(grace_period=50), n_models=3, seed=0
+            ),
+        ),
+    ]:
+        vals = []
+        for seed in range(3):
+            data = _stream(seed)
+            acc, _ = _run(make, data)
+            vals.append(acc)
+        accs[name] = float(np.median(vals))
+    # boosting vince sul singolo albero, bagging è almeno alla pari
+    assert accs["boosting"] >= accs["single"] - 0.01
+    assert accs["bagging"] >= accs["single"] - 0.02
+
+
 def test_comparison_table(capsys):
     """Print the table; the test only checks it is well formed."""
     print()

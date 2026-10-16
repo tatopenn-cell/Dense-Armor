@@ -1,5 +1,6 @@
 """Helpers shared by the ensemble classes."""
 
+import copy
 import math
 from typing import Any
 
@@ -29,11 +30,16 @@ def finite(d: dict) -> bool:
 
 
 def new_member(m: Any) -> Any:
-    """Build a fresh member from a class, a factory or an instance."""
+    """Build a fresh member from a class, a factory or an instance.
+
+    A class or a factory is called. An instance is cloned if it exposes
+    ``clone`` (every estimator of the library does). An instance without
+    ``clone`` is deep-copied, so the members do not share state.
+    """
     if isinstance(m, type):
         return m()
     if callable(m) and not hasattr(m, "learn_one"):
         return m()
     if hasattr(m, "clone"):
         return m.clone()
-    return m
+    return copy.deepcopy(m)

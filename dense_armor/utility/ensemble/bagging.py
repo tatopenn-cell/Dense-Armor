@@ -21,23 +21,12 @@ References:
         Artificial Intelligence and Statistics 2001, 105-112.
 """
 
-import math
 from typing import Any
 
 import numpy as np
 
-from dense_armor.utility.ensemble._common import as_dict, finite, new_member
 from dense_armor.roles import Classifier
-
-
-def as_dict(x: Any) -> dict:
-    if hasattr(x, "to_dict"):
-        return dict(x.to_dict())
-    try:
-        return dict(x)
-    except (TypeError, ValueError):
-        return {}
-
+from dense_armor.utility.ensemble._common import as_dict, finite, new_member
 
 
 class OnlineBaggingClassifier(Classifier):

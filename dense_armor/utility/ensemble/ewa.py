@@ -37,18 +37,8 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor.utility.ensemble._common import as_dict, finite, new_member
 from dense_armor.roles import Regressor
-
-
-def as_dict(x: Any) -> dict:
-    if hasattr(x, "to_dict"):
-        return dict(x.to_dict())
-    try:
-        return dict(x)
-    except (TypeError, ValueError):
-        return {}
-
+from dense_armor.utility.ensemble._common import as_dict, finite, new_member
 
 
 def _squared_error(y_true, y_pred) -> float:
@@ -163,8 +153,6 @@ class ExponentiallyWeightedAverageRegressor(Regressor):
             return 0.0
         k = len(self.losses_)
         denom = 1.0 - math.exp(-self.eta)
-        if denom <= 0.0:
-            return float("inf")
         return (self.eta / denom) * min(self.losses_) + math.log(k) / denom
 
     def predict_one(
@@ -185,9 +173,6 @@ class ExponentiallyWeightedAverageRegressor(Regressor):
             dtype=float,
         )
         z = float(w.sum())
-        if z <= 0.0:
-            w = np.ones_like(w)
-            z = float(w.sum())
         y_hat = float(np.dot(w, np.array(preds)) / z)
         if return_std:
             var = float(np.dot(w, (np.array(preds) - y_hat) ** 2) / z)

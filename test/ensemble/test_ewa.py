@@ -22,9 +22,8 @@ def test_bound_matches_paper_formula():
     ewa = ExponentiallyWeightedAverageRegressor([_Const(0.0), _Const(1.0)], eta=0.5)
     for _ in range(30):
         _ = ewa.learn_one({"x": 0.0}, 1.0)
-    expected = (
-        (0.5 / (1.0 - np.exp(-0.5))) * min(ewa.losses_)
-        + np.log(2) / (1.0 - np.exp(-0.5))
+    expected = (0.5 / (1.0 - np.exp(-0.5))) * min(ewa.losses_) + np.log(2) / (
+        1.0 - np.exp(-0.5)
     )
     assert abs(ewa.bound() - expected) < 1e-9
 
