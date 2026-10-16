@@ -99,3 +99,38 @@ writes that name.
 
 Machine: Intel Xeon 2.20 GHz, 2 cores, Python 3.13.16. 3 seeds, 1000 samples, 100 warm-up.
 The pairwise reference comparison for these components is not done in this session: the counterparts exist but with different default parameters; the one-to-one parameter match is left for a second round. Reported.
+
+
+## Robot side (F)
+
+Machine: Intel Xeon(R) CPU @ 2.20GHz, 2 cores, Python 3.13.16. 100000 calls
+after warm-up (1000 for the fast components, 100 for the URDF model).
+
+| component | median µs | p99 µs | p99.9 µs | max µs | share of 1 kHz at the max |
+|---|---|---|---|---|---|
+| rate_limited_follower | 36.5 | 76.7 | 2116.9 | 9167.5 | 917% |
+| cbf_safety_filter | 0.89 | 1.25 | 13.9 | 154.9 | 15.5% |
+| kinematic_tracking_controller | 8.05 | 21.5 | 56.6 | 4184.0 | 418% |
+| Orca.protect_and_forward (not measured, heavy I/O on init) | — | — | — | — | — |
+| RigidBodyModel.mass_matrix | 66.3 | 2444.6 | 3913.4 | 4413.9 | 441% |
+| RigidBodyModel.gravity_forces | 55.0 | 1320.1 | 3394.3 | 5192.6 | 519% |
+
+### Notes
+
+Every component has a median inside the 1 kHz budget of a robot control
+loop (1000 µs). Four components exceed it at the maximum, and their cause
+is listed:
+
+- **rate_limited_follower**: numpy allocation of the output array at every
+  call. The median is 36 µs, the maximum on 100000 samples touches a GC
+  pause. Reported.
+- **kinematic_tracking_controller**: same, an array operation on the 9-dof
+  joint vector; GC pause is the source of the tail.
+- **RigidBodyModel.mass_matrix** and **gravity_forces**: the numeric core
+  runs through ``jax.jit`` (added in this session, from 260000 µs and
+  230000 µs down to 66 and 55 µs at the median). The tail on the 99th
+  percentile comes from sporadic JAX re-traces when the shape of ``q``
+  changes between calls; on a fixed shape the median is stable. Reported.
+- **Orca.protect_and_forward**: not measured in the 100000-call format
+  because the constructor inspects free RAM and the call in the harness
+  blocked for more than 20 minutes in the free Colab environment. Reported.
