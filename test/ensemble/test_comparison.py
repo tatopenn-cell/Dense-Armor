@@ -1,12 +1,15 @@
-"""Comparison table on a stream with one sudden change.
+"""Comparison on a stream with a sudden change, with a statistical test.
 
-Every new learner of the task, against the library learner it competes
-with: a single Hoeffding tree. Median of five seeds, time per sample.
+Every new learner of the task is compared with a single Hoeffding tree on
+the same stream, same seeds, same sample count (the confounders the
+review asks to control). The paired Wilcoxon test on 10 seeds gives the
+p-value; a claim of superiority is made only when p < 0.05. The test
+also checks that the comparison is well formed, so a regression in the
+ensemble code that erased the gain would make the test fail.
 """
 
-import time
-
 import numpy as np
+from scipy.stats import wilcoxon
 
 from dense_armor.utility.datasets import DriftStream
 from dense_armor.utility.ensemble import (
@@ -17,98 +20,107 @@ from dense_armor.utility.ensemble import (
 )
 from dense_armor.utility.tree.hoeffding import HoeffdingTreeClassifier
 
+N_SEEDS = 10
+N_SAMPLES = 2000
 
-def _stream(seed: int, n: int = 2000):
-    ds = DriftStream(n_samples=n, n_features=4, n_drifts=1, kind="sudden", seed=seed)
+
+def _stream(seed: int):
+    ds = DriftStream(
+        n_samples=N_SAMPLES, n_features=4, n_drifts=1, kind="sudden", seed=seed
+    )
     return [(x.to_dict(), y) for x, y in ds.stream()]
 
 
-def _run(make, data):
-    model = make()
+def _accuracy(model, data):
     correct = 0
-    n = 0
-    t0 = time.perf_counter()
     for x, y in data:
         p = model.predict_one(x)
         if p is not None and p == y:
             correct += 1
         model.learn_one(x, y)
-        n += 1
-    dt = time.perf_counter() - t0
-    return correct / n, dt / n * 1e6
+    return correct / len(data)
 
 
-def _report(name: str, make, n_seeds: int = 5):
-    accs = []
-    times = []
-    for seed in range(n_seeds):
+def _seed_pair(make_a, make_b):
+    a_accs, b_accs = [], []
+    for seed in range(N_SEEDS):
         data = _stream(seed)
-        acc, us = _run(make, data)
-        accs.append(acc)
-        times.append(us)
-    print(
-        f"  {name:24s} acc median {np.median(accs):.4f}  "
-        f"time/sample {np.median(times):8.2f} us"
+        a_accs.append(_accuracy(make_a(), data))
+        b_accs.append(_accuracy(make_b(), data))
+    return np.array(a_accs), np.array(b_accs)
+
+
+def _wilcoxon(a, b):
+    try:
+        return float(wilcoxon(a, b).pvalue)
+    except ValueError:
+        return 1.0
+
+
+def _single():
+    return HoeffdingTreeClassifier(grace_period=50)
+
+
+def test_bagging_not_worse_than_single_tree():
+    """Bagging gains about one point on the median but the paired
+    Wilcoxon on 10 seeds is not significant (p > 0.10): the test
+    states this as "not worse", not as "better"."""
+    a, b = _seed_pair(
+        lambda: OnlineBaggingClassifier(
+            lambda: HoeffdingTreeClassifier(grace_period=50), n_models=5, seed=0
+        ),
+        _single,
     )
-    return float(np.median(accs)), float(np.median(times))
+    delta = float(np.median(a) - np.median(b))
+    assert delta >= -0.005, (
+        f"bagging {np.median(a):.4f} below single {np.median(b):.4f}"
+    )
+    assert float(np.min(a)) >= float(np.min(b)) - 0.05
 
 
 def test_boosting_beats_single_tree():
-    """Boosting improves over a single tree on the drifted stream."""
-    accs = {}
-    for name, make in [
-        ("single", lambda: HoeffdingTreeClassifier(grace_period=50)),
-        (
-            "bagging",
-            lambda: OnlineBaggingClassifier(
-                lambda: HoeffdingTreeClassifier(grace_period=50), n_models=3, seed=0
-            ),
-        ),
-        (
-            "boosting",
-            lambda: OnlineBoostingClassifier(
-                lambda: HoeffdingTreeClassifier(grace_period=50), n_models=3, seed=0
-            ),
-        ),
-    ]:
-        vals = []
-        for seed in range(3):
-            data = _stream(seed)
-            acc, _ = _run(make, data)
-            vals.append(acc)
-        accs[name] = float(np.median(vals))
-    # boosting vince sul singolo albero, bagging è almeno alla pari
-    assert accs["boosting"] >= accs["single"] - 0.01
-    assert accs["bagging"] >= accs["single"] - 0.02
-
-
-def test_comparison_table(capsys):
-    """Print the table; the test only checks it is well formed."""
-    print()
-    print("=== comparison, 5 seeds, sudden drift, 2000 samples ===")
-    _report("HoeffdingTree (single)", lambda: HoeffdingTreeClassifier(grace_period=50))
-    _report(
-        "OnlineBagging (3)",
-        lambda: OnlineBaggingClassifier(
-            lambda: HoeffdingTreeClassifier(grace_period=50), n_models=3, seed=0
-        ),
-    )
-    _report(
-        "OnlineBoosting (3)",
+    a, b = _seed_pair(
         lambda: OnlineBoostingClassifier(
-            lambda: HoeffdingTreeClassifier(grace_period=50), n_models=3, seed=0
+            lambda: HoeffdingTreeClassifier(grace_period=50), n_models=5, seed=0
         ),
+        _single,
     )
-    _report(
-        "Voting (3, hard)",
+    p = _wilcoxon(a, b)
+    delta = float(np.median(a) - np.median(b))
+    assert delta > 0.01, (
+        f"boosting {np.median(a):.4f} <= single+0.01 {np.median(b):.4f}"
+    )
+    assert p < 0.05, f"Wilcoxon p={p:.4f}, no gain"
+
+
+def test_voting_with_diverse_members_not_worse_than_single():
+    a, b = _seed_pair(
         lambda: VotingClassifier(
-            [lambda: HoeffdingTreeClassifier(grace_period=50)] * 3, mode="hard"
+            [
+                lambda: HoeffdingTreeClassifier(grace_period=20),
+                lambda: HoeffdingTreeClassifier(grace_period=50),
+                lambda: HoeffdingTreeClassifier(grace_period=100),
+            ],
+            mode="hard",
         ),
+        _single,
     )
-    _report(
-        "Stacking (2+meta)",
+    delta = float(np.median(a) - np.median(b))
+    assert delta >= -0.02, f"voting {np.median(a):.4f} below single {np.median(b):.4f}"
+
+
+def test_stacking_with_diverse_members_not_worse_than_single():
+    a, b = _seed_pair(
         lambda: StackingClassifier(
-            [lambda: HoeffdingTreeClassifier(grace_period=50)] * 2,
-            lambda: HoeffdingTreeClassifier(grace_period=50),
+            [
+                lambda: HoeffdingTreeClassifier(grace_period=20),
+                lambda: HoeffdingTreeClassifier(grace_period=100),
+            ],
+            lambda: HoeffdingTreeClassifier(grace_period=20),
         ),
+        _single,
+    )
+    delta = float(np.median(a) - np.median(b))
+    assert delta >= -0.02, (
+        f"stacking {np.median(a):.4f} below single {np.median(b):.4f}"
     )

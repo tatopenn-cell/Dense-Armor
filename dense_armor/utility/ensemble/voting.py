@@ -114,8 +114,6 @@ class VotingClassifier(Classifier):
 
     def predict_proba_one(self, x: Any, t: float | None = None) -> dict:
         self._ensure_members()
-        if not self.members_:
-            return {}
         d = as_dict(x)
         if self.mode == "hard":
             votes: dict = {}

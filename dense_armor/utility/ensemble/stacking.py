@@ -122,26 +122,22 @@ class StackingClassifier(Classifier):
 
     def predict_proba_one(self, x: Any, t: float | None = None) -> dict:
         self._ensure()
-        if self.meta_ is None:
-            return {}
         d = as_dict(x)
         meta_x = self._meta_input(d)
         if not meta_x:
             return {}
         try:
             return self.meta_.predict_proba_one(meta_x)
-        except AttributeError:
+        except (AttributeError, NotImplementedError):
             return {}
 
     def predict_one(self, x: Any, t: float | None = None) -> Any:
         self._ensure()
-        if self.meta_ is None:
-            return None
         d = as_dict(x)
         meta_x = self._meta_input(d)
         if not meta_x:
             return None
         try:
             return self.meta_.predict_one(meta_x)
-        except AttributeError:
+        except (AttributeError, NotImplementedError):
             return None

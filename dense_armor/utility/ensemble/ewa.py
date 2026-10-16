@@ -152,7 +152,7 @@ class ExponentiallyWeightedAverageRegressor(Regressor):
         if not self.losses_:
             return 0.0
         k = len(self.losses_)
-        denom = 1.0 - math.exp(-self.eta)
+        denom = -math.expm1(-self.eta)
         return (self.eta / denom) * min(self.losses_) + math.log(k) / denom
 
     def predict_one(
