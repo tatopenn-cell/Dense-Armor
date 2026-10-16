@@ -4,6 +4,39 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+## [1.1.29] - 2026-10-16
+
+### Changed
+- Speed (#184): ADWIN rewritten as ADWIN2 (exponential buckets, Hoeffding cut,
+  Bifet and Gavalda 2006), 13x to 38x faster per update depending on the
+  machine; `AdaptiveRandomForestClassifier.predict_one` no longer builds the
+  probability dict (5x to 7x faster); the Hoeffding tree checks for a split
+  every `grace_period` samples (1.6x to 1.8x faster). Before and after on
+  three machines in `benchmarks/speed_log.md`, harness in `benchmarks/speed.py`.
+- ADWIN can flag a change on several consecutive updates; the docs say so and
+  the robot-stream table of `docs/drift/detectors.md` is measured again with
+  this version (17.7 s delay, 0 missed, 1.4 false alarms per hour).
+- `check_estimator` computes the ROC AUC with its own Mann-Whitney U, with no
+  optional dependency.
+
+### Fixed
+- The provenance signature of `dense_armor.core` follows the package version
+  (it fell back to 1.0.11) (#187).
+- `SafeEstimator.restore` reads the checkpoint envelope with an unpickler that
+  refuses every global and verifies the digest before the model state is
+  unpickled; `save` and `restore` take an optional `key` for an HMAC-SHA256.
+  The state is still a pickle: restore only trusted checkpoints (#187).
+- MCP streaming sessions are capped at 256 and dropped after an hour idle;
+  importing `dense_armor.dynamics` no longer loads the QP solver; `nvidia-smi`
+  is called without a shell; `one_sided_arl` returns `inf` on exponent overflow
+  instead of a warning (#187).
+
+### Added
+- Quality benchmark of the building blocks (20 seeds, 3 streams) and the claim
+  register `docs/quality.md` (#181, #183); `check_estimator` reports "not
+  applicable" checks instead of skipping them silently.
+- Tests for the lines of the speed patch (#186).
+
 ## [1.1.28] - 2026-10-15
 
 ### Added
