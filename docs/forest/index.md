@@ -167,6 +167,25 @@ The adaptive random forest has a higher median accuracy than the single adaptive
 
 On the same stream OXT scores slightly above the plain Mondrian forest in every window and costs about five times more per sample (7.44 ms against 1.41 ms, twenty trees against ten). Against AMRules the comparison flips: OXT has a lower error after the change (0.053 against 0.213 in the first 100 samples) but is slower (7.44 ms against 0.08 ms). The Mondrian forest has the lower error on all five seeds (A12 = 0.32 for OXT; one-sided paired Wilcoxon with OXT lower, p = 1.000; with five seeds no two-sided p-value can fall below 0.0625). Against AMRules OXT has the lower error on four seeds out of five (p = 0.094, A12 = 0.72), which is not significant at 0.05. The random split is not the winner on this benchmark; its purpose is to remove the split search, and its cost is visible in the millisecond column.
 
+### Go or no-go for AMF and OXT
+
+Whether `AggregatedMondrianForestRegressor` (AMF) and `OnlineExtraTreesRegressor` (OXT) earn a place next to `MondrianForestRegressor` was decided on five regimes, 20 seeds each, 1000 samples, mean squared error over the second half of the stream, prequential. The rule, fixed before the run: GO: lower error than the Mondrian forest with two-sided paired Wilcoxon p < 0.05 and the 95% bootstrap interval of A12 above 0.5, or the same error (interval contains 0.5) at no more than half the ms per sample. The script is `benchmarks/z_go_nogo.py` and the numbers are in `benchmarks/z_go_nogo.json` (run on Intel(R) Xeon(R) CPU @ 2.20GHz, 4 cores).
+
+| regime | model | median error | Mondrian forest | A12 [95% interval] | seeds better | p (two-sided) | ms per sample, model / Mondrian | verdict |
+|---|---|---|---|---|---|---|---|---|
+| 20 features, 2 relevant | AMF | 0.3584 | 0.2657 | 0.04 [0.00, 0.09] | 0/20 | 1.9e-06 | 2.92 / 3.91 | NO-GO |
+| 20 features, 2 relevant | OXT | 0.1839 | 0.2657 | 0.97 [0.94, 1.00] | 20/20 | 1.9e-06 | 4.15 / 3.91 | GO |
+| 100 features, 2 relevant | AMF | 0.4122 | 0.3912 | 0.34 [0.21, 0.46] | 4/20 | 0.0083 | 2.93 / 16.85 | NO-GO |
+| 100 features, 2 relevant | OXT | 0.3512 | 0.3912 | 0.66 [0.50, 0.82] | 14/20 | 0.28 | 4.72 / 16.85 | NO-GO |
+| piecewise function of one feature | AMF | 0.0593 | 0.0313 | 0.00 [0.00, 0.00] | 0/20 | 1.9e-06 | 2.86 / 1.32 | NO-GO |
+| piecewise function of one feature | OXT | 0.0323 | 0.0313 | 0.36 [0.23, 0.49] | 5/20 | 0.07 | 3.92 / 1.32 | NO-GO |
+| 5% outliers | AMF | 1.4647 | 1.4662 | 0.45 [0.36, 0.48] | 3/20 | 0.0017 | 2.81 / 1.32 | NO-GO |
+| 5% outliers | OXT | 1.4526 | 1.4662 | 0.52 [0.46, 0.58] | 14/20 | 0.07 | 3.89 / 1.32 | NO-GO |
+| limit of 1 ms per sample (3 trees, 5 for the Mondrian forest) | AMF | 0.1139 | 0.0433 | 0.00 [0.00, 0.00] | 0/20 | 1.9e-06 | 0.94 / 0.69 | NO-GO |
+| limit of 1 ms per sample (3 trees, 5 for the Mondrian forest) | OXT | 0.0802 | 0.0433 | 0.00 [0.00, 0.01] | 0/20 | 1.9e-06 | 1.26 / 0.69 | NO-GO |
+
+AMF is worse than the Mondrian forest in all five regimes, with a paired p below 0.01 in each; in the regime with 5% outliers the medians differ only in the fourth decimal (1.4647 against 1.4662) and AMF is better on 3 seeds out of 20. OXT is better in one regime only, 20 features with 2 relevant, where it is better on 20 seeds out of 20 (error 0.184 against 0.266) at about the same cost; with 100 features the difference is not significant (p = 0.28), on a piecewise function it ties, and under a 1 ms limit it loses. The decision: keep OXT as an option for streams with many irrelevant features, and do not recommend AMF over the Mondrian forest.
+
 ## Details
 
 ### References
