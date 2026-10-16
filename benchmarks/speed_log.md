@@ -22,6 +22,7 @@ Machine: Intel(R) Core(TM) i5-8250U CPU @ 1.60GHz, 8 threads, Python 3.12.10, Wi
 | ADWIN (update) | 316.1 | 8.2 | 510.8 | 10.5 | 38.5x faster |
 
 Gaussian naive Bayes and Half-Space Trees did not change on this machine (the differences are inside the run-to-run noise).
+The same comparison on a second machine is in "Second and third machine" below.
 
 
 ## Machine and versions
@@ -156,3 +157,44 @@ is listed:
 - **Orca.protect_and_forward**: not measured in the 100000-call format
   because the constructor inspects free RAM and the call in the harness
   blocked for more than 20 minutes in the free Colab environment. Reported.
+
+## Second and third machine
+
+Kaggle does not always give the same processor: the two runs below landed on different CPUs, so the processor is
+written next to each table (read with `lscpu` inside the run).
+
+### Before and after, this repository against itself
+
+Machine: AMD EPYC 7B12 (family 23, model 49, stepping 0), 4 cores, L3 16 MiB, Python 3.13.15, Linux. Same stream and
+timing as the first before/after table, 5 seeds. Before = `master`, after = `taskV-speed`.
+
+| component | before median µs | after median µs | before p99 µs | after p99 µs | change at the median |
+|---|---|---|---|---|---|
+| Gaussian NB | 32.6 | 32.1 | 52.2 | 56.8 | same, within noise |
+| Hoeffding tree | 11.6 | 6.6 | 44.2 | 14.9 | 1.8x faster |
+| Adaptive random forest (10 models) | 3029.0 | 580.2 | 4896.2 | 893.5 | 5.2x faster |
+| Half-Space Trees (25 trees) | 851.9 | 968.1 | 1477.9 | 1568.9 | 1.14x slower |
+| ADWIN (update) | 101.6 | 7.6 | 180.4 | 15.3 | 13.3x faster |
+
+Reading the two machines together: ADWIN is 38.5x faster on the first machine and 13.3x on the second, because the
+previous version scanned the whole window and the cost of that depends on the processor. The adaptive random forest
+(6.8x and 5.2x) and the Hoeffding tree (1.6x and 1.8x) agree between the machines. **Half-Space Trees is not faster:**
+equal on the first machine (0.97x) and 1.14x slower on the second, so the vectorised descent of this branch is not an
+improvement for 25 trees and 4 features. It is reported, not claimed.
+
+### Reference run, 20 seeds
+
+Machine: Intel Xeon @ 2.20 GHz (family 6, model 79, stepping 0), 4 cores, L3 55 MiB, Linux, 20 seeds, 2000 samples
+(first 200 discarded), `benchmarks/speed.py`. Ratio = our median over the reference median in the same run; p is the
+paired two-sided Wilcoxon test over the 20 seeds.
+
+| component | our median µs | our p99 µs | ratio median | ours faster on | p |
+|---|---|---|---|---|---|
+| Gaussian NB | 35.6 | 53.8 | 0.24 | 20/20 | 1.9e-06 |
+| Hoeffding tree | 8.8 | 19.1 | 0.47 | 20/20 | 1.9e-06 |
+| Adaptive random forest (10 models) | 740.3 | 1144.5 | 1.28 | 0/20 | 1.9e-06 |
+| Half-Space Trees (25 trees) | 1171.2 | 1920.7 | 7.08 | 0/20 | 1.9e-06 |
+| ADWIN | 9.8 | 18.8 | 31.16 | 0/20 | 1.9e-06 |
+
+The ratios agree with the table of the 2-core run above (0.28, 0.47, 1.23, 7.63, 29.95 against 0.24, 0.47, 1.28, 7.08,
+31.16): the picture does not depend on the machine.
