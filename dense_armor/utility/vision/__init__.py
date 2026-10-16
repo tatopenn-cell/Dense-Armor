@@ -70,9 +70,18 @@ and it prints the score before and after the change.
 """
 
 from dense_armor.utility.vision.features import FrameFeatures
+from dense_armor.utility.vision.motion import (
+    GlobalMotion,
+    MotionEnergy,
+)
 from dense_armor.utility.vision.patches import (
     PatchFeatures,
     PatchMemory,
+)
+from dense_armor.utility.vision.window import FrameWindow
+from dense_armor.utility.vision.scene import (
+    FrameAnomaly,
+    SceneChange,
 )
 from dense_armor.utility.vision.reduce import (
     IncrementalPCA,
@@ -87,6 +96,11 @@ from dense_armor.utility.vision.streams import (
 
 __all__ = [
     "ArrayStream",
+    "FrameWindow",
+    "FrameAnomaly",
+    "SceneChange",
+    "GlobalMotion",
+    "MotionEnergy",
     "CameraStream",
     "Frame",
     "FrameFeatures",
