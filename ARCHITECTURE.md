@@ -10,7 +10,9 @@ every file. Update it whenever a module is added, moved or renamed.
    the other support classes.
 2. `utility` — the online-learning library, one subpackage per section of the programme:
    `stream`, `datasets`, `compose`, `preprocessing`, `stats`, `metrics`, `evaluate`, `learn`,
-   `tree`, `cluster`, `anomaly`, `drift`, `protect`, `vision`, `control`, `misc`.
+   `tree`, `cluster`, `anomaly`, `drift`, `protect`, `vision`, `control`, `misc`, `bayes`,
+   `linear`, `multiclass`, `multioutput`, `neighbors`, `optim`, `proba`, `rules`, `timeseries`,
+   `forest`.
 3. `dynamics` — rigid-body dynamics from URDF.
 4. `checks` — `check_estimator` and the robot checks.
 5. `bridges` — optional bridges (LLM embeddings, and a bridge to existing online-learning
@@ -45,6 +47,15 @@ graph TD
         VISION["vision: FrameFeatures,<br/>PatchFeatures, PatchMemory"]
         CONTROL["control: cbf_safety_filter,<br/>quintic_trajectory"]
         MISC["misc: Metro, diag, anwav"]
+        BAYES["bayes: MultinomialNB, BernoulliNB,<br/>ComplementNB, CategoricalNB"]
+        LINEAR["linear: LinearRegression,<br/>LogisticRegression,<br/>BayesianLinearRegression"]
+        MULTI["multiclass, multioutput:<br/>OneVsRestClassifier,<br/>ClassifierChain"]
+        NEIGH["neighbors: KNNClassifier,<br/>KNNRegressor"]
+        OPTIM["optim: SGD, AdaGrad, Adam,<br/>FTRLProximal, OnlineNewtonStep"]
+        PROBA["proba: Beta, Gaussian,<br/>Multinomial"]
+        RULES["rules: AMRulesRegressor"]
+        TSERIES["timeseries: OnlineAR,<br/>KalmanFilter, CycleResidual"]
+        FOREST["forest: AdaptiveRandomForestClassifier,<br/>AggregatedMondrianForestClassifier,<br/>OnlineExtraTreesRegressor"]
     end
 
     subgraph DYN["3. dynamics/"]
@@ -197,7 +208,12 @@ graph TD
 | `curvature.py` | `curvature` | curvature measure |
 | `deviation.py` | `StreamingDeviationScorer` | streaming deviation score |
 | `filters.py` | `HampelScorer`, `TukeyScorer`, `ChauvenetScorer`, `SigmaClipScorer`, `HampelFilter` | outlier scorers and filter |
+| `hst.py` | `HalfSpaceTrees` | Half-Space Trees for streaming anomaly detection |
+| `loda.py` | `LODA` | lightweight online detector of anomalies |
+| `lof.py` | `LocalOutlierFactor` | local outlier factor over a sliding window |
 | `mahalanobis.py` | `OnlineRobustMahalanobis` | robust Mahalanobis distance |
+| `ocsvm.py` | `OneClassSGD` | one-class SVM by SGD on random Fourier features |
+| `oiforest.py` | `OnlineIsolationForest` | online isolation forest |
 | `one_sided.py` | `one_sided_upper_filter` | one-sided upper filter |
 | `resonance_search.py` | `apply_fast_resonance`, `smoke_test` | resonance search |
 | `robust_filters.py` | `chauvenet_criterion`, `tukey_fences`, `hampel_filter`, `sigma_clip`, `pressure_valve` | robust filters |
@@ -252,6 +268,81 @@ graph TD
 | `iodat.py` | `lodat` | I/O helper |
 | `metro.py` | `Metro` | scaler |
 
+### 2.17 bayes
+
+| file | public names | what it is |
+|---|---|---|
+| `bernoulli.py` | `BernoulliNB` | Bernoulli naive Bayes with Laplace smoothing |
+| `categorical.py` | `CategoricalNB` | categorical naive Bayes with Laplace smoothing |
+| `complement.py` | `ComplementNB` | complement naive Bayes with Laplace smoothing |
+| `multinomial.py` | `MultinomialNB` | multinomial naive Bayes with Laplace smoothing |
+
+### 2.18 linear
+
+| file | public names | what it is |
+|---|---|---|
+| `bayes.py` | `BayesianLinearRegression` | online Bayesian linear regression with a conjugate Gaussian prior |
+| `glm.py` | `LinearRegression`, `LogisticRegression` | online linear and logistic regression |
+| `payload.py` | `PayloadEstimator` | recursive least squares estimate of a point mass on a link |
+
+### 2.19 multiclass
+
+| file | public names | what it is |
+|---|---|---|
+| `multiclass.py` | `OneVsRestClassifier`, `OneVsOneClassifier`, `OutputCodeClassifier` | one-vs-rest, one-vs-one and output-code multiclass wrappers |
+
+### 2.20 multioutput
+
+| file | public names | what it is |
+|---|---|---|
+| `multioutput.py` | `PerOutputClassifier`, `PerOutputRegressor`, `ClassifierChain`, `RegressorChain`, `ProbabilisticClassifierChain` | per-output models and chains for several targets |
+
+### 2.21 neighbors
+
+| file | public names | what it is |
+|---|---|---|
+| `knn.py` | `LazySearch`, `KNNClassifier`, `KNNRegressor` | k-nearest neighbours over a sliding window |
+
+### 2.22 optim
+
+| file | public names | what it is |
+|---|---|---|
+| `adagrad.py` | `AdaGrad` | AdaGrad with per-coordinate step sizes |
+| `adam.py` | `Adam` | Adam with bias-corrected moments |
+| `ftrl.py` | `FTRLProximal` | FTRL-Proximal with L1 and L2 regularisation |
+| `newton.py` | `OnlineNewtonStep` | online Newton step with a rank-one running Hessian |
+| `sgd.py` | `SGD` | stochastic gradient descent with a fixed step |
+
+### 2.23 proba
+
+| file | public names | what it is |
+|---|---|---|
+| `beta.py` | `Beta` | Beta distribution with online update and revert |
+| `gaussian.py` | `Gaussian` | univariate Gaussian updated with Welford's algorithm |
+| `multinomial.py` | `Multinomial` | Dirichlet count model over K categories |
+
+### 2.24 rules
+
+| file | public names | what it is |
+|---|---|---|
+| `amrules.py` | `AMRulesRegressor` | adaptive model rules regressor (Duarte, Gama and Bifet) |
+
+### 2.25 timeseries
+
+| file | public names | what it is |
+|---|---|---|
+| `ar.py` | `OnlineAR`, `OnlineVAR` | online autoregressive models, univariate and vector |
+| `cycle.py` | `CycleResidual` | cycle residual of a repetitive scalar stream |
+| `kalman.py` | `KalmanFilter`, `VBAdaptiveKalman`, `InnovationAdaptiveKalman` | linear Kalman filter and two adaptive variants |
+
+### 2.26 forest
+
+| file | public names | what it is |
+|---|---|---|
+| `amf.py` | `AggregatedMondrianForestClassifier`, `AggregatedMondrianForestRegressor` | aggregated Mondrian forest, classifier and regressor (Mourtada et al.) |
+| `arf.py` | `SubspaceHoeffdingTree`, `AdaptiveRandomForestClassifier` | adaptive random forest and its subspace Hoeffding tree |
+| `oxt.py` | `OnlineExtraTreesRegressor` | online extra trees regressor (Mastelini et al.) |
+
 ## 3. dynamics
 
 | file | public names | what it is |
@@ -264,7 +355,7 @@ graph TD
 
 | file | public names | what it is |
 |---|---|---|
-| `check_estimator.py` | `check_repr`, `check_repr_clone_equal`, `check_clone`, `check_clone_new_params`, `check_clone_independent`, `check_get_params_signature`, `check_default_params_non_mutable`, `check_mutate_idempotent`, `check_pickle_roundtrip`, `check_docstring`, `check_describe_serializable`, `check_state_dict_roundtrip`, `check_learn_one_does_not_modify_x`, `check_predict_before_learning`, `check_shuffle_features`, `check_classifier_proba_sum`, `check_classifier_multiclass_bool`, `check_dt_accepted`, `check_non_increasing_t_raises`, `check_estimator` | API and behaviour checks for estimators |
+| `check_estimator.py` | `check_repr`, `check_repr_clone_equal`, `check_clone`, `check_clone_new_params`, `check_clone_independent`, `check_get_params_signature`, `check_default_params_non_mutable`, `check_mutate_idempotent`, `check_pickle_roundtrip`, `check_docstring`, `check_describe_serializable`, `check_state_dict_roundtrip`, `check_learn_one_does_not_modify_x`, `check_predict_before_learning`, `check_classifier_proba_sum`, `check_classifier_multiclass_bool`, `check_dt_accepted`, `check_non_increasing_t_raises`, `check_estimator`, `check_roc_auc` | API and behaviour checks for estimators |
 | `robot.py` | `check_step_is_pure`, `check_step_is_jittable`, `check_p99_within_budget`, `check_memory_growth_bounded`, `check_estimate_variance_non_negative`, `check_schema_json`, `check_health_is_reachable`, `check_checkpoint_roundtrip` | robot-oriented checks |
 
 ## 5. bridges
@@ -307,7 +398,9 @@ A sample enters as a `Signal` from a reader in `utility/stream` (`iter_csv`, `it
 `iter_array`, `merge_by_time`, `shuffle`). It passes through transformers from `utility/compose`
 (`Select`, `Discard`, `FuncTransformer`) and `utility/preprocessing` (scalers, joint
 derivatives, text). The transformed sample reaches an estimator built on `roles/` — a classifier,
-regressor or anomaly detector from `utility/learn`, `utility/tree`, `utility/cluster`. Its
+regressor or anomaly detector from `utility/learn`, `utility/tree`, `utility/forest`,
+`utility/bayes`, `utility/linear`, `utility/neighbors`, `utility/rules`, `utility/timeseries`,
+`utility/cluster`. Its
 predictions are scored by a metric from `utility/metrics` (`Accuracy`, `RollingAUC`,
 `EventMetrics`) driven by `utility/evaluate` (`progressive_val_score`, `evaluate_events`). A
 model can be wrapped in `roles/Protected`, with a detector from `utility/anomaly` or
