@@ -86,7 +86,7 @@ class OnlineBoostingClassifier(Classifier):
         True
     """
 
-    budget_s = 0.05
+    budget_s = 2.5e-4
     memory_class = "O(n_models * window)"
 
     def __init__(self, model, n_models: int = 10, seed: int | None = None) -> None:
@@ -116,7 +116,9 @@ class OnlineBoostingClassifier(Classifier):
             return m()
         return m.clone()
 
-    def learn_one(self, x: Any, y: Any, t: float | None = None) -> "OnlineBoostingClassifier":
+    def learn_one(
+        self, x: Any, y: Any, t: float | None = None
+    ) -> "OnlineBoostingClassifier":
         d = _as_dict(x)
         if not d or y is None or not _finite(d):
             self.n_missing_ += 1

@@ -7,16 +7,20 @@ the prediction is the weighted average
 
     y_hat = sum_i w_i y_hat_i / sum_i w_i.
 
-The loss bound of Freund and Schapire (1997), Theorem 2, in the form
-written for the mixture of experts, is
+The weight update ``w_i = exp(-eta * L_i)`` is the multiplicative
+update of Hedge with ``beta = exp(-eta)`` (Freund and Schapire 1997,
+Section 2.1). The bound of Theorem 2, specialised to uniform initial
+weights (equation 9 of the paper), is
 
-    L_ensemble <= min_i L_i + eta * L_i^2 / 2 + ln(K) / eta,
+    L_ensemble <= (eta / (1 - exp(-eta))) * min_i L_i
+                  + ln(K) / (1 - exp(-eta)),
 
-with ``K`` the number of members, when the loss is in ``[0, 1]`` and
-``eta > 0``. The same bound holds for the squared loss of a regression
-problem only if the squared error is scaled to ``[0, 1]`` first; the
-class keeps the loss the user passes and reports the bound as the paper
-states it, with that assumption.
+with ``K`` the number of members. The factor ``eta / (1 - exp(-eta))``
+tends to one as ``eta -> 0``, so a small learning rate loses almost
+nothing over the best member, and the price of a larger learning rate
+is paid by the factor ``ln(K) / (1 - exp(-eta))``. The bound assumes
+the loss is in ``[0, 1]``; the class keeps the loss the user passes and
+reports the bound as the paper states it, with that assumption.
 
 References:
     Freund, Y., Schapire, R. E. (1997). A decision-theoretic
@@ -82,11 +86,7 @@ class ExponentiallyWeightedAverageRegressor(Regressor):
         ValueError: if ``eta <= 0`` or ``models`` is empty.
 
     Examples:
-        >>> from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
         >>> from dense_armor.utility.ensemble.ewa import ExponentiallyWeightedAverageRegressor
-        >>> from dense_armor.utility.learn.linear import RecursiveLeastSquares
-        >>> from dense_armor.utility.tree.hoeffding import HoeffdingTreeClassifier
-        >>> from dense_armor.utility.tree.adaptive import HoeffdingAdaptiveTreeClassifier
         >>> from dense_armor.roles import Regressor
         >>> class Const(Regressor):
         ...     def __init__(self, v): self.v = v
@@ -100,7 +100,7 @@ class ExponentiallyWeightedAverageRegressor(Regressor):
         1.0
     """
 
-    budget_s = 0.05
+    budget_s = 5e-5
     memory_class = "O(n_models)"
 
     def __init__(self, models, eta: float = 0.5, loss=None) -> None:
@@ -131,7 +131,9 @@ class ExponentiallyWeightedAverageRegressor(Regressor):
             return m.clone()
         return m()
 
-    def learn_one(self, x: Any, y: Any, t: float | None = None) -> "ExponentiallyWeightedAverageRegressor":
+    def learn_one(
+        self, x: Any, y: Any, t: float | None = None
+    ) -> "ExponentiallyWeightedAverageRegressor":
         d = _as_dict(x)
         if not d or y is None or not _finite(d):
             self.n_missing_ += 1
@@ -146,13 +148,13 @@ class ExponentiallyWeightedAverageRegressor(Regressor):
             except (AttributeError, TypeError, ValueError):
                 p = 0.0
             preds.append(p)
-        w = np.array([math.exp(-self.eta * min(l, 700.0))
-                      for l in self.losses_], dtype=float)
+        w = np.array(
+            [math.exp(-self.eta * min(l, 700.0)) for l in self.losses_], dtype=float
+        )
         z = float(w.sum())
         if z <= 0:
             w = np.ones_like(w)
             z = float(w.sum())
-        y_hat = float(np.dot(w, np.array(preds)) / z)
         for i, (m, p) in enumerate(zip(self.members_, preds)):
             self.losses_[i] = self.losses_[i] + float(self.loss(y, p))
             try:
@@ -162,7 +164,25 @@ class ExponentiallyWeightedAverageRegressor(Regressor):
         self.n_seen_ += 1
         return self
 
-    def predict_one(self, x: Any, t: float | None = None, return_std: bool = False) -> Any:
+    def bound(self) -> float:
+        """Upper bound on the cumulative loss of the ensemble.
+
+        The value is ``(eta / (1 - exp(-eta))) * min_i L_i
+        + ln(K) / (1 - exp(-eta))``, the equation 9 of Freund and
+        Schapire (1997) with ``beta = exp(-eta)``. It assumes the loss
+        is in ``[0, 1]``.
+        """
+        if not self.losses_:
+            return 0.0
+        k = len(self.losses_)
+        denom = 1.0 - math.exp(-self.eta)
+        if denom <= 0.0:
+            return float("inf")
+        return (self.eta / denom) * min(self.losses_) + math.log(k) / denom
+
+    def predict_one(
+        self, x: Any, t: float | None = None, return_std: bool = False
+    ) -> Any:
         if not self.members_:
             return 0.0
         d = _as_dict(x)
@@ -172,8 +192,9 @@ class ExponentiallyWeightedAverageRegressor(Regressor):
                 preds.append(float(m.predict_one(d)))
             except (AttributeError, TypeError, ValueError):
                 preds.append(0.0)
-        w = np.array([math.exp(-self.eta * min(l, 700.0))
-                      for l in self.losses_], dtype=float)
+        w = np.array(
+            [math.exp(-self.eta * min(l, 700.0)) for l in self.losses_], dtype=float
+        )
         z = float(w.sum())
         if z <= 0:
             w = np.ones_like(w)

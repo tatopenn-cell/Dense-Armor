@@ -36,8 +36,6 @@ Examples:
 import math
 from typing import Any
 
-import numpy as np
-
 from dense_armor.roles import Classifier
 
 
@@ -82,7 +80,7 @@ class VotingClassifier(Classifier):
         'soft'
     """
 
-    budget_s = 0.05
+    budget_s = 3e-4
     memory_class = "O(n_models * window)"
 
     def __init__(self, models, mode: str = "hard", weights=None) -> None:

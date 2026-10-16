@@ -84,7 +84,7 @@ class StackingClassifier(Classifier):
         0
     """
 
-    budget_s = 0.05
+    budget_s = 2.5e-4
     memory_class = "O(n_models * window)"
 
     def __init__(self, models, meta_model) -> None:
@@ -136,12 +136,9 @@ class StackingClassifier(Classifier):
             return self
         self._ensure()
         self.classes_.add(y)
-        # 1. the meta-model learns from the members' predictions, made
-        #    before any of them sees this label
         meta_x = self._meta_input(d)
         if meta_x:
             self.meta_.learn_one(meta_x, y)
-        # 2. the members learn on the same sample
         for m in self.members_:
             try:
                 m.learn_one(d, y)

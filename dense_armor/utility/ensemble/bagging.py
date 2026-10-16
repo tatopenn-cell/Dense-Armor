@@ -86,7 +86,7 @@ class OnlineBaggingClassifier(Classifier):
         True
     """
 
-    budget_s = 0.05
+    budget_s = 1e-4
     memory_class = "O(n_models * window)"
 
     def __init__(self, model, n_models: int = 10, seed: int | None = None) -> None:
@@ -114,7 +114,9 @@ class OnlineBaggingClassifier(Classifier):
             return m()
         return m.clone()
 
-    def learn_one(self, x: Any, y: Any, t: float | None = None) -> "OnlineBaggingClassifier":
+    def learn_one(
+        self, x: Any, y: Any, t: float | None = None
+    ) -> "OnlineBaggingClassifier":
         """Train every member ``k ~ Poisson(1)`` times on the sample."""
         d = _as_dict(x)
         if not d or y is None or not _finite(d):
