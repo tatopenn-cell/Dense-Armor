@@ -18,7 +18,7 @@ For each of the 13 semantic categories the pipeline
 OnlineRobustMahalanobis`` is learned on the normal training views, then
 scored on every test image without learning. Same parameters for every
 category, fixed before looking at any test image. Image-level AUROC is
-computed per category with ``sklearn.metrics.roc_auc_score`` (defect
+computed per category with the ROC-AUC of a general-purpose machine-learning library (defect
 counts as positive) and averaged over the 13 categories.
 
 Reference numbers from the paper (image-level AUROC): PatchCore 0.833,
@@ -35,7 +35,30 @@ import time
 from pathlib import Path
 
 import numpy as np
-from sklearn.metrics import roc_auc_score
+_roc_auc_score = None
+
+def _roc_auc_score(y_true, y_score):
+    """ROC-AUC via the Mann-Whitney U statistic (no external dependency)."""
+    pairs = sorted(zip(y_score, y_true))
+    n_pos = sum(1 for _, y in pairs if y == 1)
+    n_neg = len(pairs) - n_pos
+    if n_pos == 0 or n_neg == 0:
+        return 0.5
+    rank_sum = 0.0
+    rank = 1
+    i = 0
+    while i < len(pairs):
+        j = i
+        while j + 1 < len(pairs) and pairs[j + 1][0] == pairs[i][0]:
+            j += 1
+        avg = (rank + (rank + j - i)) / 2.0
+        for k in range(i, j + 1):
+            if pairs[k][1] == 1:
+                rank_sum += avg
+        rank += j - i + 1
+        i = j + 1
+    return (rank_sum - n_pos * (n_pos + 1) / 2.0) / (n_pos * n_neg)
+
 
 from dense_armor.utility.anomaly.mahalanobis import OnlineRobustMahalanobis
 from dense_armor.utility.vision import (
@@ -186,7 +209,7 @@ def main():
             print(f"{cat:<14} {n_tr:>7} {n_te:>7} {n_pos:>5} {'n/a':>7}")
             per_cat[cat] = None
             continue
-        a = float(roc_auc_score(y, s))
+        a = float(_roc_auc_score(y, s))
         aurocs.append(a)
         per_cat[cat] = a
         print(f"{cat:<14} {n_tr:>7} {n_te:>7} {n_pos:>5} {a:>7.3f}")
