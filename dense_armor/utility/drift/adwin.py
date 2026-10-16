@@ -130,12 +130,6 @@ class ADWIN(DriftDetector):
     def n_missing(self) -> int:
         return self.n_missing_
 
-    def _ordered(self) -> list[_Bucket]:
-        out: list[_Bucket] = []
-        for level in range(len(self._buckets) - 1, -1, -1):
-            out.extend(self._buckets[level])
-        return out
-
     def _add(self, x: float) -> None:
         self._buckets[0].append(_Bucket(x, x * x, 1, 1))
         self._total += x
@@ -155,15 +149,14 @@ class ADWIN(DriftDetector):
             )
             i += 1
 
-    def _remove_oldest(self) -> bool:
+    def _remove_oldest(self) -> None:
         for level in range(len(self._buckets) - 1, -1, -1):
             if self._buckets[level]:
                 b = self._buckets[level].pop(0)
                 self._total -= b.total
                 self._total_sq -= b.total_sq
                 self._n -= b.n
-                return True
-        return False
+                return
 
     def _drift(self) -> bool:
         n = self._n
@@ -208,6 +201,5 @@ class ADWIN(DriftDetector):
             self._remove_oldest()
         while self._drift():
             self._drift_detected = True
-            if not self._remove_oldest():
-                break
+            self._remove_oldest()
         return self
