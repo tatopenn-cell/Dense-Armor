@@ -195,8 +195,7 @@ standard deviations, 500 samples into a stream, the first flag comes a few dozen
 the burst ends within 100 samples (`test/drift/test_adwin_alarms.py`). Act on the first flag of a burst, or
 start a new detector after it, to get one event per change.
 
-The robot-stream table of section 5 was measured with the earlier ADWIN, which flagged a change once and
-later; its ADWIN row has to be measured again with this version.
+The robot-stream table of section 5 uses this version of ADWIN.
 
 ## 4. KSWIN: compare the shapes, one alarm per change
 
@@ -252,8 +251,8 @@ untouched, through `evaluate_events`.
 |---|---|---|---|
 | Page-Hinkley | 3.9 | 0 | 1041 |
 | KSWIN | 7.8 | 0 | 217 |
-| ADWIN | 12.2 | 0 | 540 |
 | CUSUM (fixed reference) | 17.2 | 0 | 1188 |
+| ADWIN | 17.7 | 0 | 1.4 |
 
 ![The four detectors on a synthetic step. Each marker is the first alarm.](../assets/drift/four_detectors.png)
 
@@ -274,7 +273,9 @@ also the one that fires the most on normal data; KSWIN takes about twice as
 long and produces five times fewer false alarms. CUSUM fixed is the slowest
 here and produces the most false alarms per hour, because once the level has
 moved, the fixed reference is permanently wrong and the detector keeps
-re-arming on every fluctuation.
+re-arming on every fluctuation. ADWIN is as slow as the fixed CUSUM, 17.7 s, and
+produces about one false alarm per hour, two orders of magnitude fewer than the
+others; its cost is the delay.
 
 The CASPER dataset is not committed to this repository: `benchmarks/casper_benchmark.py`
 expects it under a Kaggle path (`industrial-robotic-arm-anomaly-detection`), so the
