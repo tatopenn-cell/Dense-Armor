@@ -37,10 +37,11 @@ from typing import Any
 
 import numpy as np
 
+from dense_armor.utility.ensemble._common import as_dict, finite, new_member
 from dense_armor.roles import Regressor
 
 
-def _as_dict(x: Any) -> dict:
+def as_dict(x: Any) -> dict:
     if hasattr(x, "to_dict"):
         return dict(x.to_dict())
     try:
@@ -48,18 +49,6 @@ def _as_dict(x: Any) -> dict:
     except (TypeError, ValueError):
         return {}
 
-
-def _finite(d: dict) -> bool:
-    for v in d.values():
-        if v is None:
-            return False
-        try:
-            fv = float(v)
-        except (TypeError, ValueError):
-            return False
-        if not math.isfinite(fv):
-            return False
-    return True
 
 
 def _squared_error(y_true, y_pred) -> float:
@@ -134,17 +123,13 @@ class ExponentiallyWeightedAverageRegressor(Regressor):
         return set()
 
     def _new_member(self, m):
-        if isinstance(m, type):
-            return m()
-        if hasattr(m, "clone"):
-            return m.clone()
-        return m()
+        return new_member(m)
 
     def learn_one(
         self, x: Any, y: Any, t: float | None = None
     ) -> "ExponentiallyWeightedAverageRegressor":
-        d = _as_dict(x)
-        if not d or y is None or not _finite(d):
+        d = as_dict(x)
+        if not d or y is None or not finite(d):
             self.n_missing_ += 1
             return self
         if not self.members_:
@@ -157,13 +142,6 @@ class ExponentiallyWeightedAverageRegressor(Regressor):
             except (AttributeError, TypeError, ValueError):
                 p = 0.0
             preds.append(p)
-        w = np.array(
-            [math.exp(-self.eta * min(l, 700.0)) for l in self.losses_], dtype=float
-        )
-        z = float(w.sum())
-        if z <= 0:
-            w = np.ones_like(w)
-            z = float(w.sum())
         for i, (m, p) in enumerate(zip(self.members_, preds)):
             self.losses_[i] = self.losses_[i] + float(self.loss(y, p))
             try:
@@ -194,18 +172,20 @@ class ExponentiallyWeightedAverageRegressor(Regressor):
     ) -> Any:
         if not self.members_:
             return 0.0
-        d = _as_dict(x)
+        d = as_dict(x)
         preds = []
         for m in self.members_:
             try:
                 preds.append(float(m.predict_one(d)))
             except (AttributeError, TypeError, ValueError):
                 preds.append(0.0)
+        l_min = min(self.losses_)
         w = np.array(
-            [math.exp(-self.eta * min(l, 700.0)) for l in self.losses_], dtype=float
+            [math.exp(-self.eta * min(l - l_min, 700.0)) for l in self.losses_],
+            dtype=float,
         )
         z = float(w.sum())
-        if z <= 0:
+        if z <= 0.0:
             w = np.ones_like(w)
             z = float(w.sum())
         y_hat = float(np.dot(w, np.array(preds)) / z)

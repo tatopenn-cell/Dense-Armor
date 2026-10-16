@@ -36,10 +36,11 @@ Examples:
 import math
 from typing import Any
 
+from dense_armor.utility.ensemble._common import as_dict, finite, new_member
 from dense_armor.roles import Classifier
 
 
-def _as_dict(x: Any) -> dict:
+def as_dict(x: Any) -> dict:
     if hasattr(x, "to_dict"):
         return dict(x.to_dict())
     try:
@@ -47,18 +48,6 @@ def _as_dict(x: Any) -> dict:
     except (TypeError, ValueError):
         return {}
 
-
-def _finite(d: dict) -> bool:
-    for v in d.values():
-        if v is None:
-            return False
-        try:
-            fv = float(v)
-        except (TypeError, ValueError):
-            return False
-        if not math.isfinite(fv):
-            return False
-    return True
 
 
 class VotingClassifier(Classifier):
@@ -108,11 +97,7 @@ class VotingClassifier(Classifier):
         return set()
 
     def _new_member(self, m):
-        if isinstance(m, type):
-            return m()
-        if hasattr(m, "clone"):
-            return m.clone()
-        return m()
+        return new_member(m)
 
     def _ensure_members(self) -> None:
         if not self.members_:
@@ -124,8 +109,8 @@ class VotingClassifier(Classifier):
         return self.weights[i]
 
     def learn_one(self, x: Any, y: Any, t: float | None = None) -> "VotingClassifier":
-        d = _as_dict(x)
-        if not d or y is None or not _finite(d):
+        d = as_dict(x)
+        if not d or y is None or not finite(d):
             self.n_missing_ += 1
             return self
         self._ensure_members()
@@ -142,7 +127,7 @@ class VotingClassifier(Classifier):
         self._ensure_members()
         if not self.members_:
             return {}
-        d = _as_dict(x)
+        d = as_dict(x)
         if self.mode == "hard":
             votes: dict = {}
             for i, m in enumerate(self.members_):

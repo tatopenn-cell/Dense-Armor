@@ -11,10 +11,9 @@ look better on the training stream than it is. The class enforces the
 order, and a test checks it.
 
 The meta-model takes as input a dict of the members' predictions, one
-key per member: ``m0``, ``m1``, ..., and the label is the true one.
-When a member returns a probability dict, the input for the meta-model
-is the probability of the positive class for every class the member
-exposes, in the keys ``m{i}_{class}``.
+key per member: ``m0``, ``m1``, ... The value is the class returned by
+``predict_one`` of that member on the current sample. The label is the
+true one. The meta-model never sees the raw input ``x``.
 
 Raises:
     ValueError: on an empty ``models``.
@@ -38,10 +37,11 @@ Examples:
 import math
 from typing import Any
 
+from dense_armor.utility.ensemble._common import as_dict, finite, new_member
 from dense_armor.roles import Classifier
 
 
-def _as_dict(x: Any) -> dict:
+def as_dict(x: Any) -> dict:
     if hasattr(x, "to_dict"):
         return dict(x.to_dict())
     try:
@@ -49,18 +49,6 @@ def _as_dict(x: Any) -> dict:
     except (TypeError, ValueError):
         return {}
 
-
-def _finite(d: dict) -> bool:
-    for v in d.values():
-        if v is None:
-            return False
-        try:
-            fv = float(v)
-        except (TypeError, ValueError):
-            return False
-        if not math.isfinite(fv):
-            return False
-    return True
 
 
 class StackingClassifier(Classifier):
@@ -106,11 +94,7 @@ class StackingClassifier(Classifier):
         return set()
 
     def _new_member(self, m):
-        if isinstance(m, type):
-            return m()
-        if hasattr(m, "clone"):
-            return m.clone()
-        return m()
+        return new_member(m)
 
     def _ensure(self) -> None:
         if not self.members_:
@@ -130,8 +114,8 @@ class StackingClassifier(Classifier):
         return out
 
     def learn_one(self, x: Any, y: Any, t: float | None = None) -> "StackingClassifier":
-        d = _as_dict(x)
-        if not d or y is None or not _finite(d):
+        d = as_dict(x)
+        if not d or y is None or not finite(d):
             self.n_missing_ += 1
             return self
         self._ensure()
@@ -151,7 +135,7 @@ class StackingClassifier(Classifier):
         self._ensure()
         if self.meta_ is None:
             return {}
-        d = _as_dict(x)
+        d = as_dict(x)
         meta_x = self._meta_input(d)
         if not meta_x:
             return {}
@@ -164,7 +148,7 @@ class StackingClassifier(Classifier):
         self._ensure()
         if self.meta_ is None:
             return None
-        d = _as_dict(x)
+        d = as_dict(x)
         meta_x = self._meta_input(d)
         if not meta_x:
             return None

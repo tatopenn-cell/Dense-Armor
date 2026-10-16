@@ -33,10 +33,11 @@ from typing import Any
 
 import numpy as np
 
+from dense_armor.utility.ensemble._common import as_dict, finite, new_member
 from dense_armor.roles import Classifier
 
 
-def _as_dict(x: Any) -> dict:
+def as_dict(x: Any) -> dict:
     if hasattr(x, "to_dict"):
         return dict(x.to_dict())
     try:
@@ -44,18 +45,6 @@ def _as_dict(x: Any) -> dict:
     except (TypeError, ValueError):
         return {}
 
-
-def _finite(d: dict) -> bool:
-    for v in d.values():
-        if v is None:
-            return False
-        try:
-            fv = float(v)
-        except (TypeError, ValueError):
-            return False
-        if not math.isfinite(fv):
-            return False
-    return True
 
 
 class OnlineBoostingClassifier(Classifier):
@@ -111,16 +100,13 @@ class OnlineBoostingClassifier(Classifier):
         return set()
 
     def _new_member(self):
-        m = self.model
-        if isinstance(m, type) or (callable(m) and not hasattr(m, "learn_one")):
-            return m()
-        return m.clone()
+        return new_member(self.model)
 
     def learn_one(
         self, x: Any, y: Any, t: float | None = None
     ) -> "OnlineBoostingClassifier":
-        d = _as_dict(x)
-        if not d or y is None or not _finite(d):
+        d = as_dict(x)
+        if not d or y is None or not finite(d):
             self.n_missing_ += 1
             return self
         if not self.members_:
@@ -167,7 +153,7 @@ class OnlineBoostingClassifier(Classifier):
         """Weighted probability, ``sum log(1/beta)`` normalised."""
         if not self.members_:
             return {}
-        d = _as_dict(x)
+        d = as_dict(x)
         weights: dict = {}
         for m_i, m in enumerate(self.members_):
             try:
@@ -187,7 +173,7 @@ class OnlineBoostingClassifier(Classifier):
         """Weighted vote, ties go to the smallest class."""
         if not self.members_:
             return None
-        d = _as_dict(x)
+        d = as_dict(x)
         weights: dict = {}
         for m_i, m in enumerate(self.members_):
             try:
