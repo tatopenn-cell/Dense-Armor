@@ -1,0 +1,265 @@
+{
+ "machine": {
+  "cpu": "Intel(R) Xeon(R) CPU @ 2.20GHz",
+  "cores": 2,
+  "python": "3.13.16",
+  "platform": "Linux-6.6.122+-x86_64-with-glibc2.39"
+ },
+ "n_frames": 20,
+ "warmup": 5,
+ "note": "the run was interrupted; the streams below are the ones that completed",
+ "runs": {
+  "smooth_360x640": {
+   "FrameNormalizer": {
+    "median_us": 7495.1,
+    "p99_us": 9315.7
+   },
+   "MotionEnergy": {
+    "median_us": NaN,
+    "p99_us": NaN
+   },
+   "GlobalMotion": {
+    "median_us": NaN,
+    "p99_us": NaN
+   },
+   "SceneChange": {
+    "median_us": NaN,
+    "p99_us": NaN
+   },
+   "FrameAnomaly": {
+    "median_us": 3.0,
+    "p99_us": 3.2
+   },
+   "FrameWindow": {
+    "median_us": 20494.2,
+    "p99_us": 24363.6
+   },
+   "MovingObjectTracker": {
+    "median_us": NaN,
+    "p99_us": NaN
+   },
+   "TrackToSignal": {
+    "median_us": 1351.8,
+    "p99_us": 1632.9
+   },
+   "FeatureToSignal": {
+    "median_us": 672.9,
+    "p99_us": 1449.0
+   },
+   "FrameJointFusion": {
+    "median_us": 329.8,
+    "p99_us": 446.1
+   },
+   "Registration": {
+    "median_us": 46587.5,
+    "p99_us": 59435.8
+   },
+   "Stabilizer": {
+    "median_us": 33522.1,
+    "p99_us": 44531.9
+   },
+   "DifferenceImage": {
+    "median_us": NaN,
+    "p99_us": NaN
+   },
+   "DenseFlow": {
+    "median_us": 68643.7,
+    "p99_us": 86856.4
+   },
+   "MotionMask": {
+    "median_us": NaN,
+    "p99_us": NaN
+   },
+   "FrameQuality": {
+    "median_us": 72249.2,
+    "p99_us": 90195.5
+   },
+   "Sync": {
+    "median_us": 1994.7,
+    "p99_us": 5891.0
+   },
+   "EventFrame": {
+    "median_us": 448.1,
+    "p99_us": 533.1
+   },
+   "FalseColor": {
+    "median_us": 35120.1,
+    "p99_us": 51132.0
+   },
+   "Overlay": {
+    "median_us": 1088.1,
+    "p99_us": 1313.3
+   }
+  },
+  "cut_360x640": {
+   "FrameNormalizer": {
+    "median_us": 7825.2,
+    "p99_us": 9521.8
+   },
+   "MotionEnergy": {
+    "median_us": NaN,
+    "p99_us": NaN
+   },
+   "GlobalMotion": {
+    "median_us": NaN,
+    "p99_us": NaN
+   },
+   "SceneChange": {
+    "median_us": NaN,
+    "p99_us": NaN
+   },
+   "FrameAnomaly": {
+    "median_us": 3.0,
+    "p99_us": 3.2
+   },
+   "FrameWindow": {
+    "median_us": 12021.3,
+    "p99_us": 17020.1
+   },
+   "MovingObjectTracker": {
+    "median_us": NaN,
+    "p99_us": NaN
+   },
+   "TrackToSignal": {
+    "median_us": 1091.8,
+    "p99_us": 2063.1
+   },
+   "FeatureToSignal": {
+    "median_us": 499.8,
+    "p99_us": 600.0
+   },
+   "FrameJointFusion": {
+    "median_us": 200.4,
+    "p99_us": 291.3
+   },
+   "Registration": {
+    "median_us": 21422.2,
+    "p99_us": 29969.3
+   },
+   "Stabilizer": {
+    "median_us": 23020.0,
+    "p99_us": 30557.9
+   },
+   "DifferenceImage": {
+    "median_us": NaN,
+    "p99_us": NaN
+   },
+   "DenseFlow": {
+    "median_us": 68313.0,
+    "p99_us": 118700.3
+   },
+   "MotionMask": {
+    "median_us": NaN,
+    "p99_us": NaN
+   },
+   "FrameQuality": {
+    "median_us": 52891.6,
+    "p99_us": 81077.1
+   },
+   "Sync": {
+    "median_us": 1089.4,
+    "p99_us": 4037.1
+   },
+   "EventFrame": {
+    "median_us": 322.5,
+    "p99_us": 403.2
+   },
+   "FalseColor": {
+    "median_us": 33692.3,
+    "p99_us": 44372.2
+   },
+   "Overlay": {
+    "median_us": 1081.3,
+    "p99_us": 1228.3
+   }
+  },
+  "thermal_360x640": {
+   "FrameNormalizer": {
+    "median_us": 8865.6,
+    "p99_us": 10255.0
+   },
+   "MotionEnergy": {
+    "median_us": NaN,
+    "p99_us": NaN
+   },
+   "GlobalMotion": {
+    "median_us": NaN,
+    "p99_us": NaN
+   },
+   "SceneChange": {
+    "median_us": NaN,
+    "p99_us": NaN
+   },
+   "FrameAnomaly": {
+    "median_us": 3.0,
+    "p99_us": 3.4
+   },
+   "FrameWindow": {
+    "median_us": 14031.6,
+    "p99_us": 17990.7
+   },
+   "MovingObjectTracker": {
+    "median_us": NaN,
+    "p99_us": NaN
+   },
+   "TrackToSignal": {
+    "median_us": 1048.3,
+    "p99_us": 1422.5
+   },
+   "FeatureToSignal": {
+    "median_us": 505.8,
+    "p99_us": 692.0
+   },
+   "FrameJointFusion": {
+    "median_us": 775.3,
+    "p99_us": 942.5
+   },
+   "Registration": {
+    "median_us": 24604.9,
+    "p99_us": 34286.7
+   },
+   "Stabilizer": {
+    "median_us": 26675.0,
+    "p99_us": 47010.1
+   },
+   "DifferenceImage": {
+    "median_us": NaN,
+    "p99_us": NaN
+   },
+   "DenseFlow": {
+    "median_us": 70278.9,
+    "p99_us": 95386.0
+   },
+   "MotionMask": {
+    "median_us": NaN,
+    "p99_us": NaN
+   },
+   "FrameQuality": {
+    "median_us": 54227.2,
+    "p99_us": 64356.4
+   },
+   "Sync": {
+    "median_us": 1893.1,
+    "p99_us": 4385.6
+   },
+   "EventFrame": {
+    "median_us": 323.8,
+    "p99_us": 480.5
+   },
+   "FalseColor": {
+    "median_us": 35376.9,
+    "p99_us": 47550.9
+   },
+   "Overlay": {
+    "median_us": 862.7,
+    "p99_us": 972.3
+   }
+  },
+  "smooth_1080x1920": {}
+ },
+ "not_completed": [
+  "smooth_1920x1080",
+  "cut_1920x1080",
+  "thermal_1920x1080"
+ ]
+}
