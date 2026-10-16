@@ -246,3 +246,26 @@ on `2029-06-01`. See [LICENSE.md](LICENSE.md).
 
 Twin project of [Dense-Evolution](https://github.com/tatopenn-cell/Dense-Evolution)
 (NISQ quantum circuit simulator).
+
+
+## Speed
+
+The per-sample cost of the main estimators, measured by
+`benchmarks/speed.py` on an Intel Xeon 2.20 GHz with 2 cores, 20 seeds,
+2000 samples per seed, first 200 discarded. Full table and machine in
+`benchmarks/speed_log.md`.
+
+| component | median µs | p99 µs |
+|---|---|---|
+| Hoeffding tree | 9.1 | 18.1 |
+| Gaussian naive Bayes | 44.2 | 85.8 |
+| Adaptive random forest (10 models) | 754.1 | 1374.0 |
+| Half-Space Trees (25 trees) | 1285.2 | 2412.3 |
+| ADWIN (`update`) | 9.5 | 16.2 |
+
+The robot-side components stay inside a 1 kHz control-loop budget
+(1000 µs) at the median: 36.5 µs for the rate-limited follower, 0.9 µs
+for the control barrier function filter, 8.1 µs for the kinematic
+tracking controller, 66 µs for the rigid-body mass matrix and 55 µs for
+the gravity forces (the last two through `jax.jit`).
+

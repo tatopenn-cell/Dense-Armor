@@ -39,7 +39,30 @@ import time
 from pathlib import Path
 
 import numpy as np
-from sklearn.metrics import roc_auc_score
+_roc_auc_score = None
+
+def _roc_auc_score(y_true, y_score):
+    """ROC-AUC via the Mann-Whitney U statistic (no external dependency)."""
+    pairs = sorted(zip(y_score, y_true))
+    n_pos = sum(1 for _, y in pairs if y == 1)
+    n_neg = len(pairs) - n_pos
+    if n_pos == 0 or n_neg == 0:
+        return 0.5
+    rank_sum = 0.0
+    rank = 1
+    i = 0
+    while i < len(pairs):
+        j = i
+        while j + 1 < len(pairs) and pairs[j + 1][0] == pairs[i][0]:
+            j += 1
+        avg = (rank + (rank + j - i)) / 2.0
+        for k in range(i, j + 1):
+            if pairs[k][1] == 1:
+                rank_sum += avg
+        rank += j - i + 1
+        i = j + 1
+    return (rank_sum - n_pos * (n_pos + 1) / 2.0) / (n_pos * n_neg)
+
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -132,7 +155,7 @@ def evaluate(detector, X, y, learn_on_all):
             n_learned += 1
     n_learned = max(n_learned, 1)
     ms = (t_score + t_learn) / n_learned * 1e3
-    auc = float(roc_auc_score(y, scores)) if len(np.unique(y)) > 1 else float("nan")
+    auc = float(_roc_auc_score(y, scores)) if len(np.unique(y)) > 1 else float("nan")
     fa = float(n_fa) / float(n_healthy) if n_healthy else float("nan")
     return (
         auc,

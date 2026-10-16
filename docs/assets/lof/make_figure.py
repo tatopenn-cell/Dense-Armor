@@ -20,7 +20,30 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 
-from sklearn.metrics import roc_auc_score
+_roc_auc_score = None
+
+def _roc_auc_score(y_true, y_score):
+    """ROC-AUC via the Mann-Whitney U statistic (no external dependency)."""
+    pairs = sorted(zip(y_score, y_true))
+    n_pos = sum(1 for _, y in pairs if y == 1)
+    n_neg = len(pairs) - n_pos
+    if n_pos == 0 or n_neg == 0:
+        return 0.5
+    rank_sum = 0.0
+    rank = 1
+    i = 0
+    while i < len(pairs):
+        j = i
+        while j + 1 < len(pairs) and pairs[j + 1][0] == pairs[i][0]:
+            j += 1
+        avg = (rank + (rank + j - i)) / 2.0
+        for k in range(i, j + 1):
+            if pairs[k][1] == 1:
+                rank_sum += avg
+        rank += j - i + 1
+        i = j + 1
+    return (rank_sum - n_pos * (n_pos + 1) / 2.0) / (n_pos * n_neg)
+
 
 from dense_armor.utility.anomaly.hst import HalfSpaceTrees
 from dense_armor.utility.anomaly.loda import LODA
@@ -151,7 +174,7 @@ def fig_arm_trajectory():
     fig.tight_layout()
     fig.savefig(HERE / "lof_arm_trajectory.png", dpi=140)
     plt.close(fig)
-    auc = roc_auc_score(y, scores)
+    auc = _roc_auc_score(y, scores)
     print(f"  lof_arm_trajectory.png: AUC={auc:.3f}")
 
 
@@ -187,7 +210,7 @@ def _comparison_run():
                     sc[i] = det.score_one(xi)
                     if on_all or healthy[i]:
                         det.learn_one(xi)
-                out[name][proto].append(float(roc_auc_score(y, sc)))
+                out[name][proto].append(float(_roc_auc_score(y, sc)))
     return out
 
 

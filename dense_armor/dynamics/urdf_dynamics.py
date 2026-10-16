@@ -281,8 +281,7 @@ class RigidBodyModel:
                 jw = jw.at[:, dof_idx].add(scale * axis_w)
         return jv, jw
 
-    def mass_matrix(self, q):
-        """Real joint-space mass matrix M(q), shape (n, n) -- symmetric positive-definite."""
+    def _mass_matrix_impl(self, q):
         pos, rot, joint_axis_world = self.forward_kinematics(q)
         m = jnp.zeros((self.n, self.n))
         for name in self.link_names:
@@ -293,6 +292,19 @@ class RigidBodyModel:
             i_world = rot[name] @ i_local @ rot[name].T
             m = m + self.links[name]["mass"] * (jv.T @ jv) + jw.T @ i_world @ jw
         return m
+
+    def mass_matrix(self, q):
+        """Real joint-space mass matrix M(q), shape (n, n) -- symmetric positive-definite.
+
+        The numeric part is traced once and compiled with ``jax.jit``; the
+        URDF structure is captured as a Python constant during the trace, so
+        the compiled graph has no Python overhead and no eager dispatch.
+        """
+        fn = self.__dict__.get("_mass_jit")
+        if fn is None:
+            fn = jax.jit(self._mass_matrix_impl)
+            self.__dict__["_mass_jit"] = fn
+        return fn(q)
 
     def potential_energy(self, q):
         """Real total gravitational potential energy at configuration q."""
@@ -310,8 +322,15 @@ class RigidBodyModel:
         return self.kinetic_energy(q, qd) + self.potential_energy(q)
 
     def gravity_forces(self, q):
-        """Real gravity generalized-force vector g(q), shape (n,)."""
-        return jax.grad(self.potential_energy)(q)
+        """Real gravity generalized-force vector g(q), shape (n,).
+
+        The gradient is traced and compiled with ``jax.jit`` once.
+        """
+        fn = self.__dict__.get("_grav_jit")
+        if fn is None:
+            fn = jax.jit(jax.grad(self.potential_energy))
+            self.__dict__["_grav_jit"] = fn
+        return fn(q)
 
     def bias_forces(self, q, qd):
         """Real Coriolis/centrifugal generalized-force vector C(q,qdot)*qdot, shape (n,)."""

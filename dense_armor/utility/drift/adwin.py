@@ -1,40 +1,63 @@
-"""ADWIN drift detector (Bifet & Gavaldà 2007).
+"""ADWIN drift detector (Bifet & Gavalda 2006).
 
-The original reference is not on arXiv; the description used here is
-the one in Lu, Liu, Dong, Gu, Gama, Zhang (2018), "Learning under
-Concept Drift: A Review", Section 3.2.1. ADWIN keeps a window W,
-considers every cut of W into a historical part W_hist and a new part
-W_new, and drops W_hist as soon as the two sub-window means differ by
-more than a Hoeffding-style bound.
+Two algorithms share this name. The first one (Section 3.2 of the
+paper) stores the window as an explicit list of samples and tests
+every cut; the cost of ``update`` is O(W) with W the window size.
+The second one (Section 3.3 of the paper, ADWIN2) stores the window
+as an exponential histogram of buckets: level ``i`` holds buckets
+that pack ``2**i`` samples, each level keeps at most ``max_buckets``
+buckets, and when a level overflows its two oldest buckets are
+merged into one at the level above. The number of buckets is
+O(log W), so ``update`` costs O(log W) worst case and O(1)
+amortised.
 
-Derivation of the bound used here. For values in a range R, the
-two-sample Hoeffding bound for one cut gives
+The cut threshold. For a partition of the window into a historical
+part ``W0`` (with ``n0`` samples, mean ``mu0``) and a recent part
+``W1`` (with ``n1`` samples, mean ``mu1``), with ``m = n0 n1 /
+(n0 + n1)`` the harmonic-mean-like factor, ``R`` the observed range
+of the window, and ``delta' = delta / ln(n)`` the multiple-
+hypothesis correction of Section 3.2 ("only O(log n) subwindows are
+checked, which justifies using delta' = delta / ln(n)"), the window
+is dropped when
 
-    P(|mean0 - mean1| >= eps) <= 2 exp(-2 m eps^2 / R^2),
+    |mu0 - mu1| > R sqrt( ln(4/delta') / (2 m) ).
 
-with m half the harmonic mean of the two sub-window sizes,
+Both sides carry the units of the data, so the detector is scale-
+invariant.
 
-    m = 1 / (1 / n0 + 1 / n1) = n0 n1 / (n0 + n1).
+One change can be flagged on several consecutive updates. At each update
+the oldest buckets are dropped while some cut passes the test (Algorithm 1
+of the paper); a change that has only just started leaves part of the old
+regime in the window, and as more samples of the new regime arrive the
+test passes again a few updates later. Act on the first flag of a burst,
+or start a new detector after it, if one event per change is wanted. Before
+this version the detector flagged a change once, later.
 
-A union bound over the n cuts scanned at one step, with total level
-delta, gives 2 n exp(-2 m eps^2 / R^2) <= delta, hence
-
-    eps_cut = R * sqrt(ln(2 n / delta) / (2 m)).
-
-R is estimated online from the observed range of the window
-(max - min), so the detector does not depend on the units of the
-stream.
-
-Memory: this implementation stores the whole window as a Python list,
-so memory is O(W) with W the maximum window size. Each `update` costs
-O(W) for the cut scan, with prefix sums so every cut is O(1).
+Memory: O(max_buckets * log W).
 """
 
 import math
 
-import numpy as np
-
 from dense_armor.roles import DriftDetector
+
+
+class _Bucket:
+    """A run of consecutive samples stored as one unit.
+
+    Args:
+        total: sum of the samples in the bucket.
+        total_sq: sum of the squares of the samples in the bucket.
+        n: number of samples in the bucket.
+        size: bucket level; ``2**size`` samples fit in the bucket.
+    """
+
+    __slots__ = ("n", "size", "total", "total_sq")
+
+    def __init__(self, total: float, total_sq: float, n: int, size: int) -> None:
+        self.total = total
+        self.total_sq = total_sq
+        self.n = n
+        self.size = size
 
 
 class ADWIN(DriftDetector):
@@ -46,6 +69,9 @@ class ADWIN(DriftDetector):
             being dropped. Default ``200``.
         min_sub: minimum sub-window size considered during the cut
             scan. Default ``2``.
+        max_buckets: maximum number of buckets kept per level before the
+            two oldest are merged into one at the level above.
+            Default ``5``.
 
     Raises:
         ValueError: if ``delta`` is not in ``(0, 1)`` or ``max_window``
@@ -62,11 +88,11 @@ class ADWIN(DriftDetector):
         ...     if det.drift_detected:
         ...         print(i)
         ...         break
-        339
+        329
     """
 
     def __init__(self, delta: float = 0.002, max_window: int = 200,
-                 min_sub: int = 2) -> None:
+                 min_sub: int = 2, max_buckets: int = 5) -> None:
         super().__init__()
         if not 0.0 < delta < 1.0:
             raise ValueError(f"delta must be in (0, 1), got {delta}")
@@ -78,12 +104,23 @@ class ADWIN(DriftDetector):
         self.delta = delta
         self.max_window = max_window
         self.min_sub = min_sub
-        self._window: list[float] = []
+        self.max_buckets = max_buckets
+        self._buckets: list[list[_Bucket]] = [[]]
+        self._total = 0.0
+        self._total_sq = 0.0
+        self._n = 0
+        self._min = math.inf
+        self._max = -math.inf
         self.n_missing_ = 0
 
     def _reset(self) -> None:
         super()._reset()
-        self._window = []
+        self._buckets = [[]]
+        self._total = 0.0
+        self._total_sq = 0.0
+        self._n = 0
+        self._min = math.inf
+        self._max = -math.inf
         self.n_missing_ = 0
 
     def _unit_test_skips(self) -> set:
@@ -93,49 +130,84 @@ class ADWIN(DriftDetector):
     def n_missing(self) -> int:
         return self.n_missing_
 
-    @staticmethod
-    def _range(arr: np.ndarray) -> float:
-        r = float(np.max(arr) - np.min(arr))
+    def _ordered(self) -> list[_Bucket]:
+        out: list[_Bucket] = []
+        for level in range(len(self._buckets) - 1, -1, -1):
+            out.extend(self._buckets[level])
+        return out
+
+    def _add(self, x: float) -> None:
+        self._buckets[0].append(_Bucket(x, x * x, 1, 1))
+        self._total += x
+        self._total_sq += x * x
+        self._n += 1
+        self._min = min(self._min, x)
+        self._max = max(self._max, x)
+        i = 0
+        while i < len(self._buckets) and len(self._buckets[i]) > self.max_buckets:
+            b1 = self._buckets[i].pop(0)
+            b2 = self._buckets[i].pop(0)
+            if i + 1 >= len(self._buckets):
+                self._buckets.append([])
+            self._buckets[i + 1].append(
+                _Bucket(b1.total + b2.total, b1.total_sq + b2.total_sq,
+                        b1.n + b2.n, b1.size + b2.size)
+            )
+            i += 1
+
+    def _remove_oldest(self) -> bool:
+        for level in range(len(self._buckets) - 1, -1, -1):
+            if self._buckets[level]:
+                b = self._buckets[level].pop(0)
+                self._total -= b.total
+                self._total_sq -= b.total_sq
+                self._n -= b.n
+                return True
+        return False
+
+    def _drift(self) -> bool:
+        n = self._n
+        if n < 2 * self.min_sub:
+            return False
+        r = self._max - self._min
         if r <= 1e-12:
             r = 1.0
-        return r
-
-    def _best_cut(self) -> int | None:
-        n = len(self._window)
-        if n < 2 * self.min_sub:
-            return None
-        arr = np.asarray(self._window, dtype=float)
-        s1 = np.concatenate(([0.0], np.cumsum(arr)))
-        total = float(s1[-1])
-        r = self._range(arr)
-        n_cuts = n - 2 * self.min_sub + 1
-        log_term = math.log(2.0 * n_cuts / self.delta)
-        best_cut = None
-        best_excess = 0.0
-        for cut in range(self.min_sub, n - self.min_sub + 1):
-            n0 = cut
-            n1 = n - cut
-            m = 1.0 / (1.0 / n0 + 1.0 / n1)
-            mean0 = float(s1[cut]) / n0
-            mean1 = (total - float(s1[cut])) / n1
-            eps = r * math.sqrt(log_term / (2.0 * m))
-            excess = abs(mean0 - mean1) - eps
-            if excess > best_excess:
-                best_excess = excess
-                best_cut = cut
-        return best_cut
+        ln_n = math.log(n) if n > 1 else 1.0
+        delta_prime = self.delta / ln_n if ln_n > 0.0 else self.delta
+        coef = 0.5 * r * r * math.log(4.0 / delta_prime)
+        total = self._total
+        min_sub = self.min_sub
+        buckets = self._buckets
+        last_level = len(buckets) - 1
+        left_sum = 0.0
+        left_n = 0
+        last_bucket = None
+        for level in range(last_level, -1, -1):
+            level_buckets = buckets[level]
+            for b in level_buckets:
+                if last_bucket is not None:
+                    left_sum += last_bucket.total
+                    left_n += last_bucket.n
+                    n0 = left_n
+                    n1 = n - left_n
+                    if n0 >= min_sub and n1 >= min_sub:
+                        diff = left_sum / n0 - (total - left_sum) / n1
+                        m = n0 * n1 / (n0 + n1)
+                        if diff * diff * m > coef:
+                            return True
+                last_bucket = b
+        return False
 
     def update(self, x: float, t: float | None = None) -> "ADWIN":
         self._drift_detected = False
-        if not np.isfinite(x):
+        if not math.isfinite(x):
             self.n_missing_ += 1
             return self
-        self._window.append(float(x))
-        cut = self._best_cut()
-        if cut is not None:
-            self._window = self._window[cut:]
+        self._add(float(x))
+        if self._n > self.max_window:
+            self._remove_oldest()
+        while self._drift():
             self._drift_detected = True
-            return self
-        if len(self._window) > self.max_window:
-            self._window.pop(0)
+            if not self._remove_oldest():
+                break
         return self

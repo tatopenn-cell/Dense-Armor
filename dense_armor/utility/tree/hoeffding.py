@@ -206,27 +206,33 @@ class HoeffdingTreeClassifier(Classifier):
         cur: _Node | None = self.root_
         while cur is not None:
             path.append(cur)
-            if cur.is_leaf:
+            if cur.split_feature_ is None:
                 return path
             f = cur.split_feature_
-            s = cur.split_threshold_
-            if f not in x:
+            v = x.get(f)
+            if v is None:
                 return path
-            cur = cur.left_ if float(x[f]) <= s else cur.right_
+            cur = cur.left_ if float(v) <= cur.split_threshold_ else cur.right_
         return path
 
     def _update_leaf(self, node: _Node, x: dict, y: Any) -> None:
         node.n_ += 1
-        node.class_counts_[y] = node.class_counts_.get(y, 0) + 1
+        cc = node.class_counts_
+        cc[y] = cc.get(y, 0) + 1
+        fs = node.feature_stats_
+        known = self.features_
         for f, v in x.items():
-            fv = float(v)
-            self.features_.add(f)
-            per_class = node.feature_stats_.setdefault(f, {})
+            per_class = fs.get(f)
+            if per_class is None:
+                per_class = {}
+                fs[f] = per_class
             g = per_class.get(y)
             if g is None:
                 g = _Gauss()
                 per_class[y] = g
-            g.update(fv)
+            g.update(float(v))
+            if f not in known:
+                known.add(f)
 
     def _entropy(self, node: _Node) -> float:
         return _entropy(node.class_counts_)
@@ -346,7 +352,7 @@ class HoeffdingTreeClassifier(Classifier):
         leaf = path[-1]
         self._update_leaf(leaf, d, y)
         self.n_seen_ += 1
-        if leaf.is_leaf:
+        if leaf.is_leaf and leaf.n_ % self.grace_period == 0:
             self._try_split(leaf)
         return self
 
@@ -354,25 +360,33 @@ class HoeffdingTreeClassifier(Classifier):
         classes = list(self.classes_)
         if not classes:
             return {}
+        cc = leaf.class_counts_
         if self.leaf == "majority" or not leaf.feature_stats_:
-            total = sum(leaf.class_counts_.values())
-            if total <= 0:
+            total = 0.0
+            for v in cc.values():
+                total += v
+            if total <= 0.0:
                 p = 1.0 / len(classes)
                 return {c: p for c in classes}
-            return {c: leaf.class_counts_.get(c, 0) / total for c in classes}
+            return {c: cc.get(c, 0) / total for c in classes}
+        fs = leaf.feature_stats_
         logp: dict = {}
+        total = len(classes)
+        for v in cc.values():
+            total += v
         for c in classes:
-            prior = leaf.class_counts_.get(c, 0) + 1.0
-            total = sum(leaf.class_counts_.values()) + len(classes)
+            prior = cc.get(c, 0) + 1.0
             lp = math.log(prior / total)
             for f, v in x.items():
-                fv = float(v)
-                g = leaf.feature_stats_.get(f, {}).get(c)
+                per_class = fs.get(f)
+                if per_class is None:
+                    continue
+                g = per_class.get(c)
                 if g is None or g.n_ < 2:
                     continue
-                var = g.var + 1e-9
-                dd = fv - g.mean_
-                lp += -0.5 * math.log(2.0 * math.pi * var) - 0.5 * dd * dd / var
+                var = g.m2_ / g.n_ + 1e-9
+                dd = float(v) - g.mean_
+                lp -= 0.5 * math.log(6.283185307179586 * var) + 0.5 * dd * dd / var
             logp[c] = lp
         mx = max(logp.values())
         exps = {c: math.exp(v - mx) for c, v in logp.items()}
@@ -387,12 +401,53 @@ class HoeffdingTreeClassifier(Classifier):
         path = self._path(d)
         return self._predict_proba_leaf(path[-1], d)
 
+    def _predict_class_leaf(self, leaf: _Node, x: dict) -> Any:
+        """Argmax of the leaf posterior, without building the dict."""
+        classes = self.classes_
+        if not classes:
+            return None
+        cc = leaf.class_counts_
+        if self.leaf == "majority" or not leaf.feature_stats_:
+            best_c = None
+            best_n = -1
+            for c in classes:
+                n_c = cc.get(c, 0)
+                if n_c > best_n:
+                    best_n = n_c
+                    best_c = c
+            return best_c
+        fs = leaf.feature_stats_
+        total = float(len(classes))
+        for v in cc.values():
+            total += v
+        log_pi = math.log(6.283185307179586)
+        best_c = None
+        best_lp = -1e300
+        for c in classes:
+            prior = cc.get(c, 0) + 1.0
+            lp = math.log(prior / total)
+            for f, v in x.items():
+                per_class = fs.get(f)
+                if per_class is None:
+                    continue
+                g = per_class.get(c)
+                if g is None or g.n_ < 2:
+                    continue
+                var = g.m2_ / g.n_ + 1e-9
+                dd = float(v) - g.mean_
+                lp -= 0.5 * (log_pi + math.log(var)) + 0.5 * dd * dd / var
+            if lp > best_lp:
+                best_lp = lp
+                best_c = c
+        return best_c
+
     def predict_one(self, x: Any, t: float | None = None) -> Any:
         """Return the most likely class."""
-        proba = self.predict_proba_one(x, t=t)
-        if not proba:
+        if self.root_ is None:
             return None
-        return max(proba.items(), key=lambda kv: kv[1])[0]
+        d = _as_dict(x)
+        path = self._path(d)
+        return self._predict_class_leaf(path[-1], d)
 
     def explain_one(self, x: Any, t: float | None = None) -> list:
         """Return the path from root to leaf as a list of dicts.

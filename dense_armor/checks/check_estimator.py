@@ -16,6 +16,32 @@ from dense_armor.roles import (
 )
 
 
+
+
+
+def _roc_auc_score(y_true, y_score):
+    """ROC-AUC via the Mann-Whitney U statistic, no external dependency."""
+    pairs = sorted(zip(y_score, y_true))
+    n_pos = sum(1 for _, y in pairs if y == 1)
+    n_neg = len(pairs) - n_pos
+    if n_pos == 0 or n_neg == 0:
+        return 0.5
+    rank_sum = 0.0
+    rank = 1
+    i = 0
+    while i < len(pairs):
+        j = i
+        while j + 1 < len(pairs) and pairs[j + 1][0] == pairs[i][0]:
+            j += 1
+        avg = (rank + (rank + j - i)) / 2.0
+        for k in range(i, j + 1):
+            if pairs[k][1] == 1:
+                rank_sum += avg
+        rank += j - i + 1
+        i = j + 1
+    return (rank_sum - n_pos * (n_pos + 1) / 2.0) / (n_pos * n_neg)
+
+
 def _unit_params(est: Root) -> list[dict]:
     return list(type(est)._unit_test_params())
 
@@ -187,10 +213,7 @@ def check_roc_auc(est: Root) -> None:
     """
     if not isinstance(est, AnomalyDetector):
         return
-    try:
-        from sklearn.metrics import roc_auc_score
-    except ImportError:
-        return
+    _ = None
 
     fk = getattr(est, "feature_keys", None)
     keys = ["f0", "f1", "f2"] if fk is None else list(fk)
@@ -220,7 +243,7 @@ def check_roc_auc(est: Root) -> None:
         # check exercises only detectors that take flat numeric
         # features.
         return
-    auc = roc_auc_score(y, scores)
+    auc = _roc_auc_score(y, scores)
     assert auc > 0.5, (
         f"{type(est).__name__} ROC-AUC {auc:.3f} <= 0.5 on an obvious "
         f"inlier/anomaly split"
@@ -354,4 +377,3 @@ from dense_armor.checks.robot import (
     check_step_is_jittable,
     check_step_is_pure,
 )  # noqa: E402
-

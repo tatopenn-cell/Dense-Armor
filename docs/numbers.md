@@ -169,9 +169,9 @@ Rows: 274.
 | 159 | `docs/learn/online_classifiers.md`:48 | Mean 4, variance `8 / 3 = 2.667`. | `code block on the page` |
 | 160 | `docs/learn/online_classifiers.md`:56 | With `alpha = 0`, the statistics equal the batch MLE of a Gaussian NB on the observed | `code block on the page` |
 | 161 | `docs/learn/online_classifiers.md`:57 | samples; the wrapper matches a batch Gaussian NB to numerical precision (max difference | `code block on the page` |
-| 162 | `docs/learn/online_classifiers.md`:72 | `X[3000:][s[3000:] == 1] += [-2, -2, 2, 2]` | `code block on the page` |
+| 162 | `docs/learn/online_classifiers.md`:72 | X\\[3000:\\][s\\[3000:\\] == 1] += [-2, -2, 2, 2] | `code block on the page` |
 | 163 | `docs/learn/online_classifiers.md`:83 | Prequential accuracy (predict first, then learn) before the change, right after it, and late. | `code block on the page` |
-| 164 | `docs/learn/online_classifiers.md`:89 | wrong. Prequential accuracy over `[500, 3000)` (pre), `[3000, 3200)` (post), and | `code block on the page` |
+| 164 | `docs/learn/online_classifiers.md`:89 | wrong. Prequential accuracy over `\\[500, 3000)` (pre), `[3000, 3200)` (post), and | `code block on the page` |
 | 165 | `docs/learn/online_classifiers.md`:94 | / `OnlineGaussianNB(alpha=0)` / 0.952 / 0.480 / 0.879 / 617 / | `code block on the page` |
 | 166 | `docs/learn/online_classifiers.md`:95 | / `OnlineGaussianNB(alpha=0.01)` / 0.952 / 0.790 / 0.941 / 59 / | `code block on the page` |
 | 167 | `docs/learn/online_classifiers.md`:96 | / `OnlineGaussianNB(alpha=0.1)` / 0.950 / 0.925 / 0.913 / 0 / | `code block on the page` |
@@ -180,7 +180,7 @@ Rows: 274.
 | 170 | `docs/learn/online_classifiers.md`:101 | "Recovery" is the number of samples after 3000 until the 200-sample accuracy is back | `code block on the page` |
 | 171 | `docs/learn/online_classifiers.md`:106 | fast the world changes — `alpha = 0.1` never loses accuracy, at the cost of a noisier | `code block on the page` |
 | 172 | `docs/learn/online_classifiers.md`:121 | 5. When the background's accuracy over the last 50 samples beats the main classifier's | `code block on the page` |
-| 173 | `docs/learn/online_classifiers.md`:140 | `X[3000:][s[3000:] == 1] += [-2, -2, 2, 2]` | `code block on the page` |
+| 173 | `docs/learn/online_classifiers.md`:140 | X[3000:\\][s\\[3000:\\] == 1] += [-2, -2, 2, 2] | `code block on the page` |
 | 174 | `docs/learn/online_classifiers.md`:141 | det = CUSUMDriftDetector(reference="fixed", radius=20, ref_mult=5, two_sided=False) | `code block on the page` |
 | 175 | `docs/learn/online_classifiers.md`:142 | clf, hit = DriftAdaptiveClassifier(OnlineGaussianNB(), det, window=50, smooth_window=50), [] | `code block on the page` |
 | 176 | `docs/learn/online_classifiers.md`:152 | On the running data the wrapper leaves its pre-drift accuracy untouched (0.952), fires | `code block on the page` |
