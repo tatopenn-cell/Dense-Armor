@@ -48,6 +48,16 @@ import numpy as np
 from dense_armor.roles import Transformer
 
 
+
+
+def _unpack(x):
+    """Return the array from a dict, a Frame or an array."""
+    if isinstance(x, dict):
+        return np.asarray(x["array"])
+    if hasattr(x, "array"):
+        return np.asarray(x.array)
+    return np.asarray(x)
+
 def _to_gray(img: np.ndarray) -> np.ndarray:
     a = np.asarray(img, dtype=np.float32)
     if a.ndim == 3 and a.shape[2] >= 3:
@@ -145,14 +155,12 @@ class MotionEnergy(Transformer):
 
     def learn_one(self, x, y=None, t=None):
         """Store the frame, so the next call has a previous."""
-        arr = x.array if hasattr(x, "array") else x
-        self._prev = self._reduce(np.asarray(arr))
+        self._prev = self._reduce(_unpack(x))
         return self
 
     def transform_one(self, x, t=None):
         """Return the motion summary of the current frame against the previous."""
-        arr = x.array if hasattr(x, "array") else x
-        cur = self._reduce(np.asarray(arr))
+        cur = self._reduce(_unpack(x))
         if self._prev is None or self._prev.shape != cur.shape:
             return {
                 "motion_mean": 0.0,
@@ -245,44 +253,68 @@ class GlobalMotion(Transformer):
         return g
 
     def _phase_shift(self, cur: np.ndarray, prev: np.ndarray) -> tuple[float, float, float]:
+        """Sub-pixel shift from the phase of the cross-power spectrum.
+
+        The integer shift is the peak of the phase correlation. The
+        sub-pixel part is the slope of the residual phase against the
+        spatial frequency, which is exact for a pure translation: for
+        ``b(x) = a(x - d)`` the phase of the cross power spectrum is
+        ``-2 pi (kx dx + ky dy)`` at every frequency, so a weighted least
+        squares fit of the phase against ``(kx, ky)`` on the bins whose
+        magnitude is above the noise gives ``(dx, dy)`` with the tenth of
+        a pixel accuracy the task asks. The bins below the noise are
+        dropped, which is what makes the estimator work on a smooth
+        scene (the phase of a bin with no energy is noise).
+        """
+        h, w = prev.shape
         fa = np.fft.fft2(prev)
         fb = np.fft.fft2(cur)
         cross = fb * np.conj(fa)
         mag = np.abs(cross)
-        mag[mag < 1e-12] = 1e-12
-        r = cross / mag
+        if mag.max() < 1e-15:
+            return 0.0, 0.0, 0.0
+        r = cross / (mag + 1e-30)
         corr = np.fft.ifft2(r).real
         peak = int(np.argmax(corr))
         py, px = np.unravel_index(peak, corr.shape)
-        h, w = corr.shape
-        sy = py if py <= h // 2 else py - h
-        sx = px if px <= w // 2 else px - w
-        if self.refine:
-            def parabolic(idx: int, size: int, arr: np.ndarray, axis: int) -> float:
-                idx_m = (idx - 1) % size
-                idx_p = (idx + 1) % size
-                if axis == 0:
-                    v0, v1, v2 = arr[idx_m, px], arr[idx, px], arr[idx_p, px]
-                else:
-                    v0, v1, v2 = arr[py, idx_m], arr[py, idx], arr[py, idx_p]
-                denom = v0 - 2.0 * v1 + v2
-                if abs(denom) < 1e-12:
-                    return 0.0
-                return 0.5 * (v0 - v2) / denom
-            sub_y = parabolic(py, h, corr, 0)
-            sub_x = parabolic(px, w, corr, 1)
-            sy = sy + sub_y
-            sx = sx + sub_x
-        return float(sx), float(sy), float(corr[py, px])
+        sy_int = py if py <= h // 2 else py - h
+        sx_int = px if px <= w // 2 else px - w
+        peak_val = float(corr[py, px])
+        if not self.refine:
+            return float(sx_int), float(sy_int), peak_val
+
+        kx = np.fft.fftfreq(w).reshape(1, -1)
+        ky = np.fft.fftfreq(h).reshape(-1, 1)
+        phase = np.angle(cross)
+        phase = phase + 2.0 * np.pi * (ky * sy_int + kx * sx_int)
+        phase = (phase + np.pi) % (2.0 * np.pi) - np.pi
+        thresh = 0.05 * mag.max()
+        mask = mag > thresh
+        if int(mask.sum()) < 4:
+            return float(sx_int), float(sy_int), peak_val
+        ky_full = np.broadcast_to(ky, (h, w))
+        kx_full = np.broadcast_to(kx, (h, w))
+        m = mask
+        A = np.stack([ky_full[m], kx_full[m]], axis=1)
+        b = phase[m]
+        wts = mag[m]
+        Aw = A * wts[:, None]
+        bw = b * wts
+        coef, *_ = np.linalg.lstsq(Aw, bw, rcond=None)
+        dy_sub = -coef[0] / (2.0 * np.pi)
+        dx_sub = -coef[1] / (2.0 * np.pi)
+        # clamp the sub-pixel part to half a pixel: beyond that the
+        # integer peak is wrong, not the sub-pixel part
+        dy_sub = float(np.clip(dy_sub, -0.5, 0.5))
+        dx_sub = float(np.clip(dx_sub, -0.5, 0.5))
+        return float(sx_int + dx_sub), float(sy_int + dy_sub), peak_val
 
     def learn_one(self, x, y=None, t=None):
-        arr = x.array if hasattr(x, "array") else x
-        self._prev = self._to_float_gray(np.asarray(arr))
+        self._prev = self._to_float_gray(_unpack(x))
         return self
 
     def transform_one(self, x, t=None):
-        arr = x.array if hasattr(x, "array") else x
-        cur = self._to_float_gray(np.asarray(arr))
+        cur = self._to_float_gray(_unpack(x))
         if self._prev is None or self._prev.shape != cur.shape:
             return {"dx": 0.0, "dy": 0.0, "mag": 0.0, "peak": 0.0}
         sx, sy, peak = self._phase_shift(cur, self._prev)

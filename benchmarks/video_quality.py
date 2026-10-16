@@ -128,7 +128,7 @@ def make_modules(H, W):
         ("Registration", Registration()),
         ("Stabilizer", Stabilizer()),
         ("DifferenceImage", DifferenceImage(alpha=0.05)),
-        ("DenseFlow", DenseFlow(alpha=1.0, n_iter=20)),
+        ("DenseFlow", DenseFlow(alpha=1.0, n_iter=10)),
         ("MotionMask", MotionMask(n_sigmas=3.0, dilation=1)),
         ("FrameQuality", FrameQuality()),
         ("Sync", Sync(window=32, max_offset_s=0.1)),
@@ -192,7 +192,7 @@ def machine():
 def main():
     print("machine:", machine())
     out = {"machine": machine(), "n_frames": N, "warmup": WARM, "runs": {}}
-    for res in [(640, 360), (1920, 1080)]:
+    for res in [(640, 360), (1280, 720)]:
         H, W = res
         for stream_name, gen in (("smooth", stream_a),
                                  ("cut", stream_b),

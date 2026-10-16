@@ -140,8 +140,12 @@ class SceneChange(Transformer):
     def _unit_test_skips(self) -> set:
         return set()
 
-    def _prep(self, img: np.ndarray) -> np.ndarray:
-        g = _to_gray(img)
+    def _prep(self, img) -> np.ndarray:
+        if isinstance(img, dict):
+            img = img["array"]
+        elif hasattr(img, "array"):
+            img = img.array
+        g = _to_gray(np.asarray(img))
         if self.downsample > 1:
             f = self.downsample
             h, w = g.shape[0] // f, g.shape[1] // f

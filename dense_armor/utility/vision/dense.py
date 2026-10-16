@@ -257,7 +257,7 @@ class MotionMask(Transformer):
             mask = mag > med + self.n_sigmas * scale
         if self.dilation > 0:
             mask = self._dilate(mask)
-        return {"mask": mask, "iou_dummy": 0.0}
+        return {"mask": mask}
 
     def learn_one(self, x, y=None, t=None):
         return self

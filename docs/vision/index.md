@@ -660,7 +660,7 @@ than a tenth of the 33 ms frame budget at 30 frames per second.
 A video is a stream of frames in time, and it comes from a file, an
 URL, a glob of files, a camera, or a cube of multi-channel samples.
 Whatever the source, every stream yields the same object, a
-:class:`~dense_armor.utility.vision.streams.Frame`, with the image and
+`Frame`, with the image and
 the timestamp of the frame. The time of each frame is the container's
 own clock, not ``index / fps``: a recording whose frame rate changes
 with time keeps the true time of every frame.
@@ -684,15 +684,15 @@ with time keeps the true time of every frame.
 
 A cube of multi-channel samples (a thermal sequence, a multispectral
 stack, a depth map) reads with
-:class:`~dense_armor.utility.vision.streams.CubeStream`. A cube with a
+`CubeStream`. A cube with a
 16-bit depth keeps every value of the sensor without loss.
 
 ## Motion in time
 
 Two frames in a row carry the movement that a single frame does not.
-:class:`~dense_armor.utility.vision.motion.MotionEnergy` measures the
+`MotionEnergy` measures the
 amount of change (a filtered difference, summarised per frame) and
-:class:`~dense_armor.utility.vision.motion.GlobalMotion` estimates the
+`GlobalMotion` estimates the
 *global* shift of the scene with phase correlation, which separates the
 motion of the camera from the motion of the objects. On a pure
 translation the shift is exact to the tenth of a pixel.
@@ -701,17 +701,17 @@ translation the shift is exact to the tenth of a pixel.
 
 A hard cut in a video is a level shift in the difference between
 consecutive frames, which is what a drift detector for a scalar stream
-was built for. :class:`~dense_armor.utility.vision.scene.SceneChange`
+was built for. `SceneChange`
 turns a frame into a scalar distance (histogram distance plus mean
 absolute difference) and feeds it to a
-:class:`~dense_armor.utility.drift.adwin.ADWIN` or to any other drift
-detector of the library. :class:`~dense_armor.utility.vision.scene.FrameAnomaly`
+`ADWIN` or to any other drift
+detector of the library. `FrameAnomaly`
 scores a frame against a memory of the patches the library has already
 seen, following the PatchCore idea.
 
 ## Sliding window
 
-:class:`~dense_armor.utility.vision.window.FrameWindow` keeps the last
+`FrameWindow` keeps the last
 ``n`` frames, or the last ``s`` seconds, in a ring buffer, and
 summarises them with streaming mean, standard deviation, motion energy
 and quantiles of the DDSketch sketch. The memory is ``O(n)``, so a
@@ -719,7 +719,7 @@ stream of any length keeps the same footprint.
 
 ## Tracking without a detector
 
-:class:`~dense_armor.utility.vision.tracking.MovingObjectTracker`
+`MovingObjectTracker`
 builds a running robust background, groups the changed pixels into
 connected components, and follows every component with a Kalman filter.
 The association is two-round, high confidence first and low confidence
@@ -728,12 +728,12 @@ external detector with ``update(boxes)``.
 
 ## Video to signal, joints to video
 
-:class:`~dense_armor.utility.vision.adapters.TrackToSignal` and
-:class:`~dense_armor.utility.vision.adapters.FeatureToSignal` turn a
+`TrackToSignal` and
+`FeatureToSignal` turn a
 track or a dict of features into a
-:class:`~dense_armor.roles.Signal`, so the drift detectors, the anomaly
+`Signal`, so the drift detectors, the anomaly
 detectors and the metrics of the library work on video without any new
-code. :class:`~dense_armor.utility.vision.fusion.FrameJointFusion`
+code. `FrameJointFusion`
 aligns the video with the joint readings and estimates the latency of
 the camera by correlating the motion in the video with the joint speed,
 within the frame rate of the source.
@@ -742,10 +742,10 @@ within the frame rate of the source.
 
 An external pose source (a marker system, a network, the joints of a
 robot seen by a camera) delivers points over time. The
-:class:`~dense_armor.utility.vision.landmarks.LandmarkStream` is the
-interface, :class:`~dense_armor.utility.vision.landmarks.LandmarkCleaner`
+`LandmarkStream` is the
+interface, `LandmarkCleaner`
 filters them with a causal Hampel, and
-:class:`~dense_armor.utility.vision.landmarks.Kinematics` turns them into
+`Kinematics` turns them into
 angles, speeds and a cycle residual that the drift detectors understand.
 On 20 synthetic seeds the cleaned series has a smaller error than the
 raw one on every seed (Wilcoxon two-sided, A12 = 1.0).
@@ -753,9 +753,9 @@ raw one on every seed (Wilcoxon two-sided, A12 = 1.0).
 ## Registration and difference imaging
 
 When the camera moves, the difference between two frames is dominated
-by the global shift. :class:`~dense_armor.utility.vision.registration.Registration`
-estimates the shift with phase correlation, :class:`~dense_armor.utility.vision.registration.Stabilizer`
-removes it, and :class:`~dense_armor.utility.vision.registration.DifferenceImage`
+by the global shift. `Registration`
+estimates the shift with phase correlation, `Stabilizer`
+removes it, and `DifferenceImage`
 shows what really changed. On a pure translation the shift is exact
 (0.0 px error on 20 seeds). The kernel convolution of Alard and Lupton
 (1998) is not implemented here; the difference is noted in the module
@@ -763,31 +763,31 @@ docstring.
 
 ## Dense flow and motion mask
 
-:class:`~dense_armor.utility.vision.dense.DenseFlow` estimates the flow
+`DenseFlow` estimates the flow
 at every pixel with the Horn-Schunck iteration (Ziani 2025,
 equations 6-8); on a smooth scene the endpoint error is 0.04 px.
-:class:`~dense_armor.utility.vision.dense.MotionMask` takes the flow
+`MotionMask` takes the flow
 field and returns the pixels that move with respect to the global
 motion; the IoU against a synthetic ground truth is 0.96.
 
 ## Frame quality, sync and event cameras
 
-:class:`~dense_armor.utility.vision.quality.FrameQuality` measures the
+`FrameQuality` measures the
 sharpness, the exposure, the noise and two flags (a black frame, a
 frame repeated from the previous one).
-:class:`~dense_armor.utility.vision.quality.Sync` estimates the clock
+`Sync` estimates the clock
 offset between two streams by cross-correlating their features (2.9 ms
 error on 20 seeds against a uniform offset in [-50, +50] ms).
-:class:`~dense_armor.utility.vision.quality.EventFrame` accumulates an
+`EventFrame` accumulates an
 asynchronous event stream into a frame with the polarity sign.
 
 ## Visualisation
 
-:class:`~dense_armor.utility.vision.visualize.FalseColor` brings any
+`FalseColor` brings any
 band (thermal, depth, NIR, UV, SAR) into a visible image with a
-colormap; :class:`~dense_armor.utility.vision.visualize.Overlay` draws
+colormap; `Overlay` draws
 the tracks, the mask, the flow and the score on a frame;
-:class:`~dense_armor.utility.vision.visualize.VideoWriter` writes the
+`VideoWriter` writes the
 annotated video and one summary image with the signals in time.
 
 ## Benchmark

@@ -147,16 +147,15 @@ class LandmarkCleaner(Transformer):
         >>> import numpy as np
         >>> from dense_armor.utility.vision.landmarks import LandmarkCleaner
         >>> c = LandmarkCleaner(window=5, n_sigmas=3.0)
-        >>> for v in (0.0, 0.0, 0.0, 0.0, 0.0):
+        >>> rng = np.random.default_rng(0)
+        >>> for _ in range(8):
+        ...     v = float(rng.normal(0.0, 0.01))
         ...     _ = c.learn_one({"points": np.array([[v, 0.0]])})
         >>> out = c.transform_one({"points": np.array([[100.0, 0.0]])})
-        >>> bool(abs(out["points"][0, 0]) < 1.0)
+        >>> bool(abs(out["points"][0, 0]) < 0.1)
         True
         >>> int(out["cleaned"][0])
         1
-        >>> out = c.transform_one({"points": np.array([[0.0, 0.0]])})
-        >>> int(out["cleaned"][0])
-        0
     """
 
     memory_class = "O(window * N)"

@@ -326,14 +326,16 @@ class MovingObjectTracker(Transformer):
         return self._step(dets)
 
     def transform_one(self, x, t=None):
-        arr = x.array if hasattr(x, "array") else x
+        arr = x["array"] if isinstance(x, dict) else (
+            x.array if hasattr(x, "array") else x)
         gray = _to_gray(np.asarray(arr))
         dets = self._detect(gray)
         det_arr = [np.array([b[0], b[1], b[2], b[3], 1.0]) for b in dets]
         return self._step(det_arr)
 
     def learn_one(self, x, y=None, t=None):
-        arr = x.array if hasattr(x, "array") else x
+        arr = x["array"] if isinstance(x, dict) else (
+            x.array if hasattr(x, "array") else x)
         gray = _to_gray(np.asarray(arr))
         self._history.append(gray)
         if len(self._history) > self.history:

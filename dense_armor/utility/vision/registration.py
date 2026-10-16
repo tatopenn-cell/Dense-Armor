@@ -67,6 +67,21 @@ class Registration(Transformer):
         >>> out = r.transform_one({"array": moved})
         >>> (round(out["dx"], 3), round(out["dy"], 3))
         (-2.0, 3.0)
+        >>> rng2 = np.random.default_rng(1)
+        >>> ref2 = rng2.normal(0, 1, (128, 128)).astype(np.float32)
+        >>> yy, xx = np.mgrid[0:128, 0:128].astype(np.float64)
+        >>> def shifted(img, dy, dx):
+        ...     y2 = yy - dy; x2 = xx - dx
+        ...     y0 = np.floor(y2).astype(int); x0 = np.floor(x2).astype(int)
+        ...     wy = y2 - y0; wx = x2 - x0
+        ...     g = lambda y, x: img[np.clip(y, 0, 127), np.clip(x, 0, 127)]
+        ...     return (g(y0,x0)*(1-wy)*(1-wx) + g(y0+1,x0)*wy*(1-wx)
+        ...             + g(y0,x0+1)*(1-wy)*wx + g(y0+1,x0+1)*wy*wx)
+        >>> r2 = Registration()
+        >>> r2.set_reference({"array": ref2})
+        >>> o2 = r2.transform_one({"array": shifted(ref2, 0.3, -0.5)})
+        >>> bool(abs(o2["dx"] + 0.5) < 0.2 and abs(o2["dy"] - 0.3) < 0.2)
+        True
     """
 
     memory_class = "O(HW)"
@@ -115,21 +130,26 @@ class Registration(Transformer):
         h, w = corr.shape
         sy = py if py <= h // 2 else py - h
         sx = px if px <= w // 2 else px - w
-        if self.subpixel:
-            def parab(idx, size, arr, axis):
-                i_m = (idx - 1) % size
-                i_p = (idx + 1) % size
-                if axis == 0:
-                    v0, v1, v2 = arr[i_m, px], arr[idx, px], arr[i_p, px]
-                else:
-                    v0, v1, v2 = arr[py, i_m], arr[py, idx], arr[py, i_p]
-                den = v0 - 2.0 * v1 + v2
-                if abs(den) < 1e-12:
-                    return 0.0
-                return 0.5 * (v0 - v2) / den
-            sy = sy + parab(py, h, corr, 0)
-            sx = sx + parab(px, w, corr, 1)
-        return float(sx), float(sy), float(corr[py, px])
+        peak_val = float(corr[py, px])
+        if not self.subpixel:
+            return float(sx), float(sy), peak_val
+        kx = np.fft.fftfreq(w).reshape(1, -1)
+        ky = np.fft.fftfreq(h).reshape(-1, 1)
+        phase = np.angle(cross)
+        phase = phase + 2.0 * np.pi * (ky * sy + kx * sx)
+        phase = (phase + np.pi) % (2.0 * np.pi) - np.pi
+        mask = mag > 0.05 * mag.max()
+        if int(mask.sum()) < 4:
+            return float(sx), float(sy), peak_val
+        ky_full = np.broadcast_to(ky, (h, w))
+        kx_full = np.broadcast_to(kx, (h, w))
+        A = np.stack([ky_full[mask], kx_full[mask]], axis=1)
+        b = phase[mask]
+        wts = mag[mask]
+        coef, *_ = np.linalg.lstsq(A * wts[:, None], b * wts, rcond=None)
+        dy_sub = float(np.clip(-coef[0] / (2.0 * np.pi), -0.5, 0.5))
+        dx_sub = float(np.clip(-coef[1] / (2.0 * np.pi), -0.5, 0.5))
+        return float(sx + dx_sub), float(sy + dy_sub), peak_val
 
     def transform_one(self, x, t=None):
         arr = x["array"] if isinstance(x, dict) else (
@@ -254,9 +274,14 @@ class DifferenceImage(Transformer):
         return set()
 
     def transform_one(self, x, t=None):
-        frame = x["frame"] if isinstance(x, dict) else (
-            x.array if hasattr(x, "array") else x
-        )
+        if isinstance(x, dict) and "frame" in x:
+            frame = x["frame"]
+        elif isinstance(x, dict) and "array" in x:
+            frame = x["array"]
+        elif hasattr(x, "array"):
+            frame = x.array
+        else:
+            frame = x
         frame = np.asarray(frame, dtype=np.float32)
         if frame.ndim == 3:
             g = _to_gray(frame)
@@ -271,9 +296,14 @@ class DifferenceImage(Transformer):
         return {"diff": diff, "max": max_d, "mean": mean_d}
 
     def learn_one(self, x, y=None, t=None):
-        frame = x["frame"] if isinstance(x, dict) else (
-            x.array if hasattr(x, "array") else x
-        )
+        if isinstance(x, dict) and "frame" in x:
+            frame = x["frame"]
+        elif isinstance(x, dict) and "array" in x:
+            frame = x["array"]
+        elif hasattr(x, "array"):
+            frame = x.array
+        else:
+            frame = x
         frame = np.asarray(frame, dtype=np.float32)
         g = _to_gray(frame) if frame.ndim == 3 else frame
         if self._ref is None or self._ref.shape != g.shape:
