@@ -2,13 +2,14 @@
 Author: Salvatore Pennacchio (Napoli, 2026). Sister project: Dense-Evolution."""
 import logging
 
+__version__ = "1.1.28"
+
 from . import _compat
 
 _compat.install()
 
 from .armatura import Armatura
 
-__version__ = "1.1.28"
 __all__ = ["Armatura"]
 
 # Nessun handler configurato di default (convenzione standard per librerie):

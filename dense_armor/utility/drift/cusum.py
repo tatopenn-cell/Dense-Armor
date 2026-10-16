@@ -262,7 +262,10 @@ def one_sided_arl(delta: float, h: float, corrected: bool = True) -> float:
     hh = h + BOUNDARY_CORRECTION if corrected else h
     if abs(delta) < 1e-12:
         return hh ** 2
-    return (np.exp(-2 * delta * hh) - 1 + 2 * delta * hh) / (2 * delta ** 2)
+    z = -2 * delta * hh
+    if z > 700.0:
+        return float("inf")
+    return (np.exp(z) - 1 + 2 * delta * hh) / (2 * delta ** 2)
 
 
 def two_sided_arl(mu: float, k: float, h: float, corrected: bool = True) -> float:
