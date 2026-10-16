@@ -4,6 +4,11 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- The claim register and the table of numerical claims left the published docs: they are now
+  `benchmarks/claims_register.md` and `benchmarks/numbers_register.md`. The navigation lists
+  Speed once.
+
 ## [1.1.29] - 2026-10-16
 
 ### Changed
