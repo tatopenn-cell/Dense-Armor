@@ -15,6 +15,8 @@ Start from what you have in front of you:
   sensor bank) → the **multivariate detectors**.
 - You need **one alarm for a slow drift** → CUSUM.
 - You need **a safe command for a real robot** → the control modules.
+- You need **to pick one option at a time and learn from the reward** → the bandit policies.
+- You need **to ask for a label only on the samples that matter** → the active-learning strategies.
 - You need **the physical model of a robot** → the dynamics modules.
 
 ## The two shields

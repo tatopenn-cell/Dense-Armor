@@ -5,6 +5,17 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- Bandit policies: `EpsilonGreedy`, `UCB1`, `UCB1Tuned` (Auer, Cesa-Bianchi
+  and Fischer 2002), `ThompsonSampling` and `BayesUCB` (Chapelle and Li
+  2011, Kaufmann, Cappe and Garivier 2012), `Exp3` (Auer et al. 2002) and
+  `LinUCBDisjoint` (Li et al. 2010). Offline evaluation on a logged stream:
+  `offline_replay` (Li et al. 2011). Robot test: `RobotKpSelector`, UCB over
+  the gain `kp` of `kinematic_tracking_controller` on `SyntheticArm`. Guide:
+  `docs/bandit/index.md`. Benchmark: `benchmarks/bandit_quality.py`, 20 seeds,
+  one sudden change, regret against the oracle and against the best fixed arm.
+- Active learning: `RandomStrategy`, `FixedUncertainty`, `VariableUncertainty`,
+  `VariableRandomizedUncertainty` (Zliobaite et al. 2011). Guide:
+  `docs/active/index.md`.
 - `fit(X, y=None, t=None, epochs=1, shuffle=False, seed=None)` on the base class
   `Root`: one offline entry point for every online estimator. It feeds the whole
   dataset to `learn_one`, row by row, for `epochs` passes, optionally shuffled.

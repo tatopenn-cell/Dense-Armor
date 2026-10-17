@@ -156,6 +156,8 @@ Dense-Armor provides online implementations of the following families of algorit
 - Decision trees, online forests (adaptive random forest, aggregated Mondrian forests, online extra trees) and rule sets (adaptive model rules)
 - Naive Bayes, nearest neighbours, multiclass and multi-output wrappers, conjugate distributions
 - [Ensembles](https://tatopenn-cell.github.io/Dense-Armor/ensemble/) (online bagging and boosting, exponentially weighted average, voting, stacking)
+- [Bandits](https://tatopenn-cell.github.io/Dense-Armor/bandit/) (epsilon-greedy, UCB, Thompson sampling, Bayes-UCB, Exp3, LinUCB, offline replay)
+- [Active learning](https://tatopenn-cell.github.io/Dense-Armor/active/) (random, fixed, variable, randomised uncertainty with a budget)
 - Clustering
 - Anomaly detection (including the local outlier factor)
 - Drift detection
