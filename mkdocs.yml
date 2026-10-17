@@ -182,14 +182,14 @@ nav:
           - Sketches: stats/sketches.md
       - Preprocessing: preprocessing/index.md
       - Metrics and evaluation: metrics/index.md
-    - Vision:
-        - vision/index.md
-        - Frames: vision/frames.md
-        - Features: vision/features.md
-        - Flow: vision/flow.md
-        - Reduce: vision/reduce.md
-        - Motion: vision/motion.md
-        - Tracking: vision/tracking.md
-        - Kinematics: vision/kinematics.md
-        - Quality: vision/quality.md
-        - Patches: vision/patches.md
+  - Vision:
+      - vision/index.md
+      - Frames: vision/frames.md
+      - Features: vision/features.md
+      - Flow: vision/flow.md
+      - Reduce: vision/reduce.md
+      - Motion: vision/motion.md
+      - Tracking: vision/tracking.md
+      - Kinematics: vision/kinematics.md
+      - Quality: vision/quality.md
+      - Patches: vision/patches.md
