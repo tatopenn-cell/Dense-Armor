@@ -4,6 +4,9 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- The video documentation is split into eight guide pages under `docs/vision/`, each with a figure from `docs/assets/vision/make_figures.py`.
+
 ### Added
 - Ensembles of online learners: `OnlineBaggingClassifier` and
   `OnlineBoostingClassifier` (Oza and Russell 2001),

@@ -182,27 +182,14 @@ nav:
           - Sketches: stats/sketches.md
       - Preprocessing: preprocessing/index.md
       - Metrics and evaluation: metrics/index.md
-
-  - Vision:
-      - vision/index.md
-      - vision/patches.md
-
-  - Tools:
-      - Toolkit:
-          - toolkit/index.md
-          - Toolkit: toolkit/toolkit.md
-      - Live Demo: demo.md
-      - MCP Server: mcp.md
-
-  - Comparisons & limits:
-      - Dense-Armor vs Kalman: vs_kalman.md
-      - Adversarial robustness: robustness.md
-      - Known limits: limits.md
-
-  - API Reference:
-      - api/index.md
-      - General: api/general.md
-      - Robot: api/robot.md
-      - IA: api/ai.md
-      - Changelog: changelog.md
-      - License: license.md
+    - Vision:
+        - vision/index.md
+        - Frames: vision/frames.md
+        - Features: vision/features.md
+        - Flow: vision/flow.md
+        - Reduce: vision/reduce.md
+        - Motion: vision/motion.md
+        - Tracking: vision/tracking.md
+        - Kinematics: vision/kinematics.md
+        - Quality: vision/quality.md
+        - vision/patches.md
