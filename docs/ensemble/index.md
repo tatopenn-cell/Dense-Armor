@@ -72,10 +72,10 @@ print(bag.predict_one({"x": 0.1}), bag.predict_one({"x": 4.0}))
 0 1
 ```
 
-The Poisson draw is what makes the members differ. On the drifted stream of Section 1 the bag of
+The Poisson draw is what makes the members differ. On the drifted stream of Section 7 the bag of
 five trees answers correctly more often than one tree in the median of 20 seeds (0.947 against
-0.942, paired p = 0.003, Section 7). The gain is small on this stream: the members share the
-same data, and the diversity the Poisson draw gives is limited.
+0.942, paired p = 0.003). The gain is small on this stream: the members share the same data,
+and the diversity the Poisson draw gives is limited.
 
 ## 4. Boosting: weight the samples the members miss
 
@@ -191,9 +191,10 @@ single tree. The paired two-sided Wilcoxon on 20 seeds and the A12 effect size w
 
 ![Effect size of each ensemble against the single tree](../assets/ensemble/ensemble_a12.png)
 
-Every interval sits above 0.5, so every ensemble is better than the single tree with a p-value
-below 0.01. Boosting has the largest effect, with an interval that starts at 0.78. The others
-are just above 0.5, which means the improvement is real but small on this stream.
+Boosting has the largest effect, with an interval that starts at 0.78. The other three
+intervals sit just above 0.5, and the one of stacking starts exactly at 0.500: the paired
+p-value (0.0064) is below 0.01, but the effect size is at the edge of no difference. The
+improvement is real and small on this stream.
 
 ![Cost of one learn_one and one predict_one](../assets/ensemble/ensemble_cost.png)
 
@@ -204,9 +205,9 @@ is about one order of magnitude. An ensemble buys accuracy with time.
 ![Exponentially weighted average on the regression stream](../assets/ensemble/ensemble_ewa.png)
 
 On the regression stream the exponentially weighted average does not beat its own best member.
-The best member is a large-window k-NN that predicts the rule well; the weighted average blends
-it with two weaker members, so its loss is above the best member's and below the worst. The
-bound is an upper limit and the ensemble stays well below it.
+The best member is a large-window k-NN that predicts the rule well; the weighted average
+blends it with two weaker members, so its loss is above the best member's. The bound is an
+upper limit and the ensemble stays well below it.
 
 ## Details
 
@@ -214,7 +215,7 @@ bound is an upper limit and the ensemble stays well below it.
 
 - Oza, N. C., Russell, S. (2001). Online bagging and boosting. In Artificial Intelligence and Statistics 2001, 105-112. Section 2 for the Poisson sampling, Section 3 and Figure 2 for the boosting weight update.
 - Freund, Y., Schapire, R. E. (1997). A decision-theoretic generalization of on-line learning and an application to boosting. Journal of Computer and System Sciences 55(1), 119-139. Section 2.1 for the Hedge rule, Theorem 2 and equation 9 for the bound of the exponentially weighted average.
-- Kivinen, J., Warmuth, M. K. (1997). Exponentiated gradient versus gradient descent for linear predictors. Information and Computation 132(1), 1-63. The exponentiated weight update.
+- Kivinen, J., Warmuth, M. K. (1997). Exponentiated gradient versus gradient descent for linear predictors. Information and Computation 132(1), 1-63. The exponentiated gradient gives the same multiplicative update of the weights, `w_i = exp(-eta * L_i)`, from the gradient of the relative entropy.
 
 ### What each paper states
 
@@ -263,8 +264,8 @@ docstrings and tested.
 ### Checks
 
 - `check_estimator` passes for all five classes with no check skipped.
-- On the drifted stream of Section 1 the ensembles follow the change; the single tree does not
-  within the window shown.
+- On the drifted stream of Section 7 the four ensembles beat the single tree, every paired
+  p-value below 0.01.
 - The bound of the weighted average is verified against equation 9 of the paper by a test that
   fails when `bound()` returns a constant.
 - The stacking order (meta-model learns before the members see the label) is verified by a test
@@ -274,7 +275,7 @@ docstrings and tested.
 
 ### The numbers
 
-Run: `python benchmarks/ensemble_quality.py`. Machine: Intel Xeon, 2 cores, Python 3.13.16. JSON:
+Run: `python benchmarks/ensemble_quality.py`. Machine: x86_64 Linux, 2 cores, Python 3.13.16. JSON:
 `benchmarks/ensemble_quality.json`.
 
 | learner | accuracy, median | accuracy IQR | ms per sample |
@@ -288,7 +289,7 @@ Run: `python benchmarks/ensemble_quality.py`. Machine: Intel Xeon, 2 cores, Pyth
 | pair | median A | median B | p | A12 [95% interval] | seeds A better |
 |---|---|---|---|---|---|
 | bagging vs single tree | 0.9467 | 0.9423 | 0.0033 | 0.539 [0.511, 0.598] | 15/20 |
-| boosting vs single tree | 0.9818 | 0.9423 | 0.0000 | 0.889 [0.781, 0.975] | 19/20 |
+| boosting vs single tree | 0.9818 | 0.9423 | < 0.0001 | 0.889 [0.781, 0.975] | 19/20 |
 | voting vs single tree | 0.9475 | 0.9423 | 0.0019 | 0.540 [0.517, 0.600] | 12/20 |
 | stacking vs single tree | 0.9472 | 0.9423 | 0.0064 | 0.546 [0.500, 0.620] | 12/20 |
 
