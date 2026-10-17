@@ -198,3 +198,23 @@ nav:
       - Kinematics: vision/kinematics.md
       - Quality: vision/quality.md
       - Patches: vision/patches.md
+
+  - Tools:
+      - Toolkit:
+          - toolkit/index.md
+          - Toolkit: toolkit/toolkit.md
+      - Live Demo: demo.md
+      - MCP Server: mcp.md
+
+  - Comparisons & limits:
+      - Dense-Armor vs Kalman: vs_kalman.md
+      - Adversarial robustness: robustness.md
+      - Known limits: limits.md
+
+  - API Reference:
+      - api/index.md
+      - General: api/general.md
+      - Robot: api/robot.md
+      - IA: api/ai.md
+      - Changelog: changelog.md
+      - License: license.md
