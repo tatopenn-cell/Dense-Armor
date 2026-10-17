@@ -155,7 +155,7 @@ Dense-Armor provides online implementations of the following families of algorit
 - Linear models, with a wide array of optimizers
 - Decision trees, online forests (adaptive random forest, aggregated Mondrian forests, online extra trees) and rule sets (adaptive model rules)
 - Naive Bayes, nearest neighbours, multiclass and multi-output wrappers, conjugate distributions
-- Ensembles (online bagging and boosting, exponentially weighted average, voting, stacking)
+- [Ensembles](https://tatopenn-cell.github.io/Dense-Armor/ensemble/) (online bagging and boosting, exponentially weighted average, voting, stacking)
 - Clustering
 - Anomaly detection (including the local outlier factor)
 - Drift detection
