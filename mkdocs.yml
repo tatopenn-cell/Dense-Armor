@@ -137,6 +137,7 @@ nav:
       - Clustering: cluster/index.md
       - Trees: tree/index.md
       - Forests: forest/index.md
+      - Ensembles: ensemble/index.md
       - Rules: rules/index.md
 
   - Distributions:
