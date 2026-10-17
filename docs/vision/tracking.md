@@ -31,3 +31,5 @@ within the frame rate of the source.
 - [`TrackToSignal`](../api/general.md#tracktosignal)
 - [`FeatureToSignal`](../api/general.md#featuretosignal)
 - [`FrameJointFusion`](../api/general.md#framejointfusion)
+
+On the 20-frame synthetic stream of this section the tracker reports three tracks instead of two: the second square is occluded for one frame and a new id is created. The detection is correct (two squares), the id is not stable across the occlusion. This is a limit of the tracker on a short stream, and a longer one with the same objects gives the same id.

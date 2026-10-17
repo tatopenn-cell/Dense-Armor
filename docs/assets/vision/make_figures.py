@@ -258,23 +258,17 @@ def fig_05_flow():
     _save(fig, "flow", "lucas_kanade")
 
 def fig_06_colour():
-    f = np.zeros((64, 64, 3), dtype=np.float32)
-    f[:, 0:21, 0] = 0.8
-    f[:, 0:21, 1] = 0.1
-    f[:, 0:21, 2] = 0.1
-    f[:, 21:42, 0] = 0.1
-    f[:, 21:42, 1] = 0.8
-    f[:, 21:42, 2] = 0.1
-    f[:, 42:, 0] = 0.1
-    f[:, 42:, 1] = 0.1
-    f[:, 42:, 2] = 0.8
+    """The six colour features on the scene of features.md Section 3."""
+    f = np.zeros((20, 20, 3), dtype=np.float32)
+    f[:, :10, 0] = 1.0
+    f[:, 10:, 2] = 0.5
     ff = FrameFeatures(gray=False)
     out = ff.transform_one(f)
     keys = ["mean_R", "mean_G", "mean_B", "contrast_R", "contrast_G", "contrast_B"]
     vals = [out[k] for k in keys]
     fig, axes = plt.subplots(1, 2, figsize=(7.2, 3.0))
     axes[0].imshow(np.clip(f, 0, 1))
-    axes[0].set_title("three vertical bands", fontsize=9)
+    axes[0].set_title("red left, half-bright blue right", fontsize=9)
     axes[0].axis("off")
     axes[1].bar(range(len(keys)), vals, color=BLUE, edgecolor=INK, linewidth=0.5)
     axes[1].set_xticks(range(len(keys)))
@@ -283,6 +277,8 @@ def fig_06_colour():
     _save(fig, "colour", "colour_features")
     FIG["fig06_keys"] = keys
     FIG["fig06_vals"] = [float(v) for v in vals]
+
+
 
 def fig_07_projection():
     rng = np.random.default_rng(0)
