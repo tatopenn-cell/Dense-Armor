@@ -137,7 +137,7 @@ print(round(float(np.max(np.abs(tau))), 1), round(float(np.max(np.abs(safe))), 1
 
 ```bash
 pip install dense-armor                 # core: numpy + jax
-pip install "dense-armor[vision]"       # + OpenCV frame readers
+pip install "dense-armor[vision]"       # + camera (OpenCV), image folder (Pillow), in-memory
 pip install "dense-armor[ros]"          # + rosbag readers
 pip install "dense-armor[audio,data]"   # + WAV, HDF5, NetCDF
 pip install "dense-armor[mcp]"          # + MCP server for LLM agents
