@@ -3379,7 +3379,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.vision.features`
 *Bases:* Transformer
-*Guide:* [vision/index.md](../vision/index.md)
+*Guide:* [vision/features.md](../vision/features.md)
 
 Turn one frame into a fixed-length dict of float features.
 
@@ -3403,7 +3403,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.vision.reduce`
 *Bases:* Transformer
-*Guide:* [vision/index.md](../vision/index.md)
+*Guide:* [vision/reduce.md](../vision/reduce.md)
 
 Online PCA: Oja's rule for one component, stochastic subspace iteration with QR for several.
 
@@ -3478,7 +3478,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.vision.reduce`
 *Bases:* Transformer
-*Guide:* [vision/index.md](../vision/index.md)
+*Guide:* [vision/reduce.md](../vision/reduce.md)
 
 Fixed Gaussian random projection to ``k`` dimensions.
 
@@ -3501,7 +3501,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.vision.streams`
-*Guide:* [vision/index.md](../vision/index.md)
+*Guide:* [vision/frames.md](../vision/frames.md)
 
 Iterate over a numpy array of frames.
 
@@ -3509,7 +3509,7 @@ Iterate over a numpy array of frames.
 
 
 *Module:* `dense_armor.utility.vision.streams`
-*Guide:* [vision/index.md](../vision/index.md)
+*Guide:* [vision/frames.md](../vision/frames.md)
 
 Iterate over camera frames through OpenCV.
 
@@ -3517,7 +3517,7 @@ Iterate over camera frames through OpenCV.
 
 
 *Module:* `dense_armor.utility.vision.streams`
-*Guide:* [vision/index.md](../vision/index.md)
+*Guide:* [vision/frames.md](../vision/frames.md)
 
 One image frame with its timestamp.
 
@@ -3529,7 +3529,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.vision.streams`
-*Guide:* [vision/index.md](../vision/index.md)
+*Guide:* [vision/frames.md](../vision/frames.md)
 
 Iterate over image files in a folder.
 
