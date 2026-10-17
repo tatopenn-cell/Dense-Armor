@@ -381,3 +381,72 @@ def test_check_estimator():
 def test_doctest():
     res = doctest.testmod(fimt_module, verbose=False)
     assert res.failed == 0
+
+
+def test_as_dict_accepts_to_dict_objects_and_rejects_other_types():
+    class _D:
+        def to_dict(self):
+            return {"x": 1.0}
+
+    assert fimt_module._as_dict(_D()) == {"x": 1.0}
+    with pytest.raises(TypeError):
+        fimt_module._as_dict(3)
+
+
+def test_finite_rejects_none_and_non_numeric_values():
+    assert fimt_module._finite({"x": 1.0}) is True
+    assert fimt_module._finite({"x": None}) is False
+    assert fimt_module._finite({"x": "abc"}) is False
+
+
+def test_best_split_without_enough_samples_returns_zero():
+    assert fimt_module._Ebst().best_split(fimt_module._SideStats()) == (0.0, 0.0)
+
+
+def test_feature_keys_argument_fixes_the_keys():
+    m = FIMTDDRegressor(n_min=20, feature_keys=["a", "b"])
+    m.learn_one({"a": 1.0, "b": 2.0}, 1.0)
+    assert m._keys == ["a", "b"]
+
+
+def test_label_that_is_not_a_number_is_counted_as_missing():
+    m = FIMTDDRegressor(n_min=20)
+    m.learn_one({"x": 1.0}, "bad")
+    assert m.n_missing_ == 1
+
+
+def test_count_nodes_before_learning_and_predict_with_a_bad_row():
+    m = FIMTDDRegressor(n_min=20)
+    assert m._count_nodes() == 0
+    m.learn_one({"x": 1.0}, 1.0)
+    assert m.predict_one({"x": "bad"}) == 0.0
+
+
+def test_depth_limit_keeps_a_single_leaf():
+    rng = np.random.default_rng(0)
+    m = FIMTDDRegressor(n_min=20, max_depth=0)
+    for _ in range(300):
+        v = float(rng.normal())
+        m.learn_one({"x": v}, 1.0 if v < 0 else -1.0)
+    assert m._count_nodes() == 1
+
+
+def test_single_feature_split_through_the_tau_rule():
+    rng = np.random.default_rng(0)
+    m = FIMTDDRegressor(n_min=20, tau=0.5)
+    for _ in range(200):
+        v = float(rng.normal())
+        m.learn_one({"x": v}, 1.0 if v < 0 else -1.0)
+    assert m._count_nodes() > 1
+
+
+def test_alternate_tree_replaces_the_subtree_after_a_change_of_rule():
+    rng = np.random.default_rng(0)
+    m = FIMTDDRegressor(n_min=20, delta=0.01, lambda_ph=2.0)
+    for i in range(3000):
+        v = float(rng.normal())
+        w = float(rng.normal())
+        y = (1.0 if v < 0 else -1.0) if i < 1200 else (-1.0 if v < 0 else 1.0)
+        m.learn_one({"x": v, "w": w}, y)
+    assert m.predict_one({"x": -2.0, "w": 0.0}) < 0.0
+    assert m.predict_one({"x": 2.0, "w": 0.0}) > 0.0
