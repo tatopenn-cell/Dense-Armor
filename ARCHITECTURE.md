@@ -12,7 +12,7 @@ every file. Update it whenever a module is added, moved or renamed.
    `stream`, `datasets`, `compose`, `preprocessing`, `stats`, `metrics`, `evaluate`, `learn`,
    `tree`, `cluster`, `anomaly`, `drift`, `protect`, `vision`, `control`, `misc`, `bayes`,
    `linear`, `multiclass`, `multioutput`, `neighbors`, `optim`, `proba`, `rules`, `timeseries`,
-   `forest`.
+   `forest`, `ensemble`.
 3. `dynamics` — rigid-body dynamics from URDF.
 4. `checks` — `check_estimator` and the robot checks.
 5. `bridges` — optional bridges (LLM embeddings, and a bridge to existing online-learning
@@ -44,7 +44,7 @@ graph TD
         ANOMALY["anomaly: HampelScorer,<br/>OnlineRobustMahalanobis,<br/>StreamingDeviationDetector"]
         DRIFT["drift: CUSUMDriftDetector,<br/>ADWIN, KSWIN, PageHinkley"]
         PROTECT["protect: classify_segments,<br/>healing_filter, Orca"]
-        VISION["vision: FrameFeatures,<br/>PatchFeatures, PatchMemory"]
+        VISION["vision: VideoFileStream, FrameFeatures,<br/>MotionEnergy, MovingObjectTracker,<br/>PatchFeatures, PatchMemory"]
         CONTROL["control: cbf_safety_filter,<br/>quintic_trajectory"]
         MISC["misc: Metro, diag, anwav"]
         BAYES["bayes: MultinomialNB, BernoulliNB,<br/>ComplementNB, CategoricalNB"]
@@ -56,6 +56,7 @@ graph TD
         RULES["rules: AMRulesRegressor"]
         TSERIES["timeseries: OnlineAR,<br/>KalmanFilter, CycleResidual"]
         FOREST["forest: AdaptiveRandomForestClassifier,<br/>AggregatedMondrianForestClassifier,<br/>OnlineExtraTreesRegressor"]
+        ENSEMBLE["ensemble: OnlineBaggingClassifier,<br/>OnlineBoostingClassifier,<br/>ExponentiallyWeightedAverageRegressor"]
     end
 
     subgraph DYN["3. dynamics/"]
@@ -243,11 +244,23 @@ graph TD
 
 | file | public names | what it is |
 |---|---|---|
+| `adapters.py` | `TrackToSignal`, `FeatureToSignal` | video tracks and features turned into a Signal |
+| `dense.py` | `DenseFlow`, `MotionMask` | dense optical flow (Horn-Schunck) and motion mask |
 | `features.py` | `FrameFeatures` | per-frame features |
+| `fusion.py` | `fuse_frames_joints`, `FrameJointFusion` | camera and joint streams fused in time, latency of the camera |
+| `landmarks.py` | `LandmarkStream`, `LandmarkCleaner`, `Kinematics` | landmark streams, causal Hampel cleaning, angles and speeds |
+| `motion.py` | `MotionEnergy`, `GlobalMotion` | motion energy and global shift by phase correlation |
 | `patches.py` | `PatchFeatures`, `PatchMemory` | local patch features and patch memory |
+| `quality.py` | `FrameQuality`, `Sync`, `EventFrame` | frame quality, clock offset between two streams, event frames |
 | `reduce.py` | `RandomProjection`, `IncrementalPCA` | dimensionality reduction |
-| `streams.py` | `Frame`, `ArrayStream`, `ImageFolderStream`, `CameraStream` | frame streams |
+| `registration.py` | `Registration`, `Stabilizer`, `DifferenceImage` | registration, stabilisation and difference images |
+| `robustness.py` | `FrameNormalizer` | frame normaliser for hard video (dark, flat, black or repeated frames) |
+| `scene.py` | `SceneChange`, `FrameAnomaly` | scene change detection and frame anomaly |
+| `streams.py` | `Frame`, `ArrayStream`, `ImageFolderStream`, `CameraStream`, `VideoStream`, `VideoFileStream`, `CubeStream` | frame streams |
+| `tracking.py` | `MovingObjectTracker` | moving object tracker with a Kalman filter, no detector needed |
+| `visualize.py` | `FalseColor`, `Overlay`, `VideoWriter` | false colour, overlays and the annotated video writer |
 | `vocabulary.py` | `BagOfVisualWords` | bag of visual words |
+| `window.py` | `FrameWindow` | sliding window of frames with streaming statistics |
 
 ### 2.15 control
 
@@ -343,6 +356,16 @@ graph TD
 | `arf.py` | `SubspaceHoeffdingTree`, `AdaptiveRandomForestClassifier` | adaptive random forest and its subspace Hoeffding tree |
 | `oxt.py` | `OnlineExtraTreesRegressor` | online extra trees regressor (Mastelini et al.) |
 
+### 2.27 ensemble
+
+| file | public names | what it is |
+|---|---|---|
+| `bagging.py` | `OnlineBaggingClassifier` | online bagging with a Poisson(1) resample |
+| `boosting.py` | `OnlineBoostingClassifier` | online boosting (Oza and Russell) |
+| `ewa.py` | `ExponentiallyWeightedAverageRegressor` | exponentially weighted average of regressors (Hedge) |
+| `stacking.py` | `StackingClassifier` | stacking with a meta-model on the members' predictions |
+| `voting.py` | `VotingClassifier` | hard or soft vote over a fixed list of classifiers |
+
 ## 3. dynamics
 
 | file | public names | what it is |
@@ -400,6 +423,7 @@ A sample enters as a `Signal` from a reader in `utility/stream` (`iter_csv`, `it
 derivatives, text). The transformed sample reaches an estimator built on `roles/` — a classifier,
 regressor or anomaly detector from `utility/learn`, `utility/tree`, `utility/forest`,
 `utility/bayes`, `utility/linear`, `utility/neighbors`, `utility/rules`, `utility/timeseries`,
+`utility/ensemble`,
 `utility/cluster`. Its
 predictions are scored by a metric from `utility/metrics` (`Accuracy`, `RollingAUC`,
 `EventMetrics`) driven by `utility/evaluate` (`progressive_val_score`, `evaluate_events`). A
