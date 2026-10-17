@@ -7,6 +7,10 @@ sample by its signed distance from that boundary. In a control loop it answers o
 per reading: does this residual look like the healthy run, or does it fall outside the
 region the detector has learned to call normal?
 
+<img width="6348" height="561" alt="deepseek_mermaid_20261017_901454" src="https://github.com/user-attachments/assets/f0f7a197-5e71-40b4-b29a-2f4f1874d254" />
+
+
+
 ## 1. What it is
 
 The healthy residuals of a robot joint cluster around zero. When the payload changes, or a
