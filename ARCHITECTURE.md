@@ -12,7 +12,7 @@ every file. Update it whenever a module is added, moved or renamed.
    `stream`, `datasets`, `compose`, `preprocessing`, `stats`, `metrics`, `evaluate`, `learn`,
    `tree`, `cluster`, `anomaly`, `drift`, `protect`, `vision`, `control`, `misc`, `bayes`,
    `linear`, `multiclass`, `multioutput`, `neighbors`, `optim`, `proba`, `rules`, `timeseries`,
-   `forest`, `ensemble`.
+   `forest`, `ensemble`, `bandit`, `active`.
 3. `dynamics` — rigid-body dynamics from URDF.
 4. `checks` — `check_estimator` and the robot checks.
 5. `bridges` — optional bridges (LLM embeddings, and a bridge to existing online-learning
@@ -57,6 +57,8 @@ graph TD
         TSERIES["timeseries: OnlineAR,<br/>KalmanFilter, CycleResidual"]
         FOREST["forest: AdaptiveRandomForestClassifier,<br/>AggregatedMondrianForestClassifier,<br/>OnlineExtraTreesRegressor"]
         ENSEMBLE["ensemble: OnlineBaggingClassifier,<br/>OnlineBoostingClassifier,<br/>ExponentiallyWeightedAverageRegressor"]
+        BANDIT["bandit: EpsilonGreedy, UCB1,<br/>ThompsonSampling, LinUCBDisjoint"]
+        ACTIVE["active: FixedUncertainty,<br/>VariableUncertainty"]
     end
 
     subgraph DYN["3. dynamics/"]
@@ -103,7 +105,7 @@ graph TD
 | `protection.py` | `Protected` | wrapper that skips learning on flagged samples |
 | `realtime.py` | `ProfileResult`, `profile`, `RealtimePipeline`, `PureEW` | latency profile and real-time pipeline |
 | `regressor.py` | `Regressor` | base class for supervised regressors |
-| `root.py` | `InconsistentVersionWarning`, `Root` | root of the estimator stack |
+| `root.py` | `InconsistentVersionWarning`, `Root` | root of the estimator stack, with the offline entry point `fit` |
 | `safety.py` | `Health`, `HealthMonitor`, `SafeEstimator` | health monitor and safe wrapper |
 | `signal.py` | `Signal` | dict-like one-sample reading with units and timestamp |
 | `transformer.py` | `Transformer`, `TransformerSupervised` | base classes for transformers |
@@ -365,6 +367,26 @@ graph TD
 | `ewa.py` | `ExponentiallyWeightedAverageRegressor` | exponentially weighted average of regressors (Hedge) |
 | `stacking.py` | `StackingClassifier` | stacking with a meta-model on the members' predictions |
 | `voting.py` | `VotingClassifier` | hard or soft vote over a fixed list of classifiers |
+
+### 2.28 bandit
+
+| file | public names | what it is |
+|---|---|---|
+| `base.py` | `BanditPolicy` | base class of the policies: arms, `pull`, `update`, seed |
+| `ucb.py` | `EpsilonGreedy`, `UCB1`, `UCB1Tuned` | epsilon-greedy, UCB1 and UCB1-Tuned (Auer, Cesa-Bianchi and Fischer) |
+| `ts.py` | `ThompsonSampling` | Thompson sampling, Beta-Bernoulli and Gaussian (Chapelle and Li) |
+| `bayes_ucb.py` | `BayesUCB` | Bayes-UCB, a quantile of the posterior as the index (Kaufmann, Cappe and Garivier) |
+| `exp3.py` | `Exp3` | Exp3 for the non-stochastic bandit (Auer et al.) |
+| `linucb.py` | `LinUCBDisjoint` | LinUCB with one linear model per arm (Li et al.) |
+| `evaluate.py` | `offline_replay` | unbiased offline evaluation of a policy on logged data (Li et al.) |
+| `robot.py` | `RobotKpSelector` | chooses the gain `kp` of the kinematic tracking controller with UCB1 on a robot stream |
+
+### 2.29 active
+
+| file | public names | what it is |
+|---|---|---|
+| `base.py` | `ActiveStrategy` | base class of the labelling strategies: `should_label`, labelling budget |
+| `strategies.py` | `RandomStrategy`, `FixedUncertainty`, `VariableUncertainty`, `VariableRandomizedUncertainty` | random, fixed-threshold, variable-threshold and randomised-threshold uncertainty with a labelling budget (Zliobaite et al.) |
 
 ## 3. dynamics
 

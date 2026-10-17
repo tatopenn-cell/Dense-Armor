@@ -1,0 +1,50 @@
+{
+  "regret_oracle_median": {
+    "EpsilonGreedy": 384.9999999999924,
+    "UCB1": 114.50000000000443,
+    "UCB1Tuned": 112.00000000000404,
+    "ThompsonSampling": 245.99999999999272,
+    "BayesUCB": 74.00000000000207,
+    "Exp3": 393.9999999999932
+  },
+  "contextual_regret_oracle_median": {
+    "UCB1": 114.50000000000443,
+    "LinUCBDisjoint": 205.4999999999909
+  },
+  "active_rate_median": {
+    "RandomStrategy": 0.10125,
+    "FixedUncertainty": 0.0005,
+    "VariableUncertainty": 0.1,
+    "VariableRandomizedUncertainty": 0.1
+  },
+  "active_budget": 0.1,
+  "robot_picks": [
+    8.0,
+    8.0,
+    8.0,
+    8.0,
+    8.0,
+    8.0,
+    8.0,
+    8.0,
+    8.0,
+    8.0,
+    8.0,
+    8.0,
+    8.0,
+    8.0,
+    8.0,
+    8.0,
+    8.0,
+    8.0,
+    8.0,
+    8.0
+  ],
+  "robot_regret_median": 0.0,
+  "robot_seconds_per_decision_median": 0.5400272650666618,
+  "robot_arms": [
+    0.5,
+    8.0,
+    30.0
+  ]
+}
