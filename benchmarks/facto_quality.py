@@ -41,9 +41,9 @@ from dense_armor.utility.datasets import DriftStream
 from dense_armor.utility.facto import (
     FFMClassifier,
     FMClassifier,
+    FMRegressor,
     FwFMClassifier,
     HOFMClassifier,
-    FMRegressor,
 )
 from dense_armor.utility.linear.glm import LogisticRegression
 from dense_armor.utility.misc import SDFT, Skyline
@@ -149,7 +149,9 @@ def check_recovery(n_users=20, n_items=15, k=3, epochs=60, seed=0):
         errs = [abs(model.predict_one(u, i) - r) for u, i, r in ratings]
         trace.append((ep + 1, float(np.median(errs))))
     return {
-        "n_users": n_users, "n_items": n_items, "k": k,
+        "n_users": n_users,
+        "n_items": n_items,
+        "k": k,
         "n_ratings": len(ratings),
         "final_median_err": trace[-1][1],
         "trace": trace,
@@ -159,23 +161,34 @@ def check_recovery(n_users=20, n_items=15, k=3, epochs=60, seed=0):
 def check_comparison(seeds, n_samples, n_features=4):
     builders = {
         "LogisticRegression": lambda: LogisticRegression(
-            optimizer=SGD(lr=0.01), intercept=True),
+            optimizer=SGD(lr=0.01), intercept=True
+        ),
         "FM": lambda: FMClassifier(optimizer=SGD(lr=0.05), k=4, seed=0),
         "FFM": lambda: FFMClassifier(
-            fields={f"x{j}": f"F{j%2}" for j in range(n_features)},
-            k=2, lr=0.1, seed=0),
+            fields={f"x{j}": f"F{j % 2}" for j in range(n_features)},
+            k=2,
+            lr=0.1,
+            seed=0,
+        ),
         "FwFM": lambda: FwFMClassifier(
             optimizer=SGD(lr=0.05),
-            fields={f"x{j}": f"F{j%2}" for j in range(n_features)},
-            k=2, seed=0),
+            fields={f"x{j}": f"F{j % 2}" for j in range(n_features)},
+            k=2,
+            seed=0,
+        ),
         "HOFM": lambda: HOFMClassifier(optimizer=SGD(lr=0.05), m=3, k=2, seed=0),
     }
     names = list(builders)
     accs = {n: [] for n in names}
     times = {n: [] for n in names}
     for seed in range(seeds):
-        ds = DriftStream(n_samples=n_samples, n_features=n_features,
-                         n_drifts=1, kind="sudden", seed=seed)
+        ds = DriftStream(
+            n_samples=n_samples,
+            n_features=n_features,
+            n_drifts=1,
+            kind="sudden",
+            seed=seed,
+        )
         X, y = ds.data()
         X = [{f"x{j}": float(v) for j, v in enumerate(row)} for row in X]
         for name, make in builders.items():
@@ -193,12 +206,16 @@ def check_comparison(seeds, n_samples, n_features=4):
             times[name].append(float(np.median(lat) * 1e3))
     rows = []
     for n in names:
-        rows.append({
-            "model": n,
-            "acc_median": float(np.median(accs[n])),
-            "acc_iqr": float(np.percentile(accs[n], 75) - np.percentile(accs[n], 25)),
-            "ms_per_sample": float(np.median(times[n])),
-        })
+        rows.append(
+            {
+                "model": n,
+                "acc_median": float(np.median(accs[n])),
+                "acc_iqr": float(
+                    np.percentile(accs[n], 75) - np.percentile(accs[n], 25)
+                ),
+                "ms_per_sample": float(np.median(times[n])),
+            }
+        )
     return {"n_seeds": seeds, "n_samples": n_samples, "rows": rows}
 
 
@@ -209,47 +226,68 @@ def check_costs(n=2000, seed=0):
         for _ in range(n)
     ]
     samples = [s for s in samples if s]
-    rec = [(int(rng.integers(0, 20)), int(rng.integers(0, 15)),
-            float(rng.normal(3, 0.5))) for _ in range(n)]
+    rec = [
+        (int(rng.integers(0, 20)), int(rng.integers(0, 15)), float(rng.normal(3, 0.5)))
+        for _ in range(n)
+    ]
     vals = [float(rng.normal()) for _ in range(n)]
     pts = [{"x": float(rng.normal()), "y": float(rng.normal())} for _ in range(n)]
-    fields = {f"x{j}": f"F{j%2}" for j in range(4)}
+    fields = {f"x{j}": f"F{j % 2}" for j in range(4)}
     rows = []
 
     def add(name, make, samples, fit, score):
         med, p99 = _time_per_sample(make, samples, fit, score)
         rows.append({"model": name, "median_ms": med, "p99_ms": p99})
 
-    add("FMClassifier", lambda: FMClassifier(optimizer=SGD(lr=0.05), k=4, seed=0),
+    add(
+        "FMClassifier",
+        lambda: FMClassifier(optimizer=SGD(lr=0.05), k=4, seed=0),
         samples,
         lambda m, s: m.learn_one(s, 1),
-        lambda m, s: m.predict_proba_one(s))
-    add("FFMClassifier", lambda: FFMClassifier(fields=fields, k=2, lr=0.1, seed=0),
+        lambda m, s: m.predict_proba_one(s),
+    )
+    add(
+        "FFMClassifier",
+        lambda: FFMClassifier(fields=fields, k=2, lr=0.1, seed=0),
         samples,
         lambda m, s: m.learn_one(s, 1),
-        lambda m, s: m.predict_proba_one(s))
-    add("FwFMClassifier", lambda: FwFMClassifier(
-            optimizer=SGD(lr=0.05), fields=fields, k=2, seed=0),
+        lambda m, s: m.predict_proba_one(s),
+    )
+    add(
+        "FwFMClassifier",
+        lambda: FwFMClassifier(optimizer=SGD(lr=0.05), fields=fields, k=2, seed=0),
         samples,
         lambda m, s: m.learn_one(s, 1),
-        lambda m, s: m.predict_proba_one(s))
-    add("HOFMClassifier", lambda: HOFMClassifier(
-            optimizer=SGD(lr=0.05), m=3, k=2, seed=0),
+        lambda m, s: m.predict_proba_one(s),
+    )
+    add(
+        "HOFMClassifier",
+        lambda: HOFMClassifier(optimizer=SGD(lr=0.05), m=3, k=2, seed=0),
         samples,
         lambda m, s: m.learn_one(s, 1),
-        lambda m, s: m.predict_proba_one(s))
-    add("BiasedMF", lambda: BiasedMF(k=4, lr=0.01, seed=0),
+        lambda m, s: m.predict_proba_one(s),
+    )
+    add(
+        "BiasedMF",
+        lambda: BiasedMF(k=4, lr=0.01, seed=0),
         rec,
         lambda m, s: m.learn_one(s[0], s[1], s[2]),
-        lambda m, s: m.predict_one(s[0], s[1]))
-    add("SDFT", lambda: SDFT(n=16),
+        lambda m, s: m.predict_one(s[0], s[1]),
+    )
+    add(
+        "SDFT",
+        lambda: SDFT(n=16),
         vals,
         lambda m, s: m.update(s),
-        lambda m, s: m.spectrum())
-    add("Skyline", lambda: Skyline(window=10),
+        lambda m, s: m.spectrum(),
+    )
+    add(
+        "Skyline",
+        lambda: Skyline(window=10),
         pts,
         lambda m, s: m.update(s),
-        lambda m, s: m.skyline())
+        lambda m, s: m.skyline(),
+    )
     return rows
 
 
@@ -285,14 +323,20 @@ def main():
     print("costs ...", flush=True)
     costs = check_costs()
     for r in costs:
-        print(f"  {r['model']:20s} median={r['median_ms']:.4f} ms "
-              f"p99={r['p99_ms']:.4f} ms", flush=True)
+        print(
+            f"  {r['model']:20s} median={r['median_ms']:.4f} ms "
+            f"p99={r['p99_ms']:.4f} ms",
+            flush=True,
+        )
 
     print(f"comparison, {args.seeds} seeds ...", flush=True)
     comp = check_comparison(args.seeds, args.n_samples)
     for r in comp["rows"]:
-        print(f"  {r['model']:20s} acc_median={r['acc_median']:.4f} "
-              f"ms/sample={r['ms_per_sample']:.4f}", flush=True)
+        print(
+            f"  {r['model']:20s} acc_median={r['acc_median']:.4f} "
+            f"ms/sample={r['ms_per_sample']:.4f}",
+            flush=True,
+        )
 
     payload = {
         "machine": _machine(),

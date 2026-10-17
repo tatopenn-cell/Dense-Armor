@@ -26,15 +26,9 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 
-from dense_armor.utility.datasets import DriftStream
 from dense_armor.utility.facto import (
-    FFMClassifier,
-    FMClassifier,
-    FwFMClassifier,
-    HOFMClassifier,
     FMRegressor,
 )
-from dense_armor.utility.linear.glm import LogisticRegression
 from dense_armor.utility.misc import SDFT, Skyline
 from dense_armor.utility.optim import SGD
 from dense_armor.utility.reco import BiasedMF
@@ -126,6 +120,7 @@ def fig_ok_vs_double():
 def fig_comparison():
     """Accuracy on DriftStream sudden, 5 seeds, IQR error bars."""
     import json as _json
+
     figures = _json.loads((HERE / "figures.json").read_text())
     rows = figures["comparison"]["rows"]
     names = [r["model"] for r in rows]
@@ -135,15 +130,13 @@ def fig_comparison():
     fig, ax = plt.subplots(figsize=(7.2, 3.6))
     x = np.arange(len(names))
     ax.bar(x, med, yerr=iqr, capsize=5, color=DATA, width=0.55)
-    ax.axhline(0.5, color=TRUE, linestyle="--", linewidth=1,
-               label="chance")
+    ax.axhline(0.5, color=TRUE, linestyle="--", linewidth=1, label="chance")
     ax.set_xticks(x)
     ax.set_xticklabels(names, rotation=20, ha="right")
     _style(ax, "learner", "accuracy (median, IQR over 5 seeds)")
     ax.set_ylim(0.0, 1.05)
     ax.legend(frameon=False)
-    ax.set_title(
-        "DriftStream sudden, 2000 samples, 5 seeds", fontsize=11)
+    ax.set_title("DriftStream sudden, 2000 samples, 5 seeds", fontsize=11)
     _save(fig, FACTO / "comparison.png")
 
 
@@ -158,15 +151,14 @@ def fig_recovery():
 
     fig, ax = plt.subplots(figsize=(7.2, 3.6))
     ax.plot(epochs, errs, "-", color=DATA, linewidth=1.8)
-    ax.axhline(0.01, color=TRUE, linestyle="--", linewidth=1,
-               label="noise floor (0.01)")
-    _style(ax, "epoch",
-           f"median |error| over {n_users * n_items} ratings")
+    ax.axhline(
+        0.01, color=TRUE, linestyle="--", linewidth=1, label="noise floor (0.01)"
+    )
+    _style(ax, "epoch", f"median |error| over {n_users * n_items} ratings")
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.legend(frameon=False)
-    ax.set_title("BiasedMF on a planted low-rank matrix (k=3, seed 0)",
-                 fontsize=11)
+    ax.set_title("BiasedMF on a planted low-rank matrix (k=3, seed 0)", fontsize=11)
     _save(fig, RECO / "recovery.png")
 
 
@@ -198,12 +190,16 @@ def fig_rank():
 
     fig, ax = plt.subplots(figsize=(7.2, 3.6))
     ax.plot(ks, precs, "o-", color=DATA)
-    ax.axhline(ks[-1] / n_items, color=TRUE, linestyle="--", linewidth=1,
-               label="random (k/n_items)")
+    ax.axhline(
+        ks[-1] / n_items,
+        color=TRUE,
+        linestyle="--",
+        linewidth=1,
+        label="random (k/n_items)",
+    )
     _style(ax, "k", "precision@k")
     ax.legend(frameon=False)
-    ax.set_title("BiasedMF.rank against the true top-k, 20 users",
-                 fontsize=11)
+    ax.set_title("BiasedMF.rank against the true top-k, 20 users", fontsize=11)
     _save(fig, RECO / "rank.png")
 
 
@@ -244,12 +240,26 @@ def fig_sdft_skyline():
     ax2.scatter(pts[:, 0], pts[:, 1], s=8, color="#bdbdbd", label="all")
     if sky_t1:
         arr1 = np.array(sky_t1)
-        ax2.scatter(arr1[:, 0], arr1[:, 1], s=40, color=DATA,
-                    marker="s", label="skyline t1", zorder=3)
+        ax2.scatter(
+            arr1[:, 0],
+            arr1[:, 1],
+            s=40,
+            color=DATA,
+            marker="s",
+            label="skyline t1",
+            zorder=3,
+        )
     if sky_t2:
         arr2 = np.array(sky_t2)
-        ax2.scatter(arr2[:, 0], arr2[:, 1], s=40, color=NOTICE,
-                    marker="^", label="skyline t2", zorder=3)
+        ax2.scatter(
+            arr2[:, 0],
+            arr2[:, 1],
+            s=40,
+            color=NOTICE,
+            marker="^",
+            label="skyline t2",
+            zorder=3,
+        )
     ax2.set_facecolor(SURFACE)
     ax2.set_xlabel("x")
     ax2.set_ylabel("y")
