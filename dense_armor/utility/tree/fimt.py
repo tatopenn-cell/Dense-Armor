@@ -401,6 +401,14 @@ class FIMTDDRegressor(Regressor):
         (0 hits in 528 pages): the modern attribution to Lagrange is
         itself what Gautschi (2012) discusses, and Gautschi is the
         source quoted in the tests.
+
+        Taking the Lagrange interpolating polynomial, ``p(x) = sum_k
+        y_k ell_k(x)`` with ``ell_k(x) = prod_{j != k} (x - x_j) /
+        (x_k - x_j)``, as the reference against which the E-BST is
+        compared is my choice. Ikonomovska (2012) does not use it:
+        "Lagrange" and "interpolat" appear in none of the 222 pages of
+        the thesis. The reference comes from Gautschi (2012), eq.
+        (6)-(7), page 351.
     """
 
     budget_s: float = 1e-2
