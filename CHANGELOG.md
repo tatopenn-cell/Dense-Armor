@@ -1,3 +1,18 @@
+## Unreleased — task 16
+
+- New package `dense_armor/utility/facto/` with `FMRegressor` and `FMClassifier` (Rendle 2010),
+  `FFMClassifier` and `FFMRegressor` (Juan et al. 2016), `FwFMClassifier` and `FwFMRegressor`
+  (Pan et al. 2018), `HOFMClassifier` and `HOFMRegressor` (Blondel et al. 2016).
+- New package `dense_armor/utility/reco/` with `Baseline`, `BiasedMF` and `FunkMF` (Paterek 2007,
+  Koren et al. 2009), `learn_one(user, item, rating)`, `predict_one(user, item)` and `rank`.
+- New module `dense_armor/utility/misc/sdft.py` with `SDFT` (the N-point DFT of the last N
+  samples in O(N) per sample, Jacobsen and Lyons 2003).
+- New module `dense_armor/utility/misc/skyline.py` with `Skyline` (non-dominated points of a
+  sliding window, Börzsönyi et al. 2001, Tao and Papadias 2006).
+- New script `benchmarks/facto_quality.py` and `docs/assets/facto/figures.json` with every
+  number quoted on the two guide pages.
+- New pages `docs/facto/index.md` and `docs/reco/index.md`.
+
 # Changelog
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).

@@ -43,6 +43,20 @@ Start from what you have in front of you:
   pre-flight estimate (`detectability_report`) of expected detection / false-alarm
   latency.
 
+## Factorization machines and recommenders
+
+- **[Factorization machines](../facto/index.md)** — `FMRegressor`, `FMClassifier` (Rendle 2010),
+  `FFMClassifier`, `FFMRegressor` (Juan 2016), `FwFMClassifier`, `FwFMRegressor` (Pan 2018),
+  `HOFMClassifier`, `HOFMRegressor` (Blondel 2016). Each `learn_one(x, y)` where `x` is a dict
+  of features.
+- **[Recommenders](../reco/index.md)** — `Baseline`, `BiasedMF`, `FunkMF` (Paterek 2007,
+  Koren 2009). Signature `learn_one(user, item, rating)`, `predict_one(user, item)`, `rank`.
+
+## Small structures
+
+- **[Sliding DFT and sliding-window skyline](../reco/index.md)** — `SDFT` (the N-point DFT of
+  the last N samples, O(N) per sample) and `Skyline` (non-dominated points of a window).
+
 ## Multivariate detectors
 
 Five detectors for when a fault touches several channels at once. Each has a different
