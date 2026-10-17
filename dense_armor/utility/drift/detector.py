@@ -148,7 +148,7 @@ class CUSUMDriftDetector(DriftDetector):
     def _try_build_fixed_reference(self) -> bool:
         if len(self._fixed_buffer) < self._span:
             return False
-        arr = np.asarray(self._fixed_buffer, dtype=float)
+        arr: np.ndarray = np.asarray(self._fixed_buffer, dtype=float)
         med, scale = _robust_center_scale(arr)
         if not np.isfinite(scale) or scale < self.eps:
             return False
@@ -178,7 +178,7 @@ class CUSUMDriftDetector(DriftDetector):
         if len(self._buffer) < 4:
             self._buffer.append(x)
             return self
-        arr = np.asarray(self._buffer, dtype=float)
+        arr: np.ndarray = np.asarray(self._buffer, dtype=float)
         med, scale = _robust_center_scale(arr)
         if not np.isfinite(scale) or scale < self.eps:
             self._buffer.append(x)
