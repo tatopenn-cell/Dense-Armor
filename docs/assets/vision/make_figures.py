@@ -400,22 +400,6 @@ def fig_09_chain():
     FIG["fig09_dist_after"] = float(dist[30:].mean())
     FIG["fig09_ms_median"] = float(np.median(ms))
 
-
-PAGES = [
-    ("fig_01_frames", fig_01_frames),
-    ("fig_02_thermal", fig_02_thermal),
-    ("fig_03_hog", fig_03_hog),
-    ("fig_04_moments", fig_04_moments),
-    ("fig_05_flow", fig_05_flow),
-    ("fig_06_colour", fig_06_colour),
-    ("fig_07_projection", fig_07_projection),
-    ("fig_08_pca", fig_08_pca),
-    ("fig_09_chain", fig_09_chain),
-]
-
-
-
-
 def fig_10_motion():
     """MotionEnergy on a smooth stream, and GlobalMotion on a known shift."""
     from dense_armor.utility.vision.motion import MotionEnergy, GlobalMotion
@@ -543,7 +527,6 @@ def fig_11_scenes():
     FIG["fig11_normal_score"] = float(np.mean(normal_scores))
     FIG["fig11_anomalous_score"] = float(np.mean(anomalous_scores))
 
-
 def fig_12_tracking():
     """MovingObjectTracker on boxes from a known ground truth."""
     from dense_armor.utility.vision.tracking import MovingObjectTracker
@@ -581,34 +564,6 @@ def fig_12_tracking():
     _save(fig, "tracking", "two_squares")
     FIG["fig12_n_tracks"] = n_tracks
     FIG["fig12_ids"] = [int(t["id"]) for t in last["tracks"]]
-
-
-PAGES = [
-    ("fig_01_frames", fig_01_frames),
-    ("fig_02_thermal", fig_02_thermal),
-    ("fig_03_hog", fig_03_hog),
-    ("fig_04_moments", fig_04_moments),
-    ("fig_05_flow", fig_05_flow),
-    ("fig_06_colour", fig_06_colour),
-    ("fig_07_projection", fig_07_projection),
-    ("fig_08_pca", fig_08_pca),
-    ("fig_09_chain", fig_09_chain),
-    ("fig_10_motion", fig_10_motion),
-    ("fig_11_scenes", fig_11_scenes),
-    ("fig_12_tracking", fig_12_tracking),
-]
-
-
-if __name__ == "__main__":
-    print("Generating docs/assets/vision/")
-    for name, fn in PAGES:
-        fn()
-    (HERE / "figures.json").write_text(
-        json.dumps(FIG, indent=1, default=float)
-    )
-    print(f"figures.json: {len(FIG)} keys")
-    print("Done.")
-
 
 def fig_13_signals():
     """FrameJointFusion: estimate the lag between video velocity and joints."""
@@ -650,23 +605,22 @@ def fig_13_signals():
     FIG["fig13_est_lag_s"] = (est if isinstance(est, float)
                               else float(est.get("lag_s", -1.0)))
 
-
 def fig_14_landmarks():
-    """Kinematics: elbow angle raw vs cleaned, with outliers."""
+    """Kinematics on a 3-point chain: elbow angle raw vs cleaned."""
     from dense_armor.utility.vision.landmarks import (
         Kinematics, LandmarkCleaner, LandmarkStream,
     )
 
     fps = 30.0
     n = 90
-    t = np.arange(n) / fps
-    true_angle = 90.0 + 30.0 * np.sin(2 * np.pi * t)
+    t_arr = np.arange(n) / fps
+    true_angle = 90.0 + 30.0 * np.sin(2 * np.pi * t_arr)
     rng = np.random.default_rng(0)
-    # costruisco i punti (shoulder, elbow, wrist) con angolo vero
-    rad = np.radians(true_angle)
+    theta = np.radians(true_angle)
+    L = 10.0
     sh = np.zeros((n, 2))
-    el = np.stack([np.cos(rad), np.sin(rad)], axis=1) * 10.0
-    wr = el + np.stack([np.cos(rad * 1.2), np.sin(rad * 1.2)], axis=1) * 10.0
+    el = np.tile([L, 0.0], (n, 1))
+    wr = np.stack([L - L * np.cos(theta), L * np.sin(theta)], axis=1)
     pts = np.stack([sh, el, wr], axis=1)
     pts += rng.normal(0, 0.5, pts.shape)
     for f, d in [(20, 20.0), (45, 20.0), (46, 20.0), (70, 20.0)]:
@@ -677,27 +631,23 @@ def fig_14_landmarks():
     kin = Kinematics(triples=[(0, 1, 2)])
     raw_angles = []
     clean_angles = []
-    for i, fr in enumerate(stream):
-        p = fr.points if hasattr(fr, "points") else np.asarray(fr)
-        k_raw = Kinematics(triples=[(0, 1, 2)])
-        o_raw = k_raw.transform_one({"points": p})
-        a_raw = list(o_raw.values())[0]
-        raw_angles.append(a_raw)
-        _ = cl.learn_one({"points": p})
-        o_clean = cl.transform_one({"points": p})
-        p_clean = o_clean["points"]
-        o_c = kin.transform_one({"points": p_clean})
-        clean_angles.append(list(o_c.values())[0])
+    for fr in stream:
+        o_raw = kin.transform_one(fr)
+        raw_angles.append(np.degrees(o_raw["angle_0_1_2"]))
+        _ = cl.learn_one(fr)
+        fr_clean = cl.transform_one(fr)
+        o_c = kin.transform_one(fr_clean)
+        clean_angles.append(np.degrees(o_c["angle_0_1_2"]))
     raw = np.array(raw_angles)
     clean = np.array(clean_angles)
     err_raw = float(np.sqrt(np.mean((raw - true_angle) ** 2)))
     err_clean = float(np.sqrt(np.mean((clean - true_angle) ** 2)))
     fig, ax = plt.subplots(figsize=(7.2, 3.0))
-    ax.plot(t, true_angle, color=INK, linestyle="--", linewidth=1.2,
+    ax.plot(t_arr, true_angle, color=INK, linestyle="--", linewidth=1.2,
             label="true angle")
-    ax.plot(t, raw, color=ORANGE, linewidth=1.0, alpha=0.8,
-            label=f"raw  (RMSE {err_raw:.2f} deg)")
-    ax.plot(t, clean, color=BLUE, linewidth=1.4,
+    ax.plot(t_arr, raw, color=ORANGE, linewidth=1.0, alpha=0.8,
+            label=f"raw (RMSE {err_raw:.2f} deg)")
+    ax.plot(t_arr, clean, color=BLUE, linewidth=1.4,
             label=f"cleaned (RMSE {err_clean:.2f} deg)")
     ax.set_xlabel("time [s]")
     ax.set_ylabel("elbow angle [deg]")
@@ -707,12 +657,11 @@ def fig_14_landmarks():
     FIG["fig14_rmse_raw"] = err_raw
     FIG["fig14_rmse_clean"] = err_clean
 
-
 def fig_15_registration():
-    """Registration and DifferenceImage on a known shift."""
+    """Stabilizer and DifferenceImage on a known shift."""
     from scipy.ndimage import gaussian_filter
     from dense_armor.utility.vision.registration import (
-        Registration, DifferenceImage,
+        DifferenceImage, Stabilizer,
     )
 
     rng = np.random.default_rng(0)
@@ -720,42 +669,60 @@ def fig_15_registration():
     a = ((a - a.min()) / (a.max() - a.min())).astype(np.float32)
     b = np.roll(np.roll(a, 3, 0), -4, 1).astype(np.float32)
     b[30:36, 30:36] = 1.0
-    reg = Registration()
-    reg.learn_one({"array": a, "t": 0.0})
-    o = reg.transform_one({"array": b, "t": 0.033})
-    shift = (o["dy"], o["dx"])
-    b_aligned = o.get("array", b)
-    di_plain = DifferenceImage(alpha=0.0)
+    st = Stabilizer()
+    st.learn_one({"array": a, "t": 0.0})
+    o = st.transform_one({"array": b, "t": 0.033})
+    b_aligned = o["frame"]
+    dx, dy = o["dx"], o["dy"]
+    di_plain = DifferenceImage(alpha=0.01)
     di_plain.learn_one({"array": a})
-    d_plain = di_plain.transform_one({"array": b})
-    di_reg = DifferenceImage(alpha=0.0)
+    d_plain = di_plain.transform_one({"array": b})["diff"]
+    di_reg = DifferenceImage(alpha=0.01)
     di_reg.learn_one({"array": a})
-    d_reg = di_reg.transform_one({"array": b_aligned})
-    dp = d_plain["array"] if isinstance(d_plain, dict) else d_plain
-    dr = d_reg["array"] if isinstance(d_reg, dict) else d_reg
+    d_reg = di_reg.transform_one({"array": b_aligned})["diff"]
     fig, axes = plt.subplots(1, 4, figsize=(7.2, 2.0))
     for ax, img, title in [
         (axes[0], a, "reference"),
         (axes[1], b, "shifted + square"),
-        (axes[2], np.abs(dp), "plain difference"),
-        (axes[3], np.abs(dr), "registered difference"),
+        (axes[2], np.abs(d_plain), "plain difference"),
+        (axes[3], np.abs(d_reg), "registered difference"),
     ]:
         ax.imshow(img, cmap="gray")
         ax.set_title(title, fontsize=9)
         ax.axis("off")
     _save(fig, "registration", "shift_and_difference")
-    FIG["fig15_shift_dy"] = float(shift[0])
-    FIG["fig15_shift_dx"] = float(shift[1])
-    FIG["fig15_true_dy"] = 3.0
+    FIG["fig15_shift_dx"] = float(dx)
+    FIG["fig15_shift_dy"] = float(dy)
     FIG["fig15_true_dx"] = -4.0
-    FIG["fig15_max_plain"] = float(np.abs(dp).max())
-    FIG["fig15_max_reg"] = float(np.abs(dr).max())
+    FIG["fig15_true_dy"] = 3.0
+    FIG["fig15_max_plain"] = float(np.abs(d_plain).max())
+    FIG["fig15_max_reg"] = float(np.abs(d_reg).max())
 
-
-_EXTRA4 = [
+PAGES = [
+    ("fig_01_frames", fig_01_frames),
+    ("fig_02_thermal", fig_02_thermal),
+    ("fig_03_hog", fig_03_hog),
+    ("fig_04_moments", fig_04_moments),
+    ("fig_05_flow", fig_05_flow),
+    ("fig_06_colour", fig_06_colour),
+    ("fig_07_projection", fig_07_projection),
+    ("fig_08_pca", fig_08_pca),
+    ("fig_09_chain", fig_09_chain),
+    ("fig_10_motion", fig_10_motion),
+    ("fig_11_scenes", fig_11_scenes),
+    ("fig_12_tracking", fig_12_tracking),
     ("fig_13_signals", fig_13_signals),
     ("fig_14_landmarks", fig_14_landmarks),
     ("fig_15_registration", fig_15_registration),
 ]
-for _n, _f in _EXTRA4:
-    PAGES.insert(-1, (_n, _f))
+
+
+if __name__ == "__main__":
+    print("Generating docs/assets/vision/")
+    for name, fn in PAGES:
+        fn()
+    (HERE / "figures.json").write_text(
+        json.dumps(FIG, indent=1, default=float)
+    )
+    print(f"figures.json: {len(FIG)} keys")
+    print("Done.")
