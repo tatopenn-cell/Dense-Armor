@@ -91,7 +91,7 @@ class OnlinePlattScaling(ModelWrapper, Classifier):
 
     """
 
-    def __init__(self, classifier: base.Classifier, gamma: float = 0.1, rho: float = 100.0,
+    def __init__(self, classifier: Classifier, gamma: float = 0.1, rho: float = 100.0,
                  radius: float = 100.0, clip: float = 0.01):
         self.classifier = classifier
         self.gamma = gamma
