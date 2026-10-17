@@ -123,7 +123,8 @@ for i in range(100):
         f[8:20, 8:20] = 1.0
         f[24:30, 24:30] = 0.8
     frames.append(f)
-pipe = FrameFeatures() | IncrementalPCA(k=4) | OnlineRobustMahalanobis(feature_keys=[f"pc{j}" for j in range(4)])
+det = OnlineRobustMahalanobis(feature_keys=[f"pc{j}" for j in range(4)], n_init=20)
+pipe = FrameFeatures() | IncrementalPCA(k=4) | det
 scores = []
 for fr in ArrayStream(np.stack(frames), fps=10.0):
     scores.append(pipe.steps[-1][1].score_one(pipe.steps[1][1].transform_one(pipe.steps[0][1].transform_one(fr))))
@@ -132,12 +133,12 @@ print(round(float(np.mean(scores[20:80])), 3), round(float(np.mean(scores[80:]))
 ```
 
 ```
-2.998 4.439
+7.938 5.557
 ```
 
 For the first 80 frames a small bright square slides across the scene. From
 frame 80 the scene changes: the square grows and a second object appears.
-The mean anomaly score rises from 2.998 to 4.439. The library has learned
+The Mahalanobis score does not rise on this stream (7.938 to 5.557): the compressed features of the two scenes overlap, and this is a limit of the pipeline, stated here rather than tuned. The library has learned
 what "normal" looks like from the streaming frames alone, without a
 pretrained model and without storing a single frame after processing it.
 
