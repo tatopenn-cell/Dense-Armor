@@ -219,7 +219,19 @@ distribution only. The 99th percentile is two orders of magnitude above
 the median, so no single threshold in that range would both catch the
 anomaly and keep the false-alarm rate low.
 
-The dataset has no lidar recording: its files are the two arms, the Nicla sensor and a network capture, so no lidar measurement is reported.
+
+The two files can be compared by length. The IMU file has 1,751,682 rows and the arm file 1,762,650: 10,968 rows more, 9.1 minutes at 20 Hz. `benchmarks/casper_imu_alignment.py` cross-correlates the arm speed with the gyroscope norm over lags of plus or minus 16,000 rows on the first 150,000 rows. The strongest correlation is 0.087, at lags 59, 817 and 1,576, one cycle of 760 rows apart; it is 0.023 for the accelerometer norm, and 0.100 and 0.062 for the absolute changes of the gyroscope and accelerometer norms. The motion is periodic, so peaks one cycle apart cannot fix the offset, and none reaches 0.11: the IMU cannot be tied to the arm labels, and no IMU delay is reported. The numbers are in `benchmarks/casper_imu_alignment.json`.
+
+### Lidar, simulated
+
+The dataset has no lidar recording: its files are the two arms, the Nicla sensor and a network capture. The table below is therefore a **simulation**: its numbers describe a simulated sensor and say nothing about a real robot. `benchmarks/lidar_sim.py` simulates 180 beams at 10 Hz in a 6 m by 4 m room with two pillars and a robot arm that sweeps one beam sector every 38 s (the CASPER cycle), with range noise of 1 cm and 0.2% beam dropouts. Four faults start 30 minutes into a 60 minute stream: an obstacle enters the room, the range drifts by 1 cm per minute, a sector of 20 beams is covered by dirt, and 30% of the beams drop out in bursts of 10 s. Two detectors of the library run with fixed settings that were not tuned on this data: the robust Mahalanobis distance of a random projection of the scan to 8 numbers (alarm after 5 scans in a row above 7.0), and ADWIN on the change of the mean range against one cycle earlier.
+
+| detector | false alarms without faults | obstacle | drift 1 cm/min | dirt on 20 beams | 30% dropouts |
+|---|---|---|---|---|---|
+| Mahalanobis, projection to 8 | 126 in 3.83 h | 5 of 5, 43.1 s | 5 of 5, 191.2 s | 5 of 5, 0.3 s | 5 of 5, 0.3 s |
+| ADWIN on the mean range | 0 in 3.83 h | 0 of 5 | 0 of 5 | 5 of 5, 0.9 s | 5 of 5, 0.6 s |
+
+Each cell is the number of seeds that detected the fault and the median delay after its start. Before the faults start, Mahalanobis gives 13 false alarms in 1.67 h of the fault streams and ADWIN none. One scan, with the generator and both detectors, takes 343 µs. The Mahalanobis detector sees every fault but fires about 33 times an hour on a clean stream; ADWIN did not fire in 3.83 h of clean stream but does not see a slow drift or an obstacle that changes few beams. The numbers are in `benchmarks/lidar_sim.json`; the command is `python benchmarks/lidar_sim.py --seeds 5`.
 
 ## 8. Comparison with CASPER
 

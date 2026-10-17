@@ -1,0 +1,111 @@
+{
+ "config": {
+  "beams": 180,
+  "hz": 10.0,
+  "noise_m": 0.01,
+  "dropout": 0.002,
+  "k": 8,
+  "threshold": 7.0,
+  "consecutive": 5,
+  "seeds": 5,
+  "smoke": false,
+  "simulated": true
+ },
+ "faultless": {
+  "mahalanobis": {
+   "quiet_alarms": 126,
+   "quiet_hours": 3.8333333333333335
+  },
+  "adwin": {
+   "quiet_alarms": 0,
+   "quiet_hours": 3.8333333333333335
+  }
+ },
+ "microseconds_per_scan_median_stream": 342.5610880069445,
+ "faults": {
+  "obstacle": {
+   "mahalanobis": [
+    2.3,
+    59.2,
+    43.1,
+    139.8,
+    18.7
+   ],
+   "adwin": [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   "quiet_alarms": {
+    "mahalanobis": 13,
+    "adwin": 0
+   },
+   "quiet_hours": 1.6666666666666665
+  },
+  "drift": {
+   "mahalanobis": [
+    191.2,
+    59.2,
+    91.5,
+    193.9,
+    465.0
+   ],
+   "adwin": [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   "quiet_alarms": {
+    "mahalanobis": 13,
+    "adwin": 0
+   },
+   "quiet_hours": 1.6666666666666665
+  },
+  "dirt": {
+   "mahalanobis": [
+    0.3,
+    0.3,
+    0.4,
+    0.3,
+    0.2
+   ],
+   "adwin": [
+    0.7,
+    0.9,
+    1.1,
+    1.0,
+    0.7
+   ],
+   "quiet_alarms": {
+    "mahalanobis": 13,
+    "adwin": 0
+   },
+   "quiet_hours": 1.6666666666666665
+  },
+  "dropout": {
+   "mahalanobis": [
+    0.3,
+    0.3,
+    0.4,
+    0.3,
+    0.2
+   ],
+   "adwin": [
+    0.8,
+    0.5,
+    0.6,
+    0.6,
+    0.6
+   ],
+   "quiet_alarms": {
+    "mahalanobis": 13,
+    "adwin": 0
+   },
+   "quiet_hours": 1.6666666666666665
+  }
+ }
+}

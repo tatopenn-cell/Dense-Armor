@@ -1,0 +1,111 @@
+{
+ "imu_columns": [
+  "AccX",
+  "AccY",
+  "AccZ",
+  "GyroX",
+  "GyroY",
+  "GyroZ",
+  "MagX",
+  "MagY",
+  "MagZ"
+ ],
+ "arm_columns": [
+  "Timestamp",
+  "Actual Joint Positions",
+  "Actual Joint Velocities",
+  "Actual Joint Currents",
+  "Actual Cartesian Coordinates",
+  "Actual Tool Speed",
+  "Generalized Forces",
+  "Temperature of Each Joint",
+  "Execution Time",
+  "Safety Status",
+  "Tool Acceleration",
+  "Norm of Cartesion Linear Momentum",
+  "Robot Current",
+  "Joint Voltages",
+  "Elbow Position",
+  "Elbow Velocity",
+  "Tool Current",
+  "Tool Temperature",
+  "TCP Force",
+  "Anomaly State"
+ ],
+ "rows_imu": 1751682,
+ "rows_arm": 1762650,
+ "arm_seconds": 88132.5,
+ "arm_hz": 20.0,
+ "imu_hz_if_same_span": 19.87555101693473,
+ "gyro_norm": {
+  "top_lags_rows_and_corr": [
+   [
+    59,
+    0.087388707916014
+   ],
+   [
+    817,
+    0.08596488673341379
+   ],
+   [
+    1576,
+    0.08440626444282288
+   ]
+  ],
+  "corr_at_0": 0.07649059188174151
+ },
+ "acc_norm": {
+  "top_lags_rows_and_corr": [
+   [
+    1047,
+    0.02292021758448626
+   ],
+   [
+    10931,
+    0.02267899436085727
+   ],
+   [
+    1807,
+    0.022177420391976975
+   ]
+  ],
+  "corr_at_0": 0.003027580750037815
+ },
+ "gyro_abs_diff": {
+  "top_lags_rows_and_corr": [
+   [
+    72,
+    0.09999696475595139
+   ],
+   [
+    801,
+    0.09878451849232353
+   ],
+   [
+    1561,
+    0.09751238421338888
+   ]
+  ],
+  "corr_at_0": 0.09214784484308469
+ },
+ "acc_abs_diff": {
+  "top_lags_rows_and_corr": [
+   [
+    71,
+    0.061537286839149746
+   ],
+   [
+    831,
+    0.06069658143602431
+   ],
+   [
+    1592,
+    0.05962229160940057
+   ]
+  ],
+  "corr_at_0": 0.04477975154019727
+ },
+ "first_rows_same_start": {
+  "arm_timestamp_first": 257258.126
+ }
+}

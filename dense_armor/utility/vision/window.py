@@ -21,8 +21,6 @@ from dense_armor.roles import Transformer
 from dense_armor.utility.stats.quantiles import DDSketch
 
 
-
-
 def _unpack(x):
     """Return (array, t) from a Frame or from a dict with ``array`` and ``t``."""
     if hasattr(x, "array"):
@@ -30,6 +28,7 @@ def _unpack(x):
     if isinstance(x, dict):
         return np.asarray(x["array"]), float(x.get("t", 0.0))
     return np.asarray(x), 0.0
+
 
 def _to_gray(img: np.ndarray) -> np.ndarray:
     a = np.asarray(img, dtype=np.float32)
@@ -50,6 +49,14 @@ class FrameWindow(Transformer):
             the timestamps.
         quantiles: quantiles of the frame intensity to track with
             :class:`DDSketch`. Default ``(0.5, 0.9)``.
+
+    A change of the frame size (in pixels, or in the number of channels
+    after the gray conversion) resets the window: the old frames are
+    dropped, the new one starts the window from scratch, and
+    ``shape_changes_`` is incremented. The choice is "reset", not
+    "raise": a change of shape means a different source (a different
+    camera, a resize), and keeping the old frames in the statistics
+    would mix two scales. The counter tells the caller that it happened.
 
     Raises:
         ValueError: if neither or both of ``n`` and ``seconds`` are
@@ -82,9 +89,7 @@ class FrameWindow(Transformer):
         quantiles=(0.5, 0.9),
     ) -> None:
         if (n is None) == (seconds is None):
-            raise ValueError(
-                "exactly one of n and seconds must be given"
-            )
+            raise ValueError("exactly one of n and seconds must be given")
         if n is not None and n < 1:
             raise ValueError(f"n must be >= 1, got {n}")
         if seconds is not None and seconds <= 0.0:
@@ -100,6 +105,7 @@ class FrameWindow(Transformer):
         self._sketch = DDSketch(alpha=0.05)
         self._motion: list[float] = []
         self._prev: np.ndarray | None = None
+        self.shape_changes_: int = 0
 
     def _reset(self) -> None:
         self._times = []
@@ -107,6 +113,7 @@ class FrameWindow(Transformer):
         self._sketch = DDSketch(alpha=0.05)
         self._motion = []
         self._prev = None
+        self.shape_changes_ = 0
 
     def _unit_test_skips(self) -> set:
         return set()
@@ -152,6 +159,12 @@ class FrameWindow(Transformer):
         g = _to_gray(arr)
         if self._times and tt < self._times[-1]:
             tt = self._times[-1]
+        if self._prev is not None and self._prev.shape != g.shape:
+            self._arrays = []
+            self._motion = []
+            self._times = []
+            self._prev = None
+            self.shape_changes_ += 1
         m = self._motion_energy(g)
         self._prev = g
         self._arrays.append(g)
@@ -174,8 +187,12 @@ class FrameWindow(Transformer):
         std = float(stack.std())
         motion = float(np.mean(self._motion))
         self._sketch_values()
-        out = {"mean": mean, "std": std, "motion": motion,
-               "n_frames": len(self._arrays)}
+        out = {
+            "mean": mean,
+            "std": std,
+            "motion": motion,
+            "n_frames": len(self._arrays),
+        }
         for q in self.quantiles:
             out[f"q{int(q * 100)}"] = float(self._sketch.quantile(q))
         return out
