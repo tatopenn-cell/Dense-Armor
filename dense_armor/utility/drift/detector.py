@@ -26,6 +26,12 @@ class CUSUMDriftDetector(DriftDetector):
         only upward shifts are monitored.
     eps
         Degenerate-scale guard, same convention as `cusum_detector`.
+    reset_on_alarm
+        If True, the statistic and the reference are restarted after
+        each alarm, so a sustained step gives one alarm and not one per
+        sample. Default False, the old behaviour. The restart rule is a
+        choice of this implementation: Reynolds (1975) gives the run
+        length of the two-sided CUSUM but does not fix a restart.
     reference
         "adaptive" recomputes median and scale from a sliding causal
         window every step, matching `cusum_detector(reference="adaptive")`.
@@ -58,7 +64,8 @@ class CUSUMDriftDetector(DriftDetector):
 
     def __init__(self, radius: int = 10, ref_mult: int = 3, k: float = 0.5,
                  h: float = 20.0, two_sided: bool = True, eps: float = 1e-9,
-                 reference: str = "adaptive") -> None:
+                 reference: str = "adaptive",
+                 reset_on_alarm: bool = False) -> None:
         super().__init__()
         if reference not in ("adaptive", "fixed"):
             raise ValueError(
@@ -71,6 +78,7 @@ class CUSUMDriftDetector(DriftDetector):
         self.two_sided = two_sided
         self.eps = eps
         self.reference = reference
+        self.reset_on_alarm = reset_on_alarm
         self._span = radius * ref_mult
         self._buffer: deque[float] = deque(maxlen=self._span)
         self._fixed_buffer: deque[float] = deque(maxlen=self._span)
@@ -80,6 +88,7 @@ class CUSUMDriftDetector(DriftDetector):
         self._fixed_med = 0.0
         self._fixed_scale = 1.0
         self.n_missing_ = 0
+        self.n_alarms_: int = 0
 
     def _reset(self) -> None:
         super()._reset()
@@ -91,6 +100,7 @@ class CUSUMDriftDetector(DriftDetector):
         self._fixed_med = 0.0
         self._fixed_scale = 1.0
         self.n_missing_ = 0
+        self.n_alarms_ = 0
 
     def _unit_test_skips(self) -> set:
         return set()
@@ -106,14 +116,39 @@ class CUSUMDriftDetector(DriftDetector):
         if self._s_pos > self.h:
             self._drift_detected = True
             self._s_pos = 0.0
+            self.n_alarms_ += 1
+            if self.reset_on_alarm:
+                self._on_reset()
         elif self.two_sided and self._s_neg < -self.h:
             self._drift_detected = True
             self._s_neg = 0.0
+            self.n_alarms_ += 1
+            if self.reset_on_alarm:
+                self._on_reset()
+
+    def _on_reset(self) -> None:
+        """Restart the statistic and the reference after an alarm.
+
+        When ``reset_on_alarm`` is True the window of the adaptive
+        reference is cleared and the fixed reference is rebuilt from
+        the next ``span`` samples, so a single step in the mean gives
+        one alarm and not one alarm per sample until the window
+        realigns. When ``reset_on_alarm`` is False this method is not
+        called and the old behaviour is unchanged. The restart after an
+        alarm is the choice of this implementation: Reynolds (1975)
+        discusses the run length of the two-sided CUSUM but does not
+        fix a restart rule.
+        """
+        self._buffer.clear()
+        self._fixed_buffer.clear()
+        self._fixed_ready = False
+        self._fixed_med = 0.0
+        self._fixed_scale = 1.0
 
     def _try_build_fixed_reference(self) -> bool:
         if len(self._fixed_buffer) < self._span:
             return False
-        arr = np.asarray(self._fixed_buffer, dtype=float)
+        arr: np.ndarray = np.asarray(self._fixed_buffer, dtype=float)
         med, scale = _robust_center_scale(arr)
         if not np.isfinite(scale) or scale < self.eps:
             return False
@@ -143,7 +178,7 @@ class CUSUMDriftDetector(DriftDetector):
         if len(self._buffer) < 4:
             self._buffer.append(x)
             return self
-        arr = np.asarray(self._buffer, dtype=float)
+        arr: np.ndarray = np.asarray(self._buffer, dtype=float)
         med, scale = _robust_center_scale(arr)
         if not np.isfinite(scale) or scale < self.eps:
             self._buffer.append(x)

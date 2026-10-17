@@ -30,6 +30,8 @@ West, D. H. D. (1979). Updating mean and variance estimates: an improved
     method. Communications of the ACM 22(9), 532-535.
 """
 import math
+
+import numpy as np
 from typing import Any
 
 from dense_armor.roles import Transformer
@@ -114,6 +116,125 @@ class RunningMoments(Transformer):
     ) -> "RunningMoments":
         """Alias of :meth:`learn_one`, natural name for a statistic."""
         return self.learn_one(x, y=y, t=t)
+
+    @staticmethod
+    def _block(arr):
+        """Return (n, mean, m2, m3, m4) of a 1-D array, in one pass.
+
+        Args:
+            arr: a 1-D numpy array of finite floats.
+
+        Returns:
+            ``(n, mean, m2, m3, m4)`` with ``m_k = sum (x - mean)^k`` and
+            ``n`` the number of samples. ``n=0`` returns zeros.
+        """
+        import numpy as np
+
+        a: np.ndarray = np.asarray(arr, dtype=float).ravel()
+        n = int(a.size)
+        if n == 0:
+            return 0, 0.0, 0.0, 0.0, 0.0
+        mean = float(a.mean())
+        d = a - mean
+        d2 = d * d
+        m2 = float(d2.sum())
+        m3 = float((d2 * d).sum())
+        m4 = float((d2 * d2).sum())
+        return n, mean, m2, m3, m4
+
+    def _merge_into(
+        self, n_b: int, mean_b: float, m2_b: float, m3_b: float, m4_b: float
+    ) -> "RunningMoments":
+        """Update ``self`` in place with a block of ``n_b`` samples.
+
+        The formula is the same as :meth:`merge` (Chan et al. 1979,
+        P\u00e9bay 2008), applied to ``self`` and the block, and written back
+        into ``self`` so no new object is created per chunk.
+
+        Args:
+            n_b: number of samples in the block.
+            mean_b: mean of the block.
+            m2_b, m3_b, m4_b: central moments of the block.
+
+        Returns:
+            The estimator itself.
+        """
+        if n_b == 0:
+            return self
+        na = self.n_
+        if na == 0:
+            self.n_ = n_b
+            self.mean_ = mean_b
+            self.m2_ = m2_b
+            self.m3_ = m3_b
+            self.m4_ = m4_b
+            return self
+        n = na + n_b
+        d = mean_b - self.mean_
+        m2_a = self.m2_
+        m3_a = self.m3_
+        m4_a = self.m4_
+        m2 = m2_a + m2_b + d * d * na * n_b / n
+        m3 = (
+            m3_a
+            + m3_b
+            + d**3 * na * n_b * (na - n_b) / (n * n)
+            + 3.0 * d * (na * m2_b - n_b * m2_a) / n
+        )
+        m4 = (
+            m4_a
+            + m4_b
+            + d**4 * na * n_b * (na * na - na * n_b + n_b * n_b) / (n**3)
+            + 6.0 * d * d * (na * na * m2_b + n_b * n_b * m2_a) / (n * n)
+            + 4.0 * d * (na * m3_b - n_b * m3_a) / n
+        )
+        self.m2_ = m2
+        self.m3_ = m3
+        self.m4_ = m4
+        self.mean_ = self.mean_ + d * n_b / n
+        self.n_ = n
+        return self
+
+    def learn_many(self, X, t=None) -> "RunningMoments":
+        """Update the summary with a block of samples at once.
+
+        The block is summarised in one numpy pass (Welford 1962 in vector
+        form), then merged into the current state with the formula of
+        Chan et al. (1979) and P\u00e9bay (2008), the same formula used by
+        :meth:`merge` and by :meth:`_merge_into`. The result equals the
+        loop over :meth:`learn_one` within floating-point tolerance.
+
+        Args:
+            X: a 1-D numpy array (or a list of floats) of values, or a
+                dict of arrays when the estimator has a fixed ``feature``.
+                In the dict form the key ``self.feature`` is read.
+            t: unused, kept for the Transformer signature.
+
+        Returns:
+            The estimator itself.
+        """
+        import numpy as np
+
+        if isinstance(X, dict):
+            if self.feature is None:
+                key = min(X)
+            else:
+                key = self.feature
+            arr = X[key]
+        else:
+            arr = X
+        a: np.ndarray = np.asarray(arr, dtype=float).ravel()
+        a = a[np.isfinite(a)]
+        if a.size == 0:
+            self.n_missing_ += 1
+            return self
+        n_b, mean_b, m2_b, m3_b, m4_b = self._block(a)
+        self._merge_into(n_b, mean_b, m2_b, m3_b, m4_b)
+        lo = float(a.min())
+        hi = float(a.max())
+        self.min_ = lo if self.min_ is None else min(self.min_, lo)
+        self.max_ = hi if self.max_ is None else max(self.max_, hi)
+        return self
 
     @property
     def count(self) -> int:
@@ -292,6 +413,24 @@ class RunningMomentsVector(Transformer):
         self, x: dict, y: Any = None, t: float | None = None
     ) -> "RunningMomentsVector":
         return self.learn_one(x, y=y, t=t)
+
+    def learn_many(self, X, t=None) -> "RunningMomentsVector":
+        """Update every channel from a dict of arrays at once.
+
+        Args:
+            X: a dict ``{channel: array_of_values}`` with the same
+                channels the estimator has seen so far, or that the
+                ``features`` argument fixes.
+            t: unused, kept for the Transformer signature.
+
+        Returns:
+            The estimator itself.
+        """
+        channels = self._ensure(X)
+        for k, st in channels.items():
+            if k in X:
+                st.learn_many(X[k], t=t)
+        return self
 
     def merge(self, other: "RunningMomentsVector") -> "RunningMomentsVector":
         """Combine two vector summaries channel by channel.

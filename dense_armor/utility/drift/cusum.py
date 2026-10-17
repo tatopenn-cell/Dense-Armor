@@ -153,8 +153,8 @@ def cusum_detector(
         raise ValueError(f"reference must be 'adaptive' or 'fixed', got {reference!r}")
     x = np.asarray(x, dtype=np.float64).ravel()
     n = x.size
-    flagged = np.zeros(n, dtype=bool)
-    cusum = np.zeros(n, dtype=np.float64)
+    flagged: np.ndarray = np.zeros(n, dtype=bool)
+    cusum: np.ndarray = np.zeros(n, dtype=np.float64)
     s_pos, s_neg = 0.0, 0.0
     span = radius * ref_mult
 
@@ -166,7 +166,8 @@ def cusum_detector(
 
     for i in range(n):
         if reference == "fixed":
-            if i < span or fixed_med is None or not np.isfinite(fixed_scale) or fixed_scale < eps:
+            if (i < span or fixed_med is None or fixed_scale is None
+                    or not np.isfinite(fixed_scale) or fixed_scale < eps):
                 continue
             med, scale = fixed_med, fixed_scale
             if not np.isfinite(x[i]):

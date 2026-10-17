@@ -452,8 +452,20 @@ class FIMTDDRegressor(Regressor):
         self._ranges: dict[str, tuple[float, float]] = {}
         self._n_total: int = 0
         self.n_missing_: int = 0
-        self.n_seen_: int = 0
         self.root_: _Node | None = None
+        self.n_seen_: int = 0
+
+    @property
+    def n_missing(self) -> int:
+        """Number of samples skipped for missing or non-finite values.
+
+        Same value as ``n_missing_``; the public property is the
+        name used by the rest of the library.
+
+        Returns:
+            The number of skipped samples.
+        """
+        return self.n_missing_
 
     def _resolve_keys(self, x: dict) -> list[str]:
         if self._keys is not None:
