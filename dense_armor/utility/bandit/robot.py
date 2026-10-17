@@ -38,7 +38,7 @@ def _episode(
     """
     refs = []
     for sig, _ in ds.stream():
-        t = sig.t
+        t = float(sig.t or 0.0)
         q_ref, qd_ref, _ = ds.trajectory(t)
         refs.append((t, np.asarray(q_ref), np.asarray(qd_ref)))
     q_sim = refs[0][1].copy()

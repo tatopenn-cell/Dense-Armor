@@ -328,4 +328,5 @@ class UCB1Tuned(UCB1):
             return self
         r = float(reward)
         self.sumsq_[arm] = self.sumsq_[arm] + r * r
-        return super().update(arm, reward, context)
+        super().update(arm, reward, context)
+        return self

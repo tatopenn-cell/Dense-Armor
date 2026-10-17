@@ -44,13 +44,13 @@ from dense_armor.utility.active import (
     VariableUncertainty,
 )
 from dense_armor.utility.bandit import (
+    UCB1,
     BayesUCB,
     EpsilonGreedy,
     Exp3,
     LinUCBDisjoint,
     RobotKpSelector,
     ThompsonSampling,
-    UCB1,
     UCB1Tuned,
 )
 from dense_armor.utility.datasets import DriftStream

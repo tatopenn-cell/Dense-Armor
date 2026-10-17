@@ -8,7 +8,6 @@ Run: ``python docs/assets/bandit/make_figures.py``.
 """
 
 import json
-import os
 from pathlib import Path
 
 import matplotlib

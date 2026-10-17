@@ -46,7 +46,7 @@ class ThompsonSampling(BanditPolicy):
 
     References:
         Chapelle, O., Li, L. (2011). An empirical evaluation of Thompson
-            sampling. In NIPS 24. Algorithm 2, page 3: Thompson sampling
+            sampling. In NIPS 24. Algorithm 2, page 2: Thompson sampling
             for the Bernoulli bandit with a Beta(a, b) prior; the
             Gaussian posterior is on pages 5-6, algorithm 3.
     """

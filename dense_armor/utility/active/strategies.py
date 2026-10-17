@@ -150,11 +150,13 @@ class VariableRandomizedUncertainty(VariableUncertainty):
     Args:
         budget: labelling budget.
         s: adjusting step.
-        delta: standard deviation of the random multiplier, positive.
+        delta: standard deviation of the random multiplier, positive. My choice:
+            the paper calls delta the variance of the randomisation, so the
+            paper's delta is the square of this one.
         seed: seed of the random generator.
 
     References:
-        Zliobaite et al. (2011). Algorithm 5, page 5.
+        Zliobaite et al. (2011). Algorithm 5, page 6.
     """
 
     def __init__(
