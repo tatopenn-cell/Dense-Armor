@@ -1,6 +1,6 @@
 # Benchmark on a real industrial robot arm (CASPER dataset)
 
-We ran the library, unchanged, on a 24.5-hour recording of a real industrial robot arm. This page shows what it noticed: a labelled anomaly was detected 15 seconds after it began, with no false alarm in the hour before it.
+We ran the library, unchanged, on a 24.5-hour recording of a real industrial robot arm. This page shows what it noticed: a labelled anomaly was detected 15 seconds after it began, with no false alarm in the hour before it (hour 14); on the 15 normal hours before the change the same configuration fires a median of 5,696 false alarms per hour and only 2 hours have none (section 5).
 
 The Dense-Armor streaming stack was run unchanged on the CASPER dataset
 (Kayan et al., 2023), a 24.5 h recording at 20 Hz of a Universal Robots
@@ -130,6 +130,30 @@ false alarms on the 1 h pre-change window**. Higher `h` and `k` only
 delay the detection (400 → 16.35 s, 1000 → 17.90 s) and do not reduce the
 false alarms further.
 
+### The same configuration on every normal hour
+
+`benchmarks/casper_hours.py` runs the configuration above (smoothed energy over `2T`, fixed reference of one cycle, `k = 2.0`, `h = 20`) on each of the 15 hours before the labelled change, one detector per hour, with the functions of `casper_benchmark.py` unchanged. No hour holds an anomalous label. Hour 14 is the pre-change hour of the table above and gives 0, which checks the script.
+
+| hour | rows | alarms | false alarms per hour |
+|---|---|---|---|
+| 0 | 71,240 | 2,810 | 2,840.0 |
+| 1 | 72,001 | 44,656 | 44,655.4 |
+| 2 | 72,001 | 70,876 | 70,875.0 |
+| 3 | 72,001 | 0 | 0.0 |
+| 4 | 72,001 | 944 | 944.0 |
+| 5 | 72,001 | 71,241 | 71,240.0 |
+| 6 | 72,001 | 184 | 184.0 |
+| 7 | 72,001 | 33,189 | 33,188.5 |
+| 8 | 72,001 | 35,486 | 35,485.5 |
+| 9 | 72,001 | 71,241 | 71,240.0 |
+| 10 | 72,001 | 293 | 293.0 |
+| 11 | 72,001 | 3,431 | 3,431.0 |
+| 12 | 72,001 | 70,158 | 70,157.0 |
+| 13 | 72,001 | 5,696 | 5,695.9 |
+| 14 | 72,001 | 0 | 0.0 |
+
+Median 5,696 false alarms per hour, maximum 71,240, and 2 of 15 hours with none (hours 3 and 14). The zero in the hour before the labelled change is a property of that hour and not of the configuration. Command: `python benchmarks/casper_hours.py --hours 0-14`; the numbers are in `benchmarks/casper_hours.json`.
+
 ## 6. Point estimators
 
 The five scorers on the shift residual, on its energy `e²`, and on the
@@ -194,6 +218,8 @@ State`, so no delay or F1 is reported for the IMU: the score
 distribution only. The 99th percentile is two orders of magnitude above
 the median, so no single threshold in that range would both catch the
 anomaly and keep the false-alarm rate low.
+
+The dataset has no lidar recording: its files are the two arms, the Nicla sensor and a network capture, so no lidar measurement is reported.
 
 ## 8. Comparison with CASPER
 
