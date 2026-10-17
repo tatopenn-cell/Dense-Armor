@@ -146,18 +146,22 @@ on large ones. On a robot, this means the same detector works whether the
 arm is moving slowly or fast, and the parameter can be set once and
 forgotten.
 
-![Lucas–Kanade on a smooth scene: small motion, large motion with one level, large motion with three levels.](../assets/vision/flow/lucas_kanade.png)
+![Lucas–Kanade on a smooth texture: a (3, 2) px motion with one level and with three levels, and a (6, 4) px motion with four levels.](../assets/vision/flow/lucas_kanade.png)
+
+*Frame B is a true crop of a larger texture moved by (dx, dy), so nothing wraps around the border. The dashed line is the true motion, the orange arrow the median flow over the 16 cells. With one level the measured flow for (3, 2) is (2.08, 1.46); with three levels it is (3.00, 2.00); a (6, 4) motion needs four levels and gives (5.91, 4.03). Command: `python docs/assets/vision/make_figures.py`.*
 
 ## Dense flow and motion mask
 
 `DenseFlow` estimates the flow
 at every pixel with the Horn-Schunck iteration (Ziani 2025,
-equations 6-8); on a smooth scene the endpoint error is 0.04 px.
+equations 6-8); on a smooth texture moved by (0.2, 0.1) px, with intensities times 255, the endpoint error is 0.084 px.
 `MotionMask` takes the flow
 field and returns the pixels that move with respect to the global
-motion; the IoU against a synthetic ground truth is reported in the figure caption.
+motion; on a synthetic flow field with a 12 by 12 square moving by an extra (2.0, 2.0), `n_sigmas=3.0` and `dilation=0`, the IoU against the square over 20 seeds has median 0.986, minimum 0.960 and maximum 1.0.
 
-![Flow vectors and the motion mask on a synthetic scene.](../assets/vision/dense_flow/flow_and_mask.png)
+![Flow vectors on a smooth texture, the motion mask on a synthetic flow field, and the IoU over 20 seeds.](../assets/vision/dense_flow/flow_and_mask.png)
+
+*Panel (a): the flow of the texture moved by (0.2, 0.1) px, error 0.084 px. Panel (b): the mask in orange over the flow magnitude, the true square dashed, seed 0. Panel (c): the IoU for seeds 0 to 19, the median as the orange line. Command: `python docs/assets/vision/make_figures.py`.*
 
 ### API
 

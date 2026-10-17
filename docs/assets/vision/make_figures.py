@@ -199,63 +199,53 @@ def fig_04_moments():
     FIG["fig04_true_cy"] = 23.5
 
 def fig_05_flow():
-    """Lucas-Kanade: small vs large motion, with and without the pyramid.
+    """Lucas-Kanade on a smooth texture: one level against the pyramid.
 
-    The scene is a random smooth image rolled by (2, 3) or (10, 14).
-    The pyramid helps the small motion; on the large one the flow is
-    still underestimated, which is the limit the page states.
+    Frame B is a true crop of a larger texture moved by (dx, dy), so
+    nothing wraps around the border.
     """
     from scipy.ndimage import gaussian_filter
 
-    def smooth(seed=0, size=64):
-        rng = np.random.default_rng(seed)
-        a = gaussian_filter(rng.normal(0, 1, (size, size)), 2.0)
-        a = (a - a.min()) / (a.max() - a.min())
-        return a.astype(np.float32)
+    rng = np.random.default_rng(0)
+    big = gaussian_filter(rng.normal(0, 1, (96, 96)), 3.0)
+    big = (big - big.min()) / (big.max() - big.min())
+    a = big[16:80, 16:80].astype(np.float32)
 
-    def roll(f, dy, dx):
-        return np.roll(np.roll(f, dy, axis=0), dx, axis=1).astype(np.float32)
+    def moved(dx, dy):
+        return big[16 - dy:80 - dy, 16 - dx:80 - dx].astype(np.float32)
 
-    def measure(a, b, levels):
+    def measure(b, levels):
         ff = FrameFeatures(flow_levels=levels, flow_cells=(4, 4))
         ff.learn_one(a)
         o = ff.transform_one(b)
-        us, vs, mags = [], [], []
-        for cy in range(4):
-            for cx in range(4):
-                u = o[f"flow_u_{cy}_{cx}"]
-                v = o[f"flow_v_{cy}_{cx}"]
-                us.append(u)
-                vs.append(v)
-                mags.append(np.hypot(u, v))
-        return float(np.median(us)), float(np.median(vs)), float(max(mags))
+        us = [o[f"flow_u_{i}_{j}"] for i in range(4) for j in range(4)]
+        vs = [o[f"flow_v_{i}_{j}"] for i in range(4) for j in range(4)]
+        return float(np.median(us)), float(np.median(vs))
 
-    a = smooth(0)
-    fig, axes = plt.subplots(1, 3, figsize=(7.2, 3.0))
     cases = [
-        ("small (2, 3), 1 level", roll(a, 2, 3), 1, (2, 3)),
-        ("large (10, 14), 1 level", roll(a, 10, 14), 1, (10, 14)),
-        ("large (10, 14), 3 levels", roll(a, 10, 14), 3, (10, 14)),
+        ("(3, 2) px, 1 level", (3, 2), 1),
+        ("(3, 2) px, 3 levels", (3, 2), 3),
+        ("(6, 4) px, 4 levels", (6, 4), 4),
     ]
-    for ax, (title, b, lv, true) in zip(axes, cases):
-        u, v, _ = measure(a, b, lv)
+    fig, axes = plt.subplots(1, 3, figsize=(7.2, 3.0))
+    for ax, (title, (dx, dy), lv) in zip(axes, cases):
+        b = moved(dx, dy)
+        u, v = measure(b, lv)
         ax.imshow(b, cmap="gray", vmin=0.0, vmax=1.0)
         ax.set_title(title, fontsize=9)
-        cy = 32
-        cx = 32
-        scale = 2.0
-        ax.arrow(cx, cy, u * scale, v * scale, color=ORANGE, head_width=2.5,
+        ax.arrow(32, 32, dx * 2.0, dy * 2.0, color=INK, linestyle="--",
+                 head_width=0.0, linewidth=1.2, length_includes_head=True,
+                 label=f"true ({dx}, {dy})")
+        ax.arrow(32, 32, u * 2.0, v * 2.0, color=ORANGE, head_width=2.5,
                  linewidth=2.0, length_includes_head=True,
-                 label=f"u={u:.1f}, v={v:.1f}")
-        ax.arrow(cx, cy, true[1] * scale, true[0] * scale, color=INK,
-                 linestyle="--", head_width=0.0, linewidth=1.2,
-                 length_includes_head=True, label=f"true ({true[1]}, {true[0]})")
+                 label=f"measured ({u:.2f}, {v:.2f})")
         ax.legend(loc="lower right", fontsize=7)
         ax.axis("off")
-        key = title.replace(" ", "_")
-        FIG[f"fig05_{key}_u"] = u
-        FIG[f"fig05_{key}_v"] = v
+        key = f"fig05_{dx}_{dy}_L{lv}"
+        FIG[key + "_u"] = u
+        FIG[key + "_v"] = v
     _save(fig, "flow", "lucas_kanade")
+
 
 def fig_06_colour():
     """The six colour features on the scene of features.md Section 3."""
@@ -699,80 +689,86 @@ def fig_15_registration():
 
 
 def fig_16_dense_flow():
-    """DenseFlow on three moving blobs, MotionMask on a moving square.
+    """DenseFlow endpoint error on a smooth texture, MotionMask on a flow field.
 
-    The scene has sensor noise so the MAD of MotionMask is non-zero.
-    The IoU on this synthetic case is low (around 0.2): the mask finds
-    the moving square but also reacts to the blob edges. The page
-    states the measured value, not a tuned one.
+    First scene: the texture moved by (0.2, 0.1) px, intensities times 255.
+    Second scene: a synthetic flow field, global (1.0, 0.5) plus noise,
+    with a 12 by 12 square moving by an extra (2.0, 2.0); IoU over 20 seeds.
     """
+    from scipy.ndimage import gaussian_filter, shift as nd_shift
     from dense_armor.utility.vision.dense import DenseFlow, MotionMask
 
-    H = W = 64
-    yy, xx = np.mgrid[0:H, 0:W]
-    blobs = [(20.0, 20.0), (40.0, 25.0), (30.0, 45.0)]
-    sigma = 6.0
+    rng = np.random.default_rng(0)
+    big = gaussian_filter(rng.normal(0, 1, (96, 96)), 3.0)
+    big = (big - big.min()) / (big.max() - big.min())
 
-    def scene(seed, sq_y=None, sq_x=None):
-        rng = np.random.default_rng(seed)
-        img = np.zeros((H, W), dtype=np.float32)
-        for cy, cx in blobs:
-            img += np.exp(
-                -((yy - cy) ** 2 + (xx - cx) ** 2) / (2 * sigma ** 2))
-        img = img / img.max()
-        if sq_y is not None:
-            y0, x0 = int(sq_y), int(sq_x)
-            img[y0:y0 + 8, x0:x0 + 8] = 1.0
-        img += rng.normal(0, 0.02, (H, W)).astype(np.float32)
-        return img
+    def crop(dy, dx):
+        s = nd_shift(big, (dy, dx), order=3, mode="nearest")
+        return s[16:80, 16:80].astype(np.float32)
 
-    f1 = scene(0)
-    f2 = scene(0, sq_y=20, sq_x=20)
-    df = DenseFlow(alpha=1.0, n_iter=10, use_jax=False)
-    df.learn_one({"array": f1})
-    o = df.transform_one({"array": f2})
-    u, v, mag = o["u"], o["v"], o["mag"]
+    dx, dy = 0.2, 0.1
+    a, b = crop(0.0, 0.0), crop(dy, dx)
+    df = DenseFlow(alpha=1.0, n_iter=30, use_jax=False)
+    df.learn_one(a * 255.0)
+    o = df.transform_one(b * 255.0)
+    u, v = o["u"], o["v"]
+    epe = float(np.mean(np.hypot(u - dx, v - dy)))
 
-    s1 = scene(0, sq_y=20, sq_x=20)
-    s2 = scene(1, sq_y=23, sq_x=23)
-    df2 = DenseFlow(alpha=1.0, n_iter=10, use_jax=False)
-    df2.learn_one({"array": s1})
-    o2 = df2.transform_one({"array": s2})
-    mm = MotionMask(n_sigmas=2.0, dilation=1)
-    mm.learn_one({"u": o2["u"], "v": o2["v"]})
-    mask = mm.transform_one({"u": o2["u"], "v": o2["v"]})["mask"]
-    gt_mask = np.zeros((H, W), dtype=bool)
-    gt_mask[20:31, 20:31] = True
-    tp = int((mask & gt_mask).sum())
-    fp = int((mask & ~gt_mask).sum())
-    fn = int((~mask & gt_mask).sum())
-    iou = tp / (tp + fp + fn) if (tp + fp + fn) else 0.0
-    uu, vv = u[10:50, 10:50], v[10:50, 10:50]
-    epe = float(np.mean(np.hypot(uu - 0.0, vv - 0.0)))
+    def field(seed):
+        r = np.random.default_rng(seed)
+        uu = 1.0 + r.normal(0, 0.05, (64, 64))
+        vv = 0.5 + r.normal(0, 0.05, (64, 64))
+        gt = np.zeros((64, 64), dtype=bool)
+        gt[24:36, 24:36] = True
+        uu[gt] += 2.0
+        vv[gt] += 2.0
+        return uu, vv, gt
 
-    fig, axes = plt.subplots(1, 2, figsize=(7.2, 3.0))
+    def iou_of(seed):
+        uu, vv, gt = field(seed)
+        m = MotionMask(n_sigmas=3.0, dilation=0).transform_one(
+            {"u": uu, "v": vv})["mask"]
+        return float((m & gt).sum() / (m | gt).sum()), uu, vv, m, gt
+
+    ious = [iou_of(s)[0] for s in range(20)]
+    iou0, uu, vv, mask, gt = iou_of(0)
+    med = float(np.median(ious))
+
+    fig, axes = plt.subplots(1, 3, figsize=(7.2, 3.0),
+                             gridspec_kw={"width_ratios": [1, 1, 1.15]})
+    yy, xx = np.mgrid[0:64, 0:64]
     ax = axes[0]
-    ax.imshow(f2, cmap="gray")
-    step = 6
-    ax.quiver(xx[::step, ::step], yy[::step, ::step],
-              u[::step, ::step], v[::step, ::step],
-              mag[::step, ::step], cmap="Blues", scale=20, width=0.005)
-    ax.set_title(f"flow, mean |u,v| = {epe:.3f} px", fontsize=9)
+    ax.imshow(b, cmap="gray", vmin=0.0, vmax=1.0)
+    st = 8
+    ax.quiver(xx[::st, ::st], yy[::st, ::st], u[::st, ::st], v[::st, ::st],
+              angles="xy", scale_units="xy", scale=0.05, color=ORANGE,
+              width=0.006)
+    ax.set_title(f"flow, error {epe:.3f} px", fontsize=9)
     ax.axis("off")
     ax = axes[1]
-    ax.imshow(s2, cmap="gray")
-    ax.contour(gt_mask, levels=[0.5], colors=INK, linestyles="--",
-               linewidths=1.0)
+    ax.imshow(np.hypot(uu, vv), cmap="Blues")
+    ax.contour(gt.astype(float), levels=[0.5], colors=INK,
+               linestyles="--", linewidths=1.0)
     ax.contour(mask.astype(float), levels=[0.5], colors=ORANGE,
                linewidths=1.4)
-    ax.set_title(f"mask IoU = {iou:.2f}", fontsize=9)
+    ax.set_title(f"mask, IoU {iou0:.2f} (seed 0)", fontsize=9)
     ax.axis("off")
+    ax = axes[2]
+    ax.plot(range(20), ious, "o", color=BLUE, markersize=5)
+    ax.axhline(med, color=ORANGE, linewidth=1.5)
+    ax.text(19.5, med - 0.012, f"median {med:.3f}", ha="right", va="top",
+            fontsize=8, color=INK2)
+    ax.set_xlabel("seed")
+    ax.set_ylabel("IoU")
+    ax.set_ylim(0.9, 1.01)
+    ax.set_title("IoU over 20 seeds", fontsize=9)
     _save(fig, "dense_flow", "flow_and_mask")
-    FIG["fig16_mean_flow"] = epe
-    FIG["fig16_iou"] = float(iou)
-    FIG["fig16_mask_area"] = int(mask.sum())
-    FIG["fig16_gt_area"] = int(gt_mask.sum())
-
+    FIG["fig16_shift"] = [dx, dy]
+    FIG["fig16_epe"] = epe
+    FIG["fig16_iou_seed0"] = iou0
+    FIG["fig16_iou_median"] = med
+    FIG["fig16_iou_min"] = float(min(ious))
+    FIG["fig16_iou_max"] = float(max(ious))
 
 
 def fig_17_quality():
