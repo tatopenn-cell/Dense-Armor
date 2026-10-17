@@ -155,6 +155,7 @@ Dense-Armor provides online implementations of the following families of algorit
 - Linear models, with a wide array of optimizers
 - Decision trees, online forests (adaptive random forest, aggregated Mondrian forests, online extra trees) and rule sets (adaptive model rules)
 - Naive Bayes, nearest neighbours, multiclass and multi-output wrappers, conjugate distributions
+- Ensembles (online bagging and boosting, exponentially weighted average, voting, stacking)
 - Clustering
 - Anomaly detection (including the local outlier factor)
 - Drift detection
@@ -163,7 +164,7 @@ Dense-Armor provides online implementations of the following families of algorit
 - Online dynamics
 - Calibration and metric learning
 - Imbalanced learning
-- Vision (frame features, patches, vocabulary, online reduction)
+- [Vision](https://tatopenn-cell.github.io/Dense-Armor/vision/) (video files, frame features, patches, vocabulary, online reduction, motion, tracking, registration, dense flow)
 - Robot control (rate limits, control barrier functions, trajectories, kinematic tracking)
 - Robot dynamics (URDF, passivity + CBF controllers)
 - Shielding (1D series cleanup, input/output shield, per-point routing)
