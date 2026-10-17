@@ -433,6 +433,41 @@ class Root:
             setattr(self, k, copy.deepcopy(v))
         return self
 
+    def fit(self, X, y=None, t=None, epochs: int = 1, shuffle: bool = False,
+            seed: int | None = None) -> 'Root':
+        """Offline entry point for every online estimator.
+
+        Takes the whole dataset at once and feeds it to ``learn_one``
+        row by row, ``epochs`` times, optionally in a shuffled order.
+        ``y`` is passed when the estimator is supervised. ``t`` is None
+        or one timestamp per row (one pass only, times must increase).
+        """
+        learn = getattr(self, "learn_one", None)
+        if learn is None:
+            raise TypeError(f"{type(self).__name__} has no learn_one")
+        if epochs < 1:
+            raise ValueError(f"epochs must be >= 1, got {epochs}")
+        if y is not None and len(y) != len(X):
+            raise ValueError(f"X has {len(X)} rows, y has {len(y)}")
+        if t is not None:
+            if len(t) != len(X):
+                raise ValueError(f"X has {len(X)} rows, t has {len(t)}")
+            if epochs > 1:
+                raise ValueError("t needs epochs == 1")
+        from dense_armor.roles._util import call_with_t
+        order = np.arange(len(X))
+        rng = np.random.default_rng(seed)
+        for _ in range(epochs):
+            if shuffle:
+                rng.shuffle(order)
+            for i in order:
+                ti = None if t is None else t[i]
+                if y is None:
+                    call_with_t(learn, X[i], t=ti)
+                else:
+                    call_with_t(learn, X[i], y[i], t=ti)
+        return self
+
     # ── robot time base ───────────────────────────────────────────
     _DT_N = 64
 
