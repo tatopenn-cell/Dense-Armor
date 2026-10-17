@@ -369,7 +369,8 @@ def test_stream_conversions_and_paths(tmp_path):
     rgba = np.zeros((2, 2, 4), dtype=np.uint8)
     rgba[..., 0] = 255
     assert abs(float(_to_float01(rgba, gray=True).max()) - 0.299) < 1e-3
-    assert _to_float01(rgba, gray=False).shape == (2, 2, 3)
+    assert _to_float01(rgba, gray=False, bgr=True).shape == (2, 2, 3)
+    assert _to_float01(rgba, gray=False, bgr=False).shape == (2, 2, 4)
     a = np.ones((4, 4), dtype=np.float32)
     assert _resize_nearest(a, (4, 4)) is a
     assert Frame(array=a, t=1.0).to_dict()["t"] == 1.0
