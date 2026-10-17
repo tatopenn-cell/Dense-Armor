@@ -26,7 +26,6 @@ before the value being scored; the value is never part of its own window.
 See `ISTRUZIONI.md`, section "Important: centred vs causal windows".
 """
 
-from __future__ import annotations
 
 import math
 from collections import deque

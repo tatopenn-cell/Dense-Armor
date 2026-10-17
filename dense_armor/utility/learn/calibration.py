@@ -2,7 +2,6 @@
 Online Platt scaling (Gupta and Ramdas, ICML 2023, arXiv:2305.00070) as a
 classifier wrapper for an existing online-learning library. Needs the optional dependency: the streaming extra
 """
-from __future__ import annotations
 
 import math
 

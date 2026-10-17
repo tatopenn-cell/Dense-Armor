@@ -3,7 +3,6 @@ Online metric learning: OASIS, LEGO and POLA, as estimators compatible with an e
 
 Needs the optional dependency: the streaming extra.
 """
-from __future__ import annotations
 
 import random
 from collections import deque
