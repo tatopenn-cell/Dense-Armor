@@ -2,7 +2,6 @@
 Anomaly detectors compatible with an existing online-learning library, built on Dense-Armor's streaming detectors.
 Needs the optional dependency: the streaming extra
 """
-from __future__ import annotations
 
 import numpy as np
 

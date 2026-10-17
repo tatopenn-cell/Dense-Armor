@@ -18,7 +18,6 @@ corrected values equal the batch `classify_segments` + `route_and_correct`
 on the same series. With smaller `max_delay`, labels near run boundaries may
 change (documented in the latency table of `arbiter.md`).
 """
-from __future__ import annotations
 
 from typing import List, Optional, Tuple
 

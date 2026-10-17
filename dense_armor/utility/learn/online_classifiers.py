@@ -7,7 +7,6 @@ an online Gaussian naive Bayes, an online softmax regression, and a
 drift detector fires. All return calibrated-ready probabilities, so
 `OnlinePlattScaling` (binary case) can wrap them.
 """
-from __future__ import annotations
 
 from collections import deque
 from copy import deepcopy

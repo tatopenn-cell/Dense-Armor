@@ -24,7 +24,6 @@ Ljung, L., Soderstrom, T. (1983). Theory and Practice of Recursive
 Identification. MIT Press. (RLS with exponential forgetting.)
 Page, E. S. (1954). Continuous inspection schemes. Biometrika 41, 100-114.
 """
-from __future__ import annotations
 
 import os
 from pathlib import Path
