@@ -103,7 +103,7 @@ print(round(strategy.n_labelled_ / strategy.n_seen_, 3))
 
 ## 5. What the numbers say
 
-![Labelling rate per strategy, median over 20 seeds, on a drifting stream](assets/bandit/active/labelling_rate.png)
+![Labelling rate per strategy, median over 20 seeds, on a drifting stream](../assets/bandit/active/labelling_rate.png)
 
 | strategy | median rate | IQR |
 |---|---|---|

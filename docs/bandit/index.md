@@ -132,13 +132,13 @@ print(sel.best_gain(), dict(sel.counts_))
 
 ## 8. What the numbers say
 
-![Regret against the oracle, per policy](assets/bandit/bandit/regret_per_policy.png)
+![Regret against the oracle, per policy](../assets/bandit/bandit/regret_per_policy.png)
 
 Median regret against the oracle, 20 seeds: BayesUCB 74.0, UCB1Tuned 112.0, UCB1 114.5, ThompsonSampling 246.0, EpsilonGreedy 385.0, Exp3 394.0.
 
-![Regret against the best fixed arm](assets/bandit/bandit/static_regret.png)
+![Regret against the best fixed arm](../assets/bandit/bandit/static_regret.png)
 
-![Contextual against context-free](assets/bandit/bandit/contextual.png)
+![Contextual against context-free](../assets/bandit/bandit/contextual.png)
 
 On the contextual stream LinUCBDisjoint gets 205.5, worse than UCB1 at 114.5 with the two-feature context used here. Reported, not hidden: the model needs a richer context to beat the context-free baseline on this stream.
 
