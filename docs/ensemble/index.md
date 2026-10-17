@@ -83,7 +83,7 @@ and the diversity the Poisson draw gives is limited.
 counters, one for the samples it classified correctly and one for the wrong ones. The weight of
 the incoming sample for the next member grows with the fraction of its mistakes, so a sample a
 member got wrong reaches the next member more often. The final vote weights each member by
-`log(1 / beta_m)`, where `beta_m` is the error rate of that member.
+`log(1 / beta_m)`, with `beta_m = eps_m / (1 - eps_m)` and `eps_m` the error rate of that member.
 
 ```python
 import numpy as np
@@ -222,8 +222,11 @@ upper limit and the ensemble stays well below it.
 The boosting update is the one of Figure 2 of Oza and Russell: the weight of the sample for the
 next member is multiplied by `N / (2 * lambda_s)`, with `N` the number of samples seen so far
 and `lambda_s` the accumulator of the member for the samples it classified correctly or wrongly.
-The paper states the equivalence of the expected weights with batch AdaBoost, not a convergence
-rate, and this page claims the same.
+The paper gives no equivalence and no convergence rate for the boosting weights: it builds the
+algorithm to correspond to batch AdaBoost.M1 and then shows, with experiments, that online
+boosting starts worse and approaches AdaBoost as the number of examples grows (Figure 4). The
+bagging counts are the part for which the paper proves that the expected counts of the online
+and batch algorithms are equal.
 
 The bound of the exponentially weighted average is equation 9 of Freund and Schapire,
 `L_ensemble <= (eta / (1 - exp(-eta))) * min_i L_i + ln(K) / (1 - exp(-eta))`, with `K` the
