@@ -98,6 +98,8 @@ model, and they compose in this order:
   adapt when the data drifts.
 - **[Online dynamics](../learn/online_dynamics.md)** — learns, sample by sample, the
   torque the URDF model misses.
+- **[Ensembles](../ensemble/index.md)** — a group of models that answer together, from
+  a plain vote to a second model on top of the members' predictions.
 
 ## The library by section
 
@@ -110,6 +112,7 @@ The same pages, grouped the way the package is organised (`dense_armor.<section>
 | [Drift detection](../drift/index.md) | one alarm when a slow, sustained change is real | CUSUM and ARL theory |
 | [Protection](../protect/index.md) | what to do with a wrong-looking sample: pass, repair, or route | Arbiter (batch and streaming) |
 | [Online learning](../learn/index.md) | models that learn one sample at a time while the robot runs | Calibration, Metric learning, Classifiers, Dynamics |
+| [Ensembles](../ensemble/index.md) | a group of models that answer together | Voting, Bagging, Boosting, Exponentially weighted average, Stacking |
 | [Control](../control/index.md) | commands: where a robot may go, how fast, along which path | Rate limiter, CBF filter, Trajectory, Kinematic controller |
 | [Robot dynamics](../dynamics/index.md) | the physical model of a real robot from its URDF | Rigid-body dynamics, Controllers, Xacro, Mimic joints |
 | [Benchmarks](../benchmarks/index.md) | the library on recordings from real robots | Real robot arm (CASPER, UR3e) |

@@ -4,6 +4,15 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- Ensembles of online learners: `OnlineBaggingClassifier` and
+  `OnlineBoostingClassifier` (Oza and Russell 2001),
+  `ExponentiallyWeightedAverageRegressor` (Freund and Schapire 1997, Hedge
+  rule and its equation 9 bound), and the `VotingClassifier` and
+  `StackingClassifier` wrappers. Guide: `docs/ensemble/index.md`. Benchmark:
+  `benchmarks/ensemble_quality.py`, 20 seeds, one sudden change, paired
+  Wilcoxon and A12 effect size.
+
 ### Changed
 - The claim register and the table of numerical claims left the published docs: they are now
   `benchmarks/claims_register.md` and `benchmarks/numbers_register.md`. The navigation lists
