@@ -452,6 +452,8 @@ class FIMTDDRegressor(Regressor):
         self._ranges: dict[str, tuple[float, float]] = {}
         self._n_total: int = 0
         self.n_missing_: int = 0
+        self.root_: _Node | None = None
+        self.n_seen_: int = 0
 
     @property
     def n_missing(self) -> int:
