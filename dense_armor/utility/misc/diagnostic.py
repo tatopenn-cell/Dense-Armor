@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
 import os
-from typing import Dict, Optional, Union
 
 import numpy as np
 from scipy.io import wavfile
 
-def diag(iorig: Union[str, np.ndarray], ifilt: Union[str, np.ndarray]) -> Optional[Dict[str, float]]:
+
+def diag(iorig: str | np.ndarray, ifilt: str | np.ndarray) -> dict[str, float] | None:
     """Esegue un'analisi differenziale profonda accettando sia percorsi file (str) che array NumPy."""
     if isinstance(iorig, str) and isinstance(ifilt, str):
         if not os.path.exists(iorig) or not os.path.exists(ifilt):
@@ -16,19 +15,33 @@ def diag(iorig: Union[str, np.ndarray], ifilt: Union[str, np.ndarray]) -> Option
         v_ori = d_ori.astype(np.float32) / 32768.0
         v_flt = d_flt.astype(np.float32) / 32768.0
     else:
-        v_ori = iorig.astype(np.float32) / 32768.0 if iorig.dtype != np.float32 else iorig.copy()
-        v_flt = ifilt.astype(np.float32) / 32768.0 if ifilt.dtype != np.float32 else ifilt.copy()
+        v_ori = (
+            iorig.astype(np.float32) / 32768.0
+            if iorig.dtype != np.float32
+            else iorig.copy()
+        )
+        v_flt = (
+            ifilt.astype(np.float32) / 32768.0
+            if ifilt.dtype != np.float32
+            else ifilt.copy()
+        )
 
-    if len(v_ori.shape) > 1: v_ori = np.mean(v_ori, axis=1)
-    if len(v_flt.shape) > 1: v_flt = np.mean(v_flt, axis=1)
-    
+    if len(v_ori.shape) > 1:
+        v_ori = np.mean(v_ori, axis=1)
+    if len(v_flt.shape) > 1:
+        v_flt = np.mean(v_flt, axis=1)
+
     mlen = min(v_ori.shape[0], v_flt.shape[0])
     v_ori = v_ori[:mlen]
     v_flt = v_flt[:mlen]
 
     v_dff = v_ori - v_flt
     v_rem = float(np.var(v_dff))
-    fdel  = (1.0 - (np.sum(v_dff**2) / np.sum(v_ori**2))) * 100.0 if np.sum(v_ori**2) > 0 else 0.0
+    fdel = (
+        (1.0 - (np.sum(v_dff**2) / np.sum(v_ori**2))) * 100.0
+        if np.sum(v_ori**2) > 0
+        else 0.0
+    )
     pk_df = float(np.max(np.abs(v_dff))) if len(v_dff) > 0 else 0.0
     pk_db = 20 * np.log10(pk_df) if pk_df > 0 else -99.0
     alter = float(np.mean(np.abs(v_dff) > 0.05) * 100.0) if len(v_dff) > 0 else 0.0
@@ -45,8 +58,17 @@ def diag(iorig: Union[str, np.ndarray], ifilt: Union[str, np.ndarray]) -> Option
     if fdel > 99.5:
         print("[VERDETTO DIAG] INTERVENTO CHIRURGICO: Solo micro-fruscii rimossi.")
     elif fdel >= 95.0:
-        print("[VERDETTO DIAG] RESTAURO EQUILIBRATO: Ottimo bilanciamento inter-canale.")
+        print(
+            "[VERDETTO DIAG] RESTAURO EQUILIBRATO: Ottimo bilanciamento inter-canale."
+        )
     else:
-        print("[VERDETTO DIAG] MUTAZIONE AGGRESSIVA STEREO: Il Test 2 ha riscritto lo spazio dinamico.")
+        print(
+            "[VERDETTO DIAG] MUTAZIONE AGGRESSIVA STEREO: Il Test 2 ha riscritto lo spazio dinamico."
+        )
     print("=" * 85)
-    return {"fedelta": fdel, "energia_rimossa": v_rem, "picco_distorsione_db": pk_db, "tasso_modulazione": alter}
+    return {
+        "fedelta": fdel,
+        "energia_rimossa": v_rem,
+        "picco_distorsione_db": pk_db,
+        "tasso_modulazione": alter,
+    }

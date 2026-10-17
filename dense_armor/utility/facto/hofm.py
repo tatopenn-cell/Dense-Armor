@@ -6,13 +6,7 @@ from typing import Any
 import numpy as np
 
 from dense_armor.roles import Classifier, Regressor
-
-
-def _sigmoid(z: float) -> float:
-    if z >= 0.0:
-        return 1.0 / (1.0 + float(np.exp(-z)))
-    e = float(np.exp(z))
-    return e / (1.0 + e)
+from dense_armor.utility.facto._common import _sigmoid
 
 
 def _anova_forward(

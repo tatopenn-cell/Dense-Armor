@@ -113,16 +113,3 @@ class SDFT(Root):
     def spectrum(self) -> np.ndarray:
         """Return a copy of the current spectrum."""
         return self.X.copy()
-
-
-class SDFTMany:
-    """Placeholder: the batch version is ``numpy.fft.fft`` on the window."""
-
-    @staticmethod
-    def batch(values: Any) -> np.ndarray:
-        """Return ``numpy.fft.fft`` of the last ``n`` samples.
-
-        Provided so a caller can compare the streaming form and the
-        batch form on the same window.
-        """
-        return np.fft.fft(np.asarray(values, dtype=float))

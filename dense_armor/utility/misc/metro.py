@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 utility/metro.py
 =========================================================
@@ -7,6 +6,7 @@ Logarithmic Scaling Module -- protezione differenziale dei gradienti
 """
 
 import numpy as np
+
 
 class Metro:
     def __init__(self, val_e: float = -4.0):
@@ -19,10 +19,10 @@ class Metro:
         v64 = np.float64(raw_v)
         if v64 <= 0.0:
             return np.float64(0.0), np.float64(1.0)
-        
+
         exp10 = np.log10(v64)
         shift = self.val_e - exp10
-        fact = np.float64(10 ** shift)
+        fact = np.float64(10**shift)
         v_new = v64 * fact
         return v_new, fact
 

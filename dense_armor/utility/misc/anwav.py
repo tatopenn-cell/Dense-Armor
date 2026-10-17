@@ -1,14 +1,15 @@
-# -*- coding: utf-8 -*-
 import os
+
 import numpy as np
 from scipy.io import wavfile
+
 
 def anwav(fpath: str) -> None:
     """Analizza il file wav verificando i parametri di picco e dinamica."""
     if not os.path.exists(fpath):
         print(f"[ERR] File {fpath} non trovato!")
         return
-        
+
     srate, data = wavfile.read(fpath)
     if np.issubdtype(data.dtype, np.floating):
         scala = 1.0
@@ -19,22 +20,22 @@ def anwav(fpath: str) -> None:
     else:
         scala = float(np.iinfo(data.dtype).max) + 1.0
     audio = data.astype(np.float32) / scala
-    
+
     # Calcolo parametri essenziali
     mxval = np.max(np.abs(audio))
-    p_db  = 20 * np.log10(mxval) if mxval > 0 else -99.0
-    rms   = np.sqrt(np.mean(audio**2))
-    r_db  = 20 * np.log10(rms) if rms > 0 else -99.0
-    lufs  = r_db + 3.0
+    p_db = 20 * np.log10(mxval) if mxval > 0 else -99.0
+    rms = np.sqrt(np.mean(audio**2))
+    r_db = 20 * np.log10(rms) if rms > 0 else -99.0
+    lufs = r_db + 3.0
     crest = p_db - r_db
-    
+
     print(f" -> File                      : {fpath}")
     print(f" -> Picco Massimo             : {p_db:.2f} dBFS")
     print(f" -> Volume Medio RMS          : {r_db:.2f} dBFS")
     print(f" -> Loudness (LUFS)           : {lufs:.1f} LUFS")
     print(f" -> Fattore Cresta (Dinamica) : {crest:.2f} dB")
     print("-" * 85)
-    
+
     print("[VERDETTO STANDARD]:")
     if p_db > -1.0:
         print("   AVVISO: Il picco supera i -1.0 dB. Rischio distorsione.")
