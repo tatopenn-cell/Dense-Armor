@@ -2,7 +2,7 @@
 
 Two definitions are used:
 
-- dominance (Börzsönyi et al. 2001, Definition 1, page 2): a point `p`
+- dominance (Börzsönyi et al. 2001, Section 2, page 2): a point `p`
   dominates `q`, written `p << q`, if `p[d] <= q[d]` for every dimension
   `d` and `p[d] < q[d]` for at least one dimension. Ties are not
   dominance.
@@ -13,7 +13,7 @@ The window maintenance is the one of Tao and Papadias (2006, Section 3,
 page 3): when a new point arrives and the window is full, the oldest
 point leaves and the new point enters; the skyline is recomputed on the
 new window with the block nested loops (BNL) algorithm of Börzsönyi et
-al. (2001, Algorithm 1, page 4). The naive recomputation is O(W^2) per
+al. (2001, Section 3.3, page 4). The naive recomputation is O(W^2) per
 update for a window of size W; the paper also gives an incremental
 algorithm, which is not implemented here, my choice, because W is small
 in the test and the naive algorithm is easy to verify against the direct
@@ -76,8 +76,8 @@ class Skyline(Root):
 
     References:
         Börzsönyi, S., Kossmann, D., Stocker, K. (2001). The Skyline
-        Operator. In ICDE 2001. Definition 1 page 2 (dominance),
-        Algorithm 1 page 4 (block nested loops).
+        Operator. In ICDE 2001. Section 2 page 2 (dominance),
+        Section 3.3 page 4 (block nested loops).
         Tao, Y., Papadias, D. (2006). Maintaining Sliding Window
         Skylines. In ICDE 2006. Section 3 page 3 (sliding window
         maintenance).

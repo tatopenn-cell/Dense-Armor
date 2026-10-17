@@ -175,7 +175,7 @@ float(np.max(np.abs(s.X - np.fft.fft(vals[-8:]))))
 Panel (b) shows the skyline of a sliding window of 20 points, at two different times.
 The dots are the points of the window, the blue squares the skyline after 20 points, the
 orange triangles the skyline after 40 points. The skyline is the set of points not dominated
-by any other point of the window (Börzsönyi et al. 2001, Definition 1, page 2).
+by any other point of the window (Börzsönyi et al. 2001, Section 2, page 2).
 
 ~~~python
 from dense_armor.utility.misc import Skyline
@@ -218,7 +218,7 @@ that makes the value equal to `numpy.fft.fft`, as the test
 `test_matches_numpy_fft_on_every_window` checks.
 
 The skyline is Börzsönyi, S., Kossmann, D., Stocker, K. (2001). The Skyline Operator. In
-ICDE 2001. Definition 1, page 2 (dominance), Algorithm 1, page 4 (block nested loops).
+ICDE 2001. Section 2, page 2 (dominance), Section 3.3, page 4 (block nested loops).
 The sliding-window maintenance is Tao, Y., Papadias, D. (2006). Maintaining Sliding Window
 Skylines. In ICDE 2006. Section 3, page 3. The implementation recomputes the skyline of
 the current window with the naive algorithm, `O(W^2)` per update, not the incremental

@@ -6,11 +6,11 @@ Complete map of every public class in Dense-Armor: description,
 base classes, public methods. When a class has a guide page,
 the link leads there for the full explanation and examples.
 
-**208 classes**, 2021 public methods, 111 public modules.
+**221 classes**, 2193 public methods, 118 public modules.
 
 ## Classes by subsystem
 
-**Jump to:** [Roles](#roles) &nbsp;·&nbsp; [Metrics](#metrics) &nbsp;·&nbsp; [Evaluate](#evaluate) &nbsp;·&nbsp; [Core](#core) &nbsp;·&nbsp; [Mcp_server](#mcp_server) &nbsp;·&nbsp; [Anomaly](#anomaly) &nbsp;·&nbsp; [Drift](#drift) &nbsp;·&nbsp; [Trees](#trees) &nbsp;·&nbsp; [Naive Bayes](#naive-bayes) &nbsp;·&nbsp; [Distributions](#distributions) &nbsp;·&nbsp; [Nearest neighbours](#nearest-neighbours) &nbsp;·&nbsp; [Multiclass](#multiclass) &nbsp;·&nbsp; [Multi-output](#multi-output) &nbsp;·&nbsp; [Forests](#forests) &nbsp;·&nbsp; [Ensembles](#ensembles) &nbsp;·&nbsp; [Bandits](#bandits) &nbsp;·&nbsp; [Active learning](#active-learning) &nbsp;·&nbsp; [Rules](#rules) &nbsp;·&nbsp; [Clustering](#clustering) &nbsp;·&nbsp; [Stats](#stats) &nbsp;·&nbsp; [Preprocessing](#preprocessing) &nbsp;·&nbsp; [Compose](#compose) &nbsp;·&nbsp; [Vision](#vision) &nbsp;·&nbsp; [Learn](#learn) &nbsp;·&nbsp; [Datasets](#datasets) &nbsp;·&nbsp; [Protect](#protect) &nbsp;·&nbsp; [Bridges](#bridges) &nbsp;·&nbsp; [Armatura](#armatura) &nbsp;·&nbsp; [Misc](#misc) &nbsp;·&nbsp; [Dynamics](#dynamics)
+**Jump to:** [Roles](#roles) &nbsp;·&nbsp; [Metrics](#metrics) &nbsp;·&nbsp; [Evaluate](#evaluate) &nbsp;·&nbsp; [Core](#core) &nbsp;·&nbsp; [Mcp_server](#mcp_server) &nbsp;·&nbsp; [Anomaly](#anomaly) &nbsp;·&nbsp; [Drift](#drift) &nbsp;·&nbsp; [Trees](#trees) &nbsp;·&nbsp; [Naive Bayes](#naive-bayes) &nbsp;·&nbsp; [Distributions](#distributions) &nbsp;·&nbsp; [Nearest neighbours](#nearest-neighbours) &nbsp;·&nbsp; [Multiclass](#multiclass) &nbsp;·&nbsp; [Multi-output](#multi-output) &nbsp;·&nbsp; [Forests](#forests) &nbsp;·&nbsp; [Ensembles](#ensembles) &nbsp;·&nbsp; [Bandits](#bandits) &nbsp;·&nbsp; [Active learning](#active-learning) &nbsp;·&nbsp; [Factorization machines](#factorization-machines) &nbsp;·&nbsp; [Recommenders](#recommenders) &nbsp;·&nbsp; [Rules](#rules) &nbsp;·&nbsp; [Clustering](#clustering) &nbsp;·&nbsp; [Stats](#stats) &nbsp;·&nbsp; [Preprocessing](#preprocessing) &nbsp;·&nbsp; [Compose](#compose) &nbsp;·&nbsp; [Vision](#vision) &nbsp;·&nbsp; [Learn](#learn) &nbsp;·&nbsp; [Datasets](#datasets) &nbsp;·&nbsp; [Protect](#protect) &nbsp;·&nbsp; [Bridges](#bridges) &nbsp;·&nbsp; [Armatura](#armatura) &nbsp;·&nbsp; [Misc](#misc) &nbsp;·&nbsp; [Dynamics](#dynamics)
 
 ---
 
@@ -2792,6 +2792,289 @@ Public methods:
 - `state_dict()`
 - `window_samples(seconds: float)`
 
+## Factorization machines
+
+### FFMClassifier
+
+
+*Module:* `dense_armor.utility.facto.ffm`
+*Bases:* _FFMBase, Classifier
+*Guide:* [facto/index.md](../facto/index.md)
+
+Field-aware factorization machine for binary classification.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: dict, y, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None)`
+- `predict_one(x: dict, t: float | None = None)`
+- `predict_proba_many(X, t=None)`
+- `predict_proba_one(x: dict, t: float | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### FFMRegressor
+
+
+*Module:* `dense_armor.utility.facto.ffm`
+*Bases:* _FFMBase, Regressor
+*Guide:* [facto/index.md](../facto/index.md)
+
+Field-aware factorization machine with squared loss.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: dict, y, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None, return_std=False)`
+- `predict_one(x: dict, t: float | None = None, return_std: bool = False)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### FMClassifier
+
+
+*Module:* `dense_armor.utility.facto.fm`
+*Bases:* _FMBase, Classifier
+*Guide:* [facto/index.md](../facto/index.md)
+
+Factorization machine of degree 2, for binary classification.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: dict, y, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None)`
+- `predict_one(x: dict, t: float | None = None)`
+- `predict_proba_many(X, t=None)`
+- `predict_proba_one(x: dict, t: float | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### FMRegressor
+
+
+*Module:* `dense_armor.utility.facto.fm`
+*Bases:* _FMBase, Regressor
+*Guide:* [facto/index.md](../facto/index.md)
+
+Factorization machine of degree 2, for regression.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: dict, y, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None, return_std=False)`
+- `predict_one(x: dict, t: float | None = None, return_std: bool = False)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### FwFMClassifier
+
+
+*Module:* `dense_armor.utility.facto.fwfm`
+*Bases:* _FwFMBase, Classifier
+*Guide:* [facto/index.md](../facto/index.md)
+
+Field-weighted factorization machine for binary classification.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: dict, y, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None)`
+- `predict_one(x: dict, t: float | None = None)`
+- `predict_proba_many(X, t=None)`
+- `predict_proba_one(x: dict, t: float | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### FwFMRegressor
+
+
+*Module:* `dense_armor.utility.facto.fwfm`
+*Bases:* _FwFMBase, Regressor
+*Guide:* [facto/index.md](../facto/index.md)
+
+Field-weighted factorization machine with squared loss.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: dict, y, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None, return_std=False)`
+- `predict_one(x: dict, t: float | None = None, return_std: bool = False)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### HOFMClassifier
+
+
+*Module:* `dense_armor.utility.facto.hofm`
+*Bases:* _HOFMBase, Classifier
+*Guide:* [facto/index.md](../facto/index.md)
+
+Higher-order factorization machine for binary classification.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: dict, y, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None)`
+- `predict_one(x: dict, t: float | None = None)`
+- `predict_proba_many(X, t=None)`
+- `predict_proba_one(x: dict, t: float | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### HOFMRegressor
+
+
+*Module:* `dense_armor.utility.facto.hofm`
+*Bases:* _HOFMBase, Regressor
+*Guide:* [facto/index.md](../facto/index.md)
+
+Higher-order factorization machine for regression.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: dict, y, t: float | None = None)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_many(X, t=None, return_std=False)`
+- `predict_one(x: dict, t: float | None = None, return_std: bool = False)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+## Recommenders
+
+### Baseline
+
+
+*Module:* `dense_armor.utility.reco.reco`
+*Bases:* _RecoBase
+*Guide:* [reco/index.md](../reco/index.md)
+
+Global mean plus per-user and per-item biases.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_one(user: collections.abc.Hashable, item: collections.abc.Hashable, rating)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_one(user: collections.abc.Hashable, item: collections.abc.Hashable)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### BiasedMF
+
+
+*Module:* `dense_armor.utility.reco.reco`
+*Bases:* _RecoBase
+*Guide:* [reco/index.md](../reco/index.md)
+
+Global mean, biases and latent factors, with SGD.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_one(user: collections.abc.Hashable, item: collections.abc.Hashable, rating)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_one(user: collections.abc.Hashable, item: collections.abc.Hashable)`
+- `rank(user: collections.abc.Hashable, items: collections.abc.Sequence[collections.abc.Hashable], top_k: int | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### FunkMF
+
+
+*Module:* `dense_armor.utility.reco.reco`
+*Bases:* _RecoBase
+*Guide:* [reco/index.md](../reco/index.md)
+
+Plain regularized MF with SGD, no user or item biases.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_one(user: collections.abc.Hashable, item: collections.abc.Hashable, rating)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `predict_one(user: collections.abc.Hashable, item: collections.abc.Hashable)`
+- `rank(user: collections.abc.Hashable, items: collections.abc.Sequence[collections.abc.Hashable], top_k: int | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
 ## Rules
 
 ### AMRulesRegressor
@@ -4391,6 +4674,55 @@ Public methods:
 
 - `dec(v_new: float, fact: float)`
 - `enc(raw_v: float)`
+
+### SDFT
+
+
+*Module:* `dense_armor.utility.misc.sdft`
+*Bases:* Root
+*Guide:* [reco/index.md](../reco/index.md)
+
+Sliding DFT: the N-point DFT of the last N samples, O(N) per update.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `set_params(**params: Any)`
+- `spectrum()`
+- `state_dict()`
+- `update(v: float)`
+- `update_many(values)`
+- `window_samples(seconds: float)`
+
+### Skyline
+
+
+*Module:* `dense_armor.utility.misc.skyline`
+*Bases:* Root
+*Guide:* [reco/index.md](../reco/index.md)
+
+Skyline of a sliding window over a stream of points.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `set_params(**params: Any)`
+- `skyline()`
+- `skyline_points()`
+- `state_dict()`
+- `update(point)`
+- `update_many(points)`
+- `window_samples(seconds: float)`
 
 ## Dynamics
 

@@ -92,3 +92,29 @@ def test_rejects_zero_window():
 def test_doctest():
     res = doctest.testmod(skyline_module, verbose=False)
     assert res.failed == 0
+
+
+class _AsDict:
+    def __init__(self, a, b):
+        self._d = {"a": a, "b": b}
+
+    def to_dict(self):
+        return self._d
+
+
+def test_skyline_accepts_objects_with_to_dict_and_ignores_other_types():
+    from dense_armor.utility.misc import Skyline
+
+    s = Skyline(window=5, dims=["a", "b"])
+    s.update(_AsDict(1.0, 2.0))
+    assert s.skyline() == [0]
+    assert s._as_point(3) is None
+
+
+def test_skyline_update_many_and_skyline_points():
+    from dense_armor.utility.misc import Skyline
+
+    s = Skyline(window=5, dims=["a", "b"])
+    rows = [{"a": 1.0, "b": 2.0}, {"a": 2.0, "b": 1.0}, {"a": 3.0, "b": 3.0}]
+    assert s.update_many(rows) is s
+    assert len(s.skyline_points()) == 2
