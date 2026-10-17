@@ -1,4 +1,4 @@
-"""Video module benchmark: per-frame latency at 640x360.
+"""Video module benchmark: per-frame latency at a chosen resolution.
 
 Runs every module added in Task 21 on three synthetic streams (a smooth
 motion, a sudden cut, a multi-channel thermal sequence) and prints the
@@ -6,13 +6,22 @@ median and the 99th percentile of the per-frame latency in
 microseconds. The JSON next to the script carries the same numbers plus
 the machine and the number of frames per stream.
 
-The 1280x720 and 1920x1080 runs are not measured in the free Colab
-session (2 cores at 1.6 GHz); only the 360p numbers are reported. The
-sizes below are the only ones the script measures.
+The default size is 640x360. Larger sizes (1280x720, 1920x1080) are
+run from a Kaggle kernel (``kaggle/video_quality_kaggle.py``) because
+the full measurement is longer than one Colab session.
 
-Run:
+Command-line arguments:
+
+- ``--size WxH``: frame size, default ``640x360``. The JSON output is
+  ``benchmarks/video_quality_<W>x<H>.json``; the default 640x360 keeps
+  the historical name ``benchmarks/video_quality.json``.
+- ``--smoke``: use a small number of frames (``N_SMOKE``) and the same
+  warm-up, so the script returns in under a minute on any machine.
+
+Run::
 
     python benchmarks/video_quality.py
+    python benchmarks/video_quality.py --size 1280x720 --smoke
 """
 
 import json
@@ -54,6 +63,7 @@ from dense_armor.utility.vision.window import FrameWindow  # noqa: E402
 
 N = 15
 WARM = 3
+N_SMOKE = 4
 
 
 def stream_smooth(H, W, seed=0):
@@ -207,11 +217,38 @@ def machine():
             "python": sys.version.split()[0], "platform": platform.platform()}
 
 
-def main():
+def _parse_size(text):
+    parts = text.lower().split("x")
+    if len(parts) != 2:
+        raise ValueError(f"size must be WxH, got {text!r}")
+    w, h = int(parts[0]), int(parts[1])
+    if w < 8 or h < 8:
+        raise ValueError(f"size too small: {w}x{h}")
+    return w, h
+
+
+def _output_path(w, h):
+    if (w, h) == (640, 360):
+        return "benchmarks/video_quality.json"
+    return f"benchmarks/video_quality_{w}x{h}.json"
+
+
+def main(argv=None):
+    global N, WARM
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--size", default="640x360",
+                    help="frame size WxH, default 640x360")
+    ap.add_argument("--smoke", action="store_true",
+                    help=f"use {N_SMOKE} frames per stream instead of {N}")
+    args = ap.parse_args(argv)
+    W, H = _parse_size(args.size)
+    if args.smoke:
+        N = N_SMOKE
+        WARM = 1
     print("machine:", machine())
     out = {"machine": machine(), "n_frames": N, "warmup": WARM,
-           "streams": {}, "runs": {}}
-    H, W = 360, 640
+           "size": {"W": W, "H": H}, "runs": {}}
     for name, gen in (("smooth", stream_smooth),
                       ("cut", stream_cut),
                       ("thermal", stream_thermal)):
@@ -223,10 +260,11 @@ def main():
         }
         for m, md, p in rows:
             print(f"  {m:22s}  median {md:9.1f}  p99 {p:9.1f} us")
-    with open("benchmarks/video_quality.json", "w") as f:
+    path = _output_path(W, H)
+    with open(path, "w") as f:
         json.dump(out, f, indent=1)
     print()
-    print("JSON: benchmarks/video_quality.json")
+    print(f"JSON: {path}")
 
 
 if __name__ == "__main__":

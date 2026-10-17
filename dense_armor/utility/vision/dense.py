@@ -47,7 +47,6 @@ References:
 import numpy as np
 
 from dense_armor.roles import Transformer
-from dense_armor.utility.vision.motion import GlobalMotion
 
 
 def _to_gray(img: np.ndarray) -> np.ndarray:
@@ -74,8 +73,10 @@ def _average(a: np.ndarray) -> np.ndarray:
     Horn and Schunck (1981) to write the smoothness term.
     """
     return 0.25 * (
-        np.roll(a, 1, axis=0) + np.roll(a, -1, axis=0)
-        + np.roll(a, 1, axis=1) + np.roll(a, -1, axis=1)
+        np.roll(a, 1, axis=0)
+        + np.roll(a, -1, axis=0)
+        + np.roll(a, 1, axis=1)
+        + np.roll(a, -1, axis=1)
     )
 
 
@@ -89,6 +90,21 @@ class DenseFlow(Transformer):
         n_iter: number of Jacobi iterations. Default ``30``.
         use_jax: use the JAX path when the module is available; the
             numpy path is the fallback. Default ``True``.
+        normalize_intensity: if True, both frames are divided by the
+            maximum absolute intensity of the pair before the iteration,
+            and the resulting flow is scaled back by the same factor.
+            The default is ``False`` (the historical behaviour). With
+            ``False``, the flow magnitude depends on the intensity
+            scale of the image, because ``alpha`` weighs the smoothness
+            against the image gradient (Horn and Schunck 1981, eq. 7-8;
+            Ziani 2025, eq. 6, both in this folder). With ``True``, the
+            same texture shifted by the same pixels gives the same
+            flow at intensity scales 0.1, 1, 10 and 255. The flow is
+            returned in pixels, on the normalised pair: it is not
+            multiplied back by the intensity scale, because that would
+            undo the normalisation. The flow magnitude therefore is the
+            flow that an image with gradient of order one would give
+            with the chosen ``alpha``.
 
     Examples:
         >>> import numpy as np
@@ -104,8 +120,13 @@ class DenseFlow(Transformer):
 
     memory_class = "O(HW)"
 
-    def __init__(self, alpha: float = 1.0, n_iter: int = 30,
-                 use_jax: bool = True) -> None:
+    def __init__(
+        self,
+        alpha: float = 1.0,
+        n_iter: int = 30,
+        use_jax: bool = True,
+        normalize_intensity: bool = False,
+    ) -> None:
         if alpha <= 0:
             raise ValueError(f"alpha must be > 0, got {alpha}")
         if n_iter < 1:
@@ -113,6 +134,7 @@ class DenseFlow(Transformer):
         self.alpha = float(alpha)
         self.n_iter = int(n_iter)
         self.use_jax = bool(use_jax)
+        self.normalize_intensity = bool(normalize_intensity)
         self._prev: np.ndarray | None = None
         self._jax_fn = None
 
@@ -124,8 +146,10 @@ class DenseFlow(Transformer):
         return set()
 
     def _prepare(self, x) -> np.ndarray:
-        arr = x["array"] if isinstance(x, dict) else (
-            x.array if hasattr(x, "array") else x
+        arr = (
+            x["array"]
+            if isinstance(x, dict)
+            else (x.array if hasattr(x, "array") else x)
         )
         return _to_gray(np.asarray(arr)).astype(np.float32)
 
@@ -146,12 +170,16 @@ class DenseFlow(Transformer):
                 den = a2 + Ix * Ix + Iy * Iy + 1e-9
                 for _ in range(n_iter):
                     u_bar = 0.25 * (
-                        jnp.roll(u, 1, 0) + jnp.roll(u, -1, 0) +
-                        jnp.roll(u, 1, 1) + jnp.roll(u, -1, 1)
+                        jnp.roll(u, 1, 0)
+                        + jnp.roll(u, -1, 0)
+                        + jnp.roll(u, 1, 1)
+                        + jnp.roll(u, -1, 1)
                     )
                     v_bar = 0.25 * (
-                        jnp.roll(v, 1, 0) + jnp.roll(v, -1, 0) +
-                        jnp.roll(v, 1, 1) + jnp.roll(v, -1, 1)
+                        jnp.roll(v, 1, 0)
+                        + jnp.roll(v, -1, 0)
+                        + jnp.roll(v, 1, 1)
+                        + jnp.roll(v, -1, 1)
                     )
                     prod = Ix * u_bar + Iy * v_bar + It
                     u = u_bar - Ix * prod / den
@@ -184,6 +212,10 @@ class DenseFlow(Transformer):
             return {"u": z, "v": z, "mag": z}
         g1 = self._prev
         g2 = cur
+        if self.normalize_intensity:
+            m = max(float(np.max(np.abs(g1))), float(np.max(np.abs(g2))), 1e-12)
+            g1 = g1 / m
+            g2 = g2 / m
         if self.use_jax:
             try:
                 u, v = self._jax_solve(g1, g2)
