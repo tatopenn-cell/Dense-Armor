@@ -73,3 +73,16 @@ def test_rejects_zero_n():
 def test_doctest():
     res = doctest.testmod(sdft_module, verbose=False)
     assert res.failed == 0
+
+
+def test_sdft_is_zero_before_the_first_sample_and_the_spectrum_is_a_copy():
+    import numpy as np
+
+    from dense_armor.utility.misc import SDFT
+
+    s = SDFT(n=4)
+    assert np.array_equal(s.X, np.zeros(4, dtype=complex))
+    s.update_many([1.0, 2.0, 3.0, 4.0])
+    sp = s.spectrum()
+    sp[0] = 99.0
+    assert s.spectrum()[0] != 99.0

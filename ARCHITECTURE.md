@@ -12,7 +12,7 @@ every file. Update it whenever a module is added, moved or renamed.
    `stream`, `datasets`, `compose`, `preprocessing`, `stats`, `metrics`, `evaluate`, `learn`,
    `tree`, `cluster`, `anomaly`, `drift`, `protect`, `vision`, `control`, `misc`, `bayes`,
    `linear`, `multiclass`, `multioutput`, `neighbors`, `optim`, `proba`, `rules`, `timeseries`,
-   `forest`, `ensemble`, `bandit`, `active`.
+   `forest`, `ensemble`, `bandit`, `active`, `facto`, `reco`.
 3. `dynamics` — rigid-body dynamics from URDF.
 4. `checks` — `check_estimator` and the robot checks.
 5. `bridges` — optional bridges (LLM embeddings, and a bridge to existing online-learning
@@ -46,7 +46,7 @@ graph TD
         PROTECT["protect: classify_segments,<br/>healing_filter, Orca"]
         VISION["vision: VideoFileStream, FrameFeatures,<br/>MotionEnergy, MovingObjectTracker,<br/>PatchFeatures, PatchMemory"]
         CONTROL["control: cbf_safety_filter,<br/>quintic_trajectory"]
-        MISC["misc: Metro, diag, anwav"]
+        MISC["misc: Metro, diag, anwav,<br/>SDFT, Skyline"]
         BAYES["bayes: MultinomialNB, BernoulliNB,<br/>ComplementNB, CategoricalNB"]
         LINEAR["linear: LinearRegression,<br/>LogisticRegression,<br/>BayesianLinearRegression"]
         MULTI["multiclass, multioutput:<br/>OneVsRestClassifier,<br/>ClassifierChain"]
@@ -59,6 +59,8 @@ graph TD
         ENSEMBLE["ensemble: OnlineBaggingClassifier,<br/>OnlineBoostingClassifier,<br/>ExponentiallyWeightedAverageRegressor"]
         BANDIT["bandit: EpsilonGreedy, UCB1,<br/>ThompsonSampling, LinUCBDisjoint"]
         ACTIVE["active: FixedUncertainty,<br/>VariableUncertainty"]
+        FACTO["facto: FMRegressor, FFMRegressor,<br/>FwFMRegressor, HOFMRegressor"]
+        RECO["reco: Baseline, BiasedMF, FunkMF"]
     end
 
     subgraph DYN["3. dynamics/"]
@@ -282,6 +284,8 @@ graph TD
 | `diagnostic.py` | `diag` | diagnostic helper |
 | `iodat.py` | `lodat` | I/O helper |
 | `metro.py` | `Metro` | scaler |
+| `sdft.py` | `SDFT` | sliding discrete Fourier transform, one sample at a time |
+| `skyline.py` | `Skyline` | skyline of the points of a sliding window (Börzsönyi et al.; Tao and Papadias) |
 
 ### 2.17 bayes
 
@@ -387,6 +391,21 @@ graph TD
 |---|---|---|
 | `base.py` | `ActiveStrategy` | base class of the labelling strategies: `should_label`, labelling budget |
 | `strategies.py` | `RandomStrategy`, `FixedUncertainty`, `VariableUncertainty`, `VariableRandomizedUncertainty` | random, fixed-threshold, variable-threshold and randomised-threshold uncertainty with a labelling budget (Zliobaite et al.) |
+
+### 2.30 facto
+
+| file | public names | what it is |
+|---|---|---|
+| `fm.py` | `FMRegressor`, `FMClassifier` | factorization machine with the `O(kn)` pairwise term (Rendle) |
+| `ffm.py` | `FFMRegressor`, `FFMClassifier` | field-aware factorization machine, AdaGrad per coordinate (Juan et al.) |
+| `fwfm.py` | `FwFMRegressor`, `FwFMClassifier` | field-weighted factorization machine (Pan et al.) |
+| `hofm.py` | `HOFMRegressor`, `HOFMClassifier` | higher-order factorization machine, ANOVA kernel of degree `m` (Blondel et al.) |
+
+### 2.31 reco
+
+| file | public names | what it is |
+|---|---|---|
+| `reco.py` | `Baseline`, `BiasedMF`, `FunkMF` | global mean with biases, regularised matrix factorization with biases, and without (Paterek; Koren et al.); `rank` returns the items by predicted rating |
 
 ## 3. dynamics
 
