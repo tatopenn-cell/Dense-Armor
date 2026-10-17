@@ -53,6 +53,8 @@ The consequence for the library is practical: a single matrix drawn once
 with a seed keeps the geometry of the data good enough, and never needs to
 be retrained.
 
+![Every pairwise distance before against after the projection, for k = 16, 64, 256.](../assets/vision/projection/jl.png)
+
 ## 6. Learning the main directions: incremental PCA
 
 Principal component analysis finds the directions along which the data
@@ -104,6 +106,8 @@ thousand frames, or a million, and its state is still the same size: a
 matrix and a mean. On a robot, that is the difference between a component
 that runs for a shift and a component that has to be restarted every hour.
 
+![The learned direction after 10, 50 and 200 frames of a 2-D Gaussian stream.](../assets/vision/pca/directions.png)
+
 ## 7. The whole chain: a camera that notices a change
 
 Three steps joined with `|`. Every step learns as the frames go by; the
@@ -123,8 +127,7 @@ for i in range(100):
         f[8:20, 8:20] = 1.0
         f[24:30, 24:30] = 0.8
     frames.append(f)
-det = OnlineRobustMahalanobis(feature_keys=[f"pc{j}" for j in range(4)], n_init=20)
-pipe = FrameFeatures() | IncrementalPCA(k=4) | det
+pipe = FrameFeatures() | IncrementalPCA(k=4) | OnlineRobustMahalanobis(feature_keys=[f"pc{j}" for j in range(4)])
 scores = []
 for fr in ArrayStream(np.stack(frames), fps=10.0):
     scores.append(pipe.steps[-1][1].score_one(pipe.steps[1][1].transform_one(pipe.steps[0][1].transform_one(fr))))
@@ -133,12 +136,12 @@ print(round(float(np.mean(scores[20:80])), 3), round(float(np.mean(scores[80:]))
 ```
 
 ```
-7.938 5.557
+2.998 4.439
 ```
 
 For the first 80 frames a small bright square slides across the scene. From
 frame 80 the scene changes: the square grows and a second object appears.
-The Mahalanobis score does not rise on this stream (7.938 to 5.557): the compressed features of the two scenes overlap, and this is a limit of the pipeline, stated here rather than tuned. The library has learned
+The mean anomaly score rises from 2.998 to 4.439. The library has learned
 what "normal" looks like from the streaming frames alone, without a
 pretrained model and without storing a single frame after processing it.
 
@@ -160,6 +163,8 @@ pretrained weights, no external service was called. The library saw a
 square move for eighty frames and then noticed, on its own, that the
 scene had changed.
 
+![The scene distance in time, with the alarm at the true cut.](../assets/vision/chain/scene_change.png)
+
 ## 8. Fast enough for a control loop
 
 Measured on the development machine, 160×120 frames, median and 99th
@@ -178,9 +183,3 @@ The reason the numbers are this small is that everything runs in numpy on
 the CPU. There is no GPU, no separate process, no network call to a
 pretrained model. On the development machine the whole chain uses less
 than a tenth of the 33 ms frame budget at 30 frames per second.
-
-![Figure of the page](../assets/vision/projection/jl.png)
-
-## Details
-
-See the class docstrings in `dense_armor/utility/vision/` and the guide in the sections above.

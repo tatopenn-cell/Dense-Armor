@@ -47,6 +47,8 @@ of every edge on the person stays the same. The oriented histogram sees
 the edges and ignores the brightness. A descriptor that survives a change
 in the room lights is what a robot wants.
 
+![A 3 by 4 HOG grid on a scene with a square, one arrow per cell, and the histogram of one cell.](../assets/vision/edges/hog_grid.png)
+
 ## 3. Where the light is
 
 Three global numbers summarise the intensity of the frame: the mean, the
@@ -79,6 +81,8 @@ interesting on its own, but together they catch a whole family of changes
 that the edges alone would miss — a light switched off, a lens partially
 covered, a foggy window. All three are computed with a single pass over
 the frame and no stored state.
+
+![The centroid and the ellipse of the moments on a scene with a bright square.](../assets/vision/light/moments.png)
 
 ## 4c. Colour
 
@@ -121,8 +125,4 @@ grey image, so a change in the room lights does not ripple through every
 other number. A robot that does not care about colour never pays for the
 three extra channels.
 
-![Figure of the page](../assets/vision/edges/hog_grid.png)
-
-## Details
-
-See the class docstrings in `dense_armor/utility/vision/` and the guide in the sections above.
+![A frame with three vertical colour bands and the six colour features as a bar chart.](../assets/vision/colour/colour_features.png)

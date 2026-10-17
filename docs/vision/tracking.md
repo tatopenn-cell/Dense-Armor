@@ -9,6 +9,8 @@ The association is two-round, high confidence first and low confidence
 second, the idea of ByteTrack. The same class accepts boxes from an
 external detector with ``update(boxes)``.
 
+![Two squares tracked with their boxes and ids at the last frame of the stream.](../assets/vision/tracking/two_squares.png)
+
 ## Video to signal, joints to video
 
 `TrackToSignal` and
@@ -21,8 +23,4 @@ aligns the video with the joint readings and estimates the latency of
 the camera by correlating the motion in the video with the joint speed,
 within the frame rate of the source.
 
-![Figure of the page](../assets/vision/tracking/two_squares.png)
-
-## Details
-
-See the class docstrings in `dense_armor/utility/vision/` and the guide in the sections above.
+![Joint speed and video velocity in time, with the true and the estimated lag.](../assets/vision/signals/video_joint_lag.png)

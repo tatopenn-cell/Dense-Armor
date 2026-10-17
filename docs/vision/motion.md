@@ -10,6 +10,8 @@ amount of change (a filtered difference, summarised per frame) and
 motion of the camera from the motion of the objects. On a pure
 translation the shift is exact to the tenth of a pixel.
 
+![MotionEnergy per frame of a moving square, and the error of GlobalMotion on a known shift.](../assets/vision/motion/energy_and_shift.png)
+
 ## Scene changes and temporal anomalies
 
 A hard cut in a video is a level shift in the difference between
@@ -22,6 +24,8 @@ detector of the library. `FrameAnomaly`
 scores a frame against a memory of the patches the library has already
 seen, following the PatchCore idea.
 
+![SceneChange with PageHinkley on a synthetic cut, and FrameAnomaly on normal versus anomalous frames.](../assets/vision/scenes/scene_change_and_anomaly.png)
+
 ## Sliding window
 
 `FrameWindow` keeps the last
@@ -29,9 +33,3 @@ seen, following the PatchCore idea.
 summarises them with streaming mean, standard deviation, motion energy
 and quantiles of the DDSketch sketch. The memory is ``O(n)``, so a
 stream of any length keeps the same footprint.
-
-![Figure of the page](../assets/vision/motion/energy_and_shift.png)
-
-## Details
-
-See the class docstrings in `dense_armor/utility/vision/` and the guide in the sections above.

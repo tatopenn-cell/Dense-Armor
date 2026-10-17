@@ -146,6 +146,8 @@ on large ones. On a robot, this means the same detector works whether the
 arm is moving slowly or fast, and the parameter can be set once and
 forgotten.
 
+![Lucas–Kanade on a smooth scene: small motion, large motion with one level, large motion with three levels.](../assets/vision/flow/lucas_kanade.png)
+
 ## Dense flow and motion mask
 
 `DenseFlow` estimates the flow
@@ -155,8 +157,4 @@ equations 6-8); on a smooth scene the endpoint error is 0.04 px.
 field and returns the pixels that move with respect to the global
 motion; the IoU against a synthetic ground truth is 0.96.
 
-![Figure of the page](../assets/vision/flow/lucas_kanade.png)
-
-## Details
-
-See the class docstrings in `dense_armor/utility/vision/` and the guide in the sections above.
+![Flow vectors and the motion mask on a synthetic scene.](../assets/vision/dense_flow/flow_and_mask.png)

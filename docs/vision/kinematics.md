@@ -12,6 +12,8 @@ angles, speeds and a cycle residual that the drift detectors understand.
 On 20 synthetic seeds the cleaned series has a smaller error than the
 raw one on every seed (Wilcoxon two-sided, A12 = 1.0).
 
+![The elbow angle raw and cleaned against the true angle, with the outliers marked.](../assets/vision/landmarks/angle_raw_cleaned.png)
+
 ## Registration and difference imaging
 
 When the camera moves, the difference between two frames is dominated
@@ -23,8 +25,4 @@ shows what really changed. On a pure translation the shift is exact
 (1998) is not implemented here; the difference is noted in the module
 docstring.
 
-![Figure of the page](../assets/vision/landmarks/angle_raw_cleaned.png)
-
-## Details
-
-See the class docstrings in `dense_armor/utility/vision/` and the guide in the sections above.
+![Reference, shifted frame, plain difference, and the difference after registration.](../assets/vision/registration/shift_and_difference.png)

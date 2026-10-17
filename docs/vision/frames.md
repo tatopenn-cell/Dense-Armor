@@ -45,6 +45,8 @@ different rates, and the rest of the library should not care which one it
 is reading from. The stream is the adapter, the frame is the common
 currency. When a robot gets a new camera, only the stream changes.
 
+![Five frames of a synthetic scene, one every 1/30 s, with the timestamp under each.](../assets/vision/frames/five_frames.png)
+
 ## Reading any video
 
 A video is a stream of frames in time, and it comes from a file, an
@@ -77,8 +79,4 @@ stack, a depth map) reads with
 `CubeStream`. A cube with a
 16-bit depth keeps every value of the sensor without loss.
 
-![Figure of the page](../assets/vision/frames/five_frames.png)
-
-## Details
-
-See the class docstrings in `dense_armor/utility/vision/` and the guide in the sections above.
+![Four bands of a synthetic thermal cube; the hot square sits at 350 in every band.](../assets/vision/frames/thermal_bands.png)
