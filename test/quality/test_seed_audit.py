@@ -26,7 +26,7 @@ def test_walk_estimators_returns_some():
 def test_seed_info_of_hoeffding_tree_has_no_seed():
     m = _load()
     from dense_armor.utility.tree.hoeffding import HoeffdingTreeClassifier
-    has, default, ann = m._seed_info(HoeffdingTreeClassifier)
+    has, default, _ann = m._seed_info(HoeffdingTreeClassifier)
     assert has is False
     assert default == "<absent>"
 
@@ -34,6 +34,6 @@ def test_seed_info_of_hoeffding_tree_has_no_seed():
 def test_seed_info_of_arf_has_seed_none():
     m = _load()
     from dense_armor.utility.forest.arf import AdaptiveRandomForestClassifier
-    has, default, ann = m._seed_info(AdaptiveRandomForestClassifier)
+    has, default, _ann = m._seed_info(AdaptiveRandomForestClassifier)
     assert has is True
     assert default is None

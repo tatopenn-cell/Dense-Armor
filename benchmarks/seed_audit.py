@@ -16,12 +16,11 @@ No code change here: the table is the delivery.
 """
 
 import argparse
-import inspect
 import importlib
+import inspect
 import json
 import os
 from pathlib import Path
-from typing import Any
 
 from dense_armor.roles import Estimator
 
@@ -63,7 +62,7 @@ def _walk_estimators():
         mod_name = str(path.with_suffix("")).replace(os.sep, ".")
         try:
             mod = importlib.import_module(mod_name)
-        except Exception:
+        except Exception:  # noqa: BLE001, S112
             continue
         for attr in dir(mod):
             obj = getattr(mod, attr)
@@ -82,7 +81,7 @@ def _params(cls):
     try:
         gen = cls._unit_test_params()
         return next(iter(gen), {})
-    except Exception:
+    except Exception:  # noqa: BLE001
         return {}
 
 
@@ -100,11 +99,11 @@ def _run(est, stream):
     for x, y, t in stream:
         try:
             est.learn_one(x, y, t=t)
-        except Exception:
+        except Exception:  # noqa: BLE001, S110
             pass
     try:
         return est.state_dict()
-    except Exception:
+    except Exception:  # noqa: BLE001
         return {}
 
 
@@ -128,16 +127,16 @@ def _predict_differs(est_a, est_b, X_probe):
     for xp in X_probe:
         try:
             p_a = est_a.predict_one(xp)
-        except Exception:
+        except Exception:  # noqa: BLE001
             p_a = None
         try:
             p_b = est_b.predict_one(xp)
-        except Exception:
+        except Exception:  # noqa: BLE001
             p_b = None
         try:
             if p_a != p_b:
                 return True
-        except Exception:
+        except Exception:  # noqa: BLE001, S112
             continue
     return False
 
@@ -160,16 +159,16 @@ def main():
         try:
             est_a = cls(**params)
             est_b = cls(**params)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             skipped.append((mod_name, attr, f"{type(e).__name__}: {e}"))
             continue
         try:
             _run(est_a, stream)
             _run(est_b, stream)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             skipped.append((mod_name, attr, f"run {type(e).__name__}: {e}"))
             continue
-        has_seed, default, ann = _seed_info(cls)
+        has_seed, default, _ann = _seed_info(cls)
         differs = _predict_differs(est_a, est_b, probe)
         if differs:
             random_classes.append({

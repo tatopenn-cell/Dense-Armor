@@ -466,8 +466,6 @@ class FIMTDDRegressor(Regressor):
             The number of skipped samples.
         """
         return self.n_missing_
-        self.n_seen_: int = 0
-        self.root_: _Node | None = None
 
     def _resolve_keys(self, x: dict) -> list[str]:
         if self._keys is not None:
