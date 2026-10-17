@@ -21,3 +21,4 @@ esperimenti con ia/
 guida_sentinel.pdf
 *.pdf
 site/
+benchmarks/*_quick.json
