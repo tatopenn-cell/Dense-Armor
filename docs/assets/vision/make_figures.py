@@ -414,6 +414,191 @@ PAGES = [
 ]
 
 
+
+
+def fig_10_motion():
+    """MotionEnergy on a smooth stream, and GlobalMotion on a known shift."""
+    from dense_armor.utility.vision.motion import MotionEnergy, GlobalMotion
+    from dense_armor.utility.vision.streams import ArrayStream
+    from scipy.ndimage import gaussian_filter
+
+    rng = np.random.default_rng(0)
+    frames = []
+    pos = np.array([16.0, 16.0])
+    vel = np.array([1.5, 1.0])
+    for _ in range(15):
+        f = rng.normal(0.1, 0.01, (64, 64)).astype(np.float32)
+        y, x = int(pos[0]), int(pos[1])
+        f[max(0, y):y + 6, max(0, x):x + 6] = 1.0
+        frames.append(f)
+        pos = pos + vel
+    stream = ArrayStream(np.stack(frames), fps=10.0)
+
+    me = MotionEnergy(blur=1, downsample=2, p_high=95.0)
+    energies = []
+    for fr in stream:
+        o = me.transform_one(fr)
+        me.learn_one(fr)
+        energies.append(o["motion_mean"])
+    energies = np.array(energies)
+
+    a = gaussian_filter(rng.normal(0, 1, (64, 64)), 2.0)
+    a = ((a - a.min()) / (a.max() - a.min())).astype(np.float32)
+    shifts = []
+    errs = []
+    for step in range(14):
+        dy = -1 if step % 2 == 0 else 1
+        dx = 1 if step % 3 == 0 else -1
+        b = np.roll(np.roll(a, dy, 0), dx, 1).astype(np.float32)
+        gm = GlobalMotion()
+        gm.learn_one({"array": a, "t": 0.0})
+        o = gm.transform_one({"array": b, "t": 0.033})
+        shifts.append((o["dx"], o["dy"]))
+        errs.append(np.hypot(o["dx"] - dx, o["dy"] - dy))
+        a = b
+    errs = np.array(errs)
+
+    fig, axes = plt.subplots(1, 2, figsize=(7.2, 2.6))
+    ax = axes[0]
+    ax.plot(np.arange(len(energies)), energies, color=BLUE, linewidth=1.5)
+    ax.set_xlabel("frame")
+    ax.set_ylabel("motion mean")
+    ax.set_title("MotionEnergy per frame", fontsize=9)
+    ax.grid(True, alpha=0.3)
+    ax = axes[1]
+    ax.plot(np.arange(len(errs)), errs, "o-", color=BLUE, linewidth=1.4,
+            markersize=6, markeredgecolor=SURFACE)
+    ax.axhline(float(np.median(errs)), color=ORANGE, linestyle="--",
+               linewidth=1.0, label=f"median = {np.median(errs):.2f} px")
+    ax.set_xlabel("step")
+    ax.set_ylabel("shift error [px]")
+    ax.set_title("GlobalMotion: |estimated - true|", fontsize=9)
+    ax.legend(loc="upper right", fontsize=8)
+    ax.grid(True, alpha=0.3)
+    _save(fig, "motion", "energy_and_shift")
+    FIG["fig10_energy"] = [float(v) for v in energies]
+    FIG["fig10_shift_median_err"] = float(np.median(errs))
+    FIG["fig10_shift_max_err"] = float(errs.max())
+
+def fig_11_scenes():
+    """SceneChange and FrameAnomaly on synthetic cuts."""
+    from dense_armor.utility.drift.page_hinkley import PageHinkley
+    from dense_armor.utility.vision.scene import SceneChange, FrameAnomaly
+    from dense_armor.utility.vision.window import FrameWindow
+
+    rng = np.random.default_rng(0)
+    frames = []
+    for i in range(60):
+        if i < 30:
+            frames.append(rng.normal(0.2, 0.02, (64, 64)).astype(np.float32))
+        else:
+            frames.append(rng.normal(0.8, 0.02, (64, 64)).astype(np.float32))
+    det = PageHinkley(threshold=10.0, warmup=10, delta=0.0005)
+    sc = SceneChange(detector=det, bins=32, blur=1, downsample=2)
+    dist = []
+    alarms = []
+    for f in frames:
+        o = sc.transform_one({"array": f})
+        sc.learn_one({"array": f})
+        dist.append(o["distance"])
+        alarms.append(bool(o["scene_change"]))
+    dist = np.array(dist)
+    first = next((i for i, a in enumerate(alarms) if a), -1)
+
+    normal = [rng.normal(0.5, 0.02, (64, 64)).astype(np.float32)
+              for _ in range(40)]
+    fa = FrameAnomaly()
+    for f in normal:
+        fa.learn_one(f)
+    normal_scores = [fa.transform_one(f)["anomaly"] for f in normal]
+    anomalous = [rng.normal(0.9, 0.3, (64, 64)).astype(np.float32)
+                 for _ in range(10)]
+    anomalous_scores = [fa.transform_one(f)["anomaly"]
+                        for f in anomalous]
+
+    fig, axes = plt.subplots(1, 2, figsize=(7.2, 2.6))
+    ax = axes[0]
+    ax.plot(np.arange(len(dist)), dist, color=BLUE, linewidth=1.4,
+            label="scene distance")
+    if first >= 0:
+        ax.axvline(first, color=ORANGE, linestyle="--", linewidth=1.2,
+                   label=f"alarm frame {first}")
+    ax.axvline(30, color=INK, linestyle=":", linewidth=1.0,
+               label="true cut at 30")
+    ax.set_xlabel("frame")
+    ax.set_ylabel("scene distance")
+    ax.set_title("SceneChange with PageHinkley", fontsize=9)
+    ax.legend(loc="upper left", fontsize=8)
+    ax.grid(True, alpha=0.3)
+    ax = axes[1]
+    ax.bar(["normal", "anomalous"],
+           [float(np.mean(normal_scores)), float(np.mean(anomalous_scores))],
+           color=[BLUE, ORANGE], edgecolor=INK, linewidth=0.5)
+    ax.set_ylabel("mean anomaly score")
+    ax.set_title("FrameAnomaly on 64x64 frames", fontsize=9)
+    ax.grid(True, axis="y", alpha=0.3)
+    _save(fig, "scenes", "scene_change_and_anomaly")
+    FIG["fig11_first_alarm"] = int(first)
+    FIG["fig11_true_cut"] = 30
+    FIG["fig11_normal_score"] = float(np.mean(normal_scores))
+    FIG["fig11_anomalous_score"] = float(np.mean(anomalous_scores))
+
+
+def fig_12_tracking():
+    """MovingObjectTracker on boxes from a known ground truth."""
+    from dense_armor.utility.vision.tracking import MovingObjectTracker
+
+    rng = np.random.default_rng(0)
+    frames = []
+    boxes = []
+    for i in range(20):
+        f = rng.normal(0.1, 0.01, (64, 64)).astype(np.float32)
+        ya, xa = int(10 + 1.5 * i), int(5 + 1.0 * i)
+        yb, xb = int(45 - 1.0 * i), int(50 - 1.5 * i)
+        f[ya:ya + 6, xa:xa + 6] = 1.0
+        f[yb:yb + 6, xb:xb + 6] = 0.9
+        frames.append(f)
+        boxes.append([
+            (float(xa), float(ya), float(xa + 6), float(ya + 6), 1.0),
+            (float(xb), float(yb), float(xb + 6), float(yb + 6), 1.0),
+        ])
+    tr = MovingObjectTracker(min_area=8, max_missing=3)
+    last = None
+    for b in boxes:
+        last = tr.update(b)
+    fig, ax = plt.subplots(figsize=(4.2, 4.2))
+    ax.imshow(frames[-1], cmap="gray", vmin=0.0, vmax=1.0)
+    n_tracks = len(last["tracks"])
+    for track in last["tracks"]:
+        x0, y0, x1, y1 = track["box"]
+        ax.add_patch(plt.Rectangle((x0, y0), x1 - x0, y1 - y0,
+                                   fill=False, edgecolor=ORANGE,
+                                   linewidth=1.4))
+        ax.text(x0, y0 - 2, f"id {track['id']}", color=ORANGE, fontsize=9)
+    ax.set_title(f"{n_tracks} tracks at frame 19", fontsize=9)
+    ax.set_xticks(np.arange(0, 65, 16))
+    ax.set_yticks(np.arange(0, 65, 16))
+    _save(fig, "tracking", "two_squares")
+    FIG["fig12_n_tracks"] = n_tracks
+    FIG["fig12_ids"] = [int(t["id"]) for t in last["tracks"]]
+
+
+PAGES = [
+    ("fig_01_frames", fig_01_frames),
+    ("fig_02_thermal", fig_02_thermal),
+    ("fig_03_hog", fig_03_hog),
+    ("fig_04_moments", fig_04_moments),
+    ("fig_05_flow", fig_05_flow),
+    ("fig_06_colour", fig_06_colour),
+    ("fig_07_projection", fig_07_projection),
+    ("fig_08_pca", fig_08_pca),
+    ("fig_09_chain", fig_09_chain),
+    ("fig_10_motion", fig_10_motion),
+    ("fig_11_scenes", fig_11_scenes),
+    ("fig_12_tracking", fig_12_tracking),
+]
+
+
 if __name__ == "__main__":
     print("Generating docs/assets/vision/")
     for name, fn in PAGES:
@@ -423,3 +608,154 @@ if __name__ == "__main__":
     )
     print(f"figures.json: {len(FIG)} keys")
     print("Done.")
+
+
+def fig_13_signals():
+    """FrameJointFusion: estimate the lag between video velocity and joints."""
+    from dense_armor.utility.vision.fusion import FrameJointFusion
+
+    fps = 30.0
+    T = 6.0
+    n = int(T * fps)
+    t = np.arange(n) / fps
+    joint = np.sin(2 * np.pi * 0.5 * t)
+    lag_frames = 2
+    vid = np.roll(joint, lag_frames) + np.random.default_rng(0).normal(0, 0.05, n)
+    fjf = FrameJointFusion(max_lag_s=0.1, window_s=1.0, frame_rate_hz=fps)
+    for i in range(n):
+        fjf.add_joint_speed(float(joint[i]), float(t[i]))
+        fjf.add_video_velocity(float(vid[i]), float(t[i]))
+    est = fjf.estimate()
+    fig, axes = plt.subplots(1, 2, figsize=(7.2, 2.6))
+    ax = axes[0]
+    ax.plot(t, joint, color=BLUE, linewidth=1.4, label="joint speed")
+    ax.plot(t, vid, color=ORANGE, linewidth=1.0, alpha=0.8,
+            label="video velocity (lag 2 frames)")
+    ax.set_xlabel("time [s]")
+    ax.set_ylabel("normalised value")
+    ax.legend(loc="upper right", fontsize=8)
+    ax.grid(True, alpha=0.3)
+    ax = axes[1]
+    ax.axhline(2 * lag_frames / fps * 1000.0, color=INK, linestyle="--",
+               linewidth=1.0, label="true lag = 66.7 ms")
+    ax.axhline(est * 1000.0 if isinstance(est, float) else float(est["lag_s"]) * 1000.0,
+               color=ORANGE, linewidth=1.4, label="estimated lag")
+    ax.set_ylim(0, 120)
+    ax.set_ylabel("lag [ms]")
+    ax.set_xticks([])
+    ax.legend(loc="upper right", fontsize=8)
+    ax.grid(True, axis="y", alpha=0.3)
+    _save(fig, "signals", "video_joint_lag")
+    FIG["fig13_true_lag_s"] = 2.0 / fps
+    FIG["fig13_est_lag_s"] = (est if isinstance(est, float)
+                              else float(est.get("lag_s", -1.0)))
+
+
+def fig_14_landmarks():
+    """Kinematics: elbow angle raw vs cleaned, with outliers."""
+    from dense_armor.utility.vision.landmarks import (
+        Kinematics, LandmarkCleaner, LandmarkStream,
+    )
+
+    fps = 30.0
+    n = 90
+    t = np.arange(n) / fps
+    true_angle = 90.0 + 30.0 * np.sin(2 * np.pi * t)
+    rng = np.random.default_rng(0)
+    # costruisco i punti (shoulder, elbow, wrist) con angolo vero
+    rad = np.radians(true_angle)
+    sh = np.zeros((n, 2))
+    el = np.stack([np.cos(rad), np.sin(rad)], axis=1) * 10.0
+    wr = el + np.stack([np.cos(rad * 1.2), np.sin(rad * 1.2)], axis=1) * 10.0
+    pts = np.stack([sh, el, wr], axis=1)
+    pts += rng.normal(0, 0.5, pts.shape)
+    for f, d in [(20, 20.0), (45, 20.0), (46, 20.0), (70, 20.0)]:
+        pts[f, 1, 0] += d
+
+    stream = LandmarkStream(pts, fps=fps)
+    cl = LandmarkCleaner(window=7, n_sigmas=3.0, max_gap=5)
+    kin = Kinematics(triples=[(0, 1, 2)])
+    raw_angles = []
+    clean_angles = []
+    for i, fr in enumerate(stream):
+        p = fr.points if hasattr(fr, "points") else np.asarray(fr)
+        k_raw = Kinematics(triples=[(0, 1, 2)])
+        o_raw = k_raw.transform_one({"points": p})
+        a_raw = list(o_raw.values())[0]
+        raw_angles.append(a_raw)
+        _ = cl.learn_one({"points": p})
+        o_clean = cl.transform_one({"points": p})
+        p_clean = o_clean["points"]
+        o_c = kin.transform_one({"points": p_clean})
+        clean_angles.append(list(o_c.values())[0])
+    raw = np.array(raw_angles)
+    clean = np.array(clean_angles)
+    err_raw = float(np.sqrt(np.mean((raw - true_angle) ** 2)))
+    err_clean = float(np.sqrt(np.mean((clean - true_angle) ** 2)))
+    fig, ax = plt.subplots(figsize=(7.2, 3.0))
+    ax.plot(t, true_angle, color=INK, linestyle="--", linewidth=1.2,
+            label="true angle")
+    ax.plot(t, raw, color=ORANGE, linewidth=1.0, alpha=0.8,
+            label=f"raw  (RMSE {err_raw:.2f} deg)")
+    ax.plot(t, clean, color=BLUE, linewidth=1.4,
+            label=f"cleaned (RMSE {err_clean:.2f} deg)")
+    ax.set_xlabel("time [s]")
+    ax.set_ylabel("elbow angle [deg]")
+    ax.legend(loc="upper right", fontsize=8)
+    ax.grid(True, alpha=0.3)
+    _save(fig, "landmarks", "angle_raw_cleaned")
+    FIG["fig14_rmse_raw"] = err_raw
+    FIG["fig14_rmse_clean"] = err_clean
+
+
+def fig_15_registration():
+    """Registration and DifferenceImage on a known shift."""
+    from scipy.ndimage import gaussian_filter
+    from dense_armor.utility.vision.registration import (
+        Registration, DifferenceImage,
+    )
+
+    rng = np.random.default_rng(0)
+    a = gaussian_filter(rng.normal(0, 1, (64, 64)), 2.0)
+    a = ((a - a.min()) / (a.max() - a.min())).astype(np.float32)
+    b = np.roll(np.roll(a, 3, 0), -4, 1).astype(np.float32)
+    b[30:36, 30:36] = 1.0
+    reg = Registration()
+    reg.learn_one({"array": a, "t": 0.0})
+    o = reg.transform_one({"array": b, "t": 0.033})
+    shift = (o["dy"], o["dx"])
+    b_aligned = o.get("array", b)
+    di_plain = DifferenceImage(alpha=0.0)
+    di_plain.learn_one({"array": a})
+    d_plain = di_plain.transform_one({"array": b})
+    di_reg = DifferenceImage(alpha=0.0)
+    di_reg.learn_one({"array": a})
+    d_reg = di_reg.transform_one({"array": b_aligned})
+    dp = d_plain["array"] if isinstance(d_plain, dict) else d_plain
+    dr = d_reg["array"] if isinstance(d_reg, dict) else d_reg
+    fig, axes = plt.subplots(1, 4, figsize=(7.2, 2.0))
+    for ax, img, title in [
+        (axes[0], a, "reference"),
+        (axes[1], b, "shifted + square"),
+        (axes[2], np.abs(dp), "plain difference"),
+        (axes[3], np.abs(dr), "registered difference"),
+    ]:
+        ax.imshow(img, cmap="gray")
+        ax.set_title(title, fontsize=9)
+        ax.axis("off")
+    _save(fig, "registration", "shift_and_difference")
+    FIG["fig15_shift_dy"] = float(shift[0])
+    FIG["fig15_shift_dx"] = float(shift[1])
+    FIG["fig15_true_dy"] = 3.0
+    FIG["fig15_true_dx"] = -4.0
+    FIG["fig15_max_plain"] = float(np.abs(dp).max())
+    FIG["fig15_max_reg"] = float(np.abs(dr).max())
+
+
+_EXTRA4 = [
+    ("fig_13_signals", fig_13_signals),
+    ("fig_14_landmarks", fig_14_landmarks),
+    ("fig_15_registration", fig_15_registration),
+]
+for _n, _f in _EXTRA4:
+    PAGES.insert(-1, (_n, _f))
