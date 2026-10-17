@@ -2,7 +2,7 @@
 Author: Salvatore Pennacchio (Napoli, 2026). Sister project: Dense-Evolution."""
 import logging
 
-__version__ = "1.1.29"
+__version__ = "1.1.30"
 
 from . import _compat
 
