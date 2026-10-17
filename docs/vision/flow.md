@@ -83,12 +83,15 @@ for levels in (1, 3):
 3 6.0
 ```
 
-The square jumped 6 pixels to the right. With a single level the library
-sees a flow of 1.0, six times too small: the equation was linearised at
-the original position and the gradient of the square's edge only supports
-a small correction. With three levels the answer is 6.0, exactly right.
-The pyramid did not make the code smarter; it made the motion look smaller
-at first.
+The square jumped 6 pixels to the right. With `flow_levels=1` (the
+default) the library sees a flow of 1.0, six times too small: the equation
+was linearised at the original position and the gradient of the square's
+edge only supports a small correction. The benchmark
+`benchmarks/flow_levels.py` measures the flow of each `flow_levels` from 1
+to 4 on shifts of 1, 3, 6 and 10 pixels: `2` recovers (3, 2), `3` recovers
+(6, 4), `4` recovers (10, 6), and `1` recovers only the 1-pixel shift. With
+three levels the answer is 6.0, exactly right. The pyramid did not make the
+code smarter; it made the motion look smaller at first.
 
 The scheme has three steps, all of them classical:
 
