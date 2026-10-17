@@ -52,7 +52,7 @@ class SDFT(Root):
         (Section "SDFT as", MATLAB code).
     """
 
-    budget_s: float = 1e-5
+    budget_s: float = 8e-3
     memory_class: str = "O(N)"
 
     def __init__(self, n: int = 8) -> None:

@@ -56,7 +56,7 @@ class _FFMBase:
         ValueError: if ``k < 1``, ``lr <= 0`` or ``l2 < 0``.
     """
 
-    budget_s: float = 1e-2
+    budget_s: float = 2e-3
     memory_class: str = "O(n * f * k)"
 
     def __init__(

@@ -106,7 +106,7 @@ class Baseline(_RecoBase):
         workshop, KDD Cup and Workshop 2007. Section 3.3, eq. (2), page 2.
     """
 
-    budget_s: float = 1e-4
+    budget_s: float = 2e-4
     memory_class: str = "O(n_users + n_items)"
 
     def __init__(
@@ -193,7 +193,7 @@ class BiasedMF(_RecoBase):
         page 4, and the SGD update, page 4.
     """
 
-    budget_s: float = 1e-3
+    budget_s: float = 1e-2
     memory_class: str = "O((n_users + n_items) * k)"
 
     def __init__(
@@ -310,7 +310,7 @@ class FunkMF(_RecoBase):
         Paterek, A. (2007). Improving Regularized SVD. eq. (1), page 2.
     """
 
-    budget_s: float = 1e-3
+    budget_s: float = 2e-3
     memory_class: str = "O((n_users + n_items) * k)"
 
     def __init__(

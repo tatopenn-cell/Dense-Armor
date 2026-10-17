@@ -95,7 +95,7 @@ class _HOFMBase:
         ValueError: if ``m < 2``, ``k < 1`` or ``l2 < 0``.
     """
 
-    budget_s: float = 5e-3
+    budget_s: float = 1.5e-2
     memory_class: str = "O(d + (m - 1) * d * k)"
 
     def __init__(

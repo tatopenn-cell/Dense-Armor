@@ -83,7 +83,7 @@ class Skyline(Root):
         maintenance).
     """
 
-    budget_s: float = 1e-3
+    budget_s: float = 1.5e-2
     memory_class: str = "O(window * dims)"
 
     def __init__(self, window: int = 10, dims: Sequence[str] | None = None) -> None:

@@ -55,7 +55,7 @@ class _FwFMBase:
         ValueError: if ``k < 1`` or ``l2 < 0``.
     """
 
-    budget_s: float = 5e-3
+    budget_s: float = 2e-3
     memory_class: str = "O(n * k + f * f)"
 
     def __init__(

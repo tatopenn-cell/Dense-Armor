@@ -18,7 +18,7 @@ def _sigmoid(z: float) -> float:
 class _FMBase:
     """Common code for FMRegressor and FMClassifier."""
 
-    budget_s: float = 1e-3
+    budget_s: float = 1.5e-2
     memory_class: str = "O(n * k)"
 
     def __init__(
