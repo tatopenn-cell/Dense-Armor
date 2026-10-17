@@ -1,17 +1,19 @@
-# -*- coding: utf-8 -*-
 # ABCOLLATZ CONJECTURE-DRIVEN SMOOTHING SHIELD
 # SYSTEM TRANSFORM CORES FOR DYNAMIC DAMPING REGULATION
 
+from functools import partial
+
 import jax
 import jax.numpy as jnp
-from functools import partial
+
 
 class ABCollatz:
     """
     Funttore d'asse discreto per la particolarizzazione del rumore binario.
-    Combina l'evoluzione di Collatz con il limite olografico ABC 
+    Combina l'evoluzione di Collatz con il limite olografico ABC
     per calcolare la sensibilità microscopica della molla di smorzamento.
     """
+
     def __init__(self, epsilon_target: float = 1.0) -> None:
         """epsilon_target — soglia target di discrepanza ABC usata dal gating."""
         self.epsilon_target = epsilon_target
@@ -59,10 +61,10 @@ class ABCollatz:
         divisors = jnp.arange(2, 256, dtype=jnp.float64)
         is_factor = jnp.where((divisors <= n) & (n % divisors == 0.0), 1.0, 0.0)
         is_prime_factor = is_factor * jax.vmap(ABCollatz.check_prime_native)(divisors)
-        
+
         log_factors = jnp.where(is_prime_factor > 0.5, jnp.log(divisors), 0.0)
         rad_value = jnp.exp(jnp.sum(log_factors))
-        
+
         return jnp.where(n == 0.0, 0.0, jnp.where(n == 1.0, 1.0, jnp.round(rad_value)))
 
     @partial(jax.jit, static_argnums=(0,))
@@ -100,7 +102,9 @@ class ABCollatz:
         return jnp.abs(radical_product - (jnp.abs(c_safe) ** self.epsilon_target))
 
     @partial(jax.jit, static_argnums=(0,))
-    def compute_damping_gating(self, x_corrupted: jnp.ndarray, x_clean: jnp.ndarray) -> jnp.ndarray:
+    def compute_damping_gating(
+        self, x_corrupted: jnp.ndarray, x_clean: jnp.ndarray
+    ) -> jnp.ndarray:
         """
         Interfaccia di aggancio per il Dynamic Damping.
 
@@ -137,7 +141,9 @@ class ABCollatz:
         return jnp.full_like(x_corrupted, 0.85)
 
     @partial(jax.jit, static_argnums=(0,))
-    def compute_damping_gating_smooth(self, x_corrupted: jnp.ndarray, x_clean: jnp.ndarray) -> jnp.ndarray:
+    def compute_damping_gating_smooth(
+        self, x_corrupted: jnp.ndarray, x_clean: jnp.ndarray
+    ) -> jnp.ndarray:
         """Variante sperimentale di compute_damping_gating: usa la mappa di
         Collatz continua (execute_collatz_step_smooth) su indici NON
         arrotondati, invece dello scalino discreto su interi.
@@ -159,14 +165,18 @@ class ABCollatz:
         # NIENTE jnp.round qui: e' proprio il punto della versione continua
         n_indices = noise_b * 100.0 + 3.0
 
-        collatz_wave = jax.vmap(self.execute_collatz_step_smooth)(n_indices.flatten()).reshape(orig_shape)
+        collatz_wave = jax.vmap(self.execute_collatz_step_smooth)(
+            n_indices.flatten()
+        ).reshape(orig_shape)
 
         # smooth_mode=True: non ri-arrotondare collatz_wave dentro
         # evaluate_abc_discrepancy, altrimenti i decimali fluidi generati
         # sopra da execute_collatz_step_smooth andrebbero persi comunque.
         # in_axes=(0,0,0,None): smooth_mode e' uno scalare condiviso da ogni
         # elemento del vmap, non un array da indicizzare.
-        discrepancy_epsilon = jax.vmap(self.evaluate_abc_discrepancy, in_axes=(0, 0, 0, None))(
+        discrepancy_epsilon = jax.vmap(
+            self.evaluate_abc_discrepancy, in_axes=(0, 0, 0, None)
+        )(
             x_clean.flatten(),
             collatz_wave.flatten(),
             x_corrupted_safe.flatten(),

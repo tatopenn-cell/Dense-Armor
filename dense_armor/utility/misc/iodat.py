@@ -1,6 +1,6 @@
-# -*- coding: utf-8 -*-
 import logging
 import os
+
 import h5py
 import netCDF4
 import numpy as np
@@ -18,14 +18,14 @@ def lodat(fpath: str, dname: str) -> np.ndarray:
 
     exten = os.path.splitext(fpath)[1].lower()
 
-    if exten in ['.h5', '.hdf5']:
-        with h5py.File(fpath, 'r') as f:
+    if exten in [".h5", ".hdf5"]:
+        with h5py.File(fpath, "r") as f:
             data = np.array(f[dname])
         logger.info("Estratto HDF5: %s | Shape: %s", fpath, data.shape)
         return data
 
-    elif exten in ['.nc', '.netcdf']:
-        with netCDF4.Dataset(fpath, 'r') as f:
+    elif exten in [".nc", ".netcdf"]:
+        with netCDF4.Dataset(fpath, "r") as f:
             data = np.array(f.variables[dname][:])
         logger.info("Estratto NetCDF: %s | Shape: %s", fpath, data.shape)
         return data

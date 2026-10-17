@@ -140,6 +140,8 @@ nav:
       - Ensembles: ensemble/index.md
       - Bandits: bandit/index.md
       - Active learning: active/index.md
+      - Factorization machines: facto/index.md
+      - Recommenders: reco/index.md
       - Offline, the whole dataset at once: offline.md
       - Rules: rules/index.md
 
