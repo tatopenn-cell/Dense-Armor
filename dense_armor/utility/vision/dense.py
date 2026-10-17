@@ -44,6 +44,8 @@ References:
         arXiv:2511.16535. Equations 6, 7, 8.
 """
 
+from typing import Any
+
 import numpy as np
 
 from dense_armor.roles import Transformer
@@ -136,7 +138,7 @@ class DenseFlow(Transformer):
         self.use_jax = bool(use_jax)
         self.normalize_intensity = bool(normalize_intensity)
         self._prev: np.ndarray | None = None
-        self._jax_fn = None
+        self._jax_fn: Any = None
 
     def _reset(self) -> None:
         self._prev = None

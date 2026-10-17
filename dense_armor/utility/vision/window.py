@@ -125,7 +125,10 @@ class FrameWindow(Transformer):
                 self._motion.pop(0)
                 self._times.pop(0)
         else:
-            while self._times and now - self._times[0] > self.seconds:
+            secs = self.seconds
+            if secs is None:
+                return
+            while self._times and now - self._times[0] > secs:
                 self._arrays.pop(0)
                 self._motion.pop(0)
                 self._times.pop(0)
