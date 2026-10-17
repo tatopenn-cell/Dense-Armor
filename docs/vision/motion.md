@@ -33,3 +33,11 @@ seen, following the PatchCore idea.
 summarises them with streaming mean, standard deviation, motion energy
 and quantiles of the DDSketch sketch. The memory is ``O(n)``, so a
 stream of any length keeps the same footprint.
+
+### API
+
+- [`MotionEnergy`](../api/general.md#motionenergy)
+- [`GlobalMotion`](../api/general.md#globalmotion)
+- [`SceneChange`](../api/general.md#scenechange)
+- [`FrameAnomaly`](../api/general.md#frameanomaly)
+- [`FrameWindow`](../api/general.md#framewindow)

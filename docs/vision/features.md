@@ -126,3 +126,7 @@ other number. A robot that does not care about colour never pays for the
 three extra channels.
 
 ![A frame with three vertical colour bands and the six colour features as a bar chart.](../assets/vision/colour/colour_features.png)
+
+### API
+
+- [`FrameFeatures`](../api/general.md#framefeatures)

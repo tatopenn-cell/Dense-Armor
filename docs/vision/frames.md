@@ -80,3 +80,12 @@ stack, a depth map) reads with
 16-bit depth keeps every value of the sensor without loss.
 
 ![Four bands of a synthetic thermal cube; the hot square sits at 350 in every band.](../assets/vision/frames/thermal_bands.png)
+
+### API
+
+- [`Frame`](../api/general.md#frame)
+- [`ArrayStream`](../api/general.md#arraystream)
+- [`ImageFolderStream`](../api/general.md#imagefolderstream)
+- [`CameraStream`](../api/general.md#camerastream)
+- [`VideoFileStream`](../api/general.md#videofilestream)
+- [`CubeStream`](../api/general.md#cubestream)

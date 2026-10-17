@@ -183,3 +183,8 @@ The reason the numbers are this small is that everything runs in numpy on
 the CPU. There is no GPU, no separate process, no network call to a
 pretrained model. On the development machine the whole chain uses less
 than a tenth of the 33 ms frame budget at 30 frames per second.
+
+### API
+
+- [`RandomProjection`](../api/general.md#randomprojection)
+- [`IncrementalPCA`](../api/general.md#incrementalpca)

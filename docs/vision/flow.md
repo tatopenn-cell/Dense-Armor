@@ -155,6 +155,12 @@ at every pixel with the Horn-Schunck iteration (Ziani 2025,
 equations 6-8); on a smooth scene the endpoint error is 0.04 px.
 `MotionMask` takes the flow
 field and returns the pixels that move with respect to the global
-motion; the IoU against a synthetic ground truth is 0.96.
+motion; the IoU against a synthetic ground truth is reported in the figure caption.
 
 ![Flow vectors and the motion mask on a synthetic scene.](../assets/vision/dense_flow/flow_and_mask.png)
+
+### API
+
+- [`FrameFeatures`](../api/general.md#framefeatures)
+- [`DenseFlow`](../api/general.md#denseflow)
+- [`MotionMask`](../api/general.md#motionmask)

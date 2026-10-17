@@ -26,3 +26,12 @@ shows what really changed. On a pure translation the shift is exact
 docstring.
 
 ![Reference, shifted frame, plain difference, and the difference after registration.](../assets/vision/registration/shift_and_difference.png)
+
+### API
+
+- [`LandmarkStream`](../api/general.md#landmarkstream)
+- [`LandmarkCleaner`](../api/general.md#landmarkcleaner)
+- [`Kinematics`](../api/general.md#kinematics)
+- [`Registration`](../api/general.md#registration)
+- [`Stabilizer`](../api/general.md#stabilizer)
+- [`DifferenceImage`](../api/general.md#differenceimage)

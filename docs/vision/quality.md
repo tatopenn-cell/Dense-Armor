@@ -33,3 +33,12 @@ the numbers and the machine. The 1280x720 and 1920x1080 runs exceed
 the free Colab session, and are reported as not measured.
 
 ![Median milliseconds per frame at 640 by 360 for every module of the video package.](../assets/vision/benchmark/ms_per_frame.png)
+
+### API
+
+- [`FrameQuality`](../api/general.md#framequality)
+- [`Sync`](../api/general.md#sync)
+- [`EventFrame`](../api/general.md#eventframe)
+- [`FalseColor`](../api/general.md#falsecolor)
+- [`Overlay`](../api/general.md#overlay)
+- [`VideoWriter`](../api/general.md#videowriter)

@@ -24,3 +24,10 @@ the camera by correlating the motion in the video with the joint speed,
 within the frame rate of the source.
 
 ![Joint speed and video velocity in time, with the true and the estimated lag.](../assets/vision/signals/video_joint_lag.png)
+
+### API
+
+- [`MovingObjectTracker`](../api/general.md#movingobjecttracker)
+- [`TrackToSignal`](../api/general.md#tracktosignal)
+- [`FeatureToSignal`](../api/general.md#featuretosignal)
+- [`FrameJointFusion`](../api/general.md#framejointfusion)
