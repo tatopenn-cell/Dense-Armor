@@ -76,8 +76,12 @@ def test_gradient_matches_eq_5_and_6():
     G_i_before = ffm._G[i_a, f_c].copy()
     G_j_before = ffm._G[i_c, f_a].copy()
     ffm.learn_one(x, y)
-    expected_w_i = w_i_before - 0.1 * expected_g_i / np.sqrt(G_i_before + expected_g_i**2)
-    expected_w_j = w_j_before - 0.1 * expected_g_j / np.sqrt(G_j_before + expected_g_j**2)
+    expected_w_i = w_i_before - 0.1 * expected_g_i / np.sqrt(
+        G_i_before + expected_g_i**2
+    )
+    expected_w_j = w_j_before - 0.1 * expected_g_j / np.sqrt(
+        G_j_before + expected_g_j**2
+    )
     assert np.allclose(expected_w_i, ffm._w[i_a, f_c], atol=1e-10)
     assert np.allclose(expected_w_j, ffm._w[i_c, f_a], atol=1e-10)
 
