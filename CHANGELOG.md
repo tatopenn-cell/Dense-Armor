@@ -4,6 +4,22 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+## [1.1.31] - 2026-10-17
+
+### Added
+- `CUSUMDriftDetector(reset_on_alarm=False)` and the counter `n_alarms_`: with `reset_on_alarm=True` the statistic and the reference restart after an alarm, so a sustained step gives one alarm and not one per sample. The default is the old behaviour. `benchmarks/casper_hours_episodes.py` and `kaggle/casper_hours_episodes.py` count alarm episodes per hour next to the count of flagged samples.
+- `learn_many` on `RunningMoments` and `RunningMomentsVector`: a vectorised batch update, equal to the row loop within `1e-9` (tested).
+- `dense_armor/utility/_validation.py`: `as_dict`, `finite_row` and `is_number`, the validation that several estimators copy; the existing classes are not changed.
+- `FIMTDDRegressor.n_missing`, the name the rest of the library uses; `n_missing_` stays.
+- `benchmarks/flow_levels.py` and its JSON: the error of the optical flow against the true shift for one to four pyramid levels and for the intensity scales, with and without `normalize_intensity`; `docs/vision/flow.md` states what each number of levels recovers.
+- `benchmarks/seed_audit.py` and its JSON: the estimators whose output depends on chance, and the default of their `seed`; `benchmarks/hotspots.py`: the profile of five models.
+
+### Fixed
+- Type errors of `mypy` in `vision/window.py`, `drift/cusum.py` and `vision/dense.py`, with no change of behaviour.
+
+### Changed
+- The DOI of version 1.1.30 in the README badge, the README links and `CITATION.cff`.
+
 ## [1.1.30] - 2026-10-17
 
 ### Master program 1 closed
