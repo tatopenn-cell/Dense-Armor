@@ -71,3 +71,19 @@ def test_exp3_clone():
     assert type(c) is Exp3
     assert c.gamma == 0.05
     assert c.seed == 7
+
+
+def test_exp3_is_uniform_when_every_weight_vanishes():
+    p = Exp3(arms=[0, 1, 2], gamma=0.1, seed=0)
+    p.weights_ = {0: 0.0, 1: 0.0, 2: 0.0}
+    assert p._probabilities() == {0: 1.0 / 3, 1: 1.0 / 3, 2: 1.0 / 3}
+
+
+def test_exp3_returns_the_last_arm_when_the_draw_exceeds_the_cumulative_sum():
+    class _Draw:
+        def random(self):
+            return 2.0
+
+    p = Exp3(arms=[0, 1], gamma=0.1, seed=0)
+    p._rng = _Draw()
+    assert p.pull() == 1

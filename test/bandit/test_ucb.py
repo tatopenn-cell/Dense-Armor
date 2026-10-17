@@ -111,3 +111,27 @@ def test_ucb1_tuned_clone():
     c = p.clone()
     assert type(c) is UCB1Tuned
     assert c.seed == 3
+
+
+def test_epsilon_greedy_falls_back_to_the_first_arm_when_means_are_nan():
+    p = EpsilonGreedy(arms=["a", "b"], epsilon=0.0, seed=0)
+    p.counts_ = {"a": 1, "b": 1}
+    p.means_ = {"a": float("nan"), "b": float("nan")}
+    assert p.pull() == "a"
+
+
+def test_epsilon_greedy_counts_invalid_updates_as_missing():
+    p = EpsilonGreedy(arms=["a", "b"], seed=0)
+    p.update("a", float("nan"))
+    p.update("zzz", 1.0)
+    assert p.n_missing == 2
+
+
+def test_ucb1_index_is_infinite_for_an_unplayed_arm():
+    p = UCB1(arms=["a", "b"], seed=0)
+    assert p._index("a", 1) == float("inf")
+
+
+def test_ucb1_tuned_index_is_infinite_for_an_unplayed_arm():
+    p = UCB1Tuned(arms=["a", "b"], seed=0)
+    assert p._index("a", 1) == float("inf")

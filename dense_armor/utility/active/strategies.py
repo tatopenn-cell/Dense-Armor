@@ -1,5 +1,6 @@
 """The four active learning strategies of Zliobaite et al. (2011)."""
 
+import math
 from typing import Any
 
 from dense_armor.utility.active.base import ActiveStrategy
@@ -150,9 +151,8 @@ class VariableRandomizedUncertainty(VariableUncertainty):
     Args:
         budget: labelling budget.
         s: adjusting step.
-        delta: standard deviation of the random multiplier, positive. My choice:
-            the paper calls delta the variance of the randomisation, so the
-            paper's delta is the square of this one.
+        delta: variance of the random multiplier, positive, as the paper
+            states it. The default 0.01 is my choice.
         seed: seed of the random generator.
 
     References:
@@ -171,7 +171,7 @@ class VariableRandomizedUncertainty(VariableUncertainty):
         Args:
             budget: labelling budget.
             s: adjusting step.
-            delta: standard deviation of ``eta``.
+            delta: variance of ``eta``.
             seed: seed of the random generator.
 
         Raises:
@@ -197,7 +197,7 @@ class VariableRandomizedUncertainty(VariableUncertainty):
         if self.n_seen_ > 0 and (self.n_labelled_ / self.n_seen_) < self.budget:
             p = model.predict_proba_one(x)
             conf = max(p.values()) if p else 0.0
-            eta = float(self._rng.normal(1.0, self.delta))
+            eta = float(self._rng.normal(1.0, math.sqrt(self.delta)))
             if float(conf) < self.theta_ * eta:
                 self.n_labelled_ += 1
                 self.theta_ *= 1.0 - self.s

@@ -74,3 +74,14 @@ def test_bad_budget_rejected():
     for b in (0.0, -0.1, 1.5):
         with pytest.raises(ValueError):
             RandomStrategy(budget=b)
+
+
+class _EmptyModel:
+    def predict_proba_one(self, x):
+        return {}
+
+
+def test_fixed_uncertainty_labels_when_the_model_has_no_probabilities():
+    s = FixedUncertainty(theta=0.5, budget=0.1, seed=0)
+    assert s.should_label({"x": 1.0}, _EmptyModel()) is True
+    assert s.n_labelled_ == 1

@@ -62,3 +62,13 @@ def test_linucb_clone():
     assert type(c) is LinUCBDisjoint
     assert c.alpha == 0.5
     assert c.arms == ("a", "b")
+
+
+def test_linucb_counts_a_non_numeric_reward_as_missing():
+    p = LinUCBDisjoint(arms=["left", "right"], alpha=0.3)
+    p.update("left", "x", context={"a": 1.0})
+    assert p.n_missing == 1
+
+
+def test_linucb_unit_test_skips_is_a_set():
+    assert LinUCBDisjoint(arms=["a", "b"])._unit_test_skips() == set()

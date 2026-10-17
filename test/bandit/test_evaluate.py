@@ -48,3 +48,9 @@ def test_replay_rejects_policy_with_no_match():
 def test_replay_rejects_bad_alpha():
     with pytest.raises(ValueError):
         offline_replay(_stream(n=200), lambda c: 0, alpha=0.0)
+
+
+def test_offline_replay_skips_a_retained_event_with_a_bad_reward():
+    events = [({}, 0, "bad"), ({}, 0, 1.0), ({}, 0, 0.0)]
+    out = offline_replay(events, lambda c: 0, seed=0)
+    assert out["n_retained"] == 2
