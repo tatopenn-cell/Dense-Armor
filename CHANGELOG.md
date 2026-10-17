@@ -1,23 +1,22 @@
-## Unreleased — task 16
-
-- New package `dense_armor/utility/facto/` with `FMRegressor` and `FMClassifier` (Rendle 2010),
-  `FFMClassifier` and `FFMRegressor` (Juan et al. 2016), `FwFMClassifier` and `FwFMRegressor`
-  (Pan et al. 2018), `HOFMClassifier` and `HOFMRegressor` (Blondel et al. 2016).
-- New package `dense_armor/utility/reco/` with `Baseline`, `BiasedMF` and `FunkMF` (Paterek 2007,
-  Koren et al. 2009), `learn_one(user, item, rating)`, `predict_one(user, item)` and `rank`.
-- New module `dense_armor/utility/misc/sdft.py` with `SDFT` (the N-point DFT of the last N
-  samples in O(N) per sample, Jacobsen and Lyons 2003).
-- New module `dense_armor/utility/misc/skyline.py` with `Skyline` (non-dominated points of a
-  sliding window, Börzsönyi et al. 2001, Tao and Papadias 2006).
-- New script `benchmarks/facto_quality.py` and `docs/assets/facto/figures.json` with every
-  number quoted on the two guide pages.
-- New pages `docs/facto/index.md` and `docs/reco/index.md`.
-
 # Changelog
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
+
+## [1.1.30] - 2026-10-17
+
+### Master program 1 closed
+The first master program, the online-learning toolbox in 21 sections, is complete. What each section delivers:
+
+- **Base and checks, statistics, preprocessing, metrics and evaluation, pipelines and datasets:** the `roles` base classes and `check_estimator`, the robot layer (timestamped `Signal`, real-time contract, uncertainty, safe estimators, units), moments, robust statistics, quantile sketches, scalers and feature selection, prequential evaluation, streams and the synthetic datasets.
+- **Models:** linear models and optimisers, naive Bayes, neighbours, multiclass and multi-output wrappers, probability distributions, Hoeffding trees, FIMT-DD regression model trees, adaptive random forests, Mondrian forests, extra trees and AMRules, with the numeric go/no-go for the aggregated Mondrian forest and the online extra trees.
+- **Ensembles, bandits and active learning, factorization machines:** online bagging and boosting, exponentially weighted average, voting and stacking; seven bandit policies with offline replay and four labelling strategies; factorization machines (plain, field-aware, field-weighted, higher-order), three recommenders, the sliding DFT and the skyline.
+- **Anomalies, drift, clustering, time series, uncertainty:** robust detectors, Half-Space Trees, LODA, one-class SGD, online isolation forest, the local outlier factor; CUSUM, Page-Hinkley, ADWIN2 and KSWIN; online k-means and DenStream; online AR, Kalman filters and the cycle residual; adaptive conformal intervals.
+- **Protection, control and the LLM bridge:** arbiter, healing and the real-time guard; kinematic controller, trajectories and passivity; embeddings as features and estimators as JSON tools.
+- **Native vision:** frame streams and video files, features, motion, tracking, registration, dense flow, patch memory, with eight guide pages and twenty figures.
+- **Real robot (CASPER, UR3e):** the cycle-residual CUSUM detects the labelled anomaly 15.00 s after it begins. The same configuration on the 15 normal hours before it fires a median of 5,696 false alarms per hour, with 2 hours at zero: the page states both. The dataset has no lidar, so the page carries a lidar benchmark that is a simulation and says so. The IMU file has no timestamp column and cannot be tied to the arm by cross-correlation (strongest correlation 0.087), so no IMU delay is reported.
+
 
 ### Changed
 - The video documentation is split into eight guide pages under `docs/vision/`, each with a figure from `docs/assets/vision/make_figures.py`.
@@ -45,6 +44,27 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   `StackingClassifier` wrappers. Guide: `docs/ensemble/index.md`. Benchmark:
   `benchmarks/ensemble_quality.py`, 20 seeds, one sudden change, paired
   Wilcoxon and A12 effect size.
+- New package `dense_armor/utility/facto/` with `FMRegressor` and `FMClassifier` (Rendle 2010),
+  `FFMClassifier` and `FFMRegressor` (Juan et al. 2016), `FwFMClassifier` and `FwFMRegressor`
+  (Pan et al. 2018), `HOFMClassifier` and `HOFMRegressor` (Blondel et al. 2016).
+- New package `dense_armor/utility/reco/` with `Baseline`, `BiasedMF` and `FunkMF` (Paterek 2007,
+  Koren et al. 2009), `learn_one(user, item, rating)`, `predict_one(user, item)` and `rank`.
+- New module `dense_armor/utility/misc/sdft.py` with `SDFT` (the N-point DFT of the last N
+  samples in O(N) per sample, Jacobsen and Lyons 2003).
+- New module `dense_armor/utility/misc/skyline.py` with `Skyline` (non-dominated points of a
+  sliding window, Börzsönyi et al. 2001, Tao and Papadias 2006).
+- New script `benchmarks/facto_quality.py` and `docs/assets/facto/figures.json` with every
+  number quoted on the two guide pages.
+- New pages `docs/facto/index.md` and `docs/reco/index.md`.
+- `FIMTDDRegressor` (`utility/tree/fimt.py`): FIMT-DD regression model tree (Ikonomovska 2012) with an extended binary search tree per leaf, perceptron leaves and an alternate tree grown after a Page-Hinkley alarm.
+- `DenseFlow(normalize_intensity=False)`: an optional normalisation, off by default, that makes the flow independent of the intensity scale; `FrameWindow` resets when the frame shape changes and counts the changes in `shape_changes_`; `FrameAnomaly` is tested on 1-, 3- and 4-channel frames.
+- `benchmarks/video_quality.py --size WxH --smoke` and `kaggle/video_quality_kaggle.py` for the long measurements at 1280x720 and 1920x1080.
+- `benchmarks/lidar_sim.py` and `benchmarks/lidar_sim.json`: a synthetic lidar benchmark (simulation) with two detectors and four faults; `benchmarks/casper_imu_alignment.py` and its JSON: the IMU alignment attempt.
+- `benchmarks/casper_hours.py` and `benchmarks/casper_hours.json`: false alarms of the headline CASPER configuration on every normal hour.
+- `ARCHITECTURE.md` and `docs/api/general.md` list the bandit, active, factorization, recommender and small-structure packages.
+
+### Fixed
+- `OnlinePlattScaling` (`learn/calibration.py`): the annotation `base.Classifier` named a module that does not exist; it is `Classifier`. `from __future__ import annotations` is removed from the seven files that had it, since Python 3.10 supports the syntax directly.
 
 ### Changed
 - The claim register and the table of numerical claims left the published docs: they are now

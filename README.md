@@ -153,9 +153,12 @@ Works on Python 3.10+. JAX is the backend for every estimator.
 Dense-Armor provides online implementations of the following families of algorithms:
 
 - Linear models, with a wide array of optimizers
-- Decision trees, online forests (adaptive random forest, aggregated Mondrian forests, online extra trees) and rule sets (adaptive model rules)
+- Decision trees (including FIMT-DD regression model trees), online forests (adaptive random forest, aggregated Mondrian forests, online extra trees) and rule sets (adaptive model rules)
 - Naive Bayes, nearest neighbours, multiclass and multi-output wrappers, conjugate distributions
 - [Ensembles](https://tatopenn-cell.github.io/Dense-Armor/ensemble/) (online bagging and boosting, exponentially weighted average, voting, stacking)
+- [Bandits](https://tatopenn-cell.github.io/Dense-Armor/bandit/) (epsilon-greedy, UCB, Thompson sampling, Bayes-UCB, Exp3, LinUCB, offline replay)
+- [Active learning](https://tatopenn-cell.github.io/Dense-Armor/active/) (random, fixed, variable and randomised uncertainty with a labelling budget)
+- Factorization machines ([plain, field-aware, field-weighted, higher-order](https://tatopenn-cell.github.io/Dense-Armor/facto/)) and [recommenders](https://tatopenn-cell.github.io/Dense-Armor/reco/) (baseline, biased and plain matrix factorization, sliding DFT, skyline)
 - Clustering
 - Anomaly detection (including the local outlier factor)
 - Drift detection
@@ -271,3 +274,6 @@ for the control barrier function filter, 8.1 µs for the kinematic
 tracking controller, 66 µs for the rigid-body mass matrix and 55 µs for
 the gravity forces (the last two through `jax.jit`).
 
+## Acknowledgements
+
+Dense-Armor takes inspiration from [River](https://riverml.xyz) (Montiel et al., 2020, [arXiv:2012.04740](https://arxiv.org/abs/2012.04740)), the online machine learning library.
