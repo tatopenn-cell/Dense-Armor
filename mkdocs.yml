@@ -138,6 +138,7 @@ nav:
       - Trees: tree/index.md
       - Forests: forest/index.md
       - Ensembles: ensemble/index.md
+      - Offline, the whole dataset at once: offline.md
       - Rules: rules/index.md
 
   - Distributions:

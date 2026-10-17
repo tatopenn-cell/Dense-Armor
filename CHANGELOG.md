@@ -5,6 +5,10 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- `fit(X, y=None, t=None, epochs=1, shuffle=False, seed=None)` on the base class
+  `Root`: one offline entry point for every online estimator. It feeds the whole
+  dataset to `learn_one`, row by row, for `epochs` passes, optionally shuffled.
+  Nothing existing changes. Guide: `docs/offline.md`.
 - Ensembles of online learners: `OnlineBaggingClassifier` and
   `OnlineBoostingClassifier` (Oza and Russell 2001),
   `ExponentiallyWeightedAverageRegressor` (Freund and Schapire 1997, Hedge

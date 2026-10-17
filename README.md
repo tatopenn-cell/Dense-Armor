@@ -169,6 +169,7 @@ Dense-Armor provides online implementations of the following families of algorit
 - Robot dynamics (URDF, passivity + CBF controllers)
 - Shielding (1D series cleanup, input/output shield, per-point routing)
 - [Finance pipelines](https://tatopenn-cell.github.io/Dense-Armor/finance/): nine pipelines for markets, fraud, intrusion and credit scoring, each page opening with the question it answers
+- [Offline learning](https://tatopenn-cell.github.io/Dense-Armor/offline/): `fit` feeds a whole dataset to any online algorithm
 
 Dense-Armor also provides other online utilities:
 
