@@ -56,7 +56,7 @@ class Frame:
 def _to_float01(arr: np.ndarray, gray: bool, bgr: bool = False) -> np.ndarray:
     a = np.asarray(arr)
     integer = a.dtype.kind in "ui"
-    if a.ndim == 3 and a.shape[2] == 4:
+    if a.ndim == 3 and a.shape[2] == 4 and (bgr or gray):
         a = a[..., :3]
     if a.ndim == 3 and a.shape[2] == 3 and bgr:
         a = a[..., ::-1]
@@ -81,7 +81,7 @@ def _to_dtype(arr: np.ndarray, dtype: str, gray: bool, bgr: bool = False) -> np.
     value on a 16-bit sensor readout.
     """
     a = np.asarray(arr)
-    if a.ndim == 3 and a.shape[2] == 4:
+    if a.ndim == 3 and a.shape[2] == 4 and (bgr or gray):
         a = a[..., :3]
     if a.ndim == 3 and a.shape[2] == 3 and bgr:
         a = a[..., ::-1]

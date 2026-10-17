@@ -1,0 +1,35 @@
+# Tracking: objects, signals, joints
+
+## Tracking without a detector
+
+`MovingObjectTracker`
+builds a running robust background, groups the changed pixels into
+connected components, and follows every component with a Kalman filter.
+The association is two-round, high confidence first and low confidence
+second, the idea of ByteTrack. The same class accepts boxes from an
+external detector with ``update(boxes)``.
+
+![Two squares tracked with their boxes and ids at the last frame of the stream.](../assets/vision/tracking/two_squares.png)
+
+## Video to signal, joints to video
+
+`TrackToSignal` and
+`FeatureToSignal` turn a
+track or a dict of features into a
+`Signal`, so the drift detectors, the anomaly
+detectors and the metrics of the library work on video without any new
+code. `FrameJointFusion`
+aligns the video with the joint readings and estimates the latency of
+the camera by correlating the motion in the video with the joint speed,
+within the frame rate of the source.
+
+![Joint speed and video velocity in time, with the true and the estimated lag.](../assets/vision/signals/video_joint_lag.png)
+
+### API
+
+- [`MovingObjectTracker`](../api/general.md#movingobjecttracker)
+- [`TrackToSignal`](../api/general.md#tracktosignal)
+- [`FeatureToSignal`](../api/general.md#featuretosignal)
+- [`FrameJointFusion`](../api/general.md#framejointfusion)
+
+On the 20-frame synthetic stream of this section the tracker reports three tracks instead of two: the second square is occluded for one frame and a new id is created. The detection is correct (two squares), the id is not stable across the occlusion. This is a limit of the tracker on a short stream, and a longer one with the same objects gives the same id.

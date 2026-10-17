@@ -221,6 +221,9 @@ not committed to this repository: `benchmarks/vision_rad_patches.py` expects it 
 `RAD_ROOT = /content/rad/Anomaly_refine_msk`, so the numbers above are from the run
 where the dataset was present, and cannot be regenerated in a Colab that lacks it.
 
+
+![The anomaly map over a RAD image from the patch memory](../assets/vision/quality/event_frame.png)
+
 ## API reference
 
 ::: dense_armor.utility.vision.patches
