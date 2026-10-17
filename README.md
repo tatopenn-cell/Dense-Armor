@@ -274,3 +274,6 @@ for the control barrier function filter, 8.1 µs for the kinematic
 tracking controller, 66 µs for the rigid-body mass matrix and 55 µs for
 the gravity forces (the last two through `jax.jit`).
 
+## Acknowledgements
+
+Dense-Armor takes inspiration from [River](https://riverml.xyz) (Montiel et al., 2020, [arXiv:2012.04740](https://arxiv.org/abs/2012.04740)), the online machine learning library.
