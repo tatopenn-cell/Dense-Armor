@@ -29,8 +29,22 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import casper_benchmark as cb
 from dense_armor.utility.drift.detector import CUSUMDriftDetector
+
+
+def _cb():
+    """Import ``casper_benchmark`` lazily.
+
+    The module imports pandas at the top; a CI environment with a
+    numpy/pandas mismatch crashes at import time. Deferring the import
+    to the functions that need it keeps ``count_alarms`` (the function
+    the test uses) free of pandas.
+
+    Returns:
+        The ``casper_benchmark`` module.
+    """
+    import casper_benchmark
+    return casper_benchmark
 
 K = 2.0
 H = 20.0
@@ -65,6 +79,7 @@ def count_alarms(det, series):
 
 
 def _find_arm():
+    cb = _cb()
     for root in (Path("/kaggle/input"), Path.home() / ".cache" / "kagglehub"):
         arm = next(root.rglob("right_arm.csv"), None) if root.exists() else None
         if arm is not None:
@@ -74,6 +89,7 @@ def _find_arm():
 
 
 def _moving_joint(arm, t0):
+    cb = _cb()
     df = cb.load_slice(arm, t0, t0 + 3600.0, [JOINT_COL])
     best, var_best = None, -1.0
     for j in range(6):
@@ -85,6 +101,7 @@ def _moving_joint(arm, t0):
 
 
 def one_window(df_all, t0, joint, hour, minutes):
+    cb = _cb()
     ta = t0 + hour * 3600.0
     tb = ta + minutes * 60.0
     ts = df_all["Timestamp"].to_numpy()
@@ -133,6 +150,7 @@ def main():
         a.hours = "0-0"
         a.minutes = min(a.minutes, 10.0)
 
+    cb = _cb()
     base, arm = _find_arm()
     t0 = float(cb.pd.read_csv(arm, nrows=1, usecols=["Timestamp"])["Timestamp"].iloc[0])
     joint = _moving_joint(arm, t0)
