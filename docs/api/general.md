@@ -6,11 +6,11 @@ Complete map of every public class in Dense-Armor: description,
 base classes, public methods. When a class has a guide page,
 the link leads there for the full explanation and examples.
 
-**169 classes**, 1599 public methods, 116 public modules.
+**208 classes**, 2021 public methods, 111 public modules.
 
 ## Classes by subsystem
 
-**Jump to:** [Roles](#roles) &nbsp;·&nbsp; [Metrics](#metrics) &nbsp;·&nbsp; [Evaluate](#evaluate) &nbsp;·&nbsp; [Core](#core) &nbsp;·&nbsp; [Mcp_server](#mcp_server) &nbsp;·&nbsp; [Anomaly](#anomaly) &nbsp;·&nbsp; [Drift](#drift) &nbsp;·&nbsp; [Trees](#trees) &nbsp;·&nbsp; [Naive Bayes](#naive-bayes) &nbsp;·&nbsp; [Distributions](#distributions) &nbsp;·&nbsp; [Nearest neighbours](#nearest-neighbours) &nbsp;·&nbsp; [Multiclass](#multiclass) &nbsp;·&nbsp; [Multi-output](#multi-output) &nbsp;·&nbsp; [Forests](#forests) &nbsp;·&nbsp; [Ensembles](#ensembles) &nbsp;·&nbsp; [Rules](#rules) &nbsp;·&nbsp; [Clustering](#clustering) &nbsp;·&nbsp; [Stats](#stats) &nbsp;·&nbsp; [Preprocessing](#preprocessing) &nbsp;·&nbsp; [Compose](#compose) &nbsp;·&nbsp; [Vision](#vision) &nbsp;·&nbsp; [Learn](#learn) &nbsp;·&nbsp; [Datasets](#datasets) &nbsp;·&nbsp; [Protect](#protect) &nbsp;·&nbsp; [Bridges](#bridges) &nbsp;·&nbsp; [Armatura](#armatura) &nbsp;·&nbsp; [Misc](#misc) &nbsp;·&nbsp; [Dynamics](#dynamics)
+**Jump to:** [Roles](#roles) &nbsp;·&nbsp; [Metrics](#metrics) &nbsp;·&nbsp; [Evaluate](#evaluate) &nbsp;·&nbsp; [Core](#core) &nbsp;·&nbsp; [Mcp_server](#mcp_server) &nbsp;·&nbsp; [Anomaly](#anomaly) &nbsp;·&nbsp; [Drift](#drift) &nbsp;·&nbsp; [Trees](#trees) &nbsp;·&nbsp; [Naive Bayes](#naive-bayes) &nbsp;·&nbsp; [Distributions](#distributions) &nbsp;·&nbsp; [Nearest neighbours](#nearest-neighbours) &nbsp;·&nbsp; [Multiclass](#multiclass) &nbsp;·&nbsp; [Multi-output](#multi-output) &nbsp;·&nbsp; [Forests](#forests) &nbsp;·&nbsp; [Ensembles](#ensembles) &nbsp;·&nbsp; [Bandits](#bandits) &nbsp;·&nbsp; [Active learning](#active-learning) &nbsp;·&nbsp; [Rules](#rules) &nbsp;·&nbsp; [Clustering](#clustering) &nbsp;·&nbsp; [Stats](#stats) &nbsp;·&nbsp; [Preprocessing](#preprocessing) &nbsp;·&nbsp; [Compose](#compose) &nbsp;·&nbsp; [Vision](#vision) &nbsp;·&nbsp; [Learn](#learn) &nbsp;·&nbsp; [Datasets](#datasets) &nbsp;·&nbsp; [Protect](#protect) &nbsp;·&nbsp; [Bridges](#bridges) &nbsp;·&nbsp; [Armatura](#armatura) &nbsp;·&nbsp; [Misc](#misc) &nbsp;·&nbsp; [Dynamics](#dynamics)
 
 ---
 
@@ -28,6 +28,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: signal.Signal | dict, y: Any, t=None)`
@@ -53,6 +54,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: dict, t=None)`
@@ -77,6 +79,7 @@ Public methods:
 - `classify(score: float)`
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_one(x: dict, t=None)`
 - `load_state_dict(state: dict)`
@@ -98,6 +101,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: dict, y: Any, t=None)`
@@ -123,6 +127,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `load_state_dict(state: dict)`
 - `mutate(new_attrs: dict)`
@@ -151,6 +156,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `load_state_dict(state: dict)`
 - `mutate(new_attrs: dict)`
@@ -178,6 +184,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `load_state_dict(state: dict)`
 - `mutate(new_attrs: dict)`
@@ -218,6 +225,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `load_state_dict(state: dict)`
 - `mutate(new_attrs: dict)`
@@ -251,6 +259,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_one(x: dict, y=None, t=None)`
 - `load_state_dict(state: dict)`
@@ -273,6 +282,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `init_state()`
 - `load_state_dict(state: dict)`
@@ -306,6 +316,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: dict, y: Any, t=None)`
@@ -328,6 +339,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `load_state_dict(state: dict)`
 - `mutate(new_attrs: dict)`
@@ -347,6 +359,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `is_flagged(x: Any)`
 - `learn_one(x: Any, y=None, t=None)`
@@ -386,6 +399,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: dict, y=None, t=None)`
@@ -409,6 +423,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: dict, y=None, t=None)`
@@ -432,6 +447,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x, y=None, t=None)`
@@ -1119,6 +1135,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `is_outlier(x)`
 - `learn_many(X, t=None)`
@@ -1143,6 +1160,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `is_outlier(x: dict, threshold=None)`
 - `learn_many(X, t=None)`
@@ -1168,6 +1186,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x)`
@@ -1192,6 +1211,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `is_outlier(x)`
 - `learn_many(X, t=None)`
@@ -1216,6 +1236,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `is_outlier(x: dict, threshold=None)`
 - `learn_many(X, t=None)`
@@ -1240,6 +1261,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `is_outlier(x: dict, threshold=None)`
 - `learn_many(X, t=None)`
@@ -1264,6 +1286,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `is_outlier(x: dict, threshold=None)`
 - `learn_many(X, t=None)`
@@ -1289,6 +1312,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `is_outlier(x: dict, threshold=None)`
 - `learn_many(X, t=None)`
@@ -1314,6 +1338,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `is_outlier(x)`
 - `learn_many(X, t=None)`
@@ -1339,6 +1364,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x)`
@@ -1363,6 +1389,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `is_outlier(x)`
 - `learn_many(X, t=None)`
@@ -1412,6 +1439,7 @@ Public methods:
 
 - `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep: bool = True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: dict, t: float | None = None)`
@@ -1438,6 +1466,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `load_state_dict(state: dict)`
 - `mutate(new_attrs: dict)`
@@ -1462,6 +1491,7 @@ Public methods:
 - `describe()`
 - `expected_detection_delay(shift: float)`
 - `expected_false_alarm_run()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `load_state_dict(state: dict)`
 - `mutate(new_attrs: dict)`
@@ -1484,6 +1514,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `load_state_dict(state: dict)`
 - `mutate(new_attrs: dict)`
@@ -1506,6 +1537,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `load_state_dict(state: dict)`
 - `mutate(new_attrs: dict)`
@@ -1531,6 +1563,7 @@ Public methods:
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
 - `explain_one(x: Any, t=None)`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: Any, y: Any, t=None)`
@@ -1558,6 +1591,7 @@ Public methods:
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
 - `explain_one(x: Any, t=None)`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: Any, y: Any, t=None)`
@@ -1585,6 +1619,7 @@ Public methods:
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
 - `explain_one(x: Any, t=None)`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: Any, y: Any, t=None)`
@@ -1611,6 +1646,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: Any, y: Any, t=None)`
@@ -1637,6 +1673,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: Any, y: Any, t=None)`
@@ -1662,6 +1699,7 @@ Public methods:
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
 - `explain_one(x: Any, t=None)`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: Any, y: Any, t=None)`
@@ -1689,6 +1727,7 @@ Public methods:
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
 - `explain_one(x: Any, t=None)`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: Any, y: Any, t=None)`
@@ -1715,6 +1754,7 @@ Public methods:
 
 - `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep: bool = True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: dict, y: Any, t: float | None = None)`
@@ -1741,6 +1781,7 @@ Public methods:
 
 - `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep: bool = True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: dict, y: Any, t: float | None = None)`
@@ -1767,6 +1808,7 @@ Public methods:
 
 - `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep: bool = True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: dict, y: Any, t: float | None = None)`
@@ -1793,6 +1835,7 @@ Public methods:
 
 - `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep: bool = True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: dict, y: Any, t: float | None = None)`
@@ -1887,6 +1930,7 @@ Public methods:
 
 - `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep: bool = True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: dict, y: Any, t: float | None = None)`
@@ -1913,6 +1957,7 @@ Public methods:
 
 - `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep: bool = True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: dict, y: Any, t: float | None = None)`
@@ -1953,6 +1998,7 @@ Public methods:
 
 - `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep: bool = True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: dict, y: Any, t: float | None = None)`
@@ -1978,6 +2024,7 @@ Public methods:
 
 - `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep: bool = True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: dict, y: Any, t: float | None = None)`
@@ -2003,6 +2050,7 @@ Public methods:
 
 - `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep: bool = True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: dict, y: Any, t: float | None = None)`
@@ -2031,6 +2079,7 @@ Public methods:
 
 - `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep: bool = True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: dict, y: dict, t: float | None = None)`
@@ -2057,6 +2106,7 @@ Public methods:
 
 - `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep: bool = True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: dict, y: dict, t: float | None = None)`
@@ -2081,6 +2131,7 @@ Public methods:
 
 - `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep: bool = True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: dict, y: dict, t: float | None = None)`
@@ -2107,6 +2158,7 @@ Public methods:
 
 - `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep: bool = True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: dict, y: dict, t: float | None = None)`
@@ -2131,6 +2183,7 @@ Public methods:
 
 - `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep: bool = True)`
 - `joint_proba_one(x: dict, t: float | None = None)`
 - `learn_many(X, y, t=None)`
@@ -2160,6 +2213,7 @@ Public methods:
 
 - `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep: bool = True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: Any, y: Any, t: float | None = None)`
@@ -2186,6 +2240,7 @@ Public methods:
 
 - `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep: bool = True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: Any, y: Any, t: float | None = None)`
@@ -2213,6 +2268,7 @@ Public methods:
 
 - `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep: bool = True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: Any, y: Any, t: float | None = None)`
@@ -2239,6 +2295,7 @@ Public methods:
 - `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
 - `describe()`
 - `explain_one(x: Any, t: float | None = None)`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep: bool = True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: Any, y: Any, t: float | None = None)`
@@ -2266,6 +2323,7 @@ Public methods:
 
 - `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep: bool = True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: Any, y: Any, t: float | None = None)`
@@ -2293,6 +2351,7 @@ Public methods:
 - `bound()`
 - `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep: bool = True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x, y, t: float | None = None)`
@@ -2317,6 +2376,7 @@ Public methods:
 
 - `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep: bool = True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x, y, t: float | None = None)`
@@ -2343,6 +2403,7 @@ Public methods:
 
 - `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep: bool = True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x, y, t: float | None = None)`
@@ -2369,6 +2430,7 @@ Public methods:
 
 - `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep: bool = True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x, y, t: float | None = None)`
@@ -2395,6 +2457,7 @@ Public methods:
 
 - `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep: bool = True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x, y, t: float | None = None)`
@@ -2405,6 +2468,327 @@ Public methods:
 - `predict_proba_many(X, t=None)`
 - `predict_proba_one(x, t: float | None = None)`
 - `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+## Bandits
+
+### BanditPolicy
+
+
+*Module:* `dense_armor.utility.bandit.base`
+*Bases:* Root
+*Guide:* [bandit/index.md](../bandit/index.md)
+
+Base class for bandit policies.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `pull(context: dict | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `update(arm, reward: float, context: dict | None = None)`
+- `window_samples(seconds: float)`
+
+### BayesUCB
+
+
+*Module:* `dense_armor.utility.bandit.bayes_ucb`
+*Bases:* BanditPolicy
+*Guide:* [bandit/index.md](../bandit/index.md)
+
+Bayes-UCB policy.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `pull(context: dict | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `update(arm, reward: float, context: dict | None = None)`
+- `window_samples(seconds: float)`
+
+### EpsilonGreedy
+
+
+*Module:* `dense_armor.utility.bandit.ucb`
+*Bases:* BanditPolicy
+*Guide:* [bandit/index.md](../bandit/index.md)
+
+Epsilon-greedy policy.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `pull(context: dict | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `update(arm, reward: float, context: dict | None = None)`
+- `window_samples(seconds: float)`
+
+### Exp3
+
+
+*Module:* `dense_armor.utility.bandit.exp3`
+*Bases:* BanditPolicy
+*Guide:* [bandit/index.md](../bandit/index.md)
+
+Exp3 policy for the non-stochastic multi-armed bandit.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `pull(context: dict | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `update(arm, reward: float, context: dict | None = None)`
+- `window_samples(seconds: float)`
+
+### LinUCBDisjoint
+
+
+*Module:* `dense_armor.utility.bandit.linucb`
+*Bases:* Root
+*Guide:* [bandit/index.md](../bandit/index.md)
+
+LinUCB with disjoint linear models.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `pull(context: dict | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `update(arm, reward: float, context: dict | None = None)`
+- `window_samples(seconds: float)`
+
+### RobotKpSelector
+
+
+*Module:* `dense_armor.utility.bandit.robot`
+*Bases:* Root
+*Guide:* [bandit/index.md](../bandit/index.md)
+
+Choose ``kp`` among a set of values by UCB1 on a robot stream.
+
+Public methods:
+
+- `best_gain()`
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `run_round()`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### ThompsonSampling
+
+
+*Module:* `dense_armor.utility.bandit.ts`
+*Bases:* BanditPolicy
+*Guide:* [bandit/index.md](../bandit/index.md)
+
+Thompson sampling for a Bernoulli or a Gaussian bandit.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `pull(context: dict | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `update(arm, reward: float, context: dict | None = None)`
+- `window_samples(seconds: float)`
+
+### UCB1
+
+
+*Module:* `dense_armor.utility.bandit.ucb`
+*Bases:* BanditPolicy
+*Guide:* [bandit/index.md](../bandit/index.md)
+
+UCB1 policy.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `pull(context: dict | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `update(arm, reward: float, context: dict | None = None)`
+- `window_samples(seconds: float)`
+
+### UCB1Tuned
+
+
+*Module:* `dense_armor.utility.bandit.ucb`
+*Bases:* UCB1
+*Guide:* [bandit/index.md](../bandit/index.md)
+
+UCB1-Tuned policy.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `pull(context: dict | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `update(arm, reward: float, context: dict | None = None)`
+- `window_samples(seconds: float)`
+
+## Active learning
+
+### ActiveStrategy
+
+
+*Module:* `dense_armor.utility.active.base`
+*Bases:* Root
+*Guide:* [active/index.md](../active/index.md)
+
+Base class for active learning strategies on a stream.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `set_params(**params: Any)`
+- `should_label(x: dict, model)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### FixedUncertainty
+
+
+*Module:* `dense_armor.utility.active.strategies`
+*Bases:* ActiveStrategy
+*Guide:* [active/index.md](../active/index.md)
+
+Fixed-threshold uncertainty strategy.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `set_params(**params: Any)`
+- `should_label(x: dict, model)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### RandomStrategy
+
+
+*Module:* `dense_armor.utility.active.strategies`
+*Bases:* ActiveStrategy
+*Guide:* [active/index.md](../active/index.md)
+
+Random strategy: label with probability ``B``.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `set_params(**params: Any)`
+- `should_label(x: dict, model)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### VariableRandomizedUncertainty
+
+
+*Module:* `dense_armor.utility.active.strategies`
+*Bases:* VariableUncertainty
+*Guide:* [active/index.md](../active/index.md)
+
+Variable-threshold uncertainty with a randomised threshold.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `set_params(**params: Any)`
+- `should_label(x: dict, model)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### VariableUncertainty
+
+
+*Module:* `dense_armor.utility.active.strategies`
+*Bases:* ActiveStrategy
+*Guide:* [active/index.md](../active/index.md)
+
+Variable-threshold uncertainty strategy.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `set_params(**params: Any)`
+- `should_label(x: dict, model)`
 - `state_dict()`
 - `window_samples(seconds: float)`
 
@@ -2424,6 +2808,7 @@ Public methods:
 - `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
 - `describe()`
 - `explain_one(x: Any)`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep: bool = True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: Any, y: Any, t: float | None = None)`
@@ -2450,6 +2835,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: Any, y=None, t=None)`
@@ -2475,6 +2861,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: Any, y=None, t=None)`
@@ -2501,6 +2888,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: dict, y=None, t=None)`
@@ -2526,6 +2914,7 @@ Public methods:
 - `check(item: Any)`
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: dict, y=None, t=None)`
@@ -2552,6 +2941,7 @@ Public methods:
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
 - `estimate(item: Any)`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: dict, y=None, t=None)`
@@ -2577,6 +2967,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: dict, y=None, t=None)`
@@ -2603,6 +2994,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: dict, y=None, t=None)`
@@ -2628,6 +3020,7 @@ Public methods:
 - `clone(new_params=None, include_attributes=False)`
 - `count()`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: dict, y=None, t=None)`
@@ -2653,6 +3046,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: dict, y=None, t=None)`
@@ -2677,6 +3071,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: dict, y=None, t=None)`
@@ -2701,6 +3096,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: dict, y=None, t=None)`
@@ -2725,6 +3121,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: dict, y=None, t=None)`
@@ -2749,6 +3146,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: dict, y=None, t=None)`
@@ -2773,6 +3171,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: dict, y=None, t=None)`
@@ -2797,6 +3196,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: dict, y=None, t=None)`
@@ -2821,6 +3221,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: dict, y=None, t=None)`
@@ -2845,6 +3246,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: dict, y=None, t=None)`
@@ -2870,6 +3272,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: dict, y=None, t=None)`
@@ -2895,6 +3298,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: dict, y=None, t=None)`
@@ -2921,6 +3325,7 @@ Public methods:
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
 - `estimate(item: Any)`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: dict, y=None, t=None)`
@@ -2947,6 +3352,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: dict, y=None, t=None)`
@@ -2976,6 +3382,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: Any, y=None, t=None)`
@@ -3000,6 +3407,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: Any, y=None, t=None)`
@@ -3024,6 +3432,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: Any, y=None, t=None)`
@@ -3048,6 +3457,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: Any, y=None, t=None)`
@@ -3072,6 +3482,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: Any, y=None, t=None)`
@@ -3096,6 +3507,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: Any, y=None, t=None)`
@@ -3120,6 +3532,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: Any, y: Any, t=None)`
@@ -3146,6 +3559,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: Any, y=None, t=None)`
@@ -3170,6 +3584,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: Any, y=None, t=None)`
@@ -3194,6 +3609,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: Any, y=None, t=None)`
@@ -3218,6 +3634,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: Any, y=None, t=None)`
@@ -3242,6 +3659,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: Any, y=None, t=None)`
@@ -3266,6 +3684,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: Any, y=None, t=None)`
@@ -3291,6 +3710,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: Any, y=None, t=None)`
@@ -3314,6 +3734,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: Any, y=None, t=None)`
@@ -3337,6 +3758,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: Any, y=None, t=None)`
@@ -3363,6 +3785,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: Any, y=None, t=None)`
@@ -3387,6 +3810,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: Any, y=None, t=None)`
@@ -3411,6 +3835,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: dict, y=None, t=None)`
@@ -3435,6 +3860,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: Any, y=None, t=None)`
@@ -3460,6 +3886,7 @@ Public methods:
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
 - `finalize()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `is_outlier(x: Any, threshold=1.0)`
 - `learn_many(X, t=None)`
@@ -3486,6 +3913,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, t=None)`
 - `learn_one(x: dict, y=None, t=None)`
@@ -3548,6 +3976,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x, y)`
@@ -3575,6 +4004,7 @@ Public methods:
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
 - `distance(x: dict, x2: dict)`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_pair(x: dict, x2: dict, y: float)`
 - `learn_triplet(x: dict, x_pos: dict, x_neg: dict)`
@@ -3598,6 +4028,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x: dict, y)`
@@ -3625,6 +4056,7 @@ Public methods:
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
 - `distance(x: dict, x2: dict)`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_pair(x: dict, x2: dict, y)`
 - `learn_triplet(x: dict, x_pos: dict, x_neg: dict)`
@@ -3648,6 +4080,7 @@ Public methods:
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
 - `distance(x: dict, x2: dict)`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_pair(x: dict, x2: dict, y)`
 - `learn_triplet(x: dict, x_pos: dict, x_neg: dict)`
@@ -3670,6 +4103,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x, y)`
@@ -3696,6 +4130,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x, y, kwargs)`
@@ -3722,6 +4157,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x, y)`
@@ -3749,6 +4185,7 @@ Public methods:
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
 - `distance(x: dict, x2: dict)`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_pair(x: dict, x2: dict, y: int)`
 - `learn_triplet(x: dict, x_pos: dict, x_neg: dict)`
@@ -3771,6 +4208,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x, y)`
@@ -3902,6 +4340,7 @@ Public methods:
 
 - `clone(new_params=None, include_attributes=False)`
 - `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
 - `get_params(deep=True)`
 - `learn_json(payload: str)`
 - `learn_one(text: str, y: Any, t=None)`
