@@ -698,6 +698,208 @@ def fig_15_registration():
     FIG["fig15_max_plain"] = float(np.abs(d_plain).max())
     FIG["fig15_max_reg"] = float(np.abs(d_reg).max())
 
+
+
+
+
+def fig_16_dense_flow():
+    """DenseFlow on three moving blobs, MotionMask on a moving square.
+
+    The scene has sensor noise so the MAD of MotionMask is non-zero.
+    The IoU on this synthetic case is low (around 0.2): the mask finds
+    the moving square but also reacts to the blob edges. The page
+    states the measured value, not a tuned one.
+    """
+    from dense_armor.utility.vision.dense import DenseFlow, MotionMask
+
+    H = W = 64
+    yy, xx = np.mgrid[0:H, 0:W]
+    blobs = [(20.0, 20.0), (40.0, 25.0), (30.0, 45.0)]
+    sigma = 6.0
+
+    def scene(seed, sq_y=None, sq_x=None):
+        rng = np.random.default_rng(seed)
+        img = np.zeros((H, W), dtype=np.float32)
+        for cy, cx in blobs:
+            img += np.exp(
+                -((yy - cy) ** 2 + (xx - cx) ** 2) / (2 * sigma ** 2))
+        img = img / img.max()
+        if sq_y is not None:
+            y0, x0 = int(sq_y), int(sq_x)
+            img[y0:y0 + 8, x0:x0 + 8] = 1.0
+        img += rng.normal(0, 0.02, (H, W)).astype(np.float32)
+        return img
+
+    f1 = scene(0)
+    f2 = scene(0, sq_y=20, sq_x=20)
+    df = DenseFlow(alpha=1.0, n_iter=10, use_jax=False)
+    df.learn_one({"array": f1})
+    o = df.transform_one({"array": f2})
+    u, v, mag = o["u"], o["v"], o["mag"]
+
+    s1 = scene(0, sq_y=20, sq_x=20)
+    s2 = scene(1, sq_y=23, sq_x=23)
+    df2 = DenseFlow(alpha=1.0, n_iter=10, use_jax=False)
+    df2.learn_one({"array": s1})
+    o2 = df2.transform_one({"array": s2})
+    mm = MotionMask(n_sigmas=2.0, dilation=1)
+    mm.learn_one({"u": o2["u"], "v": o2["v"]})
+    mask = mm.transform_one({"u": o2["u"], "v": o2["v"]})["mask"]
+    gt_mask = np.zeros((H, W), dtype=bool)
+    gt_mask[20:31, 20:31] = True
+    tp = int((mask & gt_mask).sum())
+    fp = int((mask & ~gt_mask).sum())
+    fn = int((~mask & gt_mask).sum())
+    iou = tp / (tp + fp + fn) if (tp + fp + fn) else 0.0
+    uu, vv = u[10:50, 10:50], v[10:50, 10:50]
+    epe = float(np.mean(np.hypot(uu - 0.0, vv - 0.0)))
+
+    fig, axes = plt.subplots(1, 2, figsize=(7.2, 3.0))
+    ax = axes[0]
+    ax.imshow(f2, cmap="gray")
+    step = 6
+    ax.quiver(xx[::step, ::step], yy[::step, ::step],
+              u[::step, ::step], v[::step, ::step],
+              mag[::step, ::step], cmap="Blues", scale=20, width=0.005)
+    ax.set_title(f"flow, mean |u,v| = {epe:.3f} px", fontsize=9)
+    ax.axis("off")
+    ax = axes[1]
+    ax.imshow(s2, cmap="gray")
+    ax.contour(gt_mask, levels=[0.5], colors=INK, linestyles="--",
+               linewidths=1.0)
+    ax.contour(mask.astype(float), levels=[0.5], colors=ORANGE,
+               linewidths=1.4)
+    ax.set_title(f"mask IoU = {iou:.2f}", fontsize=9)
+    ax.axis("off")
+    _save(fig, "dense_flow", "flow_and_mask")
+    FIG["fig16_mean_flow"] = epe
+    FIG["fig16_iou"] = float(iou)
+    FIG["fig16_mask_area"] = int(mask.sum())
+    FIG["fig16_gt_area"] = int(gt_mask.sum())
+
+
+
+def fig_17_quality():
+    """FrameQuality: sharp, blurred and black."""
+    from scipy.ndimage import gaussian_filter
+    from dense_armor.utility.vision.quality import FrameQuality
+
+    rng = np.random.default_rng(0)
+    sharp = rng.normal(0.5, 0.3, (64, 64)).astype(np.float32)
+    sharp = np.clip(sharp, 0.0, 1.0)
+    blurred = gaussian_filter(sharp, 3.0)
+    black = np.zeros((64, 64), dtype=np.float32)
+    fq = FrameQuality()
+    rows = []
+    for name, img in [("sharp", sharp), ("blurred", blurred), ("black", black)]:
+        o = fq.transform_one({"array": img})
+        rows.append((name, o))
+    fig, axes = plt.subplots(1, 3, figsize=(7.2, 2.6))
+    for ax, (name, o), img in zip(axes, rows, [sharp, blurred, black]):
+        ax.imshow(img, cmap="gray", vmin=0.0, vmax=1.0)
+        flags = []
+        if o["black"]:
+            flags.append("black")
+        if o["repeated"]:
+            flags.append("repeated")
+        title = (f"{name}\nsharp={o['sharpness']:.3f} noise={o['noise']:.3f}"
+                 + (f" [{','.join(flags)}]" if flags else ""))
+        ax.set_title(title, fontsize=8)
+        ax.axis("off")
+    _save(fig, "quality", "sharp_blurred_black")
+    for name, o in rows:
+        FIG[f"fig17_{name}_sharpness"] = float(o["sharpness"])
+        FIG[f"fig17_{name}_noise"] = float(o["noise"])
+        FIG[f"fig17_{name}_black"] = bool(o["black"])
+
+
+def fig_18_visualise():
+    """FalseColor on a thermal band and Overlay with a box."""
+    from dense_armor.utility.vision.visualize import FalseColor, Overlay
+
+    rng = np.random.default_rng(0)
+    band = rng.normal(300.0, 5.0, (64, 64)).astype(np.float32)
+    band[21:27, 21:27] += 50.0
+    fc = FalseColor(colormap="hot", low_pct=1.0, high_pct=99.0)
+    fc.learn_one({"array": band})
+    rgb = fc.transform_one({"array": band})["rgb"]
+    legend = fc.transform_one({"array": band})["legend"]
+    ov = Overlay(box_thickness=1)
+    out = ov.transform_one({"array": rgb,
+                            "tracks": [{"id": 1,
+                                        "box": (21.0, 21.0, 27.0, 27.0)}]})
+    rgb_over = out["rgb"]
+    fig, axes = plt.subplots(1, 2, figsize=(7.2, 3.0))
+    axes[0].imshow(rgb)
+    axes[0].set_title(f"FalseColor {legend['colormap']}", fontsize=9)
+    axes[0].axis("off")
+    axes[1].imshow(np.clip(rgb_over, 0, 1))
+    axes[1].set_title("Overlay with a box", fontsize=9)
+    axes[1].axis("off")
+    _save(fig, "visualise", "false_color_and_overlay")
+    FIG["fig18_colormap"] = legend["colormap"]
+    FIG["fig18_low"] = float(legend["low"])
+    FIG["fig18_high"] = float(legend["high"])
+
+
+def fig_19_event():
+    """EventFrame on 200 random events."""
+    from dense_armor.utility.vision.quality import EventFrame
+
+    rng = np.random.default_rng(0)
+    ef = EventFrame(shape=(64, 64), decay=0.9)
+    for _ in range(200):
+        ef.learn_one({"x": int(rng.integers(0, 64)),
+                      "y": int(rng.integers(0, 64)),
+                      "polarity": int(rng.choice([-1, 1])),
+                      "t": 0.0})
+    o = ef.transform_one(None)
+    img = o["frame"]
+    n_nonzero = int((img != 0).sum())
+    fig, ax = plt.subplots(figsize=(4.2, 4.2))
+    ax.imshow(img, cmap="RdBu_r", vmin=-1, vmax=1)
+    ax.set_title(f"EventFrame after {o['n_events']} events, "
+                 f"{n_nonzero} nonzero", fontsize=9)
+    ax.set_xticks(np.arange(0, 65, 16))
+    ax.set_yticks(np.arange(0, 65, 16))
+    _save(fig, "quality", "event_frame")
+    FIG["fig19_n_events"] = int(o["n_events"])
+    FIG["fig19_n_nonzero"] = n_nonzero
+
+
+def fig_20_benchmark():
+    """Benchmark: ms per frame per module at 640x360."""
+    from pathlib import Path as _P
+    json_path = ROOT / "benchmarks" / "video_quality.json"
+    data = json.loads(_P(json_path).read_text())
+    runs = data["runs"].get("smooth_640x360", {})
+    names = []
+    meds = []
+    for k, v in runs.items():
+        if v["median_us"] is None or not np.isfinite(v["median_us"]):
+            continue
+        names.append(k)
+        meds.append(v["median_us"] / 1000.0)
+    if not names:
+        print("  fig_20: JSON without 640x360 rows, figure skipped")
+        return
+    order = np.argsort(meds)
+    names = [names[i] for i in order]
+    meds = [meds[i] for i in order]
+    fig, ax = plt.subplots(figsize=(7.2, 4.5))
+    y = np.arange(len(names))
+    ax.barh(y, meds, color=BLUE, edgecolor=INK, linewidth=0.5)
+    ax.set_yticks(y)
+    ax.set_yticklabels(names, fontsize=8)
+    ax.set_xlabel("median milliseconds per frame")
+    ax.set_xscale("log")
+    ax.grid(True, axis="x", alpha=0.3)
+    for yi, m in zip(y, meds):
+        ax.text(m * 1.1, yi, f"{m:.2f}", va="center", fontsize=7)
+    _save(fig, "benchmark", "ms_per_frame")
+    for name, m in zip(names, meds):
+        FIG[f"fig20_{name}_ms"] = float(m)
+
 PAGES = [
     ("fig_01_frames", fig_01_frames),
     ("fig_02_thermal", fig_02_thermal),
@@ -714,6 +916,11 @@ PAGES = [
     ("fig_13_signals", fig_13_signals),
     ("fig_14_landmarks", fig_14_landmarks),
     ("fig_15_registration", fig_15_registration),
+    ("fig_16_dense_flow", fig_16_dense_flow),
+    ("fig_17_quality", fig_17_quality),
+    ("fig_18_visualise", fig_18_visualise),
+    ("fig_19_event", fig_19_event),
+    ("fig_20_benchmark", fig_20_benchmark),
 ]
 
 
