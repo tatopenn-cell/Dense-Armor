@@ -279,3 +279,4 @@ the gravity forces (the last two through `jax.jit`).
 Dense-Armor takes inspiration from [River](https://riverml.xyz) (Montiel et al., 2020, [arXiv:2012.04740](https://arxiv.org/abs/2012.04740)), the online machine learning library.
 
 - Drones: [Actuator fault](docs/drones/actuator_fault.md).
+- Drones: [Sensor consistency](docs/drones/sensor_consistency.md).

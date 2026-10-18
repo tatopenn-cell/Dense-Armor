@@ -86,6 +86,7 @@ nav:
       - Drones:
         - Overview: drones/index.md
         - Actuator fault: drones/actuator_fault.md
+            - Sensor consistency: drones/sensor_consistency.md
 
   - Shields:
       - shields/index.md
