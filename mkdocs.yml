@@ -83,6 +83,9 @@ nav:
           - Unsupervised fraud: finance/unsupervised_fraud.md
           - Intrusion detection: finance/intrusion.md
           - Credit scoring: finance/credit_scoring.md
+      - Drones:
+        - Overview: drones/index.md
+        - Actuator fault: drones/actuator_fault.md
 
   - Shields:
       - shields/index.md
