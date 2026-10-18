@@ -18,7 +18,7 @@ from pipelines.drones.io import (
 )
 
 # ------------------------------------------------------------------
-# Helpers to build fixtures
+# Fixtures
 # ------------------------------------------------------------------
 
 def _require_pyulog():
@@ -106,6 +106,18 @@ def _att(t_ms, roll=0.0):
     })
 
 
+def _att_tgt(t_ms):
+    return ("attitude_target", {
+        "time_boot_ms": t_ms,
+        "type_mask": 0,
+        "q": [1.0, 0.0, 0.0, 0.0],
+        "body_roll_rate": 0.10,
+        "body_pitch_rate": 0.20,
+        "body_yaw_rate": 0.30,
+        "thrust": 0.5,
+    })
+
+
 def _hr_imu(t_us):
     return ("highres_imu", {
         "time_usec": t_us, "xacc": 0.1, "yacc": 0.2, "zacc": 9.81,
@@ -157,8 +169,6 @@ def test_read_ulog_full(tmp_path):
         ], [
             {"timestamp": 1_000_000, "gyro_rad": [0.1, 0.2, 0.3],
              "accelerometer_m_s2": [0.0, 0.0, 9.81]},
-            {"timestamp": 1_100_000, "gyro_rad": [0.1, 0.2, 0.3],
-             "accelerometer_m_s2": [0.0, 0.0, 9.81]},
         ]),
         ("vehicle_gps_position", [
             ("uint64_t", 0, "timestamp"),
@@ -166,8 +176,16 @@ def test_read_ulog_full(tmp_path):
             ("float", 0, "vel_e_m_s"),
             ("float", 0, "vel_d_m_s"),
         ], [
-            {"timestamp": 1_000_000, "vel_n_m_s": 1.0, "vel_e_m_s": 0.0,
-             "vel_d_m_s": 0.0},
+            {"timestamp": 1_000_000, "vel_n_m_s": 1.0,
+             "vel_e_m_s": 0.0, "vel_d_m_s": 0.0},
+        ]),
+        ("vehicle_rates_setpoint", [
+            ("uint64_t", 0, "timestamp"),
+            ("float", 0, "roll"),
+            ("float", 0, "pitch"),
+            ("float", 0, "yaw"),
+        ], [
+            {"timestamp": 1_000_000, "roll": 0.1, "pitch": 0.2, "yaw": 0.3},
         ]),
         ("actuator_outputs", [
             ("uint64_t", 0, "timestamp"),
@@ -184,11 +202,13 @@ def test_read_ulog_full(tmp_path):
     ]
     p = _build_ulog(msgs, path=tmp_path / "full.ulg")
     out = list(read_ulog(p))
-    assert len(out) >= 1
+    assert out
     assert out[0]["t"] == 0.0
     np.testing.assert_allclose(out[0]["gyro"], [0.1, 0.2, 0.3], atol=1e-6)
     np.testing.assert_allclose(out[0]["acc"], [0.0, 0.0, 9.81], atol=1e-6)
     np.testing.assert_allclose(out[0]["gps_v"], [1.0, 0.0, 0.0], atol=1e-6)
+    np.testing.assert_allclose(out[0]["commanded"], [0.1, 0.2, 0.3],
+                               atol=1e-6)
     np.testing.assert_allclose(out[0]["motor"], [0.5] * 4, atol=1e-6)
     assert abs(out[0]["battery_v"] - 12.6) < 1e-4
 
@@ -202,13 +222,14 @@ def test_read_ulog_no_sensor_combined_uses_attitude(tmp_path):
             ("float", 0, "pitchspeed"),
             ("float", 0, "yawspeed"),
         ], [
-            {"timestamp": 1_000_000, "rollspeed": 0.5, "pitchspeed": 0.6,
-             "yawspeed": 0.7},
+            {"timestamp": 1_000_000, "rollspeed": 0.5,
+             "pitchspeed": 0.6, "yawspeed": 0.7},
         ]),
     ]
     p = _build_ulog(msgs, path=tmp_path / "att_only.ulg")
     out = list(read_ulog(p))
     assert out[0]["acc"] is None
+    assert out[0]["commanded"] is None
     np.testing.assert_allclose(out[0]["gyro"], [0.5, 0.6, 0.7], atol=1e-6)
 
 
@@ -228,6 +249,7 @@ def test_read_ulog_partial_fields(tmp_path):
     out = list(read_ulog(p))
     assert out[0]["gps_v"] is None
     assert out[0]["motor"] is None
+    assert out[0]["commanded"] is None
     assert np.isnan(out[0]["battery_v"])
 
 
@@ -284,17 +306,21 @@ def test_read_mavlink_log_full(tmp_path):
     p = _build_tlog([
         _hb(),
         _hr_imu(1_000_000),
+        _att_tgt(1000),
         _gps(1_000_000),
         _servo(1_000_000),
         _batt(),
     ], tmp_path / "full.tlog")
     out = list(read_mavlink_log(p))
-    assert out, "no samples"
+    assert out
     first = out[0]
     assert first["gyro"] is not None
     assert first["acc"] is not None
     assert first["gps_v"] is not None
     assert first["motor"] is not None
+    assert first["commanded"] is not None
+    np.testing.assert_allclose(first["commanded"], [0.1, 0.2, 0.3],
+                               atol=1e-6)
     np.testing.assert_allclose(first["motor"], [0.5, 0.6, 0.7, 0.8],
                                atol=1e-6)
 
@@ -306,6 +332,7 @@ def test_read_mavlink_log_attitude_only(tmp_path):
     assert out
     np.testing.assert_allclose(out[0]["gyro"], [0.01, 0.02, 0.03],
                                atol=1e-6)
+    assert out[0]["commanded"] is None
 
 
 def test_read_mavlink_log_highres_wins_over_attitude(tmp_path):
@@ -348,7 +375,7 @@ def test_read_mavlink_log_import_error(monkeypatch, tmp_path):
 
 
 # ------------------------------------------------------------------
-# _mav_time branches
+# _mav_time
 # ------------------------------------------------------------------
 
 def test_mav_time_branches():
@@ -363,7 +390,7 @@ def test_mav_time_branches():
 
 
 # ------------------------------------------------------------------
-# _align and _align_records direct branches
+# _align and _align_records
 # ------------------------------------------------------------------
 
 def test_align_empty():
@@ -388,74 +415,7 @@ def test_align_carry_forward():
 
 
 # ------------------------------------------------------------------
-# synthetic_flight
-# ------------------------------------------------------------------
-
-def test_synthetic_flight_no_fault():
-    stream = list(synthetic_flight(n=10, seed=0))
-    assert len(stream) == 10
-    assert all(not s["fault_started"] for s in stream)
-    assert stream[0]["motor"].shape == (4,)
-    assert stream[0]["gyro"].shape == (3,)
-    assert stream[0]["gps_v"].shape == (3,)
-    assert stream[0]["acc"].shape == (3,)
-    assert stream[0]["t"] == 0.0
-    assert stream[-1]["t"] == pytest.approx(0.09, abs=1e-9)
-
-
-def test_synthetic_flight_reproducible():
-    a = list(synthetic_flight(n=5, seed=7))
-    b = list(synthetic_flight(n=5, seed=7))
-    for x, y in zip(a, b):
-        np.testing.assert_array_equal(x["gyro"], y["gyro"])
-
-
-def test_synthetic_flight_zero_samples():
-    assert list(synthetic_flight(n=0, seed=0)) == []
-
-
-def test_synthetic_flight_negative_n():
-    with pytest.raises(ValueError):
-        list(synthetic_flight(n=-1, seed=0))
-
-
-def test_synthetic_flight_invalid_fault():
-    with pytest.raises(ValueError):
-        list(synthetic_flight(n=3, seed=0, fault="unknown"))
-
-
-def test_synthetic_flight_actuator_fault():
-    stream = list(synthetic_flight(n=20, seed=1, fault="actuator"))
-    fault_at = round(0.6 * 20)
-    assert not stream[fault_at - 1]["fault_started"]
-    assert stream[fault_at]["fault_started"]
-    assert stream[fault_at]["motor"][0] == 0.2
-
-
-def test_synthetic_flight_gps_step():
-    stream = list(synthetic_flight(n=20, seed=1, fault="gps_step"))
-    fault_at = round(0.6 * 20)
-    before = stream[fault_at - 1]["gps_v"][0]
-    after = stream[fault_at]["gps_v"][0]
-    assert abs(after - before) > 1.5
-
-
-def test_synthetic_flight_propeller():
-    stream = list(synthetic_flight(n=400, seed=2, fault="propeller"))
-    fault_at = round(0.6 * 400)
-    gyro_x = [s["gyro"][0] for s in stream[fault_at:]]
-    assert max(abs(g) for g in gyro_x) > 0.2
-
-
-def test_synthetic_flight_battery_sag():
-    stream = list(synthetic_flight(n=20, seed=3, fault="battery_sag"))
-    fault_at = round(0.6 * 20)
-    v_before = stream[fault_at - 1]["battery_v"]
-    v_after = stream[fault_at]["battery_v"]
-    assert v_before - v_after > 1.5
-
-# ------------------------------------------------------------------
-# Extra: _ulog_series rami scoperti
+# _ulog_series extra branches
 # ------------------------------------------------------------------
 
 def test_ulog_series_topic_absent_returns_none():
@@ -509,3 +469,87 @@ def test_ulog_series_scalar_and_array_mixed():
     assert out is not None
     np.testing.assert_allclose(out[1], [[1.0, 0.5, -0.1]])
 
+
+# ------------------------------------------------------------------
+# synthetic_flight: contract
+# ------------------------------------------------------------------
+
+def test_synthetic_flight_no_fault():
+    stream = list(synthetic_flight(n=10, seed=0))
+    assert len(stream) == 10
+    assert all(not s["fault_started"] for s in stream)
+    assert all(s["fault_kind"] is None for s in stream)
+    assert stream[0]["motor"].shape == (4,)
+    assert stream[0]["gyro"].shape == (3,)
+    assert stream[0]["commanded"].shape == (3,)
+    assert stream[0]["gps_v"].shape == (3,)
+    assert stream[0]["acc"].shape == (3,)
+    assert stream[0]["t"] == 0.0
+    assert stream[-1]["t"] == pytest.approx(0.09, abs=1e-9)
+
+
+def test_synthetic_flight_reproducible():
+    a = list(synthetic_flight(n=5, seed=7))
+    b = list(synthetic_flight(n=5, seed=7))
+    for x, y in zip(a, b):
+        np.testing.assert_array_equal(x["gyro"], y["gyro"])
+        np.testing.assert_array_equal(x["commanded"], y["commanded"])
+
+
+def test_synthetic_flight_zero_samples():
+    assert list(synthetic_flight(n=0, seed=0)) == []
+
+
+def test_synthetic_flight_negative_n():
+    with pytest.raises(ValueError):
+        list(synthetic_flight(n=-1, seed=0))
+
+
+def test_synthetic_flight_invalid_fault():
+    with pytest.raises(ValueError):
+        list(synthetic_flight(n=3, seed=0, fault="unknown"))
+
+
+# ------------------------------------------------------------------
+# synthetic_flight: each fault kind
+# ------------------------------------------------------------------
+
+def test_synthetic_flight_actuator_loss():
+    stream = list(synthetic_flight(n=200, seed=1, fault="actuator_loss"))
+    fault_at = round(0.6 * 200)
+    before = stream[fault_at - 1]
+    after = stream[fault_at]
+    assert not before["fault_started"]
+    assert after["fault_started"]
+    assert after["fault_kind"] == "actuator_loss"
+    assert abs(after["gyro"][2] - after["commanded"][2]) > 0.05
+
+
+def test_synthetic_flight_gps_ramp():
+    stream = list(synthetic_flight(n=200, seed=1, fault="gps_ramp"))
+    fault_at = round(0.6 * 200)
+    d0 = stream[fault_at]["gps_v"][0] - stream[fault_at - 1]["gps_v"][0]
+    d_mid = (stream[fault_at + 20]["gps_v"][0]
+             - stream[fault_at - 1]["gps_v"][0])
+    d_end = (stream[-1]["gps_v"][0]
+             - stream[fault_at - 1]["gps_v"][0])
+    assert stream[fault_at]["fault_kind"] == "gps_ramp"
+    assert d_end > d_mid > d0
+    assert d_end > 0.5
+
+
+def test_synthetic_flight_propeller():
+    stream = list(synthetic_flight(n=400, seed=2, fault="propeller"))
+    fault_at = round(0.6 * 400)
+    gyro_x = [s["gyro"][0] for s in stream[fault_at:]]
+    assert max(abs(g) for g in gyro_x) > 0.2
+    assert stream[fault_at]["fault_kind"] == "propeller"
+
+
+def test_synthetic_flight_battery_drop():
+    stream = list(synthetic_flight(n=20, seed=3, fault="battery_drop"))
+    fault_at = round(0.6 * 20)
+    v_before = stream[fault_at - 1]["battery_v"]
+    v_after = stream[fault_at]["battery_v"]
+    assert v_before - v_after > 1.5
+    assert stream[fault_at]["fault_kind"] == "battery_drop"
