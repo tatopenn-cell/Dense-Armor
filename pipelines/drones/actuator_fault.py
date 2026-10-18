@@ -74,6 +74,7 @@ DEFAULT_MAHA = {
     "n_init": 100,
     "threshold": 7.0,
     "feature_keys": RESIDUAL_KEYS,
+    "seed": 0,
 }
 
 

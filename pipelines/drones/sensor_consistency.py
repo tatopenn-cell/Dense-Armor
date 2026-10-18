@@ -8,8 +8,10 @@ estimated by IMU sensors and GPS by averaging the Euclidean
 distance between each deviation sample". This pipeline does the
 same comparison in software, on velocity instead of position:
 
-1. Integrate the accelerometer (with gravity removed) to get an
-   IMU-only velocity estimate.
+1. Start the IMU velocity from the first GPS velocity (the same
+   anchoring an EKF does), then integrate the accelerometer with
+   gravity removed. The integration gives the change in velocity;
+   the anchor makes it the absolute velocity.
 2. The residual is ``gps_v - imu_v``, one three-vector per sample.
 3. The score is the Euclidean norm of the residual, matching the
    "Euclidean distance" of the paper.
@@ -132,7 +134,7 @@ def run(
     fault_index = -1
     fault_kind: str | None = None
 
-    imu_v = np.zeros(3)
+    imu_v: np.ndarray | None = None
     prev_t: float | None = None
 
     for i, sample in enumerate(stream):
@@ -148,7 +150,9 @@ def run(
             continue
         acc = np.asarray(acc, dtype=float)
         gps_v = np.asarray(gps_v, dtype=float)
-        if prev_t is not None:
+        if imu_v is None:
+            imu_v = gps_v.copy()
+        elif prev_t is not None:
             dt = t - prev_t
             if dt > 0:
                 imu_v = imu_v + (acc - GRAVITY_NED) * dt
