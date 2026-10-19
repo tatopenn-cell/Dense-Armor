@@ -32,8 +32,8 @@ def test_run_one_seed():
     r = run(n_seeds=1, n_samples=150, max_depth=3)
     assert isinstance(r, StaticVsOnlineResult)
     assert r.n_seeds == 1
-    assert r.n_samples == 300
-    assert r.warmup == 150
+    assert r.n_samples == 150
+    assert r.warmup == 75
     assert len(r.accuracy_batch) == 1
     assert len(r.accuracy_online) == 1
 
