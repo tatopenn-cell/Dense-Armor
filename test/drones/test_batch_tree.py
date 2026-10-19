@@ -133,3 +133,66 @@ def test_fit_accepts_the_root_arguments():
         X, y, t=None, epochs=1, shuffle=False, seed=3
     )
     assert clf.predict_one({"a": 0.05}) == 0
+
+
+def test_gini_empty_returns_zero():
+    from dense_armor.utility.tree.batch import _gini
+    assert _gini({}) == 0.0
+
+
+def test_majority_empty_returns_none():
+    from dense_armor.utility.tree.batch import _majority
+    assert _majority({}) is None
+
+
+def test_constant_feature_is_skipped():
+    """A constant feature column is skipped (no split on it)."""
+    from dense_armor.utility.tree.batch import BatchDecisionTreeClassifier
+    X = [{"a": 1.0, "b": 0.0}, {"a": 1.0, "b": 1.0},
+         {"a": 1.0, "b": 2.0}, {"a": 1.0, "b": 3.0}]
+    y = [0, 0, 1, 1]
+    clf = BatchDecisionTreeClassifier(max_depth=3).fit(X, y)
+    # the tree splits on b, not on the constant a
+    assert clf._root is not None
+    assert clf._root.feature == "b"
+
+
+def test_no_split_returns_leaf():
+    """Two classes, no feature separates them: the node stays a leaf."""
+    from dense_armor.utility.tree.batch import BatchDecisionTreeClassifier
+    X = [{"a": 1.0}, {"a": 1.0}]
+    y = [0, 1]
+    clf = BatchDecisionTreeClassifier(max_depth=3).fit(X, y)
+    p = clf.predict_proba_one({"a": 1.0})
+    assert abs(p.get(0, 0) - 0.5) < 1e-9
+
+
+def test_predict_missing_feature_returns_leaf():
+    """A missing feature key returns the current node (no crash)."""
+    from dense_armor.utility.tree.batch import BatchDecisionTreeClassifier
+    X = [{"a": 0.0}, {"a": 1.0}, {"a": 2.0}, {"a": 3.0}]
+    y = [0, 0, 1, 1]
+    clf = BatchDecisionTreeClassifier(max_depth=2).fit(X, y)
+    out = clf.predict_one({})
+    assert out in (0, 1)
+
+
+def test_predict_non_numeric_returns_leaf():
+    """A non-numeric value returns the current node (no crash)."""
+    from dense_armor.utility.tree.batch import BatchDecisionTreeClassifier
+    X = [{"a": 0.0}, {"a": 1.0}, {"a": 2.0}, {"a": 3.0}]
+    y = [0, 0, 1, 1]
+    clf = BatchDecisionTreeClassifier(max_depth=2).fit(X, y)
+    out = clf.predict_one({"a": "not a number"})
+    assert out in (0, 1)
+
+
+def test_proba_on_empty_leaf_returns_empty_dict():
+    """A leaf with no class counts gives an empty probability dict."""
+    from dense_armor.utility.tree.batch import (
+        BatchDecisionTreeClassifier,
+        _Node,
+    )
+    clf = BatchDecisionTreeClassifier(max_depth=2)
+    clf._root = _Node(counts={})
+    assert clf.predict_proba_one({"a": 1.0}) == {}

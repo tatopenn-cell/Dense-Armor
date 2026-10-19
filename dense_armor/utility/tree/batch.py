@@ -107,8 +107,6 @@ def _best_split(
         if col_sorted[0] == col_sorted[-1]:
             continue
         valid = col_sorted[:-1] < col_sorted[1:]
-        if not valid.any():
-            continue
         Y_sorted = Y[order]
         cum = np.cumsum(Y_sorted, axis=0)  # (n, K)
         total = cum[-1]  # (K,)
@@ -216,8 +214,6 @@ class BatchDecisionTreeClassifier(Classifier):
             return leaf
         j = feature_names.index(feature)
         mask = X[:, j] <= threshold
-        if mask.all() or not mask.any():
-            return leaf
         leaf.feature = feature
         leaf.threshold = threshold
         leaf.counts = counts
@@ -285,8 +281,7 @@ class BatchDecisionTreeClassifier(Classifier):
             except (TypeError, ValueError):
                 return node
             thr = node.threshold
-            if thr is None:
-                return node
+            assert thr is not None  # invariant: feature and threshold set together
             node = node.left if v <= thr else node.right
         return node
 
