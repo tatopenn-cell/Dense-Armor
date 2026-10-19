@@ -68,7 +68,7 @@ link_health                0.006   0.000   0.006        0.0
 
 ## 4. The pipeline on MQTT
 
-The bridge runs a pipeline and publishes its score and its alarm on MQTT, on the topics `drone/<id>/score` and `drone/<id>/alarm`. The id is a short string chosen by the user; by default a random four-letter suffix, so two boards on the same broker do not mix. On a board connected to the laptop over Wi-Fi, the broker can be the laptop itself (a local Mosquitto), or a public one.
+The bridge runs a pipeline and publishes its score and its alarm on MQTT, on the topics `drone/<id>/score` and `drone/<id>/alarm`. The id is a short string chosen by the operator; by default a random four-letter suffix, so two boards on the same broker do not mix. On a board connected to the laptop over Wi-Fi, the broker can be the laptop itself (a local Mosquitto), or a public one.
 
 ```bash
 python edge/mqtt_bridge.py --smoke --id d1
@@ -91,7 +91,7 @@ On the board, the same message arrives from the bridge. The bridge is the proces
 
 ## 6. The container, if the operating system is not enough
 
-For a board where the Python of the operating system is not the version the library needs, there are two container definitions in `edge/`. The Raspberry Pi one uses the multi-arch `python:3.11-slim` image, the Jetson one uses the NVIDIA L4T PyTorch image for JetPack 6. Both are written and not built.
+For a board where the Python of the operating system is not the version the library needs, there are two container definitions in `edge/`. The Raspberry Pi one uses the multi-arch `python:3.11-slim` image, the Jetson one uses the NVIDIA L4T PyTorch image for JetPack 6. Both are written and not built. The arm64 image builds and `python -m edge.edge_bench --smoke` starts on arm64 under QEMU emulation in CI; the times of an emulated run are not the times of a Raspberry Pi and are not reported.
 
 ```bash
 # on a Raspberry Pi 4 or 5, 64-bit OS, with Docker installed

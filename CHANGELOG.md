@@ -4,6 +4,14 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- `pipelines/drones/`, a drone section of nine pipelines over the library primitives, on synthetic streams: `actuator_fault` (`CUSUMDriftDetector`, `OnlineRobustMahalanobis`; one episode 0.02 s after the fault, 0 false alarms), `sensor_consistency` (`CUSUMDriftDetector`; 3 episodes at 0.28 / 1.47 / 2.67 s), `propeller_health` (`SDFT`; band [40, 55] Hz 0.74 to 57.10, peak 46.88 Hz), `battery_endurance` (`AdaptiveConformalRegressor`, `LinearRegression`, `AdaGrad`, `TDigest`; q50 22.5 min, coverage 0.923), `safety_filter` (`cbf_safety_filter_live`; 2.0 m/s to 0.285 m/s), `link_health` (two `CUSUMDriftDetector`; 0.19 s after the dropout), `visual_landing` (`GlobalMotion`, `DenseFlow`, `MotionMask`, `FrameAnomaly`; mean shift error 0.731 px, FrameAnomaly 0.3100 to 0.6433, MotionMask 0 to 185 px), `static_vs_online` (a CART tree against a Hoeffding tree; 1.0000 against 0.9920, paired Wilcoxon p = 0.0020, A12 1.000).
+- `pipelines/drones/alfa.py`: reader for the ALFA dataset (Keipour, Mousaei & Scherer 2020, DOI 10.1184/R1/12707963), the same fields as `read_mavlink_log` plus the fault ground truth, and `alfa_fault_time`.
+- `benchmarks/drones/alfa_actuator.py` and `kaggle/drones_alfa_actuator.py` with a `SMOKE` switch: the actuator-fault pipeline on the processed ALFA flights, delay and false alarms per hour over the flights.
+- `dense_armor/utility/tree/batch.py`: `BatchDecisionTreeClassifier`, a CART tree fitted on the whole training set (Breiman et al. 1984, chapter 2; Gini index as in Bourel et al. 2026, page 8). `OnlineBaggingClassifier.fit_batch`, the batch protocol of Oza and Russell 2001.
+- `edge/`: `edge_bench.py`, `mqtt_bridge.py`, `install.sh`, `Dockerfile.arm64`, `Dockerfile.jetson`, the systemd unit and `board_selftest.sh`. `docs/drones/`: nine pipeline pages, `start_here.md`, `ardupilot.md` (ArduPilot against PX4, field by field, in the `pymavlink` dialects) and `jetson_power.md` (the `nvpmodel` modes of each Orin module, the commands, and a measurements table to be filled with the numbers of a board).
+- `.github/workflows/arm64-smoke.yml`: the arm64 image builds under QEMU emulation and `edge.edge_bench --smoke` starts on it, on `edge/**` and `pipelines/drones/**` changes.
+
 ## [1.1.31] - 2026-10-17
 
 ### Added

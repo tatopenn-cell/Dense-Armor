@@ -120,7 +120,7 @@ print([round(float(v), 3) for v in s["motor"]])
 [1.5, 1.6, 1.26, 1.52]
 ```
 
-The four `servo*_raw` channels are divided by 1000, so 1500 is 1.5 and 1260 is 1.26. The scale is the one of the synthetic stream, not a normalisation to [0, 1]: a real servo output in [1000, 2000] maps to [1.0, 2.0].
+The four `servo*_raw` channels are divided by 1000, so 1500 is 1.5 and 1260 is 1.26. The scale is the one of the synthetic stream, not a normalisation to [0, 1]: a servo output in [1000, 2000] maps to [1.0, 2.0].
 
 ## 6. The battery
 
@@ -185,9 +185,9 @@ print([round(float(v), 3) for v in s["commanded"]])
 
 - The mapping from field to message is the one of `pipelines/drones/io.py`, not a new one. The table states it, it does not propose a different reader.
 - The eight code blocks write their own tlog with `pymavlink` and read it back with `read_mavlink_log`: no file on disk is needed, and each block is self-contained.
-- `motor` is divided by 1000, as in `io.py`, so the values are in [1.0, 2.0] on a real log and not in [0, 1].
+- `motor` is divided by 1000, as in `io.py`, so the values are in [1.0, 2.0] on a board log and not in [0, 1].
 - `SCALED_IMU2` is named as the proposal for `acc` when `HIGHRES_IMU` is absent, because ArduPilot logs it. It is not added to `io.py` here: B says no change to `io.py`.
 
 ### Development diary
 
-The first version of the page read a real ALFA tlog and showed the first samples. The tlog contains `RAW_IMU` and `SCALED_IMU2`, not `HIGHRES_IMU`, and `read_mavlink_log` reads only the latter: the gyro comes from `ATTITUDE`, the acceleration is `None`. The page now says that, and the examples write a tlog with the message each field needs, so the reader is shown on the case it handles.
+The first version of the page read an ALFA tlog and showed the first samples. The tlog contains `RAW_IMU` and `SCALED_IMU2`, not `HIGHRES_IMU`, and `read_mavlink_log` reads only the latter: the gyro comes from `ATTITUDE`, the acceleration is `None`. The page now says that, and the examples write a tlog with the message each field needs, so the reader is shown on the case it handles.

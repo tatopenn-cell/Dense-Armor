@@ -66,7 +66,7 @@ The table is empty. A number written here without a board is a number invented, 
 
 ### Choices stated explicitly
 
-- The page states the commands and the table, and leaves the measurements empty on purpose: the task asks for the numbers of a board, and no board is available here.
+- The page states the commands and the table, and leaves the measurements empty on purpose: the numbers come from a board, and no board is available here.
 - The loop in section 4 sets the modes in order and runs the smoke benchmark for each. It does not restore the previous mode at the end: the last mode stays. A script that restores it is `edge/board_selftest.sh` for the single run, not for the loop.
 - The mode ids are per module, and the table is the source. A module whose id is not in the table is not covered.
 

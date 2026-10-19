@@ -35,13 +35,18 @@ but not the exact column for each field of this reader.
 - ``battery_v``: ``mavros-battery.csv``, ``field.voltage``, V.
 
 Example:
-    >>> from pipelines.drones.alfa import read_alfa
-    >>> samples = list(read_alfa("/content/alfa/processed/processed/"
-    ...     "carbonZ_2018-07-18-15-53-31_1_engine_failure"))
-    >>> len(samples) > 0
-    True
-    >>> sorted(samples[0])[:3]
-    ['acc', 'battery_v', 'commanded']
+    >>> import tempfile
+    >>> from pathlib import Path
+    >>> from pipelines.drones.alfa import alfa_fault_time
+    >>> d = Path(tempfile.mkdtemp())
+    >>> h = ["%time,field.data", "1050000000,1"]
+    >>> _ = (d / "x-failure_status-engines.csv").write_text(
+    ...     chr(10).join(h))
+    >>> g = ["%time,x", "1000000000,0"]
+    >>> _ = (d / "x-mavros-imu-data_raw.csv").write_text(
+    ...     chr(10).join(g))
+    >>> alfa_fault_time(d)
+    (0.05, 'engines')
 """
 
 from __future__ import annotations

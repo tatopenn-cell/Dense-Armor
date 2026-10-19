@@ -280,3 +280,12 @@ Dense-Armor takes inspiration from [River](https://riverml.xyz) (Montiel et al.,
 
 - Drones: [Actuator fault](docs/drones/actuator_fault.md).
 - Drones: [Sensor consistency](docs/drones/sensor_consistency.md).
+- Drones: [Propeller health: is a propeller damaged?](docs/drones/propeller_health.md).
+- Drones: [Battery endurance: how many minutes of flight are left, and how sure?](docs/drones/battery_endurance.md).
+- Drones: [Safety filter: is the next move safe?](docs/drones/safety_filter.md).
+- Drones: [Link health: is the radio link about to fail?](docs/drones/link_health.md).
+- Drones: [Visual landing: is the pad where I think it is, and is the camera moving?](docs/drones/visual_landing.md).
+- Drones: [Static vs online: a CART tree and an online Hoeffding tree on the same stream](docs/drones/static_vs_online.md).
+- Drones: [Start here: a drone and a board](docs/drones/start_here.md).
+- Drones: [ArduPilot against PX4](docs/drones/ardupilot.md).
+- Drones: [Jetson power: how much does the power mode change the time per sample?](docs/drones/jetson_power.md).
