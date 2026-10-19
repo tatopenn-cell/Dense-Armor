@@ -9,6 +9,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+BRANCH = "taskD2-drones"
 SMOKE = os.environ.get("SMOKE", "0") == "1"
 REPO = Path("/kaggle/working/Dense-Armor")
 DATA = Path("/kaggle/working/alfa/processed/processed")
@@ -18,7 +19,7 @@ if not REPO.exists():
     subprocess.run(["git", "clone",
                     "https://github.com/tatopenn-cell/Dense-Armor.git",
                     str(REPO)], check=True)
-    subprocess.run(["git", "-C", str(REPO), "checkout", "taskD2-drones"],
+    subprocess.run(["git", "-C", str(REPO), "checkout", BRANCH],
                    check=True)
 
 subprocess.run([sys.executable, "-m", "pip", "install", "-q", "-e",

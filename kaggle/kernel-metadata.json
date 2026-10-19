@@ -1,5 +1,5 @@
 {
-  "id": "tatopenn-cell/dense-armor-alfa-actuator",
+  "id": "tatopenn/dense-armor-alfa-actuator",
   "title": "Dense-Armor ALFA actuator",
   "code_file": "drones_alfa_actuator.py",
   "language": "python",

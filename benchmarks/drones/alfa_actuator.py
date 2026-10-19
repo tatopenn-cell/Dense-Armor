@@ -31,10 +31,20 @@ ROOT = Path(__file__).resolve().parents[2]
 SMOKE_FLIGHTS = 2
 
 
+def _samples(flight_dir: Path) -> list[dict]:
+    """Samples of one flight for the pipeline: the attitude error is the residual."""
+    out = []
+    for s in read_alfa(flight_dir):
+        e = s["attitude_error"]
+        out.append({"t": s["t"], "fault_started": s["fault_started"],
+                    "fault_kind": s["fault_kind"],
+                    "residual": e if np.all(np.isfinite(e)) else None})
+    return out
+
+
 def _one_flight(flight_dir: Path) -> dict:
     t_fault, kind = alfa_fault_time(flight_dir)
-    samples = list(read_alfa(flight_dir))
-    r = run(samples)
+    r = run(_samples(flight_dir))
     delay = None
     if r.delays_s:
         delay = float(r.delays_s[0])

@@ -6,9 +6,13 @@ of the fault in the ground truth (section 3.3, page 4). The processed
 flights are folders of one CSV per ROS topic (section 3.1, page 3).
 
 ``read_alfa(flight_dir)`` yields one dict per sample with the fields of
-:func:`pipelines.drones.io.read_mavlink_log` -- ``t``, ``gyro``,
-``commanded``, ``acc``, ``gps_v``, ``motor``, ``battery_v`` -- plus
-``fault_started`` and ``fault_kind``. The samples are the rows of
+:func:`pipelines.drones.io.read_mavlink_log` -- ``t``, ``gyro``, ``acc``,
+``gps_v``, ``motor``, ``battery_v`` -- plus ``attitude``, ``attitude_cmd``,
+``attitude_error``, ``fault_started`` and ``fault_kind``. ALFA publishes
+the commanded roll, pitch and yaw as **angles**, not as body rates (the
+commanded value spans -45 to +45 degrees on the flights, the bank limit),
+so the reader has no ``commanded`` rate; the comparison of the commanded
+with the measured value is made on the angles, in ``attitude_error``. The samples are the rows of
 ``mavros-imu-data_raw.csv``; every other field is aligned to the most
 recent value at or before the IMU timestamp, as in
 ``pipelines/drones/io.py``.
@@ -26,8 +30,11 @@ but not the exact column for each field of this reader.
   rad/s.
 - ``acc``: ``mavros-imu-data_raw.csv``, ``field.linear_acceleration.*``,
   m/s^2.
-- ``commanded``: ``mavros-nav_info-{roll,pitch,yaw}.csv``,
-  ``field.commanded``, deg/s, converted to rad/s.
+- ``attitude_cmd``, ``attitude``: ``mavros-nav_info-{roll,pitch,yaw}.csv``,
+  ``field.commanded`` and ``field.measured``, degrees, converted to rad.
+- ``attitude_error``: ``attitude_cmd - attitude`` per axis, in rad, each
+  difference wrapped to [-pi, pi) so that a yaw near 0 and 360 degrees
+  gives a small error.
 - ``gps_v``: ``mavros-global_position-raw-gps_vel.csv``,
   ``field.twist.linear.*``, m/s.
 - ``motor``: ``mavros-rc-out.csv``, ``field.channels0..3``, PWM in
@@ -171,10 +178,10 @@ def read_alfa(flight_dir) -> Iterator[dict[str, Any]]:
     t_bat, bat = _read(flight, _BATTERY, ["field.voltage"])
     nav_t, nav = [], {}
     for stem in _NAV:
-        t_n, v = _read(flight, stem, ["field.commanded"])
+        t_n, v = _read(flight, stem, ["field.commanded", "field.measured"])
         nav_t.append(t_n)
-        nav[stem] = v["field.commanded"]
-    t_nav = np.stack(nav_t)
+        nav[stem] = v
+    t_nav = nav_t
 
     t0 = int(t_imu[0])
     secs = (t_imu - t0) / NS_PER_S
@@ -196,10 +203,13 @@ def read_alfa(flight_dir) -> Iterator[dict[str, Any]]:
                       (_at(t_rc, rc["field.channels3"], t_imu) - PWM_MIN)
                       / PWM_SPAN], axis=1)
     battery_v = _at(t_bat, bat["field.voltage"], t_imu)
-    cmd = []
-    for i, stem in enumerate(_NAV):
-        cmd.append(_at(t_nav[i], nav[stem], t_imu) * DEG_TO_RAD)
-    commanded = np.stack(cmd, axis=1)
+    cmd_deg = np.stack([_at(t_nav[i], nav[stem]["field.commanded"], t_imu)
+                        for i, stem in enumerate(_NAV)], axis=1)
+    meas_deg = np.stack([_at(t_nav[i], nav[stem]["field.measured"], t_imu)
+                         for i, stem in enumerate(_NAV)], axis=1)
+    attitude_cmd = cmd_deg * DEG_TO_RAD
+    attitude = meas_deg * DEG_TO_RAD
+    attitude_error = ((cmd_deg - meas_deg + 180.0) % 360.0 - 180.0) * DEG_TO_RAD
 
     t_fault, kind = alfa_fault_time(flight)
     for i in range(len(secs)):
@@ -207,7 +217,9 @@ def read_alfa(flight_dir) -> Iterator[dict[str, Any]]:
         yield {
             "t": float(secs[i]),
             "gyro": gyro[i].copy(),
-            "commanded": commanded[i].copy(),
+            "attitude_cmd": attitude_cmd[i].copy(),
+            "attitude": attitude[i].copy(),
+            "attitude_error": attitude_error[i].copy(),
             "acc": acc[i].copy(),
             "gps_v": gps_v[i].copy(),
             "motor": motor[i].copy(),

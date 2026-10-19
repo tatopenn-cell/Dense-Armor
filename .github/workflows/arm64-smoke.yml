@@ -1,0 +1,24 @@
+name: arm64 smoke
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "edge/**"
+      - "pipelines/drones/**"
+      - ".github/workflows/arm64-smoke.yml"
+
+jobs:
+  arm64-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up QEMU
+        run: docker run --privileged --rm tonistiigi/binfmt --install all
+      - name: Build the arm64 image
+        run: docker buildx build --platform linux/arm64 -f edge/Dockerfile.arm64 --load -t dense-armor-drone .
+      - name: Run the smoke benchmark on arm64
+        run: docker run --rm --platform linux/arm64 dense-armor-drone python -m edge.edge_bench --smoke
+      - name: Print the machine from inside the container
+        run: docker run --rm --platform linux/arm64 dense-armor-drone uname -m

@@ -21,7 +21,8 @@ def _write(path: Path, header: list[str], rows: list[list[str]]) -> None:
         w.writerows(rows)
 
 
-def _mini_flight(tmp_path: Path, fault_at_ns: int | None) -> Path:
+def _mini_flight(tmp_path: Path, fault_at_ns: int | None,
+                 cmd: str = "10.0", meas: str = "5.0") -> Path:
     d = tmp_path / "carbonZ_test"
     d.mkdir()
     t0 = 1_531_943_810_000_000_000
@@ -54,7 +55,7 @@ def _mini_flight(tmp_path: Path, fault_at_ns: int | None) -> Path:
            ["%time", "field.header.seq", "field.header.stamp",
             "field.header.frame_id", "field.voltage", "field.current"], bat)
     for axis in ("roll", "pitch", "yaw"):
-        rows = [[str(t), "0", "0", "NED", "10.0", "5.0"] for t in ts]
+        rows = [[str(t), "0", "0", "NED", cmd, meas] for t in ts]
         _write(d / f"carbonZ_test-mavros-nav_info-{axis}.csv",
                ["%time", "field.header.seq", "field.header.stamp",
                 "field.header.frame_id", "field.commanded",
@@ -81,10 +82,34 @@ def test_read_alfa_yields_one_dict_per_imu_sample(tmp_path):
                                 (1520 - PWM_MIN) / PWM_SPAN])
     assert s["battery_v"] == 12.5
     deg_to_rad = np.pi / 180.0
-    np.testing.assert_allclose(s["commanded"],
-                               [10.0 * deg_to_rad] * 3)
+    assert "commanded" not in s
+    np.testing.assert_allclose(s["attitude_cmd"], [10.0 * deg_to_rad] * 3)
+    np.testing.assert_allclose(s["attitude"], [5.0 * deg_to_rad] * 3)
+    np.testing.assert_allclose(s["attitude_error"], [5.0 * deg_to_rad] * 3)
     assert s["fault_started"] is False
     assert s["fault_kind"] is None
+
+
+def test_attitude_error_wraps_to_plus_minus_pi(tmp_path):
+    d = _mini_flight(tmp_path, fault_at_ns=None, cmd="350.0", meas="10.0")
+    s = next(iter(read_alfa(d)))
+    np.testing.assert_allclose(s["attitude_error"],
+                               [-20.0 * np.pi / 180.0] * 3)
+
+
+def test_attitude_files_of_different_length(tmp_path):
+    d = _mini_flight(tmp_path, fault_at_ns=None)
+    t0 = 1_531_943_810_000_000_000
+    short = [[str(t0 + i * 100_000_000), "0", "0", "NED", "20.0", "15.0"]
+             for i in range(3)]
+    _write(d / "carbonZ_test-mavros-nav_info-yaw.csv",
+           ["%time", "field.header.seq", "field.header.stamp",
+            "field.header.frame_id", "field.commanded", "field.measured"],
+           short)
+    samples = list(read_alfa(d))
+    assert len(samples) == 5
+    np.testing.assert_allclose(samples[4]["attitude_error"][2],
+                               5.0 * np.pi / 180.0)
 
 
 def test_t_is_seconds_from_first_imu_sample(tmp_path):
