@@ -48,9 +48,13 @@ The synthetic fault models (all "my choice" unless stated):
 - ``gps_ramp`` follows the description of SemperFi (Sathaye et al.
   2021) section 2.2, page 3: the attacker "gradually introduces
   offsets". The ramp rate is my choice.
-- ``propeller`` follows Zhang et al. 2023, section V, page 5: only one
-  propeller is damaged and the fault is visible on the onboard IMU. The
-  vibration frequency and amplitude are my choice.
+- ``propeller`` is my choice. Zhang et al. 2023 (section V, page 5)
+  describe the fault as visible in the quadrotor's angular accelerations
+  and use a DCNN on a nine-channel temporal signal (roll, pitch, roll
+  rate, pitch rate, yaw rate, four propeller speeds); they do not give a
+  single frequency. Here the fault is a 47 Hz sine on the x gyro with
+  amplitude 0.5 rad/s, which is a proxy for the vibration, not the
+  paper's signal.
 - ``battery_drop`` has no paper: a constant voltage drop. Alyassi et al.
   2017 is a nine-term regression on power (section IV, pages 4-5); it is
   used in the battery pipeline, not here.
@@ -257,6 +261,13 @@ def read_mavlink_log(path) -> Iterator[dict[str, Any]]:
     ``BATTERY_STATUS``           ``battery_v`` from ``voltages[0]``
                                  in mV, divided by 1000
     ============================ ==================================
+
+    The message names above are the standard MAVLink ones defined in
+    ``pymavlink.dialects.v10``, not from a survey. Koubaa et al. 2019
+    (the survey in the task folder) names only ``HEARTBEAT`` explicitly
+    (page 3: "the message ID equal to 0 refers to a message of type
+    HEARTBEAT"); the other names come from the dialect file, which is
+    the authoritative source.
 
     The message ``ATTITUDE_TARGET`` provides the reference rate; when
     it is absent (some logs do not record the setpoint), ``commanded``
