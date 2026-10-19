@@ -91,6 +91,7 @@ nav:
         - Battery endurance: drones/battery_endurance.md
         - Safety filter: drones/safety_filter.md
         - Link health: drones/link_health.md
+        - Visual landing: drones/visual_landing.md
 
   - Shields:
       - shields/index.md
