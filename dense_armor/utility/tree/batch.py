@@ -227,19 +227,34 @@ class BatchDecisionTreeClassifier(Classifier):
         )
         return leaf
 
-    def fit(self, X: list[dict], y: list, **kwargs) -> BatchDecisionTreeClassifier:
+    def fit(
+        self,
+        X: Any,
+        y: Any = None,
+        t: Any = None,
+        epochs: int = 1,
+        shuffle: bool = False,
+        seed: int | None = None,
+    ) -> BatchDecisionTreeClassifier:
         """Fit the tree on the whole dataset.
 
         Args:
             X: list of feature dicts.
             y: list of labels, same length as ``X``.
+            t: accepted for the interface of ``Root.fit``; unused.
+            epochs: accepted for the interface of ``Root.fit``; unused.
+            shuffle: accepted for the interface of ``Root.fit``; unused.
+            seed: accepted for the interface of ``Root.fit``; unused.
 
         Returns:
             ``self``.
 
         Raises:
-            ValueError: on empty ``X`` or on a length mismatch.
+            ValueError: on empty ``X``, on ``y`` equal to ``None`` or on a
+                length mismatch.
         """
+        if y is None:
+            raise ValueError("fit needs the labels y")
         if len(X) == 0:
             raise ValueError("cannot fit on an empty dataset")
         if len(X) != len(y):

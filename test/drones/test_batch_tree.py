@@ -119,3 +119,17 @@ def test_clone_independent():
     a = BatchDecisionTreeClassifier(max_depth=2).fit(X, y)
     b = a.clone()
     assert b.predict_one({"x": 0.5}) is None  # not fitted
+
+
+def test_fit_without_labels_raises():
+    with pytest.raises(ValueError):
+        BatchDecisionTreeClassifier().fit([{"a": 1.0}])
+
+
+def test_fit_accepts_the_root_arguments():
+    X = [{"a": 0.0}, {"a": 1.0}, {"a": 0.1}, {"a": 0.9}]
+    y = [0, 1, 0, 1]
+    clf = BatchDecisionTreeClassifier(max_depth=2).fit(
+        X, y, t=None, epochs=1, shuffle=False, seed=3
+    )
+    assert clf.predict_one({"a": 0.05}) == 0

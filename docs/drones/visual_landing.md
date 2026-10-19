@@ -95,7 +95,7 @@ The pipeline still calls `MotionMask` on every frame and stores its pixel count 
 
 ### Choices stated explicitly
 
-- The frame size is 640 by 360, the one of the spec.
+- The frame size is 640 by 360, the size used by the benchmarks of the library.
 - The global shift is 1 pixel per frame, the small-shift regime of Horn-Schunck.
 - The person is a dark square of 30 by 30 pixels, 0.0 on the bright pad 0.7, walking at 2 pixels per frame relative to the pad. The size and the level are my choice; a smaller square is under the patch size, a lighter one is under the memory's sensitivity.
 - `DenseFlow` runs with `use_jax=False` (the numpy path), because the JAX path is slower on a single frame and the pipeline is not batched.

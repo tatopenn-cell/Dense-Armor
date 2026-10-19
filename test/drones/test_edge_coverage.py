@@ -2,6 +2,7 @@
 
 import subprocess
 import sys
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -39,7 +40,7 @@ def test_edge_bench_main_block(tmp_path):
         [sys.executable, "edge/edge_bench.py", "--smoke",
          "--out", str(out)],
         check=False, capture_output=True, text=True, timeout=180,
-        cwd="/content/Dense-Armor",
+        cwd=Path(__file__).resolve().parents[2],
     )
     assert r.returncode == 0
     assert out.exists()

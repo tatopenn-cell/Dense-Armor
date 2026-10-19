@@ -127,8 +127,8 @@ class OnlineBaggingClassifier(Classifier):
         Args:
             X: list of feature dicts, one per sample.
             y: list of labels, same length as ``X``.
-            seed: RNG seed for the bootstrap draws. ``None`` uses
-                ``self.seed``.
+            seed: RNG seed for the bootstrap draws. ``None`` continues the
+                generator of the estimator.
 
         Returns:
             ``self``, fitted.
@@ -147,10 +147,7 @@ class OnlineBaggingClassifier(Classifier):
             ]
         for label in y:
             self.classes_.add(label)
-        rng = (
-            self._rng if seed is None
-            else __import__("numpy").random.default_rng(seed)
-        )
+        rng = self._rng if seed is None else np.random.default_rng(seed)
         n = len(X)
         for member in self.members_:
             idx_b = rng.integers(0, n, size=n)
