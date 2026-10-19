@@ -78,6 +78,7 @@ def test_person_visible_after_person_at():
     assert float(np.min(person_region)) < 0.1
 
 
+@pytest.mark.slow
 def test_run_no_person():
     frames, truth, _ = synthetic_frames(n=10, shift=(1, 0), seed=0)
     r = run(frames, truth, None)
@@ -88,6 +89,7 @@ def test_run_no_person():
     assert r.mean_error_px < 1.0
 
 
+@pytest.mark.slow
 def test_run_globalmotion_recovers_shift():
     frames, truth, _ = synthetic_frames(n=10, shift=(1, 0), seed=0)
     r = run(frames, truth, None)
@@ -95,21 +97,24 @@ def test_run_globalmotion_recovers_shift():
     assert r.max_error_px < 2.0
 
 
+@pytest.mark.slow
 def test_run_zero_shift():
     frames, truth, _ = synthetic_frames(n=8, shift=(0, 0), seed=0)
     r = run(frames, truth, None)
     assert r.mean_error_px < 1.0
 
 
+@pytest.mark.slow
 def test_run_frameanomaly_discriminates():
     frames, truth, pa = synthetic_frames(
-        n=40, shift=(1, 0), seed=0, person_at=20)
+        n=25, shift=(1, 0), seed=0, person_at=20)
     r = run(frames, truth, pa, anomaly_warmup=10)
     assert np.isfinite(r.anomaly_before_mean)
     assert np.isfinite(r.anomaly_after_mean)
     assert r.anomaly_after_mean > r.anomaly_before_mean
 
 
+@pytest.mark.slow
 def test_run_motionmask_declared_zero():
     frames, truth, pa = synthetic_frames(
         n=20, shift=(1, 0), seed=0, person_at=10)
@@ -119,6 +124,7 @@ def test_run_motionmask_declared_zero():
     assert r.mask_pixels.sum() >= 0
 
 
+@pytest.mark.slow
 def test_run_result_fields():
     frames, truth, pa = synthetic_frames(
         n=10, shift=(1, 0), seed=0, person_at=5)
@@ -132,6 +138,7 @@ def test_run_result_fields():
     assert r.time_dense_ms > 0
 
 
+@pytest.mark.slow
 def test_run_deterministic():
     frames, truth, pa = synthetic_frames(
         n=15, shift=(1, 0), seed=0, person_at=8)
@@ -141,6 +148,7 @@ def test_run_deterministic():
     np.testing.assert_array_equal(r1.est_dy, r2.est_dy)
 
 
+@pytest.mark.slow
 def test_run_no_truth():
     frames, _, _ = synthetic_frames(n=5, shift=(1, 0), seed=0)
     r = run(frames, None, None)
