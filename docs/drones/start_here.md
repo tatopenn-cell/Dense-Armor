@@ -113,3 +113,7 @@ docker run --rm -it dense-armor-drone python -m edge.edge_bench --smoke
 | install on a board | no | no |
 
 The last three rows are not run, and the page says so. The numbers in the previous sections are from x86, not from a board. The point of the file is that the same commands, run on the board, produce the board's numbers; the file is the file, not the board.
+
+## Report your board
+
+Run `bash edge/board_selftest.sh` on your board: it prints the model, the OS and the Python version, installs `dense-armor[drone]` in a virtual environment, runs `python -m edge.edge_bench --smoke`, and writes the JSON with the model in its file name. Paste the block it prints at the end into https://github.com/tatopenn-cell/Dense-Evolution-Discovery/issues/266.
