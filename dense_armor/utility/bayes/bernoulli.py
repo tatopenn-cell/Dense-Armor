@@ -53,7 +53,10 @@ class BernoulliNB(Classifier):
         for naive Bayes text classification. Eq. 2 and 3.
     """
 
-    budget_s = 0.001
+    # The p99 on a Windows runner is 2.27 ms, above the old 1 ms.
+    # The budget is the worst case the estimator promises, not the
+    # best case on Linux.
+    budget_s = 0.003
     memory_class = "O(c d)"
 
     def __init__(

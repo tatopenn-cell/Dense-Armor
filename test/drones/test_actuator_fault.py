@@ -24,6 +24,18 @@ def test_residual_returns_difference():
     np.testing.assert_allclose(r, [0.05, 0.05, 0.05], atol=1e-12)
 
 
+def test_residual_uses_a_ready_residual_first():
+    r = _residual({"residual": [0.1, 0.2, 0.3], "commanded": np.ones(3),
+                   "gyro": np.zeros(3)})
+    np.testing.assert_allclose(r, [0.1, 0.2, 0.3])
+
+
+def test_residual_without_ready_value_is_unchanged():
+    r = _residual({"residual": None, "commanded": np.array([1.0, 2.0, 3.0]),
+                   "gyro": np.array([0.5, 0.5, 0.5])})
+    np.testing.assert_allclose(r, [0.5, 1.5, 2.5])
+
+
 def test_residual_missing_commanded_returns_none():
     assert _residual({"gyro": np.array([0.1, 0.2, 0.3])}) is None
 

@@ -94,6 +94,8 @@ nav:
         - Visual landing: drones/visual_landing.md
         - Static vs online: drones/static_vs_online.md
         - Start here: drones/start_here.md
+        - ArduPilot: drones/ardupilot.md
+        - Jetson power: drones/jetson_power.md
 
   - Shields:
       - shields/index.md

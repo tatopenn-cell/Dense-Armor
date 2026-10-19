@@ -114,7 +114,15 @@ class ActuatorFaultResult:
 
 
 def _residual(sample: dict) -> np.ndarray | None:
-    """Return the 3-vector ``commanded - gyro``, or None."""
+    """Return the 3-vector ``commanded - gyro``, or None.
+
+    A sample that carries a ready ``residual`` (3 values) uses it as it is;
+    this is how a dataset without a commanded body rate (ALFA publishes the
+    commanded attitude angles) feeds the same pipeline.
+    """
+    ready = sample.get("residual")
+    if ready is not None:
+        return np.asarray(ready, dtype=float)
     cmd = sample.get("commanded")
     gyro = sample.get("gyro")
     if cmd is None or gyro is None:
@@ -147,8 +155,8 @@ def run(
     Args:
         stream: list of dicts from :func:`pipelines.drones.io.synthetic_flight`
             or :func:`pipelines.drones.io.read_mavlink_log`. Each dict
-            needs ``gyro`` and ``commanded`` (3-vectors), and may
-            carry ``t`` (seconds), ``fault_started`` and ``fault_kind``.
+            needs ``gyro`` and ``commanded`` (3-vectors) or a ready
+            ``residual`` (3 values), and may            carry ``t`` (seconds), ``fault_started`` and ``fault_kind``.
         cusum_kwargs: keyword arguments forwarded to
             :class:`CUSUMDriftDetector`. The default is
             ``reference="fixed", radius=20, ref_mult=5, k=0.5, h=20.0,

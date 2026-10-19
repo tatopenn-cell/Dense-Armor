@@ -79,8 +79,11 @@ class StaticVsOnlineResult:
             model (fit on the training half plus predict on the test).
         time_per_sample_online_ms: median per-sample time of the online
             model (predict plus learn on the test half).
-        memory_batch_kb: peak memory of the batch model, in KB.
-        memory_online_kb: peak memory of the online model, in KB.
+        memory_batch_kb: change of the process RSS around the batch
+            model, in KB. It can be negative: the RSS is measured
+            before and after, and the process can release memory.
+        memory_online_kb: change of the process RSS around the
+            online model, in KB. It can be negative, same reason.
         batch_name: name of the batch class.
         online_name: name of the online class.
     """

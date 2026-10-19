@@ -96,7 +96,7 @@ At the fault sample the score is 9.2, above the default threshold 7; by sample 7
 
 A run with no fault gives zero episodes and a false-alarm rate of 0 per hour of normal flight. On a stream with the fault, it raises exactly one episode and the delay is the one the operator needs.
 
-The pipeline was run on a synthetic stream, not on ALFA: the ALFA dataset is at DOI 10.1184/R1/12707963 and is not downloaded. The ALFA fault model is a control-surface failure (Keipour, Mousaei and Scherer 2020, page 1); the residual has the same shape, but the log comes from read_mavlink_log (telemetry tlog, section 3.1, page 3).
+The run on ALFA is prepared in `kaggle/drones_alfa_actuator.py`; the numbers on this page are from the synthetic stream. ALFA publishes the commanded roll, pitch and yaw as angles, so on ALFA the residual is the commanded angle minus the measured angle, not the commanded rate minus the gyro. The ALFA fault model is a control-surface failure (Keipour, Mousaei and Scherer 2020, page 1); the processed flights are read by `pipelines/drones/alfa.py` from the one-CSV-per-topic layout of section 3.1, page 3.
 
 ## Details
 
