@@ -7,6 +7,11 @@ running MQTT broker. One end-to-end run against a public broker
 
 import sys
 
+import sys
+
+import numpy as np
+import pytest
+
 from edge.mqtt_bridge import (
     DEFAULT_BROKER,
     DEFAULT_PORT,
@@ -126,9 +131,8 @@ def test_main_errors_returns_1(monkeypatch):
 
 def test_default_publisher_paho1x(monkeypatch):
     """Fallback branch: paho-mqtt 1.x has no CallbackAPIVersion."""
-    import paho.mqtt.client as mqtt_real
-
     from edge import mqtt_bridge as mod
+    import paho.mqtt.client as mqtt_real
     calls = []
     def fake_single(topic, payload, hostname, port, qos, retain, **kw):
         calls.append((topic, payload, hostname, port))

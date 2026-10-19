@@ -49,9 +49,9 @@ import math
 import random
 import string
 import sys
-from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Callable
 
 _ROOT = Path(__file__).resolve().parents[1]
 if str(_ROOT) not in sys.path:
@@ -59,6 +59,7 @@ if str(_ROOT) not in sys.path:
 
 from pipelines.drones.io import synthetic_flight
 from pipelines.drones.sensor_consistency import run as run_pipeline
+
 
 DEFAULT_BROKER = "test.mosquitto.org"
 DEFAULT_PORT = 1883
@@ -107,7 +108,7 @@ def _default_publisher(
     runs on both versions without a deprecation warning.
     """
     import paho.mqtt.client as mqtt
-    from paho.mqtt import publish
+    import paho.mqtt.publish as publish
 
     version2 = getattr(mqtt, "CallbackAPIVersion", None)
     if version2 is not None and hasattr(version2, "VERSION2"):
