@@ -107,6 +107,59 @@ class OnlineBaggingClassifier(Classifier):
         self.n_seen_ += 1
         return self
 
+    def fit_batch(
+        self,
+        X: list,
+        y: list,
+        seed: int | None = None,
+    ) -> "OnlineBaggingClassifier":
+        """Batch entry point: fit each member on a bootstrap of ``(X, y)``.
+
+        This is the batch protocol of Oza and Russell 2001, section 2,
+        page 2: for each member, draw a bootstrap of the whole dataset
+        (same size, with replacement) and fit the member on that
+        bootstrap. The members are then combined with the same vote of
+        :meth:`predict_one`. The online protocol, :meth:`learn_one`,
+        gives each member ``k ~ Poisson(1)`` copies of each sample
+        instead; the two protocols have the same limit as N goes to
+        infinity, and differ in expectation on a finite sample.
+
+        Args:
+            X: list of feature dicts, one per sample.
+            y: list of labels, same length as ``X``.
+            seed: RNG seed for the bootstrap draws. ``None`` uses
+                ``self.seed``.
+
+        Returns:
+            ``self``, fitted.
+
+        Raises:
+            ValueError: if ``X`` and ``y`` have different lengths, or
+                if ``X`` is empty.
+        """
+        if len(X) != len(y):
+            raise ValueError(f"X has {len(X)} rows, y has {len(y)}")
+        if len(X) == 0:
+            raise ValueError("cannot fit_batch on an empty dataset")
+        if not self.members_:
+            self.members_ = [
+                self._new_member() for _ in range(self.n_models)
+            ]
+        for label in y:
+            self.classes_.add(label)
+        rng = (
+            self._rng if seed is None
+            else __import__("numpy").random.default_rng(seed)
+        )
+        n = len(X)
+        for member in self.members_:
+            idx_b = rng.integers(0, n, size=n)
+            X_boot = [X[i] for i in idx_b]
+            y_boot = [y[i] for i in idx_b]
+            member.fit(X_boot, y_boot)
+        self.n_seen_ += n
+        return self
+
     def predict_proba_one(self, x: Any, t: float | None = None) -> dict:
         """Mean of the members' probability dicts."""
         if not self.members_:

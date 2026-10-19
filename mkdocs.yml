@@ -92,6 +92,7 @@ nav:
         - Safety filter: drones/safety_filter.md
         - Link health: drones/link_health.md
         - Visual landing: drones/visual_landing.md
+        - Static vs online: drones/static_vs_online.md
 
   - Shields:
       - shields/index.md

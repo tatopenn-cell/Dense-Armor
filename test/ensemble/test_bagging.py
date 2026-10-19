@@ -131,3 +131,77 @@ def test_new_member_deepcopy_when_no_clone():
     assert m is not base
     m.learn_one({}, 0)
     assert base.calls == 0
+
+# ------------------------------------------------------------------
+# fit_batch (added for taskD1 B8, the batch protocol of Oza 2001)
+# ------------------------------------------------------------------
+
+def test_fit_batch_returns_self():
+    clf = OnlineBaggingClassifier(_tree, n_models=3, seed=0)
+    X = [{"x": 0.0}, {"x": 4.0}]
+    y = [0, 1]
+    out = clf.fit_batch(X, y)
+    assert out is clf
+
+
+def test_fit_batch_populates_members():
+    clf = OnlineBaggingClassifier(_tree, n_models=4, seed=0)
+    X = [{"x": float(i)} for i in range(20)]
+    y = [int(i > 10) for i in range(20)]
+    clf.fit_batch(X, y)
+    assert len(clf.members_) == 4
+
+
+def test_fit_batch_length_mismatch_raises():
+    clf = OnlineBaggingClassifier(_tree, n_models=2, seed=0)
+    try:
+        clf.fit_batch([{"x": 0.0}], [0, 1])
+        raise AssertionError("expected ValueError")
+    except ValueError:
+        pass
+
+
+def test_fit_batch_empty_raises():
+    clf = OnlineBaggingClassifier(_tree, n_models=2, seed=0)
+    try:
+        clf.fit_batch([], [])
+        raise AssertionError("expected ValueError")
+    except ValueError:
+        pass
+
+
+def test_fit_batch_learns_simple_split():
+    rng = np.random.default_rng(0)
+    X = []
+    y = []
+    for _ in range(200):
+        v = float(rng.normal(0.0 if rng.random() < 0.5 else 4.0, 0.5))
+        X.append({"x": v})
+        y.append(int(v > 2.0))
+    clf = OnlineBaggingClassifier(_tree, n_models=3, seed=0)
+    clf.fit_batch(X, y, seed=0)
+    assert clf.predict_one({"x": 0.1}) == 0
+    assert clf.predict_one({"x": 4.0}) == 1
+
+
+def test_fit_batch_after_learn_one_keeps_members():
+    clf = OnlineBaggingClassifier(_tree, n_models=3, seed=0)
+    _ = clf.learn_one({"x": 0.0}, 0)
+    n_before = len(clf.members_)
+    clf.fit_batch([{"x": float(i)} for i in range(10)], [0] * 10)
+    assert len(clf.members_) == n_before
+
+
+def test_fit_batch_seed_is_reproducible():
+    rng = np.random.default_rng(0)
+    X = []
+    y = []
+    for _ in range(50):
+        v = float(rng.normal(0.0 if rng.random() < 0.5 else 4.0, 0.5))
+        X.append({"x": v})
+        y.append(int(v > 2.0))
+    a = OnlineBaggingClassifier(_tree, n_models=3, seed=0).fit_batch(X, y, seed=7)
+    b = OnlineBaggingClassifier(_tree, n_models=3, seed=0).fit_batch(X, y, seed=7)
+    for x_test in ({"x": -0.5}, {"x": 0.5}, {"x": 3.5}, {"x": 4.5}):
+        assert a.predict_one(x_test) == b.predict_one(x_test)
+
