@@ -89,6 +89,7 @@ nav:
         - Sensor consistency: drones/sensor_consistency.md
         - Propeller health: drones/propeller_health.md
         - Battery endurance: drones/battery_endurance.md
+        - Safety filter: drones/safety_filter.md
 
   - Shields:
       - shields/index.md
