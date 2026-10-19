@@ -156,11 +156,18 @@ class MovingObjectTracker(Transformer):
         high_score: score above which a detection goes to the first
             association round. Below this value the detection goes to
             the second round. Default ``0.5``.
+        association: ``"greedy"`` (default, the historical
+            behaviour: sort the IoU pairs and pick them from the
+            highest) or ``"hungarian"`` (the global optimum of the
+            IoU matrix, with scipy.optimize.linear_sum_assignment;
+            falls back to greedy when scipy is not installed).
         reid_radius: re-identification radius for tracks with
             ``missing > 0``, in units of the box size. A missing
             track is matched to the nearest unmatched detection
             within ``reid_radius * max(w, h)`` of the Kalman
-            prediction, after the two IoU rounds. Default ``2.0``.
+            prediction, after the two IoU rounds. ``0.0`` (the
+            default) disables re-ID, so the default behaviour is the
+            historical one; set it to e.g. ``2.0`` to enable it.
         kf: a :class:`KalmanFilter` subclass, or a callable returning
             one. Default is the plain filter.
 
@@ -196,7 +203,8 @@ class MovingObjectTracker(Transformer):
         max_missing: int = 15,
         iou_threshold: float = 0.3,
         high_score: float = 0.5,
-        reid_radius: float = 2.0,
+        association: str = "greedy",
+        reid_radius: float = 0.0,
         kf=None,
     ) -> None:
         if n_sigmas <= 0:
@@ -215,6 +223,10 @@ class MovingObjectTracker(Transformer):
         self.max_missing = int(max_missing)
         self.iou_threshold = float(iou_threshold)
         self.high_score = float(high_score)
+        if association not in ("greedy", "hungarian"):
+            raise ValueError(
+                f"association must be 'greedy' or 'hungarian', got {association!r}")
+        self.association = association
         self.reid_radius = float(reid_radius)
         if kf is None:
             self.kf_factory = _default_kf
@@ -260,24 +272,26 @@ class MovingObjectTracker(Transformer):
         return _components(eroded, self.min_area)
 
     def _associate(self, tracks, detections, hi_thresh) -> tuple[list, list, list]:
-        """Two-round Hungarian association, then re-identification.
+        """Two-round association (BYTE), then an optional re-ID step.
 
-        Rounds 1 and 2 are the two-round association of BYTE (the first
-        round sees only detections with score >= ``hi_thresh``, the
-        second round the rest). Each round builds the IoU matrix of the
-        Kalman-predicted boxes against the detections and solves it with
-        the Hungarian algorithm (``scipy.optimize.linear_sum_assignment``,
-        which is the association step of MambaMOT and of the short-term
-        ReID of Sea You Later). If scipy is not installed, it falls back
-        to the greedy pick, which is what the first version of this
-        tracker did.
+        Rounds 1 and 2 are the two-round structure of BYTE: round 1 sees
+        only detections with score >= ``hi_thresh``, round 2 the rest.
+        Inside a round the algorithm is the one chosen at construction:
+        ``"greedy"`` (the historical behaviour: sort the pairs by IoU and
+        pick them from the highest) or ``"hungarian"``
+        (``scipy.optimize.linear_sum_assignment``, with every pair below
+        ``iou_threshold`` given a high cost *before* the assignment, so
+        the optimum cannot pick an invalid pair; this is the association
+        of MambaMOT, arXiv:2403.10826, and of the short-term ReID of Sea
+        You Later, arXiv:2311.03561).
 
-        The third step is re-identification: a track with
-        ``missing > 0`` that is still unmatched is matched to the nearest
-        unmatched detection within ``reid_radius * max(w, h)`` of the
-        Kalman prediction. That is the short-term ReID of Sea You Later
-        in its simplest form: no appearance features, only the predicted
-        position and the box size.
+        The third step is the re-ID, and it is off by default
+        (``reid_radius=0.0``): a track with ``missing > 0`` is matched
+        to the nearest unmatched detection within
+        ``reid_radius * max(w, h)`` of the Kalman prediction, which is
+        the short-term ReID of Sea You Later in its simplest form (no
+        appearance features, only the predicted position and the box
+        size).
         """
         unmatched_tracks = list(range(len(tracks)))
         unmatched_dets = list(range(len(detections)))
@@ -286,36 +300,34 @@ class MovingObjectTracker(Transformer):
             if not unmatched_tracks or not unmatched_dets:
                 break
             n_t, n_d = len(unmatched_tracks), len(unmatched_dets)
-            iou = np.zeros((n_t, n_d))
+            iou = np.full((n_t, n_d), -1.0)
             for i, ti in enumerate(unmatched_tracks):
                 pred = tracks[ti].predict()
                 for j, di in enumerate(unmatched_dets):
                     det = detections[di]
                     score = det[2] if len(det) > 2 else 1.0
                     if round_idx == 0 and score < hi_thresh:
-                        iou[i, j] = -1.0
                         continue
                     iou[i, j] = _iou(pred, det[:4])
-            cost = np.where(iou < 0, 1e6, -iou)
-            try:
-                from scipy.optimize import linear_sum_assignment
-                rows, cols = linear_sum_assignment(cost)
-                candidate = list(zip(rows.tolist(), cols.tolist()))
-            except ImportError:
-                candidate = []
-                used_r, used_c = set(), set()
-                flat = [(iou[i, j], i, j) for i in range(n_t) for j in range(n_d)
-                        if iou[i, j] >= 0]
-                flat.sort(reverse=True)
-                for _, i, j in flat:
-                    if i in used_r or j in used_c:
-                        continue
-                    used_r.add(i)
-                    used_c.add(j)
-                    candidate.append((i, j))
+            # a pair is a candidate only if its IoU is at or above the
+            # threshold; the cost of a non-candidate is high, so the
+            # assignment cannot pick it (the earlier version applied the
+            # threshold after the assignment and lost valid pairs)
+            candidate = iou >= self.iou_threshold
+            if self.association == "hungarian":
+                try:
+                    from scipy.optimize import linear_sum_assignment
+                except ImportError:
+                    rows_cols = self._greedy(iou, candidate)
+                else:
+                    cost = np.where(candidate, -iou, 1e6)
+                    r, c = linear_sum_assignment(cost)
+                    rows_cols = list(zip(r.tolist(), c.tolist()))
+            else:
+                rows_cols = self._greedy(iou, candidate)
             used_t, used_d = set(), set()
-            for r, c in candidate:
-                if iou[r, c] < self.iou_threshold:
+            for r, c in rows_cols:
+                if not candidate[r, c]:
                     continue
                 ti, di = unmatched_tracks[r], unmatched_dets[c]
                 pairs.append((ti, di))
@@ -323,7 +335,7 @@ class MovingObjectTracker(Transformer):
                 used_d.add(di)
             unmatched_tracks = [t for t in unmatched_tracks if t not in used_t]
             unmatched_dets = [d for d in unmatched_dets if d not in used_d]
-        if unmatched_tracks and unmatched_dets:
+        if self.reid_radius > 0.0 and unmatched_tracks and unmatched_dets:
             for ti in list(unmatched_tracks):
                 if tracks[ti].missing == 0:
                     continue
@@ -347,6 +359,22 @@ class MovingObjectTracker(Transformer):
                     unmatched_tracks.remove(ti)
                     unmatched_dets.remove(best_di)
         return pairs, unmatched_tracks, unmatched_dets
+
+    @staticmethod
+    def _greedy(iou, candidate) -> list:
+        """Sort the candidate pairs by IoU and pick them from the highest."""
+        flat = [(iou[i, j], i, j)
+                for i in range(iou.shape[0]) for j in range(iou.shape[1])
+                if candidate[i, j]]
+        flat.sort(reverse=True)
+        used_r, used_c, out = set(), set(), []
+        for _, i, j in flat:
+            if i in used_r or j in used_c:
+                continue
+            used_r.add(i)
+            used_c.add(j)
+            out.append((i, j))
+        return out
 
     def _step(self, detections: list) -> dict:
         # associazione in due round (le predizioni sono calcolate dentro
