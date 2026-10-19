@@ -1,0 +1,16 @@
+[Unit]
+Description=Dense-Armor drone pipeline
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/Dense-Armor
+ExecStart=/opt/Dense-Armor/.venv/bin/python edge/mqtt_bridge.py --id drone1
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

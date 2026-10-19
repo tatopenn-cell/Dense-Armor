@@ -83,6 +83,17 @@ nav:
           - Unsupervised fraud: finance/unsupervised_fraud.md
           - Intrusion detection: finance/intrusion.md
           - Credit scoring: finance/credit_scoring.md
+      - Drones:
+        - Overview: drones/index.md
+        - Actuator fault: drones/actuator_fault.md
+        - Sensor consistency: drones/sensor_consistency.md
+        - Propeller health: drones/propeller_health.md
+        - Battery endurance: drones/battery_endurance.md
+        - Safety filter: drones/safety_filter.md
+        - Link health: drones/link_health.md
+        - Visual landing: drones/visual_landing.md
+        - Static vs online: drones/static_vs_online.md
+        - Start here: drones/start_here.md
 
   - Shields:
       - shields/index.md
@@ -203,6 +214,7 @@ nav:
       - Toolkit:
           - toolkit/index.md
           - Toolkit: toolkit/toolkit.md
+      - Skyline: misc/skyline.md
       - Live Demo: demo.md
       - MCP Server: mcp.md
 
