@@ -133,3 +133,14 @@ def test_hungarian_opts_in():
     out = t.update([[0, 0, 10, 10, 1.0]])
     assert out["n_tracks"] == 1
     assert out["tracks"][0]["missing"] == 0
+
+
+def test_kf_is_still_the_fifth_positional_argument():
+    """The historical call ``MovingObjectTracker(3.0, 10, 16, 15, 0.3, 0.5, kf)``
+    must still bind kf, not association."""
+    from dense_armor.utility.vision.tracking import MovingObjectTracker, _default_kf
+    kf = _default_kf()
+    t = MovingObjectTracker(3.0, 10, 16, 15, 0.3, 0.5, kf)
+    assert t.association == "greedy"
+    assert t.reid_radius == 0.0
+    assert t.kf_factory is kf or t.kf_factory() is not None

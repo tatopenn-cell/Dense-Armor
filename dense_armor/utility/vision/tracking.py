@@ -156,11 +156,16 @@ class MovingObjectTracker(Transformer):
         high_score: score above which a detection goes to the first
             association round. Below this value the detection goes to
             the second round. Default ``0.5``.
+        kf: a :class:`KalmanFilter` subclass, or a callable returning
+            one. Default is the plain filter.
         association: ``"greedy"`` (default, the historical
             behaviour: sort the IoU pairs and pick them from the
             highest) or ``"hungarian"`` (the global optimum of the
             IoU matrix, with scipy.optimize.linear_sum_assignment;
-            falls back to greedy when scipy is not installed).
+            falls back to greedy when scipy is not installed). The
+            Hungarian step follows MambaMOT (arXiv:2403.10826, page 2),
+            which solves the assignment between the predicted position
+            and the detections with it.
         reid_radius: re-identification radius for tracks with
             ``missing > 0``, in units of the box size. A missing
             track is matched to the nearest unmatched detection
@@ -168,8 +173,13 @@ class MovingObjectTracker(Transformer):
             prediction, after the two IoU rounds. ``0.0`` (the
             default) disables re-ID, so the default behaviour is the
             historical one; set it to e.g. ``2.0`` to enable it.
-        kf: a :class:`KalmanFilter` subclass, or a callable returning
-            one. Default is the plain filter.
+            This is a simplification of the short-term ReID of Sea You
+            Later (arXiv:2311.03561, page 4, Eq. 6): the paper solves
+            the assignment on world-coordinate distances from the
+            drone metadata, with a match threshold; here the distance
+            is in image space and the threshold is the box size times
+            ``reid_radius``. The choice is this pipeline's, not the
+            paper's.
 
     Raises:
         ValueError: on non-positive ``history``, ``min_area``,
@@ -203,9 +213,9 @@ class MovingObjectTracker(Transformer):
         max_missing: int = 15,
         iou_threshold: float = 0.3,
         high_score: float = 0.5,
+        kf=None,
         association: str = "greedy",
         reid_radius: float = 0.0,
-        kf=None,
     ) -> None:
         if n_sigmas <= 0:
             raise ValueError(f"n_sigmas must be > 0, got {n_sigmas}")
@@ -281,17 +291,22 @@ class MovingObjectTracker(Transformer):
         pick them from the highest) or ``"hungarian"``
         (``scipy.optimize.linear_sum_assignment``, with every pair below
         ``iou_threshold`` given a high cost *before* the assignment, so
-        the optimum cannot pick an invalid pair; this is the association
-        of MambaMOT, arXiv:2403.10826, and of the short-term ReID of Sea
-        You Later, arXiv:2311.03561).
+        the optimum cannot pick an invalid pair). The Hungarian step
+        follows MambaMOT (arXiv:2403.10826, page 2), which solves the
+        assignment between the predicted position and the detections
+        with it.
 
         The third step is the re-ID, and it is off by default
         (``reid_radius=0.0``): a track with ``missing > 0`` is matched
         to the nearest unmatched detection within
-        ``reid_radius * max(w, h)`` of the Kalman prediction, which is
-        the short-term ReID of Sea You Later in its simplest form (no
-        appearance features, only the predicted position and the box
-        size).
+        ``reid_radius * max(w, h)`` of the Kalman prediction. This is
+        a simplification of the short-term ReID of Sea You Later
+        (arXiv:2311.03561, page 4, Eq. 6): the paper solves the
+        assignment on world-coordinate distances from the drone
+        metadata, with a match threshold; here the distance is in
+        image space and the threshold is the box size times
+        ``reid_radius``. The choice is this pipeline's, not the
+        paper's.
         """
         unmatched_tracks = list(range(len(tracks)))
         unmatched_dets = list(range(len(detections)))
