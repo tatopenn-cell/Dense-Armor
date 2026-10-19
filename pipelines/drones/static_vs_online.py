@@ -49,7 +49,7 @@ page and is the batch protocol of Oza and Russell 2001).
 
 Example:
     >>> from pipelines.drones.static_vs_online import run
-    >>> r = run(n_seeds=2, n_samples=600, warmup=200)
+    >>> r = run(n_seeds=2, n_samples=600, n_models=3)
     >>> r.n_seeds
     2
     >>> len(r.accuracy_batch)
