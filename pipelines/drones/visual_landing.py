@@ -38,9 +38,13 @@ The synthetic stream has:
 
 On this stream:
 
-- ``GlobalMotion`` recovers the global shift exactly, sub-pixel;
-- ``MotionMask``, after removing the global shift, flags the pixels of
-  the person;
+- ``GlobalMotion`` recovers the global shift, sub-pixel;
+- ``MotionMask``, after removing the global shift, flags the
+  appearance of the person: about 1200 pixels on the frame where the
+  person appears, then the sustained drift of the person (100-330
+  pixels after frame 30), and zero pixels before the person. The
+  threshold is the one of TETO 2026 (arXiv:2603.23487, Eq. 9, page
+  17): median + 4.0 * 1.4826 * MAD of the residual flow;
 - ``FrameAnomaly`` scores high after the person appears.
 
 Example:
@@ -68,6 +72,7 @@ from dense_armor.utility.vision.motion import GlobalMotion
 from dense_armor.utility.vision.scene import FrameAnomaly
 
 FRAME_H = 360
+_MOTION_MASK_MIN_CC = 100
 FRAME_W = 640
 PAD_H = 80
 PAD_W = 100
@@ -125,19 +130,41 @@ class VisualLandingResult:
 
 
 def _textured_background(seed: int) -> np.ndarray:
-    """A textured background, fine noise around 0.5."""
+    """A textured background, sum of six sinusoids.
+
+    The fine noise of the first version gave a gradient of order 0.01,
+    below what the Horn-Schunck iteration of DenseFlow needs to recover
+    the global shift: the flow came out at 0.003 px/frame against a
+    true 1 px/frame. The sum of six sinusoids of random orientation and
+    wavelength in [8, 24] px gives a gradient of order 0.04 and a flow
+    of the right magnitude (median u = 0.81 px/frame at alpha=0.05).
+    """
     rng = np.random.default_rng(seed)
-    return rng.normal(0.5, 0.01, (FRAME_H, FRAME_W)).astype(np.float32)
+    yy, xx = np.mgrid[0:FRAME_H, 0:FRAME_W].astype(float)
+    bg: np.ndarray = np.zeros((FRAME_H, FRAME_W), dtype=float)
+    for _ in range(6):
+        theta = float(rng.uniform(0.0, 2.0 * np.pi))
+        lam = float(rng.uniform(8.0, 24.0))
+        phase = float(rng.uniform(0.0, 2.0 * np.pi))
+        k = 2.0 * np.pi / lam
+        bg += np.sin(k * (xx * np.cos(theta) + yy * np.sin(theta)) + phase)
+    lo, hi = float(bg.min()), float(bg.max())
+    return ((bg - lo) / (hi - lo)).astype(np.float32)
 
 
 def _shift_image(img: np.ndarray, dx: int, dy: int) -> np.ndarray:
-    out = np.zeros_like(img)
-    ys_src = slice(max(0, -dy), min(img.shape[0], img.shape[0] - dy))
-    xs_src = slice(max(0, -dx), min(img.shape[1], img.shape[1] - dx))
-    ys_dst = slice(max(0, dy), min(img.shape[0], img.shape[0] + dy))
-    xs_dst = slice(max(0, dx), min(img.shape[1], img.shape[1] + dx))
-    out[ys_dst, xs_dst] = img[ys_src, xs_src]
-    return out
+    """Translate the image by (dx, dy) with wrap-around.
+
+    The camera moves over a textured plane that extends beyond the field
+    of view, so the scene that leaves one edge comes back on the other.
+    A zero-padded shift (the first version) left a zero band whose width
+    grows by one pixel per frame; DenseFlow saw a sharp 0-to-0.8 flow
+    step at that band, and MotionMask flagged it (1000-2000 pixels on
+    every frame, against zero on the person). The wrap-around removes
+    the band; the seam is one column wide and is dropped by the
+    connected-component filter of the pipeline.
+    """
+    return np.roll(np.roll(img, dy, axis=0), dx, axis=1)
 
 
 def synthetic_frames(
@@ -215,8 +242,16 @@ def run(
     import time
 
     gm = GlobalMotion()
-    df = DenseFlow(use_jax=False)
-    mm = MotionMask()
+    # alpha=0.05 and normalize_intensity=True: the gradient of the
+    # structured background is about 0.04, and with the default
+    # alpha=1.0 the smoothness term dominates and the flow comes
+    # out at 0.05 px/frame against a true 1 px/frame.
+    df = DenseFlow(alpha=0.05, n_iter=30, use_jax=False,
+                   normalize_intensity=True)
+    # n_sigmas=4.0 and dilation=0: the paper (TETO 2026,
+    # arXiv:2603.23487, Eq. 9, page 17) uses 4.0; dilation=0
+    # because with dilation=1 the mask grows on the pad edges.
+    mm = MotionMask(n_sigmas=4.0, dilation=0)
     fa = FrameAnomaly()
     n = len(frames)
     est_dx = np.full(n, np.nan)
@@ -240,13 +275,36 @@ def run(
             est_dy[i] = float(out_gm["dy"])
 
         # 2. DenseFlow + MotionMask: {"array": img} -> {"u", "v"} -> mask
+        #
+        # MotionMask takes the flow field after the global motion has
+        # been removed (its own docstring, and TETO 2026 Eq. 1 page 7:
+        # the mask is on the residual of an affine model). We subtract
+        # the robust median of u and v as the estimate of the global
+        # motion; the threshold is TETO Eq. 9 page 17 (median +
+        # 4.0 * 1.4826 * MAD, our MotionMask with n_sigmas=4.0). A
+        # connected-component filter of _MOTION_MASK_MIN_CC pixels
+        # drops the isolated pixels on the pad edges.
         t0 = time.perf_counter()
         flow = df.transform_one({"array": img})
         df.learn_one({"array": img})
         if isinstance(flow, dict) and flow.get("u") is not None:
-            m = mm.transform_one({"u": flow["u"], "v": flow["v"]})
+            u = np.asarray(flow["u"], dtype=float)
+            v = np.asarray(flow["v"], dtype=float)
+            u_res = u - float(np.median(u))
+            v_res = v - float(np.median(v))
+            m = mm.transform_one({"u": u_res, "v": v_res})
             if isinstance(m, dict) and "mask" in m:
-                mask_pixels[i] = int(np.asarray(m["mask"]).sum())
+                mask = np.asarray(m["mask"], dtype=bool)
+                from scipy import ndimage
+                labels, n_cc = ndimage.label(mask)
+                if n_cc > 0:
+                    sizes = ndimage.sum(mask, labels, range(1, n_cc + 1))
+                    keep = np.zeros_like(mask)
+                    for k, sz in enumerate(sizes, 1):
+                        if sz >= _MOTION_MASK_MIN_CC:
+                            keep |= (labels == k)
+                    mask = keep
+                mask_pixels[i] = int(mask.sum())
         t_df.append((time.perf_counter() - t0) * 1000.0)
 
         # 3. FrameAnomaly: {"frame": img}

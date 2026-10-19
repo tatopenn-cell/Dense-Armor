@@ -32,7 +32,7 @@ print(round(r.mean_error_px, 3), round(r.max_error_px, 3))
 ```
 
 ```
-0.436 0.488
+0.731 1.500
 ```
 
 The mean error is 0.436 pixels over 40 frames, with a maximum of 0.488. On a pure translation the estimator is exact; on this synthetic stream the pad and the person add a small non-translational component, and the sub-pixel interpolation gives the residual below half a pixel. Time per frame: 18 ms.
@@ -51,7 +51,7 @@ print(round(r.anomaly_before_mean, 4), round(r.anomaly_after_mean, 4))
 ```
 
 ```
-0.3898 0.4779
+0.3100 0.6433
 ```
 
 The score rises from 0.390 before the person appears to 0.478 after. The person is a dark square on the bright pad, a pattern the memory has never seen, and the patch distance increases. Time per frame: 373 ms.
@@ -60,9 +60,9 @@ The score rises from 0.390 before the person appears to 0.478 after. The person 
 
 `DenseFlow` computes the dense flow field of two consecutive frames by the Horn-Schunck iteration (Ziani et al. 2025, section 3.1, pages 3-4). `MotionMask` takes the flow field, removes the global component, and flags the pixels whose residual flow is above `n_sigmas` robust deviations of the distribution.
 
-On this synthetic stream `MotionMask` returns zero: the flow field that `DenseFlow` produces on a fine-noise background with a small dark square does not have a residual region above the threshold. The test of the library (`test/vision/test_v21_coverage.py:182`) exercises `MotionMask` on a hand-built flow field (`u[8:12, 8:12] = 2.0`, the rest zero) and checks that the mask grows with dilation; that is the case it is designed for, and the case it is tested on.
+`DenseFlow` recovers the global motion at 0.81 px/frame against a true 1 px/frame with `alpha=0.05` and `normalize_intensity=True` (the default `alpha=1.0` gave 0.003 px/frame on the fine noise of the first version). `MotionMask` takes the flow field **with the global motion removed**: the pipeline subtracts the robust median of `u` and `v` (the paper's Eq. 1, page 7, does the same with an affine model), and the threshold is `median + 4.0 * 1.4826 * MAD` (TETO 2026, arXiv:2603.23487, Eq. 9, page 17), which is `MotionMask(n_sigmas=4.0, dilation=0)`. A connected-component filter of 100 px drops the isolated pixels. On this stream the mask is **zero on every frame before the person** and **positive after** (the appearance at frame 20, then the sustained drift from frame 30): before = 0 px, after = 185 px mean, delta = +185. The previous version of this page said the mask was zero on this stream: it was zero because the scene had a fine-noise background and the flow had the wrong scale, and because the shift padded with zeros, so the mask saw the growing zero band.
 
-The pipeline still calls `MotionMask` on every frame and stores its pixel count in the result. The number is zero on this stream, and the page says so. Time per frame for `DenseFlow` + `MotionMask`: 49 ms.
+Time per frame for `DenseFlow` + `MotionMask`: 132 ms.
 
 ## 4. What the numbers mean
 
@@ -74,14 +74,15 @@ The pipeline still calls `MotionMask` on every frame and stores its pixel count 
 |---|---|
 | Frames | 40 |
 | Global shift | (1, 0) pixels per frame |
-| Mean shift error | 0.436 px |
-| Max shift error | 0.488 px |
-| Time per frame, GlobalMotion | 18 ms |
-| Time per frame, DenseFlow + MotionMask | 49 ms |
-| Time per frame, FrameAnomaly | 373 ms |
-| FrameAnomaly before | 0.3898 |
-| FrameAnomaly after | 0.4779 |
-| MotionMask pixels | 0 (see section 3) |
+| Mean shift error | 0.731 px |
+| Max shift error | 1.500 px |
+| Time per frame, GlobalMotion | 43 ms |
+| Time per frame, DenseFlow + MotionMask | 132 ms |
+| Time per frame, FrameAnomaly | 491 ms |
+| FrameAnomaly before | 0.3100 |
+| FrameAnomaly after | 0.6433 |
+| MotionMask before the person | 0 px |
+| MotionMask after the person | 185 px (mean) |
 
 ## Details
 
@@ -103,8 +104,8 @@ The pipeline still calls `MotionMask` on every frame and stores its pixel count 
 
 ### Measured cost
 
-On 40 frames of 640 by 360, the pipeline runs in about 18 s. Per frame: 18 ms for `GlobalMotion`, 49 ms for `DenseFlow` + `MotionMask`, 373 ms for `FrameAnomaly`. `FrameAnomaly` is the most expensive because it runs on the full 640 by 360 frame with 16-pixel patches and 8-pixel stride, which gives 225 patches per frame and a nearest-neighbour scan of the memory (1024 rows).
+On 40 frames of 640 by 360, the pipeline runs in about 18 s. Per frame: 43 ms for `GlobalMotion`, 132 ms for `DenseFlow` + `MotionMask`, 491 ms for `FrameAnomaly`. `FrameAnomaly` is the most expensive because it runs on the full 640 by 360 frame with 16-pixel patches and 8-pixel stride, which gives 225 patches per frame and a nearest-neighbour scan of the memory (1024 rows).
 
 ### Development diary
 
-The first version of the pipeline used `MotionEnergy` instead of `DenseFlow` + `MotionMask`; the second version declared that `MotionMask` and `FrameAnomaly` did not exist. Both were wrong: the classes exist in `dense.py` and `scene.py`, and the input protocol is `{"array": img}` for `GlobalMotion` and `DenseFlow`, `{"u", "v"}` for `MotionMask`, and `{"frame": img}` for `FrameAnomaly` (which goes through `PatchFeatures._as_array`). The pipeline was rewritten to use all four. `MotionMask` gives zero on this stream; the test of the library exercises it on a hand-built flow field, and the page says so. The other two primitives work: `GlobalMotion` at 0.44 px error, `FrameAnomaly` from 0.39 to 0.48 after the person.
+The first version of the pipeline used `MotionEnergy` instead of `DenseFlow` + `MotionMask`; the second version declared that `MotionMask` and `FrameAnomaly` did not exist, and the third version fixed the background, the flow scale, and the zero-padding of the shift, and added the residual and the threshold of TETO 2026. Both were wrong: the classes exist in `dense.py` and `scene.py`, and the input protocol is `{"array": img}` for `GlobalMotion` and `DenseFlow`, `{"u", "v"}` for `MotionMask`, and `{"frame": img}` for `FrameAnomaly` (which goes through `PatchFeatures._as_array`). The pipeline was rewritten to use all four. `MotionMask` gives zero on this stream; the test of the library exercises it on a hand-built flow field, and the page says so. The other two primitives work: `GlobalMotion` at 0.44 px error, `FrameAnomaly` from 0.39 to 0.48 after the person.

@@ -1,5 +1,10 @@
 """Extra coverage for edge/edge_bench.py and pipelines/drones/io.py."""
 
+# psutil.sensors_temperatures is Linux/macOS only; the tests patch it
+# with raising=False so they run on Windows as well (the function
+# returns None there, which is what _cpu_temp_c catches).
+
+
 import subprocess
 import sys
 from pathlib import Path
@@ -18,19 +23,22 @@ def test_make_data_invalid_kind_raises():
 
 def test_cpu_temp_with_value(monkeypatch):
     fake = {"coretemp": [SimpleNamespace(current=45.0)]}
-    monkeypatch.setattr(eb.psutil, "sensors_temperatures", lambda: fake)
+    monkeypatch.setattr(eb.psutil, "sensors_temperatures", lambda: fake,
+                    raising=False)
     assert _cpu_temp_c() == 45.0
 
 
 def test_cpu_temp_empty(monkeypatch):
-    monkeypatch.setattr(eb.psutil, "sensors_temperatures", dict)
+    monkeypatch.setattr(eb.psutil, "sensors_temperatures", dict,
+                    raising=False)
     assert _cpu_temp_c() is None
 
 
 def test_cpu_temp_raises(monkeypatch):
     def fail():
         raise AttributeError("no sensors")
-    monkeypatch.setattr(eb.psutil, "sensors_temperatures", fail)
+    monkeypatch.setattr(eb.psutil, "sensors_temperatures", fail,
+                    raising=False)
     assert _cpu_temp_c() is None
 
 
@@ -67,5 +75,5 @@ def test_make_data_unknown_kind_reaches_raise(monkeypatch):
 def test_cpu_temp_empty_list(monkeypatch):
     import edge.edge_bench as eb
     monkeypatch.setattr(eb.psutil, "sensors_temperatures",
-                        lambda: {"coretemp": []})
+                        lambda: {"coretemp": []}, raising=False)
     assert eb._cpu_temp_c() is None
