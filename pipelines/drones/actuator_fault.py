@@ -207,7 +207,7 @@ def run(
     delays: list[float] = []
     if fault_index >= 0:
         t_fault = times[fault_index]
-        for i in np.flatnonzero(starts):
+        for i in map(int, np.flatnonzero(starts)):
             if i >= fault_index:
                 delays.append(float(times[i] - t_fault))
     max_delay = max(delays) if delays else None
