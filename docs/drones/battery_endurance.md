@@ -154,7 +154,7 @@ The paper gives the model (equation 5, page 5) and the coefficients for three dr
 
 ### Measured cost
 
-The `run(...)` on 600 samples completes in about 0.3 s on the CPU of this session. Per-sample cost: one LinearRegression predict and update (O(4)), one AdaGrad step, one conformal update (O(1) plus a rolling quantile over the last 100 residuals), one TDigest update (amortised O(1) plus periodic merges), one V · I. No JAX, no compilation.
+The `run(...)` on 600 samples completes in about 0.3 s. Per-sample cost: one LinearRegression predict and update (O(4)), one AdaGrad step, one conformal update (O(1) plus a rolling quantile over the last 100 residuals), one TDigest update (amortised O(1) plus periodic merges), one V · I. No JAX, no compilation.
 
 ### Development diary
 

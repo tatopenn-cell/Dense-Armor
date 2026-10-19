@@ -15,7 +15,7 @@
 #     docker run --rm -it --runtime nvidia dense-armor-drone \
 #         python edge/edge_bench.py --smoke
 #
-# This file is written, not built in this session (no Jetson board).
+# This file is written, not built (no Jetson board).
 # The page docs/drones/start_here.md cites it.
 
 FROM nvcr.io/nvidia/l4t-pytorch:r36.2.0-pth2.1-py3

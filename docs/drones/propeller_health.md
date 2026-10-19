@@ -105,7 +105,7 @@ The spectrum tells the same story. Before the fault the band is flat noise; afte
 
 *Synthetic stream, same as above. Blue: mean |X| of the differenced gyro over 50 windows before the fault. Red: the same over 50 windows after the fault. The peak at 46.9 Hz is the 47 Hz vibration of the damaged propeller.*
 
-The pipeline was run on a synthetic stream, not on real propeller data: the paper of Zhang et al. 2023 (section V, page 5) does not publish the raw data of the damaged propellers, and Baldini et al. 2026 (the reference for the formula) is a simulation of an octarotor. The frequency 47 Hz is my choice; the paper is silent on the number.
+The pipeline was run on a synthetic stream: the paper of Zhang et al. 2023 (section V, page 5) does not publish the raw data of the damaged propellers, and Baldini et al. 2026 (the reference for the formula) is a simulation of an octarotor. The frequency 47 Hz is my choice; the paper is silent on the number.
 
 ## Details
 
@@ -148,7 +148,7 @@ The four deviations above are the only ones. In every other respect the pipeline
 
 ### Measured cost
 
-The `run(...)` on 2000 samples completes in under a second on the CPU of this session. Per-sample cost: one SDFT update (O(N) with N = 128) and one max over the band (about 20 bins). No JAX, no compilation.
+The `run(...)` on 2000 samples completes in under a second. Per-sample cost: one SDFT update (O(N) with N = 128) and one max over the band (about 20 bins). No JAX, no compilation.
 
 ### Development diary
 

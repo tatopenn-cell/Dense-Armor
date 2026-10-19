@@ -7,7 +7,7 @@
 # drone extra, and prints the Python version and the module paths.
 #
 # The commands are the ones a user runs on the board. They are not
-# executed by the CI, and they are not executed in this session (no
+# executed by the CI, and they are not executed (no
 # board is available). The page docs/drones/start_here.md tells the
 # user to run this script after a fresh install of the operating
 # system; the "written, not run on the board" statement is in that

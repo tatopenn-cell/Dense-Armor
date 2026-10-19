@@ -7,7 +7,7 @@ on MQTT topics:
     drone/<id>/score    the score of the pipeline at that sample
     drone/<id>/alarm    the alarm flag (0 or 1) when it turns on
 
-The topics follow the spec of Task D1, item C4. The published values
+The topics are the two channels of the bridge. The published values
 are one message per sample for the score, and one message per episode
 start for the alarm (a rising edge of the alarm, same convention as the
 other pages: benchmarks/casper_hours_episodes.py, lines 74-76).
@@ -37,7 +37,7 @@ The --smoke flag uses a synthetic stream of 200 samples and publishes
 to test.mosquitto.org on a random id. Without the flag it uses 2000
 samples and the id can be set with --id.
 
-No board is available in this session. The code is the one a
+No board is available. The code is the one a
 Raspberry Pi or a Jetson would run: paho-mqtt, one message per sample,
 the same topics. The page states this: "written, not run on the board".
 """

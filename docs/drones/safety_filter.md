@@ -128,26 +128,26 @@ Two regimes, one curve, one reading. Below 0.30 m/s, the clean stream is safe; t
 | Requested speed | 2.0 m/s | 0.10 m/s |
 | Safe speed | 0.285 m/s | -0.245 m/s (away) |
 
-The figure and the numbers come from `benchmarks/drones/make_figure_safety.py` and from `pipelines/drones/safety_filter.py`, run on this session.
+The figure and the numbers come from `benchmarks/drones/make_figure_safety.py` and from `pipelines/drones/safety_filter.py`.
 
 ## Details
 
 ### References
 
 - Ames, A. D., Coogan, S., Egerstedt, M., Notomista, G., Sreenath, K., Tabuada, P. (2019). *Control Barrier Functions: Theory and Applications.* European Control Conference (ECC). arXiv:1903.11199. Equation CBF-QP, section II, page 2. The docstring of `dense_armor/utility/control/cbf_filter.py` cites this paper and page.
-- The scan generator is `benchmarks/lidar_sim.py` (Simulated lidar, no real recording). The scene (6 x 4 m room, two pillars, robot arm, 180 beams, 10 Hz, 1 cm noise) is described in its module docstring, pages 1-2 of the file.
+- The scan generator is `benchmarks/lidar_sim.py` (simulated lidar). The scene (6 x 4 m room, two pillars, robot arm, 180 beams, 10 Hz, 1 cm noise) is described in its module docstring, pages 1-2 of the file.
 
 ### Choices stated explicitly
 
 - **The requested speed is `-v_max`** (approach), not `+v_max`. The filter answers the question 'can the drone approach at this speed?'. Passing `+v_max` (moving away) never triggers the CBF: the state moves toward safety, so the constraint is already satisfied. With `-v_max` the constraint can be violated, which is the case the page is about.
 - **The safe value is the maximum of the two filtered velocities, not the minimum.** The two CBF constraints (obstacle, geofence) are both lower bounds on the velocity, so satisfying both requires the larger of the two filtered values. The first version of the module used `min` and the tests caught it: on a dirty scan the obstacle filter pushed away at +0.27 m/s and the geofence filter let -0.10 m/s through, and the minimum was -0.10 m/s, inside the forbidden ball.
-- **The live variant with n_substeps=20 is used, not the single-tick `cbf_safety_filter`.** The CBF's forward-invariance proof is a continuous-time result. At 10 Hz and 2 m/s the drone covers 0.2 m per tick, enough to overshoot the barrier. The live variant sub-steps each tick into 20 mini-steps of 5 ms each, which the module docstring (line 40) reports as the smallest count that restored the guarantee in real robot data.
+- **The live variant with n_substeps=20 is used, not the single-tick `cbf_safety_filter`.** The CBF's forward-invariance proof is a continuous-time result. At 10 Hz and 2 m/s the drone covers 0.2 m per tick, enough to overshoot the barrier. The live variant sub-steps each tick into 20 mini-steps of 5 ms each, which the module docstring (line 40) reports as the smallest count that restored the guarantee on robot-arm data.
 - **The geofence distance is constant.** `room_ranges()` depends only on the geometry of the room, and its minimum is 2.0 m. A constant distance is safe (never triggers the CBF) and the geofence only matters if the drone gets within 0.5 m of a wall, which does not happen on this stream.
 - **The safe distances are 0.5 m for both the obstacle and the geofence.** The paper does not give a value. 0.5 m is larger than the arm radius (0.9 m) but small enough to allow the drone to pass between the pillars.
 
 ### Measured cost
 
-The `run(...)` on 200 scans completes in about 0.2 s on the CPU of this session. Per-scan cost: two `cbf_safety_filter_live` calls, each with 20 substeps (20 closed-form divisions). No JAX, no compilation.
+The `run(...)` on 200 scans completes in about 0.2 s. Per-scan cost: two `cbf_safety_filter_live` calls, each with 20 substeps (20 closed-form divisions). No JAX, no compilation.
 
 ### Development diary
 

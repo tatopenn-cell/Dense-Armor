@@ -42,7 +42,7 @@ With no fault, the mean inter-arrival is 100 ms and the mean RSSI is -60 dBm, as
 
 ## 2. The fault, injected
 
-The spec of Task D1 does not cite a paper for this pipeline, and no paper on MQTT link health is in the task folder. The two faults are my choice and are stated in Details. `link_degradation` grows the inter-arrival linearly toward 150 ms and falls the RSSI toward -75 dBm, over 2 s from the fault. `link_dropout` drops 50% of the packets, so the average inter-arrival doubles and the RSSI is unchanged.
+No paper on MQTT link health is cited for this pipeline. The two faults are the choice of this implementation and are stated in Details. `link_degradation` grows the inter-arrival linearly toward 150 ms and falls the RSSI toward -75 dBm, over 2 s from the fault. `link_dropout` drops 50% of the packets, so the average inter-arrival doubles and the RSSI is unchanged.
 
 ```python
 from pipelines.drones.link_health import run, synthetic_mqtt
@@ -95,12 +95,12 @@ A run with no fault gives zero episodes and zero false alarms per hour: the nomi
 
 ### References
 
-- No paper on MQTT link health is in the task folder, and the spec of Task D1 does not cite one for this item. The pipeline is therefore my choice in every component; each one is stated below.
+- No paper on MQTT link health is cited for this pipeline. The pipeline is therefore a design choice in every component; each one is stated below.
 - The CUSUM detector is the `CUSUMDriftDetector` of `dense_armor/utility/drift/detector.py`, with the same convention of the other pages: rising edge of `drift_detected` as the episode (`benchmarks/casper_hours_episodes.py`, lines 74-76).
 
 ### Choices stated explicitly
 
-- **The stream is synthetic.** No real MQTT capture is in the task folder. The generator `synthetic_mqtt` produces nominal inter-arrival 100 ms with Gaussian noise 5 ms, and nominal RSSI -60 dBm with Gaussian noise 2 dBm. Both values are my choice.
+- **The stream is synthetic.** No MQTT capture is available. The generator `synthetic_mqtt` produces nominal inter-arrival 100 ms with Gaussian noise 5 ms, and nominal RSSI -60 dBm with Gaussian noise 2 dBm. Both values are my choice.
 - **The fault `link_degradation`** grows the inter-arrival from 100 to 150 ms and falls the RSSI from -60 to -75 dBm over 2 s. The shape (linear ramp), the magnitudes (50 ms, 15 dBm) and the duration (2 s) are my choice.
 - **The fault `link_dropout`** drops 50% of the packets. The percentage is my choice; a higher dropout would be detected even earlier, a lower one later.
 - **Two CUSUMs, one per signal.** The spec of B7 says 'a drift detector on the packet inter-arrival time and the RSSI'. I use one detector per signal and combine the alarms with an OR. A single detector on a combined feature (for example the sum of the two normalized signals) is also possible; the OR is simpler and the two alarms are stored separately in the result for inspection.
@@ -110,7 +110,7 @@ A run with no fault gives zero episodes and zero false alarms per hour: the nomi
 
 ### Measured cost
 
-The `run(...)` on 800 packets completes in under a second on the CPU of this session. Per-packet cost: two CUSUM updates (O(1) amortised each) plus two numpy assignments. No JAX, no compilation.
+The `run(...)` on 800 packets completes in under a second. Per-packet cost: two CUSUM updates (O(1) amortised each) plus two numpy assignments. No JAX, no compilation.
 
 ### Development diary
 

@@ -103,7 +103,7 @@ The pipeline still calls `MotionMask` on every frame and stores its pixel count 
 
 ### Measured cost
 
-On 40 frames of 640 by 360, the pipeline runs in about 18 s on the CPU of this session. Per frame: 18 ms for `GlobalMotion`, 49 ms for `DenseFlow` + `MotionMask`, 373 ms for `FrameAnomaly`. `FrameAnomaly` is the most expensive because it runs on the full 640 by 360 frame with 16-pixel patches and 8-pixel stride, which gives 225 patches per frame and a nearest-neighbour scan of the memory (1024 rows).
+On 40 frames of 640 by 360, the pipeline runs in about 18 s. Per frame: 18 ms for `GlobalMotion`, 49 ms for `DenseFlow` + `MotionMask`, 373 ms for `FrameAnomaly`. `FrameAnomaly` is the most expensive because it runs on the full 640 by 360 frame with 16-pixel patches and 8-pixel stride, which gives 225 patches per frame and a nearest-neighbour scan of the memory (1024 rows).
 
 ### Development diary
 

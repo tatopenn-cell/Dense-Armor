@@ -29,7 +29,7 @@ runs.
 
 The JSON is written to benchmarks/drones/edge_bench_<host>.json.
 
-No board is available in this session. The tables produced here are
+No board is available. The tables produced here are
 for the x86 host of Colab; the same command, on a Raspberry Pi or a
 Jetson, writes the file with the board name in it. The page states
 this: "written, not run on the board".
@@ -49,7 +49,7 @@ import numpy as np
 import psutil
 
 _ROOT = Path(__file__).resolve().parents[1]
-if str(_ROOT) not in sys.path:
+if str(_ROOT) not in sys.path:  # pragma: no cover - path bootstrap
     sys.path.insert(0, str(_ROOT))
 
 from pipelines.drones.actuator_fault import run as run_actuator
@@ -196,5 +196,5 @@ def main() -> int:
     return 0
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover - module entry point
     raise SystemExit(main())

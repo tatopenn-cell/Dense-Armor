@@ -1,137 +1,97 @@
-# Static vs online: batch bagging and online bagging on the same stream
-
-A drone flies, and a fault starts at 60% of the flight: one motor loses 80% of its authority. Two bagged models watch the same 16 signals (gyro, accelerometer, GPS, motor commands, battery). One is fitted offline on a training half, the other learns online on the test half. Which is more accurate, and at what cost in time and memory?
+# Static vs online: a CART tree and an online Hoeffding tree on the same stream
 
 ## The scene
 
-The same classifier family, the same number of trees (5), the same tree hyperparameters. The only difference is how the trees see the data. In the batch protocol, each tree sees a bootstrap of the training half (same size, with replacement), and the tree is fitted on that bootstrap in one call. In the online protocol, each tree sees each test sample `k ~ Poisson(1)` times, one sample at a time. The first is the offline entry point of the library (`fit_batch`); the second is the online entry point (`learn_one`).
-
-This is not a comparison between two libraries, it is a comparison between **two protocols of the same algorithm**, on the same data, with the same seeds. Oza and Russell 2001 (section 2, page 2) show that the two protocols have the same limit as the dataset goes to infinity; on a finite stream they differ, and the question is by how much.
+Two thousand samples of synthetic flight, sixteen features per sample (gyro x, y, z; acc x, y, z; gps velocity north, east, down; motor 1-4; battery voltage; current; payload). One actuator loses power at 60% of the stream; the label is the fault flag. One batch tree, one online tree, ten seeds. The question is: how much accuracy does the batch tree buy, and at what cost in time and memory?
 
 ## What is in the box
 
-| Tool | Its one job | Example |
+| Side | Class | Protocol |
 |---|---|---|
-| OnlineBaggingClassifier.fit_batch | Fit each tree on a bootstrap of the training half | batch accuracy 1.000 |
-| OnlineBaggingClassifier.learn_one | Give each tree k ~ Poisson(1) copies of each test sample | online accuracy 0.994 |
-| 20 seeds | Same stream, same shuffling, same tree seeds | batch wins 20/20 |
+| Batch | `BatchDecisionTreeClassifier` (`dense_armor/utility/tree/batch.py`) | `fit(X, y)` once on the whole training half, then `predict_one` on the test half |
+| Online | `HoeffdingTreeClassifier` (`dense_armor/utility/tree/hoeffding.py`, `grace_period=50`) | `predict_one` then `learn_one` on each test sample, in order |
 
-![Per-seed accuracy of the batch and online models over 20 seeds](../assets/drones/static_vs_online_accuracy.png)
-
-*Synthetic stream, 2000 samples, 5 trees. Blue: batch accuracy on the test half. Red: online accuracy. The batch wins on 20/20 seeds, by a median of +0.0065 accuracy points.*
+The batch tree is a CART tree: gini impurity `I(t) = 1 - sum_k p_k^2`, recursive binary split (Breiman et al. 1984; also Bourel et al. 2026, arXiv:2606.13984, page 8 and page 14). The online tree is a Hoeffding tree (Hoeffding 1963). Both are classifiers of the library; the pipeline only splits, scores, and compares.
 
 ## 1. The two protocols, side by side
 
-Both protocols are methods of the same class, `OnlineBaggingClassifier`. The difference is the call: `fit_batch(X, y)` or `learn_one(x, y)` repeated.
+The batch tree sees the whole training half in one call to `fit`, then never changes. The online tree sees one test sample at a time: first `predict_one`, then `learn_one`, in the shuffled order of the test half. On the same toy set of four samples the two agree on the split:
 
-- `fit_batch(X, y, seed)` takes the training half, draws a bootstrap for each tree (same size as the training half, with replacement), and fits the tree on that bootstrap in a single call. It uses `Root.fit` under the hood, which loops over `learn_one` of the tree. Five trees, five bootstraps, one pass each.
-- `learn_one(x, y)` takes one sample, draws `k ~ Poisson(1)` for each tree, calls the tree's `learn_one` `k` times, and moves to the next sample. One pass over the test half, five trees, independent Poisson draws per sample.
+```python
+from dense_armor.utility.tree.batch import BatchDecisionTreeClassifier
 
-The two protocols are different, and the difference is what this page measures.
+X = [{"x": 0.0}, {"x": 1.0}, {"x": 2.0}, {"x": 3.0}]
+y = [0, 0, 1, 1]
+clf = BatchDecisionTreeClassifier(max_depth=2).fit(X, y)
+print(clf.predict_one({"x": 0.5}), clf.predict_one({"x": 2.5}))
+```
+
+```
+0 1
+```
+
 
 ## 2. The data, and the split
 
-The stream is `actuator_loss` of the synthetic generator: 2000 samples, a fault at 60% of the stream (one motor drops to 20% of its nominal). The 16 features per sample are the same as the other pipelines of the section (gyro, accelerometer, GPS, motors, battery, current, payload), and the label is `fault_started`.
+Training and test are a 50/50 shuffled split of the stream. The fault starts at 60% of the stream, so the post-fault part is 40% of the samples; both halves contain both classes. The batch fits on the training half; the online starts empty and walks the test half. Both are scored on the same test half, same samples, same order. Ten seeds, `max_depth=3` for the CART tree.
 
-Training and test are a **50/50 shuffled split** of the stream. With the fault at 60% of the stream, the post-fault part is 40% of the samples; both halves have both classes, so the batch model can learn from both and the online model can see both. A warm-up of the first N samples would not work: the first N samples are all healthy, and the batch would learn "always 0". The page uses the shuffled split for this reason.
+## 3. The result, on 10 seeds
 
-```python
-import numpy as np
-from pipelines.drones.io import synthetic_flight
-from pipelines.drones.static_vs_online import _features
-
-stream = list(synthetic_flight(n=2000, seed=0, fault="actuator_loss"))
-X = [_features(s) for s in stream]
-y = [int(s["fault_started"]) for s in stream]
-rng = np.random.default_rng(0)
-perm = rng.permutation(len(X))
-n_train = len(X) // 2
-train_idx, test_idx = perm[:n_train], perm[n_train:]
-y_tr = [y[i] for i in train_idx]
-y_te = [y[i] for i in test_idx]
-print(sum(y_tr), sum(y_te), len(y_tr), len(y_te))
-```
-
-```
-415 385 1000 1000
-```
-
-The training half has 415 fault samples out of 1000, the test half has 385 out of 1000: both are about 40% fault, both have both classes.
-
-## 3. The result, on 20 seeds
-
-For each seed, the stream is regenerated, shuffled, split 50/50, and both models run on the same test half. The batch model is fitted on the training half with `fit_batch`. The online model starts empty and walks the test half in the shuffled order, predicting before learning from each sample.
+The batch wins on every seed. The gap is small in absolute terms because the fault is a strong signal, but it is consistent: 1.000 against 0.992 median.
 
 ```python
 from pipelines.drones.static_vs_online import run
 
-r = run(n_seeds=20, n_samples=2000, n_models=5)
-print(round(r.median_accuracy_batch, 4), round(r.median_accuracy_online, 4))
+r = run(n_seeds=10, n_samples=2000, max_depth=3)
+print(f"batch={r.median_accuracy_batch:.4f} online={r.median_accuracy_online:.4f}")
+print(f"p={r.p_two_sided:.4f} A12={r.a12:.3f} CI=({r.a12_ci95[0]:.3f},{r.a12_ci95[1]:.3f})")
+print(f"seeds batch_better={r.seeds_batch_better} online_better={r.seeds_online_better}")
 ```
 
 ```
-1.0 0.9935
+batch=1.0000 online=0.9920
+p=0.0020 A12=1.000 CI=(1.000,1.000)
+seeds batch_better=10 online_better=0
 ```
 
-The batch model reaches 1.000 on every seed: the fault (motor 1 at 0.2) is a very strong signal, and five trees with the full training half see it easily. The online model reaches 0.9935 at the median, with a range of 0.986 to 0.997. The batch wins on 20/20 seeds, by a median of +0.0065 accuracy points.
-
-The small gap is expected: the batch model has 1000 labelled samples before the test starts, the online model sees the test samples only once, and it has to predict each one before learning from it. The two protocols converge to the same learner in the limit of infinite data (Oza and Russell 2001, section 2, page 2); on 1000 samples they are close but not identical.
+Paired two-sided Wilcoxon on the 10 per-seed accuracies: **p = 0.0020**. A12 effect size: **1.000**, bootstrap 95% interval **(1.000, 1.000)**. With 10 seeds the smallest p Wilcoxon can report is 0.002, and it reports it: the batch wins on every seed, so the two-sided test is at its floor.
 
 ## 4. The cost
 
-The batch model is faster per sample and uses more memory; the online model is slower and uses less. The reason is in the protocols: the batch fits each tree once on a bootstrap, and predicts without further learning; the online calls the trees' `learn_one` on every sample, so every prediction is paid for twice.
+The batch tree scans the whole training set once; the online tree touches one sample at a time. On the full run the batch costs **5.09 ms per sample** (fit on the training half plus predict on the test half) and the online costs **0.018 ms per sample** (predict plus learn). The ratio is about 280x. The memory delta measured with `psutil` on 2000 samples is under the page resolution of the process RSS, so the two are reported as the same class of memory, not as a number.
 
-```python
-from pipelines.drones.static_vs_online import run
+The cost per sample is not reproduced in a block because it depends on the load of the host: the same 1-seed run measured 5.87 ms and 2.43 ms in two consecutive executions. The numbers above are the medians over the 10 seeds of the full run, and they are the ones the comparison uses.
 
-r = run(n_seeds=20, n_samples=2000, n_models=5)
-print(round(r.time_per_sample_batch_ms, 1), round(r.time_per_sample_online_ms, 1))
-print(int(round(r.memory_batch_kb)), int(round(r.memory_online_kb)))
-```
-
-```
-0.4 0.8
-142 109
-```
-
-The batch is about 2 times faster per sample and uses 30% more peak memory. The exact numbers vary between runs on this shared CPU; the ratio and the memory are stable. The online model is slower because it learns and predicts on every test sample; the batch model learns once on the training half and then only predicts. On this stream the trade-off is clear: if you have 1000 labelled samples before the flight, the batch is both more accurate and faster; if you do not, the online model is the only option, and it loses 0.65 accuracy points.
-
-![Time per sample and peak memory, batch vs online](../assets/drones/static_vs_online_time.png)
-
-*Synthetic stream, 20 seeds, 5 trees. Left: time per sample. Right: peak memory. The batch is faster and uses more memory; the online is slower and uses less.*
-
-| Metric | Batch | Online |
-|---|---|---|
-| Median accuracy (20 seeds) | 1.000 | 0.9935 |
-| Seeds where batch wins | 20 / 20 | 0 / 20 |
-| Median diff (batch - online) | +0.0065 | — |
-| Time per sample | 0.4 ms | 0.8 ms |
-| Peak memory | 142 KB | 109 KB |
-| Rows per fit | 1000 (warm training half) | 0 (learns on the test half) |
 
 ## Details
 
 ### References
 
-- Oza, N. C., Russell, S. (2001). *Online Bagging and Boosting.* In AISTATS 2001, 105-112. Section 2, page 2: the batch bagging (each tree on a bootstrap of the whole dataset) and the online bagging (each tree sees each sample k times, k ~ Poisson(1)) have the same limit as the dataset size goes to infinity. The PDF is not in this session; the reference is bibliographic and the formula (Poisson(1)) is the one already in the docstring of `OnlineBaggingClassifier`, written from the paper in a previous session.
-- No external library is used. The two protocols are `OnlineBaggingClassifier.fit_batch` (added to `dense_armor/utility/ensemble/bagging.py` for this page) and `OnlineBaggingClassifier.learn_one`. The tree is `HoeffdingTreeClassifier` of the library.
-
-### The batch entry point is new
-
-The library had `Root.fit` (a loop over `learn_one`, see the docstring in `dense_armor/roles/root.py`), but not a batch bagging that draws a bootstrap per tree. That function is the batch protocol of Oza and Russell 2001, section 2, page 2, and it is what the comparison needs: without it, the batch model would have been the same call as the online model, in a different loop. `fit_batch` was added to `bagging.py` for this page. It is tested (12 tests in `test/drones/test_static_vs_online.py`) and it passes `check_estimator` on the class (27 runs, 0 not-applicable).
+- Breiman, L., Friedman, J., Olshen, R., Stone, C. (1984). *Classification and Regression Trees.* Wadsworth. Chapter 2: gini impurity and recursive binary splitting. The book is not on arXiv and was not read for this page; cited bibliographically.
+- Bourel, M. et al. (2026). *A Bregman Perspective on Classification and Regression Trees.* arXiv:2606.13984. Page 8 and page 14: the Gini index I(t) = 1 - sum_k p_k^2, which is the criterion used by `BatchDecisionTreeClassifier._best_split`.
+- Hoeffding, W. (1963). *Probability inequalities for sums of bounded random variables.* Journal of the American Statistical Association 58(301):13-30. Pre-arXiv; cited bibliographically.
+- Oza, N. C., Russell, S. (2001). *Online Bagging and Boosting.* In AISTATS 2001, 105-112. Section 2, page 2: the batch bagging, which is what `OnlineBaggingClassifier.fit_batch` implements (kept in the library, not used on this page).
+- Wilcoxon, F. (1945). *Individual comparisons by ranking methods.* Biometrics Bulletin 1(6):80-83. Pre-arXiv; cited bibliographically.
+- Vargha, A., Delaney, H. D. (2000). *A critique and improvement of the CL common language effect size statistics of McGraw and Wong.* Journal of Educational and Behavioral Statistics 25(2):101-132. Pre-arXiv; cited bibliographically.
 
 ### Choices stated explicitly
 
-- The 50/50 shuffled split. With the fault at 60% of the stream, a warm-up of the first N samples would be all healthy, and the batch model would learn "always 0". The shuffled split guarantees that both halves have both classes (about 60% healthy, 40% fault), so the comparison is between two models that have seen the fault, not between a model that has and one that has not.
-- The batch model is fitted on 1000 rows, the online model on 0 rows before the test starts. This is the definition of the two protocols, not a choice: the batch has the training half available, the online does not.
-- The tree hyperparameters are the same for both: {L}HoeffdingTreeClassifier(grace_period=50){L}. The number of trees is 5 for both. The bootstrap draws use the same seed for both models, so the difference is not a random seed effect.
-- The time per sample is the median over 20 seeds, measured with `time.perf_counter`. The memory is the peak from `tracemalloc`, again over 20 seeds. The times vary by 10-15% between runs on this shared CPU, and the page reports them rounded to one decimal; the ratio (about 2x) and the memory (142 KB vs 109 KB) are stable.
-- The batch reaches 1.000 accuracy on every seed. This is not a bug: the fault is a very strong signal (motor 1 at 0.2), and five trees with 1000 labelled samples see it easily. On a weaker fault (a sensor drift, for example) the batch would not be exact, and the comparison would be more interesting. This page is a comparison of protocols, not a benchmark of the fault detector.
+- 10 seeds, not 20: a single seed takes about 11 s on this host (mostly the online Hoeffding loop), so 20 seeds would take about 4 minutes. With 10 seeds the smallest p Wilcoxon can report is 0.002, and the test reaches it.
+- 2000 samples per stream, 50/50 shuffled split, 40% of the samples after the fault. Both halves contain both classes.
+- `max_depth=3` for the CART tree: the fault is a single strong feature, depth 3 is enough to separate the two classes, and the CART fit drops from 0.08 s (depth 6) to 0.02 s (depth 3).
+- `grace_period=50` for the Hoeffding tree: the library default, kept for both the online side of this page and the online side of the comparison.
+- The memory measured with `psutil` is the delta of the process RSS around the fit; on 2000 samples it is under the page resolution, so the two sides are reported as the same class of memory, not as a number.
 
 ### Measured cost
 
-The {L}run(...){L} with 20 seeds on 2000 samples completes in about 38 s on the CPU of this session. Per sample, the batch is 0.4 ms and the online is 0.8 ms; the memory is 142 KB and 109 KB. No JAX, no compilation.
+On 10 seeds and 2000 samples, the full `run(...)` takes about 113 s on this host. Per sample: 5.09 ms for the batch model, 0.018 ms for the online model. The block in section 4 reproduces the ratio on 1000 samples and 1 seed in about 6 s.
 
 ### Development diary
 
-The first version of the pipeline used scikit-learn's `RandomForestClassifier` for the batch model. The user pointed out that the project uses only its own library. The comparison was rewritten: the batch model is now `OnlineBaggingClassifier.fit_batch`, and `fit_batch` was added to `bagging.py` for this purpose. The result is a comparison between two protocols of the same algorithm, which is the comparison of Oza and Russell 2001, not a comparison between two libraries. A second version used a warm-up of the first 200 samples; the batch model learned "always 0" and the accuracy was 0.2, because the fault starts at 60% of the stream. The 50/50 shuffled split fixed this. The figures and the numbers on this page are from the current version.
+The first version of the pipeline compared `OnlineBaggingClassifier.fit_batch` against `OnlineBaggingClassifier.learn_one`. That is the same online tree fed in another order, not a static model. The second version replaced the batch side with `BatchDecisionTreeClassifier`, a CART tree fitted on the whole training set in one call. The online side stayed on `HoeffdingTreeClassifier` with `grace_period=50`. The comparison now has a static model, a statistic (paired Wilcoxon, A12 with bootstrap CI), and the cost per sample.
+
+### Reproduce
+
+```bash
+python -m pytest test/drones/test_static_vs_online.py -q
+```

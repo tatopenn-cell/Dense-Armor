@@ -1,6 +1,6 @@
 # Sensor consistency: is the GPS telling the truth?
 
-A GPS receiver can be spoofed. An attacker transmits fake signals that look like the real ones and slowly pushes the reported position and velocity away from the truth. SemperFi (Sathaye et al. 2021, section 2.2, page 3) describes it as "the attacker-defined trajectory or static position" and "gradually introduces offsets" into the victim's signals. A drone that trusts its GPS follows the spoofed position and flies off course. This page shows the software detector: it compares the GPS velocity to the one a pure inertial integration produces, and raises an alarm when the two diverge.
+A GPS receiver can be spoofed. An attacker transmits fake signals that look like the authentic ones and slowly pushes the reported position and velocity away from the truth. SemperFi (Sathaye et al. 2021, section 2.2, page 3) describes it as "the attacker-defined trajectory or static position" and "gradually introduces offsets" into the victim's signals. A drone that trusts its GPS follows the spoofed position and flies off course. This page shows the software detector: it compares the GPS velocity to the one a pure inertial integration produces, and raises an alarm when the two diverge.
 
 ## The scene
 
@@ -136,7 +136,7 @@ Other choices:
 
 ### Measured cost
 
-The run function on 800 samples completes in under a second on the CPU of this session. Per-sample cost: one np.linalg.norm on a 3-vector plus update of CUSUMDriftDetector (O(1) amortised). No JAX, no compilation.
+The run function on 800 samples completes in under a second. Per-sample cost: one np.linalg.norm on a 3-vector plus update of CUSUMDriftDetector (O(1) amortised). No JAX, no compilation.
 
 ### Development diary
 

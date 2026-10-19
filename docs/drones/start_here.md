@@ -8,9 +8,9 @@ What to buy is **not** stated here. The page assumes the drone, the flight contr
 
 A quadrotor on a desk, propellers off, battery disconnected. The flight controller is connected to the board over a serial cable (TELEM2 on a Pixhawk, UART on a Raspberry Pi or a Jetson). The board runs the operating system of the vendor (Raspberry Pi OS 64-bit, or JetPack 6 on a Jetson). The network is a Wi-Fi hotspot, and the laptop with the MQTT client is on the same network.
 
-The goal is to see, on the laptop, one line per sample with the score of the pipeline, and a line on the alarm topic when the pipeline raises an alarm. No propellers, no flight: the stream is synthetic (the pipelines of this section run on `synthetic_flight`, `synthetic_mqtt`, and the simulated lidar). When the same pipeline runs on a real flight controller, the fields of the stream are the ones the flight controller sends, and the rest of the path is the same.
+The goal is to see, on the laptop, one line per sample with the score of the pipeline, and a line on the alarm topic when the pipeline raises an alarm. No propellers, no flight: the stream is synthetic (the pipelines of this section run on `synthetic_flight`, `synthetic_mqtt`, and the simulated lidar). When the same pipeline runs on a flight controller, the fields of the stream are the ones the flight controller sends, and the rest of the path is the same.
 
-**The commands on this page were run on the x86 host of this session. The two boards were not available, so the same commands have not been run on a Raspberry Pi or a Jetson. The page says so where it matters.**
+**The commands on this page were run on an x86 host. The two boards were not available, so the same commands have not been run on a Raspberry Pi or a Jetson. The page says so where it matters.**
 
 ## 1. What the board runs
 
@@ -39,7 +39,7 @@ bash edge/install.sh
 
 The output ends with three lines: the path of the Python interpreter inside the virtual environment, the version, and the file of `dense_armor` and `pipelines`. If the first line is a path under the repository, the install worked. `bash -n edge/install.sh` checks the script without running it.
 
-**Not run on the board.** The commands above were checked with `bash -n` on the x86 host of this session; they were not run on a Raspberry Pi or a Jetson, because the boards were not available. The two Dockerfile variants (`edge/Dockerfile.arm64` for Raspberry Pi, `edge/Dockerfile.jetson` for Jetson) are also written and not built.
+**Not run on the board.** The commands above were checked with `bash -n` on x86; they were not run on a Raspberry Pi or a Jetson, because the boards were not available. The two Dockerfile variants (`edge/Dockerfile.arm64` for Raspberry Pi, `edge/Dockerfile.jetson` for Jetson) are also written and not built.
 
 ## 3. The benchmark, on the board
 
@@ -52,7 +52,7 @@ python edge/edge_bench.py --smoke
 
 The `--smoke` flag uses 200 samples per run and 5 runs, and finishes in under a minute. Without the flag it uses 2000 samples and 20 runs. The JSON is in `benchmarks/drones/edge_bench_<hostname>.json`.
 
-**Run on x86, not on the board.** The output below is from this session's host (Colab, 2 CPUs). The page does not claim that a Raspberry Pi or a Jetson produces the same numbers; the whole point of the file is to run it on the board and get the board's numbers.
+**Run on x86, not on the board.** The output below is from an x86 host (Colab, 2 CPUs). The page does not claim that a Raspberry Pi or a Jetson produces the same numbers; the whole point of the file is to run it on the board and get the board's numbers.
 
 ```text
 host: 5da763c0fe9f, 2 cpus, temp=None
@@ -78,7 +78,7 @@ The output is the broker, the id, the two topics, the number of score messages a
 
 ## 5. Read the score on the laptop
 
-On the laptop, on the same network, install a MQTT client and subscribe to the two topics. The commands below are the ones a user runs; they were run in this session against `test.mosquitto.org`, with the id `d1`, and the score messages arrived on the laptop side of the session (the same machine).
+On the laptop, on the same network, install a MQTT client and subscribe to the two topics. The commands below are the ones a user runs; they were run against `test.mosquitto.org`, with the id `d1`, and the score messages arrived on the laptop side (the same machine).
 
 ```bash
 # on the laptop, in a terminal
@@ -91,7 +91,7 @@ On the board, the same message arrives from the bridge. The bridge is the proces
 
 ## 6. The container, if the operating system is not enough
 
-For a board where the Python of the operating system is not the version the library needs, there are two container definitions in `edge/`. The Raspberry Pi one uses the multi-arch `python:3.11-slim` image, the Jetson one uses the NVIDIA L4T PyTorch image for JetPack 6. Both are written and not built in this session.
+For a board where the Python of the operating system is not the version the library needs, there are two container definitions in `edge/`. The Raspberry Pi one uses the multi-arch `python:3.11-slim` image, the Jetson one uses the NVIDIA L4T PyTorch image for JetPack 6. Both are written and not built.
 
 ```bash
 # on a Raspberry Pi 4 or 5, 64-bit OS, with Docker installed
@@ -99,17 +99,17 @@ docker buildx build --platform linux/arm64 -f edge/Dockerfile.arm64 -t dense-arm
 docker run --rm -it dense-armor-drone python edge/edge_bench.py --smoke
 ```
 
-**Not built.** The Dockerfiles were not built in this session: there is no arm64 host and no Jetson. The build command is the one a user runs on the board. If the board's Docker does not have buildx, `docker build -f edge/Dockerfile.arm64 -t dense-armor-drone .` is the fallback.
+**Not built.** The Dockerfiles were not built: there is no arm64 host and no Jetson. The build command is the one a user runs on the board. If the board's Docker does not have buildx, `docker build -f edge/Dockerfile.arm64 -t dense-armor-drone .` is the fallback.
 
 ## 7. What was run, and what was not
 
-| Command | Run on x86 (this session) | Run on the board |
+| Command | Run on x86 | Run on the board |
 |---|---|---|
 | `bash -n edge/install.sh` | yes | no |
 | `python edge/edge_bench.py --smoke` | yes, 0.5 s | no |
 | `python edge/mqtt_bridge.py --smoke --id d1` | yes, 500/500 score, 2/2 alarm | no |
 | `docker buildx build ... edge/Dockerfile.arm64` | not built (no arm64 host) | no |
 | `docker build ... edge/Dockerfile.jetson` | not built (no Jetson) | no |
-| install on a real board | no | no |
+| install on a board | no | no |
 
-The last three rows are not run, and the page says so. The numbers in the previous sections are from the x86 host of this session, not from a board. The point of the file is that the same commands, run on the board, produce the board's numbers; the file is the file, not the board.
+The last three rows are not run, and the page says so. The numbers in the previous sections are from x86, not from a board. The point of the file is that the same commands, run on the board, produce the board's numbers; the file is the file, not the board.

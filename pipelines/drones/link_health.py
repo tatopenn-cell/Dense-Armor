@@ -19,7 +19,7 @@ convention as the other pages (benchmarks/casper_hours_episodes.py,
 lines 74-76).
 
 The stream is synthetic. The spec of Task D1 does not cite a paper for
-this pipeline, and no paper on MQTT link health is in the task folder.
+this pipeline, and no paper on MQTT link health is cited.
 Every design choice below is my choice, declared in Details of the
 page:
 

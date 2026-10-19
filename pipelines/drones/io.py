@@ -264,7 +264,7 @@ def read_mavlink_log(path) -> Iterator[dict[str, Any]]:
 
     The message names above are the standard MAVLink ones defined in
     ``pymavlink.dialects.v10``, not from a survey. Koubaa et al. 2019
-    (the survey in the task folder) names only ``HEARTBEAT`` explicitly
+    (the MAVLink survey) names only ``HEARTBEAT`` explicitly
     (page 3: "the message ID equal to 0 refers to a message of type
     HEARTBEAT"); the other names come from the dialect file, which is
     the authoritative source.

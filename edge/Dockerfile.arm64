@@ -12,7 +12,7 @@
 # Run:
 #     docker run --rm -it dense-armor-drone python edge/edge_bench.py --smoke
 #
-# This file is written, not built in this session (no arm64 host, no
+# This file is written, not built (no arm64 host, no
 # board). The page docs/drones/start_here.md cites it.
 
 FROM python:3.11-slim

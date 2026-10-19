@@ -28,7 +28,7 @@ def test_features_count_and_keys():
 
 
 def test_run_one_seed():
-    r = run(n_seeds=1, n_samples=300, n_models=3)
+    r = run(n_seeds=1, n_samples=300, max_depth=3)
     assert isinstance(r, StaticVsOnlineResult)
     assert r.n_seeds == 1
     assert r.n_samples == 300
@@ -38,36 +38,36 @@ def test_run_one_seed():
 
 
 def test_run_accuracy_reasonable():
-    r = run(n_seeds=2, n_samples=400, n_models=3)
+    r = run(n_seeds=2, n_samples=400, max_depth=3)
     assert 0.7 <= r.median_accuracy_batch <= 1.0
     assert 0.7 <= r.median_accuracy_online <= 1.0
 
 
 def test_run_batch_faster_than_online():
-    r = run(n_seeds=2, n_samples=400, n_models=3)
+    r = run(n_seeds=2, n_samples=400, max_depth=3)
     assert r.time_per_sample_batch_ms > 0
     assert r.time_per_sample_online_ms > 0
     # the batch is usually faster per sample; do not assert the inequality,
     # just check both are finite and small
 
 
-def test_run_memory_positive():
-    r = run(n_seeds=1, n_samples=300, n_models=3)
-    assert r.memory_batch_kb > 0
-    assert r.memory_online_kb > 0
+def test_run_memory_non_negative():
+    r = run(n_seeds=1, n_samples=300, max_depth=3)
+    assert r.memory_batch_kb >= 0
+    assert r.memory_online_kb >= 0
 
 
 def test_run_deterministic():
-    r1 = run(n_seeds=2, n_samples=300, n_models=3)
-    r2 = run(n_seeds=2, n_samples=300, n_models=3)
+    r1 = run(n_seeds=2, n_samples=300, max_depth=3)
+    r2 = run(n_seeds=2, n_samples=300, max_depth=3)
     np.testing.assert_array_equal(r1.accuracy_batch, r2.accuracy_batch)
     np.testing.assert_array_equal(r1.accuracy_online, r2.accuracy_online)
 
 
 def test_run_names_populated():
-    r = run(n_seeds=1, n_samples=200, n_models=3)
-    assert "fit_batch" in r.batch_name
-    assert "learn_one" in r.online_name
+    r = run(n_seeds=1, n_samples=200, max_depth=3)
+    assert "CART" in r.batch_name
+    assert "Hoeffding" in r.online_name
 
 
 def test_fit_batch_makes_members():
