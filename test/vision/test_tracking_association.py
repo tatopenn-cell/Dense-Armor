@@ -144,3 +144,64 @@ def test_kf_is_still_the_fifth_positional_argument():
     assert t.association == "greedy"
     assert t.reid_radius == 0.0
     assert t.kf_factory is kf or t.kf_factory() is not None
+
+
+def test_no_motion_returns_empty_detections():
+    """A frame identical to the background has no detection."""
+    import numpy as np
+
+    from dense_armor.utility.vision.tracking import MovingObjectTracker
+    frames = np.zeros((8, 32, 32), dtype=np.float32)
+    t = MovingObjectTracker(min_area=4, history=4)
+    for fr in frames:
+        t.learn_one({"array": fr})
+    out = t.transform_one({"array": frames[0]})
+    assert out["n_tracks"] == 0
+
+
+def test_hungarian_drops_non_candidate_pairs():
+    """When no pair is a candidate, the Hungarian step drops them all.
+
+    Two tracks, one detection that does not overlap either track: the
+    IoU matrix is all below threshold, so candidate is all False, the
+    assignment returns a pair, and the `not candidate` branch drops it.
+    """
+    from dense_armor.utility.vision.tracking import MovingObjectTracker
+    t = MovingObjectTracker(min_area=1, history=1, association="hungarian",
+                            iou_threshold=0.3)
+    t.update([[0, 0, 10, 10, 1.0], [100, 0, 110, 10, 1.0]])
+    # a detection in between, overlapping neither at IoU >= 0.3
+    out = t.update([[50, 0, 60, 10, 1.0]])
+    # both tracks stay, the detection becomes a new track
+    assert out["n_tracks"] == 3
+
+
+def test_hungarian_fallback_when_scipy_missing(monkeypatch):
+    """With association='hungarian' and no scipy, the greedy path is used."""
+    import builtins
+    real_import = builtins.__import__
+
+    def fake_import(name, *a, **kw):
+        if name == "scipy.optimize" or name.startswith("scipy.optimize."):
+            raise ImportError("no scipy")
+        return real_import(name, *a, **kw)
+
+    monkeypatch.setattr(builtins, "__import__", fake_import)
+    from dense_armor.utility.vision.tracking import MovingObjectTracker
+    t = MovingObjectTracker(min_area=1, history=1, association="hungarian")
+    t.update([[0, 0, 10, 10, 1.0]])
+    out = t.update([[0, 0, 10, 10, 1.0]])
+    assert out["n_tracks"] == 1
+    assert out["tracks"][0]["missing"] == 0
+
+
+def test_reid_skips_fresh_tracks():
+    """With reid_radius > 0, a track with missing == 0 is not re-identified."""
+    from dense_armor.utility.vision.tracking import MovingObjectTracker
+    t = MovingObjectTracker(min_area=1, history=1, reid_radius=5.0)
+    t.update([[0, 0, 10, 10, 1.0]])
+    # next frame: a detection matches the track, another is far
+    out = t.update([[0, 0, 10, 10, 1.0], [80, 0, 90, 10, 1.0]])
+    assert out["n_tracks"] == 2
+    # the far one becomes a new track (missing == 0), not a re-ID
+    assert all(tr["missing"] == 0 for tr in out["tracks"])
