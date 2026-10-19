@@ -1,0 +1,70 @@
+{
+  "host": {
+    "hostname": "5da763c0fe9f",
+    "cpu_count": 2,
+    "cpu_freq_mhz": 2199.998,
+    "cpu_temp_c": null,
+    "python": "3.13.16",
+    "platform": "linux"
+  },
+  "smoke": true,
+  "n_samples": 200,
+  "n_runs": 5,
+  "total_s": 0.4538772159994551,
+  "results": [
+    {
+      "name": "actuator_fault",
+      "n_samples": 200,
+      "n_runs": 5,
+      "ms_per_sample_median": 0.06139791499663261,
+      "ms_per_sample_iqr": 0.0006484299956355244,
+      "ms_per_sample_p99": 0.06631348859991704,
+      "rss_delta_kb_median": 0.0
+    },
+    {
+      "name": "sensor_consistency",
+      "n_samples": 200,
+      "n_runs": 5,
+      "ms_per_sample_median": 0.015863195003475994,
+      "ms_per_sample_iqr": 0.004373810006654821,
+      "ms_per_sample_p99": 0.018267764997654014,
+      "rss_delta_kb_median": 0.0
+    },
+    {
+      "name": "propeller_health",
+      "n_samples": 200,
+      "n_runs": 5,
+      "ms_per_sample_median": 0.024055515004874906,
+      "ms_per_sample_iqr": 0.002444179999656626,
+      "ms_per_sample_p99": 0.03816648940155574,
+      "rss_delta_kb_median": 0.0
+    },
+    {
+      "name": "battery_endurance",
+      "n_samples": 200,
+      "n_runs": 5,
+      "ms_per_sample_median": 0.10003271999266872,
+      "ms_per_sample_iqr": 0.003686159998324001,
+      "ms_per_sample_p99": 0.12486805839653244,
+      "rss_delta_kb_median": 0.0
+    },
+    {
+      "name": "safety_filter",
+      "n_samples": 200,
+      "n_runs": 5,
+      "ms_per_sample_median": 0.024224984999818844,
+      "ms_per_sample_iqr": 0.00037065499782329425,
+      "ms_per_sample_p99": 0.024675208799453684,
+      "rss_delta_kb_median": 0.0
+    },
+    {
+      "name": "link_health",
+      "n_samples": 200,
+      "n_runs": 5,
+      "ms_per_sample_median": 0.005593680007223156,
+      "ms_per_sample_iqr": 0.00036741500480275135,
+      "ms_per_sample_p99": 0.005869303003055393,
+      "rss_delta_kb_median": 0.0
+    }
+  ]
+}
