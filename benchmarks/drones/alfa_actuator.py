@@ -63,8 +63,9 @@ def _summary(rows: list[dict]) -> dict:
             out[f"{name}_median"] = None
             out[f"{name}_iqr"] = None
             continue
-        qs = np.percentile(arr, [25, 50, 75]).tolist()
-        q1, q2, q3 = float(qs[0]), float(qs[1]), float(qs[2])
+        q1 = float(np.percentile(arr, 25))
+        q2 = float(np.percentile(arr, 50))
+        q3 = float(np.percentile(arr, 75))
         out[f"{name}_median"] = float(q2)
         out[f"{name}_iqr"] = float(q3 - q1)
     return out
