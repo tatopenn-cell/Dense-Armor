@@ -113,3 +113,31 @@ def test_online_passes_check_estimator():
     clf = OnlineBaggingClassifier(_tree, n_models=3, seed=0)
     out = check_estimator(clf)
     assert out["not_applicable"] == []
+
+
+def test_wilcoxon_on_ten_seeds():
+    """_wilcoxon on 10 per-seed values is finite and small when a > b."""
+    import numpy as np
+    from pipelines.drones.static_vs_online import _wilcoxon
+    a = np.array([1.0, 0.99, 0.98, 1.0, 0.99, 1.0, 0.99, 1.0, 0.98, 1.0])
+    b = np.array([0.99, 0.98, 0.97, 0.99, 0.98, 0.99, 0.98, 0.99, 0.97, 0.99])
+    p = _wilcoxon(a, b)
+    assert 0.0 < p < 0.05
+
+
+def test_wilcoxon_constant_returns_one():
+    """_wilcoxon on identical arrays returns 1.0 (fallback branch)."""
+    import numpy as np
+    from pipelines.drones.static_vs_online import _wilcoxon
+    a = np.array([0.99, 0.99, 0.99, 0.99, 0.99])
+    assert _wilcoxon(a, a) == 1.0
+
+
+def test_a12_on_separated_values():
+    """_a12 on 10 vs 10 separated values is 1.0; on identical is 0.5."""
+    import numpy as np
+    from pipelines.drones.static_vs_online import _a12
+    a = np.array([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+    b = np.array([0.99] * 10)
+    assert _a12(a, b) == 1.0
+    assert _a12(b, b) == 0.5
