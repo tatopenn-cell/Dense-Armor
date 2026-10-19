@@ -1,0 +1,42 @@
+# syntax=docker/dockerfile:1
+# Dense-Armor on a Raspberry Pi 4 or 5, 64-bit OS.
+#
+# Base image: the official python image, arm64v8 variant. The tag
+# python:3.11-slim is multi-arch and resolves to arm64v8/python on an
+# arm64 host. The image page is https://hub.docker.com/_/python, the
+# arm64v8 variant is documented on the same page under "Architectures".
+#
+# Build (on the board, or on a host with buildx and qemu):
+#     docker buildx build --platform linux/arm64 -f edge/Dockerfile.arm64 -t dense-armor-drone .
+#
+# Run:
+#     docker run --rm -it dense-armor-drone python edge/edge_bench.py --smoke
+#
+# This file is written, not built in this session (no arm64 host, no
+# board). The page docs/drones/start_here.md cites it.
+
+FROM python:3.11-slim
+
+LABEL org.opencontainers.image.title="Dense-Armor drone"
+LABEL org.opencontainers.image.description="Dense-Armor with the drone extra, arm64"
+LABEL org.opencontainers.image.source="https://github.com/tatopenn-cell/Dense-Armor"
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        libopenblas-dev \
+        liblapack-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt/dense-armor
+
+COPY pyproject.toml README.md ./
+COPY dense_armor ./dense_armor
+COPY pipelines ./pipelines
+COPY edge ./edge
+COPY benchmarks ./benchmarks
+
+RUN pip install --no-cache-dir -e ".[drone]"
+
+ENV PYTHONUNBUFFERED=1
+CMD ["python", "edge/edge_bench.py", "--smoke"]

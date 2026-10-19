@@ -93,6 +93,7 @@ nav:
         - Link health: drones/link_health.md
         - Visual landing: drones/visual_landing.md
         - Static vs online: drones/static_vs_online.md
+        - Start here: drones/start_here.md
 
   - Shields:
       - shields/index.md

@@ -1,0 +1,44 @@
+# syntax=docker/dockerfile:1
+# Dense-Armor on an NVIDIA Jetson Orin.
+#
+# Base image: the NVIDIA L4T PyTorch container for JetPack 6, which is
+# a Jetson-compatible Python image with the CUDA runtime already in
+# place. The image is documented on the NGC catalogue at
+# https://catalog.ngc.nvidia.com/orgs/nvidia/containers/l4t-pytorch,
+# and the JetPack 6 mapping to L4T r36 is on
+# https://developer.nvidia.com/embedded/jetpack.
+#
+# Build (on the board):
+#     docker build -f edge/Dockerfile.jetson -t dense-armor-drone .
+#
+# Run (with the default runtime, nvidia-docker not needed on JetPack 6):
+#     docker run --rm -it --runtime nvidia dense-armor-drone \
+#         python edge/edge_bench.py --smoke
+#
+# This file is written, not built in this session (no Jetson board).
+# The page docs/drones/start_here.md cites it.
+
+FROM nvcr.io/nvidia/l4t-pytorch:r36.2.0-pth2.1-py3
+
+LABEL org.opencontainers.image.title="Dense-Armor drone"
+LABEL org.opencontainers.image.description="Dense-Armor with the drone extra, Jetson Orin"
+LABEL org.opencontainers.image.source="https://github.com/tatopenn-cell/Dense-Armor"
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        python3-venv \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt/dense-armor
+
+COPY pyproject.toml README.md ./
+COPY dense_armor ./dense_armor
+COPY pipelines ./pipelines
+COPY edge ./edge
+COPY benchmarks ./benchmarks
+
+RUN pip3 install --no-cache-dir -e ".[drone]"
+
+ENV PYTHONUNBUFFERED=1
+CMD ["python3", "edge/edge_bench.py", "--smoke"]
