@@ -207,6 +207,7 @@ nav:
       - Toolkit:
           - toolkit/index.md
           - Toolkit: toolkit/toolkit.md
+      - Skyline: misc/skyline.md
       - Live Demo: demo.md
       - MCP Server: mcp.md
 
