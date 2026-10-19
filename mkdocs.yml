@@ -88,6 +88,7 @@ nav:
         - Actuator fault: drones/actuator_fault.md
         - Sensor consistency: drones/sensor_consistency.md
         - Propeller health: drones/propeller_health.md
+        - Battery endurance: drones/battery_endurance.md
 
   - Shields:
       - shields/index.md

@@ -65,7 +65,7 @@ Example:
     >>> len(stream)
     3
     >>> len(stream[0])
-    9
+    12
     >>> stream[0]["fault_kind"] is None
     True
 """
@@ -409,9 +409,13 @@ def synthetic_flight(
             sample ``round(FAULT_AT_FRACTION * n)``.
 
     Yields:
-        One dict per sample, with the standard fields plus
-        ``fault_started`` (bool) and ``fault_kind`` (the fault name
-        from the fault sample onwards, else None).
+        One dict per sample, with the standard fields, plus
+        ``current_a`` (A, synthetic: 300 W * mean(motor) / battery_v),
+        ``payload_kg`` (0.0 by default: the synthetic stream has no
+        payload), ``wind_xy`` ([0, 0]: the synthetic stream has no
+        wind), ``fault_started`` (bool) and ``fault_kind`` (the fault
+        name from the fault sample onwards, else None). The 12 keys
+        of the dict are the interface of this function.
 
     Raises:
         ValueError: on a negative ``n`` or an unknown ``fault``.
@@ -449,6 +453,10 @@ def synthetic_flight(
         gps_v = np.array([v_n, v_e, 0.0]) + rng.normal(0.0, 0.05, 3)
         motor = 0.5 + rng.normal(0.0, 0.01, 4)
         battery_v = 12.6 - 0.2 * (t / 60.0) + rng.normal(0.0, 0.005)
+        payload_kg = 0.0
+        wind_xy = np.zeros(2)
+        power_w = 300.0 * float(np.mean(motor)) + rng.normal(0.0, 5.0)
+        current_a = power_w / max(battery_v, 9.0) + rng.normal(0.0, 0.1)
         started = k >= fault_at
         if started and fault is not None:
             if fault == "actuator_loss":
@@ -470,6 +478,9 @@ def synthetic_flight(
             "gps_v": gps_v,
             "motor": motor,
             "battery_v": float(battery_v),
+            "current_a": float(current_a),
+            "payload_kg": float(payload_kg),
+            "wind_xy": wind_xy.copy(),
             "fault_started": bool(started),
             "fault_kind": fault if started else None,
         }
