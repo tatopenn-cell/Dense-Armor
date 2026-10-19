@@ -13,7 +13,7 @@
 #
 # Run (with the default runtime, nvidia-docker not needed on JetPack 6):
 #     docker run --rm -it --runtime nvidia dense-armor-drone \
-#         python edge/edge_bench.py --smoke
+#         python -m edge.edge_bench --smoke
 #
 # This file is written, not built (no Jetson board).
 # The page docs/drones/start_here.md cites it.
@@ -41,4 +41,4 @@ COPY benchmarks ./benchmarks
 RUN pip3 install --no-cache-dir -e ".[drone]"
 
 ENV PYTHONUNBUFFERED=1
-CMD ["python3", "edge/edge_bench.py", "--smoke"]
+CMD ["python3", "-m", "edge.edge_bench", "--smoke"]

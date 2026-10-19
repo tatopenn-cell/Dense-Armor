@@ -37,7 +37,7 @@ def test_cpu_temp_raises(monkeypatch):
 def test_edge_bench_main_block(tmp_path):
     out = tmp_path / "bench.json"
     r = subprocess.run(
-        [sys.executable, "edge/edge_bench.py", "--smoke",
+        [sys.executable, "-m", "edge.edge_bench", "--smoke",
          "--out", str(out)],
         check=False, capture_output=True, text=True, timeout=180,
         cwd=Path(__file__).resolve().parents[2],

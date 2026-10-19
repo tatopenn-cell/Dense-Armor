@@ -10,7 +10,7 @@
 #     docker buildx build --platform linux/arm64 -f edge/Dockerfile.arm64 -t dense-armor-drone .
 #
 # Run:
-#     docker run --rm -it dense-armor-drone python edge/edge_bench.py --smoke
+#     docker run --rm -it dense-armor-drone python -m edge.edge_bench --smoke
 #
 # This file is written, not built (no arm64 host, no
 # board). The page docs/drones/start_here.md cites it.
@@ -39,4 +39,4 @@ COPY benchmarks ./benchmarks
 RUN pip install --no-cache-dir -e ".[drone]"
 
 ENV PYTHONUNBUFFERED=1
-CMD ["python", "edge/edge_bench.py", "--smoke"]
+CMD ["python", "-m", "edge.edge_bench", "--smoke"]

@@ -47,7 +47,7 @@ Before running a pipeline, measure the time per sample on this board. The script
 
 ```bash
 source .venv/bin/activate
-python edge/edge_bench.py --smoke
+python -m edge.edge_bench --smoke
 ```
 
 The `--smoke` flag uses 200 samples per run and 5 runs, and finishes in under a minute. Without the flag it uses 2000 samples and 20 runs. The JSON is in `benchmarks/drones/edge_bench_<hostname>.json`.
@@ -96,7 +96,7 @@ For a board where the Python of the operating system is not the version the libr
 ```bash
 # on a Raspberry Pi 4 or 5, 64-bit OS, with Docker installed
 docker buildx build --platform linux/arm64 -f edge/Dockerfile.arm64 -t dense-armor-drone .
-docker run --rm -it dense-armor-drone python edge/edge_bench.py --smoke
+docker run --rm -it dense-armor-drone python -m edge.edge_bench --smoke
 ```
 
 **Not built.** The Dockerfiles were not built: there is no arm64 host and no Jetson. The build command is the one a user runs on the board. If the board's Docker does not have buildx, `docker build -f edge/Dockerfile.arm64 -t dense-armor-drone .` is the fallback.
@@ -106,7 +106,7 @@ docker run --rm -it dense-armor-drone python edge/edge_bench.py --smoke
 | Command | Run on x86 | Run on the board |
 |---|---|---|
 | `bash -n edge/install.sh` | yes | no |
-| `python edge/edge_bench.py --smoke` | yes, 0.5 s | no |
+| `python -m edge.edge_bench --smoke` | yes, 0.5 s | no |
 | `python edge/mqtt_bridge.py --smoke --id d1` | yes, 500/500 score, 2/2 alarm | no |
 | `docker buildx build ... edge/Dockerfile.arm64` | not built (no arm64 host) | no |
 | `docker build ... edge/Dockerfile.jetson` | not built (no Jetson) | no |

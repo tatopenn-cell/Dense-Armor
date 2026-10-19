@@ -20,8 +20,8 @@ says so in Details.
 
 Run from the repository root:
 
-    python edge/edge_bench.py --smoke
-    python edge/edge_bench.py
+    python -m edge.edge_bench --smoke
+    python -m edge.edge_bench
 
 The --smoke flag uses 200 samples per run and 5 runs, and finishes in
 under one minute on x86. Without the flag it uses 2000 samples and 20
@@ -47,10 +47,6 @@ from pathlib import Path
 
 import numpy as np
 import psutil
-
-_ROOT = Path(__file__).resolve().parents[1]
-if str(_ROOT) not in sys.path:  # pragma: no cover - path bootstrap
-    sys.path.insert(0, str(_ROOT))
 
 from pipelines.drones.actuator_fault import run as run_actuator
 from pipelines.drones.battery_endurance import run as run_battery
