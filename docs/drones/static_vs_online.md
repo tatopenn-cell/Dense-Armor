@@ -58,7 +58,7 @@ Paired two-sided Wilcoxon on the 10 per-seed accuracies: **p = 0.0020**. A12 eff
 
 ## 4. The cost
 
-The batch tree scans the whole training set once; the online tree touches one sample at a time. On the full run the batch costs **5.09 ms per sample** (fit on the training half plus predict on the test half) and the online costs **0.018 ms per sample** (predict plus learn). The ratio is about 280x. The memory delta measured with `psutil` on 2000 samples is under the page resolution of the process RSS, so the two are reported as the same class of memory, not as a number.
+The batch tree scans the whole training set once; the online tree touches one sample at a time. On the full run the batch costs **5.09 ms per sample** (fit on the training half plus predict on the test half) and the online costs **0.018 ms per sample** (predict plus learn). The ratio is about 280x. `run(...)` also returns the change of the process RSS around each model (`memory_batch_kb`, `memory_online_kb`). The value is a delta, not a peak, and it can be negative: the process can release memory between the two reads. On 2000 samples it is under the page resolution of `psutil`, so this page does not use it as a comparison.
 
 The cost per sample is not reproduced in a block because it depends on the load of the host: the same 1-seed run measured 5.87 ms and 2.43 ms in two consecutive executions. The numbers above are the medians over the 10 seeds of the full run, and they are the ones the comparison uses.
 
@@ -80,7 +80,7 @@ The cost per sample is not reproduced in a block because it depends on the load 
 - 2000 samples per stream, 50/50 shuffled split, 40% of the samples after the fault. Both halves contain both classes.
 - `max_depth=3` for the CART tree: the fault is a single strong feature, depth 3 is enough to separate the two classes, and the CART fit drops from 0.08 s (depth 6) to 0.02 s (depth 3).
 - `grace_period=50` for the Hoeffding tree: the library default, kept for both the online side of this page and the online side of the comparison.
-- The memory measured with `psutil` is the delta of the process RSS around the fit; on 2000 samples it is under the page resolution, so the two sides are reported as the same class of memory, not as a number.
+- The memory is the change of the process RSS around each model, not a peak: `psutil` reads the RSS before and after, and the value can be negative. On 2000 samples it is under the page resolution, so the page does not compare the two models on it.
 
 ### Measured cost
 
