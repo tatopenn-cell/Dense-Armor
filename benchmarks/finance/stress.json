@@ -1,0 +1,146 @@
+{
+  "dataset": "synthetic flash crash (Braun et al. 2017, page 1)",
+  "crash": {
+    "crash_at": 1000,
+    "duration_ticks": 5,
+    "drop": 0.05,
+    "recovery_fraction": 0.6
+  },
+  "surveillance": {
+    "seeds": 5,
+    "ticks": 100,
+    "alarms": {
+      "median": 0.0,
+      "iqr": 0.0,
+      "n": 5
+    },
+    "delay": {
+      "median": null,
+      "iqr": null,
+      "n": 0
+    },
+    "n_with_delay": 0,
+    "wall_time_s": 6.145777225494385
+  },
+  "execution": {
+    "seeds": 20,
+    "ticks": 2000,
+    "refused": {
+      "median": 2.0,
+      "iqr": 1.25,
+      "n": 20
+    },
+    "wall_time_s": 13.07979416847229
+  },
+  "per_seed": {
+    "surveillance": [
+      {
+        "seed": 0,
+        "n_alarms": 0,
+        "delay": null
+      },
+      {
+        "seed": 1,
+        "n_alarms": 0,
+        "delay": null
+      },
+      {
+        "seed": 2,
+        "n_alarms": 0,
+        "delay": null
+      },
+      {
+        "seed": 3,
+        "n_alarms": 0,
+        "delay": null
+      },
+      {
+        "seed": 4,
+        "n_alarms": 0,
+        "delay": null
+      }
+    ],
+    "execution": [
+      {
+        "seed": 0,
+        "n_refused": 3
+      },
+      {
+        "seed": 1,
+        "n_refused": 2
+      },
+      {
+        "seed": 2,
+        "n_refused": 1
+      },
+      {
+        "seed": 3,
+        "n_refused": 2
+      },
+      {
+        "seed": 4,
+        "n_refused": 4
+      },
+      {
+        "seed": 5,
+        "n_refused": 3
+      },
+      {
+        "seed": 6,
+        "n_refused": 1
+      },
+      {
+        "seed": 7,
+        "n_refused": 4
+      },
+      {
+        "seed": 8,
+        "n_refused": 3
+      },
+      {
+        "seed": 9,
+        "n_refused": 1
+      },
+      {
+        "seed": 10,
+        "n_refused": 2
+      },
+      {
+        "seed": 11,
+        "n_refused": 2
+      },
+      {
+        "seed": 12,
+        "n_refused": 2
+      },
+      {
+        "seed": 13,
+        "n_refused": 1
+      },
+      {
+        "seed": 14,
+        "n_refused": 2
+      },
+      {
+        "seed": 15,
+        "n_refused": 2
+      },
+      {
+        "seed": 16,
+        "n_refused": 2
+      },
+      {
+        "seed": 17,
+        "n_refused": 1
+      },
+      {
+        "seed": 18,
+        "n_refused": 1
+      },
+      {
+        "seed": 19,
+        "n_refused": 2
+      }
+    ]
+  }
+}

@@ -87,6 +87,7 @@ nav:
           - Drift vs noise: finance/drift_vs_noise.md
           - Portfolio: finance/portfolio.md
           - Order book: finance/order_book.md
+          - Stress: finance/stress.md
       - Drones:
         - Overview: drones/index.md
         - Actuator fault: drones/actuator_fault.md
