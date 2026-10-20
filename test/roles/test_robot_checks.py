@@ -117,15 +117,17 @@ def test_p99_within_budget_fails_on_a_slow_learner():
     """A learner slower than its budget must fail the check.
 
     The check takes 200 measurements after 64 warm-up samples; a
-    learner that sleeps 1 ms per call, with a budget of 1e-3 s, must
-    be rejected. The test proves the measurement is real and not a
-    count of calls.
+    learner that sleeps 10 ms per call, with a budget of 1e-3 s and a
+    limit of 1.5e-3 s, must be rejected with a margin of 6x. The
+    sleep is 10 ms and not 1 ms because time.sleep(1e-3) on Linux can
+    return in 1.05 ms, below the 1.5e-3 limit: a test that depends on
+    the jitter of the scheduler is flaky, as the CI showed.
     """
     class _Slow:
         budget_s = 1e-3
 
         def learn_one(self, x):
-            time.sleep(1e-3)
+            time.sleep(1e-2)
 
     with pytest.raises(AssertionError, match="exceeds"):
         robot.check_p99_within_budget(_Slow())
