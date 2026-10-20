@@ -85,11 +85,13 @@ class SparseCosineIndex:
     drops from 1.4 ms to 0.24 ms, which is a property of this corpus and
     not a claim of the paper.
 
-    The sparse product is the one of Liu and Vinter (2015), Algorithm 3,
-    page 3: a segmented sum over the non-zero entries, vectorised on the
-    SIMD units of the CPU. The point of the index is that the product is
-    the library's sparse routine, not a Python loop; the exact kernel is
-    the one of the ``scipy.sparse`` CSR matrix the class builds.
+    The product is the one of ``scipy.sparse`` CSR, not a Python loop.
+    Liu and Vinter (2015), Algorithm 3 page 3, and Jang et al. (2019),
+    page 2, are cited as the description of a segmented-sum CSR product
+    and of batching several products, not as the kernel this class
+    runs: ``scipy`` does not implement the CSR5 format or the batched
+    CUDA kernel. The measured numbers below are the ones of the
+    ``scipy.sparse`` product on this host.
 
     References
     ----------
@@ -113,7 +115,7 @@ class SparseCosineIndex:
     """
 
     budget_s = 2e-3
-    memory_class = "O(window)"
+    memory_class = "O(vocabulary)"  # unbounded unless max_terms_per_document is set
 
     def __init__(
         self,

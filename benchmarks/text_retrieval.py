@@ -184,9 +184,14 @@ def run(docs_dir: Path, max_queries: int | None = None,
 
     rrs = []
     top5_ours = []
-    t0 = time.perf_counter()
-    S = index.query_many(q_scores)
-    query_ours = (time.perf_counter() - t0) / max(len(queries), 1)
+    runs = []
+    for _ in range(5):
+        t0 = time.perf_counter()
+        S = index.query_many(q_scores)
+        runs.append((time.perf_counter() - t0) / max(len(queries), 1))
+    query_ours = float(np.median(runs))
+    query_ours_min = float(np.min(runs))
+    query_ours_max = float(np.max(runs))
     for j, page in enumerate(pages):
         ranked = np.argsort(-S[:, j])
         top5_ours.append(set(ranked[:5].tolist()))
@@ -209,7 +214,9 @@ def run(docs_dir: Path, max_queries: int | None = None,
         "ours": {"rr_median": float(np.median(rrs)),
                  "rr_iqr": float(np.percentile(rrs, 75) - np.percentile(rrs, 25)),
                  "build_s": build_ours, "query_s": query_ours,
-                 "method": "sparse"},
+                 "query_s_min": query_ours_min,
+                 "query_s_max": query_ours_max,
+                 "n_runs": 5, "method": "sparse"},
         "ours_loop": {"rr_median": float(np.median(rrs_loop)),
                       "rr_iqr": float(np.percentile(rrs_loop, 75)
                                       - np.percentile(rrs_loop, 25)),
