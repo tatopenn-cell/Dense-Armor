@@ -187,6 +187,7 @@ Dense-Armor also provides other online utilities:
 - Online statistics and sketches
 - Metrics for streams and robots
 - Preprocessing
+- Preprocessing: [Text vectorizer](docs/preprocessing/text_vectorizer.md).
 - Streams (CSV, arrays, rosbag, frame folders, merge by time, shuffle)
 - Built-in datasets
 - Progressive model validation
