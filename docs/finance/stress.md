@@ -37,7 +37,13 @@ print(s["seeds"], s["ticks"], s["alarms"]["median"],
 5 100 0.0 0
 ```
 
-`FinancePipeline` sees 100 ticks and 5 seeds, around a crash at tick 50. It raises **zero** alarms, on every seed: the pipeline does not see the crash. The reason is the calibration. `FinancePipeline` is built for daily or minute returns, with the ranges of `range_ret` and `range_vol` set for that scale, and Orca on every tick. A crash of five ticks, on a price path that walks with `vol=0.001` per tick, is not outside the ranges the pipeline expects. The page states the result and does not tune the pipeline: the task asks what the existing pipeline does, and the answer is "nothing on this crash".
+`FinancePipeline` sees 100 ticks and 5 seeds, around a crash at tick 50. It raises **zero** alarms, on every seed, and the code of `process_tick` says why. Three conditions, all read in `pipelines/finance/surveillance.py`:
+
+1. `anomalous = s_loda > self.loda.threshold and s_hst > self.hst.threshold`: both scores must pass, and one above its threshold is not enough.
+2. `ret = (price - price[-2]) / price[-2]`: the return is per tick. The crash of five ticks with a drop of 5% gives about **1% per tick**, inside `range_ret=(-0.01, 0.01)`, so Half-Space Trees sees nothing outside the range it was told to expect.
+3. `LODA` starts with `range_init=50` and needs a warm-up before its threshold is stable; the crash at tick 50 of the run falls inside that warm-up.
+
+The relative volume of 10 during the crash is outside `range_vol=(0.5, 1.5)`, and Half-Space Trees can score it. The `and` of the first condition is what keeps the alarm false: with one score out of range and the other inside its warm-up, the pair does not pass. The page states the result and does not tune the pipeline: the task asks what the existing pipeline does, and the code says why the answer is zero.
 
 ## 3. The execution pipeline on the crash
 
@@ -81,4 +87,4 @@ The execution pipeline reacts to the crash, the surveillance pipeline does not. 
 
 ### Development diary
 
-The first version of the benchmark fed a constant order size of 1.0 and a constant relative volume of 1.0, and the execution pipeline refused nothing and the surveillance pipeline raised nothing: a constant stream has nothing to detect. The page now multiplies the sizes and the volumes by ten during the crash, and the execution pipeline refuses 2.0 orders per run median. The surveillance pipeline still raises nothing, and the page says it: the calibration is for a different time scale, and the result is the result.
+The first version of the benchmark fed a constant order size of 1.0 and a constant relative volume of 1.0, and the execution pipeline refused nothing and the surveillance pipeline raised nothing: a constant stream has nothing to detect. The page now multiplies the sizes and the volumes by ten during the crash, and the execution pipeline refuses 2.0 orders per run median. The surveillance pipeline still raises nothing. The second version of this paragraph said "the calibration is for a different time scale": that was a hypothesis, not a reading. The three conditions above are the reading of `process_tick`, and the page says them.
