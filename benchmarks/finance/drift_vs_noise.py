@@ -33,6 +33,7 @@ import json
 import sys
 import time
 from pathlib import Path
+from typing import TypedDict
 
 import numpy as np
 from scipy.stats import wilcoxon
@@ -51,6 +52,12 @@ CHANGE_AT = 2500
 TICKS_PER_HOUR = 3600
 N_SEEDS = 20
 SMOKE_SEEDS = 2
+
+
+class _Summary(TypedDict):
+    median: float | None
+    iqr: float | None
+    n: int
 
 
 def _a12(a: np.ndarray, b: np.ndarray) -> float:
@@ -84,7 +91,7 @@ def _one_run(seed: int, shift: bool, noise_df: float) -> dict:
     }
 
 
-def _summary(values: list[float | None]) -> dict:
+def _summary(values: list[float | None]) -> _Summary:
     v = np.asarray([x for x in values if x is not None], dtype=float)
     if v.size == 0:
         return {"median": None, "iqr": None, "n": 0}
@@ -134,6 +141,12 @@ def main() -> int:
     n_raw_detected = sum(1 for x in raw_d if x is not None)
     n_rob_detected = sum(1 for x in rob_d if x is not None)
 
+    raw_calm_sum = _summary([float(x) for x in raw_calm])
+    rob_calm_sum = _summary([float(x) for x in rob_calm])
+    raw_delay_sum = _summary([float(x) for x in raw_imputed])
+    rob_delay_sum = _summary([float(x) for x in rob_imputed])
+    raw_delay_none_sum = _summary(raw_d)
+    rob_delay_none_sum = _summary(rob_d)
     summary = {
         "dataset": f"synthetic tick, Student-t df={args.noise_df:.1f}",
         "n_ticks": N_TICKS,
@@ -169,16 +182,16 @@ def main() -> int:
 
     print(f"synthetic tick, Student-t df={args.noise_df:.1f}, {n_seeds} seeds")
     print("calm (no shift): episodes per hour")
-    print(f"  raw    median {summary['calm']['raw_per_hour']:.2f}")
-    print(f"  robust median {summary['calm']['robust_per_hour']:.2f}")
+    print(f"  raw    median {float(np.median(raw_per_hour)):.2f}")
+    print(f"  robust median {float(np.median(rob_per_hour)):.2f}")
     print(f"  Wilcoxon p {p_calm:.4f}, A12 {a12_calm:.3f}")
     print("shift (drift 0 -> 0.002): detection delay in ticks")
     print(f"  detected: raw {n_raw_detected}/{n_seeds}, "
           f"robust {n_rob_detected}/{n_seeds}")
-    print(f"  raw    median {summary['shift']['raw_delay']['median']} "
-          f"IQR {summary['shift']['raw_delay']['iqr']}")
-    print(f"  robust median {summary['shift']['robust_delay']['median']} "
-          f"IQR {summary['shift']['robust_delay']['iqr']}")
+    print(f"  raw    median {raw_delay_none_sum['median']} "
+          f"IQR {raw_delay_none_sum['iqr']}")
+    print(f"  robust median {rob_delay_none_sum['median']} "
+          f"IQR {rob_delay_none_sum['iqr']}")
     print(f"  Wilcoxon p {p_delay:.4f}, A12 {a12_delay:.3f} "
           f"(imputed {N_TICKS} ticks for no alarm)")
     print(f"wall time {dt:.1f} s")
