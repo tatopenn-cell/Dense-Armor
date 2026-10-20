@@ -146,7 +146,7 @@ def test_transform_matrix_matches_transform_one():
         for norm in ("l2", None):
             v = TextVectorizer(smooth_idf=smooth, norm=norm)
             v.fit(docs)
-            M = v.transform_matrix()
+            M = v.transform_matrix(docs)
             terms = v._vocab_sorted
             for i, d in enumerate(docs):
                 s = v.transform_one(d)["scores"]
@@ -176,8 +176,8 @@ def test_cache_invalidated_after_load_state_dict():
     assert M.shape[1] == len(w.tfidf_.df_)
 
 
-def test_fit_tokens_freed_after_transform_matrix():
-    """transform_matrix() without documents frees the tokens it reused."""
+def test_fit_keeps_no_tokens():
+    """After fit and transform_matrix the vectorizer holds no token lists."""
     v = TextVectorizer().fit(["a b", "a c"])
-    v.transform_matrix()
-    assert v._fit_tokens is None
+    v.transform_matrix(["a b"])
+    assert not hasattr(v, "_fit_tokens")

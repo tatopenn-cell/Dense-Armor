@@ -88,8 +88,12 @@ def _measure_choices(chunks, queries, pages, relevant_of_query,
     choice and keeps the others at the baseline, so the number is the
     effect of that choice alone.
     """
-    from sklearn.feature_extraction.text import TfidfVectorizer  # type: ignore[import-untyped]
-    from sklearn.metrics.pairwise import cosine_similarity as sk_cos  # type: ignore[import-untyped]
+    from sklearn.feature_extraction.text import (
+        TfidfVectorizer,  # type: ignore[import-untyped]
+    )
+    from sklearn.metrics.pairwise import (
+        cosine_similarity as sk_cos,  # type: ignore[import-untyped]
+    )
 
     sk = TfidfVectorizer(stop_words="english", ngram_range=(1, 2))
     X = sk.fit_transform(chunks)
@@ -167,7 +171,9 @@ def run(docs_dir: Path, max_queries: int | None = None,
     stop = None
     if use_sklearn:
         try:
-            from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS  # type: ignore[import-untyped]
+            from sklearn.feature_extraction.text import (
+                ENGLISH_STOP_WORDS,  # type: ignore[import-untyped]
+            )
             stop = sorted(ENGLISH_STOP_WORDS)
         except ImportError:
             stop = None
@@ -192,7 +198,6 @@ def run(docs_dir: Path, max_queries: int | None = None,
     query_ours = float(np.median(runs))
     query_ours_min = float(np.min(runs))
     query_ours_max = float(np.max(runs))
-    # pipeline: transform_one + prodotto + argsort, lo stesso lavoro del lato batch
     runs_pipe = []
     for _ in range(5):
         t0 = time.perf_counter()
@@ -253,8 +258,12 @@ def run(docs_dir: Path, max_queries: int | None = None,
 
     if use_sklearn:
         try:
-            from sklearn.feature_extraction.text import TfidfVectorizer  # type: ignore[import-untyped]
-            from sklearn.metrics.pairwise import cosine_similarity as sk_cos  # type: ignore[import-untyped]
+            from sklearn.feature_extraction.text import (
+                TfidfVectorizer,  # type: ignore[import-untyped]
+            )
+            from sklearn.metrics.pairwise import (
+                cosine_similarity as sk_cos,  # type: ignore[import-untyped]
+            )
             t0 = time.perf_counter()
             sk = TfidfVectorizer(stop_words="english", ngram_range=(1, 2),
                                  max_features=20000)
@@ -276,7 +285,6 @@ def run(docs_dir: Path, max_queries: int | None = None,
             out["top5_overlap_median"] = float(np.median(overlaps))
             out["top5_overlap_iqr"] = float(
                 np.percentile(overlaps, 75) - np.percentile(overlaps, 25))
-            # aligned: no cap on either side
             sk_aligned = TfidfVectorizer(stop_words="english",
                                          ngram_range=(1, 2))
             X_aligned = sk_aligned.fit_transform(chunks)
@@ -290,7 +298,6 @@ def run(docs_dir: Path, max_queries: int | None = None,
                  for a, b in zip(top5_ours, top5_sk_aligned)])
             out["top5_overlap_median_aligned"] = float(np.median(ov_aligned))
 
-            # both sides capped at 20000: the selection rule alone
             vec_20k = TextVectorizer(
                 stop_words=sorted(ENGLISH_STOP_WORDS), ngram_range=(1, 2),
                 max_features=20000, norm="l2", smooth_idf=False)

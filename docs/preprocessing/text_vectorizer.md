@@ -96,7 +96,7 @@ print(idx.n_documents_, S.shape)
 3 (3, 2)
 ```
 
-On the 1,549 chunks and 134 queries of `benchmarks/text_retrieval.json`, the exact float32 index answers a query in **0.000081 s** median over five runs (range 0.000079-0.000083 s), against **0.0506 s** of the loop of `cosine_similarity_many` on the same scores. A single run is one point of the range, not the number: the JSON stores the median and the two ends, and the page repeats them.
+On the 1,549 chunks and 134 queries of `benchmarks/text_retrieval.json`, the exact float32 index answers a query in **0.000080 s** median over five runs (range 0.000079-0.000119 s), against **0.0508 s** of the loop of `cosine_similarity_many` on the same scores. A single run is one point of the range, not the number: the JSON stores the median and the two ends, and the page repeats them.
 
 The top-5 of the exact float32 index is identical to the float64 one on 134 of 134 queries (`float32_top5_identical_to_float64` in the JSON). `max_terms_per_document` drops terms and is an option, not the default: on this corpus 50 terms per document keep the reciprocal rank but change the top-5 of some queries (overlap 0.80 against the exact index, in `pruned_k50_top5_overlap_vs_exact_median`).
 
@@ -155,7 +155,7 @@ The three primitives above are exact (134 of 134 queries give the same top-5 as 
 
 The build is 0.750 s against 0.562 s of the batch library (1.34x on our side slower). The pipeline is 637 us against 4647 us (7.3x on our side faster); the kernel alone is 80 us and the batch library does not expose a kernel-only path in the benchmark, so the honest comparison is the pipeline. 10x on the build would need 0.075 s. The numbers come from `benchmarks/text_retrieval.json`, a fresh run of `benchmarks/text_retrieval.py` on this commit.
 
-The papers that could go further are not in the folder, or are for a different scale. Feature hashing attacks the build, but on 81k terms the collision distortion would buy nothing measurable and the exact top-5 would no longer be guaranteed. Random projection and SVD make the matrix dense, and the sparse product here is 229 us: they pay when the original dimension is in the hundreds of thousands. The batched SpMM of Nagasaka et al. (2019) and the CSR5 of Liu and Vinter (2015) are GPU kernels for SpMV and SpMM; the kernel here is `scipy.sparse` CSR on CPU and sparse by sparse, and the 9.27x and 6.09x of those papers are GPU numbers, not ours.
+The papers that could go further are not in the folder, or are for a different scale. Feature hashing attacks the build, but the exact top-5 would no longer be guaranteed. Random projection and SVD make the matrix dense, and the sparse product here is 80 us (`query_s` in `benchmarks/text_retrieval.json`): they pay when the original dimension is in the hundreds of thousands. The batched SpMM of Nagasaka et al. (2019) and the CSR5 of Liu and Vinter (2015) are GPU kernels for SpMV and SpMM; the kernel here is `scipy.sparse` CSR on CPU and sparse by sparse, and the 9.27x and 6.09x of those papers are GPU numbers, not ours.
 
 ## Details
 
@@ -185,7 +185,7 @@ The papers that could go further are not in the folder, or are for a different s
 
 ### Measured cost
 
-On the 1,549 chunks and 134 queries of `benchmarks/text_retrieval.json`: build 0.772 s, query **0.000081 s** median over five runs (0.000079-0.000083), loop of `cosine_similarity_many` 0.0506 s per query. The `budget_s` of `TextVectorizer` is 1.5 ms, about ten times the p99 of 0.138 ms per document.
+On the 1,549 chunks and 134 queries of `benchmarks/text_retrieval.json`: build 0.750 s, query **0.000080 s** median over five runs (0.000079-0.000119), loop of `cosine_similarity_many` 0.0508 s per query. The `budget_s` of `TextVectorizer` is 1.5 ms, about ten times the p99 of 0.138 ms per document.
 
 ### Development diary
 
