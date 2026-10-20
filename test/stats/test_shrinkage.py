@@ -38,8 +38,8 @@ def test_shrinkage_is_a_convex_combination():
     assert 0.0 <= alpha <= 1.0
     p = 4
     tr_s = float(np.trace(s))
-    assert abs(beta - (1.0 - alpha) * tr_s / p) < 1e-12
-    expected = alpha * s + beta * np.eye(p)
+    assert abs(beta - (1.0 - alpha) * tr_s) < 1e-12
+    expected = alpha * s + (beta / p) * np.eye(p)
     np.testing.assert_allclose(shrunk, expected, atol=1e-12)
 
 
@@ -63,7 +63,7 @@ def test_batch_formula_matches():
     alpha_ref = float(min(max(alpha_ref, 0.0), 1.0))
     _, alpha, beta = o.shrinkage()
     assert abs(alpha - alpha_ref) < 1e-12
-    beta_ref = (1.0 - alpha_ref) * tr_s / p
+    beta_ref = (1.0 - alpha_ref) * tr_s
     assert abs(beta - beta_ref) < 1e-12
 
 

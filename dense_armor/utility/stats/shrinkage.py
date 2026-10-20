@@ -81,12 +81,17 @@ class OnlineShrinkageCovariance:
         12, with ``Sigma_0 = (1/p) I``:
 
             alpha* = 1 - (tr(S)^2 / (n p)) / (tr(S^2) - tr(S)^2 / p)
-            beta*  = (1 - alpha*) * tr(S) / p
+            beta*  = (1 - alpha*) * tr(S)
+
+        with ``Sigma_0 = (1/p) I``, so ``tr(S Sigma_0) = tr(S) / p`` and
+        ``||Sigma_0||_F^2 = 1/p``, and the product ``beta* (1/p) I`` is
+        the target term.
 
         Returns:
             ``(shrunk, alpha, beta)``: the shrunk covariance, the
             intensity ``alpha`` on the sample covariance and the
-            intensity ``beta`` on the target ``(1/p) I``.
+            intensity ``beta`` of equation (4.4), which multiplies the
+            target ``(1/p) I``.
         """
         s = self.sample_covariance()
         n = max(self.n_seen_, 1)
@@ -98,6 +103,6 @@ class OnlineShrinkageCovariance:
             return s.copy(), 1.0, 0.0
         alpha = 1.0 - (tr_s * tr_s / (n * p)) / denom
         alpha = float(min(max(alpha, 0.0), 1.0))
-        beta = (1.0 - alpha) * tr_s / p
-        shrunk = alpha * s + beta * np.eye(p)
+        beta = (1.0 - alpha) * tr_s
+        shrunk = alpha * s + (beta / p) * np.eye(p)
         return shrunk, alpha, beta
