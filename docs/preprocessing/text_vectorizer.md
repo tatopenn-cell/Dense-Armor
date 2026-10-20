@@ -93,11 +93,11 @@ print(round(r["ours_loop"]["query_s"], 4))
 
 ```
 1541 134
-1.0 0.0002
-0.0388
+1.0 0.0001
+0.0395
 ```
 
-The corpus is the 1,541 chunks of the `docs/` pages, and the queries are the first heading and the first sentence of each of the 134 pages. The index answers a query in **0.0003 s** against **0.0538 s** of the loop of `cosine_similarity_many` on the same scores, about 190 times faster, with the same reciprocal rank (median 1.0). The build takes 1.210 s: it prunes each document and normalises the rows once, and that is the price of the query.
+The corpus is the 1,541 chunks of the `docs/` pages, and the queries are the first heading and the first sentence of each of the 134 pages. The index answers a query in **0.0003 s** against **0.0538 s** of the loop of `cosine_similarity_many` on the same scores, about 440 times faster, with the same reciprocal rank (median 1.0). The build takes 1.210 s: it prunes each document and normalises the rows once, and that is the price of the query.
 
 ## Details
 

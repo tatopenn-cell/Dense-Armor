@@ -101,3 +101,34 @@ def test_as_text_other_type():
 def test_max_features_larger_than_vocabulary_keeps_all():
     v = TextVectorizer(max_features=1000).fit(DOCS)
     assert len(v.tfidf_.df_) > 3
+
+def test_fit_twice_resets_state():
+    v = TextVectorizer()
+    v.fit(DOCS)
+    v.fit(DOCS)
+    assert v.tfidf_.n_docs_ == 3
+
+
+def test_none_and_nan_are_missing():
+    v = TextVectorizer()
+    v.learn_one(None)
+    v.learn_one(float("nan"))
+    v.learn_one(5)
+    assert v.n_missing_ == 3
+    assert v.tfidf_.n_docs_ == 0
+
+
+def test_state_dict_keeps_stop_words():
+    import json
+    v = TextVectorizer(stop_words=["the"]).fit(DOCS)
+    s = json.dumps(v.state_dict())
+    w = TextVectorizer().load_state_dict(json.loads(s))
+    assert w.stop_words == ("the",)
+    assert w.transform_one(DOCS[0])["scores"] == v.transform_one(DOCS[0])["scores"]
+
+
+def test_generator_stop_words_not_consumed():
+    v = TextVectorizer(stop_words=(w for w in ["the"]))
+    for d in DOCS:
+        v.learn_one(d)
+    assert "the" not in v.tfidf_.df_

@@ -16,20 +16,31 @@ rule (alphabetical order) is stated in the docstring of :meth:`fit`.
 
 from __future__ import annotations
 
+import math
 from collections.abc import Iterable
 
 from dense_armor.roles import Transformer
 from dense_armor.utility.preprocessing.text import TFIDF, Tokenizer
 
 
-def _as_text(x) -> str:
+def _as_text(x) -> str | None:
+    """The text of one input, or ``None`` when the input is not a string.
+
+    A missing value (``None``), a NaN, a number or any other non-string
+    is not text: the caller counts it in ``n_missing_`` instead of
+    learning a term ``"none"`` or ``"nan"``.
+    """
     if isinstance(x, str):
         return x
     if hasattr(x, "to_dict"):
         x = x.to_dict()
     if isinstance(x, dict):
-        return str(x.get("text", ""))
-    return str(x)
+        x = x.get("text", "")
+    if isinstance(x, float) and math.isnan(x):
+        return None
+    if isinstance(x, str):
+        return x
+    return None
 
 
 class TextVectorizer(Transformer):
@@ -53,7 +64,7 @@ class TextVectorizer(Transformer):
     """
 
     budget_s = 1.5e-3
-    memory_class = "O(vocabulary)"
+    memory_class = "O(window)"
 
     def __init__(
         self,
@@ -73,15 +84,17 @@ class TextVectorizer(Transformer):
                 f"max_features must be >= 1 or None, got {max_features}")
         if norm not in (None, "l2"):
             raise ValueError(f"norm must be None or 'l2', got {norm!r}")
-        self.stop_words = stop_words
+        self.stop_words = (None if stop_words is None
+                           else tuple(stop_words))
         self.ngram_range = ngram_range
         self.max_features = max_features
         self.norm = norm
         self.smooth_idf = smooth_idf
         self.tokenizer_ = Tokenizer(
-            ngrams=ngram_range[1], stop_words=stop_words)
+            ngrams=ngram_range[1], stop_words=self.stop_words)
         self.tfidf_ = TFIDF(smooth_idf=smooth_idf, norm=norm)
         self._fitted = False
+        self.n_missing_: int = 0
 
     def _learn_doc(self, text: str) -> None:
         tokens = self.tokenizer_.transform_one({"text": text})["tokens"]
@@ -99,15 +112,33 @@ class TextVectorizer(Transformer):
         self._time_step(t)
         if not self._fitted:
             self._fitted = True
-        self._learn_doc(_as_text(x))
+        text = _as_text(x)
+        if text is None:
+            self.n_missing_ += 1
+            return self
+        self._learn_doc(text)
         return self
 
     def transform_one(self, x, t: float | None = None) -> dict:
         """Return ``{"scores": {term: score}}`` for one document."""
-        d = x if isinstance(x, dict) else {"text": _as_text(x)}
+        text = _as_text(x)
+        d = x if isinstance(x, dict) else {"text": text if text else ""}
         out = dict(d)
-        out["scores"] = self._scores(_as_text(x))
+        if text is None:
+            self.n_missing_ += 1
+            out["scores"] = {}
+            return out
+        out["scores"] = self._scores(text)
         return out
+
+    def _reset_state(self) -> None:
+        """Empty the vocabulary and the counters, before a new fit."""
+        self.tokenizer_ = Tokenizer(
+            ngrams=self.ngram_range[1], stop_words=self.stop_words)
+        self.tfidf_ = TFIDF(
+            smooth_idf=self.smooth_idf, norm=self.norm)
+        self.n_missing_ = 0
+        self._fitted = False
 
     def _apply_max_features(self) -> None:
         if self.max_features is None:
@@ -135,8 +166,13 @@ class TextVectorizer(Transformer):
         ignored, because the vectorizer is unsupervised and the
         document order does not change the state.
         """
+        self._reset_state()
         for doc in X:
-            self._learn_doc(_as_text(doc))
+            text = _as_text(doc)
+            if text is None:
+                self.n_missing_ += 1
+                continue
+            self._learn_doc(text)
             self._fitted = True
         self._apply_max_features()
         return self
@@ -154,6 +190,8 @@ class TextVectorizer(Transformer):
             "ngram_range": list(self.ngram_range),
             "norm": self.norm,
             "smooth_idf": self.smooth_idf,
+            "stop_words": (None if self.stop_words is None
+                           else list(self.stop_words)),
         }
 
     def load_state_dict(self, state: dict) -> TextVectorizer:
@@ -164,6 +202,8 @@ class TextVectorizer(Transformer):
         self.ngram_range = tuple(state["ngram_range"])
         self.norm = state["norm"]
         self.smooth_idf = state["smooth_idf"]
+        sw = state.get("stop_words")
+        self.stop_words = None if sw is None else tuple(sw)
         self.tokenizer_ = Tokenizer(
             ngrams=self.ngram_range[1], stop_words=self.stop_words)
         self.tfidf_ = TFIDF(

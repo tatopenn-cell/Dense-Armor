@@ -77,10 +77,18 @@ class TestSparseCosineIndex:
         want = cosine_similarity_many(q, docs)
         np.testing.assert_allclose(got, want, atol=1e-12)
 
-    def test_unknown_terms_ignored(self):
+    def test_unknown_terms_count_in_the_norm_not_in_the_product(self):
+        """A term outside the index reduces the score through the norm.
+
+        The query norm is the norm of the whole query, as in
+        ``cosine_similarity``: the term outside the index does not
+        contribute to the product but it is in the denominator.
+        """
         idx = SparseCosineIndex([{"a": 1.0}])
-        got = idx.query({"a": 1.0, "zebra": 100.0})
-        assert got[0] == pytest.approx(1.0)
+        q = {"a": 1.0, "zebra": 100.0}
+        got = idx.query(q)[0]
+        want = cosine_similarity_many(q, [{"a": 1.0}])[0]
+        assert got == pytest.approx(want, abs=1e-12)
 
     def test_empty_query_is_zero(self):
         idx = SparseCosineIndex([{"a": 1.0}])
@@ -140,3 +148,18 @@ class TestSparseCosineIndex:
         idx = SparseCosineIndex(docs, max_terms_per_document=2)
         assert idx.n_documents_ == 2
         assert "c" in idx.vocabulary_
+
+def test_query_many_matches_query():
+    docs = [{"a": 1.0, "b": 2.0}, {"b": 1.0, "c": 3.0}]
+    idx = SparseCosineIndex(docs)
+    qs = [{"a": 1.0, "b": 1.0}, {"c": 2.0}]
+    got = idx.query_many(qs)
+    for j, q in enumerate(qs):
+        np.testing.assert_allclose(got[:, j], idx.query(q), atol=1e-12)
+
+
+def test_query_norm_counts_terms_outside_index():
+    idx = SparseCosineIndex([{"a": 1.0}])
+    got = idx.query({"a": 1.0, "z": 1.0})[0]
+    want = cosine_similarity_many({"a": 1.0, "z": 1.0}, [{"a": 1.0}])[0]
+    assert got == pytest.approx(want, abs=1e-12)

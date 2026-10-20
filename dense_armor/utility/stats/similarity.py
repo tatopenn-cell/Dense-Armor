@@ -69,10 +69,11 @@ class SparseCosineIndex:
     normalises the rows once, so the cosine of a query against every
     document is one sparse product and one division, not a Python loop
     over the documents. On the 1,541 chunks and 134 queries of
-    ``benchmarks/text_retrieval.json`` the batched query takes 0.0002 s
-    per query against 0.0388 s of the loop of
-    :func:`cosine_similarity_many` on the same scores, about 190 times
-    faster, with the same ranking.
+    ``benchmarks/text_retrieval.json`` the batched query takes 0.00009 to 0.00016 s
+    per query, median 0.00015 s over five runs, against 0.0395 s of the
+    loop of :func:`cosine_similarity_many` on the same scores; the
+    ratio is 250 to 440 times depending on the run, and the ranking is
+    the same. A single run is not a number: the range is the number.
 
     ``max_terms_per_document`` is the document-centric static pruning of
     Lassance, Déjean, Lupart and Tonellotto (2023), section 2, page 2:
@@ -112,7 +113,7 @@ class SparseCosineIndex:
     """
 
     budget_s = 2e-3
-    memory_class = "O(nnz)"
+    memory_class = "O(window)"
 
     def __init__(
         self,
@@ -165,17 +166,17 @@ class SparseCosineIndex:
     def query_many(self, queries: list[dict]) -> np.ndarray:
         """Cosine of each query against every indexed document, in one product.
 
-        The queries are stacked into a dense matrix of shape
+        The queries are stacked into a sparse matrix of shape
         ``(n_terms, n_queries)`` and multiplied once by the CSR matrix,
         so the cost is one sparse matrix-matrix product instead of one
-        matrix-vector product per query. This is the batched sparse-dense
-        product of Jang et al. (2019), "Batched Sparse Matrix
-        Multiplication for Accelerating Graph Convolutional Networks",
-        arXiv:1903.11409: several matrix products in a single operation
-        amortise the overhead of the loop (page 2, abstract; the speedups
-        of 9.27x at nB=64 and 6.09x at nB=512 are on page 8, Figure 8).
-        The kernel is the one of ``scipy.sparse``, not a Python loop, and
-        no term is dropped: the matrix is the exact one.
+        matrix-vector product per query. The kernel is the one of
+        ``scipy.sparse`` (CSR, segmented sum); the idea of batching the
+        products into one operation comes from Jang et al. (2019),
+        "Batched Sparse Matrix Multiplication for Accelerating Graph
+        Convolutional Networks", arXiv:1903.11409, page 2 and Figure 8,
+        page 8, whose measurements are on GPU and are cited as the
+        motivation, not as the number obtained here. No term is dropped:
+        the matrix is the exact one.
 
         Args:
             queries: the queries, one ``{term: score}`` dict each.
@@ -188,16 +189,24 @@ class SparseCosineIndex:
         n = len(queries)
         if n == 0:
             return np.zeros((self.n_documents_, 0), dtype=self.dtype_)
-        Q = np.zeros((self.matrix_.shape[1], n), dtype=self.dtype_)
+        rows, cols, vals = [], [], []
+        norms = np.zeros(n, dtype=np.float64)
         for j, q in enumerate(queries):
             for term, v in q.items():
+                norms[j] += float(v) * float(v)
                 i = self.vocabulary_.get(term)
                 if i is not None:
-                    Q[i, j] = float(v)
-        norms = np.sqrt(np.einsum("ij,ij->j", Q, Q))
-        norms = np.where(norms > 0.0, norms, 1.0)
-        out = np.asarray(self.matrix_.dot(Q), dtype=self.dtype_)
-        return out / norms[None, :]
+                    rows.append(i)
+                    cols.append(j)
+                    vals.append(float(v))
+        norm_values: np.ndarray = np.sqrt(norms)
+        norm_values = np.where(norm_values > 0.0, norm_values, 1.0)
+        Q = sparse.csc_matrix(
+            (vals, (rows, cols)), shape=(self.matrix_.shape[1], n),
+            dtype=self.dtype_)
+        product: np.ndarray = np.asarray(
+            self.matrix_.dot(Q).todense(), dtype=self.dtype_)
+        return product / norm_values[None, :]
 
     def query(self, q: dict) -> np.ndarray:
         """Cosine of ``q`` against every indexed document.
@@ -214,7 +223,7 @@ class SparseCosineIndex:
             j = self.vocabulary_.get(term)
             if j is not None:
                 qd[j] = float(v)
-        qn = float(np.sqrt(np.dot(qd, qd)))
+        qn = float(np.sqrt(sum(float(v) * float(v) for v in q.values())))
         if qn == 0.0:
             return np.zeros(self.n_documents_, dtype=self.dtype_)
         return self.matrix_.dot(qd) / qn
