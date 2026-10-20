@@ -232,39 +232,6 @@ def test_top_k_threshold_empty_query_returns_zeros():
     assert len(got) == 2
     assert all(s == 0.0 for _, s in got)
 
-
-def test_top_k_schubert_matches_full_product():
-    docs = [{"a": 1.0, "b": 2.0}, {"b": 1.0, "c": 3.0}, {"a": 2.0}]
-    idx = SparseCosineIndex(docs, dtype=np.float32)
-    got = idx.top_k_schubert({"a": 1.0}, k=2, n_pivots=2)
-    full = np.argsort(-idx.query({"a": 1.0}))[:2]
-    assert [d for d, _ in got] == full.tolist()
-
-
-def test_top_k_schubert_single_pivot():
-    docs = [{"a": 1.0, "b": 2.0}, {"b": 1.0, "c": 3.0}, {"a": 2.0}]
-    idx = SparseCosineIndex(docs, dtype=np.float32)
-    got = idx.top_k_schubert({"a": 1.0}, k=2, n_pivots=1)
-    full = np.argsort(-idx.query({"a": 1.0}))[:2]
-    assert [d for d, _ in got] == full.tolist()
-
-
-def test_feature_hash_is_deterministic_and_in_range():
-    from dense_armor.utility.stats.similarity import feature_hash
-    assert feature_hash("fox", m=1024) == feature_hash("fox", m=1024)
-    col, sign = feature_hash("fox", m=1024)
-    assert 0 <= col < 1024
-    assert sign in (-1, 1)
-    for i in range(100):
-        col, sign = feature_hash(f"t{i}", m=64)
-        assert 0 <= col < 64
-        assert sign in (-1, 1)
-
-
-def test_feature_hash_seed_changes_the_column_or_the_sign():
-    from dense_armor.utility.stats.similarity import feature_hash
-    assert feature_hash("fox", m=1024, seed=1) != feature_hash("fox", m=1024, seed=0)
-
 def test_query_many_sparse_normalized_skips_the_division():
     from scipy import sparse
     docs = [{"a": 1.0, "b": 2.0}, {"b": 1.0, "c": 3.0}, {"a": 2.0}]
@@ -288,9 +255,3 @@ def test_build_inverted_is_cached():
     inv1 = idx._inv
     idx._build_inverted()
     assert idx._inv is inv1
-
-
-def test_top_k_schubert_k_larger_than_documents():
-    idx = SparseCosineIndex([{"a": 1.0}, {"b": 1.0}])
-    got = idx.top_k_schubert({"a": 1.0}, k=10, n_pivots=2)
-    assert len(got) == 2

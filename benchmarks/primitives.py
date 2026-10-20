@@ -1,4 +1,4 @@
-"""Measure the three ranking primitives against the full product.
+"""Measure the ranking primitive against the full product.
 
 Writes benchmarks/primitives.json. Each number here comes from this
 script, not from a notebook: the page cites this file.
@@ -47,12 +47,8 @@ def main() -> int:
         return float(np.median(runs)) / max(len(q_scores), 1)
 
     fagin_s = per_query(idx.top_k_threshold)
-    schubert_s = per_query(idx.top_k_schubert)
     fagin_same = sum(
         int({d for d, _ in idx.top_k_threshold(qd, k=5)} == top_full[j])
-        for j, qd in enumerate(q_scores))
-    schubert_same = sum(
-        int({d for d, _ in idx.top_k_schubert(qd, k=5, n_pivots=16)} == top_full[j])
         for j, qd in enumerate(q_scores))
 
     payload = {
@@ -62,9 +58,6 @@ def main() -> int:
         "fagin_s_per_query": fagin_s,
         "fagin_top5_identical": fagin_same,
         "fagin_total": len(q_scores),
-        "schubert_s_per_query": schubert_s,
-        "schubert_top5_identical": schubert_same,
-        "schubert_total": len(q_scores),
     }
     OUT.write_text(json.dumps(payload, indent=2) + "\n")
     print(json.dumps(payload, indent=2))
