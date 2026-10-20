@@ -175,6 +175,12 @@ class TFIDF(Transformer):
         counts_key: optional dict key holding a precomputed count
             dict; when present it is used instead of recounting.
         scores_key: dict key written with ``{term: score}``.
+        norm: ``None`` (default) leaves the scores as they are;
+            ``"l2"`` divides the scores of a document by the square
+            root of the sum of their squares, so a non-zero document
+            has L2 norm 1 (Rennie et al. 2003, the length-normalisation
+            transform, pages 6-7). An all-zero document stays all-zero.
+            Any other value raises a ``ValueError``.
 
     Examples:
         >>> from dense_armor.utility.preprocessing.text import TFIDF
@@ -201,11 +207,16 @@ class TFIDF(Transformer):
         tokens_key: str = "tokens",
         counts_key: str = "counts",
         scores_key: str = "scores",
+        norm: str | None = None,
     ) -> None:
+        if norm not in (None, "l2"):
+            raise ValueError(
+                f"norm must be None or 'l2', got {norm!r}")
         self.smooth_idf = smooth_idf
         self.tokens_key = tokens_key
         self.counts_key = counts_key
         self.scores_key = scores_key
+        self.norm = norm
         self.n_docs_: int = 0
         self.df_: dict[str, int] = {}
 
@@ -242,6 +253,10 @@ class TFIDF(Transformer):
             else:
                 idf = math.log(n / df)
             scores[term] = float(tf) * idf
+        if self.norm == "l2":
+            sq = math.sqrt(sum(v * v for v in scores.values()))
+            if sq > 0.0:
+                scores = {k: v / sq for k, v in scores.items()}
         out = dict(d)
         out[self.scores_key] = scores
         return out

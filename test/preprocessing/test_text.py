@@ -112,3 +112,34 @@ def test_tokenizer_stop_words_case_insensitive():
     out = tk.transform_one({"text": "The cat and a dog"})
     assert "the" not in out["tokens"]
     assert "a" not in out["tokens"]
+
+
+def test_tfidf_norm_l2_unit_norm():
+    tf = TFIDF(norm="l2")
+    tf.learn_one({"tokens": ["a", "b", "c"]})
+    tf.learn_one({"tokens": ["a", "b"]})
+    tf.learn_one({"tokens": ["a"]})
+    out = tf.transform_one({"tokens": ["a", "b", "c"]})
+    sq = math.sqrt(sum(v * v for v in out["scores"].values()))
+    assert sq == pytest.approx(1.0, abs=1e-12)
+
+
+def test_tfidf_norm_l2_zero_document_stays_zero():
+    tf = TFIDF(norm="l2")
+    tf.learn_one({"tokens": ["a"]})
+    out = tf.transform_one({"tokens": []})
+    assert out["scores"] == {}
+
+
+def test_tfidf_norm_invalid_raises():
+    with pytest.raises(ValueError, match="norm must be None or 'l2'"):
+        TFIDF(norm="l1")
+
+
+def test_tfidf_default_norm_unchanged():
+    tf = TFIDF()
+    tf.learn_one({"tokens": ["a", "b"]})
+    tf.learn_one({"tokens": ["a"]})
+    out = tf.transform_one({"tokens": ["a", "b"]})
+    sq = math.sqrt(sum(v * v for v in out["scores"].values()))
+    assert sq != pytest.approx(1.0, abs=1e-6)
