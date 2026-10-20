@@ -309,7 +309,9 @@ class SparseCosineIndex:
 
         Fagin, R., Lotem, A., Naor, M. (2001). Optimal Aggregation
         Algorithms for Middleware. PODS 2001; JCSS 67(4), 2003. The
-        Threshold Algorithm, section 3.
+        Threshold Algorithm, section 3. The paper is not on arXiv and
+        it is not in the folder: the section number is the one the
+        citation reports, not verified against the PDF.
 
         The posting lists are sorted by weight descending, so the first
         not-yet-consumed weight of each list bounds every further
