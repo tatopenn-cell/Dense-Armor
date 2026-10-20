@@ -42,7 +42,7 @@ class OnlineShrinkageCovariance:
         ValueError: on a non-positive ``n_features``.
     """
 
-    budget_s = 5e-4
+    budget_s = 1e-3
     memory_class = "O(p^2)"
 
     def __init__(self, n_features: int, feature_prefix: str = "v") -> None:

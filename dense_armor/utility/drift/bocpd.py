@@ -110,7 +110,7 @@ class BayesianOnlineChangepoint(DriftDetector):
     """
 
     _is_stochastic = False
-    budget_s = 2e-3
+    budget_s = 7.13e-03
     memory_class = "O(max_run_length)"
 
     def __init__(

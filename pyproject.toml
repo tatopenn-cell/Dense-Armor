@@ -54,5 +54,5 @@ dense-armor-mcp = "dense_armor.mcp_server.server:main"
 include = ["dense_armor*", "pipelines*"]
 
 [[tool.mypy.overrides]]
-module = ["pyulog", "pyulog.*", "pymavlink", "pymavlink.*", "paho.*", "yaml", "psutil", "scipy", "scipy.*"]
+module = ["pyulog", "pyulog.*", "pymavlink", "pymavlink.*", "paho.*", "yaml", "psutil", "scipy", "scipy.*", "zmq", "confluent_kafka"]
 ignore_missing_imports = true

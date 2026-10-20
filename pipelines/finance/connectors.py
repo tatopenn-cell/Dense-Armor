@@ -93,8 +93,8 @@ class BrokerAdapter:
     """Base for the broker adapters, with a lazy import of the client.
 
     Args:
-        client: a client object with a ``publish(topic, payload)``
-            method, or ``None`` to import the real one.
+        client: an object with a ``publish(topic, payload)`` method, or
+            ``None`` to build the real one on first use.
         topic: the topic to publish on.
         extra: the name of the optional extra, used in the ImportError.
         package: the module to import when ``client`` is None.
@@ -108,9 +108,7 @@ class BrokerAdapter:
         self._extra = extra
         self._package = package
 
-    def _resolve_client(self):
-        if self._client is not None:
-            return self._client
+    def _import(self):
         try:
             module = __import__(self._package, fromlist=["_"])
         except ImportError as exc:
@@ -119,22 +117,78 @@ class BrokerAdapter:
                 f"[{self._extra}] extra") from exc
         return module
 
+    def _resolve_client(self):
+        if self._client is not None:
+            return self._client
+        self._client = self._build_client()
+        return self._client
+
+    def _build_client(self):
+        raise NotImplementedError
+
     def publish(self, payload) -> None:
         client = self._resolve_client()
         client.publish(self.topic, payload)
 
 
-class ZmqSubscriber(BrokerAdapter):
-    """A ZeroMQ publisher, written and not run against a broker."""
+class _ZmqClient:
+    """A ZeroMQ PUB socket behind the ``publish(topic, payload)`` method."""
 
-    def __init__(self, client=None, topic: str = "ticks") -> None:
+    def __init__(self, zmq_module, address: str = "tcp://127.0.0.1:5555") -> None:
+        self._ctx = zmq_module.Context()
+        self._sock = self._ctx.socket(zmq_module.PUB)
+        self._sock.connect(address)
+
+    def publish(self, topic, payload) -> None:
+        self._sock.send_multipart([topic.encode(), repr(payload).encode()])
+
+    def close(self) -> None:
+        self._sock.close()
+        self._ctx.term()
+
+
+class _KafkaClient:
+    """A confluent-kafka Producer behind the same method."""
+
+    def __init__(self, kafka_module, servers: str = "127.0.0.1:9092") -> None:
+        self._producer = kafka_module.Producer({"bootstrap.servers": servers})
+
+    def publish(self, topic, payload) -> None:
+        self._producer.produce(topic, repr(payload).encode())
+        self._producer.poll(0)
+
+    def flush(self) -> None:
+        self._producer.flush()
+
+
+class ZmqSubscriber(BrokerAdapter):
+    """A ZeroMQ publisher, written and not run against a broker.
+
+    Args:
+        client: an object with ``publish(topic, payload)``, or ``None``
+            to build a ``_ZmqClient`` on first use.
+        topic: the topic.
+        address: the ZeroMQ address for the real client.
+    """
+
+    def __init__(self, client=None, topic: str = "ticks",
+                 address: str = "tcp://127.0.0.1:5555") -> None:
         super().__init__(client=client, topic=topic,
                          extra="finance-stream", package="zmq")
+        self.address = address
+
+    def _build_client(self):
+        return _ZmqClient(self._import(), self.address)
 
 
 class KafkaConsumer(BrokerAdapter):
     """A Kafka producer, written and not run against a broker."""
 
-    def __init__(self, client=None, topic: str = "ticks") -> None:
+    def __init__(self, client=None, topic: str = "ticks",
+                 servers: str = "127.0.0.1:9092") -> None:
         super().__init__(client=client, topic=topic,
                          extra="finance-stream", package="confluent_kafka")
+        self.servers = servers
+
+    def _build_client(self):
+        return _KafkaClient(self._import(), self.servers)

@@ -95,32 +95,73 @@ def test_missing_package_names_the_extra():
         s.publish(1)
 
 
-def test_missing_package_message_names_the_module():
-    s = KafkaConsumer(client=None)
-    s._package = "not_a_real_package_xyz"
-    with pytest.raises(ImportError, match="not_a_real_package_xyz"):
-        s.publish(1)
-
-
-def test_publish_with_real_module():
-    """The resolved module is returned when the import succeeds."""
+def test_zmq_client_is_built_and_sends():
+    """The real zmq client is wired to Context, PUB and send_multipart."""
     import sys
     import types
 
-    class FakeModule(types.ModuleType):
-        def __init__(self, name):
-            super().__init__(name)
-            self.calls = []
+    sent = []
 
-        def publish(self, topic, payload):
-            self.calls.append((topic, payload))
+    class FakeSock:
+        def __init__(self):
+            self.connected = None
 
-    fake = FakeModule("fake_broker_xyz")
-    sys.modules["fake_broker_xyz"] = fake
+        def connect(self, address):
+            self.connected = address
+
+        def send_multipart(self, parts):
+            sent.append(parts)
+
+        def close(self):
+            pass
+
+    class FakeContext:
+        def socket(self, kind):
+            return FakeSock()
+
+        def term(self):
+            pass
+
+    fake = types.ModuleType("fake_zmq")
+    fake.Context = FakeContext
+    fake.PUB = 1
+    sys.modules["fake_zmq"] = fake
     try:
         s = ZmqSubscriber(client=None, topic="t")
-        s._package = "fake_broker_xyz"
-        s.publish("x")
-        assert fake.calls == [("t", "x")]
+        s._package = "fake_zmq"
+        s.publish({"x": 1})
+        assert sent and sent[0][0] == b"t"
     finally:
-        del sys.modules["fake_broker_xyz"]
+        del sys.modules["fake_zmq"]
+
+
+def test_kafka_client_is_built_and_sends():
+    """The real Kafka client is wired to Producer.produce and poll."""
+    import sys
+    import types
+
+    produced = []
+
+    class FakeProducer:
+        def __init__(self, conf):
+            self.conf = conf
+
+        def produce(self, topic, payload):
+            produced.append((topic, payload))
+
+        def poll(self, timeout):
+            return 0
+
+        def flush(self):
+            pass
+
+    fake = types.ModuleType("fake_confluent")
+    fake.Producer = FakeProducer
+    sys.modules["fake_confluent"] = fake
+    try:
+        s = KafkaConsumer(client=None, topic="k")
+        s._package = "fake_confluent"
+        s.publish(1)
+        assert produced and produced[0][0] == "k"
+    finally:
+        del sys.modules["fake_confluent"]

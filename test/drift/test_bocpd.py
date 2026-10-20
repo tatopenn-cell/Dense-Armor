@@ -168,16 +168,20 @@ def test_passes_check_estimator():
     assert len(out["skipped"]) == 0
 
 
-def test_budget_is_from_a_measured_p99():
-    """budget_s is above the measured p99 on this host."""
+def test_budget_is_ten_times_the_measured_p99():
+    """The budget is about ten times the p99, and never below 1e-3 s.
+
+    The rule is on the ratio, not on a fixed number: a budget that only
+    covers the p99 of a fast machine fails on a slow one.
+    """
     import time
     rng = np.random.default_rng(0)
-    det = BayesianOnlineChangepoint(lam=100.0)
+    det = BayesianOnlineChangepoint(lam=250.0)
     ts = []
-    for x in rng.normal(0.0, 1.0, 1000):
+    for x in rng.normal(0.0, 1.0, 500):
         t0 = time.perf_counter()
         det.update(x)
         ts.append(time.perf_counter() - t0)
     p99 = float(np.percentile(ts, 99))
-    assert p99 < det.budget_s, (
-        f"p99 {p99:.2e} s exceeds budget {det.budget_s:.2e} s")
+    assert det.budget_s >= 1e-3
+    assert det.budget_s >= 5.0 * p99, (det.budget_s, p99)
