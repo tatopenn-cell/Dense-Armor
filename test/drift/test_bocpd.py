@@ -154,6 +154,10 @@ def test_bad_arguments():
         BayesianOnlineChangepoint(max_run_length=0)
     with pytest.raises(ValueError):
         BayesianOnlineChangepoint(mass_window=0)
+    with pytest.raises(ValueError, match="mass_threshold"):
+        BayesianOnlineChangepoint(mass_threshold=1.0)
+    with pytest.raises(ValueError, match="mass_threshold"):
+        BayesianOnlineChangepoint(mass_threshold=-0.1)
     with pytest.raises(ValueError):
         BayesianOnlineChangepoint(detection_threshold=0.0)
     with pytest.raises(ValueError):

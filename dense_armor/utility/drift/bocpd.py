@@ -114,7 +114,7 @@ class BayesianOnlineChangepoint(DriftDetector):
             ``detection_threshold`` outside ``(0, 1)``.
     """
 
-    budget_s = 7.13e-03
+    budget_s = 1.49e-02
     memory_class = "O(max_run_length)"
 
     def __init__(

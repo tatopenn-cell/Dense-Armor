@@ -16,10 +16,10 @@ print(r.n_returns, r.n_alarms, round(r.alarm_rate_per_year, 2))
 ```
 
 ```
-1253 6 0.81
+1253 5 0.81
 ```
 
-The file is the S&P 500 daily close of the fixtures, 1,253 log returns. The detector raises 6 alarms in 2.48 years of calm data, 0.81 alarms per year. `alarm_rate_per_year` counts the alarms before the first half of the series, so a real series and a synthetic one are compared on the same footing.
+The file is the S&P 500 daily close of the fixtures, 1,253 log returns. The detector raises 5 alarms in 2.48 years of calm data, 0.81 alarms per year. `alarm_rate_per_year` counts the alarms before the first half of the series, so a real series and a synthetic one are compared on the same footing.
 
 ## 2. A planted change, and the delay in samples
 
@@ -79,7 +79,7 @@ where `pi_t(r)` is the predictive probability of the new sample given the data s
 
 ### Measured cost
 
-`RegimePipeline.run` on the 1,253 returns of `GSPC.csv` takes 4.1 ms per sample median on this host, and the detector p99 is 1.3 ms per sample. The budget of `BayesianOnlineChangepoint` is set to 2 ms, measured on this host.
+`RegimePipeline.run` on the 1,253 returns of `GSPC.csv` takes 0.46 ms per sample median on this host, and the detector p99 is 1.94 ms per sample. The budget of `BayesianOnlineChangepoint` is set to 2 ms, measured on this host.
 
 ### Development diary
 
