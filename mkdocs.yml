@@ -205,8 +205,18 @@ nav:
           - Streaming quantiles: stats/streaming.md
           - Dependence: stats/dependence.md
           - Sketches: stats/sketches.md
-      - Preprocessing: preprocessing/index.md
-      - Metrics and evaluation: metrics/index.md
+      - Preprocessing:
+          - preprocessing/index.md
+          - Scaling features and joints: preprocessing/scaling.md
+          - Speed, acceleration, jerk and power: preprocessing/signals.md
+          - Text: preprocessing/text.md
+          - Features and rare events: preprocessing/features.md
+      - Metrics and evaluation:
+          - metrics/index.md
+          - Pairs, classification, probabilities: metrics/basics.md
+          - Regression and uncertainty: metrics/regression.md
+          - On a stream: metrics/stream.md
+          - Events: metrics/events.md
   - Vision:
       - vision/index.md
       - Frames: vision/frames.md
