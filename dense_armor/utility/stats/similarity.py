@@ -180,7 +180,22 @@ class SparseCosineIndex:
 
     @classmethod
     def from_csr(cls, M, vocabulary: dict):
-        """Build the index from a CSR matrix already normalised by row."""
+        """Build the index from a CSR matrix already normalised by row.
+
+        Args:
+            M: the documents, shape (n_documents, n_terms), rows with
+                unit L2 norm.
+            vocabulary: term to column, each column in [0, M.shape[1]).
+
+        Raises:
+            ValueError: on a column outside [0, M.shape[1]), so the index
+                does not fail later with an IndexError on a query.
+        """
+        n_terms = M.shape[1]
+        for term, col in vocabulary.items():
+            if not 0 <= col < n_terms:
+                raise ValueError(
+                    f"column of {term!r} is {col}, outside [0, {n_terms})")
         obj = cls.__new__(cls)
         obj.n_documents_ = M.shape[0]
         obj.max_terms_per_document_ = None

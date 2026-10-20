@@ -169,3 +169,124 @@ def test_query_many_empty():
     idx = SparseCosineIndex([{"a": 1.0}, {"b": 1.0}])
     S = idx.query_many([])
     assert S.shape == (2, 0)
+
+def test_from_csr_gives_the_same_index():
+    docs = [{"a": 1.0, "b": 2.0}, {"b": 1.0, "c": 3.0}, {"a": 2.0}]
+    idx = SparseCosineIndex(docs, dtype=np.float32)
+    idx2 = SparseCosineIndex.from_csr(idx.matrix_, dict(idx.vocabulary_))
+    assert idx2.n_documents_ == 3
+    np.testing.assert_allclose(idx2.query({"a": 1.0}), idx.query({"a": 1.0}),
+                               atol=1e-6)
+
+
+def test_from_csr_bad_column_raises():
+    docs = [{"a": 1.0}]
+    idx = SparseCosineIndex(docs)
+    bad = {k: v + 100 for k, v in idx.vocabulary_.items()}
+    with pytest.raises(ValueError, match="outside"):
+        SparseCosineIndex.from_csr(idx.matrix_, bad)
+
+
+def test_query_many_sparse_matches_query_many():
+    from scipy import sparse
+    docs = [{"a": 1.0, "b": 2.0}, {"b": 1.0, "c": 3.0}, {"a": 2.0}]
+    idx = SparseCosineIndex(docs, dtype=np.float32)
+    qs = [{"a": 1.0}, {"b": 1.0}]
+    rows, cols, vals = [], [], []
+    for j, q in enumerate(qs):
+        for term, v in q.items():
+            i = idx.vocabulary_.get(term)
+            if i is not None:
+                rows.append(i); cols.append(j); vals.append(v)
+    Q = sparse.csc_matrix((vals, (rows, cols)),
+                          shape=(idx.matrix_.shape[1], 2), dtype=np.float32)
+    got = idx.query_many_sparse(Q)
+    want = idx.query_many(qs)
+    np.testing.assert_allclose(got, want, atol=1e-6)
+
+
+def test_query_many_sparse_empty_returns_empty_columns():
+    from scipy import sparse
+    idx = SparseCosineIndex([{"a": 1.0}, {"b": 1.0}])
+    Q = sparse.csc_matrix((idx.matrix_.shape[1], 0), dtype=np.float32)
+    assert idx.query_many_sparse(Q).shape == (2, 0)
+
+
+def test_top_k_threshold_matches_full_product():
+    docs = [{"a": 1.0, "b": 2.0}, {"b": 1.0, "c": 3.0}, {"a": 2.0}]
+    idx = SparseCosineIndex(docs, dtype=np.float32)
+    got = idx.top_k_threshold({"a": 1.0}, k=2)
+    full = np.argsort(-idx.query({"a": 1.0}))[:2]
+    assert [d for d, _ in got] == full.tolist()
+
+
+def test_top_k_threshold_k_larger_than_documents():
+    idx = SparseCosineIndex([{"a": 1.0}, {"b": 1.0}])
+    got = idx.top_k_threshold({"a": 1.0}, k=10)
+    assert len(got) == 2
+
+
+def test_top_k_threshold_empty_query_returns_zeros():
+    idx = SparseCosineIndex([{"a": 1.0}, {"b": 1.0}])
+    got = idx.top_k_threshold({}, k=2)
+    assert len(got) == 2
+    assert all(s == 0.0 for _, s in got)
+
+
+def test_top_k_schubert_matches_full_product():
+    docs = [{"a": 1.0, "b": 2.0}, {"b": 1.0, "c": 3.0}, {"a": 2.0}]
+    idx = SparseCosineIndex(docs, dtype=np.float32)
+    got = idx.top_k_schubert({"a": 1.0}, k=2, n_pivots=2)
+    full = np.argsort(-idx.query({"a": 1.0}))[:2]
+    assert [d for d, _ in got] == full.tolist()
+
+
+def test_top_k_schubert_single_pivot():
+    docs = [{"a": 1.0, "b": 2.0}, {"b": 1.0, "c": 3.0}, {"a": 2.0}]
+    idx = SparseCosineIndex(docs, dtype=np.float32)
+    got = idx.top_k_schubert({"a": 1.0}, k=2, n_pivots=1)
+    full = np.argsort(-idx.query({"a": 1.0}))[:2]
+    assert [d for d, _ in got] == full.tolist()
+
+
+def test_feature_hash_is_deterministic_and_in_range():
+    from dense_armor.utility.stats.similarity import feature_hash
+    assert feature_hash("fox", m=1024) == feature_hash("fox", m=1024)
+    assert 0 <= feature_hash("fox", m=1024) < 1024
+    for i in range(100):
+        assert 0 <= feature_hash(f"t{i}", m=64) < 64
+
+
+def test_feature_hash_seed_changes_the_column():
+    from dense_armor.utility.stats.similarity import feature_hash
+    assert feature_hash("fox", m=1024, seed=1) != feature_hash("fox", m=1024, seed=0)
+
+def test_query_many_sparse_normalized_skips_the_division():
+    from scipy import sparse
+    docs = [{"a": 1.0, "b": 2.0}, {"b": 1.0, "c": 3.0}, {"a": 2.0}]
+    idx = SparseCosineIndex(docs, dtype=np.float32)
+    rows, cols, vals = [], [], []
+    for j, q in enumerate([{"a": 1.0}, {"b": 1.0}]):
+        for term, v in q.items():
+            i = idx.vocabulary_.get(term)
+            if i is not None:
+                rows.append(i); cols.append(j); vals.append(v)
+    Q = sparse.csc_matrix((vals, (rows, cols)),
+                          shape=(idx.matrix_.shape[1], 2), dtype=np.float32)
+    got = idx.query_many_sparse(Q, normalized=True)
+    np.testing.assert_allclose(got, idx.query_many([{"a": 1.0}, {"b": 1.0}]),
+                               atol=1e-6)
+
+
+def test_build_inverted_is_cached():
+    idx = SparseCosineIndex([{"a": 1.0}, {"b": 1.0}])
+    idx._build_inverted()
+    inv1 = idx._inv
+    idx._build_inverted()
+    assert idx._inv is inv1
+
+
+def test_top_k_schubert_k_larger_than_documents():
+    idx = SparseCosineIndex([{"a": 1.0}, {"b": 1.0}])
+    got = idx.top_k_schubert({"a": 1.0}, k=10, n_pivots=2)
+    assert len(got) == 2
