@@ -39,10 +39,20 @@ import jax
 
 jax.config.update("jax_enable_x64", True)
 
-from mcp.server import MCPServer
+from mcp.server import MCPServer  # noqa: E402
 
 mcp = MCPServer("dense_armor_mcp")
 
+from .tools import (  # noqa: E402, F401
+    dense_armor_clean_signal,
+    dense_armor_detect_anomalies,
+    dense_armor_heal_series,
+    dense_armor_health,
+    dense_armor_robust_filter,
+    dense_armor_stream_end,
+    dense_armor_stream_start,
+    dense_armor_stream_update,
+)
 
 
 def main():
