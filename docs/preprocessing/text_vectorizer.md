@@ -100,6 +100,62 @@ On the 1,542 chunks and 134 queries of `benchmarks/text_retrieval.json`, the exa
 
 The top-5 of the exact float32 index is identical to the float64 one on 134 of 134 queries (`float32_top5_identical_to_float64` in the JSON). `max_terms_per_document` drops terms and is an option, not the default: on this corpus 50 terms per document keep the reciprocal rank but change the top-5 of some queries (overlap 0.80 against the exact index, in `pruned_k50_top5_overlap_vs_exact_median`).
 
+## 6. Three ranking primitives from the papers, each for its own case
+
+The full product is not the only way to rank. The library has three more primitives, each from a paper, each exact, each for a case where the full product is the wrong tool. On this corpus they are slower than the full product, and the numbers say so.
+
+**The Threshold Algorithm of Fagin, Lotem and Naor (2001).** The cosine is a sum of per-term contributions; with the posting lists sorted by weight descending, the next weight of each list bounds every further contribution, and when that bound is below the fifth score the scan stops. The scores of the touched documents are then recomputed exactly, because a touched document can still grow. It is exact, and it is the primitive for a corpus where the full product is prohibitive.
+
+```python
+import numpy as np
+from dense_armor.utility.stats.similarity import SparseCosineIndex
+
+docs = [{"a": 1.0, "b": 2.0}, {"b": 1.0, "c": 3.0}, {"a": 2.0}]
+idx = SparseCosineIndex(docs, dtype=np.float32)
+print([(d, round(s, 3)) for d, s in idx.top_k_threshold({"a": 1.0}, k=2)])
+```
+
+```
+[(2, 1.0), (0, 0.447)]
+```
+
+**The triangle inequality for cosine of Schubert (2021).** For any pivot `z`, `sim(x, y) <= sim(x, z)*sim(z, y) + sqrt((1-sim(x, z)^2)(1-sim(z, y)^2))` (Eq. 13, page 6). With a pivot in the index and the query as `x`, the bound says whether a document can still enter the top-k without computing its product. Exact, and it pays with a metric index (VP-tree, M-tree) on a large corpus.
+
+```python
+import numpy as np
+from dense_armor.utility.stats.similarity import SparseCosineIndex
+
+docs = [{"a": 1.0, "b": 2.0}, {"b": 1.0, "c": 3.0}, {"a": 2.0}]
+idx = SparseCosineIndex(docs, dtype=np.float32)
+print([(d, round(s, 3)) for d, s in idx.top_k_schubert({"a": 1.0}, k=2, n_pivots=2)])
+```
+
+```
+[(2, 1.0), (0, 0.447)]
+```
+
+**The hashing trick of Weinberger et al. (2009).** A token goes to one of `m` columns by a deterministic hash, no vocabulary in memory; the collision error on the inner product is `O(1/sqrt(m))` (page 2). It is the primitive for a vocabulary too large to keep, and the exact top-5 is no longer guaranteed.
+
+```python
+from dense_armor.utility.stats.similarity import feature_hash
+
+print(0 <= feature_hash("fox", m=1024) < 1024)
+print(feature_hash("fox", m=1024) == feature_hash("fox", m=1024))
+```
+
+```
+True
+True
+```
+
+## 7. What does not work, with the numbers
+
+The three primitives above are exact (134 of 134 queries give the same top-5 as the full product), and on this corpus they are slower than the full product: Fagin 13,269 us per query, Schubert 120,049 us, against 42 us of the full product. The bound is correct; the random access on the candidates, and the Python per row, cost more than the C product on 1,542 documents. They are the right tool on millions of documents, not here.
+
+The batch is at parity, not 10x faster. On the same 1,542 chunks and 134 queries, with the same settings on both sides, the build is 0.658 s against 0.673 s of the batch library (0.98x), and the query with the query matrix ready is 0.037 ms against 0.053 ms (1.4x on our side). 10x would be 0.067 s, and the numpy and scipy floor alone is about 0.1 s. The build is about 70% Python (tokenizer, document frequencies, token to column, `np.unique` per document), and even with numba on the two loops the estimate is 3.5x to 4x, not 10x. A full numba rewrite including the tokenizer is a project of its own, and it is not done here.
+
+The papers that could go further are not in the folder, or are for a different scale. Feature hashing attacks the build, but on 81k terms the collision distortion would buy nothing measurable and the exact top-5 would no longer be guaranteed. Random projection and SVD make the matrix dense, and the sparse product here is 42 us: they pay when the original dimension is in the hundreds of thousands. The batched SpMM of Nagasaka et al. (2019) and the CSR5 of Liu and Vinter (2015) are GPU kernels for SpMV and SpMM; the kernel here is `scipy.sparse` CSR on CPU and sparse by sparse, and the 9.27x and 6.09x of those papers are GPU numbers, not ours.
+
 ## Details
 
 ### References
@@ -110,6 +166,10 @@ The top-5 of the exact float32 index is identical to the float64 one on 134 of 1
 - Lassance, C., Déjean, H., Lupart, S., Tonellotto, N. (2023). *A Static Pruning Study on Sparse Neural Retrievers.* SIGIR '23, arXiv:2304.12702. Section 2, page 2: the document-centric pruning, an option of the class.
 - Nagasaka, Y., Nukada, A., Kojima, R. (2019). *Batched Sparse Matrix Multiplication for Accelerating Graph Convolutional Networks.* arXiv:1903.11409. Page 2 and Figure 8 page 8: batching several products into one, 9.27x at nB = 64 and 6.09x at nB = 512, cited as the motivation; the measurements there are on GPU and are not claimed here.
 - Liu, W., Vinter, B. (2015). *CSR5: An Efficient Storage Format for Cross-Platform Sparse Matrix-Vector Multiplication.* arXiv:1503.05032. Algorithm 3, page 3: the segmented sum of a CSR product, cited as the description, not as the kernel this class runs.
+- Fagin, R., Lotem, A., Naor, M. (2001). *Optimal Aggregation Algorithms for Middleware.* PODS 2001; JCSS 67(4), 2003. The Threshold Algorithm, section 3: `top_k_threshold`, exact, for a corpus where the full product is prohibitive.
+- Schubert, E. (2021). *A Triangle Inequality for Cosine Similarity.* SISDA 2021, arXiv:2107.04071. Eq. 13, page 6: `top_k_schubert`, exact, for a metric index on a large corpus.
+- Uhlmann, J. K. (1991). *Satisfying general proximity/similarity queries with metric trees.* Information Processing Letters 40(4), 175-179. The VP-tree, the index the Schubert bound pays with; not in the folder.
+- Weinberger, K., Dasgupta, A., Langford, J., Smola, A., Attenberg, J. (2009). *Feature Hashing for Large Scale Multitask Learning.* ICML 2009, arXiv:0902.2206. Section 2 page 1 and the `O(1/sqrt(m))` bound page 2: `feature_hash`, for a vocabulary too large to keep.
 
 ### Choices stated explicitly
 
@@ -120,6 +180,7 @@ The top-5 of the exact float32 index is identical to the float64 one on 134 of 1
 - `memory_class` is `O(vocabulary)` in `TextVectorizer` and `SparseCosineIndex`: the vocabulary grows with the distinct terms unless `max_features` or `max_terms_per_document` caps it. The two classes are not bounded without those caps, and the docstring says so.
 - The kernel is `scipy.sparse` CSR. Liu and Vinter, and Nagasaka, Nukada and Kojima, are cited as the description of a segmented-sum product and of batching, not as the implementation.
 - `query_many` builds a sparse query matrix, not a dense `n_terms` by `n_queries` one.
+- `top_k_threshold`, `top_k_schubert` and `feature_hash` are exact (the first two) and optional: they do not replace the full product as the default, and their docstrings say when they are the right tool with the measured numbers.
 
 ### Measured cost
 
