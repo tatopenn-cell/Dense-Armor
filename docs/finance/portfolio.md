@@ -20,10 +20,10 @@ print(round(alpha, 3), round(beta, 3))
 ```
 
 ```
-0.732 0.268
+0.0 4.0
 ```
 
-The sample covariance is updated one row at a time, and `shrinkage()` evaluates the two intensities of equations (4.3) and (4.4), page 12 of the paper: `alpha` on the sample covariance, `beta` on the target `(1/p) I`. On this stream, independent Gaussian columns with 500 rows and four variables, `alpha` is 0.732: the sample covariance of independent columns has a small denominator in equation (4.3), and the shrunk matrix keeps a visible part of the target.
+The sample covariance is updated one row at a time, and `shrinkage()` evaluates the two intensities of equations (4.3) and (4.4), page 12 of the paper: `alpha` on the sample covariance, `beta` on the target `(1/p) I`. On this stream, independent Gaussian columns with 500 rows and four variables, `alpha` is 0 and `beta` is 4: the sample covariance of independent columns is close to isotropic, the denominator of equation (4.3) is small, and the formula puts the whole weight on the target. The shrunk matrix is `(tr(S)/p) I`, which on this stream is close to the identity. The hand case in the tests, where the covariance is not isotropic, gives `alpha = 0.489891`, so the formula is not degenerate on every input.
 
 ## 2. The minimum-variance weights
 
@@ -57,9 +57,9 @@ print(round(payload["realised_vol_min_var"], 5),
 ```
 
 ```
-[-0.084, 1.282, -0.087, -0.111]
-[0.243, 0.401, 0.242, 0.114]
-0.00986 0.01402 0.01697
+[-0.077, 1.267, -0.08, -0.11]
+[0.243, 0.4, 0.243, 0.114]
+0.00986 0.01403 0.01697
 ```
 
 The panel is the four fixtures `AAPL`, `GSPC`, `MSFT`, `TSLA`, aligned to their common length of 1,253 daily log returns. The minimum-variance weights have two negative entries: the weights solve the problem without a long-only constraint, and a negative weight is a short position. The page states it and does not hide it. The realised volatility of the minimum-variance portfolio on the sample is 0.986% per day, the inverse-volatility one is 1.402%, the equal-weight one is 1.697%.
