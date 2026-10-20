@@ -22,6 +22,10 @@ from dense_armor.utility.stats.robust import (
     RollingMedianVector,
     RollingQuantile,
 )
+from dense_armor.utility.stats.similarity import (
+    cosine_similarity,
+    cosine_similarity_many,
+)
 from dense_armor.utility.stats.sketches import (
     BloomFilter,
     CountMinSketch,
@@ -49,4 +53,6 @@ __all__ = [
     "RunningMomentsVector",
     "SpaceSaving",
     "TDigest",
+    "cosine_similarity",
+    "cosine_similarity_many",
 ]

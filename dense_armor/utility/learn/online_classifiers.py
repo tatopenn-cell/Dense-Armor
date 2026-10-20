@@ -104,7 +104,7 @@ class OnlineGaussianNB(Classifier):
         return float(-0.5 * np.sum(np.log(2.0 * np.pi * var)
                                     + (z - self._mu[y]) ** 2 / var))
 
-    def predict_proba_one(self, x) -> dict:
+    def predict_proba_one(self, x: dict, t: float | None = None) -> dict:
         if not self._n:
             return {}
         z = self._to_vec(x)
@@ -212,7 +212,7 @@ class OnlineSoftmaxRegression(Classifier):
             self._W[c] = self._W[c] - step * g
         return self
 
-    def predict_proba_one(self, x) -> dict:
+    def predict_proba_one(self, x: dict, t: float | None = None) -> dict:
         if not self._classes:
             return {}
         z = self._to_vec(x)
@@ -279,7 +279,23 @@ class DriftAdaptiveClassifier(Classifier):
     References
     ----------
     Gama, J., Medas, P., Castillo, G., Rodrigues, P. (2004). Learning with
-    drift detection. In SBIA.
+    drift detection. In SBIA. The drift detection method is section 3,
+    pages 3-4: the error rate ``p_i`` is Bernoulli, its standard
+    deviation is ``s_i = sqrt(p_i (1 - p_i) / i)`` (page 3), the minima
+    are kept while ``p_i + s_i`` decreases, the warning level is
+    ``p_i + s_i >= p_min + 2 s_min`` (95%) and the drift level is
+    ``p_i + s_i >= p_min + 3 s_min`` (99%) (page 4).
+
+    This class is a variant of DDM, and the difference is declared here:
+    the monitored statistic is the mean log-loss over the last
+    ``smooth_window`` samples, not the binomial error rate ``p_i``; the
+    detection itself is delegated to the ``detector`` passed in (a
+    :class:`~dense_armor.roles.DriftDetector`), so the warning and drift
+    thresholds are the detector's, not the ``p_min + 2 s_min`` and
+    ``p_min + 3 s_min`` of the paper. The hit buffers and the background
+    swap are this implementation's: when the detector fires, a copy of
+    the classifier is trained in parallel and replaces the main model if
+    its recent accuracy is higher.
     """
 
     def __init__(self, classifier, detector, window: int = 50,
@@ -290,9 +306,9 @@ class DriftAdaptiveClassifier(Classifier):
         self.smooth_window = smooth_window
         self._main = deepcopy(classifier)
         self._bg = None
-        self._main_hits = deque(maxlen=window)
-        self._bg_hits = deque(maxlen=window)
-        self._err_buf = deque(maxlen=max(1, smooth_window))
+        self._main_hits: deque[float] = deque(maxlen=window)
+        self._bg_hits: deque[float] = deque(maxlen=window)
+        self._err_buf: deque[float] = deque(maxlen=max(1, smooth_window))
 
     @property
     def _multiclass(self):
@@ -322,7 +338,7 @@ class DriftAdaptiveClassifier(Classifier):
                 self._bg_hits = deque(maxlen=self.window)
         return self
 
-    def predict_proba_one(self, x) -> dict:
+    def predict_proba_one(self, x: dict, t: float | None = None) -> dict:
         return self._main.predict_proba_one(x)
 
     @classmethod

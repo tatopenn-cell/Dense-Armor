@@ -186,7 +186,7 @@ Dense-Armor also provides other online utilities:
 - Feature extraction and selection
 - Online statistics and sketches
 - Metrics for streams and robots
-- Preprocessing
+- Preprocessing, with a [text vectorizer](docs/preprocessing/text_vectorizer.md) that ranks documents by TF-IDF and cosine similarity
 - Streams (CSV, arrays, rosbag, frame folders, merge by time, shuffle)
 - Built-in datasets
 - Progressive model validation
@@ -231,7 +231,7 @@ Some specifics:
 
 ## Contributing
 
-Contributions are welcome. The library is built to be extended one estimator at a time, following the same interface (`learn_one` / `predict_one` / `transform_one`) and the same checks (`dense_armor.checks`).
+Contributions are welcome. The library is built to be extended one estimator at a time, following the same interface (`learn_one` / `predict_one` / `transform_one`) and the same checks (`dense_armor.checks`). Code style is checked with `ruff check dense_armor`, configured in `pyproject.toml`.
 
 ---
 

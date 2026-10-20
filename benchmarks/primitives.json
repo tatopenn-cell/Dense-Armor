@@ -1,0 +1,11 @@
+{
+  "n_documents": 1549,
+  "n_queries": 134,
+  "full_matmul_s_per_query": 0.0002286704552241292,
+  "fagin_s_per_query": 0.0023502492313399225,
+  "fagin_top5_identical": 134,
+  "fagin_total": 134,
+  "schubert_s_per_query": 0.10914753711938883,
+  "schubert_top5_identical": 134,
+  "schubert_total": 134
+}
