@@ -1,0 +1,58 @@
+{
+  "n_chunks": 1547,
+  "n_queries": 134,
+  "ours": {
+    "rr_median": 1.0,
+    "rr_iqr": 0.0,
+    "build_s": 0.5903098999988288,
+    "query_s": 6.072089553214679e-05,
+    "query_s_min": 5.845447763089966e-05,
+    "query_s_max": 6.294552234189112e-05,
+    "query_s_pipeline": 0.0004058544776066199,
+    "n_runs": 5,
+    "method": "sparse"
+  },
+  "ours_loop": {
+    "rr_median": 1.0,
+    "rr_iqr": 0.0,
+    "query_s": 0.03507631716415948,
+    "method": "loop"
+  },
+  "float32_top5_identical_to_float64": 134,
+  "float32_top5_total": 134,
+  "pruned_k50_top5_overlap_vs_exact_median": 0.8,
+  "top5_overlap_median": 0.8,
+  "top5_overlap_iqr": 0.19999999999999996,
+  "top5_overlap_median_aligned": 1.0,
+  "top5_overlap_median_both_20000": 0.8,
+  "choices": {
+    "baseline": {
+      "top5_overlap_median": 1.0,
+      "top5_overlap_iqr": 0.19999999999999996
+    },
+    "stop_words_none": {
+      "top5_overlap_median": 0.8,
+      "top5_overlap_iqr": 0.35
+    },
+    "smooth_idf_true": {
+      "top5_overlap_median": 1.0,
+      "top5_overlap_iqr": 0.19999999999999996
+    },
+    "norm_none": {
+      "top5_overlap_median": 1.0,
+      "top5_overlap_iqr": 0.19999999999999996
+    },
+    "max_features_20000": {
+      "top5_overlap_median": 0.8,
+      "top5_overlap_iqr": 0.19999999999999996
+    }
+  },
+  "sklearn": {
+    "rr_median": 1.0,
+    "rr_iqr": 0.0,
+    "build_s": 0.40011239999876125,
+    "query_s": 0.0038510350746240765
+  },
+  "wilcoxon_p": 0.023544102412552784,
+  "a12": 0.5223880597014925
+}

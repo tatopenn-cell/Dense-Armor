@@ -277,4 +277,4 @@ old examples leave the queue, which lets the classifier follow a change in the s
   arXiv:0902.2206. Malialis, K., Panayiotou, C., Polycarpou, M. (2018), "Queue-based
   resampling for online class imbalance learning", ICANN, arXiv:1809.10388.
 ````
-
+| [Text vectorizer](text_vectorizer.md) | TF-IDF with a fixed vocabulary, batch or online, and the cosine ranking |

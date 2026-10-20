@@ -8,6 +8,7 @@ import hashlib
 import math
 import re
 from collections import Counter
+from collections.abc import Iterable
 from typing import Any
 
 from dense_armor.roles import Transformer
@@ -33,6 +34,12 @@ class Tokenizer(Transformer):
         ngrams: maximum n-gram order (1 = unigrams only).
         text_key: dict key holding the text string.
         tokens_key: dict key written with the token list.
+        stop_words: words removed from the word list before the
+            n-grams are formed, so no n-gram contains a removed
+            word. ``None`` is the old behaviour. The library has no
+            built-in list: pass a collection of words. A string such
+            as ``"english"`` raises a ``ValueError``, because there
+            is no list inside the library to resolve it to.
 
     Examples:
         >>> from dense_armor.utility.preprocessing.text import Tokenizer
@@ -50,11 +57,21 @@ class Tokenizer(Transformer):
         ngrams: int = 1,
         text_key: str = "text",
         tokens_key: str = "tokens",
+        stop_words: Iterable[str] | None = None,
     ) -> None:
+        if isinstance(stop_words, str):
+            raise ValueError(  # noqa: TRY004 - the task names ValueError
+                "stop_words is a collection of words; the library has no "
+                "built-in list, so pass e.g. ['the', 'a'] or the list of "
+                "another library. A string such as 'english' cannot be "
+                "resolved here.")
         self.lowercase = lowercase
         self.ngrams = ngrams
         self.text_key = text_key
         self.tokens_key = tokens_key
+        self.stop_words = (
+            frozenset(w.lower() for w in stop_words)
+            if stop_words is not None else None)
 
     def learn_one(
         self, x: Any, y: Any = None, t: float | None = None
@@ -72,6 +89,8 @@ class Tokenizer(Transformer):
         if self.lowercase:
             text = text.lower()
         words = _TOKEN_RE.findall(text)
+        if self.stop_words is not None:
+            words = [w for w in words if w not in self.stop_words]
         tokens = list(words)
         for n in range(2, self.ngrams + 1):
             for i in range(len(words) - n + 1):
@@ -156,6 +175,12 @@ class TFIDF(Transformer):
         counts_key: optional dict key holding a precomputed count
             dict; when present it is used instead of recounting.
         scores_key: dict key written with ``{term: score}``.
+        norm: ``None`` (default) leaves the scores as they are;
+            ``"l2"`` divides the scores of a document by the square
+            root of the sum of their squares, so a non-zero document
+            has L2 norm 1 (Rennie et al. 2003, the length-normalisation
+            transform, page 7). An all-zero document stays all-zero.
+            Any other value raises a ``ValueError``.
 
     Examples:
         >>> from dense_armor.utility.preprocessing.text import TFIDF
@@ -169,8 +194,8 @@ class TFIDF(Transformer):
         0.346574
 
     References:
-        Silajev, I. (2026). TF-IDF and BM25 as Kullback-Leibler
-            divergences. arXiv:2609.14016, section 1.
+        Silajev, I. (2026). TF-IDF and BM25 are exact KL divergences.
+            arXiv:2609.14016, section 1.
     """
 
     budget_s = 1e-3
@@ -182,11 +207,16 @@ class TFIDF(Transformer):
         tokens_key: str = "tokens",
         counts_key: str = "counts",
         scores_key: str = "scores",
+        norm: str | None = None,
     ) -> None:
+        if norm not in (None, "l2"):
+            raise ValueError(
+                f"norm must be None or 'l2', got {norm!r}")
         self.smooth_idf = smooth_idf
         self.tokens_key = tokens_key
         self.counts_key = counts_key
         self.scores_key = scores_key
+        self.norm = norm
         self.n_docs_: int = 0
         self.df_: dict[str, int] = {}
 
@@ -223,6 +253,10 @@ class TFIDF(Transformer):
             else:
                 idf = math.log(n / df)
             scores[term] = float(tf) * idf
+        if self.norm == "l2":
+            sq = math.sqrt(sum(v * v for v in scores.values()))
+            if sq > 0.0:
+                scores = {k: v / sq for k, v in scores.items()}
         out = dict(d)
         out[self.scores_key] = scores
         return out
