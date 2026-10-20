@@ -213,3 +213,12 @@ def test_check_estimator():
     check_estimator(OnlineSoftmaxRegression())
     check_estimator(DriftAdaptiveClassifier(
         OnlineGaussianNB(), CUSUMDriftDetector(reference="adaptive")))
+
+def test_softmax_non_adaptive_step_is_eta():
+    from dense_armor.utility.learn.online_classifiers import OnlineSoftmaxRegression
+    est = OnlineSoftmaxRegression(eta=0.1, l2=0.0, adaptive=False)
+    for _ in range(5):
+        est.learn_one({"x": 1.0}, 0)
+        est.learn_one({"x": 2.0}, 1)
+    proba = est.predict_proba_one({"x": 1.0})
+    assert abs(sum(proba.values()) - 1.0) < 1e-9

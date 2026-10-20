@@ -4,46 +4,46 @@
   "ours": {
     "rr_median": 1.0,
     "rr_iqr": 0.0,
-    "build_s": 2.228660688000673,
-    "query_s": 0.0004706342985098591,
+    "build_s": 0.6807122310001432,
+    "query_s": 0.00023452535820816498,
     "method": "sparse"
   },
   "ours_loop": {
     "rr_median": 1.0,
     "rr_iqr": 0.0,
-    "query_s": 0.05373459612685871,
+    "query_s": 0.03876203822387448,
     "method": "loop"
   },
-  "top5_overlap_median": 0.6,
-  "top5_overlap_iqr": 0.20000000000000007,
+  "top5_overlap_median": 0.8,
+  "top5_overlap_iqr": 0.19999999999999996,
   "choices": {
     "baseline": {
-      "top5_overlap_median": 0.6,
-      "top5_overlap_iqr": 0.20000000000000007
+      "top5_overlap_median": 1.0,
+      "top5_overlap_iqr": 0.19999999999999996
     },
     "stop_words_none": {
-      "top5_overlap_median": 0.6,
-      "top5_overlap_iqr": 0.20000000000000007
+      "top5_overlap_median": 0.8,
+      "top5_overlap_iqr": 0.4
     },
     "smooth_idf_true": {
-      "top5_overlap_median": 0.6,
-      "top5_overlap_iqr": 0.20000000000000007
+      "top5_overlap_median": 1.0,
+      "top5_overlap_iqr": 0.19999999999999996
     },
     "norm_none": {
-      "top5_overlap_median": 0.6,
-      "top5_overlap_iqr": 0.20000000000000007
+      "top5_overlap_median": 1.0,
+      "top5_overlap_iqr": 0.19999999999999996
     },
     "max_features_20000": {
       "top5_overlap_median": 0.8,
-      "top5_overlap_iqr": 0.20000000000000007
+      "top5_overlap_iqr": 0.19999999999999996
     }
   },
   "sklearn": {
     "rr_median": 1.0,
     "rr_iqr": 0.0,
-    "build_s": 0.6052545990005456,
-    "query_s": 0.004288325977608681
+    "build_s": 0.5356660779998492,
+    "query_s": 0.0039134173880551884
   },
-  "wilcoxon_p": 0.06559969214707187,
-  "a12": 0.5150367565159278
+  "wilcoxon_p": 0.023544102412552784,
+  "a12": 0.5223880597014925
 }

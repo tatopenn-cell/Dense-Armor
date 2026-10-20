@@ -104,12 +104,10 @@ def _measure_choices(chunks, queries, pages, relevant_of_query,
         vec.fit(chunks)
         doc_scores = [vec.transform_one(c)["scores"] for c in chunks]
         q_scores = [vec.transform_one(q)["scores"] for q in queries]
-        idx = SparseCosineIndex(doc_scores, max_terms_per_document=50,
-                                    dtype=np.float32)
-        top5 = []
-        for qs in q_scores:
-            ranked = np.argsort(-idx.query(qs))
-            top5.append(set(ranked[:5].tolist()))
+        idx = SparseCosineIndex(doc_scores, dtype=np.float32)
+        S = idx.query_many(q_scores)
+        top5 = [set(np.argsort(-S[:, j])[:5].tolist())
+                for j in range(S.shape[1])]
         ov = np.array([len(a & b) / 5.0 for a, b in zip(top5, top5_sk)])
         return float(np.median(ov)), float(
             np.percentile(ov, 75) - np.percentile(ov, 25))
@@ -182,19 +180,17 @@ def run(docs_dir: Path, max_queries: int | None = None,
 
     q_scores = [vec.transform_one(q)["scores"] for q in queries]
 
-    index = SparseCosineIndex(doc_scores, max_terms_per_document=50,
-                                dtype=np.float32)
+    index = SparseCosineIndex(doc_scores, dtype=np.float32)
 
     rrs = []
     top5_ours = []
     t0 = time.perf_counter()
-    for qs, page in zip(q_scores, pages):
-        rel = relevant_of_query[page]
-        sims = index.query(qs)
-        ranked = np.argsort(-sims)
-        top5_ours.append(set(ranked[:5].tolist()))
-        rrs.append(_rr(ranked, rel))
+    S = index.query_many(q_scores)
     query_ours = (time.perf_counter() - t0) / max(len(queries), 1)
+    for j, page in enumerate(pages):
+        ranked = np.argsort(-S[:, j])
+        top5_ours.append(set(ranked[:5].tolist()))
+        rrs.append(_rr(ranked, relevant_of_query[page]))
     rrs = np.array(rrs)
 
     rrs_loop = []

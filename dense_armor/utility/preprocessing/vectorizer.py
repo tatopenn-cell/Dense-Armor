@@ -119,7 +119,10 @@ class TextVectorizer(Transformer):
         keep = {term for term, _ in ranked[: self.max_features]}
         self.tfidf_.df_ = {term: df[term] for term in keep}
 
-    def fit(self, documents: Iterable) -> TextVectorizer:
+    def fit(
+        self, X, y=None, t=None, epochs: int = 1,
+        shuffle: bool = False, seed: int | None = None,
+    ) -> TextVectorizer:
         """Fit the state from a list of documents.
 
         The state after ``fit`` equals the state after the same documents
@@ -127,8 +130,12 @@ class TextVectorizer(Transformer):
         set, the terms kept are the ones with the highest document
         frequency; ties are broken by alphabetical order, so the result
         does not depend on the order of the documents.
+        The signature follows ``Root.fit``; ``y``, ``t``, ``epochs``,
+        ``shuffle`` and ``seed`` are accepted for compatibility and
+        ignored, because the vectorizer is unsupervised and the
+        document order does not change the state.
         """
-        for doc in documents:
+        for doc in X:
             self._learn_doc(_as_text(doc))
             self._fitted = True
         self._apply_max_features()
