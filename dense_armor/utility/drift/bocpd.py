@@ -84,10 +84,15 @@ class BayesianOnlineChangepoint(DriftDetector):
             Default 0.01.
         beta0: prior scale of the Inverse-Gamma on the variance.
             Default 0.01.
-        max_run_length: maximum run length kept. The paper truncates by
-            mass (section 2.4, page 4); this implementation truncates by
-            length, which bounds the memory at ``O(max_run_length)``.
-            Default 200. It is this implementation's choice.
+        max_run_length: hard cap on the number of run lengths kept, a
+            safety bound on memory. The primary truncation is by mass
+            (see ``mass_threshold``). Default 10000, chosen above the
+            expected run length ``lam`` so the cap does not cut the
+            mode. It is this implementation's choice.
+        mass_threshold: the run lengths in the tail whose cumulative
+            mass is below this value are discarded, as section 2.4,
+            page 4 of the paper suggests (``10^-4`` is the paper's
+            example). Default 1e-4.
         mass_window: number of shortest run lengths whose cumulative
             posterior mass is compared to ``detection_threshold``.
             The changepoint signal is the mass that the posterior
@@ -109,7 +114,6 @@ class BayesianOnlineChangepoint(DriftDetector):
             ``detection_threshold`` outside ``(0, 1)``.
     """
 
-    _is_stochastic = False
     budget_s = 7.13e-03
     memory_class = "O(max_run_length)"
 
@@ -120,7 +124,8 @@ class BayesianOnlineChangepoint(DriftDetector):
         kappa0: float = 0.01,
         alpha0: float = 0.01,
         beta0: float = 0.01,
-        max_run_length: int = 200,
+        max_run_length: int = 10000,
+        mass_threshold: float = 1e-4,
         mass_window: int = 10,
         detection_threshold: float = 0.5,
     ) -> None:
@@ -129,6 +134,9 @@ class BayesianOnlineChangepoint(DriftDetector):
             raise ValueError(f"lam must be > 0, got {lam}")
         if max_run_length < 1:
             raise ValueError(f"max_run_length must be >= 1, got {max_run_length}")
+        if not (0.0 <= mass_threshold < 1.0):
+            raise ValueError(
+                f"mass_threshold must be in [0, 1), got {mass_threshold}")
         if mass_window < 1:
             raise ValueError(f"mass_window must be >= 1, got {mass_window}")
         if kappa0 <= 0 or alpha0 <= 0 or beta0 <= 0:
@@ -142,6 +150,7 @@ class BayesianOnlineChangepoint(DriftDetector):
         self.alpha0 = float(alpha0)
         self.beta0 = float(beta0)
         self.max_run_length = int(max_run_length)
+        self.mass_threshold = float(mass_threshold)
         self.mass_window = int(mass_window)
         self.detection_threshold = float(detection_threshold)
         self._reset()
@@ -234,12 +243,18 @@ class BayesianOnlineChangepoint(DriftDetector):
         new_alpha[1:] = alpha_n
         new_beta[1:] = beta_n
 
-        if len(new_r) > self.max_run_length + 1:
-            new_r = new_r[: self.max_run_length + 1]
-            new_mu = new_mu[: self.max_run_length + 1]
-            new_kappa = new_kappa[: self.max_run_length + 1]
-            new_alpha = new_alpha[: self.max_run_length + 1]
-            new_beta = new_beta[: self.max_run_length + 1]
+        cut = len(new_r)
+        tail = 0.0
+        while cut > 1 and tail + new_r[cut - 1] < self.mass_threshold:
+            tail += new_r[cut - 1]
+            cut -= 1
+        cut = min(cut, self.max_run_length + 1)
+        if cut < len(new_r):
+            new_r = new_r[:cut]
+            new_mu = new_mu[:cut]
+            new_kappa = new_kappa[:cut]
+            new_alpha = new_alpha[:cut]
+            new_beta = new_beta[:cut]
 
         total = float(new_r.sum())
         if total > 0:

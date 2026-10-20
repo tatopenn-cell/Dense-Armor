@@ -69,10 +69,10 @@ def load_log_returns(path) -> np.ndarray:
         except ValueError:
             continue
         closes.append(c)
-    closes = np.asarray(closes, dtype=float)
-    if np.any(closes <= 0):
+    arr = np.asarray(closes, dtype=float)
+    if np.any(arr <= 0):
         raise ValueError(f"{path}: a close is not positive")
-    return np.log(closes[1:] / closes[:-1])
+    return np.log(arr[1:] / arr[:-1])
 
 
 def synthetic_two_regime(

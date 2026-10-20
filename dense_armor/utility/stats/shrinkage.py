@@ -80,7 +80,7 @@ class OnlineShrinkageCovariance:
         The intensities are equations (4.3) and (4.4) of the paper, page
         12, with ``Sigma_0 = (1/p) I``:
 
-            alpha* = 1 - (tr(S)^2 / (n p)) / (tr(S^2) - tr(S)^2 / p)
+            alpha* = 1 - (tr(S)^2 / n) / (tr(S^2) - tr(S)^2 / p)
             beta*  = (1 - alpha*) * tr(S)
 
         with ``Sigma_0 = (1/p) I``, so ``tr(S Sigma_0) = tr(S) / p`` and
@@ -101,7 +101,7 @@ class OnlineShrinkageCovariance:
         denom = tr_s2 - tr_s * tr_s / p
         if denom <= 0.0:
             return s.copy(), 1.0, 0.0
-        alpha = 1.0 - (tr_s * tr_s / (n * p)) / denom
+        alpha = 1.0 - (tr_s * tr_s / n) / denom
         alpha = float(min(max(alpha, 0.0), 1.0))
         beta = (1.0 - alpha) * tr_s
         shrunk = alpha * s + (beta / p) * np.eye(p)

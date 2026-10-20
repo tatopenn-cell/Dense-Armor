@@ -181,3 +181,35 @@ def test_budget_is_at_least_the_declared_minimum():
     """
     det = BayesianOnlineChangepoint(lam=250.0)
     assert det.budget_s >= 1e-3
+
+def test_no_alarm_at_the_old_cap_on_a_calm_stream():
+    """On a calm stream of 1200 samples there is no alarm at t=200.
+
+    The old default truncated by length at 200, and 11 seeds of 12 had an
+    alarm exactly at t=200. The truncation is now by mass, and the cap is
+    above lam, so the alarm at the cap must not appear.
+    """
+    rng = np.random.default_rng(0)
+    xs = rng.normal(0.0, 1.0, 1200)
+    det = BayesianOnlineChangepoint(lam=250.0)
+    alarms = []
+    for i, x in enumerate(xs):
+        det.update(float(x))
+        if det.drift_detected:
+            alarms.append(i)
+    assert 200 not in alarms, alarms
+
+
+def test_run_length_grows_with_the_stream():
+    """On a calm stream the MAP run length is not pinned at a small cap.
+
+    With the old truncation at 200 the MAP stayed in 109-171 on 1200
+    samples. With the truncation by mass the mode follows the stream and
+    the MAP at the end is above the old cap.
+    """
+    rng = np.random.default_rng(1)
+    xs = rng.normal(0.0, 1.0, 1200)
+    det = BayesianOnlineChangepoint(lam=250.0)
+    for x in xs:
+        det.update(float(x))
+    assert det.map_run_length_ > 200, det.map_run_length_

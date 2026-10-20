@@ -171,7 +171,14 @@ Dense-Armor provides online implementations of the following families of algorit
 - Robot control (rate limits, control barrier functions, trajectories, kinematic tracking)
 - Robot dynamics (URDF, passivity + CBF controllers)
 - Shielding (1D series cleanup, input/output shield, per-point routing)
-- [Finance pipelines](https://tatopenn-cell.github.io/Dense-Armor/finance/): sixteen pipelines for markets, fraud, intrusion, credit scoring, regime, portfolio, order book, stress, streaming and timing, each page opening with the question it answers
+- [Finance pipelines](https://tatopenn-cell.github.io/Dense-Armor/finance/): nine pipelines for markets, fraud, intrusion and credit scoring, each page opening with the question it answers
+- [Finance: Regime](https://tatopenn-cell.github.io/Dense-Armor/finance/regime/): the regime page.
+- [Finance: Drift vs noise](https://tatopenn-cell.github.io/Dense-Armor/finance/drift_vs_noise/): the drift vs noise page.
+- [Finance: Portfolio](https://tatopenn-cell.github.io/Dense-Armor/finance/portfolio/): the portfolio page.
+- [Finance: Order book](https://tatopenn-cell.github.io/Dense-Armor/finance/order_book/): the order book page.
+- [Finance: Stress](https://tatopenn-cell.github.io/Dense-Armor/finance/stress/): the stress page.
+- [Finance: Streaming](https://tatopenn-cell.github.io/Dense-Armor/finance/streaming/): the streaming page.
+- [Finance: Timing](https://tatopenn-cell.github.io/Dense-Armor/finance/timing/): the timing page.
 - [Offline learning](https://tatopenn-cell.github.io/Dense-Armor/offline/): `fit` feeds a whole dataset to any online algorithm
 
 Dense-Armor also provides other online utilities:
