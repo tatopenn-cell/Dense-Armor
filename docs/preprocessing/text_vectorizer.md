@@ -163,9 +163,9 @@ The papers that could go further are not in the folder, or are for a different s
 
 - Silajev, I. (2026). *TF-IDF and BM25 are exact KL divergences.* arXiv:2609.14016. The TF and IDF of the score, section 1, pages 1-4. The title is the one printed on page 1 of the PDF.
 - Rennie, J. D. M., Shih, L., Teevan, J., Karger, D. R. (2003). *Tackling the Poor Assumptions of Naive Bayes Text Classifiers.* The length-normalisation transform, page 7.
-- McCallum, A., Nigam, K. (1998). *A Comparison of Event Models for Naive Bayes Text Classification.* Feature selection, page 3.
+- McCallum, A., Nigam, K. (1998). *A Comparison of Event Models for Naive Bayes Text Classification.* Feature selection, page 3: the paper keeps the words with the highest average mutual information with the class; `max_features` here keeps the highest document frequency, which needs no labels.
 - Lassance, C., Déjean, H., Lupart, S., Tonellotto, N. (2023). *A Static Pruning Study on Sparse Neural Retrievers.* SIGIR '23, arXiv:2304.12702. Section 2, page 2: the document-centric pruning, an option of the class.
-- Nagasaka, Y., Nukada, A., Kojima, R. (2019). *Batched Sparse Matrix Multiplication for Accelerating Graph Convolutional Networks.* arXiv:1903.11409. Page 2 and Figure 8 page 8: batching several products into one, 9.27x at nB = 64 and 6.09x at nB = 512, cited as the motivation; the measurements there are on GPU and are not claimed here.
+- Nagasaka, Y., Nukada, A., Kojima, R., Matsuoka, S. (2019). *Batched Sparse Matrix Multiplication for Accelerating Graph Convolutional Networks.* arXiv:1903.11409. Page 2 and Figure 8 page 8: batching several products into one, 9.27x at nB = 64 and 6.09x at nB = 512, cited as the motivation; the measurements there are on GPU and are not claimed here.
 - Liu, W., Vinter, B. (2015). *CSR5: An Efficient Storage Format for Cross-Platform Sparse Matrix-Vector Multiplication.* arXiv:1503.05032. Algorithm 3, page 3: the segmented sum of a CSR product, cited as the description, not as the kernel this class runs.
 - Fagin, R., Lotem, A., Naor, M. (2001). *Optimal Aggregation Algorithms for Middleware.* PODS 2001; JCSS 67(4), 2003. The Threshold Algorithm, section 3: `top_k_threshold`, exact, for a corpus where the full product is prohibitive.
 - Schubert, E. (2021). *A Triangle Inequality for Cosine Similarity.* SISDA 2021, arXiv:2107.04071. Eq. 13, page 6: `top_k_schubert`, exact, for a metric index on a large corpus.
@@ -174,12 +174,14 @@ The papers that could go further are not in the folder, or are for a different s
 
 ### Choices stated explicitly
 
+- The queries of the benchmark are the first heading and first sentence of each page, and that page is in the corpus: a reciprocal rank of 1.0 for every system is expected, and the benchmark checks that the index agrees with the batch library, not the quality of the retrieval.
+- `top_k_threshold`, `top_k_schubert` and `feature_hash` are additions beyond the files the task lists.
 - The library has no built-in stop-word list: a string such as `"english"` raises a `ValueError` that says so, and the caller passes the collection.
 - `smooth_idf=False` is the default and follows the paper: `ln(N / DF)` with no `+1`.
 - `norm="l2"` is the default of `TextVectorizer` and `None` is the default of `TFIDF`.
 - `max_features` keeps the terms with the highest document frequency, ties broken by alphabetical order; the batch system orders by term frequency. Measured in the JSON: `top5_overlap_median_aligned` = 1.0 (no cap on either side), `top5_overlap_median` = 0.8 (cap 20000 on one side only), `top5_overlap_median_both_20000` = 0.9 (both sides at 20000). The selection rule alone changes the top-5 of one query in ten; the cap alone changes one in five.
 - `memory_class` is `O(vocabulary)` in `TextVectorizer` and `SparseCosineIndex`: the vocabulary grows with the distinct terms unless `max_features` or `max_terms_per_document` caps it. The two classes are not bounded without those caps, and the docstring says so.
-- The kernel is `scipy.sparse` CSR. Liu and Vinter, and Nagasaka, Nukada and Kojima, are cited as the description of a segmented-sum product and of batching, not as the implementation.
+- The kernel is `scipy.sparse` CSR. Liu and Vinter, and Nagasaka et al., are cited as the description of a segmented-sum product and of batching, not as the implementation.
 - `query_many` builds a sparse query matrix, not a dense `n_terms` by `n_queries` one.
 - `top_k_threshold`, `top_k_schubert` and `feature_hash` are exact (the first two) and optional: they do not replace the full product as the default, and their docstrings say when they are the right tool with the measured numbers.
 

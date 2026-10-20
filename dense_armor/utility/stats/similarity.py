@@ -98,8 +98,8 @@ class SparseCosineIndex:
     not a claim of the paper.
 
     The product is the one of ``scipy.sparse`` CSR, not a Python loop.
-    Liu and Vinter (2015), Algorithm 3 page 3, and Nagasaka, Nukada and
-    Kojima (2019), page 2 and Figure 8 page 8, are cited as the
+    Liu and Vinter (2015), Algorithm 3 page 3, and Nagasaka et al.
+    (2019), page 2 and Figure 8 page 8, are cited as the
     description of a segmented-sum CSR product
     and of batching several products, not as the kernel this class
     runs: ``scipy`` does not implement the CSR5 format or the batched
@@ -243,8 +243,7 @@ class SparseCosineIndex:
         so the cost is one sparse matrix-matrix product instead of one
         matrix-vector product per query. The kernel is the one of
         ``scipy.sparse`` (CSR, segmented sum); the idea of batching the
-        products into one operation comes from Nagasaka, Nukada and
-          Kojima (2019),
+        products into one operation comes from Nagasaka et al. (2019),
         "Batched Sparse Matrix Multiplication for Accelerating Graph
         Convolutional Networks", arXiv:1903.11409, page 2 and Figure 8,
         page 8, whose measurements are on GPU and are cited as the
