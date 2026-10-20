@@ -20,10 +20,10 @@ print(round(alpha, 3), round(beta, 3))
 ```
 
 ```
-0.991 0.009
+0.732 0.268
 ```
 
-The sample covariance is updated one row at a time, and `shrinkage()` evaluates the two intensities of equations (4.3) and (4.4), page 12 of the paper: `alpha` on the sample covariance, `beta` on the target `(1/p) I`. With 500 rows and four variables `alpha` is close to one, and the shrunk matrix is close to the sample one.
+The sample covariance is updated one row at a time, and `shrinkage()` evaluates the two intensities of equations (4.3) and (4.4), page 12 of the paper: `alpha` on the sample covariance, `beta` on the target `(1/p) I`. On this stream, independent Gaussian columns with 500 rows and four variables, `alpha` is 0.732: the sample covariance of independent columns has a small denominator in equation (4.3), and the shrunk matrix keeps a visible part of the target.
 
 ## 2. The minimum-variance weights
 
@@ -37,7 +37,7 @@ print([round(float(v), 4) for v in w], round(float(w.sum()), 6))
 ```
 
 ```
-[0.8919, 0.1081] 1.0
+[0.7273, 0.2727] 1.0
 ```
 
 The weights minimise `w' S w` subject to `1' w = 1`. The Lagrangian gives `w = S^-1 1 / (1' S^-1 1)`, and the test of the pipeline checks the formula against a numerical minimisation within `1e-6`.
