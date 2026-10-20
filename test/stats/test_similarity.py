@@ -102,3 +102,41 @@ class TestSparseCosineIndex:
         idx = SparseCosineIndex(self._docs())
         assert idx.matrix_.shape == (4, 3)
         assert idx.query({"a": 1.0}).shape == (4,)
+
+    def test_max_terms_per_document_keeps_top_scores(self):
+        docs = [{"a": 1.0, "b": 2.0, "c": 3.0, "d": 4.0}]
+        idx = SparseCosineIndex(docs, max_terms_per_document=2)
+        assert len(idx.vocabulary_) == 2
+        assert set(idx.vocabulary_) == {"c", "d"}
+
+    def test_max_terms_none_keeps_every_term(self):
+        docs = [{"a": 1.0, "b": 2.0, "c": 3.0}]
+        idx = SparseCosineIndex(docs)
+        assert len(idx.vocabulary_) == 3
+        assert idx.max_terms_per_document_ is None
+
+    def test_max_terms_bad_value(self):
+        with pytest.raises(ValueError, match="max_terms_per_document"):
+            SparseCosineIndex([{"a": 1.0}], max_terms_per_document=0)
+
+    def test_dtype_float32_matches_float64(self):
+        docs = [{"a": 1.0, "b": 2.0}, {"b": 1.0, "c": 3.0}]
+        q = {"a": 1.0, "b": 0.5}
+        a = SparseCosineIndex(docs, dtype=np.float64).query(q)
+        b = SparseCosineIndex(docs, dtype=np.float32).query(q)
+        np.testing.assert_allclose(a, b, atol=1e-6)
+
+    def test_dtype_bad_value(self):
+        with pytest.raises(ValueError, match="dtype"):
+            SparseCosineIndex([{"a": 1.0}], dtype=np.int64)
+
+    def test_rows_are_normalised(self):
+        idx = SparseCosineIndex([{"a": 1.0, "b": 1.0}])
+        self_sim = idx.query({"a": 1.0, "b": 1.0})
+        assert self_sim[0] == pytest.approx(1.0, abs=1e-12)
+
+    def test_max_terms_shorter_document_kept_as_is(self):
+        docs = [{"a": 1.0}, {"a": 1.0, "b": 2.0, "c": 3.0}]
+        idx = SparseCosineIndex(docs, max_terms_per_document=2)
+        assert idx.n_documents_ == 2
+        assert "c" in idx.vocabulary_
