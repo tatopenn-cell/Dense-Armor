@@ -19,7 +19,7 @@ print(r.n_returns, r.n_alarms, round(r.alarm_rate_per_year, 2))
 1253 5 0.81
 ```
 
-The file is the S&P 500 daily close of the fixtures, 1,253 log returns. The detector raises 5 alarms in 2.48 years of calm data, 0.81 alarms per year. `alarm_rate_per_year` counts the alarms before the first half of the series, so a real series and a synthetic one are compared on the same footing.
+The file is the S&P 500 daily close of the fixtures, 1,253 log returns. The detector raises 5 alarms over the whole series; 2 of them fall in the first 2.48 years, the calm part, and that is 0.81 alarms per year of calm data. `alarm_rate_per_year` counts the alarms before the first half of the series, so a real series and a synthetic one are compared on the same footing.
 
 ## 2. A planted change, and the delay in samples
 
