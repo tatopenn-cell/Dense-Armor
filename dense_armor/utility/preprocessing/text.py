@@ -179,7 +179,7 @@ class TFIDF(Transformer):
             ``"l2"`` divides the scores of a document by the square
             root of the sum of their squares, so a non-zero document
             has L2 norm 1 (Rennie et al. 2003, the length-normalisation
-            transform, pages 6-7). An all-zero document stays all-zero.
+            transform, page 7). An all-zero document stays all-zero.
             Any other value raises a ``ValueError``.
 
     Examples:
@@ -194,8 +194,8 @@ class TFIDF(Transformer):
         0.346574
 
     References:
-        Silajev, I. (2026). TF-IDF and BM25 as Kullback-Leibler
-            divergences. arXiv:2609.14016, section 1.
+        Silajev, I. (2026). TF-IDF and BM25 are exact KL divergences.
+            arXiv:2609.14016, section 1.
     """
 
     budget_s = 1e-3

@@ -29,6 +29,13 @@ def cosine_similarity(a: dict, b: dict) -> float:
 
     Returns:
         The cosine, in ``[-1, 1]``; 0.0 if either document is all zero.
+
+    Example:
+        >>> round(cosine_similarity({"a": 1.0, "b": 2.0},
+        ...                         {"a": 2.0, "b": 4.0}), 6)
+        1.0
+        >>> cosine_similarity({"a": 0.0}, {"a": 1.0})
+        0.0
     """
     if not a or not b:
         return 0.0
@@ -57,6 +64,11 @@ def cosine_similarity_many(query: dict, matrix: list[dict]) -> np.ndarray:
     Returns:
         A numpy array, one cosine per document, in the order of
         ``matrix``.
+
+    Example:
+        >>> cosine_similarity_many(
+        ...     {"a": 1.0}, [{"a": 1.0}, {"a": 0.0}]).tolist()
+        [1.0, 0.0]
     """
     return np.array([cosine_similarity(query, d) for d in matrix],
                     dtype=float)
@@ -86,8 +98,9 @@ class SparseCosineIndex:
     not a claim of the paper.
 
     The product is the one of ``scipy.sparse`` CSR, not a Python loop.
-    Liu and Vinter (2015), Algorithm 3 page 3, and Jang et al. (2019),
-    page 2, are cited as the description of a segmented-sum CSR product
+    Liu and Vinter (2015), Algorithm 3 page 3, and Nagasaka, Nukada and
+    Kojima (2019), page 2 and Figure 8 page 8, are cited as the
+    description of a segmented-sum CSR product
     and of batching several products, not as the kernel this class
     runs: ``scipy`` does not implement the CSR5 format or the batched
     CUDA kernel. The measured numbers below are the ones of the
@@ -173,7 +186,8 @@ class SparseCosineIndex:
         so the cost is one sparse matrix-matrix product instead of one
         matrix-vector product per query. The kernel is the one of
         ``scipy.sparse`` (CSR, segmented sum); the idea of batching the
-        products into one operation comes from Jang et al. (2019),
+        products into one operation comes from Nagasaka, Nukada and
+          Kojima (2019),
         "Batched Sparse Matrix Multiplication for Accelerating Graph
         Convolutional Networks", arXiv:1903.11409, page 2 and Figure 8,
         page 8, whose measurements are on GPU and are cited as the
@@ -187,6 +201,13 @@ class SparseCosineIndex:
             A numpy array of shape ``(n_documents_, n_queries)``, the
             cosine of each query against each document. 0.0 where either
             side is all zero, never ``nan``.
+
+        Example:
+            >>> idx = SparseCosineIndex([{"a": 1.0, "b": 2.0}, {"a": 2.0}])
+            >>> idx.query_many([{"a": 1.0}]).round(4).tolist()
+            [[0.4472], [1.0]]
+            >>> idx.query_many([]).shape
+            (2, 0)
         """
         n = len(queries)
         if n == 0:
@@ -219,6 +240,11 @@ class SparseCosineIndex:
         Returns:
             A numpy array of length ``n_documents_``; 0.0 where either
             side is all zero, never ``nan``.
+
+        Example:
+            >>> idx = SparseCosineIndex([{"a": 1.0, "b": 2.0}, {"a": 2.0}])
+            >>> idx.query({"a": 1.0}).round(4).tolist()
+            [0.4472, 1.0]
         """
         qd = np.zeros(self.matrix_.shape[1], dtype=self.dtype_)
         for term, v in q.items():

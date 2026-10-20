@@ -61,6 +61,11 @@ class TextVectorizer(Transformer):
     Raises:
         ValueError: on a bad ``ngram_range``, a negative ``max_features``,
             or a bad ``norm``.
+
+    Example:
+        >>> v = TextVectorizer().fit(["a b", "a c", None])
+        >>> v.tfidf_.n_docs_, v.n_missing_
+        (2, 1)
     """
 
     budget_s = 1.5e-3
@@ -165,6 +170,11 @@ class TextVectorizer(Transformer):
         ``shuffle`` and ``seed`` are accepted for compatibility and
         ignored, because the vectorizer is unsupervised and the
         document order does not change the state.
+
+        Example:
+            >>> v = TextVectorizer().fit(["a b", "a c", None])
+            >>> v.tfidf_.n_docs_, v.n_missing_
+            (2, 1)
         """
         self._reset_state()
         for doc in X:

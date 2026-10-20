@@ -132,3 +132,9 @@ def test_generator_stop_words_not_consumed():
     for d in DOCS:
         v.learn_one(d)
     assert "the" not in v.tfidf_.df_
+
+def test_fit_counts_missing_documents():
+    """A missing value in fit is counted, not learned (lines 173-174)."""
+    v = TextVectorizer().fit(["a b", None, "a c"])
+    assert v.tfidf_.n_docs_ == 2
+    assert v.n_missing_ == 1

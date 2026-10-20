@@ -21,7 +21,7 @@ The library has no built-in list: the paper of the folder does not contain one, 
 
 ## 2. Length normalisation
 
-A long document has more terms and larger counts. The L2 normalisation divides the scores of a document by the square root of the sum of their squares, so a document is compared on direction and not on length (Rennie et al. 2003, pages 6-7).
+A long document has more terms and larger counts. The L2 normalisation divides the scores of a document by the square root of the sum of their squares, so a document is compared on direction and not on length (Rennie et al. 2003, page 7).
 
 ```python
 from dense_armor.utility.preprocessing.text import TFIDF
@@ -104,11 +104,11 @@ The top-5 of the exact float32 index is identical to the float64 one on 134 of 1
 
 ### References
 
-- Silajev, I. (2026). *TF-IDF and BM25 as Kullback-Leibler divergences.* arXiv:2609.14016. The TF and IDF of the score, section 1, pages 1-4. Page 1 of the PDF is titled "TF-IDF and BM25 are exact KL divergences"; the docstring of `TFIDF` cites the other title, reported here, not changed.
-- Rennie, J. D. M., Shih, L., Teevan, J., Karger, D. R. (2003). *Tackling the Poor Assumptions of Naive Bayes Text Classifiers.* The length-normalisation transform, pages 6-7.
-- McCallum, A., Nigam, K. (1998). *A Comparison of Event Models for Naive Bayes Text Classification.* Vocabulary selection, page 4.
+- Silajev, I. (2026). *TF-IDF and BM25 are exact KL divergences.* arXiv:2609.14016. The TF and IDF of the score, section 1, pages 1-4. The title is the one printed on page 1 of the PDF.
+- Rennie, J. D. M., Shih, L., Teevan, J., Karger, D. R. (2003). *Tackling the Poor Assumptions of Naive Bayes Text Classifiers.* The length-normalisation transform, page 7.
+- McCallum, A., Nigam, K. (1998). *A Comparison of Event Models for Naive Bayes Text Classification.* Feature selection, page 3.
 - Lassance, C., Déjean, H., Lupart, S., Tonellotto, N. (2023). *A Static Pruning Study on Sparse Neural Retrievers.* SIGIR '23, arXiv:2304.12702. Section 2, page 2: the document-centric pruning, an option of the class.
-- Jang, D. et al. (2019). *Batched Sparse Matrix Multiplication for Accelerating Graph Convolutional Networks.* arXiv:1903.11409. Page 2 and Figure 8 page 8: batching several products into one, cited as the motivation; the measurements there are on GPU and are not claimed here.
+- Nagasaka, Y., Nukada, A., Kojima, R. (2019). *Batched Sparse Matrix Multiplication for Accelerating Graph Convolutional Networks.* arXiv:1903.11409. Page 2 and Figure 8 page 8: batching several products into one, 9.27x at nB = 64 and 6.09x at nB = 512, cited as the motivation; the measurements there are on GPU and are not claimed here.
 - Liu, W., Vinter, B. (2015). *CSR5: An Efficient Storage Format for Cross-Platform Sparse Matrix-Vector Multiplication.* arXiv:1503.05032. Algorithm 3, page 3: the segmented sum of a CSR product, cited as the description, not as the kernel this class runs.
 
 ### Choices stated explicitly
@@ -118,7 +118,7 @@ The top-5 of the exact float32 index is identical to the float64 one on 134 of 1
 - `norm="l2"` is the default of `TextVectorizer` and `None` is the default of `TFIDF`.
 - `max_features` keeps the terms with the highest document frequency, ties broken by alphabetical order.
 - `memory_class` is `O(vocabulary)` in `TextVectorizer` and `SparseCosineIndex`: the vocabulary grows with the distinct terms unless `max_features` or `max_terms_per_document` caps it. The two classes are not bounded without those caps, and the docstring says so.
-- The kernel is `scipy.sparse` CSR. Liu and Vinter and Jang are cited as the description of a segmented-sum product and of batching, not as the implementation.
+- The kernel is `scipy.sparse` CSR. Liu and Vinter, and Nagasaka, Nukada and Kojima, are cited as the description of a segmented-sum product and of batching, not as the implementation.
 - `query_many` builds a sparse query matrix, not a dense `n_terms` by `n_queries` one.
 
 ### Measured cost

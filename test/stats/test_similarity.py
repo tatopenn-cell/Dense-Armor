@@ -163,3 +163,9 @@ def test_query_norm_counts_terms_outside_index():
     got = idx.query({"a": 1.0, "z": 1.0})[0]
     want = cosine_similarity_many({"a": 1.0, "z": 1.0}, [{"a": 1.0}])[0]
     assert got == pytest.approx(want, abs=1e-12)
+
+def test_query_many_empty():
+    """The empty batch returns (n_documents, 0), not a crash (line 191)."""
+    idx = SparseCosineIndex([{"a": 1.0}, {"b": 1.0}])
+    S = idx.query_many([])
+    assert S.shape == (2, 0)
