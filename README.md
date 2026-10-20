@@ -179,7 +179,7 @@ Dense-Armor provides online implementations of the following families of algorit
 - [Finance: Stress](https://tatopenn-cell.github.io/Dense-Armor/finance/stress/): the stress page.
 - [Finance: Streaming](https://tatopenn-cell.github.io/Dense-Armor/finance/streaming/): the streaming page.
 - [Finance: Timing](https://tatopenn-cell.github.io/Dense-Armor/finance/timing/): the timing page.
-- [Offline learning](https://tatopenn-cell.github.io/Dense-Armor/offline/): `fit` feeds a whole dataset to any online algorithm
+- [Offline learning](https://tatopenn-cell.github.io/Dense-Armor/offline/): `fit` feeds a whole dataset to any online algorithm, and the batch tree, the bagging and the text vectorizer learn from all the rows at once
 
 Dense-Armor also provides other online utilities:
 
