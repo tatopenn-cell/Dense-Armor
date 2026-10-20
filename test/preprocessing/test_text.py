@@ -82,3 +82,33 @@ def test_check_estimator_tfidf():
 
 def test_check_estimator_hasher():
     check_estimator(FeatureHasher())
+
+
+def test_tokenizer_stop_words_removed_from_unigrams_and_bigrams():
+    tk = Tokenizer(ngrams=2, stop_words=["the", "over"])
+    out = tk.transform_one({"text": "the quick brown fox jumps over the lazy dog"})
+    toks = out["tokens"]
+    assert "the" not in toks
+    assert "over" not in toks
+    assert all("the" not in t.split() for t in toks)
+    assert all("over" not in t.split() for t in toks)
+    assert "quick brown" in toks
+
+
+def test_tokenizer_stop_words_none_is_old_behaviour():
+    tk = Tokenizer(ngrams=2)
+    out = tk.transform_one({"text": "the quick brown fox jumps over the lazy dog"})
+    assert "the" in out["tokens"]
+    assert "over the" in out["tokens"]
+
+
+def test_tokenizer_stop_words_string_raises():
+    with pytest.raises(ValueError, match="no built-in list"):
+        Tokenizer(stop_words="english")
+
+
+def test_tokenizer_stop_words_case_insensitive():
+    tk = Tokenizer(ngrams=1, stop_words=["The", "A"])
+    out = tk.transform_one({"text": "The cat and a dog"})
+    assert "the" not in out["tokens"]
+    assert "a" not in out["tokens"]
