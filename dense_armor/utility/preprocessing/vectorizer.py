@@ -100,6 +100,7 @@ class TextVectorizer(Transformer):
         self.tfidf_ = TFIDF(smooth_idf=smooth_idf, norm=norm)
         self._fitted = False
         self.n_missing_: int = 0
+        self._fit_tokens: list[list[str]] | None = None
         self._vocab_sorted: list[str] | None = None
         self._vocab_index: dict[str, int] | None = None
 
@@ -145,6 +146,7 @@ class TextVectorizer(Transformer):
         self.tfidf_ = TFIDF(
             smooth_idf=self.smooth_idf, norm=self.norm)
         self.n_missing_ = 0
+        self._fit_tokens = None
         self._fitted = False
         self._vocab_sorted: list[str] | None = None
         self._vocab_index: dict[str, int] | None = None
@@ -198,6 +200,7 @@ class TextVectorizer(Transformer):
                 continue
             tokenized.append(
                 self.tokenizer_.transform_one({"text": text})["tokens"])
+        self._fit_tokens = tokenized
         df: dict[str, int] = {}
         for ts in tokenized:
             for term in set(ts):
@@ -209,24 +212,35 @@ class TextVectorizer(Transformer):
         self._freeze_vocabulary()
         return self
 
-    def transform_matrix(self, documents):
+    def transform_matrix(self, documents=None):
         """Scores of many documents as a CSR matrix, in one pass.
 
         Same scores as ``transform_one`` on each document, but the
         vocabulary lookup and the counts are done with numpy instead of
         a Python dict per document. Shape ``(n_documents, n_terms)``,
         columns in the order of ``tfidf_.df_``.
+
+        Args:
+            documents: the documents to score. When ``None``, the tokens
+                kept by the last ``fit`` are reused, so the documents of
+                the fit are not tokenized twice.
         """
         import numpy as np
         from scipy import sparse
-        tokenized = []
-        for doc in documents:
-            text = _as_text(doc)
-            if text is None:
-                tokenized.append([])
-                continue
-            tokenized.append(
-                self.tokenizer_.transform_one({"text": text})["tokens"])
+        if documents is None:
+            if self._fit_tokens is None:
+                raise ValueError(
+                    "transform_matrix() without documents needs a fit first")
+            tokenized = self._fit_tokens
+        else:
+            tokenized = []
+            for doc in documents:
+                text = _as_text(doc)
+                if text is None:
+                    tokenized.append([])
+                    continue
+                tokenized.append(
+                    self.tokenizer_.transform_one({"text": text})["tokens"])
         self._freeze_vocabulary()
         terms = self._vocab_sorted
         vocab = self._vocab_index
