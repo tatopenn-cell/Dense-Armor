@@ -96,13 +96,13 @@ print(idx.n_documents_, S.shape)
 3 (3, 2)
 ```
 
-On the 1,549 chunks and 134 queries of `benchmarks/text_retrieval.json`, the exact float32 index answers a query in **0.000080 s** median over five runs (range 0.000079-0.000119 s), against **0.0508 s** of the loop of `cosine_similarity_many` on the same scores. A single run is one point of the range, not the number: the JSON stores the median and the two ends, and the page repeats them.
+On the 1,547 chunks and 134 queries of `benchmarks/text_retrieval.json`, the exact float32 index answers a query in **0.000061 s** median over five runs (range 0.000058-0.000063 s), against **0.0351 s** of the loop of `cosine_similarity_many` on the same scores. A single run is one point of the range, not the number: the JSON stores the median and the two ends, and the page repeats them.
 
 The top-5 of the exact float32 index is identical to the float64 one on 134 of 134 queries (`float32_top5_identical_to_float64` in the JSON). `max_terms_per_document` drops terms and is an option, not the default: on this corpus 50 terms per document keep the reciprocal rank but change the top-5 of some queries (overlap 0.80 against the exact index, in `pruned_k50_top5_overlap_vs_exact_median`).
 
-## 6. Three ranking primitives from the papers, each for its own case
+## 6. A top-k primitive for a very large corpus
 
-The full product is not the only way to rank. The library has three more primitives, each from a paper, each exact, each for a case where the full product is the wrong tool. On this corpus they are slower than the full product, and the numbers say so.
+The full product is not the only way to rank. `top_k_threshold` is exact and is for a corpus where the full product is prohibitive; on the corpus of this page it is slower than the full product, and the numbers say so.
 
 **The Threshold Algorithm of Fagin, Lotem and Naor (2001).** The cosine is a sum of per-term contributions; with the posting lists sorted by weight descending, the next weight of each list bounds every further contribution, and when that bound is below the fifth score the scan stops. The scores of the touched documents are then recomputed exactly, because a touched document can still grow. It is exact, and it is the primitive for a corpus where the full product is prohibitive.
 
@@ -119,41 +119,11 @@ print([(d, round(s, 3)) for d, s in idx.top_k_threshold({"a": 1.0}, k=2)])
 [(2, 1.0), (0, 0.447)]
 ```
 
-**The triangle inequality for cosine of Schubert (2021).** For any pivot `z`, `sim(x, y) <= sim(x, z)*sim(z, y) + sqrt((1-sim(x, z)^2)(1-sim(z, y)^2))` (Eq. 13, page 6). With a pivot in the index and the query as `x`, the bound says whether a document can still enter the top-k without computing its product. Exact, and it pays with a metric index (VP-tree, M-tree) on a large corpus.
-
-```python
-import numpy as np
-from dense_armor.utility.stats.similarity import SparseCosineIndex
-
-docs = [{"a": 1.0, "b": 2.0}, {"b": 1.0, "c": 3.0}, {"a": 2.0}]
-idx = SparseCosineIndex(docs, dtype=np.float32)
-print([(d, round(s, 3)) for d, s in idx.top_k_schubert({"a": 1.0}, k=2, n_pivots=2)])
-```
-
-```
-[(2, 1.0), (0, 0.447)]
-```
-
-**The hashing trick of Weinberger et al. (2009).** A token goes to one of `m` columns by a deterministic hash, no vocabulary in memory; the collision error on the inner product is `O(1/sqrt(m))` (page 2). It is the primitive for a vocabulary too large to keep, and the exact top-5 is no longer guaranteed.
-
-```python
-from dense_armor.utility.stats.similarity import feature_hash
-
-col, sign = feature_hash("fox", m=1024)
-print(0 <= col < 1024, sign in (-1, 1))
-print(feature_hash("fox", m=1024) == feature_hash("fox", m=1024))
-```
-
-```
-True True
-True
-```
-
 ## 7. What does not work, with the numbers
 
-The three primitives above are exact (134 of 134 queries give the same top-5 as the full product), and on this corpus they are slower than the full product: Fagin 2350 us per query (10.3x the full product), Schubert 109148 us (477x), against 229 us of the full product. The numbers come from `benchmarks/primitives.py`, which writes `benchmarks/primitives.json`. The bound is correct; the random access on the candidates, and the Python per row, cost more than the C product on 1,549 documents. They are the right tool on millions of documents, not here.
+`top_k_threshold` is exact (134 of 134 queries give the same top-5 as the full product), and on this corpus it is slower than the full product: 1587 us per query (14.7x the full product) against 108 us of the full product. The numbers come from `benchmarks/primitives.py`, which writes `benchmarks/primitives.json`. The random access on the candidates, and the Python per row, cost more than the C product on 1,547 documents. It is the right tool on millions of documents, not here.
 
-The build is 0.750 s against 0.562 s of the batch library (1.34x on our side slower). The pipeline is 637 us against 4647 us (7.3x on our side faster); the kernel alone is 80 us and the batch library does not expose a kernel-only path in the benchmark, so the honest comparison is the pipeline. 10x on the build would need 0.075 s. The numbers come from `benchmarks/text_retrieval.json`, a fresh run of `benchmarks/text_retrieval.py` on this commit.
+The build is 0.590 s against 0.400 s of the batch library (1.48x on our side slower). The pipeline is 406 us against 3851 us (9.5x on our side faster); the kernel alone is 61 us and the batch library does not expose a kernel-only path in the benchmark, so the honest comparison is the pipeline. 10x on the build would need 0.075 s. The numbers come from `benchmarks/text_retrieval.json`, a fresh run of `benchmarks/text_retrieval.py` on this commit.
 
 The papers that could go further are not in the folder, or are for a different scale. Feature hashing attacks the build, but the exact top-5 would no longer be guaranteed. Random projection and SVD make the matrix dense, and the sparse product here is 80 us (`query_s` in `benchmarks/text_retrieval.json`): they pay when the original dimension is in the hundreds of thousands. The batched SpMM of Nagasaka et al. (2019) and the CSR5 of Liu and Vinter (2015) are GPU kernels for SpMV and SpMM; the kernel here is `scipy.sparse` CSR on CPU and sparse by sparse, and the 9.27x and 6.09x of those papers are GPU numbers, not ours.
 
@@ -168,14 +138,11 @@ The papers that could go further are not in the folder, or are for a different s
 - Nagasaka, Y., Nukada, A., Kojima, R., Matsuoka, S. (2019). *Batched Sparse Matrix Multiplication for Accelerating Graph Convolutional Networks.* arXiv:1903.11409. Page 2 and Figure 8 page 8: batching several products into one, 9.27x at nB = 64 and 6.09x at nB = 512, cited as the motivation; the measurements there are on GPU and are not claimed here.
 - Liu, W., Vinter, B. (2015). *CSR5: An Efficient Storage Format for Cross-Platform Sparse Matrix-Vector Multiplication.* arXiv:1503.05032. Algorithm 3, page 3: the segmented sum of a CSR product, cited as the description, not as the kernel this class runs.
 - Fagin, R., Lotem, A., Naor, M. (2001). *Optimal Aggregation Algorithms for Middleware.* PODS 2001; JCSS 67(4), 2003. The Threshold Algorithm, section 3: `top_k_threshold`, exact, for a corpus where the full product is prohibitive.
-- Schubert, E. (2021). *A Triangle Inequality for Cosine Similarity.* SISDA 2021, arXiv:2107.04071. Eq. 13, page 6: `top_k_schubert`, exact, for a metric index on a large corpus.
-- Uhlmann, J. K. (1991). *Satisfying general proximity/similarity queries with metric trees.* Information Processing Letters 40(4), 175-179. The VP-tree, the index the Schubert bound pays with; not in the folder.
-- Weinberger, K., Dasgupta, A., Langford, J., Smola, A., Attenberg, J. (2009). *Feature Hashing for Large Scale Multitask Learning.* ICML 2009, arXiv:0902.2206. Section 2 page 1 and the `O(1/sqrt(m))` bound page 2: `feature_hash`, for a vocabulary too large to keep.
 
 ### Choices stated explicitly
 
 - The queries of the benchmark are the first heading and first sentence of each page, and that page is in the corpus: a reciprocal rank of 1.0 for every system is expected, and the benchmark checks that the index agrees with the batch library, not the quality of the retrieval.
-- `top_k_threshold`, `top_k_schubert` and `feature_hash` are additions beyond the files the task lists.
+- `top_k_threshold` is an addition beyond the files the task lists.
 - The library has no built-in stop-word list: a string such as `"english"` raises a `ValueError` that says so, and the caller passes the collection.
 - `smooth_idf=False` is the default and follows the paper: `ln(N / DF)` with no `+1`.
 - `norm="l2"` is the default of `TextVectorizer` and `None` is the default of `TFIDF`.
@@ -183,14 +150,14 @@ The papers that could go further are not in the folder, or are for a different s
 - `memory_class` is `O(vocabulary)` in `TextVectorizer` and `SparseCosineIndex`: the vocabulary grows with the distinct terms unless `max_features` or `max_terms_per_document` caps it. The two classes are not bounded without those caps, and the docstring says so.
 - The kernel is `scipy.sparse` CSR. Liu and Vinter, and Nagasaka et al., are cited as the description of a segmented-sum product and of batching, not as the implementation.
 - `query_many` builds a sparse query matrix, not a dense `n_terms` by `n_queries` one.
-- `top_k_threshold`, `top_k_schubert` and `feature_hash` are exact (the first two) and optional: they do not replace the full product as the default, and their docstrings say when they are the right tool with the measured numbers.
+- `top_k_threshold` is exact and optional: it does not replace the full product as the default, and its docstring says when it is the right tool with the measured numbers.
 
 ### Measured cost
 
-On the 1,549 chunks and 134 queries of `benchmarks/text_retrieval.json`: build 0.750 s, query **0.000080 s** median over five runs (0.000079-0.000119), loop of `cosine_similarity_many` 0.0508 s per query. The `budget_s` of `TextVectorizer` is 1.5 ms, about ten times the p99 of 0.138 ms per document.
+On the 1,547 chunks and 134 queries of `benchmarks/text_retrieval.json`: build 0.590 s, query **0.000061 s** median over five runs (0.000058-0.000063), loop of `cosine_similarity_many` 0.0351 s per query. The `budget_s` of `TextVectorizer` is 1.5 ms, about ten times the p99 of 0.138 ms per document.
 
 ### Development diary
 
-A full numba rewrite of the build, including the tokenizer, was considered and not done: the estimate is 3.5x to 4x on the two loops, not 10x, and it is a project of its own. Fagin, Lotem and Naor (2001) is not on arXiv: the citation says "section 3" and that section number is not verified against the PDF, because the paper is not in the folder. Uhlmann (1991) is not in the folder either, cited bibliographic only.
+A full numba rewrite of the build, including the tokenizer, was considered and not done: the estimate is 3.5x to 4x on the two loops, not 10x, and it is a project of its own. Fagin, Lotem and Naor (2001) is not on arXiv: the citation says "section 3" and that section number is not verified against the PDF, because the paper is not in the folder.
 
 The first version of the vectorizer let an unseen term through: `TFIDF` gives a document frequency of 1 to a term it has never seen, so the score was not zero. The vectorizer now filters the scores to the vocabulary of `df_`. The first version of the index answered with a 1 by N sparse matrix and a `todense`, which is a sparse matrix-matrix product; the query is now a sparse vector and a single product. The page first said that 50 terms per document kept the ranking identical: that compared the reciprocal ranks, not the top-5, and the top-5 overlap with the exact index is 0.80, so the default is the exact index and the pruning is an option.
