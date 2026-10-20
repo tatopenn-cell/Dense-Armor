@@ -89,6 +89,7 @@ nav:
           - Order book: finance/order_book.md
           - Stress: finance/stress.md
           - Streaming: finance/streaming.md
+          - Timing: finance/timing.md
       - Drones:
         - Overview: drones/index.md
         - Actuator fault: drones/actuator_fault.md
