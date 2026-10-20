@@ -43,7 +43,7 @@ print(s["seeds"], s["ticks"], s["alarms"]["median"],
 2. `ret = (price - price[-2]) / price[-2]`: the return is per tick. The crash of five ticks with a drop of 5% gives about **1% per tick**, inside `range_ret=(-0.01, 0.01)`, so Half-Space Trees sees nothing outside the range it was told to expect.
 3. `LODA` starts with `range_init=50` and needs a warm-up before its threshold is stable; the crash at tick 50 of the run falls inside that warm-up.
 
-The relative volume of 10 during the crash is outside `range_vol=(0.5, 1.5)`, and Half-Space Trees can score it. The `and` of the first condition is what keeps the alarm false: with one score out of range and the other inside its warm-up, the pair does not pass. The page states the result and does not tune the pipeline: the task asks what the existing pipeline does, and the code says why the answer is zero.
+The relative volume of 10 during the crash is outside `range_vol=(0.5, 1.5)`, and Half-Space Trees can score it. The `and` of the first condition is what keeps the alarm false: with one score out of range and the other inside its warm-up, the pair does not pass. The page states the result and does not tune the pipeline: the question is what the existing pipeline does, and the code says why the answer is zero.
 
 ## 3. The execution pipeline on the crash
 
@@ -64,7 +64,7 @@ print(e["seeds"], e["ticks"], e["refused"]["median"], e["refused"]["iqr"])
 
 ## 4. What the numbers say, and what they do not
 
-The execution pipeline reacts to the crash, the surveillance pipeline does not. The page does not say that the surveillance pipeline is wrong: it is calibrated for a different time scale, and the page says so. The crash is synthetic, the order sizes and the relative volumes are synthetic (log-normal around one, multiplied by ten during the crash), and the two pipelines are not modified. A tuning of the surveillance pipeline for tick-level crashes is not on this page; it would be a change to the pipeline, and the task does not ask for it.
+The execution pipeline reacts to the crash, the surveillance pipeline does not. The page does not say that the surveillance pipeline is wrong: it is calibrated for a different time scale, and the page says so. The crash is synthetic, the order sizes and the relative volumes are synthetic (log-normal around one, multiplied by ten during the crash), and the two pipelines are not modified. A tuning of the surveillance pipeline for tick-level crashes is not on this page; it would be a change to the pipeline, and the page does not make it.
 
 ## Details
 
@@ -79,7 +79,7 @@ The execution pipeline reacts to the crash, the surveillance pipeline does not. 
 - The crash is synthetic: five ticks of drop, five ticks of recovery, and a Gaussian walk with `vol=0.001` per tick around them. The paper measures on real trade data; the page generates a synthetic event with the paper's shape and says so.
 - The order sizes and the relative volumes are log-normal around one with standard deviation 0.2, multiplied by ten during the crash. The choice is this page's: the paper measures the price, not the sizes, and the multiplier is what makes the refusal rule fire.
 - The surveillance pipeline runs 100 ticks and 5 seeds, not 2,000 and 20: it calls Orca on every tick (121 ms/tick on this host), and 2,000 ticks and 20 seeds would be 80 minutes. The execution pipeline runs 2,000 ticks and 20 seeds because it costs 0.2 ms/order. The two budgets are declared, and a median over 5 seeds is a small-sample median.
-- The page does not tune the surveillance pipeline. A tuning for the tick scale is a change to an existing pipeline, and the task forbids it.
+- The page does not tune the surveillance pipeline. A tuning for the tick scale is a change to an existing pipeline, and the page does not make it.
 
 ### Measured cost
 

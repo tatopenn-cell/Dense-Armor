@@ -32,7 +32,8 @@ if str(ROOT) not in sys.path:
 
 from pipelines.finance.connectors import BoundedStream
 from pipelines.finance.drift_vs_noise import (
-    DriftVsNoisePipeline, synthetic_tick,
+    DriftVsNoisePipeline,
+    synthetic_tick,
 )
 from pipelines.finance.execution import ExecutionPipeline
 from pipelines.finance.order_book import order_flow_imbalance, synthetic_book

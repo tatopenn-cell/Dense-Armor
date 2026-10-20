@@ -11,7 +11,9 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from pipelines.finance.order_book import (
-    order_flow_imbalance, regress, synthetic_book,
+    order_flow_imbalance,
+    regress,
+    synthetic_book,
 )
 
 OUT = ROOT / "benchmarks" / "finance" / "order_book.json"
