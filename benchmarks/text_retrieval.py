@@ -192,6 +192,15 @@ def run(docs_dir: Path, max_queries: int | None = None,
     query_ours = float(np.median(runs))
     query_ours_min = float(np.min(runs))
     query_ours_max = float(np.max(runs))
+    # pipeline: transform_one + prodotto + argsort, lo stesso lavoro del lato batch
+    runs_pipe = []
+    for _ in range(5):
+        t0 = time.perf_counter()
+        for q in queries:
+            scores = vec.transform_one(q)["scores"]
+            _ = np.argsort(-index.query(scores))
+        runs_pipe.append((time.perf_counter() - t0) / max(len(queries), 1))
+    query_ours_pipeline = float(np.median(runs_pipe))
     for j, page in enumerate(pages):
         ranked = np.argsort(-S[:, j])
         top5_ours.append(set(ranked[:5].tolist()))
@@ -216,6 +225,7 @@ def run(docs_dir: Path, max_queries: int | None = None,
                  "build_s": build_ours, "query_s": query_ours,
                  "query_s_min": query_ours_min,
                  "query_s_max": query_ours_max,
+                 "query_s_pipeline": query_ours_pipeline,
                  "n_runs": 5, "method": "sparse"},
         "ours_loop": {"rr_median": float(np.median(rrs_loop)),
                       "rr_iqr": float(np.percentile(rrs_loop, 75)
