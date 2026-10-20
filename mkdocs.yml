@@ -85,6 +85,7 @@ nav:
           - Credit scoring: finance/credit_scoring.md
           - Regime: finance/regime.md
           - Drift vs noise: finance/drift_vs_noise.md
+          - Portfolio: finance/portfolio.md
       - Drones:
         - Overview: drones/index.md
         - Actuator fault: drones/actuator_fault.md
