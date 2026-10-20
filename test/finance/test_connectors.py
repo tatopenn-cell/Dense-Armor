@@ -165,3 +165,78 @@ def test_kafka_client_is_built_and_sends():
         assert produced and produced[0][0] == "k"
     finally:
         del sys.modules["fake_confluent"]
+
+def test_broker_adapter_is_abstract():
+    from pipelines.finance.connectors import BrokerAdapter
+    base = BrokerAdapter(client=None)
+    with pytest.raises(NotImplementedError):
+        base.publish(1)
+
+
+def test_zmq_client_close_calls_close_and_term():
+    import sys
+    import types
+
+    calls = []
+
+    class FakeSock:
+        def connect(self, address):
+            pass
+
+        def send_multipart(self, parts):
+            pass
+
+        def close(self):
+            calls.append("sock.close")
+
+    class FakeContext:
+        def socket(self, kind):
+            return FakeSock()
+
+        def term(self):
+            calls.append("ctx.term")
+
+    fake = types.ModuleType("fake_zmq_close")
+    fake.Context = FakeContext
+    fake.PUB = 1
+    sys.modules["fake_zmq_close"] = fake
+    try:
+        s = ZmqSubscriber(client=None, topic="t")
+        s._package = "fake_zmq_close"
+        c = s._resolve_client()
+        c.close()
+        assert calls == ["sock.close", "ctx.term"]
+    finally:
+        del sys.modules["fake_zmq_close"]
+
+
+def test_kafka_client_flush_calls_flush():
+    import sys
+    import types
+
+    flushed = []
+
+    class FakeProducer:
+        def __init__(self, conf):
+            self.conf = conf
+
+        def produce(self, topic, payload):
+            pass
+
+        def poll(self, timeout):
+            return 0
+
+        def flush(self):
+            flushed.append(True)
+
+    fake = types.ModuleType("fake_confluent_flush")
+    fake.Producer = FakeProducer
+    sys.modules["fake_confluent_flush"] = fake
+    try:
+        s = KafkaConsumer(client=None, topic="k")
+        s._package = "fake_confluent_flush"
+        c = s._resolve_client()
+        c.flush()
+        assert flushed == [True]
+    finally:
+        del sys.modules["fake_confluent_flush"]
