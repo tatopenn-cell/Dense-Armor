@@ -93,9 +93,12 @@ def check_p99_within_budget(est: Any) -> None:
     learn = getattr(est, "learn_one", None)
     if learn is None:
         return
-    from dense_armor.roles.signal import Signal
     import jax.numpy as jnp
 
+    from dense_armor.roles.signal import Signal
+
+    n_warmup = 64
+    n_measured = 200
     signals = [
         Signal(
             values=jnp.array([float(i)]),
@@ -103,21 +106,22 @@ def check_p99_within_budget(est: Any) -> None:
             units=[""],
             t=i * 0.01,
         )
-        for i in range(32)
+        for i in range(n_warmup + n_measured)
     ]
-    for sig in signals[:8]:
+    for sig in signals[:n_warmup]:
         _learn(est, sig)
     latencies: list[float] = []
-    for sig in signals[8:]:
+    for sig in signals[n_warmup:]:
         t0 = time.perf_counter()
         _learn(est, sig)
         latencies.append(time.perf_counter() - t0)
     p99 = float(np.percentile(latencies, 99)) if latencies else 0.0
     # CI runners are slower and more jittery than the machine the
-    # budgets are measured on. A tolerance of half the budget keeps the
-    # check meaningful (an estimator that regresses by 2x or more still
-    # fails) without failing on a single slow sample when only ~24
-    # measurements are taken.
+    # budgets are measured on. With 200 measurements after a warm-up of
+    # 64, the 99th percentile is the second-largest value, not the
+    # maximum: a single JAX compile, a GC pause or a preemption does
+    # not decide it. The tolerance of half the budget stays, so an
+    # estimator that regresses by 2x or more still fails.
     tolerance = max(1e-4, 0.5 * budget)
     assert p99 <= budget + tolerance, (
         f"p99 latency {p99:.3e} s exceeds declared budget "
@@ -135,8 +139,9 @@ def check_memory_growth_bounded(est: Any) -> None:
         return
     if getattr(est, "_raw_memory_usage", None) is None:
         return
-    from dense_armor.roles.signal import Signal
     import jax.numpy as jnp
+
+    from dense_armor.roles.signal import Signal
 
     def _sig(i: int) -> Any:
         return Signal(values=jnp.array([float(i)]), names=["x"], units=[""])
@@ -159,8 +164,9 @@ def check_estimate_variance_non_negative(est: Any) -> None:
     predict = getattr(est, "predict_one", None)
     if predict is None:
         return
-    from dense_armor.roles.signal import Signal
     import jax.numpy as jnp
+
+    from dense_armor.roles.signal import Signal
 
     sig = Signal(values=jnp.array([0.0]), names=["x"], units=[""])
     try:

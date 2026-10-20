@@ -1,0 +1,11 @@
+{
+  "dataset": "synthetic book, planted linear relation",
+  "n_events": 2000,
+  "planted_slope": 0.0002,
+  "noise": 0.001,
+  "estimated_slope": 0.002707639015133891,
+  "intercept": -0.012227241447852671,
+  "r2": 0.6413979314794216,
+  "ofi_median": 200.0,
+  "ofi_max": 200.0
+}

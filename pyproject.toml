@@ -21,6 +21,7 @@ classifiers = [
 dependencies = ["numpy", "jax", "psutil", "osqp", "scipy", "xacro"]
 
 [project.optional-dependencies]
+finance-stream = ["pyzmq>=25", "confluent-kafka>=2"]
 audio = ["scipy"]
 data = ["h5py", "netCDF4"]
 quantum = ["dense-evolution"]
@@ -53,5 +54,5 @@ dense-armor-mcp = "dense_armor.mcp_server.server:main"
 include = ["dense_armor*", "pipelines*"]
 
 [[tool.mypy.overrides]]
-module = ["pyulog", "pyulog.*", "pymavlink", "pymavlink.*", "paho.*", "yaml", "psutil", "scipy", "scipy.*"]
+module = ["pyulog", "pyulog.*", "pymavlink", "pymavlink.*", "paho.*", "yaml", "psutil", "scipy", "scipy.*", "zmq", "confluent_kafka"]
 ignore_missing_imports = true

@@ -1,0 +1,31 @@
+{
+  "capacity": 50,
+  "n": 1000,
+  "ratio": 2.0,
+  "rows": [
+    {
+      "policy": "drop_oldest",
+      "pushed": 1000,
+      "consumed": 500,
+      "dropped_oldest": 450,
+      "dropped_newest": 0,
+      "blocked": 0
+    },
+    {
+      "policy": "drop_newest",
+      "pushed": 1000,
+      "consumed": 500,
+      "dropped_oldest": 0,
+      "dropped_newest": 450,
+      "blocked": 0
+    },
+    {
+      "policy": "block",
+      "pushed": 1000,
+      "consumed": 500,
+      "dropped_oldest": 0,
+      "dropped_newest": 0,
+      "blocked": 450
+    }
+  ]
+}

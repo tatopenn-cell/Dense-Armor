@@ -1,6 +1,6 @@
 # Financial pipelines: multi-model streaming architectures for risk, execution, and fraud detection
 
-This page serves as the index for nine software pipelines that handle the daily data challenges faced by market analysts, banking infrastructure, and payment desks. Every pipeline chains together the core mathematical blocks of the package to solve practical business questions—like identifying market anomalies, filtering out fraudulent transactions, or sizing trade orders safely before execution.
+This page serves as the index for sixteen software pipelines that handle the daily data challenges faced by market analysts, banking infrastructure, and payment desks. Every pipeline chains together the core mathematical blocks of the package to solve practical business questions—like identifying market anomalies, filtering out fraudulent transactions, or sizing trade orders safely before execution.
 
 
 ## Operational Pipelines Matrix
@@ -16,6 +16,13 @@ This page serves as the index for nine software pipelines that handle the daily 
 | **Unsupervised Fraud Detection** | Multi-model anomalous transaction profiling deployed on unlabelled streams. | [Unsupervised fraud](unsupervised_fraud.md) |
 | **Network Intrusion Detection** | Drift-adaptive streaming tree architectures for real-time security perimeters. | [Intrusion detection](intrusion.md) |
 | **Predictive Credit Scoring** | Ensemble online tree models for real-time customer conversion optimization. | [Credit scoring](credit_scoring.md) |
+| **Regime** | Bayesian online changepoint detection on daily returns (BOCPD, Adams and MacKay 2007). | [Regime](regime.md) |
+| **Drift vs noise** | Raw tick returns against a pre-averaged statistic, with a paired Wilcoxon and an A12. | [Drift vs noise](drift_vs_noise.md) |
+| **Portfolio** | Minimum-variance and inverse-volatility weights from an online shrunk covariance (Bodnar et al. 2014). | [Portfolio](portfolio.md) |
+| **Order book** | Order flow imbalance and the linear price impact of Cont, Kukanov and Stoikov (2010). | [Order book](order_book.md) |
+| **Stress** | The existing pipelines on a synthetic flash crash (Braun et al. 2017). | [Stress](stress.md) |
+| **Streaming** | A bounded queue with three policies and two lazy broker adapters. | [Streaming](streaming.md) |
+| **Timing** | Median, IQR, p99 and p99/median of the time per sample, on a declared host. | [Timing](timing.md) |
 
 
 ## Architectural Integration & Layout Standard

@@ -83,6 +83,13 @@ nav:
           - Unsupervised fraud: finance/unsupervised_fraud.md
           - Intrusion detection: finance/intrusion.md
           - Credit scoring: finance/credit_scoring.md
+          - Regime: finance/regime.md
+          - Drift vs noise: finance/drift_vs_noise.md
+          - Portfolio: finance/portfolio.md
+          - Order book: finance/order_book.md
+          - Stress: finance/stress.md
+          - Streaming: finance/streaming.md
+          - Timing: finance/timing.md
       - Drones:
         - Overview: drones/index.md
         - Actuator fault: drones/actuator_fault.md
