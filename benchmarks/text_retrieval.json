@@ -1,19 +1,18 @@
 {
-  "n_chunks": 376,
-  "n_queries": 20,
+  "n_chunks": 1531,
+  "n_queries": 133,
   "ours": {
     "rr_median": 1.0,
     "rr_iqr": 0.0,
-    "build_s": 0.15300142800015237,
-    "query_s": 0.00899065389999123
+    "build_s": 0.6988630719997673,
+    "query_s": 0.039281065796990845
   },
   "sklearn": {
     "rr_median": 1.0,
     "rr_iqr": 0.0,
-    "build_s": 0.11808020799981023,
-    "query_s": 0.00207767574997888
+    "build_s": 0.5701027119998798,
+    "query_s": 0.004316472947369022
   },
-  "wilcoxon_p": 1.0,
-  "a12": 0.5,
-  "wilcoxon_note": "all reciprocal ranks equal: the two systems rank the same chunk first for every query, the test has no pair to compare"
+  "wilcoxon_p": 0.023544102412552784,
+  "a12": 0.5225563909774436
 }
