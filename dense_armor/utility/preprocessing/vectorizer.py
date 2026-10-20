@@ -100,6 +100,8 @@ class TextVectorizer(Transformer):
         self.tfidf_ = TFIDF(smooth_idf=smooth_idf, norm=norm)
         self._fitted = False
         self.n_missing_: int = 0
+        self._vocab_sorted: list[str] | None = None
+        self._vocab_index: dict[str, int] | None = None
 
     def _learn_doc(self, text: str) -> None:
         tokens = self.tokenizer_.transform_one({"text": text})["tokens"]
@@ -144,6 +146,15 @@ class TextVectorizer(Transformer):
             smooth_idf=self.smooth_idf, norm=self.norm)
         self.n_missing_ = 0
         self._fitted = False
+        self._vocab_sorted: list[str] | None = None
+        self._vocab_index: dict[str, int] | None = None
+
+    def _freeze_vocabulary(self) -> None:
+        """Cache the sorted terms and the term-to-column dict, once per fit."""
+        if self._vocab_sorted is None:
+            self._vocab_sorted = sorted(self.tfidf_.df_)
+            self._vocab_index = {
+                term: i for i, term in enumerate(self._vocab_sorted)}
 
     def _apply_max_features(self) -> None:
         if self.max_features is None:
@@ -154,6 +165,8 @@ class TextVectorizer(Transformer):
         ranked = sorted(df.items(), key=lambda kv: (-kv[1], kv[0]))
         keep = {term for term, _ in ranked[: self.max_features]}
         self.tfidf_.df_ = {term: df[term] for term in keep}
+        self._vocab_sorted = None
+        self._vocab_index = None
 
     def fit(
         self, X, y=None, t=None, epochs: int = 1,
@@ -177,15 +190,79 @@ class TextVectorizer(Transformer):
             (2, 1)
         """
         self._reset_state()
+        tokenized = []
         for doc in X:
             text = _as_text(doc)
             if text is None:
                 self.n_missing_ += 1
                 continue
-            self._learn_doc(text)
-            self._fitted = True
+            tokenized.append(
+                self.tokenizer_.transform_one({"text": text})["tokens"])
+        df: dict[str, int] = {}
+        for ts in tokenized:
+            for term in set(ts):
+                df[term] = df.get(term, 0) + 1
+        self.tfidf_.df_ = df
+        self.tfidf_.n_docs_ = len(tokenized)
+        self._fitted = bool(tokenized)
         self._apply_max_features()
+        self._freeze_vocabulary()
         return self
+
+    def transform_matrix(self, documents):
+        """Scores of many documents as a CSR matrix, in one pass.
+
+        Same scores as ``transform_one`` on each document, but the
+        vocabulary lookup and the counts are done with numpy instead of
+        a Python dict per document. Shape ``(n_documents, n_terms)``,
+        columns in the order of ``tfidf_.df_``.
+        """
+        import numpy as np
+        from scipy import sparse
+        tokenized = []
+        for doc in documents:
+            text = _as_text(doc)
+            if text is None:
+                tokenized.append([])
+                continue
+            tokenized.append(
+                self.tokenizer_.transform_one({"text": text})["tokens"])
+        self._freeze_vocabulary()
+        terms = self._vocab_sorted
+        vocab = self._vocab_index
+        V = len(terms)
+        n = len(tokenized)
+        rows_l, cols_l, vals_l = [], [], []
+        for i, ts in enumerate(tokenized):
+            if not ts:
+                continue
+            ids = np.fromiter((vocab[t] for t in ts if t in vocab),
+                              dtype=np.int32)
+            if ids.size == 0:
+                continue
+            uniq, cnt = np.unique(ids, return_counts=True)
+            rows_l.append(np.full(uniq.size, i, dtype=np.int32))
+            cols_l.append(uniq)
+            vals_l.append(cnt.astype(np.float32) / np.float32(len(ts)))
+        if rows_l:
+            rows = np.concatenate(rows_l); cols = np.concatenate(cols_l)
+            vals = np.concatenate(vals_l)
+        else:
+            rows = cols = np.array([], dtype=np.int32)
+            vals = np.array([], dtype=np.float32)
+        M = sparse.csr_matrix((vals, (rows, cols)), shape=(n, V),
+                              dtype=np.float32)
+        df_arr = np.array([self.tfidf_.df_[term] for term in terms],
+                          dtype=np.float32)
+        N = np.float32(max(self.tfidf_.n_docs_, 1))
+        idf = (np.log1p(N / df_arr) if self.smooth_idf
+               else np.log(N / df_arr))
+        M = M.multiply(idf[None, :]).tocsr()
+        if self.norm == "l2":
+            nrm = np.sqrt(np.asarray(M.multiply(M).sum(axis=1)).ravel())
+            nrm[nrm == 0] = 1
+            M = sparse.diags(1 / nrm) @ M
+        return M.tocsr()
 
     def transform(self, documents: Iterable) -> list[dict]:
         """Return one ``{"scores": {term: score}}`` dict per document."""

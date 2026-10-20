@@ -178,6 +178,48 @@ class SparseCosineIndex:
         inv = sparse.diags(1.0 / (norms + 1e-15))
         self.matrix_ = (inv @ mat).astype(self.dtype_).tocsr()
 
+    @classmethod
+    def from_csr(cls, M, vocabulary: dict):
+        """Build the index from a CSR matrix already normalised by row."""
+        obj = cls.__new__(cls)
+        obj.n_documents_ = M.shape[0]
+        obj.max_terms_per_document_ = None
+        obj.dtype_ = M.dtype
+        obj.vocabulary_ = dict(vocabulary)
+        obj.matrix_ = M.tocsr()
+        return obj
+
+    def query_many_sparse(
+        self, Q: sparse.spmatrix, normalized: bool = False,
+    ) -> np.ndarray:
+        """Cosine of each query against every indexed document, Q already sparse.
+
+        Same result as :meth:`query_many`, but the caller passes the
+        queries already in a sparse matrix of shape
+        ``(n_terms, n_queries)`` with the same columns as the index.
+        This skips the Python loop that builds Q from the dicts, which on
+        134 queries costs about as much as the product itself.
+
+        Args:
+            Q: the queries, shape ``(n_terms, n_queries)``, same columns
+                as the index.
+            normalized: if True, the columns of Q already have unit L2
+                norm and the division is skipped. ``transform_matrix``
+                with ``norm="l2"`` gives such a Q.
+
+        Returns:
+            A numpy array of shape ``(n_documents_, n_queries)``.
+        """
+        if Q.shape[1] == 0:
+            return np.zeros((self.n_documents_, 0), dtype=self.dtype_)
+        product: np.ndarray = np.asarray(
+            self.matrix_.dot(Q).todense(), dtype=self.dtype_)
+        if normalized:
+            return product
+        norms = np.sqrt(np.asarray(Q.multiply(Q).sum(axis=0)).ravel())
+        norms = np.where(norms > 0.0, norms, 1.0)
+        return product / norms[None, :]
+
     def query_many(self, queries: list[dict]) -> np.ndarray:
         """Cosine of each query against every indexed document, in one product.
 
