@@ -96,7 +96,7 @@ print(idx.n_documents_, S.shape)
 3 (3, 2)
 ```
 
-On the 1,542 chunks and 134 queries of `benchmarks/text_retrieval.json`, the exact float32 index answers a query in **0.000080 s** median over five runs (range 0.000079-0.000081 s), against **0.0498 s** of the loop of `cosine_similarity_many` on the same scores. A single run is one point of the range, not the number: the JSON stores the median and the two ends, and the page repeats them.
+On the 1,542 chunks and 134 queries of `benchmarks/text_retrieval.json`, the exact float32 index answers a query in **0.000077 s** median over five runs (range 0.000077-0.000080 s), against **0.0398 s** of the loop of `cosine_similarity_many` on the same scores. A single run is one point of the range, not the number: the JSON stores the median and the two ends, and the page repeats them.
 
 The top-5 of the exact float32 index is identical to the float64 one on 134 of 134 queries (`float32_top5_identical_to_float64` in the JSON). `max_terms_per_document` drops terms and is an option, not the default: on this corpus 50 terms per document keep the reciprocal rank but change the top-5 of some queries (overlap 0.80 against the exact index, in `pruned_k50_top5_overlap_vs_exact_median`).
 
@@ -116,14 +116,14 @@ The top-5 of the exact float32 index is identical to the float64 one on 134 of 1
 - The library has no built-in stop-word list: a string such as `"english"` raises a `ValueError` that says so, and the caller passes the collection.
 - `smooth_idf=False` is the default and follows the paper: `ln(N / DF)` with no `+1`.
 - `norm="l2"` is the default of `TextVectorizer` and `None` is the default of `TFIDF`.
-- `max_features` keeps the terms with the highest document frequency, ties broken by alphabetical order.
+- `max_features` keeps the terms with the highest document frequency, ties broken by alphabetical order; the batch system orders by term frequency. Measured in the JSON: `top5_overlap_median_aligned` = 1.0 (no cap on either side), `top5_overlap_median` = 0.8 (cap 20000 on one side only), `top5_overlap_median_both_20000` = 0.9 (both sides at 20000). The selection rule alone changes the top-5 of one query in ten; the cap alone changes one in five.
 - `memory_class` is `O(vocabulary)` in `TextVectorizer` and `SparseCosineIndex`: the vocabulary grows with the distinct terms unless `max_features` or `max_terms_per_document` caps it. The two classes are not bounded without those caps, and the docstring says so.
 - The kernel is `scipy.sparse` CSR. Liu and Vinter, and Nagasaka, Nukada and Kojima, are cited as the description of a segmented-sum product and of batching, not as the implementation.
 - `query_many` builds a sparse query matrix, not a dense `n_terms` by `n_queries` one.
 
 ### Measured cost
 
-On the 1,542 chunks and 134 queries of `benchmarks/text_retrieval.json`: build 0.739 s, query **0.000080 s** median over five runs (0.000079-0.000081), loop of `cosine_similarity_many` 0.0498 s per query. The `budget_s` of `TextVectorizer` is 1.5 ms, about ten times the p99 of 0.138 ms per document.
+On the 1,542 chunks and 134 queries of `benchmarks/text_retrieval.json`: build 0.712 s, query **0.000077 s** median over five runs (0.000077-0.000080), loop of `cosine_similarity_many` 0.0398 s per query. The `budget_s` of `TextVectorizer` is 1.5 ms, about ten times the p99 of 0.138 ms per document.
 
 ### Development diary
 

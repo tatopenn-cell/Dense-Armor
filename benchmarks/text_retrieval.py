@@ -266,6 +266,35 @@ def run(docs_dir: Path, max_queries: int | None = None,
             out["top5_overlap_median"] = float(np.median(overlaps))
             out["top5_overlap_iqr"] = float(
                 np.percentile(overlaps, 75) - np.percentile(overlaps, 25))
+            # aligned: no cap on either side
+            sk_aligned = TfidfVectorizer(stop_words="english",
+                                         ngram_range=(1, 2))
+            X_aligned = sk_aligned.fit_transform(chunks)
+            top5_sk_aligned = []
+            for qi in range(len(pages)):
+                qv = sk_aligned.transform([queries[qi]])
+                ranked = np.argsort(-sk_cos(qv, X_aligned).ravel())
+                top5_sk_aligned.append(set(ranked[:5].tolist()))
+            ov_aligned = np.array(
+                [len(a & b) / 5.0
+                 for a, b in zip(top5_ours, top5_sk_aligned)])
+            out["top5_overlap_median_aligned"] = float(np.median(ov_aligned))
+
+            # both sides capped at 20000: the selection rule alone
+            vec_20k = TextVectorizer(
+                stop_words=sorted(ENGLISH_STOP_WORDS), ngram_range=(1, 2),
+                max_features=20000, norm="l2", smooth_idf=False)
+            vec_20k.fit(chunks)
+            ds_20k = [vec_20k.transform_one(c)["scores"] for c in chunks]
+            qs_20k = [vec_20k.transform_one(q)["scores"] for q in queries]
+            idx_20k = SparseCosineIndex(ds_20k, dtype=np.float32)
+            S_20k = idx_20k.query_many(qs_20k)
+            top5_20k = [set(np.argsort(-S_20k[:, j])[:5].tolist())
+                        for j in range(S_20k.shape[1])]
+            ov_both = np.array(
+                [len(a & b) / 5.0 for a, b in zip(top5_20k, top5_sk)])
+            out["top5_overlap_median_both_20000"] = float(np.median(ov_both))
+
             out["choices"] = _measure_choices(
                 chunks, queries, pages, relevant_of_query,
                 sorted(ENGLISH_STOP_WORDS))
