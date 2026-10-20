@@ -138,3 +138,46 @@ def test_fit_counts_missing_documents():
     v = TextVectorizer().fit(["a b", None, "a c"])
     assert v.tfidf_.n_docs_ == 2
     assert v.n_missing_ == 1
+
+def test_transform_matrix_matches_transform_one():
+    """transform_matrix() and transform_one agree, smooth_idf and norm both."""
+    docs = ["the quick brown fox", "a quick brown dog", "the fox and the dog"]
+    for smooth in (False, True):
+        for norm in ("l2", None):
+            v = TextVectorizer(smooth_idf=smooth, norm=norm)
+            v.fit(docs)
+            M = v.transform_matrix()
+            terms = v._vocab_sorted
+            for i, d in enumerate(docs):
+                s = v.transform_one(d)["scores"]
+                row = {terms[j]: float(M[i, j]) for j in M[i].indices}
+                for term, val in s.items():
+                    assert abs(row.get(term, 0.0) - val) < 1e-6
+
+
+def test_cache_invalidated_after_learn_one():
+    """A term learnt after fit is in the matrix, not only in df_."""
+    v = TextVectorizer()
+    v.fit(["a b"])
+    v.learn_one("quokka")
+    assert "quokka" in v.tfidf_.df_
+    M = v.transform_matrix(["quokka"])
+    assert M.shape[1] == len(v.tfidf_.df_)
+
+
+def test_cache_invalidated_after_load_state_dict():
+    """load_state_dict on a frozen instance rebuilds the cache."""
+    import json
+    v = TextVectorizer().fit(["a b", "a c"])
+    s = v.state_dict()
+    w = TextVectorizer()
+    w.load_state_dict(json.loads(json.dumps(s)))
+    M = w.transform_matrix(["a"])
+    assert M.shape[1] == len(w.tfidf_.df_)
+
+
+def test_fit_tokens_freed_after_transform_matrix():
+    """transform_matrix() without documents frees the tokens it reused."""
+    v = TextVectorizer().fit(["a b", "a c"])
+    v.transform_matrix()
+    assert v._fit_tokens is None

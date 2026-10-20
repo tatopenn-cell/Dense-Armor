@@ -252,12 +252,16 @@ def test_top_k_schubert_single_pivot():
 def test_feature_hash_is_deterministic_and_in_range():
     from dense_armor.utility.stats.similarity import feature_hash
     assert feature_hash("fox", m=1024) == feature_hash("fox", m=1024)
-    assert 0 <= feature_hash("fox", m=1024) < 1024
+    col, sign = feature_hash("fox", m=1024)
+    assert 0 <= col < 1024
+    assert sign in (-1, 1)
     for i in range(100):
-        assert 0 <= feature_hash(f"t{i}", m=64) < 64
+        col, sign = feature_hash(f"t{i}", m=64)
+        assert 0 <= col < 64
+        assert sign in (-1, 1)
 
 
-def test_feature_hash_seed_changes_the_column():
+def test_feature_hash_seed_changes_the_column_or_the_sign():
     from dense_armor.utility.stats.similarity import feature_hash
     assert feature_hash("fox", m=1024, seed=1) != feature_hash("fox", m=1024, seed=0)
 

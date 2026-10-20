@@ -125,6 +125,8 @@ class TextVectorizer(Transformer):
             self.n_missing_ += 1
             return self
         self._learn_doc(text)
+        self._vocab_sorted = None
+        self._vocab_index = None
         return self
 
     def transform_one(self, x, t: float | None = None) -> dict:
@@ -232,6 +234,7 @@ class TextVectorizer(Transformer):
                 raise ValueError(
                     "transform_matrix() without documents needs a fit first")
             tokenized = self._fit_tokens
+            self._fit_tokens = None
         else:
             tokenized = []
             for doc in documents:
@@ -305,6 +308,8 @@ class TextVectorizer(Transformer):
         self.smooth_idf = state["smooth_idf"]
         sw = state.get("stop_words")
         self.stop_words = None if sw is None else tuple(sw)
+        self._vocab_sorted = None
+        self._vocab_index = None
         self.tokenizer_ = Tokenizer(
             ngrams=self.ngram_range[1], stop_words=self.stop_words)
         self.tfidf_ = TFIDF(

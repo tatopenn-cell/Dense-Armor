@@ -343,6 +343,9 @@ class SparseCosineIndex:
             A list of (doc_index, score), highest first, k of them.
         """
         self._build_inverted()
+        qn = float(np.sqrt(sum(float(v) * float(v) for v in q.values())))
+        if qn > 0.0:
+            q = {term: float(v) / qn for term, v in q.items()}
         rows = []
         for term, v in q.items():
             col = self.vocabulary_.get(term)
@@ -448,18 +451,21 @@ class SparseCosineIndex:
             col = self.vocabulary_.get(term)
             if col is not None:
                 q_vec[col] = v
+        qn = float(np.sqrt(np.dot(q_vec, q_vec)))
+        if qn > 0.0:
+            q_vec /= qn
         qp = np.asarray(P @ q_vec).ravel()
         bound = (qp[None, :] * DP
                  + np.sqrt(np.clip(1 - qp[None, :] ** 2, 0, None)
                            * np.clip(1 - DP ** 2, 0, None)))
-        bound = bound.max(axis=1)
+        bound = bound.min(axis=1)
         order = np.argsort(-bound)
         top: list[tuple[int, float]] = []
         kth = 0.0
         for d in order:
             if len(top) == k and bound[d] < kth:
                 break
-            s = float(M[d] @ q_vec)
+            s = float(np.asarray(M[d] @ q_vec).ravel()[0])
             if len(top) < k or s > kth:
                 top.append((int(d), s))
                 top.sort(key=lambda kv: -kv[1])
@@ -501,14 +507,15 @@ class SparseCosineIndex:
         return self.matrix_.dot(qd) / qn
 
 
-def feature_hash(term: str, m: int = 1 << 20, seed: int = 0) -> int:
-    """Column of a term in the hashing trick of Weinberger et al. 2009.
+def feature_hash(term: str, m: int = 1 << 20, seed: int = 0) -> tuple[int, int]:
+    """Column and sign of a term in the hashing trick of Weinberger et al. 2009.
 
     Weinberger, K., Dasgupta, A., Langford, J., Smola, A., Attenberg, J.
     (2009). Feature Hashing for Large Scale Multitask Learning. ICML 2009,
     arXiv:0902.2206. Section 2, page 1: a token is mapped to one of m
-    columns by a hash, with no vocabulary in memory. The collision error
-    on the inner product is O(1/sqrt(m)), page 2.
+    columns by a hash, with no vocabulary in memory, and a second hash
+    gives the sign in (-1, 1) so the collision error is unbiased. The
+    collision error on the inner product is O(1/sqrt(m)), page 2.
 
     When to use it: a vocabulary too large to keep in memory, where the
     collision distortion is acceptable. On a small corpus the exact
@@ -522,15 +529,20 @@ def feature_hash(term: str, m: int = 1 << 20, seed: int = 0) -> int:
         seed: the hash seed.
 
     Returns:
-        The column index, in [0, m).
+        A pair (col, sign): the column in [0, m), and the sign in (-1, 1).
 
     Example:
-        >>> 0 <= feature_hash("fox", m=1024) < 1024
+        >>> col, sign = feature_hash("fox", m=1024)
+        >>> 0 <= col < 1024 and sign in (-1, 1)
         True
         >>> feature_hash("fox", m=1024) == feature_hash("fox", m=1024)
         True
     """
     import hashlib
-    digest = hashlib.blake2b(f"{seed}:{term}".encode(),
-                             digest_size=8).digest()
-    return int.from_bytes(digest, "little") % m
+    col_digest = hashlib.blake2b(f"c:{seed}:{term}".encode(),
+                                 digest_size=8).digest()
+    sign_digest = hashlib.blake2b(f"s:{seed}:{term}".encode(),
+                                  digest_size=8).digest()
+    col = int.from_bytes(col_digest, "little") % m
+    sign = 1 if int.from_bytes(sign_digest, "little") % 2 == 0 else -1
+    return col, sign
