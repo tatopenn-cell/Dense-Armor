@@ -141,10 +141,6 @@ def main() -> int:
     n_raw_detected = sum(1 for x in raw_d if x is not None)
     n_rob_detected = sum(1 for x in rob_d if x is not None)
 
-    raw_calm_sum = _summary([float(x) for x in raw_calm])
-    rob_calm_sum = _summary([float(x) for x in rob_calm])
-    raw_delay_sum = _summary([float(x) for x in raw_imputed])
-    rob_delay_sum = _summary([float(x) for x in rob_imputed])
     raw_delay_none_sum = _summary(raw_d)
     rob_delay_none_sum = _summary(rob_d)
     summary = {
