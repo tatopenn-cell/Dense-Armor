@@ -104,7 +104,7 @@ class OnlineGaussianNB(Classifier):
         return float(-0.5 * np.sum(np.log(2.0 * np.pi * var)
                                     + (z - self._mu[y]) ** 2 / var))
 
-    def predict_proba_one(self, x) -> dict:
+    def predict_proba_one(self, x: dict, t: float | None = None) -> dict:
         if not self._n:
             return {}
         z = self._to_vec(x)
@@ -212,7 +212,7 @@ class OnlineSoftmaxRegression(Classifier):
             self._W[c] = self._W[c] - step * g
         return self
 
-    def predict_proba_one(self, x) -> dict:
+    def predict_proba_one(self, x: dict, t: float | None = None) -> dict:
         if not self._classes:
             return {}
         z = self._to_vec(x)
@@ -338,7 +338,7 @@ class DriftAdaptiveClassifier(Classifier):
                 self._bg_hits = deque(maxlen=self.window)
         return self
 
-    def predict_proba_one(self, x) -> dict:
+    def predict_proba_one(self, x: dict, t: float | None = None) -> dict:
         return self._main.predict_proba_one(x)
 
     @classmethod

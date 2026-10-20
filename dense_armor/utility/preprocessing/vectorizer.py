@@ -52,7 +52,7 @@ class TextVectorizer(Transformer):
             or a bad ``norm``.
     """
 
-    budget_s = 5e-3
+    budget_s = 1.5e-3
     memory_class = "O(vocabulary)"
 
     def __init__(

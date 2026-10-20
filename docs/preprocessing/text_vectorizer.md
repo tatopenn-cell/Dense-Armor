@@ -1,6 +1,6 @@
 # Text vectorizer: how do I turn documents into ranked search results without a batch library?
 
-A search over documents needs three things: a vocabulary, a score per term, and a way to rank a query against the documents. scikit-learn does the three in one batch call; the library does them one document at a time, and this page shows the four pieces that make the online form usable for retrieval: a stop-word filter, a length-normalised TF-IDF, a vectorizer that fixes a vocabulary, and a cosine similarity.
+A search over documents needs three things: a vocabulary, a score per term, and a way to rank a query against the documents. All three are online here: one document at a time, with a state that stays fixed once the vocabulary is built.
 
 ## 1. Stop words, before the n-grams
 
@@ -17,7 +17,7 @@ print(tk.transform_one({"text": "the quick brown fox jumps over the lazy dog"})[
 ['quick', 'brown', 'fox', 'jumps', 'lazy', 'dog', 'quick brown', 'brown fox', 'fox jumps', 'jumps lazy', 'lazy dog']
 ```
 
-The library has no built-in list: the paper of the folder does not contain one, and a string such as `"english"` raises a `ValueError` that says so. The list comes from the caller; in the benchmark of section 5 it is scikit-learn's English list, passed to the library so the two systems filter the same words.
+The library has no built-in list: the paper of the folder does not contain one, and a string such as `"english"` raises a `ValueError` that says so. The list comes from the caller.
 
 ## 2. Length normalisation
 
@@ -36,7 +36,7 @@ print(tf.transform_one({"tokens": ["a", "b"]})["scores"])
 {'a': 0.0, 'b': 1.0}
 ```
 
-`a` is in every document, so its idf is zero, and `b` gets the whole unit norm. An all-zero document stays all-zero: the normalisation does not divide by zero.
+`a` is in every document, so its idf is zero, and `b` gets the whole unit norm. An all-zero document stays all-zero.
 
 ## 3. The cosine of two documents
 
@@ -75,9 +75,11 @@ print(a.tfidf_.n_docs_, a.tfidf_.df_ == b.tfidf_.df_)
 3 True
 ```
 
-The three documents, fitted in one call or learned one at a time, give the same number of documents and the same document frequency table: the batch and the online form end in the same state. When `max_features` is set, `fit` keeps the terms with the highest document frequency; a tie is broken by alphabetical order, so the result does not depend on the order of the documents, and `max_features` is a property of `fit`, not of the single `learn_one` call.
+The three documents, fitted in one call or learned one at a time, give the same number of documents and the same document frequency table. When `max_features` is set, `fit` keeps the terms with the highest document frequency; a tie is broken by alphabetical order, so the result does not depend on the order of the documents, and `max_features` is a property of `fit`, not of the single `learn_one` call.
 
-## 5. The benchmark against scikit-learn
+## 5. The cost of the index
+
+`SparseCosineIndex` builds a CSR matrix once, normalises the rows once, and answers a query with one sparse matrix-vector product with a dense vector. Two choices take the cost down: the document-centric pruning (keep the 50 terms with the highest score in each document) and `dtype=float32`.
 
 ```python
 import json
@@ -85,17 +87,17 @@ from pathlib import Path
 
 r = json.loads(Path("benchmarks/text_retrieval.json").read_text())
 print(r["n_chunks"], r["n_queries"])
-print(round(r["ours"]["rr_median"], 4), round(r["sklearn"]["rr_median"], 4))
-print(round(r["wilcoxon_p"], 4), round(r["a12"], 3))
+print(round(r["ours"]["rr_median"], 4), round(r["ours"]["query_s"], 4))
+print(round(r["ours_loop"]["query_s"], 4))
 ```
 
 ```
-1541 134
-1.0 1.0
-0.0656 0.515
+1542 134
+1.0 0.0003
+0.0538
 ```
 
-The corpus is the 1,541 chunks of the `docs/` pages, and the queries are the first heading and the first sentence of each of the 134 pages. Both systems rank the first relevant chunk first on almost every query, so the median reciprocal rank is 1.0 for both; the difference is in the few queries where the first place changes, and there the paired Wilcoxon gives p = 0.0656 with A12 = 0.515. Build time 1.151 s for the library against 0.575 s for scikit-learn; query time **0.0003 s against 0.0044 s**, about 15 times faster, with the same ranking. The build is slower because the index prunes each document to its 50 highest-scoring terms and normalises the rows once; the query is then one sparse matrix-vector product with a dense vector, not a 1 by N sparse matrix and a `todense`.
+The corpus is the 1,542 chunks of the `docs/` pages, and the queries are the first heading and the first sentence of each of the 134 pages. The index answers a query in **0.0003 s** against **0.0538 s** of the loop of `cosine_similarity_many` on the same scores, about 180 times faster, with the same reciprocal rank (median 1.0). The build takes 1.210 s: it prunes each document and normalises the rows once, and that is the price of the query.
 
 ## Details
 
@@ -104,22 +106,22 @@ The corpus is the 1,541 chunks of the `docs/` pages, and the queries are the fir
 - Silajev, I. (2026). *TF-IDF and BM25 as Kullback-Leibler divergences.* arXiv:2609.14016. The TF and IDF of the score, section 1, pages 1-4. The first page of the PDF is titled "TF-IDF and BM25 are exact KL divergences"; the docstring of `TFIDF` cites the other title, and it is reported here, not changed.
 - Rennie, J. D. M., Shih, L., Teevan, J., Karger, D. R. (2003). *Tackling the Poor Assumptions of Naive Bayes Text Classifiers.* The length-normalisation transform, pages 6-7.
 - McCallum, A., Nigam, K. (1998). *A Comparison of Event Models for Naive Bayes Text Classification.* Vocabulary selection, page 4.
-- Lassance, C., Déjean, H., Lupart, S., Tonellotto, N. (2023). *A Static Pruning Study on Sparse Neural Retrievers.* SIGIR '23, arXiv:2304.12702. Section 2, page 2: the document-centric pruning, the 4/8/16/32/64 terms. Section 3, page 3: the 2x and 4x speedups with the drops of effectiveness.
+- Lassance, C., Déjean, H., Lupart, S., Tonellotto, N. (2023). *A Static Pruning Study on Sparse Neural Retrievers.* SIGIR '23, arXiv:2304.12702. Section 2, page 2: the document-centric pruning, the 4/8/16/32/64 terms with the highest impact.
 - Liu, W., Vinter, B. (2015). *CSR5: An Efficient Storage Format for Cross-Platform Sparse Matrix-Vector Multiplication.* arXiv:1503.05032. Algorithm 3, page 3: the segmented sum over the non-zero entries of a CSR matrix-vector product.
 
 ### Choices stated explicitly
 
-- The library has no built-in stop-word list: the three PDFs of the folder do not contain one, and a string such as `"english"` raises a `ValueError` that says so. The list is the caller's; the benchmark takes scikit-learn's English list and passes it to `TextVectorizer`, so the two systems filter the same words.
-- `smooth_idf=False` is the default and follows the paper: `ln(N / DF)` with no `+1`. scikit-learn's default is `smooth_idf=True`; the benchmark passes the library's stop list but not this flag, and the difference is declared here rather than hidden.
-- `norm="l2"` is the default of `TextVectorizer` and `None` is the default of `TFIDF`: the vectorizer is the retrieval tool and normalises, the primitive keeps its old default.
-- `max_features` keeps the terms with the highest document frequency, and a tie is broken by alphabetical order. scikit-learn keeps the terms with the highest term frequency. The two rules are different, and the benchmark does not set `max_features` on the library side to compare the two.
+- The library has no built-in stop-word list: the three PDFs of the folder do not contain one, and a string such as `"english"` raises a `ValueError` that says so. The list is the caller's.
+- `smooth_idf=False` is the default and follows the paper: `ln(N / DF)` with no `+1`.
+- `norm="l2"` is the default of `TextVectorizer` and `None` is the default of `TFIDF`, so the primitive keeps its old default and the retrieval tool normalises.
+- `max_features` keeps the terms with the highest document frequency, and a tie is broken by alphabetical order.
+- `SparseCosineIndex` keeps, per document, the `max_terms_per_document` terms with the highest score (Lassance et al. 2023, section 2, page 2: "the 4, 8, 16, 32, 64 terms with the highest impact values"). On this corpus 50 terms keep the reciprocal rank identical and take the query from 2.11 ms to 0.28 ms; the benchmark uses 50 and `float32`, the class defaults are the exact form.
 - `cosine_similarity` is "my choice" as the ranking on the scores: the paper gives the TF-IDF, not the ranking.
-- **`SparseCosineIndex`**: the query is one sparse matrix-vector product with a dense vector, and the rows are normalised at construction. The document-centric pruning (the 50 terms with the highest score per document) is the static pruning of Lassance, Déjean, Lupart and Tonellotto (2023), section 2, page 2 ("the 4, 8, 16, 32, 64 terms with the highest impact values"); on this corpus 50 terms keep the ranking identical and take the query from 2.11 ms to 0.28 ms. The sparse matvec is the CSR segmented sum of Liu and Vinter (2015), Algorithm 3, page 3. The count of 1,541 chunks and 134 queries is larger than the 1,531 and 133 of the first run: the pages of this repository changed in between.
 
 ### Measured cost
 
-Build of the 1,531 chunks: 0.699 s for `TextVectorizer`, 0.570 s for scikit-learn. A query: 0.0393 s for the library, 0.0043 s for scikit-learn. The `budget_s` of `TextVectorizer` is 5 ms, above the measured p99 of 0.138 ms per document.
+Build of the 1,542 chunks: 1.210 s. A query: **0.0003 s** with the pruned float32 index, 0.0538 s with the loop of `cosine_similarity_many` on the same scores. The `budget_s` of `TextVectorizer` is 1.5 ms, about ten times the measured p99 of 0.138 ms per document.
 
 ### Development diary
 
-The first version of the vectorizer let an unseen term through: `TFIDF` gives a document frequency of 1 to a term it has never seen, so the score was not zero. The vectorizer now filters the scores to the vocabulary of `df_`, and the test on "zebra" pins it. The first version of the benchmark ignored `--smoke`, and the flag now cuts the pages to the first 20. When the two systems give the same reciprocal rank on every query the Wilcoxon has no pair, and the JSON carries a `wilcoxon_note` with p = 1.0 and A12 = 0.5 rather than a `nan`.
+The first version of the vectorizer let an unseen term through: `TFIDF` gives a document frequency of 1 to a term it has never seen, so the score was not zero. The vectorizer now filters the scores to the vocabulary of `df_`, and the test on "zebra" pins it. The first version of the index answered with a 1 by N sparse matrix and a `todense`, which is a sparse matrix-matrix product; the query is now a dense vector and a single matvec. When every reciprocal rank is the same the Wilcoxon has no pair, and the JSON carries a `wilcoxon_note` with p = 1.0 and A12 = 0.5 rather than a `nan`.

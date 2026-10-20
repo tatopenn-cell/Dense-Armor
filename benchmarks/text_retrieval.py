@@ -134,11 +134,13 @@ def run(docs_dir: Path, max_queries: int | None = None,
                                 dtype=np.float32)
 
     rrs = []
+    top5_ours = []
     t0 = time.perf_counter()
     for qs, page in zip(q_scores, pages):
         rel = relevant_of_query[page]
         sims = index.query(qs)
         ranked = np.argsort(-sims)
+        top5_ours.append(set(ranked[:5].tolist()))
         rrs.append(_rr(ranked, rel))
     query_ours = (time.perf_counter() - t0) / max(len(queries), 1)
     rrs = np.array(rrs)
@@ -177,13 +179,20 @@ def run(docs_dir: Path, max_queries: int | None = None,
             build_sk = time.perf_counter() - t0
             t0 = time.perf_counter()
             rrs_sk = []
+            top5_sk = []
             for qi, page in enumerate(pages):
                 qv = sk.transform([queries[qi]])
                 sims = sk_cos(qv, X).ravel()
                 ranked = np.argsort(-sims)
+                top5_sk.append(set(ranked[:5].tolist()))
                 rrs_sk.append(_rr(ranked, relevant_of_query[page]))
             query_sk = (time.perf_counter() - t0) / max(len(pages), 1)
             rrs_sk = np.array(rrs_sk)
+            overlaps = np.array(
+                [len(a & b) / 5.0 for a, b in zip(top5_ours, top5_sk)])
+            out["top5_overlap_median"] = float(np.median(overlaps))
+            out["top5_overlap_iqr"] = float(
+                np.percentile(overlaps, 75) - np.percentile(overlaps, 25))
             out["sklearn"] = {
                 "rr_median": float(np.median(rrs_sk)),
                 "rr_iqr": float(np.percentile(rrs_sk, 75) - np.percentile(rrs_sk, 25)),
@@ -225,6 +234,8 @@ def main() -> int:
         print(f"sklearn:   RR median {s['rr_median']:.4f} IQR {s['rr_iqr']:.4f} "
               f" build {s['build_s']:.3f}s query {s['query_s']:.4f}s")
         print(f"Wilcoxon p {r['wilcoxon_p']:.4f}  A12 {r['a12']:.3f}")
+        print(f"top-5 overlap median {r['top5_overlap_median']:.3f} "
+              f"IQR {r['top5_overlap_iqr']:.3f}")
     else:
         print(f"sklearn: not computed ({r.get('sklearn_error', '?')})")
     args.out.write_text(json.dumps(r, indent=2) + "\n", encoding="utf-8")
