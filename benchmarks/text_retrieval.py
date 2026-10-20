@@ -78,6 +78,58 @@ def build_corpus(docs_dir: Path) -> tuple[list[str], list[str], list[str]]:
 
 
 
+
+def _measure_choices(chunks, queries, pages, relevant_of_query,
+                     stop_list) -> dict:
+    """Top-5 overlap of the library against the batch system, per choice.
+
+    The baseline is the library aligned with the batch system: the same
+    stop list, ``smooth_idf=False``, ``norm="l2"``. Each entry changes one
+    choice and keeps the others at the baseline, so the number is the
+    effect of that choice alone.
+    """
+    from sklearn.feature_extraction.text import TfidfVectorizer  # type: ignore[import-untyped]
+    from sklearn.metrics.pairwise import cosine_similarity as sk_cos  # type: ignore[import-untyped]
+
+    sk = TfidfVectorizer(stop_words="english", ngram_range=(1, 2))
+    X = sk.fit_transform(chunks)
+    top5_sk = []
+    for qi in range(len(pages)):
+        qv = sk.transform([queries[qi]])
+        ranked = np.argsort(-sk_cos(qv, X).ravel())
+        top5_sk.append(set(ranked[:5].tolist()))
+
+    def _overlap(vec_kwargs):
+        vec = TextVectorizer(**vec_kwargs)
+        vec.fit(chunks)
+        doc_scores = [vec.transform_one(c)["scores"] for c in chunks]
+        q_scores = [vec.transform_one(q)["scores"] for q in queries]
+        idx = SparseCosineIndex(doc_scores, max_terms_per_document=50,
+                                    dtype=np.float32)
+        top5 = []
+        for qs in q_scores:
+            ranked = np.argsort(-idx.query(qs))
+            top5.append(set(ranked[:5].tolist()))
+        ov = np.array([len(a & b) / 5.0 for a, b in zip(top5, top5_sk)])
+        return float(np.median(ov)), float(
+            np.percentile(ov, 75) - np.percentile(ov, 25))
+
+    base = {"stop_words": stop_list, "ngram_range": (1, 2), "norm": "l2",
+            "smooth_idf": False}
+    out: dict = {}
+    m, i = _overlap(base)
+    out["baseline"] = {"top5_overlap_median": m, "top5_overlap_iqr": i}
+    m, i = _overlap({**base, "stop_words": None})
+    out["stop_words_none"] = {"top5_overlap_median": m, "top5_overlap_iqr": i}
+    m, i = _overlap({**base, "smooth_idf": True})
+    out["smooth_idf_true"] = {"top5_overlap_median": m, "top5_overlap_iqr": i}
+    m, i = _overlap({**base, "norm": None})
+    out["norm_none"] = {"top5_overlap_median": m, "top5_overlap_iqr": i}
+    m, i = _overlap({**base, "max_features": 20000})
+    out["max_features_20000"] = {"top5_overlap_median": m,
+                                 "top5_overlap_iqr": i}
+    return out
+
 def _rr(ranked: np.ndarray, relevant: set[int]) -> float:
     for i, idx in enumerate(ranked):
         if int(idx) in relevant:
@@ -193,6 +245,9 @@ def run(docs_dir: Path, max_queries: int | None = None,
             out["top5_overlap_median"] = float(np.median(overlaps))
             out["top5_overlap_iqr"] = float(
                 np.percentile(overlaps, 75) - np.percentile(overlaps, 25))
+            out["choices"] = _measure_choices(
+                chunks, queries, pages, relevant_of_query,
+                sorted(ENGLISH_STOP_WORDS))
             out["sklearn"] = {
                 "rr_median": float(np.median(rrs_sk)),
                 "rr_iqr": float(np.percentile(rrs_sk, 75) - np.percentile(rrs_sk, 25)),
