@@ -5,9 +5,8 @@ steady-state runs, so the compilation cost does not pollute the per-call
 latency.
 """
 
-from typing import Any
-
 import time
+from typing import Any
 
 import jax
 import numpy as np

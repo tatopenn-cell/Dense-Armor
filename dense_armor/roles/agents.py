@@ -25,11 +25,11 @@ References
 JSON Schema draft-07 (IETF draft-handrews-json-schema-01).
 """
 import json
-from typing import Any, Mapping, Optional
+from collections.abc import Mapping
+from typing import Any
 
 from dense_armor.roles.physics import unit_spec_of
 from dense_armor.roles.signal import Signal
-
 
 DEFAULT_INPUT_SCHEMA: Mapping[str, Any] = {
     "type": "object",

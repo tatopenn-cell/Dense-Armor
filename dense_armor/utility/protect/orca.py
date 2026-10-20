@@ -1,23 +1,24 @@
-# -*- coding: utf-8 -*-
 """
 utility/orca.py
 Universal AI Orchestrator Shield (ORCA) -- orchestratore dinamico
 selettivo context-aware a 4 fasi.
 """
-import time, logging
-from collections import deque, Counter
-from typing import Callable, Optional, Tuple
-import numpy as np
+import logging
+import time
+from collections import Counter, deque
+from collections.abc import Callable
+
 import jax
 import jax.numpy as jnp
+import numpy as np
 
+from dense_armor.core.damping_operator import apply_damping_blend
 from dense_armor.core.engine import AdaptiveSignalStabilizer
 from dense_armor.core.memory import UniversalMemoryGuard
 from dense_armor.core.noise import AIHardwareProfiler
-from dense_armor.utility.misc.collatz import ABCollatz
-from dense_armor.core.damping_operator import apply_damping_blend
 from dense_armor.utility.anomaly.curvature import curvature
 from dense_armor.utility.anomaly.resonance_search import apply_fast_resonance
+from dense_armor.utility.misc.collatz import ABCollatz
 from dense_armor.utility.protect.arbiter import route_and_correct
 
 logger = logging.getLogger(__name__)
@@ -41,7 +42,7 @@ class Orca:
 
     def __init__(self, static_threshold: float = 0.15, initial_damping: float = 0.85,
                  alpha: float = 0.05, val_e: float = -4.0,
-                 chunk_threshold: Optional[int] = None, min_free_ram_percentage: float = 0.15,
+                 chunk_threshold: int | None = None, min_free_ram_percentage: float = 0.15,
                  reference_memory_size: int = 32, reference_recall_min_score: float = 0.90) -> None:
         """val_e — esponente di scala target per la compressione log10 in ingresso;
         chunk_threshold — dimensione oltre la quale un batch viene processato a blocchi;
@@ -131,7 +132,7 @@ class Orca:
         piuttosto che un OOM del processo qualche chunk piu' avanti."""
         self._memory_guard.check_memory_safety()
 
-    def _recall_reference(self, row_corrupted_flat: np.ndarray, slice_shape: tuple) -> Optional[np.ndarray]:
+    def _recall_reference(self, row_corrupted_flat: np.ndarray, slice_shape: tuple) -> np.ndarray | None:
         """Cerca nella banca dei riferimenti puliti (stessa shape) quello piu'
         simile all'input corrotto corrente via apply_fast_resonance. Ritorna
         None (nessun richiamo) se la banca per questa shape e' vuota o se il
@@ -174,7 +175,7 @@ class Orca:
 
     def _applica_arbitro(
         self, co_row_flat: np.ndarray, purified_row_flat: np.ndarray, radius: int = 10,
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Instrada ogni punto verso il correttore giusto invece di uno
         solo per l'intera riga (vedi utility/arbiter.py e
         test/test_arbiter_orca_integration.py per il confronto reale che
@@ -462,9 +463,9 @@ class Orca:
 
     def protect_and_forward(
         self,
-        ai_model_callable: Optional[Callable],
+        ai_model_callable: Callable | None,
         x_corrupted: np.ndarray,
-        x_reference: Optional[np.ndarray] = None,
+        x_reference: np.ndarray | None = None,
         use_input_shield: bool = True,
         use_model_injection: bool = True,
         use_output_shield: bool = True,

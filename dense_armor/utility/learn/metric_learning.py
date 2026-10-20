@@ -9,7 +9,7 @@ from collections import deque
 
 import numpy as np
 
-from dense_armor.roles import Root, Classifier
+from dense_armor.roles import Classifier, Root
 
 
 class MetricLearner(Root):

@@ -12,7 +12,8 @@ The bridge has no extra dependency: ``embed`` is supplied by the caller.
 forward compatibility, but the module imports without it.
 """
 import json
-from typing import Any, Callable, Dict, Optional, Sequence
+from collections.abc import Callable, Sequence
+from typing import Any
 
 from dense_armor.roles.estimator import Estimator
 
@@ -44,11 +45,11 @@ class LLMEmbeddingClassifier(Estimator):
         self.embed = embed
         self.classifier = classifier
 
-    def _features(self, text: str) -> Dict[str, float]:
+    def _features(self, text: str) -> dict[str, float]:
         vec = self.embed(text)
         return {f"e{i}": float(v) for i, v in enumerate(vec)}
 
-    def learn_one(self, text: str, y: Any, t: Optional[float] = None):
+    def learn_one(self, text: str, y: Any, t: float | None = None):
         x = self._features(text)
         try:
             self.classifier.learn_one(x, y, t=t)
@@ -57,20 +58,20 @@ class LLMEmbeddingClassifier(Estimator):
         return self
 
     def predict_proba_one(self, text: str,
-                          t: Optional[float] = None) -> Dict[Any, float]:
+                          t: float | None = None) -> dict[Any, float]:
         x = self._features(text)
         try:
             return self.classifier.predict_proba_one(x, t=t)
         except TypeError:
             return self.classifier.predict_proba_one(x)
 
-    def predict_one(self, text: str, t: Optional[float] = None):
+    def predict_one(self, text: str, t: float | None = None):
         p = self.predict_proba_one(text, t=t)
         if not p:
             return None
         return max(p, key=p.get)
 
-    def describe(self) -> Dict[str, Any]:
+    def describe(self) -> dict[str, Any]:
         """JSON-serialisable description for an LLM agent."""
         inner = self.classifier.describe()
         return {

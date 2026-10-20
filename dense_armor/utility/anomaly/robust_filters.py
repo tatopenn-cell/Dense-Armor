@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 robust_filters.py -- quattro rilevatori di anomalie "a basso costo", nessuna
 meccanica pesante (nessun modello dinamico, nessuno stato, nessuna
@@ -29,7 +28,6 @@ I quattro metodi, in ordine di introduzione storica:
   contro le statistiche "ripulite".
 """
 import math
-from typing import List, Tuple
 
 import numpy as np
 
@@ -81,7 +79,7 @@ def _jensen_shannon(a: np.ndarray, b: np.ndarray, n_bins: int = None, pseudo: fl
     return 0.5 * kl_pm + 0.5 * kl_qm
 
 
-def chauvenet_criterion(x: np.ndarray, radius: int = 10) -> Tuple[np.ndarray, List[int]]:
+def chauvenet_criterion(x: np.ndarray, radius: int = 10) -> tuple[np.ndarray, list[int]]:
     """Criterio di Chauvenet (1863) su finestra locale di raggio `radius`.
 
     Per il punto i, con la finestra come campione (media mu, std sigma, size
@@ -115,7 +113,7 @@ def chauvenet_criterion(x: np.ndarray, radius: int = 10) -> Tuple[np.ndarray, Li
     return out, anomalie
 
 
-def tukey_fences(x: np.ndarray, radius: int = 10, k: float = 1.5) -> Tuple[np.ndarray, List[int]]:
+def tukey_fences(x: np.ndarray, radius: int = 10, k: float = 1.5) -> tuple[np.ndarray, list[int]]:
     """Tukey's fences / IQR su finestra locale di raggio `radius`.
 
     Q1/Q3 = 25/75-esimo percentile della finestra, IQR = Q3-Q1. Il punto i e'
@@ -139,7 +137,7 @@ def tukey_fences(x: np.ndarray, radius: int = 10, k: float = 1.5) -> Tuple[np.nd
     return out, anomalie
 
 
-def hampel_filter(x: np.ndarray, radius: int = 10, n_sigmas: float = 3.0) -> Tuple[np.ndarray, List[int]]:
+def hampel_filter(x: np.ndarray, radius: int = 10, n_sigmas: float = 3.0) -> tuple[np.ndarray, list[int]]:
     """Hampel filter su finestra locale di raggio `radius`.
 
     mediana e MAD (Median Absolute Deviation) della finestra, scalato per
@@ -170,7 +168,7 @@ def hampel_filter(x: np.ndarray, radius: int = 10, n_sigmas: float = 3.0) -> Tup
     return out, anomalie
 
 
-def sigma_clip(x: np.ndarray, radius: int = 10, n_sigmas: float = 3.0, max_iters: int = 5) -> Tuple[np.ndarray, List[int]]:
+def sigma_clip(x: np.ndarray, radius: int = 10, n_sigmas: float = 3.0, max_iters: int = 5) -> tuple[np.ndarray, list[int]]:
     """Sigma-clipping iterativo (standard in astronomia: stacking, fotometria)
     su finestra locale di raggio `radius`.
 
@@ -220,7 +218,7 @@ def sigma_clip(x: np.ndarray, radius: int = 10, n_sigmas: float = 3.0, max_iters
 def pressure_valve(
     x: np.ndarray, radius: int = 10, soglia_pressione: float = 8.0, n_sigmas: float = 3.0,
     ref_mult: int = 3, k_molla: float = 3.0,
-) -> Tuple[np.ndarray, List[int], np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, list[int], np.ndarray, np.ndarray]:
     """Orchestratore automatico dei quattro rilevatori sopra: non un voto
     (quanti metodi segnalano il punto), una combinazione a MINIMA VARIANZA
     vincolata -- lo stimatore BLUE (Best Linear Unbiased Estimator) classico

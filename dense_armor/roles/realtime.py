@@ -26,8 +26,9 @@ West, D. H. D. (1979). Updating mean and variance estimates: an
 """
 import gc
 import time
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Callable, Optional, Sequence
+from typing import Any
 
 import jax
 import jax.numpy as jnp
@@ -35,7 +36,6 @@ import numpy as np
 
 from dense_armor.roles import Root
 from dense_armor.roles.signal import Signal
-
 
 DEFAULT_WARMUP = 10
 
@@ -64,19 +64,19 @@ class ProfileResult:
     memory_end_b: int
     memory_growth_b: int
     memory_class: str
-    budget_s: Optional[float]
+    budget_s: float | None
     n_samples: int
     n_warmup: int
 
     @property
-    def fits(self) -> Optional[bool]:
+    def fits(self) -> bool | None:
         """``True`` if ``p99_s`` is at or below the declared ``budget_s``."""
         if self.budget_s is None:
             return None
         return self.p99_s <= self.budget_s
 
 
-def _budget_of(est: Any) -> Optional[float]:
+def _budget_of(est: Any) -> float | None:
     return getattr(est, "budget_s", None)
 
 
@@ -172,7 +172,7 @@ class RealtimePipeline:
     steps: list[Any]
     period_s: float
     require_budget: bool = True
-    _total_budget_s: Optional[float] = field(init=False, default=None)
+    _total_budget_s: float | None = field(init=False, default=None)
 
     def __post_init__(self) -> None:
         if self.period_s <= 0:
@@ -198,11 +198,11 @@ class RealtimePipeline:
         self._total_budget_s = total
 
     @property
-    def total_budget_s(self) -> Optional[float]:
+    def total_budget_s(self) -> float | None:
         return self._total_budget_s
 
     @property
-    def headroom_s(self) -> Optional[float]:
+    def headroom_s(self) -> float | None:
         if self._total_budget_s is None:
             return None
         return self.period_s - self._total_budget_s
@@ -226,7 +226,7 @@ class PureEW(Root):
         memory_class: declared memory class, ``"O(1)"`` by construction.
     """
 
-    budget_s: Optional[float] = 1e-4
+    budget_s: float | None = 1e-4
     memory_class: str = "O(1)"
 
     def __init__(self, alpha: float = 0.1) -> None:

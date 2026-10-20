@@ -53,6 +53,13 @@ dense-armor-mcp = "dense_armor.mcp_server.server:main"
 [tool.setuptools.packages.find]
 include = ["dense_armor*", "pipelines*"]
 
+[tool.ruff]
+target-version = "py310"
+extend-exclude = [".claude"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "UP"]
+
 [[tool.mypy.overrides]]
 module = ["pyulog", "pyulog.*", "pymavlink", "pymavlink.*", "paho.*", "yaml", "psutil", "scipy", "scipy.*", "zmq", "confluent_kafka"]
 ignore_missing_imports = true

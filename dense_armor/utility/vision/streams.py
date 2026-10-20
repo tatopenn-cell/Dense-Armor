@@ -464,7 +464,7 @@ class VideoFileStream(VideoStream):
         stop: int | None = None,
         stride: int = 1,
         max_frames: int | None = None,
-        rotate: str | int | float | bool = "auto",
+        rotate: str | float | bool = "auto",
         follow: bool = False,
         wait_s: float = 0.05,
         max_waits: int | None = 200,
@@ -565,8 +565,7 @@ class VideoFileStream(VideoStream):
                     waits = 0
                     t_ms = float(cap.get(self._cv2.CAP_PROP_POS_MSEC) or 0.0)
                     t_here = t_offset + t_ms / 1000.0
-                    if t_here < last_t:
-                        t_here = last_t
+                    t_here = max(t_here, last_t)
                     last_t = t_here
                     if self._in_range(global_index):
                         arr = self._apply_rotation(frame)

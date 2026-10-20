@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 dynamics/urdf_dynamics.py
 ===========================
@@ -43,9 +42,9 @@ hand-built geometric Jacobian used for the mass matrix.
 """
 import xml.etree.ElementTree as ET
 
-import numpy as np
 import jax
 import jax.numpy as jnp
+import numpy as np
 
 jax.config.update("jax_enable_x64", True)
 

@@ -26,7 +26,7 @@ from collections import deque
 
 import numpy as np
 
-from dense_armor.roles import Signal, Transformer
+from dense_armor.roles import Transformer
 from dense_armor.utility.stream.merge import merge_by_time
 from dense_armor.utility.vision.motion import GlobalMotion
 
@@ -179,7 +179,7 @@ class FrameJointFusion(Transformer):
         n = len(fv_n)
         best_shift = 0
         best_corr = -2.0
-        for shift in range(0, max_shift + 1):
+        for shift in range(max_shift + 1):
             a = fv_n[shift:]
             b = jv_n[:n - shift]
             if len(a) < 4 or a.std() < 1e-9 or b.std() < 1e-9:

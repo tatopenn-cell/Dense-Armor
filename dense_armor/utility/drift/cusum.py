@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 utility/cusum.py
 =================
@@ -51,7 +50,6 @@ span, median/1.4826*MAD center-scale) so a point's "z" here is in the
 same robust-sigma units classify_segments already reports, rather than
 introducing a second, incompatible notion of scale.
 """
-from typing import Tuple
 
 import numpy as np
 
@@ -61,7 +59,7 @@ def _window_causal(x: np.ndarray, i: int, span: int) -> np.ndarray:
     return x[lo:i]
 
 
-def _robust_center_scale(w: np.ndarray) -> Tuple[float, float]:
+def _robust_center_scale(w: np.ndarray) -> tuple[float, float]:
     med = float(np.median(w))
     mad = float(np.median(np.abs(w - med)))
     return med, 1.4826 * mad
@@ -71,7 +69,7 @@ def cusum_detector(
     x: np.ndarray, radius: int = 10, ref_mult: int = 3,
     k: float = 0.5, h: float = 20.0, eps: float = 1e-9,
     reference: str = "adaptive",
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray]:
     """Two-sided CUSUM on the same causal robust-z-score classify_segments
     uses, so a sustained drift too gradual to cross classify_segments'
     OWN instantaneous n_sigmas threshold still accumulates and eventually

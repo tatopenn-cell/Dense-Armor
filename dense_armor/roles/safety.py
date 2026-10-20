@@ -28,12 +28,12 @@ import hmac
 import io
 import pickle
 import time
+from collections.abc import Callable
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any
 
-from dense_armor.roles import Root, Estimator
-
+from dense_armor.roles import Estimator, Root
 
 CHECKPOINT_VERSION = 1
 
@@ -85,7 +85,7 @@ class HealthMonitor(Root):
         self.drift_mult = drift_mult
         self.degraded_mult = degraded_mult
         self.recent_: list[float] = []
-        self.baseline_: Optional[float] = None
+        self.baseline_: float | None = None
         self.n_ = 0
 
     def _state_from_window(self) -> Health:
@@ -158,9 +158,9 @@ class SafeEstimator(Estimator):
     def __init__(
         self,
         model: Any,
-        guard: Optional[Callable[[Any], bool]] = None,
+        guard: Callable[[Any], bool] | None = None,
         fallback: Any = None,
-        monitor: Optional[HealthMonitor] = None,
+        monitor: HealthMonitor | None = None,
     ) -> None:
         self.model = model
         self.guard = guard
@@ -180,7 +180,7 @@ class SafeEstimator(Estimator):
         """Current :class:`Health` state."""
         return self.monitor.state
 
-    def learn_one(self, x: Any, y: Any = None, t: Optional[float] = None):
+    def learn_one(self, x: Any, y: Any = None, t: float | None = None):
         """Learn from ``(x, y)`` unless the guard flags ``x``."""
         self._time_step(t)
         if self.is_flagged(x):
@@ -207,7 +207,7 @@ class SafeEstimator(Estimator):
     def predict_one(
         self,
         x: Any,
-        t: Optional[float] = None,
+        t: float | None = None,
         return_std: bool = False,
         return_estimate: bool = False,
     ) -> Any:
@@ -225,7 +225,7 @@ class SafeEstimator(Estimator):
         self._last_good_ = out
         return out
 
-    def score_one(self, x: Any, t: Optional[float] = None) -> float:
+    def score_one(self, x: Any, t: float | None = None) -> float:
         """Delegate ``score_one`` to the wrapped model, or NaN if absent."""
         self._time_step(t)
         m = self.model

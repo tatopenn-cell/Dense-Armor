@@ -252,7 +252,8 @@ class TextVectorizer(Transformer):
             cols_l.append(uniq)
             vals_l.append(cnt.astype(np.float32) / np.float32(len(ts)))
         if rows_l:
-            rows = np.concatenate(rows_l); cols = np.concatenate(cols_l)
+            rows = np.concatenate(rows_l)
+            cols = np.concatenate(cols_l)
             vals = np.concatenate(vals_l)
         else:
             rows = cols = np.array([], dtype=np.int32)

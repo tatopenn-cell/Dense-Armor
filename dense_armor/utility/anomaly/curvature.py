@@ -1,6 +1,7 @@
 import jax
 import jax.numpy as jnp
 
+
 # Versione ottimizzata ad altissima densità matematica (XLA-Fused)
 @jax.jit
 def curvature(x_current: jnp.ndarray, x_reference: jnp.ndarray, scale: float = 1.0, delta: float = 1e-6) -> jnp.ndarray:

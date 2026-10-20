@@ -48,8 +48,6 @@ import numpy as np
 from dense_armor.roles import Transformer
 
 
-
-
 def _unpack(x):
     """Return the array from a dict, a Frame or an array."""
     if isinstance(x, dict):

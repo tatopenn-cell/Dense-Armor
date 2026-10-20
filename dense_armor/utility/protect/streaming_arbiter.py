@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 utility/streaming_arbiter.py
 =============================
@@ -19,12 +18,11 @@ on the same series. With smaller `max_delay`, labels near run boundaries may
 change (documented in the latency table of `arbiter.md`).
 """
 
-from typing import List, Optional, Tuple
 
 import numpy as np
 
 
-def _robust_center_scale(w: np.ndarray) -> Tuple[float, float]:
+def _robust_center_scale(w: np.ndarray) -> tuple[float, float]:
     med = float(np.median(w))
     mad = float(np.median(np.abs(w - med)))
     return med, 1.4826 * mad
@@ -74,13 +72,13 @@ class StreamingArbiter:
         self.spike_run_max = spike_run_max
         self.max_delay = int(max_delay)
         self.eps = eps
-        self._x: List[float] = []
-        self._deviante: List[bool] = []
-        self._med_rif: List[float] = []
-        self._labels: List[Optional[str]] = []
-        self._corrected: List[float] = []
+        self._x: list[float] = []
+        self._deviante: list[bool] = []
+        self._med_rif: list[float] = []
+        self._labels: list[str | None] = []
+        self._corrected: list[float] = []
         self._next_undecided: int = 0
-        self._emitted: List[Tuple[int, str, float]] = []
+        self._emitted: list[tuple[int, str, float]] = []
 
     def _causal_window(self, i: int) -> np.ndarray:
         lo = max(0, i - self.radius * self.ref_mult)
@@ -157,7 +155,7 @@ class StreamingArbiter:
             self._assign(s, j, label, H)
             self._next_undecided = j
 
-    def update(self, x: float) -> List[Tuple[int, str, float]]:
+    def update(self, x: float) -> list[tuple[int, str, float]]:
         """Add a sample and return the samples finalised at this step."""
         self._emitted = []
         self._x.append(float(x))
@@ -167,7 +165,7 @@ class StreamingArbiter:
         self._sweep(forced=False)
         return list(self._emitted)
 
-    def flush(self) -> List[Tuple[int, str, float]]:
+    def flush(self) -> list[tuple[int, str, float]]:
         """Finalise every sample still pending."""
         self._emitted = []
         self._sweep(forced=True)
@@ -213,10 +211,10 @@ class StreamingHealing:
         self.sustain_threshold = sustain_threshold
         self.wide_mult = wide_mult
         self.max_delay = int(max_delay)
-        self._x: List[float] = []
-        self._decided: List[Optional[float]] = []
+        self._x: list[float] = []
+        self._decided: list[float | None] = []
         self._next: int = 0
-        self._emitted: List[Tuple[int, float]] = []
+        self._emitted: list[tuple[int, float]] = []
 
     def _decide(self, i: int, H: int) -> float:
         wide = self.radius * self.wide_mult
@@ -248,14 +246,14 @@ class StreamingHealing:
             self._emitted.append((k, self._decided[k]))
             self._next += 1
 
-    def update(self, x: float) -> List[Tuple[int, float]]:
+    def update(self, x: float) -> list[tuple[int, float]]:
         self._emitted = []
         self._x.append(float(x))
         self._decided.append(None)
         self._sweep(forced=False)
         return list(self._emitted)
 
-    def flush(self) -> List[Tuple[int, float]]:
+    def flush(self) -> list[tuple[int, float]]:
         self._emitted = []
         self._sweep(forced=True)
         return list(self._emitted)

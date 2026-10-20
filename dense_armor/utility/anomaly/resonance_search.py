@@ -1,8 +1,9 @@
-# -*- coding: utf-8 -*-
 import jax
 import jax.numpy as jnp
 import numpy as np
+
 from dense_armor.core.damping_operator import apply_damping_blend
+
 
 @jax.jit
 def _resonance_scores(database_matrix: jnp.ndarray, query_vector: jnp.ndarray, kappa: float, delta_eff: float, stress_segnale: float) -> jnp.ndarray:

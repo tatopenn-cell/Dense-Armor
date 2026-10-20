@@ -231,7 +231,7 @@ Some specifics:
 
 ## Contributing
 
-Contributions are welcome. The library is built to be extended one estimator at a time, following the same interface (`learn_one` / `predict_one` / `transform_one`) and the same checks (`dense_armor.checks`).
+Contributions are welcome. The library is built to be extended one estimator at a time, following the same interface (`learn_one` / `predict_one` / `transform_one`) and the same checks (`dense_armor.checks`). Code style is checked with `ruff check dense_armor`, configured in `pyproject.toml`.
 
 ---
 

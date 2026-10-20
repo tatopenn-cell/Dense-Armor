@@ -22,14 +22,14 @@ Fitzpatrick, R. (2008). Maxwell's equations and the principles of
     electromagnetism. Jones & Bartlett — for the SI unit conventions.
 """
 import xml.etree.ElementTree as ET
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Mapping, Optional, Sequence
+from typing import Any
 
 import numpy as np
 
-from dense_armor.roles import Estimator, Transformer
-
+from dense_armor.roles import Transformer
 
 DIMENSIONLESS = "1"
 
@@ -47,7 +47,7 @@ class UnitSpec:
     outputs: Mapping[str, str] = field(default_factory=dict)
 
 
-def unit_spec_of(est: Any) -> Optional[UnitSpec]:
+def unit_spec_of(est: Any) -> UnitSpec | None:
     """Return the ``UnitSpec`` declared by ``est``, or ``None``.
 
     An estimator declares its units by setting a class attribute
@@ -116,13 +116,13 @@ class UnitCheckedPipeline(Transformer):
     def __init__(
         self,
         steps: Sequence[Any],
-        output_units: Optional[Mapping[str, str]] = None,
+        output_units: Mapping[str, str] | None = None,
     ) -> None:
         self.steps = list(steps)
         self.output_units = dict(output_units) if output_units else None
-        self.step_units: list[tuple[Optional[Mapping[str, str]],
-                                    Optional[Mapping[str, str]]]] = []
-        prev_outputs: Optional[Mapping[str, str]] = None
+        self.step_units: list[tuple[Mapping[str, str] | None,
+                                    Mapping[str, str] | None]] = []
+        prev_outputs: Mapping[str, str] | None = None
         for i, step in enumerate(self.steps):
             spec = unit_spec_of(step)
             if spec is None:
@@ -237,7 +237,7 @@ def limits_from_urdf(source: str | Path | Any) -> JointLimits:
         ValueError: if no joint with a ``<limit>`` block is found.
     """
     if hasattr(source, "path"):
-        path = Path(getattr(source, "path"))
+        path = Path(source.path)
     else:
         path = Path(str(source))
     if not path.is_file():
