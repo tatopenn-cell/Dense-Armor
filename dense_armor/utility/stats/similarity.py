@@ -115,7 +115,7 @@ class SparseCosineIndex:
     """
 
     budget_s = 2e-3
-    memory_class = "O(vocabulary)"  # unbounded unless max_terms_per_document is set
+    memory_class = "O(vocabulary)"
 
     def __init__(
         self,

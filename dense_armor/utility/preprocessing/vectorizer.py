@@ -64,7 +64,7 @@ class TextVectorizer(Transformer):
     """
 
     budget_s = 1.5e-3
-    memory_class = "O(vocabulary)"  # unbounded unless max_features is set
+    memory_class = "O(vocabulary)"
 
     def __init__(
         self,

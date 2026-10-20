@@ -223,6 +223,24 @@ def run(docs_dir: Path, max_queries: int | None = None,
                       "query_s": query_loop, "method": "loop"},
     }
 
+    idx64 = SparseCosineIndex(doc_scores)
+    S64 = idx64.query_many(q_scores)
+    top64 = np.argsort(-S64, axis=0)[:5]
+    top32 = np.argsort(-S, axis=0)[:5]
+    same = sum(int(np.array_equal(top64[:, j], top32[:, j]))
+               for j in range(len(q_scores)))
+    out["float32_top5_identical_to_float64"] = same
+    out["float32_top5_total"] = len(q_scores)
+
+    idx_pruned = SparseCosineIndex(doc_scores, max_terms_per_document=50,
+                                   dtype=np.float32)
+    S_pruned = idx_pruned.query_many(q_scores)
+    ov_pruned = np.array(
+        [len(set(np.argsort(-S_pruned[:, j])[:5].tolist())
+             & set(top32[:, j].tolist())) / 5.0
+         for j in range(len(q_scores))])
+    out["pruned_k50_top5_overlap_vs_exact_median"] = float(np.median(ov_pruned))
+
     if use_sklearn:
         try:
             from sklearn.feature_extraction.text import TfidfVectorizer  # type: ignore[import-untyped]

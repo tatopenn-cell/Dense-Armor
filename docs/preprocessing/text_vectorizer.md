@@ -95,12 +95,10 @@ print(idx.n_documents_, S.shape)
 ```
 3 (3, 2)
 ```
-1541 (1541, 1)
-```
 
-On the 1,541 chunks and 134 queries of `benchmarks/text_retrieval.json`, the exact float32 index answers a query in **0.000118 s** median over five runs (range 0.000117-0.000126 s), against **0.0458 s** of the loop of `cosine_similarity_many` on the same scores. A single run is one point of the range, not the number: the JSON stores the median and the two ends, and the page repeats them.
+On the 1,542 chunks and 134 queries of `benchmarks/text_retrieval.json`, the exact float32 index answers a query in **0.000080 s** median over five runs (range 0.000079-0.000081 s), against **0.0498 s** of the loop of `cosine_similarity_many` on the same scores. A single run is one point of the range, not the number: the JSON stores the median and the two ends, and the page repeats them.
 
-The top-5 of the exact float32 index is identical to the float64 one on 134 of 134 queries. `max_terms_per_document` drops terms and is an option, not the default: on this corpus 50 terms per document keep the reciprocal rank but change the top-5 of some queries (overlap 0.80 against the exact index).
+The top-5 of the exact float32 index is identical to the float64 one on 134 of 134 queries (`float32_top5_identical_to_float64` in the JSON). `max_terms_per_document` drops terms and is an option, not the default: on this corpus 50 terms per document keep the reciprocal rank but change the top-5 of some queries (overlap 0.80 against the exact index, in `pruned_k50_top5_overlap_vs_exact_median`).
 
 ## Details
 
@@ -125,7 +123,7 @@ The top-5 of the exact float32 index is identical to the float64 one on 134 of 1
 
 ### Measured cost
 
-On the 1,541 chunks and 134 queries of `benchmarks/text_retrieval.json`: build 1.137 s, query **0.000118 s** median over five runs (0.000117-0.000126), loop of `cosine_similarity_many` 0.0458 s per query. The `budget_s` of `TextVectorizer` is 1.5 ms, about ten times the p99 of 0.138 ms per document.
+On the 1,542 chunks and 134 queries of `benchmarks/text_retrieval.json`: build 0.739 s, query **0.000080 s** median over five runs (0.000079-0.000081), loop of `cosine_similarity_many` 0.0498 s per query. The `budget_s` of `TextVectorizer` is 1.5 ms, about ten times the p99 of 0.138 ms per document.
 
 ### Development diary
 
