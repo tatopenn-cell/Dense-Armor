@@ -79,7 +79,7 @@ where `pi_t(r)` is the predictive probability of the new sample given the data s
 
 ### Measured cost
 
-`RegimePipeline.run` on the 1,253 returns of `GSPC.csv` takes 0.46 ms per sample median on this host, and the detector p99 is 1.94 ms per sample. The budget of `BayesianOnlineChangepoint` is set to 2 ms, measured on this host.
+`RegimePipeline.run` on the 1,253 returns of `GSPC.csv` takes about 0.4 ms per sample median on this host. The 99th percentile moves between runs on the same host (0.5 ms to 1.9 ms on three runs), because it is one sample on 1,253; the median is the stable number and it is the one stated. The budget of the detector is 14.9 ms, about ten times the p99 of 1.5 ms measured on a 12,000-sample stream, where the long stream is the one the budget is for. The budget of `BayesianOnlineChangepoint` is set to 2 ms, measured on this host.
 
 ### Development diary
 
