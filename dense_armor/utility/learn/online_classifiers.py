@@ -10,7 +10,6 @@ drift detector fires. All return calibrated-ready probabilities, so
 
 from collections import deque
 from copy import deepcopy
-from typing import Optional
 
 import numpy as np
 
@@ -65,7 +64,7 @@ class OnlineGaussianNB(Classifier):
         self.alpha = alpha
         self.var_smoothing = var_smoothing
         self.eps = eps
-        self._keys: Optional[list] = None
+        self._keys: list | None = None
         self._n: dict = {}
         self._mu: dict = {}
         self._m2: dict = {}
@@ -169,7 +168,7 @@ class OnlineSoftmaxRegression(Classifier):
         self.l2 = l2
         self.adaptive = adaptive
         self.eps = eps
-        self._keys: Optional[list] = None
+        self._keys: list | None = None
         self._W: dict = {}
         self._G: dict = {}
         self._classes: list = []

@@ -10,12 +10,12 @@ pipelines, checks and evaluators without the core depending on it.
 """
 
 from dense_armor.roles.anomaly_detector import AnomalyDetector, AnomalyGate
-from dense_armor.roles.root import Root, InconsistentVersionWarning
 from dense_armor.roles.classifier import Classifier
 from dense_armor.roles.drift_detector import DriftDetector
 from dense_armor.roles.estimator import Estimator
 from dense_armor.roles.protection import Protected
 from dense_armor.roles.regressor import Regressor
+from dense_armor.roles.root import InconsistentVersionWarning, Root
 from dense_armor.roles.transformer import Transformer, TransformerSupervised
 from dense_armor.roles.wrapper import ModelWrapper
 
@@ -46,38 +46,46 @@ if _river_base is not None:
 del _ROLE_MAP
 
 __all__ = [
-    "Signal",
     "AdaptiveConformalRegressor",
+    "AnomalyDetector",
+    "AnomalyGate",
+    "Classifier",
+    "DriftDetector",
     "Estimate",
+    "Estimator",
+    "InconsistentVersionWarning",
+    "ModelWrapper",
+    "Protected",
     "PureEW",
     "RealtimePipeline",
+    "Regressor",
+    "Root",
     "SafeEstimator",
+    "Signal",
+    "Transformer",
+    "TransformerSupervised",
     "UnitCheckedPipeline",
     "UnitSpec",
     "call_json",
     "limits_from_urdf",
     "profile",
     "schema",
-
-    "AnomalyDetector",
-    "AnomalyGate",
-    "Root",
-    "Classifier",
-    "DriftDetector",
-    "Estimator",
-    "InconsistentVersionWarning",
-    "Protected",
-    "Regressor",
-    "Transformer",
-    "TransformerSupervised",
-    "ModelWrapper",
 ]
 
-from dense_armor.roles.signal import Signal  # noqa: E402
-from dense_armor.roles.agents import call_json, schema  # noqa: E402
-from dense_armor.roles.physics import UnitCheckedPipeline, UnitSpec, limits_from_urdf  # noqa: E402
-from dense_armor.roles.realtime import PureEW, RealtimePipeline, profile  # noqa: E402
-from dense_armor.roles.safety import SafeEstimator  # noqa: E402
-from dense_armor.roles.uncertainty import AdaptiveConformalRegressor, Estimate  # noqa: E402
-from dense_armor.roles.safety import Health  # noqa: E402
-from dense_armor.roles.physics import PhysicalLimitsGuard  # noqa: E402
+from dense_armor.roles.agents import call_json, schema
+from dense_armor.roles.physics import (
+    PhysicalLimitsGuard,
+    UnitCheckedPipeline,
+    UnitSpec,
+    limits_from_urdf,
+)
+from dense_armor.roles.realtime import PureEW, RealtimePipeline, profile
+from dense_armor.roles.safety import (
+    Health,
+    SafeEstimator,
+)
+from dense_armor.roles.signal import Signal
+from dense_armor.roles.uncertainty import (
+    AdaptiveConformalRegressor,
+    Estimate,
+)

@@ -39,7 +39,7 @@ Gupta, C., Ramdas, A. (2023). Online Platt scaling with calibeating.
 """
 from collections import deque
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 
 from dense_armor.roles import Regressor
 from dense_armor.roles._util import call_with_t
@@ -47,8 +47,8 @@ from dense_armor.roles.signal import Signal
 from dense_armor.utility.learn.calibration import OnlinePlattScaling
 
 __all__ = [
-    "Estimate",
     "AdaptiveConformalRegressor",
+    "Estimate",
     "OnlinePlattScaling",
 ]
 
@@ -99,7 +99,7 @@ class AdaptiveConformalRegressor(Regressor):
         window: number of past residuals used to compute ``Q_t``.
     """
 
-    budget_s: Optional[float] = 5e-4
+    budget_s: float | None = 5e-4
     memory_class: str = "O(window)"
 
     def __init__(
@@ -117,8 +117,8 @@ class AdaptiveConformalRegressor(Regressor):
         self.residuals_: deque[float] = deque(maxlen=window)
         self.n_ = 0
         self.n_miss_ = 0
-        self._last_lo_: Optional[float] = None
-        self._last_hi_: Optional[float] = None
+        self._last_lo_: float | None = None
+        self._last_hi_: float | None = None
 
     def _quantile(self, p: float) -> float:
         if not self.residuals_:
@@ -132,7 +132,7 @@ class AdaptiveConformalRegressor(Regressor):
         return s[lo] + (pos - lo) * (s[hi] - s[lo])
 
     def learn_one(
-        self, x: Signal | dict, y: Any, t: Optional[float] = None
+        self, x: Signal | dict, y: Any, t: float | None = None
     ) -> "AdaptiveConformalRegressor":
         """Update the base model and the miscoverage level.
 
@@ -160,7 +160,7 @@ class AdaptiveConformalRegressor(Regressor):
         return self
 
     def predict_interval(
-        self, x: Signal | dict, t: Optional[float] = None
+        self, x: Signal | dict, t: float | None = None
     ) -> tuple[float, float]:
         """Return the current conformal interval ``(lo, hi)``."""
         self._time_step(t)
@@ -173,7 +173,7 @@ class AdaptiveConformalRegressor(Regressor):
     def predict_one(
         self,
         x: Signal | dict,
-        t: Optional[float] = None,
+        t: float | None = None,
         return_std: bool = False,
         return_estimate: bool = False,
     ) -> Any:
@@ -195,7 +195,7 @@ class AdaptiveConformalRegressor(Regressor):
         return 1.0 - self.n_miss_ / self.n_
 
     def transform_one(
-        self, x: Signal | dict, t: Optional[float] = None
+        self, x: Signal | dict, t: float | None = None
     ) -> dict:
         lo, hi = self.predict_interval(x, t=t)
         return {

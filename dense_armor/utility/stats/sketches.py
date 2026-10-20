@@ -263,8 +263,7 @@ class HyperLogLog(Transformer):
         index = h & (self.m_ - 1)
         w = h >> self.precision
         rho = self._rho(w, 64 - self.precision)
-        if rho > self.registers_[index]:
-            self.registers_[index] = rho
+        self.registers_[index] = max(self.registers_[index], rho)
         self.n_ += 1
         return self
 

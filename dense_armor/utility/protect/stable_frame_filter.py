@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 utility/stable_frame_filter.py
 ================================
@@ -49,13 +48,12 @@ Discovery, "Predicting a robot teleoperation calibration-offset regime"
      not dramatic noise reduction (less real device rotation correlates
      with less incidental translational-acceleration variance).
 """
-from typing import Optional
 
 import numpy as np
 
 
 def velocity_gated_stable_mask(
-    reference: np.ndarray, vel_threshold: float, axis: Optional[int] = None,
+    reference: np.ndarray, vel_threshold: float, axis: int | None = None,
     already_rate: bool = False,
 ) -> np.ndarray:
     """Boolean mask, True where `reference` indicates a "slow" or

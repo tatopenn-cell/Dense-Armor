@@ -12,8 +12,13 @@ import json
 import numpy as np
 
 from .models import (
-    CleanSignalInput, DetectAnomaliesInput, HealSeriesInput, RobustFilterInput,
-    StreamEndInput, StreamStartInput, StreamUpdateInput,
+    CleanSignalInput,
+    DetectAnomaliesInput,
+    HealSeriesInput,
+    RobustFilterInput,
+    StreamEndInput,
+    StreamStartInput,
+    StreamUpdateInput,
 )
 from .server import mcp
 
@@ -94,6 +99,7 @@ async def dense_armor_health() -> str:
         available_ram_gb, total_ram_gb, ram_percent_free}.
     """
     import psutil
+
     import dense_armor
     from dense_armor.core.noise import AIHardwareProfiler
 
@@ -267,7 +273,10 @@ async def dense_armor_stream_start(params: StreamStartInput) -> str:
     """
     import time
     import uuid
-    from dense_armor.utility.anomaly.streaming import MultiChannelStreamingDeviationDetector
+
+    from dense_armor.utility.anomaly.streaming import (
+        MultiChannelStreamingDeviationDetector,
+    )
 
     now = time.monotonic()
     for sid in [s for s, t in _STREAM_LAST_SEEN.items() if now - t > STREAM_SESSION_TTL_S]:

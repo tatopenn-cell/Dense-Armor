@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 utility/one_sided.py
 ======================
@@ -41,7 +40,6 @@ stay general-purpose two-sided detectors, usable directly for signals
 where a decrease is just as meaningful as an increase (e.g. a
 similarity score, a confidence score bounded on both sides).
 """
-from typing import Tuple
 
 import numpy as np
 

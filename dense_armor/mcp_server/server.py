@@ -36,17 +36,13 @@ to after the tool import would break this (same convention as
 Dense-Evolution's tools/mcp_server/server.py).
 """
 import jax
+
 jax.config.update("jax_enable_x64", True)
 
-from mcp.server import MCPServer  # noqa: E402
+from mcp.server import MCPServer
 
 mcp = MCPServer("dense_armor_mcp")
 
-from .tools import (  # noqa: E402
-    dense_armor_health, dense_armor_clean_signal, dense_armor_detect_anomalies,
-    dense_armor_robust_filter, dense_armor_heal_series,
-    dense_armor_stream_start, dense_armor_stream_update, dense_armor_stream_end,
-)
 
 
 def main():

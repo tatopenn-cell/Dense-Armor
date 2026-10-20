@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 dynamics/six_dof_pbc_cbf_controller.py
 =========================================
@@ -30,9 +29,9 @@ note).
 """
 from functools import partial
 
-import numpy as np
 import jax
 import jax.numpy as jnp
+import numpy as np
 import osqp
 from scipy import sparse
 

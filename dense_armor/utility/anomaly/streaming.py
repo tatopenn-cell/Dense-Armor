@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 utility/streaming.py
 =====================
@@ -47,7 +46,6 @@ una scala condivisa desensibilizzerebbe quello lento o darebbe falsi
 allarmi su quello attivo).
 """
 from collections import deque
-from typing import List, Optional, Tuple
 
 import numpy as np
 
@@ -113,7 +111,7 @@ class MultiChannelStreamingDeviationDetector:
     def __init__(self, n_channels: int, radius: int = 10, ref_mult: int = 3,
                  n_sigmas: float = 3.0, eps: float = 1e-9):
         self.n_channels = n_channels
-        self._detectors: List[StreamingDeviationDetector] = [
+        self._detectors: list[StreamingDeviationDetector] = [
             StreamingDeviationDetector(radius=radius, ref_mult=ref_mult, n_sigmas=n_sigmas, eps=eps)
             for _ in range(n_channels)
         ]
@@ -129,7 +127,7 @@ class MultiChannelStreamingDeviationDetector:
 def classify_segments_multichannel(
     X: np.ndarray, radius: int = 10, ref_mult: int = 3,
     n_sigmas: float = 3.0, spike_run_max: int = 2, eps: float = 1e-9,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """X: (n_campioni, n_canali). Applica `classify_segments` (arbiter.py)
     indipendentemente a ogni colonna -- stesso identico risultato per
     canale che chiamarla singolarmente, solo impilato invece di

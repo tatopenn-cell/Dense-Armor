@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 dynamics/online_dynamics.py
 ===========================
@@ -26,18 +25,16 @@ Page, E. S. (1954). Continuous inspection schemes. Biometrika 41, 100-114.
 """
 
 import os
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Optional, Sequence
-
-import numpy as np
-
-from dense_armor.roles import Regressor
 
 import jax.numpy as jnp
+import numpy as np
 
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.utility.drift.detector import CUSUMDriftDetector
+from dense_armor.roles import Regressor
 from dense_armor.utility.anomaly.filters import HampelScorer
+from dense_armor.utility.drift.detector import CUSUMDriftDetector
 
 
 class RecursiveLeastSquares(Regressor):
@@ -89,13 +86,13 @@ class RecursiveLeastSquares(Regressor):
     """
 
     def __init__(self, lam: float = 1.0, delta: float = 1e6,
-                 feature_keys: Optional[Sequence[str]] = None):
+                 feature_keys: Sequence[str] | None = None):
         self.lam = lam
         self.delta = delta
         self.feature_keys = feature_keys
-        self._keys: Optional[list] = None
-        self._w: Optional[np.ndarray] = None
-        self._P: Optional[np.ndarray] = None
+        self._keys: list | None = None
+        self._w: np.ndarray | None = None
+        self._P: np.ndarray | None = None
 
     def _resolve_keys(self, x) -> list:
         if self._keys is not None:
@@ -365,7 +362,7 @@ class DriftAwareResidualDynamicsLearner(ResidualDynamicsLearner):
         return self
 
 
-def write_minimal_urdf(path: Optional[str] = None,
+def write_minimal_urdf(path: str | None = None,
                        payload_mass: float = 0.0) -> str:
     """Write a minimal 2-link revolute URDF, optionally with an extra point
     mass at link2's own frame origin. Returns the path.

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 dynamics/passivity_cbf_controller.py
 =======================================
@@ -35,9 +34,9 @@ as the Discovery version this promotes.
 """
 from functools import partial
 
-import numpy as np
 import jax
 import jax.numpy as jnp
+import numpy as np
 import osqp
 from scipy import sparse
 

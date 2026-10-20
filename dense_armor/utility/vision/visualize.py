@@ -23,7 +23,6 @@ the rest of the module works without it. The colours are chosen so the
 output is readable in the default matplotlib colormaps.
 """
 
-from collections import deque
 from pathlib import Path
 
 import numpy as np

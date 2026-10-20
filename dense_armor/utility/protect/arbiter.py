@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 utility/arbiter.py
 ===================
@@ -57,7 +56,6 @@ a 6.0449 (use_arbiter=True) -- un miglioramento reale, non piu' un
 pareggio. Vedi test/test_arbiter_orca_integration.py per la verifica
 completa sui 7 scenari con questo fix.
 """
-from typing import Tuple
 
 import numpy as np
 
@@ -83,7 +81,7 @@ def _window_causal(x: np.ndarray, i: int, span: int) -> np.ndarray:
     return x[lo:i]
 
 
-def _robust_center_scale(w: np.ndarray) -> Tuple[float, float]:
+def _robust_center_scale(w: np.ndarray) -> tuple[float, float]:
     med = float(np.median(w))
     mad = float(np.median(np.abs(w - med)))
     return med, 1.4826 * mad
@@ -92,7 +90,7 @@ def _robust_center_scale(w: np.ndarray) -> Tuple[float, float]:
 def classify_segments(
     x: np.ndarray, radius: int = 10, ref_mult: int = 3,
     n_sigmas: float = 3.0, spike_run_max: int = 2, eps: float = 1e-9,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Ritorna (etichette, deviazione, incertezza):
       etichette   -- array di stringhe 'clean'/'spike'/'regime', una per punto.
@@ -198,7 +196,7 @@ def classify_segments(
 def route_and_correct(
     x: np.ndarray, radius: int = 10, ref_mult: int = 3,
     n_sigmas: float = 3.0, spike_run_max: int = 2,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Applica la classificazione e corregge ogni punto secondo l'etichetta:
       'clean'/'regime' -> passa il valore grezzo (un cambio di regime

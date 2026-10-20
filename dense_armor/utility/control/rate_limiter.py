@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 utility/rate_limiter.py
 =========================

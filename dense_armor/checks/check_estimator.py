@@ -8,15 +8,12 @@ import numpy as np
 
 from dense_armor.roles import (
     AnomalyDetector,
-    Root,
     Classifier,
     DriftDetector,
     Regressor,
+    Root,
     Transformer,
 )
-
-
-
 
 
 def _roc_auc_score(y_true, y_score):
@@ -376,4 +373,4 @@ from dense_armor.checks.robot import (
     check_schema_json,
     check_step_is_jittable,
     check_step_is_pure,
-)  # noqa: E402
+)

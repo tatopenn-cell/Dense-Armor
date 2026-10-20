@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 utility/cbf_filter.py
 =======================

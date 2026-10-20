@@ -30,9 +30,9 @@ West, D. H. D. (1979). Updating mean and variance estimates: an improved
     method. Communications of the ACM 22(9), 532-535.
 """
 import math
+from typing import Any
 
 import numpy as np
-from typing import Any
 
 from dense_armor.roles import Transformer
 
@@ -128,7 +128,6 @@ class RunningMoments(Transformer):
             ``(n, mean, m2, m3, m4)`` with ``m_k = sum (x - mean)^k`` and
             ``n`` the number of samples. ``n=0`` returns zeros.
         """
-        import numpy as np
 
         a: np.ndarray = np.asarray(arr, dtype=float).ravel()
         n = int(a.size)
@@ -213,7 +212,6 @@ class RunningMoments(Transformer):
         Returns:
             The estimator itself.
         """
-        import numpy as np
 
         if isinstance(X, dict):
             if self.feature is None:

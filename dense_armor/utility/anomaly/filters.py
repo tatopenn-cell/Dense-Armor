@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 utility/streaming_filters.py
 =============================
