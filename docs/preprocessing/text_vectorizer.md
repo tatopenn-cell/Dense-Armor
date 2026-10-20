@@ -96,7 +96,7 @@ print(idx.n_documents_, S.shape)
 3 (3, 2)
 ```
 
-On the 1,542 chunks and 134 queries of `benchmarks/text_retrieval.json`, the exact float32 index answers a query in **0.000077 s** median over five runs (range 0.000077-0.000080 s), against **0.0398 s** of the loop of `cosine_similarity_many` on the same scores. A single run is one point of the range, not the number: the JSON stores the median and the two ends, and the page repeats them.
+On the 1,549 chunks and 134 queries of `benchmarks/text_retrieval.json`, the exact float32 index answers a query in **0.000081 s** median over five runs (range 0.000079-0.000083 s), against **0.0506 s** of the loop of `cosine_similarity_many` on the same scores. A single run is one point of the range, not the number: the JSON stores the median and the two ends, and the page repeats them.
 
 The top-5 of the exact float32 index is identical to the float64 one on 134 of 134 queries (`float32_top5_identical_to_float64` in the JSON). `max_terms_per_document` drops terms and is an option, not the default: on this corpus 50 terms per document keep the reciprocal rank but change the top-5 of some queries (overlap 0.80 against the exact index, in `pruned_k50_top5_overlap_vs_exact_median`).
 
@@ -139,22 +139,23 @@ print([(d, round(s, 3)) for d, s in idx.top_k_schubert({"a": 1.0}, k=2, n_pivots
 ```python
 from dense_armor.utility.stats.similarity import feature_hash
 
-print(0 <= feature_hash("fox", m=1024) < 1024)
+col, sign = feature_hash("fox", m=1024)
+print(0 <= col < 1024, sign in (-1, 1))
 print(feature_hash("fox", m=1024) == feature_hash("fox", m=1024))
 ```
 
 ```
-True
+True True
 True
 ```
 
 ## 7. What does not work, with the numbers
 
-The three primitives above are exact (134 of 134 queries give the same top-5 as the full product), and on this corpus they are slower than the full product: Fagin 13,269 us per query, Schubert 120,049 us, against 42 us of the full product. The bound is correct; the random access on the candidates, and the Python per row, cost more than the C product on 1,542 documents. They are the right tool on millions of documents, not here.
+The three primitives above are exact (134 of 134 queries give the same top-5 as the full product), and on this corpus they are slower than the full product: Fagin 2350 us per query (10.3x the full product), Schubert 109148 us (477x), against 229 us of the full product. The numbers come from `benchmarks/primitives.py`, which writes `benchmarks/primitives.json`. The bound is correct; the random access on the candidates, and the Python per row, cost more than the C product on 1,549 documents. They are the right tool on millions of documents, not here.
 
-The batch is at parity, not 10x faster. On the same 1,542 chunks and 134 queries, with the same settings on both sides, the build is 0.658 s against 0.673 s of the batch library (0.98x), and the query with the query matrix ready is 0.037 ms against 0.053 ms (1.4x on our side). 10x would be 0.067 s, and the numpy and scipy floor alone is about 0.1 s. The build is about 70% Python (tokenizer, document frequencies, token to column, `np.unique` per document), and even with numba on the two loops the estimate is 3.5x to 4x, not 10x. A full numba rewrite including the tokenizer is a project of its own, and it is not done here.
+The batch is at parity on the build and faster on the query, not 10x faster overall. On the 1549 chunks and 134 queries of the repository, with the same settings on both sides, the build is 0.772 s against 0.557 s of the batch library (1.39x, our side slower), and a query is 81 us against 4527 us (56x, our side faster). 10x on the build would need 0.077 s, and the numpy and scipy floor alone is about 0.1 s. The build is about 70% Python (tokenizer, document frequencies, token to column, `np.unique` per document); a full numba rewrite including the tokenizer is a project of its own and it is not done here.
 
-The papers that could go further are not in the folder, or are for a different scale. Feature hashing attacks the build, but on 81k terms the collision distortion would buy nothing measurable and the exact top-5 would no longer be guaranteed. Random projection and SVD make the matrix dense, and the sparse product here is 42 us: they pay when the original dimension is in the hundreds of thousands. The batched SpMM of Nagasaka et al. (2019) and the CSR5 of Liu and Vinter (2015) are GPU kernels for SpMV and SpMM; the kernel here is `scipy.sparse` CSR on CPU and sparse by sparse, and the 9.27x and 6.09x of those papers are GPU numbers, not ours.
+The papers that could go further are not in the folder, or are for a different scale. Feature hashing attacks the build, but on 81k terms the collision distortion would buy nothing measurable and the exact top-5 would no longer be guaranteed. Random projection and SVD make the matrix dense, and the sparse product here is 229 us: they pay when the original dimension is in the hundreds of thousands. The batched SpMM of Nagasaka et al. (2019) and the CSR5 of Liu and Vinter (2015) are GPU kernels for SpMV and SpMM; the kernel here is `scipy.sparse` CSR on CPU and sparse by sparse, and the 9.27x and 6.09x of those papers are GPU numbers, not ours.
 
 ## Details
 
@@ -184,7 +185,7 @@ The papers that could go further are not in the folder, or are for a different s
 
 ### Measured cost
 
-On the 1,542 chunks and 134 queries of `benchmarks/text_retrieval.json`: build 0.712 s, query **0.000077 s** median over five runs (0.000077-0.000080), loop of `cosine_similarity_many` 0.0398 s per query. The `budget_s` of `TextVectorizer` is 1.5 ms, about ten times the p99 of 0.138 ms per document.
+On the 1,549 chunks and 134 queries of `benchmarks/text_retrieval.json`: build 0.772 s, query **0.000081 s** median over five runs (0.000079-0.000083), loop of `cosine_similarity_many` 0.0506 s per query. The `budget_s` of `TextVectorizer` is 1.5 ms, about ten times the p99 of 0.138 ms per document.
 
 ### Development diary
 
