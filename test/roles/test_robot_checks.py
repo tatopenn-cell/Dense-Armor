@@ -1,5 +1,6 @@
 """Tests for dense_armor/checks/robot.py."""
 import pickle
+import time
 from pathlib import Path
 
 import jax.numpy as jnp
@@ -109,7 +110,25 @@ def test_learn_passes_target_when_accepted():
 def test_p99_within_budget_passes():
     est = _Learner()
     robot.check_p99_within_budget(est)
-    assert est.n == 32
+    assert est.n == 64 + 200
+
+
+def test_p99_within_budget_fails_on_a_slow_learner():
+    """A learner slower than its budget must fail the check.
+
+    The check takes 200 measurements after 64 warm-up samples; a
+    learner that sleeps 1 ms per call, with a budget of 1e-3 s, must
+    be rejected. The test proves the measurement is real and not a
+    count of calls.
+    """
+    class _Slow:
+        budget_s = 1e-3
+
+        def learn_one(self, x):
+            time.sleep(1e-3)
+
+    with pytest.raises(AssertionError, match="exceeds"):
+        robot.check_p99_within_budget(_Slow())
 
 
 def test_p99_within_budget_fails_on_zero_budget():
