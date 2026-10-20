@@ -12,7 +12,7 @@ from dense_armor.utility.facto._common import _sigmoid
 class _FMBase:
     """Common code for FMRegressor and FMClassifier."""
 
-    budget_s: float = 1.5e-2
+    budget_s = 3.5e-1
     memory_class: str = "O(n * k)"
 
     def __init__(

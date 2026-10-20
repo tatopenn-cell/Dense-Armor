@@ -64,7 +64,7 @@ class RandomProjection(Transformer):
         ['p0', 'p1', 'p2']
     """
 
-    budget_s = 0.005
+    budget_s = 2.5e-1
     memory_class = "O(1)"
 
     def __init__(
