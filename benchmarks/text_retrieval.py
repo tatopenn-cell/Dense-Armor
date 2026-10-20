@@ -24,7 +24,6 @@ import time
 from pathlib import Path
 
 import numpy as np
-from scipy import sparse
 from scipy.stats import wilcoxon
 
 ROOT = Path(__file__).resolve().parents[1]
