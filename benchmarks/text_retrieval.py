@@ -24,6 +24,7 @@ import time
 from pathlib import Path
 
 import numpy as np
+from scipy import sparse
 from scipy.stats import wilcoxon
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -31,7 +32,10 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from dense_armor.utility.preprocessing.vectorizer import TextVectorizer
-from dense_armor.utility.stats.similarity import cosine_similarity_many
+from dense_armor.utility.stats.similarity import (
+    SparseCosineIndex,
+    cosine_similarity_many,
+)
 
 CHUNK = 1000
 OVERLAP = 200
@@ -71,6 +75,8 @@ def build_corpus(docs_dir: Path) -> tuple[list[str], list[str], list[str]]:
         chunks.extend(chunk_text(text))
     return chunks, [p for p in pages for _ in chunk_text(
         (docs_dir / p).read_text(encoding="utf-8", errors="replace"))], queries
+
+
 
 
 def _rr(ranked: np.ndarray, relevant: set[int]) -> float:
@@ -124,22 +130,41 @@ def run(docs_dir: Path, max_queries: int | None = None,
     build_ours = time.perf_counter() - t0
 
     q_scores = [vec.transform_one(q)["scores"] for q in queries]
+
+    index = SparseCosineIndex(doc_scores, max_terms_per_document=50,
+                                dtype=np.float32)
+
     rrs = []
+    t0 = time.perf_counter()
+    for qs, page in zip(q_scores, pages):
+        rel = relevant_of_query[page]
+        sims = index.query(qs)
+        ranked = np.argsort(-sims)
+        rrs.append(_rr(ranked, rel))
+    query_ours = (time.perf_counter() - t0) / max(len(queries), 1)
+    rrs = np.array(rrs)
+
+    rrs_loop = []
     t0 = time.perf_counter()
     for qs, page in zip(q_scores, pages):
         rel = relevant_of_query[page]
         sims = cosine_similarity_many(qs, doc_scores)
         ranked = np.argsort(-sims)
-        rrs.append(_rr(ranked, rel))
-    query_ours = (time.perf_counter() - t0) / max(len(queries), 1)
-    rrs = np.array(rrs)
+        rrs_loop.append(_rr(ranked, rel))
+    query_loop = (time.perf_counter() - t0) / max(len(queries), 1)
+    rrs_loop = np.array(rrs_loop)
 
     out: dict = {
         "n_chunks": len(chunks),
         "n_queries": len(queries),
         "ours": {"rr_median": float(np.median(rrs)),
                  "rr_iqr": float(np.percentile(rrs, 75) - np.percentile(rrs, 25)),
-                 "build_s": build_ours, "query_s": query_ours},
+                 "build_s": build_ours, "query_s": query_ours,
+                 "method": "sparse"},
+        "ours_loop": {"rr_median": float(np.median(rrs_loop)),
+                      "rr_iqr": float(np.percentile(rrs_loop, 75)
+                                      - np.percentile(rrs_loop, 25)),
+                      "query_s": query_loop, "method": "loop"},
     }
 
     if use_sklearn:
@@ -193,7 +218,9 @@ def main() -> int:
     print(f"chunks {r['n_chunks']}, queries {r['n_queries']}")
     print(f"ours:      RR median {r['ours']['rr_median']:.4f} "
           f"IQR {r['ours']['rr_iqr']:.4f}  build {r['ours']['build_s']:.3f}s "
-          f"query {r['ours']['query_s']:.4f}s")
+          f"query {r['ours']['query_s']:.4f}s (sparse)")
+    print(f"ours loop: RR median {r['ours_loop']['rr_median']:.4f} "
+          f"IQR {r['ours_loop']['rr_iqr']:.4f}  query {r['ours_loop']['query_s']:.4f}s")
     if "sklearn" in r:
         s = r["sklearn"]
         print(f"sklearn:   RR median {s['rr_median']:.4f} IQR {s['rr_iqr']:.4f} "

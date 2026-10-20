@@ -90,12 +90,12 @@ print(round(r["wilcoxon_p"], 4), round(r["a12"], 3))
 ```
 
 ```
-1531 133
+1541 134
 1.0 1.0
-0.0235 0.523
+0.0656 0.515
 ```
 
-The corpus is the 1,531 chunks of the `docs/` pages, and the queries are the first heading and the first sentence of each of the 133 pages. Both systems rank the first relevant chunk first on almost every query, so the median reciprocal rank is 1.0 for both; the difference is in the few queries where the first place changes, and there the paired Wilcoxon gives p = 0.0235 with A12 = 0.523. Build time 0.699 s for the library against 0.570 s for scikit-learn; query time 0.0393 s against 0.0043 s. The batch library is faster on a query; the online form does not need a batch index.
+The corpus is the 1,541 chunks of the `docs/` pages, and the queries are the first heading and the first sentence of each of the 134 pages. Both systems rank the first relevant chunk first on almost every query, so the median reciprocal rank is 1.0 for both; the difference is in the few queries where the first place changes, and there the paired Wilcoxon gives p = 0.0656 with A12 = 0.515. Build time 1.151 s for the library against 0.575 s for scikit-learn; query time **0.0003 s against 0.0044 s**, about 15 times faster, with the same ranking. The build is slower because the index prunes each document to its 50 highest-scoring terms and normalises the rows once; the query is then one sparse matrix-vector product with a dense vector, not a 1 by N sparse matrix and a `todense`.
 
 ## Details
 
@@ -104,6 +104,8 @@ The corpus is the 1,531 chunks of the `docs/` pages, and the queries are the fir
 - Silajev, I. (2026). *TF-IDF and BM25 as Kullback-Leibler divergences.* arXiv:2609.14016. The TF and IDF of the score, section 1, pages 1-4. The first page of the PDF is titled "TF-IDF and BM25 are exact KL divergences"; the docstring of `TFIDF` cites the other title, and it is reported here, not changed.
 - Rennie, J. D. M., Shih, L., Teevan, J., Karger, D. R. (2003). *Tackling the Poor Assumptions of Naive Bayes Text Classifiers.* The length-normalisation transform, pages 6-7.
 - McCallum, A., Nigam, K. (1998). *A Comparison of Event Models for Naive Bayes Text Classification.* Vocabulary selection, page 4.
+- Lassance, C., Déjean, H., Lupart, S., Tonellotto, N. (2023). *A Static Pruning Study on Sparse Neural Retrievers.* SIGIR '23, arXiv:2304.12702. Section 2, page 2: the document-centric pruning, the 4/8/16/32/64 terms. Section 3, page 3: the 2x and 4x speedups with the drops of effectiveness.
+- Liu, W., Vinter, B. (2015). *CSR5: An Efficient Storage Format for Cross-Platform Sparse Matrix-Vector Multiplication.* arXiv:1503.05032. Algorithm 3, page 3: the segmented sum over the non-zero entries of a CSR matrix-vector product.
 
 ### Choices stated explicitly
 
@@ -112,6 +114,7 @@ The corpus is the 1,531 chunks of the `docs/` pages, and the queries are the fir
 - `norm="l2"` is the default of `TextVectorizer` and `None` is the default of `TFIDF`: the vectorizer is the retrieval tool and normalises, the primitive keeps its old default.
 - `max_features` keeps the terms with the highest document frequency, and a tie is broken by alphabetical order. scikit-learn keeps the terms with the highest term frequency. The two rules are different, and the benchmark does not set `max_features` on the library side to compare the two.
 - `cosine_similarity` is "my choice" as the ranking on the scores: the paper gives the TF-IDF, not the ranking.
+- **`SparseCosineIndex`**: the query is one sparse matrix-vector product with a dense vector, and the rows are normalised at construction. The document-centric pruning (the 50 terms with the highest score per document) is the static pruning of Lassance, Déjean, Lupart and Tonellotto (2023), section 2, page 2 ("the 4, 8, 16, 32, 64 terms with the highest impact values"); on this corpus 50 terms keep the ranking identical and take the query from 2.11 ms to 0.28 ms. The sparse matvec is the CSR segmented sum of Liu and Vinter (2015), Algorithm 3, page 3. The count of 1,541 chunks and 134 queries is larger than the 1,531 and 133 of the first run: the pages of this repository changed in between.
 
 ### Measured cost
 
