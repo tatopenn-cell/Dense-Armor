@@ -148,8 +148,8 @@ class TextVectorizer(Transformer):
         self.n_missing_ = 0
         self._fit_tokens = None
         self._fitted = False
-        self._vocab_sorted: list[str] | None = None
-        self._vocab_index: dict[str, int] | None = None
+        self._vocab_sorted = None
+        self._vocab_index = None
 
     def _freeze_vocabulary(self) -> None:
         """Cache the sorted terms and the term-to-column dict, once per fit."""
