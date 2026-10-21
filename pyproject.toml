@@ -7,8 +7,8 @@ name = "dense-armor"
 version = "1.1.32"
 description = "Robot-AI Online Shielding & Learning: JAX estimators that learn one sample at a time, with streams, trees and forests, clustering, vision, uncertainty, drift and anomaly detection, protected learning and robot command safety"
 readme = "README.md"
-license = "BUSL-1.1"
-license-files = ["LICENSE.md"]
+license = "AGPL-3.0-or-later"
+license-files = ["LICENSE"]
 authors = [{ name = "Salvatore Pennacchio", email = "jtatopenn@libero.it" }]
 requires-python = ">=3.10"
 keywords = ["online-learning", "streaming", "robotics", "anomaly-detection", "drift-detection", "ai-safety", "robust-statistics", "jax"]
