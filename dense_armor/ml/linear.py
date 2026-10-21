@@ -15,12 +15,11 @@ import numpy as np
 
 from dense_armor.ml.base import MLBase
 
-__all__ = [
-    "LinearRegression",
-    "LogisticRegression",
-    "BayesianLinearRegression",
-    "PayloadEstimator",
-]
+STOPPED = {
+    "PayloadEstimator": "the reference estimates the payload with the dynamics model of the robot; the interface on a table of regressors and residuals is not in it",
+}
+
+__all__ = ["LinearRegression", "LogisticRegression", "BayesianLinearRegression"]
 
 
 def _design(X, intercept: bool) -> np.ndarray:
@@ -165,31 +164,3 @@ class BayesianLinearRegression(MLBase):
             return mu
         var = 1.0 / self.beta + np.einsum("ij,jk,ik->i", A, self.cov_, A)
         return mu, np.sqrt(var)
-
-
-class PayloadEstimator(MLBase):
-    """Mass of a point load by weighted least squares on the gravity torque.
-
-    Given the regressor ``phi`` (the gravity torque of a unit mass, one entry per
-    joint and per sample) and the residual ``r`` of the unloaded model, the mass
-    ``m`` minimises ``sum_i lam^(n-1-i) (r_i - m phi_i)^2``, so
-    ``m = sum w_i phi_i r_i / sum w_i phi_i^2``.
-
-    Args:
-        lam: forgetting factor in ``(0, 1]``; 1 weights every sample equally.
-
-    Example:
-        >>> PayloadEstimator().fit([1.0, 2.0, 3.0], [0.5, 1.0, 1.5]).mass_
-        0.5
-    """
-
-    def __init__(self, lam: float = 1.0) -> None:
-        self.lam = lam
-
-    def fit(self, X, y=None):  # type: ignore[override]
-        phi = np.asarray(X, dtype=float).ravel()
-        r = np.asarray(y, dtype=float).ravel()
-        w = self.lam ** np.arange(phi.size - 1, -1, -1)
-        den = float(np.sum(w * phi * phi))
-        self.mass_ = float(np.sum(w * phi * r) / den) if den > 0 else float("nan")
-        return self

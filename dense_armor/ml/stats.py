@@ -1,30 +1,20 @@
-"""Statistics: the exact quantity each online statistic or sketch computes.
+"""Statistics computed on the whole table: covariance, moments, medians, shrinkage.
 
-Every class reads the whole dataset with ``fit``. The online class of
-``dense_armor.utility.stats`` is the other side of the pair; the sketches
-(quantiles, counts, membership) approximate the exact quantity that the
-class returns.
+Every class reads the whole dataset with ``fit``.
 
 References:
-    Pearson correlation and the sample covariance with ``n - 1`` (textbook).
+    Chan, T. F., Golub, G. H., LeVeque, R. J. (1979). Updating formulae and a pairwise
+        algorithm for computing sample variances, Compstat: the two-pass formulas for the
+        mean, the variance and the covariance (not in the folder, bibliographic only).
     West, D. H. D. (1979). Updating mean and variance estimates, CACM 22(9):
         the exponentially weighted recursion (not in the folder,
         bibliographic only).
     Bodnar, T., Gupta, A. K., Parolya, N. (2014). Optimal linear shrinkage
         estimator for large dimensional precision matrix, Eq. (4.3) and (4.4),
         page 12 (not in the folder, bibliographic only).
-    Masson, C., Rim, J. E., Lee, H. K. (2019). DDSketch; Dunning, T. (2019).
-        Computing extremely accurate quantiles using t-digests; Cormode, G.,
-        Muthukrishnan, S. (2005); Flajolet, P. et al. (2007); Bloom, B. H.
-        (1970); Metwally, A. et al. (2005): the sketches, whose exact
-        counterpart is the class (not in the folder, bibliographic
-        only).
 """
 
 from __future__ import annotations
-
-from collections import Counter
-from typing import Any
 
 import numpy as np
 from numpy.lib.stride_tricks import sliding_window_view
@@ -33,6 +23,15 @@ from scipy.stats import kurtosis as _kurt
 from scipy.stats import skew as _skew
 
 from dense_armor.ml.base import MLBase, finite, finite_pairs
+
+STOPPED = {
+    "DDSketch": "a sketch does not depend on the order of the rows: its form on the whole table is the online class itself, and the exact quantile is not the algorithm of Masson et al.",
+    "TDigest": "a sketch does not depend on the order of the rows: its form on the whole table is the online class itself, and the exact quantile is not the algorithm of Dunning and Ertl",
+    "CountMinSketch": "a sketch does not depend on the order of the rows: its form on the whole table is the online class itself, and the exact count is not the algorithm of Cormode and Muthukrishnan",
+    "HyperLogLog": "a sketch does not depend on the order of the rows: its form on the whole table is the online class itself, and the exact distinct count is not the algorithm of Flajolet et al.",
+    "BloomFilter": "a sketch does not depend on the order of the rows: its form on the whole table is the online class itself, and exact membership is not the filter of Bloom",
+    "SpaceSaving": "a sketch does not depend on the order of the rows: its form on the whole table is the online class itself, and the exact counts are not the algorithm of Metwally et al.",
+}
 
 __all__ = [
     "Covariance",
@@ -43,14 +42,8 @@ __all__ = [
     "Moments",
     "ColumnMoments",
     "EWStats",
-    "DDSketch",
-    "TDigest",
     "RollingMedian",
     "ShrinkageCovariance",
-    "CountMinSketch",
-    "HyperLogLog",
-    "BloomFilter",
-    "SpaceSaving",
 ]
 
 
@@ -290,72 +283,6 @@ class EWStats(MLBase):
         return self
 
 
-class _ExactQuantile(MLBase):
-    """Exact quantiles of the whole dataset, the target of a quantile sketch."""
-
-    def __init__(self, feature: str | None = None) -> None:
-        self.feature = feature
-
-    def fit(self, X, y=None):  # type: ignore[override]
-        x, self.n_missing_ = finite(X)
-        self.sorted_ = np.sort(x)
-        self.count_ = int(x.size)
-        self.min_ = float(x.min()) if x.size else float("nan")
-        self.max_ = float(x.max()) if x.size else float("nan")
-        return self
-
-    def quantile(self, q: float) -> float:
-        """Exact lower quantile ``q`` in ``[0, 1]``: the value of rank ``floor(q (n - 1))``."""
-        if self.sorted_.size == 0:
-            return float("nan")
-        return float(np.quantile(self.sorted_, q, method="lower"))
-
-
-class DDSketch(_ExactQuantile):
-    """Exact quantiles: what DDSketch (Masson et al. 2019) approximates.
-
-    Args:
-        alpha: relative error of the online sketch (kept for the pair).
-        max_buckets: bucket cap of the online sketch (kept for the pair).
-        feature: name of the channel.
-
-    Example:
-        >>> DDSketch().fit([1.0, 2.0, 3.0]).quantile(0.5)
-        2.0
-    """
-
-    def __init__(
-        self, alpha: float = 0.01, max_buckets: int = 2048, feature: str | None = None
-    ) -> None:
-        super().__init__(feature)
-        self.alpha = alpha
-        self.max_buckets = max_buckets
-
-
-class TDigest(_ExactQuantile):
-    """Exact quantiles: what the t-digest (Dunning 2019) approximates.
-
-    Args:
-        delta: compression of the online digest (kept for the pair).
-        buffer_size: buffer of the online digest (kept for the pair).
-        feature: name of the channel.
-
-    Example:
-        >>> TDigest().fit([1.0, 2.0, 3.0, 4.0]).quantile(0.5)
-        2.0
-    """
-
-    def __init__(
-        self,
-        delta: float = 100.0,
-        buffer_size: int | None = None,
-        feature: str | None = None,
-    ) -> None:
-        super().__init__(feature)
-        self.delta = delta
-        self.buffer_size = buffer_size
-
-
 class RollingMedian(MLBase):
     """Median over every window and over the last window, per column.
 
@@ -428,132 +355,3 @@ class ShrinkageCovariance(MLBase):
         self.sample_ = s
         self.shrunk_ = self.alpha_ * s + self.beta_ * np.eye(p) / p
         return self
-
-
-class CountMinSketch(MLBase):
-    """Exact item counts: what the Count-Min sketch approximates.
-
-    Args:
-        epsilon: error of the online sketch (kept for the pair).
-        delta: failure probability of the online sketch (kept for the pair).
-        feature: name of the channel.
-        seed: seed of the online sketch (kept for the pair).
-
-    Example:
-        >>> CountMinSketch().fit(["a", "b", "a"]).estimate("a")
-        2
-    """
-
-    def __init__(
-        self,
-        epsilon: float = 0.01,
-        delta: float = 0.01,
-        feature: str | None = None,
-        seed: int = 42,
-    ) -> None:
-        self.epsilon = epsilon
-        self.delta = delta
-        self.feature = feature
-        self.seed = seed
-
-    def fit(self, X, y=None):  # type: ignore[override]
-        self.counts_ = Counter(X)
-        self.count_ = int(sum(self.counts_.values()))
-        return self
-
-    def estimate(self, item: Any) -> int:
-        """Exact number of occurrences of ``item``."""
-        return int(self.counts_.get(item, 0))
-
-
-class HyperLogLog(MLBase):
-    """Exact number of distinct items: what HyperLogLog approximates.
-
-    Args:
-        precision: precision of the online sketch (kept for the pair).
-        feature: name of the channel.
-        seed: seed of the online sketch (kept for the pair).
-
-    Example:
-        >>> HyperLogLog().fit(["a", "b", "a"]).count_distinct_
-        2
-    """
-
-    def __init__(
-        self, precision: int = 14, feature: str | None = None, seed: int = 42
-    ) -> None:
-        self.precision = precision
-        self.feature = feature
-        self.seed = seed
-
-    def fit(self, X, y=None):  # type: ignore[override]
-        items = list(X)
-        self.count_total_ = len(items)
-        self.count_distinct_ = len(set(items))
-        return self
-
-
-class BloomFilter(MLBase):
-    """Exact set membership: what the Bloom filter approximates.
-
-    Args:
-        n_expected: capacity of the online filter (kept for the pair).
-        p_false: false-positive rate of the online filter (kept for the pair).
-        feature: name of the channel.
-        seed: seed of the online filter (kept for the pair).
-
-    Example:
-        >>> BloomFilter().fit(["a"]).check("b")
-        False
-    """
-
-    def __init__(
-        self,
-        n_expected: int = 1000,
-        p_false: float = 0.01,
-        feature: str | None = None,
-        seed: int = 42,
-    ) -> None:
-        self.n_expected = n_expected
-        self.p_false = p_false
-        self.feature = feature
-        self.seed = seed
-
-    def fit(self, X, y=None):  # type: ignore[override]
-        self.set_ = set(X)
-        self.count_ = len(self.set_)
-        return self
-
-    def check(self, item: Any) -> bool:
-        """True if ``item`` was in the dataset."""
-        return item in self.set_
-
-
-class SpaceSaving(MLBase):
-    """Exact most frequent items: what Space-Saving approximates.
-
-    Args:
-        k: number of items kept by the online algorithm.
-        feature: name of the channel.
-
-    Example:
-        >>> SpaceSaving(k=1).fit(["a", "b", "a"]).top()
-        [('a', 2)]
-    """
-
-    def __init__(self, k: int = 10, feature: str | None = None) -> None:
-        self.k = k
-        self.feature = feature
-
-    def fit(self, X, y=None):  # type: ignore[override]
-        self.counts_ = Counter(X)
-        self.count_ = int(sum(self.counts_.values()))
-        return self
-
-    def estimate(self, item: Any) -> int:
-        """Exact number of occurrences of ``item``."""
-        return int(self.counts_.get(item, 0))
-
-    def top(self, n: int | None = None) -> list[tuple[Any, int]]:
-        """The ``n`` (default ``k``) most frequent items with exact counts."""
-        return self.counts_.most_common(self.k if n is None else n)

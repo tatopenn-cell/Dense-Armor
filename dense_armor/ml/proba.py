@@ -83,7 +83,9 @@ class Gaussian(MLBase):
     """Gaussian of a sample: the mean and the variance (``n - 1``), pooled with a prior of weight ``n``.
 
     The prior counts as ``n`` observations with mean ``mean`` and variance ``var``
-    (``n = 0`` ignores it); the pooled mean and variance combine the two groups.
+    (``n = 0`` ignores it); the pooled mean and variance combine the two groups. The
+    pooling is our derivation (the parallel combination of Chan et al. 1979), not an
+    equation of the reference.
 
     Args:
         mean: prior mean.

@@ -9,13 +9,12 @@ from dense_armor.ml.linear import (
     BayesianLinearRegression,
     LinearRegression,
     LogisticRegression,
-    PayloadEstimator,
 )
 
 
 def test_doctests():
     r = doctest.testmod(L)
-    assert r.failed == 0 and r.attempted >= 7
+    assert r.failed == 0 and r.attempted >= 5
 
 
 def test_ridge_hand_case():
@@ -60,8 +59,5 @@ def test_bayesian_posterior_hand_case():
     assert np.allclose(bayes.mean_, np.r_[ridge.intercept_, ridge.coef_])
 
 
-def test_payload_hand_case():
-    assert PayloadEstimator().fit([1.0, 2.0, 3.0], [0.5, 1.0, 1.5]).mass_ == 0.5
-    w = PayloadEstimator(lam=0.5).fit([1.0, 1.0], [2.0, 4.0]).mass_
-    assert abs(w - (0.5 * 2.0 + 1.0 * 4.0) / 1.5) < 1e-12
-    assert np.isnan(PayloadEstimator().fit([0.0, 0.0], [1.0, 1.0]).mass_)
+def test_payload_is_declared_stopped():
+    assert "PayloadEstimator" in L.STOPPED

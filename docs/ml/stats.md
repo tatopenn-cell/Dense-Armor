@@ -1,6 +1,6 @@
 # Stats: the algorithms
 
-A statistic such as a mean, a variance or a correlation is computed on a whole table at once. This page lists the statistics of the machine learning part of the library, and the exact answers to the questions that a sketch answers approximately on a stream (a quantile, a count, a membership).
+A statistic such as a mean, a variance or a correlation is computed on a whole table at once. This page lists the statistics of the machine learning part of the library: covariance and correlation, moments, the exponentially weighted mean and variance, rolling windows, the rolling median and the shrunk covariance.
 
 Every class reads the whole dataset with `fit` and leaves its results in attributes with a trailing underscore; `transform` or a query method applies them. The data are `synthetic` where a block makes them up.
 
@@ -121,35 +121,7 @@ print(round(EWStats(alpha=0.5).fit([1.0, 3.0]).mean_, 4))
 2.0
 ~~~
 
-## 9. `DDSketch`
-
-Exact quantiles: what DDSketch (Masson et al. 2019) approximates.
-
-~~~python
-import numpy as np
-from dense_armor.ml.stats import DDSketch
-print(DDSketch().fit([1.0, 2.0, 3.0]).quantile(0.5))
-~~~
-
-~~~
-2.0
-~~~
-
-## 10. `TDigest`
-
-Exact quantiles: what the t-digest (Dunning 2019) approximates.
-
-~~~python
-import numpy as np
-from dense_armor.ml.stats import TDigest
-print(TDigest().fit([1.0, 2.0, 3.0, 4.0]).quantile(0.5))
-~~~
-
-~~~
-2.0
-~~~
-
-## 11. `RollingMedian`
+## 9. `RollingMedian`
 
 Median over every window and over the last window, per column.
 
@@ -164,7 +136,7 @@ print(m.median_.tolist())
 [5.0]
 ~~~
 
-## 12. `ShrinkageCovariance`
+## 10. `ShrinkageCovariance`
 
 Linear shrinkage toward `(1/p) I` on the sample covariance of all rows.
 
@@ -180,79 +152,19 @@ print(ShrinkageCovariance(3).fit(X).shrunk_.shape)
 (3, 3)
 ~~~
 
-## 13. `CountMinSketch`
-
-Exact item counts: what the Count-Min sketch approximates.
-
-~~~python
-import numpy as np
-from dense_armor.ml.stats import CountMinSketch
-print(CountMinSketch().fit(["a", "b", "a"]).estimate("a"))
-~~~
-
-~~~
-2
-~~~
-
-## 14. `HyperLogLog`
-
-Exact number of distinct items: what HyperLogLog approximates.
-
-~~~python
-import numpy as np
-from dense_armor.ml.stats import HyperLogLog
-print(HyperLogLog().fit(["a", "b", "a"]).count_distinct_)
-~~~
-
-~~~
-2
-~~~
-
-## 15. `BloomFilter`
-
-Exact set membership: what the Bloom filter approximates.
-
-~~~python
-import numpy as np
-from dense_armor.ml.stats import BloomFilter
-print(BloomFilter().fit(["a"]).check("b"))
-~~~
-
-~~~
-False
-~~~
-
-## 16. `SpaceSaving`
-
-Exact most frequent items: what Space-Saving approximates.
-
-~~~python
-import numpy as np
-from dense_armor.ml.stats import SpaceSaving
-print(SpaceSaving(k=1).fit(["a", "b", "a"]).top())
-~~~
-
-~~~
-[('a', 2)]
-~~~
-
 ## Details
 
 ### References
 
-Pearson correlation and the sample covariance with `n - 1` (textbook).
+Chan, T. F., Golub, G. H., LeVeque, R. J. (1979). Updating formulae and a pairwise
+        algorithm for computing sample variances, Compstat: the two-pass formulas for the
+        mean, the variance and the covariance (not in the folder, bibliographic only).
     West, D. H. D. (1979). Updating mean and variance estimates, CACM 22(9):
         the exponentially weighted recursion (not in the folder,
         bibliographic only).
     Bodnar, T., Gupta, A. K., Parolya, N. (2014). Optimal linear shrinkage
         estimator for large dimensional precision matrix, Eq. (4.3) and (4.4),
         page 12 (not in the folder, bibliographic only).
-    Masson, C., Rim, J. E., Lee, H. K. (2019). DDSketch; Dunning, T. (2019).
-        Computing extremely accurate quantiles using t-digests; Cormode, G.,
-        Muthukrishnan, S. (2005); Flajolet, P. et al. (2007); Bloom, B. H.
-        (1970); Metwally, A. et al. (2005): the sketches, whose exact
-        counterpart is the class (not in the folder, bibliographic
-        only).
 
 ### Choices stated explicitly
 
@@ -261,3 +173,11 @@ The class of a sketch is the exact value the sketch approximates, and the class 
 ### Development diary
 
 The classes are new and independent of the online classes of dense_armor.utility.
+
+Classes without a form:
+- `DDSketch`: a sketch does not depend on the order of the rows: its form on the whole table is the online class itself, and the exact quantile is not the algorithm of Masson et al.
+- `TDigest`: a sketch does not depend on the order of the rows: its form on the whole table is the online class itself, and the exact quantile is not the algorithm of Dunning and Ertl
+- `CountMinSketch`: a sketch does not depend on the order of the rows: its form on the whole table is the online class itself, and the exact count is not the algorithm of Cormode and Muthukrishnan
+- `HyperLogLog`: a sketch does not depend on the order of the rows: its form on the whole table is the online class itself, and the exact distinct count is not the algorithm of Flajolet et al.
+- `BloomFilter`: a sketch does not depend on the order of the rows: its form on the whole table is the online class itself, and exact membership is not the filter of Bloom
+- `SpaceSaving`: a sketch does not depend on the order of the rows: its form on the whole table is the online class itself, and the exact counts are not the algorithm of Metwally et al.

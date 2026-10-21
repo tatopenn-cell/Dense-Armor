@@ -60,20 +60,6 @@
       "max": 1.3322676295501878e-15,
       "why": ""
     },
-    "DDSketch": {
-      "kind": "rel",
-      "median": 0.008109502372008023,
-      "p90": 0.009434243784657858,
-      "max": 0.009621789336277718,
-      "why": "the sketch is within its relative error alpha of the exact quantile"
-    },
-    "TDigest": {
-      "kind": "rel",
-      "median": 0.11308562467426458,
-      "p90": 0.3551064183008569,
-      "max": 0.41122619784017705,
-      "why": "the digest is within its rank error of the exact quantile"
-    },
     "RollingMedianVector": {
       "kind": "abs",
       "median": 0.0,
@@ -87,34 +73,6 @@
       "p90": 7.46069872548105e-15,
       "max": 1.0658141036401503e-14,
       "why": ""
-    },
-    "CountMinSketch": {
-      "kind": "rel",
-      "median": 1.0,
-      "p90": 1.0999999999999996,
-      "max": 2.0,
-      "why": "the sketch never undercounts and overcounts within epsilon * n"
-    },
-    "HyperLogLog": {
-      "kind": "rel",
-      "median": 0.0024662477752040862,
-      "p90": 0.005782753437284667,
-      "max": 0.008729285183118319,
-      "why": "the standard error of the sketch is 1.04 / sqrt(2^precision)"
-    },
-    "BloomFilter": {
-      "kind": "abs",
-      "median": 0.0,
-      "p90": 0.0,
-      "max": 0.0,
-      "why": "the filter has false positives at rate p_false and no false negatives"
-    },
-    "SpaceSaving": {
-      "kind": "rel",
-      "median": 1.0,
-      "p90": 2.2999432076328943,
-      "max": 2.717741935483871,
-      "why": "the counts of the kept items are upper bounds of the exact counts"
     }
   }
 }

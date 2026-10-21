@@ -7,21 +7,15 @@ import numpy as np
 import dense_armor.ml.stats as S
 from dense_armor.ml.stats import (
     Autocorrelation,
-    BloomFilter,
     ColumnMoments,
     Correlation,
-    CountMinSketch,
     Covariance,
-    DDSketch,
     EWStats,
-    HyperLogLog,
     Moments,
     RollingCorrelation,
     RollingCovariance,
     RollingMedian,
     ShrinkageCovariance,
-    SpaceSaving,
-    TDigest,
 )
 
 
@@ -84,15 +78,6 @@ def test_ew_hand_case():
     assert n.count_ == 0 and np.isnan(n.mean_)
 
 
-def test_quantiles_exact():
-    d = DDSketch().fit([4.0, 1.0, 3.0, 2.0, float("nan")])
-    assert d.n_missing_ == 1 and d.count_ == 4
-    assert d.quantile(0.0) == 1.0 and d.quantile(1.0) == 4.0 and d.quantile(0.5) == 2.0
-    assert d.min_ == 1.0 and d.max_ == 4.0
-    t = TDigest().fit([])
-    assert np.isnan(t.quantile(0.5)) and np.isnan(t.min_)
-
-
 def test_rolling_median_hand_case():
     m = RollingMedian(window=3).fit([[1.0, 9.0], [5.0, 1.0], [2.0, 4.0], [8.0, 6.0]])
     assert m.series_.tolist() == [[2.0, 4.0], [5.0, 4.0]]
@@ -115,20 +100,8 @@ def test_shrinkage_hand_case():
     assert one.shrunk_.shape == (2, 2)
 
 
-def test_exact_sketch_targets():
-    items = ["a", "b", "a", "c", "a", "b"]
-    assert CountMinSketch().fit(items).estimate("a") == 3
-    assert CountMinSketch().fit(items).estimate("z") == 0
-    h = HyperLogLog().fit(items)
-    assert h.count_distinct_ == 3 and h.count_total_ == 6
-    b = BloomFilter().fit(items)
-    assert b.check("c") and not b.check("z") and b.count_ == 3
-    s = SpaceSaving(k=2).fit(items)
-    assert (
-        s.top() == [("a", 3), ("b", 2)]
-        and s.top(1) == [("a", 3)]
-        and s.estimate("c") == 1
-    )
+def test_sketches_are_declared_stopped():
+    assert set(S.STOPPED) == {"DDSketch", "TDigest", "CountMinSketch", "HyperLogLog", "BloomFilter", "SpaceSaving"}
 
 
 def test_base_is_not_online():

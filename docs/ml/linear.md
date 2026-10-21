@@ -49,20 +49,6 @@ print(round(float(m.predict([[3.0]])[0]), 3))
 7.0
 ~~~
 
-## 4. `PayloadEstimator`
-
-Mass of a point load by weighted least squares on the gravity torque.
-
-~~~python
-import numpy as np
-from dense_armor.ml.linear import PayloadEstimator
-print(PayloadEstimator().fit([1.0, 2.0, 3.0], [0.5, 1.0, 1.5]).mass_)
-~~~
-
-~~~
-0.5
-~~~
-
 ## Details
 
 ### References
@@ -81,3 +67,6 @@ The class of a sketch is the exact value the sketch approximates, and the class 
 ### Development diary
 
 The classes are new and independent of the online classes of dense_armor.utility.
+
+Classes without a form:
+- `PayloadEstimator`: the reference estimates the payload with the dynamics model of the robot; the interface on a table of regressors and residuals is not in it

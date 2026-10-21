@@ -19,15 +19,8 @@ from dense_armor.utility.stats.moments import (
     RunningMoments,
     RunningMomentsVector,
 )
-from dense_armor.utility.stats.quantiles import DDSketch, TDigest
 from dense_armor.utility.stats.robust import RollingMedianVector
 from dense_armor.utility.stats.shrinkage import OnlineShrinkageCovariance
-from dense_armor.utility.stats.sketches import (
-    BloomFilter,
-    CountMinSketch,
-    HyperLogLog,
-    SpaceSaving,
-)
 
 
 def _xy(seed, n=300):
@@ -116,14 +109,6 @@ def _q(cls, ocls, seed, **kw):
     return [c.quantile(q) for q in qs], [o.quantile(q) for q in qs], "rel"
 
 
-def c_dd(seed):
-    return _q(ml.DDSketch, DDSketch, seed)
-
-
-def c_td(seed):
-    return _q(ml.TDigest, TDigest, seed)
-
-
 def c_rmed(seed):
     x, y = _xy(seed)
     c = ml.RollingMedian(window=15).fit(np.c_[x, y])
@@ -151,38 +136,6 @@ def _items(seed, n=3000):
     return [f"k{int(v)}" for v in r.zipf(1.5, size=n) % 500]
 
 
-def c_cm(seed):
-    it = _items(seed)
-    c = ml.CountMinSketch().fit(it)
-    o = feed(CountMinSketch(), [{"x": v} for v in it])
-    keys = sorted(set(it))[:50]
-    return [c.estimate(k) for k in keys], [o.estimate(k) for k in keys], "rel"
-
-
-def c_hll(seed):
-    it = _items(seed)
-    c = ml.HyperLogLog().fit(it)
-    o = feed(HyperLogLog(), [{"x": v} for v in it])
-    return [c.count_distinct_], [o.count()], "rel"
-
-
-def c_bloom(seed):
-    it = _items(seed)
-    c = ml.BloomFilter().fit(it)
-    o = feed(BloomFilter(), [{"x": v} for v in it])
-    probe = [f"k{i}" for i in range(500, 800)]
-    fp = [float(o.check(p)) for p in probe]
-    return [float(c.check(p)) for p in probe], fp, "abs"
-
-
-def c_ss(seed):
-    it = _items(seed)
-    c = ml.SpaceSaving(k=5).fit(it)
-    o = feed(SpaceSaving(k=5), [{"x": v} for v in it])
-    top = [k for k, _ in c.top()]
-    return [c.estimate(k) for k in top], [o.estimate(k) for k in top], "rel"
-
-
 CASES = {
     "RunningCovariance": c_cov,
     "RunningCorrelation": c_corr,
@@ -192,23 +145,11 @@ CASES = {
     "RunningMoments": c_mom,
     "RunningMomentsVector": c_momv,
     "EWStats": c_ew,
-    "DDSketch": c_dd,
-    "TDigest": c_td,
     "RollingMedianVector": c_rmed,
     "OnlineShrinkageCovariance": c_shr,
-    "CountMinSketch": c_cm,
-    "HyperLogLog": c_hll,
-    "BloomFilter": c_bloom,
-    "SpaceSaving": c_ss,
 }
 WHY = {
     "Autocorrelation": "the online estimator differs from the textbook sample autocorrelation",
-    "DDSketch": "the sketch is within its relative error alpha of the exact quantile",
-    "TDigest": "the digest is within its rank error of the exact quantile",
-    "CountMinSketch": "the sketch never undercounts and overcounts within epsilon * n",
-    "HyperLogLog": "the standard error of the sketch is 1.04 / sqrt(2^precision)",
-    "BloomFilter": "the filter has false positives at rate p_false and no false negatives",
-    "SpaceSaving": "the counts of the kept items are upper bounds of the exact counts",
 }
 
 if __name__ == "__main__":

@@ -119,7 +119,9 @@ class OutputCodeClassifier(MLBase):
 
     Every class gets a random codeword of ``code_size`` bits (+1 or -1) and one
     classifier is trained per bit; a row goes to the class whose codeword is
-    closest in Hamming distance to the predicted bits.
+    closest in Hamming distance to the predicted bits. The code design (random bits,
+    redrawn until every column has both signs) is our choice: Dietterich and Bakiri
+    (Section 2) also separate the rows of the code matrix.
 
     Args:
         binary_factory: callable returning a fresh binary classifier.
