@@ -44,6 +44,9 @@ docs = [
 [project.urls]
 Homepage = "https://github.com/tatopenn-cell/Dense-Armor"
 Repository = "https://github.com/tatopenn-cell/Dense-Armor"
+Documentation = "https://tatopenn-cell.github.io/Dense-Armor/"
+Changelog = "https://github.com/tatopenn-cell/Dense-Armor/blob/master/CHANGELOG.md"
+Issues = "https://github.com/tatopenn-cell/Dense-Armor/issues"
 "Sister project (Dense-Evolution)" = "https://github.com/tatopenn-cell/Dense-Evolution"
 
 [project.scripts]
