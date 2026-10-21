@@ -313,14 +313,18 @@ def run(args) -> dict:
 
     if have_energy:
         p = _wilcoxon(j_b, j_o)
-        a12 = _a12(j_b, j_o)
-        ci = _a12_ci(j_b, j_o, np.random.default_rng(0))
+        if len(j_b) < MIN_PAIRS_FOR_WILCOXON:
+            a12: float | None = None
+            ci: tuple[float, float] | None = None
+        else:
+            a12 = _a12(j_b, j_o)
+            ci = _a12_ci(j_b, j_o, np.random.default_rng(0))
         comparison = {
             "j_per_1000_delta_median": float(np.median(j_b - j_o)),
             "wilcoxon_p": p,
             "wilcoxon_note": _wilcoxon_note(p, len(j_b)),
             "a12_batch_over_online": a12,
-            "a12_ci95": list(ci),
+            "a12_ci95": list(ci) if ci is not None else None,
             "seeds_batch_better": int((j_b < j_o).sum()),
             "seeds_online_better": int((j_o < j_b).sum()),
             "seeds_tie": int((j_b == j_o).sum()),

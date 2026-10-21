@@ -73,10 +73,10 @@ The `--smoke` run uses 3 seeds, 600 samples per stream, and a constant 5000 mW, 
 
 | Model | Wall time median (s) | CPU time median (s) | Net energy median (J) | J per 1000 samples, median | J per 1000 samples, IQR |
 |---|---|---|---|---|---|
-| BatchDecisionTreeClassifier (CART) | 0.0037 | 0.0037 | 0.0181 | 0.060 | 0.0022 |
-| HoeffdingTreeClassifier | 0.0060 | 0.0060 | 0.0296 | 0.099 | 0.0016 |
+| BatchDecisionTreeClassifier (CART) | 0.0084 | 0.0084 | 0.0415 | 0.138 | 0.0019 |
+| HoeffdingTreeClassifier | 0.0149 | 0.0149 | 0.0735 | 0.245 | 0.0046 |
 
-The run is synthetic: a constant 5000 mW, `dt_s = 0.1`, 3 seeds, 600 samples per stream, host `4ce6e14ced10`, `board: null`. The batch model used 0.060 J per 1000 samples and the online model 0.099 J per 1000 samples; the delta batch minus online is -0.039 J per 1000. Two seeds favour the batch model and one favours the online model. The paired Wilcoxon is not computed, fewer than six pairs; A12 is 0.111 with a bootstrap 95% interval [0.0, 1.0], which does not separate the two models. This run does not say which model is cheaper on a board.
+The run is synthetic: a constant 5000 mW, `dt_s = 0.1`, 3 seeds, 600 samples per stream, host `4ce6e14ced10`, `board: null`. The batch model used 0.138 J per 1000 samples and the online model 0.245 J per 1000 samples; the delta batch minus online is -0.108 J per 1000. 3 seeds favour the batch model and 0 favour the online model. The paired Wilcoxon is not computed, fewer than six pairs; A12 and its bootstrap 95% interval are not computed for the same reason. This run does not say which model is cheaper on a board.
 
 A board fills the second table. Run the command of section 3 once per power mode.
 

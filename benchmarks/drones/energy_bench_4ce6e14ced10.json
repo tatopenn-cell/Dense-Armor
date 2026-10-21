@@ -11,35 +11,32 @@
   "n_samples": 600,
   "batch": {
     "name": "BatchDecisionTreeClassifier (CART)",
-    "wall_s_median": 0.003684768000312033,
-    "wall_s_iqr": 0.00013885599992136122,
-    "cpu_s_median": 0.003690832999999838,
-    "cpu_s_iqr": 0.00013853699999999414,
-    "energy_j_median": 0.018056169997180405,
-    "energy_j_iqr": 0.0006721900012962578,
-    "j_per_1000_median": 0.060187233323934684,
-    "j_per_1000_iqr": 0.002240633337654195
+    "wall_s_median": 0.008427040000242414,
+    "wall_s_iqr": 0.00011868999990838347,
+    "cpu_s_median": 0.008377953999999743,
+    "cpu_s_iqr": 0.00011966350000003345,
+    "energy_j_median": 0.041511995004839264,
+    "energy_j_iqr": 0.0005793175023427466,
+    "j_per_1000_median": 0.13837331668279754,
+    "j_per_1000_iqr": 0.0019310583411424886
   },
   "online": {
     "name": "HoeffdingTreeClassifier",
-    "wall_s_median": 0.005986116000713082,
-    "wall_s_iqr": 8.519599987266702e-05,
-    "cpu_s_median": 0.005988225000000291,
-    "cpu_s_iqr": 8.495700000010764e-05,
-    "energy_j_median": 0.02963123499739595,
-    "energy_j_iqr": 0.0004673199987337284,
-    "j_per_1000_median": 0.09877078332465317,
-    "j_per_1000_iqr": 0.0015577333291124373
+    "wall_s_median": 0.014853186999971513,
+    "wall_s_iqr": 0.00028356650000205263,
+    "cpu_s_median": 0.014857252000000098,
+    "cpu_s_iqr": 0.0002543744999998765,
+    "energy_j_median": 0.0735344199983956,
+    "energy_j_iqr": 0.0013741175007453421,
+    "j_per_1000_median": 0.24511473332798536,
+    "j_per_1000_iqr": 0.00458039166915114
   },
   "comparison": {
-    "j_per_1000_delta_median": -0.03858355000071848,
+    "j_per_1000_delta_median": -0.10765525000048609,
     "wilcoxon_p": null,
     "wilcoxon_note": "not computed, fewer than 6 pairs",
-    "a12_batch_over_online": 0.0,
-    "a12_ci95": [
-      0.0,
-      0.0
-    ],
+    "a12_batch_over_online": null,
+    "a12_ci95": null,
     "seeds_batch_better": 3,
     "seeds_online_better": 0,
     "seeds_tie": 0
