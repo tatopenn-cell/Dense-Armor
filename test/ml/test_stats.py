@@ -8,18 +8,18 @@ import dense_armor.ml.stats as S
 from dense_armor.ml.stats import (
     Autocorrelation,
     BloomFilter,
+    ColumnMoments,
+    Correlation,
     CountMinSketch,
+    Covariance,
     DDSketch,
     EWStats,
     HyperLogLog,
-    ShrinkageCovariance,
+    Moments,
     RollingCorrelation,
     RollingCovariance,
     RollingMedian,
-    Correlation,
-    Covariance,
-    Moments,
-    ColumnMoments,
+    ShrinkageCovariance,
     SpaceSaving,
     TDigest,
 )
@@ -94,9 +94,7 @@ def test_quantiles_exact():
 
 
 def test_rolling_median_hand_case():
-    m = RollingMedian(window=3).fit(
-        [[1.0, 9.0], [5.0, 1.0], [2.0, 4.0], [8.0, 6.0]]
-    )
+    m = RollingMedian(window=3).fit([[1.0, 9.0], [5.0, 1.0], [2.0, 4.0], [8.0, 6.0]])
     assert m.series_.tolist() == [[2.0, 4.0], [5.0, 4.0]]
     assert m.median_.tolist() == [5.0, 4.0]
     short = RollingMedian(window=9).fit([1.0, 2.0])
