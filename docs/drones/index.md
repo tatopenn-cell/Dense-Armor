@@ -44,6 +44,8 @@ The software that runs on the small computer onboard.
 - **[Jetson power](jetson_power.md)** — the power modes of the Orin modules,
   the commands to read and set the mode, and how to measure the time per
   sample in each mode.
+- **[Jetson energy](jetson_energy.md)** — the joules per 1000 samples of the
+  batch and the online tree, and one command to measure them on a board.
 - **[ArduPilot against PX4](ardupilot.md)** — what changes on the two
   autopilots of the drone ecosystem, the messages each one emits and the
   fields the pipelines read.

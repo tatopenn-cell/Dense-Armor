@@ -103,6 +103,7 @@ nav:
         - Start here: drones/start_here.md
         - ArduPilot: drones/ardupilot.md
         - Jetson power: drones/jetson_power.md
+        - Jetson energy: drones/jetson_energy.md
 
   - Shields:
       - shields/index.md

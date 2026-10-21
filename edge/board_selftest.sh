@@ -63,6 +63,14 @@ else
     echo "tegrastats: not a Jetson / Raspberry Pi"
 fi
 
+if [ -n "${POWER_NODE:-}" ] && [ -r "$POWER_NODE" ]; then
+    echo "energy: $POWER_NODE"
+    python -m edge.energy_bench --power-node "$POWER_NODE" || true
+    echo "energy json: benchmarks/drones/energy_bench_$(hostname).json"
+else
+    echo "energy: not measured (POWER_NODE not set or not readable)"
+fi
+
 echo
 echo "--- paste this in the issue ---"
 echo "board: $MODEL"

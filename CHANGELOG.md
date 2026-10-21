@@ -4,6 +4,9 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- `edge/power.py`, `edge/energy_bench.py`, `test/drones/test_power.py`, `test/drones/test_energy_bench.py`, `docs/drones/jetson_energy.md`: the energy of a run (trapezoid integral of a power trace, net of the idle), a paired batch-vs-online energy benchmark, the four calibration lines of Table I of 2306.13107, and one command for a Jetson board. Every energy value is synthetic or null: no reduction on a board is claimed.
+- `edge/board_selftest.sh`: the energy section after the existing steps, on `POWER_NODE`.
 ### Changed
 - The README says that the library also learns from a whole dataset (`fit` and the batch versions) in the three places that said the opposite.
 
