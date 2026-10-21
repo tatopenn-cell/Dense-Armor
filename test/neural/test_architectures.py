@@ -68,14 +68,14 @@ def test_laststep_mean_overtime_addpositions_gradchecks():
         (AddPositions(8), jax.random.normal(jax.random.PRNGKey(0), (2, 4, 8))),
     ]:
 
-        def f(xx, l=layer):
-            l.x_ = None
-            return l.forward(xx)
+        def f(xx, ly=layer):
+            ly.x_ = None
+            return ly.forward(xx)
 
-        def b(xx, y, g, l=layer):
-            l.x_ = None
-            l.forward(xx)
-            return l.backward(g)
+        def b(xx, y, g, ly=layer):
+            ly.x_ = None
+            ly.forward(xx)
+            return ly.backward(g)
 
         assert gradcheck(f, b, x) < 1e-4
 
