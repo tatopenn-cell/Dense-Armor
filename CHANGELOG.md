@@ -5,7 +5,7 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 ## [Unreleased]
 
 ### Added
-- `dense_armor/ml/`: the machine learning classes, which read the whole table in `fit`: statistics, preprocessing, linear models, naive Bayes, nearest neighbours, multiclass, multi-output, distributions, trees (CART and Mondrian forests), anomaly detection (Hampel, Tukey, Chauvenet, sigma clipping, Local Outlier Factor), change detection (CUSUM with a fixed reference) and vision (Horn-Schunck flow, motion mask, phase correlation, random projection, PCA); each module lists in `STOPPED` the classes whose reference defines no algorithm for the whole dataset; `docs/ml/` and `docs/compare/` hold the pages and the comparison with the online classes.
+- `dense_armor/ml/`: the machine learning classes, which read the whole table in `fit`: statistics, preprocessing, linear models, naive Bayes, nearest neighbours, multiclass, multi-output, distributions, trees (CART and Mondrian forests), anomaly detection (Hampel, Tukey, Chauvenet, sigma clipping, Local Outlier Factor), change detection (CUSUM with a fixed reference) and vision (Horn-Schunck flow, random projection, PCA); each module lists in `STOPPED` the classes whose reference defines no algorithm for the whole dataset; `docs/ml/` and `docs/compare/` hold the pages and the comparison with the online classes.
 ### Added
 - `dense_armor/utility/neural/`: `Dense`, `Embedding`, `Dropout`, `Residual`, `BatchNorm`, `LayerNorm`, `AsTransformer`; `docs/neural/layers.md` with the guide and the figure of the two normalisations.
 ### Added

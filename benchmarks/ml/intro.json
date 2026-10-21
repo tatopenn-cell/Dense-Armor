@@ -11,5 +11,5 @@
  "tree": "A tree asks a series of yes/no questions about the features and ends in a leaf that gives the answer. DecisionTreeClassifier chooses each question with the gini impurity; the Mondrian forests draw the questions at random and mix the answers along the path of each query.",
  "drift": "A change detector reads a series of values and says where its level shifts. CUSUMDriftDetector fixes the reference level from the first values and adds up the deviations that follow until the sum crosses a threshold.",
  "anomaly": "An anomaly detector marks the values that do not look like their neighbours. Four rules (Hampel, Tukey, Chauvenet, sigma clipping) judge each value of a series against its centred window; the Local Outlier Factor compares the density around a row with the density around its neighbours.",
- "vision": "Vision here works on frames and on tables of features. DenseFlow gives the motion of every pixel between two frames, MotionMask keeps the pixels that move most, GlobalMotion gives the shift of the whole scene, RandomProjection and PCA reduce a table of features to fewer columns."
+ "vision": "Vision here works on a pair of frames and on tables of features. DenseFlow gives the motion of every pixel between two frames; RandomProjection and PCA reduce a table of features to fewer columns."
 }

@@ -9,15 +9,13 @@ import dense_armor.ml.vision as V
 from dense_armor.ml.vision import (
     PCA,
     DenseFlow,
-    GlobalMotion,
-    MotionMask,
     RandomProjection,
 )
 
 
 def test_doctests():
     r = doctest.testmod(V)
-    assert r.failed == 0 and r.attempted >= 5
+    assert r.failed == 0 and r.attempted >= 3
 
 
 def test_flow_zero_and_normalisation():
@@ -46,28 +44,6 @@ def test_flow_one_step_hand_case():
     assert not m.v_.any()
 
 
-def test_mask_hand_case():
-    u = np.tile([0.1, 0.0], (8, 4))
-    u[3:5, 3:5] = 2.0
-    z = np.zeros((8, 8))
-    m = MotionMask(dilation=0).fit(u, z)
-    assert m.mask_.sum() == 4 and m.mask_[3:5, 3:5].all()
-    d = MotionMask(dilation=1).fit(u, z)
-    assert d.mask_.sum() == 12
-    assert not MotionMask().fit(z, z).mask_.any()
-
-
-def test_global_motion():
-    rng = np.random.default_rng(0)
-    a = rng.normal(size=(32, 32))
-    m = GlobalMotion(refine=False).fit(a, np.roll(a, (3, -2), axis=(0, 1)))
-    assert (m.dx_, m.dy_) == (-2.0, 3.0) and m.peak_ > 0.9
-    h = GlobalMotion(window=16).fit(a, np.roll(a, (1, 1), axis=(0, 1)))
-    assert abs(h.dx_ - 1) < 1.0
-    z = GlobalMotion().fit(np.ones((8, 8)), np.ones((8, 8)))
-    assert (z.dx_, z.dy_, z.peak_) == (0.0, 0.0, 0.0)
-
-
 def test_colour_frames_use_the_luminance():
     rng = np.random.default_rng(3)
     a = rng.normal(size=(8, 8, 3))
@@ -78,12 +54,6 @@ def test_colour_frames_use_the_luminance():
     assert np.allclose(c.u_, g.u_)
     one = DenseFlow(n_iter=5).fit(a[..., :1], b[..., :1])
     assert np.allclose(one.u_, DenseFlow(n_iter=5).fit(a[..., 0], b[..., 0]).u_)
-
-
-def test_global_motion_single_frequency():
-    a = np.tile(np.cos(2 * np.pi * np.arange(16) / 16), (16, 1))
-    m = GlobalMotion().fit(a, np.roll(a, 1, axis=1))
-    assert (m.dx_, m.dy_) == (1.0, 0.0)
 
 
 def test_random_projection():
@@ -110,4 +80,4 @@ def test_pca_hand_case():
 
 
 def test_stopped():
-    assert len(V.STOPPED) == 23 and all(V.STOPPED.values())
+    assert len(V.STOPPED) == 25 and all(V.STOPPED.values())
