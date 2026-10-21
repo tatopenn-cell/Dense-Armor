@@ -69,6 +69,7 @@ plugins:
 
 nav:
   - Machine learning:
+      - Anomaly detection: ml/anomaly.md
       - Naive Bayes: ml/bayes.md
       - Change detection: ml/drift.md
       - Linear models: ml/linear.md
@@ -182,6 +183,7 @@ nav:
           - Adversarial robustness: robustness.md
           - Known limits: limits.md
           - Machine learning against online learning:
+              - Anomaly detection: compare/anomaly.md
               - Naive Bayes: compare/bayes.md
               - Change detection: compare/drift.md
               - Linear models: compare/linear.md
