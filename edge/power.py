@@ -135,9 +135,9 @@ class SysfsPowerSource:
         return float(int(self.path.read_text(encoding="utf-8").strip()))
 
     def _loop(self) -> None:
-        next_t = time.monotonic()
+        next_t = time.perf_counter()
         while not self._stop.is_set():
-            t = time.monotonic() - self._t0
+            t = time.perf_counter() - self._t0
             try:
                 mw = self._read_mw()
             except BaseException as exc:
@@ -146,14 +146,14 @@ class SysfsPowerSource:
             self._t.append(t)
             self._mw.append(mw)
             next_t += self.dt_s
-            sleep = next_t - time.monotonic()
+            sleep = next_t - time.perf_counter()
             if sleep > 0.0:
                 self._stop.wait(sleep)
 
     def start(self) -> SysfsPowerSource:
         if self._thread is not None:
             raise RuntimeError("already started")
-        self._t0 = time.monotonic()
+        self._t0 = time.perf_counter()
         self._t = []
         self._mw = []
         self._error = None
@@ -165,7 +165,7 @@ class SysfsPowerSource:
     def stop(self) -> PowerTrace:
         if self._thread is None:
             raise RuntimeError("not started")
-        elapsed = time.monotonic() - self._t0
+        elapsed = time.perf_counter() - self._t0
         self._stop.set()
         self._thread.join()
         self._thread = None
@@ -214,7 +214,7 @@ class SyntheticPowerSource:
         self._running = False
 
     def start(self) -> SyntheticPowerSource:
-        self._t0 = time.monotonic()
+        self._t0 = time.perf_counter()
         self._running = True
         return self
 
@@ -223,7 +223,7 @@ class SyntheticPowerSource:
             raise RuntimeError("not started")
         self._running = False
         if self.duration_s is None:
-            duration = time.monotonic() - self._t0
+            duration = time.perf_counter() - self._t0
         else:
             duration = float(self.duration_s)
         duration = max(duration, 1e-6)
