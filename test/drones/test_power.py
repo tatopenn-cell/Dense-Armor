@@ -68,12 +68,14 @@ def test_net_energy_removes_only_the_part_above_idle():
 def test_linear_ramp_gives_trapezoid_area():
     trace = PowerTrace(t_s=np.array([0.0, 2.0]), mw=np.array([1000.0, 3000.0]))
     assert energy_j(trace) == pytest.approx(
-        (1000.0 + 3000.0) / 2.0 * 2.0 / 1000.0, abs=1e-9)
+        (1000.0 + 3000.0) / 2.0 * 2.0 / 1000.0, abs=1e-9
+    )
 
 
 def test_three_point_ramp_matches_trapezoid():
-    trace = PowerTrace(t_s=np.array([0.0, 1.0, 2.0]),
-                       mw=np.array([1000.0, 2000.0, 3000.0]))
+    trace = PowerTrace(
+        t_s=np.array([0.0, 1.0, 2.0]), mw=np.array([1000.0, 2000.0, 3000.0])
+    )
     assert energy_j(trace) == pytest.approx(4.0, abs=1e-9)
 
 
@@ -115,8 +117,9 @@ def test_calibrate_unknown_device_raises():
 def test_calibrate_is_not_applied_by_default():
     trace = _trace([1000.0, 1000.0], dt=1.0)
     e_raw = energy_j(trace)
-    e_calibrated = energy_j(PowerTrace(
-        trace.t_s, np.array([calibrate_mw(v, "Nano") for v in trace.mw])))
+    e_calibrated = energy_j(
+        PowerTrace(trace.t_s, np.array([calibrate_mw(v, "Nano") for v in trace.mw]))
+    )
     assert e_calibrated > e_raw
 
 
@@ -183,8 +186,7 @@ def test_synthetic_source_constant_power():
     trace = src.start().stop()
     assert trace.mw.size >= 2
     assert np.all(trace.mw == 4000.0)
-    assert energy_j(trace) == pytest.approx(
-        4000.0 * trace.t_s[-1] / 1000.0, abs=1e-9)
+    assert energy_j(trace) == pytest.approx(4000.0 * trace.t_s[-1] / 1000.0, abs=1e-9)
 
 
 def test_synthetic_source_without_duration_uses_wall_time():

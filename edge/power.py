@@ -60,9 +60,7 @@ class PowerTrace:
         if self.t_s.ndim != 1:
             raise ValueError(f"t_s must be 1-D, got {self.t_s.ndim}-D")
         if self.t_s.size < 2:
-            raise ValueError(
-                f"a trace needs at least two samples, got {self.t_s.size}"
-            )
+            raise ValueError(f"a trace needs at least two samples, got {self.t_s.size}")
 
 
 def energy_j(trace: PowerTrace) -> float:
@@ -102,8 +100,7 @@ def calibrate_mw(x_mw: float, device: str) -> float:
     """
     if device not in CALIBRATION_MW:
         raise ValueError(
-            f"unknown device {device!r}, expected one of "
-            f"{sorted(CALIBRATION_MW)}"
+            f"unknown device {device!r}, expected one of {sorted(CALIBRATION_MW)}"
         )
     a, b = CALIBRATION_MW[device]
     return float(a * float(x_mw) + b)
@@ -183,9 +180,7 @@ class SysfsPowerSource:
         t: np.ndarray = np.asarray(self._t, dtype=float)
         mw: np.ndarray = np.asarray(self._mw, dtype=float)
         if t.size < 2:
-            raise RuntimeError(
-                f"the trace has {t.size} samples, need at least two"
-            )
+            raise RuntimeError(f"the trace has {t.size} samples, need at least two")
         del thread
         return PowerTrace(t_s=t, mw=mw)
 
@@ -245,7 +240,7 @@ def _demo() -> int:
     trace = src.start().stop()
     e = energy_j(trace)
     print(f"source: synthetic, {mw:.0f} mW for {duration:.1f} s")
-    print(f"energy: {e:.4f} J (expected {mw*duration/1000.0:.4f})")
+    print(f"energy: {e:.4f} J (expected {mw * duration / 1000.0:.4f})")
     print(f"calibrated AGX Orin: {calibrate_mw(mw, 'AGX Orin'):.2f} mW")
     return 0
 
