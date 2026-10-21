@@ -5,6 +5,8 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- `dense_armor/utility/neural/`: `Conv1D`, `Conv2D`, `MaxPool1D`, `MaxPool2D`, `AvgPool1D`, `AvgPool2D`, `Flatten`, `RNN`, `GRU`, `LSTM`, `MultiHeadSelfAttention`, `TransformerBlock`, `LastStep`, `MeanOverTime`, `AddPositions`, `cnn`, `recurrent_net`, `transformer_encoder`; `docs/neural/vision_layers.md` and `docs/neural/sequence_layers.md`.
+### Added
 - `dense_armor/utility/neural/`: `Sequential`, `Parallel`, `mlp`, `resnet_mlp`; `docs/neural/chains.md` with the guide and the figure of the MLP on a synthetic two-moons set.
 ### Added
 - `dense_armor/utility/neural/`: `Dense`, `Embedding`, `Dropout`, `Residual`, `BatchNorm`, `LayerNorm`, `AsTransformer`; `docs/neural/layers.md` with the guide and the figure of the two normalisations.

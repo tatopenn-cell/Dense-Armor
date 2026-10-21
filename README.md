@@ -302,3 +302,5 @@ Dense-Armor takes inspiration from [River](https://riverml.xyz) (Montiel et al.,
 - Deep Learning: [Neural bricks: how do I check that a neural piece learns the right gradient?](docs/neural/index.md).
 - Deep Learning: [Layers: how do I build a layer, check its gradient and use it in a stream?](docs/neural/layers.md).
 - Deep Learning: [Chains: how do I join layers into a network and train it one sample at a time or on a batch?](docs/neural/chains.md).
+- Deep Learning: [Convolution and pooling: how do I look for a pattern in an image and shrink it?](docs/neural/vision_layers.md).
+- Deep Learning: [Recurrent layers and attention: how do I keep a memory of the past samples?](docs/neural/sequence_layers.md).
