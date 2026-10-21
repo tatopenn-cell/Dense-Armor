@@ -71,7 +71,6 @@ class Sequential:
         self.layers = list(layers)
         self._accepts = [_accepts_training(layer) for layer in self.layers]
         self.x_: jax.Array | None = None
-        self._ys: list[jax.Array] = []
 
     def __len__(self) -> int:
         return len(self.layers)
@@ -105,14 +104,12 @@ class Sequential:
     def forward(self, x: jax.Array, training: bool = True) -> jax.Array:
         """Pass ``x`` through the layers from the first to the last."""
         self.x_ = x
-        self._ys = []
         y = x
         for layer, accepts in zip(self.layers, self._accepts):
             if accepts:
                 y = layer.forward(y, training=training)
             else:
                 y = layer.forward(y)
-            self._ys.append(y)
         return y
 
     def backward(self, g: jax.Array) -> jax.Array:

@@ -118,7 +118,7 @@ def resnet_mlp(
     """
     if depth < 1:
         raise ValueError(f"depth must be at least 1, got {depth}")
-    keys = jax.random.split(key, 2 + 3 * depth)
+    keys = jax.random.split(key, 2 + 2 * depth)
     layers: list[Any] = [
         Dense(n_in, width, keys[0]),
         Relu(),

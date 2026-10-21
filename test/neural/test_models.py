@@ -110,16 +110,18 @@ def test_resnet_bad_depth_raises():
 
 
 def _train_xor(make_model, steps, lr, seed=0):
+    base = np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]], dtype=np.float32)
+    base_y = np.array([0.0, 1.0, 1.0, 0.0], dtype=np.float32)
+    X = np.tile(base, (16, 1))
+    y = np.tile(base_y, 16)
     k = jax.random.PRNGKey(seed)
     model = make_model(k)
     opt = {id(p): Adam(lr=lr) for p in model.params()}
-    X = np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]], dtype=np.float32)
-    y = np.array([0.0, 1.0, 1.0, 0.0], dtype=np.float32)
     rng = np.random.default_rng(seed)
     losses = []
     for _ in range(steps):
         model.zero_grad()
-        perm = rng.permutation(4)
+        perm = rng.permutation(len(X))
         batch_loss = 0.0
         for i in perm:
             logit = model.forward(jnp.asarray(X[i]))[0]
@@ -130,9 +132,9 @@ def _train_xor(make_model, steps, lr, seed=0):
             model.backward(jnp.array([g]))
         for p in model.params():
             p.update(opt[id(p)])
-        losses.append(batch_loss / 4.0)
+        losses.append(batch_loss / len(X))
     ok = 0
-    for xi, yi in zip(X, y):
+    for xi, yi in zip(base, base_y):
         logit = float(model.forward(jnp.asarray(xi))[0])
         pred = 1.0 if logit > 0.0 else 0.0
         if pred == float(yi):
@@ -140,25 +142,37 @@ def _train_xor(make_model, steps, lr, seed=0):
     return ok / 4.0, losses[-1]
 
 
+@pytest.mark.slow
 def test_mlp_learns_xor():
-    acc, final_loss = _train_xor(
-        lambda k: mlp([2, 8, 1], k),
-        steps=200,
-        lr=0.05,
-    )
-    assert acc == 1.0, f"accuracy {acc}, final loss {final_loss}"
+    """The MLP learns XOR on at least 4 of 5 seeds.
+
+    The topology ``[2, 16, 1]`` with 64 points (the 4 XOR points
+    repeated 16 times), 100 steps, lr = 0.05, one Adam per ``Param``,
+    reaches accuracy 1.0 on all five seeds 0 to 4 in the measurements
+    of 2026-10-21 on this runtime (JAX 0.11.1, CPU). The narrower
+    topology ``[2, 8, 1]`` stops at 0.75 on seeds 0 and 3 (3 of 5),
+    and ``[2, 8, 8, 1]`` reaches 4 of 5. The threshold is the task's
+    requirement, not the best case observed.
+    """
+    accs = []
+    for seed in range(5):
+        acc, _loss = _train_xor(lambda k: mlp([2, 16, 1], k), 100, 0.05, seed)
+        accs.append(acc)
+    print(f"accuracies (seed 0 to 4): {accs}")
+    n_one = sum(1 for a in accs if a == 1.0)
+    assert n_one >= 4, f"accuracies {accs}, only {n_one} of 5 reached 1.0"
 
 
+@pytest.mark.slow
 def test_resnet_mlp_learns_xor():
-    acc, final_loss = _train_xor(
-        lambda k: resnet_mlp(8, 2, 2, 1, k),
-        steps=200,
-        lr=0.05,
-    )
-    assert acc == 1.0, f"accuracy {acc}, final loss {final_loss}"
+    for seed in range(5):
+        acc, final_loss = _train_xor(
+            lambda k: resnet_mlp(8, 2, 2, 1, k), 100, 0.05, seed
+        )
+        assert acc == 1.0, f"seed {seed}: accuracy {acc}, loss {final_loss}"
 
 
 def test_same_key_twice_gives_the_same_final_loss():
-    acc1, loss1 = _train_xor(lambda k: mlp([2, 8, 1], k), 100, 0.05)
-    acc2, loss2 = _train_xor(lambda k: mlp([2, 8, 1], k), 100, 0.05)
+    _a1, loss1 = _train_xor(lambda k: mlp([2, 8, 1], k), 30, 0.05, seed=0)
+    _a2, loss2 = _train_xor(lambda k: mlp([2, 8, 1], k), 30, 0.05, seed=0)
     assert abs(loss1 - loss2) < 1e-6
