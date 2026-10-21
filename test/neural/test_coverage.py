@@ -211,3 +211,170 @@ def test_embedding_rejects_float_ids():
     e = Embedding(10, 4, jax.random.PRNGKey(0))
     with pytest.raises(ValueError, match="integer array"):
         e.forward(jnp.array([1.0, 2.0]))
+
+
+def test_sequential_repr_eq_and_eq_with_wrong_type():
+    from dense_armor.utility.neural.chain import Sequential
+    from dense_armor.utility.neural.layers import Dense
+
+    a = Sequential([Dense(3, 2, jax.random.PRNGKey(0))])
+    b = Sequential([Dense(3, 2, jax.random.PRNGKey(0))])
+    c = Sequential([Dense(3, 4, jax.random.PRNGKey(0))])
+    assert "Sequential" in repr(a)
+    assert a.__eq__("x") is NotImplemented
+    assert a == b
+    assert a != c
+    d = Sequential([Dense(3, 2, jax.random.PRNGKey(1))])
+    assert a != d
+
+
+def test_sequential_accepts_training_with_kwargs_layer():
+    from dense_armor.utility.neural.chain import Sequential, _accepts_training
+
+    class WithKwargs:
+        def forward(self, x, **kwargs):
+            return x
+
+        def backward(self, g):
+            return g
+
+    assert _accepts_training(WithKwargs())
+    s = Sequential([WithKwargs()])
+    y = s.forward(jnp.ones(3))
+    assert y.shape == (3,)
+
+
+def test_sequential_forward_without_training_argument():
+    from dense_armor.utility.neural.activations import Relu
+    from dense_armor.utility.neural.chain import Sequential
+
+    s = Sequential([Relu()])
+    y = s.forward(jnp.array([-1.0, 1.0]))
+    assert np.allclose(np.asarray(y), np.array([0.0, 1.0]))
+
+
+def test_parallel_repr_len_getitem():
+    from dense_armor.utility.neural.chain import Parallel
+    from dense_armor.utility.neural.layers import Dense
+
+    p = Parallel(
+        [Dense(3, 4, jax.random.PRNGKey(0)), Dense(3, 4, jax.random.PRNGKey(1))], "add"
+    )
+    assert "Parallel" in repr(p)
+    assert len(p) == 2
+    assert type(p[0]).__name__ == "Dense"
+
+
+def test_parallel_eq():
+    from dense_armor.utility.neural.chain import Parallel
+    from dense_armor.utility.neural.layers import Dense
+
+    a = Parallel(
+        [Dense(3, 4, jax.random.PRNGKey(0)), Dense(3, 4, jax.random.PRNGKey(1))], "add"
+    )
+    b = Parallel(
+        [Dense(3, 4, jax.random.PRNGKey(0)), Dense(3, 4, jax.random.PRNGKey(1))], "add"
+    )
+    c = Parallel(
+        [Dense(3, 4, jax.random.PRNGKey(0)), Dense(3, 2, jax.random.PRNGKey(1))],
+        "concat",
+    )
+    assert a.__eq__("x") is NotImplemented
+    assert a == b
+    assert a != c
+
+
+def test_parallel_backward_before_forward_raises():
+    from dense_armor.utility.neural.chain import Parallel
+    from dense_armor.utility.neural.layers import Dense
+
+    p = Parallel(
+        [Dense(3, 4, jax.random.PRNGKey(0)), Dense(3, 4, jax.random.PRNGKey(1))], "add"
+    )
+    with pytest.raises(RuntimeError, match="call forward"):
+        p.backward(jnp.ones(4))
+
+
+def test_accepts_training_when_signature_raises(monkeypatch):
+    import inspect as _inspect
+
+    from dense_armor.utility.neural import chain as _chain
+
+    class WithForward:
+        def forward(self, x):
+            return x
+
+    def _raise(*a, **k):
+        raise ValueError("no signature")
+
+    monkeypatch.setattr(_inspect, "signature", _raise)
+    assert _chain._accepts_training(WithForward()) is False
+
+
+def test_sequential_eq_length_and_type():
+    from dense_armor.utility.neural.activations import Relu
+    from dense_armor.utility.neural.chain import Sequential
+    from dense_armor.utility.neural.layers import Dense
+
+    a = Sequential([Dense(3, 2, jax.random.PRNGKey(0))])
+    b = Sequential([Dense(3, 2, jax.random.PRNGKey(0)), Relu()])
+    c = Sequential([Relu()])
+    assert a != b
+    assert a != c
+
+
+def test_sequential_load_state_dict_wrong_shape():
+    from dense_armor.utility.neural.chain import Sequential
+    from dense_armor.utility.neural.layers import Dense
+
+    s = Sequential([Dense(3, 2, jax.random.PRNGKey(0))])
+    with pytest.raises(ValueError, match="state\\[0\\] has shape"):
+        s.load_state_dict([np.zeros((3, 4)), np.zeros((2,))])
+
+
+def test_parallel_eq_length_merge_and_type():
+    from dense_armor.utility.neural.activations import Relu
+    from dense_armor.utility.neural.chain import Parallel
+    from dense_armor.utility.neural.layers import Dense
+
+    a = Parallel(
+        [Dense(3, 4, jax.random.PRNGKey(0)), Dense(3, 4, jax.random.PRNGKey(1))], "add"
+    )
+    longer = Parallel(
+        [
+            Dense(3, 4, jax.random.PRNGKey(0)),
+            Dense(3, 4, jax.random.PRNGKey(1)),
+            Dense(3, 4, jax.random.PRNGKey(2)),
+        ],
+        "add",
+    )
+    other_merge = Parallel(
+        [Dense(3, 4, jax.random.PRNGKey(0)), Dense(3, 4, jax.random.PRNGKey(1))],
+        "concat",
+    )
+    other_type = Parallel([Dense(3, 4, jax.random.PRNGKey(0)), Relu()], "add")
+    assert a != longer
+    assert a != other_merge
+    assert a != other_type
+
+
+def test_parallel_branch_without_training_argument():
+    from dense_armor.utility.neural.activations import Relu
+    from dense_armor.utility.neural.chain import Parallel
+
+    p = Parallel([Relu(), Relu()], "add")
+    y = p.forward(jnp.array([-1.0, 1.0]))
+    assert np.allclose(np.asarray(y), np.array([0.0, 2.0]))
+
+
+def test_parallel_eq_same_type_different_params():
+    from dense_armor.utility.neural.chain import Parallel
+    from dense_armor.utility.neural.layers import Dense
+
+    a = Parallel(
+        [Dense(3, 4, jax.random.PRNGKey(0)), Dense(3, 4, jax.random.PRNGKey(1))], "add"
+    )
+    b = Parallel(
+        [Dense(3, 4, jax.random.PRNGKey(0)), Dense(3, 5, jax.random.PRNGKey(1))], "add"
+    )
+    assert a != b
