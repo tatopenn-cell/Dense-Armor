@@ -4,6 +4,9 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- The DOI of version 1.1.33 in the README badge, the README links and `CITATION.cff`.
+
 ## [1.1.33] - 2026-10-21
 
 ### Added
