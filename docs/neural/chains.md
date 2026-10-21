@@ -79,6 +79,47 @@ True
 
 This is why the same training loop works on a batch and on a stream: the gradient of the mean loss is the average of the per-sample gradients, and the two ways of taking it agree to `1e-5`.
 
+### A small case by hand
+
+A chain of two layers with the weights written down, to see what `backward` returns. `Dense(2, 2)` with `W1 = [[1, 2], [3, 4]]` and zero bias, a `Relu`, then `Dense(2, 1)` with `W2 = [[5], [6]]` and zero bias. The input is two samples, `X = [[1, 2], [3, 4]]`, and the targets are `T = [[90], [200]]`. The loss is the mean squared error.
+
+The forward pass is `H = X W1 = [[7, 10], [15, 22]]`; the rectifier leaves it unchanged, since both columns are positive; and `Y = H W2 = [[95], [207]]`. The gradient of the loss with respect to `Y`, for `L = mean((Y - T)^2)`, is `g = (Y - T) / 2 = [[2.5], [3.5]]`.
+
+~~~python
+import numpy as np
+import jax
+import jax.numpy as jnp
+from dense_armor.utility.neural.chain import Sequential
+from dense_armor.utility.neural.layers import Dense
+from dense_armor.utility.neural.activations import Relu
+
+d1 = Dense(2, 2, jax.random.PRNGKey(0))
+d1.W.value = jnp.array([[1.0, 2.0], [3.0, 4.0]])
+d1.b.value = jnp.array([0.0, 0.0])
+d2 = Dense(2, 1, jax.random.PRNGKey(1))
+d2.W.value = jnp.array([[5.0], [6.0]])
+d2.b.value = jnp.array([0.0])
+s = Sequential([d1, Relu(), d2])
+
+X = jnp.array([[1.0, 2.0], [3.0, 4.0]])
+T = jnp.array([[90.0], [200.0]])
+Y = s.forward(X)
+g = (Y - T) / X.shape[0]
+s.zero_grad()
+dx = s.backward(g)
+print(np.asarray(Y).tolist())
+print(np.asarray(d1.W.grad).tolist())
+print(np.asarray(dx).tolist())
+~~~
+
+~~~
+[[95.0], [207.0]]
+[[65.0, 78.0], [95.0, 114.0]]
+[[42.5, 97.5], [59.5, 136.5]]
+~~~
+
+The same numbers by hand, step by step: `dW2 = relu(H)^T g = [[70], [102]]` and `db2 = g.sum(axis=0) = [6]`; `dH = g W2^T * mask = [[12.5, 15], [17.5, 21]]`, where the mask is 1 because both entries of `H` are positive; `dW1 = X^T dH = [[65, 78], [95, 114]]` and `db1 = dH.sum(axis=0) = [30, 36]`; and `dx = dH W1^T = [[42.5, 97.5], [59.5, 136.5]]`. The test `test_chain_two_layers_gradient_by_hand` in `test/neural/test_chain.py` checks all five arrays against these numbers within `1e-6`.
+
 ## 3. Branches that merge
 
 A branching sends the same input to several branches and merges the outputs. With `merge="add"` the outputs are summed, so every branch must return the same shape. With `merge="concat"` the outputs are concatenated on the last axis, so the branches can return different widths.

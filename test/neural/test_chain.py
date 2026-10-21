@@ -278,3 +278,37 @@ def test_parallel_params_and_zero_grad():
     p.zero_grad()
     for par in p.params():
         assert bool(jnp.all(par.grad == 0.0))
+
+
+def test_chain_two_layers_gradient_by_hand():
+    """Backward of ``Dense(2,2) -> Relu -> Dense(2,1)`` with MSE.
+
+    Two samples, weights written in the test, numbers computed by
+    hand and checked against ``backward`` within ``1e-6``.
+    """
+    d1 = Dense(2, 2, jax.random.PRNGKey(0))
+    d1.W.value = jnp.array([[1.0, 2.0], [3.0, 4.0]])
+    d1.b.value = jnp.array([0.0, 0.0])
+    d2 = Dense(2, 1, jax.random.PRNGKey(1))
+    d2.W.value = jnp.array([[5.0], [6.0]])
+    d2.b.value = jnp.array([0.0])
+    s = Sequential([d1, Relu(), d2])
+
+    X = jnp.array([[1.0, 2.0], [3.0, 4.0]])
+    T = jnp.array([[90.0], [200.0]])
+    Y = s.forward(X)
+    assert np.allclose(np.asarray(Y), np.array([[95.0], [207.0]]))
+
+    g = (Y - T) / X.shape[0]
+    s.zero_grad()
+    dx = s.backward(g)
+
+    assert np.allclose(
+        np.asarray(d1.W.grad), np.array([[65.0, 78.0], [95.0, 114.0]]), atol=1e-6
+    )
+    assert np.allclose(np.asarray(d1.b.grad), np.array([30.0, 36.0]), atol=1e-6)
+    assert np.allclose(np.asarray(d2.W.grad), np.array([[70.0], [102.0]]), atol=1e-6)
+    assert np.allclose(np.asarray(d2.b.grad), np.array([6.0]), atol=1e-6)
+    assert np.allclose(
+        np.asarray(dx), np.array([[42.5, 97.5], [59.5, 136.5]]), atol=1e-6
+    )
