@@ -17,7 +17,8 @@ from dense_armor.ml import (  # noqa: F401
     proba,
     stats,
     tree,
+    vision,
 )
 from dense_armor.ml.base import MLBase
 
-__all__ = ["MLBase", "anomaly", "bayes", "drift", "linear", "multiclass", "multioutput", "neighbors", "optim", "preprocessing", "proba", "stats", "tree"]
+__all__ = ["MLBase", "anomaly", "bayes", "drift", "linear", "multiclass", "multioutput", "neighbors", "optim", "preprocessing", "proba", "stats", "tree", "vision"]

@@ -1,0 +1,43 @@
+{
+  "family": "vision",
+  "seeds": 10,
+  "synthetic": true,
+  "wilcoxon_a12": "not computed: the machine learning and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two",
+  "classes": {
+    "DenseFlow": {
+      "kind": "abs",
+      "median": 2.280848017122139e-07,
+      "p90": 3.126870627756517e-07,
+      "max": 3.4043915020376403e-07,
+      "why": "the same iteration on the same pair of frames"
+    },
+    "MotionMask": {
+      "kind": "abs",
+      "median": 0.0,
+      "p90": 0.0,
+      "max": 0.0,
+      "why": "the same threshold on the same flow field"
+    },
+    "GlobalMotion": {
+      "kind": "abs",
+      "median": 0.0,
+      "p90": 0.0,
+      "max": 0.0,
+      "why": "the same phase correlation on the same pair of frames"
+    },
+    "RandomProjection": {
+      "kind": "abs",
+      "median": 1.7763568394002505e-15,
+      "p90": 2.264854970235319e-15,
+      "max": 2.6645352591003757e-15,
+      "why": "the same matrix from the same seed"
+    },
+    "PCA": {
+      "kind": "abs",
+      "median": 0.00027234099499495734,
+      "p90": 0.00042664235142944026,
+      "max": 0.000797664036482626,
+      "why": "the eigenvectors of the covariance of the whole table, against the rule that approaches them one row at a time"
+    }
+  }
+}

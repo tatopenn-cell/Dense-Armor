@@ -80,6 +80,7 @@ nav:
       - Distributions: ml/proba.md
       - Statistics and sketches: ml/stats.md
       - Decision trees: ml/tree.md
+      - Vision: ml/vision.md
   - Online learning:
       - Online learning:
           - learn/index.md
@@ -194,6 +195,7 @@ nav:
               - Distributions: compare/proba.md
               - Statistics and sketches: compare/stats.md
               - Decision trees: compare/tree.md
+              - Vision: compare/vision.md
       - Applications:
           - Finance:
               - finance/index.md
