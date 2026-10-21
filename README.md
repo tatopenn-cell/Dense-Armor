@@ -7,7 +7,7 @@
   <a href="https://codecov.io/gh/tatopenn-cell/Dense-Armor"><img alt="codecov" src="https://codecov.io/gh/tatopenn-cell/Dense-Armor/branch/master/graph/badge.svg"></a>
   <a href="https://pypi.org/project/dense-armor"><img alt="pypi" src="https://img.shields.io/pypi/v/dense-armor.svg"></a>
   <a href="https://doi.org/10.5281/zenodo.23527280"><img alt="DOI" src="https://zenodo.org/badge/DOI/10.5281/zenodo.23527280.svg"></a>
-  <img alt="license" src="https://img.shields.io/badge/license-BSL_1.1-blue.svg">
+  <img alt="license" src="https://img.shields.io/badge/license-AGPL_3.0-blue.svg">
   <img alt="python" src="https://img.shields.io/badge/python-3.10%2B-blue.svg">
   <img alt="vision" src="https://img.shields.io/badge/vision-native-9cf.svg">
   <img alt="robot control" src="https://img.shields.io/badge/robot%20control-rate%20limit%20%2B%20CBF-9cf.svg">
@@ -251,8 +251,10 @@ Contributions are welcome. The library is built to be extended one estimator at 
 
 ## License
 
-Business Source License 1.1 — free non-commercial use, converts to Apache 2.0
-on `2029-06-01`. See [LICENSE.md](LICENSE.md).
+GNU Affero General Public License v3.0 or later. See [LICENSE](LICENSE).
+Releases up to 1.1.32 were published under the Business Source License 1.1:
+[LICENSE-BUSL-1.1-until-1.1.32.md](LICENSE-BUSL-1.1-until-1.1.32.md).
+A commercial licence is available on request.
 
 `© 2026 Salvatore Pennacchio <jtatopenn@libero.it>`
 
