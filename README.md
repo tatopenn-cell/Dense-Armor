@@ -6,7 +6,7 @@
   <img alt="tests" src="https://github.com/tatopenn-cell/Dense-Armor/actions/workflows/tests.yml/badge.svg">
   <a href="https://codecov.io/gh/tatopenn-cell/Dense-Armor"><img alt="codecov" src="https://codecov.io/gh/tatopenn-cell/Dense-Armor/branch/master/graph/badge.svg"></a>
   <a href="https://pypi.org/project/dense-armor"><img alt="pypi" src="https://img.shields.io/pypi/v/dense-armor.svg"></a>
-  <a href="https://doi.org/10.5281/zenodo.23527280"><img alt="DOI" src="https://zenodo.org/badge/DOI/10.5281/zenodo.23527280.svg"></a>
+  <a href="https://doi.org/10.5281/zenodo.23534981"><img alt="DOI" src="https://zenodo.org/badge/DOI/10.5281/zenodo.23534981.svg"></a>
   <img alt="license" src="https://img.shields.io/badge/license-AGPL_3.0-blue.svg">
   <img alt="python" src="https://img.shields.io/badge/python-3.10%2B-blue.svg">
   <img alt="vision" src="https://img.shields.io/badge/vision-native-9cf.svg">
@@ -225,7 +225,7 @@ Some specifics:
 - [Changelog](https://tatopenn-cell.github.io/Dense-Armor/changelog/)
 - [Package releases](https://pypi.org/project/dense-armor/#history)
 - [Sister project (Dense-Evolution)](https://github.com/tatopenn-cell/Dense-Evolution)
-- [DOI](https://doi.org/10.5281/zenodo.23527280)
+- [DOI](https://doi.org/10.5281/zenodo.23534981)
 
 ---
 
@@ -243,7 +243,7 @@ Contributions are welcome. The library is built to be extended one estimator at 
   title     = {Dense-Armor: Robot-AI Online Shielding \\& Learning},
   year      = 2026,
   publisher = {Zenodo},
-  doi       = {10.5281/zenodo.23527280}
+  doi       = {10.5281/zenodo.23534981}
 }
 ```
 
