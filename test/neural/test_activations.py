@@ -138,7 +138,32 @@ def test_prelu_class_grad_on_a():
 
 def test_backward_before_forward_raises_for_all_classes():
     import pytest
+
     for cls in (Relu, Sigmoid, Tanh, Softmax, PRelu):
         layer = cls()
         with pytest.raises(RuntimeError, match="call forward"):
             layer.backward(jnp.ones((2, 2)))
+
+
+def test_prelu_accumulates_a_grad():
+    x = jnp.array([-2.0, 1.0, -0.5])
+    layer = PRelu(a=0.25)
+    g = jnp.ones_like(x)
+    _ = layer.forward(x)
+    _ = layer.backward(g)
+    first = float(layer.a.grad[0])
+    _ = layer.forward(x)
+    _ = layer.backward(g)
+    second = float(layer.a.grad[0])
+    assert abs(second - 2.0 * first) < 1e-5, (
+        f"first={first}, second={second}, expected second = 2 * first"
+    )
+
+
+def test_prelu_zero_grad_after_accumulation():
+    x = jnp.array([-2.0, 1.0, -0.5])
+    layer = PRelu(a=0.25)
+    _ = layer.forward(x)
+    _ = layer.backward(jnp.ones_like(x))
+    layer.a.zero_grad()
+    assert float(layer.a.grad[0]) == 0.0

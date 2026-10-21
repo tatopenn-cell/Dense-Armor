@@ -6,11 +6,12 @@ compute the central finite differences of ``L`` in each element of
 error against ``backward(g)``. The global precision is not changed
 outside the call.
 
-``eps = 1e-6`` is the choice of this code: large enough that the
-subtraction in the finite difference does not lose all the digits
-of a float32 input, small enough that the truncation error of the
-central difference (order ``eps**2``) stays below the tolerance the
-tests use (``1e-7`` on a correct pair).
+``eps = 1e-6`` is the choice of this code, evaluated under
+``jax.enable_x64(True)``: with float64 the subtraction in the finite
+difference keeps enough digits at ``eps = 1e-6``, and the truncation
+error of the central difference (order ``eps**2``) stays below the
+tolerance the tests use (``1e-7`` on a correct pair). A float32 grid
+would lose the small perturbation in the subtraction at this step.
 """
 
 from __future__ import annotations
@@ -23,7 +24,7 @@ import jax.numpy as jnp
 import numpy as np
 
 
-def _relu_max(a: np.ndarray, b: np.ndarray) -> float:
+def _max_relative_error(a: np.ndarray, b: np.ndarray) -> float:
     denom = np.maximum(np.abs(a) + np.abs(b), 1e-12)
     return float(np.max(np.abs(a - b) / denom))
 
@@ -58,9 +59,7 @@ def gradcheck(
 
         dx_an = jnp.asarray(backward(x64, forward(x64), g), dtype=jnp.float64)
         if dx_an.shape != x64.shape:
-            raise ValueError(
-                f"backward shape {dx_an.shape}, expected {x64.shape}"
-            )
+            raise ValueError(f"backward shape {dx_an.shape}, expected {x64.shape}")
 
         flat = np.asarray(x64).reshape(-1)
         grad_fd = np.empty_like(flat)
@@ -74,4 +73,4 @@ def gradcheck(
             grad_fd[i] = float((L(xp_j) - L(xm_j)) / (2.0 * eps))
         grad_fd = grad_fd.reshape(np.shape(x64))
 
-        return _relu_max(np.asarray(dx_an), grad_fd)
+        return _max_relative_error(np.asarray(dx_an), grad_fd)

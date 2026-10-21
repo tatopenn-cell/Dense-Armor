@@ -69,15 +69,24 @@ def glorot_uniform(key: Any, shape: tuple[int, ...]) -> jax.Array:
     """Uniform initialisation of Glorot and Bengio (2010), Eqn.(16) p.5.
 
     ``W ~ U[-sqrt(6 / (fan_in + fan_out)), sqrt(6 / (fan_in + fan_out))]``,
-    with ``fan_in = shape[0]`` and ``fan_out = shape[1]``. For a 1-D
-    shape ``fan_out = 1``. The source is open: PMLR 9:249-256, page 5,
-    Eqn.(16). The Gaussian case of the same paper is ``xavier_normal``
-    above; the two share the scale ``1 / (fan_in + fan_out)`` and differ
-    only in the distribution.
+    with ``fan_in = shape[0]`` and ``fan_out = shape[1]``. The source is
+    open: PMLR 9:249-256, page 5, Eqn.(16).
+
+    This is not the uniform version of ``xavier_normal`` above.
+    ``xavier_normal`` uses ``N(0, sqrt(1/fan_in))``, the linear case
+    ``a = 1`` of He et al. 2015 Eqn.(15) page 5, and it takes one
+    dimension of the shape. ``glorot_uniform`` uses the scale
+    ``6/(fan_in + fan_out)`` of Glorot and Bengio Eqn.(16) page 5, and it
+    needs both dimensions. The two formulas come from two different
+    papers and are not interconvertible.
+
+    Raises:
+        ValueError: if ``shape`` has fewer than two dimensions, because
+            the formula needs both ``fan_in`` and ``fan_out``.
     """
-    if len(shape) < 1:
-        raise ValueError("shape must not be empty")
+    if len(shape) < 2:
+        raise ValueError(f"shape must have at least two dimensions, got {shape}")
     n_in = int(shape[0])
-    n_out = int(shape[1]) if len(shape) > 1 else 1
+    n_out = int(shape[1])
     bound = (6.0 / (n_in + n_out)) ** 0.5
     return jax.random.uniform(key, shape, minval=-bound, maxval=bound)

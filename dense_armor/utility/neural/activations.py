@@ -34,8 +34,9 @@ def prelu_forward(x: jax.Array, a: float = 0.25) -> jax.Array:
     return jnp.where(x > 0.0, x, a * x)
 
 
-def prelu_backward(x: jax.Array, y: jax.Array, g: jax.Array,
-                   a: float = 0.25) -> jax.Array:
+def prelu_backward(
+    x: jax.Array, y: jax.Array, g: jax.Array, a: float = 0.25
+) -> jax.Array:
     """Derivative of PReLU: ``g`` where ``x > 0``, ``a*g`` otherwise."""
     del y
     return jnp.where(x > 0.0, g, a * g)
@@ -99,6 +100,7 @@ class PRelu:
 
     def __init__(self, a: float = 0.25) -> None:
         from dense_armor.utility.neural.params import Param
+
         self.a = Param(np.asarray([a], dtype=np.float32))
         self.x: jax.Array | None = None
         self.y: jax.Array | None = None
@@ -116,11 +118,13 @@ class PRelu:
         a = float(self.a.value[0])
         dx = prelu_backward(self.x, self.y, g, a)
         da = jnp.sum(jnp.where(self.x > 0.0, 0.0, self.x * g))
-        self.a.grad = jnp.asarray([da], dtype=self.a.value.dtype)
+        self.a.grad = self.a.grad + jnp.asarray([da], dtype=self.a.value.dtype)
         return dx
 
 
 class Sigmoid:
+    """Sigmoid: ``forward`` caches ``x`` and ``y``; ``backward`` returns ``dx``."""
+
     def __init__(self) -> None:
         self.x: jax.Array | None = None
         self.y: jax.Array | None = None
@@ -138,6 +142,8 @@ class Sigmoid:
 
 
 class Tanh:
+    """Tanh: ``forward`` caches ``x`` and ``y``; ``backward`` returns ``dx``."""
+
     def __init__(self) -> None:
         self.x: jax.Array | None = None
         self.y: jax.Array | None = None
@@ -155,6 +161,8 @@ class Tanh:
 
 
 class Softmax:
+    """Softmax over the last axis: ``forward`` caches ``x`` and ``y``; ``backward`` returns ``dx``."""
+
     def __init__(self) -> None:
         self.x: jax.Array | None = None
         self.y: jax.Array | None = None

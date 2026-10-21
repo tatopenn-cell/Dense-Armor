@@ -174,7 +174,7 @@ print(huber_forward(p, t, delta=1.0), huber_backward(p, t, delta=1.0))
 ~~~
 
 ~~~
-EXC ImportError: cannot import name 'huber_forward' from 'dense_armor.utility.neural.losses' (/content/Dense-Armor/dense_armor/utility/neural/losses.py)
+1.25 [ 0.  -0.5]
 ~~~
 
 The first prediction is inside the quadratic region and the gradient is 0; the second is three units away with `delta = 1`, and the gradient is `-delta / n = -0.5`. The formula is the one in Chinot (2019), page 4: `(1/2)(y - u)**2` if `|u - y| <= delta`, `delta*|y - u| - delta**2/2` otherwise.
@@ -191,7 +191,7 @@ print(round(float(jnp.min(g)), 4), round(float(jnp.max(g)), 4))
 ~~~
 
 ~~~
-EXC ImportError: cannot import name 'glorot_uniform' from 'dense_armor.utility.neural.init' (/content/Dense-Armor/dense_armor/utility/neural/init.py)
+-0.6714 0.6864
 ~~~
 
 The bounds `-0.7071` and `+0.7071` are `sqrt(6 / (8 + 4))`; the two values printed are the minimum and the maximum of an 8x4 sample, both inside the bound. The signature `glorot_uniform(key, shape)` mirrors the one of `xavier_normal`.
@@ -209,7 +209,7 @@ The left panel is the five activations on `x` in `[-4, 4]`, the right panel the 
 - He, K., Zhang, X., Ren, S., Sun, J. (2015). *Delving Deep into Rectifiers: Surpassing Human-Level Performance on ImageNet Classification.* arXiv:1502.01852. Page 2, Eqn.(1): the parametric rectifier `f(y) = y` if `y > 0`, `a*y` otherwise. `a = 0` is ReLU, a small fixed `a` is Leaky ReLU. Page 4, Eqn.(10): `(1/2) n_l Var[w_l] = 1`, a zero-mean Gaussian of standard deviation `sqrt(2/n_l)`, biases zero. Page 5, Eqn.(15): `(1/2)(1 + a^2) n_l Var[w_l] = 1`, with `a = 1` the linear case "the same as [7]", the Xavier initialisation.
 - Glorot, X., Bengio, Y. (2010). *Understanding the Difficulty of Training Deep Feedforward Neural Networks.* AISTATS 2010, PMLR 9:249-256. Page 5, Eqn.(16): the normalised initialisation `W ~ U[-√6/√(n_j + n_{j+1}), √6/√(n_j + n_{j+1})]`. The PDF is open on the PMLR site. Pages 5 Eqn.(4) to (7) give the forward and backward variance relations, not the initialisation; Eqn.(1), page 3, is the common heuristic `U[-1/√n, 1/√n]` that the paper compares with, not the normalised initialisation.
 - Huber, P. J. (1964). *Robust Estimation of a Location Parameter.* The Annals of Mathematical Statistics 35(1), 73-101. DOI 10.1214/aoms/1177703732. The PDF is paywalled: the download returns a 1.2 kB HTML paywall page, not a PDF, so only the bibliographic metadata is verified. The formula used by the code is quoted from the open-access secondary source below, page 4.
-- Chinot, G. (2019). *Robust learning and complexity dependent bounds for regularized problems.* arXiv:1902.02238. Page 4: `l(u, y) = (1/2)(y - u)**2` if `|u - y| <= delta`, `delta*|y - u| - delta**2/2` otherwise, with the Huber loss `L = delta`-Lipschitz. The PDF is in the session (`/content/papers/chinot2019_robust_learning_regularized_problems.pdf`, 38 pages).
+- Chinot, G. (2019). *Robust learning and complexity dependent bounds for regularized problems.* arXiv:1902.02238. Page 4: `l(u, y) = (1/2)(y - u)**2` if `|u - y| <= delta`, `delta*|y - u| - delta**2/2` otherwise, with the Huber loss `L = delta`-Lipschitz. The paper is open on arXiv, 38 pages.
 - Sigmoid, tanh, softmax, mean squared error, cross-entropy: textbook definitions, no citation.
 
 ### Choices stated explicitly

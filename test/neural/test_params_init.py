@@ -111,11 +111,13 @@ def test_glorot_uniform_is_bounded_by_sqrt6_over_sum():
 def test_glorot_uniform_matches_the_formula_at_scale():
     key = jax.random.PRNGKey(3)
     w = glorot_uniform(key, (256, 256))
-    expected_std = (6.0 / (256 + 256)) ** 0.5 / (3.0 ** 0.5)
+    expected_std = (6.0 / (256 + 256)) ** 0.5 / (3.0**0.5)
     std = float(jnp.std(w))
     assert abs(std - expected_std) / expected_std < 0.05
 
 
-def test_glorot_uniform_empty_shape_raises():
-    with pytest.raises(ValueError, match="must not be empty"):
+def test_glorot_uniform_1d_shape_raises():
+    with pytest.raises(ValueError, match="at least two dimensions"):
+        glorot_uniform(jax.random.PRNGKey(0), (8,))
+    with pytest.raises(ValueError, match="at least two dimensions"):
         glorot_uniform(jax.random.PRNGKey(0), ())
