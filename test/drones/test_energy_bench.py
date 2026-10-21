@@ -298,7 +298,9 @@ def test_idle_mw_for_trace_uses_fifth_percentile(tmp_path):
 
     tr = PowerTrace(t_s=np.arange(20.0),
                     mw=np.arange(1000.0, 3000.0, 100.0))
-    factory = lambda: _TraceSource(tr, dt_s=0.01)
+    def factory():
+        return _TraceSource(tr, dt_s=0.01)
+
     idle, note = _idle_mw(factory, 0.0, is_trace=True)
     expected = float(np.quantile(tr.mw, 0.05))
     assert idle == pytest.approx(expected)

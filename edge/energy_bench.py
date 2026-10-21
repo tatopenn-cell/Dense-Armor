@@ -167,7 +167,7 @@ class _TraceSource:
     def stop(self) -> PowerTrace:
         elapsed = max(time.monotonic() - self._t0, 1e-6)
         n = max(int(elapsed / self._dt_s) + 1, 2)
-        idx = np.arange(n) % self._trace.mw.size
+        idx: np.ndarray = np.arange(n) % self._trace.mw.size
         tt = np.linspace(0.0, elapsed, n)
         mm = self._trace.mw[idx]
         return PowerTrace(t_s=tt, mw=mm)
