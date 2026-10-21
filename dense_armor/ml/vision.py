@@ -1,12 +1,12 @@
-"""Vision: the flow between two frames and the reduction of a table of features.
+"""Vision: the flow between two frames, the global shift, and the reduction of a table of features.
 
 References:
     Horn, B. K., Schunck, B. G. (1981). Determining optical flow. Artificial
         Intelligence 17(1-3), 185-203: the energy and its Euler-Lagrange
         equations (not in the folder, bibliographic only).
     Ziani (2025). Methods to a Multiresolution Horn-Schunck. arXiv:2511.16535,
-        equations 7 and 8: the Euler-Lagrange equations solved by iteration
-        (page 4 of the PDF in the folder).
+        equations 6, 7, 8: the Jacobi iteration (not in the folder,
+        bibliographic only).
     Johnson, W. B., Lindenstrauss, J. (1984) and Ghojogh et al. (2021), section
         2.2: the Gaussian matrix with variance 1/k (not in the folder,
         bibliographic only).
@@ -21,13 +21,11 @@ import numpy as np
 
 from dense_armor.ml.base import MLBase
 
-__all__ = ["DenseFlow", "PCA", "RandomProjection"]
+__all__ = ["DenseFlow", "GlobalMotion", "MotionMask", "PCA", "RandomProjection"]
 
 _FRAME = "it computes one record (a frame, a box, a window of recent frames) from the state kept between calls, and the steps of the docstring act on that state"
 _NOREF = "the docstring gives a missing reference and the algorithm is outside the textbooks: it is stopped and reported"
 STOPPED = {
-    "MotionMask": "the cited pages (Horn and Schunck, Ziani eq. 6-8, TETO) give the flow and the event mask; the threshold on the median and 1.4826 MAD of the flow magnitude is written in the code of the class only",
-    "GlobalMotion": "phase correlation is outside Horn and Schunck and outside Ziani (2025); its reference, Kuglin and Hines (1975), lies outside the folder",
     "TrackToSignal": _FRAME,
     "FeatureToSignal": _FRAME,
     "FrameFeatures": _FRAME,
@@ -124,6 +122,127 @@ class DenseFlow(MLBase):
             u = ub - Ix * p / den
             v = vb - Iy * p / den
         self.u_, self.v_, self.mag_ = u, v, np.hypot(u, v)
+        return self
+
+
+class MotionMask(MLBase):
+    """Mask of the pixels whose flow magnitude is large, from the two components of a flow field.
+
+    With ``mag = hypot(u, v)``, ``med`` its median and ``scale = 1.4826 * MAD``,
+    a pixel is moving when ``mag > med + n_sigmas * scale`` (the mask is empty when
+    ``scale <= 1e-9``); the mask is then dilated ``dilation`` times with the four
+    neighbours.
+
+    Args:
+        n_sigmas: threshold in robust deviations.
+        dilation: number of dilations.
+
+    Example:
+        >>> u = np.tile([0.1, 0.0], (8, 4)); u[3:5, 3:5] = 2.0
+        >>> MotionMask(dilation=0).fit(u, np.zeros((8, 8))).mask_.sum()
+        np.int64(4)
+    """
+
+    def __init__(self, n_sigmas: float = 3.0, dilation: int = 1) -> None:
+        self.n_sigmas = n_sigmas
+        self.dilation = dilation
+
+    def fit(self, X, y=None):  # type: ignore[override]
+        mag = np.hypot(np.asarray(X, dtype=float), np.asarray(y, dtype=float))
+        med = float(np.median(mag))
+        scale = 1.4826 * float(np.median(np.abs(mag - med)))
+        mask = (
+            np.zeros_like(mag, dtype=bool)
+            if scale <= 1e-9
+            else mag > med + self.n_sigmas * scale
+        )
+        for _ in range(self.dilation):
+            out = mask.copy()
+            out[1:, :] |= mask[:-1, :]
+            out[:-1, :] |= mask[1:, :]
+            out[:, 1:] |= mask[:, :-1]
+            out[:, :-1] |= mask[:, 1:]
+            mask = out
+        self.mask_ = mask
+        return self
+
+
+class GlobalMotion(MLBase):
+    """Global shift between two frames by phase correlation.
+
+    Both frames are reduced to the luminance and to zero mean (and multiplied by a
+    Hann window of ``window`` pixels when ``window > 0``). With ``F`` the Fourier
+    transforms, the cross power spectrum is ``C = F(cur) conj(F(prev))``; the
+    integer shift ``(sx, sy)`` is the position of the peak of the inverse
+    transform of ``C / |C|`` (wrapped to half the frame). With ``refine``, the
+    phase of ``C`` after removing the integer shift is, for a pure translation,
+    ``-2 pi (kx dx + ky dy)`` at every frequency; ``(dx, dy)`` is fitted by least
+    squares weighted by ``|C|`` on the bins with ``|C| > 0.05 max |C|`` and each
+    part is clipped to half a pixel. The shift is the integer part plus this
+    part.
+
+    Args:
+        window: Hann window size in pixels, or 0.
+        refine: add the sub-pixel part.
+
+    Example:
+        >>> rng = np.random.default_rng(0)
+        >>> a = rng.normal(size=(32, 32))
+        >>> m = GlobalMotion().fit(a, np.roll(a, (3, -2), axis=(0, 1)))
+        >>> round(m.dx_, 3), round(m.dy_, 3)
+        (-2.0, 3.0)
+    """
+
+    def __init__(self, window: int = 0, refine: bool = True) -> None:
+        self.window = window
+        self.refine = refine
+
+    def _prep(self, img) -> np.ndarray:
+        g = _gray(img)
+        g = g - g.mean()
+        if self.window > 0:
+            h, w = g.shape
+            wy = np.hanning(min(self.window, h))
+            wx = np.hanning(min(self.window, w))
+            if wy.shape[0] < h:
+                p = (h - wy.shape[0]) // 2
+                wy = np.concatenate([np.zeros(p), wy, np.zeros(h - wy.shape[0] - p)])
+            if wx.shape[0] < w:
+                p = (w - wx.shape[0]) // 2
+                wx = np.concatenate([np.zeros(p), wx, np.zeros(w - wx.shape[0] - p)])
+            g = g * wy[:, None] * wx[None, :]
+        return g
+
+    def fit(self, X, y=None):  # type: ignore[override]
+        prev, cur = self._prep(X), self._prep(y)
+        h, w = prev.shape
+        self.dx_ = self.dy_ = self.peak_ = 0.0
+        cross = np.fft.fft2(cur) * np.conj(np.fft.fft2(prev))
+        mag = np.abs(cross)
+        if mag.max() < 1e-15:
+            return self
+        corr = np.fft.ifft2(cross / (mag + 1e-30)).real
+        py, px = np.unravel_index(int(np.argmax(corr)), corr.shape)
+        sy = int(py) if py <= h // 2 else int(py) - h
+        sx = int(px) if px <= w // 2 else int(px) - w
+        self.peak_ = float(corr[py, px])
+        self.dx_, self.dy_ = float(sx), float(sy)
+        if not self.refine:
+            return self
+        kx = np.fft.fftfreq(w).reshape(1, -1)
+        ky = np.fft.fftfreq(h).reshape(-1, 1)
+        phase = np.angle(cross) + 2.0 * np.pi * (ky * sy + kx * sx)
+        phase = (phase + np.pi) % (2.0 * np.pi) - np.pi
+        m = mag > 0.05 * mag.max()
+        if int(m.sum()) < 4:
+            return self
+        A = np.stack(
+            [np.broadcast_to(ky, (h, w))[m], np.broadcast_to(kx, (h, w))[m]], axis=1
+        )
+        wts = mag[m]
+        coef, *_ = np.linalg.lstsq(A * wts[:, None], phase[m] * wts, rcond=None)
+        self.dy_ = float(sy + np.clip(-coef[0] / (2.0 * np.pi), -0.5, 0.5))
+        self.dx_ = float(sx + np.clip(-coef[1] / (2.0 * np.pi), -0.5, 0.5))
         return self
 
 

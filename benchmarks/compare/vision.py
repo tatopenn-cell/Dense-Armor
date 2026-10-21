@@ -6,7 +6,8 @@ import common
 import numpy as np
 
 from dense_armor.ml import vision as ml
-from dense_armor.utility.vision.dense import DenseFlow
+from dense_armor.utility.vision.dense import DenseFlow, MotionMask
+from dense_armor.utility.vision.motion import GlobalMotion
 from dense_armor.utility.vision.reduce import IncrementalPCA, RandomProjection
 
 
@@ -27,6 +28,26 @@ def c_flow(seed):
         r["u"].ravel().tolist() + r["v"].ravel().tolist(),
         "abs",
     )
+
+
+def c_mask(seed):
+    r = np.random.default_rng(seed)
+    u = r.normal(0, 0.05, (24, 24))
+    v = r.normal(0, 0.05, (24, 24))
+    u[8:12, 8:12] += 2.0
+    c = ml.MotionMask().fit(u, v)
+    o = MotionMask().transform_one({"u": u, "v": v})["mask"]
+    return [float(x) for x in c.mask_.ravel()], [float(x) for x in o.ravel()], "abs"
+
+
+def c_global(seed):
+    a, _ = _frames(seed)
+    b = np.roll(a, (3, -2), axis=(0, 1))
+    c = ml.GlobalMotion().fit(a, b)
+    o = GlobalMotion()
+    o.learn_one({"array": a})
+    r = o.transform_one({"array": b})
+    return [c.dx_, c.dy_, c.peak_], [r["dx"], r["dy"], r["peak"]], "abs"
 
 
 def c_rp(seed):
@@ -55,11 +76,15 @@ def c_pca(seed):
 
 CASES = {
     "DenseFlow": c_flow,
+    "MotionMask": c_mask,
+    "GlobalMotion": c_global,
     "RandomProjection": c_rp,
     "PCA": c_pca,
 }
 WHY = {
     "DenseFlow": "the same iteration on the same pair of frames",
+    "MotionMask": "the same threshold on the same flow field",
+    "GlobalMotion": "the same phase correlation on the same pair of frames",
     "RandomProjection": "the same matrix from the same seed",
     "PCA": "the eigenvectors of the covariance of the whole table, against the rule that approaches them one row at a time",
 }
