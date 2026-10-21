@@ -19,12 +19,12 @@ from dense_armor.ml.base import MLBase
 
 __all__ = ["CUSUMDriftDetector"]
 
-_STREAM = "the reference defines the test on a stream, with a window or a running statistic that moves at each new value: it holds no algorithm for the whole series"
+_STREAM = "the reference defines the test on a stream, with a window or a running statistic that moves at each new value: the algorithm of the reference is written for one value at a time"
 STOPPED = {
     "ADWIN": _STREAM,
     "KSWIN": _STREAM,
     "PageHinkley": _STREAM,
-    "BayesianOnlineChangepoint": "Algorithm 1 of Adams and MacKay (2007) is the recursion on the run length that receives one value at a time; the cited pages hold no separate form for the whole series",
+    "BayesianOnlineChangepoint": "Algorithm 1 of Adams and MacKay (2007) is the recursion on the run length that receives one value at a time; the cited pages give the recursion and the run-length posterior of the stream",
 }
 
 
@@ -32,7 +32,7 @@ class CUSUMDriftDetector(MLBase):
     """Two-sided CUSUM of Page with a fixed reference, run on the whole series.
 
     The median and the scale ``1.4826 * MAD`` are computed once from the first
-    ``radius * ref_mult`` values and never updated. Then, for every later value,
+    ``radius * ref_mult`` values and kept fixed. Then, for every later value,
     ``z = (x - median) / scale``, ``S+ = max(0, S+ + z - k)``,
     ``S- = min(0, S- + z + k)``; the value is flagged when ``S+ > h`` or
     ``S- < -h``, and the sum that crossed restarts from 0. Values before the

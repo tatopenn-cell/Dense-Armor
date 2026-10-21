@@ -78,6 +78,6 @@ Classes without a form:
 - `HoeffdingTreeClassifier`: the batch tree that the Hoeffding tree approaches is DecisionTreeClassifier
 - `HoeffdingAnytimeTreeClassifier`: the batch tree that the Hoeffding tree approaches is DecisionTreeClassifier
 - `HoeffdingAdaptiveTreeClassifier`: the batch tree that the Hoeffding tree approaches is DecisionTreeClassifier; the replacement of subtrees on drift is defined on a stream
-- `FIMTDDRegressor`: the reference chapter (Ikonomovska 2012, chapter 6) is not in the folder and the docstring writes no formula; the model tree with drift detection is defined on a stream
-- `SGTRegressor`: the reference defines the algorithm on a stream (a bound or a test on statistics that arrive one example at a time): it holds no algorithm for the whole dataset
-- `SGTClassifier`: the reference defines the algorithm on a stream (a bound or a test on statistics that arrive one example at a time): it holds no algorithm for the whole dataset
+- `FIMTDDRegressor`: the reference chapter (Ikonomovska 2012, chapter 6) lies outside the folder and the formulas of the chapter are outside the folder; the model tree with drift detection is defined on a stream
+- `SGTRegressor`: the reference defines the algorithm on a stream (a bound or a test on statistics that arrive one example at a time): the algorithm of the reference is written for one example or one window at a time
+- `SGTClassifier`: the reference defines the algorithm on a stream (a bound or a test on statistics that arrive one example at a time): the algorithm of the reference is written for one example or one window at a time

@@ -128,7 +128,7 @@ class CategoricalNB(_NB):
 
     ``P(x_j = k | c) = (n_cjk + alpha) / (n_c + alpha K_j)`` with ``K_j`` the
     number of categories of feature ``j`` seen in the training table; a
-    category never seen gets ``alpha / (n_c + alpha K_j)``.
+    an unseen category gets ``alpha / (n_c + alpha K_j)``.
 
     Args:
         alpha: pseudo-count of the smoothing.

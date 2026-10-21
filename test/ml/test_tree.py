@@ -64,5 +64,23 @@ def test_mondrian_regressor():
     assert abs(g.predict([[1.0]])[0] - 2.0) < 1e-12
 
 
+def test_mondrian_split_at_the_upper_edge_is_a_leaf():
+    class Edge:
+        def exponential(self, scale):
+            return 0.1
+
+        def choice(self, n, p):
+            return 0
+
+        def uniform(self, lo, hi):
+            return hi
+
+    m = MondrianForestClassifier(lifetime=10.0)
+    m.classes_ = np.array([0, 1])
+    X, y = np.array([[0.0], [1.0]]), np.array([0, 1])
+    node = m._block(X, y, 0.0, Edge())
+    assert "feature" not in node and node["tau"] == 10.0 and node["n"] == 2
+
+
 def test_stopped():
     assert len(T.STOPPED) == 6 and all(T.STOPPED.values())

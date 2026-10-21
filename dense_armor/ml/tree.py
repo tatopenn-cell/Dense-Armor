@@ -17,6 +17,7 @@ References:
 from __future__ import annotations
 
 import math
+from abc import abstractmethod
 
 import numpy as np
 
@@ -28,12 +29,12 @@ __all__ = [
     "MondrianForestRegressor",
 ]
 
-_STREAM = "the reference defines the algorithm on a stream (a bound or a test on statistics that arrive one example at a time): it holds no algorithm for the whole dataset"
+_STREAM = "the reference defines the algorithm on a stream (a bound or a test on statistics that arrive one example at a time): the algorithm of the reference is written for one example or one window at a time"
 STOPPED = {
     "HoeffdingTreeClassifier": "the batch tree that the Hoeffding tree approaches is DecisionTreeClassifier",
     "HoeffdingAnytimeTreeClassifier": "the batch tree that the Hoeffding tree approaches is DecisionTreeClassifier",
     "HoeffdingAdaptiveTreeClassifier": "the batch tree that the Hoeffding tree approaches is DecisionTreeClassifier; the replacement of subtrees on drift is defined on a stream",
-    "FIMTDDRegressor": "the reference chapter (Ikonomovska 2012, chapter 6) is not in the folder and the docstring writes no formula; the model tree with drift detection is defined on a stream",
+    "FIMTDDRegressor": "the reference chapter (Ikonomovska 2012, chapter 6) lies outside the folder and the formulas of the chapter are outside the folder; the model tree with drift detection is defined on a stream",
     "SGTRegressor": _STREAM,
     "SGTClassifier": _STREAM,
 }
@@ -141,8 +142,9 @@ class DecisionTreeClassifier(MLBase):
 class _Mondrian(MLBase):
     """Mondrian trees of Algorithms 1 and 2 (page 4) and the mixture prediction of Algorithm 5 (2016)."""
 
+    @abstractmethod
     def _stats(self, y: np.ndarray):
-        raise NotImplementedError
+        """Statistics of the targets of a block."""
 
     def _block(self, X, y, tau_parent, rng):
         lx, ux = X.min(axis=0), X.max(axis=0)

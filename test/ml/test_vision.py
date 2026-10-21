@@ -68,6 +68,24 @@ def test_global_motion():
     assert (z.dx_, z.dy_, z.peak_) == (0.0, 0.0, 0.0)
 
 
+def test_colour_frames_use_the_luminance():
+    rng = np.random.default_rng(3)
+    a = rng.normal(size=(8, 8, 3))
+    b = np.roll(a, 1, axis=1)
+    lum = lambda f: f[..., 0] * 0.299 + f[..., 1] * 0.587 + f[..., 2] * 0.114  # noqa: E731
+    c = DenseFlow(n_iter=5).fit(a, b)
+    g = DenseFlow(n_iter=5).fit(lum(a), lum(b))
+    assert np.allclose(c.u_, g.u_)
+    one = DenseFlow(n_iter=5).fit(a[..., :1], b[..., :1])
+    assert np.allclose(one.u_, DenseFlow(n_iter=5).fit(a[..., 0], b[..., 0]).u_)
+
+
+def test_global_motion_single_frequency():
+    a = np.tile(np.cos(2 * np.pi * np.arange(16) / 16), (16, 1))
+    m = GlobalMotion().fit(a, np.roll(a, 1, axis=1))
+    assert (m.dx_, m.dy_) == (1.0, 0.0)
+
+
 def test_random_projection():
     X = np.arange(12.0).reshape(2, 6)
     m = RandomProjection(k=3, seed=0).fit(X)

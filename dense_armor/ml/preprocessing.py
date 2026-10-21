@@ -17,7 +17,7 @@ References:
         bibliographic only).
     Malialis, K. et al. (2022). Queue-based resampling for online class
         imbalance learning: a sequential method over a stream, so
-        ``QueueResampler`` has no class (not in the folder,
+        ``QueueResampler`` is declared in ``STOPPED`` (not in the folder,
         bibliographic only).
 """
 
@@ -26,10 +26,10 @@ from __future__ import annotations
 import hashlib
 import math
 import re
+from abc import abstractmethod
 from collections import Counter
 
 import numpy as np
-from scipy.stats import pearsonr  # noqa: F401  (kept for the docstring of SelectKBest)
 
 from dense_armor.ml.base import MLBase
 from dense_armor.ml.stats import EWStats
@@ -51,7 +51,7 @@ __all__ = [
 ]
 
 STOPPED = {
-    "QueueResampler": "the reference describes a queue over a stream: it holds no algorithm for the whole dataset",
+    "QueueResampler": "the reference describes a queue over a stream: the algorithm of the reference is written for one example or one window at a time",
 }
 
 _TOKEN_RE = re.compile(r"[A-Za-z0-9_]+")
@@ -69,8 +69,9 @@ class _Scaler(MLBase):
         self.features = features
         self.eps = eps
 
+    @abstractmethod
     def _centre_scale(self, A: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-        raise NotImplementedError
+        """Centre and scale of every column."""
 
     def fit(self, X, y=None):  # type: ignore[override]
         A = _table(X)

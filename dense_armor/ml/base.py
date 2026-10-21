@@ -2,7 +2,7 @@
 
 A class implements the algorithm of the paper on the whole dataset:
 ``fit`` takes the whole array and the results are attributes with a trailing
-underscore. It has no ``learn_one``: the online class of the library is the
+underscore. The online class of the library, with ``learn_one``, is the
 other side of the pair, and ``benchmarks/ml`` saves the difference.
 """
 

@@ -16,7 +16,7 @@ import numpy as np
 from dense_armor.ml.base import MLBase
 
 STOPPED = {
-    "PayloadEstimator": "the reference estimates the payload with the dynamics model of the robot; the interface on a table of regressors and residuals is not in it",
+    "PayloadEstimator": "the reference estimates the payload with the dynamics model of the robot; the reference gives the estimate on the signals of the robot",
 }
 
 __all__ = ["LinearRegression", "LogisticRegression", "BayesianLinearRegression"]

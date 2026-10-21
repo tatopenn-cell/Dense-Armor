@@ -25,12 +25,12 @@ from scipy.stats import skew as _skew
 from dense_armor.ml.base import MLBase, finite, finite_pairs
 
 STOPPED = {
-    "DDSketch": "a sketch does not depend on the order of the rows: its form on the whole table is the online class itself, and the exact quantile is not the algorithm of Masson et al.",
-    "TDigest": "a sketch does not depend on the order of the rows: its form on the whole table is the online class itself, and the exact quantile is not the algorithm of Dunning and Ertl",
-    "CountMinSketch": "a sketch does not depend on the order of the rows: its form on the whole table is the online class itself, and the exact count is not the algorithm of Cormode and Muthukrishnan",
-    "HyperLogLog": "a sketch does not depend on the order of the rows: its form on the whole table is the online class itself, and the exact distinct count is not the algorithm of Flajolet et al.",
-    "BloomFilter": "a sketch does not depend on the order of the rows: its form on the whole table is the online class itself, and exact membership is not the filter of Bloom",
-    "SpaceSaving": "a sketch does not depend on the order of the rows: its form on the whole table is the online class itself, and the exact counts are not the algorithm of Metwally et al.",
+    "DDSketch": "a sketch is the same for every order of the rows: its form on the whole table is the online class itself, and the exact quantile differs from the algorithm of Masson et al.",
+    "TDigest": "a sketch is the same for every order of the rows: its form on the whole table is the online class itself, and the exact quantile differs from the algorithm of Dunning and Ertl",
+    "CountMinSketch": "a sketch is the same for every order of the rows: its form on the whole table is the online class itself, and the exact count differs from the algorithm of Cormode and Muthukrishnan",
+    "HyperLogLog": "a sketch is the same for every order of the rows: its form on the whole table is the online class itself, and the exact distinct count differs from the algorithm of Flajolet et al.",
+    "BloomFilter": "a sketch is the same for every order of the rows: its form on the whole table is the online class itself, and exact membership differs from the filter of Bloom",
+    "SpaceSaving": "a sketch is the same for every order of the rows: its form on the whole table is the online class itself, and the exact counts are not the algorithm of Metwally et al.",
 }
 
 __all__ = [

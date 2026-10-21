@@ -23,8 +23,8 @@ from dense_armor.ml.base import MLBase
 
 __all__ = ["DenseFlow", "GlobalMotion", "MotionMask", "PCA", "RandomProjection"]
 
-_FRAME = "it computes one record (a frame, a box, a window of recent frames) from the state kept between calls, and the docstring writes no step that reads the whole dataset"
-_NOREF = "the docstring cites no reference and the algorithm is not a textbook definition: it is stopped and reported"
+_FRAME = "it computes one record (a frame, a box, a window of recent frames) from the state kept between calls, and the steps of the docstring act on that state"
+_NOREF = "the docstring gives a missing reference and the algorithm is outside the textbooks: it is stopped and reported"
 STOPPED = {
     "TrackToSignal": _FRAME,
     "FeatureToSignal": _FRAME,
@@ -34,7 +34,7 @@ STOPPED = {
     "Kinematics": _FRAME,
     "MotionEnergy": _FRAME,
     "PatchFeatures": _FRAME,
-    "PatchMemory": "the reservoir mode bounds the bank on a stream with Algorithm R; the coreset reduction of PatchCore is in a paper that is not in the folder",
+    "PatchMemory": "the reservoir mode bounds the bank on a stream with Algorithm R; the coreset reduction of PatchCore is in a paper outside the folder",
     "FrameQuality": _NOREF,
     "Sync": _NOREF,
     "EventFrame": _NOREF,
@@ -129,7 +129,7 @@ class MotionMask(MLBase):
     """Mask of the pixels whose flow magnitude is large, from the two components of a flow field.
 
     With ``mag = hypot(u, v)``, ``med`` its median and ``scale = 1.4826 * MAD``,
-    a pixel is moving when ``mag > med + n_sigmas * scale`` (no pixel moves when
+    a pixel is moving when ``mag > med + n_sigmas * scale`` (the mask is empty when
     ``scale <= 1e-9``); the mask is then dilated ``dilation`` times with the four
     neighbours.
 

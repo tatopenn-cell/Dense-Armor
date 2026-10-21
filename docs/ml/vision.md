@@ -109,26 +109,26 @@ The class of a sketch is the exact value the sketch approximates, and the class 
 The classes are new and independent of the online classes of dense_armor.utility.
 
 Classes without a form:
-- `TrackToSignal`: it computes one record (a frame, a box, a window of recent frames) from the state kept between calls, and the docstring writes no step that reads the whole dataset
-- `FeatureToSignal`: it computes one record (a frame, a box, a window of recent frames) from the state kept between calls, and the docstring writes no step that reads the whole dataset
-- `FrameFeatures`: it computes one record (a frame, a box, a window of recent frames) from the state kept between calls, and the docstring writes no step that reads the whole dataset
-- `FrameJointFusion`: the docstring cites no reference and the algorithm is not a textbook definition: it is stopped and reported
+- `TrackToSignal`: it computes one record (a frame, a box, a window of recent frames) from the state kept between calls, and the steps of the docstring act on that state
+- `FeatureToSignal`: it computes one record (a frame, a box, a window of recent frames) from the state kept between calls, and the steps of the docstring act on that state
+- `FrameFeatures`: it computes one record (a frame, a box, a window of recent frames) from the state kept between calls, and the steps of the docstring act on that state
+- `FrameJointFusion`: the docstring gives a missing reference and the algorithm is outside the textbooks: it is stopped and reported
 - `LandmarkCleaner`: it is a causal Hampel filter with a gap rule on a landmark stream, defined on the values seen before
-- `Kinematics`: it computes one record (a frame, a box, a window of recent frames) from the state kept between calls, and the docstring writes no step that reads the whole dataset
-- `MotionEnergy`: it computes one record (a frame, a box, a window of recent frames) from the state kept between calls, and the docstring writes no step that reads the whole dataset
-- `PatchFeatures`: it computes one record (a frame, a box, a window of recent frames) from the state kept between calls, and the docstring writes no step that reads the whole dataset
-- `PatchMemory`: the reservoir mode bounds the bank on a stream with Algorithm R; the coreset reduction of PatchCore is in a paper that is not in the folder
-- `FrameQuality`: the docstring cites no reference and the algorithm is not a textbook definition: it is stopped and reported
-- `Sync`: the docstring cites no reference and the algorithm is not a textbook definition: it is stopped and reported
-- `EventFrame`: the docstring cites no reference and the algorithm is not a textbook definition: it is stopped and reported
-- `Registration`: it computes one record (a frame, a box, a window of recent frames) from the state kept between calls, and the docstring writes no step that reads the whole dataset
-- `Stabilizer`: it computes one record (a frame, a box, a window of recent frames) from the state kept between calls, and the docstring writes no step that reads the whole dataset
+- `Kinematics`: it computes one record (a frame, a box, a window of recent frames) from the state kept between calls, and the steps of the docstring act on that state
+- `MotionEnergy`: it computes one record (a frame, a box, a window of recent frames) from the state kept between calls, and the steps of the docstring act on that state
+- `PatchFeatures`: it computes one record (a frame, a box, a window of recent frames) from the state kept between calls, and the steps of the docstring act on that state
+- `PatchMemory`: the reservoir mode bounds the bank on a stream with Algorithm R; the coreset reduction of PatchCore is in a paper outside the folder
+- `FrameQuality`: the docstring gives a missing reference and the algorithm is outside the textbooks: it is stopped and reported
+- `Sync`: the docstring gives a missing reference and the algorithm is outside the textbooks: it is stopped and reported
+- `EventFrame`: the docstring gives a missing reference and the algorithm is outside the textbooks: it is stopped and reported
+- `Registration`: it computes one record (a frame, a box, a window of recent frames) from the state kept between calls, and the steps of the docstring act on that state
+- `Stabilizer`: it computes one record (a frame, a box, a window of recent frames) from the state kept between calls, and the steps of the docstring act on that state
 - `DifferenceImage`: the reference is an exponential update of the frames that came before
-- `FrameNormalizer`: the docstring cites no reference and the algorithm is not a textbook definition: it is stopped and reported
+- `FrameNormalizer`: the docstring gives a missing reference and the algorithm is outside the textbooks: it is stopped and reported
 - `SceneChange`: it is a CUSUM or ADWIN test on a stream of frame statistics
 - `FrameAnomaly`: it is a CUSUM or ADWIN test on a stream of frame statistics
 - `MovingObjectTracker`: the association and the Kalman prediction use the tracks of the previous frames
-- `FalseColor`: the docstring cites no reference and the algorithm is not a textbook definition: it is stopped and reported
-- `Overlay`: the docstring cites no reference and the algorithm is not a textbook definition: it is stopped and reported
-- `BagOfVisualWords`: it computes one record (a frame, a box, a window of recent frames) from the state kept between calls, and the docstring writes no step that reads the whole dataset
-- `FrameWindow`: it computes one record (a frame, a box, a window of recent frames) from the state kept between calls, and the docstring writes no step that reads the whole dataset
+- `FalseColor`: the docstring gives a missing reference and the algorithm is outside the textbooks: it is stopped and reported
+- `Overlay`: the docstring gives a missing reference and the algorithm is outside the textbooks: it is stopped and reported
+- `BagOfVisualWords`: it computes one record (a frame, a box, a window of recent frames) from the state kept between calls, and the steps of the docstring act on that state
+- `FrameWindow`: it computes one record (a frame, a box, a window of recent frames) from the state kept between calls, and the steps of the docstring act on that state

@@ -102,12 +102,12 @@ The class of a sketch is the exact value the sketch approximates, and the class 
 The classes are new and independent of the online classes of dense_armor.utility.
 
 Classes without a form:
-- `StreamingDeviationScorer`: the reference defines the score on the window of the values learned before the one scored, or on statistics that move at each new value: it holds no algorithm for the whole dataset
-- `StreamingDeviationDetector`: the reference defines the score on the window of the values learned before the one scored, or on statistics that move at each new value: it holds no algorithm for the whole dataset
-- `MultiChannelStreamingDeviationDetector`: the reference defines the score on the window of the values learned before the one scored, or on statistics that move at each new value: it holds no algorithm for the whole dataset
+- `StreamingDeviationScorer`: the reference defines the score on the window of the values learned before the one scored, or on statistics that move at each new value: the algorithm of the reference is written for one example or one window at a time
+- `StreamingDeviationDetector`: the reference defines the score on the window of the values learned before the one scored, or on statistics that move at each new value: the algorithm of the reference is written for one example or one window at a time
+- `MultiChannelStreamingDeviationDetector`: the reference defines the score on the window of the values learned before the one scored, or on statistics that move at each new value: the algorithm of the reference is written for one example or one window at a time
 - `HampelScorer`: its batch form is HampelFilter, which scores every value on the centred window
-- `HalfSpaceTrees`: the reference defines the score on the window of the values learned before the one scored, or on statistics that move at each new value: it holds no algorithm for the whole dataset
-- `LODA`: the reference defines the score on the window of the values learned before the one scored, or on statistics that move at each new value: it holds no algorithm for the whole dataset
-- `OneClassSGD`: the reference defines the score on the window of the values learned before the one scored, or on statistics that move at each new value: it holds no algorithm for the whole dataset
-- `OnlineIsolationForest`: the reference defines the score on the window of the values learned before the one scored, or on statistics that move at each new value: it holds no algorithm for the whole dataset
-- `OnlineRobustMahalanobis`: the whole-sample estimator is Section A.2 of Guillot et al. (2025), which is not in the folder; the library initialises the dispersion with the average of the centred outer products as a declared choice, and the rest is stochastic gradient on a stream
+- `HalfSpaceTrees`: the reference defines the score on the window of the values learned before the one scored, or on statistics that move at each new value: the algorithm of the reference is written for one example or one window at a time
+- `LODA`: the reference defines the score on the window of the values learned before the one scored, or on statistics that move at each new value: the algorithm of the reference is written for one example or one window at a time
+- `OneClassSGD`: the reference defines the score on the window of the values learned before the one scored, or on statistics that move at each new value: the algorithm of the reference is written for one example or one window at a time
+- `OnlineIsolationForest`: the reference defines the score on the window of the values learned before the one scored, or on statistics that move at each new value: the algorithm of the reference is written for one example or one window at a time
+- `OnlineRobustMahalanobis`: the whole-sample estimator is Section A.2 of Guillot et al. (2025), which lies outside the folder; the library initialises the dispersion with the average of the centred outer products as a declared choice, and the rest is stochastic gradient on a stream

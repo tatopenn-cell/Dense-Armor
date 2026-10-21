@@ -15,6 +15,7 @@ References:
 from __future__ import annotations
 
 import math
+from abc import abstractmethod
 
 import numpy as np
 
@@ -28,7 +29,7 @@ __all__ = [
     "TukeyScorer",
 ]
 
-_STREAM = "the reference defines the score on the window of the values learned before the one scored, or on statistics that move at each new value: it holds no algorithm for the whole dataset"
+_STREAM = "the reference defines the score on the window of the values learned before the one scored, or on statistics that move at each new value: the algorithm of the reference is written for one example or one window at a time"
 STOPPED = {
     "StreamingDeviationScorer": _STREAM,
     "StreamingDeviationDetector": _STREAM,
@@ -38,7 +39,7 @@ STOPPED = {
     "LODA": _STREAM,
     "OneClassSGD": _STREAM,
     "OnlineIsolationForest": _STREAM,
-    "OnlineRobustMahalanobis": "the whole-sample estimator is Section A.2 of Guillot et al. (2025), which is not in the folder; the library initialises the dispersion with the average of the centred outer products as a declared choice, and the rest is stochastic gradient on a stream",
+    "OnlineRobustMahalanobis": "the whole-sample estimator is Section A.2 of Guillot et al. (2025), which lies outside the folder; the library initialises the dispersion with the average of the centred outer products as a declared choice, and the rest is stochastic gradient on a stream",
 }
 
 
@@ -51,9 +52,9 @@ class _Windowed(MLBase):
 
     radius: int
 
+    @abstractmethod
     def _flag(self, x: np.ndarray, i: int) -> float | None:
         """The replacement of x[i] when it is an outlier, else ``None``."""
-        raise NotImplementedError
 
     def fit(self, X, y=None):  # type: ignore[override]
         x = np.asarray(X, dtype=float).ravel()
@@ -230,7 +231,7 @@ class LocalOutlierFactor(MLBase):
     reachability distances; ``LOF(p)`` is the mean ``lrd`` of the neighbours
     divided by ``lrd(p)``. The sum of the reachability distances gets a term
     ``1e-10`` per neighbour, so that duplicates give a finite density: the one
-    deviation from the paper, which assumes no duplicates.
+    deviation from the paper, which assumes distinct points.
 
     Args:
         n_neighbors: ``k``, also called MinPts.

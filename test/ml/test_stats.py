@@ -101,7 +101,14 @@ def test_shrinkage_hand_case():
 
 
 def test_sketches_are_declared_stopped():
-    assert set(S.STOPPED) == {"DDSketch", "TDigest", "CountMinSketch", "HyperLogLog", "BloomFilter", "SpaceSaving"}
+    assert set(S.STOPPED) == {
+        "DDSketch",
+        "TDigest",
+        "CountMinSketch",
+        "HyperLogLog",
+        "BloomFilter",
+        "SpaceSaving",
+    }
 
 
 def test_base_is_not_online():

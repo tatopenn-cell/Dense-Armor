@@ -13,9 +13,9 @@ from __future__ import annotations
 __all__: list[str] = []
 
 STOPPED = {
-    "SGD": "the reference defines an update on the gradient of one example; it holds no algorithm for the whole dataset",
-    "AdaGrad": "the reference defines an update on the gradient of one example; it holds no algorithm for the whole dataset",
-    "Adam": "the reference defines an update on the gradient of one example; it holds no algorithm for the whole dataset",
-    "FTRLProximal": "the reference defines an update on the gradient of one example; it holds no algorithm for the whole dataset",
-    "OnlineNewtonStep": "the reference defines an update on the gradient of one example; it holds no algorithm for the whole dataset",
+    "SGD": "the reference defines an update on the gradient of one example; the algorithm of the reference is written for one example or one window at a time",
+    "AdaGrad": "the reference defines an update on the gradient of one example; the algorithm of the reference is written for one example or one window at a time",
+    "Adam": "the reference defines an update on the gradient of one example; the algorithm of the reference is written for one example or one window at a time",
+    "FTRLProximal": "the reference defines an update on the gradient of one example; the algorithm of the reference is written for one example or one window at a time",
+    "OnlineNewtonStep": "the reference defines an update on the gradient of one example; the algorithm of the reference is written for one example or one window at a time",
 }

@@ -58,6 +58,20 @@ def test_sigma_clip_hand_case():
     assert SigmaClipScorer(radius=1).fit([1.0, 2.0]).anomalies_ == []
 
 
+def test_sigma_clip_removes_the_outliers_of_the_window():
+    x = [20.0] + [1.0] * 9 + [100.0] + [1.0] * 10
+    m = SigmaClipScorer(radius=20).fit(x)
+    assert m.anomalies_ == [0, 10]
+    assert m.cleaned_[0] == 1.0 and m.cleaned_[10] == 1.0
+    plain = SigmaClipScorer(radius=20, max_iters=0).fit(x)
+    assert plain.anomalies_ == [10]
+
+
+def test_sigma_clip_empty_kept_set():
+    m = SigmaClipScorer(radius=4, n_sigmas=0.5).fit([1.0, -1.0, 1.0, -1.0, 1.0])
+    assert m.anomalies_ == []
+
+
 def test_lof_hand_case():
     X = [[0.0], [1.0], [2.0], [3.0], [10.0]]
     m = LocalOutlierFactor(n_neighbors=2).fit(X)

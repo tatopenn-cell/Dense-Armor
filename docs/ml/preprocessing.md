@@ -205,7 +205,7 @@ Standardisation, min-max scaling, variance threshold, correlation
         bibliographic only).
     Malialis, K. et al. (2022). Queue-based resampling for online class
         imbalance learning: a sequential method over a stream, so
-        `QueueResampler` has no class (not in the folder,
+        `QueueResampler` is declared in `STOPPED` (not in the folder,
         bibliographic only).
 
 ### Choices stated explicitly
@@ -217,4 +217,4 @@ The class of a sketch is the exact value the sketch approximates, and the class 
 The classes are new and independent of the online classes of dense_armor.utility.
 
 Classes without a form:
-- `QueueResampler`: the reference describes a queue over a stream: it holds no algorithm for the whole dataset
+- `QueueResampler`: the reference describes a queue over a stream: the algorithm of the reference is written for one example or one window at a time
