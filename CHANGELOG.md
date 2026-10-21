@@ -5,6 +5,9 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 ## [Unreleased]
 
 ### Changed
+- The README says that the library also learns from a whole dataset (`fit` and the batch versions) in the three places that said the opposite.
+
+### Changed
 - The DOI of version 1.1.32 in the README badge, the README links and `CITATION.cff`.
 
 ## [1.1.32] - 2026-10-21

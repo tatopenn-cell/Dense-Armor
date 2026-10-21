@@ -26,7 +26,7 @@
 
 ## Who is this for
 
-Python developers working on systems where data arrives one sample at a time and the model has to learn or stay stable *while it runs*: robot control loops, sensor pipelines, agent runtimes, any streaming workload. If you train on a fixed dataset and then deploy, this library is probably not what you need.
+Python developers working on systems where data arrives one sample at a time and the model has to learn or stay stable *while it runs*: robot control loops, sensor pipelines, agent runtimes, any streaming workload. A fixed dataset works too: `fit` feeds every row to any algorithm, and the [Offline learning](https://tatopenn-cell.github.io/Dense-Armor/offline/) page lists the batch versions.
 
 ## Use cases
 
@@ -58,7 +58,7 @@ In this library, *shielding* means cleaning the data a model sees (NaN, spikes, 
 
 ## What it does
 
-Dense-Armor is a Python library for online learning. Every estimator learns one sample at a time, at control-loop speed, on JAX: nothing is retrained in batch, nothing revisits the past. The same `learn_one` / `predict_one` / `transform_one` contract runs on a table, a time series, a robot joint stream, a video frame, a token stream, and a shield can sit in front of any of them.
+Dense-Armor is a Python library for online learning. Every estimator learns one sample at a time, at control-loop speed, on JAX, and `fit` feeds a whole dataset to any of them. The same `learn_one` / `predict_one` / `transform_one` contract runs on a table, a time series, a robot joint stream, a video frame, a token stream, and a shield can sit in front of any of them.
 
 ---
 
@@ -201,7 +201,7 @@ Check out [the API](https://tatopenn-cell.github.io/Dense-Armor/api/) for a comp
 
 ## Should I be using Dense-Armor?
 
-The answer is probably no. Most of the time, batch learning does the job just fine. An online approach fits when:
+Batch learning does the job for many problems, and Dense-Armor covers it with `fit` and the batch versions. An online approach fits when:
 
 - you want a model that learns from new data without revisiting past data
 - you want a model that is robust to concept drift
