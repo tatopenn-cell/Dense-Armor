@@ -44,8 +44,8 @@ Rows: 106. Supported by the benchmark: 4. Kept (technical): 57. Rows needing rew
 | 27 | `limits.md`:39 | not a better local check. The full table is in | kept | word is technical, definition, or a measurement inside the page |
 | 28 | `limits.md`:81 | *not* do". The original README had only the wins; the limits section was | kept | word is technical, definition, or a measurement inside the page |
 | 29 | `linear/bayes.md`:163 | Neither is better in the abstract: they answer different questions. | kept | word is technical, definition, or a measurement inside the page |
-| 30 | `metrics/index.md`:123 | $(0.1^2 + 0.2^2 + 0.4^2)/3 = 0.07$. Both are lower for better forecasts. | kept | word is technical, definition, or a measurement inside the page |
-| 31 | `metrics/index.md`:300 | recovers to 0.84. With labels 300 samples late the drop comes later and goes deeper (0.38), | kept | word is technical, definition, or a measurement inside the page |
+| 30 | `metrics/basics.md`:104 | $(0.1^2 + 0.2^2 + 0.4^2)/3 = 0.07$. Both are lower for better forecasts. | kept | word is technical, definition, or a measurement inside the page |
+| 31 | `metrics/stream.md`:79 | recovers to 0.84. With labels 300 samples late the drop comes later and goes deeper (0.38), | kept | word is technical, definition, or a measurement inside the page |
 | 32 | `multiclass/index.md`:11 | - **OneVsRestClassifier**: one classifier per class. The classifier for class `c` is trained on the samples of | kept | word is technical, definition, or a measurement inside the page |
 | 33 | `multiclass/index.md`:13 | - **OneVsOneClassifier**: one classifier per pair of classes. For three classes there are `3 * 2 / 2 = 3` clas | kept | word is technical, definition, or a measurement inside the page |
 | 34 | `multiclass/index.md`:15 | - **OutputCodeClassifier**: every class gets a codeword of `+1` and `-1` bits. One classifier is trained per * | kept | word is technical, definition, or a measurement inside the page |
@@ -83,8 +83,8 @@ Rows: 106. Supported by the benchmark: 4. Kept (technical): 57. Rows needing rew
 | 66 | `quality.md`:39 | / 27 / limits.md:39 / not a better local check. The full table is in / kept — technical, not a comparison / | kept | not a comparison A vs B |
 | 67 | `quality.md`:40 | / 28 / limits.md:81 / *not* do". The original README had only the wins; the limits section was / rewrite — rew | kept | not a comparison A vs B |
 | 68 | `quality.md`:41 | / 29 / linear/bayes.md:163 / Neither is better in the abstract: they answer different questions. / kept — tech | kept | not a comparison A vs B |
-| 69 | `quality.md`:42 | / 30 / metrics/index.md:123 / $(0.1^2 + 0.2^2 + 0.4^2)/3 = 0.07$. Both are lower for better forecasts. / kept  | kept | not a comparison A vs B |
-| 70 | `quality.md`:43 | / 31 / metrics/index.md:300 / recovers to 0.84. With labels 300 samples late the drop comes later and goes dee | kept | not a comparison A vs B |
+| 69 | `quality.md`:42 | / 30 / metrics/basics.md:104 / $(0.1^2 + 0.2^2 + 0.4^2)/3 = 0.07$. Both are lower for better forecasts. / kept  | kept | not a comparison A vs B |
+| 70 | `quality.md`:43 | / 31 / metrics/stream.md:79 / recovers to 0.84. With labels 300 samples late the drop comes later and goes dee | kept | not a comparison A vs B |
 | 71 | `quality.md`:49 | / 37 / multiclass/index.md:96 / - **`OutputCodeClassifier` softmax.** The paper only defines a hard decision ( | kept | not a comparison A vs B |
 | 72 | `quality.md`:50 | / 38 / multioutput/index.md:78 / The forward order is about ten accuracy points better, with five seeds each.  | kept | not a comparison A vs B |
 | 73 | `quality.md`:53 | / 41 / optim/ftrl.md:191 / scale grows, the constant version reaches its threshold faster. / kept — kept / | kept | not a comparison A vs B |
