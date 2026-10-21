@@ -24,3 +24,8 @@ __all__ = [
     "dense_backward",
     "dense_forward",
 ]
+
+from dense_armor.utility.neural.chain import Parallel, Sequential
+from dense_armor.utility.neural.models import mlp, resnet_mlp
+
+__all__ = list(__all__) + ["Parallel", "Sequential", "mlp", "resnet_mlp"]

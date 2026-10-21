@@ -170,6 +170,7 @@ nav:
   - Deep learning:
       - Foundations: neural/index.md
       - Layers: neural/layers.md
+      - Chains: neural/chains.md
   - Applications and reference:
       - Applications:
           - Finance:

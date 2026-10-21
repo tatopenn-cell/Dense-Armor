@@ -5,6 +5,8 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- `dense_armor/utility/neural/`: `Sequential`, `Parallel`, `mlp`, `resnet_mlp`; `docs/neural/chains.md` with the guide and the figure of the MLP on a synthetic two-moons set.
+### Added
 - `dense_armor/utility/neural/`: `Dense`, `Embedding`, `Dropout`, `Residual`, `BatchNorm`, `LayerNorm`, `AsTransformer`; `docs/neural/layers.md` with the guide and the figure of the two normalisations.
 ### Added
 - `dense_armor/utility/neural/`: `Param`, `he_normal`, `xavier_normal`, `glorot_uniform`, five activations and four losses (mse, softmax cross-entropy, bce-with-logits, Huber) with `forward`/`backward`, and `gradcheck` against central finite differences; `docs/neural/index.md` with the guide and the figure of the five activations.
