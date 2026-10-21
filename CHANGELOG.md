@@ -4,10 +4,16 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+## [1.1.33] - 2026-10-21
+
 ### Added
+- `notebooks/drone_actuator_fault.ipynb`: the actuator-fault pipeline on synthetic flights, with the CUSUM threshold `h` against false alarms per hour.
+- `Documentation`, `Changelog` and `Issues` in `[project.urls]`.
+- `docs/drones/index.md` lists every page of the drone section.
 - `edge/power.py`, `edge/energy_bench.py`, `test/drones/test_power.py`, `test/drones/test_energy_bench.py`, `docs/drones/jetson_energy.md`: the energy of a run (trapezoid integral of a power trace, net of the idle), a paired batch-vs-online energy benchmark, the four calibration lines of Table I of 2306.13107, and one command for a Jetson board. Every energy value is synthetic or null: no reduction on a board is claimed.
 - `edge/board_selftest.sh`: the energy section after the existing steps, on `POWER_NODE`.
 ### Changed
+- The licence is the GNU Affero General Public License v3.0 or later (`LICENSE`); the Business Source License 1.1 text of the releases up to 1.1.32 is in `LICENSE-BUSL-1.1-until-1.1.32.md`. `pyproject.toml`, `CITATION.cff`, the README and `docs/license.md` follow.
 - The README says that the library also learns from a whole dataset (`fit` and the batch versions) in the three places that said the opposite.
 
 ### Changed
