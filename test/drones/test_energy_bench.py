@@ -232,7 +232,8 @@ def test_run_smoke_synthetic():
     assert payload["comparison"]["wilcoxon_p"] is None
     assert "fewer than" in payload["comparison"]["wilcoxon_note"]
     a12 = payload["comparison"]["a12_batch_over_online"]
-    assert 0.0 <= a12 <= 1.0
+    assert a12 is None
+    assert payload["comparison"]["a12_ci95"] is None
     assert payload["batch"]["j_per_1000_median"] > 0.0
     assert payload["online"]["j_per_1000_median"] > 0.0
 
