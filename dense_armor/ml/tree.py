@@ -24,16 +24,18 @@ import numpy as np
 from dense_armor.ml.base import MLBase
 
 __all__ = [
+    "BatchDecisionTreeClassifier",
     "DecisionTreeClassifier",
+    "DecisionTreeRegressor",
     "MondrianForestClassifier",
     "MondrianForestRegressor",
 ]
 
 _STREAM = "the reference defines the algorithm on a stream (a bound or a test on statistics that arrive one example at a time): the algorithm of the reference is written for one example or one window at a time"
 STOPPED = {
-    "HoeffdingTreeClassifier": "the batch tree that the Hoeffding tree approaches is DecisionTreeClassifier",
-    "HoeffdingAnytimeTreeClassifier": "the batch tree that the Hoeffding tree approaches is DecisionTreeClassifier",
-    "HoeffdingAdaptiveTreeClassifier": "the batch tree that the Hoeffding tree approaches is DecisionTreeClassifier; the replacement of subtrees on drift is defined on a stream",
+    "HoeffdingTreeClassifier": "the batch tree that the Hoeffding tree approaches is BatchDecisionTreeClassifier",
+    "HoeffdingAnytimeTreeClassifier": "the batch tree that the Hoeffding tree approaches is BatchDecisionTreeClassifier",
+    "HoeffdingAdaptiveTreeClassifier": "the batch tree that the Hoeffding tree approaches is BatchDecisionTreeClassifier; the replacement of subtrees on drift is defined on a stream",
     "FIMTDDRegressor": "the reference chapter (Ikonomovska 2012, chapter 6) lies outside the folder and the formulas of the chapter are outside the folder; the model tree with drift detection is defined on a stream",
     "SGTRegressor": _STREAM,
     "SGTClassifier": _STREAM,
@@ -45,7 +47,7 @@ def _gini(counts: np.ndarray) -> float:
     return 0.0 if n == 0 else float(1.0 - ((counts / n) ** 2).sum())
 
 
-class DecisionTreeClassifier(MLBase):
+class BatchDecisionTreeClassifier(MLBase):
     """Binary decision tree with the gini impurity, grown recursively on the whole table.
 
     At each node every feature and every midpoint between consecutive sorted
@@ -60,7 +62,7 @@ class DecisionTreeClassifier(MLBase):
         min_samples_split: smallest node that is split.
 
     Example:
-        >>> m = DecisionTreeClassifier().fit([[0.0], [1.0], [2.0], [3.0]], [0, 0, 1, 1])
+        >>> m = BatchDecisionTreeClassifier().fit([[0.0], [1.0], [2.0], [3.0]], [0, 0, 1, 1])
         >>> m.predict([[0.5], [2.5]]).tolist(), m.depth_
         ([0, 1], 1)
     """
@@ -137,6 +139,240 @@ class DecisionTreeClassifier(MLBase):
             return 0 if "feature" not in n else 1 + max(d(n["left"]), d(n["right"]))
 
         return d(self.tree_)
+
+
+def _score(
+    kind: str,
+    left: np.ndarray,
+    right: np.ndarray,
+    nl: np.ndarray,
+    nr: np.ndarray,
+    lam: float,
+) -> np.ndarray:
+    if kind == "cls":
+        return (left**2).sum(axis=-1) / nl + (right**2).sum(axis=-1) / nr
+    if kind == "reg":
+        return left[..., 0] ** 2 / nl + right[..., 0] ** 2 / nr
+    return left[..., 0] ** 2 / (left[..., 1] + lam) + right[..., 0] ** 2 / (
+        right[..., 1] + lam
+    )
+
+
+def _split(X, S, kind, feats, min_leaf, rng, random_thr, lam):
+    """Best split ``(score, feature, threshold)`` over ``feats``, or ``None``."""
+    n = X.shape[0]
+    tot = S.sum(axis=0)
+    if kind == "grad":
+        base = tot[0] ** 2 / (tot[1] + lam)
+    elif kind == "cls":
+        base = (tot**2).sum() / n
+    else:
+        base = tot[0] ** 2 / n
+    best = None
+    for f in feats:
+        col = X[:, f]
+        if random_thr:
+            lo, hi = col.min(), col.max()
+            if lo == hi:
+                continue
+            thr = rng.uniform(lo, hi)
+            mask = col <= thr
+            nl = mask.sum()
+            if nl < min_leaf or n - nl < min_leaf:
+                continue
+            left = S[mask].sum(axis=0)
+            sc = (
+                _score(
+                    kind,
+                    left,
+                    tot - left,
+                    np.array(float(nl)),
+                    np.array(float(n - nl)),
+                    lam,
+                )
+                - base
+            )
+            if best is None or sc > best[0]:
+                best = (float(sc), int(f), float(thr))
+            continue
+        order = np.argsort(col, kind="stable")
+        cs = np.cumsum(S[order], axis=0)[:-1]
+        sv = col[order]
+        valid = sv[:-1] < sv[1:]
+        nl = np.arange(1, n, dtype=float)
+        valid &= (nl >= min_leaf) & (n - nl >= min_leaf)
+        if not valid.any():
+            continue
+        sc = _score(kind, cs, tot - cs, nl, n - nl, lam) - base
+        sc = np.where(valid, sc, -np.inf)
+        i = int(np.argmax(sc))
+        if best is None or sc[i] > best[0]:
+            best = (float(sc[i]), int(f), float((sv[i] + sv[i + 1]) / 2.0))
+    return best
+
+
+class _Tree(MLBase):
+    """Greedy tree: ``kind`` is ``"cls"``, ``"reg"`` or ``"grad"``."""
+
+    def _grow(self, X, S, depth, rng, kind):
+        n, d = X.shape
+        leaf = {"stats": S.sum(axis=0), "n": n}
+        if (
+            self.max_depth is not None and depth >= self.max_depth
+        ) or n < self.min_samples_split:
+            return leaf
+        if kind == "cls" and (S.sum(axis=0) == n).any():
+            return leaf
+        k = d if self.max_features is None else min(self.max_features, d)
+        feats = rng.permutation(d)[:k] if k < d else np.arange(d)
+        sp = _split(
+            X,
+            S,
+            kind,
+            feats,
+            self.min_samples_leaf,
+            rng,
+            getattr(self, "splitter", "best") == "random",
+            getattr(self, "lambda_", 0.0),
+        )
+        gamma = getattr(self, "gamma", 0.0)
+        if sp is None or sp[0] <= (2.0 * gamma if kind == "grad" else 1e-12):
+            return leaf
+        _, f, thr = sp
+        m = X[:, f] <= thr
+        return {
+            "feature": f,
+            "threshold": thr,
+            "left": self._grow(X[m], S[m], depth + 1, rng, kind),
+            "right": self._grow(X[~m], S[~m], depth + 1, rng, kind),
+            "n": n,
+        }
+
+    def _leaves(self, X) -> list[dict]:
+        out = []
+        for row in np.asarray(X, dtype=float):
+            node = self.tree_
+            while "feature" in node:
+                node = (
+                    node["left"]
+                    if row[node["feature"]] <= node["threshold"]
+                    else node["right"]
+                )
+            out.append(node)
+        return out
+
+    def _depth(self, node=None) -> int:
+        node = self.tree_ if node is None else node
+        return (
+            0
+            if "feature" not in node
+            else 1 + max(self._depth(node["left"]), self._depth(node["right"]))
+        )
+
+    @property
+    def depth_(self) -> int:
+        """Depth of the fitted tree (0 for a single leaf)."""
+        return self._depth()
+
+
+class DecisionTreeClassifier(_Tree):
+    """CART classification tree: splits that maximise the Gini decrease.
+
+    Args:
+        max_depth: depth limit, or ``None``.
+        min_samples_split: smallest node that is split.
+        min_samples_leaf: smallest number of rows in a leaf.
+        max_features: number of features tried at each split, or ``None`` for all.
+        splitter: ``"best"`` or ``"random"`` (a random threshold, as in extremely randomised trees).
+        seed: seed of the random choices.
+
+    Example:
+        >>> X = [[0.0], [1.0], [2.0], [3.0]]
+        >>> m = DecisionTreeClassifier().fit(X, [0, 0, 1, 1])
+        >>> m.predict([[0.5], [2.5]]).tolist(), m.depth_
+        ([0, 1], 1)
+    """
+
+    def __init__(
+        self,
+        max_depth: int | None = None,
+        min_samples_split: int = 2,
+        min_samples_leaf: int = 1,
+        max_features: int | None = None,
+        splitter: str = "best",
+        seed: int = 0,
+    ) -> None:
+        self.max_depth = max_depth
+        self.min_samples_split = min_samples_split
+        self.min_samples_leaf = min_samples_leaf
+        self.max_features = max_features
+        self.splitter = splitter
+        self.seed = seed
+
+    def fit(self, X, y=None, sample_weight=None):  # type: ignore[override]
+        A = np.asarray(X, dtype=float)
+        t = np.asarray(y)
+        self.classes_ = np.unique(t)
+        S = (t[:, None] == self.classes_[None, :]).astype(float)
+        if sample_weight is not None:
+            S = S * np.asarray(sample_weight, dtype=float)[:, None]
+        self.tree_ = self._grow(A, S, 0, np.random.default_rng(self.seed), "cls")
+        return self
+
+    def predict_proba(self, X) -> np.ndarray:
+        """Class frequencies of the leaf each row falls in."""
+        st = np.array([lf["stats"] for lf in self._leaves(X)])
+        return st / st.sum(axis=1, keepdims=True)
+
+    def predict(self, X) -> np.ndarray:
+        """The most frequent class of the leaf."""
+        return self.classes_[np.argmax(self.predict_proba(X), axis=1)]
+
+
+class DecisionTreeRegressor(_Tree):
+    """CART regression tree: splits that maximise the variance reduction; leaves hold the mean.
+
+    Args:
+        max_depth: depth limit, or ``None``.
+        min_samples_split: smallest node that is split.
+        min_samples_leaf: smallest number of rows in a leaf.
+        max_features: number of features tried at each split, or ``None`` for all.
+        splitter: ``"best"`` or ``"random"``.
+        seed: seed of the random choices.
+
+    Example:
+        >>> m = DecisionTreeRegressor().fit([[0.0], [1.0], [2.0], [3.0]], [1.0, 1.0, 5.0, 5.0])
+        >>> m.predict([[0.2], [2.8]]).tolist()
+        [1.0, 5.0]
+    """
+
+    def __init__(
+        self,
+        max_depth: int | None = None,
+        min_samples_split: int = 2,
+        min_samples_leaf: int = 1,
+        max_features: int | None = None,
+        splitter: str = "best",
+        seed: int = 0,
+    ) -> None:
+        self.max_depth = max_depth
+        self.min_samples_split = min_samples_split
+        self.min_samples_leaf = min_samples_leaf
+        self.max_features = max_features
+        self.splitter = splitter
+        self.seed = seed
+
+    def fit(self, X, y=None):  # type: ignore[override]
+        A = np.asarray(X, dtype=float)
+        t = np.asarray(y, dtype=float)
+        self.tree_ = self._grow(
+            A, t[:, None], 0, np.random.default_rng(self.seed), "reg"
+        )
+        return self
+
+    def predict(self, X) -> np.ndarray:
+        """The mean target of the leaf."""
+        return np.array([lf["stats"][0] / lf["n"] for lf in self._leaves(X)])
 
 
 class _Mondrian(MLBase):

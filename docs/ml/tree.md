@@ -4,14 +4,14 @@ A tree asks a series of yes/no questions about the features and ends in a leaf t
 
 Every class reads the whole dataset with `fit` and leaves its results in attributes with a trailing underscore; `transform` or a query method applies them. The data are `synthetic` where a block makes them up.
 
-## 1. `DecisionTreeClassifier`
+## 1. `BatchDecisionTreeClassifier`
 
 Binary decision tree with the gini impurity, grown recursively on the whole table.
 
 ~~~python
 import numpy as np
-from dense_armor.ml.tree import DecisionTreeClassifier
-m = DecisionTreeClassifier().fit([[0.0], [1.0], [2.0], [3.0]], [0, 0, 1, 1])
+from dense_armor.ml.tree import BatchDecisionTreeClassifier
+m = BatchDecisionTreeClassifier().fit([[0.0], [1.0], [2.0], [3.0]], [0, 0, 1, 1])
 print(m.predict([[0.5], [2.5]]).tolist(), m.depth_)
 ~~~
 
@@ -19,7 +19,38 @@ print(m.predict([[0.5], [2.5]]).tolist(), m.depth_)
 [0, 1] 1
 ~~~
 
-## 2. `MondrianForestClassifier`
+## 2. `DecisionTreeClassifier`
+
+CART classification tree: splits that maximise the Gini decrease.
+
+~~~python
+import numpy as np
+from dense_armor.ml.tree import DecisionTreeClassifier
+X = [[0.0], [1.0], [2.0], [3.0]]
+m = DecisionTreeClassifier().fit(X, [0, 0, 1, 1])
+print(m.predict([[0.5], [2.5]]).tolist(), m.depth_)
+~~~
+
+~~~
+[0, 1] 1
+~~~
+
+## 3. `DecisionTreeRegressor`
+
+CART regression tree: splits that maximise the variance reduction; leaves hold the mean.
+
+~~~python
+import numpy as np
+from dense_armor.ml.tree import DecisionTreeRegressor
+m = DecisionTreeRegressor().fit([[0.0], [1.0], [2.0], [3.0]], [1.0, 1.0, 5.0, 5.0])
+print(m.predict([[0.2], [2.8]]).tolist())
+~~~
+
+~~~
+[1.0, 5.0]
+~~~
+
+## 4. `MondrianForestClassifier`
 
 Forest of Mondrian trees; the probability is the mixture of the class histograms along the path.
 
@@ -35,7 +66,7 @@ print(m.predict([[0.05], [1.05]]).tolist())
 [0, 1]
 ~~~
 
-## 3. `MondrianForestRegressor`
+## 5. `MondrianForestRegressor`
 
 Forest of Mondrian trees; the prediction is the mean of the mixture over the path.
 
@@ -75,9 +106,9 @@ The class of a sketch is the exact value the sketch approximates, and the class 
 The classes are new and independent of the online classes of dense_armor.utility.
 
 Classes without a form:
-- `HoeffdingTreeClassifier`: the batch tree that the Hoeffding tree approaches is DecisionTreeClassifier
-- `HoeffdingAnytimeTreeClassifier`: the batch tree that the Hoeffding tree approaches is DecisionTreeClassifier
-- `HoeffdingAdaptiveTreeClassifier`: the batch tree that the Hoeffding tree approaches is DecisionTreeClassifier; the replacement of subtrees on drift is defined on a stream
+- `HoeffdingTreeClassifier`: the batch tree that the Hoeffding tree approaches is BatchDecisionTreeClassifier
+- `HoeffdingAnytimeTreeClassifier`: the batch tree that the Hoeffding tree approaches is BatchDecisionTreeClassifier
+- `HoeffdingAdaptiveTreeClassifier`: the batch tree that the Hoeffding tree approaches is BatchDecisionTreeClassifier; the replacement of subtrees on drift is defined on a stream
 - `FIMTDDRegressor`: the reference chapter (Ikonomovska 2012, chapter 6) lies outside the folder and the formulas of the chapter are outside the folder; the model tree with drift detection is defined on a stream
 - `SGTRegressor`: the reference defines the algorithm on a stream (a bound or a test on statistics that arrive one example at a time): the algorithm of the reference is written for one example or one window at a time
 - `SGTClassifier`: the reference defines the algorithm on a stream (a bound or a test on statistics that arrive one example at a time): the algorithm of the reference is written for one example or one window at a time

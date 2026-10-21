@@ -72,6 +72,8 @@ nav:
       - Anomaly detection: ml/anomaly.md
       - Naive Bayes: ml/bayes.md
       - Change detection: ml/drift.md
+      - Ensembles: ml/ensemble.md
+      - Forests: ml/forest.md
       - Linear models: ml/linear.md
       - Multiclass: ml/multiclass.md
       - Multi-output: ml/multioutput.md

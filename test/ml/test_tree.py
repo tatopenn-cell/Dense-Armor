@@ -6,7 +6,7 @@ import numpy as np
 
 import dense_armor.ml.tree as T
 from dense_armor.ml.tree import (
-    DecisionTreeClassifier,
+    BatchDecisionTreeClassifier,
     MondrianForestClassifier,
     MondrianForestRegressor,
 )
@@ -19,7 +19,7 @@ def test_doctests():
 
 def test_tree_hand_case():
     X = [[0.0, 5.0], [1.0, 4.0], [2.0, 5.0], [3.0, 4.0]]
-    m = DecisionTreeClassifier().fit(X, [0, 0, 1, 1])
+    m = BatchDecisionTreeClassifier().fit(X, [0, 0, 1, 1])
     assert m.tree_["feature"] == 0 and m.tree_["threshold"] == 1.5 and m.depth_ == 1
     assert m.predict([[1.4, 0.0], [1.6, 0.0]]).tolist() == [0, 1]
     assert m.predict_proba([[0.0, 0.0]]).tolist() == [[1.0, 0.0]]
@@ -27,13 +27,13 @@ def test_tree_hand_case():
 
 def test_tree_limits_and_ties():
     X = [[0.0], [1.0], [2.0], [3.0]]
-    m = DecisionTreeClassifier(max_depth=0).fit(X, [0, 1, 1, 0])
+    m = BatchDecisionTreeClassifier(max_depth=0).fit(X, [0, 1, 1, 0])
     assert m.depth_ == 0 and m.predict([[9.0]]).tolist() == [0]
-    m = DecisionTreeClassifier(min_samples_split=5).fit(X, [0, 0, 1, 1])
+    m = BatchDecisionTreeClassifier(min_samples_split=5).fit(X, [0, 0, 1, 1])
     assert m.depth_ == 0
-    m = DecisionTreeClassifier().fit([[1.0], [1.0]], [0, 1])
+    m = BatchDecisionTreeClassifier().fit([[1.0], [1.0]], [0, 1])
     assert m.depth_ == 0 and m.predict([[1.0]]).tolist() == [0]
-    m = DecisionTreeClassifier().fit([[0.0], [1.0], [2.0]], [0, 1, 0])
+    m = BatchDecisionTreeClassifier().fit([[0.0], [1.0], [2.0]], [0, 1, 0])
     assert m.depth_ == 2
 
 

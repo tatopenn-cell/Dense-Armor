@@ -10,7 +10,7 @@ A tree asks a series of yes/no questions about the features and ends in a leaf t
 
 | class | kind | median | p90 | max | why |
 |---|---|---|---|---|---|
-| `DecisionTreeClassifier` | abs | 0 | 0 | 0 | the same gini splits on the same table |
+| `BatchDecisionTreeClassifier` | abs | 0 | 0 | 0 | the same gini splits on the same table |
 | `MondrianForestClassifier` | abs | 0.01 | 0.021 | 0.03 | the trees are sampled from the whole table at once, not grown row by row, so the random splits differ |
 | `MondrianForestRegressor` | abs | 0.0167 | 0.0303 | 0.0449 | the trees are sampled from the whole table at once, not grown row by row, so the random splits differ |
 

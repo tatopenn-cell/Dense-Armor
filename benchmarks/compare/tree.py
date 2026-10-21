@@ -26,7 +26,7 @@ def _d(X):
 
 def c_tree(seed):
     X, y, T, t = _cls(seed)
-    c = ml.DecisionTreeClassifier(max_depth=4).fit(X, y)
+    c = ml.BatchDecisionTreeClassifier(max_depth=4).fit(X, y)
     o = BatchDecisionTreeClassifier(max_depth=4)
     o.fit(_d(X), y.tolist())
     po = [o.predict_one(d) for d in _d(T)]
@@ -70,12 +70,12 @@ def c_mfr(seed):
 
 
 CASES = {
-    "DecisionTreeClassifier": c_tree,
+    "BatchDecisionTreeClassifier": c_tree,
     "MondrianForestClassifier": c_mfc,
     "MondrianForestRegressor": c_mfr,
 }
 WHY = {
-    "DecisionTreeClassifier": "the same gini splits on the same table",
+    "BatchDecisionTreeClassifier": "the same gini splits on the same table",
     "MondrianForestClassifier": "the trees are sampled from the whole table at once, not grown row by row, so the random splits differ",
     "MondrianForestRegressor": "the trees are sampled from the whole table at once, not grown row by row, so the random splits differ",
 }
