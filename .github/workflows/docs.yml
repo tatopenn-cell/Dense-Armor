@@ -10,7 +10,7 @@ on:
       - "dense_armor/**"
       - "README.md"
       - "CHANGELOG.md"
-      - "LICENSE.md"
+      - "LICENSE"
       - ".github/workflows/docs.yml"
   workflow_dispatch:
 

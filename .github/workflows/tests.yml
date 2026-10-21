@@ -32,7 +32,7 @@ jobs:
               - '!mkdocs.yml'
               - '!README.md'
               - '!CHANGELOG.md'
-              - '!LICENSE.md'
+              - '!LICENSE'
 
   pytest:
     name: pytest (Python ${{ matrix.python-version }}, ${{ matrix.os }})
