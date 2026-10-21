@@ -1,3 +1,0 @@
-{
-  "stats": "A statistic such as a mean, a variance or a correlation can be computed in two ways. The classic way reads the whole table at once. The online way reads one row at a time and keeps a few numbers up to date. This page puts the two side by side for the statistics of the library, and for the sketches that answer a question about a stream (a quantile, a count, a membership) in a few kilobytes: the classic side of a sketch is the exact answer that the sketch approximates."
-}

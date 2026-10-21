@@ -1,0 +1,4 @@
+{
+  "stats": "A statistic such as a mean, a variance or a correlation is computed on a whole table at once. This page lists the statistics of the machine learning part of the library, and the exact answers to the questions that a sketch answers approximately on a stream (a quantile, a count, a membership).",
+  "preprocessing": "Before a model sees the data, the table is rescaled, some columns are dropped, the joint records are turned into velocities and the text is turned into numbers. Each class reads the whole table with `fit` and applies the result with `transform`."
+}

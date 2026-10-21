@@ -68,15 +68,10 @@ plugins:
             heading_level: 2
 
 nav:
-  - Start:
-      - Home: index.md
-      - Getting Started: getting-started.md
-      - Speed: speed.md
-      - Comparisons & limits:
-          - Dense-Armor vs Kalman: vs_kalman.md
-          - Adversarial robustness: robustness.md
-          - Known limits: limits.md
   - Machine learning:
+      - Statistics and sketches: ml/stats.md
+      - Preprocessing: ml/preprocessing.md
+  - Online learning:
       - Online learning:
           - learn/index.md
           - Calibration: learn/calibration.md
@@ -170,7 +165,14 @@ nav:
   - Deep learning:
       - Foundations: neural/index.md
       - Layers: neural/layers.md
-  - Applications and reference:
+  - Library:
+      - Home: index.md
+      - Getting Started: getting-started.md
+      - Speed: speed.md
+      - Comparisons & limits:
+          - Dense-Armor vs Kalman: vs_kalman.md
+          - Adversarial robustness: robustness.md
+          - Known limits: limits.md
       - Applications:
           - Finance:
               - finance/index.md

@@ -1,9 +1,9 @@
-"""Base class of the classic (offline) algorithms of Dense-Armor.
+"""Base class of the machine learning algorithms of Dense-Armor.
 
-A classic class implements the algorithm of the paper on the whole dataset:
+A class implements the algorithm of the paper on the whole dataset:
 ``fit`` takes the whole array and the results are attributes with a trailing
 underscore. It has no ``learn_one``: the online class of the library is the
-other side of the pair, and ``benchmarks/offline`` saves the difference.
+other side of the pair, and ``benchmarks/ml`` saves the difference.
 """
 
 from __future__ import annotations
@@ -13,11 +13,11 @@ import numpy as np
 from dense_armor.roles import Root
 
 
-class ClassicBase(Root):
-    """Root of the classic classes: parameters, ``clone`` and ``state_dict``.
+class MLBase(Root):
+    """Root of the classes: parameters, ``clone`` and ``state_dict``.
 
     Example:
-        >>> class Mean(ClassicBase):
+        >>> class Mean(MLBase):
         ...     def fit(self, X, y=None):
         ...         self.mean_ = float(np.mean(X))
         ...         return self

@@ -1,9 +1,9 @@
-"""Classic statistics: the exact quantity each online statistic or sketch computes.
+"""Statistics: the exact quantity each online statistic or sketch computes.
 
 Every class reads the whole dataset with ``fit``. The online class of
 ``dense_armor.utility.stats`` is the other side of the pair; the sketches
 (quantiles, counts, membership) approximate the exact quantity that the
-classic class returns.
+class returns.
 
 References:
     Pearson correlation and the sample covariance with ``n - 1`` (textbook).
@@ -17,7 +17,7 @@ References:
         Computing extremely accurate quantiles using t-digests; Cormode, G.,
         Muthukrishnan, S. (2005); Flajolet, P. et al. (2007); Bloom, B. H.
         (1970); Metwally, A. et al. (2005): the sketches, whose exact
-        counterpart is the classic class (not in the folder, bibliographic
+        counterpart is the class (not in the folder, bibliographic
         only).
 """
 
@@ -32,25 +32,25 @@ from scipy.signal import lfilter
 from scipy.stats import kurtosis as _kurt
 from scipy.stats import skew as _skew
 
-from dense_armor.offline.base import ClassicBase, finite, finite_pairs
+from dense_armor.ml.base import MLBase, finite, finite_pairs
 
 __all__ = [
-    "ClassicRunningCovariance",
-    "ClassicRunningCorrelation",
-    "ClassicRollingCovariance",
-    "ClassicRollingCorrelation",
-    "ClassicAutocorrelation",
-    "ClassicRunningMoments",
-    "ClassicRunningMomentsVector",
-    "ClassicEWStats",
-    "ClassicDDSketch",
-    "ClassicTDigest",
-    "ClassicRollingMedianVector",
-    "ClassicOnlineShrinkageCovariance",
-    "ClassicCountMinSketch",
-    "ClassicHyperLogLog",
-    "ClassicBloomFilter",
-    "ClassicSpaceSaving",
+    "Covariance",
+    "Correlation",
+    "RollingCovariance",
+    "RollingCorrelation",
+    "Autocorrelation",
+    "Moments",
+    "ColumnMoments",
+    "EWStats",
+    "DDSketch",
+    "TDigest",
+    "RollingMedian",
+    "ShrinkageCovariance",
+    "CountMinSketch",
+    "HyperLogLog",
+    "BloomFilter",
+    "SpaceSaving",
 ]
 
 
@@ -69,7 +69,7 @@ def _corr(a: np.ndarray, b: np.ndarray) -> float:
     return float(np.corrcoef(a, b)[0, 1])
 
 
-class ClassicRunningCovariance(ClassicBase):
+class Covariance(MLBase):
     """Sample covariance (``n - 1``) and Pearson correlation of two channels.
 
     Args:
@@ -77,7 +77,7 @@ class ClassicRunningCovariance(ClassicBase):
         y_feature: name of the second channel.
 
     Example:
-        >>> m = ClassicRunningCovariance().fit([1.0, 2.0, 3.0], [2.0, 4.0, 6.0])
+        >>> m = Covariance().fit([1.0, 2.0, 3.0], [2.0, 4.0, 6.0])
         >>> round(m.cov_, 6), round(m.corr_, 6)
         (2.0, 1.0)
     """
@@ -94,16 +94,16 @@ class ClassicRunningCovariance(ClassicBase):
         return self
 
 
-class ClassicRunningCorrelation(ClassicRunningCovariance):
+class Correlation(Covariance):
     """Pearson correlation of two channels over the whole dataset.
 
     Example:
-        >>> ClassicRunningCorrelation().fit([1.0, 2.0, 3.0], [3.0, 2.0, 1.0]).corr_
+        >>> Correlation().fit([1.0, 2.0, 3.0], [3.0, 2.0, 1.0]).corr_
         -1.0
     """
 
 
-class ClassicRollingCovariance(ClassicBase):
+class RollingCovariance(MLBase):
     """Sample covariance over the last ``window`` pairs and over every window.
 
     Args:
@@ -112,7 +112,7 @@ class ClassicRollingCovariance(ClassicBase):
         window: number of pairs in a window.
 
     Example:
-        >>> m = ClassicRollingCovariance(window=3).fit([1., 2., 3., 4.], [1., 2., 3., 5.])
+        >>> m = RollingCovariance(window=3).fit([1., 2., 3., 4.], [1., 2., 3., 5.])
         >>> m.cov_series_.shape
         (2,)
     """
@@ -151,17 +151,17 @@ class ClassicRollingCovariance(ClassicBase):
         return self
 
 
-class ClassicRollingCorrelation(ClassicRollingCovariance):
+class RollingCorrelation(RollingCovariance):
     """Pearson correlation over the last ``window`` pairs and over every window.
 
     Example:
-        >>> m = ClassicRollingCorrelation(window=3).fit([1., 2., 3.], [1., 2., 3.])
+        >>> m = RollingCorrelation(window=3).fit([1., 2., 3.], [1., 2., 3.])
         >>> round(m.corr_, 6)
         1.0
     """
 
 
-class ClassicAutocorrelation(ClassicBase):
+class Autocorrelation(MLBase):
     """Sample autocorrelation at a fixed lag: the standard estimator.
 
     ``r_k = sum_t (x_t - m)(x_{t+k} - m) / sum_t (x_t - m)^2`` with ``m`` the
@@ -172,7 +172,7 @@ class ClassicAutocorrelation(ClassicBase):
         lag: the lag, at least 1.
 
     Example:
-        >>> round(ClassicAutocorrelation(lag=1).fit([1., 2., 1., 2., 1.]).value_, 4)
+        >>> round(Autocorrelation(lag=1).fit([1., 2., 1., 2., 1.]).value_, 4)
         -0.8
     """
 
@@ -193,11 +193,11 @@ class ClassicAutocorrelation(ClassicBase):
         return self
 
 
-class ClassicRunningMoments(ClassicBase):
+class Moments(MLBase):
     """Mean, variance (``n - 1``), skewness, excess kurtosis, min, max, range.
 
     Example:
-        >>> m = ClassicRunningMoments().fit([1.0, 2.0, 3.0, 4.0])
+        >>> m = Moments().fit([1.0, 2.0, 3.0, 4.0])
         >>> m.mean_, round(m.var_, 4), m.ptp_
         (2.5, 1.6667, 3.0)
     """
@@ -224,11 +224,11 @@ class ClassicRunningMoments(ClassicBase):
         return self
 
 
-class ClassicRunningMomentsVector(ClassicBase):
+class ColumnMoments(MLBase):
     """The moments of every column of a matrix.
 
     Example:
-        >>> m = ClassicRunningMomentsVector().fit([[1., 10.], [3., 20.]])
+        >>> m = ColumnMoments().fit([[1., 10.], [3., 20.]])
         >>> m.mean_.tolist()
         [2.0, 15.0]
     """
@@ -240,7 +240,7 @@ class ClassicRunningMomentsVector(ClassicBase):
         A = np.asarray(X, dtype=float)
         if A.ndim == 1:
             A = A[:, None]
-        cols = [ClassicRunningMoments().fit(A[:, j]) for j in range(A.shape[1])]
+        cols = [Moments().fit(A[:, j]) for j in range(A.shape[1])]
         self.mean_ = np.array([c.mean_ for c in cols])
         self.var_ = np.array([c.var_ for c in cols])
         self.skewness_ = np.array([c.skewness_ for c in cols])
@@ -250,7 +250,7 @@ class ClassicRunningMomentsVector(ClassicBase):
         return self
 
 
-class ClassicEWStats(ClassicBase):
+class EWStats(MLBase):
     """Exponentially weighted mean and variance of the whole series.
 
     The recursion of West (1979), ``mu_t = mu_{t-1} + a d_t``,
@@ -263,7 +263,7 @@ class ClassicEWStats(ClassicBase):
         feature: name of the channel (kept for the online pair).
 
     Example:
-        >>> round(ClassicEWStats(alpha=0.5).fit([1.0, 3.0]).mean_, 4)
+        >>> round(EWStats(alpha=0.5).fit([1.0, 3.0]).mean_, 4)
         2.0
     """
 
@@ -290,7 +290,7 @@ class ClassicEWStats(ClassicBase):
         return self
 
 
-class _ExactQuantile(ClassicBase):
+class _ExactQuantile(MLBase):
     """Exact quantiles of the whole dataset, the target of a quantile sketch."""
 
     def __init__(self, feature: str | None = None) -> None:
@@ -311,7 +311,7 @@ class _ExactQuantile(ClassicBase):
         return float(np.quantile(self.sorted_, q, method="lower"))
 
 
-class ClassicDDSketch(_ExactQuantile):
+class DDSketch(_ExactQuantile):
     """Exact quantiles: what DDSketch (Masson et al. 2019) approximates.
 
     Args:
@@ -320,7 +320,7 @@ class ClassicDDSketch(_ExactQuantile):
         feature: name of the channel.
 
     Example:
-        >>> ClassicDDSketch().fit([1.0, 2.0, 3.0]).quantile(0.5)
+        >>> DDSketch().fit([1.0, 2.0, 3.0]).quantile(0.5)
         2.0
     """
 
@@ -332,7 +332,7 @@ class ClassicDDSketch(_ExactQuantile):
         self.max_buckets = max_buckets
 
 
-class ClassicTDigest(_ExactQuantile):
+class TDigest(_ExactQuantile):
     """Exact quantiles: what the t-digest (Dunning 2019) approximates.
 
     Args:
@@ -341,7 +341,7 @@ class ClassicTDigest(_ExactQuantile):
         feature: name of the channel.
 
     Example:
-        >>> ClassicTDigest().fit([1.0, 2.0, 3.0, 4.0]).quantile(0.5)
+        >>> TDigest().fit([1.0, 2.0, 3.0, 4.0]).quantile(0.5)
         2.0
     """
 
@@ -356,7 +356,7 @@ class ClassicTDigest(_ExactQuantile):
         self.buffer_size = buffer_size
 
 
-class ClassicRollingMedianVector(ClassicBase):
+class RollingMedian(MLBase):
     """Median over every window and over the last window, per column.
 
     Args:
@@ -364,7 +364,7 @@ class ClassicRollingMedianVector(ClassicBase):
         features: names of the columns (kept for the online pair).
 
     Example:
-        >>> m = ClassicRollingMedianVector(window=3).fit([1., 5., 2., 8.])
+        >>> m = RollingMedian(window=3).fit([1., 5., 2., 8.])
         >>> m.median_.tolist()
         [5.0]
     """
@@ -388,7 +388,7 @@ class ClassicRollingMedianVector(ClassicBase):
         return self
 
 
-class ClassicOnlineShrinkageCovariance(ClassicBase):
+class ShrinkageCovariance(MLBase):
     """Linear shrinkage toward ``(1/p) I`` on the sample covariance of all rows.
 
     Eq. (4.3) and (4.4), page 12 of Bodnar, Gupta and Parolya (2014):
@@ -403,7 +403,7 @@ class ClassicOnlineShrinkageCovariance(ClassicBase):
     Example:
         >>> import numpy as np
         >>> X = np.random.default_rng(0).normal(size=(30, 3))
-        >>> ClassicOnlineShrinkageCovariance(3).fit(X).shrunk_.shape
+        >>> ShrinkageCovariance(3).fit(X).shrunk_.shape
         (3, 3)
     """
 
@@ -430,7 +430,7 @@ class ClassicOnlineShrinkageCovariance(ClassicBase):
         return self
 
 
-class ClassicCountMinSketch(ClassicBase):
+class CountMinSketch(MLBase):
     """Exact item counts: what the Count-Min sketch approximates.
 
     Args:
@@ -440,7 +440,7 @@ class ClassicCountMinSketch(ClassicBase):
         seed: seed of the online sketch (kept for the pair).
 
     Example:
-        >>> ClassicCountMinSketch().fit(["a", "b", "a"]).estimate("a")
+        >>> CountMinSketch().fit(["a", "b", "a"]).estimate("a")
         2
     """
 
@@ -466,7 +466,7 @@ class ClassicCountMinSketch(ClassicBase):
         return int(self.counts_.get(item, 0))
 
 
-class ClassicHyperLogLog(ClassicBase):
+class HyperLogLog(MLBase):
     """Exact number of distinct items: what HyperLogLog approximates.
 
     Args:
@@ -475,7 +475,7 @@ class ClassicHyperLogLog(ClassicBase):
         seed: seed of the online sketch (kept for the pair).
 
     Example:
-        >>> ClassicHyperLogLog().fit(["a", "b", "a"]).count_distinct_
+        >>> HyperLogLog().fit(["a", "b", "a"]).count_distinct_
         2
     """
 
@@ -493,7 +493,7 @@ class ClassicHyperLogLog(ClassicBase):
         return self
 
 
-class ClassicBloomFilter(ClassicBase):
+class BloomFilter(MLBase):
     """Exact set membership: what the Bloom filter approximates.
 
     Args:
@@ -503,7 +503,7 @@ class ClassicBloomFilter(ClassicBase):
         seed: seed of the online filter (kept for the pair).
 
     Example:
-        >>> ClassicBloomFilter().fit(["a"]).check("b")
+        >>> BloomFilter().fit(["a"]).check("b")
         False
     """
 
@@ -529,7 +529,7 @@ class ClassicBloomFilter(ClassicBase):
         return item in self.set_
 
 
-class ClassicSpaceSaving(ClassicBase):
+class SpaceSaving(MLBase):
     """Exact most frequent items: what Space-Saving approximates.
 
     Args:
@@ -537,7 +537,7 @@ class ClassicSpaceSaving(ClassicBase):
         feature: name of the channel.
 
     Example:
-        >>> ClassicSpaceSaving(k=1).fit(["a", "b", "a"]).top()
+        >>> SpaceSaving(k=1).fit(["a", "b", "a"]).top()
         [('a', 2)]
     """
 
