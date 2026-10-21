@@ -47,6 +47,8 @@ Xavier NX 4230.41 mW
 
 The four lines are the ones of Table I, page 4: AGX Orin `1.02x + 3115.39`, Xavier NX `1.10x + 3130.41`, TX2 `0.90x + 1998.80`, Nano `1.11x + 232.60`, with errors of 3%, 2%, 3%, 0.8%. The default of every function that could apply them is to leave the reading as it is: the owner decides whether the calibration holds on a different setup.
 
+![LENS Jetson power trace (left) and joules per 1000 samples of the batch and online models (right)](../assets/jetson_energy/jetson_energy.png)
+
 ## 2. The benchmark: online against batch, paired by seed
 
 For every seed the benchmark builds the same stream of [Static vs online](static_vs_online.md), splits it 50/50, fits the batch CART tree on the training half, and lets the online Hoeffding tree predict and learn on the test half. A power source is started and stopped around each model; the wall time, the CPU time and the net energy are written per run, and the runs of the two models are paired by seed. The idle power is measured for `idle_s` seconds before the runs and subtracted.
