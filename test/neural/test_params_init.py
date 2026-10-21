@@ -9,6 +9,7 @@ import pytest
 
 from dense_armor.utility.neural.init import (
     fan_in,
+    glorot_uniform,
     he_normal,
     xavier_normal,
     zeros_bias,
@@ -97,3 +98,24 @@ def test_zeros_bias_shape_and_values():
     b = zeros_bias(3)
     assert b.shape == (3,)
     assert bool(jnp.all(b == 0.0))
+
+
+def test_glorot_uniform_is_bounded_by_sqrt6_over_sum():
+    key = jax.random.PRNGKey(0)
+    w = glorot_uniform(key, (1024, 1024))
+    bound = (6.0 / (1024 + 1024)) ** 0.5
+    assert bool(jnp.all(jnp.abs(w) <= bound + 1e-6))
+    assert float(jnp.std(w)) > 0.0
+
+
+def test_glorot_uniform_matches_the_formula_at_scale():
+    key = jax.random.PRNGKey(3)
+    w = glorot_uniform(key, (256, 256))
+    expected_std = (6.0 / (256 + 256)) ** 0.5 / (3.0 ** 0.5)
+    std = float(jnp.std(w))
+    assert abs(std - expected_std) / expected_std < 0.05
+
+
+def test_glorot_uniform_empty_shape_raises():
+    with pytest.raises(ValueError, match="must not be empty"):
+        glorot_uniform(jax.random.PRNGKey(0), ())

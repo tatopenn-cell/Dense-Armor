@@ -111,3 +111,56 @@ class BCEWithLogits:
         if self._logits is None or self._targets is None:
             raise RuntimeError("call forward() before backward()")
         return bce_with_logits_backward(self._logits, self._targets)
+
+
+def huber_forward(pred: jax.Array, target: jax.Array,
+                  delta: float = 1.0) -> jax.Array:
+    """Mean of the Huber loss with parameter ``delta``.
+
+    The formula is the one in Chinot (2019), page 4:
+    ``l(u, y) = (1/2)(y - u)**2`` if ``|u - y| <= delta``,
+    ``delta*|y - u| - delta**2/2`` otherwise. With ``r = pred - target``,
+    the loss is ``(1/2) r**2`` if ``|r| <= delta`` and
+    ``delta*(|r| - delta/2)`` otherwise.
+    """
+    if delta <= 0.0:
+        raise ValueError(f"delta must be positive, got {delta}")
+    r = pred - target
+    small = 0.5 * r * r
+    big = delta * (jnp.abs(r) - 0.5 * delta)
+    return jnp.mean(jnp.where(jnp.abs(r) <= delta, small, big))
+
+
+def huber_backward(pred: jax.Array, target: jax.Array,
+                   delta: float = 1.0) -> jax.Array:
+    """Gradient of the Huber loss with respect to ``pred``.
+
+    ``clip(pred - target, -delta, delta) / n``, with ``n`` the number of
+    elements. The clip is the derivative of the loss in the two branches:
+    ``r`` inside the quadratic region, ``delta*sign(r)`` outside.
+    """
+    if delta <= 0.0:
+        raise ValueError(f"delta must be positive, got {delta}")
+    r = pred - target
+    return jnp.clip(r, -delta, delta) / jnp.size(r)
+
+
+class Huber:
+    """Huber loss with a cached last prediction and target."""
+
+    def __init__(self, delta: float = 1.0) -> None:
+        if delta <= 0.0:
+            raise ValueError(f"delta must be positive, got {delta}")
+        self.delta = float(delta)
+        self._pred: jax.Array | None = None
+        self._target: jax.Array | None = None
+
+    def forward(self, pred: jax.Array, target: jax.Array) -> jax.Array:
+        self._pred = pred
+        self._target = target
+        return huber_forward(pred, target, self.delta)
+
+    def backward(self) -> jax.Array:
+        if self._pred is None or self._target is None:
+            raise RuntimeError("call forward() before backward()")
+        return huber_backward(self._pred, self._target, self.delta)

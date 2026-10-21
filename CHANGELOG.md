@@ -5,7 +5,7 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 ## [Unreleased]
 
 ### Added
-- `dense_armor/utility/neural/`: `Param`, `he_normal`, `xavier_normal`, five activations and three losses with `forward`/`backward`, and `gradcheck` against central finite differences; `docs/neural/index.md` with the guide and the figure of the five activations.
+- `dense_armor/utility/neural/`: `Param`, `he_normal`, `xavier_normal`, `glorot_uniform`, five activations and four losses (mse, softmax cross-entropy, bce-with-logits, Huber) with `forward`/`backward`, and `gradcheck` against central finite differences; `docs/neural/index.md` with the guide and the figure of the five activations.
 ### Changed
 - The DOI of version 1.1.33 in the README badge, the README links and `CITATION.cff`.
 

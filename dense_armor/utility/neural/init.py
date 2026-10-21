@@ -63,3 +63,21 @@ def xavier_normal(key: Any, shape: tuple[int, ...]) -> jax.Array:
 def zeros_bias(n: int) -> jax.Array:
     """Zero biases of length ``n``."""
     return jnp.zeros((int(n),))
+
+
+def glorot_uniform(key: Any, shape: tuple[int, ...]) -> jax.Array:
+    """Uniform initialisation of Glorot and Bengio (2010), Eqn.(16) p.5.
+
+    ``W ~ U[-sqrt(6 / (fan_in + fan_out)), sqrt(6 / (fan_in + fan_out))]``,
+    with ``fan_in = shape[0]`` and ``fan_out = shape[1]``. For a 1-D
+    shape ``fan_out = 1``. The source is open: PMLR 9:249-256, page 5,
+    Eqn.(16). The Gaussian case of the same paper is ``xavier_normal``
+    above; the two share the scale ``1 / (fan_in + fan_out)`` and differ
+    only in the distribution.
+    """
+    if len(shape) < 1:
+        raise ValueError("shape must not be empty")
+    n_in = int(shape[0])
+    n_out = int(shape[1]) if len(shape) > 1 else 1
+    bound = (6.0 / (n_in + n_out)) ** 0.5
+    return jax.random.uniform(key, shape, minval=-bound, maxval=bound)

@@ -13,9 +13,12 @@ from dense_armor.utility.neural.gradcheck import gradcheck
 from dense_armor.utility.neural.losses import (
     MSE,
     BCEWithLogits,
+    Huber,
     SoftmaxCrossEntropy,
     bce_with_logits_backward,
     bce_with_logits_forward,
+    huber_backward,
+    huber_forward,
     mse_backward,
     mse_forward,
     softmax_cross_entropy_backward,
@@ -135,3 +138,53 @@ def test_classes_backward_before_forward_raises():
     for layer in (MSE(), SoftmaxCrossEntropy(), BCEWithLogits()):
         with pytest.raises(RuntimeError, match="call forward"):
             layer.backward()
+
+
+def test_huber_matches_hand_values():
+    import jax.numpy as jnp
+
+    from dense_armor.utility.neural.losses import huber_backward, huber_forward
+
+    p = jnp.array([1.0, 2.0])
+    t = jnp.array([1.0, 5.0])
+    v = huber_forward(p, t, delta=1.0)
+    assert abs(float(v) - 1.25) < 1e-9
+    g = huber_backward(p, t, delta=1.0)
+    assert abs(float(g[0]) - 0.0) < 1e-9
+    assert abs(float(g[1]) + 0.5) < 1e-9
+
+
+def test_huber_backward_matches_finite_differences():
+    x = _batch(11, (4,))
+    tt = _batch(12, (4,))
+
+    def f(xx):
+        return huber_forward(xx, tt, delta=0.7)
+
+    def b(xx, y, g):
+        del y
+        return g * huber_backward(xx, tt, delta=0.7)
+
+    assert gradcheck(f, b, x) < 1e-4
+
+
+def test_huber_rejects_bad_delta():
+    import pytest
+    with pytest.raises(ValueError, match="delta must be positive"):
+        huber_forward(jnp.array([1.0]), jnp.array([2.0]), delta=0.0)
+    with pytest.raises(ValueError, match="delta must be positive"):
+        huber_backward(jnp.array([1.0]), jnp.array([2.0]), delta=-1.0)
+    with pytest.raises(ValueError, match="delta must be positive"):
+        Huber(delta=0.0)
+
+
+def test_huber_class_cache_and_backward():
+    import pytest
+    layer = Huber(delta=0.5)
+    with pytest.raises(RuntimeError, match="call forward"):
+        layer.backward()
+    x = _batch(13, (3,))
+    t = _batch(14, (3,))
+    _ = layer.forward(x, t)
+    dx = layer.backward()
+    assert dx.shape == x.shape
