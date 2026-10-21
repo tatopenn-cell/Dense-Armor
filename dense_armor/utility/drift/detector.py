@@ -189,9 +189,18 @@ class CUSUMDriftDetector(DriftDetector):
         return self
 
     def expected_false_alarm_run(self) -> float:
-        """Expected number of samples between false alarms under no change."""
+        """Expected number of samples between false alarms under no change.
+
+        The formula takes the mean and the noise width as known exactly. The
+        detector estimates them on a window of ``radius * ref_mult`` samples,
+        so the run it gives is shorter: see benchmarks/cusum_false_alarm.json.
+        """
         return two_sided_arl(0.0, self.k, self.h)
 
     def expected_detection_delay(self, shift: float) -> float:
-        """Expected number of samples to detect a standardized mean shift `shift`."""
+        """Expected number of samples to detect a standardized mean shift `shift`.
+
+        The formula takes the mean and the noise width as known exactly; the
+        detector estimates them on a window of ``radius * ref_mult`` samples.
+        """
         return two_sided_arl(shift, self.k, self.h)

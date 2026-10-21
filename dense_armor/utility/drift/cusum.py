@@ -88,12 +88,15 @@ def cusum_detector(
     1998). h (the decision threshold) is NOT the commonly-cited h~4-5:
     checked directly (2026-09-03, prompted by a parallel investigation
     porting this same algorithm to a streaming detector) before shipping that
-    value -- h=5.0 gives a 100% ("adaptive") / 85% ("fixed") stream-level
-    false-alarm rate on a 1000-sample purely stable N(0,1) series (200
+    value -- h=5.0 gives a 100.0% ("adaptive") / 84.1% ("fixed") stream-level
+    false-alarm rate on a 1000-sample purely stable N(0,1) series (1000
     trials, radius=10, ref_mult=3, k=0.5), because its average run length
-    under no-change is only ~19-38 samples, nowhere near 1000. h=20.0
-    (this default) empirically gives 3.5% ("adaptive") / 15.5% ("fixed")
-    over the same 1000-sample horizon. "fixed" stays structurally more
+    under no change is about 469 samples (two_sided_arl(0, 0.5, 5.0)),
+    shorter than that 1000-sample horizon, and a reference estimated on a
+    short window makes it shorter still. h=20.0 (this default)
+    empirically gives 3.3% ("adaptive") / 12.6% ("fixed") over the same
+    1000-sample horizon (benchmarks/cusum_false_alarm.json, written by
+    benchmarks/cusum_false_alarm.py). "fixed" stays structurally more
     exposed than "adaptive" at any shared h -- its target never updates,
     so an unlucky warmup-window estimate is never self-corrected the way
     "adaptive"'s sliding reference recovers from one; not a tuning gap,

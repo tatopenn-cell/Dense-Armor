@@ -1,0 +1,37 @@
+{
+  "n_samples": 1000,
+  "trials": 1000,
+  "k": 0.5,
+  "radius": 10,
+  "ref_mult": 3,
+  "seed": 42,
+  "rows": [
+    {
+      "h": 5.0,
+      "formula_arl": 469.11118205819747,
+      "formula_alarm_in_n": 0.8813634687569354,
+      "measured": {
+        "adaptive": 1.0,
+        "fixed": 0.841
+      }
+    },
+    {
+      "h": 10.0,
+      "formula_arl": 70673.63519773011,
+      "formula_alarm_in_n": 0.014049913716172702,
+      "measured": {
+        "adaptive": 0.505,
+        "fixed": 0.389
+      }
+    },
+    {
+      "h": 20.0,
+      "formula_arl": 1556958360.0943098,
+      "formula_alarm_in_n": 6.422777284464942e-07,
+      "measured": {
+        "adaptive": 0.033,
+        "fixed": 0.126
+      }
+    }
+  ]
+}

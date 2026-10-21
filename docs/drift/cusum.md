@@ -122,6 +122,24 @@ treating the running total as a Brownian motion; the $+1.166$ is Siegmund's corr
 last jump that overshoots the threshold. The two sides combine as
 $1/\mathrm{ARL} = 1/\mathrm{ARL}^+ + 1/\mathrm{ARL}^-$.
 
+
+The formula takes the mean and the noise width as known exactly. The detector estimates them
+on a window of `radius * ref_mult` samples (30 by default), so on a stream of 1000 stable
+samples it gives more false alarms than the formula says. `benchmarks/cusum_false_alarm.py`
+runs 1000 stable series of 1000 samples for each threshold:
+
+| $h$ | formula: samples between false alarms | formula: chance of an alarm in 1000 samples | measured, `adaptive` | measured, `fixed` |
+|---|---|---|---|---|
+| 5 | 469.1 | 0.881 | 1.000 | 0.841 |
+| 10 | 70,674 | 0.014 | 0.505 | 0.389 |
+| 20 | $1.6 	imes 10^{9}$ | 0.000 | 0.033 | 0.126 |
+
+At $h = 5$ the formula already predicts a false alarm in 88% of the series, and the detector
+gives more. At $h = 20$ the formula predicts none, and the detector raises one in
+3.3% (`adaptive`) or 12.6% (`fixed`) of them: that is the cost of estimating the reference on a
+short window. `expected_false_alarm_run()` and `expected_detection_delay()` return the formula;
+read the measured columns for the cost of a threshold on a real stream.
+
 ## 5. The same estimate in your sensor's units
 
 `detectability_report` turns the ARL into numbers for a real deployment: the noise level of your
