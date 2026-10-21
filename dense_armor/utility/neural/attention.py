@@ -93,7 +93,9 @@ def scaled_dot_product_attention_backward(
     weights = jax.nn.softmax(scores, axis=-1)
     d_weights = g @ jnp.swapaxes(v, -1, -2)
     dv = jnp.swapaxes(weights, -1, -2) @ g
-    d_scores = weights * (d_weights - jnp.sum(d_weights * weights, axis=-1, keepdims=True))
+    d_scores = weights * (
+        d_weights - jnp.sum(d_weights * weights, axis=-1, keepdims=True)
+    )
     d_scores = d_scores / jnp.sqrt(d_k)
     dq = d_scores @ k
     dk = jnp.swapaxes(d_scores, -1, -2) @ q
@@ -117,12 +119,14 @@ def sinusoidal_positions(length: int, d_model: int) -> jax.Array:
         ValueError: if ``d_model`` is odd.
 
     Examples:
-        >>> import numpy as np
         >>> from dense_armor.utility.neural.attention import (
         ...     sinusoidal_positions,
         ... )
-        >>> np.round(np.asarray(sinusoidal_positions(2, 4)), 4).tolist()
-        [[0.0, 1.0, 0.0, 1.0], [0.8415, 0.5403, 0.01, 1.0]]
+        >>> pe = sinusoidal_positions(2, 4)
+        >>> [round(float(v), 4) for v in pe[0]]
+        [0.0, 1.0, 0.0, 1.0]
+        >>> [round(float(v), 4) for v in pe[1]]
+        [0.8415, 0.5403, 0.01, 0.9999]
     """
     if d_model % 2 != 0:
         raise ValueError(f"d_model must be even, got {d_model}")
@@ -167,9 +171,7 @@ class MultiHeadSelfAttention:
         causal: bool = False,
     ) -> None:
         if d_model % n_heads != 0:
-            raise ValueError(
-                f"d_model {d_model} is not divisible by n_heads {n_heads}"
-            )
+            raise ValueError(f"d_model {d_model} is not divisible by n_heads {n_heads}")
         self.d_model = d_model
         self.n_heads = n_heads
         self.d_k = d_model // n_heads
@@ -215,7 +217,12 @@ class MultiHeadSelfAttention:
         merged = self._merge_heads(attn_out)
         y = merged @ self.W_O.value
         self._cache = dict(
-            x=x, Q=Q, K=K, V=V, merged=merged, mask=mask,
+            x=x,
+            Q=Q,
+            K=K,
+            V=V,
+            merged=merged,
+            mask=mask,
         )
         return y[0] if squeeze else y
 
@@ -233,8 +240,11 @@ class MultiHeadSelfAttention:
         d_merged = g @ self.W_O.value.T
         d_attn_out = self._split_heads(d_merged)
         dQ, dK, dV = scaled_dot_product_attention_backward(
-            self._cache["Q"], self._cache["K"], self._cache["V"],
-            d_attn_out, self._cache["mask"],
+            self._cache["Q"],
+            self._cache["K"],
+            self._cache["V"],
+            d_attn_out,
+            self._cache["mask"],
         )
         dQ_m = self._merge_heads(dQ)
         dK_m = self._merge_heads(dK)
@@ -243,9 +253,7 @@ class MultiHeadSelfAttention:
         dW_Q = x_flat.T @ dQ_m.reshape(-1, D)
         dW_K = x_flat.T @ dK_m.reshape(-1, D)
         dW_V = x_flat.T @ dV_m.reshape(-1, D)
-        dX = (dQ_m @ self.W_Q.value.T
-              + dK_m @ self.W_K.value.T
-              + dV_m @ self.W_V.value.T)
+        dX = dQ_m @ self.W_Q.value.T + dK_m @ self.W_K.value.T + dV_m @ self.W_V.value.T
         self.W_Q.grad = self.W_Q.grad + dW_Q
         self.W_K.grad = self.W_K.grad + dW_K
         self.W_V.grad = self.W_V.grad + dW_V
@@ -260,7 +268,9 @@ class MultiHeadSelfAttention:
         )
 
     def step(
-        self, x_t: jax.Array, cache: tuple[jax.Array, jax.Array],
+        self,
+        x_t: jax.Array,
+        cache: tuple[jax.Array, jax.Array],
     ) -> tuple[jax.Array, tuple[jax.Array, jax.Array]]:
         """One causal step against a cache of the past."""
         x_t = jnp.asarray(x_t)
@@ -317,9 +327,7 @@ class TransformerBlock:
         dropout: float = 0.0,
     ) -> None:
         keys = jax.random.split(key, 6)
-        self.attn = MultiHeadSelfAttention(
-            d_model, n_heads, keys[0], causal=causal
-        )
+        self.attn = MultiHeadSelfAttention(d_model, n_heads, keys[0], causal=causal)
         self.ln1 = LayerNorm(d_model)
         self.ln2 = LayerNorm(d_model)
         self.ffn1 = Dense(d_model, d_ff, keys[1])
@@ -361,7 +369,11 @@ class TransformerBlock:
             ffn_out = self.dropout_ffn.forward(ffn_out, training=training)
         y = self.ln2.forward(x1 + ffn_out)
         self._cache = dict(
-            x=x, attn_out=attn_out, x1=x1, ffn_h=ffn_h, ffn_out=ffn_out,
+            x=x,
+            attn_out=attn_out,
+            x1=x1,
+            ffn_h=ffn_h,
+            ffn_out=ffn_out,
         )
         return y
 
@@ -390,7 +402,9 @@ class TransformerBlock:
         return self.attn.init_cache()
 
     def step(
-        self, x_t: jax.Array, cache: tuple[jax.Array, jax.Array],
+        self,
+        x_t: jax.Array,
+        cache: tuple[jax.Array, jax.Array],
     ) -> tuple[jax.Array, tuple[jax.Array, jax.Array]]:
         """One causal step; returns ``(y_t, new_cache)``."""
         attn_out, new_cache = self.attn.step(x_t, cache)

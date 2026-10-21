@@ -267,3 +267,21 @@ def test_transformer_encoder_learns_first_sign():
     print(f"transformer accuracies: {accs}")
     n_ok = sum(1 for a in accs if a >= 0.9)
     assert n_ok >= 4, f"only {n_ok} of 5 reached 0.9: {accs}"
+
+
+def test_small_layers_repr_and_empty_params():
+    assert repr(LastStep()) == "LastStep()"
+    assert repr(MeanOverTime()) == "MeanOverTime()"
+    assert repr(AddPositions(8)) == "AddPositions(8)"
+    assert LastStep().params() == []
+    assert MeanOverTime().params() == []
+    assert AddPositions(8).params() == []
+
+
+def test_small_layers_backward_before_forward_raises():
+    with pytest.raises(RuntimeError, match="call forward"):
+        LastStep().backward(jnp.ones((2, 3)))
+    with pytest.raises(RuntimeError, match="call forward"):
+        MeanOverTime().backward(jnp.ones((2, 3)))
+    with pytest.raises(RuntimeError, match="call forward"):
+        AddPositions(8).backward(jnp.ones((2, 4, 8)))
