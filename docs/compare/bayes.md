@@ -15,7 +15,7 @@ A naive Bayes classifier counts how often each feature value goes with each clas
 | `CategoricalNB` | abs | 5.55e-16 | 6.91e-16 | 9.16e-16 | the same counts and the same smoothing |
 | `ComplementNB` | abs | 1.67e-16 | 1.72e-16 | 2.22e-16 | the same counts and the same smoothing |
 
-Wilcoxon and A12: not computed: the classic and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two.
+Wilcoxon and A12: not computed: the machine learning and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two.
 
 ## Run it
 

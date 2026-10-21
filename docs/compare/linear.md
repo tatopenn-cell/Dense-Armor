@@ -14,7 +14,7 @@ A linear model predicts a number, or the probability of a class, as a weighted s
 | `LogisticRegression` | abs | 0.452 | 0.48 | 0.519 | the online model takes one stochastic gradient step per row, the batch model runs Newton steps to the optimum |
 | `BayesianLinearRegression` | abs | 3.55e-15 | 4.49e-15 | 4.88e-15 | the same conjugate posterior: the two differ only by rounding |
 
-Wilcoxon and A12: not computed: the classic and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two.
+Wilcoxon and A12: not computed: the machine learning and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two.
 
 ## Run it
 

@@ -82,7 +82,7 @@ class _Scaler(MLBase):
         """Apply the fitted centre and scale; columns with a scale below ``eps`` pass through."""
         A = _table(X)
         ok = np.isfinite(self.scale_) & (self.scale_ > self.eps)
-        out = A.astype(float).copy()
+        out: np.ndarray = A.astype(float).copy()
         out[:, ok] = (A[:, ok] - self.center_[ok]) / self.scale_[ok]
         return out
 

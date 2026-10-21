@@ -24,7 +24,7 @@ Before a model sees the data, the table is rescaled, some columns are dropped, t
 | `FeatureHasher` | abs | 0 | 0 | 0 |  |
 | `TextVectorizer` | abs | 7.84e-08 | 7.84e-08 | 7.84e-08 | the online matrix is float32, the batch one float64 |
 
-Wilcoxon and A12: not computed: the classic and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two.
+Wilcoxon and A12: not computed: the machine learning and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two.
 
 ## Run it
 

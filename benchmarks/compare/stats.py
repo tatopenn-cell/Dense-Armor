@@ -1,4 +1,4 @@
-"""Classic against online, family ``stats``: the difference on synthetic data."""
+"""Machine learning against online, family ``stats``: the difference on synthetic data."""
 
 from __future__ import annotations
 

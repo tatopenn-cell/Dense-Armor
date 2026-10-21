@@ -1,10 +1,10 @@
-"""Shared helpers of the classic against online comparison.
+"""Shared helpers of the machine learning against online comparison.
 
-A case is a function ``seed -> (classic, online, kind)``: the two outputs on
+A case is a function ``seed -> (machine learning output, online output, kind)``: the two outputs on
 the same synthetic data and ``kind``, ``"abs"`` for the largest absolute
 difference or ``"rel"`` for the largest relative difference (the error of a
 sketch against the exact value). ``run`` runs the cases on 10 seeds
-(3 with ``--smoke``) and writes ``benchmarks/offline/<family>.json``.
+(3 with ``--smoke``) and writes ``benchmarks/compare/<family>.json``.
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 NOT_COMPUTED = (
-    "not computed: the classic and the online value are two outputs of the same "
+    "not computed: the machine learning and the online value are two outputs of the same "
     "formula on the same data, so the table gives their difference and not a "
     "ranking of the two"
 )
@@ -34,9 +34,9 @@ def feed(online, rows):
     return online
 
 
-def diff(classic, online, kind: str) -> float:
+def diff(ml, online, kind: str) -> float:
     """Largest absolute or relative difference between two outputs."""
-    a = np.asarray(classic, dtype=float)
+    a = np.asarray(ml, dtype=float)
     b = np.asarray(online, dtype=float)
     d = np.abs(a - b)
     if kind == "rel":

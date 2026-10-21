@@ -14,7 +14,7 @@ A binary classifier answers yes or no. To choose among many classes, these strat
 | `OneVsOneClassifier` | abs | 0.0475 | 0.0865 | 0.1 | difference between the test accuracies; the online binary models see each row once |
 | `OutputCodeClassifier` | abs | 0.0325 | 0.0805 | 0.085 | difference between the test accuracies; the online binary models see each row once |
 
-Wilcoxon and A12: not computed: the classic and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two.
+Wilcoxon and A12: not computed: the machine learning and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two.
 
 ## Run it
 

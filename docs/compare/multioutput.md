@@ -16,7 +16,7 @@ Some problems have several targets at once, for example the position and the spe
 | `ClassifierChain` | abs | 0.0125 | 0.0215 | 0.035 | difference between the test accuracies; the online models see each row once |
 | `ProbabilisticClassifierChain` | abs | 0.015 | 0.026 | 0.035 | difference between the test accuracies; the online models see each row once |
 
-Wilcoxon and A12: not computed: the classic and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two.
+Wilcoxon and A12: not computed: the machine learning and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two.
 
 ## Run it
 

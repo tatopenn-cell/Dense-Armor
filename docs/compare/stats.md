@@ -27,7 +27,7 @@ A statistic such as a mean, a variance or a correlation is computed on a whole t
 | `BloomFilter` | abs | 0 | 0 | 0 | the filter has false positives at rate p_false and no false negatives |
 | `SpaceSaving` | rel | 1 | 2.3 | 2.72 | the counts of the kept items are upper bounds of the exact counts |
 
-Wilcoxon and A12: not computed: the classic and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two.
+Wilcoxon and A12: not computed: the machine learning and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two.
 
 ## Run it
 

@@ -13,7 +13,7 @@ A nearest-neighbour model answers a question about a new row by looking at the r
 | `KNNClassifier` | abs | 0 | 0 | 0 | the online model searches a window as large as the table, so the two see the same rows |
 | `KNNRegressor` | abs | 3.3e-10 | 4.81e-10 | 5.6e-10 | the online model searches a window as large as the table, so the two see the same rows |
 
-Wilcoxon and A12: not computed: the classic and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two.
+Wilcoxon and A12: not computed: the machine learning and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two.
 
 ## Run it
 

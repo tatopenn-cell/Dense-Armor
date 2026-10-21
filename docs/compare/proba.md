@@ -14,7 +14,7 @@ A distribution summarises a sample in a few numbers. These classes keep the post
 | `Gaussian` | abs | 3.11e-15 | 9.06e-15 | 1.07e-14 | the same conjugate update, counted one row at a time |
 | `Multinomial` | abs | 0 | 0 | 0 | the same conjugate update, counted one row at a time |
 
-Wilcoxon and A12: not computed: the classic and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two.
+Wilcoxon and A12: not computed: the machine learning and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two.
 
 ## Run it
 

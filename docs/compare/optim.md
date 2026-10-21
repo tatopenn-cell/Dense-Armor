@@ -16,7 +16,7 @@ An optimiser moves the weights downhill on a loss. These classes take the gradie
 | `FTRLProximal` | abs | 0 | 0 | 0 | the same update rule applied to the same gradient |
 | `OnlineNewtonStep` | abs | 1.81e-10 | 5.88e-09 | 3.85e-08 | the same update rule applied to the same gradient |
 
-Wilcoxon and A12: not computed: the classic and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two.
+Wilcoxon and A12: not computed: the machine learning and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two.
 
 ## Run it
 

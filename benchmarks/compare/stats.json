@@ -2,7 +2,7 @@
   "family": "stats",
   "seeds": 10,
   "synthetic": true,
-  "wilcoxon_a12": "not computed: the classic and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two",
+  "wilcoxon_a12": "not computed: the machine learning and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two",
   "classes": {
     "RunningCovariance": {
       "kind": "abs",
