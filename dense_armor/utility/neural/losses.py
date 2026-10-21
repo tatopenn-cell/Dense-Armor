@@ -26,8 +26,7 @@ def mse_backward(pred: jax.Array, target: jax.Array) -> jax.Array:
     return 2.0 * d / jnp.size(d)
 
 
-def softmax_cross_entropy_forward(logits: jax.Array,
-                                  labels: jax.Array) -> jax.Array:
+def softmax_cross_entropy_forward(logits: jax.Array, labels: jax.Array) -> jax.Array:
     """Mean over the batch of ``-log softmax(logits)[label]``, in log-sum-exp form."""
     m = jnp.max(logits, axis=-1, keepdims=True)
     lse = m + jnp.log(jnp.sum(jnp.exp(logits - m), axis=-1, keepdims=True))
@@ -35,8 +34,7 @@ def softmax_cross_entropy_forward(logits: jax.Array,
     return -jnp.mean(picked)
 
 
-def softmax_cross_entropy_backward(logits: jax.Array,
-                                   labels: jax.Array) -> jax.Array:
+def softmax_cross_entropy_backward(logits: jax.Array, labels: jax.Array) -> jax.Array:
     """``(softmax(logits) - onehot(labels)) / n``."""
     y = jax.nn.softmax(logits, axis=-1)
     n = logits.shape[0]
@@ -44,8 +42,7 @@ def softmax_cross_entropy_backward(logits: jax.Array,
     return (y - onehot) / n
 
 
-def bce_with_logits_forward(logits: jax.Array,
-                            targets: jax.Array) -> jax.Array:
+def bce_with_logits_forward(logits: jax.Array, targets: jax.Array) -> jax.Array:
     """Mean over the batch of ``max(z,0) - z*t + log(1 + exp(-|z|))``."""
     z = logits
     t = targets
@@ -53,8 +50,7 @@ def bce_with_logits_forward(logits: jax.Array,
     return jnp.mean(per)
 
 
-def bce_with_logits_backward(logits: jax.Array,
-                             targets: jax.Array) -> jax.Array:
+def bce_with_logits_backward(logits: jax.Array, targets: jax.Array) -> jax.Array:
     """``(sigmoid(z) - t) / n``, with ``n`` the number of elements."""
     return (jax.nn.sigmoid(logits) - targets) / jnp.size(logits)
 
@@ -113,8 +109,7 @@ class BCEWithLogits:
         return bce_with_logits_backward(self._logits, self._targets)
 
 
-def huber_forward(pred: jax.Array, target: jax.Array,
-                  delta: float = 1.0) -> jax.Array:
+def huber_forward(pred: jax.Array, target: jax.Array, delta: float = 1.0) -> jax.Array:
     """Mean of the Huber loss with parameter ``delta``.
 
     The formula is the one in Chinot (2019), page 4:
@@ -131,8 +126,7 @@ def huber_forward(pred: jax.Array, target: jax.Array,
     return jnp.mean(jnp.where(jnp.abs(r) <= delta, small, big))
 
 
-def huber_backward(pred: jax.Array, target: jax.Array,
-                   delta: float = 1.0) -> jax.Array:
+def huber_backward(pred: jax.Array, target: jax.Array, delta: float = 1.0) -> jax.Array:
     """Gradient of the Huber loss with respect to ``pred``.
 
     ``clip(pred - target, -delta, delta) / n``, with ``n`` the number of

@@ -42,8 +42,7 @@ class Param:
         nv = jnp.asarray(new_value)
         if nv.shape != self.value.shape:
             raise ValueError(
-                f"optimizer.step returned shape {nv.shape}, "
-                f"expected {self.value.shape}"
+                f"optimizer.step returned shape {nv.shape}, expected {self.value.shape}"
             )
         self.value = nv
         return self

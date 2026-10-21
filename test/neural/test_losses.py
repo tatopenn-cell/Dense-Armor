@@ -170,6 +170,7 @@ def test_huber_backward_matches_finite_differences():
 
 def test_huber_rejects_bad_delta():
     import pytest
+
     with pytest.raises(ValueError, match="delta must be positive"):
         huber_forward(jnp.array([1.0]), jnp.array([2.0]), delta=0.0)
     with pytest.raises(ValueError, match="delta must be positive"):
@@ -180,6 +181,7 @@ def test_huber_rejects_bad_delta():
 
 def test_huber_class_cache_and_backward():
     import pytest
+
     layer = Huber(delta=0.5)
     with pytest.raises(RuntimeError, match="call forward"):
         layer.backward()

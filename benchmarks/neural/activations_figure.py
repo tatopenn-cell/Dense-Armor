@@ -45,7 +45,9 @@ d_sig = np.asarray(sigmoid_backward(x, y_sig, g))
 y_tanh = np.asarray(tanh_forward(x))
 d_tanh = np.asarray(tanh_backward(x, y_tanh, g))
 
-y_softmax_1d = np.asarray(softmax_forward(jnp.stack([x, jnp.zeros_like(x)], axis=-1)))[:, 0]
+y_softmax_1d = np.asarray(softmax_forward(jnp.stack([x, jnp.zeros_like(x)], axis=-1)))[
+    :, 0
+]
 y_softmax_1d_neg = 1.0 - y_softmax_1d
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4.2))
