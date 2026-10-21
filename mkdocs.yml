@@ -132,15 +132,13 @@ nav:
           - protect/index.md
           - Arbiter: protect/arbiter.md
 
-  - Learning:
+  - Machine learning:
       - Online learning:
           - learn/index.md
           - Calibration: learn/calibration.md
           - Metric learning: learn/metric_learning.md
           - Online classifiers: learn/online_classifiers.md
           - Online dynamics: learn/online_dynamics.md
-      - Deep Learning: neural/index.md
-      - Layers: neural/layers.md
       - Optimizers:
           - optim/index.md
           - SGD: optim/sgd.md
@@ -167,6 +165,10 @@ nav:
       - Recommenders: reco/index.md
       - Offline, the whole dataset at once: offline.md
       - Rules: rules/index.md
+
+  - Deep learning:
+      - Foundations: neural/index.md
+      - Layers: neural/layers.md
 
   - Distributions:
       - proba/index.md
