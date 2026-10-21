@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import jax
 import jax.numpy as jnp
+import numpy as np
 import pytest
 
 from dense_armor.utility.neural.adapter import AsTransformer
@@ -152,3 +153,61 @@ def test_adapter_non_numeric_value_counts_as_missing():
     out = a.transform_one({"a": "not-a-number", "b": 0.0, "c": 0.0})
     assert out == {}
     assert a.n_missing == 1
+
+
+def test_layernorm_backward_1d_matches_batch_row():
+    from dense_armor.utility.neural.norm import LayerNorm
+
+    x_row = jnp.array([0.112, -0.406, 2.108, -0.268])
+    x_batch = x_row[None, :]
+
+    ln1 = LayerNorm(4)
+    ln1.forward(x_row)
+    g1 = jnp.ones(4)
+    dx1 = np.asarray(ln1.backward(g1))
+    gain1 = np.asarray(ln1.gain.grad)
+    bias1 = np.asarray(ln1.bias.grad)
+
+    ln2 = LayerNorm(4)
+    ln2.forward(x_batch)
+    g2 = jnp.ones((1, 4))
+    dx2 = np.asarray(ln2.backward(g2))
+    gain2 = np.asarray(ln2.gain.grad)
+    bias2 = np.asarray(ln2.bias.grad)
+
+    assert np.allclose(dx1, dx2[0], atol=1e-6)
+    assert np.allclose(gain1, gain2, atol=1e-6)
+    assert np.allclose(bias1, bias2, atol=1e-6)
+    assert not np.allclose(gain1, gain1[0])
+
+
+def test_batchnorm_backward_after_eval_raises():
+    from dense_armor.utility.neural.norm import BatchNorm
+
+    bn = BatchNorm(3)
+    bn.forward(jnp.ones((4, 3)), training=True)
+    bn.forward(jnp.ones((1, 3)), training=False)
+    with pytest.raises(RuntimeError, match="backward after an evaluation"):
+        bn.backward(jnp.ones((1, 3)))
+
+
+def test_dropout_backward_after_eval_raises():
+    d = Dropout(0.5, jax.random.PRNGKey(0))
+    d.forward(jnp.ones(4), training=True)
+    d.forward(jnp.ones(4), training=False)
+    with pytest.raises(RuntimeError, match="backward after an evaluation"):
+        d.backward(jnp.ones(4))
+
+
+def test_batchnorm_training_rejects_1d_input():
+    from dense_armor.utility.neural.norm import BatchNorm
+
+    bn = BatchNorm(3)
+    with pytest.raises(ValueError, match="2-D batch"):
+        bn.forward(jnp.ones(3), training=True)
+
+
+def test_embedding_rejects_float_ids():
+    e = Embedding(10, 4, jax.random.PRNGKey(0))
+    with pytest.raises(ValueError, match="integer array"):
+        e.forward(jnp.array([1.0, 2.0]))

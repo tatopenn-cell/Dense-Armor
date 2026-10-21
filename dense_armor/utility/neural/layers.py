@@ -24,7 +24,6 @@ from typing import Any
 
 import jax
 import jax.numpy as jnp
-import numpy as np
 
 from dense_armor.utility.neural.init import (
     he_normal,
@@ -200,25 +199,22 @@ class Embedding:
     def forward(self, ids: jax.Array, training: bool = True) -> jax.Array:
         """Return ``E[ids]`` for an integer array of any shape."""
         del training
-        ids = jnp.asarray(ids, dtype=jnp.int32)
-        if bool(jnp.any(ids < 0)) or bool(jnp.any(ids >= self.n_tokens)):
+        ids_arr = jnp.asarray(ids)
+        if not jnp.issubdtype(ids_arr.dtype, jnp.integer):
+            raise ValueError(f"ids must be an integer array, got dtype {ids_arr.dtype}")
+        if bool(jnp.any(ids_arr < 0)) or bool(jnp.any(ids_arr >= self.n_tokens)):
             raise ValueError(
                 f"ids must lie in [0, {self.n_tokens}), "
-                f"got min={int(ids.min())} max={int(ids.max())}"
+                f"got min={int(ids_arr.min())} max={int(ids_arr.max())}"
             )
-        self.ids_ = ids
-        return self.E.value[ids]
+        self.ids_ = ids_arr
+        return self.E.value[ids_arr]
 
     def backward(self, g: jax.Array) -> None:
         """Add ``g`` into the rows of ``E.grad``; repeated ids add up."""
         if self.ids_ is None:
             raise RuntimeError("call forward() before backward()")
-        rows = np.asarray(self.ids_).reshape(-1)
-        g2 = np.asarray(g).reshape(len(rows), self.dim)
-        add = np.zeros_like(np.asarray(self.E.grad))
-        for i, r in enumerate(rows):
-            add[r] += g2[i]
-        self.E.grad = self.E.grad + jnp.asarray(add)
+        self.E.grad = self.E.grad.at[self.ids_].add(jnp.asarray(g))
         return None
 
     def params(self) -> list[Param]:
@@ -273,7 +269,9 @@ class Dropout:
     def forward(self, x: jax.Array, training: bool = True) -> jax.Array:
         """Random dropout in training mode, identity in evaluation."""
         if not training:
+            self.mode_ = "eval"
             return x
+        self.mode_ = "train"
         self.key, sub = jax.random.split(self.key)
         keep = 1.0 - self.p
         mask = (jax.random.uniform(sub, x.shape) < keep).astype(x.dtype)
@@ -284,6 +282,11 @@ class Dropout:
         """``g * mask / (1 - p)`` with the mask of the last training call."""
         if self.mask_ is None:
             raise RuntimeError("call forward() in training mode before backward()")
+        if getattr(self, "mode_", "train") == "eval":
+            raise RuntimeError(
+                "backward after an evaluation forward has no training "
+                "gradient; call forward(training=True) before backward()"
+            )
         return g * self.mask_ / (1.0 - self.p)
 
     def params(self) -> list[Param]:

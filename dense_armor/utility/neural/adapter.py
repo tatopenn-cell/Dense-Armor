@@ -26,6 +26,13 @@ class AsTransformer(Transformer):
     element. A missing key, ``None``, NaN or a non-numeric value
     returns ``{}`` and increments ``n_missing``.
 
+    ``budget_s = 0.015`` is ten times the p99 of ``transform_one``
+    measured on this Colab runtime (CPU, 2 cores, 1.6 GHz) with a
+    ``Dense(3, 2)`` layer and three input keys; it is never below the
+    floor ``1e-3`` that ``check_estimator`` requires. ``memory_class``
+    is ``"O(1)"``: the adapter stores only the input keys and the
+    layer, and the layer's own state does not grow with the stream.
+
     Args:
         layer: any object with ``forward(x, training=True)``.
         input_keys: the dict keys read, in order, into the input vector.

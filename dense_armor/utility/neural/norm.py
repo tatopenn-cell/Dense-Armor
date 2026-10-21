@@ -36,7 +36,7 @@ class BatchNorm:
         n_features: number of features in the last axis.
         eps: constant added to the variance for numerical stability.
             The paper (page 3) does not give a value; ``1e-5`` is our
-            choice, the value used by the reference implementation.
+            choice.
         momentum: weight of the current batch in the running average.
             The paper (page 4) does not give a value; ``0.1`` is our
             choice.
@@ -71,6 +71,7 @@ class BatchNorm:
         self.xhat_: jax.Array | None = None
         self.std_: jax.Array | None = None
         self.m_: int = 0
+        self.mode_: str = "train"
 
     def forward(self, x: jax.Array, training: bool = True) -> jax.Array:
         """Normalise the batch or apply the running statistics."""
@@ -81,7 +82,13 @@ class BatchNorm:
             xhat = (x - mu) / jnp.sqrt(var + self.eps)
             self.xhat_ = xhat
             self.std_ = jnp.sqrt(var + self.eps)
+            self.mode_ = "eval"
             return self.gamma.value * xhat + self.beta.value
+        if x.ndim == 1:
+            raise ValueError(
+                "BatchNorm needs a 2-D batch of shape (m, n_features), "
+                f"got 1-D of shape {x.shape}"
+            )
         m = x.shape[0]
         if m < 2:
             raise ValueError(f"BatchNorm training needs at least two samples, got {m}")
@@ -92,6 +99,7 @@ class BatchNorm:
         self.xhat_ = xhat
         self.std_ = std
         self.m_ = int(m)
+        self.mode_ = "train"
         var_unbiased = var * (m / (m - 1))
         mo = self.momentum
         self.running_mean_ = (1.0 - mo) * self.running_mean_ + mo * np.asarray(mu)
@@ -104,6 +112,11 @@ class BatchNorm:
         """Return ``dx`` and add to ``gamma.grad`` and ``beta.grad``."""
         if self.xhat_ is None or self.std_ is None:
             raise RuntimeError("call forward() before backward()")
+        if self.mode_ == "eval":
+            raise RuntimeError(
+                "backward after an evaluation forward has no training "
+                "gradient; call forward(training=True) before backward()"
+            )
         xhat = self.xhat_
         std = self.std_
         self.gamma.grad = self.gamma.grad + jnp.sum(g * xhat, axis=0)
@@ -167,8 +180,9 @@ class LayerNorm:
             raise RuntimeError("call forward() before backward()")
         xhat = self.xhat_
         std = self.std_
-        self.gain.grad = self.gain.grad + jnp.sum(g * xhat, axis=0)
-        self.bias.grad = self.bias.grad + jnp.sum(g, axis=0)
+        sum_axes = tuple(range(g.ndim - 1))
+        self.gain.grad = self.gain.grad + jnp.sum(g * xhat, axis=sum_axes)
+        self.bias.grad = self.bias.grad + jnp.sum(g, axis=sum_axes)
         n = self.n_features
         dxhat = g * self.gain.value
         dx = (
