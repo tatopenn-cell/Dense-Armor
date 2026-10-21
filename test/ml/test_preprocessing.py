@@ -44,9 +44,11 @@ def test_ew_scaler_hand_case():
 
 
 def test_robust_scaler_hand_case():
-    s = RobustScaler(window=3).fit([[100.0], [1.0], [2.0], [9.0]])
+    X = [[100.0], [1.0], [2.0], [9.0]]
+    s = RobustScaler(window=3, scale=1.0).fit(X)
     assert s.center_.tolist() == [2.0] and s.scale_.tolist() == [1.0]
     assert s.transform([[5.0]]).tolist() == [[3.0]]
+    assert RobustScaler(window=3).fit(X).scale_.tolist() == [1.4826]
     flat = RobustScaler(window=3).fit([[4.0], [4.0], [4.0]])
     assert flat.transform([[9.0]]).tolist() == [[9.0]]
 
@@ -77,11 +79,15 @@ def test_select_k_best_hand_case():
 
 
 def test_joint_derivatives_hand_case():
-    q = [[0.0, 0.0], [1.0, 2.0], [4.0, 2.0], [9.0, 2.0]]
+    q = [[0.0, 5.0], [1.0, 5.0], [8.0, 5.0], [27.0, 5.0]]
     d = JointDerivatives().fit(q, [0.0, 1.0, 2.0, 3.0])
-    assert d.qd_.tolist() == [[0.0, 0.0], [1.0, 2.0], [3.0, 0.0], [5.0, 0.0]]
-    assert d.qdd_.tolist() == [[0.0, 0.0], [1.0, 2.0], [2.0, -2.0], [2.0, 0.0]]
-    assert d.jerk_.tolist() == [[0.0, 0.0], [1.0, 2.0], [1.0, -4.0], [0.0, 2.0]]
+    assert d.qd_[0].tolist() == [0.0, 0.0] and d.qd_[1].tolist() == [1.0, 0.0]
+    assert np.allclose(d.qd_[2], [10.0, 0.0]) and np.allclose(d.qdd_[2], [6.0, 0.0])
+    assert np.allclose(d.jerk_[2], [0.0, 0.0])
+    assert np.allclose(d.qd_[3], [27.0, 0.0]) and np.allclose(d.qdd_[3], [18.0, 0.0])
+    assert np.allclose(d.jerk_[3], [6.0, 0.0])
+    one = JointDerivatives(order=1).fit(q, [0.0, 1.0, 2.0, 3.0])
+    assert one.qdd_.sum() == 0.0 and np.allclose(one.qd_[3], [19.0, 0.0])
 
 
 def test_joint_power_hand_case():

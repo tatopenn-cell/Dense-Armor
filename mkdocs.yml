@@ -69,8 +69,8 @@ plugins:
 
 nav:
   - Machine learning:
-      - Statistics and sketches: ml/stats.md
       - Preprocessing: ml/preprocessing.md
+      - Statistics and sketches: ml/stats.md
   - Online learning:
       - Online learning:
           - learn/index.md
@@ -173,6 +173,9 @@ nav:
           - Dense-Armor vs Kalman: vs_kalman.md
           - Adversarial robustness: robustness.md
           - Known limits: limits.md
+          - Machine learning against online learning:
+              - Preprocessing: compare/preprocessing.md
+              - Statistics and sketches: compare/stats.md
       - Applications:
           - Finance:
               - finance/index.md

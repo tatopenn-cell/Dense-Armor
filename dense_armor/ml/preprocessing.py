@@ -132,26 +132,36 @@ class EWScaler(_Scaler):
 class RobustScaler(_Scaler):
     """Centre on the median and scale by the MAD of the last ``window`` rows.
 
+    The scale is ``1.4826`` times the median absolute deviation, the factor
+    that makes it a consistent estimator of sigma for Gaussian data
+    (Hampel 1974, not in the folder, bibliographic only).
+
     Args:
         window: number of rows used.
         features: names of the columns (kept for the online pair).
         eps: scale floor below which a column passes through.
+        scale: factor applied to the raw MAD.
 
     Example:
-        >>> RobustScaler(window=3).fit([[1.0], [2.0], [9.0]]).scale_.tolist()
+        >>> RobustScaler(window=3, scale=1.0).fit([[1.0], [2.0], [9.0]]).scale_.tolist()
         [1.0]
     """
 
     def __init__(
-        self, window: int = 20, features: list[str] | None = None, eps: float = 1e-12
+        self,
+        window: int = 20,
+        features: list[str] | None = None,
+        eps: float = 1e-12,
+        scale: float = 1.4826,
     ) -> None:
         super().__init__(features, eps)
         self.window = window
+        self.scale = scale
 
     def _centre_scale(self, A):
         W = A[-self.window :]
         med = np.median(W, axis=0)
-        return med, np.median(np.abs(W - med), axis=0)
+        return med, self.scale * np.median(np.abs(W - med), axis=0)
 
 
 class MinMaxScaler(_Scaler):
@@ -234,20 +244,23 @@ class SelectKBest(MLBase):
 
 
 class JointDerivatives(MLBase):
-    """Velocity, acceleration and jerk by backward finite differences on the whole record.
+    """Velocity, acceleration and jerk from the polynomial through the last ``order + 1`` samples.
 
-    ``qd_i = (q_i - q_{i-1}) / (t_i - t_{i-1})``, then the same difference of
-    ``qd`` for ``qdd`` and of ``qdd`` for ``jerk``; the first rows, where a
-    difference is not defined, are zero as in the online class.
+    For each row ``i`` the interpolating polynomial of the last ``order + 1``
+    positions (Newton divided differences) is differentiated at ``t_i``:
+    ``qd`` is its first derivative, ``qdd`` the second and ``jerk`` the
+    third. It is exact for a polynomial of degree ``order``. The first rows,
+    which have fewer samples, use the polynomial they have and the missing
+    derivatives are zero.
 
     Args:
         order: number of derivatives, 1 to 3.
         q_key: name of the joint positions (kept for the online pair).
 
     Example:
-        >>> d = JointDerivatives(order=1).fit([[0.0], [1.0], [3.0]], [0.0, 1.0, 2.0])
-        >>> d.qd_.T.tolist()
-        [[0.0, 1.0, 2.0]]
+        >>> d = JointDerivatives(order=3).fit([[0.0], [1.0], [8.0], [27.0]], [0.0, 1.0, 2.0, 3.0])
+        >>> d.qd_[-1].round(6).tolist(), d.qdd_[-1].round(6).tolist(), d.jerk_[-1].round(6).tolist()
+        ([27.0], [18.0], [6.0])
     """
 
     def __init__(self, order: int = 3, q_key: str = "q") -> None:
@@ -257,14 +270,19 @@ class JointDerivatives(MLBase):
     def fit(self, X, y=None):  # type: ignore[override]
         q = _table(X)
         t = np.asarray(y, dtype=float)
-        dt = np.diff(t)[:, None]
-        self.qd_ = np.vstack([np.zeros((1, q.shape[1])), np.diff(q, axis=0) / dt])
-        self.qdd_ = np.vstack(
-            [np.zeros((1, q.shape[1])), np.diff(self.qd_, axis=0) / dt]
-        )
-        self.jerk_ = np.vstack(
-            [np.zeros((1, q.shape[1])), np.diff(self.qdd_, axis=0) / dt]
-        )
+        n, d = q.shape
+        out = np.zeros((3, n, d))
+        for i in range(n):
+            k = min(self.order, i)
+            if k == 0:
+                continue
+            tau = t[i - k : i + 1] - t[i]
+            coef = np.linalg.solve(
+                np.vander(tau, k + 1, increasing=True), q[i - k : i + 1]
+            )
+            for j in range(1, k + 1):
+                out[j - 1, i] = coef[j] * math.factorial(j)
+        self.qd_, self.qdd_, self.jerk_ = out
         return self
 
 
