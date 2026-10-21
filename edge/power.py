@@ -257,3 +257,19 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+def trace_from_npy(path: str | Path, dt_s: float = 1.0,
+                   key: str = "tot") -> PowerTrace:
+    """Load a measured power trace from a .npy of dicts.
+
+    Each element of the array is a dict with a ``tot`` entry whose
+    ``power`` field is the whole-board power in mW, as the INA3221
+    exposes it. The sampling interval is a parameter because the
+    dataset does not state it: ``dt_s = 1.0`` is my choice, and the
+    page declares it.
+    """
+    arr = np.load(path, allow_pickle=True)
+    mw = np.array([float(d[key]["power"]) for d in arr], dtype=float)
+    t = np.arange(mw.size, dtype=float) * float(dt_s)
+    return PowerTrace(t_s=t, mw=mw)

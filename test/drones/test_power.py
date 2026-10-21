@@ -241,3 +241,21 @@ def test_main_without_flags_prints_help(capsys, monkeypatch):
     out = capsys.readouterr().out
     assert rc == 0
     assert "usage" in out.lower()
+
+
+def test_trace_from_npy_reads_tot_power(tmp_path):
+    import numpy as np
+
+    from edge.power import trace_from_npy
+
+    arr = np.array([{"tot": {"power": 1000.0}},
+                    {"tot": {"power": 2000.0}},
+                    {"tot": {"power": 1500.0}}], dtype=object)
+    f = tmp_path / "tr.npy"
+    np.save(f, arr, allow_pickle=True)
+    tr = trace_from_npy(str(f), dt_s=1.0)
+    assert tr.mw.tolist() == [1000.0, 2000.0, 1500.0]
+    assert tr.t_s.tolist() == [0.0, 1.0, 2.0]
+    e = energy_j(tr)
+    assert e == pytest.approx((1000.0 + 2000.0) / 2.0 / 1000.0
+                              + (2000.0 + 1500.0) / 2.0 / 1000.0, abs=1e-9)

@@ -68,6 +68,41 @@ The `--smoke` run uses 3 seeds, 600 samples per stream, and a constant 5000 mW, 
 
 **Synthetic**: constant 5000 mW, `dt_s = 0.1`, 3 seeds, 600 samples per stream, host `4ce6e14ced10`, `board: null`. The batch model used 0.137 J per 1000 samples and the online model 0.255 J per 1000 samples; the delta batch minus online is -0.116 J per 1000. 3 seeds favour the batch model and 0 favour the online model. The paired Wilcoxon is **not computed**, fewer than six pairs, and A12 is 0.000 with a bootstrap 95% interval [0.0, 0.0]. This run does not say which model is cheaper on a board.
 
+
+
+### Measured on a real Jetson, replayed on this host
+
+The dataset of Hines, Milford and Fischer (2025) publishes a power trace measured on a Jetson with the on-device LENS localisation system: 1583 samples of the whole-board power from the INA3221, `tot.power` in mW, 3.69 to 5.82 W, mean 4.59 W. The trace is replayed on an x86 host: the power values are the Jetson's, the wall time of each run is this host's, and the two are multiplied to give joules. The idle is the 5th percentile of the trace (3.93 W), subtracted at every sample.
+
+~~~bash
+python -m edge.energy_bench --trace Jetson_LENS_inference.npy --trace-dt-s 1.0
+~~~
+
+~~~
+idle_mw: 3929.0 (5th percentile of the public trace)
+n_seeds: 10, n_samples: 2000
+power: public-trace
+
+model                                             wall_s      cpu_s     J/1000
+BatchDecisionTreeClassifier (CART)                 0.011      0.011      0.006
+HoeffdingTreeClassifier                            0.019      0.019      0.011
+
+delta J/1000 (batch - online): -0.0047
+wilcoxon p: 0.001953125
+A12 (batch > online): 0.0
+~~~
+
+| Model | Wall time median (s) | Net energy median (J) | J per 1000 samples, median | J per 1000 samples, IQR |
+|---|---|---|---|---|
+| BatchDecisionTreeClassifier (CART) | 0.011 | 0.011 | 0.006 | 0.000 |
+| HoeffdingTreeClassifier | 0.019 | 0.019 | 0.011 | 0.000 |
+
+**Measured on a real Jetson, replayed on an x86 host**: 10 seeds, 2000 samples per stream, power from the LENS trace, idle 3.93 W (5th percentile), `power: public-trace`, `board: null`. The batch model used 0.006 J per 1000 samples and the online model 0.011 J per 1000 samples; the delta batch minus online is -0.005 J per 1000. Ten seeds favour the batch model and zero favour the online model. The paired Wilcoxon gives p = 0.002, and A12 is 0.000 with a bootstrap 95% interval [0.0, 0.0].
+
+The number is not the energy of the Jetson. It is the energy that a Jetson would spend if the run lasted as long as it lasts on this host: the power is the Jetson's, the wall time is this host's, and the ratio of the two models is meaningful only if the ARM and x86 cores scale the two models the same way, which is not measured here. A run with `POWER_NODE` on a board replaces the trace with the board's own sensor and removes this caveat.
+
+The dataset: Hines, A. D., Milford, M., Fischer, T. (2025). *A compact neuromorphic system for ultra energy-efficient, on-device robot localization.* Zenodo record 13999449, `Figure3.zip`, `Jetson_LENS_inference.npy`. The trace is `tot.power` in mW, sampled once per event; the sampling interval of 1 s in the replay is my choice, because the dataset does not state one.
+
 A board fills the second table. Run the command of section 3 once per power mode.
 
 | Module | Mode | Model | Median ms/sample | Net energy median (J) | J per 1000 samples |

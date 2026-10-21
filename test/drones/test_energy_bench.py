@@ -14,7 +14,8 @@ from edge import energy_bench as eb
 
 
 def _args(**kw):
-    base = dict(smoke=True, power_node=None, dt_s=0.1, idle_s=0.0, out=None)
+    base = dict(smoke=True, power_node=None, trace=None, trace_dt_s=1.0,
+                dt_s=0.1, idle_s=0.0, out=None)
     base.update(kw)
     return SimpleNamespace(**base)
 
@@ -268,3 +269,37 @@ def test_default_out_uses_hostname(monkeypatch):
     p = eb._default_out()
     assert p.name == "energy_bench_my-host.json"
     assert p.parent == Path("benchmarks/drones")
+
+
+def test_trace_source_replays_and_cycles():
+    import time as _t
+
+    import numpy as np
+
+    from edge.energy_bench import _TraceSource
+    from edge.power import PowerTrace
+
+    tr = PowerTrace(t_s=np.array([0.0, 1.0, 2.0]),
+                    mw=np.array([1000.0, 2000.0, 3000.0]))
+    src = _TraceSource(tr, dt_s=0.005)
+    src.start()
+    _t.sleep(0.03)
+    out = src.stop()
+    assert out.mw.size >= 2
+    assert out.mw.min() >= 1000.0 and out.mw.max() <= 3000.0
+    assert set(np.unique(out.mw)).issubset({1000.0, 2000.0, 3000.0})
+
+
+def test_idle_mw_for_trace_uses_fifth_percentile(tmp_path):
+    import numpy as np
+
+    from edge.energy_bench import _idle_mw, _TraceSource
+    from edge.power import PowerTrace
+
+    tr = PowerTrace(t_s=np.arange(20.0),
+                    mw=np.arange(1000.0, 3000.0, 100.0))
+    factory = lambda: _TraceSource(tr, dt_s=0.01)
+    idle, note = _idle_mw(factory, 0.0, is_trace=True)
+    expected = float(np.quantile(tr.mw, 0.05))
+    assert idle == pytest.approx(expected)
+    assert "5th percentile" in note

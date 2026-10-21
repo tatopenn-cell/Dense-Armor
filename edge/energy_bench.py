@@ -57,6 +57,7 @@ from edge.power import (
     SysfsPowerSource,
     energy_j,
     net_energy_j,
+    trace_from_npy,
 )
 from pipelines.drones.io import synthetic_flight
 from pipelines.drones.static_vs_online import _features
@@ -115,7 +116,15 @@ def _board_model() -> str | None:
         return None
 
 
-def _idle_mw(source_factory, idle_s: float) -> tuple[float, str]:
+def _idle_mw(source_factory, idle_s: float,
+             is_trace: bool = False) -> tuple[float, str]:
+    if is_trace:
+        src = source_factory()
+        tr = src._trace if hasattr(src, "_trace") else None
+        if tr is None:
+            return 0.0, "not measured (trace missing)"
+        idle = float(np.quantile(tr.mw, 0.05))
+        return idle, "5th percentile of the public trace"
     if idle_s <= 0.0:
         return 0.0, "not measured (idle_s = 0)"
     src = source_factory()
@@ -136,6 +145,32 @@ def _measure(fn, source) -> tuple[float, float, PowerTrace | None]:
     wall = time.perf_counter() - wall0
     cpu = time.process_time() - cpu0
     return wall, cpu, trace
+
+
+class _TraceSource:
+    """Replay a fixed power trace, sampled on the run's own wall time.
+
+    The trace is resampled to ``dt_s`` and the segment of length
+    ``elapsed`` is returned. A run longer than the trace cycles the
+    trace, with the same sequence of values.
+    """
+
+    def __init__(self, trace: PowerTrace, dt_s: float = 0.01) -> None:
+        self._trace = trace
+        self._dt_s = float(dt_s)
+        self._t0 = 0.0
+
+    def start(self) -> _TraceSource:
+        self._t0 = time.monotonic()
+        return self
+
+    def stop(self) -> PowerTrace:
+        elapsed = max(time.monotonic() - self._t0, 1e-6)
+        n = max(int(elapsed / self._dt_s) + 1, 2)
+        idx = np.arange(n) % self._trace.mw.size
+        tt = np.linspace(0.0, elapsed, n)
+        mm = self._trace.mw[idx]
+        return PowerTrace(t_s=tt, mw=mm)
 
 
 def _energy_per_1000(trace: PowerTrace, idle_mw: float, n_samples: int) -> float:
@@ -248,6 +283,12 @@ def _make_source_factory(args) -> tuple[object, str | None]:
             return SysfsPowerSource(args.power_node, dt_s=args.dt_s)
 
         return factory, "sysfs"
+    if args.trace:
+        tr = trace_from_npy(args.trace, dt_s=args.trace_dt_s)
+        def factory():
+            return _TraceSource(tr, dt_s=0.01)
+
+        return factory, "public-trace"
     return None, None
 
 
@@ -260,7 +301,8 @@ def run(args) -> dict:
     idle_mw = 0.0
     idle_note = "not measured (no power source)"
     if source_factory is not None:
-        idle_mw, idle_note = _idle_mw(source_factory, idle_s)
+        idle_mw, idle_note = _idle_mw(
+            source_factory, idle_s, is_trace=bool(args.trace))
 
     runs_batch: list[_Run] = []
     runs_online: list[_Run] = []
@@ -324,6 +366,7 @@ def run(args) -> dict:
         "board": _board_model(),
         "power": power_kind,
         "power_node": args.power_node,
+        "trace": args.trace,
         "dt_s": float(args.dt_s),
         "idle_mw": float(idle_mw),
         "idle_s": float(idle_s),
@@ -349,6 +392,9 @@ def main() -> int:
                         help="path of a sysfs node that returns mW")
     parser.add_argument("--dt-s", type=float, default=0.1)
     parser.add_argument("--idle-s", type=float, default=30.0)
+    parser.add_argument("--trace", type=str, default=None,
+                        help="npy with a measured power trace, in mW")
+    parser.add_argument("--trace-dt-s", type=float, default=1.0)
     parser.add_argument("--out", type=str, default=None)
     args = parser.parse_args()
 
