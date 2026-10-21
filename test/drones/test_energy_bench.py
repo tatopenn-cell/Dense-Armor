@@ -14,8 +14,15 @@ from edge import energy_bench as eb
 
 
 def _args(**kw):
-    base = dict(smoke=True, power_node=None, trace=None, trace_dt_s=1.0,
-                dt_s=0.1, idle_s=0.0, out=None)
+    base = dict(
+        smoke=True,
+        power_node=None,
+        trace=None,
+        trace_dt_s=1.0,
+        dt_s=0.1,
+        idle_s=0.0,
+        out=None,
+    )
     base.update(kw)
     return SimpleNamespace(**base)
 
@@ -74,17 +81,23 @@ def test_wilcoxon_note_computed():
 
 def test_module_runs_as_main(tmp_path):
     import subprocess
+
     out = tmp_path / "energy.json"
     r = subprocess.run(
         [sys.executable, "-m", "edge.energy_bench", "--smoke", "--out", str(out)],
-        capture_output=True, text=True, timeout=120)
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
     assert r.returncode == 0
     assert out.exists()
 
 
 def test_board_model_on_non_jetson(monkeypatch, tmp_path):
     target = tmp_path / "missing"
-    monkeypatch.setattr(eb, "Path", lambda p: target if p == "/proc/device-tree/model" else Path(p))
+    monkeypatch.setattr(
+        eb, "Path", lambda p: target if p == "/proc/device-tree/model" else Path(p)
+    )
     assert eb._board_model() is None
 
 
@@ -113,8 +126,9 @@ def test_board_model_oserror_returns_none(monkeypatch, tmp_path):
         return real_path(p)
 
     monkeypatch.setattr(eb, "Path", fake_path)
-    monkeypatch.setattr(type(f), "read_text",
-                        lambda self, *a, **k: (_ for _ in ()).throw(OSError("no")))
+    monkeypatch.setattr(
+        type(f), "read_text", lambda self, *a, **k: (_ for _ in ()).throw(OSError("no"))
+    )
     assert eb._board_model() is None
 
 
@@ -136,16 +150,20 @@ def test_summarise_medians_and_iqr():
 
 def test_summarise_all_nan_gives_nan():
     runs = [
-        eb._Run(wall_s=1.0, cpu_s=1.0, energy_j=float("nan"),
-                j_per_1000=float("nan"), n_samples=10),
+        eb._Run(
+            wall_s=1.0,
+            cpu_s=1.0,
+            energy_j=float("nan"),
+            j_per_1000=float("nan"),
+            n_samples=10,
+        ),
     ]
     s = eb._summarise(runs, "x")
     assert np.isnan(s["j_per_1000_median"])
 
 
 def test_energy_per_1000_scales_linearly():
-    trace = eb.PowerTrace(t_s=np.array([0.0, 2.0]),
-                          mw=np.array([5000.0, 5000.0]))
+    trace = eb.PowerTrace(t_s=np.array([0.0, 2.0]), mw=np.array([5000.0, 5000.0]))
     val = eb._energy_per_1000(trace, idle_mw=0.0, n_samples=1000)
     assert val == pytest.approx(10.0, abs=1e-9)
     val2 = eb._energy_per_1000(trace, idle_mw=0.0, n_samples=500)
@@ -153,8 +171,7 @@ def test_energy_per_1000_scales_linearly():
 
 
 def test_energy_per_1000_subtracts_idle():
-    trace = eb.PowerTrace(t_s=np.array([0.0, 2.0]),
-                          mw=np.array([5000.0, 5000.0]))
+    trace = eb.PowerTrace(t_s=np.array([0.0, 2.0]), mw=np.array([5000.0, 5000.0]))
     val = eb._energy_per_1000(trace, idle_mw=3000.0, n_samples=1000)
     assert val == pytest.approx(4.0, abs=1e-9)
 
@@ -183,6 +200,7 @@ def test_make_source_factory_smoke():
 
 def test_make_source_factory_power_node(tmp_path):
     import time as _time
+
     p = tmp_path / "power1_input"
     p.write_text("1234\n", encoding="utf-8")
     f, kind = eb._make_source_factory(_args(smoke=False, power_node=str(p)))
@@ -239,8 +257,8 @@ def test_run_without_source_keeps_wall_and_cpu():
 def test_main_smoke_writes_json(tmp_path, monkeypatch, capsys):
     out = tmp_path / "energy.json"
     monkeypatch.setattr(
-        sys, "argv",
-        ["edge.energy_bench", "--smoke", "--out", str(out)])
+        sys, "argv", ["edge.energy_bench", "--smoke", "--out", str(out)]
+    )
     rc = eb.main()
     assert rc == 0
     assert out.exists()
@@ -254,9 +272,7 @@ def test_main_smoke_writes_json(tmp_path, monkeypatch, capsys):
 
 def test_main_without_source_writes_json(tmp_path, monkeypatch):
     out = tmp_path / "energy.json"
-    monkeypatch.setattr(
-        sys, "argv",
-        ["edge.energy_bench", "--out", str(out)])
+    monkeypatch.setattr(sys, "argv", ["edge.energy_bench", "--out", str(out)])
     rc = eb.main()
     assert rc == 0
     payload = json.loads(out.read_text())
@@ -271,37 +287,46 @@ def test_default_out_uses_hostname(monkeypatch):
     assert p.parent == Path("benchmarks/drones")
 
 
-def test_trace_source_replays_and_cycles():
-    import time as _t
-
+def test_net_energy_with_idle_greater_than_zero():
     import numpy as np
 
-    from edge.energy_bench import _TraceSource
-    from edge.power import PowerTrace
+    from edge.power import PowerTrace, net_energy_j
 
-    tr = PowerTrace(t_s=np.array([0.0, 1.0, 2.0]),
-                    mw=np.array([1000.0, 2000.0, 3000.0]))
-    src = _TraceSource(tr, dt_s=0.005)
-    src.start()
-    _t.sleep(0.03)
-    out = src.stop()
-    assert out.mw.size >= 2
-    assert out.mw.min() >= 1000.0 and out.mw.max() <= 3000.0
-    assert set(np.unique(out.mw)).issubset({1000.0, 2000.0, 3000.0})
+    trace = PowerTrace(t_s=np.array([0.0, 1.0]), mw=np.array([5000.0, 5000.0]))
+    gross = 5000.0 * 1.0 / 1000.0
+    net = net_energy_j(trace, idle_mw=3000.0)
+    assert abs(net - 2000.0 * 1.0 / 1000.0) < 1e-9
+    assert net < gross
 
 
-def test_idle_mw_for_trace_uses_fifth_percentile(tmp_path):
+def test_run_pair_energy_is_net_of_idle(tmp_path):
+    from types import SimpleNamespace
+
+    from edge.energy_bench import run
+
+    args = SimpleNamespace(
+        smoke=True,
+        power_node=None,
+        trace=None,
+        trace_dt_s=1.0,
+        dt_s=0.1,
+        idle_s=0.0,
+        out=None,
+    )
+    payload = run(args)
+    assert payload["idle_mw"] == 0.0
+    assert payload["batch"]["energy_j_median"] > 0.0
+
+
+def test_wilcoxon_value_error_returns_none(monkeypatch):
     import numpy as np
 
-    from edge.energy_bench import _idle_mw, _TraceSource
-    from edge.power import PowerTrace
+    from edge import energy_bench as eb
 
-    tr = PowerTrace(t_s=np.arange(20.0),
-                    mw=np.arange(1000.0, 3000.0, 100.0))
-    def factory():
-        return _TraceSource(tr, dt_s=0.01)
+    def broken(a, b):
+        raise ValueError("test")
 
-    idle, note = _idle_mw(factory, 0.0, is_trace=True)
-    expected = float(np.quantile(tr.mw, 0.05))
-    assert idle == pytest.approx(expected)
-    assert "5th percentile" in note
+    monkeypatch.setattr(eb, "wilcoxon", broken)
+    a = np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
+    b = np.array([2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
+    assert eb._wilcoxon(a, b) is None

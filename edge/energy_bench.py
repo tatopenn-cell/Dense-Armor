@@ -4,10 +4,10 @@ For each seed the same stream, the same 50/50 split and the same test
 half of ``pipelines/drones/static_vs_online.py`` are used: the batch tree
 fits on the training half and predicts the test half; the online tree
 predicts and learns on the test half, in the same order. Around each
-model a power source is started and stopped; the energy is the integral
-of the power over the wall time of the run, and the idle power measured
-before the runs is subtracted. The two runs of a seed are paired: the
-same stream, the same test half, only the model changes.
+model a power source is started and stopped; the energy is the net
+energy of the run, the integral of the power above the idle, in joules,
+and the joules per 1000 samples are the same divided by the number of
+test samples times 1000.
 
 The comparison is on the net energy per 1000 samples, with a paired
 Wilcoxon two-sided p-value and the A12 effect size. If the number of
@@ -42,9 +42,10 @@ import argparse
 import json
 import socket
 import time
-import warnings
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Protocol
 
 import numpy as np
 from scipy.stats import wilcoxon
@@ -55,9 +56,7 @@ from edge.power import (
     PowerTrace,
     SyntheticPowerSource,
     SysfsPowerSource,
-    energy_j,
     net_energy_j,
-    trace_from_npy,
 )
 from pipelines.drones.io import synthetic_flight
 from pipelines.drones.static_vs_online import _features
@@ -72,7 +71,13 @@ FULL_SAMPLES = 2000
 MIN_PAIRS_FOR_WILCOXON = 6
 
 
+class _PowerSource(Protocol):
+    def start(self) -> object: ...
+    def stop(self) -> PowerTrace: ...
+
+
 def _a12(a: np.ndarray, b: np.ndarray) -> float:
+    """A12 effect size: P(a > b) + 0.5 * P(a == b)."""
     diff = a[:, None] - b[None, :]
     return float((diff > 0).mean() + 0.5 * (diff == 0).mean())
 
@@ -80,6 +85,7 @@ def _a12(a: np.ndarray, b: np.ndarray) -> float:
 def _a12_ci(
     a: np.ndarray, b: np.ndarray, rng: np.random.Generator, n: int = 2000
 ) -> tuple[float, float]:
+    """Bootstrap 95% interval of A12."""
     k = len(a)
     vals = np.empty(n)
     for i in range(n):
@@ -89,13 +95,15 @@ def _a12_ci(
 
 
 def _wilcoxon(a: np.ndarray, b: np.ndarray) -> float | None:
+    """Paired two-sided Wilcoxon p-value, or None when it cannot be computed."""
     if len(a) < MIN_PAIRS_FOR_WILCOXON:
         return None
     if bool(np.all(a == b)):
         return None
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", RuntimeWarning)
+    try:
         return float(wilcoxon(a, b).pvalue)
+    except ValueError:
+        return None
 
 
 def _wilcoxon_note(p: float | None, n_pairs: int) -> str:
@@ -116,15 +124,9 @@ def _board_model() -> str | None:
         return None
 
 
-def _idle_mw(source_factory, idle_s: float,
-             is_trace: bool = False) -> tuple[float, str]:
-    if is_trace:
-        src = source_factory()
-        tr = src._trace if hasattr(src, "_trace") else None
-        if tr is None:
-            return 0.0, "not measured (trace missing)"
-        idle = float(np.quantile(tr.mw, 0.05))
-        return idle, "5th percentile of the public trace"
+def _idle_mw(
+    source_factory: Callable[[], _PowerSource], idle_s: float
+) -> tuple[float, str]:
     if idle_s <= 0.0:
         return 0.0, "not measured (idle_s = 0)"
     src = source_factory()
@@ -134,10 +136,13 @@ def _idle_mw(source_factory, idle_s: float,
     return float(np.mean(trace.mw)), f"measured for {idle_s:.2f} s"
 
 
-def _measure(fn, source) -> tuple[float, float, PowerTrace | None]:
+def _measure(
+    fn: Callable[[], None],
+    source_factory: Callable[[], _PowerSource] | None,
+) -> tuple[float, float, PowerTrace | None]:
     cpu0 = time.process_time()
     wall0 = time.perf_counter()
-    src = source() if source is not None else None
+    src = source_factory() if source_factory is not None else None
     if src is not None:
         src.start()
     fn()
@@ -145,32 +150,6 @@ def _measure(fn, source) -> tuple[float, float, PowerTrace | None]:
     wall = time.perf_counter() - wall0
     cpu = time.process_time() - cpu0
     return wall, cpu, trace
-
-
-class _TraceSource:
-    """Replay a fixed power trace, sampled on the run's own wall time.
-
-    The trace is resampled to ``dt_s`` and the segment of length
-    ``elapsed`` is returned. A run longer than the trace cycles the
-    trace, with the same sequence of values.
-    """
-
-    def __init__(self, trace: PowerTrace, dt_s: float = 0.01) -> None:
-        self._trace = trace
-        self._dt_s = float(dt_s)
-        self._t0 = 0.0
-
-    def start(self) -> _TraceSource:
-        self._t0 = time.monotonic()
-        return self
-
-    def stop(self) -> PowerTrace:
-        elapsed = max(time.monotonic() - self._t0, 1e-6)
-        n = max(int(elapsed / self._dt_s) + 1, 2)
-        idx: np.ndarray = np.arange(n) % self._trace.mw.size
-        tt = np.linspace(0.0, elapsed, n)
-        mm = self._trace.mw[idx]
-        return PowerTrace(t_s=tt, mw=mm)
 
 
 def _energy_per_1000(trace: PowerTrace, idle_mw: float, n_samples: int) -> float:
@@ -191,9 +170,9 @@ def _run_pair(
     seed: int,
     n_samples: int,
     max_depth: int,
-    source_factory,
+    source_factory: Callable[[], _PowerSource] | None,
     idle_mw: float,
-) -> tuple[_Run, _Run, str]:
+) -> tuple[_Run, _Run]:
     stream = list(synthetic_flight(n=n_samples, seed=seed, fault="actuator_loss"))
     X = [_features(s) for s in stream]
     y = [int(s["fault_started"]) for s in stream]
@@ -215,11 +194,9 @@ def _run_pair(
             clf_b.predict_one(x)
 
     w_b, c_b, tr_b = _measure(do_batch, source_factory)
-    e_b = energy_j(tr_b) if tr_b is not None else float("nan")
+    e_b = net_energy_j(tr_b, idle_mw) if tr_b is not None else float("nan")
     j_b = (
-        _energy_per_1000(tr_b, idle_mw, len(X_te))
-        if tr_b is not None
-        else float("nan")
+        _energy_per_1000(tr_b, idle_mw, len(X_te)) if tr_b is not None else float("nan")
     )
 
     clf_o = HoeffdingTreeClassifier(grace_period=50)
@@ -230,16 +207,14 @@ def _run_pair(
             clf_o.learn_one(x, t)
 
     w_o, c_o, tr_o = _measure(do_online, source_factory)
-    e_o = energy_j(tr_o) if tr_o is not None else float("nan")
+    e_o = net_energy_j(tr_o, idle_mw) if tr_o is not None else float("nan")
     j_o = (
-        _energy_per_1000(tr_o, idle_mw, len(X_te))
-        if tr_o is not None
-        else float("nan")
+        _energy_per_1000(tr_o, idle_mw, len(X_te)) if tr_o is not None else float("nan")
     )
 
     rb = _Run(wall_s=w_b, cpu_s=c_b, energy_j=e_b, j_per_1000=j_b, n_samples=len(X_te))
     ro = _Run(wall_s=w_o, cpu_s=c_o, energy_j=e_o, j_per_1000=j_o, n_samples=len(X_te))
-    return rb, ro, ""
+    return rb, ro
 
 
 def _summarise(runs: list[_Run], name: str) -> dict:
@@ -270,25 +245,27 @@ def _summarise(runs: list[_Run], name: str) -> dict:
     }
 
 
-def _make_source_factory(args) -> tuple[object, str | None]:
+def _make_source_factory(
+    args,
+) -> tuple[Callable[[], _PowerSource] | None, str | None]:
     if args.smoke and args.power_node:
         raise SystemExit("--smoke and --power-node are mutually exclusive")
     if args.smoke:
-        def factory():
-            return SyntheticPowerSource(mw=SMOKE_MW, dt_s=args.dt_s)
+        mw = SMOKE_MW
+        dt_s = args.dt_s
+
+        def factory() -> _PowerSource:
+            return SyntheticPowerSource(mw=mw, dt_s=dt_s)
 
         return factory, "synthetic"
     if args.power_node:
-        def factory():
-            return SysfsPowerSource(args.power_node, dt_s=args.dt_s)
+        node = args.power_node
+        dt_s = args.dt_s
+
+        def factory() -> _PowerSource:
+            return SysfsPowerSource(node, dt_s=dt_s)
 
         return factory, "sysfs"
-    if args.trace:
-        tr = trace_from_npy(args.trace, dt_s=args.trace_dt_s)
-        def factory():
-            return _TraceSource(tr, dt_s=0.01)
-
-        return factory, "public-trace"
     return None, None
 
 
@@ -301,13 +278,12 @@ def run(args) -> dict:
     idle_mw = 0.0
     idle_note = "not measured (no power source)"
     if source_factory is not None:
-        idle_mw, idle_note = _idle_mw(
-            source_factory, idle_s, is_trace=bool(args.trace))
+        idle_mw, idle_note = _idle_mw(source_factory, idle_s)
 
     runs_batch: list[_Run] = []
     runs_online: list[_Run] = []
     for seed in range(n_seeds):
-        rb, ro, _ = _run_pair(
+        rb, ro = _run_pair(
             seed=seed,
             n_samples=n_samples,
             max_depth=DEFAULT_MAX_DEPTH,
@@ -366,7 +342,6 @@ def run(args) -> dict:
         "board": _board_model(),
         "power": power_kind,
         "power_node": args.power_node,
-        "trace": args.trace,
         "dt_s": float(args.dt_s),
         "idle_mw": float(idle_mw),
         "idle_s": float(idle_s),
@@ -386,15 +361,19 @@ def _default_out() -> Path:
 
 def main() -> int:
     parser = argparse.ArgumentParser(prog="edge.energy_bench")
-    parser.add_argument("--smoke", action="store_true",
-                        help="3 seeds, synthetic power, under one minute on x86")
-    parser.add_argument("--power-node", type=str, default=None,
-                        help="path of a sysfs node that returns mW")
+    parser.add_argument(
+        "--smoke",
+        action="store_true",
+        help="3 seeds, synthetic power, under one minute on x86",
+    )
+    parser.add_argument(
+        "--power-node",
+        type=str,
+        default=None,
+        help="path of a sysfs node that returns mW",
+    )
     parser.add_argument("--dt-s", type=float, default=0.1)
     parser.add_argument("--idle-s", type=float, default=30.0)
-    parser.add_argument("--trace", type=str, default=None,
-                        help="npy with a measured power trace, in mW")
-    parser.add_argument("--trace-dt-s", type=float, default=1.0)
     parser.add_argument("--out", type=str, default=None)
     args = parser.parse_args()
 
@@ -412,16 +391,17 @@ def main() -> int:
     print(f"idle_mw: {payload['idle_mw']:.1f} ({payload['idle_note']})")
     print(f"n_seeds: {payload['n_seeds']}, n_samples: {payload['n_samples']}")
     print()
-    header = (f"{'model':45s} {'wall_s':>10s} {'cpu_s':>10s} "
-              f"{'J/1000':>10s}")
+    header = f"{'model':45s} {'wall_s':>10s} {'cpu_s':>10s} {'J/1000':>10s}"
     print(header)
     print("-" * len(header))
     for m in (payload["batch"], payload["online"]):
         j = m["j_per_1000_median"]
         j_str = f"{j:10.3f}" if j is not None else f"{'null':>10s}"
-        print(f"{m['name']:45s} "
-              f"{m['wall_s_median']:10.3f} {m['cpu_s_median']:10.3f} "
-              f"{j_str}")
+        print(
+            f"{m['name']:45s} "
+            f"{m['wall_s_median']:10.3f} {m['cpu_s_median']:10.3f} "
+            f"{j_str}"
+        )
     c = payload["comparison"]
     print()
     print(f"delta J/1000 (batch - online): {c['j_per_1000_delta_median']}")

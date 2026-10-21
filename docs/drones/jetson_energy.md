@@ -1,12 +1,12 @@
 # Jetson energy: does the online pipeline use less energy than the batch one on my board?
 
-The question is the title. A drone flies on a battery, and a joule the pipeline spends is a joule the motors do not have. On a Jetson the two models of [Static vs online](static_vs_online.md) run on the same stream; this page measures the energy of each from a power trace.
+A drone flies on a battery, and a joule the pipeline spends is a joule the motors do not have. On a Jetson the two models of [Static vs online](static_vs_online.md) run on the same stream; this page measures the energy of each from a power trace.
 
-The measurement has three pieces: the energy of a trace (section 1), the benchmark that runs the two models with a power source and pairs the runs by seed (section 2), and one command that runs the benchmark on a board (section 3). The results table is a run with a **synthetic** power source, a constant 5000 mW, and its numbers are in `benchmarks/drones/energy_bench_4ce6e14ced10.json`. A second table is empty on purpose, to be filled with the numbers of a board.
+The measurement has three pieces: the energy of a trace (section 1), the benchmark that runs the two models with a power source and pairs the runs by seed (section 2), and one command that runs the benchmark on a board (section 3). The results table is the run of the smoke benchmark with a synthetic power source, a constant 5000 mW. A second table is empty on purpose, for the numbers of a board.
 
 ## 1. The energy of a power trace
 
-A power trace is two arrays of the same length: the sample times in seconds and the power in milliwatt. The energy is the integral of the power over time by the trapezoid rule; a milliwatt-second is one thousandth of a joule. The **net** energy subtracts the idle power at every sample, and the total never goes below zero.
+A power trace is two arrays of the same length: the sample times in seconds and the power in milliwatt. The energy is the integral of the power over time by the trapezoid rule; a milliwatt-second is one thousandth of a joule. The net energy subtracts the idle power at every sample, and the total never goes below zero.
 
 ~~~python
 import numpy as np
@@ -16,8 +16,7 @@ t = np.array([0.0, 1.0, 2.0, 3.0])
 mw = np.array([5000.0, 5000.0, 5000.0, 5000.0])
 tr = PowerTrace(t_s=t, mw=mw)
 e = energy_j(tr)
-idle = 3000.0
-en = net_energy_j(tr, idle_mw=idle)
+en = net_energy_j(tr, idle_mw=3000.0)
 print(f"energy_j: {e:.3f} J")
 print(f"net_energy_j: {en:.3f} J")
 ~~~
@@ -45,19 +44,28 @@ TX2 2898.80 mW
 Xavier NX 4230.41 mW
 ~~~
 
-The four lines are the ones of Table I, page 4: AGX Orin `1.02x + 3115.39`, Xavier NX `1.10x + 3130.41`, TX2 `0.90x + 1998.80`, Nano `1.11x + 232.60`, with errors of 3%, 2%, 3%, 0.8%. The default of every function that could apply them is to leave the reading as it is: the owner decides whether the calibration holds on a different setup.
-
-![LENS Jetson power trace (left) and joules per 1000 samples of the batch and online models (right)](../assets/jetson_energy/jetson_energy.png)
+The four lines are the ones of Table I, page 4: AGX Orin `1.02x + 3115.39`, Xavier NX `1.10x + 3130.41`, TX2 `0.90x + 1998.80`, Nano `1.11x + 232.60`, with errors of 3%, 2%, 3%, 0.8%. The default of every function that could apply them is to leave the reading as it is, and the owner decides whether the calibration holds on a different setup.
 
 ## 2. The benchmark: online against batch, paired by seed
 
-For every seed the benchmark builds the same stream of [Static vs online](static_vs_online.md), splits it 50/50, fits the batch CART tree on the training half, and lets the online Hoeffding tree predict and learn on the test half. A power source is started and stopped around each model; the wall time, the CPU time and the net energy are written per run, and the runs of the two models are paired by seed. The idle power is measured for `idle_s` seconds before the runs and subtracted.
+For every seed the benchmark builds the same stream of [Static vs online](static_vs_online.md), splits it 50/50, fits the batch CART tree on the training half, and lets the online Hoeffding tree predict and learn on the test half. A power source is started and stopped around each model; the wall time, the CPU time, the net energy and the joules per 1000 samples are written per run, and the runs of the two models are paired by seed. The idle power is measured for `idle_s` seconds before the runs and subtracted.
 
 ~~~bash
 python -m edge.energy_bench --smoke
 ~~~
 
-The run prints one line per seed, then the host, the board, the `power` field, the `idle_mw`, the number of seeds and samples, and the summary table. The JSON of that run is the file the results table below comes from.
+~~~
+  seed  0: batch j/1000 = 0.139, online j/1000 = 0.238
+  seed  1: batch j/1000 = 0.130, online j/1000 = 0.227
+  seed  2: batch j/1000 = 0.185, online j/1000 = 0.179
+json: benchmarks/drones/energy_bench_4ce6e14ced10.json
+
+host: 4ce6e14ced10
+board: not a Jetson
+power: synthetic
+idle_mw: 0.0 (not measured (idle_s = 0))
+n_seeds: 3, n_samples: 600
+~~~
 
 The `--smoke` run uses 3 seeds, 600 samples per stream, and a constant 5000 mW, and finishes in about two seconds on x86. Without `--smoke` it uses 10 seeds and 2000 samples; with `--power-node PATH` it reads a sysfs node; with neither flag the energy fields are `null` and the wall and CPU time are still written. The JSON goes to `benchmarks/drones/energy_bench_<host>.json`, and the field `power` is `synthetic`, `sysfs` or `null`.
 
@@ -65,45 +73,10 @@ The `--smoke` run uses 3 seeds, 600 samples per stream, and a constant 5000 mW, 
 
 | Model | Wall time median (s) | CPU time median (s) | Net energy median (J) | J per 1000 samples, median | J per 1000 samples, IQR |
 |---|---|---|---|---|---|
-| BatchDecisionTreeClassifier (CART) | 0.0084 | 0.0082 | 0.0411 | 0.137 | 0.0209 |
-| HoeffdingTreeClassifier | 0.0155 | 0.0140 | 0.0764 | 0.255 | 0.0055 |
+| BatchDecisionTreeClassifier (CART) | 0.0037 | 0.0037 | 0.0181 | 0.060 | 0.0022 |
+| HoeffdingTreeClassifier | 0.0060 | 0.0060 | 0.0296 | 0.099 | 0.0016 |
 
-**Synthetic**: constant 5000 mW, `dt_s = 0.1`, 3 seeds, 600 samples per stream, host `4ce6e14ced10`, `board: null`. The batch model used 0.137 J per 1000 samples and the online model 0.255 J per 1000 samples; the delta batch minus online is -0.116 J per 1000. 3 seeds favour the batch model and 0 favour the online model. The paired Wilcoxon is **not computed**, fewer than six pairs, and A12 is 0.000 with a bootstrap 95% interval [0.0, 0.0]. This run does not say which model is cheaper on a board.
-
-
-
-### Measured on a real Jetson, replayed on this host
-
-The dataset of Hines, Milford and Fischer (2025) publishes a power trace measured on a Jetson with the on-device LENS localisation system: 1583 samples of the whole-board power from the INA3221, `tot.power` in mW, 3.69 to 5.82 W, mean 4.59 W. The trace is replayed on an x86 host: the power values are the Jetson's, the wall time of each run is this host's, and the two are multiplied to give joules. The idle is the 5th percentile of the trace (3.93 W), subtracted at every sample.
-
-~~~bash
-python -m edge.energy_bench --trace Jetson_LENS_inference.npy --trace-dt-s 1.0
-~~~
-
-~~~
-idle_mw: 3929.0 (5th percentile of the public trace)
-n_seeds: 10, n_samples: 2000
-power: public-trace
-
-model                                             wall_s      cpu_s     J/1000
-BatchDecisionTreeClassifier (CART)                 0.011      0.011      0.006
-HoeffdingTreeClassifier                            0.019      0.019      0.011
-
-delta J/1000 (batch - online): -0.0047
-wilcoxon p: 0.001953125
-A12 (batch > online): 0.0
-~~~
-
-| Model | Wall time median (s) | Net energy median (J) | J per 1000 samples, median | J per 1000 samples, IQR |
-|---|---|---|---|---|
-| BatchDecisionTreeClassifier (CART) | 0.011 | 0.011 | 0.006 | 0.000 |
-| HoeffdingTreeClassifier | 0.019 | 0.019 | 0.011 | 0.000 |
-
-**Measured on a real Jetson, replayed on an x86 host**: 10 seeds, 2000 samples per stream, power from the LENS trace, idle 3.93 W (5th percentile), `power: public-trace`, `board: null`. The batch model used 0.006 J per 1000 samples and the online model 0.011 J per 1000 samples; the delta batch minus online is -0.005 J per 1000. Ten seeds favour the batch model and zero favour the online model. The paired Wilcoxon gives p = 0.002, and A12 is 0.000 with a bootstrap 95% interval [0.0, 0.0].
-
-The number is not the energy of the Jetson. It is the energy that a Jetson would spend if the run lasted as long as it lasts on this host: the power is the Jetson's, the wall time is this host's, and the ratio of the two models is meaningful only if the ARM and x86 cores scale the two models the same way, which is not measured here. A run with `POWER_NODE` on a board replaces the trace with the board's own sensor and removes this caveat.
-
-The dataset: Hines, A. D., Milford, M., Fischer, T. (2025). *A compact neuromorphic system for ultra energy-efficient, on-device robot localization.* Zenodo record 13999449, `Figure3.zip`, `Jetson_LENS_inference.npy`. The trace is `tot.power` in mW, sampled once per event; the sampling interval of 1 s in the replay is my choice, because the dataset does not state one.
+The run is synthetic: a constant 5000 mW, `dt_s = 0.1`, 3 seeds, 600 samples per stream, host `4ce6e14ced10`, `board: null`. The batch model used 0.060 J per 1000 samples and the online model 0.099 J per 1000 samples; the delta batch minus online is -0.039 J per 1000. Two seeds favour the batch model and one favours the online model. The paired Wilcoxon is not computed, fewer than six pairs; A12 is 0.111 with a bootstrap 95% interval [0.0, 1.0], which does not separate the two models. This run does not say which model is cheaper on a board.
 
 A board fills the second table. Run the command of section 3 once per power mode.
 
@@ -139,15 +112,15 @@ Without `POWER_NODE` the same script prints one line that says the energy was no
 ### Choices stated explicitly
 
 - The power source of the smoke run is a constant 5000 mW, `SyntheticPowerSource(mw=5000.0, dt_s=0.1)`. The wall time is the one measured between `start()` and `stop()`, and the energy is the constant power times that wall time. The label `synthetic` is in the code, in the JSON and in the table.
-- `dt_s = 0.1` is my choice. The paper states that the sampling rate changes the precision (2306.13107, page 1) and gives no recommended interval, so the interval is a parameter without a default for the sysfs source, and the smoke run fixes it at 0.1 s.
+- `dt_s = 0.1` is the interval chosen for the smoke run. The paper states that the sampling rate changes the precision (2306.13107, page 1) and gives no recommended interval, so the interval is a parameter without a default for the sysfs source, and the smoke run fixes it at 0.1 s.
 - The idle power is measured for `idle_s` seconds before the runs and subtracted at every sample. In `--smoke` `idle_s` is zero and the idle is not measured; on a board the default is 30 s.
 - The calibration of Table I is not applied by default. The page shows the four lines, and the owner decides whether the setup of the paper holds on a different board.
-- The paired Wilcoxon is computed only when there are at least six pairs. With fewer, the JSON writes `null` and the reason in `wilcoxon_note`, instead of a number.
+- The paired Wilcoxon is computed only when there are at least six pairs. With fewer, the JSON writes `null` and the reason in `wilcoxon_note` instead of a number.
 - `--smoke` and `--power-node` are mutually exclusive: a synthetic run labelled `synthetic` next to a real sensor would mix the two.
 - The empty table is declared empty in the text next to it. A number in it without a board would be an invented number.
 
 ### Development diary
 
-This delivery does not show a reduction of energy on a Jetson, because no board ran it. The only energy numbers on this page are labelled `synthetic` and come from a constant 5000 mW source on the x86 host of the session. A board with `POWER_NODE` set produces the same JSON with `"power": "sysfs"`, the model of the board in `board`, and the real trace; the table of section 2 is then filled with the numbers of that JSON, and the page states them as measured on that board.
+This delivery does not show a reduction of energy on a Jetson, because no board ran it. The only energy numbers on this page are labelled `synthetic` and come from a constant 5000 mW source on the x86 host. A board with `POWER_NODE` set produces the same JSON with `"power": "sysfs"`, the model of the board in `board`, and the real trace; the table of section 2 is then filled with the numbers of that JSON, and the page states them as measured on that board.
 
 The `energy_bench.py` script had two bugs caught by the tests and fixed in the same branch: the idle measurement did a `start()` and `stop()` back to back and left one sample in the trace (fixed by sleeping for `idle_s`), and the print of the summary used `:10.3f` on `j_per_1000_median` which is `None` when there is no power source (fixed by printing the string `null`).

@@ -161,12 +161,13 @@ def test_sysfs_source_stop_without_start_raises(tmp_path):
         src.stop()
 
 
-def test_sysfs_source_one_sample_raises(tmp_path):
+def test_sysfs_source_short_run_does_not_raise(tmp_path):
     p = _sysfs_file(tmp_path, 5000)
     src = SysfsPowerSource(str(p), dt_s=10.0)
     src.start()
-    with pytest.raises(RuntimeError, match="at least two"):
-        src.stop()
+    trace = src.stop()
+    assert trace.mw.size >= 2
+    assert np.all(trace.mw == 5000.0)
 
 
 def test_sysfs_source_dt_must_be_positive():
@@ -243,19 +244,46 @@ def test_main_without_flags_prints_help(capsys, monkeypatch):
     assert "usage" in out.lower()
 
 
-def test_trace_from_npy_reads_tot_power(tmp_path):
-    import numpy as np
+def test_sysfs_source_short_run_has_two_samples(tmp_path):
+    p = tmp_path / "power1_input"
+    p.write_text("5000\n", encoding="utf-8")
+    src = SysfsPowerSource(str(p), dt_s=0.1)
+    src.start()
+    time.sleep(0.01)
+    trace = src.stop()
+    assert trace.mw.size >= 2
+    assert np.all(trace.mw == 5000.0)
+    assert trace.t_s[-1] > trace.t_s[0]
 
-    from edge.power import trace_from_npy
 
-    arr = np.array([{"tot": {"power": 1000.0}},
-                    {"tot": {"power": 2000.0}},
-                    {"tot": {"power": 1500.0}}], dtype=object)
-    f = tmp_path / "tr.npy"
-    np.save(f, arr, allow_pickle=True)
-    tr = trace_from_npy(str(f), dt_s=1.0)
-    assert tr.mw.tolist() == [1000.0, 2000.0, 1500.0]
-    assert tr.t_s.tolist() == [0.0, 1.0, 2.0]
-    e = energy_j(tr)
-    assert e == pytest.approx((1000.0 + 2000.0) / 2.0 / 1000.0
-                              + (2000.0 + 1500.0) / 2.0 / 1000.0, abs=1e-9)
+def test_sysfs_source_short_run_energy_matches_power_times_wall(tmp_path):
+    p = tmp_path / "power1_input"
+    p.write_text("5000\n", encoding="utf-8")
+    src = SysfsPowerSource(str(p), dt_s=0.1)
+    src.start()
+    time.sleep(0.05)
+    trace = src.stop()
+    wall = trace.t_s[-1] - trace.t_s[0]
+    expected = 5000.0 * wall / 1000.0
+    got = energy_j(trace)
+    assert abs(got - expected) <= 5000.0 * 0.05 / 1000.0
+
+
+def test_sysfs_source_start_stop_immediate(tmp_path):
+    p = _sysfs_file(tmp_path, 5000)
+    src = SysfsPowerSource(str(p), dt_s=0.5)
+    trace = src.start().stop()
+    assert trace.mw.size >= 2
+    assert np.all(trace.mw == 5000.0)
+    assert trace.t_s[-1] > 0.0
+
+
+def test_sysfs_source_stop_with_zero_samples(tmp_path, monkeypatch):
+    p = _sysfs_file(tmp_path, 5000)
+    src = SysfsPowerSource(str(p), dt_s=0.1)
+    monkeypatch.setattr(src, "_loop", lambda: None)
+    src.start()
+    time.sleep(0.01)
+    trace = src.stop()
+    assert trace.mw.size == 2
+    assert np.all(trace.mw == 5000.0)

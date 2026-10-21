@@ -6,16 +6,8 @@ through the sysfs nodes, one integer in mW per read (Shalavi et al.,
 over the wall time, by the trapezoid rule, in joules: a milliwatt-second
 divided by 1000. The internal sensors underestimate the actual power by
 up to 50% in most cases and a linear calibration brings the error within
-±3% (page 1); the calibration is available as ``calibrate_mw`` and is
+3% (page 1); the calibration is available as ``calibrate_mw`` and is
 not applied by default.
-
-Run from the repository root:
-
-    python -m edge.power --demo
-
-The demo prints the energy of a synthetic constant power, labelled
-synthetic. A real measurement requires a board with the INA3221 sensor
-exposed as a sysfs node; the node path is a parameter, without a default.
 """
 
 from __future__ import annotations
@@ -91,7 +83,7 @@ def calibrate_mw(x_mw: float, device: str) -> float:
     ``a`` and ``b`` from the table, and ``y`` the estimate of the true
     board power in mW. The four lines are: AGX Orin ``1.02x + 3115.39``,
     Xavier NX ``1.10x + 3130.41``, TX2 ``0.90x + 1998.80``, Nano
-    ``1.11x + 232.60``, with errors ±3%, ±2%, ±3%, ±0.8% respectively.
+    ``1.11x + 232.60``, with errors of 3%, 2%, 3%, 0.8% respectively.
 
     The four lines hold for the devices and the setup of the paper
     (external oscilloscope, same nvpmodel); the owner decides whether to
@@ -115,13 +107,16 @@ class SysfsPowerSource:
     between :meth:`start` and :meth:`stop`, and :meth:`stop` returns the
     :class:`PowerTrace` and joins the thread.
 
+    A run shorter than ``dt_s`` would give a single sample; :meth:`stop`
+    reads the node once more at the instant of the stop, so every run of
+    any length produces a trace with at least two samples (the first and
+    the last instant of the run).
+
     The path is a parameter without a default: the node name depends on
     the board and the kernel, and a guessed default would be wrong on
     most boards. The sampling interval matters: the built-in sensors
     measure average values and miss the current peaks, and the sampling
-    rate changes the precision (page 1). My choice: ``dt_s`` has no
-    default, so the interval is always declared by the caller and
-    written next to the trace.
+    rate changes the precision (page 1).
     """
 
     def __init__(self, path: str | Path, dt_s: float) -> None:
@@ -170,18 +165,23 @@ class SysfsPowerSource:
     def stop(self) -> PowerTrace:
         if self._thread is None:
             raise RuntimeError("not started")
+        elapsed = time.monotonic() - self._t0
         self._stop.set()
         self._thread.join()
-        thread = self._thread
         self._thread = None
         if self._error is not None:
             err = self._error
             raise RuntimeError(f"read failed: {err}") from err
+        if not self._t:
+            first = self._read_mw()
+            self._t.append(0.0)
+            self._mw.append(first)
+        if len(self._t) == 1:
+            last = self._read_mw()
+            self._t.append(max(elapsed, 1e-6))
+            self._mw.append(last)
         t: np.ndarray = np.asarray(self._t, dtype=float)
         mw: np.ndarray = np.asarray(self._mw, dtype=float)
-        if t.size < 2:
-            raise RuntimeError(f"the trace has {t.size} samples, need at least two")
-        del thread
         return PowerTrace(t_s=t, mw=mw)
 
 
@@ -257,19 +257,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
-
-def trace_from_npy(path: str | Path, dt_s: float = 1.0,
-                   key: str = "tot") -> PowerTrace:
-    """Load a measured power trace from a .npy of dicts.
-
-    Each element of the array is a dict with a ``tot`` entry whose
-    ``power`` field is the whole-board power in mW, as the INA3221
-    exposes it. The sampling interval is a parameter because the
-    dataset does not state it: ``dt_s = 1.0`` is my choice, and the
-    page declares it.
-    """
-    arr = np.load(path, allow_pickle=True)
-    mw = np.array([float(d[key]["power"]) for d in arr], dtype=float)
-    t = np.arange(mw.size, dtype=float) * float(dt_s)
-    return PowerTrace(t_s=t, mw=mw)
