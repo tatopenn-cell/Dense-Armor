@@ -226,8 +226,8 @@ class SyntheticPowerSource:
             duration = time.monotonic() - self._t0
         else:
             duration = float(self.duration_s)
-        duration = max(duration, self.dt_s)
-        n = int(math.ceil(duration / self.dt_s)) + 1
+        duration = max(duration, 1e-6)
+        n = max(int(math.ceil(duration / self.dt_s)) + 1, 2)
         t = np.linspace(0.0, duration, n)
         mw = np.full(n, self.mw)
         return PowerTrace(t_s=t, mw=mw)
