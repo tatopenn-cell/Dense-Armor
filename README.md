@@ -300,3 +300,4 @@ Dense-Armor takes inspiration from [River](https://riverml.xyz) (Montiel et al.,
 - Drones: [Jetson power: how much does the power mode change the time per sample?](docs/drones/jetson_power.md).
 - Drones: [Jetson energy: the joules per 1000 samples of the online and batch pipelines, and one command to measure them on a board](docs/drones/jetson_energy.md).
 - Deep Learning: [Neural bricks: how do I check that a neural piece learns the right gradient?](docs/neural/index.md).
+- Deep Learning: [Layers: how do I build a layer, check its gradient and use it in a stream?](docs/neural/layers.md).
