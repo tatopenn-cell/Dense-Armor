@@ -21,9 +21,7 @@ from dense_armor.utility.neural.params import Param
 def _conv_out_size(i: int, k: int, s: int, p: int) -> int:
     """Output size ``floor((i + 2p - k)/s) + 1`` (Relationship 6, p.15)."""
     if i + 2 * p - k < 0:
-        raise ValueError(
-            f"kernel {k} with padding {p} is larger than input {i}"
-        )
+        raise ValueError(f"kernel {k} with padding {p} is larger than input {i}")
     return (i + 2 * p - k) // s + 1
 
 
@@ -111,10 +109,12 @@ class Conv1D:
         squeeze = x.ndim == 2
         if squeeze:
             x = x[None]
-        _conv_out_size(x.shape[1], self.kernel, self.stride,
-                       self._p_left + self._p_right)
+        _conv_out_size(
+            x.shape[1], self.kernel, self.stride, self._p_left + self._p_right
+        )
         y = jax.lax.conv_general_dilated(
-            x, self.W.value.astype(dt),
+            x,
+            self.W.value.astype(dt),
             window_strides=(self.stride,),
             padding=((self._p_left, self._p_right),),
             dimension_numbers=("NWC", "WIO", "NWC"),
@@ -147,14 +147,12 @@ class Conv1D:
             idx = jnp.arange(L_out) * s + k
             x_slice = x_padded[:, idx, :]
             dW = dW.at[k].set(jnp.einsum("nlo,nli->io", g, x_slice))
-        dx_padded = jnp.zeros(
-            (B, L + p_left + p_right, self.c_in), dtype=dt
-        )
+        dx_padded = jnp.zeros((B, L + p_left + p_right, self.c_in), dtype=dt)
         for k in range(K):
             idx = jnp.arange(L_out) * s + k
             contrib = jnp.einsum("nlo,io->nli", g, W_val[k])
             dx_padded = dx_padded.at[:, idx, :].add(contrib)
-        dx = dx_padded[:, p_left:p_left + L, :]
+        dx = dx_padded[:, p_left : p_left + L, :]
         self.W.grad = self.W.grad + dW.astype(self.W.grad.dtype)
         self.b.grad = self.b.grad + db.astype(self.b.grad.dtype)
         return dx[0] if squeeze else dx
@@ -165,9 +163,7 @@ class Conv1D:
             raise ValueError("init_buffer() requires causal=True")
         return jnp.zeros((self.kernel - 1, self.c_in), dtype=jnp.float32)
 
-    def step(
-        self, x_t: jax.Array, buffer: jax.Array
-    ) -> tuple[jax.Array, jax.Array]:
+    def step(self, x_t: jax.Array, buffer: jax.Array) -> tuple[jax.Array, jax.Array]:
         """One causal step: ``(y_t, new_buffer)``."""
         if not self.causal:
             raise ValueError("step() requires causal=True")
@@ -245,7 +241,8 @@ class Conv2D:
         _conv_out_size(x.shape[1], self.kernel, self.stride, self.padding)
         _conv_out_size(x.shape[2], self.kernel, self.stride, self.padding)
         y = jax.lax.conv_general_dilated(
-            x, self.W.value.astype(dt),
+            x,
+            self.W.value.astype(dt),
             window_strides=(self.stride, self.stride),
             padding=((self.padding, self.padding), (self.padding, self.padding)),
             dimension_numbers=("NHWC", "HWIO", "NHWC"),
@@ -279,24 +276,21 @@ class Conv2D:
                 h_idx = jnp.arange(Ho) * s + kh
                 w_idx = jnp.arange(Wo) * s + kw
                 x_slice = x_padded[:, h_idx[:, None], w_idx[None, :], :]
-                dW = dW.at[kh, kw].set(
-                    jnp.einsum("nhwo,nhwi->io", g, x_slice)
-                )
-        dx_padded = jnp.zeros(
-            (B, H + 2 * p, W + 2 * p, self.c_in), dtype=dt
-        )
+                dW = dW.at[kh, kw].set(jnp.einsum("nhwo,nhwi->io", g, x_slice))
+        dx_padded = jnp.zeros((B, H + 2 * p, W + 2 * p, self.c_in), dtype=dt)
         for kh in range(K):
             for kw in range(K):
                 h_idx = jnp.arange(Ho) * s + kh
                 w_idx = jnp.arange(Wo) * s + kw
                 contrib = jnp.einsum("nhwo,io->nhwi", g, W_val[kh, kw])
-                dx_padded = dx_padded.at[
-                    :, h_idx[:, None], w_idx[None, :], :
-                ].add(contrib)
-        dx = dx_padded[:, p:p + H, p:p + W, :]
+                dx_padded = dx_padded.at[:, h_idx[:, None], w_idx[None, :], :].add(
+                    contrib
+                )
+        dx = dx_padded[:, p : p + H, p : p + W, :]
         self.W.grad = self.W.grad + dW
         self.b.grad = self.b.grad + db
         return dx[0] if squeeze else dx
+
 
 class MaxPool1D:
     """1-D max pooling with the first maximum going to the gradient.
@@ -343,7 +337,7 @@ class MaxPool1D:
         argmaxes = []
         for i in range(L_out):
             start = i * self.stride
-            window = x[:, start:start + self.kernel, :]
+            window = x[:, start : start + self.kernel, :]
             idx = jnp.argmax(window, axis=1)
             val = jnp.take_along_axis(window, idx[:, None, :], axis=1)[:, 0, :]
             ys.append(val)
@@ -421,7 +415,7 @@ class MaxPool2D:
             for j in range(Wo):
                 hs = i * self.stride
                 ws = j * self.stride
-                window = x[:, hs:hs + self.kernel, ws:ws + self.kernel, :]
+                window = x[:, hs : hs + self.kernel, ws : ws + self.kernel, :]
                 flat = window.reshape(window.shape[0], -1, window.shape[-1])
                 idx = jnp.argmax(flat, axis=1)
                 val = jnp.take_along_axis(flat, idx[:, None, :], axis=1)[:, 0, :]
@@ -496,7 +490,7 @@ class AvgPool1D:
         ys = []
         for i in range(L_out):
             start = i * self.stride
-            window = x[:, start:start + self.kernel, :]
+            window = x[:, start : start + self.kernel, :]
             ys.append(window.mean(axis=1))
         self.x_ = x
         y = jnp.stack(ys, axis=1)
@@ -567,7 +561,7 @@ class AvgPool2D:
             for j in range(Wo):
                 hs = i * self.stride
                 ws = j * self.stride
-                window = x[:, hs:hs + self.kernel, ws:ws + self.kernel, :]
+                window = x[:, hs : hs + self.kernel, ws : ws + self.kernel, :]
                 row.append(window.mean(axis=(1, 2)))
             ys.append(jnp.stack(row, axis=1))
         self.x_ = x
@@ -593,9 +587,7 @@ class AvgPool2D:
                     for kw in range(self.kernel):
                         hpos = i * self.stride + kh
                         wpos = j * self.stride + kw
-                        dx = dx.at[b_idx, hpos, wpos, c_idx].add(
-                            share[:, i, j, :]
-                        )
+                        dx = dx.at[b_idx, hpos, wpos, c_idx].add(share[:, i, j, :])
         return dx[0] if squeeze else dx
 
 

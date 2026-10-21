@@ -237,7 +237,9 @@ def test_gru_one_step_by_hand():
 
     x_t = jnp.array([1.0])
     h_prev = jnp.array([0.5])
-    sig = lambda v: 1.0 / (1.0 + np.exp(-v))
+
+    def sig(v):
+        return 1.0 / (1.0 + np.exp(-v))
 
     r_pre = 1.0 * 1.0 + 0.0 * 0.5 + 0.0
     z_pre = 1.0 * 1.0 + 0.0 * 0.5 + 0.0
@@ -278,7 +280,9 @@ def test_lstm_one_step_by_hand():
     x_t = jnp.array([0.5])
     y_prev = jnp.array([0.1])
     c_prev = jnp.array([0.2])
-    sig = lambda v: 1.0 / (1.0 + np.exp(-v))
+
+    def sig(v):
+        return 1.0 / (1.0 + np.exp(-v))
 
     z = np.tanh(1.0 * 0.5)
     i = sig(1.0 * 0.5)

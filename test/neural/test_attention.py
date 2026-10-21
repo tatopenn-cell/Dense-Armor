@@ -54,7 +54,7 @@ def test_sdpa_k_gradcheck():
 def test_sdpa_weights_sum_to_one():
     q = jax.random.normal(jax.random.PRNGKey(0), (3, 4))
     k = jax.random.normal(jax.random.PRNGKey(1), (5, 4))
-    v = jax.random.normal(jax.random.PRNGKey(2), (5, 6))
+    jax.random.normal(jax.random.PRNGKey(2), (5, 6))
     d_k = q.shape[-1]
     scores = q @ k.T / np.sqrt(d_k)
     w = np.asarray(jax.nn.softmax(scores, axis=-1))
