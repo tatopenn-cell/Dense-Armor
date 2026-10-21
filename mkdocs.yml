@@ -70,6 +70,7 @@ plugins:
 nav:
   - Machine learning:
       - Naive Bayes: ml/bayes.md
+      - Change detection: ml/drift.md
       - Linear models: ml/linear.md
       - Multiclass: ml/multiclass.md
       - Multi-output: ml/multioutput.md
@@ -182,6 +183,7 @@ nav:
           - Known limits: limits.md
           - Machine learning against online learning:
               - Naive Bayes: compare/bayes.md
+              - Change detection: compare/drift.md
               - Linear models: compare/linear.md
               - Multiclass: compare/multiclass.md
               - Multi-output: compare/multioutput.md

@@ -6,6 +6,7 @@ Each module is a family of the library. The online classes of
 
 from dense_armor.ml import (  # noqa: F401
     bayes,
+    drift,
     linear,
     multiclass,
     multioutput,
@@ -18,4 +19,4 @@ from dense_armor.ml import (  # noqa: F401
 )
 from dense_armor.ml.base import MLBase
 
-__all__ = ["MLBase", "bayes", "linear", "multiclass", "multioutput", "neighbors", "optim", "preprocessing", "proba", "stats", "tree"]
+__all__ = ["MLBase", "bayes", "drift", "linear", "multiclass", "multioutput", "neighbors", "optim", "preprocessing", "proba", "stats", "tree"]
