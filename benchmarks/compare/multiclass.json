@@ -1,0 +1,29 @@
+{
+  "family": "multiclass",
+  "seeds": 10,
+  "synthetic": true,
+  "wilcoxon_a12": "not computed: the classic and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two",
+  "classes": {
+    "OneVsRestClassifier": {
+      "kind": "abs",
+      "median": 0.052499999999999936,
+      "p90": 0.08199999999999996,
+      "max": 0.09999999999999998,
+      "why": "difference between the test accuracies; the online binary models see each row once"
+    },
+    "OneVsOneClassifier": {
+      "kind": "abs",
+      "median": 0.04749999999999999,
+      "p90": 0.08649999999999997,
+      "max": 0.09999999999999998,
+      "why": "difference between the test accuracies; the online binary models see each row once"
+    },
+    "OutputCodeClassifier": {
+      "kind": "abs",
+      "median": 0.03250000000000003,
+      "p90": 0.08050000000000007,
+      "max": 0.08500000000000008,
+      "why": "difference between the test accuracies; the online binary models see each row once"
+    }
+  }
+}

@@ -71,9 +71,12 @@ nav:
   - Machine learning:
       - Naive Bayes: ml/bayes.md
       - Linear models: ml/linear.md
+      - Multiclass: ml/multiclass.md
+      - Multi-output: ml/multioutput.md
       - Nearest neighbours: ml/neighbors.md
       - Optimizers: ml/optim.md
       - Preprocessing: ml/preprocessing.md
+      - Distributions: ml/proba.md
       - Statistics and sketches: ml/stats.md
   - Online learning:
       - Online learning:
@@ -180,9 +183,12 @@ nav:
           - Machine learning against online learning:
               - Naive Bayes: compare/bayes.md
               - Linear models: compare/linear.md
+              - Multiclass: compare/multiclass.md
+              - Multi-output: compare/multioutput.md
               - Nearest neighbours: compare/neighbors.md
               - Optimizers: compare/optim.md
               - Preprocessing: compare/preprocessing.md
+              - Distributions: compare/proba.md
               - Statistics and sketches: compare/stats.md
       - Applications:
           - Finance:
