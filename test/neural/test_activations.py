@@ -167,3 +167,17 @@ def test_prelu_zero_grad_after_accumulation():
     _ = layer.backward(jnp.ones_like(x))
     layer.a.zero_grad()
     assert float(layer.a.grad[0]) == 0.0
+
+
+def test_prelu_grad_matches_hand_computation():
+    x = jnp.array([-2.0, 1.0, -0.5])
+    layer = PRelu(a=0.25)
+    g = jnp.ones_like(x)
+    _ = layer.forward(x)
+    _ = layer.backward(g)
+    expected = float(jnp.sum(jnp.where(x > 0.0, 0.0, x * g)))
+    got = float(layer.a.grad[0])
+    assert abs(got - expected) < 1e-5, (
+        f"a.grad={got}, expected={expected} (sum of x*g where x<=0)"
+    )
+    assert abs(got - (-2.5)) < 1e-5, f"a.grad={got}, hand value -2.5"

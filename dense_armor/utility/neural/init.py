@@ -75,10 +75,12 @@ def glorot_uniform(key: Any, shape: tuple[int, ...]) -> jax.Array:
     This is not the uniform version of ``xavier_normal`` above.
     ``xavier_normal`` uses ``N(0, sqrt(1/fan_in))``, the linear case
     ``a = 1`` of He et al. 2015 Eqn.(15) page 5, and it takes one
-    dimension of the shape. ``glorot_uniform`` uses the scale
-    ``6/(fan_in + fan_out)`` of Glorot and Bengio Eqn.(16) page 5, and it
-    needs both dimensions. The two formulas come from two different
-    papers and are not interconvertible.
+    dimension of the shape. ``glorot_uniform`` draws from a uniform on
+    ``[-b, b]`` with ``b = sqrt(6/(fan_in + fan_out))``, Eqn.(16) page 5
+    of Glorot and Bengio, and it needs both dimensions. ``b**2`` is
+    ``6/(fan_in + fan_out)``; the docstring writes the bound ``b``, not
+    its square. The two formulas come from two different papers and are
+    not interconvertible.
 
     Raises:
         ValueError: if ``shape`` has fewer than two dimensions, because
