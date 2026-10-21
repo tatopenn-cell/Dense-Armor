@@ -9,8 +9,9 @@ References:
         folder, bibliographic only).
     Kingma, D. P., Ba, J. (2015). Adam: a method for stochastic optimization,
         Algorithm 1, arXiv:1412.6980 (not in the folder, bibliographic only).
-    McMahan, H. B. (2011). Follow-the-regularized-leader and mirror descent,
-        Algorithm 1 (FTRL-Proximal) (not in the folder, bibliographic only).
+    Orabona, F. (2019). A modern introduction to online learning, Chapter 7,
+        Algorithm 7.2 (FTRL with linearised losses) (not in the folder,
+        bibliographic only).
     Hazan, E., Agarwal, A., Kale, S. (2007). Logarithmic regret algorithms for
         online convex optimization, Algorithm 2 (Online Newton Step) (not in
         the folder, bibliographic only).
@@ -135,17 +136,23 @@ class Adam(_Optimizer):
 
 
 class FTRLProximal(_Optimizer):
-    """FTRL-Proximal with L1 and L2 terms (McMahan 2011).
+    """Follow-the-Regularized-Leader with linearised losses and an L1 and L2 term.
+
+    ``z_t = sum_{s <= t} g_s`` and ``eta_t = alpha / t^beta``; the weights are
+    the soft threshold ``w = -sign(z) max(|z| - l1, 0) / (1 / eta_t + l2)``
+    (Orabona 2019, Chapter 7, Algorithm 7.2; the soft threshold is the
+    proximal operator of the L1 norm, Section 7.8; not in the folder,
+    bibliographic only).
 
     Args:
-        alpha: learning-rate scale.
-        beta: learning-rate offset.
+        alpha: numerator of the learning-rate schedule.
+        beta: exponent of the schedule, in ``[0, 1]``.
         l1: L1 strength, which makes small weights exactly zero.
         l2: L2 strength.
 
     Example:
-        >>> FTRLProximal(alpha=1.0, beta=1.0).minimize(lambda w: np.array([1.0]), [0.0], 1).round(4).tolist()
-        [-0.5]
+        >>> FTRLProximal(alpha=1.0, beta=0.5).minimize(lambda w: np.array([1.0]), [0.0], 1).round(4).tolist()
+        [-1.0]
     """
 
     def __init__(
@@ -158,18 +165,14 @@ class FTRLProximal(_Optimizer):
 
     def _init(self, d):
         self.z_ = np.zeros(d)
-        self.n_ = np.zeros(d)
+        self.t_ = 0
 
     def _step(self, w, g):
-        sigma = (np.sqrt(self.n_ + g * g) - np.sqrt(self.n_)) / self.alpha
-        self.z_ = self.z_ + g - sigma * w
-        self.n_ = self.n_ + g * g
-        denom = (self.beta + np.sqrt(self.n_)) / self.alpha + self.l2
-        return np.where(
-            np.abs(self.z_) <= self.l1,
-            0.0,
-            -(self.z_ - np.sign(self.z_) * self.l1) / denom,
-        )
+        self.t_ += 1
+        self.z_ = self.z_ + g
+        eta = self.alpha / self.t_**self.beta
+        shrunk = np.maximum(np.abs(self.z_) - self.l1, 0.0)
+        return -np.sign(self.z_) * shrunk / (1.0 / eta + self.l2)
 
 
 class NewtonStep(_Optimizer):

@@ -1,0 +1,29 @@
+{
+  "family": "linear",
+  "seeds": 10,
+  "synthetic": true,
+  "wilcoxon_a12": "not computed: the classic and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two",
+  "classes": {
+    "LinearRegression": {
+      "kind": "abs",
+      "median": 0.03340680741036853,
+      "p90": 0.05578009360819518,
+      "max": 0.06510198187486171,
+      "why": "the online model takes one stochastic gradient step per row, the batch model solves the problem exactly"
+    },
+    "LogisticRegression": {
+      "kind": "abs",
+      "median": 0.4521437702981289,
+      "p90": 0.48002527878925844,
+      "max": 0.519462623846821,
+      "why": "the online model takes one stochastic gradient step per row, the batch model runs Newton steps to the optimum"
+    },
+    "BayesianLinearRegression": {
+      "kind": "abs",
+      "median": 3.552713678800501e-15,
+      "p90": 4.485301019485632e-15,
+      "max": 4.884981308350689e-15,
+      "why": "the same conjugate posterior: the two differ only by rounding"
+    }
+  }
+}

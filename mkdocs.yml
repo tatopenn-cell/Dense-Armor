@@ -69,6 +69,10 @@ plugins:
 
 nav:
   - Machine learning:
+      - Naive Bayes: ml/bayes.md
+      - Linear models: ml/linear.md
+      - Nearest neighbours: ml/neighbors.md
+      - Optimizers: ml/optim.md
       - Preprocessing: ml/preprocessing.md
       - Statistics and sketches: ml/stats.md
   - Online learning:
@@ -174,6 +178,10 @@ nav:
           - Adversarial robustness: robustness.md
           - Known limits: limits.md
           - Machine learning against online learning:
+              - Naive Bayes: compare/bayes.md
+              - Linear models: compare/linear.md
+              - Nearest neighbours: compare/neighbors.md
+              - Optimizers: compare/optim.md
               - Preprocessing: compare/preprocessing.md
               - Statistics and sketches: compare/stats.md
       - Applications:

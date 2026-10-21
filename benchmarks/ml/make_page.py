@@ -26,7 +26,7 @@ INTRO = json.loads(Path(__file__).with_name("intro.json").read_text(encoding="ut
 def _block(cls) -> tuple[str, str]:
     """Self-contained code and the real output of the doctest example of ``cls``."""
     doc = inspect.getdoc(cls) or ""
-    lines = [f"from {cls.__module__} import {cls.__name__}"]
+    lines = ["import numpy as np", f"from {cls.__module__} import {cls.__name__}"]
     for e in doctest.DocTestParser().get_examples(doc):
         src = e.source.rstrip("\n")
         try:

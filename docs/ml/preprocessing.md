@@ -9,6 +9,7 @@ Every class reads the whole dataset with `fit` and leaves its results in attribu
 Standardise with the mean and the standard deviation (`n - 1`) of the table.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.preprocessing import StandardScaler
 print(StandardScaler().fit_transform([[1.0], [3.0]]).round(4).tolist())
 ~~~
@@ -22,6 +23,7 @@ print(StandardScaler().fit_transform([[1.0], [3.0]]).round(4).tolist())
 Standardise with the exponentially weighted mean and standard deviation.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.preprocessing import EWScaler
 print(EWScaler(alpha=0.5).fit([[1.0], [3.0]]).center_.tolist())
 ~~~
@@ -35,8 +37,9 @@ print(EWScaler(alpha=0.5).fit([[1.0], [3.0]]).center_.tolist())
 Centre on the median and scale by the MAD of the last `window` rows.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.preprocessing import RobustScaler
-print(RobustScaler(window=3).fit([[1.0], [2.0], [9.0]]).scale_.tolist())
+print(RobustScaler(window=3, scale=1.0).fit([[1.0], [2.0], [9.0]]).scale_.tolist())
 ~~~
 
 ~~~
@@ -48,6 +51,7 @@ print(RobustScaler(window=3).fit([[1.0], [2.0], [9.0]]).scale_.tolist())
 Rescale each column to `[0, 1]` with the minimum and the maximum of the table.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.preprocessing import MinMaxScaler
 print(MinMaxScaler().fit_transform([[1.0], [3.0], [2.0]]).T.tolist())
 ~~~
@@ -61,6 +65,7 @@ print(MinMaxScaler().fit_transform([[1.0], [3.0], [2.0]]).T.tolist())
 Drop the columns whose variance (`n - 1`) is at or below `threshold`.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.preprocessing import VarianceThreshold
 print(VarianceThreshold().fit([[1.0, 5.0], [2.0, 5.0]]).keep_.tolist())
 ~~~
@@ -74,6 +79,7 @@ print(VarianceThreshold().fit([[1.0, 5.0], [2.0, 5.0]]).keep_.tolist())
 Keep the `k` columns with the highest absolute Pearson correlation with `y`.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.preprocessing import SelectKBest
 X = [[1.0, 3.0], [2.0, 1.0], [3.0, 2.0]]
 print(SelectKBest(k=1).fit(X, [1.0, 2.0, 3.0]).selected_.tolist())
@@ -85,16 +91,17 @@ print(SelectKBest(k=1).fit(X, [1.0, 2.0, 3.0]).selected_.tolist())
 
 ## 7. `JointDerivatives`
 
-Velocity, acceleration and jerk by backward finite differences on the whole record.
+Velocity, acceleration and jerk from the polynomial through the last `order + 1` samples.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.preprocessing import JointDerivatives
-d = JointDerivatives(order=1).fit([[0.0], [1.0], [3.0]], [0.0, 1.0, 2.0])
-print(d.qd_.T.tolist())
+d = JointDerivatives(order=3).fit([[0.0], [1.0], [8.0], [27.0]], [0.0, 1.0, 2.0, 3.0])
+print(d.qd_[-1].round(6).tolist(), d.qdd_[-1].round(6).tolist(), d.jerk_[-1].round(6).tolist())
 ~~~
 
 ~~~
-[[0.0, 1.0, 2.0]]
+[27.0] [18.0] [6.0]
 ~~~
 
 ## 8. `JointPower`
@@ -102,6 +109,7 @@ print(d.qd_.T.tolist())
 Mechanical power `tau * qd` per joint and its total, for every row.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.preprocessing import JointPower
 print(JointPower().fit([[2.0, 1.0]], [[3.0, 4.0]]).total_.tolist())
 ~~~
@@ -115,6 +123,7 @@ print(JointPower().fit([[2.0, 1.0]], [[3.0, 4.0]]).total_.tolist())
 Lower-case word tokens with optional n-grams, for a list of documents.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.preprocessing import Tokenizer
 print(Tokenizer(ngrams=2).tokenize("The cat sat"))
 ~~~
@@ -128,6 +137,7 @@ print(Tokenizer(ngrams=2).tokenize("The cat sat"))
 Term counts of every document of a list of token lists.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.preprocessing import BagOfWords
 print(BagOfWords().fit([["a", "b", "a"]]).counts_)
 ~~~
@@ -141,6 +151,7 @@ print(BagOfWords().fit([["a", "b", "a"]]).counts_)
 TF-IDF of a corpus: `tf = count / length`, `idf = ln(N / DF)`.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.preprocessing import TFIDF
 t = TFIDF().fit([["a", "b"], ["a", "c"]])
 print(t.df_["a"], round(t.transform_one(["b", "b"])["b"], 4))
@@ -155,6 +166,7 @@ print(t.df_["a"], round(t.transform_one(["b", "b"])["b"], 4))
 Signed feature hashing of a list of count dictionaries into a dense matrix.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.preprocessing import FeatureHasher
 print(FeatureHasher(n_features=8).fit_transform([{"a": 2.0}]).shape)
 ~~~
@@ -168,6 +180,7 @@ print(FeatureHasher(n_features=8).fit_transform([{"a": 2.0}]).shape)
 TF-IDF matrix of a corpus with a fixed vocabulary.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.preprocessing import TextVectorizer
 v = TextVectorizer(ngram_range=(1, 1)).fit(["a b", "a c"])
 print(v.vocabulary_)

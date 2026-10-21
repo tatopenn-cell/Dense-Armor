@@ -1,0 +1,43 @@
+{
+  "family": "optim",
+  "seeds": 10,
+  "synthetic": true,
+  "wilcoxon_a12": "not computed: the classic and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two",
+  "classes": {
+    "SGD": {
+      "kind": "abs",
+      "median": 0.0,
+      "p90": 0.0,
+      "max": 0.0,
+      "why": "the same update rule applied to the same gradient"
+    },
+    "AdaGrad": {
+      "kind": "abs",
+      "median": 0.0,
+      "p90": 0.0,
+      "max": 0.0,
+      "why": "the same update rule applied to the same gradient"
+    },
+    "Adam": {
+      "kind": "abs",
+      "median": 0.0,
+      "p90": 0.0,
+      "max": 0.0,
+      "why": "the same update rule applied to the same gradient"
+    },
+    "FTRLProximal": {
+      "kind": "abs",
+      "median": 0.0,
+      "p90": 0.0,
+      "max": 0.0,
+      "why": "the same update rule applied to the same gradient"
+    },
+    "OnlineNewtonStep": {
+      "kind": "abs",
+      "median": 1.809024041676821e-10,
+      "p90": 5.876858288900153e-09,
+      "max": 3.8494784249110126e-08,
+      "why": "the same update rule applied to the same gradient"
+    }
+  }
+}

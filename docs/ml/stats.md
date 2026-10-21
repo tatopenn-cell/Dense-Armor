@@ -9,6 +9,7 @@ Every class reads the whole dataset with `fit` and leaves its results in attribu
 Sample covariance (`n - 1`) and Pearson correlation of two channels.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.stats import Covariance
 m = Covariance().fit([1.0, 2.0, 3.0], [2.0, 4.0, 6.0])
 print(round(m.cov_, 6), round(m.corr_, 6))
@@ -23,6 +24,7 @@ print(round(m.cov_, 6), round(m.corr_, 6))
 Pearson correlation of two channels over the whole dataset.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.stats import Correlation
 print(Correlation().fit([1.0, 2.0, 3.0], [3.0, 2.0, 1.0]).corr_)
 ~~~
@@ -36,6 +38,7 @@ print(Correlation().fit([1.0, 2.0, 3.0], [3.0, 2.0, 1.0]).corr_)
 Sample covariance over the last `window` pairs and over every window.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.stats import RollingCovariance
 m = RollingCovariance(window=3).fit([1., 2., 3., 4.], [1., 2., 3., 5.])
 print(m.cov_series_.shape)
@@ -50,6 +53,7 @@ print(m.cov_series_.shape)
 Pearson correlation over the last `window` pairs and over every window.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.stats import RollingCorrelation
 m = RollingCorrelation(window=3).fit([1., 2., 3.], [1., 2., 3.])
 print(round(m.corr_, 6))
@@ -64,6 +68,7 @@ print(round(m.corr_, 6))
 Sample autocorrelation at a fixed lag: the standard estimator.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.stats import Autocorrelation
 print(round(Autocorrelation(lag=1).fit([1., 2., 1., 2., 1.]).value_, 4))
 ~~~
@@ -77,6 +82,7 @@ print(round(Autocorrelation(lag=1).fit([1., 2., 1., 2., 1.]).value_, 4))
 Mean, variance (`n - 1`), skewness, excess kurtosis, min, max, range.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.stats import Moments
 m = Moments().fit([1.0, 2.0, 3.0, 4.0])
 print(m.mean_, round(m.var_, 4), m.ptp_)
@@ -91,6 +97,7 @@ print(m.mean_, round(m.var_, 4), m.ptp_)
 The moments of every column of a matrix.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.stats import ColumnMoments
 m = ColumnMoments().fit([[1., 10.], [3., 20.]])
 print(m.mean_.tolist())
@@ -105,6 +112,7 @@ print(m.mean_.tolist())
 Exponentially weighted mean and variance of the whole series.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.stats import EWStats
 print(round(EWStats(alpha=0.5).fit([1.0, 3.0]).mean_, 4))
 ~~~
@@ -118,6 +126,7 @@ print(round(EWStats(alpha=0.5).fit([1.0, 3.0]).mean_, 4))
 Exact quantiles: what DDSketch (Masson et al. 2019) approximates.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.stats import DDSketch
 print(DDSketch().fit([1.0, 2.0, 3.0]).quantile(0.5))
 ~~~
@@ -131,6 +140,7 @@ print(DDSketch().fit([1.0, 2.0, 3.0]).quantile(0.5))
 Exact quantiles: what the t-digest (Dunning 2019) approximates.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.stats import TDigest
 print(TDigest().fit([1.0, 2.0, 3.0, 4.0]).quantile(0.5))
 ~~~
@@ -144,6 +154,7 @@ print(TDigest().fit([1.0, 2.0, 3.0, 4.0]).quantile(0.5))
 Median over every window and over the last window, per column.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.stats import RollingMedian
 m = RollingMedian(window=3).fit([1., 5., 2., 8.])
 print(m.median_.tolist())
@@ -158,6 +169,7 @@ print(m.median_.tolist())
 Linear shrinkage toward `(1/p) I` on the sample covariance of all rows.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.stats import ShrinkageCovariance
 import numpy as np
 X = np.random.default_rng(0).normal(size=(30, 3))
@@ -173,6 +185,7 @@ print(ShrinkageCovariance(3).fit(X).shrunk_.shape)
 Exact item counts: what the Count-Min sketch approximates.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.stats import CountMinSketch
 print(CountMinSketch().fit(["a", "b", "a"]).estimate("a"))
 ~~~
@@ -186,6 +199,7 @@ print(CountMinSketch().fit(["a", "b", "a"]).estimate("a"))
 Exact number of distinct items: what HyperLogLog approximates.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.stats import HyperLogLog
 print(HyperLogLog().fit(["a", "b", "a"]).count_distinct_)
 ~~~
@@ -199,6 +213,7 @@ print(HyperLogLog().fit(["a", "b", "a"]).count_distinct_)
 Exact set membership: what the Bloom filter approximates.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.stats import BloomFilter
 print(BloomFilter().fit(["a"]).check("b"))
 ~~~
@@ -212,6 +227,7 @@ False
 Exact most frequent items: what Space-Saving approximates.
 
 ~~~python
+import numpy as np
 from dense_armor.ml.stats import SpaceSaving
 print(SpaceSaving(k=1).fit(["a", "b", "a"]).top())
 ~~~
