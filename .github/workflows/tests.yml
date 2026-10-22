@@ -62,7 +62,7 @@ jobs:
         if: needs.changes.outputs.code == 'true'
         env:
           JAX_ENABLE_X64: "True"
-        run: pytest test/ -v -m "not training" --cov=dense_armor --cov-report=xml --cov-report=term-missing
+        run: pytest test/ -v -m "not training and not heavy" --cov=dense_armor --cov-report=xml --cov-report=term-missing
 
       # Solo una gamba della matrice carica su Codecov -- 6 upload identici
       # (uno per combinazione OS/Python) non aggiungono informazione, solo

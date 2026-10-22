@@ -27,6 +27,7 @@ def _make(**kw):
     return SyntheticArm(URDF, **base)
 
 
+@pytest.mark.heavy
 def test_nominal_torque_is_inverse_dynamics():
     ds = _make()
     rng = np.random.default_rng(0)

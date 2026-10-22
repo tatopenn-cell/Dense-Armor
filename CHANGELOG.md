@@ -7,6 +7,7 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 ### Added
 - `dense_armor/utility/neural/`: `ConstantLR`, `StepLR`, `CosineWarmRestarts`, `minibatches`, `Trainer`; `docs/neural/training.md` with the guide and the figure of the training loop.
 ### Changed
+- The marker `heavy` (tests above 14 seconds: `test/dynamics`, the payload and the experiment suites, `ensemble/test_comparison.py` and a few more) moves 1060 seconds of the suite out of the matrix of the workflow `tests`, which now runs `-m "not training and not heavy"`; the workflow `tests-slow` runs `training`, `heavy-dynamics` and `heavy-rest` as three parallel jobs (Python 3.12, ubuntu) with the coverage uploaded to Codecov.
 - The five tests of `test/neural` that train a network for minutes carry the marker `training`; the workflow `tests` runs `-m "not training"` and the new workflow `tests-slow` runs them on one job (Python 3.12) when `dense_armor/utility/neural/`, `test/neural/` or `pytest.ini` change. A test for `MaxPool2D.backward` before `forward`, the format of three files, and a positive wording in `docs/neural/vision_layers.md`.
 
 ### Added

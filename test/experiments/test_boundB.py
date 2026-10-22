@@ -68,6 +68,7 @@ def calcola_chunk_ottimale():
     chunk_calcolato = int(ram_libera_byte // costo_stimato_frame)
     return max(1000, min(10000, chunk_calcolato))
 
+@pytest.mark.heavy
 def test_geometric_spatial_attacks():
     """Rotazione/traslazione affine e deformazione elastica: 50000 passi ciascuna
     contro AdaptiveSignalStabilizer."""

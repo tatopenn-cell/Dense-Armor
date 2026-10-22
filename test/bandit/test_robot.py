@@ -2,8 +2,10 @@
 
 
 from dense_armor.utility.bandit import RobotKpSelector
+import pytest
 
 
+@pytest.mark.heavy
 def test_ucb_finds_the_best_gain():
     """UCB should pick kp=8.0 (the best of 0.5, 8.0, 30.0) on most seeds."""
     arms = [0.5, 8.0, 30.0]

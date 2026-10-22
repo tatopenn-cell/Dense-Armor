@@ -139,6 +139,7 @@ def test_pure_inside_lax_scan(cls, kw, n, tol):
     assert jnp.all(jnp.isfinite(w_final))
 
 
+@pytest.mark.heavy
 @pytest.mark.parametrize("diameter", [None, 4.0, 10.0])
 def test_newton_step_projection_object_equals_pure(diameter):
     rng = np.random.default_rng(0)

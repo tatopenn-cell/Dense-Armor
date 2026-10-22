@@ -17,6 +17,9 @@ import numpy as np
 import dense_armor.dynamics.passivity_cbf_controller as pcc
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 from dense_armor.dynamics.passivity_cbf_controller import solve_control_qp, manipulability
+import pytest
+pytestmark = pytest.mark.heavy
+
 
 FIXTURES = os.path.join(os.path.dirname(os.path.dirname(__file__)), "fixtures", "urdf")
 

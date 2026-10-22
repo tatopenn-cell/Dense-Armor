@@ -14,7 +14,9 @@ from test_boundA import test_gradient_based_attacks as _test_A
 from test_boundB import test_geometric_spatial_attacks as _test_B
 from test_boundC import test_optimization_based_attacks as _test_C
 from test_boundD import test_fourier_domain_attacks as _test_D
+import pytest
 
+@pytest.mark.heavy
 def test_adversarial_suite_summary():
     """Esegue le 4 categorie di attacco (CAT-A/B/C/D) in sequenza e stampa un
     riepilogo consolidato -- stessa logica di test_boundA-D.py, eseguite una

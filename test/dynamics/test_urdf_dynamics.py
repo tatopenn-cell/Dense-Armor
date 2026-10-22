@@ -15,6 +15,8 @@ import numpy as np
 import pytest
 
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
+pytestmark = pytest.mark.heavy
+
 
 FIXTURES = os.path.join(os.path.dirname(os.path.dirname(__file__)), "fixtures", "urdf")
 

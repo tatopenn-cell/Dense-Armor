@@ -138,6 +138,7 @@ def test_anomaly_gate_accepts_every_detector():
 # the same err_bare. Its interface is exercised by
 # test_anomaly_gate_accepts_every_detector; the defect stays open in the
 # review of task 10.
+@pytest.mark.heavy
 @pytest.mark.parametrize(
     "name",
     ["hst", "loda", "ocsvm", "mahalanobis", "lof"],
