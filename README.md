@@ -301,4 +301,7 @@ Dense-Armor takes inspiration from [River](https://riverml.xyz) (Montiel et al.,
 - Drones: [Jetson energy: the joules per 1000 samples of the online and batch pipelines, and one command to measure them on a board](docs/drones/jetson_energy.md).
 - Deep Learning: [Neural bricks: how do I check that a neural piece learns the right gradient?](docs/neural/index.md).
 - Deep Learning: [Layers: how do I build a layer, check its gradient and use it in a stream?](docs/neural/layers.md).
+- Deep Learning: [Chains: how do I join layers into a network and train it one sample at a time or on a batch?](docs/neural/chains.md).
+- Deep Learning: [Convolution and pooling: how do I look for a pattern in an image and shrink it?](docs/neural/vision_layers.md).
+- Deep Learning: [Recurrent layers and attention: how do I keep a memory of the past samples?](docs/neural/sequence_layers.md).
 - Machine learning: [Statistics](docs/ml/stats.md), [trees](docs/ml/tree.md), [anomaly detection](docs/ml/anomaly.md), [change detection](docs/ml/drift.md), [vision](docs/ml/vision.md) and the other families of `dense_armor.ml`, grown on the whole table.

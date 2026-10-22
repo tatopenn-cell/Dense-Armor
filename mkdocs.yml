@@ -177,6 +177,9 @@ nav:
   - Deep learning:
       - Foundations: neural/index.md
       - Layers: neural/layers.md
+      - Chains: neural/chains.md
+      - Convolution and pooling: neural/vision_layers.md
+      - Recurrent layers and attention: neural/sequence_layers.md
   - Library:
       - Home: index.md
       - Getting Started: getting-started.md
