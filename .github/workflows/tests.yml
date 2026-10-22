@@ -32,6 +32,7 @@ jobs:
               - '!mkdocs.yml'
               - '!README.md'
               - '!CHANGELOG.md'
+              - '!ARCHITECTURE.md'
               - '!LICENSE'
 
   pytest:
