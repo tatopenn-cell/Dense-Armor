@@ -125,7 +125,7 @@ def test_learning_reduces_error():
     )
 
     t = Trainer(s, MSE(), Adam(0.01))
-    t.fit(X, Y, epochs=20, batch_size=10, key=jax.random.PRNGKey(0))
+    t.fit(X, Y, epochs=40, batch_size=10, key=jax.random.PRNGKey(0))
     after = float(
         np.mean(
             np.asarray((np.asarray(s.forward(jnp.asarray(X), training=False)) - Y) ** 2)

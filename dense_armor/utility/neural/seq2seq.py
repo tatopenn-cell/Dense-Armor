@@ -1,13 +1,13 @@
 """A fixed-horizon sequence encoder and decoder.
 
-The encoder is a recurrent layer (``LSTM`` of N03), the summary is its
+The encoder is a recurrent layer (``LSTM`` of the library), the summary is its
 last output, the decoder reads the summary repeated ``horizon`` times,
 and a ``Dense`` head maps every decoder output to the target. The
 source is read in reverse (page 3 of Sutskever et al. 2014).
 
 This is a fixed-horizon forecaster with the summary ``v`` as input of
 every decoder step, not the initial state of the decoder of Eq.(1),
-page 3 of the paper: the ``LSTM`` of N03 starts from the zero state
+page 3 of the paper: the ``LSTM`` of the library starts from the zero state
 and exposes no gradient on its initial state, and ``Trainer`` feeds a
 model one array. Our choice, stated in the docstring.
 """
@@ -35,6 +35,13 @@ class Seq2Seq:
     ``backward(g)`` returns the gradient of ``x``: the sum of the
     decoder gradients on ``v`` enters the last step of the encoder,
     then the time axis is reversed back.
+
+    This is a fixed-horizon forecaster with ``v`` as input of every
+    decoder step, not the initial state of the decoder of Eq.(1),
+    page 3 of Sutskever et al. 2014: the recurrent layer starts from
+    the zero state and exposes no gradient on its initial state, and
+    ``Trainer`` feeds a model one array. Our choice, stated here and
+    in the page ``docs/neural/encoder_decoder.md``.
 
     Args:
         encoder: a recurrent layer with ``forward``, ``backward``,
@@ -107,6 +114,7 @@ class Seq2Seq:
             x=x,
             squeeze=squeeze,
             x_in=x_in,
+            enc_out=enc_out,
             v=v,
             v_rep=v_rep,
             dec_out=dec_out,
@@ -123,8 +131,7 @@ class Seq2Seq:
         d_dec_out = self.head.backward(g_batch)
         d_v_rep = self.decoder.backward(d_dec_out)
         d_v = d_v_rep.sum(axis=1)
-        enc_out = self.encoder.forward(c["x_in"], training=False)
-        d_enc_out = jnp.zeros_like(enc_out).at[:, -1, :].set(d_v)
+        d_enc_out = jnp.zeros_like(c["enc_out"]).at[:, -1, :].set(d_v)
         d_x_in = self.encoder.backward(d_enc_out)
         if self.reverse_source:
             d_x = jnp.flip(d_x_in, axis=1)

@@ -1,6 +1,6 @@
 # Encoders and decoders: how do I squeeze a stream of joint states into a few numbers, or into a few integers, and expand it back or into a forecast?
 
-An encoder takes a sample and compresses it into a few numbers, the code. A decoder takes the code and expands it back, close to the original. An autoencoder trains the two together so that the reconstruction error is small: a low error means the code kept enough information, a high error means the sample is far from what the network has seen. A vector quantizer rounds the code to the nearest of a fixed set of codes: the code becomes an integer, useful for indexing and compression. A Matryoshka representation trains one embedding so that its first few coordinates are themselves a usable code, and a long one is no worse than a short one. A sequence encoder summarises a whole sequence into one vector, and a decoder expands that vector into a fixed number of future steps. All of these are bricks: each has `forward`, `backward` and `params()`, the `Trainer` of N04 trains it on a batch, and `AsTransformer` places it in a pipeline of the library.
+An encoder takes a sample and compresses it into a few numbers, the code. A decoder takes the code and expands it back, close to the original. An autoencoder trains the two together so that the reconstruction error is small: a low error means the code kept enough information, a high error means the sample is far from what the network has seen. A vector quantizer rounds the code to the nearest of a fixed set of codes: the code becomes an integer, useful for indexing and compression. A Matryoshka representation trains one embedding so that its first few coordinates are themselves a usable code, and a long one is no worse than a short one. A sequence encoder summarises a whole sequence into one vector, and a decoder expands that vector into a fixed number of future steps. All of these are bricks: each has `forward`, `backward` and `params()`, the `Trainer` trains it on a batch, and `AsTransformer` places it in a pipeline of the library.
 
 The page works on a synthetic stream of joint states: 6 numbers per sample (two positions, two velocities, two torques, labelled `synthetic`), a rate of 100 Hz, 300 samples in the training set. The same bricks work on a stream of joint states at a fixed rate.
 
@@ -35,7 +35,7 @@ print(float(a.reconstruction_error(x)))
 
 The encoder reads `[3, 4]` and keeps only the first coordinate (`W = [[1], [0]]`), the decoder rebuilds `[3, 0]` from the code (`W = [[1, 0]]`). The reconstruction is `[3, 0]`; the reconstruction error is the mean over the last axis of `(x - forward(x)) ** 2`, `((3 - 3)**2 + (4 - 0)**2) / 2 = 8`. `encode(x)` returns the code alone, `decode(z)` the reconstruction; both with `training=False`.
 
-The `Trainer` of N04 trains it on a batch with `y = X` and `MSE`:
+The `Trainer` trains it on a batch with `y = X` and `MSE`:
 
 ~~~python
 import jax
@@ -126,7 +126,7 @@ The two heads have loss `0.12693` (size 1) and `0.31326` (size 2); their sum is 
 
 ## 4. The sequence encoder and decoder
 
-`Seq2Seq(encoder, decoder, head, horizon, reverse_source=True)` reads a source sequence with a recurrent encoder and writes a fixed number of future steps with a recurrent decoder and a dense head. With `reverse_source=True` the source is read in reverse (page 3 of Sutskever et al. 2014). The summary `v` is the last output of the encoder; the decoder reads `v` repeated `horizon` times, and the head gives the output for every step. This is a fixed-horizon forecaster with `v` as input of every step, not the initial state of the decoder of Eq.(1), page 3: the `LSTM` of N03 starts from the zero state and exposes no gradient on its initial state.
+`Seq2Seq(encoder, decoder, head, horizon, reverse_source=True)` reads a source sequence with a recurrent encoder and writes a fixed number of future steps with a recurrent decoder and a dense head. With `reverse_source=True` the source is read in reverse (page 3 of Sutskever et al. 2014). The summary `v` is the last output of the encoder; the decoder reads `v` repeated `horizon` times, and the head gives the output for every step. This is a fixed-horizon forecaster with `v` as input of every step, not the initial state of the decoder of Eq.(1), page 3: the recurrent layer starts from the zero state and exposes no gradient on its initial state.
 
 ~~~python
 import jax
@@ -149,11 +149,11 @@ print(len(s.params()))
 32
 ~~~
 
-A source of shape `(4, 2)` (4 steps, 2 features) gives `(2, 1)` (2 steps, 1 output); a batch of 5 gives `(5, 2, 1)`. The 32 parameters are the 15 of the first `LSTM`, the 15 of the second, and the 2 of the head. `Trainer` of N04 trains it on a batch of `(B, T, n_in)` sources and `(B, horizon, n_out)` targets.
+A source of shape `(4, 2)` (4 steps, 2 features) gives `(2, 1)` (2 steps, 1 output); a batch of 5 gives `(5, 2, 1)`. The 32 parameters are the 15 of the first `LSTM`, the 15 of the second, and the 2 of the head. The `Trainer` trains it on a batch of `(B, T, n_in)` sources and `(B, horizon, n_out)` targets.
 
 ## 5. An autoencoder trained online, as an anomaly score
 
-`OnlineAutoencoder(model, optimizer, feature_keys=None, schedule=None)` is an `AnomalyDetector` of the library. `score_one(x)` is the reconstruction error of the autoencoder on the sample, high = anomalous; `learn_one(x)` updates the autoencoder one sample at a time with the same operations, in the same order, as `OnlineNetRegressor` of N05, with the target equal to the sample itself. The reconstruction error as the anomaly score is the argument of Chalapathy and Chawla (2019), pages 6 and 9.
+`OnlineAutoencoder(model, optimizer, feature_keys=None, schedule=None)` is an `AnomalyDetector` of the library. `score_one(x)` is the reconstruction error of the autoencoder on the sample, high = anomalous; `learn_one(x)` updates the autoencoder one sample at a time with the same operations, in the same order, as the online regression model of the library, with the target equal to the sample itself. The reconstruction error as the anomaly score is the argument of Chalapathy and Chawla (2019), pages 6 and 9.
 
 ~~~python
 import jax
@@ -283,7 +283,7 @@ score at white: 1.8375
 median after: 0.0176
 ~~~
 
-The median score of the 150 frames before the white one is `0.017`; the score at the white frame is `1.8375`, about 100 times higher. The autoencoder, trained one frame at a time on the moving blob, reconstructs a frame of the same circle with a low error and the all-white frame with a high one. The median score of the 39 frames after the white one is `0.0176`: the autoencoder has learned the white frame as soon as it has seen it, and the score of the normal frames after it is back near the pre-white level. The white frame is a point anomaly, not a drift.
+The median score of the 150 frames before the white one is `0.017`; the score at the white frame is `1.8375`, about 100 times higher. The autoencoder, trained one frame at a time on the moving blob, reconstructs a frame of the same circle with a low error and the all-white frame with a high one. The median score of the 40 frames after the white one is `0.0176`: the autoencoder has learned the white frame as soon as it has seen it, and the score of the normal frames after it is back near the pre-white level. The white frame is a point anomaly, not a drift.
 
 ## 7. The code of the autoencoder and the code of PCA
 
@@ -325,7 +325,7 @@ print(pca_errs)
 [0.1733, 0.0018, 0.0012, 0.0008]
 ~~~
 
-The two errors are both measured as the mean over the last axis of the squared error. At size 1 the two are similar (`0.175` vs `0.173`): the first component of `PCA` already captures the direction of the plane. At size 2 `PCA` is much better than the autoencoder (`0.002` vs `0.046`): the closed-form solution of `PCA` is exact for a linear subspace, while a two-layer linear network with 30 Adam epochs is a gradient descent that has not converged to the same optimum. The gap is the price of the iterative training, and the `OnlineAutoencoder` of step 5 learns one sample at a time, so the user pays it on purpose for the online mode.
+The two errors are both measured as the mean over the last axis of the squared error. At size 1 the two are similar (`0.175` vs `0.173`): the first component of `PCA` already captures the direction of the plane. At size 2 `PCA` reaches `0.002` and the autoencoder reaches `0.046`: the closed-form solution of `PCA` is exact for a linear subspace, while a two-layer linear network with 30 Adam epochs is a gradient descent that has not converged to the same optimum. The gap is the price of the iterative training, and the `OnlineAutoencoder` of step 5 learns one sample at a time, and it is trained by gradient descent, so the iterative cost is the price of the online mode.
 
 ## 8. The encoder inside a pipeline
 
@@ -346,19 +346,19 @@ dec2 = Sequential([Dense(1, 2, jax.random.PRNGKey(1))])
 dec2.layers[0].W.value = jnp.array([[1.0, 0.0]])
 dec2.layers[0].b.value = jnp.array([0.0, 0.0])
 ae = Autoencoder(enc2, dec2)
-at = AsTransformer(ae.encoder, ["a", "b"])
+at = AsTransformer(ae.encoder, ["a", "b"], prefix="c")
 print(at.transform_one({"a": 3.0, "b": 4.0}))
 ~~~
 
 ~~~
-{'z0': 3.0}
+{'c0': 3.0}
 ~~~
 
-The encoder has the weights of the hand case (`W = [[1], [0]]`, `b = [0]`), so `[3, 4]` becomes `z0 = 3`. `AsTransformer` reads the keys `a` and `b` in order, builds the vector `[3, 4]`, runs the encoder with `training=False`, and returns the code as a dict of `float`. The pipeline of `dense_armor.roles` calls `transform_one` on one sample at a time, with the same code as the batch.
+The encoder has the weights of the hand case (`W = [[1], [0]]`, `b = [0]`), so `[3, 4]` becomes `c0 = 3`. `AsTransformer` reads the keys `a` and `b` in order, builds the vector `[3, 4]`, runs the encoder with `training=False`, and returns the code as a dict of `float`. The pipeline of `dense_armor.roles` calls `transform_one` on one sample at a time, with the same code as the batch.
 
 ![The reconstruction error of Autoencoder and PCA, the code usage of VectorQuantizer, the Matryoshka accuracy, a Seq2Seq forecast, the score of an OnlineAutoencoder on a stream with a fault](../assets/neural/encoder_decoder.png)
 
-The first panel is the reconstruction error of an `Autoencoder` and of `PCA` on the 300 synthetic samples against the code size (1, 2, 3, 4), both measured as the mean over the last axis of the squared error: `0.434, 0.022, 0.007, 0.010` for the autoencoder, `0.147, 0.002, 0.001, 0.001` for `PCA`. The two saturate after size 2. The second panel is the code usage of a `VectorQuantizer` with 4 codes: `87, 78, 69, 66`, close to uniform. The third panel is the accuracy of a `MatryoshkaLoss` on synthetic 4-class data in `R^8` where the first 2 coordinates separate the classes: `0.99, 0.82, 0.935` for sizes 2, 4, 8. The fourth panel is the forecast of a `Seq2Seq` on one of the sinusoids, against the truth: the mean squared error over the batch is `0.13`. The fifth panel is the score of an `OnlineAutoencoder` along a stream of 400 synthetic samples with an offset injected at sample 300: the median before the fault is `0.10`, the score at the fault is `24.40`, the median after is `1.77`. The sixth panel gives the three numbers as text.
+The first panel is the reconstruction error of an `Autoencoder` and of `PCA` on the 300 synthetic samples against the code size (1, 2, 3, 4), both measured as the mean over the last axis of the squared error: `0.434, 0.022, 0.007, 0.010` for the autoencoder, `0.147, 0.002, 0.001, 0.001` for `PCA`. The two saturate after size 2. The second panel is the code usage of a `VectorQuantizer` with 4 codes: `87, 78, 69, 66`, close to uniform. The third panel is the accuracy of a `MatryoshkaLoss` on synthetic 4-class data in `R^8` where the first 2 coordinates separate the classes: `0.99, 0.82, 0.935` for sizes 2, 4, 8. The fourth panel is the forecast of a `Seq2Seq` on one of the sinusoids, against the truth: the mean squared error over the batch is `0.13`, measured on the training batch (a fit, not a generalisation measure). The fifth panel is the score of an `OnlineAutoencoder` along a stream of 400 synthetic samples with an offset injected at sample 300: the median before the fault is `0.10`, the score at the fault is `24.40`, the median after is `1.77`. The sixth panel gives the three numbers as text.
 
 ## Details
 
@@ -368,19 +368,19 @@ The first panel is the reconstruction error of an `Autoencoder` and of `PCA` on 
 - van den Oord, A., Vinyals, O., Kavukcuoglu, K. (2017). *Neural Discrete Representation Learning.* arXiv:1711.00937. Page 3, Eq.(1) the nearest code and Eq.(2) `z_q = e_k`. Page 3, the gradient copied from the decoder input to the encoder output. Page 4, Eq.(3) with the codebook and commitment terms and `beta = 0.25` (results unchanged for `beta` from 0.1 to 2.0).
 - Kusupati, A., Bhatt, G., Rege, A., Wallingford, M., Sinha, A., Ramanujan, V., Howard-Snyder, W., Chen, K., Kakade, S., Jain, P., Farhadi, A. (2022). *Matryoshka Representation Learning.* arXiv:2205.13147. Page 4, Eq.(1), the sum over the sizes `m` of `c_m L(W(m) F(x)_{1:m}; y)`, the sizes obtained by halving, `c_m = 1`.
 - Chalapathy, R., Chawla, S. (2019). *Deep Learning for Anomaly Detection: A Survey.* arXiv:1901.03407. Page 6, autoencoders trained on data with no anomalies produce low reconstruction errors for normal instances and high ones for unusual events. Page 9, the magnitude of the residual (the reconstruction error) is the anomaly score, ranked or thresholded.
-- Balsubramani, A., Dasgupta, S., Freund, Y. (2013). *The Fast Convergence of Incremental PCA.* arXiv:1501.03796. Page 1, the Oja update. Page 2, `gamma_n = c / n`. Only the page quotes this, in the reference of `IncrementalPCA`; the task does not implement an online PCA.
+- Balsubramani, A., Dasgupta, S., Freund, Y. (2013). *The Fast Convergence of Incremental PCA.* arXiv:1501.03796. Page 1, the Oja update. Page 2, `gamma_n = c / n`. Only the page quotes this, in the reference of `IncrementalPCA`; the page does not add an online PCA brick.
 
-The autoencoder, the reconstruction error as a number, the online step of the autoencoder (the update of N05 with `y = x`), the codebook initialisation and the forecast head are engineering definitions and carry no citation. Zhou, Sohn and Lee, *Online incremental feature learning with denoising autoencoders*, AISTATS 2012 (found in the reference list on page 9 of arXiv:1711.03705, which is not in this folder), is cited as *not in the folder, bibliographic only*.
+The autoencoder, the reconstruction error as a number, the online step of the autoencoder (the online update with `y = x`), the codebook initialisation and the forecast head are engineering definitions and carry no citation. Zhou, Sohn and Lee, *Online incremental feature learning with denoising autoencoders*, AISTATS 2012 is cited as *bibliographic only*.
 
 ### Choices stated explicitly
 
 - The codebook of the `VectorQuantizer` starts from a zero-mean Gaussian, not from a uniform distribution or a fixed grid. The paper (page 3) gives no initialisation; a Gaussian is the same distribution the encoder starts from, and the codebook adapts to the codes it receives.
-- The `Seq2Seq` uses the summary `v` as input of every decoder step, not as the initial state of the decoder of Eq.(1), page 3. The `LSTM` of N03 starts from the zero state and exposes no gradient on its initial state, and `Trainer` feeds a model one array; a fixed-horizon forecaster with `v` at every step is the variant that fits the bricks of the library. The docstring of `Seq2Seq` states it.
-- The autoencoder's `reconstruction_error` is the mean over the last axis of `(x - forward(x)) ** 2`: one value per sample for a batch, a scalar for one sample. The mean over the last axis is the natural reduction for a vector sample; the choice is stated in the docstring.
-- `OnlineAutoencoder.score_one` returns `0.0` for a dict with a missing key, a `nan` or an `inf`. This is the convention of the anomaly detectors of the library (see `AnomalyDetector` in `ROLES_API.md`), and it keeps the score a `float` for every input.
+- The `Seq2Seq` uses the summary `v` as input of every decoder step, not as the initial state of the decoder of Eq.(1), page 3. The recurrent layer starts from the zero state and exposes no gradient on its initial state, and `Trainer` feeds a model one array; a fixed-horizon forecaster with `v` at every step is the variant that fits the bricks of the library. The docstring of `Seq2Seq` states it.
+- The `reconstruction_error` is the mean over the last axis of `(x - forward(x)) ** 2`: one value per sample for a batch, a scalar for one sample. The mean over the last axis is the natural reduction for a vector sample; the choice is stated in the docstring.
+- `OnlineAutoencoder.score_one` returns `0.0` for a dict with a missing key, a `nan` or an `inf`. This is the convention of the anomaly detectors of the library, and it keeps the score a `float` for every input.
 - `budget_s = 0.05` for `OnlineAutoencoder`: ten times the measured p99 of `learn_one` (`3.94 ms` on this runtime with the hand-case autoencoder), never below `1e-3`. `memory_class = "O(1)"`.
-- The batch form of each brick is trained by the `Trainer` of N04 with `y = X` for the autoencoder, `y` for the Matryoshka loss, `y` of shape `(B, horizon, n_out)` for the `Seq2Seq`. The online form of the autoencoder is the only one of item E; the online form of `VectorQuantizer`, `MatryoshkaLoss` and `Seq2Seq` is not in this task.
+- The batch form of each brick is trained by the `Trainer` with `y = X` for the autoencoder, `y` for the Matryoshka loss, `y` of shape `(B, horizon, n_out)` for the `Seq2Seq`. The online form is provided only for the autoencoder; `VectorQuantizer`, `MatryoshkaLoss` and `Seq2Seq` are batch models.
 
 ### Development diary
 
-The delivery leaves out the exponential moving average of the codebook (the second term of the loss of the VQ-VAE, page 4 of van den Oord et al. 2017), a decoder fed with the generated tokens of the previous step (the autoregressive form of Seq2Seq), the weight tying of the Matryoshka heads (the largest head sharing part of its weights with the smaller ones), and the online form of `VectorQuantizer`, `MatryoshkaLoss` and `Seq2Seq`. The `OnlineAutoencoder` trains the autoencoder one sample at a time, which is the form of item E; the batch form of the autoencoder is the one of the `Trainer`. The `IncrementalPCA` of the library is quoted only in the figure; the task does not implement an online PCA.
+The exponential moving average of the codebook (the second term of the loss of the VQ-VAE, page 4 of van den Oord et al. 2017), a decoder fed with the generated tokens of the previous step (the autoregressive form of Seq2Seq), the weight tying of the Matryoshka heads (the largest head sharing part of its weights with the smaller ones), and the online form of `VectorQuantizer`, `MatryoshkaLoss` and `Seq2Seq` are not implemented. The `OnlineAutoencoder` trains the autoencoder one sample at a time; the batch form of the autoencoder is the one of the `Trainer`. The `IncrementalPCA` of the library is quoted only in the figure; the page does not add an online PCA brick.

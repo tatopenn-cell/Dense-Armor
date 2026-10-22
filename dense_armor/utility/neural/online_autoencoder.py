@@ -4,7 +4,7 @@
 ``AnomalyDetector`` of the library: ``score_one(x)`` is the
 reconstruction error of the autoencoder on the sample, high =
 anomalous, and ``learn_one(x)`` updates the autoencoder one sample at
-a time with the same step as ``OnlineNetRegressor`` of N05 (the
+a time with the same step as ``OnlineNetRegressor`` of the library (the
 target is the input itself, ``y = x``). The reconstruction error as
 the anomaly score is the argument of Chalapathy and Chawla (2019),
 pages 6 and 9: an autoencoder trained on normal samples reconstructs
@@ -57,7 +57,7 @@ class OnlineAutoencoder(AnomalyDetector):
     """An autoencoder trained one sample at a time, as an anomaly score.
 
     ``learn_one(x, t=None)`` updates the autoencoder with the same
-    operations, in the same order, as ``OnlineNetRegressor`` of N05:
+    operations, in the same order, as ``OnlineNetRegressor`` of the library:
     ``zero_grad()`` on every ``Param``, ``forward(vector,
     training=True)``, the ``MSE`` loss against the vector itself, the
     ``backward``, the learning rate ``schedule(n_seen_)`` written to
