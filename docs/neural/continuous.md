@@ -34,7 +34,7 @@ The forward pass gives `2.0`. The gradient of the MSE with respect to the predic
 
 ## 2. The online step equals the batch of one sample
 
-Twenty samples fed one by one to `OnlineNetRegressor` leave the weights equal, within `1e-6`, to one `Trainer.fit` with `batch_size=1` and `shuffle=False` on the same model and the same data. This is the contract of N04: one code path serves the classic mode and the online mode.
+Twenty samples fed one by one to `OnlineNetRegressor` leave the weights equal, within `1e-6`, to one `Trainer.fit` with `batch_size=1` and `shuffle=False` on the same model and the same data. This is the contract of N04: one code path serves the batch mode and the online mode.
 
 ~~~python
 import jax

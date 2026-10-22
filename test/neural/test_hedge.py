@@ -129,10 +129,10 @@ def test_hedge_eq3_against_jax_grad():
     for j in range(c.L_ + 1):
         d_logits = (probs[j] - onehot) * c.alphas_[j]
         d_h = c.Thetas_[j].value @ d_logits
-        for l in range(j, 0, -1):
-            d_pre = d_h * (hs[l] > 0).astype(d_h.dtype)
-            dWs[l - 1] = dWs[l - 1] + jnp.outer(hs[l - 1], d_pre)
-            d_h = c.Ws_[l - 1].value @ d_pre
+        for lvl in range(j, 0, -1):
+            d_pre = d_h * (hs[lvl] > 0).astype(d_h.dtype)
+            dWs[lvl - 1] = dWs[lvl - 1] + jnp.outer(hs[lvl - 1], d_pre)
+            d_h = c.Ws_[lvl - 1].value @ d_pre
     manual = -0.1 * np.asarray(dWs[0])
     np.testing.assert_allclose(manual, -0.1 * np.asarray(grad_W0), atol=1e-5)
 
@@ -272,3 +272,27 @@ def test_hedge_missing_after_learn():
     c.learn_one({"a": 1.0, "b": 0.0}, 1)
     assert c.predict_proba_one({}) == {}
     assert c.predict_one({}) is None
+
+
+def test_hedge_read_returns_none_on_missing_and_non_numeric():
+    c = HedgeNetClassifier(
+        [2, 4], jax.random.PRNGKey(0), classes=[0, 1], feature_keys=["a", "b"]
+    )
+    w0 = [np.asarray(p.value).copy() for p in c.params()]
+    c.learn_one({"a": 1.0}, 1)
+    c.learn_one({"a": 1.0, "b": None}, 1)
+    c.learn_one({"a": 1.0, "b": "x"}, 1)
+    c.learn_one({"a": 1.0, "b": float("nan")}, 1)
+    assert c.n_missing_ == 4
+    w1 = [np.asarray(p.value).copy() for p in c.params()]
+    for a, b in zip(w0, w1):
+        assert np.allclose(a, b)
+
+
+def test_hedge_read_x_not_dict():
+    """Line 140: _read returns None when x is not a dict."""
+    c = HedgeNetClassifier([2, 4], jax.random.PRNGKey(0), classes=[0, 1])
+    c.learn_one(None, 1)
+    assert c.n_missing_ == 1
+    c.learn_one({"a": 1.0, "b": 0.0}, 1)
+    assert c.n_seen_ == 1

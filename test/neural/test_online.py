@@ -385,3 +385,183 @@ def test_online_l2_online():
     w_o = [np.asarray(p.value).copy() for p in r.model_.params()]
     for a, b in zip(w_t, w_o):
         assert np.allclose(a, b, atol=1e-6)
+
+
+def test_regressor_y_not_numeric_counts_as_missing():
+    m = mlp([2, 2, 1], jax.random.PRNGKey(0))
+    r = OnlineNetRegressor(m, MSE(), SGD(0.1), feature_keys=["a", "b"])
+    w0 = [np.asarray(p.value).copy() for p in r.model_.params()]
+    r.learn_one({"a": 1.0, "b": 0.0}, None)
+    r.learn_one({"a": 1.0, "b": 0.0}, "a")
+    r.learn_one({"a": 1.0, "b": 0.0}, float("nan"))
+    assert r.n_missing_ == 3
+    assert r.n_seen_ == 0
+    w1 = [np.asarray(p.value).copy() for p in r.model_.params()]
+    for a, b in zip(w0, w1):
+        assert np.allclose(a, b)
+
+
+def test_values_equal_wrap_mismatch_and_param_count():
+    from dense_armor.utility.neural.online import _EqWrap, _values_equal
+
+    m1 = mlp([2, 4, 1], jax.random.PRNGKey(0))
+    m2 = mlp([3, 4, 1], jax.random.PRNGKey(0))
+    assert not _values_equal(m1, m2)
+    assert not _values_equal(_EqWrap(1), "1")
+    assert _values_equal(_EqWrap(ConstantLR(0.1)), ConstantLR(0.1))
+
+
+def test_classifier_decoupled_online():
+    X, y, dicts = _data(10)
+    y_int = np.array([1 if v > 0 else 0 for v in y.reshape(-1)])
+    m1 = mlp([2, 1], jax.random.PRNGKey(42))
+    t = Trainer(m1, BCEWithLogits(), SGD(0.1), weight_decay=0.1, decay="decoupled")
+    t.fit(
+        X,
+        y_int.reshape(-1, 1),
+        epochs=1,
+        batch_size=1,
+        key=jax.random.PRNGKey(0),
+        shuffle=False,
+    )
+    w_t = [np.asarray(p.value).copy() for p in m1.params()]
+
+    m2 = mlp([2, 1], jax.random.PRNGKey(42))
+    c = OnlineNetClassifier(
+        m2,
+        BCEWithLogits(),
+        SGD(0.1),
+        classes=[0, 1],
+        feature_keys=["a", "b"],
+        weight_decay=0.1,
+        decay="decoupled",
+    )
+    for d, yi in zip(dicts, y_int):
+        c.learn_one(d, int(yi))
+    w_o = [np.asarray(p.value).copy() for p in c.model_.params()]
+    for a, b in zip(w_t, w_o):
+        assert np.allclose(a, b, atol=1e-6)
+
+
+def test_classifier_y_not_in_classes():
+    m = mlp([2, 1], jax.random.PRNGKey(0))
+    c = OnlineNetClassifier(
+        m, BCEWithLogits(), SGD(0.1), classes=[0, 1], feature_keys=["a", "b"]
+    )
+    c.learn_one({"a": 1.0, "b": 0.0}, 5)
+    assert c.n_missing_ == 1
+    c.learn_one({"a": 1.0, "b": 0.0}, None)
+    assert c.n_missing_ == 2
+    c.learn_one({"a": 1.0, "b": 0.0}, 1)
+    assert c.n_seen_ == 1
+
+
+def test_regressor_first_x_not_dict():
+    m = mlp([2, 2, 1], jax.random.PRNGKey(0))
+    r = OnlineNetRegressor(m, MSE(), SGD(0.1))
+    r.learn_one(None, 0.0)
+    assert r.n_missing_ == 1
+    r.learn_one({"a": 1.0, "b": 0.0}, 0.0)
+    assert r.n_seen_ == 1
+
+
+def test_regressor_read_features_returns_none():
+    m = mlp([2, 2, 1], jax.random.PRNGKey(0))
+    r = OnlineNetRegressor(m, MSE(), SGD(0.1), feature_keys=["a", "b"])
+    r.learn_one({"a": 1.0}, 0.0)
+    assert r.n_missing_ == 1
+    r.learn_one({"a": 1.0, "b": None}, 0.0)
+    assert r.n_missing_ == 2
+    r.learn_one({"a": 1.0, "b": "not-a-number"}, 0.0)
+    assert r.n_missing_ == 3
+    r.learn_one({"a": 1.0, "b": 0.0}, 0.0)
+    assert r.n_seen_ == 1
+
+
+def test_values_equal_param_count_differs():
+    """Line 90: same type, params() length differs -> False."""
+    from dense_armor.utility.neural.online import _values_equal
+
+    class P:
+        def __init__(self, v):
+            self.value = v
+
+    class M:
+        def __init__(self, n):
+            self.n = n
+
+        def params(self):
+            return [P(0.0) for _ in range(self.n)]
+
+    assert not _values_equal(M(2), M(1))
+    assert _values_equal(M(2), M(2))
+
+
+def test_values_equal_dict_keys_differ():
+    """Line 99: same type, __dict__ keys differ -> False."""
+    from dense_armor.utility.neural.online import _values_equal
+
+    class D:
+        def __init__(self, extra=False):
+            self.x = 1
+            if extra:
+                self.y = 2
+
+    assert not _values_equal(D(False), D(True))
+    assert _values_equal(D(False), D(False))
+
+
+def test_values_equal_nested_values_differ():
+    """Line 102: same type, same keys, a nested value differs -> False."""
+    from dense_armor.utility.neural.online import _values_equal
+
+    class A:
+        def __init__(self, v):
+            self.x = v
+
+    assert not _values_equal(A(1), A(2))
+    assert _values_equal(A(1), A(1))
+
+
+def test_classifier_l2_weight_decay_online():
+    """Line 396: the classifier L2 branch matches the Trainer."""
+    X, y, dicts = _data(10)
+    y_int = np.array([1 if v > 0 else 0 for v in y.reshape(-1)])
+
+    m1 = mlp([2, 1], jax.random.PRNGKey(42))
+    t = Trainer(m1, BCEWithLogits(), SGD(0.1), weight_decay=0.5, decay="l2")
+    t.fit(
+        X,
+        y_int.reshape(-1, 1),
+        epochs=1,
+        batch_size=1,
+        key=jax.random.PRNGKey(0),
+        shuffle=False,
+    )
+    w_t = [np.asarray(p.value).copy() for p in m1.params()]
+
+    m2 = mlp([2, 1], jax.random.PRNGKey(42))
+    c = OnlineNetClassifier(
+        m2,
+        BCEWithLogits(),
+        SGD(0.1),
+        classes=[0, 1],
+        feature_keys=["a", "b"],
+        weight_decay=0.5,
+        decay="l2",
+    )
+    for d, yi in zip(dicts, y_int):
+        c.learn_one(d, int(yi))
+    w_o = [np.asarray(p.value).copy() for p in c.model_.params()]
+    for a, b in zip(w_t, w_o):
+        assert np.allclose(a, b, atol=1e-6)
+
+
+def test_classifier_first_x_not_dict():
+    """Lines 437-438: first learn with x not a dict -> n_missing."""
+    m = mlp([2, 1], jax.random.PRNGKey(0))
+    c = OnlineNetClassifier(m, BCEWithLogits(), SGD(0.1), classes=[0, 1])
+    c.learn_one(None, 1)
+    assert c.n_missing_ == 1
+    c.learn_one({"a": 1.0, "b": 0.0}, 1)
+    assert c.n_seen_ == 1

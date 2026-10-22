@@ -199,10 +199,10 @@ class HedgeNetClassifier(Classifier):
             d_logits = (probs[j] - onehot) * self.alphas_[j]
             dThetas[j] = jnp.outer(hs[j], d_logits)
             d_h = self.Thetas_[j].value @ d_logits
-            for l in range(j, 0, -1):
-                d_pre = d_h * (hs[l] > 0).astype(d_h.dtype)
-                dWs[l - 1] = dWs[l - 1] + jnp.outer(hs[l - 1], d_pre)
-                d_h = self.Ws_[l - 1].value @ d_pre
+            for lvl in range(j, 0, -1):
+                d_pre = d_h * (hs[lvl] > 0).astype(d_h.dtype)
+                dWs[lvl - 1] = dWs[lvl - 1] + jnp.outer(hs[lvl - 1], d_pre)
+                d_h = self.Ws_[lvl - 1].value @ d_pre
         for i in range(self.L_):
             self.Ws_[i].value = self.Ws_[i].value - self.lr * dWs[i]
         for i in range(self.L_ + 1):

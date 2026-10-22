@@ -207,7 +207,12 @@ class OnlineNetRegressor(Regressor):
     def learn_one(self, x: dict, y: Any, t: float | None = None) -> OnlineNetRegressor:
         """One online step; returns ``self``."""
         del t
-        if not math.isfinite(float(y)):
+        try:
+            yv = float(y)
+        except (TypeError, ValueError):
+            self.n_missing_ += 1
+            return self
+        if not math.isfinite(yv):
             self.n_missing_ += 1
             return self
         if self.feature_keys is None and self.feature_keys_ is None:
@@ -230,7 +235,7 @@ class OnlineNetRegressor(Regressor):
         for p in self.model_.params():
             p.zero_grad()
         pred = self.model_.forward(vec, training=True)
-        y_arr = jnp.asarray([float(y)], dtype=jnp.float32)
+        y_arr = jnp.asarray([yv], dtype=jnp.float32)
         self.loss.forward(pred.reshape(-1, 1), y_arr.reshape(-1, 1))
         self.model_.backward(self.loss.backward())
         for p, opt in zip(self.model_.params(), self.optimizers_):
