@@ -87,16 +87,50 @@ def test_missing_values_count():
         assert np.allclose(a, b)
 
 
+def _arrays_and_elements(oa):
+    n_arrays = 0
+    n_elements = 0
+    for prm in oa.model_.params():
+        n_arrays += 1
+        n_elements += int(prm.value.size)
+    for opt in oa.optimizers_:
+        for attr in ("m", "v", "_m", "_v"):
+            if not hasattr(opt, attr):
+                continue
+            arr = getattr(opt, attr)
+            size = int(getattr(arr, "size", 0))
+            if size == 0:
+                continue
+            n_arrays += 1
+            n_elements += size
+    return n_arrays, n_elements
+
+
 def test_bound_memory_constant_after_many_samples():
-    oa = OnlineAutoencoder(_hand(), SGD(0.01), feature_keys=["a", "b"])
+    oa = OnlineAutoencoder(_hand(), Adam(0.01), feature_keys=["a", "b"])
     for _ in range(200):
         oa.learn_one({"a": 1.0, "b": 0.0})
-    n_params_200 = len(oa.model_.params()) + len(oa.optimizers_)
+    n_arrays_200, n_elements_200 = _arrays_and_elements(oa)
     for _ in range(1800):
         oa.learn_one({"a": 1.0, "b": 0.0})
-    n_params_2000 = len(oa.model_.params()) + len(oa.optimizers_)
+    n_arrays_2000, n_elements_2000 = _arrays_and_elements(oa)
     assert oa.n_seen_ == 2000
-    assert n_params_200 == n_params_2000
+    assert n_arrays_200 == n_arrays_2000, (
+        f"array count grew: {n_arrays_200} -> {n_arrays_2000}"
+    )
+    assert n_elements_200 == n_elements_2000, (
+        f"element count grew: {n_elements_200} -> {n_elements_2000}"
+    )
+    n_params = sum(int(prm.value.size) for prm in oa.model_.params())
+    n_opt_state = n_elements_2000 - n_params
+    assert n_opt_state > 0, (
+        f"test counts only params ({n_params}), not optimizer state: "
+        f"the optimizer must expose _m and _v (Adam) so the count includes state"
+    )
+    print(
+        f"arrays={n_arrays_2000} elements={n_elements_2000} "
+        f"params={n_params} opt_state={n_opt_state}"
+    )
 
 
 @pytest.mark.training

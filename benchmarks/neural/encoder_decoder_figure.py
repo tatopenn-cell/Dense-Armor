@@ -1,11 +1,23 @@
 """Generate docs/assets/neural/encoder_decoder.png.
 
-Five panels on synthetic data, from the library classes: the
-reconstruction error of an Autoencoder and of PCA against the code
-size; the code usage of a VectorQuantizer; the accuracy of the
-Matryoshka heads against m; a forecast of a Seq2Seq against the
-truth; the score of an OnlineAutoencoder along a stream with a
-fault. The labels say ``synthetic``.
+Five panels on synthetic data, from the library classes:
+
+1. the reconstruction error of an Autoencoder and of PCA against the
+   code size, both as the mean over the last axis of the squared error;
+2. the code usage of a VectorQuantizer;
+3. the accuracy of the Matryoshka heads against m: the model is
+   trained on the first 60 of the 200 samples and evaluated on all 200,
+   so 140 of the 200 points were never used in training. The three
+   accuracies ``0.99, 0.82, 0.935`` are computed on all 200 points, of
+   which 60 are train and 140 are held out;
+4. a forecast of a Seq2Seq against the truth on a synthetic sinusoid:
+   the printed MSE is measured on the training batch, not on held-out
+   data, and the panel is a fit, not a generalisation measure;
+5. the score of an OnlineAutoencoder along a stream with a fault
+   injected at sample 300.
+
+The labels say ``synthetic``. The classes are the ones of
+``dense_armor.utility.neural`` and ``dense_armor.utility.vision.reduce``.
 """
 
 from __future__ import annotations

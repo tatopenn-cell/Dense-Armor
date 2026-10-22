@@ -153,3 +153,12 @@ def test_value_errors_and_runtime_error():
         vq.backward(jnp.ones((1, 1)))
     with pytest.raises(RuntimeError, match="call forward"):
         vq.loss()
+
+
+def test_repr():
+    vq = VectorQuantizer(2, 1, jax.random.PRNGKey(0), beta=0.25)
+    s = repr(vq)
+    assert "VectorQuantizer" in s
+    assert "n_codes=2" in s
+    assert "dim=1" in s
+    assert "beta=0.25" in s

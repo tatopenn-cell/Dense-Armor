@@ -2,8 +2,7 @@
 
 The class joins two models, the ``encoder`` and the ``decoder``, into
 one model with ``forward``, ``backward`` and ``params()``. The ``Trainer``
-of N04 trains it with ``y = X`` and ``MSE``; the task adds no training
-loop. The reconstruction error is the mean squared difference between
+trains it with ``y = X`` and ``MSE``. The reconstruction error is the mean squared difference between
 the input and the output of the autoencoder, one value per sample.
 """
 
