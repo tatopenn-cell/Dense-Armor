@@ -172,3 +172,16 @@ __all__ = list(__all__) + ["Bidirectional"]
 from dense_armor.utility.neural.norm_more import GroupNorm, InstanceNorm
 
 __all__ = list(__all__) + ["GroupNorm", "InstanceNorm"]
+
+
+from dense_armor.utility.neural.conv_more import (
+    Conv3D,
+    DepthwiseConv2D,
+    SeparableConv2D,
+)
+
+__all__ = list(__all__) + [
+    "Conv3D",
+    "DepthwiseConv2D",
+    "SeparableConv2D",
+]
