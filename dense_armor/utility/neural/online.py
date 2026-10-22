@@ -147,7 +147,7 @@ class OnlineNetRegressor(Regressor):
         1
     """
 
-    budget_s = 1e-3
+    budget_s = 0.06
     memory_class = "O(1)"
 
     def __init__(
@@ -336,7 +336,7 @@ class OnlineNetClassifier(Classifier):
         [0, 1]
     """
 
-    budget_s = 1e-3
+    budget_s = 0.01
     memory_class = "O(1)"
 
     def __init__(

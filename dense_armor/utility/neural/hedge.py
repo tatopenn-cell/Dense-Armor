@@ -72,7 +72,7 @@ class HedgeNetClassifier(Classifier):
         [0, 1]
     """
 
-    budget_s = 1e-3
+    budget_s = 0.01
     memory_class = "O(1)"
 
     def __init__(
