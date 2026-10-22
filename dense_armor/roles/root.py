@@ -435,7 +435,7 @@ class Root:
 
     def fit(self, X, y=None, t=None, epochs: int = 1, shuffle: bool = False,
             seed: int | None = None) -> 'Root':
-        """Entry point that feeds a whole dataset to every online estimator.
+        """Offline entry point for every online estimator.
 
         Takes the whole dataset at once and feeds it to ``learn_one``
         row by row, ``epochs`` times, optionally in a shuffled order.
