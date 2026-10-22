@@ -7,10 +7,12 @@ import numpy as np
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 from dense_armor.utility.datasets.synthetic_arm import SyntheticArm
 from dense_armor.utility.linear.payload import PayloadEstimator
+import pytest
 
 URDF = str(Path(__file__).parent.parent / "fixtures/urdf/panda.urdf")
 
 
+@pytest.mark.heavy
 def test_lam_is_applied_once_per_sample_not_once_per_joint():
     """With lam=0.99 the effective memory is ~100 samples, not ~12.
 
@@ -78,6 +80,7 @@ def test_first_sample_does_not_update_the_mass():
     assert est._prev_t is not None
 
 
+@pytest.mark.heavy
 def test_estimate_stays_zero_before_the_fault():
     """Before the fault the internal _m can be negative, predict_one clamps."""
     ds = SyntheticArm(

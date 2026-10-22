@@ -13,6 +13,9 @@ import numpy as np
 
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 from dense_armor.dynamics.six_dof_pbc_cbf_controller import solve_control_qp, rotation_error
+import pytest
+pytestmark = pytest.mark.heavy
+
 
 FIXTURES = os.path.join(os.path.dirname(os.path.dirname(__file__)), "fixtures", "urdf")
 

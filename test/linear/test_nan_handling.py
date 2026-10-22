@@ -16,6 +16,7 @@ from dense_armor.utility.linear.bayes import BayesianLinearRegression
 from dense_armor.utility.linear.glm import LinearRegression, LogisticRegression
 from dense_armor.utility.linear.payload import PayloadEstimator
 from dense_armor.utility.optim import SGD, Adam
+import pytest
 
 URDF = str(Path(__file__).parent.parent / "fixtures/urdf/panda.urdf")
 
@@ -81,6 +82,7 @@ def test_pure_step_nan_is_skipped():
     assert np.array_equal(w_after_valid, w_after_nan)
 
 
+@pytest.mark.heavy
 def test_payload_nan_is_skipped_and_counted():
     ds = SyntheticArm(
         URDF,

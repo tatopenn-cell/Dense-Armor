@@ -4,23 +4,33 @@ on:
   push:
     branches: [master]
     paths:
-      - "dense_armor/utility/neural/**"
-      - "test/neural/**"
+      - "dense_armor/**"
+      - "test/**"
       - "pytest.ini"
       - ".github/workflows/tests-slow.yml"
   pull_request:
     branches: [master]
     paths:
-      - "dense_armor/utility/neural/**"
-      - "test/neural/**"
+      - "dense_armor/**"
+      - "test/**"
       - "pytest.ini"
       - ".github/workflows/tests-slow.yml"
 
 jobs:
-  training:
-    name: training tests (Python 3.12, ubuntu-latest)
+  slow:
+    name: ${{ matrix.name }} (Python 3.12, ubuntu-latest)
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: training
+            args: "test/neural -m training"
+          - name: heavy-dynamics
+            args: "test/dynamics -m heavy"
+          - name: heavy-rest
+            args: "test --ignore=test/dynamics -m heavy"
     steps:
       - uses: actions/checkout@v4
 
@@ -30,9 +40,17 @@ jobs:
           python-version: "3.12"
 
       - name: Install package + dev deps
-        run: pip install -e ".[dev]"
+        run: pip install -e ".[dev,audio,data,mcp,ros]" opencv-python-headless pillow
 
-      - name: Run the training tests
+      - name: Run the tests
         env:
           JAX_ENABLE_X64: "True"
-        run: pytest test/neural -v -m training
+        run: pytest ${{ matrix.args }} -v --cov=dense_armor --cov-report=xml --cov-report=term-missing
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage.xml
+          flags: ${{ matrix.name }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false

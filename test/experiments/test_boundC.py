@@ -110,6 +110,7 @@ def calcola_chunk_ottimale():
     chunk_calcolato = int(ram_libera_byte // costo_stimato_frame)
     return max(1000, min(10000, chunk_calcolato))
 
+@pytest.mark.heavy
 def test_optimization_based_attacks():
     """Carlini-Wagner (norma L2 e L-inf) e DeepFool: 50000 passi ciascuno
     contro AdaptiveSignalStabilizer, tre stabilizzatori isolati in parallelo."""

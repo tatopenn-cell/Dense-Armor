@@ -19,6 +19,7 @@ def test_doctests():
     assert r.failed == 0
 
 
+@pytest.mark.heavy
 @pytest.mark.slow
 def test_synthetic_payload_fault():
     ds = SyntheticArm(
@@ -74,6 +75,7 @@ def test_synthetic_payload_fault():
     assert t_stay < 5.0
 
 
+@pytest.mark.heavy
 @pytest.mark.slow
 def test_clone_runs_same_stream():
     ds = SyntheticArm(

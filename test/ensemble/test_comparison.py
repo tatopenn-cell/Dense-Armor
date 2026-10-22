@@ -19,6 +19,7 @@ from dense_armor.utility.ensemble import (
     VotingClassifier,
 )
 from dense_armor.utility.tree.hoeffding import HoeffdingTreeClassifier
+import pytest
 
 N_SEEDS = 10
 N_SAMPLES = 2000
@@ -61,6 +62,7 @@ def _single():
     return HoeffdingTreeClassifier(grace_period=50)
 
 
+@pytest.mark.heavy
 def test_bagging_not_worse_than_single_tree():
     """Bagging gains about one point on the median but the paired
     Wilcoxon on 10 seeds is not significant (p > 0.10): the test
@@ -78,6 +80,7 @@ def test_bagging_not_worse_than_single_tree():
     assert float(np.min(a)) >= float(np.min(b)) - 0.05
 
 
+@pytest.mark.heavy
 def test_boosting_beats_single_tree():
     a, b = _seed_pair(
         lambda: OnlineBoostingClassifier(
@@ -93,6 +96,7 @@ def test_boosting_beats_single_tree():
     assert p < 0.05, f"Wilcoxon p={p:.4f}, no gain"
 
 
+@pytest.mark.heavy
 def test_voting_with_diverse_members_not_worse_than_single():
     a, b = _seed_pair(
         lambda: VotingClassifier(
@@ -109,6 +113,7 @@ def test_voting_with_diverse_members_not_worse_than_single():
     assert delta >= -0.02, f"voting {np.median(a):.4f} below single {np.median(b):.4f}"
 
 
+@pytest.mark.heavy
 def test_stacking_with_diverse_members_not_worse_than_single():
     a, b = _seed_pair(
         lambda: StackingClassifier(

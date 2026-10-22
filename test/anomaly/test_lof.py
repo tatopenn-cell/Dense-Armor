@@ -209,6 +209,7 @@ def test_feature_keys_explicit():
     assert 0.0 < s < 5.0
 
 
+@pytest.mark.heavy
 def test_synthetic_arm_stream():
     """LOF on the SyntheticArm payload fault, AUC above chance."""
     from sklearn.metrics import roc_auc_score
