@@ -4,6 +4,8 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- `dense_armor/utility/neural/`: `ConstantLR`, `StepLR`, `CosineWarmRestarts`, `minibatches`, `Trainer`; `docs/neural/training.md` with the guide and the figure of the training loop.
 ### Changed
 - The five tests of `test/neural` that train a network for minutes carry the marker `training`; the workflow `tests` runs `-m "not training"` and the new workflow `tests-slow` runs them on one job (Python 3.12) when `dense_armor/utility/neural/`, `test/neural/` or `pytest.ini` change. A test for `MaxPool2D.backward` before `forward`, the format of three files, and a positive wording in `docs/neural/vision_layers.md`.
 
