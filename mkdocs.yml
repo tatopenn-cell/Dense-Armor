@@ -215,6 +215,7 @@ nav:
       - Convolution and pooling: neural/vision_layers.md
       - Recurrent layers and attention: neural/sequence_layers.md
       - Training: neural/training.md
+      - Continuous training: neural/continuous.md
   - Library:
       - Home: index.md
       - Getting Started: getting-started.md
