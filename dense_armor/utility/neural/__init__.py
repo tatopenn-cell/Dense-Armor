@@ -81,3 +81,19 @@ __all__ = list(__all__) + [
     "scaled_dot_product_attention_backward",
     "sinusoidal_positions",
 ]
+
+from dense_armor.utility.neural.batching import minibatches
+from dense_armor.utility.neural.schedules import (
+    ConstantLR,
+    CosineWarmRestarts,
+    StepLR,
+)
+from dense_armor.utility.neural.trainer import Trainer
+
+__all__ = list(__all__) + [
+    "minibatches",
+    "ConstantLR",
+    "StepLR",
+    "CosineWarmRestarts",
+    "Trainer",
+]

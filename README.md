@@ -304,4 +304,5 @@ Dense-Armor takes inspiration from [River](https://riverml.xyz) (Montiel et al.,
 - Deep Learning: [Chains: how do I join layers into a network and train it one sample at a time or on a batch?](docs/neural/chains.md).
 - Deep Learning: [Convolution and pooling: how do I look for a pattern in an image and shrink it?](docs/neural/vision_layers.md).
 - Deep Learning: [Recurrent layers and attention: how do I keep a memory of the past samples?](docs/neural/sequence_layers.md).
+- Deep Learning: [Training: how do I train a network on a dataset I already have, and stop it before it memorises?](docs/neural/training.md).
 - Machine learning: [Statistics](docs/ml/stats.md), [trees](docs/ml/tree.md), [anomaly detection](docs/ml/anomaly.md), [change detection](docs/ml/drift.md), [vision](docs/ml/vision.md) and the other families of `dense_armor.ml`, grown on the whole table.
