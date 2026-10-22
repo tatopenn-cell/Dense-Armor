@@ -142,3 +142,8 @@ __all__ = list(__all__) + [
     "SiLU",
     "Softplus",
 ]
+
+
+from dense_armor.utility.neural.schedules_more import LinearWarmup, NoamSchedule
+
+__all__ = list(__all__) + ["LinearWarmup", "NoamSchedule"]
