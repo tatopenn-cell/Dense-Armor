@@ -185,3 +185,8 @@ __all__ = list(__all__) + [
     "DepthwiseConv2D",
     "SeparableConv2D",
 ]
+
+
+from dense_armor.utility.neural.positions import LearnedPositions
+
+__all__ = list(__all__) + ["LearnedPositions"]
