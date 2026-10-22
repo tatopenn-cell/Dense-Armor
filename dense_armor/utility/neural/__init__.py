@@ -125,3 +125,20 @@ __all__ = list(__all__) + [
     "Seq2Seq",
     "VectorQuantizer",
 ]
+
+
+from dense_armor.utility.neural.activations_more import (
+    ELU,
+    GELU,
+    LeakyReLU,
+    SiLU,
+    Softplus,
+)
+
+__all__ = list(__all__) + [
+    "ELU",
+    "GELU",
+    "LeakyReLU",
+    "SiLU",
+    "Softplus",
+]
