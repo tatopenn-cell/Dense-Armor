@@ -101,9 +101,9 @@ def test_conv3d_kernel1_equals_dense():
     d = Dense(2, 3, jax.random.PRNGKey(0))
     d.W.value = c.W.value.reshape(2, 3)
     d.b.value = c.b.value
-    xt = jnp.array([[[[1.0, 2.0], [3.0, 4.0]]]])
+    xt = jnp.arange(8.0).reshape(1, 2, 2, 2)
     yc = np.asarray(c.forward(xt))
-    yd = np.asarray(d.forward(xt.reshape(1, 4, 2))).reshape(1, 1, 2, 3)
+    yd = np.asarray(d.forward(xt.reshape(1, 4, 2))).reshape(1, 2, 2, 3)
     print(f"Conv3D(k=1) vs Dense: max diff {np.max(np.abs(yc - yd)):.2e}")
     assert np.allclose(yc, yd, atol=1e-6)
 
