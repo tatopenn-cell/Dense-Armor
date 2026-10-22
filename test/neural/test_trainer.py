@@ -264,3 +264,45 @@ def test_two_moons_reaches_accuracy():
     acc = float(((pred > 0.5) == (y.reshape(-1) > 0.5)).mean())
     print(f"accuracy: {acc:.4f}")
     assert acc >= 0.9
+
+
+def test_trainer_works_without_model_zero_grad():
+    """A model with only forward, backward, params, and no zero_grad."""
+    from dense_armor.utility.neural.layers import Dense
+
+    class BareModel:
+        def __init__(self, m):
+            self.m = m
+
+        def forward(self, x, training=True):
+            return self.m.forward(x, training=training)
+
+        def backward(self, g):
+            return self.m.backward(g)
+
+        def params(self):
+            return self.m.params()
+
+    m = Dense(2, 1, jax.random.PRNGKey(0))
+    model = BareModel(m)
+    assert not hasattr(model, "zero_grad")
+    t = Trainer(model, MSE(), SGD(0.01))
+    X, y = _data(5)
+    t.fit(X, y, epochs=2, batch_size=2, key=jax.random.PRNGKey(0))
+    assert len(t.history_["train_loss"]) == 2
+
+
+def test_stopped_epoch_is_last_when_no_patience():
+    X, y = _data(10)
+    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
+    t = Trainer(m, MSE(), SGD(0.01))
+    t.fit(X, y, epochs=3, batch_size=5, key=jax.random.PRNGKey(0))
+    assert t.stopped_epoch_ == 2
+    assert t.best_epoch_ is None
+
+
+def test_optimizers_is_a_list():
+    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
+    t = Trainer(m, MSE(), SGD(0.01))
+    assert isinstance(t.optimizers_, list)
+    assert len(t.optimizers_) == len(m.params())

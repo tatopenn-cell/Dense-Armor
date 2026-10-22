@@ -51,7 +51,7 @@ def minibatches(
     if batch_size < 1:
         raise ValueError(f"batch_size must be at least 1, got {batch_size}")
     if key is None:
-        order = np.arange(n, dtype=np.int32)
+        order: np.ndarray = np.arange(n, dtype=np.int32)
     else:
         order = np.asarray(jax.random.permutation(key, n), dtype=np.int32)
     for start in range(0, n, batch_size):

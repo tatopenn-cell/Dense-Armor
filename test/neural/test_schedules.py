@@ -117,3 +117,17 @@ def test_cosine_continuous_at_restart():
     right = c(10.0)
     assert left < right
     assert right == pytest.approx(0.1, abs=1e-9)
+
+
+def test_step_lr_multiplier():
+    s = StepLR(0.1, 10, 0.5)
+    assert s.multiplier(0.0) == 1.0
+    assert s.multiplier(10.0) == 0.5
+    assert s.multiplier(25.0) == 0.25
+
+
+def test_cosine_multiplier_with_zero_lr_max():
+    c = CosineWarmRestarts(0.0, 0.0, 10)
+    assert c.multiplier(1.0) == 0.0
+    assert c.multiplier(5.0) == 0.0
+    assert c(5.0) == 0.0

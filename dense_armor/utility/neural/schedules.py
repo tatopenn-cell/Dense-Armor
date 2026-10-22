@@ -87,8 +87,11 @@ class StepLR:
         return self.lr * (self.gamma ** math.floor(epoch / self.step))
 
     def multiplier(self, epoch: float) -> float:
-        """Return ``self(epoch) / self(0.0)``."""
-        return self(epoch) / self(0.0)
+        """Return ``self(epoch) / self(0.0)``; 0 if ``self(0.0) == 0``."""
+        base = self(0.0)
+        if base == 0.0:
+            return 0.0
+        return self(epoch) / base
 
 
 class CosineWarmRestarts:
@@ -161,5 +164,8 @@ class CosineWarmRestarts:
         return self.lr_min + 0.5 * (self.lr_max - self.lr_min) * (1.0 + cos_term)
 
     def multiplier(self, epoch: float) -> float:
-        """Return ``self(epoch) / self(0.0)``."""
-        return self(epoch) / self(0.0)
+        """Return ``self(epoch) / self(0.0)``; 0 if ``self(0.0) == 0``."""
+        base = self(0.0)
+        if base == 0.0:
+            return 0.0
+        return self(epoch) / base

@@ -91,5 +91,9 @@ from dense_armor.utility.neural.schedules import (
 from dense_armor.utility.neural.trainer import Trainer
 
 __all__ = list(__all__) + [
-    "minibatches", "ConstantLR", "StepLR", "CosineWarmRestarts", "Trainer",
+    "minibatches",
+    "ConstantLR",
+    "StepLR",
+    "CosineWarmRestarts",
+    "Trainer",
 ]

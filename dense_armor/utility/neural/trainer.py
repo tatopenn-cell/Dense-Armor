@@ -11,9 +11,12 @@ The weight decay applies only to the ``Param`` whose ``value`` has two
 or more dimensions (the weights). ``decay="l2"`` adds ``weight_decay *
 value`` to the gradient before the update (Algorithm 1, line 6, page 3
 of Loshchilov and Hutter 2019); ``decay="decoupled"`` subtracts
-``eta_t * weight_decay * value`` from the weights after the update,
-with ``eta_t = schedule.multiplier(epoch + b / n_batches)`` (Algorithm 1,
-line 9, and Algorithm 2, line 12, of the same paper).
+``eta_t * weight_decay * value`` from the weights **before the
+optimizer update**, using the previous value (Algorithm 1, line 9, and
+Algorithm 2, line 12, of the same paper: ``theta_t = theta_{t-1} -
+m_t - eta_t * lambda * theta_{t-1}``). With standard SGD the two forms
+are equivalent when the L2 coefficient is ``lambda / alpha`` for a
+decoupled decay ``lambda`` (Proposition 1, page 2).
 
 Early stopping: with a validation set and ``patience``, the training
 stops at the end of the epoch after which the validation loss has not
@@ -90,7 +93,7 @@ class Trainer:
         self.schedule = schedule if schedule is not None else ConstantLR(optimizer.lr)
         self.weight_decay = float(weight_decay)
         self.decay = decay
-        self.optimizers_ = {id(p): copy.deepcopy(optimizer) for p in model.params()}
+        self.optimizers_ = [copy.deepcopy(optimizer) for _ in model.params()]
         self.history_: dict[str, list[float]] = {
             "train_loss": [],
             "val_loss": [],
@@ -164,22 +167,23 @@ class Trainer:
             batches = list(minibatches(n, batch_size, key=sub))
             n_batches = len(batches)
             first_lr = self.schedule(epoch + 0.0 / n_batches)
-            for opt in self.optimizers_.values():
+            for opt in self.optimizers_:
                 opt.lr = first_lr
             total_loss = 0.0
             total_size = 0
             for b_idx, idx in enumerate(batches):
                 epoch_t = epoch + b_idx / n_batches
                 lr_t = self.schedule(epoch_t)
-                for opt in self.optimizers_.values():
+                for opt in self.optimizers_:
                     opt.lr = lr_t
-                self.model.zero_grad()
+                for p in self.model.params():
+                    p.zero_grad()
                 pred = self.model.forward(X[idx], training=True)
                 batch_loss = self.loss.forward(pred, y[idx])
                 self.model.backward(self.loss.backward())
-                for p in self.model.params():
+                for p, opt in zip(self.model.params(), self.optimizers_):
                     self._apply_weight_decay(p, epoch_t)
-                    p.update(self.optimizers_[id(p)])
+                    p.update(opt)
                 total_loss += float(batch_loss) * len(idx)
                 total_size += len(idx)
             train_loss = total_loss / total_size
@@ -206,6 +210,8 @@ class Trainer:
         if patience is not None and best_weights is not None:
             for p, w in zip(self.model.params(), best_weights):
                 p.value = jnp.asarray(w)
+        if self.stopped_epoch_ is None:
+            self.stopped_epoch_ = epochs - 1
         return self
 
     def evaluate(self, X: Any, y: Any) -> float:
