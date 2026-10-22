@@ -207,3 +207,8 @@ __all__ = list(__all__) + [
     "L1Loss",
     "LabelSmoothingCE",
 ]
+
+
+from dense_armor.utility.neural.online_vector import OnlineNetVector
+
+__all__ = list(__all__) + ["OnlineNetVector"]
