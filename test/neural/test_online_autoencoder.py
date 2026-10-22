@@ -121,16 +121,12 @@ def test_detects_a_point_off_the_plane():
         "p4": float(X[0, 4]),
         "p5": float(X[0, 5]),
     }
-    # punto fuori dal piano: aggiungo il vettore ortogonale (1,1,1,1,1,1)/sqrt(6)
-    ortho = np.ones(6, dtype=np.float32) / np.sqrt(6.0)
-    p_out = {
-        "p0": p_in["p0"] + float(ortho[0]),
-        "p1": p_in["p1"] + float(ortho[1]),
-        "p2": p_in["p2"] + float(ortho[2]),
-        "p3": p_in["p3"] + float(ortho[3]),
-        "p4": p_in["p4"] + float(ortho[4]),
-        "p5": p_in["p5"] + float(ortho[5]),
-    }
+    _, _, vt = np.linalg.svd(A, full_matrices=True)
+    ortho = vt[2:].sum(axis=0)
+    ortho = ortho / np.linalg.norm(ortho)
+    assert abs(float(np.dot(ortho, A[0]))) < 1e-6
+
+    p_out = {f"p{i}": p_in[f"p{i}"] + float(ortho[i]) for i in range(6)}
     s_in = oa.score_one(p_in)
     s_out = oa.score_one(p_out)
     print(f"score in-plane: {s_in:.4f}, score off-plane: {s_out:.4f}")

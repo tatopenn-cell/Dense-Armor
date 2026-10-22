@@ -124,7 +124,6 @@ class Seq2Seq:
         d_v_rep = self.decoder.backward(d_dec_out)
         d_v = d_v_rep.sum(axis=1)
         enc_out = self.encoder.forward(c["x_in"], training=False)
-        T = enc_out.shape[1]
         d_enc_out = jnp.zeros_like(enc_out).at[:, -1, :].set(d_v)
         d_x_in = self.encoder.backward(d_enc_out)
         if self.reverse_source:

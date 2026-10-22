@@ -108,25 +108,36 @@ def test_gradient_heads_against_jax_grad():
         )
 
 
-def test_one_sample_and_batch_give_finite_losses():
+def test_one_sample_and_batch_give_the_same_loss_and_gradients():
     ml = _hand()
     z_b = jnp.array([[1.0, 0.0], [0.0, 1.0]])
     y_b = jnp.array([0, 1])
 
-    l_b = ml.forward(z_b, y_b)
-    dz_b = ml.backward()
-    assert dz_b.shape == (2, 2)
-    assert np.isfinite(float(l_b))
+    l_b = float(ml.forward(z_b, y_b))
+    dz_b = np.asarray(ml.backward())
+    grad_b = [np.asarray(h.grad).copy() for h in ml.heads_]
 
     for h in ml.heads_:
         h.grad = jnp.zeros_like(h.value)
 
-    z_1 = jnp.array([1.0, 0.0])
-    y_1 = jnp.array(0)
-    l_1 = ml.forward(z_1, y_1)
-    dz_1 = ml.backward()
-    assert dz_1.shape == (2,)
-    assert np.isfinite(float(l_1))
+    l0 = float(ml.forward(z_b[0], y_b[0]))
+    dz0 = np.asarray(ml.backward())
+    g0 = [np.asarray(h.grad).copy() for h in ml.heads_]
+
+    for h in ml.heads_:
+        h.grad = jnp.zeros_like(h.value)
+
+    l1 = float(ml.forward(z_b[1], y_b[1]))
+    dz1 = np.asarray(ml.backward())
+    g1 = [np.asarray(h.grad).copy() for h in ml.heads_]
+
+    mean = (l0 + l1) / 2.0
+    assert abs(l_b - mean) < 1e-6, f"batch {l_b} vs mean {mean}"
+
+    assert np.allclose(dz_b[0], dz0 / 2.0, atol=1e-6), "dz row 0 differs"
+    assert np.allclose(dz_b[1], dz1 / 2.0, atol=1e-6), "dz row 1 differs"
+    for i, (gb, ga, gb2) in enumerate(zip(grad_b, g0, g1)):
+        assert np.allclose(2.0 * gb, ga + gb2, atol=1e-6), f"grad head {i} differs"
 
 
 @pytest.mark.training
