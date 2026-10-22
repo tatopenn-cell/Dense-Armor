@@ -23,6 +23,7 @@ import jax.numpy as jnp
 
 from dense_armor.roles import AnomalyDetector
 from dense_armor.utility.neural.autoencoder import Autoencoder
+from dense_armor.utility.neural.clip import clip_grad_norm
 from dense_armor.utility.neural.losses import MSE
 from dense_armor.utility.neural.online import _EqWrap, _unwrap
 from dense_armor.utility.neural.schedules import ConstantLR
@@ -111,7 +112,10 @@ class OnlineAutoencoder(AnomalyDetector):
         optimizer: Any,
         feature_keys: Any = None,
         schedule: Any = None,
+        clip_norm: float | None = None,
     ) -> None:
+        if clip_norm is not None and clip_norm <= 0:
+            raise ValueError(f"clip_norm must be > 0 or None, got {clip_norm}")
         model = _unwrap(model)
         optimizer = _unwrap(optimizer)
         if schedule is not None:
@@ -124,6 +128,7 @@ class OnlineAutoencoder(AnomalyDetector):
         self.optimizer = optimizer
         self.feature_keys = list(feature_keys) if feature_keys is not None else None
         self.schedule = schedule if schedule is not None else ConstantLR(optimizer.lr)
+        self.clip_norm = clip_norm
         self.model_ = copy.deepcopy(model)
         self.optimizers_ = [copy.deepcopy(optimizer) for _ in model.params()]
         self.loss_ = MSE()
@@ -170,6 +175,8 @@ class OnlineAutoencoder(AnomalyDetector):
         vec_2d = vec.reshape(-1, 1)
         self.loss_.forward(pred.reshape(-1, 1), vec_2d)
         self.model_.backward(self.loss_.backward().reshape(-1))
+        if self.clip_norm is not None:
+            clip_grad_norm(self.model_.params(), self.clip_norm)
         for p, opt in zip(self.model_.params(), self.optimizers_):
             p.update(opt)
         self.n_seen_ += 1

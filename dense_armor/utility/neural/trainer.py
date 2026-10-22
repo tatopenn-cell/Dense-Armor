@@ -35,6 +35,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from dense_armor.utility.neural.batching import minibatches
+from dense_armor.utility.neural.clip import clip_grad_norm
 from dense_armor.utility.neural.params import Param
 from dense_armor.utility.neural.schedules import ConstantLR
 
@@ -42,36 +43,37 @@ from dense_armor.utility.neural.schedules import ConstantLR
 class Trainer:
     """Train a model on a dataset, with mini-batches and schedules.
 
-    Args:
-        model: any object with ``forward(x, training=True)``,
-            ``backward(g)``, ``params()`` and ``zero_grad()``.
-        loss: any object with ``forward(pred, target)`` and
-            ``backward()``.
-        optimizer: a prototype of ``dense_armor.utility.optim``
-            (``SGD``, ``Adam``); one ``deepcopy`` is made for each
-            ``Param``.
-        schedule: a learning-rate schedule; default ``ConstantLR``
-            with the learning rate of ``optimizer``.
-        weight_decay: the weight-decay coefficient, default 0.
-        decay: ``"l2"`` (default) or ``"decoupled"``.
+        Args:
+            model: any object with ``forward(x, training=True)``,
+                ``backward(g)``, ``params()`` and ``zero_grad()``.
+            loss: any object with ``forward(pred, target)`` and
+                ``backward()``.
+            optimizer: a prototype of ``dense_armor.utility.optim``
+                (``SGD``, ``Adam``); one ``deepcopy`` is made for each
+                ``Param``.
+            schedule: a learning-rate schedule; default ``ConstantLR``
+                with the learning rate of ``optimizer``.
+            weight_decay: the weight-decay coefficient, default 0.
+            decay: ``"l2"`` (default) or ``"decoupled"``.
 
-    Raises:
-        ValueError: if ``decay`` is neither ``"l2"`` nor ``"decoupled"``,
-            or if ``weight_decay`` is negative.
+        Raises:
+            ValueError: if ``decay`` is neither ``"l2"`` nor ``"decoupled"``,
+                or if ``weight_decay`` is negative.
 
-    Examples:
-        >>> import jax
-        >>> from dense_armor.utility.neural.trainer import Trainer
-        >>> from dense_armor.utility.neural.models import mlp
-        >>> from dense_armor.utility.neural.losses import MSE
-        >>> from dense_armor.utility.optim import SGD
-        >>> m = mlp([2, 4, 1], jax.random.PRNGKey(0))
-        >>> t = Trainer(m, MSE(), SGD(0.01))
-        >>> X = jax.numpy.ones((4, 2))
-        >>> y = jax.numpy.zeros((4, 1))
-        >>> _ = t.fit(X, y, epochs=2, batch_size=2, key=jax.random.PRNGKey(0))
-        >>> len(t.history_["train_loss"])
-        2
+        Examples:
+            >>> import jax
+            >>> from dense_armor.utility.neural.trainer import Trainer
+            >>> from dense_armor.utility.neural.models import mlp
+            >>> from dense_armor.utility.neural.clip import clip_grad_norm
+    from dense_armor.utility.neural.losses import MSE
+            >>> from dense_armor.utility.optim import SGD
+            >>> m = mlp([2, 4, 1], jax.random.PRNGKey(0))
+            >>> t = Trainer(m, MSE(), SGD(0.01))
+            >>> X = jax.numpy.ones((4, 2))
+            >>> y = jax.numpy.zeros((4, 1))
+            >>> _ = t.fit(X, y, epochs=2, batch_size=2, key=jax.random.PRNGKey(0))
+            >>> len(t.history_["train_loss"])
+            2
     """
 
     def __init__(
@@ -82,6 +84,7 @@ class Trainer:
         schedule: Any = None,
         weight_decay: float = 0.0,
         decay: str = "l2",
+        clip_norm: float | None = None,
     ) -> None:
         if decay not in ("l2", "decoupled"):
             raise ValueError(f"decay must be 'l2' or 'decoupled', got {decay!r}")
@@ -93,6 +96,9 @@ class Trainer:
         self.schedule = schedule if schedule is not None else ConstantLR(optimizer.lr)
         self.weight_decay = float(weight_decay)
         self.decay = decay
+        if clip_norm is not None and clip_norm <= 0:
+            raise ValueError(f"clip_norm must be > 0 or None, got {clip_norm}")
+        self.clip_norm = clip_norm
         self.optimizers_ = [copy.deepcopy(optimizer) for _ in model.params()]
         self.history_: dict[str, list[float]] = {
             "train_loss": [],
@@ -181,6 +187,8 @@ class Trainer:
                 pred = self.model.forward(X[idx], training=True)
                 batch_loss = self.loss.forward(pred, y[idx])
                 self.model.backward(self.loss.backward())
+                if self.clip_norm is not None:
+                    clip_grad_norm(self.model.params(), self.clip_norm)
                 for p, opt in zip(self.model.params(), self.optimizers_):
                     self._apply_weight_decay(p, epoch_t)
                     p.update(opt)
