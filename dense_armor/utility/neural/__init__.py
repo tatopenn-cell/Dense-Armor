@@ -162,3 +162,8 @@ __all__ = list(__all__) + [
     "Upsample1D",
     "Upsample2D",
 ]
+
+
+from dense_armor.utility.neural.bidirectional import Bidirectional
+
+__all__ = list(__all__) + ["Bidirectional"]
