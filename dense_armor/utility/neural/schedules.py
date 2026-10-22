@@ -123,16 +123,18 @@ class CosineWarmRestarts:
     """
 
     def __init__(
-        self, lr_max: float, lr_min: float, t0: float, t_mult: float = 1.0,
+        self,
+        lr_max: float,
+        lr_min: float,
+        t0: float,
+        t_mult: float = 1.0,
     ) -> None:
         if t0 <= 0:
             raise ValueError(f"t0 must be positive, got {t0}")
         if t_mult <= 0:
             raise ValueError(f"t_mult must be positive, got {t_mult}")
         if lr_min > lr_max:
-            raise ValueError(
-                f"lr_min {lr_min} is above lr_max {lr_max}"
-            )
+            raise ValueError(f"lr_min {lr_min} is above lr_max {lr_max}")
         self.lr_max = float(lr_max)
         self.lr_min = float(lr_min)
         self.t0 = float(t0)

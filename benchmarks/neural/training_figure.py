@@ -16,11 +16,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 import matplotlib
 
 matplotlib.use("Agg")
+import jax
 import matplotlib.pyplot as plt
 import numpy as np
-
-import jax
-import jax.numpy as jnp
 
 from dense_armor.utility.neural.losses import MSE
 from dense_armor.utility.neural.models import mlp
@@ -41,8 +39,16 @@ y_val = y_val + rng.normal(0.0, 0.4, y_val.shape).astype(np.float32)
 
 model = mlp([2, 16, 16, 1], jax.random.PRNGKey(0))
 tr = Trainer(model, MSE(), Adam(0.01))
-tr.fit(X, y, epochs=150, batch_size=10, key=jax.random.PRNGKey(1),
-       X_val=X_val, y_val=y_val, patience=3)
+tr.fit(
+    X,
+    y,
+    epochs=150,
+    batch_size=10,
+    key=jax.random.PRNGKey(1),
+    X_val=X_val,
+    y_val=y_val,
+    patience=3,
+)
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4.2))
 
@@ -50,8 +56,10 @@ epochs = list(range(len(tr.history_["train_loss"])))
 ax1.plot(epochs, tr.history_["train_loss"], "o-", label="train loss", ms=3)
 ax1.plot(epochs, tr.history_["val_loss"], "s-", label="val loss", ms=3)
 if tr.best_epoch_ is not None:
-    ax1.axvline(tr.best_epoch_, color="k", linestyle="--", alpha=0.5,
-                label=f"best epoch ({tr.best_epoch_})")
+    best_ep = tr.best_epoch_
+    ax1.axvline(
+        best_ep, color="k", linestyle="--", alpha=0.5, label=f"best epoch ({best_ep})"
+    )
 ax1.set_xlabel("epoch")
 ax1.set_ylabel("MSE loss")
 ax1.set_title("early stopping on the synthetic set", weight="bold", fontsize=11)
@@ -74,4 +82,6 @@ OUT.parent.mkdir(parents=True, exist_ok=True)
 fig.savefig(OUT, dpi=140)
 print(f"written: {OUT} ({OUT.stat().st_size} B)")
 print(f"best_epoch_: {tr.best_epoch_}, stopped_epoch_: {tr.stopped_epoch_}")
-print(f"val_loss at best: {tr.history_['val_loss'][tr.best_epoch_]:.4f}")
+if tr.best_epoch_ is not None:
+    best_ep = tr.best_epoch_
+    print(f"val_loss at best: {tr.history_['val_loss'][best_ep]:.4f}")

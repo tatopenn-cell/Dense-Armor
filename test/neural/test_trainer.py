@@ -15,7 +15,7 @@ from dense_armor.utility.neural.schedules import (
     CosineWarmRestarts,
 )
 from dense_armor.utility.neural.trainer import Trainer
-from dense_armor.utility.optim import Adam, SGD
+from dense_armor.utility.optim import SGD, Adam
 
 
 def _data(n=20, seed=0):
@@ -79,8 +79,8 @@ def test_one_sample_matches_manual_loop():
     opt = SGD(0.1)
     for i in range(4):
         m2.zero_grad()
-        pred = m2.forward(jnp.asarray(X[i:i+1]), training=True)
-        _ = loss.forward(pred, jnp.asarray(y[i:i+1]))
+        pred = m2.forward(jnp.asarray(X[i : i + 1]), training=True)
+        _ = loss.forward(pred, jnp.asarray(y[i : i + 1]))
         m2.backward(loss.backward())
         for p in m2.params():
             p.update(opt)
@@ -96,17 +96,13 @@ def test_l2_equals_decoupled_with_factor_lambda_over_alpha():
     alpha = 0.1
 
     m_l2 = mlp([2, 4, 1], jax.random.PRNGKey(0))
-    t_l2 = Trainer(m_l2, MSE(), SGD(alpha),
-                   weight_decay=lam / alpha, decay="l2")
-    t_l2.fit(X, y, epochs=2, batch_size=10, key=jax.random.PRNGKey(0),
-             shuffle=False)
+    t_l2 = Trainer(m_l2, MSE(), SGD(alpha), weight_decay=lam / alpha, decay="l2")
+    t_l2.fit(X, y, epochs=2, batch_size=10, key=jax.random.PRNGKey(0), shuffle=False)
     w_l2 = [np.asarray(p.value).copy() for p in m_l2.params()]
 
     m_dc = mlp([2, 4, 1], jax.random.PRNGKey(0))
-    t_dc = Trainer(m_dc, MSE(), SGD(alpha),
-                   weight_decay=lam, decay="decoupled")
-    t_dc.fit(X, y, epochs=2, batch_size=10, key=jax.random.PRNGKey(0),
-             shuffle=False)
+    t_dc = Trainer(m_dc, MSE(), SGD(alpha), weight_decay=lam, decay="decoupled")
+    t_dc.fit(X, y, epochs=2, batch_size=10, key=jax.random.PRNGKey(0), shuffle=False)
     w_dc = [np.asarray(p.value).copy() for p in m_dc.params()]
 
     for a, b in zip(w_l2, w_dc):
@@ -119,8 +115,7 @@ def test_decoupled_shrinks_weights_by_hand():
     m = mlp([2, 4, 1], jax.random.PRNGKey(0))
     W0 = np.asarray(m.params()[0].value).copy()
     t = Trainer(m, MSE(), SGD(0.1), weight_decay=0.1, decay="decoupled")
-    t.fit(X, y, epochs=1, batch_size=2, key=jax.random.PRNGKey(0),
-          shuffle=False)
+    t.fit(X, y, epochs=1, batch_size=2, key=jax.random.PRNGKey(0), shuffle=False)
     W1 = np.asarray(m.params()[0].value)
     expected = W0 * (1 - 0.1 * 1.0) - 0.1 * 0.0
     assert np.allclose(W1, expected, atol=1e-6)
@@ -132,8 +127,7 @@ def test_l2_does_not_touch_biases():
     m = mlp([2, 4, 1], jax.random.PRNGKey(0))
     b0 = np.asarray(m.params()[1].value).copy()
     t = Trainer(m, MSE(), SGD(0.1), weight_decay=1.0, decay="l2")
-    t.fit(X, y, epochs=1, batch_size=2, key=jax.random.PRNGKey(0),
-          shuffle=False)
+    t.fit(X, y, epochs=1, batch_size=2, key=jax.random.PRNGKey(0), shuffle=False)
     b1 = np.asarray(m.params()[1].value)
     assert np.allclose(b1, b0, atol=1e-8)
 
@@ -143,8 +137,7 @@ def test_schedule_in_history_follows_cosine():
     m = mlp([2, 4, 1], jax.random.PRNGKey(0))
     c = CosineWarmRestarts(0.05, 0.0, 5)
     t = Trainer(m, MSE(), SGD(0.01), schedule=c)
-    t.fit(X, y, epochs=3, batch_size=10, key=jax.random.PRNGKey(0),
-          shuffle=False)
+    t.fit(X, y, epochs=3, batch_size=10, key=jax.random.PRNGKey(0), shuffle=False)
     for e in range(3):
         assert abs(t.history_["lr"][e] - c(e)) < 1e-12
 
@@ -158,8 +151,16 @@ def test_early_stopping_restores_best_weights():
 
     m = mlp([2, 32, 32, 1], jax.random.PRNGKey(0))
     t = Trainer(m, MSE(), Adam(0.01))
-    t.fit(X_tr, y_tr, epochs=200, batch_size=10, key=jax.random.PRNGKey(0),
-          X_val=X_val, y_val=y_val, patience=5)
+    t.fit(
+        X_tr,
+        y_tr,
+        epochs=200,
+        batch_size=10,
+        key=jax.random.PRNGKey(0),
+        X_val=X_val,
+        y_val=y_val,
+        patience=5,
+    )
     print(f"stopped at {t.stopped_epoch_}, best at {t.best_epoch_}")
     assert t.stopped_epoch_ < 200
     best_val = t.history_["val_loss"][t.best_epoch_]
@@ -233,11 +234,18 @@ def test_value_errors():
     with pytest.raises(ValueError, match="different lengths"):
         t.fit(X, y[:3], epochs=1, batch_size=2, key=jax.random.PRNGKey(0))
     with pytest.raises(ValueError, match="patience requires"):
-        t.fit(X, y, epochs=1, batch_size=2, key=jax.random.PRNGKey(0),
-              patience=3)
+        t.fit(X, y, epochs=1, batch_size=2, key=jax.random.PRNGKey(0), patience=3)
     with pytest.raises(ValueError, match="patience must be at least 1"):
-        t.fit(X, y, epochs=1, batch_size=2, key=jax.random.PRNGKey(0),
-              X_val=X, y_val=y, patience=0)
+        t.fit(
+            X,
+            y,
+            epochs=1,
+            batch_size=2,
+            key=jax.random.PRNGKey(0),
+            X_val=X,
+            y_val=y,
+            patience=0,
+        )
 
 
 def test_two_moons_reaches_accuracy():

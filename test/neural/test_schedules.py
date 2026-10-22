@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import math
-
 import pytest
 
 from dense_armor.utility.neural.schedules import (
@@ -29,7 +27,7 @@ def test_step_lr_hand_values():
     assert s(9.99) == pytest.approx(0.1)
     assert s(10.0) == pytest.approx(0.05)
     assert s(25.0) == pytest.approx(0.025)
-    assert s(100.0) == pytest.approx(0.1 * 0.5 ** 10)
+    assert s(100.0) == pytest.approx(0.1 * 0.5**10)
 
 
 def test_cosine_t0_10_hand_values():
@@ -56,9 +54,11 @@ def test_cosine_never_below_lr_min():
 
 
 def test_cosine_multiplier_at_zero_is_one():
-    for c in [CosineWarmRestarts(0.1, 0.0, 10),
-              CosineWarmRestarts(0.1, 0.02, 7),
-              CosineWarmRestarts(0.1, 0.0, 1, t_mult=2)]:
+    for c in [
+        CosineWarmRestarts(0.1, 0.0, 10),
+        CosineWarmRestarts(0.1, 0.02, 7),
+        CosineWarmRestarts(0.1, 0.0, 1, t_mult=2),
+    ]:
         assert c.multiplier(0.0) == pytest.approx(1.0)
 
 

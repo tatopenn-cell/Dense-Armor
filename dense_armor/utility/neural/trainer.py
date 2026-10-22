@@ -81,24 +81,20 @@ class Trainer:
         decay: str = "l2",
     ) -> None:
         if decay not in ("l2", "decoupled"):
-            raise ValueError(
-                f"decay must be 'l2' or 'decoupled', got {decay!r}"
-            )
+            raise ValueError(f"decay must be 'l2' or 'decoupled', got {decay!r}")
         if weight_decay < 0:
-            raise ValueError(
-                f"weight_decay must be non-negative, got {weight_decay}"
-            )
+            raise ValueError(f"weight_decay must be non-negative, got {weight_decay}")
         self.model = model
         self.loss = loss
         self.optimizer_prototype = optimizer
         self.schedule = schedule if schedule is not None else ConstantLR(optimizer.lr)
         self.weight_decay = float(weight_decay)
         self.decay = decay
-        self.optimizers_ = {
-            id(p): copy.deepcopy(optimizer) for p in model.params()
-        }
+        self.optimizers_ = {id(p): copy.deepcopy(optimizer) for p in model.params()}
         self.history_: dict[str, list[float]] = {
-            "train_loss": [], "val_loss": [], "lr": [],
+            "train_loss": [],
+            "val_loss": [],
+            "lr": [],
         }
         self.best_epoch_: int | None = None
         self.stopped_epoch_: int | None = None
@@ -145,9 +141,7 @@ class Trainer:
         if epochs < 1:
             raise ValueError(f"epochs must be at least 1, got {epochs}")
         if len(X) != len(y):
-            raise ValueError(
-                f"X and y have different lengths: {len(X)} and {len(y)}"
-            )
+            raise ValueError(f"X and y have different lengths: {len(X)} and {len(y)}")
         if patience is not None:
             if X_val is None or y_val is None:
                 raise ValueError("patience requires X_val and y_val")
@@ -199,8 +193,9 @@ class Trainer:
             if patience is not None:
                 if val_loss < best_val - min_delta:
                     best_val = val_loss
-                    best_weights = [np.asarray(p.value).copy()
-                                    for p in self.model.params()]
+                    best_weights = [
+                        np.asarray(p.value).copy() for p in self.model.params()
+                    ]
                     self.best_epoch_ = epoch
                     no_improve = 0
                 else:
