@@ -3,6 +3,11 @@
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
+### Added
+- `dense_armor/utility/optim/`: `RMSProp`; `SGD` with momentum and Nesterov.
+- `dense_armor/utility/neural/`: 10 new modules (clip, activations_more, schedules_more, convtranspose, bidirectional, norm_more, conv_more, positions, losses_more, online_vector); `PRelu.params()`; `clip_norm` in the four estimators.
+- `docs/neural/classic_pieces.md` and `docs/assets/neural/classic_pieces.png`.
+
 
 ### Added
 - `dense_armor/utility/neural/`: `Autoencoder`, `VectorQuantizer`, `MatryoshkaLoss`, `Seq2Seq`, `OnlineAutoencoder`; `docs/neural/encoder_decoder.md` with the guide and the figure.
