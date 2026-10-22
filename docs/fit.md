@@ -1,4 +1,4 @@
-# Offline: the same algorithm on the whole dataset
+# Fit: the same algorithm on the whole dataset
 
 Every online algorithm of the library can also learn from a dataset you already have, all at once: you hand it the rows and it learns from them.
 
@@ -26,7 +26,7 @@ The rule behind the data is `2a - b`, so the answer for `a = 1, b = 1` is 1.0. `
 
 ## 2. Several passes, in a shuffled order
 
-An offline dataset can be read more than once. `epochs` sets the number of passes, `shuffle` changes the order at every pass, and `seed` makes the order repeatable.
+A dataset you already have can be read more than once. `epochs` sets the number of passes, `shuffle` changes the order at every pass, and `seed` makes the order repeatable.
 
 ```python
 m = LinearRegression(optimizer=SGD()).fit(X, y, epochs=5, shuffle=True, seed=0)
@@ -83,7 +83,7 @@ print(bag.predict_one({"x": 1.0}), bag.predict_one({"x": 6.0}), len(bag.members_
 0 1 5
 ```
 
-The row with `x = 1.0` gets the class 0, the row with `x = 6.0` the class 1, and the ensemble has five members. The online protocol, `learn_one`, gives each member a number of copies of each row drawn from a Poisson law with mean 1; the two protocols reach the same limit as the number of rows grows and differ on a finite sample. Each member is any estimator with a `fit`; with the batch tree as above, the whole ensemble works offline.
+The row with `x = 1.0` gets the class 0, the row with `x = 6.0` the class 1, and the ensemble has five members. The online protocol, `learn_one`, gives each member a number of copies of each row drawn from a Poisson law with mean 1; the two protocols reach the same limit as the number of rows grows and differ on a finite sample. Each member is any estimator with a `fit`; with the batch tree as above, the whole ensemble works on the whole dataset.
 
 ### 4.3 Text: a vocabulary fitted on a list of documents
 
@@ -109,7 +109,7 @@ The three documents, fitted in one call or learned one at a time, give the same 
 ## Details
 
 ### What `fit` does and does not do
-`fit` is defined once on the base class `Root`, so every estimator of the library has it. It adds an offline way in and changes nothing that exists: `learn_one`, `learn_many` and every algorithm stay as they were. It is a loop over `learn_one`; the classic batch version of each algorithm, written from its original paper, is the next step of the program (row 24 of the master program), one family at a time; the ones that exist today are in section 4.
+`fit` is defined once on the base class `Root`, so every estimator of the library has it. It adds a way in for a whole dataset and changes nothing that exists: `learn_one`, `learn_many` and every algorithm stay as they were. It is a loop over `learn_one`; the classic batch version of each algorithm, written from its original paper, is the next step of the program (row 24 of the master program), one family at a time; the ones that exist today are in section 4.
 
 ### Arguments
 `X` is a list of rows, `y` a list of labels of the same length, `t` a list of timestamps of the same length, `epochs` an integer of at least 1, `shuffle` a boolean, `seed` an integer. A mismatch of lengths, `epochs < 1`, or `t` with more than one epoch raises `ValueError`; an object without `learn_one` raises `TypeError`.
