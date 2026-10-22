@@ -190,3 +190,20 @@ __all__ = list(__all__) + [
 from dense_armor.utility.neural.positions import LearnedPositions
 
 __all__ = list(__all__) + ["LearnedPositions"]
+
+
+from dense_armor.utility.neural.losses_more import (
+    FocalLoss,
+    HingeLoss,
+    KLDivLoss,
+    L1Loss,
+    LabelSmoothingCE,
+)
+
+__all__ = list(__all__) + [
+    "FocalLoss",
+    "HingeLoss",
+    "KLDivLoss",
+    "L1Loss",
+    "LabelSmoothingCE",
+]
