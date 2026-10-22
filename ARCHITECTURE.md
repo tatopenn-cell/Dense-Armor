@@ -12,14 +12,13 @@ every file. Update it whenever a module is added, moved or renamed.
    `stream`, `datasets`, `compose`, `preprocessing`, `stats`, `metrics`, `evaluate`, `learn`,
    `tree`, `cluster`, `anomaly`, `drift`, `protect`, `vision`, `control`, `misc`, `bayes`,
    `linear`, `multiclass`, `multioutput`, `neighbors`, `optim`, `proba`, `rules`, `timeseries`,
-   `forest`, `ensemble`, `bandit`, `active`, `facto`, `reco`, `neural`.
+   `forest`, `ensemble`, `bandit`, `active`, `facto`, `reco`.
 3. `dynamics` — rigid-body dynamics from URDF.
 4. `checks` — `check_estimator` and the robot checks.
 5. `bridges` — optional bridges (LLM embeddings, and a bridge to existing online-learning
    libraries).
 6. `core` and `armatura.py` — the signal-shielding engine and its public class `Armatura`.
 7. `mcp_server` — the MCP tool adapter.
-8. `ml` — the machine learning classes: they read a whole table with `fit`, family by family.
 
 ```mermaid
 graph TD
@@ -62,7 +61,6 @@ graph TD
         ACTIVE["active: FixedUncertainty,<br/>VariableUncertainty"]
         FACTO["facto: FMRegressor, FFMRegressor,<br/>FwFMRegressor, HOFMRegressor"]
         RECO["reco: Baseline, BiasedMF, FunkMF"]
-        NEURAL["neural: Dense, Sequential, Conv2D,<br/>LSTM, MultiHeadSelfAttention,<br/>Trainer"]
     end
 
     subgraph DYN["3. dynamics/"]
@@ -89,12 +87,7 @@ graph TD
         MTOOLS["dense_armor_clean_signal,<br/>dense_armor_detect_anomalies,<br/>dense_armor_heal_series"]
     end
 
-    subgraph ML["8. ml/"]
-        MLC["stats, preprocessing, linear, bayes,<br/>tree, forest, ensemble, anomaly,<br/>drift, vision"]
-    end
-
     UTIL --> ROLES
-    ML --> ROLES
     CHECKS --> ROLES
     PROTECT --> DET
     DATASETS --> RBM
@@ -114,7 +107,7 @@ graph TD
 | `protection.py` | `Protected` | wrapper that skips learning on flagged samples |
 | `realtime.py` | `ProfileResult`, `profile`, `RealtimePipeline`, `PureEW` | latency profile and real-time pipeline |
 | `regressor.py` | `Regressor` | base class for supervised regressors |
-| `root.py` | `InconsistentVersionWarning`, `Root` | root of the estimator stack, with the entry point `fit` that feeds a whole dataset to `learn_one` |
+| `root.py` | `InconsistentVersionWarning`, `Root` | root of the estimator stack, with the offline entry point `fit` |
 | `safety.py` | `Health`, `HealthMonitor`, `SafeEstimator` | health monitor and safe wrapper |
 | `signal.py` | `Signal` | dict-like one-sample reading with units and timestamp |
 | `transformer.py` | `Transformer`, `TransformerSupervised` | base classes for transformers |
@@ -414,29 +407,6 @@ graph TD
 |---|---|---|
 | `reco.py` | `Baseline`, `BiasedMF`, `FunkMF` | global mean with biases, regularised matrix factorization with biases, and without (Paterek; Koren et al.); `rank` returns the items by predicted rating |
 
-### 2.32 neural
-
-Networks as layers with `forward`, `backward` and `params()`: parameters, initialisations, activations and losses, dense, normalisation, convolution, recurrent and attention layers, chains and architectures, and the training loop with schedules and mini-batches. A layer joins a pipeline of `roles/` through `AsTransformer`.
-
-| file | public names | what it is |
-|---|---|---|
-| `activations.py` | `relu_forward`, `relu_backward`, `prelu_forward`, `prelu_backward`, `sigmoid_forward`, `sigmoid_backward`, `tanh_forward`, `tanh_backward`, `softmax_forward`, `softmax_backward`, `Relu`, `PRelu`, `Sigmoid`, `Tanh`, `Softmax` | Activations with a forward and a backward, on a batch or one sample |
-| `adapter.py` | `AsTransformer` | A layer seen as a ``Transformer`` of the library |
-| `attention.py` | `scaled_dot_product_attention`, `scaled_dot_product_attention_backward`, `sinusoidal_positions`, `MultiHeadSelfAttention`, `TransformerBlock` | Attention layers |
-| `batching.py` | `minibatches` | Mini-batch generator |
-| `chain.py` | `Sequential`, `Parallel` | Chains and branches of layers |
-| `conv.py` | `Conv1D`, `Conv2D`, `MaxPool1D`, `MaxPool2D`, `AvgPool1D`, `AvgPool2D`, `Flatten` | Convolution and pooling layers |
-| `gradcheck.py` | `gradcheck` | Gradient check against central finite differences |
-| `init.py` | `fan_in`, `he_normal`, `xavier_normal`, `zeros_bias`, `glorot_uniform` | He and Xavier initialisations for rectifier networks |
-| `layers.py` | `dense_forward`, `dense_backward`, `Dense`, `Embedding`, `Dropout`, `Residual` | Dense, Embedding, Dropout, Residual |
-| `losses.py` | `mse_forward`, `mse_backward`, `softmax_cross_entropy_forward`, `softmax_cross_entropy_backward`, `bce_with_logits_forward`, `bce_with_logits_backward`, `MSE`, `SoftmaxCrossEntropy`, `BCEWithLogits`, `huber_forward`, `huber_backward`, `Huber` | Losses with a forward and a backward, on a batch |
-| `models.py` | `mlp`, `resnet_mlp`, `LastStep`, `MeanOverTime`, `AddPositions`, `cnn`, `recurrent_net`, `transformer_encoder` | standard architectures (MLP, residual MLP, CNN, recurrent net, transformer encoder) and the small layers that join them to a head |
-| `norm.py` | `BatchNorm`, `LayerNorm` | BatchNorm and LayerNorm, with a forward and a backward |
-| `params.py` | `Param` | A parameter that holds its gradient, and the update through an optimizer |
-| `recurrent.py` | `RNN`, `GRU`, `LSTM` | Recurrent layers |
-| `schedules.py` | `ConstantLR`, `StepLR`, `CosineWarmRestarts` | Learning-rate schedules |
-| `trainer.py` | `Trainer` | The standard training loop |
-
 ## 3. dynamics
 
 | file | public names | what it is |
@@ -486,30 +456,6 @@ Networks as layers with `forward`, `backward` and `params()`: parameters, initia
 | `server.py` | `main` | MCP server entry point |
 | `tools.py` | `catch_errors`, `dense_armor_health`, `dense_armor_clean_signal`, `dense_armor_detect_anomalies`, `dense_armor_robust_filter`, `dense_armor_heal_series`, `dense_armor_stream_start`, `dense_armor_stream_update`, `dense_armor_stream_end` | MCP tools |
 
-## 8. ml
-
-One module per family. A class subclasses `MLBase` (`base.py`, itself a `roles.Root`): `fit(X, y=None)` takes the whole table and returns `self`, and the results are attributes with a trailing underscore. Each module lists in `STOPPED` the online classes of the family whose reference defines the algorithm only on a stream.
-
-| file | public names | what it is |
-|---|---|---|
-| `anomaly.py` | `ChauvenetScorer`, `HampelFilter`, `LocalOutlierFactor`, `SigmaClipScorer`, `TukeyScorer` | Anomaly detection on a whole series or a whole table |
-| `base.py` | `MLBase`, `finite`, `finite_pairs` | Base class of the machine learning algorithms of Dense-Armor |
-| `bayes.py` | `MultinomialNB`, `BernoulliNB`, `CategoricalNB`, `ComplementNB` | Naive Bayes classifiers fitted on the whole table by counting |
-| `drift.py` | `CUSUMDriftDetector` | Change detection on a whole series |
-| `ensemble.py` | `BaggingClassifier`, `BoostingClassifier`, `ExponentiallyWeightedAverage`, `VotingClassifier`, `StackingClassifier` | Ensembles fitted on the whole table |
-| `forest.py` | `RandomForestClassifier`, `ExtraTreesRegressor` | Forests of trees grown on bootstrap samples or with random thresholds |
-| `linear.py` | `LinearRegression`, `LogisticRegression`, `BayesianLinearRegression` | Linear models fitted on the whole table |
-| `multiclass.py` | `OneVsRestClassifier`, `OneVsOneClassifier`, `OutputCodeClassifier` | Multiclass strategies built on a binary classifier fitted on the whole table |
-| `multioutput.py` | `PerOutputClassifier`, `PerOutputRegressor`, `ClassifierChain`, `RegressorChain`, `ProbabilisticClassifierChain` | Models with several targets, built on a single-target model fitted on the whole table |
-| `neighbors.py` | `KNNClassifier`, `KNNRegressor` | k-nearest-neighbour models on the whole training table |
-| `optim.py` | | the five optimisers have no form on the whole table: they are listed in `STOPPED` |
-| `preprocessing.py` | `StandardScaler`, `EWScaler`, `RobustScaler`, `MinMaxScaler`, `VarianceThreshold`, `SelectKBest`, `JointDerivatives`, `JointPower`, `Tokenizer`, `BagOfWords`, `TFIDF`, `FeatureHasher`, `TextVectorizer` | Preprocessing |
-| `proba.py` | `Beta`, `Gaussian`, `Multinomial` | Distributions fitted on the whole sample |
-| `rules.py` | | `AMRulesRegressor` is listed in `STOPPED` |
-| `stats.py` | `Covariance`, `Correlation`, `RollingCovariance`, `RollingCorrelation`, `Autocorrelation`, `Moments`, `ColumnMoments`, `EWStats`, `RollingMedian`, `ShrinkageCovariance` | Statistics computed on the whole table |
-| `tree.py` | `BatchDecisionTreeClassifier`, `DecisionTreeClassifier`, `DecisionTreeRegressor`, `MondrianForestClassifier`, `MondrianForestRegressor` | Decision trees and Mondrian forests grown on the whole table |
-| `vision.py` | `DenseFlow`, `GlobalMotion`, `MotionMask`, `PCA`, `RandomProjection` | optical flow between two frames, global shift, motion mask, random projection and PCA |
-
 ## How data flows
 
 A sample enters as a `Signal` from a reader in `utility/stream` (`iter_csv`, `iter_rosbag`,
@@ -524,8 +470,6 @@ predictions are scored by a metric from `utility/metrics` (`Accuracy`, `RollingA
 `EventMetrics`) driven by `utility/evaluate` (`progressive_val_score`, `evaluate_events`). A
 model can be wrapped in `roles/Protected`, with a detector from `utility/anomaly` or
 `utility/drift`, to skip learning on flagged samples.
-
-A table that is already complete is read at once by the classes of `ml/` with `fit`. A network of `utility/neural` is built from layers, joined in a `Sequential`, trained by a `Trainer` on mini-batches, and placed in a pipeline of `roles/` through `AsTransformer`.
 
 
 ```
