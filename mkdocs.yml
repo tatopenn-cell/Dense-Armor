@@ -68,6 +68,39 @@ plugins:
             heading_level: 2
 
 nav:
+  - Applications:
+      - Finance:
+          - finance/index.md
+          - Surveillance: finance/surveillance.md
+          - Risk: finance/risk.md
+          - Execution: finance/execution.md
+          - Single ticker: finance/single_ticker.md
+          - Static vs online: finance/static_vs_online.md
+          - Fraud detection: finance/fraud.md
+          - Unsupervised fraud: finance/unsupervised_fraud.md
+          - Intrusion detection: finance/intrusion.md
+          - Credit scoring: finance/credit_scoring.md
+          - Regime: finance/regime.md
+          - Drift vs noise: finance/drift_vs_noise.md
+          - Portfolio: finance/portfolio.md
+          - Order book: finance/order_book.md
+          - Stress: finance/stress.md
+          - Streaming: finance/streaming.md
+          - Timing: finance/timing.md
+      - Drones:
+          - Overview: drones/index.md
+          - Actuator fault: drones/actuator_fault.md
+          - Sensor consistency: drones/sensor_consistency.md
+          - Propeller health: drones/propeller_health.md
+          - Battery endurance: drones/battery_endurance.md
+          - Safety filter: drones/safety_filter.md
+          - Link health: drones/link_health.md
+          - Visual landing: drones/visual_landing.md
+          - Static vs online: drones/static_vs_online.md
+          - Start here: drones/start_here.md
+          - ArduPilot: drones/ardupilot.md
+          - Jetson power: drones/jetson_power.md
+          - Jetson energy: drones/jetson_energy.md
   - Machine learning:
       - Anomaly detection: ml/anomaly.md
       - Naive Bayes: ml/bayes.md
@@ -201,39 +234,6 @@ nav:
               - Statistics and sketches: compare/stats.md
               - Decision trees: compare/tree.md
               - Vision: compare/vision.md
-      - Applications:
-          - Finance:
-              - finance/index.md
-              - Surveillance: finance/surveillance.md
-              - Risk: finance/risk.md
-              - Execution: finance/execution.md
-              - Single ticker: finance/single_ticker.md
-              - Static vs online: finance/static_vs_online.md
-              - Fraud detection: finance/fraud.md
-              - Unsupervised fraud: finance/unsupervised_fraud.md
-              - Intrusion detection: finance/intrusion.md
-              - Credit scoring: finance/credit_scoring.md
-              - Regime: finance/regime.md
-              - Drift vs noise: finance/drift_vs_noise.md
-              - Portfolio: finance/portfolio.md
-              - Order book: finance/order_book.md
-              - Stress: finance/stress.md
-              - Streaming: finance/streaming.md
-              - Timing: finance/timing.md
-          - Drones:
-              - Overview: drones/index.md
-              - Actuator fault: drones/actuator_fault.md
-              - Sensor consistency: drones/sensor_consistency.md
-              - Propeller health: drones/propeller_health.md
-              - Battery endurance: drones/battery_endurance.md
-              - Safety filter: drones/safety_filter.md
-              - Link health: drones/link_health.md
-              - Visual landing: drones/visual_landing.md
-              - Static vs online: drones/static_vs_online.md
-              - Start here: drones/start_here.md
-              - ArduPilot: drones/ardupilot.md
-              - Jetson power: drones/jetson_power.md
-              - Jetson energy: drones/jetson_energy.md
       - Shields:
           - shields/index.md
           - Armatura: shields/armatura.md
