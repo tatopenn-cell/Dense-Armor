@@ -1,0 +1,43 @@
+{
+  "family": "anomaly",
+  "seeds": 10,
+  "synthetic": true,
+  "wilcoxon_a12": "not computed: the machine learning and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two",
+  "classes": {
+    "HampelFilter": {
+      "kind": "abs",
+      "median": 0.0,
+      "p90": 0.0,
+      "max": 0.0,
+      "why": "the same rule on the same centred window"
+    },
+    "TukeyScorer": {
+      "kind": "abs",
+      "median": 0.0,
+      "p90": 0.0,
+      "max": 0.0,
+      "why": "the same rule on the same centred window"
+    },
+    "ChauvenetScorer": {
+      "kind": "abs",
+      "median": 0.0,
+      "p90": 0.0,
+      "max": 0.0,
+      "why": "the same rule on the same centred window"
+    },
+    "SigmaClipScorer": {
+      "kind": "abs",
+      "median": 0.0,
+      "p90": 0.0,
+      "max": 0.0,
+      "why": "the same rule on the same centred window"
+    },
+    "LocalOutlierFactor": {
+      "kind": "abs",
+      "median": 0.0,
+      "p90": 0.0,
+      "max": 0.0,
+      "why": "the same definitions, with the whole table as the reference set"
+    }
+  }
+}

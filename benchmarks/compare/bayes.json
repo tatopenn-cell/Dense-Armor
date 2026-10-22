@@ -1,0 +1,36 @@
+{
+  "family": "bayes",
+  "seeds": 10,
+  "synthetic": true,
+  "wilcoxon_a12": "not computed: the machine learning and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two",
+  "classes": {
+    "MultinomialNB": {
+      "kind": "abs",
+      "median": 2.220446049250313e-16,
+      "p90": 6.439293542825907e-16,
+      "max": 9.43689570931383e-16,
+      "why": "the same counts and the same smoothing"
+    },
+    "BernoulliNB": {
+      "kind": "abs",
+      "median": 3.0531133177191805e-16,
+      "p90": 3.3306690738754696e-16,
+      "max": 3.3306690738754696e-16,
+      "why": "the same counts and the same smoothing"
+    },
+    "CategoricalNB": {
+      "kind": "abs",
+      "median": 5.551115123125783e-16,
+      "p90": 6.911138328291599e-16,
+      "max": 9.159339953157541e-16,
+      "why": "the same counts and the same smoothing"
+    },
+    "ComplementNB": {
+      "kind": "abs",
+      "median": 1.6653345369377348e-16,
+      "p90": 1.7208456881689924e-16,
+      "max": 2.220446049250313e-16,
+      "why": "the same counts and the same smoothing"
+    }
+  }
+}

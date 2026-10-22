@@ -1,0 +1,99 @@
+{
+  "family": "preprocessing",
+  "seeds": 10,
+  "synthetic": true,
+  "wilcoxon_a12": "not computed: the machine learning and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two",
+  "classes": {
+    "StandardScaler": {
+      "kind": "abs",
+      "median": 3.774758283725532e-15,
+      "p90": 7.216449660063518e-15,
+      "max": 8.215650382226158e-15,
+      "why": ""
+    },
+    "EWScaler": {
+      "kind": "abs",
+      "median": 8.881784197001252e-16,
+      "p90": 1.7097434579227405e-15,
+      "max": 3.1086244689504383e-15,
+      "why": ""
+    },
+    "RobustScaler": {
+      "kind": "abs",
+      "median": 0.0,
+      "p90": 0.0,
+      "max": 0.0,
+      "why": ""
+    },
+    "MinMaxScaler": {
+      "kind": "abs",
+      "median": 0.0,
+      "p90": 0.0,
+      "max": 0.0,
+      "why": ""
+    },
+    "VarianceThreshold": {
+      "kind": "abs",
+      "median": 0.0,
+      "p90": 0.0,
+      "max": 0.0,
+      "why": ""
+    },
+    "SelectKBest": {
+      "kind": "abs",
+      "median": 0.0,
+      "p90": 0.0,
+      "max": 0.0,
+      "why": ""
+    },
+    "JointDerivatives": {
+      "kind": "abs",
+      "median": 1.8044374883174896e-09,
+      "p90": 5.681067705154419e-09,
+      "max": 6.51925802230835e-09,
+      "why": "rounding of a polynomial through four samples 0.01 s apart"
+    },
+    "JointPower": {
+      "kind": "abs",
+      "median": 0.0,
+      "p90": 0.0,
+      "max": 0.0,
+      "why": ""
+    },
+    "Tokenizer": {
+      "kind": "abs",
+      "median": 0.0,
+      "p90": 0.0,
+      "max": 0.0,
+      "why": ""
+    },
+    "BagOfWords": {
+      "kind": "abs",
+      "median": 0.0,
+      "p90": 0.0,
+      "max": 0.0,
+      "why": ""
+    },
+    "TFIDF": {
+      "kind": "abs",
+      "median": 0.0,
+      "p90": 0.0,
+      "max": 0.0,
+      "why": ""
+    },
+    "FeatureHasher": {
+      "kind": "abs",
+      "median": 0.0,
+      "p90": 0.0,
+      "max": 0.0,
+      "why": ""
+    },
+    "TextVectorizer": {
+      "kind": "abs",
+      "median": 7.84185570368301e-08,
+      "p90": 7.84185570368301e-08,
+      "max": 7.84185570368301e-08,
+      "why": "the online matrix is float32, the batch one float64"
+    }
+  }
+}

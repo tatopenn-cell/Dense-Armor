@@ -1,0 +1,29 @@
+{
+  "family": "tree",
+  "seeds": 10,
+  "synthetic": true,
+  "wilcoxon_a12": "not computed: the machine learning and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two",
+  "classes": {
+    "BatchDecisionTreeClassifier": {
+      "kind": "abs",
+      "median": 0.0,
+      "p90": 0.0,
+      "max": 0.0,
+      "why": "the same gini splits on the same table"
+    },
+    "MondrianForestClassifier": {
+      "kind": "abs",
+      "median": 0.010000000000000009,
+      "p90": 0.021000000000000015,
+      "max": 0.030000000000000027,
+      "why": "the trees are sampled from the whole table at once, not grown row by row, so the random splits differ"
+    },
+    "MondrianForestRegressor": {
+      "kind": "abs",
+      "median": 0.016672666031551337,
+      "p90": 0.030318015521584647,
+      "max": 0.04485034107584095,
+      "why": "the trees are sampled from the whole table at once, not grown row by row, so the random splits differ"
+    }
+  }
+}
