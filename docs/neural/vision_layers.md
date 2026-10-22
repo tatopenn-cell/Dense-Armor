@@ -116,7 +116,7 @@ The chain has 4 parameters (a `Conv2D` with `W` and `b`, and a `Dense` with `W` 
 
 ## 6. A causal Conv1D, for a stream
 
-A causal `Conv1D` predicts the step `t` using only the steps up to `t`, never the future. The library pads on the left with `kernel - 1` zeros and no padding on the right, so the output at position `t` depends on the input at positions `t - kernel + 1` to `t`. The `step` method applies the same window to a single sample and a buffer of the last `kernel - 1` samples.
+A causal `Conv1D` predicts the step `t` from the steps up to `t`. The library pads the left side with `kernel - 1` zeros and applies the window that ends at `t`, so the output at position `t` depends on the input at positions `t - kernel + 1` to `t`. The `step` method applies the same window to a single sample and a buffer of the last `kernel - 1` samples.
 
 ~~~python
 import jax

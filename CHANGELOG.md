@@ -4,6 +4,9 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- The five tests of `test/neural` that train a network for minutes carry the marker `training`; the workflow `tests` runs `-m "not training"` and the new workflow `tests-slow` runs them on one job (Python 3.12) when `dense_armor/utility/neural/`, `test/neural/` or `pytest.ini` change. A test for `MaxPool2D.backward` before `forward`, the format of three files, and a positive wording in `docs/neural/vision_layers.md`.
+
 ### Added
 - `dense_armor/utility/neural/`: `Conv1D`, `Conv2D`, `MaxPool1D`, `MaxPool2D`, `AvgPool1D`, `AvgPool2D`, `Flatten`, `RNN`, `GRU`, `LSTM`, `MultiHeadSelfAttention`, `TransformerBlock`, `LastStep`, `MeanOverTime`, `AddPositions`, `cnn`, `recurrent_net`, `transformer_encoder`; `docs/neural/vision_layers.md` and `docs/neural/sequence_layers.md`.
 - `dense_armor/ml/`: the machine learning classes, which read the whole table in `fit`: statistics, preprocessing, linear models, naive Bayes, nearest neighbours, multiclass, multi-output, distributions, trees (CART and Mondrian forests), anomaly detection (Hampel, Tukey, Chauvenet, sigma clipping, Local Outlier Factor), change detection (CUSUM with a fixed reference) and vision (Horn-Schunck flow, motion mask, phase correlation, random projection, PCA); each module lists in `STOPPED` the classes whose reference defines no algorithm for the whole dataset; `docs/ml/` and `docs/compare/` hold the pages and the comparison with the online classes.

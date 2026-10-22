@@ -143,6 +143,7 @@ def _train_xor(make_model, steps, lr, seed=0):
 
 
 @pytest.mark.slow
+@pytest.mark.training
 def test_mlp_learns_xor():
     """The MLP learns XOR on at least 4 of 5 seeds.
 
@@ -164,6 +165,7 @@ def test_mlp_learns_xor():
 
 
 @pytest.mark.slow
+@pytest.mark.training
 def test_resnet_mlp_learns_xor():
     for seed in range(5):
         acc, final_loss = _train_xor(

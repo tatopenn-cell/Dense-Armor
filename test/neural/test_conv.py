@@ -309,6 +309,8 @@ def test_pooling_backward_before_forward_raises():
     with pytest.raises(RuntimeError, match="call forward"):
         MaxPool1D(2).backward(jnp.ones((2, 1)))
     with pytest.raises(RuntimeError, match="call forward"):
+        MaxPool2D(2).backward(jnp.ones((1, 1, 1)))
+    with pytest.raises(RuntimeError, match="call forward"):
         AvgPool2D(2).backward(jnp.ones((1, 1, 1)))
 
 
@@ -370,8 +372,10 @@ def test_flatten_backward_before_forward_raises():
     with pytest.raises(RuntimeError, match="call forward"):
         Flatten().backward(jnp.ones(3))
 
+
 def test_conv_out_size_and_pool_out_size_private():
     from dense_armor.utility.neural.conv import _conv_out_size, _pool_out_size
+
     assert _conv_out_size(5, 3, 1, 0) == 3
     assert _conv_out_size(5, 3, 1, 1) == 5
     assert _conv_out_size(5, 3, 2, 0) == 2

@@ -215,6 +215,7 @@ def _bar_images(n, rng, noise=0.1):
 
 
 @pytest.mark.slow
+@pytest.mark.training
 def test_cnn_separates_vertical_from_horizontal():
     rng = np.random.default_rng(0)
     X, y = _bar_images(80, rng)
@@ -239,6 +240,7 @@ def _first_sign_sequences(n, rng, t=10):
 
 
 @pytest.mark.slow
+@pytest.mark.training
 def test_recurrent_net_lstm_and_gru():
     rng = np.random.default_rng(1)
     X, y = _first_sign_sequences(80, rng)
@@ -254,6 +256,7 @@ def test_recurrent_net_lstm_and_gru():
 
 
 @pytest.mark.slow
+@pytest.mark.training
 def test_transformer_encoder_learns_first_sign():
     rng = np.random.default_rng(2)
     X, y = _first_sign_sequences(80, rng)
