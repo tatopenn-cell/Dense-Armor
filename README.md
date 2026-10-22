@@ -26,7 +26,7 @@
 
 ## Who is this for
 
-Python developers working on systems where data arrives one sample at a time and the model has to learn or stay stable *while it runs*: robot control loops, sensor pipelines, agent runtimes, any streaming workload. A fixed dataset works too: `fit` feeds every row to any algorithm, and the [Offline learning](https://tatopenn-cell.github.io/Dense-Armor/offline/) page lists the batch versions.
+Python developers working on systems where data arrives one sample at a time and the model has to learn or stay stable *while it runs*: robot control loops, sensor pipelines, agent runtimes, any streaming workload. A fixed dataset works too: the [Machine learning](https://tatopenn-cell.github.io/Dense-Armor/ml/stats/) classes of `dense_armor.ml` read the whole table at once.
 
 ## Use cases
 
@@ -58,7 +58,7 @@ In this library, *shielding* means cleaning the data a model sees (NaN, spikes, 
 
 ## What it does
 
-Dense-Armor is a Python library for online learning. Every estimator learns one sample at a time, at control-loop speed, on JAX, and `fit` feeds a whole dataset to any of them. The same `learn_one` / `predict_one` / `transform_one` contract runs on a table, a time series, a robot joint stream, a video frame, a token stream, and a shield can sit in front of any of them.
+Dense-Armor is a Python machine learning library with an online part. Every online estimator learns one sample at a time, at control-loop speed, on JAX, and the machine learning classes of `dense_armor.ml` read a whole dataset with `fit`. The same `learn_one` / `predict_one` / `transform_one` contract runs on a table, a time series, a robot joint stream, a video frame, a token stream, and a shield can sit in front of any of them.
 
 ---
 
@@ -179,7 +179,7 @@ Dense-Armor provides online implementations of the following families of algorit
 - [Finance: Stress](https://tatopenn-cell.github.io/Dense-Armor/finance/stress/): the stress page.
 - [Finance: Streaming](https://tatopenn-cell.github.io/Dense-Armor/finance/streaming/): the streaming page.
 - [Finance: Timing](https://tatopenn-cell.github.io/Dense-Armor/finance/timing/): the timing page.
-- [Offline learning](https://tatopenn-cell.github.io/Dense-Armor/offline/): `fit` feeds a whole dataset to any online algorithm, and the batch tree, the bagging and the text vectorizer learn from all the rows at once
+- [Machine learning](https://tatopenn-cell.github.io/Dense-Armor/ml/stats/): the classes of `dense_armor.ml` read the whole table in `fit`: statistics, preprocessing, trees, forests, ensembles, anomaly and change detection, vision
 
 Dense-Armor also provides other online utilities:
 
@@ -201,7 +201,7 @@ Check out [the API](https://tatopenn-cell.github.io/Dense-Armor/api/) for a comp
 
 ## Should I be using Dense-Armor?
 
-Batch learning does the job for many problems, and Dense-Armor covers it with `fit` and the batch versions. An online approach fits when:
+Learning on the whole dataset does the job for many problems, and Dense-Armor covers it with the machine learning classes of `dense_armor.ml`. An online approach fits when:
 
 - you want a model that learns from new data without revisiting past data
 - you want a model that is robust to concept drift

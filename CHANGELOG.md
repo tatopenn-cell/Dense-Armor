@@ -45,7 +45,7 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ### Changed
 - `pyproject.toml` has a `[tool.ruff]` section (target py310, `.claude` excluded, rules E4, E7, E9, F, I, UP) and `ruff check --fix` is applied to 44 files of `dense_armor`: import order, annotations, unused `noqa`. The 30 errors left in `dense_armor` have no safe fix.
-- `docs/offline.md` lists the algorithms that work on the whole dataset: `BatchDecisionTreeClassifier`, `OnlineBaggingClassifier.fit_batch` and `TextVectorizer.fit`.
+- `docs/fit.md` lists the algorithms that work on the whole dataset: `BatchDecisionTreeClassifier`, `OnlineBaggingClassifier.fit_batch` and `TextVectorizer.fit`.
 
 ## [1.1.31] - 2026-10-17
 
@@ -95,7 +95,7 @@ The first master program, the online-learning toolbox in 21 sections, is complet
 - `fit(X, y=None, t=None, epochs=1, shuffle=False, seed=None)` on the base class
   `Root`: one offline entry point for every online estimator. It feeds the whole
   dataset to `learn_one`, row by row, for `epochs` passes, optionally shuffled.
-  Nothing existing changes. Guide: `docs/offline.md`.
+  Nothing existing changes. Guide: `docs/fit.md`.
 - Ensembles of online learners: `OnlineBaggingClassifier` and
   `OnlineBoostingClassifier` (Oza and Russell 2001),
   `ExponentiallyWeightedAverageRegressor` (Freund and Schapire 1997, Hedge

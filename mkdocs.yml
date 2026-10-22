@@ -114,7 +114,7 @@ nav:
       - Active learning: active/index.md
       - Factorization machines: facto/index.md
       - Recommenders: reco/index.md
-      - Offline, the whole dataset at once: offline.md
+      - Fit, the whole dataset at once: fit.md
       - Rules: rules/index.md
       - Detection:
           - Anomaly detection:
