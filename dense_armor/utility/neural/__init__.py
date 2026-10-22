@@ -97,3 +97,17 @@ __all__ = list(__all__) + [
     "CosineWarmRestarts",
     "Trainer",
 ]
+
+from dense_armor.utility.neural.background import BackgroundLearner
+from dense_armor.utility.neural.hedge import HedgeNetClassifier
+from dense_armor.utility.neural.online import (
+    OnlineNetClassifier,
+    OnlineNetRegressor,
+)
+
+__all__ = list(__all__) + [
+    "BackgroundLearner",
+    "HedgeNetClassifier",
+    "OnlineNetClassifier",
+    "OnlineNetRegressor",
+]

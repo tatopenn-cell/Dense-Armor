@@ -5,6 +5,8 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- `dense_armor/utility/neural/`: `OnlineNetRegressor`, `OnlineNetClassifier`, `HedgeNetClassifier`, `BackgroundLearner`; `docs/neural/continuous.md` with the guide and the figure of continuous training.
+### Added
 - `dense_armor/utility/neural/`: `ConstantLR`, `StepLR`, `CosineWarmRestarts`, `minibatches`, `Trainer`; `docs/neural/training.md` with the guide and the figure of the training loop.
 ### Changed
 - The marker `heavy` (tests above 14 seconds: `test/dynamics`, the payload and the experiment suites, `ensemble/test_comparison.py` and a few more) moves 1060 seconds of the suite out of the matrix of the workflow `tests`, which now runs `-m "not training and not heavy"`; the workflow `tests-slow` runs `training`, `heavy-dynamics` and `heavy-rest` as three parallel jobs (Python 3.12, ubuntu) with the coverage uploaded to Codecov.
