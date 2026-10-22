@@ -167,3 +167,8 @@ __all__ = list(__all__) + [
 from dense_armor.utility.neural.bidirectional import Bidirectional
 
 __all__ = list(__all__) + ["Bidirectional"]
+
+
+from dense_armor.utility.neural.norm_more import GroupNorm, InstanceNorm
+
+__all__ = list(__all__) + ["GroupNorm", "InstanceNorm"]
