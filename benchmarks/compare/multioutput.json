@@ -1,0 +1,43 @@
+{
+  "family": "multioutput",
+  "seeds": 10,
+  "synthetic": true,
+  "wilcoxon_a12": "not computed: the machine learning and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two",
+  "classes": {
+    "PerOutputRegressor": {
+      "kind": "abs",
+      "median": 0.024836484196776087,
+      "p90": 0.0406013055671446,
+      "max": 0.06278317189100968,
+      "why": "the online regressors take one stochastic step per row; the batch ones solve exactly"
+    },
+    "RegressorChain": {
+      "kind": "abs",
+      "median": 0.03198203901867891,
+      "p90": 0.05218501770480461,
+      "max": 0.06278317189100968,
+      "why": "the online regressors take one stochastic step per row; the batch ones solve exactly"
+    },
+    "PerOutputClassifier": {
+      "kind": "abs",
+      "median": 0.015000000000000013,
+      "p90": 0.025500000000000023,
+      "max": 0.030000000000000027,
+      "why": "difference between the test accuracies; the online models see each row once"
+    },
+    "ClassifierChain": {
+      "kind": "abs",
+      "median": 0.012500000000000011,
+      "p90": 0.021500000000000012,
+      "max": 0.03500000000000003,
+      "why": "difference between the test accuracies; the online models see each row once"
+    },
+    "ProbabilisticClassifierChain": {
+      "kind": "abs",
+      "median": 0.015000000000000013,
+      "p90": 0.02600000000000002,
+      "max": 0.03500000000000003,
+      "why": "difference between the test accuracies; the online models see each row once"
+    }
+  }
+}

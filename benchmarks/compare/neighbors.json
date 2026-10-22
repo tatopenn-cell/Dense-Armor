@@ -1,0 +1,22 @@
+{
+  "family": "neighbors",
+  "seeds": 10,
+  "synthetic": true,
+  "wilcoxon_a12": "not computed: the machine learning and the online value are two outputs of the same formula on the same data, so the table gives their difference and not a ranking of the two",
+  "classes": {
+    "KNNClassifier": {
+      "kind": "abs",
+      "median": 0.0,
+      "p90": 0.0,
+      "max": 0.0,
+      "why": "the online model searches a window as large as the table, so the two see the same rows"
+    },
+    "KNNRegressor": {
+      "kind": "abs",
+      "median": 3.3027086621117974e-10,
+      "p90": 4.810339404581754e-10,
+      "max": 5.598784214022601e-10,
+      "why": "the online model searches a window as large as the table, so the two see the same rows"
+    }
+  }
+}

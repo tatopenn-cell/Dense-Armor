@@ -68,15 +68,22 @@ plugins:
             heading_level: 2
 
 nav:
-  - Start:
-      - Home: index.md
-      - Getting Started: getting-started.md
-      - Speed: speed.md
-      - Comparisons & limits:
-          - Dense-Armor vs Kalman: vs_kalman.md
-          - Adversarial robustness: robustness.md
-          - Known limits: limits.md
   - Machine learning:
+      - Anomaly detection: ml/anomaly.md
+      - Naive Bayes: ml/bayes.md
+      - Change detection: ml/drift.md
+      - Ensembles: ml/ensemble.md
+      - Forests: ml/forest.md
+      - Linear models: ml/linear.md
+      - Multiclass: ml/multiclass.md
+      - Multi-output: ml/multioutput.md
+      - Nearest neighbours: ml/neighbors.md
+      - Preprocessing: ml/preprocessing.md
+      - Distributions: ml/proba.md
+      - Statistics and sketches: ml/stats.md
+      - Decision trees: ml/tree.md
+      - Vision: ml/vision.md
+  - Online learning:
       - Online learning:
           - learn/index.md
           - Calibration: learn/calibration.md
@@ -173,7 +180,27 @@ nav:
       - Chains: neural/chains.md
       - Convolution and pooling: neural/vision_layers.md
       - Recurrent layers and attention: neural/sequence_layers.md
-  - Applications and reference:
+  - Library:
+      - Home: index.md
+      - Getting Started: getting-started.md
+      - Speed: speed.md
+      - Comparisons & limits:
+          - Dense-Armor vs Kalman: vs_kalman.md
+          - Adversarial robustness: robustness.md
+          - Known limits: limits.md
+          - Machine learning against online learning:
+              - Anomaly detection: compare/anomaly.md
+              - Naive Bayes: compare/bayes.md
+              - Change detection: compare/drift.md
+              - Linear models: compare/linear.md
+              - Multiclass: compare/multiclass.md
+              - Multi-output: compare/multioutput.md
+              - Nearest neighbours: compare/neighbors.md
+              - Preprocessing: compare/preprocessing.md
+              - Distributions: compare/proba.md
+              - Statistics and sketches: compare/stats.md
+              - Decision trees: compare/tree.md
+              - Vision: compare/vision.md
       - Applications:
           - Finance:
               - finance/index.md
