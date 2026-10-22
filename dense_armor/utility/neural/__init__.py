@@ -111,3 +111,17 @@ __all__ = list(__all__) + [
     "OnlineNetClassifier",
     "OnlineNetRegressor",
 ]
+
+from dense_armor.utility.neural.autoencoder import Autoencoder
+from dense_armor.utility.neural.matryoshka import MatryoshkaLoss
+from dense_armor.utility.neural.online_autoencoder import OnlineAutoencoder
+from dense_armor.utility.neural.quantize import VectorQuantizer
+from dense_armor.utility.neural.seq2seq import Seq2Seq
+
+__all__ = list(__all__) + [
+    "Autoencoder",
+    "MatryoshkaLoss",
+    "OnlineAutoencoder",
+    "Seq2Seq",
+    "VectorQuantizer",
+]

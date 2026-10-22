@@ -216,6 +216,7 @@ nav:
       - Recurrent layers and attention: neural/sequence_layers.md
       - Training: neural/training.md
       - Continuous training: neural/continuous.md
+      - Encoders and decoders: neural/encoder_decoder.md
   - Library:
       - Home: index.md
       - Getting Started: getting-started.md

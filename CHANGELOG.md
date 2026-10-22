@@ -5,6 +5,8 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- `dense_armor/utility/neural/`: `Autoencoder`, `VectorQuantizer`, `MatryoshkaLoss`, `Seq2Seq`, `OnlineAutoencoder`; `docs/neural/encoder_decoder.md` with the guide and the figure.
+### Added
 - `dense_armor/utility/neural/`: `OnlineNetRegressor`, `OnlineNetClassifier`, `HedgeNetClassifier`, `BackgroundLearner`; `docs/neural/continuous.md` with the guide and the figure of continuous training.
 ### Added
 - `dense_armor/utility/neural/`: `ConstantLR`, `StepLR`, `CosineWarmRestarts`, `minibatches`, `Trainer`; `docs/neural/training.md` with the guide and the figure of the training loop.
