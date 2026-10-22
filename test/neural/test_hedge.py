@@ -292,6 +292,8 @@ def test_hedge_read_returns_none_on_missing_and_non_numeric():
 def test_hedge_read_x_not_dict():
     """Line 140: _read returns None when x is not a dict."""
     c = HedgeNetClassifier([2, 4], jax.random.PRNGKey(0), classes=[0, 1])
+    assert c._read(None) is None
+    assert c._read("not-a-dict") is None
     c.learn_one(None, 1)
     assert c.n_missing_ == 1
     c.learn_one({"a": 1.0, "b": 0.0}, 1)
