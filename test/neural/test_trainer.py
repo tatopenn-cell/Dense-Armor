@@ -161,10 +161,26 @@ def test_early_stopping_restores_best_weights():
         y_val=y_val,
         patience=5,
     )
-    print(f"stopped at {t.stopped_epoch_}, best at {t.best_epoch_}")
+    print(f"with patience: stopped at {t.stopped_epoch_}, best at {t.best_epoch_}")
     assert t.stopped_epoch_ < 200
     best_val = t.history_["val_loss"][t.best_epoch_]
     assert abs(t.evaluate(X_val, y_val) - best_val) < 1e-6
+
+    m2 = mlp([2, 32, 32, 1], jax.random.PRNGKey(0))
+    t2 = Trainer(m2, MSE(), Adam(0.01))
+    t2.fit(
+        X_tr,
+        y_tr,
+        epochs=200,
+        batch_size=10,
+        key=jax.random.PRNGKey(0),
+        X_val=X_val,
+        y_val=y_val,
+        patience=None,
+    )
+    print(f"without patience: stopped at {t2.stopped_epoch_}, best at {t2.best_epoch_}")
+    assert t2.stopped_epoch_ == 199
+    assert t2.best_epoch_ is None
 
 
 def test_without_patience_runs_all_epochs():
