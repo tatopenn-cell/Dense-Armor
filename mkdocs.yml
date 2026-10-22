@@ -102,7 +102,6 @@ nav:
           - Jetson power: drones/jetson_power.md
           - Jetson energy: drones/jetson_energy.md
   - Machine learning:
-      - Overview: ml/index.md
       - Anomaly detection: ml/anomaly.md
       - Naive Bayes: ml/bayes.md
       - Change detection: ml/drift.md

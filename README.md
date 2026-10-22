@@ -26,7 +26,7 @@
 
 ## Who is this for
 
-Python developers working on systems where data arrives one sample at a time and the model has to learn or stay stable *while it runs*: robot control loops, sensor pipelines, agent runtimes, any streaming workload. A fixed dataset works too: the [Machine learning](https://tatopenn-cell.github.io/Dense-Armor/ml/) classes of `dense_armor.ml` read the whole table at once.
+Python developers working on systems where data arrives one sample at a time and the model has to learn or stay stable *while it runs*: robot control loops, sensor pipelines, agent runtimes, any streaming workload. A fixed dataset works too: the [Machine learning](https://tatopenn-cell.github.io/Dense-Armor/ml/stats/) classes of `dense_armor.ml` read the whole table at once.
 
 ## Use cases
 
@@ -179,7 +179,7 @@ Dense-Armor provides online implementations of the following families of algorit
 - [Finance: Stress](https://tatopenn-cell.github.io/Dense-Armor/finance/stress/): the stress page.
 - [Finance: Streaming](https://tatopenn-cell.github.io/Dense-Armor/finance/streaming/): the streaming page.
 - [Finance: Timing](https://tatopenn-cell.github.io/Dense-Armor/finance/timing/): the timing page.
-- [Machine learning](https://tatopenn-cell.github.io/Dense-Armor/ml/): the classes of `dense_armor.ml` read the whole table in `fit`: statistics, preprocessing, trees, forests, ensembles, anomaly and change detection, vision
+- [Machine learning](https://tatopenn-cell.github.io/Dense-Armor/ml/stats/): the classes of `dense_armor.ml` read the whole table in `fit`: statistics, preprocessing, trees, forests, ensembles, anomaly and change detection, vision
 
 Dense-Armor also provides other online utilities:
 
@@ -305,4 +305,4 @@ Dense-Armor takes inspiration from [River](https://riverml.xyz) (Montiel et al.,
 - Deep Learning: [Convolution and pooling: how do I look for a pattern in an image and shrink it?](docs/neural/vision_layers.md).
 - Deep Learning: [Recurrent layers and attention: how do I keep a memory of the past samples?](docs/neural/sequence_layers.md).
 - Deep Learning: [Training: how do I train a network on a dataset I already have, and stop it before it memorises?](docs/neural/training.md).
-- Machine learning: [the families of `dense_armor.ml`](docs/ml/index.md), grown on the whole table: statistics, preprocessing, linear models, trees, forests, ensembles, anomaly and change detection, vision.
+- Machine learning: [Statistics](docs/ml/stats.md), [trees](docs/ml/tree.md), [anomaly detection](docs/ml/anomaly.md), [change detection](docs/ml/drift.md), [vision](docs/ml/vision.md) and the other families of `dense_armor.ml`, grown on the whole table.
