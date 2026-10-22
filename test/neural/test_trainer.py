@@ -142,6 +142,7 @@ def test_schedule_in_history_follows_cosine():
         assert abs(t.history_["lr"][e] - c(e)) < 1e-12
 
 
+@pytest.mark.training
 def test_early_stopping_restores_best_weights():
     rng = np.random.default_rng(0)
     X_tr = rng.normal(0.0, 1.0, (30, 2)).astype(np.float32)
@@ -264,6 +265,7 @@ def test_value_errors():
         )
 
 
+@pytest.mark.training
 def test_two_moons_reaches_accuracy():
     rng = np.random.default_rng(42)
     n = 100
@@ -322,3 +324,29 @@ def test_optimizers_is_a_list():
     t = Trainer(m, MSE(), SGD(0.01))
     assert isinstance(t.optimizers_, list)
     assert len(t.optimizers_) == len(m.params())
+
+
+def test_early_stopping_triggers_in_a_few_epochs():
+    """Early stopping with patience=1 on random data, not @training."""
+    rng = np.random.default_rng(7)
+    X = rng.normal(0.0, 1.0, (20, 2)).astype(np.float32)
+    y = rng.normal(0.0, 1.0, (20, 1)).astype(np.float32)
+    Xv = rng.normal(0.0, 1.0, (20, 2)).astype(np.float32)
+    yv = rng.normal(0.0, 1.0, (20, 1)).astype(np.float32)
+    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
+    t = Trainer(m, MSE(), SGD(0.5))
+    t.fit(
+        X,
+        y,
+        epochs=5,
+        batch_size=10,
+        key=jax.random.PRNGKey(0),
+        X_val=Xv,
+        y_val=yv,
+        patience=1,
+    )
+    assert t.stopped_epoch_ is not None
+    assert t.stopped_epoch_ < 5
+    assert t.best_epoch_ is not None
+    best_val = t.history_["val_loss"][t.best_epoch_]
+    assert abs(t.evaluate(Xv, yv) - best_val) < 1e-6
