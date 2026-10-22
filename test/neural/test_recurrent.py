@@ -294,6 +294,7 @@ def test_lstm_one_step_by_hand():
     out, _ = ls.step(x_t, (y_prev, c_prev))
     assert abs(float(out[0]) - float(y)) < 1e-6
 
+
 def test_repr_rnn_gru_lstm():
     assert "RNN" in repr(RNN(3, 4, jax.random.PRNGKey(0)))
     assert "GRU" in repr(GRU(3, 4, jax.random.PRNGKey(0)))

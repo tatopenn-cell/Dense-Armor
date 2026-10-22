@@ -1,0 +1,38 @@
+name: tests-slow
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "dense_armor/utility/neural/**"
+      - "test/neural/**"
+      - "pytest.ini"
+      - ".github/workflows/tests-slow.yml"
+  pull_request:
+    branches: [master]
+    paths:
+      - "dense_armor/utility/neural/**"
+      - "test/neural/**"
+      - "pytest.ini"
+      - ".github/workflows/tests-slow.yml"
+
+jobs:
+  training:
+    name: training tests (Python 3.12, ubuntu-latest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install package + dev deps
+        run: pip install -e ".[dev]"
+
+      - name: Run the training tests
+        env:
+          JAX_ENABLE_X64: "True"
+        run: pytest test/neural -v -m training
