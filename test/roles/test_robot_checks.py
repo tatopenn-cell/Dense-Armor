@@ -238,3 +238,26 @@ def test_schema_json_runs_on_estimator():
             return 0.0
 
     robot.check_schema_json(_R())
+
+
+def test_p99_within_budget_survives_a_burst_of_slow_calls():
+    """Three slow calls in the first round do not fail a fast learner.
+
+    With 200 measurements per round the 99th percentile sits between the
+    198th and the 199th value, so three calls of 20 ms in the first round
+    put it at 20 ms; the second round is clean and the smallest p99
+    counts. A learner that is slow in every round still fails (the test
+    above).
+    """
+    class _Burst:
+        budget_s = 1e-3
+
+        def __init__(self):
+            self.n = 0
+
+        def learn_one(self, x):
+            self.n += 1
+            if self.n in (70, 71, 72):
+                time.sleep(2e-2)
+
+    robot.check_p99_within_budget(_Burst())
