@@ -293,3 +293,37 @@ def test_lstm_one_step_by_hand():
 
     out, _ = ls.step(x_t, (y_prev, c_prev))
     assert abs(float(out[0]) - float(y)) < 1e-6
+
+def test_repr_rnn_gru_lstm():
+    assert "RNN" in repr(RNN(3, 4, jax.random.PRNGKey(0)))
+    assert "GRU" in repr(GRU(3, 4, jax.random.PRNGKey(0)))
+    assert "LSTM" in repr(LSTM(3, 4, jax.random.PRNGKey(0)))
+
+
+def test_init_state_with_batch():
+    r = RNN(3, 4, jax.random.PRNGKey(0))
+    h = r.init_state(batch=3)
+    assert h.shape == (3, 4)
+    assert bool(jnp.all(h == 0.0))
+    g = GRU(3, 4, jax.random.PRNGKey(0))
+    h = g.init_state(batch=3)
+    assert h.shape == (3, 4)
+    ls = LSTM(3, 4, jax.random.PRNGKey(0))
+    y, c = ls.init_state(batch=3)
+    assert y.shape == (3, 4) and c.shape == (3, 4)
+
+
+def test_rnn_relu_gradcheck():
+    r = RNN(3, 4, jax.random.PRNGKey(0), activation="relu")
+    x = jax.random.normal(jax.random.PRNGKey(1), (5, 3))
+
+    def f(xx):
+        r._cache = []
+        return r.forward(xx)
+
+    def b(xx, y, g):
+        r._cache = []
+        r.forward(xx)
+        return r.backward(g)
+
+    assert gradcheck(f, b, x) < 1e-4

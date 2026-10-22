@@ -344,9 +344,9 @@ def test_conv_params_returns_two():
 
 def test_init_buffer_and_step_non_causal_raise():
     c = Conv1D(1, 1, 3, jax.random.PRNGKey(0))
-    with pytest.raises(ValueError, match="init_buffer\(\) requires causal=True"):
+    with pytest.raises(ValueError, match=r"init_buffer\(\) requires causal=True"):
         c.init_buffer()
-    with pytest.raises(ValueError, match="step\(\) requires causal=True"):
+    with pytest.raises(ValueError, match=r"step\(\) requires causal=True"):
         c.step(jnp.zeros(1), jnp.zeros((2, 1)))
 
 
@@ -369,3 +369,19 @@ def test_flatten_1d_input():
 def test_flatten_backward_before_forward_raises():
     with pytest.raises(RuntimeError, match="call forward"):
         Flatten().backward(jnp.ones(3))
+
+def test_conv_out_size_and_pool_out_size_private():
+    from dense_armor.utility.neural.conv import _conv_out_size, _pool_out_size
+    assert _conv_out_size(5, 3, 1, 0) == 3
+    assert _conv_out_size(5, 3, 1, 1) == 5
+    assert _conv_out_size(5, 3, 2, 0) == 2
+    assert _pool_out_size(4, 2, 2) == 2
+    with pytest.raises(ValueError, match="is larger than input"):
+        _conv_out_size(3, 5, 1, 0)
+    with pytest.raises(ValueError, match="is larger than input"):
+        _pool_out_size(3, 5, 1)
+
+
+def test_avgpool1d_backward_before_forward_raises():
+    with pytest.raises(RuntimeError, match="call forward"):
+        AvgPool1D(2).backward(jnp.ones((2, 1)))
