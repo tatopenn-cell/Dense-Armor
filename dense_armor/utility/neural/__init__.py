@@ -147,3 +147,18 @@ __all__ = list(__all__) + [
 from dense_armor.utility.neural.schedules_more import LinearWarmup, NoamSchedule
 
 __all__ = list(__all__) + ["LinearWarmup", "NoamSchedule"]
+
+
+from dense_armor.utility.neural.convtranspose import (
+    ConvTranspose1D,
+    ConvTranspose2D,
+    Upsample1D,
+    Upsample2D,
+)
+
+__all__ = list(__all__) + [
+    "ConvTranspose1D",
+    "ConvTranspose2D",
+    "Upsample1D",
+    "Upsample2D",
+]
