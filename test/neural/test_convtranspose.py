@@ -194,3 +194,122 @@ def test_backward_before_forward_raises():
     u2 = Upsample2D(2)
     with pytest.raises(RuntimeError):
         u2.backward(jnp.ones((4, 4, 1)))
+
+
+def test_convtranspose1d_backward_matches_jax_grad():
+    rng = np.random.default_rng(0)
+    x_arr = rng.normal(0.0, 1.0, (4, 2)).astype(np.float32)
+    g_arr = rng.normal(0.0, 1.0, (9, 3)).astype(np.float32)
+
+    c = ConvTranspose1D(2, 3, 3, jax.random.PRNGKey(0), stride=2)
+    y = c.forward(jnp.asarray(x_arr))
+    dx = np.asarray(c.backward(jnp.asarray(g_arr)))
+    assert dx.shape == x_arr.shape
+    assert c.W.grad.shape == c.W.value.shape
+    assert c.b.grad.shape == c.b.value.shape
+
+    def loss(xv):
+        cc = ConvTranspose1D(2, 3, 3, jax.random.PRNGKey(0), stride=2)
+        cc.W.value = c.W.value
+        cc.b.value = c.b.value
+        return jnp.sum(cc.forward(xv) * jnp.asarray(g_arr))
+
+    ref = np.asarray(jax.grad(loss)(jnp.asarray(x_arr)))
+    print(f"ConvTranspose1D dx max diff: {np.max(np.abs(dx - ref)):.3e}")
+    assert np.allclose(dx, ref, atol=1e-4)
+
+
+def test_convtranspose2d_backward_matches_jax_grad():
+    rng = np.random.default_rng(1)
+    x_arr = rng.normal(0.0, 1.0, (3, 3, 2)).astype(np.float32)
+    g_arr = rng.normal(0.0, 1.0, (7, 7, 3)).astype(np.float32)
+
+    c = ConvTranspose2D(2, 3, 3, jax.random.PRNGKey(0), stride=2)
+    y = c.forward(jnp.asarray(x_arr))
+    dx = np.asarray(c.backward(jnp.asarray(g_arr)))
+    assert dx.shape == x_arr.shape
+    assert c.W.grad.shape == c.W.value.shape
+    assert c.b.grad.shape == c.b.value.shape
+
+    def loss(xv):
+        cc = ConvTranspose2D(2, 3, 3, jax.random.PRNGKey(0), stride=2)
+        cc.W.value = c.W.value
+        cc.b.value = c.b.value
+        return jnp.sum(cc.forward(xv) * jnp.asarray(g_arr))
+
+    ref = np.asarray(jax.grad(loss)(jnp.asarray(x_arr)))
+    print(f"ConvTranspose2D dx max diff: {np.max(np.abs(dx - ref)):.3e}")
+    assert np.allclose(dx, ref, atol=1e-4)
+
+
+def test_squeeze_and_batch_match_convtranspose():
+    rng = np.random.default_rng(2)
+    x1 = rng.normal(0.0, 1.0, (4, 2)).astype(np.float32)
+    xb = x1[None]
+    g1 = rng.normal(0.0, 1.0, (7, 3)).astype(np.float32)
+    gb = g1[None]
+
+    c1 = ConvTranspose1D(2, 3, 3, jax.random.PRNGKey(0), stride=2)
+    y1 = np.asarray(c1.forward(jnp.asarray(x1)))
+    c2 = ConvTranspose1D(2, 3, 3, jax.random.PRNGKey(0), stride=2)
+    c2.W.value = c1.W.value
+    c2.b.value = c1.b.value
+    yb = np.asarray(c2.forward(jnp.asarray(xb)))
+    assert np.allclose(y1, yb[0], atol=1e-6)
+    dx1 = np.asarray(c1.backward(jnp.asarray(g1)))
+    dxb = np.asarray(c2.backward(jnp.asarray(gb)))
+    assert np.allclose(dx1, dxb[0], atol=1e-6)
+
+    x2d = rng.normal(0.0, 1.0, (3, 3, 2)).astype(np.float32)
+    g2d = rng.normal(0.0, 1.0, (6, 6, 3)).astype(np.float32)
+    d1 = ConvTranspose2D(2, 3, 3, jax.random.PRNGKey(0), stride=2)
+    y_s = np.asarray(d1.forward(jnp.asarray(x2d)))
+    d2 = ConvTranspose2D(2, 3, 3, jax.random.PRNGKey(0), stride=2)
+    d2.W.value = d1.W.value
+    d2.b.value = d1.b.value
+    y_b = np.asarray(d2.forward(jnp.asarray(x2d[None])))
+    assert np.allclose(y_s, y_b[0], atol=1e-6)
+    dx_s = np.asarray(d1.backward(jnp.asarray(g2d)))
+    dx_b = np.asarray(d2.backward(jnp.asarray(g2d[None])))
+    assert np.allclose(dx_s, dx_b[0], atol=1e-6)
+
+
+def test_repr_and_params_all_convtranspose():
+    key = jax.random.PRNGKey(0)
+    for cls, name, n_params in [
+        (ConvTranspose1D, "ConvTranspose1D", 2),
+        (ConvTranspose2D, "ConvTranspose2D", 2),
+    ]:
+        c = cls(2, 3, 3, key, stride=2, padding=1, output_padding=1)
+        s = repr(c)
+        assert name in s
+        assert "c_in=2" in s or "2," in s
+        assert "stride=2" in s
+        ps = c.params()
+        assert len(ps) == n_params
+        assert ps[0] is c.W
+        assert ps[1] is c.b
+
+    u = Upsample1D(2)
+    assert repr(u) == "Upsample1D(factor=2)"
+    assert u.params() == []
+    u2 = Upsample2D(3)
+    assert repr(u2) == "Upsample2D(factor=3)"
+    assert u2.params() == []
+
+
+def test_convtranspose_adjoint_full_batch():
+    rng = np.random.default_rng(3)
+    c_in, c_out, k = 2, 3, 3
+    x = rng.normal(0.0, 1.0, (5, 5, c_in)).astype(np.float32)
+    conv = Conv2D(c_in, c_out, k, jax.random.PRNGKey(0))
+    conv.b.value = jnp.zeros_like(conv.b.value)
+    y_shape = conv.forward(jnp.asarray(x[None])).shape
+    y = rng.normal(0.0, 1.0, y_shape).astype(np.float32)
+    tconv = ConvTranspose2D(c_out, c_in, k, jax.random.PRNGKey(0))
+    tconv.W.value = jnp.transpose(conv.W.value, (0, 1, 3, 2))
+    tconv.b.value = jnp.zeros_like(tconv.b.value)
+    lhs = float(jnp.sum(conv.forward(jnp.asarray(x[None])) * jnp.asarray(y)))
+    rhs = float(jnp.sum(jnp.asarray(x[None]) * tconv.forward(jnp.asarray(y))))
+    print(f"batch adjoint: lhs={lhs:.4f} rhs={rhs:.4f} diff={abs(lhs - rhs):.3e}")
+    assert abs(lhs - rhs) < 1e-4
