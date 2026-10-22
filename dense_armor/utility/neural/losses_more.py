@@ -123,15 +123,12 @@ def focal_backward(
     else:
         a_t = jnp.ones_like(logits)
     dpt_dz = jnp.where(y == 1.0, p * (1.0 - p), -p * (1.0 - p))
-    dCE_dz = jnp.where(y == 1.0, p - 1.0, p)
-    term1 = (
-        -a_t
-        * gamma
-        * (1.0 - p_t) ** (gamma - 1.0)
-        * dpt_dz
-        * (jnp.where(y == 1.0, jax.nn.log_sigmoid(logits), jax.nn.log_sigmoid(-logits)))
+    dlogpt_dz = jnp.where(y == 1.0, 1.0 - p, -p)
+    log_pt = jnp.where(
+        y == 1.0, jax.nn.log_sigmoid(logits), jax.nn.log_sigmoid(-logits)
     )
-    term2 = -a_t * (1.0 - p_t) ** gamma * dCE_dz
+    term1 = a_t * gamma * (1.0 - p_t) ** (gamma - 1.0) * dpt_dz * log_pt
+    term2 = -a_t * (1.0 - p_t) ** gamma * dlogpt_dz
     return (term1 + term2) / jnp.size(logits)
 
 
