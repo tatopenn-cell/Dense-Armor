@@ -539,7 +539,6 @@ class LSTM:
                 grads["p_i"] = grads["p_i"] + (di_pre * c_prev).sum(axis=0)
                 grads["p_f"] = grads["p_f"] + (df_pre * c_prev).sum(axis=0)
                 grads["p_o"] = grads["p_o"] + (do_pre * cc).sum(axis=0)
-                dc = dc + po * do_pre
             dy_next = (
                 dz_pre @ self.R_z.value.T
                 + di_pre @ self.R_i.value.T
@@ -547,8 +546,6 @@ class LSTM:
                 + do_pre @ self.R_o.value.T
             )
             dc_next = dc * f + pi * di_pre + pf * df_pre
-            if self.peepholes:
-                dc_next = dc * f + pi * di_pre + pf * df_pre
             dxs[t] = (
                 dz_pre @ self.W_z.value.T
                 + di_pre @ self.W_i.value.T
