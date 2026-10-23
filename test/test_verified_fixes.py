@@ -217,3 +217,12 @@ def test_func_transformer_whole():
     with pytest.raises(TypeError):
         FuncTransformer(lambda d: [1.0], whole=True).transform_one(s)
     assert FuncTransformer(lambda v: v + 1.0, keys=()).transform_one({"a": 1.0}) == {"a": 1.0}
+
+
+def test_kmeans_warmup_shape_mismatch():
+    from dense_armor.utility.cluster.kmeans import OnlineKMeans
+
+    km = OnlineKMeans(k=2, warmup=4)
+    km.learn_one({"x": [0.0]})
+    km.learn_one({"x": [0.0, 1.0]})
+    assert km.n_missing_ == 1 and km.n_seen_ == 1

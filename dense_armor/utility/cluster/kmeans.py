@@ -41,8 +41,13 @@ buffered, ``k`` distinct centres are picked among them by greedy
 farthest-first selection (each new centre is the point farthest from the
 centres already chosen, the minimax rule of the PatchCore coreset, Roth
 et al. 2021, eq. 5), and the buffered points are then assigned in order.
-Starting from the first ``k`` points instead can put two centres in the
-same group and leave another group without one.
+The first centre is the distinct point nearest to the mean (deterministic;
+PatchCore starts from a random point). Starting from the first ``k``
+points instead can put two centres in the same group and leave another
+group without one. When the warm-up holds fewer than ``k`` distinct
+points, ``centers_`` has fewer than ``k`` rows. A point whose dimension
+differs from the first buffered one is counted in ``n_missing_``, not in
+``n_seen_``.
 
 Examples:
     >>> from dense_armor.utility.cluster.kmeans import OnlineKMeans
@@ -166,8 +171,6 @@ class OnlineKMeans(Transformer):
         """Buffer the first points; return True once the centres exist."""
         if self.centers_ is not None:
             return True
-        if self._buf and v.shape[0] != self._buf[0].shape[0]:
-            return False
         self._buf.append(v.copy())
         if len(self._buf) < self.warmup:
             return False
@@ -194,6 +197,9 @@ class OnlineKMeans(Transformer):
         self._time_step(t)
         v = _vec(x)
         if v is None:
+            self.n_missing_ += 1
+            return self
+        if self.centers_ is None and self._buf and v.shape[0] != self._buf[0].shape[0]:
             self.n_missing_ += 1
             return self
         if not self._warm_up(v):
