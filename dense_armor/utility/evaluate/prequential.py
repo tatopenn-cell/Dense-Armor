@@ -48,9 +48,7 @@ def _split_ready(
         n_ready = max(0, len(buffer) - delay)
         return buffer[:n_ready], buffer[n_ready:]
     if now is None:
-        raise ValueError(
-            "a delay in seconds needs samples with a timestamp (Signal)"
-        )
+        raise ValueError("a delay in seconds needs samples with a timestamp (Signal)")
     ready: list[_PENDING] = []
     rest: list[_PENDING] = []
     for item in buffer:
