@@ -39,7 +39,7 @@ print(round(float(w), 8))
 0.94543565
 ~~~
 
-The three numbers are the hand cases of the page. Momentum on `w = 1.0`, `g = 1.0`, `lr = 0.1`, `gamma = 0.9`: the first step is `0.9`, the second is `0.71`. Nesterov on the same case: `0.81`, then `0.539`. RMSProp on `w = 1.0`, `g = 1.0`, `lr = 0.01`, `rho = 0.9`, `eps = 1e-8`: `0.96837722`, then `0.94543565`. With `momentum = 0.0` every result is byte-for-byte what `SGD(lr)` gave before this task, and `repr` stays `SGD(lr=...)`.
+The three numbers are the hand cases of the page. Momentum on `w = 1.0`, `g = 1.0`, `lr = 0.1`, `gamma = 0.9`: the first step is `0.9`, the second is `0.71`. Nesterov on the same case: `0.81`, then `0.539`. RMSProp on `w = 1.0`, `g = 1.0`, `lr = 0.01`, `rho = 0.9`, `eps = 1e-8`: `0.96837722`, then `0.94543565`. With `momentum = 0.0` every result is byte-for-byte the `SGD(lr)` update, and `repr` stays `SGD(lr=...)`.
 
 The momentum form is Eq.(4), page 4 of Ruder (2016); the Nesterov form is Eq.(7), page 3 of Bengio, Boulanger-Lewandowski and Pascanu (2012); the RMSProp form is Eq.(18), page 7 of Ruder (2016).
 
@@ -66,7 +66,7 @@ print(round(norm, 1), [round(float(v), 1) for v in p.grad])
 
 The norm before the clipping is `5.0`; the gradient of norm `5.0` becomes `[0.6, 0.8]` of norm `1.0`. With `max_norm = 10.0` the gradient stays `[3.0, 4.0]` and the return value is still `5.0`. With two `Param` of gradients `[3.0]` and `[4.0]` the norm is the global `5.0` and the two become `[0.6]` and `[0.8]`: the norm is global, not per parameter. A gradient of zeros returns `0.0` and stays zeros.
 
-With `clip_norm = None` every result is identical to what the four estimators gave before this task. With `clip_norm = 0.5` and `SGD(1.0)` a single step moves all the parameters together by a vector of norm at most `0.5 + 1e-6`.
+With `clip_norm = None` the update is the one without clipping: no `Param` is touched by the clip and the four estimators follow the same path they follow without the option. With `clip_norm = 0.5` and `SGD(1.0)` a single step moves all the parameters together by a vector of norm at most `0.5 + 1e-6`.
 
 ## 3. Activations
 
