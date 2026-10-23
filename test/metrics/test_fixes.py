@@ -1,6 +1,5 @@
 """The refusals added to the metrics: merge, joints, rolling."""
 
-import numpy as np
 import pytest
 
 from dense_armor.utility.metrics import (
@@ -46,7 +45,7 @@ def test_merge_with_the_same_configuration_adds_the_counts(cls):
 @pytest.mark.parametrize("cls", JOINTS)
 def test_a_scalar_after_a_vector_is_refused(cls):
     m = cls()
-    m.update(np.array([1.0, 2.0]), np.array([1.5, 2.5]))
+    m.update([1.0, 2.0], [1.5, 2.5])
     with pytest.raises(ValueError):
         m.update(3.0, 3.5)
 
@@ -56,13 +55,13 @@ def test_a_vector_after_a_scalar_is_refused(cls):
     m = cls()
     m.update(3.0, 3.5)
     with pytest.raises(ValueError):
-        m.update(np.array([1.0, 2.0]), np.array([1.5, 2.5]))
+        m.update([1.0, 2.0], [1.5, 2.5])
 
 
 @pytest.mark.parametrize("cls", JOINTS)
 def test_a_refused_update_leaves_the_state_unchanged(cls):
     m = cls()
-    m.update(np.array([1.0, 2.0]), np.array([1.5, 2.5]))
+    m.update([1.0, 2.0], [1.5, 2.5])
     before = m.get()
     with pytest.raises(ValueError):
         m.update(3.0, 3.5)
@@ -72,7 +71,7 @@ def test_a_refused_update_leaves_the_state_unchanged(cls):
 @pytest.mark.parametrize("cls", JOINTS)
 def test_merge_refuses_a_different_number_of_joints(cls):
     left, right = cls(), cls()
-    left.update(np.array([1.0, 2.0]), np.array([1.5, 2.5]))
+    left.update([1.0, 2.0], [1.5, 2.5])
     right.update(3.0, 3.5)
     with pytest.raises(ValueError):
         left.merge(right)

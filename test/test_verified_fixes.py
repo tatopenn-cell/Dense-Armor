@@ -13,6 +13,7 @@ from dense_armor.utility.linear.glm import LogisticRegression
 from dense_armor.utility.metrics import Accuracy
 from dense_armor.utility.misc.diagnostic import diag
 from dense_armor.utility.misc.metro import Metro
+from dense_armor.utility.optim import SGD
 from dense_armor.utility.tree.batch import BatchDecisionTreeClassifier
 
 
@@ -78,7 +79,7 @@ def test_batch_has_no_unused_class_set():
 
 
 def test_logistic_treats_any_nonzero_label_as_one():
-    one, two = LogisticRegression(), LogisticRegression()
+    one, two = LogisticRegression(SGD(0.1)), LogisticRegression(SGD(0.1))
     x = {"a": 1.0, "b": -0.5}
     one.learn_one(x, 1)
     two.learn_one(x, 2)
@@ -86,7 +87,7 @@ def test_logistic_treats_any_nonzero_label_as_one():
 
 
 def test_logistic_and_bayes_skip_an_infinite_value():
-    log = LogisticRegression()
+    log = LogisticRegression(SGD(0.1))
     log.learn_one({"a": float("inf")}, 1)
     assert log.n_missing == 1 and log._w is None
     bay = BayesianLinearRegression()
