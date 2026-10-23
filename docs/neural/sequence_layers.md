@@ -191,14 +191,16 @@ from dense_armor.utility.neural.models import MeanOverTime
 
 m = MeanOverTime()
 x = jnp.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
-print(m.forward(x).tolist())
+print([round(float(v), 4) for v in m.forward(x)])
+print([[round(float(v), 4) for v in row] for row in m.backward(jnp.ones((2,)))])
 ~~~
 
 ~~~
 [3.0, 4.0]
+[[0.3333, 0.3333], [0.3333, 0.3333], [0.3333, 0.3333]]
 ~~~
 
-The three steps are `[1, 2]`, `[3, 4]`, `[5, 6]`; the mean of the first coordinates is `(1 + 3 + 5) / 3 = 3` and of the second is `(2 + 4 + 6) / 3 = 4`. The backward of `ones` would put `1 / 3` at every step, `1 / 3 * 3 = 1` in each coordinate.
+The three steps are `[1, 2]`, `[3, 4]`, `[5, 6]`; the mean of the first coordinates is `(1 + 3 + 5) / 3 = 3` and of the second is `(2 + 4 + 6) / 3 = 4`. The backward of `ones` puts `1 / 3` at every step: the three `1 / 3` values of a coordinate sum back to `1`, the coordinate of the upstream gradient.
 
 Textbook definition, no citation.
 

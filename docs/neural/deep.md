@@ -173,7 +173,7 @@ print(u.backward(jnp.ones((6, 1))).reshape(-1).tolist())
 [2.0, 2.0, 2.0]
 ~~~
 
-With factor `2` each of the three positions becomes two copies, so the output has length `3 * 2 = 6` and holds `[1, 1, 2, 2, 3, 3]`. The backward sums each block of `factor` positions: the two `1`s give `1 + 1 = 2`, the two `2`s give `2 + 2 = 2`, the two `3`s give `3 + 3 = 2`, because the upstream gradient is all `1`s.
+With factor `2` each of the three positions becomes two copies, so the output has length `3 * 2 = 6` and holds `[1, 1, 2, 2, 3, 3]`. The backward sums each block of `factor` positions: the two positions of the first block receive `1 + 1 = 2`, the two of the second block `1 + 1 = 2`, the two of the third `1 + 1 = 2`. What the backward sums is the upstream gradient, not the value of the input: the upstream gradient is all `1`s, so every block of two positions gives `1 + 1 = 2` and the three input positions `1, 2, 3` do not enter the count.
 
 Textbook definition, no citation.
 
