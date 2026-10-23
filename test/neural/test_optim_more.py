@@ -61,7 +61,7 @@ def test_sgd_zero_momentum_unchanged():
     [
         SGD(0.1, momentum=0.9),
         SGD(0.1, momentum=0.9, nesterov=True),
-        RMSProp(0.01),
+        RMSProp(0.05),
     ],
 )
 def test_pure_update_matches_step(opt):
@@ -80,7 +80,7 @@ def test_pure_update_matches_step(opt):
     [
         SGD(0.05, momentum=0.9),
         SGD(0.05, momentum=0.9, nesterov=True),
-        RMSProp(0.01),
+        RMSProp(0.05),
     ],
 )
 @pytest.mark.training
@@ -88,7 +88,7 @@ def test_learning_with_trainer(opt):
     rng = np.random.default_rng(0)
     X = rng.normal(0.0, 1.0, (200, 2)).astype(np.float32)
     y = (X[:, 0:1] + 2 * X[:, 1:2]).astype(np.float32)
-    m = mlp([2, 8, 1], jax.random.PRNGKey(0))
+    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
     before = float(
         np.mean((np.asarray(m.forward(jnp.asarray(X), training=False)) - y) ** 2)
     )
@@ -98,7 +98,7 @@ def test_learning_with_trainer(opt):
         np.mean((np.asarray(m.forward(jnp.asarray(X), training=False)) - y) ** 2)
     )
     print(f"{type(opt).__name__}: before={before:.4f} after={after:.4f}")
-    assert after < before / 2.0, f"{after} not < {before / 2.0}"
+    assert after < before / 10.0, f"{after} not < {before / 10.0}"
 
 
 def test_sgd_value_errors():
