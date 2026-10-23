@@ -19,6 +19,7 @@ from dense_armor.utility.optim.adagrad import AdaGrad
 from dense_armor.utility.optim.adam import Adam
 from dense_armor.utility.optim.ftrl import FTRLProximal
 from dense_armor.utility.optim.newton import OnlineNewtonStep
+from dense_armor.utility.optim.rmsprop import RMSProp
 from dense_armor.utility.optim.sgd import SGD
 
 __all__ = [
@@ -27,4 +28,5 @@ __all__ = [
     "Adam",
     "FTRLProximal",
     "OnlineNewtonStep",
+    "RMSProp",
 ]

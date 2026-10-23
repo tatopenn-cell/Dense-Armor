@@ -125,3 +125,90 @@ __all__ = list(__all__) + [
     "Seq2Seq",
     "VectorQuantizer",
 ]
+
+
+from dense_armor.utility.neural.activations_more import (
+    ELU,
+    GELU,
+    LeakyReLU,
+    SiLU,
+    Softplus,
+)
+
+__all__ = list(__all__) + [
+    "ELU",
+    "GELU",
+    "LeakyReLU",
+    "SiLU",
+    "Softplus",
+]
+
+
+from dense_armor.utility.neural.schedules_more import LinearWarmup, NoamSchedule
+
+__all__ = list(__all__) + ["LinearWarmup", "NoamSchedule"]
+
+
+from dense_armor.utility.neural.convtranspose import (
+    ConvTranspose1D,
+    ConvTranspose2D,
+    Upsample1D,
+    Upsample2D,
+)
+
+__all__ = list(__all__) + [
+    "ConvTranspose1D",
+    "ConvTranspose2D",
+    "Upsample1D",
+    "Upsample2D",
+]
+
+
+from dense_armor.utility.neural.bidirectional import Bidirectional
+
+__all__ = list(__all__) + ["Bidirectional"]
+
+
+from dense_armor.utility.neural.norm_more import GroupNorm, InstanceNorm
+
+__all__ = list(__all__) + ["GroupNorm", "InstanceNorm"]
+
+
+from dense_armor.utility.neural.conv_more import (
+    Conv3D,
+    DepthwiseConv2D,
+    SeparableConv2D,
+)
+
+__all__ = list(__all__) + [
+    "Conv3D",
+    "DepthwiseConv2D",
+    "SeparableConv2D",
+]
+
+
+from dense_armor.utility.neural.positions import LearnedPositions
+
+__all__ = list(__all__) + ["LearnedPositions"]
+
+
+from dense_armor.utility.neural.losses_more import (
+    FocalLoss,
+    HingeLoss,
+    KLDivLoss,
+    L1Loss,
+    LabelSmoothingCE,
+)
+
+__all__ = list(__all__) + [
+    "FocalLoss",
+    "HingeLoss",
+    "KLDivLoss",
+    "L1Loss",
+    "LabelSmoothingCE",
+]
+
+
+from dense_armor.utility.neural.online_vector import OnlineNetVector
+
+__all__ = list(__all__) + ["OnlineNetVector"]

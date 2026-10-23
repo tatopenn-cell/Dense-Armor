@@ -3,9 +3,9 @@
 ``OnlineNetRegressor`` and ``OnlineNetClassifier`` wrap a model with
 ``forward``, ``backward`` and ``params()`` and learn through
 ``learn_one(x, y)`` with the same operations, in the same order, as one
-batch of ``Trainer.fit`` of N04 with a batch of one sample: zero the
+batch of ``Trainer.fit`` with a batch of one sample: zero the
 gradients, forward, loss, backward, learning rate from a schedule, the
-weight decay of N04, the update of every ``Param``. A sample is one
+weight decay of the ``Trainer``, the update of every ``Param``. A sample is one
 unit of the schedule (our choice: the schedule reads ``n_seen_``
 directly, so a stream of 1000 samples advances the schedule by 1000;
 this is stated in the docstring of ``learn_one``).
@@ -22,6 +22,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from dense_armor.roles import Classifier, Regressor
+from dense_armor.utility.neural.clip import clip_grad_norm
 from dense_armor.utility.neural.params import Param
 from dense_armor.utility.neural.schedules import ConstantLR
 
@@ -112,13 +113,13 @@ class OnlineNetRegressor(Regressor):
     """A network trained one sample at a time.
 
     ``learn_one(x, y)`` performs the same update as one batch of
-    ``Trainer.fit`` of N04 with a batch of one sample: ``zero_grad()``
-    on every ``Param``, ``forward``, ``loss.forward``, ``backward``,
-    the learning rate ``schedule(n_seen_)`` written to the ``lr`` of
-    the optimizer copy of every ``Param``, the weight decay of N04 (L2
-    or decoupled, only on ``Param`` with two or more dimensions), the
-    update, then ``n_seen_ += 1``. A sample is one unit of the
-    schedule (our choice).
+    ``Trainer.fit`` of the ``Trainer`` with a batch of one sample:
+    ``zero_grad()`` on every ``Param``, ``forward``, ``loss.forward``,
+    ``backward``, the learning rate ``schedule(n_seen_)`` written to
+    the ``lr`` of the optimizer copy of every ``Param``, the weight
+    decay of the ``Trainer`` (L2 or decoupled, only on ``Param`` with
+    two or more dimensions), the update, then ``n_seen_ += 1``. A
+    sample is one unit of the schedule (our choice).
 
     Args:
         model: any object with ``forward(x, training=True)``,
@@ -159,11 +160,14 @@ class OnlineNetRegressor(Regressor):
         schedule: Any = None,
         weight_decay: float = 0.0,
         decay: str = "l2",
+        clip_norm: float | None = None,
     ) -> None:
         if decay not in ("l2", "decoupled"):
             raise ValueError(f"decay must be 'l2' or 'decoupled', got {decay!r}")
         if weight_decay < 0:
             raise ValueError(f"weight_decay must be non-negative, got {weight_decay}")
+        if clip_norm is not None and clip_norm <= 0:
+            raise ValueError(f"clip_norm must be > 0 or None, got {clip_norm}")
         model = _unwrap(model)
         loss = _unwrap(loss)
         optimizer = _unwrap(optimizer)
@@ -176,6 +180,7 @@ class OnlineNetRegressor(Regressor):
         self.schedule = schedule if schedule is not None else ConstantLR(optimizer.lr)
         self.weight_decay = float(weight_decay)
         self.decay = decay
+        self.clip_norm = clip_norm
         self.model_ = copy.deepcopy(model)
         self.optimizers_ = [copy.deepcopy(optimizer) for _ in model.params()]
         self.n_seen_ = 0
@@ -238,6 +243,8 @@ class OnlineNetRegressor(Regressor):
         y_arr = jnp.asarray([yv], dtype=jnp.float32)
         self.loss.forward(pred.reshape(-1, 1), y_arr.reshape(-1, 1))
         self.model_.backward(self.loss.backward())
+        if self.clip_norm is not None:
+            clip_grad_norm(self.model_.params(), self.clip_norm)
         for p, opt in zip(self.model_.params(), self.optimizers_):
             self._apply_weight_decay(p, float(self.n_seen_))
             p.update(opt)
@@ -312,7 +319,7 @@ class OnlineNetClassifier(Classifier):
     """A network classifier trained one sample at a time.
 
     Same operations, in the same order, as one batch of ``Trainer.fit``
-    of N04 with a batch of one sample. The learning rate is
+    with a batch of one sample. The learning rate is
     ``schedule(n_seen_)`` (a sample is one unit of the schedule, our
     choice). ``predict_proba_one`` uses ``BCEWithLogits`` for two
     classes and ``SoftmaxCrossEntropy`` for more.
@@ -354,11 +361,14 @@ class OnlineNetClassifier(Classifier):
         schedule: Any = None,
         weight_decay: float = 0.0,
         decay: str = "l2",
+        clip_norm: float | None = None,
     ) -> None:
         if decay not in ("l2", "decoupled"):
             raise ValueError(f"decay must be 'l2' or 'decoupled', got {decay!r}")
         if weight_decay < 0:
             raise ValueError(f"weight_decay must be non-negative, got {weight_decay}")
+        if clip_norm is not None and clip_norm <= 0:
+            raise ValueError(f"clip_norm must be > 0 or None, got {clip_norm}")
         classes_list = list(classes)
         if len(classes_list) < 2:
             raise ValueError(
@@ -377,6 +387,7 @@ class OnlineNetClassifier(Classifier):
         self.schedule = schedule if schedule is not None else ConstantLR(optimizer.lr)
         self.weight_decay = float(weight_decay)
         self.decay = decay
+        self.clip_norm = clip_norm
         self.model_ = copy.deepcopy(model)
         self.optimizers_ = [copy.deepcopy(optimizer) for _ in model.params()]
         self.n_seen_ = 0
@@ -459,6 +470,8 @@ class OnlineNetClassifier(Classifier):
         self.loss.forward(logits, self._target_vector(y))
         g = self.loss.backward()
         self.model_.backward(g.reshape(-1))
+        if self.clip_norm is not None:
+            clip_grad_norm(self.model_.params(), self.clip_norm)
         for p, opt in zip(self.model_.params(), self.optimizers_):
             self._apply_weight_decay(p, float(self.n_seen_))
             p.update(opt)

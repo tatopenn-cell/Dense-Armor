@@ -121,6 +121,10 @@ class PRelu:
         self.a.grad = self.a.grad + jnp.asarray([da], dtype=self.a.value.dtype)
         return dx
 
+    def params(self) -> list:
+        """The parameter ``a`` of the PReLU."""
+        return [self.a]
+
 
 class Sigmoid:
     """Sigmoid: ``forward`` caches ``x`` and ``y``; ``backward`` returns ``dx``."""

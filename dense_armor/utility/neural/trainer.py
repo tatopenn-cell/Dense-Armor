@@ -35,6 +35,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from dense_armor.utility.neural.batching import minibatches
+from dense_armor.utility.neural.clip import clip_grad_norm
 from dense_armor.utility.neural.params import Param
 from dense_armor.utility.neural.schedules import ConstantLR
 
@@ -82,6 +83,7 @@ class Trainer:
         schedule: Any = None,
         weight_decay: float = 0.0,
         decay: str = "l2",
+        clip_norm: float | None = None,
     ) -> None:
         if decay not in ("l2", "decoupled"):
             raise ValueError(f"decay must be 'l2' or 'decoupled', got {decay!r}")
@@ -93,6 +95,9 @@ class Trainer:
         self.schedule = schedule if schedule is not None else ConstantLR(optimizer.lr)
         self.weight_decay = float(weight_decay)
         self.decay = decay
+        if clip_norm is not None and clip_norm <= 0:
+            raise ValueError(f"clip_norm must be > 0 or None, got {clip_norm}")
+        self.clip_norm = clip_norm
         self.optimizers_ = [copy.deepcopy(optimizer) for _ in model.params()]
         self.history_: dict[str, list[float]] = {
             "train_loss": [],
@@ -181,6 +186,8 @@ class Trainer:
                 pred = self.model.forward(X[idx], training=True)
                 batch_loss = self.loss.forward(pred, y[idx])
                 self.model.backward(self.loss.backward())
+                if self.clip_norm is not None:
+                    clip_grad_norm(self.model.params(), self.clip_norm)
                 for p, opt in zip(self.model.params(), self.optimizers_):
                     self._apply_weight_decay(p, epoch_t)
                     p.update(opt)
