@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 test/test_kinematic_controller.py
 ====================================
@@ -9,7 +8,9 @@ utility/kinematic_controller.py's own docstring for the real numbers).
 """
 import numpy as np
 
-from dense_armor.utility.control.kinematic_controller import kinematic_tracking_controller
+from dense_armor.utility.control.kinematic_controller import (
+    kinematic_tracking_controller,
+)
 
 
 def test_exact_exponential_convergence_constant_reference():
