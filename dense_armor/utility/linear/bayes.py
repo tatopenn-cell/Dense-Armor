@@ -132,7 +132,11 @@ class BayesianLinearRegression(Regressor):
         self._keys: list | None = None
         self._m: np.ndarray | None = None
         self._S: np.ndarray | None = None
-        self.n_missing: int = 0
+        self.n_missing_: int = 0
+
+    @property
+    def n_missing(self) -> int:
+        return self.n_missing_
 
     @staticmethod
     def _as_dict(x):
@@ -190,15 +194,15 @@ class BayesianLinearRegression(Regressor):
         """
         xv = self._row(x)
         if not np.all(np.isfinite(xv)):
-            self.n_missing += 1
+            self.n_missing_ += 1
             return self
         try:
             yv = float(y)
         except (TypeError, ValueError):
-            self.n_missing += 1
+            self.n_missing_ += 1
             return self
         if not np.isfinite(yv):
-            self.n_missing += 1
+            self.n_missing_ += 1
             return self
         self._ensure_state(xv.size)
         Sx = self._S @ xv

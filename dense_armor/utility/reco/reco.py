@@ -42,20 +42,24 @@ class _RecoBase(Root):
         self.init_scale = float(init_scale)
         self.mu_: float = 0.0
         self.n_seen_: int = 0
-        self.n_missing: int = 0
+        self.n_missing_: int = 0
         self._rng = np.random.default_rng(self.seed)
+
+    @property
+    def n_missing(self) -> int:
+        return self.n_missing_
 
     def _check_input(self, user: Any, item: Any, rating: Any) -> bool:
         if user is None or item is None:
-            self.n_missing += 1
+            self.n_missing_ += 1
             return False
         try:
             r = float(rating)
         except (TypeError, ValueError):
-            self.n_missing += 1
+            self.n_missing_ += 1
             return False
         if not np.isfinite(r):
-            self.n_missing += 1
+            self.n_missing_ += 1
             return False
         return True
 

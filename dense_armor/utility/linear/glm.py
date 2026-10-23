@@ -106,7 +106,11 @@ class LinearRegression(Regressor):
         self.feature_keys = feature_keys
         self._keys: list | None = None
         self._w: np.ndarray | None = None
-        self.n_missing: int = 0
+        self.n_missing_: int = 0
+
+    @property
+    def n_missing(self) -> int:
+        return self.n_missing_
 
     @staticmethod
     def _as_dict(x):
@@ -154,7 +158,7 @@ class LinearRegression(Regressor):
         """
         xv = self._row(x)
         if _nan_in_input(xv, y):
-            self.n_missing += 1
+            self.n_missing_ += 1
             return self
         self._ensure_weights(xv.size)
         assert self._w is not None
@@ -304,7 +308,11 @@ class LogisticRegression(Classifier):
         self.feature_keys = feature_keys
         self._keys: list | None = None
         self._w: np.ndarray | None = None
-        self.n_missing: int = 0
+        self.n_missing_: int = 0
+
+    @property
+    def n_missing(self) -> int:
+        return self.n_missing_
 
     @staticmethod
     def _as_dict(x):
@@ -356,7 +364,7 @@ class LogisticRegression(Classifier):
         """
         xv = self._row(x)
         if _nan_in_input(xv, y):
-            self.n_missing += 1
+            self.n_missing_ += 1
             return self
         self._ensure_weights(xv.size)
         assert self._w is not None

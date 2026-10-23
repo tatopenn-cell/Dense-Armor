@@ -129,12 +129,16 @@ class PayloadEstimator(Regressor):
         self._P = float(delta)
         self._prev_qd: np.ndarray | None = None
         self._prev_t: float | None = None
-        self.n_missing: int = 0
+        self.n_missing_: int = 0
         self._mm = jax.jit(model.mass_matrix)
         self._bf = jax.jit(model.bias_forces)
         self._gf = jax.jit(model.gravity_forces)
         _link = link
         self._lj = jax.jit(lambda q: model.link_jacobian(q, _link))
+
+    @property
+    def n_missing(self) -> int:
+        return self.n_missing_
 
     @staticmethod
     def _as_dict(x: Any) -> dict:
@@ -178,11 +182,11 @@ class PayloadEstimator(Regressor):
         d = self._as_dict(x)
         extracted = self._extract(d)
         if extracted is None:
-            self.n_missing += 1
+            self.n_missing_ += 1
             return self
         q, qd, tau = extracted
         if np.any(np.isnan(q)) or np.any(np.isnan(qd)) or np.any(np.isnan(tau)):
-            self.n_missing += 1
+            self.n_missing_ += 1
             return self
         t_sample = getattr(x, "t", None)
         if t_sample is None:
