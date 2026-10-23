@@ -384,11 +384,11 @@ The left panel is the five activations on `x` in `[-4, 4]`, the right panel the 
 - The gradient check evaluates the finite differences with `eps = 1e-6`. The step is large enough that float32 does not lose all digits, small enough that the truncation error of the central difference stays below the tolerance of the tests (`1e-7` on a correct pair).
 - The gradient check runs inside `jax.enable_x64(True)` and restores the previous setting at the end. Outside the call the global precision is unchanged.
 - The Huber loss and `glorot_uniform` are optional pieces. The Huber formula is quoted from the open-access Chinot (2019), page 4, because the primary paper (Huber 1964) is paywalled. The Glorot uniform is Glorot and Bengio (2010), Eqn.(16), page 5.
-- The layers of the next task (N02: Dense, Conv, RNN) are not delivered. They belong to a separate task, and N01 stops at the pieces that the gradient check tests.
+- The layers (Dense, Conv, RNN) are not delivered here. They belong to a separate page of the guide, and this page stops at the pieces that the gradient check tests.
 
 ### Development diary
 
-The pieces of this delivery are the ones the gradient check can test end to end. The Huber loss and `glorot_uniform` are optional, and the page states it: the first is outside N01 and quoted from Chinot (2019), page 4, the second is the normalised uniform of Glorot and Bengio (2010), page 5. The layers of N02 (Dense, Conv, RNN) belong to a separate task and are not delivered here.
+The pieces of this delivery are the ones the gradient check can test end to end. The Huber loss and `glorot_uniform` are optional, and the page states it: the first is outside this page and quoted from Chinot (2019), page 4, the second is the normalised uniform of Glorot and Bengio (2010), page 5. The layers (Dense, Conv, RNN) belong to a separate page of the guide and are not delivered here.
 
 The first version of the gradient check divided each difference by the analytic gradient rather than by the sum of the absolute values, and a single element with a small analytic gradient made the relative error large even when the backward was right. The division by `max(|a| + |b|, 1e-12)` keeps the error at the scale of the values compared.
 
