@@ -78,7 +78,10 @@ class RunningMoments(Transformer):
         return min(x) if self.feature is None else self.feature
 
     def _value(self, x: dict) -> float | None:
-        v = float(x[self._key(x)])
+        try:
+            v = float(x[self._key(x)])
+        except (KeyError, TypeError, ValueError):
+            return None
         return None if math.isnan(v) else v
 
     def learn_one(
@@ -207,6 +210,8 @@ class RunningMoments(Transformer):
             X: a 1-D numpy array (or a list of floats) of values, or a
                 dict of arrays when the estimator has a fixed ``feature``.
                 In the dict form the key ``self.feature`` is read.
+                Every NaN or infinite value is counted in
+                ``n_missing_`` and skipped, as in :meth:`learn_one`.
             t: unused, kept for the Transformer signature.
 
         Returns:
@@ -222,9 +227,10 @@ class RunningMoments(Transformer):
         else:
             arr = X
         a: np.ndarray = np.asarray(arr, dtype=float).ravel()
-        a = a[np.isfinite(a)]
+        ok = np.isfinite(a)
+        self.n_missing_ += int(a.size - np.count_nonzero(ok))
+        a = a[ok]
         if a.size == 0:
-            self.n_missing_ += 1
             return self
         n_b, mean_b, m2_b, m3_b, m4_b = self._block(a)
         self._merge_into(n_b, mean_b, m2_b, m3_b, m4_b)
@@ -418,7 +424,8 @@ class RunningMomentsVector(Transformer):
         Args:
             X: a dict ``{channel: array_of_values}`` with the same
                 channels the estimator has seen so far, or that the
-                ``features`` argument fixes.
+                ``features`` argument fixes. A channel missing from
+                ``X`` adds 1 to the ``n_missing_`` of that channel.
             t: unused, kept for the Transformer signature.
 
         Returns:
@@ -428,6 +435,8 @@ class RunningMomentsVector(Transformer):
         for k, st in channels.items():
             if k in X:
                 st.learn_many(X[k], t=t)
+            else:
+                st.n_missing_ += 1
         return self
 
     def merge(self, other: "RunningMomentsVector") -> "RunningMomentsVector":
@@ -504,7 +513,10 @@ class EWStats(Transformer):
         return min(x) if self.feature is None else self.feature
 
     def _value(self, x: dict) -> float | None:
-        v = float(x[self._key(x)])
+        try:
+            v = float(x[self._key(x)])
+        except (KeyError, TypeError, ValueError):
+            return None
         return None if math.isnan(v) else v
 
     def learn_one(

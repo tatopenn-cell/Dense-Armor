@@ -57,7 +57,7 @@ def test_learn_many_skips_nan():
 def test_learn_many_all_nan_counts_as_missing():
     m = RunningMoments()
     m.learn_many(np.array([np.nan, np.nan]))
-    assert m.n_missing_ == 1
+    assert m.n_missing_ == 2
 
 
 def test_learn_many_empty_returns_self():

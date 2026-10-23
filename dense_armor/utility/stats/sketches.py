@@ -39,11 +39,11 @@ from dense_armor.roles import Transformer
 
 
 def _hash64(item: Any, seed: int) -> int:
-    """Stable 64-bit hash of an item, keyed by ``seed``."""
+    """Stable 64-bit hash of an item, keyed by ``seed`` modulo ``2**32``."""
     h = hashlib.blake2b(
         str(item).encode("utf-8"),
         digest_size=8,
-        key=seed.to_bytes(4, "little", signed=False),
+        key=(seed & 0xFFFFFFFF).to_bytes(4, "little", signed=False),
     )
     return int.from_bytes(h.digest(), "little")
 

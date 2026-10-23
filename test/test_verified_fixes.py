@@ -275,3 +275,33 @@ def test_stream_checks(tmp_path):
     bad = [(Signal(values=[1.0], names=["a"], units=[""], t=float("nan")), None)]
     with pytest.raises(ValueError):
         list(merge_by_time(bad))
+
+
+def test_stats_missing_and_extremes():
+    from dense_armor.utility.stats.dependence import Autocorrelation
+    from dense_armor.utility.stats.moments import RunningMoments, RunningMomentsVector
+    from dense_armor.utility.stats.quantiles import TDigest
+    from dense_armor.utility.stats.shrinkage import OnlineShrinkageCovariance
+    from dense_armor.utility.stats.sketches import _hash64
+
+    m = RunningMoments(feature="a")
+    m.learn_many(np.array([1.0, np.nan, 2.0, np.inf]))
+    assert m.n_missing_ == 2 and m.n_ == 2
+    m.learn_one({"b": 1.0})
+    assert m.n_missing_ == 3
+    v = RunningMomentsVector(features=["a", "b"])
+    v.learn_many({"a": np.array([1.0, 2.0])})
+    assert v.channels_["b"].n_missing_ == 1
+    ac = Autocorrelation(feature="a", lag=1)
+    ac.learn_one({})
+    assert ac.n_missing == 1
+    td = TDigest()
+    for x in np.random.default_rng(0).pareto(1.5, 2000):
+        td.learn_one({"x": float(x)})
+    assert td.quantile(1.0) == td.max_ and td.quantile(0.0) == td.min_
+    sc = OnlineShrinkageCovariance(n_features=2)
+    rng = np.random.default_rng(1)
+    for i in range(60):
+        sc.learn_one({"v0": float(rng.normal()), "v1": float("nan") if i % 2 else float(rng.normal())})
+    assert sc.shrinkage()[1] >= 0.0
+    assert _hash64("a", 2**33) == _hash64("a", 0)
