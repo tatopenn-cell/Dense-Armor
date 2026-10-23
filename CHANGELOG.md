@@ -10,6 +10,7 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 - `benchmarks/neural/check_examples.py`, the script that checks that each class is in a code block of its page and that every block of the five pages prints the output written under it; `test/neural/test_check_examples.py` (4 tests).
 
 ### Fixed
+- `FFMClassifier.learn_one` learns the label `0`: with `y = 0` the gradient of eq. (5)-(6) was zero and the model never learned the negative class. The labels `1` and `0`, or `+1` and `-1`, now give the update of the logit loss; the update for `+1` and `-1` is unchanged.
 - `docs/neural/deep.md` held its sections 7 to 11, the figure and the details twice; the repeated half is gone.
 - `ARCHITECTURE.md` lists `bocpd.py`, `vectorizer.py`, `shrinkage.py`, `similarity.py`, `batch.py` and `fimt.py`.
 

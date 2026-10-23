@@ -222,6 +222,12 @@ class FFMClassifier(_FFMBase, Classifier):
         feature_keys: explicit list of feature names.
         seed: seed of the initialiser.
 
+    The label ``y`` of ``learn_one`` is ``1`` or ``0``, as in the other
+    classifiers of the package, or ``+1`` or ``-1``, the labels of eq. (1)
+    of the paper. A label above zero is the positive class and every other
+    finite label is the negative class, so ``0`` and ``-1`` give the same
+    update. The probabilities returned are keyed by ``0`` and ``1``.
+
     Examples:
         >>> from dense_armor.utility.facto.ffm import FFMClassifier
         >>> fields = {"a": "F1", "b": "F1", "c": "F2"}
@@ -229,6 +235,13 @@ class FFMClassifier(_FFMBase, Classifier):
         >>> for _ in range(500):
         ...     _ = ffm.learn_one({"a": 1.0, "b": 0.5, "c": 0.3}, 1)
         >>> round(ffm.predict_proba_one({"a": 1.0, "b": 0.5, "c": 0.3})[1], 3) > 0.5
+        True
+        >>> neg = FFMClassifier(fields=fields, k=2, lr=0.1, seed=0)
+        >>> _ = neg.learn_one({"a": 1.0, "b": 0.5, "c": 0.3}, 0)
+        >>> before = neg.predict_proba_one({"a": 1.0, "b": 0.5, "c": 0.3})[0]
+        >>> for _ in range(500):
+        ...     _ = neg.learn_one({"a": 1.0, "b": 0.5, "c": 0.3}, 0)
+        >>> neg.predict_proba_one({"a": 1.0, "b": 0.5, "c": 0.3})[0] > before
         True
 
     References:
@@ -240,8 +253,8 @@ class FFMClassifier(_FFMBase, Classifier):
     """
 
     def _grad_error(self, score: float, y: Any) -> float:
-        yv = float(y)
-        return -yv / (1.0 + float(np.exp(yv * score)))
+        ys = 1.0 if float(y) > 0.0 else -1.0
+        return -ys / (1.0 + float(np.exp(ys * score)))
 
     def learn_one(self, x: dict, y: Any, t: float | None = None) -> "FFMClassifier":
         """One AdaGrad step on the logit loss of a single sample."""
