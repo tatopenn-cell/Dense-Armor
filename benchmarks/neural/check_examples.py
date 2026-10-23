@@ -68,8 +68,8 @@ def check_page(
     """Check one page.
 
     Only the blocks that mention one of ``names`` are executed: the
-    other blocks pre-date this task (some of them train a network for
-    minutes) and are not the subject of the check.
+    other blocks (some of them train a network for minutes) are not
+    the subject of the check.
 
     Returns ``(classes, blocks)``: ``classes`` is a list of ``(name, found)``;
     ``blocks`` is a list of ``(index, ok, expected, got)`` for the
