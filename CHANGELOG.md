@@ -7,6 +7,7 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 ### Added
 - `docs/neural/attention.md`, the page of the attention; `docs/api/neural.md`, the signature of every public class and function of `neural` and `optim`.
 ### Fixed
+- `LSTM.backward` with `peepholes=True` added the term `p_o * do_pre` to the cell gradient twice, so the gradient carried to the previous step was wrong as soon as `p_o` was not zero (it starts at zero, so the gradient checks at initialisation could not see it); the second addition and a repeated assignment are removed, and two gradient checks run with non-zero peepholes.
 - `docs/neural/deep.md` held its sections 7 to 11, the figure and the details twice; the repeated half is gone.
 - `ARCHITECTURE.md` lists `bocpd.py`, `vectorizer.py`, `shrinkage.py`, `similarity.py`, `batch.py` and `fimt.py`.
 

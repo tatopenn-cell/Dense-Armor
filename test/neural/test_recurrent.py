@@ -88,6 +88,24 @@ def test_gru_param_gradcheck():
         assert _gradcheck_param(g, name) < 1e-4, name
 
 
+def _lstm_nonzero_peepholes():
+    ls = LSTM(3, 4, jax.random.PRNGKey(0), peepholes=True)
+    for k, name in enumerate(("p_i", "p_f", "p_o")):
+        key = jax.random.PRNGKey(10 + k)
+        getattr(ls, name).value = 0.5 * jax.random.normal(key, (4,))
+    return ls
+
+
+def test_lstm_nonzero_peepholes_x_gradcheck():
+    assert _gradcheck_x(_lstm_nonzero_peepholes()) < 1e-4
+
+
+def test_lstm_nonzero_peepholes_param_gradcheck():
+    ls = _lstm_nonzero_peepholes()
+    for name in ("W_z", "W_f", "W_o", "R_z", "R_o", "b_f", "b_o", "p_i", "p_f", "p_o"):
+        assert _gradcheck_param(ls, name) < 1e-4, name
+
+
 def test_lstm_param_gradcheck():
     ls = LSTM(3, 4, jax.random.PRNGKey(0), peepholes=True)
     for name in (
