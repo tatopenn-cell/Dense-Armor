@@ -56,7 +56,7 @@ def test_backward_squeeze():
 def test_gradient_of_x_equals_g():
     m = _fixed()
     x = jnp.zeros((2, 2))
-    y = m.forward(x)
+    _ = m.forward(x)
     g = jnp.array([[0.5, -0.3], [1.2, 0.7]])
     dx = m.backward(g)
     assert np.allclose(dx, g)

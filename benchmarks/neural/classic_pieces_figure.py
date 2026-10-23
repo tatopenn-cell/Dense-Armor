@@ -144,9 +144,7 @@ axes[2].set_title("Two warmup schedules (synthetic)", weight="bold", fontsize=10
 axes[2].grid(True, alpha=0.3)
 axes[2].legend(fontsize=8)
 
-fig.suptitle(
-    "classic neural-network pieces on synthetic data", weight="bold", fontsize=12
-)
+fig.suptitle("neural-network pieces on synthetic data", weight="bold", fontsize=12)
 fig.tight_layout()
 OUT.parent.mkdir(parents=True, exist_ok=True)
 fig.savefig(OUT, dpi=140)

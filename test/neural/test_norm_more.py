@@ -96,7 +96,7 @@ def test_gradients_against_jax_grad():
     g = jnp.asarray(rng.normal(0.0, 1.0, (2, 4, 3)).astype(np.float32))
 
     gn = GroupNorm(1, 3)
-    y = gn.forward(x)
+    _ = gn.forward(x)
     dx = np.asarray(gn.backward(g))
 
     def loss(xv):

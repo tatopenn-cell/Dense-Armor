@@ -202,7 +202,7 @@ def test_convtranspose1d_backward_matches_jax_grad():
     g_arr = rng.normal(0.0, 1.0, (9, 3)).astype(np.float32)
 
     c = ConvTranspose1D(2, 3, 3, jax.random.PRNGKey(0), stride=2)
-    y = c.forward(jnp.asarray(x_arr))
+    _ = c.forward(jnp.asarray(x_arr))
     dx = np.asarray(c.backward(jnp.asarray(g_arr)))
     assert dx.shape == x_arr.shape
     assert c.W.grad.shape == c.W.value.shape
@@ -225,7 +225,7 @@ def test_convtranspose2d_backward_matches_jax_grad():
     g_arr = rng.normal(0.0, 1.0, (7, 7, 3)).astype(np.float32)
 
     c = ConvTranspose2D(2, 3, 3, jax.random.PRNGKey(0), stride=2)
-    y = c.forward(jnp.asarray(x_arr))
+    _ = c.forward(jnp.asarray(x_arr))
     dx = np.asarray(c.backward(jnp.asarray(g_arr)))
     assert dx.shape == x_arr.shape
     assert c.W.grad.shape == c.W.value.shape

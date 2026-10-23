@@ -126,10 +126,6 @@ def test_value_errors():
 
 
 def test_multiplier_returns_zero_when_base_is_zero():
-    # For LinearWarmup, the base lr_start is always > 0, so multiplier
-    # is a real division; the 0.0 branch of LinearWarmup.multiplier can
-    # only trigger if lr_start is 0, which the constructor forbids.
-    # NoamSchedule(.)(0) == 0.0 always, so multiplier always returns 0.0.
     s = LinearWarmup(0.1, 3.2, 5)
     assert s.multiplier(0.0) == 1.0
     n = NoamSchedule(512, 4000)
@@ -139,13 +135,10 @@ def test_multiplier_returns_zero_when_base_is_zero():
 
 
 def test_multiplier_zero_branch_directly():
-    # Force the 0.0 branch of both classes by mutating lr_start/d_model
-    # so that self(0.0) evaluates to 0.0 — no other public path reaches it.
     s = LinearWarmup(0.1, 3.2, 5)
     s.lr_start = 0.0
     s.lr_end = 0.0
     assert s.multiplier(2.5) == 0.0
 
     n = NoamSchedule(512, 4000)
-    # NoamSchedule(.)(0) is 0.0 by definition; multiplier short-circuits
     assert n.multiplier(0.0) == 0.0

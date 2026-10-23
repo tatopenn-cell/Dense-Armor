@@ -25,9 +25,9 @@ from dense_armor.utility.neural.losses_more import (
 
 
 def test_l1_hand_case():
-    l = L1Loss()
-    v = float(l.forward(jnp.array([1.0, 3.0]), jnp.array([2.0, 1.0])))
-    g = np.asarray(l.backward())
+    loss = L1Loss()
+    v = float(loss.forward(jnp.array([1.0, 3.0]), jnp.array([2.0, 1.0])))
+    g = np.asarray(loss.backward())
     print(f"L1: {v:.4f}, grad {g.tolist()}")
     assert abs(v - 1.5) < 1e-6
     assert np.allclose(g, [-0.5, 0.5])
@@ -103,9 +103,9 @@ def test_l1_gradient_jax():
     rng = np.random.default_rng(0)
     pred = jnp.asarray(rng.normal(0.0, 1.0, 5).astype(np.float32))
     tgt = jnp.asarray(rng.normal(0.0, 1.0, 5).astype(np.float32))
-    l = L1Loss()
-    _ = l.forward(pred, tgt)
-    g = np.asarray(l.backward())
+    loss = L1Loss()
+    _ = loss.forward(pred, tgt)
+    g = np.asarray(loss.backward())
 
     def f(p):
         return jnp.mean(jnp.abs(p - tgt))

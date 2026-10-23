@@ -1,4 +1,4 @@
-# Classic pieces: what does a deep neural network need beyond the layers, and where is each piece in the library?
+# Neural network pieces: what does a deep neural network need beyond the layers, and where is each piece in the library?
 
 A neural network that trains well needs more than a stack of layers. It needs an optimizer that does not zigzag on a narrow valley, a guard that keeps the gradient from exploding, an activation that does not saturate too early, a schedule that warms up the learning rate at the start, a way to enlarge a feature map when the network goes backwards, a way to read a sequence in both directions, a normalisation that does not depend on the batch, three-dimensional and depthwise convolutions for video and for cheap image models, a positional signal that says where a token is, and a set of losses beyond the mean squared error and the plain cross-entropy. This page adds these pieces to the library and shows one example of each, plus a last step that uses them together in a small convolutional autoencoder.
 
@@ -332,7 +332,7 @@ The label-smoothing target is `q'(k) = (1 - eps) delta_{k,y} + eps / K`, page 7 
 
 ## 11. The online learner for vector targets
 
-`OnlineNetRegressor` of N05 trains a network one sample at a time on a scalar target. A `Seq2Seq`, a `VectorQuantizer` and a `MatryoshkaLoss` have a vector target, and the loss may have its own parameters. `OnlineNetVector` is the online form for all of them: it accepts `x` as a dict or as any array-like, `y` as any array-like (a scalar included), and it trains the model and the loss together.
+`OnlineNetRegressor` of the library trains a network one sample at a time on a scalar target. A `Seq2Seq`, a `VectorQuantizer` and a `MatryoshkaLoss` have a vector target, and the loss may have its own parameters. `OnlineNetVector` is the online form for all of them: it accepts `x` as a dict or as any array-like, `y` as any array-like (a scalar included), and it trains the model and the loss together.
 
 `OnlineNetVector(model, loss, optimizer, feature_keys=None, schedule=None, weight_decay=0.0, decay="l2", clip_norm=None)` is in `dense_armor/utility/neural/online_vector.py`, a subclass of `dense_armor.roles.Regressor`.
 
@@ -591,7 +591,7 @@ Label smoothing: `q'(k) = (1 - eps) delta_{k,y} + eps / K`, page 7 of Szegedy et
 
 ## 11. The online learner for vector targets
 
-`OnlineNetRegressor` of N05 trains a network one sample at a time on a scalar target. A `Seq2Seq`, a `VectorQuantizer` and a `MatryoshkaLoss` have a vector target, and the loss may have its own parameters. `OnlineNetVector` is the online form for all of them.
+`OnlineNetRegressor` of the library trains a network one sample at a time on a scalar target. A `Seq2Seq`, a `VectorQuantizer` and a `MatryoshkaLoss` have a vector target, and the loss may have its own parameters. `OnlineNetVector` is the online form for all of them.
 
 `OnlineNetVector(model, loss, optimizer, feature_keys=None, schedule=None, weight_decay=0.0, decay="l2", clip_norm=None)` is in `dense_armor/utility/neural/online_vector.py`.
 
@@ -709,7 +709,7 @@ The definitions without a source (the nearest-neighbour upsampling, `L1Loss`, th
 - `eps` in `RMSProp` sits inside the square root, as in Eq.(18), page 7 of Ruder (2016).
 - `HingeLoss` follows `mean(max(0, 1 - y * pred))` on the batch, so the gradient is `-y / N` where the sample is active. With both samples active on a batch of `N = 2` this is `[-0.5, -0.5]`, not `[-0.25, -0.5]`. The `ISTRUZIONI.md` states `[-0.25, -0.5]` for this case, but the value of the loss `1.75` is consistent with the formula and `-y / N` on `N = 2`; the test uses `[-0.5, -0.5]`.
 - `LabelSmoothingCE` uses the uniform prior `u(k) = 1 / K`, page 7 of Szegedy et al. (2016).
-- The name of the page and of the two assets (`classic_pieces_*`) comes from `ISTRUZIONI.md`, which calls the set of pieces the "classic neural network" pieces. The page opens with "deep neural network" because the pieces are modern (GELU 2016, focal loss 2017, GroupNorm 2018) and the word "classic" in the spec is a name for the set, not a period.
+- The name of the page and of the two assets (`classic_pieces_*`) is a historical name from the task specification; the page opens with "deep neural network" because the pieces are modern (GELU 2016, focal loss 2017, GroupNorm 2018), not a period.
 
 ### Measured cost
 
@@ -723,4 +723,4 @@ The figure regenerates its first panel on 20 seeds and prints `SGD+Nesterov` wit
 
 The first draft of `DepthwiseConv2D.forward` reshaped the weight to `(k, k, channels, 1)` and passed `feature_group_count=channels` to `jax.lax.conv_general_dilated`; JAX raises `ValueError: conv_general_dilated lhs feature dimension size divided by feature_group_count must equal the rhs input feature dimension size, but 2 // 2 != 2`. The correct reshape for grouped convolution is `(k, k, 1, channels)`. The bug was fixed in the same commit that wrote the layer, and the test `test_depthwise_hand_case` would have caught it (it did, in the smoke run).
 
-The first draft of `focal_backward` had two sign errors: the derivative of `log(p_t)` with respect to the logit was written with the opposite sign, and the first term of `dFL/dz` used `-a_t` instead of `+a_t`. The test `test_focal_gradient_jax` compared the backward with `jax.grad` of the forward and found every element with the opposite sign; with the fix the two agree within `1e-5`. The bug was fixed in a separate commit `taskN06b J: fix the sign of the focal loss gradient`.
+The first draft of `focal_backward` had two sign errors: the derivative of `log(p_t)` with respect to the logit was written with the opposite sign, and the first term of `dFL/dz` used `-a_t` instead of `+a_t`. The test `test_focal_gradient_jax` compared the backward with `jax.grad` of the forward and found every element with the opposite sign; with the fix the two agree within `1e-5`. The bug was fixed in a separate commit.
