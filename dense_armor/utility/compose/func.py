@@ -1,10 +1,13 @@
 """Apply a user function to channels of a :class:`Signal`.
 
 By default the function is called once per channel with the value of
-that channel. When ``keys`` is empty and ``whole`` is False, every
-channel is transformed. When ``whole`` is True, the function is called
-once with the whole dict and must return a dict. A ``None`` result
-skips the channel.
+that channel. When ``keys`` is ``None`` and ``whole`` is False, every
+channel is transformed; an empty ``keys`` transforms nothing. When
+``whole`` is True, the function is called once with the whole dict and
+must return a dict (otherwise ``TypeError``); on a :class:`Signal` the
+units and the missing mask are kept only if the returned names are the
+input names in the same order, and are reset otherwise. A ``None``
+result skips the channel.
 
 Examples:
     >>> from dense_armor.utility.compose import FuncTransformer
@@ -33,7 +36,8 @@ class FuncTransformer(Transformer):
             the whole dict (when ``whole`` is True), and returning the
             new value or ``None`` to skip the channel.
         keys: names of the channels to transform. ``None`` transforms
-            every channel when ``whole`` is False.
+            every channel when ``whole`` is False; an empty tuple
+            transforms none.
         whole: if True, ``fn`` receives the whole dict and must return
             a dict, which replaces the output.
 
@@ -84,14 +88,25 @@ class FuncTransformer(Transformer):
 
     def _transform_whole(self, x: Any) -> Any:
         out = self.fn(dict(x))
+        if not isinstance(out, dict):
+            raise TypeError(
+                f"fn must return a dict when whole is True, got {type(out).__name__}"
+            )
         if isinstance(x, Signal):
             vals = [out[k] for k in out]
             names = list(out.keys())
-            units = ["" for _ in names]
+            if names == list(x.names):
+                return Signal(
+                    values=np.asarray(vals, dtype=float),
+                    names=names,
+                    units=list(x.units),
+                    t=x.t,
+                    missing=x.mask,
+                )
             return Signal(
                 values=np.asarray(vals, dtype=float),
                 names=names,
-                units=units,
+                units=["" for _ in names],
                 t=x.t,
             )
         return dict(out)
@@ -100,10 +115,11 @@ class FuncTransformer(Transformer):
         if isinstance(x, Signal):
             vals = [float(v) for v in x.array]
             targets = self.keys if self.keys is not None else list(x.names)
+            pos = {n: i for i, n in enumerate(x.names)}
             for k in targets:
-                if k not in x.names:
+                j = pos.get(k)
+                if j is None:
                     continue
-                j = x.names.index(k)
                 new = self.fn(vals[j])
                 if new is not None:
                     vals[j] = float(new)

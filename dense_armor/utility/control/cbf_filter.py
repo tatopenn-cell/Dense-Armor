@@ -88,6 +88,12 @@ def cbf_safety_filter(x: float, u_des: float, obstacle: float, safe_dist: float,
     -------
     float
         The safety-filtered control input.
+
+    Notes
+    -----
+    The guarantee needs a safe start (h >= 0). With ``x == obstacle`` the
+    constraint has Lg h = 0 and no solution, so ``u_des`` is returned
+    unchanged; the same holds when ``abs(Lg h) < 1e-9``.
     """
     h = (x - obstacle) ** 2 - safe_dist ** 2
     Lgh = 2.0 * (x - obstacle)
@@ -125,6 +131,8 @@ def cbf_safety_filter_live(x: float, u_des: float, dt: float, obstacle: float, s
     position), so it composes directly with a velocity-controlled motor
     the same way `cbf_safety_filter` does.
     """
+    if n_substeps < 1:
+        raise ValueError("n_substeps must be at least 1")
     sub_dt = dt / n_substeps
     x_sub = x
     for _ in range(n_substeps):
@@ -137,7 +145,15 @@ def cbf_filtered_trajectory(x_raw: np.ndarray, obstacle: float, safe_dist: float
     """Applies cbf_safety_filter causally along a raw command stream,
     sub-stepping each real sample (see module docstring for why this
     is required to hold the continuous-time invariance guarantee in
-    discrete time)."""
+    discrete time).
+
+    The command velocity is ``(x_raw[i] - x) / sub_dt`` and is not
+    bounded: the filter limits the position against the obstacle, not
+    the speed. To bound the speed, pass ``x_raw`` through
+    ``rate_limited_follower`` first (the composition is left to the
+    caller). ``n_substeps`` must be at least 1."""
+    if n_substeps < 1:
+        raise ValueError("n_substeps must be at least 1")
     n = len(x_raw)
     out = np.empty(n)
     x = float(x_raw[0])

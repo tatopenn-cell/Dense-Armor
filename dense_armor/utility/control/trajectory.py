@@ -84,12 +84,17 @@ def quintic_trajectory(q0, qf, T: float, v0=None, a0=None, vf=None, af=None, n_s
     q0 = np.atleast_1d(np.asarray(q0, dtype=float))
     qf = np.atleast_1d(np.asarray(qf, dtype=float))
     n_dof = q0.shape[0]
-    assert qf.shape[0] == n_dof, "q0 and qf must have the same number of joints"
     v0 = np.zeros(n_dof) if v0 is None else np.atleast_1d(np.asarray(v0, dtype=float))
     a0 = np.zeros(n_dof) if a0 is None else np.atleast_1d(np.asarray(a0, dtype=float))
     vf = np.zeros(n_dof) if vf is None else np.atleast_1d(np.asarray(vf, dtype=float))
     af = np.zeros(n_dof) if af is None else np.atleast_1d(np.asarray(af, dtype=float))
-    assert T > 0, "T must be positive"
+    for a in (q0, qf, v0, a0, vf, af):
+        if a.shape != (n_dof,):
+            raise ValueError("q0, qf, v0, a0, vf, af must be 1-D with the same number of joints")
+    if not (np.isfinite(T) and T > 0):
+        raise ValueError("T must be positive and finite")
+    if n_samples < 1:
+        raise ValueError("n_samples must be at least 1")
 
     t = np.linspace(0.0, T, n_samples)
 

@@ -185,3 +185,35 @@ def test_diag_scales_by_dtype_and_refuses_mixed_arguments():
     assert same is not None and ref is not None
     with pytest.raises(TypeError):
         diag("a.wav", sig)
+
+
+def test_control_validation():
+    from dense_armor.utility.control.cbf_filter import cbf_filtered_trajectory, cbf_safety_filter_live
+    from dense_armor.utility.control.kinematic_controller import kinematic_tracking_controller
+    from dense_armor.utility.control.trajectory import quintic_trajectory
+
+    with pytest.raises(ValueError):
+        kinematic_tracking_controller([0.0, 1.0], [0.0], [0.0, 0.0], 1.0)
+    with pytest.raises(ValueError):
+        quintic_trajectory([0.0], [[1.0]], 1.0)
+    with pytest.raises(ValueError):
+        quintic_trajectory([0.0], [1.0], 0.0)
+    with pytest.raises(ValueError):
+        quintic_trajectory([0.0], [1.0], 1.0, n_samples=0)
+    with pytest.raises(ValueError):
+        cbf_filtered_trajectory(np.zeros(3), 5.0, 1.0, n_substeps=0)
+    with pytest.raises(ValueError):
+        cbf_safety_filter_live(0.0, 1.0, 0.1, 5.0, 1.0, n_substeps=0)
+
+
+def test_func_transformer_whole():
+    from dense_armor.roles import Signal
+    from dense_armor.utility.compose import FuncTransformer
+
+    s = Signal(values=[1.0, 2.0], names=["a", "b"], units=["m", "s"], t=0.0, missing=[False, True])
+    out = FuncTransformer(lambda d: {k: v + 1.0 for k, v in d.items()}, whole=True).transform_one(s)
+    assert list(out.units) == ["m", "s"]
+    assert list(out.mask) == [False, True]
+    with pytest.raises(TypeError):
+        FuncTransformer(lambda d: [1.0], whole=True).transform_one(s)
+    assert FuncTransformer(lambda v: v + 1.0, keys=()).transform_one({"a": 1.0}) == {"a": 1.0}
