@@ -66,7 +66,7 @@ def test_works_for_any_number_of_dof():
 
 def test_mismatched_shapes_raise():
     import pytest
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         kinematic_tracking_controller([0.0, 0.0], [1.0], [0.0], kp=1.0)
 
 

@@ -6,7 +6,10 @@ Needs the optional dependency: the streaming extra
 import numpy as np
 
 from dense_armor.roles import AnomalyDetector
-from dense_armor.utility.anomaly.streaming import StreamingDeviationDetector, _feature_value
+from dense_armor.utility.anomaly.streaming import (
+    StreamingDeviationDetector,
+    _feature_value,
+)
 from dense_armor.utility.protect.arbiter import _robust_center_scale
 
 

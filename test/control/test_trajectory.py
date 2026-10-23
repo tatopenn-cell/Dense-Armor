@@ -61,5 +61,5 @@ def test_stationary_start_end_gives_a_real_trajectory_shape_not_a_straight_line(
 
 def test_mismatched_dof_raises():
     import pytest
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         quintic_trajectory([0.0, 0.0], [1.0], 1.0)

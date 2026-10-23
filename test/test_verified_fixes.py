@@ -188,8 +188,13 @@ def test_diag_scales_by_dtype_and_refuses_mixed_arguments():
 
 
 def test_control_validation():
-    from dense_armor.utility.control.cbf_filter import cbf_filtered_trajectory, cbf_safety_filter_live
-    from dense_armor.utility.control.kinematic_controller import kinematic_tracking_controller
+    from dense_armor.utility.control.cbf_filter import (
+        cbf_filtered_trajectory,
+        cbf_safety_filter_live,
+    )
+    from dense_armor.utility.control.kinematic_controller import (
+        kinematic_tracking_controller,
+    )
     from dense_armor.utility.control.trajectory import quintic_trajectory
 
     with pytest.raises(ValueError):
@@ -246,7 +251,7 @@ def test_anomaly_missing_key():
     from dense_armor.utility.anomaly.filters import HampelFilter, HampelScorer
     from dense_armor.utility.anomaly.streaming import StreamingDeviationDetector
 
-    s = HampelScorer(radius=5)
+    s = HampelScorer(radius=5, feature="v")
     for v in range(10):
         s.learn_one({"v": float(v)})
     s.learn_one({"w": 1.0})

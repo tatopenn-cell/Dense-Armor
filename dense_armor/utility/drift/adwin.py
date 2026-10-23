@@ -98,7 +98,7 @@ class ADWIN(DriftDetector):
         ...     if det.drift_detected:
         ...         print(i)
         ...         break
-        329
+        327
     """
 
     def __init__(
