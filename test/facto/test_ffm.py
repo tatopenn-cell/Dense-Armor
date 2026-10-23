@@ -166,7 +166,9 @@ def test_label_zero_equals_label_minus_one():
 
 def test_both_classes_are_separated():
     pos, neg = {"a": 1.0, "c": 1.0}, {"b": 1.0, "d": 1.0}
-    ffm = _factory_clf()
+    ffm = FFMClassifier(
+        fields=FIELDS, k=2, lr=0.1, seed=0, feature_keys=["a", "b", "c", "d"]
+    )
     for _ in range(300):
         _ = ffm.learn_one(pos, 1)
         _ = ffm.learn_one(neg, 0)
