@@ -5,7 +5,7 @@
 ``learn_one(x, y)`` with the same operations, in the same order, as one
 batch of ``Trainer.fit`` with a batch of one sample: zero the
 gradients, forward, loss, backward, learning rate from a schedule, the
-weight decay of N04, the update of every ``Param``. A sample is one
+weight decay of the ``Trainer``, the update of every ``Param``. A sample is one
 unit of the schedule (our choice: the schedule reads ``n_seen_``
 directly, so a stream of 1000 samples advances the schedule by 1000;
 this is stated in the docstring of ``learn_one``).
