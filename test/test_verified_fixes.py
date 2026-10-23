@@ -262,3 +262,16 @@ def test_anomaly_missing_key():
     for v in (1.0, 1.1, 0.9, 1.0, float("nan")):
         det.update(v)
     assert len(det._buffer) == 4
+
+
+def test_stream_checks(tmp_path):
+    from dense_armor.roles import Signal
+    from dense_armor.utility.stream import iter_csv, merge_by_time
+
+    p = tmp_path / "a.csv"
+    p.write_text("a,t\n1,0\n2,1\n")
+    with pytest.raises(ValueError):
+        list(iter_csv(p, start=0.0))
+    bad = [(Signal(values=[1.0], names=["a"], units=[""], t=float("nan")), None)]
+    with pytest.raises(ValueError):
+        list(merge_by_time(bad))

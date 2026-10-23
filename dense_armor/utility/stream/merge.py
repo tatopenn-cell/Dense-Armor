@@ -14,10 +14,16 @@ Examples:
 """
 
 import heapq
+import math
 from collections.abc import Iterable, Iterator
 from typing import Any
 
 from dense_armor.roles import Signal
+
+
+def _check_t(sig: Signal) -> None:
+    if sig.t is None or not math.isfinite(float(sig.t)):
+        raise ValueError("merge_by_time needs a finite timestamp on every sample")
 
 
 def merge_by_time(
@@ -34,7 +40,8 @@ def merge_by_time(
         timestamps keep the order of the arguments.
 
     Raises:
-        ValueError: if a sample has ``t=None``.
+        ValueError: if a sample has ``t=None`` or a ``t`` that is NaN or
+            infinite.
     """
     heap: list[tuple[float, int, Signal, Any, Iterator]] = []
     for i, s in enumerate(streams):
@@ -43,8 +50,7 @@ def merge_by_time(
             sig, y = next(it)
         except StopIteration:
             continue
-        if sig.t is None:
-            raise ValueError("merge_by_time needs a timestamp on every sample")
+        _check_t(sig)
         heapq.heappush(heap, (float(sig.t), i, sig, y, it))
     while heap:
         _, i, sig, y, it = heapq.heappop(heap)
@@ -53,6 +59,5 @@ def merge_by_time(
             sig2, y2 = next(it)
         except StopIteration:
             continue
-        if sig2.t is None:
-            raise ValueError("merge_by_time needs a timestamp on every sample")
+        _check_t(sig2)
         heapq.heappush(heap, (float(sig2.t), i, sig2, y2, it))
