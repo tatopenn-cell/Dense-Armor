@@ -71,6 +71,75 @@ print(np.asarray(y).reshape(2, 2).tolist())
 
 The four maxima `5, 7, 13, 15` are the bottom-right corners of the four 2 by 2 blocks: the maximum of `[0, 1, 4, 5]` is 5, of `[2, 3, 6, 7]` is 7, and so on. The output size follows Relationship 7, page 18 of the same reference, `o = floor((i - k) / s) + 1`, with no padding, valid for any type of pooling.
 
+### MaxPool1D
+
+A `MaxPool1D` slides a window along the length of a sequence, channel by channel, and keeps the maximum of each window. It is the one-dimensional version of the pooling above: on a sensor stream it keeps the strongest response of each window and discards the position of the weaker ones. The output length follows Relationship 7, page 18 of Dumoulin and Visin (2016), `o = floor((i - k) / s) + 1`, the same formula as the 2-D case.
+
+~~~python
+import jax.numpy as jnp
+from dense_armor.utility.neural.conv import MaxPool1D
+
+p = MaxPool1D(2)
+x = jnp.array([[1.0], [3.0], [2.0], [4.0]])
+print(p.forward(x).reshape(-1).tolist())
+print(p.backward(jnp.ones((2, 1))).reshape(-1).tolist())
+~~~
+
+~~~
+[3.0, 4.0]
+[0.0, 1.0, 0.0, 1.0]
+~~~
+
+The two windows are `[1, 3]` and `[2, 4]`; the maxima are `3` and `4`. The backward of `ones` puts the gradient at the position of the maximum: `[0, 1, 0, 1]`, the two positions that won.
+
+Dumoulin, V., Visin, F. (2016). *A guide to convolution arithmetic for deep learning.* arXiv:1603.07285. Page 18, Relationship 7.
+
+### AvgPool1D
+
+An `AvgPool1D` computes the same windows of `MaxPool1D` but returns the mean, not the maximum. On a sensor stream where noise is symmetric around the true value, the mean of a window is a smoother estimate than the maximum, and the gradient of the backward spreads over every position of the window instead of concentrating on one. The output length is the same of `MaxPool1D`, Relationship 7, page 18 of Dumoulin and Visin (2016).
+
+~~~python
+import jax.numpy as jnp
+from dense_armor.utility.neural.conv import AvgPool1D
+
+p = AvgPool1D(2)
+x = jnp.array([[1.0], [3.0], [2.0], [4.0]])
+print(p.forward(x).reshape(-1).tolist())
+print(p.backward(jnp.ones((2, 1))).reshape(-1).tolist())
+~~~
+
+~~~
+[2.0, 3.0]
+[0.5, 0.5, 0.5, 0.5]
+~~~
+
+The two windows are `[1, 3]` and `[2, 4]`; the means are `(1 + 3) / 2 = 2` and `(2 + 4) / 2 = 3`. The backward of `ones` spreads `1 / k = 1/2` over every position of each window: every entry is `0.5`.
+
+Dumoulin, V., Visin, F. (2016). *A guide to convolution arithmetic for deep learning.* arXiv:1603.07285. Page 18, Relationship 7.
+
+### AvgPool2D
+
+An `AvgPool2D` is the same idea in two dimensions: 2 by 2 windows with no overlap, the mean of each window in place of the maximum. On an image, the result is a blurred, smaller version of the input; the backward spreads the gradient uniformly over every position of each window. On an `(H, W, c)` input with no padding the output size is `(H - k) // s + 1` on both axes, again Relationship 7, page 18 of Dumoulin and Visin (2016).
+
+~~~python
+import jax.numpy as jnp
+from dense_armor.utility.neural.conv import AvgPool2D
+
+p = AvgPool2D(2)
+x = jnp.array([[[1.0], [2.0]], [[3.0], [4.0]]])
+print(p.forward(x).reshape(-1).tolist())
+print(p.backward(jnp.ones((1, 1, 1))).reshape(-1).tolist())
+~~~
+
+~~~
+[2.5]
+[0.25, 0.25, 0.25, 0.25]
+~~~
+
+The single window is the whole `2 x 2` input, `[1, 2, 3, 4]`; its mean is `(1 + 2 + 3 + 4) / 4 = 2.5`. The backward of `ones` spreads `1 / (k * k) = 1/4 = 0.25` over every position, so all four entries are `0.25`.
+
+Dumoulin, V., Visin, F. (2016). *A guide to convolution arithmetic for deep learning.* arXiv:1603.07285. Page 18, Relationship 7.
+
 ## 4. Flatten, from the image to a vector
 
 A `Flatten` merges every axis after the first (the batch axis, when there is one) into a single axis, and its `backward` restores the shape. It is the last step of a vision network before the dense head.
