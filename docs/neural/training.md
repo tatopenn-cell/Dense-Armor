@@ -195,4 +195,4 @@ The mini-batch loop, the shuffling by a permutation, the step schedule, the earl
 
 ### Development diary
 
-The delivery leaves out the online training with `learn_one`, the checkpoints and the latency budget (task N05), the gradient clipping, the mixed precision and the early-stopping rule with a moving average of the validation loss. The `Trainer` is a single class, not a hierarchy: an `EarlyStopping` callback would be a separate abstraction, out of this task's scope.
+The delivery leaves out the online training with `learn_one`, the checkpoints and the latency budget (see [Continuous training](continuous.md)), the gradient clipping, the mixed precision and the early-stopping rule with a moving average of the validation loss. The `Trainer` is a single class, not a hierarchy: an `EarlyStopping` callback would be a separate abstraction, out of scope for this page.
