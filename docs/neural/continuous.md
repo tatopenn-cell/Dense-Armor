@@ -34,7 +34,7 @@ The forward pass gives `2.0`. The gradient of the MSE with respect to the predic
 
 ## 2. The online step equals the batch of one sample
 
-Twenty samples fed one by one to `OnlineNetRegressor` leave the weights equal, within `1e-6`, to one `Trainer.fit` with `batch_size=1` and `shuffle=False` on the same model and the same data. This is the contract of N04: one code path serves the batch mode and the online mode.
+Twenty samples fed one by one to `OnlineNetRegressor` leave the weights equal, within `1e-6`, to one `Trainer.fit` with `batch_size=1` and `shuffle=False` on the same model and the same data. This is the contract of the training loop (see [Training](training.md)): one code path serves the batch mode and the online mode.
 
 ~~~python
 import jax
@@ -265,7 +265,7 @@ The queue, the worker thread, the snapshot of the served model, the progressive 
 
 ### Choices stated explicitly
 
-- A sample is one unit of the learning-rate schedule: `schedule(n_seen_)` is the learning rate of the sample number `n_seen_`. This is our choice; the schedule is the one of N04, read at the fractional epoch `epoch + b / n_batches` in the batch training.
+- A sample is one unit of the learning-rate schedule: `schedule(n_seen_)` is the learning rate of the sample number `n_seen_`. This is our choice; the schedule is the one of the batch training (see [Training](training.md)), read at the fractional epoch `epoch + b / n_batches`.
 - The hidden activation of the Hedge network is relu. The paper writes a generic activation `sigma`; relu is the one the reference implementation and our `Dense` layers use.
 - The Hedge loss is `1 - p(l)[y]`. The paper asks for a value in `(0, 1)` and does not give the formula; the probability that the classifier gives to the true class is the natural choice, and `1 - p` is in `[0, 1]` for a softmax output.
 - The gradient of every `Theta(l)` and `W(l)` uses the cross-entropy of the classifier, weighted by the current `alpha(l)` (Eq.(2) and Eq.(3), page 4). For the multiclass case the loss is the softmax cross-entropy of the `Dense` layers.
@@ -276,4 +276,4 @@ The queue, the worker thread, the snapshot of the served model, the progressive 
 
 ### Development diary
 
-The delivery leaves out the forgetting of old regimes, gradient clipping and mixed precision: task N07 and N08. The `BackgroundLearner` uses one worker; more workers would need a different protocol for `served_` and are out of this task. The online estimators hold a full copy of the model (`model_`), so the wrapper and the original share the same `Param` shapes but are not the same objects; this is the price of the one-copy-per-`Param` optimizer of N04.
+The delivery leaves out the forgetting of old regimes, gradient clipping and mixed precision. The `BackgroundLearner` uses one worker; more workers would need a different protocol for `served_` and are out of scope for this page. The online estimators hold a full copy of the model (`model_`), so the wrapper and the original share the same `Param` shapes but are not the same objects; this is the price of the one-copy-per-`Param` optimizer of the `Trainer`.
