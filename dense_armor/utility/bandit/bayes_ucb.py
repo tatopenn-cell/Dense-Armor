@@ -25,7 +25,9 @@ class BayesUCB(BanditPolicy):
     ``1 - 1 / (t (log n)^c)`` quantile of the posterior distribution of
     the mean reward, where ``t`` is the number of plays so far and ``n``
     the horizon. The arm with the highest quantile is played. For
-    Bernoulli rewards the posterior is ``Beta(1 + S_j, 1 + F_j)``. For
+    Bernoulli rewards the posterior is ``Beta(1 + S_j, 1 + F_j)``; a
+    reward counts as a success when it is ``>= 0.5``, so a continuous
+    reward in [0, 1] is binarised (the paper assumes rewards in {0, 1}). For
     Gaussian rewards with known variance the posterior is
     ``N(mu_j, sigma^2 / n_j)``; with ``estimate_var=True`` the posterior
     is a Student-t with ``n_j - 1`` degrees of freedom, as in Section 2
@@ -102,7 +104,7 @@ class BayesUCB(BanditPolicy):
         self.counts_: dict[Any, int] = {a: 0 for a in self.arms}
         self.means_: dict[Any, float] = {a: 0.0 for a in self.arms}
         self.successes_: dict[Any, int] = {a: 0 for a in self.arms}
-        self.sumsq_: dict[Any, float] = {a: 0.0 for a in self.arms}
+        self.m2_: dict[Any, float] = {a: 0.0 for a in self.arms}
 
     def _quantile(self, arm: Any, t: int) -> float:
         if self.family == "bernoulli":
@@ -119,8 +121,7 @@ class BayesUCB(BanditPolicy):
         n_h = self.horizon if self.horizon else (self.n_seen_ + 1)
         alpha = 1.0 / (t * (math.log(max(n_h, 2)) ** self.c))
         if self.estimate_var and nj >= 2:
-            var = self.sumsq_[arm] / nj - self.means_[arm] * self.means_[arm]
-            var = max(var, 0.0) * nj / (nj - 1)
+            var = max(self.m2_[arm], 0.0) / (nj - 1)
             sd = math.sqrt(var / nj)
             q = float(_student.ppf(1.0 - alpha, nj - 1))
             return self.means_[arm] + q * sd
@@ -167,6 +168,6 @@ class BayesUCB(BanditPolicy):
         if self.family == "bernoulli" and r >= 0.5:
             self.successes_[arm] += 1
         if self.family == "gaussian":
-            self.sumsq_[arm] = self.sumsq_[arm] + r * r
+            self.m2_[arm] = self.m2_[arm] + (r - m) * (r - self.means_[arm])
         self.n_seen_ += 1
         return self

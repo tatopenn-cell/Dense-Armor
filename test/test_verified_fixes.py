@@ -226,3 +226,16 @@ def test_kmeans_warmup_shape_mismatch():
     km.learn_one({"x": [0.0]})
     km.learn_one({"x": [0.0, 1.0]})
     assert km.n_missing_ == 1 and km.n_seen_ == 1
+
+
+def test_bandit_fixes():
+    from dense_armor.utility.bandit import BayesUCB
+    from dense_armor.utility.bandit.evaluate import offline_replay
+
+    p = BayesUCB(arms=[0], family="gaussian", estimate_var=True)
+    xs = [1e6 + d for d in (-1.0, 0.0, 1.0, 2.0, -2.0)]
+    for x in xs:
+        p.update(0, x)
+    assert abs(p.m2_[0] / (len(xs) - 1) - float(np.var(xs, ddof=1))) < 1e-6
+    with pytest.raises(ValueError):
+        offline_replay([({"x": 0.0}, 0, 1.0)], lambda c: 0, n_bootstrap=0)
