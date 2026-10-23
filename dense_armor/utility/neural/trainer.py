@@ -43,37 +43,36 @@ from dense_armor.utility.neural.schedules import ConstantLR
 class Trainer:
     """Train a model on a dataset, with mini-batches and schedules.
 
-        Args:
-            model: any object with ``forward(x, training=True)``,
-                ``backward(g)``, ``params()`` and ``zero_grad()``.
-            loss: any object with ``forward(pred, target)`` and
-                ``backward()``.
-            optimizer: a prototype of ``dense_armor.utility.optim``
-                (``SGD``, ``Adam``); one ``deepcopy`` is made for each
-                ``Param``.
-            schedule: a learning-rate schedule; default ``ConstantLR``
-                with the learning rate of ``optimizer``.
-            weight_decay: the weight-decay coefficient, default 0.
-            decay: ``"l2"`` (default) or ``"decoupled"``.
+    Args:
+        model: any object with ``forward(x, training=True)``,
+            ``backward(g)``, ``params()`` and ``zero_grad()``.
+        loss: any object with ``forward(pred, target)`` and
+            ``backward()``.
+        optimizer: a prototype of ``dense_armor.utility.optim``
+            (``SGD``, ``Adam``); one ``deepcopy`` is made for each
+            ``Param``.
+        schedule: a learning-rate schedule; default ``ConstantLR``
+            with the learning rate of ``optimizer``.
+        weight_decay: the weight-decay coefficient, default 0.
+        decay: ``"l2"`` (default) or ``"decoupled"``.
 
-        Raises:
-            ValueError: if ``decay`` is neither ``"l2"`` nor ``"decoupled"``,
-                or if ``weight_decay`` is negative.
+    Raises:
+        ValueError: if ``decay`` is neither ``"l2"`` nor ``"decoupled"``,
+            or if ``weight_decay`` is negative.
 
-        Examples:
-            >>> import jax
-            >>> from dense_armor.utility.neural.trainer import Trainer
-            >>> from dense_armor.utility.neural.models import mlp
-            >>> from dense_armor.utility.neural.clip import clip_grad_norm
-    from dense_armor.utility.neural.losses import MSE
-            >>> from dense_armor.utility.optim import SGD
-            >>> m = mlp([2, 4, 1], jax.random.PRNGKey(0))
-            >>> t = Trainer(m, MSE(), SGD(0.01))
-            >>> X = jax.numpy.ones((4, 2))
-            >>> y = jax.numpy.zeros((4, 1))
-            >>> _ = t.fit(X, y, epochs=2, batch_size=2, key=jax.random.PRNGKey(0))
-            >>> len(t.history_["train_loss"])
-            2
+    Examples:
+        >>> import jax
+        >>> from dense_armor.utility.neural.trainer import Trainer
+        >>> from dense_armor.utility.neural.models import mlp
+        >>> from dense_armor.utility.neural.losses import MSE
+        >>> from dense_armor.utility.optim import SGD
+        >>> m = mlp([2, 4, 1], jax.random.PRNGKey(0))
+        >>> t = Trainer(m, MSE(), SGD(0.01))
+        >>> X = jax.numpy.ones((4, 2))
+        >>> y = jax.numpy.zeros((4, 1))
+        >>> _ = t.fit(X, y, epochs=2, batch_size=2, key=jax.random.PRNGKey(0))
+        >>> len(t.history_["train_loss"])
+        2
     """
 
     def __init__(
