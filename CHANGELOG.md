@@ -7,6 +7,7 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 ### Added
 - `docs/neural/attention.md`, the page of the attention; `docs/api/neural.md`, the signature of every public class and function of `neural` and `optim`.
 ### Fixed
+- `FFMClassifier.learn_one` learns the label `0`: with `y = 0` the gradient of eq. (5)-(6) was zero and the model never learned the negative class. The labels `1` and `0`, or `+1` and `-1`, now give the update of the logit loss; the update for `+1` and `-1` is unchanged.
 - `docs/neural/deep.md` held its sections 7 to 11, the figure and the details twice; the repeated half is gone.
 - `ARCHITECTURE.md` lists `bocpd.py`, `vectorizer.py`, `shrinkage.py`, `similarity.py`, `batch.py` and `fimt.py`.
 
