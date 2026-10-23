@@ -83,7 +83,7 @@ print(softmax_forward(jnp.array([[1000.0, 0.0, -1000.0]])))
 
 ### Sigmoid
 
-A binary classifier ends with a raw score that can be any real number, but a decision needs a probability. A sigmoid is the simplest function that takes that score and squeezes it into the interval (0, 1) without breaking the smoothness: a small score becomes a probability near 0, a large score near 1, and 0 becomes 0.5. The same shape serves as a gate, where 0 is closed, 1 is open and 0.5 is halfway. Because the output is never exactly 0 or 1, a signal always passes a little, and because the derivative is positive everywhere, the gradient of the layers below does not vanish at the start of a training.
+A binary classifier ends with a raw score that can be any finite number, but a decision needs a probability. A sigmoid is the simplest function that takes that score and squeezes it into the interval (0, 1) without breaking the smoothness: a small score becomes a probability near 0, a large score near 1, and 0 becomes 0.5. The same shape serves as a gate, where 0 is closed, 1 is open and 0.5 is halfway. Because the output is never exactly 0 or 1, a signal always passes a little, and because the derivative is positive everywhere, the gradient of the layers below does not vanish at the start of a training.
 
 ~~~python
 import jax.numpy as jnp
