@@ -337,7 +337,8 @@ graph TD
 | `adam.py` | `Adam` | Adam with bias-corrected moments |
 | `ftrl.py` | `FTRLProximal` | FTRL-Proximal with L1 and L2 regularisation |
 | `newton.py` | `OnlineNewtonStep` | online Newton step with a rank-one running Hessian |
-| `sgd.py` | `SGD` | stochastic gradient descent with a fixed step |
+| `rmsprop.py` | `RMSProp` | RMSProp with a running mean of the squared gradient |
+| `sgd.py` | `SGD` | stochastic gradient descent with a fixed step, optional momentum and Nesterov |
 
 ### 2.23 proba
 
@@ -416,25 +417,43 @@ graph TD
 
 ### 2.32 neural
 
-Networks as layers with `forward`, `backward` and `params()`: parameters, initialisations, activations and losses, dense, normalisation, convolution, recurrent and attention layers, chains and architectures, and the training loop with schedules and mini-batches. A layer joins a pipeline of `roles/` through `AsTransformer`.
+Networks as layers with `forward`, `backward` and `params()`: parameters, initialisations, activations and losses, dense, normalisation, convolution, recurrent and attention layers, chains and architectures, the training loop, the optimizer-side pieces (gradient clipping, warmup schedules), online and background learners, encoders and decoders, with schedules and mini-batches. A layer joins a pipeline of `roles/` through `AsTransformer`.
 
 | file | public names | what it is |
 |---|---|---|
 | `activations.py` | `relu_forward`, `relu_backward`, `prelu_forward`, `prelu_backward`, `sigmoid_forward`, `sigmoid_backward`, `tanh_forward`, `tanh_backward`, `softmax_forward`, `softmax_backward`, `Relu`, `PRelu`, `Sigmoid`, `Tanh`, `Softmax` | Activations with a forward and a backward, on a batch or one sample |
+| `activations_more.py` | `gelu_forward`, `gelu_backward`, `gelu_approx_forward`, `gelu_approx_backward`, `silu_forward`, `silu_backward`, `elu_forward`, `elu_backward`, `leaky_relu_forward`, `leaky_relu_backward`, `softplus_forward`, `softplus_backward`, `GELU`, `SiLU`, `ELU`, `LeakyReLU`, `Softplus` | More activations: GELU, SiLU, ELU, LeakyReLU, Softplus |
 | `adapter.py` | `AsTransformer` | A layer seen as a ``Transformer`` of the library |
 | `attention.py` | `scaled_dot_product_attention`, `scaled_dot_product_attention_backward`, `sinusoidal_positions`, `MultiHeadSelfAttention`, `TransformerBlock` | Attention layers |
+| `autoencoder.py` | `Autoencoder` | An autoencoder: an encoder, a decoder and the reconstruction error |
+| `background.py` | `BackgroundLearner` | A background learner: the main program is never blocked |
 | `batching.py` | `minibatches` | Mini-batch generator |
+| `bidirectional.py` | `Bidirectional` | Bidirectional recurrent layer |
 | `chain.py` | `Sequential`, `Parallel` | Chains and branches of layers |
+| `clip.py` | `clip_grad_norm` | Gradient clipping by global L2 norm |
 | `conv.py` | `Conv1D`, `Conv2D`, `MaxPool1D`, `MaxPool2D`, `AvgPool1D`, `AvgPool2D`, `Flatten` | Convolution and pooling layers |
+| `conv_more.py` | `Conv3D`, `DepthwiseConv2D`, `SeparableConv2D` | Three-dimensional, depthwise and separable convolutions |
+| `convtranspose.py` | `ConvTranspose1D`, `ConvTranspose2D`, `Upsample1D`, `Upsample2D` | Transposed convolutions and nearest-neighbour upsampling |
 | `gradcheck.py` | `gradcheck` | Gradient check against central finite differences |
+| `hedge.py` | `HedgeNetClassifier` | Hedge Backpropagation (Sahoo et al. 2018) |
 | `init.py` | `fan_in`, `he_normal`, `xavier_normal`, `zeros_bias`, `glorot_uniform` | He and Xavier initialisations for rectifier networks |
 | `layers.py` | `dense_forward`, `dense_backward`, `Dense`, `Embedding`, `Dropout`, `Residual` | Dense, Embedding, Dropout, Residual |
 | `losses.py` | `mse_forward`, `mse_backward`, `softmax_cross_entropy_forward`, `softmax_cross_entropy_backward`, `bce_with_logits_forward`, `bce_with_logits_backward`, `MSE`, `SoftmaxCrossEntropy`, `BCEWithLogits`, `huber_forward`, `huber_backward`, `Huber` | Losses with a forward and a backward, on a batch |
+| `losses_more.py` | `l1_forward`, `l1_backward`, `label_smoothing_ce_forward`, `label_smoothing_ce_backward`, `kldiv_forward`, `kldiv_backward`, `hinge_forward`, `hinge_backward`, `focal_forward`, `focal_backward`, `L1Loss`, `LabelSmoothingCE`, `KLDivLoss`, `HingeLoss`, `FocalLoss` | More losses: L1, label-smoothed cross-entropy, KL divergence, hinge, focal |
+| `matryoshka.py` | `MatryoshkaLoss` | The Matryoshka Representation Learning loss of Kusupati et al. 2022 |
 | `models.py` | `mlp`, `resnet_mlp`, `LastStep`, `MeanOverTime`, `AddPositions`, `cnn`, `recurrent_net`, `transformer_encoder` | standard architectures (MLP, residual MLP, CNN, recurrent net, transformer encoder) and the small layers that join them to a head |
 | `norm.py` | `BatchNorm`, `LayerNorm` | BatchNorm and LayerNorm, with a forward and a backward |
+| `norm_more.py` | `GroupNorm`, `InstanceNorm` | GroupNorm and InstanceNorm |
+| `online.py` | `OnlineNetRegressor`, `OnlineNetClassifier` | Online estimators of a network: one sample at a time |
+| `online_autoencoder.py` | `OnlineAutoencoder` | An autoencoder trained online, used as an anomaly detector |
+| `online_vector.py` | `OnlineNetVector` | Online learner for vector targets |
 | `params.py` | `Param` | A parameter that holds its gradient, and the update through an optimizer |
+| `positions.py` | `LearnedPositions` | The learned positional embedding |
+| `quantize.py` | `VectorQuantizer` | The vector quantizer of van den Oord et al. 2017 |
 | `recurrent.py` | `RNN`, `GRU`, `LSTM` | Recurrent layers |
 | `schedules.py` | `ConstantLR`, `StepLR`, `CosineWarmRestarts` | Learning-rate schedules |
+| `schedules_more.py` | `LinearWarmup`, `NoamSchedule` | Learning-rate schedules with warmup |
+| `seq2seq.py` | `Seq2Seq` | A fixed-horizon sequence encoder and decoder |
 | `trainer.py` | `Trainer` | The standard training loop |
 
 ## 3. dynamics
