@@ -44,7 +44,11 @@ class ActiveStrategy(Root):
         self._rng = np.random.default_rng(self.seed)
         self.n_seen_ = 0
         self.n_labelled_ = 0
-        self.n_missing = 0
+        self.n_missing_ = 0
+
+    @property
+    def n_missing(self) -> int:
+        return self.n_missing_
 
     def should_label(self, x: dict, model: Any) -> bool:
         """Decide whether to request the true label of ``x``.

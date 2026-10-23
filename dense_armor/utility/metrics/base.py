@@ -44,10 +44,14 @@ class Metric:
             role-agnostic metrics.
         bigger_is_better: ``True`` for accuracy-like metrics, ``False``
             for loss-like metrics. Model selection uses it to rank.
+        supports_revert: ``False`` for a metric that cannot undo one
+            ``update`` (``R2Score``, ``RollingAUC``); ``Rolling`` refuses
+            such a metric when it is built.
     """
 
     role_: Any = None
     bigger_is_better: bool = True
+    supports_revert: bool = True
 
     def __init__(self) -> None:
         self.n_ = 0

@@ -44,7 +44,9 @@ def iter_rosbag(
     Args:
         path: ROS 1 ``.bag`` file, or ROS 2 bag directory.
         topics: topic names to read. ``None`` = every topic with a
-            ``sensor_msgs/msg/JointState`` message.
+            ``sensor_msgs/msg/JointState`` message. A name that is not in
+            the bag (or is not a ``JointState`` topic) is ignored without
+            an error, so a typo gives an empty iteration.
 
     Yields:
         ``(signal, None)`` pairs, in message order.

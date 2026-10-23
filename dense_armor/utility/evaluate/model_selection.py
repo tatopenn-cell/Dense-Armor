@@ -80,10 +80,11 @@ class OnlineModelSelection:
         ``bigger_is_better`` of the metric is respected.
 
         Raises:
-            ValueError: if the models have not been run yet.
+            ValueError: if there are several models and none of them has
+                been scored yet (the choice would be arbitrary).
         """
-        if not self.metrics:
-            raise ValueError("no metrics")
+        if len(self.metrics) > 1 and all(m.n_ == 0 for m in self.metrics):
+            raise ValueError("the models have not been run yet")
         sign = 1.0 if self.metrics[0].bigger_is_better else -1.0
         scores = [sign * m.get() for m in self.metrics]
         return max(range(len(scores)), key=scores.__getitem__)

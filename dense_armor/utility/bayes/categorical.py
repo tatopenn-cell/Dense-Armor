@@ -27,6 +27,13 @@ class CategoricalNB(Classifier):
         feature_keys: optional list of feature names. ``None``
             collects the keys of the first sample seen.
 
+    A sample with a missing key, a ``None`` or a non-finite float value
+    is not a valid category: ``learn_one`` counts it in ``n_missing_``
+    and ``predict_proba_one`` returns ``{}`` (no likelihood without a
+    category). The naive Bayes classes of this package treat a missing
+    key differently: ``BernoulliNB``, ``MultinomialNB`` and
+    ``ComplementNB`` read it as a zero count.
+
     Raises:
         ValueError: on a non-positive ``alpha``.
 
@@ -121,12 +128,11 @@ class CategoricalNB(Classifier):
             cats.update(self._categories[y][i])
         return sorted(cats, key=str)
 
-    def _log_likelihood(self, cats: list, y: Any) -> float:
+    def _log_likelihood(self, cats: list, y: Any, sizes: list | None = None) -> float:
         total = 0.0
         n = self._class_n[y]
         for i, cat in enumerate(cats):
-            all_cats = self._all_categories(i)
-            v = len(all_cats)
+            v = len(self._all_categories(i)) if sizes is None else sizes[i]
             c = self._counts[y][i].get(cat, 0)
             p = (c + self.alpha) / (n + self.alpha * v)
             total += float(np.log(p))
@@ -152,8 +158,10 @@ class CategoricalNB(Classifier):
             if cat is None:
                 return {}
             cats.append(cat)
+        sizes = [len(self._all_categories(i)) for i in range(len(cats))]
         log_post = {
-            y: self._log_likelihood(cats, y) + self._log_prior(y) for y in self._counts
+            y: self._log_likelihood(cats, y, sizes) + self._log_prior(y)
+            for y in self._counts
         }
         mx = max(log_post.values())
         ex = {y: float(np.exp(v - mx)) for y, v in log_post.items()}

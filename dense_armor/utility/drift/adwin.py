@@ -51,13 +51,23 @@ class _Bucket:
         size: bucket level; ``2**size`` samples fit in the bucket.
     """
 
-    __slots__ = ("n", "size", "total", "total_sq")
+    __slots__ = ("hi", "lo", "n", "size", "total", "total_sq")
 
-    def __init__(self, total: float, total_sq: float, n: int, size: int) -> None:
+    def __init__(
+        self,
+        total: float,
+        total_sq: float,
+        n: int,
+        size: int,
+        lo: float = math.inf,
+        hi: float = -math.inf,
+    ) -> None:
         self.total = total
         self.total_sq = total_sq
         self.n = n
         self.size = size
+        self.lo = lo
+        self.hi = hi
 
 
 class ADWIN(DriftDetector):
@@ -88,18 +98,22 @@ class ADWIN(DriftDetector):
         ...     if det.drift_detected:
         ...         print(i)
         ...         break
-        329
+        327
     """
 
-    def __init__(self, delta: float = 0.002, max_window: int = 200,
-                 min_sub: int = 2, max_buckets: int = 5) -> None:
+    def __init__(
+        self,
+        delta: float = 0.002,
+        max_window: int = 200,
+        min_sub: int = 2,
+        max_buckets: int = 5,
+    ) -> None:
         super().__init__()
         if not 0.0 < delta < 1.0:
             raise ValueError(f"delta must be in (0, 1), got {delta}")
         if max_window < 4 * min_sub:
             raise ValueError(
-                f"max_window must be at least {4 * min_sub}, "
-                f"got {max_window}"
+                f"max_window must be at least {4 * min_sub}, got {max_window}"
             )
         self.delta = delta
         self.max_window = max_window
@@ -131,7 +145,7 @@ class ADWIN(DriftDetector):
         return self.n_missing_
 
     def _add(self, x: float) -> None:
-        self._buckets[0].append(_Bucket(x, x * x, 1, 1))
+        self._buckets[0].append(_Bucket(x, x * x, 1, 1, x, x))
         self._total += x
         self._total_sq += x * x
         self._n += 1
@@ -144,8 +158,14 @@ class ADWIN(DriftDetector):
             if i + 1 >= len(self._buckets):
                 self._buckets.append([])
             self._buckets[i + 1].append(
-                _Bucket(b1.total + b2.total, b1.total_sq + b2.total_sq,
-                        b1.n + b2.n, b1.size + b2.size)
+                _Bucket(
+                    b1.total + b2.total,
+                    b1.total_sq + b2.total_sq,
+                    b1.n + b2.n,
+                    b1.size + b2.size,
+                    min(b1.lo, b2.lo),
+                    max(b1.hi, b2.hi),
+                )
             )
             i += 1
 
@@ -156,7 +176,14 @@ class ADWIN(DriftDetector):
                 self._total -= b.total
                 self._total_sq -= b.total_sq
                 self._n -= b.n
+                self._refresh_range()
                 return
+
+    def _refresh_range(self) -> None:
+        lows = [b.lo for level in self._buckets for b in level]
+        highs = [b.hi for level in self._buckets for b in level]
+        self._min = min(lows) if lows else math.inf
+        self._max = max(highs) if highs else -math.inf
 
     def _drift(self) -> bool:
         n = self._n

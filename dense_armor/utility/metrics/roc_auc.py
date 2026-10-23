@@ -31,8 +31,8 @@ from dense_armor.utility.metrics.base import Metric
 
 
 def _auc(scores: list[float], labels: list[int]) -> float:
-    pos = [s for s, l in zip(scores, labels) if l == 1]
-    neg = [s for s, l in zip(scores, labels) if l == 0]
+    pos = [s for s, lab in zip(scores, labels) if lab == 1]
+    neg = [s for s, lab in zip(scores, labels) if lab == 0]
     if not pos or not neg:
         return 0.5
     wins = 0.0
@@ -49,7 +49,8 @@ class RollingAUC(Metric):
     """Rolling ROC-AUC, exact on the last ``window`` samples.
 
     Args:
-        window: window size in samples (default 200).
+        window: window size in samples (default 200). The weight ``w`` of
+            ``update`` is not used: every pair in the window counts once.
 
     Examples:
         >>> from dense_armor.utility.metrics import RollingAUC
@@ -62,6 +63,7 @@ class RollingAUC(Metric):
 
     role_ = Classifier
     bigger_is_better = True
+    supports_revert = False
 
     def __init__(self, window: int = 200) -> None:
         super().__init__()

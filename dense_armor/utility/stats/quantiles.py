@@ -97,7 +97,10 @@ class DDSketch(Transformer):
         return min(x) if self.feature is None else self.feature
 
     def _value(self, x: dict) -> float | None:
-        v = float(x[self._key(x)])
+        try:
+            v = float(x[self._key(x)])
+        except (KeyError, TypeError, ValueError):
+            return None
         return None if math.isnan(v) else v
 
     def _index(self, x: float) -> int:
@@ -315,7 +318,10 @@ class TDigest(Transformer):
         return min(x) if self.feature is None else self.feature
 
     def _value(self, x: dict) -> float | None:
-        v = float(x[self._key(x)])
+        try:
+            v = float(x[self._key(x)])
+        except (KeyError, TypeError, ValueError):
+            return None
         return None if math.isnan(v) else v
 
     def _effective_buffer(self) -> int:
@@ -399,9 +405,9 @@ class TDigest(Transformer):
         if not self.centroids_ or self.n_ == 0:
             return 0.0
         if q <= 0.0:
-            return self.centroids_[0][0]
+            return self.min_ if self.min_ is not None else self.centroids_[0][0]
         if q >= 1.0:
-            return self.centroids_[-1][0]
+            return self.max_ if self.max_ is not None else self.centroids_[-1][0]
         n = sum(c for _, c in self.centroids_)
         target = q * (n - 1)
         cum = 0.0

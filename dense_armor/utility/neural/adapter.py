@@ -59,7 +59,11 @@ class AsTransformer(Transformer):
         self.layer = layer
         self.input_keys = tuple(input_keys)
         self.prefix = prefix
-        self.n_missing = 0
+        self.n_missing_ = 0
+
+    @property
+    def n_missing(self) -> int:
+        return self.n_missing_
 
     def __repr__(self) -> str:
         return (
@@ -88,7 +92,7 @@ class AsTransformer(Transformer):
         del t
         vals = self._read(x)
         if vals is None:
-            self.n_missing += 1
+            self.n_missing_ += 1
             return {}
         v = jnp.asarray(vals, dtype=jnp.float32)
         y = self.layer.forward(v, training=False)

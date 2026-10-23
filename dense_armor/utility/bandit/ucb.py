@@ -113,7 +113,7 @@ class EpsilonGreedy(BanditPolicy):
             The policy itself.
         """
         if not self._valid(arm, reward):
-            self.n_missing += 1
+            self.n_missing_ += 1
             return self
         n = self.counts_[arm] + 1
         self.counts_[arm] = n
@@ -219,7 +219,7 @@ class UCB1(BanditPolicy):
             The policy itself.
         """
         if not self._valid(arm, reward):
-            self.n_missing += 1
+            self.n_missing_ += 1
             return self
         n = self.counts_[arm] + 1
         self.counts_[arm] = n
@@ -324,7 +324,7 @@ class UCB1Tuned(UCB1):
             The policy itself.
         """
         if not self._valid(arm, reward):
-            self.n_missing += 1
+            self.n_missing_ += 1
             return self
         r = float(reward)
         self.sumsq_[arm] = self.sumsq_[arm] + r * r

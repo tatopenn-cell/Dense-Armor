@@ -85,7 +85,9 @@ class OnlineShrinkageCovariance:
 
         with ``Sigma_0 = (1/p) I``, so ``tr(S Sigma_0) = tr(S) / p`` and
         ``||Sigma_0||_F^2 = 1/p``, and the product ``beta* (1/p) I`` is
-        the target term.
+        the target term. ``n`` is the smallest number of complete pairs
+        among the entries of ``S`` (a sample with a NaN is skipped by the
+        pairs that use it), which equals ``n_seen_`` without NaN.
 
         Returns:
             ``(shrunk, alpha, beta)``: the shrunk covariance, the
@@ -94,7 +96,7 @@ class OnlineShrinkageCovariance:
             target ``(1/p) I``.
         """
         s = self.sample_covariance()
-        n = max(self.n_seen_, 1)
+        n = max(min(cov.n_ for cov in self._pairs.values()), 1)
         p = self.n_features
         tr_s = float(np.trace(s))
         tr_s2 = float(np.sum(s * s))

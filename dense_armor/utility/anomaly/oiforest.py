@@ -364,7 +364,9 @@ class OnlineIsolationForest(AnomalyDetector):
         Returns:
             ``2 ** (-E(D) / c)`` where ``E(D)`` is the average leaf
             depth across the ensemble and ``c = log2(window / eta)``.
-            ``1.0`` before any sample is learned.
+            ``1.0`` (the most anomalous value) before any sample is
+            learned or when ``x`` is not valid; LODA, HST, OCSVM and
+            Mahalanobis return ``0.0`` in those cases.
         """
         if not self._ready:
             return 1.0

@@ -42,20 +42,24 @@ class _RecoBase(Root):
         self.init_scale = float(init_scale)
         self.mu_: float = 0.0
         self.n_seen_: int = 0
-        self.n_missing: int = 0
+        self.n_missing_: int = 0
         self._rng = np.random.default_rng(self.seed)
+
+    @property
+    def n_missing(self) -> int:
+        return self.n_missing_
 
     def _check_input(self, user: Any, item: Any, rating: Any) -> bool:
         if user is None or item is None:
-            self.n_missing += 1
+            self.n_missing_ += 1
             return False
         try:
             r = float(rating)
         except (TypeError, ValueError):
-            self.n_missing += 1
+            self.n_missing_ += 1
             return False
         if not np.isfinite(r):
-            self.n_missing += 1
+            self.n_missing_ += 1
             return False
         return True
 
@@ -74,8 +78,8 @@ class Baseline(_RecoBase):
     user bias and `b_i` the item bias. A rating `r` updates the three
     quantities one step of SGD with L2 on the biases::
 
-        e = r - y_hat
-        mu   <- running mean of the ratings seen so far
+        mu   <- running mean of the ratings seen so far, with r included
+        e = r - (mu + b_u + b_i)
         b_u  <- b_u  + lr * (e - l2 * b_u)
         b_i  <- b_i  + lr * (e - l2 * b_i)
 
@@ -152,8 +156,8 @@ class BiasedMF(_RecoBase):
     and the two latent vectors one step of SGD with L2 on every
     parameter::
 
-        e    = r - y_hat
-        mu   <- mu   + lr * e
+        mu   <- running mean of the ratings seen so far, with r included
+        e    = r - y_hat, with the new mu
         b_u  <- b_u  + lr * (e - l2 * b_u)
         b_i  <- b_i  + lr * (e - l2 * b_i)
         p_u  <- p_u  + lr * (e * q_i - l2 * p_u)

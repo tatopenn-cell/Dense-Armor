@@ -19,10 +19,13 @@ class ThompsonSampling(BanditPolicy):
     arm's mean reward and plays the arm with the highest draw. For
     Bernoulli rewards the posterior is ``Beta(1 + S_j, 1 + F_j)`` with
     ``S_j`` and ``F_j`` the number of successes and failures of arm
-    ``j`` (Beta(1, 1) prior, as the paper uses in its simulations). For
-    Gaussian rewards with known variance ``sigma^2`` the posterior is
-    ``N(mu_j, sigma^2 / n_j)`` under a ``N(0, 1)`` prior, ``mu_j`` the
-    running mean and ``n_j`` the number of pulls.
+    ``j`` (Beta(1, 1) prior, as the paper uses in its simulations); a
+    reward counts as a success when it is ``>= 0.5``, so a continuous
+    reward in [0, 1] is binarised. For Gaussian rewards with known
+    variance ``sigma^2`` the posterior is ``N(mu_j, sigma^2 / n_j)``
+    (a flat prior: ``mu_j`` is the running mean, not the mean under a
+    ``N(0, 1)`` prior, and ``n_j`` the number of pulls); an arm never
+    pulled is drawn from ``N(0, 1)``.
 
     Args:
         arms: the sequence of arms.
@@ -119,7 +122,7 @@ class ThompsonSampling(BanditPolicy):
             The policy itself.
         """
         if not self._valid(arm, reward):
-            self.n_missing += 1
+            self.n_missing_ += 1
             return self
         r = float(reward)
         n = self.counts_[arm] + 1

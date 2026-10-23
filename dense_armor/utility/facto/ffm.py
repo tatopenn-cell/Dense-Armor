@@ -80,8 +80,12 @@ class _FFMBase:
         self._field_index: dict[str, int] | None = None
         self._w: np.ndarray | None = None
         self._G: np.ndarray | None = None
-        self.n_missing: int = 0
+        self.n_missing_: int = 0
         self.n_seen_: int = 0
+
+    @property
+    def n_missing(self) -> int:
+        return self.n_missing_
 
     @staticmethod
     def _as_dict(x: Any) -> dict:
@@ -171,7 +175,7 @@ class _FFMBase:
 
     def _learn_common(self, x: Any, y: Any) -> None:
         if self._nan_in(x, y):
-            self.n_missing += 1
+            self.n_missing_ += 1
             return
         keys = self._resolve_keys(x)
         assert keys is not None

@@ -69,7 +69,10 @@ class _RollingWindow(Transformer):
         return min(x) if self.feature is None else self.feature
 
     def _value(self, x: dict) -> float | None:
-        v = float(x[self._key(x)])
+        try:
+            v = float(x[self._key(x)])
+        except (KeyError, TypeError, ValueError):
+            return None
         return None if math.isnan(v) else v
 
     def _resolve_window(self) -> int:

@@ -108,17 +108,22 @@ class OnlinePlattScaling(ModelWrapper, Classifier):
     def _multiclass(self):
         return False
 
-    def _u(self, x, **kwargs):
-        inner = self.classifier.predict_proba_one(x, **kwargs)
+    def _u_from(self, inner):
         p = inner.get(True, 1.0 - inner.get(False, 0.5))
         p = min(max(p, self.clip), 1.0 - self.clip)
         return np.array([math.log(p / (1.0 - p)), 1.0])
+
+    def _u(self, x, **kwargs):
+        return self._u_from(self.classifier.predict_proba_one(x, **kwargs))
 
     def _project(self, t):
         if t @ t <= self.radius**2:
             return t
         lo, hi = 0.0, 1.0
-        f = lambda lam: np.linalg.solve(self._A + lam * np.eye(2), self._A @ t)
+
+        def f(lam):
+            return np.linalg.solve(self._A + lam * np.eye(2), self._A @ t)
+
         while f(hi) @ f(hi) > self.radius**2:
             hi *= 2.0
         for _ in range(60):
@@ -130,14 +135,15 @@ class OnlinePlattScaling(ModelWrapper, Classifier):
         inner = self.classifier.predict_proba_one(x, **kwargs)
         if not inner:
             return {}
-        p = 1.0 / (1.0 + math.exp(-float(self._theta @ self._u(x, **kwargs))))
+        p = 1.0 / (1.0 + math.exp(-float(self._theta @ self._u_from(inner))))
         return {False: 1.0 - p, True: p}
 
     def learn_one(self, x, y, **kwargs):
-        if not self.classifier.predict_proba_one(x, **kwargs):
+        inner = self.classifier.predict_proba_one(x, **kwargs)
+        if not inner:
             self.classifier.learn_one(x, y, **kwargs)
             return
-        u = self._u(x, **kwargs)
+        u = self._u_from(inner)
         g = (1.0 / (1.0 + math.exp(-float(self._theta @ u))) - float(y)) * u
         self._A += np.outer(g, g)
         self._theta = self._project(self._theta - np.linalg.solve(self._A, g) / self.gamma)

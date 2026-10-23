@@ -56,7 +56,11 @@ class ABCollatz:
     @staticmethod
     @jax.jit
     def calculate_jax_rad(n: jnp.ndarray) -> jnp.ndarray:
-        """Pialla i doppioni e le molteplicità isolando il seme primo generatore."""
+        """Pialla i doppioni e le molteplicità isolando il seme primo generatore.
+
+        I fattori primi si cercano solo tra 2 e 255: un fattore primo da
+        256 in su non entra nel radicale (per ``n = 257`` il risultato è 1).
+        """
         # Griglia estesa a 256 per coprire le espansioni iperboliche di Collatz
         divisors = jnp.arange(2, 256, dtype=jnp.float64)
         is_factor = jnp.where((divisors <= n) & (n % divisors == 0.0), 1.0, 0.0)
@@ -81,7 +85,6 @@ class ABCollatz:
         # =========================================================================
         # FRACTAL PROTECTION: Sanificazione registri interni contro infezione NaN
         # =========================================================================
-        a_safe = jnp.where(jnp.isnan(a), 1.0, a)
         b_safe = jnp.where(jnp.isnan(b), 1.0, b)
         c_safe = jnp.where(jnp.isnan(c), 1.0, c)
 

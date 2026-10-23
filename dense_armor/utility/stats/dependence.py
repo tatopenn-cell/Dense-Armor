@@ -516,7 +516,10 @@ class Autocorrelation(Transformer):
     ) -> "Autocorrelation":
         """Update the running mean, variance and lagged co-moment."""
         self._time_step(t)
-        v = float(x[self.feature])
+        try:
+            v = float(x[self.feature])
+        except (KeyError, TypeError, ValueError):
+            v = math.nan
         if math.isnan(v):
             self.n_missing_ += 1
             return self

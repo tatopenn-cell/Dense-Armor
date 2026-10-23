@@ -85,7 +85,13 @@ def rate_limited_follower(x_raw: np.ndarray, max_vel: float, max_accel: float, d
         velocity/acceleration on known-good data), the same convention
         used in both real-domain validations above.
     dt : float
-        Real time step between samples.
+        Real time step between samples; it must equal the sampling
+        period of ``x_raw`` (max_vel and max_accel are per unit time).
+
+    Notes
+    -----
+    The first sample is the initial state: ``out[0] == x_raw[0]`` and it
+    is not limited, even if it is a spike.
 
     Returns
     -------

@@ -39,6 +39,10 @@ class ComplementNB(Classifier):
         feature_keys: optional list of feature names. ``None``
             collects the keys of the first sample seen.
 
+    In ``predict_proba_one`` a key missing from ``x`` counts as 0.0,
+    while ``learn_one`` discards a sample with a missing key
+    (``n_missing_``); ``CategoricalNB`` returns ``{}`` instead.
+
     Raises:
         ValueError: on a non-positive ``alpha``.
 

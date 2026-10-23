@@ -93,7 +93,11 @@ class Skyline(Root):
         self.dims = list(dims) if dims is not None else None
         self._buffer: deque = deque(maxlen=self.window)
         self.n_seen_: int = 0
-        self.n_missing: int = 0
+        self.n_missing_: int = 0
+
+    @property
+    def n_missing(self) -> int:
+        return self.n_missing_
 
     def _as_point(self, p: Any) -> np.ndarray | None:
         if isinstance(p, dict):
@@ -118,7 +122,7 @@ class Skyline(Root):
         """Push one point, dropping the oldest when the window is full."""
         p = self._as_point(point)
         if p is None:
-            self.n_missing += 1
+            self.n_missing_ += 1
             return self
         self._buffer.append(p)
         self.n_seen_ += 1

@@ -32,6 +32,7 @@ from collections import deque
 import numpy as np
 
 from dense_armor.roles import AnomalyDetector, Transformer
+from dense_armor.utility.anomaly.streaming import _feature_value
 
 
 def _scaled_mad(w: np.ndarray) -> float:
@@ -122,15 +123,25 @@ class HampelScorer(AnomalyDetector):
         self.eps = eps
         self._buffer: deque = deque(maxlen=2 * radius)
 
+    n_missing_ = 0
+
+    @property
+    def n_missing(self) -> int:
+        return self.n_missing_
+
     def _value(self, x):
-        return float(x[self.feature if self.feature is not None else min(x)])
+        return _feature_value(x, self.feature)
 
     def learn_one(self, x):
-        self._buffer.append(self._value(x))
+        v = self._value(x)
+        if v is None:
+            self.n_missing_ += 1
+            return
+        self._buffer.append(v)
 
     def score_one(self, x):
         v = self._value(x)
-        if len(self._buffer) < 4:
+        if v is None or len(self._buffer) < 4:
             return 0.0
         w = np.fromiter(self._buffer, dtype=float)
         med = float(np.median(w))
@@ -206,15 +217,25 @@ class TukeyScorer(AnomalyDetector):
         self.eps = eps
         self._buffer: deque = deque(maxlen=2 * radius)
 
+    n_missing_ = 0
+
+    @property
+    def n_missing(self) -> int:
+        return self.n_missing_
+
     def _value(self, x):
-        return float(x[self.feature if self.feature is not None else min(x)])
+        return _feature_value(x, self.feature)
 
     def learn_one(self, x):
-        self._buffer.append(self._value(x))
+        v = self._value(x)
+        if v is None:
+            self.n_missing_ += 1
+            return
+        self._buffer.append(v)
 
     def score_one(self, x):
         v = self._value(x)
-        if len(self._buffer) < 4:
+        if v is None or len(self._buffer) < 4:
             return 0.0
         w = np.fromiter(self._buffer, dtype=float)
         q1, q3 = np.percentile(w, [25, 75])
@@ -303,15 +324,25 @@ class ChauvenetScorer(AnomalyDetector):
         self.eps = eps
         self._buffer: deque = deque(maxlen=2 * radius)
 
+    n_missing_ = 0
+
+    @property
+    def n_missing(self) -> int:
+        return self.n_missing_
+
     def _value(self, x):
-        return float(x[self.feature if self.feature is not None else min(x)])
+        return _feature_value(x, self.feature)
 
     def learn_one(self, x):
-        self._buffer.append(self._value(x))
+        v = self._value(x)
+        if v is None:
+            self.n_missing_ += 1
+            return
+        self._buffer.append(v)
 
     def score_one(self, x):
         v = self._value(x)
-        if len(self._buffer) < 4:
+        if v is None or len(self._buffer) < 4:
             return float("inf")
         w = np.fromiter(self._buffer, dtype=float)
         n = w.size
@@ -390,15 +421,25 @@ class SigmaClipScorer(AnomalyDetector):
         self.eps = eps
         self._buffer: deque = deque(maxlen=2 * radius)
 
+    n_missing_ = 0
+
+    @property
+    def n_missing(self) -> int:
+        return self.n_missing_
+
     def _value(self, x):
-        return float(x[self.feature if self.feature is not None else min(x)])
+        return _feature_value(x, self.feature)
 
     def learn_one(self, x):
-        self._buffer.append(self._value(x))
+        v = self._value(x)
+        if v is None:
+            self.n_missing_ += 1
+            return
+        self._buffer.append(v)
 
     def score_one(self, x):
         v = self._value(x)
-        if len(self._buffer) < 4:
+        if v is None or len(self._buffer) < 4:
             return 0.0
         w = np.fromiter(self._buffer, dtype=float)
         mu, sigma = _clean_stats(w, self.n_sigmas, self.max_iters, self.eps)
@@ -462,6 +503,12 @@ class HampelFilter(Transformer):
             radius=radius, n_sigmas=n_sigmas, feature=feature, eps=eps
         )
 
+    n_missing_ = 0
+
+    @property
+    def n_missing(self) -> int:
+        return self.n_missing_ + self._scorer.n_missing_
+
     def _key(self, x):
         return self.feature if self.feature is not None else min(x)
 
@@ -469,8 +516,11 @@ class HampelFilter(Transformer):
         self._scorer.learn_one(x)
 
     def transform_one(self, x):
+        v = self._scorer._value(x)
+        if v is None:
+            self.n_missing_ += 1
+            return x
         key = self._key(x)
-        v = float(x[key])
         if len(self._scorer._buffer) < 4:
             return {**x, key: v}
         if not self._scorer.is_outlier(x):

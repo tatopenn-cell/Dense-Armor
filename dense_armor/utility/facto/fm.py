@@ -37,8 +37,12 @@ class _FMBase:
         self._keys: list[str] | None = None
         self._key_index: dict[str, int] | None = None
         self._theta: np.ndarray | None = None
-        self.n_missing: int = 0
+        self.n_missing_: int = 0
         self.n_seen_: int = 0
+
+    @property
+    def n_missing(self) -> int:
+        return self.n_missing_
 
     @staticmethod
     def _as_dict(x: Any) -> dict:
@@ -159,7 +163,7 @@ class _FMBase:
 
     def _learn_common(self, x: Any, y: Any) -> None:
         if self._nan_in(x, y):
-            self.n_missing += 1
+            self.n_missing_ += 1
             return
         keys = self._resolve_keys(x)
         self._ensure_state(keys)

@@ -104,8 +104,9 @@ class RecursiveLeastSquares(Regressor):
         return self._keys
 
     def _to_vec(self, x) -> np.ndarray:
+        """Feature vector in the order of the keys; a key missing from ``x`` counts as 0.0."""
         keys = self._resolve_keys(x)
-        return np.array([float(x[k]) for k in keys], dtype=float)
+        return np.array([float(x.get(k, 0.0)) for k in keys], dtype=float)
 
     def _init(self, d: int) -> None:
         self._w = np.zeros(d)

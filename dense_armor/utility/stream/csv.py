@@ -78,15 +78,18 @@ def iter_csv(
         array_cols: columns holding a list literal ``"[...]"``, expanded
             into ``<name>_0, ..., <name>_{k-1}`` channels; ``k`` from the
             first row.
-        start: skip rows before this time.
-        stop: stop at the first row past this time.
+        start: skip rows before this time; needs ``time_col``.
+        stop: stop at the first row past this time; needs ``time_col``.
 
     Yields:
         ``(signal, label)`` pairs in file order.
 
     Raises:
-        ValueError: on a requested column that is not in the file.
+        ValueError: on a requested column that is not in the file, or on
+            ``start`` or ``stop`` without ``time_col``.
     """
+    if time_col is None and (start is not None or stop is not None):
+        raise ValueError("start and stop need time_col")
     array_cols = [] if array_cols is None else list(array_cols)
     path = Path(path)
     with path.open(newline="", encoding="utf-8") as f:

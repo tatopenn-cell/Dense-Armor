@@ -85,5 +85,6 @@ def kinematic_tracking_controller(q, q_ref, qd_ref, kp: float):
     q = np.atleast_1d(np.asarray(q, dtype=float))
     q_ref = np.atleast_1d(np.asarray(q_ref, dtype=float))
     qd_ref = np.atleast_1d(np.asarray(qd_ref, dtype=float))
-    assert q.shape == q_ref.shape == qd_ref.shape, "q, q_ref, qd_ref must have the same number of joints"
+    if not q.shape == q_ref.shape == qd_ref.shape:
+        raise ValueError("q, q_ref, qd_ref must have the same number of joints")
     return qd_ref + kp * (q_ref - q)

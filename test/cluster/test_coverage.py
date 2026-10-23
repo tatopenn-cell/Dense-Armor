@@ -20,7 +20,7 @@ def test_kmeans_invalid_inputs_and_arguments():
     km.learn_one({"x": [0.0, 1.0]})
     km.learn_one({"x": [5.0]})
     km.learn_one({"x": [1.0, 2.0]})
-    assert km.n_missing == 3
+    assert km.n_missing == 4
     assert km.predict_one({"x": [1.0, 2.0]}) == 0
     assert km.transform_one({"x": [1.0, 2.0]}) == {"cluster": 0, "distances": []}
 

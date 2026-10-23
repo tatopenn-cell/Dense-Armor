@@ -19,6 +19,7 @@ Lavin, A., Ahmad, S. (2015). Evaluating real-time anomaly detection
 from collections.abc import Iterable
 from typing import Any
 
+from dense_armor.roles._util import call_with_t
 from dense_armor.utility.metrics.events import EventMetrics, EventWindow
 
 
@@ -41,8 +42,8 @@ def _alarm(detector: Any, x: Any, t: float) -> bool:
             raise ValueError(
                 "an anomaly detector needs a 'score_threshold' attribute"
             )
-        score = detector.score_one(x, t=t)
-        detector.learn_one(x, t=t)
+        score = call_with_t(detector.score_one, x, t=t)
+        call_with_t(detector.learn_one, x, t=t)
         return bool(score > threshold)
     raise TypeError(
         "detector must expose 'update' + 'drift_detected' or "

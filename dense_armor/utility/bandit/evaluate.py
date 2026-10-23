@@ -46,7 +46,7 @@ def offline_replay(
 
     Raises:
         ValueError: if the stream is empty, if no event is retained, or
-            if ``alpha`` is outside ``(0, 1)``.
+            if ``alpha`` is outside ``(0, 1)`` or ``n_bootstrap < 1``.
 
     Examples:
         >>> import numpy as np
@@ -73,6 +73,8 @@ def offline_replay(
     """
     if not 0.0 < float(alpha) < 1.0:
         raise ValueError("alpha must be in (0, 1)")
+    if int(n_bootstrap) < 1:
+        raise ValueError("n_bootstrap must be at least 1")
     kept: list[float] = []
     n_total = 0
     for ctx, arm, reward in stream:

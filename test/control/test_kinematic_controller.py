@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 test/test_kinematic_controller.py
 ====================================
@@ -9,7 +8,9 @@ utility/kinematic_controller.py's own docstring for the real numbers).
 """
 import numpy as np
 
-from dense_armor.utility.control.kinematic_controller import kinematic_tracking_controller
+from dense_armor.utility.control.kinematic_controller import (
+    kinematic_tracking_controller,
+)
 
 
 def test_exact_exponential_convergence_constant_reference():
@@ -66,7 +67,7 @@ def test_works_for_any_number_of_dof():
 
 def test_mismatched_shapes_raise():
     import pytest
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         kinematic_tracking_controller([0.0, 0.0], [1.0], [0.0], kp=1.0)
 
 

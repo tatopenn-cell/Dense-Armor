@@ -102,7 +102,11 @@ class LinUCBDisjoint(Root):
         self.feature_keys = tuple(feature_keys) if feature_keys is not None else None
         self.models_: dict[Any, BayesianLinearRegression] = {}
         self.n_seen_ = 0
-        self.n_missing = 0
+        self.n_missing_ = 0
+
+    @property
+    def n_missing(self) -> int:
+        return self.n_missing_
 
     def _model(self, arm: Any) -> BayesianLinearRegression:
         if arm not in self.models_:
@@ -157,14 +161,14 @@ class LinUCBDisjoint(Root):
             The policy itself.
         """
         if arm not in self.arms or not context or reward is None:
-            self.n_missing += 1
+            self.n_missing_ += 1
             return self
         try:
             if not np.isfinite(float(reward)):
-                self.n_missing += 1
+                self.n_missing_ += 1
                 return self
         except (TypeError, ValueError):
-            self.n_missing += 1
+            self.n_missing_ += 1
             return self
         self._model(arm).learn_one(context, float(reward))
         self.n_seen_ += 1

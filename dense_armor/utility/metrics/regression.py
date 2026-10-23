@@ -79,6 +79,16 @@ class _PerJoint:
         ]
 
 
+def _check_joints(metric: Any, n: int) -> None:
+    """Fix the number of joints at the first sample and refuse a change."""
+    if metric.n_joints_ is None:
+        metric.n_joints_ = n
+        if n > 1:
+            metric.per_joint_ = _PerJoint(n)
+    elif metric.n_joints_ != n:
+        raise ValueError(f"joint count changed from {metric.n_joints_} to {n}")
+
+
 class MeanAbsoluteError(Metric):
     """Mean absolute error, one sample at a time.
 
@@ -108,17 +118,11 @@ class MeanAbsoluteError(Metric):
         self.sum_ = 0.0
         self.total_ = 0.0
         self.per_joint_: _PerJoint | None = None
+        self.n_joints_: int | None = None
 
     def _update(self, y_true: Any, y_pred: Any, w: float) -> None:
         pairs = _pairs(y_true, y_pred, self.feature)
-        if len(pairs) > 1:
-            if self.per_joint_ is None:
-                self.per_joint_ = _PerJoint(len(pairs))
-            elif self.per_joint_.n != len(pairs):
-                raise ValueError(
-                    f"joint count changed from {self.per_joint_.n} "
-                    f"to {len(pairs)}"
-                )
+        _check_joints(self, len(pairs))
         for j, (a, b) in enumerate(pairs):
             v = abs(a - b)
             self.sum_ += w * v
@@ -158,7 +162,12 @@ class MeanAbsoluteError(Metric):
             raise TypeError(
                 f"merge expects MeanAbsoluteError, got {type(other).__name__}"
             )
+        if None not in (self.n_joints_, other.n_joints_) and (
+            self.n_joints_ != other.n_joints_
+        ):
+            raise ValueError("merge requires the same number of joints")
         m = MeanAbsoluteError(feature=self.feature)
+        m.n_joints_ = self.n_joints_ if self.n_joints_ is not None else other.n_joints_
         m.sum_ = self.sum_ + other.sum_
         m.total_ = self.total_ + other.total_
         if (
@@ -193,17 +202,11 @@ class MeanSquaredError(Metric):
         self.sum_ = 0.0
         self.total_ = 0.0
         self.per_joint_: _PerJoint | None = None
+        self.n_joints_: int | None = None
 
     def _update(self, y_true: Any, y_pred: Any, w: float) -> None:
         pairs = _pairs(y_true, y_pred, self.feature)
-        if len(pairs) > 1:
-            if self.per_joint_ is None:
-                self.per_joint_ = _PerJoint(len(pairs))
-            elif self.per_joint_.n != len(pairs):
-                raise ValueError(
-                    f"joint count changed from {self.per_joint_.n} "
-                    f"to {len(pairs)}"
-                )
+        _check_joints(self, len(pairs))
         for j, (a, b) in enumerate(pairs):
             d = a - b
             v = d * d
@@ -245,7 +248,12 @@ class MeanSquaredError(Metric):
             raise TypeError(
                 f"merge expects MeanSquaredError, got {type(other).__name__}"
             )
+        if None not in (self.n_joints_, other.n_joints_) and (
+            self.n_joints_ != other.n_joints_
+        ):
+            raise ValueError("merge requires the same number of joints")
         m = MeanSquaredError(feature=self.feature)
+        m.n_joints_ = self.n_joints_ if self.n_joints_ is not None else other.n_joints_
         m.sum_ = self.sum_ + other.sum_
         m.total_ = self.total_ + other.total_
         if (
@@ -296,7 +304,12 @@ class RootMeanSquaredError(MeanSquaredError):
                 f"merge expects RootMeanSquaredError, "
                 f"got {type(other).__name__}"
             )
+        if None not in (self.n_joints_, other.n_joints_) and (
+            self.n_joints_ != other.n_joints_
+        ):
+            raise ValueError("merge requires the same number of joints")
         m = RootMeanSquaredError(feature=self.feature)
+        m.n_joints_ = self.n_joints_ if self.n_joints_ is not None else other.n_joints_
         m.sum_ = self.sum_ + other.sum_
         m.total_ = self.total_ + other.total_
         if (
@@ -329,6 +342,7 @@ class R2Score(Metric):
 
     role_ = Regressor
     bigger_is_better = True
+    supports_revert = False
 
     def __init__(self, feature: str | None = None) -> None:
         super().__init__()

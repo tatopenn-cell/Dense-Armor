@@ -185,7 +185,8 @@ class LEGO(MetricLearner):
         """5th/95th percentile of same-class / different-class squared distances.
 
         X is an array-like of shape (n, d), y an array-like of labels.
-        Returns (near, far).
+        Returns (near, far). Raises ValueError when the set has no pair of
+        the same class or no pair of different classes.
         """
         X = np.asarray(X, dtype=float)
         y = np.asarray(y)
@@ -193,8 +194,15 @@ class LEGO(MetricLearner):
         same = y[:, None] == y[None, :]
         np.fill_diagonal(same, False)
         off = ~np.eye(len(X), dtype=bool)
-        near = float(np.percentile(D2[same], low))
-        far = float(np.percentile(D2[~same & off], high))
+        d_same = D2[same]
+        d_diff = D2[~same & off]
+        if d_same.size == 0 or d_diff.size == 0:
+            raise ValueError(
+                "percentile_targets needs a pair of the same class and a pair "
+                "of different classes"
+            )
+        near = float(np.percentile(d_same, low))
+        far = float(np.percentile(d_diff, high))
         return near, far
 
 

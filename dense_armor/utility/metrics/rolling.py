@@ -31,7 +31,9 @@ class Rolling(Metric):
 
     Raises:
         ValueError: if neither or both of ``window`` and ``window_s``
-            are given, or if ``window < 1``, or if ``window_s <= 0``.
+            are given, or if ``window < 1``, or if ``window_s <= 0``, or
+            if the metric cannot undo an update (``R2Score``,
+            ``RollingAUC``).
 
     Examples:
         >>> from dense_armor.utility.metrics import Accuracy
@@ -58,6 +60,11 @@ class Rolling(Metric):
             raise ValueError(f"window must be >= 1, got {window}")
         if window_s is not None and window_s <= 0:
             raise ValueError(f"window_s must be > 0, got {window_s}")
+        if not getattr(metric, "supports_revert", True):
+            raise ValueError(
+                f"{type(metric).__name__} cannot undo an update and "
+                "cannot be wrapped in Rolling"
+            )
         self.metric = metric
         self.window = window
         self.window_s = window_s
@@ -102,8 +109,11 @@ class Rolling(Metric):
             ``self``.
 
         Raises:
-            ValueError: if ``t`` is not increasing.
+            ValueError: if ``t`` is not increasing, or if ``t`` is missing
+                in the ``window_s`` mode.
         """
+        if self.window_s is not None and t is None:
+            raise ValueError("window_s mode needs the timestamp t")
         if t is not None:
             t = float(t)
             if self._last_t_ is not None and t <= self._last_t_:
@@ -146,7 +156,11 @@ class Rolling(Metric):
         Only the last ``window`` entries of the union are kept; the
         intermediate contributions to the underlying metric are not
         recovered, so this is a pragmatic merge for reporting, not the
-        exact state of the union.
+        exact state of the union. After a merge the underlying metric
+        holds both windows while only the last ``window`` entries can be
+        reverted: a further ``update`` on the merged object does not give
+        the rolling value, so the result is read with ``get`` and not
+        updated.
 
         Args:
             other: another :class:`Rolling` with the same configuration.

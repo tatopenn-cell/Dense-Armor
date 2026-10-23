@@ -132,7 +132,11 @@ class BayesianLinearRegression(Regressor):
         self._keys: list | None = None
         self._m: np.ndarray | None = None
         self._S: np.ndarray | None = None
-        self.n_missing: int = 0
+        self.n_missing_: int = 0
+
+    @property
+    def n_missing(self) -> int:
+        return self.n_missing_
 
     @staticmethod
     def _as_dict(x):
@@ -179,7 +183,9 @@ class BayesianLinearRegression(Regressor):
         breaking the symmetry the derivation assumes.
 
         Args:
-            x: feature dict.
+            x: feature dict. A key missing from the dict counts as 0.0
+                (sparse input); a NaN or infinite value skips the sample
+                and adds 1 to ``n_missing``.
             y: target scalar.
             t: optional timestamp, currently unused.
 
@@ -187,16 +193,16 @@ class BayesianLinearRegression(Regressor):
             self.
         """
         xv = self._row(x)
-        if np.any(np.isnan(xv)):
-            self.n_missing += 1
+        if not np.all(np.isfinite(xv)):
+            self.n_missing_ += 1
             return self
         try:
             yv = float(y)
         except (TypeError, ValueError):
-            self.n_missing += 1
+            self.n_missing_ += 1
             return self
-        if np.isnan(yv):
-            self.n_missing += 1
+        if not np.isfinite(yv):
+            self.n_missing_ += 1
             return self
         self._ensure_state(xv.size)
         Sx = self._S @ xv
