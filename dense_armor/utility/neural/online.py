@@ -3,7 +3,7 @@
 ``OnlineNetRegressor`` and ``OnlineNetClassifier`` wrap a model with
 ``forward``, ``backward`` and ``params()`` and learn through
 ``learn_one(x, y)`` with the same operations, in the same order, as one
-batch of ``Trainer.fit`` of N04 with a batch of one sample: zero the
+batch of ``Trainer.fit`` with a batch of one sample: zero the
 gradients, forward, loss, backward, learning rate from a schedule, the
 weight decay of N04, the update of every ``Param``. A sample is one
 unit of the schedule (our choice: the schedule reads ``n_seen_``
@@ -319,7 +319,7 @@ class OnlineNetClassifier(Classifier):
     """A network classifier trained one sample at a time.
 
     Same operations, in the same order, as one batch of ``Trainer.fit``
-    of N04 with a batch of one sample. The learning rate is
+    with a batch of one sample. The learning rate is
     ``schedule(n_seen_)`` (a sample is one unit of the schedule, our
     choice). ``predict_proba_one`` uses ``BCEWithLogits`` for two
     classes and ``SoftmaxCrossEntropy`` for more.

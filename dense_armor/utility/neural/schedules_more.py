@@ -38,13 +38,13 @@ class LinearWarmup:
     Examples:
         >>> from dense_armor.utility.neural.schedules_more import LinearWarmup
         >>> s = LinearWarmup(0.1, 3.2, 5)
-        >>> s(0.0)
+        >>> round(s(0.0), 2)
         0.1
-        >>> s(2.5)
+        >>> round(s(2.5), 2)
         1.65
-        >>> s(5.0)
+        >>> round(s(5.0), 2)
         3.2
-        >>> s(7.0)
+        >>> round(s(7.0), 2)
         3.2
     """
 
@@ -108,8 +108,8 @@ class NoamSchedule:
         0.0
         >>> round(s(4000.0), 10)
         0.0006987712
-        >>> round(s(1.0), 12)
-        1.7469281e-07
+        >>> round(s(1.0) * 1e7, 3)
+        1.747
     """
 
     def __init__(

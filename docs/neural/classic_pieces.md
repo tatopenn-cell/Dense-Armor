@@ -709,7 +709,7 @@ The definitions without a source (the nearest-neighbour upsampling, `L1Loss`, th
 - `eps` in `RMSProp` sits inside the square root, as in Eq.(18), page 7 of Ruder (2016).
 - `HingeLoss` follows `mean(max(0, 1 - y * pred))` on the batch, so the gradient is `-y / N` where the sample is active. With both samples active on a batch of `N = 2` this is `[-0.5, -0.5]`, not `[-0.25, -0.5]`. The `ISTRUZIONI.md` states `[-0.25, -0.5]` for this case, but the value of the loss `1.75` is consistent with the formula and `-y / N` on `N = 2`; the test uses `[-0.5, -0.5]`.
 - `LabelSmoothingCE` uses the uniform prior `u(k) = 1 / K`, page 7 of Szegedy et al. (2016).
-- The name of the page and of the two assets (`classic_pieces_*`) is a historical name from the task specification; the page opens with "deep neural network" because the pieces are modern (GELU 2016, focal loss 2017, GroupNorm 2018), not a period.
+- The name of the page and of the two assets (`classic_pieces_*`) is a historical name from the specification; the page opens with "deep neural network" because the pieces are modern (GELU 2016, focal loss 2017, GroupNorm 2018), not a period.
 
 ### Measured cost
 
