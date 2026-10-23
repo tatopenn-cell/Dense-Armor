@@ -217,7 +217,7 @@ nav:
       - Training: neural/training.md
       - Continuous training: neural/continuous.md
       - Encoders and decoders: neural/encoder_decoder.md
-      - Classic pieces: neural/classic_pieces.md
+      - Deep: neural/deep.md
   - Library:
       - Home: index.md
       - Getting Started: getting-started.md

@@ -1,4 +1,4 @@
-"""Generate docs/assets/neural/classic_pieces.png.
+"""Generate docs/assets/neural/deep.png.
 
 Three panels on synthetic data, from the library classes:
 
@@ -45,7 +45,7 @@ from dense_armor.utility.neural.trainer import Trainer
 from dense_armor.utility.optim import SGD, Adam, RMSProp
 
 HERE = Path(__file__).resolve().parents[2]
-OUT = HERE / "docs" / "assets" / "neural" / "classic_pieces.png"
+OUT = HERE / "docs" / "assets" / "neural" / "deep.png"
 
 
 def _mlp(key):
@@ -144,7 +144,7 @@ axes[2].set_title("Two warmup schedules (synthetic)", weight="bold", fontsize=10
 axes[2].grid(True, alpha=0.3)
 axes[2].legend(fontsize=8)
 
-fig.suptitle("neural-network pieces on synthetic data", weight="bold", fontsize=12)
+fig.suptitle("deep neural-network on synthetic data", weight="bold", fontsize=12)
 fig.tight_layout()
 OUT.parent.mkdir(parents=True, exist_ok=True)
 fig.savefig(OUT, dpi=140)

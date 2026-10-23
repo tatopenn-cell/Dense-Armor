@@ -1,6 +1,6 @@
-# Neural network pieces: what does a deep neural network need beyond the layers, and where is each piece in the library?
+# Deep: what does a deep neural network need beyond the layers, and where is each piece in the library?
 
-A neural network that trains well needs more than a stack of layers. It needs an optimizer that does not zigzag on a narrow valley, a guard that keeps the gradient from exploding, an activation that does not saturate too early, a schedule that warms up the learning rate at the start, a way to enlarge a feature map when the network goes backwards, a way to read a sequence in both directions, a normalisation that does not depend on the batch, three-dimensional and depthwise convolutions for video and for cheap image models, a positional signal that says where a token is, and a set of losses beyond the mean squared error and the plain cross-entropy. This page adds these pieces to the library and shows one example of each, plus a last step that uses them together in a small convolutional autoencoder.
+A neural network that trains well needs more than a stack of layers. It needs an optimizer that does not zigzag on a narrow valley, a guard that keeps the gradient from exploding, an activation that does not saturate too early, a schedule that warms up the learning rate at the start, a way to enlarge a feature map when the network goes backwards, a way to read a sequence in both directions, a normalisation that does not depend on the batch, three-dimensional and depthwise convolutions for video and for cheap image models, a positional signal that says where a token is, and a set of losses beyond the mean squared error and the plain cross-entropy. This page adds these modules to the library and shows one example of each, plus a last step that uses them together in a small convolutional autoencoder.
 
 The page walks the pieces in the order the library adds them. Every step is self-contained: the block defines what it uses, prints what it claims, and the number under the block is the output of the block on this commit.
 
@@ -409,7 +409,7 @@ The autoencoder is a symmetric path: `(8, 8, 1)` to `(4, 4, 4)` with the first `
 
 ## The figure
 
-![The training loss of five optimizers on a synthetic regression (median over 20 seeds, with the 25th and 75th percentiles); the curves of six activations on -4 to 4; the learning rate of two warmup schedules over 100 epochs](../assets/neural/classic_pieces.png)
+![The training loss of five optimizers on a synthetic regression (median over 20 seeds, with the 25th and 75th percentiles); the curves of six activations on -4 to 4; the learning rate of two warmup schedules over 100 epochs](../assets/neural/deep.png)
 
 The first panel is the training loss of `SGD`, `SGD` with momentum, `SGD` with Nesterov, `RMSProp` and `Adam` on the same synthetic regression (`sin(x_0) + x_1^2` on 100 points, a small MLP with two `GELU` layers, 100 epochs), median over 20 seeds, with the 25th and 75th percentiles as a band. The final median losses after 100 epochs are `SGD 0.0182`, `SGD+momentum 0.0076`, `SGD+Nesterov 0.0014` (with one seed out of 20 diverged, and the divergence declared in the script's print), `RMSProp 0.0130`, `Adam 0.0042`. The page does not say which optimizer is the best: the curves and the numbers are what the script prints on this runtime.
 
@@ -667,7 +667,7 @@ The autoencoder is a symmetric path: `(8, 8, 1)` to `(4, 4, 4)` with the first `
 
 ## The figure
 
-![The training loss of five optimizers on a synthetic regression (median over 20 seeds, with the 25th and 75th percentiles); the curves of six activations on -4 to 4; the learning rate of two warmup schedules over 100 epochs](../assets/neural/classic_pieces.png)
+![The training loss of five optimizers on a synthetic regression (median over 20 seeds, with the 25th and 75th percentiles); the curves of six activations on -4 to 4; the learning rate of two warmup schedules over 100 epochs](../assets/neural/deep.png)
 
 The first panel is the training loss of `SGD`, `SGD` with momentum, `SGD` with Nesterov, `RMSProp` and `Adam` on the same synthetic regression (`sin(x_0) + x_1^2` on 100 points, a small MLP with two `GELU` layers, 100 epochs), median over 20 seeds, with the 25th and 75th percentiles as a band. The final median losses after 100 epochs are `SGD 0.0182`, `SGD+momentum 0.0076`, `SGD+Nesterov 0.0014` (with `1/20 seeds diverged`, declared in the script's print), `RMSProp 0.0130`, `Adam 0.0042`. The page does not rank the optimizers: the curves and the numbers are what the script prints on this runtime.
 
@@ -709,7 +709,6 @@ The definitions without a source (the nearest-neighbour upsampling, `L1Loss`, th
 - `eps` in `RMSProp` sits inside the square root, as in Eq.(18), page 7 of Ruder (2016).
 - `HingeLoss` follows `mean(max(0, 1 - y * pred))` on the batch, so the gradient is `-y / N` where the sample is active. With both samples active on a batch of `N = 2` this is `[-0.5, -0.5]`, not `[-0.25, -0.5]`. The `ISTRUZIONI.md` states `[-0.25, -0.5]` for this case, but the value of the loss `1.75` is consistent with the formula and `-y / N` on `N = 2`; the test uses `[-0.5, -0.5]`.
 - `LabelSmoothingCE` uses the uniform prior `u(k) = 1 / K`, page 7 of Szegedy et al. (2016).
-- The name of the page and of the two assets (`classic_pieces_*`) is a historical name from the specification; the page opens with "deep neural network" because the pieces are modern (GELU 2016, focal loss 2017, GroupNorm 2018), not a period.
 
 ### Measured cost
 
