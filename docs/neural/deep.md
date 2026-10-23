@@ -154,6 +154,52 @@ With kernel `[[1], [10], [100]]`, `stride = 2` and input `[1, 2]`, the output is
 
 The output size is `s * (L - 1) + a + k - 2p`, Relationship 14, page 26 of Dumoulin and Visin (2016). With `a = 0` it is Relationship 13 of the same page. The three triples `(L, k, s, p, a)` = `(5, 3, 2, 1, 0)`, `(5, 3, 2, 0, 1)`, `(6, 4, 3, 1, 2)` give the sizes 9, 12, 19. The adjoint property `sum(Conv2D(x) * y) == sum(x * ConvTranspose2D(y))` holds for `stride = 1` and `stride = 2` within `1e-4`.
 
+### Upsample1D
+
+An `Upsample1D` repeats each position of a sequence a fixed number of times along the length. It is the simplest way to grow a feature map in a decoder: no parameter, no learning, the output is a stretch of the input. Where a `ConvTranspose1D` learns how to redistribute the energy over the wider map, an `Upsample1D` simply repeats every value, and a `Conv1D` after it learns the redistribution. In a decoder the two are often paired: upsample, then convolve.
+
+~~~python
+import jax.numpy as jnp
+from dense_armor.utility.neural.convtranspose import Upsample1D
+
+u = Upsample1D(2)
+x = jnp.array([[1.0], [2.0], [3.0]])
+print(u.forward(x).reshape(-1).tolist())
+print(u.backward(jnp.ones((6, 1))).reshape(-1).tolist())
+~~~
+
+~~~
+[1.0, 1.0, 2.0, 2.0, 3.0, 3.0]
+[2.0, 2.0, 2.0]
+~~~
+
+With factor `2` each of the three positions becomes two copies, so the output has length `3 * 2 = 6` and holds `[1, 1, 2, 2, 3, 3]`. The backward sums each block of `factor` positions: the two `1`s give `1 + 1 = 2`, the two `2`s give `2 + 2 = 2`, the two `3`s give `3 + 3 = 2`, because the upstream gradient is all `1`s.
+
+Textbook definition, no citation.
+
+### Upsample2D
+
+An `Upsample2D` repeats each position along both spatial axes. On a `(H, W, c)` input with factor `f`, the output has shape `(H * f, W * f, c)`, and the backward sums each `f x f` block. It is the two-dimensional version of `Upsample1D`, used in a decoder after a convolution when the shape of the output has to match the shape of the input of the encoder.
+
+~~~python
+import jax.numpy as jnp
+from dense_armor.utility.neural.convtranspose import Upsample2D
+
+u = Upsample2D(2)
+x = jnp.array([[[1.0], [2.0]], [[3.0], [4.0]]])
+print(u.forward(x).shape)
+print(u.backward(jnp.ones((4, 4, 1))).reshape(-1).tolist())
+~~~
+
+~~~
+(4, 4, 1)
+[4.0, 4.0, 4.0, 4.0]
+~~~
+
+With factor `2` the `2 x 2` input becomes `4 x 4`, every entry repeated four times. The backward sums each `2 x 2` block of ones, so every entry of the `2 x 2` input receives `2 * 2 = 4`.
+
+Textbook definition, no citation.
+
 ## 6. The bidirectional recurrent layer
 
 A recurrent layer reads a sequence from left to right; the state at position `t` depends on the past, not on the future. In a speech recogniser, in a tagger, in a classifier of a whole sequence, the meaning of a token depends on what comes after as well. A bidirectional layer runs two recurrent layers, one on the sequence and one on the reversed sequence, and concatenates the two outputs on the last axis.
