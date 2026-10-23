@@ -294,4 +294,4 @@ The Elman layer, the last-step and mean-over-time selections and the synthetic t
 
 ### Development diary
 
-The delivery leaves out the cross-attention and the gate between two signals (task N07), the learned positional encodings, the bidirectional layers and the transposed convolutions (task N03b). An `AsTransformer` around a `recurrent_net` or a `transformer_encoder` is not required by this task and is not provided; the two builders return a `Sequential` and are not wrapped in a library role.
+The cross-attention and the gate between two signals are not part of the library. The learned positional encodings, the bidirectional layers and the transposed convolutions are in [Deep](deep.md). An `AsTransformer` around a `recurrent_net` or a `transformer_encoder` is not required by this task and is not provided; the two builders return a `Sequential` and are not wrapped in a library role.

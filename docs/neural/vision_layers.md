@@ -247,7 +247,7 @@ The cross-correlation of a convolution, the max and the average, the flatten and
 
 ### Choices stated explicitly
 
-- The initialisation of a `Conv2D` is the He initialisation on the fan-in `k * k * c_in` of a convolutional layer (Eqn.(10), page 4 of He et al. 2015). `he_normal` of N01 takes the fan-in from `shape[0]`, so `Conv2D` calls it on the shape `(k * k * c_in, c_out)` and reshapes the result.
+- The initialisation of a `Conv2D` is the He initialisation on the fan-in `k * k * c_in` of a convolutional layer (Eqn.(10), page 4 of He et al. 2015). `he_normal` (see [Layers](layers.md)) takes the fan-in from `shape[0]`, so `Conv2D` calls it on the shape `(k * k * c_in, c_out)` and reshapes the result.
 - The padding of a `cnn` is `kernel // 2` for every layer, so the pooling is what reduces the spatial size. A side that the pooling would reduce below 1 raises `ValueError`.
 - The `cnn` builder wraps the chain in a small class that adds and removes the batch axis around the chain, so the `Sequential` sees always a 4-dimensional input and `Flatten` works for both a single image and a batch.
 - A `MaxPool2D` sends the gradient to the first position of the maximum in each window. With a tie (two equal maxima) the first position wins. This is the convention of the reference frameworks.
@@ -255,4 +255,4 @@ The cross-correlation of a convolution, the max and the average, the flatten and
 
 ### Development diary
 
-The delivery leaves out the transposed convolutions, the dilated convolutions, the grouped convolutions and the adaptive pooling: task N02b or N03b. The `cnn` builder has one convolutional layer per channel, no residual connection between the blocks; a residual CNN would be a `Sequential` of `Residual` around the chain, which the library already supports.
+The transposed convolutions and the depthwise one (the grouped case with one channel per group) are in [Deep](deep.md). Dilated convolutions, convolutions with a configurable number of groups and adaptive pooling are not part of the library. The `cnn` builder has one convolutional layer per channel, no residual connection between the blocks; a residual CNN would be a `Sequential` of `Residual` around the chain, which the library already supports.
