@@ -120,7 +120,10 @@ class OnlinePlattScaling(ModelWrapper, Classifier):
         if t @ t <= self.radius**2:
             return t
         lo, hi = 0.0, 1.0
-        f = lambda lam: np.linalg.solve(self._A + lam * np.eye(2), self._A @ t)
+
+        def f(lam):
+            return np.linalg.solve(self._A + lam * np.eye(2), self._A @ t)
+
         while f(hi) @ f(hi) > self.radius**2:
             hi *= 2.0
         for _ in range(60):

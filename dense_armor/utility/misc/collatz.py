@@ -85,7 +85,6 @@ class ABCollatz:
         # =========================================================================
         # FRACTAL PROTECTION: Sanificazione registri interni contro infezione NaN
         # =========================================================================
-        a_safe = jnp.where(jnp.isnan(a), 1.0, a)
         b_safe = jnp.where(jnp.isnan(b), 1.0, b)
         c_safe = jnp.where(jnp.isnan(c), 1.0, c)
 

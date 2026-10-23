@@ -1,7 +1,6 @@
 """Tests for learn_many on RunningMoments and RunningMomentsVector."""
 
 import numpy as np
-import pytest
 
 from dense_armor.utility.stats.moments import (
     RunningMoments,
