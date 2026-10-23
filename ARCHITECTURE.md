@@ -157,6 +157,7 @@ graph TD
 | `scale.py` | `StandardScaler`, `EWScaler`, `RobustScaler`, `MinMaxScaler` | online scalers |
 | `select.py` | `VarianceThreshold`, `SelectKBest` | feature selection |
 | `text.py` | `Tokenizer`, `BagOfWords`, `TFIDF`, `FeatureHasher` | text transformers |
+| `vectorizer.py` | `TextVectorizer` | Text vectorizer: a fixed vocabulary, TF-IDF, and batch or online fit |
 
 ### 2.5 stats
 
@@ -166,6 +167,8 @@ graph TD
 | `moments.py` | `RunningMoments`, `RunningMomentsVector`, `EWStats` | moments and exponentially weighted statistics |
 | `quantiles.py` | `DDSketch`, `TDigest` | quantile sketches |
 | `robust.py` | `RollingMedian`, `RollingMAD`, `RollingIQR`, `RollingQuantile`, `RollingMedianVector` | robust rolling statistics |
+| `shrinkage.py` | `OnlineShrinkageCovariance` | Online shrinkage covariance (Bodnar, Gupta and Parolya 2014) |
+| `similarity.py` | `cosine_similarity`, `cosine_similarity_many`, `SparseCosineIndex` | Cosine similarity between score dicts |
 | `sketches.py` | `CountMinSketch`, `HyperLogLog`, `BloomFilter`, `SpaceSaving` | streaming sketches |
 
 ### 2.6 metrics
@@ -201,7 +204,9 @@ graph TD
 | file | public names | what it is |
 |---|---|---|
 | `adaptive.py` | `HoeffdingAdaptiveTreeClassifier` | adaptive Hoeffding tree |
+| `batch.py` | `BatchDecisionTreeClassifier` | Batch decision tree (CART) for offline learning |
 | `efdt.py` | `HoeffdingAnytimeTreeClassifier` | anytime Hoeffding tree |
+| `fimt.py` | `FIMTDDRegressor` | FIMT-DD regression model tree, from Ikonomovska (2012) |
 | `hoeffding.py` | `HoeffdingTreeClassifier` | Hoeffding tree |
 | `mondrian.py` | `MondrianForestRegressor`, `MondrianForestClassifier` | Mondrian forest |
 | `sgt.py` | `SGTRegressor`, `SGTClassifier` | streaming gradient tree |
@@ -236,6 +241,7 @@ graph TD
 | file | public names | what it is |
 |---|---|---|
 | `adwin.py` | `ADWIN` | ADWIN drift detector |
+| `bocpd.py` | `BayesianOnlineChangepoint` | Bayesian online changepoint detection (Adams and MacKay 2007) |
 | `cusum.py` | `cusum_detector`, `one_sided_arl`, `two_sided_arl`, `detectability_report` | CUSUM detector and ARL helpers |
 | `detector.py` | `CUSUMDriftDetector` | streaming CUSUM detector |
 | `kswin.py` | `KSWIN` | KSWIN drift detector |

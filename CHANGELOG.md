@@ -4,6 +4,12 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- `docs/neural/attention.md`, the page of the attention; `docs/api/neural.md`, the signature of every public class and function of `neural` and `optim`.
+### Fixed
+- `docs/neural/deep.md` held its sections 7 to 11, the figure and the details twice; the repeated half is gone.
+- `ARCHITECTURE.md` lists `bocpd.py`, `vectorizer.py`, `shrinkage.py`, `similarity.py`, `batch.py` and `fimt.py`.
+
 ## [1.1.34] - 2026-10-23
 ### Added
 - `dense_armor/utility/optim/`: `RMSProp`; `SGD` with momentum and Nesterov.

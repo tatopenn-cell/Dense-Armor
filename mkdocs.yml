@@ -214,6 +214,7 @@ nav:
       - Chains: neural/chains.md
       - Convolution and pooling: neural/vision_layers.md
       - Recurrent layers and attention: neural/sequence_layers.md
+      - Attention: neural/attention.md
       - Training: neural/training.md
       - Continuous training: neural/continuous.md
       - Encoders and decoders: neural/encoder_decoder.md
@@ -277,5 +278,6 @@ nav:
           - General: api/general.md
           - Robot: api/robot.md
           - IA: api/ai.md
+          - Neural networks: api/neural.md
           - Changelog: changelog.md
           - License: license.md
