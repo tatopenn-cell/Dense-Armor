@@ -162,8 +162,12 @@ def cusum_detector(
     fixed_med, fixed_scale = None, None
     if reference == "fixed" and n > span:
         init_window = x[:span]
-        if np.all(np.isfinite(init_window)):
-            fixed_med, fixed_scale = _robust_center_scale(init_window)
+        if not np.all(np.isfinite(init_window)):
+            raise ValueError(
+                f"reference='fixed' needs the first {span} samples to be "
+                "finite: the fixed reference is built from them"
+            )
+        fixed_med, fixed_scale = _robust_center_scale(init_window)
 
     for i in range(n):
         if reference == "fixed":

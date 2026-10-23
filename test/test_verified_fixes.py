@@ -3,6 +3,14 @@
 import numpy as np
 import pytest
 
+from dense_armor.utility.drift import (
+    ADWIN,
+    KSWIN,
+    BayesianOnlineChangepoint,
+    CUSUMDriftDetector,
+    PageHinkley,
+)
+from dense_armor.utility.drift.cusum import cusum_detector
 from dense_armor.utility.evaluate import evaluate_events, progressive_val_score
 from dense_armor.utility.evaluate.model_selection import OnlineModelSelection
 from dense_armor.utility.learn.calibration import OnlinePlattScaling
@@ -55,6 +63,34 @@ def test_an_anomaly_detector_without_t_is_called_without_it():
 
     stream = [(float(i), {"a": 1.0}) for i in range(5)]
     assert evaluate_events(stream, Det(), [(1.0, 3.0)])["missed"] == 0
+
+
+def test_the_drift_package_exports_every_detector():
+    names = (ADWIN, KSWIN, BayesianOnlineChangepoint, CUSUMDriftDetector, PageHinkley)
+    assert all(callable(c) for c in names)
+
+
+def test_adwin_range_follows_the_window_after_an_eviction():
+    adw = ADWIN(max_buckets=64)
+    for v in [0.0] * 4 + [10.0] * 4:
+        adw._add(v)
+    for _ in range(4):
+        adw._remove_oldest()
+    assert (adw._min, adw._max) == (10.0, 10.0)
+
+
+def test_bocpd_counts_missing_from_the_start():
+    det = BayesianOnlineChangepoint()
+    assert det.n_missing_ == 0
+    det.update(float("nan"))
+    det.update(float("inf"))
+    assert det.n_missing_ == 2
+
+
+def test_cusum_fixed_reference_refuses_a_nan_in_the_first_window():
+    x = np.concatenate([[float("nan")], np.zeros(5000)])
+    with pytest.raises(ValueError):
+        cusum_detector(x, reference="fixed")
 
 
 def test_batch_fit_refuses_a_row_with_a_missing_feature():

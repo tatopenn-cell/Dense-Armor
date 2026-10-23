@@ -157,6 +157,7 @@ class BayesianOnlineChangepoint(DriftDetector):
 
     def _reset(self) -> None:
         super()._reset()
+        self.n_missing_: int = 0
         self.n_alarms_: int = 0
         self.n_seen_: int = 0
         self.run_length_: np.ndarray = np.zeros(1, dtype=float)
@@ -211,7 +212,7 @@ class BayesianOnlineChangepoint(DriftDetector):
         """Update the run length distribution with one sample."""
         self._drift_detected = False
         if not np.isfinite(x):
-            self.n_missing_ = getattr(self, "n_missing_", 0) + 1
+            self.n_missing_ += 1
             return self
         x = float(x)
         self.n_seen_ += 1
