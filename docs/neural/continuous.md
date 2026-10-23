@@ -34,7 +34,7 @@ The forward pass gives `2.0`. The gradient of the MSE with respect to the predic
 
 ## 2. The online step equals the batch of one sample
 
-Twenty samples fed one by one to `OnlineNetRegressor` leave the weights equal, within `1e-6`, to one `Trainer.fit` with `batch_size=1` and `shuffle=False` on the same model and the same data. This is the contract of N04: one code path serves the batch mode and the online mode.
+Twenty samples fed one by one to `OnlineNetRegressor` leave the weights equal, within `1e-6`, to one `Trainer.fit` with `batch_size=1` and `shuffle=False` on the same model and the same data. This is the contract of the training loop (see [Training](training.md)): one code path serves the batch mode and the online mode.
 
 ~~~python
 import jax
@@ -70,6 +70,41 @@ print(f"{d:.2e}")
 
 The two paths give the same weights to machine precision. The classifier (`OnlineNetClassifier`) uses `BCEWithLogits` for two classes and `SoftmaxCrossEntropy` for more, and `predict_proba_one` returns the class probabilities. A sample with a missing feature, `None`, NaN, a non-numeric value or a non-finite target is counted in `n_missing_` and does not change the weights.
 
+
+### OnlineNetClassifier
+
+A classifier, not a regressor: it learns one sample at a time from a label, and it predicts the probability of each class. It shares the operations of `OnlineNetRegressor` (zero the gradient, forward, loss, backward, the schedule, the weight decay, the update) and differs only in the loss and in the shape of the output. With two classes it uses `BCEWithLogits` and a model that ends with a single score; with more classes it uses `SoftmaxCrossEntropy` and a model that ends with one score per class. `predict_proba_one` returns the two or more probabilities, `predict_one` the class with the largest one.
+
+~~~python
+import jax
+import jax.numpy as jnp
+from dense_armor.utility.neural.online import OnlineNetClassifier
+from dense_armor.utility.neural.layers import Dense
+from dense_armor.utility.neural.losses import SoftmaxCrossEntropy
+from dense_armor.utility.optim import SGD
+
+d = Dense(2, 3, jax.random.PRNGKey(0))
+d.W.value = jnp.array([[1.0, 0.0, -1.0], [0.0, 1.0, 0.0]])
+d.b.value = jnp.zeros(3)
+c = OnlineNetClassifier(d, SoftmaxCrossEntropy(), SGD(0.1),
+                        classes=[0, 1, 2], feature_keys=["a", "b"])
+print(c.predict_one({"a": 1.0, "b": 0.0}))
+c.learn_one({"a": 1.0, "b": 0.0}, 0)
+print(c.predict_one({"a": 1.0, "b": 0.0}))
+print([round(float(v), 4) for v in c.model_.W.value[0]])
+print([round(float(v), 4) for v in c.model_.b.value])
+~~~
+
+~~~
+0
+0
+[1.0335, -0.0245, -1.009]
+[0.0335, -0.0245, -0.009]
+~~~
+
+With `x = [1, 0]` the model produces the scores `[1, 0, -1]` (the first column of `W`); softmax gives `[0.665, 0.245, 0.090]`; the prediction is `0`, the class with the largest probability, both before and after one step. The loss is `-log(0.665) = 0.408` and the gradient of the loss with respect to the scores is `[0.665 - 1, 0.245, 0.090] = [-0.335, 0.245, 0.090]`. With `x = [1, 0]` the update is `dW[0] = -0.1 * [-0.335, 0.245, 0.090] = [0.0335, -0.0245, -0.009]`, and the first row of `W` moves from `[1, 0, -1]` to `[1.0335, -0.0245, -1.009]`. The bias moves by the same amount, `b = [0.0335, -0.0245, -0.009]`. The second row of `W` does not move, because the second input is `0`.
+
+Textbook definition, no citation.
 
 ## 3. Hedge Backpropagation, the depth chosen while it runs
 
@@ -230,7 +265,7 @@ The queue, the worker thread, the snapshot of the served model, the progressive 
 
 ### Choices stated explicitly
 
-- A sample is one unit of the learning-rate schedule: `schedule(n_seen_)` is the learning rate of the sample number `n_seen_`. This is our choice; the schedule is the one of N04, read at the fractional epoch `epoch + b / n_batches` in the batch training.
+- A sample is one unit of the learning-rate schedule: `schedule(n_seen_)` is the learning rate of the sample number `n_seen_`. This is our choice; the schedule is the one of the batch training (see [Training](training.md)), read at the fractional epoch `epoch + b / n_batches`.
 - The hidden activation of the Hedge network is relu. The paper writes a generic activation `sigma`; relu is the one the reference implementation and our `Dense` layers use.
 - The Hedge loss is `1 - p(l)[y]`. The paper asks for a value in `(0, 1)` and does not give the formula; the probability that the classifier gives to the true class is the natural choice, and `1 - p` is in `[0, 1]` for a softmax output.
 - The gradient of every `Theta(l)` and `W(l)` uses the cross-entropy of the classifier, weighted by the current `alpha(l)` (Eq.(2) and Eq.(3), page 4). For the multiclass case the loss is the softmax cross-entropy of the `Dense` layers.
@@ -241,4 +276,4 @@ The queue, the worker thread, the snapshot of the served model, the progressive 
 
 ### Development diary
 
-The delivery leaves out the forgetting of old regimes, gradient clipping and mixed precision: task N07 and N08. The `BackgroundLearner` uses one worker; more workers would need a different protocol for `served_` and are out of this task. The online estimators hold a full copy of the model (`model_`), so the wrapper and the original share the same `Param` shapes but are not the same objects; this is the price of the one-copy-per-`Param` optimizer of N04.
+The delivery leaves out the forgetting of old regimes, gradient clipping and mixed precision. The `BackgroundLearner` uses one worker; more workers would need a different protocol for `served_` and are out of scope for this page. The online estimators hold a full copy of the model (`model_`), so the wrapper and the original share the same `Param` shapes but are not the same objects; this is the price of the one-copy-per-`Param` optimizer of the `Trainer`.

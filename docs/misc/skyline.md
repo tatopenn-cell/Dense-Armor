@@ -121,4 +121,4 @@ The benchmark `benchmarks/facto_quality.py` contains `check_skyline_equals_brute
 
 ### Development diary
 
-This page was written after Task D1, on request of the owner, because the class existed with a full docstring and a test but without a page of its own: a reader could find it in the API list and not know what it was for. The page is outside the items named by Task D1; it is added on the same branch, in a separate commit, so that the owner can move it to a different PR if wanted.
+This page was written after the main work of the branch, on request of the owner, because the class existed with a full docstring and a test but without a page of its own: a reader could find it in the API list and not know what it was for. The page is added on the same branch, in a separate commit, so that the owner can move it to a different PR if wanted.
