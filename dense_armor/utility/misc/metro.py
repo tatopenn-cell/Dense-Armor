@@ -15,12 +15,16 @@ class Metro:
         self.eps64 = np.finfo(np.float64).eps
 
     def enc(self, raw_v: float) -> tuple:
-        """Proietta la variabile infinitesima nello spazio hardware visibile."""
+        """Proietta la variabile infinitesima nello spazio hardware visibile.
+
+        Il segno si conserva: un valore negativo e' scalato con il fattore
+        del suo valore assoluto. Lo zero resta zero con fattore 1.
+        """
         v64 = np.float64(raw_v)
-        if v64 <= 0.0:
+        if v64 == 0.0:
             return np.float64(0.0), np.float64(1.0)
 
-        exp10 = np.log10(v64)
+        exp10 = np.log10(abs(v64))
         shift = self.val_e - exp10
         fact = np.float64(10**shift)
         v_new = v64 * fact

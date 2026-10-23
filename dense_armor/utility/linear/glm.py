@@ -36,14 +36,14 @@ from dense_armor.roles import Classifier, Regressor
 
 
 def _nan_in_input(xv, y) -> bool:
-    """True if any feature in xv or the target y is NaN."""
-    if np.any(np.isnan(xv)):
+    """True if any feature in xv or the target y is NaN or infinite."""
+    if not np.all(np.isfinite(xv)):
         return True
     try:
         yv = float(y)
     except (TypeError, ValueError):
         return True
-    return bool(np.isnan(yv))
+    return not bool(np.isfinite(yv))
 
 
 class LinearRegression(Regressor):
@@ -222,7 +222,7 @@ class LinearRegression(Regressor):
         else:
             xv = feats
         pred = jnp.dot(w, xv)
-        has_nan = jnp.isnan(y) | jnp.any(jnp.isnan(xv))
+        has_nan = ~jnp.isfinite(y) | ~jnp.all(jnp.isfinite(xv))
         err = pred - y
         grad = 2.0 * err * xv
         if self.l2 > 0.0:
@@ -345,7 +345,9 @@ class LogisticRegression(Classifier):
         """One gradient step on the log loss of a single sample.
 
         Args:
-            x: feature dict.
+            x: feature dict. A key missing from the dict counts as 0.0
+                (sparse input); a NaN or infinite value skips the sample
+                and adds 1 to ``n_missing``.
             y: target in {0, 1}. Any nonzero value is treated as 1.
             t: optional timestamp, currently unused.
 
@@ -360,7 +362,8 @@ class LogisticRegression(Classifier):
         assert self._w is not None
         z = float(self._w @ xv)
         p = 1.0 / (1.0 + np.exp(-z))
-        grad = (p - float(y)) * xv
+        yv = 1.0 if float(y) != 0.0 else 0.0
+        grad = (p - yv) * xv
         if self.l2 > 0.0:
             grad = grad + self.l2 * self._w
         self._w = self.optimizer.step(self._w, grad)
@@ -435,8 +438,9 @@ class LogisticRegression(Classifier):
             xv = feats
         z = jnp.dot(w, xv)
         p = jax.nn.sigmoid(z)
-        has_nan = jnp.isnan(y) | jnp.any(jnp.isnan(xv))
-        grad = (p - y) * xv
+        has_nan = ~jnp.isfinite(y) | ~jnp.all(jnp.isfinite(xv))
+        yb = jnp.where(y != 0.0, 1.0, 0.0)
+        grad = (p - yb) * xv
         if self.l2 > 0.0:
             grad = grad + self.l2 * w
         new_opt_state, new_w = self.optimizer.update(opt_state, w, grad)

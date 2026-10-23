@@ -196,6 +196,8 @@ class _PRFBase(Metric):
         raise ValueError(f"unknown average: {self.average!r}")
 
     def _merge_into(self, m: "_PRFBase", other: "_PRFBase") -> None:
+        if self.positive != other.positive or self.average != other.average:
+            raise ValueError("merge requires the same positive and average")
         for d_name in ("tp_", "fp_", "fn_", "support_"):
             d = getattr(m, d_name)
             for k, v in getattr(self, d_name).items():
@@ -618,7 +620,9 @@ class LogLoss(Metric):
 
     ``-mean(y log p + (1 - y) log(1 - p))`` with ``p`` the predicted
     probability of the positive class. The predicted probability is
-    clipped to ``[eps, 1 - eps]`` to avoid ``log(0)``.
+    clipped to ``[eps, 1 - eps]`` to avoid ``log(0)``. The label ``y`` is
+    1 or 0; a value between them is read as a soft label (the
+    cross-entropy against it) and is not checked.
 
     Args:
         eps: clipping floor, default ``1e-15``.
@@ -684,7 +688,8 @@ class BrierScore(Metric):
     """Mean squared error of predicted probabilities.
 
     ``mean((p - y)**2)``. The lower the better; ``0.25`` is the score of
-    a constant 0.5 forecast.
+    a constant 0.5 forecast. The label ``y`` is 1 or 0; a value between
+    them is read as a soft label and is not checked.
 
     Examples:
         >>> from dense_armor.utility.metrics import BrierScore

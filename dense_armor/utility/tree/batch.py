@@ -153,6 +153,15 @@ class BatchDecisionTreeClassifier(Classifier):
     protocols: one pass on the full training set (this class), one
     sample at a time (the online Hoeffding tree).
 
+    When a feature of the tree is missing from the dict given to
+    :meth:`predict_one` or :meth:`predict_proba_one`, or its value is not
+    a number, the answer is the majority class (the distribution) of the
+    node where the path stops, and not of a leaf. ``budget_s`` is the
+    budget of the per-sample calls (``predict_one`` and ``learn_one``),
+    not of :meth:`fit`. ``memory_class`` describes the fitted tree; the
+    memory check of ``check_estimator`` reads only ``"O(1)"`` and
+    ``"O(window)"``, so it is skipped for this class.
+
     Args:
         max_depth: maximum depth of the tree. ``None`` means no limit.
         min_samples_split: minimum number of samples at a node to
@@ -189,7 +198,6 @@ class BatchDecisionTreeClassifier(Classifier):
         self.min_samples_split = min_samples_split
         self._root: _Node | None = None
         self._feature_names: list[str] = []
-        self._classes_: set = set()
 
     def _unit_test_skips(self) -> set:
         return {"check_step_is_pure", "check_step_is_jittable"}
@@ -246,8 +254,11 @@ class BatchDecisionTreeClassifier(Classifier):
             ``self``.
 
         Raises:
-            ValueError: on empty ``X``, on ``y`` equal to ``None`` or on a
-                length mismatch.
+            ValueError: on empty ``X``, on ``y`` equal to ``None``, on a
+                length mismatch, on a row without one of the features of
+                the first row, on a value that is not a number, or on a
+                NaN or infinite value. The features are the keys of the
+                first row; the other keys of the later rows are ignored.
         """
         if y is None:
             raise ValueError("fit needs the labels y")
@@ -256,14 +267,20 @@ class BatchDecisionTreeClassifier(Classifier):
         if len(X) != len(y):
             raise ValueError(f"X has {len(X)} rows, y has {len(y)}")
         feature_names = sorted(X[0].keys())
+        rows = []
+        for i, row in enumerate(X):
+            try:
+                rows.append([float(row[k]) for k in feature_names])
+            except KeyError as err:
+                raise ValueError(
+                    f"row {i} has no feature {err.args[0]!r}"
+                ) from None
+            except (TypeError, ValueError):
+                raise ValueError(f"row {i} holds a value that is not a number") from None
+        X_arr = np.asarray(rows, dtype=float)
+        if not np.all(np.isfinite(X_arr)):
+            raise ValueError("X holds a NaN or an infinite value")
         self._feature_names = feature_names
-        self._classes_ = set()
-        for label in y:
-            self._classes_.add(label)
-        X_arr = np.asarray(
-            [[float(row[k]) for k in feature_names] for row in X],
-            dtype=float,
-        )
         y_arr = np.asarray(y)
         self._root = self._build(X_arr, y_arr, feature_names, 0)
         return self

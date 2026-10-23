@@ -74,8 +74,8 @@ class Baseline(_RecoBase):
     user bias and `b_i` the item bias. A rating `r` updates the three
     quantities one step of SGD with L2 on the biases::
 
-        e = r - y_hat
-        mu   <- running mean of the ratings seen so far
+        mu   <- running mean of the ratings seen so far, with r included
+        e = r - (mu + b_u + b_i)
         b_u  <- b_u  + lr * (e - l2 * b_u)
         b_i  <- b_i  + lr * (e - l2 * b_i)
 
@@ -152,8 +152,8 @@ class BiasedMF(_RecoBase):
     and the two latent vectors one step of SGD with L2 on every
     parameter::
 
-        e    = r - y_hat
-        mu   <- mu   + lr * e
+        mu   <- running mean of the ratings seen so far, with r included
+        e    = r - y_hat, with the new mu
         b_u  <- b_u  + lr * (e - l2 * b_u)
         b_i  <- b_i  + lr * (e - l2 * b_i)
         p_u  <- p_u  + lr * (e * q_i - l2 * p_u)

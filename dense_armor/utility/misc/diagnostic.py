@@ -4,27 +4,33 @@ import numpy as np
 from scipy.io import wavfile
 
 
+def _unit(a: np.ndarray) -> np.ndarray:
+    """Samples as float32 in [-1, 1]: floats as they are, integers by their range."""
+    if np.issubdtype(a.dtype, np.floating):
+        return a.astype(np.float32)
+    info = np.iinfo(a.dtype)
+    half = (float(info.max) + 1.0) / (2.0 if info.min == 0 else 1.0)
+    offset = half if info.min == 0 else 0.0
+    return (a.astype(np.float32) - offset) / half
+
+
 def diag(iorig: str | np.ndarray, ifilt: str | np.ndarray) -> dict[str, float] | None:
     """Esegue un'analisi differenziale profonda accettando sia percorsi file (str) che array NumPy."""
+    if isinstance(iorig, str) != isinstance(ifilt, str):
+        raise TypeError("diag takes two file paths or two arrays, not one of each")
     if isinstance(iorig, str) and isinstance(ifilt, str):
         if not os.path.exists(iorig) or not os.path.exists(ifilt):
             print("[ERR] Uno dei file audio non è presente.")
             return
         sr1, d_ori = wavfile.read(iorig)
         sr2, d_flt = wavfile.read(ifilt)
-        v_ori = d_ori.astype(np.float32) / 32768.0
-        v_flt = d_flt.astype(np.float32) / 32768.0
+        if sr1 != sr2:
+            raise ValueError(f"the sample rates differ: {sr1} and {sr2}")
+        v_ori = _unit(d_ori)
+        v_flt = _unit(d_flt)
     else:
-        v_ori = (
-            iorig.astype(np.float32) / 32768.0
-            if iorig.dtype != np.float32
-            else iorig.copy()
-        )
-        v_flt = (
-            ifilt.astype(np.float32) / 32768.0
-            if ifilt.dtype != np.float32
-            else ifilt.copy()
-        )
+        v_ori = _unit(np.asarray(iorig))
+        v_flt = _unit(np.asarray(ifilt))
 
     if len(v_ori.shape) > 1:
         v_ori = np.mean(v_ori, axis=1)

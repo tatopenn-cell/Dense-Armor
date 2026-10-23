@@ -7,6 +7,11 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 ### Added
 - `docs/neural/attention.md`, the page of the attention; `docs/api/neural.md`, the signature of every public class and function of `neural` and `optim`.
 ### Fixed
+- Metrics: `merge` of `Precision`, `Recall`, `FBeta` and `F1` refuses another `positive` or `average`; `MeanAbsoluteError`, `MeanSquaredError` and `RootMeanSquaredError` refuse a change between a scalar and a vector (before, the scalar was added to joint 0); `Rolling` refuses a metric that cannot undo an update (`R2Score`, `RollingAUC`) when it is built, and a missing `t` in the `window_s` mode; the docstrings state that `Rolling.merge` is for reporting, that `PointAdjustedF1.merge` does not exist, that `RollingAUC` ignores `w`, that `nab_score` is not clamped at 0 and the labels of `LogLoss` and `BrierScore`.
+- `LogisticRegression` binarises the label as its docstring says (a nonzero label is 1); `LogisticRegression`, `LinearRegression` and `BayesianLinearRegression` skip an infinite value and count it in `n_missing`; `RecursiveLeastSquares` counts a missing key as 0.0 like the other linear models.
+- `BatchDecisionTreeClassifier.fit` refuses a row without a feature, a value that is not a number and a NaN or an infinite value; the unused `_classes_` is removed; the docstring states the schema, the answer on a missing feature and the budget.
+- `LEGO.percentile_targets` refuses a set without a pair of the same class or without a pair of different classes; `OnlinePlattScaling` asks the base classifier once per call and not twice.
+- `Metro.enc` keeps the sign of a negative value; `diag` scales each type of sample by its range and refuses one path with one array; `anwav` labels the loudness as an estimate (RMS plus 3 dB); the docstrings of `ABCollatz.calculate_jax_rad` and of the recommenders (`Baseline`, `BiasedMF`) state the limit of 255 and the order of the update of `mu`.
 - `docs/neural/deep.md` held its sections 7 to 11, the figure and the details twice; the repeated half is gone.
 - `ARCHITECTURE.md` lists `bocpd.py`, `vectorizer.py`, `shrinkage.py`, `similarity.py`, `batch.py` and `fimt.py`.
 

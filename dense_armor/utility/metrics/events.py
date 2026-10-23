@@ -423,7 +423,9 @@ class EventMetrics:
         window, and ``-|a_fp|`` when no window precedes it (Figure 3).
 
         Returns:
-            The score; 100 for the perfect detector, 0 for the null one.
+            The score; 100 for the perfect detector, 0 for the null one,
+            and a negative value for a detector worse than the null one
+            (the score is not clamped at 0).
         """
         raw = 0.0
         for e in self.events:
@@ -482,6 +484,10 @@ class PointAdjustedF1(Metric):
 
     Use this metric only as a comparison, next to the range-based
     precision and recall of Tatbul et al. (2018).
+
+    ``merge`` is not implemented: the metric keeps the whole stream of
+    labels and predictions in order, and two streams cannot be joined
+    without that order.
 
     Args:
         positive: the label treated as the positive class.

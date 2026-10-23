@@ -5,7 +5,11 @@ from scipy.io import wavfile
 
 
 def anwav(fpath: str) -> None:
-    """Analizza il file wav verificando i parametri di picco e dinamica."""
+    """Analizza il file wav verificando i parametri di picco e dinamica.
+
+    Il loudness e' una stima: il livello RMS in dBFS piu' 3 dB. Non e' il
+    LUFS di ITU-R BS.1770, che usa un filtro di ponderazione e un gating.
+    """
     if not os.path.exists(fpath):
         print(f"[ERR] File {fpath} non trovato!")
         return
@@ -32,7 +36,7 @@ def anwav(fpath: str) -> None:
     print(f" -> File                      : {fpath}")
     print(f" -> Picco Massimo             : {p_db:.2f} dBFS")
     print(f" -> Volume Medio RMS          : {r_db:.2f} dBFS")
-    print(f" -> Loudness (LUFS)           : {lufs:.1f} LUFS")
+    print(f" -> Loudness (stima RMS + 3 dB): {lufs:.1f} dB")
     print(f" -> Fattore Cresta (Dinamica) : {crest:.2f} dB")
     print("-" * 85)
 
