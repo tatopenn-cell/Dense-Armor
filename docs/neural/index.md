@@ -388,7 +388,7 @@ The left panel is the five activations on `x` in `[-4, 4]`, the right panel the 
 
 ### Development diary
 
-The pieces of this delivery are the ones the gradient check can test end to end. The Huber loss and `glorot_uniform` are optional, and the page states it: the first is outside this page and quoted from Chinot (2019), page 4, the second is the normalised uniform of Glorot and Bengio (2010), page 5. The layers (Dense, Conv, RNN) belong to a separate page of the guide and are not delivered here.
+The pieces of this page are the ones the gradient check can test end to end. The Huber loss and `glorot_uniform` are optional, and the page states it: the first is outside this page and quoted from Chinot (2019), page 4, the second is the normalised uniform of Glorot and Bengio (2010), page 5. The layers (Dense, Conv, RNN) belong to a separate page of the guide and are not delivered here.
 
 The first version of the gradient check divided each difference by the analytic gradient rather than by the sum of the absolute values, and a single element with a small analytic gradient made the relative error large even when the backward was right. The division by `max(|a| + |b|, 1e-12)` keeps the error at the scale of the values compared.
 
