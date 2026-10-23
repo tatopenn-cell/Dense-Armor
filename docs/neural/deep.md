@@ -39,7 +39,7 @@ print(round(float(w), 8))
 0.94543565
 ~~~
 
-The three numbers are the hand cases of the page. Momentum on `w = 1.0`, `g = 1.0`, `lr = 0.1`, `gamma = 0.9`: the first step is `0.9`, the second is `0.71`. Nesterov on the same case: `0.81`, then `0.539`. RMSProp on `w = 1.0`, `g = 1.0`, `lr = 0.01`, `rho = 0.9`, `eps = 1e-8`: `0.96837722`, then `0.94543565`. With `momentum = 0.0` every result is byte-for-byte what `SGD(lr)` gave before this task, and `repr` stays `SGD(lr=...)`.
+The three numbers are the hand cases of the page. Momentum on `w = 1.0`, `g = 1.0`, `lr = 0.1`, `gamma = 0.9`: the first step is `0.9`, the second is `0.71`. Nesterov on the same case: `0.81`, then `0.539`. RMSProp on `w = 1.0`, `g = 1.0`, `lr = 0.01`, `rho = 0.9`, `eps = 1e-8`: `0.96837722`, then `0.94543565`. With `momentum = 0.0` every result is byte-for-byte the `SGD(lr)` update, and `repr` stays `SGD(lr=...)`.
 
 The momentum form is Eq.(4), page 4 of Ruder (2016); the Nesterov form is Eq.(7), page 3 of Bengio, Boulanger-Lewandowski and Pascanu (2012); the RMSProp form is Eq.(18), page 7 of Ruder (2016).
 
@@ -66,7 +66,7 @@ print(round(norm, 1), [round(float(v), 1) for v in p.grad])
 
 The norm before the clipping is `5.0`; the gradient of norm `5.0` becomes `[0.6, 0.8]` of norm `1.0`. With `max_norm = 10.0` the gradient stays `[3.0, 4.0]` and the return value is still `5.0`. With two `Param` of gradients `[3.0]` and `[4.0]` the norm is the global `5.0` and the two become `[0.6]` and `[0.8]`: the norm is global, not per parameter. A gradient of zeros returns `0.0` and stays zeros.
 
-With `clip_norm = None` every result is identical to what the four estimators gave before this task. With `clip_norm = 0.5` and `SGD(1.0)` a single step moves all the parameters together by a vector of norm at most `0.5 + 1e-6`.
+With `clip_norm = None` the update is the one without clipping: no `Param` is touched by the clip and the four estimators follow the same path they follow without the option. With `clip_norm = 0.5` and `SGD(1.0)` a single step moves all the parameters together by a vector of norm at most `0.5 + 1e-6`.
 
 ## 3. Activations
 
@@ -153,6 +153,52 @@ print(c2.forward(jnp.array([[1.0], [2.0]])).reshape(-1).tolist())
 With kernel `[[1], [10], [100]]`, `stride = 2` and input `[1, 2]`, the output is `[1, 10, 102, 20, 200]` (length 5). With `padding = 1` and `output_padding = 1` the first and the last position are cut, and the length is 4.
 
 The output size is `s * (L - 1) + a + k - 2p`, Relationship 14, page 26 of Dumoulin and Visin (2016). With `a = 0` it is Relationship 13 of the same page. The three triples `(L, k, s, p, a)` = `(5, 3, 2, 1, 0)`, `(5, 3, 2, 0, 1)`, `(6, 4, 3, 1, 2)` give the sizes 9, 12, 19. The adjoint property `sum(Conv2D(x) * y) == sum(x * ConvTranspose2D(y))` holds for `stride = 1` and `stride = 2` within `1e-4`.
+
+### Upsample1D
+
+An `Upsample1D` repeats each position of a sequence a fixed number of times along the length. It is the simplest way to grow a feature map in a decoder: no parameter, no learning, the output is a stretch of the input. Where a `ConvTranspose1D` learns how to redistribute the energy over the wider map, an `Upsample1D` simply repeats every value, and a `Conv1D` after it learns the redistribution. In a decoder the two are often paired: upsample, then convolve.
+
+~~~python
+import jax.numpy as jnp
+from dense_armor.utility.neural.convtranspose import Upsample1D
+
+u = Upsample1D(2)
+x = jnp.array([[1.0], [2.0], [3.0]])
+print(u.forward(x).reshape(-1).tolist())
+print(u.backward(jnp.ones((6, 1))).reshape(-1).tolist())
+~~~
+
+~~~
+[1.0, 1.0, 2.0, 2.0, 3.0, 3.0]
+[2.0, 2.0, 2.0]
+~~~
+
+With factor `2` each of the three positions becomes two copies, so the output has length `3 * 2 = 6` and holds `[1, 1, 2, 2, 3, 3]`. The backward sums each block of `factor` positions: the two positions of the first block receive `1 + 1 = 2`, the two of the second block `1 + 1 = 2`, the two of the third `1 + 1 = 2`. What the backward sums is the upstream gradient, not the value of the input: the upstream gradient is all `1`s, so every block of two positions gives `1 + 1 = 2` and the three input positions `1, 2, 3` do not enter the count.
+
+Textbook definition, no citation.
+
+### Upsample2D
+
+An `Upsample2D` repeats each position along both spatial axes. On a `(H, W, c)` input with factor `f`, the output has shape `(H * f, W * f, c)`, and the backward sums each `f x f` block. It is the two-dimensional version of `Upsample1D`, used in a decoder after a convolution when the shape of the output has to match the shape of the input of the encoder.
+
+~~~python
+import jax.numpy as jnp
+from dense_armor.utility.neural.convtranspose import Upsample2D
+
+u = Upsample2D(2)
+x = jnp.array([[[1.0], [2.0]], [[3.0], [4.0]]])
+print(u.forward(x).shape)
+print(u.backward(jnp.ones((4, 4, 1))).reshape(-1).tolist())
+~~~
+
+~~~
+(4, 4, 1)
+[4.0, 4.0, 4.0, 4.0]
+~~~
+
+With factor `2` the `2 x 2` input becomes `4 x 4`, every entry repeated four times. The backward sums each `2 x 2` block of ones, so every entry of the `2 x 2` input receives `2 * 2 = 4`.
+
+Textbook definition, no citation.
 
 ## 6. The bidirectional recurrent layer
 

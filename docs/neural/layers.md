@@ -23,7 +23,7 @@ print(y.shape, d.W.value.shape, d.b.value.shape)
 (2,) (3, 2) (2,)
 ~~~
 
-`Dense` holds the weights as `Param` objects, so `W` and `b` have the same `value`, `grad`, `zero_grad()` and `update(optimizer)` as the `Param` of N01. `backward(g)` returns the gradient of the input and **adds** to `W.grad` and `b.grad`; the caller calls `zero_grad()` before a new pass.
+`Dense` holds the weights as `Param` objects, so `W` and `b` have the same `value`, `grad`, `zero_grad()` and `update(optimizer)` as the `Param` of [Neural bricks](index.md). `backward(g)` returns the gradient of the input and **adds** to `W.grad` and `b.grad`; the caller calls `zero_grad()` before a new pass.
 
 ## 2. An embedding table
 
@@ -172,13 +172,13 @@ The first histogram is the raw feature, skewed; the second is the same feature a
 
 ### Choices stated explicitly
 
-- The embedding table starts from a zero-mean Gaussian with standard deviation `1/sqrt(dim)`. The N02a sources do not state a scale for an embedding table; `1/sqrt(dim)` is our choice, and it keeps the variance of a lookup roughly independent of the dimension when the ids are uniform.
+- The embedding table starts from a zero-mean Gaussian with standard deviation `1/sqrt(dim)`. The sources for this page do not state a scale for an embedding table; `1/sqrt(dim)` is our choice, and it keeps the variance of a lookup roughly independent of the dimension when the ids are uniform.
 - Dropout multiplies the kept elements by `1/(1 - p)` at training time. Hinton et al. 2012 (page 2) halve the outgoing weights of the mean network at test time; the training-time scaling gives the same expected value and leaves the evaluation mode as the identity.
 - `BatchNorm` uses `eps = 1e-5` and `momentum = 0.1`. The paper gives no value for either; `1e-5` and `0.1` are our choices, the values used by the reference implementation.
 - `LayerNorm` adds `eps = 1e-5` inside the square root. The paper (Eq.(3), page 2) writes no constant; `1e-5` is our choice.
-- `AsTransformer` does not learn. The weights of a layer are updated by `Param.update` in a training loop of N04 and N05, not by the streaming interface; `learn_one` returns `self` and changes nothing.
+- `AsTransformer` does not learn. The weights of a layer are updated by `Param.update` in a training loop of [Training](training.md) and [Continuous training](continuous.md), not by the streaming interface; `learn_one` returns `self` and changes nothing.
 - The adapter's `budget_s` is `0.015`, ten times the measured p99 of `transform_one` on this machine (1.37 ms), never below `1e-3`.
 
 ### Development diary
 
-The delivery leaves out the convolution, the pooling and the recurrent layers, which are N02b. The online update of the running statistics of `BatchNorm` between training and evaluation is not driven by the streaming interface: the `training=True` flag of `forward` decides which statistics to use, and the caller decides when to switch.
+The delivery leaves out the convolution, the pooling and the recurrent layers, which are in [Convolution and pooling](vision_layers.md) and [Recurrent layers and attention](sequence_layers.md). The online update of the running statistics of `BatchNorm` between training and evaluation is not driven by the streaming interface: the `training=True` flag of `forward` decides which statistics to use, and the caller decides when to switch.

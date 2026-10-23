@@ -154,6 +154,82 @@ True
 
 The cache grows by one key-value pair per step, and the attention weights of step `t` are computed only against the keys of steps `0` to `t`. `init_cache` returns two arrays of shape `(0, d_model)`. The causal mask of the `forward` is a lower-triangular boolean matrix, and the same mask is applied inside `scaled_dot_product_attention` before the softmax (page 5 of the paper).
 
+## The small layers of the builders
+
+The three layers below are small: they do not have parameters, or they have a fixed table of numbers. They are the glue that the `recurrent_net` and `transformer_encoder` builders use between a recurrent layer and a dense head, and that the reader will meet again if they open those builders.
+
+### LastStep
+
+A recurrent layer returns one state per step; a classifier or a regressor wants one vector per sequence. A `LastStep` keeps the last state and drops the others. On a sequence `(B, T, n)` it returns `(B, n)`; the backward puts the whole upstream gradient at the last step and zeros elsewhere, because the earlier steps did not contribute to the output.
+
+~~~python
+import jax.numpy as jnp
+from dense_armor.utility.neural.models import LastStep
+
+l = LastStep()
+x = jnp.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
+print(l.forward(x).tolist())
+print(l.backward(jnp.ones((2,))).tolist())
+~~~
+
+~~~
+[5.0, 6.0]
+[[0.0, 0.0], [0.0, 0.0], [1.0, 1.0]]
+~~~
+
+The three steps of the sequence are `[1, 2]`, `[3, 4]`, `[5, 6]`; the last is `[5, 6]`. The backward of `ones` puts `1` at the last step and `0` at the two before, because only the last step saw the output.
+
+Textbook definition, no citation.
+
+### MeanOverTime
+
+A `MeanOverTime` averages the states over the time axis, so every step contributes to the output. It is the other common way to read a sequence: `LastStep` keeps the end, `MeanOverTime` keeps the whole. The backward spreads `g / T` over every step, so each state receives the same share of the gradient.
+
+~~~python
+import jax.numpy as jnp
+from dense_armor.utility.neural.models import MeanOverTime
+
+m = MeanOverTime()
+x = jnp.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
+print([round(float(v), 4) for v in m.forward(x)])
+print([[round(float(v), 4) for v in row] for row in m.backward(jnp.ones((2,)))])
+~~~
+
+~~~
+[3.0, 4.0]
+[[0.3333, 0.3333], [0.3333, 0.3333], [0.3333, 0.3333]]
+~~~
+
+The three steps are `[1, 2]`, `[3, 4]`, `[5, 6]`; the mean of the first coordinates is `(1 + 3 + 5) / 3 = 3` and of the second is `(2 + 4 + 6) / 3 = 4`. The backward of `ones` puts `1 / 3` at every step: the three `1 / 3` values of a coordinate sum back to `1`, the coordinate of the upstream gradient.
+
+Textbook definition, no citation.
+
+### AddPositions
+
+An attention layer sees a set of vectors, not an ordered sequence: without something that tells the layer where a token is, two permutations of the same tokens give the same output. A fixed sinusoidal table, added to the input before the attention, breaks that symmetry. A learned table would work too, with one advantage (no `max_len` fixed in advance) and one disadvantage (no extrapolation to longer sequences); the fixed table is the choice of Vaswani et al. (2017), page 6.
+
+~~~python
+import jax.numpy as jnp
+from dense_armor.utility.neural.models import AddPositions
+
+a = AddPositions(4)
+x = jnp.zeros((4, 2))
+y = a.forward(x)
+print([round(float(v), 4) for v in y[0]])
+print([round(float(v), 4) for v in y[1]])
+print([round(float(v), 4) for v in y[2]])
+~~~
+
+~~~
+[0.0, 1.0]
+[0.8415, 0.5403]
+[0.9093, -0.4161]
+~~~
+
+The input is all zeros, so the output is the sinusoidal table alone. The first row is the position `0`, where `sin(0) = 0` and `cos(0) = 1`. The second row is the position `1`, where `sin(1) = 0.8415` and `cos(1) = 0.5403`. The third row is the position `2`, where `sin(2) = 0.9093` and `cos(2) = -0.4161`. With `AddPositions(4)` on a two-channel input, the first channel holds the sines at frequencies `0` and `1` and the second channel holds the cosines at the same frequencies.
+
+Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, L., Polosukhin, I. (2017). *Attention Is All You Need.* arXiv:1706.03762. Page 6, the sinusoidal positional encoding.
+
 ## 7. A transformer encoder, from the sequence to a label
 
 A transformer encoder of Vaswani et al. 2017 stacks a dense projection, a positional encoding, `depth` transformer blocks and a mean over the time axis, followed by a dense head. The `transformer_encoder` builder returns a `Sequential`.
@@ -220,4 +296,4 @@ The Elman layer, the last-step and mean-over-time selections and the synthetic t
 
 ### Development diary
 
-The delivery leaves out the cross-attention and the gate between two signals (task N07), the learned positional encodings, the bidirectional layers and the transposed convolutions (task N03b). An `AsTransformer` around a `recurrent_net` or a `transformer_encoder` is not required by this task and is not provided; the two builders return a `Sequential` and are not wrapped in a library role.
+The cross-attention and the gate between two signals are not part of the library. The learned positional encodings, the bidirectional layers and the transposed convolutions are in [Deep](deep.md). An `AsTransformer` around a `recurrent_net` or a `transformer_encoder` is not provided; the two builders return a `Sequential` and are not wrapped in a library role.
