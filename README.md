@@ -308,4 +308,5 @@ Dense-Armor takes inspiration from [River](https://riverml.xyz) (Montiel et al.,
 - Deep Learning: [Continuous training: how do I keep a network learning from a stream, without blocking the loop and without losing it when the program stops?](docs/neural/continuous.md).
 - Deep Learning: [Encoders and decoders: how do I squeeze a stream of joint states into a few numbers, or into a few integers, and expand it back or into a forecast?](docs/neural/encoder_decoder.md).
 - Deep Learning: [Deep: what does a deep neural network need beyond the layers, and where is each piece in the library?](docs/neural/deep.md).
+- Deep Learning: [Attention: how does a network look at the other steps of a sequence, and where is each piece in the library?](docs/neural/attention.md).
 - Machine learning: [the families of `dense_armor.ml`](docs/ml/index.md), grown on the whole table: statistics, preprocessing, linear models, trees, forests, ensembles, anomaly and change detection, vision.
