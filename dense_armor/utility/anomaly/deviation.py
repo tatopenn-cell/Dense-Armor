@@ -6,7 +6,7 @@ Needs the optional dependency: the streaming extra
 import numpy as np
 
 from dense_armor.roles import AnomalyDetector
-from dense_armor.utility.anomaly.streaming import StreamingDeviationDetector
+from dense_armor.utility.anomaly.streaming import StreamingDeviationDetector, _feature_value
 from dense_armor.utility.protect.arbiter import _robust_center_scale
 
 
@@ -52,19 +52,30 @@ class StreamingDeviationScorer(AnomalyDetector):
         self.eps = eps
         self._detector = StreamingDeviationDetector(radius=radius, ref_mult=ref_mult, eps=eps)
 
+    n_missing_ = 0
+
+    @property
+    def n_missing(self) -> int:
+        return self.n_missing_
+
     def _value(self, x):
-        return float(x[self.feature if self.feature is not None else min(x)])
+        return _feature_value(x, self.feature)
 
     def score_one(self, x):
         buf = self._detector._buffer
-        if len(buf) < 4:
+        v = self._value(x)
+        if v is None or len(buf) < 4:
             return 0.0
         med, scale = _robust_center_scale(np.array(buf))
-        dev = abs(self._value(x) - med)
+        dev = abs(v - med)
         return dev if scale < self.eps else dev / scale
 
     def learn_one(self, x):
-        self._detector.update(self._value(x))
+        v = self._value(x)
+        if v is None:
+            self.n_missing_ += 1
+            return
+        self._detector.update(v)
 
     def _unit_test_skips(self):
         return {"check_roc_auc"}

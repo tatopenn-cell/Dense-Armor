@@ -239,3 +239,26 @@ def test_bandit_fixes():
     assert abs(p.m2_[0] / (len(xs) - 1) - float(np.var(xs, ddof=1))) < 1e-6
     with pytest.raises(ValueError):
         offline_replay([({"x": 0.0}, 0, 1.0)], lambda c: 0, n_bootstrap=0)
+
+
+def test_anomaly_missing_key():
+    from dense_armor.utility.anomaly.deviation import StreamingDeviationScorer
+    from dense_armor.utility.anomaly.filters import HampelFilter, HampelScorer
+    from dense_armor.utility.anomaly.streaming import StreamingDeviationDetector
+
+    s = HampelScorer(radius=5)
+    for v in range(10):
+        s.learn_one({"v": float(v)})
+    s.learn_one({"w": 1.0})
+    s.learn_one({})
+    s.learn_one({"v": float("nan")})
+    assert s.n_missing == 3 and s.score_one({"w": 1.0}) == 0.0
+    d = StreamingDeviationScorer(feature="v")
+    d.learn_one({})
+    assert d.n_missing == 1 and d.score_one({}) == 0.0
+    f = HampelFilter(radius=5, feature="v")
+    assert f.transform_one({"w": 2.0}) == {"w": 2.0}
+    det = StreamingDeviationDetector(radius=5, ref_mult=2)
+    for v in (1.0, 1.1, 0.9, 1.0, float("nan")):
+        det.update(v)
+    assert len(det._buffer) == 4

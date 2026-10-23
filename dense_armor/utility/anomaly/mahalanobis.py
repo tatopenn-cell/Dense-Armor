@@ -120,7 +120,10 @@ class OnlineRobustMahalanobis(AnomalyDetector):
         n_init: number of samples accumulated before the offline
             initialisation. The paper uses 100 in the simulations
             (section 4.1). Must be at least ``d + 1`` where ``d`` is
-            the number of features.
+            the number of features; with fewer samples the offline
+            initialisation falls back to the identity matrix, the case
+            the module docstring says never reaches the scale of the
+            data.
         max_step_frac: cap on the ASGD step length, as a fraction
             of the current Frobenius norm of ``V`` (and of the
             Euclidean norm of ``m``). The paper's step size

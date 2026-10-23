@@ -59,7 +59,9 @@ Details not fixed by the paper, stated explicitly:
   formula.
 - Step size ``eta_t = step / t`` with ``step`` a user constant
   (``1.0`` recovers the paper's ``eta_t = 1/t``; the paper's own
-  experiments use AdaGrad).
+  experiments use AdaGrad). ``t`` counts the steps since the end of
+  the ``n_init`` warm-up, so the first update after it has
+  ``eta = step``; a global counter would start at ``n_init + 1``.
 - Threshold: when ``threshold`` is ``None`` (default) the effective
   threshold is the ``threshold_quantile``-quantile of the last
   ``threshold_window`` scores (default 0.95 and 500); while fewer than

@@ -6,7 +6,10 @@ import jax.numpy as jnp
 @jax.jit
 def curvature(x_current: jnp.ndarray, x_reference: jnp.ndarray, scale: float = 1.0, delta: float = 1e-6) -> jnp.ndarray:
     """
-    Calcola la curvatura geometrica (κ) calcolando direttamente il gradiente analitico.
+    Non e' una curvatura differenziale: e' la saturazione monotona
+    `sqrt(g + delta) / sqrt(1 + g + delta)` della norma al quadrato `g` del gradiente
+    analitico di `sum((x - ref)^2) / scale`, un indicatore di prossimita' in [0, 1).
+    Il nome `curvature` resta per compatibilita' con le API gia' pubblicate.
     Elimina l'overhead di tracciamento di jax.grad mantenendo l'invarianza numerica.
 
     `scale` fissa l'ampiezza reale (nelle stesse unità di x_current/x_reference) alla

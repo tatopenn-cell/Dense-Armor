@@ -52,6 +52,15 @@ import numpy as np
 from dense_armor.utility.protect.arbiter import _robust_center_scale, classify_segments
 
 
+def _feature_value(x, feature):
+    """Finite float of ``feature`` (smallest key when ``None``), else ``None``."""
+    try:
+        v = float(x[feature if feature is not None else min(x)])
+    except (KeyError, TypeError, ValueError):
+        return None
+    return v if np.isfinite(v) else None
+
+
 class StreamingDeviationDetector:
     """Flag di deviazione causale a latenza zero, un punto alla volta --
     stessa finestra causale (radius*ref_mult), stessa mediana/MAD
@@ -83,7 +92,11 @@ class StreamingDeviationDetector:
     def update(self, x: float) -> bool:
         """Alimenta un nuovo punto. Ritorna True se DEVIA rispetto alla
         finestra dei punti strettamente PRECEDENTI (mai includendo se
-        stesso) -- stessa semantica di `_window_causal` in arbiter.py."""
+        stesso) -- stessa semantica di `_window_causal` in arbiter.py.
+        Un valore non finito non entra nel buffer e non e' deviante."""
+        if not np.isfinite(x):
+            self.last_deviation = 0.0
+            return False
         if len(self._buffer) < 4:
             self._buffer.append(x)
             self.last_deviation = 0.0
