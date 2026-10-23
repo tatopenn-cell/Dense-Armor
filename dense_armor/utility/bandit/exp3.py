@@ -146,7 +146,7 @@ class Exp3(BanditPolicy):
             The policy itself.
         """
         if not self._valid(arm, reward):
-            self.n_missing += 1
+            self.n_missing_ += 1
             return self
         x = float(reward)
         p_arm = self._probabilities()[arm]

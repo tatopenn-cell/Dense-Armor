@@ -158,7 +158,7 @@ class BayesUCB(BanditPolicy):
             The policy itself.
         """
         if not self._valid(arm, reward):
-            self.n_missing += 1
+            self.n_missing_ += 1
             return self
         r = float(reward)
         n = self.counts_[arm] + 1

@@ -27,8 +27,8 @@ class BanditPolicy(Root):
     Attributes:
         arms: the arms as a tuple.
         n_seen_: number of rewards learned so far.
-        n_missing: number of samples skipped because of NaN, missing arm,
-            or non-numeric reward.
+        n_missing_: number of samples skipped because of NaN, missing arm,
+            or non-numeric reward (``n_missing`` reads it).
     """
 
     budget_s = 1e-3
@@ -51,7 +51,11 @@ class BanditPolicy(Root):
         self.seed = int(seed)
         self._rng = np.random.default_rng(self.seed)
         self.n_seen_ = 0
-        self.n_missing = 0
+        self.n_missing_ = 0
+
+    @property
+    def n_missing(self) -> int:
+        return self.n_missing_
 
     def pull(self, context: dict | None = None) -> Any:
         """Choose an arm.

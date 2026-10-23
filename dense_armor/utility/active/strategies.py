@@ -127,7 +127,7 @@ class VariableUncertainty(ActiveStrategy):
             True if the instance is uncertain and the budget allows it.
         """
         self.n_seen_ += 1
-        if self.n_seen_ > 0 and (self.n_labelled_ / self.n_seen_) < self.budget:
+        if (self.n_labelled_ / self.n_seen_) < self.budget:
             p = model.predict_proba_one(x)
             conf = max(p.values()) if p else 0.0
             if float(conf) < self.theta_:
@@ -152,7 +152,11 @@ class VariableRandomizedUncertainty(VariableUncertainty):
         budget: labelling budget.
         s: adjusting step.
         delta: variance of the random multiplier, positive, as the paper
-            states it. The default 0.01 is my choice.
+            states it. The default 0.01 is my choice. With a large
+            ``delta`` the multiplier ``eta`` is negative with probability
+            ``P(Normal(1, delta) < 0)`` (about 16 % for ``delta = 1``);
+            then the threshold ``theta * eta`` is negative and no label is
+            requested at that step.
         seed: seed of the random generator.
 
     References:
@@ -194,7 +198,7 @@ class VariableRandomizedUncertainty(VariableUncertainty):
             threshold and the budget allows it.
         """
         self.n_seen_ += 1
-        if self.n_seen_ > 0 and (self.n_labelled_ / self.n_seen_) < self.budget:
+        if (self.n_labelled_ / self.n_seen_) < self.budget:
             p = model.predict_proba_one(x)
             conf = max(p.values()) if p else 0.0
             eta = float(self._rng.normal(1.0, math.sqrt(self.delta)))
