@@ -32,6 +32,11 @@ def _timestamp_of(x: Any) -> float | None:
     return None
 
 
+def _check_delay(delay: float | None) -> None:
+    if delay is not None and delay < 0:
+        raise ValueError(f"delay must be >= 0, got {delay}")
+
+
 def _split_ready(
     buffer: list[_PENDING],
     delay: float | None,
@@ -43,7 +48,9 @@ def _split_ready(
         n_ready = max(0, len(buffer) - delay)
         return buffer[:n_ready], buffer[n_ready:]
     if now is None:
-        return [], list(buffer)
+        raise ValueError(
+            "a delay in seconds needs samples with a timestamp (Signal)"
+        )
     ready: list[_PENDING] = []
     rest: list[_PENDING] = []
     for item in buffer:
@@ -88,7 +95,11 @@ def progressive_val_score(
     With ``delay=None`` every sample is scored and learned immediately.
     With an integer ``delay`` the last ``delay`` samples wait in the
     buffer; with a float the delay is measured in seconds on the
-    timestamps.
+    timestamps, which only a :class:`~dense_armor.roles.Signal` carries:
+    a float delay on samples without a timestamp raises ``ValueError``.
+    The trace has one value for each full block of ``every`` samples;
+    the value after the last sample and the delayed samples is the
+    returned metric.
 
     Args:
         stream: an iterable of ``(x, y)`` pairs.
@@ -102,7 +113,9 @@ def progressive_val_score(
         The metric, or ``(metric, trace)`` when ``every`` is given.
 
     Raises:
-        ValueError: if ``every`` is given and is not positive.
+        ValueError: if ``every`` is given and is not positive, if
+            ``delay`` is negative, or if ``delay`` is in seconds and a
+            sample has no timestamp.
 
     Example:
         >>> from dense_armor.utility.evaluate import progressive_val_score
@@ -117,6 +130,7 @@ def progressive_val_score(
         >>> round(m.get(), 3)
         0.95
     """
+    _check_delay(delay)
     if every is not None and every < 1:
         raise ValueError(f"every must be >= 1, got {every}")
     buffer: list[_PENDING] = []
@@ -152,9 +166,9 @@ def progressive_val_proba_score(
 
     Use when the metric needs a probability (``LogLoss``,
     ``BrierScore``) and the classifier exposes ``predict_proba_one``.
-    The class ``positive=1`` is used as the probability of the positive
-    class; if the classifier is not binary, the metric must select the
-    class itself.
+    The metric receives one number: the probability of the class ``1``
+    (or ``True``), or ``0.5`` while the classifier gives no probability.
+    A classifier with other class labels is not supported.
 
     Args:
         stream: an iterable of ``(x, y)`` pairs.
@@ -165,7 +179,13 @@ def progressive_val_proba_score(
 
     Returns:
         The metric, or ``(metric, trace)``.
+
+    Raises:
+        ValueError: if ``every`` is given and is not positive, if
+            ``delay`` is negative, or if ``delay`` is in seconds and a
+            sample has no timestamp.
     """
+    _check_delay(delay)
     if every is not None and every < 1:
         raise ValueError(f"every must be >= 1, got {every}")
     buffer: list[_PENDING] = []

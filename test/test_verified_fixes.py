@@ -3,14 +3,57 @@
 import numpy as np
 import pytest
 
+from dense_armor.utility.evaluate import evaluate_events, progressive_val_score
+from dense_armor.utility.evaluate.model_selection import OnlineModelSelection
 from dense_armor.utility.learn.calibration import OnlinePlattScaling
 from dense_armor.utility.learn.metric_learning import LEGO
 from dense_armor.utility.learn.online_dynamics import RecursiveLeastSquares
 from dense_armor.utility.linear.bayes import BayesianLinearRegression
 from dense_armor.utility.linear.glm import LogisticRegression
+from dense_armor.utility.metrics import Accuracy
 from dense_armor.utility.misc.diagnostic import diag
 from dense_armor.utility.misc.metro import Metro
 from dense_armor.utility.tree.batch import BatchDecisionTreeClassifier
+
+
+class _Const:
+    def learn_one(self, x, y, t=None):
+        return self
+
+    def predict_one(self, x, t=None):
+        return 1
+
+
+def test_current_best_before_the_run_raises():
+    sel = OnlineModelSelection([_Const(), _Const()], Accuracy)
+    with pytest.raises(ValueError):
+        sel.current_best()
+    sel.run([({}, 1)] * 3)
+    assert sel.current_best() in (0, 1)
+
+
+def test_a_negative_delay_raises():
+    with pytest.raises(ValueError):
+        progressive_val_score([({}, 1)], _Const(), Accuracy(), delay=-5)
+
+
+def test_a_delay_in_seconds_needs_timestamps():
+    with pytest.raises(ValueError):
+        progressive_val_score([({}, 1)] * 3, _Const(), Accuracy(), delay=1.5)
+
+
+def test_an_anomaly_detector_without_t_is_called_without_it():
+    class Det:
+        score_threshold = 0.5
+
+        def score_one(self, x):
+            return 1.0
+
+        def learn_one(self, x):
+            return self
+
+    stream = [(float(i), {"a": 1.0}) for i in range(5)]
+    assert evaluate_events(stream, Det(), [(1.0, 3.0)])["missed"] == 0
 
 
 def test_batch_fit_refuses_a_row_with_a_missing_feature():
