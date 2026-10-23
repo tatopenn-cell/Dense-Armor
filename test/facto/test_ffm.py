@@ -136,6 +136,46 @@ def test_rejects_bad_parameters():
         FFMClassifier(fields=FIELDS, l2=-1.0)
 
 
+def test_gradient_for_labels_zero_and_minus_one():
+    ffm = _factory_clf()
+    sig = 1.0 / (1.0 + np.exp(-0.3))
+    assert ffm._grad_error(0.3, 0) == pytest.approx(sig)
+    assert ffm._grad_error(0.3, -1) == pytest.approx(sig)
+    assert ffm._grad_error(0.3, 1) == pytest.approx(sig - 1.0)
+    assert ffm._grad_error(0.3, 1.0) == pytest.approx(sig - 1.0)
+
+
+def test_label_zero_is_learned():
+    x = {"a": 1.0, "c": 1.0}
+    ffm = _factory_clf()
+    _ = ffm.learn_one(x, 0)
+    before = ffm.predict_proba_one(x)[0]
+    for _ in range(300):
+        _ = ffm.learn_one(x, 0)
+    assert ffm.predict_proba_one(x)[0] > before
+
+
+def test_label_zero_equals_label_minus_one():
+    x = {"a": 1.0, "b": 0.5, "c": 0.3}
+    zero, minus = _factory_clf(), _factory_clf()
+    for _ in range(20):
+        _ = zero.learn_one(x, 0)
+        _ = minus.learn_one(x, -1)
+    assert np.array_equal(zero._w, minus._w)
+
+
+def test_both_classes_are_separated():
+    pos, neg = {"a": 1.0, "c": 1.0}, {"b": 1.0, "d": 1.0}
+    ffm = FFMClassifier(
+        fields=FIELDS, k=2, lr=0.1, seed=0, feature_keys=["a", "b", "c", "d"]
+    )
+    for _ in range(300):
+        _ = ffm.learn_one(pos, 1)
+        _ = ffm.learn_one(neg, 0)
+    assert ffm.predict_one(pos) == 1
+    assert ffm.predict_one(neg) == 0
+
+
 def test_check_estimator_classifier():
     r = check_estimator(_factory_clf())
     assert r["not_applicable"] == []

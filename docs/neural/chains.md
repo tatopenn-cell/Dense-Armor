@@ -222,4 +222,4 @@ The left panel is the decision boundary of `mlp([2, 16, 16, 1])` after 200 steps
 
 ### Development diary
 
-The delivery leaves out the convolutional network, the recurrent network and the transformer block, which need the layers of N02b and the attention of N07: task N03b. A general graph with shared nodes is also left out, as stated in the Choices.
+The delivery leaves out the convolutional network, the recurrent network and the transformer block, which need the layers of [Convolution and pooling](vision_layers.md) and [Recurrent layers and attention](sequence_layers.md) and the attention of [Attention](attention.md). A general graph with shared nodes is also left out, as stated in the Choices.
