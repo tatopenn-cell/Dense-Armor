@@ -71,6 +71,41 @@ print(f"{d:.2e}")
 The two paths give the same weights to machine precision. The classifier (`OnlineNetClassifier`) uses `BCEWithLogits` for two classes and `SoftmaxCrossEntropy` for more, and `predict_proba_one` returns the class probabilities. A sample with a missing feature, `None`, NaN, a non-numeric value or a non-finite target is counted in `n_missing_` and does not change the weights.
 
 
+### OnlineNetClassifier
+
+A classifier, not a regressor: it learns one sample at a time from a label, and it predicts the probability of each class. It shares the operations of `OnlineNetRegressor` (zero the gradient, forward, loss, backward, the schedule, the weight decay, the update) and differs only in the loss and in the shape of the output. With two classes it uses `BCEWithLogits` and a model that ends with a single score; with more classes it uses `SoftmaxCrossEntropy` and a model that ends with one score per class. `predict_proba_one` returns the two or more probabilities, `predict_one` the class with the largest one.
+
+~~~python
+import jax
+import jax.numpy as jnp
+from dense_armor.utility.neural.online import OnlineNetClassifier
+from dense_armor.utility.neural.layers import Dense
+from dense_armor.utility.neural.losses import SoftmaxCrossEntropy
+from dense_armor.utility.optim import SGD
+
+d = Dense(2, 3, jax.random.PRNGKey(0))
+d.W.value = jnp.array([[1.0, 0.0, -1.0], [0.0, 1.0, 0.0]])
+d.b.value = jnp.zeros(3)
+c = OnlineNetClassifier(d, SoftmaxCrossEntropy(), SGD(0.1),
+                        classes=[0, 1, 2], feature_keys=["a", "b"])
+print(c.predict_one({"a": 1.0, "b": 0.0}))
+c.learn_one({"a": 1.0, "b": 0.0}, 0)
+print(c.predict_one({"a": 1.0, "b": 0.0}))
+print([round(float(v), 4) for v in c.model_.W.value[0]])
+print([round(float(v), 4) for v in c.model_.b.value])
+~~~
+
+~~~
+0
+0
+[1.0335, -0.0245, -1.009]
+[0.0335, -0.0245, -0.009]
+~~~
+
+With `x = [1, 0]` the model produces the scores `[1, 0, -1]` (the first column of `W`); softmax gives `[0.665, 0.245, 0.090]`; the prediction is `0`, the class with the largest probability, both before and after one step. The loss is `-log(0.665) = 0.408` and the gradient of the loss with respect to the scores is `[0.665 - 1, 0.245, 0.090] = [-0.335, 0.245, 0.090]`. With `x = [1, 0]` the update is `dW[0] = -0.1 * [-0.335, 0.245, 0.090] = [0.0335, -0.0245, -0.009]`, and the first row of `W` moves from `[1, 0, -1]` to `[1.0335, -0.0245, -1.009]`. The bias moves by the same amount, `b = [0.0335, -0.0245, -0.009]`. The second row of `W` does not move, because the second input is `0`.
+
+Textbook definition, no citation.
+
 ## 3. Hedge Backpropagation, the depth chosen while it runs
 
 A Hedge network of Sahoo, Pham, Lu and Hoi (2018) has `L + 1` classifiers on the representations `h(0) = x`, `h(l) = relu(W(l) h(l-1))`, each with a softmax output `f(l) = softmax(h(l) Theta(l))`. The prediction is `F(x) = sum_l alpha(l) f(l)(x)`, a weighted sum of the depths (Eq.(1), page 3). The `alpha(l)` start uniform, and after every sample they are discounted by `beta ** L(l)`, where `L(l) = 1 - p(l)[y]` is the loss of the classifier at depth `l`, then smoothed to `s / L` and normalised to sum to 1 (page 4).

@@ -6,6 +6,9 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ### Added
 - `docs/neural/attention.md`, the page of the attention; `docs/api/neural.md`, the signature of every public class and function of `neural` and `optim`.
+- The 16 sections of the pages `docs/neural/index.md`, `docs/neural/vision_layers.md`, `docs/neural/deep.md`, `docs/neural/sequence_layers.md` and `docs/neural/continuous.md` for the neural classes that had no code example: `Sigmoid`, `Tanh`, `Softmax`, `PRelu`, `SoftmaxCrossEntropy`, `BCEWithLogits`, `Huber`, `MaxPool1D`, `AvgPool1D`, `AvgPool2D`, `Upsample1D`, `Upsample2D`, `LastStep`, `MeanOverTime`, `AddPositions`, `OnlineNetClassifier`.
+- `benchmarks/neural/check_examples.py`, the script that checks that each class is in a code block of its page and that every block of the five pages prints the output written under it; `test/neural/test_check_examples.py` (4 tests).
+
 ### Fixed
 - `docs/neural/deep.md` held its sections 7 to 11, the figure and the details twice; the repeated half is gone.
 - `ARCHITECTURE.md` lists `bocpd.py`, `vectorizer.py`, `shrinkage.py`, `similarity.py`, `batch.py` and `fimt.py`.
