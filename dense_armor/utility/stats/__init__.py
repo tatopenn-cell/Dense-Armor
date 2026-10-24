@@ -1,4 +1,5 @@
 """Streaming statistics and sketches."""
+from dense_armor.utility.stats.bm25 import BM25Index
 from dense_armor.utility.stats.dependence import (
     Autocorrelation,
     RollingCorrelation,
@@ -35,6 +36,7 @@ from dense_armor.utility.stats.sketches import (
 
 __all__ = [
     "Autocorrelation",
+    "BM25Index",
     "BloomFilter",
     "CountMinSketch",
     "DDSketch",
