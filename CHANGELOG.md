@@ -4,6 +4,11 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+## [1.1.35] - 2026-10-24
+
+### Changed
+- The DOI of version 1.1.34 in the README badge, the README links and `CITATION.cff`.
+
 ### Added
 - `docs/neural/attention.md`, the page of the attention; `docs/api/neural.md`, the signature of every public class and function of `neural` and `optim`.
 - The 16 sections of the pages `docs/neural/index.md`, `docs/neural/vision_layers.md`, `docs/neural/deep.md`, `docs/neural/sequence_layers.md` and `docs/neural/continuous.md` for the neural classes that had no code example: `Sigmoid`, `Tanh`, `Softmax`, `PRelu`, `SoftmaxCrossEntropy`, `BCEWithLogits`, `Huber`, `MaxPool1D`, `AvgPool1D`, `AvgPool2D`, `Upsample1D`, `Upsample2D`, `LastStep`, `MeanOverTime`, `AddPositions`, `OnlineNetClassifier`.
