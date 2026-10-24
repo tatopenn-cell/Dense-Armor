@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 test/test_six_dof_pbc_cbf_controller.py
 ==========================================
@@ -10,10 +9,14 @@ import os
 
 import jax.numpy as jnp
 import numpy as np
-
-from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.dynamics.six_dof_pbc_cbf_controller import solve_control_qp, rotation_error
 import pytest
+
+from dense_armor.dynamics.six_dof_pbc_cbf_controller import (
+    rotation_error,
+    solve_control_qp,
+)
+from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
+
 pytestmark = pytest.mark.heavy
 
 
@@ -143,6 +146,7 @@ def test_position_and_orientation_converge():
     converge under RK4-integrated real dynamics -- not just a single QP call.
     """
     from functools import partial
+
     import jax
 
     @partial(jax.jit, static_argnames=("model", "n_substeps"))

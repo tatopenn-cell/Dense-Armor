@@ -1,8 +1,10 @@
-# -*- coding: utf-8 -*-
 import numpy as np
 import pytest
 
-from dense_armor.core.vector import BitwisePermutationEngine, ParametricScenarioSimulator
+from dense_armor.core.vector import (
+    BitwisePermutationEngine,
+    ParametricScenarioSimulator,
+)
 
 
 def test_bitwise_swap_scambia_gli_elementi_attesi():

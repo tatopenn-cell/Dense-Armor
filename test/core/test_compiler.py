@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
 import numpy as np
 import pytest
 
-from dense_armor.core.compiler import DynamicAICodegen, CMD_MAP
+from dense_armor.core.compiler import CMD_MAP, DynamicAICodegen
 
 
 def test_compile_pipeline_riconosce_tutti_i_comandi_testuali():

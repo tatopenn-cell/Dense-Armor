@@ -57,12 +57,14 @@ def _manipulability_jacobian(model, link_name, q):
 
 
 def _manipulability_jacobian_dot_times_qd(model, link_name, q, qd):
-    jfn = lambda qq: _manipulability_jacobian(model, link_name, qq) @ qd
+    def jfn(qq):
+        return _manipulability_jacobian(model, link_name, qq) @ qd
     return jax.jvp(jfn, (q,), (qd,))[1]
 
 
 def _link_jacobian_dot_times_qd(model, link_name, q, qd):
-    jfn = lambda qq: model.link_jacobian(qq, link_name) @ qd
+    def jfn(qq):
+        return model.link_jacobian(qq, link_name) @ qd
     return jax.jvp(jfn, (q,), (qd,))[1]
 
 
@@ -73,7 +75,8 @@ def _lambda_task(model, link_name, q):
 
 
 def _lambda_task_dot_times_qd(model, link_name, q, qd):
-    fn = lambda qq: _lambda_task(model, link_name, qq)
+    def fn(qq):
+        return _lambda_task(model, link_name, qq)
     return jax.jvp(fn, (q,), (qd,))[1]
 
 

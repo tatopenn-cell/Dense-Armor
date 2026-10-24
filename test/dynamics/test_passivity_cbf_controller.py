@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 test/test_passivity_cbf_controller.py
 ========================================
@@ -13,11 +12,15 @@ from unittest.mock import patch
 
 import jax.numpy as jnp
 import numpy as np
+import pytest
 
 import dense_armor.dynamics.passivity_cbf_controller as pcc
+from dense_armor.dynamics.passivity_cbf_controller import (
+    manipulability,
+    solve_control_qp,
+)
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.dynamics.passivity_cbf_controller import solve_control_qp, manipulability
-import pytest
+
 pytestmark = pytest.mark.heavy
 
 
