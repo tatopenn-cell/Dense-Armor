@@ -37,7 +37,6 @@ from typing import Any
 
 from dense_armor.roles import Transformer
 
-
 _MISSING = object()
 
 
