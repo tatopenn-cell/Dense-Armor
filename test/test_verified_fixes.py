@@ -399,3 +399,12 @@ def test_sketches_count_missing_key(name):
     if name != "HyperLogLog":
         assert s.transform_one({"b": 1}) == {}
         assert s.n_missing == 2
+
+
+def test_ffm_orphan_feature_allocates_nothing():
+    from dense_armor.utility.facto.ffm import FFMClassifier
+
+    m = FFMClassifier(fields={"a": "f1", "b": "f2"}, k=3, feature_keys=["a", "b", "z"])
+    m.learn_one({"a": 1.0, "b": 1.0, "z": 5.0}, 1)
+    assert m._w.shape[0] == 2
+    assert 0.0 <= m.predict_proba_one({"a": 1.0, "b": 1.0, "z": 5.0}).get(1, 0.5) <= 1.0
