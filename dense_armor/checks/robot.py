@@ -87,7 +87,7 @@ def check_p99_within_budget(est: Any) -> None:
     # it before measuring, so the check is deterministic.
     if budget < 1e-3:
         raise AssertionError(
-            f"declared budget {budget:.3e} s exceeds the 1e-3 s "
+            f"declared budget {budget:.3e} s is below the 1e-3 s "
             f"lower bound"
         )
     learn = getattr(est, "learn_one", None)
