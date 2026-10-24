@@ -86,6 +86,18 @@ def test_nb_leaf_one_minority_sample_does_not_saturate():
     assert all(h.predict_one(q) == 0 for q in queries)
 
 
+def test_nb_leaf_skips_features_without_statistics_for_a_class():
+    rng = np.random.default_rng(0)
+    h = HoeffdingTreeClassifier(grace_period=10**9)
+    for _ in range(40):
+        h.learn_one({"a": float(rng.normal()), "b": float(rng.normal())}, 0)
+    for _ in range(40):
+        h.learn_one({"a": float(rng.normal() + 4.0)}, 1)
+    q = {"a": 4.0, "b": 0.0, "never_seen": 1.0}
+    assert h.predict_proba_one(q)[1] > 0.99
+    assert h.predict_one(q) == 1
+
+
 def test_nb_leaf_still_used_when_every_class_has_two_samples():
     rng = np.random.default_rng(0)
     h = _one_leaf_stream(30, rng)
