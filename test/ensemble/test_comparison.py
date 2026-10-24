@@ -81,19 +81,24 @@ def test_bagging_not_worse_than_single_tree():
 
 
 @pytest.mark.heavy
-def test_boosting_beats_single_tree():
+def test_boosting_not_worse_than_single_tree():
+    """Boosting gained 3.7 points on the median over the single tree
+    (0.9758 against 0.9392, Wilcoxon p = 0.0039) while the Naive Bayes
+    leaf gave the rare class a probability close to 1 when it had fewer
+    than two samples. With the majority fallback of that case the single
+    tree reaches 0.9965 and boosting 0.9970 (difference 0.0005, p = 0.125):
+    the test states "not worse", not "better"."""
     a, b = _seed_pair(
         lambda: OnlineBoostingClassifier(
             lambda: HoeffdingTreeClassifier(grace_period=50), n_models=5, seed=0
         ),
         _single,
     )
-    p = _wilcoxon(a, b)
     delta = float(np.median(a) - np.median(b))
-    assert delta > 0.01, (
-        f"boosting {np.median(a):.4f} <= single+0.01 {np.median(b):.4f}"
+    assert delta >= -0.005, (
+        f"boosting {np.median(a):.4f} below single {np.median(b):.4f}"
     )
-    assert p < 0.05, f"Wilcoxon p={p:.4f}, no gain"
+    assert float(np.min(a)) >= float(np.min(b)) - 0.05
 
 
 @pytest.mark.heavy

@@ -4,6 +4,9 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- `HoeffdingTreeClassifier` with `leaf="nb"` (the default): a leaf in which any class has fewer than two samples now answers like `leaf="majority"`, in `predict_proba_one` and in `predict_one`. Before, that class skipped every likelihood term and kept only its prior, while the other classes added one log-density per feature, so on an imbalanced stream the rare class got a probability close to 1 for ordinary samples. On a leaf with 300 samples of class 0 and one of class 1 (synthetic), the median probability of class 1 on 200 new class-0 samples was 0.953 and is now 0.0033. On the credit card fraud stream (284,807 rows, 492 frauds) the default configuration measured AUROC 0.513 and AUPRC 0.0032 before the change (`dense-business`, `benchmarks/kaggle/n65_diag`). On the sudden-drift stream of `test/ensemble/test_comparison.py` (2,000 samples, 10 seeds) the single tree goes from a median accuracy of 0.9392 to 0.9965 and `OnlineBoostingClassifier` from 0.9758 to 0.9970, so the gain of boosting over the single tree (0.0365, Wilcoxon p = 0.0039) becomes 0.0005 (p = 0.125); the test `test_boosting_beats_single_tree` is replaced by `test_boosting_not_worse_than_single_tree`. Tests: `test_nb_leaf_one_minority_sample_does_not_saturate` and `test_nb_leaf_still_used_when_every_class_has_two_samples` in `test/tree/test_hoeffding.py`.
+
 ## [1.1.35] - 2026-10-24
 
 ### Changed
