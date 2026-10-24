@@ -87,7 +87,7 @@ def check_p99_within_budget(est: Any) -> None:
     # it before measuring, so the check is deterministic.
     if budget < 1e-3:
         raise AssertionError(
-            f"declared budget {budget:.3e} s exceeds the 1e-3 s "
+            f"declared budget {budget:.3e} s is below the 1e-3 s "
             f"lower bound"
         )
     learn = getattr(est, "learn_one", None)
@@ -155,17 +155,23 @@ def check_memory_growth_bounded(est: Any) -> None:
     def _sig(i: int) -> Any:
         return Signal(values=jnp.array([float(i)]), names=["x"], units=[""])
 
-    for i in range(32):
+    n_fill = 32
+    if mc == "O(window)":
+        window = getattr(est, "window", None)
+        if not isinstance(window, int) or isinstance(window, bool) or window < 1:
+            return
+        n_fill = max(32, window + 8)
+    for i in range(n_fill):
         _learn(est, _sig(i))
     start = int(est._raw_memory_usage)
-    for i in range(32, 64):
+    for i in range(n_fill, n_fill + 32):
         _learn(est, _sig(i))
     end = int(est._raw_memory_usage)
     slack = 8192
-    if mc == "O(1)":
-        assert end - start <= slack, (
-            f"declared O(1) but memory grew by {end - start} bytes"
-        )
+    assert end - start <= slack, (
+        f"declared {mc} but memory grew by {end - start} bytes "
+        f"after {n_fill} samples"
+    )
 
 
 def check_estimate_variance_non_negative(est: Any) -> None:

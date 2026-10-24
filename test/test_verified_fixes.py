@@ -310,3 +310,101 @@ def test_stats_missing_and_extremes():
         sc.learn_one({"v0": float(rng.normal()), "v1": float("nan") if i % 2 else float(rng.normal())})
     assert sc.shrinkage()[1] >= 0.0
     assert _hash64("a", 2**33) == _hash64("a", 0)
+
+
+@pytest.mark.parametrize("module,name", [
+    ("moments", "RunningMoments"),
+    ("moments", "EWStats"),
+    ("quantiles", "DDSketch"),
+    ("quantiles", "TDigest"),
+    ("robust", "RollingMedian"),
+])
+def test_stats_empty_and_non_number_counted(module, name):
+    import importlib
+
+    est = getattr(importlib.import_module(f"dense_armor.utility.stats.{module}"), name)()
+    est.learn_one({})
+    est.learn_one({"a": "text"})
+    est.learn_one({"a": None})
+    assert est.n_missing == 3
+
+
+@pytest.mark.parametrize("name", ["TukeyScorer", "ChauvenetScorer", "SigmaClipScorer", "HampelScorer"])
+def test_filter_scorers_missing_key(name):
+    from dense_armor.utility.anomaly import filters
+
+    s = getattr(filters, name)(radius=5, feature="v")
+    for v in range(10):
+        s.learn_one({"v": float(v)})
+    s.learn_one({})
+    s.learn_one({"v": "text"})
+    assert s.n_missing == 2
+    expected = float("inf") if name == "ChauvenetScorer" else 0.0
+    assert s.score_one({}) == expected
+    assert len(s._buffer) == 10
+
+
+def test_hampel_filter_missing_and_outlier():
+    from dense_armor.utility.anomaly.filters import HampelFilter
+
+    f = HampelFilter(radius=5, feature="v")
+    for v in range(10):
+        f.learn_one({"v": float(v)})
+    assert f.transform_one({"w": 1.0}) == {"w": 1.0}
+    assert f.n_missing == 1
+    out = f.transform_one({"v": 1000.0, "z": 2.0})
+    assert out["z"] == 2.0 and out["v"] < 20.0
+    assert f.transform_one({"v": 4.5}) == {"v": 4.5}
+
+
+def test_active_strategy_n_missing_property():
+    from dense_armor.utility.active.strategies import RandomStrategy
+
+    s = RandomStrategy(budget=0.5)
+    assert s.n_missing == 0 and s.n_missing_ == 0
+
+
+def test_platt_project_shrinks_a_long_vector():
+    from dense_armor.utility.learn.calibration import OnlinePlattScaling
+
+    p = OnlinePlattScaling(classifier=None, radius=0.5)
+    out = p._project(np.array([5.0, 5.0]))
+    assert float(out @ out) <= 0.25 + 1e-6
+
+
+def test_diag_unsigned_and_sample_rate(tmp_path):
+    from scipy.io import wavfile
+
+    sig = (np.sin(np.linspace(0, 20, 400)) * 100 + 128).astype(np.uint8)
+    assert diag(sig, sig) is not None
+    a = tmp_path / "a.wav"
+    b = tmp_path / "b.wav"
+    wavfile.write(a, 8000, sig)
+    wavfile.write(b, 16000, sig)
+    with pytest.raises(ValueError):
+        diag(str(a), str(b))
+    assert diag(str(a), str(a)) is not None
+
+
+@pytest.mark.parametrize("name", ["CountMinSketch", "HyperLogLog", "BloomFilter", "SpaceSaving"])
+def test_sketches_count_missing_key(name):
+    from dense_armor.utility.stats import sketches
+
+    s = getattr(sketches, name)(feature="a")
+    s.learn_one({"a": "x"})
+    s.learn_one({"b": "y"})
+    assert s.n_missing == 1 and s.n_ == 1
+    if hasattr(s, "merge"):
+        assert s.merge(s).n_missing == 2
+    if name != "HyperLogLog":
+        assert s.transform_one({"b": 1}) == {}
+        assert s.n_missing == 2
+
+
+def test_ffm_orphan_feature_allocates_nothing():
+    from dense_armor.utility.facto.ffm import FFMClassifier
+
+    m = FFMClassifier(fields={"a": "f1", "b": "f2"}, k=3, feature_keys=["a", "b", "z"])
+    m.learn_one({"a": 1.0, "b": 1.0, "z": 5.0}, 1)
+    assert m._w.shape[0] == 2
+    assert 0.0 <= m.predict_proba_one({"a": 1.0, "b": 1.0, "z": 5.0}).get(1, 0.5) <= 1.0

@@ -36,7 +36,8 @@ class _FFMBase:
     Args:
         fields: mapping from feature name to field name. Every feature
             that appears in ``learn_one`` must be in this map; a
-            feature that is not, is ignored (no factor update).
+            feature that is not, is ignored (no factor update, and no
+            row of the factor array is allocated for it).
         k: number of factors, strictly positive.
         lr: AdaGrad learning rate (``eta`` in the paper), strictly
             positive.
@@ -106,7 +107,9 @@ class _FFMBase:
             self._keys = list(self.feature_keys)
         else:
             self._keys = sorted(x)
-        self._key_index = {key: i for i, key in enumerate(self._keys)}
+        self._key_index = {
+            key: i for i, key in enumerate(k for k in self._keys if k in self.fields)
+        }
         fields_seen = [self.fields[k] for k in self._keys if k in self.fields]
         self._field_names = sorted(set(fields_seen))
         self._field_index = {f: i for i, f in enumerate(self._field_names)}
@@ -117,7 +120,8 @@ class _FFMBase:
             return
         assert self._keys is not None
         assert self._field_names is not None
-        n = len(self._keys)
+        assert self._key_index is not None
+        n = len(self._key_index)
         f = len(self._field_names)
         rng = np.random.default_rng(self.seed)
         self._w = rng.uniform(0.0, 1.0 / np.sqrt(self.k), size=(n, f, self.k))

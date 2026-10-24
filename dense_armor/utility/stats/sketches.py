@@ -37,6 +37,16 @@ from typing import Any
 
 from dense_armor.roles import Transformer
 
+_MISSING = object()
+
+
+def _item_of(sketch: Any, x: dict) -> Any:
+    """The item of ``x`` for ``sketch``, or ``_MISSING`` when the key is absent."""
+    try:
+        return x[sketch._key(x)]
+    except (KeyError, TypeError, ValueError):
+        return _MISSING
+
 
 def _hash64(item: Any, seed: int) -> int:
     """Stable 64-bit hash of an item, keyed by ``seed`` modulo ``2**32``."""
@@ -102,6 +112,11 @@ class CountMinSketch(Transformer):
         self.d_: int = math.ceil(math.log(1.0 / delta))
         self.table_: list[list[int]] = [[0] * self.w_ for _ in range(self.d_)]
         self.n_ = 0
+        self.n_missing_ = 0
+
+    @property
+    def n_missing(self) -> int:
+        return self.n_missing_
 
     def _key(self, x: dict) -> str:
         return min(x) if self.feature is None else self.feature
@@ -114,7 +129,10 @@ class CountMinSketch(Transformer):
     ) -> "CountMinSketch":
         """Insert one item from ``x``."""
         self._time_step(t)
-        item = x[self._key(x)]
+        item = _item_of(self, x)
+        if item is _MISSING:
+            self.n_missing_ += 1
+            return self
         for row in range(self.d_):
             col = self._row_col(item, row)
             self.table_[row][col] += 1
@@ -168,6 +186,7 @@ class CountMinSketch(Transformer):
                     self.table_[row][col] + other.table_[row][col]
                 )
         out.n_ = self.n_ + other.n_
+        out.n_missing_ = self.n_missing_ + other.n_missing_
         return out
 
     @property
@@ -183,7 +202,10 @@ class CountMinSketch(Transformer):
         return self.d_
 
     def transform_one(self, x: dict, t: float | None = None) -> dict:
-        item = x[self._key(x)]
+        item = _item_of(self, x)
+        if item is _MISSING:
+            self.n_missing_ += 1
+            return {}
         return {
             "count": self.n_,
             "estimate": self.estimate(item),
@@ -233,6 +255,7 @@ class HyperLogLog(Transformer):
         self.m_: int = 1 << precision
         self.registers_: list[int] = [0] * self.m_
         self.n_ = 0
+        self.n_missing_ = 0
         alpha: float
         if self.m_ == 16:
             alpha = 0.673
@@ -243,6 +266,10 @@ class HyperLogLog(Transformer):
         else:
             alpha = 0.7213 / (1.0 + 1.079 / self.m_)
         self.alpha_: float = alpha
+
+    @property
+    def n_missing(self) -> int:
+        return self.n_missing_
 
     def _key(self, x: dict) -> str:
         return min(x) if self.feature is None else self.feature
@@ -258,7 +285,10 @@ class HyperLogLog(Transformer):
     ) -> "HyperLogLog":
         """Insert one item."""
         self._time_step(t)
-        item = x[self._key(x)]
+        item = _item_of(self, x)
+        if item is _MISSING:
+            self.n_missing_ += 1
+            return self
         h = _hash64(item, self.seed)
         index = h & (self.m_ - 1)
         w = h >> self.precision
@@ -310,6 +340,7 @@ class HyperLogLog(Transformer):
         for i in range(self.m_):
             out.registers_[i] = max(self.registers_[i], other.registers_[i])
         out.n_ = self.n_ + other.n_
+        out.n_missing_ = self.n_missing_ + other.n_missing_
         return out
 
     @property
@@ -379,6 +410,11 @@ class BloomFilter(Transformer):
         self.k_: int = max(1, round((self.m_ / n_expected) * math.log(2)))
         self.bits_: bytearray = bytearray((self.m_ + 7) // 8)
         self.n_ = 0
+        self.n_missing_ = 0
+
+    @property
+    def n_missing(self) -> int:
+        return self.n_missing_
 
     def _key(self, x: dict) -> str:
         return min(x) if self.feature is None else self.feature
@@ -391,7 +427,10 @@ class BloomFilter(Transformer):
     ) -> "BloomFilter":
         """Insert one item."""
         self._time_step(t)
-        item = x[self._key(x)]
+        item = _item_of(self, x)
+        if item is _MISSING:
+            self.n_missing_ += 1
+            return self
         for pos in self._positions(item):
             self.bits_[pos // 8] |= 1 << (pos % 8)
         self.n_ += 1
@@ -444,6 +483,7 @@ class BloomFilter(Transformer):
         )
         out.bits_ = bytearray(a | b for a, b in zip(self.bits_, other.bits_))
         out.n_ = self.n_ + other.n_
+        out.n_missing_ = self.n_missing_ + other.n_missing_
         return out
 
     @property
@@ -464,7 +504,10 @@ class BloomFilter(Transformer):
         return sum(b.bit_count() for b in self.bits_) / self.m_
 
     def transform_one(self, x: dict, t: float | None = None) -> dict:
-        item = x[self._key(x)]
+        item = _item_of(self, x)
+        if item is _MISSING:
+            self.n_missing_ += 1
+            return {}
         return {
             "count": self.n_,
             "present": self.check(item),
@@ -515,6 +558,11 @@ class SpaceSaving(Transformer):
         self.feature = feature
         self.counters_: dict[Any, int] = {}
         self.n_ = 0
+        self.n_missing_ = 0
+
+    @property
+    def n_missing(self) -> int:
+        return self.n_missing_
 
     def _key(self, x: dict) -> str:
         return min(x) if self.feature is None else self.feature
@@ -524,7 +572,10 @@ class SpaceSaving(Transformer):
     ) -> "SpaceSaving":
         """Insert one item."""
         self._time_step(t)
-        item = x[self._key(x)]
+        item = _item_of(self, x)
+        if item is _MISSING:
+            self.n_missing_ += 1
+            return self
         self.n_ += 1
         if item in self.counters_:
             self.counters_[item] += 1
@@ -585,6 +636,7 @@ class SpaceSaving(Transformer):
             raise ValueError("merge requires the same k")
         out = SpaceSaving(k=self.k, feature=self.feature)
         out.n_ = self.n_ + other.n_
+        out.n_missing_ = self.n_missing_ + other.n_missing_
         combined: dict[Any, int] = {}
         for item, c in self.counters_.items():
             combined[item] = combined.get(item, 0) + c
@@ -605,7 +657,10 @@ class SpaceSaving(Transformer):
         return len(self.counters_)
 
     def transform_one(self, x: dict, t: float | None = None) -> dict:
-        item = x[self._key(x)]
+        item = _item_of(self, x)
+        if item is _MISSING:
+            self.n_missing_ += 1
+            return {}
         return {
             "count": self.n_,
             "estimate": self.estimate(item),

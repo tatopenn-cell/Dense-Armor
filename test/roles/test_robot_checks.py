@@ -137,7 +137,7 @@ def test_p99_within_budget_fails_on_zero_budget():
     est = _Learner()
     est.budget_s = 0.0
     est.learn_one = lambda x: sum(range(10000))
-    with pytest.raises(AssertionError, match="exceeds"):
+    with pytest.raises(AssertionError, match="is below the 1e-3 s lower bound"):
         robot.check_p99_within_budget(est)
 
 

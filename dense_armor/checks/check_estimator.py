@@ -1,5 +1,6 @@
 """Run every applicable check on an estimator."""
 
+import copy
 import json
 import pickle
 from typing import Any
@@ -116,8 +117,13 @@ def check_mutate_idempotent(est: Root) -> None:
     cur = {k: getattr(est, k) for k in est._mutable_attributes if hasattr(est, k)}
     for k in est._mutable_attributes:
         assert hasattr(est, k), f"declared mutable {k} does not exist"
-    if cur:
-        est.mutate(cur)
+    if not cur:
+        return
+    est.mutate(cur)
+    once = {k: repr(getattr(est, k)) for k in cur}
+    est.mutate(cur)
+    twice = {k: repr(getattr(est, k)) for k in cur}
+    assert once == twice, "mutate applied twice differs from applied once"
 
 
 def check_pickle_roundtrip(est: Root) -> None:
@@ -147,7 +153,7 @@ def _sample_x() -> dict:
 
 def check_learn_one_does_not_modify_x(est: Root) -> None:
     x = _sample_x()
-    snapshot = dict(x)
+    snapshot = copy.deepcopy(x)
     try:
         if isinstance(est, Classifier):
             est.learn_one(x, 0)
