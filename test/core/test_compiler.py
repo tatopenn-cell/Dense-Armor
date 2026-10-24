@@ -76,6 +76,22 @@ def test_run_pipeline_with_chunking_coincide_col_run_diretto():
     np.testing.assert_allclose(np.array(direct), np.array(chunked), atol=1e-6)
 
 
+def test_run_pipeline_with_chunking_dropout_coincide_col_run_diretto():
+    data = np.ones(1000)
+    ops = DynamicAICodegen().compile_pipeline([("dropout", 0.8, 0.0)] * 2)
+    direct = DynamicAICodegen(seed=3).run_dynamic_pipeline(data, ops)
+    codegen = DynamicAICodegen(seed=3)
+    chunked = codegen.run_pipeline_with_chunking(data, ops, chunk_size=1)
+    np.testing.assert_array_equal(direct, chunked)
+    again = codegen.run_pipeline_with_chunking(data, ops, chunk_size=1)
+    assert not np.array_equal(chunked, again)
+
+
+def test_compile_pipeline_parametro_non_numerico_nomina_l_istruzione():
+    with pytest.raises(ValueError, match="instruction 1"):
+        DynamicAICodegen().compile_pipeline(["relu", ("scale", "abc", 0.0)])
+
+
 def test_compute_gradients_ha_la_shape_dell_input():
     codegen = DynamicAICodegen()
     ops = codegen.compile_pipeline(["scale"])

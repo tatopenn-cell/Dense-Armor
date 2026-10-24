@@ -54,8 +54,9 @@ STREAM_SESSION_TTL_S = 3600.0
 # server.py's module docstring for why everything here is direct
 # in-process, no separate kernel) -- a session's detector state is lost
 # if the server restarts, same as any other in-memory server state.
-# Sessions are NOT garbage-collected automatically: a real caller must
-# call dense_armor_stream_end when a real sensor stream ends.
+# A session idle for more than STREAM_SESSION_TTL_S is dropped at the next
+# dense_armor_stream_start, before the MAX_STREAM_SESSIONS cap is checked;
+# a caller frees a session at once with dense_armor_stream_end.
 
 
 def catch_errors(func):

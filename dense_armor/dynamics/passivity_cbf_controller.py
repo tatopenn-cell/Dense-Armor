@@ -183,8 +183,22 @@ def solve_control_qp(model, link_name, q, qd, p_des, pd_des, pdd_des,
     Real per-joint position/velocity limits from `model`'s own URDF <limit>
     tags are enforced too (Kurtz et al.'s own "joint" CBF constraint type),
     inert for any joint the URDF declares no limit for.
+
+    If the passivity + CBF + box QP is infeasible, the passivity row is
+    dropped; if CBF + box is still infeasible, the box is dropped too.
+
+    Raises
+    ------
+    ValueError
+        If ``model.n < 3``: the 3 x n position Jacobian is rank-deficient,
+        the manipulability is identically zero and its gradient is NaN.
+    RuntimeError
+        If even the CBF-only QP is not solved; OSQP's infeasibility
+        certificate is never returned as an acceleration.
     """
     n = model.n
+    if n < 3:
+        raise ValueError(f"solve_control_qp needs model.n >= 3 for a 3-D task, got {n}")
     m, bias, grav, qdd_nom, a1, u1, a2, u2, mu, h, qdd_lb, qdd_ub = _qp_ingredients(
         model, link_name, jnp.asarray(q), jnp.asarray(qd), jnp.asarray(p_des),
         jnp.asarray(pd_des), jnp.asarray(pdd_des), kp_task, kd_task, kd_null,
@@ -238,6 +252,19 @@ def solve_control_qp(model, link_name, q, qd, p_des, pd_des, pdd_des,
         prob = osqp.OSQP()
         prob.setup(p_mat, q_vec, a_cbf, l_cbf, u_cbf, verbose=False, polish=True)
         res = prob.solve()
+
+        if has_real_limits and res.info.status_val != osqp.constant("OSQP_SOLVED"):
+            # CBF + joint-limit box jointly infeasible: keep only the CBF.
+            a_cbf2 = sparse.csc_matrix(np.asarray(a2).reshape(1, n))
+            prob = osqp.OSQP()
+            prob.setup(p_mat, q_vec, a_cbf2, np.array([-1e20]), np.array([float(u2)]),
+                       verbose=False, polish=True)
+            res = prob.solve()
+
+    if res.info.status_val != osqp.constant("OSQP_SOLVED"):
+        raise RuntimeError(
+            f"control QP not solved (OSQP status '{res.info.status}'): "
+            "even the CBF-only problem has no solution")
 
     qdd = np.asarray(res.x)
     tau = np.asarray(m) @ qdd + np.asarray(bias) + np.asarray(grav)

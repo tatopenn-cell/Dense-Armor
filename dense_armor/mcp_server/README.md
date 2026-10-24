@@ -59,7 +59,7 @@ same environment a bare top-level name is a real, observed collision, not a hypo
 | `dense_armor_heal_series` | The neighbor-consensus `healing_filter` -- strong on pervasive noise and genuine sustained jumps, standalone. |
 | `dense_armor_stream_start` | Opens a real-time streaming session (one `MultiChannelStreamingDeviationDetector` kept in server memory) -- for a live sensor stream where waiting to collect a full array first isn't an option. Returns a `session_id`. |
 | `dense_armor_stream_update` | Feeds one real-time reading (one value per channel) into an open session, returns that instant's deviation flag per channel. Call once per real sensor reading, in order -- the detector's state advances with every call. |
-| `dense_armor_stream_end` | Closes a session and frees its state. Sessions are not garbage-collected automatically. |
+| `dense_armor_stream_end` | Closes a session and frees its state. A session idle for more than one hour is dropped at the next `dense_armor_stream_start`. |
 
 The 3 streaming tools are **stateful** (session-based), unlike every other tool above, which
 are pure functions of their inputs. See `utility/streaming.py`/`docs/api/streaming.md` for the

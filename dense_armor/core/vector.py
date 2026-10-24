@@ -54,6 +54,7 @@ class BitwisePermutationEngine:
         Returns:
             The permuted vector, with the same shape as ``data``.
         """
+        data = np.asarray(data)
         output = data.copy()
         t_stride = 1 << (self.n - 1 - target_bit)
         c_stride = 1 << (self.n - 1 - control_bit)

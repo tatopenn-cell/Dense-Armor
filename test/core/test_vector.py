@@ -54,3 +54,11 @@ def test_collapse_decision_vettore_a_energia_zero_solleva_errore():
     sim = ParametricScenarioSimulator()
     with pytest.raises(RuntimeError):
         sim.collapse_decision(np.zeros(5), target_idx=2)
+
+
+def test_bitwise_swap_accetta_un_array_jax():
+    import jax.numpy as jnp
+
+    engine = BitwisePermutationEngine(2)
+    out = engine.apply_bitwise_swap(jnp.arange(4.0), target_bit=1, control_bit=0)
+    np.testing.assert_array_equal(out, [0.0, 1.0, 3.0, 2.0])
