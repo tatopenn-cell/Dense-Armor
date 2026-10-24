@@ -62,3 +62,33 @@ def test_max_nodes_default_finite():
 
 def test_check_estimator_hoeffding():
     check_estimator(HoeffdingTreeClassifier(grace_period=20))
+
+
+def _one_leaf_stream(n_minority, rng):
+    h = HoeffdingTreeClassifier(grace_period=10**9)
+    rows = [(rng.normal(size=6), 0) for _ in range(300)]
+    rows += [(rng.normal(size=6) + 3.0, 1) for _ in range(n_minority)]
+    rng.shuffle(rows)
+    for x, y in rows:
+        h.learn_one({f"f{i}": float(v) for i, v in enumerate(x)}, y)
+    return h
+
+
+def test_nb_leaf_one_minority_sample_does_not_saturate():
+    rng = np.random.default_rng(0)
+    h = _one_leaf_stream(1, rng)
+    queries = [
+        {f"f{i}": float(v) for i, v in enumerate(rng.normal(size=6))}
+        for _ in range(200)
+    ]
+    p1 = [h.predict_proba_one(q).get(1, 0.0) for q in queries]
+    assert float(np.median(p1)) < 0.05
+    assert all(h.predict_one(q) == 0 for q in queries)
+
+
+def test_nb_leaf_still_used_when_every_class_has_two_samples():
+    rng = np.random.default_rng(0)
+    h = _one_leaf_stream(30, rng)
+    near_minority = {f"f{i}": 3.0 for i in range(6)}
+    assert h.predict_one(near_minority) == 1
+    assert h.predict_proba_one(near_minority)[1] > 0.99

@@ -4,6 +4,9 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- `HoeffdingTreeClassifier` with `leaf="nb"` (the default): a leaf in which any class has fewer than two samples now answers like `leaf="majority"`, in `predict_proba_one` and in `predict_one`. Before, that class skipped every likelihood term and kept only its prior, while the other classes added one log-density per feature, so on an imbalanced stream the rare class got a probability close to 1 for ordinary samples. On a leaf with 300 samples of class 0 and one of class 1 (synthetic), the median probability of class 1 on 200 new class-0 samples was 0.953 and is now 0.0033. On the credit card fraud stream (284,807 rows, 492 frauds) the default configuration measured AUROC 0.513 and AUPRC 0.0032 before the change (`dense-business`, `benchmarks/kaggle/n65_diag`). Tests: `test_nb_leaf_one_minority_sample_does_not_saturate` and `test_nb_leaf_still_used_when_every_class_has_two_samples` in `test/tree/test_hoeffding.py`.
+
 ## [1.1.35] - 2026-10-24
 
 ### Changed

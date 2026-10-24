@@ -139,7 +139,10 @@ class HoeffdingTreeClassifier(Classifier):
         tau: tie threshold.
         max_depth: maximum depth, or ``None``.
         max_nodes: maximum number of nodes. Default ``10000``.
-        leaf: ``"nb"`` or ``"majority"``.
+        leaf: ``"nb"`` or ``"majority"``. With ``"nb"``, a leaf in which
+            any class has fewer than two samples answers like
+            ``"majority"``, because the Gaussian likelihood of that class
+            cannot be estimated.
 
     Raises:
         ValueError: on a bad ``leaf`` or a non-positive parameter.
@@ -361,7 +364,11 @@ class HoeffdingTreeClassifier(Classifier):
         if not classes:
             return {}
         cc = leaf.class_counts_
-        if self.leaf == "majority" or not leaf.feature_stats_:
+        if (
+            self.leaf == "majority"
+            or not leaf.feature_stats_
+            or any(cc.get(c, 0) < 2 for c in classes)
+        ):
             total = 0.0
             for v in cc.values():
                 total += v
@@ -407,7 +414,11 @@ class HoeffdingTreeClassifier(Classifier):
         if not classes:
             return None
         cc = leaf.class_counts_
-        if self.leaf == "majority" or not leaf.feature_stats_:
+        if (
+            self.leaf == "majority"
+            or not leaf.feature_stats_
+            or any(cc.get(c, 0) < 2 for c in classes)
+        ):
             best_c = None
             best_n = -1
             for c in classes:
