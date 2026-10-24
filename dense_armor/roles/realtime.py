@@ -35,6 +35,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from dense_armor.roles import Root
+from dense_armor.roles._util import call_with_t
 from dense_armor.roles.signal import Signal
 
 DEFAULT_WARMUP = 10
@@ -208,8 +209,11 @@ class RealtimePipeline:
         return self.period_s - self._total_budget_s
 
     def learn_one(self, sig: Signal) -> list[Any]:
-        """Call ``learn_one`` on every step in order, return their outputs."""
-        return [step.learn_one(sig) for step in self.steps]
+        """Call ``learn_one`` on every step in order, return their outputs.
+
+        ``sig.t`` is passed as ``t`` to every step that accepts it.
+        """
+        return [call_with_t(step.learn_one, sig, t=sig.t) for step in self.steps]
 
 
 class PureEW(Root):

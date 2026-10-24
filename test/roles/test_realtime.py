@@ -1,6 +1,5 @@
 """Tests for dense_armor/roles/realtime.py."""
 import doctest
-import time
 
 import jax
 import jax.numpy as jnp
@@ -36,6 +35,32 @@ class _Budgeted(RunningMoments):
 
     budget_s = 1e-4
     memory_class = "O(1)"
+
+
+class _SeesT:
+    budget_s = 1e-4
+
+    def __init__(self):
+        self.ts = []
+
+    def learn_one(self, x, t=None):
+        self.ts.append(t)
+        return self
+
+
+class _NoTStep:
+    budget_s = 1e-4
+
+    def learn_one(self, x):
+        return self
+
+
+def test_realtime_pipeline_forwards_the_signal_timestamp():
+    a, b = _SeesT(), _NoTStep()
+    p = RealtimePipeline([a, b], period_s=1e-2)
+    for s in _stream(3):
+        p.learn_one(s)
+    assert a.ts == [0.0, 0.01, 0.02]
 
 
 def test_profile_returns_dataclass():

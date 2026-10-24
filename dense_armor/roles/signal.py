@@ -151,7 +151,9 @@ class Signal(dict):
             others: signals with the same channel names and units.
 
         Returns:
-            A new Signal with ``array`` of shape ``(n + 1, d)``.
+            A new Signal with ``array`` of shape ``(n + 1, d)``. Its ``t``
+            is the shared timestamp when every signal has the same ``t``,
+            and ``None`` when the timestamps differ.
         """
         group = [self, *others]
         for s in group:
