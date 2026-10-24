@@ -384,3 +384,18 @@ def test_diag_unsigned_and_sample_rate(tmp_path):
     with pytest.raises(ValueError):
         diag(str(a), str(b))
     assert diag(str(a), str(a)) is not None
+
+
+@pytest.mark.parametrize("name", ["CountMinSketch", "HyperLogLog", "BloomFilter", "SpaceSaving"])
+def test_sketches_count_missing_key(name):
+    from dense_armor.utility.stats import sketches
+
+    s = getattr(sketches, name)(feature="a")
+    s.learn_one({"a": "x"})
+    s.learn_one({"b": "y"})
+    assert s.n_missing == 1 and s.n_ == 1
+    if hasattr(s, "merge"):
+        assert s.merge(s).n_missing == 2
+    if name != "HyperLogLog":
+        assert s.transform_one({"b": 1}) == {}
+        assert s.n_missing == 2
