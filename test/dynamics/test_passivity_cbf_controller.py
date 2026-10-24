@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 test/test_passivity_cbf_controller.py
 ========================================
@@ -13,11 +12,15 @@ from unittest.mock import patch
 
 import jax.numpy as jnp
 import numpy as np
+import pytest
 
 import dense_armor.dynamics.passivity_cbf_controller as pcc
+from dense_armor.dynamics.passivity_cbf_controller import (
+    manipulability,
+    solve_control_qp,
+)
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.dynamics.passivity_cbf_controller import solve_control_qp, manipulability
-import pytest
+
 pytestmark = pytest.mark.heavy
 
 
@@ -208,3 +211,59 @@ def test_osqp_infeasibility_fallback_with_real_joint_limits():
     assert calls["n"] == 2
     assert np.all(np.isfinite(qdd))
     assert np.all(np.isfinite(tau))
+
+
+def _osqp_failing_first(k):
+    real_osqp_cls = pcc.osqp.OSQP
+    calls = {"n": 0}
+
+    class FailingOSQP:
+        def __init__(self):
+            self._real = real_osqp_cls()
+
+        def setup(self, *args, **kwargs):
+            self._real.setup(*args, **kwargs)
+
+        def solve(self):
+            calls["n"] += 1
+            res = self._real.solve()
+            if calls["n"] <= k:
+                res.info.status_val = -999
+            return res
+
+    return FailingOSQP, calls
+
+
+def _panda_state():
+    model = RigidBodyModel(os.path.join(FIXTURES, "panda.urdf"))
+    q = jnp.array([0.0, 0.5, 0.0, -0.5, 0.0, 1.5, 0.0, 0.0, 0.0])
+    qd = jnp.array([0.1, -0.1, 0.1, 0.5, -0.1, 0.2, 0.1, 0.0, 0.0])
+    p_des = model.link_position(q, "panda_hand") + jnp.array([0.05, 0.0, 0.1])
+    return model, q, qd, p_des
+
+
+def test_cbf_box_infeasible_falls_back_to_cbf_only():
+    model, q, qd, p_des = _panda_state()
+    cls, calls = _osqp_failing_first(2)
+    with patch.object(pcc.osqp, "OSQP", cls):
+        qdd, tau, _, _ = solve_control_qp(model, "panda_hand", q, qd, p_des,
+                                          jnp.zeros(3), jnp.zeros(3), eps=0.03)
+    assert calls["n"] == 3
+    assert np.all(np.isfinite(tau))
+    assert np.max(np.abs(qdd)) < 1e6
+
+
+def test_unsolved_qp_raises_instead_of_returning_the_certificate():
+    model, q, qd, p_des = _panda_state()
+    cls, _ = _osqp_failing_first(3)
+    with patch.object(pcc.osqp, "OSQP", cls), pytest.raises(RuntimeError, match="not solved"):
+        solve_control_qp(model, "panda_hand", q, qd, p_des, jnp.zeros(3), jnp.zeros(3), eps=0.03)
+
+
+def test_fewer_than_three_joints_is_rejected():
+    class TwoJoints:
+        n = 2
+
+    with pytest.raises(ValueError, match="model.n >= 3"):
+        solve_control_qp(TwoJoints(), "tip", jnp.zeros(2), jnp.zeros(2),
+                         jnp.zeros(3), jnp.zeros(3), jnp.zeros(3))

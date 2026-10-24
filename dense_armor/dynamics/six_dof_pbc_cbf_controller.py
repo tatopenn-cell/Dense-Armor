@@ -62,12 +62,14 @@ def _manipulability_jacobian(model, link_name, q):
 
 
 def _manipulability_jacobian_dot_times_qd(model, link_name, q, qd):
-    jfn = lambda qq: _manipulability_jacobian(model, link_name, qq) @ qd
+    def jfn(qq):
+        return _manipulability_jacobian(model, link_name, qq) @ qd
     return jax.jvp(jfn, (q,), (qd,))[1]
 
 
 def _spatial_jacobian_dot_times_qd(model, link_name, q, qd):
-    jfn = lambda qq: model.link_spatial_jacobian(qq, link_name) @ qd
+    def jfn(qq):
+        return model.link_spatial_jacobian(qq, link_name) @ qd
     return jax.jvp(jfn, (q,), (qd,))[1]
 
 
@@ -78,7 +80,8 @@ def _lambda_task(model, link_name, q):
 
 
 def _lambda_task_dot_times_qd(model, link_name, q, qd):
-    fn = lambda qq: _lambda_task(model, link_name, qq)
+    def fn(qq):
+        return _lambda_task(model, link_name, qq)
     return jax.jvp(fn, (q,), (qd,))[1]
 
 
@@ -186,8 +189,19 @@ def solve_control_qp(model, link_name, q, qd, p_des, pd_des, pdd_des, r_des, w_d
 
     Real per-joint position/velocity limits from `model`'s own URDF <limit>
     tags are enforced too, same as `passivity_cbf_controller.solve_control_qp`.
+
+    Raises
+    ------
+    ValueError
+        If ``model.n < 6``: the 6 x n spatial Jacobian is rank-deficient,
+        the manipulability is identically zero and its gradient is NaN.
+    RuntimeError
+        If even the CBF-only QP is not solved; OSQP's infeasibility
+        certificate is never returned as an acceleration.
     """
     n = model.n
+    if n < 6:
+        raise ValueError(f"solve_control_qp needs model.n >= 6 for a 6-D task, got {n}")
     m, bias, grav, qdd_nom, a1, u1, a2, u2, mu, h, qdd_lb, qdd_ub = _qp_ingredients(
         model, link_name, jnp.asarray(q), jnp.asarray(qd), jnp.asarray(p_des),
         jnp.asarray(pd_des), jnp.asarray(pdd_des), jnp.asarray(r_des),
@@ -252,6 +266,11 @@ def solve_control_qp(model, link_name, q, qd, p_des, pd_des, pdd_des, r_des, w_d
             prob = osqp.OSQP()
             prob.setup(p_mat, q_vec, a_cbf2, l_cbf2, u_cbf2, verbose=False, polish=True)
             res = prob.solve()
+
+    if res.info.status_val != osqp.constant("OSQP_SOLVED"):
+        raise RuntimeError(
+            f"control QP not solved (OSQP status '{res.info.status}'): "
+            "even the CBF-only problem has no solution")
 
     qdd = np.asarray(res.x)
     tau = np.asarray(m) @ qdd + np.asarray(bias) + np.asarray(grav)

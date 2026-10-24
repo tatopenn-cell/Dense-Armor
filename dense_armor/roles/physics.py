@@ -30,6 +30,7 @@ from typing import Any
 import numpy as np
 
 from dense_armor.roles import Transformer
+from dense_armor.roles._util import call_learn_one
 
 DIMENSIONLESS = "1"
 
@@ -148,16 +149,7 @@ class UnitCheckedPipeline(Transformer):
             h = step.transform_one(h, t=t) if t is not None else step.transform_one(h)
         last = self.steps[-1]
         if hasattr(last, "learn_one"):
-            try:
-                if y is None:
-                    last.learn_one(h, t=t)
-                else:
-                    last.learn_one(h, y, t=t)
-            except TypeError:
-                if y is None:
-                    last.learn_one(h)
-                else:
-                    last.learn_one(h, y)
+            call_learn_one(last.learn_one, h, y, t=t)
         return self
 
     def transform_one(self, x, t=None):

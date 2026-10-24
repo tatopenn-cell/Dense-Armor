@@ -34,6 +34,7 @@ from pathlib import Path
 from typing import Any
 
 from dense_armor.roles import Estimator, Root
+from dense_armor.roles._util import call_learn_one, call_with_t
 
 CHECKPOINT_VERSION = 1
 
@@ -132,7 +133,9 @@ class SafeEstimator(Estimator):
     The wrapped ``model`` can be any estimator: a regressor, a
     classifier, a transformer, an anomaly detector. Only the methods
     the model actually exposes are called; the rest pass through as
-    ``None``.
+    ``None``. The health residual is ``|y - y_hat|`` for a model without
+    ``predict_proba_one`` and the 0/1 error ``y_hat != y`` for a
+    classifier.
 
     Args:
         model: the estimator to wrap.
@@ -188,20 +191,17 @@ class SafeEstimator(Estimator):
             return self
         m = self.model
         if hasattr(m, "predict_one") and y is not None:
-            yhat = m.predict_one(x, t=t)
+            yhat = call_with_t(m.predict_one, x, t=t)
             if yhat is not None:
-                try:
-                    self.monitor.update(abs(float(y) - float(yhat)))
-                except (TypeError, ValueError):
-                    pass
+                if hasattr(m, "predict_proba_one"):
+                    self.monitor.update(float(yhat != y))
+                else:
+                    try:
+                        self.monitor.update(abs(float(y) - float(yhat)))
+                    except (TypeError, ValueError):
+                        pass
         if hasattr(m, "learn_one"):
-            try:
-                m.learn_one(x, y, t=t)
-            except TypeError:
-                try:
-                    m.learn_one(x, y)
-                except TypeError:
-                    m.learn_one(x)
+            call_learn_one(m.learn_one, x, y, t=t)
         return self
 
     def predict_one(

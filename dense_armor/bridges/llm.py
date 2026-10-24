@@ -15,6 +15,8 @@ import json
 from collections.abc import Callable, Sequence
 from typing import Any
 
+import numpy as np
+
 from dense_armor.roles.estimator import Estimator
 
 
@@ -47,7 +49,14 @@ class LLMEmbeddingClassifier(Estimator):
 
     def _features(self, text: str) -> dict[str, float]:
         vec = self.embed(text)
-        return {f"e{i}": float(v) for i, v in enumerate(vec)}
+        if vec is None or isinstance(vec, (str, bytes)):
+            raise TypeError(
+                f"embed must return a 1-D sequence of numbers, got {type(vec).__name__}")
+        arr = np.asarray(vec, dtype=float)
+        if arr.ndim != 1:
+            raise ValueError(
+                f"embed must return a 1-D sequence of numbers, got shape {arr.shape}")
+        return {f"e{i}": float(v) for i, v in enumerate(arr)}
 
     def learn_one(self, text: str, y: Any, t: float | None = None):
         x = self._features(text)
@@ -77,7 +86,7 @@ class LLMEmbeddingClassifier(Estimator):
         return {
             "name": type(self).__name__,
             "module": type(self).__module__,
-            "embedding": getattr(self.embed, "__name__", repr(self.embed)),
+            "embedding": getattr(self.embed, "__name__", type(self.embed).__name__),
             "parameters": {"classifier": inner},
             "methods": ["learn_json", "predict_json", "predict_proba_json",
                         "describe"],
@@ -90,9 +99,15 @@ class LLMEmbeddingClassifier(Estimator):
         }
 
     def learn_json(self, payload: str) -> str:
-        """JSON-in / JSON-out: ``{"text": ..., "label": ...}``."""
+        """JSON-in / JSON-out: ``{"text": ..., "label": ...}``.
+
+        Raises:
+            ValueError: if ``label`` is missing or ``null``.
+        """
         obj = json.loads(payload)
-        self.learn_one(str(obj["text"]), obj.get("label"))
+        if obj.get("label") is None:
+            raise ValueError('learn_json needs a non-null "label"')
+        self.learn_one(str(obj["text"]), obj["label"])
         return json.dumps({"ok": True})
 
     def predict_json(self, payload: str) -> str:
@@ -101,6 +116,10 @@ class LLMEmbeddingClassifier(Estimator):
         return json.dumps({"prediction": pred})
 
     def predict_proba_json(self, payload: str) -> str:
+        """Class keys are encoded as ``predict_json`` encodes the class:
+        a string stays as is, any other label is its JSON text
+        (``True`` -> ``"true"``, ``1`` -> ``"1"``)."""
         obj = json.loads(payload)
         p = self.predict_proba_one(str(obj["text"]))
-        return json.dumps({"proba": {str(k): float(v) for k, v in p.items()}})
+        return json.dumps({"proba": {k if isinstance(k, str) else json.dumps(k): float(v)
+                                     for k, v in p.items()}})

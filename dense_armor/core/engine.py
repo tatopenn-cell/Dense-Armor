@@ -2,7 +2,7 @@
 
 Features:
     - Anomaly detection through a dynamic threshold based on rolling volatility.
-    - Selective damping with L2-norm preservation to avoid local blow-ups.
+    - Selective damping with per-element magnitude preservation to avoid local blow-ups.
     - Macro-context calibration on 2D batches ``(N_scenarios, T_steps)`` with
       dynamic parameters.
     - Fully JAX-compatible, with precompiled ``vmap`` + ``scan`` kernels.
@@ -642,6 +642,10 @@ class AdaptiveSignalStabilizer:
         """Filter a batch of structured scenarios in parallel (``vmap``).
 
         Accepts native 2D tensors or multidimensional arrays (3D/4D).
+        Recalibrates the filter on ``raw_batch`` first, through
+        :meth:`calibrate_macro_context`, so ``dyn_thr``, ``dyn_dmp``,
+        ``dyn_alp`` and ``noise_scalar`` change on ``self``;
+        :meth:`filter_batch_scenarios_independent` leaves them unchanged.
 
         Args:
             raw_batch: the batch of raw signals, shape ``(N, ...)``.

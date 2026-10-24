@@ -33,6 +33,12 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 - `FFMClassifier.learn_one` learns the label `0`: with `y = 0` the gradient of eq. (5)-(6) was zero and the model never learned the negative class. The labels `1` and `0`, or `+1` and `-1`, now give the update of the logit loss; the update for `+1` and `-1` is unchanged.
 - `docs/neural/deep.md` held its sections 7 to 11, the figure and the details twice; the repeated half is gone.
 - `ARCHITECTURE.md` lists `bocpd.py`, `vectorizer.py`, `shrinkage.py`, `similarity.py`, `batch.py` and `fimt.py`.
+- Controllers: `passivity_cbf_controller.solve_control_qp` drops the joint-limit box when the CBF and the box are jointly infeasible, as the 6-DoF controller does; both controllers raise `RuntimeError` when even the CBF-only QP is not solved (before, OSQP's infeasibility certificate, of order 1e9, came back as the acceleration) and raise `ValueError` for a robot with fewer joints than the task dimensions (3 or 6), where the manipulability gradient is NaN.
+- `DynamicAICodegen.run_pipeline_with_chunking` carries the PRNG key across chunks and across calls: a dropout no longer repeats the same mask, and the result no longer depends on `chunk_size`. `compile_pipeline` names the instruction whose parameter is not a number.
+- `BitwisePermutationEngine.apply_bitwise_swap` accepts a JAX array.
+- LLM bridge: `learn_json` refuses a missing or `null` label (before, `None` was learned as a class); the output of `embed` must be a 1-D sequence of numbers (before, a string of digits became one feature per character); `predict_proba_json` writes the class keys as `predict_json` writes the class (`"true"`, not `"True"`); `describe` names a callable instance by its class.
+- Roles: `RealtimePipeline.learn_one` passes `sig.t` to every step that takes `t`; `call_json` dispatches `update(x, t)` to a drift detector and returns `drift_detected`; `SafeEstimator` and `UnitCheckedPipeline` pass `y` and `t` only to a `learn_one` that declares them (before, an unsupervised `learn_one(x, t)` received `y` as `t`); `SafeEstimator` monitors a classifier with the 0/1 error.
+- Docstrings and notes: `filter_batch_scenarios` recalibrates the filter on `self`; the engine preserves the magnitude per element (it said "L2 norm"); `Signal.stacked` gives `t=None` for different timestamps; the MCP server drops a session idle for one hour at the next `dense_armor_stream_start`, and its standalone `requirements.txt` lists the core dependencies.
 
 ## [1.1.34] - 2026-10-23
 ### Added

@@ -29,6 +29,26 @@ class _TypedReg(Regressor):
         return self._last
 
 
+class _StepDrift:
+    def __init__(self):
+        self.drift_detected = False
+        self.ts = []
+
+    def update(self, x, t=None):
+        self.drift_detected = x > 5.0
+        self.ts.append(t)
+        return self
+
+
+def test_call_json_update_drives_a_drift_detector():
+    det = _StepDrift()
+    out = json.loads(call_json(det, {"method": "update", "x": 1.0}))
+    assert out == {"ok": True, "result": {"drift_detected": False}}
+    out = json.loads(call_json(det, {"method": "update", "x": 9.0, "t": 0.5}))
+    assert out["result"]["drift_detected"] is True
+    assert det.ts == [None, 0.5]
+
+
 def test_schema_is_json_serialisable():
     d = schema(RunningMoments())
     json.dumps(d)

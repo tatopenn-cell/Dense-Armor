@@ -163,7 +163,7 @@ def call_json(est: Any, payload: str | Mapping[str, Any]) -> str:
         })
     method = getattr(est, method_name)
     x_raw = obj.get("x")
-    x = _to_signal_or_dict(x_raw) if x_raw is not None else {}
+    x = {} if x_raw is None or method_name == "update" else _to_signal_or_dict(x_raw)
     y = obj.get("y")
     t = obj.get("t")
     try:
@@ -174,6 +174,9 @@ def call_json(est: Any, payload: str | Mapping[str, Any]) -> str:
                 result = method(x, y, t=t) if t is not None else method(x, y)
         elif method_name in ("predict_one", "score_one", "transform_one"):
             result = method(x, t=t) if t is not None else method(x)
+        elif method_name == "update":
+            method(x_raw, t=t) if t is not None else method(x_raw)
+            result = {"drift_detected": bool(getattr(est, "drift_detected", False))}
         else:
             result = method()
     except Exception as e:  # noqa: BLE001

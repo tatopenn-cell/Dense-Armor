@@ -163,5 +163,41 @@ def test_safe_estimator_handles_model_without_predict_one():
     assert est.model.count == 20
 
 
+class _ConstClf:
+    def learn_one(self, x, y, t=None):
+        return self
+
+    def predict_one(self, x, t=None):
+        return "cat"
+
+    def predict_proba_one(self, x, t=None):
+        return {"cat": 1.0}
+
+
+def test_safe_estimator_monitors_a_classifier_with_the_0_1_error():
+    hm = HealthMonitor(window=10, warmup=3)
+    est = SafeEstimator(_ConstClf(), monitor=hm)
+    for y in ["cat"] * 4 + ["dog"] * 10:
+        est.learn_one({"x": 1.0}, y)
+    assert hm.n_ == 14
+    assert hm.baseline_ == 0.0
+    assert est.health is Health.DEGRADED
+
+
+class _Unsupervised:
+    def __init__(self):
+        self.got = []
+
+    def learn_one(self, x, t=None):
+        self.got.append(t)
+        return self
+
+
+def test_safe_estimator_never_passes_y_as_t():
+    m = _Unsupervised()
+    SafeEstimator(m).learn_one({"x": 1.0}, 5.0, t=0.25)
+    assert m.got == [0.25]
+
+
 def test_doctests():
     assert doctest.testmod(safety_mod).failed == 0

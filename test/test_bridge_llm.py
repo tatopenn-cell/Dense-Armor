@@ -50,7 +50,7 @@ def test_learn_json_and_predict_json_roundtrip():
 
 
 def test_works_with_an_arbitrary_wrapped_estimator():
-    from dense_armor.utility.learn.metric_learning import MetricKNNClassifier, OASIS
+    from dense_armor.utility.learn.metric_learning import OASIS, MetricKNNClassifier
 
     clf = LLMEmbeddingClassifier(
         _stub_embed,
@@ -80,3 +80,39 @@ def test_learn_json_rejects_bad_input(bad):
     clf = LLMEmbeddingClassifier(_stub_embed, OnlineGaussianNB())
     with pytest.raises((json.JSONDecodeError, KeyError)):
         clf.learn_json(bad)
+
+
+@pytest.mark.parametrize("payload", [{"text": "ciao"}, {"text": "ciao", "label": None}])
+def test_learn_json_rejects_missing_label(payload):
+    clf = LLMEmbeddingClassifier(_stub_embed, OnlineGaussianNB())
+    with pytest.raises(ValueError, match="label"):
+        clf.learn_json(json.dumps(payload))
+    assert clf.predict_one("ciao") is None
+
+
+@pytest.mark.parametrize("out, exc", [(None, TypeError), ("123", TypeError),
+                                      ([[1.0, 2.0], [3.0, 4.0]], ValueError)])
+def test_embed_output_is_validated(out, exc):
+    clf = LLMEmbeddingClassifier(lambda text: out, OnlineGaussianNB())
+    with pytest.raises(exc, match="embed must return"):
+        clf.learn_one("x", 0)
+
+
+def test_predict_proba_json_keys_match_predict_json():
+    clf = LLMEmbeddingClassifier(_stub_embed, OnlineGaussianNB())
+    for _ in range(5):
+        clf.learn_one("aa", True)
+        clf.learn_one("bbbbbb", False)
+    pred = json.loads(clf.predict_json(json.dumps({"text": "aa"})))["prediction"]
+    proba = json.loads(clf.predict_proba_json(json.dumps({"text": "aa"})))["proba"]
+    assert json.dumps(pred) in proba
+    assert set(proba) == {"true", "false"}
+
+
+def test_describe_names_a_callable_instance_by_its_class():
+    class Embedder:
+        def __call__(self, text):
+            return [1.0]
+
+    d = LLMEmbeddingClassifier(Embedder(), OnlineGaussianNB()).describe()
+    assert d["embedding"] == "Embedder"

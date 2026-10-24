@@ -121,18 +121,17 @@ def _run_pipeline_jit(d: jnp.ndarray, ops: jnp.ndarray, k: jnp.ndarray) -> tuple
 @jax.jit
 def _run_pipeline_chunked_jit(
     data_state: jnp.ndarray, chunks_tensor: jnp.ndarray, base_key: jnp.ndarray
-) -> jnp.ndarray:
-    """Two-level scan over macro-chunks, carrying the state across chunks."""
+) -> tuple:
+    """Two-level scan over macro-chunks, carrying state and PRNG key across chunks."""
 
-    def _chunk_iterator(carry_state: jnp.ndarray, single_chunk: jnp.ndarray) -> tuple:
-        """Run one instruction chunk, propagating the state to the next."""
-        (f_data, _next_k), _ = jax.lax.scan(
-            _execute_ai_instruction_step, (carry_state, base_key), single_chunk
-        )
-        return f_data, None
+    def _chunk_iterator(carry: tuple, single_chunk: jnp.ndarray) -> tuple:
+        """Run one instruction chunk, propagating state and key to the next."""
+        return jax.lax.scan(_execute_ai_instruction_step, carry, single_chunk)[0], None
 
-    final_state, _ = jax.lax.scan(_chunk_iterator, data_state, chunks_tensor)
-    return final_state
+    (final_state, next_k), _ = jax.lax.scan(
+        _chunk_iterator, (data_state, base_key), chunks_tensor
+    )
+    return final_state, next_k
 
 
 def _loss_fn(d: jnp.ndarray, ops: jnp.ndarray, k: jnp.ndarray) -> jnp.ndarray:
@@ -172,11 +171,16 @@ class DynamicAICodegen:
             An array of shape ``(N, 4)`` with rows ``[cmd_id, p1, p2, 0.0]``.
         """
         compiled = []
-        for cmd in text_instructions:
+        for i, cmd in enumerate(text_instructions):
             if isinstance(cmd, tuple):
                 name = str(cmd[0]).lower().strip()
-                p1 = float(cmd[1]) if len(cmd) > 1 else 0.0
-                p2 = float(cmd[2]) if len(cmd) > 2 else 0.0
+                try:
+                    p1 = float(cmd[1]) if len(cmd) > 1 else 0.0
+                    p2 = float(cmd[2]) if len(cmd) > 2 else 0.0
+                except (TypeError, ValueError) as exc:
+                    raise ValueError(
+                        f"instruction {i} {cmd!r}: parameters must be numbers"
+                    ) from exc
             else:
                 name = str(cmd).lower().strip()
                 if name == "dropout":
@@ -243,7 +247,7 @@ class DynamicAICodegen:
         j_data = jnp.array(input_data, dtype=jnp.float64)
         j_chunks = jnp.array(structured_chunks, dtype=jnp.float64)
 
-        res_data = _run_pipeline_chunked_jit(j_data, j_chunks, self.base_key)
+        res_data, self.base_key = _run_pipeline_chunked_jit(j_data, j_chunks, self.base_key)
         return np.array(res_data)
 
     def compute_gradients(
