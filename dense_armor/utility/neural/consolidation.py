@@ -741,7 +741,16 @@ class TheoreticalBound:
         Hopfield, J. J. (1982). Neural networks and physical systems with
         emergent collective computational abilities. PNAS 79(8):2554-2558,
         page 3. **Bibliographic only**: no PDF in the folder, the capacity
-        ``0.138 N`` is the classical result, not the 2025 refinement.
+        ``0.138 N`` is the classical result.
+
+        The two 2025 papers are in the folder and are cited, but they do
+        **not** give a closed-form bound: ``hopfield2025_forgetting.pdf``
+        (Essex, Janson, Norris, Baird 2025) studies bifurcation mechanisms
+        and attractor basins in a learning Hopfield network,
+        ``associative2025_forgetting.pdf`` (Vinci, Galluzzi, Mattia 2025)
+        studies self-interactions in associative networks. The ``0.138``
+        capacity is not in either PDF; the class keeps the classical
+        value and declares it.
     """
 
     def __init__(self, n_params: int, n_neurons: int | None = None) -> None:
