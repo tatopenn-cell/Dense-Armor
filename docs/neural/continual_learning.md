@@ -277,6 +277,12 @@ Forgetting, median:
 
 VQ: MSE 0.73, PSNR 1.37, exact recall 0.95. PQ: MSE 0.16, PSNR 8.10, exact recall 1.00. `state_bytes` 1088, `max_nodes` 85, `n_nodes` 8.
 
+## The figure
+
+![continual learning on synthetic data](../assets/neural/continual_learning.png)
+
+*Top: forgetting per learner after five synthetic tasks. Bottom left: reconstruction MSE per lifecycle state, log scale. Bottom right: exact recall per lifecycle state. All data synthetic.*
+
 ## Details
 
 ### References
