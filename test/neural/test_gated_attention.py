@@ -143,3 +143,17 @@ def test_backward_batch():
     dxq, dxc = g.backward(jnp.ones((1, 2, 2)))
     assert dxq.shape == xq.shape
     assert dxc.shape == xc.shape
+
+
+def test_residual_composition_preserves_static_part():
+    m = _identity_model()
+    g = GatedCrossAttention(m, 0.5)
+    xq = jnp.array([[1.0, 0.0], [0.0, 1.0]])
+    xc = jnp.array([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])
+    signal = jnp.array([0.2, 0.9])
+    y_attn = g.forward(xq, xc, signal)
+    y = xq + y_attn
+    assert np.allclose(np.asarray(y[0]), np.asarray(xq[0]))
+    assert not np.allclose(np.asarray(y[1]), np.asarray(xq[1]))
+    expected = np.array([0.59889, 1.80222])
+    assert np.allclose(np.asarray(y[1]), expected, atol=1e-5)
