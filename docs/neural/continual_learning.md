@@ -167,6 +167,29 @@ print(tree.n_nodes(), tree.max_nodes())
 
 Twenty events, fewer nodes than the maximum allowed by `max_depth` and `branching`.
 
+The tree has two routers. The default, `router="linear"`, scans every child and picks the one with the lowest vector-quantised residual. `router="mondrian"` keeps a bounding box per child and picks the child with the smallest box extension for the new event. The Mondrian descent needs only float min/max comparisons per child; the linear descent needs an encode and a decode per child. On the same forty events:
+
+~~~python
+import jax.numpy as jnp
+import numpy as np
+from dense_armor.utility.neural.consolidation import ResidualTree
+
+data = np.random.RandomState(0).randn(40, 2) * 3
+for name in ("linear", "mondrian"):
+    tree = ResidualTree(d_model=2, n_codes=4, max_depth=2, branching=4,
+                        kappa=0.0, seed=0, router=name)
+    for x in data:
+        tree.insert(jnp.asarray(x, dtype=jnp.float32))
+    print(name, tree.n_nodes())
+~~~
+
+~~~
+linear 11
+mondrian 3
+~~~
+
+The two routers are not equivalent: Mondrian is a trade-off declared in the class docstring, not a guarantee. Both respect `max_depth` and `branching` and return a valid node within the bound. The default stays `linear`, so the behaviour of the previous sections is unchanged.
+
 ## 8. A memory with a lifecycle (LifecycleMemory)
 
 The fourth memory piece assigns each event to one of four states, with a bit-width per state (SuperLocalMemory V3.3, Bhardwaj 2026, p. 1). An access promotes the event toward `active`; time without access decays it toward `archive`.
@@ -314,6 +337,7 @@ VQ: MSE 0.73, PSNR 1.37, exact recall 0.95. PQ: MSE 0.16, PSNR 8.10, exact recal
 - `VQMemory` forward is not differentiable: `quantize` selects `argmin_j ||z_e - e_j||`. `gradcheck` is not applicable, and the deviation from the layer contract is declared in the docstring; the straight-through estimator is a biased surrogate of a gradient that does not exist.
 - `ArchivalMemory` write policy is the four formulas stated in section 11: `importance = 0.4 novelty + 0.3 rarity + 0.3 relevance`, `write_depth = round(importance * max_depth)`, promote after `promote_threshold` accesses and decay after `decay_horizon_s` seconds, `promote` merges `branching` children into a parent. The policy is our choice; no paper gives it.
 - The `DarkMemory` construction with the Prisma ground state was measured with 20 seeds and did not pass its own test (Wilcoxon p = 0.0929, A12 = 0.6312): it is not in the branch.
+- `ResidualTree` has two routers: `linear` (default) picks the child with the lowest vector-quantised residual, `mondrian` picks the child with the smallest box extension. The two descents are not equivalent: Mondrian is a declared trade-off, not a guarantee.
 - The tasks of the forgetting benchmark are synthetic conflicting rules, not MNIST permutations.
 
 ### Measured cost
