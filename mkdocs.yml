@@ -219,6 +219,7 @@ nav:
       - Continuous training: neural/continuous.md
       - Encoders and decoders: neural/encoder_decoder.md
       - Deep: neural/deep.md
+      - Composable attention: neural/composable_attention.md
   - Library:
       - Home: index.md
       - Getting Started: getting-started.md

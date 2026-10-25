@@ -212,3 +212,8 @@ __all__ = list(__all__) + [
 from dense_armor.utility.neural.online_vector import OnlineNetVector
 
 __all__ = list(__all__) + ["OnlineNetVector"]
+
+
+from dense_armor.utility.neural.cross_attention import MultiHeadCrossAttention
+
+__all__ = list(__all__) + ["MultiHeadCrossAttention"]

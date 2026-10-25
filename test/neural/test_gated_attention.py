@@ -1,0 +1,239 @@
+"""Tests for GatedCrossAttention.
+
+The brick is a deviation from the task specification, declared in the
+module docstring: a closed step returns the query unchanged, not the
+zero vector. The hand case and the closed-step test are written for
+the new formula.
+"""
+
+from __future__ import annotations
+
+import jax
+import jax.numpy as jnp
+import numpy as np
+import pytest
+
+from dense_armor.utility.neural.cross_attention import MultiHeadCrossAttention
+from dense_armor.utility.neural.gated_attention import GatedCrossAttention
+from dense_armor.utility.neural.gradcheck import gradcheck
+
+KEY = jax.random.PRNGKey(0)
+
+
+def _identity_model() -> MultiHeadCrossAttention:
+    m = MultiHeadCrossAttention(2, 1, KEY, d_context=2)
+    for p in m.params():
+        p.value = jnp.eye(2)
+    return m
+
+
+def test_hand_case():
+    m = _identity_model()
+    g = GatedCrossAttention(m, 0.5)
+    xq = jnp.array([[1.0, 0.0], [0.0, 1.0]])
+    xc = jnp.array([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])
+    signal = jnp.array([0.2, 0.9])
+    out = g.forward(xq, xc, signal)
+    expected_gate = np.array([0.0, 1.0])
+    expected_y = np.array([[1.0, 0.0], [0.59889, 1.80222]])
+    assert np.allclose(np.asarray(g.gate_), expected_gate)
+    assert np.allclose(np.asarray(out), expected_y, atol=1e-5)
+
+    dxq, dxc = g.backward(jnp.ones((2, 2)))
+    expected_dxq = np.array([[1.0, 1.0], [1.11377, 1.05609]])
+    expected_dxc = np.array(
+        [[0.19778, 0.14168], [0.40111, 0.28735], [0.40111, 0.57097]]
+    )
+    assert np.allclose(np.asarray(dxq), expected_dxq, atol=1e-5)
+    assert np.allclose(np.asarray(dxc), expected_dxc, atol=1e-5)
+
+
+def test_boundary():
+    m = _identity_model()
+    g = GatedCrossAttention(m, 0.5)
+    xq = jnp.array([[1.0, 0.0], [0.0, 1.0]])
+    xc = jnp.array([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])
+    g.forward(xq, xc, jnp.array([0.5, 0.5]))
+    assert np.allclose(np.asarray(g.gate_), np.zeros(2))
+    g.forward(xq, xc, jnp.array([float("nan"), 0.9]))
+    assert np.allclose(np.asarray(g.gate_), np.array([0.0, 1.0]))
+
+
+def test_all_open_adds_attention_to_query():
+    m = _identity_model()
+    g = GatedCrossAttention(m, 0.1)
+    xq = jnp.array([[1.0, 0.0], [0.0, 1.0]])
+    xc = jnp.array([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])
+    signal = jnp.array([0.9, 0.9])
+    y_gated = np.asarray(g.forward(xq, xc, signal))
+    m2 = _identity_model()
+    y_plain = np.asarray(m2.forward(xq, xc))
+    assert np.allclose(y_gated, np.asarray(xq) + y_plain, atol=1e-6)
+
+
+def test_closed_step_no_param_grad():
+    m = _identity_model()
+    g = GatedCrossAttention(m, 0.5)
+    xq = jnp.array([[1.0, 0.0], [0.0, 1.0]])
+    xc = jnp.array([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])
+    g.forward(xq, xc, jnp.array([0.0, 0.0]))
+    for p in m.params():
+        p.zero_grad()
+    dxq, dxc = g.backward(jnp.ones((2, 2)))
+    for p in m.params():
+        assert np.allclose(np.asarray(p.grad), np.zeros_like(np.asarray(p.grad)))
+    assert np.allclose(np.asarray(dxq), np.ones((2, 2)))
+    assert np.allclose(np.asarray(dxc), np.zeros((3, 2)))
+
+
+def test_single_and_batch():
+    m = _identity_model()
+    g = GatedCrossAttention(m, 0.5)
+    xq = jnp.array([[1.0, 0.0], [0.0, 1.0]])
+    xc = jnp.array([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])
+    signal = jnp.array([0.2, 0.9])
+    y1 = np.asarray(g.forward(xq, xc, signal))
+    m2 = _identity_model()
+    g2 = GatedCrossAttention(m2, 0.5)
+    y2 = np.asarray(g2.forward(xq[None], xc[None], signal[None])[0])
+    assert np.allclose(y1, y2, atol=1e-6)
+
+
+def test_errors():
+    m = _identity_model()
+    g = GatedCrossAttention(m, 0.5)
+    xq = jnp.ones((2, 2))
+    xc = jnp.ones((3, 2))
+    with pytest.raises(ValueError):
+        g.forward(xq, xc, jnp.ones(3))
+    with pytest.raises(RuntimeError):
+        g.backward(jnp.ones((2, 2)))
+
+
+def test_repr():
+    m = _identity_model()
+    g = GatedCrossAttention(m, 0.5)
+    s = repr(g)
+    assert "GatedCrossAttention" in s
+    assert "threshold=0.5" in s
+
+
+def test_repr_contains_threshold():
+    m = _identity_model()
+    g = GatedCrossAttention(m, 0.5)
+    assert "threshold=0.5" in repr(g)
+    assert "MultiHeadCrossAttention" in repr(g)
+
+
+def test_signal_batch_shape_mismatch():
+    m = _identity_model()
+    g = GatedCrossAttention(m, 0.5)
+    xq = jnp.ones((2, 3, 2))
+    xc = jnp.ones((2, 3, 2))
+    with pytest.raises(ValueError):
+        g.forward(xq, xc, jnp.ones((3, 3)))
+
+
+def test_params_returns_inner_four():
+    m = _identity_model()
+    g = GatedCrossAttention(m, 0.5)
+    ps = g.params()
+    assert ps == m.params()
+    assert len(ps) == 4
+
+
+def test_backward_batch():
+    m = _identity_model()
+    g = GatedCrossAttention(m, 0.5)
+    xq = jnp.array([[[1.0, 0.0], [0.0, 1.0]]])
+    xc = jnp.array([[[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]]])
+    signal = jnp.array([[0.2, 0.9]])
+    g.forward(xq, xc, signal)
+    dxq, dxc = g.backward(jnp.ones((1, 2, 2)))
+    assert dxq.shape == xq.shape
+    assert dxc.shape == xc.shape
+
+
+def test_1d_signal_with_3d_queries():
+    m = _identity_model()
+    g = GatedCrossAttention(m, 0.5)
+    xq = jnp.array([[[1.0, 0.0], [0.0, 1.0]]])
+    xc = jnp.array([[[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]]])
+    signal = jnp.array([0.2, 0.9])
+    y = g.forward(xq, xc, signal)
+    assert y.shape == xq.shape
+    dxq, dxc = g.backward(jnp.ones(xq.shape))
+    assert dxq.shape == xq.shape
+    assert dxc.shape == xc.shape
+
+
+def test_gradcheck_xq():
+    m = _identity_model()
+    g = GatedCrossAttention(m, 0.5)
+    xc = jnp.array([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])
+    signal = jnp.array([0.2, 0.9])
+
+    def f(xq_):
+        return g.forward(xq_, xc, signal)
+
+    def b(xq_, y, gg):
+        g.forward(xq_, xc, signal)
+        dxq, _ = g.backward(gg)
+        return dxq
+
+    xq = jnp.array([[1.0, 0.0], [0.0, 1.0]])
+    assert gradcheck(f, b, xq) < 1e-5
+
+
+def test_gradcheck_xc():
+    m = _identity_model()
+    g = GatedCrossAttention(m, 0.5)
+    xq = jnp.array([[1.0, 0.0], [0.0, 1.0]])
+    signal = jnp.array([0.2, 0.9])
+
+    def f(xc_):
+        return g.forward(xq, xc_, signal)
+
+    def b(xc_, y, gg):
+        g.forward(xq, xc_, signal)
+        _, dxc = g.backward(gg)
+        return dxc
+
+    xc = jnp.array([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])
+    assert gradcheck(f, b, xc) < 1e-5
+
+
+def test_gradcheck_params():
+    xq = jnp.array([[1.0, 0.0], [0.0, 1.0]])
+    xc = jnp.array([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])
+    signal = jnp.array([0.2, 0.9])
+    for name in ["W_Q", "W_K", "W_V", "W_O"]:
+
+        def f(v, name=name):
+            m = MultiHeadCrossAttention(2, 1, jax.random.PRNGKey(0), d_context=2)
+            getattr(m, name).value = v
+            g = GatedCrossAttention(m, 0.5)
+            return g.forward(xq, xc, signal)
+
+        def b(v, y, gg, name=name):
+            m = MultiHeadCrossAttention(2, 1, jax.random.PRNGKey(0), d_context=2)
+            getattr(m, name).value = v
+            g = GatedCrossAttention(m, 0.5)
+            g.forward(xq, xc, signal)
+            for pp in m.params():
+                pp.zero_grad()
+            g.backward(gg)
+            return getattr(m, name).grad
+
+        m0 = MultiHeadCrossAttention(2, 1, jax.random.PRNGKey(0), d_context=2)
+        assert gradcheck(f, b, getattr(m0, name).value) < 1e-5
+
+
+def test_closed_returns_query():
+    m = _identity_model()
+    g = GatedCrossAttention(m, 0.5)
+    xq = jnp.array([[1.0, 0.0], [0.0, 1.0]])
+    xc = jnp.array([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])
+    y = g.forward(xq, xc, jnp.array([0.0, 0.0]))
+    assert np.allclose(np.asarray(y), np.asarray(xq), atol=1e-6)
+    assert np.allclose(np.asarray(g.gate_), np.zeros(2))
