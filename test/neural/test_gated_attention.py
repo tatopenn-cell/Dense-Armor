@@ -151,3 +151,16 @@ def test_backward_batch():
     dxq, dxc = g.backward(jnp.ones((1, 2, 2)))
     assert dxq.shape == xq.shape
     assert dxc.shape == xc.shape
+
+
+def test_1d_signal_with_3d_queries():
+    m = _identity_model()
+    g = GatedCrossAttention(m, 0.5)
+    xq = jnp.array([[[1.0, 0.0], [0.0, 1.0]]])
+    xc = jnp.array([[[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]]])
+    signal = jnp.array([0.2, 0.9])
+    y = g.forward(xq, xc, signal)
+    assert y.shape == xq.shape
+    dxq, dxc = g.backward(jnp.ones(xq.shape))
+    assert dxq.shape == xq.shape
+    assert dxc.shape == xc.shape

@@ -109,10 +109,12 @@ class BottleneckFusion:
         if fsn is None:
             fsn_used = jnp.broadcast_to(self.fsn.value, (B, self.n_bottleneck, D))
             from_self = True
+            fsn_out_shape = "self"
         else:
-            fsn = jnp.asarray(fsn)
-            fsn_used = fsn[None] if fsn.ndim == 2 else fsn
+            fsn_arr = jnp.asarray(fsn)
+            fsn_used = jnp.broadcast_to(fsn_arr, (B, self.n_bottleneck, D))
             from_self = False
+            fsn_out_shape = "2d" if fsn_arr.ndim == 2 else "3d"
         ab = jnp.concatenate([a3, fsn_used], axis=1)
         bb = jnp.concatenate([b3, fsn_used], axis=1)
         a_out = self.block_a.forward(ab, training=training)
@@ -121,7 +123,11 @@ class BottleneckFusion:
         b_new = b_out[:, :Tb]
         fsn_a = a_out[:, Ta:]
         fsn_b = b_out[:, Tb:]
-        fsn_new = 0.5 * (fsn_a + fsn_b)
+        fsn_raw = 0.5 * (fsn_a + fsn_b)
+        if fsn_out_shape == "2d":
+            fsn_new = jnp.mean(fsn_raw, axis=0)
+        else:
+            fsn_new = fsn_raw
         self._cache = dict(
             sq_a=sq_a,
             sq_b=sq_b,
@@ -134,10 +140,16 @@ class BottleneckFusion:
             bb=bb,
             fsn_used=fsn_used,
             from_self=from_self,
+            fsn_out_shape=fsn_out_shape,
         )
         a_ret = a_new[0] if sq_a else a_new
         b_ret = b_new[0] if sq_b else b_new
-        fsn_ret = fsn_new[0] if (sq_a and sq_b) else fsn_new
+        if fsn_out_shape == "2d":
+            fsn_ret = fsn_new
+        elif sq_a and sq_b:
+            fsn_ret = fsn_new[0]
+        else:
+            fsn_ret = fsn_new
         return a_ret, b_ret, fsn_ret
 
     def backward(self, ga: Any, gb: Any, gfsn: Any):
@@ -163,8 +175,11 @@ class BottleneckFusion:
         if gfsn is None:
             gfsn_used = jnp.zeros((B, nb, self.d_model))
         else:
-            gfsn = jnp.asarray(gfsn)
-            gfsn_used = gfsn[None] if gfsn.ndim == 2 else gfsn
+            gfsn_arr = jnp.asarray(gfsn)
+            if gfsn_arr.ndim == 2:
+                gfsn_used = jnp.broadcast_to(gfsn_arr[None] / B, (B, nb, self.d_model))
+            else:
+                gfsn_used = jnp.broadcast_to(gfsn_arr, (B, nb, self.d_model))
         d_fsn_half = 0.5 * gfsn_used
         d_ab = jnp.concatenate([ga, d_fsn_half], axis=1)
         d_bb = jnp.concatenate([gb, d_fsn_half], axis=1)
@@ -178,8 +193,10 @@ class BottleneckFusion:
         if c["from_self"]:
             self.fsn.grad = self.fsn.grad + jnp.sum(dfsn, axis=0)
             dfsn_ret = None
+        elif c["fsn_out_shape"] == "2d":
+            dfsn_ret = jnp.sum(dfsn, axis=0)
         else:
-            dfsn_ret = dfsn[0] if (c["sq_a"] and c["sq_b"]) else dfsn
+            dfsn_ret = dfsn
         da_ret = da[0] if c["sq_a"] else da
         db_ret = db[0] if c["sq_b"] else db
         return da_ret, db_ret, dfsn_ret

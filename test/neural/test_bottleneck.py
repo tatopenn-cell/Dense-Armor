@@ -202,3 +202,20 @@ def test_d_ff_none_defaults_to_4_times_d_model():
     a_out, b_out, fsn_out = m.forward(a, b)
     assert np.asarray(a_out).shape == (3, 4)
     assert np.asarray(fsn_out).shape == (2, 4)
+
+
+def test_2d_fsn_with_3d_streams():
+    m = _tiny_model()
+    a = jnp.ones((2, 3, 4))
+    b = jnp.ones((2, 5, 4))
+    fsn = jnp.zeros((2, 4))
+    a_out, b_out, fsn_out = m.forward(a, b, fsn=fsn)
+    assert a_out.shape == (2, 3, 4)
+    assert b_out.shape == (2, 5, 4)
+    assert fsn_out.shape == (2, 4)
+    da, db, dfsn = m.backward(
+        jnp.ones((2, 3, 4)), jnp.ones((2, 5, 4)), jnp.ones((2, 4))
+    )
+    assert da.shape == (2, 3, 4)
+    assert db.shape == (2, 5, 4)
+    assert dfsn.shape == (2, 4)

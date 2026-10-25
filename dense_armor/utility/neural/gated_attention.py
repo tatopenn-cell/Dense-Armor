@@ -98,6 +98,8 @@ class GatedCrossAttention:
         y_attn = self.attention.forward(xq, xc, training=training)
         if self._squeeze:
             g = gate[:, None]
+        elif gate.ndim == 1:
+            g = gate[None, :, None]
         else:
             g = gate[:, :, None]
         out = xq + y_attn * g
@@ -125,6 +127,8 @@ class GatedCrossAttention:
         g_out = jnp.asarray(g_out)
         if self._squeeze:
             g = self.gate_[:, None]
+        elif self.gate_.ndim == 1:
+            g = self.gate_[None, :, None]
         else:
             g = self.gate_[:, :, None]
         dxq_attn, dxc = self.attention.backward(g_out * g)
