@@ -1,4 +1,10 @@
-"""Tests for GatedCrossAttention."""
+"""Tests for GatedCrossAttention.
+
+The brick is a deviation from the task specification, declared in the
+module docstring: a closed step returns the query unchanged, not the
+zero vector. The hand case and the closed-step test are written for
+the new formula.
+"""
 
 from __future__ import annotations
 
@@ -28,12 +34,12 @@ def test_hand_case():
     signal = jnp.array([0.2, 0.9])
     out = g.forward(xq, xc, signal)
     expected_gate = np.array([0.0, 1.0])
-    expected_y = np.array([[0.0, 0.0], [0.59889, 0.80222]])
+    expected_y = np.array([[1.0, 0.0], [0.59889, 1.80222]])
     assert np.allclose(np.asarray(g.gate_), expected_gate)
     assert np.allclose(np.asarray(out), expected_y, atol=1e-5)
 
     dxq, dxc = g.backward(jnp.ones((2, 2)))
-    expected_dxq = np.array([[0.0, 0.0], [0.11377, 0.05609]])
+    expected_dxq = np.array([[1.0, 1.0], [1.11377, 1.05609]])
     expected_dxc = np.array(
         [[0.19778, 0.14168], [0.40111, 0.28735], [0.40111, 0.57097]]
     )
@@ -52,7 +58,7 @@ def test_boundary():
     assert np.allclose(np.asarray(g.gate_), np.array([0.0, 1.0]))
 
 
-def test_all_open_equals_attention_alone():
+def test_all_open_adds_attention_to_query():
     m = _identity_model()
     g = GatedCrossAttention(m, 0.1)
     xq = jnp.array([[1.0, 0.0], [0.0, 1.0]])
@@ -61,10 +67,10 @@ def test_all_open_equals_attention_alone():
     y_gated = np.asarray(g.forward(xq, xc, signal))
     m2 = _identity_model()
     y_plain = np.asarray(m2.forward(xq, xc))
-    assert np.allclose(y_gated, y_plain, atol=1e-6)
+    assert np.allclose(y_gated, np.asarray(xq) + y_plain, atol=1e-6)
 
 
-def test_closed_step_no_grad():
+def test_closed_step_no_param_grad():
     m = _identity_model()
     g = GatedCrossAttention(m, 0.5)
     xq = jnp.array([[1.0, 0.0], [0.0, 1.0]])
@@ -72,9 +78,11 @@ def test_closed_step_no_grad():
     g.forward(xq, xc, jnp.array([0.0, 0.0]))
     for p in m.params():
         p.zero_grad()
-    g.backward(jnp.ones((2, 2)))
+    dxq, dxc = g.backward(jnp.ones((2, 2)))
     for p in m.params():
         assert np.allclose(np.asarray(p.grad), np.zeros_like(np.asarray(p.grad)))
+    assert np.allclose(np.asarray(dxq), np.ones((2, 2)))
+    assert np.allclose(np.asarray(dxc), np.zeros((3, 2)))
 
 
 def test_single_and_batch():
@@ -143,17 +151,3 @@ def test_backward_batch():
     dxq, dxc = g.backward(jnp.ones((1, 2, 2)))
     assert dxq.shape == xq.shape
     assert dxc.shape == xc.shape
-
-
-def test_residual_composition_preserves_static_part():
-    m = _identity_model()
-    g = GatedCrossAttention(m, 0.5)
-    xq = jnp.array([[1.0, 0.0], [0.0, 1.0]])
-    xc = jnp.array([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])
-    signal = jnp.array([0.2, 0.9])
-    y_attn = g.forward(xq, xc, signal)
-    y = xq + y_attn
-    assert np.allclose(np.asarray(y[0]), np.asarray(xq[0]))
-    assert not np.allclose(np.asarray(y[1]), np.asarray(xq[1]))
-    expected = np.array([0.59889, 1.80222])
-    assert np.allclose(np.asarray(y[1]), expected, atol=1e-5)

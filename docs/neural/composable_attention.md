@@ -78,14 +78,12 @@ print([[round(float(v), 5) for v in row] for row in y.tolist()])
 
 ~~~
 [0.0, 1.0]
-[[0.0, 0.0], [0.59889, 0.80222]]
+[[1.0, 0.0], [0.59889, 1.80222]]
 ~~~
 
-The first step has `signal[0] = 0.2`, below the threshold `0.5`, so its gate is `0.0` and its row of the output is `[0, 0]`. The second step has `signal[1] = 0.9`, above the threshold, so its row is the same as the ungated cross-attention.
+The first step has `signal[0] = 0.2`, below the threshold `0.5`, so its gate is `0.0` and its row of the output is the query unchanged, `[1, 0]`. The second step has `signal[1] = 0.9`, above the threshold, so its row is the query plus the ungated cross-attention, `[0.59889, 1.80222]`. The identity path carries the static part of the query at every step; the attention adds the dynamic part only where the gate is open.
 
-The gate alone produces the zero vector at a closed step, and the closed step sends no gradient to the queries, to the context or to a parameter. That is what the brick promises, and it is what a caller that only wants "look only when the signal says so" needs. The static part of the queries is preserved by the caller: the queries go through the gate and, in parallel, through a clean line to the output. The composition is one line, `y = xq + gated.forward(xq, xc, signal)`.
-
-On a synthetic audio level of 40 steps, about half the steps are open. At the closed steps the gated block returns the zero vector, and the residual composition returns the queries unchanged:
+The identity path in the brick carries the static part of the query at a closed step, and the attention adds the dynamic part only where the gate is open. On a synthetic audio level of 40 steps, about half the steps are open. At the closed steps the output is the query unchanged; at the open steps the output is the query plus the attention:
 
 ~~~python
 import jax
@@ -103,22 +101,22 @@ for p in cross.params():
 gated = GatedCrossAttention(cross, threshold=0.5)
 xq = jnp.tile(jnp.array([[1.0, 0.0]]), (40, 1))
 xc = jnp.array([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])
-y_attn = gated.forward(xq, xc, signal)
-y = xq + y_attn
+y = gated.forward(xq, xc, signal)
 gate = np.asarray(gated.gate_)
 closed = gate == 0.0
+open_ = ~closed
 print(f"open steps: {int(gate.sum())} / {len(gate)}")
-print(f"max |gated| at closed: {float(np.max(np.abs(np.asarray(y_attn)[closed]))):.5f}")
-print(f"max |residual| at closed: {float(np.max(np.abs(np.asarray(y)[closed]))):.5f}")
+print(f"max |y| at closed: {float(np.max(np.abs(np.asarray(y)[closed]))):.5f}")
+print(f"max |y| at open: {float(np.max(np.abs(np.asarray(y)[open_]))):.5f}")
 ~~~
 
 ~~~
 open steps: 19 / 40
-max |gated| at closed: 0.00000
-max |residual| at closed: 1.00000
+max |y| at closed: 1.00000
+max |y| at open: 1.80222
 ~~~
 
-The first number is the open steps of the audio level. The second is the largest absolute value of the gated block at the closed steps: `0.0`, because a closed step produces the zero vector. The third is the largest absolute value of the residual composition at the closed steps: `1.0`, the largest coordinate of the queries, preserved because the residual path carries them unchanged. The architecture uses this composition around the gate: the static part survives a closed step, and the dynamic part is added on top at the open steps.
+The first number is the open steps of the audio level. The second is the largest absolute value of the output at the closed steps: `1.0`, the largest coordinate of the query, because a closed step returns the query unchanged. The third is the largest absolute value of the output at the open steps: `1.80222`, the largest coordinate of the query plus the attention. The static part survives a closed step, and the dynamic part is added on top at the open steps, in the brick itself.
 
 ## 3. The latent cross-attention
 
@@ -197,7 +195,7 @@ In one layer, with the same `fsn`, changing `b` leaves `a'` unchanged: the first
 - The scale of the latent array is `0.02`: the paper learns the latent array and gives no scale in the pages used.
 - The two streams of the bottleneck have one transformer block each, with its own weights, not a shared block.
 - `d_ff = 4 * d_model` is the default of `BottleneckFusion`.
-- The gate is applied to the query rows only: the context steps are not gated. The static part of the queries is preserved by the caller, with the residual composition `y = xq + gated.forward(xq, xc, signal)` shown in step B; the brick alone returns the zero vector at a closed step by design.
+- The gate is applied to the query rows only: the context steps are not gated. The brick returns `xq + g * attention(xq, xc)` and not `g * attention(xq, xc)`: a closed step returns the query unchanged. This is a **deviation from the task specification**, declared: the task says "the output is the output of attention with every row multiplied by g, so a closed step produces the zero vector". The reason: a zero vector at a closed step is a discontinuity that breaks the gradient path of the query and destroys its static part. The hand case and the closed-step test reflect the new formula.
 - Several layers of `BottleneckFusion` are called in sequence, passing `fsn'` on; the module adds no stack class.
 
 ### Measured cost

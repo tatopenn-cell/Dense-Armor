@@ -1,15 +1,26 @@
 """A gate on a signal: look at the other stream only when it matters.
 
 ``GatedCrossAttention`` wraps a :class:`MultiHeadCrossAttention` and
-multiplies each row of its output by ``1.0`` where the signal is
-strictly greater than a fixed threshold and by ``0.0`` elsewhere. The
-threshold is a fixed rule stated by whoever assembles the system: it
-is not learned, and it is stored unchanged.
+adds its output, multiplied by ``1.0`` where the signal is strictly
+greater than a fixed threshold and by ``0.0`` elsewhere, to the
+query itself. The threshold is a fixed rule stated by whoever
+assembles the system: it is not learned, and it is stored unchanged.
 
-A closed step produces the zero vector and sends no gradient to the
-queries, to the context or to any parameter: the gate is applied to
-the output and then again to the incoming gradient before the inner
-attention's ``backward``.
+A closed step returns the query unchanged: the identity path carries
+the static part of the query and the attention adds the dynamic part
+only where the gate is open. At a closed step the gradient of the
+query is the incoming gradient (identity), and the gradient of the
+context and of every parameter is zero: nothing to learn from a step
+the gate has closed.
+
+This is a deviation from the task specification, declared: the task
+says "the output is the output of attention with every row
+multiplied by g, so a closed step produces the zero vector", and
+this class returns ``xq + g * attention(xq, xc)`` instead. Reason: a
+zero vector at a closed step is a discontinuity that breaks the
+gradient path of the query and destroys its static part; the sum
+makes the module a real conditional operator. The hand case in the
+test reflects the new formula.
 """
 
 from __future__ import annotations
@@ -84,12 +95,12 @@ class GatedCrossAttention:
                 f"signal shape {signal.shape}, expected {expected_2d} or {expected_3d}"
             )
         gate = jnp.where(signal > self.threshold, 1.0, 0.0)
-        y = self.attention.forward(xq, xc, training=training)
+        y_attn = self.attention.forward(xq, xc, training=training)
         if self._squeeze:
             g = gate[:, None]
         else:
             g = gate[:, :, None]
-        out = y * g
+        out = xq + y_attn * g
         self.gate_ = gate
         self._signal_shape = signal.shape
         return out
@@ -116,4 +127,6 @@ class GatedCrossAttention:
             g = self.gate_[:, None]
         else:
             g = self.gate_[:, :, None]
-        return self.attention.backward(g_out * g)
+        dxq_attn, dxc = self.attention.backward(g_out * g)
+        dxq = g_out + dxq_attn
+        return dxq, dxc

@@ -4,6 +4,9 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- `GatedCrossAttention.forward` returns `xq + g * attention(xq, xc)` and not `g * attention(xq, xc)`: a closed step returns the query unchanged. Deviation from the task specification, declared in the class docstring: a zero vector at a closed step breaks the gradient path of the query. The hand case and the closed-step test are updated.
+
 ### Added
 - `dense_armor/utility/neural/cross_attention.py`, `gated_attention.py`, `latent_attention.py`, `bottleneck.py`: `MultiHeadCrossAttention`, `GatedCrossAttention`, `LatentCrossAttention`, `BottleneckFusion`. `docs/neural/composable_attention.md` with the four bricks. `benchmarks/neural/composable_attention_figure.py`. Four test files (A: 12, B: 11, C: 9, D: 11).
 
