@@ -49,7 +49,6 @@ class GatedCrossAttention:
         self.attention = attention
         self.threshold = float(threshold)
         self.gate_: jnp.ndarray | None = None
-        self._signal_shape: tuple[int, ...] | None = None
         self._squeeze: bool = False
 
     def __repr__(self) -> str:
@@ -104,7 +103,6 @@ class GatedCrossAttention:
             g = gate[:, :, None]
         out = xq + y_attn * g
         self.gate_ = gate
-        self._signal_shape = signal.shape
         return out
 
     def backward(self, g_out: Any):

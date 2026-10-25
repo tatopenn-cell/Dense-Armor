@@ -15,6 +15,7 @@ import pytest
 
 from dense_armor.utility.neural.cross_attention import MultiHeadCrossAttention
 from dense_armor.utility.neural.gated_attention import GatedCrossAttention
+from dense_armor.utility.neural.gradcheck import gradcheck
 
 KEY = jax.random.PRNGKey(0)
 
@@ -164,3 +165,75 @@ def test_1d_signal_with_3d_queries():
     dxq, dxc = g.backward(jnp.ones(xq.shape))
     assert dxq.shape == xq.shape
     assert dxc.shape == xc.shape
+
+
+def test_gradcheck_xq():
+    m = _identity_model()
+    g = GatedCrossAttention(m, 0.5)
+    xc = jnp.array([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])
+    signal = jnp.array([0.2, 0.9])
+
+    def f(xq_):
+        return g.forward(xq_, xc, signal)
+
+    def b(xq_, y, gg):
+        g.forward(xq_, xc, signal)
+        dxq, _ = g.backward(gg)
+        return dxq
+
+    xq = jnp.array([[1.0, 0.0], [0.0, 1.0]])
+    assert gradcheck(f, b, xq) < 1e-5
+
+
+def test_gradcheck_xc():
+    m = _identity_model()
+    g = GatedCrossAttention(m, 0.5)
+    xq = jnp.array([[1.0, 0.0], [0.0, 1.0]])
+    signal = jnp.array([0.2, 0.9])
+
+    def f(xc_):
+        return g.forward(xq, xc_, signal)
+
+    def b(xc_, y, gg):
+        g.forward(xq, xc_, signal)
+        _, dxc = g.backward(gg)
+        return dxc
+
+    xc = jnp.array([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])
+    assert gradcheck(f, b, xc) < 1e-5
+
+
+def test_gradcheck_params():
+    xq = jnp.array([[1.0, 0.0], [0.0, 1.0]])
+    xc = jnp.array([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])
+    signal = jnp.array([0.2, 0.9])
+    for name in ["W_Q", "W_K", "W_V", "W_O"]:
+
+        def f(v, name=name):
+            m = MultiHeadCrossAttention(2, 1, jax.random.PRNGKey(0), d_context=2)
+            getattr(m, name).value = v
+            g = GatedCrossAttention(m, 0.5)
+            return g.forward(xq, xc, signal)
+
+        def b(v, y, gg, name=name):
+            m = MultiHeadCrossAttention(2, 1, jax.random.PRNGKey(0), d_context=2)
+            getattr(m, name).value = v
+            g = GatedCrossAttention(m, 0.5)
+            g.forward(xq, xc, signal)
+            for pp in m.params():
+                pp.zero_grad()
+            g.backward(gg)
+            return getattr(m, name).grad
+
+        m0 = MultiHeadCrossAttention(2, 1, jax.random.PRNGKey(0), d_context=2)
+        assert gradcheck(f, b, getattr(m0, name).value) < 1e-5
+
+
+def test_closed_returns_query():
+    m = _identity_model()
+    g = GatedCrossAttention(m, 0.5)
+    xq = jnp.array([[1.0, 0.0], [0.0, 1.0]])
+    xc = jnp.array([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])
+    y = g.forward(xq, xc, jnp.array([0.0, 0.0]))
+    assert np.allclose(np.asarray(y), np.asarray(xq), atol=1e-6)
+    assert np.allclose(np.asarray(g.gate_), np.zeros(2))

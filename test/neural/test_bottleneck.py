@@ -219,3 +219,24 @@ def test_2d_fsn_with_3d_streams():
     assert da.shape == (2, 3, 4)
     assert db.shape == (2, 5, 4)
     assert dfsn.shape == (2, 4)
+
+
+def test_gradcheck_fsn():
+    m = BottleneckFusion(2, 1, 2, jax.random.PRNGKey(0), d_ff=2)
+    a = jax.random.normal(jax.random.PRNGKey(0), (3, 2))
+    b = jax.random.normal(jax.random.PRNGKey(0), (5, 2))
+
+    def f(fsn_):
+        m.fsn.value = fsn_
+        return m.forward(a, b, fsn=None)[2]
+
+    def bw(fsn_, y, gg):
+        m.fsn.value = fsn_
+        m.forward(a, b, fsn=None)
+        for pp in m.params():
+            pp.zero_grad()
+        m.backward(jnp.zeros((3, 2)), jnp.zeros((5, 2)), gg)
+        return m.fsn.grad
+
+    fsn0 = 0.02 * jax.random.normal(jax.random.PRNGKey(0), (2, 2))
+    assert gradcheck(f, bw, fsn0) < 1e-4

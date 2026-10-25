@@ -124,3 +124,24 @@ def test_d_context_none_defaults_to_d_model():
     assert m.d_context == 4
     y = m.forward(jnp.ones((3, 4)))
     assert np.asarray(y).shape == (1, 4)
+
+
+def test_gradcheck_latents():
+    m = _identity_model()
+    xc = jnp.array([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])
+
+    def f(lat_):
+        m.latents.value = lat_
+        return m.forward(xc)
+
+    def b(lat_, y, gg):
+        m.latents.value = lat_
+        m.forward(xc)
+        m.latents.zero_grad()
+        for pp in m.attention.params():
+            pp.zero_grad()
+        m.backward(gg)
+        return m.latents.grad
+
+    lat0 = jnp.array([[1.0, 0.0]])
+    assert gradcheck(f, b, lat0) < 1e-5
