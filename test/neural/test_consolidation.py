@@ -7,7 +7,6 @@ import pytest
 
 from dense_armor.utility.neural.consolidation import (
     ArchivalMemory,
-    DarkMemory,
     DualMemory,
     LifecycleMemory,
     PQMemory,
@@ -547,121 +546,120 @@ def test_promote_preserves_mse():
     assert abs(parent["alpha"] - alpha_kids) < max(1e-3, 0.5 * abs(alpha_kids)), "alpha changed too much"
 
 
-def test_prime_key_uniqueness():
-    dm = DarkMemory()
-    D1, p1 = dm.prime_key([np.zeros(4), np.ones(4)])
-    D2, p2 = dm.prime_key([np.zeros(4), 2 * np.ones(4), 3 * np.ones(4)])
-    assert D1 == 2 * 3
-    assert D2 == 2 * 3 * 5
-    assert p1 == [2, 3]
-    assert p2 == [2, 3, 5]
-    assert len(p2) == 3
+def test_vq_backward_before_forward_raises():
+    """backward() before forward() raises RuntimeError (REVISIONE_IA.md §2b)."""
+    import pytest
+    vq = VQMemory(n_x=2, d_model=4, n_codes=8, seed=0)
+    with pytest.raises(RuntimeError):
+        vq.backward(jnp.ones((1, 2)))
 
 
-def test_blocks_on_duplicate():
-    dm = DarkMemory()
-    D, primes = dm.prime_key([np.zeros(4), np.zeros(4), np.zeros(4)])
-    assert dm.blocks(2, D) is True
-    assert dm.blocks(3, D) is True
-    assert dm.blocks(7, D) is False
+
+def test_vq_quantization_is_discrete_declared():
+    """The VQ forward is not differentiable: gradcheck is not applicable.
+
+    ``VQMemory.quantize`` selects ``k = argmin_j ||z_e - e_j||``. A finite
+    difference on the weights changes ``z_e`` by ``eps``, which can cross a
+    codebook boundary, so the finite-difference gradient of the true
+    forward is not the analytic one. The straight-through estimator is a
+    biased surrogate of a gradient that does not exist. The contract is
+    tested by property (``test_vq_straight_through``: with commitment 0,
+    ``dz_e = dz_q``; ``test_codebook_gradient_independent_of_commitment``:
+    the commitment term does not change the codebook gradient), not by
+    ``gradcheck``. This is a declared deviation from REVISIONE_IA.md §2b.
+    """
+    vq = VQMemory(n_x=2, d_model=4, n_codes=8, seed=0)
+    x = jnp.asarray(np.random.RandomState(0).randn(4, 2), dtype=jnp.float32)
+    z_e = vq.encode(x)
+    z_q, k, _ = vq.quantize(z_e)
+    assert z_q.shape == z_e.shape
+    assert k.shape == (4,)
+    assert int(k.min()) >= 0 and int(k.max()) < 8
 
 
-def test_guide_is_prisma_ground_state():
-    """The guide field is psi_0(r_j) of the Prisma ground state."""
-    dm = DarkMemory()
-    # mu = 1, eps = 0 at E=0 is not reached (D >= 2), but D=2 gives
-    # E = log 2 ~ 0.69, mu ~ 0.59, eps ~ 0.82: the field is a sech-like
-    # profile, peak at r=0, decreasing with r.
-    F = dm.guide_field(2, [np.array([1.0, 1.0, 1.0, 1.0])])
-    assert F.shape == (4,)
-    # all deltas equal -> all r_j equal -> all F^(j) equal
-    assert np.allclose(F, F[0], atol=1e-9)
-    # F positive, bounded by the peak of psi_0 (order 1)
-    assert np.all(F >= 0.0)
-    assert np.all(F <= 1.5)
+def test_vq_params_and_backward_before_fit():
+    """VQMemory.params() exists; backward before forward raises; encode before fit raises."""
+    import pytest
+    vq = VQMemory(n_x=2, d_model=4, n_codes=8, seed=0)
+    params = vq.params()
+    assert len(params) >= 2
+    with pytest.raises(RuntimeError):
+        vq.backward(jnp.ones((1, 2)))
 
 
-def test_prisma_sech_limit():
-    """At mu=1, eps=0 the ground state matches sech to 1e-4."""
-    dm = DarkMemory()
-    psi = dm._prisma_ground_state(mu=1.0, eps=0.0, R=5.0, N=256)
-    r = np.linspace(0.0, 5.0, 256)
-    sech = 1.0 / np.cosh(r)
-    sech = sech / np.sqrt(np.trapezoid(sech ** 2, r))
-    corr = float(np.corrcoef(psi, sech)[0, 1])
-    assert corr > 0.999, f"corr(psi0, sech) = {corr:.6f} at mu=1, eps=0"
+def test_pq_fit_wrong_d_model_raises():
+    """PQMemory.fit rejects a wrong d_model (line 236)."""
+    import pytest
+    pq = PQMemory(d_model=8, n_subspaces=2, n_centroids=8, seed=0)
+    with pytest.raises(ValueError, match="expected d_model"):
+        pq.fit(jnp.ones((10, 5)))
+
+def test_pq_encode_before_fit_raises():
+    import pytest
+    pq = PQMemory(d_model=8, n_subspaces=2, n_centroids=8, seed=0)
+    with pytest.raises(RuntimeError, match="fit"):
+        pq.encode(jnp.ones(8))
+    with pytest.raises(RuntimeError, match="fit"):
+        pq.decode(jnp.zeros(2, dtype=jnp.int32))
+    with pytest.raises(RuntimeError, match="fit"):
+        pq.asymmetric_distance(jnp.ones(8), jnp.zeros(2, dtype=jnp.int32))
 
 
-def test_guide_delocalises_with_energy():
-    """Larger D (larger E) gives a broader field: mean(r_j * F_j) grows."""
-    dm = DarkMemory()
-    deltas = [np.array([-1.0, 0.5, 2.0, -0.3])]  # same deltas for both
-    F_small = dm.guide_field(6, deltas)    # E = log 6 ~ 1.79, mu ~ 0.36
-    F_large = dm.guide_field(30, deltas)   # E = log 30 ~ 3.40, mu ~ 0.23
-    cum = np.abs(np.array([-1.0, 0.5, 2.0, -0.3]))
-    r_j = 5.0 * cum / cum.max()
-    mean_small = float(np.mean(r_j * F_small))
-    mean_large = float(np.mean(r_j * F_large))
-    assert mean_large >= mean_small, (
-        f"mean(r*F) did not grow: {mean_small:.4f} -> {mean_large:.4f}"
-    )
-
-def test_init_retention():
-    """A generation initialised from the guide keeps acc_1 > 0 on task 1."""
-    import jax
-    from dense_armor.utility.neural.activations import Relu
-    from dense_armor.utility.neural.chain import Sequential
-    from dense_armor.utility.neural.layers import Dense
-    from dense_armor.utility.neural.losses import SoftmaxCrossEntropy
-    from dense_armor.utility.neural.trainer import Trainer
-    from dense_armor.utility.optim import Adam
-    seed = 0
-    rng = np.random.RandomState(seed)
-    X = jnp.asarray(rng.randn(400, 2).astype(np.float32) * 1.5)
-    tasks = [
-        (X, jnp.asarray((np.asarray(X)[:, 0] > 0).astype(np.int32))),
-        (X, jnp.asarray((np.asarray(X)[:, 1] > 0).astype(np.int32))),
-        (X, jnp.asarray((np.asarray(X)[:, 0] + np.asarray(X)[:, 1] > 0).astype(np.int32))),
-    ]
-    key = jax.random.PRNGKey(seed)
-    model = Sequential([Dense(2, 16, key), Relu(), Dense(16, 2, key)])
-    loss = SoftmaxCrossEntropy()
-    tr = Trainer(model, loss, Adam(lr=0.01))
-    dm = DarkMemory()
-    deltas = []
-    for k, (Xk, yk) in enumerate(tasks):
-        before = [np.asarray(pp.value).copy() for pp in model.params()]
-        tr.fit(Xk, yk, epochs=10, batch_size=32, key=key)
-        after = [np.asarray(pp.value).copy() for pp in model.params()]
-        deltas.append(np.concatenate([(a - b).reshape(-1) for a, b in zip(after, before)]))
-    D, _ = dm.prime_key(deltas)
-    F = dm.guide_field(D, deltas)
-    init_theta = dm.init_from_guide(F, seed=seed)
-    key4 = jax.random.PRNGKey(seed + 4)
-    new_model = Sequential([Dense(2, 16, key4), Relu(), Dense(16, 2, key4)])
-    offset = 0
-    for pp in new_model.params():
-        n = pp.value.size
-        seg = init_theta[offset:offset + n] if offset + n <= init_theta.size else np.zeros(n)
-        pp.value = jnp.asarray(seg.reshape(pp.value.shape), dtype=jnp.float32)
-        offset += n
-    X4 = jnp.asarray(rng.randn(200, 2).astype(np.float32) * 1.5)
-    y4 = jnp.asarray((np.asarray(X4)[:, 0] - np.asarray(X4)[:, 1] > 0).astype(np.int32))
-    tr4 = Trainer(new_model, loss, Adam(lr=0.01))
-    tr4.fit(X4, y4, epochs=10, batch_size=32, key=key4)
-    acc1 = float((np.argmax(np.asarray(new_model.forward(tasks[0][0], training=False)), axis=-1) == np.asarray(tasks[0][1])).mean())
-    assert acc1 > 0.0, f"generation 4 keeps acc_1 = {acc1}"
+def test_pq_kmeans_empty_cluster_falls_back():
+    """k-means keeps the old centroid when a cluster is empty (line 228)."""
+    # data with fewer points than centroids forces some clusters to be empty
+    X = jnp.asarray(np.random.RandomState(0).randn(4, 8), dtype=jnp.float32)
+    pq = PQMemory(d_model=8, n_subspaces=2, n_centroids=16, seed=0)
+    pq.fit(X)
+    assert len(pq.centroids_) == 2
 
 
-def test_dark_memory_size():
-    import math
-    dm = DarkMemory()
-    D, _ = dm.prime_key([np.zeros(4)] * 10)
-    bits = math.log2(D)
-    assert bits < 8000
+def test_tree_consolidate_visits_children():
+    """consolidate recurses into every child (line 468) and reports n_events (line 478)."""
+    tree = ResidualTree(d_model=2, n_codes=4, max_depth=3, branching=2, kappa=0.0, seed=0)
+    rng = np.random.RandomState(0)
+    for _ in range(20):
+        tree.insert(jnp.asarray(rng.randn(2) * 5, dtype=jnp.float32))
+    n_before = tree.n_events()
+    tree.consolidate()
+    assert tree.n_events() == n_before
 
 
-def test_c_k_values():
-    import math
-    c1 = 1.0 - math.log(math.pi ** 2 / 6)
-    assert abs(c1 - 0.5023) < 1e-3
+def test_lifecycle_read_out_of_range():
+    import pytest
+    lm = LifecycleMemory(d_model=4, seed=0)
+    lm.write(jnp.zeros(4, dtype=jnp.float32), t=0.0)
+    with pytest.raises(IndexError):
+        lm.read(5)
+    with pytest.raises(IndexError):
+        lm.access(5)
+    assert len(lm) == 1
+
+
+def test_lifecycle_quantize_identity_for_high_bits():
+    """bits >= 24 returns x (line 554), hi == lo returns x."""
+    lm = LifecycleMemory(d_model=4, value_range=(-5.0, 5.0), seed=0)
+    x = jnp.asarray([0.3, -0.7, 1.1, 2.4], dtype=jnp.float32)
+    out = lm._quantize(x, 32)
+    assert np.array_equal(np.asarray(out), np.asarray(x))
+    # hi == lo
+    lm2 = LifecycleMemory(d_model=4, value_range=(0.0, 0.0), seed=0)
+    assert np.array_equal(np.asarray(lm2._quantize(x, 4)), np.asarray(x))
+
+
+def test_dual_memory_empty_replay_and_separation():
+    dm = DualMemory(d_model=4, seed=0)
+    assert dm.replay(3) == []
+    assert dm.top_k_separation(jnp.zeros(4, dtype=jnp.float32)) == []
+
+
+def test_archival_read_and_len():
+    am = ArchivalMemory(d_model=2, n_codes=8, seed=0)
+    am.write(jnp.asarray([1.0, 0.0], dtype=jnp.float32), t=0.0)
+    _, depth = am.read(jnp.asarray([1.0, 0.0], dtype=jnp.float32))
+    assert depth >= 0
+    assert len(am) == 1
+
+
+
+

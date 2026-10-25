@@ -221,7 +221,6 @@ __all__ = list(__all__) + ["MultiHeadCrossAttention"]
 
 from dense_armor.utility.neural.consolidation import (
     ArchivalMemory,
-    DarkMemory,
     DualMemory,
     LifecycleMemory,
     PQMemory,
@@ -233,7 +232,7 @@ from dense_armor.utility.neural.continual import AGEM, EWC, GEM
 from dense_armor.utility.neural.generative_replay import DeepGenerativeReplay
 
 __all__ = list(globals().get("__all__", [])) + [
-    "AGEM", "ArchivalMemory", "DarkMemory", "DeepGenerativeReplay", "DualMemory",
+    "AGEM", "ArchivalMemory", "DeepGenerativeReplay", "DualMemory",
     "EWC", "GEM", "LifecycleMemory", "PQMemory", "ResidualTree", "TheoreticalBound",
     "VQMemory",
 ]
