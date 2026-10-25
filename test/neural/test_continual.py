@@ -207,3 +207,35 @@ def test_agem_gref_uniform():
     assert g_ref.shape == (2,)
     # the fixed seed 42 gives the same indices on every call
     assert agem.seed == 42
+
+
+def test_gem_observe_non_scalar_y():
+    """GEM rejects a non-scalar y (line 136)."""
+    import pytest
+    gem = GEM(memory_per_task=4, seed=0)
+    with pytest.raises(ValueError, match="y must be a scalar"):
+        gem.observe(jnp.zeros(2), jnp.array([1, 2]), task_id=0)
+
+
+def test_agem_observe_non_scalar_y():
+    """A-GEM rejects a non-scalar y (line 224)."""
+    import pytest
+    agem = AGEM(memory_per_task=4, seed=0)
+    with pytest.raises(ValueError, match="y must be a scalar"):
+        agem.observe(jnp.zeros(2), jnp.array([1, 2]), task_id=0)
+
+
+def test_gem_project_no_violation_returns_g():
+    """project() with satisfied constraint returns g (line 174)."""
+    gem = GEM(seed=0)
+    g = jnp.array([1.0, 0.0])
+    g1 = jnp.array([1.0, 0.0])
+    assert np.allclose(np.asarray(gem.project(g, [g1])), np.asarray(g))
+
+
+def test_agem_project_no_violation_returns_g():
+    """project() with satisfied constraint returns g (line 257)."""
+    agem = AGEM(seed=0)
+    g = jnp.array([1.0, 0.0])
+    g1 = jnp.array([1.0, 0.0])
+    assert np.allclose(np.asarray(agem.project(g, g1)), np.asarray(g))
