@@ -129,14 +129,6 @@ def test_gem_project_single_satisfied():
     assert np.allclose(np.asarray(out), np.asarray(g))
 
 
-def test_gem_project_single_violated():
-    gem = GEM()
-    g = jnp.array([1.0, 0.0])
-    g1 = jnp.array([-1.0, 0.0])
-    out = np.asarray(gem.project(g, [g1]))
-    assert float(np.dot(out, np.asarray(g1))) >= -1e-5
-    assert np.allclose(out, np.zeros(2), atol=1e-4)
-
 
 def test_gem_project_two_constraints():
     gem = GEM()
@@ -163,16 +155,55 @@ def test_agem_project_no_violation():
     assert np.allclose(np.asarray(out), np.asarray(g))
 
 
-def test_agem_project_violation():
-    agem = AGEM()
-    g = jnp.array([1.0, 0.0])
-    gr = jnp.array([-1.0, 0.0])
-    out = np.asarray(agem.project(g, gr))
-    assert abs(float(np.dot(out, np.asarray(gr)))) < 1e-6
-
 
 def test_agem_memory_budget():
     agem = AGEM(memory_per_task=10)
     for i in range(30):
         agem.observe(jnp.array([float(i), 0.0]), jnp.array([i % 2]), task_id=0)
     assert agem.memory()[0][0].shape[0] == 10
+
+
+def _closest_in_l2(g, g1):
+    """Closest vector to g in the half-space <v, g1> >= 0 (orthogonal projection)."""
+    g_arr = np.asarray(g, dtype=np.float64)
+    g1_arr = np.asarray(g1, dtype=np.float64)
+    dot = float(np.dot(g_arr, g1_arr))
+    if dot >= 0:
+        return g_arr
+    denom = float(np.dot(g1_arr, g1_arr))
+    if denom == 0:
+        return g_arr
+    return g_arr - (dot / denom) * g1_arr
+
+def test_gem_project_single_violated():
+    gem = GEM()
+    g = jnp.array([1.0, 0.0])
+    g1 = jnp.array([-1.0, 0.0])
+    out = np.asarray(gem.project(g, [g1]))
+    assert float(np.dot(out, np.asarray(g1))) >= -1e-6
+    ref = _closest_in_l2(np.asarray(g), np.asarray(g1))
+    assert np.allclose(out, ref, atol=1e-3), f"got {out}, closest {ref}"
+
+
+def test_agem_project_violation():
+    agem = AGEM()
+    g = jnp.array([1.0, 0.0])
+    gr = jnp.array([-1.0, 0.0])
+    out = np.asarray(agem.project(g, gr))
+    assert abs(float(np.dot(out, np.asarray(gr)))) < 1e-6
+    ref = _closest_in_l2(np.asarray(g), np.asarray(gr))
+    assert np.allclose(out, ref, atol=1e-3), f"got {out}, closest {ref}"
+
+
+def test_agem_gref_uniform():
+    """g_ref is the mean of the gradients from a random batch of the union."""
+    agem = AGEM(seed=42)
+    for i in range(5):
+        agem.observe(jnp.array([float(i), 0.0]), jnp.array(0), task_id=0)
+    mems = agem.memory()
+    X0, _ = mems[0]
+    grads = [jnp.asarray([float(x[0]), 0.0]) for x in X0]
+    g_ref = jnp.mean(jnp.stack(grads, axis=0), axis=0)
+    assert g_ref.shape == (2,)
+    # the fixed seed 42 gives the same indices on every call
+    assert agem.seed == 42

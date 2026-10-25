@@ -210,15 +210,17 @@ def main():
         q1, q3 = np.percentile(acc[name], [25, 75])
         fmed = float(np.median(forg[name]))
         print(f"{name:10s}  {med:.3f} [{q1:.3f}, {q3:.3f}]  {fmed:.3f}")
-    if len(seeds) >= 4:
-        for name in acc:
-            if name == "baseline":
-                continue
+    for name in acc:
+        if name == "baseline":
+            continue
+        if len(seeds) >= 4:
             try:
                 stat, p = wilcoxon(acc[name], acc["baseline"])
                 print(f"  wilcoxon {name} vs baseline: p={p:.4f}  A12={a12(acc[name], acc['baseline']):.3f}")
             except Exception as e:
                 print(f"  wilcoxon {name}: {e}")
+        else:
+            print(f"  wilcoxon {name}: not computed, only {len(seeds)} seeds (<4)")
     out = Path("benchmarks/neural/continual_learning.json")
     out.write_text(json.dumps(rows, indent=2))
     print(f"wrote {out}")

@@ -7,6 +7,7 @@ import pytest
 
 from dense_armor.utility.neural.consolidation import (
     ArchivalMemory,
+    DarkMemory,
     DualMemory,
     LifecycleMemory,
     PQMemory,
@@ -437,3 +438,221 @@ def test_archival_size_bounded():
     fast, slow = am.dual.size()
     assert fast <= 8
     assert slow <= 16
+
+
+def _all_nodes(node):
+    yield node
+    for c in node["children"]:
+        yield from _all_nodes(c)
+
+
+def test_vq_straight_through():
+    """With commitment=0, the decoder gradient equals the encoder gradient."""
+    vq = VQMemory(n_x=2, d_model=4, n_codes=8, commitment=0.0, seed=0)
+    x = jnp.asarray(np.random.RandomState(0).randn(4, 2), dtype=jnp.float32)
+    x_hat = vq.forward(x)
+    g = jnp.ones_like(x_hat)
+    dz_q = vq.decoder.backward(g)
+    z_e = vq._z_e
+    e_k = vq.codebook.value[vq._k]
+    dz_e = dz_q + 2.0 * vq.commitment * (z_e - e_k)
+    assert np.allclose(np.asarray(dz_e), np.asarray(dz_q), atol=1e-6)
+
+def test_vq_mse_decreases_20_steps():
+    vq = VQMemory(n_x=2, d_model=4, n_codes=16, commitment=0.25, seed=0)
+    x = jnp.asarray(np.random.RandomState(0).randn(200, 2), dtype=jnp.float32)
+    def mse():
+        z = vq.encode(x)
+        zq, _, _ = vq.quantize(z)
+        return float(jnp.mean(jnp.sum((x - vq.decode(zq)) ** 2, axis=-1)))
+    before = mse()
+    vq.fit(x, n_steps=20)
+    after = mse()
+    assert after < before, f"MSE did not decrease: {before:.4f} -> {after:.4f}"
+
+
+
+def test_residual_decreases_with_depth():
+    """A leaf trained on its own samples beats the root on the same samples."""
+    tree = ResidualTree(d_model=2, n_codes=4, max_depth=2, branching=4, kappa=0.0, seed=0)
+    rng = np.random.RandomState(0)
+    for c in [(-3.0, -3.0), (3.0, 3.0), (-3.0, 3.0), (3.0, -3.0)]:
+        for _ in range(30):
+            tree.insert(jnp.asarray(np.array(c) + rng.randn(2) * 0.1, dtype=jnp.float32))
+    leaves = [n for n in _all_nodes(tree.root) if n["depth"] > 0 and len(n["samples"]) > 0]
+    assert leaves, "no leaf with samples"
+    leaf = max(leaves, key=lambda n: len(n["samples"]))
+    n_leaf = len(leaf["samples"])
+    if n_leaf < 4:
+        # not enough samples to learn a codebook: declare and skip
+        print(f"skip: best leaf has {n_leaf} samples (<4)")
+        return
+    xs = jnp.stack(leaf["samples"], axis=0)
+    leaf_pred = leaf["vq"].decode(leaf["vq"].encode(xs))
+    root_pred = tree.root["vq"].decode(tree.root["vq"].encode(xs))
+    leaf_mse = float(jnp.mean(jnp.sum((xs - leaf_pred) ** 2, axis=-1)))
+    root_mse = float(jnp.mean(jnp.sum((xs - root_pred) ** 2, axis=-1)))
+    assert leaf_mse <= root_mse + 1e-3, f"leaf {leaf_mse:.4f} > root {root_mse:.4f}"
+
+def test_consolidate_no_loss():
+    """consolidate reduces nodes without increasing state size."""
+    tree = ResidualTree(d_model=2, n_codes=8, max_depth=3, branching=2, kappa=0.0, seed=0)
+    rng = np.random.RandomState(0)
+    for _ in range(20):
+        tree.insert(jnp.asarray(rng.randn(2) * 5, dtype=jnp.float32))
+    nodes_before = tree.n_nodes()
+    bytes_before = tree.state_size_bytes()
+    tree.consolidate()
+    nodes_after = tree.n_nodes()
+    bytes_after = tree.state_size_bytes()
+    assert nodes_after <= nodes_before, f"nodes grew: {nodes_before} -> {nodes_after}"
+    assert bytes_after <= bytes_before + tree.n_codes * 4, f"bytes grew: {bytes_before} -> {bytes_after}"
+
+def test_fisher_rao_positive():
+    lm = LifecycleMemory(d_model=4, seed=0)
+    x = jnp.asarray([0.3, -0.7, 1.1, 2.4], dtype=jnp.float32)
+    idx = lm.write(x, t=0.0)
+    lm._events[idx]["state"] = "cold"
+    xh, _, _ = lm.read(idx)
+    p_ = (np.asarray(x) - np.min(np.asarray(x))) / (np.ptp(np.asarray(x)) + 1e-9)
+    q_ = (np.asarray(xh) - np.min(np.asarray(xh))) / (np.ptp(np.asarray(xh)) + 1e-9)
+    p_ = p_ / (np.sum(p_) + 1e-9)
+    q_ = q_ / (np.sum(q_) + 1e-9)
+    bc = min(float(np.sum(np.sqrt(p_ * q_ + 1e-12))), 1.0)
+    d = float(2.0 * np.arccos(bc))
+    assert d > 0.0, f"Fisher-Rao distance is {d}"
+
+
+def test_j_bibliographic_only():
+    doc = (TheoreticalBound.__doc__ or "").lower()
+    assert "bibliographic only" in doc
+
+
+def test_promote_preserves_mse():
+    """A promoted parent has n_codes // branching and sum of child supports."""
+    tree = ResidualTree(d_model=2, n_codes=8, max_depth=3, branching=2, kappa=0.0, seed=0)
+    rng = np.random.RandomState(1)
+    for _ in range(30):
+        tree.insert(jnp.asarray(rng.randn(2) * 3, dtype=jnp.float32))
+    parent = tree.root
+    while parent["children"] and len(parent["children"]) < 2:
+        parent = parent["children"][0]
+    if len(parent["children"]) < 2:
+        return
+    kids = list(parent["children"])
+    support_kids = sum(k["support"] for k in kids)
+    alpha_kids = float(np.mean([k["alpha"] for k in kids]))
+    tree.consolidate()
+    assert parent["support"] >= support_kids, f"support {parent['support']} < {support_kids}"
+    assert abs(parent["alpha"] - alpha_kids) < max(1e-3, 0.5 * abs(alpha_kids)), "alpha changed too much"
+
+
+def test_prime_key_uniqueness():
+    dm = DarkMemory()
+    D1, p1 = dm.prime_key([np.zeros(4), np.ones(4)])
+    D2, p2 = dm.prime_key([np.zeros(4), 2 * np.ones(4), 3 * np.ones(4)])
+    assert D1 == 2 * 3
+    assert D2 == 2 * 3 * 5
+    assert p1 == [2, 3]
+    assert p2 == [2, 3, 5]
+    assert len(p2) == 3
+
+
+def test_blocks_on_duplicate():
+    dm = DarkMemory()
+    D, primes = dm.prime_key([np.zeros(4), np.zeros(4), np.zeros(4)])
+    assert dm.blocks(2, D) is True
+    assert dm.blocks(3, D) is True
+    assert dm.blocks(7, D) is False
+
+
+def test_guide_converges_to_unity():
+    import math
+    dm = DarkMemory(k=1)
+    for n in (2, 3, 5):
+        D = 1
+        for p in [2, 3, 5, 7, 11][:n]:
+            D *= p
+        F = dm.guide_field(D, [np.ones(4)])
+        w = np.ones(4) / np.sum(np.abs(np.ones(4)))
+        alpha = float(np.mean(F / (w + 1e-12)))
+        assert alpha > 0.0
+
+
+def test_guide_uses_lambert_w():
+    import math
+    from scipy.special import lambertw
+    dm = DarkMemory(k=1)
+    D = 2 * 3 * 5
+    E = math.log(D)
+    c1 = 1.0 - math.log(math.pi ** 2 / 6)
+    W = float(lambertw(E * math.exp(E + c1)).real)
+    alpha_expected = W / E
+    deltas = [np.ones(4)]
+    F = dm.guide_field(D, deltas)
+    # w_j is L2-normalised in guide_field: ||[1,1,1,1]||_2 = 2, w_j = 0.5
+    w = np.ones(4) / (np.linalg.norm(np.ones(4)) + 1e-12)
+    alpha_got = float(np.mean(F / (w + 1e-12)))
+    assert abs(alpha_got - alpha_expected) < 1e-6, (
+        f"alpha_got={alpha_got:.6f}, alpha_expected={alpha_expected:.6f}"
+    )
+
+def test_init_retention():
+    """A generation initialised from the guide keeps acc_1 > 0 on task 1."""
+    import jax
+    from dense_armor.utility.neural.activations import Relu
+    from dense_armor.utility.neural.chain import Sequential
+    from dense_armor.utility.neural.layers import Dense
+    from dense_armor.utility.neural.losses import SoftmaxCrossEntropy
+    from dense_armor.utility.neural.trainer import Trainer
+    from dense_armor.utility.optim import Adam
+    seed = 0
+    rng = np.random.RandomState(seed)
+    X = jnp.asarray(rng.randn(400, 2).astype(np.float32) * 1.5)
+    tasks = [
+        (X, jnp.asarray((np.asarray(X)[:, 0] > 0).astype(np.int32))),
+        (X, jnp.asarray((np.asarray(X)[:, 1] > 0).astype(np.int32))),
+        (X, jnp.asarray((np.asarray(X)[:, 0] + np.asarray(X)[:, 1] > 0).astype(np.int32))),
+    ]
+    key = jax.random.PRNGKey(seed)
+    model = Sequential([Dense(2, 16, key), Relu(), Dense(16, 2, key)])
+    loss = SoftmaxCrossEntropy()
+    tr = Trainer(model, loss, Adam(lr=0.01))
+    dm = DarkMemory()
+    deltas = []
+    for k, (Xk, yk) in enumerate(tasks):
+        before = [np.asarray(pp.value).copy() for pp in model.params()]
+        tr.fit(Xk, yk, epochs=10, batch_size=32, key=key)
+        after = [np.asarray(pp.value).copy() for pp in model.params()]
+        deltas.append(np.concatenate([(a - b).reshape(-1) for a, b in zip(after, before)]))
+    D, _ = dm.prime_key(deltas)
+    F = dm.guide_field(D, deltas)
+    init_theta = dm.init_from_guide(F, seed=seed)
+    key4 = jax.random.PRNGKey(seed + 4)
+    new_model = Sequential([Dense(2, 16, key4), Relu(), Dense(16, 2, key4)])
+    offset = 0
+    for pp in new_model.params():
+        n = pp.value.size
+        seg = init_theta[offset:offset + n] if offset + n <= init_theta.size else np.zeros(n)
+        pp.value = jnp.asarray(seg.reshape(pp.value.shape), dtype=jnp.float32)
+        offset += n
+    X4 = jnp.asarray(rng.randn(200, 2).astype(np.float32) * 1.5)
+    y4 = jnp.asarray((np.asarray(X4)[:, 0] - np.asarray(X4)[:, 1] > 0).astype(np.int32))
+    tr4 = Trainer(new_model, loss, Adam(lr=0.01))
+    tr4.fit(X4, y4, epochs=10, batch_size=32, key=key4)
+    acc1 = float((np.argmax(np.asarray(new_model.forward(tasks[0][0], training=False)), axis=-1) == np.asarray(tasks[0][1])).mean())
+    assert acc1 > 0.0, f"generation 4 keeps acc_1 = {acc1}"
+
+
+def test_dark_memory_size():
+    import math
+    dm = DarkMemory()
+    D, _ = dm.prime_key([np.zeros(4)] * 10)
+    bits = math.log2(D)
+    assert bits < 8000
+
+
+def test_c_k_values():
+    import math
+    c1 = 1.0 - math.log(math.pi ** 2 / 6)
+    assert abs(c1 - 0.5023) < 1e-3

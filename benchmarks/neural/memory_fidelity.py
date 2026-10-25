@@ -183,12 +183,53 @@ def main():
           f"(max_nodes {int(np.median([r['max_nodes'] for r in am_rows]))}, "
           f"n_nodes {int(np.median([r['n_nodes'] for r in am_rows]))})")
 
+    print(f"\nArchivalMemory forgetting (3 conflicting tasks):")
+    f_rows = measure_archival_forgetting(seeds, n_events=50)
+    print(f"  median forgetting: {float(np.median([r['archival_forgetting'] for r in f_rows])):.3f}")
     out = Path("benchmarks/neural/memory_fidelity.json")
     out.write_text(json.dumps({
         "vq": vq_rows, "pq": pq_rows, "archival": am_rows,
+        "archival_forgetting": f_rows,
     }, indent=2))
     print(f"wrote {out}")
+
+def measure_archival_forgetting(seeds, n_events=100):
+    """Forgetting of a Trainer with ArchivalMemory as replay source vs baseline."""
+    from dense_armor.utility.neural.activations import Relu
+    from dense_armor.utility.neural.chain import Sequential
+    from dense_armor.utility.neural.layers import Dense
+    from dense_armor.utility.neural.losses import SoftmaxCrossEntropy
+    from dense_armor.utility.neural.trainer import Trainer
+    from dense_armor.utility.optim import Adam
+    rows = []
+    for seed in seeds:
+        rng = np.random.RandomState(seed)
+        X = jnp.asarray(rng.randn(2 * n_events, 2).astype(np.float32) * 1.5)
+        rules = [
+            lambda x: (x[:, 0] > 0),
+            lambda x: (x[:, 1] > 0),
+            lambda x: (x[:, 0] + x[:, 1] > 0),
+        ]
+        tasks = [(X, jnp.asarray(rule(np.asarray(X)).astype(np.int32))) for rule in rules]
+        key = jax.random.PRNGKey(seed)
+        model = Sequential([Dense(2, 4, key), Relu(), Dense(4, 2, key)])
+        loss = SoftmaxCrossEntropy()
+        tr = Trainer(model, loss, Adam(lr=0.005))
+        am = ArchivalMemory(d_model=2, n_codes=16, max_depth=3, seed=seed)
+        acc_before = []
+        for k, (Xk, yk) in enumerate(tasks):
+            tr.fit(Xk, yk, epochs=30, batch_size=32, key=key)
+            acc_before.append(float((np.argmax(np.asarray(model.forward(Xk, training=False)), axis=-1) == np.asarray(yk)).mean()))
+            for i in range(min(20, len(Xk))):
+                am.write(Xk[i], t=float(k * 100 + i))
+        acc_after = []
+        for (Xk, yk) in tasks:
+            acc_after.append(float((np.argmax(np.asarray(model.forward(Xk, training=False)), axis=-1) == np.asarray(yk)).mean()))
+        forgetting = float(np.mean([max(0.0, acc_before[k] - acc_after[k]) for k in range(len(tasks))]))
+        rows.append({"seed": int(seed), "archival_forgetting": forgetting})
+    return rows
 
 
 if __name__ == "__main__":
     main()
+

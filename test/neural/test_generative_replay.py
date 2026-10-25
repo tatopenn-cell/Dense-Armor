@@ -60,19 +60,44 @@ def test_generator_state_grows_linearly():
     assert size_two == 2 * size_one
 
 
-def test_two_task_retention():
+
+
+def _two_moons(n=100, seed=0):
+    """Two moons, 2D, binary labels, from sklearn.datasets."""
+    from sklearn.datasets import make_moons
+    X, y = make_moons(n_samples=n, noise=0.1, random_state=seed)
+    return jnp.asarray(X.astype(np.float32)), jnp.asarray(y.astype(np.int32))
+
+
+def test_two_moons_retention():
+    """The DGR solver keeps acc_A_after >= acc_A_before - 0.1 on two moons."""
     dgr = DeepGenerativeReplay(
         n_x=2, n_y=2, dim_z=4, hidden=16, n_fake=32, seed=0, lr=0.05
     )
-    xa, ya = _blob_a(n=100)
-    xb, yb = _blob_b(n=100)
+    xa, ya = _two_moons(100, seed=0)
+    xb, yb = _two_moons(100, seed=1)
     dgr.train_task(xa, ya, n_epochs=20, batch_size=32)
     pred_a_before = np.argmax(np.asarray(dgr.predict(xa)), axis=-1)
     acc_a_before = float((pred_a_before == np.asarray(ya)).mean())
     dgr.train_task(xb, yb, n_epochs=20, batch_size=32)
     pred_a_after = np.argmax(np.asarray(dgr.predict(xa)), axis=-1)
     acc_a_after = float((pred_a_after == np.asarray(ya)).mean())
-    assert acc_a_after >= acc_a_before - 0.3, (
-        f"replay failed: acc_a_before={acc_a_before:.2f} "
-        f"acc_a_after={acc_a_after:.2f}"
+    assert acc_a_after >= acc_a_before - 0.1, (
+        f"two-moons replay failed: before={acc_a_before:.2f} "
+        f"after={acc_a_after:.2f}"
     )
+
+
+def test_generator_state_fixed():
+    """The state size of one generator does not change with n_tasks_."""
+    dgr = DeepGenerativeReplay(
+        n_x=2, n_y=2, dim_z=4, hidden=8, n_fake=16, seed=0
+    )
+    xa, ya = _two_moons(20, seed=0)
+    dgr.train_task(xa, ya, n_epochs=1)
+    size_one = sum(int(np.asarray(p.value).size) for p in dgr.generators[0].params())
+    xb, yb = _two_moons(20, seed=1)
+    dgr.train_task(xb, yb, n_epochs=1)
+    for g in dgr.generators:
+        size_g = sum(int(np.asarray(p.value).size) for p in g.params())
+        assert size_g == size_one, f"generator size changed: {size_one} -> {size_g}"

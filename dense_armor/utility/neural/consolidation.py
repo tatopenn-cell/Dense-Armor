@@ -358,6 +358,7 @@ class ResidualTree:
             "support": 0,
             "alpha": 0.0,
             "kappa": self.kappa,
+            "samples": [],
         }
 
     def _residual(self, node: dict, x: jnp.ndarray) -> float:
@@ -406,10 +407,14 @@ class ResidualTree:
             return node
 
     def _write(self, node: dict, x: jnp.ndarray, r: float) -> None:
-        node["vq"].fit(x, n_steps=1)
         node["support"] += 1
         n = node["support"]
         node["alpha"] = (node["alpha"] * (n - 1) + r) / n
+        if len(node["samples"]) < 8:
+            node["samples"].append(x)
+        if n % 4 == 0 or len(node["samples"]) == 8:
+            xs = jnp.stack(node["samples"], axis=0)
+            node["vq"].fit(xs, n_steps=10)
         self._n_events += 1
 
     def read(self, x: jnp.ndarray) -> tuple[jnp.ndarray, int]:
@@ -858,3 +863,106 @@ class ArchivalMemory:
 
     def __len__(self) -> int:
         return len(self.lifecycle)
+
+
+class DarkMemory:
+    """Dark memory: prime key, fermionic block, Lambert-W guide field.
+
+    Owner's construction, derived from the owner's framework (Gentile
+    statistics, Lambert-W unified metric, prime gas). Not in any paper of
+    the folder: see `sources/gentile_supplement.md` lines 13, 17, 74 and
+    `sources/dvpt_unified_formula.md` lines 10-17 of the N09 package.
+
+    Args:
+        k: Gentile order. 1 = fermionic (DVPT limit), infinity = bosonic.
+        eps: scale of the guide field in the initialisation.
+        sigma: standard deviation of the noise in the initialisation.
+
+    Attributes:
+        primes_: the primes used so far, one per generation.
+        D_: the current product ``D_n``.
+
+    References:
+        Owner's framework, `sources/gentile_supplement.md` and
+        `sources/dvpt_unified_formula.md`, in the N09 package.
+    """
+
+    def __init__(self, k: int = 1, eps: float = 0.01, sigma: float = 0.001) -> None:
+        self.k = int(k)
+        self.eps = float(eps)
+        self.sigma = float(sigma)
+        self.primes_: list[int] = []
+        self.D_: int = 1
+
+    @staticmethod
+    def _i_primes(n: int) -> list[int]:
+        out, c = [], 2
+        while len(out) < n:
+            ok = True
+            for q in out:
+                if q * q > c:
+                    break
+                if c % q == 0:
+                    ok = False
+                    break
+            if ok:
+                out.append(c)
+            c += 1
+        return out
+
+    def prime_key(self, history: list) -> tuple[int, list[int]]:
+        """Return ``(D_n, primes)`` from the list of per-generation changes."""
+        n = len(history)
+        primes = self._i_primes(n)
+        D = 1
+        for p in primes:
+            D *= p
+        self.primes_ = primes
+        self.D_ = D
+        return D, primes
+
+    def blocks(self, new_prime: int, D: int) -> bool:
+        """True if ``new_prime`` divides ``D`` (the structure is not new)."""
+        if new_prime < 2:
+            return False
+        return D % new_prime == 0
+
+    def guide_field(self, D: int, deltas: list) -> np.ndarray:
+        """``F^(j) = alpha * w_j`` with ``alpha`` from Lambert W and ``w_j`` from the deltas."""
+        import math
+        from scipy.special import lambertw
+        if D < 2:
+            return np.zeros(1)
+        E = math.log(D)
+        c_k = 1.0 - math.log(self._zeta(self.k + 1))
+        try:
+            W = float(lambertw(E * math.exp(E + c_k)).real)
+        except Exception:
+            W = E + c_k
+        alpha = W / E if E > 0 else 1.0
+        if not deltas:
+            return np.zeros(1)
+        p = max(len(deltas[0]) if hasattr(deltas[0], "__len__") else 1, 1)
+        cum = np.zeros(p)
+        for d in deltas:
+            arr = np.asarray(d, dtype=float).reshape(-1)
+            cum += arr[:p] if arr.size >= p else np.pad(arr, (0, p - arr.size))
+        norm = float(np.linalg.norm(cum)) + 1e-12
+        w = np.abs(cum) / norm
+        return alpha * w
+
+    @staticmethod
+    def _zeta(s: float) -> float:
+        import math
+        if s == 2:
+            return math.pi ** 2 / 6.0
+        total = 0.0
+        for n in range(1, 10000):
+            total += 1.0 / (n ** s)
+        return total
+
+    def init_from_guide(self, F: np.ndarray, seed: int = 0) -> np.ndarray:
+        """``theta^(j)(0) = eps * F^(j) + eta^(j)``, eta ~ N(0, sigma^2)."""
+        rng = np.random.RandomState(seed)
+        eta = rng.randn(*F.shape) * self.sigma
+        return self.eps * F + eta
