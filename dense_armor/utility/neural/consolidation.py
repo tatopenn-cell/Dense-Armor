@@ -293,6 +293,15 @@ class PQMemory:
 class ResidualTree:
     """Residual tree (DeltaMem, Tan et al. 2026, adapted to dense networks).
 
+    Two routers are available. ``router="linear"`` (default) scans every
+    child and picks the one with the lowest vector-quantised residual,
+    which requires an encode and a decode per child. ``router="mondrian"``
+    keeps a bounding box per child and picks the child with the smallest
+    box extension for the new event, which requires only float min/max
+    comparisons. The Mondrian descent is not the same path as the linear
+    one: it is a trade-off declared here, not an equivalence. Both
+    respect ``max_depth`` and ``branching`` and return a valid node.
+
     DeltaMem is an incremental experience memory for LLM agents with
     residual trees: each node stores a residual ``<alpha, kappa>`` against
     its parent, and high-confidence paths are consolidated into a new root.
@@ -331,13 +340,19 @@ class ResidualTree:
         branching: int = 8,
         kappa: float = 0.1,
         seed: int = 0,
+        router: str = "linear",
     ) -> None:
+        if router not in ("linear", "mondrian"):
+            raise ValueError(
+                f"router must be 'linear' or 'mondrian', got {router!r}"
+            )
         self.d_model = int(d_model)
         self.n_codes = int(n_codes)
         self.max_depth = int(max_depth)
         self.branching = int(branching)
         self.kappa = float(kappa)
         self.seed = int(seed)
+        self.router = router
         self._rng = np.random.RandomState(seed)
         self.root = self._new_node(depth=0)
         self._n_nodes = 1
@@ -359,7 +374,42 @@ class ResidualTree:
             "alpha": 0.0,
             "kappa": self.kappa,
             "samples": [],
+            "lb_": None,
+            "ub_": None,
         }
+
+    def _extend_box(self, node: dict, x: jnp.ndarray) -> None:
+        """Extend the node's box with ``x``."""
+        xa = np.asarray(x, dtype=np.float64).reshape(-1)
+        if node["lb_"] is None:
+            node["lb_"] = xa.copy()
+            node["ub_"] = xa.copy()
+        else:
+            node["lb_"] = np.minimum(node["lb_"], xa)
+            node["ub_"] = np.maximum(node["ub_"], xa)
+
+    def _box_extension(self, node: dict, x: jnp.ndarray) -> float:
+        """Box extension needed to contain ``x`` (0.0 if inside).
+
+        Returns ``inf`` for a node with no box yet (no sample seen).
+        """
+        if node["lb_"] is None:
+            return float("inf")
+        xa = np.asarray(x, dtype=np.float64).reshape(-1)
+        lo = np.minimum(node["lb_"], xa)
+        hi = np.maximum(node["ub_"], xa)
+        return float(np.sum((node["lb_"] - lo) + (hi - node["ub_"])))
+
+    def _pick_child_mondrian(self, node: dict, x: jnp.ndarray) -> dict | None:
+        """Child with the smallest box extension for ``x`` (``None`` if no child)."""
+        best = None
+        best_ext = float("inf")
+        for child in node["children"]:
+            e = self._box_extension(child, x)
+            if e < best_ext:
+                best_ext = e
+                best = child
+        return best
 
     def _residual(self, node: dict, x: jnp.ndarray) -> float:
         """Reconstruction error of ``x`` with the node's codebook."""
@@ -389,14 +439,19 @@ class ResidualTree:
             ):
                 self._write(node, x, r)
                 return node
-            best = None
-            best_r = float("inf")
-            for child in node["children"]:
-                rc = self._residual(child, x)
-                if rc < best_r:
-                    best_r = rc
-                    best = child
-            if best is not None and best_r < r:
+            if self.router == "mondrian":
+                best = self._pick_child_mondrian(node, x)
+            else:
+                best = None
+                best_r = float("inf")
+                for child in node["children"]:
+                    rc = self._residual(child, x)
+                    if rc < best_r:
+                        best_r = rc
+                        best = child
+                if best is not None and best_r >= r:
+                    best = None
+            if best is not None:
                 node = best
                 continue
             child = self._new_node(depth=node["depth"] + 1)
@@ -410,6 +465,7 @@ class ResidualTree:
         node["support"] += 1
         n = node["support"]
         node["alpha"] = (node["alpha"] * (n - 1) + r) / n
+        self._extend_box(node, x)
         if len(node["samples"]) < 8:
             node["samples"].append(x)
         if n % 4 == 0 or len(node["samples"]) == 8:
@@ -428,13 +484,16 @@ class ResidualTree:
         x = jnp.asarray(x, dtype=jnp.float32).reshape(-1, self.d_model)
         node = self.root
         while True:
-            best = None
-            best_r = float("inf")
-            for child in node["children"]:
-                rc = self._residual(child, x)
-                if rc < best_r:
-                    best_r = rc
-                    best = child
+            if self.router == "mondrian":
+                best = self._pick_child_mondrian(node, x)
+            else:
+                best = None
+                best_r = float("inf")
+                for child in node["children"]:
+                    rc = self._residual(child, x)
+                    if rc < best_r:
+                        best_r = rc
+                        best = child
             if best is None:
                 break
             node = best

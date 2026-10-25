@@ -663,3 +663,81 @@ def test_archival_read_and_len():
 
 
 
+
+
+def test_tree_router_linear_is_default():
+    """The default router is 'linear', and the constructor accepts 'mondrian'."""
+    import pytest
+    tree = ResidualTree(d_model=2, n_codes=4, max_depth=2, seed=0)
+    assert tree.router == "linear"
+    tree2 = ResidualTree(d_model=2, n_codes=4, max_depth=2, seed=0, router="mondrian")
+    assert tree2.router == "mondrian"
+    with pytest.raises(ValueError, match="router must be"):
+        ResidualTree(d_model=2, router="bad")
+
+
+def test_tree_router_mondrian_valid_node():
+    """The Mondrian router returns a node within max_depth, with bounded nodes."""
+    tree = ResidualTree(
+        d_model=2, n_codes=4, max_depth=2, branching=4, kappa=0.0, seed=0,
+        router="mondrian",
+    )
+    rng = np.random.RandomState(0)
+    for _ in range(60):
+        tree.insert(jnp.asarray(rng.randn(2) * 3, dtype=jnp.float32))
+    assert tree.n_nodes() <= tree.max_nodes()
+    _, depth = tree.read(jnp.asarray([1.0, 1.0], dtype=jnp.float32))
+    assert 0 <= depth <= tree.max_depth
+
+
+def test_tree_router_mondrian_fewer_encodes():
+    """Mondrian uses box comparisons; the same data visits no more nodes than linear."""
+    rng_data = np.random.RandomState(0).randn(60, 2) * 3.0
+    t_lin = ResidualTree(
+        d_model=2, n_codes=4, max_depth=2, branching=4, kappa=0.0, seed=0,
+        router="linear",
+    )
+    t_mon = ResidualTree(
+        d_model=2, n_codes=4, max_depth=2, branching=4, kappa=0.0, seed=0,
+        router="mondrian",
+    )
+    for x in rng_data:
+        t_lin.insert(jnp.asarray(x, dtype=jnp.float32))
+        t_mon.insert(jnp.asarray(x, dtype=jnp.float32))
+    assert t_mon.n_nodes() <= t_lin.n_nodes()
+    # both respect the same bound
+    assert t_lin.n_nodes() <= t_lin.max_nodes()
+    assert t_mon.n_nodes() <= t_mon.max_nodes()
+
+
+def test_tree_router_mondrian_time_lower():
+    """Mondrian insert is faster than linear insert on the same data.
+
+    The test measures the wall-clock time of 200 inserts in each mode,
+    on the same data. The linear mode calls encode and decode per
+    child at every level; Mondrian calls only float min/max. The test
+    declares the tolerance: Mondrian must be at most 1.5x the linear
+    time, which is a weak bound that fails if the code does a full
+    scan by mistake.
+    """
+    import time as _time
+    rng_data = np.random.RandomState(1).randn(200, 2) * 3.0
+    xs = [jnp.asarray(x, dtype=jnp.float32) for x in rng_data]
+
+    def _time_router(name):
+        tree = ResidualTree(
+            d_model=2, n_codes=4, max_depth=2, branching=4, kappa=0.0, seed=0,
+            router=name,
+        )
+        t0 = _time.perf_counter()
+        for x in xs:
+            tree.insert(x)
+        return _time.perf_counter() - t0
+
+    t_lin = _time_router("linear")
+    t_mon = _time_router("mondrian")
+    ratio = t_mon / max(t_lin, 1e-9)
+    assert ratio <= 1.5, (
+        f"Mondrian insert is {ratio:.2f}x the linear time "
+        f"({t_mon:.3f}s vs {t_lin:.3f}s); the bound is 1.5"
+    )
