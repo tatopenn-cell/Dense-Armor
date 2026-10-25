@@ -47,19 +47,21 @@ def make_tasks(n_tasks: int, n_per: int, seed: int):
     rng = np.random.RandomState(seed)
     tasks = []
     X = rng.randn(2 * n_per, 2).astype(np.float32) * 1.5
-    for k in range(min(n_tasks, 3)):
-        if k == 0:
-            y = (X[:, 0] > 0).astype(np.int32)
-        elif k == 1:
-            y = (X[:, 1] > 0).astype(np.int32)
-        else:
-            y = (X[:, 0] + X[:, 1] > 0).astype(np.int32)
+    rules = [
+        lambda x: (x[:, 0] > 0),
+        lambda x: (x[:, 1] > 0),
+        lambda x: (x[:, 0] + x[:, 1] > 0),
+        lambda x: (x[:, 0] * x[:, 1] > 0),
+        lambda x: (x[:, 0] ** 2 + x[:, 1] ** 2 > 1.0),
+    ]
+    for k in range(min(n_tasks, len(rules))):
+        y = rules[k](X).astype(np.int32)
         tasks.append((jnp.asarray(X), jnp.asarray(y)))
     return tasks
 
 
 def make_model(key):
-    return Sequential([Dense(2, 8, key), Relu(), Dense(8, 2, key)])
+    return Sequential([Dense(2, 4, key), Relu(), Dense(4, 2, key)])
 
 
 def accuracy(model, X, y):
@@ -98,7 +100,7 @@ def train_one(name, seed):
     task is learned; ``acc_after[k]`` is the accuracy on task k at the end
     of the sequence. ``forgetting_k = acc_before[k] - acc_after[k]``.
     """
-    tasks = make_tasks(3, 100, seed)
+    tasks = make_tasks(5, 100, seed)
     key = jax.random.PRNGKey(seed)
     model = make_model(key)
     if name == "dgr":
@@ -112,11 +114,11 @@ def train_one(name, seed):
         model = dgr.solver
     else:
         loss = SoftmaxCrossEntropy()
-        opt_per = [Adam(lr=0.01) for _ in model.params()]
-        ewc = EWC(model, loss, lambda_=0.4) if name == "ewc" else None
+        opt_per = [Adam(lr=0.005) for _ in model.params()]
+        ewc = EWC(model, loss, lambda_=5000.0) if name == "ewc" else None
         mem = (
-            GEM(memory_per_task=32, seed=seed) if name == "gem"
-            else AGEM(memory_per_task=32, seed=seed) if name == "agem"
+            GEM(memory_per_task=64, seed=seed) if name == "gem"
+            else AGEM(memory_per_task=64, seed=seed) if name == "agem"
             else None
         )
         past_grads: list = []

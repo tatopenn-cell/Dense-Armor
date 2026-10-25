@@ -5,7 +5,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.neural.unforgetting import (
+from dense_armor.utility.neural.consolidation import (
     ArchivalMemory,
     DualMemory,
     LifecycleMemory,

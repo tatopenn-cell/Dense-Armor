@@ -115,23 +115,30 @@ class VQMemory:
         return dx
 
     def fit(
-        self, x: jnp.ndarray, n_steps: int = 5
+        self, x: jnp.ndarray, n_steps: int = 5, lr: float = 0.01
     ) -> "VQMemory":
         """Train the encoder, decoder and codebook on ``x`` for ``n_steps``.
 
         Helper for the tests and the ``ResidualTree``: uses the EMA
         codebook update and the straight-through gradient on the encoder
-        and decoder. No ``Trainer``, no per-parameter optimiser, because
-        the shapes differ and one shared ``Adam`` would fail.
+        and decoder. One ``Adam`` per ``Param`` (the shapes differ, and a
+        shared optimiser fails on the first parameter whose shape does not
+        match its state).
         """
+        from dense_armor.utility.optim import Adam
+
         X = jnp.asarray(x, dtype=jnp.float32)
+        opt_enc = [Adam(lr=lr) for _ in self.encoder.params()]
+        opt_dec = [Adam(lr=lr) for _ in self.decoder.params()]
         for _ in range(int(n_steps)):
             x_hat = self.forward(X)
             self.backward(x_hat - X)
             self.update_codebook()
-            for p in self.encoder.params():
+            for p, o in zip(self.encoder.params(), opt_enc):
+                p.update(o)
                 p.zero_grad()
-            for p in self.decoder.params():
+            for p, o in zip(self.decoder.params(), opt_dec):
+                p.update(o)
                 p.zero_grad()
         return self
 
@@ -510,23 +517,37 @@ class LifecycleMemory:
         d_model: int,
         promote_threshold: int = 3,
         decay_horizon_s: float = 600.0,
+        value_range: tuple[float, float] = (-5.0, 5.0),
         seed: int = 0,
     ) -> None:
         self.d_model = int(d_model)
         self.promote_threshold = int(promote_threshold)
         self.decay_horizon_s = float(decay_horizon_s)
+        self.value_range = (float(value_range[0]), float(value_range[1]))
         self.seed = int(seed)
         self._rng = np.random.RandomState(seed)
         self._events: list[dict] = []
 
     def _quantize(self, x: jnp.ndarray, bits: int) -> jnp.ndarray:
-        """Uniform quantisation to ``bits`` bits over the range of ``x``."""
+        """Uniform quantisation to ``bits`` bits over a fixed global range.
+
+        The range is ``value_range``, set at construction, not the range
+        of ``x``. A per-vector range is lossless for a 2D vector: the min
+        and the max sit exactly on the boundaries of the quantiser, so
+        even 2 bits reconstruct the original exactly. The fixed range
+        gives the intended decay: 8 bits ~ 0.04 error, 4 bits ~ 0.1,
+        2 bits ~ 1.
+
+        For ``bits >= 24`` the number of levels exceeds the int32 range
+        of JAX, and the reconstruction is effectively the identity.
+        """
         x = jnp.asarray(x, dtype=jnp.float32)
-        lo = float(jnp.min(x))
-        hi = float(jnp.max(x))
+        if bits >= 24:
+            return x
+        lo, hi = self.value_range
         if hi == lo:
             return x
-        levels = (2 ** bits) - 1
+        levels = float((1 << bits) - 1)
         q = jnp.round((x - lo) / (hi - lo) * levels) / levels
         return q * (hi - lo) + lo
 
@@ -780,7 +801,7 @@ class ArchivalMemory:
         )
         self.lifecycle = LifecycleMemory(
             d_model=d_model, promote_threshold=3,
-            decay_horizon_s=600.0, seed=seed,
+            decay_horizon_s=600.0, value_range=(-5.0, 5.0), seed=seed,
         )
         self.dual = DualMemory(
             d_model=d_model, fast_capacity=fast_capacity,
