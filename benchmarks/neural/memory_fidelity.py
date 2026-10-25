@@ -139,11 +139,139 @@ def measure_archival(x: jnp.ndarray, seed: int):
             "max_nodes": am.tree.max_nodes()}
 
 
+
+
+def measure_dark_memory(seeds, n_per_task=200, n_epochs=10, eps_init=1.0):
+    """DarkMemory retention: acc_1 with and without the guide field."""
+    import jax
+    from dense_armor.utility.neural.activations import Relu
+    from dense_armor.utility.neural.chain import Sequential
+    from dense_armor.utility.neural.consolidation import DarkMemory
+    from dense_armor.utility.neural.layers import Dense
+    from dense_armor.utility.neural.losses import SoftmaxCrossEntropy
+    from dense_armor.utility.neural.trainer import Trainer
+    from dense_armor.utility.optim import Adam
+
+    def train_and_build(seed):
+        rng = np.random.RandomState(seed)
+        X = jnp.asarray(rng.randn(n_per_task * 2, 2).astype(np.float32) * 1.5)
+        Xa = np.asarray(X)
+        tasks = [
+            (X, jnp.asarray((Xa[:, 0] > 0).astype(np.int32))),
+            (X, jnp.asarray((Xa[:, 1] > 0).astype(np.int32))),
+            (X, jnp.asarray((Xa[:, 0] + Xa[:, 1] > 0).astype(np.int32))),
+        ]
+        key = jax.random.PRNGKey(seed)
+        model = Sequential([Dense(2, 32, key), Relu(), Dense(32, 2, key)])
+        loss = SoftmaxCrossEntropy()
+        tr = Trainer(model, loss, Adam(lr=0.01))
+        deltas = []
+        for Xk, yk in tasks:
+            before = [np.asarray(pp.value).copy() for pp in model.params()]
+            tr.fit(Xk, yk, epochs=n_epochs, batch_size=32, key=key)
+            after = [np.asarray(pp.value).copy() for pp in model.params()]
+            deltas.append(np.concatenate([(a - b).reshape(-1) for a, b in zip(after, before)]))
+        dm = DarkMemory()
+        D, primes = dm.prime_key(deltas)
+        return X, tasks, deltas, D, primes
+
+    def init_from_guide_and_train(seed, X, tasks, deltas, D, eps):
+        import jax
+        from dense_armor.utility.neural.activations import Relu
+        from dense_armor.utility.neural.chain import Sequential
+        from dense_armor.utility.neural.consolidation import DarkMemory
+        from dense_armor.utility.neural.layers import Dense
+        from dense_armor.utility.neural.losses import SoftmaxCrossEntropy
+        from dense_armor.utility.neural.trainer import Trainer
+        from dense_armor.utility.optim import Adam
+        dm = DarkMemory(eps=eps)
+        F = dm.guide_field(D, deltas)
+        theta = dm.init_from_guide(F, seed=seed)
+        key4 = jax.random.PRNGKey(seed + 4)
+        new_model = Sequential([Dense(2, 32, key4), Relu(), Dense(32, 2, key4)])
+        offset = 0
+        for pp in new_model.params():
+            n = pp.value.size
+            seg = theta[offset:offset + n] if offset + n <= theta.size else np.zeros(n)
+            pp.value = jnp.asarray(seg.reshape(pp.value.shape), dtype=jnp.float32)
+            offset += n
+        # task 4: XOR-like
+        Xa = np.asarray(X)
+        X4 = X
+        y4 = jnp.asarray(((Xa[:, 0] * Xa[:, 1]) > 0).astype(np.int32))
+        tr4 = Trainer(new_model, SoftmaxCrossEntropy(), Adam(lr=0.01))
+        tr4.fit(X4, y4, epochs=n_epochs, batch_size=32, key=key4)
+        acc1 = float((np.argmax(np.asarray(new_model.forward(tasks[0][0], training=False)), axis=-1) == np.asarray(tasks[0][1])).mean())
+        return acc1
+
+    rows = []
+    import time as _time
+    for seed in seeds:
+        X, tasks, deltas, D, primes = train_and_build(seed)
+        t0 = _time.perf_counter()
+        acc1_guide = init_from_guide_and_train(seed, X, tasks, deltas, D, eps=eps_init)
+        dt_guide = (_time.perf_counter() - t0) * 1e3
+        acc1_noguide = init_from_guide_and_train(seed, X, tasks, deltas, D, eps=0.0)
+        import math
+        rows.append({
+            "seed": int(seed),
+            "D": int(D),
+            "log2_D_bits": float(math.log2(D)),
+            "acc1_with_guide": acc1_guide,
+            "acc1_no_guide": acc1_noguide,
+            "delta_pp": float((acc1_guide - acc1_noguide) * 100),
+            "latency_ms": float(dt_guide),
+        })
+    return rows
+
+
+def _wilcoxon_a12(a, b):
+    from scipy.stats import wilcoxon
+    a = np.asarray(a, dtype=float)
+    b = np.asarray(b, dtype=float)
+    if len(a) < 4:
+        return None, None
+    try:
+        _, p = wilcoxon(a, b)
+    except Exception:
+        p = None
+    gt = np.sum(a[:, None] > b[None, :])
+    eq = np.sum(a[:, None] == b[None, :])
+    a12 = float((gt + 0.5 * eq) / (a.size * b.size))
+    return float(p) if p is not None else None, a12
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--smoke", action="store_true")
     parser.add_argument("--full", action="store_true")
+    parser.add_argument("--dark", action="store_true")
+    parser.add_argument("--dark-eps", type=float, default=1.0)
+    parser.add_argument("--dark-seeds", type=int, default=20)
     args = parser.parse_args()
+    if args.dark:
+        seeds = list(range(args.dark_seeds))
+        print(f"DarkMemory: seeds={len(seeds)}, eps={args.dark_eps}")
+        rows = measure_dark_memory(seeds, eps_init=args.dark_eps)
+        acc_guide = [r["acc1_with_guide"] for r in rows]
+        acc_no = [r["acc1_no_guide"] for r in rows]
+        delta = [r["delta_pp"] for r in rows]
+        log2D = [r["log2_D_bits"] for r in rows]
+        lat = [r["latency_ms"] for r in rows]
+        print(f"  acc_1 with guide: median {float(np.median(acc_guide)):.3f} IQR [{np.percentile(acc_guide, 25):.3f}, {np.percentile(acc_guide, 75):.3f}]")
+        print(f"  acc_1 no guide:   median {float(np.median(acc_no)):.3f} IQR [{np.percentile(acc_no, 25):.3f}, {np.percentile(acc_no, 75):.3f}]")
+        print(f"  delta (pp):       median {float(np.median(delta)):+.2f} IQR [{np.percentile(delta, 25):+.2f}, {np.percentile(delta, 75):+.2f}]")
+        print(f"  log2(D_3) bits:   median {float(np.median(log2D)):.1f}")
+        print(f"  latency guide:    median {float(np.median(lat)):.1f} ms")
+        p_val, a12 = _wilcoxon_a12(acc_guide, acc_no)
+        if p_val is not None:
+            print(f"  wilcoxon: p={p_val:.4f}  A12={a12:.3f}")
+        else:
+            print(f"  wilcoxon: not computed, only {len(seeds)} seeds (<4)")
+        out = Path("benchmarks/neural/memory_fidelity_dark.json")
+        out.write_text(json.dumps(rows, indent=2))
+        print(f"wrote {out}")
+        return
     seeds = list(range(20)) if args.full else [0, 1]
     n_events = 200 if args.full else 50
 

@@ -566,35 +566,44 @@ def test_blocks_on_duplicate():
     assert dm.blocks(7, D) is False
 
 
-def test_guide_converges_to_unity():
-    import math
-    dm = DarkMemory(k=1)
-    for n in (2, 3, 5):
-        D = 1
-        for p in [2, 3, 5, 7, 11][:n]:
-            D *= p
-        F = dm.guide_field(D, [np.ones(4)])
-        w = np.ones(4) / np.sum(np.abs(np.ones(4)))
-        alpha = float(np.mean(F / (w + 1e-12)))
-        assert alpha > 0.0
+def test_guide_is_prisma_ground_state():
+    """The guide field is psi_0(r_j) of the Prisma ground state."""
+    dm = DarkMemory()
+    # mu = 1, eps = 0 at E=0 is not reached (D >= 2), but D=2 gives
+    # E = log 2 ~ 0.69, mu ~ 0.59, eps ~ 0.82: the field is a sech-like
+    # profile, peak at r=0, decreasing with r.
+    F = dm.guide_field(2, [np.array([1.0, 1.0, 1.0, 1.0])])
+    assert F.shape == (4,)
+    # all deltas equal -> all r_j equal -> all F^(j) equal
+    assert np.allclose(F, F[0], atol=1e-9)
+    # F positive, bounded by the peak of psi_0 (order 1)
+    assert np.all(F >= 0.0)
+    assert np.all(F <= 1.5)
 
 
-def test_guide_uses_lambert_w():
-    import math
-    from scipy.special import lambertw
-    dm = DarkMemory(k=1)
-    D = 2 * 3 * 5
-    E = math.log(D)
-    c1 = 1.0 - math.log(math.pi ** 2 / 6)
-    W = float(lambertw(E * math.exp(E + c1)).real)
-    alpha_expected = W / E
-    deltas = [np.ones(4)]
-    F = dm.guide_field(D, deltas)
-    # w_j is L2-normalised in guide_field: ||[1,1,1,1]||_2 = 2, w_j = 0.5
-    w = np.ones(4) / (np.linalg.norm(np.ones(4)) + 1e-12)
-    alpha_got = float(np.mean(F / (w + 1e-12)))
-    assert abs(alpha_got - alpha_expected) < 1e-6, (
-        f"alpha_got={alpha_got:.6f}, alpha_expected={alpha_expected:.6f}"
+def test_prisma_sech_limit():
+    """At mu=1, eps=0 the ground state matches sech to 1e-4."""
+    dm = DarkMemory()
+    psi = dm._prisma_ground_state(mu=1.0, eps=0.0, R=5.0, N=256)
+    r = np.linspace(0.0, 5.0, 256)
+    sech = 1.0 / np.cosh(r)
+    sech = sech / np.sqrt(np.trapezoid(sech ** 2, r))
+    corr = float(np.corrcoef(psi, sech)[0, 1])
+    assert corr > 0.999, f"corr(psi0, sech) = {corr:.6f} at mu=1, eps=0"
+
+
+def test_guide_delocalises_with_energy():
+    """Larger D (larger E) gives a broader field: mean(r_j * F_j) grows."""
+    dm = DarkMemory()
+    deltas = [np.array([-1.0, 0.5, 2.0, -0.3])]  # same deltas for both
+    F_small = dm.guide_field(6, deltas)    # E = log 6 ~ 1.79, mu ~ 0.36
+    F_large = dm.guide_field(30, deltas)   # E = log 30 ~ 3.40, mu ~ 0.23
+    cum = np.abs(np.array([-1.0, 0.5, 2.0, -0.3]))
+    r_j = 5.0 * cum / cum.max()
+    mean_small = float(np.mean(r_j * F_small))
+    mean_large = float(np.mean(r_j * F_large))
+    assert mean_large >= mean_small, (
+        f"mean(r*F) did not grow: {mean_small:.4f} -> {mean_large:.4f}"
     )
 
 def test_init_retention():

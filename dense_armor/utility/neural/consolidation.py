@@ -877,10 +877,12 @@ class ArchivalMemory:
 class DarkMemory:
     """Dark memory: prime key, fermionic block, Lambert-W guide field.
 
-    Owner's construction, derived from the owner's framework (Gentile
-    statistics, Lambert-W unified metric, prime gas). Not in any paper of
-    the folder: see `sources/gentile_supplement.md` lines 13, 17, 74 and
-    `sources/dvpt_unified_formula.md` lines 10-17 of the N09 package.
+    Owner's construction. The prime key and the fermionic block are from
+    the owner's notes; the guide field is the ground state of the Prisma
+    operator family (prisma_operator_family.md, sec. 2), with
+    `mu = 1/(1+E)`, `eps = 2(1-mu)`, `E = log D`. The DVPT limit
+    (E=0, mu=1, eps=0) gives the sech, the Aubry-Andre limit (mu=0,
+    eps=2) gives the delocalised profile.
 
     Args:
         k: Gentile order. 1 = fermionic (DVPT limit), infinity = bosonic.
@@ -936,31 +938,80 @@ class DarkMemory:
             return False
         return D % new_prime == 0
 
-    def guide_field(self, D: int, deltas: list) -> np.ndarray:
-        """``F^(j) = alpha * w_j`` with ``alpha`` from Lambert W and ``w_j`` from the deltas."""
+    def guide_field(self, D: int, deltas: list, R: float = 5.0, N: int = 256) -> np.ndarray:
+        """Guide field from the Prisma ground state of H(mu, eps).
+
+        The Prisma operator family (prisma_operator_family.md, sec. 2):
+
+            H(mu, eps) = -d^2/dr^2 + eps*cos(2*pi*alpha*r) - 2*mu*sech^2(r)
+
+        with alpha = 1/Phi. The parameters are set from the dark-memory
+        energy ``E = log D``:
+
+            mu  = 1 / (1 + E)
+            eps = 2 * (1 - mu)
+
+        so that E = 0 gives the DVPT limit (mu = 1, eps = 0, ground state
+        sech) and E -> infinity gives the Aubry-Andre limit (mu = 0,
+        eps = 2). The ground state psi_0(r) is the profile of the field.
+        A synapse with cumulative change |Delta^(j)| is mapped to
+        ``r_j = R * |Delta^(j)| / max_j(|Delta^(j)|)`` and the field is
+        ``F^(j) = psi_0(r_j)``.
+
+        Args:
+            D: the prime product D_n, D >= 1.
+            deltas: the list of per-generation changes.
+            R: half-width of the integration domain. Default 5.0.
+            N: number of grid points. Default 256.
+
+        Returns:
+            The field, an array of shape ``(P,)`` where ``P = len(deltas[0])``.
+        """
         import math
-        from scipy.special import lambertw
-        if D < 2:
+        if D < 2 or not deltas:
             return np.zeros(1)
         E = math.log(D)
-        c_k = 1.0 - math.log(self._zeta(self.k + 1))
-        try:
-            W = float(lambertw(E * math.exp(E + c_k)).real)
-        except Exception:
-            W = E + c_k
-        alpha = W / E if E > 0 else 1.0
-        if not deltas:
-            return np.zeros(1)
+        mu = 1.0 / (1.0 + E)
+        eps = 2.0 * (1.0 - mu)
+        psi = self._prisma_ground_state(mu, eps, R=R, N=N)
+        # per-synapse cumulative change
         p = max(len(deltas[0]) if hasattr(deltas[0], "__len__") else 1, 1)
         cum = np.zeros(p)
         for d in deltas:
             arr = np.asarray(d, dtype=float).reshape(-1)
             cum += arr[:p] if arr.size >= p else np.pad(arr, (0, p - arr.size))
-        norm = float(np.linalg.norm(cum)) + 1e-12
-        w = np.abs(cum) / norm
-        return alpha * w
+        abs_cum = np.abs(cum)
+        max_abs = float(np.max(abs_cum)) if abs_cum.size else 0.0
+        if max_abs <= 0.0:
+            return np.full(p, float(psi[0]))
+        r_j = R * abs_cum / max_abs
+        r_grid = np.linspace(0.0, R, N)
+        return np.interp(r_j, r_grid, psi)
 
     @staticmethod
+    def _prisma_ground_state(mu: float, eps: float, R: float = 5.0, N: int = 256) -> np.ndarray:
+        """The ground state psi_0 of H(mu, eps), normalised on [0, R].
+
+        Finite differences with Neumann at r = 0 (psi(-dr) = psi(dr)) and
+        Dirichlet at r = R. The wavefunction is returned as |psi_0|,
+        normalised so that the trapezoidal integral of psi^2 is 1.
+        """
+        r = np.linspace(0.0, R, N)
+        dr = r[1] - r[0]
+        main = 2.0 / dr ** 2
+        off = -1.0 / dr ** 2
+        H = np.diag(np.full(N, main))
+        H += np.diag(np.full(N - 1, off), 1)
+        H += np.diag(np.full(N - 1, off), -1)
+        H[0, 0] = 1.0 / dr ** 2
+        alpha = 1.0 / ((1.0 + 5.0 ** 0.5) / 2.0)  # 1/Phi
+        V = eps * np.cos(2.0 * np.pi * alpha * r) - 2.0 * mu / np.cosh(r) ** 2
+        H = H + np.diag(V)
+        _, evecs = np.linalg.eigh(H)
+        psi = np.abs(evecs[:, 0])
+        norm = float(np.sqrt(np.trapezoid(psi ** 2, r)))
+        return psi / max(norm, 1e-12)
+
     def _zeta(s: float) -> float:
         import math
         if s == 2:
