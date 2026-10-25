@@ -23,3 +23,5 @@ guida_sentinel.pdf
 site/
 benchmarks/*_quick.json
 edge/__pycache__/
+
+benchmarks/neural/*.json

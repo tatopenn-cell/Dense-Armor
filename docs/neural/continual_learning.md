@@ -233,7 +233,12 @@ The capacity is `1.38` patterns for `10` neurons, and `5` events exceed it, so t
 
 ## 11. The composition (ArchivalMemory)
 
-The last piece combines the tree, the lifecycle and the dual memory with a write policy declared in `RULE.md`: an importance score, a write depth, a state transition and a promotion rule.
+The last piece combines the tree, the lifecycle and the dual memory with a write policy that depends on an importance score. The policy has four parts, each one stated as a formula:
+
+- `importance(x, t) = clip(0.4 * novelty + 0.3 * rarity + 0.3 * relevance, 0, 1)`, with `novelty` the distance to the closest slow event, `rarity` the inverse of the number of events in the same leaf, `relevance` the residual against the current node;
+- `write_depth(importance) = round(importance * max_depth)`, so an important event goes deeper and a routine one stays near the root;
+- `transition(state, accesses, age)` promotes one band after `promote_threshold` accesses and decays one band after `decay_horizon_s` seconds without access;
+- `promote(node)` merges `branching` children into a parent whose codebook is reduced by the same factor.
 
 ~~~python
 import jax.numpy as jnp
@@ -307,7 +312,7 @@ VQ: MSE 0.73, PSNR 1.37, exact recall 0.95. PQ: MSE 0.16, PSNR 8.10, exact recal
 - `PQMemory` is bibliographic only: the formula is derived from section 3 of the paper, not verified against a PDF that is not in the folder.
 - `TheoreticalBound` is the classical Hopfield capacity `0.138 sqrt(P)`, a declared placeholder. The two 2025 papers are in the folder and cited in the docstring, but neither gives a closed-form bound.
 - `VQMemory` forward is not differentiable: `quantize` selects `argmin_j ||z_e - e_j||`. `gradcheck` is not applicable, and the deviation from the layer contract is declared in the docstring; the straight-through estimator is a biased surrogate of a gradient that does not exist.
-- `ArchivalMemory` write policy is declared in `RULE.md` v0.1: importance, write depth, state transition, promotion. Section 7 is left for the owner to sign.
+- `ArchivalMemory` write policy is the four formulas stated in section 11: `importance = 0.4 novelty + 0.3 rarity + 0.3 relevance`, `write_depth = round(importance * max_depth)`, promote after `promote_threshold` accesses and decay after `decay_horizon_s` seconds, `promote` merges `branching` children into a parent. The policy is our choice; no paper gives it.
 - The `DarkMemory` construction with the Prisma ground state was measured with 20 seeds and did not pass its own test (Wilcoxon p = 0.0929, A12 = 0.6312): it is not in the branch.
 - The tasks of the forgetting benchmark are synthetic conflicting rules, not MNIST permutations.
 
