@@ -84,7 +84,6 @@ class GatedCrossAttention:
                 f"signal shape {signal.shape}, expected {expected_2d} or {expected_3d}"
             )
         gate = jnp.where(signal > self.threshold, 1.0, 0.0)
-        gate = jnp.where(jnp.isnan(signal), 0.0, gate)
         y = self.attention.forward(xq, xc, training=training)
         if self._squeeze:
             g = gate[:, None]

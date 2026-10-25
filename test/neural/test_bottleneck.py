@@ -192,3 +192,13 @@ def test_learning():
     after = trainer.evaluate(X, y)
     print(f"learning: before={before:.4f} after={after:.4f}")
     assert after < before * 0.5
+
+
+def test_d_ff_none_defaults_to_4_times_d_model():
+    m = BottleneckFusion(4, 2, 2, KEY)
+    assert m.d_ff == 16
+    a = jnp.ones((3, 4))
+    b = jnp.ones((5, 4))
+    a_out, b_out, fsn_out = m.forward(a, b)
+    assert np.asarray(a_out).shape == (3, 4)
+    assert np.asarray(fsn_out).shape == (2, 4)

@@ -117,3 +117,10 @@ def test_repr():
     s = repr(m)
     assert "LatentCrossAttention" in s
     assert "n_latents=1" in s
+
+
+def test_d_context_none_defaults_to_d_model():
+    m = LatentCrossAttention(1, 4, 2, KEY)
+    assert m.d_context == 4
+    y = m.forward(jnp.ones((3, 4)))
+    assert np.asarray(y).shape == (1, 4)
