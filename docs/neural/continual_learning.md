@@ -309,6 +309,15 @@ change the ranking. DGR makes the forgetting worse than the baseline: the
 MLP generator trained on reconstructed past samples damages the solver on
 the actual past samples.
 
+A sweep of the EWC `lambda_` (5 seeds, same benchmark) confirms the
+default: `lambda_ = 5000` gives forgetting 0.118 (IQR [0.094, 0.123])
+and `acc_avg` 0.648; `lambda_ = 50000` gives a nominally lower forgetting
+(0.079, IQR [0.055, 0.136]) but a lower `acc_avg` (0.631), a wider
+spread, and a paired Wilcoxon of p = 0.4375 (A12 = 0.440). The
+forgetting of 50000 is lower because the model learns the new task
+less well, not because it retains the old one better. The default
+stays `lambda_ = 5000`, the value of Kirkpatrick et al. 2017.
+
 The memory-fidelity numbers below come from a different run: the smoke
 configuration on CPU (2 seeds, 50 events each), because the lifecycle
 measurements do not need a GPU.
