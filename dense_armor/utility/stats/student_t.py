@@ -60,6 +60,8 @@ Liu, C., Rubin, D. B. (1995). ML estimation of the t distribution with
 import math
 from typing import Any
 
+from scipy.stats import t as _scipy_t
+
 from dense_armor.roles import Transformer
 
 _EPS_LOG_SIGMA = -30.0
@@ -198,12 +200,7 @@ class StudentT(Transformer):
                 "var": self._variance(),
             }
         logpdf = self._logpdf(v)
-        try:
-            from scipy.stats import t as _t  # type: ignore[import-not-found]
-
-            cdf = float(_t.cdf(v, df=self.nu, loc=self.mu_, scale=self.sigma_))
-        except ImportError:  # pragma: no cover
-            cdf = float("nan")
+        cdf = float(_scipy_t.cdf(v, df=self.nu, loc=self.mu_, scale=self.sigma_))
         return {
             "logpdf": logpdf,
             "pdf": float(math.exp(logpdf)),

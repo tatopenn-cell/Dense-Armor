@@ -20,7 +20,7 @@ table:
 
 ``--smoke`` runs a smaller configuration. ``--crunchdao`` is a second
 block that runs only if the CrunchDAO DataCrunch 2 data is available in
-``/content/data/``: it measures whether the three models as feature
+``data/``: it measures whether the three models as feature
 extractors add signal beyond the ``Feature_*`` columns. See the module
 docstring of ``_crunchdao`` below.
 """
@@ -209,10 +209,10 @@ def _run_domain(
     }
 
 
-def _crunchdao() -> dict:
+def _crunchdao(data_dir: Path) -> dict:
     """Measure whether the three features add signal on CrunchDAO data.
 
-    Needs ``/content/data/X_train.parquet`` and ``y_train.parquet``
+    Needs ``<data_dir>/X_train.parquet`` and ``y_train.parquet`` (default ``data/``)
     (the quick starter of CrunchDAO DataCrunch 2 downloads them). For
     each row, compute the three features, fit a ``LinearRegression``
     on ``Feature_*`` alone (baseline) and on ``Feature_*`` + the three
@@ -222,11 +222,10 @@ def _crunchdao() -> dict:
     N10 stops at the feature vector and the measurement. It does not
     build the regressor that competes on the leaderboard.
     """
-    data = Path("/content/data")
-    x_path = data / "X_train.parquet"
-    y_path = data / "y_train.parquet"
+    x_path = data_dir / "X_train.parquet"
+    y_path = data_dir / "y_train.parquet"
     if not (x_path.exists() and y_path.exists()):
-        return {"status": "not computed, data not in /content/data/"}
+        return {"status": f"not computed, data not in {data_dir}"}
     try:
         import pandas as pd
         from sklearn.linear_model import LinearRegression
@@ -299,6 +298,12 @@ def main() -> int:
         "--crunchdao", action="store_true", help="also run the CrunchDAO block"
     )
     ap.add_argument(
+        "--crunchdao-data",
+        type=Path,
+        default=Path("data"),
+        help="directory with X_train.parquet and y_train.parquet for --crunchdao",
+    )
+    ap.add_argument(
         "--out", type=Path, default=ROOT / "benchmarks/statistics_online.json"
     )
     args = ap.parse_args()
@@ -349,7 +354,7 @@ def main() -> int:
 
     if args.crunchdao:
         print("\n--- crunchdao ---")
-        c = _crunchdao()
+        c = _crunchdao(args.crunchdao_data)
         out["crunchdao"] = c
         if c["status"] == "computed":
             print(
