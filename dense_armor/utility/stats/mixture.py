@@ -254,6 +254,12 @@ class OnlineGaussianMixture(Transformer):
         self.n_ += 1
         return self
 
+    def update(
+        self, x: dict, y: Any = None, t: float | None = None
+    ) -> "OnlineGaussianMixture":
+        """Alias of :meth:`learn_one`, natural name for a statistic."""
+        return self.learn_one(x, y=y, t=t)
+
     def _logpdf(self, v: list[float]) -> float:
         import numpy as np
 

@@ -154,6 +154,10 @@ class GARCH11(Transformer):
         self.n_ += 1
         return self
 
+    def update(self, x: dict, y: Any = None, t: float | None = None) -> "GARCH11":
+        """Alias of :meth:`learn_one`, natural name for a statistic."""
+        return self.learn_one(x, y=y, t=t)
+
     def _loglik(self, v: float) -> float:
         if self.sigma2_ <= 0:
             return float("-inf")
