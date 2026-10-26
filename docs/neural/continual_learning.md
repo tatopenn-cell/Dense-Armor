@@ -281,18 +281,38 @@ One event written, in `active` state at 32 bits, the `len` of the memory is one.
 
 ## The measured cost
 
-The internal benchmark (`benchmarks/neural/continual_learning.py` and `memory_fidelity.py`, 2 seeds, smoke) gives the numbers below. They come from a run of this session on this host.
+The internal benchmark (`benchmarks/neural/continual_learning.py`) gives the
+numbers below. They come from a full run on a Kaggle GPU (2 × CUDA,
+`JAX_PLATFORMS=cuda`), one seed, five synthetic conflicting tasks (axis x,
+axis y, diagonal, XOR, circle), 100 samples per task, 20 epochs, batch 32,
+`lambda_ = 5000` for EWC.
 
-Forgetting, median:
+Forgetting (one seed, full run):
 
-| learner | forgetting |
-|---|---|
-| baseline | 0.324 |
-| EWC | 0.118 |
-| GEM | 0.285 |
-| A-GEM | 0.283 |
-| DGR | 0.380 |
-| ArchivalMemory as replay | 0.130 |
+| learner | forgetting | wall time |
+|---|---|---|
+| baseline | 0.336 | 23 s |
+| EWC | **0.098** | 21 s |
+| GEM | 0.267 | 198 s |
+| AGEM | 0.261 | 22 s |
+| DGR | 0.398 | 27 s |
+
+EWC reduces the forgetting by a factor 3.4 against the unprotected baseline,
+at the same cost. GEM and AGEM reduce it by 20-22%, less than EWC, because on
+these five 2D tasks the gradient of the new task is rarely in direct conflict
+with the gradients of the past tasks (the projection fires on a minority of
+steps and moves the gradient by a small amount). GEM is 9× slower than AGEM
+for no extra benefit: the quadratic program inside `project` runs 500
+projected-gradient iterations per batch. The measured value is the honest
+one; reducing `max_iter` would cut the time to about 40 s but would not
+change the ranking. DGR makes the forgetting worse than the baseline: the
+MLP generator trained on reconstructed past samples damages the solver on
+the actual past samples.
+
+The memory-fidelity numbers below come from a different run: the smoke
+configuration on CPU (2 seeds, 50 events each), because the lifecycle
+measurements do not need a GPU.
+
 
 `ArchivalMemory` per lifecycle state (median over 2 seeds, 50 events each):
 
