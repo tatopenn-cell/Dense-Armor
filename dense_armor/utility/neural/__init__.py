@@ -236,3 +236,11 @@ __all__ = list(globals().get("__all__", [])) + [
     "EWC", "GEM", "LifecycleMemory", "PQMemory", "ResidualTree", "TheoreticalBound",
     "VQMemory",
 ]
+
+from dense_armor.utility.neural.moe import SparseMoE
+from dense_armor.utility.neural.test_time import TestTimeCompute
+
+__all__ = list(globals().get("__all__", [])) + [
+    "SparseMoE",
+    "TestTimeCompute",
+]
