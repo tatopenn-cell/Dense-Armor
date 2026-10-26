@@ -25,3 +25,15 @@ benchmarks/*_quick.json
 edge/__pycache__/
 
 benchmarks/neural/*.json
+
+# CrunchDAO quickstarter downloads
+
+data/
+
+.crunchdao/
+
+main.py
+
+notebook.ipynb
+
+requirements.txt

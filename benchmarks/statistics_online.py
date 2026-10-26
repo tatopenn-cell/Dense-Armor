@@ -18,11 +18,7 @@ table:
   ``benchmarks/finance/drift_vs_noise.py``, with two volatility
   regimes.
 
-``--smoke`` runs a smaller configuration. ``--crunchdao`` is a second
-block that runs only if the CrunchDAO DataCrunch 2 data is available in
-``data/``: it measures whether the three models as feature
-extractors add signal beyond the ``Feature_*`` columns. See the module
-docstring of ``_crunchdao`` below.
+``--smoke`` runs a smaller configuration. ``--robust`` switches StudentT
 """
 
 from __future__ import annotations
@@ -209,83 +205,6 @@ def _run_domain(
     }
 
 
-def _crunchdao(data_dir: Path) -> dict:
-    """Measure whether the three features add signal on CrunchDAO data.
-
-    Needs ``<data_dir>/X_train.parquet`` and ``y_train.parquet`` (default ``data/``)
-    (the quick starter of CrunchDAO DataCrunch 2 downloads them). For
-    each row, compute the three features, fit a ``LinearRegression``
-    on ``Feature_*`` alone (baseline) and on ``Feature_*`` + the three
-    features (augmented), measure the Pearson correlation per ``moon``
-    on the last 20% of the moons, report both.
-
-    N10 stops at the feature vector and the measurement. It does not
-    build the regressor that competes on the leaderboard.
-    """
-    x_path = data_dir / "X_train.parquet"
-    y_path = data_dir / "y_train.parquet"
-    if not (x_path.exists() and y_path.exists()):
-        return {"status": f"not computed, data not in {data_dir}"}
-    try:
-        import pandas as pd
-        from sklearn.linear_model import LinearRegression
-    except ImportError as e:
-        return {"status": f"not computed, missing dependency: {e}"}
-
-    X = pd.read_parquet(x_path)
-    y = pd.read_parquet(y_path)
-    df = X.merge(y, on=["moon", "id"], how="inner")
-    feature_cols = [c for c in df.columns if c.startswith("Feature_")]
-    df = df.sort_values(["moon", "id"]).reset_index(drop=True)
-
-    st = StudentT(nu=5.0, learning_rate=0.05)
-    mx = OnlineGaussianMixture(n_components=2, learning_rate=0.05)
-    ga = GARCH11(omega=1e-6, alpha=0.08, beta=0.90)
-
-    rows = []
-    for _, row in df.iterrows():
-        s = {"x": float(row[feature_cols[0]])}
-        st.learn_one(s)
-        mx.learn_one(s)
-        ga.learn_one(s)
-        rows.append(
-            {
-                "st_logpdf": -st.score_one(s),
-                "mx_resp0": float(mx.transform_one(s)["responsibilities"][0]),
-                "garch_sigma2": float(ga.transform_one(s)["sigma2"]),
-            }
-        )
-    feat = pd.DataFrame(rows)
-    for c in feat.columns:
-        df[c] = feat[c].values
-
-    moons = sorted(df["moon"].unique())
-    cut = moons[int(len(moons) * 0.8)]
-    train = df[df["moon"] < cut]
-    test = df[df["moon"] >= cut]
-    if len(test) == 0:
-        return {"status": "not computed, no test moons after the split"}
-
-    def _pearson(cols: list[str]) -> float:
-        model = LinearRegression().fit(train[cols], train["target"])
-        pred = model.predict(test[cols])
-        if float(np.std(pred)) == 0.0:
-            return 0.0
-        return float(np.corrcoef(pred, test["target"])[0, 1])
-
-    base = _pearson(feature_cols)
-    aug = _pearson(feature_cols + ["st_logpdf", "mx_resp0", "garch_sigma2"])
-    return {
-        "status": "computed",
-        "baseline_pearson": base,
-        "augmented_pearson": aug,
-        "delta": aug - base,
-        "test_moons": int(test["moon"].nunique()),
-        "train_rows": int(len(train)),
-        "test_rows": int(len(test)),
-    }
-
-
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--smoke", action="store_true", help="smaller configuration")
@@ -293,15 +212,6 @@ def main() -> int:
         "--robust",
         action="store_true",
         help="StudentT with learning_rate=0.005 and the bimodal domain",
-    )
-    ap.add_argument(
-        "--crunchdao", action="store_true", help="also run the CrunchDAO block"
-    )
-    ap.add_argument(
-        "--crunchdao-data",
-        type=Path,
-        default=Path("data"),
-        help="directory with X_train.parquet and y_train.parquet for --crunchdao",
     )
     ap.add_argument(
         "--out", type=Path, default=ROOT / "benchmarks/statistics_online.json"
@@ -351,17 +261,6 @@ def main() -> int:
             f"  garch:     sigma2={res['garch']['sigma2_']:.3e}, "
             f"lat={res['garch']['latency_us']['median']:.1f} us"
         )
-
-    if args.crunchdao:
-        print("\n--- crunchdao ---")
-        c = _crunchdao(args.crunchdao_data)
-        out["crunchdao"] = c
-        if c["status"] == "computed":
-            print(
-                f"  baseline={c['baseline_pearson']:.4f}, "
-                f"augmented={c['augmented_pearson']:.4f}, "
-                f"delta={c['delta']:+.4f}"
-            )
 
     args.out.write_text(json.dumps(out, indent=2) + "\n", encoding="utf-8")
     print(f"\nwritten: {args.out}")
