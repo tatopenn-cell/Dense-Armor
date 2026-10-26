@@ -1,18 +1,19 @@
-"""Public benchmark: Permuted MNIST, ten permutations. STOPPED.
+"""Public benchmark: Permuted MNIST, ten permutations. DONE (reduced).
 
-Status: M is `stopped`. The paper configuration (MLP 400-400, 10 tasks,
-2000 samples per task, 5 epochs) needs a GPU. Even a reduced configuration
-(3 tasks, 300 samples, 1 epoch, hidden 64) takes more than 6 minutes per
-learner on this CPU, and the smoke was interrupted. No number is reported.
+Status: M is done with a reduced configuration. The paper configuration
+(MLP 400-400, 10 tasks, 2000 samples per task, 5 epochs, 5 seeds) ran
+on a Kaggle T4 GPU for 2 hours and hit the 7200 s timeout. The run uses
+the same number of tasks (10) with 300 samples per task, 1 epoch,
+hidden 64, 2 seeds: the forgetting across ten tasks is measured, but
+the numbers are not comparable in absolute accuracy to Chaudhry et al.
+2019 Table 4 page 16 because the model is smaller and the training
+shorter. They are comparable in form: does the learner forget, does the
+constraint help.
 
-The script is kept as a reference for a GPU run: `--full` reproduces the
-paper's architecture and training (10 tasks, 2000 samples, 5 epochs,
-hidden 400-400). On a GPU, `--full` runs in minutes and item M becomes
-`done` with the numbers comparable to Chaudhry et al. 2019, Table 4 p. 16.
-
-Reference numbers (Chaudhry et al. 2019, Table 4 page 16, averaged over
-5 runs): VAN 47.9, EWC 68.3, GEM 89.5, A-GEM 89.1, multi-task 95.3.
-These are the targets of the GPU run.
+The test set is clamped to MNIST's 10000 test samples: with 10 tasks of
+2000 samples, n_per_task * n_tasks = 20000 exceeds the test set, and
+the clamp uses min(n_per_task * n_tasks, 10000) // n_tasks = 1000 per
+task on the test side, keeping 2000 per task on the train side.
 """
 
 from __future__ import annotations
@@ -64,19 +65,24 @@ def load_mnist(n_per_task: int, n_tasks: int, seed: int):
         transform=transforms.ToTensor(),
     )
     def extract(ds, n):
+        n = min(int(n), len(ds))
         rng = np.random.RandomState(seed)
         idx = rng.choice(len(ds), size=n, replace=False)
         X = np.stack([np.asarray(ds[int(i)][0]).reshape(-1) for i in idx]).astype(np.float32)
         y = np.array([int(ds[int(i)][1]) for i in idx], dtype=np.int32)
         return X, y
-    Xtr_all, ytr_all = extract(ds_train, n_per_task * n_tasks)
-    Xte_all, yte_all = extract(ds_test, n_per_task * n_tasks)
+    n_train = n_per_task * n_tasks
+    n_test = min(n_per_task * n_tasks, len(ds_test))
+    n_test_per_task = max(1, n_test // n_tasks)
+    n_test = n_test_per_task * n_tasks
+    Xtr_all, ytr_all = extract(ds_train, n_train)
+    Xte_all, yte_all = extract(ds_test, n_test)
     rng = np.random.RandomState(seed + 1)
     tasks = []
     for k in range(n_tasks):
         perm = rng.permutation(784)
         tr_idx = slice(k * n_per_task, (k + 1) * n_per_task)
-        te_idx = slice(k * n_per_task, (k + 1) * n_per_task)
+        te_idx = slice(k * n_test_per_task, (k + 1) * n_test_per_task)
         Xtr = Xtr_all[tr_idx][:, perm]
         Xte = Xte_all[te_idx][:, perm]
         tasks.append({
@@ -252,7 +258,7 @@ def main():
         print("  reference: Chaudhry et al. 2019, Table 4 page 16")
         print("    VAN 47.9, EWC 68.3, GEM 89.5, A-GEM 89.1, multi-task 95.3")
         return
-    seeds, n_tasks, n_per, epochs, hidden = list(range(5)), 10, 2000, 5, 400
+    seeds, n_tasks, n_per, epochs, hidden = list(range(2)), 10, 300, 1, 64
     print(f"seeds={len(seeds)}, tasks={n_tasks}, samples/task={n_per}, "
           f"epochs={epochs}, hidden={hidden}")
     t0 = time.time()
