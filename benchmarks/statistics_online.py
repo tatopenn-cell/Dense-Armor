@@ -49,6 +49,11 @@ N_FULL = 10000
 N_SMOKE = 2000
 
 
+class DomainCfg(TypedDict):
+    nu: float
+    init_means: list[list[float]]
+
+
 class Summary(TypedDict):
     median: float | None
     p90: float | None
@@ -308,7 +313,7 @@ def main() -> int:
         "learning_rate": lr,
         "domains": [],
     }
-    per_domain = {
+    per_domain: dict[str, DomainCfg] = {
         "robot": {"nu": 3.0, "init_means": [[0.0], [0.2]]},
         "drone": {"nu": 4.0, "init_means": [[-1.0], [1.0]]},
         "finance": {"nu": 3.0, "init_means": [[-0.02], [0.02]]},
