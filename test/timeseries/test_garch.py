@@ -177,5 +177,20 @@ def test_fit_equals_learn_one():
     assert a.epsilon_ == b.epsilon_
 
 
+def test_transform_one_nan_returns_nan():
+    m = GARCH11(omega=1e-6, alpha=0.08, beta=0.90)
+    m.learn_one({"x": 0.01})
+    out = m.transform_one({"x": float("nan")})
+    assert math.isnan(out["loglik"])
+    assert math.isnan(out["standardized"])
+    assert out["sigma2"] == m.sigma2_
+
+
+def test_score_one_nan_returns_nan():
+    m = GARCH11(omega=1e-6, alpha=0.08, beta=0.90)
+    m.learn_one({"x": 0.01})
+    assert math.isnan(m.score_one({"x": float("nan")}))
+
+
 def test_check_estimator():
     check_estimator(GARCH11(omega=1e-6, alpha=0.08, beta=0.90), allow_not_applicable={})

@@ -302,7 +302,7 @@ class OnlineGaussianMixture(Transformer):
         if not self.initialized_:
             import copy
 
-            self.d_ = other._d
+            self.d_ = other.d_
             self.weights_ = copy.deepcopy(other.weights_)
             self.means_ = copy.deepcopy(other.means_)
             self.variances_ = copy.deepcopy(other.variances_)

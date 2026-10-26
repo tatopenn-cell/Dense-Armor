@@ -234,5 +234,65 @@ def test_fit_equals_learn_one():
     assert np.allclose(a.weights_, b.weights_, atol=1e-15)
 
 
+def test_transform_one_before_init_returns_nan():
+    m = OnlineGaussianMixture(n_components=2)
+    out = m.transform_one({"x": 1.0})
+    assert math.isnan(out["logpdf"])
+    assert out["responsibilities"] == []
+
+
+def test_transform_one_nan_returns_nan():
+    m = OnlineGaussianMixture(n_components=2)
+    for v in [1.0, 2.0]:
+        m.learn_one({"x": v})
+    out = m.transform_one({"x": float("nan")})
+    assert math.isnan(out["logpdf"])
+
+
+def test_score_one_before_init_returns_nan():
+    m = OnlineGaussianMixture(n_components=2)
+    assert math.isnan(m.score_one({"x": 1.0}))
+
+
+def test_score_one_nan_returns_nan():
+    m = OnlineGaussianMixture(n_components=2)
+    for v in [1.0, 2.0]:
+        m.learn_one({"x": v})
+    assert math.isnan(m.score_one({"x": float("nan")}))
+
+
+def test_init_means_wrong_shape_raises():
+    m = OnlineGaussianMixture(n_components=2, init_means=[[0.0], [1.0], [2.0]])
+    with pytest.raises(ValueError, match="init_means"):
+        m.learn_one({"x": 0.5})
+
+
+def test_merge_uninitialized_with_initialized():
+    a = OnlineGaussianMixture(n_components=2, learning_rate=0.1)
+    b = OnlineGaussianMixture(n_components=2, learning_rate=0.1)
+    for v in [1.0, 2.0, 3.0]:
+        b.learn_one({"x": v})
+    a.merge(b)
+    assert a.initialized_
+    assert a.n_ == 3
+
+
+def test_merge_initialized_with_uninitialized():
+    a = OnlineGaussianMixture(n_components=2, learning_rate=0.1)
+    for v in [1.0, 2.0, 3.0]:
+        a.learn_one({"x": v})
+    b = OnlineGaussianMixture(n_components=2, learning_rate=0.1)
+    a.merge(b)
+    assert a.n_ == 3
+
+
+def test_transform_one_feature_named():
+    m = OnlineGaussianMixture(n_components=2, feature="x")
+    for v in [1.0, 2.0, 3.0]:
+        m.learn_one({"x": v, "y": 0.0})
+    out = m.transform_one({"x": 2.0, "y": 100.0})
+    assert out["logpdf"] == out["logpdf"]
+
+
 def test_check_estimator():
     check_estimator(OnlineGaussianMixture(n_components=2), allow_not_applicable={})

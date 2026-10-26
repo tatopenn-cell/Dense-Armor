@@ -213,6 +213,22 @@ def test_fit_y_param_passed_through():
     assert abs(a.mu_ - b.mu_) < 1e-15
 
 
+def test_transform_one_nan_returns_nan():
+    m = StudentT(nu=5.0, learning_rate=0.1)
+    m.learn_one({"x": 1.0})
+    out = m.transform_one({"x": float("nan")})
+    assert math.isnan(out["logpdf"])
+    assert math.isnan(out["pdf"])
+    assert math.isnan(out["cdf"])
+    assert out["mean"] == m.mu_
+
+
+def test_score_one_nan_returns_nan():
+    m = StudentT(nu=5.0, learning_rate=0.1)
+    m.learn_one({"x": 1.0})
+    assert math.isnan(m.score_one({"x": float("nan")}))
+
+
 def test_check_estimator():
     skip = {}
     check_estimator(StudentT(nu=5.0), allow_not_applicable=skip)
