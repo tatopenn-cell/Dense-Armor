@@ -60,7 +60,6 @@ Liu, C., Rubin, D. B. (1995). ML estimation of the t distribution with
 import math
 from typing import Any
 
-
 from dense_armor.roles import Transformer
 
 _EPS_LOG_SIGMA = -30.0
@@ -157,7 +156,6 @@ class StudentT(Transformer):
             self.n_missing_ += 1
             return self
         sigma = self.sigma_
-        z = (v - self.mu_) / sigma
         g_mu = (
             (self.nu + 1.0)
             * (v - self.mu_)
