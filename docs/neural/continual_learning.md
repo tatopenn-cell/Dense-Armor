@@ -338,6 +338,7 @@ VQ: MSE 0.73, PSNR 1.37, exact recall 0.95. PQ: MSE 0.16, PSNR 8.10, exact recal
 - `ArchivalMemory` write policy is the four formulas stated in section 11: `importance = 0.4 novelty + 0.3 rarity + 0.3 relevance`, `write_depth = round(importance * max_depth)`, promote after `promote_threshold` accesses and decay after `decay_horizon_s` seconds, `promote` merges `branching` children into a parent. The policy is our choice; no paper gives it.
 - The `DarkMemory` construction with the Prisma ground state was measured with 20 seeds and did not pass its own test (Wilcoxon p = 0.0929, A12 = 0.6312): it is not in the branch.
 - `ResidualTree` has two routers: `linear` (default) picks the child with the lowest vector-quantised residual, `mondrian` picks the child with the smallest box extension. The two descents are not equivalent: Mondrian is a declared trade-off, not a guarantee.
+- `HoeffdingAnytimeTreeClassifier` (EFDT, Manapragada et al. 2018) is an opt-in speed option, not a replacement for `AdaptiveRandomForestClassifier`. On the synthetic drift benchmark of this session it is 26-58x faster (0.021-0.051 ms/sample against 0.723-1.563) and at parity on sudden and gradual drift, but it collapses by 30.0 pp after the change on incremental drift (0.662 against 0.962) because it has no native drift detection. The benchmark is `benchmarks/neural/efdt_vs_arf.py`.
 - The tasks of the forgetting benchmark are synthetic conflicting rules, not MNIST permutations.
 
 ### Measured cost
