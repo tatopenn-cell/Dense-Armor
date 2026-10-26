@@ -1,4 +1,5 @@
 """Streaming statistics and sketches."""
+
 from dense_armor.utility.stats.dependence import (
     Autocorrelation,
     RollingCorrelation,
@@ -32,6 +33,7 @@ from dense_armor.utility.stats.sketches import (
     HyperLogLog,
     SpaceSaving,
 )
+from dense_armor.utility.stats.student_t import StudentT
 
 __all__ = [
     "Autocorrelation",
@@ -52,6 +54,7 @@ __all__ = [
     "RunningMoments",
     "RunningMomentsVector",
     "SpaceSaving",
+    "StudentT",
     "TDigest",
     "cosine_similarity",
     "cosine_similarity_many",
