@@ -5,8 +5,6 @@ VQ-VAE: van den Oord et al. 2017, Eq. (1)-(4) page 3.
 
 from __future__ import annotations
 
-from typing import Any
-
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -108,15 +106,13 @@ class VQMemory:
         e_k = self.codebook.value[self._k]
         diff = z_e - e_k
         dz_e = dz_q + 2.0 * self.commitment * diff
-        self.codebook.grad = self.codebook.grad + jnp.zeros_like(
-            self.codebook.grad
-        ).at[self._k].add(-2.0 * diff)
+        self.codebook.grad = self.codebook.grad + jnp.zeros_like(self.codebook.grad).at[
+            self._k
+        ].add(-2.0 * diff)
         dx = self.encoder.backward(dz_e)
         return dx
 
-    def fit(
-        self, x: jnp.ndarray, n_steps: int = 5, lr: float = 0.01
-    ) -> "VQMemory":
+    def fit(self, x: jnp.ndarray, n_steps: int = 5, lr: float = 0.01) -> VQMemory:
         """Train the encoder, decoder and codebook on ``x`` for ``n_steps``.
 
         Helper for the tests and the ``ResidualTree``: uses the EMA
@@ -128,21 +124,22 @@ class VQMemory:
         from dense_armor.utility.optim import Adam
 
         X = jnp.asarray(x, dtype=jnp.float32)
-        opt_enc = [Adam(lr=lr) for _ in self.encoder.params()]
-        opt_dec = [Adam(lr=lr) for _ in self.decoder.params()]
+        if not hasattr(self, "_opt_enc"):
+            self._opt_enc = [Adam(lr=lr) for _ in self.encoder.params()]
+            self._opt_dec = [Adam(lr=lr) for _ in self.decoder.params()]
         for _ in range(int(n_steps)):
             x_hat = self.forward(X)
             self.backward(x_hat - X)
             self.update_codebook()
-            for p, o in zip(self.encoder.params(), opt_enc):
+            for p, o in zip(self.encoder.params(), self._opt_enc):
                 p.update(o)
                 p.zero_grad()
-            for p, o in zip(self.decoder.params(), opt_dec):
+            for p, o in zip(self.decoder.params(), self._opt_dec):
                 p.update(o)
                 p.zero_grad()
         return self
 
-    def update_codebook(self) -> "VQMemory":
+    def update_codebook(self) -> VQMemory:
         """EMA update: ``e_k = sums_k / counts_k`` for the used codes."""
         mask = self._counts > 0
         means = jnp.where(
@@ -229,7 +226,7 @@ class PQMemory:
             C = jnp.stack(newC, axis=0)
         return C
 
-    def fit(self, documents: jnp.ndarray) -> "PQMemory":
+    def fit(self, documents: jnp.ndarray) -> PQMemory:
         """Train one codebook per subspace by k-means."""
         X = jnp.asarray(documents, dtype=jnp.float32)
         if X.shape[-1] != self.d_model:
@@ -343,9 +340,7 @@ class ResidualTree:
         router: str = "linear",
     ) -> None:
         if router not in ("linear", "mondrian"):
-            raise ValueError(
-                f"router must be 'linear' or 'mondrian', got {router!r}"
-            )
+            raise ValueError(f"router must be 'linear' or 'mondrian', got {router!r}")
         self.d_model = int(d_model)
         self.n_codes = int(n_codes)
         self.max_depth = int(max_depth)
@@ -468,9 +463,9 @@ class ResidualTree:
         self._extend_box(node, x)
         if len(node["samples"]) < 8:
             node["samples"].append(x)
-        if n % 4 == 0 or len(node["samples"]) == 8:
+        if n % 8 == 0 or len(node["samples"]) == 8:
             xs = jnp.stack(node["samples"], axis=0)
-            node["vq"].fit(xs, n_steps=10)
+            node["vq"].fit(xs, n_steps=3)
         self._n_events += 1
 
     def read(self, x: jnp.ndarray) -> tuple[jnp.ndarray, int]:
@@ -508,14 +503,13 @@ class ResidualTree:
         ``n_codes / branching``; the children are dropped.
         """
         removed = 0
+
         def visit(node: dict) -> None:
             nonlocal removed
             while len(node["children"]) >= self.branching:
                 kids = node["children"][: self.branching]
                 node["vq"].fit(
-                    jnp.concatenate(
-                        [k["vq"].codebook.value for k in kids], axis=0
-                    ),
+                    jnp.concatenate([k["vq"].codebook.value for k in kids], axis=0),
                     n_steps=3,
                 )
                 node["support"] = sum(k["support"] for k in kids)
@@ -525,6 +519,7 @@ class ResidualTree:
                 self._n_nodes -= len(kids)
             for child in node["children"]:
                 visit(child)
+
         visit(self.root)
         return removed
 
@@ -538,9 +533,7 @@ class ResidualTree:
 
     def max_nodes(self) -> int:
         """Theoretical maximum nodes with ``branching`` and ``max_depth``."""
-        return (self.branching ** (self.max_depth + 1) - 1) // (
-            self.branching - 1
-        )
+        return (self.branching ** (self.max_depth + 1) - 1) // (self.branching - 1)
 
     def state_size_bytes(self) -> int:
         """Bytes of the codebooks, one entry per node."""
@@ -629,7 +622,7 @@ class LifecycleMemory:
         )
         return idx
 
-    def access(self, idx: int, t: float = 0.0) -> "LifecycleMemory":
+    def access(self, idx: int, t: float = 0.0) -> LifecycleMemory:
         """Register an access; promote if the threshold is reached."""
         if idx < 0 or idx >= len(self._events):
             raise IndexError(f"event {idx} out of range")
@@ -643,7 +636,7 @@ class LifecycleMemory:
             ev["accesses"] = 0
         return self
 
-    def tick(self, t: float = 0.0) -> "LifecycleMemory":
+    def tick(self, t: float = 0.0) -> LifecycleMemory:
         """Decay every event that has not been accessed for ``decay_horizon_s``."""
         for ev in self._events:
             age = float(t) - ev["last_access_t"]
@@ -815,9 +808,7 @@ class TheoreticalBound:
     def __init__(self, n_params: int, n_neurons: int | None = None) -> None:
         self.n_params = int(n_params)
         self.n_neurons = (
-            int(n_neurons)
-            if n_neurons is not None
-            else int(round(self.n_params ** 0.5))
+            int(n_neurons) if n_neurons is not None else int(round(self.n_params**0.5))
         )
 
     def capacity(self) -> float:
@@ -860,6 +851,7 @@ class ArchivalMemory:
         fast_capacity: int = 64,
         slow_capacity: int = 512,
         seed: int = 0,
+        router: str = "linear",
     ) -> None:
         self.d_model = int(d_model)
         self.n_codes = int(n_codes)
@@ -868,17 +860,29 @@ class ArchivalMemory:
         self.fast_capacity = int(fast_capacity)
         self.slow_capacity = int(slow_capacity)
         self.seed = int(seed)
+        self.router = str(router)
         self.tree = ResidualTree(
-            d_model=d_model, n_codes=n_codes, max_depth=max_depth,
-            branching=branching, kappa=0.1, seed=seed,
+            d_model=d_model,
+            n_codes=n_codes,
+            max_depth=max_depth,
+            branching=branching,
+            kappa=0.1,
+            seed=seed,
+            router=self.router,
         )
         self.lifecycle = LifecycleMemory(
-            d_model=d_model, promote_threshold=3,
-            decay_horizon_s=600.0, value_range=(-5.0, 5.0), seed=seed,
+            d_model=d_model,
+            promote_threshold=3,
+            decay_horizon_s=600.0,
+            value_range=(-5.0, 5.0),
+            seed=seed,
         )
         self.dual = DualMemory(
-            d_model=d_model, fast_capacity=fast_capacity,
-            slow_capacity=slow_capacity, top_k=8, seed=seed,
+            d_model=d_model,
+            fast_capacity=fast_capacity,
+            slow_capacity=slow_capacity,
+            top_k=8,
+            seed=seed,
         )
 
     def importance(self, x: jnp.ndarray, t: float = 0.0) -> float:
@@ -909,7 +913,11 @@ class ArchivalMemory:
         i = states.index(state)
         if accesses >= self.lifecycle.promote_threshold and i > 0:
             return states[i - 1]
-        if age_s >= self.lifecycle.decay_horizon_s and accesses == 0 and i < len(states) - 1:
+        if (
+            age_s >= self.lifecycle.decay_horizon_s
+            and accesses == 0
+            and i < len(states) - 1
+        ):
             return states[i + 1]
         return state
 
