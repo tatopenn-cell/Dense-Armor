@@ -186,6 +186,7 @@ Dense-Armor also provides other online utilities:
 - Feature extraction and selection
 - Online statistics and sketches
 - Metrics for streams and robots
+- Online models: [autoregressive](docs/timeseries/ar.md), [Kalman](docs/timeseries/kalman.md), [cycle residual](docs/timeseries/cycle.md), [Student-t](docs/stats/student_t.md), [Gaussian mixture](docs/stats/mixture.md), [GARCH(1,1)](docs/timeseries/garch.md)
 - Preprocessing, with a [text vectorizer](docs/preprocessing/text_vectorizer.md) that ranks documents by TF-IDF and cosine similarity
 - Streams (CSV, arrays, rosbag, frame folders, merge by time, shuffle)
 - Built-in datasets

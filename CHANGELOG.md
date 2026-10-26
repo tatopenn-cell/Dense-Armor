@@ -4,6 +4,24 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- `dense_armor/utility/stats/student_t.py`, `mixture.py`, `dense_armor/utility/timeseries/garch.py`:
+  `StudentT`, `OnlineGaussianMixture`, `GARCH11`. Three online models: a robust
+  location-scale estimator (Student-t with `nu` fixed, Liu & Rubin 1995's EM
+  update of `nu` not implemented and declared), a Gaussian mixture with diagonal
+  covariance (Cappé & Moulines 2009 online EM, Gaussian form derived and
+  declared), and GARCH(1,1) conditional variance (Csáji 2018 Eq. 1b, parameters
+  fixed and declared). Three test files (25, 24, 19 tests, 68 total, all
+  green). `benchmarks/statistics_online.py` with four synthetic domains
+  (robot, drone, finance, bimodal), a `--robust` flag, and a `--crunchdao`
+  block that measures whether the three features add signal on CrunchDAO
+  DataCrunch 2 data. Three docs pages: `docs/stats/student_t.md`,
+  `docs/stats/mixture.md`, `docs/timeseries/garch.md`. The learning-rate
+  schedules were measured (constant, sqrt, pow, adaptive) and none dominates:
+  the adaptive schedule gives the wrong sign on the robot domain. No adaptive
+  schedule is added to the library; the class docstring declares that a fixed
+  learning rate converges to a neighbourhood of the MLE.
+
 ## [1.2.0] - 2026-10-26
 
 ### Changed

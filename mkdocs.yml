@@ -140,6 +140,7 @@ nav:
           - Autoregressive models: timeseries/ar.md
           - Kalman filters: timeseries/kalman.md
           - Cycle residual: timeseries/cycle.md
+          - GARCH: timeseries/garch.md
       - Clustering: cluster/index.md
       - Trees: tree/index.md
       - Forests: forest/index.md
@@ -182,6 +183,8 @@ nav:
               - stats/index.md
               - Moments: stats/moments.md
               - Robust statistics: stats/robust.md
+              - Student-t: stats/student_t.md
+              - Online Gaussian mixture: stats/mixture.md
               - Streaming quantiles: stats/streaming.md
               - Dependence: stats/dependence.md
               - Sketches: stats/sketches.md
