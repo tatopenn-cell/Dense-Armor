@@ -129,7 +129,7 @@ class OnlineGaussianMixture(Transformer):
         ...     for v in [-2.0, -1.9, -2.1, 2.0, 2.1, 1.9]:
         ...         _ = m.learn_one({"x": v})
         >>> sorted(round(float(x), 1) for x in m.means_.ravel())
-        [-1.6, 2.2]
+        [-2.0, 2.0]
 
     References:
         Cappé & Moulines (2009), JRSS-B 71(3), Eq. (15) page 4 and

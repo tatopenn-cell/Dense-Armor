@@ -46,9 +46,7 @@ def test_online_ar_pinned():
         np.array([-0.22525470995545976, 1.169057542806564]),
         atol=1e-10,
     )
-    assert ar.predict_one({"x": 0.2}) == pytest.approx(
-        0.18650801947066625, abs=1e-10
-    )
+    assert ar.predict_one({"x": 0.2}) == pytest.approx(0.18650801947066625, abs=1e-10)
 
 
 def test_kalman_filter_pinned():
@@ -62,10 +60,16 @@ def test_kalman_filter_pinned():
     for v in stream:
         kf1.learn_one({"x": v})
         kf2.learn_one({"x": v})
-    snapshot_1 = {k: np.array(v, copy=True) for k, v in kf1.state_dict().items()
-                  if isinstance(v, (np.ndarray, float, int))}
-    snapshot_2 = {k: np.array(v, copy=True) for k, v in kf2.state_dict().items()
-                  if isinstance(v, (np.ndarray, float, int))}
+    snapshot_1 = {
+        k: np.array(v, copy=True)
+        for k, v in kf1.state_dict().items()
+        if isinstance(v, (np.ndarray, float, int))
+    }
+    snapshot_2 = {
+        k: np.array(v, copy=True)
+        for k, v in kf2.state_dict().items()
+        if isinstance(v, (np.ndarray, float, int))
+    }
     for key in snapshot_1:
         assert np.allclose(snapshot_1[key], snapshot_2[key], atol=0.0), (
             f"KalmanFilter is not deterministic on {key}"
