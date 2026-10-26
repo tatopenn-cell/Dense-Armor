@@ -314,4 +314,5 @@ Dense-Armor takes inspiration from [River](https://riverml.xyz) (Montiel et al.,
 - Deep Learning: [Attention: how does a network look at the other steps of a sequence, and where is each piece in the library?](docs/neural/attention.md).
 - Deep Learning: [Composable attention: how do I make a network look at one sensor only when another one says it matters, and fuse two sensors through a few numbers?](docs/neural/composable_attention.md).
 - Deep Learning: [Continual learning: how do I keep a network from forgetting the past, and how do I measure what it remembers?](docs/neural/continual_learning.md).
+- Deep Learning: [Sparse mixture of experts and test-time compute: how do I make a network use only part of its parameters on each sample, and how do I spend more compute at inference to get a better answer?](docs/neural/moe_testtime.md).
 - Machine learning: [the families of `dense_armor.ml`](docs/ml/index.md), grown on the whole table: statistics, preprocessing, linear models, trees, forests, ensembles, anomaly and change detection, vision.

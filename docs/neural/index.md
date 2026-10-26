@@ -368,6 +368,10 @@ The bounds `-0.7071` and `+0.7071` are `sqrt(6 / (8 + 4))`; the two values print
 
 The left panel is the five activations on `x` in `[-4, 4]`, the right panel the derivative of each one as the code `backward` returns it.
 
+## See also
+
+- [Sparse mixture of experts and test-time compute: how do I make a network use only part of its parameters on each sample, and how do I spend more compute at inference to get a better answer?](moe_testtime.md)
+
 ## Details
 
 ### References

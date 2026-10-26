@@ -224,6 +224,7 @@ nav:
       - Deep: neural/deep.md
       - Composable attention: neural/composable_attention.md
       - Continual learning: neural/continual_learning.md
+      - Mixture of experts and test-time compute: neural/moe_testtime.md
   - Library:
       - Home: index.md
       - Getting Started: getting-started.md
