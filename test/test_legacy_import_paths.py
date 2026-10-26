@@ -26,7 +26,6 @@ PAIRS = [
     ("utility.kinematic_controller", "control.kinematic_controller"),
     ("utility.rate_limiter", "control.rate_limiter"),
     ("utility.trajectory", "control.trajectory"),
-    ("utility.anwav", "misc.anwav"),
     ("utility.collatz", "misc.collatz"),
     ("utility.metro", "misc.metro"),
     ("utility.iodat", "misc.iodat"),

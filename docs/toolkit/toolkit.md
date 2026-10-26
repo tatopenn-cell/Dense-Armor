@@ -9,7 +9,7 @@ participates in the anomaly shield. Generic tools for JAX / NumPy pipelines.
 Every example below was run before being written down. Each module is tested on its
 own (`test/test_chunk.py`, `test_compiler.py`, `test_memory.py`, `test_preset.py`,
 `test_tensor.py`, `test_noise.py`, `test_vector.py`, `test_profiler.py`,
-`test_visualizer.py`, `test_logger.py`, `test_anwav.py`, `test_diagnostic.py`,
+`test_visualizer.py`, `test_logger.py`, `test_diagnostic.py`,
 `test_iodat.py`, `test_resonance_search.py`).
 
 ## Pipeline and chunking
