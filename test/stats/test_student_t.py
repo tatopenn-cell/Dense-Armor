@@ -176,6 +176,43 @@ def test_score_one_is_negative_logpdf():
         assert abs(score + logpdf) < 1e-12
 
 
+def test_fit_equals_learn_one():
+    x = _t_series(5.0, 0.0, 1.0, 200, SEED)
+    samples = [{"x": float(v)} for v in x]
+    a = StudentT(nu=5.0, learning_rate=0.1)
+    a.fit(samples)
+    b = StudentT(nu=5.0, learning_rate=0.1)
+    for s in samples:
+        b.learn_one(s)
+    assert a.n_ == b.n_ == 200
+    assert abs(a.mu_ - b.mu_) < 1e-15
+    assert abs(a.log_sigma_ - b.log_sigma_) < 1e-15
+    assert a.n_missing_ == b.n_missing_
+
+
+def test_fit_epochs_two_passes():
+    samples = [{"x": float(v)} for v in [1.0, 2.0, 3.0, 4.0, 5.0]]
+    a = StudentT(nu=5.0, learning_rate=0.1)
+    a.fit(samples, epochs=2)
+    b = StudentT(nu=5.0, learning_rate=0.1)
+    for _ in range(2):
+        for s in samples:
+            b.learn_one(s)
+    assert a.n_ == b.n_ == 10
+    assert abs(a.mu_ - b.mu_) < 1e-15
+
+
+def test_fit_y_param_passed_through():
+    samples = [{"x": 1.0}, {"x": 2.0}, {"x": 3.0}]
+    labels = [0.0, 0.0, 0.0]
+    a = StudentT(nu=5.0, learning_rate=0.1)
+    a.fit(samples, y=labels)
+    b = StudentT(nu=5.0, learning_rate=0.1)
+    for s, y in zip(samples, labels):
+        b.learn_one(s, y=y)
+    assert abs(a.mu_ - b.mu_) < 1e-15
+
+
 def test_check_estimator():
     skip = {}
     check_estimator(StudentT(nu=5.0), allow_not_applicable=skip)
