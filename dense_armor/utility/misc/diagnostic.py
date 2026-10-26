@@ -1,7 +1,33 @@
+"""Differential analysis of two audio signals.
+
+``diag`` compares an original signal and a filtered version of it, both
+as file paths (WAV) or as NumPy arrays, and returns a small dictionary
+of statistics:
+
+- ``fidelity``: percentage of the original energy that survives in the
+  filtered signal, ``(1 - sum(diff^2) / sum(orig^2)) * 100``. A filter
+  that only scales the signal by 0.98 gives 99.96.
+- ``removed_energy``: variance of the difference, computed with
+  :class:`dense_armor.utility.stats.RunningMoments` as if it were a
+  stream.
+- ``peak_distortion_db``: the peak of the removed component in dBFS,
+  ``20 * log10(max|diff|)``. ``-99.0`` when the difference is zero.
+- ``modulation_rate``: the fraction of samples where ``|diff|`` exceeds
+  ``threshold``, in percent.
+- ``verdict``: a one-word label for the fidelity. ``"micro_edits"``
+  above 99.5, ``"balanced"`` between 95 and 99.5, ``"aggressive"``
+  below 95.
+
+The output has no side effect: the earlier version printed the result
+to stdout and this version returns it.
+"""
+
 import os
 
 import numpy as np
 from scipy.io import wavfile
+
+from dense_armor.utility.stats import RunningMoments
 
 
 def _unit(a: np.ndarray) -> np.ndarray:
@@ -14,14 +40,34 @@ def _unit(a: np.ndarray) -> np.ndarray:
     return (a.astype(np.float32) - offset) / half
 
 
-def diag(iorig: str | np.ndarray, ifilt: str | np.ndarray) -> dict[str, float] | None:
-    """Esegue un'analisi differenziale profonda accettando sia percorsi file (str) che array NumPy."""
+def diag(
+    iorig: str | np.ndarray,
+    ifilt: str | np.ndarray,
+    threshold: float = 0.05,
+) -> dict[str, float | str] | None:
+    """Compare two signals and return the differential statistics.
+
+    Args:
+        iorig: the original signal, as a WAV path or a NumPy array.
+        ifilt: the filtered signal, same kind as ``iorig``.
+        threshold: absolute difference above which a sample counts as
+            modified. Default ``0.05``.
+
+    Returns:
+        A dict with keys ``fidelity``, ``removed_energy``,
+        ``peak_distortion_db``, ``modulation_rate``, ``verdict``. The
+        first four are floats, the fifth is a string. ``None`` if one
+        of the two paths does not exist.
+
+    Raises:
+        TypeError: if one argument is a path and the other an array.
+        ValueError: if the two WAV files have different sample rates.
+    """
     if isinstance(iorig, str) != isinstance(ifilt, str):
         raise TypeError("diag takes two file paths or two arrays, not one of each")
     if isinstance(iorig, str) and isinstance(ifilt, str):
         if not os.path.exists(iorig) or not os.path.exists(ifilt):
-            print("[ERR] Uno dei file audio non è presente.")
-            return
+            return None
         sr1, d_ori = wavfile.read(iorig)
         sr2, d_flt = wavfile.read(ifilt)
         if sr1 != sr2:
@@ -42,39 +88,29 @@ def diag(iorig: str | np.ndarray, ifilt: str | np.ndarray) -> dict[str, float] |
     v_flt = v_flt[:mlen]
 
     v_dff = v_ori - v_flt
-    v_rem = float(np.var(v_dff))
+    rm = RunningMoments()
+    rm.fit([{"x": float(d)} for d in v_dff])
+    v_rem = float(rm.var) if rm.count > 1 else 0.0
     fdel = (
-        (1.0 - (np.sum(v_dff**2) / np.sum(v_ori**2))) * 100.0
+        (1.0 - (float(np.sum(v_dff**2)) / float(np.sum(v_ori**2)))) * 100.0
         if np.sum(v_ori**2) > 0
         else 0.0
     )
-    pk_df = float(np.max(np.abs(v_dff))) if len(v_dff) > 0 else 0.0
-    pk_db = 20 * np.log10(pk_df) if pk_df > 0 else -99.0
-    alter = float(np.mean(np.abs(v_dff) > 0.05) * 100.0) if len(v_dff) > 0 else 0.0
-
-    print("=" * 85)
-    print("[DIAGNOSTICA DIFFERENZIALE STEREO] RE-ALLINEAMENTO COMPLETATO")
-    print("=" * 85)
-    print(f" -> Indice Strutturale di Fedeltà : {fdel:.4f}% (Portante preservata)")
-    print(f" -> Energia Totale Rimossa (Var)  : {v_rem:.4e}")
-    print(f" -> Picco di Distorsione Segato   : {pk_db:.2f} dBFS (Transiente massimo)")
-    print(f" -> Tasso Modulazione Reticolo    : {alter:.2f}% (Campioni modificati)")
-    print("-" * 85)
+    pk_df = float(np.max(np.abs(v_dff))) if v_dff.size > 0 else 0.0
+    pk_db = 20.0 * float(np.log10(pk_df)) if pk_df > 0 else -99.0
+    alter = float(np.mean(np.abs(v_dff) > threshold) * 100.0) if v_dff.size > 0 else 0.0
 
     if fdel > 99.5:
-        print("[VERDETTO DIAG] INTERVENTO CHIRURGICO: Solo micro-fruscii rimossi.")
+        verdict = "micro_edits"
     elif fdel >= 95.0:
-        print(
-            "[VERDETTO DIAG] RESTAURO EQUILIBRATO: Ottimo bilanciamento inter-canale."
-        )
+        verdict = "balanced"
     else:
-        print(
-            "[VERDETTO DIAG] MUTAZIONE AGGRESSIVA STEREO: Il Test 2 ha riscritto lo spazio dinamico."
-        )
-    print("=" * 85)
+        verdict = "aggressive"
+
     return {
-        "fedelta": fdel,
-        "energia_rimossa": v_rem,
-        "picco_distorsione_db": pk_db,
-        "tasso_modulazione": alter,
+        "fidelity": float(fdel),
+        "removed_energy": v_rem,
+        "peak_distortion_db": float(pk_db),
+        "modulation_rate": float(alter),
+        "verdict": verdict,
     }

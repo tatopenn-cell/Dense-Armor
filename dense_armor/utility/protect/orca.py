@@ -3,6 +3,7 @@ utility/orca.py
 Universal AI Orchestrator Shield (ORCA) -- orchestratore dinamico
 selettivo context-aware a 4 fasi.
 """
+
 import logging
 import time
 from collections import Counter, deque
@@ -18,7 +19,6 @@ from dense_armor.core.memory import UniversalMemoryGuard
 from dense_armor.core.noise import AIHardwareProfiler
 from dense_armor.utility.anomaly.curvature import curvature
 from dense_armor.utility.anomaly.resonance_search import apply_fast_resonance
-from dense_armor.utility.misc.collatz import ABCollatz
 from dense_armor.utility.protect.arbiter import route_and_correct
 
 logger = logging.getLogger(__name__)
@@ -40,10 +40,17 @@ class Orca:
     # viene tagliato, vedi _execute_4_phase_input_shield per il perche'.
     _CO_CHUNK_CLIP_MULT = 20.0
 
-    def __init__(self, static_threshold: float = 0.15, initial_damping: float = 0.85,
-                 alpha: float = 0.05, val_e: float = -4.0,
-                 chunk_threshold: int | None = None, min_free_ram_percentage: float = 0.15,
-                 reference_memory_size: int = 32, reference_recall_min_score: float = 0.90) -> None:
+    def __init__(
+        self,
+        static_threshold: float = 0.15,
+        initial_damping: float = 0.85,
+        alpha: float = 0.05,
+        val_e: float = -4.0,
+        chunk_threshold: int | None = None,
+        min_free_ram_percentage: float = 0.15,
+        reference_memory_size: int = 32,
+        reference_recall_min_score: float = 0.90,
+    ) -> None:
         """val_e — esponente di scala target per la compressione log10 in ingresso;
         chunk_threshold — dimensione oltre la quale un batch viene processato a blocchi;
         None (default) lo auto-deriva da AIHardwareProfiler (RAM/backend
@@ -65,18 +72,22 @@ class Orca:
             chunk_threshold = int(self._CHUNK_THRESHOLD_BASELINE * scale)
             logger.info(
                 "chunk_threshold auto-derivato da AIHardwareProfiler: %d (%s)",
-                chunk_threshold, profiler.get_profile_summary(),
+                chunk_threshold,
+                profiler.get_profile_summary(),
             )
         self.chunk_threshold = int(chunk_threshold)
         self.val_e = float(val_e)
         self.min_free_ram = min_free_ram_percentage
         self.reference_recall_min_score = float(reference_recall_min_score)
-        self.stabilizer = AdaptiveSignalStabilizer(static_threshold, initial_damping, alpha)
-        self.shield = ABCollatz(epsilon_target=1.0)
+        self.stabilizer = AdaptiveSignalStabilizer(
+            static_threshold, initial_damping, alpha
+        )
         self.last_kappa = 0.0
         # Guardia di memoria condivisa (RAM+VRAM), non piu' un check psutil
         # ad-hoc duplicato qui dentro (vedi _gc_se_ram_bassa).
-        self._memory_guard = UniversalMemoryGuard(min_free_ram_percentage=min_free_ram_percentage)
+        self._memory_guard = UniversalMemoryGuard(
+            min_free_ram_percentage=min_free_ram_percentage
+        )
         # Banca di riferimenti puliti visti in passato, una deque per shape
         # (le shape diverse non sono comparabili tra loro): quando il chiamante
         # fornisce x_reference, le sue righe vengono ricordate qui; in modalita'
@@ -94,10 +105,14 @@ class Orca:
         # margine d'errore (come la covarianza di Kalman, ma definito semplicemente
         # come |valore_ricevuto - valore_corretto|: quanto piu' lo scudo ha dovuto
         # spostare un valore, tanto meno ci si deve fidare del risultato in quel punto)
-        self.margine_ingresso = None       # array, stessa forma dell'input: incertezza in SPAZIO INPUT
+        self.margine_ingresso = (
+            None  # array, stessa forma dell'input: incertezza in SPAZIO INPUT
+        )
         self.margine_ingresso_medio = 0.0
         self.margine_ingresso_max = 0.0
-        self.margine_uscita = None         # array, stessa forma dell'output: incertezza in SPAZIO OUTPUT
+        self.margine_uscita = (
+            None  # array, stessa forma dell'output: incertezza in SPAZIO OUTPUT
+        )
         self.margine_uscita_medio = 0.0
         self.margine_uscita_max = 0.0
 
@@ -109,8 +124,10 @@ class Orca:
         # la correzione. I due segnali sono complementari, non ridondanti:
         # una correzione piccola con incertezza alta e' un caso ambiguo che
         # e' andato bene per caso, non uno davvero sicuro.
-        self.etichette_arbitro = None      # array di stringhe 'clean'/'spike'/'regime', stessa forma dell'input
-        self.incertezza_arbitro = None     # array 0..1, stessa forma dell'input
+        self.etichette_arbitro = (
+            None  # array di stringhe 'clean'/'spike'/'regime', stessa forma dell'input
+        )
+        self.incertezza_arbitro = None  # array 0..1, stessa forma dell'input
         self.incertezza_arbitro_media = 0.0
         # Memoria dei TIPI di corruzione gia' visti per ogni shape (non solo
         # i riferimenti puliti per forma, gia' in _reference_bank) -- un
@@ -132,7 +149,9 @@ class Orca:
         piuttosto che un OOM del processo qualche chunk piu' avanti."""
         self._memory_guard.check_memory_safety()
 
-    def _recall_reference(self, row_corrupted_flat: np.ndarray, slice_shape: tuple) -> np.ndarray | None:
+    def _recall_reference(
+        self, row_corrupted_flat: np.ndarray, slice_shape: tuple
+    ) -> np.ndarray | None:
         """Cerca nella banca dei riferimenti puliti (stessa shape) quello piu'
         simile all'input corrotto corrente via apply_fast_resonance. Ritorna
         None (nessun richiamo) se la banca per questa shape e' vuota o se il
@@ -149,11 +168,15 @@ class Orca:
             return None
         return candidates[best_idx]
 
-    def _remember_reference(self, x_reference_np: np.ndarray, slice_shape: tuple) -> None:
+    def _remember_reference(
+        self, x_reference_np: np.ndarray, slice_shape: tuple
+    ) -> None:
         """Registra ogni riga di un riferimento pulito fornito dal chiamante
         nella banca (una deque a dimensione fissa per shape, FIFO -- i piu'
         vecchi escono quando se ne aggiungono di nuovi oltre reference_memory_size)."""
-        bank = self._reference_bank.setdefault(slice_shape, deque(maxlen=self._reference_memory_size))
+        bank = self._reference_bank.setdefault(
+            slice_shape, deque(maxlen=self._reference_memory_size)
+        )
         for b in range(x_reference_np.shape[0]):
             bank.append(np.asarray(x_reference_np[b].flatten(), dtype=np.float64))
 
@@ -165,7 +188,9 @@ class Orca:
         vedi _aggiorna_memoria_corruzione)."""
         return self._corruption_type_memory.get(slice_shape, Counter())
 
-    def _aggiorna_memoria_corruzione(self, etichette_riga: np.ndarray, slice_shape: tuple) -> None:
+    def _aggiorna_memoria_corruzione(
+        self, etichette_riga: np.ndarray, slice_shape: tuple
+    ) -> None:
         """Aggiorna il Counter dei tipi di corruzione per questa shape con le
         etichette osservate in una riga -- chiamato solo quando x_reference
         e' noto (l'unico caso in cui l'arbitro ha un bersaglio vero contro
@@ -174,7 +199,10 @@ class Orca:
         counter.update(etichette_riga.tolist())
 
     def _applica_arbitro(
-        self, co_row_flat: np.ndarray, purified_row_flat: np.ndarray, radius: int = 10,
+        self,
+        co_row_flat: np.ndarray,
+        purified_row_flat: np.ndarray,
+        radius: int = 10,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Instrada ogni punto verso il correttore giusto invece di uno
         solo per l'intera riga (vedi utility/arbiter.py e
@@ -201,7 +229,8 @@ class Orca:
         co_safe = np.where(np.isfinite(co_row_flat), co_row_flat, purified_row_flat)
         arbiter_out, etichette, incertezza = route_and_correct(co_safe, radius=radius)
         corretto = np.where(
-            etichette == "spike", arbiter_out,
+            etichette == "spike",
+            arbiter_out,
             np.where(etichette == "regime", co_safe, purified_row_flat),
         )
         return corretto, etichette, incertezza
@@ -250,12 +279,12 @@ class Orca:
         """Solo la combinazione elementwise finale dello scudo entrata
         (jnp.where/aritmetica pura), precompilata una sola volta. f1 e gate
         restano calcolati con chiamate EAGER separate (filter_batch_scenarios/
-        compute_damping_gating fanno calibrazione e conversioni numpy
+        la calibrazione e le conversioni numpy
         interne -- non sono componibili dentro un jax.jit esterno, provato:
         TracerArrayConversionError).
 
         hard_clamp_mask (calcolato dal chiamante su cl_chunk_raw/co_chunk_raw,
-        PRIMA di qualunque compressione log10): dove True, il gate ABC/Collatz
+        PRIMA di qualunque compressione log10): dove True, il gate dinamico (rimosso in v1.1.0)
         (potenzialmente ingannato da un segnale gia' ammortizzato) viene
         bypassato e forzato a 0.99 -- protocollo di emergenza per le
         macro-anomalie individuate sui dati originali (non su quelli gia'
@@ -270,17 +299,26 @@ class Orca:
         candidate = f1 - (gt * diff)
         return jnp.where(jnp.isnan(candidate), c_chunk, candidate)
 
-    def _run_output_shield_kernel(self, ai_output_flat: jnp.ndarray, ref_flat: jnp.ndarray) -> tuple:
+    def _run_output_shield_kernel(
+        self, ai_output_flat: jnp.ndarray, ref_flat: jnp.ndarray
+    ) -> tuple:
         """Pipeline JAX pura dello scudo uscita, isolata per essere
         precompilata una sola volta (vedi _compiled_output_shield_kernel)."""
         final_hardened_flat = apply_damping_blend(ai_output_flat, ref_flat)
-        final_hardened_flat = jnp.where(jnp.isnan(final_hardened_flat), 0.0, final_hardened_flat)
+        final_hardened_flat = jnp.where(
+            jnp.isnan(final_hardened_flat), 0.0, final_hardened_flat
+        )
         raw_out_noto = jnp.isfinite(ai_output_flat)
-        margine = jnp.where(raw_out_noto, jnp.abs(ai_output_flat - final_hardened_flat),
-                             jnp.abs(final_hardened_flat))
+        margine = jnp.where(
+            raw_out_noto,
+            jnp.abs(ai_output_flat - final_hardened_flat),
+            jnp.abs(final_hardened_flat),
+        )
         return final_hardened_flat, margine
 
-    def _execute_4_phase_input_shield(self, cl_chunk_raw: np.ndarray, co_chunk_raw: np.ndarray) -> tuple:
+    def _execute_4_phase_input_shield(
+        self, cl_chunk_raw: np.ndarray, co_chunk_raw: np.ndarray
+    ) -> tuple:
         """Le 4 fasi dello scudo entrata su un chunk flat gia' pronto; ritorna (decompresso, margine)."""
         v64_cl, v64_co = np.float64(cl_chunk_raw), np.float64(co_chunk_raw)
         # Sbarramento di sicurezza: intensita' del rumore sui dati GREZZI
@@ -342,7 +380,7 @@ class Orca:
         # a un multiplo ampio della scala target: la variazione normale
         # (co vicino a cl) resta ben dentro il margine, il salto patologico
         # viene spento qualunque ne sia la causa esatta.
-        clip_bound = self._CO_CHUNK_CLIP_MULT * (10.0 ** self.val_e)
+        clip_bound = self._CO_CHUNK_CLIP_MULT * (10.0**self.val_e)
         co_chunk_np = np.clip(co_chunk_np, -clip_bound, clip_bound)
         c_chunk = jnp.array(c_chunk_np).reshape(1, -1)
         co_chunk = jnp.array(co_chunk_np).reshape(1, -1)
@@ -355,7 +393,9 @@ class Orca:
         # contaminando i campioni successivi (verificato: senza questo,
         # 3 campioni normali dopo un picco enorme restavano contaminati
         # per centinaia/migliaia di unita').
-        ref = self.stabilizer.filter_batch_scenarios(co_chunk, hard_clamp_mask=hard_clamp_mask)
+        ref = self.stabilizer.filter_batch_scenarios(
+            co_chunk, hard_clamp_mask=hard_clamp_mask
+        )
         # isfinite (non solo isnan): col fattore condiviso co_chunk non e'
         # piu' garantito restare vicino a 10^val_e per corruzioni estreme --
         # un overflow (Inf, non NaN) deve essere intercettato qui altrimenti
@@ -365,14 +405,21 @@ class Orca:
         # non su f1 (gia' ammortizzato dallo Stadio 1) -- altrimenti l'ABC
         # gating giudica quanto e' anomalo un segnale che e' gia' stato in
         # parte corretto, sottostimando l'anomalia originale.
-        gate = self.shield.compute_damping_gating(co_chunk, c_chunk)
+        # Gate costante, dichiarato. La storia e' nel CHANGELOG
+        # (v1.1.0) e nel commit che ha rimosso collatz.py: il gate
+        # dinamico basato sul radicale di Collatz non era
+        # discriminante (il radicale di un intero non ha relazione
+        # monotona con la sua grandezza, quindi saturava a 0.85
+        # anche con rumore nullo), e la variante continua faceva
+        # peggio della costante su 6 scenari su 7 (RMSE).
+        gate = jnp.full_like(co_chunk, 0.85)
         fh = self._compiled_input_shield_kernel(
             f1, c_chunk, gate, jnp.float32(self.initial_damping), hard_clamp_mask
         )
 
         self.last_kappa = float(curvature(fh.flatten(), c_chunk.flatten()))
         jax.block_until_ready(fh)
-        
+
         # niente clamp a zero qui: col segno preservato sopra, fh puo' legittimamente
         # essere negativo -- azzerarlo cancellerebbe dati puliti validi (vedi test)
         filtered_enc_np = np.array(fh).flatten()
@@ -385,11 +432,15 @@ class Orca:
         # (incertezza massima onesta, MAI NaN -- altrimenti la media/max collassano
         # a NaN proprio nei casi in cui lo scudo dovrebbe essere piu' utile).
         raw_noto = np.isfinite(v64_co)
-        margine_chunk = np.where(raw_noto, np.abs(v64_co - dec_chunk), np.abs(dec_chunk))
+        margine_chunk = np.where(
+            raw_noto, np.abs(v64_co - dec_chunk), np.abs(dec_chunk)
+        )
         del c_chunk, co_chunk, fh, filtered_enc_np
         return dec_chunk, margine_chunk
 
-    def _execute_4_phase_input_shield_batch(self, cl_batch_raw: np.ndarray, co_batch_raw: np.ndarray) -> tuple:
+    def _execute_4_phase_input_shield_batch(
+        self, cl_batch_raw: np.ndarray, co_batch_raw: np.ndarray
+    ) -> tuple:
         """Versione vettorizzata di _execute_4_phase_input_shield: cl_batch_raw/
         co_batch_raw hanno shape (B, F) -- B righe indipendenti processate in
         UNA chiamata invece di B chiamate separate (era il collo di bottiglia
@@ -407,7 +458,10 @@ class Orca:
         # rompeva il caso B=1,F=1 (shape (1,1) -> () -> IndexError piu' a
         # valle in filter_batch_scenarios_independent su original_shape[0]).
         # astype preserva sempre la shape, per qualunque n di elementi.
-        v64_cl, v64_co = cl_batch_raw.astype(np.float64), co_batch_raw.astype(np.float64)
+        v64_cl, v64_co = (
+            cl_batch_raw.astype(np.float64),
+            co_batch_raw.astype(np.float64),
+        )
         raw_noise = np.abs(v64_co - v64_cl)
         mask_cl = v64_cl != 0.0
         exp10_cl = np.where(mask_cl, np.log10(np.abs(v64_cl) + 1e-15), 0.0)
@@ -415,15 +469,24 @@ class Orca:
         fact_shared = np.where(mask_cl, 10 ** (self.val_e - exp10_cl), 1.0)
         c_chunk_np = v64_cl * fact_shared
         co_chunk_np = v64_co * fact_shared
-        clip_bound = self._CO_CHUNK_CLIP_MULT * (10.0 ** self.val_e)
+        clip_bound = self._CO_CHUNK_CLIP_MULT * (10.0**self.val_e)
         co_chunk_np = np.clip(co_chunk_np, -clip_bound, clip_bound)
         c_chunk = jnp.array(c_chunk_np)
         co_chunk = jnp.array(co_chunk_np)
         hard_clamp_mask = jnp.array(raw_noise > 0.05)
 
-        ref = self.stabilizer.filter_batch_scenarios_independent(co_chunk, hard_clamp_mask=hard_clamp_mask)
+        ref = self.stabilizer.filter_batch_scenarios_independent(
+            co_chunk, hard_clamp_mask=hard_clamp_mask
+        )
         f1 = jnp.where(jnp.isfinite(ref), ref, c_chunk)
-        gate = self.shield.compute_damping_gating(co_chunk, c_chunk)
+        # Gate costante, dichiarato. La storia e' nel CHANGELOG
+        # (v1.1.0) e nel commit che ha rimosso collatz.py: il gate
+        # dinamico basato sul radicale di Collatz non era
+        # discriminante (il radicale di un intero non ha relazione
+        # monotona con la sua grandezza, quindi saturava a 0.85
+        # anche con rumore nullo), e la variante continua faceva
+        # peggio della costante su 6 scenari su 7 (RMSE).
+        gate = jnp.full_like(co_chunk, 0.85)
         fh = self._compiled_input_shield_kernel(
             f1, c_chunk, gate, jnp.float32(self.initial_damping), hard_clamp_mask
         )
@@ -439,22 +502,31 @@ class Orca:
         filtered_enc_np = np.array(fh)
         dec_batch = filtered_enc_np / fact_shared
         raw_noto = np.isfinite(v64_co)
-        margine_batch = np.where(raw_noto, np.abs(v64_co - dec_batch), np.abs(dec_batch))
+        margine_batch = np.where(
+            raw_noto, np.abs(v64_co - dec_batch), np.abs(dec_batch)
+        )
         del c_chunk, co_chunk, fh, filtered_enc_np
         return dec_batch, margine_batch
 
-    def _execute_4_phase_output_shield(self, ai_output: jnp.ndarray, output_reference: jnp.ndarray) -> tuple:
+    def _execute_4_phase_output_shield(
+        self, ai_output: jnp.ndarray, output_reference: jnp.ndarray
+    ) -> tuple:
         """Le 4 fasi dello scudo uscita; ritorna (output_corretto, margine), stessa shape di ai_output."""
         orig_shape = ai_output.shape
         B = orig_shape[0]
-        ai_output_flat, ref_flat = ai_output.reshape(B, -1), output_reference.reshape(B, -1)
+        ai_output_flat, ref_flat = (
+            ai_output.reshape(B, -1),
+            output_reference.reshape(B, -1),
+        )
         if ai_output_flat.shape != ref_flat.shape:
             # riferimento incompatibile: auto-consistenza cieca invece di azzerare tutto
             ref_flat = self.stabilizer.filter_batch_scenarios(ai_output_flat)
         # margine d'errore in SPAZIO OUTPUT: quanto la risposta grezza del modello
         # e' stata corretta dal blending -- stessa logica dello scudo entrata (mai
         # NaN anche se il modello produce output non finito)
-        final_hardened_flat, margine_flat = self._compiled_output_shield_kernel(ai_output_flat, ref_flat)
+        final_hardened_flat, margine_flat = self._compiled_output_shield_kernel(
+            ai_output_flat, ref_flat
+        )
         x_final = final_hardened_flat.reshape(orig_shape)
         margine = margine_flat.reshape(orig_shape)
         jax.block_until_ready(x_final)
@@ -484,7 +556,9 @@ class Orca:
         aggiorna anche tipi_corruzione_visti(slice_shape)."""
         is_simple_data_test = ai_model_callable is None or not use_model_injection
         if is_simple_data_test:
-            logger.info("CONTRAZIONE LOGICA DETECTED: Riconosciuto Test di Protezione Dati Semplice (No IA Model).")
+            logger.info(
+                "CONTRAZIONE LOGICA DETECTED: Riconosciuto Test di Protezione Dati Semplice (No IA Model)."
+            )
             use_model_injection = False
 
         # Un array 1D (es. una singola serie da sensore/pipeline) NON e' un
@@ -493,7 +567,7 @@ class Orca:
         # veniva processato da solo (slice_shape=()), azzerando il contesto
         # su cui si basa il rilevamento outlier in modalita' cieca (senza
         # x_reference) -- il caso d'uso principale documentato nel README.
-        was_1d = (x_corrupted.ndim == 1)
+        was_1d = x_corrupted.ndim == 1
         if was_1d:
             x_corrupted = np.asarray(x_corrupted).reshape(1, -1)
             if x_reference is not None:
@@ -503,9 +577,11 @@ class Orca:
         B = orig_shape[0]
         slice_shape = orig_shape[1:]
         t_start = time.time()
-        
+
         if use_input_shield:
-            logger.info("Attivazione SCUDO ENTRATA (4 Fasi) su Ipervolume: %s", orig_shape)
+            logger.info(
+                "Attivazione SCUDO ENTRATA (4 Fasi) su Ipervolume: %s", orig_shape
+            )
             x_corrupted_np = np.array(x_corrupted)
             if x_reference is None:
                 x_reference_np = np.zeros_like(x_corrupted_np)
@@ -515,7 +591,9 @@ class Orca:
                     if recalled is not None:
                         x_reference_np[b] = recalled.reshape(slice_shape)
                     else:
-                        x_reference_np[b] = self._blind_reference(row_flat).reshape(slice_shape)
+                        x_reference_np[b] = self._blind_reference(row_flat).reshape(
+                            slice_shape
+                        )
             else:
                 x_reference_np = np.array(x_reference)
                 self._remember_reference(x_reference_np, slice_shape)
@@ -533,7 +611,9 @@ class Orca:
                 # dalle altre a questo stadio (nessuno stato condiviso tra
                 # righe qui: _reference_bank/_corruption_type_memory non
                 # sono toccati in questo blocco).
-                out_batch, marg_batch = self._execute_4_phase_input_shield_batch(flat_cl_all, flat_co_all)
+                out_batch, marg_batch = self._execute_4_phase_input_shield_batch(
+                    flat_cl_all, flat_co_all
+                )
                 purified_batch = out_batch.reshape(orig_shape)
                 margine_batch = marg_batch.reshape(orig_shape)
                 self._gc_se_ram_bassa()
@@ -547,7 +627,11 @@ class Orca:
                     c_size = self.chunk_threshold
                     for start_idx in range(0, total_elements, c_size):
                         end_idx = min(start_idx + c_size, total_elements)
-                        purified_chunk, margine_chunk = self._execute_4_phase_input_shield(flat_cl[start_idx:end_idx], flat_co[start_idx:end_idx])
+                        purified_chunk, margine_chunk = (
+                            self._execute_4_phase_input_shield(
+                                flat_cl[start_idx:end_idx], flat_co[start_idx:end_idx]
+                            )
+                        )
                         out_flat[start_idx:end_idx] = purified_chunk
                         margine_flat[start_idx:end_idx] = margine_chunk
                         self._gc_se_ram_bassa()
@@ -560,7 +644,9 @@ class Orca:
                 for b in range(B):
                     co_flat = x_corrupted_np[b].flatten()
                     pur_flat = purified_batch[b].flatten()
-                    corretto_flat, etichette_flat, incertezza_flat = self._applica_arbitro(co_flat, pur_flat)
+                    corretto_flat, etichette_flat, incertezza_flat = (
+                        self._applica_arbitro(co_flat, pur_flat)
+                    )
                     purified_batch[b] = corretto_flat.reshape(slice_shape)
                     etichette_batch[b] = etichette_flat.reshape(slice_shape)
                     incertezza_batch[b] = incertezza_flat.reshape(slice_shape)
@@ -574,10 +660,16 @@ class Orca:
             self.margine_ingresso = margine_batch
             self.margine_ingresso_medio = float(np.mean(margine_batch))
             self.margine_ingresso_max = float(np.max(margine_batch))
-            logger.info("Input purificato in %.3fs. Margine d'errore: medio=%.4g, max=%.4g",
-                        time.time() - t_start, self.margine_ingresso_medio, self.margine_ingresso_max)
+            logger.info(
+                "Input purificato in %.3fs. Margine d'errore: medio=%.4g, max=%.4g",
+                time.time() - t_start,
+                self.margine_ingresso_medio,
+                self.margine_ingresso_max,
+            )
         else:
-            logger.info("SCUDO ENTRATA disattivato. I dati transitano senza pre-filtri.")
+            logger.info(
+                "SCUDO ENTRATA disattivato. I dati transitano senza pre-filtri."
+            )
             x_for_model = jnp.array(x_corrupted)
             self.margine_ingresso = None
             self.margine_ingresso_medio = self.margine_ingresso_max = 0.0
@@ -586,9 +678,15 @@ class Orca:
             t_ia = time.time()
             ai_output = ai_model_callable(x_for_model)
             jax.block_until_ready(ai_output)
-            logger.info("Risposta IA ottenuta in %.3fs. Shape Output: %s", time.time() - t_ia, ai_output.shape)
+            logger.info(
+                "Risposta IA ottenuta in %.3fs. Shape Output: %s",
+                time.time() - t_ia,
+                ai_output.shape,
+            )
         else:
-            logger.info("INIEZIONE MODELLO bypassata. I dati purificati procedono verso la barriera spettrale.")
+            logger.info(
+                "INIEZIONE MODELLO bypassata. I dati purificati procedono verso la barriera spettrale."
+            )
             ai_output = x_for_model
 
         if use_output_shield:
@@ -604,13 +702,20 @@ class Orca:
                 # nessun riferimento pulito noto: auto-consistenza cieca sull'output
                 # stesso (stesso stabilizzatore della Fase 1, applicato qui all'uscita)
                 output_reference = self.stabilizer.filter_batch_scenarios(
-                    ai_output.reshape(ai_output.shape[0], -1)).reshape(ai_output.shape)
-            x_final, margine_out = self._execute_4_phase_output_shield(ai_output, output_reference)
+                    ai_output.reshape(ai_output.shape[0], -1)
+                ).reshape(ai_output.shape)
+            x_final, margine_out = self._execute_4_phase_output_shield(
+                ai_output, output_reference
+            )
             self.margine_uscita = np.array(margine_out)
             self.margine_uscita_medio = float(jnp.mean(margine_out))
             self.margine_uscita_max = float(jnp.max(margine_out))
-            logger.info("Output rinormalizzato in %.3fs. Margine d'errore: medio=%.4g, max=%.4g",
-                        time.time() - t_out, self.margine_uscita_medio, self.margine_uscita_max)
+            logger.info(
+                "Output rinormalizzato in %.3fs. Margine d'errore: medio=%.4g, max=%.4g",
+                time.time() - t_out,
+                self.margine_uscita_medio,
+                self.margine_uscita_max,
+            )
         else:
             logger.info("SCUDO USCITA disattivato. Emissione del flusso lineare.")
             x_final = ai_output
@@ -628,5 +733,8 @@ class Orca:
             if self.incertezza_arbitro is not None:
                 self.incertezza_arbitro = self.incertezza_arbitro.reshape(-1)
 
-        logger.info("Transito concluso. Sistema sigillato in %.3f secondi totali.", time.time() - t_start)
+        logger.info(
+            "Transito concluso. Sistema sigillato in %.3f secondi totali.",
+            time.time() - t_start,
+        )
         return x_final

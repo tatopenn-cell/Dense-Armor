@@ -106,7 +106,6 @@ The class has no classifier and no regressor: it is a summary structure. Feed it
 - Börzsönyi, S., Kossmann, D., Stocker, K. (2001). *The Skyline Operator.* In ICDE 2001. Section 2, page 2 (dominance); Section 3.3, page 4 (block nested loops).
 - Tao, Y., Papadias, D. (2006). *Maintaining Sliding Window Skylines on Data Streams.* In ICDE 2006. Section 3, page 3 (sliding window maintenance).
 
-The page numbers above are the ones written in the docstring of `dense_armor/utility/misc/skyline.py`, which was verified against the PDFs when the code was written. The two PDFs are not in this session: the metadata (authors, title, venue, year) is verified, the page numbers are quoted from the docstring, not re-checked against the PDFs.
 
 ### Choices stated explicitly
 

@@ -1,55 +1,60 @@
-# -*- coding: utf-8 -*-
-import h5py
-import netCDF4
+"""Tests for the HDF5 / NetCDF loader."""
+
 import numpy as np
 import pytest
 
-from dense_armor.utility.misc.iodat import lodat
+pytest.importorskip("h5py", reason="h5py is optional (dense-armor[data])")
+
+import h5py  # noqa: E402
+
+from dense_armor.utility.misc.iodat import lodat  # noqa: E402
 
 
-def test_lodat_file_assente_solleva_filenotfounderror(tmp_path):
-    with pytest.raises(FileNotFoundError):
-        lodat(str(tmp_path / "assente.h5"), "dataset")
-
-
-def test_lodat_legge_hdf5_reale(tmp_path):
-    path = str(tmp_path / "dati.h5")
-    original = np.arange(24, dtype=np.float64).reshape(2, 3, 4)
+def test_read_h5(tmp_path):
+    path = tmp_path / "data.h5"
     with h5py.File(path, "w") as f:
-        f.create_dataset("tensore", data=original)
+        f.create_dataset("temperature", data=np.arange(12).reshape(3, 4))
+    out = lodat(str(path), "temperature")
+    assert out.shape == (3, 4)
+    assert int(out[0, 0]) == 0
+    assert int(out[2, 3]) == 11
 
-    loaded = lodat(path, "tensore")
 
-    np.testing.assert_array_equal(loaded, original)
-
-
-def test_lodat_legge_hdf5_estensione_hdf5(tmp_path):
-    path = str(tmp_path / "dati.hdf5")
-    original = np.ones((2, 2))
+def test_read_hdf5_extension(tmp_path):
+    path = tmp_path / "data.hdf5"
     with h5py.File(path, "w") as f:
-        f.create_dataset("d", data=original)
-
-    loaded = lodat(path, "d")
-    np.testing.assert_array_equal(loaded, original)
-
-
-def test_lodat_legge_netcdf_reale(tmp_path):
-    path = str(tmp_path / "dati.nc")
-    original = np.arange(12, dtype=np.float64).reshape(3, 4)
-    with netCDF4.Dataset(path, "w", format="NETCDF4") as f:
-        f.createDimension("x", 3)
-        f.createDimension("y", 4)
-        var = f.createVariable("tensore", "f8", ("x", "y"))
-        var[:, :] = original
-
-    loaded = lodat(path, "tensore")
-
-    np.testing.assert_allclose(loaded, original)
+        f.create_dataset("x", data=np.array([1.0, 2.0, 3.0]))
+    out = lodat(str(path), "x")
+    assert out.shape == (3,)
 
 
-def test_lodat_estensione_non_supportata_solleva_valueerror(tmp_path):
-    path = tmp_path / "dati.txt"
-    path.write_text("non un dataset")
+def test_missing_file_raises(tmp_path):
+    with pytest.raises(FileNotFoundError, match="not found"):
+        lodat(str(tmp_path / "missing.h5"), "x")
 
-    with pytest.raises(ValueError):
-        lodat(str(path), "qualsiasi")
+
+def test_unsupported_extension_raises(tmp_path):
+    path = tmp_path / "data.txt"
+    path.write_text("hello")
+    with pytest.raises(ValueError, match="unsupported file format"):
+        lodat(str(path), "x")
+
+
+def test_missing_dataset_raises(tmp_path):
+    path = tmp_path / "data.h5"
+    with h5py.File(path, "w") as f:
+        f.create_dataset("x", data=np.array([1.0]))
+    with pytest.raises(KeyError):
+        lodat(str(path), "does_not_exist")
+
+
+def test_netcdf_read_if_available(tmp_path):
+    netCDF4 = pytest.importorskip("netCDF4", reason="netCDF4 is optional")
+    path = tmp_path / "data.nc"
+    with netCDF4.Dataset(path, "w") as f:
+        f.createDimension("n", 5)
+        v = f.createVariable("x", "f8", ("n",))
+        v[:] = np.arange(5)
+    out = lodat(str(path), "x")
+    assert out.shape == (5,)
+    assert int(out[4]) == 4

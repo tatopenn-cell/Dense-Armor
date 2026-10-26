@@ -9,7 +9,7 @@ participates in the anomaly shield. Generic tools for JAX / NumPy pipelines.
 Every example below was run before being written down. Each module is tested on its
 own (`test/test_chunk.py`, `test_compiler.py`, `test_memory.py`, `test_preset.py`,
 `test_tensor.py`, `test_noise.py`, `test_vector.py`, `test_profiler.py`,
-`test_visualizer.py`, `test_logger.py`, `test_anwav.py`, `test_diagnostic.py`,
+`test_visualizer.py`, `test_logger.py`, `test_diagnostic.py`,
 `test_iodat.py`, `test_resonance_search.py`).
 
 ## Pipeline and chunking
@@ -324,9 +324,9 @@ first twelve characters are shown; the rest is the same hash continued.
 
 ## Audio and data I/O
 
-**`diag(iorig, ifilt)`** compares two signals (file paths or NumPy arrays):
-structural fidelity, removed energy, distortion peak, and the fraction of samples that
-were modified.
+**`diag(iorig, ifilt, threshold=0.05)`** compares two signals (file paths or
+NumPy arrays): structural fidelity, removed energy, distortion peak, the fraction of
+samples that were modified, and a one-word verdict.
 
 ```python
 import numpy as np
@@ -337,18 +337,20 @@ orig = rng.normal(size=2000).astype(np.float32)
 filt = orig * 0.98
 result = diag(orig, filt)
 print(sorted(result.keys()))
-print(result["fedelta"])
+print(result["fidelity"], result["verdict"])
 ```
 
 ```
-['energia_rimossa', 'fedelta', 'picco_distorsione_db', 'tasso_modulazione']
-99.96
+['fidelity', 'modulation_rate', 'peak_distortion_db', 'removed_energy', 'verdict']
+99.96 micro_edits
 ```
 
-`fedelta` is the structural fidelity in percent: 99.96 % here, because the filter only
-scaled the signal by 0.98. `energia_rimossa`, `picco_distorsione_db` and
-`tasso_modulazione` give the removed energy, the peak of the removed component in
-dBFS, and the fraction of samples touched.
+`fidelity` is the structural fidelity in percent: 99.96 % here, because the filter
+only scaled the signal by 0.98. `removed_energy`, `peak_distortion_db` and
+`modulation_rate` give the removed energy (variance of the difference, computed with
+`RunningMoments`), the peak of the removed component in dBFS, and the fraction of
+samples touched. `verdict` summarises the fidelity: `micro_edits` above 99.5,
+`balanced` between 95 and 99.5, `aggressive` below 95.
 
 ::: dense_armor.utility.misc.diagnostic
 
