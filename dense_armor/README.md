@@ -28,7 +28,6 @@ Riferimento per chi vuole contribuire al codice, non per chi vuole solo installa
 | modulo | cosa fa |
 |---|---|
 | `orca.py` | `Orca` — lo scudo input/output a 4 fasi. Vedi README principale. |
-| `collatz.py` | `ABCollatz` — gating basato sulla congettura di Collatz, Stadio 2 di **Orca** (dalla v1.1.0 `Armatura` non lo usa più). Vedi sotto per il dettaglio dell'algoritmo, e CHANGELOG [1.0.10]/[1.1.0] per i suoi limiti noti. |
 | `curvature.py` | `curvature(x_current, x_reference, scale=1.0)` — calcola la derivata analitica esplicita di `sum((x-ref)²)`, normalizzata in `[0,1)`. Usata come misura di "quanto un punto si è allontanato" nello scudo di ingresso. `scale` fissa in unità reali il punto di saturazione (default 1.0, comportamento invariato); vedi `docs/api/curvature.md` per un caso reale (SO-101) in cui il default satura quasi subito e serve uno scale fisico per un segnale graduale. |
 | `metro.py` | `Metro` — scaler logaritmico anti-underflow: proietta un valore infinitesimo in uno spazio numerico visibile (`enc`) e lo riporta indietro (`dec`). Usato dal rilevatore di deriva lenta di `Armatura`. |
 | `resonance_search.py` | `apply_fast_resonance` — cerca pattern noti confrontando un vettore query con una matrice di riferimento, pesando coseno-similarità "base" e "post-blend" (via `damping_operator`). Usato anche da `Orca` per richiamare, in modalità cieca, un riferimento pulito già visto in passato e simile all'input corrotto corrente (`_recall_reference`/`_remember_reference`, soglia `reference_recall_min_score=0.90`). |
@@ -45,9 +44,6 @@ Due meccaniche del codice che vale la pena capire a fondo se ci si mette le mani
 
 **Fix: riferimento che attraversa lo zero**: `fact` dipende da `log10(|valore_pulito|)` — un riferimento pulito quasi-zero (anche solo un residuo di floating point, es. `sin(4π) ≈ -4.9e-16`, mai esattamente `0.0`) faceva esplodere `fact` e, con esso, il controvalore compresso del CORROTTO (che condivide lo stesso fattore ma non è vicino a zero) — un salto di ordini di grandezza rispetto ai punti vicini, sufficiente a sballare la memoria causale di `AdaptiveSignalStabilizer` per l'intero batch, non solo per quel punto. Due correzioni: (1) `exp10_cl` non viene più amplificato oltre la scala target (`val_e`) — un pulito già a/sotto quella scala non ha nulla da guadagnare da un fattore ancora più estremo; (2) il valore compresso del corrotto (`co_chunk`) viene comunque limitato a un multiplo ampio (20×) della scala target, indipendentemente dalla causa esatta del salto. Verificato: MSE su un riferimento sinusoidale che attraversa lo zero da ~9 (peggio della modalità cieca) a ~0.02 (`test/test_orca.py::test_riferimento_che_attraversa_lo_zero_non_esplode_piu`).
 
-**Radicale di Collatz** (`collatz.py`, `calculate_jax_rad`): calcola il prodotto dei fattori primi distinti di un numero, `rad(n) = exp(Σ log(p_i))`, usando l'esponenziale della somma dei logaritmi invece di un ciclo condizionale — questo lo rende differenziabile e vettorizzabile su GPU senza `if`/`while`, cosa che JAX non gestirebbe altrimenti in modo efficiente in un contesto JIT-compilato.
-
----
 
 ## `$ nota`
 
