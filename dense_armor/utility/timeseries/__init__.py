@@ -6,6 +6,7 @@ time and share the ``dense_armor.roles`` interface.
 
 from dense_armor.utility.timeseries.ar import OnlineAR, OnlineVAR
 from dense_armor.utility.timeseries.cycle import CycleResidual
+from dense_armor.utility.timeseries.garch import GARCH11
 from dense_armor.utility.timeseries.kalman import (
     InnovationAdaptiveKalman,
     KalmanFilter,
@@ -14,6 +15,7 @@ from dense_armor.utility.timeseries.kalman import (
 
 __all__ = [
     "CycleResidual",
+    "GARCH11",
     "InnovationAdaptiveKalman",
     "KalmanFilter",
     "OnlineAR",

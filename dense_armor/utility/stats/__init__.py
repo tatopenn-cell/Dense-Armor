@@ -1,4 +1,5 @@
 """Streaming statistics and sketches."""
+
 from dense_armor.utility.stats.dependence import (
     Autocorrelation,
     RollingCorrelation,
@@ -6,6 +7,7 @@ from dense_armor.utility.stats.dependence import (
     RunningCorrelation,
     RunningCovariance,
 )
+from dense_armor.utility.stats.mixture import OnlineGaussianMixture
 from dense_armor.utility.stats.moments import (
     EWStats,
     RunningMoments,
@@ -32,6 +34,7 @@ from dense_armor.utility.stats.sketches import (
     HyperLogLog,
     SpaceSaving,
 )
+from dense_armor.utility.stats.student_t import StudentT
 
 __all__ = [
     "Autocorrelation",
@@ -49,9 +52,11 @@ __all__ = [
     "RollingQuantile",
     "RunningCorrelation",
     "RunningCovariance",
+    "OnlineGaussianMixture",
     "RunningMoments",
     "RunningMomentsVector",
     "SpaceSaving",
+    "StudentT",
     "TDigest",
     "cosine_similarity",
     "cosine_similarity_many",

@@ -57,10 +57,10 @@ do.
 For a control loop that must decide *now*, the difference is between a
 system that works and a system that stalls.
 
-## Five families
+## Seven families
 
 Different streams need different summaries. The library groups the
-statistics into five families, one file per family, each with its own
+statistics into seven families, one file per family, each with its own
 guide page.
 
 | Family | The question it answers | Classes |
@@ -70,6 +70,8 @@ guide page.
 | Quantiles | Where is the 99th percentile of an unbounded stream? | `DDSketch`, `TDigest` |
 | Dependence | Do two channels move together? Does a signal repeat itself? | `RunningCovariance`, `RunningCorrelation`, `RollingCovariance`, `RollingCorrelation`, `Autocorrelation` |
 | Sketches | How many distinct items have I seen? Which items are frequent? | `CountMinSketch`, `HyperLogLog`, `BloomFilter`, `SpaceSaving` |
+| Student-t | What is the location when a few outliers would ruin the mean, with a full density around it? | `StudentT` |
+| Mixture | What if the samples come from more than one distribution? | `OnlineGaussianMixture` |
 
 Each guide page follows the same structure: an idea in plain words, a
 short runnable example, the mathematics behind the update, a small case

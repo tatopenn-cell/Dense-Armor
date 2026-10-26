@@ -43,6 +43,7 @@ breaks the pattern, the residual jumps.
 | a physical state with a model (position, velocity, bias) | the state is hidden, measurements are noisy | `KalmanFilter` | [kalman.md](kalman.md) |
 | the same, and the sensor noise itself changes | the noise covariance is not known | `VBAdaptiveKalman`, `InnovationAdaptiveKalman` | [kalman.md](kalman.md) |
 | a repeating motion (a pick-and-place cycle, a rotating joint) | the cycle is the normal | `CycleResidual` | [cycle.md](cycle.md) |
+| a return or a noise stream whose variance clusters | the variance is not constant | `GARCH11` | [garch.md](garch.md) |
 
 ## 3. The shared shape
 
