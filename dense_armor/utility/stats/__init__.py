@@ -7,6 +7,7 @@ from dense_armor.utility.stats.dependence import (
     RunningCorrelation,
     RunningCovariance,
 )
+from dense_armor.utility.stats.mixture import OnlineGaussianMixture
 from dense_armor.utility.stats.moments import (
     EWStats,
     RunningMoments,
@@ -51,6 +52,7 @@ __all__ = [
     "RollingQuantile",
     "RunningCorrelation",
     "RunningCovariance",
+    "OnlineGaussianMixture",
     "RunningMoments",
     "RunningMomentsVector",
     "SpaceSaving",
