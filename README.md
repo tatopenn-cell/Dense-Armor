@@ -277,6 +277,8 @@ The per-sample cost of the main estimators, measured by
 | Half-Space Trees (25 trees) | 1285.2 | 2412.3 |
 | ADWIN (`update`) | 9.5 | 16.2 |
 
+The Hoeffding Anytime tree (`HoeffdingAnytimeTreeClassifier`) is 26-58x faster than the adaptive random forest on the drift benchmark of `benchmarks/neural/efdt_vs_arf.py` (21-51 µs per sample against 723-1563 µs): at parity on sudden and gradual drift, 30.0 pp behind after the change on incremental drift, no native drift detection. An opt-in speed option, not a replacement.
+
 The robot-side components stay inside a 1 kHz control-loop budget
 (1000 µs) at the median: 36.5 µs for the rate-limited follower, 0.9 µs
 for the control barrier function filter, 8.1 µs for the kinematic
