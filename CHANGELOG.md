@@ -8,6 +8,7 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 - `GatedCrossAttention.forward` returns `xq + g * attention(xq, xc)` and not `g * attention(xq, xc)`: a closed step returns the query unchanged. Deviation from the task specification, declared in the class docstring: a zero vector at a closed step breaks the gradient path of the query. The hand case and the closed-step test are updated.
 
 ### Added
+- `dense_armor/utility/neural/continual.py`, `generative_replay.py`, `consolidation.py`: `EWC`, `GEM`, `AGEM`, `DeepGenerativeReplay`, `VQMemory`, `PQMemory`, `ResidualTree`, `LifecycleMemory`, `DualMemory`, `TheoreticalBound`, `ArchivalMemory`. `docs/neural/continual_learning.md` with the eleven pieces. `benchmarks/neural/continual_learning.py`, `memory_fidelity.py`, `public_benchmark.py`. Three test files (continual 19, generative replay 5, consolidation 57).
 - `dense_armor/utility/neural/cross_attention.py`, `gated_attention.py`, `latent_attention.py`, `bottleneck.py`: `MultiHeadCrossAttention`, `GatedCrossAttention`, `LatentCrossAttention`, `BottleneckFusion`. `docs/neural/composable_attention.md` with the four bricks. `benchmarks/neural/composable_attention_figure.py`. Four test files (A: 12, B: 16, C: 11, D: 14).
 
 ### Fixed

@@ -1,0 +1,24 @@
+# Codecov configuration.
+#
+# The patch gate measures the `dense_armor` package, not the benchmark
+# scripts, the tests or the documentation pages. The benchmarks are
+# runnable scripts, not library code, and they are not imported by any
+# test; their lines would count as uncovered in the diff even though
+# `--cov=dense_armor` never asked for them. The patch is measured on
+# the lines of `dense_armor/` only.
+
+ignore:
+  - "benchmarks"
+  - "test"
+  - "docs"
+
+coverage:
+  status:
+    project:
+      default:
+        target: 96%
+        threshold: 1%
+    patch:
+      default:
+        target: auto
+        threshold: 1%

@@ -217,3 +217,22 @@ __all__ = list(__all__) + ["OnlineNetVector"]
 from dense_armor.utility.neural.cross_attention import MultiHeadCrossAttention
 
 __all__ = list(__all__) + ["MultiHeadCrossAttention"]
+
+
+from dense_armor.utility.neural.consolidation import (
+    ArchivalMemory,
+    DualMemory,
+    LifecycleMemory,
+    PQMemory,
+    ResidualTree,
+    TheoreticalBound,
+    VQMemory,
+)
+from dense_armor.utility.neural.continual import AGEM, EWC, GEM
+from dense_armor.utility.neural.generative_replay import DeepGenerativeReplay
+
+__all__ = list(globals().get("__all__", [])) + [
+    "AGEM", "ArchivalMemory", "DeepGenerativeReplay", "DualMemory",
+    "EWC", "GEM", "LifecycleMemory", "PQMemory", "ResidualTree", "TheoreticalBound",
+    "VQMemory",
+]
