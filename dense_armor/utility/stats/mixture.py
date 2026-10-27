@@ -295,7 +295,7 @@ class OnlineGaussianMixture(Transformer):
         logpdf = self._logpdf(v)
         return {
             "logpdf": logpdf,
-            "pdf": float(math.exp(logpdf)),
+            "pdf": float(math.exp(min(logpdf, 700))),
             "responsibilities": [float(x) for x in r],
         }
 

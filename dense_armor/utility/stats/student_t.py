@@ -159,7 +159,7 @@ class StudentT(Transformer):
     @property
     def sigma_(self) -> float:
         """Current scale, ``exp(log_sigma_)``."""
-        return float(math.exp(self.log_sigma_))
+        return float(math.exp(min(self.log_sigma_, 700)))
 
     def learn_one(self, x: dict, y: Any = None, t: float | None = None) -> "StudentT":
         """Update location and scale with one sample from ``x``."""
@@ -214,7 +214,7 @@ class StudentT(Transformer):
         cdf = float(_scipy_t.cdf(v, df=self.nu, loc=self.mu_, scale=self.sigma_))
         return {
             "logpdf": logpdf,
-            "pdf": float(math.exp(logpdf)),
+            "pdf": float(math.exp(min(logpdf, 700))),
             "cdf": cdf,
             "mean": self.mu_,
             "var": self._variance(),

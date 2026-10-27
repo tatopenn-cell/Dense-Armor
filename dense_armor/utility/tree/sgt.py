@@ -703,8 +703,8 @@ class SGTClassifier(Classifier, _SGTBase):
 
     def _sigmoid(self, z: float) -> float:
         if z >= 0.0:
-            return 1.0 / (1.0 + math.exp(-z))
-        e = math.exp(z)
+            return 1.0 / (1.0 + math.exp(-max(min(z, 700), -700)))
+        e = math.exp(max(min(z, 700), -700))
         return e / (1.0 + e)
 
     def _grad_and_hess(self, f: float, y: float) -> tuple[float, float]:
