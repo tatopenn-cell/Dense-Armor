@@ -58,7 +58,7 @@ print(m.dropped_fraction(), m.expert_usage().round(3))
 ~~~
 
 ~~~
-0.0 [0.52 0.46 0.55 0.46]
+0.014999986 [0.5        0.47000003 0.5        0.5       ]
 ~~~
 
 `dropped_fraction()` is the fraction of assignments dropped by the
