@@ -79,7 +79,7 @@ class Beta:
         if x <= 0.0 or x >= 1.0:
             return 0.0
         log_beta = lgamma(self.a) + lgamma(self.b) - lgamma(self.a + self.b)
-        log_p = (self.a - 1.0) * np.log(x) + (self.b - 1.0) * np.log(1.0 - x)
+        log_p = (self.a - 1.0) * np.log(np.clip(x, 1e-15, 1.0 - 1e-15)) + (self.b - 1.0) * np.log(np.clip(1.0 - x, 1e-15, 1.0 - 1e-15))
         return float(np.exp(log_p - log_beta))
 
     def mean(self) -> float:

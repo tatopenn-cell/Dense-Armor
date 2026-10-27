@@ -215,7 +215,7 @@ class HoeffdingTreeClassifier(Classifier):
             v = x.get(f)
             if v is None:
                 return path
-            cur = cur.left_ if float(v) <= cur.split_threshold_ else cur.right_
+            cur = cur.left_ if cur.split_threshold_ is not None and float(v) <= cur.split_threshold_ else cur.right_
         return path
 
     def _update_leaf(self, node: _Node, x: dict, y: Any) -> None:
@@ -393,7 +393,8 @@ class HoeffdingTreeClassifier(Classifier):
                     continue
                 var = g.m2_ / g.n_ + 1e-9
                 dd = float(v) - g.mean_
-                lp -= 0.5 * math.log(6.283185307179586 * var) + 0.5 * dd * dd / var
+                var_safe = max(var, 1e-15)
+            lp -= 0.5 * math.log(6.283185307179586 * var_safe) + 0.5 * dd * dd / var_safe
             logp[c] = lp
         mx = max(logp.values())
         exps = {c: math.exp(v - mx) for c, v in logp.items()}

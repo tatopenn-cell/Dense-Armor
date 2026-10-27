@@ -552,7 +552,7 @@ class GaussianNLL(Metric):
 
     def _nll(self, y: float, mu: float, v: float) -> float:
         v = max(v, self.eps)
-        return 0.5 * math.log(2.0 * math.pi * v) + 0.5 * (y - mu) ** 2 / v
+        return 0.5 * math.log(2.0 * math.pi * max(v, 1e-15)) + 0.5 * (y - mu) ** 2 / max(v, 1e-15)
 
     def _update(self, y_true: Any, y_pred: Any, w: float) -> None:
         mu, v = self._mu_v(y_pred)
