@@ -140,7 +140,8 @@ class Gaussian(MLBase):
         v = self._ml_var()
         if v <= 0.0:
             return 0.0
-        return math.exp(-0.5 * (x - self.mean_) ** 2 / v) / math.sqrt(2.0 * math.pi * v)
+        v_safe = max(v, 1e-15)
+        return math.exp(-0.5 * (x - self.mean_) ** 2 / v_safe) / math.sqrt(2.0 * math.pi * v_safe)
 
     def cdf(self, x: float) -> float:
         """Probability of a value at or below ``x``, with the maximum-likelihood variance."""

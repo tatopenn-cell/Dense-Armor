@@ -110,6 +110,8 @@ class OnlinePlattScaling(ModelWrapper, Classifier):
 
     def _u_from(self, inner):
         p = inner.get(True, 1.0 - inner.get(False, 0.5))
+        if not math.isfinite(p):
+            p = 0.5
         p = min(max(p, self.clip), 1.0 - self.clip)
         return np.array([math.log(p / (1.0 - p)), 1.0])
 

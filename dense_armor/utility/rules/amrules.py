@@ -171,9 +171,9 @@ class _Splits:
     def best(self, total_n: float, total_s: float, total_q: float) -> tuple | None:
         if len(self.xs) < 2:
             return None
-        n = np.cumsum(np.asarray(self.n, dtype=float))[:-1]
-        s = np.cumsum(np.asarray(self.s, dtype=float))[:-1]
-        q = np.cumsum(np.asarray(self.q, dtype=float))[:-1]
+        n: np.ndarray = np.cumsum(np.asarray(self.n, dtype=float))[:-1]
+        s: np.ndarray = np.cumsum(np.asarray(self.s, dtype=float))[:-1]
+        q: np.ndarray = np.cumsum(np.asarray(self.q, dtype=float))[:-1]
         rn, rs, rq = total_n - n, total_s - s, total_q - q
         ok = (n > 0) & (rn > 0)
         var_e = total_q / total_n - (total_s / total_n) ** 2
@@ -233,7 +233,7 @@ class _Rule:
         return self.target.mean if self.target.n > 0 else 0.0
 
     def predict_perceptron(self, v: np.ndarray) -> float:
-        z = np.append(self._standardise(v), 1.0)
+        z: np.ndarray = np.append(self._standardise(v), 1.0)
         out = float(self.w @ z) * self._target_scale() + self.target.mean
         return out if math.isfinite(out) else self.predict_mean()
 
@@ -264,7 +264,7 @@ class _Rule:
             k = abs(v[j] - self.attrs[j].mean)
             p = 2.0 * sd * sd / (sd * sd + k * k) if sd < k else 1.0
             p = min(max(p, _EPS), 1.0 - _EPS)
-            score += math.log(p) - math.log(1.0 - p)
+            score += math.log(max(p, 1e-15)) - math.log(max(1.0 - p, 1e-15))
         return score / self.d < t
 
     def learn(
@@ -277,7 +277,7 @@ class _Rule:
         self.t_perc = alpha * self.t_perc + abs(pp - y)
         self.n_perc = alpha * self.n_perc + 1.0
         if self.target.n > 1:
-            z = np.append(self._standardise(v), 1.0)
+            z: np.ndarray = np.append(self._standardise(v), 1.0)
             yn = (y - self.target.mean) / self._target_scale()
             w = self.w - eta * (float(self.w @ z) - yn) * z
             self.w = w if np.isfinite(w).all() else np.zeros(self.d + 1)

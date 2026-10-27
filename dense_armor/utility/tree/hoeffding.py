@@ -215,7 +215,7 @@ class HoeffdingTreeClassifier(Classifier):
             v = x.get(f)
             if v is None:
                 return path
-            cur = cur.left_ if float(v) <= cur.split_threshold_ else cur.right_
+            cur = cur.left_ if cur.split_threshold_ is not None and float(v) <= cur.split_threshold_ else cur.right_
         return path
 
     def _update_leaf(self, node: _Node, x: dict, y: Any) -> None:
@@ -260,7 +260,7 @@ class HoeffdingTreeClassifier(Classifier):
                 else:
                     right_counts[k] = total_k
                 continue
-            z = (s - g.mean_) / math.sqrt(g.var)
+            z = (s - g.mean_) / math.sqrt(max(g.var, 1e-15))
             p_left = _phi(z)
             left_counts[k] = p_left * total_k
             right_counts[k] = (1.0 - p_left) * total_k

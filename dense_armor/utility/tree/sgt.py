@@ -480,7 +480,7 @@ class _SGTBase:
         s = math.sqrt(best_var) if best_var > 0.0 else 0.0
         if s <= 0.0:
             return False
-        t = best_mean / (s / math.sqrt(n))
+        t = best_mean / (max(s, 1e-15) / math.sqrt(n))
         p = _student_t_sf(t, n - 1)
         if p < self.delta:
             node.split_feature_ = best_f
@@ -703,8 +703,8 @@ class SGTClassifier(Classifier, _SGTBase):
 
     def _sigmoid(self, z: float) -> float:
         if z >= 0.0:
-            return 1.0 / (1.0 + math.exp(-z))
-        e = math.exp(z)
+            return 1.0 / (1.0 + math.exp(-max(min(z, 700), -700)))
+        e = math.exp(max(min(z, 700), -700))
         return e / (1.0 + e)
 
     def _grad_and_hess(self, f: float, y: float) -> tuple[float, float]:

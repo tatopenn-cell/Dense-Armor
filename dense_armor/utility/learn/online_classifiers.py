@@ -101,8 +101,8 @@ class OnlineGaussianNB(Classifier):
     def _log_likelihood(self, z, y) -> float:
         var = self._m2[y] / self._n[y] + self.var_smoothing
         var = np.maximum(var, self.eps)
-        return float(-0.5 * np.sum(np.log(2.0 * np.pi * var)
-                                    + (z - self._mu[y]) ** 2 / var))
+        return float(-0.5 * np.sum(np.log(2.0 * np.pi * np.maximum(var, 1e-15))
+                                    + (z - self._mu[y]) ** 2 / np.maximum(var, 1e-15)))
 
     def predict_proba_one(self, x: dict, t: float | None = None) -> dict:
         if not self._n:
