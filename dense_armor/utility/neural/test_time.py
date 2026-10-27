@@ -70,14 +70,12 @@ class TestTimeCompute:
         )
 
     def _score(self, probs: jax.Array) -> jax.Array:
-        if self.verifier == "confidence":
-            return probs.max(axis=-1)
         if self.verifier == "margin":
             s = jnp.sort(probs, axis=-1)
             return s[..., -1] - s[..., -2]
         if self.verifier == "entropy":
             return jnp.sum(probs * jnp.log(probs + 1e-9), axis=-1)
-        raise ValueError(self.verifier)
+        return probs.max(axis=-1)
 
     def forward(self, x: jax.Array, training: bool = True) -> jax.Array:
         """Run the model on the candidates and return the best."""

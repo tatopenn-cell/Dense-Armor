@@ -223,4 +223,30 @@ def test_noisy_gating_backward():
     m.backward(jnp.ones_like(y))
     norms = [float(jnp.linalg.norm(p.grad)) for p in m.params()]
     assert sum(norms) > 0.0
+def test_load_balancing_loss_before_forward_raises():
+    m = _model()
+    with pytest.raises(RuntimeError, match="forward"):
+        m.load_balancing_loss()
+
+
+def test_expert_usage_before_forward_raises():
+    m = _model()
+    with pytest.raises(RuntimeError, match="forward"):
+        m.expert_usage()
+
+
+def test_dropped_fraction_before_forward_raises():
+    m = _model()
+    with pytest.raises(RuntimeError, match="forward"):
+        m.dropped_fraction()
+
+
+def test_repr_contains_hyperparameters():
+    m = _model(n_experts=3, top_k=2, hidden=4, cf=1.25)
+    r = repr(m)
+    assert "SparseMoE(" in r
+    assert "n_experts=3" in r
+    assert "top_k=2" in r
+    assert "hidden=4" in r
+    assert "capacity_factor=1.25" in r
 
