@@ -41,7 +41,7 @@ If every token of the batch went to the same expert, that expert would
 see the whole batch and the others would see nothing. The **capacity
 factor** caps the tokens per expert at `capacity_factor * top_k *
 n_tokens / n_experts`, and the tokens above the cap are dropped (Fedus
-et al. 2021, Section 2.2, page 5). With 100 tokens, 4 experts, `top_k=2`
+et al. 2021, Section 2.2, page 6). With 100 tokens, 4 experts, `top_k=2`
 and `capacity_factor=1.0`, the average load is 50 tokens per expert and
 no expert sees more than 50.
 
@@ -242,7 +242,7 @@ assignments in.
 - Fedus, W., Zoph, B., Shazeer, N. (2021). *Switch Transformers: Scaling to
   Trillion Parameter Models with Simple and Efficient Sparsity*.
   arXiv:2101.03961. Gating: Eq. (1), page 5. Load balancing: Eq. (4),
-  page 7. Capacity factor: Section 2.2, page 5.
+  page 7. Capacity factor: Section 2.2, page 6.
 - Snell, C., Lee, J., Xu, K., Kumar, A. (2024). *Scaling LLM Test-Time
   Compute Optimally Can be More Effective than Scaling Model Parameters*.
   arXiv:2408.03314. Generate-and-test: page 2.

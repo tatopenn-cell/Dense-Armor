@@ -2,7 +2,7 @@
 
 Only the top_k experts selected for each token are executed, not all
 n_experts. The tokens are dispatched to their experts with a capacity factor
-(Fedus et al. 2021, Section 2.2, page 5), each expert runs on its own
+(Fedus et al. 2021, Section 2.2, page 6), each expert runs on its own
 (capacity, n_x) sub-batch via jax.vmap, and the outputs are combined with a
 gather. The cost is O(n_tokens * capacity_factor) in expert evaluations, not
 O(n_tokens * n_experts).
@@ -232,7 +232,7 @@ class SparseMoE:
             return n_tokens
         # each token is routed to top_k experts, so the average load per
         # expert is top_k * n_tokens / n_experts, not n_tokens / n_experts
-        # (Fedus et al. 2021, Section 2.2, page 5: capacity is a multiple of
+        # (Fedus et al. 2021, Section 2.2, page 6: capacity is a multiple of
         # the average tokens per expert).
         avg_load = self.top_k * n_tokens / self.n_experts
         return max(1, math.floor(self.capacity_factor * avg_load))
