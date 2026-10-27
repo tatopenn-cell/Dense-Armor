@@ -1,8 +1,6 @@
 """Unit tests for dense_armor/utility/calibration.py (Online Platt scaling)."""
-import doctest
-import importlib
-import sys
 
+import doctest
 import math
 import random
 
@@ -11,9 +9,9 @@ import pytest
 pytest.importorskip("river")
 
 from river import metrics  # noqa: E402
-from dense_armor.roles import Classifier  # noqa: E402
 
 import dense_armor.utility.learn.calibration as calibration  # noqa: E402
+from dense_armor.roles import Classifier  # noqa: E402
 from dense_armor.utility.learn.calibration import OnlinePlattScaling  # noqa: E402
 from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB  # noqa: E402
 
@@ -106,7 +104,6 @@ def test_docstring_example():
     assert doctest.testmod(calibration).failed == 0
 
 
-
 def test_projection_onto_small_ball():
     m = OnlinePlattScaling(Fixed(0.9), radius=0.5)
     for y in [False, True, False, False]:
@@ -141,3 +138,20 @@ def test_no_opinion_leaves_calibration_untouched():
     assert cal.classifier.seen == [False]
     assert cal._theta.tolist() == [1.0, 0.0]
     assert cal.predict_proba_one({"x": 1.0})[True] < 0.05
+
+
+def test_online_platt_scaling_handles_nan():
+    class NaNToxicBase:
+        def predict_proba_one(self, x):
+            return {True: float("nan"), False: float("nan")}
+
+        def learn_one(self, x, y):
+            pass
+
+    cal = OnlinePlattScaling(NaNToxicBase())
+    res = cal.predict_proba_one({"x": 1.0})
+
+    assert not any(isinstance(v, float) and math.isnan(v) for v in res.values())
+    assert not any(isinstance(v, float) and math.isinf(v) for v in res.values())
+    assert res[True] == 0.5
+    assert res[False] == 0.5
