@@ -2,6 +2,15 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## [1.2.1] - 2026-10-27
+
+### Fixed
+- `OnlinePlattScaling`: handle NaN in base predictions (fallback to 0.5).
+- Log-domain clipping (1e-15) in LogLoss, Beta, OnlineGaussianNB, Gaussian Mixture, GaussianNLL, Hoeffding Tree, and AMRules.
+- Division and square root protections against zero variance in Gaussian PDFs, Correlation, Hoeffding leaves, SGT, OnlineGaussianNB, and Mixture.
+- Exponential overflow protection (clamp to [-700, 700]) in Factorisation Machines, SGT, Mixture PDF, and Student-T PDF.
+- Pre-existing mypy errors in hoeffding.py, mixture.py, and amrules.py.
+
 ## [Unreleased]
 
 ### Added
