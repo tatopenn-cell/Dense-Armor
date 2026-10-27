@@ -98,7 +98,8 @@ class Gaussian:
         if var <= 0.0:
             return 0.0
         c = 1.0 / sqrt(2.0 * pi * var)
-        return float(c * np.exp(-0.5 * (float(x) - self._mean) ** 2 / var))
+        var_safe = max(var, 1e-15)
+        return float(c * np.exp(-0.5 * (float(x) - self._mean) ** 2 / var_safe))
 
     def cdf(self, x: float) -> float:
         """Cumulative distribution at ``x``, using the error function."""

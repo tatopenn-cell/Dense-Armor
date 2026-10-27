@@ -480,7 +480,7 @@ class _SGTBase:
         s = math.sqrt(best_var) if best_var > 0.0 else 0.0
         if s <= 0.0:
             return False
-        t = best_mean / (s / math.sqrt(n))
+        t = best_mean / (max(s, 1e-15) / math.sqrt(n))
         p = _student_t_sf(t, n - 1)
         if p < self.delta:
             node.split_feature_ = best_f

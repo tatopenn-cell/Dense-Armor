@@ -219,7 +219,7 @@ class OnlineGaussianMixture(Transformer):
         var = self.variances_ + self.reg_covar
         diff = x[None, :] - self.means_
         log_norm = -0.5 * np.sum(np.log(2.0 * math.pi * np.maximum(var, 1e-15)), axis=1)
-        log_exp = -0.5 * np.sum(diff * diff / var, axis=1)
+        log_exp = -0.5 * np.sum(diff * diff / np.maximum(var, 1e-15), axis=1)
         return np.log(self.weights_ + 1e-300) + log_norm + log_exp
 
     def learn_one(
