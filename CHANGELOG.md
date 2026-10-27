@@ -23,7 +23,7 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   learning rate converges to a neighbourhood of the MLE.
 - `dense_armor/utility/neural/moe.py`, `test_time.py`: `SparseMoE` and
   `TestTimeCompute`. `SparseMoE` dispatches each token to its top-k experts
-  with a capacity factor (Fedus et al. 2021, Section 2.2, page 5), so only
+  with a capacity factor (Fedus et al. 2021, Section 2.2, page 6), so only
   the selected experts run, not all `n_experts`. `forward_pure` is pure and
   compiles under `jax.jit`, `backward` is `jax.vjp` of `forward_pure`, the
   load-balancing loss is Fedus Eq. (4), page 7, and the routing is a

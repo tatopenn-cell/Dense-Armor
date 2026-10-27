@@ -261,7 +261,7 @@ page 4). The discrepancy is declared, not resolved.
 ### Choices stated explicitly
 
 - The capacity factor defaults to `1.25`, Fedus et al. (2021), Section
-  2.2, page 5. `None` disables the drop. The capacity is
+  2.2, page 6. `None` disables the drop. The capacity is
   `capacity_factor * top_k * n_tokens / n_experts`, not `capacity_factor *
   n_tokens / n_experts`: with `top_k = 2` the average load per expert is
   `top_k * n_tokens / n_experts`. The first version of the code used the

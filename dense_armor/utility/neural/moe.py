@@ -152,7 +152,7 @@ class SparseMoE:
 
     References:
         Fedus, Zoph, Shazeer (2021), Switch Transformers, Eq. (1) page 5,
-        Eq. (4) page 7, capacity factor Section 2.2 page 5. Shazeer et al.
+        Eq. (4) page 7, capacity factor Section 2.2, page 6. Shazeer et al.
         (2017), Eq. (3) page 4; the noisy top-k of Eq. (4) page 4 is not
         implemented.
     """
