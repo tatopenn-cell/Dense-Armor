@@ -393,8 +393,7 @@ class HoeffdingTreeClassifier(Classifier):
                     continue
                 var = g.m2_ / g.n_ + 1e-9
                 dd = float(v) - g.mean_
-                var_safe = max(var, 1e-15)
-            lp -= 0.5 * math.log(6.283185307179586 * var_safe) + 0.5 * dd * dd / var_safe
+                lp -= 0.5 * math.log(6.283185307179586 * var) + 0.5 * dd * dd / var
             logp[c] = lp
         mx = max(logp.values())
         exps = {c: math.exp(v - mx) for c, v in logp.items()}
