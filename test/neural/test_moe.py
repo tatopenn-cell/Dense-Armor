@@ -161,6 +161,7 @@ def test_invalid_capacity_factor():
     with pytest.raises(ValueError, match="capacity_factor"):
         SparseMoE(n_x=2, n_y=2, capacity_factor=-0.5)
 
+
 def test_top_k_one():
     """Con top_k=1 ogni token ha esattamente 1 posizione >= 0 in pos."""
     m = _model(n_experts=4, top_k=1, cf=None)
@@ -204,8 +205,14 @@ def test_expert_usage_sums_to_top_k():
 def test_noisy_gating_changes_output():
     """Con noisy_gating=True e stessi input, due forward danno output diversi."""
     m = SparseMoE(
-        n_x=2, n_y=2, n_experts=4, top_k=2, hidden=7, seed=0,
-        capacity_factor=None, noisy_gating=True,
+        n_x=2,
+        n_y=2,
+        n_experts=4,
+        top_k=2,
+        hidden=7,
+        seed=0,
+        capacity_factor=None,
+        noisy_gating=True,
     )
     x = jnp.ones((8, 2))
     y1 = m.forward(x)
@@ -216,13 +223,21 @@ def test_noisy_gating_changes_output():
 def test_noisy_gating_backward():
     """Con noisy_gating=True il backward produce gradienti non nulli."""
     m = SparseMoE(
-        n_x=2, n_y=2, n_experts=4, top_k=2, hidden=7, seed=0,
-        capacity_factor=None, noisy_gating=True,
+        n_x=2,
+        n_y=2,
+        n_experts=4,
+        top_k=2,
+        hidden=7,
+        seed=0,
+        capacity_factor=None,
+        noisy_gating=True,
     )
     y = m.forward(jnp.ones((8, 2)))
     m.backward(jnp.ones_like(y))
     norms = [float(jnp.linalg.norm(p.grad)) for p in m.params()]
     assert sum(norms) > 0.0
+
+
 def test_load_balancing_loss_before_forward_raises():
     m = _model()
     with pytest.raises(RuntimeError, match="forward"):
@@ -249,4 +264,3 @@ def test_repr_contains_hyperparameters():
     assert "top_k=2" in r
     assert "hidden=4" in r
     assert "capacity_factor=1.25" in r
-

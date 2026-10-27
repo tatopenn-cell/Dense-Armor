@@ -68,7 +68,6 @@ def _forward_pure_aux(
     p = jax.nn.softmax(logits, axis=-1)
     top_vals, top_idx = jax.lax.top_k(p, top_k)
 
-
     n_tokens_local = x.shape[0]
     n_flat = n_tokens_local * top_k
     flat_expert = top_idx.reshape(-1)
@@ -76,7 +75,9 @@ def _forward_pure_aux(
     # Il costo dipende da n_flat = n_tokens * top_k, non da n_experts.
     order = jnp.argsort(flat_expert, stable=True)
     sorted_exp = flat_expert[order]
-    new_seg = jnp.concatenate([jnp.ones(1, dtype=bool), sorted_exp[1:] != sorted_exp[:-1]])
+    new_seg = jnp.concatenate(
+        [jnp.ones(1, dtype=bool), sorted_exp[1:] != sorted_exp[:-1]]
+    )
     seg_start = jnp.maximum.accumulate(jnp.where(new_seg, jnp.arange(n_flat), 0))
     rank_sorted = jnp.arange(n_flat) - seg_start
     rank = jnp.empty_like(rank_sorted).at[order].set(rank_sorted)

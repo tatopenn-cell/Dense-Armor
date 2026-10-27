@@ -107,9 +107,7 @@ class TestTimeCompute:
     def backward(self, g: jax.Array) -> jax.Array:
         """Backward through the selected candidate (not for ensemble)."""
         if self.verifier == "ensemble":
-            raise RuntimeError(
-                "backward is not implemented for verifier='ensemble'"
-            )
+            raise RuntimeError("backward is not implemented for verifier='ensemble'")
         if self._selected is None or self._candidates is None:
             raise RuntimeError("call forward() before backward()")
         candidates = self._candidates
@@ -123,7 +121,6 @@ class TestTimeCompute:
             self.model.forward(candidates[i], training=True)
             self.model.backward(g * mask[:, None])
         return dx
-
 
     def params(self) -> list:
         return self.model.params()

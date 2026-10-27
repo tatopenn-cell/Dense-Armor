@@ -52,12 +52,15 @@ def test_invalid_noise():
     with pytest.raises(ValueError, match="noise"):
         TestTimeCompute(_model(), noise=-0.1)
 
+
 def _make_base():
-    return Sequential([
-        Dense(2, 4, jax.random.PRNGKey(0)),
-        Relu(),
-        Dense(4, 2, jax.random.PRNGKey(1)),
-    ])
+    return Sequential(
+        [
+            Dense(2, 4, jax.random.PRNGKey(0)),
+            Relu(),
+            Dense(4, 2, jax.random.PRNGKey(1)),
+        ]
+    )
 
 
 def test_repr_contains_params():
@@ -70,28 +73,36 @@ def test_repr_contains_params():
 
 
 def test_margin_verifier():
-    ttc = TestTimeCompute(_make_base(), n_candidates=4, noise=0.1, seed=0, verifier="margin")
+    ttc = TestTimeCompute(
+        _make_base(), n_candidates=4, noise=0.1, seed=0, verifier="margin"
+    )
     y = ttc.forward(jnp.ones((2, 2)))
     assert y.shape == (2, 2)
     assert ttc.verifier == "margin"
 
 
 def test_entropy_verifier():
-    ttc = TestTimeCompute(_make_base(), n_candidates=4, noise=0.1, seed=0, verifier="entropy")
+    ttc = TestTimeCompute(
+        _make_base(), n_candidates=4, noise=0.1, seed=0, verifier="entropy"
+    )
     y = ttc.forward(jnp.ones((2, 2)))
     assert y.shape == (2, 2)
     assert ttc.verifier == "entropy"
 
 
 def test_ensemble_verifier():
-    ttc = TestTimeCompute(_make_base(), n_candidates=4, noise=0.1, seed=0, verifier="ensemble")
+    ttc = TestTimeCompute(
+        _make_base(), n_candidates=4, noise=0.1, seed=0, verifier="ensemble"
+    )
     y = ttc.forward(jnp.ones((2, 2)))
     assert y.shape == (2, 2)
     assert ttc._selected is None
 
 
 def test_backward_ensemble_raises():
-    ttc = TestTimeCompute(_make_base(), n_candidates=2, noise=0.1, seed=0, verifier="ensemble")
+    ttc = TestTimeCompute(
+        _make_base(), n_candidates=2, noise=0.1, seed=0, verifier="ensemble"
+    )
     ttc.forward(jnp.ones((2, 2)))
     with pytest.raises(RuntimeError, match="ensemble"):
         ttc.backward(jnp.ones((2, 2)))
@@ -107,5 +118,3 @@ def test_backward_after_forward():
 def test_invalid_verifier():
     with pytest.raises(ValueError, match="verifier"):
         TestTimeCompute(_make_base(), verifier="bogus")
-
-

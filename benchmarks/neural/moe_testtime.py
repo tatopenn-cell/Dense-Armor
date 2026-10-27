@@ -22,6 +22,7 @@ epochs, 100 samples per task.
 
 Run: python benchmarks/neural/moe_testtime.py [--smoke] [--out PATH]
 """
+
 from __future__ import annotations
 
 import argparse
@@ -76,9 +77,9 @@ def train_sequence(model, tasks, key, n_epochs, batch=32):
         trainer.fit(X, y, epochs=n_epochs, batch_size=batch, key=key)
         acc_before.append(accuracy(model, X, y))
     acc_after = [accuracy(model, X, y) for X, y in tasks]
-    forgetting = float(np.mean([
-        max(0.0, acc_before[k] - acc_after[k]) for k in range(len(tasks))
-    ]))
+    forgetting = float(
+        np.mean([max(0.0, acc_before[k] - acc_after[k]) for k in range(len(tasks))])
+    )
     return acc_before, acc_after, forgetting
 
 
@@ -88,7 +89,11 @@ def count_params(model):
 
 def _agg(values):
     arr = np.asarray(values, dtype=float)
-    return {"mean": float(arr.mean()), "std": float(arr.std(ddof=0)), "n": int(arr.size)}
+    return {
+        "mean": float(arr.mean()),
+        "std": float(arr.std(ddof=0)),
+        "n": int(arr.size),
+    }
 
 
 def run_moe_vs_dense(seeds, smoke):
@@ -107,11 +112,16 @@ def run_moe_vs_dense(seeds, smoke):
 
         n_experts = 4
         gating_params = 2 * n_experts + n_experts
-        hidden = max(2, int(round(
-            (n_dense - gating_params - n_experts * 2) / (n_experts * 5)
-        )))
+        hidden = max(
+            2, int(round((n_dense - gating_params - n_experts * 2) / (n_experts * 5)))
+        )
         moe = SparseMoE(
-            n_x=2, n_y=2, n_experts=n_experts, top_k=2, hidden=hidden, seed=seed,
+            n_x=2,
+            n_y=2,
+            n_experts=n_experts,
+            top_k=2,
+            hidden=hidden,
+            seed=seed,
             capacity_factor=1.25,
         )
         n_moe = count_params(moe)
@@ -123,26 +133,28 @@ def run_moe_vs_dense(seeds, smoke):
         usage = np.asarray(moe.expert_usage()).tolist()
         drop = float(moe.dropped_fraction())
 
-        per_seed.append({
-            "seed": seed,
-            "dense": {
-                "n_params": n_dense,
-                "acc_before": acc_b,
-                "acc_after": acc_a,
-                "forgetting": for_g,
-                "wall_time_s": t_dense,
-            },
-            "moe": {
-                "n_params": n_moe,
-                "hidden": hidden,
-                "acc_before": acc_b_m,
-                "acc_after": acc_a_m,
-                "forgetting": for_m,
-                "wall_time_s": t_moe,
-                "expert_usage": usage,
-                "dropped_fraction": drop,
-            },
-        })
+        per_seed.append(
+            {
+                "seed": seed,
+                "dense": {
+                    "n_params": n_dense,
+                    "acc_before": acc_b,
+                    "acc_after": acc_a,
+                    "forgetting": for_g,
+                    "wall_time_s": t_dense,
+                },
+                "moe": {
+                    "n_params": n_moe,
+                    "hidden": hidden,
+                    "acc_before": acc_b_m,
+                    "acc_after": acc_a_m,
+                    "forgetting": for_m,
+                    "wall_time_s": t_moe,
+                    "expert_usage": usage,
+                    "dropped_fraction": drop,
+                },
+            }
+        )
 
     def _mean(key, sub):
         return _agg([d[sub][key] for d in per_seed])
@@ -153,15 +165,21 @@ def run_moe_vs_dense(seeds, smoke):
         "seeds": list(seeds),
         "per_seed": per_seed,
         "aggregate": {
-            "dense_acc_after_task1": _agg([d["dense"]["acc_after"][0] for d in per_seed]),
-            "dense_acc_after_task2": _agg([d["dense"]["acc_after"][1] for d in per_seed]),
+            "dense_acc_after_task1": _agg(
+                [d["dense"]["acc_after"][0] for d in per_seed]
+            ),
+            "dense_acc_after_task2": _agg(
+                [d["dense"]["acc_after"][1] for d in per_seed]
+            ),
             "dense_forgetting": _agg([d["dense"]["forgetting"] for d in per_seed]),
             "dense_wall_time_s": _agg([d["dense"]["wall_time_s"] for d in per_seed]),
             "moe_acc_after_task1": _agg([d["moe"]["acc_after"][0] for d in per_seed]),
             "moe_acc_after_task2": _agg([d["moe"]["acc_after"][1] for d in per_seed]),
             "moe_forgetting": _agg([d["moe"]["forgetting"] for d in per_seed]),
             "moe_wall_time_s": _agg([d["moe"]["wall_time_s"] for d in per_seed]),
-            "moe_dropped_fraction": _agg([d["moe"]["dropped_fraction"] for d in per_seed]),
+            "moe_dropped_fraction": _agg(
+                [d["moe"]["dropped_fraction"] for d in per_seed]
+            ),
             "moe_expert_usage_mean": [
                 float(np.mean([d["moe"]["expert_usage"][i] for d in per_seed]))
                 for i in range(4)
@@ -184,9 +202,7 @@ def run_testtime(seeds, smoke):
                 for seed in seeds:
                     tasks = make_tasks(n, seed, noise=noise)
                     key = jax.random.PRNGKey(seed)
-                    base = Sequential(
-                        [Dense(2, 16, key), Relu(), Dense(16, 2, key)]
-                    )
+                    base = Sequential([Dense(2, 16, key), Relu(), Dense(16, 2, key)])
                     train_sequence(base, tasks, key, epochs)
                     acc_single = float(
                         np.mean([accuracy(base, X, y) for X, y in tasks])
@@ -198,9 +214,7 @@ def run_testtime(seeds, smoke):
                         seed=seed,
                         verifier=verifier,
                     )
-                    acc_ttc = float(
-                        np.mean([accuracy(ttc, X, y) for X, y in tasks])
-                    )
+                    acc_ttc = float(np.mean([accuracy(ttc, X, y) for X, y in tasks]))
                     rows.append(
                         {
                             "seed": seed,
@@ -232,7 +246,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--smoke", action="store_true")
     parser.add_argument(
-        "--out", type=Path, default=Path(__file__).with_suffix(".json"),
+        "--out",
+        type=Path,
+        default=Path(__file__).with_suffix(".json"),
     )
     args = parser.parse_args()
 
@@ -247,13 +263,27 @@ def main():
     print(f"written: {args.out}")
     m = out["moe_vs_dense"]["aggregate"]
     print("MoE vs dense (mean ± std over seeds):")
-    print(f"  dense acc task1 = {m['dense_acc_after_task1']['mean']:.3f} ± {m['dense_acc_after_task1']['std']:.3f}")
-    print(f"  dense acc task2 = {m['dense_acc_after_task2']['mean']:.3f} ± {m['dense_acc_after_task2']['std']:.3f}")
-    print(f"  dense forgetting = {m['dense_forgetting']['mean']:.3f} ± {m['dense_forgetting']['std']:.3f}")
-    print(f"  MoE acc task1 = {m['moe_acc_after_task1']['mean']:.3f} ± {m['moe_acc_after_task1']['std']:.3f}")
-    print(f"  MoE acc task2 = {m['moe_acc_after_task2']['mean']:.3f} ± {m['moe_acc_after_task2']['std']:.3f}")
-    print(f"  MoE forgetting = {m['moe_forgetting']['mean']:.3f} ± {m['moe_forgetting']['std']:.3f}")
-    print(f"  MoE dropped = {m['moe_dropped_fraction']['mean']:.3f} ± {m['moe_dropped_fraction']['std']:.3f}")
+    print(
+        f"  dense acc task1 = {m['dense_acc_after_task1']['mean']:.3f} ± {m['dense_acc_after_task1']['std']:.3f}"
+    )
+    print(
+        f"  dense acc task2 = {m['dense_acc_after_task2']['mean']:.3f} ± {m['dense_acc_after_task2']['std']:.3f}"
+    )
+    print(
+        f"  dense forgetting = {m['dense_forgetting']['mean']:.3f} ± {m['dense_forgetting']['std']:.3f}"
+    )
+    print(
+        f"  MoE acc task1 = {m['moe_acc_after_task1']['mean']:.3f} ± {m['moe_acc_after_task1']['std']:.3f}"
+    )
+    print(
+        f"  MoE acc task2 = {m['moe_acc_after_task2']['mean']:.3f} ± {m['moe_acc_after_task2']['std']:.3f}"
+    )
+    print(
+        f"  MoE forgetting = {m['moe_forgetting']['mean']:.3f} ± {m['moe_forgetting']['std']:.3f}"
+    )
+    print(
+        f"  MoE dropped = {m['moe_dropped_fraction']['mean']:.3f} ± {m['moe_dropped_fraction']['std']:.3f}"
+    )
     print(f"  MoE usage mean = {[round(v, 3) for v in m['moe_expert_usage_mean']]}")
     print("Test-time compute (delta over single pass):")
     for row in out["test_time"]["configs"]:
