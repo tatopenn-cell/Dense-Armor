@@ -54,5 +54,6 @@ The three claims declared in `ISTRUZIONI.md`, measured on fraction 1.0:
 ## Details
 
 - **References**: the issue pytorch/pytorch#13246 (`papers/issue_13246.md`), the post `papers/ppwwyyxx_demystify_ram.txt` (RSS, PSS, USS), the pull request `papers/pr_191555.md` as prior art, the `multiprocessing` docs.
-- **Choices**: offsets and one flat buffer; blake2b digest, not `hash()`; the owner unlinks and an attached handle only closes; read-only views; `allow_pickle`; empty input raises; `uss` and `pss`, not `rss`.
+- **Choices**: offsets and one flat buffer; blake2b digest, not `hash()`; the owner unlinks and an attached handle only closes; read-only views; `allow_pickle` (recursive); empty input raises; `uss` and `pss`, not `rss`.
+- **Declared limitation of `SharedDict`**: keys are compared by the bytes of their pickle, not by Python equality. `d[1.0]` and `d[True]` on a dict with key `1` raise `KeyError`, while a Python `dict` returns the value. The reason is the cost of a lookup: a digest-only match would unpickle every candidate key, which is slower than the byte comparison.
 - **Measured cost**: the JSON of `benchmarks/data_shared_memory.py`, 5 runs, median and IQR.

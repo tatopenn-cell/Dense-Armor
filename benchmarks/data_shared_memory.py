@@ -51,8 +51,7 @@ def _read_worker(args):
     }
 
 
-def _run_once(n_items, n_reads, contender, start_method):
-    data = _build_data(n_items)
+def _run_once(n_items, n_reads, contender, start_method, data):
     if contender == "plain_list":
         handle = data
     elif contender == "numpy_object":
@@ -109,8 +108,11 @@ def _iqr(vals):
     return s[int(0.75 * (n - 1))] - s[int(0.25 * (n - 1))]
 
 
-def _run_5(n_items, n_reads, contender, start_method):
-    runs = [_run_once(n_items, n_reads, contender, start_method) for _ in range(5)]
+def _run_n(n_items, n_reads, contender, start_method, data, n_runs):
+    runs = [
+        _run_once(n_items, n_reads, contender, start_method, data)
+        for _ in range(n_runs)
+    ]
     uss = [r["uss_median"] for r in runs]
     pss = [r["pss_median"] for r in runs]
     lat = [r["lat_median_us"] for r in runs]
@@ -159,8 +161,8 @@ def main():
     args = parser.parse_args()
 
     n_items = 100_000 if args.smoke else 1_000_000
-    runs = 1 if args.smoke else 5
-    fractions = [0.1, 0.5, 1.0]
+    n_runs = 1 if args.smoke else 5
+    fractions = [1.0]
     contenders = [
         "plain_list",
         "numpy_object",
@@ -170,29 +172,29 @@ def main():
         "shared_list",
     ]
 
+    data = _build_data(n_items)
+
     results = {}
     for cont in contenders:
         results[cont] = {}
         for frac in fractions:
             n_reads = int(n_items * frac)
-            if runs == 1:
-                results[cont][f"fork_{frac}"] = _run_once(
-                    n_items, n_reads, cont, "fork"
-                )
-            else:
-                results[cont][f"fork_{frac}"] = _run_5(n_items, n_reads, cont, "fork")
-            if (
-                cont
-                in ("shareable_list", "shared_strings", "shared_list", "plain_list")
-                and frac == 1.0
+            results[cont][f"fork_{frac}"] = _run_n(
+                n_items, n_reads, cont, "fork", data, n_runs
+            )
+            if cont in (
+                "shareable_list",
+                "shared_strings",
+                "shared_list",
+                "plain_list",
             ):
-                if runs == 1:
-                    results[cont]["spawn_1.0"] = _run_once(
-                        n_items, n_reads, cont, "spawn"
-                    )
-                else:
-                    results[cont]["spawn_1.0"] = _run_5(n_items, n_reads, cont, "spawn")
+                results[cont][f"spawn_{frac}"] = _run_n(
+                    n_items, n_reads, cont, "spawn", data, n_runs
+                )
 
+    results["n_elements"] = n_items
+    results["n_workers"] = 4
+    results["n_runs"] = n_runs
     results["claims"] = _evaluate_claims(results)
 
     print(json.dumps(results, indent=2))

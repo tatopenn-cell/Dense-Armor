@@ -210,6 +210,15 @@ class SharedList:
 
     Source: `papers/pr_191555.md` (the design). The `multiprocessing`
     docs for protocol 5.
+
+    What pickles and what does not: any object with a working
+    `__getstate__` / `__setstate__` (custom classes, nested dicts,
+    cyclic structures, numpy arrays, tensors) goes through. Objects
+    that are not picklable (database connections, open file handles,
+    sockets, threads, locks, lambdas, generators) raise `TypeError`
+    from pickle. For a connection, put the *recipe* (the URL, the
+    credentials, the path) in the container, and open the connection
+    in the worker, one per process.
     """
 
     def __init__(self, items: list, allow_pickle: bool = True) -> None:
@@ -312,8 +321,18 @@ class SharedDict(Mapping):
     Source: `papers/pr_191555.md` (the design). The `hash()` note is from
     `papers/ppwwyyxx_demystify_ram.txt`, section "Python objects".
 
-    Declared limitation: keys are hashed by their pickle bytes, so `1`,
-    `1.0` and `True` are distinct keys, unlike a Python `dict`.
+    What pickles: see `SharedList`. Connections, file handles,
+    sockets, threads, locks, lambdas and generators are not picklable:
+    put the recipe in the container and open the resource in the worker.
+
+    Declared limitation: keys are compared by the bytes of their
+    pickle, not by Python equality. A Python `dict` treats `1`, `1.0`
+    and `True` as the same key; this class treats them as distinct
+    keys. The reason is the cost of a lookup: a digest-only match would
+    unpickle every candidate key, which is slower than the byte
+    comparison and defeats the sorted digest index. The page
+    `docs/api/data_shared.md` repeats the limitation in the Choices
+    section.
     """
 
     def __init__(self, mapping: dict, allow_pickle: bool = True) -> None:

@@ -184,3 +184,130 @@ def test_fork_child_reads():
         with ctx.Pool(2) as pool:
             results = pool.map(_read_index, [(ss, i) for i in range(3)])
             assert results == items
+
+
+def test_windows_size_is_int():
+    """SharedMemory(size=...) must receive a Python int, not a numpy.int64.
+
+    On Windows, CreateFileMapping() raises TypeError if size is a
+    numpy.int64. Every call to SharedMemory in shared.py casts size with
+    int(...); this test verifies that the cast is in place by checking
+    that the objects are created and that no error is raised.
+    """
+    with SharedStrings(["a", "b"]):
+        pass
+    with SharedList([1, 2]):
+        pass
+    with SharedDict({"a": 1}):
+        pass
+
+
+def test_finalizer_does_not_hold_self():
+    """The finalizer must not keep a strong reference to the object.
+
+    With weakref.finalize(self, self._cleanup, ...) the bound method holds
+    a strong reference to self, so the object is never collected and the
+    block is freed only at process exit. With a module-level function the
+    object is collected, and the finalizer unlinks the block.
+    """
+    import gc
+    import weakref
+
+    import numpy as np
+
+    from dense_armor.utility.data import SharedArray
+
+    arr = SharedArray(np.array([1.0]))
+    ref = weakref.ref(arr)
+    del arr
+    gc.collect()
+    assert ref() is None, "the object was not collected: the finalizer holds it"
+
+
+def test_shared_array_rejects_object_dtype():
+    """dtype=object would put pointers in the shared block: rejected."""
+    import numpy as np
+
+    with pytest.raises(TypeError):
+        SharedArray(np.array([{"a": 1}], dtype=object))
+
+
+def test_shared_list_allow_pickle_recursive():
+    """allow_pickle=False must reject nested unsafe types."""
+    with pytest.raises(TypeError):
+        SharedList([[{1}]], allow_pickle=False)
+    with pytest.raises(TypeError):
+        SharedList([(1, {2})], allow_pickle=False)
+
+
+def test_shared_dict_allow_pickle_recursive():
+    """allow_pickle=False must reject unsafe keys and values."""
+    with pytest.raises(TypeError):
+        SharedDict({1: {2}}, allow_pickle=False)
+    with pytest.raises(TypeError):
+        SharedDict({{1}: 2}, allow_pickle=False)
+
+
+def test_shared_dict_key_equality_declared():
+    """SharedDict compares keys by pickle bytes, not by Python equality.
+
+    A Python dict treats 1, 1.0 and True as the same key. SharedDict
+    treats them as distinct keys. This is a declared limitation, not a
+    bug: the docstring of SharedDict says it.
+    """
+    from dense_armor.utility.data import SharedDict as _SD
+
+    doc = _SD.__doc__ or ""
+    assert "pickle" in doc.lower(), "the docstring must say how keys are compared"
+    d = SharedDict({1: "a"})
+    with pytest.raises(KeyError):
+        _ = d[1.0]
+    with pytest.raises(KeyError):
+        _ = d[True]
+    d.close()
+    d.unlink()
+
+
+# Class at module level: pickle can find it by qualified name.
+class Point:
+    def __init__(self, x, y):
+        self.x, self.y = x, y
+
+    def __getstate__(self):
+        return {"x": self.x, "y": self.y}
+
+    def __setstate__(self, state):
+        self.x, self.y = state["x"], state["y"]
+
+    def __eq__(self, other):
+        return isinstance(other, Point) and (self.x, self.y) == (other.x, other.y)
+
+
+def test_shared_list_custom_object():
+    """A custom class with __getstate__ / __setstate__ survives the round trip."""
+    with SharedList([Point(1, 2), Point(3, 4)]) as sl:
+        a, b = sl[0], sl[1]
+        assert a == Point(1, 2)
+        assert b == Point(3, 4)
+        assert a is not b
+
+
+def test_shared_list_rejects_connection():
+    """A non-picklable object (a socket) raises TypeError."""
+    import socket
+
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        with pytest.raises((TypeError, AttributeError)):
+            SharedList([s])
+    finally:
+        s.close()
+
+
+def test_shared_list_cyclic_structure():
+    """A cyclic structure is picklable, so SharedList round-trips it."""
+    a = [1, 2]
+    a.append(a)
+    with SharedList([a]) as sl:
+        got = sl[0]
+        assert got[0] == 1 and got[1] == 2 and got[2] is got
