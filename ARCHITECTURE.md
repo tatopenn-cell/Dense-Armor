@@ -36,7 +36,7 @@ graph TD
         DATASETS["datasets: Casper, DriftStream,<br/>SyntheticArm"]
         COMPOSE["compose: Select, Discard,<br/>FuncTransformer"]
         PREPROC["preprocessing: RobustScaler, EWScaler,<br/>JointDerivatives, Tokenizer"]
-        STATS["stats: RunningMoments,<br/>RollingMedian, DDSketch,<br/>CountMinSketch"]
+        STATS["stats: RunningMoments,<br/>RollingMedian, DDSketch,<br/>OnlineGaussianMixture, StudentT"]
         METRICS["metrics: Accuracy, RollingAUC,<br/>EventMetrics, R2Score"]
         EVAL["evaluate: progressive_val_score,<br/>evaluate_events, best_of"]
         LEARN["learn: OnlineGaussianNB,<br/>RecursiveLeastSquares,<br/>OnlinePlattScaling"]
@@ -47,7 +47,7 @@ graph TD
         PROTECT["protect: classify_segments,<br/>healing_filter, Orca"]
         VISION["vision: VideoFileStream, FrameFeatures,<br/>MotionEnergy, MovingObjectTracker,<br/>PatchFeatures, PatchMemory"]
         CONTROL["control: cbf_safety_filter,<br/>quintic_trajectory"]
-        MISC["misc: Metro, diag, anwav,<br/>SDFT, Skyline"]
+        MISC["misc: Metro, diag,<br/>SDFT, Skyline"]
         BAYES["bayes: MultinomialNB, BernoulliNB,<br/>ComplementNB, CategoricalNB"]
         LINEAR["linear: LinearRegression,<br/>LogisticRegression,<br/>BayesianLinearRegression"]
         MULTI["multiclass, multioutput:<br/>OneVsRestClassifier,<br/>ClassifierChain"]
@@ -55,7 +55,7 @@ graph TD
         OPTIM["optim: SGD, AdaGrad, Adam,<br/>FTRLProximal, OnlineNewtonStep"]
         PROBA["proba: Beta, Gaussian,<br/>Multinomial"]
         RULES["rules: AMRulesRegressor"]
-        TSERIES["timeseries: OnlineAR,<br/>KalmanFilter, CycleResidual"]
+        TSERIES["timeseries: OnlineAR,<br/>KalmanFilter, GARCH11,<br/>CycleResidual"]
         FOREST["forest: AdaptiveRandomForestClassifier,<br/>AggregatedMondrianForestClassifier,<br/>OnlineExtraTreesRegressor"]
         ENSEMBLE["ensemble: OnlineBaggingClassifier,<br/>OnlineBoostingClassifier,<br/>ExponentiallyWeightedAverageRegressor"]
         BANDIT["bandit: EpsilonGreedy, UCB1,<br/>ThompsonSampling, LinUCBDisjoint"]
@@ -118,7 +118,7 @@ graph TD
 | `safety.py` | `Health`, `HealthMonitor`, `SafeEstimator` | health monitor and safe wrapper |
 | `signal.py` | `Signal` | dict-like one-sample reading with units and timestamp |
 | `transformer.py` | `Transformer`, `TransformerSupervised` | base classes for transformers |
-| `uncertainty.py` | `Estimate`, `AdaptiveConformalRegressor` | prediction estimate and conformal regressor |
+| `uncertainty.py` | `Estimate`, `AdaptiveConformalRegressor`, `OnlinePlattScaling` (re-exported from `utility/learn`) | prediction estimate and conformal regressor |
 | `wrapper.py` | `ModelWrapper` | delegation wrapper |
 
 ## 2. utility
@@ -164,12 +164,14 @@ graph TD
 | file | public names | what it is |
 |---|---|---|
 | `dependence.py` | `RunningCovariance`, `RunningCorrelation`, `RollingCovariance`, `RollingCorrelation`, `Autocorrelation` | covariance and correlation statistics |
+| `mixture.py` | `OnlineGaussianMixture` | online Gaussian mixture with diagonal covariance |
 | `moments.py` | `RunningMoments`, `RunningMomentsVector`, `EWStats` | moments and exponentially weighted statistics |
 | `quantiles.py` | `DDSketch`, `TDigest` | quantile sketches |
 | `robust.py` | `RollingMedian`, `RollingMAD`, `RollingIQR`, `RollingQuantile`, `RollingMedianVector` | robust rolling statistics |
 | `shrinkage.py` | `OnlineShrinkageCovariance` | Online shrinkage covariance (Bodnar, Gupta and Parolya 2014) |
 | `similarity.py` | `cosine_similarity`, `cosine_similarity_many`, `SparseCosineIndex` | Cosine similarity between score dicts |
 | `sketches.py` | `CountMinSketch`, `HyperLogLog`, `BloomFilter`, `SpaceSaving` | streaming sketches |
+| `student_t.py` | `StudentT` | online Student-t location-scale estimator with fixed degrees of freedom |
 
 ### 2.6 metrics
 
@@ -292,8 +294,6 @@ graph TD
 
 | file | public names | what it is |
 |---|---|---|
-| `anwav.py` | `anwav` | ANWAV helper |
-| `collatz.py` | `ABCollatz` | Collatz-based generator |
 | `diagnostic.py` | `diag` | diagnostic helper |
 | `iodat.py` | `lodat` | I/O helper |
 | `metro.py` | `Metro` | scaler |
@@ -366,6 +366,7 @@ graph TD
 |---|---|---|
 | `ar.py` | `OnlineAR`, `OnlineVAR` | online autoregressive models, univariate and vector |
 | `cycle.py` | `CycleResidual` | cycle residual of a repetitive scalar stream |
+| `garch.py` | `GARCH11` | GARCH(1,1) conditional variance, recursive, with fixed parameters |
 | `kalman.py` | `KalmanFilter`, `VBAdaptiveKalman`, `InnovationAdaptiveKalman` | linear Kalman filter and two adaptive variants |
 
 ### 2.26 forest
@@ -435,18 +436,26 @@ Networks as layers with `forward`, `backward` and `params()`: parameters, initia
 | `background.py` | `BackgroundLearner` | A background learner: the main program is never blocked |
 | `batching.py` | `minibatches` | Mini-batch generator |
 | `bidirectional.py` | `Bidirectional` | Bidirectional recurrent layer |
+| `bottleneck.py` | `BottleneckFusion` | Bottleneck fusion: two streams exchange information through a few tokens |
 | `chain.py` | `Sequential`, `Parallel` | Chains and branches of layers |
 | `clip.py` | `clip_grad_norm` | Gradient clipping by global L2 norm |
+| `consolidation.py` | `VQMemory`, `PQMemory`, `ResidualTree`, `LifecycleMemory`, `DualMemory`, `TheoreticalBound`, `ArchivalMemory` | Unforgetting primitives: VQ codebook and the memories built on it |
+| `continual.py` | `EWC`, `GEM`, `AGEM` | Continual-learning baselines: EWC, GEM, A-GEM |
 | `conv.py` | `Conv1D`, `Conv2D`, `MaxPool1D`, `MaxPool2D`, `AvgPool1D`, `AvgPool2D`, `Flatten` | Convolution and pooling layers |
 | `conv_more.py` | `Conv3D`, `DepthwiseConv2D`, `SeparableConv2D` | Three-dimensional, depthwise and separable convolutions |
 | `convtranspose.py` | `ConvTranspose1D`, `ConvTranspose2D`, `Upsample1D`, `Upsample2D` | Transposed convolutions and nearest-neighbour upsampling |
+| `cross_attention.py` | `MultiHeadCrossAttention` | Cross-attention: queries from one stream, keys and values from another |
+| `gated_attention.py` | `GatedCrossAttention` | A gate on a signal: look at the other stream only when it matters |
+| `generative_replay.py` | `DeepGenerativeReplay` | Deep generative replay (Shin et al. 2017) |
 | `gradcheck.py` | `gradcheck` | Gradient check against central finite differences |
 | `hedge.py` | `HedgeNetClassifier` | Hedge Backpropagation (Sahoo et al. 2018) |
 | `init.py` | `fan_in`, `he_normal`, `xavier_normal`, `zeros_bias`, `glorot_uniform` | He and Xavier initialisations for rectifier networks |
+| `latent_attention.py` | `LatentCrossAttention` | Latent cross-attention: read an input of any length into a fixed set of latents |
 | `layers.py` | `dense_forward`, `dense_backward`, `Dense`, `Embedding`, `Dropout`, `Residual` | Dense, Embedding, Dropout, Residual |
 | `losses.py` | `mse_forward`, `mse_backward`, `softmax_cross_entropy_forward`, `softmax_cross_entropy_backward`, `bce_with_logits_forward`, `bce_with_logits_backward`, `MSE`, `SoftmaxCrossEntropy`, `BCEWithLogits`, `huber_forward`, `huber_backward`, `Huber` | Losses with a forward and a backward, on a batch |
 | `losses_more.py` | `l1_forward`, `l1_backward`, `label_smoothing_ce_forward`, `label_smoothing_ce_backward`, `kldiv_forward`, `kldiv_backward`, `hinge_forward`, `hinge_backward`, `focal_forward`, `focal_backward`, `L1Loss`, `LabelSmoothingCE`, `KLDivLoss`, `HingeLoss`, `FocalLoss` | More losses: L1, label-smoothed cross-entropy, KL divergence, hinge, focal |
 | `matryoshka.py` | `MatryoshkaLoss` | The Matryoshka Representation Learning loss of Kusupati et al. 2022 |
+| `moe.py` | `forward_pure`, `SparseMoE` | Sparse mixture of experts, dispatched in JAX |
 | `models.py` | `mlp`, `resnet_mlp`, `LastStep`, `MeanOverTime`, `AddPositions`, `cnn`, `recurrent_net`, `transformer_encoder` | standard architectures (MLP, residual MLP, CNN, recurrent net, transformer encoder) and the small layers that join them to a head |
 | `norm.py` | `BatchNorm`, `LayerNorm` | BatchNorm and LayerNorm, with a forward and a backward |
 | `norm_more.py` | `GroupNorm`, `InstanceNorm` | GroupNorm and InstanceNorm |
@@ -460,6 +469,7 @@ Networks as layers with `forward`, `backward` and `params()`: parameters, initia
 | `schedules.py` | `ConstantLR`, `StepLR`, `CosineWarmRestarts` | Learning-rate schedules |
 | `schedules_more.py` | `LinearWarmup`, `NoamSchedule` | Learning-rate schedules with warmup |
 | `seq2seq.py` | `Seq2Seq` | A fixed-horizon sequence encoder and decoder |
+| `test_time.py` | `TestTimeCompute` | Test-time compute: generate candidates and pick the best |
 | `trainer.py` | `Trainer` | The standard training loop |
 
 ## 3. dynamics
@@ -551,6 +561,3 @@ model can be wrapped in `roles/Protected`, with a detector from `utility/anomaly
 `utility/drift`, to skip learning on flagged samples.
 
 A table that is already complete is read at once by the classes of `ml/` with `fit`. A network of `utility/neural` is built from layers, joined in a `Sequential`, trained by a `Trainer` on mini-batches, and placed in a pipeline of `roles/` through `AsTransformer`.
-
-
-```
