@@ -2,29 +2,55 @@ import hashlib
 import pickle
 import weakref
 from collections.abc import Mapping
-from multiprocessing import shared_memory
+from multiprocessing import resource_tracker, shared_memory
 
 import numpy as np
+
+
+def _cleanup_shm(owner: bool, *names: str) -> None:
+    if owner:
+        for name in names:
+            try:
+                shared_memory.SharedMemory(name=name).unlink()
+            except FileNotFoundError:
+                pass
+
+
+def _attach(name: str) -> shared_memory.SharedMemory:
+    try:
+        return shared_memory.SharedMemory(name=name, track=False)
+    except TypeError:
+        shm = shared_memory.SharedMemory(name=name)
+        resource_tracker.unregister(shm.name, "shared_memory")
+        return shm
+
+
+def _check_safe_pickle(item) -> None:
+    if isinstance(item, (type(None), bool, int, float, str, bytes)):
+        return
+    if isinstance(item, (tuple, list)):
+        for x in item:
+            _check_safe_pickle(x)
+        return
+    raise TypeError(f"unsupported type: {type(item)}")
 
 
 class SharedArray:
     """A numeric numpy array in one shared memory block.
 
     Source: `papers/issue_13246.md`, comment 1364587359 (the `numpy`
-    workaround) and the Editor note; `papers/ppwwyyxx_demystify_ram.txt`,
-    section "Measure RAM Usage".
-    after `fork`; `papers/ppwwyyxx_demystify_ram.txt`, section "Measure
-    RAM Usage" for the difference between RSS, PSS and USS.
-    The array is read-only (`flags.writeable` is False) so that a read
-    does not change the refcount.
+    workaround); `papers/ppwwyyxx_demystify_ram.txt`, section "Measure
+    RAM Usage".
     """
 
     def __init__(self, arr: np.ndarray) -> None:
         if arr.size == 0:
             raise ValueError("empty array")
+        if arr.dtype == object:
+            raise TypeError("dtype=object is not supported in shared memory")
         self._shape = arr.shape
         self._dtype = arr.dtype
-        self._shm = shared_memory.SharedMemory(create=True, size=arr.nbytes)
+        self._shm = shared_memory.SharedMemory(create=True, size=int(arr.nbytes))
         self._arr: np.ndarray = np.ndarray(
             self._shape, dtype=self._dtype, buffer=self._shm.buf
         )
@@ -32,15 +58,8 @@ class SharedArray:
         self._arr.flags.writeable = False
         self._owner = True
         self._finalizer = weakref.finalize(
-            self, self._cleanup, self._owner, self._shm.name
+            self, _cleanup_shm, self._owner, self._shm.name
         )
-
-    def _cleanup(self, owner: bool, name: str) -> None:
-        if owner:
-            try:
-                shared_memory.SharedMemory(name=name).unlink()
-            except FileNotFoundError:
-                pass
 
     @property
     def array(self) -> np.ndarray:
@@ -73,13 +92,13 @@ class SharedArray:
         }
 
     def __setstate__(self, state: dict) -> None:
-        self._shm = shared_memory.SharedMemory(name=state["name"])
+        self._shm = _attach(state["name"])
         self._shape, self._dtype = state["shape"], state["dtype"]
         self._arr = np.ndarray(self._shape, dtype=self._dtype, buffer=self._shm.buf)
         self._arr.flags.writeable = False
         self._owner = state["owner"]
         self._finalizer = weakref.finalize(
-            self, self._cleanup, self._owner, self._shm.name
+            self, _cleanup_shm, self._owner, self._shm.name
         )
 
     def __enter__(self):
@@ -93,11 +112,8 @@ class SharedArray:
 class SharedStrings:
     """A list of strings as one UTF-8 blob plus int64 offsets.
 
-    Source: `papers/pr_191555.md` (the design, not the numbers);
-    `papers/issue_13246.md`, comment 436632186 (the case of the list of paths).
-    The motivation is the case of the issue (`papers/issue_13246.md`): a
-    list of file paths read by index. `__getitem__(i)` decodes only item `i`,
-    so it does not touch the pages of the other items.
+    Source: `papers/pr_191555.md` (the design); `papers/issue_13246.md`,
+    comment 436632186.
     """
 
     def __init__(self, strings: list[str]) -> None:
@@ -107,13 +123,13 @@ class SharedStrings:
         encoded = [s.encode("utf-8") for s in strings]
         self._offsets = np.zeros(self._n + 1, dtype=np.int64)
         self._offsets[1:] = np.cumsum([len(e) for e in encoded])
-        total_bytes = self._offsets[-1]
+        total_bytes = int(self._offsets[-1])
         if total_bytes == 0:
             raise ValueError("zero bytes")
 
         self._shm_data = shared_memory.SharedMemory(create=True, size=total_bytes)
         self._shm_offsets = shared_memory.SharedMemory(
-            create=True, size=self._offsets.nbytes
+            create=True, size=int(self._offsets.nbytes)
         )
         self._data: np.ndarray = np.ndarray(
             (total_bytes,), dtype=np.uint8, buffer=self._shm_data.buf
@@ -121,25 +137,12 @@ class SharedStrings:
         self._off_arr: np.ndarray = np.ndarray(
             (self._n + 1,), dtype=np.int64, buffer=self._shm_offsets.buf
         )
-
         self._off_arr[:] = self._offsets
         self._data[:] = np.frombuffer(b"".join(encoded), dtype=np.uint8)
         self._owner = True
         self._finalizer = weakref.finalize(
-            self,
-            self._cleanup,
-            self._owner,
-            self._shm_data.name,
-            self._shm_offsets.name,
+            self, _cleanup_shm, self._owner, self._shm_data.name, self._shm_offsets.name
         )
-
-    def _cleanup(self, owner: bool, name_data: str, name_off: str) -> None:
-        if owner:
-            for name in (name_data, name_off):
-                try:
-                    shared_memory.SharedMemory(name=name).unlink()
-                except FileNotFoundError:
-                    pass
 
     @property
     def names(self) -> list[str]:
@@ -180,8 +183,8 @@ class SharedStrings:
         }
 
     def __setstate__(self, state: dict) -> None:
-        self._shm_data = shared_memory.SharedMemory(name=state["name_data"])
-        self._shm_offsets = shared_memory.SharedMemory(name=state["name_offsets"])
+        self._shm_data = _attach(state["name_data"])
+        self._shm_offsets = _attach(state["name_offsets"])
         self._n = state["n"]
         self._data = np.ndarray(
             (self._shm_data.size,), dtype=np.uint8, buffer=self._shm_data.buf
@@ -191,11 +194,7 @@ class SharedStrings:
         )
         self._owner = state["owner"]
         self._finalizer = weakref.finalize(
-            self,
-            self._cleanup,
-            self._owner,
-            self._shm_data.name,
-            self._shm_offsets.name,
+            self, _cleanup_shm, self._owner, self._shm_data.name, self._shm_offsets.name
         )
 
     def __enter__(self):
@@ -209,12 +208,8 @@ class SharedStrings:
 class SharedList:
     """A flat buffer of pickled items plus int64 offsets.
 
-    Source: `papers/pr_191555.md` (the design, not the numbers); the
-    pickle protocol 5 is from the `multiprocessing` docs, section
-    "SharedMemory".
-    By default (`allow_pickle=True`), the items are pickled with protocol 5.
-    Warning: pickle from shared memory trusts every local process, as
-    noted in the security section of the `multiprocessing` docs.
+    Source: `papers/pr_191555.md` (the design). The `multiprocessing`
+    docs for protocol 5.
     """
 
     def __init__(self, items: list, allow_pickle: bool = True) -> None:
@@ -223,20 +218,18 @@ class SharedList:
         self._n, self._allow_pickle = len(items), allow_pickle
         encoded = []
         for item in items:
-            if not allow_pickle and not isinstance(
-                item, (type(None), bool, int, float, str, bytes, tuple, list)
-            ):
-                raise TypeError("unsupported type")
+            if not allow_pickle:
+                _check_safe_pickle(item)
             encoded.append(pickle.dumps(item, protocol=5))
         self._offsets = np.zeros(self._n + 1, dtype=np.int64)
         self._offsets[1:] = np.cumsum([len(e) for e in encoded])
-        total_bytes = self._offsets[-1]
+        total_bytes = int(self._offsets[-1])
         if total_bytes == 0:
             raise ValueError("zero bytes")
 
         self._shm_data = shared_memory.SharedMemory(create=True, size=total_bytes)
         self._shm_offsets = shared_memory.SharedMemory(
-            create=True, size=self._offsets.nbytes
+            create=True, size=int(self._offsets.nbytes)
         )
         self._data: np.ndarray = np.ndarray(
             (total_bytes,), dtype=np.uint8, buffer=self._shm_data.buf
@@ -244,25 +237,12 @@ class SharedList:
         self._off_arr: np.ndarray = np.ndarray(
             (self._n + 1,), dtype=np.int64, buffer=self._shm_offsets.buf
         )
-
         self._off_arr[:] = self._offsets
         self._data[:] = np.frombuffer(b"".join(encoded), dtype=np.uint8)
         self._owner = True
         self._finalizer = weakref.finalize(
-            self,
-            self._cleanup,
-            self._owner,
-            self._shm_data.name,
-            self._shm_offsets.name,
+            self, _cleanup_shm, self._owner, self._shm_data.name, self._shm_offsets.name
         )
-
-    def _cleanup(self, owner: bool, name_data: str, name_off: str) -> None:
-        if owner:
-            for name in (name_data, name_off):
-                try:
-                    shared_memory.SharedMemory(name=name).unlink()
-                except FileNotFoundError:
-                    pass
 
     @property
     def names(self) -> list[str]:
@@ -304,8 +284,8 @@ class SharedList:
         }
 
     def __setstate__(self, state: dict) -> None:
-        self._shm_data = shared_memory.SharedMemory(name=state["name_data"])
-        self._shm_offsets = shared_memory.SharedMemory(name=state["name_offsets"])
+        self._shm_data = _attach(state["name_data"])
+        self._shm_offsets = _attach(state["name_offsets"])
         self._n, self._allow_pickle = state["n"], state["allow_pickle"]
         self._data = np.ndarray(
             (self._shm_data.size,), dtype=np.uint8, buffer=self._shm_data.buf
@@ -315,11 +295,7 @@ class SharedList:
         )
         self._owner = state["owner"]
         self._finalizer = weakref.finalize(
-            self,
-            self._cleanup,
-            self._owner,
-            self._shm_data.name,
-            self._shm_offsets.name,
+            self, _cleanup_shm, self._owner, self._shm_data.name, self._shm_offsets.name
         )
 
     def __enter__(self):
@@ -333,13 +309,11 @@ class SharedList:
 class SharedDict(Mapping):
     """Separate key and value buffers with offsets.
 
-    Source: `papers/pr_191555.md` (the design, not the numbers); the
-    `hash()` note is from `papers/ppwwyyxx_demystify_ram.txt`, section
-    "Python objects".
-    The lookup uses `hashlib.blake2b(pickle_of_key, digest_size=8)` because
-    `hash()` of a `str` differs between processes, as noted in
-    `papers/ppwwyyxx_demystify_ram.txt` (the section on Python objects).
-    A missing key raises `KeyError`.
+    Source: `papers/pr_191555.md` (the design). The `hash()` note is from
+    `papers/ppwwyyxx_demystify_ram.txt`, section "Python objects".
+
+    Declared limitation: keys are hashed by their pickle bytes, so `1`,
+    `1.0` and `True` are distinct keys, unlike a Python `dict`.
     """
 
     def __init__(self, mapping: dict, allow_pickle: bool = True) -> None:
@@ -347,6 +321,11 @@ class SharedDict(Mapping):
             raise ValueError("empty dict")
         self._n, self._allow_pickle = len(mapping), allow_pickle
         keys, vals = list(mapping.keys()), list(mapping.values())
+        if not allow_pickle:
+            for k in keys:
+                _check_safe_pickle(k)
+            for v in vals:
+                _check_safe_pickle(v)
         enc_keys = [pickle.dumps(k, protocol=5) for k in keys]
         enc_vals = [pickle.dumps(v, protocol=5) for v in vals]
 
@@ -355,17 +334,18 @@ class SharedDict(Mapping):
         self._val_offsets = np.zeros(self._n + 1, dtype=np.int64)
         self._val_offsets[1:] = np.cumsum([len(e) for e in enc_vals])
 
-        total_key_bytes, total_val_bytes = self._key_offsets[-1], self._val_offsets[-1]
+        total_key_bytes = int(self._key_offsets[-1])
+        total_val_bytes = int(self._val_offsets[-1])
         if total_key_bytes == 0 or total_val_bytes == 0:
             raise ValueError("zero bytes")
 
         self._shm_keys = shared_memory.SharedMemory(create=True, size=total_key_bytes)
         self._shm_key_offsets = shared_memory.SharedMemory(
-            create=True, size=self._key_offsets.nbytes
+            create=True, size=int(self._key_offsets.nbytes)
         )
         self._shm_vals = shared_memory.SharedMemory(create=True, size=total_val_bytes)
         self._shm_val_offsets = shared_memory.SharedMemory(
-            create=True, size=self._val_offsets.nbytes
+            create=True, size=int(self._val_offsets.nbytes)
         )
 
         self._keys_data: np.ndarray = np.ndarray(
@@ -394,10 +374,10 @@ class SharedDict(Mapping):
         self._sort_idx = np.argsort(self._digests)
 
         self._shm_digests = shared_memory.SharedMemory(
-            create=True, size=self._digests.nbytes
+            create=True, size=int(self._digests.nbytes)
         )
         self._shm_sort_idx = shared_memory.SharedMemory(
-            create=True, size=self._sort_idx.nbytes
+            create=True, size=int(self._sort_idx.nbytes)
         )
         self._digest_arr: np.ndarray = np.ndarray(
             (self._n,), dtype=np.uint64, buffer=self._shm_digests.buf
@@ -412,7 +392,7 @@ class SharedDict(Mapping):
         self._owner = True
         self._finalizer = weakref.finalize(
             self,
-            self._cleanup,
+            _cleanup_shm,
             self._owner,
             self._shm_keys.name,
             self._shm_key_offsets.name,
@@ -421,14 +401,6 @@ class SharedDict(Mapping):
             self._shm_digests.name,
             self._shm_sort_idx.name,
         )
-
-    def _cleanup(self, owner: bool, *names: str) -> None:
-        if owner:
-            for name in names:
-                try:
-                    shared_memory.SharedMemory(name=name).unlink()
-                except FileNotFoundError:
-                    pass
 
     @property
     def names(self) -> list[str]:
@@ -505,12 +477,12 @@ class SharedDict(Mapping):
 
     def __setstate__(self, state: dict) -> None:
         self._n, self._allow_pickle = state["n"], state["allow_pickle"]
-        self._shm_keys = shared_memory.SharedMemory(name=state["names"][0])
-        self._shm_key_offsets = shared_memory.SharedMemory(name=state["names"][1])
-        self._shm_vals = shared_memory.SharedMemory(name=state["names"][2])
-        self._shm_val_offsets = shared_memory.SharedMemory(name=state["names"][3])
-        self._shm_digests = shared_memory.SharedMemory(name=state["names"][4])
-        self._shm_sort_idx = shared_memory.SharedMemory(name=state["names"][5])
+        self._shm_keys = _attach(state["names"][0])
+        self._shm_key_offsets = _attach(state["names"][1])
+        self._shm_vals = _attach(state["names"][2])
+        self._shm_val_offsets = _attach(state["names"][3])
+        self._shm_digests = _attach(state["names"][4])
+        self._shm_sort_idx = _attach(state["names"][5])
         self._keys_data = np.ndarray(
             (self._shm_keys.size,), dtype=np.uint8, buffer=self._shm_keys.buf
         )
@@ -530,9 +502,7 @@ class SharedDict(Mapping):
             (self._n,), dtype=np.int64, buffer=self._shm_sort_idx.buf
         )
         self._owner = state["owner"]
-        self._finalizer = weakref.finalize(
-            self, self._cleanup, self._owner, *self.names
-        )
+        self._finalizer = weakref.finalize(self, _cleanup_shm, self._owner, *self.names)
 
     def __enter__(self):
         return self

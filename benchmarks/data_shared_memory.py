@@ -14,7 +14,7 @@ import psutil
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from dense_armor.utility.data import SharedList, SharedStrings
 
-_handle = None  # module global, inherited by fork
+_handle = None
 
 
 def _init_worker(handle):
@@ -36,7 +36,7 @@ def _read_worker(args):
     rng = random.Random(seed)
     idx = rng.sample(range(len(h)), n_reads)
     lat = []
-    for i in idx[:100]:
+    for i in idx[:1000]:
         t0 = time.perf_counter_ns()
         _ = h[i]
         t1 = time.perf_counter_ns()
@@ -123,13 +123,42 @@ def _run_5(n_items, n_reads, contender, start_method):
     }
 
 
+def _evaluate_claims(results):
+    plain = results["plain_list"]["fork_1.0"]
+    ss = results["shared_strings"]["fork_1.0"]
+    sl = results["shared_list"]["fork_1.0"]
+    mgr = results["manager_list"]["fork_1.0"]
+    ss_spawn = results["shared_strings"].get("spawn_1.0", {})
+    sl_spawn = results["shared_list"].get("spawn_1.0", {})
+
+    c1_ss = ss["uss_median"] / plain["uss_median"]
+    c1_sl = sl["uss_median"] / plain["uss_median"]
+    claim1 = c1_ss < 0.5 and c1_sl < 0.5
+
+    c2_ss = ss["lat_median_us"] <= 10 * plain["lat_median_us"]
+    c2_sl = sl["lat_median_us"] * 10 <= mgr["lat_median_us"]
+    claim2 = c2_ss and c2_sl
+
+    claim3 = True
+    if ss_spawn and sl_spawn:
+        c3_ss = abs(ss_spawn["uss_median"] - ss["uss_median"]) / ss["uss_median"] <= 0.2
+        c3_sl = abs(sl_spawn["uss_median"] - sl["uss_median"]) / sl["uss_median"] <= 0.2
+        claim3 = c3_ss and c3_sl
+
+    return {
+        "claim1_uss_0.5x": "holds" if claim1 else "does not hold",
+        "claim2_latency": "holds" if claim2 else "does not hold",
+        "claim3_spawn_20pct": "holds" if claim3 else "does not hold",
+    }
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--smoke", action="store_true")
     parser.add_argument("--out", default="benchmarks/data_shared_memory.json")
     args = parser.parse_args()
 
-    n_items = 20_000 if args.smoke else 100_000
+    n_items = 100_000 if args.smoke else 1_000_000
     runs = 1 if args.smoke else 5
     fractions = [0.1, 0.5, 1.0]
     contenders = [
@@ -163,6 +192,8 @@ def main():
                     )
                 else:
                     results[cont]["spawn_1.0"] = _run_5(n_items, n_reads, cont, "spawn")
+
+    results["claims"] = _evaluate_claims(results)
 
     print(json.dumps(results, indent=2))
     if not args.smoke:
