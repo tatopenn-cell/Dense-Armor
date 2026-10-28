@@ -166,7 +166,8 @@ class StudentT(Transformer):
 
         The mean step is the weighted-mean EM step of the scale mixture
         of the t (Kotz & Nadarajah, Multivariate t Distributions and Their
-        Applications, Cambridge University Press 2004, ch. 3)::
+        Applications, Cambridge University Press 2004, ch. 3; bibliographic
+        only: the book is not in the folder of this task, no page verified)::
 
             z = (v - mu) / sigma
             w = (nu + 1) / (nu + z^2)
