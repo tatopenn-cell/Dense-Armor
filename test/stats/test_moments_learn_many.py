@@ -34,7 +34,7 @@ def test_learn_many_in_chunks_matches_one_call():
     for cut in (100, 1000, 5000):
         chunk = RunningMoments()
         for i in range(0, len(arr), cut):
-            chunk.learn_many(arr[i:i + cut])
+            chunk.learn_many(arr[i : i + cut])
         assert abs(one.mean_ - chunk.mean_) < 1e-9
         assert abs(one.m2_ - chunk.m2_) < 1e-6 * max(1.0, abs(one.m2_))
         assert abs(one.m3_ - chunk.m3_) < 1e-6 * max(1.0, abs(one.m3_))
@@ -90,4 +90,32 @@ def test_learn_many_vector_matches_loop():
     v2.learn_many({"a": A, "b": B})
     for k in ("a", "b"):
         assert abs(v.channels_[k].mean_ - v2.channels_[k].mean_) < 1e-9
-        assert abs(v.channels_[k].m2_ - v2.channels_[k].m2_) < 1e-6 * max(1.0, abs(v.channels_[k].m2_))
+        assert abs(v.channels_[k].m2_ - v2.channels_[k].m2_) < 1e-6 * max(
+            1.0, abs(v.channels_[k].m2_)
+        )
+
+
+def test_block_constant_large_values_no_overflow():
+    """Non-regression: `_block` returns m2=0 for constant large values.
+
+    With 500,000 samples at 1.79e301, `a.mean()` is 1.79e301 with a
+    rounding error of ~1e285. The original `_block` computes
+    `(a - mean)**2`, which is ~1e570 and overflows to `inf`. The
+    shift-based `_block` subtracts `a[0]` first, so
+    `(a - a[0]) - mean_shifted` is exactly zero and `m2 = 0`.
+    """
+    import numpy as np
+
+    from dense_armor.utility.stats.moments import RunningMoments
+
+    max_f = np.finfo(np.float64).max / 1e5
+    min_f = max_f / 1e2
+    batch = np.full(500000, min_f, dtype=np.float64)
+
+    m = RunningMoments()
+    m.learn_many(batch)
+
+    assert np.isfinite(m.mean_), f"mean: {m.mean_}"
+    assert np.isfinite(m.m2_), f"m2: {m.m2_}"
+    assert m.m2_ == 0.0, f"m2 deve essere 0, invece è {m.m2_}"
+    assert m.var == 0.0, f"var deve essere 0, invece è {m.var}"
