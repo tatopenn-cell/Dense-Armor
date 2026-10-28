@@ -14,35 +14,51 @@ import psutil
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from dense_armor.utility.data import SharedList, SharedStrings
 
+_handle = None  # module global, inherited by fork
+
+
+def _init_worker(handle):
+    global _handle
+    _handle = handle
+
 
 def _build_data(n):
     return [f"/path/to/file/{i}" for i in range(n)]
 
 
 def _read_worker(args):
-    handle, indices = args
+    n_reads, seed = args
     pid = os.getpid()
     proc = psutil.Process(pid)
-    _ = handle[0]
+    h = _handle
+    _ = h[0]
     before = proc.memory_full_info()
-    for i in indices:
-        _ = handle[i]
+    rng = random.Random(seed)
+    idx = rng.sample(range(len(h)), n_reads)
+    lat = []
+    for i in idx[:100]:
+        t0 = time.perf_counter_ns()
+        _ = h[i]
+        t1 = time.perf_counter_ns()
+        lat.append(t1 - t0)
+    for i in idx:
+        _ = h[i]
     after = proc.memory_full_info()
     return {
         "uss": after.uss - before.uss,
         "pss": after.pss - before.pss,
+        "lat_median_ns": statistics.median(lat),
     }
 
 
-def run_benchmark(n_items, fraction, contender, start_method):
-    ctx = get_context(start_method)
+def _run_once(n_items, n_reads, contender, start_method):
     data = _build_data(n_items)
-
     if contender == "plain_list":
         handle = data
     elif contender == "numpy_object":
         handle = np.array(data, dtype=object)
     elif contender == "manager_list":
+        ctx = get_context(start_method)
         handle = ctx.Manager().list(data)
     elif contender == "shareable_list":
         from multiprocessing.shared_memory import ShareableList
@@ -55,17 +71,21 @@ def run_benchmark(n_items, fraction, contender, start_method):
     else:
         raise ValueError(contender)
 
-    n_reads = int(n_items * fraction)
-    random.seed(42)
-    indices = random.sample(range(n_items), n_reads)
-    chunk_size = max(1, len(indices) // 4)
-    chunks = [indices[i : i + chunk_size] for i in range(0, len(indices), chunk_size)]
+    ctx = get_context(start_method)
+    tasks = [(n_reads, i) for i in range(4)]
+    global _handle
+    if start_method == "fork":
+        _handle = handle
+        with ctx.Pool(4) as pool:
+            results = pool.map(_read_worker, tasks)
+        _handle = None
+    else:
+        with ctx.Pool(4, initializer=_init_worker, initargs=(handle,)) as pool:
+            results = pool.map(_read_worker, tasks)
 
-    with ctx.Pool(4) as pool:
-        results = pool.map(_read_worker, [(handle, c) for c in chunks])
-
-    uss_vals = [r["uss"] for r in results]
-    pss_vals = [r["pss"] for r in results]
+    uss = [r["uss"] for r in results]
+    pss = [r["pss"] for r in results]
+    lat = [r["lat_median_ns"] for r in results]
 
     if contender == "shareable_list":
         handle.shm.close()
@@ -75,8 +95,31 @@ def run_benchmark(n_items, fraction, contender, start_method):
         handle.close()
 
     return {
-        "uss_median": statistics.median(uss_vals),
-        "pss_median": statistics.median(pss_vals),
+        "uss_median": statistics.median(uss),
+        "pss_median": statistics.median(pss),
+        "lat_median_us": statistics.median(lat) / 1000.0,
+    }
+
+
+def _iqr(vals):
+    s = sorted(vals)
+    n = len(s)
+    if n < 2:
+        return 0.0
+    return s[int(0.75 * (n - 1))] - s[int(0.25 * (n - 1))]
+
+
+def _run_5(n_items, n_reads, contender, start_method):
+    runs = [_run_once(n_items, n_reads, contender, start_method) for _ in range(5)]
+    uss = [r["uss_median"] for r in runs]
+    pss = [r["pss_median"] for r in runs]
+    lat = [r["lat_median_us"] for r in runs]
+    return {
+        "uss_median": statistics.median(uss),
+        "uss_iqr": _iqr(uss),
+        "pss_median": statistics.median(pss),
+        "pss_iqr": _iqr(pss),
+        "lat_median_us": statistics.median(lat),
     }
 
 
@@ -86,7 +129,8 @@ def main():
     parser.add_argument("--out", default="benchmarks/data_shared_memory.json")
     args = parser.parse_args()
 
-    n_items = 100_000 if args.smoke else 1_000_000
+    n_items = 20_000 if args.smoke else 100_000
+    runs = 1 if args.smoke else 5
     fractions = [0.1, 0.5, 1.0]
     contenders = [
         "plain_list",
@@ -101,26 +145,24 @@ def main():
     for cont in contenders:
         results[cont] = {}
         for frac in fractions:
-            try:
-                start = time.time()
-                res = run_benchmark(n_items, frac, cont, "fork")
-                res["time_s"] = time.time() - start
-                results[cont][f"fork_{frac}"] = res
-            except Exception as e:
-                results[cont][f"fork_{frac}"] = {"error": str(e)}
-
+            n_reads = int(n_items * frac)
+            if runs == 1:
+                results[cont][f"fork_{frac}"] = _run_once(
+                    n_items, n_reads, cont, "fork"
+                )
+            else:
+                results[cont][f"fork_{frac}"] = _run_5(n_items, n_reads, cont, "fork")
             if (
                 cont
                 in ("shareable_list", "shared_strings", "shared_list", "plain_list")
                 and frac == 1.0
             ):
-                start = time.time()
-                try:
-                    res = run_benchmark(n_items, frac, cont, "spawn")
-                    res["time_s"] = time.time() - start
-                    results[cont][f"spawn_{frac}"] = res
-                except Exception as e:
-                    results[cont][f"spawn_{frac}"] = {"error": str(e)}
+                if runs == 1:
+                    results[cont]["spawn_1.0"] = _run_once(
+                        n_items, n_reads, cont, "spawn"
+                    )
+                else:
+                    results[cont]["spawn_1.0"] = _run_5(n_items, n_reads, cont, "spawn")
 
     print(json.dumps(results, indent=2))
     if not args.smoke:

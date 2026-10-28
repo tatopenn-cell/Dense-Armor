@@ -174,3 +174,13 @@ def test_no_leak():
     gc.collect()
     after = set(shm_dir.iterdir())
     assert len(after - before) == 0
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux only")
+def test_fork_child_reads():
+    ctx = mp.get_context("fork")
+    items = ["a", "b", "c"]
+    with SharedStrings(items) as ss:
+        with ctx.Pool(2) as pool:
+            results = pool.map(_read_index, [(ss, i) for i in range(3)])
+            assert results == items
