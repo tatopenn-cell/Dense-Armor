@@ -439,7 +439,11 @@ Networks as layers with `forward`, `backward` and `params()`: parameters, initia
 | `bottleneck.py` | `BottleneckFusion` | Bottleneck fusion: two streams exchange information through a few tokens |
 | `chain.py` | `Sequential`, `Parallel` | Chains and branches of layers |
 | `clip.py` | `clip_grad_norm` | Gradient clipping by global L2 norm |
-| `consolidation.py` | `VQMemory`, `PQMemory`, `ResidualTree`, `LifecycleMemory`, `DualMemory`, `TheoreticalBound`, `ArchivalMemory` | Unforgetting primitives: VQ codebook and the memories built on it |
+| `consolidation/` | `__init__.py` re-exports the 7 names | Package (split from the former `consolidation.py`). |
+| `consolidation/vq.py` | `VQMemory`, `PQMemory` | Vector quantisation (VQ-VAE, van den Oord 2017, Eq. 1-4 p. 3) and product quantisation (Jegou 2011). |
+| `consolidation/tree.py` | `ResidualTree` | Residual tree over a `VQMemory`. |
+| `consolidation/memory.py` | `LifecycleMemory`, `DualMemory`, `TheoreticalBound` | Lifecycle states, dual (fast + slow) memory, the theoretical bound. |
+| `consolidation/archival.py` | `ArchivalMemory` | Archival memory: tree + lifecycle + dual memory together. |
 | `continual.py` | `EWC`, `GEM`, `AGEM` | Continual-learning baselines: EWC, GEM, A-GEM |
 | `conv.py` | `Conv1D`, `Conv2D`, `MaxPool1D`, `MaxPool2D`, `AvgPool1D`, `AvgPool2D`, `Flatten` | Convolution and pooling layers |
 | `conv_more.py` | `Conv3D`, `DepthwiseConv2D`, `SeparableConv2D` | Three-dimensional, depthwise and separable convolutions |
