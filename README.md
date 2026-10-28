@@ -18,7 +18,7 @@
 
 <h3 align="center">Robot-AI Online Shielding &amp; Learning</h3>
 
-<p align="center"><strong>A library for online learning on robot, vision, and AI streams, one sample at a time, with streaming statistics and protection, drift and anomaly detection, and safe robot commands.</strong></p>
+<p align="center"><strong>A library for online learning on robot, vision, and AI streams, one sample at a time: streaming statistics and protection, drift and anomaly detection, safe robot commands, deep learning with continual learning and memory consolidation, and robust time-series models.</strong></p>
 
 <p align="center">📖 <a href="https://tatopenn-cell.github.io/Dense-Armor/"><strong>Full documentation, API reference, quick guide →</strong></a></p>
 
@@ -58,7 +58,7 @@ In this library, *shielding* means cleaning the data a model sees (NaN, spikes, 
 
 ## What it does
 
-Dense-Armor is a Python machine learning library with an online part. Every online estimator learns one sample at a time, at control-loop speed, on JAX, and the machine learning classes of `dense_armor.ml` read a whole dataset with `fit`. The same `learn_one` / `predict_one` / `transform_one` contract runs on a table, a time series, a robot joint stream, a video frame, a token stream, and a shield can sit in front of any of them.
+Dense-Armor is a Python machine learning library with an online part. Every online estimator learns one sample at a time, at control-loop speed, on JAX, and the machine learning classes of `dense_armor.ml` read a whole dataset with `fit`. The same `learn_one` / `predict_one` / `transform_one` contract runs on a table, a time series, a robot joint stream, a video frame, a token stream, and a shield can sit in front of any of them. On top of that, `dense_armor.utility.neural` has the deep-learning pieces (layers, attention, convolutional and recurrent blocks, batch and streaming training, continual learning with EWC/GEM/A-GEM, memory consolidation with vector quantization, product quantization and a residual tree), and `dense_armor.utility.stats` and `.timeseries` have the robust models (Student-t, Gaussian mixture, GARCH, AR/VAR/Kalman).
 
 ---
 
@@ -168,6 +168,7 @@ Dense-Armor provides online implementations of the following families of algorit
 - Calibration and metric learning
 - Imbalanced learning
 - [Vision](https://tatopenn-cell.github.io/Dense-Armor/vision/) (video files, frame features, patches, vocabulary, online reduction, motion, tracking, registration, dense flow)
+- [Deep learning](https://tatopenn-cell.github.io/Dense-Armor/neural/) (layers, attention, convolutional and recurrent blocks, batch and streaming training, continual learning with EWC, GEM, A-GEM, memory consolidation with VQ, PQ, residual tree, dual and archival memory)
 - Robot control (rate limits, control barrier functions, trajectories, kinematic tracking)
 - Robot dynamics (URDF, passivity + CBF controllers)
 - Shielding (1D series cleanup, input/output shield, per-point routing)

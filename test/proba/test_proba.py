@@ -292,3 +292,21 @@ def test_gaussian_pdf_uses_constructor_var():
     g._n = 1.0
     g._m2 = 0.0
     assert g.pdf(0.0) == 0.0
+
+def test_pdf_small_variance_peak():
+    """pdf at the mean is 1/sqrt(2*pi*var) even for var << 1e-15.
+
+    The previous pdf normalised with ``var`` but exponentiated with
+    ``var_safe = max(var, 1e-15)``, so for var < 1e-15 the density was
+    flatter than the true one. With the fix both use ``var``.
+    """
+    import math
+    from dense_armor.utility.proba.gaussian import Gaussian
+
+    for var in (1e-16, 1e-17, 1e-20):
+        g = Gaussian(mean=0.0, var=var, n=1.0)
+        got = g.pdf(0.0)
+        expected = 1.0 / math.sqrt(2.0 * math.pi * var)
+        assert abs(got - expected) / expected < 1e-3, (
+            f"var={var!r}: pdf={got!r}, expected={expected!r}"
+        )

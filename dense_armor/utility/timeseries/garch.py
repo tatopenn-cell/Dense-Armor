@@ -22,7 +22,7 @@ This module implements **GARCH(1, 1)**, the special case with
 
     sigma^2_t = omega + alpha * X^2_{t-1} + beta * sigma^2_{t-1}
 
-The quasi-maximum-likelihood (QML) log-likelihood is Eq. (3) page 2
+The quasi-maximum-likelihood (QML) log-likelihood is Eq. (3) page 3
 of the paper, with the constants omitted:
 
     l_n(theta) = (1/n) * sum_t [ log sigma^2_t(theta)
@@ -45,7 +45,7 @@ References
 Csáji, B. Cs. (2018). Score Permutation Based Finite Sample Inference
     for Generalized AutoRegressive Conditional Heteroskedasticity
     (GARCH) Models. arXiv:1807.08390. Eq. (1a)-(1b) page 1; Eq. (2)
-    page 1; Eq. (3) page 2; initialization page 2.
+    page 1; Eq. (3) page 3; initialization page 3.
 Bollerslev, T. (1986). Generalized autoregressive conditional
     heteroskedasticity. Journal of Econometrics 31(3), 307-327.
     DOI 10.1016/0304-4076(86)90063-1. Not in the folder,
@@ -79,8 +79,10 @@ class GARCH11(Transformer):
             of the keys.
 
     Attributes:
-        sigma2_: conditional variance of the last sample.
-        epsilon_: residual of the last sample, ``X_t``.
+        sigma2_: conditional variance of the next sample, updated from
+            the last residual and the last variance.
+        epsilon_: residual of the last sample, ``X_t`` (zero before the first
+            ``learn_one``, unchanged until the next).
         sigma2_history_: not kept (memory O(1)); only the last variance.
 
     Raises:
@@ -212,5 +214,5 @@ class GARCH11(Transformer):
         self.epsilon_ = w_self * self.epsilon_ + w_other * other.epsilon_
         self.n_ = n_total
         self.n_missing_ += other.n_missing_
-        self.initialized_ = self.initialized_ or other._initialized
+        self.initialized_ = self.initialized_ or other.initialized_
         return self

@@ -95,6 +95,16 @@ class BottleneckFusion:
                 over the batch) when ``None``.
             training: forwarded to the two blocks.
 
+            Declared limitation: a 2D ``fsn`` with a 3D stream (batch
+            ``B > 1``) is supported and returns a 2D ``fsn'``, but that
+            ``fsn'`` is the *mean* of the two branches' bottlenecks over
+            the batch (``fsn_new = mean(fsn_raw, axis=0)``).  The output
+            of one sample therefore depends on the other samples of the
+            batch.  The 3D form is per-sample and has no such coupling.
+            The 2D form is kept for the test ``test_2d_fsn_with_3d_streams``
+            and for the callers that use it as a summary; a caller that
+            needs per-sample independence passes a 3D ``fsn``.
+
         Returns:
             The triple ``(a', b', fsn')``.
         """

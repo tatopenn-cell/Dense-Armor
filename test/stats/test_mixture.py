@@ -296,3 +296,24 @@ def test_transform_one_feature_named():
 
 def test_check_estimator():
     check_estimator(OnlineGaussianMixture(n_components=2), allow_not_applicable={})
+
+def test_init_from_first_uses_each_dimension():
+    """The initial means follow every coordinate of the first sample.
+
+    _init_from_first used v[0] for all d dimensions, so on a 2D sample
+    (10, -10) every component started near (10, 10). With v[j] the two
+    dimensions start near 10 and -10. ``_vector`` reads a dict of floats
+    with sorted keys, so a 2D input is two keys.
+    """
+    import numpy as np
+
+    from dense_armor.utility.stats.mixture import OnlineGaussianMixture
+
+    m = OnlineGaussianMixture(n_components=2, init_scale=0.5)
+    m.learn_one({"a": 10.0, "b": -10.0})
+    means = np.asarray(m.means_)
+    assert means.shape == (2, 2), f"means shape {means.shape}"
+    assert abs(means[0, 0] - 10.0) < 1.0, f"dim 0: {means[0, 0]!r}"
+    assert abs(means[0, 1] + 10.0) < 1.0, f"dim 1: {means[0, 1]!r}"
+    assert abs(means[1, 0] - 10.0) < 1.0, f"dim 0 (comp 1): {means[1, 0]!r}"
+    assert abs(means[1, 1] + 10.0) < 1.0, f"dim 1 (comp 1): {means[1, 1]!r}"

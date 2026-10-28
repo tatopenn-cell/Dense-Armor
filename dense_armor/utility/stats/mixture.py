@@ -44,7 +44,8 @@ mentions the Gaussian case only in passing. The derivation is this
 file's own choice, declared here per rule 18 of
 ``REGOLE_DOC_DENSE_ARMOR.md``.
 
-Covariance is **diagonal**, positive by construction. Full covariance
+Covariance is **diagonal**; it is positive because ``reg_covar`` is added
+at use time. Full covariance
 is not implemented: a diagonal covariance keeps the update O(k * d)
 per sample, and a full covariance would make the M-step O(k * d^3).
 
@@ -206,7 +207,7 @@ class OnlineGaussianMixture(Transformer):
             offsets = [
                 (i - (self.n_components - 1) / 2.0) for i in range(self.n_components)
             ]
-            means = [[v[0] + o * self.init_scale for _ in range(d)] for o in offsets]
+            means = [[v[j] + o * self.init_scale for j in range(d)] for o in offsets]
         self.weights_ = np.full(self.n_components, 1.0 / self.n_components)
         self.means_ = np.asarray(means, dtype=float)
         self.variances_ = np.full((self.n_components, d), self.init_scale**2)
@@ -218,8 +219,11 @@ class OnlineGaussianMixture(Transformer):
         x: np.ndarray = np.asarray(v, dtype=float)
         var = self.variances_ + self.reg_covar
         diff = x[None, :] - self.means_
-        log_norm = -0.5 * np.sum(np.log(2.0 * math.pi * np.maximum(var, 1e-15)), axis=1)
-        log_exp = -0.5 * np.sum(diff * diff / np.maximum(var, 1e-15), axis=1)
+        # reg_covar can be 0, so var can be 0 when all the data in a
+        # component is the same: the max keeps log(0) and 0/0 finite.
+        var_safe = np.maximum(var, 1e-15)
+        log_norm = -0.5 * np.sum(np.log(2.0 * math.pi * var_safe), axis=1)
+        log_exp = -0.5 * np.sum(diff * diff / var_safe, axis=1)
         return np.log(self.weights_ + 1e-300) + log_norm + log_exp
 
     def learn_one(
@@ -257,7 +261,7 @@ class OnlineGaussianMixture(Transformer):
             var_old + mu_old * mu_old
         ) + gamma * r[:, None] * (x_arr[None, :] ** 2)
         e_x2 = num_x2 / w_safe[:, None]
-        var_new = np.maximum(e_x2 - means_new * means_new, self.reg_covar)
+        var_new = np.maximum(e_x2 - means_new * means_new, 0.0)
 
         self.weights_ = w_new
         self.means_ = means_new
@@ -307,7 +311,18 @@ class OnlineGaussianMixture(Transformer):
         return float(-self._logpdf(v))
 
     def merge(self, other: "OnlineGaussianMixture") -> "OnlineGaussianMixture":
-        """Combine two independent states by weighted averaging of ``n_``."""
+        """Combine two independent states by weighted averaging of ``n_``.
+
+        This is a *naive* merge: it averages the weights, the means and the
+        variances component by component, assuming that component ``k`` of
+        ``self`` and component ``k`` of ``other`` are the same component. Two
+        independently fitted mixtures do not, in general, share the order of
+        their components, so a merge of this kind is a lower bound of the
+        correct posterior and is declared as a limitation, not as a property
+        of the estimator. A correct merge would require matching the
+        components (e.g. by a distance between the means) or re-running EM on
+        the union of the sufficient statistics, which the class does not keep.
+        """
         if not other.initialized_:
             return self
         if not self.initialized_:

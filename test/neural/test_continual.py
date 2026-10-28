@@ -239,3 +239,24 @@ def test_agem_project_no_violation_returns_g():
     g = jnp.array([1.0, 0.0])
     g1 = jnp.array([1.0, 0.0])
     assert np.allclose(np.asarray(agem.project(g, g1)), np.asarray(g))
+
+def test_solve_nonneg_qp_stops_with_tol():
+    """_solve_nonneg_qp with tol > 0 stops before max_iter.
+
+    The loop runs a projected gradient; with tol it stops when the
+    maximum change of v is below tol. Without a test, the break was
+    uncovered (continual.py 60% on the touched lines).
+    """
+    import jax.numpy as jnp
+
+    from dense_armor.utility.neural.continual import GEM
+
+    A = jnp.asarray([[2.0, 0.0], [0.0, 2.0]])
+    b = jnp.asarray([-1.0, -1.0])
+    v_plain = GEM._solve_nonneg_qp(A, b, max_iter=500, tol=0.0)
+    v_tol = GEM._solve_nonneg_qp(A, b, max_iter=500, tol=1e-6)
+    # the solution is v = 0.5 on both components
+    assert abs(float(v_tol[0]) - 0.5) < 1e-4, f"v_tol[0] = {float(v_tol[0])!r}"
+    assert abs(float(v_tol[1]) - 0.5) < 1e-4, f"v_tol[1] = {float(v_tol[1])!r}"
+    # with tol the result is (nearly) the same
+    assert float(jnp.max(jnp.abs(v_plain - v_tol))) < 1e-3

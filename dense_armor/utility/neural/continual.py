@@ -1,7 +1,7 @@
 """Continual-learning baselines: EWC, GEM, A-GEM.
 
 EWC: Kirkpatrick et al. 2017, Eq. (3) page 3.
-GEM: Lopez-Paz & Ranzato 2017, Eq. (7) page 4.
+GEM: Lopez-Paz & Ranzato 2017, Eq. (8) QP and Eq. (11) dual, page 4.
 A-GEM: Chaudhry et al. 2019, Eq. (11) page 5.
 """
 
@@ -26,7 +26,9 @@ class EWC:
             of :class:`Param`.
         loss: any object with ``forward(pred, target)``, e.g. ``MSE`` or
             ``SoftmaxCrossEntropy``.
-        lambda_: weight of the old task, the paper's value for MNIST is 0.4.
+        lambda_: weight of the old task. 0.4 is our choice: Kirkpatrick et al.
+            2017 (PNAS 114(13), p. 5) tuned lambda by hyperparameter search on
+            Atari and state no single value; 0.4 is not in the paper.
 
     The diagonal Fisher is computed with central finite differences on the
     flat parameter vector, ``eps = 1e-6``, because ``jax.grad`` cannot write
@@ -77,6 +79,15 @@ class EWC:
         into the model's ``Param`` objects (JAX forbids side effects inside
         a transformation). The finite difference is accurate to ``1e-4``
         relative on the tests, which is the tolerance the test declares.
+
+        Declared limitation: ``F_ = (dL/dtheta)^2`` where ``dL/dtheta`` is
+        the gradient of the *mean* log-likelihood on the batch, not the
+        mean of the per-sample squared gradients of Eq. (3) of Kirkpatrick
+        et al. 2017.  The two coincide only when the batch has one sample.
+        A correct Fisher is ``mean_i (dL_i/dtheta)^2`` and costs
+        ``n_samples * n_params`` finite differences, which this method
+        does not pay.  Treat ``F_`` as a lower bound of the diagonal
+        Fisher, not as the Fisher.
         """
         theta = np.asarray(self.flat_params(), dtype=np.float64)
         eps = 1e-6
@@ -106,7 +117,7 @@ class EWC:
 
 
 class GEM:
-    """Gradient Episodic Memory (Lopez-Paz & Ranzato 2017, Eq. 7 p. 4).
+    """Gradient Episodic Memory (Lopez-Paz & Ranzato 2017, Eq. 8 QP and Eq. 11 dual, p. 4).
 
     Args:
         memory_per_task: budget of the episodic memory of one task.
@@ -114,7 +125,7 @@ class GEM:
 
     References:
         Lopez-Paz & Ranzato 2017, Gradient Episodic Memory for Continual
-        Learning, NeurIPS, Eq. (7) page 4.
+        Learning, NeurIPS, Eq. (8) QP and Eq. (11) dual, page 4.
     """
 
     def __init__(self, memory_per_task: int = 256, seed: int = 0) -> None:
@@ -124,11 +135,20 @@ class GEM:
         self._rng = np.random.RandomState(seed)
 
     def observe(self, x: Any, y: Any, task_id: int) -> "GEM":
-        """Reservoir-sample one sample into the memory of ``task_id``.
+        """Store one sample into the memory of ``task_id``.
 
         ``x`` is stored as a 1D array of length ``d_model``; ``y`` keeps its
         dtype (int for class labels) and is stored as a scalar in a 1D array
         of length 1, so that ``memory()`` returns ``Y`` with shape ``(n,)``.
+
+        Declared limitation: this is *not* reservoir sampling.  The
+        replacement index is drawn in ``[0, n + 1)`` with ``n = len(memory)``
+        (at most ``memory_per_task``), not with ``n_seen`` (the number of
+        samples seen for this task).  Once the memory is full, almost every
+        new sample replaces one slot, so the memory is heavily biased to
+        recent samples.  A correct reservoir draws in ``[0, n_seen + 1)``
+        and needs a per-task ``n_seen`` counter, which the class does not
+        keep.
         """
         xa = np.asarray(x, dtype=np.float64).reshape(-1)
         ya = np.asarray(y).reshape(-1)
@@ -160,7 +180,7 @@ class GEM:
     def project(
         self, g: jnp.ndarray, mem_grads: Sequence[jnp.ndarray]
     ) -> jnp.ndarray:
-        """Solve Eq. (7) p. 4 by projecting ``g`` onto the half-spaces.
+        """Solve Eq. (8) p. 4 (QP) by projecting ``g`` onto the half-spaces.
 
         Args:
             g: the proposed gradient, shape ``(P,)``.
@@ -183,13 +203,29 @@ class GEM:
 
     @staticmethod
     def _solve_nonneg_qp(
-        A: jnp.ndarray, b: jnp.ndarray, max_iter: int = 500
+        A: jnp.ndarray,
+        b: jnp.ndarray,
+        max_iter: int = 500,
+        tol: float = 0.0,
     ) -> jnp.ndarray:
-        """Minimise ``1/2 v^T A v + v^T b`` with ``v >= 0`` (projected gradient)."""
+        """Minimise ``1/2 v^T A v + v^T b`` with ``v >= 0`` (projected gradient).
+
+        Args:
+            A, b: the quadratic and the linear term.
+            max_iter: maximum number of projected-gradient steps
+                (default 500).
+            tol: if positive, stop when the maximum absolute change of
+                ``v`` between two steps is below ``tol``.  Default 0.0:
+                run exactly ``max_iter`` steps (the previous behaviour).
+        """
         v = jnp.zeros(A.shape[0])
         lr = 1.0 / (jnp.linalg.norm(A) + 1e-8)
         for _ in range(max_iter):
-            v = jnp.maximum(0.0, v - lr * (A @ v + b))
+            v_new = jnp.maximum(0.0, v - lr * (A @ v + b))
+            if tol > 0.0 and bool(jnp.max(jnp.abs(v_new - v)) < tol):
+                v = v_new
+                break
+            v = v_new
         return v
 
 
@@ -198,7 +234,7 @@ class AGEM:
 
     Args:
         memory_per_task: budget of the episodic memory of one task.
-        seed: seed of the reservoir sampling.
+        seed: seed of the random state used to pick the replacement index.
 
     References:
         Chaudhry et al. 2019, Efficient Lifelong Learning with A-GEM, ICLR,
@@ -212,11 +248,20 @@ class AGEM:
         self._rng = np.random.RandomState(seed)
 
     def observe(self, x: Any, y: Any, task_id: int) -> "AGEM":
-        """Reservoir-sample one sample into the memory of ``task_id``.
+        """Store one sample into the memory of ``task_id``.
 
         ``x`` is stored as a 1D array of length ``d_model``; ``y`` keeps its
         dtype (int for class labels) and is stored as a scalar in a 1D array
         of length 1, so that ``memory()`` returns ``Y`` with shape ``(n,)``.
+
+        Declared limitation: this is *not* reservoir sampling.  The
+        replacement index is drawn in ``[0, n + 1)`` with ``n = len(memory)``
+        (at most ``memory_per_task``), not with ``n_seen`` (the number of
+        samples seen for this task).  Once the memory is full, almost every
+        new sample replaces one slot, so the memory is heavily biased to
+        recent samples.  A correct reservoir draws in ``[0, n_seen + 1)``
+        and needs a per-task ``n_seen`` counter, which the class does not
+        keep.
         """
         xa = np.asarray(x, dtype=np.float64).reshape(-1)
         ya = np.asarray(y).reshape(-1)

@@ -131,10 +131,10 @@ class RunningCovariance(Transformer):
     @property
     def corr(self) -> float:
         """Pearson correlation coefficient, in ``[-1, 1]``."""
-        denom = math.sqrt(max(self.m2_x_ * self.m2_y_, 1e-30))
-        if denom == 0.0:
+        p = self.m2_x_ * self.m2_y_
+        if p <= 0.0:
             return 0.0
-        return self.c_ / denom
+        return self.c_ / math.sqrt(p)
 
     def merge(self, other: "RunningCovariance") -> "RunningCovariance":
         """Combine two partial states into the state of the union.

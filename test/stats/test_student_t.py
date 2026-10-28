@@ -23,21 +23,21 @@ def _t_series(nu: float, mu: float, sigma: float, n: int, seed: int) -> np.ndarr
     return mu + sigma * rng.standard_t(df=nu, size=n)
 
 
-# The online gradient with a fixed learning_rate converges to a
-# neighbourhood of the maximum-likelihood estimate, not to the MLE
-# exactly: the residual width is proportional to learning_rate
-# (Robbins-Monro with constant step). The tolerances below are the
-# measured residual width at learning_rate=0.05 on 5000 samples, with
-# margin. They are declared, not derived. For exact estimates use
+# The tolerances are the measured residual width at learning_rate=0.05
+# on 5000 samples with the dimensionally correct step lr * w * (v - mu),
+# w = (nu+1)/(nu+z^2), z = (v - mu)/sigma, times a 1.3 margin. They are
+# declared, not derived. They were re-measured after the step changed:
+# the previous step had unit 1/length and made the convergence depend on
+# the data scale (see test_scale_invariance). For exact estimates use
 # scipy.stats.t.fit on the same series.
 
 
 @pytest.mark.parametrize(
     "nu,mu_true,sigma_true,tol_mu",
     [
-        (2.0, 0.0, 1.0, 0.1),
-        (5.0, 2.0, 0.5, 0.1),
-        (30.0, -1.0, 2.0, 0.2),
+        (2.0, 0.0, 1.0, 0.2),
+        (5.0, 2.0, 0.5, 0.2),
+        (30.0, -1.0, 2.0, 0.43),
     ],
 )
 def test_location_converges_to_neighbourhood(nu, mu_true, sigma_true, tol_mu):
@@ -53,9 +53,9 @@ def test_location_converges_to_neighbourhood(nu, mu_true, sigma_true, tol_mu):
 @pytest.mark.parametrize(
     "nu,sigma_true,tol_rel",
     [
-        (2.0, 1.0, 0.35),
-        (5.0, 0.5, 0.25),
-        (30.0, 2.0, 0.25),
+        (2.0, 1.0, 0.34),
+        (5.0, 0.5, 0.3),
+        (30.0, 2.0, 0.3),
     ],
 )
 def test_scale_converges_to_neighbourhood(nu, sigma_true, tol_rel):
@@ -227,6 +227,32 @@ def test_score_one_nan_returns_nan():
     m = StudentT(nu=5.0, learning_rate=0.1)
     m.learn_one({"x": 1.0})
     assert math.isnan(m.score_one({"x": float("nan")}))
+
+
+def test_scale_invariance():
+    """Same t series at scales 1e-3, 1, 1e3: mu_ and sigma_ scale with it.
+
+    The previous mean step lr * (nu+1)*(v-mu)/(nu*sigma^2 + (v-mu)^2) had
+    unit 1/length, so the estimate depended on the data scale: scale 1e-3
+    gave mu_ ~= 19 (true 0.01), scale 1e3 gave mu_ ~= 0.02 (true 1e4).
+    The weighted-mean EM step lr * w * (v-mu), w = (nu+1)/(nu+z^2),
+    z = (v-mu)/sigma, has unit length and scales correctly.
+    """
+    for scale in (1e-3, 1.0, 1e3):
+        mu_true = 5.0 * scale
+        sigma_true = 2.0 * scale
+        x = _t_series(5.0, mu_true, sigma_true, 5000, SEED)
+        m = StudentT(nu=5.0, mu_init=0.0, sigma_init=1.0, learning_rate=0.05)
+        for v in x:
+            m.learn_one({"x": float(v)})
+        tol_mu = 0.5 * abs(mu_true) + 1e-3 * scale
+        tol_sigma = 0.5 * abs(sigma_true) + 1e-3 * scale
+        assert abs(m.mu_ - mu_true) < tol_mu, (
+            f"scale={scale}: mu_={m.mu_:.4g} vs true={mu_true:.4g}, tol={tol_mu:.2g}"
+        )
+        assert abs(m.sigma_ - sigma_true) < tol_sigma, (
+            f"scale={scale}: sigma_={m.sigma_:.4g} vs true={sigma_true:.4g}, tol={tol_sigma:.2g}"
+        )
 
 
 def test_check_estimator():

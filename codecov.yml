@@ -22,3 +22,15 @@ coverage:
       default:
         target: auto
         threshold: 1%
+
+# Carry the last uploaded value of each flag forward when the workflow
+# does not run on a commit.  The `tests` workflow is skipped on docs-only
+# commits, so its (default) flag is not uploaded; without carryforward,
+# Codecov sees the flag as missing and the patch status drops to the
+# files covered by the other flags only (33% on 25577cf, a docs-only
+# commit).  With carryforward, a docs-only commit keeps the coverage of
+# the previous code commit.
+flag_management:
+  default_rules:
+    carryforward: true
+
