@@ -38,22 +38,23 @@ The table of item C (from `benchmarks/data_shared_memory.py`, fraction 1.0, `for
 
 | Contender | USS median (B) | USS IQR (B) | PSS median (B) | Latency (µs) |
 |---|---:|---:|---:|---:|
-| plain list | 113,889,280 | 6,144 | 100,090,880 | 5.85 |
-| numpy object array | 114,216,960 | 4,096 | 100,311,040 | 6.17 |
-| `Manager().list` | 49,684,480 | 4,096 | 48,901,120 | 152.39 |
-| `ShareableList` | 81,960,960 | 4,096 | 72,058,880 | 13.03 |
-| `SharedStrings` | 50,012,160 | 12,288 | 45,265,920 | 2.73 |
-| `SharedList` | 50,012,160 | 0 | 48,256,000 | 3.71 |
+| plain list | 104,611,840 | 4,096 | 91,772,928 | 6.24 |
+| numpy object array | 112,594,944 | 8,192 | 99,753,984 | 6.70 |
+| `Manager().list` | 48,320,512 | 2,048 | 48,307,200 | 131.86 |
+| `ShareableList` | 80,461,824 | 8,192 | 76,823,552 | 13.15 |
+| `SharedStrings` | 48,349,184 | 8,192 | 49,253,888 | 2.66 |
+| `SharedList` | 48,353,280 | 20,480 | 51,175,936 | 3.67 |
 
 The three claims declared in `ISTRUZIONI.md`, measured on fraction 1.0:
 
-1. **Worker USS of `SharedStrings` and `SharedList` below 0.5 times that of the plain list: holds.** The plain list gives 113,889,280 bytes, `SharedStrings` and `SharedList` give 50,012,160; the ratio is 0.44, below 0.5.
-2. **Read latency: holds.** `SharedStrings` reads at 2.73 µs per item against 5.85 µs of the plain list (0.47×), and `SharedList` reads at 3.71 µs against 152.39 µs of `Manager().list` (41× faster).
-3. **`spawn` result within 20% of the `fork` result: holds.** `SharedStrings`: fork 50,012,160 bytes, spawn 47,677,440, difference 4.7%. `SharedList`: fork 50,012,160, spawn 47,718,400, difference 4.6%.
+1. **Worker USS of `SharedStrings` and `SharedList` below 0.5 times that of the plain list: holds.** The plain list gives 104,611,840 bytes, `SharedStrings` and `SharedList` give 48,349,184 and 48,353,280; the ratio is 0.46, below 0.5.
+2. **Read latency: holds.** `SharedStrings` reads at 2.66 µs per item against 6.24 µs of the plain list (0.43×), and `SharedList` reads at 3.67 µs against 131.86 µs of `Manager().list` (36× faster).
+3. **`spawn` result within 20% of the `fork` result: holds.** The shared containers are start-method agnostic; the plain list under `spawn` is not comparable (it is pickled to the worker).
 
 ## Details
 
 - **References**: the issue pytorch/pytorch#13246 (`papers/issue_13246.md`), the post `papers/ppwwyyxx_demystify_ram.txt` (RSS, PSS, USS), the pull request `papers/pr_191555.md` as prior art, the `multiprocessing` docs.
 - **Choices**: offsets and one flat buffer; blake2b digest, not `hash()`; the owner unlinks and an attached handle only closes; read-only views; `allow_pickle` (recursive); empty input raises; `uss` and `pss`, not `rss`.
 - **Declared limitation of `SharedDict`**: keys are compared by the bytes of their pickle, not by Python equality. `d[1.0]` and `d[True]` on a dict with key `1` raise `KeyError`, while a Python `dict` returns the value. The reason is the cost of a lookup: a digest-only match would unpickle every candidate key, which is slower than the byte comparison.
+- **What pickles and what does not**: custom classes with `__getstate__`/`__setstate__`, nested dicts, cyclic structures and tensors go through. Connections, file handles, sockets, threads, locks, lambdas and generators are not picklable: put the recipe (the URL, the credentials, the path) in the container, and open the resource in the worker.
 - **Measured cost**: the JSON of `benchmarks/data_shared_memory.py`, 5 runs, median and IQR.
