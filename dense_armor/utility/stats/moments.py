@@ -29,6 +29,7 @@ Pébay, P. (2008). Formulas for robust, one-pass parallel computation of
 West, D. H. D. (1979). Updating mean and variance estimates: an improved
     method. Communications of the ACM 22(9), 532-535.
 """
+
 import math
 from typing import Any
 
@@ -136,8 +137,19 @@ class RunningMoments(Transformer):
         n = int(a.size)
         if n == 0:
             return 0, 0.0, 0.0, 0.0, 0.0
-        mean = float(a.mean())
-        d = a - mean
+        # Shift by the first finite value before computing the
+        # deviations. On constant large values, (a - a.mean()) has a
+        # rounding error of ~1e285 and its square overflows to inf;
+        # (a - a[0]) - mean_shifted is exactly zero instead.
+        shift = float(a.flat[0])
+        if np.isfinite(shift):
+            a_shifted = a - shift
+            mean_shifted = float(a_shifted.mean())
+            mean = mean_shifted + shift
+            d = a_shifted - mean_shifted
+        else:
+            mean = float(a.mean())
+            d = a - mean
         d2 = d * d
         m2 = float(d2.sum())
         m3 = float((d2 * d).sum())
@@ -306,9 +318,7 @@ class RunningMoments(Transformer):
             TypeError: if ``other`` is not a ``RunningMoments``.
         """
         if not isinstance(other, RunningMoments):
-            raise TypeError(
-                f"merge expects RunningMoments, got {type(other).__name__}"
-            )
+            raise TypeError(f"merge expects RunningMoments, got {type(other).__name__}")
         m = RunningMoments(feature=self.feature)
         m.n_missing_ = self.n_missing_ + other.n_missing_
         na, nb = self.n_, other.n_
@@ -464,9 +474,7 @@ class RunningMomentsVector(Transformer):
         if set(keys) != set(other.channels_.keys()):
             raise ValueError("merge requires the same channel keys")
         out = RunningMomentsVector(features=keys)
-        out.channels_ = {
-            k: self.channels_[k].merge(other.channels_[k]) for k in keys
-        }
+        out.channels_ = {k: self.channels_[k].merge(other.channels_[k]) for k in keys}
         return out
 
     def transform_one(self, x: dict, t: float | None = None) -> dict:
@@ -519,9 +527,7 @@ class EWStats(Transformer):
             return None
         return None if math.isnan(v) else v
 
-    def learn_one(
-        self, x: dict, y: Any = None, t: float | None = None
-    ) -> "EWStats":
+    def learn_one(self, x: dict, y: Any = None, t: float | None = None) -> "EWStats":
         """Update the exponentially weighted mean and variance."""
         self._time_step(t)
         v = self._value(x)
@@ -538,9 +544,7 @@ class EWStats(Transformer):
         self.n_ += 1
         return self
 
-    def update(
-        self, x: dict, y: Any = None, t: float | None = None
-    ) -> "EWStats":
+    def update(self, x: dict, y: Any = None, t: float | None = None) -> "EWStats":
         return self.learn_one(x, y=y, t=t)
 
     @property
