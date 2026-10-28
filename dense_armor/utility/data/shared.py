@@ -10,7 +10,9 @@ import numpy as np
 class SharedArray:
     """A numeric numpy array in one shared memory block.
 
-    Source: `papers/issue_13246.md`, the symptom of copy-on-access growth
+    Source: `papers/issue_13246.md`, comment 1364587359 (the `numpy`
+    workaround) and the Editor note; `papers/ppwwyyxx_demystify_ram.txt`,
+    section "Measure RAM Usage".
     after `fork`; `papers/ppwwyyxx_demystify_ram.txt`, section "Measure
     RAM Usage" for the difference between RSS, PSS and USS.
     The array is read-only (`flags.writeable` is False) so that a read
@@ -91,7 +93,8 @@ class SharedArray:
 class SharedStrings:
     """A list of strings as one UTF-8 blob plus int64 offsets.
 
-    Source: `papers/pr_191555.md`, the prior art (flat buffer + int64 offsets).
+    Source: `papers/pr_191555.md` (the design, not the numbers);
+    `papers/issue_13246.md`, comment 436632186 (the case of the list of paths).
     The motivation is the case of the issue (`papers/issue_13246.md`): a
     list of file paths read by index. `__getitem__(i)` decodes only item `i`,
     so it does not touch the pages of the other items.
@@ -206,7 +209,9 @@ class SharedStrings:
 class SharedList:
     """A flat buffer of pickled items plus int64 offsets.
 
-    Source: `papers/pr_191555.md`, prior art (flat buffer + offsets).
+    Source: `papers/pr_191555.md` (the design, not the numbers); the
+    pickle protocol 5 is from the `multiprocessing` docs, section
+    "SharedMemory".
     By default (`allow_pickle=True`), the items are pickled with protocol 5.
     Warning: pickle from shared memory trusts every local process, as
     noted in the security section of the `multiprocessing` docs.
@@ -328,7 +333,9 @@ class SharedList:
 class SharedDict(Mapping):
     """Separate key and value buffers with offsets.
 
-    Source: `papers/pr_191555.md`, prior art (separate key/value buffers + offsets).
+    Source: `papers/pr_191555.md` (the design, not the numbers); the
+    `hash()` note is from `papers/ppwwyyxx_demystify_ram.txt`, section
+    "Python objects".
     The lookup uses `hashlib.blake2b(pickle_of_key, digest_size=8)` because
     `hash()` of a `str` differs between processes, as noted in
     `papers/ppwwyyxx_demystify_ram.txt` (the section on Python objects).
