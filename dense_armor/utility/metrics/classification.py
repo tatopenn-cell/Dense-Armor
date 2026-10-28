@@ -648,13 +648,13 @@ class LogLoss(Metric):
     def _update(self, y_true: Any, y_pred: Any, w: float) -> None:
         p = min(max(float(y_pred), self.eps), 1.0 - self.eps)
         y = float(y_true)
-        self.sum_ += w * (-(y * math.log(max(p, 1e-15)) + (1.0 - y) * math.log(max(1.0 - p, 1e-15))))
+        self.sum_ += w * (-(y * math.log(max(p, self.eps)) + (1.0 - y) * math.log(max(1.0 - p, self.eps))))
         self.total_ += w
 
     def _revert(self, y_true: Any, y_pred: Any, w: float) -> None:
         p = min(max(float(y_pred), self.eps), 1.0 - self.eps)
         y = float(y_true)
-        self.sum_ -= w * (-(y * math.log(max(p, 1e-15)) + (1.0 - y) * math.log(max(1.0 - p, 1e-15))))
+        self.sum_ -= w * (-(y * math.log(max(p, self.eps)) + (1.0 - y) * math.log(max(1.0 - p, self.eps))))
         self.total_ -= w
 
     def get(self) -> float:

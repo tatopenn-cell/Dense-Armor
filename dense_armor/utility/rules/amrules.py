@@ -264,7 +264,7 @@ class _Rule:
             k = abs(v[j] - self.attrs[j].mean)
             p = 2.0 * sd * sd / (sd * sd + k * k) if sd < k else 1.0
             p = min(max(p, _EPS), 1.0 - _EPS)
-            score += math.log(max(p, 1e-15)) - math.log(max(1.0 - p, 1e-15))
+            score += math.log(max(p, _EPS)) - math.log(max(1.0 - p, _EPS))
         return score / self.d < t
 
     def learn(

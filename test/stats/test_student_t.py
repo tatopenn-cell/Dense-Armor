@@ -23,18 +23,13 @@ def _t_series(nu: float, mu: float, sigma: float, n: int, seed: int) -> np.ndarr
     return mu + sigma * rng.standard_t(df=nu, size=n)
 
 
-# The online EM step with a fixed learning_rate converges to a
-# neighbourhood of the maximum-likelihood estimate, not to the MLE
-# exactly: the residual width is proportional to learning_rate
-# (Robbins-Monro with constant step). The tolerances below are the
-# measured residual width at learning_rate=0.05 on 5000 samples with
-# the dimensionally correct step lr * w * (v - mu), w = (nu+1)/(nu+z^2),
-# z = (v - mu)/sigma, times a 1.3 margin. They are declared, not derived.
-# They were re-measured after the step changed: the previous step was
-# lr * (nu+1)(v-mu)/(nu*sigma^2 + (v-mu)^2), which has unit 1/length
-# and made the convergence depend on the data scale (see
-# test_scale_invariance). For exact estimates use scipy.stats.t.fit
-# on the same series.
+# The tolerances are the measured residual width at learning_rate=0.05
+# on 5000 samples with the dimensionally correct step lr * w * (v - mu),
+# w = (nu+1)/(nu+z^2), z = (v - mu)/sigma, times a 1.3 margin. They are
+# declared, not derived. They were re-measured after the step changed:
+# the previous step had unit 1/length and made the convergence depend on
+# the data scale (see test_scale_invariance). For exact estimates use
+# scipy.stats.t.fit on the same series.
 
 
 @pytest.mark.parametrize(

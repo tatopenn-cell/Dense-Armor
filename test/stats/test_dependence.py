@@ -195,3 +195,19 @@ def test_check_estimator_autocorrelation():
 
 def test_doctests():
     assert doctest.testmod(dep_mod).failed == 0
+
+def test_corr_small_scale():
+    """Correlation of two equal signals at scale 1e-9 is 1, not ~0.08.
+
+    The previous corr used sqrt(max(m2x * m2y, 1e-30)): with both signals
+    of scale k * 1e-9 the product m2x * m2y was ~6.8e-33, the max
+    clamped it to 1e-30, and the denominator was 1e-15 instead of 8.25e-17,
+    so corr returned 0.083 instead of 1. The zero check after the max could
+    not fire.
+    """
+    from dense_armor.utility.stats.dependence import RunningCovariance
+
+    rc = RunningCovariance()
+    for k in range(10):
+        rc.learn_one({"x": k * 1e-9, "y": k * 1e-9})
+    assert abs(rc.corr - 1.0) < 1e-6, f"corr={rc.corr!r}, expected 1.0"

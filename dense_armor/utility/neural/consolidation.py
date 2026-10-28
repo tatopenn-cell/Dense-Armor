@@ -461,17 +461,21 @@ class ResidualTree:
             return node
 
     def _write(self, node: dict, x: jnp.ndarray, r: float) -> None:
+        """Write one event into ``node``.
+
+        The samples list stops growing at 8 (the append is guarded by
+        ``len < 8``), so ``len == 8`` is true on every write after the
+        eighth. The previous condition was ``n % 8 == 0 or len == 8``: the
+        first disjunct never changed the outcome (dead code) and is removed.
+        To fit only once every 8 writes, change the condition to
+        ``n % 8 == 0 and len == 8``.
+        """
         node["support"] += 1
         n = node["support"]
         node["alpha"] = (node["alpha"] * (n - 1) + r) / n
         self._extend_box(node, x)
         if len(node["samples"]) < 8:
             node["samples"].append(x)
-        # The samples list stops growing at 8 (the append above is guarded
-        # by len < 8), so len == 8 is true on every write after the eighth.
-        # The previous condition was 'n % 8 == 0 or len == 8': the first
-        # disjunct never changed the outcome (dead code).  To fit only once
-        # every 8 writes, change to 'n % 8 == 0 and len == 8'.
         if len(node["samples"]) == 8:
             xs = jnp.stack(node["samples"], axis=0)
             node["vq"].fit(xs, n_steps=3)
@@ -902,17 +906,20 @@ class ArchivalMemory:
         )
 
     def importance(self, x: jnp.ndarray, t: float = 0.0) -> float:
-        """The importance of ``x``, in [0, 1] (RULE.md section 1)."""
+        """The importance of ``x``, in [0, 1] (RULE.md section 1).
+
+        The novelty is the distance from the closest slow event. ``x`` has
+        shape ``(1, d)`` after ``reshape(-1, d_model)``; ``S`` is ``(n, d)``.
+        ``S - x`` broadcasts to ``(n, d)`` and the sum over ``axis=1`` is
+        the squared distance per event. The previous ``x[None, :]`` made it
+        ``(1, 1, d)``, broadcast to ``(1, n, d)``, and ``axis=1`` summed
+        over events instead of over coordinates.
+        """
         x = jnp.asarray(x, dtype=jnp.float32).reshape(-1, self.d_model)
         # novelty: distance from the closest slow event, sigmoid-scaled
         nov = float(jnp.linalg.norm(x))
         if self.dual.slow_:
             S = np.stack(self.dual.slow_, axis=0)
-            # x has shape (1, d) after reshape(-1, d_model); S has (n, d).
-            # S - x broadcasts to (n, d) (or (1, d) when n = 1), and the sum
-            # over axis 1 is the squared distance per event.  The previous
-            # x[None, :] made it (1, 1, d), broadcast to (1, n, d), and the
-            # sum over axis 1 summed over events instead of over coordinates.
             d = np.sum((S - np.asarray(x)) ** 2, axis=1)
             nov = float(np.sqrt(np.min(d)))
         novelty = 1.0 / (1.0 + nov)

@@ -741,3 +741,24 @@ def test_tree_router_mondrian_time_lower():
         f"Mondrian insert is {ratio:.2f}x the linear time "
         f"({t_mon:.3f}s vs {t_lin:.3f}s); the bound is 1.5"
     )
+
+def test_vqmemory_fit_updates_lr_after_first_call():
+    """The second fit() call applies the new lr to the existing optimisers.
+
+    VQMemory.fit created the Adam optimisers only on the first call; from
+    the second on the lr argument was ignored. The fix sets o.lr = lr on
+    the existing optimisers. The test calls fit twice and checks the lr
+    stored on the optimisers.
+    """
+    import jax.numpy as jnp
+
+    from dense_armor.utility.neural.consolidation import VQMemory
+
+    m = VQMemory(n_x=2, d_model=4, n_codes=8, seed=0)
+    x = jnp.asarray([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])
+    m.fit(x, n_steps=1, lr=0.01)
+    lr_first = [o.lr for o in m._opt_enc + m._opt_dec]
+    m.fit(x, n_steps=1, lr=0.5)
+    lr_second = [o.lr for o in m._opt_enc + m._opt_dec]
+    assert all(abs(a - 0.01) < 1e-12 for a in lr_first), f"first lr: {lr_first}"
+    assert all(abs(a - 0.5) < 1e-12 for a in lr_second), f"second lr: {lr_second}"

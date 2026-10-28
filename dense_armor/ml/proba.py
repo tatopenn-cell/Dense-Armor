@@ -136,7 +136,16 @@ class Gaussian(MLBase):
         return self.m2_ / self.n_ if self.n_ > 0 else float(self.var)
 
     def pdf(self, x: float) -> float:
-        """Density at ``x``, with the maximum-likelihood variance ``m2 / n``."""
+        """Density at ``x``, with the maximum-likelihood variance ``m2 / n``.
+
+        For a variance below ``1e-15`` the density is computed with
+        ``v_safe = 1e-15``: the peak is ``1.26e7`` instead of the true
+        ``1.32e8`` (with ``var=1e-16``). This is a declared choice: the
+        clamp keeps ``sqrt(2 * pi * v)`` finite and the density finite,
+        at the cost of flattening the peak when the estimated variance is
+        below ``1e-15``. The same clamp is not applied to the true
+        variance, so the cdf and the sample are unaffected.
+        """
         v = self._ml_var()
         if v <= 0.0:
             return 0.0

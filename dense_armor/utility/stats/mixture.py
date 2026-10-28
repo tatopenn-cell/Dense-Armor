@@ -257,7 +257,7 @@ class OnlineGaussianMixture(Transformer):
             var_old + mu_old * mu_old
         ) + gamma * r[:, None] * (x_arr[None, :] ** 2)
         e_x2 = num_x2 / w_safe[:, None]
-        var_new = np.maximum(e_x2 - means_new * means_new, self.reg_covar)
+        var_new = np.maximum(e_x2 - means_new * means_new, 0.0)
 
         self.weights_ = w_new
         self.means_ = means_new

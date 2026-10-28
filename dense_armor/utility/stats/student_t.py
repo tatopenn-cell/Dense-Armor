@@ -162,7 +162,23 @@ class StudentT(Transformer):
         return float(math.exp(min(self.log_sigma_, 700)))
 
     def learn_one(self, x: dict, y: Any = None, t: float | None = None) -> "StudentT":
-        """Update location and scale with one sample from ``x``."""
+        """Update location and scale with one sample from ``x``.
+
+        The mean step is the weighted-mean EM step of the scale mixture
+        of the t (Kotz & Nadarajah, Multivariate t Distributions and Their
+        Applications, Cambridge University Press 2004, ch. 3)::
+
+            z = (v - mu) / sigma
+            w = (nu + 1) / (nu + z^2)
+            mu' = mu + learning_rate * w * (v - mu)
+            log_sigma' = log_sigma + learning_rate * (-1 + w * z^2)
+
+        The increment ``learning_rate * w * (v - mu)`` has the same unit
+        as ``mu_`` (length). The previous update used the gradient
+        ``(nu+1) * (v - mu) / (nu * sigma^2 + (v - mu)^2)``, which has
+        unit 1/length and made the estimate depend on the data scale:
+        see ``test_scale_invariance``.
+        """
         self._time_step(t)
         v = self._value(x)
         if v is None:
@@ -171,9 +187,6 @@ class StudentT(Transformer):
         sigma = self.sigma_
         z = (v - self.mu_) / sigma
         w = (self.nu + 1.0) / (self.nu + z * z)
-        # Weighted-mean EM step (scale-mixture, eq. of Kotz & Nadarajah ch. 3).
-        # The increment has the same unit as mu_ (length); the previous
-        # gradient (nu+1)*(v-mu)/(nu*sigma^2 + (v-mu)^2) had unit 1/length.
         self.mu_ = self.mu_ + self.learning_rate * w * (v - self.mu_)
         g_log_sigma = -1.0 + w * z * z
         new_log_sigma = self.log_sigma_ + self.learning_rate * g_log_sigma
