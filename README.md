@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/banner.jpg" alt="Dense-Armor — Robot-AI Online Shielding &amp; Learning" width="900">
+<img width="1800" height="400" alt="banner_nuovo" src="https://github.com/user-attachments/assets/9557ee09-fc5d-4ae9-8e1a-684017013f6e" />
 </p>
 
 <p align="center">
