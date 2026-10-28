@@ -229,6 +229,32 @@ def test_score_one_nan_returns_nan():
     assert math.isnan(m.score_one({"x": float("nan")}))
 
 
+def test_scale_invariance():
+    """Same t series at scales 1e-3, 1, 1e3: mu_ and sigma_ scale with it.
+
+    The previous mean step lr * (nu+1)*(v-mu)/(nu*sigma^2 + (v-mu)^2) had
+    unit 1/length, so the estimate depended on the data scale: scale 1e-3
+    gave mu_ ~= 19 (true 0.01), scale 1e3 gave mu_ ~= 0.02 (true 1e4).
+    The weighted-mean EM step lr * w * (v-mu), w = (nu+1)/(nu+z^2),
+    z = (v-mu)/sigma, has unit length and scales correctly.
+    """
+    for scale in (1e-3, 1.0, 1e3):
+        mu_true = 5.0 * scale
+        sigma_true = 2.0 * scale
+        x = _t_series(5.0, mu_true, sigma_true, 5000, SEED)
+        m = StudentT(nu=5.0, mu_init=0.0, sigma_init=1.0, learning_rate=0.05)
+        for v in x:
+            m.learn_one({"x": float(v)})
+        tol_mu = 0.5 * abs(mu_true) + 1e-3 * scale
+        tol_sigma = 0.5 * abs(sigma_true) + 1e-3 * scale
+        assert abs(m.mu_ - mu_true) < tol_mu, (
+            f"scale={scale}: mu_={m.mu_:.4g} vs true={mu_true:.4g}, tol={tol_mu:.2g}"
+        )
+        assert abs(m.sigma_ - sigma_true) < tol_sigma, (
+            f"scale={scale}: sigma_={m.sigma_:.4g} vs true={sigma_true:.4g}, tol={tol_sigma:.2g}"
+        )
+
+
 def test_check_estimator():
     skip = {}
     check_estimator(StudentT(nu=5.0), allow_not_applicable=skip)

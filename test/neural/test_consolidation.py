@@ -398,15 +398,35 @@ def test_bound_hopfield_16_positive():
 
 
 def test_archival_importance_three_cases():
+    """Three cases of importance(): empty slow, one slow event, two slow events.
+
+    `write()` fills the *fast* list; `DualMemory.consolidate()` moves it to
+    the *slow* list. The fix in `importance` is on `self.dual.slow_`: with
+    x of shape (1, d) the old `x[None, :]` broadcast to (1, n, d) and
+    `axis=1` summed over the events instead of over the coordinates. With
+    two distinct slow events, the old code gives the same novelty to a
+    point that is exactly one of them and to a point farther away; the fix
+    gives novelty 0 to the first and 10 to the second.
+    """
     am = ArchivalMemory(d_model=2, n_codes=8, max_depth=3, seed=0)
-    imp_novel = am.importance(jnp.asarray([10.0, 10.0], dtype=jnp.float32))
-    am.write(jnp.asarray([1.0, 0.0], dtype=jnp.float32))
-    am.write(jnp.asarray([1.0, 0.0], dtype=jnp.float32))
-    imp_shared = am.importance(jnp.asarray([1.0, 0.0], dtype=jnp.float32))
-    assert 0.0 <= imp_novel <= 1.0
-    assert 0.0 <= imp_shared <= 1.0
-    assert imp_novel > imp_shared, (
-        f"novel {imp_novel:.3f} not above shared {imp_shared:.3f}"
+    # 1. empty slow memory: novelty = ||x||
+    imp_empty = am.importance(jnp.asarray([10.0, 10.0], dtype=jnp.float32))
+    assert 0.0 <= imp_empty <= 1.0
+    # 2. two distinct slow events
+    am.write(jnp.asarray([10.0, 0.0], dtype=jnp.float32))
+    am.write(jnp.asarray([0.0, 10.0], dtype=jnp.float32))
+    am.dual.consolidate()
+    assert len(am.dual.slow_) == 2, (
+        f"slow memory has {len(am.dual.slow_)} events, expected 2"
+    )
+    # 3. a point equal to one slow event has novelty 0, a far point 10;
+    # with the old code both had novelty 10.
+    imp_on = am.importance(jnp.asarray([10.0, 0.0], dtype=jnp.float32))
+    imp_far = am.importance(jnp.asarray([20.0, 0.0], dtype=jnp.float32))
+    assert 0.0 <= imp_on <= 1.0
+    assert 0.0 <= imp_far <= 1.0
+    assert imp_on > imp_far + 0.2, (
+        f"imp_on={imp_on:.3f} should be > imp_far+0.2={imp_far + 0.2:.3f}"
     )
 
 
@@ -851,3 +871,28 @@ def test_pq_asymmetric_distance_before_fit_raises():
     pq = PQMemory(d_model=4, n_subspaces=2, n_centroids=4, seed=0)
     with pytest.raises(RuntimeError, match="fit"):
         pq.asymmetric_distance(jnp.asarray([[1.0, 2.0, 3.0, 4.0]]), jnp.asarray([0, 0]))
+
+
+def test_archival_importance_with_slow_memory():
+    """importance() uses the slow memory when it is not empty.
+
+    `write()` fills the fast memory; `DualMemory.consolidate()` moves it
+    to the slow memory. Only then `self.dual.slow_` is non-empty and the
+    `if self.dual.slow_` branch of `importance` is taken. With two
+    distinct slow events, a point equal to one of them must have a
+    higher novelty than a point far from both.
+    """
+    from dense_armor.utility.neural.consolidation import ArchivalMemory
+
+    m = ArchivalMemory(d_model=2, slow_capacity=16, seed=0)
+    m.write(jnp.asarray([10.0, 0.0], dtype=jnp.float32))
+    m.write(jnp.asarray([0.0, 10.0], dtype=jnp.float32))
+    m.dual.consolidate()
+    assert len(m.dual.slow_) == 2, (
+        f"slow memory has {len(m.dual.slow_)} events, expected 2"
+    )
+    imp_same = m.importance(jnp.asarray([10.0, 0.0], dtype=jnp.float32))
+    imp_far = m.importance(jnp.asarray([20.0, 0.0], dtype=jnp.float32))
+    assert 0.0 <= imp_same <= 1.0
+    assert 0.0 <= imp_far <= 1.0
+    assert imp_same > imp_far + 0.2, f"same={imp_same!r}, far={imp_far!r}"
