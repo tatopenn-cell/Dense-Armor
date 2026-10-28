@@ -194,3 +194,36 @@ def test_score_one_nan_returns_nan():
 
 def test_check_estimator():
     check_estimator(GARCH11(omega=1e-6, alpha=0.08, beta=0.90), allow_not_applicable={})
+
+def test_merge_does_not_raise():
+    """GARCH11.merge must not raise AttributeError.
+
+    The previous merge read ``other._initialized`` (with a leading
+    underscore), an attribute that does not exist: the state attribute is
+    ``initialized_`` (trailing underscore). The bug only appeared when
+    ``n_total > 0``, so a merge of two empty estimators did not catch it.
+    """
+    a = GARCH11()
+    b = GARCH11()
+    for i in range(100):
+        a.learn_one({"r": 0.01 * (i % 3 - 1)})
+        b.learn_one({"r": 0.01 * (i % 5 - 2)})
+    merged = a.merge(b)
+    assert merged.n_ == 200
+    assert merged.initialized_ is True
+
+
+def test_merge_is_weighted_average():
+    """The merged sigma2_ and epsilon_ are the weighted averages by n_."""
+    a = GARCH11()
+    b = GARCH11()
+    for i in range(10):
+        a.learn_one({"r": 0.1})
+    for i in range(30):
+        b.learn_one({"r": -0.2})
+    s_a, e_a, n_a = a.sigma2_, a.epsilon_, a.n_
+    s_b, e_b, n_b = b.sigma2_, b.epsilon_, b.n_
+    a.merge(b)
+    assert a.n_ == n_a + n_b
+    assert abs(a.sigma2_ - (n_a * s_a + n_b * s_b) / (n_a + n_b)) < 1e-15
+    assert abs(a.epsilon_ - (n_a * e_a + n_b * e_b) / (n_a + n_b)) < 1e-15
