@@ -169,15 +169,13 @@ class StudentT(Transformer):
             self.n_missing_ += 1
             return self
         sigma = self.sigma_
-        g_mu = (
-            (self.nu + 1.0)
-            * (v - self.mu_)
-            / (self.nu * sigma * sigma + (v - self.mu_) ** 2)
-        )
-        g_log_sigma = -1.0 + (self.nu + 1.0) * (v - self.mu_) ** 2 / (
-            self.nu * sigma * sigma + (v - self.mu_) ** 2
-        )
-        self.mu_ = self.mu_ + self.learning_rate * g_mu
+        z = (v - self.mu_) / sigma
+        w = (self.nu + 1.0) / (self.nu + z * z)
+        # Weighted-mean EM step (scale-mixture, eq. of Kotz & Nadarajah ch. 3).
+        # The increment has the same unit as mu_ (length); the previous
+        # gradient (nu+1)*(v-mu)/(nu*sigma^2 + (v-mu)^2) had unit 1/length.
+        self.mu_ = self.mu_ + self.learning_rate * w * (v - self.mu_)
+        g_log_sigma = -1.0 + w * z * z
         new_log_sigma = self.log_sigma_ + self.learning_rate * g_log_sigma
         self.log_sigma_ = max(new_log_sigma, _EPS_LOG_SIGMA)
         self.n_ += 1

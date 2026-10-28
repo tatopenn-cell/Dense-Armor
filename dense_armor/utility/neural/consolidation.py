@@ -127,6 +127,10 @@ class VQMemory:
         if not hasattr(self, "_opt_enc"):
             self._opt_enc = [Adam(lr=lr) for _ in self.encoder.params()]
             self._opt_dec = [Adam(lr=lr) for _ in self.decoder.params()]
+        else:
+            for o in self._opt_enc + self._opt_dec:
+                if hasattr(o, "lr"):
+                    o.lr = lr
         for _ in range(int(n_steps)):
             x_hat = self.forward(X)
             self.backward(x_hat - X)

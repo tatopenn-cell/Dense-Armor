@@ -206,7 +206,7 @@ class OnlineGaussianMixture(Transformer):
             offsets = [
                 (i - (self.n_components - 1) / 2.0) for i in range(self.n_components)
             ]
-            means = [[v[0] + o * self.init_scale for _ in range(d)] for o in offsets]
+            means = [[v[j] + o * self.init_scale for j in range(d)] for o in offsets]
         self.weights_ = np.full(self.n_components, 1.0 / self.n_components)
         self.means_ = np.asarray(means, dtype=float)
         self.variances_ = np.full((self.n_components, d), self.init_scale**2)

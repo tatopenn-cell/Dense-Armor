@@ -212,5 +212,5 @@ class GARCH11(Transformer):
         self.epsilon_ = w_self * self.epsilon_ + w_other * other.epsilon_
         self.n_ = n_total
         self.n_missing_ += other.n_missing_
-        self.initialized_ = self.initialized_ or other._initialized
+        self.initialized_ = self.initialized_ or other.initialized_
         return self
