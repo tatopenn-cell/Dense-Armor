@@ -2,7 +2,7 @@
 
 A network trained on a sequence of tasks overwrites what it learned before. The page builds the pieces that fight that overwrite: a penalty that slows the movement of the important weights, a memory that projects the new gradient away from the past tasks, a generator that replays the past, and a family of quantised memories that store the past with a declared fidelity. The last sections measure what the whole thing remembers, per lifecycle state, and compare it with the baseline.
 
-The code lives in `dense_armor/utility/neural/continual.py`, `generative_replay.py` and `consolidation.py`. Every piece shares the same batch and one-sample modes: `forward`, `backward` and `params()`.
+The code lives in `dense_armor/utility/neural/continual.py`, `generative_replay.py` and `consolidation/` (`vq.py`, `tree.py`, `memory.py`, `archival.py`). Every piece shares the same batch and one-sample modes: `forward`, `backward` and `params()`.
 
 ## 1. A penalty on the important weights (EWC)
 
