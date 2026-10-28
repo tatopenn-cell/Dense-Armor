@@ -133,7 +133,7 @@ class GEM:
         self._rng = np.random.RandomState(seed)
 
     def observe(self, x: Any, y: Any, task_id: int) -> "GEM":
-        """Reservoir-sample one sample into the memory of ``task_id``.
+        """Store one sample into the memory of ``task_id``.
 
         ``x`` is stored as a 1D array of length ``d_model``; ``y`` keeps its
         dtype (int for class labels) and is stored as a scalar in a 1D array
@@ -232,7 +232,7 @@ class AGEM:
 
     Args:
         memory_per_task: budget of the episodic memory of one task.
-        seed: seed of the reservoir sampling.
+        seed: seed of the random state used to pick the replacement index.
 
     References:
         Chaudhry et al. 2019, Efficient Lifelong Learning with A-GEM, ICLR,
@@ -246,7 +246,7 @@ class AGEM:
         self._rng = np.random.RandomState(seed)
 
     def observe(self, x: Any, y: Any, task_id: int) -> "AGEM":
-        """Reservoir-sample one sample into the memory of ``task_id``.
+        """Store one sample into the memory of ``task_id``.
 
         ``x`` is stored as a 1D array of length ``d_model``; ``y`` keeps its
         dtype (int for class labels) and is stored as a scalar in a 1D array
