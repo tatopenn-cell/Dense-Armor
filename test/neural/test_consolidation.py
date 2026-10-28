@@ -32,8 +32,6 @@ def test_quantize_matches_bruteforce():
     assert np.array_equal(np.asarray(k), k_ref)
 
 
-
-
 def test_codebook_gradient_independent_of_commitment():
     """The codebook term is ``-2 (z_e - e_k)``, the commitment does not enter."""
     vq1 = VQMemory(n_x=2, d_model=4, n_codes=8, commitment=0.0, seed=0)
@@ -82,7 +80,10 @@ def test_codebook_ema_reduces_quantization_mse():
         vq.forward(x)
         vq.update_codebook()
     mse_1 = quant_mse(vq.encode(x))
-    assert mse_1 <= mse_0, f"quantization MSE did not decrease: {mse_0:.4f} -> {mse_1:.4f}"
+    assert mse_1 <= mse_0, (
+        f"quantization MSE did not decrease: {mse_0:.4f} -> {mse_1:.4f}"
+    )
+
 
 def test_all_slots_reachable():
     vq = VQMemory(n_x=2, d_model=4, n_codes=8, seed=0)
@@ -169,13 +170,15 @@ def test_residual_tree_single_node():
 
 
 def test_residual_tree_branching_creates_children():
-    tree = ResidualTree(d_model=2, n_codes=8, max_depth=2, branching=4,
-                        kappa=0.01, seed=0)
+    tree = ResidualTree(
+        d_model=2, n_codes=8, max_depth=2, branching=4, kappa=0.01, seed=0
+    )
     rng = np.random.RandomState(0)
     for c in [(-3.0, -3.0), (3.0, 3.0), (-3.0, 3.0), (3.0, -3.0)]:
         for _ in range(5):
-            tree.insert(jnp.asarray(rng.randn(2) * 0.1 + np.array(c),
-                                    dtype=jnp.float32))
+            tree.insert(
+                jnp.asarray(rng.randn(2) * 0.1 + np.array(c), dtype=jnp.float32)
+            )
     assert tree.n_nodes() > 1
 
 
@@ -186,8 +189,9 @@ def test_residual_tree_read_returns_leaf():
     created; kappa=0.0 forces a child whenever the residual is above 0,
     which is what the test wants to exercise.
     """
-    tree = ResidualTree(d_model=2, n_codes=4, max_depth=2, branching=4,
-                        kappa=0.0, seed=0)
+    tree = ResidualTree(
+        d_model=2, n_codes=4, max_depth=2, branching=4, kappa=0.0, seed=0
+    )
     rng = np.random.RandomState(1)
     centers = [(-3.0, -3.0), (3.0, 3.0), (-3.0, 3.0), (3.0, -3.0)]
     for c in centers:
@@ -196,12 +200,15 @@ def test_residual_tree_read_returns_leaf():
             tree.insert(x)
     _, depth_root = tree.read(jnp.asarray([0.0, 0.0], dtype=jnp.float32))
     _, depth_leaf = tree.read(jnp.asarray([3.0, 3.0], dtype=jnp.float32))
-    assert depth_leaf >= 1, f"read returned root (depth 0), tree has {tree.n_nodes()} nodes"
+    assert depth_leaf >= 1, (
+        f"read returned root (depth 0), tree has {tree.n_nodes()} nodes"
+    )
 
 
 def test_residual_tree_max_depth_respected():
-    tree = ResidualTree(d_model=2, n_codes=4, max_depth=1, branching=2,
-                        kappa=0.0, seed=0)
+    tree = ResidualTree(
+        d_model=2, n_codes=4, max_depth=1, branching=2, kappa=0.0, seed=0
+    )
     rng = np.random.RandomState(2)
     for _ in range(50):
         tree.insert(jnp.asarray(rng.randn(2) * 10, dtype=jnp.float32))
@@ -209,8 +216,9 @@ def test_residual_tree_max_depth_respected():
 
 
 def test_residual_tree_consolidate_reduces_nodes():
-    tree = ResidualTree(d_model=2, n_codes=8, max_depth=3, branching=2,
-                        kappa=0.0, seed=0)
+    tree = ResidualTree(
+        d_model=2, n_codes=8, max_depth=3, branching=2, kappa=0.0, seed=0
+    )
     rng = np.random.RandomState(3)
     for _ in range(20):
         tree.insert(jnp.asarray(rng.randn(2) * 5, dtype=jnp.float32))
@@ -222,8 +230,9 @@ def test_residual_tree_consolidate_reduces_nodes():
 
 
 def test_residual_tree_state_bounded():
-    tree = ResidualTree(d_model=2, n_codes=4, max_depth=3, branching=2,
-                        kappa=0.0, seed=0)
+    tree = ResidualTree(
+        d_model=2, n_codes=4, max_depth=3, branching=2, kappa=0.0, seed=0
+    )
     rng = np.random.RandomState(4)
     for _ in range(200):
         tree.insert(jnp.asarray(rng.randn(2) * 10, dtype=jnp.float32))
@@ -249,8 +258,7 @@ def test_lifecycle_decay_to_archive():
 
 
 def test_lifecycle_promote_on_access():
-    lm = LifecycleMemory(d_model=4, promote_threshold=2,
-                         decay_horizon_s=10.0, seed=0)
+    lm = LifecycleMemory(d_model=4, promote_threshold=2, decay_horizon_s=10.0, seed=0)
     x = jnp.asarray([1.0, 2.0, 3.0, 4.0], dtype=jnp.float32)
     idx = lm.write(x, t=0.0)
     for k in range(1, 6):
@@ -314,9 +322,9 @@ def test_dual_memory_topk_separation():
     query = jnp.asarray((0.0, 0.0), dtype=jnp.float32)
     sep = dm.top_k_separation(query)
     assert len(sep) == 3
-    closest_idx = int(np.argmin(np.sum(
-        (np.asarray(centers) - np.asarray(query)) ** 2, axis=1
-    )))
+    closest_idx = int(
+        np.argmin(np.sum((np.asarray(centers) - np.asarray(query)) ** 2, axis=1))
+    )
     assert closest_idx not in sep, (
         f"the closest event (index {closest_idx}) is in the top-k separation"
     )
@@ -428,8 +436,15 @@ def test_archival_write_read_roundtrip():
 
 
 def test_archival_size_bounded():
-    am = ArchivalMemory(d_model=2, n_codes=4, max_depth=2, branching=2,
-                        fast_capacity=8, slow_capacity=16, seed=0)
+    am = ArchivalMemory(
+        d_model=2,
+        n_codes=4,
+        max_depth=2,
+        branching=2,
+        fast_capacity=8,
+        slow_capacity=16,
+        seed=0,
+    )
     rng = np.random.RandomState(0)
     for i in range(100):
         am.write(jnp.asarray(rng.randn(2), dtype=jnp.float32), t=float(i))
@@ -457,28 +472,36 @@ def test_vq_straight_through():
     dz_e = dz_q + 2.0 * vq.commitment * (z_e - e_k)
     assert np.allclose(np.asarray(dz_e), np.asarray(dz_q), atol=1e-6)
 
+
 def test_vq_mse_decreases_20_steps():
     vq = VQMemory(n_x=2, d_model=4, n_codes=16, commitment=0.25, seed=0)
     x = jnp.asarray(np.random.RandomState(0).randn(200, 2), dtype=jnp.float32)
+
     def mse():
         z = vq.encode(x)
         zq, _, _ = vq.quantize(z)
         return float(jnp.mean(jnp.sum((x - vq.decode(zq)) ** 2, axis=-1)))
+
     before = mse()
     vq.fit(x, n_steps=20)
     after = mse()
     assert after < before, f"MSE did not decrease: {before:.4f} -> {after:.4f}"
 
 
-
 def test_residual_decreases_with_depth():
     """A leaf trained on its own samples beats the root on the same samples."""
-    tree = ResidualTree(d_model=2, n_codes=4, max_depth=2, branching=4, kappa=0.0, seed=0)
+    tree = ResidualTree(
+        d_model=2, n_codes=4, max_depth=2, branching=4, kappa=0.0, seed=0
+    )
     rng = np.random.RandomState(0)
     for c in [(-3.0, -3.0), (3.0, 3.0), (-3.0, 3.0), (3.0, -3.0)]:
         for _ in range(30):
-            tree.insert(jnp.asarray(np.array(c) + rng.randn(2) * 0.1, dtype=jnp.float32))
-    leaves = [n for n in _all_nodes(tree.root) if n["depth"] > 0 and len(n["samples"]) > 0]
+            tree.insert(
+                jnp.asarray(np.array(c) + rng.randn(2) * 0.1, dtype=jnp.float32)
+            )
+    leaves = [
+        n for n in _all_nodes(tree.root) if n["depth"] > 0 and len(n["samples"]) > 0
+    ]
     assert leaves, "no leaf with samples"
     leaf = max(leaves, key=lambda n: len(n["samples"]))
     n_leaf = len(leaf["samples"])
@@ -493,9 +516,12 @@ def test_residual_decreases_with_depth():
     root_mse = float(jnp.mean(jnp.sum((xs - root_pred) ** 2, axis=-1)))
     assert leaf_mse <= root_mse + 1e-3, f"leaf {leaf_mse:.4f} > root {root_mse:.4f}"
 
+
 def test_consolidate_no_loss():
     """consolidate reduces nodes without increasing state size."""
-    tree = ResidualTree(d_model=2, n_codes=8, max_depth=3, branching=2, kappa=0.0, seed=0)
+    tree = ResidualTree(
+        d_model=2, n_codes=8, max_depth=3, branching=2, kappa=0.0, seed=0
+    )
     rng = np.random.RandomState(0)
     for _ in range(20):
         tree.insert(jnp.asarray(rng.randn(2) * 5, dtype=jnp.float32))
@@ -505,7 +531,10 @@ def test_consolidate_no_loss():
     nodes_after = tree.n_nodes()
     bytes_after = tree.state_size_bytes()
     assert nodes_after <= nodes_before, f"nodes grew: {nodes_before} -> {nodes_after}"
-    assert bytes_after <= bytes_before + tree.n_codes * 4, f"bytes grew: {bytes_before} -> {bytes_after}"
+    assert bytes_after <= bytes_before + tree.n_codes * 4, (
+        f"bytes grew: {bytes_before} -> {bytes_after}"
+    )
+
 
 def test_fisher_rao_positive():
     lm = LifecycleMemory(d_model=4, seed=0)
@@ -529,7 +558,9 @@ def test_j_bibliographic_only():
 
 def test_promote_preserves_mse():
     """A promoted parent has n_codes // branching and sum of child supports."""
-    tree = ResidualTree(d_model=2, n_codes=8, max_depth=3, branching=2, kappa=0.0, seed=0)
+    tree = ResidualTree(
+        d_model=2, n_codes=8, max_depth=3, branching=2, kappa=0.0, seed=0
+    )
     rng = np.random.RandomState(1)
     for _ in range(30):
         tree.insert(jnp.asarray(rng.randn(2) * 3, dtype=jnp.float32))
@@ -542,17 +573,21 @@ def test_promote_preserves_mse():
     support_kids = sum(k["support"] for k in kids)
     alpha_kids = float(np.mean([k["alpha"] for k in kids]))
     tree.consolidate()
-    assert parent["support"] >= support_kids, f"support {parent['support']} < {support_kids}"
-    assert abs(parent["alpha"] - alpha_kids) < max(1e-3, 0.5 * abs(alpha_kids)), "alpha changed too much"
+    assert parent["support"] >= support_kids, (
+        f"support {parent['support']} < {support_kids}"
+    )
+    assert abs(parent["alpha"] - alpha_kids) < max(1e-3, 0.5 * abs(alpha_kids)), (
+        "alpha changed too much"
+    )
 
 
 def test_vq_backward_before_forward_raises():
     """backward() before forward() raises RuntimeError (REVISIONE_IA.md §2b)."""
     import pytest
+
     vq = VQMemory(n_x=2, d_model=4, n_codes=8, seed=0)
     with pytest.raises(RuntimeError):
         vq.backward(jnp.ones((1, 2)))
-
 
 
 def test_vq_quantization_is_discrete_declared():
@@ -580,6 +615,7 @@ def test_vq_quantization_is_discrete_declared():
 def test_vq_params_and_backward_before_fit():
     """VQMemory.params() exists; backward before forward raises; encode before fit raises."""
     import pytest
+
     vq = VQMemory(n_x=2, d_model=4, n_codes=8, seed=0)
     params = vq.params()
     assert len(params) >= 2
@@ -590,12 +626,15 @@ def test_vq_params_and_backward_before_fit():
 def test_pq_fit_wrong_d_model_raises():
     """PQMemory.fit rejects a wrong d_model (line 236)."""
     import pytest
+
     pq = PQMemory(d_model=8, n_subspaces=2, n_centroids=8, seed=0)
     with pytest.raises(ValueError, match="expected d_model"):
         pq.fit(jnp.ones((10, 5)))
 
+
 def test_pq_encode_before_fit_raises():
     import pytest
+
     pq = PQMemory(d_model=8, n_subspaces=2, n_centroids=8, seed=0)
     with pytest.raises(RuntimeError, match="fit"):
         pq.encode(jnp.ones(8))
@@ -616,7 +655,9 @@ def test_pq_kmeans_empty_cluster_falls_back():
 
 def test_tree_consolidate_visits_children():
     """consolidate recurses into every child (line 468) and reports n_events (line 478)."""
-    tree = ResidualTree(d_model=2, n_codes=4, max_depth=3, branching=2, kappa=0.0, seed=0)
+    tree = ResidualTree(
+        d_model=2, n_codes=4, max_depth=3, branching=2, kappa=0.0, seed=0
+    )
     rng = np.random.RandomState(0)
     for _ in range(20):
         tree.insert(jnp.asarray(rng.randn(2) * 5, dtype=jnp.float32))
@@ -627,6 +668,7 @@ def test_tree_consolidate_visits_children():
 
 def test_lifecycle_read_out_of_range():
     import pytest
+
     lm = LifecycleMemory(d_model=4, seed=0)
     lm.write(jnp.zeros(4, dtype=jnp.float32), t=0.0)
     with pytest.raises(IndexError):
@@ -661,13 +703,10 @@ def test_archival_read_and_len():
     assert len(am) == 1
 
 
-
-
-
-
 def test_tree_router_linear_is_default():
     """The default router is 'linear', and the constructor accepts 'mondrian'."""
     import pytest
+
     tree = ResidualTree(d_model=2, n_codes=4, max_depth=2, seed=0)
     assert tree.router == "linear"
     tree2 = ResidualTree(d_model=2, n_codes=4, max_depth=2, seed=0, router="mondrian")
@@ -679,7 +718,12 @@ def test_tree_router_linear_is_default():
 def test_tree_router_mondrian_valid_node():
     """The Mondrian router returns a node within max_depth, with bounded nodes."""
     tree = ResidualTree(
-        d_model=2, n_codes=4, max_depth=2, branching=4, kappa=0.0, seed=0,
+        d_model=2,
+        n_codes=4,
+        max_depth=2,
+        branching=4,
+        kappa=0.0,
+        seed=0,
         router="mondrian",
     )
     rng = np.random.RandomState(0)
@@ -694,11 +738,21 @@ def test_tree_router_mondrian_fewer_encodes():
     """Mondrian uses box comparisons; the same data visits no more nodes than linear."""
     rng_data = np.random.RandomState(0).randn(60, 2) * 3.0
     t_lin = ResidualTree(
-        d_model=2, n_codes=4, max_depth=2, branching=4, kappa=0.0, seed=0,
+        d_model=2,
+        n_codes=4,
+        max_depth=2,
+        branching=4,
+        kappa=0.0,
+        seed=0,
         router="linear",
     )
     t_mon = ResidualTree(
-        d_model=2, n_codes=4, max_depth=2, branching=4, kappa=0.0, seed=0,
+        d_model=2,
+        n_codes=4,
+        max_depth=2,
+        branching=4,
+        kappa=0.0,
+        seed=0,
         router="mondrian",
     )
     for x in rng_data:
@@ -721,12 +775,18 @@ def test_tree_router_mondrian_time_lower():
     scan by mistake.
     """
     import time as _time
+
     rng_data = np.random.RandomState(1).randn(200, 2) * 3.0
     xs = [jnp.asarray(x, dtype=jnp.float32) for x in rng_data]
 
     def _time_router(name):
         tree = ResidualTree(
-            d_model=2, n_codes=4, max_depth=2, branching=4, kappa=0.0, seed=0,
+            d_model=2,
+            n_codes=4,
+            max_depth=2,
+            branching=4,
+            kappa=0.0,
+            seed=0,
             router=name,
         )
         t0 = _time.perf_counter()
@@ -741,6 +801,7 @@ def test_tree_router_mondrian_time_lower():
         f"Mondrian insert is {ratio:.2f}x the linear time "
         f"({t_mon:.3f}s vs {t_lin:.3f}s); the bound is 1.5"
     )
+
 
 def test_vqmemory_fit_updates_lr_after_first_call():
     """The second fit() call applies the new lr to the existing optimisers.
@@ -762,3 +823,31 @@ def test_vqmemory_fit_updates_lr_after_first_call():
     lr_second = [o.lr for o in m._opt_enc + m._opt_dec]
     assert all(abs(a - 0.01) < 1e-12 for a in lr_first), f"first lr: {lr_first}"
     assert all(abs(a - 0.5) < 1e-12 for a in lr_second), f"second lr: {lr_second}"
+
+
+def test_pq_decode_before_fit_raises():
+    """PQMemory.decode() before fit() raises RuntimeError.
+
+    Covers the ``if not self._fitted`` branch of PQMemory.decode.
+    """
+    import pytest
+
+    from dense_armor.utility.neural.consolidation import PQMemory
+
+    pq = PQMemory(d_model=4, n_subspaces=2, n_centroids=4, seed=0)
+    with pytest.raises(RuntimeError, match="fit"):
+        pq.decode(jnp.asarray([0, 0]))
+
+
+def test_pq_asymmetric_distance_before_fit_raises():
+    """PQMemory.asymmetric_distance() before fit() raises RuntimeError.
+
+    Covers the ``if not self._fitted`` branch of PQMemory.asymmetric_distance.
+    """
+    import pytest
+
+    from dense_armor.utility.neural.consolidation import PQMemory
+
+    pq = PQMemory(d_model=4, n_subspaces=2, n_centroids=4, seed=0)
+    with pytest.raises(RuntimeError, match="fit"):
+        pq.asymmetric_distance(jnp.asarray([[1.0, 2.0, 3.0, 4.0]]), jnp.asarray([0, 0]))

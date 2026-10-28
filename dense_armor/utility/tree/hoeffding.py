@@ -260,11 +260,7 @@ class HoeffdingTreeClassifier(Classifier):
                 else:
                     right_counts[k] = total_k
                 continue
-            if g.var > 0.0:
-                z = (s - g.mean_) / math.sqrt(g.var)
-            else:
-                diff = s - g.mean_
-                z = 0.0 if diff == 0.0 else math.copysign(math.inf, diff)
+            z = (s - g.mean_) / math.sqrt(g.var)
             p_left = _phi(z)
             left_counts[k] = p_left * total_k
             right_counts[k] = (1.0 - p_left) * total_k
