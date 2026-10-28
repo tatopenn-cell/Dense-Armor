@@ -34,6 +34,14 @@ def scaled_dot_product_attention(
     the scores; the positions where it is false are set to ``-inf``
     before the softmax (page 5). Works on any leading axis.
 
+    An all-False row of the mask (a query position with no valid key)
+    gives ``softmax([-inf, ...]) = NaN`` and the function returns NaN
+    for that position.  This is a silent NaN, not a ``ValueError``:
+    a guard that raises would break any caller that runs this function
+    inside ``jax.jit`` (a Python ``bool`` of a traced value is not
+    allowed).  Check the mask before calling, if your mask can be empty
+    on a row.
+
     Args:
         q: queries, shape ``(..., T_q, d_k)``.
         k: keys, shape ``(..., T_k, d_k)``.

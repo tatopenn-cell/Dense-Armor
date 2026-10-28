@@ -307,7 +307,18 @@ class OnlineGaussianMixture(Transformer):
         return float(-self._logpdf(v))
 
     def merge(self, other: "OnlineGaussianMixture") -> "OnlineGaussianMixture":
-        """Combine two independent states by weighted averaging of ``n_``."""
+        """Combine two independent states by weighted averaging of ``n_``.
+
+        This is a *naive* merge: it averages the weights, the means and the
+        variances component by component, assuming that component ``k`` of
+        ``self`` and component ``k`` of ``other`` are the same component. Two
+        independently fitted mixtures do not, in general, share the order of
+        their components, so a merge of this kind is a lower bound of the
+        correct posterior and is declared as a limitation, not as a property
+        of the estimator. A correct merge would require matching the
+        components (e.g. by a distance between the means) or re-running EM on
+        the union of the sufficient statistics, which the class does not keep.
+        """
         if not other.initialized_:
             return self
         if not self.initialized_:

@@ -467,7 +467,12 @@ class ResidualTree:
         self._extend_box(node, x)
         if len(node["samples"]) < 8:
             node["samples"].append(x)
-        if n % 8 == 0 or len(node["samples"]) == 8:
+        # The samples list stops growing at 8 (the append above is guarded
+        # by len < 8), so len == 8 is true on every write after the eighth.
+        # The previous condition was 'n % 8 == 0 or len == 8': the first
+        # disjunct never changed the outcome (dead code).  To fit only once
+        # every 8 writes, change to 'n % 8 == 0 and len == 8'.
+        if len(node["samples"]) == 8:
             xs = jnp.stack(node["samples"], axis=0)
             node["vq"].fit(xs, n_steps=3)
         self._n_events += 1
@@ -764,7 +769,14 @@ class DualMemory:
         return n
 
     def replay(self, n: int, t_now: float = 0.0) -> list[np.ndarray]:
-        """Sample ``n`` events from the slow memory, prioritised by novelty*age."""
+        """Sample ``n`` events from the slow memory, prioritised by novelty*age.
+
+        Declared limitation: ``age`` is the index-based recency
+        ``np.arange(len(slow_), 0, -1)``, not ``t_now - t_event``.  The
+        argument ``t_now`` is accepted for interface compatibility and is
+        not used.  Making the age time-based needs a timestamp per event,
+        which the memory does not keep.
+        """
         if not self.slow_:
             return []
         nov = np.asarray(self._slow_novelty, dtype=np.float64)
@@ -896,7 +908,12 @@ class ArchivalMemory:
         nov = float(jnp.linalg.norm(x))
         if self.dual.slow_:
             S = np.stack(self.dual.slow_, axis=0)
-            d = np.sum((S - np.asarray(x)[None, :]) ** 2, axis=1)
+            # x has shape (1, d) after reshape(-1, d_model); S has (n, d).
+            # S - x broadcasts to (n, d) (or (1, d) when n = 1), and the sum
+            # over axis 1 is the squared distance per event.  The previous
+            # x[None, :] made it (1, 1, d), broadcast to (1, n, d), and the
+            # sum over axis 1 summed over events instead of over coordinates.
+            d = np.sum((S - np.asarray(x)) ** 2, axis=1)
             nov = float(np.sqrt(np.min(d)))
         novelty = 1.0 / (1.0 + nov)
         # rarity: inverse of the number of events in the same leaf
@@ -926,7 +943,16 @@ class ArchivalMemory:
         return state
 
     def write(self, x: jnp.ndarray, t: float = 0.0) -> int:
-        """Write ``x`` in the tree, the lifecycle and the dual memory."""
+        """Write ``x`` in the tree, the lifecycle and the dual memory.
+
+        Declared limitation: the write policy ``importance -> write_depth``
+        (RULE.md sections 1 and 2) is *not* connected here.  ``self.tree``
+        inserts at its own default depth, and the importance is not passed
+        to the lifecycle or the dual memory.  ``importance()`` and
+        ``write_depth()`` are available to the caller, but the caller must
+        apply them; the class does not.  Connecting them is a behavioural
+        change, not a bug fix.
+        """
         x = jnp.asarray(x, dtype=jnp.float32).reshape(-1, self.d_model)
         self.tree.insert(x)
         idx = self.lifecycle.write(x, t=t)

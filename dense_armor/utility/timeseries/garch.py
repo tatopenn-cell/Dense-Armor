@@ -79,8 +79,10 @@ class GARCH11(Transformer):
             of the keys.
 
     Attributes:
-        sigma2_: conditional variance of the last sample.
-        epsilon_: residual of the last sample, ``X_t``.
+        sigma2_: conditional variance of the next sample, updated from
+            the last residual and the last variance.
+        epsilon_: residual of the last sample, ``X_t`` (zero before the first
+            ``learn_one``, unchanged until the next).
         sigma2_history_: not kept (memory O(1)); only the last variance.
 
     Raises:
