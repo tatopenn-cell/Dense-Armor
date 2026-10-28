@@ -1,16 +1,12 @@
 """Residual tree over VQMemory."""
+
 from __future__ import annotations
 
-import jax
 import jax.numpy as jnp
 import numpy as np
 
-from dense_armor.utility.neural.activations import Relu
-from dense_armor.utility.neural.chain import Sequential
-from dense_armor.utility.neural.layers import Dense
-from dense_armor.utility.neural.params import Param
-
 from .vq import VQMemory
+
 
 class ResidualTree:
     """Residual tree (DeltaMem, Tan et al. 2026, adapted to dense networks).

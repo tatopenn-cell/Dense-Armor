@@ -1,4 +1,9 @@
-"""Vector quantisation memories: VQMemory, PQMemory."""
+"""Vector quantisation memories: VQMemory, PQMemory.
+
+VQMemory: VQ-VAE, van den Oord et al. 2017, Eq. (1)-(4) page 3.
+PQMemory: product quantisation, Jegou et al. 2011, IEEE TPAMI 33(1).
+"""
+
 from __future__ import annotations
 
 import jax
@@ -9,6 +14,7 @@ from dense_armor.utility.neural.activations import Relu
 from dense_armor.utility.neural.chain import Sequential
 from dense_armor.utility.neural.layers import Dense
 from dense_armor.utility.neural.params import Param
+
 
 class VQMemory:
     """Vector-quantised memory (van den Oord et al. 2017, Eq. 1-4 p. 3).

@@ -1,14 +1,10 @@
 """Lifecycle and dual memory."""
+
 from __future__ import annotations
 
-import jax
 import jax.numpy as jnp
 import numpy as np
 
-from dense_armor.utility.neural.activations import Relu
-from dense_armor.utility.neural.chain import Sequential
-from dense_armor.utility.neural.layers import Dense
-from dense_armor.utility.neural.params import Param
 
 class LifecycleMemory:
     """Lifecycle-quantised memory (SuperLocalMemory V3.3, Bhardwaj 2026, p.1).

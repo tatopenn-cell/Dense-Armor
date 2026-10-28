@@ -1,17 +1,13 @@
 """Archival memory: tree + lifecycle + dual."""
+
 from __future__ import annotations
 
-import jax
 import jax.numpy as jnp
 import numpy as np
 
-from dense_armor.utility.neural.activations import Relu
-from dense_armor.utility.neural.chain import Sequential
-from dense_armor.utility.neural.layers import Dense
-from dense_armor.utility.neural.params import Param
-
 from .memory import DualMemory, LifecycleMemory
 from .tree import ResidualTree
+
 
 class ArchivalMemory:
     """Unforgetting architetturale: residual tree + lifecycle + dual memory.
