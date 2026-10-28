@@ -22,7 +22,7 @@ This module implements **GARCH(1, 1)**, the special case with
 
     sigma^2_t = omega + alpha * X^2_{t-1} + beta * sigma^2_{t-1}
 
-The quasi-maximum-likelihood (QML) log-likelihood is Eq. (3) page 2
+The quasi-maximum-likelihood (QML) log-likelihood is Eq. (3) page 3
 of the paper, with the constants omitted:
 
     l_n(theta) = (1/n) * sum_t [ log sigma^2_t(theta)
@@ -45,7 +45,7 @@ References
 Csáji, B. Cs. (2018). Score Permutation Based Finite Sample Inference
     for Generalized AutoRegressive Conditional Heteroskedasticity
     (GARCH) Models. arXiv:1807.08390. Eq. (1a)-(1b) page 1; Eq. (2)
-    page 1; Eq. (3) page 2; initialization page 2.
+    page 1; Eq. (3) page 3; initialization page 3.
 Bollerslev, T. (1986). Generalized autoregressive conditional
     heteroskedasticity. Journal of Econometrics 31(3), 307-327.
     DOI 10.1016/0304-4076(86)90063-1. Not in the folder,

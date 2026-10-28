@@ -1,7 +1,7 @@
 """Continual-learning baselines: EWC, GEM, A-GEM.
 
 EWC: Kirkpatrick et al. 2017, Eq. (3) page 3.
-GEM: Lopez-Paz & Ranzato 2017, Eq. (7) page 4.
+GEM: Lopez-Paz & Ranzato 2017, Eq. (8) QP and Eq. (11) dual, page 4.
 A-GEM: Chaudhry et al. 2019, Eq. (11) page 5.
 """
 
@@ -26,7 +26,9 @@ class EWC:
             of :class:`Param`.
         loss: any object with ``forward(pred, target)``, e.g. ``MSE`` or
             ``SoftmaxCrossEntropy``.
-        lambda_: weight of the old task, the paper's value for MNIST is 0.4.
+        lambda_: weight of the old task. 0.4 is our choice: Kirkpatrick et al.
+            2017 (PNAS 114(13), p. 5) tuned lambda by hyperparameter search on
+            Atari and state no single value; 0.4 is not in the paper.
 
     The diagonal Fisher is computed with central finite differences on the
     flat parameter vector, ``eps = 1e-6``, because ``jax.grad`` cannot write
@@ -115,7 +117,7 @@ class EWC:
 
 
 class GEM:
-    """Gradient Episodic Memory (Lopez-Paz & Ranzato 2017, Eq. 7 p. 4).
+    """Gradient Episodic Memory (Lopez-Paz & Ranzato 2017, Eq. 8 QP and Eq. 11 dual, p. 4).
 
     Args:
         memory_per_task: budget of the episodic memory of one task.
@@ -123,7 +125,7 @@ class GEM:
 
     References:
         Lopez-Paz & Ranzato 2017, Gradient Episodic Memory for Continual
-        Learning, NeurIPS, Eq. (7) page 4.
+        Learning, NeurIPS, Eq. (8) QP and Eq. (11) dual, page 4.
     """
 
     def __init__(self, memory_per_task: int = 256, seed: int = 0) -> None:
@@ -178,7 +180,7 @@ class GEM:
     def project(
         self, g: jnp.ndarray, mem_grads: Sequence[jnp.ndarray]
     ) -> jnp.ndarray:
-        """Solve Eq. (7) p. 4 by projecting ``g`` onto the half-spaces.
+        """Solve Eq. (8) p. 4 (QP) by projecting ``g`` onto the half-spaces.
 
         Args:
             g: the proposed gradient, shape ``(P,)``.

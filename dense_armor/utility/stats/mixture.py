@@ -44,7 +44,8 @@ mentions the Gaussian case only in passing. The derivation is this
 file's own choice, declared here per rule 18 of
 ``REGOLE_DOC_DENSE_ARMOR.md``.
 
-Covariance is **diagonal**, positive by construction. Full covariance
+Covariance is **diagonal**; it is positive because ``reg_covar`` is added
+at use time. Full covariance
 is not implemented: a diagonal covariance keeps the update O(k * d)
 per sample, and a full covariance would make the M-step O(k * d^3).
 
@@ -218,8 +219,11 @@ class OnlineGaussianMixture(Transformer):
         x: np.ndarray = np.asarray(v, dtype=float)
         var = self.variances_ + self.reg_covar
         diff = x[None, :] - self.means_
-        log_norm = -0.5 * np.sum(np.log(2.0 * math.pi * np.maximum(var, 1e-15)), axis=1)
-        log_exp = -0.5 * np.sum(diff * diff / np.maximum(var, 1e-15), axis=1)
+        # reg_covar can be 0, so var can be 0 when all the data in a
+        # component is the same: the max keeps log(0) and 0/0 finite.
+        var_safe = np.maximum(var, 1e-15)
+        log_norm = -0.5 * np.sum(np.log(2.0 * math.pi * var_safe), axis=1)
+        log_exp = -0.5 * np.sum(diff * diff / var_safe, axis=1)
         return np.log(self.weights_ + 1e-300) + log_norm + log_exp
 
     def learn_one(
