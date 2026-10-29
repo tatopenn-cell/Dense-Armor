@@ -1,8 +1,10 @@
 import hashlib
 import pickle
+import sys
 import weakref
 from collections.abc import Mapping
 from multiprocessing import resource_tracker, shared_memory
+from typing import Any
 
 import numpy as np
 
@@ -17,11 +19,15 @@ def _cleanup_shm(owner: bool, *names: str) -> None:
 
 
 def _attach(name: str) -> shared_memory.SharedMemory:
+    opts: dict[str, Any] = {"track": False}
     try:
-        return shared_memory.SharedMemory(name=name, track=False)
+        return shared_memory.SharedMemory(name=name, **opts)
     except TypeError:
         shm = shared_memory.SharedMemory(name=name)
-        resource_tracker.unregister(shm.name, "shared_memory")
+        if sys.platform != "win32":
+            resource_tracker.unregister(
+                getattr(shm, "_name", shm.name), "shared_memory"
+            )
         return shm
 
 
@@ -41,6 +47,14 @@ class SharedArray:
     Source: `papers/issue_13246.md`, comment 1364587359 (the `numpy`
     workaround); `papers/ppwwyyxx_demystify_ram.txt`, section "Measure
     RAM Usage".
+
+    Platform: Linux and Windows both work. `/dev/shm` exists only on
+    Linux; on Windows the block disappears when the last handle closes
+    and `unlink()` does nothing.
+
+    Args:
+        arr: A numeric array. An empty array raises `ValueError`; a
+            `dtype=object` array raises `TypeError`.
     """
 
     def __init__(self, arr: np.ndarray) -> None:
@@ -113,7 +127,15 @@ class SharedStrings:
     """A list of strings as one UTF-8 blob plus int64 offsets.
 
     Source: `papers/pr_191555.md` (the design); `papers/issue_13246.md`,
-    comment 436632186.
+    comment 436632186 (a huge list grows memory, a numpy array does not).
+
+    Platform: Linux and Windows both work. `/dev/shm` exists only on
+    Linux; on Windows `unlink()` does nothing.
+
+    Args:
+        strings: A non-empty list of `str`. An empty list raises
+            `ValueError`, and so does a list whose strings are all empty
+            (a `SharedMemory` block cannot have size 0).
     """
 
     def __init__(self, strings: list[str]) -> None:
@@ -121,7 +143,7 @@ class SharedStrings:
             raise ValueError("empty list")
         self._n = len(strings)
         encoded = [s.encode("utf-8") for s in strings]
-        self._offsets = np.zeros(self._n + 1, dtype=np.int64)
+        self._offsets: np.ndarray = np.zeros(self._n + 1, dtype=np.int64)
         self._offsets[1:] = np.cumsum([len(e) for e in encoded])
         total_bytes = int(self._offsets[-1])
         if total_bytes == 0:
@@ -219,6 +241,20 @@ class SharedList:
     from pickle. For a connection, put the *recipe* (the URL, the
     credentials, the path) in the container, and open the connection
     in the worker, one per process.
+
+    Trust: reading an item calls `pickle.loads` on bytes in shared
+    memory, so every local process that can attach the block is trusted
+    to write only data it owns. `allow_pickle=False` restricts what is
+    written at construction (`None`, `bool`, `int`, `float`, `str`,
+    `bytes`, and `tuple` / `list` of these; anything else raises
+    `TypeError`); it does not change how items are read.
+
+    Platform: Linux and Windows both work. `/dev/shm` exists only on
+    Linux; on Windows `unlink()` does nothing.
+
+    Args:
+        items: A non-empty list. An empty list raises `ValueError`.
+        allow_pickle: If False, only the safe types above are accepted.
     """
 
     def __init__(self, items: list, allow_pickle: bool = True) -> None:
@@ -230,11 +266,9 @@ class SharedList:
             if not allow_pickle:
                 _check_safe_pickle(item)
             encoded.append(pickle.dumps(item, protocol=5))
-        self._offsets = np.zeros(self._n + 1, dtype=np.int64)
+        self._offsets: np.ndarray = np.zeros(self._n + 1, dtype=np.int64)
         self._offsets[1:] = np.cumsum([len(e) for e in encoded])
         total_bytes = int(self._offsets[-1])
-        if total_bytes == 0:
-            raise ValueError("zero bytes")
 
         self._shm_data = shared_memory.SharedMemory(create=True, size=total_bytes)
         self._shm_offsets = shared_memory.SharedMemory(
@@ -333,6 +367,18 @@ class SharedDict(Mapping):
     comparison and defeats the sorted digest index. The page
     `docs/api/data_shared.md` repeats the limitation in the Choices
     section.
+
+    Trust: reading a value calls `pickle.loads` on bytes in shared
+    memory, so every local process that can attach the blocks is trusted
+    to write only data it owns. `allow_pickle=False` restricts keys and
+    values at construction to the safe types of `SharedList`.
+
+    Platform: Linux and Windows both work. `/dev/shm` exists only on
+    Linux; on Windows `unlink()` does nothing.
+
+    Args:
+        mapping: A non-empty dict. An empty dict raises `ValueError`.
+        allow_pickle: If False, only the safe types are accepted.
     """
 
     def __init__(self, mapping: dict, allow_pickle: bool = True) -> None:
@@ -348,15 +394,13 @@ class SharedDict(Mapping):
         enc_keys = [pickle.dumps(k, protocol=5) for k in keys]
         enc_vals = [pickle.dumps(v, protocol=5) for v in vals]
 
-        self._key_offsets = np.zeros(self._n + 1, dtype=np.int64)
+        self._key_offsets: np.ndarray = np.zeros(self._n + 1, dtype=np.int64)
         self._key_offsets[1:] = np.cumsum([len(e) for e in enc_keys])
-        self._val_offsets = np.zeros(self._n + 1, dtype=np.int64)
+        self._val_offsets: np.ndarray = np.zeros(self._n + 1, dtype=np.int64)
         self._val_offsets[1:] = np.cumsum([len(e) for e in enc_vals])
 
         total_key_bytes = int(self._key_offsets[-1])
         total_val_bytes = int(self._val_offsets[-1])
-        if total_key_bytes == 0 or total_val_bytes == 0:
-            raise ValueError("zero bytes")
 
         self._shm_keys = shared_memory.SharedMemory(create=True, size=total_key_bytes)
         self._shm_key_offsets = shared_memory.SharedMemory(
@@ -532,7 +576,19 @@ class SharedDict(Mapping):
 
 
 def to_shared(obj, allow_pickle: bool = True):
-    """Convert a Python object to a shared container."""
+    """Convert a Python object to a shared container.
+
+    Args:
+        obj: An `ndarray` (`SharedArray`), a list or tuple of `str`
+            (`SharedStrings`), any other list or tuple (`SharedList`) or
+            a dict (`SharedDict`). Anything else raises `TypeError`; an
+            empty list or tuple raises `ValueError`.
+        allow_pickle: Passed to `SharedList` and `SharedDict`; ignored for
+            arrays and lists of `str`.
+
+    Returns:
+        The shared container.
+    """
     if isinstance(obj, np.ndarray):
         return SharedArray(obj)
     if isinstance(obj, dict):

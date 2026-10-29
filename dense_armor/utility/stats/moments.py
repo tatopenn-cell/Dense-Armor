@@ -95,6 +95,11 @@ class RunningMoments(Transformer):
             self.n_missing_ += 1
             return self
         n_old = self.n_
+        if n_old == 0:
+            self.mean_ = v
+            self.n_ = 1
+            self.min_ = self.max_ = v
+            return self
         n = n_old + 1
         d = v - self.mean_
         dn = d / n
