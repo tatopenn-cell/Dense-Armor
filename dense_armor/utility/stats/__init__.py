@@ -34,6 +34,7 @@ from dense_armor.utility.stats.sketches import (
     HyperLogLog,
     SpaceSaving,
 )
+from dense_armor.utility.stats.stable import stable_moments, stable_var
 from dense_armor.utility.stats.student_t import StudentT
 
 __all__ = [
@@ -57,6 +58,8 @@ __all__ = [
     "RunningMomentsVector",
     "SpaceSaving",
     "StudentT",
+    "stable_moments",
+    "stable_var",
     "TDigest",
     "cosine_similarity",
     "cosine_similarity_many",

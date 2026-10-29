@@ -27,11 +27,21 @@ Chan, T. F., Golub, G. H., LeVeque, R. J. (1979). Updating formulae and
 Chatfield, C. (2003). The Analysis of Time Series: An Introduction,
     6th ed. Chapman & Hall/CRC.
 """
+
 import math
 from collections import deque
 from typing import Any
 
+import numpy as np
+
 from dense_armor.roles import Transformer
+
+
+def _num_dtype(dtype, value):
+    """Cast to the working dtype (numpy scalar) or to float."""
+    if dtype is None:
+        return float(value)
+    return np.dtype(dtype).type(value)
 
 
 class RunningCovariance(Transformer):
@@ -67,10 +77,12 @@ class RunningCovariance(Transformer):
         x_feature: str = "x",
         y_feature: str = "y",
         feature: str | None = None,
+        dtype=None,
     ) -> None:
         self.x_feature = x_feature
         self.y_feature = y_feature
         self.feature = feature
+        self.dtype = dtype
         self.n_ = 0
         self.n_missing_ = 0
         self.mean_x_ = 0.0
@@ -80,8 +92,11 @@ class RunningCovariance(Transformer):
         self.c_ = 0.0
 
     def _values(self, x: dict) -> tuple[float, float] | None:
-        a = float(x[self.x_feature])
-        b = float(x[self.y_feature])
+        try:
+            a = float(x[self.x_feature])
+            b = float(x[self.y_feature])
+        except (KeyError, TypeError, ValueError):
+            return None
         if math.isnan(a) or math.isnan(b):
             return None
         return a, b
@@ -97,13 +112,20 @@ class RunningCovariance(Transformer):
             return self
         a, b = pair
         n = self.n_ + 1
-        dx = a - self.mean_x_
-        dy = b - self.mean_y_
-        self.mean_x_ += dx / n
-        self.mean_y_ += dy / n
-        self.m2_x_ += dx * (a - self.mean_x_)
-        self.m2_y_ += dy * (b - self.mean_y_)
-        self.c_ += dx * (b - self.mean_y_)
+        an = _num_dtype(self.dtype, a)
+        bn = _num_dtype(self.dtype, b)
+        nn = _num_dtype(self.dtype, n)
+        mx = _num_dtype(self.dtype, self.mean_x_)
+        my = _num_dtype(self.dtype, self.mean_y_)
+        dx = an - mx
+        dy = bn - my
+        mx_new = mx + dx / nn
+        my_new = my + dy / nn
+        self.mean_x_ = float(mx_new)
+        self.mean_y_ = float(my_new)
+        self.m2_x_ = float(_num_dtype(self.dtype, self.m2_x_) + dx * (an - mx_new))
+        self.m2_y_ = float(_num_dtype(self.dtype, self.m2_y_) + dy * (bn - my_new))
+        self.c_ = float(_num_dtype(self.dtype, self.c_) + dx * (bn - my_new))
         self.n_ = n
         return self
 
@@ -167,6 +189,7 @@ class RunningCovariance(Transformer):
             x_feature=self.x_feature,
             y_feature=self.y_feature,
             feature=self.feature,
+            dtype=self.dtype,
         )
         m.n_missing_ = self.n_missing_ + other.n_missing_
         na, nb = self.n_, other.n_
@@ -230,11 +253,15 @@ class RunningCorrelation(Transformer):
         x_feature: str = "x",
         y_feature: str = "y",
         feature: str | None = None,
+        dtype=None,
     ) -> None:
         self.x_feature = x_feature
         self.y_feature = y_feature
         self.feature = feature
-        self._cov = RunningCovariance(x_feature=x_feature, y_feature=y_feature)
+        self.dtype = dtype
+        self._cov = RunningCovariance(
+            x_feature=x_feature, y_feature=y_feature, dtype=dtype
+        )
 
     def learn_one(
         self, x: dict, y: Any = None, t: float | None = None
@@ -298,12 +325,14 @@ class RollingCovariance(Transformer):
         window: int = 20,
         window_s: float | None = None,
         feature: str | None = None,
+        dtype=None,
     ) -> None:
         self.x_feature = x_feature
         self.y_feature = y_feature
         self.window = window
         self.window_s = window_s
         self.feature = feature
+        self.dtype = dtype
         self.buf_x_: deque[float] = deque(maxlen=window)
         self.buf_y_: deque[float] = deque(maxlen=window)
         self.n_ = 0
@@ -311,8 +340,11 @@ class RollingCovariance(Transformer):
         self._resolved_window: int | None = None
 
     def _values(self, x: dict) -> tuple[float, float] | None:
-        a = float(x[self.x_feature])
-        b = float(x[self.y_feature])
+        try:
+            a = float(x[self.x_feature])
+            b = float(x[self.y_feature])
+        except (KeyError, TypeError, ValueError):
+            return None
         if math.isnan(a) or math.isnan(b):
             return None
         return a, b
@@ -421,17 +453,20 @@ class RollingCorrelation(Transformer):
         window: int = 20,
         window_s: float | None = None,
         feature: str | None = None,
+        dtype=None,
     ) -> None:
         self.x_feature = x_feature
         self.y_feature = y_feature
         self.window = window
         self.window_s = window_s
         self.feature = feature
+        self.dtype = dtype
         self._cov = RollingCovariance(
             x_feature=x_feature,
             y_feature=y_feature,
             window=window,
             window_s=window_s,
+            dtype=dtype,
         )
 
     def learn_one(
@@ -498,11 +533,12 @@ class Autocorrelation(Transformer):
         Introduction, 6th ed. Chapman & Hall/CRC.
     """
 
-    def __init__(self, feature: str = "x", lag: int = 1) -> None:
+    def __init__(self, feature: str = "x", lag: int = 1, dtype=None) -> None:
         if lag < 1:
             raise ValueError(f"lag must be >= 1, got {lag}")
         self.feature = feature
         self.lag = lag
+        self.dtype = dtype
         self.history_: deque[float] = deque(maxlen=lag)
         self.n_ = 0
         self.n_pairs_ = 0
@@ -524,12 +560,18 @@ class Autocorrelation(Transformer):
             self.n_missing_ += 1
             return self
         n = self.n_ + 1
-        d = v - self.mean_
-        self.mean_ += d / n
-        self.m2_ += d * (v - self.mean_)
+        vv = _num_dtype(self.dtype, v)
+        nn = _num_dtype(self.dtype, n)
+        m = _num_dtype(self.dtype, self.mean_)
+        d = vv - m
+        m_new = m + d / nn
+        self.mean_ = float(m_new)
+        self.m2_ = float(_num_dtype(self.dtype, self.m2_) + d * (vv - m_new))
         if len(self.history_) == self.lag:
-            past = self.history_[0]
-            self.c_ += (v - self.mean_) * (past - self.mean_)
+            past = _num_dtype(self.dtype, self.history_[0])
+            self.c_ = float(
+                _num_dtype(self.dtype, self.c_) + (vv - m_new) * (past - m_new)
+            )
             self.n_pairs_ += 1
         self.history_.append(v)
         self.n_ = n

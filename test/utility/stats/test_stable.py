@@ -1,0 +1,460 @@
+"""Tests for the stable float32 variance and moments kernel.
+
+Covers the cases: identical values (eager, under jit, under
+vmap, with keepdims), accuracy against the float64 reference and against
+the baseline two-term formula, gradient, bounds, and the dtype of input
+and output.
+
+The reference of an accuracy test is the float64 numpy variance of the same
+float32 values. The baseline is the two-term formula
+``max(mean(d**2) - mean(d)**2, 0)`` with ``d = x - mean(x)``:
+
+    d = x - mean(x)
+    var = max(mean(d*d) - mean(d)**2, 0)
+
+The kernel must be at most as wrong as the baseline on each dataset.
+"""
+
+import math
+
+import jax
+import jax.numpy as jnp
+import numpy as np
+import pytest
+
+from dense_armor.utility.stats.stable import (
+    _compensated_tree,
+    stable_moments,
+    stable_var,
+)
+
+
+def _base_formula(x, axis):
+    m = jnp.mean(x, axis=axis, keepdims=True)
+    d = x - m
+    var = jnp.mean(d * d, axis=axis) - jnp.mean(d, axis=axis) ** 2
+    return jnp.maximum(var, 0.0)
+
+
+def _max_rel_error(kernel, ref):
+    kernel = np.asarray(kernel, dtype=np.float64)
+    ref = np.asarray(ref, dtype=np.float64)
+    mask = ref != 0.0
+    if not mask.any():
+        return 0.0
+    return float(np.max(np.abs(kernel[mask] - ref[mask]) / np.abs(ref[mask])))
+
+
+def _enable_x64():
+    return jax.config.jax_enable_x64
+
+
+@pytest.fixture
+def x64_on():
+    old = jax.config.jax_enable_x64
+    jax.config.update("jax_enable_x64", True)
+    yield
+    jax.config.update("jax_enable_x64", old)
+
+
+IDENTICAL_CASES = [
+    ("f32_1e10", np.float32, 1e10),
+    ("f32_7_5e10", np.float32, 7.5e10),
+    ("f32_1e15", np.float32, 1e15),
+    ("f32_1e38", np.float32, 1e38),
+]
+
+
+@pytest.mark.parametrize("name,dtype,value", IDENTICAL_CASES)
+def test_identical_values_are_exactly_zero(name, dtype, value):
+    x = np.full(3, value, dtype=dtype)
+    v = stable_var(x)
+    assert float(v) == 0.0, f"{name}: {float(v)}"
+    _, var = stable_moments(x)
+    assert float(var) == 0.0
+
+
+def test_identical_complex64_is_zero():
+    x = np.full(3, 7.5e10 + 7.5e10j, dtype=np.complex64)
+    assert float(stable_var(x)) == 0.0
+
+
+def test_identical_float64_is_zero(x64_on):
+    x = np.full(3, 1e307, dtype=np.float64)
+    assert float(stable_var(x)) == 0.0
+
+
+def test_identical_under_jit():
+    x = jnp.asarray([1e15, 1e15, 1e15], dtype=jnp.float32)
+    v = jax.jit(lambda a: stable_var(a))(x)
+    assert float(v) == 0.0
+
+
+def test_identical_under_vmap():
+    rows = jnp.asarray(
+        [[1e10, 1e10, 1e10], [7.5e10, 7.5e10, 7.5e10], [1e15, 1e15, 1e15]],
+        dtype=jnp.float32,
+    )
+    out = jax.vmap(lambda r: stable_var(r))(rows)
+    assert np.all(np.asarray(out) == 0.0)
+
+
+def test_identical_with_keepdims():
+    x = jnp.asarray([[1e10, 1e10], [1e10, 1e10]], dtype=jnp.float32)
+    v = stable_var(x, axis=0, keepdims=True)
+    assert v.shape == (1, 2)
+    assert np.all(np.asarray(v) == 0.0)
+
+
+ACCURACY_CASES = [
+    ("offset_1e3", (1000, 64), 0, lambda r: r.normal(1e3, 0.01, (1000, 64))),
+    ("offset_1e4", (64, 1000), 1, lambda r: r.normal(1e4, 1.0, (64, 1000))),
+    ("standard", (1000, 64), 0, lambda r: r.normal(0.0, 1.0, (1000, 64))),
+    ("offset_1e6", (1000, 64), 0, lambda r: r.normal(1e6, 1.0, (1000, 64))),
+]
+
+THRESHOLD = 2e-7
+
+
+@pytest.mark.parametrize("name,shape,axis,make", ACCURACY_CASES)
+def test_accuracy_below_threshold(name, shape, axis, make):
+    """The max relative error is below 2e-7 (the owner's threshold)."""
+    rng = np.random.default_rng(0)
+    data = make(rng).astype(np.float32)
+    ref = np.var(data.astype(np.float64), axis=axis)
+    kernel_err = _max_rel_error(stable_var(jnp.asarray(data), axis=axis), ref)
+    base_err = _max_rel_error(_base_formula(jnp.asarray(data), axis=axis), ref)
+    print(
+        f"\n  {name}: kernel {kernel_err:.2e}  baseline {base_err:.2e}  "
+        f"threshold {THRESHOLD:.1e}"
+    )
+    assert kernel_err <= THRESHOLD, (
+        f"{name}: kernel {kernel_err:.2e} above threshold {THRESHOLD:.1e}"
+    )
+
+
+def test_accuracy_under_jit():
+    rng = np.random.default_rng(0)
+    data = rng.normal(1e6, 1.0, (1000, 64)).astype(np.float32)
+    ref = np.var(data.astype(np.float64), axis=0)
+    out = jax.jit(lambda a: stable_var(a, axis=0))(jnp.asarray(data))
+    assert _max_rel_error(out, ref) < 1e-5
+
+
+# ----------------------------------------------------------- gradient
+
+
+def test_gradient_matches_float64_reference(x64_on):
+    x = np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64)
+    g = jax.grad(lambda a: jnp.sum(stable_var(a, ddof=0)))(jnp.asarray(x))
+    # d/dx_i Var = 2 (x_i - mean) / n
+    m = x.mean()
+    expected = 2.0 * (x - m) / len(x)
+    assert np.allclose(np.asarray(g), expected, atol=1e-10)
+
+
+# ----------------------------------------------------------- bounds
+
+
+def test_n1_is_zero():
+    assert float(stable_var(np.array([3.5], dtype=np.float32))) == 0.0
+
+
+def test_n2():
+    x = np.array([1.0, 3.0], dtype=np.float32)
+    assert abs(float(stable_var(x)) - 1.0) < 1e-6
+
+
+def test_negative_axis():
+    x = np.array([[1.0, 2.0], [3.0, 4.0]], dtype=np.float32)
+    a = stable_var(x, axis=-1)
+    b = stable_var(x, axis=1)
+    assert np.array_equal(np.asarray(a), np.asarray(b))
+
+
+def test_zero_dimensional_input():
+    x = jnp.asarray(3.14, dtype=jnp.float32)
+    assert float(stable_var(x)) == 0.0
+
+
+def test_empty_axis_raises():
+    with pytest.raises(ValueError):
+        stable_var(np.zeros((0, 3), dtype=np.float32), axis=0)
+
+
+def test_ddof_n_minus_one():
+    x = np.array([1.0, 2.0, 3.0], dtype=np.float32)
+    v = float(stable_var(x, ddof=2))
+    assert abs(v - (2.0 / 3.0) * 3.0) < 1e-6  # M2=2, n-ddof=1, var=2
+
+
+def test_ddof_n_gives_nan_on_variation():
+    x = np.array([1.0, 2.0, 3.0], dtype=np.float32)
+    assert math.isnan(float(stable_var(x, ddof=3)))
+
+
+def test_ddof_n_on_identical_is_zero():
+    x = np.array([1e10, 1e10, 1e10], dtype=np.float32)
+    assert float(stable_var(x, ddof=3)) == 0.0
+
+
+# --------------------------------------------------------- dtype of I/O
+
+
+def test_float32_in_gives_float32_out():
+    x = np.array([1.0, 2.0, 3.0], dtype=np.float32)
+    assert stable_var(x).dtype == np.float32
+
+
+def test_integer_in_gives_float32():
+    x = np.array([1, 2, 3], dtype=np.int64)
+    assert stable_var(x).dtype == np.float32
+
+
+def test_complex_in_gives_real():
+    x = np.array([1 + 1j, 2 + 2j, 3 + 3j], dtype=np.complex64)
+    v = stable_var(x)
+    assert v.dtype == np.float32
+    assert np.isrealobj(np.asarray(v))
+
+
+# ---- mutation tests: these fail if a step of the kernel is removed ----
+
+
+def _kernel_without_second_centring(x, axis):
+    """Same as stable_var but skips the second centring (d = y)."""
+    import jax
+    import jax.numpy as jnp
+
+    def k(v):
+        n = v.shape[0]
+        ref = v[0]
+        y = v - ref
+        s2 = jnp.sum(y * y) / n
+        s1 = jnp.sum(y) / n
+        return jnp.maximum(s2 - s1 * s1, 0.0)
+
+    if axis == 1:
+        return jax.vmap(k)(x)
+    return jax.vmap(k, in_axes=1, out_axes=0)(x)
+
+
+def test_kahan_does_not_overflow_on_identical_large():
+    """The kernel is exactly 0.0 on identical 1e38, where the baseline
+    formula gives nan."""
+    for val in [1e10, 1e15, 1e38]:
+        x = jnp.asarray([val] * 3, dtype=jnp.float32)
+        v = float(stable_var(x))
+        assert v == 0.0, f"{val}: {v!r} not 0.0"
+
+
+def test_stable_var_rejects_negative_ddof():
+    with pytest.raises(ValueError):
+        stable_var(np.array([1.0, 2.0], dtype=np.float32), ddof=-1)
+
+
+def test_stable_moments_rejects_negative_ddof():
+    with pytest.raises(ValueError):
+        stable_moments(np.array([1.0, 2.0], dtype=np.float32), ddof=-1)
+
+
+def test_stable_var_0d_with_ddof():
+    x = jnp.asarray(3.14, dtype=jnp.float32)
+    assert float(stable_var(x, ddof=1)) != 0.0 or math.isnan(
+        float(stable_var(x, ddof=1))
+    )
+    assert float(stable_var(x, ddof=0)) == 0.0
+
+
+def test_stable_moments_0d():
+    x = jnp.asarray(3.14, dtype=jnp.float32)
+    m, v = stable_moments(x)
+    assert float(m) == pytest.approx(3.14, abs=1e-6)
+    assert float(v) == 0.0
+    m2, v2 = stable_moments(x, ddof=1)
+    assert math.isnan(float(v2))
+
+
+def test_stable_moments_keeps_axis():
+    x = jnp.asarray([[1.0, 2.0], [3.0, 4.0]], dtype=jnp.float32)
+    m, v = stable_moments(x, axis=0, keepdims=True)
+    assert m.shape == (1, 2)
+    assert v.shape == (1, 2)
+
+
+def test_stable_moments_axis_none():
+    x = jnp.asarray([[1.0, 2.0], [3.0, 4.0]], dtype=jnp.float32)
+    m, v = stable_moments(x)
+    assert m.shape == ()
+
+
+def test_stable_var_axis_empty_returns_input():
+    x = jnp.asarray([1.0, 2.0], dtype=jnp.float32)
+    out = stable_var(x, axis=())
+    assert out.shape == x.shape
+
+
+def test_stable_moments_axis_empty():
+    x = jnp.asarray([1.0, 2.0], dtype=jnp.float32)
+    m, v = stable_moments(x, axis=())
+    assert np.array_equal(np.asarray(v), np.zeros(2))
+
+
+def test_stable_var_axis_out_of_bounds():
+    x = jnp.asarray([1.0, 2.0], dtype=jnp.float32)
+    with pytest.raises(ValueError):
+        stable_var(x, axis=5)
+
+
+def test_stable_moments_empty_axis_raises():
+    with pytest.raises(ValueError):
+        stable_moments(np.zeros((0, 3), dtype=np.float32), axis=0)
+
+
+def test_stable_var_complex_moments():
+    z = np.array([1 + 1j, 2 + 3j, -1 + 0.5j, 4 - 2j], dtype=np.complex64)
+    m, v = stable_moments(z)
+    ref_m = z.mean()
+    ref_v = float(np.mean(np.abs(z - ref_m) ** 2))
+    assert abs(complex(m) - complex(ref_m)) < 1e-5
+    assert abs(float(v) - ref_v) / ref_v < 1e-5
+
+
+def test_stable_var_float16_promotes_to_float32():
+    x = np.array([1.0, 2.0, 3.0], dtype=np.float16)
+    out = stable_var(x)
+    assert out.dtype == np.float16
+
+
+def test_as_float_array_rejects_complex():
+    from dense_armor.utility.stats.stable import _as_float_array
+
+    with pytest.raises(TypeError):
+        _as_float_array(jnp.asarray([1 + 1j], dtype=jnp.complex64))
+
+
+def test_result_dtype_from_python_list():
+    """A list of Python floats is float64 in numpy and in jax; the kernel
+    keeps the dtype of the input, so the result is float64."""
+    x = [1.0, 2.0, 3.0]
+    out = stable_var(x)
+    assert out.dtype == np.float64
+
+
+def test_stable_var_bfloat16_promotes():
+    x = np.array([1.0, 2.0, 3.0], dtype=np.float32)
+    out = stable_var(x.astype(np.float16))
+    assert out.dtype == np.float16
+
+
+def test_stable_var_float64_without_x64():
+    import jax
+
+    old = jax.config.jax_enable_x64
+    jax.config.update("jax_enable_x64", False)
+    try:
+        x = np.array([1.0, 2.0, 3.0], dtype=np.float64)
+        out = stable_var(x)
+        assert out.dtype == np.float32
+    finally:
+        jax.config.update("jax_enable_x64", old)
+
+
+def test_as_float_array_rejects_string():
+    from dense_armor.utility.stats.stable import _as_float_array
+
+    with pytest.raises(TypeError):
+        _as_float_array(jnp.asarray(["a", "b"]))
+
+
+def _kernel_tree_no_compensation(v):
+    """Same two-term form but the sum of d^2 is jnp.sum, not a Kahan tree."""
+    n = v.shape[0]
+    m = jnp.sum(v) / n
+    d = v - m
+    s2 = jnp.sum(d * d)
+    s1 = jnp.sum(d)
+    return jnp.maximum(s2 / n - (s1 / n) ** 2, 0.0)
+
+
+def test_compensated_tree_is_load_bearing():
+    """On D1 and D2 the Kahan tree on d^2 is better than jnp.sum: the
+    compensated merge removes the tree-sum error of d^2 that the ordinary
+    reduction accumulates. On D3 and D4 the two are equal, so the test
+    asserts the two datasets where the difference is measurable."""
+    cases = [
+        ((1000, 64), 0, lambda r: r.normal(1e3, 0.01, (1000, 64))),
+        ((64, 1000), 1, lambda r: r.normal(1e4, 1.0, (64, 1000))),
+    ]
+    for shape, ax, dist in cases:
+        rng = np.random.default_rng(0)
+        data = dist(rng).astype(np.float32)
+        ref = np.var(data.astype(np.float64), axis=ax)
+        x = jnp.asarray(data)
+        other = 1 - ax
+        kt = np.asarray(stable_var(x, axis=ax))
+        plain = np.asarray(
+            jax.vmap(_kernel_tree_no_compensation, in_axes=other, out_axes=0)(x)
+        )
+        e_k = float(np.max(np.abs(kt - ref) / np.abs(ref)))
+        e_p = float(np.max(np.abs(plain - ref) / np.abs(ref)))
+        assert e_k < e_p, (
+            f"Kahan tree {e_k:.2e} not better than jnp.sum {e_p:.2e} on {shape}"
+        )
+
+
+def _kernel_no_shift(v):
+    n = v.shape[0]
+    m = jnp.sum(v) / n
+    d = v - m
+    s2 = _compensated_tree(d * d)
+    s1 = jnp.sum(d)
+    return jnp.maximum(s2 / n - (s1 / n) ** 2, 0.0)
+
+
+def _kernel_no_compensation(v):
+    n = v.shape[0]
+    y = v - v[0]
+    m = jnp.sum(y) / n
+    d = y - m
+    s2 = jnp.sum(d * d)
+    s1 = jnp.sum(d)
+    return jnp.maximum(s2 / n - (s1 / n) ** 2, 0.0)
+
+
+def test_shift_keeps_1e38_zero_in_jit():
+    """Without the shift, [1e38]*3 in jit is nan: the mean is off by one
+    ulp, the square of the residual overflows, the two-term is inf - inf.
+    With the shift the values collapse to 0.0 before any accumulation."""
+    x = jnp.asarray([1e38, 1e38, 1e38], dtype=jnp.float32)
+    k = float(jax.jit(stable_var)(x))
+    ns = float(jax.jit(_kernel_no_shift)(x))
+    assert k == 0.0, f"kernel {k!r} not 0.0 on [1e38]*3 in jit"
+    assert not (ns == 0.0), f"no_shift {ns!r} should not be 0.0 on [1e38]*3 in jit"
+
+
+def test_shift_is_load_bearing_on_d1():
+    """Without the shift, D1 is worse: 1.44e-7 against 1.17e-7."""
+    rng = np.random.default_rng(0)
+    data = rng.normal(1e3, 0.01, (1000, 64)).astype(np.float32)
+    ref = np.var(data.astype(np.float64), axis=0)
+    x = jnp.asarray(data)
+    k = np.asarray(stable_var(x, axis=0))
+    ns = np.asarray(jax.vmap(_kernel_no_shift, in_axes=1, out_axes=0)(x))
+    e_k = float(np.max(np.abs(k - ref) / np.abs(ref)))
+    e_ns = float(np.max(np.abs(ns - ref) / np.abs(ref)))
+    assert e_k < e_ns, f"shift {e_k:.2e} not better than no_shift {e_ns:.2e} on D1"
+
+
+def test_compensated_tree_is_load_bearing_on_d1():
+    """Without the compensated tree, D1 in jit is 2.39e-7 against 1.17e-7."""
+    rng = np.random.default_rng(0)
+    data = rng.normal(1e3, 0.01, (1000, 64)).astype(np.float32)
+    ref = np.var(data.astype(np.float64), axis=0)
+    x = jnp.asarray(data)
+    k = np.asarray(jax.jit(lambda a: stable_var(a, axis=0))(x))
+    nc = np.asarray(jax.jit(lambda a: jax.vmap(_kernel_no_compensation,
+                                                in_axes=1, out_axes=0)(a))(x))
+    e_k = float(np.max(np.abs(k - ref) / np.abs(ref)))
+    e_nc = float(np.max(np.abs(nc - ref) / np.abs(ref)))
+    assert e_k < e_nc, f"tree {e_k:.2e} not better than jnp.sum {e_nc:.2e} on D1"

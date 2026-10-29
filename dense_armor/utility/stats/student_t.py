@@ -60,9 +60,18 @@ Liu, C., Rubin, D. B. (1995). ML estimation of the t distribution with
 import math
 from typing import Any
 
+import numpy as np
 from scipy.stats import t as _scipy_t
 
 from dense_armor.roles import Transformer
+
+
+def _num_dtype(dtype, value):
+    """Cast to the working dtype (numpy scalar) or to float."""
+    if dtype is None:
+        return float(value)
+    return np.dtype(dtype).type(value)
+
 
 _EPS_LOG_SIGMA = -30.0
 
@@ -123,6 +132,7 @@ class StudentT(Transformer):
         sigma_init: float = 1.0,
         learning_rate: float = 0.05,
         feature: str | None = None,
+        dtype=None,
     ) -> None:
         if nu <= 0:
             raise ValueError(f"nu must be strictly positive, got {nu!r}")
@@ -139,6 +149,7 @@ class StudentT(Transformer):
         self.sigma_init = float(sigma_init)
         self.learning_rate = float(learning_rate)
         self.feature = feature
+        self.dtype = dtype
         self.mu_ = float(mu_init)
         self.log_sigma_ = float(math.log(sigma_init))
         self.n_ = 0
@@ -192,6 +203,9 @@ class StudentT(Transformer):
         g_log_sigma = -1.0 + w * z * z
         new_log_sigma = self.log_sigma_ + self.learning_rate * g_log_sigma
         self.log_sigma_ = max(new_log_sigma, _EPS_LOG_SIGMA)
+        _ = _num_dtype(self.dtype, self.mu_)
+        self.mu_ = float(_num_dtype(self.dtype, self.mu_))
+        self.log_sigma_ = float(_num_dtype(self.dtype, self.log_sigma_))
         self.n_ += 1
         return self
 
