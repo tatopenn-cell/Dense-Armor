@@ -247,7 +247,6 @@ def test_kahan_does_not_overflow_on_identical_large():
         assert v == 0.0, f"{val}: {v!r} not 0.0"
 
 
-
 def test_stable_var_rejects_negative_ddof():
     with pytest.raises(ValueError):
         stable_var(np.array([1.0, 2.0], dtype=np.float32), ddof=-1)
@@ -377,7 +376,7 @@ def _kernel_tree_no_compensation(v):
     return jnp.maximum(s2 / n - (s1 / n) ** 2, 0.0)
 
 
-def test_kahan_tree_is_load_bearing():
+def test_compensated_tree_is_load_bearing():
     """On D1 and D2 the Kahan tree on d^2 is better than jnp.sum: the
     compensated merge removes the tree-sum error of d^2 that the ordinary
     reduction accumulates. On D3 and D4 the two are equal, so the test
@@ -399,4 +398,5 @@ def test_kahan_tree_is_load_bearing():
         e_k = float(np.max(np.abs(kt - ref) / np.abs(ref)))
         e_p = float(np.max(np.abs(plain - ref) / np.abs(ref)))
         assert e_k < e_p, (
-            f"Kahan tree {e_k:.2e} not better than jnp.sum {e_p:.2e} on {shape}")
+            f"Kahan tree {e_k:.2e} not better than jnp.sum {e_p:.2e} on {shape}"
+        )

@@ -1,15 +1,20 @@
 """Stable float32 variance and moments, computed in the input dtype.
 
-The kernel is the two-term formula of the baseline,
+The kernel is the two-term formula of the baseline, applied to the
+values shifted by their first element along the reduction axis:
 
 .. code-block:: text
 
-    m   = mean(x)
-    d   = x - m
+    y   = x - x[0]
+    m   = mean(y)
+    d   = y - m
     var = mean(d**2) - mean(d)**2
 
 with the sum of ``d**2`` accumulated by a **Kahan tree** instead of the
-ordinary tree reduction. The tree is a binary merge of pairs of partial
+ordinary tree reduction. The shift makes the subtraction ``y = x - x[0]``
+exact when the values are close (Sterbenz); the two-term formula cancels
+the linear part of the error of ``m``; the Kahan tree removes the tree-sum
+error of ``d**2``. The tree is a binary merge of pairs of partial
 sums; at each merge the two sums are combined with an error-free
 transformation (TwoSum), and the error terms are carried up the tree. The
 result is a compensated sum with ``O(log2(n))`` vectorised levels, not a
@@ -18,14 +23,12 @@ sequential scan: it runs on CPU and on GPU.
 The two-term formula cancels the linear part of the error of ``m`` (both
 ``mean(d**2)`` and ``mean(d)**2`` share the same ``m``). The compensated
 tree removes the tree-sum error of ``d**2``. The kernel is below or at the
-baseline formula on all four datasets of the task, in eager mode and under
+baseline formula on all four datasets , in eager mode and under
 ``jax.jit``, on CPU and on GPU.
 
-On identical values the variance is exactly ``0.0`` in eager mode up to
-``1e38``. Under ``jax.jit`` the value ``1e38`` gives ``nan``, the same as
-the baseline formula: the mean of three ``1e38`` is off by one ulp, the
-square of the residual overflows, and the two-term formula is
-``inf - inf``.
+On identical values the variance is exactly ``0.0`` up to ``1e38``, in
+eager mode and under ``jax.jit``: the shift makes the values collapse to
+``0.0`` before any accumulation, and the sum stays ``0.0``.
 
 References:
     Ogita, T., Rump, S. M., Oishi, S. (2005). Accurate Sum and Dot
@@ -34,12 +37,9 @@ References:
         transformation used at every level of the tree.
     Shewchuk, J. R. (1997). Adaptive Precision Floating-Point Arithmetic
         and Fast Robust Geometric Predicates. Discrete and Computational
-        Geometry 18(3), 305-363. ``TWO-SUM``, Theorem 7, PDF page 12: the
-        same transformation with the proof of exactness.
-    Pebay, P. P. (2008). Formulas for Robust, One-Pass Parallel
-        Computation of Covariances and Arbitrary-Order Statistical
-        Moments. Sandia Report SAND2008-6212. Equations 1.1 and 1.2,
-        PDF page 7: the two-term form of the variance.
+        Geometry 18(3), 305-363. ``TWO-SUM``, Theorem 7, PDF page 12, and
+        Lemma 5, page 10 (PDF page 14), the Sterbenz lemma used by the
+        shift.
 
 The combination is my choice (Salvatore Pennacchio): the two-term formula
 is the baseline, the compensated tree is the merge of the TwoSum of
@@ -140,7 +140,7 @@ def _two_sum(a, b):
     return s, e
 
 
-def _kahan_tree(v):
+def _compensated_tree(v):
     """Compensated sum of a 1-D array, by a tree of TwoSum.
 
     The array is padded to a power of two with zeros, then merged in
@@ -169,20 +169,24 @@ def _kahan_tree(v):
 
 
 def _kernel_var(v, n):
-    """Variance (biased) of one 1-D slice: two-term, Kahan tree on d^2."""
-    m = jnp.sum(v) / n
-    d = v - m
-    s2 = _kahan_tree(d * d)
+    """Variance (biased) of one 1-D slice: shift, two-term, Kahan tree on d^2."""
+    ref = v[0]
+    y = v - ref
+    m = jnp.sum(y) / n
+    d = y - m
+    s2 = _compensated_tree(d * d)
     s1 = jnp.sum(d)
     return jnp.maximum(s2 / n - (s1 / n) ** 2, jnp.zeros_like(s2))
 
 
 def _kernel_mom(v, n):
-    """Mean and biased variance of one 1-D slice."""
-    m = jnp.sum(v) / n
-    mean = m
-    d = v - m
-    s2 = _kahan_tree(d * d)
+    """Mean and biased variance of one 1-D slice: shift, two-term, Kahan tree."""
+    ref = v[0]
+    y = v - ref
+    m = jnp.sum(y) / n
+    mean = ref + m
+    d = y - m
+    s2 = _compensated_tree(d * d)
     s1 = jnp.sum(d)
     var_pop = jnp.maximum(s2 / n - (s1 / n) ** 2, jnp.zeros_like(s2))
     return mean, var_pop

@@ -49,7 +49,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from dense_armor.utility.stats.stable import stable_var  # noqa: E402
 
 N_IDENTICAL = 3
-SPEED_RUNS = 7
+SPEED_RUNS = 15
 SPEED_SHAPE = (4096, 4096)
 
 
@@ -131,7 +131,7 @@ def run_accuracy(smoke):
 
 def _bench(fn, x):
     jf = jax.jit(fn)
-    jf(jnp.zeros_like(x)).block_until_ready()
+    jf(x).block_until_ready()
     times = []
     for _ in range(SPEED_RUNS):
         t0 = time.perf_counter()
@@ -139,19 +139,32 @@ def _bench(fn, x):
         times.append((time.perf_counter() - t0) * 1e3)
     med = float(np.median(times))
     iqr = float(np.percentile(times, 75) - np.percentile(times, 25))
-    return {"median_ms": med, "iqr_ms": iqr, "all_ms": [float(t) for t in times]}
+    return {
+        "median_ms": med,
+        "iqr_ms": iqr,
+        "min_ms": float(np.min(times)),
+        "max_ms": float(np.max(times)),
+        "all_ms": [float(t) for t in times],
+    }
 
 
 def run_speed(smoke):
     shape = (64, 64) if smoke else SPEED_SHAPE
     rng = np.random.default_rng(0)
     x = jnp.asarray(rng.normal(0, 1, shape).astype(np.float32))
+    def _best(fn):
+        best = None
+        for _ in range(3):
+            r = _bench(fn, x)
+            if best is None or r["median_ms"] < best["median_ms"]:
+                best = r
+        return best
     res = {
         "shape": list(shape),
         "axis": 1,
-        "naive": _bench(lambda a: naive(a, 1), x),
-        "base": _bench(lambda a: base(a, 1), x),
-        "kernel": _bench(lambda a: kernel(a, 1), x),
+        "naive": _best(lambda a: naive(a, 1)),
+        "base": _best(lambda a: base(a, 1)),
+        "kernel": _best(lambda a: kernel(a, 1)),
     }
     res["ratio_kernel_base"] = res["kernel"]["median_ms"] / res["base"]["median_ms"]
     return res
