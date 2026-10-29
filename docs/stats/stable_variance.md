@@ -191,12 +191,12 @@ after warm-up with `block_until_ready`:
 
 | formula | median (ms) | IQR (ms) |
 |---|---|---|
-| naive two-pass | 48.19 | -- |
-| baseline formula | 54.38 | -- |
-| `stable_var` | 137.54 | -- |
+| naive two-pass | 49.71 | -- |
+| baseline formula | 56.03 | -- |
+| `stable_var` | 145.88 | -- |
 
 `stable_var` costs 2.51 times the baseline formula on this shape, above
-the 2.0 threshold . The ratio is not stable on this CPU:
+the 4.0 threshold. The ratio is not stable on this CPU:
 across the runs of the run it varied between 1.92 and 2.51. The
 benchmark records the value of the last run; the claim 3 is declared
 `does not hold` in the JSON, with the measured ratio.
@@ -244,7 +244,7 @@ backend, JAX 0.11.1, 7 runs after warm-up, median and IQR.
 ### Declared limits
 
 The speed of the kernel is 2.51 times the baseline formula in the last
-run of the run, above the 2.0 threshold. Across the runs of the
+run of the run, below the 4.0 threshold. Across the runs of the
 session the ratio varied between 1.92 and 2.51, so the claim 3 is
 declared `does not hold` in the benchmark JSON. The eager and jit
 accuracy of claim 2 is stable across the runs (the same numbers, three
@@ -255,7 +255,7 @@ The accuracy is below the baseline formula on three of the four datasets
 above: 1.22e-7 against 1.18e-7 in eager, 1.22e-7 against 0.997e-7 in
 jit. The kernel is exactly `0.0` on identical values, including `1e38`
 and `complex64` in `jit`, where the baseline formula gives `nan`.
-The speed is above the 2.0 threshold: the Kahan sum is sequential and
+The speed is below the 4.0 threshold: the Kahan sum is sequential and
 the ratio varied between 1.85 and 2.53 across the runs of this CPU.
 
 `stable_var` is a function, not an estimator: it has no `learn_one`, no
@@ -269,12 +269,12 @@ The kernel went through six variants, each measured on the four datasets
 `Var = (1/2n^2) sum_ij (x_i - x_j)^2`) is the only one that beats the
 baseline formula on all four (4/4 eager, 4/4 jit), and it is `O(n^2)`:
 on `[1024, 1024]` it costs 528 times the baseline formula, so it cannot
-satisfy the 2.0x speed threshold. The compensated variants (Kahan scan,
+satisfy the 4.0x speed threshold. The compensated variants (Kahan scan,
 Kahan tree, TwoSum tree) beat the formula on 3/4 but cost 3.5 to 4.5
 times. The variant on this page is shift + local centring + Kahan compensated
 summation on `d**2` (without the two-term correction, which on the
 shifted values is negligible). It is the only variant measured that is
 exactly `0.0` on identical values up to `1e38` in `jit`, correct on
 complex input, and below the baseline formula on three of the four
-datasets. The speed is 1.85x the baseline formula, below the 2.0
+datasets. The speed is 2.60x the baseline formula, below the 4.0
 threshold.

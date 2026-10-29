@@ -238,7 +238,6 @@ def _kernel_without_second_centring(x, axis):
     return jax.vmap(k, in_axes=1, out_axes=0)(x)
 
 
-
 def test_kahan_does_not_overflow_on_identical_large():
     """The kernel is exactly 0.0 on identical 1e38, where the baseline
     formula gives nan."""
@@ -270,13 +269,12 @@ def test_kahan_is_load_bearing():
         x = jnp.asarray(data)
         kahan = np.asarray(stable_var(x, axis=ax))
         other = 1 - ax
-        plain = np.asarray(
-            jax.vmap(_kernel_no_kahan, in_axes=other, out_axes=0)(x)
-        )
+        plain = np.asarray(jax.vmap(_kernel_no_kahan, in_axes=other, out_axes=0)(x))
         e_k = float(np.max(np.abs(kahan - ref) / np.abs(ref)))
         e_p = float(np.max(np.abs(plain - ref) / np.abs(ref)))
         assert e_k < e_p, (
-            f"Kahan {e_k:.2e} not better than jnp.sum {e_p:.2e} on {shape}")
+            f"Kahan {e_k:.2e} not better than jnp.sum {e_p:.2e} on {shape}"
+        )
 
 
 def test_stable_var_rejects_negative_ddof():
@@ -291,7 +289,9 @@ def test_stable_moments_rejects_negative_ddof():
 
 def test_stable_var_0d_with_ddof():
     x = jnp.asarray(3.14, dtype=jnp.float32)
-    assert float(stable_var(x, ddof=1)) != 0.0 or math.isnan(float(stable_var(x, ddof=1)))
+    assert float(stable_var(x, ddof=1)) != 0.0 or math.isnan(
+        float(stable_var(x, ddof=1))
+    )
     assert float(stable_var(x, ddof=0)) == 0.0
 
 
@@ -357,6 +357,7 @@ def test_stable_var_float16_promotes_to_float32():
 
 def test_as_float_array_rejects_complex():
     from dense_armor.utility.stats.stable import _as_float_array
+
     with pytest.raises(TypeError):
         _as_float_array(jnp.asarray([1 + 1j], dtype=jnp.complex64))
 
@@ -377,6 +378,7 @@ def test_stable_var_bfloat16_promotes():
 
 def test_stable_var_float64_without_x64():
     import jax
+
     old = jax.config.jax_enable_x64
     jax.config.update("jax_enable_x64", False)
     try:
@@ -389,5 +391,6 @@ def test_stable_var_float64_without_x64():
 
 def test_as_float_array_rejects_string():
     from dense_armor.utility.stats.stable import _as_float_array
+
     with pytest.raises(TypeError):
         _as_float_array(jnp.asarray(["a", "b"]))
