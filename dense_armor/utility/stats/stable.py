@@ -1,5 +1,8 @@
 """Stable float32 variance and moments, computed in the input dtype.
 
+The kernel is validated on CPU and on GPU (T4, ``jax[cuda12]``); the
+two benchmark JSON files are committed in ``benchmarks/``.
+
 The kernel is the two-term formula of the baseline, applied to the
 values shifted by their first element along the reduction axis:
 
