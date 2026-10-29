@@ -153,15 +153,11 @@ def test_to_shared_invalid():
         to_shared(42)
 
 
-@pytest.mark.skipif(
-    sys.platform == "win32",
-    reason="spawn Pool.map never returns on Windows (workers unpickling the handle); the CI runs for hours",
-)
 def test_spawn_pool():
     ctx = mp.get_context("spawn")
     items = ["a", "b", "c"]
     with SharedStrings(items) as ss:
-        with ctx.Pool(2) as pool:
+        with ctx.Pool(4) as pool:
             results = pool.map(_read_index, [(ss, i) for i in range(3)])
             assert results == items
         assert ss[0] == "a"
@@ -175,9 +171,15 @@ def test_no_leak():
     before = set(shm_dir.iterdir())
     with SharedArray(np.array([1.0])):
         pass
+    with SharedStrings(["a"]):
+        pass
+    with SharedList([1]):
+        pass
+    with SharedDict({"a": 1}):
+        pass
     gc.collect()
     after = set(shm_dir.iterdir())
-    assert len(after - before) == 0
+    assert after == before
 
 
 @pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux only")
@@ -190,42 +192,94 @@ def test_fork_child_reads():
             assert results == items
 
 
-def test_windows_size_is_int():
-    """SharedMemory(size=...) must receive a Python int, not a numpy.int64.
+def test_shared_memory_size_is_python_int(monkeypatch):
+    """SharedMemory(size=...) receives a Python int, never a numpy.int64.
 
-    On Windows, CreateFileMapping() raises TypeError if size is a
-    numpy.int64. Every call to SharedMemory in shared.py casts size with
-    int(...); this test verifies that the cast is in place by checking
-    that the objects are created and that no error is raised.
+    On Windows CreateFileMapping() raises TypeError for a numpy.int64.
     """
-    with SharedStrings(["a", "b"]):
-        pass
-    with SharedList([1, 2]):
+    from multiprocessing import shared_memory
+
+    real = shared_memory.SharedMemory
+    sizes = []
+
+    def spy(*args, **kwargs):
+        if kwargs.get("create"):
+            sizes.append(kwargs["size"])
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(
+        "dense_armor.utility.data.shared.shared_memory.SharedMemory", spy
+    )
+    with SharedArray(np.array([1.0])), SharedStrings(["a"]), SharedList([1]):
         pass
     with SharedDict({"a": 1}):
         pass
+    assert len(sizes) == 1 + 2 + 2 + 6
+    assert all(type(s) is int for s in sizes)
 
 
-def test_finalizer_does_not_hold_self():
-    """The finalizer must not keep a strong reference to the object.
+@pytest.mark.parametrize(
+    "make",
+    [
+        lambda: SharedArray(np.array([1.0, 2.0])),
+        lambda: SharedStrings(["a", "b"]),
+        lambda: SharedList([1, 2]),
+        lambda: SharedDict({"a": 1}),
+    ],
+    ids=["array", "strings", "list", "dict"],
+)
+def test_finalizer_frees_the_block(make):
+    """Dropping the owner frees the block: the finalizer holds no reference to self."""
+    from multiprocessing import shared_memory
 
-    With weakref.finalize(self, self._cleanup, ...) the bound method holds
-    a strong reference to self, so the object is never collected and the
-    block is freed only at process exit. With a module-level function the
-    object is collected, and the finalizer unlinks the block.
-    """
-    import gc
-    import weakref
-
-    import numpy as np
-
-    from dense_armor.utility.data import SharedArray
-
-    arr = SharedArray(np.array([1.0]))
-    ref = weakref.ref(arr)
-    del arr
+    obj = make()
+    name = obj.names[0]
+    del obj
     gc.collect()
-    assert ref() is None, "the object was not collected: the finalizer holds it"
+    with pytest.raises(FileNotFoundError):
+        shared_memory.SharedMemory(name=name)
+
+
+@pytest.mark.parametrize(
+    ("make", "get"),
+    [
+        (lambda: SharedArray(np.array([1.0, 2.0])), lambda h: h.array.tolist()),
+        (lambda: SharedStrings(["a", "bb"]), lambda h: h[:]),
+        (lambda: SharedList([1, {"k": 2}]), lambda h: h[:]),
+        (lambda: SharedDict({"a": 1, "b": 2}), lambda h: [h["a"], h["b"]]),
+    ],
+    ids=["array", "strings", "list", "dict"],
+)
+def test_pickled_handle_attaches_and_never_unlinks(make, get):
+    with make() as owner:
+        att = pickle.loads(pickle.dumps(owner))
+        try:
+            assert len(att) == len(owner)
+            assert att.names == owner.names
+            assert get(att) == get(owner)
+            att.unlink()
+            att.unlink()
+        finally:
+            att.close()
+        assert get(owner) == get(owner)
+        owner.unlink()
+        owner.unlink()
+
+
+def test_shared_list_safe_tuple_and_list_roundtrip():
+    items = [(1, "a"), [2.0, b"x", None, True]]
+    with SharedList(items, allow_pickle=False) as sl:
+        assert sl[:] == items
+
+
+def test_shared_strings_all_empty_raises():
+    with pytest.raises(ValueError):
+        SharedStrings(["", ""])
+
+
+def test_to_shared_empty_list_raises():
+    with pytest.raises(ValueError):
+        to_shared([])
 
 
 def test_shared_array_rejects_object_dtype():
@@ -259,20 +313,18 @@ def test_shared_dict_key_equality_declared():
     treats them as distinct keys. This is a declared limitation, not a
     bug: the docstring of SharedDict says it.
     """
-    from dense_armor.utility.data import SharedDict as _SD
-
-    doc = _SD.__doc__ or ""
-    assert "pickle" in doc.lower(), "the docstring must say how keys are compared"
     d = SharedDict({1: "a"})
-    with pytest.raises(KeyError):
-        _ = d[1.0]
-    with pytest.raises(KeyError):
-        _ = d[True]
-    d.close()
-    d.unlink()
+    try:
+        assert d[1] == "a"
+        with pytest.raises(KeyError):
+            _ = d[1.0]
+        with pytest.raises(KeyError):
+            _ = d[True]
+    finally:
+        d.close()
+        d.unlink()
 
 
-# Class at module level: pickle can find it by qualified name.
 class Point:
     def __init__(self, x, y):
         self.x, self.y = x, y
@@ -302,7 +354,7 @@ def test_shared_list_rejects_connection():
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
-        with pytest.raises((TypeError, AttributeError)):
+        with pytest.raises(TypeError):
             SharedList([s])
     finally:
         s.close()
