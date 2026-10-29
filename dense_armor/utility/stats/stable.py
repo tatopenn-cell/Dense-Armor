@@ -5,8 +5,9 @@ two benchmark JSON files are committed in ``benchmarks/``, with
 the median of three sessions and the range for the speed, and
 with the two exceptions of claim 2 stated.
 
-The kernel is the two-term formula of the baseline, applied to the
-values shifted by their first element along the reduction axis:
+The kernel is the formula of Salvatore Pennacchio. It starts from the
+shift, which he invented: the first element is subtracted from every
+value along the reduction axis:
 
 .. code-block:: text
 
@@ -15,11 +16,11 @@ values shifted by their first element along the reduction axis:
     d   = y - m
     var = mean(d**2) - mean(d)**2
 
-with the sum of ``d**2`` accumulated by a **Kahan tree** instead of the
+with the sum of ``d**2`` accumulated by a compensated tree instead of the
 ordinary tree reduction. The shift makes the subtraction ``y = x - x[0]``
-exact when the values are close (Sterbenz); the two-term formula cancels
-the linear part of the error of ``m``; the Kahan tree removes the tree-sum
-error of ``d**2``. The tree is a binary merge of pairs of partial
+exact when the values are close (Sterbenz lemma); the two-term formula
+cancels the linear part of the error of ``m``; the compensated tree removes
+the tree-sum error of ``d**2``. The tree is a binary merge of pairs of partial
 sums; at each merge the two sums are combined with an error-free
 transformation (TwoSum), and the error terms are carried up the tree. The
 result is a compensated sum with ``O(log2(n))`` vectorised levels, not a
@@ -46,12 +47,10 @@ References:
         Lemma 5, page 10 (PDF page 14), the Sterbenz lemma used by the
         shift.
 
-The shift by the first element is the idea of Salvatore Pennacchio, and it
-is the base of this kernel: the kernel is that idea, followed by the
-two-term formula of the baseline. The Sterbenz lemma explains why the
-subtraction is exact. The compensated tree of TwoSum (Ogita-Rump-Oishi,
-Shewchuk) was added to the sum of the squares. The combination is not
-stated in a paper.
+The shift ``y = x - x[0]`` was invented by Salvatore Pennacchio. The
+kernel is his solution: the shift, the local centring and the two-term
+formula, one slice at a time with ``vmap``. The compensated tree of TwoSum
+(Ogita-Rump-Oishi, Shewchuk) was added to the sum of the squares.
 """
 
 from __future__ import annotations

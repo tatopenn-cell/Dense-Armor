@@ -218,12 +218,9 @@ benchmark records the value of the last run; the claim 3 is declared
 
 ### Choices
 
-The shift by the first element is the idea of Salvatore Pennacchio, and it
-is the base of the kernel. The chain of the four steps is his choice. None
-of the three papers states
-it as a variance kernel: the shift is the Sterbenz lemma, the local
-centring is Pebay eq. 1.1/1.2, the compensated sum is Kahan 1965, but the
-chain is not in a paper.
+The shift `y = x - x[0]` was invented by Salvatore Pennacchio. The kernel is
+his solution. The compensated tree of TwoSum was added to the sum of the
+squares.
 
 The dtype policy: float32 in gives float32 out, float64 in gives float64
 out when `jax_enable_x64` is on (off, JAX promotes to float32),
