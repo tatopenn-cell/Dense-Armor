@@ -185,7 +185,7 @@ Dense-Armor provides online implementations of the following families of algorit
 Dense-Armor also provides other online utilities:
 
 - Feature extraction and selection
-- Online statistics and sketches
+- Online statistics and sketches, including [stable float32 variance](https://tatopenn-cell.github.io/Dense-Armor/stats/stable_variance/) (`stable_var`, `stable_moments`): exactly `0.0` on identical values up to `1e38`, a compensated tree that runs on CPU and GPU, and an optional `dtype` on the 11 statistics estimators
 - Metrics for streams and robots
 - Online models: [autoregressive](docs/timeseries/ar.md), [Kalman](docs/timeseries/kalman.md), [cycle residual](docs/timeseries/cycle.md), [Student-t](docs/stats/student_t.md), [Gaussian mixture](docs/stats/mixture.md), [GARCH(1,1)](docs/timeseries/garch.md)
 - Preprocessing, with a [text vectorizer](docs/preprocessing/text_vectorizer.md) that ranks documents by TF-IDF and cosine similarity
@@ -278,6 +278,8 @@ The per-sample cost of the main estimators, measured by
 | Adaptive random forest (10 models) | 754.1 | 1374.0 |
 | Half-Space Trees (25 trees) | 1285.2 | 2412.3 |
 | ADWIN (`update`) | 9.5 | 16.2 |
+
+`stable_var` is the compensated float32 variance. On `[4096, 4096]`, `axis=1`, it costs 3.59x the plain two-term formula on CPU (range [3.55, 4.60] over three sessions) and 2.24x on a T4 GPU (range [2.20, 2.27]): the Kahan tree is `log2(n)` vectorised levels, so it runs on both backends. The maximum relative error against `np.var(float64)` is below the baseline formula on three of the four datasets of the task in each combination (CPU eager, CPU jit, GPU eager, GPU jit). The two JSON files are `benchmarks/stable_variance_float32.json` (CPU) and `benchmarks/stable_variance_float32_gpu.json` (GPU).
 
 The Hoeffding Anytime tree (`HoeffdingAnytimeTreeClassifier`) is 26-58x faster than the adaptive random forest on the drift benchmark of `benchmarks/neural/efdt_vs_arf.py` (21-51 µs per sample against 723-1563 µs): at parity on sudden and gradual drift, 30.0 pp behind after the change on incremental drift, no native drift detection. An opt-in speed option, not a replacement.
 
