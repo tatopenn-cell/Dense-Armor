@@ -1,5 +1,8 @@
 """Stable float32 variance and moments, computed in the input dtype.
 
+Kernel: first-element anchor shift, local centring, Kahan compensated
+sum of squares.
+
 The kernel computes the variance of a sample of real values in four steps,
 all in the input dtype:
 
