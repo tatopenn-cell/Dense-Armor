@@ -119,3 +119,32 @@ def test_block_constant_large_values_no_overflow():
     assert np.isfinite(m.m2_), f"m2: {m.m2_}"
     assert m.m2_ == 0.0, f"m2 deve essere 0, invece è {m.m2_}"
     assert m.var == 0.0, f"var deve essere 0, invece è {m.var}"
+
+
+def test_learn_one_first_sample_does_not_overflow():
+    """Non-regression: the first sample of `learn_one` is stored as is.
+
+    For `v = 1e307`, the first update computed `d * dn = inf` and then
+    `inf * n_old` with `n_old = 0`, so `m2_` became `nan`. Identical
+    values at 1e307 (float64) and 1e38 give variance 0.
+    """
+    for v in (1e307, 1e38, -1e307):
+        m = RunningMoments()
+        for _ in range(3):
+            m.learn_one({"x": v})
+        assert m.n_ == 3
+        assert m.mean_ == v
+        assert (m.m2_, m.m3_, m.m4_) == (0.0, 0.0, 0.0)
+        assert m.var == 0.0
+        assert m.min_ == m.max_ == v
+
+
+def test_learn_one_first_sample_matches_the_old_update():
+    """The shortcut gives the same state as the general update for n_old = 0."""
+    m = RunningMoments()
+    m.learn_one({"x": 3.5})
+    assert (m.n_, m.mean_, m.m2_, m.m3_, m.m4_) == (1, 3.5, 0.0, 0.0, 0.0)
+    assert m.min_ == m.max_ == 3.5
+    m.learn_one({"x": 4.5})
+    assert (m.n_, m.mean_) == (2, 4.0)
+    assert m.m2_ == 0.5
