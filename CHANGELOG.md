@@ -11,9 +11,36 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 - Exponential overflow protection (clamp to [-700, 700]) in Factorisation Machines, SGT, Mixture PDF, and Student-T PDF.
 - Pre-existing mypy errors in hoeffding.py, mixture.py, and amrules.py.
 
-## [Unreleased]
+## [1.3.0] - 2026-10-29
 
 ### Added
+- `dense_armor/utility/stats/stable.py`: `stable_var` and `stable_moments`, a
+  float32 variance kernel. First-element anchor shift (Sterbenz exact on close
+  values), two-term formula, and a Kahan tree (binary merge of `TwoSum`,
+  `log2(n)` vectorised levels) on `d**2`. Exactly `0.0` on identical values up
+  to `1e38` in eager and under `jax.jit`, on CPU and on GPU; below the baseline
+  two-term formula on 3 of 4 datasets of the task in each combination (the two
+  exceptions are D4 on CPU and D3 under `jax.jit` on GPU, declared). Complex
+  input returns `E|z - mean(z)|**2`, real. 69 tests, 99% coverage of the new
+  file. Two JSON benchmarks (`benchmarks/stable_variance_float32.json` for CPU,
+  `benchmarks/stable_variance_float32_gpu.json` for a T4 GPU), a page
+  `docs/stats/stable_variance.md` and a README paragraph. The speed is 3.59x
+  the baseline formula on CPU (range [3.55, 4.60] over three sessions) and
+  2.24x on GPU (range [2.20, 2.27]).
+- `dense_armor/utility/stats/`: an optional `dtype=None` keyword on the 11
+  estimators of the statistics batch (`RunningMoments`, `EWStats`,
+  `RunningMomentsVector`, `RunningCovariance`, `Autocorrelation`,
+  `RunningCorrelation`, `RollingCorrelation`, `RollingCovariance`,
+  `OnlineGaussianMixture`, `OnlineShrinkageCovariance`, `StudentT`). The
+  default keeps float64 bit for bit; `dtype=numpy.float32` makes the state
+  float32, and in `RunningMoments` `learn_many` of a float32 block uses
+  `stable_moments`. Every class passes `check_estimator` 27/27 with 0
+  not-applicable and 0 skip, in both dtypes. `OnlineShrinkageCovariance` now
+  inherits `Transformer` (it had no `get_params`, so `check_estimator` could
+  not run on it); `RunningCovariance._values` and `RollingCovariance._values`
+  no longer raise `KeyError` on a sample without `x`/`y` (pre-existing, it
+  broke `check_learn_one_does_not_modify_x` on master).
+
 - `dense_armor/utility/stats/student_t.py`, `mixture.py`, `dense_armor/utility/timeseries/garch.py`:
   `StudentT`, `OnlineGaussianMixture`, `GARCH11`. Three online models: a robust
   location-scale estimator (Student-t with `nu` fixed, Liu & Rubin 1995's EM
@@ -55,7 +82,8 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   is at most +0.003 within the noise of 0.004-0.010, and the page declares
   that the wrapper does not improve accuracy on this domain.
 
-## [1.2.0] - 2026-10-26
+## [Unreleased]
+1.2.0] - 2026-10-26
 
 ### Changed
 - README Speed section: one sentence on EFDT (26-58x faster than the adaptive random forest, at parity on sudden and gradual drift, 30.0 pp behind after the change on incremental drift, no native drift detection). The numbers come from `benchmarks/neural/efdt_vs_arf.py`.
