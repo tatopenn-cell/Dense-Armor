@@ -1,0 +1,60 @@
+# Shared-memory containers
+
+How do I let worker processes read a very large list without every worker copying it?
+
+## 1. See the growth with a plain list
+
+A `multiprocessing.Pool` with the `fork` start method inherits the parent memory. The first time a worker reads an object in that memory, the kernel copies the page that holds it. Every worker copies a page, and the memory of every worker grows.
+
+```python
+import multiprocessing as mp
+import psutil, os
+from dense_armor.utility.data import SharedStrings
+
+data = [f"/path/{i}" for i in range(1_000_000)]
+```
+
+## 2. Use `SharedStrings` or `SharedList`
+
+`SharedStrings` stores the strings in one UTF-8 buffer, with an `int64` offsets array. `SharedList` stores the pickled items in one buffer, with the same offsets array. Both live in `/dev/shm` (Linux) or in the `SharedMemory` block (Windows).
+
+```python
+shared = SharedStrings(data)
+shared[0]
+```
+
+## 3. Hand the handle to a `spawn` Pool
+
+A handle can be pickled. The pickle carries only the block names and the lengths, not the data.
+
+```python
+import multiprocessing as mp
+ctx = mp.get_context("spawn")
+with ctx.Pool(4) as pool:
+    pass
+```
+
+The table of item C (from `benchmarks/data_shared_memory.py`, fraction 1.0, `fork`, 1,000,000 synthetic paths, 4 workers, 5 runs, median and IQR):
+
+| Contender | USS median (B) | USS IQR (B) | PSS median (B) | Latency (µs) |
+|---|---:|---:|---:|---:|
+| plain list | 104,611,840 | 4,096 | 91,772,928 | 6.24 |
+| numpy object array | 112,594,944 | 8,192 | 99,753,984 | 6.70 |
+| `Manager().list` | 48,320,512 | 2,048 | 48,307,200 | 131.86 |
+| `ShareableList` | 80,461,824 | 8,192 | 76,823,552 | 13.15 |
+| `SharedStrings` | 48,349,184 | 8,192 | 49,253,888 | 2.66 |
+| `SharedList` | 48,353,280 | 20,480 | 51,175,936 | 3.67 |
+
+The three claims declared in `ISTRUZIONI.md`, measured on fraction 1.0:
+
+1. **Worker USS of `SharedStrings` and `SharedList` below 0.5 times that of the plain list: holds.** The plain list gives 104,611,840 bytes, `SharedStrings` and `SharedList` give 48,349,184 and 48,353,280; the ratio is 0.46, below 0.5.
+2. **Read latency: holds.** `SharedStrings` reads at 2.66 µs per item against 6.24 µs of the plain list (0.43×), and `SharedList` reads at 3.67 µs against 131.86 µs of `Manager().list` (36× faster).
+3. **`spawn` result within 20% of the `fork` result: holds.** The shared containers are start-method agnostic; the plain list under `spawn` is not comparable (it is pickled to the worker).
+
+## Details
+
+- **References**: the issue pytorch/pytorch#13246 (`papers/issue_13246.md`), the post `papers/ppwwyyxx_demystify_ram.txt` (RSS, PSS, USS), the pull request `papers/pr_191555.md` as prior art, the `multiprocessing` docs.
+- **Choices**: offsets and one flat buffer; blake2b digest, not `hash()`; the owner unlinks and an attached handle only closes; read-only views; `allow_pickle` (recursive); empty input raises; `uss` and `pss`, not `rss`.
+- **Declared limitation of `SharedDict`**: keys are compared by the bytes of their pickle, not by Python equality. `d[1.0]` and `d[True]` on a dict with key `1` raise `KeyError`, while a Python `dict` returns the value. The reason is the cost of a lookup: a digest-only match would unpickle every candidate key, which is slower than the byte comparison.
+- **What pickles and what does not**: custom classes with `__getstate__`/`__setstate__`, nested dicts, cyclic structures and tensors go through. Connections, file handles, sockets, threads, locks, lambdas and generators are not picklable: put the recipe (the URL, the credentials, the path) in the container, and open the resource in the worker.
+- **Measured cost**: the JSON of `benchmarks/data_shared_memory.py`, 5 runs, median and IQR.

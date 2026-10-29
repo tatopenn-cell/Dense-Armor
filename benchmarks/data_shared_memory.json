@@ -1,0 +1,92 @@
+{
+  "plain_list": {
+    "fork_1.0": {
+      "uss_median": 104611840.0,
+      "uss_iqr": 4096.0,
+      "pss_median": 91772928.0,
+      "pss_iqr": 11264.0,
+      "lat_median_us": 6.23625
+    },
+    "spawn_1.0": {
+      "uss_median": 46698496.0,
+      "uss_iqr": 200704.0,
+      "pss_median": 46697984.0,
+      "pss_iqr": 198144.0,
+      "lat_median_us": 0.64075
+    }
+  },
+  "numpy_object": {
+    "fork_1.0": {
+      "uss_median": 112594944.0,
+      "uss_iqr": 8192.0,
+      "pss_median": 99753984.0,
+      "pss_iqr": 6144.0,
+      "lat_median_us": 6.69925
+    }
+  },
+  "manager_list": {
+    "fork_1.0": {
+      "uss_median": 48320512.0,
+      "uss_iqr": 2048.0,
+      "pss_median": 48307200.0,
+      "pss_iqr": 1536.0,
+      "lat_median_us": 131.85525
+    }
+  },
+  "shareable_list": {
+    "fork_1.0": {
+      "uss_median": 80461824.0,
+      "uss_iqr": 8192.0,
+      "pss_median": 76823552.0,
+      "pss_iqr": 11776.0,
+      "lat_median_us": 13.148
+    },
+    "spawn_1.0": {
+      "uss_median": 48109568.0,
+      "uss_iqr": 2048.0,
+      "pss_median": 54135296.0,
+      "pss_iqr": 273920.0,
+      "lat_median_us": 5.1775
+    }
+  },
+  "shared_strings": {
+    "fork_1.0": {
+      "uss_median": 48349184.0,
+      "uss_iqr": 8192.0,
+      "pss_median": 49253888.0,
+      "pss_iqr": 601088.0,
+      "lat_median_us": 2.6575
+    },
+    "spawn_1.0": {
+      "uss_median": 40157184.0,
+      "uss_iqr": 0.0,
+      "pss_median": 45694464.0,
+      "pss_iqr": 1024.0,
+      "lat_median_us": 2.73525
+    }
+  },
+  "shared_list": {
+    "fork_1.0": {
+      "uss_median": 48353280.0,
+      "uss_iqr": 20480.0,
+      "pss_median": 51175936.0,
+      "pss_iqr": 356352.0,
+      "lat_median_us": 3.66525
+    },
+    "spawn_1.0": {
+      "uss_median": 40157184.0,
+      "uss_iqr": 0.0,
+      "pss_median": 48697344.0,
+      "pss_iqr": 7680.0,
+      "lat_median_us": 3.7005
+    }
+  },
+  "n_elements": 1000000,
+  "n_workers": 4,
+  "n_runs": 5,
+  "claims": {
+    "claim1_uss_0.5x": "holds",
+    "claim2_latency": "holds",
+    "claim3_spawn_20pct": "holds"
+  }
+}
