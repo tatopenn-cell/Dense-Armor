@@ -1,9 +1,8 @@
 """Stable float32 variance and moments, computed in the input dtype.
 
-The kernel is validated on CPU and on GPU (T4, ``jax[cuda12]``); the
-two benchmark JSON files are committed in ``benchmarks/``, with
-the median of three sessions and the range for the speed, and
-with the two exceptions of claim 2 stated.
+The two benchmark JSON files (CPU and GPU) are committed in
+``benchmarks/``, with the median of three sessions and the range for the
+speed.
 
 The kernel is the formula of Salvatore Pennacchio. It starts from the
 shift, which he invented: the first element is subtracted from every
@@ -26,11 +25,13 @@ transformation (TwoSum), and the error terms are carried up the tree. The
 result is a compensated sum with ``O(log2(n))`` vectorised levels, not a
 sequential scan: it runs on CPU and on GPU.
 
-The two-term formula cancels the linear part of the error of ``m`` (both
-``mean(d**2)`` and ``mean(d)**2`` share the same ``m``). The compensated
-tree removes the tree-sum error of ``d**2``. The kernel is below or at the
-baseline formula on all four datasets , in eager mode and under
-``jax.jit``, on CPU and on GPU.
+The formula of ``tf.nn.moments`` is ``mean(d**2) - mean(d)**2`` with
+``d = x - mean(x)``, without the shift. Against it, the maximum relative
+error of the kernel on the four synthetic datasets of the benchmark is at
+most equal on 3 or 4 datasets in each of the four combinations (CPU and
+GPU, eager and ``jax.jit``). The exceptions are D4 (N(1e6, 1)) on the CPU,
+in eager mode and under ``jax.jit``, and D3 (N(0, 1)) under ``jax.jit`` on
+the GPU.
 
 On identical values the variance is exactly ``0.0`` up to ``1e38``, in
 eager mode and under ``jax.jit``: the shift makes the values collapse to
@@ -44,8 +45,8 @@ References:
     Shewchuk, J. R. (1997). Adaptive Precision Floating-Point Arithmetic
         and Fast Robust Geometric Predicates. Discrete and Computational
         Geometry 18(3), 305-363. ``TWO-SUM``, Theorem 7, PDF page 12, and
-        Lemma 5, page 10 (PDF page 14), the Sterbenz lemma used by the
-        shift.
+        Lemma 5, PDF page 10, the Sterbenz lemma that makes the shift
+        exact.
 
 The shift ``y = x - x[0]`` was invented by Salvatore Pennacchio. The
 kernel is his solution: the shift, the local centring and the two-term
@@ -149,10 +150,11 @@ def _two_sum(a, b):
 def _compensated_tree(v):
     """Compensated sum of a 1-D array, by a tree of TwoSum.
 
-    The array is padded to a power of two with zeros, then merged in
-    ``log2(n)`` levels. At each level, pairs of partial sums ``(S, C)``
-    are combined with Three TwoSums: one for the high parts, one for the
-    carries, one for their sum. The result is ``S + C``.
+    The array is merged in ``log2(n)`` levels; when a level has an odd
+    length, one zero is appended. At each level, pairs of partial sums
+    ``(S, C)`` are combined with three ``TwoSum`` calls: one for the high
+    parts, one for the carries, one for their sum. The result is
+    ``S + C``.
 
     Args:
         v: a 1-D array.
@@ -175,7 +177,7 @@ def _compensated_tree(v):
 
 
 def _kernel_var(v, n):
-    """Variance (biased) of one 1-D slice: shift, two-term, Kahan tree on d^2."""
+    """Variance (biased) of one 1-D slice: shift, two-term, compensated tree on d^2."""
     ref = v[0]
     y = v - ref
     m = jnp.sum(y) / n
@@ -186,7 +188,7 @@ def _kernel_var(v, n):
 
 
 def _kernel_mom(v, n):
-    """Mean and biased variance of one 1-D slice: shift, two-term, Kahan tree."""
+    """Mean and biased variance of one 1-D slice: shift, two-term, compensated tree."""
     ref = v[0]
     y = v - ref
     m = jnp.sum(y) / n
@@ -228,26 +230,29 @@ def _finish_mean(mean, axes, batch_shape, keepdims, out_dtype):
 def stable_var(x, axis=None, ddof=0, keepdims=False):
     """Variance of ``x`` along ``axis``, computed in the input dtype.
 
-    The variance is the two-term formula of the baseline,
-    ``mean(d**2) - mean(d)**2`` with ``d = x - mean(x)``, with the
-    accumulation of ``d**2`` done by a Kahan tree (a binary merge of
-    TwoSum, ``log2(n)`` vectorised levels). The two-term formula cancels
-    the linear part of the error of the mean; the compensated tree
-    removes the tree-sum error of ``d**2``. The result is exactly ``0.0``
-    on identical values in eager mode; on ``1e38`` under ``jax.jit`` it
-    is ``nan``, the same as the baseline.
+    The shift ``y = x - x[0]``, invented by Salvatore Pennacchio, comes
+    first. Then ``m = mean(y)``, ``d = y - m`` and ``var = mean(d**2) -
+    mean(d)**2``, one slice at a time with ``vmap``, with ``d**2`` summed
+    by a compensated tree of ``TwoSum`` (``log2(n)`` vectorised levels).
+    The result is exactly ``0.0`` on identical values up to ``1e38``, in
+    eager mode and under ``jax.jit``. Complex input gives ``E|z -
+    mean(z)|**2``, a real number. Integers, ``float16`` and ``bfloat16``
+    are computed in ``float32``.
 
     Args:
         x: array-like. numpy and JAX arrays are accepted.
         axis: int, tuple of int, or ``None`` (default, all axes).
-        ddof: delta degrees of freedom, default ``0``.
+        ddof: delta degrees of freedom, default ``0``. When ``ddof >= n``
+            the variance is ``nan``, or ``0.0`` if it is zero.
         keepdims: keep the reduced axes with size one, default ``False``.
 
     Returns:
         The variance, dtype of the input (or float32 for integers).
 
     Raises:
-        ValueError: if the reduction axis is empty or out of bounds.
+        ValueError: if the reduction axis is empty or out of bounds, or
+            if ``ddof`` is negative.
+        TypeError: if the dtype is not numeric.
 
     Example:
         >>> import numpy as np
@@ -290,20 +295,24 @@ def stable_moments(x, axis=None, ddof=0, keepdims=False):
     """Mean and variance of ``x`` along ``axis``, in the input dtype.
 
     Returns ``(mean, var)`` with the same conventions as
-    :func:`stable_var` for dtype, empty axis, ``nan`` / ``inf``
-    propagation, and ``ddof``.
+    :func:`stable_var` for dtype, empty axis and ``ddof``. The mean is
+    ``x[0]`` plus the mean of the shifted values. For complex input the
+    mean is complex and the variance is real.
 
     Args:
         x: array-like.
         axis: int, tuple of int, or ``None`` (default, all axes).
-        ddof: delta degrees of freedom, default ``0``.
+        ddof: delta degrees of freedom, default ``0``. When ``ddof >= n``
+            the variance is ``nan``, or ``0.0`` if it is zero.
         keepdims: keep the reduced axes, default ``False``.
 
     Returns:
         Tuple ``(mean, var)``, dtype of the input (or float32).
 
     Raises:
-        ValueError: if the reduction axis is empty or out of bounds.
+        ValueError: if the reduction axis is empty or out of bounds, or
+            if ``ddof`` is negative.
+        TypeError: if the dtype is not numeric.
 
     Example:
         >>> import numpy as np
