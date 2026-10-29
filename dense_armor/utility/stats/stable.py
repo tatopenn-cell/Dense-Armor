@@ -104,7 +104,7 @@ def _cast_out(a, out_dtype):
     result of a float64 input is float32 in that mode (the same rule as
     every JAX program). The cast is explicit so no warning is emitted.
     """
-    d = jnp.asarray(out_dtype)
+    d = jnp.dtype(out_dtype)
     if d == jnp.float64 and not jax.config.jax_enable_x64:
         return a.astype(jnp.float32)
     return a.astype(d)
