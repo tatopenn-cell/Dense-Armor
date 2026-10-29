@@ -182,6 +182,7 @@ nav:
           - Statistics:
               - stats/index.md
               - Moments: stats/moments.md
+              - Stable variance: stats/stable_variance.md
               - Robust statistics: stats/robust.md
               - Student-t: stats/student_t.md
               - Online Gaussian mixture: stats/mixture.md
