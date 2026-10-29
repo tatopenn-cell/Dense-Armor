@@ -82,6 +82,37 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   is at most +0.003 within the noise of 0.004-0.010, and the page declares
   that the wrapper does not improve accuracy on this domain.
 
+### Fixed
+
+- `RunningMoments.learn_one` returned `nan` on the first sample at `1e307`
+  (`inf * n_old` with `n_old = 0`). The first sample now sets the state
+  directly.
+- Attach on Windows without the resource tracker: the `spawn` Pool no longer
+  hangs. Tests for the pickled handle, docstrings, docs page.
+- Review fixes 1-4 on `attention`, `continual` and `consolidation` (see the
+  individual commits `2299a13` … `54fb537`).
+
+### Added
+
+- `dense_armor/utility/data/shared.py`: shared-memory containers
+  (`SharedArray`, `SharedList`, `SharedDict`, `to_shared`) for process-to-process
+  data sharing. They do not inherit `Root` and are not estimators; the module is
+  independent and its tests do not call `check_estimator`. Page
+  `docs/api/data_shared.md`, benchmark `benchmarks/data_shared_memory.py` and
+  `benchmarks/data_shared_memory.json`.
+- `dense_armor/utility/neural/consolidation/`: the consolidation code split
+  into a package (`vq.py`, `tree.py`, `memory.py`, `archival.py`). No
+  behaviour change; the tests of `test/neural/test_consolidation.py` still
+  pass.
+
+### Changed
+
+- `.github/workflows`: the coverage flags are carried forward on docs-only
+  commits (`codecov.yml` updated).
+- `ARCHITECTURE.md`: lists the 12 missing modules (neural, stats, timeseries),
+  drops `anwav` and `collatz`.
+
+
 ## [Unreleased]
 1.2.0] - 2026-10-26
 
