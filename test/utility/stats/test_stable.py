@@ -23,6 +23,7 @@ import numpy as np
 import pytest
 
 from dense_armor.utility.stats.stable import (
+    _compensated_tree,
     stable_moments,
     stable_var,
 )
@@ -400,3 +401,60 @@ def test_compensated_tree_is_load_bearing():
         assert e_k < e_p, (
             f"Kahan tree {e_k:.2e} not better than jnp.sum {e_p:.2e} on {shape}"
         )
+
+
+def _kernel_no_shift(v):
+    n = v.shape[0]
+    m = jnp.sum(v) / n
+    d = v - m
+    s2 = _compensated_tree(d * d)
+    s1 = jnp.sum(d)
+    return jnp.maximum(s2 / n - (s1 / n) ** 2, 0.0)
+
+
+def _kernel_no_compensation(v):
+    n = v.shape[0]
+    y = v - v[0]
+    m = jnp.sum(y) / n
+    d = y - m
+    s2 = jnp.sum(d * d)
+    s1 = jnp.sum(d)
+    return jnp.maximum(s2 / n - (s1 / n) ** 2, 0.0)
+
+
+def test_shift_keeps_1e38_zero_in_jit():
+    """Without the shift, [1e38]*3 in jit is nan: the mean is off by one
+    ulp, the square of the residual overflows, the two-term is inf - inf.
+    With the shift the values collapse to 0.0 before any accumulation."""
+    x = jnp.asarray([1e38, 1e38, 1e38], dtype=jnp.float32)
+    k = float(jax.jit(stable_var)(x))
+    ns = float(jax.jit(_kernel_no_shift)(x))
+    assert k == 0.0, f"kernel {k!r} not 0.0 on [1e38]*3 in jit"
+    assert not (ns == 0.0), f"no_shift {ns!r} should not be 0.0 on [1e38]*3 in jit"
+
+
+def test_shift_is_load_bearing_on_d1():
+    """Without the shift, D1 is worse: 1.44e-7 against 1.17e-7."""
+    rng = np.random.default_rng(0)
+    data = rng.normal(1e3, 0.01, (1000, 64)).astype(np.float32)
+    ref = np.var(data.astype(np.float64), axis=0)
+    x = jnp.asarray(data)
+    k = np.asarray(stable_var(x, axis=0))
+    ns = np.asarray(jax.vmap(_kernel_no_shift, in_axes=1, out_axes=0)(x))
+    e_k = float(np.max(np.abs(k - ref) / np.abs(ref)))
+    e_ns = float(np.max(np.abs(ns - ref) / np.abs(ref)))
+    assert e_k < e_ns, f"shift {e_k:.2e} not better than no_shift {e_ns:.2e} on D1"
+
+
+def test_compensated_tree_is_load_bearing_on_d1():
+    """Without the compensated tree, D1 in jit is 2.39e-7 against 1.17e-7."""
+    rng = np.random.default_rng(0)
+    data = rng.normal(1e3, 0.01, (1000, 64)).astype(np.float32)
+    ref = np.var(data.astype(np.float64), axis=0)
+    x = jnp.asarray(data)
+    k = np.asarray(jax.jit(lambda a: stable_var(a, axis=0))(x))
+    nc = np.asarray(jax.jit(lambda a: jax.vmap(_kernel_no_compensation,
+                                                in_axes=1, out_axes=0)(a))(x))
+    e_k = float(np.max(np.abs(k - ref) / np.abs(ref)))
+    e_nc = float(np.max(np.abs(nc - ref) / np.abs(ref)))
+    assert e_k < e_nc, f"tree {e_k:.2e} not better than jnp.sum {e_nc:.2e} on D1"
