@@ -180,15 +180,12 @@ The maximum relative error against the `float64` reference of the same
 | N(0, 1), `[1000, 64]` axis 0 | 1.94e-7 | 1.36e-7 | 1.94e-7 | 1.36e-7 |
 | N(1e6, 1), `[1000, 64]` axis 0 | 1.18e-7 | 1.22e-7 | 0.997e-7 | 1.22e-7 |
 
-All four are below or at the baseline formula, in eager mode and under
-`jax.jit`. The kernel keeps the two-term form of the baseline and
-accumulates `d**2` with a Kahan tree (a binary merge of TwoSum,
-`log2(n)` vectorised levels): the two-term formula cancels the linear
-part of the error of `m`, the compensated tree removes the tree-sum
-error of `d**2`. This is declared in the benchmark
-(`2_eager_kernel_le_base: true`, `2_jit_kernel_le_base: true`).
-
-The speed on a synthetic `[4096, 4096]` float32 array, `axis=1`, 7 runs
+Three of the four are below the baseline formula in each combination
+(CPU eager, CPU jit, GPU eager, GPU jit). The two exceptions are
+declared: D4 on CPU (the shift quantisation at that offset), D3 on
+GPU under `jit` (the compiler reorders the tree). The CPU numbers are
+in `stable_variance_float32.json`, the GPU numbers in
+`stable_variance_float32_gpu.json`.
 after warm-up with `block_until_ready`:
 
 | formula | median (ms) | IQR (ms) |

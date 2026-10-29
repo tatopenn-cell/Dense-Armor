@@ -1,0 +1,59 @@
+{
+  "jax": "0.12.0.1",
+  "backend": "gpu",
+  "identical": {
+    "f32_1e10": {"value": 0.0, "is_zero": true},
+    "f32_7_5e10": {"value": 0.0, "is_zero": true},
+    "f32_1e15": {"value": 0.0, "is_zero": true},
+    "f32_1e38": {"value": 0.0, "is_zero": true},
+    "c64_7_5e10": {"value": 0.0, "is_zero": true}
+  },
+  "accuracy": {
+    "offset_1e3": {
+      "base_eager": 1.3450847321164846e-07,
+      "base_jit": 1.3450847321164846e-07,
+      "kernel_eager": 1.1736300992379859e-07,
+      "kernel_jit": 1.1736300992379859e-07,
+      "eager_kernel_le_base": true,
+      "jit_kernel_le_base": true
+    },
+    "offset_1e4": {
+      "base_eager": 1.70311508265839e-07,
+      "base_jit": 1.70311508265839e-07,
+      "kernel_eager": 1.146510150003617e-07,
+      "kernel_jit": 1.146510150003617e-07,
+      "eager_kernel_le_base": true,
+      "jit_kernel_le_base": true
+    },
+    "standard": {
+      "base_eager": 1.4419363320155074e-07,
+      "base_jit": 1.4419363320155074e-07,
+      "kernel_eager": 1.3635082724292186e-07,
+      "kernel_jit": 1.6366491494552674e-07,
+      "eager_kernel_le_base": true,
+      "jit_kernel_le_base": false
+    },
+    "offset_1e6": {
+      "base_eager": 1.2536055956557228e-07,
+      "base_jit": 1.2536055956557228e-07,
+      "kernel_eager": 1.2177315162011942e-07,
+      "kernel_jit": 1.2177315162011942e-07,
+      "eager_kernel_le_base": true,
+      "jit_kernel_le_base": true
+    }
+  },
+  "speed": {
+    "shape": [4096, 4096],
+    "axis": 1,
+    "naive": {"median_ms": 0.692648000040208, "iqr_ms": 0.02517300026738667},
+    "base": {"median_ms": 0.7095089999893389, "iqr_ms": 0.02492899989192665},
+    "kernel": {"median_ms": 1.5497710001000087, "iqr_ms": 0.015175000044109765},
+    "ratio_kernel_base": 2.184286598370557
+  },
+  "claims": {
+    "1_identical_zero": true,
+    "2_eager_kernel_le_base": true,
+    "2_jit_kernel_le_base": false,
+    "3_speed_le_4x": true
+  }
+}
