@@ -192,8 +192,8 @@ after warm-up with `block_until_ready`:
 | formula | median (ms) | IQR (ms) |
 |---|---|---|
 | naive two-pass | 49.70 | 3.65 |
-| baseline formula | 54.89 | 1.30 |
-| `stable_var` | 155.97 | 4.08 |
+| baseline formula | 54.67 | -- |
+| `stable_var` | 264.78 | -- |
 
 `stable_var` costs 2.51 times the baseline formula on this shape, above
 the 2.0 threshold . The ratio is not stable on this CPU:
@@ -253,7 +253,7 @@ of four datasets below the baseline).
 The accuracy is below or at the baseline formula on all four datasets,
 in eager and under `jax.jit`, but the speed is 2.84 times the baseline
 formula, above the 2.0 threshold. The Kahan sum is sequential: on this
-CPU, `[4096, 4096]` axis=1, it takes 155.97 ms against 54.89 ms of the
+CPU, `[4096, 4096]` axis=1, it takes 264.78 ms against 54.67 ms of the
 baseline. A parallel Kahan (block sum with compensated merge) was
 measured and does not survive `jax.jit` on these shapes (the merge
 tree is reordered by XLA). The dataset `[1e38]*3` returns `nan` for
