@@ -153,22 +153,35 @@ def run_speed(smoke):
     rng = np.random.default_rng(0)
     x = jnp.asarray(rng.normal(0, 1, shape).astype(np.float32))
 
-    def _best(fn):
-        best = None
-        for _ in range(3):
-            r = _bench(fn, x)
-            if best is None or r["median_ms"] < best["median_ms"]:
-                best = r
-        return best
+    def _sessions(fn):
+        runs = [_bench(fn, x) for _ in range(3)]
+        meds = [r["median_ms"] for r in runs]
+        return {
+            "sessions": runs,
+            "median_of_medians_ms": float(np.median(meds)),
+            "min_of_medians_ms": float(np.min(meds)),
+            "max_of_medians_ms": float(np.max(meds)),
+        }
 
     res = {
         "shape": list(shape),
         "axis": 1,
-        "naive": _best(lambda a: naive(a, 1)),
-        "base": _best(lambda a: base(a, 1)),
-        "kernel": _best(lambda a: kernel(a, 1)),
+        "naive": _sessions(lambda a: naive(a, 1)),
+        "base": _sessions(lambda a: base(a, 1)),
+        "kernel": _sessions(lambda a: kernel(a, 1)),
     }
-    res["ratio_kernel_base"] = res["kernel"]["median_ms"] / res["base"]["median_ms"]
+    res["ratio_kernel_base"] = (
+        res["kernel"]["median_of_medians_ms"]
+        / res["base"]["median_of_medians_ms"]
+    )
+    res["ratio_min_of_medians"] = (
+        res["kernel"]["min_of_medians_ms"]
+        / res["base"]["max_of_medians_ms"]
+    )
+    res["ratio_max_of_medians"] = (
+        res["kernel"]["max_of_medians_ms"]
+        / res["base"]["min_of_medians_ms"]
+    )
     return res
 
 
@@ -181,7 +194,7 @@ def main(smoke):
     claim1 = all(v["is_zero"] for v in ident.values())
     claim2_eager = all(v["eager_kernel_le_base"] for v in acc.values())
     claim2_jit = all(v["jit_kernel_le_base"] for v in acc.values())
-    claim3 = spd["ratio_kernel_base"] <= 4.0
+    claim3 = spd["ratio_kernel_base"] <= 4.0  # mediana delle mediane
 
     print()
     print("identical values (must be exactly 0.0):")
@@ -203,7 +216,10 @@ def main(smoke):
     print(f"speed shape={spd['shape']} axis={spd['axis']}")
     for k in ("naive", "base", "kernel"):
         v = spd[k]
-        print(f"  {k:7s} median {v['median_ms']:7.2f} ms  IQR {v['iqr_ms']:5.2f} ms")
+        print(
+            f"  {k:7s} median of medians {v['median_of_medians_ms']:7.2f} ms  "
+            f"range [{v['min_of_medians_ms']:.2f}, {v['max_of_medians_ms']:.2f}]"
+        )
     print(
         f"  ratio kernel/base = {spd['ratio_kernel_base']:.2f}x  "
         f"(claim 3 <= 4.0): {'PASS' if claim3 else 'FAIL'}"

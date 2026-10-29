@@ -190,9 +190,9 @@ after warm-up with `block_until_ready`:
 
 | formula | median (ms) | IQR (ms) |
 |---|---|---|
-| naive two-pass | 47.78 | -- |
-| baseline formula | 53.79 | -- |
-| `stable_var` | 188.46 | -- |
+| naive two-pass | 51.39 | -- |
+| baseline formula | 57.71 | -- |
+| `stable_var` | 207.42 | -- |
 
 `stable_var` costs 2.51 times the baseline formula on this shape, above
 the 4.0 threshold. The ratio is not stable on this CPU:
