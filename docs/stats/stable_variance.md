@@ -173,30 +173,33 @@ The maximum relative error against the `float64` reference of the same
 `float32` values, on the four datasets of the task, measured by
 `benchmarks/stable_variance_float32.py`:
 
-| dataset | TensorFlow formula (eager) | `stable_var` (eager) | TensorFlow formula (jit) | `stable_var` (jit) |
+| dataset | baseline formula (eager) | `stable_var` (eager) | baseline formula (jit) | `stable_var` (jit) |
 |---|---|---|---|---|
 | N(1e3, 0.01), `[1000, 64]` axis 0 | 1.44e-7 | 1.17e-7 | 1.18e-7 | 1.17e-7 |
 | N(1e4, 1), `[64, 1000]` axis 1 | 1.59e-7 | 1.15e-7 | 1.59e-7 | 1.15e-7 |
 | N(0, 1), `[1000, 64]` axis 0 | 1.94e-7 | 1.36e-7 | 1.94e-7 | 1.36e-7 |
 | N(1e6, 1), `[1000, 64]` axis 0 | 1.18e-7 | 1.22e-7 | 0.997e-7 | 1.22e-7 |
 
-Three of the four are below the TensorFlow formula, in eager and under
+Three of the four are below the baseline formula, in eager and under
 `jax.jit`. The fourth (N(1e6, 1)) is above: at that offset, `ulp(x[0])` is
 `0.0625` against a deviation of `1`, so the shift introduces a quantisation
 error that a linear technique cannot remove without float64. This is
-declared in the benchmark (`2_jit_kernel_le_tf: false`) and in the Details.
+declared in the benchmark (`2_jit_kernel_le_base: false`) and in the Details.
 
 The speed on a synthetic `[4096, 4096]` float32 array, `axis=1`, 7 runs
 after warm-up with `block_until_ready`:
 
 | formula | median (ms) | IQR (ms) |
 |---|---|---|
-| naive two-pass | 64.31 | 2.23 |
-| TensorFlow formula | 72.30 | 1.44 |
-| `stable_var` | 138.68 | 37.61 |
+| naive two-pass | 47.95 | 1.77 |
+| baseline formula | 54.25 | 1.15 |
+| `stable_var` | 135.99 | 1.44 |
 
-`stable_var` costs 1.92 times the TensorFlow formula on this shape,
-below the 2.0 threshold of the task.
+`stable_var` costs 2.51 times the baseline formula on this shape, above
+the 2.0 threshold of the task. The ratio is not stable on this CPU:
+across the runs of this session it varied between 1.92 and 2.51. The
+benchmark records the value of the last run; the claim 3 is declared
+`does not hold` in the JSON, with the measured ratio.
 
 ## Details
 
@@ -240,7 +243,14 @@ backend, JAX 0.11.1, 7 runs after warm-up, median and IQR.
 
 ### Declared limits
 
-The N(1e6, 1) dataset is above the TensorFlow formula in both regimes
+The speed of the kernel is 2.51 times the baseline formula in the last
+run of this session, above the 2.0 threshold. Across the runs of the
+session the ratio varied between 1.92 and 2.51, so the claim 3 is
+declared `does not hold` in the benchmark JSON. The eager and jit
+accuracy of claim 2 is stable across the runs (the same numbers, three
+of four datasets below the baseline).
+
+The N(1e6, 1) dataset is above the baseline formula in both regimes
 (1.22e-7 against 1.18e-7 in eager, 1.22e-7 against 0.997e-7 in jit). At
 that offset `ulp(x[0]) = 0.0625` against a deviation of `1`: the shift
 introduces a quantisation error that no linear technique can remove
@@ -255,8 +265,8 @@ T3 is item D of the task, through the `dtype` keyword of each estimator.
 The kernel went through six variants, each measured on the four datasets
 of the task. The pairwise form of the variance (Lagrange's identity,
 `Var = (1/2n^2) sum_ij (x_i - x_j)^2`) is the only one that beats the
-TensorFlow formula on all four (4/4 eager, 4/4 jit), and it is `O(n^2)`:
-on `[1024, 1024]` it costs 528 times the TensorFlow formula, so it cannot
+baseline formula on all four (4/4 eager, 4/4 jit), and it is `O(n^2)`:
+on `[1024, 1024]` it costs 528 times the baseline formula, so it cannot
 satisfy the 2.0x speed threshold. The compensated variants (Kahan scan,
 Kahan tree, TwoSum tree) beat the formula on 3/4 but cost 3.5 to 4.5
 times. The variant on this page (shift + local centring + Kahan on

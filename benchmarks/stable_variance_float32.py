@@ -3,9 +3,8 @@
 Contenders, all under ``jax.jit`` and float32:
 
 - ``naive``: two-pass ``mean((x - mean(x))**2)``.
-- ``tf``: the TensorFlow formula ``max(mean(d**2) - mean(d)**2, 0)``
-  with ``d = x - mean(x)``. A labelled copy in this script, nothing
-  is sent to TensorFlow.
+- ``base``: the baseline two-term formula ``max(mean(d**2) - mean(d)**2, 0)``
+  with ``d = x - mean(x)``. A labelled copy in this script.
 - ``kernel``: ``dense_armor.utility.stats.stable.stable_var``.
 
 Cases: the identical values of the tests, the four datasets of the
@@ -20,10 +19,10 @@ after the run:
 1. The kernel returns exactly ``0.0`` on every identical-values case,
    under ``jit``.
 2. On each of the four datasets the maximum relative error of the
-   kernel is at most the maximum relative error of the TensorFlow
-   formula, in eager mode and under ``jit``.
+   kernel is at most the maximum relative error of the baseline
+   two-term formula, in eager mode and under ``jit``.
 3. The time of the kernel is at most 2.0 times the time of the
-   TensorFlow formula on ``[4096, 4096]``, ``axis=1``.
+   baseline formula on ``[4096, 4096]``, ``axis=1``.
 
 Run:
     python benchmarks/stable_variance_float32.py            full run
@@ -55,7 +54,7 @@ def naive(x, axis):
     return jnp.mean(d * d, axis=axis)
 
 
-def tf(x, axis):
+def base(x, axis):
     m = jnp.mean(x, axis=axis, keepdims=True)
     d = x - m
     return jnp.maximum(jnp.mean(d * d, axis=axis)
@@ -110,17 +109,17 @@ def run_accuracy(smoke):
     for name, data, axis in accuracy_cases(smoke):
         ref = np.var(data.astype(np.float64), axis=axis)
         x = jnp.asarray(data)
-        e_tf_eager = _max_rel(tf(x, axis), ref)
-        e_tf_jit = _max_rel(jax.jit(lambda a: tf(a, axis))(x), ref)
+        e_base_eager = _max_rel(base(x, axis), ref)
+        e_base_jit = _max_rel(jax.jit(lambda a: base(a, axis))(x), ref)
         e_kern_eager = _max_rel(kernel(x, axis), ref)
         e_kern_jit = _max_rel(jax.jit(lambda a: kernel(a, axis))(x), ref)
         out[name] = {
-            "tf_eager": e_tf_eager,
-            "tf_jit": e_tf_jit,
+            "base_eager": e_base_eager,
+            "base_jit": e_base_jit,
             "kernel_eager": e_kern_eager,
             "kernel_jit": e_kern_jit,
-            "eager_kernel_le_tf": bool(e_kern_eager <= e_tf_eager),
-            "jit_kernel_le_tf": bool(e_kern_jit <= e_tf_jit),
+            "eager_kernel_le_base": bool(e_kern_eager <= e_base_eager),
+            "jit_kernel_le_base": bool(e_kern_jit <= e_base_jit),
         }
     return out
 
@@ -147,10 +146,10 @@ def run_speed(smoke):
         "shape": list(shape),
         "axis": 1,
         "naive": _bench(lambda a: naive(a, 1), x),
-        "tf": _bench(lambda a: tf(a, 1), x),
+        "base": _bench(lambda a: base(a, 1), x),
         "kernel": _bench(lambda a: kernel(a, 1), x),
     }
-    res["ratio_kernel_tf"] = res["kernel"]["median_ms"] / res["tf"]["median_ms"]
+    res["ratio_kernel_base"] = res["kernel"]["median_ms"] / res["base"]["median_ms"]
     return res
 
 
@@ -161,9 +160,9 @@ def main(smoke):
     spd = run_speed(smoke)
 
     claim1 = all(v["is_zero"] for v in ident.values())
-    claim2_eager = all(v["eager_kernel_le_tf"] for v in acc.values())
-    claim2_jit = all(v["jit_kernel_le_tf"] for v in acc.values())
-    claim3 = spd["ratio_kernel_tf"] <= 2.0
+    claim2_eager = all(v["eager_kernel_le_base"] for v in acc.values())
+    claim2_jit = all(v["jit_kernel_le_base"] for v in acc.values())
+    claim3 = spd["ratio_kernel_base"] <= 2.0
 
     print()
     print("identical values (must be exactly 0.0):")
@@ -172,26 +171,26 @@ def main(smoke):
               f"{'OK' if v['is_zero'] else 'FAIL'}")
     print()
     print(f"{'dataset':15s} {'tf_e':>10s} {'ke':>10s} {'tf_j':>10s} {'kj':>10s}  "
-          f"{'e<=tf':>6s} {'j<=tf':>6s}")
+          f"{'e<=base':>6s} {'j<=base':>6s}")
     for name, v in acc.items():
-        print(f"  {name:15s} {v['tf_eager']:.2e} {v['kernel_eager']:.2e} "
-              f"{v['tf_jit']:.2e} {v['kernel_jit']:.2e}  "
-              f"{'OK' if v['eager_kernel_le_tf'] else 'FAIL':>6s} "
-              f"{'OK' if v['jit_kernel_le_tf'] else 'FAIL':>6s}")
+        print(f"  {name:15s} {v['base_eager']:.2e} {v['kernel_eager']:.2e} "
+              f"{v['base_jit']:.2e} {v['kernel_jit']:.2e}  "
+              f"{'OK' if v['eager_kernel_le_base'] else 'FAIL':>6s} "
+              f"{'OK' if v['jit_kernel_le_base'] else 'FAIL':>6s}")
     print()
     print(f"speed shape={spd['shape']} axis={spd['axis']}")
-    for k in ("naive", "tf", "kernel"):
+    for k in ("naive", "base", "kernel"):
         v = spd[k]
         print(f"  {k:7s} median {v['median_ms']:7.2f} ms  "
               f"IQR {v['iqr_ms']:5.2f} ms")
-    print(f"  ratio kernel/tf = {spd['ratio_kernel_tf']:.2f}x  "
+    print(f"  ratio kernel/base = {spd['ratio_kernel_base']:.2f}x  "
           f"(claim 3 <= 2.0): {'PASS' if claim3 else 'FAIL'}")
     print()
     print(f"claim 1 (identical = 0.0):           "
           f"{'holds' if claim1 else 'does not hold'}")
-    print(f"claim 2 eager (kernel <= TF):        "
+    print(f"claim 2 eager (kernel <= base):      "
           f"{'holds' if claim2_eager else 'does not hold'}")
-    print(f"claim 2 jit (kernel <= TF):          "
+    print(f"claim 2 jit (kernel <= base):        "
           f"{'holds' if claim2_jit else 'does not hold'}")
     print(f"claim 3 (speed <= 2.0x):             "
           f"{'holds' if claim3 else 'does not hold'}")
@@ -204,8 +203,8 @@ def main(smoke):
         "speed": spd,
         "claims": {
             "1_identical_zero": claim1,
-            "2_eager_kernel_le_tf": claim2_eager,
-            "2_jit_kernel_le_tf": claim2_jit,
+            "2_eager_kernel_le_base": claim2_eager,
+            "2_jit_kernel_le_base": claim2_jit,
             "3_speed_le_2x": claim3,
         },
     }

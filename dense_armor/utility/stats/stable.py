@@ -25,9 +25,10 @@ all in the input dtype:
    reconstructed as ``r + m``.
 
 On the four datasets of the task the maximum relative error is between
-``1.15e-7`` and ``1.36e-7`` on D1, D2 and D3 (below the TensorFlow
-formula in both eager and jit), and ``1.22e-7`` on D4 (above the
-TensorFlow formula, which on that dataset is at ``0.997e-7`` in jit).
+``1.15e-7`` and ``1.36e-7`` on D1, D2 and D3 (below the baseline
+two-term formula in both eager and jit), and ``1.22e-7`` on D4
+(above the baseline formula, which on that dataset is at ``0.997e-7``
+in jit).
 The case D4 has ``ulp(x[0]) = 0.0625`` against a deviation of ``1``, so
 the shift introduces a quantisation error that no linear technique can
 remove without computing in float64, and float64 is out of scope.

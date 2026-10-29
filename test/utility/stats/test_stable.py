@@ -2,11 +2,12 @@
 
 Covers the cases of the task: identical values (eager, under jit, under
 vmap, with keepdims), accuracy against the float64 reference and against
-the TensorFlow formula, gradient, bounds, and the dtype of input and output.
+the baseline two-term formula, gradient, bounds, and the dtype of input
+and output.
 
 The reference of an accuracy test is the float64 numpy variance of the same
-float32 values. The baseline is the formula TensorFlow uses in ``nn_impl.py``
-lines 1480-1487 (a local copy in the test, nothing is sent to TensorFlow):
+float32 values. The baseline is the two-term formula
+``max(mean(d**2) - mean(d)**2, 0)`` with ``d = x - mean(x)``:
 
     d = x - mean(x)
     var = max(mean(d*d) - mean(d)**2, 0)
@@ -26,7 +27,7 @@ from dense_armor.utility.stats.stable import stable_moments, stable_var
 
 # ---------------------------------------------------------------- helpers
 
-def _tf_formula(x, axis):
+def _base_formula(x, axis):
     m = jnp.mean(x, axis=axis, keepdims=True)
     d = x - m
     var = jnp.mean(d * d, axis=axis) - jnp.mean(d, axis=axis) ** 2
@@ -124,7 +125,7 @@ def test_accuracy_below_threshold(name, shape, axis, make):
     data = make(rng).astype(np.float32)
     ref = np.var(data.astype(np.float64), axis=axis)
     kernel_err = _max_rel_error(stable_var(jnp.asarray(data), axis=axis), ref)
-    base_err = _max_rel_error(_tf_formula(jnp.asarray(data), axis=axis), ref)
+    base_err = _max_rel_error(_base_formula(jnp.asarray(data), axis=axis), ref)
     print(f"\n  {name}: kernel {kernel_err:.2e}  baseline {base_err:.2e}  "
           f"threshold {THRESHOLD:.1e}")
     assert kernel_err <= THRESHOLD, (
