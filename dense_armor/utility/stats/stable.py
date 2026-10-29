@@ -56,7 +56,6 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-
 __all__ = ["stable_var", "stable_moments"]
 
 
@@ -112,9 +111,7 @@ def _check_axis(a, axis):
     nd = a.ndim
     for ax in axis:
         if not (-nd <= ax < nd):
-            raise ValueError(
-                f"stable_var: axis {ax} out of bounds for ndim {nd}"
-            )
+            raise ValueError(f"stable_var: axis {ax} out of bounds for ndim {nd}")
     return tuple(sorted({ax % nd for ax in axis}))
 
 
@@ -125,8 +122,8 @@ def _prepare(a, axes):
     perm = other_axes + list(axes)
     if perm != list(range(nd)):
         a = jnp.transpose(a, perm)
-    batch_shape = a.shape[:len(other_axes)]
-    red_shape = a.shape[len(other_axes):]
+    batch_shape = a.shape[: len(other_axes)]
+    red_shape = a.shape[len(other_axes) :]
     n = 1
     for s in red_shape:
         n *= s
@@ -148,14 +145,15 @@ def _kahan_sum(x):
     Returns:
         The compensated sum, a scalar of the same dtype.
     """
+
     def step(carry, xi):
         s, c = carry
         y = xi - c
         t = s + y
         c = (t - s) - y
         return (t, c), None
-    (s, c), _ = jax.lax.scan(
-        step, (jnp.zeros((), x.dtype), jnp.zeros((), x.dtype)), x)
+
+    (s, c), _ = jax.lax.scan(step, (jnp.zeros((), x.dtype), jnp.zeros((), x.dtype)), x)
     return s + c
 
 
@@ -191,8 +189,9 @@ def _finish_var(var_pop, n, ddof, axes, batch_shape, keepdims, out_dtype):
     else:
         denom = n - ddof
         if denom <= 0:
-            var = jnp.where(var_pop == 0, jnp.zeros_like(var_pop),
-                            jnp.full_like(var_pop, jnp.nan))
+            var = jnp.where(
+                var_pop == 0, jnp.zeros_like(var_pop), jnp.full_like(var_pop, jnp.nan)
+            )
         else:
             factor = var_pop.dtype.type(n / denom)
             var = var_pop * factor
@@ -244,8 +243,9 @@ def stable_var(x, axis=None, ddof=0, keepdims=False):
     if xa.dtype.kind == "c":
         re = xa.real
         im = xa.imag
-        return (stable_var(re, axis=axis, ddof=ddof, keepdims=keepdims)
-                + stable_var(im, axis=axis, ddof=ddof, keepdims=keepdims))
+        return stable_var(re, axis=axis, ddof=ddof, keepdims=keepdims) + stable_var(
+            im, axis=axis, ddof=ddof, keepdims=keepdims
+        )
     a = _as_float_array(x)
     out_dtype = _result_dtype(x)
     if a.ndim == 0:
@@ -320,5 +320,7 @@ def stable_moments(x, axis=None, ddof=0, keepdims=False):
 
     b_flat, batch_shape, n = _prepare(a, axes)
     mean, var_pop = jax.vmap(lambda v: _kernel_mom(v, n))(b_flat)
-    return (_finish_mean(mean, axes, batch_shape, keepdims, out_dtype),
-            _finish_var(var_pop, n, ddof, axes, batch_shape, keepdims, out_dtype))
+    return (
+        _finish_mean(mean, axes, batch_shape, keepdims, out_dtype),
+        _finish_var(var_pop, n, ddof, axes, batch_shape, keepdims, out_dtype),
+    )
