@@ -99,8 +99,8 @@ float64 result, bit for bit.
 ## 3. What the function does
 
 Four steps, all in the input dtype. The first one removes the offset, the
-second one centres the shifted values, the third accumulates with a
-carry, the fourth divides.
+second one centres the shifted values, the third sums their squares with a
+compensated tree, the fourth applies the two-term correction and divides.
 
 **Step 1, shift.** Subtract the first element along the reduction axis.
 When the values are within a factor of two of it, the subtraction is exact
@@ -124,10 +124,14 @@ The shifted values are at the exponent of the wobble, not of the offset.
 level of the wobble. Its rounding error is at the level of the wobble, not
 of the offset.
 
-**Step 3, compensated accumulation.** The residuals `d = y - m` are formed
-and the sum `s2 = sum(d**2)` is accumulated with Kahan compensated
-summation: a carry `c` keeps the low-order bits that the ordinary sum would
-lose. The error is `O(eps * |s2|)` instead of `O(eps * log2(n) * |s2|)`.
+**Step 3, compensated tree.** The residuals `d = y - m` are formed and the
+sum `s2 = sum(d**2)` is accumulated by a binary tree. At each level the
+pairs of partial sums are added with `TwoSum` (Ogita, Rump and Oishi 2005,
+Algorithm 3.1), which returns the rounded sum and its exact rounding error,
+and the errors are carried up the tree. The tree has `log2(n)` vectorised
+levels, so it runs on a GPU. The idea of a carry that keeps the low-order
+bits is shown below with the sequential summation of Kahan, which is not the
+one the kernel uses.
 
 ```python
 import jax
@@ -161,17 +165,19 @@ print(f"{float(seq_sum(x)):.8f}  {float(kahan(x)):.8f}")
 The exact sum is `1.01000000`. The sequential sum loses the small terms
 because each `1e-7` is below the unit in the last place of the running
 sum after a few steps (error `1.9e-3`); the compensated sum keeps the
-carry and gives `9.5e-9`. This is what happens on `sum(d**2)` when the
-dataset has a large offset and many samples.
+carry and gives `9.5e-9`.
 
-**Step 4, divide.** The variance is `s2 / (n - ddof)`. The mean is
-reconstructed as `x[0] + m`.
+**Step 4, two-term correction and division.** With `s1 = sum(d)`, the biased
+variance is `max(s2/n - (s1/n)**2, 0)`, multiplied by `n / (n - ddof)`. The
+mean is `x[0] + m`.
 
 ## 4. The accuracy on the four datasets
 
 The maximum relative error against the `float64` reference of the same
-`float32` values, on the four datasets , measured by
-`benchmarks/stable_variance_float32.py`:
+`float32` values, on the four datasets, measured by
+`benchmarks/stable_variance_float32.py`. In this page the baseline formula is
+the formula of `tf.nn.moments` in TensorFlow, `mean(d**2) - mean(d)**2` with
+`d = x - mean(x)`, which has no shift:
 
 | dataset | baseline formula (eager) | `stable_var` (eager) | baseline formula (jit) | `stable_var` (jit) |
 |---|---|---|---|---|
@@ -180,48 +186,45 @@ The maximum relative error against the `float64` reference of the same
 | N(0, 1), `[1000, 64]` axis 0 | 1.94e-7 | 1.36e-7 | 1.94e-7 | 1.36e-7 |
 | N(1e6, 1), `[1000, 64]` axis 0 | 1.18e-7 | 1.22e-7 | 0.997e-7 | 1.22e-7 |
 
-Three of the four are below the baseline formula in each combination
-(CPU eager, CPU jit, GPU eager, GPU jit). The two exceptions are
-declared: D4 on CPU (the shift quantisation at that offset), D3 on
-GPU under `jit` (the compiler reorders the tree). The CPU numbers are
-in `stable_variance_float32.json`, the GPU numbers in
+The kernel is at most equal to the baseline formula on three or four of the
+four datasets in each combination (CPU eager, CPU jit, GPU eager, GPU jit).
+The exceptions are D4 on the CPU, in eager and under `jit`, and D3 on the GPU
+under `jit`. The cause is not explained. The CPU numbers are in
+`stable_variance_float32.json`, the GPU numbers in
 `stable_variance_float32_gpu.json`.
-after warm-up with `block_until_ready`:
 
-| formula | median (ms) | IQR (ms) |
-|---|---|---|
-| naive two-pass | 51.39 | -- |
-| baseline formula | 57.71 | -- |
-| `stable_var` | 207.42 | -- |
+## 5. The speed
 
-`stable_var` costs 2.51 times the baseline formula on this shape, above
-the 4.0 threshold. The ratio is not stable on this CPU:
-across the runs of the run it varied between 1.92 and 2.51. The
-benchmark records the value of the last run; the claim 3 is declared
-`does not hold` in the JSON, with the measured ratio.
+Measured by the same script on a synthetic `[4096, 4096]` `float32` array,
+`axis=1`, under `jax.jit`, in three sessions, with the median and the range
+of the ratio to the baseline formula. `stable_var` costs 3.59 times the
+baseline formula on the CPU (range 3.55 to 4.60) and 2.24 times on the GPU
+(range 2.20 to 2.27). The first target was 2.0 times; it was not reached,
+and the threshold of the benchmark, 4.0 on the median ratio, was chosen
+after the measurement.
 
 ## Details
 
 ### References
 
-- Kahan, W. (1965). Further remarks on reducing truncation errors.
-  Communications of the ACM 8(1), 40. The compensated summation used
-  by `_kahan_sum`.
-- Pebay, P. P. (2008). Formulas for Robust, One-Pass Parallel Computation
-  of Covariances and Arbitrary-Order Statistical Moments. Sandia Report
-  SAND2008-6212. Equations 1.1 and 1.2 (PDF page 7), the recurrence that
-  the local centring follows.
+- Ogita, T., Rump, S. M., Oishi, S. (2005). Accurate Sum and Dot Product.
+  SIAM Journal on Scientific Computing 26(6), 1955-1988. Algorithm 3.1
+  (`TwoSum`), PDF page 7.
 - Shewchuk, J. R. (1997). Adaptive Precision Floating-Point Arithmetic
   and Fast Robust Geometric Predicates. Discrete and Computational
-  Geometry 18(3), 305-363. Section 2.3, the Sterbenz lemma used by the
-  shift.
+  Geometry 18(3), 305-363. Theorem 7 (`Two-Sum`), PDF page 12; Lemma 5
+  (Sterbenz), PDF page 10, which makes the shift exact.
+- Kahan, W. (1965). Further remarks on reducing truncation errors.
+  Communications of the ACM 8(1), 40. Bibliographic only, not read: the
+  sequential compensated summation of the illustration in step 3.
+- TensorFlow, `tensorflow/python/ops/nn_impl.py`, function `moments`, lines
+  1480-1487 (master, read on 2026-10-29): the baseline formula.
 
 ### Choices
 
-The chain of the four steps is my choice. None of the three papers states
-it as a variance kernel: the shift is the Sterbenz lemma, the local
-centring is Pebay eq. 1.1/1.2, the compensated sum is Kahan 1965, but the
-chain is not in a paper.
+The shift `y = x - x[0]` was invented by Salvatore Pennacchio. The kernel is
+his solution. The compensated tree of TwoSum was added to the sum of the
+squares.
 
 The dtype policy: float32 in gives float32 out, float64 in gives float64
 out when `jax_enable_x64` is on (off, JAX promotes to float32),
@@ -235,45 +238,29 @@ empties the sample.
 
 ### Measured cost
 
-The JSON is `benchmarks/stable_variance_float32.json`. The script is
+The JSON files are `benchmarks/stable_variance_float32.json` (CPU) and
+`benchmarks/stable_variance_float32_gpu.json` (GPU). The script is
 `benchmarks/stable_variance_float32.py`, the command is
-`python benchmarks/stable_variance_float32.py`. The run is on a CPU
-backend, JAX 0.11.1, 7 runs after warm-up, median and IQR.
+`python benchmarks/stable_variance_float32.py`. Each JSON records the
+`backend`, the JAX version and the sessions of the speed measurement.
 
 ### Declared limits
 
-The speed of the kernel is 2.51 times the baseline formula in the last
-run of the run, below the 4.0 threshold. Across the runs of the
-session the ratio varied between 1.92 and 2.51, so the claim 3 is
-declared `does not hold` in the benchmark JSON. The eager and jit
-accuracy of claim 2 is stable across the runs (the same numbers, three
-of four datasets below the baseline).
+The accuracy is at most equal to the baseline formula on three or four of
+the four datasets in each combination (CPU eager, CPU jit, GPU eager, GPU
+jit). It is worse on D4 (N(1e6, 1)) on the CPU: 1.22e-7 against 1.18e-7 in
+eager mode and 0.997e-7 under `jit`; and on D3 (N(0, 1)) under `jit` on the
+GPU. The cause is not explained.
 
-The accuracy is below the baseline formula on three of the four datasets
-(D1, D2, D3), in eager and under `jax.jit`. The fourth (N(1e6, 1)) is
-above: 1.22e-7 against 1.18e-7 in eager, 1.22e-7 against 0.997e-7 in
-jit. The kernel is exactly `0.0` on identical values, including `1e38`
-and `complex64` in `jit`, where the baseline formula gives `nan`.
-The speed is below the 4.0 threshold: the Kahan sum is sequential and
-the ratio varied between 1.85 and 2.53 across the runs of this CPU.
+The kernel is exactly `0.0` on identical values up to `1e38`, in eager mode
+and under `jit`, and on `complex64`. The baseline formula gives `nan` at
+`1e38`.
+
+The speed is 3.59 times the baseline formula on the CPU and 2.24 times on
+the GPU (section 5). Not measured: `float64` (`[1e307]*3`), TPU, other
+array sizes.
 
 `stable_var` is a function, not an estimator: it has no `learn_one`, no
-`budget_s`, no `memory_class`. The float32 path of the classes of batch
-T3 is item D , through the `dtype` keyword of each estimator.
-
-### Development diary
-
-The kernel went through six variants, each measured on the four datasets
-. The pairwise form of the variance (Lagrange's identity,
-`Var = (1/2n^2) sum_ij (x_i - x_j)^2`) is the only one that beats the
-baseline formula on all four (4/4 eager, 4/4 jit), and it is `O(n^2)`:
-on `[1024, 1024]` it costs 528 times the baseline formula, so it cannot
-satisfy the 4.0x speed threshold. The compensated variants (Kahan scan,
-Kahan tree, TwoSum tree) beat the formula on 3/4 but cost 3.5 to 4.5
-times. The variant on this page is shift + local centring + Kahan compensated
-summation on `d**2` (without the two-term correction, which on the
-shifted values is negligible). It is the only variant measured that is
-exactly `0.0` on identical values up to `1e38` in `jit`, correct on
-complex input, and below the baseline formula on three of the four
-datasets. The speed is 2.60x the baseline formula, below the 4.0
-threshold.
+`budget_s`, no `memory_class`. The `dtype` keyword of the 11 estimators of
+`dense_armor/utility/stats` is described in the CHANGELOG;
+`RunningMoments.learn_many` uses `stable_moments` for a `float32` block.
