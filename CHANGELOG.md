@@ -2,20 +2,11 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
-## [1.2.1] - 2026-10-27
-
-### Fixed
-- `OnlinePlattScaling`: handle NaN in base predictions (fallback to 0.5).
-- Log-domain clipping (1e-15) in LogLoss, Beta, OnlineGaussianNB, Gaussian Mixture, GaussianNLL, Hoeffding Tree, and AMRules.
-- Division and square root protections against zero variance in Gaussian PDFs, Correlation, Hoeffding leaves, SGT, OnlineGaussianNB, and Mixture.
-- Exponential overflow protection (clamp to [-700, 700]) in Factorisation Machines, SGT, Mixture PDF, and Student-T PDF.
-- Pre-existing mypy errors in hoeffding.py, mixture.py, and amrules.py.
-
 ## [1.3.0] - 2026-10-29
 
 ### Added
 - `dense_armor/utility/stats/stable.py`: `stable_var` and `stable_moments`, a
-  float32 variance kernel. First-element anchor shift (Sterbenz exact on close
+  float32 variance kernel. First-element anchor shift, the idea of Salvatore Pennacchio (Sterbenz exact on close
   values), two-term formula, and a Kahan tree (binary merge of `TwoSum`,
   `log2(n)` vectorised levels) on `d**2`. Exactly `0.0` on identical values up
   to `1e38` in eager and under `jax.jit`, on CPU and on GPU; below the baseline
@@ -112,6 +103,15 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 - `ARCHITECTURE.md`: lists the 12 missing modules (neural, stats, timeseries),
   drops `anwav` and `collatz`.
 
+
+## [1.2.1] - 2026-10-27
+
+### Fixed
+- `OnlinePlattScaling`: handle NaN in base predictions (fallback to 0.5).
+- Log-domain clipping (1e-15) in LogLoss, Beta, OnlineGaussianNB, Gaussian Mixture, GaussianNLL, Hoeffding Tree, and AMRules.
+- Division and square root protections against zero variance in Gaussian PDFs, Correlation, Hoeffding leaves, SGT, OnlineGaussianNB, and Mixture.
+- Exponential overflow protection (clamp to [-700, 700]) in Factorisation Machines, SGT, Mixture PDF, and Student-T PDF.
+- Pre-existing mypy errors in hoeffding.py, mixture.py, and amrules.py.
 
 ## [Unreleased]
 1.2.0] - 2026-10-26

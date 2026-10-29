@@ -218,7 +218,9 @@ benchmark records the value of the last run; the claim 3 is declared
 
 ### Choices
 
-The chain of the four steps is my choice. None of the three papers states
+The shift by the first element is the idea of Salvatore Pennacchio, and it
+is the base of the kernel. The chain of the four steps is his choice. None
+of the three papers states
 it as a variance kernel: the shift is the Sterbenz lemma, the local
 centring is Pebay eq. 1.1/1.2, the compensated sum is Kahan 1965, but the
 chain is not in a paper.

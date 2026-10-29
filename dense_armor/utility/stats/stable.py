@@ -46,10 +46,12 @@ References:
         Lemma 5, page 10 (PDF page 14), the Sterbenz lemma used by the
         shift.
 
-The combination is my choice (Salvatore Pennacchio): the two-term formula
-is the baseline, the compensated tree is the merge of the TwoSum of
-Ogita-Rump-Oishi and Shewchuk. The combination of the two is not stated
-in a paper.
+The shift by the first element is the idea of Salvatore Pennacchio, and it
+is the base of this kernel: the kernel is that idea, followed by the
+two-term formula of the baseline. The Sterbenz lemma explains why the
+subtraction is exact. The compensated tree of TwoSum (Ogita-Rump-Oishi,
+Shewchuk) was added to the sum of the squares. The combination is not
+stated in a paper.
 """
 
 from __future__ import annotations
