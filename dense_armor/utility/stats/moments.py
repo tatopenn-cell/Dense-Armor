@@ -35,8 +35,10 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor.utility.stats.stable import stable_moments
 from dense_armor.roles import Transformer
+from dense_armor.utility.stats.stable import stable_moments
+
+
 def _num_dtype(dtype, value):
     """Cast to the working dtype (numpy scalar) or to float."""
     if dtype is None:
@@ -70,9 +72,7 @@ class RunningMoments(Transformer):
         Pébay, P. (2008). Sandia Report SAND2008-6212.
     """
 
-    def __init__(
-        self, feature: str | None = None, dtype=None
-    ) -> None:
+    def __init__(self, feature: str | None = None, dtype=None) -> None:
         self.feature = feature
         self.dtype = dtype
         self.n_ = 0
@@ -431,9 +431,7 @@ class RunningMomentsVector(Transformer):
         {'q0': 0.1, 'q1': 0.2}
     """
 
-    def __init__(
-        self, features: list[str] | None = None, dtype=None
-    ) -> None:
+    def __init__(self, features: list[str] | None = None, dtype=None) -> None:
         self.features = features
         self.dtype = dtype
         self.channels_: dict[str, RunningMoments] | None = None

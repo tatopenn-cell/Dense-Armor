@@ -27,12 +27,16 @@ Chan, T. F., Golub, G. H., LeVeque, R. J. (1979). Updating formulae and
 Chatfield, C. (2003). The Analysis of Time Series: An Introduction,
     6th ed. Chapman & Hall/CRC.
 """
+
 import math
 from collections import deque
 from typing import Any
 
-from dense_armor.roles import Transformer
 import numpy as np
+
+from dense_armor.roles import Transformer
+
+
 def _num_dtype(dtype, value):
     """Cast to the working dtype (numpy scalar) or to float."""
     if dtype is None:
@@ -566,8 +570,7 @@ class Autocorrelation(Transformer):
         if len(self.history_) == self.lag:
             past = _num_dtype(self.dtype, self.history_[0])
             self.c_ = float(
-                _num_dtype(self.dtype, self.c_)
-                + (vv - m_new) * (past - m_new)
+                _num_dtype(self.dtype, self.c_) + (vv - m_new) * (past - m_new)
             )
             self.n_pairs_ += 1
         self.history_.append(v)

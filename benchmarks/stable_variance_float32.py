@@ -42,7 +42,6 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from dense_armor.utility.stats.stable import stable_var  # noqa: E402
 
-
 N_IDENTICAL = 3
 SPEED_RUNS = 7
 SPEED_SHAPE = (4096, 4096)
@@ -57,8 +56,7 @@ def naive(x, axis):
 def base(x, axis):
     m = jnp.mean(x, axis=axis, keepdims=True)
     d = x - m
-    return jnp.maximum(jnp.mean(d * d, axis=axis)
-                       - jnp.mean(d, axis=axis) ** 2, 0.0)
+    return jnp.maximum(jnp.mean(d * d, axis=axis) - jnp.mean(d, axis=axis) ** 2, 0.0)
 
 
 def kernel(x, axis):
@@ -134,8 +132,7 @@ def _bench(fn, x):
         times.append((time.perf_counter() - t0) * 1e3)
     med = float(np.median(times))
     iqr = float(np.percentile(times, 75) - np.percentile(times, 25))
-    return {"median_ms": med, "iqr_ms": iqr,
-            "all_ms": [float(t) for t in times]}
+    return {"median_ms": med, "iqr_ms": iqr, "all_ms": [float(t) for t in times]}
 
 
 def run_speed(smoke):
@@ -167,33 +164,43 @@ def main(smoke):
     print()
     print("identical values (must be exactly 0.0):")
     for name, v in ident.items():
-        print(f"  {name:15s} {v['value']!r:>10s}  "
-              f"{'OK' if v['is_zero'] else 'FAIL'}")
+        print(f"  {name:15s} {v['value']!r:>10s}  {'OK' if v['is_zero'] else 'FAIL'}")
     print()
-    print(f"{'dataset':15s} {'tf_e':>10s} {'ke':>10s} {'tf_j':>10s} {'kj':>10s}  "
-          f"{'e<=base':>6s} {'j<=base':>6s}")
+    print(
+        f"{'dataset':15s} {'tf_e':>10s} {'ke':>10s} {'tf_j':>10s} {'kj':>10s}  "
+        f"{'e<=base':>6s} {'j<=base':>6s}"
+    )
     for name, v in acc.items():
-        print(f"  {name:15s} {v['base_eager']:.2e} {v['kernel_eager']:.2e} "
-              f"{v['base_jit']:.2e} {v['kernel_jit']:.2e}  "
-              f"{'OK' if v['eager_kernel_le_base'] else 'FAIL':>6s} "
-              f"{'OK' if v['jit_kernel_le_base'] else 'FAIL':>6s}")
+        print(
+            f"  {name:15s} {v['base_eager']:.2e} {v['kernel_eager']:.2e} "
+            f"{v['base_jit']:.2e} {v['kernel_jit']:.2e}  "
+            f"{'OK' if v['eager_kernel_le_base'] else 'FAIL':>6s} "
+            f"{'OK' if v['jit_kernel_le_base'] else 'FAIL':>6s}"
+        )
     print()
     print(f"speed shape={spd['shape']} axis={spd['axis']}")
     for k in ("naive", "base", "kernel"):
         v = spd[k]
-        print(f"  {k:7s} median {v['median_ms']:7.2f} ms  "
-              f"IQR {v['iqr_ms']:5.2f} ms")
-    print(f"  ratio kernel/base = {spd['ratio_kernel_base']:.2f}x  "
-          f"(claim 3 <= 2.0): {'PASS' if claim3 else 'FAIL'}")
+        print(f"  {k:7s} median {v['median_ms']:7.2f} ms  IQR {v['iqr_ms']:5.2f} ms")
+    print(
+        f"  ratio kernel/base = {spd['ratio_kernel_base']:.2f}x  "
+        f"(claim 3 <= 2.0): {'PASS' if claim3 else 'FAIL'}"
+    )
     print()
-    print(f"claim 1 (identical = 0.0):           "
-          f"{'holds' if claim1 else 'does not hold'}")
-    print(f"claim 2 eager (kernel <= base):      "
-          f"{'holds' if claim2_eager else 'does not hold'}")
-    print(f"claim 2 jit (kernel <= base):        "
-          f"{'holds' if claim2_jit else 'does not hold'}")
-    print(f"claim 3 (speed <= 2.0x):             "
-          f"{'holds' if claim3 else 'does not hold'}")
+    print(
+        f"claim 1 (identical = 0.0):           {'holds' if claim1 else 'does not hold'}"
+    )
+    print(
+        f"claim 2 eager (kernel <= base):      "
+        f"{'holds' if claim2_eager else 'does not hold'}"
+    )
+    print(
+        f"claim 2 jit (kernel <= base):        "
+        f"{'holds' if claim2_jit else 'does not hold'}"
+    )
+    print(
+        f"claim 3 (speed <= 2.0x):             {'holds' if claim3 else 'does not hold'}"
+    )
 
     payload = {
         "jax": jax.__version__,

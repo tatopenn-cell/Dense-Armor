@@ -46,9 +46,7 @@ class OnlineShrinkageCovariance(Transformer):
     budget_s = 1e-3
     memory_class = "O(p^2)"
 
-    def __init__(
-        self, n_features: int, feature_prefix: str = "v", dtype=None
-    ) -> None:
+    def __init__(self, n_features: int, feature_prefix: str = "v", dtype=None) -> None:
         if n_features < 1:
             raise ValueError(f"n_features must be >= 1, got {n_features}")
         self.n_features = int(n_features)
@@ -59,12 +57,12 @@ class OnlineShrinkageCovariance(Transformer):
             for j in range(i, self.n_features):
                 key_i = f"{self.feature_prefix}{i}"
                 key_j = f"{self.feature_prefix}{j}"
-                self._pairs[(i, j)] = RunningCovariance(
-                    key_i, key_j, dtype=dtype
-                )
+                self._pairs[(i, j)] = RunningCovariance(key_i, key_j, dtype=dtype)
         self.n_seen_: int = 0
 
-    def learn_one(self, x: dict, y=None, t: float | None = None) -> OnlineShrinkageCovariance:
+    def learn_one(
+        self, x: dict, y=None, t: float | None = None
+    ) -> OnlineShrinkageCovariance:
         """Update the running moments with one sample."""
         for cov in self._pairs.values():
             cov.learn_one(x, t=t)

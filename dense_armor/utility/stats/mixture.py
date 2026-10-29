@@ -213,7 +213,9 @@ class OnlineGaussianMixture(Transformer):
         work = np.dtype(self.dtype) if self.dtype is not None else np.dtype(float)
         self.weights_ = np.full(self.n_components, 1.0 / self.n_components, dtype=work)
         self.means_ = np.asarray(means, dtype=work)
-        self.variances_ = np.full((self.n_components, d), self.init_scale**2, dtype=work)
+        self.variances_ = np.full(
+            (self.n_components, d), self.init_scale**2, dtype=work
+        )
         self.initialized_ = True
 
     def _log_component(self, v: list[float]) -> Any:

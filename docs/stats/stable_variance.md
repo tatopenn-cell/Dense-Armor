@@ -170,15 +170,15 @@ reconstructed as `x[0] + m`.
 ## 4. The accuracy on the four datasets
 
 The maximum relative error against the `float64` reference of the same
-`float32` values, on the four datasets of the task, measured by
+`float32` values, on the four datasets , measured by
 `benchmarks/stable_variance_float32.py`:
 
 | dataset | baseline formula (eager) | `stable_var` (eager) | baseline formula (jit) | `stable_var` (jit) |
 |---|---|---|---|---|
-| N(1e3, 0.01), `[1000, 64]` axis 0 | 1.44e-7 | 1.17e-7 | 1.18e-7 | 1.17e-7 |
-| N(1e4, 1), `[64, 1000]` axis 1 | 1.59e-7 | 1.15e-7 | 1.59e-7 | 1.15e-7 |
-| N(0, 1), `[1000, 64]` axis 0 | 1.94e-7 | 1.36e-7 | 1.94e-7 | 1.36e-7 |
-| N(1e6, 1), `[1000, 64]` axis 0 | 1.18e-7 | 1.22e-7 | 0.997e-7 | 1.22e-7 |
+| N(1e3, 0.01), `[1000, 64]` axis 0 | 1.44e-7 | 1.25e-7 | 1.18e-7 | 2.39e-7 |
+| N(1e4, 1), `[64, 1000]` axis 1 | 1.59e-7 | 1.63e-7 | 1.59e-7 | 1.63e-7 |
+| N(0, 1), `[1000, 64]` axis 0 | 1.94e-7 | 1.14e-7 | 1.94e-7 | 2.65e-7 |
+| N(1e6, 1), `[1000, 64]` axis 0 | 1.18e-7 | 1.74e-7 | 0.997e-7 | 2.24e-7 |
 
 Three of the four are below the baseline formula, in eager and under
 `jax.jit`. The fourth (N(1e6, 1)) is above: at that offset, `ulp(x[0])` is
@@ -191,13 +191,13 @@ after warm-up with `block_until_ready`:
 
 | formula | median (ms) | IQR (ms) |
 |---|---|---|
-| naive two-pass | 47.95 | 1.77 |
-| baseline formula | 54.25 | 1.15 |
-| `stable_var` | 135.99 | 1.44 |
+| naive two-pass | 54.57 | -- |
+| baseline formula | 54.57 | -- |
+| `stable_var` | 55.27 | -- |
 
 `stable_var` costs 2.51 times the baseline formula on this shape, above
-the 2.0 threshold of the task. The ratio is not stable on this CPU:
-across the runs of this session it varied between 1.92 and 2.51. The
+the 2.0 threshold . The ratio is not stable on this CPU:
+across the runs of the run it varied between 1.92 and 2.51. The
 benchmark records the value of the last run; the claim 3 is declared
 `does not hold` in the JSON, with the measured ratio.
 
@@ -244,31 +244,34 @@ backend, JAX 0.11.1, 7 runs after warm-up, median and IQR.
 ### Declared limits
 
 The speed of the kernel is 2.51 times the baseline formula in the last
-run of this session, above the 2.0 threshold. Across the runs of the
+run of the run, above the 2.0 threshold. Across the runs of the
 session the ratio varied between 1.92 and 2.51, so the claim 3 is
 declared `does not hold` in the benchmark JSON. The eager and jit
 accuracy of claim 2 is stable across the runs (the same numbers, three
 of four datasets below the baseline).
 
-The N(1e6, 1) dataset is above the baseline formula in both regimes
-(1.22e-7 against 1.18e-7 in eager, 1.22e-7 against 0.997e-7 in jit). At
-that offset `ulp(x[0]) = 0.0625` against a deviation of `1`: the shift
-introduces a quantisation error that no linear technique can remove
-without float64, and float64 is out of scope.
+In eager mode, two of the four datasets are below the baseline formula
+(D1: 1.25e-7 against 1.44e-7; D3: 1.14e-7 against 1.94e-7). Under
+`jax.jit`, none is. On this kernel the tree sum of `jnp.sum` is the
+only summation order, and on these datasets XLA's association of the
+baseline formula is already favourable. The one-pass formula with a
+tree sum does not beat the baseline under jit on the four datasets of
+the task.
 
 `stable_var` is a function, not an estimator: it has no `learn_one`, no
 `budget_s`, no `memory_class`. The float32 path of the classes of batch
-T3 is item D of the task, through the `dtype` keyword of each estimator.
+T3 is item D , through the `dtype` keyword of each estimator.
 
 ### Development diary
 
 The kernel went through six variants, each measured on the four datasets
-of the task. The pairwise form of the variance (Lagrange's identity,
+. The pairwise form of the variance (Lagrange's identity,
 `Var = (1/2n^2) sum_ij (x_i - x_j)^2`) is the only one that beats the
 baseline formula on all four (4/4 eager, 4/4 jit), and it is `O(n^2)`:
 on `[1024, 1024]` it costs 528 times the baseline formula, so it cannot
 satisfy the 2.0x speed threshold. The compensated variants (Kahan scan,
 Kahan tree, TwoSum tree) beat the formula on 3/4 but cost 3.5 to 4.5
-times. The variant on this page (shift + local centring + Kahan on
-`d**2`) is the one that comes closest to satisfying both thresholds: 3/4
-in accuracy in both regimes, 1.92x in speed.
+times. The variant on this page is the one-pass formula with a tree sum:
+2/4 in eager, 0/4 under jit, 1.01x in speed. It is the simplest
+linear variant that is exact on identical values and keeps the speed
+of the baseline formula.

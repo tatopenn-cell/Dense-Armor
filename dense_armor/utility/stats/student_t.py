@@ -60,15 +60,18 @@ Liu, C., Rubin, D. B. (1995). ML estimation of the t distribution with
 import math
 from typing import Any
 
+import numpy as np
 from scipy.stats import t as _scipy_t
 
 from dense_armor.roles import Transformer
-import numpy as np
+
+
 def _num_dtype(dtype, value):
     """Cast to the working dtype (numpy scalar) or to float."""
     if dtype is None:
         return float(value)
     return np.dtype(dtype).type(value)
+
 
 _EPS_LOG_SIGMA = -30.0
 

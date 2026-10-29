@@ -16,14 +16,19 @@ For every class:
 import numpy as np
 import pytest
 
-from dense_armor.utility.stats.moments import (
-    EWStats, RunningMoments, RunningMomentsVector,
-)
 from dense_armor.utility.stats.dependence import (
-    Autocorrelation, RollingCorrelation, RollingCovariance,
-    RunningCorrelation, RunningCovariance,
+    Autocorrelation,
+    RollingCorrelation,
+    RollingCovariance,
+    RunningCorrelation,
+    RunningCovariance,
 )
 from dense_armor.utility.stats.mixture import OnlineGaussianMixture
+from dense_armor.utility.stats.moments import (
+    EWStats,
+    RunningMoments,
+    RunningMomentsVector,
+)
 from dense_armor.utility.stats.shrinkage import OnlineShrinkageCovariance
 from dense_armor.utility.stats.student_t import StudentT
 
@@ -40,8 +45,6 @@ def _stream_xy(n=200, seed=0):
     return x, y
 
 
-# ---- dtype carries in get_params for all 11 classes -------------------
-
 def _all_constructors():
     return [
         ("RunningMoments", lambda dt: RunningMoments(dtype=dt)),
@@ -53,7 +56,10 @@ def _all_constructors():
         ("RollingCorrelation", lambda dt: RollingCorrelation(dtype=dt)),
         ("RollingCovariance", lambda dt: RollingCovariance(dtype=dt)),
         ("StudentT", lambda dt: StudentT(dtype=dt)),
-        ("OnlineShrinkageCovariance", lambda dt: OnlineShrinkageCovariance(n_features=2, dtype=dt)),
+        (
+            "OnlineShrinkageCovariance",
+            lambda dt: OnlineShrinkageCovariance(n_features=2, dtype=dt),
+        ),
         ("OnlineGaussianMixture", lambda dt: OnlineGaussianMixture(dtype=dt)),
     ]
 
@@ -65,8 +71,6 @@ def test_dtype_in_get_params(name, make):
     p32 = make(np.float32).get_params()
     assert p32["dtype"] is np.float32, f"{name}: dtype not carried"
 
-
-# ---- default equals float64 within 1e-12 ------------------------------
 
 def test_running_moments_default_matches_float64():
     data = _stream()
@@ -89,8 +93,6 @@ def test_running_moments_identical_f32_zero():
     m.learn_many(np.full(200, 1e10, dtype=np.float32))
     assert m.m2_ == 0.0 and m.var == 0.0
 
-
-# ---- classes without learn_many: honest float32 tolerance -------------
 
 def test_running_covariance_f32_tolerance_on_offset():
     """Welford float32 on 200 points at offset 1e3 gives ~1e-4 relative."""

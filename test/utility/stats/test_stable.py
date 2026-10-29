@@ -25,8 +25,6 @@ import pytest
 from dense_armor.utility.stats.stable import stable_moments, stable_var
 
 
-# ---------------------------------------------------------------- helpers
-
 def _base_formula(x, axis):
     m = jnp.mean(x, axis=axis, keepdims=True)
     d = x - m
@@ -54,8 +52,6 @@ def x64_on():
     yield
     jax.config.update("jax_enable_x64", old)
 
-
-# --------------------------------------------------- identical values
 
 IDENTICAL_CASES = [
     ("f32_1e10", np.float32, 1e10),
@@ -91,9 +87,10 @@ def test_identical_under_jit():
 
 
 def test_identical_under_vmap():
-    rows = jnp.asarray([[1e10, 1e10, 1e10],
-                        [7.5e10, 7.5e10, 7.5e10],
-                        [1e15, 1e15, 1e15]], dtype=jnp.float32)
+    rows = jnp.asarray(
+        [[1e10, 1e10, 1e10], [7.5e10, 7.5e10, 7.5e10], [1e15, 1e15, 1e15]],
+        dtype=jnp.float32,
+    )
     out = jax.vmap(lambda r: stable_var(r))(rows)
     assert np.all(np.asarray(out) == 0.0)
 
@@ -105,15 +102,12 @@ def test_identical_with_keepdims():
     assert np.all(np.asarray(v) == 0.0)
 
 
-# ----------------------------------------------------------- accuracy
-
 ACCURACY_CASES = [
     ("offset_1e3", (1000, 64), 0, lambda r: r.normal(1e3, 0.01, (1000, 64))),
     ("offset_1e4", (64, 1000), 1, lambda r: r.normal(1e4, 1.0, (64, 1000))),
     ("standard", (1000, 64), 0, lambda r: r.normal(0.0, 1.0, (1000, 64))),
     ("offset_1e6", (1000, 64), 0, lambda r: r.normal(1e6, 1.0, (1000, 64))),
 ]
-
 
 THRESHOLD = 2e-7
 
@@ -126,10 +120,13 @@ def test_accuracy_below_threshold(name, shape, axis, make):
     ref = np.var(data.astype(np.float64), axis=axis)
     kernel_err = _max_rel_error(stable_var(jnp.asarray(data), axis=axis), ref)
     base_err = _max_rel_error(_base_formula(jnp.asarray(data), axis=axis), ref)
-    print(f"\n  {name}: kernel {kernel_err:.2e}  baseline {base_err:.2e}  "
-          f"threshold {THRESHOLD:.1e}")
+    print(
+        f"\n  {name}: kernel {kernel_err:.2e}  baseline {base_err:.2e}  "
+        f"threshold {THRESHOLD:.1e}"
+    )
     assert kernel_err <= THRESHOLD, (
-        f"{name}: kernel {kernel_err:.2e} above threshold {THRESHOLD:.1e}")
+        f"{name}: kernel {kernel_err:.2e} above threshold {THRESHOLD:.1e}"
+    )
 
 
 def test_accuracy_under_jit():
@@ -142,6 +139,7 @@ def test_accuracy_under_jit():
 
 # ----------------------------------------------------------- gradient
 
+
 def test_gradient_matches_float64_reference(x64_on):
     x = np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64)
     g = jax.grad(lambda a: jnp.sum(stable_var(a, ddof=0)))(jnp.asarray(x))
@@ -152,6 +150,7 @@ def test_gradient_matches_float64_reference(x64_on):
 
 
 # ----------------------------------------------------------- bounds
+
 
 def test_n1_is_zero():
     assert float(stable_var(np.array([3.5], dtype=np.float32))) == 0.0
@@ -197,6 +196,7 @@ def test_ddof_n_on_identical_is_zero():
 
 # --------------------------------------------------------- dtype of I/O
 
+
 def test_float32_in_gives_float32_out():
     x = np.array([1.0, 2.0, 3.0], dtype=np.float32)
     assert stable_var(x).dtype == np.float32
@@ -216,15 +216,14 @@ def test_complex_in_gives_real():
 
 # ---- mutation tests: these fail if a step of the kernel is removed ----
 
+
 def test_shift_is_load_bearing():
     """Without the shift, the naive formula on the same data fails the
     identical-value case and the large-offset cases."""
-    import jax
     import jax.numpy as jnp
 
     x = np.array([1e10, 1e10, 1e10], dtype=np.float32)
-    naive = float(jnp.mean(jnp.asarray(x) ** 2)
-                  - jnp.mean(jnp.asarray(x)) ** 2)
+    naive = float(jnp.mean(jnp.asarray(x) ** 2) - jnp.mean(jnp.asarray(x)) ** 2)
     kernel = float(stable_var(x))
     assert abs(naive) > 1e6, "the naive formula must fail on identical 1e10"
     assert kernel == 0.0, "the kernel must give 0.0 on identical 1e10"
@@ -265,13 +264,11 @@ def test_second_centring_is_load_bearing():
     3.4e-7 / 8.8e-7 / 9.0e-7 / 2.8e-7 on D1-D4, the 4-step kernel gives
     1.2e-7 / 1.1e-7 / 1.4e-7 / 1.7e-7. D2 and D3 are above 2e-7 with the
     3-step, below with the 4-step."""
-    import jax
     import jax.numpy as jnp
 
     # The 2e-7 threshold is the eager threshold (item B). Under jit the
     # kernel itself is above it on three datasets, so the mutation test
     # must run in eager.
-    import jax.numpy as jnp
 
     for shape, ax, dist in [
         ((1000, 64), 0, lambda r: r.normal(1e3, 0.01, (1000, 64))),
