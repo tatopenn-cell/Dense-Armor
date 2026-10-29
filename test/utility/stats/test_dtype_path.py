@@ -147,3 +147,15 @@ def test_online_shrinkage_covariance_f32_state():
         s.learn_one({"v0": float(v[0]), "v1": float(v[1])})
     cov = s.sample_covariance()
     assert cov.shape == (2, 2)
+
+
+def test_online_shrinkage_sample_cov_dtype():
+    s32 = OnlineShrinkageCovariance(n_features=2, dtype=np.float32)
+    s64 = OnlineShrinkageCovariance(n_features=2)
+    rng = np.random.default_rng(0)
+    for _ in range(20):
+        v = rng.normal(0, 1, 2).astype(np.float32)
+        s32.learn_one({"v0": float(v[0]), "v1": float(v[1])})
+        s64.learn_one({"v0": float(v[0]), "v1": float(v[1])})
+    assert s32.sample_covariance().dtype == np.float32
+    assert s64.sample_covariance().dtype == np.float64

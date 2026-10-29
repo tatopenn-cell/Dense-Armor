@@ -74,7 +74,8 @@ class OnlineShrinkageCovariance(Transformer):
     def sample_covariance(self) -> np.ndarray:
         """The running sample covariance, ``p`` by ``p``."""
         p = self.n_features
-        s = np.zeros((p, p), dtype=float)
+        work = np.dtype(self.dtype) if self.dtype is not None else np.dtype(float)
+        s = np.zeros((p, p), dtype=work)
         for (i, j), cov in self._pairs.items():
             s[i, j] = cov.cov
             s[j, i] = cov.cov
