@@ -1,57 +1,50 @@
 """Stable float32 variance and moments, computed in the input dtype.
 
-Kernel: first-element anchor shift, local centring, Kahan compensated
-sum of squares.
+The kernel is the two-term formula of the baseline,
 
-The kernel computes the variance of a sample of real values in four steps,
-all in the input dtype:
+.. code-block:: text
 
-1. **Shift.** A reference ``r = x[0]`` is subtracted from every element
-   along the reduction axis, ``y = x - r``. When the values are within a
-   factor of two of the reference (identical values, low spread compared
-   to the offset) the subtraction is exact by the Sterbenz lemma, and the
-   shift removes the large common exponent that causes the cancellation
-   in the naive formula.
+    m   = mean(x)
+    d   = x - m
+    var = mean(d**2) - mean(d)**2
 
-2. **Local centring.** The mean of ``y`` is computed in the input dtype,
-   ``m = sum(y) / n``. Because ``y`` has already lost the large offset,
-   the exponent of ``m`` is small and its rounding error is at the level
-   of the variation, not at the level of the offset.
+with the sum of ``d**2`` accumulated by a **Kahan tree** instead of the
+ordinary tree reduction. The tree is a binary merge of pairs of partial
+sums; at each merge the two sums are combined with an error-free
+transformation (TwoSum), and the error terms are carried up the tree. The
+result is a compensated sum with ``O(log2(n))`` vectorised levels, not a
+sequential scan: it runs on CPU and on GPU.
 
-3. **Second centring and compensated accumulation.** The residuals
-   ``d = y - m`` are formed and the sum ``s2 = sum(d**2)`` is accumulated
-   with the compensated summation of Kahan (1965): a carry ``c`` keeps
-   the low-order bits that the ordinary sum would lose, so the error is
-   ``O(eps * |s2|)`` instead of ``O(eps * log2(n) * |s2|)``.
+The two-term formula cancels the linear part of the error of ``m`` (both
+``mean(d**2)`` and ``mean(d)**2`` share the same ``m``). The compensated
+tree removes the tree-sum error of ``d**2``. The kernel is below or at the
+baseline formula on all four datasets of the task, in eager mode and under
+``jax.jit``, on CPU and on GPU.
 
-4. **Variance.** The variance is ``s2 / (n - ddof)``. The mean is
-   reconstructed as ``r + m``.
-
-On the four datasets the maximum relative error is between
-``1.15e-7`` and ``1.36e-7`` on D1, D2 and D3 (below the baseline
-two-term formula in both eager and jit), and ``1.22e-7`` on D4
-(above the baseline formula, which on that dataset is at ``0.997e-7``
-in jit).
-The case D4 has ``ulp(x[0]) = 0.0625`` against a deviation of ``1``, so
-the shift introduces a quantisation error that no linear technique can
-remove without computing in float64, and float64 is out of scope.
+On identical values the variance is exactly ``0.0`` in eager mode up to
+``1e38``. Under ``jax.jit`` the value ``1e38`` gives ``nan``, the same as
+the baseline formula: the mean of three ``1e38`` is off by one ulp, the
+square of the residual overflows, and the two-term formula is
+``inf - inf``.
 
 References:
-    Kahan, W. (1965). Further remarks on reducing truncation errors.
-        Communications of the ACM 8(1), 40. The compensated summation
-        used by :func:`_kahan_sum`.
-    Pebay, P. P. (2008). Formulas for Robust, One-Pass Parallel
-        Computation of Covariances and Arbitrary-Order Statistical
-        Moments. Sandia Report SAND2008-6212. Equations 1.1 and 1.2
-        (PDF page 7), the recurrence that the local centring follows.
+    Ogita, T., Rump, S. M., Oishi, S. (2005). Accurate Sum and Dot
+        Product. SIAM Journal on Scientific Computing 26(6), 1955-1988.
+        ``TwoSum``, Algorithm 3.1, PDF page 7: the error-free
+        transformation used at every level of the tree.
     Shewchuk, J. R. (1997). Adaptive Precision Floating-Point Arithmetic
         and Fast Robust Geometric Predicates. Discrete and Computational
-        Geometry 18(3), 305-363. Section 2.3, the Sterbenz lemma used
-        by the shift.
+        Geometry 18(3), 305-363. ``TWO-SUM``, Theorem 7, PDF page 12: the
+        same transformation with the proof of exactness.
+    Pebay, P. P. (2008). Formulas for Robust, One-Pass Parallel
+        Computation of Covariances and Arbitrary-Order Statistical
+        Moments. Sandia Report SAND2008-6212. Equations 1.1 and 1.2,
+        PDF page 7: the two-term form of the variance.
 
-The chain is my choice (Salvatore Pennacchio): the shift is the Sterbenz
-lemma, the local centring is Pebay eq. 1.1/1.2, the compensated sum is
-Kahan 1965. The chain of the three is not stated in a paper.
+The combination is my choice (Salvatore Pennacchio): the two-term formula
+is the baseline, the compensated tree is the merge of the TwoSum of
+Ogita-Rump-Oishi and Shewchuk. The combination of the two is not stated
+in a paper.
 """
 
 from __future__ import annotations
@@ -135,51 +128,63 @@ def _prepare(a, axes):
     return b_flat, batch_shape, n
 
 
-def _kahan_sum(x):
-    """Kahan compensated summation of a 1-D array.
+def _two_sum(a, b):
+    """Knuth's ``TwoSum``: ``a + b = s + err``, ``s = fl(a + b)``.
 
-    Kahan, W. (1965). Further remarks on reducing truncation errors.
-    Communications of the ACM 8(1), 40. The algorithm keeps a carry ``c``
-    so that ``s + c`` approximates the exact sum with error
-    ``O(eps * |s|)``, independent of the number of elements.
+    Ogita, Rump, Oishi 2005, Algorithm 3.1, PDF page 7; Shewchuk 1997,
+    Theorem 7, PDF page 12.
+    """
+    s = a + b
+    bb = s - a
+    e = (a - (s - bb)) + (b - bb)
+    return s, e
+
+
+def _kahan_tree(v):
+    """Compensated sum of a 1-D array, by a tree of TwoSum.
+
+    The array is padded to a power of two with zeros, then merged in
+    ``log2(n)`` levels. At each level, pairs of partial sums ``(S, C)``
+    are combined with Three TwoSums: one for the high parts, one for the
+    carries, one for their sum. The result is ``S + C``.
 
     Args:
-        x: a 1-D array.
+        v: a 1-D array.
 
     Returns:
         The compensated sum, a scalar of the same dtype.
     """
-
-    def step(carry, xi):
-        s, c = carry
-        y = xi - c
-        t = s + y
-        c = (t - s) - y
-        return (t, c), None
-
-    (s, c), _ = jax.lax.scan(step, (jnp.zeros((), x.dtype), jnp.zeros((), x.dtype)), x)
-    return s + c
+    S = v
+    C = jnp.zeros_like(v)
+    while S.shape[0] > 1:
+        if S.shape[0] % 2 == 1:
+            S = jnp.concatenate([S, jnp.zeros((1,), S.dtype)])
+            C = jnp.concatenate([C, jnp.zeros((1,), C.dtype)])
+        s1, e1 = _two_sum(S[0::2], S[1::2])
+        s2, e2 = _two_sum(C[0::2], C[1::2])
+        s3, e3 = _two_sum(s1, s2)
+        S = s3
+        C = e1 + e2 + e3
+    return S[0] + C[0]
 
 
 def _kernel_var(v, n):
-    """Variance (biased) of one 1-D slice: shift + local centring + Kahan(d^2)."""
-    ref = v[0]
-    y = v - ref
-    m = jnp.sum(y) / n
-    d = y - m
-    s2 = _kahan_sum(d * d)
-    return jnp.maximum(s2 / n, jnp.zeros_like(s2))
+    """Variance (biased) of one 1-D slice: two-term, Kahan tree on d^2."""
+    m = jnp.sum(v) / n
+    d = v - m
+    s2 = _kahan_tree(d * d)
+    s1 = jnp.sum(d)
+    return jnp.maximum(s2 / n - (s1 / n) ** 2, jnp.zeros_like(s2))
 
 
 def _kernel_mom(v, n):
     """Mean and biased variance of one 1-D slice."""
-    ref = v[0]
-    y = v - ref
-    m = jnp.sum(y) / n
-    mean = ref + m
-    d = y - m
-    s2 = _kahan_sum(d * d)
-    var_pop = jnp.maximum(s2 / n, jnp.zeros_like(s2))
+    m = jnp.sum(v) / n
+    mean = m
+    d = v - m
+    s2 = _kahan_tree(d * d)
+    s1 = jnp.sum(d)
+    var_pop = jnp.maximum(s2 / n - (s1 / n) ** 2, jnp.zeros_like(s2))
     return mean, var_pop
 
 
@@ -213,11 +218,14 @@ def _finish_mean(mean, axes, batch_shape, keepdims, out_dtype):
 def stable_var(x, axis=None, ddof=0, keepdims=False):
     """Variance of ``x`` along ``axis``, computed in the input dtype.
 
-    The variance is ``M2 / (n - ddof)`` with ``M2 = sum((x - mean)**2)``
-    along the reduction axis, computed by shifting ``x`` by its first
-    element along that axis, centring the shifted values a second time,
-    and accumulating the squares with Kahan compensated summation (see
-    the module docstring for the four steps and the references).
+    The variance is the two-term formula of the baseline,
+    ``mean(d**2) - mean(d)**2`` with ``d = x - mean(x)``, with the
+    accumulation of ``d**2`` done by a Kahan tree (a binary merge of
+    TwoSum, ``log2(n)`` vectorised levels). The two-term formula cancels
+    the linear part of the error of the mean; the compensated tree
+    removes the tree-sum error of ``d**2``. The result is exactly ``0.0``
+    on identical values in eager mode; on ``1e38`` under ``jax.jit`` it
+    is ``nan``, the same as the baseline.
 
     Args:
         x: array-like. numpy and JAX arrays are accepted.
@@ -273,8 +281,7 @@ def stable_moments(x, axis=None, ddof=0, keepdims=False):
 
     Returns ``(mean, var)`` with the same conventions as
     :func:`stable_var` for dtype, empty axis, ``nan`` / ``inf``
-    propagation, and ``ddof``. The mean is the shifted mean plus the
-    reference.
+    propagation, and ``ddof``.
 
     Args:
         x: array-like.

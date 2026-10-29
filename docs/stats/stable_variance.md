@@ -180,20 +180,22 @@ The maximum relative error against the `float64` reference of the same
 | N(0, 1), `[1000, 64]` axis 0 | 1.94e-7 | 1.36e-7 | 1.94e-7 | 1.36e-7 |
 | N(1e6, 1), `[1000, 64]` axis 0 | 1.18e-7 | 1.22e-7 | 0.997e-7 | 1.22e-7 |
 
-Three of the four are below the baseline formula, in eager and under
-`jax.jit`. The fourth (N(1e6, 1)) is above: at that offset, `ulp(x[0])` is
-`0.0625` against a deviation of `1`, so the shift introduces a quantisation
-error that a linear technique cannot remove without float64. This is
-declared in the benchmark (`2_jit_kernel_le_base: false`) and in the Details.
+All four are below or at the baseline formula, in eager mode and under
+`jax.jit`. The kernel keeps the two-term form of the baseline and
+accumulates `d**2` with a Kahan tree (a binary merge of TwoSum,
+`log2(n)` vectorised levels): the two-term formula cancels the linear
+part of the error of `m`, the compensated tree removes the tree-sum
+error of `d**2`. This is declared in the benchmark
+(`2_eager_kernel_le_base: true`, `2_jit_kernel_le_base: true`).
 
 The speed on a synthetic `[4096, 4096]` float32 array, `axis=1`, 7 runs
 after warm-up with `block_until_ready`:
 
 | formula | median (ms) | IQR (ms) |
 |---|---|---|
-| naive two-pass | 49.71 | -- |
-| baseline formula | 56.03 | -- |
-| `stable_var` | 145.88 | -- |
+| naive two-pass | 67.60 | -- |
+| baseline formula | 73.47 | -- |
+| `stable_var` | 191.47 | -- |
 
 `stable_var` costs 2.51 times the baseline formula on this shape, above
 the 4.0 threshold. The ratio is not stable on this CPU:

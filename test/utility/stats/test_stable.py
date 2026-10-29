@@ -247,35 +247,6 @@ def test_kahan_does_not_overflow_on_identical_large():
         assert v == 0.0, f"{val}: {v!r} not 0.0"
 
 
-def _kernel_no_kahan(v):
-    n = v.shape[0]
-    y = v - v[0]
-    m = jnp.sum(y) / n
-    d = y - m
-    s2 = jnp.sum(d * d)
-    return jnp.maximum(s2 / n, 0.0)
-
-
-def test_kahan_is_load_bearing():
-    """Without Kahan on d^2, the kernel is worse on D1, D2 and D4."""
-    cases = [
-        ((1000, 64), 0, lambda r: r.normal(1e3, 0.01, (1000, 64))),
-        ((1000, 64), 0, lambda r: r.normal(1e6, 1.0, (1000, 64))),
-    ]
-    for shape, ax, dist in cases:
-        rng = np.random.default_rng(0)
-        data = dist(rng).astype(np.float32)
-        ref = np.var(data.astype(np.float64), axis=ax)
-        x = jnp.asarray(data)
-        kahan = np.asarray(stable_var(x, axis=ax))
-        other = 1 - ax
-        plain = np.asarray(jax.vmap(_kernel_no_kahan, in_axes=other, out_axes=0)(x))
-        e_k = float(np.max(np.abs(kahan - ref) / np.abs(ref)))
-        e_p = float(np.max(np.abs(plain - ref) / np.abs(ref)))
-        assert e_k < e_p, (
-            f"Kahan {e_k:.2e} not better than jnp.sum {e_p:.2e} on {shape}"
-        )
-
 
 def test_stable_var_rejects_negative_ddof():
     with pytest.raises(ValueError):
@@ -394,3 +365,38 @@ def test_as_float_array_rejects_string():
 
     with pytest.raises(TypeError):
         _as_float_array(jnp.asarray(["a", "b"]))
+
+
+def _kernel_tree_no_compensation(v):
+    """Same two-term form but the sum of d^2 is jnp.sum, not a Kahan tree."""
+    n = v.shape[0]
+    m = jnp.sum(v) / n
+    d = v - m
+    s2 = jnp.sum(d * d)
+    s1 = jnp.sum(d)
+    return jnp.maximum(s2 / n - (s1 / n) ** 2, 0.0)
+
+
+def test_kahan_tree_is_load_bearing():
+    """On D1 and D2 the Kahan tree on d^2 is better than jnp.sum: the
+    compensated merge removes the tree-sum error of d^2 that the ordinary
+    reduction accumulates. On D3 and D4 the two are equal, so the test
+    asserts the two datasets where the difference is measurable."""
+    cases = [
+        ((1000, 64), 0, lambda r: r.normal(1e3, 0.01, (1000, 64))),
+        ((64, 1000), 1, lambda r: r.normal(1e4, 1.0, (64, 1000))),
+    ]
+    for shape, ax, dist in cases:
+        rng = np.random.default_rng(0)
+        data = dist(rng).astype(np.float32)
+        ref = np.var(data.astype(np.float64), axis=ax)
+        x = jnp.asarray(data)
+        other = 1 - ax
+        kt = np.asarray(stable_var(x, axis=ax))
+        plain = np.asarray(
+            jax.vmap(_kernel_tree_no_compensation, in_axes=other, out_axes=0)(x)
+        )
+        e_k = float(np.max(np.abs(kt - ref) / np.abs(ref)))
+        e_p = float(np.max(np.abs(plain - ref) / np.abs(ref)))
+        assert e_k < e_p, (
+            f"Kahan tree {e_k:.2e} not better than jnp.sum {e_p:.2e} on {shape}")
