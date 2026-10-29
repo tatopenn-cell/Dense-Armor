@@ -362,9 +362,11 @@ def test_as_float_array_rejects_complex():
 
 
 def test_result_dtype_from_python_list():
+    """A list of Python floats is float64 in numpy and in jax; the kernel
+    keeps the dtype of the input, so the result is float64."""
     x = [1.0, 2.0, 3.0]
     out = stable_var(x)
-    assert out.dtype == np.float32
+    assert out.dtype == np.float64
 
 
 def test_stable_var_bfloat16_promotes():
@@ -383,3 +385,9 @@ def test_stable_var_float64_without_x64():
         assert out.dtype == np.float32
     finally:
         jax.config.update("jax_enable_x64", old)
+
+
+def test_as_float_array_rejects_string():
+    from dense_armor.utility.stats.stable import _as_float_array
+    with pytest.raises(TypeError):
+        _as_float_array(jnp.asarray(["a", "b"]))
