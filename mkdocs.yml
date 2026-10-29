@@ -182,7 +182,6 @@ nav:
           - Statistics:
               - stats/index.md
               - Moments: stats/moments.md
-              - Stable variance: stats/stable_variance.md
               - Robust statistics: stats/robust.md
               - Student-t: stats/student_t.md
               - Online Gaussian mixture: stats/mixture.md
@@ -226,6 +225,7 @@ nav:
       - Composable attention: neural/composable_attention.md
       - Continual learning: neural/continual_learning.md
       - Mixture of experts and test-time compute: neural/moe_testtime.md
+      - Stable variance in float32: stats/stable_variance.md
   - Library:
       - Home: index.md
       - Getting Started: getting-started.md
