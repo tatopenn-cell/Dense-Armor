@@ -152,6 +152,7 @@ def run_speed(smoke):
     shape = (64, 64) if smoke else SPEED_SHAPE
     rng = np.random.default_rng(0)
     x = jnp.asarray(rng.normal(0, 1, shape).astype(np.float32))
+
     def _best(fn):
         best = None
         for _ in range(3):
@@ -159,6 +160,7 @@ def run_speed(smoke):
             if best is None or r["median_ms"] < best["median_ms"]:
                 best = r
         return best
+
     res = {
         "shape": list(shape),
         "axis": 1,
