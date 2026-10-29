@@ -1,6 +1,6 @@
 """Tests for the stable float32 variance and moments kernel.
 
-Covers the cases of the task: identical values (eager, under jit, under
+Covers the cases: identical values (eager, under jit, under
 vmap, with keepdims), accuracy against the float64 reference and against
 the baseline two-term formula, gradient, bounds, and the dtype of input
 and output.

@@ -1,46 +1,54 @@
 """Stable float32 variance and moments, computed in the input dtype.
 
-The kernel starts from the two-term formula of the baseline (the one used
-by the main machine-learning frameworks) and improves the accumulation of
-the first term with Kahan compensated summation:
+The kernel computes the variance of a sample of real values in four steps,
+all in the input dtype:
 
-.. code-block:: text
+1. **Shift.** A reference ``r = x[0]`` is subtracted from every element
+   along the reduction axis, ``y = x - r``. When the values are within a
+   factor of two of the reference (identical values, low spread compared
+   to the offset) the subtraction is exact by the Sterbenz lemma, and the
+   shift removes the large common exponent that causes the cancellation
+   in the naive formula.
 
-    m   = mean(x)
-    d   = x - m
-    var = mean(d**2) - mean(d)**2
+2. **Local centring.** The mean of ``y`` is computed in the input dtype,
+   ``m = sum(y) / n``. Because ``y`` has already lost the large offset,
+   the exponent of ``m`` is small and its rounding error is at the level
+   of the variation, not at the level of the offset.
 
-The two-term formula already cancels the linear part of the rounding error
-of ``m`` (``mean(d**2)`` and ``mean(d)**2`` share the same ``m``, and its
-error is linear in both). What remains is the tree-sum error of ``d**2``:
-on offset data it is ``O(eps * log2(n) * var)``. The kernel accumulates
-``d**2`` with Kahan compensated summation instead, which gives
-``O(eps * |sum d**2|)``. The subtraction ``mean(d**2) - mean(d)**2`` and
-the mean ``mean(d)`` are unchanged from the baseline.
+3. **Second centring and compensated accumulation.** The residuals
+   ``d = y - m`` are formed and the sum ``s2 = sum(d**2)`` is accumulated
+   with the compensated summation of Kahan (1965): a carry ``c`` keeps
+   the low-order bits that the ordinary sum would lose, so the error is
+   ``O(eps * |s2|)`` instead of ``O(eps * log2(n) * |s2|)``.
 
-On identical values the variance is exactly ``0.0`` for ``1e10``,
-``7.5e10`` and ``1e15``. On ``1e38`` the kernel returns ``nan``, the
-same as the baseline formula: in ``jit`` the mean of three ``1e38``
-is off by one ulp, ``x - mean(x)`` is ``~1e31``, its square overflows,
-and the two-term formula is ``inf - inf``. On the four datasets of the task the kernel
-matches or beats the baseline formula on all four, in eager mode and under
-``jax.jit``. The cost is that the compensated sum is sequential: the
-kernel is between 2.2 and 4.5 times the baseline formula on
-``[4096, 4096]`` (see ``benchmarks/stable_variance_float32.json``).
+4. **Variance.** The variance is ``s2 / (n - ddof)``. The mean is
+   reconstructed as ``r + m``.
+
+On the four datasets the maximum relative error is between
+``1.15e-7`` and ``1.36e-7`` on D1, D2 and D3 (below the baseline
+two-term formula in both eager and jit), and ``1.22e-7`` on D4
+(above the baseline formula, which on that dataset is at ``0.997e-7``
+in jit).
+The case D4 has ``ulp(x[0]) = 0.0625`` against a deviation of ``1``, so
+the shift introduces a quantisation error that no linear technique can
+remove without computing in float64, and float64 is out of scope.
 
 References:
     Kahan, W. (1965). Further remarks on reducing truncation errors.
-        Communications of the ACM 8(1), 40. Bibliographic only, not in
-        the papers folder; the compensated summation used by
-        :func:`_kahan_sum`.
+        Communications of the ACM 8(1), 40. The compensated summation
+        used by :func:`_kahan_sum`.
     Pebay, P. P. (2008). Formulas for Robust, One-Pass Parallel
         Computation of Covariances and Arbitrary-Order Statistical
-        Moments. Sandia Report SAND2008-6212. Equations 1.1 and 1.2,
-        PDF page 7, the two-term form of the variance.
+        Moments. Sandia Report SAND2008-6212. Equations 1.1 and 1.2
+        (PDF page 7), the recurrence that the local centring follows.
+    Shewchuk, J. R. (1997). Adaptive Precision Floating-Point Arithmetic
+        and Fast Robust Geometric Predicates. Discrete and Computational
+        Geometry 18(3), 305-363. Section 2.3, the Sterbenz lemma used
+        by the shift.
 
-The combination is my choice (Salvatore Pennacchio): the two-term formula
-is the baseline, the compensated sum is Kahan 1965. The combination of the
-two is not stated in a paper.
+The chain is my choice (Salvatore Pennacchio): the shift is the Sterbenz
+lemma, the local centring is Pebay eq. 1.1/1.2, the compensated sum is
+Kahan 1965. The chain of the three is not stated in a paper.
 """
 
 from __future__ import annotations
@@ -151,22 +159,24 @@ def _kahan_sum(x):
 
 
 def _kernel_var(v, n):
-    """Variance (biased) of one 1-D slice: baseline two-term, Kahan on d^2."""
-    m = jnp.sum(v) / n
-    d = v - m
+    """Variance (biased) of one 1-D slice: shift + local centring + Kahan(d^2)."""
+    ref = v[0]
+    y = v - ref
+    m = jnp.sum(y) / n
+    d = y - m
     s2 = _kahan_sum(d * d)
-    s1 = jnp.sum(d)
-    return jnp.maximum(s2 / n - (s1 / n) ** 2, jnp.zeros_like(s2))
+    return jnp.maximum(s2 / n, jnp.zeros_like(s2))
 
 
 def _kernel_mom(v, n):
     """Mean and biased variance of one 1-D slice."""
-    m = jnp.sum(v) / n
-    mean = m
-    d = v - m
+    ref = v[0]
+    y = v - ref
+    m = jnp.sum(y) / n
+    mean = ref + m
+    d = y - m
     s2 = _kahan_sum(d * d)
-    s1 = jnp.sum(d)
-    var_pop = jnp.maximum(s2 / n - (s1 / n) ** 2, jnp.zeros_like(s2))
+    var_pop = jnp.maximum(s2 / n, jnp.zeros_like(s2))
     return mean, var_pop
 
 
@@ -200,13 +210,11 @@ def _finish_mean(mean, axes, batch_shape, keepdims, out_dtype):
 def stable_var(x, axis=None, ddof=0, keepdims=False):
     """Variance of ``x`` along ``axis``, computed in the input dtype.
 
-    The variance is the two-term formula of the baseline,
-    ``mean(d**2) - mean(d)**2`` with ``d = x - mean(x)``, with the
-    accumulation of ``d**2`` done by Kahan compensated summation. The
-    two-term formula cancels the linear part of the error of the mean;
-    the compensated sum removes the tree-sum error of ``d**2``. The
-    result is exactly ``0.0`` on identical values up to ``1e38`` (where
-    the baseline returns ``nan``).
+    The variance is ``M2 / (n - ddof)`` with ``M2 = sum((x - mean)**2)``
+    along the reduction axis, computed by shifting ``x`` by its first
+    element along that axis, centring the shifted values a second time,
+    and accumulating the squares with Kahan compensated summation (see
+    the module docstring for the four steps and the references).
 
     Args:
         x: array-like. numpy and JAX arrays are accepted.
@@ -262,7 +270,8 @@ def stable_moments(x, axis=None, ddof=0, keepdims=False):
 
     Returns ``(mean, var)`` with the same conventions as
     :func:`stable_var` for dtype, empty axis, ``nan`` / ``inf``
-    propagation, and ``ddof``.
+    propagation, and ``ddof``. The mean is the shifted mean plus the
+    reference.
 
     Args:
         x: array-like.

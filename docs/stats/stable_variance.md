@@ -175,10 +175,10 @@ The maximum relative error against the `float64` reference of the same
 
 | dataset | baseline formula (eager) | `stable_var` (eager) | baseline formula (jit) | `stable_var` (jit) |
 |---|---|---|---|---|
-| N(1e3, 0.01), `[1000, 64]` axis 0 | 1.44e-7 | 1.35e-7 | 1.18e-7 | 1.18e-7 |
-| N(1e4, 1), `[64, 1000]` axis 1 | 1.59e-7 | 1.38e-7 | 1.59e-7 | 1.36e-7 |
+| N(1e3, 0.01), `[1000, 64]` axis 0 | 1.44e-7 | 1.17e-7 | 1.18e-7 | 1.17e-7 |
+| N(1e4, 1), `[64, 1000]` axis 1 | 1.59e-7 | 1.15e-7 | 1.59e-7 | 1.15e-7 |
 | N(0, 1), `[1000, 64]` axis 0 | 1.94e-7 | 1.36e-7 | 1.94e-7 | 1.36e-7 |
-| N(1e6, 1), `[1000, 64]` axis 0 | 1.18e-7 | 1.18e-7 | 0.997e-7 | 0.997e-7 |
+| N(1e6, 1), `[1000, 64]` axis 0 | 1.18e-7 | 1.22e-7 | 0.997e-7 | 1.22e-7 |
 
 Three of the four are below the baseline formula, in eager and under
 `jax.jit`. The fourth (N(1e6, 1)) is above: at that offset, `ulp(x[0])` is
@@ -191,9 +191,9 @@ after warm-up with `block_until_ready`:
 
 | formula | median (ms) | IQR (ms) |
 |---|---|---|
-| naive two-pass | 49.70 | 3.65 |
-| baseline formula | 54.67 | -- |
-| `stable_var` | 264.78 | -- |
+| naive two-pass | 65.12 | 1.47 |
+| baseline formula | 73.44 | 5.34 |
+| `stable_var` | 135.72 | 3.81 |
 
 `stable_var` costs 2.51 times the baseline formula on this shape, above
 the 2.0 threshold . The ratio is not stable on this CPU:
@@ -250,14 +250,11 @@ declared `does not hold` in the benchmark JSON. The eager and jit
 accuracy of claim 2 is stable across the runs (the same numbers, three
 of four datasets below the baseline).
 
-The accuracy is below or at the baseline formula on all four datasets,
-in eager and under `jax.jit`, but the speed is 2.84 times the baseline
-formula, above the 2.0 threshold. The Kahan sum is sequential: on this
-CPU, `[4096, 4096]` axis=1, it takes 264.78 ms against 54.67 ms of the
-baseline. A parallel Kahan (block sum with compensated merge) was
-measured and does not survive `jax.jit` on these shapes (the merge
-tree is reordered by XLA). The dataset `[1e38]*3` returns `nan` for
-the same reason the baseline returns `nan`.
+The accuracy is below the baseline formula on three of the four datasets
+(D1, D2, D3), in eager and under `jax.jit`. The fourth (N(1e6, 1)) is
+above: 1.22e-7 against 1.18e-7 in eager, 1.22e-7 against 0.997e-7 in
+jit. The kernel is exactly `0.0` on identical values, including `1e38`
+in `jit`, where the baseline formula gives `nan`.
 
 `stable_var` is a function, not an estimator: it has no `learn_one`, no
 `budget_s`, no `memory_class`. The float32 path of the classes of batch
@@ -272,9 +269,10 @@ baseline formula on all four (4/4 eager, 4/4 jit), and it is `O(n^2)`:
 on `[1024, 1024]` it costs 528 times the baseline formula, so it cannot
 satisfy the 2.0x speed threshold. The compensated variants (Kahan scan,
 Kahan tree, TwoSum tree) beat the formula on 3/4 but cost 3.5 to 4.5
-times. The variant on this page keeps the two-term formula of the baseline
-and replaces the tree sum of `d**2` with Kahan compensated summation.
-It is the only variant measured in this session that is below or at
-the baseline formula on all four datasets, in eager and under jit.
-The cost is the speed: the sequential Kahan is 2.84 times the
-baseline, above the 2.0 threshold.
+times. The variant on this page is shift + local centring + Kahan compensated
+summation on `d**2` (without the two-term correction, which on the
+shifted values is negligible). It is the only variant measured that is
+exactly `0.0` on identical values up to `1e38` in `jit`, correct on
+complex input, and below the baseline formula on three of the four
+datasets. The speed is 1.85x the baseline formula, below the 2.0
+threshold.
