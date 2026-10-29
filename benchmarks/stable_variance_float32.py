@@ -79,6 +79,7 @@ def identical_cases():
         ("f32_7_5e10", np.float32, 7.5e10),
         ("f32_1e15", np.float32, 1e15),
         ("f32_1e38", np.float32, 1e38),
+        ("c64_7_5e10", np.complex64, 7.5e10 + 7.5e10j),
     ]
 
 

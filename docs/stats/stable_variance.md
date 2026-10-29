@@ -191,9 +191,9 @@ after warm-up with `block_until_ready`:
 
 | formula | median (ms) | IQR (ms) |
 |---|---|---|
-| naive two-pass | 65.12 | 1.47 |
-| baseline formula | 73.44 | 5.34 |
-| `stable_var` | 135.72 | 3.81 |
+| naive two-pass | 48.19 | -- |
+| baseline formula | 54.38 | -- |
+| `stable_var` | 137.54 | -- |
 
 `stable_var` costs 2.51 times the baseline formula on this shape, above
 the 2.0 threshold . The ratio is not stable on this CPU:
@@ -254,7 +254,9 @@ The accuracy is below the baseline formula on three of the four datasets
 (D1, D2, D3), in eager and under `jax.jit`. The fourth (N(1e6, 1)) is
 above: 1.22e-7 against 1.18e-7 in eager, 1.22e-7 against 0.997e-7 in
 jit. The kernel is exactly `0.0` on identical values, including `1e38`
-in `jit`, where the baseline formula gives `nan`.
+and `complex64` in `jit`, where the baseline formula gives `nan`.
+The speed is above the 2.0 threshold: the Kahan sum is sequential and
+the ratio varied between 1.85 and 2.53 across the runs of this CPU.
 
 `stable_var` is a function, not an estimator: it has no `learn_one`, no
 `budget_s`, no `memory_class`. The float32 path of the classes of batch
