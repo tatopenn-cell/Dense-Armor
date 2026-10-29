@@ -170,7 +170,7 @@ below the 2.0 threshold of the task.
 
 ### Choices
 
-The four-step chain is our choice. None of the three papers states it as
+The four-step chain is my choice. None of the three papers states it as
 a variance kernel. Each step is in a paper (the shift is the Sterbenz
 lemma, the two-term form is Pebay eq. 1.4 specialized to a singleton, the
 residual uses the TwoSum of Ogita-Rump-Oishi Algorithm 3.1 and Shewchuk

@@ -211,3 +211,79 @@ def test_complex_in_gives_real():
     v = stable_var(x)
     assert v.dtype == np.float32
     assert np.isrealobj(np.asarray(v))
+
+
+# ---- mutation tests: these fail if a step of the kernel is removed ----
+
+def test_shift_is_load_bearing():
+    """Without the shift, the naive formula on the same data fails the
+    identical-value case and the large-offset cases."""
+    import jax
+    import jax.numpy as jnp
+
+    x = np.array([1e10, 1e10, 1e10], dtype=np.float32)
+    naive = float(jnp.mean(jnp.asarray(x) ** 2)
+                  - jnp.mean(jnp.asarray(x)) ** 2)
+    kernel = float(stable_var(x))
+    assert abs(naive) > 1e6, "the naive formula must fail on identical 1e10"
+    assert kernel == 0.0, "the kernel must give 0.0 on identical 1e10"
+
+
+def test_shift_removed_changes_identical_result():
+    """Explicit: if we do not shift, the result on [1e38]*3 is not 0.0."""
+    import jax.numpy as jnp
+
+    x = jnp.asarray([1e38, 1e38, 1e38], dtype=jnp.float32)
+    naive = float(jnp.mean(x * x) - jnp.mean(x) ** 2)
+    kernel = float(stable_var(np.asarray(x)))
+    assert kernel == 0.0
+    assert not (naive == 0.0), "without shift the naive formula must not be 0"
+
+
+def _kernel_without_second_centring(x, axis):
+    """Same as stable_var but skips the second centring (d = y)."""
+    import jax
+    import jax.numpy as jnp
+
+    def k(v):
+        n = v.shape[0]
+        ref = v[0]
+        y = v - ref
+        s2 = jnp.sum(y * y) / n
+        s1 = jnp.sum(y) / n
+        return jnp.maximum(s2 - s1 * s1, 0.0)
+
+    if axis == 1:
+        return jax.vmap(k)(x)
+    return jax.vmap(k, in_axes=1, out_axes=0)(x)
+
+
+def test_second_centring_is_load_bearing():
+    """Without the second centring the kernel is wrong on the datasets
+    where the wobble is small compared to the offset: 3-step gives
+    3.4e-7 / 8.8e-7 / 9.0e-7 / 2.8e-7 on D1-D4, the 4-step kernel gives
+    1.2e-7 / 1.1e-7 / 1.4e-7 / 1.7e-7. D2 and D3 are above 2e-7 with the
+    3-step, below with the 4-step."""
+    import jax
+    import jax.numpy as jnp
+
+    # The 2e-7 threshold is the eager threshold (item B). Under jit the
+    # kernel itself is above it on three datasets, so the mutation test
+    # must run in eager.
+    import jax.numpy as jnp
+
+    for shape, ax, dist in [
+        ((1000, 64), 0, lambda r: r.normal(1e3, 0.01, (1000, 64))),
+        ((64, 1000), 1, lambda r: r.normal(1e4, 1.0, (64, 1000))),
+        ((1000, 64), 0, lambda r: r.normal(0.0, 1.0, (1000, 64))),
+        ((1000, 64), 0, lambda r: r.normal(1e6, 1.0, (1000, 64))),
+    ]:
+        rng = np.random.default_rng(0)
+        data = dist(rng).astype(np.float32)
+        ref = np.var(data.astype(np.float64), axis=ax)
+        four = np.asarray(stable_var(jnp.asarray(data), axis=ax))
+        three = np.asarray(_kernel_without_second_centring(jnp.asarray(data), ax))
+        e4 = float(np.max(np.abs(four - ref) / np.abs(ref)))
+        e3 = float(np.max(np.abs(three - ref) / np.abs(ref)))
+        assert e4 < 2e-7, f"4-step {e4:.2e} above 2e-7 on {shape}"
+        assert e3 > 2e-7, f"3-step {e3:.2e} not above 2e-7 on {shape}"

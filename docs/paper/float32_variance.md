@@ -194,10 +194,10 @@ For maximum transparency and compliance with professional open-source
 engineering standards, the following architectural blueprint has been
 committed to the official codebase:
 
-    NOTE ON IMPLEMENTATION (Our Choice - Architectural Shift & Compensation):
+    NOTE ON IMPLEMENTATION (My Choice - Architectural Shift & Compensation):
 
     To prevent catastrophic cancellation in float32 data arrays where the
-    mean magnitude dwarfs the population variance, we implement a custom,
+    mean magnitude dwarfs the population variance, I implement a custom,
     non-sequential two-pass algorithm optimized for XLA vector pipelines.
 
     References:

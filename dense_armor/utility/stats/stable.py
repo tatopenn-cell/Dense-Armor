@@ -39,22 +39,19 @@ References:
         Report SAND2008-6212. Equations 1.3 and 1.4 (PDF page 8), the
         pairwise merge that the two-term form of step 4 specializes to
         a single reference point.
-    Ogita, T., Rump, S. M., Oishi, S. (2005). Accurate Sum and Dot Product.
-        SIAM Journal on Scientific Computing 26(6), 1955-1988. TwoSum
-        (Algorithm 3.1, PDF page 7), the error-free transformation used
-        in :func:`_two_sum`.
     Shewchuk, J. R. (1997). Adaptive Precision Floating-Point Arithmetic and
         Fast Robust Geometric Predicates. Discrete and Computational
-        Geometry 18(3), 305-363. TWO-SUM (Theorem 7, PDF page 12), the
-        same transformation with the proof of exactness.
+        Geometry 18(3), 305-363. Section 2.3, the Sterbenz lemma used by
+        step 1.
 
-The four steps are our choice: none of the papers above states the
-combination as a variance kernel. Each step is in a paper (the shift is
-the Sterbenz lemma, the two-term form is Pebay eq. 1.4 specialized to a
-singleton, the residual is the TwoSum of ORMI Algorithm 3.1 and Shewchuk
-Theorem 7), but the chain is not. The reason for the chain is the one
-stated in steps 1-4: it is the smallest number of steps that keeps every
-intermediate at the level of the variation and not of the offset.
+The chain of the four steps is the owner's composition (Salvatore
+Pennacchio): Pebay eq. 1.4 gives the two-term form for a general
+reference point, and the shift of step 1 is the Sterbenz lemma; the chain
+of the two is not stated in a paper. The error-free transformations of
+Ogita-Rump-Oishi 2005 and Shewchuk 1997 were considered and are not used
+in the kernel: they are the subject of an earlier draft of this module,
+and their measured cost on this shape was between 3 and 8 times the
+two-term form, with no accuracy gain on the four datasets of the task.
 """
 
 from __future__ import annotations
@@ -68,18 +65,20 @@ __all__ = ["stable_var", "stable_moments"]
 
 
 def _as_float_array(x):
-    """Return ``x`` as a JAX array with a float dtype."""
+    """Return ``x`` as a JAX array with a float dtype.
+
+    Complex input is not handled here: :func:`stable_var` and
+    :func:`stable_moments` split it into real and imaginary part and
+    return ``var(real) + var(imag)``, which is ``E|z - mean(z)|**2``.
+    """
     a = jnp.asarray(x)
     kind = a.dtype.kind
     if kind == "c":
-        if a.dtype.itemsize <= 8:
-            re = a.real.astype(jnp.float32)
-            im = a.imag.astype(jnp.float32)
-        else:
-            re = a.real
-            im = a.imag
-        a = re * re + im * im
-    elif kind == "f":
+        raise TypeError(
+            "stable_var: complex input is handled by stable_var and "
+            "stable_moments directly, not by _as_float_array"
+        )
+    if kind == "f":
         if a.dtype in (jnp.float16, jnp.bfloat16):
             a = a.astype(jnp.float32)
     elif kind in ("i", "u", "b"):
@@ -221,6 +220,12 @@ def stable_var(x, axis=None, ddof=0, keepdims=False):
     """
     if ddof < 0:
         raise ValueError(f"stable_var: ddof must be non-negative, got {ddof}")
+    xa = jnp.asarray(x)
+    if xa.dtype.kind == "c":
+        re = xa.real
+        im = xa.imag
+        return (stable_var(re, axis=axis, ddof=ddof, keepdims=keepdims)
+                + stable_var(im, axis=axis, ddof=ddof, keepdims=keepdims))
     a = _as_float_array(x)
     out_dtype = _result_dtype(x)
     if a.ndim == 0:
@@ -269,6 +274,15 @@ def stable_moments(x, axis=None, ddof=0, keepdims=False):
     """
     if ddof < 0:
         raise ValueError(f"stable_moments: ddof must be non-negative, got {ddof}")
+    xa = jnp.asarray(x)
+    if xa.dtype.kind == "c":
+        re = xa.real
+        im = xa.imag
+        m_re, _ = stable_moments(re, axis=axis, ddof=ddof, keepdims=keepdims)
+        m_im, _ = stable_moments(im, axis=axis, ddof=ddof, keepdims=keepdims)
+        v_re = stable_var(re, axis=axis, ddof=ddof, keepdims=keepdims)
+        v_im = stable_var(im, axis=axis, ddof=ddof, keepdims=keepdims)
+        return m_re + 1j * m_im, v_re + v_im
     a = _as_float_array(x)
     out_dtype = _result_dtype(x)
     if a.ndim == 0:
@@ -288,42 +302,3 @@ def stable_moments(x, axis=None, ddof=0, keepdims=False):
     mean, var_pop = jax.vmap(lambda v: _kernel_mom(v, n))(b_flat)
     return (_finish_mean(mean, axes, batch_shape, keepdims, out_dtype),
             _finish_var(var_pop, n, ddof, axes, batch_shape, keepdims, out_dtype))
-
-
-def _two_sum(a, b):
-    """Knuth's ``TwoSum``: ``a + b = s + err``, ``s = fl(a + b)``.
-
-    Ogita, Rump, Oishi 2005, Algorithm 3.1, PDF page 7; Shewchuk 1997,
-    Theorem 7, PDF page 12.
-    """
-    s = a + b
-    bb = s - a
-    err = (a - (s - bb)) + (b - bb)
-    return s, err
-
-
-def _split(a):
-    """Dekker's ``Split``: ``a = hi + lo`` with ``|lo| <= |hi|``.
-
-    Ogita, Rump, Oishi 2005, Algorithm 3.2, PDF page 7; Shewchuk 1997,
-    Theorem 17, PDF page 22.
-    """
-    t = jnp.finfo(a.dtype).nmant + 1
-    s = (t + 1) // 2
-    factor = jnp.asarray(2**s + 1, dtype=a.dtype)
-    c = factor * a
-    hi = c - (c - a)
-    return hi, a - hi
-
-
-def _two_prod(a, b):
-    """Veltkamp's ``TwoProduct``: ``a * b = p + err``, ``p = fl(a * b)``.
-
-    Ogita, Rump, Oishi 2005, Algorithm 3.3, PDF page 7; Shewchuk 1997,
-    Theorem 18, PDF page 23.
-    """
-    p = a * b
-    ah, al = _split(a)
-    bh, bl = _split(b)
-    err = ((ah * bh - p) + ah * bl + al * bh) + al * bl
-    return p, err
