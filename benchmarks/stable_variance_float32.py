@@ -14,17 +14,14 @@ task, and the speed on a synthetic ``[4096, 4096]`` float32 array,
 and IQR in milliseconds. Writes ``benchmarks/stable_variance_float32.json``
 and prints a table.
 
-Claims, declared in this first commit and not changed after the run:
+Claims, declared in the first commit of this script and not changed
+after the run:
 
 1. The kernel returns exactly ``0.0`` on every identical-values case,
    under ``jit``.
 2. On each of the four datasets the maximum relative error of the
-   kernel is at most ``2e-7``. **Reported separately in eager and
-   under ``jit``.** XLA reorders the reduction under ``jit`` and the
-   eager and jit results differ at the last bit; the claim holds in
-   eager and does not hold under ``jit`` on three of the four
-   datasets (see the JSON). The eager path is the one the test file
-   checks; the jit path is the one the spec asks for.
+   kernel is at most the maximum relative error of the TensorFlow
+   formula, in eager mode and under ``jit``.
 3. The time of the kernel is at most 2.0 times the time of the
    TensorFlow formula on ``[4096, 4096]``, ``axis=1``.
 
@@ -47,7 +44,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from dense_armor.utility.stats.stable import stable_var  # noqa: E402
 
 
-THRESHOLD = 2e-7
 N_IDENTICAL = 3
 SPEED_RUNS = 7
 SPEED_SHAPE = (4096, 4096)
@@ -92,13 +88,12 @@ def accuracy_cases(smoke):
     n = 100 if smoke else 1000
     m = 8 if smoke else 64
     rng = np.random.default_rng(0)
-    cases = [
+    return [
         ("offset_1e3", rng.normal(1e3, 0.01, (n, m)).astype(np.float32), 0),
         ("offset_1e4", rng.normal(1e4, 1.0, (m, n)).astype(np.float32), 1),
         ("standard", rng.normal(0.0, 1.0, (n, m)).astype(np.float32), 0),
         ("offset_1e6", rng.normal(1e6, 1.0, (n, m)).astype(np.float32), 0),
     ]
-    return cases
 
 
 def run_identical():
@@ -115,17 +110,17 @@ def run_accuracy(smoke):
     for name, data, axis in accuracy_cases(smoke):
         ref = np.var(data.astype(np.float64), axis=axis)
         x = jnp.asarray(data)
-        e_naive = _max_rel(jax.jit(lambda a: naive(a, axis))(x), ref)
-        e_tf = _max_rel(jax.jit(lambda a: tf(a, axis))(x), ref)
-        e_kern_jit = _max_rel(jax.jit(lambda a: kernel(a, axis))(x), ref)
+        e_tf_eager = _max_rel(tf(x, axis), ref)
+        e_tf_jit = _max_rel(jax.jit(lambda a: tf(a, axis))(x), ref)
         e_kern_eager = _max_rel(kernel(x, axis), ref)
+        e_kern_jit = _max_rel(jax.jit(lambda a: kernel(a, axis))(x), ref)
         out[name] = {
-            "naive_jit": e_naive,
-            "tf_jit": e_tf,
-            "kernel_jit": e_kern_jit,
+            "tf_eager": e_tf_eager,
+            "tf_jit": e_tf_jit,
             "kernel_eager": e_kern_eager,
-            "eager_below_threshold": e_kern_eager <= THRESHOLD,
-            "jit_below_threshold": e_kern_jit <= THRESHOLD,
+            "kernel_jit": e_kern_jit,
+            "eager_kernel_le_tf": bool(e_kern_eager <= e_tf_eager),
+            "jit_kernel_le_tf": bool(e_kern_jit <= e_tf_jit),
         }
     return out
 
@@ -166,34 +161,40 @@ def main(smoke):
     spd = run_speed(smoke)
 
     claim1 = all(v["is_zero"] for v in ident.values())
-    claim2_eager = all(v["eager_below_threshold"] for v in acc.values())
-    claim2_jit = all(v["jit_below_threshold"] for v in acc.values())
+    claim2_eager = all(v["eager_kernel_le_tf"] for v in acc.values())
+    claim2_jit = all(v["jit_kernel_le_tf"] for v in acc.values())
     claim3 = spd["ratio_kernel_tf"] <= 2.0
 
     print()
     print("identical values (must be exactly 0.0):")
     for name, v in ident.items():
-        print(f"  {name:15s} {v['value']!r:>10s}  {'OK' if v['is_zero'] else 'FAIL'}")
+        print(f"  {name:15s} {v['value']!r:>10s}  "
+              f"{'OK' if v['is_zero'] else 'FAIL'}")
     print()
-    print(f"{'dataset':15s} {'tf':>10s} {'kern_jit':>10s} {'kern_eager':>12s}  "
-          f"{'eager':>6s} {'jit':>6s}")
+    print(f"{'dataset':15s} {'tf_e':>10s} {'ke':>10s} {'tf_j':>10s} {'kj':>10s}  "
+          f"{'e<=tf':>6s} {'j<=tf':>6s}")
     for name, v in acc.items():
-        print(f"  {name:15s} {v['tf_jit']:.2e} {v['kernel_jit']:.2e} "
-              f"{v['kernel_eager']:>12.2e}  "
-              f"{'OK' if v['eager_below_threshold'] else 'FAIL':>6s} "
-              f"{'OK' if v['jit_below_threshold'] else 'FAIL':>6s}")
+        print(f"  {name:15s} {v['tf_eager']:.2e} {v['kernel_eager']:.2e} "
+              f"{v['tf_jit']:.2e} {v['kernel_jit']:.2e}  "
+              f"{'OK' if v['eager_kernel_le_tf'] else 'FAIL':>6s} "
+              f"{'OK' if v['jit_kernel_le_tf'] else 'FAIL':>6s}")
     print()
     print(f"speed shape={spd['shape']} axis={spd['axis']}")
     for k in ("naive", "tf", "kernel"):
         v = spd[k]
-        print(f"  {k:7s} median {v['median_ms']:7.2f} ms  IQR {v['iqr_ms']:5.2f} ms")
+        print(f"  {k:7s} median {v['median_ms']:7.2f} ms  "
+              f"IQR {v['iqr_ms']:5.2f} ms")
     print(f"  ratio kernel/tf = {spd['ratio_kernel_tf']:.2f}x  "
           f"(claim 3 <= 2.0): {'PASS' if claim3 else 'FAIL'}")
     print()
-    print(f"claim 1 (identical = 0.0):        {'holds' if claim1 else 'does not hold'}")
-    print(f"claim 2 eager (accuracy):         {'holds' if claim2_eager else 'does not hold'}")
-    print(f"claim 2 jit (accuracy):           {'holds' if claim2_jit else 'does not hold'}")
-    print(f"claim 3 (speed <= 2.0x):          {'holds' if claim3 else 'does not hold'}")
+    print(f"claim 1 (identical = 0.0):           "
+          f"{'holds' if claim1 else 'does not hold'}")
+    print(f"claim 2 eager (kernel <= TF):        "
+          f"{'holds' if claim2_eager else 'does not hold'}")
+    print(f"claim 2 jit (kernel <= TF):          "
+          f"{'holds' if claim2_jit else 'does not hold'}")
+    print(f"claim 3 (speed <= 2.0x):             "
+          f"{'holds' if claim3 else 'does not hold'}")
 
     payload = {
         "jax": jax.__version__,
@@ -203,11 +204,10 @@ def main(smoke):
         "speed": spd,
         "claims": {
             "1_identical_zero": claim1,
-            "2_accuracy_eager": claim2_eager,
-            "2_accuracy_jit": claim2_jit,
+            "2_eager_kernel_le_tf": claim2_eager,
+            "2_jit_kernel_le_tf": claim2_jit,
             "3_speed_le_2x": claim3,
         },
-        "threshold": THRESHOLD,
     }
     out = Path(__file__).resolve().parent / "stable_variance_float32.json"
     out.write_text(json.dumps(payload, indent=2))

@@ -15,43 +15,39 @@ all in the input dtype:
    the exponent of ``m`` is small and its rounding error is at the level
    of the variation, not at the level of the offset.
 
-3. **Second centring and accumulation.** The residuals ``d = y - m`` are
-   formed and the two sums ``sum(d**2)`` and ``sum(d)`` are accumulated.
+3. **Second centring and compensated accumulation.** The residuals
+   ``d = y - m`` are formed and the sum ``s2 = sum(d**2)`` is accumulated
+   with the compensated summation of Kahan (1965): a carry ``c`` keeps
+   the low-order bits that the ordinary sum would lose, so the error is
+   ``O(eps * |s2|)`` instead of ``O(eps * log2(n) * |s2|)``.
 
-4. **Cancellation of the mean error.** The variance is
-   ``var = max(sum(d**2) / n - (sum(d) / n)**2, 0)``. The two terms
-   share the same ``m``; its rounding error is linear in ``m`` in both
-   terms and cancels in the difference, which is why this formula is
-   accurate on offset data even when ``m`` itself is not exact.
+4. **Variance.** The variance is ``s2 / (n - ddof)``. The mean is
+   reconstructed as ``r + m``.
 
-The reduction is done one axis at a time by ``jax.vmap`` over 1D slices,
-so every sum is a 1D tree reduction, and multi-axis reductions are
-handled by transposing the reduction axes to the end and flattening them.
-
-On the four datasets of the task, the maximum relative error is between
-``1.1e-7`` and ``1.7e-7``, i.e. between 1 and 1.5 times the float32
-relative rounding unit ``eps = 2**-23 = 1.19e-7``. The threshold of the
-task is ``2e-7``.
+On the four datasets of the task the maximum relative error is between
+``1.15e-7`` and ``1.36e-7`` on D1, D2 and D3 (below the TensorFlow
+formula in both eager and jit), and ``1.22e-7`` on D4 (above the
+TensorFlow formula, which on that dataset is at ``0.997e-7`` in jit).
+The case D4 has ``ulp(x[0]) = 0.0625`` against a deviation of ``1``, so
+the shift introduces a quantisation error that no linear technique can
+remove without computing in float64, and float64 is out of scope.
 
 References:
-    Pebay, P. P. (2008). Formulas for Robust, One-Pass Parallel Computation
-        of Covariances and Arbitrary-Order Statistical Moments. Sandia
-        Report SAND2008-6212. Equations 1.3 and 1.4 (PDF page 8), the
-        pairwise merge that the two-term form of step 4 specializes to
-        a single reference point.
-    Shewchuk, J. R. (1997). Adaptive Precision Floating-Point Arithmetic and
-        Fast Robust Geometric Predicates. Discrete and Computational
-        Geometry 18(3), 305-363. Section 2.3, the Sterbenz lemma used by
-        step 1.
+    Kahan, W. (1965). Further remarks on reducing truncation errors.
+        Communications of the ACM 8(1), 40. The compensated summation
+        used by :func:`_kahan_sum`.
+    Pebay, P. P. (2008). Formulas for Robust, One-Pass Parallel
+        Computation of Covariances and Arbitrary-Order Statistical
+        Moments. Sandia Report SAND2008-6212. Equations 1.1 and 1.2
+        (PDF page 7), the recurrence that the local centring follows.
+    Shewchuk, J. R. (1997). Adaptive Precision Floating-Point Arithmetic
+        and Fast Robust Geometric Predicates. Discrete and Computational
+        Geometry 18(3), 305-363. Section 2.3, the Sterbenz lemma used
+        by the shift.
 
-The chain of the four steps is the owner's composition (Salvatore
-Pennacchio): Pebay eq. 1.4 gives the two-term form for a general
-reference point, and the shift of step 1 is the Sterbenz lemma; the chain
-of the two is not stated in a paper. The error-free transformations of
-Ogita-Rump-Oishi 2005 and Shewchuk 1997 were considered and are not used
-in the kernel: they are the subject of an earlier draft of this module,
-and their measured cost on this shape was between 3 and 8 times the
-two-term form, with no accuracy gain on the four datasets of the task.
+The chain is my choice (Salvatore Pennacchio): the shift is the Sterbenz
+lemma, the local centring is Pebay eq. 1.1/1.2, the compensated sum is
+Kahan 1965. The chain of the three is not stated in a paper.
 """
 
 from __future__ import annotations
@@ -138,25 +134,50 @@ def _prepare(a, axes):
     return b_flat, batch_shape, n
 
 
+def _kahan_sum(x):
+    """Kahan compensated summation of a 1-D array.
+
+    Kahan, W. (1965). Further remarks on reducing truncation errors.
+    Communications of the ACM 8(1), 40. The algorithm keeps a carry ``c``
+    so that ``s + c`` approximates the exact sum with error
+    ``O(eps * |s|)``, independent of the number of elements.
+
+    Args:
+        x: a 1-D array.
+
+    Returns:
+        The compensated sum, a scalar of the same dtype.
+    """
+    def step(carry, xi):
+        s, c = carry
+        y = xi - c
+        t = s + y
+        c = (t - s) - y
+        return (t, c), None
+    (s, c), _ = jax.lax.scan(
+        step, (jnp.zeros((), x.dtype), jnp.zeros((), x.dtype)), x)
+    return s + c
+
+
 def _kernel_var(v, n):
+    """Variance (biased) of one 1-D slice: shift + local centring + Kahan(d^2)."""
     ref = v[0]
     y = v - ref
     m = jnp.sum(y) / n
     d = y - m
-    s2 = jnp.sum(d * d)
-    s1 = jnp.sum(d)
-    return jnp.maximum(s2 / n - (s1 / n) ** 2, jnp.zeros_like(s2))
+    s2 = _kahan_sum(d * d)
+    return jnp.maximum(s2 / n, jnp.zeros_like(s2))
 
 
 def _kernel_mom(v, n):
+    """Mean and biased variance of one 1-D slice."""
     ref = v[0]
     y = v - ref
     m = jnp.sum(y) / n
     mean = ref + m
     d = y - m
-    s2 = jnp.sum(d * d)
-    s1 = jnp.sum(d)
-    var_pop = jnp.maximum(s2 / n - (s1 / n) ** 2, jnp.zeros_like(s2))
+    s2 = _kahan_sum(d * d)
+    var_pop = jnp.maximum(s2 / n, jnp.zeros_like(s2))
     return mean, var_pop
 
 
@@ -192,9 +213,8 @@ def stable_var(x, axis=None, ddof=0, keepdims=False):
     The variance is ``M2 / (n - ddof)`` with ``M2 = sum((x - mean)**2)``
     along the reduction axis, computed by shifting ``x`` by its first
     element along that axis, centring the shifted values a second time,
-    and subtracting the squared mean of the residuals from the mean of
-    their squares (see the module docstring for the four steps and the
-    references).
+    and accumulating the squares with Kahan compensated summation (see
+    the module docstring for the four steps and the references).
 
     Args:
         x: array-like. numpy and JAX arrays are accepted.
