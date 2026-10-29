@@ -23,12 +23,12 @@ after the run:
    kernel is at most the maximum relative error of the baseline
    two-term formula, in eager mode and under ``jit``.
 3. The time of the kernel is at most 4.0 times the time of the
-   baseline formula on ``[4096, 4096]``, ``axis=1``. The threshold is
-   4.0x, not 2.0x, and it is declared here before the measurement:
-   the kernel is meant for reductions over blocks of thousands of
-   samples, where the per-sample cost of the sequential Kahan sum is
-   amortised, and 4.0x covers the maximum observed on this CPU (3.37x)
-   with margin.
+   baseline formula on ``[4096, 4096]``, ``axis=1``. The original
+   target of 2.0x is not reached (the sequential Kahan sum costs
+   1.85-3.37x); the threshold of 4.0x was chosen after the measurement,
+   it covers the maximum observed with margin, and it applies to CPU
+   only: on GPU/TPU the kernel has not been measured, do not use it
+   there without measuring it first.
 
 Run:
     python benchmarks/stable_variance_float32.py            full run
@@ -219,7 +219,7 @@ def main(smoke):
             "1_identical_zero": claim1,
             "2_eager_kernel_le_base": claim2_eager,
             "2_jit_kernel_le_base": claim2_jit,
-            "3_speed_le_2x": claim3,
+            "3_speed_le_4x": claim3,
         },
     }
     out = Path(__file__).resolve().parent / "stable_variance_float32.json"
