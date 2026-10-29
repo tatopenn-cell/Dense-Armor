@@ -45,10 +45,12 @@
   "speed": {
     "shape": [4096, 4096],
     "axis": 1,
-    "naive": {"median_ms": 0.692648000040208, "iqr_ms": 0.02517300026738667},
-    "base": {"median_ms": 0.7095089999893389, "iqr_ms": 0.02492899989192665},
-    "kernel": {"median_ms": 1.5497710001000087, "iqr_ms": 0.015175000044109765},
-    "ratio_kernel_base": 2.184286598370557
+    "naive": {"median_of_medians_ms": 0.7063479999942501, "min_of_medians_ms": 0.6981669999959195, "max_of_medians_ms": 0.7127129999844328},
+    "base": {"median_of_medians_ms": 0.6959259999916867, "min_of_medians_ms": 0.695180999969125, "max_of_medians_ms": 0.7047170000191727},
+    "kernel": {"median_of_medians_ms": 1.5578229999846371, "min_of_medians_ms": 1.547464999987369, "max_of_medians_ms": 1.5814420000310747},
+    "ratio_kernel_base": 2.238489437099988,
+    "ratio_min_of_medians": 2.1958672771414176,
+    "ratio_max_of_medians": 2.2748636687442714
   },
   "claims": {
     "1_identical_zero": true,
