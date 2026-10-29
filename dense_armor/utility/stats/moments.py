@@ -35,7 +35,13 @@ from typing import Any
 
 import numpy as np
 
+from dense_armor.utility.stats.stable import stable_moments
 from dense_armor.roles import Transformer
+def _num_dtype(dtype, value):
+    """Cast to the working dtype (numpy scalar) or to float."""
+    if dtype is None:
+        return float(value)
+    return np.dtype(dtype).type(value)
 
 
 class RunningMoments(Transformer):
@@ -64,8 +70,11 @@ class RunningMoments(Transformer):
         Pébay, P. (2008). Sandia Report SAND2008-6212.
     """
 
-    def __init__(self, feature: str | None = None) -> None:
+    def __init__(
+        self, feature: str | None = None, dtype=None
+    ) -> None:
         self.feature = feature
+        self.dtype = dtype
         self.n_ = 0
         self.mean_ = 0.0
         self.m2_ = 0.0
@@ -127,25 +136,38 @@ class RunningMoments(Transformer):
         return self.learn_one(x, y=y, t=t)
 
     @staticmethod
-    def _block(arr):
+    def _block(arr, dtype=None):
         """Return (n, mean, m2, m3, m4) of a 1-D array, in one pass.
+
+        When ``dtype`` is float32, ``mean`` and ``m2`` come from
+        :func:`stable_moments` (shift + local centring + two-term
+        cancellation), so the same float32 block that :func:`stable_var`
+        handles keeps the same accuracy inside the estimator. ``m3`` and
+        ``m4`` are computed from the shifted residuals in the same dtype.
 
         Args:
             arr: a 1-D numpy array of finite floats.
+            dtype: numpy dtype for the accumulation, ``None`` for float64.
 
         Returns:
             ``(n, mean, m2, m3, m4)`` with ``m_k = sum (x - mean)^k`` and
             ``n`` the number of samples. ``n=0`` returns zeros.
         """
 
-        a: np.ndarray = np.asarray(arr, dtype=float).ravel()
+        work = np.dtype(dtype) if dtype is not None else np.dtype(float)
+        a: np.ndarray = np.asarray(arr, dtype=work).ravel()
         n = int(a.size)
         if n == 0:
             return 0, 0.0, 0.0, 0.0, 0.0
-        # Shift by the first finite value before computing the
-        # deviations. On constant large values, (a - a.mean()) has a
-        # rounding error of ~1e285 and its square overflows to inf;
-        # (a - a[0]) - mean_shifted is exactly zero instead.
+        if work == np.float32:
+            mean, m2 = stable_moments(a, axis=0)
+            mean_f = float(mean)
+            d = a - work.type(mean_f)
+            d2 = d * d
+            m2_f = float(m2) * n
+            m3_f = float((d2 * d).sum())
+            m4_f = float((d2 * d2).sum())
+            return n, mean_f, m2_f, m3_f, m4_f
         shift = float(a.flat[0])
         if np.isfinite(shift):
             a_shifted = a - shift
@@ -243,13 +265,14 @@ class RunningMoments(Transformer):
             arr = X[key]
         else:
             arr = X
-        a: np.ndarray = np.asarray(arr, dtype=float).ravel()
+        work = np.dtype(self.dtype) if self.dtype is not None else np.dtype(float)
+        a: np.ndarray = np.asarray(arr, dtype=work).ravel()
         ok = np.isfinite(a)
         self.n_missing_ += int(a.size - np.count_nonzero(ok))
         a = a[ok]
         if a.size == 0:
             return self
-        n_b, mean_b, m2_b, m3_b, m4_b = self._block(a)
+        n_b, mean_b, m2_b, m3_b, m4_b = self._block(a, dtype=self.dtype)
         self._merge_into(n_b, mean_b, m2_b, m3_b, m4_b)
         lo = float(a.min())
         hi = float(a.max())
@@ -408,14 +431,19 @@ class RunningMomentsVector(Transformer):
         {'q0': 0.1, 'q1': 0.2}
     """
 
-    def __init__(self, features: list[str] | None = None) -> None:
+    def __init__(
+        self, features: list[str] | None = None, dtype=None
+    ) -> None:
         self.features = features
+        self.dtype = dtype
         self.channels_: dict[str, RunningMoments] | None = None
 
     def _ensure(self, x: dict) -> dict[str, RunningMoments]:
         if self.channels_ is None:
             keys = list(self.features) if self.features is not None else sorted(x)
-            self.channels_ = {k: RunningMoments(feature=k) for k in keys}
+            self.channels_ = {
+                k: RunningMoments(feature=k, dtype=self.dtype) for k in keys
+            }
         return self.channels_
 
     def learn_one(
@@ -478,7 +506,7 @@ class RunningMomentsVector(Transformer):
         keys = list(self.channels_.keys())
         if set(keys) != set(other.channels_.keys()):
             raise ValueError("merge requires the same channel keys")
-        out = RunningMomentsVector(features=keys)
+        out = RunningMomentsVector(features=keys, dtype=self.dtype)
         out.channels_ = {k: self.channels_[k].merge(other.channels_[k]) for k in keys}
         return out
 
@@ -514,9 +542,12 @@ class EWStats(Transformer):
         West, D. H. D. (1979). Communications of the ACM 22(9), 532-535.
     """
 
-    def __init__(self, alpha: float = 0.1, feature: str | None = None) -> None:
+    def __init__(
+        self, alpha: float = 0.1, feature: str | None = None, dtype=None
+    ) -> None:
         self.alpha = alpha
         self.feature = feature
+        self.dtype = dtype
         self.mean_: float | None = None
         self.var_ = 0.0
         self.n_ = 0
@@ -539,13 +570,18 @@ class EWStats(Transformer):
         if v is None:
             self.n_missing_ += 1
             return self
+        w = _num_dtype(self.dtype, self.alpha)
+        one = _num_dtype(self.dtype, 1.0)
+        vv = _num_dtype(self.dtype, v)
         if self.mean_ is None:
-            self.mean_ = v
+            self.mean_ = float(vv)
             self.var_ = 0.0
         else:
-            d = v - self.mean_
-            self.mean_ = self.mean_ + self.alpha * d
-            self.var_ = (1.0 - self.alpha) * (self.var_ + self.alpha * d * d)
+            m = _num_dtype(self.dtype, self.mean_)
+            var = _num_dtype(self.dtype, self.var_)
+            d = vv - m
+            self.mean_ = float(m + w * d)
+            self.var_ = float((one - w) * (var + w * d * d))
         self.n_ += 1
         return self
 

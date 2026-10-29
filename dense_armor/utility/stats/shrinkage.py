@@ -26,10 +26,11 @@ from __future__ import annotations
 
 import numpy as np
 
+from dense_armor.roles import Transformer
 from dense_armor.utility.stats.dependence import RunningCovariance
 
 
-class OnlineShrinkageCovariance:
+class OnlineShrinkageCovariance(Transformer):
     """Online covariance with linear shrinkage toward ``(1/p) I``.
 
     Args:
@@ -45,17 +46,22 @@ class OnlineShrinkageCovariance:
     budget_s = 1e-3
     memory_class = "O(p^2)"
 
-    def __init__(self, n_features: int, feature_prefix: str = "v") -> None:
+    def __init__(
+        self, n_features: int, feature_prefix: str = "v", dtype=None
+    ) -> None:
         if n_features < 1:
             raise ValueError(f"n_features must be >= 1, got {n_features}")
         self.n_features = int(n_features)
         self.feature_prefix = str(feature_prefix)
+        self.dtype = dtype
         self._pairs: dict[tuple[int, int], RunningCovariance] = {}
         for i in range(self.n_features):
             for j in range(i, self.n_features):
                 key_i = f"{self.feature_prefix}{i}"
                 key_j = f"{self.feature_prefix}{j}"
-                self._pairs[(i, j)] = RunningCovariance(key_i, key_j)
+                self._pairs[(i, j)] = RunningCovariance(
+                    key_i, key_j, dtype=dtype
+                )
         self.n_seen_: int = 0
 
     def learn_one(self, x: dict, y=None, t: float | None = None) -> OnlineShrinkageCovariance:
@@ -108,3 +114,13 @@ class OnlineShrinkageCovariance:
         beta = (1.0 - alpha) * tr_s
         shrunk = alpha * s + (beta / p) * np.eye(p)
         return shrunk, alpha, beta
+
+    def transform_one(self, x: dict, t: float | None = None) -> dict:
+        """Return the shrunk covariance and the two intensities."""
+        shrunk, alpha, beta = self.shrinkage()
+        return {
+            "covariance": shrunk.tolist(),
+            "alpha": alpha,
+            "beta": beta,
+            "n_seen": self.n_seen_,
+        }

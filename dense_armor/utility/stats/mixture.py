@@ -154,6 +154,7 @@ class OnlineGaussianMixture(Transformer):
         init_means: list[list[float]] | None = None,
         init_scale: float = 1.0,
         feature: str | None = None,
+        dtype=None,
     ) -> None:
         if n_components < 1:
             raise ValueError(f"n_components must be >= 1, got {n_components!r}")
@@ -169,6 +170,7 @@ class OnlineGaussianMixture(Transformer):
         self.init_means = init_means
         self.init_scale = float(init_scale)
         self.feature = feature
+        self.dtype = dtype
         self.n_ = 0
         self.n_missing_ = 0
         self.initialized_ = False
@@ -208,9 +210,10 @@ class OnlineGaussianMixture(Transformer):
                 (i - (self.n_components - 1) / 2.0) for i in range(self.n_components)
             ]
             means = [[v[j] + o * self.init_scale for j in range(d)] for o in offsets]
-        self.weights_ = np.full(self.n_components, 1.0 / self.n_components)
-        self.means_ = np.asarray(means, dtype=float)
-        self.variances_ = np.full((self.n_components, d), self.init_scale**2)
+        work = np.dtype(self.dtype) if self.dtype is not None else np.dtype(float)
+        self.weights_ = np.full(self.n_components, 1.0 / self.n_components, dtype=work)
+        self.means_ = np.asarray(means, dtype=work)
+        self.variances_ = np.full((self.n_components, d), self.init_scale**2, dtype=work)
         self.initialized_ = True
 
     def _log_component(self, v: list[float]) -> Any:
@@ -263,9 +266,10 @@ class OnlineGaussianMixture(Transformer):
         e_x2 = num_x2 / w_safe[:, None]
         var_new = np.maximum(e_x2 - means_new * means_new, 0.0)
 
-        self.weights_ = w_new
-        self.means_ = means_new
-        self.variances_ = var_new
+        work = self.weights_.dtype
+        self.weights_ = w_new.astype(work, copy=False)
+        self.means_ = means_new.astype(work, copy=False)
+        self.variances_ = var_new.astype(work, copy=False)
         self.n_ += 1
         return self
 
