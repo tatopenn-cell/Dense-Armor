@@ -1,13 +1,14 @@
 """Item 0 of T4: the float32 error of each class against float64.
 
-Stream: N(1e3, 0.01), 100,000 samples, seed 0, cast to float32. The
-reference is the float64 variance of the same float32 values, never the
-variance of the float64 values they came from. Three update rules are
-compared: the plain Welford of the repository today, a compensated
-Welford (TwoSum on the mean and on the M2 term), and the shift plus
-compensated sums of the T3 kernel applied online.
+The decision stream is N(1e3, 0.01), 100,000 samples, seed 0, as the
+task states. The three extra streams N(1e5, 1), N(1e6, 1) and N(1e7, 1)
+are reported as information, not as a pass or fail criterion. The
+reference is always the float64 variance of the same float32 values,
+never the variance of the float64 values they came from.
 
-Threshold 1e-6: a class above it keeps float64 accumulators.
+At offset 1e7 the spacing of float32 is 1.0: the output prints it next
+to the numbers, because that spacing is the reason the three extra
+streams are information and not a criterion.
 """
 
 import sys
@@ -67,42 +68,60 @@ def welford_comp(x32):
 def shift_comp(x32):
     K = np.float32(x32[0])
     n = np.float32(0.0)
-    s1 = np.float32(0.0); c1 = np.float32(0.0)
-    s2 = np.float32(0.0); c2 = np.float32(0.0)
+    s1 = np.float32(0.0)
+    c1 = np.float32(0.0)
+    s2 = np.float32(0.0)
+    c2 = np.float32(0.0)
     for v in x32:
         y = np.float32(np.float32(v) - K)
-        s1, e1 = two_sum(s1, y); c1 = np.float32(c1 + e1)
-        s2, e2 = two_sum(s2, np.float32(y * y)); c2 = np.float32(c2 + e2)
+        s1, e1 = two_sum(s1, y)
+        c1 = np.float32(c1 + e1)
+        s2, e2 = two_sum(s2, np.float32(y * y))
+        c2 = np.float32(c2 + e2)
         n = np.float32(n + np.float32(1.0))
-    s1c = np.float32(s1 + c1); s2c = np.float32(s2 + c2)
+    s1c = np.float32(s1 + c1)
+    s2c = np.float32(s2 + c2)
     my = np.float32(s1c / n)
     return np.float32(np.float32(s2c / n) - np.float32(my * my))
 
 
 def rel(a, b):
-    a = float(a); b = float(b)
+    a = float(a)
+    b = float(b)
     if b == 0.0:
         return 0.0 if a == 0.0 else float("inf")
     return abs(a - b) / abs(b)
 
 
-def main():
+def run(mean, sigma, label, criterion):
     rng = np.random.default_rng(SEED)
-    x32 = (1e3 + 0.01 * rng.standard_normal(N)).astype(np.float32)
+    x32 = (mean + sigma * rng.standard_normal(N)).astype(np.float32)
     x64 = x32.astype(np.float64)
     ref = float(x64.var())
-
-    print("stream N(1e3, 0.01), N=%d, seed=%d" % (N, SEED))
-    print("reference (float64 of the float32 values): %.6e" % ref)
     print()
-    print("%-16s %14s %12s  decision" % ("update rule", "var32", "rel err"))
-    for name, fn in [("welford_plain", welford_plain),
-                     ("welford_comp", welford_comp),
-                     ("shift_comp", shift_comp)]:
+    print(f"=== {label}: N({mean:g}, {sigma:g}), N={N}, seed={SEED} ===")
+    print(f"reference (float64 of the float32 values): {ref:.6e}")
+    if mean >= 1e7:
+        print("float32 spacing at this offset is 1.0")
+    print(f"{'update rule':16s} {'var32':>14s} {'rel err':>12s}  decision")
+    for name, fn in [
+        ("welford_plain", welford_plain),
+        ("welford_comp", welford_comp),
+        ("shift_comp", shift_comp),
+    ]:
         v = fn(x32)
         e = rel(v, ref)
-        print("%-16s %14.6e %12.3e  %s" %
-              (name, float(v), e, "KEEP" if e <= THRESH else "float64"))
+        tag = "KEEP" if e <= THRESH else "float64"
+        if not criterion:
+            tag = "(information)"
+        print(f"{name:16s} {float(v):14.6e} {e:12.3e}  {tag}")
+
+
+def main():
+    run(1e3, 0.01, "decision stream", True)
+    run(1e5, 1.0, "information stream", False)
+    run(1e6, 1.0, "information stream", False)
+    run(1e7, 1.0, "information stream", False)
 
 
 if __name__ == "__main__":
