@@ -47,8 +47,8 @@ class Gaussian:
         Bishop, C. M. (2006). Section 2.3, eq. 2.42.
         Healy, J. (2022). Accurate and consistent calculation of the
             mean and the variance in Monte-Carlo simulations.
-            arXiv:2206.10662v7, Algorithm 2 (bibliographic only: the PDF
-            is not in the task folder).
+            arXiv:2206.10662v7, Introduction and Algorithm 2 (PDF page
+            4): the shifted naive algorithm with K = x[0].
     """
 
     def __init__(

@@ -4,7 +4,7 @@ Item A: the three wrappers (SklearnClassifier, SklearnRegressor,
 SklearnTransformer) fit and predict. Item B: from_sklearn wraps a
 scikit-learn estimator as a Dense-Armor Estimator. The import of
 ``dense_armor.bridges.sklearn`` without scikit-learn installed raises
-a ModuleNotFoundError that names the extra, as the river bridge does.
+a ModuleNotFoundError that names the extra, as the other bridges do.
 
 The ``partial_fit`` branch of ``from_sklearn`` is tested with
 ``SGDClassifier``: ``LogisticRegression`` with the default solver

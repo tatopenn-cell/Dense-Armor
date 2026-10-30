@@ -398,7 +398,7 @@ class _DenseArmorAdapter(Estimator):
         distinct = sorted(set(self._buffer_y))
         if len(distinct) < 2:
             return
-        X = np.asarray(self._buffer_rows, dtype=float)
+        X: np.ndarray = np.asarray(self._buffer_rows, dtype=float)
         y_arr = np.asarray(self._buffer_y)
         self._model.partial_fit(X, y_arr, classes=np.asarray(distinct))
         self._classes = list(distinct)
@@ -439,13 +439,13 @@ class _DenseArmorAdapter(Estimator):
     def predict_one(self, x: Any, t: Any = None) -> Any:
         if self._model is None:
             self._refit()
-        X = np.asarray([self._ordered(x)], dtype=float)
+        X: np.ndarray = np.asarray([self._ordered(x)], dtype=float)
         return self._model.predict(X)[0]
 
     def predict_proba_one(self, x: Any, t: Any = None) -> dict:
         if self._model is None:
             self._refit()
-        X = np.asarray([self._ordered(x)], dtype=float)
+        X: np.ndarray = np.asarray([self._ordered(x)], dtype=float)
         proba = self._model.predict_proba(X)[0]
         classes = list(getattr(self._model, "classes_", range(len(proba))))
         return dict(zip(classes, (float(p) for p in proba)))

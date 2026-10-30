@@ -13,6 +13,7 @@ A bridge does not replace an algorithm. It makes a Dense-Armor object usable whe
 | scikit-learn | [sklearn](sklearn.md) | `pip install dense-armor[sklearn]` |
 | PyTorch | [torch](torch.md) | `pip install dense-armor[torch]` |
 | TensorFlow | [tensorflow](tensorflow.md) | `pip install dense-armor[tensorflow]` |
-| river | `dense_armor.bridges.river` | `pip install dense-armor[river]` |
+| river | [river](river.md) | `pip install dense-armor[river]` |
+| LLM agents | [llm](llm.md) | none: `embed` is supplied by the caller |
 
 The imports of a bridge are optional: `import dense_armor` works without the other library installed, and the bridge module raises a `ModuleNotFoundError` that names the extra when the other library is missing.

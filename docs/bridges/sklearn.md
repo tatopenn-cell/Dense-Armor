@@ -93,7 +93,7 @@ ModuleNotFoundError: dense_armor.bridges.sklearn needs scikit-learn: pip install
 - **`predict` returns the class with the largest probability, taken from `classes_`**, never the value of a member or `None`. On this stream a member that has not seen the class returns `{}` from `predict_proba_one`, and the wrapper still returns a class from `classes_`.
 - **`from_sklearn` treats `partial_fit` as an online method.** When the estimator has `partial_fit`, `learn_one` calls it on the current row, and `refit_every` must be `None`. When the estimator is batch (no `partial_fit`), `refit_every` must be given, because the alternative is a `fit` over a growing table at every row.
 - **The class list of a `partial_fit` classifier**: passing `classes` to `from_sklearn` uses it from the first row; leaving it out buffers the rows until two distinct classes have been seen. The buffer is the only correct option when the row stream starts with a single class, because `SGDClassifier.partial_fit` with one class and no `classes` raises.
-- **The optional dependency is installed as an extra**: `pip install dense-armor[sklearn]`. The bridge module imports scikit-learn inside a `try/except` and raises a `ModuleNotFoundError` that names the extra, as the river bridge does. `import dense_armor` works without scikit-learn.
+- **The optional dependency is installed as an extra**: `pip install dense-armor[sklearn]`. The bridge module imports scikit-learn inside a `try/except` and raises a `ModuleNotFoundError` that names the extra, as the other bridges do. `import dense_armor` works without scikit-learn.
 
 ### Measured cost
 
