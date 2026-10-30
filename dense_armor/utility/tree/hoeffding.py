@@ -43,6 +43,8 @@ References:
 import math
 from typing import Any
 
+import numpy as np
+
 from dense_armor.roles import Classifier
 
 
@@ -110,14 +112,13 @@ class _Gauss:
         self.n_ = 0
         self.mean_ = 0.0
         self.m2_ = 0.0
-        import numpy as np
 
         self._f32 = dtype is not None and np.dtype(dtype) == np.float32
-        self._K = None
-        self._mean_y = np.float32(0.0)
+        self._K: Any = None
+        self._mean_y: Any = np.float32(0.0)
         self._c_mean = np.float32(0.0)
-        self._m2_y = np.float32(0.0)
-        self._c_m2 = np.float32(0.0)
+        self._m2_y: Any = np.float32(0.0)
+        self._c_m2: Any = np.float32(0.0)
 
     def update(self, v: float) -> None:
         if not self._f32:
@@ -126,7 +127,6 @@ class _Gauss:
             self.mean_ += d / self.n_
             self.m2_ += d * (v - self.mean_)
             return
-        import numpy as np
 
         vf = np.float32(v)
         if self._K is None:
@@ -153,7 +153,6 @@ class _Gauss:
         if self._f32:
             if self.n_ <= 1:
                 return 0.0
-            import numpy as np
 
             n = np.float32(self.n_)
             m2 = np.float32(self._m2_y + self._c_m2)

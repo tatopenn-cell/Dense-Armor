@@ -119,7 +119,7 @@ def _f32_welford_var(
     base, welford_attr_n, welford_attr_mean, welford_attr_m2, welford_attr_var
 ):
     class F32(base):
-        def __init__(self):
+        def __init__(self, **kwargs):
             setattr(self, welford_attr_n, 0)
             setattr(self, welford_attr_mean, np.float32(0.0))
             setattr(self, welford_attr_m2, np.float32(0.0))
@@ -129,7 +129,7 @@ def _f32_welford_var(
 
 def _f32_shift_var(base, attr_n, attr_mean, attr_m2, attr_var):
     class F32(base):
-        def __init__(self):
+        def __init__(self, **kwargs):
             setattr(self, attr_n, 0)
             setattr(self, attr_mean, np.float32(0.0))
             setattr(self, attr_m2, np.float32(0.0))
@@ -150,7 +150,7 @@ def _f32_shift_var(base, attr_n, attr_mean, attr_m2, attr_var):
 
 def _f32_welford(base, n_attr, mean_attr, m2_attr, var_fn):
     class F32(base):
-        def __init__(self):
+        def __init__(self, **kwargs):
             setattr(self, n_attr, 0)
             setattr(self, mean_attr, np.float32(0.0))
             setattr(self, m2_attr, np.float32(0.0))
@@ -179,7 +179,7 @@ def _f32_welford_simple(base):
     class F32(base):
         __slots__ = ()
 
-        def __init__(self):
+        def __init__(self, **kwargs):
             self.n_ = 0
             self.mean_ = np.float32(0.0)
             self.m2_ = np.float32(0.0)
@@ -205,7 +205,7 @@ def _f32_shift_welford_simple(base):
     class F32(base):
         __slots__ = ("_shift",)
 
-        def __init__(self):
+        def __init__(self, **kwargs):
             self.n_ = 0
             self.mean_ = np.float32(0.0)
             self.m2_ = np.float32(0.0)
@@ -232,7 +232,7 @@ def _f32_gauss_welford(base):
     class F32(base):
         __slots__ = ()
 
-        def __init__(self):
+        def __init__(self, **kwargs):
             self.n_ = 0
             self.mean_ = np.float32(0.0)
             self.m2_ = np.float32(0.0)
@@ -258,7 +258,7 @@ def _f32_gauss_shift(base):
     class F32(base):
         __slots__ = ("_shift",)
 
-        def __init__(self):
+        def __init__(self, **kwargs):
             self.n_ = 0
             self.mean_ = np.float32(0.0)
             self.m2_ = np.float32(0.0)
@@ -284,7 +284,7 @@ def _f32_leaf_welford(base):
     class F32(base):
         __slots__ = ()
 
-        def __init__(self):
+        def __init__(self, **kwargs):
             self.n_ = 0
             self.mean_ = np.float32(0.0)
             self.m2_ = np.float32(0.0)
@@ -311,7 +311,7 @@ def _f32_leaf_shift(base):
     class F32(base):
         __slots__ = ("_shift",)
 
-        def __init__(self):
+        def __init__(self, **kwargs):
             self.n_ = 0
             self.mean_ = np.float32(0.0)
             self.m2_ = np.float32(0.0)
@@ -339,7 +339,7 @@ def _f32_moments_welford(base):
     class F32(base):
         __slots__ = ()
 
-        def __init__(self, n=0, mean=0.0, m2=0.0):
+        def __init__(self, n=0, mean=0.0, m2=0.0, **kwargs):
             self.n = int(n)
             self.mean = np.float32(mean)
             self.m2 = np.float32(m2)
@@ -365,7 +365,7 @@ def _f32_moments_shift(base):
     class F32(base):
         __slots__ = ("_shift",)
 
-        def __init__(self, n=0, mean=0.0, m2=0.0):
+        def __init__(self, n=0, mean=0.0, m2=0.0, **kwargs):
             self.n = int(n)
             self.mean = np.float32(mean)
             self.m2 = np.float32(m2)
@@ -412,7 +412,7 @@ def _f32_perceptron_shift(base):
     class F32(base):
         __slots__ = ("_shift",)
 
-        def __init__(self, dim, eta0=0.1, etad=0.005):
+        def __init__(self, dim, eta0=0.1, etad=0.005, **kwargs):
             self.n = 0
             self.w = np.zeros(dim + 1, dtype=np.float32)
             self.mean = np.zeros(dim, dtype=np.float32)
