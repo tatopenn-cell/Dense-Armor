@@ -86,6 +86,24 @@ The two methods `update` and `revert` are exact inverses. On the same observatio
 
 For the Gaussian, `revert` is the Welford update run backwards; for the beta and the multinomial, it is a subtraction on the counter. The three classes reject a `revert` that would leave a counter or a count non-positive, with a `ValueError`.
 
+## float32
+
+`Gaussian(dtype=numpy.float32)` keeps the state in float32 and applies
+the shifted-data algorithm with ``K = x[0]`` (Healy 2022, Algorithm 2)
+online: TwoSum on ``s1 = sum(y)`` and ``s2 = sum(y**2)``, two-term
+variance. Relative error of the variance against the float64 reference
+on N(1e3, 0.01), 100,000 samples, seed 0: 2.1e-8. On a constant stream
+at 1e10 and 1e38 the variance is exactly 0.0. With this mode ``revert``
+raises ``NotImplementedError`` (the shifted compensated sums have no
+exact inverse) and ``w`` must be 1.
+
+Cost, median of 7 runs of one update over 20,000 samples, one CPU
+thread: default 0.000347 ms (IQR 0.000008), float32 0.003227 ms (IQR 0.000059). The claim that the float32 path is at
+most as slow as the default is not met: on a scalar loop the numpy
+float32 arithmetic is slower than the Python float64 arithmetic. The
+float32 speed is in `learn_many` and in jitted array code, not in a
+scalar loop.
+
 ## Details
 
 ### References

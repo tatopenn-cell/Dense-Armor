@@ -98,3 +98,22 @@ $$\mathrm{NLL} = \tfrac12 \ln(2\pi v) + \frac{(y - \mu)^2}{2v} = \tfrac12 \ln(0.
 
 A variance that is too small makes the second term explode; one that is too large makes the
 first term grow. The minimum is at the true spread.
+
+## float32
+
+`R2Score(dtype=numpy.float32)` keeps the Welford state and the
+`ss_res` sum in float32 and applies the shifted-data algorithm with
+``K = y_true[0]`` (Healy 2022, Algorithm 2) online: TwoSum on ``s1``,
+``s2`` and ``ss_res``, two-term formulas for the mean and for ``M2``.
+Relative error against the float64 reference on N(1e3, 0.01), 100,000
+samples, seed 0: ``M2`` 1.7e-8, ``ss_res`` 3.7e-8. On a constant target
+``get()`` returns 0.0. With this mode ``w`` must be 1. `R2Score` is a
+`Metric`, not an `Estimator`: `check_estimator` does not apply.
+
+Cost, median of 7 runs of one `update` over 20,000 samples, one CPU
+thread: default 0.001350 ms (IQR 0.000520), float32 0.009571 ms (IQR 0.000097). The claim that the float32 path is at
+most as slow as the default is not met: on a scalar loop the numpy
+float32 arithmetic is slower than the Python float64 arithmetic. The
+float32 speed is in `learn_many` and in jitted array code, not in a
+scalar loop.
+

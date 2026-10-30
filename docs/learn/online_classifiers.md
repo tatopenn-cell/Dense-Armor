@@ -189,6 +189,24 @@ At 100 Hz the loop has 10 ms per cycle: all three fit with three orders of magni
 to spare. The wrapper is 7× the bare NB because it runs a background copy in parallel
 after each drift alarm.
 
+## float32
+
+`OnlineGaussianNB(dtype=numpy.float32)` keeps per-class and per-feature
+state in float32 and applies the shifted-data algorithm with
+``K = x[0]`` (Healy 2022, Algorithm 2) online: two TwoSum sums per
+feature and the two-term variance. Relative error of the variance
+against the float64 reference on N(1e3, 0.01), 100,000 samples, seed 0:
+6.2e-8. On a constant stream at 1e10 and 1e38 the variance is exactly
+0.0. With this mode ``alpha`` must be 0 (the exponential decay is not
+compatible with a fixed shift).
+
+Cost, median of 7 runs of one `learn_one` over 20,000 samples, one CPU
+thread: default 0.005857 ms (IQR 0.000149), float32 0.023624 ms (IQR 0.009820). The claim that the float32
+path is at most as slow as the default is not met: on a scalar loop the
+numpy float32 arithmetic is slower than the Python float64 arithmetic.
+The float32 speed is in `learn_many` and in jitted array code, not in a
+scalar loop.
+
 ## API reference
 
 ::: dense_armor.utility.learn.online_classifiers
