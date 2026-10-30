@@ -2,6 +2,47 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## [1.3.1] - 2026-10-30
+
+### Added
+- `dense_armor/bridges/sklearn.py`: `SklearnClassifier`, `SklearnRegressor`,
+  `SklearnTransformer` (a Dense-Armor estimator behind the scikit-learn
+  interface) and `from_sklearn` (a scikit-learn estimator behind the
+  Dense-Armor `Estimator` interface). The three wrappers pass
+  `check_estimator` 27/27 with 0 not-applicable and 0 skipped on
+  scikit-learn 1.6.1. New extra `sklearn = ["scikit-learn>=1.6"]`.
+  Page `docs/bridges/sklearn.md`.
+- `dense_armor/bridges/torch.py`: `to_jax` / `to_torch` (DLPack, no copy on
+  a contiguous CPU tensor), `TorchModule` (a Dense-Armor model as a
+  `torch.nn.Module`, backward through `jax.vjp`), `from_torch` (a
+  `torch.nn.Module` as an adapter with `jax.custom_vjp`). New extra
+  `torch = ["torch>=2.0"]`. Benchmark `benchmarks/bridge_torch.py` and
+  page `docs/bridges/torch.md`.
+- `dense_armor/bridges/tensorflow.py`: `to_jax` / `to_tf` (DLPack with the
+  capsule), `KerasLayer` (a Dense-Armor model as a
+  `tf.keras.layers.Layer` through `jax2tf.convert`), `from_keras` (a
+  `tf.keras.Model` as an adapter with `jax.custom_vjp` and
+  `tf.GradientTape`). New extra `tensorflow = ["tensorflow-cpu>=2.16"]`.
+  Benchmark `benchmarks/bridge_tensorflow.py` and page
+  `docs/bridges/tensorflow.md`.
+- `docs/bridges/index.md`: overview of the available bridges. New
+  "Bridges" section in the nav.
+
+### Changed
+- `dense_armor/__init__.py`: `__version__` aligned to the `pyproject.toml`
+  version (was 1.2.1, the last release is 1.3.0).
+- `CITATION.cff`: `version` aligned to the `pyproject.toml` version.
+
+### Reported
+- In all three bridges the cross-framework forward costs more than the
+  same model called in the source framework: PyTorch 53x, TensorFlow
+  53x, both declared in their pages with the JSON benchmark. The claim of
+  a 20% overhead declared in the first commit of each task does not hold.
+- `from_keras` returns a 2D output and works on float32 only.
+- The TensorFlow tests are skipped in the CI of this branch (the extra is
+  not installed); they pass locally and on Kaggle.
+
+
 ## [1.3.0] - 2026-10-29
 
 ### Added
