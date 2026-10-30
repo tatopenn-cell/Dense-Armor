@@ -110,7 +110,7 @@ samples, seed 0: ``M2`` 1.7e-8, ``ss_res`` 3.7e-8. On a constant target
 ``get()`` returns 0.0. With this mode ``w`` must be 1. `R2Score` is a
 `Metric`, not an `Estimator`: `check_estimator` does not apply.
 
-Cost, median of 7 runs of one update over 20,000 samples, one CPU thread: default 0.001300 ms (IQR 0.000012), float32 0.009759 ms (IQR 0.000077). The claim that the float32 path is at
+Cost, median of 7 runs of one update over 20,000 samples, one CPU thread: default 0.002044 ms (IQR 0.000635), float32 0.009688 ms (IQR 0.000079). The claim that the float32 path is at
 most as slow as the default is not met: on a scalar loop the numpy
 float32 arithmetic is slower than the Python float64 arithmetic. The
 float32 speed of these classes is not measured; no class in this batch
