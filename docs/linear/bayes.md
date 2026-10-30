@@ -162,6 +162,13 @@ Which one is the right tool? It depends on the question:
 
 Neither is better in the abstract: they answer different questions.
 
+## float32
+
+No `dtype=numpy.float32` path: the Sherman-Morrison rank-one update of
+the covariance in float32 on the decision stream N(1e3, 0.01) gives a
+negative variance (about -6.8e13) instead of the 1.0 of the float64
+reference. The class keeps float64 accumulators.
+
 ## Details
 
 ### References

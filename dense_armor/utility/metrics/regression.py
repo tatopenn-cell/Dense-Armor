@@ -28,15 +28,21 @@ from dense_armor.roles import Regressor
 from dense_armor.utility.metrics.base import Metric
 
 
+def _two_sum(a, b):
+    """Error-free transformation ``a + b = s + e`` in the dtype of ``a``."""
+    s = a + b
+    bb = s - a
+    e = (a - (s - bb)) + (b - bb)
+    return s, e
+
+
 def _is_vector(v: Any) -> bool:
     if isinstance(v, (list, tuple)):
         return len(v) > 1 and all(isinstance(x, (int, float)) for x in v)
     return False
 
 
-def _pairs(
-    y_true: Any, y_pred: Any, feature: str | None
-) -> list[tuple[float, float]]:
+def _pairs(y_true: Any, y_pred: Any, feature: str | None) -> list[tuple[float, float]]:
     """Return the list of scalar (y_true, y_pred) pairs to feed.
 
     A ``feature`` selects one key from dict inputs, a vector pair is
@@ -301,8 +307,7 @@ class RootMeanSquaredError(MeanSquaredError):
         """
         if not isinstance(other, RootMeanSquaredError):
             raise TypeError(
-                f"merge expects RootMeanSquaredError, "
-                f"got {type(other).__name__}"
+                f"merge expects RootMeanSquaredError, got {type(other).__name__}"
             )
         if None not in (self.n_joints_, other.n_joints_) and (
             self.n_joints_ != other.n_joints_
@@ -344,23 +349,75 @@ class R2Score(Metric):
     bigger_is_better = True
     supports_revert = False
 
-    def __init__(self, feature: str | None = None) -> None:
+    def __init__(self, feature: str | None = None, dtype: Any = None) -> None:
         super().__init__()
         self.feature = feature
+        self.dtype = dtype
         self.ss_res_ = 0.0
         self.mean_ = 0.0
         self.m2_ = 0.0
         self.total_ = 0.0
+        import numpy as _np
+
+        self._f32 = dtype is not None and _np.dtype(dtype) == _np.float32
+        self._K: Any = None
+        self._s1: Any = None
+        self._c1: Any = None
+        self._s2: Any = None
+        self._c2: Any = None
+        self._sres: Any = None
+        self._cres: Any = None
 
     def _update(self, y_true: Any, y_pred: Any, w: float) -> None:
         pairs = _pairs(y_true, y_pred, self.feature)
+        if not self._f32:
+            for a, b in pairs:
+                self.ss_res_ += w * (a - b) ** 2
+                n_new = self.total_ + w
+                delta = a - self.mean_
+                self.mean_ += w * delta / n_new
+                self.m2_ += w * delta * (a - self.mean_)
+                self.total_ = n_new
+            return
+        if w != 1.0:
+            raise ValueError("dtype=numpy.float32 supports only w=1 in R2Score")
+        import numpy as _np
+
         for a, b in pairs:
-            self.ss_res_ += w * (a - b) ** 2
-            n_new = self.total_ + w
-            delta = a - self.mean_
-            self.mean_ += w * delta / n_new
-            self.m2_ += w * delta * (a - self.mean_)
-            self.total_ = n_new
+            af = _np.float32(a)
+            bf = _np.float32(b)
+            if self._K is None:
+                self._K = af
+                self._s1 = _np.float32(0.0)
+                self._c1 = _np.float32(0.0)
+                self._s2 = _np.float32(0.0)
+                self._c2 = _np.float32(0.0)
+                self._sres = _np.float32(0.0)
+                self._cres = _np.float32(0.0)
+            y = _np.float32(af - self._K)
+            yy = _np.float32(y * y)
+            r = _np.float32(af - bf)
+            rr = _np.float32(r * r)
+            s1, e1 = _two_sum(self._s1, y)
+            self._c1 = _np.float32(self._c1 + e1)
+            self._s1 = s1
+            s2, e2 = _two_sum(self._s2, yy)
+            self._c2 = _np.float32(self._c2 + e2)
+            self._s2 = s2
+            sr, er = _two_sum(self._sres, rr)
+            self._cres = _np.float32(self._cres + er)
+            self._sres = sr
+            self.total_ += 1.0
+            n32 = _np.float32(self.total_)
+            s1c = _np.float32(self._s1 + self._c1)
+            s2c = _np.float32(self._s2 + self._c2)
+            src = _np.float32(self._sres + self._cres)
+            my = _np.float32(s1c / n32)
+            self.mean_ = float(self._K + my)
+            self.m2_ = float(
+                _np.float32(_np.float32(s2c / n32) - _np.float32(my * my))
+            ) * float(n32)
+            self.ss_res_ = float(src)
 
     def _revert(self, y_true: Any, y_pred: Any, w: float) -> None:
         raise NotImplementedError(
@@ -376,7 +433,13 @@ class R2Score(Metric):
         """Combine two partial states.
 
         Uses the parallel formula for Welford's ``M2`` (Chan et al.
-        1979).
+        1979) in the default path. With ``dtype=numpy.float32`` on
+        either side this method raises ``NotImplementedError``: the
+        formula runs on the stored scalars, whose shift differs between
+        the two partial states, so the combined value would carry the
+        accumulated float32 error (about 5.5e-5 on a split
+        N(1e3, 0.01) stream) instead of the single-pass 1.7e-8. The
+        default path does not have this limit.
 
         Args:
             other: another :class:`R2Score`.
@@ -386,12 +449,20 @@ class R2Score(Metric):
 
         Raises:
             TypeError: if ``other`` is not a :class:`R2Score`.
+            NotImplementedError: if either side uses ``dtype=numpy.float32``.
         """
         if not isinstance(other, R2Score):
-            raise TypeError(
-                f"merge expects R2Score, got {type(other).__name__}"
+            raise TypeError(f"merge expects R2Score, got {type(other).__name__}")
+        if self._f32 or (hasattr(other, "_f32") and other._f32):
+            raise NotImplementedError(
+                "R2Score.merge is not available with dtype=numpy.float32: "
+                "the pairwise formula runs on the stored scalars, whose "
+                "shift differs between the two partial states, so the "
+                "combined value carries the accumulated float32 error "
+                "(about 5.5e-5 on a split N(1e3, 0.01) stream) instead of "
+                "the single-pass 1.7e-8. Use the default path to merge."
             )
-        m = R2Score(feature=self.feature)
+        m = R2Score(feature=self.feature, dtype=self.dtype)
         na, nb = self.total_, other.total_
         m.ss_res_ = self.ss_res_ + other.ss_res_
         m.total_ = na + nb
@@ -581,9 +652,7 @@ class GaussianNLL(Metric):
             TypeError: if ``other`` is not a :class:`GaussianNLL`.
         """
         if not isinstance(other, GaussianNLL):
-            raise TypeError(
-                f"merge expects GaussianNLL, got {type(other).__name__}"
-            )
+            raise TypeError(f"merge expects GaussianNLL, got {type(other).__name__}")
         m = GaussianNLL(eps=self.eps)
         m.sum_ = self.sum_ + other.sum_
         m.total_ = self.total_ + other.total_

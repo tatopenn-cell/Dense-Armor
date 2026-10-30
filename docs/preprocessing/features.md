@@ -56,3 +56,22 @@ one for the positive class and one for the negative, and at each step it feeds t
 the union of the two. The queue length bounds how many old examples are kept, so the training
 set stays balanced even when the stream is not. The union also acts as a sliding window: very
 old examples leave the queue, which lets the classifier follow a change in the stream.
+
+## float32
+
+`SelectKBest(dtype=numpy.float32)` keeps the running correlation
+between each feature and the target in float32 and applies the
+shifted-data algorithm with ``K = (x[0], y[0])`` (Healy 2022,
+Algorithm 2) online: five TwoSum accumulators per feature and the
+two-term formulas for ``m2_x``, ``m2_y`` and ``c_xy``. Relative error
+of ``m2_x`` against the float64 reference on N(1e3, 0.01), 100,000
+samples, seed 0: 1.7e-8. On a constant stream at 1e10 and 1e38
+``m2_x``, ``m2_y`` and the correlation are exactly 0.0.
+
+Cost, median of 7 runs of one update over 20,000 samples, one CPU thread: default 0.001245 ms (IQR 0.000022), float32 0.020472 ms (IQR 0.009036). The claim that the float32 path
+is at most as slow as the default is not met: on a scalar loop the
+numpy float32 arithmetic is slower than the Python float64 arithmetic.
+The float32 speed of these classes is not measured; no class in this
+batch has a `learn_many` on which the float32 blocks of the T3 kernel
+could be timed.
+
