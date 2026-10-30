@@ -105,6 +105,7 @@ nav:
       - Overview: bridges/index.md
       - scikit-learn: bridges/sklearn.md
       - PyTorch: bridges/torch.md
+      - TensorFlow: bridges/tensorflow.md
   - Machine learning:
       - Overview: ml/index.md
       - Anomaly detection: ml/anomaly.md
