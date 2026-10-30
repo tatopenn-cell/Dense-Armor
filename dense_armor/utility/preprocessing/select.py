@@ -152,11 +152,6 @@ class VarianceThreshold(Transformer):
         threshold: variance floor; features with ``var <= threshold``
             are dropped from the output.
         features: explicit feature order.
-        dtype: ``None`` (default) keeps the correlation in float64 and
-            gives the Welford bivariate update bit for bit.
-            ``numpy.float32`` keeps the state in float32 and applies the
-            shifted-data algorithm with ``K = (x[0], y[0])`` (Healy 2022,
-            Algorithm 2) with five ``TwoSum`` accumulators.
 
     Examples:
         >>> from dense_armor.utility.preprocessing.select import VarianceThreshold
@@ -223,6 +218,11 @@ class SelectKBest(Transformer):
     Args:
         k: number of features to keep.
         features: explicit feature order.
+        dtype: ``None`` (default) keeps the correlation in float64 and
+            gives the Welford bivariate update bit for bit.
+            ``numpy.float32`` keeps the state in float32 and applies the
+            shifted-data algorithm with ``K = (x[0], y[0])`` (Healy 2022,
+            Algorithm 2) with five ``TwoSum`` accumulators.
 
     Examples:
         >>> from dense_armor.utility.preprocessing.select import SelectKBest
