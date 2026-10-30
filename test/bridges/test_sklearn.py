@@ -14,6 +14,7 @@ the ``refit_every`` branch instead.
 
 import subprocess
 import sys
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -129,10 +130,31 @@ else:
 """
     r = subprocess.run(
         [sys.executable, "-c", code],
-        cwd="/content/Dense-Armor",
+        cwd=str(Path(__file__).resolve().parents[2]),
         capture_output=True,
         text=True,
         timeout=120,
     )
     assert r.returncode == 0, r.stderr[-400:]
     assert "pip install dense-armor[sklearn]" in r.stdout
+
+
+def test_partial_fit_honours_classes():
+    """classes fixes the class list at the first call."""
+    m = SklearnClassifier(OnlineGaussianNB)
+    X = np.array([[0.0], [1.0], [2.0], [3.0]])
+    y = np.array([0, 1, 0, 1])
+    m.partial_fit(X, y, classes=[0, 1, 2])
+    assert m.classes_.tolist() == [0, 1, 2]
+    p = m.predict_proba(np.array([[0.5]]))
+    assert p.shape == (1, 3)
+
+
+def test_from_sklearn_rejects_unknown_label():
+    """A new label after the first call raises a clear ValueError."""
+    from sklearn.linear_model import SGDClassifier
+
+    w = from_sklearn(SGDClassifier(loss="log_loss", random_state=0), classes=[0, 1])
+    w.learn_one({"a": 0.0}, 0)
+    with pytest.raises(ValueError, match="not in the class list"):
+        w.learn_one({"a": 1.0}, 2)

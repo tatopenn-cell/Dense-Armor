@@ -66,10 +66,15 @@ def test_transformer_agreement():
     direct = MinMaxScaler()
     for row in X:
         direct.learn_one({i: float(v) for i, v in enumerate(row)})
-    keys = sorted(direct.transform_one({i: float(v) for i, v in enumerate(X[0])}).keys())
+    keys = sorted(
+        direct.transform_one({i: float(v) for i, v in enumerate(X[0])}).keys()
+    )
     direct_out = np.asarray(
         [
-            [float(direct.transform_one({i: float(v) for i, v in enumerate(row)})[k]) for k in keys]
+            [
+                float(direct.transform_one({i: float(v) for i, v in enumerate(row)})[k])
+                for k in keys
+            ]
             for row in X
         ]
     )

@@ -15,15 +15,21 @@ from typing import Any
 import numpy as np
 
 try:
-    from sklearn.base import (
+    from scipy import sparse as _sparse
+    from sklearn.base import (  # type: ignore[import-untyped]
         BaseEstimator,
         ClassifierMixin,
         RegressorMixin,
         TransformerMixin,
     )
-    from sklearn.utils.validation import check_array, check_is_fitted, column_or_1d
-    from sklearn.utils.multiclass import check_classification_targets
-    from scipy import sparse as _sparse
+    from sklearn.utils.multiclass import (  # type: ignore[import-untyped]
+        check_classification_targets,
+    )
+    from sklearn.utils.validation import (  # type: ignore[import-untyped]
+        check_array,
+        check_is_fitted,
+        column_or_1d,
+    )
 except ModuleNotFoundError as exc:
     raise ModuleNotFoundError(
         "dense_armor.bridges.sklearn needs scikit-learn: "
@@ -110,6 +116,8 @@ def _y_regressor(y: Any) -> np.ndarray:
 class _DenseWrapper:
     """Common machinery of the three wrappers; not a BaseEstimator."""
 
+    n_features_in_: int
+
     def __init__(self, estimator: Any, feature_names: Any = None) -> None:
         self.estimator = estimator
         self.feature_names = feature_names
@@ -134,11 +142,8 @@ class _DenseWrapper:
             self.model_ = _fresh(self.estimator)
         if hasattr(self, "n_features_in_") and arr.shape[1] != self.n_features_in_:
             raise ValueError(
-                "X has {} features, but {} is expecting {} features as input".format(
-                    arr.shape[1],
-                    type(self).__name__,
-                    self.n_features_in_,
-                )
+                f"X has {arr.shape[1]} features, but {type(self).__name__} "
+                f"is expecting {self.n_features_in_} features as input"
             )
         self.n_features_in_ = arr.shape[1]
         if not hasattr(self, "_names_"):
@@ -150,10 +155,14 @@ class _DenseWrapper:
                 self._names_ = list(range(arr.shape[1]))
         return arr
 
-    def _iter(self, arr: np.ndarray) -> Any:
-        names = self._names_
-        for row in arr:
-            yield {name: float(v) for name, v in zip(names, row)}
+    def _row(self, x: Any) -> dict:
+        """Return a dict keyed by the feature names, in the fixed order."""
+        if not isinstance(x, dict):
+            try:
+                x = dict(x)
+            except (TypeError, ValueError):
+                x = {}
+        return {name: float(x[name]) for name in self._names_}
 
 
 class SklearnClassifier(ClassifierMixin, _DenseWrapper, BaseEstimator):
@@ -170,29 +179,39 @@ class SklearnClassifier(ClassifierMixin, _DenseWrapper, BaseEstimator):
         [0, 1]
     """
 
-    def fit(self, X: Any, y: Any) -> "SklearnClassifier":
+    def fit(self, X: Any, y: Any) -> SklearnClassifier:
         arr = self._setup(X, reset=True, min_samples=2)
         y_arr = _y_classifier(y)
         if arr.shape[0] != len(y_arr):
-            raise ValueError(
-                "dense_armor.bridges.sklearn: X and y differ in length"
-            )
+            raise ValueError("dense_armor.bridges.sklearn: X and y differ in length")
         self.classes_ = np.unique(y_arr)
         for x, yi in zip(self._iter(arr), y_arr):
             self.model_.learn_one(x, yi)
         return self
 
-    def partial_fit(
-        self, X: Any, y: Any, classes: Any = None
-    ) -> "SklearnClassifier":
-        if not hasattr(self, "model_"):
-            if classes is not None:
-                self.classes_ = np.asarray(classes)
-            return self.fit(X, y)
+    def _iter(self, arr: np.ndarray) -> Any:
+        names = self._names_
+        for row in arr:
+            yield {name: float(v) for name, v in zip(names, row)}
+
+    def partial_fit(self, X: Any, y: Any, classes: Any = None) -> SklearnClassifier:
         if y is None:
             raise ValueError("dense_armor.bridges.sklearn: y is required")
-        arr = self._setup(X, reset=False)
         y_arr = np.asarray(y)
+        arr = self._setup(X, reset=not hasattr(self, "model_"))
+        if not hasattr(self, "classes_"):
+            if classes is None:
+                self.classes_ = np.unique(y_arr)
+            else:
+                self.classes_ = np.asarray(classes)
+        elif classes is not None and not np.array_equal(
+            np.asarray(self.classes_), np.asarray(classes)
+        ):
+            raise ValueError(
+                "dense_armor.bridges.sklearn: classes changed between partial_fit calls"
+            )
+        if arr.shape[0] != len(y_arr):
+            raise ValueError("dense_armor.bridges.sklearn: X and y differ in length")
         for x, yi in zip(self._iter(arr), y_arr):
             self.model_.learn_one(x, yi)
         return self
@@ -217,24 +236,27 @@ class SklearnClassifier(ClassifierMixin, _DenseWrapper, BaseEstimator):
 class SklearnRegressor(RegressorMixin, _DenseWrapper, BaseEstimator):
     """A Dense-Armor regressor behind the scikit-learn regressor interface."""
 
-    def fit(self, X: Any, y: Any) -> "SklearnRegressor":
+    def fit(self, X: Any, y: Any) -> SklearnRegressor:
         arr = self._setup(X, reset=True, min_samples=2)
         y_arr = _y_regressor(y)
         if arr.shape[0] != len(y_arr):
-            raise ValueError(
-                "dense_armor.bridges.sklearn: X and y differ in length"
-            )
+            raise ValueError("dense_armor.bridges.sklearn: X and y differ in length")
         for x, yi in zip(self._iter(arr), y_arr):
             self.model_.learn_one(x, float(yi))
         return self
 
-    def partial_fit(self, X: Any, y: Any) -> "SklearnRegressor":
-        if not hasattr(self, "model_"):
-            return self.fit(X, y)
+    def _iter(self, arr: np.ndarray) -> Any:
+        names = self._names_
+        for row in arr:
+            yield {name: float(v) for name, v in zip(names, row)}
+
+    def partial_fit(self, X: Any, y: Any) -> SklearnRegressor:
         if y is None:
             raise ValueError("dense_armor.bridges.sklearn: y is required")
-        arr = self._setup(X, reset=False)
+        arr = self._setup(X, reset=not hasattr(self, "model_"))
         y_arr = np.asarray(y, dtype=float)
+        if arr.shape[0] != len(y_arr):
+            raise ValueError("dense_armor.bridges.sklearn: X and y differ in length")
         for x, yi in zip(self._iter(arr), y_arr):
             self.model_.learn_one(x, float(yi))
         return self
@@ -250,7 +272,7 @@ class SklearnRegressor(RegressorMixin, _DenseWrapper, BaseEstimator):
 class SklearnTransformer(TransformerMixin, _DenseWrapper, BaseEstimator):
     """A Dense-Armor transformer behind the scikit-learn transformer interface."""
 
-    def fit(self, X: Any, y: Any = None) -> "SklearnTransformer":
+    def fit(self, X: Any, y: Any = None) -> SklearnTransformer:
         arr = self._setup(X, reset=True, min_samples=1)
         for x in self._iter(arr):
             self.model_.learn_one(x, y)
@@ -260,7 +282,12 @@ class SklearnTransformer(TransformerMixin, _DenseWrapper, BaseEstimator):
         self.feature_names_out_ = np.asarray([str(k) for k in out.keys()])
         return self
 
-    def partial_fit(self, X: Any, y: Any = None) -> "SklearnTransformer":
+    def _iter(self, arr: np.ndarray) -> Any:
+        names = self._names_
+        for row in arr:
+            yield {name: float(v) for name, v in zip(names, row)}
+
+    def partial_fit(self, X: Any, y: Any = None) -> SklearnTransformer:
         if not hasattr(self, "model_"):
             return self.fit(X, y)
         arr = self._setup(X, reset=False)
@@ -295,7 +322,10 @@ def from_sklearn(
     The first call to ``partial_fit`` of a scikit-learn classifier must
     carry the list of classes; pass ``classes`` explicitly, or leave it
     ``None`` and the adapter buffers the rows until it has seen at least
-    two distinct classes, then calls ``partial_fit`` with them.
+    two distinct classes, then calls ``partial_fit`` with them. A label
+    that is not in the class list raises a ``ValueError``: scikit-learn
+    partial-fit classifiers cannot add a new class after the first call,
+    and refitting the model would silently discard the other rows.
 
     If the estimator has no ``partial_fit`` (a batch estimator),
     ``refit_every`` must be given and the rows are collected and refit
@@ -339,16 +369,22 @@ class _DenseArmorAdapter(Estimator):
     ) -> None:
         self.est = est
         self.refit_every = refit_every
-        self._rows: list = []
-        self._y: list = []
+        self._rows: list[list[float]] = []
+        self._y: list[Any] = []
         self._model: Any = None
-        self._classes = None if classes is None else list(classes)
+        self._classes: list[Any] | None = None if classes is None else list(classes)
         self._has_partial = hasattr(est, "partial_fit")
         self._partial_ready = False
-        self._buffer_rows: list = []
-        self._buffer_y: list = []
+        self._buffer_rows: list[list[float]] = []
+        self._buffer_y: list[Any] = []
+        self._names: list[str] | None = None
         if self._has_partial:
             self._model = copy.deepcopy(est)
+
+    def _ordered(self, x: Any) -> list[float]:
+        if self._names is None:
+            self._names = list(x.keys())
+        return [float(x[n]) for n in self._names]
 
     def _refit(self) -> None:
         model = copy.deepcopy(self.est)
@@ -356,7 +392,7 @@ class _DenseArmorAdapter(Estimator):
             model.fit(np.asarray(self._rows, dtype=float), np.asarray(self._y))
         self._model = model
 
-    def _partial_first(self, row: list, y: Any) -> None:
+    def _partial_first(self, row: list[float], y: Any) -> None:
         self._buffer_rows.append(row)
         self._buffer_y.append(y)
         distinct = sorted(set(self._buffer_y))
@@ -370,8 +406,8 @@ class _DenseArmorAdapter(Estimator):
         self._buffer_rows = []
         self._buffer_y = []
 
-    def learn_one(self, x: Any, y: Any, t: Any = None) -> "_DenseArmorAdapter":
-        row = [float(v) for v in x.values()]
+    def learn_one(self, x: Any, y: Any, t: Any = None) -> _DenseArmorAdapter:
+        row = self._ordered(x)
         if self._has_partial:
             if not self._partial_ready:
                 if self._classes is not None:
@@ -384,10 +420,16 @@ class _DenseArmorAdapter(Estimator):
                 else:
                     self._partial_first(row, y)
                 return self
+            assert self._classes is not None
             if y not in self._classes:
-                self._classes.append(y)
+                raise ValueError(
+                    f"from_sklearn: label {y!r} is not in the class list "
+                    f"{self._classes!r}; scikit-learn partial-fit "
+                    "classifiers cannot add a new class after the first call"
+                )
             self._model.partial_fit(np.asarray([row], dtype=float), np.asarray([y]))
         else:
+            assert self.refit_every is not None
             self._rows.append(row)
             self._y.append(y)
             if len(self._rows) % int(self.refit_every) == 0:
@@ -397,13 +439,13 @@ class _DenseArmorAdapter(Estimator):
     def predict_one(self, x: Any, t: Any = None) -> Any:
         if self._model is None:
             self._refit()
-        X = np.asarray([[float(v) for v in x.values()]])
+        X = np.asarray([self._ordered(x)], dtype=float)
         return self._model.predict(X)[0]
 
     def predict_proba_one(self, x: Any, t: Any = None) -> dict:
         if self._model is None:
             self._refit()
-        X = np.asarray([[float(v) for v in x.values()]])
+        X = np.asarray([self._ordered(x)], dtype=float)
         proba = self._model.predict_proba(X)[0]
         classes = list(getattr(self._model, "classes_", range(len(proba))))
         return dict(zip(classes, (float(p) for p in proba)))
