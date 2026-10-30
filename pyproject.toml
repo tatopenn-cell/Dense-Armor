@@ -21,6 +21,7 @@ classifiers = [
 dependencies = ["numpy", "jax", "psutil", "osqp", "scipy", "xacro"]
 
 [project.optional-dependencies]
+tensorflow = ["tensorflow-cpu>=2.16"]
 torch = ["torch>=2.0"]
 sklearn = ["scikit-learn>=1.6"]
 finance-stream = ["pyzmq>=25", "confluent-kafka>=2"]
