@@ -42,20 +42,20 @@ class _CorrStats:
         import numpy as _np
 
         self._f32 = dtype is not None and _np.dtype(dtype) == _np.float32
-        self._Kx = None
-        self._Ky = None
-        self._s1x = None
-        self._c1x = None
-        self._s1y = None
-        self._c1y = None
-        self._s2x = None
-        self._c2x = None
-        self._s2y = None
-        self._c2y = None
-        self._sxy = None
-        self._cxy = None
+        self._Kx: Any = None
+        self._Ky: Any = None
+        self._s1x: Any = None
+        self._c1x: Any = None
+        self._s1y: Any = None
+        self._c1y: Any = None
+        self._s2x: Any = None
+        self._c2x: Any = None
+        self._s2y: Any = None
+        self._c2y: Any = None
+        self._sxy: Any = None
+        self._cxy: Any = None
 
-    def update(self, x: float, y: float) -> None:
+    def update(self, x: float, y: float) -> "_CorrStats":
         """Add one ``(x, y)`` pair.
 
         With ``dtype=None`` (default) the update is Welford's bivariate
@@ -94,24 +94,26 @@ class _CorrStats:
             self._c2y = _np.float32(0.0)
             self._sxy = _np.float32(0.0)
             self._cxy = _np.float32(0.0)
-        dx = _np.float32(xf - self._Kx)
-        dy = _np.float32(yf - self._Ky)
-        dxx = _np.float32(dx * dx)
-        dyy = _np.float32(dy * dy)
-        dxy = _np.float32(dx * dy)
-        s1x, e1x = _two_sum(self._s1x, dx)
+        assert self._Kx is not None
+        assert self._Ky is not None
+        dx32 = _np.float32(xf - self._Kx)
+        dy32 = _np.float32(yf - self._Ky)
+        dxx32 = _np.float32(dx32 * dx32)
+        dyy32 = _np.float32(dy32 * dy32)
+        dxy32 = _np.float32(dx32 * dy32)
+        s1x, e1x = _two_sum(self._s1x, dx32)
         self._c1x = _np.float32(self._c1x + e1x)
         self._s1x = s1x
-        s1y, e1y = _two_sum(self._s1y, dy)
+        s1y, e1y = _two_sum(self._s1y, dy32)
         self._c1y = _np.float32(self._c1y + e1y)
         self._s1y = s1y
-        s2x, e2x = _two_sum(self._s2x, dxx)
+        s2x, e2x = _two_sum(self._s2x, dxx32)
         self._c2x = _np.float32(self._c2x + e2x)
         self._s2x = s2x
-        s2y, e2y = _two_sum(self._s2y, dyy)
+        s2y, e2y = _two_sum(self._s2y, dyy32)
         self._c2y = _np.float32(self._c2y + e2y)
         self._s2y = s2y
-        sxy, exy = _two_sum(self._sxy, dxy)
+        sxy, exy = _two_sum(self._sxy, dxy32)
         self._cxy = _np.float32(self._cxy + exy)
         self._sxy = sxy
         self.n_ += 1

@@ -360,13 +360,13 @@ class R2Score(Metric):
         import numpy as _np
 
         self._f32 = dtype is not None and _np.dtype(dtype) == _np.float32
-        self._K = None
-        self._s1 = None
-        self._c1 = None
-        self._s2 = None
-        self._c2 = None
-        self._sres = None
-        self._cres = None
+        self._K: Any = None
+        self._s1: Any = None
+        self._c1: Any = None
+        self._s2: Any = None
+        self._c2: Any = None
+        self._sres: Any = None
+        self._cres: Any = None
 
     def _update(self, y_true: Any, y_pred: Any, w: float) -> None:
         pairs = _pairs(y_true, y_pred, self.feature)

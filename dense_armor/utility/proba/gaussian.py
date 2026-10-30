@@ -61,6 +61,11 @@ class Gaussian:
         self.dtype = dtype
         self._var0 = float(var)
         self._n = float(n)
+        self._K: Any = None
+        self._s1: Any = None
+        self._c1: Any = None
+        self._s2: Any = None
+        self._c2: Any = None
         if dtype is not None and np.dtype(dtype) == np.float32:
             self._f32 = True
             self._K = np.float32(mean) if n > 0.0 else None
@@ -138,6 +143,7 @@ class Gaussian:
             return self._mean
         if self._n <= 0.0:
             return float(self._K) if self._K is not None else 0.0
+        assert self._K is not None
         n = np.float32(self._n)
         s1c = np.float32(self._s1 + self._c1)
         return float(self._K + np.float32(s1c / n))
