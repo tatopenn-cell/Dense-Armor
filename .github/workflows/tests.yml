@@ -63,6 +63,10 @@ jobs:
         if: needs.changes.outputs.code == 'true' && matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest'
         run: pip install torch --index-url https://download.pytorch.org/whl/cpu
 
+      - name: Install tensorflow (CPU) for the bridge tests
+        if: needs.changes.outputs.code == 'true' && matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest'
+        run: pip install tensorflow-cpu
+
       - name: Run pytest
         if: needs.changes.outputs.code == 'true'
         env:
