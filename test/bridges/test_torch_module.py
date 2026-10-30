@@ -90,6 +90,7 @@ def test_sgd_step_lowers_loss():
 def test_train_mode_reaches_dropout():
     """eval is identity, train applies a mask and advances the key."""
     import jax
+
     from dense_armor.utility.neural import Dropout, Sequential
 
     m = Sequential([Dropout(0.5, key=jax.random.PRNGKey(0))])
