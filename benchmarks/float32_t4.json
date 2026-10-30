@@ -1,0 +1,43 @@
+{
+  "backend": "3.13.18",
+  "platform": "Linux-6.6.159+-x86_64-with-glibc2.39",
+  "processor": "x86_64",
+  "n": 20000,
+  "seed": 0,
+  "runs": 7,
+  "claim": "the float32 path is at most as slow as the default path on every kept class, median of 7 runs",
+  "rows": [
+    {
+      "class": "Gaussian",
+      "default_median_ms": 0.00034727345000646893,
+      "default_iqr_ms": 7.995500027391245e-06,
+      "f32_median_ms": 0.003227223800013235,
+      "f32_iqr_ms": 5.8997499991164225e-05,
+      "claim_holds": false
+    },
+    {
+      "class": "OnlineGaussianNB",
+      "default_median_ms": 0.005857115100025112,
+      "default_iqr_ms": 0.00014936924994799535,
+      "f32_median_ms": 0.0236240728499979,
+      "f32_iqr_ms": 0.009819518749986857,
+      "claim_holds": false
+    },
+    {
+      "class": "SelectKBest",
+      "default_median_ms": 0.0016658509000080813,
+      "default_iqr_ms": 0.0006836236999788526,
+      "f32_median_ms": 0.015997060900008363,
+      "f32_iqr_ms": 0.005422040625012416,
+      "claim_holds": false
+    },
+    {
+      "class": "R2Score",
+      "default_median_ms": 0.0013495253999735723,
+      "default_iqr_ms": 0.0005195352499868023,
+      "f32_median_ms": 0.009570533850001084,
+      "f32_iqr_ms": 9.705227500944429e-05,
+      "claim_holds": false
+    }
+  ]
+}
