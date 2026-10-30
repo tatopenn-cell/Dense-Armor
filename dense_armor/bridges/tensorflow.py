@@ -144,7 +144,6 @@ def _make_apply_jax(module: Any) -> Any:
 
     def _forward(x: Any) -> Any:
         if cache["out_dim"] is None:
-            # The first call outside a trace fixes the output shape.
             probe = module(tf.zeros((1, x.shape[1]), dtype=tf.float32))
             cache["out_dim"] = int(probe.shape[-1])
         out_shape = jax.ShapeDtypeStruct((x.shape[0], cache["out_dim"]), jnp.float32)

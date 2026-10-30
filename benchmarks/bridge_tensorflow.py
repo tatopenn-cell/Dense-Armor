@@ -121,5 +121,6 @@ if __name__ == "__main__":
     args = ap.parse_args()
     out = main(args.smoke)
     import json as _json
+
     Path(args.out).write_text(_json.dumps(out, indent=2))
     print(f"\nwrote {args.out}")

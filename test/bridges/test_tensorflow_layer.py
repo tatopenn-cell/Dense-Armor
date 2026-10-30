@@ -69,6 +69,4 @@ def test_optimizer_step_lowers_loss():
         grads = tape.gradient(loss, layer.trainable_variables)
         opt.apply_gradients(zip(grads, layer.trainable_variables))
         losses.append(float(loss.numpy()))
-    # threshold 0.9: the run converges, the exact factor depends on the
-    # TensorFlow version (2.20 and 2.21 differ on the last digit)
     assert losses[-1] < losses[0] * 0.9
