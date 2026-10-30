@@ -59,6 +59,10 @@ jobs:
         if: needs.changes.outputs.code == 'true'
         run: pip install -e ".[dev,audio,data,mcp,ros]" opencv-python-headless pillow
 
+      - name: Install torch (CPU) for the bridge tests
+        if: needs.changes.outputs.code == 'true' && matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest'
+        run: pip install torch --index-url https://download.pytorch.org/whl/cpu
+
       - name: Run pytest
         if: needs.changes.outputs.code == 'true'
         env:
