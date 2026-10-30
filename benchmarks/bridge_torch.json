@@ -1,0 +1,22 @@
+{
+  "backend": "cpu",
+  "torch": "2.11.0+cpu",
+  "jax": "0.11.1",
+  "numpy": "2.1.3",
+  "batch": 256,
+  "n_runs": 7,
+  "jax_direct_ms": {
+    "median": 0.35576699883677065,
+    "iqr": 0.10344449856347637
+  },
+  "torch_direct_ms": {
+    "median": 0.32199499946727883,
+    "iqr": 0.04895450001640711
+  },
+  "bridge_ms": {
+    "median": 13.160976001017843,
+    "iqr": 0.9746625000843778
+  },
+  "overhead_fraction": 35.99324570308509,
+  "claim_20pct_holds": false
+}
