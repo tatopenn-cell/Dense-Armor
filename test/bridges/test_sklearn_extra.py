@@ -11,7 +11,6 @@ import pytest
 pytest.importorskip("sklearn")
 
 from sklearn.linear_model import Ridge, SGDClassifier
-from sklearn.tree import DecisionTreeClassifier
 
 from dense_armor.bridges.sklearn import (
     SklearnClassifier,
@@ -23,7 +22,6 @@ from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
 from dense_armor.utility.linear.glm import LinearRegression
 from dense_armor.utility.optim import SGD
 from dense_armor.utility.preprocessing.scale import MinMaxScaler
-
 
 # ---- _as_array error paths ----
 
