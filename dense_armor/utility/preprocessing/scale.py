@@ -135,8 +135,9 @@ class StandardScaler(Transformer):
         or ``(n, d)`` for a vector feature) each column goes through
         :meth:`RunningMoments.learn_many`, which summarises the block in
         one numpy pass and merges it with the pairwise formula of Chan,
-        Golub and LeVeque (1979), Eq. (2.1b), and Pebay (2008), Eq. (1.3)
-        and (1.4). The state equals the one of the loop over
+        Golub and LeVeque (1979), Eq. (2.1b), report page 4 (PDF page 8),
+        and Pebay (2008), Eq. (1.3) and (1.4), PDF page 8. The state
+        equals the one of the loop over
         :meth:`learn_one` within floating-point tolerance, and no sum of
         the samples is rebuilt, so a block of large values does not
         overflow the mean. With anything else (a list of dicts) the loop

@@ -1,10 +1,8 @@
-"""Block path of the scikit-learn bridge and ``StandardScaler.learn_many``.
+"""Block path of the scikit-learn bridge.
 
-The scaler of Dense-Armor learns a block of samples with
-``RunningMoments.learn_many`` (one numpy pass and the pairwise merge of
-Chan, Golub and LeVeque 1979, Eq. 2.1b). The bridge hands the columns of the
-array to a model that declares ``learn_many_columns = True``, and keeps the
-loop of ``learn_one`` for every other model.
+The bridge hands the columns of the array to a model that declares
+``learn_many_columns = True`` (the ``StandardScaler`` of Dense-Armor), and
+keeps the loop of ``learn_one`` for every other model.
 """
 
 import numpy as np
@@ -35,53 +33,8 @@ def _table(n=4000, seed=0):
     return rng.normal([1e3, 5.0, -2.0], [1.0, 2.0, 0.5], size=(n, 3))
 
 
-def test_scaler_block_equals_loop():
-    X = _table()
-    a, b = StandardScaler(), StandardScaler()
-    for r in X:
-        a.learn_one({"f0": r[0], "f1": r[1], "f2": r[2]})
-    b.learn_many({"f0": X[:, 0], "f1": X[:, 1], "f2": X[:, 2]})
-    for k in ("f0", "f1", "f2"):
-        sa, sb = a.stats_[k][0], b.stats_[k][0]
-        assert sa.count == sb.count
-        assert abs(sa.mean - sb.mean) / abs(sa.mean) <= TOL
-        assert abs(sa.var - sb.var) / sa.var <= TOL
-
-
-def test_scaler_block_detects_a_different_input():
-    X = _table()
-    a, b = StandardScaler(), StandardScaler()
-    a.learn_many({"f0": X[:, 0]})
-    b.learn_many({"f0": X[:, 0] * 1.01})
-    assert (
-        abs(a.stats_["f0"][0].var - b.stats_["f0"][0].var) / a.stats_["f0"][0].var
-        > 1e-3
-    )
-
-
-def test_scaler_block_counts_nan_as_missing():
-    col = np.array([1.0, 2.0, np.nan, 3.0, np.inf, 4.0])
-    s = StandardScaler().learn_many({"x": col})
-    r = s.stats_["x"][0]
-    assert r.count == 4
-    assert r.n_missing == 2
-    assert r.mean == pytest.approx(2.5)
-
-
-def test_scaler_block_with_a_vector_feature():
-    q = np.array([[0.0, 1.0], [1.0, 2.0], [2.0, 3.0]])
-    s = StandardScaler().learn_many({"q": q})
-    assert [round(v, 4) for v in s.transform_one({"q": [2.0, 3.0]})["q"]] == [1.0, 1.0]
-
-
-def test_scaler_list_of_dicts_uses_the_loop():
-    s = StandardScaler().learn_many([{"x": 1.0}, {"x": 2.0}, {"x": 3.0}])
-    assert s.stats_["x"][0].count == 3
-
-
 def test_bridge_uses_the_block_path():
-    X = _table()
-    SklearnTransformer(_NoLoop).fit(X)
+    SklearnTransformer(_NoLoop).fit(_table())
 
 
 def test_bridge_block_equals_loop():
