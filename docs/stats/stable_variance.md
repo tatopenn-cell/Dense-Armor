@@ -222,9 +222,11 @@ after the measurement.
 
 ### Choices
 
-The shift `y = x - x[0]` was invented by Salvatore Pennacchio. The kernel is
-his solution. The compensated tree of TwoSum was added to the sum of the
-squares.
+The shift `y = x - x[0]` is the shifted-data formula of Chan, Golub and
+LeVeque (1983) with K = x[0], cited from Wikipedia, "Algorithms for
+calculating variance"; the paper of 1983 was not read. The combination of the
+shift, the local centring, the two-term formula and the compensated tree of
+TwoSum, one slice at a time with `vmap`, is by Salvatore Pennacchio.
 
 The dtype policy: float32 in gives float32 out, float64 in gives float64
 out when `jax_enable_x64` is on (off, JAX promotes to float32),

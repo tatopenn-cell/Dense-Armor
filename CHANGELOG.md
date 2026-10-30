@@ -6,8 +6,9 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ### Added
 - `dense_armor/utility/stats/stable.py`: `stable_var` and `stable_moments`, a
-  float32 variance kernel. First-element anchor shift, invented by Salvatore Pennacchio (Sterbenz exact on close
-  values), two-term formula, and a Kahan tree (binary merge of `TwoSum`,
+  float32 variance kernel. First-element anchor shift (shifted-data formula of Chan, Golub and LeVeque 1983
+  with K = x[0]; Sterbenz exact on close values), two-term formula, and a
+  compensated tree (binary merge of `TwoSum`,
   `log2(n)` vectorised levels) on `d**2`. Exactly `0.0` on identical values up
   to `1e38` in eager and under `jax.jit`, on CPU and on GPU; below the baseline
   two-term formula on 3 of 4 datasets of the task in each combination (the two

@@ -4,9 +4,9 @@ The two benchmark JSON files (CPU and GPU) are committed in
 ``benchmarks/``, with the median of three sessions and the range for the
 speed.
 
-The kernel is the formula of Salvatore Pennacchio. It starts from the
-shift, which he invented: the first element is subtracted from every
-value along the reduction axis:
+The kernel is a combination by Salvatore Pennacchio. It starts from the
+shifted-data formula of Chan, Golub and LeVeque (1983) with K = x[0]: the
+first element is subtracted from every value along the reduction axis:
 
 .. code-block:: text
 
@@ -48,10 +48,12 @@ References:
         Lemma 5, PDF page 10, the Sterbenz lemma that makes the shift
         exact.
 
-The shift ``y = x - x[0]`` was invented by Salvatore Pennacchio. The
-kernel is his solution: the shift, the local centring and the two-term
-formula, one slice at a time with ``vmap``. The compensated tree of TwoSum
-(Ogita-Rump-Oishi, Shewchuk) was added to the sum of the squares.
+The shift ``y = x - x[0]`` is the shifted-data formula of Chan, Golub and
+LeVeque (1983) with K = x[0], cited from Wikipedia, "Algorithms for
+calculating variance"; the paper of 1983 was not read. The combination of
+the shift, the local centring, the two-term formula and the compensated tree
+of TwoSum (Ogita-Rump-Oishi, Shewchuk), one slice at a time with ``vmap``,
+is by Salvatore Pennacchio.
 """
 
 from __future__ import annotations
@@ -230,8 +232,8 @@ def _finish_mean(mean, axes, batch_shape, keepdims, out_dtype):
 def stable_var(x, axis=None, ddof=0, keepdims=False):
     """Variance of ``x`` along ``axis``, computed in the input dtype.
 
-    The shift ``y = x - x[0]``, invented by Salvatore Pennacchio, comes
-    first. Then ``m = mean(y)``, ``d = y - m`` and ``var = mean(d**2) -
+    The shift ``y = x - x[0]``, the shifted-data formula of Chan, Golub and
+    LeVeque (1983) with K = x[0], comes first. Then ``m = mean(y)``, ``d = y - m`` and ``var = mean(d**2) -
     mean(d)**2``, one slice at a time with ``vmap``, with ``d**2`` summed
     by a compensated tree of ``TwoSum`` (``log2(n)`` vectorised levels).
     The result is exactly ``0.0`` on identical values up to ``1e38``, in
