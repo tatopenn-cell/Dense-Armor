@@ -119,13 +119,19 @@ class KerasLayer(tf.keras.layers.Layer):
     def call(self, x: tf.Tensor, training: bool | None = None) -> tf.Tensor:
         import copy
 
-        def f(x_arg: Any, *w_args: Any) -> Any:
-            m = copy.deepcopy(self._model)
-            for param, w in zip(m.params(), w_args):
-                param.value = w
-            return m.forward(x_arg, training=False)
+        if not hasattr(self, "_cache"):
+            self._cache: dict = {}
+        key = (tuple(x.shape), bool(training))
+        if key not in self._cache:
 
-        f_tf = jax2tf.convert(f)
+            def f(x_arg: Any, *w_args: Any) -> Any:
+                m = copy.deepcopy(self._model)
+                for param, w in zip(m.params(), w_args):
+                    param.value = w
+                return m.forward(x_arg, training=bool(training))
+
+            self._cache[key] = jax2tf.convert(f)
+        f_tf = self._cache[key]
         return f_tf(x, *[tf.convert_to_tensor(w) for w in self._w])
 
 
