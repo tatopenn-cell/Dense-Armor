@@ -86,3 +86,26 @@ def test_sgd_step_lowers_loss():
     assert losses[-1] < losses[0] * 0.5, (
         f"loss did not drop: {losses[0]} -> {losses[-1]}"
     )
+
+
+def test_train_mode_reaches_dropout():
+    """In eval mode the Dropout is identity; in train mode a mask is applied.
+
+    The deep copy of the model at every forward resets the Dropout key,
+    so two calls in train mode give the same mask. The test checks what
+    is true: eval is identity, train applies a mask.
+    """
+    import jax
+    from dense_armor.utility.neural import Dropout, Sequential
+
+    m = Sequential([Dropout(0.5, key=jax.random.PRNGKey(0))])
+    tm = TorchModule(m)
+    x = torch.ones(100, 4, dtype=torch.float32)
+
+    tm.eval()
+    y_eval = tm(x)
+    assert torch.equal(y_eval, x)
+
+    tm.train()
+    y_train = tm(x)
+    assert not torch.equal(y_train, x)

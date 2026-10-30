@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from typing import Any
 
+import copy
+
 import numpy as np
 
 try:
@@ -101,7 +103,6 @@ class TorchModule(torch.nn.Module):
     def __init__(self, model: Any) -> None:
         super().__init__()
         self._model = model
-        self._model = model
         self._torch_params = torch.nn.ParameterList(
             [
                 torch.nn.Parameter(torch.tensor(np.asarray(p.value)))
@@ -110,16 +111,19 @@ class TorchModule(torch.nn.Module):
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:  # type: ignore[override]
-        return _TorchModuleFn.apply(self._model, x, *tuple(self._torch_params))
+        return _TorchModuleFn.apply(
+            self._model, x, self.training, *tuple(self._torch_params)
+        )
 
 
 class _TorchModuleFn(torch.autograd.Function):
     """``torch.autograd.Function`` whose forward and backward are jax."""
 
     @staticmethod
-    def forward(ctx: Any, model: Any, x: torch.Tensor, *params: Any) -> torch.Tensor:
+    def forward(
+        ctx: Any, model: Any, x: torch.Tensor, training: bool, *params: Any
+    ) -> torch.Tensor:
         import copy
-
 
         base = model
         pp = [jnp.asarray(p.detach().numpy()) for p in params]
@@ -129,7 +133,7 @@ class _TorchModuleFn(torch.autograd.Function):
             m = copy.deepcopy(base)
             for param, v in zip(m.params(), pp_):
                 param.value = v
-            return m.forward(xx_, training=False)
+            return m.forward(xx_, training=training)
 
         out, vjp_fn = jax.vjp(f, pp, xa)
         ctx.save_for_backward(*params)
@@ -140,7 +144,7 @@ class _TorchModuleFn(torch.autograd.Function):
     def backward(ctx: Any, g_out: torch.Tensor) -> tuple:
         g = jnp.asarray(g_out.detach().numpy())
         g_p, g_x = ctx._vjp_fn(g)
-        out = [None, torch.from_dlpack(g_x).clone()]
+        out = [None, torch.from_dlpack(g_x).clone(), None]
         out.extend(torch.from_dlpack(gg).clone() for gg in g_p)
         return tuple(out)
 
@@ -148,10 +152,15 @@ class _TorchModuleFn(torch.autograd.Function):
 class TorchAdapter:
     """A ``torch.nn.Module`` usable inside Dense-Armor.
 
-    Exposes ``apply(x)`` that runs the module on the converted input and
-    whose gradient is ``torch.autograd`` through ``jax.custom_vjp``.
-    The Dense-Armor side sees a function of ``x`` only: the module's own
-    parameters are updated by torch, not by the Dense-Armor estimator.
+    ``apply(x)`` runs the torch module on ``x`` (a jax array or a torch
+    tensor). If ``x`` is a jax array, the gradient of the output with
+    respect to ``x`` is computed with ``torch.autograd`` and exposed to
+    jax through ``jax.custom_vjp``, so a Dense-Armor pipeline can back
+    propagate through the adapter.
+
+    The module's own parameters are updated by torch, not by the
+    Dense-Armor estimator: the adapter is a computation node, not a
+    container of params.
 
     Args:
         module: a ``torch.nn.Module``.
@@ -168,11 +177,52 @@ class TorchAdapter:
 
     def __init__(self, module: Any) -> None:
         self.module = module
+        self._apply_jax = _make_apply_jax(module)
 
     def apply(self, x: Any) -> Any:
-        if isinstance(x, jax.Array):
-            x = torch.from_dlpack(x).clone()
-        return self.module(x)
+        if isinstance(x, torch.Tensor):
+            return self.module(x)
+        return self._apply_jax(x)
+
+
+def _make_apply_jax(module: Any) -> Any:
+    out_dim = getattr(module, "out_features", None)
+    if out_dim is None:
+        out_dim = list(module.parameters())[-1].shape[0]
+
+    @jax.custom_vjp
+    def _apply(x: Any) -> Any:
+        return _forward(x)
+
+    def _forward(x: Any) -> Any:
+        out_shape = jax.ShapeDtypeStruct((x.shape[0], out_dim), jnp.float32)
+
+        def cb(x_np: Any) -> Any:
+            with torch.no_grad():
+                x_t = torch.from_numpy(np.array(x_np, copy=True))
+                y = module(x_t)
+            return y.numpy()
+
+        return jax.pure_callback(cb, out_shape, x)
+
+    def _fwd(x: Any) -> tuple:
+        return _forward(x), (x,)
+
+    def _bwd(res: tuple, g: Any) -> tuple:
+        (x,) = res
+        g_shape = jax.ShapeDtypeStruct(x.shape, jnp.float32)
+
+        def cb(x_np: Any, g_np: Any) -> Any:
+            x_t = torch.from_numpy(np.array(x_np, copy=True)).requires_grad_(True)
+            y = module(x_t)
+            y.backward(torch.from_numpy(np.array(g_np, copy=True)))
+            return x_t.grad.numpy()
+
+        g_x = jax.pure_callback(cb, g_shape, x, g)
+        return (g_x,)
+
+    _apply.defvjp(_fwd, _bwd)
+    return _apply
 
 
 def from_torch(module: Any) -> TorchAdapter:
@@ -183,7 +233,8 @@ def from_torch(module: Any) -> TorchAdapter:
 
     Returns:
         A ``TorchAdapter`` whose ``apply`` runs the module on the input
-        and whose gradient, if the input requires grad, is
-        ``torch.autograd`` of the module.
+        and, for a jax array input, exposes the gradient of the module
+        through ``jax.custom_vjp``. A torch tensor input is passed to the
+        module unchanged, and torch.autograd of the caller still works.
     """
     return TorchAdapter(module)

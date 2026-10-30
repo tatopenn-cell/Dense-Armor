@@ -76,15 +76,15 @@ $ python benchmarks/bridge_torch.py
   "numpy": "2.1.3",
   "batch": 256,
   "n_runs": 7,
-  "jax_direct_ms":    {"median": 0.160, "iqr": 0.065},
-  "torch_direct_ms":  {"median": 0.306, "iqr": 0.040},
-  "bridge_ms":        {"median": 9.026, "iqr": 0.355},
-  "overhead_fraction": 55.4,
+  "jax_direct_ms":    {"median": 0.177, "iqr": 0.031},
+  "torch_direct_ms":  {"median": 0.220, "iqr": 0.096},
+  "bridge_ms":        {"median": 7.224, "iqr": 0.282},
+  "overhead_fraction": 39.87,
   "claim_20pct_holds": false
 }
 ```
 
-The claim declared in the first commit (the conversion costs less than 20% of the forward) **does not hold**: the bridge forward takes 9.0 ms against 0.16 ms of the JAX forward, a factor of 56. The overhead is not the DLPack conversion (0.16 ms); it is `jax.vjp` in eager mode. Making it cheaper would need `jax.jit` of the forward, which is incompatible with the mutable `Param.value` the Dense-Armor layers use, and a functional version of the layers is a separate task. The numbers are the ones above.
+The claim declared in the first commit (the conversion costs less than 20% of the forward) **does not hold**: the bridge forward takes 7.2 ms against 0.18 ms of the JAX forward, a factor of 40. The DLPack conversion is not the dominant cost; the two heavy terms are a `deepcopy` of the model (1.0 ms) and `jax.vjp` in eager mode (3.4 ms), measured on the same model (forward 0.16, deepcopy 1.0, jax.vjp 3.4). Making it cheaper would need `jax.jit` of the forward, which is incompatible with the mutable `Param.value` the Dense-Armor layers use, and a functional version of the layers is a separate task. The numbers are the ones above.
 
 ## Details
 
@@ -104,9 +104,31 @@ The claim declared in the first commit (the conversion costs less than 20% of th
 - **`TorchModule.backward` uses `jax.vjp` and copies the gradient.** `torch.from_dlpack` of a JAX array shares the buffer, and JAX invalidates it when the array goes out of scope; `.clone()` on the gradient avoids the stale buffer.
 - **`from_torch` does not wrap the module's parameters as Dense-Armor params.** The Dense-Armor estimator only computes through the module; the module's parameters are updated by torch. A full conversion (torch params inside the Dense-Armor `Param` object) is out of scope.
 
+- **A float64 input comes out as float32.** The bridge converts the input 
+through DLPack, and the torch module runs in its own dtype (float32 for a 
+`torch.nn.Linear` with the default). A float64 tensor crossing the bridge 
+is silently downcast. The Dense-Armor layers are float32 by default, so 
+this matches the rest of the library; the delivery states it rather than 
+hiding it.
+- **`gradcheck` in float64 runs on float32 arithmetic.** The torch module 
+is float32, so the finite-difference gradient of `gradcheck` sees the 
+float32 result of the module, with the tolerance `eps=1e-4, atol=1e-3` 
+declared in the test. The gradient with respect to the parameters is 
+verified indirectly by the SGD test (the loss drops), not by `gradcheck`.
+- **`deepcopy` resets the Dropout key.** The `TorchModule` trains a copy 
+of the Dense-Armor model at every forward, so a `Dropout` inside the model 
+sees the same key at every call: two calls in `train()` give the same mask. 
+The test `test_train_mode_reaches_dropout` checks what is true (eval is 
+identity, train applies a mask), and this is the declared limit.
+- **The `TorchModule` trains a copy, not the original.** The original 
+model is unchanged after a `TorchModule` forward; the parameters a torch 
+optimiser sees are the bridge's own `torch.nn.Parameter`s, and the 
+Dense-Armor `Param` objects are not updated. A full bidirectional 
+parameter sync is a separate task.
+
 ### Measured cost
 
-The JSON is `benchmarks/bridge_torch.json`. The claim does not hold and the delivery says so: 9.0 ms against 0.16 ms, a factor of 56, on a 2-core CPU.
+The JSON is `benchmarks/bridge_torch.json`. The claim does not hold and the delivery says so: 7.2 ms against 0.18 ms, a factor of 40, on a 2-core CPU. The breakdown (forward 0.16, deepcopy 1.0, jax.vjp 3.4) is in section 4.
 
 ### Development diary
 

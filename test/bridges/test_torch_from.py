@@ -29,7 +29,7 @@ def test_apply_on_jax_array():
     adapter = from_torch(module)
     x = jnp.zeros((3, 4), dtype=jnp.float32)
     y = adapter.apply(x)
-    assert isinstance(y, torch.Tensor)
+    assert not isinstance(y, torch.Tensor)
     assert tuple(y.shape) == (3, 2)
 
 
