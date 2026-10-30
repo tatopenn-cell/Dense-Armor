@@ -45,7 +45,7 @@ def render(n_runs, n_samples, default_ms, default_iqr, f32_ms, f32_iqr):
 
 
 def main(check):
-    data = json.loads(JSON.read_text())
+    data = json.loads(JSON.read_text(encoding="utf-8"))
     rows = {r["class"]: r for r in data["rows"]}
     n_runs = data["runs"]
     n_samples = data["n"]
@@ -53,7 +53,7 @@ def main(check):
     diffs = 0
     for rel_path, cls in PAGES:
         p = ROOT / rel_path
-        src = p.read_text()
+        src = p.read_text(encoding="utf-8")
         row = rows[cls]
         expected = render(
             n_runs,
@@ -77,7 +77,7 @@ def main(check):
         else:
             new = PATTERN.sub(expected, src)
             if new != src:
-                p.write_text(new)
+                p.write_text(new, encoding="utf-8", newline="\n")
                 print(f"{rel_path}: rewritten")
             else:
                 print(f"{rel_path}: already current")

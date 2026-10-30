@@ -35,6 +35,17 @@ jobs:
               - '!ARCHITECTURE.md'
               - '!LICENSE'
 
+  float32-sections:
+    name: float32 pages match the benchmark JSON
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check the float32 cost lines of the pages
+        run: python tools/render_float32_sections.py --check
+
   pytest:
     name: pytest (Python ${{ matrix.python-version }}, ${{ matrix.os }})
     needs: changes
