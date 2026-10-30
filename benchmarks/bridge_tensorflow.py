@@ -117,5 +117,9 @@ def main(smoke: bool) -> dict:
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--smoke", action="store_true")
+    ap.add_argument("--out", default="benchmarks/bridge_tensorflow.json")
     args = ap.parse_args()
-    main(args.smoke)
+    out = main(args.smoke)
+    import json as _json
+    Path(args.out).write_text(_json.dumps(out, indent=2))
+    print(f"\nwrote {args.out}")

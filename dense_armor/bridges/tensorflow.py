@@ -16,7 +16,7 @@ import numpy as np
 try:
     import jax
     import jax.numpy as jnp
-    import tensorflow as tf
+    import tensorflow as tf  # type: ignore[import-untyped]
     from jax.experimental import jax2tf
 except ModuleNotFoundError as exc:
     raise ModuleNotFoundError(
@@ -54,7 +54,7 @@ def to_jax(x: Any) -> Any:
         tensor becomes a float32 array, no float64 is introduced.
 
     Example:
-        >>> import tensorflow as tf
+        >>> import tensorflow as tf  # type: ignore[import-untyped]
         >>> from dense_armor.bridges.tensorflow import to_jax
         >>> t = tf.constant([1.0, 2.0, 3.0], dtype=tf.float32)
         >>> a = to_jax(t)
@@ -130,16 +130,16 @@ class KerasLayer(tf.keras.layers.Layer):
 
 
 def _make_apply_jax(module: Any) -> Any:
-    cache = {"out_dim": None}
+    cache: dict = {"out_dim": None}
 
     @jax.custom_vjp
     def _apply(x: Any) -> Any:
         return _forward(x)
 
     def _forward(x: Any) -> Any:
-        x_t = tf.convert_to_tensor(np.asarray(x))
         if cache["out_dim"] is None:
-            probe = module(x_t)
+            # The first call outside a trace fixes the output shape.
+            probe = module(tf.zeros((1, x.shape[1]), dtype=tf.float32))
             cache["out_dim"] = int(probe.shape[-1])
         out_shape = jax.ShapeDtypeStruct((x.shape[0], cache["out_dim"]), jnp.float32)
 
@@ -183,7 +183,7 @@ class KerasAdapter:
         module: a compiled ``tf.keras.Model``.
 
     Example:
-        >>> import tensorflow as tf
+        >>> import tensorflow as tf  # type: ignore[import-untyped]
         >>> from dense_armor.bridges.tensorflow import from_keras
         >>> module = tf.keras.Sequential([
         ...     tf.keras.layers.Dense(8, activation="relu"),

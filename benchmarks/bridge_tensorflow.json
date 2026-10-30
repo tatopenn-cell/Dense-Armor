@@ -1,0 +1,22 @@
+{
+  "backend": "cpu",
+  "tensorflow": "2.21.0",
+  "jax": "0.11.1",
+  "numpy": "2.1.3",
+  "batch": 256,
+  "n_runs": 7,
+  "jax_direct_ms": {
+    "median": 0.22690500190947205,
+    "iqr": 0.014847999409539625
+  },
+  "tf_direct_ms": {
+    "median": 3.7494770003831945,
+    "iqr": 0.13218299864092842
+  },
+  "bridge_ms": {
+    "median": 15.753750998555915,
+    "iqr": 4.56022300022596
+  },
+  "overhead_fraction": 68.42883967291813,
+  "claim_20pct_holds": false
+}
