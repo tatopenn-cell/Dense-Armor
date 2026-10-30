@@ -28,9 +28,10 @@ PAGES = [
 
 PREFIX = "Cost, median of"
 PATTERN = re.compile(
-    r"Cost, median of \d+ runs of one update over [\d,]+ samples, "
-    r"one CPU thread: default [-0-9.]+ ms \(IQR [-0-9.]+\), "
-    r"float32 [-0-9.]+ ms \(IQR [-0-9.]+\)\."
+    r"Cost,\s+median\s+of\s+\d+\s+runs\s+of\s+one\s+update\s+over\s+"
+    r"[\d,]+\s+samples,\s+one\s+CPU\s+thread:\s+default\s+"
+    r"[-0-9.]+\s+ms\s+\(IQR\s+[-0-9.]+\)\s*,\s+float32\s+"
+    r"[-0-9.]+\s+ms\s+\(IQR\s+[-0-9.]+\)\."
 )
 
 
