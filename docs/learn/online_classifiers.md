@@ -200,12 +200,12 @@ against the float64 reference on N(1e3, 0.01), 100,000 samples, seed 0:
 0.0. With this mode ``alpha`` must be 0 (the exponential decay is not
 compatible with a fixed shift).
 
-Cost, median of 7 runs of one `learn_one` over 20,000 samples, one CPU
-thread: default 0.005857 ms (IQR 0.000149), float32 0.023624 ms (IQR 0.009820). The claim that the float32
+Cost, median of 7 runs of one update over 20,000 samples, one CPU thread: default 0.010282 ms (IQR 0.004630), float32 0.026553 ms (IQR 0.010353). The claim that the float32
 path is at most as slow as the default is not met: on a scalar loop the
 numpy float32 arithmetic is slower than the Python float64 arithmetic.
-The float32 speed is in `learn_many` and in jitted array code, not in a
-scalar loop.
+The float32 speed of these classes is not measured; no class in this
+batch has a `learn_many` on which the float32 blocks of the T3 kernel
+could be timed.
 
 ## API reference
 

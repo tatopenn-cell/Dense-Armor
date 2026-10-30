@@ -100,12 +100,14 @@ exact inverse) and ``w`` must be 1. A spread above the float32 maximum
 return ``nan`` and print a numpy ``RuntimeWarning`` on the overflow. The
 default float64 path does not overflow on that range.
 
-Cost, median of 7 runs of one update over 20,000 samples, one CPU
-thread: default 0.000347 ms (IQR 0.000008), float32 0.003227 ms (IQR 0.000059). The claim that the float32 path is at
-most as slow as the default is not met: on a scalar loop the numpy
-float32 arithmetic is slower than the Python float64 arithmetic. The
-float32 speed is in `learn_many` and in jitted array code, not in a
-scalar loop.
+Cost, median of 7 runs of one update over 20,000 samples,
+one CPU thread: default 0.000462 ms
+(IQR 0.000008), float32 0.005404 ms
+(IQR 0.000250). The claim that the float32 path is at most
+as slow as the default is not met: on a scalar loop, numpy.float32 is
+slower than Python float64. The float32 speed of these classes is not
+measured; no class in this batch has a ``learn_many`` on which the
+float32 blocks of the T3 kernel could be timed.
 
 ## Details
 

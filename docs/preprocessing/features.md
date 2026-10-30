@@ -68,10 +68,10 @@ of ``m2_x`` against the float64 reference on N(1e3, 0.01), 100,000
 samples, seed 0: 1.7e-8. On a constant stream at 1e10 and 1e38
 ``m2_x``, ``m2_y`` and the correlation are exactly 0.0.
 
-Cost, median of 7 runs of one `learn_one` over 20,000 samples, one CPU
-thread: default 0.001666 ms (IQR 0.000684), float32 0.015997 ms (IQR 0.005422). The claim that the float32 path
+Cost, median of 7 runs of one update over 20,000 samples, one CPU thread: default 0.001283 ms (IQR 0.000098), float32 0.015608 ms (IQR 0.000508). The claim that the float32 path
 is at most as slow as the default is not met: on a scalar loop the
 numpy float32 arithmetic is slower than the Python float64 arithmetic.
-The float32 speed is in `learn_many` and in jitted array code, not in a
-scalar loop.
+The float32 speed of these classes is not measured; no class in this
+batch has a `learn_many` on which the float32 blocks of the T3 kernel
+could be timed.
 

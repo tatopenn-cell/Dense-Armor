@@ -433,14 +433,13 @@ class R2Score(Metric):
         """Combine two partial states.
 
         Uses the parallel formula for Welford's ``M2`` (Chan et al.
-        1979). The formula runs in float64 on the stored scalars, so the
-        merged object has the ``dtype`` of ``self`` and the result
-        carries the accumulated error of the float32 path; on a split
-        of a N(1e3, 0.01) stream, that error against a single-pass
-        float64 reference is about 5.5e-5 (measured in the review of
-        task T4), higher than the 1e-6 threshold of the single class on
-        the same stream. It is not a fresh error introduced by
-        ``merge``: it is the error of the two partial states, combined.
+        1979) in the default path. With ``dtype=numpy.float32`` on
+        either side this method raises ``NotImplementedError``: the
+        formula runs on the stored scalars, whose shift differs between
+        the two partial states, so the combined value would carry the
+        accumulated float32 error (about 5.5e-5 on a split
+        N(1e3, 0.01) stream) instead of the single-pass 1.7e-8. The
+        default path does not have this limit.
 
         Args:
             other: another :class:`R2Score`.
@@ -450,9 +449,19 @@ class R2Score(Metric):
 
         Raises:
             TypeError: if ``other`` is not a :class:`R2Score`.
+            NotImplementedError: if either side uses ``dtype=numpy.float32``.
         """
         if not isinstance(other, R2Score):
             raise TypeError(f"merge expects R2Score, got {type(other).__name__}")
+        if self._f32 or (hasattr(other, "_f32") and other._f32):
+            raise NotImplementedError(
+                "R2Score.merge is not available with dtype=numpy.float32: "
+                "the pairwise formula runs on the stored scalars, whose "
+                "shift differs between the two partial states, so the "
+                "combined value carries the accumulated float32 error "
+                "(about 5.5e-5 on a split N(1e3, 0.01) stream) instead of "
+                "the single-pass 1.7e-8. Use the default path to merge."
+            )
         m = R2Score(feature=self.feature, dtype=self.dtype)
         na, nb = self.total_, other.total_
         m.ss_res_ = self.ss_res_ + other.ss_res_

@@ -99,17 +99,27 @@ def test_float32_weight_must_be_one():
         m.update(1.0, 1.0, w=0.5)
 
 
-def test_float32_merge_keeps_the_dtype():
-    """The reviewer case: merge must keep dtype=float32."""
+def test_float32_merge_raises_not_implemented():
+    """The reviewer case: merging float32 partial states would carry
+    the accumulated error of the two shifted sums (about 5.5e-5 on a
+    split N(1e3, 0.01) stream), so the method raises instead."""
     a = R2Score(dtype=np.float32)
     b = R2Score(dtype=np.float32)
     for x, y in [(1.0, 1.1), (2.0, 2.1), (3.0, 2.9)]:
         a.update(x, y)
     for x, y in [(4.0, 4.05), (5.0, 4.9)]:
         b.update(x, y)
-    m = a.merge(b)
-    assert m._f32 is True
-    assert m.dtype == np.float32
+    with pytest.raises(NotImplementedError):
+        a.merge(b)
+
+
+def test_float32_merge_with_default_other_raises():
+    a = R2Score(dtype=np.float32)
+    b = R2Score()
+    a.update(1.0, 1.1)
+    b.update(2.0, 2.1)
+    with pytest.raises(NotImplementedError):
+        a.merge(b)
 
 
 def test_default_merge_does_not_enable_float32():

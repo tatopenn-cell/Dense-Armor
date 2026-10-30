@@ -2,41 +2,41 @@
   "backend": "cpu",
   "platform": "Linux-6.6.159+-x86_64-with-glibc2.39",
   "processor": "x86_64",
-  "n": 2000,
+  "n": 20000,
   "seed": 0,
   "runs": 7,
   "claim": "the float32 path is at most as slow as the default path on every kept class, median of 7 runs",
   "rows": [
     {
       "class": "Gaussian",
-      "default_median_ms": 0.0003121999998256797,
-      "default_iqr_ms": 5.7197500154870795e-05,
-      "f32_median_ms": 0.0032775899999251124,
-      "f32_iqr_ms": 5.330024987415527e-05,
+      "default_median_ms": 0.0004702024999915011,
+      "default_iqr_ms": 1.5048725003907748e-05,
+      "f32_median_ms": 0.005644848149995596,
+      "f32_iqr_ms": 0.0003558652500032615,
       "claim_holds": false
     },
     {
       "class": "OnlineGaussianNB",
-      "default_median_ms": 0.0057980145002147765,
-      "default_iqr_ms": 8.939974986788002e-05,
-      "f32_median_ms": 0.018602639000164345,
-      "f32_iqr_ms": 0.0005138572500982264,
+      "default_median_ms": 0.010826230750035392,
+      "default_iqr_ms": 0.0005693102000122949,
+      "f32_median_ms": 0.020121571600020614,
+      "f32_iqr_ms": 0.007959187425012716,
       "claim_holds": false
     },
     {
       "class": "SelectKBest",
-      "default_median_ms": 0.0022123599997030396,
-      "default_iqr_ms": 0.00023976449983820203,
-      "f32_median_ms": 0.01555296400010775,
-      "f32_iqr_ms": 3.923300005226338e-05,
+      "default_median_ms": 0.0012445828999716468,
+      "default_iqr_ms": 2.1669224997822225e-05,
+      "f32_median_ms": 0.02047195004997775,
+      "f32_iqr_ms": 0.00903561437501139,
       "claim_holds": false
     },
     {
       "class": "R2Score",
-      "default_median_ms": 0.0013202549998823088,
-      "default_iqr_ms": 2.798274999804562e-05,
-      "f32_median_ms": 0.009907254499921692,
-      "f32_iqr_ms": 0.00042200700022476667,
+      "default_median_ms": 0.002044481849998192,
+      "default_iqr_ms": 0.0006353347499953089,
+      "f32_median_ms": 0.009687896349987568,
+      "f32_iqr_ms": 7.883527500780578e-05,
       "claim_holds": false
     }
   ]

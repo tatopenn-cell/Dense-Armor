@@ -102,7 +102,7 @@ BENCHES = [
 
 def main(smoke):
     n = 2_000 if smoke else 20_000
-    print(f"backend: {platform.python_version()} / {platform.platform()}")
+    print(f"backend: cpu / python {platform.python_version()} / {platform.platform()}")
     print(f"N per run: {n}, seed: {SEED}, runs: {N_RUNS}")
     print(f"{'class':20s} {'path':10s} {'median ms':>12s} {'IQR ms':>12s}")
     rows = []
