@@ -214,6 +214,9 @@ after the measurement.
   and Fast Robust Geometric Predicates. Discrete and Computational
   Geometry 18(3), 305-363. Theorem 7 (`Two-Sum`), PDF page 12; Lemma 5
   (Sterbenz), PDF page 10, which makes the shift exact.
+- Healy, J. (2022). Accurate and consistent calculation of the mean and
+  variance in Monte-Carlo simulations. arXiv:2206.10662v7. Algorithm 2: the
+  shifted naive algorithm with K = x[0] and Kahan summation.
 - Kahan, W. (1965). Further remarks on reducing truncation errors.
   Communications of the ACM 8(1), 40. Bibliographic only, not read: the
   sequential compensated summation of the illustration in step 3.
@@ -222,11 +225,14 @@ after the measurement.
 
 ### Choices
 
-The shift `y = x - x[0]` is the shifted-data formula of Chan, Golub and
-LeVeque (1983) with K = x[0], cited from Wikipedia, "Algorithms for
-calculating variance"; the paper of 1983 was not read. The combination of the
-shift, the local centring, the two-term formula and the compensated tree of
-TwoSum, one slice at a time with `vmap`, is by Salvatore Pennacchio.
+The shift `y = x - x[0]` is the shifted-data algorithm with K = x[0]. Healy
+(2022), Introduction and Algorithm 2, takes the first observation as K, sums
+with Kahan's compensation and applies the two-term formula `T/n - (M - K)**2`,
+and cites Chan, Golub and LeVeque (1983) for the choice of K; the paper of 1983
+was not read. This kernel adds to that algorithm the local centring `d = y - m`
+before the squares, the compensated tree of TwoSum in place of the sequential
+Kahan sum, and the evaluation one slice at a time with `vmap`. These additions
+are by Salvatore Pennacchio.
 
 The dtype policy: float32 in gives float32 out, float64 in gives float64
 out when `jax_enable_x64` is on (off, JAX promotes to float32),

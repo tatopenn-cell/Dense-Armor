@@ -4,9 +4,9 @@ The two benchmark JSON files (CPU and GPU) are committed in
 ``benchmarks/``, with the median of three sessions and the range for the
 speed.
 
-The kernel is a combination by Salvatore Pennacchio. It starts from the
-shifted-data formula of Chan, Golub and LeVeque (1983) with K = x[0]: the
-first element is subtracted from every value along the reduction axis:
+The kernel starts from the shifted-data algorithm with K = x[0] (Healy 2022,
+Algorithm 2; Chan, Golub and LeVeque 1983): the first element is subtracted
+from every value along the reduction axis:
 
 .. code-block:: text
 
@@ -47,13 +47,19 @@ References:
         Geometry 18(3), 305-363. ``TWO-SUM``, Theorem 7, PDF page 12, and
         Lemma 5, PDF page 10, the Sterbenz lemma that makes the shift
         exact.
+    Healy, J. (2022). Accurate and consistent calculation of the mean and
+        variance in Monte-Carlo simulations. arXiv:2206.10662v7. Algorithm 2,
+        the shifted naive algorithm with K = x[0] and Kahan summation.
 
-The shift ``y = x - x[0]`` is the shifted-data formula of Chan, Golub and
-LeVeque (1983) with K = x[0], cited from Wikipedia, "Algorithms for
-calculating variance"; the paper of 1983 was not read. The combination of
-the shift, the local centring, the two-term formula and the compensated tree
-of TwoSum (Ogita-Rump-Oishi, Shewchuk), one slice at a time with ``vmap``,
-is by Salvatore Pennacchio.
+The shift ``y = x - x[0]`` is the shifted-data algorithm with K = x[0].
+Healy (2022), Introduction and Algorithm 2, takes the first observation as K,
+sums with Kahan's compensation and applies the two-term formula
+``T/n - (M - K)**2``, and cites Chan, Golub and LeVeque (1983) for the choice
+of K; the paper of 1983 was not read. This kernel adds to that algorithm the
+local centring ``d = y - m`` before the squares, the compensated tree of
+TwoSum (Ogita-Rump-Oishi, Shewchuk) in place of the sequential Kahan sum, and
+the evaluation one slice at a time with ``vmap``. These additions are by
+Salvatore Pennacchio.
 """
 
 from __future__ import annotations
@@ -232,8 +238,8 @@ def _finish_mean(mean, axes, batch_shape, keepdims, out_dtype):
 def stable_var(x, axis=None, ddof=0, keepdims=False):
     """Variance of ``x`` along ``axis``, computed in the input dtype.
 
-    The shift ``y = x - x[0]``, the shifted-data formula of Chan, Golub and
-    LeVeque (1983) with K = x[0], comes first. Then ``m = mean(y)``, ``d = y - m`` and ``var = mean(d**2) -
+    The shift ``y = x - x[0]``, the shifted-data algorithm with K = x[0]
+    (Healy 2022, Algorithm 2), comes first. Then ``m = mean(y)``, ``d = y - m`` and ``var = mean(d**2) -
     mean(d)**2``, one slice at a time with ``vmap``, with ``d**2`` summed
     by a compensated tree of ``TwoSum`` (``log2(n)`` vectorised levels).
     The result is exactly ``0.0`` on identical values up to ``1e38``, in
