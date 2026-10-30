@@ -142,6 +142,9 @@ pip install "dense-armor[ros]"          # + rosbag readers
 pip install "dense-armor[audio,data]"   # + WAV, HDF5, NetCDF
 pip install "dense-armor[mcp]"          # + MCP server for LLM agents
 pip install "dense-armor[quantum]"      # + Dense-Evolution (NISQ simulator)
+pip install "dense-armor[sklearn]"      # + scikit-learn bridge
+pip install "dense-armor[torch]"        # + PyTorch bridge
+pip install "dense-armor[tensorflow]"   # + TensorFlow bridge
 ```
 
 Works on Python 3.10+. JAX is the backend for every estimator.
@@ -194,6 +197,7 @@ Dense-Armor also provides other online utilities:
 - Progressive model validation
 - Model pipelines
 - LLM bridge (embeddings as features, estimators as JSON tools)
+- Bridges: scikit-learn, PyTorch and TensorFlow
 - Checks (`check_estimator`, p99 budget, memory growth, clone, pickle, state dict, roc_auc)
 - Core engine (`DynamicAICodegen` JIT compiler, `ImageChunker`, `UniversalMemoryGuard`, `AdaptiveSignalStabilizer`, `AIHardwareProfiler`, `StochasticAdversarialNoise`)
 
