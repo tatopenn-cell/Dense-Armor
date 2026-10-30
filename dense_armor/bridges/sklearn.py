@@ -274,8 +274,7 @@ class SklearnTransformer(TransformerMixin, _DenseWrapper, BaseEstimator):
 
     def fit(self, X: Any, y: Any = None) -> SklearnTransformer:
         arr = self._setup(X, reset=True, min_samples=1)
-        for x in self._iter(arr):
-            self.model_.learn_one(x, y)
+        self._learn(arr, y)
         sample = next(self._iter(arr))
         out = self.model_.transform_one(sample) or {}
         self._out_keys_ = list(out.keys())
@@ -291,9 +290,21 @@ class SklearnTransformer(TransformerMixin, _DenseWrapper, BaseEstimator):
         if not hasattr(self, "model_"):
             return self.fit(X, y)
         arr = self._setup(X, reset=False)
+        self._learn(arr, y)
+        return self
+
+    def _learn(self, arr: np.ndarray, y: Any) -> None:
+        """Learn a block: ``learn_many`` on the columns when the model has it.
+
+        A model with ``learn_many_columns = True`` takes a dict of columns
+        in ``learn_many``; any other model learns one row at a time.
+        """
+        if getattr(self.model_, "learn_many_columns", False):
+            cols = {name: arr[:, j] for j, name in enumerate(self._names_)}
+            self.model_.learn_many(cols)
+            return
         for x in self._iter(arr):
             self.model_.learn_one(x, y)
-        return self
 
     def transform(self, X: Any) -> np.ndarray:
         check_is_fitted(self, "model_")
