@@ -10,6 +10,7 @@ drift detector fires. All return calibrated-ready probabilities, so
 
 from collections import deque
 from copy import deepcopy
+from typing import Any
 
 import numpy as np
 
@@ -80,7 +81,7 @@ class OnlineGaussianNB(Classifier):
         alpha: float = 0.0,
         var_smoothing: float = 0.0,
         eps: float = 1e-12,
-        dtype=None,
+        dtype: Any = None,
     ):
         self.alpha = alpha
         self.var_smoothing = var_smoothing
@@ -168,16 +169,23 @@ class OnlineGaussianNB(Classifier):
     def _log_likelihood(self, z, y) -> float:
         var = self._m2[y] / self._n[y] + self.var_smoothing
         var = np.maximum(var, self.eps)
-        return float(-0.5 * np.sum(np.log(2.0 * np.pi * np.maximum(var, 1e-15))
-                                    + (z - self._mu[y]) ** 2 / np.maximum(var, 1e-15)))
+        return float(
+            -0.5
+            * np.sum(
+                np.log(2.0 * np.pi * np.maximum(var, 1e-15))
+                + (z - self._mu[y]) ** 2 / np.maximum(var, 1e-15)
+            )
+        )
 
     def predict_proba_one(self, x: dict, t: float | None = None) -> dict:
         if not self._n:
             return {}
         z = self._to_vec(x)
         total = sum(self._n.values())
-        log_post = {y: self._log_likelihood(z, y)
-                    + float(np.log(self._n[y] / total)) for y in self._n}
+        log_post = {
+            y: self._log_likelihood(z, y) + float(np.log(self._n[y] / total))
+            for y in self._n
+        }
         mx = max(log_post.values())
         ex = {y: float(np.exp(v - mx)) for y, v in log_post.items()}
         s = sum(ex.values())
@@ -229,8 +237,13 @@ class OnlineSoftmaxRegression(Classifier):
     for online learning and stochastic optimization. JMLR 12, 2121-2159.
     """
 
-    def __init__(self, eta: float = 0.1, l2: float = 0.0,
-                 adaptive: bool = True, eps: float = 1e-8):
+    def __init__(
+        self,
+        eta: float = 0.1,
+        l2: float = 0.0,
+        adaptive: bool = True,
+        eps: float = 1e-8,
+    ):
         self.eta = eta
         self.l2 = l2
         self.adaptive = adaptive
@@ -365,8 +378,7 @@ class DriftAdaptiveClassifier(Classifier):
     its recent accuracy is higher.
     """
 
-    def __init__(self, classifier, detector, window: int = 50,
-                 smooth_window: int = 50):
+    def __init__(self, classifier, detector, window: int = 50, smooth_window: int = 50):
         self.classifier = classifier
         self.detector = detector
         self.window = window
@@ -396,9 +408,11 @@ class DriftAdaptiveClassifier(Classifier):
         if self._bg is not None:
             self._bg_hits.append(1.0 if self._bg.predict_one(x) == y else 0.0)
             self._bg.learn_one(x, y)
-            if (len(self._bg_hits) >= self.window
-                    and len(self._main_hits) >= self.window
-                    and float(np.mean(self._bg_hits)) > float(np.mean(self._main_hits))):
+            if (
+                len(self._bg_hits) >= self.window
+                and len(self._main_hits) >= self.window
+                and float(np.mean(self._bg_hits)) > float(np.mean(self._main_hits))
+            ):
                 self._main = self._bg
                 self._bg = None
                 self._main_hits = self._bg_hits
@@ -411,8 +425,11 @@ class DriftAdaptiveClassifier(Classifier):
     @classmethod
     def _unit_test_params(cls):
         from dense_armor.utility.drift.detector import CUSUMDriftDetector
-        yield {"classifier": OnlineGaussianNB(),
-               "detector": CUSUMDriftDetector(reference="adaptive")}
+
+        yield {
+            "classifier": OnlineGaussianNB(),
+            "detector": CUSUMDriftDetector(reference="adaptive"),
+        }
 
     def _unit_test_skips(self):
         return {"check_roc_auc"}

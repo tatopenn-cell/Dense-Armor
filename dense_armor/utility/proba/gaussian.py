@@ -8,6 +8,7 @@ error function, eq. 1.48 in the same section.
 """
 
 from math import erf, pi, sqrt
+from typing import Any
 
 import numpy as np
 
@@ -51,7 +52,7 @@ class Gaussian:
     """
 
     def __init__(
-        self, mean: float = 0.0, var: float = 1.0, n: float = 0.0, dtype=None
+        self, mean: float = 0.0, var: float = 1.0, n: float = 0.0, dtype: Any = None
     ) -> None:
         if var <= 0.0:
             raise ValueError(f"var must be > 0, got {var}")

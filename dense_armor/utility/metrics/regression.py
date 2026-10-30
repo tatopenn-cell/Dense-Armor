@@ -349,7 +349,7 @@ class R2Score(Metric):
     bigger_is_better = True
     supports_revert = False
 
-    def __init__(self, feature: str | None = None, dtype=None) -> None:
+    def __init__(self, feature: str | None = None, dtype: Any = None) -> None:
         super().__init__()
         self.feature = feature
         self.dtype = dtype

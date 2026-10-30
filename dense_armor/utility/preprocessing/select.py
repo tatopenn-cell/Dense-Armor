@@ -31,7 +31,7 @@ def _as_dict(x: Any) -> dict:
 class _CorrStats:
     """Running Pearson correlation between one feature and the target."""
 
-    def __init__(self, dtype=None) -> None:
+    def __init__(self, dtype: Any = None) -> None:
         self.dtype = dtype
         self.n_ = 0
         self.mean_x_ = 0.0
@@ -237,7 +237,7 @@ class SelectKBest(Transformer):
     memory_class = "O(1)"
 
     def __init__(
-        self, k: int = 10, features: list[str] | None = None, dtype=None
+        self, k: int = 10, features: list[str] | None = None, dtype: Any = None
     ) -> None:
         self.k = k
         self.features = features
