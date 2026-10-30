@@ -7,8 +7,11 @@ with streaming statistics and protection, drift and anomaly detection, and safe 
 commands.**
 
 Dense-Armor is an online learning library with a shielding layer on top. Everything that
-learns does it one sample at a time, at control-loop speed, and everything that is
+learns online does it one sample at a time, at control-loop speed, and everything that is
 estimating can be protected from corrupted data without retraining or weight changes.
+Next to the online core there are two modules that read a whole dataset at once: a
+[machine learning](ml/index.md) module (`dense_armor.ml`, with `fit` and `predict`) and a
+[deep learning](neural/index.md) module (layers, networks, training, attention).
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -136,6 +139,42 @@ payload fault no longer poisons the model's state.
 
 ## What is in here
 
+**Deep learning** — networks built from layers, with a gradient that can be checked.
+
+- **[Foundations](neural/index.md)**, **[layers](neural/layers.md)** and
+  **[chains](neural/chains.md)** — the smallest pieces of a network, and how to join them.
+- **[Convolution and pooling](neural/vision_layers.md)**,
+  **[recurrent layers](neural/sequence_layers.md)** and
+  **[attention](neural/attention.md)** — patterns in an image, memory of the past samples,
+  and a step that looks at every other step.
+- **[Training](neural/training.md)** — schedules, mini-batches and the trainer with weight
+  decay and early stopping.
+- **[Continuous training](neural/continuous.md)** — online estimators, Hedge
+  Backpropagation, a background learner.
+- **[Encoders and decoders](neural/encoder_decoder.md)** — compress a stream into a few
+  numbers or integers and expand it back or into a forecast.
+- **[Deep](neural/deep.md)** — the pieces a deep network needs beyond the layers.
+- **[Composable attention](neural/composable_attention.md)** — cross-attention and the
+  fusion of two sensors.
+- **[Continual learning](neural/continual_learning.md)** — how to keep a network from
+  forgetting the past, and how to measure what it remembers.
+- **[Mixture of experts and test-time compute](neural/moe_testtime.md)** — use only part of
+  the parameters on each sample, spend more compute at inference.
+- **[Stable variance in float32](stats/stable_variance.md)** — a variance that is exactly
+  zero on identical values.
+
+**Machine learning** — the classes of `dense_armor.ml`, which read a whole table at once
+with `fit(X, y)`. The [overview](ml/index.md) has one page per family:
+[anomaly detection](ml/anomaly.md), [Naive Bayes](ml/bayes.md),
+[change detection](ml/drift.md), [ensembles](ml/ensemble.md), [forests](ml/forest.md),
+[linear models](ml/linear.md), [multiclass](ml/multiclass.md),
+[multi-output](ml/multioutput.md), [nearest neighbours](ml/neighbors.md),
+[preprocessing](ml/preprocessing.md), [distributions](ml/proba.md),
+[statistics and sketches](ml/stats.md), [decision trees](ml/tree.md) and
+[vision](ml/vision.md). The pages in
+[machine learning against online learning](compare/anomaly.md) compare the two on the
+same data.
+
 **Online learning** — the core. Models that learn one sample at a time.
 
 - **[Optimizers](optim/index.md)** — SGD, AdaGrad, Adam, FTRLProximal,
@@ -212,6 +251,13 @@ past.
   features, patch descriptors, visual vocabulary.
 - **[Patches](vision/patches.md)** — PatchFeatures and PatchMemory (native PatchCore),
   reservoir and coreset.
+
+**Applications** — pipelines that chain the blocks above on a synthetic stream.
+
+- **[Finance](finance/index.md)** — streaming pipelines for risk, execution and fraud
+  detection.
+- **[Drones](drones/index.md)** — one page per question about a flying robot: actuator
+  fault, sensor consistency, battery endurance, link health, visual landing and others.
 
 **Tools** — the parts that do not participate in the anomaly shield.
 
