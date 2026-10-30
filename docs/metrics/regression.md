@@ -113,8 +113,9 @@ samples, seed 0: ``M2`` 1.7e-8, ``ss_res`` 3.7e-8. On a constant target
 Cost, median of 7 runs of one update over 20,000 samples, one CPU thread: default 0.001300 ms (IQR 0.000012), float32 0.009759 ms (IQR 0.000077). The claim that the float32 path is at
 most as slow as the default is not met: on a scalar loop the numpy
 float32 arithmetic is slower than the Python float64 arithmetic. The
-float32 speed is in `learn_many` and in jitted array code, not in a
-scalar loop.
+float32 speed of these classes is not measured; no class in this batch
+has a `learn_many` on which the float32 blocks of the T3 kernel could
+be timed.
         `R2Score.merge` with `dtype=numpy.float32` on either side raises
         `NotImplementedError`: the pairwise formula runs on the stored
         scalars, whose shift differs between the two partial states, so
