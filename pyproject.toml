@@ -21,6 +21,7 @@ classifiers = [
 dependencies = ["numpy", "jax", "psutil", "osqp", "scipy", "xacro"]
 
 [project.optional-dependencies]
+sklearn = ["scikit-learn>=1.6"]
 finance-stream = ["pyzmq>=25", "confluent-kafka>=2"]
 audio = ["scipy"]
 data = ["h5py", "netCDF4"]
