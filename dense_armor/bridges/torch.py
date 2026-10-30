@@ -9,9 +9,8 @@ Needs the optional dependency: ``pip install dense-armor[torch]``.
 
 from __future__ import annotations
 
-from typing import Any
-
 import copy
+from typing import Any
 
 import numpy as np
 
@@ -123,7 +122,6 @@ class _TorchModuleFn(torch.autograd.Function):
     def forward(
         ctx: Any, model: Any, x: torch.Tensor, training: bool, *params: Any
     ) -> torch.Tensor:
-        import copy
 
         base = model
         pp = [jnp.asarray(p.detach().numpy()) for p in params]
