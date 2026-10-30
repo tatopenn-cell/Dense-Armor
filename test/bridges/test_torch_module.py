@@ -49,7 +49,6 @@ def test_gradcheck_on_input():
     tm = TorchModule(m)
     x = torch.randn(2, 4, dtype=torch.float64, requires_grad=True)
 
-    # gradcheck vuole float64
     def tm64(z):
         return tm(z.float()).double()
 
@@ -89,14 +88,8 @@ def test_sgd_step_lowers_loss():
 
 
 def test_train_mode_reaches_dropout():
-    """In eval mode the Dropout is identity; in train mode a mask is applied.
-
-    The deep copy of the model at every forward resets the Dropout key,
-    so two calls in train mode give the same mask. The test checks what
-    is true: eval is identity, train applies a mask.
-    """
+    """eval is identity, train applies a mask and advances the key."""
     import jax
-
     from dense_armor.utility.neural import Dropout, Sequential
 
     m = Sequential([Dropout(0.5, key=jax.random.PRNGKey(0))])
@@ -110,3 +103,5 @@ def test_train_mode_reaches_dropout():
     tm.train()
     y_train = tm(x)
     assert not torch.equal(y_train, x)
+    y_train2 = tm(x)
+    assert not torch.equal(y_train, y_train2)

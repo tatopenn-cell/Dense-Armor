@@ -134,6 +134,8 @@ class _TorchModuleFn(torch.autograd.Function):
             return m.forward(xx_, training=training)
 
         out, vjp_fn = jax.vjp(f, pp, xa)
+        if training:
+            _advance_keys(base)
         ctx.save_for_backward(*params)
         ctx._vjp_fn = vjp_fn
         return torch.from_dlpack(out).clone()
@@ -181,6 +183,21 @@ class TorchAdapter:
         if isinstance(x, torch.Tensor):
             return self.module(x)
         return self._apply_jax(x)
+
+
+def _advance_keys(module: Any) -> None:
+    """Advance the Dropout key of every Dropout inside the module tree."""
+    if hasattr(module, "key") and hasattr(module, "p"):
+        module.key, _ = jax.random.split(module.key)
+    for attr in ("layers", "inner", "branches"):
+        sub = getattr(module, attr, None)
+        if sub is None:
+            continue
+        if isinstance(sub, list):
+            for x in sub:
+                _advance_keys(x)
+        else:
+            _advance_keys(sub)
 
 
 def _make_apply_jax(module: Any) -> Any:

@@ -115,11 +115,13 @@ is float32, so the finite-difference gradient of `gradcheck` sees the
 float32 result of the module, with the tolerance `eps=1e-4, atol=1e-3` 
 declared in the test. The gradient with respect to the parameters is 
 verified indirectly by the SGD test (the loss drops), not by `gradcheck`.
-- **`deepcopy` resets the Dropout key.** The `TorchModule` trains a copy 
-of the Dense-Armor model at every forward, so a `Dropout` inside the model 
-sees the same key at every call: two calls in `train()` give the same mask. 
-The test `test_train_mode_reaches_dropout` checks what is true (eval is 
-identity, train applies a mask), and this is the declared limit.
+- **The `Dropout` key advances on the original model.** The `TorchModule` 
+trains a copy of the model at every forward (the Dense-Armor layers hold 
+mutable `Param.value`), so the copy's `Dropout` key would be the same at 
+every call. After each forward in `train()` the bridge advances the key of 
+the original model, so two calls in `train()` see two different masks. A 
+test checks that eval is identity, train applies a mask, and two train 
+calls differ.
 - **The `TorchModule` trains a copy, not the original.** The original 
 model is unchanged after a `TorchModule` forward; the parameters a torch 
 optimiser sees are the bridge's own `torch.nn.Parameter`s, and the 
