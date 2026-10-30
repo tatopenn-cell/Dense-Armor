@@ -16,6 +16,14 @@ import numpy as np
 from dense_armor.roles import Classifier
 
 
+def _two_sum(a, b):
+    """Error-free transformation ``a + b = s + e`` in the dtype of ``a``."""
+    s = a + b
+    bb = s - a
+    e = (a - (s - bb)) + (b - bb)
+    return s, e
+
+
 class OnlineGaussianNB(Classifier):
     """Gaussian naive Bayes updated one sample at a time.
 
@@ -38,6 +46,14 @@ class OnlineGaussianNB(Classifier):
     eps
         Floor on the variance to avoid ``log(0)`` when a class has a single
         sample.
+    dtype
+        ``None`` (default) keeps the state and the update in float64 and
+        gives the Welford update bit for bit. ``numpy.float32`` keeps the
+        state in float32 and applies the shifted-data algorithm with
+        ``K = x[0]`` per class and feature (Healy 2022, Algorithm 2) with
+        two ``TwoSum`` accumulators per feature. In this mode ``alpha``
+        must be 0: the exponential decay is not compatible with a fixed
+        shift.
 
     Examples
     --------
@@ -59,15 +75,27 @@ class OnlineGaussianNB(Classifier):
     of squares and products. Technometrics 4(3), 419-420.
     """
 
-    def __init__(self, alpha: float = 0.0, var_smoothing: float = 0.0,
-                 eps: float = 1e-12):
+    def __init__(
+        self,
+        alpha: float = 0.0,
+        var_smoothing: float = 0.0,
+        eps: float = 1e-12,
+        dtype=None,
+    ):
         self.alpha = alpha
         self.var_smoothing = var_smoothing
         self.eps = eps
+        self.dtype = dtype
         self._keys: list | None = None
         self._n: dict = {}
         self._mu: dict = {}
         self._m2: dict = {}
+        self._f32 = dtype is not None and np.dtype(dtype) == np.float32
+        self._K: dict = {}
+        self._s1: dict = {}
+        self._c1: dict = {}
+        self._s2: dict = {}
+        self._c2: dict = {}
 
     @property
     def _multiclass(self):
@@ -84,6 +112,11 @@ class OnlineGaussianNB(Classifier):
 
     def learn_one(self, x, y):
         z = self._to_vec(x)
+        if not self._f32:
+            return self._learn_one_float64(z, y)
+        return self._learn_one_float32(z, y)
+
+    def _learn_one_float64(self, z, y):
         if y not in self._n:
             self._n[y] = 0.0
             self._mu[y] = np.zeros(z.size)
@@ -96,6 +129,40 @@ class OnlineGaussianNB(Classifier):
         self._n[y] = n_new
         self._mu[y] = new_mu
         self._m2[y] = new_m2
+        return self
+
+    def _learn_one_float32(self, z, y):
+        if self.alpha != 0.0:
+            raise ValueError(
+                "dtype=numpy.float32 supports only alpha=0 in OnlineGaussianNB"
+            )
+        zf = np.asarray(z, dtype=np.float32)
+        if y not in self._n:
+            self._n[y] = 0.0
+            self._K[y] = zf.copy()
+            self._s1[y] = np.zeros(zf.size, dtype=np.float32)
+            self._c1[y] = np.zeros(zf.size, dtype=np.float32)
+            self._s2[y] = np.zeros(zf.size, dtype=np.float32)
+            self._c2[y] = np.zeros(zf.size, dtype=np.float32)
+            self._mu[y] = np.zeros(zf.size)
+            self._m2[y] = np.zeros(zf.size)
+        K = self._K[y]
+        dv = zf - K
+        s1, e1 = _two_sum(self._s1[y], dv)
+        self._c1[y] = self._c1[y] + e1
+        self._s1[y] = s1
+        dv2 = dv * dv
+        s2, e2 = _two_sum(self._s2[y], dv2)
+        self._c2[y] = self._c2[y] + e2
+        self._s2[y] = s2
+        self._n[y] += 1.0
+        n32 = np.float32(self._n[y])
+        s1c = self._s1[y] + self._c1[y]
+        s2c = self._s2[y] + self._c2[y]
+        mean_y = s1c / n32
+        var_pop = s2c / n32 - mean_y * mean_y
+        self._mu[y] = (K + mean_y).astype(np.float64)
+        self._m2[y] = (var_pop * n32).astype(np.float64)
         return self
 
     def _log_likelihood(self, z, y) -> float:
