@@ -433,7 +433,14 @@ class R2Score(Metric):
         """Combine two partial states.
 
         Uses the parallel formula for Welford's ``M2`` (Chan et al.
-        1979).
+        1979). The formula runs in float64 on the stored scalars, so the
+        merged object has the ``dtype`` of ``self`` and the result
+        carries the accumulated error of the float32 path; on a split
+        of a N(1e3, 0.01) stream, that error against a single-pass
+        float64 reference is about 5.5e-5 (measured in the review of
+        task T4), higher than the 1e-6 threshold of the single class on
+        the same stream. It is not a fresh error introduced by
+        ``merge``: it is the error of the two partial states, combined.
 
         Args:
             other: another :class:`R2Score`.
@@ -446,7 +453,7 @@ class R2Score(Metric):
         """
         if not isinstance(other, R2Score):
             raise TypeError(f"merge expects R2Score, got {type(other).__name__}")
-        m = R2Score(feature=self.feature)
+        m = R2Score(feature=self.feature, dtype=self.dtype)
         na, nb = self.total_, other.total_
         m.ss_res_ = self.ss_res_ + other.ss_res_
         m.total_ = na + nb

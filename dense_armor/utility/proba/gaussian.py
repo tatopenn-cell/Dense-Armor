@@ -60,6 +60,7 @@ class Gaussian:
             raise ValueError(f"n must be >= 0, got {n}")
         self.dtype = dtype
         self._var0 = float(var)
+        self._mean0 = float(mean)
         self._n = float(n)
         self._K: Any = None
         self._s1: Any = None
@@ -87,7 +88,12 @@ class Gaussian:
         shifted-data algorithm with ``K = x[0]`` (Healy 2022, Algorithm 2)
         applied online: the sums of ``y = x - K`` and of ``y**2`` are
         accumulated with ``TwoSum``, and the variance follows from the
-        two-term formula. In this mode ``w`` must be 1.
+        two-term formula. In this mode ``w`` must be 1 and the spread of
+        the stream must stay within the range of float32: a value of
+        about ``1e20`` squared reaches ``1e40``, above the float32
+        maximum (about ``3.4e38``), and ``y * y`` becomes ``inf``. The
+        default path in float64 does not overflow on that range. This
+        is a limit of the float32 path, not a bug.
         """
         if w <= 0.0:
             raise ValueError(f"w must be > 0, got {w}")
@@ -142,7 +148,7 @@ class Gaussian:
         if not self._f32:
             return self._mean
         if self._n <= 0.0:
-            return float(self._K) if self._K is not None else 0.0
+            return float(self._K) if self._K is not None else self._mean0
         assert self._K is not None
         n = np.float32(self._n)
         s1c = np.float32(self._s1 + self._c1)
@@ -211,13 +217,28 @@ class Gaussian:
         return float(rng.normal(self.mean(), sqrt(max(var, 0.0))))
 
     def init_state(self) -> tuple:
-        """Return the current state (n, mean, m2) as JAX scalars."""
+        """Return the current state (n, mean, m2) as JAX scalars.
+
+        In both dtypes the state is a tuple of three scalars: the count,
+        the mean (from :meth:`mean`) and the second central moment
+        (``variance()`` times ``n``, or ``n == 0`` when the state is
+        empty). The pure form is independent of the storage layout of
+        the two paths.
+        """
         import jax.numpy as jnp
 
+        if not self._f32:
+            return (
+                jnp.asarray(self._n),
+                jnp.asarray(self._mean),
+                jnp.asarray(self._m2),
+            )
+        n = float(self._n)
+        m2 = self._var_biased() * n if n > 0.0 else 0.0
         return (
             jnp.asarray(self._n),
-            jnp.asarray(self._mean),
-            jnp.asarray(self._m2),
+            jnp.asarray(self.mean()),
+            jnp.asarray(m2),
         )
 
     def step(self, state: tuple, v: object) -> tuple:

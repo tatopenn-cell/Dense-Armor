@@ -117,3 +117,32 @@ def test_float32_initial_state_with_n_positive():
     assert abs(g.mean() - 5.0) < 1e-5
     g.update(5.0)
     assert abs(g.mean() - 5.0) < 1e-4
+
+
+def test_float32_init_state_does_not_use_mean_attribute():
+    """The reviewer case: init_state must work with dtype=float32."""
+    g = Gaussian(dtype=np.float32)
+    for v in [1.0, 2.0, 3.0]:
+        g.update(v)
+    n, m, m2 = g.init_state()
+    assert float(n) == 3.0
+    assert abs(float(m) - 2.0) < 1e-6
+    assert abs(float(m2) - 2.0) < 1e-4
+
+
+def test_float32_empty_mean_keeps_constructor_value():
+    """The reviewer case: empty Gaussian(dtype=float32) keeps mean."""
+    g = Gaussian(mean=5.0, dtype=np.float32)
+    assert g.mean() == 5.0
+    g2 = Gaussian(mean=5.0)
+    assert g2.mean() == 5.0
+
+
+def test_float32_large_spread_variance_is_nan():
+    """A spread above the float32 maximum gives nan, not a silent 0."""
+    import math
+
+    g = Gaussian(dtype=np.float32)
+    for v in [1e20, 1.5e20, 2e20]:
+        g.update(v)
+    assert math.isnan(g.variance())

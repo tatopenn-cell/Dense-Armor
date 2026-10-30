@@ -95,7 +95,10 @@ variance. Relative error of the variance against the float64 reference
 on N(1e3, 0.01), 100,000 samples, seed 0: 2.1e-8. On a constant stream
 at 1e10 and 1e38 the variance is exactly 0.0. With this mode ``revert``
 raises ``NotImplementedError`` (the shifted compensated sums have no
-exact inverse) and ``w`` must be 1.
+exact inverse) and ``w`` must be 1. A spread above the float32 maximum
+(about 3.4e38) makes ``y*y`` overflow: ``variance()`` and ``_var_biased()``
+return ``nan`` and print a numpy ``RuntimeWarning`` on the overflow. The
+default float64 path does not overflow on that range.
 
 Cost, median of 7 runs of one update over 20,000 samples, one CPU
 thread: default 0.000347 ms (IQR 0.000008), float32 0.003227 ms (IQR 0.000059). The claim that the float32 path is at

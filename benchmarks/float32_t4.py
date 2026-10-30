@@ -126,7 +126,7 @@ def main(smoke):
     out.write_text(
         json.dumps(
             {
-                "backend": platform.python_version(),
+                "backend": "cpu",
                 "platform": platform.platform(),
                 "processor": platform.processor(),
                 "n": n,
