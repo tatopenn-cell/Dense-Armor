@@ -16,9 +16,9 @@
   <a href="https://tatopenn-cell.github.io/Dense-Armor/"><img alt="docs" src="https://img.shields.io/badge/docs-tatopenn--cell.github.io-00e5ff?style=flat-square"></a>
 </p>
 
-<h3 align="center">Robot-AI Online Shielding &amp; Learning</h3>
+<h3 align="center">Library of Primitives from__Robot__to__AI__ </h3>
 
-<p align="center"><strong>A library for online learning on robot, vision, and AI streams, one sample at a time: streaming statistics and protection, drift and anomaly detection, safe robot commands, deep learning with continual learning and memory consolidation, and robust time-series models.</strong></p>
+<p align="center"><strong>A library for online learning on robot, vision, and AI streams, one sample at a time: streaming statistics that stay accurate in float32, protection, drift and anomaly detection, safe robot commands, deep learning with continual learning and memory consolidation, robust time-series models, and bridges to scikit-learn, PyTorch, TensorFlow, River and LLM agents.</strong></p>
 
 <p align="center">📖 <a href="https://tatopenn-cell.github.io/Dense-Armor/"><strong>Full documentation, API reference, quick guide →</strong></a></p>
 
