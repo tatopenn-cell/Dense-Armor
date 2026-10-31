@@ -55,9 +55,7 @@ def _mlp():
 def _resnet():
     from dense_armor.utility.neural.models import resnet_mlp
 
-    return resnet_mlp(
-        width=4, depth=3, n_in=2, n_out=1, key=jax.random.PRNGKey(0)
-    )
+    return resnet_mlp(width=4, depth=3, n_in=2, n_out=1, key=jax.random.PRNGKey(0))
 
 
 def _cnn():
@@ -76,8 +74,12 @@ def _rnn():
     from dense_armor.utility.neural.models import recurrent_net
 
     return recurrent_net(
-        n_in=2, n_hidden=4, n_out=1, key=jax.random.PRNGKey(0),
-        cell="rnn", n_layers=1,
+        n_in=2,
+        n_hidden=4,
+        n_out=1,
+        key=jax.random.PRNGKey(0),
+        cell="rnn",
+        n_layers=1,
     )
 
 
@@ -147,6 +149,7 @@ REASON = {
 
 def walk(model):
     names = []
+
     def rec(layer):
         cls = type(layer).__name__
         if cls in CACHE:
@@ -165,6 +168,7 @@ def walk(model):
             child = getattr(layer, name, None)
             if child is not None:
                 rec(child)
+
     rec(model)
     return names
 
@@ -183,7 +187,11 @@ def main():
                 continue
             seen.append(n)
             attrs = ", ".join(CACHE.get(n, []))
-            blocks = "yes (state carried)" if DECISION.get(n) == "blocker" else "no (cache inside jit)"
+            blocks = (
+                "yes (state carried)"
+                if DECISION.get(n) == "blocker"
+                else "no (cache inside jit)"
+            )
             print(f"| {model_name} | {n} | {attrs} | {blocks} | {DECISION.get(n)} |")
     print()
     print("=== Design ===")

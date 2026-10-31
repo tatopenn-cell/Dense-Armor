@@ -42,15 +42,20 @@ import time
 from pathlib import Path
 
 import jax
-import jax.numpy as jnp
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from dense_armor.utility.neural.compiled import (  # noqa: E402
     _init_state as init_state,
+)
+from dense_armor.utility.neural.compiled import (
     _read_values as read_values,
+)
+from dense_armor.utility.neural.compiled import (
     _write_values as write_values,
+)
+from dense_armor.utility.neural.compiled import (
     make_step,
 )
 from dense_armor.utility.neural.losses import MSE  # noqa: E402
@@ -78,8 +83,14 @@ def _models(smoke):
             ),
             "transformer_encoder": (
                 lambda: transformer_encoder(
-                    n_in=32, d_model=32, n_heads=4, d_ff=64, depth=1,
-                    n_out=32, key=jax.random.PRNGKey(SEED), max_len=8,
+                    n_in=32,
+                    d_model=32,
+                    n_heads=4,
+                    d_ff=64,
+                    depth=1,
+                    n_out=32,
+                    key=jax.random.PRNGKey(SEED),
+                    max_len=8,
                 ),
                 (4, 8, 32),
                 (4, 32),
@@ -93,8 +104,14 @@ def _models(smoke):
         ),
         "transformer_encoder": (
             lambda: transformer_encoder(
-                n_in=128, d_model=256, n_heads=8, d_ff=1024, depth=4,
-                n_out=128, key=jax.random.PRNGKey(SEED), max_len=128,
+                n_in=128,
+                d_model=256,
+                n_heads=8,
+                d_ff=1024,
+                depth=4,
+                n_out=128,
+                key=jax.random.PRNGKey(SEED),
+                max_len=128,
             ),
             (32, 128, 128),
             (32, 128),
@@ -173,12 +190,12 @@ def _loss_comparison(model_make, X, y, batch_size, n_steps):
         for p in m1.params():
             p.zero_grad()
         pred = m1.forward(X[idx], training=True)
-        l = float(t1.loss.forward(pred, y[idx]))
+        lv = float(t1.loss.forward(pred, y[idx]))
         m1.backward(t1.loss.backward())
         for p in m1.params():
             p.update(t1.optimizer_prototype)
         if (s + 1) in checkpoints:
-            losses_loop[s + 1] = l
+            losses_loop[s + 1] = lv
 
     m2 = model_make()
     values = read_values(m2)
@@ -190,13 +207,15 @@ def _loss_comparison(model_make, X, y, batch_size, n_steps):
     for s in range(n_steps):
         idx_start = (s % n_batches) * batch_size
         idx = slice(idx_start, idx_start + batch_size)
-        values, st, l = step(values, st, X[idx], y[idx], float(s))
+        values, st, lv = step(values, st, X[idx], y[idx], float(s))
         write_values(m2, values)
         if (s + 1) in checkpoints:
-            losses_comp[s + 1] = float(l)
+            losses_comp[s + 1] = float(lv)
 
-    rel = {k: abs(losses_loop[k] - losses_comp[k]) / max(abs(losses_loop[k]), 1e-12)
-           for k in checkpoints}
+    rel = {
+        k: abs(losses_loop[k] - losses_comp[k]) / max(abs(losses_loop[k]), 1e-12)
+        for k in checkpoints
+    }
     return losses_loop, losses_comp, rel, checkpoints
 
 
@@ -223,13 +242,19 @@ def _backend_label():
 
 def main(smoke, models_to_run, loss_steps, out_path=None):
     label = _backend_label()
-    print(f"backend: {label} (jax {jax.__version__}, "
-          f"python {platform.python_version()}, {platform.processor()})")
-    print(f"n_steps={N_STEPS}, n_sessions={N_SESSIONS}, seed={SEED}, "
-          f"smoke={smoke}, loss_steps={loss_steps}")
+    print(
+        f"backend: {label} (jax {jax.__version__}, "
+        f"python {platform.python_version()}, {platform.processor()})"
+    )
+    print(
+        f"n_steps={N_STEPS}, n_sessions={N_SESSIONS}, seed={SEED}, "
+        f"smoke={smoke}, loss_steps={loss_steps}"
+    )
     print()
-    print(f"{'model':22s} {'mode':10s} {'steps/s median':>15s} "
-          f"{'range':>22s} {'compile s':>10s}")
+    print(
+        f"{'model':22s} {'mode':10s} {'steps/s median':>15s} "
+        f"{'range':>22s} {'compile s':>10s}"
+    )
     result = {
         "backend": label,
         "jax": jax.__version__,
@@ -266,10 +291,14 @@ def main(smoke, models_to_run, loss_steps, out_path=None):
         rng_loop = (float(min(loop_sps)), float(max(loop_sps)))
         rng_comp = (float(min(comp_sps)), float(max(comp_sps)))
         ratio = med_comp / med_loop if med_loop > 0 else float("inf")
-        print(f"{name:22s} {'loop':10s} {med_loop:15.3f} "
-              f"[{rng_loop[0]:8.2f}, {rng_loop[1]:8.2f}] {'-':>10s}")
-        print(f"{'':22s} {'compiled':10s} {med_comp:15.3f} "
-              f"[{rng_comp[0]:8.2f}, {rng_comp[1]:8.2f}] {compile_time:10.3f}")
+        print(
+            f"{name:22s} {'loop':10s} {med_loop:15.3f} "
+            f"[{rng_loop[0]:8.2f}, {rng_loop[1]:8.2f}] {'-':>10s}"
+        )
+        print(
+            f"{'':22s} {'compiled':10s} {med_comp:15.3f} "
+            f"[{rng_comp[0]:8.2f}, {rng_comp[1]:8.2f}] {compile_time:10.3f}"
+        )
         print(f"{'':22s} ratio={ratio:.3f}")
         row = {
             "model": name,
@@ -294,8 +323,7 @@ def main(smoke, models_to_run, loss_steps, out_path=None):
                 make, X, y, batch_size, loss_steps
             )
             max_rel = max(rel.values())
-            print(f"{'':22s} loss_rel_max={max_rel:.2e} "
-                  f"at {checkpoints}")
+            print(f"{'':22s} loss_rel_max={max_rel:.2e} at {checkpoints}")
             row["loss_loop"] = losses_loop
             row["loss_compiled"] = losses_comp
             row["loss_rel"] = rel
@@ -313,15 +341,21 @@ def main(smoke, models_to_run, loss_steps, out_path=None):
         result["rows"].append(row)
 
     if any_loss_measured:
-        result["claims"]["1_loss_within_1e-4"] = "holds" if all_loss_ok else "does not hold"
+        result["claims"]["1_loss_within_1e-4"] = (
+            "holds" if all_loss_ok else "does not hold"
+        )
     else:
         result["claims"]["1_loss_within_1e-4"] = "not measured: loss_steps=0"
     if any_gpu:
-        result["claims"]["2_gpu_at_least_3x"] = "holds" if all_gpu_ok else "does not hold"
+        result["claims"]["2_gpu_at_least_3x"] = (
+            "holds" if all_gpu_ok else "does not hold"
+        )
     else:
         result["claims"]["2_gpu_at_least_3x"] = "not measured: backend is not gpu"
     if any_cpu:
-        result["claims"]["3_cpu_at_least_1_5x"] = "holds" if all_cpu_ok else "does not hold"
+        result["claims"]["3_cpu_at_least_1_5x"] = (
+            "holds" if all_cpu_ok else "does not hold"
+        )
     else:
         result["claims"]["3_cpu_at_least_1_5x"] = "not measured: backend is not cpu"
 

@@ -39,7 +39,6 @@ from typing import Any
 import jax
 import jax.numpy as jnp
 
-from dense_armor.utility.neural.params import Param
 
 def _optimizer_name(optimizer: Any) -> str:
     return type(optimizer).__name__
@@ -95,23 +94,16 @@ def _apply_update(
     name = _optimizer_name(optimizer)
     if weight_decay > 0.0 and decay == "l2":
         grads = [
-            g + weight_decay * v if v.ndim >= 2 else g
-            for v, g in zip(values, grads)
+            g + weight_decay * v if v.ndim >= 2 else g for v, g in zip(values, grads)
         ]
     if weight_decay > 0.0 and decay == "decoupled":
-        values = [
-            v - eta * weight_decay * v if v.ndim >= 2 else v
-            for v in values
-        ]
+        values = [v - eta * weight_decay * v if v.ndim >= 2 else v for v in values]
     if name == "SGD":
         if optimizer.momentum == 0.0:
             new_values = [v - lr * g for v, g in zip(values, grads)]
             return new_values, None
         u_old = opt_state
-        u_new = [
-            optimizer.momentum * u + lr * g
-            for u, g in zip(u_old, grads)
-        ]
+        u_new = [optimizer.momentum * u + lr * g for u, g in zip(u_old, grads)]
         if optimizer.nesterov:
             new_values = [
                 v - lr * g - optimizer.momentum * u
@@ -183,7 +175,7 @@ def _clip_grads(grads: list, max_norm: float) -> list:
     return [g * scale for g in grads]
 
 
-def _stateful_blocker(model):
+def _stateful_blocker(model: Any) -> str | None:
     """Return the class name of the first stateful layer, or None.
 
     Dropout carries a PRNG key that advances at every training forward.
@@ -197,21 +189,28 @@ def _stateful_blocker(model):
     stateful = {"Dropout", "BatchNorm", "GroupNorm", "InstanceNorm"}
     visited = set()
 
-    def walk(layer):
+    def walk(layer: Any) -> str | None:
         if id(layer) in visited:
             return None
         visited.add(id(layer))
         cls = type(layer).__name__
         if cls in stateful:
             return cls
-        children = []
+        children: list[Any] = []
         inner = getattr(layer, "layers", None) or []
         children.extend(inner)
         single = getattr(layer, "inner", None)
         if single is not None:
             children.append(single)
-        for name in ("attn", "ln1", "ln2", "ffn1", "ffn2",
-                     "dropout_attn", "dropout_ffn"):
+        for name in (
+            "attn",
+            "ln1",
+            "ln2",
+            "ffn1",
+            "ffn2",
+            "dropout_attn",
+            "dropout_ffn",
+        ):
             child = getattr(layer, name, None)
             if child is not None:
                 children.append(child)
@@ -264,7 +263,9 @@ def make_step(
             "see the item 0 audit."
         )
 
-    def _step(values, opt_state, x, y, lr, eta):
+    def _step(
+        values: list, opt_state: Any, x: Any, y: Any, lr: Any, eta: Any
+    ) -> tuple[list, Any, Any]:
         _write_values(model, values)
         for p in model.params():
             p.zero_grad()
@@ -283,7 +284,9 @@ def make_step(
         raise ValueError(f"compile=True does not support optimizer {name}")
     jitted = jax.jit(_step)
 
-    def step(values, opt_state, x, y, epoch_t):
+    def step(
+        values: list, opt_state: Any, x: Any, y: Any, epoch_t: float
+    ) -> tuple[list, Any, Any]:
         t = float(epoch_t)
         lr = schedule(t)
         eta = schedule.multiplier(t)

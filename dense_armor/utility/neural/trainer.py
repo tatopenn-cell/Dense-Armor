@@ -38,8 +38,14 @@ from dense_armor.utility.neural.batching import minibatches
 from dense_armor.utility.neural.clip import clip_grad_norm
 from dense_armor.utility.neural.compiled import (
     _init_state as init_state,
+)
+from dense_armor.utility.neural.compiled import (
     _read_values as read_values,
+)
+from dense_armor.utility.neural.compiled import (
     _write_values as write_values,
+)
+from dense_armor.utility.neural.compiled import (
     make_step,
 )
 from dense_armor.utility.neural.params import Param

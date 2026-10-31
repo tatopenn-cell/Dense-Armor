@@ -10,13 +10,18 @@ import math
 
 import jax
 import jax.numpy as jnp
-import numpy as np
 import pytest
 
 from dense_armor.utility.neural.compiled import (
     _init_state as init_state,
+)
+from dense_armor.utility.neural.compiled import (
     _read_values as read_values,
+)
+from dense_armor.utility.neural.compiled import (
     _write_values as write_values,
+)
+from dense_armor.utility.neural.compiled import (
     make_step,
 )
 from dense_armor.utility.neural.losses import MSE
@@ -31,7 +36,6 @@ from dense_armor.utility.neural.schedules import ConstantLR, StepLR
 from dense_armor.utility.neural.trainer import Trainer
 from dense_armor.utility.optim import SGD, AdaGrad, Adam, RMSProp
 
-
 MODEL_FACTORIES = {
     "mlp": (
         lambda: mlp([2, 4, 1], jax.random.PRNGKey(0)),
@@ -39,7 +43,9 @@ MODEL_FACTORIES = {
         (16, 1),
     ),
     "resnet_mlp": (
-        lambda: resnet_mlp(width=4, depth=2, n_in=2, n_out=1, key=jax.random.PRNGKey(0)),
+        lambda: resnet_mlp(
+            width=4, depth=2, n_in=2, n_out=1, key=jax.random.PRNGKey(0)
+        ),
         (16, 2),
         (16, 1),
     ),
@@ -59,8 +65,14 @@ MODEL_FACTORIES = {
     ),
     "transformer_encoder": (
         lambda: transformer_encoder(
-            n_in=4, d_model=8, n_heads=2, d_ff=16, depth=1, n_out=3,
-            key=jax.random.PRNGKey(0), max_len=8,
+            n_in=4,
+            d_model=8,
+            n_heads=2,
+            d_ff=16,
+            depth=1,
+            n_out=3,
+            key=jax.random.PRNGKey(0),
+            max_len=8,
         ),
         (16, 8, 4),
         (16, 3),
@@ -120,22 +132,28 @@ def test_default_unchanged_bit_for_bit():
     The values are the three epoch losses of the MLP [2, 4, 1] with
     seed 0, MSE, SGD(0.01), batch 8 on 16 samples, shuffle with key 0.
     They were taken from master before this branch existed and are
-    stored here. The equality is bit for bit.
+    stored here. The last digit of a loss changes with the version of
+    Python and of the libraries (Python 3.10 and 3.11 on the CI give
+    1.0359279394961725 for the stored 1.0359279394961722), so the
+    comparison is relative: 1e-9 with x64 on, 1e-5 with x64 off.
     """
     factory, sx, sy = MODEL_FACTORIES["mlp"]
     X, y = _data(sx, sy)
     m = factory()
     t = Trainer(m, MSE(), SGD(0.01))
     t.fit(X, y, epochs=3, batch_size=8, key=jax.random.PRNGKey(0))
-    expected = (
-        STORED_MASTER_LOSSES_X64_TRUE
-        if jax.config.jax_enable_x64
-        else STORED_MASTER_LOSSES_X64_FALSE
-    )
-    assert t.history_["train_loss"] == expected
+    if jax.config.jax_enable_x64:
+        expected = STORED_MASTER_LOSSES_X64_TRUE
+        tol = 1e-9
+    else:
+        expected = STORED_MASTER_LOSSES_X64_FALSE
+        tol = 1e-5
+    assert t.history_["train_loss"] == pytest.approx(expected, rel=tol)
 
 
-@pytest.mark.parametrize("optimizer_name", ["sgd", "sgd_momentum", "adam", "rmsprop", "adagrad"])
+@pytest.mark.parametrize(
+    "optimizer_name", ["sgd", "sgd_momentum", "adam", "rmsprop", "adagrad"]
+)
 def test_optimizer_runs_in_compiled_mode(optimizer_name):
     """Every optimizer of the batch runs and lowers the loss."""
     factory, sx, sy = MODEL_FACTORIES["mlp"]
@@ -204,14 +222,22 @@ def test_l2_and_decoupled_differ_for_sgd_with_momentum():
     X, y = _data(sx, sy)
     m1 = factory()
     t1 = Trainer(
-        m1, MSE(), SGD(0.01, momentum=0.9), weight_decay=0.1,
-        decay="l2", compile=True,
+        m1,
+        MSE(),
+        SGD(0.01, momentum=0.9),
+        weight_decay=0.1,
+        decay="l2",
+        compile=True,
     )
     t1.fit(X, y, epochs=2, batch_size=8, key=jax.random.PRNGKey(0))
     m2 = factory()
     t2 = Trainer(
-        m2, MSE(), SGD(0.01, momentum=0.9), weight_decay=0.1,
-        decay="decoupled", compile=True,
+        m2,
+        MSE(),
+        SGD(0.01, momentum=0.9),
+        weight_decay=0.1,
+        decay="decoupled",
+        compile=True,
     )
     t2.fit(X, y, epochs=2, batch_size=8, key=jax.random.PRNGKey(0))
     assert t1.history_["train_loss"][-1] != t2.history_["train_loss"][-1]
@@ -237,8 +263,15 @@ def test_early_stopping_path():
     m = factory()
     t = Trainer(m, MSE(), SGD(0.01), compile=True)
     t.fit(
-        X, y, epochs=20, batch_size=8, key=jax.random.PRNGKey(0),
-        X_val=X_val, y_val=y_val, patience=2, min_delta=100.0,
+        X,
+        y,
+        epochs=20,
+        batch_size=8,
+        key=jax.random.PRNGKey(0),
+        X_val=X_val,
+        y_val=y_val,
+        patience=2,
+        min_delta=100.0,
     )
     assert t.stopped_epoch_ is not None
     assert t.stopped_epoch_ < 19
@@ -301,9 +334,6 @@ def test_step_counter_bounds():
     assert int(st2["t"]) == 2
 
 
-# ==== Strong equivalence tests: one per option that a mutation can remove ====
-
-
 @pytest.mark.parametrize(
     "make_opt",
     [
@@ -315,7 +345,15 @@ def test_step_counter_bounds():
         lambda: RMSProp(0.001),
         lambda: AdaGrad(0.1),
     ],
-    ids=["sgd", "sgd_mom", "sgd_nesterov", "adam", "adam_custom_betas", "rmsprop", "adagrad"],
+    ids=[
+        "sgd",
+        "sgd_mom",
+        "sgd_nesterov",
+        "adam",
+        "adam_custom_betas",
+        "rmsprop",
+        "adagrad",
+    ],
 )
 def test_compiled_equals_loop_with_that_optimizer(make_opt):
     """For every optimizer option, compiled loss == loop loss at every epoch.
@@ -359,9 +397,7 @@ def test_compiled_equals_loop_with_that_schedule(make_sched):
     opt_b = SGD(0.01)
     t_loop = Trainer(factory(), MSE(), opt_a, schedule=make_sched(opt_a))
     t_loop.fit(X, y, epochs=4, batch_size=8, key=jax.random.PRNGKey(0))
-    t_comp = Trainer(
-        factory(), MSE(), opt_b, schedule=make_sched(opt_b), compile=True
-    )
+    t_comp = Trainer(factory(), MSE(), opt_b, schedule=make_sched(opt_b), compile=True)
     t_comp.fit(X, y, epochs=4, batch_size=8, key=jax.random.PRNGKey(0))
     for a, b in zip(t_loop.history_["train_loss"], t_comp.history_["train_loss"]):
         rel = abs(a - b) / max(abs(a), 1e-12)
@@ -373,9 +409,7 @@ def test_compiled_equals_loop_with_weight_decay(decay):
     """With weight decay, compiled loss == loop loss at every epoch."""
     factory, sx, sy = MODEL_FACTORIES["mlp"]
     X, y = _data(sx, sy)
-    t_loop = Trainer(
-        factory(), MSE(), SGD(0.01), weight_decay=0.1, decay=decay
-    )
+    t_loop = Trainer(factory(), MSE(), SGD(0.01), weight_decay=0.1, decay=decay)
     t_loop.fit(X, y, epochs=4, batch_size=8, key=jax.random.PRNGKey(0))
     t_comp = Trainer(
         factory(), MSE(), SGD(0.01), weight_decay=0.1, decay=decay, compile=True
@@ -392,9 +426,7 @@ def test_compiled_equals_loop_with_clipping():
     X, y = _data(sx, sy)
     t_loop = Trainer(factory(), MSE(), SGD(0.01), clip_norm=0.01)
     t_loop.fit(X, y, epochs=4, batch_size=8, key=jax.random.PRNGKey(0))
-    t_comp = Trainer(
-        factory(), MSE(), SGD(0.01), clip_norm=0.01, compile=True
-    )
+    t_comp = Trainer(factory(), MSE(), SGD(0.01), clip_norm=0.01, compile=True)
     t_comp.fit(X, y, epochs=4, batch_size=8, key=jax.random.PRNGKey(0))
     for a, b in zip(t_loop.history_["train_loss"], t_comp.history_["train_loss"]):
         rel = abs(a - b) / max(abs(a), 1e-12)
@@ -429,31 +461,27 @@ def test_compiled_equals_loop_l2_equals_decoupled_for_plain_sgd():
 
 def test_rejects_dropout():
     """compile=True rejects a model that contains Dropout."""
-    from dense_armor.utility.neural.layers import Dropout, Dense
     from dense_armor.utility.neural.chain import Sequential
+    from dense_armor.utility.neural.layers import Dense, Dropout
 
     key = jax.random.PRNGKey(0)
     k1, k2, k3 = jax.random.split(key, 3)
     model = Sequential([Dense(2, 4, k1), Dropout(0.5, k2), Dense(4, 1, k3)])
     with pytest.raises(ValueError, match="Dropout"):
-        make_step(
-            model, MSE(), SGD(0.01), ConstantLR(0.01), 0.0, "l2", None
-        )
+        make_step(model, MSE(), SGD(0.01), ConstantLR(0.01), 0.0, "l2", None)
 
 
 def test_rejects_batchnorm():
     """compile=True rejects a model that contains BatchNorm."""
-    from dense_armor.utility.neural.norm import BatchNorm
-    from dense_armor.utility.neural.layers import Dense
     from dense_armor.utility.neural.chain import Sequential
+    from dense_armor.utility.neural.layers import Dense
+    from dense_armor.utility.neural.norm import BatchNorm
 
     key = jax.random.PRNGKey(0)
     k1, k2 = jax.random.split(key)
     model = Sequential([Dense(2, 4, k1), BatchNorm(4), Dense(4, 1, k2)])
     with pytest.raises(ValueError, match="BatchNorm"):
-        make_step(
-            model, MSE(), SGD(0.01), ConstantLR(0.01), 0.0, "l2", None
-        )
+        make_step(model, MSE(), SGD(0.01), ConstantLR(0.01), 0.0, "l2", None)
 
 
 def test_second_fit_does_not_restart_the_optimizer():
@@ -470,3 +498,45 @@ def test_second_fit_does_not_restart_the_optimizer():
     t_b.fit(X, y, epochs=4, batch_size=8, key=jax.random.PRNGKey(0), shuffle=False)
     last_b = t_b.history_["train_loss"][-1]
     assert abs(last_a - last_b) <= 1e-6, f"{last_a} vs {last_b}"
+
+
+def test_compiled_equals_loop_decoupled_decay_with_a_decaying_schedule():
+    """The decoupled term is scaled by the schedule multiplier, as in the loop."""
+    factory, sx, sy = MODEL_FACTORIES["mlp"]
+    X, y = _data(sx, sy)
+    kwargs = {"weight_decay": 0.5, "decay": "decoupled"}
+    t_loop = Trainer(
+        factory(),
+        MSE(),
+        SGD(0.05),
+        schedule=StepLR(0.05, step=1.0, gamma=0.3),
+        **kwargs,
+    )
+    t_loop.fit(X, y, epochs=4, batch_size=8, key=jax.random.PRNGKey(0))
+    t_comp = Trainer(
+        factory(),
+        MSE(),
+        SGD(0.05),
+        schedule=StepLR(0.05, step=1.0, gamma=0.3),
+        compile=True,
+        **kwargs,
+    )
+    t_comp.fit(X, y, epochs=4, batch_size=8, key=jax.random.PRNGKey(0))
+    for a, b in zip(t_loop.history_["train_loss"], t_comp.history_["train_loss"]):
+        assert abs(a - b) / max(abs(a), 1e-12) <= 1e-4, f"{a} vs {b}"
+
+
+def test_compiled_l2_decay_leaves_the_vectors_alone_as_the_loop_does():
+    """With a large l2 coefficient the biases of the loop are not decayed."""
+    factory, sx, sy = MODEL_FACTORIES["mlp"]
+    X, y = _data(sx, sy)
+    m_loop = factory()
+    Trainer(m_loop, MSE(), SGD(0.05), weight_decay=2.0, decay="l2").fit(
+        X, y, epochs=4, batch_size=8, key=jax.random.PRNGKey(0)
+    )
+    m_comp = factory()
+    Trainer(m_comp, MSE(), SGD(0.05), weight_decay=2.0, decay="l2", compile=True).fit(
+        X, y, epochs=4, batch_size=8, key=jax.random.PRNGKey(0)
+    )
+    for p, q in zip(m_loop.params(), m_comp.params()):
+        assert float(jnp.max(jnp.abs(p.value - q.value))) <= 1e-5
