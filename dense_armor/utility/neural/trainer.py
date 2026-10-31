@@ -214,6 +214,7 @@ class Trainer:
                     values, opt_state, batch_loss = step(
                         values, opt_state, X[idx], y[idx], epoch_t
                     )
+                    write_values(self.model, values)
                     total_loss += float(batch_loss) * len(idx)
                     total_size += len(idx)
                 else:
