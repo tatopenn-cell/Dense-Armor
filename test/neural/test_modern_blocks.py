@@ -156,6 +156,11 @@ def test_glu_batch_equals_single_sample_and_sequence():
     np.testing.assert_allclose(full[0], rows, atol=1e-6)
 
 
+def test_glu_repr_names_the_activation_and_the_bias():
+    f = GLUFeedForward(2, 3, "silu", jax.random.PRNGKey(0), bias=True)
+    assert repr(f) == "GLUFeedForward(2, 3, 'silu', bias=True)"
+
+
 def test_glu_unknown_activation_raises():
     with pytest.raises(ValueError):
         GLUFeedForward(2, 2, "relu", jax.random.PRNGKey(0))
