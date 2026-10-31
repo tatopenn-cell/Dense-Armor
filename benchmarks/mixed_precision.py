@@ -5,7 +5,7 @@ Claims, written before the first run and not changed after it:
 (1) The loss of bfloat16 at step 200 is within 5% relative of
     float32 on the same stream.
 (2) The peak memory of the lower precision is at most 0.7 times that
-    of float32 (GPU only: ``memory_stats()`` of the device, read in a
+    of float32 (accelerator only: ``memory_stats()`` of the device, read in a
     fresh process per mode because the peak of a process only grows; on
     the CPU the value is ``None``).
 (3) The faster of bfloat16 and float16 has at least 1.3 times the
@@ -91,7 +91,8 @@ def _peak_bytes():
 
 
 def _backend():
-    return "gpu" if jax.default_backend() == "gpu" else "cpu"
+    name = jax.default_backend()
+    return "gpu" if name in ("gpu", "cuda", "rocm") else name
 
 
 def _make_stepper(trainer, dt, batch):
@@ -203,13 +204,53 @@ MODES = [
 
 
 def _run_in_new_process(label, smoke, loss_steps):
-    """Run one mode in a fresh process: the peak memory of a process only grows."""
+    """Run one mode in a fresh process: the peak memory of a process only grows.
+
+    A mode that fails (a dtype the device does not support) gives a row with
+    an ``error`` field instead of stopping the benchmark.
+    """
     cmd = [sys.executable, __file__, "--mode", label, "--loss-steps", str(loss_steps)]
     if smoke:
         cmd.append("--smoke")
-    out = subprocess.run(cmd, capture_output=True, text=True, check=True).stdout
-    line = next(ln for ln in out.splitlines() if ln.startswith("ROW "))
-    return json.loads(line[4:])
+    done = subprocess.run(cmd, capture_output=True, text=True)
+    lines = [ln for ln in done.stdout.splitlines() if ln.startswith("ROW ")]
+    if done.returncode != 0 or not lines:
+        return {"mode": label, "error": (done.stderr or done.stdout)[-400:]}
+    return json.loads(lines[0][4:])
+
+
+def _claims(rows):
+    ok = {r["mode"]: r for r in rows if "error" not in r}
+    ref = ok.get("float32")
+    lower = [ok[m] for m in ("bfloat16", "float16") if m in ok]
+    claims = {
+        "1_bf16_loss_within_5pct": {"holds": None, "reason": "a mode failed"},
+        "2_memory_0.7x": {"holds": None, "reason": "no peak memory"},
+        "3_faster_of_bf16_fp16_1.3x": {"holds": None, "reason": "a mode failed"},
+    }
+    if ref is None:
+        return claims
+    if "bfloat16" in ok and ref["final_loss"] > 0:
+        rel = abs(ok["bfloat16"]["final_loss"] - ref["final_loss"]) / ref["final_loss"]
+        claims["1_bf16_loss_within_5pct"] = {"holds": rel < 0.05, "rel_diff": rel}
+    peaks = [r["peak_bytes"] for r in lower if r["peak_bytes"] is not None]
+    if ref["peak_bytes"] is not None and peaks:
+        ratio = min(peaks) / ref["peak_bytes"]
+        claims["2_memory_0.7x"] = {"holds": ratio <= 0.7, "ratio": ratio}
+    if _backend() == "cpu":
+        claims["3_faster_of_bf16_fp16_1.3x"] = {
+            "holds": None,
+            "reason": "accelerator only: no bfloat16 acceleration on CPU",
+        }
+    elif lower:
+        fastest = max(lower, key=lambda r: r["steps_per_second_median"])
+        ratio = fastest["steps_per_second_median"] / ref["steps_per_second_median"]
+        claims["3_faster_of_bf16_fp16_1.3x"] = {
+            "which": fastest["mode"],
+            "ratio": ratio,
+            "holds": ratio >= 1.3,
+        }
+    return claims
 
 
 def main(smoke, loss_steps):
@@ -219,53 +260,18 @@ def main(smoke, loss_steps):
         print(f"  running {label} ...")
         rows.append(_run_in_new_process(label, smoke, loss_steps))
         r = rows[-1]
+        if "error" in r:
+            print(f"    FAILED: {r['error']}")
+            continue
         print(
             f"    loss={r['final_loss']:.6f}  "
             f"steps/s={r['steps_per_second_median']:.2f}  "
             f"peak={r['peak_bytes']}"
         )
-    claims = {
-        "1_bf16_loss_within_5pct": None,
-        "2_memory_0.7x": None,
-        "3_faster_of_bf16_fp16_1.3x": None,
-    }
-    rows_by = {r["mode"]: r for r in rows}
-    ref = rows_by["float32"]
-    if ref["final_loss"] > 0:
-        bf = rows_by["bfloat16"]["final_loss"]
-        claims["1_bf16_loss_within_5pct"] = {
-            "holds": abs(bf - ref["final_loss"]) / ref["final_loss"] < 0.05,
-            "rel_diff": abs(bf - ref["final_loss"]) / ref["final_loss"],
-        }
-    if ref["peak_bytes"] is not None:
-        best_peak = min(
-            (rows_by["bfloat16"]["peak_bytes"] or 1e18),
-            (rows_by["float16"]["peak_bytes"] or 1e18),
-        )
-        claims["2_memory_0.7x"] = {
-            "holds": best_peak / ref["peak_bytes"] <= 0.7,
-            "ratio": best_peak / ref["peak_bytes"],
-        }
-    else:
-        claims["2_memory_0.7x"] = {"holds": None, "reason": "no GPU peak memory"}
-    fastest = max(
-        ("bfloat16", rows_by["bfloat16"]["steps_per_second_median"]),
-        ("float16", rows_by["float16"]["steps_per_second_median"]),
-        key=lambda kv: kv[1],
-    )
-    if _backend() == "cpu":
-        claims["3_faster_of_bf16_fp16_1.3x"] = {
-            "holds": None,
-            "reason": "GPU only: no bfloat16 acceleration on CPU",
-        }
-    else:
-        claims["3_faster_of_bf16_fp16_1.3x"] = {
-            "which": fastest[0],
-            "ratio": fastest[1] / ref["steps_per_second_median"],
-            "holds": fastest[1] / ref["steps_per_second_median"] >= 1.3,
-        }
+    claims = _claims(rows)
     payload = {
         "backend": _backend(),
+        "device_kind": jax.devices()[0].device_kind,
         "jax": jax.__version__,
         "python": platform.python_version(),
         "processor": platform.processor(),
