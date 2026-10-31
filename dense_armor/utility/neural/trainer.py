@@ -37,10 +37,10 @@ import numpy as np
 from dense_armor.utility.neural.batching import minibatches
 from dense_armor.utility.neural.clip import clip_grad_norm
 from dense_armor.utility.neural.compiled import (
-    init_state,
+    _init_state as init_state,
+    _read_values as read_values,
+    _write_values as write_values,
     make_step,
-    read_values,
-    write_values,
 )
 from dense_armor.utility.neural.params import Param
 from dense_armor.utility.neural.schedules import ConstantLR
@@ -111,6 +111,9 @@ class Trainer:
             raise ValueError(f"clip_norm must be > 0 or None, got {clip_norm}")
         self.clip_norm = clip_norm
         self.compile = bool(compile)
+        self._compiled_values: list | None = None
+        self._compiled_opt_state: Any = None
+        self._compiled_step: Any = None
         self.optimizers_ = [copy.deepcopy(optimizer) for _ in model.params()]
         self.history_: dict[str, list[float]] = {
             "train_loss": [],
@@ -178,18 +181,24 @@ class Trainer:
         n = len(X)
 
         if self.compile:
-            values = read_values(self.model)
-            write_values(self.model, values)
-            opt_state = init_state(self.optimizer_prototype, values)
-            step = make_step(
-                self.model,
-                self.loss,
-                self.optimizer_prototype,
-                self.schedule,
-                self.weight_decay,
-                self.decay,
-                self.clip_norm,
-            )
+            if self._compiled_step is None:
+                self._compiled_values = read_values(self.model)
+                write_values(self.model, self._compiled_values)
+                self._compiled_opt_state = init_state(
+                    self.optimizer_prototype, self._compiled_values
+                )
+                self._compiled_step = make_step(
+                    self.model,
+                    self.loss,
+                    self.optimizer_prototype,
+                    self.schedule,
+                    self.weight_decay,
+                    self.decay,
+                    self.clip_norm,
+                )
+            values = self._compiled_values
+            opt_state = self._compiled_opt_state
+            step = self._compiled_step
         else:
             values = None
             opt_state = None
@@ -208,14 +217,17 @@ class Trainer:
                     opt.lr = first_lr
             total_loss = 0.0
             total_size = 0
+            total_loss_device: Any = jnp.float32(0.0) if self.compile else None
             for b_idx, idx in enumerate(batches):
                 epoch_t = epoch + b_idx / n_batches
                 if self.compile:
                     values, opt_state, batch_loss = step(
                         values, opt_state, X[idx], y[idx], epoch_t
                     )
+                    self._compiled_values = values
+                    self._compiled_opt_state = opt_state
                     write_values(self.model, values)
-                    total_loss += float(batch_loss) * len(idx)
+                    total_loss_device = total_loss_device + batch_loss * len(idx)
                     total_size += len(idx)
                 else:
                     lr_t = self.schedule(epoch_t)
@@ -233,7 +245,11 @@ class Trainer:
                         p.update(opt)
                     total_loss += float(batch_loss) * len(idx)
                     total_size += len(idx)
-            train_loss = total_loss / total_size
+            if self.compile:
+                assert total_loss_device is not None
+                train_loss = float(total_loss_device) / total_size
+            else:
+                train_loss = total_loss / total_size
             self.history_["train_loss"].append(train_loss)
             self.history_["lr"].append(first_lr)
             if X_val is not None and y_val is not None:
@@ -259,12 +275,8 @@ class Trainer:
                         self.stopped_epoch_ = epoch
                         break
         if patience is not None and best_weights is not None:
-            if self.compile:
-                for p, w in zip(self.model.params(), best_weights):
-                    p.value = jnp.asarray(w)
-            else:
-                for p, w in zip(self.model.params(), best_weights):
-                    p.value = jnp.asarray(w)
+            for p, w in zip(self.model.params(), best_weights):
+                p.value = jnp.asarray(w)
         if self.stopped_epoch_ is None:
             self.stopped_epoch_ = epochs - 1
         return self

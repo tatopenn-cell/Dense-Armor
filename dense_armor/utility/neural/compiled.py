@@ -41,11 +41,6 @@ import jax.numpy as jnp
 
 from dense_armor.utility.neural.params import Param
 
-# The optimizer is recognised by the name of its class: the object
-# form of dense_armor.utility.optim is the one that carries the
-# hyperparameters and the step arithmetic.
-
-
 def _optimizer_name(optimizer: Any) -> str:
     return type(optimizer).__name__
 
@@ -184,8 +179,49 @@ def _clip_grads(grads: list, max_norm: float) -> list:
     for g in grads:
         total_sq = total_sq + jnp.sum(g * g)
     norm = jnp.sqrt(total_sq)
-    scale = jnp.where(norm >= max_norm, max_norm / (norm + 1e-12), 1.0)
+    scale = jnp.where(norm >= max_norm, max_norm / norm, 1.0)
     return [g * scale for g in grads]
+
+
+def _stateful_blocker(model):
+    """Return the class name of the first stateful layer, or None.
+
+    Dropout carries a PRNG key that advances at every training forward.
+    BatchNorm carries a running mean and variance that change at every
+    training forward. Both states must cross the jit boundary, so a
+    compiled step on a model that contains them is not supported. The
+    function walks the layer tree through the attributes that the
+    models use (layers, inner, attn, ln1, ln2, ffn1, ffn2, dropout_attn,
+    dropout_ffn).
+    """
+    stateful = {"Dropout", "BatchNorm", "GroupNorm", "InstanceNorm"}
+    visited = set()
+
+    def walk(layer):
+        if id(layer) in visited:
+            return None
+        visited.add(id(layer))
+        cls = type(layer).__name__
+        if cls in stateful:
+            return cls
+        children = []
+        inner = getattr(layer, "layers", None) or []
+        children.extend(inner)
+        single = getattr(layer, "inner", None)
+        if single is not None:
+            children.append(single)
+        for name in ("attn", "ln1", "ln2", "ffn1", "ffn2",
+                     "dropout_attn", "dropout_ffn"):
+            child = getattr(layer, name, None)
+            if child is not None:
+                children.append(child)
+        for child in children:
+            found = walk(child)
+            if found is not None:
+                return found
+        return None
+
+    return walk(model)
 
 
 def make_step(
@@ -220,6 +256,13 @@ def make_step(
         returns ``(new_values, new_opt_state, loss_value)``.
     """
     name = _optimizer_name(optimizer)
+    blocker = _stateful_blocker(model)
+    if blocker is not None:
+        raise ValueError(
+            f"compile=True does not support {blocker}: its state advances "
+            "at every training forward and must cross the jit boundary; "
+            "see the item 0 audit."
+        )
 
     def _step(values, opt_state, x, y, lr, eta):
         _write_values(model, values)
@@ -249,25 +292,6 @@ def make_step(
     return step
 
 
-def init_state(optimizer: Any, values: list) -> Any:
-    """Public alias of :func:`_init_state`."""
-    return _init_state(optimizer, values)
-
-
-def read_values(model: Any) -> list:
-    """Public alias of :func:`_read_values`."""
-    return _read_values(model)
-
-
-def write_values(model: Any, values: list) -> None:
-    """Public alias of :func:`_write_values`."""
-    _write_values(model, values)
-
-
 __all__ = [
-    "Param",
-    "init_state",
     "make_step",
-    "read_values",
-    "write_values",
 ]
