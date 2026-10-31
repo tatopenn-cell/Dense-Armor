@@ -1,0 +1,83 @@
+{
+  "backend": "gpu",
+  "jax": "0.11.1",
+  "python": "3.13.15",
+  "processor": "x86_64",
+  "platform": "Linux-6.18.55+-x86_64-with-glibc2.39",
+  "n_sessions": 3,
+  "n_steps_per_session": 20,
+  "loss_steps": 200,
+  "smoke": false,
+  "seed": 0,
+  "claims": {
+    "1_bf16_loss_within_5pct": {
+      "holds": true,
+      "rel_diff": 4.435669994721301e-05
+    },
+    "2_memory_0.7x": {
+      "holds": false,
+      "ratio": 1.0333036485121145
+    },
+    "3_faster_of_bf16_fp16_1.3x": {
+      "which": "bfloat16",
+      "ratio": 0.7587366835119529,
+      "holds": false
+    }
+  },
+  "rows": [
+    {
+      "mode": "float32",
+      "compute_dtype": null,
+      "loss_scale": null,
+      "loss_at_step": 200,
+      "final_loss": 0.9460052251815796,
+      "peak_bytes": 2333349632,
+      "steps_per_second_median": 3.3523742525364586,
+      "steps_per_second_range": [
+        3.341456907383156,
+        3.3775985228296364
+      ],
+      "steps_per_second_sessions": [
+        3.3523742525364586,
+        3.3775985228296364,
+        3.341456907383156
+      ]
+    },
+    {
+      "mode": "bfloat16",
+      "compute_dtype": "bfloat16",
+      "loss_scale": null,
+      "loss_at_step": 200,
+      "final_loss": 0.9459632635116577,
+      "peak_bytes": 2411058688,
+      "steps_per_second_median": 2.5435693222603746,
+      "steps_per_second_range": [
+        2.5252820959232607,
+        2.552303082401471
+      ],
+      "steps_per_second_sessions": [
+        2.552303082401471,
+        2.5435693222603746,
+        2.5252820959232607
+      ]
+    },
+    {
+      "mode": "float16",
+      "compute_dtype": "float16",
+      "loss_scale": "dynamic",
+      "loss_at_step": 200,
+      "final_loss": 0.9459456205368042,
+      "peak_bytes": 2476843008,
+      "steps_per_second_median": 2.388674998788037,
+      "steps_per_second_range": [
+        2.3866034841015296,
+        2.395258532177601
+      ],
+      "steps_per_second_sessions": [
+        2.395258532177601,
+        2.388674998788037,
+        2.3866034841015296
+      ]
+    }
+  ]
+}
