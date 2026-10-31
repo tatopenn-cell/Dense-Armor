@@ -184,3 +184,11 @@ def test_equality_and_copy_keep_eta():
     assert a != b
     c = copy.deepcopy(b)
     assert c == b and c.eta == 0.5
+
+
+def test_equality_against_non_adamw_returns_not_implemented():
+    opt = AdamW(weight_decay=0.1)
+    other = Adam(lr=0.1)
+    result = opt.__eq__(other)
+    assert result is NotImplemented or result is False
+    assert opt != other
