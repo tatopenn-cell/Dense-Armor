@@ -33,6 +33,12 @@ The first row has a root mean square of `sqrt((9 + 16) / 2) = 3.5355`, and
 `3 / 3.5355 = 0.8485`. The second row is already at root mean square `1`, so
 it does not change. The gain starts at `1`; it is the only parameter.
 
+The formula is `y = x / sqrt(mean(x**2) + eps) * g`, where `x` is one input row,
+`mean` averages over its features, `eps` is a small constant that keeps the
+root away from zero, and `g` is the gain. The small case is the first row
+above: `mean(x**2) = (9 + 16) / 2 = 12.5`, its root is `3.5355`, and
+`[3, 4] / 3.5355 = [0.8485, 1.1314]`.
+
 ## 2. Gate the feed-forward network
 
 A gated feed-forward layer computes two projections of the input, passes one
@@ -56,6 +62,14 @@ print(f.forward(x).shape, len(f.params()))
 The output has the shape of the input, and the layer has three weight
 matrices, as the paper says. The argument `bias=True` adds three bias
 vectors; `activation` is `"sigmoid"`, `"gelu"` or `"silu"`.
+
+The formula is `y = (act(x W) * (x V)) W2`, where `x` is one input row of
+`d_model` numbers, `W` and `V` are matrices of shape `(d_model, d_ff)`, `W2`
+has shape `(d_ff, d_model)`, `act` is the sigmoid, the GELU or the SiLU, and
+`*` is the product element by element. A small case: `x = [1, 2]`, `W` the
+identity, `V` half the identity, `W2` the identity, and the SiLU. Then
+`x W = [1, 2]`, the SiLU gives `[0.7311, 1.7616]`, `x V = [0.5, 1.0]`, the
+product is `[0.3655, 1.7616]`, and `W2` leaves it as it is.
 
 ## 3. Rotate the queries and the keys
 
@@ -87,6 +101,35 @@ input" and "reverse the output" is `0.0`: the order is invisible. With
 `rotary=True` it is `1.5552`: the output depends on the order. The default
 is `rotary=False`, and then the layer gives the same values as before.
 
+The formula rotates each pair of adjacent numbers `(a, b)` of a query or a key
+at position `m` by the angle `m * theta_i`: `(a cos(m theta_i) - b sin(m
+theta_i), a sin(m theta_i) + b cos(m theta_i))`, with `theta_i = 10000^(-2 i /
+d)` for the pair `i = 0, 1, ...` and `d` the dimension of one head. A small
+case: `d = 2`, the pair `(1, 0)` at position `1` becomes `(cos 1, sin 1) =
+(0.5403, 0.8415)`. A rotation does not change lengths, and rotating by `m` and
+by `n` differs by a rotation of `m - n`, so the product of a query at `m` and a
+key at `n` depends only on `m - n`:
+
+```python
+import jax
+import jax.numpy as jnp
+from dense_armor.utility.neural.rotary import apply_rotary, rotary_angles
+
+q = jax.random.normal(jax.random.PRNGKey(0), (8,))
+k = jax.random.normal(jax.random.PRNGKey(1), (8,))
+cos, sin = rotary_angles(10, 8)
+rq = apply_rotary(jnp.tile(q, (10, 1)), cos, sin)
+rk = apply_rotary(jnp.tile(k, (10, 1)), cos, sin)
+print([round(float(rq[m] @ rk[n]), 4) for m, n in [(5, 2), (9, 6), (5, 3)]])
+```
+
+```
+[-0.2266, -0.2266, 0.0591]
+```
+
+The first two products are equal: the distance is `3` in both `(5, 2)` and
+`(9, 6)`. The third, at distance `2`, is different.
+
 ## 4. Train with AdamW
 
 `AdamW` is Adam with the weight decay applied to the weights directly, not
@@ -114,6 +157,16 @@ print([round(v, 4) for v in t.history_["train_loss"]])
 The loss falls in the first epochs. The decay is `eta * weight_decay *
 weight` at every step, where `eta` is an attribute of the optimizer that
 equals `1.0` until it is set.
+
+The update is `w <- w - lr * m_hat / (sqrt(v_hat) + eps) - eta * weight_decay *
+w`, where `w` is a weight, `m_hat` and `v_hat` are the bias-corrected moving
+averages of the gradient and of its square (as in Adam), `lr` is the step
+size, `eps` a small constant, `weight_decay` the decay coefficient and `eta`
+the multiplier of the decay. A small case, the first step: `w = 1.0`, gradient
+`0.5`, `lr = 0.1`, `weight_decay = 0.5`, `eta = 1`. At the first step `m_hat`
+is the gradient and `sqrt(v_hat)` its absolute value, so the Adam term is `0.1
+* 0.5 / 0.5 = 0.1`; the decay is `1 * 0.5 * 1.0 = 0.5`; and `w = 1.0 - 0.1 -
+0.5 = 0.4`.
 
 ## Details
 

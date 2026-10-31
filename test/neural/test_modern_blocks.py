@@ -363,3 +363,28 @@ def test_the_new_blocks_are_exported_with_layernorm():
     assert neural.RMSNorm is RMSNorm
     assert neural.GLUFeedForward is GLUFeedForward
     assert neural.LayerNorm.__name__ == "LayerNorm"
+
+
+def test_glu_weights_start_with_the_variance_of_the_library_initialisation():
+    f = GLUFeedForward(256, 1024, "silu", jax.random.PRNGKey(0))
+    for param, fan_in in ((f.W, 256), (f.V, 256), (f.W2, 1024)):
+        expected = (1.0 / fan_in) ** 0.5
+        assert abs(float(jnp.std(param.value)) - expected) / expected < 0.03
+
+
+def test_rmsnorm_gain_starts_at_one():
+    np.testing.assert_array_equal(np.asarray(RMSNorm(4).gain.value), np.ones(4))
+
+
+def test_the_old_positional_call_of_the_attention_still_binds_causal():
+    key = jax.random.PRNGKey(0)
+    old = MultiHeadSelfAttention(8, 2, key, True)
+    assert old.causal is True and old.rotary is False
+    new = MultiHeadSelfAttention(8, 2, key, False, True)
+    assert new.causal is False and new.rotary is True
+
+
+def test_rotary_angles_follow_the_base():
+    cos, sin = rotary_angles(2, 4, base=100.0)
+    np.testing.assert_allclose(np.asarray(cos[1]), [0.5403023, 0.9950042], atol=1e-5)
+    np.testing.assert_allclose(np.asarray(sin[1]), [0.8414710, 0.0998334], atol=1e-5)
