@@ -227,6 +227,7 @@ nav:
       - Recurrent layers and attention: neural/sequence_layers.md
       - Attention: neural/attention.md
       - Training: neural/training.md
+      - Compiled training: neural/compiled_training.md
       - Continuous training: neural/continuous.md
       - Encoders and decoders: neural/encoder_decoder.md
       - Deep: neural/deep.md
