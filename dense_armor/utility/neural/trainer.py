@@ -36,6 +36,12 @@ import numpy as np
 
 from dense_armor.utility.neural.batching import minibatches
 from dense_armor.utility.neural.clip import clip_grad_norm
+from dense_armor.utility.neural.compiled import (
+    init_state,
+    make_step,
+    read_values,
+    write_values,
+)
 from dense_armor.utility.neural.params import Param
 from dense_armor.utility.neural.schedules import ConstantLR
 
@@ -55,6 +61,11 @@ class Trainer:
             with the learning rate of ``optimizer``.
         weight_decay: the weight-decay coefficient, default 0.
         decay: ``"l2"`` (default) or ``"decoupled"``.
+        clip_norm: the global L2 clipping threshold, or ``None``.
+        compile: if True, the whole step is a single ``jax.jit``
+            function with a vectorised optimizer over the pytree of
+            the parameters; if False (default) the Python loop is used
+            and its results do not change.
 
     Raises:
         ValueError: if ``decay`` is neither ``"l2"`` nor ``"decoupled"``,
@@ -84,6 +95,7 @@ class Trainer:
         weight_decay: float = 0.0,
         decay: str = "l2",
         clip_norm: float | None = None,
+        compile: bool = False,
     ) -> None:
         if decay not in ("l2", "decoupled"):
             raise ValueError(f"decay must be 'l2' or 'decoupled', got {decay!r}")
@@ -98,6 +110,7 @@ class Trainer:
         if clip_norm is not None and clip_norm <= 0:
             raise ValueError(f"clip_norm must be > 0 or None, got {clip_norm}")
         self.clip_norm = clip_norm
+        self.compile = bool(compile)
         self.optimizers_ = [copy.deepcopy(optimizer) for _ in model.params()]
         self.history_: dict[str, list[float]] = {
             "train_loss": [],
@@ -164,6 +177,24 @@ class Trainer:
         no_improve = 0
         n = len(X)
 
+        if self.compile:
+            values = read_values(self.model)
+            write_values(self.model, values)
+            opt_state = init_state(self.optimizer_prototype, values)
+            step = make_step(
+                self.model,
+                self.loss,
+                self.optimizer_prototype,
+                self.schedule,
+                self.weight_decay,
+                self.decay,
+                self.clip_norm,
+            )
+        else:
+            values = None
+            opt_state = None
+            step = None
+
         for epoch in range(epochs):
             if shuffle:
                 key, sub = jax.random.split(key)
@@ -172,27 +203,35 @@ class Trainer:
             batches = list(minibatches(n, batch_size, key=sub))
             n_batches = len(batches)
             first_lr = self.schedule(epoch + 0.0 / n_batches)
-            for opt in self.optimizers_:
-                opt.lr = first_lr
+            if not self.compile:
+                for opt in self.optimizers_:
+                    opt.lr = first_lr
             total_loss = 0.0
             total_size = 0
             for b_idx, idx in enumerate(batches):
                 epoch_t = epoch + b_idx / n_batches
-                lr_t = self.schedule(epoch_t)
-                for opt in self.optimizers_:
-                    opt.lr = lr_t
-                for p in self.model.params():
-                    p.zero_grad()
-                pred = self.model.forward(X[idx], training=True)
-                batch_loss = self.loss.forward(pred, y[idx])
-                self.model.backward(self.loss.backward())
-                if self.clip_norm is not None:
-                    clip_grad_norm(self.model.params(), self.clip_norm)
-                for p, opt in zip(self.model.params(), self.optimizers_):
-                    self._apply_weight_decay(p, epoch_t)
-                    p.update(opt)
-                total_loss += float(batch_loss) * len(idx)
-                total_size += len(idx)
+                if self.compile:
+                    values, opt_state, batch_loss = step(
+                        values, opt_state, X[idx], y[idx], epoch_t
+                    )
+                    total_loss += float(batch_loss) * len(idx)
+                    total_size += len(idx)
+                else:
+                    lr_t = self.schedule(epoch_t)
+                    for opt in self.optimizers_:
+                        opt.lr = lr_t
+                    for p in self.model.params():
+                        p.zero_grad()
+                    pred = self.model.forward(X[idx], training=True)
+                    batch_loss = self.loss.forward(pred, y[idx])
+                    self.model.backward(self.loss.backward())
+                    if self.clip_norm is not None:
+                        clip_grad_norm(self.model.params(), self.clip_norm)
+                    for p, opt in zip(self.model.params(), self.optimizers_):
+                        self._apply_weight_decay(p, epoch_t)
+                        p.update(opt)
+                    total_loss += float(batch_loss) * len(idx)
+                    total_size += len(idx)
             train_loss = total_loss / total_size
             self.history_["train_loss"].append(train_loss)
             self.history_["lr"].append(first_lr)
@@ -204,9 +243,12 @@ class Trainer:
             if patience is not None:
                 if val_loss < best_val - min_delta:
                     best_val = val_loss
-                    best_weights = [
-                        np.asarray(p.value).copy() for p in self.model.params()
-                    ]
+                    if self.compile:
+                        best_weights = [np.asarray(v).copy() for v in values]
+                    else:
+                        best_weights = [
+                            np.asarray(p.value).copy() for p in self.model.params()
+                        ]
                     self.best_epoch_ = epoch
                     no_improve = 0
                 else:
@@ -215,8 +257,12 @@ class Trainer:
                         self.stopped_epoch_ = epoch
                         break
         if patience is not None and best_weights is not None:
-            for p, w in zip(self.model.params(), best_weights):
-                p.value = jnp.asarray(w)
+            if self.compile:
+                for p, w in zip(self.model.params(), best_weights):
+                    p.value = jnp.asarray(w)
+            else:
+                for p, w in zip(self.model.params(), best_weights):
+                    p.value = jnp.asarray(w)
         if self.stopped_epoch_ is None:
             self.stopped_epoch_ = epochs - 1
         return self
