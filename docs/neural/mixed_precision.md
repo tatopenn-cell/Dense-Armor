@@ -63,7 +63,8 @@ survives, and after the backward it is divided by `8192` to give back
 ## 2. The scale of the loss
 
 The `loss_scale` argument of `Trainer` accepts `None` (no scaling), a
-positive float (a constant factor), or `'dynamic'`:
+positive float (a constant factor), or `'dynamic'`. It works with
+`compute_dtype` or alone, and needs `compile=True`.
 
 - `'dynamic'` starts at `init_scale = 65536`, halves and skips the step on
   an overflow, and doubles the factor after `2000` consecutive steps
@@ -72,6 +73,10 @@ positive float (a constant factor), or `'dynamic'`:
   (PyTorch) and of `apex.amp.GradScaler` (NVIDIA), not a formula of the
   paper. The paper describes a constant factor and a skip on overflow; the
   growth window is our choice, taken from those two libraries.
+
+The next block trains the same small MLP in float32 and in float16 with
+the dynamic scale, for five epochs of eight steps, and prints the loss of
+each epoch and the scale at the end of each epoch.
 
 ```python
 import numpy as np
@@ -83,24 +88,31 @@ from dense_armor.utility.optim import SGD
 
 X = np.random.default_rng(1).normal(size=(64, 2)).astype(np.float32)
 y = np.random.default_rng(2).normal(size=(64, 1)).astype(np.float32)
-m = mlp([2, 4, 1], jax.random.PRNGKey(0))
-t = Trainer(m, MSE(), SGD(0.01), compile=True,
-            compute_dtype='float16', loss_scale='dynamic')
-t.fit(X, y, epochs=5, batch_size=8, key=jax.random.PRNGKey(0))
-print([round(v, 4) for v in t.history_['train_loss']])
-print([float(s) for s in t.history_['loss_scale']])
+
+def run(**kw):
+    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
+    t = Trainer(m, MSE(), SGD(0.01), compile=True, **kw)
+    t.fit(X, y, epochs=5, batch_size=8, key=jax.random.PRNGKey(0))
+    return t.history_
+
+h32 = run()
+h16 = run(compute_dtype='float16', loss_scale='dynamic')
+print([round(v, 4) for v in h32['train_loss']])
+print([round(v, 4) for v in h16['train_loss']])
+print([float(s) for s in h16['loss_scale']])
 ```
 
 ```
-[5.348, 5.348, 5.348, 5.348, 5.348]
-[256.0, 1.0, 1.0, 1.0, 1.0]
+[3.8462, 1.9789, 1.4705, 1.2851, 1.1959]
+[4.7503, 3.0693, 1.8122, 1.4383, 1.2735]
+[4096.0, 4096.0, 4096.0, 4096.0, 4096.0]
 ```
 
-The loss stays at `5.348`: every step overflows, the scale halves from
-`65536` to `1` in two steps, and from `1` it cannot halve further. A scale
-of `1` is no scaling: this MLP, with these weights and this input, is in
-the wrong range for float16. The history shows the halving; it does not
-show a training that succeeds.
+The float16 run follows the float32 run, a few steps behind. The scale
+starts at `65536` and ends the first epoch at `4096`, which is four
+halvings: four steps overflowed and were skipped, so the weights did not
+move in them and the loss of the first epoch is higher. The scale does
+not move again in the next epochs.
 
 ## 3. bfloat16: the same range as float32
 
@@ -157,86 +169,59 @@ scaling is not needed.
 - **Dynamic scaling.** The paper describes a constant factor and a skip
   on overflow; the growth window of `2000` good steps is the default of
   `torch.cuda.amp.GradScaler` and `apex.amp.GradScaler`. `init_scale =
-  65536` and `backoff = 0.5` are the same defaults.
-- **`compute_dtype=None`** keeps float32 and the existing behaviour bit
-  for bit.
+  65536` and `backoff = 0.5` are the same defaults. The scale never goes
+  below `1`.
+- **The scale is an argument of the compiled step.** The step multiplies
+  the loss gradient by the scale it receives, divides the float32
+  gradients by the same scale, and then clips them. The clipping norm is
+  therefore the one of the unscaled gradient.
+- **`compute_dtype=None` and `loss_scale=None`** keep float32 and the
+  existing behaviour: the losses of the default compiled trainer equal
+  the values stored from the master branch, and `history_` has the same
+  three keys.
 
 ### Measured cost
 
-`benchmarks/mixed_precision.py` runs a transformer encoder of 6 layers,
-`d_model=512`, sequence 256, batch 32, in three modes on the CPU of this
-session. Values in `benchmarks/mixed_precision_cpu.json`, `backend: 'cpu'`.
+`benchmarks/mixed_precision.py` runs a `transformer_encoder` of 6 layers,
+`d_model=512`, sequence 256, batch 32, on synthetic data (seed 0), with
+SGD at learning rate `0.01`. Each mode runs in a process of its own,
+because the peak memory of a process only grows. The loss is the loss of
+step 200 on one batch repeated, 3 sessions of 20 steps for the speed.
+Values in `benchmarks/mixed_precision_gpu.json`, `backend: gpu`, on a
+Kaggle GPU kernel; the model of the card is not recorded in the file.
 
-CPU (`benchmarks/mixed_precision_cpu.json`, `backend: cpu`):
+| mode | loss at step 1 | loss at step 200 | steps/s (median, range) | peak bytes |
+|---|---|---|---|---|
+| float32 | 2.2085 | 0.945989 | 3.386 (3.386 to 3.396) | 2 407 757 056 |
+| bfloat16 | 2.2085 | 0.945990 | 2.734 (2.712 to 2.739) | 2 463 308 800 |
+| float16 (dynamic) | 2.2084 | 0.945968 | 2.783 (2.782 to 2.790) | 2 463 308 800 |
 
-| mode | loss at step 20 | steps/s (median) |
-|---|---|---|
-| float32 | 0.580604 | 122.13 |
-| bfloat16 | 0.581430 | 87.23 |
-| float16 (dynamic) | 0.595491 | 78.29 |
-
-GPU (T4, `benchmarks/mixed_precision_gpu.json`, `backend: gpu`):
-
-| mode | loss at step 200 | steps/s (median) | peak bytes |
-|---|---|---|---|
-| float32 | 0.946005 | 3.35 | 2 333 349 632 |
-| bfloat16 | 0.945963 | 2.54 | 2 411 058 688 |
-| float16 (dynamic) | 0.945946 | 2.39 | 2 476 843 008 |
-
-Claim 1 (bfloat16 within 5% of float32): **holds**. On CPU at step
-20 the relative difference is 0.14%; on GPU at step 200 the relative
-difference is `4.4e-5`. Claim 2 (memory of the lower precision at most
-0.7 times float32): **does not hold**. On GPU the ratio is `1.033`: the
-mixed-precision run uses about 3% more memory than float32. Claim 3 (the
-faster of bfloat16 and float16 has at least 1.3 times the steps per
-second of float32): **does not hold**. On GPU the ratio is `0.759`:
-bfloat16 is about 24% slower than float32, not faster.
-
-The reason for claims 2 and 3: the T4 GPU of the run is a Turing card,
-which has no bfloat16 tensor core. The `bfloat16` arithmetic is done in
-software, and the mixed step adds a copy of the master weights in
-float32 plus the float16 gradients in the graph, so the peak memory
-grows. The claims are reported as they were written before the run;
-the numbers above say they do not hold on this card. On an Ampere
-(A100, A10, RTX 30/40) or Hopper (H100) the tensor cores have bfloat16,
-and the result may differ; that is not measured here.
+Claim 1 (the loss of bfloat16 at step 200 within 5% of float32):
+**holds**, the relative difference is `4.4e-7`; the loss moves from
+`2.2085` to `0.946` in the 200 steps, so the claim is tested on a model
+that trains. Claim 2 (peak memory of the lower precision at most 0.7
+times that of float32): **does not hold**, the ratio is `1.023`. Claim 3
+(the faster of bfloat16 and float16 has at least 1.3 times the steps per
+second of float32): **does not hold**, the faster is float16 and the
+ratio is `0.822`. The claims are reported as they were written before the
+run. Why the lower precision is not faster nor smaller on this card is
+not measured here; a GPU with bfloat16 tensor cores may give another
+result.
 
 ### Not measured
 
-GPU speed, GPU peak memory, training at scale, the trajectory of a network
-that learns with float16 on a task whose gradient signal is strong enough. The page shows the underflow, the
-loss scaling and the bfloat16 range on small models. A demonstration that
-float16 training with loss scaling matches float32 on a task where the
-network actually learns is **not** part of this page.
+The reason of claims 2 and 3, the model of the GPU, the float32
+reductions of Section 3.3, training at scale on a natural-language
+corpus, and a comparison with a statistic (Wilcoxon, A12): the claims
+above compare one run per mode.
 
 ### Development diary
 
 A first version of the mixed step captured `loss_scale` as a constant in
-the jitted graph, so the scale could not change at runtime and the
-dynamic scaling did not work. The fix passes the scale as a runtime
-argument of the jitted step, and `Trainer.fit` passes `self._scale` at
-every step. The block of Section 2 shows the corrected behaviour.
-
-The underflow exists and the loss scaling fixes it in the gradient
-(Section 1). But the loss on these small networks does not decrease
-whether the scaling is on or off. The reason is in the master-weight
-update, not in the gradient: `lr * grad = 0.01 * 2.7e-9 = 2.7e-11`, and
-a float32 weight of `0.9` (or even `0.01`) has a precision of about
-`1e-7` (or `1e-9`), so the sum `w - lr * grad` returns `w` unchanged.
-The loss scaling makes the gradient survive the float16 representation,
-but the update is lost in the float32 master weight before the loss can
-move.
-
-A scan of eighteen configurations (hidden layers `8`, `10`, `12`, initial
-weight scale `0.1` and `0.01`, `lr` in `0.1`, `0.5`, `1.0`, twenty
-epochs) shows the same trajectory with and without a loss scale of
-`1024` in all eighteen: the difference between the scaled and the
-unscaled final loss is below the print precision. A configuration where
-the scale changes the trajectory needs a master weight small enough that
-`lr * grad` is above its float32 precision, and on a network whose
-gradient is above `2^-24` that weight is below `2e-4`: on these models
-the two requirements (underflow in the gradient, visible update in the
-weight) do not meet. A network larger than the ones used here, or a task
-with a stronger gradient signal, is needed for a demonstration that the
-loss scaling makes the training match float32. Reported, not
-demonstrated.
+the jitted graph. The scale then could not change at runtime, and the
+dynamic scaling skipped every step: the loss of the first version of
+Section 2 stayed at `5.348` for five epochs while a constant scale of `1`
+trained like float32. The page explained that result by the range of
+float16, which was wrong. The scale is now an argument of the step, and
+a test checks that the update of the step that triggers the growth equals
+the update of a constant scale of the same value.

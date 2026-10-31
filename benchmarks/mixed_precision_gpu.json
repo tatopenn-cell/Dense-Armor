@@ -12,15 +12,15 @@
   "claims": {
     "1_bf16_loss_within_5pct": {
       "holds": true,
-      "rel_diff": 4.435669994721301e-05
+      "rel_diff": 4.410541799775768e-07
     },
     "2_memory_0.7x": {
       "holds": false,
-      "ratio": 1.0333036485121145
+      "ratio": 1.023071988870957
     },
     "3_faster_of_bf16_fp16_1.3x": {
-      "which": "bfloat16",
-      "ratio": 0.7587366835119529,
+      "which": "float16",
+      "ratio": 0.8218259825282594,
       "holds": false
     }
   },
@@ -30,17 +30,18 @@
       "compute_dtype": null,
       "loss_scale": null,
       "loss_at_step": 200,
-      "final_loss": 0.9460052251815796,
-      "peak_bytes": 2333349632,
-      "steps_per_second_median": 3.3523742525364586,
+      "initial_loss": 2.2084617614746094,
+      "final_loss": 0.9459892511367798,
+      "peak_bytes": 2407757056,
+      "steps_per_second_median": 3.3863875928893186,
       "steps_per_second_range": [
-        3.341456907383156,
-        3.3775985228296364
+        3.38559767015193,
+        3.395723176543933
       ],
       "steps_per_second_sessions": [
-        3.3523742525364586,
-        3.3775985228296364,
-        3.341456907383156
+        3.395723176543933,
+        3.38559767015193,
+        3.3863875928893186
       ]
     },
     {
@@ -48,17 +49,18 @@
       "compute_dtype": "bfloat16",
       "loss_scale": null,
       "loss_at_step": 200,
-      "final_loss": 0.9459632635116577,
-      "peak_bytes": 2411058688,
-      "steps_per_second_median": 2.5435693222603746,
+      "initial_loss": 2.2084736824035645,
+      "final_loss": 0.9459896683692932,
+      "peak_bytes": 2463308800,
+      "steps_per_second_median": 2.7337555688975996,
       "steps_per_second_range": [
-        2.5252820959232607,
-        2.552303082401471
+        2.7118445700503138,
+        2.7391402044799373
       ],
       "steps_per_second_sessions": [
-        2.552303082401471,
-        2.5435693222603746,
-        2.5252820959232607
+        2.7391402044799373,
+        2.7337555688975996,
+        2.7118445700503138
       ]
     },
     {
@@ -66,17 +68,18 @@
       "compute_dtype": "float16",
       "loss_scale": "dynamic",
       "loss_at_step": 200,
-      "final_loss": 0.9459456205368042,
-      "peak_bytes": 2476843008,
-      "steps_per_second_median": 2.388674998788037,
+      "initial_loss": 2.2084436416625977,
+      "final_loss": 0.9459676742553711,
+      "peak_bytes": 2463308800,
+      "steps_per_second_median": 2.7830213107477717,
       "steps_per_second_range": [
-        2.3866034841015296,
-        2.395258532177601
+        2.7821804686278173,
+        2.7904977112463434
       ],
       "steps_per_second_sessions": [
-        2.395258532177601,
-        2.388674998788037,
-        2.3866034841015296
+        2.7821804686278173,
+        2.7904977112463434,
+        2.7830213107477717
       ]
     }
   ]
