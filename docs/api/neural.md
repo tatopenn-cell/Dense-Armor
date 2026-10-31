@@ -99,6 +99,9 @@ Every public class and function of `dense_armor.utility.neural` and of the optim
 | `scaled_dot_product_attention` | `scaled_dot_product_attention(q: jax.Array, k: jax.Array, v: jax.Array, mask: jax.Array \| None = None) -> jax.Array` | ``softmax(q k^T / sqrt(d_k)) v`` (Eq.(1), page 4) |
 | `scaled_dot_product_attention_backward` | `scaled_dot_product_attention_backward(q: jax.Array, k: jax.Array, v: jax.Array, g: jax.Array, mask: jax.Array \| None = None) -> tuple[jax.Array, jax.Array, jax.Array]` | Gradients ``(dq, dk, dv)`` of the scaled dot-product attention |
 | `sinusoidal_positions` | `sinusoidal_positions(length: int, d_model: int) -> jax.Array` | The sinusoidal positional encoding of page 6 |
+| `rotary_angles` | `rotary_angles(length: int, d_k: int, offset: int = 0, base: float = 10000.0) -> tuple[jax.Array, jax.Array]` | The cosines and sines of the rotary rotation at each position |
+| `apply_rotary` | `apply_rotary(x: jax.Array, cos: jax.Array, sin: jax.Array) -> jax.Array` | Rotate each adjacent pair of the last axis of ``x`` |
+| `apply_rotary_transpose` | `apply_rotary_transpose(g: jax.Array, cos: jax.Array, sin: jax.Array) -> jax.Array` | The gradient of ``apply_rotary``: the rotation by the opposite angle |
 | `MultiHeadSelfAttention` | `MultiHeadSelfAttention(d_model: int, n_heads: int, key: Any, causal: bool = False, rotary: bool = False) -> None` | Multi-head self-attention of Vaswani et al. 2017, page 5 |
 | `TransformerBlock` | `TransformerBlock(d_model: int, n_heads: int, d_ff: int, key: Any, causal: bool = False, dropout: float = 0.0) -> None` | The encoder block of Vaswani et al. 2017 |
 

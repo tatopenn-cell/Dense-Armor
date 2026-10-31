@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import copy
+
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -156,3 +158,29 @@ def test_they_differ_when_the_schedule_decays_and_eta_is_not_set():
     ta.fit(X, y, epochs=4, batch_size=8, key=jax.random.PRNGKey(0))
     tb.fit(X, y, epochs=4, batch_size=8, key=jax.random.PRNGKey(0))
     assert float(jnp.max(jnp.abs(a.W.value - b.W.value))) > 1e-3
+
+
+def test_eta_must_not_be_negative_or_nan():
+    opt = AdamW(lr=0.1, weight_decay=0.5)
+    for bad in (-0.1, float("nan")):
+        with pytest.raises(ValueError):
+            opt.eta = bad
+    assert opt.eta == 1.0
+
+
+def test_eta_zero_switches_the_decay_off():
+    opt = AdamW(lr=0.1, weight_decay=0.5)
+    opt.eta = 0.0
+    ref = Adam(lr=0.1)
+    w = np.array([1.0, -2.0])
+    g = np.array([0.5, 1.0])
+    np.testing.assert_allclose(opt.step(w, g), ref.step(w, g), rtol=1e-12)
+
+
+def test_equality_and_copy_keep_eta():
+    a = AdamW(weight_decay=0.1)
+    b = AdamW(weight_decay=0.1)
+    b.eta = 0.5
+    assert a != b
+    c = copy.deepcopy(b)
+    assert c == b and c.eta == 0.5

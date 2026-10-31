@@ -75,6 +75,23 @@ class AdamW(Adam):
         self.weight_decay = float(weight_decay)
         self.eta = 1.0
 
+    @property
+    def eta(self) -> float:
+        """The multiplier of the decay, not negative; ``1.0`` until set."""
+        return self._eta
+
+    @eta.setter
+    def eta(self, value: float) -> None:
+        if not value >= 0.0:
+            raise ValueError(f"eta must be >= 0, got {value}")
+        self._eta = float(value)
+
+    def __eq__(self, other: object) -> Any:
+        result = super().__eq__(other)
+        if result is NotImplemented or not isinstance(other, AdamW):
+            return result
+        return bool(result) and self._eta == other._eta
+
     def __repr__(self) -> str:
         return (
             f"AdamW(lr={self.lr}, beta1={self.beta1}, beta2={self.beta2}, "

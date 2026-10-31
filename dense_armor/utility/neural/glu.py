@@ -37,7 +37,7 @@ class GLUFeedForward:
     weight matrices: ``W`` and ``V`` of shape ``(d_model, d_ff)`` and ``W2``
     of shape ``(d_ff, d_model)``. The paper omits the biases (page 2); with
     ``bias=True`` the layer adds ``b`` to ``x W``, ``c`` to ``x V`` and
-    ``b2`` to the output, the form of Eq.(5) (our choice, off by default).
+    ``b2`` to the output, the forms with biases of Eq.(4), page 1, and Eq.(5), page 2 (our choice, off by default).
     The paper reduces ``d_ff`` by a factor ``2/3`` to keep the number of
     parameters of a two-matrix layer (page 2); this class does not.
 

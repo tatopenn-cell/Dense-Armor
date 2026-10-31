@@ -125,7 +125,8 @@ equals `1.0` until it is set.
 - Zhang, B., Sennrich, R. (2019). Root Mean Square Layer Normalization.
   NeurIPS 2019, arXiv:1910.07467. Section 4, Eq.(4), page 3.
 - Shazeer, N. (2020). GLU Variants Improve Transformer. arXiv:2002.05202.
-  Eq.(6), page 2 (the feed-forward layers); Eq.(5), page 2 (with biases).
+  Eq.(6), page 2 (the feed-forward layers); Eq.(4), page 1, and Eq.(5), page 2 (the
+  units with biases).
 - Su, J., Lu, Y., Pan, S., Murtadha, A., Wen, B., Liu, Y. (2021). RoFormer:
   Enhanced Transformer with Rotary Position Embedding. arXiv:2104.09864.
   Section 3.2.2, Eq.(14) to (16), page 5; Section 3.4.2, Eq.(34), page 7.
@@ -135,7 +136,7 @@ equals `1.0` until it is set.
 - `RMSNorm`: `eps` inside the root is our choice (`1e-5`, the value of
   `LayerNorm` in this library); the equation of the paper has no constant.
 - `GLUFeedForward`: the biases are off by default, as in Eq.(6); with
-  `bias=True` the layer follows the form of Eq.(5) (our choice). `d_ff` is
+  `bias=True` the layer follows the forms of Eq.(4) and Eq.(5) (our choice). `d_ff` is
   not reduced by `2/3` as the paper does to match the parameters of a
   two-matrix layer.
 - Rotary: the pairs are adjacent dimensions, as in Eq.(34); the angles are

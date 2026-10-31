@@ -7,15 +7,22 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.neural.attention import MultiHeadSelfAttention
+from dense_armor.utility.neural.attention import (
+    MultiHeadSelfAttention,
+    TransformerBlock,
+)
 from dense_armor.utility.neural.glu import GLUFeedForward
 from dense_armor.utility.neural.gradcheck import gradcheck
+from dense_armor.utility.neural.losses import MSE
+from dense_armor.utility.neural.models import transformer_encoder
 from dense_armor.utility.neural.norm_rms import RMSNorm
 from dense_armor.utility.neural.rotary import (
     apply_rotary,
     apply_rotary_transpose,
     rotary_angles,
 )
+from dense_armor.utility.neural.trainer import Trainer
+from dense_armor.utility.optim import SGD
 
 
 def _grad_errors(layer, x):
@@ -269,31 +276,7 @@ def test_attention_rotary_sees_the_order_of_the_tokens():
 
 
 MASTER_VALUES = {
-    (False, False): dict(
-        y0=[
-            -1.7638189792633057,
-            -1.9617462158203125,
-            -0.5266642570495605,
-            0.9045798778533936,
-        ],
-        y_sum=-17.09138298034668,
-        dx_sum=-4.9654541015625,
-        dwq_sum=-1.729050636291504,
-        dwo_sum=6.995484828948975,
-    ),
-    (False, True): dict(
-        y0=[
-            -1.200319528579712,
-            -2.664421558380127,
-            -0.42142587900161743,
-            1.3955621719360352,
-        ],
-        y_sum=-10.545769691467285,
-        dx_sum=-8.786205291748047,
-        dwq_sum=-0.8111534118652344,
-        dwo_sum=16.888275146484375,
-    ),
-    (True, False): dict(
+    False: dict(
         y0=[
             0.10256822689852667,
             -0.2194263372602911,
@@ -305,7 +288,7 @@ MASTER_VALUES = {
         dwq_sum=2.0515880775398134,
         dwo_sum=-15.2268447859072,
     ),
-    (True, True): dict(
+    True: dict(
         y0=[
             0.256219575767904,
             -0.19267658562852993,
@@ -322,24 +305,61 @@ MASTER_VALUES = {
 
 @pytest.mark.parametrize("causal", [False, True])
 def test_attention_default_equals_the_values_stored_from_master(causal):
-    """The values were taken from master before rotary existed.
+    """The values were taken from master before rotary existed, with x64 on.
 
-    The key of ``MASTER_VALUES`` is ``(jax_enable_x64, causal)``. The last
-    digit of a loss changes with the version of Python and of the libraries,
-    so the comparison is relative: 1e-9 with x64 on, 1e-5 with x64 off.
+    The random draws of the weights and of the input depend on the x64 mode,
+    so the stored values hold for that mode only; the test directory turns it
+    on. The last digit changes with the version of Python and of the
+    libraries, so the comparison is relative, ``1e-9``.
     """
+    if not jax.config.jax_enable_x64:
+        pytest.skip("the stored values are those of the x64 mode")
     m = MultiHeadSelfAttention(8, 2, jax.random.PRNGKey(0), causal=causal)
     x = jax.random.normal(jax.random.PRNGKey(1), (2, 5, 8))
     g = jax.random.normal(jax.random.PRNGKey(2), (2, 5, 8))
     y = m.forward(x)
     dx = m.backward(g)
-    x64 = bool(jax.config.jax_enable_x64)
-    ref = MASTER_VALUES[(x64, causal)]
-    tol = 1e-9 if x64 else 1e-5
-    np.testing.assert_allclose(np.asarray(y[0, 0, :4]), ref["y0"], rtol=tol)
-    np.testing.assert_allclose(float(y.sum()), ref["y_sum"], rtol=tol)
-    np.testing.assert_allclose(float(dx.sum()), ref["dx_sum"], rtol=tol)
-    np.testing.assert_allclose(float(m.W_Q.grad.sum()), ref["dwq_sum"], rtol=tol)
-    np.testing.assert_allclose(float(m.W_O.grad.sum()), ref["dwo_sum"], rtol=tol)
+    ref = MASTER_VALUES[causal]
+    np.testing.assert_allclose(np.asarray(y[0, 0, :4]), ref["y0"], rtol=1e-9)
+    np.testing.assert_allclose(float(y.sum()), ref["y_sum"], rtol=1e-9)
+    np.testing.assert_allclose(float(dx.sum()), ref["dx_sum"], rtol=1e-9)
+    np.testing.assert_allclose(float(m.W_Q.grad.sum()), ref["dwq_sum"], rtol=1e-9)
+    np.testing.assert_allclose(float(m.W_O.grad.sum()), ref["dwo_sum"], rtol=1e-9)
     assert repr(m) == f"MultiHeadSelfAttention(8, 2, causal={causal})"
     assert m.rotary is False
+
+
+def test_rotary_attention_trains_the_same_in_the_compiled_step():
+    def build():
+        model = transformer_encoder(
+            n_in=4,
+            d_model=8,
+            n_heads=2,
+            d_ff=16,
+            depth=1,
+            n_out=3,
+            key=jax.random.PRNGKey(0),
+            max_len=8,
+        )
+        for layer in model.layers:
+            if isinstance(layer, TransformerBlock):
+                layer.attn.rotary = True
+        return model
+
+    kx, ky = jax.random.split(jax.random.PRNGKey(1))
+    X = jax.random.normal(kx, (16, 8, 4))
+    y = jax.random.normal(ky, (16, 3))
+    losses = {}
+    for compile in (False, True):
+        trainer = Trainer(build(), MSE(), SGD(0.01), compile=compile)
+        trainer.fit(X, y, epochs=3, batch_size=8, key=jax.random.PRNGKey(0))
+        losses[compile] = trainer.history_["train_loss"]
+    np.testing.assert_allclose(losses[True], losses[False], rtol=1e-4)
+
+
+def test_the_new_blocks_are_exported_with_layernorm():
+    import dense_armor.utility.neural as neural
+
+    assert neural.RMSNorm is RMSNorm
+    assert neural.GLUFeedForward is GLUFeedForward
+    assert neural.LayerNorm.__name__ == "LayerNorm"
