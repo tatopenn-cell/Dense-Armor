@@ -202,7 +202,7 @@ Python step per layer and the compiled step fuses them.
 
 - The GPU. `benchmarks/compiled_step_gpu.json` is not in the
   repository. The benchmark needs a Kaggle GPU with the JSON
-  committed, and this session does not have one. The claim (2) of
+  committed, and the branch does not have one. The claim (2) of
   the benchmark (GPU at least 3.0x) is reported, not measured.
 - Mixed precision, multi-device, gradient checkpointing: these are
   the tasks N4, N5, N6.
