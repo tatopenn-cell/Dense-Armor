@@ -332,10 +332,11 @@ def test_loss_scale_multiplies_the_stored_gradient_and_the_update_is_unscaled():
 
 def test_clip_acts_on_the_unscaled_gradient():
     """The global norm is clipped after the unscale: a scale of 1024 and a
-    scale of 1 give the same clipped update."""
+    scale of 1 give the same clipped update, and the clip changes the
+    update (it is active)."""
     X, y = _data((16, 2), (16, 1))
 
-    def run(scale):
+    def run(scale, clip):
         m = _mlp()
         t = Trainer(
             m,
@@ -344,13 +345,20 @@ def test_clip_acts_on_the_unscaled_gradient():
             compile=True,
             compute_dtype="float16",
             loss_scale=scale,
-            clip_norm=0.05,
+            clip_norm=clip,
         )
         t.fit(X, y, epochs=2, batch_size=8, key=jax.random.PRNGKey(0))
         return [np.array(p.value) for p in m.params()]
 
-    for a, b in zip(run(1.0), run(1024.0)):
+    clipped_1, clipped_1024, unclipped = (
+        run(1.0, 0.05),
+        run(1024.0, 0.05),
+        run(1.0, None),
+    )
+    for a, b in zip(clipped_1, clipped_1024):
         np.testing.assert_allclose(a, b, rtol=2e-3, atol=1e-6)
+    gap = max(float(np.abs(a - b).max()) for a, b in zip(clipped_1, unclipped))
+    assert gap > 1e-3, gap
 
 
 def test_grads_are_float32_after_mixed_step():
