@@ -8,6 +8,7 @@ token: ``O(T**2)`` in the length, chosen for clarity. The cache-based
 
 from __future__ import annotations
 
+import inspect
 from typing import Any
 
 import jax
@@ -32,7 +33,9 @@ def generate(
 
     Args:
         model: an object with ``forward(tokens) -> logits`` of shape
-            ``(T, V)``, and optionally a ``max_len`` attribute.
+            ``(T, V)``, and optionally a ``max_len`` attribute. If its
+            ``forward`` has a ``training`` argument, it is called with
+            ``training=False``.
         prompt: an integer array of token ids, shape ``(P,)``.
         max_new: how many tokens to add. ``max_new = 0`` returns the
             prompt unchanged.
@@ -69,17 +72,20 @@ def generate(
             f"max_len {max_len} is smaller than the prompt ({prompt.shape[0]})"
         )
 
+    takes_training = "training" in inspect.signature(model.forward).parameters
     seq = prompt
     for _ in range(max_new):
         if seq.shape[0] >= max_len:
             break
-        logits = jnp.asarray(model.forward(seq))
+        if takes_training:
+            logits = jnp.asarray(model.forward(seq, training=False))
+        else:
+            logits = jnp.asarray(model.forward(seq))
         last = logits[-1]
         if temperature == 0.0:
             nxt = jnp.argmax(last)
         else:
-            probs = jax.nn.softmax(last / temperature, axis=-1)
             key, sub = jax.random.split(key)
-            nxt = jax.random.categorical(sub, jnp.log(probs), axis=-1)
+            nxt = jax.random.categorical(sub, last / temperature, axis=-1)
         seq = jnp.concatenate([seq, jnp.atleast_1d(jnp.asarray(nxt, dtype=seq.dtype))])
     return seq

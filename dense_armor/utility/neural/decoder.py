@@ -42,13 +42,14 @@ class TransformerDecoderBlock:
         d_model: the representation dimension.
         n_heads: the number of heads of both attentions.
         d_ff: the width of the feed-forward hidden layer.
-        key: a ``jax.random`` key.
         cross: if True, add the cross-attention sub-layer.
-        dropout: dropout probability on the output of each sub-layer,
-            applied before the residual addition, default 0.
+        norm: the normalisation of every sub-layer. Only ``"layer"`` is
+            available.
+        key: a ``jax.random`` key, keyword only.
 
     Raises:
-        ValueError: if ``d_model`` is not divisible by ``n_heads``.
+        ValueError: if ``d_model`` is not divisible by ``n_heads``, or if
+            ``norm`` is not ``"layer"``.
 
     Examples:
         >>> import jax
@@ -56,7 +57,7 @@ class TransformerDecoderBlock:
         >>> from dense_armor.utility.neural.decoder import (
         ...     TransformerDecoderBlock,
         ... )
-        >>> b = TransformerDecoderBlock(8, 2, 16, jax.random.PRNGKey(0))
+        >>> b = TransformerDecoderBlock(8, 2, 16, key=jax.random.PRNGKey(0))
         >>> b.forward(jnp.ones((4, 8))).shape
         (4, 8)
     """
@@ -66,10 +67,13 @@ class TransformerDecoderBlock:
         d_model: int,
         n_heads: int,
         d_ff: int,
-        key: Any,
         cross: bool = False,
-        dropout: float = 0.0,
+        norm: str = "layer",
+        *,
+        key: Any,
     ) -> None:
+        if norm != "layer":
+            raise ValueError(f"norm must be 'layer', got {norm!r}")
         if d_model % n_heads != 0:
             raise ValueError(f"d_model {d_model} is not divisible by n_heads {n_heads}")
         n_keys = 8 if cross else 6
@@ -79,7 +83,6 @@ class TransformerDecoderBlock:
         self.ffn1 = Dense(d_model, d_ff, keys[1])
         self.ffn2 = Dense(d_ff, d_model, keys[2])
         self.cross = cross
-        self.dropout_p = dropout
         if cross:
             self.cross_attn = MultiHeadCrossAttention(d_model, n_heads, keys[3])
             self.ln2 = LayerNorm(d_model)
@@ -96,7 +99,7 @@ class TransformerDecoderBlock:
     def __repr__(self) -> str:
         return (
             f"TransformerDecoderBlock({self.d_model}, {self.n_heads}, "
-            f"{self.d_ff}, cross={self.cross}, dropout={self.dropout_p})"
+            f"{self.d_ff}, cross={self.cross})"
         )
 
     def params(self) -> list[Param]:
@@ -126,7 +129,8 @@ class TransformerDecoderBlock:
             memory: the encoder output, shape ``(Tc, d_model)`` or
                 ``(B, Tc, d_model)``. Required when ``cross=True``,
                 ignored otherwise.
-            training: forwarded to the layers that accept it.
+            training: ignored; the block has no layer that behaves
+                differently in training.
 
         Raises:
             ValueError: if ``cross=True`` and ``memory`` is ``None``.
@@ -140,55 +144,45 @@ class TransformerDecoderBlock:
             ca_out = self.cross_attn.forward(x1, memory)
             x2 = self.ln2.forward(x1 + ca_out)
             ffn_h = jax.nn.relu(self.ffn1.forward(x2))
-            ffn_out = self.ffn2.forward(ffn_h)
-            y = self.ln3.forward(x2 + ffn_out)
-            self._cache = dict(
-                x=x,
-                attn_out=attn_out,
-                x1=x1,
-                ca_out=ca_out,
-                x2=x2,
-                ffn_h=ffn_h,
-                ffn_out=ffn_out,
-            )
+            y = self.ln3.forward(x2 + self.ffn2.forward(ffn_h))
         else:
             ffn_h = jax.nn.relu(self.ffn1.forward(x1))
-            ffn_out = self.ffn2.forward(ffn_h)
-            y = self.ln2.forward(x1 + ffn_out)
-            self._cache = dict(
-                x=x,
-                attn_out=attn_out,
-                x1=x1,
-                ffn_h=ffn_h,
-                ffn_out=ffn_out,
-            )
+            y = self.ln2.forward(x1 + self.ffn2.forward(ffn_h))
+        self._cache = dict(ffn_h=ffn_h)
         return y
 
-    def backward(self, g: jax.Array) -> jax.Array:
-        """Gradients; returns ``dx`` and adds to every parameter's grad.
+    def backward(self, g: jax.Array) -> jax.Array | tuple[jax.Array, jax.Array]:
+        """Gradients; adds to the ``grad`` of every parameter.
 
-        With ``cross=True`` the gradient on ``memory`` is discarded by
-        this method (the caller can call ``cross_attn.backward`` on its
-        own to obtain it, before this method consumes the cache).
+        Args:
+            g: the gradient of the output, the shape of ``x``.
+
+        Returns:
+            ``dx`` when ``cross=False``. With ``cross=True`` the pair
+            ``(dx, dmemory)``, the gradient on the input and the gradient
+            on ``memory``, as ``MultiHeadCrossAttention.backward`` returns
+            ``(dxq, dxc)``.
         """
         if self._cache is None:
             raise RuntimeError("call forward() before backward()")
-        c = self._cache
+        ffn_h = self._cache["ffn_h"]
+        d_memory = None
         if self.cross:
             d_x2_plus_ffn = self.ln3.backward(g)
             d_ffn_h = self.ffn2.backward(d_x2_plus_ffn)
-            d_ffn1_out = d_ffn_h * (c["ffn_h"] > 0).astype(d_ffn_h.dtype)
+            d_ffn1_out = d_ffn_h * (ffn_h > 0).astype(d_ffn_h.dtype)
             d_x2_from_ffn = self.ffn1.backward(d_ffn1_out)
             d_x2 = d_x2_plus_ffn + d_x2_from_ffn
             d_x1_plus_ca = self.ln2.backward(d_x2)
-            dq, _d_memory = self.cross_attn.backward(d_x1_plus_ca)
+            dq, d_memory = self.cross_attn.backward(d_x1_plus_ca)
             d_x1 = d_x1_plus_ca + dq
         else:
             d_x1_plus_ffn = self.ln2.backward(g)
             d_ffn_h = self.ffn2.backward(d_x1_plus_ffn)
-            d_ffn1_out = d_ffn_h * (c["ffn_h"] > 0).astype(d_ffn_h.dtype)
+            d_ffn1_out = d_ffn_h * (ffn_h > 0).astype(d_ffn_h.dtype)
             d_x1_from_ffn = self.ffn1.backward(d_ffn1_out)
             d_x1 = d_x1_plus_ffn + d_x1_from_ffn
         d_x_plus_attn = self.ln1.backward(d_x1)
         d_x_attn = self.attn.backward(d_x_plus_attn)
-        return d_x_plus_attn + d_x_attn
+        dx = d_x_plus_attn + d_x_attn
+        return (dx, d_memory) if self.cross else dx

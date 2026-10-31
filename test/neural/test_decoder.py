@@ -7,24 +7,26 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
+from dense_armor.utility.neural.attention import scaled_dot_product_attention
 from dense_armor.utility.neural.decoder import TransformerDecoderBlock
 from dense_armor.utility.neural.generate import generate
 from dense_armor.utility.neural.gradcheck import gradcheck
 from dense_armor.utility.neural.layers import Embedding
 from dense_armor.utility.neural.losses_lm import NextTokenLoss, perplexity
 from dense_armor.utility.neural.models import _TiedHead, transformer_decoder
+from dense_armor.utility.neural.trainer import Trainer
 from dense_armor.utility.optim import Adam
 
 
 def test_decoder_block_shape_without_cross():
-    b = TransformerDecoderBlock(8, 2, 16, jax.random.PRNGKey(0))
+    b = TransformerDecoderBlock(8, 2, 16, key=jax.random.PRNGKey(0))
     x = jax.random.normal(jax.random.PRNGKey(1), (4, 8))
     assert b.forward(x).shape == (4, 8)
     assert len(b.params()) == 12
 
 
 def test_decoder_block_shape_with_cross():
-    b = TransformerDecoderBlock(8, 2, 16, jax.random.PRNGKey(0), cross=True)
+    b = TransformerDecoderBlock(8, 2, 16, cross=True, key=jax.random.PRNGKey(0))
     x = jax.random.normal(jax.random.PRNGKey(1), (4, 8))
     mem = jax.random.normal(jax.random.PRNGKey(2), (3, 8))
     assert b.forward(x, memory=mem).shape == (4, 8)
@@ -32,14 +34,14 @@ def test_decoder_block_shape_with_cross():
 
 
 def test_decoder_block_cross_requires_memory():
-    b = TransformerDecoderBlock(8, 2, 16, jax.random.PRNGKey(0), cross=True)
+    b = TransformerDecoderBlock(8, 2, 16, cross=True, key=jax.random.PRNGKey(0))
     x = jax.random.normal(jax.random.PRNGKey(1), (4, 8))
     with pytest.raises(ValueError, match="memory"):
         b.forward(x)
 
 
 def test_backward_before_forward_raises():
-    b = TransformerDecoderBlock(8, 2, 16, jax.random.PRNGKey(0))
+    b = TransformerDecoderBlock(8, 2, 16, key=jax.random.PRNGKey(0))
     with pytest.raises(RuntimeError):
         b.backward(jnp.ones((4, 8)))
 
@@ -58,7 +60,7 @@ def test_causality_exact():
 
 
 def test_gradcheck_decoder_block_no_cross():
-    b = TransformerDecoderBlock(4, 2, 8, jax.random.PRNGKey(0))
+    b = TransformerDecoderBlock(4, 2, 8, key=jax.random.PRNGKey(0))
     x = jax.random.normal(jax.random.PRNGKey(1), (3, 4))
 
     def fwd(xx):
@@ -72,7 +74,7 @@ def test_gradcheck_decoder_block_no_cross():
 
 
 def test_gradcheck_decoder_block_cross():
-    b = TransformerDecoderBlock(4, 2, 8, jax.random.PRNGKey(0), cross=True)
+    b = TransformerDecoderBlock(4, 2, 8, cross=True, key=jax.random.PRNGKey(0))
     mem = jax.random.normal(jax.random.PRNGKey(2), (3, 4))
     x = jax.random.normal(jax.random.PRNGKey(1), (3, 4))
 
@@ -81,7 +83,7 @@ def test_gradcheck_decoder_block_cross():
 
     def bwd(xx, y, g):
         b.forward(xx, memory=mem)
-        return b.backward(g)
+        return b.backward(g)[0]
 
     assert gradcheck(fwd, bwd, x) < 1e-4
 
@@ -246,11 +248,11 @@ def test_generate_reproduces_pattern():
 
 def test_decoder_block_d_model_not_divisible():
     with pytest.raises(ValueError, match="divisible"):
-        TransformerDecoderBlock(8, 3, 16, jax.random.PRNGKey(0))
+        TransformerDecoderBlock(8, 3, 16, key=jax.random.PRNGKey(0))
 
 
 def test_decoder_block_no_cross_ignores_memory():
-    b = TransformerDecoderBlock(8, 2, 16, jax.random.PRNGKey(0), cross=False)
+    b = TransformerDecoderBlock(8, 2, 16, cross=False, key=jax.random.PRNGKey(0))
     x = jax.random.normal(jax.random.PRNGKey(1), (4, 8))
     mem = jax.random.normal(jax.random.PRNGKey(2), (3, 8))
     y1 = b.forward(x)
@@ -312,9 +314,9 @@ def test_generate_sampled_path_runs():
 
 
 def test_repr_decoder_block():
-    b = TransformerDecoderBlock(8, 2, 16, jax.random.PRNGKey(0))
+    b = TransformerDecoderBlock(8, 2, 16, key=jax.random.PRNGKey(0))
     assert "TransformerDecoderBlock(8, 2, 16" in repr(b)
-    b2 = TransformerDecoderBlock(8, 2, 16, jax.random.PRNGKey(0), cross=True)
+    b2 = TransformerDecoderBlock(8, 2, 16, cross=True, key=jax.random.PRNGKey(0))
     assert "cross=True" in repr(b2)
 
 
@@ -380,7 +382,7 @@ def test_decoder_block_initialisation_variances():
     He gives ``2/fan_in`` (same equation, ReLU case with ``a=0``).
     """
     d_model, d_ff = 64, 256
-    b = TransformerDecoderBlock(d_model, 4, d_ff, jax.random.PRNGKey(0))
+    b = TransformerDecoderBlock(d_model, 4, d_ff, key=jax.random.PRNGKey(0))
     for name in ("W_Q", "W_K", "W_V", "W_O"):
         v = float(getattr(b.attn, name).value.var())
         assert abs(v - 1.0 / d_model) < 0.2 / d_model, f"{name}: {v}"
@@ -392,3 +394,119 @@ def test_decoder_block_initialisation_variances():
     assert float(b.ln1.gain.value.max()) == 1.0
     assert float(b.ln1.bias.value.min()) == 0.0
     assert float(b.ln1.bias.value.max()) == 0.0
+
+
+def test_hand_case_of_the_causal_attention():
+    q = jnp.array([[1.0], [2.0], [3.0]])
+    mask = jnp.tril(jnp.ones((3, 3), dtype=bool))
+    out = np.asarray(scaled_dot_product_attention(q, q, q, mask))[:, 0]
+    np.testing.assert_allclose(out, [1.0, 1.8808, 2.9480], atol=1e-4)
+
+
+def test_hand_case_of_the_cross_attention_scores():
+    q = jnp.array([[1.0], [1.0]])
+    k = jnp.array([[1.0], [2.0], [3.0]])
+    v = jnp.array([[10.0], [20.0], [30.0]])
+    out = np.asarray(scaled_dot_product_attention(q, k, v))[:, 0]
+    np.testing.assert_allclose(out, [25.7521, 25.7521], atol=1e-3)
+
+
+def test_gradcheck_decoder_block_memory():
+    b = TransformerDecoderBlock(4, 2, 8, cross=True, key=jax.random.PRNGKey(0))
+    x = jax.random.normal(jax.random.PRNGKey(1), (3, 4))
+    mem = jax.random.normal(jax.random.PRNGKey(2), (3, 4))
+
+    def fwd(mm):
+        return b.forward(x, memory=mm)
+
+    def bwd(mm, y, g):
+        b.forward(x, memory=mm)
+        return b.backward(g)[1]
+
+    assert gradcheck(fwd, bwd, mem) < 1e-4
+
+
+def test_cross_attention_term_depends_on_the_memory():
+    b = TransformerDecoderBlock(8, 2, 16, cross=True, key=jax.random.PRNGKey(0))
+    x = jax.random.normal(jax.random.PRNGKey(1), (4, 8))
+    m1 = jax.random.normal(jax.random.PRNGKey(2), (5, 8))
+    m2 = jax.random.normal(jax.random.PRNGKey(3), (5, 8))
+    assert (
+        float(jnp.max(jnp.abs(b.forward(x, memory=m1) - b.forward(x, memory=m2))))
+        > 1e-3
+    )
+
+
+def test_backward_returns_one_array_without_cross_and_a_pair_with_cross():
+    x = jax.random.normal(jax.random.PRNGKey(1), (4, 8))
+    plain = TransformerDecoderBlock(8, 2, 16, key=jax.random.PRNGKey(0))
+    assert plain.backward(jnp.ones_like(plain.forward(x))).shape == (4, 8)
+    crossed = TransformerDecoderBlock(8, 2, 16, cross=True, key=jax.random.PRNGKey(0))
+    mem = jax.random.normal(jax.random.PRNGKey(2), (5, 8))
+    dx, dmem = crossed.backward(jnp.ones_like(crossed.forward(x, memory=mem)))
+    assert dx.shape == (4, 8) and dmem.shape == (5, 8)
+
+
+def test_signature_of_the_task_cross_is_the_fourth_positional_argument():
+    b = TransformerDecoderBlock(8, 2, 16, True, key=jax.random.PRNGKey(0))
+    assert b.cross is True
+    with pytest.raises(ValueError, match="norm"):
+        TransformerDecoderBlock(8, 2, 16, False, "rms", key=jax.random.PRNGKey(0))
+
+
+def test_the_tie_is_the_sixth_positional_argument_and_removes_the_head():
+    key = jax.random.PRNGKey(0)
+    free = transformer_decoder(8, 16, 2, 1, 6, False, key=key)
+    tied = transformer_decoder(8, 16, 2, 1, 6, True, key=key)
+    assert len(free.params()) == len(tied.params()) + 2
+    tokens = jnp.array([0, 1, 2, 3])
+    hidden = tokens
+    for layer in tied.layers[:-1]:
+        hidden = layer.forward(hidden)
+    emb = tied.layers[0]
+    np.testing.assert_allclose(
+        np.asarray(tied.forward(tokens)),
+        np.asarray(hidden @ emb.E.value.T),
+        atol=1e-5,
+    )
+
+
+def test_model_forward_longer_than_max_len_raises():
+    m = transformer_decoder(8, 16, 2, 1, 6, key=jax.random.PRNGKey(0))
+    with pytest.raises(ValueError):
+        m.forward(jnp.arange(7) % 8)
+
+
+def test_next_token_loss_works_under_jit_and_gives_the_same_value():
+    L = NextTokenLoss()
+    logits = jnp.array([[[2.0, 0.0], [0.0, 2.0], [2.0, 0.0]]])
+    y = jnp.array([[1, -100, 1]])
+    eager = float(L.forward(logits, y))
+    jitted = float(jax.jit(lambda lg, yy: NextTokenLoss().forward(lg, yy))(logits, y))
+    assert abs(eager - jitted) < 1e-6
+    assert abs(jitted - 0.1269) < 1e-3
+
+
+def test_trainer_with_the_compiled_step_trains_the_language_model_like_the_loop():
+    tokens = jnp.asarray(np.tile(np.arange(4), (8, 2)), dtype=jnp.int32)
+    losses = {}
+    for compile in (False, True):
+        m = transformer_decoder(4, 16, 2, 1, 8, key=jax.random.PRNGKey(0))
+        t = Trainer(m, NextTokenLoss(), Adam(0.05), compile=compile)
+        t.fit(tokens, tokens, epochs=3, batch_size=4, key=jax.random.PRNGKey(0))
+        losses[compile] = t.history_["train_loss"]
+    np.testing.assert_allclose(losses[True], losses[False], rtol=1e-4)
+    assert losses[True][-1] < losses[True][0]
+
+
+def test_neural_package_exports_the_decoder_pieces():
+    import dense_armor.utility.neural as neural
+
+    for name in (
+        "TransformerDecoderBlock",
+        "NextTokenLoss",
+        "transformer_decoder",
+        "generate",
+        "perplexity",
+    ):
+        assert hasattr(neural, name), name

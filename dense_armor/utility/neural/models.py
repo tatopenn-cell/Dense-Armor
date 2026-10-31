@@ -523,10 +523,10 @@ def transformer_decoder(
     n_heads: int,
     n_layers: int,
     max_len: int,
+    tie: bool = False,
     *,
     key: Any,
     d_ff: int | None = None,
-    tie: bool = False,
 ) -> Sequential:
     """The decoder of Vaswani et al. 2017, as a chain to a causal LM.
 
@@ -540,9 +540,10 @@ def transformer_decoder(
         n_heads: the number of heads of every block.
         n_layers: the number of decoder blocks, at least one.
         max_len: the maximum sequence length.
-        key: a ``jax.random`` key, split once per layer with weights.
-        d_ff: the width of the feed-forward. ``None`` uses ``4 * d_model``.
         tie: if True, the output head reuses the embedding matrix.
+        key: a ``jax.random`` key, keyword only, split once per layer with
+            weights.
+        d_ff: the width of the feed-forward. ``None`` uses ``4 * d_model``.
 
     Raises:
         ValueError: if ``n_layers`` is below 1, or if ``d_model`` is not
@@ -570,7 +571,7 @@ def transformer_decoder(
     emb = Embedding(vocab, d_model, keys[0])
     layers: list[Any] = [emb, AddPositions(max_len)]
     for i in range(n_layers):
-        layers.append(TransformerDecoderBlock(d_model, n_heads, d_ff, keys[i + 1]))
+        layers.append(TransformerDecoderBlock(d_model, n_heads, d_ff, key=keys[i + 1]))
     layers.append(LayerNorm(d_model))
     if tie:
         layers.append(_TiedHead(emb))

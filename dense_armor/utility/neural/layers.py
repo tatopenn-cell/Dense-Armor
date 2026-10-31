@@ -197,12 +197,23 @@ class Embedding:
     __hash__ = None  # type: ignore[assignment]
 
     def forward(self, ids: jax.Array, training: bool = True) -> jax.Array:
-        """Return ``E[ids]`` for an integer array of any shape."""
+        """Return ``E[ids]`` for an integer array of any shape.
+
+        The range of the ids is checked when they are known. Under
+        ``jax.jit`` they are not, the check is skipped, and the gather of
+        JAX handles an id out of range without an error.
+        """
         del training
         ids_arr = jnp.asarray(ids)
         if not jnp.issubdtype(ids_arr.dtype, jnp.integer):
             raise ValueError(f"ids must be an integer array, got dtype {ids_arr.dtype}")
-        if bool(jnp.any(ids_arr < 0)) or bool(jnp.any(ids_arr >= self.n_tokens)):
+        try:
+            out_of_range = bool(jnp.any(ids_arr < 0)) or bool(
+                jnp.any(ids_arr >= self.n_tokens)
+            )
+        except jax.errors.ConcretizationTypeError:
+            out_of_range = False
+        if out_of_range:
             raise ValueError(
                 f"ids must lie in [0, {self.n_tokens}), "
                 f"got min={int(ids_arr.min())} max={int(ids_arr.max())}"

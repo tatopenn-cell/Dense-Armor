@@ -8,7 +8,7 @@ The self-attention of [Attention](attention.md) compares every query with every 
 
 The check is exact, not approximate: change the tokens after `t` and the logits up to `t` do not change at all, bit for bit.
 
-~~~python
+```python
 import jax
 import jax.numpy as jnp
 from dense_armor.utility.neural.models import transformer_decoder
@@ -22,14 +22,14 @@ print(bool(jnp.array_equal(la[0], lc[0])))
 print(bool(jnp.array_equal(la[1], lc[1])))
 print(bool(jnp.array_equal(la[2], lc[2])))
 print(bool(not jnp.array_equal(la[3], lc[3])))
-~~~
+```
 
-~~~
+```
 True
 True
 True
 True
-~~~
+```
 
 The first three positions are identical because the change is at position 3 and later. Position 3 changes because it now sees the token `7` instead of `3`.
 
@@ -39,21 +39,21 @@ The encoder block of [Attention](attention.md) has two sub-layers: self-attentio
 
 The block follows the post-norm order of the paper: `y = LayerNorm(x + Sublayer(x))`.
 
-~~~python
+```python
 import jax
 import jax.numpy as jnp
 from dense_armor.utility.neural.decoder import TransformerDecoderBlock
 
-b = TransformerDecoderBlock(8, 2, 16, jax.random.PRNGKey(0))
+b = TransformerDecoderBlock(8, 2, 16, key=jax.random.PRNGKey(0))
 x = jax.random.normal(jax.random.PRNGKey(1), (4, 8))
 print(b.forward(x).shape)
 print(len(b.params()))
-~~~
+```
 
-~~~
+```
 (4, 8)
 12
-~~~
+```
 
 The block keeps the width of the sequence. The twelve parameters are the four projections of the attention, the gain and the bias of the two layer norms, and the weight and the bias of the two dense layers of the feed-forward.
 
@@ -65,7 +65,7 @@ The block keeps the width of the sequence. The twelve parameters are the four pr
 
 The target of position `t` is the token at `t+1`. With a two-token vocabulary, `y = [1, 0, 1]`, and logits `[[2, 0], [0, 2], [2, 0]]`, the log-softmax of the first position at the target `0` is `-0.1269` and the same for the second position at the target `1`. The mean over the two valid positions is `0.1269`, and the perplexity is `e^0.1269 = 1.1353`.
 
-~~~python
+```python
 import jax.numpy as jnp
 from dense_armor.utility.neural.losses_lm import NextTokenLoss, perplexity
 
@@ -75,12 +75,12 @@ y = jnp.array([[1, 0, 1]])
 val = float(L.forward(logits, y))
 print(round(val, 4))
 print(round(perplexity(val), 4))
-~~~
+```
 
-~~~
+```
 0.1269
 1.1353
-~~~
+```
 
 A target of `-100` does not enter the loss and does not enter the count. This is the convention of the field, not a formula of the paper, and it is declared in the docstring.
 
@@ -88,7 +88,7 @@ A target of `-100` does not enter the loss and does not enter the count. This is
 
 At `temperature=0` the next token is the argmax of the last logits. At `temperature>0` the next token is sampled from `softmax(logits / temperature)` and a `jax.random` key is required. The returned sequence never exceeds `max_len`.
 
-~~~python
+```python
 import jax
 import jax.numpy as jnp
 from dense_armor.utility.neural.models import transformer_decoder
@@ -97,11 +97,11 @@ from dense_armor.utility.neural.generate import generate
 m = transformer_decoder(4, 8, 2, 1, 4, key=jax.random.PRNGKey(0))
 out = generate(m, jnp.array([0, 1]), max_new=2, max_len=4)
 print(out.tolist())
-~~~
+```
 
-~~~
+```
 [0, 1, 3, 3]
-~~~
+```
 
 An untrained model returns arbitrary tokens. Training is what makes the output continue the pattern.
 
@@ -109,7 +109,7 @@ An untrained model returns arbitrary tokens. Training is what makes the output c
 
 A period-4 pattern `0, 1, 2, 3, 0, 1, 2, 3` on a four-token vocabulary, a model with one block, and Adam with `lr=0.05`. The loss crosses `0.05` in a few dozen steps, and `generate` continues the pattern from a two-token prompt.
 
-~~~python
+```python
 import numpy as np
 import jax
 import jax.numpy as jnp
@@ -134,13 +134,13 @@ for step in range(300):
 print(step + 1)
 print(round(loss, 4))
 print(generate(m, jnp.array([0, 1]), max_new=5, max_len=8).tolist())
-~~~
+```
 
-~~~
+```
 28
 0.0244
 [0, 1, 2, 3, 0, 1, 2]
-~~~
+```
 
 Twenty-eight steps, loss `0.0244`, and the prompt `[0, 1]` is continued with `[2, 3, 0, 1, 2]`, the period-4 pattern.
 
@@ -157,11 +157,13 @@ Twenty-eight steps, loss `0.0244`, and the prompt `[0, 1]` is continued with `[2
 - **Weight tying.** `tie=True` reuses the embedding matrix as the output projection. This is not in Vaswani et al. 2017; it is a common practice in language models, and it is declared in the `_TiedHead` docstring. The default is `tie=False`.
 - **`ignore_index = -100`.** A target with this value does not enter the next-token loss and does not enter the count. This is not in Vaswani et al. 2017; it is the convention of the reference implementations of the field, and it is declared in the `NextTokenLoss` docstring.
 - **`d_ff` default.** `4 * d_model`, from the base model of Vaswani et al., Section 3.3, page 5 (`d_model=512`, `d_ff=2048`). The parameter is exposed so a caller can choose another value.
+- **Gradient on the memory.** With `cross=True` the `backward` of the block returns the pair `(dx, dmemory)`, as `MultiHeadCrossAttention.backward` returns `(dxq, dxc)`, so an encoder can receive its gradient. With `cross=False` it returns `dx`.
+- **Compiled step.** `Trainer(model, NextTokenLoss(), optimizer, compile=True)` trains the language model with the same losses as the loop (tested). To allow it, the count of valid targets of `NextTokenLoss` stays an array, and the check of the range of the ids in `Embedding` is skipped under `jax.jit`, where the ids are not known.
 - **Generation.** Re-runs the whole prefix at every new token: `O(T**2)` in the length. The cache-based `step` of `MultiHeadSelfAttention` exists but is not exposed by `TransformerDecoderBlock`; the choice is documented in the `generate` docstring.
 
 ### Measured cost
 
-No benchmark in this page. The numbers printed by the code blocks come from runs of the blocks themselves, on this page. The training block on a small model (`d_model=16`, one block, sequence 8) takes about ten seconds on the Colab CPU.
+No benchmark in this page. The numbers printed by the code blocks come from runs of the blocks themselves, on this page. The time of the training block is not measured.
 
 ### Not measured
 
@@ -169,4 +171,4 @@ GPU speed, the base architecture of the paper (`d_model=512`, six blocks), longe
 
 ### Development diary
 
-The page was written after the code: the block, the loss and the generation loop passed their tests (`test/neural/test_decoder.py`, 37 tests) before any prose was written. The outputs shown are the outputs of the last run of the blocks, not written by hand.
+The page was written after the code: the block, the loss and the generation loop passed their tests (`test/neural/test_decoder.py`, 49 tests) before any prose was written. The outputs shown are the outputs of the last run of the blocks, not written by hand.

@@ -39,7 +39,10 @@ class NextTokenLoss:
             and does not enter the count. Default ``-100``.
 
     Raises:
-        ValueError: on ``forward`` if no position has a valid target.
+        ValueError: on ``forward`` if no position has a valid target. Under
+            ``jax.jit`` the count is not known when the function is
+            traced, so the check is skipped and the loss is ``0`` when no
+            target is valid.
 
     Examples:
         >>> import jax.numpy as jnp
@@ -85,8 +88,15 @@ class NextTokenLoss:
             )
         target = y[..., 1:]
         mask = target != self.ignore_index
-        n_valid = int(jnp.sum(mask))
-        if n_valid == 0:
+        n_valid = jnp.sum(mask)
+        try:
+            empty = int(n_valid) == 0
+        except (
+            jax.errors.ConcretizationTypeError,
+            jax.errors.TracerIntegerConversionError,
+        ):
+            empty = False
+        if empty:
             raise ValueError(
                 "no position has a valid target (all ignore_index, or T = 1)"
             )
@@ -95,7 +105,7 @@ class NextTokenLoss:
             lp, jnp.where(mask, target, 0)[..., None], axis=-1
         )[..., 0]
         masked = jnp.where(mask, picked, 0.0)
-        loss = -jnp.sum(masked) / n_valid
+        loss = -jnp.sum(masked) / jnp.maximum(n_valid, 1)
         self._logits = logits
         self._y = y
         self._mask = mask
@@ -109,7 +119,7 @@ class NextTokenLoss:
         y = self._y
         mask = self._mask
         V = logits.shape[-1]
-        n_valid = int(jnp.sum(mask))
+        n_valid = jnp.maximum(jnp.sum(mask), 1)
         target = y[..., 1:]
         soft = jax.nn.softmax(logits[..., :-1, :], axis=-1)
         onehot = jax.nn.one_hot(jnp.where(mask, target, 0), V, dtype=soft.dtype)
