@@ -48,10 +48,10 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from dense_armor.utility.neural.compiled import (  # noqa: E402
-    init_state,
+    _init_state as init_state,
+    _read_values as read_values,
+    _write_values as write_values,
     make_step,
-    read_values,
-    write_values,
 )
 from dense_armor.utility.neural.losses import MSE  # noqa: E402
 from dense_armor.utility.neural.models import (  # noqa: E402
@@ -112,7 +112,6 @@ def _sps_loop(model_make, X, y, batch_size, n_steps):
     t = Trainer(m, MSE(), SGD(0.01))
     n = len(X)
     n_batches = max(1, n // batch_size)
-    # warm-up: one step, then time n_steps
     for p in m.params():
         p.zero_grad()
     pred = m.forward(X[0:batch_size], training=True)
@@ -127,10 +126,11 @@ def _sps_loop(model_make, X, y, batch_size, n_steps):
         for p in m.params():
             p.zero_grad()
         pred = m.forward(X[idx], training=True)
-        _ = t.loss.forward(pred, y[idx])
+        loss_value = t.loss.forward(pred, y[idx])
         m.backward(t.loss.backward())
         for p in m.params():
             p.update(t.optimizer_prototype)
+        jax.block_until_ready(loss_value)
     dt = time.perf_counter() - t0
     return n_steps / dt
 
@@ -144,7 +144,6 @@ def _sps_compiled(model_make, X, y, batch_size, n_steps):
     step = make_step(m, MSE(), opt, ConstantLR(0.01), 0.0, "l2", None)
     n = len(X)
     n_batches = max(1, n // batch_size)
-    # compile with the first batch, then time
     tc = time.perf_counter()
     values, st, _ = step(values, st, X[0:batch_size], y[0:batch_size], 0.0)
     compile_time = time.perf_counter() - tc
@@ -153,7 +152,8 @@ def _sps_compiled(model_make, X, y, batch_size, n_steps):
     for s in range(n_steps):
         idx_start = (s % n_batches) * batch_size
         idx = slice(idx_start, idx_start + batch_size)
-        values, st, _ = step(values, st, X[idx], y[idx], float(s))
+        values, st, loss_value = step(values, st, X[idx], y[idx], float(s))
+        jax.block_until_ready(loss_value)
         write_values(m, values)
     dt = time.perf_counter() - t0
     return n_steps / dt, compile_time
