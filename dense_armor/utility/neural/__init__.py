@@ -42,6 +42,9 @@ from dense_armor.utility.neural.conv import (
     MaxPool1D,
     MaxPool2D,
 )
+from dense_armor.utility.neural.decoder import TransformerDecoderBlock
+from dense_armor.utility.neural.generate import generate
+from dense_armor.utility.neural.losses_lm import NextTokenLoss, perplexity
 from dense_armor.utility.neural.models import (
     AddPositions,
     LastStep,
@@ -50,6 +53,7 @@ from dense_armor.utility.neural.models import (
     mlp,
     recurrent_net,
     resnet_mlp,
+    transformer_decoder,
     transformer_encoder,
 )
 from dense_armor.utility.neural.recurrent import GRU, LSTM, RNN
@@ -65,6 +69,11 @@ __all__ = list(__all__) + [
     "cnn",
     "recurrent_net",
     "transformer_encoder",
+    "transformer_decoder",
+    "TransformerDecoderBlock",
+    "NextTokenLoss",
+    "perplexity",
+    "generate",
     "Conv1D",
     "Conv2D",
     "MaxPool1D",
