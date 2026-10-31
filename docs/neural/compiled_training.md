@@ -189,6 +189,24 @@ The three claims of the benchmark, as the script prints them:
 3. On the CPU the compiled step is at least 1.5x the loop: does not hold
    (1.49x and 1.17x).
 
+### Through `Trainer.fit`
+
+The path a user takes is `Trainer.fit`, which also reads the loss once per
+epoch and writes the parameters back after every step.
+`benchmarks/compiled_fit_speed.py` times it: epochs after one warm-up epoch,
+3 sessions, the clock stopped when the parameters are ready. The figures
+below are the output of that script in a Kaggle kernel, on the commit
+`3891c23` (CPU: 4 cores, `JAX_PLATFORMS=cpu`; GPU: Tesla T4). They are
+printed by the script and not written in a JSON file.
+
+| model | backend | steps/s `compile=False` | steps/s `compile=True` | ratio |
+|---|---|---|---|---|
+| mlp 4x512, batch 256 | CPU | 58.32 (51.01 to 59.31) | 111.07 (107.08 to 111.15) | 1.90x |
+| mlp 4x512, batch 256 | GPU | 45.05 (44.86 to 46.48) | 191.56 (181.04 to 191.58) | 4.25x |
+| transformer 4x256, seq 128, batch 32 | GPU | 6.12 (6.06 to 6.22) | 30.27 (30.25 to 30.36) | 4.95x |
+
+The transformer is run on the GPU only.
+
 ## Details
 
 ### References
@@ -244,8 +262,8 @@ call is 0.20 s (mlp) and 2.16 s (transformer) on the CPU, and 0.18 s and
 
 ### Not measured
 
-- The speed of `Trainer.fit` on the GPU: no script of the repository
-  measures it.
+- The speed of `Trainer.fit` is not in a JSON file: it is the printed
+  output of `benchmarks/compiled_fit_speed.py`, run once per backend.
 - The loss of the transformer at 200 steps on the CPU: it was run for 3
   steps, because 200 steps take about 27 minutes on that CPU.
 - Mixed precision, multi-device and gradient checkpointing: the page does
