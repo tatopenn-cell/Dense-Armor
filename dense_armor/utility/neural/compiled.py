@@ -164,14 +164,27 @@ def _apply_update(
     raise ValueError(f"compile=True does not support optimizer {name}")
 
 
-def _write_values(model: Any, values: list) -> None:
-    """Set ``p.value`` of every ``Param`` from the flat list."""
+def _write_values(model: Any, values: list, dtype: Any = None) -> None:
+    """Set ``p.value`` of every ``Param`` from the flat list.
+
+    Args:
+        model: the model.
+        values: the flat list of arrays.
+        dtype: an optional jax dtype; if given, every value is cast.
+    """
     for p, v in zip(model.params(), values):
-        p.value = jnp.asarray(v)
+        p.value = jnp.asarray(v, dtype=dtype) if dtype is not None else jnp.asarray(v)
 
 
-def _read_values(model: Any) -> list:
-    """Return the current ``p.value`` of every ``Param`` as a flat list."""
+def _read_values(model: Any, dtype: Any = None) -> list:
+    """Return the current ``p.value`` of every ``Param`` as a flat list.
+
+    Args:
+        model: the model.
+        dtype: an optional jax dtype; if given, every value is cast.
+    """
+    if dtype is not None:
+        return [jnp.asarray(p.value, dtype=dtype) for p in model.params()]
     return [jnp.asarray(p.value) for p in model.params()]
 
 
@@ -320,18 +333,16 @@ def make_step(
         )
 
     def _mixed_step(values: list, x: Any, y: Any):
-        cast_values = _cast(values, dtype)
-        _write_values(model, cast_values)
+        _write_values(model, values)
         for pp in model.params():
             pp.zero_grad()
-        pred = model.forward(_cast(x, dtype), training=True)
+        pred = model.forward(x, training=True)
         loss_value = loss.forward(pred, _cast(y, dtype))
         grad = loss.backward()
         if loss_scale != 1.0:
             grad = grad * loss_scale
         model.backward(grad)
         grads = _read_grads(model)
-        grads = [jnp.asarray(g, dtype=jnp.float32) for g in grads]
         if clip_norm is not None:
             grads = _clip_grads(grads, clip_norm)
         return grads, loss_value

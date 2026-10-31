@@ -106,6 +106,57 @@ class Trainer:
         compute_dtype: str | None = None,
         loss_scale: float | str | None = None,
     ) -> None:
+        """Build a trainer.
+
+        The ``compute_dtype`` and ``loss_scale`` arguments are item A of
+        task N4 (mixed-precision training). The defaults ``None`` and
+        ``None`` keep float32 and today's behaviour bit for bit.
+
+        The mixed-precision machinery follows Micikevicius et al. 2017,
+        Section 3 (page 2): a float32 master copy of the weights and of
+        the optimizer state, and the cast of the compute to the dtype
+        for the forward and the backward. Section 3.2 (pages 4-5) is the
+        source of the loss scaling and of the skip of a step whose
+        gradient contains an inf or a nan. The paper describes a
+        **constant** scaling factor (§3.2 page 4, "the simplest one is
+        to pick a constant scaling factor") and the skip on overflow
+        (§3.2 page 5, "one option is to skip the weight update when an
+        overflow is detected").
+
+        The dynamic scaling (grow after a window of good steps, halve
+        and skip on overflow) is **not in the paper**: the paper mentions
+        only the constant factor and the skip. It is the behaviour of
+        ``torch.cuda.amp.GradScaler`` (``growth_interval=2000``,
+        ``init_scale=65536.0``, ``growth_factor=2.0``,
+        ``backoff_factor=0.5``, PyTorch documentation) and of
+        ``apex.amp.GradScaler`` (NVIDIA, same defaults), adopted here as
+        the field's de-facto standard, not as an arbitrary choice. The
+        paper does not mention bfloat16 either; bfloat16 has the same
+        exponent range as float32, so the loss scaling is not needed
+        with it (our statement, not a formula of the paper).
+
+        Args:
+            model: the model.
+            loss: the loss.
+            optimizer: the object form of the optimizer.
+            schedule: the schedule; ``ConstantLR(optimizer.lr)`` if None.
+            weight_decay: the weight decay coefficient.
+            decay: ``"l2"`` or ``"decoupled"``.
+            clip_norm: the global L2 threshold, or ``None``.
+            compile: use the compiled step of item N1.
+            compute_dtype: ``None`` (float32), ``"bfloat16"``,
+                ``"float16"`` or ``"float32"``.
+            loss_scale: ``None`` (no scaling), a positive float (constant
+                scale), or ``"dynamic"`` (grow after 2000 good steps,
+                halve and skip on overflow, the PyTorch/Apex default).
+
+        Raises:
+            ValueError: on ``decay`` outside ``("l2", "decoupled")``,
+                negative ``weight_decay``, non-positive ``clip_norm``,
+                ``compute_dtype`` outside the four values, or
+                ``loss_scale`` outside ``None``, a positive float or
+                ``"dynamic"``.
+        """
         if decay not in ("l2", "decoupled"):
             raise ValueError(f"decay must be 'l2' or 'decoupled', got {decay!r}")
         if weight_decay < 0:
@@ -226,10 +277,11 @@ class Trainer:
             self.compute_dtype is not None or self.loss_scale is not None
         )
         if mixed and self.loss_scale == "dynamic" and self._scale == 1.0:
-            self._scale = float(2.0**10)
+            self._scale = float(2.0**16)
 
         if self.compile:
-            self._compiled_values = read_values(self.model)
+            _dtype = jnp.float32 if mixed else None
+            self._compiled_values = read_values(self.model, dtype=_dtype)
             if self._compiled_step is None:
                 self._compiled_opt_state = init_state(
                     self.optimizer_prototype, self._compiled_values
@@ -281,7 +333,7 @@ class Trainer:
                     else:
                         if self.loss_scale == "dynamic":
                             self._good_steps += 1
-                            if self._good_steps >= 200:
+                            if self._good_steps >= 2000:
                                 self._scale = self._scale * 2.0
                                 self._good_steps = 0
                         if self._scale != 1.0:
@@ -302,7 +354,7 @@ class Trainer:
                         )
                         self._compiled_values = values
                         self._compiled_opt_state = opt_state
-                        write_values(self.model, values)
+                        write_values(self.model, values, dtype=jnp.float32)
                     total_loss_device = total_loss_device + batch_loss * len(idx)
                     total_size += len(idx)
                 elif self.compile:
