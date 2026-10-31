@@ -338,8 +338,10 @@ class Trainer:
             for b_idx, idx in enumerate(batches):
                 epoch_t = epoch + b_idx / n_batches
                 if mixed:
-                    grads, batch_loss = self._compiled_mixed(values, X[idx], y[idx])
-                    overflow = any(bool(jnp.any(~jnp.isfinite(g))) for g in grads)
+                    grads_fp16, grads_fp32, batch_loss = self._compiled_mixed(
+                        values, X[idx], y[idx], self._scale
+                    )
+                    overflow = any(bool(jnp.any(~jnp.isfinite(g))) for g in grads_fp16)
                     if overflow:
                         if self.loss_scale == "dynamic":
                             self._scale = max(self._scale / 2.0, 1.0)
@@ -351,7 +353,7 @@ class Trainer:
                                 self._scale = self._scale * 2.0
                                 self._good_steps = 0
                         if self._scale != 1.0:
-                            grads = [g / self._scale for g in grads]
+                            grads_fp32 = [g / self._scale for g in grads_fp32]
                         lr_t = self.schedule(epoch_t)
                         eta_t = self.schedule.multiplier(epoch_t)
                         if values is None:
@@ -359,7 +361,7 @@ class Trainer:
                         values, opt_state = _apply_update(
                             self.optimizer_prototype,
                             values,
-                            grads,
+                            grads_fp32,
                             opt_state,
                             lr_t,
                             eta_t,

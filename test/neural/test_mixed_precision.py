@@ -72,8 +72,8 @@ def test_underflow_float16_without_scale_is_zero_with_scale_is_not():
             loss_scale=scale,
         )
         values = [jnp.array(p.value, dtype=jnp.float32) for p in m.params()]
-        grads, _ = step.mixed(values, X, y)
-        return np.asarray(grads[0])
+        grads_fp16, _, _ = step.mixed(values, X, y, scale)
+        return np.asarray(grads_fp16[0])
 
     g_no_scale = first_grad(1.0)
     g_8192 = first_grad(8192.0)
@@ -148,7 +148,8 @@ def test_overflow_skips_step_and_halves_scale():
     assert initial_scale in (1024.0, 2048.0), initial_scale
 
     values_before = [np.array(p.value) for p in m.params()]
-    t._compiled_mixed = lambda values, x, y: (
+    t._compiled_mixed = lambda values, x, y, scale: (
+        [jnp.full_like(g, jnp.inf) for g in [p.grad for p in m.params()]],
         [jnp.full_like(g, jnp.inf) for g in [p.grad for p in m.params()]],
         jnp.float32(1.0),
     )
@@ -168,18 +169,33 @@ def test_overflow_skips_step_and_halves_scale():
 # ------------------------------------------------------------------
 
 
-def test_dynamic_scale_produces_no_nan():
+def test_dynamic_scale_produces_no_nan_and_trains():
+    """200 steps (25 epochs of 8 batches) of float16 + dynamic.
+
+    With the loss scale passed at runtime (not captured as a constant in
+    the jitted graph), the scale adapts and the loss decreases over 25
+    epochs. A mutation that captures the scale as a constant leaves the
+    scale stuck and the loss frozen; the test fails.
+    """
     X, y = _data((64, 2), (64, 1))
     m = mlp([2, 4, 1], jax.random.PRNGKey(0))
     t = Trainer(
         m, MSE(), SGD(0.01), compile=True, compute_dtype="float16", loss_scale="dynamic"
     )
-    t.fit(X, y, epochs=20, batch_size=8, key=jax.random.PRNGKey(0))
+    t.fit(X, y, epochs=25, batch_size=8, key=jax.random.PRNGKey(0))
     losses = t.history_["train_loss"]
-    print(f"  losses[:5]: {[round(v, 3) for v in losses[:5]]}")
-    print(f"  scale[:5]:  {t.history_['loss_scale'][:5]}")
+    scales = t.history_["loss_scale"]
+    print(f"  epochs (of 8 steps): {len(losses)}")
+    print(f"  losses[:3]: {[round(v, 4) for v in losses[:3]]}")
+    print(f"  losses[-3:]: {[round(v, 4) for v in losses[-3:]]}")
+    print(f"  scale[:3]: {[float(s) for s in scales[:3]]}")
+    print(f"  scale[-3:]: {[float(s) for s in scales[-3:]]}")
+    assert len(losses) == 25, f"expected 25 epochs, got {len(losses)}"
     assert all(np.isfinite(v) for v in losses), losses
-    assert all(s > 0 for s in t.history_["loss_scale"])
+    assert all(s > 0 for s in scales)
+    assert losses[-1] < losses[0] * 0.9, (
+        f"loss did not decrease: {losses[0]:.4f} -> {losses[-1]:.4f}"
+    )
 
 
 # ------------------------------------------------------------------
@@ -204,16 +220,49 @@ def test_master_weights_stay_float32():
 
 
 def test_default_unchanged_bit_for_bit():
+    """At compute_dtype=None and loss_scale=None the compiled path gives
+    the same loss as the loop path, on the same data.
+
+    The existing test test_compiled_step.py::test_default_unchanged_bit_for_bit
+    compares compile=False against the values stored from master and
+    passes on this branch. Here the comparison is compile=True (with the
+    mixed-precision defaults that must not change anything) against
+    compile=False, with the same data. The tolerance is the one of that
+    test: 1e-9 with x64 on, 1e-5 with x64 off, relative.
+    """
     X, y = _data((16, 2), (16, 1))
     a = mlp([2, 4, 1], jax.random.PRNGKey(0))
-    t_a = Trainer(a, MSE(), SGD(0.01), compile=True)
+    t_a = Trainer(
+        a,
+        MSE(),
+        SGD(0.01),
+        compile=True,
+        compute_dtype=None,
+        loss_scale=None,
+    )
     t_a.fit(X, y, epochs=3, batch_size=8, key=jax.random.PRNGKey(0))
     assert t_a.history_["loss_scale"] == []
 
+    b = mlp([2, 4, 1], jax.random.PRNGKey(0))
+    t_b = Trainer(
+        b,
+        MSE(),
+        SGD(0.01),
+        compile=False,
+        compute_dtype=None,
+        loss_scale=None,
+    )
+    t_b.fit(X, y, epochs=3, batch_size=8, key=jax.random.PRNGKey(0))
 
-# ------------------------------------------------------------------
-# Loss scaling multiplies the gradient
-# ------------------------------------------------------------------
+    tol = 1e-9 if jax.config.jax_enable_x64 else 1e-5
+    losses_a = t_a.history_["train_loss"]
+    losses_b = t_b.history_["train_loss"]
+    print(f"  compile=True  (default): {[round(v, 6) for v in losses_a]}")
+    print(f"  compile=False (default): {[round(v, 6) for v in losses_b]}")
+    assert len(losses_a) == len(losses_b) == 3
+    for got, want in zip(losses_a, losses_b):
+        rel = abs(got - want) / max(abs(want), 1e-12)
+        assert rel <= tol, f"compile=True {got!r} != compile=False {want!r} (rel {rel})"
 
 
 def test_loss_scale_multiplies_gradient():
@@ -235,8 +284,8 @@ def test_loss_scale_multiplies_gradient():
             loss_scale=scale,
         )
         values = [jnp.array(p.value, dtype=jnp.float32) for p in m.params()]
-        grads, _ = step.mixed(values, X, y)
-        return grads
+        _, grads_fp32, _ = step.mixed(values, X, y, scale)
+        return grads_fp32
 
     g1 = grads_with(1.0)
     g100 = grads_with(100.0)
@@ -267,8 +316,8 @@ def test_grads_are_float32_after_mixed_step():
         loss_scale=8192.0,
     )
     values = [jnp.array(p.value, dtype=jnp.float32) for p in m.params()]
-    grads, _ = step.mixed(values, X, y)
-    for g in grads:
+    _, grads_fp32, _ = step.mixed(values, X, y, 8192.0)
+    for g in grads_fp32:
         assert jnp.asarray(g).dtype == jnp.float32, jnp.asarray(g).dtype
 
 
@@ -340,7 +389,7 @@ def test_weights_and_input_are_cast_to_compute_dtype_in_forward():
         loss_scale=1.0,
     )
     values = [jnp.array(p.value, dtype=jnp.float32) for p in m.params()]
-    step.mixed(values, X, y)
+    step.mixed(values, X, y, 1.0)
     print(f"  input dtypes: {[str(d) for d in seen['input_dtypes']]}")
     print(f"  weight dtypes: {[str(d) for d in seen['weight_dtypes']]}")
     assert all(d == jnp.bfloat16 for d in seen["input_dtypes"]), (
@@ -349,36 +398,6 @@ def test_weights_and_input_are_cast_to_compute_dtype_in_forward():
     assert all(d == jnp.bfloat16 for d in seen["weight_dtypes"]), (
         "the weights are not cast to bfloat16"
     )
-
-
-def test_grad_dtype_is_compute_dtype_during_backward():
-    """After the backward, before the float32 cast for the optimizer,
-    every Param.grad is in the compute dtype.
-
-    Section 3.1 page 2: "weights, activations and gradients are stored
-    as FP16". A mutation that removes the cast leaves Param.grad in
-    float32; the test fails.
-    """
-    from dense_armor.utility.neural.losses import MSE as _MSE
-    from dense_armor.utility.neural.models import mlp as _mlp
-
-    X, y = _data((8, 2), (8, 1))
-    m = _mlp([2, 4, 1], jax.random.PRNGKey(0))
-    for p_ in m.params():
-        p_.value = jnp.asarray(p_.value, dtype=jnp.float16)
-    for p_ in m.params():
-        p_.zero_grad()
-    pred = m.forward(X.astype(np.float16))
-    _ = _MSE().forward(pred, y)
-    m.backward(jnp.ones_like(pred) * 0.01)
-    dtypes = {str(p_.grad.dtype) for p_ in m.params()}
-    print(f"  Param.grad dtypes before the explicit cast: {dtypes}")
-    # forzo il cast come fa _mixed_step
-    for p_ in m.params():
-        p_.grad = jnp.asarray(p_.grad, dtype=jnp.float16)
-    dtypes_after = {str(p_.grad.dtype) for p_ in m.params()}
-    print(f"  Param.grad dtypes after the cast: {dtypes_after}")
-    assert dtypes_after == {"float16"}, dtypes_after
 
 
 def test_dtype_map_and_cast_direct():

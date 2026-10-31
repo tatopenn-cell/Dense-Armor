@@ -332,7 +332,7 @@ def make_step(
             f"compute_dtype must be one of {sorted(_DTYPE_MAP)}, got {compute_dtype!r}"
         )
 
-    def _mixed_step(values: list, x: Any, y: Any):
+    def _mixed_step(values: list, x: Any, y: Any, scale: Any):
         cast_values = _cast(values, dtype)
         _write_values(model, cast_values)
         for pp in model.params():
@@ -341,32 +341,34 @@ def make_step(
         loss_value = loss.forward(pred, y)
         loss_value = jnp.asarray(loss_value, dtype=jnp.float32)
         grad = loss.backward()
-        if loss_scale != 1.0:
-            grad = grad * loss_scale
+        grad = grad * scale
         model.backward(grad)
-        for pp in model.params():
-            pp.grad = jnp.asarray(pp.grad, dtype=dtype)
         grads = _read_grads(model)
-        grads = [jnp.asarray(g, dtype=jnp.float32) for g in grads]
+        # Section 3.1 page 2: gradients are stored as FP16. The cast is a
+        # return value, not a side effect on Param.grad: a side effect
+        # inside jit is ignored (and is what made the CPU test pass and
+        # the GPU test fail before this fix).
+        grads_fp16 = [jnp.asarray(g, dtype=dtype) for g in grads]
+        grads_fp32 = [jnp.asarray(g, dtype=jnp.float32) for g in grads_fp16]
         if clip_norm is not None:
-            grads = _clip_grads(grads, clip_norm)
-        return grads, loss_value
+            grads_fp32 = _clip_grads(grads_fp32, clip_norm)
+        return grads_fp16, grads_fp32, loss_value
 
     mixed_jitted = jax.jit(_mixed_step)
 
-    def _mixed_public(values: list, x: Any, y: Any):
-        return mixed_jitted(values, x, y)
+    def _mixed(values: list, x: Any, y: Any, scale: float):
+        return mixed_jitted(values, x, y, jnp.float32(scale))
 
-    def _step_with_mixed_placeholder(
+    def _plain_step(
         values: list, opt_state: Any, x: Any, y: Any, epoch_t: float
     ) -> tuple[list, Any, Any]:
         raise RuntimeError(
             "make_step with compute_dtype or loss_scale active returns "
-            "a mixed step; use .mixed"
+            "a mixed step; use .mixed(values, x, y, scale)"
         )
 
-    setattr(_step_with_mixed_placeholder, "mixed", _mixed_public)
-    return _step_with_mixed_placeholder
+    _plain_step.mixed = _mixed
+    return _plain_step
 
 
 __all__ = [
