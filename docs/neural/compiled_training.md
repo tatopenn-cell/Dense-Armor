@@ -44,12 +44,13 @@ elapsed = time.perf_counter() - start
 print(round(20 / elapsed, 1))
 ```
 ```
-21.37
+13.0
 ```
 
-The MLP of four layers of 512 runs at about 21 steps per second on
-this CPU. Each step is twenty Python calls, one per layer, plus the
-host synchronisation of the loss.
+The block above is one run of 20 steps: 13.0 steps per second. The
+benchmark median over three sessions, in `benchmarks/compiled_step_cpu.json`,
+is 18.28 steps per second on the same CPU. Each step is twenty Python
+calls, one per layer, plus the host synchronisation of the loss.
 
 ## 2. Turn on compile=True
 
@@ -75,7 +76,7 @@ print(len(t.history_["train_loss"]))
 1
 ```
 
-The first call compiles the step (0.21 s for the MLP). After the
+The first call compiles the step (0.20 s for the MLP). After the
 compilation, the step is one call:
 ```python
 import time
@@ -98,18 +99,20 @@ elapsed = time.perf_counter() - start
 print(round(1 / elapsed, 0))
 ```
 ```
-1701
+2.0
 ```
 
-1701 steps per second on the same CPU, against 21 for the loop. The
-transformer encoder of four layers is even more sensitive to the
-Python overhead: 0.364 steps per second for the loop, 401 for the
-compiled step.
+The block above is one run: 2.0 steps per second, against 13.0 for
+the loop. The benchmark median over three sessions is 27.244 steps
+per second for the compiled step and 18.28 for the loop. The
+transformer encoder of four layers is slower: 0.365 steps per second
+for the loop, 0.427 for the compiled step, so the ratio on that model
+is 1.17x, not the 1.49x of the MLP.
 
 ## 3. Check that the loss is the same
 
-The compiled step must give the same loss as the loop. Run both for
-200 steps on the same data and the same seed:
+The compiled step must give the same loss as the loop. Run both on
+the same data and the same seed:
 ```python
 import jax
 import jax.numpy as jnp
@@ -133,7 +136,7 @@ print(t_loop.history_["train_loss"][-1], t_compiled.history_["train_loss"][-1])
 ```
 
 ```
-0.3718 0.3718
+2.840958833694458 2.840958833694458
 ```
 The two losses are the same. The maximum relative difference over
 the 200 steps is 1.04e-07 for the MLP and 9.71e-07 for the
@@ -148,14 +151,14 @@ The numbers of the page come from
 
 | model | steps/s loop | steps/s compiled | ratio | compile s |
 |---|---|---|---|---|
-| mlp 4x512, batch 256 | 21.37 | 1701 | 79.6x | 0.21 |
-| transformer 4x256, seq 128, batch 32 | 0.364 | 401 | 1102x | 1.36 |
+| mlp 4x512, batch 256 | 18.28 | 27.244 | 1.49x | 0.20 |
+| transformer 4x256, seq 128, batch 32 | 0.365 | 0.427 | 1.17x | 2.16 |
 The range over the three sessions, from the same JSON:
 
-- mlp, loop: 21.16 to 21.69.
-- mlp, compiled: 1526 to 1914.
+- mlp, loop: 11.32 to 21.43.
+- mlp, compiled: 17 to 31.
 - transformer, loop: 0.36 to 0.37.
-- transformer, compiled: 336 to 459.
+- transformer, compiled: 0 to 0.
 
 ## Details
 
@@ -188,11 +191,15 @@ and decoupled decay for plain SGD.
 ### Measured cost
 
 From `benchmarks/compiled_step_cpu.json`, on the CPU of the run
-(jax 0.11.1, python 3.13.18, x86_64):
+(jax 0.11.1, python 3.13.18, x86_64). The claim (3) of the benchmark
+is that the compiled step is at least 1.5x the loop on the CPU. **It
+does not hold** on this CPU: 1.49x on the MLP and 1.17x on the
+transformer. The compiled step is still faster, but by less than the
+1.5x the benchmark declared.
 
-- mlp: loop 21.37 steps per second, compiled 1701, ratio 79.6x,
+- mlp: loop 18.28 steps per second, compiled 27, ratio 1.49x,
   compile time 0.21 s.
-- transformer: loop 0.364, compiled 401, ratio 1102x, compile time
+- transformer: loop 0.364, compiled 401, ratio 1.17x, compile time
   1.36 s.
 
 The compiled mode is faster by a factor that depends on the model.
