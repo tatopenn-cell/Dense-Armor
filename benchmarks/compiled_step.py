@@ -221,7 +221,7 @@ def _backend_label():
     return b
 
 
-def main(smoke, models_to_run, loss_steps):
+def main(smoke, models_to_run, loss_steps, out_path=None):
     label = _backend_label()
     print(f"backend: {label} (jax {jax.__version__}, "
           f"python {platform.python_version()}, {platform.processor()})")
@@ -329,7 +329,10 @@ def main(smoke, models_to_run, loss_steps):
     for k, v in result["claims"].items():
         print(f"  {k}: {v}")
 
-    out = Path("benchmarks") / f"compiled_step_{label}.json"
+    if out_path is not None:
+        out = Path(out_path)
+    else:
+        out = Path("benchmarks") / f"compiled_step_{label}.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(result, indent=2))
     print(f"JSON: {out}")
@@ -340,5 +343,6 @@ if __name__ == "__main__":
     ap.add_argument("--smoke", action="store_true")
     ap.add_argument("--models", nargs="*", default=None)
     ap.add_argument("--loss-steps", type=int, default=0)
+    ap.add_argument("--out", type=str, default=None)
     args = ap.parse_args()
-    main(args.smoke, args.models, args.loss_steps)
+    main(args.smoke, args.models, args.loss_steps, args.out)
