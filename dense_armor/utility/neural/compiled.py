@@ -344,7 +344,10 @@ def make_step(
         if loss_scale != 1.0:
             grad = grad * loss_scale
         model.backward(grad)
+        for pp in model.params():
+            pp.grad = jnp.asarray(pp.grad, dtype=dtype)
         grads = _read_grads(model)
+        grads = [jnp.asarray(g, dtype=jnp.float32) for g in grads]
         if clip_norm is not None:
             grads = _clip_grads(grads, clip_norm)
         return grads, loss_value

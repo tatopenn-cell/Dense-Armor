@@ -85,9 +85,9 @@ def test_underflow_float16_without_scale_is_zero_with_scale_is_not():
         f"  scale 8192: abs max = {abs(g_8192).max():.3e}, "
         f"nonzero = {int(np.sum(g_8192 != 0))}"
     )
-    assert abs(g_no_scale).max() < FLOAT16_MIN, (
-        f"the un-scaled gradient is {abs(g_no_scale).max():.3e}, "
-        f"not below {FLOAT16_MIN:.3e}: choose a deeper network"
+    assert abs(g_no_scale).max() == 0.0, (
+        f"the un-scaled gradient is {abs(g_no_scale).max():.3e}, not zero: "
+        "the float16 storage of the gradients is not in place"
     )
     assert abs(g_8192).max() > FLOAT16_MIN, (
         f"with scale 8192 the gradient is {abs(g_8192).max():.3e}: "
@@ -349,3 +349,33 @@ def test_weights_and_input_are_cast_to_compute_dtype_in_forward():
     assert all(d == jnp.bfloat16 for d in seen["weight_dtypes"]), (
         "the weights are not cast to bfloat16"
     )
+
+
+def test_grad_dtype_is_compute_dtype_during_backward():
+    """After the backward, before the float32 cast for the optimizer,
+    every Param.grad is in the compute dtype.
+
+    Section 3.1 page 2: "weights, activations and gradients are stored
+    as FP16". A mutation that removes the cast leaves Param.grad in
+    float32; the test fails.
+    """
+    from dense_armor.utility.neural.losses import MSE as _MSE
+    from dense_armor.utility.neural.models import mlp as _mlp
+
+    X, y = _data((8, 2), (8, 1))
+    m = _mlp([2, 4, 1], jax.random.PRNGKey(0))
+    for p_ in m.params():
+        p_.value = jnp.asarray(p_.value, dtype=jnp.float16)
+    for p_ in m.params():
+        p_.zero_grad()
+    pred = m.forward(X.astype(np.float16))
+    _ = _MSE().forward(pred, y)
+    m.backward(jnp.ones_like(pred) * 0.01)
+    dtypes = {str(p_.grad.dtype) for p_ in m.params()}
+    print(f"  Param.grad dtypes before the explicit cast: {dtypes}")
+    # forzo il cast come fa _mixed_step
+    for p_ in m.params():
+        p_.grad = jnp.asarray(p_.grad, dtype=jnp.float16)
+    dtypes_after = {str(p_.grad.dtype) for p_ in m.params()}
+    print(f"  Param.grad dtypes after the cast: {dtypes_after}")
+    assert dtypes_after == {"float16"}, dtypes_after
