@@ -510,3 +510,78 @@ def test_neural_package_exports_the_decoder_pieces():
         "perplexity",
     ):
         assert hasattr(neural, name), name
+
+
+def test_generate_model_without_training_argument():
+    """The fallback branch: a model whose forward has no training argument."""
+    class _NoTraining:
+        def __init__(self, vocab: int) -> None:
+            self.vocab = vocab
+        def forward(self, x: jax.Array) -> jax.Array:
+            return jnp.zeros((x.shape[0], self.vocab))
+
+    m = _NoTraining(4)
+    out = generate(m, jnp.array([0, 1]), max_new=2, max_len=4)
+    assert out.shape == (4,)
+
+
+def test_tied_head_repr_and_params():
+    from dense_armor.utility.neural.models import _TiedHead
+    emb = Embedding(4, 6, jax.random.PRNGKey(0))
+    head = _TiedHead(emb)
+    assert "_TiedHead" in repr(head)
+    assert head.params() == []
+
+
+def test_transformer_decoder_with_tie_true_runs():
+    from dense_armor.utility.neural.models import transformer_decoder
+    m = transformer_decoder(8, 8, 2, 1, 4, tie=True, key=jax.random.PRNGKey(0))
+    x = jnp.array([0, 1, 2, 3])
+    logits = m.forward(x)
+    assert logits.shape == (4, 8)
+    g = jnp.ones_like(logits) / 8.0
+    m.backward(g)
+    head = m.layers[-1]
+    emb = head.embedding
+    assert float(jnp.abs(emb.E.grad).sum()) > 0.0
+
+
+def test_transformer_decoder_with_tie_false_runs():
+    from dense_armor.utility.neural.models import transformer_decoder
+    m = transformer_decoder(8, 8, 2, 1, 4, tie=False, key=jax.random.PRNGKey(0))
+    x = jnp.array([0, 1, 2, 3])
+    logits = m.forward(x)
+    assert logits.shape == (4, 8)
+    m.backward(jnp.ones_like(logits) / 8.0)
+    head = m.layers[-1]
+    assert float(jnp.abs(head.W.grad).sum()) > 0.0
+
+
+def test_transformer_decoder_rejects_zero_layers():
+    from dense_armor.utility.neural.models import transformer_decoder
+    try:
+        transformer_decoder(8, 8, 2, 0, 4, key=jax.random.PRNGKey(0))
+        raise AssertionError("expected ValueError")
+    except ValueError as e:
+        assert "n_layers" in str(e)
+
+
+def test_transformer_decoder_rejects_bad_head_split():
+    from dense_armor.utility.neural.models import transformer_decoder
+    try:
+        transformer_decoder(8, 8, 3, 1, 4, key=jax.random.PRNGKey(0))
+        raise AssertionError("expected ValueError")
+    except ValueError as e:
+        assert "divisible" in str(e)
+
+
+
+def test_tied_head_backward_before_forward_raises():
+    from dense_armor.utility.neural.models import _TiedHead
+    emb = Embedding(4, 6, jax.random.PRNGKey(0))
+    head = _TiedHead(emb)
+    try:
+        head.backward(jnp.ones((2, 4)))
+        raise AssertionError("expected RuntimeError")
+    except RuntimeError:
+        pass
