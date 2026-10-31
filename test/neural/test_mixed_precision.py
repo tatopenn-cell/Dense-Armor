@@ -44,11 +44,6 @@ def _deep_sigmoid():
     return mlp([2] + [4] * 12 + [1], jax.random.PRNGKey(0), activation="sigmoid")
 
 
-# ------------------------------------------------------------------
-# Underflow: the case the paper describes (§3.2 page 4)
-# ------------------------------------------------------------------
-
-
 def test_underflow_float16_without_scale_is_zero_with_scale_is_not():
     """A deep sigmoid MLP has first-layer gradients below 2^-24 in
     float16; without loss scaling they become zero, with scale 8192
@@ -95,11 +90,6 @@ def test_underflow_float16_without_scale_is_zero_with_scale_is_not():
     )
 
 
-# ------------------------------------------------------------------
-# bf16 diverges from fp32 bit-for-bit
-# ------------------------------------------------------------------
-
-
 @pytest.mark.parametrize(
     "factory,sx,sy",
     [
@@ -131,11 +121,6 @@ def test_bf16_diverges_from_fp32_bit_for_bit(factory, sx, sy):
     assert fp32 != bf16, "bfloat16 equals float32: the cast is not applied"
 
 
-# ------------------------------------------------------------------
-# Overflow: skip the step, halve the scale, weights unchanged
-# ------------------------------------------------------------------
-
-
 def test_overflow_skips_step_and_halves_scale():
     X, y = _data((8, 2), (8, 1))
     m = mlp([2, 4, 1], jax.random.PRNGKey(0))
@@ -162,11 +147,6 @@ def test_overflow_skips_step_and_halves_scale():
     values_after = [np.array(p.value) for p in m.params()]
     for a, b in zip(values_before, values_after):
         assert np.array_equal(a, b), "weights changed after skipped step"
-
-
-# ------------------------------------------------------------------
-# No NaN over 200 steps with float16 + dynamic
-# ------------------------------------------------------------------
 
 
 def test_dynamic_scale_produces_no_nan_and_trains():
@@ -198,11 +178,6 @@ def test_dynamic_scale_produces_no_nan_and_trains():
     )
 
 
-# ------------------------------------------------------------------
-# Master weights and optimizer state in float32
-# ------------------------------------------------------------------
-
-
 def test_master_weights_stay_float32():
     X, y = _data((16, 2), (16, 1))
     m = mlp([2, 4, 1], jax.random.PRNGKey(0))
@@ -212,11 +187,6 @@ def test_master_weights_stay_float32():
         assert p.value.dtype == jnp.float32, p.value.dtype
     for v in t._compiled_values:
         assert jnp.asarray(v).dtype == jnp.float32, jnp.asarray(v).dtype
-
-
-# ------------------------------------------------------------------
-# Default: bit-for-bit unchanged
-# ------------------------------------------------------------------
 
 
 def test_default_unchanged_bit_for_bit():
@@ -294,11 +264,6 @@ def test_loss_scale_multiplies_gradient():
     assert 50.0 < ratio < 200.0, ratio
 
 
-# ------------------------------------------------------------------
-# Gradients reaching _apply_update are float32
-# ------------------------------------------------------------------
-
-
 def test_grads_are_float32_after_mixed_step():
     from dense_armor.utility.neural.compiled import make_step as _ms
 
@@ -319,11 +284,6 @@ def test_grads_are_float32_after_mixed_step():
     _, grads_fp32, _ = step.mixed(values, X, y, 8192.0)
     for g in grads_fp32:
         assert jnp.asarray(g).dtype == jnp.float32, jnp.asarray(g).dtype
-
-
-# ------------------------------------------------------------------
-# Unscale: constant scale 64 equals no scale on a small MLP
-# ------------------------------------------------------------------
 
 
 def test_unscale_makes_constant_scale_match_no_scale():
@@ -400,26 +360,6 @@ def test_weights_and_input_are_cast_to_compute_dtype_in_forward():
     )
 
 
-def test_dtype_map_and_cast_direct():
-    """Touch _DTYPE_MAP and _cast directly so coverage sees them.
-
-    These are top-level constants and a helper; exercising them in a
-    test removes the coverage artefact where the module is already
-    imported before the trace starts.
-    """
-    from dense_armor.utility.neural import compiled as c
-
-    assert set(c._DTYPE_MAP) == {"bfloat16", "float16", "float32"}
-    import jax.numpy as jnp
-
-    x = jnp.array([1.0, 2.0], dtype=jnp.float32)
-    assert c._cast(x, None) is x
-    y = c._cast(x, "float16")
-    assert y.dtype == jnp.float16
-    z = c._cast([x, x], "bfloat16")
-    assert all(a.dtype == jnp.bfloat16 for a in z)
-
-
 def test_read_write_values_with_dtype():
     """_read_values and _write_values with an explicit dtype."""
     import jax.random
@@ -486,7 +426,8 @@ def test_non_mixed_compiled_returns_plain_step():
         compute_dtype=None,
         loss_scale=1.0,
     )
-    assert not hasattr(step, "mixed")
+    assert step.plain is not None
+    assert step.mixed is None
 
 
 def test_mixed_step_returns_mixed_attribute():

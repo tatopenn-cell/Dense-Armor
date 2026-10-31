@@ -184,10 +184,9 @@ class Trainer:
         if compute_dtype is not None and compute_dtype not in (
             "bfloat16",
             "float16",
-            "float32",
         ):
             raise ValueError(
-                f"compute_dtype must be None, 'bfloat16', 'float16' or 'float32', "
+                f"compute_dtype must be None, 'bfloat16' or 'float16', "
                 f"got {compute_dtype!r}"
             )
         self.compute_dtype = compute_dtype
@@ -356,8 +355,7 @@ class Trainer:
                             grads_fp32 = [g / self._scale for g in grads_fp32]
                         lr_t = self.schedule(epoch_t)
                         eta_t = self.schedule.multiplier(epoch_t)
-                        if values is None:
-                            raise RuntimeError("mixed path requires values")
+                        assert values is not None
                         values, opt_state = _apply_update(
                             self.optimizer_prototype,
                             values,
@@ -374,7 +372,8 @@ class Trainer:
                     total_loss_device = total_loss_device + batch_loss * len(idx)
                     total_size += len(idx)
                 elif self.compile:
-                    values, opt_state, batch_loss = step(
+                    assert step.plain is not None
+                    values, opt_state, batch_loss = step.plain(
                         values, opt_state, X[idx], y[idx], epoch_t
                     )
                     self._compiled_values = values

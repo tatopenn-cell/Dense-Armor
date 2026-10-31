@@ -34,15 +34,31 @@ are equivalent when the L2 coefficient is ``lambda / alpha``.
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from dataclasses import dataclass
 from typing import Any
 
 import jax
 import jax.numpy as jnp
 
+
+@dataclass
+class CompiledStep:
+    """A pair of step functions for a compiled Trainer.
+
+    Attributes:
+        plain: ``(values, opt_state, x, y, epoch_t) -> (values, opt_state, loss)``.
+        mixed: ``(values, x, y, scale) -> (grads_fp16, grads_fp32, loss)``,
+            or ``None`` when the trainer is not in mixed-precision mode.
+    """
+
+    plain: Callable | None
+    mixed: Callable | None
+
+
 _DTYPE_MAP = {
     "bfloat16": jnp.bfloat16,
     "float16": jnp.float16,
-    "float32": jnp.float32,
 }
 
 
@@ -313,10 +329,10 @@ def make_step(
     if name not in ("SGD", "Adam", "RMSProp", "AdaGrad"):
         raise ValueError(f"compile=True does not support optimizer {name}")
 
-    if compute_dtype is None and loss_scale == 1.0:
+    if compute_dtype is None:
         jitted = jax.jit(_step)
 
-        def step(
+        def plain_step(
             values: list, opt_state: Any, x: Any, y: Any, epoch_t: float
         ) -> tuple[list, Any, Any]:
             tt = float(epoch_t)
@@ -324,13 +340,14 @@ def make_step(
             eta = schedule.multiplier(tt)
             return jitted(values, opt_state, x, y, lr, eta)
 
-        return step
+        return CompiledStep(plain=plain_step, mixed=None)
 
-    dtype = _DTYPE_MAP.get(compute_dtype) if compute_dtype is not None else None
-    if compute_dtype is not None and dtype is None:
+    if compute_dtype is not None and compute_dtype not in _DTYPE_MAP:
         raise ValueError(
-            f"compute_dtype must be one of {sorted(_DTYPE_MAP)}, got {compute_dtype!r}"
+            f"compute_dtype must be None, 'bfloat16' or 'float16', "
+            f"got {compute_dtype!r}"
         )
+    dtype = _DTYPE_MAP[compute_dtype] if compute_dtype is not None else None
 
     def _mixed_step(values: list, x: Any, y: Any, scale: Any):
         cast_values = _cast(values, dtype)
@@ -359,16 +376,7 @@ def make_step(
     def _mixed(values: list, x: Any, y: Any, scale: float):
         return mixed_jitted(values, x, y, jnp.float32(scale))
 
-    def _plain_step(
-        values: list, opt_state: Any, x: Any, y: Any, epoch_t: float
-    ) -> tuple[list, Any, Any]:
-        raise RuntimeError(
-            "make_step with compute_dtype or loss_scale active returns "
-            "a mixed step; use .mixed(values, x, y, scale)"
-        )
-
-    _plain_step.mixed = _mixed
-    return _plain_step
+    return CompiledStep(plain=None, mixed=_mixed)
 
 
 __all__ = [

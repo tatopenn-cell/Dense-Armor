@@ -92,31 +92,52 @@ def _backend():
     return "gpu" if jax.default_backend() == "gpu" else "cpu"
 
 
-def _step_fn(trainer):
-    """A function ``step(values, x, y)`` that does one full trainer step.
+def _make_stepper(trainer, dt, batch):
+    """Return a function ``step(values, opt_state, x, y) -> (values, opt_state, loss)``.
 
-    It mirrors ``Trainer.fit``: overflow check, unscale, schedule,
-    ``_apply_update``. Returns the new values and the loss.
+    For ``dt is None`` uses the plain jitted step (``trainer._compiled_step.plain``).
+    For ``dt`` in ``("bfloat16", "float16")`` uses the mixed step plus the same
+    bookkeeping as ``Trainer.fit`` (overflow check, halving, unscale,
+    ``_apply_update``), returning the updated optimizer state as well.
     """
     from dense_armor.utility.neural.compiled import _apply_update
 
-    def step(values, x, y):
-        grads, loss = trainer._compiled_mixed(values, x, y)
-        overflow = any(bool(jnp.any(~jnp.isfinite(g))) for g in grads)
-        if not overflow:
-            if trainer.loss_scale is not None and trainer._scale != 1.0:
-                grads = [g / trainer._scale for g in grads]
-            values, _ = _apply_update(
+    if dt is None:
+        plain = trainer._compiled_step.plain
+
+        def step(values, opt_state, x, y):
+            return plain(values, opt_state, x, y, 0.0)
+
+        return step
+
+    mixed = trainer._compiled_step.mixed
+
+    def step(values, opt_state, x, y):
+        grads_fp16, grads_fp32, loss = mixed(values, x, y, trainer._scale)
+        overflow = any(bool(jnp.any(~jnp.isfinite(g))) for g in grads_fp16)
+        if overflow:
+            if trainer.loss_scale == "dynamic":
+                trainer._scale = max(trainer._scale / 2.0, 1.0)
+            trainer._good_steps = 0
+        else:
+            if trainer.loss_scale == "dynamic":
+                trainer._good_steps += 1
+                if trainer._good_steps >= 2000:
+                    trainer._scale = trainer._scale * 2.0
+                    trainer._good_steps = 0
+            if trainer._scale != 1.0:
+                grads_fp32 = [g / trainer._scale for g in grads_fp32]
+            values, opt_state = _apply_update(
                 trainer.optimizer_prototype,
                 values,
-                grads,
-                trainer._compiled_opt_state,
+                grads_fp32,
+                opt_state,
                 trainer.schedule(0.0),
                 trainer.schedule.multiplier(0.0),
                 trainer.weight_decay,
                 trainer.decay,
             )
-        return values, loss
+        return values, opt_state, loss
 
     return step
 
@@ -135,22 +156,24 @@ def _run_one(label, compute_dtype, loss_scale, smoke, loss_steps):
     )
     t.fit(X, y, epochs=1, batch_size=batch, key=jax.random.PRNGKey(SEED))
     values = t._compiled_values
-    step = _step_fn(t)
+    opt_state = t._compiled_opt_state
+    step = _make_stepper(t, compute_dtype, batch)
     xb = jnp.asarray(X)
     yb = jnp.asarray(y)
     loss = None
     for _ in range(max(1, loss_steps)):
-        values, loss = step(values, xb, yb)
+        values, opt_state, loss = step(values, opt_state, xb, yb)
     peak = _peak_bytes()
     steps = []
     for _ in range(N_SESSIONS):
         values_s = t._compiled_values
+        opt_state_s = t._compiled_opt_state
         for _ in range(3):
-            values_s, _ = step(values_s, xb, yb)
+            values_s, opt_state_s, _ = step(values_s, opt_state_s, xb, yb)
         jax.block_until_ready(values_s[0])
         t0 = time.perf_counter()
         for _ in range(N_STEPS):
-            values_s, _ = step(values_s, xb, yb)
+            values_s, opt_state_s, _ = step(values_s, opt_state_s, xb, yb)
         jax.block_until_ready(values_s[0])
         steps.append(N_STEPS / (time.perf_counter() - t0))
     med = float(np.median(steps))
@@ -171,8 +194,8 @@ def main(smoke, loss_steps):
     print(f"backend: {_backend()}")
     rows = []
     for label, dt, ls in [
-        ("float32", "float32", 1.0),
-        ("bfloat16", "bfloat16", 1.0),
+        ("float32", None, None),
+        ("bfloat16", "bfloat16", None),
         ("float16", "float16", "dynamic"),
     ]:
         print(f"  running {label} ...")
