@@ -53,6 +53,8 @@ Every public class and function of `dense_armor.utility.neural` and of the optim
 | `Residual` | `Residual(inner: Any) -> None` | ``y = x + inner.forward(x)`` (He et al. 2015, Eqn.(1) page 3) |
 | `BatchNorm` | `BatchNorm(n_features: int, eps: float = 1e-05, momentum: float = 0.1) -> None` | Batch normalisation of a 2-D batch ``(m, n_features)`` |
 | `LayerNorm` | `LayerNorm(n_features: int, eps: float = 1e-05) -> None` | Layer normalisation over the features of each sample |
+| `RMSNorm` | `RMSNorm(n_features: int, eps: float = 1e-05) -> None` | RMS layer normalisation over the features of each sample |
+| `GLUFeedForward` | `GLUFeedForward(d_model: int, d_ff: int, activation: str, key: Any, bias: bool = False) -> None` | The feed-forward layer ``(act(x W) * (x V)) W2`` of Shazeer 2020 |
 | `AsTransformer` | `AsTransformer(layer: Any, input_keys: list[str], prefix: str = z) -> None` | A layer exposed as a ``Transformer`` |
 
 ## [Chains](../neural/chains.md)
@@ -97,7 +99,7 @@ Every public class and function of `dense_armor.utility.neural` and of the optim
 | `scaled_dot_product_attention` | `scaled_dot_product_attention(q: jax.Array, k: jax.Array, v: jax.Array, mask: jax.Array \| None = None) -> jax.Array` | ``softmax(q k^T / sqrt(d_k)) v`` (Eq.(1), page 4) |
 | `scaled_dot_product_attention_backward` | `scaled_dot_product_attention_backward(q: jax.Array, k: jax.Array, v: jax.Array, g: jax.Array, mask: jax.Array \| None = None) -> tuple[jax.Array, jax.Array, jax.Array]` | Gradients ``(dq, dk, dv)`` of the scaled dot-product attention |
 | `sinusoidal_positions` | `sinusoidal_positions(length: int, d_model: int) -> jax.Array` | The sinusoidal positional encoding of page 6 |
-| `MultiHeadSelfAttention` | `MultiHeadSelfAttention(d_model: int, n_heads: int, key: Any, causal: bool = False) -> None` | Multi-head self-attention of Vaswani et al. 2017, page 5 |
+| `MultiHeadSelfAttention` | `MultiHeadSelfAttention(d_model: int, n_heads: int, key: Any, causal: bool = False, rotary: bool = False) -> None` | Multi-head self-attention of Vaswani et al. 2017, page 5 |
 | `TransformerBlock` | `TransformerBlock(d_model: int, n_heads: int, d_ff: int, key: Any, causal: bool = False, dropout: float = 0.0) -> None` | The encoder block of Vaswani et al. 2017 |
 
 ## [Training](../neural/training.md)
@@ -188,6 +190,7 @@ Every public class and function of `dense_armor.utility.neural` and of the optim
 | `SGD` | `SGD(lr: float = 0.1, momentum: float = 0.0, nesterov: bool = False) -> None` | Gradient descent with optional momentum and Nesterov momentum |
 | `RMSProp` | `RMSProp(lr: float = 0.001, rho: float = 0.9, eps: float = 1e-08) -> None` | RMSProp with an exponentially decaying average of squared gradients |
 | `Adam` | `Adam(lr: float = 0.001, beta1: float = 0.9, beta2: float = 0.999, eps: float = 1e-08) -> None` | Adam with bias-corrected moment estimates |
+| `AdamW` | `AdamW(lr: float = 0.001, beta1: float = 0.9, beta2: float = 0.999, eps: float = 1e-08, weight_decay: float = 0.0) -> None` | Adam with weight decay decoupled from the gradient |
 | `AdaGrad` | `AdaGrad(lr: float = 0.1, eps: float = 1e-08) -> None` | AdaGrad with per-coordinate adaptive step sizes |
 | `FTRLProximal` | `FTRLProximal(alpha: float = 1.0, beta: float = 0.5, l1: float = 0.0, l2: float = 0.0) -> None` | FTRL with a quadratic + L1 + L2 regularizer |
 | `OnlineNewtonStep` | `OnlineNewtonStep(gamma: float = 1.0, eps: float = 1e-06, D: float \| None = None) -> None` | Second-order online update with a rank-one running Hessian |
