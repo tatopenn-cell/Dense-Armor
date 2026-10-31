@@ -300,8 +300,14 @@ def test_generate_no_max_len_anywhere():
 
 def test_generate_sampled_path_runs():
     m = transformer_decoder(4, 8, 2, 1, 6, key=jax.random.PRNGKey(0))
-    out = generate(m, jnp.array([0, 1]), max_new=3, temperature=1.0,
-                   key=jax.random.PRNGKey(1), max_len=6)
+    out = generate(
+        m,
+        jnp.array([0, 1]),
+        max_new=3,
+        temperature=1.0,
+        key=jax.random.PRNGKey(1),
+        max_len=6,
+    )
     assert out.shape == (5,)
 
 
