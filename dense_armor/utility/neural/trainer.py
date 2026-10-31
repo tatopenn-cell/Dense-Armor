@@ -245,6 +245,7 @@ class Trainer:
                 if val_loss < best_val - min_delta:
                     best_val = val_loss
                     if self.compile:
+                        assert values is not None
                         best_weights = [np.asarray(v).copy() for v in values]
                     else:
                         best_weights = [
