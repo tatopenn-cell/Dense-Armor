@@ -115,7 +115,7 @@ class SklearnCompat:
     """Mixin: ``__sklearn_tags__``, ``score`` and ``fit_transform`` for scikit-learn tools."""
 
     def __sklearn_tags__(self) -> Any:
-        from sklearn.utils import (
+        from sklearn.utils import (  # type: ignore[import-untyped]
             ClassifierTags,
             InputTags,
             RegressorTags,

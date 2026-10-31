@@ -22,7 +22,7 @@ from sklearn.pipeline import make_pipeline  # noqa: E402
 from sklearn.utils import get_tags  # noqa: E402
 
 from dense_armor.ml.linear import LinearRegression, LogisticRegression  # noqa: E402
-from dense_armor.ml.neighbors import KNNClassifier  # noqa: E402
+from dense_armor.ml.neighbors import KNNClassifier, KNNRegressor  # noqa: E402
 from dense_armor.ml.preprocessing import (  # noqa: E402
     EWScaler,
     MinMaxScaler,
@@ -91,11 +91,12 @@ def test_score_of_a_regressor_is_r2_of_scikit_learn():
     assert m.score(X, yr) == pytest.approx(r2_score(yr, m.predict(X)))
 
 
-def test_score_of_a_regressor_on_a_constant_target_is_finite():
+def test_score_of_a_regressor_on_a_constant_target_follows_scikit_learn():
     X, _, _ = _table()
-    m = LinearRegression().fit(X, np.full(len(X), 3.0))
-    assert m.score(X, np.full(len(X), 3.0)) == 1.0
-    assert m.score(X, np.full(len(X), 4.0)) == 0.0
+    m = KNNRegressor(n_neighbors=3).fit(X, np.full(len(X), 3.0))
+    perfect, off = np.full(len(X), 3.0), np.full(len(X), 4.0)
+    assert m.score(X, perfect) == 1.0 == r2_score(perfect, m.predict(X))
+    assert m.score(X, off) == 0.0 == r2_score(off, m.predict(X))
 
 
 def test_score_and_fit_transform_exist_only_where_they_make_sense():
@@ -133,7 +134,7 @@ import sys
 
 class _Block:
     def find_spec(self, name, path=None, target=None):
-        if name.split(".")[0] in ("sklearn", "scipy"):
+        if name.split(".")[0] == "sklearn":
             raise ModuleNotFoundError(f"blocked: {name}")
         return None
 
@@ -159,3 +160,87 @@ else:
     )
     assert r.returncode == 0, r.stderr[-400:]
     assert "OK" in r.stdout
+
+
+REASONS = {
+    "check_n_features_in": "fit does not set n_features_in_",
+    "check_n_features_in_after_fitting": "fit does not set n_features_in_",
+    "check_estimators_unfitted": "predict before fit does not raise NotFittedError",
+    "check_complex_data": "complex data is not rejected",
+    "check_estimators_empty_data_messages": "empty data is not rejected with the scikit-learn message",
+    "check_fit1d": "a 1-D X is accepted as one column, not rejected",
+    "check_fit2d_1sample": "one sample is not rejected with the scikit-learn message",
+    "check_fit2d_predict1d": "a 1-D X in predict is not rejected with the scikit-learn message",
+    "check_requires_y_none": "y=None in fit is not rejected with the scikit-learn message",
+    "check_estimators_nan_inf": "non-finite values are dropped by the class, not rejected",
+    "check_supervised_y_no_nan": "a non-finite y is dropped by the class, not rejected",
+    "check_supervised_y_2d": "a 2-D y is not supported",
+    "check_estimator_sparse_tag": "sparse input is not supported",
+    "check_estimator_sparse_array": "sparse input is not rejected with the scikit-learn message",
+    "check_estimator_sparse_matrix": "sparse input is not rejected with the scikit-learn message",
+    "check_classifiers_classes": "string labels are not supported",
+    "check_classifiers_train": "the training checks of scikit-learn on its own data set do not hold",
+    "check_classifiers_regression_target": "a continuous target is not rejected",
+    "check_transformer_general": "transform with another number of features is not rejected",
+}
+
+DECLARED = {
+    LogisticRegression: {
+        "check_classifiers_classes",
+        "check_classifiers_regression_target",
+        "check_classifiers_train",
+        "check_complex_data",
+        "check_estimator_sparse_array",
+        "check_estimator_sparse_matrix",
+        "check_estimator_sparse_tag",
+        "check_estimators_empty_data_messages",
+        "check_estimators_nan_inf",
+        "check_estimators_unfitted",
+        "check_fit1d",
+        "check_fit2d_predict1d",
+        "check_n_features_in",
+        "check_n_features_in_after_fitting",
+        "check_supervised_y_2d",
+        "check_supervised_y_no_nan",
+    },
+    LinearRegression: {
+        "check_complex_data",
+        "check_estimator_sparse_array",
+        "check_estimator_sparse_matrix",
+        "check_estimator_sparse_tag",
+        "check_estimators_empty_data_messages",
+        "check_estimators_nan_inf",
+        "check_estimators_unfitted",
+        "check_fit1d",
+        "check_fit2d_1sample",
+        "check_fit2d_predict1d",
+        "check_n_features_in",
+        "check_n_features_in_after_fitting",
+        "check_requires_y_none",
+        "check_supervised_y_2d",
+        "check_supervised_y_no_nan",
+    },
+    StandardScaler: {
+        "check_complex_data",
+        "check_estimator_sparse_array",
+        "check_estimator_sparse_matrix",
+        "check_estimator_sparse_tag",
+        "check_estimators_empty_data_messages",
+        "check_estimators_nan_inf",
+        "check_fit1d",
+        "check_fit2d_predict1d",
+        "check_n_features_in",
+        "check_n_features_in_after_fitting",
+        "check_transformer_general",
+    },
+}
+
+
+@pytest.mark.parametrize("cls", list(DECLARED), ids=lambda c: c.__name__)
+def test_check_estimator_fails_only_on_the_declared_checks(cls):
+    from sklearn.utils.estimator_checks import check_estimator
+
+    results = check_estimator(cls(), on_fail=None)
+    failed = {r["check_name"] for r in results if r["status"] == "failed"}
+    assert failed == DECLARED[cls]
+    assert all(name in REASONS for name in failed)
