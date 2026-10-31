@@ -576,4 +576,6 @@ def transformer_decoder(
         layers.append(_TiedHead(emb))
     else:
         layers.append(Dense(d_model, vocab, keys[n_layers + 1]))
-    return Sequential(layers)
+    seq = Sequential(layers)
+    seq.max_len = int(max_len)
+    return seq
