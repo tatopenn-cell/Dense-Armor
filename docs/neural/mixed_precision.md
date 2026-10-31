@@ -180,16 +180,33 @@ measured** on CPU.
 ### Not measured
 
 GPU speed, GPU peak memory, training at scale, the trajectory of a network
-that learns with float16 in a real task. The page shows the underflow, the
+that learns with float16 on a task whose gradient signal is strong enough. The page shows the underflow, the
 loss scaling and the bfloat16 range on small models. A demonstration that
 float16 training with loss scaling matches float32 on a task where the
 network actually learns is **not** part of this page.
 
 ### Development diary
 
-The underflow is real and the loss scaling fixes it in the gradient
+The underflow exists and the loss scaling fixes it in the gradient
 (Section 1). But the loss on these small networks does not decrease
-whether the scaling is on or off: the update `lr * grad = 0.01 * 2.7e-9
-= 2.7e-11` is too small to move a float32 master weight, even after the
-gradient survives. A network larger than the ones used here, or a task
-with a stronger gradient signal, is needed for that claim.
+whether the scaling is on or off. The reason is in the master-weight
+update, not in the gradient: `lr * grad = 0.01 * 2.7e-9 = 2.7e-11`, and
+a float32 weight of `0.9` (or even `0.01`) has a precision of about
+`1e-7` (or `1e-9`), so the sum `w - lr * grad` returns `w` unchanged.
+The loss scaling makes the gradient survive the float16 representation,
+but the update is lost in the float32 master weight before the loss can
+move.
+
+A scan of eighteen configurations (hidden layers `8`, `10`, `12`, initial
+weight scale `0.1` and `0.01`, `lr` in `0.1`, `0.5`, `1.0`, twenty
+epochs) shows the same trajectory with and without a loss scale of
+`1024` in all eighteen: the difference between the scaled and the
+unscaled final loss is below the print precision. A configuration where
+the scale changes the trajectory needs a master weight small enough that
+`lr * grad` is above its float32 precision, and on a network whose
+gradient is above `2^-24` that weight is below `2e-4`: on these models
+the two requirements (underflow in the gradient, visible update in the
+weight) do not meet. A network larger than the ones used here, or a task
+with a stronger gradient signal, is needed for a demonstration that the
+loss scaling makes the training match float32. Reported, not
+demonstrated.

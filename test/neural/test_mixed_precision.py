@@ -379,3 +379,134 @@ def test_grad_dtype_is_compute_dtype_during_backward():
     dtypes_after = {str(p_.grad.dtype) for p_ in m.params()}
     print(f"  Param.grad dtypes after the cast: {dtypes_after}")
     assert dtypes_after == {"float16"}, dtypes_after
+
+
+def test_dtype_map_and_cast_direct():
+    """Touch _DTYPE_MAP and _cast directly so coverage sees them.
+
+    These are top-level constants and a helper; exercising them in a
+    test removes the coverage artefact where the module is already
+    imported before the trace starts.
+    """
+    from dense_armor.utility.neural import compiled as c
+
+    assert set(c._DTYPE_MAP) == {"bfloat16", "float16", "float32"}
+    import jax.numpy as jnp
+
+    x = jnp.array([1.0, 2.0], dtype=jnp.float32)
+    assert c._cast(x, None) is x
+    y = c._cast(x, "float16")
+    assert y.dtype == jnp.float16
+    z = c._cast([x, x], "bfloat16")
+    assert all(a.dtype == jnp.bfloat16 for a in z)
+
+
+def test_read_write_values_with_dtype():
+    """_read_values and _write_values with an explicit dtype."""
+    import jax.random
+
+    from dense_armor.utility.neural.compiled import _read_values, _write_values
+    from dense_armor.utility.neural.models import mlp
+
+    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
+    values = _read_values(m, dtype=jnp.float16)
+    for v in values:
+        assert jnp.asarray(v).dtype == jnp.float16
+    _write_values(m, values, dtype=jnp.bfloat16)
+    for p_ in m.params():
+        assert p_.value.dtype == jnp.bfloat16
+    values2 = _read_values(m)
+    for v in values2:
+        assert jnp.asarray(v).dtype == jnp.bfloat16
+
+
+def test_invalid_compute_dtype_raises():
+    from dense_armor.utility.neural.models import mlp
+    from dense_armor.utility.neural.trainer import Trainer
+
+    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
+    with pytest.raises(ValueError, match="compute_dtype"):
+        Trainer(m, MSE(), SGD(0.01), compute_dtype="float64")
+
+
+def test_invalid_loss_scale_string_raises():
+    from dense_armor.utility.neural.models import mlp
+    from dense_armor.utility.neural.trainer import Trainer
+
+    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
+    with pytest.raises(ValueError, match="loss_scale"):
+        Trainer(m, MSE(), SGD(0.01), loss_scale="constant")
+
+
+def test_negative_loss_scale_raises():
+    from dense_armor.utility.neural.models import mlp
+    from dense_armor.utility.neural.trainer import Trainer
+
+    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
+    with pytest.raises(ValueError, match="loss_scale"):
+        Trainer(m, MSE(), SGD(0.01), loss_scale=-1.0)
+
+
+def test_non_mixed_compiled_returns_plain_step():
+    """At compute_dtype=None and loss_scale=1.0 the make_step returns
+    the plain jitted step, not the mixed one."""
+    from dense_armor.utility.neural.compiled import make_step
+    from dense_armor.utility.neural.models import mlp
+    from dense_armor.utility.neural.schedules import ConstantLR
+    from dense_armor.utility.optim import SGD
+
+    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
+    step = make_step(
+        m,
+        MSE(),
+        SGD(0.01),
+        ConstantLR(0.01),
+        0.0,
+        "l2",
+        None,
+        compute_dtype=None,
+        loss_scale=1.0,
+    )
+    assert not hasattr(step, "mixed")
+
+
+def test_mixed_step_returns_mixed_attribute():
+    from dense_armor.utility.neural.compiled import make_step
+    from dense_armor.utility.neural.models import mlp
+    from dense_armor.utility.neural.schedules import ConstantLR
+    from dense_armor.utility.optim import SGD
+
+    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
+    step = make_step(
+        m,
+        MSE(),
+        SGD(0.01),
+        ConstantLR(0.01),
+        0.0,
+        "l2",
+        None,
+        compute_dtype="bfloat16",
+        loss_scale=1.0,
+    )
+    assert hasattr(step, "mixed")
+
+
+def test_invalid_compute_dtype_in_make_step_raises():
+    from dense_armor.utility.neural.compiled import make_step
+    from dense_armor.utility.neural.models import mlp
+    from dense_armor.utility.neural.schedules import ConstantLR
+    from dense_armor.utility.optim import SGD
+
+    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
+    with pytest.raises(ValueError, match="compute_dtype"):
+        make_step(
+            m,
+            MSE(),
+            SGD(0.01),
+            ConstantLR(0.01),
+            0.0,
+            "l2",
+            None,
+            compute_dtype="float64",
+            loss_scale=1.0,
+        )
