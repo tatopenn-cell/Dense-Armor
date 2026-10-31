@@ -244,3 +244,10 @@ def test_check_estimator_fails_only_on_the_declared_checks(cls):
     failed = {r["check_name"] for r in results if r["status"] == "failed"}
     assert failed == DECLARED[cls]
     assert all(name in REASONS for name in failed)
+
+
+def test_score_read_from_the_class_is_the_plain_function():
+    from dense_armor.ml.linear import LogisticRegression
+
+    assert callable(LogisticRegression.score)
+    assert LogisticRegression.score.__doc__ == LogisticRegression().score.__doc__
