@@ -312,7 +312,7 @@ class Trainer:
                 )
                 if mixed:
                     self._compiled_mixed = self._compiled_step.mixed
-            values = self._compiled_values
+            values: Any = self._compiled_values
             opt_state = self._compiled_opt_state
             step = self._compiled_step
         else:

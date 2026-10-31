@@ -295,7 +295,9 @@ def test_optimizer_state_stays_float32():
     assert int(state["t"]) == 4
 
 
-def test_loss_scale_multiplies_gradient():
+def test_loss_scale_multiplies_the_stored_gradient_and_the_update_is_unscaled():
+    """The float16 gradient is ``scale`` times larger; the float32 gradient
+    handed to the optimizer is divided by the same ``scale``."""
     from dense_armor.utility.neural.compiled import make_step as _ms
 
     X, y = _data((8, 2), (8, 1))
@@ -314,14 +316,41 @@ def test_loss_scale_multiplies_gradient():
             loss_scale=scale,
         )
         values = [jnp.array(p.value, dtype=jnp.float32) for p in m.params()]
-        _, grads_fp32, _ = step.mixed(values, X, y, scale)
-        return grads_fp32
+        grads_fp16, grads_fp32, _ = step.mixed(values, X, y, scale)
+        return grads_fp16, grads_fp32
 
-    g1 = grads_with(1.0)
-    g100 = grads_with(100.0)
-    ratio = float(jnp.abs(g100[0]).mean() / jnp.maximum(jnp.abs(g1[0]).mean(), 1e-12))
-    print(f"  ratio g100/g1 = {ratio:.3f}")
-    assert 50.0 < ratio < 200.0, ratio
+    h1, g1 = grads_with(1.0)
+    h100, g100 = grads_with(100.0)
+    stored = float(jnp.abs(h100[0]).mean() / jnp.abs(h1[0]).mean())
+    handed = float(jnp.abs(g100[0]).mean() / jnp.abs(g1[0]).mean())
+    print(
+        f"  stored fp16 ratio {stored:.3f}, fp32 ratio after the unscale {handed:.3f}"
+    )
+    assert stored == pytest.approx(100.0, rel=0.02)
+    assert handed == pytest.approx(1.0, rel=0.02)
+
+
+def test_clip_acts_on_the_unscaled_gradient():
+    """The global norm is clipped after the unscale: a scale of 1024 and a
+    scale of 1 give the same clipped update."""
+    X, y = _data((16, 2), (16, 1))
+
+    def run(scale):
+        m = _mlp()
+        t = Trainer(
+            m,
+            MSE(),
+            SGD(0.01),
+            compile=True,
+            compute_dtype="float16",
+            loss_scale=scale,
+            clip_norm=0.05,
+        )
+        t.fit(X, y, epochs=2, batch_size=8, key=jax.random.PRNGKey(0))
+        return [np.array(p.value) for p in m.params()]
+
+    for a, b in zip(run(1.0), run(1024.0)):
+        np.testing.assert_allclose(a, b, rtol=2e-3, atol=1e-6)
 
 
 def test_grads_are_float32_after_mixed_step():

@@ -3,8 +3,9 @@
 A float32 parameter is four bytes. Half precision is two bytes: half the
 memory, and on a modern GPU half the bandwidth. The catch is that the range
 of a float16 is much smaller than float32: the largest finite value is
-`65504` and the smallest positive normal value is `2^-24 = 5.96e-8`. A
-gradient smaller than that becomes zero, and the parameter stops learning.
+`65504`, the smallest positive normal value is `2^-14 = 6.10e-5`, and the
+smallest positive value of any kind (a subnormal) is `2^-24 = 5.96e-8`. A
+gradient smaller than `2^-24` becomes zero, and the parameter stops learning.
 
 ## 1. The gradient that becomes zero
 
@@ -19,7 +20,7 @@ The next block builds the model, takes one step in float16 with scale `1`
 and with scale `8192`, and prints the largest magnitude of the
 first-layer gradient.
 
-~~~python
+```python
 import numpy as np
 import jax
 import jax.numpy as jnp
@@ -40,19 +41,19 @@ def first_grad(scale):
         compute_dtype='float16', loss_scale=scale,
     )
     values = [jnp.array(p.value, dtype=jnp.float32) for p in m.params()]
-    grads, _ = step.mixed(values, X, y)
-    return np.asarray(grads[0])
+    grads16, _, _ = step.mixed(values, X, y, scale)
+    return np.asarray(grads16[0])
 
 g1 = first_grad(1.0)
 g8192 = first_grad(8192.0)
 print(f'scale 1:    {abs(g1).max():.3e}')
 print(f'scale 8192: {abs(g8192).max():.3e}')
-~~~
+```
 
-~~~
+```
 scale 1:    0.000e+00
 scale 8192: 2.235e-05
-~~~
+```
 
 With scale `1` every element of the first-layer gradient is exactly zero
 in float16. With scale `8192` the largest is `2.2e-5`: the gradient
@@ -72,7 +73,7 @@ positive float (a constant factor), or `'dynamic'`:
   paper. The paper describes a constant factor and a skip on overflow; the
   growth window is our choice, taken from those two libraries.
 
-~~~python
+```python
 import numpy as np
 import jax
 from dense_armor.utility.neural.models import mlp
@@ -88,12 +89,12 @@ t = Trainer(m, MSE(), SGD(0.01), compile=True,
 t.fit(X, y, epochs=5, batch_size=8, key=jax.random.PRNGKey(0))
 print([round(v, 4) for v in t.history_['train_loss']])
 print([float(s) for s in t.history_['loss_scale']])
-~~~
+```
 
-~~~
+```
 [5.348, 5.348, 5.348, 5.348, 5.348]
 [256.0, 1.0, 1.0, 1.0, 1.0]
-~~~
+```
 
 The loss stays at `5.348`: every step overflows, the scale halves from
 `65536` to `1` in two steps, and from `1` it cannot halve further. A scale
@@ -107,7 +108,7 @@ A bfloat16 has the exponent of float32 (eight bits) and a short mantissa
 (seven bits). The range is the same as float32, the precision is lower.
 No loss scaling is needed; the gradients do not underflow.
 
-~~~python
+```python
 import numpy as np
 import jax
 from dense_armor.utility.neural.models import mlp
@@ -126,12 +127,12 @@ def run(**kw):
 
 print([round(v, 6) for v in run()])
 print([round(v, 6) for v in run(compute_dtype='bfloat16')])
-~~~
+```
 
-~~~
+```
 [3.387116, 2.700739, 2.257435, 1.967672]
 [3.390043, 2.706822, 2.278326, 1.958916]
-~~~
+```
 
 The two trajectories are within `1%` of each other at every epoch: the
 lower precision of bfloat16 does not diverge on this task, and the loss
@@ -151,8 +152,8 @@ scaling is not needed.
 - **Reductions in float32 (Section 3.3).** The reductions of `LayerNorm`,
   of the attention softmax and of the cross-entropy stay in the compute
   dtype, not in float32. The paper recommends float32 for reductions.
-  **Reported, not done**: the fix needs changes in `norm.py`,
-  `attention.py`, `losses.py`, not in item A of N4.
+  Not implemented: it needs changes in `norm.py`, `attention.py` and
+  `losses.py`.
 - **Dynamic scaling.** The paper describes a constant factor and a skip
   on overflow; the growth window of `2000` good steps is the default of
   `torch.cuda.amp.GradScaler` and `apex.amp.GradScaler`. `init_scale =
