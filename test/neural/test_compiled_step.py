@@ -14,10 +14,10 @@ import numpy as np
 import pytest
 
 from dense_armor.utility.neural.compiled import (
-    init_state,
+    _init_state as init_state,
+    _read_values as read_values,
+    _write_values as write_values,
     make_step,
-    read_values,
-    write_values,
 )
 from dense_armor.utility.neural.losses import MSE
 from dense_armor.utility.neural.models import (
@@ -279,3 +279,174 @@ def test_step_counter_bounds():
     assert int(st1["t"]) == 1
     _, st2, _ = step(values, st1, X, y, 0)
     assert int(st2["t"]) == 2
+
+
+# ==== Strong equivalence tests: one per option that a mutation can remove ====
+
+
+@pytest.mark.parametrize(
+    "make_opt",
+    [
+        lambda: SGD(0.01),
+        lambda: SGD(0.01, momentum=0.9),
+        lambda: SGD(0.01, momentum=0.9, nesterov=True),
+        lambda: Adam(0.001),
+        lambda: Adam(0.001, beta1=0.5, beta2=0.9),
+        lambda: RMSProp(0.001),
+        lambda: AdaGrad(0.1),
+    ],
+    ids=["sgd", "sgd_mom", "sgd_nesterov", "adam", "adam_custom_betas", "rmsprop", "adagrad"],
+)
+def test_compiled_equals_loop_with_that_optimizer(make_opt):
+    """For every optimizer option, compiled loss == loop loss at every epoch.
+
+    A mutation that removes Nesterov, or a momentum term, or the Adam
+    bias correction, or a beta, changes the loss; the test fails because
+    the compiled loss no longer equals the loop loss at the same epoch.
+    """
+    factory, sx, sy = MODEL_FACTORIES["mlp"]
+    X, y = _data(sx, sy)
+    m_loop = factory()
+    t_loop = Trainer(m_loop, MSE(), make_opt())
+    t_loop.fit(X, y, epochs=5, batch_size=8, key=jax.random.PRNGKey(0))
+    m_comp = factory()
+    t_comp = Trainer(m_comp, MSE(), make_opt(), compile=True)
+    t_comp.fit(X, y, epochs=5, batch_size=8, key=jax.random.PRNGKey(0))
+    for a, b in zip(t_loop.history_["train_loss"], t_comp.history_["train_loss"]):
+        rel = abs(a - b) / max(abs(a), 1e-12)
+        assert rel <= 1e-4, f"{a} vs {b}, rel {rel}"
+
+
+@pytest.mark.parametrize(
+    "make_sched",
+    [
+        lambda opt: ConstantLR(0.01),
+        lambda opt: StepLR(0.01, step=1.0, gamma=0.5),
+        lambda opt: StepLR(0.01, step=2.0, gamma=0.1),
+    ],
+    ids=["constant", "step_gamma_0_5", "step_gamma_0_1"],
+)
+def test_compiled_equals_loop_with_that_schedule(make_sched):
+    """For every schedule, compiled loss == loop loss at every epoch.
+
+    A mutation that ignores the schedule in the compiled step (uses a
+    constant lr) changes the loss; the test fails because the compiled
+    loss no longer equals the loop loss at the same epoch.
+    """
+    factory, sx, sy = MODEL_FACTORIES["mlp"]
+    X, y = _data(sx, sy)
+    opt_a = SGD(0.01)
+    opt_b = SGD(0.01)
+    t_loop = Trainer(factory(), MSE(), opt_a, schedule=make_sched(opt_a))
+    t_loop.fit(X, y, epochs=4, batch_size=8, key=jax.random.PRNGKey(0))
+    t_comp = Trainer(
+        factory(), MSE(), opt_b, schedule=make_sched(opt_b), compile=True
+    )
+    t_comp.fit(X, y, epochs=4, batch_size=8, key=jax.random.PRNGKey(0))
+    for a, b in zip(t_loop.history_["train_loss"], t_comp.history_["train_loss"]):
+        rel = abs(a - b) / max(abs(a), 1e-12)
+        assert rel <= 1e-4, f"{a} vs {b}, rel {rel}"
+
+
+@pytest.mark.parametrize("decay", ["l2", "decoupled"])
+def test_compiled_equals_loop_with_weight_decay(decay):
+    """With weight decay, compiled loss == loop loss at every epoch."""
+    factory, sx, sy = MODEL_FACTORIES["mlp"]
+    X, y = _data(sx, sy)
+    t_loop = Trainer(
+        factory(), MSE(), SGD(0.01), weight_decay=0.1, decay=decay
+    )
+    t_loop.fit(X, y, epochs=4, batch_size=8, key=jax.random.PRNGKey(0))
+    t_comp = Trainer(
+        factory(), MSE(), SGD(0.01), weight_decay=0.1, decay=decay, compile=True
+    )
+    t_comp.fit(X, y, epochs=4, batch_size=8, key=jax.random.PRNGKey(0))
+    for a, b in zip(t_loop.history_["train_loss"], t_comp.history_["train_loss"]):
+        rel = abs(a - b) / max(abs(a), 1e-12)
+        assert rel <= 1e-4, f"{a} vs {b}, rel {rel}"
+
+
+def test_compiled_equals_loop_with_clipping():
+    """With clipping, compiled loss == loop loss at every epoch."""
+    factory, sx, sy = MODEL_FACTORIES["mlp"]
+    X, y = _data(sx, sy)
+    t_loop = Trainer(factory(), MSE(), SGD(0.01), clip_norm=0.01)
+    t_loop.fit(X, y, epochs=4, batch_size=8, key=jax.random.PRNGKey(0))
+    t_comp = Trainer(
+        factory(), MSE(), SGD(0.01), clip_norm=0.01, compile=True
+    )
+    t_comp.fit(X, y, epochs=4, batch_size=8, key=jax.random.PRNGKey(0))
+    for a, b in zip(t_loop.history_["train_loss"], t_comp.history_["train_loss"]):
+        rel = abs(a - b) / max(abs(a), 1e-12)
+        assert rel <= 1e-4, f"{a} vs {b}, rel {rel}"
+
+
+def test_compiled_equals_loop_l2_equals_decoupled_for_plain_sgd():
+    """Proposition 1 of Loshchilov-Hutter: for plain SGD, l2 with
+    weight_decay=lam equals decoupled with weight_decay=lam*alpha.
+    """
+    factory, sx, sy = MODEL_FACTORIES["mlp"]
+    X, y = _data(sx, sy)
+    alpha = 0.01
+    lam = 0.1
+    t_l2 = Trainer(
+        factory(), MSE(), SGD(alpha), weight_decay=lam, decay="l2", compile=True
+    )
+    t_l2.fit(X, y, epochs=4, batch_size=8, key=jax.random.PRNGKey(0))
+    t_dec = Trainer(
+        factory(),
+        MSE(),
+        SGD(alpha),
+        weight_decay=lam * alpha,
+        decay="decoupled",
+        compile=True,
+    )
+    t_dec.fit(X, y, epochs=4, batch_size=8, key=jax.random.PRNGKey(0))
+    for a, b in zip(t_l2.history_["train_loss"], t_dec.history_["train_loss"]):
+        rel = abs(a - b) / max(abs(a), 1e-12)
+        assert rel <= 1e-3, f"l2 {a} vs decoupled {b}, rel {rel}"
+
+
+def test_rejects_dropout():
+    """compile=True rejects a model that contains Dropout."""
+    from dense_armor.utility.neural.layers import Dropout, Dense
+    from dense_armor.utility.neural.chain import Sequential
+
+    key = jax.random.PRNGKey(0)
+    k1, k2, k3 = jax.random.split(key, 3)
+    model = Sequential([Dense(2, 4, k1), Dropout(0.5, k2), Dense(4, 1, k3)])
+    with pytest.raises(ValueError, match="Dropout"):
+        make_step(
+            model, MSE(), SGD(0.01), ConstantLR(0.01), 0.0, "l2", None
+        )
+
+
+def test_rejects_batchnorm():
+    """compile=True rejects a model that contains BatchNorm."""
+    from dense_armor.utility.neural.norm import BatchNorm
+    from dense_armor.utility.neural.layers import Dense
+    from dense_armor.utility.neural.chain import Sequential
+
+    key = jax.random.PRNGKey(0)
+    k1, k2 = jax.random.split(key)
+    model = Sequential([Dense(2, 4, k1), BatchNorm(4), Dense(4, 1, k2)])
+    with pytest.raises(ValueError, match="BatchNorm"):
+        make_step(
+            model, MSE(), SGD(0.01), ConstantLR(0.01), 0.0, "l2", None
+        )
+
+
+def test_second_fit_does_not_restart_the_optimizer():
+    """fit(2)+fit(2) equals fit(4) with shuffle=False (same data order)."""
+    factory, sx, sy = MODEL_FACTORIES["mlp"]
+    X, y = _data(sx, sy)
+    m_a = factory()
+    t_a = Trainer(m_a, MSE(), SGD(0.01, momentum=0.9), compile=True)
+    t_a.fit(X, y, epochs=2, batch_size=8, key=jax.random.PRNGKey(0), shuffle=False)
+    t_a.fit(X, y, epochs=2, batch_size=8, key=jax.random.PRNGKey(0), shuffle=False)
+    last_a = t_a.history_["train_loss"][-1]
+    m_b = factory()
+    t_b = Trainer(m_b, MSE(), SGD(0.01, momentum=0.9), compile=True)
+    t_b.fit(X, y, epochs=4, batch_size=8, key=jax.random.PRNGKey(0), shuffle=False)
+    last_b = t_b.history_["train_loss"][-1]
+    assert abs(last_a - last_b) <= 1e-6, f"{last_a} vs {last_b}"

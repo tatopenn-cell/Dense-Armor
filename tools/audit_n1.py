@@ -1,6 +1,6 @@
 """Item 0 of N1: audit of the layers for a jitted training step.
 
-The five reference models of the task are mlp, resnet_mlp, cnn,
+The five reference models of the batch are mlp, resnet_mlp, cnn,
 recurrent_net, transformer_encoder. The script walks every layer of
 each model, lists the attributes that forward writes on self (the
 cache that backward reads), and decides whether the layer blocks
@@ -87,7 +87,6 @@ def _transformer():
     return transformer_encoder(4, 8, 2, 16, 1, 3, jax.random.PRNGKey(0), 16)
 
 
-# Attributi che forward scrive e backward legge: la cache.
 CACHE = {
     "Dense": ["x_"],
     "Residual": ["x_"],
@@ -201,7 +200,7 @@ def main():
     print()
     print("Dropout is the one layer that is a blocker: its PRNG key")
     print("advances at every training forward. The five reference models")
-    print("of the task build TransformerBlock with dropout=0.0 by default,")
+    print("of the batch build TransformerBlock with dropout=0.0 by default,")
     print("so none of them uses Dropout in the benchmark. A model that")
     print("does use Dropout can still be trained with compile=True only")
     print("if the key is carried in the state explicitly; that is outside")
