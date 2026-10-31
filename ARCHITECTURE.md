@@ -12,11 +12,11 @@ every file. Update it whenever a module is added, moved or renamed.
    `stream`, `datasets`, `compose`, `preprocessing`, `stats`, `metrics`, `evaluate`, `learn`,
    `tree`, `cluster`, `anomaly`, `drift`, `protect`, `vision`, `control`, `misc`, `bayes`,
    `linear`, `multiclass`, `multioutput`, `neighbors`, `optim`, `proba`, `rules`, `timeseries`,
-   `forest`, `ensemble`, `bandit`, `active`, `facto`, `reco`, `neural`.
+   `forest`, `ensemble`, `bandit`, `active`, `facto`, `reco`, `neural`, `data`.
 3. `dynamics` — rigid-body dynamics from URDF.
 4. `checks` — `check_estimator` and the robot checks.
 5. `bridges` — optional bridges (LLM embeddings, and a bridge to existing online-learning
-   libraries).
+   libraries, scikit-learn, PyTorch and TensorFlow/Keras).
 6. `core` and `armatura.py` — the signal-shielding engine and its public class `Armatura`.
 7. `mcp_server` — the MCP tool adapter.
 8. `ml` — the machine learning classes: they read a whole table with `fit`, family by family.
@@ -36,7 +36,7 @@ graph TD
         DATASETS["datasets: Casper, DriftStream,<br/>SyntheticArm"]
         COMPOSE["compose: Select, Discard,<br/>FuncTransformer"]
         PREPROC["preprocessing: RobustScaler, EWScaler,<br/>JointDerivatives, Tokenizer"]
-        STATS["stats: RunningMoments,<br/>RollingMedian, DDSketch,<br/>OnlineGaussianMixture, StudentT"]
+        STATS["stats: RunningMoments,<br/>RollingMedian, DDSketch,<br/>OnlineGaussianMixture, StudentT,<br/>stable_var"]
         METRICS["metrics: Accuracy, RollingAUC,<br/>EventMetrics, R2Score"]
         EVAL["evaluate: progressive_val_score,<br/>evaluate_events, best_of"]
         LEARN["learn: OnlineGaussianNB,<br/>RecursiveLeastSquares,<br/>OnlinePlattScaling"]
@@ -52,7 +52,7 @@ graph TD
         LINEAR["linear: LinearRegression,<br/>LogisticRegression,<br/>BayesianLinearRegression"]
         MULTI["multiclass, multioutput:<br/>OneVsRestClassifier,<br/>ClassifierChain"]
         NEIGH["neighbors: KNNClassifier,<br/>KNNRegressor"]
-        OPTIM["optim: SGD, AdaGrad, Adam,<br/>FTRLProximal, OnlineNewtonStep"]
+        OPTIM["optim: SGD, AdaGrad, Adam, AdamW,<br/>FTRLProximal, OnlineNewtonStep"]
         PROBA["proba: Beta, Gaussian,<br/>Multinomial"]
         RULES["rules: AMRulesRegressor"]
         TSERIES["timeseries: OnlineAR,<br/>KalmanFilter, GARCH11,<br/>CycleResidual"]
@@ -62,7 +62,7 @@ graph TD
         ACTIVE["active: FixedUncertainty,<br/>VariableUncertainty"]
         FACTO["facto: FMRegressor, FFMRegressor,<br/>FwFMRegressor, HOFMRegressor"]
         RECO["reco: Baseline, BiasedMF, FunkMF"]
-        NEURAL["neural: Dense, Sequential, Conv2D,<br/>LSTM, MultiHeadSelfAttention,<br/>Trainer"]
+        NEURAL["neural: Dense, Sequential, Conv2D,<br/>LSTM, MultiHeadSelfAttention,<br/>RMSNorm, GLUFeedForward,<br/>TransformerDecoderBlock, generate,<br/>Trainer"]
     end
 
     subgraph DYN["3. dynamics/"]
@@ -78,6 +78,9 @@ graph TD
     subgraph BRIDGES["5. bridges/"]
         LLM["LLMEmbeddingClassifier"]
         RIV["to_river, from_river"]
+        SKB["SklearnClassifier, Regressor,<br/>Transformer, from_sklearn"]
+        TCH["from_torch, to_torch"]
+        TFB["from_keras, to_tf"]
     end
 
     subgraph CORE["6. core/ and armatura.py"]
@@ -171,6 +174,7 @@ graph TD
 | `shrinkage.py` | `OnlineShrinkageCovariance` | Online shrinkage covariance (Bodnar, Gupta and Parolya 2014) |
 | `similarity.py` | `cosine_similarity`, `cosine_similarity_many`, `SparseCosineIndex` | Cosine similarity between score dicts |
 | `sketches.py` | `CountMinSketch`, `HyperLogLog`, `BloomFilter`, `SpaceSaving` | streaming sketches |
+| `stable.py` | `stable_var`, `stable_moments` | variance and moments that stay exact when the mean is far from zero (the kernel behind the `ml/` statistics) |
 | `student_t.py` | `StudentT` | online Student-t location-scale estimator with fixed degrees of freedom |
 
 ### 2.6 metrics
@@ -341,6 +345,7 @@ graph TD
 |---|---|---|
 | `adagrad.py` | `AdaGrad` | AdaGrad with per-coordinate step sizes |
 | `adam.py` | `Adam` | Adam with bias-corrected moments |
+| `adamw.py` | `AdamW` | Adam with decoupled weight decay (Loshchilov and Hutter, Algorithm 2); `eta` scales the step and the decay |
 | `ftrl.py` | `FTRLProximal` | FTRL-Proximal with L1 and L2 regularisation |
 | `newton.py` | `OnlineNewtonStep` | online Newton step with a rank-one running Hessian |
 | `rmsprop.py` | `RMSProp` | RMSProp with a running mean of the squared gradient |
@@ -431,7 +436,7 @@ Networks as layers with `forward`, `backward` and `params()`: parameters, initia
 | `activations.py` | `relu_forward`, `relu_backward`, `prelu_forward`, `prelu_backward`, `sigmoid_forward`, `sigmoid_backward`, `tanh_forward`, `tanh_backward`, `softmax_forward`, `softmax_backward`, `Relu`, `PRelu`, `Sigmoid`, `Tanh`, `Softmax` | Activations with a forward and a backward, on a batch or one sample |
 | `activations_more.py` | `gelu_forward`, `gelu_backward`, `gelu_approx_forward`, `gelu_approx_backward`, `silu_forward`, `silu_backward`, `elu_forward`, `elu_backward`, `leaky_relu_forward`, `leaky_relu_backward`, `softplus_forward`, `softplus_backward`, `GELU`, `SiLU`, `ELU`, `LeakyReLU`, `Softplus` | More activations: GELU, SiLU, ELU, LeakyReLU, Softplus |
 | `adapter.py` | `AsTransformer` | A layer seen as a ``Transformer`` of the library |
-| `attention.py` | `scaled_dot_product_attention`, `scaled_dot_product_attention_backward`, `sinusoidal_positions`, `MultiHeadSelfAttention`, `TransformerBlock` | Attention layers |
+| `attention.py` | `scaled_dot_product_attention`, `scaled_dot_product_attention_backward`, `sinusoidal_positions`, `MultiHeadSelfAttention`, `TransformerBlock` | Attention layers; `MultiHeadSelfAttention(..., rotary=True)` rotates queries and keys (also in the cached `step`, with the position offset) |
 | `autoencoder.py` | `Autoencoder` | An autoencoder: an encoder, a decoder and the reconstruction error |
 | `background.py` | `BackgroundLearner` | A background learner: the main program is never blocked |
 | `batching.py` | `minibatches` | Mini-batch generator |
@@ -445,24 +450,30 @@ Networks as layers with `forward`, `backward` and `params()`: parameters, initia
 | `consolidation/memory.py` | `LifecycleMemory`, `DualMemory`, `TheoreticalBound` | Lifecycle states, dual (fast + slow) memory, the theoretical bound. |
 | `consolidation/archival.py` | `ArchivalMemory` | Archival memory: tree + lifecycle + dual memory together. |
 | `continual.py` | `EWC`, `GEM`, `AGEM` | Continual-learning baselines: EWC, GEM, A-GEM |
+| `compiled.py` | `make_step` | The compiled training step behind `Trainer(compile=True)`: one `jax.jit` step over forward, loss, backward and optimizer; models with `Dropout` or `BatchNorm` are refused |
 | `conv.py` | `Conv1D`, `Conv2D`, `MaxPool1D`, `MaxPool2D`, `AvgPool1D`, `AvgPool2D`, `Flatten` | Convolution and pooling layers |
 | `conv_more.py` | `Conv3D`, `DepthwiseConv2D`, `SeparableConv2D` | Three-dimensional, depthwise and separable convolutions |
 | `convtranspose.py` | `ConvTranspose1D`, `ConvTranspose2D`, `Upsample1D`, `Upsample2D` | Transposed convolutions and nearest-neighbour upsampling |
 | `cross_attention.py` | `MultiHeadCrossAttention` | Cross-attention: queries from one stream, keys and values from another |
+| `decoder.py` | `TransformerDecoderBlock` | Decoder block (Vaswani et al., post-norm): causal self-attention, optional cross-attention over a memory (then `backward` returns `(dx, dmemory)`), feed-forward |
 | `gated_attention.py` | `GatedCrossAttention` | A gate on a signal: look at the other stream only when it matters |
 | `generative_replay.py` | `DeepGenerativeReplay` | Deep generative replay (Shin et al. 2017) |
+| `generate.py` | `generate` | Greedy or sampled generation from a causal language model, capped at `max_len` |
+| `glu.py` | `GLUFeedForward` | Gated feed-forward of Shazeer 2020: GLU, GEGLU or SwiGLU (Eq. 4-6) |
 | `gradcheck.py` | `gradcheck` | Gradient check against central finite differences |
 | `hedge.py` | `HedgeNetClassifier` | Hedge Backpropagation (Sahoo et al. 2018) |
 | `init.py` | `fan_in`, `he_normal`, `xavier_normal`, `zeros_bias`, `glorot_uniform` | He and Xavier initialisations for rectifier networks |
 | `latent_attention.py` | `LatentCrossAttention` | Latent cross-attention: read an input of any length into a fixed set of latents |
 | `layers.py` | `dense_forward`, `dense_backward`, `Dense`, `Embedding`, `Dropout`, `Residual` | Dense, Embedding, Dropout, Residual |
 | `losses.py` | `mse_forward`, `mse_backward`, `softmax_cross_entropy_forward`, `softmax_cross_entropy_backward`, `bce_with_logits_forward`, `bce_with_logits_backward`, `MSE`, `SoftmaxCrossEntropy`, `BCEWithLogits`, `huber_forward`, `huber_backward`, `Huber` | Losses with a forward and a backward, on a batch |
+| `losses_lm.py` | `NextTokenLoss`, `perplexity` | Next-token cross-entropy with `ignore_index=-100`, safe under `jax.jit`, and the perplexity |
 | `losses_more.py` | `l1_forward`, `l1_backward`, `label_smoothing_ce_forward`, `label_smoothing_ce_backward`, `kldiv_forward`, `kldiv_backward`, `hinge_forward`, `hinge_backward`, `focal_forward`, `focal_backward`, `L1Loss`, `LabelSmoothingCE`, `KLDivLoss`, `HingeLoss`, `FocalLoss` | More losses: L1, label-smoothed cross-entropy, KL divergence, hinge, focal |
 | `matryoshka.py` | `MatryoshkaLoss` | The Matryoshka Representation Learning loss of Kusupati et al. 2022 |
 | `moe.py` | `forward_pure`, `SparseMoE` | Sparse mixture of experts, dispatched in JAX |
-| `models.py` | `mlp`, `resnet_mlp`, `LastStep`, `MeanOverTime`, `AddPositions`, `cnn`, `recurrent_net`, `transformer_encoder` | standard architectures (MLP, residual MLP, CNN, recurrent net, transformer encoder) and the small layers that join them to a head |
+| `models.py` | `mlp`, `resnet_mlp`, `LastStep`, `MeanOverTime`, `AddPositions`, `cnn`, `recurrent_net`, `transformer_encoder`, `transformer_decoder` | standard architectures (MLP, residual MLP, CNN, recurrent net, transformer encoder, causal transformer decoder with an optional tied output head) and the small layers that join them to a head |
 | `norm.py` | `BatchNorm`, `LayerNorm` | BatchNorm and LayerNorm, with a forward and a backward |
 | `norm_more.py` | `GroupNorm`, `InstanceNorm` | GroupNorm and InstanceNorm |
+| `norm_rms.py` | `RMSNorm` | Root-mean-square normalisation of Zhang and Sennrich (Eq. 4), without mean or bias |
 | `online.py` | `OnlineNetRegressor`, `OnlineNetClassifier` | Online estimators of a network: one sample at a time |
 | `online_autoencoder.py` | `OnlineAutoencoder` | An autoencoder trained online, used as an anomaly detector |
 | `online_vector.py` | `OnlineNetVector` | Online learner for vector targets |
@@ -470,11 +481,22 @@ Networks as layers with `forward`, `backward` and `params()`: parameters, initia
 | `positions.py` | `LearnedPositions` | The learned positional embedding |
 | `quantize.py` | `VectorQuantizer` | The vector quantizer of van den Oord et al. 2017 |
 | `recurrent.py` | `RNN`, `GRU`, `LSTM` | Recurrent layers |
+| `rotary.py` | `rotary_angles`, `apply_rotary`, `apply_rotary_transpose` | Rotary position embedding of Su et al. (Eq. 14-16, 34): adjacent pairs rotated, base 10000 |
 | `schedules.py` | `ConstantLR`, `StepLR`, `CosineWarmRestarts` | Learning-rate schedules |
 | `schedules_more.py` | `LinearWarmup`, `NoamSchedule` | Learning-rate schedules with warmup |
 | `seq2seq.py` | `Seq2Seq` | A fixed-horizon sequence encoder and decoder |
 | `test_time.py` | `TestTimeCompute` | Test-time compute: generate candidates and pick the best |
 | `trainer.py` | `Trainer` | The standard training loop |
+
+Notes on the network files: `Embedding` in `layers.py` skips its range check on ids under `jax.jit`; `Trainer(compile=True)` builds its step with `compiled.py`; `decoder.py`, `generate.py`, `losses_lm.py` and the `transformer_decoder` builder form the language-model path (token embedding, sinusoidal positions, decoder blocks, final layer norm, head).
+
+### 2.33 data
+
+| file | public names | what it is |
+|---|---|---|
+| `shared.py` | `SharedArray`, `SharedStrings`, `SharedList`, `SharedDict`, `to_shared` | Objects placed in shared memory, so that several processes read one copy |
+
+Internal helpers, not public: `utility/_validation.py` (`as_dict`, `is_number`, `finite_row`, the three checks shared by several modules), `utility/ensemble/_common.py` (`as_dict`, `finite`, `new_member`) and `utility/facto/_common.py` (helpers of the factorization machines).
 
 ## 3. dynamics
 
@@ -497,6 +519,9 @@ Networks as layers with `forward`, `backward` and `params()`: parameters, initia
 |---|---|---|
 | `llm.py` | `LLMEmbeddingClassifier` | classifier over LLM embeddings |
 | `river.py` | `to_river`, `from_river` | bridge to existing online-learning libraries |
+| `sklearn.py` | `SklearnClassifier`, `SklearnRegressor`, `SklearnTransformer`, `from_sklearn` | a Dense-Armor online estimator wrapped as a scikit-learn estimator |
+| `tensorflow.py` | `to_jax`, `to_tf`, `KerasLayer`, `KerasAdapter`, `from_keras` | tensors and Keras layers to and from JAX (needs TensorFlow) |
+| `torch.py` | `to_jax`, `to_torch`, `TorchModule`, `TorchAdapter`, `from_torch` | tensors and `torch.nn` modules to and from JAX (needs PyTorch) |
 
 ## 6. core/ and armatura.py
 
@@ -517,6 +542,8 @@ Networks as layers with `forward`, `backward` and `params()`: parameters, initia
 | `vector.py` | `BitwisePermutationEngine`, `ParametricScenarioSimulator` | vector engines |
 | `visualizer.py` | `AIEngineVisualizer` | engine visualizer |
 
+Package-level files: `_compat.py` keeps the old import paths working (each old name resolves to the same module object), and `__main__.py` runs `python -m dense_armor`, which calls `armatura.main`.
+
 ## 7. mcp_server
 
 | file | public names | what it is |
@@ -527,10 +554,11 @@ Networks as layers with `forward`, `backward` and `params()`: parameters, initia
 
 ## 8. ml
 
-One module per family. A class subclasses `MLBase` (`base.py`, itself a `roles.Root`): `fit(X, y=None)` takes the whole table and returns `self`, and the results are attributes with a trailing underscore. Each module lists in `STOPPED` the online classes of the family whose reference defines the algorithm only on a stream.
+One module per family. A class subclasses `MLBase` (which includes `SklearnCompat`) (`base.py`, itself a `roles.Root`): `fit(X, y=None)` takes the whole table and returns `self`, and the results are attributes with a trailing underscore. Each module lists in `STOPPED` the online classes of the family whose reference defines the algorithm only on a stream.
 
 | file | public names | what it is |
 |---|---|---|
+| `_sklearn_compat.py` | `SklearnCompat`, `estimator_kind` | Mixin of `MLBase`: `__sklearn_tags__`, `score` and `fit_transform`, so that a class passes where scikit-learn expects an estimator |
 | `anomaly.py` | `ChauvenetScorer`, `HampelFilter`, `LocalOutlierFactor`, `SigmaClipScorer`, `TukeyScorer` | Anomaly detection on a whole series or a whole table |
 | `base.py` | `MLBase`, `finite`, `finite_pairs` | Base class of the machine learning algorithms of Dense-Armor |
 | `bayes.py` | `MultinomialNB`, `BernoulliNB`, `CategoricalNB`, `ComplementNB` | Naive Bayes classifiers fitted on the whole table by counting |
