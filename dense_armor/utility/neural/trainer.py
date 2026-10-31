@@ -205,10 +205,11 @@ class Trainer:
             if _ls <= 0.0:
                 raise ValueError(f"loss_scale must be positive, got {_ls}")
         self.loss_scale = _ls
+        self._scale: float
         if isinstance(_ls, float):
-            self._scale: float = float(_ls)
+            self._scale = float(_ls)
         else:
-            self._scale: float = 1.0
+            self._scale = 1.0
         self._good_steps: int = 0
         self._compiled_values: list | None = None
         self._compiled_opt_state: Any = None
