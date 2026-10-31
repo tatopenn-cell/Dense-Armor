@@ -12,7 +12,7 @@
   "claims": {
     "1_bf16_loss_within_5pct": {
       "holds": true,
-      "rel_diff": 0.0012498828395243855
+      "rel_diff": 0.001384161833700804
     },
     "2_memory_0.7x": {
       "holds": null,
@@ -31,15 +31,15 @@
       "loss_at_step": 20,
       "final_loss": 0.5806036591529846,
       "peak_bytes": null,
-      "steps_per_second_median": 92.52581893660842,
+      "steps_per_second_median": 93.66158346516592,
       "steps_per_second_range": [
-        88.87284635277624,
-        93.03970653241893
+        84.04477127151867,
+        93.85953906807252
       ],
       "steps_per_second_sessions": [
-        92.52581893660842,
-        88.87284635277624,
-        93.03970653241893
+        93.66158346516592,
+        93.85953906807252,
+        84.04477127151867
       ]
     },
     {
@@ -47,17 +47,17 @@
       "compute_dtype": "bfloat16",
       "loss_scale": 1.0,
       "loss_at_step": 20,
-      "final_loss": 0.581329345703125,
+      "final_loss": 0.5814073085784912,
       "peak_bytes": null,
-      "steps_per_second_median": 90.64680520252043,
+      "steps_per_second_median": 83.2223722509099,
       "steps_per_second_range": [
-        89.95568859262664,
-        91.46223580315329
+        83.12037857722171,
+        91.37435834265243
       ],
       "steps_per_second_sessions": [
-        90.64680520252043,
-        91.46223580315329,
-        89.95568859262664
+        83.12037857722171,
+        83.2223722509099,
+        91.37435834265243
       ]
     },
     {
@@ -65,17 +65,17 @@
       "compute_dtype": "float16",
       "loss_scale": "dynamic",
       "loss_at_step": 20,
-      "final_loss": 0.5805345773696899,
+      "final_loss": 0.5806786417961121,
       "peak_bytes": null,
-      "steps_per_second_median": 46.627678016680335,
+      "steps_per_second_median": 79.70582683541998,
       "steps_per_second_range": [
-        45.54816681294482,
-        53.01836311415394
+        74.70112081544632,
+        80.43931384265579
       ],
       "steps_per_second_sessions": [
-        53.01836311415394,
-        45.54816681294482,
-        46.627678016680335
+        74.70112081544632,
+        80.43931384265579,
+        79.70582683541998
       ]
     }
   ]
