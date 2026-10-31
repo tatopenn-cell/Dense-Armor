@@ -489,7 +489,9 @@ class _TiedHead:
         self.x_: jax.Array | None = None
 
     def __repr__(self) -> str:
-        return f"_TiedHead(n_tokens={self.embedding.n_tokens}, dim={self.embedding.dim})"
+        return (
+            f"_TiedHead(n_tokens={self.embedding.n_tokens}, dim={self.embedding.dim})"
+        )
 
     def params(self) -> list[Param]:
         """Empty: the matrix is the one of the wrapped ``Embedding``."""
@@ -560,18 +562,14 @@ def transformer_decoder(
     if n_layers < 1:
         raise ValueError(f"n_layers must be at least 1, got {n_layers}")
     if d_model % n_heads != 0:
-        raise ValueError(
-            f"d_model {d_model} is not divisible by n_heads {n_heads}"
-        )
+        raise ValueError(f"d_model {d_model} is not divisible by n_heads {n_heads}")
     if d_ff is None:
         d_ff = 4 * d_model
     keys = jax.random.split(key, n_layers + 2)
     emb = Embedding(vocab, d_model, keys[0])
     layers: list[Any] = [emb, AddPositions(max_len)]
     for i in range(n_layers):
-        layers.append(
-            TransformerDecoderBlock(d_model, n_heads, d_ff, keys[i + 1])
-        )
+        layers.append(TransformerDecoderBlock(d_model, n_heads, d_ff, keys[i + 1]))
     layers.append(LayerNorm(d_model))
     if tie:
         layers.append(_TiedHead(emb))

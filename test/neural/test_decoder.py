@@ -2,17 +2,17 @@
 
 from __future__ import annotations
 
-import numpy as np
 import jax
 import jax.numpy as jnp
+import numpy as np
 import pytest
 
 from dense_armor.utility.neural.decoder import TransformerDecoderBlock
 from dense_armor.utility.neural.generate import generate
 from dense_armor.utility.neural.gradcheck import gradcheck
+from dense_armor.utility.neural.layers import Embedding
 from dense_armor.utility.neural.losses_lm import NextTokenLoss, perplexity
 from dense_armor.utility.neural.models import _TiedHead, transformer_decoder
-from dense_armor.utility.neural.layers import Embedding
 from dense_armor.utility.optim import Adam
 
 
@@ -194,8 +194,7 @@ def test_batch_and_single_same_logits():
 
 
 def _period4_batch(seed: int, T: int = 8) -> jnp.ndarray:
-    rng = np.random.default_rng(seed)
-    x = np.arange(T) % 4
+    x: np.ndarray = np.arange(T) % 4
     return jnp.asarray(x.astype(np.int32))
 
 
@@ -241,5 +240,126 @@ def test_generate_reproduces_pattern():
     out = generate(m, prompt, max_new=5, max_len=8)
     expected = np.array([0, 1, 2, 3, 0, 1, 2])
     assert np.array_equal(np.asarray(out), expected[: out.shape[0]]), (
-        f"generated {np.asarray(out).tolist()}, expected {expected[:out.shape[0]].tolist()}"
+        f"generated {np.asarray(out).tolist()}, expected {expected[: out.shape[0]].tolist()}"
     )
+
+
+def test_decoder_block_d_model_not_divisible():
+    with pytest.raises(ValueError, match="divisible"):
+        TransformerDecoderBlock(8, 3, 16, jax.random.PRNGKey(0))
+
+
+def test_decoder_block_no_cross_ignores_memory():
+    b = TransformerDecoderBlock(8, 2, 16, jax.random.PRNGKey(0), cross=False)
+    x = jax.random.normal(jax.random.PRNGKey(1), (4, 8))
+    mem = jax.random.normal(jax.random.PRNGKey(2), (3, 8))
+    y1 = b.forward(x)
+    y2 = b.forward(x, memory=mem)
+    assert np.array_equal(np.asarray(y1), np.asarray(y2))
+
+
+def test_next_token_loss_leading_shape_mismatch():
+    L = NextTokenLoss()
+    with pytest.raises(ValueError, match="leading shapes"):
+        L.forward(jnp.zeros((2, 3, 5)), jnp.array([[0, 1, 2]]))
+
+
+def test_next_token_loss_T_mismatch():
+    L = NextTokenLoss()
+    with pytest.raises(ValueError, match="T differs"):
+        L.forward(jnp.zeros((1, 3, 5)), jnp.array([[0, 1, 2, 3]]))
+
+
+def test_next_token_loss_backward_before_forward_raises():
+    L = NextTokenLoss()
+    with pytest.raises(RuntimeError):
+        L.backward()
+
+
+def test_generate_prompt_not_1d():
+    m = transformer_decoder(4, 8, 2, 1, 6, key=jax.random.PRNGKey(0))
+    with pytest.raises(ValueError, match="1-D"):
+        generate(m, jnp.array([[0, 1, 2]]), max_new=1, max_len=6)
+
+
+def test_generate_max_len_from_model_attribute():
+    m = transformer_decoder(4, 8, 2, 1, 4, key=jax.random.PRNGKey(0))
+    m.max_len = 4
+    out = generate(m, jnp.array([0, 1, 2]), max_new=5)
+    assert out.shape == (4,)
+
+
+def test_generate_no_max_len_anywhere():
+    class _Model:
+        def forward(self, x):
+            return jnp.zeros((x.shape[0], 4))
+
+    with pytest.raises(ValueError, match="max_len"):
+        generate(_Model(), jnp.array([0, 1]), max_new=1)
+
+
+def test_generate_sampled_path_runs():
+    m = transformer_decoder(4, 8, 2, 1, 6, key=jax.random.PRNGKey(0))
+    out = generate(m, jnp.array([0, 1]), max_new=3, temperature=1.0,
+                   key=jax.random.PRNGKey(1), max_len=6)
+    assert out.shape == (5,)
+
+
+def test_repr_decoder_block():
+    b = TransformerDecoderBlock(8, 2, 16, jax.random.PRNGKey(0))
+    assert "TransformerDecoderBlock(8, 2, 16" in repr(b)
+    b2 = TransformerDecoderBlock(8, 2, 16, jax.random.PRNGKey(0), cross=True)
+    assert "cross=True" in repr(b2)
+
+
+def test_repr_next_token_loss():
+    L = NextTokenLoss()
+    assert "ignore_index=-100" in repr(L)
+    L2 = NextTokenLoss(ignore_index=-1)
+    assert "ignore_index=-1" in repr(L2)
+
+
+def test_next_token_loss_call_equals_forward():
+    L = NextTokenLoss()
+    logits = jnp.array([[[2.0, 0.0], [0.0, 2.0], [2.0, 0.0]]])
+    y = jnp.array([[1, 0, 1]])
+    a = float(L.forward(logits, y))
+    L2 = NextTokenLoss()
+    b = float(L2(logits, y))
+    assert abs(a - b) < 1e-9
+
+
+def test_generate_max_new_negative_message():
+    m = transformer_decoder(4, 8, 2, 1, 6, key=jax.random.PRNGKey(0))
+    try:
+        generate(m, jnp.array([0, 1]), max_new=-1, max_len=6)
+        assert False, "expected ValueError"
+    except ValueError as e:
+        assert "max_new" in str(e)
+
+
+def test_generate_temperature_negative_message():
+    m = transformer_decoder(4, 8, 2, 1, 6, key=jax.random.PRNGKey(0))
+    try:
+        generate(m, jnp.array([0, 1]), max_new=1, temperature=-1.0, max_len=6)
+        assert False, "expected ValueError"
+    except ValueError as e:
+        assert "temperature" in str(e)
+
+
+def test_generate_temperature_positive_no_key_message():
+    m = transformer_decoder(4, 8, 2, 1, 6, key=jax.random.PRNGKey(0))
+    try:
+        generate(m, jnp.array([0, 1]), max_new=1, temperature=1.0, max_len=6)
+        assert False, "expected ValueError"
+    except ValueError as e:
+        assert "key" in str(e)
+
+
+def test_generate_max_len_smaller_than_prompt_message():
+    m = transformer_decoder(4, 8, 2, 1, 6, key=jax.random.PRNGKey(0))
+    try:
+        generate(m, jnp.array([0, 1, 2, 3, 4, 5]), max_new=1, max_len=4)
+        assert False, "expected ValueError"
+    except ValueError as e:
+        assert "smaller" in str(e) or "max_len" in str(e)

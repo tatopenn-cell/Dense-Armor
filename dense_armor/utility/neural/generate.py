@@ -63,9 +63,7 @@ def generate(
     if max_len is None:
         max_len = getattr(model, "max_len", None)
         if max_len is None:
-            raise ValueError(
-                "max_len is None and the model has no max_len attribute"
-            )
+            raise ValueError("max_len is None and the model has no max_len attribute")
     if max_len < prompt.shape[0]:
         raise ValueError(
             f"max_len {max_len} is smaller than the prompt ({prompt.shape[0]})"

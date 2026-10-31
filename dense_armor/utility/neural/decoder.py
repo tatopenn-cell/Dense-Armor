@@ -19,7 +19,6 @@ from __future__ import annotations
 from typing import Any
 
 import jax
-import jax.numpy as jnp
 
 from dense_armor.utility.neural.attention import MultiHeadSelfAttention
 from dense_armor.utility.neural.cross_attention import MultiHeadCrossAttention
@@ -71,14 +70,10 @@ class TransformerDecoderBlock:
         dropout: float = 0.0,
     ) -> None:
         if d_model % n_heads != 0:
-            raise ValueError(
-                f"d_model {d_model} is not divisible by n_heads {n_heads}"
-            )
+            raise ValueError(f"d_model {d_model} is not divisible by n_heads {n_heads}")
         n_keys = 8 if cross else 6
         keys = jax.random.split(key, n_keys)
-        self.attn = MultiHeadSelfAttention(
-            d_model, n_heads, keys[0], causal=True
-        )
+        self.attn = MultiHeadSelfAttention(d_model, n_heads, keys[0], causal=True)
         self.ln1 = LayerNorm(d_model)
         self.ffn1 = Dense(d_model, d_ff, keys[1])
         self.ffn2 = Dense(d_ff, d_model, keys[2])
@@ -147,17 +142,24 @@ class TransformerDecoderBlock:
             ffn_out = self.ffn2.forward(ffn_h)
             y = self.ln3.forward(x2 + ffn_out)
             self._cache = dict(
-                x=x, attn_out=attn_out, x1=x1,
-                ca_out=ca_out, x2=x2,
-                ffn_h=ffn_h, ffn_out=ffn_out,
+                x=x,
+                attn_out=attn_out,
+                x1=x1,
+                ca_out=ca_out,
+                x2=x2,
+                ffn_h=ffn_h,
+                ffn_out=ffn_out,
             )
         else:
             ffn_h = jax.nn.relu(self.ffn1.forward(x1))
             ffn_out = self.ffn2.forward(ffn_h)
             y = self.ln2.forward(x1 + ffn_out)
             self._cache = dict(
-                x=x, attn_out=attn_out, x1=x1,
-                ffn_h=ffn_h, ffn_out=ffn_out,
+                x=x,
+                attn_out=attn_out,
+                x1=x1,
+                ffn_h=ffn_h,
+                ffn_out=ffn_out,
             )
         return y
 

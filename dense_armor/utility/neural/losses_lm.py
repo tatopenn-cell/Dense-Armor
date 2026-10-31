@@ -92,7 +92,9 @@ class NextTokenLoss:
                 "no position has a valid target (all ignore_index, or T = 1)"
             )
         lp = _log_softmax(logits[..., :-1, :])
-        picked = jnp.take_along_axis(lp, jnp.where(mask, target, 0)[..., None], axis=-1)[..., 0]
+        picked = jnp.take_along_axis(
+            lp, jnp.where(mask, target, 0)[..., None], axis=-1
+        )[..., 0]
         masked = jnp.where(mask, picked, 0.0)
         loss = -jnp.sum(masked) / n_valid
         self._logits = logits
