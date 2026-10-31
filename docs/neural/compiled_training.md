@@ -139,8 +139,14 @@ print(t_loop.history_["train_loss"][-1], t_compiled.history_["train_loss"][-1])
 2.840958833694458 2.840958833694458
 ```
 The two losses are the same. The maximum relative difference over
-the 200 steps is 1.04e-07 for the MLP and 9.71e-07 for the
-transformer. Both are below the 1e-4 the benchmark asks for.
+200 steps is **1.04e-07 for the MLP on the CPU** (holds), and
+**9.71e-07 for the transformer at 3 steps** (the CPU run uses 3
+steps; at 200 steps on the GPU the difference is **4.94e-03 and
+3.30e-02**, so claim (1) for the transformer **does not hold**).
+The claim (2) on the GPU holds when the step is timed directly and
+does not hold through `Trainer.fit`. The claim (3) on the CPU does
+not hold (1.49x, 1.17x). The reported section at the bottom gives all
+the numbers and the source.
 
 ## The measurement
 
@@ -191,11 +197,15 @@ and decoupled decay for plain SGD.
 ### Measured cost
 
 From `benchmarks/compiled_step_cpu.json`, on the CPU of the run
-(jax 0.11.1, python 3.13.18, x86_64). The claim (3) of the benchmark
-is that the compiled step is at least 1.5x the loop on the CPU. **It
-does not hold** on this CPU: 1.49x on the MLP and 1.17x on the
-transformer. The compiled step is still faster, but by less than the
-1.5x the benchmark declared.
+(jax 0.11.1, python 3.13.18, x86_64). The claims of the benchmark are three. Claim (1) holds on the MLP
+(1.04e-07 at 200 steps) and **does not hold** on the transformer on
+the GPU (4.94e-03 and 3.30e-02 at 200 steps). Claim (2), GPU at least
+3.0x, holds when the step is timed directly (16x on the MLP, 4.9x on
+the transformer in the reviewer's Kaggle run) and **does not hold**
+when timed through `Trainer.fit` (2.17x and 1.64x). Claim (3), CPU at
+least 1.5x, **does not hold** on this CPU (1.49x on the MLP, 1.17x on
+the transformer). All three are in the JSON and in the delivery as
+they are.
 
 - mlp: loop 18.28 steps per second, compiled 27, ratio 1.49x,
   compile time 0.21 s.
@@ -205,6 +215,37 @@ transformer. The compiled step is still faster, but by less than the
 The compiled mode is faster by a factor that depends on the model.
 On the transformer the factor is large because the loop calls one
 Python step per layer and the compiled step fuses them.
+### Reported from the Kaggle run of the reviewer
+
+These numbers are from the reviewer's Kaggle kernel, which is not in
+this branch. The `benchmarks/compiled_step_gpu.json` file is not
+committed: the branch does not have one. They are reported as they
+came back, not measured here.
+
+- The arithmetic is equivalent to the loop on the GPU: 42 cases (6
+  optimizers, 7 option combinations), the worst relative difference
+  is 1.0e-05 (Adam with clipping).
+- The 22 tests (now 39) pass on the GPU.
+- Claim (1) on the transformer at 200 steps on the GPU: **does not
+  hold**, 4.94e-03 in one run and 3.30e-02 in another. The MLP holds
+  on the CPU (1.04e-07) and is not measured on the GPU at 200 steps.
+- Claim (2) on the GPU: holds when the step is timed directly (16x on
+  the MLP, 4.9x on the transformer), **does not hold** when timed
+  through `Trainer.fit` (2.17x and 1.64x). The compiled step through
+  `Trainer.fit` includes the `write_values` copy of every parameter
+  between two steps, which is the cost that the direct timing does
+  not pay.
+- Claim (3) on the CPU: **does not hold** (1.49x and 1.17x), the
+  compiled step is faster but by less than 1.5x.
+- A second fit with compile=True restarted the optimizer from zero;
+  fixed in this branch, tested with `test_second_fit_does_not_restart_the_optimizer`.
+- Dropout with compile=True trained silently with a frozen mask;
+  fixed in this branch, now rejected with `ValueError`.
+- The CNN with compile=False differs from master by 1e-7 on the GPU
+  and is identical on the CPU. The CPU comparison is in the test
+  `test_default_unchanged_bit_for_bit` and it passes: it is the cuDNN
+  reduction order, not the code.
+
 ### Not measured
 
 - The GPU. `benchmarks/compiled_step_gpu.json` is not in the
