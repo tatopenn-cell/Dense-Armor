@@ -87,11 +87,16 @@ class _Gauss:
 
     With ``dtype=None`` (default) the update is Welford's and the
     result is bit for bit the one of the previous version. With
-    ``dtype=numpy.float32`` the update is the shifted-data algorithm
-    with ``K = x[0]`` (Healy 2022, Algorithm 2) applied online: a
-    compensated Welford on ``y = x - K``, with ``TwoSum`` on the mean
-    and on the M2 term. ``m2_`` and ``mean_`` are kept as float64 so
-    the tree code that reads them does not change.
+    ``dtype=numpy.float32`` the values are shifted by ``K = x[0]``, the
+    shift of the shifted-data algorithm of Healy (2022), Introduction
+    and Algorithm 2, PDF pages 2 and 4. Healy accumulates the sums
+    ``S = sum(y)`` and ``T = sum(y**2)`` with Kahan's compensation and
+    returns ``V = T/n - (M - K)**2``. This class is a variant: it keeps
+    Welford's recurrence on ``y = x - K`` (the mean of ``y`` and ``M2``),
+    and ``TwoSum`` carries the rounding error of the update of the mean
+    and of the update of ``M2``. ``var`` is ``M2 / n`` as in the
+    default path. ``m2_`` and ``mean_`` are kept as float64 so the tree
+    code that reads them does not change.
     """
 
     __slots__ = (
