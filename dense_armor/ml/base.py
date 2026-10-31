@@ -10,10 +10,11 @@ from __future__ import annotations
 
 import numpy as np
 
+from dense_armor.ml._sklearn_compat import SklearnCompat
 from dense_armor.roles import Root
 
 
-class MLBase(Root):
+class MLBase(SklearnCompat, Root):
     """Root of the classes: parameters, ``clone`` and ``state_dict``.
 
     Example:

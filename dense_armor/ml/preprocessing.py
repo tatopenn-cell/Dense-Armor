@@ -87,9 +87,9 @@ class _Scaler(MLBase):
         out[:, ok] = (A[:, ok] - self.center_[ok]) / self.scale_[ok]
         return out
 
-    def fit_transform(self, X) -> np.ndarray:
-        """``fit`` then ``transform`` on the same table."""
-        return self.fit(X).transform(X)
+    def fit_transform(self, X, y=None, **fit_params) -> np.ndarray:
+        """``fit`` then ``transform`` on the same table; ``y`` is not used."""
+        return self.fit(X, y, **fit_params).transform(X)
 
 
 class StandardScaler(_Scaler):
@@ -465,8 +465,8 @@ class FeatureHasher(MLBase):
     def fit(self, X, y=None):  # type: ignore[override]
         return self
 
-    def fit_transform(self, X) -> np.ndarray:
-        """The hashed matrix of the documents, one row each."""
+    def fit_transform(self, X, y=None, **fit_params) -> np.ndarray:
+        """The hashed matrix of the documents, one row each; ``y`` is not used."""
         out = np.zeros((len(X), self.n_features))
         for i, doc in enumerate(X):
             for term, w in doc.items():

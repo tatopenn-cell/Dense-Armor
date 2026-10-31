@@ -110,6 +110,7 @@ nav:
       - LLM agents: bridges/llm.md
   - Machine learning:
       - Overview: ml/index.md
+      - scikit-learn tools: ml/sklearn.md
       - Anomaly detection: ml/anomaly.md
       - Naive Bayes: ml/bayes.md
       - Change detection: ml/drift.md

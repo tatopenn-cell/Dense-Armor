@@ -50,6 +50,8 @@ References:
     Healy, J. (2022). Accurate and consistent calculation of the mean and
         variance in Monte-Carlo simulations. arXiv:2206.10662v7. Algorithm 2,
         the shifted naive algorithm with K = x[0] and Kahan summation.
+    Issue #117286 of TensorFlow: the inaccuracy of ``tf.nn.moments`` in
+        float32.
 
 The shift ``y = x - x[0]`` is the shifted-data algorithm with K = x[0].
 Healy (2022), Introduction and Algorithm 2, takes the first observation as K,
