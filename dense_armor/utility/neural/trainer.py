@@ -37,6 +37,10 @@ import numpy as np
 from dense_armor.utility.neural.batching import minibatches
 from dense_armor.utility.neural.clip import clip_grad_norm
 from dense_armor.utility.neural.compiled import (
+    _apply_update,
+    make_step,
+)
+from dense_armor.utility.neural.compiled import (
     _init_state as init_state,
 )
 from dense_armor.utility.neural.compiled import (
@@ -44,9 +48,6 @@ from dense_armor.utility.neural.compiled import (
 )
 from dense_armor.utility.neural.compiled import (
     _write_values as write_values,
-)
-from dense_armor.utility.neural.compiled import (
-    make_step,
 )
 from dense_armor.utility.neural.params import Param
 from dense_armor.utility.neural.schedules import ConstantLR
@@ -102,6 +103,8 @@ class Trainer:
         decay: str = "l2",
         clip_norm: float | None = None,
         compile: bool = False,
+        compute_dtype: str | None = None,
+        loss_scale: float | str | None = None,
     ) -> None:
         if decay not in ("l2", "decoupled"):
             raise ValueError(f"decay must be 'l2' or 'decoupled', got {decay!r}")
@@ -117,14 +120,42 @@ class Trainer:
             raise ValueError(f"clip_norm must be > 0 or None, got {clip_norm}")
         self.clip_norm = clip_norm
         self.compile = bool(compile)
+        if compute_dtype is not None and compute_dtype not in (
+            "bfloat16",
+            "float16",
+            "float32",
+        ):
+            raise ValueError(
+                f"compute_dtype must be None, 'bfloat16', 'float16' or 'float32', "
+                f"got {compute_dtype!r}"
+            )
+        self.compute_dtype = compute_dtype
+        if loss_scale is None:
+            _ls: Any = None
+        elif isinstance(loss_scale, str):
+            if loss_scale != "dynamic":
+                raise ValueError(
+                    f"loss_scale must be None, a positive float, or 'dynamic', "
+                    f"got {loss_scale!r}"
+                )
+            _ls = "dynamic"
+        else:
+            _ls = float(loss_scale)
+            if _ls <= 0.0:
+                raise ValueError(f"loss_scale must be positive, got {_ls}")
+        self.loss_scale = _ls
+        self._scale: float = 1.0
+        self._good_steps: int = 0
         self._compiled_values: list | None = None
         self._compiled_opt_state: Any = None
         self._compiled_step: Any = None
+        self._compiled_mixed: Any = None
         self.optimizers_ = [copy.deepcopy(optimizer) for _ in model.params()]
         self.history_: dict[str, list[float]] = {
             "train_loss": [],
             "val_loss": [],
             "lr": [],
+            "loss_scale": [],
         }
         self.best_epoch_: int | None = None
         self.stopped_epoch_: int | None = None
@@ -178,13 +209,24 @@ class Trainer:
             if patience < 1:
                 raise ValueError(f"patience must be at least 1, got {patience}")
 
-        self.history_ = {"train_loss": [], "val_loss": [], "lr": []}
+        self.history_ = {
+            "train_loss": [],
+            "val_loss": [],
+            "lr": [],
+            "loss_scale": [],
+        }
         self.best_epoch_ = None
         self.stopped_epoch_ = None
         best_val = float("inf")
         best_weights: list[np.ndarray] | None = None
         no_improve = 0
         n = len(X)
+
+        mixed = self.compile and (
+            self.compute_dtype is not None or self.loss_scale is not None
+        )
+        if mixed and self.loss_scale == "dynamic" and self._scale == 1.0:
+            self._scale = float(2.0**10)
 
         if self.compile:
             self._compiled_values = read_values(self.model)
@@ -200,7 +242,11 @@ class Trainer:
                     self.weight_decay,
                     self.decay,
                     self.clip_norm,
+                    compute_dtype=self.compute_dtype,
+                    loss_scale=(self._scale if self.loss_scale is not None else 1.0),
                 )
+                if mixed:
+                    self._compiled_mixed = self._compiled_step.mixed
             values = self._compiled_values
             opt_state = self._compiled_opt_state
             step = self._compiled_step
@@ -225,7 +271,41 @@ class Trainer:
             total_loss_device: Any = jnp.float32(0.0) if self.compile else None
             for b_idx, idx in enumerate(batches):
                 epoch_t = epoch + b_idx / n_batches
-                if self.compile:
+                if mixed:
+                    grads, batch_loss = self._compiled_mixed(values, X[idx], y[idx])
+                    overflow = any(bool(jnp.any(~jnp.isfinite(g))) for g in grads)
+                    if overflow:
+                        if self.loss_scale == "dynamic":
+                            self._scale = max(self._scale / 2.0, 1.0)
+                        self._good_steps = 0
+                    else:
+                        if self.loss_scale == "dynamic":
+                            self._good_steps += 1
+                            if self._good_steps >= 200:
+                                self._scale = self._scale * 2.0
+                                self._good_steps = 0
+                        if self._scale != 1.0:
+                            grads = [g / self._scale for g in grads]
+                        lr_t = self.schedule(epoch_t)
+                        eta_t = self.schedule.multiplier(epoch_t)
+                        if values is None:
+                            raise RuntimeError("mixed path requires values")
+                        values, opt_state = _apply_update(
+                            self.optimizer_prototype,
+                            values,
+                            grads,
+                            opt_state,
+                            lr_t,
+                            eta_t,
+                            self.weight_decay,
+                            self.decay,
+                        )
+                        self._compiled_values = values
+                        self._compiled_opt_state = opt_state
+                        write_values(self.model, values)
+                    total_loss_device = total_loss_device + batch_loss * len(idx)
+                    total_size += len(idx)
+                elif self.compile:
                     values, opt_state, batch_loss = step(
                         values, opt_state, X[idx], y[idx], epoch_t
                     )
@@ -257,6 +337,8 @@ class Trainer:
                 train_loss = total_loss / total_size
             self.history_["train_loss"].append(train_loss)
             self.history_["lr"].append(first_lr)
+            if self.loss_scale is not None:
+                self.history_["loss_scale"].append(self._scale)
             if X_val is not None and y_val is not None:
                 val_loss = self.evaluate(X_val, y_val)
             else:

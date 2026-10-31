@@ -39,6 +39,21 @@ from typing import Any
 import jax
 import jax.numpy as jnp
 
+_DTYPE_MAP = {
+    "bfloat16": jnp.bfloat16,
+    "float16": jnp.float16,
+    "float32": jnp.float32,
+}
+
+
+def _cast(x, dtype):
+    """Cast a list of arrays to a compute dtype (None = identity)."""
+    if dtype is None:
+        return x
+    if isinstance(x, list):
+        return [_cast(e, dtype) for e in x]
+    return jnp.asarray(x, dtype=dtype)
+
 
 def _optimizer_name(optimizer: Any) -> str:
     return type(optimizer).__name__
@@ -231,6 +246,8 @@ def make_step(
     weight_decay: float,
     decay: str,
     clip_norm: float | None,
+    compute_dtype: str | None = None,
+    loss_scale: float = 1.0,
 ) -> Any:
     """Return ``step(values, opt_state, x, y, epoch_t)``.
 
@@ -282,17 +299,58 @@ def make_step(
 
     if name not in ("SGD", "Adam", "RMSProp", "AdaGrad"):
         raise ValueError(f"compile=True does not support optimizer {name}")
-    jitted = jax.jit(_step)
 
-    def step(
+    if compute_dtype is None and loss_scale == 1.0:
+        jitted = jax.jit(_step)
+
+        def step(
+            values: list, opt_state: Any, x: Any, y: Any, epoch_t: float
+        ) -> tuple[list, Any, Any]:
+            tt = float(epoch_t)
+            lr = schedule(tt)
+            eta = schedule.multiplier(tt)
+            return jitted(values, opt_state, x, y, lr, eta)
+
+        return step
+
+    dtype = _DTYPE_MAP.get(compute_dtype) if compute_dtype is not None else None
+    if compute_dtype is not None and dtype is None:
+        raise ValueError(
+            f"compute_dtype must be one of {sorted(_DTYPE_MAP)}, got {compute_dtype!r}"
+        )
+
+    def _mixed_step(values: list, x: Any, y: Any):
+        cast_values = _cast(values, dtype)
+        _write_values(model, cast_values)
+        for pp in model.params():
+            pp.zero_grad()
+        pred = model.forward(_cast(x, dtype), training=True)
+        loss_value = loss.forward(pred, _cast(y, dtype))
+        grad = loss.backward()
+        if loss_scale != 1.0:
+            grad = grad * loss_scale
+        model.backward(grad)
+        grads = _read_grads(model)
+        grads = [jnp.asarray(g, dtype=jnp.float32) for g in grads]
+        if clip_norm is not None:
+            grads = _clip_grads(grads, clip_norm)
+        return grads, loss_value
+
+    mixed_jitted = jax.jit(_mixed_step)
+
+    def _mixed_public(values: list, x: Any, y: Any):
+        return mixed_jitted(values, x, y)
+
+    def _step_with_mixed_placeholder(
         values: list, opt_state: Any, x: Any, y: Any, epoch_t: float
     ) -> tuple[list, Any, Any]:
-        t = float(epoch_t)
-        lr = schedule(t)
-        eta = schedule.multiplier(t)
-        return jitted(values, opt_state, x, y, lr, eta)
+        raise RuntimeError(
+            "make_step with compute_dtype or loss_scale active returns "
+            "a mixed step; use .mixed"
+        )
 
-    return step
+    setattr(_step_with_mixed_placeholder, "mixed", _mixed_public)
+    return _step_with_mixed_placeholder
 
 
 __all__ = [
