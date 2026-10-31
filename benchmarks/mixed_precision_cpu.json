@@ -12,7 +12,7 @@
   "claims": {
     "1_bf16_loss_within_5pct": {
       "holds": true,
-      "rel_diff": 0.001384161833700804
+      "rel_diff": 0.001422453932193009
     },
     "2_memory_0.7x": {
       "holds": null,
@@ -31,15 +31,15 @@
       "loss_at_step": 20,
       "final_loss": 0.5806036591529846,
       "peak_bytes": null,
-      "steps_per_second_median": 93.66158346516592,
+      "steps_per_second_median": 87.633672460916,
       "steps_per_second_range": [
-        84.04477127151867,
-        93.85953906807252
+        83.50119822808354,
+        92.01873691087675
       ],
       "steps_per_second_sessions": [
-        93.66158346516592,
-        93.85953906807252,
-        84.04477127151867
+        87.633672460916,
+        92.01873691087675,
+        83.50119822808354
       ]
     },
     {
@@ -47,17 +47,17 @@
       "compute_dtype": "bfloat16",
       "loss_scale": 1.0,
       "loss_at_step": 20,
-      "final_loss": 0.5814073085784912,
+      "final_loss": 0.5814295411109924,
       "peak_bytes": null,
-      "steps_per_second_median": 83.2223722509099,
+      "steps_per_second_median": 88.17787190962173,
       "steps_per_second_range": [
-        83.12037857722171,
-        91.37435834265243
+        80.61459015736344,
+        88.4940492863061
       ],
       "steps_per_second_sessions": [
-        83.12037857722171,
-        83.2223722509099,
-        91.37435834265243
+        88.4940492863061,
+        88.17787190962173,
+        80.61459015736344
       ]
     },
     {
@@ -65,17 +65,17 @@
       "compute_dtype": "float16",
       "loss_scale": "dynamic",
       "loss_at_step": 20,
-      "final_loss": 0.5806786417961121,
+      "final_loss": 2.4666450023651123,
       "peak_bytes": null,
-      "steps_per_second_median": 79.70582683541998,
+      "steps_per_second_median": 112.53475326372015,
       "steps_per_second_range": [
-        74.70112081544632,
-        80.43931384265579
+        104.05347491239023,
+        114.33181810033055
       ],
       "steps_per_second_sessions": [
-        74.70112081544632,
-        80.43931384265579,
-        79.70582683541998
+        104.05347491239023,
+        114.33181810033055,
+        112.53475326372015
       ]
     }
   ]
