@@ -102,17 +102,37 @@ def test_equivalence_of_the_loss(model_name):
         assert rel <= 1e-4, f"{model_name}: loop={a} compiled={b} rel={rel}"
 
 
+STORED_MASTER_LOSSES_X64_TRUE = [
+    1.4483716913582123,
+    1.191682586339547,
+    1.0359279394961722,
+]
+STORED_MASTER_LOSSES_X64_FALSE = [
+    7.079418420791626,
+    5.084859251976013,
+    3.7510147094726562,
+]
+
+
 def test_default_unchanged_bit_for_bit():
-    """Two compiles of the same run produce the same loss."""
+    """At compile=False the loss equals the values stored from master.
+
+    The values are the three epoch losses of the MLP [2, 4, 1] with
+    seed 0, MSE, SGD(0.01), batch 8 on 16 samples, shuffle with key 0.
+    They were taken from master before this branch existed and are
+    stored here. The equality is bit for bit.
+    """
     factory, sx, sy = MODEL_FACTORIES["mlp"]
     X, y = _data(sx, sy)
-    m1 = factory()
-    t1 = Trainer(m1, MSE(), SGD(0.01))
-    t1.fit(X, y, epochs=3, batch_size=8, key=jax.random.PRNGKey(0))
-    m2 = factory()
-    t2 = Trainer(m2, MSE(), SGD(0.01))
-    t2.fit(X, y, epochs=3, batch_size=8, key=jax.random.PRNGKey(0))
-    assert t1.history_["train_loss"] == t2.history_["train_loss"]
+    m = factory()
+    t = Trainer(m, MSE(), SGD(0.01))
+    t.fit(X, y, epochs=3, batch_size=8, key=jax.random.PRNGKey(0))
+    expected = (
+        STORED_MASTER_LOSSES_X64_TRUE
+        if jax.config.jax_enable_x64
+        else STORED_MASTER_LOSSES_X64_FALSE
+    )
+    assert t.history_["train_loss"] == expected
 
 
 @pytest.mark.parametrize("optimizer_name", ["sgd", "sgd_momentum", "adam", "rmsprop", "adagrad"])

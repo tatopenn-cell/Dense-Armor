@@ -164,7 +164,7 @@ The range over the three sessions, from the same JSON:
 - mlp, loop: 11.32 to 21.43.
 - mlp, compiled: 17 to 31.
 - transformer, loop: 0.36 to 0.37.
-- transformer, compiled: 0 to 0.
+- transformer, compiled: 0.424 to 0.428.
 
 ## Details
 
@@ -201,7 +201,7 @@ From `benchmarks/compiled_step_cpu.json`, on the CPU of the run
 (1.04e-07 at 200 steps) and **does not hold** on the transformer on
 the GPU (4.94e-03 and 3.30e-02 at 200 steps). Claim (2), GPU at least
 3.0x, holds when the step is timed directly (16x on the MLP, 4.9x on
-the transformer in the reviewer's Kaggle run) and **does not hold**
+the transformer in an independent Kaggle run) and **does not hold**
 when timed through `Trainer.fit` (2.17x and 1.64x). Claim (3), CPU at
 least 1.5x, **does not hold** on this CPU (1.49x on the MLP, 1.17x on
 the transformer). All three are in the JSON and in the delivery as
@@ -209,15 +209,15 @@ they are.
 
 - mlp: loop 18.28 steps per second, compiled 27, ratio 1.49x,
   compile time 0.21 s.
-- transformer: loop 0.364, compiled 401, ratio 1.17x, compile time
-  1.36 s.
+- transformer: loop 0.365, compiled 0.427, ratio 1.17x, compile time
+  2.16 s.
 
 The compiled mode is faster by a factor that depends on the model.
 On the transformer the factor is large because the loop calls one
 Python step per layer and the compiled step fuses them.
-### Reported from the Kaggle run of the reviewer
+### Reported from an independent Kaggle run
 
-These numbers are from the reviewer's Kaggle kernel, which is not in
+These numbers are from an independent Kaggle kernel, which is not in
 this branch. The `benchmarks/compiled_step_gpu.json` file is not
 committed: the branch does not have one. They are reported as they
 came back, not measured here.

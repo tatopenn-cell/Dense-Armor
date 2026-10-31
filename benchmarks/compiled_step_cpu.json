@@ -10,9 +10,10 @@
   "smoke": false,
   "loss_steps": 0,
   "claims": {
-    "1_loss_within_1e-4": "holds",
+    "1_loss_within_1e-4": "holds for mlp (1.04e-07 at 200 steps); transformer at 3 steps on CPU (9.71e-07); does not hold for transformer at 200 steps on GPU (4.94e-03, 3.30e-02)",
     "2_gpu_at_least_3x": "not measured: backend is not gpu",
-    "3_cpu_at_least_1_5x": "does not hold"
+    "3_cpu_at_least_1_5x": "does not hold",
+    "1_loss_within_1e-4_backend": "cpu here, gpu reported by the reviewer"
   },
   "rows": [
     {

@@ -181,9 +181,8 @@ class Trainer:
         n = len(X)
 
         if self.compile:
+            self._compiled_values = read_values(self.model)
             if self._compiled_step is None:
-                self._compiled_values = read_values(self.model)
-                write_values(self.model, self._compiled_values)
                 self._compiled_opt_state = init_state(
                     self.optimizer_prototype, self._compiled_values
                 )
