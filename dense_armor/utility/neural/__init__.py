@@ -1,6 +1,7 @@
 """Neural bricks: parameters, initialisations, activations, losses."""
 
 from dense_armor.utility.neural.adapter import AsTransformer
+from dense_armor.utility.neural.glu import GLUFeedForward
 from dense_armor.utility.neural.layers import (
     Dense,
     Dropout,
@@ -10,6 +11,7 @@ from dense_armor.utility.neural.layers import (
     dense_forward,
 )
 from dense_armor.utility.neural.norm import BatchNorm, LayerNorm
+from dense_armor.utility.neural.norm_rms import RMSNorm
 from dense_armor.utility.neural.params import Param
 
 __all__ = [
@@ -19,7 +21,9 @@ __all__ = [
     "Dense",
     "Dropout",
     "Embedding",
+    "GLUFeedForward",
     "LayerNorm",
+    "RMSNorm",
     "Residual",
     "dense_backward",
     "dense_forward",

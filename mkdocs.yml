@@ -228,6 +228,7 @@ nav:
       - Attention: neural/attention.md
       - Training: neural/training.md
       - Compiled training: neural/compiled_training.md
+      - Modern blocks: neural/modern_blocks.md
       - Continuous training: neural/continuous.md
       - Encoders and decoders: neural/encoder_decoder.md
       - Decoder language models: neural/decoder_lm.md
