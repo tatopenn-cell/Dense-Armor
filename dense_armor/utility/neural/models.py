@@ -28,7 +28,9 @@ from dense_armor.utility.neural.attention import (
 )
 from dense_armor.utility.neural.chain import Sequential
 from dense_armor.utility.neural.conv import Conv2D, Flatten, MaxPool2D
-from dense_armor.utility.neural.layers import Dense, Residual
+from dense_armor.utility.neural.decoder import TransformerDecoderBlock
+from dense_armor.utility.neural.layers import Dense, Embedding, Residual
+from dense_armor.utility.neural.norm import LayerNorm
 from dense_armor.utility.neural.params import Param
 from dense_armor.utility.neural.recurrent import GRU, LSTM, RNN
 
@@ -468,4 +470,111 @@ def transformer_encoder(
         )
     layers.append(MeanOverTime())
     layers.append(Dense(d_model, n_out, keys[depth + 1]))
+    return Sequential(layers)
+
+
+class _TiedHead:
+    """Logits ``x @ E.T``, reusing an embedding matrix as output projection.
+
+    Our choice, not in Vaswani et al. 2017: the paper does not tie the
+    output projection to the input embedding. Weight tying is a common
+    practice in language-model implementations.
+
+    Args:
+        embedding: the ``Embedding`` whose matrix ``E`` is reused.
+    """
+
+    def __init__(self, embedding: Embedding) -> None:
+        self.embedding = embedding
+        self.x_: jax.Array | None = None
+
+    def __repr__(self) -> str:
+        return f"_TiedHead(n_tokens={self.embedding.n_tokens}, dim={self.embedding.dim})"
+
+    def params(self) -> list[Param]:
+        """Empty: the matrix is the one of the wrapped ``Embedding``."""
+        return []
+
+    def forward(self, x: jax.Array, training: bool = True) -> jax.Array:
+        """Return ``x @ E.T``, the logits over the vocabulary."""
+        del training
+        x = jnp.asarray(x)
+        self.x_ = x
+        return x @ self.embedding.E.value.T
+
+    def backward(self, g: jax.Array) -> jax.Array:
+        """Gradients: adds ``dE`` to ``E.grad`` and returns ``dx``."""
+        if self.x_ is None:
+            raise RuntimeError("call forward() before backward()")
+        x = self.x_
+        g = jnp.asarray(g)
+        x_flat = x.reshape(-1, x.shape[-1])
+        g_flat = g.reshape(-1, g.shape[-1])
+        dE = g_flat.T @ x_flat
+        self.embedding.E.grad = self.embedding.E.grad + dE
+        return g @ self.embedding.E.value
+
+
+def transformer_decoder(
+    vocab: int,
+    d_model: int,
+    n_heads: int,
+    n_layers: int,
+    max_len: int,
+    *,
+    key: Any,
+    d_ff: int | None = None,
+    tie: bool = False,
+) -> Sequential:
+    """The decoder of Vaswani et al. 2017, as a chain to a causal LM.
+
+    ``forward(tokens)`` takes integer token ids of shape ``(T,)`` or
+    ``(B, T)`` and returns logits of shape ``(T, vocab)`` or
+    ``(B, T, vocab)``.
+
+    Args:
+        vocab: the vocabulary size.
+        d_model: the representation width.
+        n_heads: the number of heads of every block.
+        n_layers: the number of decoder blocks, at least one.
+        max_len: the maximum sequence length.
+        key: a ``jax.random`` key, split once per layer with weights.
+        d_ff: the width of the feed-forward. ``None`` uses ``4 * d_model``.
+        tie: if True, the output head reuses the embedding matrix.
+
+    Raises:
+        ValueError: if ``n_layers`` is below 1, or if ``d_model`` is not
+            divisible by ``n_heads``.
+
+    References:
+        Vaswani et al. 2017, Section 3.1 page 3 (decoder stacks),
+        Section 3.3 page 5 (``d_model = 512``, ``d_ff = 2048``).
+
+    Examples:
+        >>> import jax
+        >>> from dense_armor.utility.neural.models import transformer_decoder
+        >>> m = transformer_decoder(8, 8, 2, 1, 4, key=jax.random.PRNGKey(0))
+        >>> m.forward(jax.numpy.array([0, 1, 2, 3])).shape
+        (4, 8)
+    """
+    if n_layers < 1:
+        raise ValueError(f"n_layers must be at least 1, got {n_layers}")
+    if d_model % n_heads != 0:
+        raise ValueError(
+            f"d_model {d_model} is not divisible by n_heads {n_heads}"
+        )
+    if d_ff is None:
+        d_ff = 4 * d_model
+    keys = jax.random.split(key, n_layers + 2)
+    emb = Embedding(vocab, d_model, keys[0])
+    layers: list[Any] = [emb, AddPositions(max_len)]
+    for i in range(n_layers):
+        layers.append(
+            TransformerDecoderBlock(d_model, n_heads, d_ff, keys[i + 1])
+        )
+    layers.append(LayerNorm(d_model))
+    if tie:
+        layers.append(_TiedHead(emb))
+    else:
+        layers.append(Dense(d_model, vocab, keys[n_layers + 1]))
     return Sequential(layers)
