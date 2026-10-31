@@ -165,7 +165,7 @@ No benchmark in this page. The numbers printed by the code blocks come from runs
 
 ### Not measured
 
-GPU speed, larger models (`d_model=512`, six blocks), longer sequences (`max_len > 64`), the quality of the model on a real corpus. The page shows the block, the loss and the generation loop, not a trained language model.
+GPU speed, the base architecture of the paper (`d_model=512`, six blocks), longer sequences (`max_len > 64`), the quality of the model on a natural-language corpus. The page shows the block, the loss and the generation loop, not a trained language model.
 
 ### Development diary
 

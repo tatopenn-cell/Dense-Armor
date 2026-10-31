@@ -30,8 +30,7 @@ class NextTokenLoss:
 
     The mean is over the positions whose target is not ``ignore_index``,
     not over ``T - 1``: a fixed denominator would dilute the valid
-    targets with the padding and make a short sequence look better than
-    it is. The count is therefore the number of valid targets. The
+    targets with the padding and inflate the score of a short sequence. The count is therefore the number of valid targets. The
     ``-100`` value is the convention of the field; the masking itself
     is our choice, not stated in Vaswani et al. 2017.
 
