@@ -20,6 +20,11 @@ from dense_armor.utility.neural.init import xavier_normal
 from dense_armor.utility.neural.layers import Dense, Dropout
 from dense_armor.utility.neural.norm import LayerNorm
 from dense_armor.utility.neural.params import Param
+from dense_armor.utility.neural.rotary import (
+    apply_rotary,
+    apply_rotary_transpose,
+    rotary_angles,
+)
 
 
 def scaled_dot_product_attention(
@@ -156,9 +161,14 @@ class MultiHeadSelfAttention:
         n_heads: the number of heads; ``d_model`` must be divisible by it.
         key: a ``jax.random`` key.
         causal: if True, each position attends only up to itself.
+        rotary: if True, the queries and the keys of every head are rotated
+            by the rotary position embedding of Su et al. 2021 (Eq.(14),
+            page 5) before the scores; the values are not. Default False,
+            the attention without positions of this class.
 
     Raises:
-        ValueError: if ``d_model`` is not divisible by ``n_heads``.
+        ValueError: if ``d_model`` is not divisible by ``n_heads``, or if
+            ``rotary`` is True and the dimension of a head is odd.
 
     Examples:
         >>> import jax
@@ -177,24 +187,32 @@ class MultiHeadSelfAttention:
         n_heads: int,
         key: Any,
         causal: bool = False,
+        rotary: bool = False,
     ) -> None:
         if d_model % n_heads != 0:
             raise ValueError(f"d_model {d_model} is not divisible by n_heads {n_heads}")
+        if rotary and (d_model // n_heads) % 2 != 0:
+            raise ValueError(
+                f"rotary needs an even head dimension, got {d_model // n_heads}"
+            )
         self.d_model = d_model
         self.n_heads = n_heads
         self.d_k = d_model // n_heads
         self.causal = causal
+        self.rotary = rotary
         keys = jax.random.split(key, 4)
         self.W_Q = Param(xavier_normal(keys[0], (d_model, d_model)))
         self.W_K = Param(xavier_normal(keys[1], (d_model, d_model)))
         self.W_V = Param(xavier_normal(keys[2], (d_model, d_model)))
         self.W_O = Param(xavier_normal(keys[3], (d_model, d_model)))
         self._cache: dict[str, jax.Array] | None = None
+        self._angles: tuple[jax.Array, jax.Array] | None = None
 
     def __repr__(self) -> str:
+        rotary = ", rotary=True" if self.rotary else ""
         return (
             f"MultiHeadSelfAttention({self.d_model}, {self.n_heads}, "
-            f"causal={self.causal})"
+            f"causal={self.causal}{rotary})"
         )
 
     def params(self) -> list[Param]:
@@ -209,6 +227,13 @@ class MultiHeadSelfAttention:
         B, H, T, dk = x.shape
         return x.transpose(0, 2, 1, 3).reshape(B, T, H * dk)
 
+    def _rotate_step(
+        self, x: jax.Array, angles: tuple[jax.Array, jax.Array]
+    ) -> jax.Array:
+        """Rotate a row of shape ``(1, d_model)`` at the position of ``angles``."""
+        heads = x.reshape(1, self.n_heads, 1, self.d_k)
+        return self._merge_heads(apply_rotary(heads, *angles))[0]
+
     def forward(self, x: jax.Array, training: bool = True) -> jax.Array:
         """Run the attention over a sequence."""
         del training
@@ -220,6 +245,11 @@ class MultiHeadSelfAttention:
         Q = self._split_heads(x @ self.W_Q.value)
         K = self._split_heads(x @ self.W_K.value)
         V = self._split_heads(x @ self.W_V.value)
+        angles = None
+        if self.rotary:
+            angles = rotary_angles(T, self.d_k)
+            Q = apply_rotary(Q, *angles)
+            K = apply_rotary(K, *angles)
         mask = jnp.tril(jnp.ones((T, T), dtype=bool)) if self.causal else None
         attn_out = scaled_dot_product_attention(Q, K, V, mask)
         merged = self._merge_heads(attn_out)
@@ -232,6 +262,7 @@ class MultiHeadSelfAttention:
             merged=merged,
             mask=mask,
         )
+        self._angles = angles
         return y[0] if squeeze else y
 
     def backward(self, g: jax.Array) -> jax.Array:
@@ -254,6 +285,9 @@ class MultiHeadSelfAttention:
             d_attn_out,
             self._cache["mask"],
         )
+        if self._angles is not None:
+            dQ = apply_rotary_transpose(dQ, *self._angles)
+            dK = apply_rotary_transpose(dK, *self._angles)
         dQ_m = self._merge_heads(dQ)
         dK_m = self._merge_heads(dK)
         dV_m = self._merge_heads(dV)
@@ -289,6 +323,10 @@ class MultiHeadSelfAttention:
         q = x_t @ self.W_Q.value
         k_new = x_t @ self.W_K.value
         v_new = x_t @ self.W_V.value
+        if self.rotary:
+            angles = rotary_angles(1, self.d_k, offset=k_cache.shape[0])
+            q = self._rotate_step(q, angles)
+            k_new = self._rotate_step(k_new, angles)
         k_all = jnp.concatenate([k_cache, k_new], axis=0)
         v_all = jnp.concatenate([v_cache, v_new], axis=0)
         Q = q.reshape(1, 1, self.n_heads, self.d_k).transpose(0, 2, 1, 3)
