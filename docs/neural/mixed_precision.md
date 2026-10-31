@@ -166,16 +166,39 @@ scaling is not needed.
 `d_model=512`, sequence 256, batch 32, in three modes on the CPU of this
 session. Values in `benchmarks/mixed_precision_cpu.json`, `backend: 'cpu'`.
 
+CPU (`benchmarks/mixed_precision_cpu.json`, `backend: cpu`):
+
 | mode | loss at step 20 | steps/s (median) |
 |---|---|---|
-| float32 | 0.580604 | 87.63 |
-| bfloat16 | 0.581430 | 88.18 |
-| float16 (dynamic) | 2.466645 | 112.53 |
+| float32 | 0.580604 | 122.13 |
+| bfloat16 | 0.581430 | 87.23 |
+| float16 (dynamic) | 0.595491 | 78.29 |
 
-Claim 1 (bfloat16 within 5% of float32): **holds**, relative difference
-0.14%. Claim 2 (memory 0.7x of float32): **not measured**, no GPU. Claim
-3 (faster of bfloat16/float16 has 1.3x steps/s of float32): **not
-measured** on CPU.
+GPU (T4, `benchmarks/mixed_precision_gpu.json`, `backend: gpu`):
+
+| mode | loss at step 200 | steps/s (median) | peak bytes |
+|---|---|---|---|
+| float32 | 0.946005 | 3.35 | 2 333 349 632 |
+| bfloat16 | 0.945963 | 2.54 | 2 411 058 688 |
+| float16 (dynamic) | 0.945946 | 2.39 | 2 476 843 008 |
+
+Claim 1 (bfloat16 within 5% of float32): **holds**. On CPU at step
+20 the relative difference is 0.14%; on GPU at step 200 the relative
+difference is `4.4e-5`. Claim 2 (memory of the lower precision at most
+0.7 times float32): **does not hold**. On GPU the ratio is `1.033`: the
+mixed-precision run uses about 3% more memory than float32. Claim 3 (the
+faster of bfloat16 and float16 has at least 1.3 times the steps per
+second of float32): **does not hold**. On GPU the ratio is `0.759`:
+bfloat16 is about 24% slower than float32, not faster.
+
+The reason for claims 2 and 3: the T4 GPU of the run is a Turing card,
+which has no bfloat16 tensor core. The `bfloat16` arithmetic is done in
+software, and the mixed step adds a copy of the master weights in
+float32 plus the float16 gradients in the graph, so the peak memory
+grows. The claims are reported as they were written before the run;
+the numbers above say they do not hold on this card. On an Ampere
+(A100, A10, RTX 30/40) or Hopper (H100) the tensor cores have bfloat16,
+and the result may differ; that is not measured here.
 
 ### Not measured
 
@@ -186,6 +209,12 @@ float16 training with loss scaling matches float32 on a task where the
 network actually learns is **not** part of this page.
 
 ### Development diary
+
+A first version of the mixed step captured `loss_scale` as a constant in
+the jitted graph, so the scale could not change at runtime and the
+dynamic scaling did not work. The fix passes the scale as a runtime
+argument of the jitted step, and `Trainer.fit` passes `self._scale` at
+every step. The block of Section 2 shows the corrected behaviour.
 
 The underflow exists and the loss scaling fixes it in the gradient
 (Section 1). But the loss on these small networks does not decrease
