@@ -363,3 +363,26 @@ def test_generate_max_len_smaller_than_prompt_message():
         assert False, "expected ValueError"
     except ValueError as e:
         assert "smaller" in str(e) or "max_len" in str(e)
+
+
+def test_decoder_block_initialisation_variances():
+    """Xavier on the four projections, He on the two feed-forward weights.
+
+    The variance is measured on matrices large enough that the sample
+    variance is within a few percent of the theoretical one: Xavier
+    gives ``1/fan_in`` (He et al. 2015, Eqn.(15) page 5, linear case),
+    He gives ``2/fan_in`` (same equation, ReLU case with ``a=0``).
+    """
+    d_model, d_ff = 64, 256
+    b = TransformerDecoderBlock(d_model, 4, d_ff, jax.random.PRNGKey(0))
+    for name in ("W_Q", "W_K", "W_V", "W_O"):
+        v = float(getattr(b.attn, name).value.var())
+        assert abs(v - 1.0 / d_model) < 0.2 / d_model, f"{name}: {v}"
+    v1 = float(b.ffn1.W.value.var())
+    v2 = float(b.ffn2.W.value.var())
+    assert abs(v1 - 2.0 / d_model) < 0.2 * 2.0 / d_model, f"ffn1: {v1}"
+    assert abs(v2 - 2.0 / d_ff) < 0.2 * 2.0 / d_ff, f"ffn2: {v2}"
+    assert float(b.ln1.gain.value.min()) == 1.0
+    assert float(b.ln1.gain.value.max()) == 1.0
+    assert float(b.ln1.bias.value.min()) == 0.0
+    assert float(b.ln1.bias.value.max()) == 0.0

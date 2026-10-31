@@ -9,9 +9,10 @@ only up to itself (page 3, "prevent positions from attending to
 subsequent positions").
 
 References:
-    Vaswani et al. 2017, Section 3.1 (page 3, decoder stacks),
-    Section 3.2.3 (page 4, multi-head attention), Eq.(2) page 5
-    (the feed-forward).
+    Vaswani et al. 2017, Section 3.1 (page 3, decoder stacks and the
+    masking of the self-attention), Section 3.2.3 (page 5, the
+    applications of attention, including encoder-decoder attention),
+    Eq.(2) page 5 (the feed-forward).
 """
 
 from __future__ import annotations

@@ -549,8 +549,9 @@ def transformer_decoder(
             divisible by ``n_heads``.
 
     References:
-        Vaswani et al. 2017, Section 3.1 page 3 (decoder stacks),
-        Section 3.3 page 5 (``d_model = 512``, ``d_ff = 2048``).
+        Vaswani et al. 2017, Section 3.1 page 3 (decoder stacks, and
+        ``d_model = 512`` as the width of every sub-layer), Table 3 page
+        9 (``d_ff = 2048`` for the base model).
 
     Examples:
         >>> import jax
