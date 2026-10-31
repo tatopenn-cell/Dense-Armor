@@ -222,6 +222,8 @@ after the measurement.
   sequential compensated summation of the illustration in step 3.
 - TensorFlow, `tensorflow/python/ops/nn_impl.py`, function `moments`, lines
   1480-1487 (master, read on 2026-10-29): the baseline formula.
+- Issue #117286 of TensorFlow: the inaccuracy of `tf.nn.moments` in
+  `float32`.
 
 ### Choices
 
