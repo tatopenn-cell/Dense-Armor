@@ -55,6 +55,12 @@ class CompiledStep:
     plain: Callable | None
     mixed: Callable | None
 
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        """Run the plain step; the mixed step is reached through ``mixed``."""
+        if self.plain is None:
+            raise TypeError("this step is mixed: call .mixed(values, x, y, scale)")
+        return self.plain(*args, **kwargs)
+
 
 _DTYPE_MAP = {
     "bfloat16": jnp.bfloat16,
@@ -276,9 +282,9 @@ def make_step(
     decay: str,
     clip_norm: float | None,
     compute_dtype: str | None = None,
-    loss_scale: float = 1.0,
-) -> Any:
-    """Return ``step(values, opt_state, x, y, epoch_t)``.
+    loss_scale: float | str | None = None,
+) -> CompiledStep:
+    """Return the compiled step: ``step(values, opt_state, x, y, epoch_t)``.
 
     The inner function is jitted. ``lr`` and ``eta`` are computed
     outside the jit, from a Python float ``epoch_t``: the schedule has
@@ -295,10 +301,26 @@ def make_step(
         weight_decay: the weight decay coefficient.
         decay: ``"l2"`` or ``"decoupled"``.
         clip_norm: the global L2 threshold, or ``None``.
+        compute_dtype: ``None``, ``"bfloat16"`` or ``"float16"``: the dtype
+            of the forward and the backward; the weights are cast to it
+            and the master copy stays in float32.
+        loss_scale: ``None`` for the plain step. Any other value selects
+            the mixed step; the factor itself is the ``scale`` argument
+            of ``mixed``, so it can change between steps.
 
     Returns:
-        A function ``step(values, opt_state, x, y, epoch_t)`` that
-        returns ``(new_values, new_opt_state, loss_value)``.
+        A ``CompiledStep``. Called as ``step(values, opt_state, x, y,
+        epoch_t)`` it returns ``(new_values, new_opt_state, loss_value)``.
+        When ``compute_dtype`` or ``loss_scale`` is given, ``step.mixed(
+        values, x, y, scale)`` returns ``(grads_fp16, grads_fp32, loss)``:
+        the scaled gradients in the compute dtype (for the overflow
+        check), and the gradients divided by ``scale``, in float32 and
+        clipped, ready for the optimizer.
+
+    Raises:
+        ValueError: on an unsupported optimizer, on a model with state
+            that must cross the jit boundary, or on ``compute_dtype``
+            outside ``None``, ``"bfloat16"``, ``"float16"``.
     """
     name = _optimizer_name(optimizer)
     blocker = _stateful_blocker(model)
@@ -329,7 +351,7 @@ def make_step(
     if name not in ("SGD", "Adam", "RMSProp", "AdaGrad"):
         raise ValueError(f"compile=True does not support optimizer {name}")
 
-    if compute_dtype is None:
+    if compute_dtype is None and loss_scale is None:
         jitted = jax.jit(_step)
 
         def plain_step(
@@ -361,12 +383,8 @@ def make_step(
         grad = grad * scale
         model.backward(grad)
         grads = _read_grads(model)
-        # Section 3.1 page 2: gradients are stored as FP16. The cast is a
-        # return value, not a side effect on Param.grad: a side effect
-        # inside jit is ignored (and is what made the CPU test pass and
-        # the GPU test fail before this fix).
         grads_fp16 = [jnp.asarray(g, dtype=dtype) for g in grads]
-        grads_fp32 = [jnp.asarray(g, dtype=jnp.float32) for g in grads_fp16]
+        grads_fp32 = [jnp.asarray(g, dtype=jnp.float32) / scale for g in grads_fp16]
         if clip_norm is not None:
             grads_fp32 = _clip_grads(grads_fp32, clip_norm)
         return grads_fp16, grads_fp32, loss_value

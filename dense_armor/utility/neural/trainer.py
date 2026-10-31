@@ -108,9 +108,9 @@ class Trainer:
     ) -> None:
         """Build a trainer.
 
-        The ``compute_dtype`` and ``loss_scale`` arguments are item A of
-        task N4 (mixed-precision training). The defaults ``None`` and
-        ``None`` keep float32 and today's behaviour bit for bit.
+        ``compute_dtype`` and ``loss_scale`` select mixed-precision
+        training on the compiled step (``compile=True``). The defaults
+        ``None`` and ``None`` keep float32 and today's behaviour.
 
         The mixed-precision machinery follows Micikevicius et al. 2017,
         Section 3 (page 2): a float32 master copy of the weights and of
@@ -130,8 +130,8 @@ class Trainer:
         of a vector) ... batch-normalization ... softmax layers". This
         library keeps them in the compute dtype: the reductions are
         inside ``norm.py``, ``attention.py`` and ``losses.py``, which
-        item A does not touch. **Reported, not done**: the float32
-        reductions need a change in those files.
+        this argument does not change. Float32 reductions need a change in
+        those files and are not implemented.
 
         The dynamic scaling (grow after a window of good steps, halve
         and skip on overflow) is **not in the paper**: the paper mentions
@@ -154,18 +154,20 @@ class Trainer:
             decay: ``"l2"`` or ``"decoupled"``.
             clip_norm: the global L2 threshold, or ``None``.
             compile: use the compiled step of item N1.
-            compute_dtype: ``None`` (float32), ``"bfloat16"``,
-                ``"float16"`` or ``"float32"``.
+            compute_dtype: ``None`` (float32), ``"bfloat16"`` or
+                ``"float16"``. Requires ``compile=True``.
             loss_scale: ``None`` (no scaling), a positive float (constant
                 scale), or ``"dynamic"`` (grow after 2000 good steps,
                 halve and skip on overflow, the PyTorch/Apex default).
+                Requires ``compile=True``.
 
         Raises:
             ValueError: on ``decay`` outside ``("l2", "decoupled")``,
                 negative ``weight_decay``, non-positive ``clip_norm``,
-                ``compute_dtype`` outside the four values, or
-                ``loss_scale`` outside ``None``, a positive float or
-                ``"dynamic"``.
+                ``compute_dtype`` outside ``None``, ``"bfloat16"``,
+                ``"float16"``, ``loss_scale`` outside ``None``, a
+                positive float or ``"dynamic"``, or either of the two
+                given with ``compile=False``.
         """
         if decay not in ("l2", "decoupled"):
             raise ValueError(f"decay must be 'l2' or 'decoupled', got {decay!r}")
@@ -204,9 +206,13 @@ class Trainer:
             if _ls <= 0.0:
                 raise ValueError(f"loss_scale must be positive, got {_ls}")
         self.loss_scale = _ls
+        if (compute_dtype is not None or _ls is not None) and not self.compile:
+            raise ValueError("compute_dtype and loss_scale require compile=True")
         self._scale: float
         if isinstance(_ls, float):
-            self._scale = float(_ls)
+            self._scale = _ls
+        elif _ls == "dynamic":
+            self._scale = float(2.0**16)
         else:
             self._scale = 1.0
         self._good_steps: int = 0
@@ -215,14 +221,15 @@ class Trainer:
         self._compiled_step: Any = None
         self._compiled_mixed: Any = None
         self.optimizers_ = [copy.deepcopy(optimizer) for _ in model.params()]
-        self.history_: dict[str, list[float]] = {
-            "train_loss": [],
-            "val_loss": [],
-            "lr": [],
-            "loss_scale": [],
-        }
+        self.history_: dict[str, list[float]] = self._new_history()
         self.best_epoch_: int | None = None
         self.stopped_epoch_: int | None = None
+
+    def _new_history(self) -> dict[str, list[float]]:
+        history: dict[str, list[float]] = {"train_loss": [], "val_loss": [], "lr": []}
+        if self.loss_scale is not None:
+            history["loss_scale"] = []
+        return history
 
     def _apply_weight_decay(self, p: Param, epoch_t: float) -> None:
         if self.weight_decay <= 0 or p.value.ndim < 2:
@@ -273,12 +280,7 @@ class Trainer:
             if patience < 1:
                 raise ValueError(f"patience must be at least 1, got {patience}")
 
-        self.history_ = {
-            "train_loss": [],
-            "val_loss": [],
-            "lr": [],
-            "loss_scale": [],
-        }
+        self.history_ = self._new_history()
         self.best_epoch_ = None
         self.stopped_epoch_ = None
         best_val = float("inf")
@@ -289,8 +291,6 @@ class Trainer:
         mixed = self.compile and (
             self.compute_dtype is not None or self.loss_scale is not None
         )
-        if mixed and self.loss_scale == "dynamic" and self._scale == 1.0:
-            self._scale = float(2.0**16)
 
         if self.compile:
             _dtype = jnp.float32 if mixed else None
@@ -308,7 +308,7 @@ class Trainer:
                     self.decay,
                     self.clip_norm,
                     compute_dtype=self.compute_dtype,
-                    loss_scale=(self._scale if self.loss_scale is not None else 1.0),
+                    loss_scale=self.loss_scale,
                 )
                 if mixed:
                     self._compiled_mixed = self._compiled_step.mixed
@@ -351,11 +351,8 @@ class Trainer:
                             if self._good_steps >= 2000:
                                 self._scale = self._scale * 2.0
                                 self._good_steps = 0
-                        if self._scale != 1.0:
-                            grads_fp32 = [g / self._scale for g in grads_fp32]
                         lr_t = self.schedule(epoch_t)
                         eta_t = self.schedule.multiplier(epoch_t)
-                        assert values is not None
                         values, opt_state = _apply_update(
                             self.optimizer_prototype,
                             values,
@@ -372,8 +369,7 @@ class Trainer:
                     total_loss_device = total_loss_device + batch_loss * len(idx)
                     total_size += len(idx)
                 elif self.compile:
-                    assert step.plain is not None
-                    values, opt_state, batch_loss = step.plain(
+                    values, opt_state, batch_loss = step(
                         values, opt_state, X[idx], y[idx], epoch_t
                     )
                     self._compiled_values = values

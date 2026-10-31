@@ -5,8 +5,9 @@ Claims, written before the first run and not changed after it:
 (1) The loss of bfloat16 at step 200 is within 5% relative of
     float32 on the same stream.
 (2) The peak memory of the lower precision is at most 0.7 times that
-    of float32 (GPU only: ``memory_stats()`` of the device; on the CPU
-    the value is ``None``).
+    of float32 (GPU only: ``memory_stats()`` of the device, read in a
+    fresh process per mode because the peak of a process only grows; on
+    the CPU the value is ``None``).
 (3) The faster of bfloat16 and float16 has at least 1.3 times the
     steps per second of float32 (the script prints which one).
 
@@ -25,6 +26,7 @@ The synthetic data are labelled "synthetic". Seed 0.
 import argparse
 import json
 import platform
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -97,8 +99,9 @@ def _make_stepper(trainer, dt, batch):
 
     For ``dt is None`` uses the plain jitted step (``trainer._compiled_step.plain``).
     For ``dt`` in ``("bfloat16", "float16")`` uses the mixed step plus the same
-    bookkeeping as ``Trainer.fit`` (overflow check, halving, unscale,
-    ``_apply_update``), returning the updated optimizer state as well.
+    bookkeeping as ``Trainer.fit`` (overflow check, halving, growth,
+    ``_apply_update``), returning the updated optimizer state as well. The
+    unscale is inside the mixed step.
     """
     from dense_armor.utility.neural.compiled import _apply_update
 
@@ -125,8 +128,6 @@ def _make_stepper(trainer, dt, batch):
                 if trainer._good_steps >= 2000:
                     trainer._scale = trainer._scale * 2.0
                     trainer._good_steps = 0
-            if trainer._scale != 1.0:
-                grads_fp32 = [g / trainer._scale for g in grads_fp32]
             values, opt_state = _apply_update(
                 trainer.optimizer_prototype,
                 values,
@@ -161,8 +162,11 @@ def _run_one(label, compute_dtype, loss_scale, smoke, loss_steps):
     xb = jnp.asarray(X)
     yb = jnp.asarray(y)
     loss = None
+    first_loss = None
     for _ in range(max(1, loss_steps)):
         values, opt_state, loss = step(values, opt_state, xb, yb)
+        if first_loss is None:
+            first_loss = float(loss)
     peak = _peak_bytes()
     steps = []
     for _ in range(N_SESSIONS):
@@ -182,6 +186,7 @@ def _run_one(label, compute_dtype, loss_scale, smoke, loss_steps):
         "compute_dtype": compute_dtype,
         "loss_scale": loss_scale,
         "loss_at_step": int(loss_steps),
+        "initial_loss": first_loss,
         "final_loss": float(loss),
         "peak_bytes": peak,
         "steps_per_second_median": med,
@@ -190,16 +195,29 @@ def _run_one(label, compute_dtype, loss_scale, smoke, loss_steps):
     }
 
 
+MODES = [
+    ("float32", None, None),
+    ("bfloat16", "bfloat16", None),
+    ("float16", "float16", "dynamic"),
+]
+
+
+def _run_in_new_process(label, smoke, loss_steps):
+    """Run one mode in a fresh process: the peak memory of a process only grows."""
+    cmd = [sys.executable, __file__, "--mode", label, "--loss-steps", str(loss_steps)]
+    if smoke:
+        cmd.append("--smoke")
+    out = subprocess.run(cmd, capture_output=True, text=True, check=True).stdout
+    line = next(ln for ln in out.splitlines() if ln.startswith("ROW "))
+    return json.loads(line[4:])
+
+
 def main(smoke, loss_steps):
     print(f"backend: {_backend()}")
     rows = []
-    for label, dt, ls in [
-        ("float32", None, None),
-        ("bfloat16", "bfloat16", None),
-        ("float16", "float16", "dynamic"),
-    ]:
+    for label, _dt, _ls in MODES:
         print(f"  running {label} ...")
-        rows.append(_run_one(label, dt, ls, smoke, loss_steps))
+        rows.append(_run_in_new_process(label, smoke, loss_steps))
         r = rows[-1]
         print(
             f"    loss={r['final_loss']:.6f}  "
@@ -270,5 +288,11 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--smoke", action="store_true")
     ap.add_argument("--loss-steps", type=int, default=LOSS_STEPS)
+    ap.add_argument("--mode", choices=[m[0] for m in MODES])
     args = ap.parse_args()
-    main(args.smoke, args.loss_steps)
+    if args.mode is None:
+        main(args.smoke, args.loss_steps)
+    else:
+        label, dt, ls = next(m for m in MODES if m[0] == args.mode)
+        row = _run_one(label, dt, ls, args.smoke, args.loss_steps)
+        print("ROW " + json.dumps(row))
