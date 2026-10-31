@@ -14,6 +14,7 @@ rolling median and median absolute deviation come from a bounded FIFO
 window. None of these carries a reference entry: the methods are
 standard and the code documents them.
 """
+
 from typing import Any
 
 import numpy as np
@@ -88,21 +89,16 @@ class StandardScaler(Transformer):
 
     budget_s = 1e-3
     memory_class = "O(1)"
+    learn_many_columns = True
 
-    def __init__(
-        self, features: list[str] | None = None, eps: float = 1e-12
-    ) -> None:
+    def __init__(self, features: list[str] | None = None, eps: float = 1e-12) -> None:
         self.features = features
         self.eps = eps
         self.stats_: dict[str, list[RunningMoments]] | None = None
 
     def _ensure(self, x: dict) -> dict[str, list[RunningMoments]]:
         if self.stats_ is None:
-            keys = (
-                list(self.features)
-                if self.features is not None
-                else sorted(x)
-            )
+            keys = list(self.features) if self.features is not None else sorted(x)
             self.stats_ = {}
             for k in keys:
                 if k not in x:
@@ -113,9 +109,7 @@ class StandardScaler(Transformer):
                 self.stats_[k] = [RunningMoments() for _ in range(vec.size)]
         return self.stats_
 
-    def _update(
-        self, d: dict, t: float | None
-    ) -> None:
+    def _update(self, d: dict, t: float | None) -> None:
         self._time_step(t)
         stats = self._ensure(d)
         for k, s_list in stats.items():
@@ -132,6 +126,48 @@ class StandardScaler(Transformer):
     ) -> "StandardScaler":
         """Update the running mean and std for each feature in ``x``."""
         self._update(_as_dict(x), t)
+        return self
+
+    def learn_many(self, X: Any, t: float | None = None) -> "StandardScaler":
+        """Update the running mean and std with a block of samples at once.
+
+        With a dict of arrays (one array per feature, one row per sample,
+        or ``(n, d)`` for a vector feature) each column goes through
+        :meth:`RunningMoments.learn_many`, which summarises the block in
+        one numpy pass and merges it with the pairwise formula of Chan,
+        Golub and LeVeque (1979), Eq. (2.1b), report page 4 (PDF page 8),
+        and Pebay (2008), Eq. (1.3) and (1.4), PDF page 8. The state
+        equals the one of the loop over
+        :meth:`learn_one` within floating-point tolerance, and no sum of
+        the samples is rebuilt, so a block of large values does not
+        overflow the mean. With anything else (a list of dicts) the loop
+        of :meth:`learn_one` is used. A NaN or infinite value is counted
+        as missing and skipped, as in :meth:`learn_one`.
+
+        Args:
+            X: a dict of arrays, or an iterable of samples.
+            t: unused, kept for the Transformer signature.
+
+        Returns:
+            The scaler itself.
+        """
+        if not isinstance(X, dict):
+            return super().learn_many(X, t)
+        cols = {k: np.asarray(v, dtype=float) for k, v in X.items()}
+        cols = {k: (v[:, None] if v.ndim == 1 else v) for k, v in cols.items()}
+        if not cols or min(v.shape[0] for v in cols.values()) == 0:
+            return self
+        first = {
+            k: (float(v[0, 0]) if v.shape[1] == 1 else v[0].tolist())
+            for k, v in cols.items()
+        }
+        stats = self._ensure(first)
+        for k, s_list in stats.items():
+            v = cols.get(k)
+            if v is None or v.shape[1] != len(s_list):
+                continue
+            for j, s in enumerate(s_list):
+                s.learn_many(v[:, j])
         return self
 
     def transform_one(self, x: Any, t: float | None = None) -> dict:
@@ -197,11 +233,7 @@ class EWScaler(Transformer):
 
     def _ensure(self, x: dict) -> dict[str, list[EWStats]]:
         if self.stats_ is None:
-            keys = (
-                list(self.features)
-                if self.features is not None
-                else sorted(x)
-            )
+            keys = list(self.features) if self.features is not None else sorted(x)
             self.stats_ = {}
             for k in keys:
                 if k not in x:
@@ -209,9 +241,7 @@ class EWScaler(Transformer):
                 vec, _ = _to_vec(x[k])
                 if vec is None:
                     continue
-                self.stats_[k] = [
-                    EWStats(alpha=self.alpha) for _ in range(vec.size)
-                ]
+                self.stats_[k] = [EWStats(alpha=self.alpha) for _ in range(vec.size)]
         return self.stats_
 
     def _update(self, d: dict, t: float | None) -> None:
@@ -226,9 +256,7 @@ class EWScaler(Transformer):
             for i, s in enumerate(s_list):
                 s.learn_one({"_v": float(vec[i])})
 
-    def learn_one(
-        self, x: Any, y: Any = None, t: float | None = None
-    ) -> "EWScaler":
+    def learn_one(self, x: Any, y: Any = None, t: float | None = None) -> "EWScaler":
         """Update the exponentially weighted stats per feature."""
         self._update(_as_dict(x), t)
         return self
@@ -296,15 +324,9 @@ class RobustScaler(Transformer):
 
     def _ensure(
         self, x: dict
-    ) -> tuple[
-        dict[str, list[RollingMedian]], dict[str, list[RollingMAD]]
-    ]:
+    ) -> tuple[dict[str, list[RollingMedian]], dict[str, list[RollingMAD]]]:
         if self.medians_ is None or self.mads_ is None:
-            keys = (
-                list(self.features)
-                if self.features is not None
-                else sorted(x)
-            )
+            keys = list(self.features) if self.features is not None else sorted(x)
             meds: dict[str, list[RollingMedian]] = {}
             mads: dict[str, list[RollingMAD]] = {}
             for k in keys:
@@ -313,12 +335,8 @@ class RobustScaler(Transformer):
                 vec, _ = _to_vec(x[k])
                 if vec is None:
                     continue
-                meds[k] = [
-                    RollingMedian(window=self.window) for _ in range(vec.size)
-                ]
-                mads[k] = [
-                    RollingMAD(window=self.window) for _ in range(vec.size)
-                ]
+                meds[k] = [RollingMedian(window=self.window) for _ in range(vec.size)]
+                mads[k] = [RollingMAD(window=self.window) for _ in range(vec.size)]
             self.medians_ = meds
             self.mads_ = mads
         return self.medians_, self.mads_
@@ -391,20 +409,14 @@ class MinMaxScaler(Transformer):
     budget_s = 1e-3
     memory_class = "O(1)"
 
-    def __init__(
-        self, features: list[str] | None = None, eps: float = 1e-12
-    ) -> None:
+    def __init__(self, features: list[str] | None = None, eps: float = 1e-12) -> None:
         self.features = features
         self.eps = eps
         self.stats_: dict[str, list[RunningMoments]] | None = None
 
     def _ensure(self, x: dict) -> dict[str, list[RunningMoments]]:
         if self.stats_ is None:
-            keys = (
-                list(self.features)
-                if self.features is not None
-                else sorted(x)
-            )
+            keys = list(self.features) if self.features is not None else sorted(x)
             self.stats_ = {}
             for k in keys:
                 if k not in x:

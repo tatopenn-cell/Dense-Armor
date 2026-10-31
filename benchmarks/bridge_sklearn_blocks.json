@@ -1,0 +1,20 @@
+{
+  "backend": "cpu",
+  "python": "3.12.10",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "numpy": "2.4.6",
+  "rows": 100000,
+  "features": 3,
+  "runs": 7,
+  "claim": "the block path is not slower than the row loop, median of 7 runs",
+  "loop": {
+    "median_ms": 1325.2009999996517,
+    "iqr_ms": 854.5421000162605
+  },
+  "block": {
+    "median_ms": 5.70569999399595,
+    "iqr_ms": 0.5855499766767025
+  },
+  "speedup": 232.25914460875043,
+  "claim_holds": true
+}

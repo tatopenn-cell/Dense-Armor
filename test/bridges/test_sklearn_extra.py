@@ -23,8 +23,6 @@ from dense_armor.utility.linear.glm import LinearRegression
 from dense_armor.utility.optim import SGD
 from dense_armor.utility.preprocessing.scale import MinMaxScaler
 
-# ---- _as_array error paths ----
-
 
 def test_classifier_rejects_sparse():
     import scipy.sparse as sp
@@ -63,9 +61,6 @@ def test_classifier_rejects_empty():
         )
 
 
-# ---- _y_classifier error paths ----
-
-
 def test_classifier_rejects_y_none():
     with pytest.raises(ValueError, match="requires y"):
         SklearnClassifier(OnlineGaussianNB).fit(np.array([[0.0], [1.0]]), None)
@@ -78,9 +73,6 @@ def test_classifier_one_class_fits_and_predicts():
     m = SklearnClassifier(OnlineGaussianNB).fit(X, y)
     assert m.classes_.tolist() == [0]
     assert m.predict(np.array([[1.5]])).tolist() == [0]
-
-
-# ---- _y_regressor error paths ----
 
 
 def test_regressor_rejects_y_none():
@@ -97,18 +89,12 @@ def test_regressor_rejects_y_inf():
         SklearnRegressor(LinearRegression(optimizer=SGD(lr=0.01))).fit(X, y)
 
 
-# ---- n_features_in_ mismatch ----
-
-
 def test_classifier_rejects_wrong_n_features():
     m = SklearnClassifier(OnlineGaussianNB).fit(
         np.array([[0.0], [1.0], [2.0], [3.0]]), np.array([0, 0, 1, 1])
     )
     with pytest.raises(ValueError, match="features"):
         m.predict(np.array([[0.0, 1.0]]))
-
-
-# ---- partial_fit classes contract ----
 
 
 def test_partial_fit_classes_change_raises():
@@ -125,16 +111,10 @@ def test_partial_fit_no_classes_on_second_call_ok():
     assert m.classes_.tolist() == [0, 1]
 
 
-# ---- _fresh variants ----
-
-
 def test_fresh_from_instance():
     m = SklearnClassifier(OnlineGaussianNB(alpha=0.5))
     m.fit(np.array([[0.0], [1.0], [2.0], [3.0]]), np.array([0, 0, 1, 1]))
     assert m.model_.alpha == 0.5
-
-
-# ---- from_sklearn error paths ----
 
 
 def test_from_sklearn_partial_with_refit_every_raises():
@@ -162,9 +142,6 @@ def test_from_sklearn_unknown_label():
         w.learn_one({"a": 1.0}, 2)
 
 
-# ---- _DenseArmorAdapter branches ----
-
-
 def test_from_sklearn_batch_predict_before_learn_refits():
     w = from_sklearn(Ridge(), refit_every=5)
     w.learn_one({"a": 0.0}, 0.0)
@@ -181,18 +158,12 @@ def test_from_sklearn_predict_proba_one():
     assert abs(sum(p.values()) - 1.0) < 1e-9
 
 
-# ---- transformer partial_fit ----
-
-
 def test_transformer_partial_fit():
     X = np.array([[0.0], [1.0], [2.0], [3.0]])
     m = SklearnTransformer(MinMaxScaler).fit(X)
     m.partial_fit(np.array([[4.0]]))
     out = m.transform(np.array([[4.0]]))
     assert out.shape == (1, 1)
-
-
-# ---- predict on unfitted ----
 
 
 def test_classifier_predict_unfitted_raises():
@@ -211,14 +182,10 @@ def test_regressor_predict_unfitted_raises():
         m.predict(np.array([[0.0]]))
 
 
-# ---- key order independence ----
-
-
 def test_predict_one_key_order_independent():
     w = from_sklearn(SGDClassifier(loss="log_loss", random_state=0), classes=[0, 1])
     for i in range(20):
         w.learn_one({"a": float(i), "b": float(-i)}, i % 2)
-    # stesso x con chiavi in ordine diverso
     p1 = w.predict_one({"a": 0.5, "b": -0.5})
     p2 = w.predict_one({"b": -0.5, "a": 0.5})
     assert p1 == p2

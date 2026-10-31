@@ -79,6 +79,31 @@ The import of the bridge without scikit-learn installed raises a `ModuleNotFound
 ModuleNotFoundError: dense_armor.bridges.sklearn needs scikit-learn: pip install dense-armor[sklearn]
 ```
 
+## 5. A block of rows at once
+
+`SklearnTransformer` learns a table row by row when the wrapped model only has `learn_one`. A model that declares `learn_many_columns = True`, like the `StandardScaler` of Dense-Armor, receives the columns of the array in one `learn_many` call: each column is summarised in one numpy pass and merged with the pairwise formula of Chan, Golub and LeVeque (1979), Eq. (2.1b), so no sum of the samples is rebuilt.
+
+The block below feeds 100 batches of 500,000 rows of the constant `1.79e301` (the input of the issue #5602 of scikit-learn), 50 million samples, to the scaler through the bridge.
+
+```python
+import numpy as np
+from dense_armor.bridges.sklearn import SklearnTransformer
+from dense_armor.utility.preprocessing.scale import StandardScaler
+
+v = np.finfo(float).max / 1e7
+sc = SklearnTransformer(StandardScaler)
+for _ in range(100):
+    sc.partial_fit(np.full((500000, 1), v))
+r = sc.model_.stats_[0][0]
+print(r.count, abs(r.mean - v) / v <= 1e-12, r.var)
+```
+
+```
+50000000 True 0.0
+```
+
+The count is the number of samples, the mean is finite and equal to the value, and the variance of constant data is exactly 0. The time of the block path against the row loop, on 100,000 rows of 3 features, is in `benchmarks/bridge_sklearn_blocks.json`, written by `benchmarks/bridge_sklearn_blocks.py`.
+
 ## Details
 
 ### References
@@ -93,7 +118,9 @@ ModuleNotFoundError: dense_armor.bridges.sklearn needs scikit-learn: pip install
 - **`predict` returns the class with the largest probability, taken from `classes_`**, never the value of a member or `None`. On this stream a member that has not seen the class returns `{}` from `predict_proba_one`, and the wrapper still returns a class from `classes_`.
 - **`from_sklearn` treats `partial_fit` as an online method.** When the estimator has `partial_fit`, `learn_one` calls it on the current row, and `refit_every` must be `None`. When the estimator is batch (no `partial_fit`), `refit_every` must be given, because the alternative is a `fit` over a growing table at every row.
 - **The class list of a `partial_fit` classifier**: passing `classes` to `from_sklearn` uses it from the first row; leaving it out buffers the rows until two distinct classes have been seen. The buffer is the only correct option when the row stream starts with a single class, because `SGDClassifier.partial_fit` with one class and no `classes` raises.
-- **The optional dependency is installed as an extra**: `pip install dense-armor[sklearn]`. The bridge module imports scikit-learn inside a `try/except` and raises a `ModuleNotFoundError` that names the extra, as the river bridge does. `import dense_armor` works without scikit-learn.
+- **The block path is declared by the model.** The bridge calls `learn_many` only on a model with the attribute `learn_many_columns = True`, because the `learn_many` of the other classes take other inputs (a list of samples, or `(X, y)`). Today the only such model is `StandardScaler`; the classifiers and the regressors learn row by row.
+- **Not covered by the block path:** a variance whose squared deviations exceed the float64 maximum (deviations above about 1.3e154) is `inf`, as it is for `numpy.var`; the mean stays finite.
+- **The optional dependency is installed as an extra**: `pip install dense-armor[sklearn]`. The bridge module imports scikit-learn inside a `try/except` and raises a `ModuleNotFoundError` that names the extra, as the other bridges do. `import dense_armor` works without scikit-learn.
 
 ### Measured cost
 
