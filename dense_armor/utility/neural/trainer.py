@@ -123,6 +123,16 @@ class Trainer:
         (§3.2 page 5, "one option is to skip the weight update when an
         overflow is detected").
 
+        The reductions of ``LayerNorm``, of the softmax of the
+        attention and of the softmax cross-entropy stay in the compute
+        dtype, not in float32. Section 3.3 page 5 of the paper
+        recommends float32 for "large reductions (sums across elements
+        of a vector) ... batch-normalization ... softmax layers". This
+        library keeps them in the compute dtype: the reductions are
+        inside ``norm.py``, ``attention.py`` and ``losses.py``, which
+        item A does not touch. **Reported, not done**: the float32
+        reductions need a change in those files.
+
         The dynamic scaling (grow after a window of good steps, halve
         and skip on overflow) is **not in the paper**: the paper mentions
         only the constant factor and the skip. It is the behaviour of

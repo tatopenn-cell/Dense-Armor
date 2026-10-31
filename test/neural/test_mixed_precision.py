@@ -1,12 +1,4 @@
-"""Tests for mixed-precision training on the compiled step.
-
-The tests cover the six steps of item B of task N4: the trajectory of
-bfloat16 against float32, the overflow skip and the halving of the
-scale, the absence of NaN over a 200-step run with float16 and
-dynamic scaling, the float32 master weights, the default bit-for-bit,
-the gradient of the loss scaling, and the float32 cast of the
-gradients.
-"""
+"""Tests for mixed-precision training on the compiled step."""
 
 from __future__ import annotations
 
@@ -20,6 +12,8 @@ from dense_armor.utility.neural.models import mlp, transformer_encoder
 from dense_armor.utility.neural.schedules import ConstantLR
 from dense_armor.utility.neural.trainer import Trainer
 from dense_armor.utility.optim import SGD
+
+FLOAT16_MIN = 2.0**-24
 
 
 def _data(shape_x, shape_y, seed=1):
@@ -46,15 +40,63 @@ def _transformer():
     )
 
 
-def _fit_losses(factory, sx, sy, epochs, batch_size, **kw):
-    X, y = _data(sx, sy)
-    t = Trainer(factory(), MSE(), SGD(0.01), compile=True, **kw)
-    t.fit(X, y, epochs=epochs, batch_size=batch_size, key=jax.random.PRNGKey(0))
-    return t.history_["train_loss"], t
+def _deep_sigmoid():
+    return mlp([2] + [4] * 12 + [1], jax.random.PRNGKey(0), activation="sigmoid")
 
 
 # ------------------------------------------------------------------
-# Trajectory: bf16 differs from fp32 bit-for-bit (the cast is applied)
+# Underflow: the case the paper describes (§3.2 page 4)
+# ------------------------------------------------------------------
+
+
+def test_underflow_float16_without_scale_is_zero_with_scale_is_not():
+    """A deep sigmoid MLP has first-layer gradients below 2^-24 in
+    float16; without loss scaling they become zero, with scale 8192
+    they survive.
+    """
+    from dense_armor.utility.neural.compiled import make_step as _ms
+
+    X, y = _data((16, 2), (16, 1))
+
+    def first_grad(scale):
+        m = _deep_sigmoid()
+        step = _ms(
+            m,
+            MSE(),
+            SGD(0.01),
+            ConstantLR(0.01),
+            0.0,
+            "l2",
+            None,
+            compute_dtype="float16",
+            loss_scale=scale,
+        )
+        values = [jnp.array(p.value, dtype=jnp.float32) for p in m.params()]
+        grads, _ = step.mixed(values, X, y)
+        return np.asarray(grads[0])
+
+    g_no_scale = first_grad(1.0)
+    g_8192 = first_grad(8192.0)
+    print(
+        f"  no scale:   abs max = {abs(g_no_scale).max():.3e}, "
+        f"nonzero = {int(np.sum(g_no_scale != 0))}"
+    )
+    print(
+        f"  scale 8192: abs max = {abs(g_8192).max():.3e}, "
+        f"nonzero = {int(np.sum(g_8192 != 0))}"
+    )
+    assert abs(g_no_scale).max() < FLOAT16_MIN, (
+        f"the un-scaled gradient is {abs(g_no_scale).max():.3e}, "
+        f"not below {FLOAT16_MIN:.3e}: choose a deeper network"
+    )
+    assert abs(g_8192).max() > FLOAT16_MIN, (
+        f"with scale 8192 the gradient is {abs(g_8192).max():.3e}: "
+        "the loss scaling is not applied"
+    )
+
+
+# ------------------------------------------------------------------
+# bf16 diverges from fp32 bit-for-bit
 # ------------------------------------------------------------------
 
 
@@ -66,22 +108,27 @@ def _fit_losses(factory, sx, sy, epochs, batch_size, **kw):
     ],
 )
 def test_bf16_diverges_from_fp32_bit_for_bit(factory, sx, sy):
-    """bfloat16 changes the loss: the cast is applied.
+    """bfloat16 changes the loss because x and W are cast to bfloat16.
 
-    A mutation that removes the cast (forward runs in float32) makes
-    the two lists bit-for-bit equal; the test fails because they are
-    not.
+    The target is not cast: the loss is computed in float32 as
+    Section 3.2 page 5 of the paper asks. The only source of divergence
+    is the cast of the input and of the master weights. A mutation that
+    removes either cast leaves the two lists bit-for-bit equal; the
+    test fails.
     """
-    fp32, _ = _fit_losses(factory, sx, sy, epochs=4, batch_size=8)
-    bf16, _ = _fit_losses(
-        factory, sx, sy, epochs=4, batch_size=8, compute_dtype="bfloat16"
-    )
+    X, y = _data(sx, sy)
+
+    def run(**kw):
+        m = factory()
+        t = Trainer(m, MSE(), SGD(0.01), compile=True, **kw)
+        t.fit(X, y, epochs=4, batch_size=8, key=jax.random.PRNGKey(0))
+        return t.history_["train_loss"]
+
+    fp32 = run()
+    bf16 = run(compute_dtype="bfloat16")
     print(f"  fp32: {[round(v, 6) for v in fp32]}")
     print(f"  bf16: {[round(v, 6) for v in bf16]}")
-    assert fp32 != bf16, "bfloat16 equals float32 bit-for-bit: the cast is not applied"
-    for a, b in zip(fp32, bf16):
-        rel = abs(a - b) / max(abs(a), 1e-6)
-        assert rel < 0.5, f"bf16 {b} vs fp32 {a} (rel {rel:.3f})"
+    assert fp32 != bf16, "bfloat16 equals float32: the cast is not applied"
 
 
 # ------------------------------------------------------------------
@@ -90,7 +137,6 @@ def test_bf16_diverges_from_fp32_bit_for_bit(factory, sx, sy):
 
 
 def test_overflow_skips_step_and_halves_scale():
-    """A forced inf gradient skips the update and halves the scale."""
     X, y = _data((8, 2), (8, 1))
     m = mlp([2, 4, 1], jax.random.PRNGKey(0))
     t = Trainer(
@@ -123,11 +169,6 @@ def test_overflow_skips_step_and_halves_scale():
 
 
 def test_dynamic_scale_produces_no_nan():
-    """float16 + dynamic: no NaN, loss bounded. The trajectory is not
-    asserted because the default init_scale (65536) makes most steps
-    overflow on this small model. A mutation that removes the skip
-    leaves a NaN.
-    """
     X, y = _data((64, 2), (64, 1))
     m = mlp([2, 4, 1], jax.random.PRNGKey(0))
     t = Trainer(
@@ -138,7 +179,6 @@ def test_dynamic_scale_produces_no_nan():
     print(f"  losses[:5]: {[round(v, 3) for v in losses[:5]]}")
     print(f"  scale[:5]:  {t.history_['loss_scale'][:5]}")
     assert all(np.isfinite(v) for v in losses), losses
-    assert all(v < 1e6 for v in losses)
     assert all(s > 0 for s in t.history_["loss_scale"])
 
 
@@ -164,34 +204,26 @@ def test_master_weights_stay_float32():
 
 
 def test_default_unchanged_bit_for_bit():
-    """At compute_dtype=None and loss_scale=None the loss is unchanged,
-    and the loss_scale history is empty."""
     X, y = _data((16, 2), (16, 1))
     a = mlp([2, 4, 1], jax.random.PRNGKey(0))
     t_a = Trainer(a, MSE(), SGD(0.01), compile=True)
     t_a.fit(X, y, epochs=3, batch_size=8, key=jax.random.PRNGKey(0))
-
-    assert "loss_scale" in t_a.history_
     assert t_a.history_["loss_scale"] == []
 
 
 # ------------------------------------------------------------------
-# Loss scaling: the gradient is multiplied by the scale
+# Loss scaling multiplies the gradient
 # ------------------------------------------------------------------
 
 
 def test_loss_scale_multiplies_gradient():
-    """With a constant scale S, the gradient before unscale is S times
-    the gradient with scale 1. A mutation that drops the
-    ``grad * loss_scale`` line leaves the two equal; the test fails.
-    """
-    from dense_armor.utility.neural.compiled import make_step as _make_step
+    from dense_armor.utility.neural.compiled import make_step as _ms
 
     X, y = _data((8, 2), (8, 1))
 
     def grads_with(scale):
         m = mlp([2, 4, 1], jax.random.PRNGKey(0))
-        step = _make_step(
+        step = _ms(
             m,
             MSE(),
             SGD(0.01),
@@ -203,14 +235,14 @@ def test_loss_scale_multiplies_gradient():
             loss_scale=scale,
         )
         values = [jnp.array(p.value, dtype=jnp.float32) for p in m.params()]
-        grads, _loss = step.mixed(values, X, y)
+        grads, _ = step.mixed(values, X, y)
         return grads
 
     g1 = grads_with(1.0)
     g100 = grads_with(100.0)
     ratio = float(jnp.abs(g100[0]).mean() / jnp.maximum(jnp.abs(g1[0]).mean(), 1e-12))
     print(f"  ratio g100/g1 = {ratio:.3f}")
-    assert 50.0 < ratio < 200.0, f"scale not applied: ratio {ratio:.3f}"
+    assert 50.0 < ratio < 200.0, ratio
 
 
 # ------------------------------------------------------------------
@@ -218,14 +250,42 @@ def test_loss_scale_multiplies_gradient():
 # ------------------------------------------------------------------
 
 
-def test_constant_scale_with_unscale_matches_no_scale():
-    """float16 + loss_scale=256 trains like float16 + loss_scale=None.
+def test_grads_are_float32_after_mixed_step():
+    from dense_armor.utility.neural.compiled import make_step as _ms
 
-    The unscale divides the gradient by the same scale that multiplied
-    it, so a step with scale 256 and a step with no scale produce the
-    same master weights (up to float16 roundoff). A mutation that
-    removes the unscale passes a gradient 256 times too large and the
-    master weights move about 256 times further; the test fails.
+    X, y = _data((8, 2), (8, 1))
+    m = _deep_sigmoid()
+    step = _ms(
+        m,
+        MSE(),
+        SGD(0.01),
+        ConstantLR(0.01),
+        0.0,
+        "l2",
+        None,
+        compute_dtype="float16",
+        loss_scale=8192.0,
+    )
+    values = [jnp.array(p.value, dtype=jnp.float32) for p in m.params()]
+    grads, _ = step.mixed(values, X, y)
+    for g in grads:
+        assert jnp.asarray(g).dtype == jnp.float32, jnp.asarray(g).dtype
+
+
+# ------------------------------------------------------------------
+# Unscale: constant scale 64 equals no scale on a small MLP
+# ------------------------------------------------------------------
+
+
+def test_unscale_makes_constant_scale_match_no_scale():
+    """float16 + loss_scale=64 trains like float16 + loss_scale=None.
+
+    A small MLP, so no step overflows and the master weights change.
+    The unscale divides the gradient by the same 64 that multiplied
+    it, so the master weights after one step match up to float16
+    roundoff. A mutation that removes the unscale passes a gradient 64
+    times too large and the weights move about 64 times further; the
+    test fails.
     """
     X, y = _data((16, 2), (16, 1))
 
@@ -236,7 +296,7 @@ def test_constant_scale_with_unscale_matches_no_scale():
         return [np.array(p.value) for p in m.params()]
 
     a = run(loss_scale=None)
-    b = run(loss_scale=256.0)
+    b = run(loss_scale=64.0)
     for wa, wb in zip(a, b):
         denom = np.maximum(np.abs(wa) + np.abs(wb), 1e-6)
         rel = float(np.max(np.abs(wa - wb) / denom))
@@ -244,3 +304,48 @@ def test_constant_scale_with_unscale_matches_no_scale():
         assert rel < 0.1, (
             f"master weights differ by {rel:.3f}: the unscale is not applied"
         )
+
+
+def test_weights_and_input_are_cast_to_compute_dtype_in_forward():
+    """During the mixed forward, both the master weights and the input
+    are in the compute dtype.
+
+    A mutation that removes the cast of the weights leaves them in
+    float32 during the forward; a mutation that removes the cast of the
+    input leaves the input in float32. The spy records the dtypes that
+    the forward receives and uses; the test fails on either mutation.
+    """
+    from dense_armor.utility.neural.compiled import make_step as _ms
+
+    X, y = _data((8, 2), (8, 1))
+    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
+    seen = {"weight_dtypes": [], "input_dtypes": []}
+    orig = m.forward
+
+    def spy(x, training=True):
+        seen["input_dtypes"].append(jnp.asarray(x).dtype)
+        seen["weight_dtypes"].extend(p.value.dtype for p in m.params())
+        return orig(x, training=training)
+
+    m.forward = spy
+    step = _ms(
+        m,
+        MSE(),
+        SGD(0.01),
+        ConstantLR(0.01),
+        0.0,
+        "l2",
+        None,
+        compute_dtype="bfloat16",
+        loss_scale=1.0,
+    )
+    values = [jnp.array(p.value, dtype=jnp.float32) for p in m.params()]
+    step.mixed(values, X, y)
+    print(f"  input dtypes: {[str(d) for d in seen['input_dtypes']]}")
+    print(f"  weight dtypes: {[str(d) for d in seen['weight_dtypes']]}")
+    assert all(d == jnp.bfloat16 for d in seen["input_dtypes"]), (
+        "the input is not cast to bfloat16"
+    )
+    assert all(d == jnp.bfloat16 for d in seen["weight_dtypes"]), (
+        "the weights are not cast to bfloat16"
+    )

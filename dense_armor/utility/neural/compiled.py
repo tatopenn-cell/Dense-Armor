@@ -333,11 +333,13 @@ def make_step(
         )
 
     def _mixed_step(values: list, x: Any, y: Any):
-        _write_values(model, values)
+        cast_values = _cast(values, dtype)
+        _write_values(model, cast_values)
         for pp in model.params():
             pp.zero_grad()
-        pred = model.forward(x, training=True)
-        loss_value = loss.forward(pred, _cast(y, dtype))
+        pred = model.forward(_cast(x, dtype), training=True)
+        loss_value = loss.forward(pred, y)
+        loss_value = jnp.asarray(loss_value, dtype=jnp.float32)
         grad = loss.backward()
         if loss_scale != 1.0:
             grad = grad * loss_scale
