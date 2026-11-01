@@ -510,7 +510,8 @@ def make_accumulating_step(
     """Return the compiled pieces of gradient accumulation.
 
     ``k`` micro-batches are run with ``grads`` and summed with ``add``;
-    ``update`` divides the sum by ``k`` (the loss is divided by ``k``),
+    ``update`` divides the sum by ``k`` (the gradient of the mean loss of
+    the group),
     clips the mean gradient, and applies the optimizer once. With equal
     micro-batches the result is the step of one batch of ``k`` times the
     size.
@@ -593,7 +594,7 @@ def make_accumulating_step(
         return grads, loss_value, finite
 
     def _add(a: list, b: list) -> list:
-        return [u + v for u, v in zip(a, b)]
+        return [u + v for u, v in zip(a, b, strict=True)]
 
     def _update(
         values: list,
