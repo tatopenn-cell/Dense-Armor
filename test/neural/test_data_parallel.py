@@ -246,6 +246,23 @@ v_out, _, _ = step_p(
 )
 OUT["pmap_devices"] = sorted(int(d.id) for d in v_out[0].devices())
 
+seen = []
+orig_pmap = jax.pmap
+
+
+def spy(*a, **k):
+    seen.append(k.get("devices"))
+    return orig_pmap(*a, **k)
+
+
+jax.pmap = spy
+m_s, t_s = trainer([3, 1])
+t_s.fit(X, Y, epochs=1, batch_size=16, key=jax.random.PRNGKey(0), shuffle=False)
+jax.pmap = orig_pmap
+OUT["trainer_pmap_devices"] = [
+    None if ds is None else [int(d.id) for d in ds] for ds in seen
+]
+
 OUT["overflow_0"] = overflow(0)
 OUT["overflow_1"] = overflow(1)
 print(json.dumps(OUT))
@@ -350,6 +367,10 @@ def test_a_list_of_device_ids_is_used_and_does_not_change_the_result(out):
 
 def test_the_step_runs_on_the_devices_that_were_asked_for(out):
     assert out["pmap_devices"] == [1, 3]
+
+
+def test_the_trainer_asks_pmap_for_the_given_device_ids(out):
+    assert out["trainer_pmap_devices"] == [[3, 1]]
 
 
 def test_a_last_batch_that_the_devices_divide_is_trained_on(out):

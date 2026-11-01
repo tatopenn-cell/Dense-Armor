@@ -154,10 +154,28 @@ A batch of 256 against a base of 32 multiplies the rate by 8, from `0.1` to `0.8
 - **Neither paper prescribes the combination** of the average, the flag and the loss for the mixed step: Goyal covers the average over workers and not the mixed step, Micikevicius covers the mixed step and not several devices.
 - **`devices=None` keeps the step as it was:** the losses of the default compiled trainer equal the values stored from the master branch.
 
+### Measured cost
+
+`benchmarks/data_parallel.py` runs a `transformer_encoder` of 6 layers, `d_model=512`, sequence 256, global batch 64, on synthetic data (seed 0), with SGD at learning rate `0.01` and one step per epoch. Each device count runs in a process of its own. Values in `benchmarks/data_parallel_gpu.json`: `Tesla T4`, jax 0.11.1, a Kaggle kernel with two GPUs; the speed is the median of 3 sessions of 20 steps.
+
+| devices | steps/s, median (range) | loss at step 1 | step 10 | step 50 | step 200 | peak bytes on device 0 |
+|---|---|---|---|---|---|---|
+| 1 | 1.275 (1.266 to 1.279) | 2.806067 | 1.306522 | 0.980802 | 0.953850 | 4 523 575 040 |
+| 2 | 2.286 (2.270 to 2.310) | 2.806067 | 1.306519 | 0.980803 | 0.953850 | 2 595 831 040 |
+
+The claims were written before the first run:
+
+| Claim | Result | Number |
+|---|---|---|
+| 1. the loss on 2 GPUs is within `1e-4` relative of 1 GPU at steps 1, 10, 50 and 200 | **holds** | largest relative difference `2.5e-6`, at step 10 |
+| 2. 2 GPUs have at least 1.5 times the steps per second of 1 GPU | **holds** | ratio `1.792` |
+
+The ratio is from one run of three sessions per device count. The sessions inside a run agree to a few percent, but two runs of the single-device case on kernels of the same kind gave speeds that differ by more than that range, so the ratio of another run can differ.
+
 ### Not measured
 
-More than two GPUs, several machines, the share of the step spent in the average, models other than the transformer encoder, and a comparison with another framework.
+More than two GPUs, several machines, the share of the step spent in the average, models other than the transformer encoder, a comparison with a statistic (Wilcoxon, A12) because the claims compare one run per device count, and a comparison with another framework.
 
 ### Development diary
 
-The first version of the parallel step passed the tests of its own file but failed in two ways that the tests did not cover: a second call of `fit` crashed because the weights written back after the first call lived on one device only, and in the mixed mode the optimizer state was rebuilt at every call. A list of device ids was accepted and ignored, and a last batch that the devices did not divide ended with an error from the reshape. The tests now cover each of them.
+The first version of the parallel step passed the tests of its own file but failed in two ways that the tests did not cover: a second call of `fit` crashed because the weights written back after the first call lived on one device only, and in the mixed mode the optimizer state was rebuilt at every call. A list of device ids was accepted and ignored, and a last batch that the devices did not divide ended with an error from the reshape. The tests now cover each of them. A first benchmark showed that `fit` copied the weights to the host at every epoch, which with one step per epoch cost more than the step; the copy is now made only when a validation set is evaluated and at the end of `fit`.

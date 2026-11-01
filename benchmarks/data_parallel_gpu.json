@@ -1,0 +1,80 @@
+{
+  "backend": "gpu",
+  "device_kind": "Tesla T4",
+  "jax": "0.11.1",
+  "python": "3.13.15",
+  "platform": "Linux-6.18.55+-x86_64-with-glibc2.39",
+  "n_sessions": 3,
+  "n_steps_per_session": 20,
+  "loss_steps": 200,
+  "smoke": false,
+  "seed": 0,
+  "synthetic": true,
+  "claims": {
+    "1_loss_within_1e-4": {
+      "holds": true,
+      "rel_diff_by_step": {
+        "1": 8.496540548550252e-08,
+        "10": 2.463525003182053e-06,
+        "50": 9.115698819498771e-07,
+        "200": 0.0
+      }
+    },
+    "2_speedup_1.5x": {
+      "ratio": 1.79240823111688,
+      "holds": true
+    }
+  },
+  "rows": [
+    {
+      "n_devices": 1,
+      "backend": "gpu",
+      "device_kind": "Tesla T4",
+      "device_count_seen": 1,
+      "jax": "0.11.1",
+      "global_batch": 64,
+      "loss_at_step": {
+        "1": 2.8060665130615234,
+        "10": 1.3065224885940552,
+        "50": 0.9808021187782288,
+        "200": 0.9538501501083374
+      },
+      "peak_bytes_device0": 4523575040,
+      "steps_per_second_median": 1.2751701639364703,
+      "steps_per_second_range": [
+        1.2661512326939062,
+        1.278761082820979
+      ],
+      "steps_per_second_sessions": [
+        1.278761082820979,
+        1.2661512326939062,
+        1.2751701639364703
+      ]
+    },
+    {
+      "n_devices": 2,
+      "backend": "gpu",
+      "device_kind": "Tesla T4",
+      "device_count_seen": 2,
+      "jax": "0.11.1",
+      "global_batch": 64,
+      "loss_at_step": {
+        "1": 2.8060667514801025,
+        "10": 1.3065192699432373,
+        "50": 0.9808030128479004,
+        "200": 0.9538501501083374
+      },
+      "peak_bytes_device0": 2595831040,
+      "steps_per_second_median": 2.2856254979143906,
+      "steps_per_second_range": [
+        2.269911751316361,
+        2.3102754257572746
+      ],
+      "steps_per_second_sessions": [
+        2.3102754257572746,
+        2.2856254979143906,
+        2.269911751316361
+      ]
+    }
+  ]
+}
