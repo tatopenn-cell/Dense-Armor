@@ -184,6 +184,8 @@ def _run_one(label, compute_dtype, loss_scale, smoke, loss_steps):
     med = float(np.median(steps))
     return {
         "mode": label,
+        "backend": _backend(),
+        "device_kind": jax.devices()[0].device_kind,
         "compute_dtype": compute_dtype,
         "loss_scale": loss_scale,
         "loss_at_step": int(loss_steps),
@@ -206,20 +208,23 @@ MODES = [
 def _run_in_new_process(label, smoke, loss_steps):
     """Run one mode in a fresh process: the peak memory of a process only grows.
 
+    The parent never touches JAX: a TPU can be held by one process only, so
+    the backend and the device kind are read from the row of a child.
+
     A mode that fails (a dtype the device does not support) gives a row with
     an ``error`` field instead of stopping the benchmark.
     """
     cmd = [sys.executable, __file__, "--mode", label, "--loss-steps", str(loss_steps)]
     if smoke:
         cmd.append("--smoke")
-    done = subprocess.run(cmd, capture_output=True, text=True)
-    lines = [ln for ln in done.stdout.splitlines() if ln.startswith("ROW ")]
-    if done.returncode != 0 or not lines:
-        return {"mode": label, "error": (done.stderr or done.stdout)[-400:]}
+    run = subprocess.run(cmd, capture_output=True, text=True)
+    lines = [ln for ln in run.stdout.splitlines() if ln.startswith("ROW ")]
+    if run.returncode != 0 or not lines:
+        return {"mode": label, "error": (run.stderr or run.stdout)[-400:]}
     return json.loads(lines[0][4:])
 
 
-def _claims(rows):
+def _claims(rows, backend):
     ok = {r["mode"]: r for r in rows if "error" not in r}
     ref = ok.get("float32")
     lower = [ok[m] for m in ("bfloat16", "float16") if m in ok]
@@ -237,7 +242,7 @@ def _claims(rows):
     if ref["peak_bytes"] is not None and peaks:
         ratio = min(peaks) / ref["peak_bytes"]
         claims["2_memory_0.7x"] = {"holds": ratio <= 0.7, "ratio": ratio}
-    if _backend() == "cpu":
+    if backend == "cpu":
         claims["3_faster_of_bf16_fp16_1.3x"] = {
             "holds": None,
             "reason": "accelerator only: no bfloat16 acceleration on CPU",
@@ -254,7 +259,6 @@ def _claims(rows):
 
 
 def main(smoke, loss_steps):
-    print(f"backend: {_backend()}")
     rows = []
     for label, _dt, _ls in MODES:
         print(f"  running {label} ...")
@@ -268,10 +272,14 @@ def main(smoke, loss_steps):
             f"steps/s={r['steps_per_second_median']:.2f}  "
             f"peak={r['peak_bytes']}"
         )
-    claims = _claims(rows)
+    done = [r for r in rows if "error" not in r]
+    if not done:
+        raise SystemExit("every mode failed")
+    backend = done[0]["backend"]
+    claims = _claims(rows, backend)
     payload = {
-        "backend": _backend(),
-        "device_kind": jax.devices()[0].device_kind,
+        "backend": backend,
+        "device_kind": done[0]["device_kind"],
         "jax": jax.__version__,
         "python": platform.python_version(),
         "processor": platform.processor(),
@@ -284,7 +292,7 @@ def main(smoke, loss_steps):
         "claims": claims,
         "rows": rows,
     }
-    out = Path(__file__).parent / f"mixed_precision_{_backend()}.json"
+    out = Path(__file__).parent / f"mixed_precision_{backend}.json"
     out.write_text(json.dumps(payload, indent=2))
     print(f"JSON: {out}")
     print(f"claims: {json.dumps(claims, indent=2)}")
