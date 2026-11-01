@@ -853,19 +853,6 @@ Public methods:
 
 ## Core
 
-### AIEngineVisualizer
-
-
-*Module:* `dense_armor.core.visualizer`
-*Guide:* [toolkit/toolkit.md](../toolkit/toolkit.md)
-
-Export tools for scientific traceability.
-
-Public methods:
-
-- `export_provenance_archive(run_history: list, filename='ai_provenance_archive.json')`
-- `export_trend_report_text(raw_signal: ndarray, filtered_signal: ndarray, filename='ai_trend_report.txt')`
-
 ### AIHardwareProfiler
 
 
@@ -894,68 +881,6 @@ Public methods:
 - `filter_batch_scenarios_independent(raw_batch: ndarray, hard_clamp_mask=None)`
 - `filter_data_stream(raw_data: ndarray)`
 
-### BitwisePermutationEngine
-
-
-*Module:* `dense_armor.core.vector`
-*Guide:* [toolkit/toolkit.md](../toolkit/toolkit.md)
-
-Bit-mask manipulation of combinatorial vectors (2^n space).
-
-Public methods:
-
-- `apply_bitwise_swap(data: ndarray, target_bit: int, control_bit: int)`
-
-### CompactJsonFormatter
-
-
-*Module:* `dense_armor.core.logger`
-*Bases:* Formatter
-*Guide:* [toolkit/toolkit.md](../toolkit/toolkit.md)
-
-Formatter instances are used to convert a LogRecord to text.
-
-Public methods:
-
-- `format(record: LogRecord)`
-- `formatException(ei)`
-- `formatMessage(record)`
-- `formatStack(stack_info)`
-- `formatTime(record, datefmt=None)`
-- `usesTime()`
-
-### DynamicAICodegen
-
-
-*Module:* `dense_armor.core.compiler`
-*Guide:* [toolkit/toolkit.md](../toolkit/toolkit.md)
-
-Compiles textual recipes into JAX instruction matrices and runs the resulting pipeline.
-
-Public methods:
-
-- `compile_pipeline(text_instructions: list)`
-- `compute_gradients(input_data: ndarray, compiled_ops: ndarray)`
-- `load_compiled_pipeline(filename='compiled_recipe.npy')`
-- `run_dynamic_pipeline(input_data: ndarray, compiled_ops: ndarray)`
-- `run_pipeline_with_chunking(input_data: ndarray, compiled_ops: ndarray, chunk_size=500)`
-- `save_compiled_pipeline(compiled_ops: ndarray, filename='compiled_recipe.npy')`
-
-### ImageChunker
-
-
-*Module:* `dense_armor.core.chunk`
-*Guide:* [toolkit/toolkit.md](../toolkit/toolkit.md)
-
-Splits and rejoins data batches and instruction lists into fixed-size chunks.
-
-Public methods:
-
-- `execute_pipeline_chunked(codegen_engine, input_vector: ndarray, compiled_ops: list)`
-- `merge_chunks(chunks_list: list)`
-- `patch_and_scan_parameters(template_ops: Array, dynamic_parameters: Array)`
-- `split_array(array: ndarray)`
-
 ### MemoryPressureError
 
 
@@ -964,76 +889,6 @@ Public methods:
 *Guide:* [toolkit/toolkit.md](../toolkit/toolkit.md)
 
 Raised when system memory (RAM/VRAM) is insufficient.
-
-### MinimalConsoleFormatter
-
-
-*Module:* `dense_armor.core.logger`
-*Bases:* Formatter
-*Guide:* [toolkit/toolkit.md](../toolkit/toolkit.md)
-
-Formatter instances are used to convert a LogRecord to text.
-
-Public methods:
-
-- `format(record: LogRecord)`
-- `formatException(ei)`
-- `formatMessage(record)`
-- `formatStack(stack_info)`
-- `formatTime(record, datefmt=None)`
-- `usesTime()`
-
-### ParametricScenarioSimulator
-
-
-*Module:* `dense_armor.core.vector`
-*Guide:* [toolkit/toolkit.md](../toolkit/toolkit.md)
-
-Parallel Monte Carlo simulations and decision collapse.
-
-Public methods:
-
-- `collapse_decision(distribution_vector: ndarray, target_idx: int)`
-- `run_parallel_scenarios(base_state: float, parameters_batch: ndarray)`
-
-### PipelineProfiler
-
-
-*Module:* `dense_armor.core.profiler`
-*Guide:* [toolkit/toolkit.md](../toolkit/toolkit.md)
-
-Profile pipeline and filter performance in microseconds.
-
-Public methods:
-
-- `measure_microseconds(codegen_instance, input_data: ndarray, compiled_ops: ndarray, repetitions=100)`
-- `measure_stabilizer_microseconds(stabilizer_instance, raw_batch: ndarray, repetitions=100)`
-
-### StochasticAdversarialNoise
-
-
-*Module:* `dense_armor.core.noise`
-*Guide:* [toolkit/toolkit.md](../toolkit/toolkit.md)
-
-Injects probabilistic noise or adversarial perturbations into AI tensors.
-
-Public methods:
-
-- `inject_noise(data_vector: ndarray, noise_type: str, intensity: float, seed=42)`
-
-### TensorVault
-
-
-*Module:* `dense_armor.core.tensor`
-*Guide:* [toolkit/toolkit.md](../toolkit/toolkit.md)
-
-Compact, optimized vault for static and parametric matrices.
-
-Public methods:
-
-- `get_backend_info()`
-- `get_parametric_transform(name: str, p: float)`
-- `get_static_transform(name: str)`
 
 ### UniversalMemoryGuard
 

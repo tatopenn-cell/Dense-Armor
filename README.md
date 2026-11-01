@@ -199,7 +199,7 @@ Dense-Armor also provides other online utilities:
 - LLM bridge (embeddings as features, estimators as JSON tools)
 - Bridges: scikit-learn, PyTorch and TensorFlow
 - Checks (`check_estimator`, p99 budget, memory growth, clone, pickle, state dict, roc_auc)
-- Core engine (`DynamicAICodegen` JIT compiler, `ImageChunker`, `UniversalMemoryGuard`, `AdaptiveSignalStabilizer`, `AIHardwareProfiler`, `StochasticAdversarialNoise`)
+- Core engine (`UniversalMemoryGuard`, `AdaptiveSignalStabilizer`, `AIHardwareProfiler`)
 
 Check out [the API](https://tatopenn-cell.github.io/Dense-Armor/api/) for a comprehensive overview.
 

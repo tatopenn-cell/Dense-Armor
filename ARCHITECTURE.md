@@ -528,19 +528,12 @@ Internal helpers, not public: `utility/_validation.py` (`as_dict`, `is_number`, 
 | file | public names | what it is |
 |---|---|---|
 | `armor.py` | `Armor`, `main` | public class and entry point |
-| `chunk.py` | `ImageChunker` | image chunker |
-| `compiler.py` | `DynamicAICodegen` | JIT pipeline compiler |
 | `damping_operator.py` | `apply_damping_blend` | damping blend operator |
 | `engine.py` | `dynamic_damping_gain`, `AdaptiveSignalStabilizer` | adaptive signal stabilizer |
-| `hybrid_engine.py` | `calculate_phi_ab`, `calculate_vettore_dinamico`, `evaluate_phi_trigger`, `hybrid_shield` | hybrid shielding engine |
-| `logger.py` | `MinimalConsoleFormatter`, `CompactJsonFormatter`, `get_json_file_logger` | loggers |
+| `hybrid_engine.py` | `hybrid_shield` | hybrid shielding engine |
 | `memory.py` | `MemoryPressureError`, `UniversalMemoryGuard` | memory guard |
-| `noise.py` | `AIHardwareProfiler`, `StochasticAdversarialNoise` | hardware profiler and noise injector |
+| `noise.py` | `AIHardwareProfiler` | hardware profiler |
 | `preset.py` | | presets |
-| `profiler.py` | `PipelineProfiler` | pipeline profiler |
-| `tensor.py` | `TensorVault` | tensor store |
-| `vector.py` | `BitwisePermutationEngine`, `ParametricScenarioSimulator` | vector engines |
-| `visualizer.py` | `AIEngineVisualizer` | engine visualizer |
 
 Package-level files: `_compat.py` keeps the old import paths working (each old name resolves to the same module object), and `__main__.py` runs `python -m dense_armor`, which calls `armor.main`.
 

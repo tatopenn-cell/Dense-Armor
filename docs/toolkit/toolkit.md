@@ -7,58 +7,8 @@ A second part of the package, under `core/` and `utility/`, independent of
 participates in the anomaly shield. Generic tools for JAX / NumPy pipelines.
 
 Every example below was run before being written down. Each module is tested on its
-own (`test/test_chunk.py`, `test_compiler.py`, `test_memory.py`, `test_preset.py`,
-`test_tensor.py`, `test_noise.py`, `test_vector.py`, `test_profiler.py`,
-`test_visualizer.py`, `test_logger.py`, `test_diagnostic.py`,
+own (`test_memory.py`, `test_preset.py`, `test_noise.py`, `test_diagnostic.py`,
 `test_iodat.py`, `test_resonance_search.py`).
-
-## Pipeline and chunking
-
-**`DynamicAICodegen`** compiles a list of operation names (`relu`, `sigmoid`, `tanh`,
-`scale`, `dropout`, `clip`, `l2_normalize`, `identity`) into a single JIT-compiled JAX
-pipeline. Useful when you want to describe a transformation pipeline declaratively
-(as data, not as hand-written JAX code) and still get one compiled kernel plus a
-gradient for free.
-
-```python
-from dense_armor.core import DynamicAICodegen
-
-codegen = DynamicAICodegen()
-ops = codegen.compile_pipeline(["relu", "l2_normalize"])
-out = codegen.run_dynamic_pipeline([-2.0, 3.0, -1.0, 4.0], ops)
-print(out)
-```
-
-```
-[0.  0.6 0.  0.8]
-```
-
-Relu clips the negatives, then L2-normalize.
-
-::: dense_armor.core.compiler
-
----
-
-**`ImageChunker`** splits a large batch (or a long list of compiled operations) into
-fixed-size blocks, and merges the results back. Useful when a batch does not fit in
-memory in one shot, or when a long instruction list would otherwise force XLA to
-recompile every time its length changes.
-
-```python
-import numpy as np
-from dense_armor.core.chunk import ImageChunker
-
-chunker = ImageChunker(chunk_size=2)
-chunks = chunker.split_array(np.arange(5))
-merged = chunker.merge_chunks(chunks)
-print([list(c) for c in chunks], list(merged))
-```
-
-```
-[[0, 1], [2, 3], [4]] [0, 1, 2, 3, 4]
-```
-
-::: dense_armor.core.chunk
 
 ## Memory guard
 
@@ -102,130 +52,9 @@ calibrated against anything specific to this package. The `SafeMaxDim` value is
 host-dependent — on a small Colab instance it lands in the tens, on a large server it
 is in the thousands. Treat it as a starting guess, not a guarantee.
 
-**`StochasticAdversarialNoise`** injects synthetic noise (bitflip, dropout, Gaussian
-blur) into a tensor while preserving its norm.
-
-```python
-import numpy as np
-from dense_armor.core import StochasticAdversarialNoise
-
-out = StochasticAdversarialNoise.inject_noise(
-    np.array([1.0, 1.0, 1.0, 1.0]), "bitflip", intensity=1.0, seed=0,
-)
-print(out)
-```
-
-```
-[-0.5 -0.5 -0.5 -0.5]
-```
-
-**Honest caveat**: this is a generic noise injector, not a real adversarial-example
-generator. For actually testing the shield's robustness, the attacks in
-`test/test_boundA.py`–`test_boundE.py` (PGD / BIM / MI-FGSM, Carlini-Wagner, DeepFool,
-Fourier) are the real, calibrated benchmark; this module overlaps with that suite
-rather than adding to it.
-
 ::: dense_armor.core.noise
 
----
-
-**`PipelineProfiler`** measures JIT latency in microseconds, with the first
-(compilation) call timed separately from steady-state calls. This is the module that
-caught a real bug: `DynamicAICodegen`'s kernels used to be re-defined (and
-re-`jax.jit`-wrapped) on every single call, so they never reused XLA's compilation
-cache — warm-up and steady-state timed almost identically. Once fixed, the split is
-real: warm-up is 1700×+ slower than steady-state on a small pipeline.
-
-```python
-import numpy as np
-from dense_armor.core import DynamicAICodegen, PipelineProfiler
-
-codegen = DynamicAICodegen()
-ops = codegen.compile_pipeline(["relu", "tanh"])
-stats = PipelineProfiler.measure_microseconds(
-    codegen, np.array([1.0, -2.0, 3.0]), ops, repetitions=5,
-)
-print(sorted(stats.keys()))
-```
-
-```
-['mean_execution_us', 'min_execution_us', 'repetitions', 'std_execution_us', 'warmup_compilation_us']
-```
-
-The five keys are: warm-up (the first, compiling call), mean / min / std of the
-steady-state calls, and the number of repetitions.
-
-::: dense_armor.core.profiler
-
-## Tensors and configuration
-
-**`TensorVault`** is a small library of static (`invert`, `identity`, `edge_detector`,
-`blend`) and parametric (`scale_project`, `amplify`, `bias_shift`) transformation
-matrices, with backend (JAX / NumPy) and precision auto-detected.
-
-```python
-from dense_armor.core import TensorVault
-
-vault = TensorVault()
-edge = vault.get_static_transform("edge_detector")
-print(edge)
-```
-
-```
-[-1.  2. -1.]
-```
-
-**Honest caveat**: these are tiny, fixed matrices (2×2 or a 3-element kernel) —
-writing one inline is a single line of code. The real value here is the
-backend/precision auto-detection, not the matrix catalog itself.
-
-::: dense_armor.core.tensor
-
----
-
-**`ParametricScenarioSimulator`** runs parallel Monte Carlo simulations over time (via
-`jax.vmap`), plus a stochastic decision collapse driven by a probability distribution.
-
-```python
-import numpy as np
-from dense_armor.core import ParametricScenarioSimulator
-
-sim = ParametricScenarioSimulator()
-result, collapsed = sim.collapse_decision(np.array([0.1, 0.2, 0.3, 0.4]), target_idx=2)
-print(result, collapsed.shape)
-```
-
-```
-1 (4,)
-```
-
-**Honest caveat**: the per-step update is a fixed exponential-moving-average
-weighting, not a configurable simulation model. Useful mainly if that specific dynamic
-matches your scenario, not as a general-purpose simulator.
-
-**`BitwisePermutationEngine`** swaps elements of a combinatorial vector (a
-`2^n`-sized space) based on target / control bit masks.
-
-```python
-import numpy as np
-from dense_armor.core import BitwisePermutationEngine
-
-engine = BitwisePermutationEngine(n_elements=2)
-out = engine.apply_bitwise_swap(np.array([0., 1., 2., 3.]), target_bit=1, control_bit=0)
-print(out)
-```
-
-```
-[0. 1. 3. 2.]
-```
-
-**Honest caveat**: each call performs exactly one controlled swap between one pair of
-indices — a single primitive, not a general permutation engine. Narrower than the
-name suggests.
-
-::: dense_armor.core.vector
-
----
+## Configuration
 
 **`SIGNAL_STABILIZER_PRESETS`** are 4 empirically-calibrated parameter sets
 (`balanced_v2`, `cifar10_best_v1`, `pure_1d_time_v1`, `cifar10_hardened_lyapunov`) for
@@ -269,58 +98,6 @@ print(round(float(np.var(x - s_bal.filter_data_stream(x))), 6),
 noisier output. The two presets really do configure different filtering behaviour.
 
 ::: dense_armor.core.preset
-
-## Logging and provenance
-
-**`MinimalConsoleFormatter`** / **`CompactJsonFormatter`** are two
-`logging.Formatter` subclasses — one human-readable for the console, one compact JSON
-for a log file.
-
-```python
-import logging
-from dense_armor.core.logger import MinimalConsoleFormatter
-
-handler = logging.StreamHandler()
-handler.setFormatter(MinimalConsoleFormatter())
-log = logging.getLogger("demo")
-log.addHandler(handler)
-log.setLevel(logging.INFO)
-log.info("hello")
-```
-
-```
-[19:33:28] [INFO] hello
-```
-
-**Honest caveat**: fairly thin wrappers around `logging.Formatter` —
-`CompactJsonFormatter`'s structured fields (module / filename / line number, one JSON
-object per event) are the main reason to reach for this over writing a one-line
-formatter yourself.
-
-::: dense_armor.core.logger
-
----
-
-**`AIEngineVisualizer`** exports a SHA-256-signed provenance archive (parameters,
-execution environment, integrity hash) and plain-text trend reports comparing raw vs.
-filtered variance.
-
-```python
-from dense_armor.core import AIEngineVisualizer
-
-viz = AIEngineVisualizer(output_dir=".")
-sha256 = viz.export_provenance_archive([{"step": 1, "value": 0.5}], filename="archive.json")
-print(len(sha256), sha256[:12])
-```
-
-```
-64 fca2a89de7ae
-```
-
-A 64-hex-character SHA-256 that matches the hash written into `archive.json`. The
-first twelve characters are shown; the rest is the same hash continued.
-
-::: dense_armor.core.visualizer
 
 ## Audio and data I/O
 
@@ -439,6 +216,3 @@ confusion about which is which.
 The honest caveats above are not decoration. Each one is a place where a real number
 was checked and the module turned out to be narrower than its name, or the effect it
 claims to provide turned out to be indistinguishable from a simpler alternative.
-Keeping them in the docs is the point: a user who reaches for
-`StochasticAdversarialNoise` as if it were a real adversarial benchmark should know
-it is not, before they write a paper about it.
