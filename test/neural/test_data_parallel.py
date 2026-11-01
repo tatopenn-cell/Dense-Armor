@@ -126,7 +126,11 @@ Xd = rng2.normal(size=(16, 2)).astype(np.float32)
 Yd = rng2.normal(size=(16, 1)).astype(np.float32)
 m, t = trainer(None)
 t.fit(Xd, Yd, epochs=3, batch_size=8, key=jax.random.PRNGKey(0))
-OUT["default"] = {"loss": t.history_["train_loss"], "keys": list(t.history_)}
+OUT["default"] = {
+    "loss": t.history_["train_loss"],
+    "keys": list(t.history_),
+    "x64": bool(jax.config.jax_enable_x64),
+}
 
 
 def adam_weights(devices, epochs, calls=1, **kw):
@@ -326,9 +330,13 @@ def test_clipping_acts_on_the_averaged_gradient(out):
 def test_default_gives_the_values_stored_from_master(out):
     """compile=True with devices=None: the three epoch losses of the MLP
     [2, 4, 1] on 16 samples, SGD(0.01), batch 8, shuffle key 0, taken by
-    running master (x64 off, the setting of the subprocess)."""
-    stored = [4.009725093841553, 3.231865406036377, 2.795619010925293]
-    assert out["default"]["loss"] == pytest.approx(stored, rel=1e-5)
+    running master with x64 on and with x64 off. The subprocess inherits the
+    setting of the environment (the CI turns x64 on), and reports it."""
+    if out["default"]["x64"]:
+        stored, tol = [1.8287844438741407, 1.4960505551335324, 1.325572929081289], 1e-9
+    else:
+        stored, tol = [4.009725093841553, 3.231865406036377, 2.795619010925293], 1e-5
+    assert out["default"]["loss"] == pytest.approx(stored, rel=tol)
     assert out["default"]["keys"] == ["train_loss", "val_loss", "lr"]
 
 
