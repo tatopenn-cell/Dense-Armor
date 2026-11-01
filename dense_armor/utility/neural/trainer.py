@@ -246,6 +246,15 @@ class Trainer:
         self.loss_scale = _ls
         if (compute_dtype is not None or _ls is not None) and not self.compile:
             raise ValueError("compute_dtype and loss_scale require compile=True")
+        if int(accumulate) < 1:
+            raise ValueError(f"accumulate must be at least 1, got {accumulate}")
+        if int(accumulate) > 1 and (
+            devices is not None or compute_dtype is not None or _ls is not None
+        ):
+            raise ValueError(
+                "accumulate > 1 is not combined with devices, compute_dtype "
+                "or loss_scale"
+            )
         self.devices: list[int] | None
         self._n_devices: int
         if devices is not None:
@@ -271,15 +280,6 @@ class Trainer:
         else:
             self.devices = None
             self._n_devices = 1
-        if int(accumulate) < 1:
-            raise ValueError(f"accumulate must be at least 1, got {accumulate}")
-        if int(accumulate) > 1 and (
-            devices is not None or compute_dtype is not None or _ls is not None
-        ):
-            raise ValueError(
-                "accumulate > 1 is not combined with devices, compute_dtype "
-                "or loss_scale"
-            )
         self.accumulate = int(accumulate)
         self._scale: float
         if isinstance(_ls, float):
