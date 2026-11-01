@@ -55,6 +55,7 @@ import hashlib
 import json
 import platform
 import sys
+import tempfile
 import time
 import urllib.request
 from pathlib import Path
@@ -221,7 +222,7 @@ def _versions():
 
 def _load_dataset():
     """Download once, verify the SHA-256, return (text, chars, ids)."""
-    cache = Path("/tmp/tinyshakespeare.txt")
+    cache = Path(tempfile.gettempdir()) / "tinyshakespeare.txt"
     if not cache.exists():
         urllib.request.urlretrieve(DATA_URL, cache)
     raw = cache.read_bytes()
