@@ -230,6 +230,7 @@ nav:
       - Compiled training: neural/compiled_training.md
       - Mixed precision: neural/mixed_precision.md
       - Data parallelism: neural/data_parallel.md
+      - Memory and data: neural/memory_and_data.md
       - Modern blocks: neural/modern_blocks.md
       - Continuous training: neural/continuous.md
       - Encoders and decoders: neural/encoder_decoder.md

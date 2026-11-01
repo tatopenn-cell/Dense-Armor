@@ -355,10 +355,11 @@ class TransformerBlock:
         dropout: dropout probability on each sub-layer, default 0.
         remat: if True, the block keeps only its input and recomputes the
             activations in ``backward`` with ``jax.checkpoint`` (Chen et
-            al. 2016, Section 3, page 3: keep a few activations and
-            recompute the rest). The outputs and the gradients are the
-            same as with ``remat=False``; the memory of the activations is
-            traded for one more forward of the block.
+            al. 2016, Section 4.1, page 4: drop some of the intermediate
+            results and recover them from an extra forward computation
+            when needed). The outputs and the gradients are the same as
+            with ``remat=False``; the memory of the activations is traded
+            for one more forward of the block.
 
     Raises:
         ValueError: if ``remat`` is True and ``dropout`` is positive: the
