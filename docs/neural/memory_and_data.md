@@ -134,7 +134,32 @@ False True
 
 ### Measured cost
 
-TBD5
+`benchmarks/memory_and_data.py` runs a `transformer_encoder` of 12 layers, `d_model=512`, sequence 256, batch 32, on synthetic data (seed 0), with SGD at learning rate `0.01` and one step per epoch. Each configuration runs in a process of its own, because the peak memory of a process only grows. Values in `benchmarks/memory_and_data_gpu.json`: `Tesla T4`, jax 0.11.1, a Kaggle GPU kernel; the speed is the median of 3 sessions of 20 steps.
+
+| `remat` | peak bytes | steps/s, median (range) |
+|---|---|---|
+| `False` | 4 429 664 256 | 1.745 (1.727 to 1.773) |
+| `True` | 991 240 704 | 1.236 (1.208 to 1.262) |
+
+The stream is measured on 6400 synthetic samples of shape `(256, 64)` (64 KiB each) in a `.npy` file, in batches of 32:
+
+| source | samples/s, median (range) |
+|---|---|
+| slices of the array in memory | 57 769 554 (52 757 833 to 58 711 826) |
+| `DataStream` over the memory map, in order | 7 262 782 (7 237 789 to 7 436 110) |
+| `DataStream` over the memory map, shuffle buffer of 512 | 55 451 (52 018 to 60 893) |
+
+The slices of the array are views, so their rate measures only the loop. The shuffled stream handles one sample at a time in Python and is about 130 times slower than the in-order stream; the 12-layer model above consumes `1.745 * 32 = 56` samples per second, far below 55 451.
+
+The claims were written before the first run:
+
+| Claim | Result | Number |
+|---|---|---|
+| 1. the peak memory with `remat` is at most 0.7 times the peak without | **holds** | ratio `0.224` |
+| 2. the time per step with `remat` is at most 1.5 times | **holds** | ratio `1.412` |
+| 3. the accumulation of 4 batches of 8 equals one batch of 32 on the GPU too | **holds** | largest difference `9.3e-8` relative to the largest weight of each array, after 10 updates |
+
+Each claim comes from one run of three sessions. The time ratio `1.412` is close to the bound of `1.5`, and the speed of a single T4 changes from run to run, so another run can put it on either side.
 
 ### Not measured
 

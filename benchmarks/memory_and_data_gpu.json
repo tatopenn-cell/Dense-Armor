@@ -1,0 +1,107 @@
+{
+  "backend": "gpu",
+  "device_kind": "Tesla T4",
+  "jax": "0.11.1",
+  "python": "3.13.15",
+  "platform": "Linux-6.18.55+-x86_64-with-glibc2.39",
+  "n_sessions": 3,
+  "n_steps_per_session": 20,
+  "smoke": false,
+  "seed": 0,
+  "synthetic": true,
+  "claims": {
+    "1_peak_memory_0.7x": {
+      "ratio": 0.22377332608388098,
+      "holds": true
+    },
+    "2_time_per_step_1.5x": {
+      "ratio": 1.411857404860116,
+      "holds": true
+    },
+    "3_accumulation_1e-5": {
+      "max_relative_difference": 9.281090740387299e-08,
+      "holds": true
+    }
+  },
+  "rows": [
+    {
+      "kind": "remat",
+      "remat": false,
+      "backend": "gpu",
+      "device_kind": "Tesla T4",
+      "jax": "0.11.1",
+      "peak_bytes": 4429664256,
+      "steps_per_second_median": 1.7452764488652939,
+      "steps_per_second_range": [
+        1.7265999731404333,
+        1.7727852382436737
+      ],
+      "steps_per_second_sessions": [
+        1.7727852382436737,
+        1.7452764488652939,
+        1.7265999731404333
+      ],
+      "mode": "remat_off"
+    },
+    {
+      "kind": "remat",
+      "remat": true,
+      "backend": "gpu",
+      "device_kind": "Tesla T4",
+      "jax": "0.11.1",
+      "peak_bytes": 991240704,
+      "steps_per_second_median": 1.236156316393873,
+      "steps_per_second_range": [
+        1.2076141448026887,
+        1.262360988621742
+      ],
+      "steps_per_second_sessions": [
+        1.262360988621742,
+        1.236156316393873,
+        1.2076141448026887
+      ],
+      "mode": "remat_on"
+    },
+    {
+      "kind": "stream",
+      "backend": "gpu",
+      "n_samples": 6400,
+      "sample_shape": [
+        256,
+        64
+      ],
+      "batch": 32,
+      "rates": {
+        "array_in_memory": {
+          "samples_per_second_median": 57769553.66751825,
+          "samples_per_second_range": [
+            52757833.323044986,
+            58711825.85044476
+          ]
+        },
+        "stream_memory_map": {
+          "samples_per_second_median": 7262782.212650247,
+          "samples_per_second_range": [
+            7237788.494378414,
+            7436110.449437402
+          ]
+        },
+        "stream_memory_map_shuffled": {
+          "samples_per_second_median": 55451.20092010415,
+          "samples_per_second_range": [
+            52017.515175160086,
+            60893.399026118816
+          ]
+        }
+      },
+      "mode": "stream"
+    },
+    {
+      "kind": "accumulation",
+      "backend": "gpu",
+      "updates": 10,
+      "max_relative_difference": 9.281090740387299e-08,
+      "mode": "accumulation"
+    }
+  ]
+}
