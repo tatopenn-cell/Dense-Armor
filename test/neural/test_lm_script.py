@@ -145,6 +145,7 @@ def test_generated_text_starts_with_prompt(smoke_json):
     assert smoke_json["generated_sample"].startswith(prompt)
     assert smoke_json["claim_4_generated_len"] == len(smoke_json["generated_greedy"])
 
+
 def test_smoke_devices_used_is_one(smoke_json):
     """Smoke runs with one device; devices_used is 1, device_count may be more."""
     assert smoke_json["devices_used"] == 1

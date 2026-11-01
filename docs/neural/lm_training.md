@@ -130,7 +130,7 @@ print(repr(d["generated_sample"]))
 
 ```
 'First Citizen:\nAnd the see the so the son th'
-"First Citizen:\n'Deys,nos; brot shall in this "
+"First Citizen:\n'Dey,nos; brot shall in this "
 ```
 
 The greedy text repeats "the": the mark of a 14.2-million-parameter model after 500 steps. The pattern is there, the grammar is not. On two devices the greedy output is worse: `First Citizen:\nAnd the the the the the the t`, the same collapse seen in the loss.

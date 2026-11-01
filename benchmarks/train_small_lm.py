@@ -331,8 +331,10 @@ def _one_session(cfg, data, steps, batch_size, devices, accumulate, key):
         all_losses.append(float(last))
         step_1 = step_i == 0
         rec_curve = (
-            (step_i + 1) in (100,) or (step_i + 1) % 500 == 0
-        ) if cfg["max_len"] > 32 else (step_i + 1) in (1, 5, 10)
+            ((step_i + 1) in (100,) or (step_i + 1) % 500 == 0)
+            if cfg["max_len"] > 32
+            else (step_i + 1) in (1, 5, 10)
+        )
         if step_1 or rec_curve:
             loss_curve[step_i + 1] = float(last)
         if not np.isfinite(last):
@@ -342,14 +344,16 @@ def _one_session(cfg, data, steps, batch_size, devices, accumulate, key):
     n_total = len(all_losses)
     n_win = min(100, n_total)
     if n_total < 200:
-        for k in ("loss_variance_first_100", "loss_variance_last_100",
-                  "loss_variance_ratio", "claim_5_loss_variance_ratio",
-                  "loss_variance_ratio_tail"):
+        for k in (
+            "loss_variance_first_100",
+            "loss_variance_last_100",
+            "loss_variance_ratio",
+            "claim_5_loss_variance_ratio",
+            "loss_variance_ratio_tail",
+        ):
             recorder[k] = None
         recorder["claim_5_holds"] = None
-        recorder["claim_5_note"] = (
-            f"n_steps={n_total} < 200, the windows overlap"
-        )
+        recorder["claim_5_note"] = f"n_steps={n_total} < 200, the windows overlap"
     else:
         first_win = jnp.asarray(all_losses[:n_win], dtype=jnp.float32)
         last_win = jnp.asarray(all_losses[-n_win:], dtype=jnp.float32)
@@ -361,7 +365,7 @@ def _one_session(cfg, data, steps, batch_size, devices, accumulate, key):
         recorder["loss_variance_ratio"] = ratio
         recorder["claim_5_loss_variance_ratio"] = ratio
         if n_total >= 400:
-            prev_win = jnp.asarray(all_losses[-2 * n_win:-n_win], dtype=jnp.float32)
+            prev_win = jnp.asarray(all_losses[-2 * n_win : -n_win], dtype=jnp.float32)
             v_prev = float(stable_var(prev_win))
             ratio_tail = (v_last / v_prev) if v_prev > 0 else float("nan")
             recorder["loss_variance_ratio_tail"] = ratio_tail
@@ -440,14 +444,20 @@ def _speed_session(cfg, data, batch_size, devices, accumulate, key):
 
     X_warm = _stack(n_warm, 2)
     trainer.fit(
-        X=X_warm, y=X_warm, epochs=1, batch_size=batch_size,
+        X=X_warm,
+        y=X_warm,
+        epochs=1,
+        batch_size=batch_size,
         key=jax.random.PRNGKey(0),
     )
 
     X_speed = _stack(n_speed, 3)
     t0 = time.perf_counter()
     trainer.fit(
-        X=X_speed, y=X_speed, epochs=1, batch_size=batch_size,
+        X=X_speed,
+        y=X_speed,
+        epochs=1,
+        batch_size=batch_size,
         key=jax.random.PRNGKey(1),
     )
     dt = time.perf_counter() - t0
@@ -480,7 +490,9 @@ def _main(args):
         "backend": backend,
         "device_kind": device_kind,
         "device_count": device_count,
-        "devices_used": (1 if args.devices is None or args.devices < 2 else args.devices),
+        "devices_used": (
+            1 if args.devices is None or args.devices < 2 else args.devices
+        ),
         "versions": versions,
         "config": cfg,
         "batch_size": batch_size,
@@ -497,7 +509,11 @@ def _main(args):
     }
 
     # Speed: 3 sessions on full, 1 on smoke, --sessions overrides
-    n_sess = args.sessions if args.sessions is not None else (1 if args.smoke else N_SESSIONS)
+    n_sess = (
+        args.sessions
+        if args.sessions is not None
+        else (1 if args.smoke else N_SESSIONS)
+    )
     sps = []
     for s in range(n_sess):
         sps.append(
@@ -555,8 +571,12 @@ def main(argv):
     ap.add_argument("--batch", type=int, default=None)
     ap.add_argument("--devices", type=int, default=1)
     ap.add_argument("--accumulate", type=int, default=1)
-    ap.add_argument("--sessions", type=int, default=None,
-                    help="speed sessions (default: 3, 1 on --smoke)")
+    ap.add_argument(
+        "--sessions",
+        type=int,
+        default=None,
+        help="speed sessions (default: 3, 1 on --smoke)",
+    )
     ap.add_argument("--json", type=str, default=None)
     args = ap.parse_args(argv)
     row = _main(args)
