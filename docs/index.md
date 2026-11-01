@@ -1,68 +1,52 @@
 # Dense-Armor
 
-Dense-Armor is a library that learns from a robot's numbers (and from images and text) while they arrive, one at a time. It can spot strange readings, notice slow changes, protect against bad data and keep robot commands safe.
+Dense-Armor is a library that learns from a robot's numbers (and from images and text) in three ways: one sample at a time, on a whole table at once, and with deep networks. It can spot strange readings, notice slow changes, protect against bad data and keep robot commands safe.
 
-**A library for online learning on robot, vision, and AI streams, one sample at a time,
-with streaming statistics and protection, drift and anomaly detection, and safe robot
-commands.**
+**A library for three kinds of learning: online learning on robot, vision, and AI streams; machine learning on a whole dataset; and deep learning.**
 
-Dense-Armor is an online learning library with a shielding layer on top. Everything that
-learns online does it one sample at a time, at control-loop speed, and everything that is
-estimating can be protected from corrupted data without retraining or weight changes.
-Next to the online core there are two modules that read a whole dataset at once: a
-[machine learning](ml/index.md) module (`dense_armor.ml`, with `fit` and `predict`) and a
-[deep learning](neural/index.md) module (layers, networks, training, attention, decoder
-language models).
+## The three kinds of learning
+
+| | Online learning | Machine learning | Deep learning |
+|---|---|---|---|
+| It reads | one sample at a time, at control-loop speed | a whole table, with `fit` and `predict` | batches or a stream, through layers |
+| Module | `dense_armor.utility.online` | `dense_armor.ml` | `dense_armor.utility.deep.neural` |
+| It has | classifiers, regressors, trees, forests, bandits, anomaly and drift detectors, clustering, time series | statistics, preprocessing, linear models, trees, forests, ensembles, anomaly and change detection | layers, attention, convolutional and recurrent blocks, training, continual learning, decoder language models |
+| Start with | [Online learning](learn/index.md) | [Machine learning](ml/index.md) | [Deep learning](neural/index.md) |
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
+│                                 APPLICATIONS                                │
 │                                                                             │
-│                          APPLICATIONS                                       │
-│                                                                             │
-│   Robot                  Vision                 LLM                AI       │
-│   control                frames                 agents             models   │
-│   dynamics               patches                tools              + shields │
-│   URDF                   vocabulary             JSON                          │
-│                                                                             │
+│ Robot control, dynamics, URDF    Vision    LLM agents, tools    AI models   │
 ├─────────────────────────────────────────────────────────────────────────────┤
+│                           THREE KINDS OF LEARNING                           │
 │                                                                             │
-│                    SHIELDING (optional, on top)                             │
-│                                                                             │
-│   Armor (1D series)   Orca (input+output)   Arbiter (per-point routing)  │
-│   Robust filters         Curvature              Streaming check              │
-│                                                                             │
+│ ONLINE                   MACHINE LEARNING         DEEP LEARNING             │
+│ one sample at a time     fit / predict on a       layers, attention,        │
+│ classifiers, regressors  whole table              training, language        │
+│ trees, anomaly, drift   statistics, linear,      models, continual         │
+│ detectors, clustering    trees, ensembles         learning                  │
 ├─────────────────────────────────────────────────────────────────────────────┤
+│                PROTECTION (optional, around any online model)               │
 │                                                                             │
-│                    ONLINE LEARNING (the core)                               │
-│                                                                             │
-│   Classifiers            Regressors             Transformers                │
-│   Anomaly detectors      Drift detectors        Clustering                  │
-│   Trees                  Calibration            Metric learning             │
-│                                                                             │
+│ Armor (1D series)    Orca (input + output)    Arbiter (per-point routing)   │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
 │                    SIGNALS & STATISTICS (the layer below)                   │
 │                                                                             │
-│   Signal                 Streams                Datasets                    │
-│   Moments                Quantiles              Sketches                    │
-│   Preprocessing          Metrics                Evaluation                  │
-│                                                                             │
+│ Signal   Streams   Datasets   Moments   Quantiles   Sketches   Metrics      │
 ├─────────────────────────────────────────────────────────────────────────────┤
+│                            ROLES (the foundation)                           │
 │                                                                             │
-│                    ROLES (the foundation)                                   │
-│                                                                             │
-│   Root → Estimator → AnomalyDetector, Classifier, Regressor, Transformer,   │
-│                      DriftDetector                                          │
-│                                                                             │
+│ Root > Estimator > AnomalyDetector, Classifier, Regressor, Transformer,     │
+│                    DriftDetector                                            │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-The learning is the core. The shield sits on top and is optional. Robot, vision, LLM and
-the AI models are the applications this core was built for.
+The three kinds of learning are the core. The shield (Armor, Orca, Arbiter) is optional protection around an online model. Robot, vision, LLM and the AI models are the applications this core was built for.
 
-## When you already have data, and where the shield goes
+## Online learning in practice: four ways to use it, and where the shield goes
 
-Four ways to use the library, from the simplest to the most protected.
+Four ways to use the online part, from the simplest to the most protected.
 
 **1 — Learn from a clean stream.** You have a model and the data is trustworthy.
 
@@ -96,7 +80,7 @@ together and a per-channel detector is blind to the combination.
                                 as one point in d dimensions
 ```
 
-Recipe 1 is the core. Recipe 2 adds the shield. Recipes 3 and 4 are the shield used on
+Recipe 1 is the online core. Recipe 2 adds the shield. Recipes 3 and 4 are the shield used on
 its own, for when you only need a detector.
 
 ## Install
