@@ -160,6 +160,10 @@ payload fault no longer poisons the model's state.
   forgetting the past, and how to measure what it remembers.
 - **[Mixture of experts and test-time compute](neural/moe_testtime.md)** — use only part of
   the parameters on each sample, spend more compute at inference.
+- **[Language-model training](neural/lm_training.md)** — a 14.2-million-parameter decoder
+  trained on a GPU, with its baselines.
+- **[Modern decoder](neural/modern_decoder.md)** — RMSNorm, rotary attention and SwiGLU, and
+  generation against a static key/value cache.
 - **[Stable variance in float32](stats/stable_variance.md)** — a variance that is exactly
   zero on identical values.
 
