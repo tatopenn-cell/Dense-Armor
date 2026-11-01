@@ -4,6 +4,7 @@
   "backend": "gpu",
   "device_kind": "Tesla T4",
   "device_count": 2,
+  "devices_used": 2,
   "versions": {
     "python": "3.13.15",
     "jax": "0.11.1",
@@ -30,31 +31,34 @@
     "vocab": 65
   },
   "sessions_tokens_per_second": [
-    5824.2299980964,
-    5544.4732216006,
-    5428.677349844519
+    27743.402804992034
   ],
-  "tokens_per_second_median": 5544.4732216006,
+  "tokens_per_second_median": 27743.402804992034,
   "tokens_per_second_range": [
-    5428.677349844519,
-    5824.2299980964
+    27743.402804992034,
+    27743.402804992034
   ],
-  "val_loss": 1.9941959977149963,
+  "loss_variance_first_100": 0.29098865389823914,
+  "loss_variance_last_100": 0.0011708935489878058,
+  "loss_variance_ratio": 0.004023846061699973,
+  "claim_5_loss_variance_ratio": 0.004023846061699973,
+  "claim_5_holds": true,
+  "val_loss": 1.9943394362926483,
   "loss_curve": {
     "1": 4.804391384124756,
-    "100": 2.5030746459960938,
-    "200": 2.214705467224121,
-    "300": 2.016712188720703,
-    "400": 1.970618486404419,
-    "500": 1.8760534524917603
+    "100": 2.503326892852783,
+    "200": 2.2153310775756836,
+    "300": 2.0037686824798584,
+    "400": 1.9665117263793945,
+    "500": 1.8958410024642944
   },
   "n_params": 14210753,
-  "generated_greedy": "First Citizen:\nAnd the shall the hast the sh",
-  "generated_sample": "First Citizen:\n'notrnos; but and.\n\nBiJRD ELI",
-  "peak_bytes": 1592877824,
+  "generated_greedy": "First Citizen:\nAnd the seel the sear the sea",
+  "generated_sample": "First Citizen:\n'Dy hows; but  saase in this ",
+  "peak_bytes": 1456666368,
   "bigram_val_loss": 2.4818894321158234,
   "unigram_val_loss": 3.3473303372775036,
-  "claim_1_val_over_bigram": 0.8034991292963982,
+  "claim_1_val_over_bigram": 0.8035569234010815,
   "claim_1_holds": false,
   "claim_2_no_nan_inf": true,
   "claim_4_generated_len": 44
