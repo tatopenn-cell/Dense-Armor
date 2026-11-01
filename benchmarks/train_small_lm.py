@@ -41,9 +41,13 @@ Usage:
     python benchmarks/train_small_lm.py --steps 2000 --devices 1
     python benchmarks/train_small_lm.py --steps 2000 --devices 2
 
-The GPU JSON is committed with its backend and the session values, as
-``benchmarks/train_small_lm_gpu.json``. The CPU JSON from ``--smoke``
-is not committed.
+The GPU JSON is committed with its backend and the session values. The
+defaults write ``benchmarks/train_small_lm_smoke.json`` for ``--smoke``
+and ``benchmarks/train_small_lm_gpu.json`` for the full run; the
+committed runs in this task used ``--json
+benchmarks/train_small_lm_gpu_1dev.json`` and ``--json
+benchmarks/train_small_lm_gpu_2dev.json`` for the two ``--devices``
+values. The CPU JSON from ``--smoke`` is not committed.
 """
 
 import argparse
@@ -365,7 +369,14 @@ def _one_session(cfg, data, steps, batch_size, devices, accumulate, key):
 
 
 def _speed_session(cfg, data, batch_size, devices, accumulate, key):
-    """Measure tokens per second over SPEED_STEPS steps, after WARMUP_STEPS."""
+    """Measure tokens per second over SPEED_STEPS steps, after WARMUP_STEPS.
+
+    The speed is measured over one ``fit`` call covering all the steps,
+    not one ``fit`` per batch: with several devices the trainer copies
+    weights and optimizer state to every device at the start of each
+    ``fit`` and syncs back at the end, and a per-batch ``fit`` measures
+    that copy, not the training.
+    """
     seq_len = cfg["max_len"]
     model = _build_model(cfg, key)
     opt = Adam(lr=3e-4)
@@ -380,24 +391,26 @@ def _speed_session(cfg, data, batch_size, devices, accumulate, key):
         devices=(None if devices is None or devices < 2 else devices),
         accumulate=accumulate,
     )
-
-    def _one(b):
-        bb = jnp.asarray(b)
-        trainer.fit(
-            X=bb, y=bb, epochs=1, batch_size=batch_size, key=jax.random.PRNGKey(0)
-        )
-
     small = cfg["max_len"] <= 32
     n_warm = 1 if small else WARMUP_STEPS
     n_speed = 3 if small else SPEED_STEPS
-    # warm-up
-    for i, b in enumerate(_batches(data["train"], batch_size, seq_len, n_warm, 2)):
-        del i
-        _one(b)
+
+    def _stack(n_steps, seed):
+        batches = list(_batches(data["train"], batch_size, seq_len, n_steps, seed))
+        return jnp.asarray(np.concatenate(batches, axis=0))
+
+    X_warm = _stack(n_warm, 2)
+    trainer.fit(
+        X=X_warm, y=X_warm, epochs=1, batch_size=batch_size,
+        key=jax.random.PRNGKey(0),
+    )
+
+    X_speed = _stack(n_speed, 3)
     t0 = time.perf_counter()
-    for i, b in enumerate(_batches(data["train"], batch_size, seq_len, n_speed, 3)):
-        del i
-        _one(b)
+    trainer.fit(
+        X=X_speed, y=X_speed, epochs=1, batch_size=batch_size,
+        key=jax.random.PRNGKey(1),
+    )
     dt = time.perf_counter() - t0
     tokens = n_speed * batch_size * seq_len
     return tokens / dt
@@ -428,6 +441,7 @@ def _main(args):
         "backend": backend,
         "device_kind": device_kind,
         "device_count": device_count,
+        "devices_used": (1 if args.devices is None or args.devices < 2 else args.devices),
         "versions": versions,
         "config": cfg,
         "batch_size": batch_size,
