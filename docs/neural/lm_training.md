@@ -1,6 +1,6 @@
 # Language-model training: how do I train a decoder on a GPU?
 
-A 14.2-million-parameter decoder trained on the tiny Shakespeare text with the modern blocks of this library: RMSNorm, SwiGLU, rotary attention, a causal mask. The page shows the data, the baselines, the model, the run on a Tesla T4 and the text the model produces after 500 steps.
+A 14.2-million-parameter decoder trained on the tiny Shakespeare text with the modern blocks of this library: RMSNorm, SwiGLU, rotary attention, a causal mask. The page shows the data, the baselines, the model, the run on a Tesla T4, the text the model produces after 500 steps, and how the variance of the training loss shrinks.
 
 ## 1. The data: 1.1 MB of Shakespeare, 65 characters
 
@@ -46,7 +46,7 @@ The two numbers come from benchmarks/train_small_lm_gpu_1dev.json. The model mus
 
 ## 3. The model: 14.2 million parameters, six modern blocks
 
-The model is an embedding, six decoder blocks, a final RMSNorm and a linear head. Each block is a pre-norm residual with two pieces: RMSNorm followed by causal rotary attention, then RMSNorm followed by SwiGLU feed-forward. The class lives in `benchmarks/train_small_lm.py`; here is its parameter count.
+The model is an embedding, six decoder blocks, a final RMSNorm and a linear head. Each block is a pre-norm residual: RMSNorm followed by causal rotary attention, then RMSNorm followed by SwiGLU feed-forward. The class lives in `benchmarks/train_small_lm.py`; here is its parameter count.
 
 ```python
 import jax
@@ -64,7 +64,7 @@ The config: `d_model` 384, six heads, six layers, `d_ff` 1536, `max_len` 256, vo
 
 ## 4. The run: 500 steps, loss from 4.80 to 1.90
 
-The training uses `Adam` with decoupled weight decay (`Trainer(decay="decoupled")`, the AdamW update of Loshchilov and Hutter 2019), bfloat16 compute with float32 master weights, the compiled step, batch 16, sequence 256. The validation loss on the last 10 % of the text, from the JSON:
+The training uses `Adam` with decoupled weight decay (`Trainer(decay="decoupled")`, the AdamW update of Loshchilov and Hutter 2019), bfloat16 compute with float32 master weights, the compiled step, batch 16, sequence 256. The recorded loss, from the JSON:
 
 ```python
 import json
@@ -77,16 +77,38 @@ for step, loss in d["loss_curve"].items():
 
 ```
 step   1  loss 4.8044
-step 100  loss 2.5032
-step 200  loss 2.2163
-step 300  loss 1.9963
-step 400  loss 1.9673
-step 500  loss 1.9005
+step 100  loss 2.5033
+step 200  loss 2.2151
+step 300  loss 2.0058
+step 400  loss 1.9720
+step 500  loss 1.8979
 ```
 
-The final validation loss is 1.9841. The bigram baseline is 2.4819, the ratio is 0.799; the target of 0.7 set before the run is not reached on 500 steps. The loss is still falling.
+The final validation loss is 1.9956. The bigram baseline is 2.4819, the ratio is 0.804; the target of 0.7 set before the run is not reached on 500 steps. The loss is still falling.
 
-## 5. The text: 44 characters after the prompt
+## 5. The variance: the training stabilises
+
+The variance of the per-step training loss, in the first 100 steps and in the last 100, computed by `stable_var` from `dense_armor.utility.stats.stable`:
+
+```python
+import json
+from pathlib import Path
+
+d = json.loads(Path("benchmarks/train_small_lm_gpu_1dev.json").read_text())
+print(f"{d['loss_variance_first_100']:.6f}")
+print(f"{d['loss_variance_last_100']:.10f}")
+print(f"{d['loss_variance_ratio']:.4e}")
+```
+
+```
+0.291021
+0.0011562244
+3.9730e-03
+```
+
+The variance drops by a factor of 250. That is what the stabilising run means: the loss moves less from step to step as the model settles. On two devices the ratio is 4.0238e-03, essentially the same. The claims C5 (the variance shrinks, ratio < 1) holds on both runs.
+
+## 6. The text: 44 characters after the prompt
 
 The model generates 30 new characters from the prompt `First Citizen:`. Greedy and temperature 1.0 on the same prompt, from the JSON:
 
@@ -100,8 +122,8 @@ print(repr(d["generated_sample"]))
 ```
 
 ```
-'First Citizen:\nAnd the son the have the son '
-"First Citizen:\n'notrn RicCUrgans.\nPmince hea"
+'First Citizen:\nAnd the son the son the son t'
+"First Citizen:\n\nDo hnou; but and.\n\nBinCeu,, "
 ```
 
 The greedy text repeats "the son the": the mark of a 14.2-million-parameter model after 500 steps. The pattern is there, the grammar is not.
@@ -113,34 +135,38 @@ The greedy text repeats "the son the": the mark of a 14.2-million-parameter mode
 - Vaswani et al. 2017, "Attention is all you need", section 3.1 page 3 (decoder stacks and causal mask), Table 3 page 9 (`d_ff = 4 * d_model`).
 - Su et al. 2021, "RoFormer", Eq.(15) page 5, Eq.(34) page 7 (the pair rotation).
 - Shazeer 2020, "GLU variants improve Transformer", Eq.(6) page 2 (SwiGLU with Swish-1), page 2 (no biases).
-- Loshchilov and Hutter 2019, "Decoupled weight decay regularization", Algorithm 1 page 4. The script uses `Adam` plus `Trainer(decay="decoupled")`, which is the same update (line 252 of `trainer.py`: `p.value = p.value - eta_t * weight_decay * p.value`).
+- Loshchilov and Hutter 2019, "Decoupled weight decay regularization", Algorithm 1 page 4. The script uses `Adam` plus `Trainer(decay="decoupled")`, which is the same update (line 252 of `trainer.py`).
+- Ogita, Rump, Oishi 2005, "Accurate Sum and Dot Product", Algorithm 3.1 page 7 (TwoSum). The compensated tree in `stable_var` uses it at every level.
+- Shewchuk 1997, "Adaptive Precision Floating-Point Arithmetic", Theorem 7 page 12 (TWO-SUM) and Lemma 5 page 10 (Sterbenz, the shift is exact).
+- Healy 2022, "Accurate and consistent calculation of the mean and variance in Monte-Carlo simulations", arXiv:2206.10662, Algorithm 2 (shifted data with K = x[0]). The kernel `stable_var` of `dense_armor.utility.stats.stable` follows it.
 - Karpathy's `char-rnn` repository, `input.txt` of "tiny Shakespeare" (public domain), SHA-256 `86c4e6aa...565ed`.
 
 ### Choices stated explicitly
 
-- **`transformer_decoder` is not used.** The builder in `models.py` composes the 2017 blocks (`LayerNorm`, two `Dense`, sinusoidal positions). The script composes RMSNorm, SwiGLU and rotary with the blocks of `attention.py`, `norm_rms.py`, `glu.py`, `layers.py`.
-- **AdamW via `Adam` plus decoupled decay.** `compiled.py::_init_state` dispatches `SGD`, `Adam`, `RMSProp`, `AdaGrad`; `AdamW` is not wired. `Adam(lr) + Trainer(decay="decoupled")` is the same update.
-- **bfloat16, not float16.** bfloat16 has an 8-bit exponent, no loss scaling needed, and runs natively on CPU, T4, TPU.
-- **30 new tokens on the page, not 200.** `generate` does not use a KV cache: every token re-runs the whole sequence. 200 tokens times 2 calls cost about 15 minutes on the T4; the page and the JSON use 30.
-- **500 steps, batch 16, on 1 device.** A 2000-step batch-32 run was planned and not committed; the committed JSON is the 500-step run.
+- **`transformer_decoder` is not used.** The builder in `models.py` composes the 2017 blocks (LayerNorm, two Dense, sinusoidal positions). The script composes RMSNorm, SwiGLU and rotary with the blocks of `attention.py`, `norm_rms.py`, `glu.py`, `layers.py`.
+- **AdamW via `Adam` plus decoupled decay.** `compiled.py::_init_state` dispatches `SGD`, `Adam`, `RMSProp`, `AdaGrad`; `AdamW` is not wired.
+- **bfloat16, not float16.** 8-bit exponent, no loss scaling needed, native on CPU, T4, TPU.
+- **30 new tokens, not 200.** `generate` has no KV cache: 2.4 s/token on the T4, 200 tokens cost about 15 minutes.
+- **Claim 5 uses `stable_var` from `dense_armor.utility.stats.stable`**, the same kernel as the float32 variance task. When the two windows overlap (`2 * min(100, n_steps) > n_steps`, i.e. fewer than 200 steps), the claim is `None`, not a number.
+- **Speed is measured with one `fit()` covering all steps, not one `fit()` per batch.** With more than one device the trainer copies weights and Adam state to every device at each `fit()` and syncs back at the end; a per-batch `fit()` measures the copy, not the training.
 
 ### Measured cost
 
 Machine: Kaggle, `device_kind` "Tesla T4", `device_count` 2, `python` 3.13.15, `jax` 0.11.1, `numpy` 2.2.6.
 
-| run | steps | batch | seq | tokens/s | peak bytes | val_loss |
-|---|---|---|---|---|---|---|
-| 1 device | 500 | 16 | 256 | 31,666 (range 31,537-32,116) | 1,426,489,856 | 1.9841 |
-| 2 devices | 500 | 16 | 256 | 5,544 (range 5,429-5,824) | 1,592,877,824 | 1.9942 |
+| run | devices | steps | batch | seq | tokens/s | peak bytes | val_loss | loss var ratio |
+|---|---|---|---|---|---|---|---|---|
+| 1 device | 1 | 500 | 16 | 256 | 28,746 | 1,424,270,592 | 1.9956 | 3.9730e-03 |
+| 2 devices | 2 | 500 | 16 | 256 | 27,743 | 1,456,666,368 | 1.9943 | 4.0238e-03 |
 
-The two runs use the same seed, same data, same steps. The 2-device run is 5.7 times slower than the 1-device run: batch 16 split in two 8-sample shards does not saturate a T4, and the per-step shard-and-all-reduce dominates. The target "2 GPUs at 1.5 times 1 GPU" set before the run does not hold on this workload.
+The two runs use the same seed, data and steps. The 2-device run is 0.97 times the 1-device run on tokens per second, well below the 1.5 set before the run: claim 3 does not hold on batch 16. The 2-device run does not pay off with 8-sample shards per device.
 
 ### Not measured
 
 - 2 GPUs with a larger batch (32 or 64) or a larger model, where data parallelism usually pays off.
-- The TPU: a TPU v3-8 has 8 devices, more than the 2-device story of `data_parallel.py`, and is not part of this run.
+- The TPU: a TPU v3-8 has 8 devices, more than the 2-device story of `data_parallel.py`.
 - bfloat16 tensor-core kernels tuned for the T4; the numbers are JAX 0.11 default.
 
 ### Development diary
 
-The first training step takes 6.3 s on the T4 with XLA compile, the next 10 steps take 2.4 s: 240 ms/step. `generate` re-runs the whole sequence per token; 20 tokens cost 47.7 s and 100 tokens cost 230.3 s, both about 2.4 s/token. A first run with `max_new=200` on both greedy and sampled generation would have taken 15 minutes on generation alone; the committed JSON uses 30.
+The first training step is 6.3 s on the T4 with XLA compile, the next 10 are 2.4 s: 240 ms/step. `generate` re-runs the whole sequence per token; 20 tokens cost 47.7 s and 100 cost 230.3 s, both about 2.4 s/token. A first run with `max_new=200` on both greedy and sampled generation would have taken 15 minutes on generation alone; the committed JSON uses 30. Claim 5 is what was missing: without `stable_var` a "proof of scale" says the model runs, not that it stabilises.
