@@ -114,6 +114,16 @@ def test_remat_gives_the_same_output_and_gradients():
         np.testing.assert_allclose(a.grad, b.grad, atol=1e-10)
 
 
+def test_only_the_remat_block_checkpoints_its_forward():
+    x = jax.random.normal(jax.random.PRNGKey(1), (5, 8))
+    found = {}
+    for remat in (False, True):
+        b = ModernDecoderBlock(8, 2, 16, jax.random.PRNGKey(0), remat=remat)
+        text = str(jax.make_jaxpr(lambda xx, b=b: b.forward(xx))(x))
+        found[remat] = "checkpoint" in text or "remat" in text
+    assert found == {False: False, True: True}
+
+
 def test_remat_backward_before_forward_raises():
     b = ModernDecoderBlock(8, 2, 16, jax.random.PRNGKey(0), remat=True)
     with pytest.raises(RuntimeError):
