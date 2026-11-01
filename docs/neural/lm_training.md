@@ -88,7 +88,7 @@ The final validation loss is 1.9956. The bigram baseline is 2.4819, the ratio is
 
 ## 5. The variance: the training stabilises
 
-The variance of the per-step training loss, in the first 100 steps and in the last 100, computed by `stable_var` from `dense_armor.utility.stats.stable`:
+The variance of the per-step training loss, in the first 100 steps and in the last 100, computed by `stable_var` from `dense_armor.utility.signals.stats.stable`:
 
 ```python
 import json
@@ -138,7 +138,7 @@ The greedy text repeats "the son the": the mark of a 14.2-million-parameter mode
 - Loshchilov and Hutter 2019, "Decoupled weight decay regularization", Algorithm 1 page 4. The script uses `Adam` plus `Trainer(decay="decoupled")`, which is the same update (line 252 of `trainer.py`).
 - Ogita, Rump, Oishi 2005, "Accurate Sum and Dot Product", Algorithm 3.1 page 7 (TwoSum). The compensated tree in `stable_var` uses it at every level.
 - Shewchuk 1997, "Adaptive Precision Floating-Point Arithmetic", Theorem 7 page 12 (TWO-SUM) and Lemma 5 page 10 (Sterbenz, the shift is exact).
-- Healy 2022, "Accurate and consistent calculation of the mean and variance in Monte-Carlo simulations", arXiv:2206.10662, Algorithm 2 (shifted data with K = x[0]). The kernel `stable_var` of `dense_armor.utility.stats.stable` follows it.
+- Healy 2022, "Accurate and consistent calculation of the mean and variance in Monte-Carlo simulations", arXiv:2206.10662, Algorithm 2 (shifted data with K = x[0]). The kernel `stable_var` of `dense_armor.utility.signals.stats.stable` follows it.
 - Karpathy's `char-rnn` repository, `input.txt` of "tiny Shakespeare" (public domain), SHA-256 `86c4e6aa...565ed`.
 
 ### Choices stated explicitly
@@ -147,7 +147,7 @@ The greedy text repeats "the son the": the mark of a 14.2-million-parameter mode
 - **AdamW via `Adam` plus decoupled decay.** `compiled.py::_init_state` dispatches `SGD`, `Adam`, `RMSProp`, `AdaGrad`; `AdamW` is not wired.
 - **bfloat16, not float16.** 8-bit exponent, no loss scaling needed, native on CPU, T4, TPU.
 - **30 new tokens, not 200.** `generate` has no KV cache: 2.4 s/token on the T4, 200 tokens cost about 15 minutes.
-- **Claim 5 uses `stable_var` from `dense_armor.utility.stats.stable`**, the same kernel as the float32 variance task. When the two windows overlap (`2 * min(100, n_steps) > n_steps`, i.e. fewer than 200 steps), the claim is `None`, not a number.
+- **Claim 5 uses `stable_var` from `dense_armor.utility.signals.stats.stable`**, the same kernel as the float32 variance task. When the two windows overlap (`2 * min(100, n_steps) > n_steps`, i.e. fewer than 200 steps), the claim is `None`, not a number.
 - **Speed is measured with one `fit()` covering all steps, not one `fit()` per batch.** With more than one device the trainer copies weights and Adam state to every device at each `fit()` and syncs back at the end; a per-batch `fit()` measures the copy, not the training.
 
 ### Measured cost
