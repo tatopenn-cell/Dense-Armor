@@ -9,10 +9,10 @@ import pytest
 
 from dense_armor.utility.neural.attention import TransformerBlock
 from dense_armor.utility.neural.losses import MSE
-from dense_armor.utility.neural.models import transformer_encoder
+from dense_armor.utility.neural.models import mlp, transformer_encoder
 from dense_armor.utility.neural.stream import DataStream
 from dense_armor.utility.neural.trainer import Trainer
-from dense_armor.utility.optim import SGD
+from dense_armor.utility.optim import SGD, Adam
 
 
 def _tol():
@@ -292,3 +292,188 @@ def test_the_compiled_trainer_follows_the_same_trajectory_with_remat():
         return t.history_["train_loss"]
 
     assert run(True) == pytest.approx(run(False), rel=1e-4)
+
+
+def _train_data(n=64):
+    rng = np.random.default_rng(0)
+    return (
+        rng.normal(size=(n, 2)).astype(np.float32),
+        rng.normal(size=(n, 1)).astype(np.float32),
+    )
+
+
+def _fit(compile, X, y, epochs, batch_size, opt=None, **kw):
+    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
+    t_kw = {k: kw.pop(k) for k in ("accumulate", "clip_norm") if k in kw}
+    t = Trainer(m, MSE(), opt or SGD(0.05), compile=compile, **t_kw)
+    t.fit(X, y, epochs=epochs, batch_size=batch_size, key=jax.random.PRNGKey(0), **kw)
+    return t, [np.array(p.value) for p in m.params()]
+
+
+def _same(a, b):
+    for x, y in zip(a, b):
+        np.testing.assert_allclose(x, y, rtol=1e-5, atol=1e-7)
+
+
+STORED_MASTER_LOSSES_X64_TRUE = [
+    1.8287844438741407,
+    1.4960505551335324,
+    1.325572929081289,
+]
+STORED_MASTER_LOSSES_X64_FALSE = [
+    4.009725093841553,
+    3.231865406036377,
+    2.795619010925293,
+]
+
+
+def test_the_default_trainer_gives_the_values_stored_from_master():
+    """compile=True, accumulate=1 and no stream: the three epoch losses of the
+    MLP [2, 4, 1] on 16 samples, SGD(0.01), batch 8, shuffle key 0, taken by
+    running master."""
+    rng = np.random.default_rng(1)
+    X = rng.normal(size=(16, 2)).astype(np.float32)
+    y = rng.normal(size=(16, 1)).astype(np.float32)
+    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
+    t = Trainer(m, MSE(), SGD(0.01), compile=True)
+    assert t.accumulate == 1
+    t.fit(X, y, epochs=3, batch_size=8, key=jax.random.PRNGKey(0))
+    if jax.config.jax_enable_x64:
+        expected, tol = STORED_MASTER_LOSSES_X64_TRUE, 1e-9
+    else:
+        expected, tol = STORED_MASTER_LOSSES_X64_FALSE, 1e-5
+    assert t.history_["train_loss"] == pytest.approx(expected, rel=tol)
+    assert list(t.history_) == ["train_loss", "val_loss", "lr"]
+
+
+@pytest.mark.parametrize("compile", [False, True])
+def test_accumulate_4_of_8_equals_one_batch_of_32_after_10_updates(compile):
+    X, y = _train_data(64)
+    t1, w1 = _fit(compile, X, y, 5, 32, shuffle=False)
+    t4, w4 = _fit(compile, X, y, 5, 8, shuffle=False, accumulate=4)
+    print(
+        f"\n  weights differ by {max(float(np.abs(a - b).max()) for a, b in zip(w1, w4))}"
+    )
+    _same(w1, w4)
+    assert t4.history_["train_loss"] == pytest.approx(
+        t1.history_["train_loss"], rel=1e-5
+    )
+
+
+@pytest.mark.parametrize("compile", [False, True])
+def test_the_clip_acts_on_the_mean_gradient_of_the_accumulation(compile):
+    X, y = _train_data(64)
+    _, w1 = _fit(compile, X, y, 5, 32, shuffle=False, clip_norm=0.05)
+    _, w4 = _fit(compile, X, y, 5, 8, shuffle=False, accumulate=4, clip_norm=0.05)
+    _, w0 = _fit(compile, X, y, 5, 32, shuffle=False)
+    _same(w1, w4)
+    assert max(float(np.abs(a - b).max()) for a, b in zip(w1, w0)) > 1e-3
+
+
+def test_the_last_group_of_an_epoch_averages_the_micro_batches_that_are_left():
+    X, y = _train_data(24)
+    t, _ = _fit(True, X, y, 1, 8, opt=Adam(0.01), shuffle=False, accumulate=2)
+    assert int(t._compiled_opt_state["t"]) == 2
+    t, _ = _fit(True, X, y, 2, 8, opt=Adam(0.01), shuffle=False, accumulate=2)
+    assert int(t._compiled_opt_state["t"]) == 4
+
+
+@pytest.mark.parametrize(
+    "kw",
+    [
+        {"accumulate": 0},
+        {"accumulate": 2, "devices": 2},
+        {"accumulate": 2, "compute_dtype": "bfloat16"},
+        {"accumulate": 2, "loss_scale": "dynamic"},
+    ],
+)
+def test_invalid_accumulate_raises(kw):
+    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
+    with pytest.raises(ValueError, match="accumulate"):
+        Trainer(m, MSE(), SGD(0.01), compile=True, **kw)
+
+
+@pytest.mark.parametrize("compile", [False, True])
+def test_fit_on_a_stream_equals_fit_on_the_arrays(compile):
+    X, y = _train_data(64)
+    _, w_arrays = _fit(compile, X, y, 5, 8, shuffle=False)
+    _, w_stream = _fit(compile, None, None, 5, None, stream=DataStream((X, y), 8))
+    _same(w_arrays, w_stream)
+
+
+@pytest.mark.parametrize("compile", [False, True])
+def test_fit_on_a_generator_stream_equals_fit_on_the_arrays(compile):
+    X, y = _train_data(64)
+    _, w_arrays = _fit(compile, X, y, 3, 8, shuffle=False)
+    stream = DataStream(lambda: zip(X, y), 8)
+    _, w_stream = _fit(compile, None, None, 3, None, stream=stream)
+    _same(w_arrays, w_stream)
+
+
+def test_fit_on_a_stream_with_accumulation_equals_one_large_batch():
+    X, y = _train_data(64)
+    _, w1 = _fit(True, X, y, 5, 32, shuffle=False)
+    _, w4 = _fit(True, None, None, 5, None, stream=DataStream((X, y), 8), accumulate=4)
+    _same(w1, w4)
+
+
+def test_fit_on_a_shuffled_memory_mapped_stream_trains(tmp_path):
+    X, y = _train_data(64)
+    np.save(tmp_path / "x.npy", X)
+    np.save(tmp_path / "y.npy", y)
+    stream = DataStream(
+        (tmp_path / "x.npy", tmp_path / "y.npy"), 8, 16, jax.random.PRNGKey(0)
+    )
+    t, _ = _fit(True, None, None, 12, None, stream=stream)
+    losses = t.history_["train_loss"]
+    assert all(np.isfinite(v) for v in losses)
+    assert losses[-1] < 0.9 * losses[0]
+
+
+def test_fit_on_a_stream_runs_with_a_validation_set_and_early_stopping():
+    X, y = _train_data(64)
+    t, _ = _fit(
+        True,
+        None,
+        None,
+        6,
+        None,
+        stream=DataStream((X, y), 8),
+        X_val=X[:8],
+        y_val=y[:8],
+        patience=2,
+    )
+    assert t.best_epoch_ is not None
+    assert not np.isnan(t.history_["val_loss"][0])
+
+
+@pytest.mark.parametrize(
+    "kw,match",
+    [
+        ({"X": np.zeros((8, 2)), "y": np.zeros((8, 1))}, "not both"),
+        ({"batch_size": 4}, "differs from the stream"),
+        ({"stream": None}, "required without a stream"),
+    ],
+)
+def test_fit_argument_errors(kw, match):
+    X, y = _train_data(16)
+    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
+    t = Trainer(m, MSE(), SGD(0.01), compile=True)
+    args = {
+        "X": None,
+        "y": None,
+        "epochs": 1,
+        "batch_size": None,
+        "stream": DataStream((X, y), 8),
+    }
+    args.update(kw)
+    with pytest.raises(ValueError, match=match):
+        t.fit(key=jax.random.PRNGKey(0), **args)
+
+
+def test_fit_without_a_stream_needs_a_batch_size():
+    X, y = _train_data(16)
+    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
+    t = Trainer(m, MSE(), SGD(0.01), compile=True)
+    with pytest.raises(ValueError, match="batch_size is required"):
+        t.fit(X, y, epochs=1, batch_size=None, key=jax.random.PRNGKey(0))
