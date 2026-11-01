@@ -34,7 +34,7 @@ vision = ["opencv-python"]
 drone = ["pyulog", "pymavlink", "paho-mqtt", "pyyaml"]
 ros = ["rosbags>=0.9.18"]
 llm = []  # the LLM bridge needs no extra package
-dev = ["pytest", "pytest-cov", "filterpy", "matplotlib", "river>=0.26; python_version >= '3.11'", "scikit-learn"]
+dev = ["pytest", "pytest-cov", "coverage>=7.10", "filterpy", "matplotlib", "river>=0.26; python_version >= '3.11'", "scikit-learn"]
 docs = [
     "mkdocs>=1.6.0",
     "ruff>=0.6",
@@ -58,6 +58,9 @@ dense-armor-mcp = "dense_armor.mcp_server.server:main"
 
 [tool.setuptools.packages.find]
 include = ["dense_armor*", "pipelines*"]
+
+[tool.coverage.run]
+patch = ["subprocess"]
 
 [tool.ruff]
 target-version = "py310"

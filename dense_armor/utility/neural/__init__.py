@@ -96,6 +96,7 @@ __all__ = list(__all__) + [
 ]
 
 from dense_armor.utility.neural.batching import minibatches
+from dense_armor.utility.neural.data_parallel import linear_scaling
 from dense_armor.utility.neural.schedules import (
     ConstantLR,
     CosineWarmRestarts,
@@ -111,6 +112,7 @@ __all__ = list(__all__) + [
     "StepLR",
     "CosineWarmRestarts",
     "Trainer",
+    "linear_scaling",
 ]
 
 from dense_armor.utility.neural.background import BackgroundLearner

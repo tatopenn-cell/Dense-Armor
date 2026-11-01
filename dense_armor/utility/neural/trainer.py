@@ -46,10 +46,26 @@ from dense_armor.utility.neural.compiled import (
     _write_values as write_values,
 )
 from dense_armor.utility.neural.compiled import (
+    make_accumulating_step,
     make_step,
+    make_step_parallel,
 )
 from dense_armor.utility.neural.params import Param
 from dense_armor.utility.neural.schedules import ConstantLR
+from dense_armor.utility.neural.stream import DataStream
+
+
+def _flag_last(items: Any) -> Any:
+    """Yield ``(item, is_last)`` for every item, looking one item ahead."""
+    it = iter(items)
+    try:
+        previous = next(it)
+    except StopIteration:
+        return
+    for item in it:
+        yield previous, False
+        previous = item
+    yield previous, True
 
 
 class Trainer:
@@ -104,6 +120,8 @@ class Trainer:
         compile: bool = False,
         compute_dtype: str | None = None,
         loss_scale: float | str | None = None,
+        devices: int | list[int] | None = None,
+        accumulate: int = 1,
     ) -> None:
         """Build a trainer.
 
@@ -159,14 +177,36 @@ class Trainer:
                 scale), or ``"dynamic"`` (grow after 2000 good steps,
                 halve and skip on overflow, the PyTorch/Apex default).
                 Requires ``compile=True``.
+            devices: ``None`` (one device, the step as before), a number
+                of devices (the first ones), or a list of device ids
+                (indices into ``jax.devices()``). The global batch of
+                ``fit`` is split evenly over them, each device computes
+                the gradient of its shard, the gradients are averaged
+                before the clipping and the update, and the weights and
+                the optimizer state stay replicated. At least 2 devices.
+                Requires ``compile=True``. It can be combined with
+                ``compute_dtype`` and ``loss_scale``.
+            accumulate: the number of micro-batches whose gradients are
+                averaged before one update; the ``batch_size`` of ``fit``
+                is the size of a micro-batch. With equal micro-batches
+                the update is that of one batch ``accumulate`` times
+                larger. The last update of an epoch averages the
+                micro-batches that are left. It works with and without
+                ``compile``, and with ``devices``, ``compute_dtype`` and
+                ``loss_scale`` (which need ``compile=True``): each
+                micro-batch is split over the devices and averaged, and a
+                group with an overflow is skipped as a whole.
 
         Raises:
             ValueError: on ``decay`` outside ``("l2", "decoupled")``,
                 negative ``weight_decay``, non-positive ``clip_norm``,
                 ``compute_dtype`` outside ``None``, ``"bfloat16"``,
                 ``"float16"``, ``loss_scale`` outside ``None``, a
-                positive float or ``"dynamic"``, or either of the two
-                given with ``compile=False``.
+                positive float or ``"dynamic"``, either of the two
+                given with ``compile=False``, ``devices`` with
+                ``compile=False``, fewer than 2 devices, more devices
+                than ``jax.device_count()``, repeated or unknown device
+                ids, or ``accumulate`` below 1.
         """
         if decay not in ("l2", "decoupled"):
             raise ValueError(f"decay must be 'l2' or 'decoupled', got {decay!r}")
@@ -207,6 +247,34 @@ class Trainer:
         self.loss_scale = _ls
         if (compute_dtype is not None or _ls is not None) and not self.compile:
             raise ValueError("compute_dtype and loss_scale require compile=True")
+        if int(accumulate) < 1:
+            raise ValueError(f"accumulate must be at least 1, got {accumulate}")
+        self.devices: list[int] | None
+        self._n_devices: int
+        if devices is not None:
+            if not self.compile:
+                raise ValueError("devices requires compile=True")
+            available = jax.device_count()
+            ids = list(range(devices)) if isinstance(devices, int) else list(devices)
+            if len(ids) < 2:
+                raise ValueError(f"devices requires at least 2 devices, got {len(ids)}")
+            if len(ids) > available:
+                raise ValueError(
+                    f"devices={len(ids)} exceeds the available count {available}"
+                )
+            if len(set(ids)) != len(ids):
+                raise ValueError(f"devices has repeated entries: {ids}")
+            bad = [i for i in ids if not 0 <= i < available]
+            if bad:
+                raise ValueError(
+                    f"device ids {bad} are not among the {available} available devices"
+                )
+            self.devices = ids
+            self._n_devices = len(ids)
+        else:
+            self.devices = None
+            self._n_devices = 1
+        self.accumulate = int(accumulate)
         self._scale: float
         if isinstance(_ls, float):
             self._scale = _ls
@@ -219,6 +287,9 @@ class Trainer:
         self._compiled_opt_state: Any = None
         self._compiled_step: Any = None
         self._compiled_mixed: Any = None
+        self._compiled_parallel: Any = None
+        self._compiled_accumulating: Any = None
+        self._compiled_parallel_mixed: Any = None
         self.optimizers_ = [copy.deepcopy(optimizer) for _ in model.params()]
         self.history_: dict[str, list[float]] = self._new_history()
         self.best_epoch_: int | None = None
@@ -255,35 +326,65 @@ class Trainer:
         X: Any,
         y: Any,
         epochs: int,
-        batch_size: int,
+        batch_size: int | None,
         key: Any,
         X_val: Any = None,
         y_val: Any = None,
         patience: int | None = None,
         min_delta: float = 0.0,
         shuffle: bool = True,
+        stream: DataStream | None = None,
     ) -> Trainer:
         """Run epochs of training; return ``self``.
 
         Args:
-            X, y: arrays of shape ``(n, ...)`` and ``(n, ...)``.
+            X, y: arrays of shape ``(n, ...)`` and ``(n, ...)``; ``None``
+                when ``stream`` is given.
             epochs: the number of epochs, at least 1.
-            batch_size: the mini-batch size.
+            batch_size: the mini-batch size; ``None`` or the batch size of
+                the stream when ``stream`` is given.
             key: a ``jax.random`` key.
             X_val, y_val: optional validation set.
             patience: stop when the val_loss has not improved for this
                 many epochs; requires the validation set.
             min_delta: the improvement threshold.
-            shuffle: whether to shuffle each epoch.
+            shuffle: whether to shuffle each epoch; a stream shuffles with
+                its own buffer and key, and this argument is ignored.
+            stream: a ``DataStream`` that serves the batches without
+                loading the dataset. For a stream of unknown length the
+                schedule is evaluated at the integer epoch.
 
         Raises:
             ValueError: on ``epochs < 1``, ``patience`` without a
-                validation set, ``patience < 1``, or ``len(X) != len(y)``.
+                validation set, ``patience < 1``, ``len(X) != len(y)``, a
+                ``stream`` together with ``X`` and ``y``, neither of the
+                two, a ``batch_size`` different from the one of the
+                stream, or, with ``devices``, a ``batch_size`` or a last
+                batch that the number of devices does not divide.
         """
         if epochs < 1:
             raise ValueError(f"epochs must be at least 1, got {epochs}")
-        if len(X) != len(y):
-            raise ValueError(f"X and y have different lengths: {len(X)} and {len(y)}")
+        n: int | None
+        if stream is not None:
+            if X is not None or y is not None:
+                raise ValueError("pass either X and y or a stream, not both")
+            if batch_size is not None and batch_size != stream.batch_size:
+                raise ValueError(
+                    f"batch_size {batch_size} differs from the stream's "
+                    f"{stream.batch_size}"
+                )
+            batch_size = stream.batch_size
+            n = stream.n_samples
+        else:
+            if X is None or y is None:
+                raise ValueError("X and y are required without a stream")
+            if batch_size is None:
+                raise ValueError("batch_size is required without a stream")
+            if len(X) != len(y):
+                raise ValueError(
+                    f"X and y have different lengths: {len(X)} and {len(y)}"
+                )
+            n = len(X)
         if patience is not None:
             if X_val is None or y_val is None:
                 raise ValueError("patience requires X_val and y_val")
@@ -296,16 +397,80 @@ class Trainer:
         best_val = float("inf")
         best_weights: list[np.ndarray] | None = None
         no_improve = 0
-        n = len(X)
 
         mixed = self.compile and (
             self.compute_dtype is not None or self.loss_scale is not None
         )
 
+        parallel = self.compile and self.devices is not None
+        if parallel:
+            n_dev = self._n_devices
+            if batch_size % n_dev != 0:
+                raise ValueError(
+                    f"batch_size {batch_size} is not divisible by devices {n_dev}"
+                )
+            tail = 0 if n is None else n % batch_size
+            if tail % n_dev != 0:
+                raise ValueError(
+                    f"the last batch has {tail} samples, not divisible by "
+                    f"devices {n_dev}: use a number of samples that leaves a "
+                    "multiple of the number of devices"
+                )
+
         if self.compile:
             _dtype = jnp.float32 if mixed else None
             self._compiled_values = read_values(self.model, dtype=_dtype)
-            if self._compiled_step is None:
+            if parallel:
+                if (
+                    self._compiled_parallel is None
+                    and self._compiled_parallel_mixed is None
+                ):
+                    self._compiled_opt_state = init_state(
+                        self.optimizer_prototype, self._compiled_values
+                    )
+                    if mixed:
+                        self._compiled_parallel_mixed = make_step_parallel(
+                            self.model,
+                            self.loss,
+                            self.optimizer_prototype,
+                            self.schedule,
+                            self.weight_decay,
+                            self.decay,
+                            self.clip_norm,
+                            self._n_devices,
+                            compute_dtype=self.compute_dtype,
+                            loss_scale=self.loss_scale,
+                            devices=self.devices,
+                        )
+                    else:
+                        self._compiled_parallel = make_step_parallel(
+                            self.model,
+                            self.loss,
+                            self.optimizer_prototype,
+                            self.schedule,
+                            self.weight_decay,
+                            self.decay,
+                            self.clip_norm,
+                            self._n_devices,
+                            devices=self.devices,
+                        )
+                n_dev = self._n_devices
+                values = jax.tree_util.tree_map(
+                    lambda v: jnp.broadcast_to(
+                        jnp.asarray(v)[None], (n_dev,) + jnp.shape(v)
+                    ),
+                    self._compiled_values,
+                )
+                opt_state = jax.tree_util.tree_map(
+                    lambda s: jnp.broadcast_to(
+                        jnp.asarray(s)[None], (n_dev,) + jnp.shape(s)
+                    ),
+                    self._compiled_opt_state,
+                )
+                step = None
+                step_parallel = self._compiled_parallel
+                step_parallel_mixed = self._compiled_parallel_mixed
+            elif self._compiled_step is None:
                 self._compiled_opt_state = init_state(
                     self.optimizer_prototype, self._compiled_values
                 )
@@ -322,66 +487,192 @@ class Trainer:
                 )
                 if mixed:
                     self._compiled_mixed = self._compiled_step.mixed
-            values: Any = self._compiled_values
-            opt_state = self._compiled_opt_state
-            step = self._compiled_step
+            if self.accumulate > 1 and self._compiled_accumulating is None:
+                self._compiled_accumulating = make_accumulating_step(
+                    self.model,
+                    self.loss,
+                    self.optimizer_prototype,
+                    self.schedule,
+                    self.weight_decay,
+                    self.decay,
+                    self.clip_norm,
+                    n_devices=self._n_devices,
+                    compute_dtype=self.compute_dtype,
+                    loss_scale=self.loss_scale,
+                    devices=self.devices,
+                )
+            if not parallel:
+                values = self._compiled_values
+                opt_state = self._compiled_opt_state
+                step = self._compiled_step
+                step_parallel = None
+                step_parallel_mixed = None
         else:
             values = None
             opt_state = None
             step = None
+            step_parallel = None
+            step_parallel_mixed = None
 
-        for epoch in range(epochs):
-            if shuffle:
-                key, sub = jax.random.split(key)
+        def sync_parallel() -> None:
+            """Write the weights of the first device into the model, on the host."""
+            values_plain = jax.tree_util.tree_map(lambda v: np.asarray(v[0]), values)
+            opt_plain = jax.tree_util.tree_map(lambda s: np.asarray(s[0]), opt_state)
+            self._compiled_values = values_plain
+            self._compiled_opt_state = opt_plain
+            if mixed:
+                write_values(self.model, values_plain, dtype=jnp.float32)
             else:
-                sub = None
-            batches = list(minibatches(n, batch_size, key=sub))
-            n_batches = len(batches)
-            first_lr = self.schedule(epoch + 0.0 / n_batches)
+                write_values(self.model, values_plain)
+
+        acc = self._compiled_accumulating if self.accumulate > 1 else None
+        acc_finite: Any = None
+        for epoch in range(epochs):
+            n_batches: int | None
+            if stream is not None:
+                n_batches = len(stream) if stream.n_samples is not None else None
+                batch_source: Any = iter(stream)
+            else:
+                if shuffle:
+                    key, sub = jax.random.split(key)
+                else:
+                    sub = None
+                batches = list(minibatches(n, batch_size, key=sub))
+                n_batches = len(batches)
+                batch_source = ((X[idx], y[idx]) for idx in batches)
+            first_lr = self.schedule(float(epoch))
             if not self.compile:
                 for opt in self.optimizers_:
                     opt.lr = first_lr
             total_loss = 0.0
             total_size = 0
             total_loss_device: Any = jnp.float32(0.0) if self.compile else None
-            for b_idx, idx in enumerate(batches):
-                epoch_t = epoch + b_idx / n_batches
-                if mixed:
+            acc_grads: Any = None
+            acc_count = 0
+            group_t = 0.0
+            for b_idx, ((xb, yb), is_last) in enumerate(_flag_last(batch_source)):
+                size = len(xb)
+                epoch_t = epoch + b_idx / n_batches if n_batches else float(epoch)
+                if parallel and size % self._n_devices != 0:
+                    raise ValueError(
+                        f"a batch of {size} samples is not divisible by "
+                        f"devices {self._n_devices}"
+                    )
+                if acc is not None and self.compile:
+                    if parallel:
+                        n_dev = self._n_devices
+                        shard = size // n_dev
+                        xb = jnp.asarray(xb).reshape(
+                            (n_dev, shard) + tuple(xb.shape[1:])
+                        )
+                        yb = jnp.asarray(yb).reshape(
+                            (n_dev, shard) + tuple(yb.shape[1:])
+                        )
+                    grads, batch_loss, finite = acc.grads(values, xb, yb, self._scale)
+                    acc_grads = (
+                        grads if acc_grads is None else acc.add(acc_grads, grads)
+                    )
+                    acc_finite = (
+                        finite
+                        if acc_finite is None
+                        else jnp.logical_and(acc_finite, finite)
+                    )
+                    if acc_count == 0:
+                        group_t = epoch_t
+                    acc_count += 1
+                    if acc_count == self.accumulate or is_last:
+                        values, opt_state = acc.update(
+                            values, opt_state, acc_grads, acc_count, acc_finite, group_t
+                        )
+                        if self.loss_scale == "dynamic":
+                            ok = acc_finite[0] if parallel else acc_finite
+                            self._update_scale(bool(ok))
+                        if not parallel:
+                            self._compiled_values = values
+                            self._compiled_opt_state = opt_state
+                            write_values(
+                                self.model, values, dtype=jnp.float32 if mixed else None
+                            )
+                        acc_grads = None
+                        acc_finite = None
+                        acc_count = 0
+                    if parallel:
+                        batch_loss = batch_loss[0]
+                    total_loss_device = total_loss_device + batch_loss * size
+                    total_size += size
+                elif step_parallel_mixed is not None:
+                    n_dev = self._n_devices
+                    shard = size // n_dev
+                    x_s = jnp.asarray(xb).reshape((n_dev, shard) + tuple(xb.shape[1:]))
+                    y_s = jnp.asarray(yb).reshape((n_dev, shard) + tuple(yb.shape[1:]))
+                    values, opt_state, batch_loss_d, finite_d = step_parallel_mixed(
+                        values, opt_state, x_s, y_s, epoch_t, self._scale
+                    )
+                    if self.loss_scale == "dynamic":
+                        self._update_scale(bool(finite_d[0]))
+                    total_loss_device = total_loss_device + batch_loss_d[0] * size
+                    total_size += size
+                elif step_parallel is not None:
+                    n_dev = self._n_devices
+                    shard = size // n_dev
+                    x_s = jnp.asarray(xb).reshape((n_dev, shard) + tuple(xb.shape[1:]))
+                    y_s = jnp.asarray(yb).reshape((n_dev, shard) + tuple(yb.shape[1:]))
+                    values, opt_state, batch_loss_d = step_parallel(
+                        values, opt_state, x_s, y_s, epoch_t
+                    )
+                    total_loss_device = total_loss_device + batch_loss_d[0] * size
+                    total_size += size
+                elif mixed:
                     values, opt_state, batch_loss, finite = self._compiled_mixed(
-                        values, opt_state, X[idx], y[idx], epoch_t, self._scale
+                        values, opt_state, xb, yb, epoch_t, self._scale
                     )
                     self._compiled_values = values
                     self._compiled_opt_state = opt_state
                     write_values(self.model, values, dtype=jnp.float32)
                     if self.loss_scale == "dynamic":
                         self._update_scale(bool(finite))
-                    total_loss_device = total_loss_device + batch_loss * len(idx)
-                    total_size += len(idx)
+                    total_loss_device = total_loss_device + batch_loss * size
+                    total_size += size
                 elif self.compile:
+                    assert step is not None
                     values, opt_state, batch_loss = step(
-                        values, opt_state, X[idx], y[idx], epoch_t
+                        values, opt_state, xb, yb, epoch_t
                     )
                     self._compiled_values = values
                     self._compiled_opt_state = opt_state
                     write_values(self.model, values)
-                    total_loss_device = total_loss_device + batch_loss * len(idx)
-                    total_size += len(idx)
+                    total_loss_device = total_loss_device + batch_loss * size
+                    total_size += size
                 else:
-                    lr_t = self.schedule(epoch_t)
-                    for opt in self.optimizers_:
-                        opt.lr = lr_t
-                    for p in self.model.params():
-                        p.zero_grad()
-                    pred = self.model.forward(X[idx], training=True)
-                    batch_loss = self.loss.forward(pred, y[idx])
+                    if acc_count == 0:
+                        group_t = epoch_t
+                        for p in self.model.params():
+                            p.zero_grad()
+                    pred = self.model.forward(xb, training=True)
+                    batch_loss = self.loss.forward(pred, yb)
                     self.model.backward(self.loss.backward())
-                    if self.clip_norm is not None:
-                        clip_grad_norm(self.model.params(), self.clip_norm)
-                    for p, opt in zip(self.model.params(), self.optimizers_):
-                        self._apply_weight_decay(p, epoch_t)
-                        p.update(opt)
-                    total_loss += float(batch_loss) * len(idx)
-                    total_size += len(idx)
+                    acc_count += 1
+                    if acc_count == self.accumulate or is_last:
+                        lr_t = self.schedule(group_t)
+                        for opt in self.optimizers_:
+                            opt.lr = lr_t
+                        if acc_count > 1:
+                            for p in self.model.params():
+                                p.grad = p.grad / acc_count
+                        if self.clip_norm is not None:
+                            clip_grad_norm(self.model.params(), self.clip_norm)
+                        for p, opt in zip(self.model.params(), self.optimizers_):
+                            self._apply_weight_decay(p, group_t)
+                            p.update(opt)
+                        acc_count = 0
+                    total_loss += float(batch_loss) * size
+                    total_size += size
+            if total_size == 0:
+                raise ValueError("the data gave no batch in this epoch")
+            if (step_parallel is not None or step_parallel_mixed is not None) and (
+                X_val is not None and y_val is not None
+            ):
+                sync_parallel()
             if self.compile:
                 assert total_loss_device is not None
                 train_loss = float(total_loss_device) / total_size
@@ -401,7 +692,10 @@ class Trainer:
                     best_val = val_loss
                     if self.compile:
                         assert values is not None
-                        best_weights = [np.asarray(v).copy() for v in values]
+                        if step_parallel is not None or step_parallel_mixed is not None:
+                            best_weights = [np.asarray(v[0]).copy() for v in values]
+                        else:
+                            best_weights = [np.asarray(v).copy() for v in values]
                     else:
                         best_weights = [
                             np.asarray(p.value).copy() for p in self.model.params()
@@ -413,6 +707,8 @@ class Trainer:
                     if no_improve >= patience:
                         self.stopped_epoch_ = epoch
                         break
+        if step_parallel is not None or step_parallel_mixed is not None:
+            sync_parallel()
         if patience is not None and best_weights is not None:
             for p, w in zip(self.model.params(), best_weights):
                 p.value = jnp.asarray(w)
