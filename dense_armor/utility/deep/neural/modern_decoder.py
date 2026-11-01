@@ -39,9 +39,17 @@ class ModernDecoderBlock:
             head width is odd.
 
     References:
-        Zhang and Sennrich 2019, "Root mean square layer normalization";
-        Su et al. 2021, "RoFormer", Eq.(15) page 5; Shazeer 2020, "GLU
-        variants improve Transformer", Eq.(6) page 2.
+        Zhang and Sennrich 2019, "Root mean square layer normalization",
+        Eq.(4) page 3 (the norm; ``RMSNorm`` adds an ``eps`` inside the
+        root, which the paper does not have); Su et al. 2021, "RoFormer",
+        Eq.(15) page 5 (the rotary matrix); Shazeer 2020, "GLU variants
+        improve Transformer", Eq.(6) page 2 (SwiGLU, no biases).
+
+    Variants and choices:
+        The norm comes before each sub-layer (pre-norm); Vaswani et al.
+        2017 page 3 put it after the residual sum. This is our choice, not
+        in the three papers above. The static key/value cache of
+        ``step_static`` is also our choice: the papers do not describe one.
 
     Examples:
         >>> import jax
