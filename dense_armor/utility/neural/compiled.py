@@ -489,6 +489,112 @@ def make_step(
     )
 
 
+@dataclass
+class AccumulatingStep:
+    """The compiled pieces of a step that accumulates the gradient.
+
+    Attributes:
+        grads: ``(values, x, y) -> (grads, loss)``, the gradient of one
+            micro-batch.
+        add: ``(a, b) -> a + b`` over two lists of gradients.
+        update: ``(values, opt_state, grads_sum, count, epoch_t) ->
+            (values, opt_state)``: the mean of ``count`` accumulated
+            gradients, clipped, then the optimizer update.
+    """
+
+    grads: Callable
+    add: Callable
+    update: Callable
+
+
+def make_accumulating_step(
+    model: Any,
+    loss: Any,
+    optimizer: Any,
+    schedule: Any,
+    weight_decay: float,
+    decay: str,
+    clip_norm: float | None,
+) -> AccumulatingStep:
+    """Return the compiled pieces of gradient accumulation.
+
+    ``k`` micro-batches are run with ``grads`` and summed with ``add``;
+    ``update`` divides the sum by ``k`` (the loss is divided by ``k``),
+    clips the mean gradient, and applies the optimizer once. With equal
+    micro-batches the result is the step of one batch of ``k`` times the
+    size.
+
+    Args:
+        model: the model, with ``forward``, ``backward`` and ``params``.
+        loss: the loss, with ``forward`` and ``backward``.
+        optimizer: the object form of an optimizer.
+        schedule: the schedule.
+        weight_decay: the weight decay coefficient.
+        decay: ``"l2"`` or ``"decoupled"``.
+        clip_norm: the global L2 threshold, or ``None``.
+
+    Returns:
+        An ``AccumulatingStep``.
+
+    Raises:
+        ValueError: on an unsupported optimizer or on a model with state
+            that must cross the jit boundary.
+    """
+    name = _optimizer_name(optimizer)
+    if name not in ("SGD", "Adam", "RMSProp", "AdaGrad"):
+        raise ValueError(f"compile=True does not support optimizer {name}")
+    blocker = _stateful_blocker(model)
+    if blocker is not None:
+        raise ValueError(
+            f"compile=True does not support {blocker}: its state advances "
+            "at every training forward and must cross the jit boundary."
+        )
+
+    def _grads(values: list, x: Any, y: Any) -> tuple[list, Any]:
+        _write_values(model, values)
+        for p in model.params():
+            p.zero_grad()
+        pred = model.forward(x, training=True)
+        loss_value = loss.forward(pred, y)
+        model.backward(loss.backward())
+        return _read_grads(model), loss_value
+
+    def _add(a: list, b: list) -> list:
+        return [u + v for u, v in zip(a, b)]
+
+    def _update(
+        values: list,
+        opt_state: Any,
+        grads_sum: list,
+        count: Any,
+        lr: Any,
+        eta: Any,
+    ) -> tuple[list, Any]:
+        grads = [g / count for g in grads_sum]
+        if clip_norm is not None:
+            grads = _clip_grads(grads, clip_norm)
+        return _apply_update(
+            optimizer, values, grads, opt_state, lr, eta, weight_decay, decay
+        )
+
+    update_jitted = jax.jit(_update)
+
+    def update(
+        values: list, opt_state: Any, grads_sum: list, count: int, epoch_t: float
+    ) -> tuple[list, Any]:
+        tt = float(epoch_t)
+        return update_jitted(
+            values,
+            opt_state,
+            grads_sum,
+            jnp.float32(count),
+            schedule(tt),
+            schedule.multiplier(tt),
+        )
+
+    return AccumulatingStep(grads=jax.jit(_grads), add=jax.jit(_add), update=update)
+
+
 def make_step_parallel(
     model: Any,
     loss: Any,
@@ -642,6 +748,7 @@ def make_step_parallel(
 
 
 __all__ = [
+    "make_accumulating_step",
     "make_step",
     "make_step_parallel",
 ]
