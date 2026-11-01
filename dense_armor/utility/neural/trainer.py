@@ -443,6 +443,17 @@ class Trainer:
             step_parallel = None
             step_parallel_mixed = None
 
+        def sync_parallel() -> None:
+            """Write the weights of the first device into the model, on the host."""
+            values_plain = jax.tree_util.tree_map(lambda v: np.asarray(v[0]), values)
+            opt_plain = jax.tree_util.tree_map(lambda s: np.asarray(s[0]), opt_state)
+            self._compiled_values = values_plain
+            self._compiled_opt_state = opt_plain
+            if mixed:
+                write_values(self.model, values_plain, dtype=jnp.float32)
+            else:
+                write_values(self.model, values_plain)
+
         for epoch in range(epochs):
             if shuffle:
                 key, sub = jax.random.split(key)
@@ -526,15 +537,10 @@ class Trainer:
                         p.update(opt)
                     total_loss += float(batch_loss) * len(idx)
                     total_size += len(idx)
-            if step_parallel is not None or step_parallel_mixed is not None:
-                values_plain = jax.tree_util.tree_map(lambda v: np.asarray(v[0]), values)
-                opt_plain = jax.tree_util.tree_map(lambda s: np.asarray(s[0]), opt_state)
-                self._compiled_values = values_plain
-                self._compiled_opt_state = opt_plain
-                if mixed:
-                    write_values(self.model, values_plain, dtype=jnp.float32)
-                else:
-                    write_values(self.model, values_plain)
+            if (step_parallel is not None or step_parallel_mixed is not None) and (
+                X_val is not None and y_val is not None
+            ):
+                sync_parallel()
             if self.compile:
                 assert total_loss_device is not None
                 train_loss = float(total_loss_device) / total_size
@@ -569,6 +575,8 @@ class Trainer:
                     if no_improve >= patience:
                         self.stopped_epoch_ = epoch
                         break
+        if step_parallel is not None or step_parallel_mixed is not None:
+            sync_parallel()
         if patience is not None and best_weights is not None:
             for p, w in zip(self.model.params(), best_weights):
                 p.value = jnp.asarray(w)

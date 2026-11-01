@@ -285,12 +285,14 @@ def test_parallel_equals_single_at_steps_1_10_50_200(out, n):
 
 @pytest.mark.parametrize("n", [2, 4])
 def test_mixed_bf16_parallel_equals_single_at_steps_1_10_50_200(out, n):
+    """The bound 1e-2 is about twice the unit roundoff of bfloat16 (2**-8,
+    3.9e-3): the sum of the shard gradients is taken in another order."""
     r = out[f"bf16_{n}"]
     print(f"\n  bf16, {n} devices, steps 1/10/50/200")
     print(f"  one : {r['one']}")
     print(f"  many: {r['many']}")
     print(f"  rel : {r['rel']}")
-    assert max(r["rel"]) < 1e-3
+    assert max(r["rel"]) < 1e-2
 
 
 def test_clipping_acts_on_the_averaged_gradient(out):
