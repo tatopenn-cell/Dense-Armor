@@ -74,6 +74,7 @@ from dense_armor.utility.neural.losses_lm import NextTokenLoss  # noqa: E402
 from dense_armor.utility.neural.norm_rms import RMSNorm  # noqa: E402
 from dense_armor.utility.neural.trainer import Trainer  # noqa: E402
 from dense_armor.utility.optim.adam import Adam  # noqa: E402
+from dense_armor.utility.stats.stable import stable_var  # noqa: E402
 
 SEED = 0
 N_SESSIONS = 3
@@ -316,6 +317,7 @@ def _one_session(cfg, data, steps, batch_size, devices, accumulate, key):
     )
     recorder = {}
     loss_curve = {}
+    all_losses = []
     for step_i, b in enumerate(_batches(data["train"], batch_size, seq_len, steps, 0)):
         b_j = jnp.asarray(b)
         trainer.fit(
@@ -325,13 +327,37 @@ def _one_session(cfg, data, steps, batch_size, devices, accumulate, key):
             batch_size=batch_size,
             key=jax.random.PRNGKey(step_i),
         )
+        last = trainer.history_["train_loss"][-1]
+        all_losses.append(float(last))
         rec_every = 5 if cfg["max_len"] <= 32 else 100
         if step_i == 0 or (step_i + 1) % rec_every == 0:
-            last = trainer.history_["train_loss"][-1]
             loss_curve[step_i + 1] = float(last)
             if not np.isfinite(last):
                 recorder["stopped_at_step"] = step_i + 1
                 break
+
+    n_total = len(all_losses)
+    n_win = min(100, n_total)
+    if 2 * n_win > n_total:
+        recorder["loss_variance_first_100"] = None
+        recorder["loss_variance_last_100"] = None
+        recorder["loss_variance_ratio"] = None
+        recorder["claim_5_loss_variance_ratio"] = None
+        recorder["claim_5_holds"] = None
+        recorder["claim_5_note"] = (
+            f"windows overlap: n_steps={n_total}, window={n_win}"
+        )
+    else:
+        first_win = jnp.asarray(all_losses[:n_win], dtype=jnp.float32)
+        last_win = jnp.asarray(all_losses[-n_win:], dtype=jnp.float32)
+        v_first = float(stable_var(first_win))
+        v_last = float(stable_var(last_win))
+        ratio = (v_last / v_first) if v_first > 0 else float("nan")
+        recorder["loss_variance_first_100"] = v_first
+        recorder["loss_variance_last_100"] = v_last
+        recorder["loss_variance_ratio"] = ratio
+        recorder["claim_5_loss_variance_ratio"] = ratio
+        recorder["claim_5_holds"] = bool(np.isfinite(ratio) and ratio < 1.0)
     # final val loss su 4 batch
     val_losses = []
     for i, b in enumerate(_batches(data["val"], batch_size, seq_len, 4, 1)):
@@ -346,7 +372,7 @@ def _one_session(cfg, data, steps, batch_size, devices, accumulate, key):
     itos = {i: c for i, c in enumerate(data["chars"])}
     prompt = "First Citizen:"
     prompt_ids = jnp.array([stoi[c] for c in prompt], dtype=jnp.int32)
-    max_new = 20 if cfg["max_len"] <= 32 else 200
+    max_new = 20 if cfg["max_len"] <= 32 else 30
     greedy = generate(
         model,
         prompt_ids,
