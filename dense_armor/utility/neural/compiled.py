@@ -430,6 +430,92 @@ def make_step(
     return CompiledStep(plain=None, mixed=_mixed, grads=_grads_public)
 
 
+def make_step_parallel(
+    model: Any,
+    loss: Any,
+    optimizer: Any,
+    schedule: Any,
+    weight_decay: float,
+    decay: str,
+    clip_norm: float | None,
+    n_devices: int,
+) -> Callable:
+    """Return the data-parallel compiled step over ``n_devices`` devices.
+
+    The global batch is split evenly over the devices. Each device runs
+    forward and backward on its shard; the gradient is averaged across
+    the devices with ``jax.lax.pmean`` before the global-norm clipping
+    and before the optimizer update; the loss is averaged the same way.
+    The master weights and the optimizer state are replicated on every
+    device, so the optimizer update produces the same result on each.
+
+    Args:
+        model: the model, with ``forward``, ``backward`` and ``params``.
+        loss: the loss, with ``forward`` and ``backward``.
+        optimizer: the object form of the optimizer.
+        schedule: the schedule.
+        weight_decay: the weight decay coefficient.
+        decay: ``"l2"`` or ``"decoupled"``.
+        clip_norm: the global L2 threshold, or ``None``.
+        n_devices: the number of devices to use.
+
+    Returns:
+        ``step_parallel(values, opt_state, x, y, epoch_t)`` where ``x``
+        and ``y`` are already split along axis 0 into ``n_devices`` shards.
+        Returns ``(values, opt_state, loss)`` with the leading device axis
+        present on every array.
+
+    Raises:
+        ValueError: on an unsupported optimizer, on a stateful model, or
+            on ``n_devices < 2``.
+    """
+    name = _optimizer_name(optimizer)
+    if name not in ("SGD", "Adam", "RMSProp", "AdaGrad"):
+        raise ValueError(f"compile=True does not support optimizer {name}")
+    blocker = _stateful_blocker(model)
+    if blocker is not None:
+        raise ValueError(
+            f"devices cannot compile a model with {blocker}: its state "
+            "must cross the device boundary"
+        )
+    if n_devices < 2:
+        raise ValueError(f"n_devices must be >= 2, got {n_devices}")
+
+    def _step_parallel(
+        values: list, opt_state: Any, x: Any, y: Any, lr: Any, eta: Any
+    ) -> tuple[list, Any, Any]:
+        _write_values(model, values)
+        for p in model.params():
+            p.zero_grad()
+        pred = model.forward(x, training=True)
+        loss_value = loss.forward(pred, y)
+        model.backward(loss.backward())
+        grads = _read_grads(model)
+        grads = jax.lax.pmean(grads, axis_name="devices")
+        loss_value = jax.lax.pmean(loss_value, axis_name="devices")
+        if clip_norm is not None:
+            grads = _clip_grads(grads, clip_norm)
+        new_values, new_opt_state = _apply_update(
+            optimizer, values, grads, opt_state, lr, eta, weight_decay, decay
+        )
+        return new_values, new_opt_state, loss_value
+
+    pmapped = jax.pmap(
+        _step_parallel,
+        axis_name="devices",
+        in_axes=(0, 0, 0, 0, None, None),
+    )
+
+    def step_parallel(values: list, opt_state: Any, x: Any, y: Any, epoch_t: float):
+        tt = float(epoch_t)
+        lr = schedule(tt)
+        eta = schedule.multiplier(tt)
+        return pmapped(values, opt_state, x, y, lr, eta)
+
+    return step_parallel
+
+
 __all__ = [
     "make_step",
+    "make_step_parallel",
 ]

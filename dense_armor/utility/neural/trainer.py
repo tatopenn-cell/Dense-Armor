@@ -47,6 +47,7 @@ from dense_armor.utility.neural.compiled import (
 )
 from dense_armor.utility.neural.compiled import (
     make_step,
+    make_step_parallel,
 )
 from dense_armor.utility.neural.params import Param
 from dense_armor.utility.neural.schedules import ConstantLR
@@ -104,6 +105,7 @@ class Trainer:
         compile: bool = False,
         compute_dtype: str | None = None,
         loss_scale: float | str | None = None,
+        devices: int | list[int] | None = None,
     ) -> None:
         """Build a trainer.
 
@@ -207,6 +209,26 @@ class Trainer:
         self.loss_scale = _ls
         if (compute_dtype is not None or _ls is not None) and not self.compile:
             raise ValueError("compute_dtype and loss_scale require compile=True")
+        self.devices: list[int] | None
+        self._n_devices: int
+        if devices is not None:
+            if not self.compile:
+                raise ValueError("devices requires compile=True")
+            if compute_dtype is not None or _ls is not None:
+                raise ValueError(
+                    "devices cannot be combined with compute_dtype or loss_scale"
+                )
+            available = jax.device_count()
+            n = int(devices) if isinstance(devices, int) else len(devices)
+            if n < 2:
+                raise ValueError(f"devices requires at least 2 devices, got {n}")
+            if n > available:
+                raise ValueError(f"devices={n} exceeds the available count {available}")
+            self.devices = list(range(n)) if isinstance(devices, int) else list(devices)
+            self._n_devices = n
+        else:
+            self.devices = None
+            self._n_devices = 1
         self._scale: float
         if isinstance(_ls, float):
             self._scale = _ls
@@ -219,6 +241,7 @@ class Trainer:
         self._compiled_opt_state: Any = None
         self._compiled_step: Any = None
         self._compiled_mixed: Any = None
+        self._compiled_parallel: Any = None
         self.optimizers_ = [copy.deepcopy(optimizer) for _ in model.params()]
         self.history_: dict[str, list[float]] = self._new_history()
         self.best_epoch_: int | None = None
@@ -302,10 +325,53 @@ class Trainer:
             self.compute_dtype is not None or self.loss_scale is not None
         )
 
+        parallel = self.compile and self.devices is not None
+        if parallel:
+            if len(X) < 2 * max(1, batch_size):
+                raise ValueError(
+                    f"parallel path needs at least {2 * max(1, batch_size)} "
+                    f"samples, got {len(X)}"
+                )
+            n_dev = self._n_devices
+            if batch_size % n_dev != 0:
+                raise ValueError(
+                    f"batch_size {batch_size} is not divisible by devices {n_dev}"
+                )
+
         if self.compile:
             _dtype = jnp.float32 if mixed else None
             self._compiled_values = read_values(self.model, dtype=_dtype)
-            if self._compiled_step is None:
+            if parallel:
+                if self._compiled_parallel is None:
+                    self._compiled_opt_state = init_state(
+                        self.optimizer_prototype, self._compiled_values
+                    )
+                    self._compiled_parallel = make_step_parallel(
+                        self.model,
+                        self.loss,
+                        self.optimizer_prototype,
+                        self.schedule,
+                        self.weight_decay,
+                        self.decay,
+                        self.clip_norm,
+                        self._n_devices,
+                    )
+                n_dev = self._n_devices
+                values = jax.tree_util.tree_map(
+                    lambda v: jnp.broadcast_to(
+                        jnp.asarray(v)[None], (n_dev,) + jnp.shape(v)
+                    ),
+                    self._compiled_values,
+                )
+                opt_state = jax.tree_util.tree_map(
+                    lambda s: jnp.broadcast_to(
+                        jnp.asarray(s)[None], (n_dev,) + jnp.shape(s)
+                    ),
+                    self._compiled_opt_state,
+                )
+                step = None
+                step_parallel = self._compiled_parallel
+            elif self._compiled_step is None:
                 self._compiled_opt_state = init_state(
                     self.optimizer_prototype, self._compiled_values
                 )
@@ -322,13 +388,16 @@ class Trainer:
                 )
                 if mixed:
                     self._compiled_mixed = self._compiled_step.mixed
-            values: Any = self._compiled_values
-            opt_state = self._compiled_opt_state
-            step = self._compiled_step
+            if not parallel:
+                values = self._compiled_values
+                opt_state = self._compiled_opt_state
+                step = self._compiled_step
+                step_parallel = None
         else:
             values = None
             opt_state = None
             step = None
+            step_parallel = None
 
         for epoch in range(epochs):
             if shuffle:
@@ -346,7 +415,21 @@ class Trainer:
             total_loss_device: Any = jnp.float32(0.0) if self.compile else None
             for b_idx, idx in enumerate(batches):
                 epoch_t = epoch + b_idx / n_batches
-                if mixed:
+                if step_parallel is not None:
+                    n_dev = self._n_devices
+                    shard = len(idx) // n_dev
+                    x_s = jnp.asarray(X[idx]).reshape(
+                        (n_dev, shard) + tuple(X.shape[1:])
+                    )
+                    y_s = jnp.asarray(y[idx]).reshape(
+                        (n_dev, shard) + tuple(y.shape[1:])
+                    )
+                    values, opt_state, batch_loss_d = step_parallel(
+                        values, opt_state, x_s, y_s, epoch_t
+                    )
+                    total_loss_device = total_loss_device + batch_loss_d[0] * len(idx)
+                    total_size += len(idx)
+                elif mixed:
                     values, opt_state, batch_loss, finite = self._compiled_mixed(
                         values, opt_state, X[idx], y[idx], epoch_t, self._scale
                     )
@@ -358,6 +441,7 @@ class Trainer:
                     total_loss_device = total_loss_device + batch_loss * len(idx)
                     total_size += len(idx)
                 elif self.compile:
+                    assert step is not None
                     values, opt_state, batch_loss = step(
                         values, opt_state, X[idx], y[idx], epoch_t
                     )
@@ -382,6 +466,12 @@ class Trainer:
                         p.update(opt)
                     total_loss += float(batch_loss) * len(idx)
                     total_size += len(idx)
+            if step_parallel is not None:
+                values_plain = jax.tree_util.tree_map(lambda v: v[0], values)
+                opt_plain = jax.tree_util.tree_map(lambda s: s[0], opt_state)
+                self._compiled_values = values_plain
+                self._compiled_opt_state = opt_plain
+                write_values(self.model, values_plain)
             if self.compile:
                 assert total_loss_device is not None
                 train_loss = float(total_loss_device) / total_size
@@ -401,7 +491,10 @@ class Trainer:
                     best_val = val_loss
                     if self.compile:
                         assert values is not None
-                        best_weights = [np.asarray(v).copy() for v in values]
+                        if step_parallel is not None:
+                            best_weights = [np.asarray(v[0]).copy() for v in values]
+                        else:
+                            best_weights = [np.asarray(v).copy() for v in values]
                     else:
                         best_weights = [
                             np.asarray(p.value).copy() for p in self.model.params()
