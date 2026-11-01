@@ -31,34 +31,34 @@
     "vocab": 65
   },
   "sessions_tokens_per_second": [
-    27743.402804992034
+    27217.872883627937,
+    35932.218277532884,
+    35700.19452178204
   ],
-  "tokens_per_second_median": 27743.402804992034,
+  "tokens_per_second_median": 35700.19452178204,
   "tokens_per_second_range": [
-    27743.402804992034,
-    27743.402804992034
+    27217.872883627937,
+    35932.218277532884
   ],
-  "loss_variance_first_100": 0.29098865389823914,
-  "loss_variance_last_100": 0.0011708935489878058,
-  "loss_variance_ratio": 0.004023846061699973,
-  "claim_5_loss_variance_ratio": 0.004023846061699973,
-  "claim_5_holds": true,
-  "val_loss": 1.9943394362926483,
+  "loss_variance_first_100": 0.2910167872905731,
+  "loss_variance_last_100": 0.0018804398132488132,
+  "loss_variance_ratio": 0.006461619725638852,
+  "claim_5_loss_variance_ratio": 0.006461619725638852,
+  "loss_variance_ratio_tail": 1.8584332414597362,
+  "claim_5_holds": false,
+  "val_loss": 2.223534405231476,
   "loss_curve": {
     "1": 4.804391384124756,
-    "100": 2.503326892852783,
-    "200": 2.2153310775756836,
-    "300": 2.0037686824798584,
-    "400": 1.9665117263793945,
-    "500": 1.8958410024642944
+    "100": 2.5032691955566406,
+    "500": 2.10996413230896
   },
   "n_params": 14210753,
-  "generated_greedy": "First Citizen:\nAnd the seel the sear the sea",
-  "generated_sample": "First Citizen:\n'Dy hows; but  saase in this ",
-  "peak_bytes": 1456666368,
+  "generated_greedy": "First Citizen:\nAnd the the the the the the t",
+  "generated_sample": "First Citizen:\n'no hows; brot shase incen,, ",
+  "peak_bytes": 1578250752,
   "bigram_val_loss": 2.4818894321158234,
   "unigram_val_loss": 3.3473303372775036,
-  "claim_1_val_over_bigram": 0.8035569234010815,
+  "claim_1_val_over_bigram": 0.8959038934042688,
   "claim_1_holds": false,
   "claim_2_no_nan_inf": true,
   "claim_4_generated_len": 44
