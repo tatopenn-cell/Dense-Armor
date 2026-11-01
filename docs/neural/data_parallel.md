@@ -154,10 +154,6 @@ A batch of 256 against a base of 32 multiplies the rate by 8, from `0.1` to `0.8
 - **Neither paper prescribes the combination** of the average, the flag and the loss for the mixed step: Goyal covers the average over workers and not the mixed step, Micikevicius covers the mixed step and not several devices.
 - **`devices=None` keeps the step as it was:** the losses of the default compiled trainer equal the values stored from the master branch.
 
-### Measured cost
-
-TBD5
-
 ### Not measured
 
 More than two GPUs, several machines, the share of the step spent in the average, models other than the transformer encoder, and a comparison with another framework.
