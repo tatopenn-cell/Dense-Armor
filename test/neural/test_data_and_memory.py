@@ -304,7 +304,11 @@ def _train_data(n=64):
 
 def _fit(compile, X, y, epochs, batch_size, opt=None, **kw):
     m = mlp([2, 4, 1], jax.random.PRNGKey(0))
-    t_kw = {k: kw.pop(k) for k in ("accumulate", "clip_norm") if k in kw}
+    t_kw = {
+        k: kw.pop(k)
+        for k in ("accumulate", "clip_norm", "compute_dtype", "loss_scale")
+        if k in kw
+    }
     t = Trainer(m, MSE(), opt or SGD(0.05), compile=compile, **t_kw)
     t.fit(X, y, epochs=epochs, batch_size=batch_size, key=jax.random.PRNGKey(0), **kw)
     return t, [np.array(p.value) for p in m.params()]
@@ -390,7 +394,6 @@ def test_accumulate_below_one_raises():
         {"compute_dtype": "float16", "loss_scale": 1024.0},
         {"compute_dtype": "bfloat16"},
         {"loss_scale": 256.0},
-        {"compute_dtype": "float16", "loss_scale": "dynamic"},
     ],
 )
 def test_mixed_accumulation_follows_the_mixed_step_of_the_large_batch(kw):
@@ -407,6 +410,27 @@ def test_mixed_accumulation_follows_the_mixed_step_of_the_large_batch(kw):
     assert t4.history_["train_loss"] == pytest.approx(
         t1.history_["train_loss"], rel=tol
     )
+
+
+def test_mixed_accumulation_with_the_dynamic_scale_trains():
+    """The skipped groups of the first epochs differ from the skipped steps of
+    the large batch, so the two runs are not compared; the run must train."""
+    X, y = _train_data(64)
+    t, _ = _fit(
+        True,
+        X,
+        y,
+        12,
+        8,
+        shuffle=False,
+        accumulate=4,
+        compute_dtype="float16",
+        loss_scale="dynamic",
+    )
+    losses = t.history_["train_loss"]
+    assert all(np.isfinite(v) for v in losses)
+    assert losses[-1] < 0.8 * losses[0]
+    assert t.history_["loss_scale"][-1] < 65536.0
 
 
 def test_one_overflow_in_a_group_skips_the_whole_group_and_halves_the_scale_once():

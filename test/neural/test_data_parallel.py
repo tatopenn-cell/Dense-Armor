@@ -297,9 +297,10 @@ def acc_overflow(shard):
         compute_dtype="float16", loss_scale="dynamic",
     )
     tr._scale = 1024.0
-    before = weights(m)
+    before = [w.astype(np.float32) for w in weights(m)]
     tr.fit(Xo[:16], Y[:16], epochs=1, batch_size=8, key=jax.random.PRNGKey(0), shuffle=False)
-    return {"unchanged": spread(before, weights(m)) == 0.0, "scale": tr.history_["loss_scale"]}
+    after = [w.astype(np.float32) for w in weights(m)]
+    return {"unchanged": spread(before, after) == 0.0, "scale": tr.history_["loss_scale"]}
 
 
 OUT["acc_overflow_0"] = acc_overflow(0)
