@@ -6,9 +6,9 @@ import common
 import numpy as np
 
 from dense_armor.ml import proba as ml
-from dense_armor.utility.proba.beta import Beta
-from dense_armor.utility.proba.gaussian import Gaussian
-from dense_armor.utility.proba.multinomial import Multinomial
+from dense_armor.utility.online.proba.beta import Beta
+from dense_armor.utility.online.proba.gaussian import Gaussian
+from dense_armor.utility.online.proba.multinomial import Multinomial
 
 
 def c_beta(seed):

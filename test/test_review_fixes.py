@@ -6,7 +6,7 @@ import sys
 import pytest
 
 from dense_armor.roles.safety import SafeEstimator
-from dense_armor.utility.drift.cusum import one_sided_arl
+from dense_armor.utility.online.drift.cusum import one_sided_arl
 
 
 class _Model:

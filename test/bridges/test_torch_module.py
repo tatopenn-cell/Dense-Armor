@@ -10,8 +10,8 @@ pytest.importorskip("torch")
 import torch
 
 from dense_armor.bridges.torch import TorchModule
-from dense_armor.utility.neural import Dense, Sequential
-from dense_armor.utility.neural.activations import Relu
+from dense_armor.utility.deep.neural import Dense, Sequential
+from dense_armor.utility.deep.neural.activations import Relu
 
 
 def _model(d_in=4, d_hidden=8, d_out=3):
@@ -91,7 +91,7 @@ def test_train_mode_reaches_dropout():
     """eval is identity, train applies a mask and advances the key."""
     import jax
 
-    from dense_armor.utility.neural import Dropout, Sequential
+    from dense_armor.utility.deep.neural import Dropout, Sequential
 
     m = Sequential([Dropout(0.5, key=jax.random.PRNGKey(0))])
     tm = TorchModule(m)

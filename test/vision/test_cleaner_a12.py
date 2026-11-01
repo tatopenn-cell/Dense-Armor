@@ -3,7 +3,7 @@
 import numpy as np
 from scipy.stats import wilcoxon
 
-from dense_armor.utility.vision.landmarks import LandmarkCleaner
+from dense_armor.utility.signals.vision.landmarks import LandmarkCleaner
 
 
 def test_cleaner_beats_raw_on_20_seeds():

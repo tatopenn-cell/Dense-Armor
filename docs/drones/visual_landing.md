@@ -92,7 +92,7 @@ Time per frame for `DenseFlow` + `MotionMask`: 132 ms.
 - Roth, K. et al. (2022). *Towards Total Recall in Industrial Anomaly Detection.* CVPR 2022. Equation 6, page 5 (the maximum nearest-neighbour distance `s*`), which is what `PatchMemory.score_one` implements, quoted in its docstring.
 - Horn, B. K. P., Schunck, B. G. (1981). *Determining Optical Flow.* Artificial Intelligence 17(1-3), 185-203. Pre-arXiv; cited bibliographically. The iteration is the one `DenseFlow` follows (the paper gives equations 7-8, as quoted by Ziani et al.).
 - Kuglin, C. D., Hines, D. C. (1975). *The Phase Correlation Image Alignment Method.* Proc. IEEE Conf. Cybernetics and Society, 163-165. Pre-arXiv; cited bibliographically. The method is the one `GlobalMotion` follows (the cross power spectrum and the peak of its inverse transform).
-- The library's own classes: `dense_armor/utility/vision/motion.py` (`GlobalMotion`), `dense.py` (`DenseFlow`, `MotionMask`), `scene.py` (`FrameAnomaly`), `patches.py` (`PatchFeatures`, `PatchMemory`).
+- The library's own classes: `dense_armor/utility/signals/vision/motion.py` (`GlobalMotion`), `dense.py` (`DenseFlow`, `MotionMask`), `scene.py` (`FrameAnomaly`), `patches.py` (`PatchFeatures`, `PatchMemory`).
 
 ### Choices stated explicitly
 

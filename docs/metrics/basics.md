@@ -5,7 +5,7 @@
 A metric reads one pair `(y_true, y_pred)` with `update` and answers `get()` at any moment.
 
 ```python
-from dense_armor.utility.metrics import Accuracy
+from dense_armor.utility.evaluation.metrics import Accuracy
 
 m = Accuracy()
 for y, p in [(0, 0), (1, 1), (0, 1), (1, 1)]:
@@ -33,7 +33,7 @@ When the model says "positive", how often is it right (**precision**)? Of the re
 how many did it find (**recall**)? **F1** is their harmonic mean.
 
 ```python
-from dense_armor.utility.metrics import F1, Precision, Recall
+from dense_armor.utility.evaluation.metrics import F1, Precision, Recall
 
 y = [1, 0, 1, 1, 0, 1]
 p = [1, 1, 1, 0, 0, 1]
@@ -65,7 +65,7 @@ Accuracy can look good by chance when one class is common. **Cohen's kappa** sub
 agreement expected by chance.
 
 ```python
-from dense_armor.utility.metrics import CohenKappa
+from dense_armor.utility.evaluation.metrics import CohenKappa
 
 m = CohenKappa()
 for a, b in zip([1, 0, 1, 1, 0, 1], [1, 1, 1, 0, 0, 1]):
@@ -86,7 +86,7 @@ $p_e = (4 \cdot 4 + 2 \cdot 2)/36 = 0.556$ and $\kappa = (0.667 - 0.556)/(1 - 0.
 When the model gives a probability instead of a label, score the probability itself.
 
 ```python
-from dense_armor.utility.metrics import BrierScore, LogLoss
+from dense_armor.utility.evaluation.metrics import BrierScore, LogLoss
 
 ll, br = LogLoss(), BrierScore()
 for y, p in [(1, 0.9), (0, 0.2), (1, 0.6)]:

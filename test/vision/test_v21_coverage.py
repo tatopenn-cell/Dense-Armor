@@ -3,25 +3,25 @@
 import numpy as np
 import pytest
 
-from dense_armor.utility.vision import streams
-from dense_armor.utility.vision.adapters import FeatureToSignal, TrackToSignal
-from dense_armor.utility.vision.dense import DenseFlow, MotionMask
-from dense_armor.utility.vision.fusion import FrameJointFusion
-from dense_armor.utility.vision.landmarks import (
+from dense_armor.utility.signals.vision import streams
+from dense_armor.utility.signals.vision.adapters import FeatureToSignal, TrackToSignal
+from dense_armor.utility.signals.vision.dense import DenseFlow, MotionMask
+from dense_armor.utility.signals.vision.fusion import FrameJointFusion
+from dense_armor.utility.signals.vision.landmarks import (
     Kinematics,
     LandmarkCleaner,
     LandmarkStream,
     _hampel_value,
 )
-from dense_armor.utility.vision.motion import GlobalMotion, MotionEnergy
-from dense_armor.utility.vision.quality import EventFrame, FrameQuality, Sync
-from dense_armor.utility.vision.registration import DifferenceImage, Registration, Stabilizer
-from dense_armor.utility.vision.robustness import FrameNormalizer
-from dense_armor.utility.vision.scene import FrameAnomaly, SceneChange
-from dense_armor.utility.vision.streams import ArrayStream, CubeStream, Frame
-from dense_armor.utility.vision.tracking import MovingObjectTracker
-from dense_armor.utility.vision.visualize import FalseColor, Overlay
-from dense_armor.utility.vision.window import FrameWindow
+from dense_armor.utility.signals.vision.motion import GlobalMotion, MotionEnergy
+from dense_armor.utility.signals.vision.quality import EventFrame, FrameQuality, Sync
+from dense_armor.utility.signals.vision.registration import DifferenceImage, Registration, Stabilizer
+from dense_armor.utility.signals.vision.robustness import FrameNormalizer
+from dense_armor.utility.signals.vision.scene import FrameAnomaly, SceneChange
+from dense_armor.utility.signals.vision.streams import ArrayStream, CubeStream, Frame
+from dense_armor.utility.signals.vision.tracking import MovingObjectTracker
+from dense_armor.utility.signals.vision.visualize import FalseColor, Overlay
+from dense_armor.utility.signals.vision.window import FrameWindow
 
 
 def _frames(n=4, shape=(24, 24), seed=0):
@@ -283,7 +283,7 @@ def test_scene_change_with_a_dict_and_a_frame_anomaly_that_keeps_learning():
 
 
 def test_tracker_with_external_boxes_and_a_custom_filter():
-    from dense_armor.utility.timeseries.kalman import KalmanFilter
+    from dense_armor.utility.online.timeseries.kalman import KalmanFilter
 
     tr = MovingObjectTracker(max_missing=1)
     for _ in range(3):

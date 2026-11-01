@@ -11,7 +11,7 @@ from dense_armor.roles.safety import (
     HealthMonitor,
     SafeEstimator,
 )
-from dense_armor.utility.stats.moments import RunningMoments
+from dense_armor.utility.signals.stats.moments import RunningMoments
 
 
 class _LastValue(Regressor):

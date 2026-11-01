@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.timeseries import GARCH11
+from dense_armor.utility.online.timeseries import GARCH11
 
 SEED = 20261026
 

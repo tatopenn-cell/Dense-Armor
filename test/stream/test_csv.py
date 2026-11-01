@@ -4,7 +4,7 @@ import tracemalloc
 
 import pytest
 
-from dense_armor.utility.stream import iter_csv
+from dense_armor.utility.signals.stream import iter_csv
 
 
 def _write(tmp_path, text):

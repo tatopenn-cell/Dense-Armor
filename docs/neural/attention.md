@@ -8,7 +8,7 @@ The scaled dot-product attention of Eq.(1), page 4 of Vaswani et al. 2017 is `At
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.attention import scaled_dot_product_attention
+from dense_armor.utility.deep.neural.attention import scaled_dot_product_attention
 
 q = jnp.array([[1.0, 0.0]])
 k = jnp.array([[1.0, 0.0], [0.0, 1.0]])
@@ -30,7 +30,7 @@ A `MultiHeadSelfAttention` projects the input into queries, keys and values, spl
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.attention import MultiHeadSelfAttention
+from dense_armor.utility.deep.neural.attention import MultiHeadSelfAttention
 
 m = MultiHeadSelfAttention(8, 2, jax.random.PRNGKey(0))
 print(m.forward(jnp.ones((4, 8))).shape)
@@ -52,7 +52,7 @@ With `causal = True`, step `t` looks only at the steps up to `t`. The method `st
 import jax
 import jax.numpy as jnp
 import numpy as np
-from dense_armor.utility.neural.attention import MultiHeadSelfAttention
+from dense_armor.utility.deep.neural.attention import MultiHeadSelfAttention
 
 m = MultiHeadSelfAttention(8, 2, jax.random.PRNGKey(0), causal=True)
 seq = jax.random.normal(jax.random.PRNGKey(1), (5, 8))
@@ -77,7 +77,7 @@ A `TransformerBlock` is the unit that a transformer stacks. It computes `y = Lay
 
 ~~~python
 import jax
-from dense_armor.utility.neural.attention import TransformerBlock
+from dense_armor.utility.deep.neural.attention import TransformerBlock
 
 b = TransformerBlock(8, 2, 16, jax.random.PRNGKey(0))
 x = jax.random.normal(jax.random.PRNGKey(1), (4, 8))
@@ -100,8 +100,8 @@ Attention sees a set of steps and not an order: if the steps are shuffled, the o
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.attention import sinusoidal_positions
-from dense_armor.utility.neural.positions import LearnedPositions
+from dense_armor.utility.deep.neural.attention import sinusoidal_positions
+from dense_armor.utility.deep.neural.positions import LearnedPositions
 
 p = sinusoidal_positions(4, 4)
 print([round(float(v), 4) for v in p[1]])
@@ -115,7 +115,7 @@ print(z.shape, len(m.params()), bool((z == m.P.value[:2]).all()))
 (2, 3) 1 True
 ~~~
 
-`sinusoidal_positions(length, d_model)` returns the fixed pattern of sines and cosines of different wavelengths; row 1 starts with `sin(1) = 0.8415` and `cos(1) = 0.5403`. The layer `AddPositions(max_len)` of `dense_armor.utility.neural.models` adds that pattern to its input and has no parameters. `LearnedPositions(max_len, d_model, key)` holds a table `P` of shape `(max_len, d_model)` that training changes, and adds its first `T` rows to a sequence of `T` steps: on a zero input the output is exactly `P[:2]`. The paper reports nearly identical results for the two (page 6 and page 9, Table 3 row (E)).
+`sinusoidal_positions(length, d_model)` returns the fixed pattern of sines and cosines of different wavelengths; row 1 starts with `sin(1) = 0.8415` and `cos(1) = 0.5403`. The layer `AddPositions(max_len)` of `dense_armor.utility.deep.neural.models` adds that pattern to its input and has no parameters. `LearnedPositions(max_len, d_model, key)` holds a table `P` of shape `(max_len, d_model)` that training changes, and adds its first `T` rows to a sequence of `T` steps: on a zero input the output is exactly `P[:2]`. The paper reports nearly identical results for the two (page 6 and page 9, Table 3 row (E)).
 
 ## 6. The encoder, from a sequence to a label
 
@@ -124,7 +124,7 @@ print(z.shape, len(m.params()), bool((z == m.P.value[:2]).all()))
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.models import transformer_encoder
+from dense_armor.utility.deep.neural.models import transformer_encoder
 
 m = transformer_encoder(4, 8, 2, 16, 1, 3, jax.random.PRNGKey(0), 16)
 print(m.forward(jnp.ones((5, 4))).shape)

@@ -9,8 +9,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from dense_armor.utility.anomaly import lof as lof_mod
-from dense_armor.utility.anomaly.lof import LocalOutlierFactor
+from dense_armor.utility.online.anomaly import lof as lof_mod
+from dense_armor.utility.online.anomaly.lof import LocalOutlierFactor
 
 URDF = Path("test/fixtures/urdf/panda.urdf")
 
@@ -214,7 +214,7 @@ def test_synthetic_arm_stream():
     """LOF on the SyntheticArm payload fault, AUC above chance."""
     from sklearn.metrics import roc_auc_score
 
-    from dense_armor.utility.datasets import SyntheticArm
+    from dense_armor.utility.signals.datasets import SyntheticArm
 
     ds = SyntheticArm(
         URDF,

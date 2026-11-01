@@ -7,9 +7,9 @@ import numpy as np
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.facto import HOFMClassifier, HOFMRegressor
-from dense_armor.utility.facto import hofm as hofm_module
-from dense_armor.utility.optim import SGD
+from dense_armor.utility.online.facto import HOFMClassifier, HOFMRegressor
+from dense_armor.utility.online.facto import hofm as hofm_module
+from dense_armor.utility.online.optim import SGD
 
 
 def _factory_clf():

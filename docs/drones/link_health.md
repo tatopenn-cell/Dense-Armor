@@ -96,7 +96,7 @@ A run with no fault gives zero episodes and zero false alarms per hour: the nomi
 ### References
 
 - No paper on MQTT link health is cited for this pipeline. The pipeline is therefore a design choice in every component; each one is stated below.
-- The CUSUM detector is the `CUSUMDriftDetector` of `dense_armor/utility/drift/detector.py`, with the same convention of the other pages: rising edge of `drift_detected` as the episode (`benchmarks/casper_hours_episodes.py`, lines 74-76).
+- The CUSUM detector is the `CUSUMDriftDetector` of `dense_armor/utility/online/drift/detector.py`, with the same convention of the other pages: rising edge of `drift_detected` as the episode (`benchmarks/casper_hours_episodes.py`, lines 74-76).
 
 ### Choices stated explicitly
 

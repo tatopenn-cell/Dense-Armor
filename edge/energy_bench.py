@@ -50,8 +50,8 @@ from typing import Protocol
 import numpy as np
 from scipy.stats import wilcoxon
 
-from dense_armor.utility.tree.batch import BatchDecisionTreeClassifier
-from dense_armor.utility.tree.hoeffding import HoeffdingTreeClassifier
+from dense_armor.utility.online.tree.batch import BatchDecisionTreeClassifier
+from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
 from edge.power import (
     PowerTrace,
     SyntheticPowerSource,

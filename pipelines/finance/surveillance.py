@@ -25,11 +25,11 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from dense_armor.utility.anomaly.filters import HampelScorer
-from dense_armor.utility.anomaly.hst import HalfSpaceTrees
-from dense_armor.utility.anomaly.loda import LODA
-from dense_armor.utility.drift.detector import CUSUMDriftDetector
-from dense_armor.utility.protect.orca import Orca
+from dense_armor.utility.online.anomaly.filters import HampelScorer
+from dense_armor.utility.online.anomaly.hst import HalfSpaceTrees
+from dense_armor.utility.online.anomaly.loda import LODA
+from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
+from dense_armor.utility.online.protect.orca import Orca
 
 
 @dataclass
@@ -75,13 +75,13 @@ class FinancePipeline:
 
     Stages, in order:
 
-    1. **Armor** (:class:`~dense_armor.utility.anomaly.filters.HampelScorer`)
+    1. **Armor** (:class:`~dense_armor.utility.online.anomaly.filters.HampelScorer`)
        drops absurd ticks.
-    2. **CUSUM** (:class:`~dense_armor.utility.drift.detector.CUSUMDriftDetector`)
+    2. **CUSUM** (:class:`~dense_armor.utility.online.drift.detector.CUSUMDriftDetector`)
        flags a change of trend.
     3. **LODA** and **Half-Space Trees** score the (return, volume)
        pair; a day is anomalous when both scores pass their thresholds.
-    4. **Orca** (:class:`~dense_armor.utility.protect.orca.Orca`)
+    4. **Orca** (:class:`~dense_armor.utility.online.protect.orca.Orca`)
        dampens the simulated order derived from the tick.
 
     Args:

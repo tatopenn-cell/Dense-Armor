@@ -17,7 +17,7 @@ Every tree sees every sample, but with a random weight: a sample counts as many 
 
 ```python
 import numpy as np
-from dense_armor.utility.forest import AdaptiveRandomForestClassifier
+from dense_armor.utility.online.forest import AdaptiveRandomForestClassifier
 
 rng = np.random.default_rng(0)
 f = AdaptiveRandomForestClassifier(n_models=5, seed=1)
@@ -61,7 +61,7 @@ There are exponentially many prunings, so the average sounds impossible. The pap
 The library already has a Mondrian forest. It smooths each tree with a fixed prior over where a path leaves the tree, so a node weighs the same whatever it has predicted. The aggregated forest replaces that fixed prior with weights learned from the loss of every node.
 
 ```python
-from dense_armor.utility.forest import AggregatedMondrianForestRegressor
+from dense_armor.utility.online.forest import AggregatedMondrianForestRegressor
 
 f = AggregatedMondrianForestRegressor(n_trees=10, seed=0)
 for i in range(200):
@@ -114,7 +114,7 @@ vote. If a drift fires, the background tree takes the place of the old one.
 
 ```python
 import numpy as np
-from dense_armor.utility.forest import OnlineExtraTreesRegressor
+from dense_armor.utility.online.forest import OnlineExtraTreesRegressor
 
 rng = np.random.default_rng(0)
 f = OnlineExtraTreesRegressor(n_models=5, seed=0)

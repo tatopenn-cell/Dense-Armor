@@ -15,8 +15,8 @@ import sys
 import numpy as np
 import pytest
 
-import dense_armor.utility.anomaly.filters as streaming_filters  # noqa: E402
-from dense_armor.utility.anomaly.filters import (  # noqa: E402
+import dense_armor.utility.online.anomaly.filters as streaming_filters  # noqa: E402
+from dense_armor.utility.online.anomaly.filters import (  # noqa: E402
     HampelScorer, TukeyScorer, ChauvenetScorer, SigmaClipScorer, HampelFilter,
 )
 
@@ -291,7 +291,7 @@ def test_flat_window_scores(cls):
 
 
 def test_sigma_clip_stats_edge_cases():
-    from dense_armor.utility.anomaly.filters import _clean_stats
+    from dense_armor.utility.online.anomaly.filters import _clean_stats
 
     assert _clean_stats(np.array([1.0, 1.0, 1.0, 1.0]), 3.0) == (1.0, 0.0)
     mu, sigma = _clean_stats(np.array([0.0, 0.0, 0.0, 100.0]), 0.5)

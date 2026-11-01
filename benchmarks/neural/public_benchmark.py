@@ -30,13 +30,13 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from dense_armor.utility.neural.activations import Relu
-from dense_armor.utility.neural.chain import Sequential
-from dense_armor.utility.neural.continual import AGEM, EWC, GEM
-from dense_armor.utility.neural.generative_replay import DeepGenerativeReplay
-from dense_armor.utility.neural.layers import Dense
-from dense_armor.utility.neural.losses import SoftmaxCrossEntropy
-from dense_armor.utility.optim import Adam
+from dense_armor.utility.deep.neural.activations import Relu
+from dense_armor.utility.deep.neural.chain import Sequential
+from dense_armor.utility.deep.neural.continual import AGEM, EWC, GEM
+from dense_armor.utility.deep.neural.generative_replay import DeepGenerativeReplay
+from dense_armor.utility.deep.neural.layers import Dense
+from dense_armor.utility.deep.neural.losses import SoftmaxCrossEntropy
+from dense_armor.utility.online.optim import Adam
 
 
 REFERENCE = {

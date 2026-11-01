@@ -1,7 +1,7 @@
 import numpy as np
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.cluster.kmeans import OnlineKMeans
+from dense_armor.utility.online.cluster.kmeans import OnlineKMeans
 
 
 def test_kmeans_three_blobs_ari():

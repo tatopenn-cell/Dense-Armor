@@ -6,12 +6,12 @@ The bricks work on a batch and on one sample, with the same functions. Every arr
 
 ## 1. A parameter, and an update through an optimizer
 
-A parameter is a number the network learns. It holds two arrays: the value, and the gradient of the loss with respect to that value, of the same shape and dtype. The update asks an optimizer of `dense_armor.utility.optim` for the next value.
+A parameter is a number the network learns. It holds two arrays: the value, and the gradient of the loss with respect to that value, of the same shape and dtype. The update asks an optimizer of `dense_armor.utility.online.optim` for the next value.
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.params import Param
-from dense_armor.utility.optim.sgd import SGD
+from dense_armor.utility.deep.neural.params import Param
+from dense_armor.utility.online.optim.sgd import SGD
 
 p = Param(jnp.array([1.0, 2.0]))
 p.grad = jnp.array([0.5, -0.3])
@@ -32,7 +32,7 @@ A weight matrix that starts too large or too small makes the network train badly
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.init import he_normal, xavier_normal
+from dense_armor.utility.deep.neural.init import he_normal, xavier_normal
 
 k = jax.random.PRNGKey(0)
 wh = he_normal(k, (1024, 1024))
@@ -52,7 +52,7 @@ An activation bends the output of a layer. ReLU keeps the positive part, zeroes 
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.activations import relu_forward, relu_backward
+from dense_armor.utility.deep.neural.activations import relu_forward, relu_backward
 
 x = jnp.array([-1.0, 0.0, 1.0])
 y = relu_forward(x)
@@ -69,7 +69,7 @@ The softmax turns a vector of logits into probabilities. On a very large number 
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.activations import softmax_forward
+from dense_armor.utility.deep.neural.activations import softmax_forward
 
 print(softmax_forward(jnp.array([[1000.0, 0.0, -1000.0]])))
 ~~~
@@ -87,7 +87,7 @@ A binary classifier ends with a raw score that can be any finite number, but a d
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.activations import Sigmoid
+from dense_armor.utility.deep.neural.activations import Sigmoid
 
 s = Sigmoid()
 print(round(float(s.forward(jnp.array(0.0))), 4))
@@ -109,7 +109,7 @@ A tanh has the shape of a sigmoid, shifted down by one half and stretched by two
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.activations import Tanh
+from dense_armor.utility.deep.neural.activations import Tanh
 
 t = Tanh()
 print(round(float(t.forward(jnp.array(0.0))), 4))
@@ -131,7 +131,7 @@ A classifier that has to choose among `K` classes ends with `K` scores, not with
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.activations import Softmax
+from dense_armor.utility.deep.neural.activations import Softmax
 
 sm = Softmax()
 print([round(float(v), 4) for v in sm.forward(jnp.array([0.0, 0.0]))])
@@ -153,7 +153,7 @@ A rectified linear unit lets a positive input through and blocks a negative one.
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.activations import PRelu
+from dense_armor.utility.deep.neural.activations import PRelu
 
 p = PRelu(0.25)
 print(round(float(p.forward(jnp.array(-1.0))), 4))
@@ -179,7 +179,7 @@ The loss turns a prediction and a target into a number to minimise. The mean squ
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.losses import mse_forward, mse_backward
+from dense_armor.utility.deep.neural.losses import mse_forward, mse_backward
 
 p = jnp.array([1.0, 2.0])
 t = jnp.array([1.0, 3.0])
@@ -196,7 +196,7 @@ The binary cross-entropy is written in a form that does not overflow on `z = 100
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.losses import bce_with_logits_forward
+from dense_armor.utility.deep.neural.losses import bce_with_logits_forward
 
 print(bce_with_logits_forward(jnp.array([1000.0, -1000.0]), jnp.array([1.0, 0.0])))
 ~~~
@@ -214,7 +214,7 @@ A classifier that outputs a distribution needs a loss that measures how far the 
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.losses import SoftmaxCrossEntropy
+from dense_armor.utility.deep.neural.losses import SoftmaxCrossEntropy
 
 sce = SoftmaxCrossEntropy()
 loss = sce.forward(jnp.array([[2.0, 0.0, 0.0]]), jnp.array([0]))
@@ -238,7 +238,7 @@ A binary classifier can output a single score `z` instead of a probability, and 
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.losses import BCEWithLogits
+from dense_armor.utility.deep.neural.losses import BCEWithLogits
 
 b = BCEWithLogits()
 loss = b.forward(jnp.array(0.0), jnp.array(1.0))
@@ -262,7 +262,7 @@ A mean squared error grows like the square of the residual, so a single outlier 
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.losses import Huber
+from dense_armor.utility.deep.neural.losses import Huber
 
 h = Huber(1.0)
 loss = h.forward(jnp.array([0.5, 3.0]), jnp.array([0.0, 0.0]))
@@ -286,7 +286,7 @@ The pieces above are only useful if the gradient they compute is the true gradie
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.gradcheck import gradcheck
+from dense_armor.utility.deep.neural.gradcheck import gradcheck
 
 def f(x):
     return x * x
@@ -306,7 +306,7 @@ The largest relative error is `4e-10`, the precision of the finite difference it
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.gradcheck import gradcheck
+from dense_armor.utility.deep.neural.gradcheck import gradcheck
 
 def f(x):
     return x * x
@@ -332,7 +332,7 @@ The Huber loss is quadratic near the target and linear far from it, so a single 
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.losses import huber_forward, huber_backward
+from dense_armor.utility.deep.neural.losses import huber_forward, huber_backward
 
 p = jnp.array([1.0, 2.0])
 t = jnp.array([1.0, 5.0])
@@ -350,7 +350,7 @@ The Glorot uniform initialisation is the distribution that the same paper uses i
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.init import glorot_uniform
+from dense_armor.utility.deep.neural.init import glorot_uniform
 
 g = glorot_uniform(jax.random.PRNGKey(0), (8, 4))
 print(round(float(jnp.min(g)), 4), round(float(jnp.max(g)), 4))

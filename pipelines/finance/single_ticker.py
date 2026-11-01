@@ -1,6 +1,6 @@
 """Single-ticker pipeline: is today strange for this stock?
 
-Uses dense_armor.utility.anomaly.loda and .hst on the (return, volume)
+Uses dense_armor.utility.online.anomaly.loda and .hst on the (return, volume)
 pair of a single ticker.
 
 Cliente: analista fondamentale, retail avanzato.
@@ -15,8 +15,8 @@ Note:
 
 from dataclasses import dataclass
 
-from dense_armor.utility.anomaly.hst import HalfSpaceTrees
-from dense_armor.utility.anomaly.loda import LODA
+from dense_armor.utility.online.anomaly.hst import HalfSpaceTrees
+from dense_armor.utility.online.anomaly.loda import LODA
 
 
 @dataclass

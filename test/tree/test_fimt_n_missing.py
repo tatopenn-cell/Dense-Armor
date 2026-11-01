@@ -9,7 +9,7 @@ reported in the delivery, not fixed here.
 
 import pytest
 
-from dense_armor.utility.tree.fimt import FIMTDDRegressor
+from dense_armor.utility.online.tree.fimt import FIMTDDRegressor
 
 
 def test_n_missing_is_zero_on_a_fresh_estimator():

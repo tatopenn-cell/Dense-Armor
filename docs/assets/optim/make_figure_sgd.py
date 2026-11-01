@@ -7,8 +7,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dense_armor.utility.linear.glm import LinearRegression
-from dense_armor.utility.optim import SGD
+from dense_armor.utility.online.linear.glm import LinearRegression
+from dense_armor.utility.online.optim import SGD
 
 out = Path(__file__).parent
 

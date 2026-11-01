@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from dense_armor.utility.stats.moments import (
+from dense_armor.utility.signals.stats.moments import (
     RunningMoments,
     RunningMomentsVector,
 )
@@ -106,7 +106,7 @@ def test_block_constant_large_values_no_overflow():
     """
     import numpy as np
 
-    from dense_armor.utility.stats.moments import RunningMoments
+    from dense_armor.utility.signals.stats.moments import RunningMoments
 
     max_f = np.finfo(np.float64).max / 1e5
     min_f = max_f / 1e2

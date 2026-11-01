@@ -5,7 +5,7 @@ Contenders, all under ``jax.jit`` and float32:
 - ``naive``: two-pass ``mean((x - mean(x))**2)``.
 - ``base``: the baseline two-term formula ``max(mean(d**2) - mean(d)**2, 0)``
   with ``d = x - mean(x)``. A labelled copy in this script.
-- ``kernel``: ``dense_armor.utility.stats.stable.stable_var``: the
+- ``kernel``: ``dense_armor.utility.signals.stats.stable.stable_var``: the
   baseline two-term formula with Kahan compensated summation on ``d**2``.
 
 Cases: the identical values of the tests, the four datasets of the
@@ -46,7 +46,7 @@ import jax.numpy as jnp
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from dense_armor.utility.stats.stable import stable_var  # noqa: E402
+from dense_armor.utility.signals.stats.stable import stable_var  # noqa: E402
 
 N_IDENTICAL = 3
 SPEED_RUNS = 15

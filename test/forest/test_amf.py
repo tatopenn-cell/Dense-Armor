@@ -7,8 +7,8 @@ import numpy as np
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.forest import amf as amf_mod
-from dense_armor.utility.forest.amf import (
+from dense_armor.utility.online.forest import amf as amf_mod
+from dense_armor.utility.online.forest.amf import (
     AggregatedMondrianForestClassifier,
     AggregatedMondrianForestRegressor,
     _AmfTree,

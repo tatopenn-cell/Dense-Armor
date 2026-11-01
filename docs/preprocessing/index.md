@@ -18,11 +18,11 @@ about which features to keep and how to handle rare events.
 
 ## API reference
 
-::: dense_armor.utility.preprocessing.scale
-::: dense_armor.utility.preprocessing.joints
-::: dense_armor.utility.preprocessing.text
-::: dense_armor.utility.preprocessing.select
-::: dense_armor.utility.preprocessing.imbalance
+::: dense_armor.utility.signals.preprocessing.scale
+::: dense_armor.utility.signals.preprocessing.joints
+::: dense_armor.utility.signals.preprocessing.text
+::: dense_armor.utility.signals.preprocessing.select
+::: dense_armor.utility.signals.preprocessing.imbalance
 
 ---
 

@@ -9,7 +9,7 @@ import numpy as np
 import pytest
 
 from dense_armor.roles import Estimator
-from dense_armor.utility.metrics.regression import R2Score
+from dense_armor.utility.evaluation.metrics.regression import R2Score
 
 
 def test_r2score_is_a_metric_not_an_estimator():

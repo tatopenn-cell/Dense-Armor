@@ -4,8 +4,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from dense_armor.utility.linear.glm import LinearRegression, LogisticRegression
-from dense_armor.utility.optim import Adam
+from dense_armor.utility.online.linear.glm import LinearRegression, LogisticRegression
+from dense_armor.utility.online.optim import Adam
 
 
 def test_linear_object_matches_pure_with_intercept_and_adam():

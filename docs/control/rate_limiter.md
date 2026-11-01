@@ -26,7 +26,7 @@ seven times the motor's real limit.
 
 ```python
 import numpy as np
-from dense_armor.utility.control.rate_limiter import rate_limited_follower
+from dense_armor.utility.robot.control.rate_limiter import rate_limited_follower
 
 u_des = np.zeros(300)
 u_des[100:] = 1.5
@@ -118,8 +118,8 @@ The limiter sits between the kinematic controller and the CBF filter:
 
 ```python
 import numpy as np
-from dense_armor.utility.control.trajectory import quintic_trajectory
-from dense_armor.utility.control.kinematic_controller import kinematic_tracking_controller
+from dense_armor.utility.robot.control.trajectory import quintic_trajectory
+from dense_armor.utility.robot.control.kinematic_controller import kinematic_tracking_controller
 
 t, q, v, a = quintic_trajectory(np.zeros(2), np.array([0.5, 1.0]), T=2.0)
 dt, qa = t[1] - t[0], np.array([0.05, -0.05])
@@ -142,7 +142,7 @@ module bounds a different aspect of the same command.
 
 ## API reference
 
-::: dense_armor.utility.control.rate_limiter
+::: dense_armor.utility.robot.control.rate_limiter
 
 ---
 

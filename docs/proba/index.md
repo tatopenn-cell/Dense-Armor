@@ -40,7 +40,7 @@ The Gaussian is updated by Welford's algorithm (Welford 1962). The state is `(n,
 ## 3. Smallest example
 
 ```python
-from dense_armor.utility.proba import Beta, Gaussian, Multinomial
+from dense_armor.utility.online.proba import Beta, Gaussian, Multinomial
 
 d = Beta(1.0, 1.0)
 for x in [1, 1, 1, 0]:

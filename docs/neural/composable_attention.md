@@ -11,7 +11,7 @@ The multi-head cross-attention projects the queries from the first stream and th
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.cross_attention import MultiHeadCrossAttention
+from dense_armor.utility.deep.neural.cross_attention import MultiHeadCrossAttention
 
 cross = MultiHeadCrossAttention(2, 1, jax.random.PRNGKey(0), d_context=2)
 for p in cross.params():
@@ -35,7 +35,7 @@ The same attention has a streaming form against a growing context, as the causal
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.cross_attention import MultiHeadCrossAttention
+from dense_armor.utility.deep.neural.cross_attention import MultiHeadCrossAttention
 
 cross = MultiHeadCrossAttention(2, 1, jax.random.PRNGKey(0), d_context=2)
 for p in cross.params():
@@ -61,8 +61,8 @@ A control signal, one number per query position, decides whether the cross-atten
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.cross_attention import MultiHeadCrossAttention
-from dense_armor.utility.neural.gated_attention import GatedCrossAttention
+from dense_armor.utility.deep.neural.cross_attention import MultiHeadCrossAttention
+from dense_armor.utility.deep.neural.gated_attention import GatedCrossAttention
 
 cross = MultiHeadCrossAttention(2, 1, jax.random.PRNGKey(0), d_context=2)
 for p in cross.params():
@@ -89,8 +89,8 @@ The identity path in the brick carries the static part of the query at a closed 
 import jax
 import jax.numpy as jnp
 import numpy as np
-from dense_armor.utility.neural.cross_attention import MultiHeadCrossAttention
-from dense_armor.utility.neural.gated_attention import GatedCrossAttention
+from dense_armor.utility.deep.neural.cross_attention import MultiHeadCrossAttention
+from dense_armor.utility.deep.neural.gated_attention import GatedCrossAttention
 
 rng = np.random.default_rng(0)
 audio = np.clip(rng.normal(0.5, 0.2, 40), 0.0, 1.0)
@@ -126,7 +126,7 @@ When the second stream is long, the queries can be a small set of learned latent
 import jax
 import jax.numpy as jnp
 import numpy as np
-from dense_armor.utility.neural.latent_attention import LatentCrossAttention
+from dense_armor.utility.deep.neural.latent_attention import LatentCrossAttention
 
 latent = LatentCrossAttention(2, 4, 2, jax.random.PRNGKey(0), d_context=4)
 for M in (100, 1000):
@@ -150,7 +150,7 @@ Two streams of similar size can exchange information through a few shared tokens
 import jax
 import jax.numpy as jnp
 import numpy as np
-from dense_armor.utility.neural.bottleneck import BottleneckFusion
+from dense_armor.utility.deep.neural.bottleneck import BottleneckFusion
 
 fusion = BottleneckFusion(4, 2, 2, jax.random.PRNGKey(0), d_ff=8)
 a = jax.random.normal(jax.random.PRNGKey(1), (6, 4))

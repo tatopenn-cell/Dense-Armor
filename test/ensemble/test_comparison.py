@@ -11,14 +11,14 @@ ensemble code that erased the gain would make the test fail.
 import numpy as np
 from scipy.stats import wilcoxon
 
-from dense_armor.utility.datasets import DriftStream
-from dense_armor.utility.ensemble import (
+from dense_armor.utility.signals.datasets import DriftStream
+from dense_armor.utility.online.ensemble import (
     OnlineBaggingClassifier,
     OnlineBoostingClassifier,
     StackingClassifier,
     VotingClassifier,
 )
-from dense_armor.utility.tree.hoeffding import HoeffdingTreeClassifier
+from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
 import pytest
 
 N_SEEDS = 10

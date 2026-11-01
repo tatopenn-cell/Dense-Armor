@@ -5,8 +5,8 @@ import math
 import numpy as np
 import pytest
 
-from dense_armor.utility.drift.adwin import ADWIN
-from dense_armor.utility.tree import (
+from dense_armor.utility.online.drift.adwin import ADWIN
+from dense_armor.utility.online.tree import (
     HoeffdingAdaptiveTreeClassifier,
     HoeffdingAnytimeTreeClassifier,
     HoeffdingTreeClassifier,
@@ -15,7 +15,7 @@ from dense_armor.utility.tree import (
     SGTClassifier,
     SGTRegressor,
 )
-from dense_armor.utility.tree.sgt import _betainc, _student_t_sf
+from dense_armor.utility.online.tree.sgt import _betainc, _student_t_sf
 
 BAD_X = [{}, {"a": None}, {"a": "x"}, {"a": float("nan")}, None]
 

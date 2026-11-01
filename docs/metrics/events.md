@@ -7,7 +7,7 @@ alarm times, and answers the two questions a robot operator asks: how late was t
 how often does it ring for nothing?
 
 ```python
-from dense_armor.utility.metrics import EventMetrics
+from dense_armor.utility.evaluation.metrics import EventMetrics
 
 m = EventMetrics([(10.0, 20.0), (40.0, 45.0)], dt=0.5, normal_time_s=3600.0)
 for t in (5.0, 12.0, 12.5, 30.0):
@@ -40,7 +40,7 @@ Figure 2b: flat ($\delta = 1$), front ($\delta = L - i + 1$, early points count 
 ($\delta = i$), middle. Precision (Eq. 9) uses the same overlap reward, with flat bias.
 
 ```python
-from dense_armor.utility.metrics import EventMetrics
+from dense_armor.utility.evaluation.metrics import EventMetrics
 
 for bias in ("front", "back"):
     m = EventMetrics([(0.0, 9.0)], positional_bias=bias, threshold_window=1.0)
@@ -77,7 +77,7 @@ window, or $-|A_{FP}|$ if no window precedes it. The total is normalised so that
 detector scores 100 and a detector that never fires scores 0 (Eq. 4).
 
 ```python
-from dense_armor.utility.metrics import EventMetrics
+from dense_armor.utility.evaluation.metrics import EventMetrics
 
 for alarms in ([0.0], [9.0], [9.0, 14.5], []):
     m = EventMetrics([(0.0, 10.0)])
@@ -107,8 +107,8 @@ the case of the figure at the top.
 
 ```python
 import numpy as np
-from dense_armor.utility.drift.detector import CUSUMDriftDetector
-from dense_armor.utility.evaluate import evaluate_events
+from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
+from dense_armor.utility.evaluation.evaluate import evaluate_events
 
 rng = np.random.default_rng(1)
 x = np.concatenate([rng.normal(0, 1, 3000), rng.normal(3, 1, 1000)])
@@ -136,7 +136,7 @@ noise.
 
 ```python
 import numpy as np
-from dense_armor.utility.metrics import F1, PointAdjustedF1
+from dense_armor.utility.evaluation.metrics import F1, PointAdjustedF1
 
 rng = np.random.default_rng(0)
 y = np.zeros(2000, dtype=int)

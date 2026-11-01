@@ -134,7 +134,7 @@ async def dense_armor_clean_signal(params: CleanSignalInput) -> str:
         etichette_arbitro, incertezza_arbitro_media} -- etichette_arbitro/
         incertezza_arbitro_media are null unless use_arbiter=True.
     """
-    from dense_armor.utility.protect.orca import Orca
+    from dense_armor.utility.online.protect.orca import Orca
 
     orca = Orca()
     x = _to_array(params.values)
@@ -165,7 +165,7 @@ async def dense_armor_detect_anomalies(params: DetectAnomaliesInput) -> str:
     Returns:
         str: JSON with {etichette, deviazione, incertezza}, one entry per input point.
     """
-    from dense_armor.utility.protect.arbiter import classify_segments
+    from dense_armor.utility.online.protect.arbiter import classify_segments
 
     x = _to_array(params.values)
     etichette, deviazione, incertezza = classify_segments(
@@ -202,7 +202,7 @@ async def dense_armor_robust_filter(params: RobustFilterInput) -> str:
         str: JSON with {cleaned, anomaly_indices}, plus
         {pressure, effective_threshold} if method='pressure_valve'.
     """
-    from dense_armor.utility.anomaly import robust_filters as rf
+    from dense_armor.utility.online.anomaly import robust_filters as rf
 
     x = _to_array(params.values)
     if params.method == "pressure_valve":
@@ -244,7 +244,7 @@ async def dense_armor_heal_series(params: HealSeriesInput) -> str:
     Returns:
         str: JSON with {healed: [...]}.
     """
-    from dense_armor.utility.protect.healing import healing_filter
+    from dense_armor.utility.online.protect.healing import healing_filter
 
     x = _to_array(params.values)
     healed = healing_filter(x, radius=params.radius, sustain_threshold=params.sustain_threshold, wide_mult=params.wide_mult)
@@ -275,7 +275,7 @@ async def dense_armor_stream_start(params: StreamStartInput) -> str:
     import time
     import uuid
 
-    from dense_armor.utility.anomaly.streaming import (
+    from dense_armor.utility.online.anomaly.streaming import (
         MultiChannelStreamingDeviationDetector,
     )
 

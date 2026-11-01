@@ -57,8 +57,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from dense_armor.utility.anomaly.mahalanobis import OnlineRobustMahalanobis
-from dense_armor.utility.drift.detector import CUSUMDriftDetector
+from dense_armor.utility.online.anomaly.mahalanobis import OnlineRobustMahalanobis
+from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
 
 RESIDUAL_KEYS = ("r0", "r1", "r2")
 DEFAULT_CUSUM = {

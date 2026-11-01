@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from dense_armor.utility.drift.detector import CUSUMDriftDetector
+from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
 from pipelines.drones.link_health import (
     DEFAULT_CUSUM,
     FAULT_KINDS,

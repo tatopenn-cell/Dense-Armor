@@ -107,7 +107,7 @@ pip install dense-armor
 ## The first learned model, in five lines
 
 ```python
-from dense_armor.utility.learn.online_dynamics import RecursiveLeastSquares
+from dense_armor.utility.online.learn.online_dynamics import RecursiveLeastSquares
 
 model = RecursiveLeastSquares(lam=1.0, feature_keys=["one", "q", "qd"])
 for t, (x, y) in enumerate(stream):
@@ -120,8 +120,8 @@ Each call to `learn_one` updates the model with the new sample. No epochs, no ba
 
 ```python
 from dense_armor.roles import AnomalyGate, Protected
-from dense_armor.utility.anomaly.hst import HalfSpaceTrees
-from dense_armor.utility.learn.online_dynamics import RecursiveLeastSquares
+from dense_armor.utility.online.anomaly.hst import HalfSpaceTrees
+from dense_armor.utility.online.learn.online_dynamics import RecursiveLeastSquares
 
 detector = AnomalyGate(HalfSpaceTrees(n_trees=25, depth=8, window=200))
 model = Protected(

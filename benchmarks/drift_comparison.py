@@ -24,11 +24,11 @@ from casper_benchmark import (
     trailing_mean,
 )
 
-from dense_armor.utility.drift.adwin import ADWIN
-from dense_armor.utility.drift.detector import CUSUMDriftDetector
-from dense_armor.utility.drift.kswin import KSWIN
-from dense_armor.utility.drift.page_hinkley import PageHinkley
-from dense_armor.utility.evaluate import evaluate_events
+from dense_armor.utility.online.drift.adwin import ADWIN
+from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
+from dense_armor.utility.online.drift.kswin import KSWIN
+from dense_armor.utility.online.drift.page_hinkley import PageHinkley
+from dense_armor.utility.evaluation.evaluate import evaluate_events
 
 
 def _stream_for_comparison():

@@ -24,8 +24,8 @@ most members predict. In `"hard"` mode each member is one vote, whatever confide
 `"soft"` mode each member returns a probability for every class and the ensemble averages them.
 
 ```python
-from dense_armor.utility.ensemble import VotingClassifier
-from dense_armor.utility.tree.hoeffding import HoeffdingTreeClassifier
+from dense_armor.utility.online.ensemble import VotingClassifier
+from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
 
 v = VotingClassifier(
     [HoeffdingTreeClassifier(grace_period=20),
@@ -56,8 +56,8 @@ twice or not at all, which is what a bootstrap sample of the batch algorithm doe
 
 ```python
 import numpy as np
-from dense_armor.utility.ensemble import OnlineBaggingClassifier
-from dense_armor.utility.tree.hoeffding import HoeffdingTreeClassifier
+from dense_armor.utility.online.ensemble import OnlineBaggingClassifier
+from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
 
 rng = np.random.default_rng(0)
 bag = OnlineBaggingClassifier(
@@ -87,8 +87,8 @@ member got wrong reaches the next member more often. The final vote weights each
 
 ```python
 import numpy as np
-from dense_armor.utility.ensemble import OnlineBoostingClassifier
-from dense_armor.utility.tree.hoeffding import HoeffdingTreeClassifier
+from dense_armor.utility.online.ensemble import OnlineBoostingClassifier
+from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
 
 rng = np.random.default_rng(0)
 boost = OnlineBoostingClassifier(
@@ -117,7 +117,7 @@ predictions. This is the Hedge rule of Freund and Schapire (1997), Section 2.1.
 
 ```python
 from dense_armor.roles import Regressor
-from dense_armor.utility.ensemble import ExponentiallyWeightedAverageRegressor
+from dense_armor.utility.online.ensemble import ExponentiallyWeightedAverageRegressor
 
 class Const(Regressor):
     def __init__(self, v):
@@ -156,8 +156,8 @@ it is.
 
 ```python
 import numpy as np
-from dense_armor.utility.ensemble import StackingClassifier
-from dense_armor.utility.tree.hoeffding import HoeffdingTreeClassifier
+from dense_armor.utility.online.ensemble import StackingClassifier
+from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
 
 rng = np.random.default_rng(0)
 stack = StackingClassifier(

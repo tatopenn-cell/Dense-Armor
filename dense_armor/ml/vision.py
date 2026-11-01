@@ -14,9 +14,9 @@ References:
         incremental PCA, NIPS: the target of the rule is the top eigenvector of
         the covariance (not in the folder, bibliographic only).
     ``GlobalMotion``: the algorithm of the online class ``GlobalMotion`` of
-        ``dense_armor.utility.vision.motion``, on a pair of frames.
+        ``dense_armor.utility.signals.vision.motion``, on a pair of frames.
     ``MotionMask``: the algorithm of the online class ``MotionMask`` of
-        ``dense_armor.utility.vision.dense``, on a flow field.
+        ``dense_armor.utility.signals.vision.dense``, on a flow field.
 """
 
 from __future__ import annotations

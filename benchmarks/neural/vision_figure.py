@@ -18,7 +18,7 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dense_armor.utility.neural.conv import Conv2D, MaxPool2D
+from dense_armor.utility.deep.neural.conv import Conv2D, MaxPool2D
 
 HERE = Path(__file__).resolve().parents[2]
 OUT = HERE / "docs" / "assets" / "neural" / "vision.png"

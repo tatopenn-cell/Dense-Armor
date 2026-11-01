@@ -32,7 +32,7 @@ weights`:
 
 ```python
 import numpy as np
-from dense_armor.utility.optim import SGD
+from dense_armor.utility.online.optim import SGD
 
 opt = SGD(lr=0.1)
 w = np.zeros(2)
@@ -51,7 +51,7 @@ arrays, so it runs inside `jax.jit` and `jax.lax.scan`:
 ```python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.optim import SGD
+from dense_armor.utility.online.optim import SGD
 
 opt = SGD(lr=0.1)
 state = opt.init_state(2)
@@ -99,9 +99,9 @@ velocity, one sample at a time. `SGD` is the optimizer:
 ```python
 from pathlib import Path
 import numpy as np
-from dense_armor.utility.datasets import SyntheticArm
-from dense_armor.utility.linear.glm import LinearRegression
-from dense_armor.utility.optim import SGD
+from dense_armor.utility.signals.datasets import SyntheticArm
+from dense_armor.utility.online.linear.glm import LinearRegression
+from dense_armor.utility.online.optim import SGD
 
 ds = SyntheticArm(Path("test/fixtures/urdf/panda.urdf"),
                   period_s=1.0, rate_hz=50.0, n_cycles=2, seed=0)

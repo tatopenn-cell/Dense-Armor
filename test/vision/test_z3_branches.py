@@ -2,8 +2,8 @@
 
 import numpy as np
 
-from dense_armor.utility.vision.dense import DenseFlow
-from dense_armor.utility.vision.window import FrameWindow
+from dense_armor.utility.signals.vision.dense import DenseFlow
+from dense_armor.utility.signals.vision.window import FrameWindow
 
 
 def test_frame_window_seconds_branch_drops_old():

@@ -8,10 +8,10 @@ import pytest
 
 from dense_armor.checks import check_estimator
 from dense_armor.roles import DriftDetector
-from dense_armor.utility.datasets import DriftStream
-from dense_armor.utility.drift.adwin import ADWIN
-from dense_armor.utility.forest import arf as arf_mod
-from dense_armor.utility.forest.arf import (
+from dense_armor.utility.signals.datasets import DriftStream
+from dense_armor.utility.online.drift.adwin import ADWIN
+from dense_armor.utility.online.forest import arf as arf_mod
+from dense_armor.utility.online.forest.arf import (
     AdaptiveRandomForestClassifier,
     SubspaceHoeffdingTree,
     _Member,

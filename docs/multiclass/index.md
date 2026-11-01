@@ -31,9 +31,9 @@ For **OutputCode**, the internal classifiers return bit predictions (either `+1`
 Three classes, two features, a logistic regression as the binary learner.
 
 ```python
-from dense_armor.utility.linear.glm import LogisticRegression
-from dense_armor.utility.multiclass import OneVsOneClassifier
-from dense_armor.utility.optim import SGD
+from dense_armor.utility.online.linear.glm import LogisticRegression
+from dense_armor.utility.online.multiclass import OneVsOneClassifier
+from dense_armor.utility.online.optim import SGD
 
 def factory():
     return LogisticRegression(optimizer=SGD(lr=0.5))

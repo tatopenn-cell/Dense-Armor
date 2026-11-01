@@ -2,7 +2,7 @@
 
 import pytest
 
-from dense_armor.utility.metrics import (
+from dense_armor.utility.evaluation.metrics import (
     F1,
     Accuracy,
     FBeta,
@@ -14,7 +14,7 @@ from dense_armor.utility.metrics import (
     RollingAUC,
     RootMeanSquaredError,
 )
-from dense_armor.utility.metrics.rolling import Rolling
+from dense_armor.utility.evaluation.metrics.rolling import Rolling
 
 JOINTS = [MeanAbsoluteError, MeanSquaredError, RootMeanSquaredError]
 

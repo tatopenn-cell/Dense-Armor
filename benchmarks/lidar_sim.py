@@ -28,9 +28,9 @@ from pathlib import Path
 
 import numpy as np
 
-from dense_armor.utility.anomaly.mahalanobis import OnlineRobustMahalanobis
-from dense_armor.utility.drift.adwin import ADWIN
-from dense_armor.utility.vision.reduce import RandomProjection
+from dense_armor.utility.online.anomaly.mahalanobis import OnlineRobustMahalanobis
+from dense_armor.utility.online.drift.adwin import ADWIN
+from dense_armor.utility.signals.vision.reduce import RandomProjection
 
 BEAMS = 180
 HZ = 10.0

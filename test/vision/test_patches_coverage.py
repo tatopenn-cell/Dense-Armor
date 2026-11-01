@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from dense_armor.utility.vision.patches import PatchFeatures, PatchMemory
+from dense_armor.utility.signals.vision.patches import PatchFeatures, PatchMemory
 
 
 def test_patch_features_invalid_frames():

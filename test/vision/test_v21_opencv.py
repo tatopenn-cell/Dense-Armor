@@ -5,8 +5,8 @@ import sys
 import numpy as np
 import pytest
 
-from dense_armor.utility.vision.streams import CameraStream, ImageFolderStream, VideoFileStream
-from dense_armor.utility.vision.visualize import VideoWriter
+from dense_armor.utility.signals.vision.streams import CameraStream, ImageFolderStream, VideoFileStream
+from dense_armor.utility.signals.vision.visualize import VideoWriter
 
 
 def test_missing_opencv_gives_a_clear_import_error(monkeypatch, tmp_path):

@@ -3,7 +3,7 @@
 import numpy as np
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.drift.detector import CUSUMDriftDetector
+from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
 from pipelines.drones.io import synthetic_flight
 from pipelines.drones.sensor_consistency import (
     GRAVITY_NED,

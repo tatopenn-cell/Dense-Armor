@@ -1,4 +1,4 @@
-"""Old import paths (dense_armor.utility.*, dense_armor.utility.learn.online_dynamics) stay valid."""
+"""Old import paths (dense_armor.utility.*, dense_armor.utility.online.learn.online_dynamics) stay valid."""
 import importlib
 
 import pytest

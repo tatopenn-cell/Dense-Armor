@@ -12,9 +12,9 @@ The page works on a synthetic stream of joint states: 6 numbers per sample (two 
 import jax
 import jax.numpy as jnp
 import numpy as np
-from dense_armor.utility.neural.autoencoder import Autoencoder
-from dense_armor.utility.neural.chain import Sequential
-from dense_armor.utility.neural.layers import Dense
+from dense_armor.utility.deep.neural.autoencoder import Autoencoder
+from dense_armor.utility.deep.neural.chain import Sequential
+from dense_armor.utility.deep.neural.layers import Dense
 
 enc = Sequential([Dense(2, 1, jax.random.PRNGKey(0))])
 enc.layers[0].W.value = jnp.array([[1.0], [0.0]])
@@ -40,12 +40,12 @@ The `Trainer` trains it on a batch with `y = X` and `MSE`:
 ~~~python
 import jax
 import numpy as np
-from dense_armor.utility.neural.autoencoder import Autoencoder
-from dense_armor.utility.neural.chain import Sequential
-from dense_armor.utility.neural.layers import Dense
-from dense_armor.utility.neural.losses import MSE
-from dense_armor.utility.neural.trainer import Trainer
-from dense_armor.utility.optim import Adam
+from dense_armor.utility.deep.neural.autoencoder import Autoencoder
+from dense_armor.utility.deep.neural.chain import Sequential
+from dense_armor.utility.deep.neural.layers import Dense
+from dense_armor.utility.deep.neural.losses import MSE
+from dense_armor.utility.deep.neural.trainer import Trainer
+from dense_armor.utility.online.optim import Adam
 
 rng = np.random.default_rng(0)
 A = rng.normal(0.0, 1.0, (2, 6)).astype(np.float32)
@@ -75,7 +75,7 @@ The reconstruction error of the 200 points, from `2.26` to `0.004`: the code siz
 import jax
 import jax.numpy as jnp
 import numpy as np
-from dense_armor.utility.neural.quantize import VectorQuantizer
+from dense_armor.utility.deep.neural.quantize import VectorQuantizer
 
 vq = VectorQuantizer(2, 1, jax.random.PRNGKey(0), beta=0.25)
 vq.codebook.value = jnp.array([[0.0], [1.0]])
@@ -102,7 +102,7 @@ The first vector `0.2` is nearer to `0.0` than to `1.0`, the second `0.9` is nea
 import jax
 import jax.numpy as jnp
 import numpy as np
-from dense_armor.utility.neural.matryoshka import MatryoshkaLoss
+from dense_armor.utility.deep.neural.matryoshka import MatryoshkaLoss
 
 ml = MatryoshkaLoss([1, 2], 2, 2, jax.random.PRNGKey(0))
 ml.heads_[0].value = jnp.array([[1.0], [-1.0]])
@@ -131,9 +131,9 @@ The two heads have loss `0.12693` (size 1) and `0.31326` (size 2); their sum is 
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.seq2seq import Seq2Seq
-from dense_armor.utility.neural.recurrent import LSTM
-from dense_armor.utility.neural.layers import Dense
+from dense_armor.utility.deep.neural.seq2seq import Seq2Seq
+from dense_armor.utility.deep.neural.recurrent import LSTM
+from dense_armor.utility.deep.neural.layers import Dense
 
 s = Seq2Seq(LSTM(2, 3, jax.random.PRNGKey(0)),
             LSTM(3, 3, jax.random.PRNGKey(1)),
@@ -159,11 +159,11 @@ A source of shape `(4, 2)` (4 steps, 2 features) gives `(2, 1)` (2 steps, 1 outp
 import jax
 import jax.numpy as jnp
 import numpy as np
-from dense_armor.utility.neural.autoencoder import Autoencoder
-from dense_armor.utility.neural.chain import Sequential
-from dense_armor.utility.neural.layers import Dense
-from dense_armor.utility.neural.online_autoencoder import OnlineAutoencoder
-from dense_armor.utility.optim import SGD
+from dense_armor.utility.deep.neural.autoencoder import Autoencoder
+from dense_armor.utility.deep.neural.chain import Sequential
+from dense_armor.utility.deep.neural.layers import Dense
+from dense_armor.utility.deep.neural.online_autoencoder import OnlineAutoencoder
+from dense_armor.utility.online.optim import SGD
 
 enc = Sequential([Dense(2, 1, jax.random.PRNGKey(0))])
 enc.layers[0].W.value = jnp.array([[1.0], [0.0]])
@@ -195,11 +195,11 @@ A fault in the stream is a sample far from the normal distribution: the autoenco
 ~~~python
 import numpy as np
 import jax
-from dense_armor.utility.neural.autoencoder import Autoencoder
-from dense_armor.utility.neural.chain import Sequential
-from dense_armor.utility.neural.layers import Dense
-from dense_armor.utility.neural.online_autoencoder import OnlineAutoencoder
-from dense_armor.utility.optim import Adam
+from dense_armor.utility.deep.neural.autoencoder import Autoencoder
+from dense_armor.utility.deep.neural.chain import Sequential
+from dense_armor.utility.deep.neural.layers import Dense
+from dense_armor.utility.deep.neural.online_autoencoder import OnlineAutoencoder
+from dense_armor.utility.online.optim import Adam
 
 rng = np.random.default_rng(0)
 A = rng.normal(0.0, 1.0, (2, 6)).astype(np.float32)
@@ -237,12 +237,12 @@ The page uses a synthetic video of 200 frames of 8 by 8 pixels, a bright blob on
 ~~~python
 import numpy as np
 import jax
-from dense_armor.utility.vision.reduce import IncrementalPCA
-from dense_armor.utility.neural.autoencoder import Autoencoder
-from dense_armor.utility.neural.chain import Sequential
-from dense_armor.utility.neural.layers import Dense
-from dense_armor.utility.neural.online_autoencoder import OnlineAutoencoder
-from dense_armor.utility.optim import Adam
+from dense_armor.utility.signals.vision.reduce import IncrementalPCA
+from dense_armor.utility.deep.neural.autoencoder import Autoencoder
+from dense_armor.utility.deep.neural.chain import Sequential
+from dense_armor.utility.deep.neural.layers import Dense
+from dense_armor.utility.deep.neural.online_autoencoder import OnlineAutoencoder
+from dense_armor.utility.online.optim import Adam
 
 rng = np.random.default_rng(0)
 n_frames = 200
@@ -293,12 +293,12 @@ The median score of the 150 frames before the white one is `0.017`; the score at
 import numpy as np
 import jax
 from dense_armor.ml.vision import PCA
-from dense_armor.utility.neural.autoencoder import Autoencoder
-from dense_armor.utility.neural.chain import Sequential
-from dense_armor.utility.neural.layers import Dense
-from dense_armor.utility.neural.losses import MSE
-from dense_armor.utility.neural.trainer import Trainer
-from dense_armor.utility.optim import Adam
+from dense_armor.utility.deep.neural.autoencoder import Autoencoder
+from dense_armor.utility.deep.neural.chain import Sequential
+from dense_armor.utility.deep.neural.layers import Dense
+from dense_armor.utility.deep.neural.losses import MSE
+from dense_armor.utility.deep.neural.trainer import Trainer
+from dense_armor.utility.online.optim import Adam
 
 rng = np.random.default_rng(1)
 A = rng.normal(0.0, 1.0, (2, 6)).astype(np.float32)
@@ -334,10 +334,10 @@ The two errors are both measured as the mean over the last axis of the squared e
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.autoencoder import Autoencoder
-from dense_armor.utility.neural.chain import Sequential
-from dense_armor.utility.neural.layers import Dense
-from dense_armor.utility.neural.adapter import AsTransformer
+from dense_armor.utility.deep.neural.autoencoder import Autoencoder
+from dense_armor.utility.deep.neural.chain import Sequential
+from dense_armor.utility.deep.neural.layers import Dense
+from dense_armor.utility.deep.neural.adapter import AsTransformer
 
 enc2 = Sequential([Dense(2, 1, jax.random.PRNGKey(0))])
 enc2.layers[0].W.value = jnp.array([[1.0], [0.0]])

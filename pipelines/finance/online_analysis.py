@@ -17,8 +17,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from dense_armor.utility.anomaly.hst import HalfSpaceTrees
-from dense_armor.utility.anomaly.loda import LODA
+from dense_armor.utility.online.anomaly.hst import HalfSpaceTrees
+from dense_armor.utility.online.anomaly.loda import LODA
 
 
 @dataclass

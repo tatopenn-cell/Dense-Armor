@@ -1,4 +1,4 @@
-"""Tests for dense_armor.utility.timeseries."""
+"""Tests for dense_armor.utility.online.timeseries."""
 
 import doctest
 import importlib
@@ -8,7 +8,7 @@ import pytest
 
 from dense_armor.checks import check_estimator
 from dense_armor.checks.robot import check_step_is_jittable
-from dense_armor.utility.timeseries import (
+from dense_armor.utility.online.timeseries import (
     CycleResidual,
     InnovationAdaptiveKalman,
     KalmanFilter,
@@ -28,7 +28,7 @@ def arm_series():
     """
     from pathlib import Path
 
-    from dense_armor.utility.datasets import SyntheticArm
+    from dense_armor.utility.signals.datasets import SyntheticArm
 
     ds = SyntheticArm(
         Path("test/fixtures/urdf/panda.urdf"),
@@ -44,9 +44,9 @@ def arm_series():
 
 
 MODULES = [
-    "dense_armor.utility.timeseries.ar",
-    "dense_armor.utility.timeseries.kalman",
-    "dense_armor.utility.timeseries.cycle",
+    "dense_armor.utility.online.timeseries.ar",
+    "dense_armor.utility.online.timeseries.kalman",
+    "dense_armor.utility.online.timeseries.cycle",
 ]
 
 
@@ -348,7 +348,7 @@ def test_cycle_residual_rises_after_fault(arm_series):
     the fault the residual has mean 0.015 and standard deviation 0.060;
     from sample 650 it has mean -6.35 and standard deviation 15.5.
     """
-    from dense_armor.utility.drift.detector import CUSUMDriftDetector
+    from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
 
     cr = CycleResidual(period=None, max_period=250, n_cycles=2)
     residuals = np.array(
@@ -421,7 +421,7 @@ def test_online_var_group_lasso_shrinks_only_off_diagonal():
     """Equation (25) of Zaman 2019: `1{n != n'}` keeps the diagonal free."""
     import numpy as np
 
-    from dense_armor.utility.timeseries import OnlineVAR
+    from dense_armor.utility.online.timeseries import OnlineVAR
 
     # two independent AR(1) channels with strong auto-regression
     rng = np.random.default_rng(0)

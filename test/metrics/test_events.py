@@ -1,4 +1,4 @@
-"""Tests for dense_armor/utility/metrics/events.py."""
+"""Tests for dense_armor/utility/evaluation/metrics/events.py."""
 import doctest
 import math
 import warnings
@@ -6,9 +6,9 @@ import warnings
 import numpy as np
 import pytest
 
-import dense_armor.utility.metrics.events as ev_mod
-from dense_armor.utility.metrics import F1
-from dense_armor.utility.metrics.events import (
+import dense_armor.utility.evaluation.metrics.events as ev_mod
+from dense_armor.utility.evaluation.metrics import F1
+from dense_armor.utility.evaluation.metrics.events import (
     EventMetrics,
     EventWindow,
     PointAdjustedF1,

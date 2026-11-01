@@ -5,8 +5,8 @@ import doctest
 import numpy as np
 import pytest
 
-from dense_armor.utility.misc import Skyline
-from dense_armor.utility.misc import skyline as skyline_module
+from dense_armor.utility.infrastructure.misc import Skyline
+from dense_armor.utility.infrastructure.misc import skyline as skyline_module
 
 
 def _brute_skyline(points):
@@ -26,7 +26,7 @@ def _brute_skyline(points):
 
 
 def test_dominance_definition():
-    from dense_armor.utility.misc.skyline import _dominates
+    from dense_armor.utility.infrastructure.misc.skyline import _dominates
 
     assert _dominates(np.array([1.0, 1.0]), np.array([2.0, 2.0]))
     assert _dominates(np.array([1.0, 1.0]), np.array([1.0, 2.0]))
@@ -103,7 +103,7 @@ class _AsDict:
 
 
 def test_skyline_accepts_objects_with_to_dict_and_ignores_other_types():
-    from dense_armor.utility.misc import Skyline
+    from dense_armor.utility.infrastructure.misc import Skyline
 
     s = Skyline(window=5, dims=["a", "b"])
     s.update(_AsDict(1.0, 2.0))
@@ -112,7 +112,7 @@ def test_skyline_accepts_objects_with_to_dict_and_ignores_other_types():
 
 
 def test_skyline_update_many_and_skyline_points():
-    from dense_armor.utility.misc import Skyline
+    from dense_armor.utility.infrastructure.misc import Skyline
 
     s = Skyline(window=5, dims=["a", "b"])
     rows = [{"a": 1.0, "b": 2.0}, {"a": 2.0, "b": 1.0}, {"a": 3.0, "b": 3.0}]

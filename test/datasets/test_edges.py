@@ -5,8 +5,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from dense_armor.utility.datasets import DriftStream, SyntheticArm
-from dense_armor.utility.datasets.casper import _first_timestamp
+from dense_armor.utility.signals.datasets import DriftStream, SyntheticArm
+from dense_armor.utility.signals.datasets.casper import _first_timestamp
 
 URDF = Path("test/fixtures/urdf/panda.urdf")
 

@@ -8,11 +8,11 @@ import time
 import numpy as np
 import pytest
 
-import dense_armor.utility.learn.online_classifiers as online_classifiers  # noqa: E402
-from dense_armor.utility.learn.online_classifiers import (  # noqa: E402
+import dense_armor.utility.online.learn.online_classifiers as online_classifiers  # noqa: E402
+from dense_armor.utility.online.learn.online_classifiers import (  # noqa: E402
     OnlineGaussianNB, OnlineSoftmaxRegression, DriftAdaptiveClassifier,
 )
-from dense_armor.utility.drift.detector import CUSUMDriftDetector  # noqa: E402
+from dense_armor.utility.online.drift.detector import CUSUMDriftDetector  # noqa: E402
 
 
 def _batch_nb(X, y):
@@ -189,7 +189,7 @@ def test_per_sample_time():
 
 
 def test_platt_wraps_binary_gaussian_nb():
-    from dense_armor.utility.learn.calibration import OnlinePlattScaling
+    from dense_armor.utility.online.learn.calibration import OnlinePlattScaling
     base = OnlineGaussianNB(alpha=0.0)
     wrapped = OnlinePlattScaling(base)
     rng = np.random.default_rng(0)
@@ -215,7 +215,7 @@ def test_check_estimator():
         OnlineGaussianNB(), CUSUMDriftDetector(reference="adaptive")))
 
 def test_softmax_non_adaptive_step_is_eta():
-    from dense_armor.utility.learn.online_classifiers import OnlineSoftmaxRegression
+    from dense_armor.utility.online.learn.online_classifiers import OnlineSoftmaxRegression
     est = OnlineSoftmaxRegression(eta=0.1, l2=0.0, adaptive=False)
     for _ in range(5):
         est.learn_one({"x": 1.0}, 0)

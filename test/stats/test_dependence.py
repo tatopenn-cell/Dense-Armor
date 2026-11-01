@@ -1,12 +1,12 @@
-"""Tests for dense_armor/utility/stats/dependence.py."""
+"""Tests for dense_armor/utility/signals/stats/dependence.py."""
 import doctest
 import math
 
 import numpy as np
 import pytest
 
-import dense_armor.utility.stats.dependence as dep_mod
-from dense_armor.utility.stats.dependence import (
+import dense_armor.utility.signals.stats.dependence as dep_mod
+from dense_armor.utility.signals.stats.dependence import (
     RunningCovariance,
     RunningCorrelation,
     RollingCovariance,
@@ -205,7 +205,7 @@ def test_corr_small_scale():
     so corr returned 0.083 instead of 1. The zero check after the max could
     not fire.
     """
-    from dense_armor.utility.stats.dependence import RunningCovariance
+    from dense_armor.utility.signals.stats.dependence import RunningCovariance
 
     rc = RunningCovariance()
     for k in range(10):

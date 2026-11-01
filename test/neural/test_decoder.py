@@ -7,15 +7,15 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.neural.attention import scaled_dot_product_attention
-from dense_armor.utility.neural.decoder import TransformerDecoderBlock
-from dense_armor.utility.neural.generate import generate
-from dense_armor.utility.neural.gradcheck import gradcheck
-from dense_armor.utility.neural.layers import Embedding
-from dense_armor.utility.neural.losses_lm import NextTokenLoss, perplexity
-from dense_armor.utility.neural.models import _TiedHead, transformer_decoder
-from dense_armor.utility.neural.trainer import Trainer
-from dense_armor.utility.optim import Adam
+from dense_armor.utility.deep.neural.attention import scaled_dot_product_attention
+from dense_armor.utility.deep.neural.decoder import TransformerDecoderBlock
+from dense_armor.utility.deep.neural.generate import generate
+from dense_armor.utility.deep.neural.gradcheck import gradcheck
+from dense_armor.utility.deep.neural.layers import Embedding
+from dense_armor.utility.deep.neural.losses_lm import NextTokenLoss, perplexity
+from dense_armor.utility.deep.neural.models import _TiedHead, transformer_decoder
+from dense_armor.utility.deep.neural.trainer import Trainer
+from dense_armor.utility.online.optim import Adam
 
 
 def test_decoder_block_shape_without_cross():
@@ -500,7 +500,7 @@ def test_trainer_with_the_compiled_step_trains_the_language_model_like_the_loop(
 
 
 def test_neural_package_exports_the_decoder_pieces():
-    import dense_armor.utility.neural as neural
+    import dense_armor.utility.deep.neural as neural
 
     for name in (
         "TransformerDecoderBlock",
@@ -528,7 +528,7 @@ def test_generate_model_without_training_argument():
 
 
 def test_tied_head_repr_and_params():
-    from dense_armor.utility.neural.models import _TiedHead
+    from dense_armor.utility.deep.neural.models import _TiedHead
 
     emb = Embedding(4, 6, jax.random.PRNGKey(0))
     head = _TiedHead(emb)
@@ -537,7 +537,7 @@ def test_tied_head_repr_and_params():
 
 
 def test_transformer_decoder_with_tie_true_runs():
-    from dense_armor.utility.neural.models import transformer_decoder
+    from dense_armor.utility.deep.neural.models import transformer_decoder
 
     m = transformer_decoder(8, 8, 2, 1, 4, tie=True, key=jax.random.PRNGKey(0))
     x = jnp.array([0, 1, 2, 3])
@@ -551,7 +551,7 @@ def test_transformer_decoder_with_tie_true_runs():
 
 
 def test_transformer_decoder_with_tie_false_runs():
-    from dense_armor.utility.neural.models import transformer_decoder
+    from dense_armor.utility.deep.neural.models import transformer_decoder
 
     m = transformer_decoder(8, 8, 2, 1, 4, tie=False, key=jax.random.PRNGKey(0))
     x = jnp.array([0, 1, 2, 3])
@@ -563,7 +563,7 @@ def test_transformer_decoder_with_tie_false_runs():
 
 
 def test_transformer_decoder_rejects_zero_layers():
-    from dense_armor.utility.neural.models import transformer_decoder
+    from dense_armor.utility.deep.neural.models import transformer_decoder
 
     try:
         transformer_decoder(8, 8, 2, 0, 4, key=jax.random.PRNGKey(0))
@@ -573,7 +573,7 @@ def test_transformer_decoder_rejects_zero_layers():
 
 
 def test_transformer_decoder_rejects_bad_head_split():
-    from dense_armor.utility.neural.models import transformer_decoder
+    from dense_armor.utility.deep.neural.models import transformer_decoder
 
     try:
         transformer_decoder(8, 8, 3, 1, 4, key=jax.random.PRNGKey(0))
@@ -583,7 +583,7 @@ def test_transformer_decoder_rejects_bad_head_split():
 
 
 def test_tied_head_backward_before_forward_raises():
-    from dense_armor.utility.neural.models import _TiedHead
+    from dense_armor.utility.deep.neural.models import _TiedHead
 
     emb = Embedding(4, 6, jax.random.PRNGKey(0))
     head = _TiedHead(emb)

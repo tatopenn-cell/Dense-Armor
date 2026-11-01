@@ -11,6 +11,12 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   (it resolves to `dense_armor.armor`) and `dense_armor.Armatura` still works
   and raises a `DeprecationWarning`. The console script `dense-armor` is
   unchanged. The entries below keep the old name.
+- The 33 folders of `dense_armor/utility` sit in six groups: `online`,
+  `deep` (`neural`), `signals`, `robot` (`control`), `evaluation` and
+  `infrastructure`. No file changed inside the folders. The old paths, for
+  example `dense_armor.utility.bandit.ucb`, still work and resolve to the
+  same module object as `dense_armor.utility.online.bandit.ucb`. The entries
+  below keep the old paths.
 
 ### Removed
 - Nothing yet.

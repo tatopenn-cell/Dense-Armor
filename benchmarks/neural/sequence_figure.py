@@ -19,8 +19,8 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dense_armor.utility.neural.attention import MultiHeadSelfAttention
-from dense_armor.utility.neural.recurrent import GRU, LSTM
+from dense_armor.utility.deep.neural.attention import MultiHeadSelfAttention
+from dense_armor.utility.deep.neural.recurrent import GRU, LSTM
 
 HERE = Path(__file__).resolve().parents[2]
 OUT = HERE / "docs" / "assets" / "neural" / "sequence.png"

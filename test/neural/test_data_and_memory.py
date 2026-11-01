@@ -7,12 +7,12 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.neural.attention import TransformerBlock
-from dense_armor.utility.neural.losses import MSE
-from dense_armor.utility.neural.models import mlp, transformer_encoder
-from dense_armor.utility.neural.stream import DataStream
-from dense_armor.utility.neural.trainer import Trainer
-from dense_armor.utility.optim import SGD, Adam
+from dense_armor.utility.deep.neural.attention import TransformerBlock
+from dense_armor.utility.deep.neural.losses import MSE
+from dense_armor.utility.deep.neural.models import mlp, transformer_encoder
+from dense_armor.utility.deep.neural.stream import DataStream
+from dense_armor.utility.deep.neural.trainer import Trainer
+from dense_armor.utility.online.optim import SGD, Adam
 
 
 def _tol():
@@ -479,8 +479,8 @@ def test_a_group_without_overflow_after_a_skipped_one_updates_the_weights():
 
 
 def _make_acc(**kw):
-    from dense_armor.utility.neural.compiled import make_accumulating_step
-    from dense_armor.utility.neural.schedules import ConstantLR
+    from dense_armor.utility.deep.neural.compiled import make_accumulating_step
+    from dense_armor.utility.deep.neural.schedules import ConstantLR
 
     m = kw.pop("model", None) or mlp([2, 4, 1], jax.random.PRNGKey(0))
     opt = kw.pop("opt", None) or SGD(0.01)
@@ -498,7 +498,7 @@ def test_the_accumulating_step_rejects_an_unsupported_optimizer():
 
 
 def test_the_accumulating_step_rejects_a_model_with_state():
-    from dense_armor.utility.neural.layers import Dropout
+    from dense_armor.utility.deep.neural.layers import Dropout
 
     with pytest.raises(ValueError, match="Dropout"):
         _make_acc(model=Dropout(0.1, jax.random.PRNGKey(0)))
@@ -510,8 +510,8 @@ def test_the_accumulating_step_rejects_an_unknown_compute_dtype():
 
 
 def _make_parallel(**kw):
-    from dense_armor.utility.neural.compiled import make_step_parallel
-    from dense_armor.utility.neural.schedules import ConstantLR
+    from dense_armor.utility.deep.neural.compiled import make_step_parallel
+    from dense_armor.utility.deep.neural.schedules import ConstantLR
 
     m = kw.pop("model", None) or mlp([2, 4, 1], jax.random.PRNGKey(0))
     opt = kw.pop("opt", None) or SGD(0.01)
@@ -528,7 +528,7 @@ def test_the_parallel_step_rejects_an_unsupported_optimizer():
 
 
 def test_the_parallel_step_rejects_a_model_with_state():
-    from dense_armor.utility.neural.layers import Dropout
+    from dense_armor.utility.deep.neural.layers import Dropout
 
     with pytest.raises(ValueError, match="Dropout"):
         _make_parallel(model=Dropout(0.1, jax.random.PRNGKey(0)))

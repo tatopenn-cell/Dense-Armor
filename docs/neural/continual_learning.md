@@ -2,7 +2,7 @@
 
 A network trained on a sequence of tasks overwrites what it learned before. The page builds the pieces that fight that overwrite: a penalty that slows the movement of the important weights, a memory that projects the new gradient away from the past tasks, a generator that replays the past, and a family of quantised memories that store the past with a declared fidelity. The last sections measure what the whole thing remembers, per lifecycle state, and compare it with the baseline.
 
-The code lives in `dense_armor/utility/neural/continual.py`, `generative_replay.py` and `consolidation/` (`vq.py`, `tree.py`, `memory.py`, `archival.py`). Every piece shares the same batch and one-sample modes: `forward`, `backward` and `params()`.
+The code lives in `dense_armor/utility/deep/neural/continual.py`, `generative_replay.py` and `consolidation/` (`vq.py`, `tree.py`, `memory.py`, `archival.py`). Every piece shares the same batch and one-sample modes: `forward`, `backward` and `params()`.
 
 ## 1. A penalty on the important weights (EWC)
 
@@ -10,11 +10,11 @@ The first piece is a penalty that adds to the loss a term proportional to how fa
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.continual import EWC
+from dense_armor.utility.deep.neural.continual import EWC
 
 class M:
     def __init__(self):
-        from dense_armor.utility.neural.params import Param
+        from dense_armor.utility.deep.neural.params import Param
         self.p = [Param(jnp.array([1.0, 2.0]))]
     def params(self):
         return self.p
@@ -39,7 +39,7 @@ The second piece keeps a small memory of each task and projects the new gradient
 ~~~python
 import numpy as np
 import jax.numpy as jnp
-from dense_armor.utility.neural.continual import GEM
+from dense_armor.utility.deep.neural.continual import GEM
 
 gem = GEM(memory_per_task=4, seed=0)
 g = jnp.array([1.0, 0.0])
@@ -61,7 +61,7 @@ The full projection solves a quadratic program with one variable per past task. 
 ~~~python
 import numpy as np
 import jax.numpy as jnp
-from dense_armor.utility.neural.continual import AGEM
+from dense_armor.utility.deep.neural.continual import AGEM
 
 agem = AGEM(memory_per_task=4, seed=0)
 g = jnp.array([1.0, 0.0])
@@ -83,7 +83,7 @@ The fourth piece trains a small generator per task and replays the generated pas
 ~~~python
 import jax.numpy as jnp
 import numpy as np
-from dense_armor.utility.neural.generative_replay import DeepGenerativeReplay
+from dense_armor.utility.deep.neural.generative_replay import DeepGenerativeReplay
 
 dgr = DeepGenerativeReplay(n_x=2, n_y=2, dim_z=4, hidden=8, n_fake=8, seed=0)
 x = jnp.asarray(np.random.RandomState(0).randn(20, 2).astype(np.float32))
@@ -108,7 +108,7 @@ The first memory piece maps an event to the nearest element of a learned codeboo
 ~~~python
 import jax.numpy as jnp
 import numpy as np
-from dense_armor.utility.neural.consolidation import VQMemory
+from dense_armor.utility.deep.neural.consolidation import VQMemory
 
 vq = VQMemory(n_x=2, d_model=4, n_codes=8, seed=0)
 x = jnp.asarray(np.random.RandomState(0).randn(10, 2).astype(np.float32))
@@ -130,7 +130,7 @@ The second memory piece splits the event into disjoint subspaces and learns a co
 ~~~python
 import jax.numpy as jnp
 import numpy as np
-from dense_armor.utility.neural.consolidation import PQMemory
+from dense_armor.utility.deep.neural.consolidation import PQMemory
 
 pq = PQMemory(d_model=8, n_subspaces=2, n_centroids=4, seed=0)
 X = jnp.asarray(np.random.RandomState(0).randn(50, 8).astype(np.float32))
@@ -152,7 +152,7 @@ The third memory piece stores each event at the deepest node whose codebook reco
 ~~~python
 import jax.numpy as jnp
 import numpy as np
-from dense_armor.utility.neural.consolidation import ResidualTree
+from dense_armor.utility.deep.neural.consolidation import ResidualTree
 
 tree = ResidualTree(d_model=2, n_codes=4, max_depth=2, branching=4, kappa=0.0, seed=0)
 rng = np.random.RandomState(0)
@@ -172,7 +172,7 @@ The tree has two routers. The default, `router="linear"`, scans every child and 
 ~~~python
 import jax.numpy as jnp
 import numpy as np
-from dense_armor.utility.neural.consolidation import ResidualTree
+from dense_armor.utility.deep.neural.consolidation import ResidualTree
 
 data = np.random.RandomState(0).randn(40, 2) * 3
 for name in ("linear", "mondrian"):
@@ -196,7 +196,7 @@ The fourth memory piece assigns each event to one of four states, with a bit-wid
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.consolidation import LifecycleMemory
+from dense_armor.utility.deep.neural.consolidation import LifecycleMemory
 
 lm = LifecycleMemory(d_model=4, decay_horizon_s=10.0, seed=0)
 x = jnp.asarray([0.3, -0.7, 1.1, 2.4], dtype=jnp.float32)
@@ -218,7 +218,7 @@ The fifth piece keeps recent events in a fast memory with top-k pattern separati
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.consolidation import DualMemory
+from dense_armor.utility.deep.neural.consolidation import DualMemory
 
 dm = DualMemory(d_model=2, fast_capacity=4, slow_capacity=8, top_k=2, seed=0)
 for i in range(3):
@@ -240,7 +240,7 @@ Three events in the fast memory, then all three moved to the slow memory.
 The theoretical piece is a placeholder: the classical Hopfield capacity `0.138 * sqrt(P)` for a fully connected network of `P` parameters (Hopfield 1982, bibliographic only). The 2025 papers on the theoretical limit are in the folder, but neither gives a closed-form bound.
 
 ~~~python
-from dense_armor.utility.neural.consolidation import TheoreticalBound
+from dense_armor.utility.deep.neural.consolidation import TheoreticalBound
 
 tb = TheoreticalBound(n_params=100, n_neurons=10)
 print(round(tb.capacity(), 4))
@@ -265,7 +265,7 @@ The last piece combines the tree, the lifecycle and the dual memory with a write
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.consolidation import ArchivalMemory
+from dense_armor.utility.deep.neural.consolidation import ArchivalMemory
 
 am = ArchivalMemory(d_model=2, n_codes=8, max_depth=2, seed=0)
 idx = am.write(jnp.asarray([1.0, 2.0], dtype=jnp.float32), t=0.0)

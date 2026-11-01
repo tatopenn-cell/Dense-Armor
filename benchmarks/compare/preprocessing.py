@@ -7,21 +7,21 @@ import numpy as np
 from common import feed
 
 from dense_armor.ml import preprocessing as ml
-from dense_armor.utility.preprocessing.joints import JointDerivatives, JointPower
-from dense_armor.utility.preprocessing.scale import (
+from dense_armor.utility.signals.preprocessing.joints import JointDerivatives, JointPower
+from dense_armor.utility.signals.preprocessing.scale import (
     EWScaler,
     MinMaxScaler,
     RobustScaler,
     StandardScaler,
 )
-from dense_armor.utility.preprocessing.select import SelectKBest, VarianceThreshold
-from dense_armor.utility.preprocessing.text import (
+from dense_armor.utility.signals.preprocessing.select import SelectKBest, VarianceThreshold
+from dense_armor.utility.signals.preprocessing.text import (
     TFIDF,
     BagOfWords,
     FeatureHasher,
     Tokenizer,
 )
-from dense_armor.utility.preprocessing.vectorizer import TextVectorizer
+from dense_armor.utility.signals.preprocessing.vectorizer import TextVectorizer
 
 NAMES = ["a", "b", "c"]
 DOCS = [

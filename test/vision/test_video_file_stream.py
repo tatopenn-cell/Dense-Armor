@@ -25,7 +25,7 @@ import pytest
 
 cv2 = pytest.importorskip("cv2")
 
-from dense_armor.utility.vision.streams import (  # noqa: E402
+from dense_armor.utility.signals.vision.streams import (  # noqa: E402
     CubeStream,
     VideoFileStream,
 )

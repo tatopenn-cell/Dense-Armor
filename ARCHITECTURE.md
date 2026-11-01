@@ -121,7 +121,7 @@ graph TD
 | `safety.py` | `Health`, `HealthMonitor`, `SafeEstimator` | health monitor and safe wrapper |
 | `signal.py` | `Signal` | dict-like one-sample reading with units and timestamp |
 | `transformer.py` | `Transformer`, `TransformerSupervised` | base classes for transformers |
-| `uncertainty.py` | `Estimate`, `AdaptiveConformalRegressor`, `OnlinePlattScaling` (re-exported from `utility/learn`) | prediction estimate and conformal regressor |
+| `uncertainty.py` | `Estimate`, `AdaptiveConformalRegressor`, `OnlinePlattScaling` (re-exported from `utility/online/learn`) | prediction estimate and conformal regressor |
 | `wrapper.py` | `ModelWrapper` | delegation wrapper |
 
 ## 2. utility
@@ -496,7 +496,7 @@ Notes on the network files: `Embedding` in `layers.py` skips its range check on 
 |---|---|---|
 | `shared.py` | `SharedArray`, `SharedStrings`, `SharedList`, `SharedDict`, `to_shared` | Objects placed in shared memory, so that several processes read one copy |
 
-Internal helpers, not public: `utility/_validation.py` (`as_dict`, `is_number`, `finite_row`, the three checks shared by several modules), `utility/ensemble/_common.py` (`as_dict`, `finite`, `new_member`) and `utility/facto/_common.py` (helpers of the factorization machines).
+Internal helpers, not public: `utility/_validation.py` (`as_dict`, `is_number`, `finite_row`, the three checks shared by several modules), `utility/online/ensemble/_common.py` (`as_dict`, `finite`, `new_member`) and `utility/online/facto/_common.py` (helpers of the factorization machines).
 
 ## 3. dynamics
 
@@ -572,17 +572,17 @@ One module per family. A class subclasses `MLBase` (which includes `SklearnCompa
 
 ## How data flows
 
-A sample enters as a `Signal` from a reader in `utility/stream` (`iter_csv`, `iter_rosbag`,
-`iter_array`, `merge_by_time`, `shuffle`). It passes through transformers from `utility/compose`
-(`Select`, `Discard`, `FuncTransformer`) and `utility/preprocessing` (scalers, joint
+A sample enters as a `Signal` from a reader in `utility/signals/stream` (`iter_csv`, `iter_rosbag`,
+`iter_array`, `merge_by_time`, `shuffle`). It passes through transformers from `utility/infrastructure/compose`
+(`Select`, `Discard`, `FuncTransformer`) and `utility/signals/preprocessing` (scalers, joint
 derivatives, text). The transformed sample reaches an estimator built on `roles/` — a classifier,
-regressor or anomaly detector from `utility/learn`, `utility/tree`, `utility/forest`,
-`utility/bayes`, `utility/linear`, `utility/neighbors`, `utility/rules`, `utility/timeseries`,
-`utility/ensemble`,
-`utility/cluster`. Its
-predictions are scored by a metric from `utility/metrics` (`Accuracy`, `RollingAUC`,
-`EventMetrics`) driven by `utility/evaluate` (`progressive_val_score`, `evaluate_events`). A
-model can be wrapped in `roles/Protected`, with a detector from `utility/anomaly` or
-`utility/drift`, to skip learning on flagged samples.
+regressor or anomaly detector from `utility/online/learn`, `utility/online/tree`, `utility/online/forest`,
+`utility/online/bayes`, `utility/online/linear`, `utility/online/neighbors`, `utility/online/rules`, `utility/online/timeseries`,
+`utility/online/ensemble`,
+`utility/online/cluster`. Its
+predictions are scored by a metric from `utility/evaluation/metrics` (`Accuracy`, `RollingAUC`,
+`EventMetrics`) driven by `utility/evaluation/evaluate` (`progressive_val_score`, `evaluate_events`). A
+model can be wrapped in `roles/Protected`, with a detector from `utility/online/anomaly` or
+`utility/online/drift`, to skip learning on flagged samples.
 
-A table that is already complete is read at once by the classes of `ml/` with `fit`. A network of `utility/neural` is built from layers, joined in a `Sequential`, trained by a `Trainer` on mini-batches, and placed in a pipeline of `roles/` through `AsTransformer`.
+A table that is already complete is read at once by the classes of `ml/` with `fit`. A network of `utility/deep/neural` is built from layers, joined in a `Sequential`, trained by a `Trainer` on mini-batches, and placed in a pipeline of `roles/` through `AsTransformer`.

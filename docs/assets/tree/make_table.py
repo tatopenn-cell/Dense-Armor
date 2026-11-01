@@ -17,13 +17,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import time
 import numpy as np
 
-from dense_armor.utility.metrics import Accuracy, MeanAbsoluteError
-from dense_armor.utility.drift.adwin import ADWIN
-from dense_armor.utility.tree.hoeffding import HoeffdingTreeClassifier
-from dense_armor.utility.tree.efdt import HoeffdingAnytimeTreeClassifier
-from dense_armor.utility.tree.adaptive import HoeffdingAdaptiveTreeClassifier
-from dense_armor.utility.tree.sgt import SGTClassifier, SGTRegressor
-from dense_armor.utility.tree.mondrian import (
+from dense_armor.utility.evaluation.metrics import Accuracy, MeanAbsoluteError
+from dense_armor.utility.online.drift.adwin import ADWIN
+from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
+from dense_armor.utility.online.tree.efdt import HoeffdingAnytimeTreeClassifier
+from dense_armor.utility.online.tree.adaptive import HoeffdingAdaptiveTreeClassifier
+from dense_armor.utility.online.tree.sgt import SGTClassifier, SGTRegressor
+from dense_armor.utility.online.tree.mondrian import (
     MondrianForestClassifier, MondrianForestRegressor,
 )
 

@@ -29,7 +29,7 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from dense_armor.utility.drift.detector import CUSUMDriftDetector
+from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
 
 
 def _cb():

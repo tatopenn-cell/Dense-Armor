@@ -78,7 +78,7 @@ On the streams of the repository (SyntheticArm payload fault and one sudden drif
 `OneClassSGD` needs more samples than a few hundred healthy points to converge. The full
 table is in the anomaly benchmark. Narrative pages come with the docs task; for now the
 classes are reachable from the API reference and from the source modules under
-`dense_armor.utility.anomaly`.
+`dense_armor.utility.online.anomaly`.
 
 ## Control
 

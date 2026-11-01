@@ -100,8 +100,8 @@ from typing import Tuple
 
 import numpy as np
 
-from dense_armor.utility.protect.arbiter import classify_segments
-from dense_armor.utility.drift.cusum import cusum_detector
+from dense_armor.utility.online.protect.arbiter import classify_segments
+from dense_armor.utility.online.drift.cusum import cusum_detector
 
 SEED = 20260901
 N_POINTS = 600

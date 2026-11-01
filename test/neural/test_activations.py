@@ -6,7 +6,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from dense_armor.utility.neural.activations import (
+from dense_armor.utility.deep.neural.activations import (
     PRelu,
     Relu,
     Sigmoid,
@@ -23,7 +23,7 @@ from dense_armor.utility.neural.activations import (
     tanh_backward,
     tanh_forward,
 )
-from dense_armor.utility.neural.gradcheck import gradcheck
+from dense_armor.utility.deep.neural.gradcheck import gradcheck
 
 
 def _batch(seed=0, shape=(4, 3)):

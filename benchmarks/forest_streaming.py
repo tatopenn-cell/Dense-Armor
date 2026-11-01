@@ -18,14 +18,14 @@ import time
 
 import numpy as np
 
-from dense_armor.utility.datasets import DriftStream
-from dense_armor.utility.drift.adwin import ADWIN
-from dense_armor.utility.forest import (
+from dense_armor.utility.signals.datasets import DriftStream
+from dense_armor.utility.online.drift.adwin import ADWIN
+from dense_armor.utility.online.forest import (
     AdaptiveRandomForestClassifier,
     AggregatedMondrianForestClassifier,
     AggregatedMondrianForestRegressor,
 )
-from dense_armor.utility.tree import (
+from dense_armor.utility.online.tree import (
     HoeffdingAdaptiveTreeClassifier,
     MondrianForestClassifier,
     MondrianForestRegressor,

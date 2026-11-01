@@ -23,9 +23,9 @@ majority.
 
 from dataclasses import dataclass
 
-from dense_armor.utility.drift.adwin import ADWIN
-from dense_armor.utility.tree.adaptive import HoeffdingAdaptiveTreeClassifier
-from dense_armor.utility.tree.hoeffding import HoeffdingTreeClassifier
+from dense_armor.utility.online.drift.adwin import ADWIN
+from dense_armor.utility.online.tree.adaptive import HoeffdingAdaptiveTreeClassifier
+from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
 
 
 @dataclass

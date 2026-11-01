@@ -9,7 +9,7 @@ the histogram of oriented gradients.
 
 ```python
 import numpy as np
-from dense_armor.utility.vision import FrameFeatures
+from dense_armor.utility.signals.vision import FrameFeatures
 
 img = np.zeros((16, 16), dtype=np.float32)
 img[8:, :] = 1.0
@@ -56,7 +56,7 @@ contrast, and the centre of mass of the brightness.
 
 ```python
 import numpy as np
-from dense_armor.utility.vision import FrameFeatures
+from dense_armor.utility.signals.vision import FrameFeatures
 
 img = np.zeros((20, 20), dtype=np.float32)
 img[2:6, 14:18] = 1.0
@@ -96,7 +96,7 @@ the rest of the descriptor untouched.
 
 ```python
 import numpy as np
-from dense_armor.utility.vision import FrameFeatures
+from dense_armor.utility.signals.vision import FrameFeatures
 
 img = np.zeros((20, 20, 3), dtype=np.float32)
 img[:, :10, 0] = 1.0

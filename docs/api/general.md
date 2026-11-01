@@ -471,7 +471,7 @@ Input and output units of an estimator, as ``{name: unit}`` dicts.
 ### Accuracy
 
 
-*Module:* `dense_armor.utility.metrics.classification`
+*Module:* `dense_armor.utility.evaluation.metrics.classification`
 *Bases:* Metric
 
 Fraction of samples where ``y_pred == y_true``.
@@ -487,7 +487,7 @@ Public methods:
 ### BalancedAccuracy
 
 
-*Module:* `dense_armor.utility.metrics.classification`
+*Module:* `dense_armor.utility.evaluation.metrics.classification`
 *Bases:* Metric
 
 Mean of the per-class recall.
@@ -503,7 +503,7 @@ Public methods:
 ### BrierScore
 
 
-*Module:* `dense_armor.utility.metrics.classification`
+*Module:* `dense_armor.utility.evaluation.metrics.classification`
 *Bases:* Metric
 
 Mean squared error of predicted probabilities.
@@ -519,7 +519,7 @@ Public methods:
 ### CohenKappa
 
 
-*Module:* `dense_armor.utility.metrics.classification`
+*Module:* `dense_armor.utility.evaluation.metrics.classification`
 *Bases:* Metric
 
 Cohen's kappa: agreement corrected for chance.
@@ -535,7 +535,7 @@ Public methods:
 ### ConfusionMatrix
 
 
-*Module:* `dense_armor.utility.metrics.classification`
+*Module:* `dense_armor.utility.evaluation.metrics.classification`
 *Bases:* Metric
 
 Multiclass confusion matrix.
@@ -551,7 +551,7 @@ Public methods:
 ### EventMetrics
 
 
-*Module:* `dense_armor.utility.metrics.events`
+*Module:* `dense_armor.utility.evaluation.metrics.events`
 
 Collect the event metrics for a stream of alarms.
 
@@ -571,7 +571,7 @@ Public methods:
 ### EventWindow
 
 
-*Module:* `dense_armor.utility.metrics.events`
+*Module:* `dense_armor.utility.evaluation.metrics.events`
 
 A labelled event interval.
 
@@ -583,7 +583,7 @@ Public methods:
 ### F1
 
 
-*Module:* `dense_armor.utility.metrics.classification`
+*Module:* `dense_armor.utility.evaluation.metrics.classification`
 *Bases:* FBeta
 
 F1 score: the harmonic mean of precision and recall.
@@ -599,7 +599,7 @@ Public methods:
 ### FBeta
 
 
-*Module:* `dense_armor.utility.metrics.classification`
+*Module:* `dense_armor.utility.evaluation.metrics.classification`
 *Bases:* _PRFBase
 
 Weighted harmonic mean of precision and recall.
@@ -615,7 +615,7 @@ Public methods:
 ### GaussianNLL
 
 
-*Module:* `dense_armor.utility.metrics.regression`
+*Module:* `dense_armor.utility.evaluation.metrics.regression`
 *Bases:* Metric
 
 Gaussian negative log-likelihood.
@@ -631,7 +631,7 @@ Public methods:
 ### IntervalCoverage
 
 
-*Module:* `dense_armor.utility.metrics.regression`
+*Module:* `dense_armor.utility.evaluation.metrics.regression`
 *Bases:* Metric
 
 Fraction of true labels inside a prediction interval.
@@ -647,7 +647,7 @@ Public methods:
 ### LogLoss
 
 
-*Module:* `dense_armor.utility.metrics.classification`
+*Module:* `dense_armor.utility.evaluation.metrics.classification`
 *Bases:* Metric
 
 Binary log-loss (cross-entropy).
@@ -663,7 +663,7 @@ Public methods:
 ### MeanAbsoluteError
 
 
-*Module:* `dense_armor.utility.metrics.regression`
+*Module:* `dense_armor.utility.evaluation.metrics.regression`
 *Bases:* Metric
 
 Mean absolute error, one sample at a time.
@@ -679,7 +679,7 @@ Public methods:
 ### MeanIntervalWidth
 
 
-*Module:* `dense_armor.utility.metrics.regression`
+*Module:* `dense_armor.utility.evaluation.metrics.regression`
 *Bases:* Metric
 
 Mean width of a prediction interval.
@@ -695,7 +695,7 @@ Public methods:
 ### MeanSquaredError
 
 
-*Module:* `dense_armor.utility.metrics.regression`
+*Module:* `dense_armor.utility.evaluation.metrics.regression`
 *Bases:* Metric
 
 Mean squared error, one sample at a time.
@@ -711,7 +711,7 @@ Public methods:
 ### Metric
 
 
-*Module:* `dense_armor.utility.metrics.base`
+*Module:* `dense_armor.utility.evaluation.metrics.base`
 
 Base class for online metrics.
 
@@ -726,7 +726,7 @@ Public methods:
 ### PointAdjustedF1
 
 
-*Module:* `dense_armor.utility.metrics.events`
+*Module:* `dense_armor.utility.evaluation.metrics.events`
 *Bases:* Metric
 
 Point-adjusted F1 (Xu et al. 2018).
@@ -742,7 +742,7 @@ Public methods:
 ### Precision
 
 
-*Module:* `dense_armor.utility.metrics.classification`
+*Module:* `dense_armor.utility.evaluation.metrics.classification`
 *Bases:* _PRFBase
 
 Fraction of predicted positives that are correct.
@@ -758,7 +758,7 @@ Public methods:
 ### R2Score
 
 
-*Module:* `dense_armor.utility.metrics.regression`
+*Module:* `dense_armor.utility.evaluation.metrics.regression`
 *Bases:* Metric
 
 Coefficient of determination, Welford running mean.
@@ -774,7 +774,7 @@ Public methods:
 ### Recall
 
 
-*Module:* `dense_armor.utility.metrics.classification`
+*Module:* `dense_armor.utility.evaluation.metrics.classification`
 *Bases:* _PRFBase
 
 Fraction of true positives that are detected.
@@ -790,7 +790,7 @@ Public methods:
 ### Rolling
 
 
-*Module:* `dense_armor.utility.metrics.rolling`
+*Module:* `dense_armor.utility.evaluation.metrics.rolling`
 *Bases:* Metric
 
 Rolling window over any metric with ``revert``.
@@ -806,7 +806,7 @@ Public methods:
 ### RollingAUC
 
 
-*Module:* `dense_armor.utility.metrics.roc_auc`
+*Module:* `dense_armor.utility.evaluation.metrics.roc_auc`
 *Bases:* Metric
 
 Rolling ROC-AUC, exact on the last ``window`` samples.
@@ -822,7 +822,7 @@ Public methods:
 ### RootMeanSquaredError
 
 
-*Module:* `dense_armor.utility.metrics.regression`
+*Module:* `dense_armor.utility.evaluation.metrics.regression`
 *Bases:* MeanSquaredError
 
 Square root of the mean squared error.
@@ -840,7 +840,7 @@ Public methods:
 ### OnlineModelSelection
 
 
-*Module:* `dense_armor.utility.evaluate.model_selection`
+*Module:* `dense_armor.utility.evaluation.evaluate.model_selection`
 
 Track several models on a stream and expose the current best.
 
@@ -980,7 +980,7 @@ Public methods:
 ### ChauvenetScorer
 
 
-*Module:* `dense_armor.utility.anomaly.filters`
+*Module:* `dense_armor.utility.online.anomaly.filters`
 *Bases:* AnomalyDetector
 *Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
 
@@ -1006,7 +1006,7 @@ Public methods:
 ### HalfSpaceTrees
 
 
-*Module:* `dense_armor.utility.anomaly.hst`
+*Module:* `dense_armor.utility.online.anomaly.hst`
 *Bases:* AnomalyDetector
 
 Half-Space Trees for streaming anomaly detection.
@@ -1031,7 +1031,7 @@ Public methods:
 ### HampelFilter
 
 
-*Module:* `dense_armor.utility.anomaly.filters`
+*Module:* `dense_armor.utility.online.anomaly.filters`
 *Bases:* Transformer
 *Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
 
@@ -1056,7 +1056,7 @@ Public methods:
 ### HampelScorer
 
 
-*Module:* `dense_armor.utility.anomaly.filters`
+*Module:* `dense_armor.utility.online.anomaly.filters`
 *Bases:* AnomalyDetector
 *Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
 
@@ -1082,7 +1082,7 @@ Public methods:
 ### LODA
 
 
-*Module:* `dense_armor.utility.anomaly.loda`
+*Module:* `dense_armor.utility.online.anomaly.loda`
 *Bases:* AnomalyDetector
 
 Lightweight Online Detector of Anomalies.
@@ -1107,7 +1107,7 @@ Public methods:
 ### OneClassSGD
 
 
-*Module:* `dense_armor.utility.anomaly.ocsvm`
+*Module:* `dense_armor.utility.online.anomaly.ocsvm`
 *Bases:* AnomalyDetector
 
 One-Class SVM solved by SGD on random Fourier features.
@@ -1132,7 +1132,7 @@ Public methods:
 ### OnlineIsolationForest
 
 
-*Module:* `dense_armor.utility.anomaly.oiforest`
+*Module:* `dense_armor.utility.online.anomaly.oiforest`
 *Bases:* AnomalyDetector
 
 Online Isolation Forest.
@@ -1157,7 +1157,7 @@ Public methods:
 ### OnlineRobustMahalanobis
 
 
-*Module:* `dense_armor.utility.anomaly.mahalanobis`
+*Module:* `dense_armor.utility.online.anomaly.mahalanobis`
 *Bases:* AnomalyDetector
 *Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
 
@@ -1183,7 +1183,7 @@ Public methods:
 ### SigmaClipScorer
 
 
-*Module:* `dense_armor.utility.anomaly.filters`
+*Module:* `dense_armor.utility.online.anomaly.filters`
 *Bases:* AnomalyDetector
 *Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
 
@@ -1209,7 +1209,7 @@ Public methods:
 ### StreamingDeviationScorer
 
 
-*Module:* `dense_armor.utility.anomaly.deviation`
+*Module:* `dense_armor.utility.online.anomaly.deviation`
 *Bases:* AnomalyDetector
 *Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
 
@@ -1234,7 +1234,7 @@ Public methods:
 ### TukeyScorer
 
 
-*Module:* `dense_armor.utility.anomaly.filters`
+*Module:* `dense_armor.utility.online.anomaly.filters`
 *Bases:* AnomalyDetector
 *Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
 
@@ -1260,7 +1260,7 @@ Public methods:
 ### MultiChannelStreamingDeviationDetector
 
 
-*Module:* `dense_armor.utility.anomaly.streaming`
+*Module:* `dense_armor.utility.online.anomaly.streaming`
 *Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
 
 N independent ``StreamingDeviationDetector`` instances, one per channel.
@@ -1272,7 +1272,7 @@ Public methods:
 ### StreamingDeviationDetector
 
 
-*Module:* `dense_armor.utility.anomaly.streaming`
+*Module:* `dense_armor.utility.online.anomaly.streaming`
 *Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
 
 Causal per-sample deviation flag, one point at a time.
@@ -1284,7 +1284,7 @@ Public methods:
 ### LocalOutlierFactor
 
 
-*Module:* `dense_armor.utility.anomaly.lof`
+*Module:* `dense_armor.utility.online.anomaly.lof`
 *Bases:* AnomalyDetector
 *Guide:* [anomaly/lof.md](../anomaly/lof.md)
 
@@ -1311,7 +1311,7 @@ Public methods:
 ### ADWIN
 
 
-*Module:* `dense_armor.utility.drift.adwin`
+*Module:* `dense_armor.utility.online.drift.adwin`
 *Bases:* DriftDetector
 *Guide:* [drift/detectors.md](../drift/detectors.md)
 
@@ -1334,7 +1334,7 @@ Public methods:
 ### CUSUMDriftDetector
 
 
-*Module:* `dense_armor.utility.drift.detector`
+*Module:* `dense_armor.utility.online.drift.detector`
 *Bases:* DriftDetector
 *Guide:* [drift/detectors.md](../drift/detectors.md)
 
@@ -1359,7 +1359,7 @@ Public methods:
 ### KSWIN
 
 
-*Module:* `dense_armor.utility.drift.kswin`
+*Module:* `dense_armor.utility.online.drift.kswin`
 *Bases:* DriftDetector
 *Guide:* [drift/detectors.md](../drift/detectors.md)
 
@@ -1382,7 +1382,7 @@ Public methods:
 ### PageHinkley
 
 
-*Module:* `dense_armor.utility.drift.page_hinkley`
+*Module:* `dense_armor.utility.online.drift.page_hinkley`
 *Bases:* DriftDetector
 *Guide:* [drift/detectors.md](../drift/detectors.md)
 
@@ -1407,7 +1407,7 @@ Public methods:
 ### HoeffdingAdaptiveTreeClassifier
 
 
-*Module:* `dense_armor.utility.tree.adaptive`
+*Module:* `dense_armor.utility.online.tree.adaptive`
 *Bases:* HoeffdingTreeClassifier
 *Guide:* [tree/index.md](../tree/index.md)
 
@@ -1435,7 +1435,7 @@ Public methods:
 ### HoeffdingAnytimeTreeClassifier
 
 
-*Module:* `dense_armor.utility.tree.efdt`
+*Module:* `dense_armor.utility.online.tree.efdt`
 *Bases:* HoeffdingTreeClassifier
 *Guide:* [tree/index.md](../tree/index.md)
 
@@ -1463,7 +1463,7 @@ Public methods:
 ### HoeffdingTreeClassifier
 
 
-*Module:* `dense_armor.utility.tree.hoeffding`
+*Module:* `dense_armor.utility.online.tree.hoeffding`
 *Bases:* Classifier
 *Guide:* [tree/index.md](../tree/index.md)
 
@@ -1491,7 +1491,7 @@ Public methods:
 ### MondrianForestClassifier
 
 
-*Module:* `dense_armor.utility.tree.mondrian`
+*Module:* `dense_armor.utility.online.tree.mondrian`
 *Bases:* Classifier, _MondrianBase
 *Guide:* [tree/index.md](../tree/index.md)
 
@@ -1518,7 +1518,7 @@ Public methods:
 ### MondrianForestRegressor
 
 
-*Module:* `dense_armor.utility.tree.mondrian`
+*Module:* `dense_armor.utility.online.tree.mondrian`
 *Bases:* Regressor, _MondrianBase
 *Guide:* [tree/index.md](../tree/index.md)
 
@@ -1543,7 +1543,7 @@ Public methods:
 ### SGTClassifier
 
 
-*Module:* `dense_armor.utility.tree.sgt`
+*Module:* `dense_armor.utility.online.tree.sgt`
 *Bases:* Classifier, _SGTBase
 *Guide:* [tree/index.md](../tree/index.md)
 
@@ -1571,7 +1571,7 @@ Public methods:
 ### SGTRegressor
 
 
-*Module:* `dense_armor.utility.tree.sgt`
+*Module:* `dense_armor.utility.online.tree.sgt`
 *Bases:* Regressor, _SGTBase
 *Guide:* [tree/index.md](../tree/index.md)
 
@@ -1599,7 +1599,7 @@ Public methods:
 ### MultinomialNB
 
 
-*Module:* `dense_armor.utility.bayes.multinomial`
+*Module:* `dense_armor.utility.online.bayes.multinomial`
 *Bases:* Classifier
 *Guide:* [bayes/index.md](../bayes/index.md)
 
@@ -1626,7 +1626,7 @@ Public methods:
 ### BernoulliNB
 
 
-*Module:* `dense_armor.utility.bayes.bernoulli`
+*Module:* `dense_armor.utility.online.bayes.bernoulli`
 *Bases:* Classifier
 *Guide:* [bayes/index.md](../bayes/index.md)
 
@@ -1653,7 +1653,7 @@ Public methods:
 ### ComplementNB
 
 
-*Module:* `dense_armor.utility.bayes.complement`
+*Module:* `dense_armor.utility.online.bayes.complement`
 *Bases:* Classifier
 *Guide:* [bayes/index.md](../bayes/index.md)
 
@@ -1680,7 +1680,7 @@ Public methods:
 ### CategoricalNB
 
 
-*Module:* `dense_armor.utility.bayes.categorical`
+*Module:* `dense_armor.utility.online.bayes.categorical`
 *Bases:* Classifier
 *Guide:* [bayes/index.md](../bayes/index.md)
 
@@ -1709,7 +1709,7 @@ Public methods:
 ### Beta
 
 
-*Module:* `dense_armor.utility.proba.beta`
+*Module:* `dense_armor.utility.online.proba.beta`
 *Bases:* object
 *Guide:* [proba/index.md](../proba/index.md)
 
@@ -1730,7 +1730,7 @@ Public methods:
 ### Gaussian
 
 
-*Module:* `dense_armor.utility.proba.gaussian`
+*Module:* `dense_armor.utility.online.proba.gaussian`
 *Bases:* object
 *Guide:* [proba/index.md](../proba/index.md)
 
@@ -1753,7 +1753,7 @@ Public methods:
 ### Multinomial
 
 
-*Module:* `dense_armor.utility.proba.multinomial`
+*Module:* `dense_armor.utility.online.proba.multinomial`
 *Bases:* object
 *Guide:* [proba/index.md](../proba/index.md)
 
@@ -1775,7 +1775,7 @@ Public methods:
 ### KNNClassifier
 
 
-*Module:* `dense_armor.utility.neighbors.knn`
+*Module:* `dense_armor.utility.online.neighbors.knn`
 *Bases:* Classifier
 *Guide:* [neighbors/index.md](../neighbors/index.md)
 
@@ -1802,7 +1802,7 @@ Public methods:
 ### KNNRegressor
 
 
-*Module:* `dense_armor.utility.neighbors.knn`
+*Module:* `dense_armor.utility.online.neighbors.knn`
 *Bases:* Regressor
 *Guide:* [neighbors/index.md](../neighbors/index.md)
 
@@ -1827,7 +1827,7 @@ Public methods:
 ### LazySearch
 
 
-*Module:* `dense_armor.utility.neighbors.knn`
+*Module:* `dense_armor.utility.online.neighbors.knn`
 *Bases:* object
 *Guide:* [neighbors/index.md](../neighbors/index.md)
 
@@ -1844,7 +1844,7 @@ Public methods:
 ### OneVsRestClassifier
 
 
-*Module:* `dense_armor.utility.multiclass.multiclass`
+*Module:* `dense_armor.utility.online.multiclass.multiclass`
 *Guide:* [multiclass/index.md](../multiclass/index.md)
 
 One-vs-all multiclass wrapper.
@@ -1870,7 +1870,7 @@ Public methods:
 ### OneVsOneClassifier
 
 
-*Module:* `dense_armor.utility.multiclass.multiclass`
+*Module:* `dense_armor.utility.online.multiclass.multiclass`
 *Guide:* [multiclass/index.md](../multiclass/index.md)
 
 Round-robin (pairwise) multiclass wrapper.
@@ -1896,7 +1896,7 @@ Public methods:
 ### OutputCodeClassifier
 
 
-*Module:* `dense_armor.utility.multiclass.multiclass`
+*Module:* `dense_armor.utility.online.multiclass.multiclass`
 *Guide:* [multiclass/index.md](../multiclass/index.md)
 
 Error-correcting output code wrapper.
@@ -1924,7 +1924,7 @@ Public methods:
 ### PerOutputClassifier
 
 
-*Module:* `dense_armor.utility.multioutput.multioutput`
+*Module:* `dense_armor.utility.online.multioutput.multioutput`
 *Bases:* Classifier
 *Guide:* [multioutput/index.md](../multioutput/index.md)
 
@@ -1951,7 +1951,7 @@ Public methods:
 ### PerOutputRegressor
 
 
-*Module:* `dense_armor.utility.multioutput.multioutput`
+*Module:* `dense_armor.utility.online.multioutput.multioutput`
 *Bases:* Regressor
 *Guide:* [multioutput/index.md](../multioutput/index.md)
 
@@ -1976,7 +1976,7 @@ Public methods:
 ### ClassifierChain
 
 
-*Module:* `dense_armor.utility.multioutput.multioutput`
+*Module:* `dense_armor.utility.online.multioutput.multioutput`
 *Bases:* Classifier
 *Guide:* [multioutput/index.md](../multioutput/index.md)
 
@@ -2003,7 +2003,7 @@ Public methods:
 ### RegressorChain
 
 
-*Module:* `dense_armor.utility.multioutput.multioutput`
+*Module:* `dense_armor.utility.online.multioutput.multioutput`
 *Bases:* Regressor
 *Guide:* [multioutput/index.md](../multioutput/index.md)
 
@@ -2028,7 +2028,7 @@ Public methods:
 ### ProbabilisticClassifierChain
 
 
-*Module:* `dense_armor.utility.multioutput.multioutput`
+*Module:* `dense_armor.utility.online.multioutput.multioutput`
 *Bases:* Classifier
 *Guide:* [multioutput/index.md](../multioutput/index.md)
 
@@ -2058,7 +2058,7 @@ Public methods:
 ### AdaptiveRandomForestClassifier
 
 
-*Module:* `dense_armor.utility.forest.arf`
+*Module:* `dense_armor.utility.online.forest.arf`
 *Bases:* Classifier
 *Guide:* [forest/index.md](../forest/index.md)
 
@@ -2085,7 +2085,7 @@ Public methods:
 ### AggregatedMondrianForestClassifier
 
 
-*Module:* `dense_armor.utility.forest.amf`
+*Module:* `dense_armor.utility.online.forest.amf`
 *Bases:* Classifier
 *Guide:* [forest/index.md](../forest/index.md)
 
@@ -2113,7 +2113,7 @@ Public methods:
 ### AggregatedMondrianForestRegressor
 
 
-*Module:* `dense_armor.utility.forest.amf`
+*Module:* `dense_armor.utility.online.forest.amf`
 *Bases:* Regressor
 *Guide:* [forest/index.md](../forest/index.md)
 
@@ -2139,7 +2139,7 @@ Public methods:
 ### SubspaceHoeffdingTree
 
 
-*Module:* `dense_armor.utility.forest.arf`
+*Module:* `dense_armor.utility.online.forest.arf`
 *Bases:* HoeffdingTreeClassifier
 *Guide:* [forest/index.md](../forest/index.md)
 
@@ -2168,7 +2168,7 @@ Public methods:
 ### OnlineExtraTreesRegressor
 
 
-*Module:* `dense_armor.utility.forest.oxt`
+*Module:* `dense_armor.utility.online.forest.oxt`
 *Bases:* Regressor
 *Guide:* [forest/index.md](../forest/index.md)
 
@@ -2195,7 +2195,7 @@ Public methods:
 ### ExponentiallyWeightedAverageRegressor
 
 
-*Module:* `dense_armor.utility.ensemble.ewa`
+*Module:* `dense_armor.utility.online.ensemble.ewa`
 *Bases:* Regressor
 *Guide:* [ensemble/index.md](../ensemble/index.md)
 
@@ -2221,7 +2221,7 @@ Public methods:
 ### OnlineBaggingClassifier
 
 
-*Module:* `dense_armor.utility.ensemble.bagging`
+*Module:* `dense_armor.utility.online.ensemble.bagging`
 *Bases:* Classifier
 *Guide:* [ensemble/index.md](../ensemble/index.md)
 
@@ -2248,7 +2248,7 @@ Public methods:
 ### OnlineBoostingClassifier
 
 
-*Module:* `dense_armor.utility.ensemble.boosting`
+*Module:* `dense_armor.utility.online.ensemble.boosting`
 *Bases:* Classifier
 *Guide:* [ensemble/index.md](../ensemble/index.md)
 
@@ -2275,7 +2275,7 @@ Public methods:
 ### StackingClassifier
 
 
-*Module:* `dense_armor.utility.ensemble.stacking`
+*Module:* `dense_armor.utility.online.ensemble.stacking`
 *Bases:* Classifier
 *Guide:* [ensemble/index.md](../ensemble/index.md)
 
@@ -2302,7 +2302,7 @@ Public methods:
 ### VotingClassifier
 
 
-*Module:* `dense_armor.utility.ensemble.voting`
+*Module:* `dense_armor.utility.online.ensemble.voting`
 *Bases:* Classifier
 *Guide:* [ensemble/index.md](../ensemble/index.md)
 
@@ -2331,7 +2331,7 @@ Public methods:
 ### BanditPolicy
 
 
-*Module:* `dense_armor.utility.bandit.base`
+*Module:* `dense_armor.utility.online.bandit.base`
 *Bases:* Root
 *Guide:* [bandit/index.md](../bandit/index.md)
 
@@ -2354,7 +2354,7 @@ Public methods:
 ### BayesUCB
 
 
-*Module:* `dense_armor.utility.bandit.bayes_ucb`
+*Module:* `dense_armor.utility.online.bandit.bayes_ucb`
 *Bases:* BanditPolicy
 *Guide:* [bandit/index.md](../bandit/index.md)
 
@@ -2377,7 +2377,7 @@ Public methods:
 ### EpsilonGreedy
 
 
-*Module:* `dense_armor.utility.bandit.ucb`
+*Module:* `dense_armor.utility.online.bandit.ucb`
 *Bases:* BanditPolicy
 *Guide:* [bandit/index.md](../bandit/index.md)
 
@@ -2400,7 +2400,7 @@ Public methods:
 ### Exp3
 
 
-*Module:* `dense_armor.utility.bandit.exp3`
+*Module:* `dense_armor.utility.online.bandit.exp3`
 *Bases:* BanditPolicy
 *Guide:* [bandit/index.md](../bandit/index.md)
 
@@ -2423,7 +2423,7 @@ Public methods:
 ### LinUCBDisjoint
 
 
-*Module:* `dense_armor.utility.bandit.linucb`
+*Module:* `dense_armor.utility.online.bandit.linucb`
 *Bases:* Root
 *Guide:* [bandit/index.md](../bandit/index.md)
 
@@ -2446,7 +2446,7 @@ Public methods:
 ### RobotKpSelector
 
 
-*Module:* `dense_armor.utility.bandit.robot`
+*Module:* `dense_armor.utility.online.bandit.robot`
 *Bases:* Root
 *Guide:* [bandit/index.md](../bandit/index.md)
 
@@ -2469,7 +2469,7 @@ Public methods:
 ### ThompsonSampling
 
 
-*Module:* `dense_armor.utility.bandit.ts`
+*Module:* `dense_armor.utility.online.bandit.ts`
 *Bases:* BanditPolicy
 *Guide:* [bandit/index.md](../bandit/index.md)
 
@@ -2492,7 +2492,7 @@ Public methods:
 ### UCB1
 
 
-*Module:* `dense_armor.utility.bandit.ucb`
+*Module:* `dense_armor.utility.online.bandit.ucb`
 *Bases:* BanditPolicy
 *Guide:* [bandit/index.md](../bandit/index.md)
 
@@ -2515,7 +2515,7 @@ Public methods:
 ### UCB1Tuned
 
 
-*Module:* `dense_armor.utility.bandit.ucb`
+*Module:* `dense_armor.utility.online.bandit.ucb`
 *Bases:* UCB1
 *Guide:* [bandit/index.md](../bandit/index.md)
 
@@ -2540,7 +2540,7 @@ Public methods:
 ### ActiveStrategy
 
 
-*Module:* `dense_armor.utility.active.base`
+*Module:* `dense_armor.utility.online.active.base`
 *Bases:* Root
 *Guide:* [active/index.md](../active/index.md)
 
@@ -2562,7 +2562,7 @@ Public methods:
 ### FixedUncertainty
 
 
-*Module:* `dense_armor.utility.active.strategies`
+*Module:* `dense_armor.utility.online.active.strategies`
 *Bases:* ActiveStrategy
 *Guide:* [active/index.md](../active/index.md)
 
@@ -2584,7 +2584,7 @@ Public methods:
 ### RandomStrategy
 
 
-*Module:* `dense_armor.utility.active.strategies`
+*Module:* `dense_armor.utility.online.active.strategies`
 *Bases:* ActiveStrategy
 *Guide:* [active/index.md](../active/index.md)
 
@@ -2606,7 +2606,7 @@ Public methods:
 ### VariableRandomizedUncertainty
 
 
-*Module:* `dense_armor.utility.active.strategies`
+*Module:* `dense_armor.utility.online.active.strategies`
 *Bases:* VariableUncertainty
 *Guide:* [active/index.md](../active/index.md)
 
@@ -2628,7 +2628,7 @@ Public methods:
 ### VariableUncertainty
 
 
-*Module:* `dense_armor.utility.active.strategies`
+*Module:* `dense_armor.utility.online.active.strategies`
 *Bases:* ActiveStrategy
 *Guide:* [active/index.md](../active/index.md)
 
@@ -2652,7 +2652,7 @@ Public methods:
 ### FFMClassifier
 
 
-*Module:* `dense_armor.utility.facto.ffm`
+*Module:* `dense_armor.utility.online.facto.ffm`
 *Bases:* _FFMBase, Classifier
 *Guide:* [facto/index.md](../facto/index.md)
 
@@ -2679,7 +2679,7 @@ Public methods:
 ### FFMRegressor
 
 
-*Module:* `dense_armor.utility.facto.ffm`
+*Module:* `dense_armor.utility.online.facto.ffm`
 *Bases:* _FFMBase, Regressor
 *Guide:* [facto/index.md](../facto/index.md)
 
@@ -2704,7 +2704,7 @@ Public methods:
 ### FMClassifier
 
 
-*Module:* `dense_armor.utility.facto.fm`
+*Module:* `dense_armor.utility.online.facto.fm`
 *Bases:* _FMBase, Classifier
 *Guide:* [facto/index.md](../facto/index.md)
 
@@ -2731,7 +2731,7 @@ Public methods:
 ### FMRegressor
 
 
-*Module:* `dense_armor.utility.facto.fm`
+*Module:* `dense_armor.utility.online.facto.fm`
 *Bases:* _FMBase, Regressor
 *Guide:* [facto/index.md](../facto/index.md)
 
@@ -2756,7 +2756,7 @@ Public methods:
 ### FwFMClassifier
 
 
-*Module:* `dense_armor.utility.facto.fwfm`
+*Module:* `dense_armor.utility.online.facto.fwfm`
 *Bases:* _FwFMBase, Classifier
 *Guide:* [facto/index.md](../facto/index.md)
 
@@ -2783,7 +2783,7 @@ Public methods:
 ### FwFMRegressor
 
 
-*Module:* `dense_armor.utility.facto.fwfm`
+*Module:* `dense_armor.utility.online.facto.fwfm`
 *Bases:* _FwFMBase, Regressor
 *Guide:* [facto/index.md](../facto/index.md)
 
@@ -2808,7 +2808,7 @@ Public methods:
 ### HOFMClassifier
 
 
-*Module:* `dense_armor.utility.facto.hofm`
+*Module:* `dense_armor.utility.online.facto.hofm`
 *Bases:* _HOFMBase, Classifier
 *Guide:* [facto/index.md](../facto/index.md)
 
@@ -2835,7 +2835,7 @@ Public methods:
 ### HOFMRegressor
 
 
-*Module:* `dense_armor.utility.facto.hofm`
+*Module:* `dense_armor.utility.online.facto.hofm`
 *Bases:* _HOFMBase, Regressor
 *Guide:* [facto/index.md](../facto/index.md)
 
@@ -2862,7 +2862,7 @@ Public methods:
 ### Baseline
 
 
-*Module:* `dense_armor.utility.reco.reco`
+*Module:* `dense_armor.utility.online.reco.reco`
 *Bases:* _RecoBase
 *Guide:* [reco/index.md](../reco/index.md)
 
@@ -2885,7 +2885,7 @@ Public methods:
 ### BiasedMF
 
 
-*Module:* `dense_armor.utility.reco.reco`
+*Module:* `dense_armor.utility.online.reco.reco`
 *Bases:* _RecoBase
 *Guide:* [reco/index.md](../reco/index.md)
 
@@ -2909,7 +2909,7 @@ Public methods:
 ### FunkMF
 
 
-*Module:* `dense_armor.utility.reco.reco`
+*Module:* `dense_armor.utility.online.reco.reco`
 *Bases:* _RecoBase
 *Guide:* [reco/index.md](../reco/index.md)
 
@@ -2935,7 +2935,7 @@ Public methods:
 ### AMRulesRegressor
 
 
-*Module:* `dense_armor.utility.rules.amrules`
+*Module:* `dense_armor.utility.online.rules.amrules`
 *Bases:* Regressor
 *Guide:* [rules/index.md](../rules/index.md)
 
@@ -2963,7 +2963,7 @@ Public methods:
 ### DenStream
 
 
-*Module:* `dense_armor.utility.cluster.denstream`
+*Module:* `dense_armor.utility.online.cluster.denstream`
 *Bases:* Transformer
 *Guide:* [cluster/index.md](../cluster/index.md)
 
@@ -2989,7 +2989,7 @@ Public methods:
 ### OnlineKMeans
 
 
-*Module:* `dense_armor.utility.cluster.kmeans`
+*Module:* `dense_armor.utility.online.cluster.kmeans`
 *Bases:* Transformer
 *Guide:* [cluster/index.md](../cluster/index.md)
 
@@ -3017,7 +3017,7 @@ Public methods:
 ### Autocorrelation
 
 
-*Module:* `dense_armor.utility.stats.dependence`
+*Module:* `dense_armor.utility.signals.stats.dependence`
 *Bases:* Transformer
 
 Running autocorrelation of a single channel at a fixed lag.
@@ -3042,7 +3042,7 @@ Public methods:
 ### BloomFilter
 
 
-*Module:* `dense_armor.utility.stats.sketches`
+*Module:* `dense_armor.utility.signals.stats.sketches`
 *Bases:* Transformer
 
 Bloom membership filter (Bloom 1970).
@@ -3069,7 +3069,7 @@ Public methods:
 ### CountMinSketch
 
 
-*Module:* `dense_armor.utility.stats.sketches`
+*Module:* `dense_armor.utility.signals.stats.sketches`
 *Bases:* Transformer
 
 Count-Min frequency sketch (Cormode & Muthukrishnan 2005).
@@ -3096,7 +3096,7 @@ Public methods:
 ### DDSketch
 
 
-*Module:* `dense_armor.utility.stats.quantiles`
+*Module:* `dense_armor.utility.signals.stats.quantiles`
 *Bases:* Transformer
 
 Relative-error quantile sketch (Masson, Rim, Lee 2019).
@@ -3123,7 +3123,7 @@ Public methods:
 ### EWStats
 
 
-*Module:* `dense_armor.utility.stats.moments`
+*Module:* `dense_armor.utility.signals.stats.moments`
 *Bases:* Transformer
 
 Exponentially weighted mean and variance, one sample at a time.
@@ -3148,7 +3148,7 @@ Public methods:
 ### HyperLogLog
 
 
-*Module:* `dense_armor.utility.stats.sketches`
+*Module:* `dense_armor.utility.signals.stats.sketches`
 *Bases:* Transformer
 
 HyperLogLog distinct-count sketch (Flajolet et al. 2007).
@@ -3175,7 +3175,7 @@ Public methods:
 ### RollingCorrelation
 
 
-*Module:* `dense_armor.utility.stats.dependence`
+*Module:* `dense_armor.utility.signals.stats.dependence`
 *Bases:* Transformer
 
 Pearson correlation of two channels over a bounded window.
@@ -3200,7 +3200,7 @@ Public methods:
 ### RollingCovariance
 
 
-*Module:* `dense_armor.utility.stats.dependence`
+*Module:* `dense_armor.utility.signals.stats.dependence`
 *Bases:* Transformer
 
 Sample covariance of two channels over a bounded window.
@@ -3225,7 +3225,7 @@ Public methods:
 ### RollingIQR
 
 
-*Module:* `dense_armor.utility.stats.robust`
+*Module:* `dense_armor.utility.signals.stats.robust`
 *Bases:* _RollingWindow
 
 Interquartile range of the last ``window`` samples.
@@ -3250,7 +3250,7 @@ Public methods:
 ### RollingMAD
 
 
-*Module:* `dense_armor.utility.stats.robust`
+*Module:* `dense_armor.utility.signals.stats.robust`
 *Bases:* _RollingWindow
 
 Median absolute deviation of the last ``window`` samples, scaled.
@@ -3275,7 +3275,7 @@ Public methods:
 ### RollingMedian
 
 
-*Module:* `dense_armor.utility.stats.robust`
+*Module:* `dense_armor.utility.signals.stats.robust`
 *Bases:* _RollingWindow
 
 Median of the last ``window`` samples.
@@ -3300,7 +3300,7 @@ Public methods:
 ### RollingMedianVector
 
 
-*Module:* `dense_armor.utility.stats.robust`
+*Module:* `dense_armor.utility.signals.stats.robust`
 *Bases:* Transformer
 
 One :class:`RollingMedian` per channel, one update call.
@@ -3325,7 +3325,7 @@ Public methods:
 ### RollingQuantile
 
 
-*Module:* `dense_armor.utility.stats.robust`
+*Module:* `dense_armor.utility.signals.stats.robust`
 *Bases:* _RollingWindow
 
 Arbitrary quantile of the last ``window`` samples.
@@ -3350,7 +3350,7 @@ Public methods:
 ### RunningCorrelation
 
 
-*Module:* `dense_armor.utility.stats.dependence`
+*Module:* `dense_armor.utility.signals.stats.dependence`
 *Bases:* Transformer
 
 Incremental Pearson correlation between two channels.
@@ -3375,7 +3375,7 @@ Public methods:
 ### RunningCovariance
 
 
-*Module:* `dense_armor.utility.stats.dependence`
+*Module:* `dense_armor.utility.signals.stats.dependence`
 *Bases:* Transformer
 
 Incremental covariance of two channels.
@@ -3401,7 +3401,7 @@ Public methods:
 ### RunningMoments
 
 
-*Module:* `dense_armor.utility.stats.moments`
+*Module:* `dense_armor.utility.signals.stats.moments`
 *Bases:* Transformer
 
 Incremental mean, variance, skewness, kurtosis for one feature.
@@ -3427,7 +3427,7 @@ Public methods:
 ### RunningMomentsVector
 
 
-*Module:* `dense_armor.utility.stats.moments`
+*Module:* `dense_armor.utility.signals.stats.moments`
 *Bases:* Transformer
 
 One ``RunningMoments`` per channel, updated in a single call.
@@ -3453,7 +3453,7 @@ Public methods:
 ### SpaceSaving
 
 
-*Module:* `dense_armor.utility.stats.sketches`
+*Module:* `dense_armor.utility.signals.stats.sketches`
 *Bases:* Transformer
 
 Space-Saving heavy hitters (Metwally et al. 2005).
@@ -3481,7 +3481,7 @@ Public methods:
 ### TDigest
 
 
-*Module:* `dense_armor.utility.stats.quantiles`
+*Module:* `dense_armor.utility.signals.stats.quantiles`
 *Bases:* Transformer
 
 Clustered sketch with small clusters near the tails (Dunning 2019).
@@ -3510,7 +3510,7 @@ Public methods:
 ### BagOfWords
 
 
-*Module:* `dense_armor.utility.preprocessing.text`
+*Module:* `dense_armor.utility.signals.preprocessing.text`
 *Bases:* Transformer
 *Guide:* [preprocessing/index.md](../preprocessing/index.md)
 
@@ -3535,7 +3535,7 @@ Public methods:
 ### EWScaler
 
 
-*Module:* `dense_armor.utility.preprocessing.scale`
+*Module:* `dense_armor.utility.signals.preprocessing.scale`
 *Bases:* Transformer
 *Guide:* [preprocessing/index.md](../preprocessing/index.md)
 
@@ -3560,7 +3560,7 @@ Public methods:
 ### FeatureHasher
 
 
-*Module:* `dense_armor.utility.preprocessing.text`
+*Module:* `dense_armor.utility.signals.preprocessing.text`
 *Bases:* Transformer
 *Guide:* [preprocessing/index.md](../preprocessing/index.md)
 
@@ -3585,7 +3585,7 @@ Public methods:
 ### JointDerivatives
 
 
-*Module:* `dense_armor.utility.preprocessing.joints`
+*Module:* `dense_armor.utility.signals.preprocessing.joints`
 *Bases:* Transformer
 *Guide:* [preprocessing/index.md](../preprocessing/index.md)
 
@@ -3610,7 +3610,7 @@ Public methods:
 ### JointPower
 
 
-*Module:* `dense_armor.utility.preprocessing.joints`
+*Module:* `dense_armor.utility.signals.preprocessing.joints`
 *Bases:* Transformer
 *Guide:* [preprocessing/index.md](../preprocessing/index.md)
 
@@ -3635,7 +3635,7 @@ Public methods:
 ### MinMaxScaler
 
 
-*Module:* `dense_armor.utility.preprocessing.scale`
+*Module:* `dense_armor.utility.signals.preprocessing.scale`
 *Bases:* Transformer
 *Guide:* [preprocessing/index.md](../preprocessing/index.md)
 
@@ -3660,7 +3660,7 @@ Public methods:
 ### QueueResampler
 
 
-*Module:* `dense_armor.utility.preprocessing.imbalance`
+*Module:* `dense_armor.utility.signals.preprocessing.imbalance`
 *Bases:* Classifier
 *Guide:* [preprocessing/index.md](../preprocessing/index.md)
 
@@ -3687,7 +3687,7 @@ Public methods:
 ### RobustScaler
 
 
-*Module:* `dense_armor.utility.preprocessing.scale`
+*Module:* `dense_armor.utility.signals.preprocessing.scale`
 *Bases:* Transformer
 *Guide:* [preprocessing/index.md](../preprocessing/index.md)
 
@@ -3712,7 +3712,7 @@ Public methods:
 ### SelectKBest
 
 
-*Module:* `dense_armor.utility.preprocessing.select`
+*Module:* `dense_armor.utility.signals.preprocessing.select`
 *Bases:* Transformer
 *Guide:* [preprocessing/index.md](../preprocessing/index.md)
 
@@ -3737,7 +3737,7 @@ Public methods:
 ### StandardScaler
 
 
-*Module:* `dense_armor.utility.preprocessing.scale`
+*Module:* `dense_armor.utility.signals.preprocessing.scale`
 *Bases:* Transformer
 *Guide:* [preprocessing/index.md](../preprocessing/index.md)
 
@@ -3762,7 +3762,7 @@ Public methods:
 ### TFIDF
 
 
-*Module:* `dense_armor.utility.preprocessing.text`
+*Module:* `dense_armor.utility.signals.preprocessing.text`
 *Bases:* Transformer
 *Guide:* [preprocessing/index.md](../preprocessing/index.md)
 
@@ -3787,7 +3787,7 @@ Public methods:
 ### Tokenizer
 
 
-*Module:* `dense_armor.utility.preprocessing.text`
+*Module:* `dense_armor.utility.signals.preprocessing.text`
 *Bases:* Transformer
 *Guide:* [preprocessing/index.md](../preprocessing/index.md)
 
@@ -3812,7 +3812,7 @@ Public methods:
 ### VarianceThreshold
 
 
-*Module:* `dense_armor.utility.preprocessing.select`
+*Module:* `dense_armor.utility.signals.preprocessing.select`
 *Bases:* Transformer
 *Guide:* [preprocessing/index.md](../preprocessing/index.md)
 
@@ -3839,7 +3839,7 @@ Public methods:
 ### Discard
 
 
-*Module:* `dense_armor.utility.compose.select`
+*Module:* `dense_armor.utility.infrastructure.compose.select`
 *Bases:* Transformer
 
 Drop the named channels.
@@ -3863,7 +3863,7 @@ Public methods:
 ### FuncTransformer
 
 
-*Module:* `dense_armor.utility.compose.func`
+*Module:* `dense_armor.utility.infrastructure.compose.func`
 *Bases:* Transformer
 
 Apply ``fn`` to channels, or to the whole dict.
@@ -3887,7 +3887,7 @@ Public methods:
 ### Select
 
 
-*Module:* `dense_armor.utility.compose.select`
+*Module:* `dense_armor.utility.infrastructure.compose.select`
 *Bases:* Transformer
 
 Keep only the named channels.
@@ -3913,7 +3913,7 @@ Public methods:
 ### BagOfVisualWords
 
 
-*Module:* `dense_armor.utility.vision.vocabulary`
+*Module:* `dense_armor.utility.signals.vision.vocabulary`
 *Bases:* Transformer
 *Guide:* [cluster/index.md](../cluster/index.md)
 
@@ -3938,7 +3938,7 @@ Public methods:
 ### FrameFeatures
 
 
-*Module:* `dense_armor.utility.vision.features`
+*Module:* `dense_armor.utility.signals.vision.features`
 *Bases:* Transformer
 *Guide:* [vision/features.md](../vision/features.md)
 
@@ -3963,7 +3963,7 @@ Public methods:
 ### IncrementalPCA
 
 
-*Module:* `dense_armor.utility.vision.reduce`
+*Module:* `dense_armor.utility.signals.vision.reduce`
 *Bases:* Transformer
 *Guide:* [vision/reduce.md](../vision/reduce.md)
 
@@ -3988,7 +3988,7 @@ Public methods:
 ### PatchFeatures
 
 
-*Module:* `dense_armor.utility.vision.patches`
+*Module:* `dense_armor.utility.signals.vision.patches`
 *Bases:* Transformer
 *Guide:* [vision/patches.md](../vision/patches.md)
 
@@ -4013,7 +4013,7 @@ Public methods:
 ### PatchMemory
 
 
-*Module:* `dense_armor.utility.vision.patches`
+*Module:* `dense_armor.utility.signals.vision.patches`
 *Bases:* AnomalyDetector
 *Guide:* [vision/patches.md](../vision/patches.md)
 
@@ -4041,7 +4041,7 @@ Public methods:
 ### RandomProjection
 
 
-*Module:* `dense_armor.utility.vision.reduce`
+*Module:* `dense_armor.utility.signals.vision.reduce`
 *Bases:* Transformer
 *Guide:* [vision/reduce.md](../vision/reduce.md)
 
@@ -4066,7 +4066,7 @@ Public methods:
 ### ArrayStream
 
 
-*Module:* `dense_armor.utility.vision.streams`
+*Module:* `dense_armor.utility.signals.vision.streams`
 *Guide:* [vision/frames.md](../vision/frames.md)
 
 Iterate over a numpy array of frames.
@@ -4074,7 +4074,7 @@ Iterate over a numpy array of frames.
 ### CameraStream
 
 
-*Module:* `dense_armor.utility.vision.streams`
+*Module:* `dense_armor.utility.signals.vision.streams`
 *Guide:* [vision/frames.md](../vision/frames.md)
 
 Iterate over camera frames through OpenCV.
@@ -4082,7 +4082,7 @@ Iterate over camera frames through OpenCV.
 ### Frame
 
 
-*Module:* `dense_armor.utility.vision.streams`
+*Module:* `dense_armor.utility.signals.vision.streams`
 *Guide:* [vision/frames.md](../vision/frames.md)
 
 One image frame with its timestamp.
@@ -4094,7 +4094,7 @@ Public methods:
 ### ImageFolderStream
 
 
-*Module:* `dense_armor.utility.vision.streams`
+*Module:* `dense_armor.utility.signals.vision.streams`
 *Guide:* [vision/frames.md](../vision/frames.md)
 
 Iterate over image files in a folder.
@@ -4104,7 +4104,7 @@ Iterate over image files in a folder.
 ### DriftAdaptiveClassifier
 
 
-*Module:* `dense_armor.utility.learn.online_classifiers`
+*Module:* `dense_armor.utility.online.learn.online_classifiers`
 *Bases:* Classifier
 *Guide:* [learn/online_classifiers.md](../learn/online_classifiers.md)
 
@@ -4131,7 +4131,7 @@ Public methods:
 ### LEGO
 
 
-*Module:* `dense_armor.utility.learn.metric_learning`
+*Module:* `dense_armor.utility.online.learn.metric_learning`
 *Bases:* MetricLearner
 *Guide:* [learn/metric_learning.md](../learn/metric_learning.md)
 
@@ -4156,7 +4156,7 @@ Public methods:
 ### MetricKNNClassifier
 
 
-*Module:* `dense_armor.utility.learn.metric_learning`
+*Module:* `dense_armor.utility.online.learn.metric_learning`
 *Bases:* Classifier
 *Guide:* [learn/metric_learning.md](../learn/metric_learning.md)
 
@@ -4183,7 +4183,7 @@ Public methods:
 ### MetricLearner
 
 
-*Module:* `dense_armor.utility.learn.metric_learning`
+*Module:* `dense_armor.utility.online.learn.metric_learning`
 *Bases:* Root
 *Guide:* [learn/metric_learning.md](../learn/metric_learning.md)
 
@@ -4207,7 +4207,7 @@ Public methods:
 ### OASIS
 
 
-*Module:* `dense_armor.utility.learn.metric_learning`
+*Module:* `dense_armor.utility.online.learn.metric_learning`
 *Bases:* MetricLearner
 *Guide:* [learn/metric_learning.md](../learn/metric_learning.md)
 
@@ -4231,7 +4231,7 @@ Public methods:
 ### OnlineGaussianNB
 
 
-*Module:* `dense_armor.utility.learn.online_classifiers`
+*Module:* `dense_armor.utility.online.learn.online_classifiers`
 *Bases:* Classifier
 *Guide:* [learn/online_classifiers.md](../learn/online_classifiers.md)
 
@@ -4258,7 +4258,7 @@ Public methods:
 ### OnlinePlattScaling
 
 
-*Module:* `dense_armor.utility.learn.calibration`
+*Module:* `dense_armor.utility.online.learn.calibration`
 *Bases:* ModelWrapper, Classifier
 *Guide:* [learn/calibration.md](../learn/calibration.md)
 
@@ -4285,7 +4285,7 @@ Public methods:
 ### OnlineSoftmaxRegression
 
 
-*Module:* `dense_armor.utility.learn.online_classifiers`
+*Module:* `dense_armor.utility.online.learn.online_classifiers`
 *Bases:* Classifier
 *Guide:* [learn/online_classifiers.md](../learn/online_classifiers.md)
 
@@ -4312,7 +4312,7 @@ Public methods:
 ### POLA
 
 
-*Module:* `dense_armor.utility.learn.metric_learning`
+*Module:* `dense_armor.utility.online.learn.metric_learning`
 *Bases:* MetricLearner
 *Guide:* [learn/metric_learning.md](../learn/metric_learning.md)
 
@@ -4336,7 +4336,7 @@ Public methods:
 ### RecursiveLeastSquares
 
 
-*Module:* `dense_armor.utility.learn.online_dynamics`
+*Module:* `dense_armor.utility.online.learn.online_dynamics`
 *Bases:* Regressor
 *Guide:* [learn/online_dynamics.md](../learn/online_dynamics.md)
 
@@ -4361,7 +4361,7 @@ Public methods:
 ### DriftAwareResidualDynamicsLearner
 
 
-*Module:* `dense_armor.utility.learn.online_dynamics`
+*Module:* `dense_armor.utility.online.learn.online_dynamics`
 *Bases:* ResidualDynamicsLearner
 *Guide:* [learn/online_dynamics.md](../learn/online_dynamics.md)
 
@@ -4375,7 +4375,7 @@ Public methods:
 ### ResidualDynamicsLearner
 
 
-*Module:* `dense_armor.utility.learn.online_dynamics`
+*Module:* `dense_armor.utility.online.learn.online_dynamics`
 *Guide:* [learn/online_dynamics.md](../learn/online_dynamics.md)
 
 Online residual torque learner over a nominal ``RigidBodyModel``.
@@ -4390,7 +4390,7 @@ Public methods:
 ### Casper
 
 
-*Module:* `dense_armor.utility.datasets.casper`
+*Module:* `dense_armor.utility.signals.datasets.casper`
 
 CASPER UR3e joint stream.
 
@@ -4402,7 +4402,7 @@ Public methods:
 ### DriftStream
 
 
-*Module:* `dense_armor.utility.datasets.drift_stream`
+*Module:* `dense_armor.utility.signals.datasets.drift_stream`
 
 Synthetic binary stream with concept drift.
 
@@ -4414,7 +4414,7 @@ Public methods:
 ### SyntheticArm
 
 
-*Module:* `dense_armor.utility.datasets.synthetic_arm`
+*Module:* `dense_armor.utility.signals.datasets.synthetic_arm`
 
 Periodic joint stream from a URDF with an optional fault.
 
@@ -4430,7 +4430,7 @@ Public methods:
 ### Orca
 
 
-*Module:* `dense_armor.utility.protect.orca`
+*Module:* `dense_armor.utility.online.protect.orca`
 *Guide:* [shields/orca.md](../shields/orca.md)
 
 Public methods:
@@ -4441,7 +4441,7 @@ Public methods:
 ### StreamingArbiter
 
 
-*Module:* `dense_armor.utility.protect.streaming_arbiter`
+*Module:* `dense_armor.utility.online.protect.streaming_arbiter`
 *Guide:* [protect/arbiter.md](../protect/arbiter.md)
 
 Bounded-delay streaming version of `arbiter.classify_segments`.
@@ -4454,7 +4454,7 @@ Public methods:
 ### StreamingHealing
 
 
-*Module:* `dense_armor.utility.protect.streaming_arbiter`
+*Module:* `dense_armor.utility.online.protect.streaming_arbiter`
 *Guide:* [protect/arbiter.md](../protect/arbiter.md)
 
 One-sample-at-a-time version of `healing.healing_filter`.
@@ -4516,7 +4516,7 @@ Public methods:
 ### Metro
 
 
-*Module:* `dense_armor.utility.misc.metro`
+*Module:* `dense_armor.utility.infrastructure.misc.metro`
 
 Public methods:
 
@@ -4526,7 +4526,7 @@ Public methods:
 ### SDFT
 
 
-*Module:* `dense_armor.utility.misc.sdft`
+*Module:* `dense_armor.utility.infrastructure.misc.sdft`
 *Bases:* Root
 *Guide:* [reco/index.md](../reco/index.md)
 
@@ -4550,7 +4550,7 @@ Public methods:
 ### Skyline
 
 
-*Module:* `dense_armor.utility.misc.skyline`
+*Module:* `dense_armor.utility.infrastructure.misc.skyline`
 *Bases:* Root
 *Guide:* [reco/index.md](../reco/index.md)
 

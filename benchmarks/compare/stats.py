@@ -7,20 +7,20 @@ import numpy as np
 from common import feed
 
 from dense_armor.ml import stats as ml
-from dense_armor.utility.stats.dependence import (
+from dense_armor.utility.signals.stats.dependence import (
     Autocorrelation,
     RollingCorrelation,
     RollingCovariance,
     RunningCorrelation,
     RunningCovariance,
 )
-from dense_armor.utility.stats.moments import (
+from dense_armor.utility.signals.stats.moments import (
     EWStats,
     RunningMoments,
     RunningMomentsVector,
 )
-from dense_armor.utility.stats.robust import RollingMedianVector
-from dense_armor.utility.stats.shrinkage import OnlineShrinkageCovariance
+from dense_armor.utility.signals.stats.robust import RollingMedianVector
+from dense_armor.utility.signals.stats.shrinkage import OnlineShrinkageCovariance
 
 
 def _xy(seed, n=300):

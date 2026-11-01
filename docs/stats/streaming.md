@@ -45,7 +45,7 @@ DDSketch is much smaller than the tolerance.
 any quantile.
 
 ```python
-from dense_armor.utility.stats.quantiles import DDSketch
+from dense_armor.utility.signals.stats.quantiles import DDSketch
 import numpy as np
 
 s = DDSketch(alpha=0.01)
@@ -120,7 +120,7 @@ tolerance. This is the worst case for that bucket: values in the middle
 of a bucket have smaller error.
 
 ```python
-from dense_armor.utility.stats.quantiles import DDSketch
+from dense_armor.utility.signals.stats.quantiles import DDSketch
 
 s = DDSketch(alpha=0.01)
 for v in [1.0] * 100:
@@ -176,7 +176,7 @@ clusters near the tails and fewer near the middle, which is exactly
 the opposite of a uniform-bucket approach.
 
 ```python
-from dense_armor.utility.stats.quantiles import TDigest
+from dense_armor.utility.signals.stats.quantiles import TDigest
 import numpy as np
 
 t = TDigest(delta=200)
@@ -196,7 +196,7 @@ their buckets, bucket by bucket. The result is exactly the same as a
 single sketch that had seen both streams:
 
 ```python
-from dense_armor.utility.stats.quantiles import DDSketch
+from dense_armor.utility.signals.stats.quantiles import DDSketch
 import numpy as np
 
 a = DDSketch(alpha=0.01)
@@ -222,7 +222,7 @@ The accuracy is not identical to a single-pass sketch, but it is very
 close. This is not a bug; it is a documented property of the merge.
 
 ```python
-from dense_armor.utility.stats.quantiles import DDSketch
+from dense_armor.utility.signals.stats.quantiles import DDSketch
 import numpy as np
 
 a = DDSketch(alpha=0.01)
@@ -268,9 +268,9 @@ safety envelope: a spike that exceeds a certain threshold should have
 been caught long before it happens.
 
 ```python
-from dense_armor.utility.learn.online_dynamics import write_minimal_urdf
+from dense_armor.utility.online.learn.online_dynamics import write_minimal_urdf
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.utility.stats.quantiles import DDSketch
+from dense_armor.utility.signals.stats.quantiles import DDSketch
 
 model = RigidBodyModel(write_minimal_urdf())
 import numpy as np

@@ -4,7 +4,7 @@ import math
 import numpy as np
 import pytest
 
-import dense_armor.utility.stats as st
+import dense_armor.utility.signals.stats as st
 
 CLASSES = [getattr(st, n) for n in st.__all__ if isinstance(getattr(st, n), type)]
 

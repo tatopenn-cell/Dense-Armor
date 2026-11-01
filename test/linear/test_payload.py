@@ -7,9 +7,9 @@ import numpy as np
 import pytest
 
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.utility.datasets.synthetic_arm import SyntheticArm
-from dense_armor.utility.linear import payload as payload_mod
-from dense_armor.utility.linear.payload import PayloadEstimator
+from dense_armor.utility.signals.datasets.synthetic_arm import SyntheticArm
+from dense_armor.utility.online.linear import payload as payload_mod
+from dense_armor.utility.online.linear.payload import PayloadEstimator
 
 URDF = str(Path(__file__).parent.parent / "fixtures/urdf/panda.urdf")
 

@@ -16,7 +16,7 @@ past, and a yes/no flag when it is too unusual.
 
 ```python
 import numpy as np
-from dense_armor.utility.anomaly.streaming import StreamingDeviationDetector
+from dense_armor.utility.online.anomaly.streaming import StreamingDeviationDetector
 
 rng = np.random.default_rng(42)
 v = 0.5 + 0.1 * rng.standard_normal(3000)
@@ -81,7 +81,7 @@ In the example the past window is around 10 with MAD 1, so $S = 1.4826$ and the 
 `score_one` interface used by online-learning pipelines.
 
 ```python
-from dense_armor.utility.anomaly.deviation import StreamingDeviationScorer
+from dense_armor.utility.online.anomaly.deviation import StreamingDeviationScorer
 
 sc = StreamingDeviationScorer(radius=5, ref_mult=2)
 for v in [1.0, 1.2, 0.9, 1.1, 1.0, 0.8, 1.05]:
@@ -100,11 +100,11 @@ needs the streaming extra; the install command is on the bridge page of the API 
 
 ## 4. The classic robust filters, one sample at a time
 
-`dense_armor.utility.anomaly.filters` gives the four classic outlier rules as streaming scorers:
+`dense_armor.utility.online.anomaly.filters` gives the four classic outlier rules as streaming scorers:
 Hampel, Tukey fences, Chauvenet and sigma clipping.
 
 ```python
-from dense_armor.utility.anomaly.filters import HampelScorer
+from dense_armor.utility.online.anomaly.filters import HampelScorer
 
 s = HampelScorer(radius=15, n_sigmas=3.0)
 for v in [1.0, 1.2, 0.9, 1.1, 1.0, 0.8, 1.05]:
@@ -145,7 +145,7 @@ own window.
 
 ```python
 import numpy as np
-from dense_armor.utility.anomaly.streaming import MultiChannelStreamingDeviationDetector
+from dense_armor.utility.online.anomaly.streaming import MultiChannelStreamingDeviationDetector
 
 rng = np.random.default_rng(0)
 qd = 0.1 * rng.standard_normal((500, 6))
@@ -173,7 +173,7 @@ together and scores how far a sample is from that pattern.
 
 ```python
 import numpy as np
-from dense_armor.utility.anomaly.mahalanobis import OnlineRobustMahalanobis
+from dense_armor.utility.online.anomaly.mahalanobis import OnlineRobustMahalanobis
 
 rng = np.random.default_rng(3)
 a = rng.normal(0, 1, 500)
@@ -218,13 +218,13 @@ the paper's CC BY 4.0 licence.*
 
 ## API reference
 
-::: dense_armor.utility.anomaly.streaming
+::: dense_armor.utility.online.anomaly.streaming
 
-::: dense_armor.utility.anomaly.deviation
+::: dense_armor.utility.online.anomaly.deviation
 
-::: dense_armor.utility.anomaly.filters
+::: dense_armor.utility.online.anomaly.filters
 
-::: dense_armor.utility.anomaly.mahalanobis
+::: dense_armor.utility.online.anomaly.mahalanobis
 
 ## Details
 

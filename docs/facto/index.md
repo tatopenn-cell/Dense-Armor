@@ -20,8 +20,8 @@ with `w0` a global bias, `w_i` a weight per feature, `V` an `n x k` matrix of fa
 `<v_i, v_j> = sum_f v_{i,f} v_{j,f}` the dot product of two rows.
 
 ~~~python
-from dense_armor.utility.facto import FMRegressor
-from dense_armor.utility.optim import SGD
+from dense_armor.utility.online.facto import FMRegressor
+from dense_armor.utility.online.optim import SGD
 
 fm = FMRegressor(optimizer=SGD(lr=0.05), k=3, seed=0)
 for _ in range(500):
@@ -58,8 +58,8 @@ in `O(k n)` with the rewriting of Lemma 3.1 (Rendle 2010, page 3)::
         = 1/2 sum_f ( (sum_i v_{i,f} x_i)^2 - sum_i v_{i,f}^2 x_i^2 )
 
 ~~~python
-from dense_armor.utility.facto import FMRegressor
-from dense_armor.utility.optim import SGD
+from dense_armor.utility.online.facto import FMRegressor
+from dense_armor.utility.online.optim import SGD
 
 fm = FMRegressor(optimizer=SGD(lr=0.05), k=3, seed=0)
 fm._resolve_keys({f"x{i}": 0.0 for i in range(6)})
@@ -86,7 +86,7 @@ field: the interaction between feature `i` and feature `j` uses the factor of `i
 field of `j` and the factor of `j` for the field of `i`.
 
 ~~~python
-from dense_armor.utility.facto import FFMClassifier
+from dense_armor.utility.online.facto import FFMClassifier
 
 fields = {"a": "F1", "b": "F1", "c": "F2"}
 m = FFMClassifier(fields=fields, k=2, lr=0.1, seed=0)
@@ -121,8 +121,8 @@ The scalar `r` captures the interaction strength of the field pair, without the 
 parameters of the FFM.
 
 ~~~python
-from dense_armor.utility.facto import FwFMClassifier
-from dense_armor.utility.optim import SGD
+from dense_armor.utility.online.facto import FwFMClassifier
+from dense_armor.utility.online.optim import SGD
 
 fields = {"a": "F1", "b": "F1", "c": "F2"}
 m = FwFMClassifier(optimizer=SGD(lr=0.05), fields=fields, k=2, seed=0)
@@ -148,8 +148,8 @@ with a dynamic programme so the cost stays linear in the number of non-zero feat
 where `A_t` is the ANOVA kernel of degree `t`.
 
 ~~~python
-from dense_armor.utility.facto import HOFMRegressor
-from dense_armor.utility.optim import SGD
+from dense_armor.utility.online.facto import HOFMRegressor
+from dense_armor.utility.online.optim import SGD
 
 m = HOFMRegressor(optimizer=SGD(lr=0.05), m=3, k=2, seed=0)
 for _ in range(300):

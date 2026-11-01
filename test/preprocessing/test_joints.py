@@ -1,7 +1,7 @@
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.preprocessing.joints import (
+from dense_armor.utility.signals.preprocessing.joints import (
     JointDerivatives,
     JointPower,
 )

@@ -13,7 +13,7 @@ samples can be labelled. The strategies differ in which 10 % to pick.
 
 ```python
 import numpy as np
-from dense_armor.utility.active import RandomStrategy
+from dense_armor.utility.online.active import RandomStrategy
 rng = np.random.default_rng(0)
 strategy = RandomStrategy(budget=0.1, seed=0)
 for _ in range(1000):
@@ -29,7 +29,7 @@ print(round(strategy.n_labelled_ / strategy.n_seen_, 3))
 
 ```python
 import numpy as np
-from dense_armor.utility.active import FixedUncertainty
+from dense_armor.utility.online.active import FixedUncertainty
 
 class Fixed:
     def predict_proba_one(self, x):
@@ -58,7 +58,7 @@ adjustment keeps the labelling rate at the budget over time.
 
 ```python
 import numpy as np
-from dense_armor.utility.active import VariableUncertainty
+from dense_armor.utility.online.active import VariableUncertainty
 
 class Fixed:
     def predict_proba_one(self, x):
@@ -83,7 +83,7 @@ before the comparison, so occasionally a confident sample is labelled too.
 
 ```python
 import numpy as np
-from dense_armor.utility.active import VariableRandomizedUncertainty
+from dense_armor.utility.online.active import VariableRandomizedUncertainty
 
 class Fixed:
     def predict_proba_one(self, x):

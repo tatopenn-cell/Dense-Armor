@@ -7,15 +7,15 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.neural.layers import Dropout
-from dense_armor.utility.neural.losses import MSE
-from dense_armor.utility.neural.models import mlp
-from dense_armor.utility.neural.schedules import (
+from dense_armor.utility.deep.neural.layers import Dropout
+from dense_armor.utility.deep.neural.losses import MSE
+from dense_armor.utility.deep.neural.models import mlp
+from dense_armor.utility.deep.neural.schedules import (
     ConstantLR,
     CosineWarmRestarts,
 )
-from dense_armor.utility.neural.trainer import Trainer
-from dense_armor.utility.optim import SGD, Adam
+from dense_armor.utility.deep.neural.trainer import Trainer
+from dense_armor.utility.online.optim import SGD, Adam
 
 
 def _data(n=20, seed=0):
@@ -286,7 +286,7 @@ def test_two_moons_reaches_accuracy():
 
 def test_trainer_works_without_model_zero_grad():
     """A model with only forward, backward, params, and no zero_grad."""
-    from dense_armor.utility.neural.layers import Dense
+    from dense_armor.utility.deep.neural.layers import Dense
 
     class BareModel:
         def __init__(self, m):

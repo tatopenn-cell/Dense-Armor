@@ -7,15 +7,15 @@ import numpy as np
 
 from dense_armor.ml import linear as mll
 from dense_armor.ml import multioutput as ml
-from dense_armor.utility.linear.glm import LinearRegression, LogisticRegression
-from dense_armor.utility.multioutput.multioutput import (
+from dense_armor.utility.online.linear.glm import LinearRegression, LogisticRegression
+from dense_armor.utility.online.multioutput.multioutput import (
     ClassifierChain,
     PerOutputClassifier,
     PerOutputRegressor,
     ProbabilisticClassifierChain,
     RegressorChain,
 )
-from dense_armor.utility.optim.sgd import SGD
+from dense_armor.utility.online.optim.sgd import SGD
 
 NAMES = ["a", "b", "c"]
 TARGETS = ["t0", "t1"]
