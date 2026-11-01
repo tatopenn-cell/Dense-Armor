@@ -58,6 +58,7 @@ from dense_armor.utility.neural.losses import MSE
 from dense_armor.utility.neural.trainer import Trainer
 from dense_armor.utility.neural.compiled import (
     make_step,
+    make_step_parallel,
     _read_values,
     _init_state,
 )
@@ -231,6 +232,20 @@ def overflow(shard):
     return {"unchanged": bool(unchanged), "equal": bool(equal), "finite": [bool(f) for f in np.asarray(finite_d)]}
 
 
+m_p = mlp([2, 4, 1], jax.random.PRNGKey(0))
+step_p = make_step_parallel(
+    m_p, MSE(), SGD(0.01), ConstantLR(0.01), 0.0, "l2", None, 2, devices=[3, 1]
+)
+vals = _read_values(m_p)
+vals_d = jax.tree_util.tree_map(
+    lambda v: jnp.broadcast_to(jnp.asarray(v)[None], (2,) + jnp.shape(v)), vals
+)
+v_out, _, _ = step_p(
+    vals_d, None, jnp.asarray(X[:16]).reshape((2, 8, 2)),
+    jnp.asarray(Y[:16]).reshape((2, 8, 1)), 0.0,
+)
+OUT["pmap_devices"] = sorted(int(d.id) for d in v_out[0].devices())
+
 OUT["overflow_0"] = overflow(0)
 OUT["overflow_1"] = overflow(1)
 print(json.dumps(OUT))
@@ -329,6 +344,10 @@ def test_invalid_devices_raise(out, key, match):
 def test_a_list_of_device_ids_is_used_and_does_not_change_the_result(out):
     assert out["ids"]["devices"] == [3, 1]
     assert out["ids"]["spread"] < 1e-6
+
+
+def test_the_step_runs_on_the_devices_that_were_asked_for(out):
+    assert out["pmap_devices"] == [1, 3]
 
 
 def test_a_last_batch_that_the_devices_divide_is_trained_on(out):
