@@ -1,9 +1,11 @@
 """Greedy and sampled generation for a causal language model.
 
-The generation re-runs the model on the whole prefix at every new
-token: ``O(T**2)`` in the length, chosen for clarity. The cache-based
-``step`` of ``MultiHeadSelfAttention`` would need a ``step`` on
-``TransformerDecoderBlock``, which is out of the scope of this item.
+A model that has ``init_static_cache`` and ``step_compiled`` (the
+``ModernDecoder`` of ``modern_decoder.py``) is run one token at a time
+against a key/value cache of fixed shape: the step compiles once and a
+new token costs the same at every length. Any other model with a
+``forward`` is run again on the whole prefix at every new token,
+``O(T**2)`` in the length.
 """
 
 from __future__ import annotations
@@ -13,6 +15,39 @@ from typing import Any
 
 import jax
 import jax.numpy as jnp
+
+
+def _pick(last: jax.Array, temperature: float, key: Any) -> tuple[jax.Array, Any]:
+    if temperature == 0.0:
+        return jnp.argmax(last), key
+    key, sub = jax.random.split(key)
+    return jax.random.categorical(sub, last / temperature, axis=-1), key
+
+
+def _generate_cached(
+    model: Any,
+    prompt: jax.Array,
+    max_new: int,
+    temperature: float,
+    key: Any,
+    max_len: int,
+) -> jax.Array:
+    caches = model.init_static_cache(max_len)
+    logits = None
+    for i in range(prompt.shape[0]):
+        logits, caches = model.step_compiled(prompt[i], caches, i)
+    new = []
+    n = prompt.shape[0]
+    while len(new) < max_new and n < max_len:
+        nxt, key = _pick(jnp.asarray(logits), temperature, key)
+        nxt = jnp.asarray(nxt, dtype=prompt.dtype)
+        new.append(nxt)
+        n += 1
+        if len(new) < max_new and n < max_len:
+            logits, caches = model.step_compiled(nxt, caches, n - 1)
+    if not new:
+        return prompt
+    return jnp.concatenate([prompt, jnp.stack(new)])
 
 
 def generate(
@@ -72,6 +107,8 @@ def generate(
             f"max_len {max_len} is smaller than the prompt ({prompt.shape[0]})"
         )
 
+    if hasattr(model, "init_static_cache") and hasattr(model, "step_compiled"):
+        return _generate_cached(model, prompt, max_new, temperature, key, max_len)
     takes_training = "training" in inspect.signature(model.forward).parameters
     seq = prompt
     for _ in range(max_new):

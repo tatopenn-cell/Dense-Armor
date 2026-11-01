@@ -60,6 +60,11 @@ from dense_armor.utility.neural.models import (
     transformer_decoder,
     transformer_encoder,
 )
+from dense_armor.utility.neural.modern_decoder import (
+    ModernDecoder,
+    ModernDecoderBlock,
+    modern_decoder,
+)
 from dense_armor.utility.neural.recurrent import GRU, LSTM, RNN
 
 __all__ = list(__all__) + [
@@ -75,6 +80,9 @@ __all__ = list(__all__) + [
     "transformer_encoder",
     "transformer_decoder",
     "TransformerDecoderBlock",
+    "modern_decoder",
+    "ModernDecoder",
+    "ModernDecoderBlock",
     "NextTokenLoss",
     "perplexity",
     "generate",
