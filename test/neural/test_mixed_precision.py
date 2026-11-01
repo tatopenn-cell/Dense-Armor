@@ -7,11 +7,11 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.neural.losses import MSE
-from dense_armor.utility.neural.models import mlp, transformer_encoder
-from dense_armor.utility.neural.schedules import ConstantLR
-from dense_armor.utility.neural.trainer import Trainer
-from dense_armor.utility.optim import SGD, Adam
+from dense_armor.utility.deep.neural.losses import MSE
+from dense_armor.utility.deep.neural.models import mlp, transformer_encoder
+from dense_armor.utility.deep.neural.schedules import ConstantLR
+from dense_armor.utility.deep.neural.trainer import Trainer
+from dense_armor.utility.online.optim import SGD, Adam
 
 FLOAT16_MIN = 2.0**-24
 
@@ -49,7 +49,7 @@ def test_underflow_float16_without_scale_is_zero_with_scale_is_not():
     float16; without loss scaling they become zero, with scale 8192
     they survive.
     """
-    from dense_armor.utility.neural.compiled import make_step as _ms
+    from dense_armor.utility.deep.neural.compiled import make_step as _ms
 
     X, y = _data((16, 2), (16, 1))
 
@@ -157,7 +157,7 @@ def test_overflow_skips_the_step_with_a_constant_scale_too():
 def test_mixed_step_equals_the_plain_step_when_nothing_is_cast():
     """With no compute dtype and a scale of 1024, the whole mixed step gives
     the values and the state of the plain step (Adam, so the state counts)."""
-    from dense_armor.utility.neural.compiled import _init_state, make_step
+    from dense_armor.utility.deep.neural.compiled import _init_state, make_step
 
     X, y = _data((16, 2), (16, 1))
 
@@ -179,7 +179,7 @@ def test_mixed_step_equals_the_plain_step_when_nothing_is_cast():
 
 
 def test_skipped_step_keeps_the_optimizer_state():
-    from dense_armor.utility.neural.compiled import _init_state, make_step
+    from dense_armor.utility.deep.neural.compiled import _init_state, make_step
 
     X, y = _data((8, 2), (8, 1))
     m = _mlp()
@@ -344,7 +344,7 @@ def test_optimizer_state_stays_float32():
 def test_loss_scale_multiplies_the_stored_gradient_and_the_update_is_unscaled():
     """The float16 gradient is ``scale`` times larger; the float32 gradient
     handed to the optimizer is divided by the same ``scale``."""
-    from dense_armor.utility.neural.compiled import make_step as _ms
+    from dense_armor.utility.deep.neural.compiled import make_step as _ms
 
     X, y = _data((8, 2), (8, 1))
 
@@ -408,7 +408,7 @@ def test_clip_acts_on_the_unscaled_gradient():
 
 
 def test_grads_are_float32_after_mixed_step():
-    from dense_armor.utility.neural.compiled import make_step as _ms
+    from dense_armor.utility.deep.neural.compiled import make_step as _ms
 
     X, y = _data((8, 2), (8, 1))
     m = _deep_sigmoid()
@@ -467,7 +467,7 @@ def test_weights_and_input_are_cast_to_compute_dtype_in_forward():
     input leaves the input in float32. The spy records the dtypes that
     the forward receives and uses; the test fails on either mutation.
     """
-    from dense_armor.utility.neural.compiled import make_step as _ms
+    from dense_armor.utility.deep.neural.compiled import make_step as _ms
 
     X, y = _data((8, 2), (8, 1))
     m = mlp([2, 4, 1], jax.random.PRNGKey(0))
@@ -507,8 +507,8 @@ def test_read_write_values_with_dtype():
     """_read_values and _write_values with an explicit dtype."""
     import jax.random
 
-    from dense_armor.utility.neural.compiled import _read_values, _write_values
-    from dense_armor.utility.neural.models import mlp
+    from dense_armor.utility.deep.neural.compiled import _read_values, _write_values
+    from dense_armor.utility.deep.neural.models import mlp
 
     m = mlp([2, 4, 1], jax.random.PRNGKey(0))
     values = _read_values(m, dtype=jnp.float16)
@@ -523,8 +523,8 @@ def test_read_write_values_with_dtype():
 
 
 def test_invalid_compute_dtype_raises():
-    from dense_armor.utility.neural.models import mlp
-    from dense_armor.utility.neural.trainer import Trainer
+    from dense_armor.utility.deep.neural.models import mlp
+    from dense_armor.utility.deep.neural.trainer import Trainer
 
     m = mlp([2, 4, 1], jax.random.PRNGKey(0))
     with pytest.raises(ValueError, match="compute_dtype"):
@@ -532,8 +532,8 @@ def test_invalid_compute_dtype_raises():
 
 
 def test_invalid_loss_scale_string_raises():
-    from dense_armor.utility.neural.models import mlp
-    from dense_armor.utility.neural.trainer import Trainer
+    from dense_armor.utility.deep.neural.models import mlp
+    from dense_armor.utility.deep.neural.trainer import Trainer
 
     m = mlp([2, 4, 1], jax.random.PRNGKey(0))
     with pytest.raises(ValueError, match="loss_scale"):
@@ -541,8 +541,8 @@ def test_invalid_loss_scale_string_raises():
 
 
 def test_negative_loss_scale_raises():
-    from dense_armor.utility.neural.models import mlp
-    from dense_armor.utility.neural.trainer import Trainer
+    from dense_armor.utility.deep.neural.models import mlp
+    from dense_armor.utility.deep.neural.trainer import Trainer
 
     m = mlp([2, 4, 1], jax.random.PRNGKey(0))
     with pytest.raises(ValueError, match="loss_scale"):
@@ -550,7 +550,7 @@ def test_negative_loss_scale_raises():
 
 
 def _make(**kw):
-    from dense_armor.utility.neural.compiled import make_step
+    from dense_armor.utility.deep.neural.compiled import make_step
 
     return make_step(_mlp(), MSE(), SGD(0.01), ConstantLR(0.01), 0.0, "l2", None, **kw)
 
@@ -573,10 +573,10 @@ def test_mixed_make_step_has_no_plain_step():
 
 
 def test_invalid_compute_dtype_in_make_step_raises():
-    from dense_armor.utility.neural.compiled import make_step
-    from dense_armor.utility.neural.models import mlp
-    from dense_armor.utility.neural.schedules import ConstantLR
-    from dense_armor.utility.optim import SGD
+    from dense_armor.utility.deep.neural.compiled import make_step
+    from dense_armor.utility.deep.neural.models import mlp
+    from dense_armor.utility.deep.neural.schedules import ConstantLR
+    from dense_armor.utility.online.optim import SGD
 
     m = mlp([2, 4, 1], jax.random.PRNGKey(0))
     with pytest.raises(ValueError, match="compute_dtype"):

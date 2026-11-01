@@ -7,7 +7,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.neural.positions import LearnedPositions
+from dense_armor.utility.deep.neural.positions import LearnedPositions
 
 
 def _fixed():
@@ -117,12 +117,12 @@ def test_grad_matches_jax_grad():
 
 @pytest.mark.training
 def test_trainer_learns_order():
-    from dense_armor.utility.neural.chain import Sequential
-    from dense_armor.utility.neural.conv import Flatten
-    from dense_armor.utility.neural.layers import Dense
-    from dense_armor.utility.neural.losses import MSE
-    from dense_armor.utility.neural.trainer import Trainer
-    from dense_armor.utility.optim import Adam
+    from dense_armor.utility.deep.neural.chain import Sequential
+    from dense_armor.utility.deep.neural.conv import Flatten
+    from dense_armor.utility.deep.neural.layers import Dense
+    from dense_armor.utility.deep.neural.losses import MSE
+    from dense_armor.utility.deep.neural.trainer import Trainer
+    from dense_armor.utility.online.optim import Adam
 
     rng = np.random.default_rng(0)
     n = 40

@@ -10,10 +10,10 @@ pytest.importorskip("river")
 
 from river import metrics  # noqa: E402
 
-import dense_armor.utility.learn.calibration as calibration  # noqa: E402
+import dense_armor.utility.online.learn.calibration as calibration  # noqa: E402
 from dense_armor.roles import Classifier  # noqa: E402
-from dense_armor.utility.learn.calibration import OnlinePlattScaling  # noqa: E402
-from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB  # noqa: E402
+from dense_armor.utility.online.learn.calibration import OnlinePlattScaling  # noqa: E402
+from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB  # noqa: E402
 
 
 class Fixed(Classifier):

@@ -9,8 +9,8 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.neural.gradcheck import gradcheck
-from dense_armor.utility.neural.losses import (
+from dense_armor.utility.deep.neural.gradcheck import gradcheck
+from dense_armor.utility.deep.neural.losses import (
     MSE,
     BCEWithLogits,
     Huber,
@@ -143,7 +143,7 @@ def test_classes_backward_before_forward_raises():
 def test_huber_matches_hand_values():
     import jax.numpy as jnp
 
-    from dense_armor.utility.neural.losses import huber_backward, huber_forward
+    from dense_armor.utility.deep.neural.losses import huber_backward, huber_forward
 
     p = jnp.array([1.0, 2.0])
     t = jnp.array([1.0, 5.0])

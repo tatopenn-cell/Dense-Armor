@@ -13,7 +13,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dense_armor.utility.timeseries import (
+from dense_armor.utility.online.timeseries import (
     OnlineAR, KalmanFilter, VBAdaptiveKalman, InnovationAdaptiveKalman,
 )
 
@@ -78,8 +78,8 @@ fig.tight_layout()
 fig.savefig(out / "kalman_R_tracking.png", dpi=130)
 
 # --- 3. CycleResidual on a real arm ---
-from dense_armor.utility.datasets import SyntheticArm
-from dense_armor.utility.timeseries import CycleResidual
+from dense_armor.utility.signals.datasets import SyntheticArm
+from dense_armor.utility.online.timeseries import CycleResidual
 
 ds = SyntheticArm(
     Path("test/fixtures/urdf/panda.urdf"),

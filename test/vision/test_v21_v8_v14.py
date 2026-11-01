@@ -2,20 +2,20 @@
 
 import numpy as np
 
-from dense_armor.utility.vision.dense import DenseFlow, MotionMask
-from dense_armor.utility.vision.landmarks import (
+from dense_armor.utility.signals.vision.dense import DenseFlow, MotionMask
+from dense_armor.utility.signals.vision.landmarks import (
     Kinematics,
     LandmarkCleaner,
     LandmarkStream,
 )
-from dense_armor.utility.vision.quality import EventFrame, FrameQuality, Sync
-from dense_armor.utility.vision.registration import (
+from dense_armor.utility.signals.vision.quality import EventFrame, FrameQuality, Sync
+from dense_armor.utility.signals.vision.registration import (
     DifferenceImage,
     Registration,
     Stabilizer,
 )
-from dense_armor.utility.vision.robustness import FrameNormalizer
-from dense_armor.utility.vision.visualize import FalseColor, Overlay
+from dense_armor.utility.signals.vision.robustness import FrameNormalizer
+from dense_armor.utility.signals.vision.visualize import FalseColor, Overlay
 
 
 def _shift_subpixel(img, dy, dx):

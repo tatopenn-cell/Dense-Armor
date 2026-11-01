@@ -12,8 +12,8 @@ import pytest
 import jax
 import jax.numpy as jnp
 
-import dense_armor.utility.learn.online_dynamics as online_dynamics  # noqa: E402
-from dense_armor.utility.learn.online_dynamics import (  # noqa: E402
+import dense_armor.utility.online.learn.online_dynamics as online_dynamics  # noqa: E402
+from dense_armor.utility.online.learn.online_dynamics import (  # noqa: E402
     RecursiveLeastSquares, ResidualDynamicsLearner,
     DriftAwareResidualDynamicsLearner, write_minimal_urdf,
 )

@@ -7,14 +7,14 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.neural.attention import (
+from dense_armor.utility.deep.neural.attention import (
     MultiHeadSelfAttention,
     TransformerBlock,
     scaled_dot_product_attention,
     scaled_dot_product_attention_backward,
     sinusoidal_positions,
 )
-from dense_armor.utility.neural.gradcheck import gradcheck
+from dense_armor.utility.deep.neural.gradcheck import gradcheck
 
 
 def _x():

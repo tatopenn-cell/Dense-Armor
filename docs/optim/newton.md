@@ -46,7 +46,7 @@ The object form owns its state and offers `step(weights, gradient) -> weights`:
 
 ```python
 import numpy as np
-from dense_armor.utility.optim import OnlineNewtonStep
+from dense_armor.utility.online.optim import OnlineNewtonStep
 
 opt = OnlineNewtonStep(gamma=1.0, eps=1.0)
 w = opt.step(np.zeros(2), np.array([1.0, 0.0]))
@@ -64,7 +64,7 @@ arrays, so it runs inside `jax.jit` and `jax.lax.scan`:
 ```python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.optim import OnlineNewtonStep
+from dense_armor.utility.online.optim import OnlineNewtonStep
 
 opt = OnlineNewtonStep(gamma=1.0, eps=1.0)
 state = opt.init_state(2)
@@ -124,9 +124,9 @@ velocity, one sample at a time. `OnlineNewtonStep` is the optimizer:
 ```python
 from pathlib import Path
 import numpy as np
-from dense_armor.utility.datasets import SyntheticArm
-from dense_armor.utility.linear.glm import LinearRegression
-from dense_armor.utility.optim import OnlineNewtonStep
+from dense_armor.utility.signals.datasets import SyntheticArm
+from dense_armor.utility.online.linear.glm import LinearRegression
+from dense_armor.utility.online.optim import OnlineNewtonStep
 
 ds = SyntheticArm(Path("test/fixtures/urdf/panda.urdf"),
                   period_s=1.0, rate_hz=50.0, n_cycles=2, seed=0)

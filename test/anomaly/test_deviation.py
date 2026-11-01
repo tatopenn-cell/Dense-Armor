@@ -1,4 +1,4 @@
-"""Unit tests for dense_armor/utility/anomaly/deviation.py."""
+"""Unit tests for dense_armor/utility/online/anomaly/deviation.py."""
 import doctest
 import importlib
 import sys
@@ -6,9 +6,9 @@ import sys
 import numpy as np
 import pytest
 
-import dense_armor.utility.anomaly.deviation as river_anomaly  # noqa: E402
-from dense_armor.utility.anomaly.deviation import StreamingDeviationScorer  # noqa: E402
-from dense_armor.utility.anomaly.streaming import StreamingDeviationDetector  # noqa: E402
+import dense_armor.utility.online.anomaly.deviation as river_anomaly  # noqa: E402
+from dense_armor.utility.online.anomaly.deviation import StreamingDeviationScorer  # noqa: E402
+from dense_armor.utility.online.anomaly.streaming import StreamingDeviationDetector  # noqa: E402
 
 
 def test_score_matches_streaming_detector_flags():

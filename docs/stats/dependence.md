@@ -45,7 +45,7 @@ rolling correlation follows the change.
 running co-moment, and reads off the covariance and correlation.
 
 ```python
-from dense_armor.utility.stats.dependence import RunningCovariance
+from dense_armor.utility.signals.stats.dependence import RunningCovariance
 
 c = RunningCovariance("a", "b")
 for a, b in [(1.0, 2.0), (2.0, 4.0), (3.0, 6.0)]:
@@ -161,7 +161,7 @@ $$
 The code produces exactly these numbers:
 
 ```python
-from dense_armor.utility.stats.dependence import RunningCovariance
+from dense_armor.utility.signals.stats.dependence import RunningCovariance
 
 c = RunningCovariance("a", "b")
 for a, b in [(1.0, 2.0), (2.0, 4.0), (3.0, 6.0)]:
@@ -193,7 +193,7 @@ The result is exactly what a single accumulator would have produced
 from both halves together.
 
 ```python
-from dense_armor.utility.stats.dependence import RunningCovariance
+from dense_armor.utility.signals.stats.dependence import RunningCovariance
 
 c = RunningCovariance("a", "b")
 for a, b in [(1.0, 2.0), (2.0, 4.0), (3.0, 6.0)]:
@@ -229,7 +229,7 @@ neither.
 covariance from that window on demand.
 
 ```python
-from dense_armor.utility.stats.dependence import RollingCovariance
+from dense_armor.utility.signals.stats.dependence import RollingCovariance
 import numpy as np
 
 c = RollingCovariance("a", "b", window=50)
@@ -256,7 +256,7 @@ only `corr`. It is convenient when only the correlation is wanted and
 the covariance would be noise:
 
 ```python
-from dense_armor.utility.stats.dependence import RollingCorrelation
+from dense_armor.utility.signals.stats.dependence import RollingCorrelation
 
 r = RollingCorrelation("a", "b", window=3)
 for a, b in [(1.0, -1.0), (2.0, -2.0), (3.0, -3.0)]:
@@ -289,7 +289,7 @@ be mostly positive and `ρ_k` will be close to 1. If the period is
 to −1. If the stream is random, `ρ_k` will be close to zero.
 
 ```python
-from dense_armor.utility.stats.dependence import Autocorrelation
+from dense_armor.utility.signals.stats.dependence import Autocorrelation
 import numpy as np
 
 ac = Autocorrelation("x", lag=1)
@@ -304,7 +304,7 @@ no autocorrelation. Feeding a sine wave at period 20 and choosing
 `lag=20` gives a value close to 1:
 
 ```python
-from dense_armor.utility.stats.dependence import Autocorrelation
+from dense_armor.utility.signals.stats.dependence import Autocorrelation
 import numpy as np
 
 ac = Autocorrelation("x", lag=1)
@@ -339,9 +339,9 @@ Dependence estimates answer two operational questions:
   an oscillation.
 
 ```python
-from dense_armor.utility.learn.online_dynamics import write_minimal_urdf
+from dense_armor.utility.online.learn.online_dynamics import write_minimal_urdf
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.utility.stats.dependence import (
+from dense_armor.utility.signals.stats.dependence import (
     RollingCorrelation, Autocorrelation,
 )
 

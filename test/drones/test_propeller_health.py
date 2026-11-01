@@ -93,7 +93,7 @@ def test_score_shape_and_finiteness():
 
 
 def test_sdft_used():
-    from dense_armor.utility.misc import SDFT as S
+    from dense_armor.utility.infrastructure.misc import SDFT as S
     s = S(n=8)
     assert hasattr(s, "spectrum")
     assert hasattr(s, "is_ready")

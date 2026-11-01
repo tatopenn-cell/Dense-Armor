@@ -58,8 +58,8 @@ tau_j`:
 ```python
 from pathlib import Path
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.utility.datasets import SyntheticArm
-from dense_armor.utility.linear.payload import PayloadEstimator
+from dense_armor.utility.signals.datasets import SyntheticArm
+from dense_armor.utility.online.linear.payload import PayloadEstimator
 
 model = RigidBodyModel(Path("test/fixtures/urdf/panda.urdf"))
 est = PayloadEstimator(model, link="panda_link7", lam=0.99)
@@ -122,8 +122,8 @@ dataset, with mass `5.0 kg` on `panda_link7`. The estimator follows:
 from pathlib import Path
 import numpy as np
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.utility.datasets import SyntheticArm
-from dense_armor.utility.linear.payload import PayloadEstimator
+from dense_armor.utility.signals.datasets import SyntheticArm
+from dense_armor.utility.online.linear.payload import PayloadEstimator
 
 URDF = Path("test/fixtures/urdf/panda.urdf")
 model = RigidBodyModel(URDF)

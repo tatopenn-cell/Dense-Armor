@@ -6,8 +6,8 @@ import jax.numpy as jnp
 import numpy as np
 
 from dense_armor.roles.signal import Signal
-from dense_armor.utility.linear import bayes as bayes_mod
-from dense_armor.utility.linear.bayes import BayesianLinearRegression
+from dense_armor.utility.online.linear import bayes as bayes_mod
+from dense_armor.utility.online.linear.bayes import BayesianLinearRegression
 
 
 def test_doctests():

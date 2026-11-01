@@ -1,11 +1,11 @@
-"""Tests for dense_armor/utility/stats/sketches.py."""
+"""Tests for dense_armor/utility/signals/stats/sketches.py."""
 import doctest
 
 import numpy as np
 import pytest
 
-import dense_armor.utility.stats.sketches as sketches_mod
-from dense_armor.utility.stats.sketches import (
+import dense_armor.utility.signals.stats.sketches as sketches_mod
+from dense_armor.utility.signals.stats.sketches import (
     CountMinSketch,
     HyperLogLog,
     BloomFilter,

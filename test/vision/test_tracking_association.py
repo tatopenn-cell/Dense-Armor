@@ -1,7 +1,7 @@
 """Tests for the Hungarian association and the re-ID of MovingObjectTracker."""
 
 
-from dense_armor.utility.vision.tracking import MovingObjectTracker
+from dense_armor.utility.signals.vision.tracking import MovingObjectTracker
 
 
 def _tracker(**kw):
@@ -91,7 +91,7 @@ def test_hungarian_threshold_is_applied_before_assignment():
 
 def test_default_is_greedy_and_no_reid():
     """The default keeps the historical behaviour: greedy, no re-ID."""
-    from dense_armor.utility.vision.tracking import MovingObjectTracker
+    from dense_armor.utility.signals.vision.tracking import MovingObjectTracker
     t = MovingObjectTracker(min_area=1, history=1)
     assert t.association == "greedy"
     assert t.reid_radius == 0.0
@@ -106,7 +106,7 @@ def test_default_is_greedy_and_no_reid():
 
 def test_reid_radius_opts_in():
     """Setting reid_radius > 0 enables the re-ID."""
-    from dense_armor.utility.vision.tracking import MovingObjectTracker
+    from dense_armor.utility.signals.vision.tracking import MovingObjectTracker
     t = MovingObjectTracker(min_area=1, history=1, reid_radius=3.0)
     out = t.update([[0, 0, 10, 10, 1.0]])
     tid = out["tracks"][0]["id"]
@@ -119,14 +119,14 @@ def test_reid_radius_opts_in():
 def test_association_invalid_raises():
     import pytest
 
-    from dense_armor.utility.vision.tracking import MovingObjectTracker
+    from dense_armor.utility.signals.vision.tracking import MovingObjectTracker
     with pytest.raises(ValueError, match="association must be"):
         MovingObjectTracker(min_area=1, history=1, association="bogus")
 
 
 def test_hungarian_opts_in():
     """Setting association='hungarian' keeps the same matches on a simple case."""
-    from dense_armor.utility.vision.tracking import MovingObjectTracker
+    from dense_armor.utility.signals.vision.tracking import MovingObjectTracker
     t = MovingObjectTracker(min_area=1, history=1, association="hungarian")
     assert t.association == "hungarian"
     t.update([[0, 0, 10, 10, 1.0]])
@@ -138,7 +138,7 @@ def test_hungarian_opts_in():
 def test_kf_is_still_the_fifth_positional_argument():
     """The historical call ``MovingObjectTracker(3.0, 10, 16, 15, 0.3, 0.5, kf)``
     must still bind kf, not association."""
-    from dense_armor.utility.vision.tracking import MovingObjectTracker, _default_kf
+    from dense_armor.utility.signals.vision.tracking import MovingObjectTracker, _default_kf
     kf = _default_kf()
     t = MovingObjectTracker(3.0, 10, 16, 15, 0.3, 0.5, kf)
     assert t.association == "greedy"
@@ -150,7 +150,7 @@ def test_no_motion_returns_empty_detections():
     """A frame identical to the background has no detection."""
     import numpy as np
 
-    from dense_armor.utility.vision.tracking import MovingObjectTracker
+    from dense_armor.utility.signals.vision.tracking import MovingObjectTracker
     frames = np.zeros((8, 32, 32), dtype=np.float32)
     t = MovingObjectTracker(min_area=4, history=4)
     for fr in frames:
@@ -166,7 +166,7 @@ def test_hungarian_drops_non_candidate_pairs():
     IoU matrix is all below threshold, so candidate is all False, the
     assignment returns a pair, and the `not candidate` branch drops it.
     """
-    from dense_armor.utility.vision.tracking import MovingObjectTracker
+    from dense_armor.utility.signals.vision.tracking import MovingObjectTracker
     t = MovingObjectTracker(min_area=1, history=1, association="hungarian",
                             iou_threshold=0.3)
     t.update([[0, 0, 10, 10, 1.0], [100, 0, 110, 10, 1.0]])
@@ -187,7 +187,7 @@ def test_hungarian_fallback_when_scipy_missing(monkeypatch):
         return real_import(name, *a, **kw)
 
     monkeypatch.setattr(builtins, "__import__", fake_import)
-    from dense_armor.utility.vision.tracking import MovingObjectTracker
+    from dense_armor.utility.signals.vision.tracking import MovingObjectTracker
     t = MovingObjectTracker(min_area=1, history=1, association="hungarian")
     t.update([[0, 0, 10, 10, 1.0]])
     out = t.update([[0, 0, 10, 10, 1.0]])
@@ -197,7 +197,7 @@ def test_hungarian_fallback_when_scipy_missing(monkeypatch):
 
 def test_reid_skips_fresh_tracks():
     """With reid_radius > 0, a track with missing == 0 is not re-identified."""
-    from dense_armor.utility.vision.tracking import MovingObjectTracker
+    from dense_armor.utility.signals.vision.tracking import MovingObjectTracker
     t = MovingObjectTracker(min_area=1, history=1, reid_radius=5.0)
     t.update([[0, 0, 10, 10, 1.0]])
     # next frame: a detection matches the track, another is far

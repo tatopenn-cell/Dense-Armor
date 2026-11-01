@@ -33,8 +33,8 @@ import torch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from dense_armor.bridges.torch import TorchModule
-from dense_armor.utility.neural import Dense, Sequential
-from dense_armor.utility.neural.activations import Relu
+from dense_armor.utility.deep.neural import Dense, Sequential
+from dense_armor.utility.deep.neural.activations import Relu
 
 
 def _model():

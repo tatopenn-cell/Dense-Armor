@@ -6,9 +6,9 @@ import common
 import numpy as np
 
 from dense_armor.ml import vision as ml
-from dense_armor.utility.vision.dense import DenseFlow, MotionMask
-from dense_armor.utility.vision.motion import GlobalMotion
-from dense_armor.utility.vision.reduce import IncrementalPCA, RandomProjection
+from dense_armor.utility.signals.vision.dense import DenseFlow, MotionMask
+from dense_armor.utility.signals.vision.motion import GlobalMotion
+from dense_armor.utility.signals.vision.reduce import IncrementalPCA, RandomProjection
 
 
 def _frames(seed):

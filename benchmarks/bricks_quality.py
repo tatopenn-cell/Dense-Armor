@@ -22,15 +22,15 @@ from pathlib import Path
 import numpy as np
 from scipy.stats import wilcoxon
 
-from dense_armor.utility.datasets import DriftStream
-from dense_armor.utility.drift.adwin import ADWIN
-from dense_armor.utility.forest import (
+from dense_armor.utility.signals.datasets import DriftStream
+from dense_armor.utility.online.drift.adwin import ADWIN
+from dense_armor.utility.online.forest import (
     AdaptiveRandomForestClassifier,
     AggregatedMondrianForestRegressor,
     OnlineExtraTreesRegressor,
 )
-from dense_armor.utility.rules import AMRulesRegressor
-from dense_armor.utility.tree import (
+from dense_armor.utility.online.rules import AMRulesRegressor
+from dense_armor.utility.online.tree import (
     HoeffdingAdaptiveTreeClassifier,
     MondrianForestRegressor,
 )

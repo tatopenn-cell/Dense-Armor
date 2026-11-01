@@ -7,16 +7,16 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.neural.chain import Sequential
-from dense_armor.utility.neural.layers import Dense
-from dense_armor.utility.neural.losses import MSE
-from dense_armor.utility.neural.matryoshka import MatryoshkaLoss
-from dense_armor.utility.neural.online import OnlineNetRegressor
-from dense_armor.utility.neural.online_vector import OnlineNetVector
-from dense_armor.utility.neural.quantize import VectorQuantizer
-from dense_armor.utility.neural.recurrent import LSTM
-from dense_armor.utility.neural.seq2seq import Seq2Seq
-from dense_armor.utility.optim import SGD, Adam
+from dense_armor.utility.deep.neural.chain import Sequential
+from dense_armor.utility.deep.neural.layers import Dense
+from dense_armor.utility.deep.neural.losses import MSE
+from dense_armor.utility.deep.neural.matryoshka import MatryoshkaLoss
+from dense_armor.utility.deep.neural.online import OnlineNetRegressor
+from dense_armor.utility.deep.neural.online_vector import OnlineNetVector
+from dense_armor.utility.deep.neural.quantize import VectorQuantizer
+from dense_armor.utility.deep.neural.recurrent import LSTM
+from dense_armor.utility.deep.neural.seq2seq import Seq2Seq
+from dense_armor.utility.online.optim import SGD, Adam
 
 
 def test_hand_case():

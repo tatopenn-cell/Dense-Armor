@@ -19,10 +19,10 @@ import jax.numpy as jnp
 import numpy as np
 from matplotlib import pyplot as plt
 
-from dense_armor.utility.neural.bottleneck import BottleneckFusion
-from dense_armor.utility.neural.cross_attention import MultiHeadCrossAttention
-from dense_armor.utility.neural.gated_attention import GatedCrossAttention
-from dense_armor.utility.neural.latent_attention import LatentCrossAttention
+from dense_armor.utility.deep.neural.bottleneck import BottleneckFusion
+from dense_armor.utility.deep.neural.cross_attention import MultiHeadCrossAttention
+from dense_armor.utility.deep.neural.gated_attention import GatedCrossAttention
+from dense_armor.utility.deep.neural.latent_attention import LatentCrossAttention
 
 OUT = Path(__file__).resolve().parents[2] / "docs" / "assets" / "neural"
 OUT.mkdir(parents=True, exist_ok=True)

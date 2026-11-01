@@ -5,7 +5,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dense_armor.utility.stats import BloomFilter, CountMinSketch, HyperLogLog, SpaceSaving
+from dense_armor.utility.signals.stats import BloomFilter, CountMinSketch, HyperLogLog, SpaceSaving
 
 rng = np.random.default_rng(0)
 lengths = [10**3, 10**4, 10**5, 10**6]

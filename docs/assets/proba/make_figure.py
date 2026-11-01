@@ -17,7 +17,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 
-from dense_armor.utility.proba import Beta, Gaussian, Multinomial
+from dense_armor.utility.online.proba import Beta, Gaussian, Multinomial
 
 HERE = Path(__file__).resolve().parent
 

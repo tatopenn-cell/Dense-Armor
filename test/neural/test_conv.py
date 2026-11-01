@@ -7,7 +7,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.neural.conv import (
+from dense_armor.utility.deep.neural.conv import (
     AvgPool1D,
     AvgPool2D,
     Conv1D,
@@ -16,7 +16,7 @@ from dense_armor.utility.neural.conv import (
     MaxPool1D,
     MaxPool2D,
 )
-from dense_armor.utility.neural.gradcheck import gradcheck
+from dense_armor.utility.deep.neural.gradcheck import gradcheck
 
 
 def test_conv1d_x_gradcheck():
@@ -374,7 +374,7 @@ def test_flatten_backward_before_forward_raises():
 
 
 def test_conv_out_size_and_pool_out_size_private():
-    from dense_armor.utility.neural.conv import _conv_out_size, _pool_out_size
+    from dense_armor.utility.deep.neural.conv import _conv_out_size, _pool_out_size
 
     assert _conv_out_size(5, 3, 1, 0) == 3
     assert _conv_out_size(5, 3, 1, 1) == 5

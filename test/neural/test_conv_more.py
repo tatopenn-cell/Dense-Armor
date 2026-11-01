@@ -7,13 +7,13 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.neural.conv import Conv2D
-from dense_armor.utility.neural.conv_more import (
+from dense_armor.utility.deep.neural.conv import Conv2D
+from dense_armor.utility.deep.neural.conv_more import (
     Conv3D,
     DepthwiseConv2D,
     SeparableConv2D,
 )
-from dense_armor.utility.neural.layers import Dense
+from dense_armor.utility.deep.neural.layers import Dense
 
 
 def test_conv3d_hand_case_ones():

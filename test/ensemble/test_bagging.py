@@ -2,9 +2,9 @@
 
 import numpy as np
 
-from dense_armor.utility.ensemble import OnlineBaggingClassifier
-from dense_armor.utility.ensemble._common import as_dict, finite
-from dense_armor.utility.tree.hoeffding import HoeffdingTreeClassifier
+from dense_armor.utility.online.ensemble import OnlineBaggingClassifier
+from dense_armor.utility.online.ensemble._common import as_dict, finite
+from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
 
 
 def _tree():
@@ -113,7 +113,7 @@ def test_as_dict_and_finite_helpers():
 
 
 def test_new_member_deepcopy_when_no_clone():
-    from dense_armor.utility.ensemble._common import new_member
+    from dense_armor.utility.online.ensemble._common import new_member
 
     class _Bare:
         def __init__(self):

@@ -38,7 +38,7 @@ samples, here `400`.
 
 ```python
 import numpy as np
-from dense_armor.utility.timeseries import CycleResidual
+from dense_armor.utility.online.timeseries import CycleResidual
 
 cr = CycleResidual(period=None, max_period=200, n_cycles=3)
 for i in range(1000):
@@ -55,7 +55,7 @@ stream that repeats exactly is zero:
 
 ```python
 import numpy as np
-from dense_armor.utility.timeseries import CycleResidual
+from dense_armor.utility.online.timeseries import CycleResidual
 
 cr = CycleResidual(period=50, n_cycles=3)
 res = []
@@ -85,8 +85,8 @@ is `200` samples (`4` base cycles of `50` samples each), so `period=200` and
 ```python
 import numpy as np
 from pathlib import Path
-from dense_armor.utility.datasets import SyntheticArm
-from dense_armor.utility.timeseries import CycleResidual
+from dense_armor.utility.signals.datasets import SyntheticArm
+from dense_armor.utility.online.timeseries import CycleResidual
 
 ds = SyntheticArm(
     Path("test/fixtures/urdf/panda.urdf"),

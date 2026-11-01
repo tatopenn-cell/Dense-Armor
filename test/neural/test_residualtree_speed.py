@@ -4,7 +4,7 @@ import numpy as np
 import jax.numpy as jnp
 import pytest
 
-from dense_armor.utility.neural.consolidation import (
+from dense_armor.utility.deep.neural.consolidation import (
     ArchivalMemory,
     ResidualTree,
     VQMemory,

@@ -3,8 +3,8 @@
 import numpy as np
 import pytest
 
-from dense_armor.utility.ensemble.bagging import OnlineBaggingClassifier
-from dense_armor.utility.tree.hoeffding import HoeffdingTreeClassifier
+from dense_armor.utility.online.ensemble.bagging import OnlineBaggingClassifier
+from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
 from pipelines.drones.io import synthetic_flight
 from pipelines.drones.static_vs_online import (
     N_FEATURES,
@@ -77,7 +77,7 @@ def test_run_names_populated():
 
 
 def test_fit_batch_makes_members():
-    from dense_armor.utility.ensemble.bagging import OnlineBaggingClassifier as OB
+    from dense_armor.utility.online.ensemble.bagging import OnlineBaggingClassifier as OB
     clf = OB(_tree, n_models=3, seed=0)
     X = [{"a": 1.0, "b": 2.0}, {"a": 3.0, "b": 4.0},
          {"a": 5.0, "b": 6.0}, {"a": 7.0, "b": 8.0}]
@@ -88,14 +88,14 @@ def test_fit_batch_makes_members():
 
 
 def test_fit_batch_length_mismatch_raises():
-    from dense_armor.utility.ensemble.bagging import OnlineBaggingClassifier as OB
+    from dense_armor.utility.online.ensemble.bagging import OnlineBaggingClassifier as OB
     clf = OB(_tree, n_models=3, seed=0)
     with pytest.raises(ValueError, match="X has"):
         clf.fit_batch([{"a": 1.0}], [0, 1], seed=0)
 
 
 def test_fit_batch_empty_raises():
-    from dense_armor.utility.ensemble.bagging import OnlineBaggingClassifier as OB
+    from dense_armor.utility.online.ensemble.bagging import OnlineBaggingClassifier as OB
     clf = OB(_tree, n_models=3, seed=0)
     with pytest.raises(ValueError, match="empty"):
         clf.fit_batch([], [], seed=0)

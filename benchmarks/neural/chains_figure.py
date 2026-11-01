@@ -17,12 +17,12 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dense_armor.utility.neural.losses import (
+from dense_armor.utility.deep.neural.losses import (
     bce_with_logits_backward,
     bce_with_logits_forward,
 )
-from dense_armor.utility.neural.models import mlp
-from dense_armor.utility.optim.adam import Adam
+from dense_armor.utility.deep.neural.models import mlp
+from dense_armor.utility.online.optim.adam import Adam
 
 HERE = Path(__file__).resolve().parents[2]
 OUT = HERE / "docs" / "assets" / "neural" / "chains.png"

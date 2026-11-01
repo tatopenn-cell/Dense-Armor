@@ -25,10 +25,10 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
-from dense_armor.utility.metrics.regression import R2Score
-from dense_armor.utility.preprocessing.select import SelectKBest
-from dense_armor.utility.proba import Gaussian
+from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB
+from dense_armor.utility.evaluation.metrics.regression import R2Score
+from dense_armor.utility.signals.preprocessing.select import SelectKBest
+from dense_armor.utility.online.proba import Gaussian
 
 SEED = 0
 N_RUNS = 7

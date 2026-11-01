@@ -9,10 +9,10 @@ the branch is covered and the message is asserted.
 import pytest
 
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.utility.linear.bayes import BayesianLinearRegression
-from dense_armor.utility.linear.glm import LinearRegression
-from dense_armor.utility.linear.payload import PayloadEstimator
-from dense_armor.utility.optim import (
+from dense_armor.utility.online.linear.bayes import BayesianLinearRegression
+from dense_armor.utility.online.linear.glm import LinearRegression
+from dense_armor.utility.online.linear.payload import PayloadEstimator
+from dense_armor.utility.online.optim import (
     SGD,
     AdaGrad,
     Adam,

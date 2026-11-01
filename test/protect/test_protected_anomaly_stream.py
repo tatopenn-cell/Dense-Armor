@@ -25,16 +25,16 @@ import numpy as np
 import pytest
 
 from dense_armor.roles import AnomalyGate, Protected
-from dense_armor.utility.anomaly.hst import HalfSpaceTrees
-from dense_armor.utility.anomaly.loda import LODA
-from dense_armor.utility.anomaly.lof import LocalOutlierFactor
-from dense_armor.utility.anomaly.mahalanobis import (
+from dense_armor.utility.online.anomaly.hst import HalfSpaceTrees
+from dense_armor.utility.online.anomaly.loda import LODA
+from dense_armor.utility.online.anomaly.lof import LocalOutlierFactor
+from dense_armor.utility.online.anomaly.mahalanobis import (
     OnlineRobustMahalanobis,
 )
-from dense_armor.utility.anomaly.ocsvm import OneClassSGD
-from dense_armor.utility.anomaly.oiforest import OnlineIsolationForest
-from dense_armor.utility.datasets import SyntheticArm
-from dense_armor.utility.learn.online_dynamics import RecursiveLeastSquares
+from dense_armor.utility.online.anomaly.ocsvm import OneClassSGD
+from dense_armor.utility.online.anomaly.oiforest import OnlineIsolationForest
+from dense_armor.utility.signals.datasets import SyntheticArm
+from dense_armor.utility.online.learn.online_dynamics import RecursiveLeastSquares
 
 URDF = Path("test/fixtures/urdf/panda.urdf")
 

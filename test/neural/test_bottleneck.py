@@ -7,8 +7,8 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.neural.bottleneck import BottleneckFusion
-from dense_armor.utility.neural.gradcheck import gradcheck
+from dense_armor.utility.deep.neural.bottleneck import BottleneckFusion
+from dense_armor.utility.deep.neural.gradcheck import gradcheck
 
 KEY = jax.random.PRNGKey(0)
 
@@ -142,9 +142,9 @@ def test_gradcheck_b():
 
 def test_learning():
     """Two layers in sequence, predict a function of b alone."""
-    from dense_armor.utility.neural.losses import MSE
-    from dense_armor.utility.neural.trainer import Trainer
-    from dense_armor.utility.optim import Adam
+    from dense_armor.utility.deep.neural.losses import MSE
+    from dense_armor.utility.deep.neural.trainer import Trainer
+    from dense_armor.utility.online.optim import Adam
 
     class TwoLayers:
         def __init__(self, key):

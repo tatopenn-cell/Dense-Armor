@@ -6,7 +6,7 @@ A standard scaler subtracts the running mean and divides by the running standard
 every feature lives around 0 with spread 1.
 
 ```python
-from dense_armor.utility.preprocessing.scale import StandardScaler
+from dense_armor.utility.signals.preprocessing.scale import StandardScaler
 
 sc = StandardScaler()
 for v in [1.0, 2.0, 3.0, 4.0, 5.0]:
@@ -31,7 +31,7 @@ one sample at a time, so the scaler never needs to store the past values.
 A robot arm sends its joints as one vector; each joint gets its own mean and spread.
 
 ```python
-from dense_armor.utility.preprocessing.scale import StandardScaler
+from dense_armor.utility.signals.preprocessing.scale import StandardScaler
 
 sc = StandardScaler()
 for q in ([0.0, 10.0], [1.0, 20.0], [2.0, 30.0]):
@@ -53,7 +53,7 @@ The robust scaler uses the rolling median and the median absolute deviation (MAD
 so it matches the standard deviation on Gaussian data); one spike barely moves it.
 
 ```python
-from dense_armor.utility.preprocessing.scale import RobustScaler, StandardScaler
+from dense_armor.utility.signals.preprocessing.scale import RobustScaler, StandardScaler
 
 rs, ss = RobustScaler(window=20), StandardScaler()
 for v in [1.0, 2.0, 3.0, 2.0, 1.0, 2.0, 3.0, 2.0, 100.0]:

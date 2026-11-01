@@ -6,7 +6,7 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from dense_armor.utility.neural.gradcheck import gradcheck
+from dense_armor.utility.deep.neural.gradcheck import gradcheck
 
 
 def _sq_f(x):

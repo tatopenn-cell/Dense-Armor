@@ -171,7 +171,7 @@ class SklearnClassifier(ClassifierMixin, _DenseWrapper, BaseEstimator):
     Example:
         >>> import numpy as np
         >>> from dense_armor.bridges.sklearn import SklearnClassifier
-        >>> from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
+        >>> from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB
         >>> X = np.array([[0.0], [1.0], [2.0], [3.0]])
         >>> y = np.array([0, 0, 1, 1])
         >>> m = SklearnClassifier(OnlineGaussianNB).fit(X, y)

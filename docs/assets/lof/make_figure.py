@@ -45,13 +45,13 @@ def _roc_auc_score(y_true, y_score):
     return (rank_sum - n_pos * (n_pos + 1) / 2.0) / (n_pos * n_neg)
 
 
-from dense_armor.utility.anomaly.hst import HalfSpaceTrees
-from dense_armor.utility.anomaly.loda import LODA
-from dense_armor.utility.anomaly.lof import LocalOutlierFactor
-from dense_armor.utility.anomaly.mahalanobis import OnlineRobustMahalanobis
-from dense_armor.utility.anomaly.ocsvm import OneClassSGD
-from dense_armor.utility.anomaly.oiforest import OnlineIsolationForest
-from dense_armor.utility.datasets import DriftStream, SyntheticArm
+from dense_armor.utility.online.anomaly.hst import HalfSpaceTrees
+from dense_armor.utility.online.anomaly.loda import LODA
+from dense_armor.utility.online.anomaly.lof import LocalOutlierFactor
+from dense_armor.utility.online.anomaly.mahalanobis import OnlineRobustMahalanobis
+from dense_armor.utility.online.anomaly.ocsvm import OneClassSGD
+from dense_armor.utility.online.anomaly.oiforest import OnlineIsolationForest
+from dense_armor.utility.signals.datasets import DriftStream, SyntheticArm
 
 HERE = Path(__file__).resolve().parent
 URDF = ROOT / "test/fixtures/urdf/panda.urdf"

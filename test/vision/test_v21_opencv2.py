@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from dense_armor.utility.vision.streams import VideoFileStream
+from dense_armor.utility.signals.vision.streams import VideoFileStream
 
 
 def _clip_file(tmp_path):

@@ -6,7 +6,7 @@ are covered, one per file:
 
 - :class:`~pipelines.finance.surveillance.FinancePipeline`
   Watch a market index in real time. Five Dense-Armor tools run in
-  sequence: Armatura cleans the tick, CUSUM watches the trend, LODA
+  sequence: Armor cleans the tick, CUSUM watches the trend, LODA
   and Half-Space Trees score the day, Orca dampens oversized orders.
 
 - :class:`~pipelines.finance.risk.RiskPipeline`
@@ -29,7 +29,7 @@ Examples:
     >>> e = p.process_tick(100.0, 1.0)
     >>> e.tick
     0
-    >>> e.discarded_by_armatura
+    >>> e.discarded_by_armor
     False
 """
 

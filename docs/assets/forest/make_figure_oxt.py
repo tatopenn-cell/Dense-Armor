@@ -7,10 +7,10 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dense_armor.utility.datasets import DriftStream
-from dense_armor.utility.forest import OnlineExtraTreesRegressor
-from dense_armor.utility.rules import AMRulesRegressor
-from dense_armor.utility.tree import MondrianForestRegressor
+from dense_armor.utility.signals.datasets import DriftStream
+from dense_armor.utility.online.forest import OnlineExtraTreesRegressor
+from dense_armor.utility.online.rules import AMRulesRegressor
+from dense_armor.utility.online.tree import MondrianForestRegressor
 
 out = Path(__file__).parent
 N, D = 2000, 4

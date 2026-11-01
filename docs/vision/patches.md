@@ -15,7 +15,7 @@ the directions of its edges, its mean brightness and its contrast.
 
 ```python
 import numpy as np
-from dense_armor.utility.vision import PatchFeatures
+from dense_armor.utility.signals.vision import PatchFeatures
 
 img = np.zeros((64, 64), dtype=np.float32)
 img[:, ::8] = 1.0
@@ -47,7 +47,7 @@ farthest from everything in memory.
 
 ```python
 import numpy as np
-from dense_armor.utility.vision import PatchFeatures, PatchMemory
+from dense_armor.utility.signals.vision import PatchFeatures, PatchMemory
 
 rng = np.random.default_rng(0)
 pf = PatchFeatures(patch=16, stride=8)
@@ -82,7 +82,7 @@ The per-patch distances form a map of the image; the largest one points at the s
 
 ```python
 import numpy as np
-from dense_armor.utility.vision import PatchFeatures, PatchMemory
+from dense_armor.utility.signals.vision import PatchFeatures, PatchMemory
 
 rng = np.random.default_rng(0)
 pf = PatchFeatures(patch=16, stride=8)
@@ -125,7 +125,7 @@ uniform sample of everything seen (reservoir sampling).
 
 ```python
 import numpy as np
-from dense_armor.utility.vision import PatchMemory
+from dense_armor.utility.signals.vision import PatchMemory
 
 rng = np.random.default_rng(0)
 mem = PatchMemory(max_size=1000, mode="reservoir")
@@ -149,7 +149,7 @@ best.
 
 ```python
 import numpy as np
-from dense_armor.utility.vision import PatchMemory
+from dense_armor.utility.signals.vision import PatchMemory
 
 rng = np.random.default_rng(0)
 data = rng.normal(size=(500, 6))
@@ -226,7 +226,7 @@ where the dataset was present, and cannot be regenerated in a Colab that lacks i
 
 ## API reference
 
-::: dense_armor.utility.vision.patches
+::: dense_armor.utility.signals.vision.patches
 
 ---
 

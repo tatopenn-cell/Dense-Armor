@@ -11,9 +11,9 @@ A chain applies its layers in order. The forward pass runs from the first layer 
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.chain import Sequential
-from dense_armor.utility.neural.layers import Dense
-from dense_armor.utility.neural.activations import Relu
+from dense_armor.utility.deep.neural.chain import Sequential
+from dense_armor.utility.deep.neural.layers import Dense
+from dense_armor.utility.deep.neural.activations import Relu
 
 s = Sequential([Dense(3, 4, jax.random.PRNGKey(0)), Relu(),
                 Dense(4, 2, jax.random.PRNGKey(1))])
@@ -35,8 +35,8 @@ A chain works on a batch and on a single sample with the same `forward` and `bac
 import numpy as np
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.chain import Sequential
-from dense_armor.utility.neural.layers import Dense
+from dense_armor.utility.deep.neural.chain import Sequential
+from dense_armor.utility.deep.neural.layers import Dense
 
 s = Sequential([Dense(3, 2, jax.random.PRNGKey(0))])
 xb = jnp.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
@@ -55,8 +55,8 @@ The batch and the single sample give the same output. The gradient has the same 
 import numpy as np
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.chain import Sequential
-from dense_armor.utility.neural.layers import Dense
+from dense_armor.utility.deep.neural.chain import Sequential
+from dense_armor.utility.deep.neural.layers import Dense
 
 s = Sequential([Dense(3, 2, jax.random.PRNGKey(0))])
 xb = jnp.ones((4, 3))
@@ -89,9 +89,9 @@ The forward pass is `H = X W1 = [[7, 10], [15, 22]]`; the rectifier leaves it un
 import numpy as np
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.chain import Sequential
-from dense_armor.utility.neural.layers import Dense
-from dense_armor.utility.neural.activations import Relu
+from dense_armor.utility.deep.neural.chain import Sequential
+from dense_armor.utility.deep.neural.layers import Dense
+from dense_armor.utility.deep.neural.activations import Relu
 
 d1 = Dense(2, 2, jax.random.PRNGKey(0))
 d1.W.value = jnp.array([[1.0, 2.0], [3.0, 4.0]])
@@ -127,8 +127,8 @@ A branching sends the same input to several branches and merges the outputs. Wit
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.chain import Parallel
-from dense_armor.utility.neural.layers import Dense
+from dense_armor.utility.deep.neural.chain import Parallel
+from dense_armor.utility.deep.neural.layers import Dense
 
 d1 = Dense(3, 4, jax.random.PRNGKey(0))
 d2 = Dense(3, 4, jax.random.PRNGKey(1))
@@ -146,8 +146,8 @@ Two branches of width 4, summed, still give a vector of width 4. With `concat` t
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.chain import Parallel
-from dense_armor.utility.neural.layers import Dense
+from dense_armor.utility.deep.neural.chain import Parallel
+from dense_armor.utility.deep.neural.layers import Dense
 
 p = Parallel([Dense(3, 4, jax.random.PRNGKey(0)),
               Dense(3, 2, jax.random.PRNGKey(1))], "concat")
@@ -168,7 +168,7 @@ An MLP is a chain of dense layers with an activation between them. The function 
 
 ~~~python
 import jax
-from dense_armor.utility.neural.models import mlp
+from dense_armor.utility.deep.neural.models import mlp
 
 m = mlp([2, 8, 1], jax.random.PRNGKey(0))
 print([p.value.shape for p in m.params()])
@@ -188,7 +188,7 @@ A residual MLP is a chain of blocks. Each block is a chain of a `Residual` aroun
 
 ~~~python
 import jax
-from dense_armor.utility.neural.models import resnet_mlp
+from dense_armor.utility.deep.neural.models import resnet_mlp
 
 r = resnet_mlp(8, 2, 3, 2, jax.random.PRNGKey(0))
 print(len(r.params()))

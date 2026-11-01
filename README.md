@@ -58,7 +58,7 @@ In this library, *shielding* means cleaning the data a model sees (NaN, spikes, 
 
 ## What it does
 
-Dense-Armor is a Python machine learning library with an online part. Every online estimator learns one sample at a time, at control-loop speed, on JAX, and the machine learning classes of `dense_armor.ml` read a whole dataset with `fit`. The same `learn_one` / `predict_one` / `transform_one` contract runs on a table, a time series, a robot joint stream, a video frame, a token stream, and a shield can sit in front of any of them. On top of that, `dense_armor.utility.neural` has the deep-learning pieces (layers, attention, convolutional and recurrent blocks, batch and streaming training, continual learning with EWC/GEM/A-GEM, memory consolidation with vector quantization, product quantization and a residual tree), and `dense_armor.utility.stats` and `.timeseries` have the robust models (Student-t, Gaussian mixture, GARCH, AR/VAR/Kalman).
+Dense-Armor is a Python machine learning library with an online part. Every online estimator learns one sample at a time, at control-loop speed, on JAX, and the machine learning classes of `dense_armor.ml` read a whole dataset with `fit`. The same `learn_one` / `predict_one` / `transform_one` contract runs on a table, a time series, a robot joint stream, a video frame, a token stream, and a shield can sit in front of any of them. On top of that, `dense_armor.utility.deep.neural` has the deep-learning pieces (layers, attention, convolutional and recurrent blocks, batch and streaming training, continual learning with EWC/GEM/A-GEM, memory consolidation with vector quantization, product quantization and a residual tree), and `dense_armor.utility.signals.stats` and `.timeseries` have the robust models (Student-t, Gaussian mixture, GARCH, AR/VAR/Kalman).
 
 ---
 
@@ -67,7 +67,7 @@ Dense-Armor is a Python machine learning library with an online part. Every onli
 As a quick example, we'll train an online Gaussian naive Bayes classifier to classify a drift stream with 5 features and one sudden concept change. Here's a look at the first observation in the dataset.
 
 ```python
->>> from dense_armor.utility.datasets import DriftStream
+>>> from dense_armor.utility.signals.datasets import DriftStream
 
 >>> dataset = DriftStream(n_samples=2000, n_features=5, n_drifts=1, kind="sudden", seed=0)
 
@@ -82,8 +82,8 @@ As a quick example, we'll train an online Gaussian naive Bayes classifier to cla
 Now let's run the model on the dataset in a streaming fashion. We sequentially interleave predictions and model updates. Meanwhile, we update a performance metric to see how well the model is doing.
 
 ```python
->>> from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
->>> from dense_armor.utility.metrics import Accuracy
+>>> from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB
+>>> from dense_armor.utility.evaluation.metrics import Accuracy
 
 >>> model = OnlineGaussianNB()
 
@@ -110,8 +110,8 @@ A joint torque stream from `SyntheticArm` (real Panda URDF, real rigid-body dyna
 ```python
 from pathlib import Path
 import numpy as np
-from dense_armor.utility.datasets import SyntheticArm
-from dense_armor.utility.control.rate_limiter import rate_limited_follower
+from dense_armor.utility.signals.datasets import SyntheticArm
+from dense_armor.utility.robot.control.rate_limiter import rate_limited_follower
 
 ds = SyntheticArm(
     Path("test/fixtures/urdf/panda.urdf"),
@@ -199,7 +199,7 @@ Dense-Armor also provides other online utilities:
 - LLM bridge (embeddings as features, estimators as JSON tools)
 - Bridges: scikit-learn, PyTorch and TensorFlow
 - Checks (`check_estimator`, p99 budget, memory growth, clone, pickle, state dict, roc_auc)
-- Core engine (`DynamicAICodegen` JIT compiler, `ImageChunker`, `UniversalMemoryGuard`, `AdaptiveSignalStabilizer`, `AIHardwareProfiler`, `StochasticAdversarialNoise`)
+- Core engine (`UniversalMemoryGuard`, `AdaptiveSignalStabilizer`, `AIHardwareProfiler`)
 
 Check out [the API](https://tatopenn-cell.github.io/Dense-Armor/api/) for a comprehensive overview.
 

@@ -11,11 +11,11 @@ from pathlib import Path
 import numpy as np
 
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.utility.datasets.synthetic_arm import SyntheticArm
-from dense_armor.utility.linear.bayes import BayesianLinearRegression
-from dense_armor.utility.linear.glm import LinearRegression, LogisticRegression
-from dense_armor.utility.linear.payload import PayloadEstimator
-from dense_armor.utility.optim import SGD, Adam
+from dense_armor.utility.signals.datasets.synthetic_arm import SyntheticArm
+from dense_armor.utility.online.linear.bayes import BayesianLinearRegression
+from dense_armor.utility.online.linear.glm import LinearRegression, LogisticRegression
+from dense_armor.utility.online.linear.payload import PayloadEstimator
+from dense_armor.utility.online.optim import SGD, Adam
 import pytest
 
 URDF = str(Path(__file__).parent.parent / "fixtures/urdf/panda.urdf")

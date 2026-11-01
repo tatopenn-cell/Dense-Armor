@@ -46,7 +46,7 @@ samples, so these results are a guide, not a guarantee.
 
 ```python
 import numpy as np
-from dense_armor.utility.drift.detector import CUSUMDriftDetector
+from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
 
 rng = np.random.default_rng(0)
 x = [float("nan")] * 10 + list(rng.normal(0, 1, 300)) + list(rng.normal(3, 1, 300))
@@ -99,7 +99,7 @@ do not depend on the units of the stream.
 
 ```python
 import numpy as np
-from dense_armor.utility.drift.page_hinkley import PageHinkley
+from dense_armor.utility.online.drift.page_hinkley import PageHinkley
 
 rng = np.random.default_rng(0)
 x = list(rng.normal(0, 1, 500)) + list(rng.normal(3, 1, 500))
@@ -149,7 +149,7 @@ looking for a cut where the two halves disagree.
 
 ```python
 import numpy as np
-from dense_armor.utility.drift.adwin import ADWIN
+from dense_armor.utility.online.drift.adwin import ADWIN
 
 rng = np.random.default_rng(0)
 x = list(rng.normal(0, 1, 300)) + list(rng.normal(4, 1, 300))
@@ -216,7 +216,7 @@ stream where the shape can change and not only the mean.
 
 ```python
 import numpy as np
-from dense_armor.utility.drift.kswin import KSWIN
+from dense_armor.utility.online.drift.kswin import KSWIN
 
 rng = np.random.default_rng(14)
 x = list(rng.normal(0, 1, 400)) + list(rng.normal(2.5, 1, 400))
@@ -289,13 +289,13 @@ is worse.
 
 ## API reference
 
-::: dense_armor.utility.drift.page_hinkley
+::: dense_armor.utility.online.drift.page_hinkley
 
-::: dense_armor.utility.drift.adwin
+::: dense_armor.utility.online.drift.adwin
 
-::: dense_armor.utility.drift.kswin
+::: dense_armor.utility.online.drift.kswin
 
-::: dense_armor.utility.drift.detector
+::: dense_armor.utility.online.drift.detector
 
 ---
 

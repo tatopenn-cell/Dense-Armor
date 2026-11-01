@@ -8,9 +8,9 @@ import jax
 import jax.numpy as jnp
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.neural.adapter import AsTransformer
-from dense_armor.utility.neural.layers import Dense
-from dense_armor.utility.neural.norm import BatchNorm, LayerNorm
+from dense_armor.utility.deep.neural.adapter import AsTransformer
+from dense_armor.utility.deep.neural.layers import Dense
+from dense_armor.utility.deep.neural.norm import BatchNorm, LayerNorm
 
 
 def _make():

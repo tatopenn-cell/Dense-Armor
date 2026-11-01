@@ -25,11 +25,11 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from dense_armor.utility.anomaly.filters import HampelScorer
-from dense_armor.utility.anomaly.hst import HalfSpaceTrees
-from dense_armor.utility.anomaly.loda import LODA
-from dense_armor.utility.drift.detector import CUSUMDriftDetector
-from dense_armor.utility.protect.orca import Orca
+from dense_armor.utility.online.anomaly.filters import HampelScorer
+from dense_armor.utility.online.anomaly.hst import HalfSpaceTrees
+from dense_armor.utility.online.anomaly.loda import LODA
+from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
+from dense_armor.utility.online.protect.orca import Orca
 
 
 @dataclass
@@ -41,9 +41,9 @@ class TickResult:
         price: the price as it arrived.
         volume: relative volume (volume divided by the mean volume of
             the calibration window).
-        cleaned_price: the price after Armatura. ``nan`` if the tick was
+        cleaned_price: the price after Armor. ``nan`` if the tick was
             discarded.
-        discarded_by_armatura: True if Armatura considered the tick
+        discarded_by_armor: True if Armor considered the tick
             absurd and dropped it.
         drift_flagged: True if CUSUM flagged a change of trend on
             this tick.
@@ -61,7 +61,7 @@ class TickResult:
     price: float
     volume: float
     cleaned_price: float
-    discarded_by_armatura: bool
+    discarded_by_armor: bool
     drift_flagged: bool
     loda_score: float
     hst_score: float
@@ -75,13 +75,13 @@ class FinancePipeline:
 
     Stages, in order:
 
-    1. **Armatura** (:class:`~dense_armor.utility.anomaly.filters.HampelScorer`)
+    1. **Armor** (:class:`~dense_armor.utility.online.anomaly.filters.HampelScorer`)
        drops absurd ticks.
-    2. **CUSUM** (:class:`~dense_armor.utility.drift.detector.CUSUMDriftDetector`)
+    2. **CUSUM** (:class:`~dense_armor.utility.online.drift.detector.CUSUMDriftDetector`)
        flags a change of trend.
     3. **LODA** and **Half-Space Trees** score the (return, volume)
        pair; a day is anomalous when both scores pass their thresholds.
-    4. **Orca** (:class:`~dense_armor.utility.protect.orca.Orca`)
+    4. **Orca** (:class:`~dense_armor.utility.online.protect.orca.Orca`)
        dampens the simulated order derived from the tick.
 
     Args:
@@ -90,7 +90,7 @@ class FinancePipeline:
             known working range.
         range_vol: (min, max) of the relative volume, from the same
             calibration window.
-        armatura_threshold: Hampel score above which the tick is discarded.
+        armor_threshold: Hampel score above which the tick is discarded.
             Default 5.0 (about five robust sigmas).
         orca_threshold: norm-reduction fraction above which the simulated
             order counts as dampened. Default 0.50.
@@ -105,10 +105,10 @@ class FinancePipeline:
         >>> p = FinancePipeline(range_ret=(-0.05, 0.05),
         ...                     range_vol=(0.5, 2.0), seed=0)
         >>> e = p.process_tick(100.0, 1.0)
-        >>> e.tick, e.discarded_by_armatura, e.anomalous
+        >>> e.tick, e.discarded_by_armor, e.anomalous
         (0, False, False)
         >>> e2 = p.process_tick(99999.0, 1.0)
-        >>> e2.discarded_by_armatura
+        >>> e2.discarded_by_armor
         True
 
     References:
@@ -126,11 +126,11 @@ class FinancePipeline:
         self,
         range_ret: tuple[float, float],
         range_vol: tuple[float, float],
-        armatura_threshold: float = 5.0,
+        armor_threshold: float = 5.0,
         orca_threshold: float = 0.50,
         seed: int = 0,
     ):
-        self.hampel = HampelScorer(radius=20, n_sigmas=armatura_threshold)
+        self.hampel = HampelScorer(radius=20, n_sigmas=armor_threshold)
         self.cusum = CUSUMDriftDetector(radius=20, ref_mult=3, k=0.5, h=30.0)
         self.loda = LODA(
             n_projections=50, n_bins=10, window=200, range_init=50, seed=seed
@@ -169,7 +169,7 @@ class FinancePipeline:
             >>> e = p.process_tick(100.0, 1.0)
             >>> e.tick
             0
-            >>> e.discarded_by_armatura
+            >>> e.discarded_by_armor
             False
         """
         sc_h = self.hampel.score_one({"x": float(price)})
@@ -220,7 +220,7 @@ class FinancePipeline:
             price=float(price),
             volume=float(relative_volume),
             cleaned_price=cleaned_price,
-            discarded_by_armatura=scartato,
+            discarded_by_armor=scartato,
             drift_flagged=deriva,
             loda_score=float(s_loda),
             hst_score=float(s_hst),

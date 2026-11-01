@@ -1,6 +1,6 @@
 # Neural networks: API
 
-Every public class and function of `dense_armor.utility.neural` and of the optimizers of `dense_armor.utility.optim`, with its signature and what it does. The title of each section is the guide page that explains the pieces with examples.
+Every public class and function of `dense_armor.utility.deep.neural` and of the optimizers of `dense_armor.utility.online.optim`, with its signature and what it does. The title of each section is the guide page that explains the pieces with examples.
 
 ## [Foundations](../neural/index.md)
 

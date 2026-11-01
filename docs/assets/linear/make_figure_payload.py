@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.utility.linear.payload import PayloadEstimator
-from dense_armor.utility.datasets import SyntheticArm
+from dense_armor.utility.online.linear.payload import PayloadEstimator
+from dense_armor.utility.signals.datasets import SyntheticArm
 
 out = Path(__file__).parent
 URDF = Path("test/fixtures/urdf/panda.urdf")

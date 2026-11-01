@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from dense_armor.utility.datasets import DriftStream
+from dense_armor.utility.signals.datasets import DriftStream
 
 
 def test_drift_stream_shapes():
@@ -58,12 +58,12 @@ def test_drift_stream_stream_yields_signals():
 
 
 def test_drift_stream_online_nb_drops_after_drift():
-    from dense_armor.utility.evaluate import progressive_val_score
-    from dense_armor.utility.learn.online_classifiers import (
+    from dense_armor.utility.evaluation.evaluate import progressive_val_score
+    from dense_armor.utility.online.learn.online_classifiers import (
         OnlineGaussianNB,
     )
-    from dense_armor.utility.metrics import Accuracy
-    from dense_armor.utility.metrics.rolling import Rolling
+    from dense_armor.utility.evaluation.metrics import Accuracy
+    from dense_armor.utility.evaluation.metrics.rolling import Rolling
 
     ds = DriftStream(
         n_samples=2000,

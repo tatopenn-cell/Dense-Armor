@@ -86,7 +86,7 @@ The counts are 4 at the root, 3 on the left, 1 on the right.
 
 ```python
 import numpy as np
-from dense_armor.utility.anomaly.hst import HalfSpaceTrees
+from dense_armor.utility.online.anomaly.hst import HalfSpaceTrees
 
 rng = np.random.default_rng(0)
 det = HalfSpaceTrees(n_trees=15, depth=8, window=100, range_init=10, seed=0)
@@ -119,8 +119,8 @@ detector learns only from the healthy part and scores the whole stream.
 
 ```python
 from pathlib import Path
-from dense_armor.utility.anomaly.hst import HalfSpaceTrees
-from dense_armor.utility.datasets import SyntheticArm
+from dense_armor.utility.online.anomaly.hst import HalfSpaceTrees
+from dense_armor.utility.signals.datasets import SyntheticArm
 
 ds = SyntheticArm(
     Path("test/fixtures/urdf/panda.urdf"),

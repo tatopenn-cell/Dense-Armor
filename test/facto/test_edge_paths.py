@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from dense_armor.utility.facto import (
+from dense_armor.utility.online.facto import (
     FFMClassifier,
     FFMRegressor,
     FMClassifier,
@@ -13,7 +13,7 @@ from dense_armor.utility.facto import (
     HOFMClassifier,
     HOFMRegressor,
 )
-from dense_armor.utility.optim import SGD
+from dense_armor.utility.online.optim import SGD
 
 FIELDS = {"a": "F1", "b": "F1", "c": "F2"}
 ALL = [FMRegressor, FMClassifier, FFMRegressor, FFMClassifier,

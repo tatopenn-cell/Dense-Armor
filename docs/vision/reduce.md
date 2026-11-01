@@ -8,7 +8,7 @@ Johnson–Lindenstrauss lemma.
 
 ```python
 import numpy as np
-from dense_armor.utility.vision import RandomProjection
+from dense_armor.utility.signals.vision import RandomProjection
 
 rng = np.random.default_rng(0)
 d, n, k = 256, 100, 64
@@ -63,7 +63,7 @@ without ever storing the whole dataset.
 
 ```python
 import numpy as np
-from dense_armor.utility.vision import IncrementalPCA
+from dense_armor.utility.signals.vision import IncrementalPCA
 
 rng = np.random.default_rng(0)
 pca = IncrementalPCA(k=1)
@@ -115,8 +115,8 @@ anomaly score is read before the frame is fed to the chain.
 
 ```python
 import numpy as np
-from dense_armor.utility.anomaly.mahalanobis import OnlineRobustMahalanobis
-from dense_armor.utility.vision import ArrayStream, FrameFeatures, IncrementalPCA
+from dense_armor.utility.online.anomaly.mahalanobis import OnlineRobustMahalanobis
+from dense_armor.utility.signals.vision import ArrayStream, FrameFeatures, IncrementalPCA
 
 frames = []
 for i in range(100):

@@ -7,7 +7,7 @@ A search over documents needs three things: a vocabulary, a score per term, and 
 Stop words are the words that carry no meaning for a search: "the", "a", "over". They are removed before the n-grams are formed, so no bigram contains one.
 
 ```python
-from dense_armor.utility.preprocessing.text import Tokenizer
+from dense_armor.utility.signals.preprocessing.text import Tokenizer
 
 tk = Tokenizer(ngrams=2, stop_words=["the", "over"])
 print(tk.transform_one({"text": "the quick brown fox jumps over the lazy dog"})["tokens"])
@@ -24,7 +24,7 @@ The library has no built-in list: the paper of the folder does not contain one, 
 A long document has more terms and larger counts. The L2 normalisation divides the scores of a document by the square root of the sum of their squares, so a document is compared on direction and not on length (Rennie et al. 2003, page 7).
 
 ```python
-from dense_armor.utility.preprocessing.text import TFIDF
+from dense_armor.utility.signals.preprocessing.text import TFIDF
 
 tf = TFIDF(norm="l2")
 tf.learn_one({"tokens": ["a", "b"]})
@@ -43,7 +43,7 @@ print(tf.transform_one({"tokens": ["a", "b"]})["scores"])
 The cosine similarity is the dot product of two score dicts divided by the product of their norms. The norm of a query counts every term of the query, as `cosine_similarity_many` does: a term outside the index does not contribute to the product, but it does reduce the score through the norm.
 
 ```python
-from dense_armor.utility.stats.similarity import cosine_similarity
+from dense_armor.utility.signals.stats.similarity import cosine_similarity
 
 print(round(cosine_similarity({"a": 1.0, "b": 2.0}, {"a": 2.0, "b": 4.0}), 6))
 print(cosine_similarity({"a": 0.0}, {"a": 1.0}))
@@ -61,7 +61,7 @@ The two documents point in the same direction, so the cosine is 1. The second ca
 `TextVectorizer` chains the tokenizer and the TF-IDF and fixes the vocabulary: a term that was not seen during the fit gets no score. The batch `fit` and the online `learn_one` end in the same state on the same documents, and `fit` resets the state, so two fits on the same documents give the same `n_docs_`.
 
 ```python
-from dense_armor.utility.preprocessing.vectorizer import TextVectorizer
+from dense_armor.utility.signals.preprocessing.vectorizer import TextVectorizer
 
 docs = ["the quick brown fox", "a quick brown dog", "the fox and the dog"]
 a = TextVectorizer().fit(docs)
@@ -84,7 +84,7 @@ print(a.tfidf_.n_docs_, a.tfidf_.df_ == b.tfidf_.df_)
 
 ```python
 import numpy as np
-from dense_armor.utility.stats.similarity import SparseCosineIndex
+from dense_armor.utility.signals.stats.similarity import SparseCosineIndex
 
 docs = [{"a": 1.0, "b": 2.0}, {"b": 1.0, "c": 3.0}, {"a": 2.0}]
 idx = SparseCosineIndex(docs, dtype=np.float32)
@@ -108,7 +108,7 @@ The full product is not the only way to rank. `top_k_threshold` is exact and is 
 
 ```python
 import numpy as np
-from dense_armor.utility.stats.similarity import SparseCosineIndex
+from dense_armor.utility.signals.stats.similarity import SparseCosineIndex
 
 docs = [{"a": 1.0, "b": 2.0}, {"b": 1.0, "c": 3.0}, {"a": 2.0}]
 idx = SparseCosineIndex(docs, dtype=np.float32)

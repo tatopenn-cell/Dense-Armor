@@ -8,11 +8,11 @@ The page walks the pieces in the order the library adds them. Every step is self
 
 Plain gradient descent moves against the gradient at every step. On a narrow valley it zigzags across the valley and creeps along it. Momentum keeps a velocity and adds a fraction `gamma` of the previous update to the current one. Nesterov looks ahead: it evaluates the gradient at the position the momentum is about to reach, which gives the optimizer a notion of where it is going. RMSProp divides the step by a running average of the squared gradients, so a direction with large gradients gets a smaller step.
 
-`SGD(lr, momentum=0.0, nesterov=False)` and `RMSProp(lr, rho=0.9, eps=1e-8)` implement the three, in `dense_armor/utility/optim/`.
+`SGD(lr, momentum=0.0, nesterov=False)` and `RMSProp(lr, rho=0.9, eps=1e-8)` implement the three, in `dense_armor/utility/online/optim/`.
 
 ~~~python
 import numpy as np
-from dense_armor.utility.optim import SGD, RMSProp
+from dense_armor.utility.online.optim import SGD, RMSProp
 
 opt = SGD(0.1, momentum=0.9)
 w = np.array(1.0)
@@ -47,12 +47,12 @@ The momentum form is Eq.(4), page 4 of Ruder (2016); the Nesterov form is Eq.(7)
 
 A recurrent network trained on a long sequence can produce a gradient whose norm is enormous; one step in that direction throws the weights far away and the next loss is `inf`. Clipping keeps the direction and shrinks the norm to a threshold when it exceeds the threshold. The library follows Algorithm 1, page 6 of Pascanu, Mikolov and Bengio (2013): the norm is computed over all the gradients together, and if it is at least `max_norm` every gradient is multiplied by `max_norm / norm`.
 
-`clip_grad_norm(params, max_norm)` is in `dense_armor/utility/neural/clip.py`. `Trainer`, `OnlineNetRegressor`, `OnlineNetClassifier` and `OnlineAutoencoder` take a `clip_norm=None` parameter that runs it right after `backward` and before the weight decay.
+`clip_grad_norm(params, max_norm)` is in `dense_armor/utility/deep/neural/clip.py`. `Trainer`, `OnlineNetRegressor`, `OnlineNetClassifier` and `OnlineAutoencoder` take a `clip_norm=None` parameter that runs it right after `backward` and before the weight decay.
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.clip import clip_grad_norm
-from dense_armor.utility.neural.params import Param
+from dense_armor.utility.deep.neural.clip import clip_grad_norm
+from dense_armor.utility.deep.neural.params import Param
 
 p = Param(jnp.array([0.0, 0.0]))
 p.grad = jnp.array([3.0, 4.0])
@@ -72,11 +72,11 @@ With `clip_norm = None` the update is the one without clipping: no `Param` is to
 
 A network that only sees `Relu` and `tanh` does not have the smooth gates that modern architectures use. `GELU`, `SiLU`, `ELU`, `LeakyReLU` and `Softplus` are the five that complete the library.
 
-`GELU(approximate=False)`, `SiLU()`, `ELU(alpha=1.0)`, `LeakyReLU(slope=0.01)` and `Softplus(beta=1.0)` are in `dense_armor/utility/neural/activations_more.py`, with the same `forward` / `backward` interface as `Relu`.
+`GELU(approximate=False)`, `SiLU()`, `ELU(alpha=1.0)`, `LeakyReLU(slope=0.01)` and `Softplus(beta=1.0)` are in `dense_armor/utility/deep/neural/activations_more.py`, with the same `forward` / `backward` interface as `Relu`.
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.activations_more import GELU, SiLU, ELU, LeakyReLU, Softplus
+from dense_armor.utility.deep.neural.activations_more import GELU, SiLU, ELU, LeakyReLU, Softplus
 
 xs = jnp.array([1.0, -1.0])
 print([round(float(v), 4) for v in GELU().forward(xs)])
@@ -102,10 +102,10 @@ The same task fixed a defect of the library. `Sequential.params()` collects only
 
 A large learning rate at step 1 throws the network into a bad region before it has seen a single batch. A warmup schedule starts at a small rate and grows. The library adds two: a linear one, from `lr_start` to `lr_end` over `warmup` epochs, and the Noam schedule of Vaswani et al. (2017), which grows linearly for `warmup` steps and then decays as the inverse square root.
 
-`LinearWarmup(lr_start, lr_end, warmup)` and `NoamSchedule(d_model, warmup, scale=1.0)` are in `dense_armor/utility/neural/schedules_more.py`, with the same `__call__(epoch)` and `multiplier(epoch)` interface as `ConstantLR`.
+`LinearWarmup(lr_start, lr_end, warmup)` and `NoamSchedule(d_model, warmup, scale=1.0)` are in `dense_armor/utility/deep/neural/schedules_more.py`, with the same `__call__(epoch)` and `multiplier(epoch)` interface as `ConstantLR`.
 
 ~~~python
-from dense_armor.utility.neural.schedules_more import LinearWarmup, NoamSchedule
+from dense_armor.utility.deep.neural.schedules_more import LinearWarmup, NoamSchedule
 
 s = LinearWarmup(0.1, 3.2, 5)
 print([round(s(e), 4) for e in [0.0, 2.5, 5.0, 7.0]])
@@ -127,12 +127,12 @@ print(n(0.0))
 
 A convolutional encoder shrinks a feature map; the decoder of an autoencoder has to grow it back. A transposed convolution is the adjoint of a convolution: it takes a small map and produces a larger one, so that the shape of the output of the decoder matches the shape of the input of the encoder. Nearest-neighbour upsampling is the simpler alternative: it repeats every position a fixed number of times.
 
-`ConvTranspose1D`, `ConvTranspose2D`, `Upsample1D` and `Upsample2D` are in `dense_armor/utility/neural/convtranspose.py`.
+`ConvTranspose1D`, `ConvTranspose2D`, `Upsample1D` and `Upsample2D` are in `dense_armor/utility/deep/neural/convtranspose.py`.
 
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.convtranspose import ConvTranspose1D
+from dense_armor.utility.deep.neural.convtranspose import ConvTranspose1D
 
 c = ConvTranspose1D(1, 1, 3, jax.random.PRNGKey(0), stride=2)
 c.W.value = jnp.array([[[1.0]], [[10.0]], [[100.0]]])
@@ -160,7 +160,7 @@ An `Upsample1D` repeats each position of a sequence a fixed number of times alon
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.convtranspose import Upsample1D
+from dense_armor.utility.deep.neural.convtranspose import Upsample1D
 
 u = Upsample1D(2)
 x = jnp.array([[1.0], [2.0], [3.0]])
@@ -183,7 +183,7 @@ An `Upsample2D` repeats each position along both spatial axes. On a `(H, W, c)` 
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.convtranspose import Upsample2D
+from dense_armor.utility.deep.neural.convtranspose import Upsample2D
 
 u = Upsample2D(2)
 x = jnp.array([[[1.0], [2.0]], [[3.0], [4.0]]])
@@ -204,13 +204,13 @@ Textbook definition, no citation.
 
 A recurrent layer reads a sequence from left to right; the state at position `t` depends on the past, not on the future. In a speech recogniser, in a tagger, in a classifier of a whole sequence, the meaning of a token depends on what comes after as well. A bidirectional layer runs two recurrent layers, one on the sequence and one on the reversed sequence, and concatenates the two outputs on the last axis.
 
-`Bidirectional(forward_layer, backward_layer)` is in `dense_armor/utility/neural/bidirectional.py`. The two layers can differ in kind (`RNN`, `GRU`, `LSTM`) and in hidden size.
+`Bidirectional(forward_layer, backward_layer)` is in `dense_armor/utility/deep/neural/bidirectional.py`. The two layers can differ in kind (`RNN`, `GRU`, `LSTM`) and in hidden size.
 
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.bidirectional import Bidirectional
-from dense_armor.utility.neural.recurrent import RNN
+from dense_armor.utility.deep.neural.bidirectional import Bidirectional
+from dense_armor.utility.deep.neural.recurrent import RNN
 
 f = RNN(1, 1, jax.random.PRNGKey(0))
 f.W.value = jnp.array([[1.0]]); f.U.value = jnp.array([[0.5]]); f.b.value = jnp.array([0.0])
@@ -233,11 +233,11 @@ The forward half is the sequence `0.761594, 0.363399, -0.674144`; the backward h
 
 `BatchNorm` normalises each channel with the mean and the variance of the batch, so the output at one sample depends on the other samples. In a control loop that produces one sample at a time, or in a small-batch setting, that dependence is a problem. `GroupNorm` splits the channels into groups and normalises over the positions and the channels of each group, with no running statistics. `InstanceNorm` is the special case of one channel per group.
 
-`GroupNorm(num_groups, num_channels, eps=1e-5, spatial_ndim=2)` and `InstanceNorm(num_channels, eps=1e-5, spatial_ndim=2)` are in `dense_armor/utility/neural/norm_more.py`.
+`GroupNorm(num_groups, num_channels, eps=1e-5, spatial_ndim=2)` and `InstanceNorm(num_channels, eps=1e-5, spatial_ndim=2)` are in `dense_armor/utility/deep/neural/norm_more.py`.
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.norm_more import GroupNorm, InstanceNorm
+from dense_armor.utility.deep.neural.norm_more import GroupNorm, InstanceNorm
 
 x = jnp.array([[[1.0, 2.0, 3.0, 4.0]], [[5.0, 6.0, 7.0, 8.0]]])
 y = GroupNorm(2, 4).forward(x).reshape(-1)
@@ -262,12 +262,12 @@ The mean of each output group is `0` and the variance is `1 / (1 + eps)` within 
 
 A 2D convolution sees a frame; a video has a third axis. A `Conv3D` convolves a cube of frames, so the filter has a temporal extent and the network can learn a motion pattern. A depthwise convolution applies a separate filter to every channel, so the number of multiplications is much smaller than a full convolution; a `SeparableConv2D` follows the depthwise with a `1 x 1` pointwise convolution that mixes the channels. The Xception paper of Chollet (2017) shows that a stack of depthwise separable convolutions is competitive with a stack of full convolutions, with far fewer parameters.
 
-`Conv3D`, `DepthwiseConv2D` and `SeparableConv2D` are in `dense_armor/utility/neural/conv_more.py`.
+`Conv3D`, `DepthwiseConv2D` and `SeparableConv2D` are in `dense_armor/utility/deep/neural/conv_more.py`.
 
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.conv_more import Conv3D, DepthwiseConv2D, SeparableConv2D
+from dense_armor.utility.deep.neural.conv_more import Conv3D, DepthwiseConv2D, SeparableConv2D
 
 c = Conv3D(1, 1, 3, jax.random.PRNGKey(0))
 c.W.value = jnp.ones_like(c.W.value); c.b.value = jnp.zeros_like(c.b.value)
@@ -309,12 +309,12 @@ print(sum(p.value.size for p in sep.params()))
 
 A transformer is permutation-invariant: the attention block sees a set, not a sequence. The order has to be added, either as a fixed sinusoidal pattern or as a learned vector per position. Vaswani et al. (2017), page 6: the two versions give nearly identical results, and the learned one has one advantage (no `max_len` fixed in advance) and one disadvantage (no extrapolation to longer sequences).
 
-`LearnedPositions(max_len, d_model, key, std=0.02)` is in `dense_armor/utility/neural/positions.py`. It holds a `Param P` of shape `(max_len, d_model)` and adds `P[:T]` to the first `T` positions of its input.
+`LearnedPositions(max_len, d_model, key, std=0.02)` is in `dense_armor/utility/deep/neural/positions.py`. It holds a `Param P` of shape `(max_len, d_model)` and adds `P[:T]` to the first `T` positions of its input.
 
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.positions import LearnedPositions
+from dense_armor.utility.deep.neural.positions import LearnedPositions
 
 m = LearnedPositions(3, 2, jax.random.PRNGKey(0))
 m.P.value = jnp.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
@@ -338,11 +338,11 @@ The scale `std = 0.02` is our choice; the paper gives no value. The reference is
 
 `MSE` and `SoftmaxCrossEntropy` are not enough. `L1Loss` is robust to outliers; `LabelSmoothingCE` prevents the largest logit from becoming much larger than all the others; `KLDivLoss` trains a classifier on soft targets; `HingeLoss` is the loss of a max-margin classifier; `FocalLoss` down-weights the well-classified examples, so the training focuses on the hard ones.
 
-`L1Loss`, `LabelSmoothingCE(eps=0.1)`, `KLDivLoss`, `HingeLoss` and `FocalLoss(gamma=2.0, alpha=None)` are in `dense_armor/utility/neural/losses_more.py`.
+`L1Loss`, `LabelSmoothingCE(eps=0.1)`, `KLDivLoss`, `HingeLoss` and `FocalLoss(gamma=2.0, alpha=None)` are in `dense_armor/utility/deep/neural/losses_more.py`.
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.losses_more import (
+from dense_armor.utility.deep.neural.losses_more import (
     L1Loss, LabelSmoothingCE, KLDivLoss, HingeLoss, FocalLoss,
 )
 
@@ -380,15 +380,15 @@ The label-smoothing target is `q'(k) = (1 - eps) delta_{k,y} + eps / K`, page 7 
 
 `OnlineNetRegressor` of the library trains a network one sample at a time on a scalar target. A `Seq2Seq`, a `VectorQuantizer` and a `MatryoshkaLoss` have a vector target, and the loss may have its own parameters. `OnlineNetVector` is the online form for all of them: it accepts `x` as a dict or as any array-like, `y` as any array-like (a scalar included), and it trains the model and the loss together.
 
-`OnlineNetVector(model, loss, optimizer, feature_keys=None, schedule=None, weight_decay=0.0, decay="l2", clip_norm=None)` is in `dense_armor/utility/neural/online_vector.py`, a subclass of `dense_armor.roles.Regressor`.
+`OnlineNetVector(model, loss, optimizer, feature_keys=None, schedule=None, weight_decay=0.0, decay="l2", clip_norm=None)` is in `dense_armor/utility/deep/neural/online_vector.py`, a subclass of `dense_armor.roles.Regressor`.
 
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.layers import Dense
-from dense_armor.utility.neural.losses import MSE
-from dense_armor.utility.neural.online_vector import OnlineNetVector
-from dense_armor.utility.optim import SGD
+from dense_armor.utility.deep.neural.layers import Dense
+from dense_armor.utility.deep.neural.losses import MSE
+from dense_armor.utility.deep.neural.online_vector import OnlineNetVector
+from dense_armor.utility.online.optim import SGD
 
 m = Dense(2, 2, jax.random.PRNGKey(0))
 m.W.value = jnp.eye(2); m.b.value = jnp.zeros(2)
@@ -415,16 +415,16 @@ The last step uses seven of the pieces in a single autoencoder on 64 synthetic `
 import numpy as np
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.layers import Dense
-from dense_armor.utility.neural.chain import Sequential
-from dense_armor.utility.neural.conv import Conv2D
-from dense_armor.utility.neural.convtranspose import ConvTranspose2D
-from dense_armor.utility.neural.norm_more import GroupNorm
-from dense_armor.utility.neural.activations_more import GELU
-from dense_armor.utility.neural.losses import MSE
-from dense_armor.utility.neural.trainer import Trainer
-from dense_armor.utility.neural.schedules_more import LinearWarmup
-from dense_armor.utility.optim import SGD
+from dense_armor.utility.deep.neural.layers import Dense
+from dense_armor.utility.deep.neural.chain import Sequential
+from dense_armor.utility.deep.neural.conv import Conv2D
+from dense_armor.utility.deep.neural.convtranspose import ConvTranspose2D
+from dense_armor.utility.deep.neural.norm_more import GroupNorm
+from dense_armor.utility.deep.neural.activations_more import GELU
+from dense_armor.utility.deep.neural.losses import MSE
+from dense_armor.utility.deep.neural.trainer import Trainer
+from dense_armor.utility.deep.neural.schedules_more import LinearWarmup
+from dense_armor.utility.online.optim import SGD
 
 rng = np.random.default_rng(0)
 X = rng.normal(0.0, 1.0, (64, 8, 8, 1)).astype(np.float32)

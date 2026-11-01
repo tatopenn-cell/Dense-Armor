@@ -32,7 +32,7 @@ The paper's Section 4 notes a corner case that matters here. If the sum of the r
 
 ```python
 import numpy as np
-from dense_armor.utility.anomaly.lof import LocalOutlierFactor
+from dense_armor.utility.online.anomaly.lof import LocalOutlierFactor
 
 rng = np.random.default_rng(0)
 det = LocalOutlierFactor(feature_keys=["a", "b"], n_neighbors=20, window=200)
@@ -58,8 +58,8 @@ The residual of joints 0-3 on a `SyntheticArm` payload fault. The fault, 5 kg ad
 
 ```python
 from pathlib import Path
-from dense_armor.utility.anomaly.lof import LocalOutlierFactor
-from dense_armor.utility.datasets import SyntheticArm
+from dense_armor.utility.online.anomaly.lof import LocalOutlierFactor
+from dense_armor.utility.signals.datasets import SyntheticArm
 
 ds = SyntheticArm(
     Path("test/fixtures/urdf/panda.urdf"),

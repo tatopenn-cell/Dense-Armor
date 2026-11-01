@@ -1,13 +1,13 @@
-"""Tests for dense_armor/utility/metrics/regression.py."""
+"""Tests for dense_armor/utility/evaluation/metrics/regression.py."""
 import doctest
 import math
 
 import pytest
 from sklearn import metrics as skm
 
-import dense_armor.utility.metrics.regression as reg_mod
+import dense_armor.utility.evaluation.metrics.regression as reg_mod
 from dense_armor.roles import Classifier, Estimate, Regressor
-from dense_armor.utility.metrics import (
+from dense_armor.utility.evaluation.metrics import (
     GaussianNLL,
     IntervalCoverage,
     MeanAbsoluteError,

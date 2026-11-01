@@ -22,7 +22,7 @@ The question is not 'is the distance below a threshold'. At 2 m/s the drone cove
 
 ## 1. The Control Barrier Function, in one line
 
-A Control Barrier Function is a real-valued function `h(x)` of the state such that `h(x) ≥ 0` is the safe set. The filter of Ames et al. 2019 (equation CBF-QP, section II, cited in the docstring of `dense_armor/utility/control/cbf_filter.py`, arXiv:1903.11199, page 2) is:
+A Control Barrier Function is a real-valued function `h(x)` of the state such that `h(x) ≥ 0` is the safe set. The filter of Ames et al. 2019 (equation CBF-QP, section II, cited in the docstring of `dense_armor/utility/robot/control/cbf_filter.py`, arXiv:1903.11199, page 2) is:
 
 ```text
 u(x) = argmin_u (1/2)||u - u_des||^2
@@ -134,7 +134,7 @@ The figure and the numbers come from `benchmarks/drones/make_figure_safety.py` a
 
 ### References
 
-- Ames, A. D., Coogan, S., Egerstedt, M., Notomista, G., Sreenath, K., Tabuada, P. (2019). *Control Barrier Functions: Theory and Applications.* European Control Conference (ECC). arXiv:1903.11199. Equation CBF-QP, section II, page 2. The docstring of `dense_armor/utility/control/cbf_filter.py` cites this paper and page.
+- Ames, A. D., Coogan, S., Egerstedt, M., Notomista, G., Sreenath, K., Tabuada, P. (2019). *Control Barrier Functions: Theory and Applications.* European Control Conference (ECC). arXiv:1903.11199. Equation CBF-QP, section II, page 2. The docstring of `dense_armor/utility/robot/control/cbf_filter.py` cites this paper and page.
 - The scan generator is `benchmarks/lidar_sim.py` (simulated lidar). The scene (6 x 4 m room, two pillars, robot arm, 180 beams, 10 Hz, 1 cm noise) is described in its module docstring, pages 1-2 of the file.
 
 ### Choices stated explicitly

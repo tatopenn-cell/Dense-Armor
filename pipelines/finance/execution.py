@@ -1,7 +1,7 @@
 """Execution pipeline: decide whether an order leaves, and how big.
 
 Uses dense_armor.protect.orca to dampen oversized orders, and
-dense_armor.utility.stats.moments to track a rolling distribution of
+dense_armor.utility.signals.stats.moments to track a rolling distribution of
 order sizes.
 
 Cliente: trading desk, broker, market maker.
@@ -22,8 +22,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from dense_armor.utility.protect.orca import Orca
-from dense_armor.utility.stats.moments import RunningMoments
+from dense_armor.utility.online.protect.orca import Orca
+from dense_armor.utility.signals.stats.moments import RunningMoments
 
 
 @dataclass

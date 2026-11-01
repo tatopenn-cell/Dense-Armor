@@ -3,8 +3,8 @@ import math
 import numpy as np
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.metrics import MeanSquaredError
-from dense_armor.utility.tree.sgt import (
+from dense_armor.utility.evaluation.metrics import MeanSquaredError
+from dense_armor.utility.online.tree.sgt import (
     SGTClassifier,
     SGTRegressor,
     _student_t_sf,
@@ -86,7 +86,7 @@ def test_check_estimator_sgt_classifier():
 
 
 def test_merge_of_bins_equals_concatenated_moments():
-    from dense_armor.utility.tree.sgt import _BinStats, _merge
+    from dense_armor.utility.online.tree.sgt import _BinStats, _merge
 
     rng = np.random.default_rng(3)
     g = rng.normal(size=300)

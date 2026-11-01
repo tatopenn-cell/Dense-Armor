@@ -49,7 +49,7 @@ item, hash it into the same columns and take the **minimum** of the
 `d` counters.
 
 ```python
-from dense_armor.utility.stats.sketches import CountMinSketch
+from dense_armor.utility.signals.stats.sketches import CountMinSketch
 
 cm = CountMinSketch(epsilon=0.001, delta=0.001)
 for w in ["a", "b", "a", "c", "a", "b", "a"]:
@@ -109,7 +109,7 @@ count the number of leading zeros in the remaining bits plus one. If
 that number is larger than the current register value, store it.
 
 ```python
-from dense_armor.utility.stats.sketches import HyperLogLog
+from dense_armor.utility.signals.stats.sketches import HyperLogLog
 
 h = HyperLogLog(precision=10)
 for i in range(1000):
@@ -145,7 +145,7 @@ where `V` is the number of registers still at zero. This makes the
 estimate accurate down to very small cardinalities:
 
 ```python
-from dense_armor.utility.stats.sketches import HyperLogLog
+from dense_armor.utility.signals.stats.sketches import HyperLogLog
 
 h = HyperLogLog(precision=10)
 for i in range(1000):
@@ -168,7 +168,7 @@ of the two values. This is exactly the state a single sketch would
 have if it had seen both streams.
 
 ```python
-from dense_armor.utility.stats.sketches import HyperLogLog
+from dense_armor.utility.signals.stats.sketches import HyperLogLog
 
 h = HyperLogLog(precision=10)
 for i in range(1000):
@@ -199,7 +199,7 @@ insert an item, hash it `k` times and set each of the `k` bits. To
 test, hash the same way and check whether all `k` bits are set.
 
 ```python
-from dense_armor.utility.stats.sketches import BloomFilter
+from dense_armor.utility.signals.stats.sketches import BloomFilter
 
 b = BloomFilter(n_expected=1000, p_false=0.01)
 for i in range(1000):
@@ -251,7 +251,7 @@ instance would have produced from both streams.
   replaced by a new counter for the incoming item with value `m + 1`.
 
 ```python
-from dense_armor.utility.stats.sketches import SpaceSaving
+from dense_armor.utility.signals.stats.sketches import SpaceSaving
 
 s = SpaceSaving(k=3)
 for w in ["a"] * 10 + ["b"] * 5 + ["c"] * 2 + ["d"] * 1:
@@ -292,7 +292,7 @@ The four sketches answer four different operational questions:
 - The **space-saving** keeps the ten most frequent fault signatures.
 
 ```python
-from dense_armor.utility.stats.sketches import (
+from dense_armor.utility.signals.stats.sketches import (
     CountMinSketch, HyperLogLog, BloomFilter, SpaceSaving,
 )
 

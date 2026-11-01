@@ -7,8 +7,8 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.neural.gradcheck import gradcheck
-from dense_armor.utility.neural.recurrent import GRU, LSTM, RNN
+from dense_armor.utility.deep.neural.gradcheck import gradcheck
+from dense_armor.utility.deep.neural.recurrent import GRU, LSTM, RNN
 
 
 def _x():

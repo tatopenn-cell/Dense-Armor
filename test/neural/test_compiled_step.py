@@ -12,29 +12,29 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from dense_armor.utility.neural.compiled import (
+from dense_armor.utility.deep.neural.compiled import (
     _init_state as init_state,
 )
-from dense_armor.utility.neural.compiled import (
+from dense_armor.utility.deep.neural.compiled import (
     _read_values as read_values,
 )
-from dense_armor.utility.neural.compiled import (
+from dense_armor.utility.deep.neural.compiled import (
     _write_values as write_values,
 )
-from dense_armor.utility.neural.compiled import (
+from dense_armor.utility.deep.neural.compiled import (
     make_step,
 )
-from dense_armor.utility.neural.losses import MSE
-from dense_armor.utility.neural.models import (
+from dense_armor.utility.deep.neural.losses import MSE
+from dense_armor.utility.deep.neural.models import (
     cnn,
     mlp,
     recurrent_net,
     resnet_mlp,
     transformer_encoder,
 )
-from dense_armor.utility.neural.schedules import ConstantLR, StepLR
-from dense_armor.utility.neural.trainer import Trainer
-from dense_armor.utility.optim import SGD, AdaGrad, Adam, RMSProp
+from dense_armor.utility.deep.neural.schedules import ConstantLR, StepLR
+from dense_armor.utility.deep.neural.trainer import Trainer
+from dense_armor.utility.online.optim import SGD, AdaGrad, Adam, RMSProp
 
 MODEL_FACTORIES = {
     "mlp": (
@@ -461,8 +461,8 @@ def test_compiled_equals_loop_l2_equals_decoupled_for_plain_sgd():
 
 def test_rejects_dropout():
     """compile=True rejects a model that contains Dropout."""
-    from dense_armor.utility.neural.chain import Sequential
-    from dense_armor.utility.neural.layers import Dense, Dropout
+    from dense_armor.utility.deep.neural.chain import Sequential
+    from dense_armor.utility.deep.neural.layers import Dense, Dropout
 
     key = jax.random.PRNGKey(0)
     k1, k2, k3 = jax.random.split(key, 3)
@@ -473,9 +473,9 @@ def test_rejects_dropout():
 
 def test_rejects_batchnorm():
     """compile=True rejects a model that contains BatchNorm."""
-    from dense_armor.utility.neural.chain import Sequential
-    from dense_armor.utility.neural.layers import Dense
-    from dense_armor.utility.neural.norm import BatchNorm
+    from dense_armor.utility.deep.neural.chain import Sequential
+    from dense_armor.utility.deep.neural.layers import Dense
+    from dense_armor.utility.deep.neural.norm import BatchNorm
 
     key = jax.random.PRNGKey(0)
     k1, k2 = jax.random.split(key)

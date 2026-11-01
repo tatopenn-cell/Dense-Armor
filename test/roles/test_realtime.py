@@ -15,7 +15,7 @@ from dense_armor.roles.realtime import (
     profile,
 )
 from dense_armor.roles.signal import Signal
-from dense_armor.utility.stats.moments import RunningMoments
+from dense_armor.utility.signals.stats.moments import RunningMoments
 
 
 def _stream(n: int = 100):

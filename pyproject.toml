@@ -53,7 +53,7 @@ Issues = "https://github.com/tatopenn-cell/Dense-Armor/issues"
 "Sister project (Dense-Evolution)" = "https://github.com/tatopenn-cell/Dense-Evolution"
 
 [project.scripts]
-dense-armor = "dense_armor.armatura:main"
+dense-armor = "dense_armor.armor:main"
 dense-armor-mcp = "dense_armor.mcp_server.server:main"
 
 [tool.setuptools.packages.find]

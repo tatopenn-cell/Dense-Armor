@@ -1,14 +1,14 @@
-"""Tests for dense_armor/utility/metrics/{base,classification}.py."""
+"""Tests for dense_armor/utility/evaluation/metrics/{base,classification}.py."""
 import doctest
 
 import numpy as np
 import pytest
 from sklearn import metrics as skm
 
-import dense_armor.utility.metrics.base as base_mod
-import dense_armor.utility.metrics.classification as cls_mod
+import dense_armor.utility.evaluation.metrics.base as base_mod
+import dense_armor.utility.evaluation.metrics.classification as cls_mod
 from dense_armor.roles import Classifier, Regressor
-from dense_armor.utility.metrics import (
+from dense_armor.utility.evaluation.metrics import (
     F1,
     Accuracy,
     BalancedAccuracy,
