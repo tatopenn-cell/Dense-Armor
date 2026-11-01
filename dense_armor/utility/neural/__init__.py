@@ -102,10 +102,12 @@ from dense_armor.utility.neural.schedules import (
     CosineWarmRestarts,
     StepLR,
 )
+from dense_armor.utility.neural.stream import DataStream
 from dense_armor.utility.neural.trainer import Trainer
 
 __all__ = list(__all__) + [
     "minibatches",
+    "DataStream",
     "ConstantLR",
     "StepLR",
     "CosineWarmRestarts",
