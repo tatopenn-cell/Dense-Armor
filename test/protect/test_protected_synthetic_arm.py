@@ -12,9 +12,9 @@ from pathlib import Path
 
 from dense_armor.roles.anomaly_detector import AnomalyGate
 from dense_armor.roles.protection import Protected
-from dense_armor.utility.anomaly.filters import HampelScorer
-from dense_armor.utility.datasets import SyntheticArm
-from dense_armor.utility.learn.online_dynamics import RecursiveLeastSquares
+from dense_armor.utility.online.anomaly.filters import HampelScorer
+from dense_armor.utility.signals.datasets import SyntheticArm
+from dense_armor.utility.online.learn.online_dynamics import RecursiveLeastSquares
 
 URDF = Path("test/fixtures/urdf/panda.urdf")
 

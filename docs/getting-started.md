@@ -15,9 +15,9 @@ Python 3.10 or newer. The computation runs on JAX, which is installed with it.
 A normal model is trained once on a table and then used. An online model reads one sample, answers, and only then learns from it. Three methods describe every estimator in the library: `predict_one(x)` answers, `learn_one(x, y)` learns, `score_one(x)` says how strange `x` is.
 
 ```python
-from dense_armor.utility.datasets import DriftStream
-from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
-from dense_armor.utility.metrics import Accuracy
+from dense_armor.utility.signals.datasets import DriftStream
+from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB
+from dense_armor.utility.evaluation.metrics import Accuracy
 
 ds = DriftStream(n_samples=2000, n_features=5, n_drifts=1, kind="sudden", seed=0)
 nb = OnlineGaussianNB()
@@ -42,7 +42,7 @@ A model can fail quietly when the world changes. A drift detector watches one nu
 
 ```python
 import numpy as np
-from dense_armor.utility.drift.page_hinkley import PageHinkley
+from dense_armor.utility.online.drift.page_hinkley import PageHinkley
 
 rng = np.random.default_rng(0)
 xs = np.concatenate([rng.normal(0, 1, 500), rng.normal(3, 1, 500)])
@@ -66,7 +66,7 @@ The mean of the stream moves from 0 to 3 at sample 500. The detector fires at sa
 Some data has no label. Anomaly detectors learn what normal looks like and give each new point a score: high means far from normal. They follow the same `learn_one` / `score_one` pair.
 
 ```python
-from dense_armor.utility.anomaly.mahalanobis import OnlineRobustMahalanobis
+from dense_armor.utility.online.anomaly.mahalanobis import OnlineRobustMahalanobis
 
 rng = np.random.default_rng(0)
 det = OnlineRobustMahalanobis()
@@ -85,13 +85,13 @@ The detector learned from 1,000 points of a standard normal distribution on two 
 
 ## 5. Clean a series before the model sees it
 
-A broken sensor sends `NaN` or a value of 9999 and the model learns from it. `Armatura` is a shield that finds such points and replaces them.
+A broken sensor sends `NaN` or a value of 9999 and the model learns from it. `Armor` is a shield that finds such points and replaces them.
 
 ```python
-from dense_armor import Armatura
+from dense_armor import Armor
 
 serie = np.array([1.0, 1.1, 1.2, 9999.0, 1.15, np.nan, 1.2, 1.25])
-pulito, K, anomalie = Armatura(livello_ia=0.0).analizza(serie)
+pulito, K, anomalie = Armor(livello_ia=0.0).analizza(serie)
 print(pulito)
 print(anomalie)
 ```
@@ -101,14 +101,14 @@ print(anomalie)
 [3, 5]
 ```
 
-The names are Italian: `analizza` is "analyse", `livello_ia=0.0` means the shield filters actively (1.0 only marks, and the 9999 stays in the series). It returns three things: the cleaned series, `K`, and the list `anomalie` of replaced positions, here 3 (the 9999) and 5 (the `NaN`). Both are replaced and the series keeps its length. `K` is the flag of the internal trigger, one per sample, and it is not the same list: the `NaN` is cleaned before the trigger, so `K` is 0 at position 5, and the trigger also marks positions 2 and 7. The sample at position 2 is replaced by the local median (1.2 becomes 1.05) without being listed in `anomalie`. The [Armatura page](shields/armatura.md) explains the trigger. [Shields](shields/index.md) shows the others, including `Orca`, which wraps a whole model.
+The names are Italian: `analizza` is "analyse", `livello_ia=0.0` means the shield filters actively (1.0 only marks, and the 9999 stays in the series). It returns three things: the cleaned series, `K`, and the list `anomalie` of replaced positions, here 3 (the 9999) and 5 (the `NaN`). Both are replaced and the series keeps its length. `K` is the flag of the internal trigger, one per sample, and it is not the same list: the `NaN` is cleaned before the trigger, so `K` is 0 at position 5, and the trigger also marks positions 2 and 7. The sample at position 2 is replaced by the local median (1.2 becomes 1.05) without being listed in `anomalie`. The [Armor page](shields/armor.md) explains the trigger. [Shields](shields/index.md) shows the others, including `Orca`, which wraps a whole model.
 
 ## 6. Keep a command from jumping
 
 A controller that receives a spike can send it to a motor. `rate_limited_follower` follows a command but never changes faster than the limits you give.
 
 ```python
-from dense_armor.utility.control.rate_limiter import rate_limited_follower
+from dense_armor.utility.robot.control.rate_limiter import rate_limited_follower
 
 raw = np.sin(np.linspace(0, 6, 200))
 raw[50] = 1e6

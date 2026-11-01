@@ -20,11 +20,11 @@ import jax
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dense_armor.utility.neural.losses import MSE
-from dense_armor.utility.neural.models import mlp
-from dense_armor.utility.neural.schedules import CosineWarmRestarts
-from dense_armor.utility.neural.trainer import Trainer
-from dense_armor.utility.optim import Adam
+from dense_armor.utility.deep.neural.losses import MSE
+from dense_armor.utility.deep.neural.models import mlp
+from dense_armor.utility.deep.neural.schedules import CosineWarmRestarts
+from dense_armor.utility.deep.neural.trainer import Trainer
+from dense_armor.utility.online.optim import Adam
 
 HERE = Path(__file__).resolve().parents[2]
 OUT = HERE / "docs" / "assets" / "neural" / "training.png"

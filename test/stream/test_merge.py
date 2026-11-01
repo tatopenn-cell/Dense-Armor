@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from dense_armor.utility.stream import iter_array, merge_by_time
+from dense_armor.utility.signals.stream import iter_array, merge_by_time
 
 
 def test_merge_sorted():

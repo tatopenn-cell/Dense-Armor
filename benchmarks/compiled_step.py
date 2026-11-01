@@ -46,26 +46,26 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from dense_armor.utility.neural.compiled import (  # noqa: E402
+from dense_armor.utility.deep.neural.compiled import (  # noqa: E402
     _init_state as init_state,
 )
-from dense_armor.utility.neural.compiled import (
+from dense_armor.utility.deep.neural.compiled import (
     _read_values as read_values,
 )
-from dense_armor.utility.neural.compiled import (
+from dense_armor.utility.deep.neural.compiled import (
     _write_values as write_values,
 )
-from dense_armor.utility.neural.compiled import (
+from dense_armor.utility.deep.neural.compiled import (
     make_step,
 )
-from dense_armor.utility.neural.losses import MSE  # noqa: E402
-from dense_armor.utility.neural.models import (  # noqa: E402
+from dense_armor.utility.deep.neural.losses import MSE  # noqa: E402
+from dense_armor.utility.deep.neural.models import (  # noqa: E402
     mlp,
     transformer_encoder,
 )
-from dense_armor.utility.neural.schedules import ConstantLR  # noqa: E402
-from dense_armor.utility.neural.trainer import Trainer  # noqa: E402
-from dense_armor.utility.optim import SGD  # noqa: E402
+from dense_armor.utility.deep.neural.schedules import ConstantLR  # noqa: E402
+from dense_armor.utility.deep.neural.trainer import Trainer  # noqa: E402
+from dense_armor.utility.online.optim import SGD  # noqa: E402
 
 SEED = 0
 N_SESSIONS = 3

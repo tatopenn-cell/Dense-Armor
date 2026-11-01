@@ -5,7 +5,7 @@ import json
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.preprocessing.vectorizer import TextVectorizer
+from dense_armor.utility.signals.preprocessing.vectorizer import TextVectorizer
 
 DOCS = ["the quick brown fox", "a quick brown dog", "the fox and the dog"]
 

@@ -19,7 +19,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 
-from dense_armor.utility.rules import AMRulesRegressor
+from dense_armor.utility.online.rules import AMRulesRegressor
 
 HERE = Path(__file__).resolve().parent
 BLUE, RED, GREY = "#2b6ca3", "#c0392b", "#7f8c8d"

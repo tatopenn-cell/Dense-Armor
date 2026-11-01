@@ -7,22 +7,22 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.neural.attention import (
+from dense_armor.utility.deep.neural.attention import (
     MultiHeadSelfAttention,
     TransformerBlock,
 )
-from dense_armor.utility.neural.glu import GLUFeedForward
-from dense_armor.utility.neural.gradcheck import gradcheck
-from dense_armor.utility.neural.losses import MSE
-from dense_armor.utility.neural.models import transformer_encoder
-from dense_armor.utility.neural.norm_rms import RMSNorm
-from dense_armor.utility.neural.rotary import (
+from dense_armor.utility.deep.neural.glu import GLUFeedForward
+from dense_armor.utility.deep.neural.gradcheck import gradcheck
+from dense_armor.utility.deep.neural.losses import MSE
+from dense_armor.utility.deep.neural.models import transformer_encoder
+from dense_armor.utility.deep.neural.norm_rms import RMSNorm
+from dense_armor.utility.deep.neural.rotary import (
     apply_rotary,
     apply_rotary_transpose,
     rotary_angles,
 )
-from dense_armor.utility.neural.trainer import Trainer
-from dense_armor.utility.optim import SGD
+from dense_armor.utility.deep.neural.trainer import Trainer
+from dense_armor.utility.online.optim import SGD
 
 
 def _grad_errors(layer, x):
@@ -358,7 +358,7 @@ def test_rotary_attention_trains_the_same_in_the_compiled_step():
 
 
 def test_the_new_blocks_are_exported_with_layernorm():
-    import dense_armor.utility.neural as neural
+    import dense_armor.utility.deep.neural as neural
 
     assert neural.RMSNorm is RMSNorm
     assert neural.GLUFeedForward is GLUFeedForward

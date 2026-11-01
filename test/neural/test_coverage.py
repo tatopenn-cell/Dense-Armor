@@ -7,14 +7,14 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.neural.adapter import AsTransformer
-from dense_armor.utility.neural.layers import (
+from dense_armor.utility.deep.neural.adapter import AsTransformer
+from dense_armor.utility.deep.neural.layers import (
     Dense,
     Dropout,
     Embedding,
     Residual,
 )
-from dense_armor.utility.neural.norm import BatchNorm, LayerNorm
+from dense_armor.utility.deep.neural.norm import BatchNorm, LayerNorm
 
 
 def test_dense_xavier_init_and_bad_init():
@@ -156,7 +156,7 @@ def test_adapter_non_numeric_value_counts_as_missing():
 
 
 def test_layernorm_backward_1d_matches_batch_row():
-    from dense_armor.utility.neural.norm import LayerNorm
+    from dense_armor.utility.deep.neural.norm import LayerNorm
 
     x_row = jnp.array([0.112, -0.406, 2.108, -0.268])
     x_batch = x_row[None, :]
@@ -182,7 +182,7 @@ def test_layernorm_backward_1d_matches_batch_row():
 
 
 def test_batchnorm_backward_after_eval_raises():
-    from dense_armor.utility.neural.norm import BatchNorm
+    from dense_armor.utility.deep.neural.norm import BatchNorm
 
     bn = BatchNorm(3)
     bn.forward(jnp.ones((4, 3)), training=True)
@@ -200,7 +200,7 @@ def test_dropout_backward_after_eval_raises():
 
 
 def test_batchnorm_training_rejects_1d_input():
-    from dense_armor.utility.neural.norm import BatchNorm
+    from dense_armor.utility.deep.neural.norm import BatchNorm
 
     bn = BatchNorm(3)
     with pytest.raises(ValueError, match="2-D batch"):
@@ -214,8 +214,8 @@ def test_embedding_rejects_float_ids():
 
 
 def test_sequential_repr_eq_and_eq_with_wrong_type():
-    from dense_armor.utility.neural.chain import Sequential
-    from dense_armor.utility.neural.layers import Dense
+    from dense_armor.utility.deep.neural.chain import Sequential
+    from dense_armor.utility.deep.neural.layers import Dense
 
     a = Sequential([Dense(3, 2, jax.random.PRNGKey(0))])
     b = Sequential([Dense(3, 2, jax.random.PRNGKey(0))])
@@ -229,7 +229,7 @@ def test_sequential_repr_eq_and_eq_with_wrong_type():
 
 
 def test_sequential_accepts_training_with_kwargs_layer():
-    from dense_armor.utility.neural.chain import Sequential, _accepts_training
+    from dense_armor.utility.deep.neural.chain import Sequential, _accepts_training
 
     class WithKwargs:
         def forward(self, x, **kwargs):
@@ -245,8 +245,8 @@ def test_sequential_accepts_training_with_kwargs_layer():
 
 
 def test_sequential_forward_without_training_argument():
-    from dense_armor.utility.neural.activations import Relu
-    from dense_armor.utility.neural.chain import Sequential
+    from dense_armor.utility.deep.neural.activations import Relu
+    from dense_armor.utility.deep.neural.chain import Sequential
 
     s = Sequential([Relu()])
     y = s.forward(jnp.array([-1.0, 1.0]))
@@ -254,8 +254,8 @@ def test_sequential_forward_without_training_argument():
 
 
 def test_parallel_repr_len_getitem():
-    from dense_armor.utility.neural.chain import Parallel
-    from dense_armor.utility.neural.layers import Dense
+    from dense_armor.utility.deep.neural.chain import Parallel
+    from dense_armor.utility.deep.neural.layers import Dense
 
     p = Parallel(
         [Dense(3, 4, jax.random.PRNGKey(0)), Dense(3, 4, jax.random.PRNGKey(1))], "add"
@@ -266,8 +266,8 @@ def test_parallel_repr_len_getitem():
 
 
 def test_parallel_eq():
-    from dense_armor.utility.neural.chain import Parallel
-    from dense_armor.utility.neural.layers import Dense
+    from dense_armor.utility.deep.neural.chain import Parallel
+    from dense_armor.utility.deep.neural.layers import Dense
 
     a = Parallel(
         [Dense(3, 4, jax.random.PRNGKey(0)), Dense(3, 4, jax.random.PRNGKey(1))], "add"
@@ -285,8 +285,8 @@ def test_parallel_eq():
 
 
 def test_parallel_backward_before_forward_raises():
-    from dense_armor.utility.neural.chain import Parallel
-    from dense_armor.utility.neural.layers import Dense
+    from dense_armor.utility.deep.neural.chain import Parallel
+    from dense_armor.utility.deep.neural.layers import Dense
 
     p = Parallel(
         [Dense(3, 4, jax.random.PRNGKey(0)), Dense(3, 4, jax.random.PRNGKey(1))], "add"
@@ -298,7 +298,7 @@ def test_parallel_backward_before_forward_raises():
 def test_accepts_training_when_signature_raises(monkeypatch):
     import inspect as _inspect
 
-    from dense_armor.utility.neural import chain as _chain
+    from dense_armor.utility.deep.neural import chain as _chain
 
     class WithForward:
         def forward(self, x):
@@ -312,9 +312,9 @@ def test_accepts_training_when_signature_raises(monkeypatch):
 
 
 def test_sequential_eq_length_and_type():
-    from dense_armor.utility.neural.activations import Relu
-    from dense_armor.utility.neural.chain import Sequential
-    from dense_armor.utility.neural.layers import Dense
+    from dense_armor.utility.deep.neural.activations import Relu
+    from dense_armor.utility.deep.neural.chain import Sequential
+    from dense_armor.utility.deep.neural.layers import Dense
 
     a = Sequential([Dense(3, 2, jax.random.PRNGKey(0))])
     b = Sequential([Dense(3, 2, jax.random.PRNGKey(0)), Relu()])
@@ -324,8 +324,8 @@ def test_sequential_eq_length_and_type():
 
 
 def test_sequential_load_state_dict_wrong_shape():
-    from dense_armor.utility.neural.chain import Sequential
-    from dense_armor.utility.neural.layers import Dense
+    from dense_armor.utility.deep.neural.chain import Sequential
+    from dense_armor.utility.deep.neural.layers import Dense
 
     s = Sequential([Dense(3, 2, jax.random.PRNGKey(0))])
     with pytest.raises(ValueError, match="state\\[0\\] has shape"):
@@ -333,9 +333,9 @@ def test_sequential_load_state_dict_wrong_shape():
 
 
 def test_parallel_eq_length_merge_and_type():
-    from dense_armor.utility.neural.activations import Relu
-    from dense_armor.utility.neural.chain import Parallel
-    from dense_armor.utility.neural.layers import Dense
+    from dense_armor.utility.deep.neural.activations import Relu
+    from dense_armor.utility.deep.neural.chain import Parallel
+    from dense_armor.utility.deep.neural.layers import Dense
 
     a = Parallel(
         [Dense(3, 4, jax.random.PRNGKey(0)), Dense(3, 4, jax.random.PRNGKey(1))], "add"
@@ -359,8 +359,8 @@ def test_parallel_eq_length_merge_and_type():
 
 
 def test_parallel_branch_without_training_argument():
-    from dense_armor.utility.neural.activations import Relu
-    from dense_armor.utility.neural.chain import Parallel
+    from dense_armor.utility.deep.neural.activations import Relu
+    from dense_armor.utility.deep.neural.chain import Parallel
 
     p = Parallel([Relu(), Relu()], "add")
     y = p.forward(jnp.array([-1.0, 1.0]))
@@ -368,8 +368,8 @@ def test_parallel_branch_without_training_argument():
 
 
 def test_parallel_eq_same_type_different_params():
-    from dense_armor.utility.neural.chain import Parallel
-    from dense_armor.utility.neural.layers import Dense
+    from dense_armor.utility.deep.neural.chain import Parallel
+    from dense_armor.utility.deep.neural.layers import Dense
 
     a = Parallel(
         [Dense(3, 4, jax.random.PRNGKey(0)), Dense(3, 4, jax.random.PRNGKey(1))], "add"

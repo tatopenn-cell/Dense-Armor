@@ -1,11 +1,11 @@
-"""Tests for dense_armor/utility/stats/quantiles.py."""
+"""Tests for dense_armor/utility/signals/stats/quantiles.py."""
 import doctest
 
 import numpy as np
 import pytest
 
-import dense_armor.utility.stats.quantiles as quantiles_mod
-from dense_armor.utility.stats.quantiles import DDSketch, TDigest
+import dense_armor.utility.signals.stats.quantiles as quantiles_mod
+from dense_armor.utility.signals.stats.quantiles import DDSketch, TDigest
 from dense_armor.checks import check_estimator
 
 

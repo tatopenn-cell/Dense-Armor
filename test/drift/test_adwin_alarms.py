@@ -1,6 +1,6 @@
 import numpy as np
 
-from dense_armor.utility.drift.adwin import ADWIN
+from dense_armor.utility.online.drift.adwin import ADWIN
 
 
 def _alarms(x, **kw):

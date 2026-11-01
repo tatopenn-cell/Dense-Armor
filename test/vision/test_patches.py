@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.vision.patches import PatchFeatures, PatchMemory
+from dense_armor.utility.signals.vision.patches import PatchFeatures, PatchMemory
 
 
 def _textured(size=64, seed=0):

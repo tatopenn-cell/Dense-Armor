@@ -11,10 +11,10 @@ This page builds the four pieces: the **online estimators** (`OnlineNetRegressor
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.online import OnlineNetRegressor
-from dense_armor.utility.neural.layers import Dense
-from dense_armor.utility.neural.losses import MSE
-from dense_armor.utility.optim import SGD
+from dense_armor.utility.deep.neural.online import OnlineNetRegressor
+from dense_armor.utility.deep.neural.layers import Dense
+from dense_armor.utility.deep.neural.losses import MSE
+from dense_armor.utility.online.optim import SGD
 
 d = Dense(1, 1, jax.random.PRNGKey(0))
 d.W.value = jnp.array([[2.0]])
@@ -39,11 +39,11 @@ Twenty samples fed one by one to `OnlineNetRegressor` leave the weights equal, w
 ~~~python
 import jax
 import numpy as np
-from dense_armor.utility.neural.online import OnlineNetRegressor
-from dense_armor.utility.neural.trainer import Trainer
-from dense_armor.utility.neural.models import mlp
-from dense_armor.utility.neural.losses import MSE
-from dense_armor.utility.optim import SGD
+from dense_armor.utility.deep.neural.online import OnlineNetRegressor
+from dense_armor.utility.deep.neural.trainer import Trainer
+from dense_armor.utility.deep.neural.models import mlp
+from dense_armor.utility.deep.neural.losses import MSE
+from dense_armor.utility.online.optim import SGD
 
 rng = np.random.default_rng(0)
 X = rng.normal(0.0, 1.0, (10, 2)).astype(np.float32)
@@ -78,10 +78,10 @@ A classifier, not a regressor: it learns one sample at a time from a label, and 
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.online import OnlineNetClassifier
-from dense_armor.utility.neural.layers import Dense
-from dense_armor.utility.neural.losses import SoftmaxCrossEntropy
-from dense_armor.utility.optim import SGD
+from dense_armor.utility.deep.neural.online import OnlineNetClassifier
+from dense_armor.utility.deep.neural.layers import Dense
+from dense_armor.utility.deep.neural.losses import SoftmaxCrossEntropy
+from dense_armor.utility.online.optim import SGD
 
 d = Dense(2, 3, jax.random.PRNGKey(0))
 d.W.value = jnp.array([[1.0, 0.0, -1.0], [0.0, 1.0, 0.0]])
@@ -113,7 +113,7 @@ A Hedge network of Sahoo, Pham, Lu and Hoi (2018) has `L + 1` classifiers on the
 ~~~python
 import jax
 import numpy as np
-from dense_armor.utility.neural.hedge import HedgeNetClassifier
+from dense_armor.utility.deep.neural.hedge import HedgeNetClassifier
 
 c = HedgeNetClassifier([2, 4, 4, 4], jax.random.PRNGKey(0), classes=[0, 1])
 print(c.L_)
@@ -132,7 +132,7 @@ On a stream where the pattern is linear, the shallow classifiers generalise well
 ~~~python
 import jax
 import numpy as np
-from dense_armor.utility.neural.hedge import HedgeNetClassifier
+from dense_armor.utility.deep.neural.hedge import HedgeNetClassifier
 
 rng = np.random.default_rng(0)
 X = rng.normal(0.0, 1.0, (300, 2)).astype(np.float32)
@@ -157,11 +157,11 @@ The two shallow classifiers (`0` and `1`) together hold `0.501`, more than the d
 `BackgroundLearner` wraps any estimator with `learn_one` and `predict_one` and moves the training to a daemon worker thread. The main program puts the sample in a `queue.Queue` and returns at once; when the queue is full, the oldest sample is dropped and counted in `n_dropped_`, so the main program never waits and the newest data are kept.
 
 ~~~python
-from dense_armor.utility.neural.background import BackgroundLearner
-from dense_armor.utility.neural.online import OnlineNetRegressor
-from dense_armor.utility.neural.models import mlp
-from dense_armor.utility.neural.losses import MSE
-from dense_armor.utility.optim import SGD
+from dense_armor.utility.deep.neural.background import BackgroundLearner
+from dense_armor.utility.deep.neural.online import OnlineNetRegressor
+from dense_armor.utility.deep.neural.models import mlp
+from dense_armor.utility.deep.neural.losses import MSE
+from dense_armor.utility.online.optim import SGD
 import jax
 
 m = mlp([2, 4, 1], jax.random.PRNGKey(0))
@@ -188,10 +188,10 @@ The `100` samples sent are all learned (`n_learned_ = 100`), and no sample is dr
 import tempfile
 from pathlib import Path
 from dense_armor.roles import SafeEstimator
-from dense_armor.utility.neural.online import OnlineNetRegressor
-from dense_armor.utility.neural.models import mlp
-from dense_armor.utility.neural.losses import MSE
-from dense_armor.utility.optim import Adam
+from dense_armor.utility.deep.neural.online import OnlineNetRegressor
+from dense_armor.utility.deep.neural.models import mlp
+from dense_armor.utility.deep.neural.losses import MSE
+from dense_armor.utility.online.optim import Adam
 import jax
 import numpy as np
 
@@ -228,10 +228,10 @@ The restored estimator has `n_seen_ = 10` and the same weights, because the file
 ~~~python
 import jax
 from dense_armor.roles import Signal, profile
-from dense_armor.utility.neural.online import OnlineNetRegressor
-from dense_armor.utility.neural.models import mlp
-from dense_armor.utility.neural.losses import MSE
-from dense_armor.utility.optim import SGD
+from dense_armor.utility.deep.neural.online import OnlineNetRegressor
+from dense_armor.utility.deep.neural.models import mlp
+from dense_armor.utility.deep.neural.losses import MSE
+from dense_armor.utility.online.optim import SGD
 
 m = mlp([2, 4, 1], jax.random.PRNGKey(0))
 o = OnlineNetRegressor(m, MSE(), SGD(0.01), feature_keys=["a", "b"])

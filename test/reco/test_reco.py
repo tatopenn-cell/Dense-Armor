@@ -5,8 +5,8 @@ import doctest
 import numpy as np
 import pytest
 
-from dense_armor.utility.reco import Baseline, BiasedMF, FunkMF
-from dense_armor.utility.reco import reco as reco_module
+from dense_armor.utility.online.reco import Baseline, BiasedMF, FunkMF
+from dense_armor.utility.online.reco import reco as reco_module
 
 
 def _planted(n_users=20, n_items=15, k=3, seed=0):

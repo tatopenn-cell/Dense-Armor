@@ -9,9 +9,9 @@ Input protocol: {"array": img} for GlobalMotion and DenseFlow,
 import numpy as np
 import pytest
 
-from dense_armor.utility.vision.dense import DenseFlow, MotionMask
-from dense_armor.utility.vision.motion import GlobalMotion
-from dense_armor.utility.vision.scene import FrameAnomaly
+from dense_armor.utility.signals.vision.dense import DenseFlow, MotionMask
+from dense_armor.utility.signals.vision.motion import GlobalMotion
+from dense_armor.utility.signals.vision.scene import FrameAnomaly
 from pipelines.drones.visual_landing import (
     FRAME_H,
     FRAME_W,

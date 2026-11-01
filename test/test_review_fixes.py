@@ -5,10 +5,8 @@ import sys
 
 import pytest
 
-import dense_armor
-from dense_armor.core import visualizer
 from dense_armor.roles.safety import SafeEstimator
-from dense_armor.utility.drift.cusum import one_sided_arl
+from dense_armor.utility.online.drift.cusum import one_sided_arl
 
 
 class _Model:
@@ -20,10 +18,6 @@ class _Model:
 
     def load_state_dict(self, d):
         self.w = d["w"]
-
-
-def test_engine_signature_follows_package_version():
-    assert visualizer.AIEngineVisualizer.ENGINE_SIGNATURE == f"dense-armor-v{dense_armor.__version__}"
 
 
 def test_dynamics_import_does_not_load_osqp():

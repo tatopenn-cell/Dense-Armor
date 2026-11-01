@@ -3,11 +3,11 @@ import numpy as np
 import pytest
 
 from dense_armor.roles import Classifier, Regressor
-from dense_armor.utility.evaluate import (
+from dense_armor.utility.evaluation.evaluate import (
     OnlineModelSelection,
     progressive_val_proba_score,
 )
-from dense_armor.utility.metrics import (
+from dense_armor.utility.evaluation.metrics import (
     F1,
     Accuracy,
     BalancedAccuracy,

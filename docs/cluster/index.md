@@ -8,7 +8,7 @@ This page shows how a system can automatically group similar data points togethe
 Each new point joins the nearest centre, and that centre moves a little towards it.
 
 ```python
-from dense_armor.utility.cluster.kmeans import OnlineKMeans
+from dense_armor.utility.online.cluster.kmeans import OnlineKMeans
 
 km = OnlineKMeans(k=2, warmup=4)
 for v in [0.0, 0.1, 10.0, 10.1, 0.2, 9.9]:
@@ -46,7 +46,7 @@ The online method sees each point once and recovers the three groups of a synthe
 ```python
 import numpy as np
 from collections import Counter
-from dense_armor.utility.cluster.kmeans import OnlineKMeans
+from dense_armor.utility.online.cluster.kmeans import OnlineKMeans
 
 rng = np.random.default_rng(0)
 centres = np.array([[0.0, 0.0], [10.0, 0.0], [0.0, 10.0]])
@@ -78,7 +78,7 @@ follow a drifting stream.
 
 ```python
 import numpy as np
-from dense_armor.utility.cluster.kmeans import OnlineKMeans
+from dense_armor.utility.online.cluster.kmeans import OnlineKMeans
 
 rng = np.random.default_rng(1)
 km = OnlineKMeans(k=2, halflife=50)
@@ -107,7 +107,7 @@ an outlier.
 
 ```python
 import numpy as np
-from dense_armor.utility.cluster.denstream import DenStream
+from dense_armor.utility.online.cluster.denstream import DenStream
 
 rng = np.random.default_rng(0)
 ds = DenStream(eps=1.0, beta=0.4, mu=3.0, decay=0.01)
@@ -147,7 +147,7 @@ of the words it contains.
 
 ```python
 import numpy as np
-from dense_armor.utility.vision.vocabulary import BagOfVisualWords
+from dense_armor.utility.signals.vision.vocabulary import BagOfVisualWords
 
 vert = np.zeros((32, 32), dtype=np.float32)
 vert[:, ::4] = 1.0
@@ -171,9 +171,9 @@ for a classifier.
 
 ## API reference
 
-::: dense_armor.utility.cluster.kmeans
-::: dense_armor.utility.cluster.denstream
-::: dense_armor.utility.vision.vocabulary
+::: dense_armor.utility.online.cluster.kmeans
+::: dense_armor.utility.online.cluster.denstream
+::: dense_armor.utility.signals.vision.vocabulary
 
 ---
 

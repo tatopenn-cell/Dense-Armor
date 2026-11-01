@@ -3,7 +3,7 @@
 ## 8. Keep only the useful features
 
 ```python
-from dense_armor.utility.preprocessing.select import SelectKBest, VarianceThreshold
+from dense_armor.utility.signals.preprocessing.select import SelectKBest, VarianceThreshold
 
 vt, sk = VarianceThreshold(threshold=0.1), SelectKBest(k=1)
 for i in range(20):
@@ -30,10 +30,10 @@ of each class and trains on both every time (Malialis et al. 2018, Algorithm 1).
 
 ```python
 import random
-from dense_armor.utility.evaluate import progressive_val_score
-from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
-from dense_armor.utility.metrics import Recall
-from dense_armor.utility.preprocessing.imbalance import QueueResampler
+from dense_armor.utility.evaluation.evaluate import progressive_val_score
+from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB
+from dense_armor.utility.evaluation.metrics import Recall
+from dense_armor.utility.signals.preprocessing.imbalance import QueueResampler
 
 rng = random.Random(0)
 s = []

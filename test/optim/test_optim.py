@@ -1,4 +1,4 @@
-"""Tests for dense_armor.utility.optim.
+"""Tests for dense_armor.utility.online.optim.
 
 The optimizer API has two shapes: an object with step(w, g), and a
 pure pair init_state(dim) / update(state, w, g). The tests check that
@@ -12,7 +12,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.optim import (
+from dense_armor.utility.online.optim import (
     SGD,
     AdaGrad,
     Adam,

@@ -1,13 +1,13 @@
-"""Tests for dense_armor/utility/evaluate/prequential.py."""
+"""Tests for dense_armor/utility/evaluation/evaluate/prequential.py."""
 import doctest
 
 import jax.numpy as jnp
 import pytest
 
-import dense_armor.utility.evaluate.prequential as preq_mod
+import dense_armor.utility.evaluation.evaluate.prequential as preq_mod
 from dense_armor.roles import Signal
-from dense_armor.utility.evaluate import progressive_val_score
-from dense_armor.utility.metrics import Accuracy, MeanSquaredError
+from dense_armor.utility.evaluation.evaluate import progressive_val_score
+from dense_armor.utility.evaluation.metrics import Accuracy, MeanSquaredError
 
 
 class _LastValue:

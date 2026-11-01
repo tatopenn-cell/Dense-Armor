@@ -7,7 +7,7 @@ causale real-time di core/hybrid_engine.py).
 import numpy as np
 import pytest
 
-from dense_armor.utility.anomaly.robust_filters import (
+from dense_armor.utility.online.anomaly.robust_filters import (
     chauvenet_criterion, tukey_fences, hampel_filter, sigma_clip, pressure_valve,
 )
 
@@ -210,7 +210,7 @@ class TestPressureValve:
 def test_accetta_una_lista_python_semplice_non_solo_ndarray(nome, fn):
     # Bug reale trovato testando l'esempio del README: le funzioni usavano
     # x.size/np.copy(x).astype(...) assumendo gia' un ndarray -- una lista
-    # Python semplice (l'input piu' naturale, coerente con Armatura.analizza())
+    # Python semplice (l'input piu' naturale, coerente con Armor.analizza())
     # faceva esplodere con AttributeError su _window's w.size. Ogni funzione
     # ora fa np.asarray(x, dtype=float) come primo passo.
     serie = [1.2, 1.3, 1.25, 1.28, 50.0, 1.31, 1.29]

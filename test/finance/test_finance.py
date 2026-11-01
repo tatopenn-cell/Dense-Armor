@@ -24,7 +24,7 @@ def test_finanza_import(pipeline):
 def test_finanza_un_tick_normale(pipeline):
     e = pipeline.process_tick(100.0, 1.0)
     assert e.tick == 0
-    assert not e.discarded_by_armatura
+    assert not e.discarded_by_armor
     assert not e.anomalous
 
 
@@ -32,7 +32,7 @@ def test_finanza_scarta_picco(pipeline):
     for _ in range(30):
         pipeline.process_tick(100.0, 1.0)
     e = pipeline.process_tick(9999.0, 1.0)
-    assert e.discarded_by_armatura
+    assert e.discarded_by_armor
 
 
 def test_esecuzione_ordine_piccolo():

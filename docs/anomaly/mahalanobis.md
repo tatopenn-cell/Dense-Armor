@@ -72,7 +72,7 @@ the scale of the data, would never reach the data.
 
 ```python
 import numpy as np
-from dense_armor.utility.anomaly.mahalanobis import (
+from dense_armor.utility.online.anomaly.mahalanobis import (
     OnlineRobustMahalanobis,
 )
 
@@ -105,10 +105,10 @@ t = 2 s) shifts the residual on joints 1-5 by tens of N·m; the healthy run stay
 
 ```python
 from pathlib import Path
-from dense_armor.utility.anomaly.mahalanobis import (
+from dense_armor.utility.online.anomaly.mahalanobis import (
     OnlineRobustMahalanobis,
 )
-from dense_armor.utility.datasets import SyntheticArm
+from dense_armor.utility.signals.datasets import SyntheticArm
 
 ds = SyntheticArm(
     Path("test/fixtures/urdf/panda.urdf"),

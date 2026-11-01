@@ -28,13 +28,13 @@ the declared limit of the option.
 import sys, time, statistics
 sys.path.insert(0, "/content/Dense-Armor")
 import numpy as np
-from dense_armor.utility.datasets import DriftStream
-from dense_armor.utility.tree import (
+from dense_armor.utility.signals.datasets import DriftStream
+from dense_armor.utility.online.tree import (
     HoeffdingAnytimeTreeClassifier,
     HoeffdingAdaptiveTreeClassifier,
 )
-from dense_armor.utility.forest import AdaptiveRandomForestClassifier
-from dense_armor.utility.drift.adwin import ADWIN
+from dense_armor.utility.online.forest import AdaptiveRandomForestClassifier
+from dense_armor.utility.online.drift.adwin import ADWIN
 
 N, D, CUT = 2000, 4, 1000
 WINDOWS = {"before": (700, 1000), "first100": (1000, 1100), "after+200": (1200, 1500)}

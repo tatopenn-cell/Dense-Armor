@@ -60,8 +60,8 @@ def _roc_auc_score(y_true, y_score):
     return (rank_sum - n_pos * (n_pos + 1) / 2.0) / (n_pos * n_neg)
 
 
-from dense_armor.utility.anomaly.mahalanobis import OnlineRobustMahalanobis
-from dense_armor.utility.vision import (
+from dense_armor.utility.online.anomaly.mahalanobis import OnlineRobustMahalanobis
+from dense_armor.utility.signals.vision import (
     FrameFeatures,
     ImageFolderStream,
     IncrementalPCA,

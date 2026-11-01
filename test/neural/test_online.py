@@ -7,16 +7,16 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.neural.layers import Dense
-from dense_armor.utility.neural.losses import MSE, BCEWithLogits
-from dense_armor.utility.neural.models import mlp
-from dense_armor.utility.neural.online import (
+from dense_armor.utility.deep.neural.layers import Dense
+from dense_armor.utility.deep.neural.losses import MSE, BCEWithLogits
+from dense_armor.utility.deep.neural.models import mlp
+from dense_armor.utility.deep.neural.online import (
     OnlineNetClassifier,
     OnlineNetRegressor,
 )
-from dense_armor.utility.neural.schedules import ConstantLR, CosineWarmRestarts
-from dense_armor.utility.neural.trainer import Trainer
-from dense_armor.utility.optim import SGD, Adam
+from dense_armor.utility.deep.neural.schedules import ConstantLR, CosineWarmRestarts
+from dense_armor.utility.deep.neural.trainer import Trainer
+from dense_armor.utility.online.optim import SGD, Adam
 
 
 def _data(n=20, seed=0):
@@ -144,7 +144,7 @@ def test_classifier_proba_one_logit():
 
 
 def test_classifier_argmax_three_logits():
-    from dense_armor.utility.neural.losses import SoftmaxCrossEntropy
+    from dense_armor.utility.deep.neural.losses import SoftmaxCrossEntropy
 
     d = Dense(1, 3, jax.random.PRNGKey(0))
     d.W.value = jnp.array([[0.1, 0.5, 0.3]])
@@ -240,7 +240,7 @@ def test_deterministic():
 
 
 def test_eqwrap_hash_and_repr():
-    from dense_armor.utility.neural.online import _EqWrap
+    from dense_armor.utility.deep.neural.online import _EqWrap
 
     m = mlp([2, 2, 1], jax.random.PRNGKey(0))
     w = _EqWrap(m)
@@ -249,7 +249,7 @@ def test_eqwrap_hash_and_repr():
 
 
 def test_values_equal_handles_wraps_and_types():
-    from dense_armor.utility.neural.online import _EqWrap, _values_equal
+    from dense_armor.utility.deep.neural.online import _EqWrap, _values_equal
 
     a = _EqWrap(ConstantLR(0.1))
     b = ConstantLR(0.1)
@@ -259,7 +259,7 @@ def test_values_equal_handles_wraps_and_types():
 
 
 def test_values_equal_param_counts_differ():
-    from dense_armor.utility.neural.online import _values_equal
+    from dense_armor.utility.deep.neural.online import _values_equal
 
     m1 = mlp([2, 4, 1], jax.random.PRNGKey(0))
     m2 = mlp([3, 4, 1], jax.random.PRNGKey(0))
@@ -329,7 +329,7 @@ def test_predict_with_missing_feature():
 
 
 def test_multiclass_target_and_softmax():
-    from dense_armor.utility.neural.losses import SoftmaxCrossEntropy
+    from dense_armor.utility.deep.neural.losses import SoftmaxCrossEntropy
 
     m = mlp([2, 3], jax.random.PRNGKey(0))
     c = OnlineNetClassifier(
@@ -402,7 +402,7 @@ def test_regressor_y_not_numeric_counts_as_missing():
 
 
 def test_values_equal_wrap_mismatch_and_param_count():
-    from dense_armor.utility.neural.online import _EqWrap, _values_equal
+    from dense_armor.utility.deep.neural.online import _EqWrap, _values_equal
 
     m1 = mlp([2, 4, 1], jax.random.PRNGKey(0))
     m2 = mlp([3, 4, 1], jax.random.PRNGKey(0))
@@ -480,7 +480,7 @@ def test_regressor_read_features_returns_none():
 
 def test_values_equal_param_count_differs():
     """Line 90: same type, params() length differs -> False."""
-    from dense_armor.utility.neural.online import _values_equal
+    from dense_armor.utility.deep.neural.online import _values_equal
 
     class P:
         def __init__(self, v):
@@ -499,7 +499,7 @@ def test_values_equal_param_count_differs():
 
 def test_values_equal_dict_keys_differ():
     """Line 99: same type, __dict__ keys differ -> False."""
-    from dense_armor.utility.neural.online import _values_equal
+    from dense_armor.utility.deep.neural.online import _values_equal
 
     class D:
         def __init__(self, extra=False):
@@ -513,7 +513,7 @@ def test_values_equal_dict_keys_differ():
 
 def test_values_equal_nested_values_differ():
     """Line 102: same type, same keys, a nested value differs -> False."""
-    from dense_armor.utility.neural.online import _values_equal
+    from dense_armor.utility.deep.neural.online import _values_equal
 
     class A:
         def __init__(self, v):

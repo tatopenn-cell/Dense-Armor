@@ -4,13 +4,13 @@ import numpy as np
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.anomaly.mahalanobis import OnlineRobustMahalanobis
-from dense_armor.utility.vision.features import FrameFeatures
-from dense_armor.utility.vision.reduce import (
+from dense_armor.utility.online.anomaly.mahalanobis import OnlineRobustMahalanobis
+from dense_armor.utility.signals.vision.features import FrameFeatures
+from dense_armor.utility.signals.vision.reduce import (
     IncrementalPCA,
     RandomProjection,
 )
-from dense_armor.utility.vision.streams import (
+from dense_armor.utility.signals.vision.streams import (
     ArrayStream,
     ImageFolderStream,
 )
@@ -343,7 +343,7 @@ def _fake_cv2(opened=True):
 def test_camera_stream_with_fake_driver(monkeypatch):
     import sys
 
-    from dense_armor.utility.vision.streams import CameraStream
+    from dense_armor.utility.signals.vision.streams import CameraStream
 
     monkeypatch.setitem(sys.modules, "cv2", _fake_cv2())
     frames = list(CameraStream(fps=10.0, size=(3, 2), max_frames=2))
@@ -364,7 +364,7 @@ def test_camera_stream_with_fake_driver(monkeypatch):
 def test_stream_conversions_and_paths(tmp_path):
     from PIL import Image
 
-    from dense_armor.utility.vision.streams import Frame, _resize_nearest, _to_float01
+    from dense_armor.utility.signals.vision.streams import Frame, _resize_nearest, _to_float01
 
     rgba = np.zeros((2, 2, 4), dtype=np.uint8)
     rgba[..., 0] = 255
@@ -420,7 +420,7 @@ def test_reduce_missing_reset_and_arguments():
 
 
 def test_vision_small_edge_branches(monkeypatch):
-    import dense_armor.utility.vision.features as fmod
+    import dense_armor.utility.signals.vision.features as fmod
 
     odd = np.zeros((4, 4, 2), dtype=np.float32)
     assert fmod._to_gray(odd) is odd

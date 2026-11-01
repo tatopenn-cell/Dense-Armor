@@ -21,10 +21,10 @@ from dense_armor.bridges.sklearn import (
     SklearnRegressor,
     SklearnTransformer,
 )
-from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
-from dense_armor.utility.linear.glm import LinearRegression
-from dense_armor.utility.optim import SGD
-from dense_armor.utility.preprocessing.scale import MinMaxScaler
+from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB
+from dense_armor.utility.online.linear.glm import LinearRegression
+from dense_armor.utility.online.optim import SGD
+from dense_armor.utility.signals.preprocessing.scale import MinMaxScaler
 
 
 @parametrize_with_checks(

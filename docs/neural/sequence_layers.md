@@ -15,7 +15,7 @@ A 1-input, 1-hidden case with weights written down shows the numbers. `W_r = 1`,
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.recurrent import GRU
+from dense_armor.utility.deep.neural.recurrent import GRU
 
 g = GRU(1, 1, jax.random.PRNGKey(0))
 g.W_r.value = jnp.array([[1.0]]); g.U_r.value = jnp.array([[0.0]]); g.b_r.value = jnp.array([0.0])
@@ -40,7 +40,7 @@ The forward pass of page 2: `z = tanh(W_z x + R_z y_prev + b_z)`, `i = sigmoid(W
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.recurrent import LSTM
+from dense_armor.utility.deep.neural.recurrent import LSTM
 
 ls = LSTM(1, 1, jax.random.PRNGKey(0))
 for n in ("W_z","W_i","W_f","W_o","R_z","R_i","R_f","R_o","b_z","b_i","b_f","b_o","p_i","p_f","p_o"):
@@ -65,7 +65,7 @@ The hand computation with `x = 0.5`, `y_prev = 0.1`, `c_prev = 0.2`, all biases 
 import jax
 import jax.numpy as jnp
 import numpy as np
-from dense_armor.utility.neural.recurrent import GRU
+from dense_armor.utility.deep.neural.recurrent import GRU
 
 g = GRU(2, 3, jax.random.PRNGKey(0))
 seq = jax.random.normal(jax.random.PRNGKey(1), (5, 2))
@@ -91,7 +91,7 @@ A multi-head self-attention of Vaswani et al. 2017 (page 5) projects the input i
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.attention import MultiHeadSelfAttention
+from dense_armor.utility.deep.neural.attention import MultiHeadSelfAttention
 
 m = MultiHeadSelfAttention(8, 2, jax.random.PRNGKey(0))
 print(m.forward(jnp.ones((4, 8))).shape)
@@ -112,7 +112,7 @@ The scaled dot-product attention of Eq.(1), page 4 of Vaswani et al. 2017 is `At
 ~~~python
 import jax.numpy as jnp
 import numpy as np
-from dense_armor.utility.neural.attention import scaled_dot_product_attention
+from dense_armor.utility.deep.neural.attention import scaled_dot_product_attention
 
 q = jnp.array([[1.0, 0.0]])
 k = jnp.array([[1.0, 0.0], [0.0, 1.0]])
@@ -135,7 +135,7 @@ With `causal = True`, the position `t` attends only to the positions up to `t`. 
 import jax
 import jax.numpy as jnp
 import numpy as np
-from dense_armor.utility.neural.attention import MultiHeadSelfAttention
+from dense_armor.utility.deep.neural.attention import MultiHeadSelfAttention
 
 m = MultiHeadSelfAttention(8, 2, jax.random.PRNGKey(0), causal=True)
 seq = jax.random.normal(jax.random.PRNGKey(1), (5, 8))
@@ -164,7 +164,7 @@ A recurrent layer returns one state per step; a classifier or a regressor wants 
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.models import LastStep
+from dense_armor.utility.deep.neural.models import LastStep
 
 l = LastStep()
 x = jnp.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
@@ -187,7 +187,7 @@ A `MeanOverTime` averages the states over the time axis, so every step contribut
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.models import MeanOverTime
+from dense_armor.utility.deep.neural.models import MeanOverTime
 
 m = MeanOverTime()
 x = jnp.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
@@ -210,7 +210,7 @@ An attention layer sees a set of vectors, not an ordered sequence: without somet
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.neural.models import AddPositions
+from dense_armor.utility.deep.neural.models import AddPositions
 
 a = AddPositions(4)
 x = jnp.zeros((4, 2))
@@ -237,7 +237,7 @@ A transformer encoder of Vaswani et al. 2017 stacks a dense projection, a positi
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.models import transformer_encoder
+from dense_armor.utility.deep.neural.models import transformer_encoder
 
 m = transformer_encoder(4, 8, 2, 16, 1, 3, jax.random.PRNGKey(0), 16)
 print(m.forward(jnp.ones((5, 4))).shape)
@@ -256,7 +256,7 @@ A recurrent network of `n_layers` LSTM, GRU or RNN layers, followed by `LastStep
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.models import recurrent_net
+from dense_armor.utility.deep.neural.models import recurrent_net
 
 m = recurrent_net(3, 4, 2, jax.random.PRNGKey(0))
 print(m.forward(jnp.ones((5, 3))).shape)

@@ -6,8 +6,8 @@ import sys
 import numpy as np
 import pytest
 
-import dense_armor.utility.learn.metric_learning as ml  # noqa: E402
-from dense_armor.utility.learn.metric_learning import (  # noqa: E402
+import dense_armor.utility.online.learn.metric_learning as ml  # noqa: E402
+from dense_armor.utility.online.learn.metric_learning import (  # noqa: E402
     LEGO, MetricKNNClassifier, OASIS, POLA,
 )
 
@@ -112,7 +112,7 @@ def test_docstring_examples():
 
 
 def test_base_class_methods_are_abstract():
-    from dense_armor.utility.learn.metric_learning import MetricLearner
+    from dense_armor.utility.online.learn.metric_learning import MetricLearner
     m = MetricLearner()
     for call in (
         lambda: m.learn_triplet({}, {}, {}),

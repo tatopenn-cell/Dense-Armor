@@ -6,7 +6,7 @@ import numpy as np
 import jax.numpy as jnp
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from dense_armor.utility.neural.consolidation import ResidualTree
+from dense_armor.utility.deep.neural.consolidation import ResidualTree
 
 def make_data(n, seed):
     rng = np.random.RandomState(seed)

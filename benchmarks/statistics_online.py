@@ -37,8 +37,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from dense_armor.utility.stats import OnlineGaussianMixture, RunningMoments, StudentT  # noqa: E402
-from dense_armor.utility.timeseries import GARCH11  # noqa: E402
+from dense_armor.utility.signals.stats import OnlineGaussianMixture, RunningMoments, StudentT  # noqa: E402
+from dense_armor.utility.online.timeseries import GARCH11  # noqa: E402
 
 SEED = 20261026
 N_FULL = 10000

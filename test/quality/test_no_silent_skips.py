@@ -22,12 +22,12 @@ from dense_armor.roles import Estimator
 
 
 PACKAGES = [
-    "dense_armor.utility.bayes",
-    "dense_armor.utility.neighbors",
-    "dense_armor.utility.multiclass",
-    "dense_armor.utility.multioutput",
-    "dense_armor.utility.forest",
-    "dense_armor.utility.rules",
+    "dense_armor.utility.online.bayes",
+    "dense_armor.utility.online.neighbors",
+    "dense_armor.utility.online.multiclass",
+    "dense_armor.utility.online.multioutput",
+    "dense_armor.utility.online.forest",
+    "dense_armor.utility.online.rules",
 ]
 
 # Reasons for a check that cannot apply. Empty by default: this module

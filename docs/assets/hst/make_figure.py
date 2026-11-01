@@ -11,8 +11,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dense_armor.utility.anomaly.hst import HalfSpaceTrees
-from dense_armor.utility.datasets import DriftStream, SyntheticArm
+from dense_armor.utility.online.anomaly.hst import HalfSpaceTrees
+from dense_armor.utility.signals.datasets import DriftStream, SyntheticArm
 
 OUT = Path(__file__).parent
 URDF = Path("test/fixtures/urdf/panda.urdf")

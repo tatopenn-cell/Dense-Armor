@@ -37,14 +37,14 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from dense_armor.utility.neural.activations import Relu
-from dense_armor.utility.neural.chain import Sequential
-from dense_armor.utility.neural.layers import Dense
-from dense_armor.utility.neural.losses import SoftmaxCrossEntropy
-from dense_armor.utility.neural.moe import SparseMoE
-from dense_armor.utility.neural.test_time import TestTimeCompute
-from dense_armor.utility.neural.trainer import Trainer
-from dense_armor.utility.optim import Adam
+from dense_armor.utility.deep.neural.activations import Relu
+from dense_armor.utility.deep.neural.chain import Sequential
+from dense_armor.utility.deep.neural.layers import Dense
+from dense_armor.utility.deep.neural.losses import SoftmaxCrossEntropy
+from dense_armor.utility.deep.neural.moe import SparseMoE
+from dense_armor.utility.deep.neural.test_time import TestTimeCompute
+from dense_armor.utility.deep.neural.trainer import Trainer
+from dense_armor.utility.online.optim import Adam
 
 
 def make_tasks(n, seed, noise=0.0):

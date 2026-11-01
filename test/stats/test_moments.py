@@ -1,12 +1,12 @@
-"""Tests for dense_armor/utility/stats/moments.py."""
+"""Tests for dense_armor/utility/signals/stats/moments.py."""
 import doctest
 
 import numpy as np
 import pytest
 from scipy import stats as scipy_stats
 
-import dense_armor.utility.stats.moments as moments_mod
-from dense_armor.utility.stats.moments import (
+import dense_armor.utility.signals.stats.moments as moments_mod
+from dense_armor.utility.signals.stats.moments import (
     RunningMoments,
     RunningMomentsVector,
     EWStats,

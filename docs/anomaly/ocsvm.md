@@ -69,7 +69,7 @@ boundary is flagged.
 
 ```python
 import numpy as np
-from dense_armor.utility.anomaly.ocsvm import OneClassSGD
+from dense_armor.utility.online.anomaly.ocsvm import OneClassSGD
 
 rng = np.random.default_rng(0)
 det = OneClassSGD(n_features_rff=64, nu=0.05, n_init=50, seed=0)
@@ -101,8 +101,8 @@ t = 2 s) shifts the residual on joints 1-5 by tens of N·m.
 
 ```python
 from pathlib import Path
-from dense_armor.utility.anomaly.ocsvm import OneClassSGD
-from dense_armor.utility.datasets import SyntheticArm
+from dense_armor.utility.online.anomaly.ocsvm import OneClassSGD
+from dense_armor.utility.signals.datasets import SyntheticArm
 
 ds = SyntheticArm(
     Path("test/fixtures/urdf/panda.urdf"),

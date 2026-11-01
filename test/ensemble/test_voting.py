@@ -2,8 +2,8 @@
 
 
 from dense_armor.roles import Classifier
-from dense_armor.utility.ensemble import VotingClassifier
-from dense_armor.utility.tree.hoeffding import HoeffdingTreeClassifier
+from dense_armor.utility.online.ensemble import VotingClassifier
+from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
 
 
 def _tree():

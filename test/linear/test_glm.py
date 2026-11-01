@@ -1,4 +1,4 @@
-"""Tests for the online GLM in dense_armor.utility.linear.glm."""
+"""Tests for the online GLM in dense_armor.utility.online.linear.glm."""
 
 import doctest
 
@@ -7,9 +7,9 @@ import numpy as np
 import pytest
 
 from dense_armor.roles.signal import Signal
-from dense_armor.utility.linear import glm as glm_mod
-from dense_armor.utility.linear.glm import LinearRegression, LogisticRegression
-from dense_armor.utility.optim import (
+from dense_armor.utility.online.linear import glm as glm_mod
+from dense_armor.utility.online.linear.glm import LinearRegression, LogisticRegression
+from dense_armor.utility.online.optim import (
     SGD,
     AdaGrad,
     Adam,

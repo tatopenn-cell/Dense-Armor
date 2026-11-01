@@ -1,11 +1,11 @@
-"""Tests for dense_armor/utility/stats/robust.py."""
+"""Tests for dense_armor/utility/signals/stats/robust.py."""
 import doctest
 
 import numpy as np
 import pytest
 
-import dense_armor.utility.stats.robust as robust_mod
-from dense_armor.utility.stats.robust import (
+import dense_armor.utility.signals.stats.robust as robust_mod
+from dense_armor.utility.signals.stats.robust import (
     MAD_SCALE,
     RollingMedian,
     RollingMAD,

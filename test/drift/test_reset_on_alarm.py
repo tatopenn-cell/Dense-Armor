@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from dense_armor.utility.drift.detector import CUSUMDriftDetector
+from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
 
 
 def _step_stream(n=500, shift_at=250, delta=3.0, seed=0):

@@ -10,8 +10,8 @@ pytest.importorskip("tensorflow")
 import tensorflow as tf
 
 from dense_armor.bridges.tensorflow import KerasLayer
-from dense_armor.utility.neural import Dense, Sequential
-from dense_armor.utility.neural.activations import Relu
+from dense_armor.utility.deep.neural import Dense, Sequential
+from dense_armor.utility.deep.neural.activations import Relu
 
 
 def _model(d_in=4, d_h=8, d_out=3):

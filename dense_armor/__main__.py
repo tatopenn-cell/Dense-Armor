@@ -1,3 +1,3 @@
-from .armatura import main
+from .armor import main
 
 main()

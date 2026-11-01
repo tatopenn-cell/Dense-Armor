@@ -26,7 +26,7 @@ also drifted slightly ahead on joint 2. The reference is moving at about 0.2 rad
 
 ```python
 import numpy as np
-from dense_armor.utility.control.kinematic_controller import kinematic_tracking_controller
+from dense_armor.utility.robot.control.kinematic_controller import kinematic_tracking_controller
 
 q = np.array([0.05, 0.5, -0.25, 0.1, 0.0, 0.0])
 q_ref = np.array([0.10, 0.6, -0.20, 0.1, 0.0, 0.0])
@@ -131,7 +131,7 @@ tracking error and converges.
 
 ## API reference
 
-::: dense_armor.utility.control.kinematic_controller
+::: dense_armor.utility.robot.control.kinematic_controller
 
 ---
 

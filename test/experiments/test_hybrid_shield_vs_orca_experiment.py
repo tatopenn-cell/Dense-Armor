@@ -1,6 +1,6 @@
 """
 Compares dense_armor.core.hybrid_engine.hybrid_shield (the phi_ab-based
-engine that already replaced ABCollatz for Armatura) against Orca's own
+engine that already replaced ABCollatz for Armor) against Orca's own
 default pipeline (constant compute_damping_gating), on the same 7 scenarios
 testKalman.py uses -- to check whether the already-vendored phi_ab approach
 would also help Orca's Stage-2 gate, before adapting it into that exact
@@ -20,7 +20,7 @@ jax.config.update("jax_enable_x64", True)
 import numpy as np
 
 from dense_armor.core.hybrid_engine import hybrid_shield
-from dense_armor.utility.protect.orca import Orca
+from dense_armor.utility.online.protect.orca import Orca
 
 _TEST_DIR = pathlib.Path(__file__).resolve().parent
 
@@ -63,7 +63,7 @@ vittorie_orca = sum(1 for k in SCENARI if rmse_orca[k] < rmse_hybrid[k])
 
 def test_hybrid_shield_measured_against_orca_default():
     print("\n" + "=" * 78)
-    print("  Orca (default, gate costante) vs hybrid_shield (phi_ab, gia' in Armatura)")
+    print("  Orca (default, gate costante) vs hybrid_shield (phi_ab, gia' in Armor)")
     print("=" * 78)
     for key, (descr, _, _) in SCENARI.items():
         print(f"[{key}] {descr}")

@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from dense_armor.utility.bandit import Exp3
+from dense_armor.utility.online.bandit import Exp3
 
 
 def test_exp3_finds_best_arm_stochastic():

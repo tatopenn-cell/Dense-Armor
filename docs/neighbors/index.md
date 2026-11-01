@@ -48,7 +48,7 @@ Fifteen samples arrive in order. The blue dots are the six most recent; the gray
 ## 5. Smallest example
 
 ```python
-from dense_armor.utility.neighbors import KNNClassifier
+from dense_armor.utility.online.neighbors import KNNClassifier
 
 clf = KNNClassifier(window_size=20, n_neighbors=3)
 for _ in range(5):
@@ -69,7 +69,7 @@ The window holds ten samples: five near `(0, 0)` labelled A and five near `(1, 1
 For a regressor, the same window returns a number instead of a label:
 
 ```python
-from dense_armor.utility.neighbors import KNNRegressor
+from dense_armor.utility.online.neighbors import KNNRegressor
 
 reg = KNNRegressor(window_size=10, n_neighbors=3)
 for i in range(10):

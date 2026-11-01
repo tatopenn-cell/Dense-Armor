@@ -2,7 +2,7 @@
 
 The pipeline reads a daily close series, turns it into log returns, and
 feeds the returns to :class:`BayesianOnlineChangepoint`
-(:mod:`dense_armor.utility.drift.bocpd`, Adams and MacKay 2007,
+(:mod:`dense_armor.utility.online.drift.bocpd`, Adams and MacKay 2007,
 arXiv:0710.3742). A changepoint is a day on which the volatility or the
 mean of the returns changed, and the alarm is the first day the
 detector reports one after the change.
@@ -29,7 +29,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from dense_armor.utility.drift.bocpd import BayesianOnlineChangepoint
+from dense_armor.utility.online.drift.bocpd import BayesianOnlineChangepoint
 
 _YAHOO_HEADER_ROWS = 3
 

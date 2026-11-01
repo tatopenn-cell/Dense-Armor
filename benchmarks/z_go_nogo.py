@@ -26,8 +26,8 @@ sys.path.insert(0, ROOT)
 import numpy as np
 from scipy.stats import wilcoxon
 
-from dense_armor.utility.forest import AggregatedMondrianForestRegressor as AMF, OnlineExtraTreesRegressor as OXT
-from dense_armor.utility.tree import MondrianForestRegressor as MON
+from dense_armor.utility.online.forest import AggregatedMondrianForestRegressor as AMF, OnlineExtraTreesRegressor as OXT
+from dense_armor.utility.online.tree import MondrianForestRegressor as MON
 
 SEEDS = 2 if SMOKE else 20
 N = 300 if SMOKE else 1000

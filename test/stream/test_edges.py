@@ -4,8 +4,8 @@ import numpy as np
 import pytest
 
 from dense_armor.roles import Signal
-from dense_armor.utility.stream import iter_array, iter_csv, merge_by_time
-from dense_armor.utility.stream.csv import _parse_array_cell, _parse_scalar_cell
+from dense_armor.utility.signals.stream import iter_array, iter_csv, merge_by_time
+from dense_armor.utility.signals.stream.csv import _parse_array_cell, _parse_scalar_cell
 
 
 def test_cell_parsers():

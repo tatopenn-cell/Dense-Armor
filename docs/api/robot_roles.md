@@ -88,7 +88,7 @@ JIT warm-up, and the memory growth over a stream.
 ```python
 from dense_armor.roles import Signal, profile
 import jax.numpy as jnp
-from dense_armor.utility.stats.moments import RunningMoments
+from dense_armor.utility.signals.stats.moments import RunningMoments
 
 stream = [
     Signal(values=jnp.array([float(i)]), names=["x"], units=[""], t=i * 0.01)
@@ -172,7 +172,7 @@ seen so far. `predict_one(x, return_estimate=True)` returns an
 
 Probabilities are calibrated online with `OnlinePlattScaling`, the
 method of Gupta & Ramdas (2023), re-exported here from
-`dense_armor.utility.learn.calibration`.
+`dense_armor.utility.online.learn.calibration`.
 
 ## 5. Safety as a role
 
@@ -192,7 +192,7 @@ fallback.
 
 ```python
 from dense_armor.roles import SafeEstimator, Health
-from dense_armor.utility.stats.moments import RunningMoments
+from dense_armor.utility.signals.stats.moments import RunningMoments
 
 safe = SafeEstimator(
     RunningMoments(),
@@ -218,7 +218,7 @@ or a mismatched model class, each with a specific error.
 ```python
 import tempfile, pathlib
 from dense_armor.roles import SafeEstimator
-from dense_armor.utility.stats.moments import RunningMoments
+from dense_armor.utility.signals.stats.moments import RunningMoments
 
 est = SafeEstimator(RunningMoments(), fallback=0.0)
 for i in range(50):
@@ -302,7 +302,7 @@ position outside the URDF limits flags the sample.
 ```python
 import json
 from dense_armor.roles import schema
-from dense_armor.utility.stats.moments import RunningMoments
+from dense_armor.utility.signals.stats.moments import RunningMoments
 
 s = schema(RunningMoments())
 json.dumps(s)
@@ -322,7 +322,7 @@ and returns a JSON response:
 ```python
 import json
 from dense_armor.roles import call_json
-from dense_armor.utility.stats.moments import RunningMoments
+from dense_armor.utility.signals.stats.moments import RunningMoments
 
 out = call_json(
     RunningMoments(),
@@ -345,7 +345,7 @@ feed typed readings without a separate protocol.
   `AdaptiveConformalRegressor.learn_one`.
 - Gupta, C., Ramdas, A. (2023). *Online Platt scaling with
   calibeating.* ICML. arXiv:2305.00070. The calibration method
-  re-exported from `dense_armor.utility.learn.calibration`.
+  re-exported from `dense_armor.utility.online.learn.calibration`.
 - Page, E. S. (1954). *Continuous inspection schemes.* Biometrika 41,
   100-114. The residual-based drift check in `HealthMonitor`.
 - Fitzpatrick, R. (2008). *Maxwell's equations and the principles of

@@ -52,7 +52,7 @@ def dynamic_damping_gain(
 
 
 class AdaptiveSignalStabilizer:
-    """Adaptive anti-panic filter for chaotic AI signals.
+    """Causal adaptive filter for time series and gradients.
 
     Args:
         static_threshold: base detection threshold.
@@ -189,23 +189,18 @@ class AdaptiveSignalStabilizer:
         """Same formulas as :meth:`calibrate_macro_context`, computed per row.
 
         The parameters are computed along ``axis=-1`` instead of on the whole
-        flattened batch. The method is pure and does not mutate ``self``, so
-        it is safe to use inside ``vmap`` downstream. The existing
-        batch-shared :meth:`calibrate_macro_context` is kept unchanged for
-        its callers (``test_boundA.py`` and the adversarial suite use the
-        shared calibration on purpose: correlated scenarios share one
-        context).
+        flattened batch. The method is pure and does not mutate ``self``, so it
+        can be used inside ``vmap``. :meth:`calibrate_macro_context` is kept for
+        the callers that want one context shared by correlated scenarios.
 
         Args:
-            raw_batch: shape ``(n_scenarios, F)``. When ``F < 2`` no row has
-                a "jump" to measure and the method returns the ``__init__``
-                defaults (``self.threshold``/``damping``/``alpha``) for
-                every row, instead of trying to replicate the stateful
-                early-return of :meth:`calibrate_macro_context`.
+            raw_batch: shape ``(n_scenarios, F)``. When ``F < 2`` no row has a
+                jump to measure and the method returns the ``__init__`` defaults
+                (``self.threshold``/``damping``/``alpha``) for every row.
 
         Returns:
-            A tuple ``(dyn_thr, dyn_dmp, dyn_alp, noise_scalar)``, each of
-            shape ``(n_scenarios,)``.
+            A tuple ``(dyn_thr, dyn_dmp, dyn_alp, noise_scalar)``, each of shape
+            ``(n_scenarios,)``.
         """
         n_scenarios = int(raw_batch.shape[0])
         per_row_std = np.std(raw_batch, axis=-1)
@@ -233,22 +228,17 @@ class AdaptiveSignalStabilizer:
         """Like :meth:`filter_batch_scenarios` with per-scenario calibration.
 
         Every scenario receives its own calibration from
-        :meth:`calibrate_macro_context_independent` instead of one shared on
-        the whole batch. Numerically equivalent to calling
-        :meth:`filter_batch_scenarios` once per scenario
-        (``n_scenarios=1`` each), but in a single ``vmap`` call instead of N
-        separate JAX dispatches. Added for
-        :meth:`Orca.protect_and_forward`: the library has never exercised
-        ``n_scenarios > 1`` on independent scenarios before (the only
-        existing multi-scenario caller, the adversarial suite in
-        ``test_boundA.py``, wants the shared calibration on purpose).
+        :meth:`calibrate_macro_context_independent` instead of one calibration
+        shared by the whole batch. It is numerically equivalent to calling
+        :meth:`filter_batch_scenarios` once per scenario, in a single ``vmap`` call
+        instead of N separate JAX dispatches. Used by
+        :meth:`Orca.protect_and_forward`.
 
         Args:
             raw_batch: the batch of raw signals, shape ``(N, ...)``.
-            hard_clamp_mask: optional boolean mask, same shape as
-                ``raw_batch``; ``True`` where the caller (Orca) has already
-                flagged a macro anomaly. Activates the State Flush in
-                :meth:`_step_kernel`.
+            hard_clamp_mask: optional boolean mask, same shape as ``raw_batch``;
+                ``True`` where the caller (Orca) has already flagged a macro
+                anomaly. Activates the State Flush in :meth:`_step_kernel`.
 
         Returns:
             The filtered batch, same shape as ``raw_batch``.
@@ -322,20 +312,14 @@ class AdaptiveSignalStabilizer:
             jnp.ndarray,
         ],
     ):
-        """One step of the causal scan: update state/gain/volatility and filter.
+        """One step of the causal scan: update state, gain and volatility, and filter.
 
-        The ninth input element ``hard_clamp_flag`` is the same authoritative
-        signal already used by the Stage 2 Hard-Clamp in Orca
-        (``raw_noise > 0.05`` on the original raw data, not a reconstruction
-        here). Where ``True``, the minimum gain floor ``k_anom_min`` is
-        instantaneously zeroed for this step only. Otherwise even a huge
-        shock would leak at least ``k_anom_min`` (25% by default) into the
-        recursive state (``prev_filtered`` / ``rolling_volatility``), and
-        that residual contaminates the next steps with a slow decay
-        (verified: without this, 3 normal samples after a 9999 spike stayed
-        above 1000 instead of returning close to the true value). The normal
-        smooth design (full ``k_anom_min``) is left unchanged below the
-        threshold: this only acts when the Hard-Clamp has already fired.
+        The ninth input, ``hard_clamp_flag``, is the signal already used by the
+        Stage 2 Hard-Clamp in Orca (``raw_noise > 0.05`` on the original raw data).
+        Where it is ``True`` the minimum gain ``k_anom_min`` is set to zero for this
+        step only, so that a shock does not leak ``k_anom_min`` (25 % by default)
+        into the recursive state (``prev_filtered`` and ``rolling_volatility``).
+        Below the threshold the gain is unchanged.
 
         Args:
             carry: ``(prev_filtered, current_damping, rolling_volatility, local_mean)``.

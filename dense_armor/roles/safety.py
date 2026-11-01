@@ -148,7 +148,7 @@ class SafeEstimator(Estimator):
 
     Examples:
         >>> from dense_armor.roles.safety import SafeEstimator
-        >>> from dense_armor.utility.stats.moments import RunningMoments
+        >>> from dense_armor.utility.signals.stats.moments import RunningMoments
         >>> guard = lambda s: s["x"] > 1e6
         >>> safe = SafeEstimator(RunningMoments(), guard=guard, fallback=0.0)
         >>> _ = safe.learn_one({"x": 1.0}, 0.0)

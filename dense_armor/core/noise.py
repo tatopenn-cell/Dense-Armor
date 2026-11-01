@@ -1,20 +1,15 @@
-"""Host hardware profiler and stochastic adversarial noise injection.
+"""Host hardware profiler.
 
 :class:`AIHardwareProfiler` reads the CPU, the total RAM and the active JAX
-backend to size the safe tensor limit. :class:`StochasticAdversarialNoise`
-injects probabilistic perturbations into a tensor, dispatching between the
-NumPy path and the JAX path based on the input type.
+backend to size the safe tensor limit.
 """
 
 import platform
-from typing import ClassVar
 
-import numpy as np
 import psutil
 
 try:
     import jax
-    import jax.numpy as jnp
 
     HAS_JAX = True
 except ImportError:
@@ -68,79 +63,3 @@ class AIHardwareProfiler:
             f"Engine: {self.backend_device} | "
             f"SafeMaxDim: {self.max_tensor_dim}"
         )
-
-
-class StochasticAdversarialNoise:
-    """Inject probabilistic or adversarial perturbations into AI tensors.
-
-    Dispatches between the NumPy path (CPU) and the JAX path (GPU) based on
-    the type of the input array.
-    """
-
-    SUPPORTED: ClassVar[set[str]] = {
-        "bitflip",
-        "dropout_noise",
-        "gaussian_blur",
-        "clean",
-    }
-
-    @staticmethod
-    def inject_noise(
-        data_vector: np.ndarray,
-        noise_type: str,
-        intensity: float,
-        seed: int = 42,
-    ) -> np.ndarray:
-        """Apply a probabilistic alteration preserving the tensor norm.
-
-        Args:
-            data_vector: the input tensor.
-            noise_type: one of ``bitflip``, ``dropout_noise``,
-                ``gaussian_blur``, ``clean``.
-            intensity: probability of triggering the alteration per element
-                (or standard deviation for ``gaussian_blur``).
-            seed: seed for the random generator.
-
-        Returns:
-            The altered tensor, renormalized to the original L2 norm.
-        """
-        noise_type = noise_type.lower().strip()
-
-        if intensity <= 0.0 or noise_type == "clean":
-            return data_vector
-
-        if HAS_JAX and isinstance(data_vector, (jnp.ndarray, jax.Array)):
-            key = jax.random.PRNGKey(seed)
-            key, subkey = jax.random.split(key)
-            trigger_mask = (
-                jax.random.uniform(subkey, shape=data_vector.shape) < intensity
-            )
-
-            if noise_type == "bitflip":
-                output = jnp.where(trigger_mask, -data_vector, data_vector)
-            elif noise_type == "dropout_noise":
-                output = jnp.where(trigger_mask, 0.0, data_vector)
-            elif noise_type == "gaussian_blur":
-                key, subkey2 = jax.random.split(key)
-                noise = jax.random.normal(subkey2, shape=data_vector.shape) * intensity
-                output = data_vector + noise
-            else:
-                output = data_vector
-
-            norm = jnp.linalg.norm(output)
-            return jnp.where(norm > 0, output / (norm + 1e-15), output)
-
-        output = np.array(data_vector, copy=True)
-        rng = np.random.default_rng(seed)
-        trigger_mask = rng.random(size=output.shape) < intensity
-
-        if noise_type == "bitflip":
-            output = np.where(trigger_mask, -output, output)
-        elif noise_type == "dropout_noise":
-            output = np.where(trigger_mask, 0.0, output)
-        elif noise_type == "gaussian_blur":
-            noise = rng.normal(0.0, intensity, size=output.shape)
-            output = output + noise
-
-        norm = np.linalg.norm(output)
-        return output / (norm + 1e-15) if norm > 0 else output

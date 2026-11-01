@@ -6,12 +6,12 @@ import jax
 import numpy as np
 import pytest
 
-from dense_armor.utility.neural.chain import Sequential
-from dense_armor.utility.neural.layers import Dense
-from dense_armor.utility.neural.losses import MSE
-from dense_armor.utility.neural.schedules_more import LinearWarmup, NoamSchedule
-from dense_armor.utility.neural.trainer import Trainer
-from dense_armor.utility.optim import SGD
+from dense_armor.utility.deep.neural.chain import Sequential
+from dense_armor.utility.deep.neural.layers import Dense
+from dense_armor.utility.deep.neural.losses import MSE
+from dense_armor.utility.deep.neural.schedules_more import LinearWarmup, NoamSchedule
+from dense_armor.utility.deep.neural.trainer import Trainer
+from dense_armor.utility.online.optim import SGD
 
 
 def test_linear_warmup_hand_case():
@@ -63,7 +63,7 @@ def test_linear_warmup_in_trainer_history():
 
 
 def test_noam_lr_reaches_optimizer():
-    from dense_armor.utility.neural.online import OnlineNetRegressor
+    from dense_armor.utility.deep.neural.online import OnlineNetRegressor
 
     m = Sequential([Dense(2, 1, jax.random.PRNGKey(0))])
     on = OnlineNetRegressor(

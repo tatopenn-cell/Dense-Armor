@@ -22,7 +22,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.stats.stable import (
+from dense_armor.utility.signals.stats.stable import (
     _compensated_tree,
     stable_moments,
     stable_var,
@@ -327,7 +327,7 @@ def test_stable_var_float16_promotes_to_float32():
 
 
 def test_as_float_array_rejects_complex():
-    from dense_armor.utility.stats.stable import _as_float_array
+    from dense_armor.utility.signals.stats.stable import _as_float_array
 
     with pytest.raises(TypeError):
         _as_float_array(jnp.asarray([1 + 1j], dtype=jnp.complex64))
@@ -361,7 +361,7 @@ def test_stable_var_float64_without_x64():
 
 
 def test_as_float_array_rejects_string():
-    from dense_armor.utility.stats.stable import _as_float_array
+    from dense_armor.utility.signals.stats.stable import _as_float_array
 
     with pytest.raises(TypeError):
         _as_float_array(jnp.asarray(["a", "b"]))

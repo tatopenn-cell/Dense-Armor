@@ -68,10 +68,10 @@ def _run_one(n_devices, smoke, loss_steps):
     import numpy as np
 
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-    from dense_armor.utility.neural.losses import MSE
-    from dense_armor.utility.neural.models import transformer_encoder
-    from dense_armor.utility.neural.trainer import Trainer
-    from dense_armor.utility.optim import SGD
+    from dense_armor.utility.deep.neural.losses import MSE
+    from dense_armor.utility.deep.neural.models import transformer_encoder
+    from dense_armor.utility.deep.neural.trainer import Trainer
+    from dense_armor.utility.online.optim import SGD
 
     cfg = _config(smoke)
     model = transformer_encoder(

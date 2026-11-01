@@ -7,7 +7,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dense_armor.utility.linear.bayes import BayesianLinearRegression
+from dense_armor.utility.online.linear.bayes import BayesianLinearRegression
 
 out = Path(__file__).parent
 rng = np.random.default_rng(0)

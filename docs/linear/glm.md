@@ -5,7 +5,7 @@ These are two fundamental prediction tools designed to learn from data one examp
 
 LinearRegression and LogisticRegression are the two supervised models of the
 package. Both fit a linear function one sample at a time, and both take any
-optimizer from `dense_armor.utility.optim` as the whole learning rule. This
+optimizer from `dense_armor.utility.online.optim` as the whole learning rule. This
 page shows the two models, the shape of the input they expect, and the
 difference between them.
 
@@ -63,8 +63,8 @@ keys of the first dict. Subsequent samples must have the same keys.
 
 ```python
 import numpy as np
-from dense_armor.utility.optim import SGD
-from dense_armor.utility.linear.glm import LinearRegression
+from dense_armor.utility.online.optim import SGD
+from dense_armor.utility.online.linear.glm import LinearRegression
 
 reg = LinearRegression(optimizer=SGD(lr=0.1), intercept=False,
                        feature_keys=["x"])
@@ -119,9 +119,9 @@ function of its velocity, with three different optimizers:
 ```python
 from pathlib import Path
 import numpy as np
-from dense_armor.utility.datasets import SyntheticArm
-from dense_armor.utility.linear.glm import LinearRegression
-from dense_armor.utility.optim import SGD, AdaGrad, Adam
+from dense_armor.utility.signals.datasets import SyntheticArm
+from dense_armor.utility.online.linear.glm import LinearRegression
+from dense_armor.utility.online.optim import SGD, AdaGrad, Adam
 
 for opt, lr in [(SGD(lr=1e-3), 1e-3), (AdaGrad(lr=10.0), 10.0),
                 (Adam(lr=0.5, beta1=0.99), 0.5)]:

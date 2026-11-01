@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from dense_armor.utility.data import (
+from dense_armor.utility.infrastructure.data import (
     SharedArray,
     SharedDict,
     SharedList,
@@ -121,7 +121,7 @@ def test_shared_dict_collision(monkeypatch):
 
         return FakeHash()
 
-    monkeypatch.setattr("dense_armor.utility.data.shared.hashlib.blake2b", fake_blake2b)
+    monkeypatch.setattr("dense_armor.utility.infrastructure.data.shared.hashlib.blake2b", fake_blake2b)
     d = {"a": 1, "b": 2}
     with SharedDict(d) as sd:
         assert sd["a"] == 1
@@ -208,7 +208,7 @@ def test_shared_memory_size_is_python_int(monkeypatch):
         return real(*args, **kwargs)
 
     monkeypatch.setattr(
-        "dense_armor.utility.data.shared.shared_memory.SharedMemory", spy
+        "dense_armor.utility.infrastructure.data.shared.shared_memory.SharedMemory", spy
     )
     with SharedArray(np.array([1.0])), SharedStrings(["a"]), SharedList([1]):
         pass

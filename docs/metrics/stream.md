@@ -6,7 +6,7 @@ A robot changes over time; the accuracy of last week says little about now. `Rol
 metric over the last `window` samples, or the last `window_s` seconds.
 
 ```python
-from dense_armor.utility.metrics import Accuracy, Rolling
+from dense_armor.utility.evaluation.metrics import Accuracy, Rolling
 
 m = Rolling(Accuracy(), window_s=0.05)
 for i in range(20):
@@ -28,7 +28,7 @@ negative. `RollingAUC` computes it exactly on the last `window` pairs.
 
 ```python
 import numpy as np
-from dense_armor.utility.metrics import RollingAUC
+from dense_armor.utility.evaluation.metrics import RollingAUC
 
 rng = np.random.default_rng(0)
 m = RollingAUC(window=200)
@@ -56,9 +56,9 @@ the end of the shift); with `delay` the model learns each label only when it arr
 
 ```python
 import numpy as np
-from dense_armor.utility.evaluate import progressive_val_score
-from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
-from dense_armor.utility.metrics import Accuracy, Rolling
+from dense_armor.utility.evaluation.evaluate import progressive_val_score
+from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB
+from dense_armor.utility.evaluation.metrics import Accuracy, Rolling
 
 rng = np.random.default_rng(0)
 qd = rng.normal(0, 1, 2000)
@@ -85,9 +85,9 @@ For metrics that need a probability, `progressive_val_proba_score` uses `predict
 
 ```python
 import numpy as np
-from dense_armor.utility.evaluate import progressive_val_proba_score
-from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
-from dense_armor.utility.metrics import LogLoss
+from dense_armor.utility.evaluation.evaluate import progressive_val_proba_score
+from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB
+from dense_armor.utility.evaluation.metrics import LogLoss
 
 rng = np.random.default_rng(0)
 s = [({"qd": v}, int(abs(v) > 0.5)) for v in rng.normal(0, 1, 2000)]
@@ -108,9 +108,9 @@ ahead.
 
 ```python
 import numpy as np
-from dense_armor.utility.evaluate import best_of
-from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB, OnlineSoftmaxRegression
-from dense_armor.utility.metrics import Accuracy
+from dense_armor.utility.evaluation.evaluate import best_of
+from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB, OnlineSoftmaxRegression
+from dense_armor.utility.evaluation.metrics import Accuracy
 
 rng = np.random.default_rng(0)
 s = [({"qd": v}, int(abs(v) > 0.5)) for v in rng.normal(0, 1, 2000)]

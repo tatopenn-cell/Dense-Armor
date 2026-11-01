@@ -7,15 +7,15 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.neural.generate import generate
-from dense_armor.utility.neural.gradcheck import gradcheck
-from dense_armor.utility.neural.losses_lm import NextTokenLoss
-from dense_armor.utility.neural.modern_decoder import (
+from dense_armor.utility.deep.neural.generate import generate
+from dense_armor.utility.deep.neural.gradcheck import gradcheck
+from dense_armor.utility.deep.neural.losses_lm import NextTokenLoss
+from dense_armor.utility.deep.neural.modern_decoder import (
     ModernDecoderBlock,
     modern_decoder,
 )
-from dense_armor.utility.neural.trainer import Trainer
-from dense_armor.utility.optim import Adam
+from dense_armor.utility.deep.neural.trainer import Trainer
+from dense_armor.utility.online.optim import Adam
 
 VOCAB = 11
 IDS = jnp.array([3, 1, 4, 1, 5, 9, 2, 6], dtype=jnp.int32)

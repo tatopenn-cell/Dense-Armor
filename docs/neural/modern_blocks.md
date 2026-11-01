@@ -17,7 +17,7 @@ bias.
 
 ```python
 import jax.numpy as jnp
-from dense_armor.utility.neural.norm_rms import RMSNorm
+from dense_armor.utility.deep.neural.norm_rms import RMSNorm
 
 x = jnp.array([[3.0, 4.0], [1.0, 1.0]])
 n = RMSNorm(2, eps=1e-12)
@@ -48,7 +48,7 @@ SwiGLU.
 
 ```python
 import jax
-from dense_armor.utility.neural.glu import GLUFeedForward
+from dense_armor.utility.deep.neural.glu import GLUFeedForward
 
 f = GLUFeedForward(4, 8, "silu", jax.random.PRNGKey(0))
 x = jax.random.normal(jax.random.PRNGKey(1), (3, 4))
@@ -82,7 +82,7 @@ depends on their distance.
 ```python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.attention import MultiHeadSelfAttention
+from dense_armor.utility.deep.neural.attention import MultiHeadSelfAttention
 
 x = jax.random.normal(jax.random.PRNGKey(1), (6, 8))
 plain = MultiHeadSelfAttention(8, 2, jax.random.PRNGKey(0))
@@ -113,7 +113,7 @@ key at `n` depends only on `m - n`:
 ```python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.neural.rotary import apply_rotary, rotary_angles
+from dense_armor.utility.deep.neural.rotary import apply_rotary, rotary_angles
 
 q = jax.random.normal(jax.random.PRNGKey(0), (8,))
 k = jax.random.normal(jax.random.PRNGKey(1), (8,))
@@ -138,10 +138,10 @@ gradients.
 
 ```python
 import jax
-from dense_armor.utility.neural.losses import MSE
-from dense_armor.utility.neural.models import mlp
-from dense_armor.utility.neural.trainer import Trainer
-from dense_armor.utility.optim import AdamW
+from dense_armor.utility.deep.neural.losses import MSE
+from dense_armor.utility.deep.neural.models import mlp
+from dense_armor.utility.deep.neural.trainer import Trainer
+from dense_armor.utility.online.optim import AdamW
 
 X = jax.random.normal(jax.random.PRNGKey(1), (32, 4))
 y = jax.random.normal(jax.random.PRNGKey(2), (32, 2))

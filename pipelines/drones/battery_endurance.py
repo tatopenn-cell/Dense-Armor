@@ -44,9 +44,9 @@ from dataclasses import dataclass
 import numpy as np
 
 from dense_armor.roles import AdaptiveConformalRegressor
-from dense_armor.utility.linear.glm import LinearRegression
-from dense_armor.utility.optim.adagrad import AdaGrad
-from dense_armor.utility.stats.quantiles import TDigest
+from dense_armor.utility.online.linear.glm import LinearRegression
+from dense_armor.utility.online.optim.adagrad import AdaGrad
+from dense_armor.utility.signals.stats.quantiles import TDigest
 
 DEFAULT_CAPACITY_WH = 63.0
 DEFAULT_V_FULL = 12.6

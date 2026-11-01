@@ -19,9 +19,9 @@ Each test fails if the corresponding fix is reverted.
 
 import numpy as np
 
-from dense_armor.utility.vision.dense import DenseFlow
-from dense_armor.utility.vision.scene import FrameAnomaly
-from dense_armor.utility.vision.window import FrameWindow
+from dense_armor.utility.signals.vision.dense import DenseFlow
+from dense_armor.utility.signals.vision.scene import FrameAnomaly
+from dense_armor.utility.signals.vision.window import FrameWindow
 
 
 def test_c2a_frame_anomaly_accepts_1ch_and_4ch():

@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.stats import OnlineGaussianMixture
+from dense_armor.utility.signals.stats import OnlineGaussianMixture
 
 SEED = 20261026
 
@@ -307,7 +307,7 @@ def test_init_from_first_uses_each_dimension():
     """
     import numpy as np
 
-    from dense_armor.utility.stats.mixture import OnlineGaussianMixture
+    from dense_armor.utility.signals.stats.mixture import OnlineGaussianMixture
 
     m = OnlineGaussianMixture(n_components=2, init_scale=0.5)
     m.learn_one({"a": 10.0, "b": -10.0})

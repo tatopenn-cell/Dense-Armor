@@ -53,7 +53,7 @@ library, and is exactly `0.0` on identical values.
 ```python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.stats.stable import stable_var
+from dense_armor.utility.signals.stats.stable import stable_var
 
 x = jnp.asarray([1e10, 1e10, 1e10], dtype=jnp.float32)
 print(float(stable_var(x)))
@@ -78,7 +78,7 @@ of `RunningMoments`:
 
 ```python
 import numpy as np
-from dense_armor.utility.stats.moments import RunningMoments
+from dense_armor.utility.signals.stats.moments import RunningMoments
 
 rng = np.random.default_rng(0)
 block = rng.normal(1000.0, 0.01, 500).astype(np.float32)
@@ -272,5 +272,5 @@ array sizes.
 
 `stable_var` is a function, not an estimator: it has no `learn_one`, no
 `budget_s`, no `memory_class`. The `dtype` keyword of the 11 estimators of
-`dense_armor/utility/stats` is described in the CHANGELOG;
+`dense_armor/utility/signals/stats` is described in the CHANGELOG;
 `RunningMoments.learn_many` uses `stable_moments` for a `float32` block.

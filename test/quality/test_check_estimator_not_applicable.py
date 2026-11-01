@@ -3,7 +3,7 @@
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.learn.online_classifiers import OnlineGaussianNB
+from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB
 
 
 class _NoPickle(OnlineGaussianNB):

@@ -7,7 +7,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.neural.norm_more import GroupNorm, InstanceNorm
+from dense_armor.utility.deep.neural.norm_more import GroupNorm, InstanceNorm
 
 
 def _hand_x():

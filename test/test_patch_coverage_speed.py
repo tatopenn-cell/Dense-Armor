@@ -1,10 +1,10 @@
 from types import SimpleNamespace
 
 from dense_armor.checks.check_estimator import _roc_auc_score
-from dense_armor.utility.drift.adwin import ADWIN
-from dense_armor.utility.forest.arf import AdaptiveRandomForestClassifier
-from dense_armor.utility.tree import hoeffding
-from dense_armor.utility.tree.hoeffding import HoeffdingTreeClassifier
+from dense_armor.utility.online.drift.adwin import ADWIN
+from dense_armor.utility.online.forest.arf import AdaptiveRandomForestClassifier
+from dense_armor.utility.online.tree import hoeffding
+from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
 
 
 def test_auc_single_class_is_one_half():

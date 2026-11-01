@@ -7,13 +7,13 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.neural.gradcheck import gradcheck
-from dense_armor.utility.neural.layers import Dense
-from dense_armor.utility.neural.losses import MSE
-from dense_armor.utility.neural.recurrent import LSTM
-from dense_armor.utility.neural.seq2seq import Seq2Seq
-from dense_armor.utility.neural.trainer import Trainer
-from dense_armor.utility.optim import Adam
+from dense_armor.utility.deep.neural.gradcheck import gradcheck
+from dense_armor.utility.deep.neural.layers import Dense
+from dense_armor.utility.deep.neural.losses import MSE
+from dense_armor.utility.deep.neural.recurrent import LSTM
+from dense_armor.utility.deep.neural.seq2seq import Seq2Seq
+from dense_armor.utility.deep.neural.trainer import Trainer
+from dense_armor.utility.online.optim import Adam
 
 
 def _seq(horizon=2, reverse=True):

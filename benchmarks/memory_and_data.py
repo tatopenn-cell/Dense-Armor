@@ -76,11 +76,11 @@ def _imports():
     import jax
     import numpy as np
 
-    from dense_armor.utility.neural.losses import MSE
-    from dense_armor.utility.neural.models import mlp, transformer_encoder
-    from dense_armor.utility.neural.stream import DataStream
-    from dense_armor.utility.neural.trainer import Trainer
-    from dense_armor.utility.optim import SGD
+    from dense_armor.utility.deep.neural.losses import MSE
+    from dense_armor.utility.deep.neural.models import mlp, transformer_encoder
+    from dense_armor.utility.deep.neural.stream import DataStream
+    from dense_armor.utility.deep.neural.trainer import Trainer
+    from dense_armor.utility.online.optim import SGD
 
     return jax, np, MSE, mlp, transformer_encoder, DataStream, Trainer, SGD
 

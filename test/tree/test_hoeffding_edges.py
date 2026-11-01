@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from dense_armor.utility.tree.hoeffding import (
+from dense_armor.utility.online.tree.hoeffding import (
     HoeffdingTreeClassifier,
     _Gauss,
     _Node,

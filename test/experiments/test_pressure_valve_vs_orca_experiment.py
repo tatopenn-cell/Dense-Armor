@@ -1,7 +1,7 @@
 """
 Three-way comparison, same 7 scenarios as testKalman.py: Orca's own default
 pipeline (constant compute_damping_gating), hybrid_shield (phi_ab, already
-vendored for Armatura), and pressure_valve (JSD-adaptive threshold, already
+vendored for Armor), and pressure_valve (JSD-adaptive threshold, already
 in robust_filters.py but never wired into either pipeline).
 
 pressure_valve is a batch/offline filter (its own docstring: not for
@@ -18,8 +18,8 @@ jax.config.update("jax_enable_x64", True)
 import numpy as np
 
 from dense_armor.core.hybrid_engine import hybrid_shield
-from dense_armor.utility.protect.orca import Orca
-from dense_armor.utility.anomaly.robust_filters import pressure_valve
+from dense_armor.utility.online.protect.orca import Orca
+from dense_armor.utility.online.anomaly.robust_filters import pressure_valve
 
 _TEST_DIR = pathlib.Path(__file__).resolve().parent
 

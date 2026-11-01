@@ -8,9 +8,22 @@ from . import _compat
 
 _compat.install()
 
-from .armatura import Armatura
+from .armor import Armor
 
-__all__ = ["Armatura"]
+__all__ = ["Armor"]
+
+
+def __getattr__(name):
+    if name == "Armatura":
+        import warnings
+
+        warnings.warn(
+            "dense_armor.Armatura is the old name of dense_armor.Armor",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return Armor
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 # Nessun handler configurato di default (convenzione standard per librerie):
 # chi integra dense-armor decide dove/se mostrare i log (es.

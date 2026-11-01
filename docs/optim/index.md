@@ -5,7 +5,7 @@ When a model learns, it changes its numbers a little after every example. An opt
 An optimizer is the algorithm that decides how much to change the weights of
 a linear model on each new sample. It is the only place where the learning
 rate lives. It is also what separates the five methods in
-`dense_armor.utility.optim`. This page starts from the gradient rule. It ends
+`dense_armor.utility.online.optim`. This page starts from the gradient rule. It ends
 with the choice of optimizer for a stream of robot joint readings.
 
 ## 1. What an optimizer does
@@ -41,7 +41,7 @@ Every optimizer is exposed twice. The object form owns its state. It offers
 
 ```python
 import numpy as np
-from dense_armor.utility.optim import SGD
+from dense_armor.utility.online.optim import SGD
 
 opt = SGD(lr=0.1)
 w = np.zeros(2)
@@ -61,7 +61,7 @@ writing to the object. So it runs inside `jax.jit` and `jax.lax.scan`:
 ```python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.optim import SGD
+from dense_armor.utility.online.optim import SGD
 
 opt = SGD(lr=0.1)
 state = opt.init_state(2)
@@ -76,7 +76,7 @@ print(w)
 
 The two forms share the same hyper-parameters and the same arithmetic. A
 stream run inside `jax.lax.scan` gives the same weights as the same stream run
-one `step` at a time. The models in `dense_armor.utility.linear` use the pure
+one `step` at a time. The models in `dense_armor.utility.online.linear` use the pure
 form. The tests use the object form.
 
 ## 3. The five optimizers
@@ -125,9 +125,9 @@ It learns one sample at a time. `SGD` is the optimizer:
 ```python
 from pathlib import Path
 import numpy as np
-from dense_armor.utility.datasets import SyntheticArm
-from dense_armor.utility.linear.glm import LinearRegression
-from dense_armor.utility.optim import SGD
+from dense_armor.utility.signals.datasets import SyntheticArm
+from dense_armor.utility.online.linear.glm import LinearRegression
+from dense_armor.utility.online.optim import SGD
 
 ds = SyntheticArm(Path("test/fixtures/urdf/panda.urdf"),
                   period_s=1.0, rate_hz=50.0, n_cycles=2, seed=0)
@@ -213,7 +213,7 @@ arXiv:1412.6980, Algorithm 1.
 
 ### Measured cost
 
-On one CPU thread, `dense_armor.utility.linear.LinearRegression` with two
+On one CPU thread, `dense_armor.utility.online.linear.LinearRegression` with two
 features, `predict_one` plus `learn_one` per sample, median of 1000 samples
 after a warm-up of 200:
 

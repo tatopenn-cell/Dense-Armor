@@ -28,7 +28,7 @@ acceleration.
 
 ```python
 import numpy as np
-from dense_armor.utility.control.trajectory import quintic_trajectory
+from dense_armor.utility.robot.control.trajectory import quintic_trajectory
 
 q0 = np.array([0.0, 0.5, -0.3, 0.1, 0.0, 0.0])
 qf = np.array([0.5, 1.0, -0.1, 0.2, 0.0, 0.0])
@@ -82,7 +82,7 @@ intermediate waypoint:
 
 ```python
 import numpy as np
-from dense_armor.utility.control.trajectory import quintic_trajectory
+from dense_armor.utility.robot.control.trajectory import quintic_trajectory
 
 q0, qf = np.array([0.0, 0.5]), np.array([0.5, 1.0])
 q_mid = 0.5 * (q0 + qf)
@@ -118,8 +118,8 @@ The output is the reference. Two standard consumers:
 
 ```python
 import numpy as np
-from dense_armor.utility.control.trajectory import quintic_trajectory
-from dense_armor.utility.control.kinematic_controller import kinematic_tracking_controller
+from dense_armor.utility.robot.control.trajectory import quintic_trajectory
+from dense_armor.utility.robot.control.kinematic_controller import kinematic_tracking_controller
 
 t, q, v, a = quintic_trajectory(np.zeros(2), np.array([0.5, 1.0]), T=2.0)
 dt, qa = t[1] - t[0], np.array([0.05, -0.05])
@@ -141,7 +141,7 @@ safe in speed and space.
 
 ## API reference
 
-::: dense_armor.utility.control.trajectory
+::: dense_armor.utility.robot.control.trajectory
 
 ---
 

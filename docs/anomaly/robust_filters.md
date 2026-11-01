@@ -28,7 +28,7 @@ outliers with the window median.
 
 ```python
 import numpy as np
-from dense_armor.utility.anomaly.robust_filters import hampel_filter
+from dense_armor.utility.online.anomaly.robust_filters import hampel_filter
 
 rng = np.random.default_rng(42)
 v = 0.5 + 0.1 * rng.standard_normal(3000)
@@ -64,7 +64,7 @@ rules, with the same `(clean, idx)` return as `hampel_filter`.
 
 ```python
 import numpy as np
-from dense_armor.utility.anomaly.robust_filters import (
+from dense_armor.utility.online.anomaly.robust_filters import (
     hampel_filter, tukey_fences, chauvenet_criterion, sigma_clip)
 
 rng = np.random.default_rng(42)
@@ -144,7 +144,7 @@ estimates.
 
 ```python
 import numpy as np
-from dense_armor.utility.anomaly.robust_filters import pressure_valve
+from dense_armor.utility.online.anomaly.robust_filters import pressure_valve
 
 rng = np.random.default_rng(42)
 v = 0.5 + 0.1 * rng.standard_normal(3000)
@@ -177,7 +177,7 @@ above the median threshold is 8.46.
 
 ## API reference
 
-::: dense_armor.utility.anomaly.robust_filters
+::: dense_armor.utility.online.anomaly.robust_filters
 
 ---
 

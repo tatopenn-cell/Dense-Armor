@@ -8,13 +8,13 @@ import numpy as np
 import pytest
 
 from dense_armor.roles import AnomalyDetector
-from dense_armor.utility.neural.autoencoder import Autoencoder
-from dense_armor.utility.neural.chain import Sequential
-from dense_armor.utility.neural.layers import Dense
-from dense_armor.utility.neural.losses import MSE
-from dense_armor.utility.neural.online_autoencoder import OnlineAutoencoder
-from dense_armor.utility.neural.trainer import Trainer
-from dense_armor.utility.optim import SGD, Adam
+from dense_armor.utility.deep.neural.autoencoder import Autoencoder
+from dense_armor.utility.deep.neural.chain import Sequential
+from dense_armor.utility.deep.neural.layers import Dense
+from dense_armor.utility.deep.neural.losses import MSE
+from dense_armor.utility.deep.neural.online_autoencoder import OnlineAutoencoder
+from dense_armor.utility.deep.neural.trainer import Trainer
+from dense_armor.utility.online.optim import SGD, Adam
 
 
 def _hand():
@@ -203,7 +203,7 @@ def test_value_error_no_encode():
 
 def test_read_returns_none_when_x_not_dict():
     """Line 37: _read with x not a dict."""
-    from dense_armor.utility.neural.online_autoencoder import _read
+    from dense_armor.utility.deep.neural.online_autoencoder import _read
 
     v, k = _read(None, ["a"])
     assert v is None
@@ -223,7 +223,7 @@ def test_first_x_not_dict_counts_missing():
 
 def test_get_params_wrap():
     """Line 163: get_params wraps model/optimizer/schedule."""
-    from dense_armor.utility.neural.online import _EqWrap
+    from dense_armor.utility.deep.neural.online import _EqWrap
 
     oa = OnlineAutoencoder(_hand(), SGD(0.1))
     d = oa.get_params()

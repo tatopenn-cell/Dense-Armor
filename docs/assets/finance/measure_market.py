@@ -73,7 +73,7 @@ def surveillance(ticker):
         e = pl.process_tick(float(p[i]), float(vr[i]))
         ts.append(time.perf_counter() - t0)
         flags.append(bool(e.anomalous))
-        disc.append(bool(e.discarded_by_armatura))
+        disc.append(bool(e.discarded_by_armor))
         cus.append(bool(e.drift_flagged))
         orca.append(bool(e.orca_dampened))
         if i % 250 == 0:
@@ -92,9 +92,9 @@ def surveillance(ticker):
         ticker,
         "n_ticks",
         len(flags),
-        "armatura_all",
+        "armor_all",
         sum(disc),
-        "armatura_post",
+        "armor_post",
         sum(x for x, q in zip(disc, post) if q),
         "cusum_all",
         sum(cus),

@@ -35,8 +35,8 @@ from pathlib import Path
 import numpy as np
 from scipy.stats import wilcoxon
 
-from dense_armor.utility.datasets import DriftStream
-from dense_armor.utility.ensemble import (
+from dense_armor.utility.signals.datasets import DriftStream
+from dense_armor.utility.online.ensemble import (
     ExponentiallyWeightedAverageRegressor,
     OnlineBaggingClassifier,
     OnlineBoostingClassifier,
@@ -44,8 +44,8 @@ from dense_armor.utility.ensemble import (
     VotingClassifier,
 )
 from dense_armor.roles import Regressor
-from dense_armor.utility.neighbors import KNNRegressor
-from dense_armor.utility.tree.hoeffding import HoeffdingTreeClassifier
+from dense_armor.utility.online.neighbors import KNNRegressor
+from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
 
 N = 2000
 D = 4

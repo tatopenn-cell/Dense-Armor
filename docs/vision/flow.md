@@ -8,7 +8,7 @@ problem in every cell of a coarse grid; this is the Lucas–Kanade method.
 
 ```python
 import numpy as np
-from dense_armor.utility.vision import FrameFeatures
+from dense_armor.utility.signals.vision import FrameFeatures
 
 a = np.zeros((16, 16), dtype=np.float32)
 a[6:10, 6:10] = 1.0
@@ -67,7 +67,7 @@ builds a small pyramid of images and works from the top down.
 
 ```python
 import numpy as np
-from dense_armor.utility.vision import FrameFeatures
+from dense_armor.utility.signals.vision import FrameFeatures
 
 a = np.zeros((64, 64), dtype=np.float32)
 a[24:40, 20:36] = 1.0
@@ -127,7 +127,7 @@ else is between the two.
 
 ```python
 import numpy as np
-from dense_armor.utility.vision import FrameFeatures
+from dense_armor.utility.signals.vision import FrameFeatures
 
 a = np.zeros((64, 64), dtype=np.float32)
 a[24:40, 20:36] = 1.0

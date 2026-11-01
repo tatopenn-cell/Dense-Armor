@@ -6,16 +6,16 @@ import numpy as np
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.linear.glm import LinearRegression, LogisticRegression
-from dense_armor.utility.multioutput import (
+from dense_armor.utility.online.linear.glm import LinearRegression, LogisticRegression
+from dense_armor.utility.online.multioutput import (
     ClassifierChain,
     PerOutputClassifier,
     PerOutputRegressor,
     ProbabilisticClassifierChain,
     RegressorChain,
 )
-from dense_armor.utility.multioutput import multioutput as mo_mod
-from dense_armor.utility.optim import SGD
+from dense_armor.utility.online.multioutput import multioutput as mo_mod
+from dense_armor.utility.online.optim import SGD
 
 
 def clf_factory():

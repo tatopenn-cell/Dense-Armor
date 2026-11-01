@@ -125,6 +125,6 @@ pip install dense-armor
 ```
 
 ```python
-from dense_armor.utility.protect.arbiter import classify_segments
-from dense_armor.utility.drift.cusum import cusum_detector
-from dense_armor.utility.anomaly.one_sided import one_sided_upper_filter
+from dense_armor.utility.online.protect.arbiter import classify_segments
+from dense_armor.utility.online.drift.cusum import cusum_detector
+from dense_armor.utility.online.anomaly.one_sided import one_sided_upper_filter
