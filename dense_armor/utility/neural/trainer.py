@@ -192,8 +192,10 @@ class Trainer:
                 the update is that of one batch ``accumulate`` times
                 larger. The last update of an epoch averages the
                 micro-batches that are left. It works with and without
-                ``compile``, and it is not combined with ``devices``,
-                ``compute_dtype`` or ``loss_scale``.
+                ``compile``, and with ``devices``, ``compute_dtype`` and
+                ``loss_scale`` (which need ``compile=True``): each
+                micro-batch is split over the devices and averaged, and a
+                group with an overflow is skipped as a whole.
 
         Raises:
             ValueError: on ``decay`` outside ``("l2", "decoupled")``,
@@ -204,8 +206,7 @@ class Trainer:
                 given with ``compile=False``, ``devices`` with
                 ``compile=False``, fewer than 2 devices, more devices
                 than ``jax.device_count()``, repeated or unknown device
-                ids, ``accumulate`` below 1, or ``accumulate`` above 1 with
-                ``devices``, ``compute_dtype`` or ``loss_scale``.
+                ids, or ``accumulate`` below 1.
         """
         if decay not in ("l2", "decoupled"):
             raise ValueError(f"decay must be 'l2' or 'decoupled', got {decay!r}")
@@ -248,13 +249,6 @@ class Trainer:
             raise ValueError("compute_dtype and loss_scale require compile=True")
         if int(accumulate) < 1:
             raise ValueError(f"accumulate must be at least 1, got {accumulate}")
-        if int(accumulate) > 1 and (
-            devices is not None or compute_dtype is not None or _ls is not None
-        ):
-            raise ValueError(
-                "accumulate > 1 is not combined with devices, compute_dtype "
-                "or loss_scale"
-            )
         self.devices: list[int] | None
         self._n_devices: int
         if devices is not None:
@@ -502,6 +496,10 @@ class Trainer:
                     self.weight_decay,
                     self.decay,
                     self.clip_norm,
+                    n_devices=self._n_devices,
+                    compute_dtype=self.compute_dtype,
+                    loss_scale=self.loss_scale,
+                    devices=self.devices,
                 )
             if not parallel:
                 values = self._compiled_values
@@ -528,6 +526,7 @@ class Trainer:
                 write_values(self.model, values_plain)
 
         acc = self._compiled_accumulating if self.accumulate > 1 else None
+        acc_finite: Any = None
         for epoch in range(epochs):
             n_batches: int | None
             if stream is not None:
@@ -559,7 +558,49 @@ class Trainer:
                         f"a batch of {size} samples is not divisible by "
                         f"devices {self._n_devices}"
                     )
-                if step_parallel_mixed is not None:
+                if acc is not None and self.compile:
+                    if parallel:
+                        n_dev = self._n_devices
+                        shard = size // n_dev
+                        xb = jnp.asarray(xb).reshape(
+                            (n_dev, shard) + tuple(xb.shape[1:])
+                        )
+                        yb = jnp.asarray(yb).reshape(
+                            (n_dev, shard) + tuple(yb.shape[1:])
+                        )
+                    grads, batch_loss, finite = acc.grads(values, xb, yb, self._scale)
+                    acc_grads = (
+                        grads if acc_grads is None else acc.add(acc_grads, grads)
+                    )
+                    acc_finite = (
+                        finite
+                        if acc_finite is None
+                        else jnp.logical_and(acc_finite, finite)
+                    )
+                    if acc_count == 0:
+                        group_t = epoch_t
+                    acc_count += 1
+                    if acc_count == self.accumulate or is_last:
+                        values, opt_state = acc.update(
+                            values, opt_state, acc_grads, acc_count, acc_finite, group_t
+                        )
+                        if self.loss_scale == "dynamic":
+                            ok = acc_finite[0] if parallel else acc_finite
+                            self._update_scale(bool(ok))
+                        if not parallel:
+                            self._compiled_values = values
+                            self._compiled_opt_state = opt_state
+                            write_values(
+                                self.model, values, dtype=jnp.float32 if mixed else None
+                            )
+                        acc_grads = None
+                        acc_finite = None
+                        acc_count = 0
+                    if parallel:
+                        batch_loss = batch_loss[0]
+                    total_loss_device = total_loss_device + batch_loss * size
+                    total_size += size
+                elif step_parallel_mixed is not None:
                     n_dev = self._n_devices
                     shard = size // n_dev
                     x_s = jnp.asarray(xb).reshape((n_dev, shard) + tuple(xb.shape[1:]))
@@ -590,25 +631,6 @@ class Trainer:
                     write_values(self.model, values, dtype=jnp.float32)
                     if self.loss_scale == "dynamic":
                         self._update_scale(bool(finite))
-                    total_loss_device = total_loss_device + batch_loss * size
-                    total_size += size
-                elif acc is not None:
-                    grads, batch_loss = acc.grads(values, xb, yb)
-                    acc_grads = (
-                        grads if acc_grads is None else acc.add(acc_grads, grads)
-                    )
-                    if acc_count == 0:
-                        group_t = epoch_t
-                    acc_count += 1
-                    if acc_count == self.accumulate or is_last:
-                        values, opt_state = acc.update(
-                            values, opt_state, acc_grads, acc_count, group_t
-                        )
-                        self._compiled_values = values
-                        self._compiled_opt_state = opt_state
-                        write_values(self.model, values)
-                        acc_grads = None
-                        acc_count = 0
                     total_loss_device = total_loss_device + batch_loss * size
                     total_size += size
                 elif self.compile:
@@ -645,6 +667,8 @@ class Trainer:
                         acc_count = 0
                     total_loss += float(batch_loss) * size
                     total_size += size
+            if total_size == 0:
+                raise ValueError("the data gave no batch in this epoch")
             if (step_parallel is not None or step_parallel_mixed is not None) and (
                 X_val is not None and y_val is not None
             ):

@@ -56,6 +56,7 @@ import jax.numpy as jnp
 from dense_armor.utility.neural.models import mlp
 from dense_armor.utility.neural.losses import MSE
 from dense_armor.utility.neural.trainer import Trainer
+from dense_armor.utility.neural.stream import DataStream
 from dense_armor.utility.neural.compiled import (
     make_step,
     make_step_parallel,
@@ -267,6 +268,52 @@ OUT["trainer_pmap_devices"] = [
     None if ds is None else [int(d.id) for d in ds] for ds in seen
 ]
 
+def acc_weights(devices, micro, k, epochs=3, **kw):
+    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
+    tr = Trainer(m, MSE(), SGD(0.05), compile=True, devices=devices, accumulate=k, **kw)
+    tr.fit(X, Y, epochs=epochs, batch_size=micro, key=jax.random.PRNGKey(0), shuffle=False)
+    return weights(m), tr
+
+
+w_big, _ = acc_weights(None, 32, 1)
+w_dev, _ = acc_weights(2, 8, 4)
+w_dev4, _ = acc_weights(4, 8, 4)
+OUT["acc_devices"] = {"two": spread(w_big, w_dev), "four": spread(w_big, w_dev4)}
+
+w_mixed_big, _ = acc_weights(None, 32, 1, compute_dtype="bfloat16")
+w_mixed_dev, _ = acc_weights(2, 8, 4, compute_dtype="bfloat16")
+OUT["acc_mixed_devices"] = spread(w_mixed_big, w_mixed_dev)
+
+
+def acc_overflow(shard):
+    Xo = X.copy()
+    if shard == 0:
+        Xo[0:4] *= 1e30
+    else:
+        Xo[4:8] *= 1e30
+    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
+    tr = Trainer(
+        m, MSE(), SGD(0.05), compile=True, devices=2, accumulate=2,
+        compute_dtype="float16", loss_scale="dynamic",
+    )
+    tr._scale = 1024.0
+    before = weights(m)
+    tr.fit(Xo[:16], Y[:16], epochs=1, batch_size=8, key=jax.random.PRNGKey(0), shuffle=False)
+    return {"unchanged": spread(before, weights(m)) == 0.0, "scale": tr.history_["loss_scale"]}
+
+
+OUT["acc_overflow_0"] = acc_overflow(0)
+OUT["acc_overflow_1"] = acc_overflow(1)
+
+attempt(
+    "generator_batch",
+    lambda: trainer(2)[1].fit(
+        None, None, epochs=1, batch_size=None, key=jax.random.PRNGKey(0),
+        stream=DataStream(lambda: zip(X[:11], Y[:11]), 4),
+    ),
+)
+OUT["errors"] = errors
+
 OUT["overflow_0"] = overflow(0)
 OUT["overflow_1"] = overflow(1)
 print(json.dumps(OUT))
@@ -404,3 +451,26 @@ def test_mixed_overflow_on_one_device_skips_all(out, shard):
     assert r["finite"] == [False, False]
     assert r["unchanged"]
     assert r["equal"]
+
+
+@pytest.mark.parametrize("key", ["two", "four"])
+def test_accumulation_over_devices_equals_one_large_batch(out, key):
+    """4 micro-batches of 8, each split over 2 or 4 devices, against one batch of 32."""
+    assert out["acc_devices"][key] < 1e-5
+
+
+def test_accumulation_with_devices_and_bfloat16_follows_the_single_device_batch(out):
+    assert out["acc_mixed_devices"] < 5e-2
+
+
+@pytest.mark.parametrize("shard", [0, 1])
+def test_an_overflow_on_one_device_skips_the_whole_accumulated_group(out, shard):
+    r = out[f"acc_overflow_{shard}"]
+    assert r["unchanged"]
+    assert r["scale"] == [512.0]
+
+
+def test_a_generator_batch_that_the_devices_do_not_divide_raises(out):
+    message = out["errors"]["generator_batch"]
+    assert message is not None and message.startswith("ValueError")
+    assert "a batch of 3 samples is not divisible by devices 2" in message

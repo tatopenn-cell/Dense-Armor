@@ -378,19 +378,155 @@ def test_the_last_group_of_an_epoch_averages_the_micro_batches_that_are_left():
     assert int(t._compiled_opt_state["t"]) == 4
 
 
+def test_accumulate_below_one_raises():
+    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
+    with pytest.raises(ValueError, match="accumulate must be at least 1"):
+        Trainer(m, MSE(), SGD(0.01), compile=True, accumulate=0)
+
+
 @pytest.mark.parametrize(
     "kw",
     [
-        {"accumulate": 0},
-        {"accumulate": 2, "devices": 2},
-        {"accumulate": 2, "compute_dtype": "bfloat16"},
-        {"accumulate": 2, "loss_scale": "dynamic"},
+        {"compute_dtype": "float16", "loss_scale": 1024.0},
+        {"compute_dtype": "bfloat16"},
+        {"loss_scale": 256.0},
+        {"compute_dtype": "float16", "loss_scale": "dynamic"},
     ],
 )
-def test_invalid_accumulate_raises(kw):
+def test_mixed_accumulation_follows_the_mixed_step_of_the_large_batch(kw):
+    """4 micro-batches of 8 in the mixed way against one mixed batch of 32.
+
+    The gradients are stored in the compute dtype per micro-batch, so the
+    two differ by the rounding of that dtype, not by more."""
+    X, y = _train_data(64)
+    t1, w1 = _fit(True, X, y, 5, 32, shuffle=False, **kw)
+    t4, w4 = _fit(True, X, y, 5, 8, shuffle=False, accumulate=4, **kw)
+    tol = {"float16": 2e-2, "bfloat16": 5e-2}.get(kw.get("compute_dtype"), 1e-5)
+    for a, b in zip(w1, w4):
+        np.testing.assert_allclose(a, b, rtol=tol, atol=tol * 0.1)
+    assert t4.history_["train_loss"] == pytest.approx(
+        t1.history_["train_loss"], rel=tol
+    )
+
+
+def test_one_overflow_in_a_group_skips_the_whole_group_and_halves_the_scale_once():
+    X, y = _train_data(32)
+    X = X.copy()
+    X[8:16] *= 1e30
     m = mlp([2, 4, 1], jax.random.PRNGKey(0))
-    with pytest.raises(ValueError, match="accumulate"):
-        Trainer(m, MSE(), SGD(0.01), compile=True, **kw)
+    t = Trainer(
+        m,
+        MSE(),
+        SGD(0.05),
+        compile=True,
+        accumulate=4,
+        compute_dtype="float16",
+        loss_scale="dynamic",
+    )
+    t._scale = 1024.0
+    before = [np.array(p.value, dtype=np.float32) for p in m.params()]
+    t.fit(X, y, epochs=1, batch_size=8, key=jax.random.PRNGKey(0), shuffle=False)
+    after = [np.array(p.value, dtype=np.float32) for p in m.params()]
+    for a, b in zip(before, after):
+        assert np.array_equal(a, b)
+    assert t.history_["loss_scale"] == [512.0]
+
+
+def test_a_group_without_overflow_after_a_skipped_one_updates_the_weights():
+    X, y = _train_data(64)
+    X = X.copy()
+    X[0:8] *= 1e30
+    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
+    t = Trainer(
+        m,
+        MSE(),
+        SGD(0.05),
+        compile=True,
+        accumulate=4,
+        compute_dtype="float16",
+        loss_scale="dynamic",
+    )
+    t._scale = 1024.0
+    before = [np.array(p.value, dtype=np.float32) for p in m.params()]
+    t.fit(X, y, epochs=1, batch_size=8, key=jax.random.PRNGKey(0), shuffle=False)
+    after = [np.array(p.value, dtype=np.float32) for p in m.params()]
+    assert max(float(np.abs(a - b).max()) for a, b in zip(before, after)) > 0.0
+    assert t.history_["loss_scale"] == [512.0]
+
+
+def _make_acc(**kw):
+    from dense_armor.utility.neural.compiled import make_accumulating_step
+    from dense_armor.utility.neural.schedules import ConstantLR
+
+    m = kw.pop("model", None) or mlp([2, 4, 1], jax.random.PRNGKey(0))
+    opt = kw.pop("opt", None) or SGD(0.01)
+    return make_accumulating_step(
+        m, MSE(), opt, ConstantLR(0.01), 0.0, "l2", None, **kw
+    )
+
+
+def test_the_accumulating_step_rejects_an_unsupported_optimizer():
+    class Weird:
+        pass
+
+    with pytest.raises(ValueError, match="does not support optimizer Weird"):
+        _make_acc(opt=Weird())
+
+
+def test_the_accumulating_step_rejects_a_model_with_state():
+    from dense_armor.utility.neural.layers import Dropout
+
+    with pytest.raises(ValueError, match="Dropout"):
+        _make_acc(model=Dropout(0.1, jax.random.PRNGKey(0)))
+
+
+def test_the_accumulating_step_rejects_an_unknown_compute_dtype():
+    with pytest.raises(ValueError, match="compute_dtype"):
+        _make_acc(compute_dtype="float64")
+
+
+def _make_parallel(**kw):
+    from dense_armor.utility.neural.compiled import make_step_parallel
+    from dense_armor.utility.neural.schedules import ConstantLR
+
+    m = kw.pop("model", None) or mlp([2, 4, 1], jax.random.PRNGKey(0))
+    opt = kw.pop("opt", None) or SGD(0.01)
+    n = kw.pop("n_devices", 2)
+    return make_step_parallel(m, MSE(), opt, ConstantLR(0.01), 0.0, "l2", None, n, **kw)
+
+
+def test_the_parallel_step_rejects_an_unsupported_optimizer():
+    class Weird:
+        pass
+
+    with pytest.raises(ValueError, match="does not support optimizer Weird"):
+        _make_parallel(opt=Weird())
+
+
+def test_the_parallel_step_rejects_a_model_with_state():
+    from dense_armor.utility.neural.layers import Dropout
+
+    with pytest.raises(ValueError, match="Dropout"):
+        _make_parallel(model=Dropout(0.1, jax.random.PRNGKey(0)))
+
+
+def test_the_parallel_step_rejects_fewer_than_two_devices():
+    with pytest.raises(ValueError, match="n_devices must be >= 2"):
+        _make_parallel(n_devices=1)
+
+
+def test_an_epoch_without_a_batch_raises():
+    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
+    t = Trainer(m, MSE(), SGD(0.01), compile=True)
+    with pytest.raises(ValueError, match="no batch"):
+        t.fit(
+            None,
+            None,
+            epochs=1,
+            batch_size=None,
+            key=jax.random.PRNGKey(0),
+            stream=DataStream(lambda: iter(()), 4),
+        )
 
 
 @pytest.mark.parametrize("compile", [False, True])
