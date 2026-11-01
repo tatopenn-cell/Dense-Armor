@@ -36,6 +36,7 @@ def test_smoke_writes_every_field(smoke_json):
         "backend",
         "device_kind",
         "device_count",
+        "devices_used",
         "versions",
         "config",
         "batch_size",
@@ -58,6 +59,11 @@ def test_smoke_writes_every_field(smoke_json):
         "claim_1_holds",
         "claim_2_no_nan_inf",
         "claim_4_generated_len",
+        "claim_5_holds",
+        "claim_5_loss_variance_ratio",
+        "loss_variance_first_100",
+        "loss_variance_last_100",
+        "loss_variance_ratio",
     ]
     missing = [k for k in required if k not in smoke_json]
     assert not missing, f"missing fields: {missing}"
@@ -138,3 +144,40 @@ def test_generated_text_starts_with_prompt(smoke_json):
     assert smoke_json["generated_greedy"].startswith(prompt)
     assert smoke_json["generated_sample"].startswith(prompt)
     assert smoke_json["claim_4_generated_len"] == len(smoke_json["generated_greedy"])
+
+def test_smoke_devices_used_is_one(smoke_json):
+    """Smoke runs with one device; devices_used is 1, device_count may be more."""
+    assert smoke_json["devices_used"] == 1
+    assert smoke_json["device_count"] >= 1
+
+
+def test_smoke_claim_5_is_none_when_windows_overlap(smoke_json):
+    """With 10 steps and a window of 100 the two windows overlap.
+
+    claim 5 must be None, not a number: the first and last window are
+    the same sequence, so the ratio is 1 by construction and says
+    nothing about the run.
+    """
+    assert smoke_json["n_steps"] < 200
+    assert smoke_json["claim_5_holds"] is None
+    assert smoke_json["loss_variance_ratio"] is None
+    assert smoke_json["claim_5_loss_variance_ratio"] is None
+    assert "windows overlap" in smoke_json["claim_5_note"]
+
+
+def test_loss_curve_keeps_1_100_500():
+    """The recorded steps are 1, 100, 500, then every 500.
+
+    A 500-step run records steps 1, 100 and 500 only. A 1000-step run
+    records 1, 100, 500, 1000. Step 200 and 300 disappear when the run
+    is longer than 500 steps.
+    """
+    import benchmarks.train_small_lm as lm  # noqa: F401
+
+    src = Path(lm.__file__).read_text()
+    assert "(step_i + 1) in (100,)" in src, (
+        "the loss curve must record step 100 explicitly"
+    )
+    assert "(step_i + 1) % 500 == 0" in src, (
+        "the loss curve must record every 500 steps after 100"
+    )

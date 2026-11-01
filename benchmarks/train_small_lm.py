@@ -329,12 +329,15 @@ def _one_session(cfg, data, steps, batch_size, devices, accumulate, key):
         )
         last = trainer.history_["train_loss"][-1]
         all_losses.append(float(last))
-        rec_every = 5 if cfg["max_len"] <= 32 else 100
-        if step_i == 0 or (step_i + 1) % rec_every == 0:
+        step_1 = step_i == 0
+        rec_curve = (
+            (step_i + 1) in (100,) or (step_i + 1) % 500 == 0
+        ) if cfg["max_len"] > 32 else (step_i + 1) in (1, 5, 10)
+        if step_1 or rec_curve:
             loss_curve[step_i + 1] = float(last)
-            if not np.isfinite(last):
-                recorder["stopped_at_step"] = step_i + 1
-                break
+        if not np.isfinite(last):
+            recorder["stopped_at_step"] = step_i + 1
+            break
 
     n_total = len(all_losses)
     n_win = min(100, n_total)
