@@ -49,9 +49,7 @@ is not committed.
 import argparse
 import hashlib
 import json
-import os
 import platform
-import subprocess
 import sys
 import time
 import urllib.request
@@ -65,11 +63,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from dense_armor.roles import Root  # noqa: E402
 from dense_armor.utility.neural.attention import MultiHeadSelfAttention  # noqa: E402
+from dense_armor.utility.neural.generate import generate  # noqa: E402
 from dense_armor.utility.neural.glu import GLUFeedForward  # noqa: E402
 from dense_armor.utility.neural.layers import Dense, Embedding  # noqa: E402
 from dense_armor.utility.neural.losses_lm import NextTokenLoss  # noqa: E402
 from dense_armor.utility.neural.norm_rms import RMSNorm  # noqa: E402
-from dense_armor.utility.neural.generate import generate  # noqa: E402
 from dense_armor.utility.neural.trainer import Trainer  # noqa: E402
 from dense_armor.utility.optim.adam import Adam  # noqa: E402
 
@@ -82,9 +80,7 @@ DATA_URL = (
     "https://raw.githubusercontent.com/karpathy/char-rnn/"
     "master/data/tinyshakespeare/input.txt"
 )
-DATA_SHA256 = (
-    "86c4e6aa9db7c042ec79f339dcb96d42b0075e16b8fc2e86bf0ca57e2dc565ed"
-)
+DATA_SHA256 = "86c4e6aa9db7c042ec79f339dcb96d42b0075e16b8fc2e86bf0ca57e2dc565ed"
 
 
 class ModernDecoderBlock(Root):
@@ -251,7 +247,7 @@ def _batches(ids, batch_size, seq_len, n_steps, seed):
     rng = np.random.default_rng(seed)
     for _ in range(n_steps):
         starts = rng.integers(0, len(ids) - seq_len - 1, size=batch_size)
-        yield np.stack([ids[s:s + seq_len] for s in starts])
+        yield np.stack([ids[s : s + seq_len] for s in starts])
 
 
 def _bigram_log_probs(ids):
@@ -293,18 +289,13 @@ def _build_model(cfg, key):
 
 def _config(smoke):
     if smoke:
-        return dict(
-            vocab=65, d_model=16, n_heads=1, n_layers=2, max_len=16, d_ff=32
-        )
-    return dict(
-        vocab=65, d_model=384, n_heads=6, n_layers=6, max_len=256, d_ff=384 * 4
-    )
+        return dict(vocab=65, d_model=16, n_heads=1, n_layers=2, max_len=16, d_ff=32)
+    return dict(vocab=65, d_model=384, n_heads=6, n_layers=6, max_len=256, d_ff=384 * 4)
 
 
-def _one_session(cfg, data, steps, batch_size, devices, accumulate, remat, key):
+def _one_session(cfg, data, steps, batch_size, devices, accumulate, key):
     """Train for ``steps`` steps, return the loss curve and the final val loss."""
     seq_len = cfg["max_len"]
-    batch = jnp.asarray(next(_batches(data["train"], batch_size, seq_len, 1, 0)))
     model = _build_model(cfg, key)
     loss_fn = NextTokenLoss()
     opt = Adam(lr=3e-4)
@@ -324,7 +315,10 @@ def _one_session(cfg, data, steps, batch_size, devices, accumulate, remat, key):
     for step_i, b in enumerate(_batches(data["train"], batch_size, seq_len, steps, 0)):
         b_j = jnp.asarray(b)
         trainer.fit(
-            X=b_j, y=b_j, epochs=1, batch_size=batch_size,
+            X=b_j,
+            y=b_j,
+            epochs=1,
+            batch_size=batch_size,
             key=jax.random.PRNGKey(step_i),
         )
         rec_every = 5 if cfg["max_len"] <= 32 else 100
@@ -350,12 +344,20 @@ def _one_session(cfg, data, steps, batch_size, devices, accumulate, remat, key):
     prompt_ids = jnp.array([stoi[c] for c in prompt], dtype=jnp.int32)
     max_new = 20 if cfg["max_len"] <= 32 else 200
     greedy = generate(
-        model, prompt_ids, max_new=max_new, temperature=0.0,
-        key=jax.random.PRNGKey(7), max_len=cfg["max_len"],
+        model,
+        prompt_ids,
+        max_new=max_new,
+        temperature=0.0,
+        key=jax.random.PRNGKey(7),
+        max_len=cfg["max_len"],
     )
     sampled = generate(
-        model, prompt_ids, max_new=max_new, temperature=1.0,
-        key=jax.random.PRNGKey(7), max_len=cfg["max_len"],
+        model,
+        prompt_ids,
+        max_new=max_new,
+        temperature=1.0,
+        key=jax.random.PRNGKey(7),
+        max_len=cfg["max_len"],
     )
     recorder["generated_greedy"] = "".join(itos[int(i)] for i in greedy)
     recorder["generated_sample"] = "".join(itos[int(i)] for i in sampled)
@@ -378,10 +380,13 @@ def _speed_session(cfg, data, batch_size, devices, accumulate, key):
         devices=(None if devices is None or devices < 2 else devices),
         accumulate=accumulate,
     )
+
     def _one(b):
         bb = jnp.asarray(b)
-        trainer.fit(X=bb, y=bb, epochs=1, batch_size=batch_size,
-                    key=jax.random.PRNGKey(0))
+        trainer.fit(
+            X=bb, y=bb, epochs=1, batch_size=batch_size, key=jax.random.PRNGKey(0)
+        )
+
     small = cfg["max_len"] <= 32
     n_warm = 1 if small else WARMUP_STEPS
     n_speed = 3 if small else SPEED_STEPS
@@ -396,17 +401,6 @@ def _speed_session(cfg, data, batch_size, devices, accumulate, key):
     dt = time.perf_counter() - t0
     tokens = n_speed * batch_size * seq_len
     return tokens / dt
-
-
-def _run_in_new_process(args, label):
-    """Run one mode in a fresh process so peak_bytes is per mode."""
-    cmd = [sys.executable, "-u", __file__] + args + ["--child", label]
-    proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
-    out = proc.stdout.strip().splitlines()
-    for line in reversed(out):
-        if line.startswith("JSON_ROW: "):
-            return json.loads(line[len("JSON_ROW: "):])
-    return {"error": "no JSON_ROW", "stderr": proc.stderr[-2000:]}
 
 
 def _main(args):
@@ -440,7 +434,6 @@ def _main(args):
         "seq_len": seq_len,
         "n_steps": steps,
         "accumulate": args.accumulate,
-        "remat": False,
         "data": {
             "sha256": data["sha256"],
             "n_bytes": data["n_bytes"],
@@ -454,17 +447,29 @@ def _main(args):
     n_sess = 1 if args.smoke else N_SESSIONS
     sps = []
     for s in range(n_sess):
-        sps.append(_speed_session(cfg, data, batch_size,
-                                  args.devices, args.accumulate,
-                                  jax.random.PRNGKey(SEED + s)))
+        sps.append(
+            _speed_session(
+                cfg,
+                data,
+                batch_size,
+                args.devices,
+                args.accumulate,
+                jax.random.PRNGKey(SEED + s),
+            )
+        )
     row["sessions_tokens_per_second"] = [float(x) for x in sps]
     row["tokens_per_second_median"] = float(np.median(sps))
     row["tokens_per_second_range"] = [float(min(sps)), float(max(sps))]
 
     # Training + val + generation
     recorder, _, _ = _one_session(
-        cfg, data, steps, batch_size, args.devices, args.accumulate,
-        False, key,
+        cfg,
+        data,
+        steps,
+        batch_size,
+        args.devices,
+        args.accumulate,
+        key,
     )
     row.update(recorder)
 
@@ -490,22 +495,19 @@ def _main(args):
 
 def main(argv):
     ap = argparse.ArgumentParser()
-    ap.add_argument("--smoke", action="store_true",
-                    help="tiny model, 50 steps, under 60 s on a CPU")
+    ap.add_argument(
+        "--smoke", action="store_true", help="tiny model, 50 steps, under 60 s on a CPU"
+    )
     ap.add_argument("--steps", type=int, default=None)
     ap.add_argument("--batch", type=int, default=None)
     ap.add_argument("--devices", type=int, default=1)
     ap.add_argument("--accumulate", type=int, default=1)
-    ap.add_argument("--child", type=str, default=None,
-                    help="run one mode in a fresh process")
     ap.add_argument("--json", type=str, default=None)
     args = ap.parse_args(argv)
-    if args.child is not None:
-        _main(args)
-        return 0
     row = _main(args)
     out = args.json or (
-        "benchmarks/train_small_lm_smoke.json" if args.smoke
+        "benchmarks/train_small_lm_smoke.json"
+        if args.smoke
         else "benchmarks/train_small_lm_gpu.json"
     )
     Path(out).write_text(json.dumps(row, indent=2))

@@ -16,9 +16,10 @@ def smoke_json(tmp_path_factory):
     """Run the script in --smoke mode once; return the parsed JSON."""
     out = tmp_path_factory.mktemp("n7") / "smoke.json"
     proc = subprocess.run(
-        [sys.executable, "-u", str(SCRIPT), "--smoke",
-         "--json", str(out)],
-        capture_output=True, text=True, timeout=180,
+        [sys.executable, "-u", str(SCRIPT), "--smoke", "--json", str(out)],
+        capture_output=True,
+        text=True,
+        timeout=180,
     )
     assert proc.returncode == 0, (
         f"smoke failed:\nstdout:\n{proc.stdout[-2000:]}\nstderr:\n{proc.stderr[-2000:]}"
@@ -30,15 +31,33 @@ def smoke_json(tmp_path_factory):
 def test_smoke_writes_every_field(smoke_json):
     """Every field the page and the delivery use is present."""
     required = [
-        "label", "mode", "backend", "device_kind", "device_count",
-        "versions", "config", "batch_size", "seq_len", "n_steps",
-        "accumulate", "data", "sessions_tokens_per_second",
-        "tokens_per_second_median", "tokens_per_second_range",
-        "val_loss", "loss_curve", "n_params",
-        "generated_greedy", "generated_sample", "peak_bytes",
-        "bigram_val_loss", "unigram_val_loss",
-        "claim_1_val_over_bigram", "claim_1_holds",
-        "claim_2_no_nan_inf", "claim_4_generated_len",
+        "label",
+        "mode",
+        "backend",
+        "device_kind",
+        "device_count",
+        "versions",
+        "config",
+        "batch_size",
+        "seq_len",
+        "n_steps",
+        "accumulate",
+        "data",
+        "sessions_tokens_per_second",
+        "tokens_per_second_median",
+        "tokens_per_second_range",
+        "val_loss",
+        "loss_curve",
+        "n_params",
+        "generated_greedy",
+        "generated_sample",
+        "peak_bytes",
+        "bigram_val_loss",
+        "unigram_val_loss",
+        "claim_1_val_over_bigram",
+        "claim_1_holds",
+        "claim_2_no_nan_inf",
+        "claim_4_generated_len",
     ]
     missing = [k for k in required if k not in smoke_json]
     assert not missing, f"missing fields: {missing}"
@@ -52,6 +71,7 @@ def test_smoke_param_count_matches_config(smoke_json):
     cfg = smoke_json["config"]
     sys.path.insert(0, str(ROOT))
     import jax  # noqa: E402
+
     from benchmarks.train_small_lm import ModernDecoder  # noqa: E402
 
     model = ModernDecoder(
@@ -79,6 +99,7 @@ def test_bigram_loss_on_a_hand_text():
     loss under P is -log(4/5) in nats.
     """
     import numpy as np  # noqa: E402
+
     sys.path.insert(0, str(ROOT))
     from benchmarks.train_small_lm import _bigram_loss  # noqa: E402
 
@@ -92,6 +113,7 @@ def test_bigram_loss_on_a_hand_text():
 def test_unigram_loss_on_a_hand_text():
     """Unigram with add-1 on "aabb" gives P(a)=P(b)=1/2, loss log 2."""
     import numpy as np  # noqa: E402
+
     sys.path.insert(0, str(ROOT))
     from benchmarks.train_small_lm import _unigram_loss  # noqa: E402
 
