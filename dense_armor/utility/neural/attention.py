@@ -353,6 +353,16 @@ class TransformerBlock:
         key: a ``jax.random`` key.
         causal: if True, the attention is causal.
         dropout: dropout probability on each sub-layer, default 0.
+        remat: if True, the block keeps only its input and recomputes the
+            activations in ``backward`` with ``jax.checkpoint`` (Chen et
+            al. 2016, Section 3, page 3: keep a few activations and
+            recompute the rest). The outputs and the gradients are the
+            same as with ``remat=False``; the memory of the activations is
+            traded for one more forward of the block.
+
+    Raises:
+        ValueError: if ``remat`` is True and ``dropout`` is positive: the
+            dropout mask would change when the forward is recomputed.
 
     Examples:
         >>> import jax
@@ -371,7 +381,10 @@ class TransformerBlock:
         key: Any,
         causal: bool = False,
         dropout: float = 0.0,
+        remat: bool = False,
     ) -> None:
+        if remat and dropout > 0:
+            raise ValueError("remat=True needs dropout=0: the mask would change")
         keys = jax.random.split(key, 6)
         self.attn = MultiHeadSelfAttention(d_model, n_heads, keys[0], causal=causal)
         self.ln1 = LayerNorm(d_model)
@@ -385,6 +398,8 @@ class TransformerBlock:
         self.d_ff = d_ff
         self.dropout_attn = Dropout(dropout, keys[3]) if dropout > 0 else None
         self.dropout_ffn = Dropout(dropout, keys[4]) if dropout > 0 else None
+        self.remat = remat
+        self._vjp: Any = None
         self._cache: dict[str, jax.Array] | None = None
 
     def __repr__(self) -> str:
@@ -403,8 +418,39 @@ class TransformerBlock:
             + self.ffn2.params()
         )
 
+    def _sublayers(self) -> list[Any]:
+        return [self.attn, self.ln1, self.ln2, self.ffn1, self.ffn2]
+
+    def _forward_remat(self, x: jax.Array, training: bool) -> jax.Array:
+        """Forward that keeps only the input; ``backward`` recomputes the rest."""
+        params = self.params()
+        subs = self._sublayers()
+
+        def pure(values: list[jax.Array], xx: jax.Array) -> jax.Array:
+            saved_values = [p.value for p in params]
+            saved_state = [dict(sub.__dict__) for sub in subs]
+            for p, v in zip(params, values):
+                p.value = v
+            try:
+                return self._forward_plain(xx, training)
+            finally:
+                for p, v in zip(params, saved_values):
+                    p.value = v
+                for sub, state in zip(subs, saved_state):
+                    sub.__dict__.clear()
+                    sub.__dict__.update(state)
+                self._cache = None
+
+        y, self._vjp = jax.vjp(jax.checkpoint(pure), [p.value for p in params], x)
+        return y
+
     def forward(self, x: jax.Array, training: bool = True) -> jax.Array:
         """Run the block over a sequence."""
+        if self.remat:
+            return self._forward_remat(x, training)
+        return self._forward_plain(x, training)
+
+    def _forward_plain(self, x: jax.Array, training: bool) -> jax.Array:
         attn_out = self.attn.forward(x, training=training)
         if self.dropout_attn is not None:
             attn_out = self.dropout_attn.forward(attn_out, training=training)
@@ -425,6 +471,13 @@ class TransformerBlock:
 
     def backward(self, g: jax.Array) -> jax.Array:
         """Gradients; returns ``dx`` and adds to every parameter's grad."""
+        if self.remat:
+            if self._vjp is None:
+                raise RuntimeError("call forward() before backward()")
+            dvalues, dx = self._vjp(g)
+            for p, d in zip(self.params(), dvalues):
+                p.grad = p.grad + d
+            return dx
         if self._cache is None:
             raise RuntimeError("call forward() before backward()")
         c = self._cache
