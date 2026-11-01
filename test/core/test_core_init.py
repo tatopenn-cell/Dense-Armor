@@ -7,17 +7,9 @@ a livello di pacchetto anche se il codice reale esisteva."""
 def test_import_diretto_dal_pacchetto_core():
     from dense_armor.core import (
         AIHardwareProfiler,
-        StochasticAdversarialNoise,
         UniversalMemoryGuard,
         MemoryPressureError,
-        ParametricScenarioSimulator,
-        BitwisePermutationEngine,
         AdaptiveSignalStabilizer,
-        DynamicAICodegen,
-        CMD_MAP,
-        TensorVault,
-        AIEngineVisualizer,
-        PipelineProfiler,
         apply_damping_blend,
         __version__,
     )
@@ -26,7 +18,6 @@ def test_import_diretto_dal_pacchetto_core():
 
     assert __version__ == dense_armor.__version__
     assert callable(apply_damping_blend)
-    assert isinstance(CMD_MAP, dict) and "relu" in CMD_MAP
 
 
 def test_init_py_col_nome_sbagliato_non_esiste_piu():

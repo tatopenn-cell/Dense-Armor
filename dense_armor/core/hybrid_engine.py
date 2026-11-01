@@ -13,10 +13,7 @@ successive differences in the recent window). They are combined into a score
 ``|raw| / |baseline|``, clipped to [-5, 5], times 5 and times ``phi_ab``, is
 ``v_dinamic``; the trigger is 1.0 when ``|v_dinamic|`` is above 0.01.
 
-``calculate_phi_ab``, ``calculate_vettore_dinamico`` and
-``evaluate_phi_trigger`` are the vector versions of these three steps,
-copied from ``dense_evolution/healing.py``. ``hybrid_shield`` has its own
-scalar version of the same steps and does not call them.
+The constants of the three steps are in ``GLOBAL_CONSTANTS``.
 """
 
 import jax
@@ -29,88 +26,6 @@ GLOBAL_CONSTANTS = {
     "WEIGHT_COHERENCE": 0.4,
     "NON_STATIC_THRESHOLD_A": 1e-2,
 }
-
-
-@jax.jit
-def calculate_phi_ab(
-    state_A: jnp.ndarray,
-    state_B: jnp.ndarray,
-    ipg_vector: jnp.ndarray,
-    scale: jnp.ndarray,
-) -> jnp.ndarray:
-    """Alignment and spatial coherence factor Phi_AB.
-
-    ``scale`` is the local volatility of the recent window (scaled MAD,
-    computed by the caller), not a fixed constant and not the absolute
-    magnitude of ``state_A`` / ``state_B``. See the module docstring for
-    the deviation from upstream.
-
-    Args:
-        state_A: the reference state (baseline).
-        state_B: the current state (raw sample).
-        ipg_vector: the unit direction of the recent raw changes.
-        scale: the local volatility of the recent window.
-
-    Returns:
-        ``phi_ab``, clipped to ``[0.0, 1.0]``.
-    """
-    semantic_change = state_B - state_A
-    norm_change = jnp.linalg.norm(semantic_change)
-    norm_ipg = jnp.linalg.norm(ipg_vector)
-
-    alignment = jnp.where(
-        (norm_change > 1e-12) & (norm_ipg > 1e-12),
-        jnp.dot(semantic_change, ipg_vector) / (norm_change * norm_ipg),
-        0.0,
-    )
-    semantic_alignment = (alignment + 1.0) / 2.0
-
-    distance_A_B = jnp.linalg.norm(state_A - state_B)
-    coherence_component = 1.0 - (distance_A_B / scale)
-
-    phi_ab = (
-        semantic_alignment * GLOBAL_CONSTANTS["WEIGHT_SEMANTIC"]
-        + coherence_component * GLOBAL_CONSTANTS["WEIGHT_COHERENCE"]
-    )
-    return jnp.clip(phi_ab, 0.0, 1.0)
-
-
-@jax.jit
-def calculate_vettore_dinamico(
-    E_A: jnp.ndarray, E_B: jnp.ndarray, Phi_AB: jnp.ndarray
-) -> jnp.ndarray:
-    """Dynamic vector (V_dinamic): differential logarithmic energy change.
-
-    Args:
-        E_A: reference energy.
-        E_B: current energy.
-        Phi_AB: the alignment factor from :func:`calculate_phi_ab`.
-
-    Returns:
-        The dynamic vector value, or 0.0 when either energy is below the
-        numerical floor.
-    """
-    valid_inputs = (E_A > 1e-12) & (E_B > 1e-12)
-    ratio = jnp.where(valid_inputs, E_B / E_A, 1.0)
-    log_ratio_clamped = jnp.clip(jnp.log(ratio), -5.0, 5.0)
-    v_vita = GLOBAL_CONSTANTS["V_DINAMIC_K_COEFF"] * log_ratio_clamped * Phi_AB
-    return jnp.where(valid_inputs, v_vita, 0.0)
-
-
-@jax.jit
-def evaluate_phi_trigger(deterministic_dq_dt_a: jnp.ndarray) -> jnp.ndarray:
-    """Binary trigger: 1.0 (dynamic) or 0.0 (static).
-
-    Args:
-        deterministic_dq_dt_a: the dynamic vector value.
-
-    Returns:
-        1.0 when the magnitude of the input exceeds ``NON_STATIC_THRESHOLD_A``,
-        0.0 otherwise.
-    """
-    magnitude_change_a = jnp.abs(deterministic_dq_dt_a)
-    trigger_active = magnitude_change_a > GLOBAL_CONSTANTS["NON_STATIC_THRESHOLD_A"]
-    return jnp.where(trigger_active, 1.0, 0.0)
 
 
 def _local_nan_fill(x: np.ndarray, radius: int) -> np.ndarray:

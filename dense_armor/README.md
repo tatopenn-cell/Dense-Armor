@@ -8,18 +8,11 @@ Riferimento per chi vuole contribuire al codice, non per chi vuole solo installa
 
 | modulo | cosa fa |
 |---|---|
-| `damping_operator.py` | `apply_damping_blend` — fonde due tensori reali con un guadagno non lineare dipendente dalla loro distanza. Vedi README principale per i dettagli. |
+| `damping_operator.py` | `apply_damping_blend` — fonde due segnali come `(1 - K) * grezzo + K * riferimento`; il peso `K` del riferimento sta tra circa 0,104 e 0,896 e arriva al massimo già a una distanza di circa 0,05 (per un valore grezzo di 1). |
 | `hybrid_engine.py` | `hybrid_shield` — motore a trigger binario di `Armor` (dalla v1.1.0), adattato dalla logica phi_ab/vettore-dinamico verificata in Dense-Evolution. Vedi CHANGELOG [1.1.0] per il dettaglio degli adattamenti (baseline su valori guariti, IPG su valori grezzi, distanza normalizzata sulla volatilità locale). |
 | `engine.py` | `AdaptiveSignalStabilizer` — stabilizzatore causale ricorsivo (via `jax.lax.scan`): segue il segnale nel tempo, smorza dove la volatilità recente supera una soglia dinamica. Nucleo dello Stadio 1 di **Orca** (dalla v1.1.0 `Armor` non lo usa più, vedi `hybrid_engine.py`). |
-| `compiler.py` | `DynamicAICodegen` — traduce sequenze di operazioni (`identity`, `relu`, `sigmoid`, `tanh`, `scale`, `dropout`, `clip`, `l2_normalize`) in pipeline JAX eseguibili via `jax.lax.switch`, con calcolo gradienti differenziabile (`compute_gradients`). |
-| `chunk.py` | `ImageChunker` — spezza array/batch grandi in sotto-chunk (`split_array`/`merge_chunks`) per evitare colli di bottiglia di memoria; esegue pipeline del compilatore a blocchi fissi senza forzare ricompilazioni JIT. |
 | `memory.py` | `UniversalMemoryGuard` — controlla RAM libera (e VRAM via `nvidia-smi`, se disponibile) prima di allocazioni pesanti; solleva `MemoryPressureError` se sotto soglia. `calculate_optimal_chunks` stima il partizionamento sicuro. Usato anche da `Orca._gc_se_ram_bassa` (prima un check `psutil` ad-hoc duplicato lì, ora delegato qui). |
-| `tensor.py` | `TensorVault` — libreria di matrici di trasformazione statiche (`invert`, `identity`, `edge_detector`, `blend`) e parametriche (`scale_project`, `amplify`, `bias_shift`), con rilevamento automatico di backend/precisione. |
-| `vector.py` | `BitwisePermutationEngine` (swap di elementi via maschere di bit su vettori di dimensione 2ⁿ) e `ParametricScenarioSimulator` (simulazioni Monte Carlo parallele via `vmap`, più `collapse_decision` per una scelta stocastica pesata da una distribuzione). |
-| `noise.py` | `AIHardwareProfiler` (rileva CPU/GPU/TPU e imposta limiti di sicurezza sui tensori) e `StochasticAdversarialNoise` (inietta `bitflip`/`dropout_noise`/`gaussian_blur` per testare la robustezza). |
-| `profiler.py` | `PipelineProfiler` — misura la latenza JIT in microsecondi, separando il warm-up di compilazione XLA dal regime stabile. |
-| `logger.py` | Due formatter di logging: uno per console leggibile, uno JSON compatto per telemetria strutturata. |
-| `visualizer.py` | `AIEngineVisualizer` — esporta report di provenienza firmati SHA-256. |
+| `noise.py` | `AIHardwareProfiler` (rileva CPU/GPU/TPU e imposta limiti di sicurezza sui tensori). |
 
 ---
 
