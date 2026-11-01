@@ -337,6 +337,62 @@ class MultiHeadSelfAttention:
         out = (merged @ self.W_O.value)[0, 0]
         return (out if squeeze else out[None]), (k_all, v_all)
 
+    def init_static_cache(self, length: int) -> tuple[jax.Array, jax.Array]:
+        """Two arrays of zeros of the fixed shape ``(length, d_model)``.
+
+        The dtype is the one of the projection weights.
+        """
+        dtype = self.W_K.value.dtype
+        return (
+            jnp.zeros((length, self.d_model), dtype=dtype),
+            jnp.zeros((length, self.d_model), dtype=dtype),
+        )
+
+    def step_static(
+        self,
+        x_t: jax.Array,
+        cache: tuple[jax.Array, jax.Array],
+        pos: jax.Array,
+    ) -> tuple[jax.Array, tuple[jax.Array, jax.Array]]:
+        """One causal step against a cache of fixed shape.
+
+        The key and the value of the token at position ``pos`` are written
+        in row ``pos`` of the cache, the rotary angle is the one of
+        position ``pos``, and the query attends to the rows ``0..pos``;
+        the rows after ``pos`` are masked. Every shape is fixed, so the
+        step compiles once for every position.
+
+        Args:
+            x_t: the token, shape ``(d_model,)``.
+            cache: the pair ``(k, v)`` of shape ``(length, d_model)``.
+            pos: the position of the token, an integer scalar (it can be
+                a traced value).
+
+        Returns:
+            The output of shape ``(d_model,)`` and the updated cache.
+        """
+        x_t = jnp.asarray(x_t)[None]
+        k_cache, v_cache = cache
+        length = k_cache.shape[0]
+        q = x_t @ self.W_Q.value
+        k_new = x_t @ self.W_K.value
+        v_new = x_t @ self.W_V.value
+        if self.rotary:
+            angles = rotary_angles(1, self.d_k, offset=pos)
+            q = self._rotate_step(q, angles)
+            k_new = self._rotate_step(k_new, angles)
+        pos = jnp.asarray(pos)
+        zero = jnp.zeros_like(pos)
+        k_all = jax.lax.dynamic_update_slice(k_cache, k_new, (pos, zero))
+        v_all = jax.lax.dynamic_update_slice(v_cache, v_new, (pos, zero))
+        Q = q.reshape(1, 1, self.n_heads, self.d_k).transpose(0, 2, 1, 3)
+        K = k_all.reshape(1, length, self.n_heads, self.d_k).transpose(0, 2, 1, 3)
+        V = v_all.reshape(1, length, self.n_heads, self.d_k).transpose(0, 2, 1, 3)
+        mask = (jnp.arange(length) <= pos)[None, :]
+        y = scaled_dot_product_attention(Q, K, V, mask=mask)
+        out = (self._merge_heads(y) @ self.W_O.value)[0, 0]
+        return out, (k_all, v_all)
+
 
 class TransformerBlock:
     """The encoder block of Vaswani et al. 2017.

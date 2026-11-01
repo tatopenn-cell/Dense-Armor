@@ -38,7 +38,7 @@ def rotary_angles(
         raise ValueError(f"d_k must be even, got {d_k}")
     i = jnp.arange(d_k // 2)
     theta = base ** (-2.0 * i / d_k)
-    pos = jnp.arange(offset, offset + length)[:, None]
+    pos = (offset + jnp.arange(length))[:, None]
     angles = pos * theta[None, :]
     return jnp.cos(angles), jnp.sin(angles)
 
