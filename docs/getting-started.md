@@ -85,13 +85,13 @@ The detector learned from 1,000 points of a standard normal distribution on two 
 
 ## 5. Clean a series before the model sees it
 
-A broken sensor sends `NaN` or a value of 9999 and the model learns from it. `Armatura` is a shield that finds such points and replaces them.
+A broken sensor sends `NaN` or a value of 9999 and the model learns from it. `Armor` is a shield that finds such points and replaces them.
 
 ```python
-from dense_armor import Armatura
+from dense_armor import Armor
 
 serie = np.array([1.0, 1.1, 1.2, 9999.0, 1.15, np.nan, 1.2, 1.25])
-pulito, K, anomalie = Armatura(livello_ia=0.0).analizza(serie)
+pulito, K, anomalie = Armor(livello_ia=0.0).analizza(serie)
 print(pulito)
 print(anomalie)
 ```
@@ -101,7 +101,7 @@ print(anomalie)
 [3, 5]
 ```
 
-The names are Italian: `analizza` is "analyse", `livello_ia=0.0` means the shield filters actively (1.0 only marks, and the 9999 stays in the series). It returns three things: the cleaned series, `K`, and the list `anomalie` of replaced positions, here 3 (the 9999) and 5 (the `NaN`). Both are replaced and the series keeps its length. `K` is the flag of the internal trigger, one per sample, and it is not the same list: the `NaN` is cleaned before the trigger, so `K` is 0 at position 5, and the trigger also marks positions 2 and 7. The sample at position 2 is replaced by the local median (1.2 becomes 1.05) without being listed in `anomalie`. The [Armatura page](shields/armatura.md) explains the trigger. [Shields](shields/index.md) shows the others, including `Orca`, which wraps a whole model.
+The names are Italian: `analizza` is "analyse", `livello_ia=0.0` means the shield filters actively (1.0 only marks, and the 9999 stays in the series). It returns three things: the cleaned series, `K`, and the list `anomalie` of replaced positions, here 3 (the 9999) and 5 (the `NaN`). Both are replaced and the series keeps its length. `K` is the flag of the internal trigger, one per sample, and it is not the same list: the `NaN` is cleaned before the trigger, so `K` is 0 at position 5, and the trigger also marks positions 2 and 7. The sample at position 2 is replaced by the local median (1.2 becomes 1.05) without being listed in `anomalie`. The [Armor page](shields/armor.md) explains the trigger. [Shields](shields/index.md) shows the others, including `Orca`, which wraps a whole model.
 
 ## 6. Keep a command from jumping
 

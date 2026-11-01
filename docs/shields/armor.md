@@ -1,13 +1,13 @@
-# Armatura (1D series shield)
+# Armor (1D series shield)
 
-Armatura cleans one series of numbers: it finds the readings that are obviously broken (a sudden huge value, a missing reading) and replaces them with sensible values. You get back the cleaned series and the list of places it changed.
+Armor cleans one series of numbers: it finds the readings that are obviously broken (a sudden huge value, a missing reading) and replaces them with sensible values. You get back the cleaned series and the list of places it changed.
 
 A loss curve that suddenly jumps to 10⁶. A sensor channel that drops a reading and
 returns NaN. A token-likelihood stream that goes from 0.9 to 0 for one sample. These are
 the kinds of single-value glitches that break a downstream pipeline silently: the model
 does not complain, it just produces wrong numbers from that point on.
 
-`Armatura` is the shield for a **single 1D series**. You give it an array; you get back
+`Armor` is the shield for a **single 1D series**. You give it an array; you get back
 the same array, with the broken samples replaced by the local baseline, plus the list of
 indices that were replaced.
 
@@ -18,12 +18,12 @@ at sample 200.
 
 ```python
 import numpy as np
-from dense_armor import Armatura
+from dense_armor import Armor
 
 rng = np.random.default_rng(42)
 x = 0.5 + 0.1 * rng.standard_normal(300)
 x[100], x[200] = 9999.0, float("nan")
-clean, K, anomalies = Armatura(livello_ia=0.0).analizza(x)
+clean, K, anomalies = Armor(livello_ia=0.0).analizza(x)
 print(len(clean), anomalies, round(float(clean[100]), 3), K[100], K[50])
 ```
 
@@ -46,7 +46,7 @@ without altering the stream.
 
 ## 2. What "local baseline" means
 
-`Armatura` looks at a window of samples **before** the one being scored (never after): its
+`Armor` looks at a window of samples **before** the one being scored (never after): its
 baseline is the mean of those previous samples (radius `min(20, max(3, n // 3))`), and a
 binary trigger decides whether the sample is an impulse. If it is, it is replaced by the
 baseline; otherwise it passes through unchanged. The first two samples are never tested (the
@@ -62,28 +62,28 @@ The consequence, on the running example:
 
 ## 3. What it is not for
 
-`Armatura` is a **point-level** shield. It removes isolated spikes and non-finite values.
+`Armor` is a **point-level** shield. It removes isolated spikes and non-finite values.
 It does not remove a slow drift, and it does not classify a regime change: those need a
 different tool (see [CUSUM](../drift/cusum.md) and [Arbiter](../protect/arbiter.md)).
-If your signal is a step change that is genuinely intended, `Armatura` leaves it alone
+If your signal is a step change that is genuinely intended, `Armor` leaves it alone
 after the first few samples, because after those samples the step is the new local
 baseline.
 
 ## 4. The engine inside
 
-`Armatura` is built on `core.hybrid_engine`, the binary-trigger engine that generalises
+`Armor` is built on `core.hybrid_engine`, the binary-trigger engine that generalises
 the logic already verified in Dense-Evolution's own
 `ia_utils.vector_healing.enhanced_dense_healing_hybrid`. See
 [Hybrid engine](hybrid_engine.md) for the internals.
 
 ## API reference
 
-::: dense_armor.armatura
+::: dense_armor.armor
 
 ---
 
 ## Details
 
 **See also**: [Hybrid engine](hybrid_engine.md) — the `core/hybrid_engine.py` module
-`Armatura` is built on. [Orca](orca.md) — the full input + output shield for an entire
+`Armor` is built on. [Orca](orca.md) — the full input + output shield for an entire
 model, if you have a model rather than a bare series.

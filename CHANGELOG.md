@@ -2,6 +2,19 @@
 
 Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## [Unreleased]
+
+### Changed
+- `Armatura` is now `Armor`, the module `dense_armor/armatura.py` is now
+  `dense_armor/armor.py`, and the docs page `shields/armatura.md` is now
+  `shields/armor.md`. The old import path `dense_armor.armatura` still works
+  (it resolves to `dense_armor.armor`) and `dense_armor.Armatura` still works
+  and raises a `DeprecationWarning`. The console script `dense-armor` is
+  unchanged. The entries below keep the old name.
+
+### Removed
+- Nothing yet.
+
 ## [1.3.1] - 2026-10-30
 
 ### Added

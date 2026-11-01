@@ -2,7 +2,7 @@
 
 Orca protects a whole model: it cleans the input before the model sees it, runs the model, and checks that the model's answer is not broken either.
 
-`Armatura` protects one series. But if you have a model — any callable that takes a
+`Armor` protects one series. But if you have a model — any callable that takes a
 tensor and returns a tensor — the corruption can happen twice: once on the way in
 (garbage input) and once on the way out (the model itself producing a wrong response).
 `Orca` shields both sides in one call: it purifies the input, runs the model, and
@@ -105,5 +105,5 @@ that shape (here `(200,)`), counted only when `use_arbiter=True` and `x_referenc
 
 **See also**: [Adaptive engine](engine.md) — `AdaptiveSignalStabilizer`, Orca's Stage 1.
 [Arbiter](../protect/arbiter.md) — the per-point classifier used by
-`use_arbiter=True`. [Armatura](armatura.md) — if you have a bare series rather than a
+`use_arbiter=True`. [Armor](armor.md) — if you have a bare series rather than a
 model.

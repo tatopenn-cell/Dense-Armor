@@ -19,7 +19,7 @@ the code.
 
 Three tool families, one for each shield entry point:
 
-- **`shield_series`** — run `Armatura.analizza` on a 1D array and return the cleaned
+- **`shield_series`** — run `Armor.analizza` on a 1D array and return the cleaned
   series, the anomaly count, and the list of replaced indices. Use this when an agent
   has a numeric series (a loss curve, a sensor channel) and wants it cleaned before
   reasoning about it.

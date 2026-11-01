@@ -185,7 +185,7 @@ async def dense_armor_robust_filter(params: RobustFilterInput) -> str:
     """Run one of the four classic anomaly detectors (Chauvenet's
     criterion, Tukey's fences, the Hampel filter, iterative sigma-clipping)
     or their combined orchestrator, `pressure_valve` -- no dynamic model,
-    no state, independent of Orca/Armatura.
+    no state, independent of Orca/Armor.
 
     `pressure_valve` combines all four via a Lagrange-multiplier-derived
     minimum-variance estimator with a Jensen-Shannon-adaptive threshold

@@ -27,7 +27,7 @@ Next to the online core there are two modules that read a whole dataset at once:
 │                                                                             │
 │                    SHIELDING (optional, on top)                             │
 │                                                                             │
-│   Armatura (1D series)   Orca (input+output)   Arbiter (per-point routing)  │
+│   Armor (1D series)   Orca (input+output)   Arbiter (per-point routing)  │
 │   Robust filters         Curvature              Streaming check              │
 │                                                                             │
 ├─────────────────────────────────────────────────────────────────────────────┤
@@ -195,7 +195,7 @@ same data.
 
 **Shielding** — the protection that sits between the data and the learning.
 
-- **[Armatura](shields/armatura.md)** — wearable shield for a single 1D series.
+- **[Armor](shields/armor.md)** — wearable shield for a single 1D series.
 - **[Orca](shields/orca.md)** — full input + output shield for an entire model.
 - **[Hybrid engine](shields/hybrid_engine.md)** and
   **[adaptive engine](shields/engine.md)** — the two causal engines the shields sit on.

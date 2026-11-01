@@ -445,7 +445,7 @@ class Orca:
         co_batch_raw hanno shape (B, F) -- B righe indipendenti processate in
         UNA chiamata invece di B chiamate separate (era il collo di bottiglia
         di latenza documentato: ~87% dispatch JAX, non calcolo reale, stesso
-        pattern gia' risolto in core/hybrid_engine.hybrid_shield per Armatura).
+        pattern gia' risolto in core/hybrid_engine.hybrid_shield per Armor).
         Usa filter_batch_scenarios_independent (calibrazione per-riga) invece
         di filter_batch_scenarios (calibrazione condivisa sull'intero batch)
         -- altrimenti righe con scala/rumore diversi si contaminerebbero a

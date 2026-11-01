@@ -8,7 +8,7 @@ drift, bound a command) and composes with the others.
 
 Start from what you have in front of you:
 
-- You have a **1D series** (a loss curve, one sensor channel, a token stream) → `Armatura`.
+- You have a **1D series** (a loss curve, one sensor channel, a token stream) → `Armor`.
 - You have a **model and a corrupted input** → `Orca`.
 - You need **one score per sample** → the anomaly detectors.
 - You have **several channels that interact** (a robot joint's torque and position, a
@@ -21,7 +21,7 @@ Start from what you have in front of you:
 
 ## The two shields
 
-- **[`Armatura`](../shields/armatura.md)** — wearable shield for a single 1D series. Built
+- **[`Armor`](../shields/armor.md)** — wearable shield for a single 1D series. Built
   on the [hybrid engine](../shields/hybrid_engine.md).
 - **[`Orca`](../shields/orca.md)** — full input + output shield for an entire model. Built
   on the [adaptive engine](../shields/engine.md) (`AdaptiveSignalStabilizer`, Stage 1)
@@ -123,7 +123,7 @@ The same pages, grouped the way the package is organised (`dense_armor.<section>
 
 | Section | What it is for | Pages |
 |---|---|---|
-| [Shields](../shields/index.md) | one object that cleans a whole series or a whole model | Armatura, Orca, their engines |
+| [Shields](../shields/index.md) | one object that cleans a whole series or a whole model | Armor, Orca, their engines |
 | [Anomaly detection](../anomaly/index.md) | a score per sample: high means it does not look like the recent past | Streaming, Robust filters, Curvature; multivariate: HalfSpaceTrees, OnlineIsolationForest, LODA, OneClassSGD, OnlineRobustMahalanobis |
 | [Drift detection](../drift/index.md) | one alarm when a slow, sustained change is real | CUSUM and ARL theory |
 | [Protection](../protect/index.md) | what to do with a wrong-looking sample: pass, repair, or route | Arbiter (batch and streaming) |

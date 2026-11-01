@@ -1,8 +1,8 @@
-# Hybrid engine (Armatura's core)
+# Hybrid engine (Armor's core)
 
-This is the part inside Armatura that decides, reading by reading, whether a value is genuine or broken, and what to put in place of a broken one: the middle value of the previous readings.
+This is the part inside Armor that decides, reading by reading, whether a value is genuine or broken, and what to put in place of a broken one: the middle value of the previous readings.
 
-`Armatura` is the front door for a 1D series: it takes an array, returns a cleaned
+`Armor` is the front door for a 1D series: it takes an array, returns a cleaned
 array. Behind it sits `hybrid_engine`, the module that actually decides, sample by
 sample, whether a value is a genuine reading or a bad one — and if bad, what to put
 in its place.
@@ -73,7 +73,7 @@ print(int((d > 1e-12).sum()), round(float(d.max()), 4))
 ```
 
 35 ordinary samples out of 298 change, by up to 0.29 (about three times the noise level), and they
-are not counted as anomalies by `Armatura`. Keep this in mind on smooth signals.
+are not counted as anomalies by `Armor`. Keep this in mind on smooth signals.
 
 ## 4. Non-finite values
 
@@ -93,4 +93,4 @@ The engine generalises the logic already verified in Dense-Evolution's own
 the NaN handling are the same as there; this version computes all samples in one vectorised
 call (`jax.vmap`).
 
-**See also**: [`Armatura`](armatura.md) — the wearable class built on this engine.
+**See also**: [`Armor`](armor.md) — the wearable class built on this engine.

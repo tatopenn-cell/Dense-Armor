@@ -8,17 +8,17 @@ it a series or a model; you get back a cleaned series or a protected prediction.
 
 There are two shields, because there are two things a user can have in front of them.
 
-## A single series: `Armatura`
+## A single series: `Armor`
 
 You have one array: a loss curve that jumps, a sensor channel that drops a reading, a
-token-likelihood stream that goes to NaN. `Armatura` looks at it point by point and
+token-likelihood stream that goes to NaN. `Armor` looks at it point by point and
 returns the same series with the broken samples replaced by the local baseline. No
 intermediate state, no model, no reference needed.
 
 ```python
-from dense_armor import Armatura
+from dense_armor import Armor
 
-clean, K, anomalies = Armatura(livello_ia=0.0).analizza([1.2, 1.3, 9999, 1.25, float("nan"), 1.3])
+clean, K, anomalies = Armor(livello_ia=0.0).analizza([1.2, 1.3, 9999, 1.25, float("nan"), 1.3])
 print(clean.round(3), anomalies)
 ```
 
@@ -29,7 +29,7 @@ print(clean.round(3), anomalies)
 The 9999 at index 2 and the NaN at index 4 are replaced (by 1.25 and 1.3); `anomalies` lists
 their indices.
 
-See **[Armatura](armatura.md)**.
+See **[Armor](armor.md)**.
 
 ## A whole model: `Orca`
 
@@ -65,7 +65,7 @@ See **[Orca](orca.md)**.
 
 ## The two engines inside
 
-- **[Hybrid engine](hybrid_engine.md)** — the engine behind `Armatura`. Generalises the
+- **[Hybrid engine](hybrid_engine.md)** — the engine behind `Armor`. Generalises the
   logic already verified in `Dense-Evolution`'s own `ia_utils.vector_healing`.
 - **[Adaptive engine](engine.md)** — `AdaptiveSignalStabilizer`, the causal recursive
   filter that is `Orca`'s Stage 1. `Orca` adds a Collatz-based gate (Stage 2) on top.

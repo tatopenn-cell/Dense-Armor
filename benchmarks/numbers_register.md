@@ -277,7 +277,7 @@ Rows: 274.
 | 267 | `docs/getting-started.md`:22 | ds = DriftStream(n_samples=2000, n_features=5, n_drifts=1, kind="sudden", seed=0) | `code block on the page` |
 | 268 | `docs/getting-started.md`:34 | Accuracy(n=1999, value=0.9989994997498749) | `code block on the page` |
 | 269 | `docs/getting-started.md`:37 | `DriftStream` makes 2,000 samples with 5 features and one sudden change of the rule that links them to the label. The model predic | `code block on the page` |
-| 270 | `docs/getting-started.md`:94 | pulito, K, anomalie = Armatura(livello_ia=0.0).analizza(serie) | `code block on the page` |
+| 270 | `docs/getting-started.md`:94 | pulito, K, anomalie = Armor(livello_ia=0.0).analizza(serie) | `code block on the page` |
 | 271 | `docs/getting-started.md`:104 | The names are Italian: `analizza` is "analyse", `livello_ia=0.0` means the shield filters actively (1.0 only marks, and the 9999 s | `code block on the page` |
 | 272 | `docs/getting-started.md`:114 | raw[50] = 1e6 | `code block on the page` |
 | 273 | `docs/getting-started.md`:115 | safe = rate_limited_follower(raw, max_vel=2.0, max_accel=1.0, dt=0.01) | `code block on the page` |

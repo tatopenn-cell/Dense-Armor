@@ -4,7 +4,7 @@
 UNA chiamata (jax.vmap, calibrazione per-riga) invece di B dispatch JAX
 separati (era il collo di bottiglia di latenza documentato nell'esperimento
 APT29 + AI-shield, ~87% dispatch secondo lo stesso profiling che ha motivato
-la vettorizzazione di Armatura in core/hybrid_engine.py).
+la vettorizzazione di Armor in core/hybrid_engine.py).
 
 Il rischio esplicito da coprire (non ipotetico): filter_batch_scenarios
 esistente condivide UNA calibrazione (calibrate_macro_context) su TUTTO il

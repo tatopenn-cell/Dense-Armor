@@ -263,7 +263,7 @@ nav:
               - Vision: compare/vision.md
       - Shields:
           - shields/index.md
-          - Armatura: shields/armatura.md
+          - Armor: shields/armor.md
           - Orca: shields/orca.md
           - Hybrid engine: shields/hybrid_engine.md
           - Adaptive engine: shields/engine.md

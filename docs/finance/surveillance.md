@@ -18,7 +18,7 @@ To benchmark this capability on historical data, the Dense-Armor multi-stage pip
 
 | Tool | Strategic Function | Operational Impact |
 |---|---|---|
-| **Armatura** | Real-time data sanitization | Discards and patches anomalous price ticks caused by data-feed glitches or network dropouts before they trigger algorithmic execution loops. |
+| **Armor** | Real-time data sanitization | Discards and patches anomalous price ticks caused by data-feed glitches or network dropouts before they trigger algorithmic execution loops. |
 | **CUSUM** | Sub-clinical drift detection | Tracks continuous micro-movements in asset behavior, triggering alerts when cumulative variations confirm a systemic shift in market sentiment. |
 | **Quantile sketch** | Bounded risk estimation | Maintains a dynamic, constant-memory summary of extreme risk tails, calculating daily Value-at-Risk parameters in under 100 microseconds. |
 | **LODA** | Multi-dimensional outlier profiling | Projects joint asset attributes onto sparse sub-spaces to score complex, concurrent price and volume anomalies. |
@@ -30,8 +30,8 @@ To benchmark this capability on historical data, the Dense-Armor multi-stage pip
 *Grey line: the daily return of the S&P 500. Red dots: the 43 flagged days. The grey band is the 249-day warm-up.*
 
 
-## 1. High-speed input sanitization (Armatura)
-High-frequency execution streams are highly vulnerable to corrupt data packages and network artifacts that distort nominal price spreads. Armatura operates as a real-time digital filtering layer, automatically evaluating the immediate historical envelope to intercept and sanitize absurd price points. Across the five-year S&P 500 benchmark the filter discarded 1 tick out of 1,253 sessions (command: `python docs/assets/finance/measure_market.py`, line `armatura_all 1`).
+## 1. High-speed input sanitization (Armor)
+High-frequency execution streams are highly vulnerable to corrupt data packages and network artifacts that distort nominal price spreads. Armor operates as a real-time digital filtering layer, automatically evaluating the immediate historical envelope to intercept and sanitize absurd price points. Across the five-year S&P 500 benchmark the filter discarded 1 tick out of 1,253 sessions (command: `python docs/assets/finance/measure_market.py`, line `armor_all 1`).
 
 
 ## 2. Structural market sentiment tracking (CUSUM)
@@ -62,7 +62,7 @@ During verified anomalous volatility windows, downstream execution strategies fa
 
 For every arriving asset tick, the multi-stage surveillance architecture processes data linearly:
 
-1. **Sanitization Filter:** **Armatura** checks and purges anomalous data-feed artifacts.
+1. **Sanitization Filter:** **Armor** checks and purges anomalous data-feed artifacts.
 2. **Statistical Updates:** Clean data is dispatched to **CUSUM** for regime tracking and to the **Quantile sketch** for value-at-risk evaluation.
 3. **Consensus Profiling:** Joint price-volume attributes are evaluated by **LODA** and **Half-Space Trees** to detect multi-dimensional outliers.
 4. **Execution Damping:** If downstream algorithms attempt execution, **Orca** scales or clamps order sizes based on current anomaly scores.
@@ -83,7 +83,7 @@ For every arriving asset tick, the multi-stage surveillance architecture process
 The pipeline is in `pipelines/finance/surveillance.py`.
 Primitives chained, each with its own page:
 
-- [Armatura](../shields/armatura.md)
+- [Armor](../shields/armor.md)
 - [CUSUM](../drift/cusum.md)
 - [LODA](../anomaly/loda.md)
 - [Half-Space Trees](../anomaly/hst.md)

@@ -1,7 +1,7 @@
 """
 Three-way comparison, same 7 scenarios as testKalman.py: Orca's own default
 pipeline (constant compute_damping_gating), hybrid_shield (phi_ab, already
-vendored for Armatura), and pressure_valve (JSD-adaptive threshold, already
+vendored for Armor), and pressure_valve (JSD-adaptive threshold, already
 in robust_filters.py but never wired into either pipeline).
 
 pressure_valve is a batch/offline filter (its own docstring: not for

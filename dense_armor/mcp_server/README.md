@@ -28,7 +28,7 @@ claude mcp add dense_armor -- dense-armor-mcp
 ```
 
 `dense-armor-mcp` is the console-script entry point (`[project.scripts]` in `pyproject.toml`,
-separate from `dense-armor` itself, Armatura's own CLI) -- it just calls this file's `main()`.
+separate from `dense-armor` itself, Armor's own CLI) -- it just calls this file's `main()`.
 Running `python /absolute/path/to/dense_armor/mcp_server/server.py` directly still works too,
 e.g. if you haven't installed the package.
 

@@ -5,6 +5,7 @@ import importlib.util
 import sys
 
 ALIASES = {
+    "dense_armor.armatura": "dense_armor.armor",
     "dense_armor.anomaly": "dense_armor.utility.anomaly",
     "dense_armor.anomaly.curvature": "dense_armor.utility.anomaly.curvature",
     "dense_armor.anomaly.deviation": "dense_armor.utility.anomaly.deviation",

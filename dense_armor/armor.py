@@ -1,5 +1,5 @@
 """
-armatura.py — L'Armatura: istanza indossabile dello scudo per una serie 1D.
+armor.py — L'Armor: istanza indossabile dello scudo per una serie 1D.
 Usa solo i moduli in core/ e utility/ di questo pacchetto.
 
 Uso rapido (CLI):
@@ -7,8 +7,8 @@ Uso rapido (CLI):
     python -m dense_armor file_con_numeri.txt
 
 Uso da codice:
-    from dense_armor import Armatura
-    a = Armatura(livello_ia=0.0)        # 0=IA neonata (FILTRA) ... 1=matura (solo MARCA)
+    from dense_armor import Armor
+    a = Armor(livello_ia=0.0)        # 0=IA neonata (FILTRA) ... 1=matura (solo MARCA)
     pulito, K, anomalie = a.analizza(serie)
     pulito, K, anomalie = a.analizza(serie_oggi, riferimento=baseline_di_ieri)  # anti-deriva
 """
@@ -24,7 +24,7 @@ from .core.hybrid_engine import (  # motore phi_ab/trigger, vedi CHANGELOG 1.1.0
 from .utility.misc.metro import Metro  # scaler anti-underflow, intatto
 
 
-class Armatura:
+class Armor:
     """Scudo indossabile con CLIP DINAMICO universale.
 
     livello_ia (0..1): quanto e' matura l'IA che lo indossa.
@@ -33,7 +33,7 @@ class Armatura:
     PAVIMENTO: la marcatura delle anomalie non viene MAI clippata — a nessun
     livello lo scudo tace (l'anomalia puo' ESSERE la risposta: mai cancellarla
     in silenzio). Il livello puo' essere misurato, non dichiarato:
-    Armatura.livello_da_entropia(entropia, vocab_size).
+    Armor.livello_da_entropia(entropia, vocab_size).
 
     MEMORIA: lo scudo e' una funzione PURA, senza stato (leggero per design).
     La memoria appartiene all'IA che lo indossa: per vedere la DERIVA LENTA
@@ -200,9 +200,9 @@ def main() -> None:
     serie = np.asarray(numeri, dtype=np.float64)
     if come_json:
         import json as _json
-        print(_json.dumps(Armatura().referto_json(serie, nome), ensure_ascii=False))
+        print(_json.dumps(Armor().referto_json(serie, nome), ensure_ascii=False))
     else:
-        Armatura().referto(serie, nome)
+        Armor().referto(serie, nome)
 
 
 if __name__ == "__main__":

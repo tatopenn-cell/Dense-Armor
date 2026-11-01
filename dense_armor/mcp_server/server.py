@@ -58,7 +58,7 @@ from .tools import (  # noqa: E402, F401
 def main():
     """Console-script entry point (`dense-armor-mcp`, see `[project.scripts]`
     in pyproject.toml -- a separate script from `dense-armor` itself, which
-    is Armatura's own number-cleaning CLI and stays untouched by this).
+    is Armor's own number-cleaning CLI and stays untouched by this).
     stdio transport: this process is meant to be launched by an MCP client
     (Claude Code, Claude Desktop, ...) as a subprocess, not run standalone
     in a terminal."""

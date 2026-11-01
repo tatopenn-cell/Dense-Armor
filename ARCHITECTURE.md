@@ -17,7 +17,7 @@ every file. Update it whenever a module is added, moved or renamed.
 4. `checks` — `check_estimator` and the robot checks.
 5. `bridges` — optional bridges (LLM embeddings, and a bridge to existing online-learning
    libraries, scikit-learn, PyTorch and TensorFlow/Keras).
-6. `core` and `armatura.py` — the signal-shielding engine and its public class `Armatura`.
+6. `core` and `armor.py` — the signal-shielding engine and its public class `Armor`.
 7. `mcp_server` — the MCP tool adapter.
 8. `ml` — the machine learning classes: they read a whole table with `fit`, family by family.
 
@@ -83,8 +83,8 @@ graph TD
         TFB["from_keras, to_tf"]
     end
 
-    subgraph CORE["6. core/ and armatura.py"]
-        ARM["Armatura"]
+    subgraph CORE["6. core/ and armor.py"]
+        ARM["Armor"]
         HYB["hybrid_shield,<br/>AdaptiveSignalStabilizer"]
     end
 
@@ -523,11 +523,11 @@ Internal helpers, not public: `utility/_validation.py` (`as_dict`, `is_number`, 
 | `tensorflow.py` | `to_jax`, `to_tf`, `KerasLayer`, `KerasAdapter`, `from_keras` | tensors and Keras layers to and from JAX (needs TensorFlow) |
 | `torch.py` | `to_jax`, `to_torch`, `TorchModule`, `TorchAdapter`, `from_torch` | tensors and `torch.nn` modules to and from JAX (needs PyTorch) |
 
-## 6. core/ and armatura.py
+## 6. core/ and armor.py
 
 | file | public names | what it is |
 |---|---|---|
-| `armatura.py` | `Armatura`, `main` | public class and entry point |
+| `armor.py` | `Armor`, `main` | public class and entry point |
 | `chunk.py` | `ImageChunker` | image chunker |
 | `compiler.py` | `DynamicAICodegen` | JIT pipeline compiler |
 | `damping_operator.py` | `apply_damping_blend` | damping blend operator |
@@ -542,7 +542,7 @@ Internal helpers, not public: `utility/_validation.py` (`as_dict`, `is_number`, 
 | `vector.py` | `BitwisePermutationEngine`, `ParametricScenarioSimulator` | vector engines |
 | `visualizer.py` | `AIEngineVisualizer` | engine visualizer |
 
-Package-level files: `_compat.py` keeps the old import paths working (each old name resolves to the same module object), and `__main__.py` runs `python -m dense_armor`, which calls `armatura.main`.
+Package-level files: `_compat.py` keeps the old import paths working (each old name resolves to the same module object), and `__main__.py` runs `python -m dense_armor`, which calls `armor.main`.
 
 ## 7. mcp_server
 
