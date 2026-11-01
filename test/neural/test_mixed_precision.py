@@ -132,10 +132,11 @@ def test_overflow_skips_step_and_halves_scale():
         m, MSE(), SGD(0.01), compile=True, compute_dtype="float16", loss_scale="dynamic"
     )
     t._scale = 1024.0
-    before = [np.array(p.value) for p in m.params()]
+    before = [np.array(p.value, dtype=np.float32) for p in m.params()]
     t.fit(X, y, epochs=1, batch_size=8, key=jax.random.PRNGKey(0))
     assert t.history_["loss_scale"][-1] == 512.0, t.history_["loss_scale"]
-    for a, b in zip(before, [np.array(p.value) for p in m.params()]):
+    after = [np.array(p.value, dtype=np.float32) for p in m.params()]
+    for a, b in zip(before, after):
         assert np.array_equal(a, b), "weights changed after skipped step"
 
 
@@ -145,10 +146,11 @@ def test_overflow_skips_the_step_with_a_constant_scale_too():
     t = Trainer(
         m, MSE(), SGD(0.01), compile=True, compute_dtype="float16", loss_scale=1024.0
     )
-    before = [np.array(p.value) for p in m.params()]
+    before = [np.array(p.value, dtype=np.float32) for p in m.params()]
     t.fit(X * 1e30, y, epochs=1, batch_size=8, key=jax.random.PRNGKey(0))
     assert t.history_["loss_scale"] == [1024.0]
-    for a, b in zip(before, [np.array(p.value) for p in m.params()]):
+    after = [np.array(p.value, dtype=np.float32) for p in m.params()]
+    for a, b in zip(before, after):
         assert np.array_equal(a, b)
 
 

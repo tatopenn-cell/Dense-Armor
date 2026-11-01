@@ -1,5 +1,6 @@
 {
   "backend": "gpu",
+  "device_kind": "Tesla T4",
   "jax": "0.11.1",
   "python": "3.13.15",
   "processor": "x86_64",
@@ -12,74 +13,80 @@
   "claims": {
     "1_bf16_loss_within_5pct": {
       "holds": true,
-      "rel_diff": 4.410541799775768e-07
+      "rel_diff": 1.8902250539753765e-05
     },
     "2_memory_0.7x": {
       "holds": false,
-      "ratio": 1.023071988870957
+      "ratio": 0.9999992550905251
     },
     "3_faster_of_bf16_fp16_1.3x": {
-      "which": "float16",
-      "ratio": 0.8218259825282594,
+      "which": "bfloat16",
+      "ratio": 0.8723490206927064,
       "holds": false
     }
   },
   "rows": [
     {
       "mode": "float32",
+      "backend": "gpu",
+      "device_kind": "Tesla T4",
       "compute_dtype": null,
       "loss_scale": null,
       "loss_at_step": 200,
       "initial_loss": 2.2084617614746094,
-      "final_loss": 0.9459892511367798,
-      "peak_bytes": 2407757056,
-      "steps_per_second_median": 3.3863875928893186,
+      "final_loss": 0.9459928274154663,
+      "peak_bytes": 2405661440,
+      "steps_per_second_median": 3.2557163406010323,
       "steps_per_second_range": [
-        3.38559767015193,
-        3.395723176543933
+        3.2168087614841108,
+        3.29226218587976
       ],
       "steps_per_second_sessions": [
-        3.395723176543933,
-        3.38559767015193,
-        3.3863875928893186
+        3.29226218587976,
+        3.2557163406010323,
+        3.2168087614841108
       ]
     },
     {
       "mode": "bfloat16",
+      "backend": "gpu",
+      "device_kind": "Tesla T4",
       "compute_dtype": "bfloat16",
       "loss_scale": null,
       "loss_at_step": 200,
       "initial_loss": 2.2084736824035645,
-      "final_loss": 0.9459896683692932,
-      "peak_bytes": 2463308800,
-      "steps_per_second_median": 2.7337555688975996,
+      "final_loss": 0.9459749460220337,
+      "peak_bytes": 2405668352,
+      "steps_per_second_median": 2.8401209613765523,
       "steps_per_second_range": [
-        2.7118445700503138,
-        2.7391402044799373
+        2.7923290219972703,
+        2.9039557615398355
       ],
       "steps_per_second_sessions": [
-        2.7391402044799373,
-        2.7337555688975996,
-        2.7118445700503138
+        2.9039557615398355,
+        2.8401209613765523,
+        2.7923290219972703
       ]
     },
     {
       "mode": "float16",
+      "backend": "gpu",
+      "device_kind": "Tesla T4",
       "compute_dtype": "float16",
       "loss_scale": "dynamic",
       "loss_at_step": 200,
-      "initial_loss": 2.2084436416625977,
-      "final_loss": 0.9459676742553711,
-      "peak_bytes": 2463308800,
-      "steps_per_second_median": 2.7830213107477717,
+      "initial_loss": 2.2084434032440186,
+      "final_loss": 0.9459569454193115,
+      "peak_bytes": 2405659648,
+      "steps_per_second_median": 2.747786719210708,
       "steps_per_second_range": [
-        2.7821804686278173,
-        2.7904977112463434
+        2.7441561924024382,
+        2.7510344953665373
       ],
       "steps_per_second_sessions": [
-        2.7821804686278173,
-        2.7904977112463434,
-        2.7830213107477717
+        2.7441561924024382,
+        2.7510344953665373,
+        2.747786719210708
       ]
     }
   ]
