@@ -1,39 +1,22 @@
-"""Binary-trigger healing engine for Armatura.
+"""Two-state filter for a 1D series: keep the raw value or fall back to a baseline.
 
-Replaces the earlier AdaptiveSignalStabilizer + ABCollatz stage. The ABCollatz
-gate was mathematically non-discriminating: it was verified with a numerical
-sweep and never demonstrably fixed.
+``hybrid_shield`` decides for every point whether the raw value is a genuine
+change (trigger 1.0, the raw value is kept) or noise (trigger 0.0, the value
+is replaced by a baseline). The baseline is the local median of the previous
+points, or a reference series when one is given.
 
-The pure functions below are vendored from
-``Dense-Evolution/dense_evolution/healing.py``
-(``calculate_phi_ab``, ``calculate_vettore_dinamico``, ``evaluate_phi_trigger``,
-``GLOBAL_CONSTANTS``), tested in that repository and already in production
-(``dense-evolution >= 8.1.9`` on PyPI). They are vendored rather than imported
-at runtime so the core stays on numpy + jax + psutil; ``dense-evolution``
-remains an optional extra (``[quantum]``).
+The decision for a point uses two things: whether the change from the
+baseline points in the direction of the recent raw changes, and how large the
+change is in units of the local volatility (the standard deviation of the
+successive differences in the recent window). They are combined into a score
+``phi_ab`` in [0, 1] with the weights 0.6 and 0.4. The log of the ratio
+``|raw| / |baseline|``, clipped to [-5, 5], times 5 and times ``phi_ab``, is
+``v_dinamic``; the trigger is 1.0 when ``|v_dinamic|`` is above 0.01.
 
-Deviation from upstream. ``calculate_phi_ab`` originally normalized the
-``state_A`` / ``state_B`` distance against a fixed constant
-(``MAX_SEMANTIC_DISTANCE = sqrt(2)``), correct when ``state_A`` and ``state_B``
-are already normalized vectors. Here they are raw scalars of arbitrary scale
-(a loss, a sensor reading, a metric). With the fixed constant any real jump
-saturated ``coherence_component`` to very negative values, so ``phi_ab`` was
-clipped to 0 for any genuine change larger than ~1.4: the trigger stayed
-"static" forever even in front of a sustained step that never isolated.
-Normalizing on the absolute scale of ``state_A`` / ``state_B`` fixed the step
-but made a huge jump look proportionally coherent, so an isolated spike
-passed untouched. The final rule normalizes the distance on the *local
-volatility* of the recent window (scaled MAD, robust to a single residual
-outlier). A huge jump with respect to the usual oscillation of the signal
-stays suspicious (spike filtered); a sustained step is judged by how
-anomalous it is relative to the normal noise, not by the magnitude of the
-number.
-
-``hybrid_shield`` generalizes the two-state logic of
-``ia_utils.vector_healing.enhanced_dense_healing_hybrid`` (a sequence of
-vectors) to a 1D scalar series. The two states are strict: for every point
-the trigger decided by ``evaluate_phi_trigger`` is 0.0 (static/noise) or 1.0
-(dynamic/genuine), with no intermediate branch.
+``calculate_phi_ab``, ``calculate_vettore_dinamico`` and
+``evaluate_phi_trigger`` are the vector versions of these three steps,
+copied from ``dense_evolution/healing.py``. ``hybrid_shield`` has its own
+scalar version of the same steps and does not call them.
 """
 
 import jax
@@ -131,13 +114,11 @@ def evaluate_phi_trigger(deterministic_dq_dt_a: jnp.ndarray) -> jnp.ndarray:
 
 
 def _local_nan_fill(x: np.ndarray, radius: int) -> np.ndarray:
-    """Fill NaNs with the median of the finite neighbours in a local window.
+    """Fill every NaN with the median of the finite values around it.
 
-    A median, not a mean, and local, not global. With a global mean a NaN
-    next to a 9999 spike in a 200-point series was filled with ~51 instead
-    of ~1.0: the spike distorted the replacement of every NaN, not only the
-    one next to it. With a local median the replacement reflects the
-    neighbourhood of the point.
+    The window has ``radius`` points on each side; when it has no finite value
+    the median of the whole array is used. A median, so that a spike next to
+    a NaN does not bias the fill.
 
     Args:
         x: the input array.
@@ -167,46 +148,32 @@ def hybrid_shield(
     riferimento: np.ndarray | None = None,
     radius_baseline: int | None = None,
 ) -> tuple[np.ndarray, np.ndarray, dict]:
-    """Apply the two-state scheme (pass-through / fallback to baseline) point by point.
+    """Filter a 1D series: the raw value where the trigger is 1.0, the baseline where it is 0.0.
 
-    Windows are always taken from ``processed`` (the raw, sanitized series),
-    never from the previous output ``out``. Using ``out`` protects from a
-    past outlier but introduces a worse bug on a genuine sustained step: the
-    first one or two points after the transition are inevitably rejected (no
-    causal detector can distinguish a true step from a spike on the very
-    first sample), those rejected points end up in ``out``, and the window
-    of the next points feeds them back into the calculation, producing a
-    "halfway" baseline that also rejects the genuinely new points. The
-    result is a stable but wrong equilibrium that never recovers (verified:
-    30 real points after a step from 1.0 to 5.0 stayed stuck at ~4.0
-    forever, never reaching 5.0). The median fallback is robust to a single
-    spike inside the window without the self-contamination risk.
+    Notes:
+        The windows and the direction of the recent changes come from the
+        raw sanitized series, not from the output. Taking them from the
+        output feeds the baseline back into the windows, and a sustained
+        step can then stay rejected.
 
-    The IPG is also taken from ``processed``, not from ``out``: the IPG must
-    see whether the recent *raw* values are actually moving in a new
-    direction. Computing it from ``out`` creates a self-feeding block: a
-    rejected point is replaced by the baseline, so ``out`` never shows
-    evidence of the new value, the IPG stays at zero, and no real step can
-    ever be recognized no matter how long it lasts (verified: with IPG from
-    ``out`` a 10-point step stayed flattened at 100%, no escape).
+        The first two points always pass with trigger 1.0, because the
+        direction needs two previous points. A NaN or a spike there must be
+        caught before this function.
 
-    Known limitation. The first two points (``i = 0`` and ``i = 1``) never
-    go through the trigger loop (an IPG from the two previous points is
-    required), so they always pass through with ``trigger = 1.0``,
-    regardless of their value. The behaviour is inherited unchanged from
-    ``enhanced_dense_healing_hybrid`` and is negligible on realistic
-    series; any NaN or spike on those two points must be caught by
-    independent upstream checks (the robust filters in
-    ``Armatura.analizza``).
+        The local volatility is the standard deviation of the successive
+        differences of the window. A median-based scale would collapse to
+        zero in a window that crosses a transition. An isolated spike raises
+        the volatility for ``radius`` steps and makes the filter more
+        permissive in that window.
 
     Args:
         serie: a 1D array of floats. NaN and Inf are accepted and sanitized.
         riferimento: when given, the baseline for point ``i`` is
-            ``riferimento[i]`` (anti-drift mode). When ``None`` (blind
-            mode), the baseline is the local mean of the previous points of
-            the same series, with adaptive radius
+            ``riferimento[i]``. When ``None``, the baseline is the local mean
+            of the previous points of the same series, with radius
             ``min(20, max(3, n // 3))``.
-        radius_baseline: optional fixed radius for the blind-mode window.
+        radius_baseline: optional fixed radius of the window of the blind
+            mode.
 
     Returns:
         A tuple ``(pulito, trigger, metadata)`` where ``pulito`` is the
@@ -275,23 +242,7 @@ def hybrid_shield(
         )
 
     def _masked_std_of_diff(row, mask, k):
-        """Local volatility: standard deviation of the successive differences.
-
-        Deliberately not the MAD of the window values. On a window that
-        straddles a true transition, as soon as the majority of the points
-        reach the new level the median of the values collapses onto the new
-        level and the MAD drops to ~0 (the pre-transition minority
-        disappears from the metric), causing an oscillating rejection right
-        after a correct acceptance. The standard deviation of the deltas
-        does not collapse: a single large difference (the transition itself)
-        raises the std instead of vanishing behind the median.
-
-        Known trade-off: an isolated spike temporarily raises this
-        volatility (two large differences, in and out of the spike) for
-        ``radius`` steps, making the engine more permissive in that window.
-        It self-corrects when the spike leaves the window; it is not a
-        permanent block.
-        """
+        """Local volatility: standard deviation of the successive differences of the window."""
         diffs = row[1:] - row[:-1]
         diff_mask = mask[1:] & mask[:-1]
         cnt = jnp.maximum(jnp.sum(diff_mask), 1)

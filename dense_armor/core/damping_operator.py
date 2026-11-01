@@ -1,12 +1,17 @@
-r"""Adaptive damping blend between a raw signal and a reference.
+"""Blend of a raw signal with a reference signal.
 
-The blend uses a non-linear gain that depends on the distance between the
-two inputs. A small distance favors the raw signal; a large distance favors
-the reference, with a damped gain that stays bounded.
+``apply_damping_blend(raw, reference)`` returns ``(1 - K) * raw + K *
+reference`` for every element. The weight ``K`` of the reference depends on
+the distance ``|raw - reference|`` and is kept between ``ALPHA - SIGMA``
+(about 0.104) and ``1 - (ALPHA - SIGMA)`` (about 0.896).
 
-The constants (``PHI``, ``ZETA``, ...) are fixed numerical hyper-parameters,
-not quantum states or operators. No complex arithmetic and no Hilbert space
-are involved.
+In practice ``K`` rises from about 0.25 at distance 0 to its upper bound
+within a distance of about 0.05 (for a raw value of 1) and stays there: a
+reference that differs from the raw signal by more than that is followed at
+about 90 %. The tests in ``test/core/test_damping_operator.py`` measure this.
+
+The constants (``PHI``, ``ALPHA``, ``SIGMA``, ``K_MAX_ZETA``) are fixed
+numerical hyper-parameters. This repository gives no derivation for them.
 """
 
 import jax
@@ -26,19 +31,19 @@ _K_MAX_ZETA = float(_ZETA_TOTAL_128 / (_PHI_128**4))
 def apply_damping_blend(
     gradient_state: jnp.ndarray, noise_matrix: jnp.ndarray
 ) -> jnp.ndarray:
-    r"""Blend ``gradient_state`` (raw) and ``noise_matrix`` (reference).
+    """Return ``(1 - K) * gradient_state + K * noise_matrix`` for every element.
 
-    The blend coefficient ``K`` grows with the distance between the two
-    signals: a small distance gives low ``K`` (favor the raw signal), a
-    large distance gives high ``K`` (favor the reference, damped). NaN
-    inputs are replaced before the blend.
+    The names are historical: ``gradient_state`` is the raw signal and
+    ``noise_matrix`` is the reference. ``K`` is bounded and grows with the
+    distance between the two (see the module docstring for its range). A NaN
+    in either input is replaced by the other input before the blend.
 
     Args:
         gradient_state: the raw signal.
         noise_matrix: the reference signal.
 
     Returns:
-        The blended signal, with no NaN in the output.
+        The blended signal, with no NaN.
     """
     eps = 1e-7
 
