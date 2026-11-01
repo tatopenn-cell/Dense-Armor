@@ -1,6 +1,6 @@
 # Language-model training: how do I train a decoder on a GPU?
 
-A 14.2-million-parameter decoder trained on the tiny Shakespeare text with the modern blocks of this library: RMSNorm, SwiGLU, rotary attention, a causal mask. The page shows the data, the baselines, the model, the run on a Tesla T4, the text the model produces after 500 steps, and how the variance of the training loss shrinks.
+A 14.2-million-parameter decoder trained on the tiny Shakespeare text with the modern blocks of this library: RMSNorm, SwiGLU, rotary attention, a causal mask. The page shows the data, the baselines, the model, the run on one and two Tesla T4, the text the model produces, and what changes when the training moves to two devices.
 
 ## 1. The data: 1.1 MB of Shakespeare, 65 characters
 
@@ -46,7 +46,7 @@ The two numbers come from benchmarks/train_small_lm_gpu_1dev.json. The model mus
 
 ## 3. The model: 14.2 million parameters, six modern blocks
 
-The model is an embedding, six decoder blocks, a final RMSNorm and a linear head. Each block is a pre-norm residual: RMSNorm followed by causal rotary attention, then RMSNorm followed by SwiGLU feed-forward. The class lives in `benchmarks/train_small_lm.py`; here is its parameter count.
+The model is an embedding, six decoder blocks, a final RMSNorm and a linear head. Each block is a pre-norm residual: RMSNorm followed by causal rotary attention, then RMSNorm followed by SwiGLU feed-forward.
 
 ```python
 import jax
@@ -60,11 +60,11 @@ print(sum(int(p.value.size) for p in m.params()))
 14210753
 ```
 
-The config: `d_model` 384, six heads, six layers, `d_ff` 1536, `max_len` 256, vocabulary 65. The `d_ff = 4 * d_model` ratio of Vaswani et al. Table 3 is kept.
+The config: d_model 384, six heads, six layers, d_ff 1536, max_len 256, vocabulary 65. The d_ff = 4 * d_model ratio of Vaswani et al. Table 3 is kept.
 
-## 4. The run: 500 steps, loss from 4.80 to 1.90
+## 4. The run: 500 steps, loss from 4.80 to 1.91
 
-The training uses `Adam` with decoupled weight decay (`Trainer(decay="decoupled")`, the AdamW update of Loshchilov and Hutter 2019), bfloat16 compute with float32 master weights, the compiled step, batch 16, sequence 256. The recorded loss, from the JSON:
+The training uses Adam with decoupled weight decay (Trainer(decay="decoupled"), the AdamW update of Loshchilov and Hutter 2019), bfloat16 compute with float32 master weights, the compiled step, batch 16, sequence 256. The recorded loss, from the JSON:
 
 ```python
 import json
@@ -77,36 +77,43 @@ for step, loss in d["loss_curve"].items():
 
 ```
 step   1  loss 4.8044
-step 100  loss 2.5033
-step 200  loss 2.2151
-step 300  loss 2.0058
-step 400  loss 1.9720
-step 500  loss 1.8979
+step 100  loss 2.5032
+step 500  loss 1.9125
 ```
 
-The final validation loss is 1.9956. The bigram baseline is 2.4819, the ratio is 0.804; the target of 0.7 set before the run is not reached on 500 steps. The loss is still falling.
+On one device the final validation loss is 2.0124, the bigram baseline is 2.4819, the ratio is 0.811. On two devices the final validation loss is 2.2235, the ratio is 0.896: the same 500 steps, the same seed, the same batches, and a worse model. The 2-device run is not only slower, it trains less. The cause is not identified in this task; it is declared in the Details.
 
-## 5. The variance: the training stabilises
+## 5. The variance: the training stabilises on one device, not on two
 
-The variance of the per-step training loss, in the first 100 steps and in the last 100, computed by `stable_var` from `dense_armor.utility.signals.stats.stable`:
+The variance of the per-step training loss, computed by `stable_var` from `dense_armor.utility.signals.stats.stable`. Two windows: the first 100 steps against the last 100, and the last 100 against the 100 before them (401-500 vs 301-400). The second is the honest one: the first window includes the descent from 4.80 to 2.50, so its variance is large by construction.
 
 ```python
 import json
 from pathlib import Path
 
-d = json.loads(Path("benchmarks/train_small_lm_gpu_1dev.json").read_text())
-print(f"{d['loss_variance_first_100']:.6f}")
-print(f"{d['loss_variance_last_100']:.10f}")
-print(f"{d['loss_variance_ratio']:.4e}")
+for name in ("gpu_1dev", "gpu_2dev"):
+    d = json.loads(Path(f"benchmarks/train_small_lm_{name}.json").read_text())
+    print(f"--- {name} ---")
+    print(f"first 100 : {d['loss_variance_first_100']:.6f}")
+    print(f"last 100  : {d['loss_variance_last_100']:.8f}")
+    print(f"tail ratio: {d['loss_variance_ratio_tail']:.4f}")
+    print(f"claim 5   : {d['claim_5_holds']}")
 ```
 
 ```
-0.291021
-0.0011562244
-3.9730e-03
+--- gpu_1dev ---
+first 100 : 0.290992
+last 100  : 0.00124835
+tail ratio: 0.7696
+claim 5   : True
+--- gpu_2dev ---
+first 100 : 0.291017
+last 100  : 0.00188044
+tail ratio: 1.8584
+claim 5   : False
 ```
 
-The variance drops by a factor of 250. That is what the stabilising run means: the loss moves less from step to step as the model settles. On two devices the ratio is 4.0238e-03, essentially the same. The claims C5 (the variance shrinks, ratio < 1) holds on both runs.
+On one device the last 100 steps move less than the 100 before them: ratio 0.77, the training is settling. On two devices the last 100 move more: ratio 1.86, the run is noisier at the end than it was in the middle. Claim 5 (the tail variance shrinks) holds on one device and fails on two.
 
 ## 6. The text: 44 characters after the prompt
 
@@ -122,11 +129,11 @@ print(repr(d["generated_sample"]))
 ```
 
 ```
-'First Citizen:\nAnd the son the son the son t'
-"First Citizen:\n\nDo hnou; but and.\n\nBinCeu,, "
+'First Citizen:\nAnd the see the so the son th'
+"First Citizen:\n'Deys,nos; brot shall in this "
 ```
 
-The greedy text repeats "the son the": the mark of a 14.2-million-parameter model after 500 steps. The pattern is there, the grammar is not.
+The greedy text repeats "the": the mark of a 14.2-million-parameter model after 500 steps. The pattern is there, the grammar is not. On two devices the greedy output is worse: `First Citizen:\nAnd the the the the the the t`, the same collapse seen in the loss.
 
 ## Details
 
@@ -135,38 +142,38 @@ The greedy text repeats "the son the": the mark of a 14.2-million-parameter mode
 - Vaswani et al. 2017, "Attention is all you need", section 3.1 page 3 (decoder stacks and causal mask), Table 3 page 9 (`d_ff = 4 * d_model`).
 - Su et al. 2021, "RoFormer", Eq.(15) page 5, Eq.(34) page 7 (the pair rotation).
 - Shazeer 2020, "GLU variants improve Transformer", Eq.(6) page 2 (SwiGLU with Swish-1), page 2 (no biases).
-- Loshchilov and Hutter 2019, "Decoupled weight decay regularization", Algorithm 1 page 4. The script uses `Adam` plus `Trainer(decay="decoupled")`, which is the same update (line 252 of `trainer.py`).
-- Ogita, Rump, Oishi 2005, "Accurate Sum and Dot Product", Algorithm 3.1 page 7 (TwoSum). The compensated tree in `stable_var` uses it at every level.
-- Shewchuk 1997, "Adaptive Precision Floating-Point Arithmetic", Theorem 7 page 12 (TWO-SUM) and Lemma 5 page 10 (Sterbenz, the shift is exact).
-- Healy 2022, "Accurate and consistent calculation of the mean and variance in Monte-Carlo simulations", arXiv:2206.10662, Algorithm 2 (shifted data with K = x[0]). The kernel `stable_var` of `dense_armor.utility.signals.stats.stable` follows it.
-- Karpathy's `char-rnn` repository, `input.txt` of "tiny Shakespeare" (public domain), SHA-256 `86c4e6aa...565ed`.
+- Loshchilov and Hutter 2019, "Decoupled weight decay regularization", Algorithm 1 page 4. The script uses `Adam` plus `Trainer(decay="decoupled")`.
+- Ogita, Rump, Oishi 2005, "Accurate Sum and Dot Product", Algorithm 3.1 page 7 (TwoSum).
+- Shewchuk 1997, Theorem 7 page 12 (TWO-SUM) and Lemma 5 page 10 (Sterbenz).
+- Healy 2022, arXiv:2206.10662, Algorithm 2 (shifted data, K = x[0]). The `stable_var` kernel follows it.
+- Karpathy's `char-rnn`, `input.txt` of "tiny Shakespeare", SHA-256 `86c4e6aa...565ed`.
 
 ### Choices stated explicitly
 
-- **`transformer_decoder` is not used.** The builder in `models.py` composes the 2017 blocks (LayerNorm, two Dense, sinusoidal positions). The script composes RMSNorm, SwiGLU and rotary with the blocks of `attention.py`, `norm_rms.py`, `glu.py`, `layers.py`.
-- **AdamW via `Adam` plus decoupled decay.** `compiled.py::_init_state` dispatches `SGD`, `Adam`, `RMSProp`, `AdaGrad`; `AdamW` is not wired.
-- **bfloat16, not float16.** 8-bit exponent, no loss scaling needed, native on CPU, T4, TPU.
-- **30 new tokens, not 200.** `generate` has no KV cache: 2.4 s/token on the T4, 200 tokens cost about 15 minutes.
-- **Claim 5 uses `stable_var` from `dense_armor.utility.signals.stats.stable`**, the same kernel as the float32 variance task. When the two windows overlap (`2 * min(100, n_steps) > n_steps`, i.e. fewer than 200 steps), the claim is `None`, not a number.
-- **Speed is measured with one `fit()` covering all steps, not one `fit()` per batch.** With more than one device the trainer copies weights and Adam state to every device at each `fit()` and syncs back at the end; a per-batch `fit()` measures the copy, not the training.
+- **`transformer_decoder` is not used.** The builder in `deep/neural/models.py` composes the 2017 blocks. The script composes RMSNorm, SwiGLU and rotary with the blocks of `deep/neural/`.
+- **AdamW via `Adam` plus decoupled decay.** `deep/neural/compiled.py` does not dispatch `AdamW`.
+- **bfloat16, not float16.** No loss scaling needed.
+- **30 new tokens, not 200.** `generate` has no KV cache: about 2 s/token on T4.
+- **Claim 5 uses the tail window** (401-500 vs 301-400), not the first window, so the descent from 4.80 to 2.50 does not enter the denominator. On fewer than 400 steps the claim is `None`.
+- **Speed is one `fit()` per session**, not one `fit()` per batch: with more than one device the trainer copies weights and Adam state at each `fit()`.
 
 ### Measured cost
 
-Machine: Kaggle, `device_kind` "Tesla T4", `device_count` 2, `python` 3.13.15, `jax` 0.11.1, `numpy` 2.2.6.
+Machine: Kaggle, `device_kind` "Tesla T4", `device_count` 2, `python` 3.13.15, `jax` 0.11.1, `numpy` 2.2.6, 3 sessions per run.
 
-| run | devices | steps | batch | seq | tokens/s | peak bytes | val_loss | loss var ratio |
-|---|---|---|---|---|---|---|---|---|
-| 1 device | 1 | 500 | 16 | 256 | 28,746 | 1,424,270,592 | 1.9956 | 3.9730e-03 |
-| 2 devices | 2 | 500 | 16 | 256 | 27,743 | 1,456,666,368 | 1.9943 | 4.0238e-03 |
+| run | devices | tokens/s median | tokens/s range | peak bytes | val_loss | ratio to bigram | claim 5 |
+|---|---|---|---|---|---|---|---|
+| 1 device | 1 | 35,983 | 28,843-36,271 | 1,427,065,088 | 2.0124 | 0.811 | True |
+| 2 devices | 2 | 35,700 | 27,218-35,932 | 1,578,250,752 | 2.2235 | 0.896 | False |
 
-The two runs use the same seed, data and steps. The 2-device run is 0.97 times the 1-device run on tokens per second, well below the 1.5 set before the run: claim 3 does not hold on batch 16. The 2-device run does not pay off with 8-sample shards per device.
+The two runs use the same seed, data and steps. The 2-device run is 0.992 times the 1-device run on the median, well below the 1.5 set before the run: claim 3 does not hold on batch 16.
 
 ### Not measured
 
-- 2 GPUs with a larger batch (32 or 64) or a larger model, where data parallelism usually pays off.
-- The TPU: a TPU v3-8 has 8 devices, more than the 2-device story of `data_parallel.py`.
-- bfloat16 tensor-core kernels tuned for the T4; the numbers are JAX 0.11 default.
+- Why the 2-device run trains worse (val_loss 2.22 against 2.01) at the same seed, data and 500 steps. Possible causes: the shard/all-reduce round of `Trainer.fit` with `devices=2` applied to the members of `ModernDecoder`, the batch 16 split in two 8-sample halves, or a different path in `compiled.py::_train_parallel`. The two runs use the same script and flags except `--devices`; the difference is not explained by any number in the JSON.
+- A 2-device run with batch 32 or 64, where data parallelism usually pays off.
+- The TPU: a TPU v3-8 has 8 devices.
 
 ### Development diary
 
-The first training step is 6.3 s on the T4 with XLA compile, the next 10 are 2.4 s: 240 ms/step. `generate` re-runs the whole sequence per token; 20 tokens cost 47.7 s and 100 cost 230.3 s, both about 2.4 s/token. A first run with `max_new=200` on both greedy and sampled generation would have taken 15 minutes on generation alone; the committed JSON uses 30. Claim 5 is what was missing: without `stable_var` a "proof of scale" says the model runs, not that it stabilises.
+The first training step is 6.3 s on T4 with XLA compile, the next 10 are 2.4 s: 240 ms/step. `generate` has no KV cache: 20 tokens cost 47.7 s and 100 cost 230.3 s. The 3-session run with 500 steps took 179 s on 1 device and 530 s on 2 devices. The 2-device number and the loss difference point in the same direction: the parallel path is doing something different, not just slower.
