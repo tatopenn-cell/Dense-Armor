@@ -129,6 +129,13 @@ def test_output_at_t_ignores_the_tokens_after_t():
     assert float(jnp.max(jnp.abs(a[5:] - b[5:]))) > 1e-6
 
 
+def test_the_order_of_the_earlier_tokens_changes_the_last_logits():
+    m = _model()
+    a = m.forward(jnp.array([1, 2, 3, 5], dtype=jnp.int32))[-1]
+    b = m.forward(jnp.array([2, 1, 3, 5], dtype=jnp.int32))[-1]
+    assert float(jnp.max(jnp.abs(a - b))) > 1e-6
+
+
 def test_step_static_logits_equal_the_full_forward_at_every_position():
     m = _model()
     full = m.forward(IDS)

@@ -252,8 +252,16 @@ from dense_armor.utility.deep.neural.continual import AGEM, EWC, GEM
 from dense_armor.utility.deep.neural.generative_replay import DeepGenerativeReplay
 
 __all__ = list(globals().get("__all__", [])) + [
-    "AGEM", "ArchivalMemory", "DeepGenerativeReplay", "DualMemory",
-    "EWC", "GEM", "LifecycleMemory", "PQMemory", "ResidualTree", "TheoreticalBound",
+    "AGEM",
+    "ArchivalMemory",
+    "DeepGenerativeReplay",
+    "DualMemory",
+    "EWC",
+    "GEM",
+    "LifecycleMemory",
+    "PQMemory",
+    "ResidualTree",
+    "TheoreticalBound",
     "VQMemory",
 ]
 
