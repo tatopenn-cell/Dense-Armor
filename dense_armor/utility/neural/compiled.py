@@ -500,6 +500,7 @@ def make_step_parallel(
     n_devices: int,
     compute_dtype: str | None = None,
     loss_scale: float | str | None = None,
+    devices: list[int] | None = None,
 ) -> Callable:
     """Return the data-parallel compiled step over ``n_devices`` devices.
 
@@ -522,6 +523,9 @@ def make_step_parallel(
         n_devices: the number of devices to use.
         compute_dtype: ``None``, ``"bfloat16"`` or ``"float16"``.
         loss_scale: ``None``, a positive float, or ``"dynamic"``.
+        devices: ids of the devices (indices into ``jax.devices()``) the
+            step runs on, ``n_devices`` of them; ``None`` takes the first
+            ``n_devices``.
 
     Returns:
         ``step_parallel(values, opt_state, x, y, epoch_t)`` in the plain
@@ -538,14 +542,15 @@ def make_step_parallel(
 
     References:
         Goyal et al. (2017), "Accurate, Large Minibatch SGD". Section 2.1,
-        page 3: "we set η̂ = kη". Section 2.3, page 4, equation (7):
-        ``ŵ_{t+1} = w_t - η̂ (1/k) Σ_{j<k} ∇L(B_j, w_t)``, the average of
-        the gradients over ``k`` workers; on the same page, before
-        equation (7): "Following similar logic as in §2.1, we set
+        page 3: setting ``η̂ = kη`` makes one large step approximate ``k``
+        small steps (after equation (4)). Section 2.3, page 4, equation
+        (7): ``ŵ_{t+1} = w_t - η̂ (1/k) Σ_{j<k} ∇L(B_j, w_t)``, the
+        average of the gradients over ``k`` workers; on the same page,
+        after equation (7): "Following similar logic as in §2.1, we set
         η̂ = kη and we keep the per-worker sample size n constant when we
         change the number of workers k." For the mixed step,
-        Micikevicius et al. (2018) §3.1 page 2 (FP32 master copy) and the
-        loss-scaling and dynamic-scaling-up factor discussion of pp. 4-5.
+        Micikevicius et al. (2017) §3.1 page 2 (FP32 master copy) and
+        pages 4-5 (loss scaling).
 
     Choices:
         The average of the per-device gradients in float32 of the values
@@ -566,6 +571,7 @@ def make_step_parallel(
         )
     if n_devices < 2:
         raise ValueError(f"n_devices must be >= 2, got {n_devices}")
+    pmap_devices = None if devices is None else [jax.devices()[i] for i in devices]
 
     if compute_dtype is None and loss_scale is None:
 
@@ -592,6 +598,7 @@ def make_step_parallel(
             _step_parallel,
             axis_name="devices",
             in_axes=(0, 0, 0, 0, None, None),
+            devices=pmap_devices,
         )
 
         def step_parallel_plain(
@@ -620,6 +627,7 @@ def make_step_parallel(
         compiled.mixed_devices_inner,
         axis_name="devices",
         in_axes=(0, 0, 0, 0, None, None, None),
+        devices=pmap_devices,
     )
 
     def step_parallel_mixed(

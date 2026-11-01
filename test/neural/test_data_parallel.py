@@ -1,6 +1,17 @@
-"""Tests for the linear scaling rule and the data-parallel step."""
+"""Tests for the linear scaling rule and the data-parallel step.
+
+The multi-device scenarios run in one subprocess with four virtual CPU
+devices: the number of devices is fixed when JAX starts, and the process of
+pytest has already started it.
+"""
 
 from __future__ import annotations
+
+import json
+import os
+import subprocess
+import sys
+import textwrap
 
 import pytest
 
@@ -17,15 +28,13 @@ def test_linear_scaling_identity_at_base_batch():
     assert linear_scaling(0.05, 32, 32) == pytest.approx(0.05)
 
 
-def test_linear_scaling_rejects_invalid_arguments():
+@pytest.mark.parametrize(
+    "args",
+    [(0.1, 256, 0), (0.1, 16, 32), (0.0, 256, 32), (-0.1, 256, 32)],
+)
+def test_linear_scaling_rejects_invalid_arguments(args):
     with pytest.raises(ValueError):
-        linear_scaling(0.1, 256, 0)
-    with pytest.raises(ValueError):
-        linear_scaling(0.1, 16, 32)
-    with pytest.raises(ValueError):
-        linear_scaling(0.0, 256, 32)
-    with pytest.raises(ValueError):
-        linear_scaling(-0.1, 256, 32)
+        linear_scaling(*args)
 
 
 def test_linear_warmup_reaches_the_scaled_rate():
@@ -39,267 +48,309 @@ def test_linear_warmup_reaches_the_scaled_rate():
     assert s(7.0) == pytest.approx(lr_end)
 
 
-import os
-import subprocess
-import sys
+_PRELUDE = """
+import json
+import numpy as np
+import jax
+import jax.numpy as jnp
+from dense_armor.utility.neural.models import mlp
+from dense_armor.utility.neural.losses import MSE
+from dense_armor.utility.neural.trainer import Trainer
+from dense_armor.utility.neural.compiled import (
+    make_step,
+    _read_values,
+    _init_state,
+)
+from dense_armor.utility.neural.schedules import ConstantLR
+from dense_armor.utility.optim import SGD, Adam
+
+CHECK = (1, 10, 50, 200)
+rng = np.random.default_rng(0)
+X = rng.normal(size=(32, 2)).astype(np.float32)
+Y = rng.normal(size=(32, 1)).astype(np.float32)
+OUT = {}
 
 
-def _run_in_subprocess(code: str, n_devices: int, timeout: int = 120) -> str:
+def trainer(devices=None, opt=None, **kw):
+    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
+    t = Trainer(m, MSE(), opt or SGD(0.01), compile=True, devices=devices, **kw)
+    return m, t
+
+
+def weights(m):
+    return [np.array(p.value) for p in m.params()]
+
+
+def spread(a, b):
+    return float(max(np.abs(x - y).max() for x, y in zip(a, b)))
+
+
+def curve(devices, **kw):
+    m, t = trainer(devices, **kw)
+    t.fit(X, Y, epochs=200, batch_size=32, key=jax.random.PRNGKey(0), shuffle=False)
+    h = t.history_["train_loss"]
+    return [float(h[s - 1]) for s in CHECK]
+
+
+def rel(a, b):
+    return [abs(x - y) / abs(x) for x, y in zip(a, b)]
+"""
+
+_SCENARIOS = """
+one = curve(None)
+for n in (2, 4):
+    many = curve(n)
+    OUT["plain_%d" % n] = {"one": one, "many": many, "rel": rel(one, many)}
+one_b = curve(None, compute_dtype="bfloat16")
+for n in (2, 4):
+    many = curve(n, compute_dtype="bfloat16")
+    OUT["bf16_%d" % n] = {"one": one_b, "many": many, "rel": rel(one_b, many)}
+
+Yc = Y.copy()
+Yc[:16] *= 10.0
+
+
+def clipped(devices, clip):
+    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
+    t = Trainer(m, MSE(), SGD(0.01), compile=True, devices=devices, clip_norm=clip)
+    t.fit(X, Yc, epochs=3, batch_size=32, key=jax.random.PRNGKey(0), shuffle=False)
+    return weights(m)
+
+
+w1, w2, w0 = clipped(None, 0.05), clipped(2, 0.05), clipped(None, None)
+OUT["clip"] = {"parallel_vs_single": spread(w1, w2), "clip_effect": spread(w1, w0)}
+
+rng2 = np.random.default_rng(1)
+Xd = rng2.normal(size=(16, 2)).astype(np.float32)
+Yd = rng2.normal(size=(16, 1)).astype(np.float32)
+m, t = trainer(None)
+t.fit(Xd, Yd, epochs=3, batch_size=8, key=jax.random.PRNGKey(0))
+OUT["default"] = {"loss": t.history_["train_loss"], "keys": list(t.history_)}
+
+
+def adam_weights(devices, epochs, calls=1, **kw):
+    m, t = trainer(devices, opt=Adam(0.01), **kw)
+    for _ in range(calls):
+        t.fit(X, Y, epochs=epochs, batch_size=16, key=jax.random.PRNGKey(0), shuffle=False)
+    return weights(m)
+
+
+OUT["adam"] = spread(adam_weights(None, 3), adam_weights(2, 3))
+OUT["state_plain"] = spread(adam_weights(2, 2), adam_weights(2, 1, calls=2))
+OUT["state_mixed"] = spread(
+    adam_weights(2, 2, compute_dtype="bfloat16"),
+    adam_weights(2, 1, calls=2, compute_dtype="bfloat16"),
+)
+OUT["adam_bf16"] = spread(
+    adam_weights(None, 3, compute_dtype="bfloat16"),
+    adam_weights(2, 3, compute_dtype="bfloat16"),
+)
+
+errors = {}
+
+
+def attempt(name, fn):
+    try:
+        fn()
+        errors[name] = None
+    except Exception as e:
+        errors[name] = type(e).__name__ + ": " + str(e)
+
+
+attempt("batch", lambda: trainer(2)[1].fit(X, Y, epochs=1, batch_size=3, key=jax.random.PRNGKey(0)))
+attempt("tail", lambda: trainer(2)[1].fit(X[:11], Y[:11], epochs=1, batch_size=4, key=jax.random.PRNGKey(0)))
+attempt("too_many", lambda: trainer(8))
+attempt("one_device", lambda: trainer(1))
+attempt("repeated", lambda: trainer([0, 0]))
+attempt("unknown", lambda: trainer([0, 9]))
+attempt(
+    "no_compile",
+    lambda: Trainer(mlp([2, 4, 1], jax.random.PRNGKey(0)), MSE(), SGD(0.01), devices=2),
+)
+OUT["errors"] = errors
+
+m_ids, t_ids = trainer([3, 1])
+t_ids.fit(X, Y, epochs=3, batch_size=16, key=jax.random.PRNGKey(0), shuffle=False)
+m_two, t_two = trainer(2)
+t_two.fit(X, Y, epochs=3, batch_size=16, key=jax.random.PRNGKey(0), shuffle=False)
+OUT["ids"] = {"spread": spread(weights(m_ids), weights(m_two)), "devices": t_ids.devices}
+
+m_tail, t_tail = trainer(2)
+t_tail.fit(X[:28], Y[:28], epochs=2, batch_size=16, key=jax.random.PRNGKey(0), shuffle=False)
+m_tail1, t_tail1 = trainer(None)
+t_tail1.fit(X[:28], Y[:28], epochs=2, batch_size=16, key=jax.random.PRNGKey(0), shuffle=False)
+OUT["tail_ok"] = spread(weights(m_tail), weights(m_tail1))
+
+m_es, t_es = trainer(2)
+t_es.fit(X, Y, epochs=8, batch_size=16, key=jax.random.PRNGKey(0), X_val=X[:8], y_val=Y[:8], patience=2)
+OUT["early"] = {"epochs": len(t_es.history_["train_loss"]), "best": t_es.best_epoch_}
+
+rng3 = np.random.default_rng(3)
+Xf = rng3.normal(size=(64, 2)).astype(np.float32)
+Yf = rng3.normal(size=(64, 1)).astype(np.float32)
+m_f, t_f = trainer(2, compute_dtype="float16", loss_scale="dynamic")
+t_f.fit(Xf, Yf, epochs=25, batch_size=8, key=jax.random.PRNGKey(0))
+h = t_f.history_["train_loss"]
+OUT["fp16"] = {"first": h[0], "last": h[-1], "scale": t_f.history_["loss_scale"], "finite": all(np.isfinite(h))}
+
+
+def overflow(shard):
+    Xo = X[:16].copy()
+    Yo = Y[:16].copy()
+    if shard == 0:
+        Xo[0:8] *= 1e30
+    else:
+        Xo[8:16] *= 1e30
+    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
+    opt = SGD(0.01)
+    step = make_step(
+        m, MSE(), opt, ConstantLR(0.01), 0.0, "l2", None,
+        compute_dtype="float16", loss_scale="dynamic",
+    )
+    pmapped = jax.pmap(
+        step.mixed_devices_inner, axis_name="devices", in_axes=(0, 0, 0, 0, None, None, None)
+    )
+    values = _read_values(m)
+    state = _init_state(opt, values)
+    n = 2
+    bc = lambda v: jnp.broadcast_to(jnp.asarray(v)[None], (n,) + jnp.shape(v))
+    values_d = jax.tree_util.tree_map(bc, values)
+    state_d = jax.tree_util.tree_map(bc, state)
+    v_out, s_out, loss_d, finite_d = pmapped(
+        values_d, state_d, jnp.asarray(Xo).reshape((n, 8, 2)),
+        jnp.asarray(Yo).reshape((n, 8, 1)), 0.01, 1.0, jnp.float32(1024.0),
+    )
+    unchanged = all(
+        np.array_equal(np.asarray(values[k]), np.asarray(v_out[k][i]))
+        for k in range(len(values)) for i in range(n)
+    )
+    equal = all(
+        np.array_equal(np.asarray(v_out[k][0]), np.asarray(v_out[k][1]))
+        for k in range(len(values))
+    )
+    return {"unchanged": bool(unchanged), "equal": bool(equal), "finite": [bool(f) for f in np.asarray(finite_d)]}
+
+
+OUT["overflow_0"] = overflow(0)
+OUT["overflow_1"] = overflow(1)
+print(json.dumps(OUT))
+"""
+
+
+def _run(code: str, n_devices: int = 4, timeout: int = 900) -> dict:
     env = dict(os.environ)
     env["XLA_FLAGS"] = f"--xla_force_host_platform_device_count={n_devices}"
+    env["JAX_PLATFORMS"] = "cpu"
     r = subprocess.run(
-        [sys.executable, "-c", code],
+        [sys.executable, "-c", textwrap.dedent(code)],
         capture_output=True,
         text=True,
         timeout=timeout,
         env=env,
     )
     if r.returncode != 0:
-        raise RuntimeError(r.stderr[-800:])
-    return r.stdout
+        raise RuntimeError(r.stderr[-1500:])
+    return json.loads(r.stdout.strip().splitlines()[-1])
 
 
-_EQUIV = """
-import numpy as np
-import jax
-from dense_armor.utility.neural.models import mlp
-from dense_armor.utility.neural.losses import MSE
-from dense_armor.utility.neural.trainer import Trainer
-from dense_armor.utility.optim import SGD
-rng = np.random.default_rng(0)
-X = rng.normal(size=(32, 2)).astype(np.float32)
-y = rng.normal(size=(32, 1)).astype(np.float32)
-
-def run(devices):
-    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
-    t = Trainer(m, MSE(), SGD(0.01), compile=True, devices=devices)
-    t.fit(X, y, epochs=5, batch_size=8, key=jax.random.PRNGKey(0))
-    return t.history_["train_loss"]
-
-one = run(None)
-many = run({n})
-print("one:", [round(float(v), 8) for v in one])
-print("many:", [round(float(v), 8) for v in many])
-print("max_rel:", max(abs(a - b) / max(abs(a), 1e-9) for a, b in zip(one, many)))
-"""
+@pytest.fixture(scope="module")
+def out():
+    return _run(_PRELUDE + _SCENARIOS)
 
 
-def test_parallel_equals_single_at_2_and_4_devices():
-    for n in (2, 4):
-        out = _run_in_subprocess(_EQUIV.format(n=n), n)
-        print(f"n_devices={n}")
-        for line in out.strip().splitlines():
-            print("  " + line)
-        rel = float(out.strip().split("max_rel:")[1].strip())
-        assert rel < 1e-5, f"n={n}: rel {rel}"
+@pytest.mark.parametrize("n", [2, 4])
+def test_parallel_equals_single_at_steps_1_10_50_200(out, n):
+    r = out[f"plain_{n}"]
+    print(f"\n  {n} devices, steps 1/10/50/200")
+    print(f"  one : {r['one']}")
+    print(f"  many: {r['many']}")
+    print(f"  rel : {r['rel']}")
+    assert max(r["rel"]) < 1e-5
 
 
-def test_parallel_rejects_undivisible_batch():
-    code = """
-import numpy as np
-import jax
-from dense_armor.utility.neural.models import mlp
-from dense_armor.utility.neural.losses import MSE
-from dense_armor.utility.neural.trainer import Trainer
-from dense_armor.utility.optim import SGD
-m = mlp([2, 4, 1], jax.random.PRNGKey(0))
-t = Trainer(m, MSE(), SGD(0.01), compile=True, devices=2)
-X = np.zeros((16, 2), dtype=np.float32)
-y = np.zeros((16, 1), dtype=np.float32)
-try:
-    t.fit(X, y, epochs=1, batch_size=3, key=jax.random.PRNGKey(0))
-    print("NO_ERROR")
-except ValueError as e:
-    print("OK", str(e)[:60])
-"""
-    out = _run_in_subprocess(code, 2)
-    print(out.strip())
-    assert "OK" in out
+@pytest.mark.parametrize("n", [2, 4])
+def test_mixed_bf16_parallel_equals_single_at_steps_1_10_50_200(out, n):
+    r = out[f"bf16_{n}"]
+    print(f"\n  bf16, {n} devices, steps 1/10/50/200")
+    print(f"  one : {r['one']}")
+    print(f"  many: {r['many']}")
+    print(f"  rel : {r['rel']}")
+    assert max(r["rel"]) < 1e-3
 
 
-def test_parallel_rejects_too_many_devices():
-    code = """
-import jax
-from dense_armor.utility.neural.models import mlp
-from dense_armor.utility.neural.losses import MSE
-from dense_armor.utility.neural.trainer import Trainer
-from dense_armor.utility.optim import SGD
-m = mlp([2, 4, 1], jax.random.PRNGKey(0))
-try:
-    Trainer(m, MSE(), SGD(0.01), compile=True, devices=8)
-    print("NO_ERROR")
-except ValueError as e:
-    print("OK", str(e)[:80])
-"""
-    out = _run_in_subprocess(code, 2)
-    print(out.strip())
-    assert "OK" in out
+def test_clipping_acts_on_the_averaged_gradient(out):
+    """The two shards have gradients of very different norms; clipping the
+    average gives the single-device result, and the clip is active."""
+    r = out["clip"]
+    print(
+        f"\n  parallel vs single: {r['parallel_vs_single']}, clip effect: {r['clip_effect']}"
+    )
+    assert r["parallel_vs_single"] < 1e-6
+    assert r["clip_effect"] > 1e-3
 
 
-def test_parallel_rejects_devices_without_compile():
-    code = """
-import jax
-from dense_armor.utility.neural.models import mlp
-from dense_armor.utility.neural.losses import MSE
-from dense_armor.utility.neural.trainer import Trainer
-from dense_armor.utility.optim import SGD
-m = mlp([2, 4, 1], jax.random.PRNGKey(0))
-try:
-    Trainer(m, MSE(), SGD(0.01), compile=False, devices=2)
-    print("NO_ERROR")
-except ValueError as e:
-    print("OK", str(e)[:60])
-"""
-    out = _run_in_subprocess(code, 2)
-    print(out.strip())
-    assert "OK" in out
+def test_default_gives_the_values_stored_from_master(out):
+    """compile=True with devices=None: the three epoch losses of the MLP
+    [2, 4, 1] on 16 samples, SGD(0.01), batch 8, shuffle key 0, taken by
+    running master (x64 off, the setting of the subprocess)."""
+    stored = [4.009725093841553, 3.231865406036377, 2.795619010925293]
+    assert out["default"]["loss"] == pytest.approx(stored, rel=1e-5)
+    assert out["default"]["keys"] == ["train_loss", "val_loss", "lr"]
 
 
-_WEIGHT_DIFF = """
-import numpy as np
-import jax
-from dense_armor.utility.neural.models import mlp
-from dense_armor.utility.neural.losses import MSE
-from dense_armor.utility.neural.trainer import Trainer
-from dense_armor.utility.optim import SGD
-rng = np.random.default_rng(0)
-X = rng.normal(size=(32, 2)).astype(np.float32)
-y = rng.normal(size=(32, 1)).astype(np.float32)
-
-def run(devices):
-    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
-    t = Trainer(m, MSE(), SGD(0.01), compile=True, devices=devices)
-    t.fit(X, y, epochs=3, batch_size=8, key=jax.random.PRNGKey(0))
-    return [np.array(p.value) for p in m.params()]
-
-a = run(None)
-b = run(2)
-print("max_diff:", max(float(np.max(np.abs(x - y))) for x, y in zip(a, b)))
-"""
+def test_adam_state_is_replicated_and_equal_to_single(out):
+    assert out["adam"] < 1e-5
+    assert out["adam_bf16"] < 1e-3
 
 
-def test_parallel_master_weights_match_single():
-    out = _run_in_subprocess(_WEIGHT_DIFF, 2)
-    print(out.strip())
-    diff = float(out.strip().split("max_diff:")[1].strip())
-    assert diff < 1e-4, f"weight diff {diff}"
+@pytest.mark.parametrize("key", ["state_plain", "state_mixed"])
+def test_the_optimizer_state_survives_between_fit_calls(out, key):
+    assert out[key] < 1e-6
 
 
-# ---------------------------------------------------------------------
-# F: the mixed parallel step (bfloat16/float16 + several devices)
-# ---------------------------------------------------------------------
-
-
-_BF16_EQUIV = """
-import numpy as np, jax
-from dense_armor.utility.neural.models import mlp
-from dense_armor.utility.neural.losses import MSE
-from dense_armor.utility.neural.trainer import Trainer
-from dense_armor.utility.optim import SGD
-rng = np.random.default_rng(0)
-X = rng.normal(size=(32, 2)).astype(np.float32)
-y = rng.normal(size=(32, 1)).astype(np.float32)
-
-def run(devices):
-    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
-    t = Trainer(m, MSE(), SGD(0.01), compile=True, devices=devices,
-                compute_dtype="bfloat16")
-    t.fit(X, y, epochs=50, batch_size=8, key=jax.random.PRNGKey(0))
-    loss = t.history_["train_loss"]
-    return loss[0], loss[2], loss[12], loss[49], loss[-1]
-
-one = run(None)
-many = run(@N@)
-for i, s in enumerate([1, 10, 50, 200]):
-    rel = abs(one[i] - many[i]) / max(abs(one[i]), 1e-9)
-    print("step " + str(s) + ": 1dev=" + str(round(one[i], 8))
-          + " @N@dev=" + str(round(many[i], 8))
-          + " rel=" + str(round(rel, 6)))
-"""
-
-
-def test_mixed_parallel_bf16_matches_single():
-    for n in (2, 4):
-        code = _BF16_EQUIV.replace("@N@", str(n))
-        out = _run_in_subprocess(code, n)
-        print(f"n_devices={n}")
-        for line in out.strip().splitlines():
-            print("  " + line)
-        for line in out.strip().splitlines():
-            if "rel=" in line:
-                rel = float(line.split("rel=")[1])
-                assert rel < 1e-3, line
-
-
-_OVERFLOW_SHARD = """
-import numpy as np, jax
-import jax.numpy as jnp
-from dense_armor.utility.neural.models import mlp
-from dense_armor.utility.neural.losses import MSE
-from dense_armor.utility.neural.compiled import (
-    make_step, _read_values as read_values, _init_state as init_state,
+@pytest.mark.parametrize(
+    "key,match",
+    [
+        ("batch", "batch_size 3 is not divisible by devices 2"),
+        ("tail", "last batch has 3 samples"),
+        ("too_many", "exceeds the available count 4"),
+        ("one_device", "at least 2 devices"),
+        ("repeated", "repeated"),
+        ("unknown", "not among the 4 available devices"),
+        ("no_compile", "devices requires compile=True"),
+    ],
 )
-from dense_armor.utility.optim import SGD
-from dense_armor.utility.neural.schedules import ConstantLR
-
-rng = np.random.default_rng(0)
-X = rng.normal(size=(16, 2)).astype(np.float32)
-y = rng.normal(size=(16, 1)).astype(np.float32)
-if SHARD == 0:
-    X[0:8] *= 1e30
-else:
-    X[8:16] *= 1e30
-
-m = mlp([2, 4, 1], jax.random.PRNGKey(0))
-opt = SGD(0.01)
-sched = ConstantLR(0.01)
-step = make_step(m, MSE(), opt, sched, 0.0, "l2", None,
-                 compute_dtype="float16", loss_scale="dynamic")
-pmapped = jax.pmap(step.mixed_devices_inner, axis_name="devices",
-                   in_axes=(0, 0, 0, 0, None, None, None))
-
-values = read_values(m)
-state = init_state(opt, values)
-n = 2
-values_d = jax.tree_util.tree_map(
-    lambda v: jnp.broadcast_to(jnp.asarray(v)[None], (n,) + jnp.shape(v)),
-    values,
-)
-state_d = jax.tree_util.tree_map(
-    lambda s: jnp.broadcast_to(jnp.asarray(s)[None], (n,) + jnp.shape(s)),
-    state,
-)
-x_s = jnp.asarray(X).reshape((n, 8, 2))
-y_s = jnp.asarray(y).reshape((n, 8, 1))
-v_out, s_out, loss_d, finite_d = pmapped(
-    values_d, state_d, x_s, y_s, 0.01, 1.0, jnp.float32(1024.0)
-)
-
-for k, v in enumerate(values):
-    ref = jnp.asarray(v)
-    for i in range(n):
-        got = v_out[k][i]
-        assert np.array_equal(np.asarray(ref), np.asarray(got)), (
-            "device " + str(i) + " param " + str(k) + " changed"
-        )
-    for i in range(1, n):
-        assert np.array_equal(np.asarray(v_out[k][0]), np.asarray(v_out[k][i])), (
-            "param " + str(k) + " differs between devices"
-        )
-fin = np.asarray(finite_d)
-assert fin[0] == fin[1], "finite flag differs between devices"
-assert not bool(fin[0]), "step should be skipped"
-print("OK shard=" + str(SHARD) + " finite=" + str(bool(fin[0])))
-"""
+def test_invalid_devices_raise(out, key, match):
+    message = out["errors"][key]
+    assert message is not None and message.startswith("ValueError"), message
+    assert match in message
 
 
-import pytest as _pytest
+def test_a_list_of_device_ids_is_used_and_does_not_change_the_result(out):
+    assert out["ids"]["devices"] == [3, 1]
+    assert out["ids"]["spread"] < 1e-6
 
 
-@_pytest.mark.parametrize("shard", [0, 1])
-def test_mixed_overflow_on_one_device_skips_all(shard):
-    code = "SHARD=" + str(shard) + "\n" + _OVERFLOW_SHARD
-    out = _run_in_subprocess(code, 2)
-    print(out.strip())
-    assert "OK shard=" + str(shard) in out
-    assert "finite=False" in out
+def test_a_last_batch_that_the_devices_divide_is_trained_on(out):
+    assert out["tail_ok"] < 1e-5
+
+
+def test_early_stopping_runs_on_several_devices(out):
+    assert out["early"]["best"] is not None
+    assert 1 <= out["early"]["epochs"] <= 8
+
+
+def test_float16_dynamic_scale_trains_on_two_devices(out):
+    r = out["fp16"]
+    assert r["finite"]
+    assert r["last"] < 0.9 * r["first"]
+    assert all(s > 0 for s in r["scale"])
+
+
+@pytest.mark.parametrize("shard", [0, 1])
+def test_mixed_overflow_on_one_device_skips_all(out, shard):
+    r = out[f"overflow_{shard}"]
+    print(f"\n  overflow on shard {shard}: {r}")
+    assert r["finite"] == [False, False]
+    assert r["unchanged"]
+    assert r["equal"]

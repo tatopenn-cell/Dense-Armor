@@ -161,14 +161,26 @@ class Trainer:
                 scale), or ``"dynamic"`` (grow after 2000 good steps,
                 halve and skip on overflow, the PyTorch/Apex default).
                 Requires ``compile=True``.
+            devices: ``None`` (one device, the step as before), a number
+                of devices (the first ones), or a list of device ids
+                (indices into ``jax.devices()``). The global batch of
+                ``fit`` is split evenly over them, each device computes
+                the gradient of its shard, the gradients are averaged
+                before the clipping and the update, and the weights and
+                the optimizer state stay replicated. At least 2 devices.
+                Requires ``compile=True``. It can be combined with
+                ``compute_dtype`` and ``loss_scale``.
 
         Raises:
             ValueError: on ``decay`` outside ``("l2", "decoupled")``,
                 negative ``weight_decay``, non-positive ``clip_norm``,
                 ``compute_dtype`` outside ``None``, ``"bfloat16"``,
                 ``"float16"``, ``loss_scale`` outside ``None``, a
-                positive float or ``"dynamic"``, or either of the two
-                given with ``compile=False``.
+                positive float or ``"dynamic"``, either of the two
+                given with ``compile=False``, ``devices`` with
+                ``compile=False``, fewer than 2 devices, more devices
+                than ``jax.device_count()``, repeated or unknown device
+                ids.
         """
         if decay not in ("l2", "decoupled"):
             raise ValueError(f"decay must be 'l2' or 'decoupled', got {decay!r}")
@@ -215,13 +227,22 @@ class Trainer:
             if not self.compile:
                 raise ValueError("devices requires compile=True")
             available = jax.device_count()
-            n = int(devices) if isinstance(devices, int) else len(devices)
-            if n < 2:
-                raise ValueError(f"devices requires at least 2 devices, got {n}")
-            if n > available:
-                raise ValueError(f"devices={n} exceeds the available count {available}")
-            self.devices = list(range(n)) if isinstance(devices, int) else list(devices)
-            self._n_devices = n
+            ids = list(range(devices)) if isinstance(devices, int) else list(devices)
+            if len(ids) < 2:
+                raise ValueError(f"devices requires at least 2 devices, got {len(ids)}")
+            if len(ids) > available:
+                raise ValueError(
+                    f"devices={len(ids)} exceeds the available count {available}"
+                )
+            if len(set(ids)) != len(ids):
+                raise ValueError(f"devices has repeated entries: {ids}")
+            bad = [i for i in ids if not 0 <= i < available]
+            if bad:
+                raise ValueError(
+                    f"device ids {bad} are not among the {available} available devices"
+                )
+            self.devices = ids
+            self._n_devices = len(ids)
         else:
             self.devices = None
             self._n_devices = 1
@@ -298,7 +319,9 @@ class Trainer:
 
         Raises:
             ValueError: on ``epochs < 1``, ``patience`` without a
-                validation set, ``patience < 1``, or ``len(X) != len(y)``.
+                validation set, ``patience < 1``, ``len(X) != len(y)``, or,
+                with ``devices``, a ``batch_size`` or a last batch that the
+                number of devices does not divide.
         """
         if epochs < 1:
             raise ValueError(f"epochs must be at least 1, got {epochs}")
@@ -324,22 +347,27 @@ class Trainer:
 
         parallel = self.compile and self.devices is not None
         if parallel:
-            if len(X) < max(1, batch_size):
-                raise ValueError(
-                    f"parallel path needs at least {max(1, batch_size)} "
-                    f"samples, got {len(X)}"
-                )
             n_dev = self._n_devices
             if batch_size % n_dev != 0:
                 raise ValueError(
                     f"batch_size {batch_size} is not divisible by devices {n_dev}"
+                )
+            tail = n % batch_size
+            if tail % n_dev != 0:
+                raise ValueError(
+                    f"the last batch has {tail} samples, not divisible by "
+                    f"devices {n_dev}: use a number of samples that leaves a "
+                    "multiple of the number of devices"
                 )
 
         if self.compile:
             _dtype = jnp.float32 if mixed else None
             self._compiled_values = read_values(self.model, dtype=_dtype)
             if parallel:
-                if self._compiled_parallel is None:
+                if (
+                    self._compiled_parallel is None
+                    and self._compiled_parallel_mixed is None
+                ):
                     self._compiled_opt_state = init_state(
                         self.optimizer_prototype, self._compiled_values
                     )
@@ -355,6 +383,7 @@ class Trainer:
                             self._n_devices,
                             compute_dtype=self.compute_dtype,
                             loss_scale=self.loss_scale,
+                            devices=self.devices,
                         )
                     else:
                         self._compiled_parallel = make_step_parallel(
@@ -366,6 +395,7 @@ class Trainer:
                             self.decay,
                             self.clip_norm,
                             self._n_devices,
+                            devices=self.devices,
                         )
                 n_dev = self._n_devices
                 values = jax.tree_util.tree_map(
@@ -497,8 +527,8 @@ class Trainer:
                     total_loss += float(batch_loss) * len(idx)
                     total_size += len(idx)
             if step_parallel is not None or step_parallel_mixed is not None:
-                values_plain = jax.tree_util.tree_map(lambda v: v[0], values)
-                opt_plain = jax.tree_util.tree_map(lambda s: s[0], opt_state)
+                values_plain = jax.tree_util.tree_map(lambda v: np.asarray(v[0]), values)
+                opt_plain = jax.tree_util.tree_map(lambda s: np.asarray(s[0]), opt_state)
                 self._compiled_values = values_plain
                 self._compiled_opt_state = opt_plain
                 if mixed:
