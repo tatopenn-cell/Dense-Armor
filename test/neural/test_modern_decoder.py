@@ -40,9 +40,9 @@ def test_builder_param_count_by_hand():
     m = _model()
     n = sum(int(p.value.size) for p in m.params())
     emb = VOCAB * 8
-    block = 8 + 4 * 8 * 8 + 8 + 3 * 8 * 16
+    block = 8 + 4 * 8 * 8 + 8 + 3 * 8 * 32
     head = 8 * VOCAB + VOCAB
-    assert n == emb + 2 * block + 8 + head == 1507
+    assert n == emb + 2 * block + 8 + head == 2275
 
 
 def test_builder_forward_shape_single_and_batch():

@@ -36,7 +36,7 @@ def _generate_cached(
     logits = None
     for i in range(prompt.shape[0]):
         logits, caches = model.step_compiled(prompt[i], caches, i)
-    new = []
+    new: list[jax.Array] = []
     n = prompt.shape[0]
     while len(new) < max_new and n < max_len:
         nxt, key = _pick(jnp.asarray(logits), temperature, key)
