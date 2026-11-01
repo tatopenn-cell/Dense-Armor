@@ -1,0 +1,61 @@
+{
+  "label": "train",
+  "mode": "full",
+  "backend": "gpu",
+  "device_kind": "Tesla T4",
+  "device_count": 2,
+  "versions": {
+    "python": "3.13.15",
+    "jax": "0.11.1",
+    "numpy": "2.2.6",
+    "platform": "Linux-6.18.55+-x86_64-with-glibc2.39"
+  },
+  "config": {
+    "vocab": 65,
+    "d_model": 384,
+    "n_heads": 6,
+    "n_layers": 6,
+    "max_len": 256,
+    "d_ff": 1536
+  },
+  "batch_size": 16,
+  "seq_len": 256,
+  "n_steps": 500,
+  "accumulate": 1,
+  "data": {
+    "sha256": "86c4e6aa9db7c042ec79f339dcb96d42b0075e16b8fc2e86bf0ca57e2dc565ed",
+    "n_bytes": 1115394,
+    "n_train": 1003854,
+    "n_val": 111540,
+    "vocab": 65
+  },
+  "sessions_tokens_per_second": [
+    5824.2299980964,
+    5544.4732216006,
+    5428.677349844519
+  ],
+  "tokens_per_second_median": 5544.4732216006,
+  "tokens_per_second_range": [
+    5428.677349844519,
+    5824.2299980964
+  ],
+  "val_loss": 1.9941959977149963,
+  "loss_curve": {
+    "1": 4.804391384124756,
+    "100": 2.5030746459960938,
+    "200": 2.214705467224121,
+    "300": 2.016712188720703,
+    "400": 1.970618486404419,
+    "500": 1.8760534524917603
+  },
+  "n_params": 14210753,
+  "generated_greedy": "First Citizen:\nAnd the shall the hast the sh",
+  "generated_sample": "First Citizen:\n'notrnos; but and.\n\nBiJRD ELI",
+  "peak_bytes": 1592877824,
+  "bigram_val_loss": 2.4818894321158234,
+  "unigram_val_loss": 3.3473303372775036,
+  "claim_1_val_over_bigram": 0.8034991292963982,
+  "claim_1_holds": false,
+  "claim_2_no_nan_inf": true,
+  "claim_4_generated_len": 44
+}
