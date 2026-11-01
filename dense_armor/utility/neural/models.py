@@ -429,6 +429,7 @@ def transformer_encoder(
     key: Any,
     max_len: int,
     causal: bool = False,
+    remat: bool = False,
 ) -> Sequential:
     """The encoder of Vaswani et al. 2017, as a chain.
 
@@ -446,6 +447,8 @@ def transformer_encoder(
         key: a ``jax.random`` key, split once per layer with weights.
         max_len: the maximum sequence length.
         causal: if True, every block is causal.
+        remat: if True, every block recomputes its activations in the
+            backward pass (``TransformerBlock(remat=True)``).
 
     Raises:
         ValueError: if ``depth`` is below 1.
@@ -466,7 +469,9 @@ def transformer_encoder(
     ]
     for i in range(depth):
         layers.append(
-            TransformerBlock(d_model, n_heads, d_ff, keys[i + 1], causal=causal)
+            TransformerBlock(
+                d_model, n_heads, d_ff, keys[i + 1], causal=causal, remat=remat
+            )
         )
     layers.append(MeanOverTime())
     layers.append(Dense(d_model, n_out, keys[depth + 1]))
