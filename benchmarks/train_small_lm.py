@@ -457,8 +457,8 @@ def _main(args):
         },
     }
 
-    # Speed: 3 sessions on full, 1 on smoke
-    n_sess = 1 if args.smoke else N_SESSIONS
+    # Speed: 3 sessions on full, 1 on smoke, --sessions overrides
+    n_sess = args.sessions if args.sessions is not None else (1 if args.smoke else N_SESSIONS)
     sps = []
     for s in range(n_sess):
         sps.append(
@@ -516,6 +516,8 @@ def main(argv):
     ap.add_argument("--batch", type=int, default=None)
     ap.add_argument("--devices", type=int, default=1)
     ap.add_argument("--accumulate", type=int, default=1)
+    ap.add_argument("--sessions", type=int, default=None,
+                    help="speed sessions (default: 3, 1 on --smoke)")
     ap.add_argument("--json", type=str, default=None)
     args = ap.parse_args(argv)
     row = _main(args)
