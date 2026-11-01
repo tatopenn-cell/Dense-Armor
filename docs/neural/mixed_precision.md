@@ -187,54 +187,53 @@ scaling is not needed.
 SGD at learning rate `0.01`. Each mode runs in a process of its own,
 because the peak memory of a process only grows. The loss is the loss of
 step 200 on one batch repeated; the speed is the median of 3 sessions of
-20 steps.
+20 steps. The float32 mode is the plain compiled step. The two other modes
+are the mixed step, one compiled function with the forward and backward in
+the compute dtype, the unscale, the clipping, the optimizer update and
+the skip on overflow. The dynamic scale of float16 reads one flag on the
+host at every step; bfloat16 reads nothing.
 
 TPU: `TPU v5 lite`, jax 0.11.2, `benchmarks/mixed_precision_tpu.json`.
 
 | mode | loss at step 1 | loss at step 200 | steps/s, median (range) | peak bytes |
 |---|---|---|---|---|
-| float32 | 2.2080 | 0.946706 | 77.20 (76.76 to 77.31) | 2 815 623 680 |
-| bfloat16 | 2.2080 | 0.946207 | 18.22 (17.31 to 18.77) | 456 712 704 |
-| float16 (dynamic) | 2.2080 | 0.946104 | 18.65 (18.42 to 18.84) | 461 934 080 |
+| float32 | 2.2080 | 0.946706 | 77.27 (76.92 to 77.39) | 2 815 623 680 |
+| bfloat16 | 2.2079 | 0.946333 | 82.14 (81.93 to 82.18) | 1 580 405 248 |
+| float16 (dynamic) | 2.2081 | 0.946167 | 76.66 (76.62 to 76.75) | 337 037 312 |
 
-GPU: a Kaggle GPU kernel, `benchmarks/mixed_precision_gpu.json` (the model
-of the card is not recorded in that file).
+GPU: `Tesla T4`, jax 0.11.1, `benchmarks/mixed_precision_gpu.json`.
 
 | mode | loss at step 1 | loss at step 200 | steps/s, median (range) | peak bytes |
 |---|---|---|---|---|
-| float32 | 2.2085 | 0.945989 | 3.386 (3.386 to 3.396) | 2 407 757 056 |
-| bfloat16 | 2.2085 | 0.945990 | 2.734 (2.712 to 2.739) | 2 463 308 800 |
-| float16 (dynamic) | 2.2084 | 0.945968 | 2.783 (2.782 to 2.790) | 2 463 308 800 |
+| float32 | 2.2085 | 0.945993 | 3.256 (3.217 to 3.292) | 2 405 661 440 |
+| bfloat16 | 2.2085 | 0.945975 | 2.840 (2.792 to 2.904) | 2 405 668 352 |
+| float16 (dynamic) | 2.2084 | 0.945957 | 2.748 (2.744 to 2.751) | 2 405 659 648 |
 
 The claims were written before the first run and are reported unchanged:
 
-| Claim | TPU v5 lite | GPU |
+| Claim | TPU v5 lite | Tesla T4 |
 |---|---|---|
-| 1. loss of bfloat16 at step 200 within 5% of float32 | **holds**, `5.3e-4` | **holds**, `4.4e-7` |
-| 2. peak memory of the lower precision at most 0.7 times float32 | **holds**, ratio `0.162` | **does not hold**, ratio `1.023` |
-| 3. the faster of bfloat16 and float16 has at least 1.3 times the steps/s of float32 | **does not hold**, float16, ratio `0.242` | **does not hold**, float16, ratio `0.822` |
+| 1. loss of bfloat16 at step 200 within 5% of float32 | **holds**, `3.9e-4` | **holds**, `1.9e-5` |
+| 2. peak memory of the lower precision at most 0.7 times float32 | **holds**, ratio `0.120` (float16; bfloat16 `0.561`) | **does not hold**, ratio `1.000` |
+| 3. the faster of bfloat16 and float16 has at least 1.3 times the steps/s of float32 | **does not hold**, bfloat16, ratio `1.063` | **does not hold**, bfloat16, ratio `0.872` |
 
 In every run the loss falls from about `2.21` to about `0.946`, so claim 1
 is tested on a model that trains.
 
-What these numbers do not separate: the float32 mode is the plain compiled
-step, one compiled function that includes the optimizer update. The two
-lower-precision modes use the mixed step, which is compiled up to the
-gradients; the unscale and the optimizer update then run outside the
-compiled function, and the overflow flag is read on the host at every
-step. The speed and the peak memory of the lower precision therefore
-include the cost of that structure, and the effect of the dtype alone is
-not isolated. The TPU peak memory ratio of `0.162` is smaller than the
-factor 2 that halving the activations would give; the reason is not
-measured.
+On the TPU the bfloat16 step is 6.3% faster than float32 and the float16
+step is 0.8% slower. On the T4 both are slower than float32. The TPU
+peak memory of float16 (`337 MB`) and of bfloat16 (`1.58 GB`) differ by a
+factor 4.7 on the same graph; the reason is not measured, and the peak of
+the T4 is the same for the three modes to within `0.0004%`, which says the
+peak is set by something other than the dtype of the activations.
 
 ### Not measured
 
-The effect of the dtype alone on speed and memory (a mixed step that
-includes the optimizer update in the compiled function), the reason of the
-TPU memory ratio, the model of the GPU, the float32 reductions of Section
-3.3, training at scale on a natural-language corpus, and a comparison with
-a statistic (Wilcoxon, A12): the claims above compare one run per mode.
+The reason of the TPU memory figures and of the identical T4 peaks, a
+comparison with another framework, a comparison with a statistic
+(Wilcoxon, A12) because the claims above compare one run per mode, the
+float32 reductions of Section 3.3, and training at scale on a
+natural-language corpus.
 
 ### Development diary
 
