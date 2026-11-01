@@ -341,14 +341,14 @@ def _one_session(cfg, data, steps, batch_size, devices, accumulate, key):
 
     n_total = len(all_losses)
     n_win = min(100, n_total)
-    if 2 * n_win > n_total:
-        recorder["loss_variance_first_100"] = None
-        recorder["loss_variance_last_100"] = None
-        recorder["loss_variance_ratio"] = None
-        recorder["claim_5_loss_variance_ratio"] = None
+    if n_total < 200:
+        for k in ("loss_variance_first_100", "loss_variance_last_100",
+                  "loss_variance_ratio", "claim_5_loss_variance_ratio",
+                  "loss_variance_ratio_tail"):
+            recorder[k] = None
         recorder["claim_5_holds"] = None
         recorder["claim_5_note"] = (
-            f"windows overlap: n_steps={n_total}, window={n_win}"
+            f"n_steps={n_total} < 200, the windows overlap"
         )
     else:
         first_win = jnp.asarray(all_losses[:n_win], dtype=jnp.float32)
@@ -360,7 +360,17 @@ def _one_session(cfg, data, steps, batch_size, devices, accumulate, key):
         recorder["loss_variance_last_100"] = v_last
         recorder["loss_variance_ratio"] = ratio
         recorder["claim_5_loss_variance_ratio"] = ratio
-        recorder["claim_5_holds"] = bool(np.isfinite(ratio) and ratio < 1.0)
+        if n_total >= 400:
+            prev_win = jnp.asarray(all_losses[-2 * n_win:-n_win], dtype=jnp.float32)
+            v_prev = float(stable_var(prev_win))
+            ratio_tail = (v_last / v_prev) if v_prev > 0 else float("nan")
+            recorder["loss_variance_ratio_tail"] = ratio_tail
+            recorder["claim_5_holds"] = bool(
+                np.isfinite(ratio_tail) and ratio_tail < 1.0
+            )
+        else:
+            recorder["loss_variance_ratio_tail"] = None
+            recorder["claim_5_holds"] = bool(np.isfinite(ratio) and ratio < 1.0)
     # final val loss su 4 batch
     val_losses = []
     for i, b in enumerate(_batches(data["val"], batch_size, seq_len, 4, 1)):
