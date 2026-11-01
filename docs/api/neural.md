@@ -102,8 +102,8 @@ Every public class and function of `dense_armor.utility.deep.neural` and of the 
 | `rotary_angles` | `rotary_angles(length: int, d_k: int, offset: int = 0, base: float = 10000.0) -> tuple[jax.Array, jax.Array]` | The cosines and sines of the rotary rotation at each position |
 | `apply_rotary` | `apply_rotary(x: jax.Array, cos: jax.Array, sin: jax.Array) -> jax.Array` | Rotate each adjacent pair of the last axis of ``x`` |
 | `apply_rotary_transpose` | `apply_rotary_transpose(g: jax.Array, cos: jax.Array, sin: jax.Array) -> jax.Array` | The gradient of ``apply_rotary``: the rotation by the opposite angle |
-| `MultiHeadSelfAttention` | `MultiHeadSelfAttention(d_model: int, n_heads: int, key: Any, causal: bool = False, rotary: bool = False) -> None` | Multi-head self-attention of Vaswani et al. 2017, page 5 |
-| `TransformerBlock` | `TransformerBlock(d_model: int, n_heads: int, d_ff: int, key: Any, causal: bool = False, dropout: float = 0.0) -> None` | The encoder block of Vaswani et al. 2017 |
+| `MultiHeadSelfAttention` | `MultiHeadSelfAttention(d_model: int, n_heads: int, key: Any, causal: bool = False, rotary: bool = False) -> None` | Multi-head self-attention of Vaswani et al. 2017, page 5; `init_static_cache` and `step_static` run one token against a key/value cache of fixed shape |
+| `TransformerBlock` | `TransformerBlock(d_model: int, n_heads: int, d_ff: int, key: Any, causal: bool = False, dropout: float = 0.0, remat: bool = False) -> None` | The encoder block of Vaswani et al. 2017 |
 
 ## [Training](../neural/training.md)
 
@@ -185,6 +185,24 @@ Every public class and function of `dense_armor.utility.deep.neural` and of the 
 | `HingeLoss` | `HingeLoss() -> None` | Hinge loss ``max(0, 1 - y * pred)`` for ``y`` in {-1, +1} |
 | `FocalLoss` | `FocalLoss(gamma: float = 2.0, alpha: float \| None = None) -> None` | Focal loss ``-alpha_t (1 - p_t)**gamma * log(p_t)`` |
 | `OnlineNetVector` | `OnlineNetVector(model: Any, loss: Any, optimizer: Any, feature_keys: Any = None, schedule: Any = None, weight_decay: float = 0.0, decay: str = l2, clip_norm: float \| None = None) -> None` | A network trained one sample at a time, on vector targets |
+
+## [Decoder language models](../neural/decoder_lm.md)
+
+| Name | Signature | What it does |
+|---|---|---|
+| `TransformerDecoderBlock` | `TransformerDecoderBlock(d_model: int, n_heads: int, d_ff: int, cross: bool = False, norm: str = 'layer', *, key: Any) -> None` | One decoder layer of Vaswani et al. 2017 |
+| `transformer_decoder` | `transformer_decoder(vocab: int, d_model: int, n_heads: int, n_layers: int, max_len: int, tie: bool = False, *, key: Any, d_ff: int \| None = None) -> Sequential` | The decoder of Vaswani et al. 2017, as a chain to a causal LM |
+| `NextTokenLoss` | `NextTokenLoss(ignore_index: int = -100) -> None` | Cross-entropy of the logits at ``t`` against the token at ``t+1`` |
+| `perplexity` | `perplexity(loss: float) -> float` | ``exp(loss)``: the effective vocabulary the model hesitates over |
+| `generate` | `generate(model: Any, prompt: jax.Array, max_new: int, temperature: float = 0.0, key: Any = None, max_len: int \| None = None) -> jax.Array` | Continue ``prompt`` with at most ``max_new`` new tokens, greedy or sampled; a model with ``init_static_cache`` and ``step_compiled`` runs against a static key/value cache |
+
+## [Rotary decoder](../neural/rotary_decoder.md)
+
+| Name | Signature | What it does |
+|---|---|---|
+| `RotaryDecoderBlock` | `RotaryDecoderBlock(d_model: int, n_heads: int, d_ff: int, key: Any, remat: bool = False) -> None` | Pre-norm decoder block: ``x + Attn(RMSNorm(x))``, then ``+ FFN(RMSNorm(.))``, with causal rotary attention and a SwiGLU feed-forward |
+| `RotaryDecoder` | `RotaryDecoder(vocab: int, d_model: int, n_heads: int, n_layers: int, max_len: int, d_ff: int, key: Any, remat: bool = False) -> None` | ``Embedding``, ``n_layers`` modern blocks, ``RMSNorm`` and a ``Dense`` head; ``step_static`` and ``step_compiled`` for generation |
+| `rotary_decoder` | `rotary_decoder(vocab: int, d_model: int, n_heads: int, n_layers: int, max_len: int, *, key: Any, d_ff: int \| None = None, remat: bool = False) -> RotaryDecoder` | A causal language model with RMSNorm, SwiGLU and rotary attention |
 
 ## Optimizers
 

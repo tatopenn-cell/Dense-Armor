@@ -78,9 +78,9 @@ def test_smoke_param_count_matches_config(smoke_json):
     sys.path.insert(0, str(ROOT))
     import jax  # noqa: E402
 
-    from benchmarks.train_small_lm import ModernDecoder  # noqa: E402
+    from benchmarks.train_small_lm import RotaryDecoder  # noqa: E402
 
-    model = ModernDecoder(
+    model = RotaryDecoder(
         vocab=cfg["vocab"],
         d_model=cfg["d_model"],
         n_heads=cfg["n_heads"],

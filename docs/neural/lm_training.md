@@ -170,7 +170,7 @@ The two runs use the same seed, data and steps. The 2-device run is 0.992 times 
 
 ### Not measured
 
-- Why the 2-device run trains worse (val_loss 2.22 against 2.01) at the same seed, data and 500 steps. Possible causes: the shard/all-reduce round of `Trainer.fit` with `devices=2` applied to the members of `ModernDecoder`, the batch 16 split in two 8-sample halves, or a different path in `compiled.py::_train_parallel`. The two runs use the same script and flags except `--devices`; the difference is not explained by any number in the JSON.
+- Why the 2-device run trains worse (val_loss 2.22 against 2.01) at the same seed, data and 500 steps. Possible causes: the shard/all-reduce round of `Trainer.fit` with `devices=2` applied to the members of `RotaryDecoder`, the batch 16 split in two 8-sample halves, or a different path in `compiled.py::_train_parallel`. The two runs use the same script and flags except `--devices`; the difference is not explained by any number in the JSON.
 - A 2-device run with batch 32 or 64, where data parallelism usually pays off.
 - The TPU: a TPU v3-8 has 8 devices.
 

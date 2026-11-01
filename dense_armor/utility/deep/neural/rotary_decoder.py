@@ -1,4 +1,4 @@
-"""The modern decoder: RMSNorm, rotary causal attention and a gated feed-forward.
+"""The rotary decoder: RMSNorm, rotary causal attention and a gated feed-forward.
 
 ``transformer_decoder`` of ``models.py`` builds the blocks of Vaswani et al.
 2017 (LayerNorm, two ``Dense``, sinusoidal positions). The decoder here is
@@ -21,7 +21,7 @@ from dense_armor.utility.deep.neural.norm_rms import RMSNorm
 from dense_armor.utility.deep.neural.params import Param
 
 
-class ModernDecoderBlock:
+class RotaryDecoderBlock:
     """Pre-norm decoder block: ``x + Attn(RMSNorm(x))``, then ``+ FFN(RMSNorm(.))``.
 
     Args:
@@ -54,10 +54,10 @@ class ModernDecoderBlock:
     Examples:
         >>> import jax
         >>> import jax.numpy as jnp
-        >>> from dense_armor.utility.deep.neural.modern_decoder import (
-        ...     ModernDecoderBlock,
+        >>> from dense_armor.utility.deep.neural.rotary_decoder import (
+        ...     RotaryDecoderBlock,
         ... )
-        >>> b = ModernDecoderBlock(8, 2, 16, jax.random.PRNGKey(0))
+        >>> b = RotaryDecoderBlock(8, 2, 16, jax.random.PRNGKey(0))
         >>> b.forward(jnp.ones((4, 8))).shape
         (4, 8)
     """
@@ -83,7 +83,7 @@ class ModernDecoderBlock:
 
     def __repr__(self) -> str:
         return (
-            f"ModernDecoderBlock({self.d_model}, {self.attn.n_heads}, "
+            f"RotaryDecoderBlock({self.d_model}, {self.attn.n_heads}, "
             f"d_ff={self.ffn.d_ff}, remat={self.remat})"
         )
 
@@ -163,14 +163,14 @@ class ModernDecoderBlock:
         return x_t + self.ffn.forward(self.norm2.forward(x_t)), cache
 
 
-class ModernDecoder:
+class RotaryDecoder:
     """``Embedding``, ``n_layers`` modern blocks, ``RMSNorm`` and a ``Dense`` head.
 
     ``forward(ids)`` takes integer token ids of shape ``(T,)`` or ``(B, T)``
     and returns logits of shape ``(T, vocab)`` or ``(B, T, vocab)``. The
     positions come from the rotary embedding of every attention.
 
-    Use ``modern_decoder`` to build it.
+    Use ``rotary_decoder`` to build it.
     """
 
     def __init__(
@@ -187,7 +187,7 @@ class ModernDecoder:
         keys = jax.random.split(key, n_layers + 2)
         self.emb = Embedding(vocab, d_model, keys[0])
         self.blocks = [
-            ModernDecoderBlock(d_model, n_heads, d_ff, keys[i + 1], remat=remat)
+            RotaryDecoderBlock(d_model, n_heads, d_ff, keys[i + 1], remat=remat)
             for i in range(n_layers)
         ]
         self.norm = RMSNorm(d_model)
@@ -197,7 +197,7 @@ class ModernDecoder:
 
     def __repr__(self) -> str:
         return (
-            f"ModernDecoder(vocab={self.emb.E.value.shape[0]}, "
+            f"RotaryDecoder(vocab={self.emb.E.value.shape[0]}, "
             f"d_model={self.emb.E.value.shape[1]}, n_layers={len(self.blocks)}, "
             f"max_len={self.max_len})"
         )
@@ -288,7 +288,7 @@ class ModernDecoder:
         )
 
 
-def modern_decoder(
+def rotary_decoder(
     vocab: int,
     d_model: int,
     n_heads: int,
@@ -298,7 +298,7 @@ def modern_decoder(
     key: Any,
     d_ff: int | None = None,
     remat: bool = False,
-) -> ModernDecoder:
+) -> RotaryDecoder:
     """A causal language model with RMSNorm, SwiGLU and rotary attention.
 
     Args:
@@ -318,8 +318,8 @@ def modern_decoder(
 
     Examples:
         >>> import jax
-        >>> from dense_armor.utility.deep.neural.modern_decoder import modern_decoder
-        >>> m = modern_decoder(8, 8, 2, 1, 4, key=jax.random.PRNGKey(0))
+        >>> from dense_armor.utility.deep.neural.rotary_decoder import rotary_decoder
+        >>> m = rotary_decoder(8, 8, 2, 1, 4, key=jax.random.PRNGKey(0))
         >>> m.forward(jax.numpy.array([0, 1, 2, 3])).shape
         (4, 8)
     """
@@ -327,7 +327,7 @@ def modern_decoder(
         raise ValueError(f"n_layers must be at least 1, got {n_layers}")
     if d_model % n_heads != 0:
         raise ValueError(f"d_model {d_model} is not divisible by n_heads {n_heads}")
-    return ModernDecoder(
+    return RotaryDecoder(
         vocab,
         d_model,
         n_heads,

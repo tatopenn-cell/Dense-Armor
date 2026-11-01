@@ -64,7 +64,7 @@ graph TD
         ACTIVE["active: FixedUncertainty,<br/>VariableUncertainty"]
         FACTO["facto: FMRegressor, FFMRegressor,<br/>FwFMRegressor, HOFMRegressor"]
         RECO["reco: Baseline, BiasedMF, FunkMF"]
-        NEURAL["neural: Dense, Sequential, Conv2D,<br/>LSTM, MultiHeadSelfAttention,<br/>RMSNorm, GLUFeedForward,<br/>TransformerDecoderBlock,<br/>ModernDecoder, generate,<br/>Trainer"]
+        NEURAL["neural: Dense, Sequential, Conv2D,<br/>LSTM, MultiHeadSelfAttention,<br/>RMSNorm, GLUFeedForward,<br/>TransformerDecoderBlock,<br/>RotaryDecoder, generate,<br/>Trainer"]
     end
 
     subgraph DYN["3. dynamics/"]
@@ -463,7 +463,7 @@ Networks as layers with `forward`, `backward` and `params()`: parameters, initia
 | `decoder.py` | `TransformerDecoderBlock` | Decoder block (Vaswani et al., post-norm): causal self-attention, optional cross-attention over a memory (then `backward` returns `(dx, dmemory)`), feed-forward |
 | `gated_attention.py` | `GatedCrossAttention` | A gate on a signal: look at the other stream only when it matters |
 | `generative_replay.py` | `DeepGenerativeReplay` | Deep generative replay (Shin et al. 2017) |
-| `generate.py` | `generate` | Greedy or sampled generation from a causal language model, capped at `max_len`; a model with `init_static_cache` and `step_compiled` (`ModernDecoder`) runs one token at a time against a static key/value cache, any other model re-runs the whole prefix |
+| `generate.py` | `generate` | Greedy or sampled generation from a causal language model, capped at `max_len`; a model with `init_static_cache` and `step_compiled` (`RotaryDecoder`) runs one token at a time against a static key/value cache, any other model re-runs the whole prefix |
 | `glu.py` | `GLUFeedForward` | Gated feed-forward of Shazeer 2020: GLU, GEGLU or SwiGLU (Eq. 4-6) |
 | `gradcheck.py` | `gradcheck` | Gradient check against central finite differences |
 | `hedge.py` | `HedgeNetClassifier` | Hedge Backpropagation (Sahoo et al. 2018) |
@@ -476,7 +476,7 @@ Networks as layers with `forward`, `backward` and `params()`: parameters, initia
 | `matryoshka.py` | `MatryoshkaLoss` | The Matryoshka Representation Learning loss of Kusupati et al. 2022 |
 | `moe.py` | `forward_pure`, `SparseMoE` | Sparse mixture of experts, dispatched in JAX |
 | `models.py` | `mlp`, `resnet_mlp`, `LastStep`, `MeanOverTime`, `AddPositions`, `cnn`, `recurrent_net`, `transformer_encoder`, `transformer_decoder` | standard architectures (MLP, residual MLP, CNN, recurrent net, transformer encoder, causal transformer decoder with an optional tied output head) and the small layers that join them to a head |
-| `modern_decoder.py` | `ModernDecoderBlock`, `ModernDecoder`, `modern_decoder` | A causal language model with RMSNorm, rotary causal attention and a SwiGLU feed-forward (pre-norm); `remat=True` recomputes the activations in `backward`; `step_static` is the step with the static cache used by `generate` |
+| `rotary_decoder.py` | `RotaryDecoderBlock`, `RotaryDecoder`, `rotary_decoder` | A causal language model with RMSNorm, rotary causal attention and a SwiGLU feed-forward (pre-norm); `remat=True` recomputes the activations in `backward`; `step_static` is the step with the static cache used by `generate` |
 | `norm.py` | `BatchNorm`, `LayerNorm` | BatchNorm and LayerNorm, with a forward and a backward |
 | `norm_more.py` | `GroupNorm`, `InstanceNorm` | GroupNorm and InstanceNorm |
 | `norm_rms.py` | `RMSNorm` | Root-mean-square normalisation of Zhang and Sennrich (Eq. 4), without mean or bias |

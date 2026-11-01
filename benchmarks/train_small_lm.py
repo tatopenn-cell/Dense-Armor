@@ -2,7 +2,7 @@
 
 Claims, written before the first run and not changed after it:
 
-(1) The final validation loss of the modern decoder (RMSNorm pre-norm,
+(1) The final validation loss of the rotary decoder (RMSNorm pre-norm,
     SwiGLU FFN, rotary attention, causal mask) is at most 0.7 times the
     validation loss of the bigram character baseline on the same split.
 (2) The declared number of steps completes with no NaN and no Inf in
@@ -19,7 +19,7 @@ The dataset is the tiny Shakespeare text of Karpathy's char-rnn
 keeps the text in memory. Nothing is committed except the script, the
 JSON and the page.
 
-The model is a modern decoder built here from the library blocks of
+The model is a rotary decoder built here from the library blocks of
 N1-N6 (``Embedding``, ``RMSNorm``, ``MultiHeadSelfAttention`` with
 ``causal=True`` and ``rotary=True``, ``GLUFeedForward`` with ``silu``,
 ``Dense``). The ``transformer_decoder`` builder of ``models.py`` uses
@@ -67,7 +67,9 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from dense_armor.roles import Root  # noqa: E402
-from dense_armor.utility.deep.neural.attention import MultiHeadSelfAttention  # noqa: E402
+from dense_armor.utility.deep.neural.attention import (
+    MultiHeadSelfAttention,  # noqa: E402
+)
 from dense_armor.utility.deep.neural.generate import generate  # noqa: E402
 from dense_armor.utility.deep.neural.glu import GLUFeedForward  # noqa: E402
 from dense_armor.utility.deep.neural.layers import Dense, Embedding  # noqa: E402
@@ -89,7 +91,7 @@ DATA_URL = (
 DATA_SHA256 = "86c4e6aa9db7c042ec79f339dcb96d42b0075e16b8fc2e86bf0ca57e2dc565ed"
 
 
-class ModernDecoderBlock(Root):
+class RotaryDecoderBlock(Root):
     """Pre-norm decoder block: RMSNorm, causal+rotary attn, SwiGLU."""
 
     def __init__(self, d_model, n_heads, d_ff, key):
@@ -126,14 +128,14 @@ class ModernDecoderBlock(Root):
         )
 
 
-class ModernDecoder(Root):
+class RotaryDecoder(Root):
     """Embedding, N modern blocks, RMSNorm, Dense head."""
 
     def __init__(self, vocab, d_model, n_heads, n_layers, max_len, d_ff, key):
         keys = jax.random.split(key, n_layers + 2)
         self.emb = Embedding(vocab, d_model, keys[0])
         self.blocks = [
-            ModernDecoderBlock(d_model, n_heads, d_ff, keys[i + 1])
+            RotaryDecoderBlock(d_model, n_heads, d_ff, keys[i + 1])
             for i in range(n_layers)
         ]
         self.norm = RMSNorm(d_model)
@@ -282,7 +284,7 @@ def _unigram_loss(ids_train, ids_val):
 
 
 def _build_model(cfg, key):
-    return ModernDecoder(
+    return RotaryDecoder(
         vocab=cfg["vocab"],
         d_model=cfg["d_model"],
         n_heads=cfg["n_heads"],

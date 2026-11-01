@@ -323,5 +323,5 @@ Dense-Armor takes inspiration from [River](https://riverml.xyz) (Montiel et al.,
 - Deep Learning: [Continual learning: how do I keep a network from forgetting the past, and how do I measure what it remembers?](docs/neural/continual_learning.md).
 - Deep Learning: [Sparse mixture of experts and test-time compute: how do I make a network use only part of its parameters on each sample, and how do I spend more compute at inference to get a better answer?](docs/neural/moe_testtime.md).
 - Deep Learning: [Language-model training: how do I train a small language model with Dense-Armor?](docs/neural/lm_training.md).
-- Deep Learning: [Modern decoder: how do I generate text without running the whole sequence again at every token?](docs/neural/modern_decoder.md).
+- Deep Learning: [Rotary decoder: how do I generate text without running the whole sequence again at every token?](docs/neural/rotary_decoder.md).
 - Machine learning: [the families of `dense_armor.ml`](docs/ml/index.md), grown on the whole table: statistics, preprocessing, linear models, trees, forests, ensembles, anomaly and change detection, vision.

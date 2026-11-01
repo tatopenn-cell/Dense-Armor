@@ -1,4 +1,4 @@
-"""Tests for the modern decoder, its static cache step and the cached generate."""
+"""Tests for the rotary decoder, its static cache step and the cached generate."""
 
 from __future__ import annotations
 
@@ -10,9 +10,9 @@ import pytest
 from dense_armor.utility.deep.neural.generate import generate
 from dense_armor.utility.deep.neural.gradcheck import gradcheck
 from dense_armor.utility.deep.neural.losses_lm import NextTokenLoss
-from dense_armor.utility.deep.neural.modern_decoder import (
-    ModernDecoderBlock,
-    modern_decoder,
+from dense_armor.utility.deep.neural.rotary_decoder import (
+    RotaryDecoderBlock,
+    rotary_decoder,
 )
 from dense_armor.utility.deep.neural.trainer import Trainer
 from dense_armor.utility.online.optim import Adam
@@ -22,7 +22,7 @@ IDS = jnp.array([3, 1, 4, 1, 5, 9, 2, 6], dtype=jnp.int32)
 
 
 def _model(remat=False, key=0):
-    return modern_decoder(VOCAB, 8, 2, 2, 12, key=jax.random.PRNGKey(key), remat=remat)
+    return rotary_decoder(VOCAB, 8, 2, 2, 12, key=jax.random.PRNGKey(key), remat=remat)
 
 
 class _ForwardOnly:
@@ -63,11 +63,11 @@ def test_builder_rejects_bad_sizes(kwargs):
     args = dict(vocab=VOCAB, d_model=8, n_heads=2, n_layers=1, max_len=4)
     args.update(kwargs)
     with pytest.raises(ValueError):
-        modern_decoder(**args, key=jax.random.PRNGKey(0))
+        rotary_decoder(**args, key=jax.random.PRNGKey(0))
 
 
 def test_block_gradcheck_on_the_input():
-    b = ModernDecoderBlock(8, 2, 16, jax.random.PRNGKey(0))
+    b = RotaryDecoderBlock(8, 2, 16, jax.random.PRNGKey(0))
     x = jax.random.normal(jax.random.PRNGKey(1), (5, 8))
 
     def bwd(xx, y, g):
@@ -78,7 +78,7 @@ def test_block_gradcheck_on_the_input():
 
 
 def test_block_gradient_of_a_weight_matches_finite_differences():
-    b = ModernDecoderBlock(8, 2, 16, jax.random.PRNGKey(0))
+    b = RotaryDecoderBlock(8, 2, 16, jax.random.PRNGKey(0))
     x = jax.random.normal(jax.random.PRNGKey(1), (5, 8))
     g = jax.random.normal(jax.random.PRNGKey(2), (5, 8))
 
@@ -103,8 +103,8 @@ def test_block_gradient_of_a_weight_matches_finite_differences():
 def test_remat_gives_the_same_output_and_gradients():
     x = jax.random.normal(jax.random.PRNGKey(1), (5, 8))
     g = jax.random.normal(jax.random.PRNGKey(2), (5, 8))
-    plain = ModernDecoderBlock(8, 2, 16, jax.random.PRNGKey(0))
-    remat = ModernDecoderBlock(8, 2, 16, jax.random.PRNGKey(0), remat=True)
+    plain = RotaryDecoderBlock(8, 2, 16, jax.random.PRNGKey(0))
+    remat = RotaryDecoderBlock(8, 2, 16, jax.random.PRNGKey(0), remat=True)
     for blk in (plain, remat):
         for p in blk.params():
             p.grad = jnp.zeros_like(p.value)
@@ -118,14 +118,14 @@ def test_only_the_remat_block_checkpoints_its_forward():
     x = jax.random.normal(jax.random.PRNGKey(1), (5, 8))
     found = {}
     for remat in (False, True):
-        b = ModernDecoderBlock(8, 2, 16, jax.random.PRNGKey(0), remat=remat)
+        b = RotaryDecoderBlock(8, 2, 16, jax.random.PRNGKey(0), remat=remat)
         text = str(jax.make_jaxpr(lambda xx, b=b: b.forward(xx))(x))
         found[remat] = "checkpoint" in text or "remat" in text
     assert found == {False: False, True: True}
 
 
 def test_remat_backward_before_forward_raises():
-    b = ModernDecoderBlock(8, 2, 16, jax.random.PRNGKey(0), remat=True)
+    b = RotaryDecoderBlock(8, 2, 16, jax.random.PRNGKey(0), remat=True)
     with pytest.raises(RuntimeError):
         b.backward(jnp.zeros((5, 8)))
 
@@ -245,11 +245,11 @@ def test_generate_without_a_cache_is_unchanged_for_a_plain_model():
     assert out.shape == (5,)
 
 
-def test_trainer_trains_the_modern_decoder_and_remat_gives_the_same_loss():
+def test_trainer_trains_the_rotary_decoder_and_remat_gives_the_same_loss():
     tokens = jnp.asarray(np.tile(np.arange(4), (8, 2)), dtype=jnp.int32)
     losses = {}
     for remat in (False, True):
-        m = modern_decoder(4, 16, 2, 1, 8, key=jax.random.PRNGKey(0), remat=remat)
+        m = rotary_decoder(4, 16, 2, 1, 8, key=jax.random.PRNGKey(0), remat=remat)
         t = Trainer(m, NextTokenLoss(), Adam(0.05), compile=False)
         t.fit(tokens, tokens, epochs=3, batch_size=4, key=jax.random.PRNGKey(0))
         losses[remat] = t.history_["train_loss"]
@@ -260,5 +260,5 @@ def test_trainer_trains_the_modern_decoder_and_remat_gives_the_same_loss():
 def test_repr_names_the_sizes():
     assert "n_layers=2" in repr(_model())
     assert "remat=True" in repr(
-        ModernDecoderBlock(8, 2, 16, jax.random.PRNGKey(0), True)
+        RotaryDecoderBlock(8, 2, 16, jax.random.PRNGKey(0), True)
     )

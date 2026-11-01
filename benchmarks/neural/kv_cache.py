@@ -1,6 +1,6 @@
 """Cost of ``generate`` with and without the static key/value cache.
 
-A ``ModernDecoder`` is run for ``--new`` tokens from a prompt of 8 tokens,
+A ``RotaryDecoder`` is run for ``--new`` tokens from a prompt of 8 tokens,
 once through the cache (``init_static_cache`` and ``step_compiled``) and
 once through a wrapper that exposes only ``forward``, which re-runs the
 whole prefix at every token. Each path is timed ``--repeats`` times after
@@ -29,7 +29,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from dense_armor.utility.deep.neural.generate import generate  # noqa: E402
-from dense_armor.utility.deep.neural.modern_decoder import modern_decoder  # noqa: E402
+from dense_armor.utility.deep.neural.rotary_decoder import rotary_decoder  # noqa: E402
 
 
 class _ForwardOnly:
@@ -73,7 +73,7 @@ def main(argv):
     if args.smoke:
         cfg.update(d_model=16, n_heads=2, n_layers=1, max_len=32)
         new, repeats = 8, 1
-    model = modern_decoder(**cfg, key=jax.random.PRNGKey(0))
+    model = rotary_decoder(**cfg, key=jax.random.PRNGKey(0))
     prompt = jnp.arange(8, dtype=jnp.int32)
     cached, out_c = _time_path(model, prompt, new, repeats)
     plain, out_p = _time_path(_ForwardOnly(model), prompt, new, repeats)

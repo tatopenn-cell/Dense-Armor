@@ -1,7 +1,7 @@
 """Greedy and sampled generation for a causal language model.
 
 A model that has ``init_static_cache`` and ``step_compiled`` (the
-``ModernDecoder`` of ``modern_decoder.py``) is run one token at a time
+``RotaryDecoder`` of ``rotary_decoder.py``) is run one token at a time
 against a key/value cache of fixed shape: the step compiles once and a
 new token costs the same at every length. Any other model with a
 ``forward`` is run again on the whole prefix at every new token,

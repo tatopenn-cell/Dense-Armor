@@ -19,13 +19,13 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   below keep the old paths.
 
 ### Added
-- `dense_armor/utility/deep/neural/modern_decoder.py`: `ModernDecoderBlock`, `ModernDecoder` and the builder
-  `modern_decoder`, a causal language model with RMSNorm, rotary causal attention and a SwiGLU feed-forward
+- `dense_armor/utility/deep/neural/rotary_decoder.py`: `RotaryDecoderBlock`, `RotaryDecoder` and the builder
+  `rotary_decoder`, a causal language model with RMSNorm, rotary causal attention and a SwiGLU feed-forward
   (pre-norm), with `remat=True` to recompute the activations in `backward`. `transformer_decoder` is unchanged.
 - `MultiHeadSelfAttention.init_static_cache` and `step_static`: one token against a key/value cache of fixed
   shape, so the step compiles once. `generate` uses it for a model that has `init_static_cache` and
-  `step_compiled` (`ModernDecoder`); any other model is run again on the whole prefix, as before.
-  `benchmarks/neural/kv_cache.py` measures the two paths; page `docs/neural/modern_decoder.md`.
+  `step_compiled` (`RotaryDecoder`); any other model is run again on the whole prefix, as before.
+  `benchmarks/neural/kv_cache.py` measures the two paths; page `docs/neural/rotary_decoder.md`.
 - `benchmarks/train_small_lm.py`, its two GPU JSONs and the page `docs/neural/lm_training.md`: a 14.2-million-parameter
   decoder trained on tiny Shakespeare on a Tesla T4, with the unigram and bigram baselines.
 
