@@ -98,14 +98,11 @@ def _backend():
 def _make_stepper(trainer, dt, batch):
     """Return a function ``step(values, opt_state, x, y) -> (values, opt_state, loss)``.
 
-    For ``dt is None`` uses the plain jitted step (``trainer._compiled_step.plain``).
-    For ``dt`` in ``("bfloat16", "float16")`` uses the mixed step plus the same
-    bookkeeping as ``Trainer.fit`` (overflow check, halving, growth,
-    ``_apply_update``), returning the updated optimizer state as well. The
-    unscale is inside the mixed step.
+    For ``dt is None`` uses the plain compiled step. For ``bfloat16`` and
+    ``float16`` uses the mixed step, one compiled function with the unscale,
+    the update and the skip on overflow. Only the dynamic scale reads a
+    value on the host at every step.
     """
-    from dense_armor.utility.neural.compiled import _apply_update
-
     if dt is None:
         plain = trainer._compiled_step.plain
 
@@ -117,28 +114,11 @@ def _make_stepper(trainer, dt, batch):
     mixed = trainer._compiled_step.mixed
 
     def step(values, opt_state, x, y):
-        grads_fp16, grads_fp32, loss = mixed(values, x, y, trainer._scale)
-        overflow = any(bool(jnp.any(~jnp.isfinite(g))) for g in grads_fp16)
-        if overflow:
-            if trainer.loss_scale == "dynamic":
-                trainer._scale = max(trainer._scale / 2.0, 1.0)
-            trainer._good_steps = 0
-        else:
-            if trainer.loss_scale == "dynamic":
-                trainer._good_steps += 1
-                if trainer._good_steps >= 2000:
-                    trainer._scale = trainer._scale * 2.0
-                    trainer._good_steps = 0
-            values, opt_state = _apply_update(
-                trainer.optimizer_prototype,
-                values,
-                grads_fp32,
-                opt_state,
-                trainer.schedule(0.0),
-                trainer.schedule.multiplier(0.0),
-                trainer.weight_decay,
-                trainer.decay,
-            )
+        values, opt_state, loss, finite = mixed(
+            values, opt_state, x, y, 0.0, trainer._scale
+        )
+        if trainer.loss_scale == "dynamic":
+            trainer._update_scale(bool(finite))
         return values, opt_state, loss
 
     return step

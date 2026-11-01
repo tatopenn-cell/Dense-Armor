@@ -1,0 +1,93 @@
+{
+  "backend": "tpu",
+  "device_kind": "TPU v5 lite",
+  "jax": "0.11.2",
+  "python": "3.13.18",
+  "processor": "x86_64",
+  "platform": "Linux-6.6.159+-x86_64-with-glibc2.39",
+  "n_sessions": 3,
+  "n_steps_per_session": 20,
+  "loss_steps": 200,
+  "smoke": false,
+  "seed": 0,
+  "claims": {
+    "1_bf16_loss_within_5pct": {
+      "holds": true,
+      "rel_diff": 0.0005270385376547345
+    },
+    "2_memory_0.7x": {
+      "holds": true,
+      "ratio": 0.16220658578919184
+    },
+    "3_faster_of_bf16_fp16_1.3x": {
+      "which": "float16",
+      "ratio": 0.24159889840998683,
+      "holds": false
+    }
+  },
+  "rows": [
+    {
+      "mode": "float32",
+      "backend": "tpu",
+      "device_kind": "TPU v5 lite",
+      "compute_dtype": null,
+      "loss_scale": null,
+      "loss_at_step": 200,
+      "initial_loss": 2.207965135574341,
+      "final_loss": 0.9467058777809143,
+      "peak_bytes": 2815623680,
+      "steps_per_second_median": 77.1982569390041,
+      "steps_per_second_range": [
+        76.75599771464263,
+        77.31337625626288
+      ],
+      "steps_per_second_sessions": [
+        76.75599771464263,
+        77.31337625626288,
+        77.1982569390041
+      ]
+    },
+    {
+      "mode": "bfloat16",
+      "backend": "tpu",
+      "device_kind": "TPU v5 lite",
+      "compute_dtype": "bfloat16",
+      "loss_scale": null,
+      "loss_at_step": 200,
+      "initial_loss": 2.207989454269409,
+      "final_loss": 0.9462069272994995,
+      "peak_bytes": 456712704,
+      "steps_per_second_median": 18.22148096225505,
+      "steps_per_second_range": [
+        17.30909487696668,
+        18.7748001556982
+      ],
+      "steps_per_second_sessions": [
+        18.22148096225505,
+        17.30909487696668,
+        18.7748001556982
+      ]
+    },
+    {
+      "mode": "float16",
+      "backend": "tpu",
+      "device_kind": "TPU v5 lite",
+      "compute_dtype": "float16",
+      "loss_scale": "dynamic",
+      "loss_at_step": 200,
+      "initial_loss": 2.2080183029174805,
+      "final_loss": 0.9461038708686829,
+      "peak_bytes": 461934080,
+      "steps_per_second_median": 18.65101383563451,
+      "steps_per_second_range": [
+        18.42216214992474,
+        18.837554871136142
+      ],
+      "steps_per_second_sessions": [
+        18.65101383563451,
+        18.42216214992474,
+        18.837554871136142
+      ]
+    }
+  ]
+}

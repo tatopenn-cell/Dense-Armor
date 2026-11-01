@@ -67,7 +67,7 @@ def test_underflow_float16_without_scale_is_zero_with_scale_is_not():
             loss_scale=scale,
         )
         values = [jnp.array(p.value, dtype=jnp.float32) for p in m.params()]
-        grads_fp16, _, _ = step.mixed(values, X, y, scale)
+        grads_fp16, _, _ = step.grads(values, X, y, scale)
         return np.asarray(grads_fp16[0])
 
     g_no_scale = first_grad(1.0)
@@ -123,31 +123,75 @@ def test_bf16_trajectory_follows_fp32(factory, sx, sy):
 
 
 def test_overflow_skips_step_and_halves_scale():
+    """An input that overflows float16 skips the step on the device and,
+    with the dynamic scale, halves the scale; the weights do not change."""
     X, y = _data((8, 2), (8, 1))
+    X = X * 1e30
     m = mlp([2, 4, 1], jax.random.PRNGKey(0))
     t = Trainer(
         m, MSE(), SGD(0.01), compile=True, compute_dtype="float16", loss_scale="dynamic"
     )
     t._scale = 1024.0
+    before = [np.array(p.value) for p in m.params()]
     t.fit(X, y, epochs=1, batch_size=8, key=jax.random.PRNGKey(0))
-    initial_scale = t.history_["loss_scale"][0]
-    assert initial_scale in (1024.0, 2048.0), initial_scale
-
-    values_before = [np.array(p.value) for p in m.params()]
-    t._compiled_mixed = lambda values, x, y, scale: (
-        [jnp.full_like(g, jnp.inf) for g in [p.grad for p in m.params()]],
-        [jnp.full_like(g, jnp.inf) for g in [p.grad for p in m.params()]],
-        jnp.float32(1.0),
-    )
-    t._good_steps = 0
-    t.fit(X, y, epochs=1, batch_size=8, key=jax.random.PRNGKey(0))
-    new_scale = t.history_["loss_scale"][-1]
-    assert new_scale == initial_scale / 2.0, (
-        f"scale did not halve: {initial_scale} -> {new_scale}"
-    )
-    values_after = [np.array(p.value) for p in m.params()]
-    for a, b in zip(values_before, values_after):
+    assert t.history_["loss_scale"][-1] == 512.0, t.history_["loss_scale"]
+    for a, b in zip(before, [np.array(p.value) for p in m.params()]):
         assert np.array_equal(a, b), "weights changed after skipped step"
+
+
+def test_overflow_skips_the_step_with_a_constant_scale_too():
+    X, y = _data((8, 2), (8, 1))
+    m = mlp([2, 4, 1], jax.random.PRNGKey(0))
+    t = Trainer(
+        m, MSE(), SGD(0.01), compile=True, compute_dtype="float16", loss_scale=1024.0
+    )
+    before = [np.array(p.value) for p in m.params()]
+    t.fit(X * 1e30, y, epochs=1, batch_size=8, key=jax.random.PRNGKey(0))
+    assert t.history_["loss_scale"] == [1024.0]
+    for a, b in zip(before, [np.array(p.value) for p in m.params()]):
+        assert np.array_equal(a, b)
+
+
+def test_mixed_step_equals_the_plain_step_when_nothing_is_cast():
+    """With no compute dtype and a scale of 1024, the whole mixed step gives
+    the values and the state of the plain step (Adam, so the state counts)."""
+    from dense_armor.utility.neural.compiled import _init_state, make_step
+
+    X, y = _data((16, 2), (16, 1))
+
+    def one(**kw):
+        m = _mlp()
+        opt = Adam(0.01)
+        values = [jnp.asarray(p.value) for p in m.params()]
+        state = _init_state(opt, values)
+        step = make_step(m, MSE(), opt, ConstantLR(0.01), 0.0, "l2", None, **kw)
+        if kw:
+            return step.mixed(values, state, X, y, 0.0, 1024.0)[:2]
+        return step(values, state, X, y, 0.0)[:2]
+
+    v_plain, s_plain = one()
+    v_mixed, s_mixed = one(loss_scale=1024.0)
+    for a, b in zip(v_plain, v_mixed):
+        np.testing.assert_allclose(a, b, rtol=1e-5, atol=1e-8)
+    assert int(s_plain["t"]) == int(s_mixed["t"]) == 1
+
+
+def test_skipped_step_keeps_the_optimizer_state():
+    from dense_armor.utility.neural.compiled import _init_state, make_step
+
+    X, y = _data((8, 2), (8, 1))
+    m = _mlp()
+    opt = Adam(0.01)
+    values = [jnp.asarray(p.value) for p in m.params()]
+    state = _init_state(opt, values)
+    step = make_step(
+        m, MSE(), opt, ConstantLR(0.01), 0.0, "l2", None, compute_dtype="float16"
+    )
+    new_values, new_state, _, finite = step.mixed(values, state, X * 1e30, y, 0.0, 1.0)
+    assert not bool(finite)
+    assert int(new_state["t"]) == 0
+    for a, b in zip(values, new_values):
+        assert np.array_equal(np.array(a), np.array(b))
 
 
 def test_dynamic_scale_produces_no_nan_and_trains():
@@ -316,7 +360,7 @@ def test_loss_scale_multiplies_the_stored_gradient_and_the_update_is_unscaled():
             loss_scale=scale,
         )
         values = [jnp.array(p.value, dtype=jnp.float32) for p in m.params()]
-        grads_fp16, grads_fp32, _ = step.mixed(values, X, y, scale)
+        grads_fp16, grads_fp32, _ = step.grads(values, X, y, scale)
         return grads_fp16, grads_fp32
 
     h1, g1 = grads_with(1.0)
@@ -378,7 +422,7 @@ def test_grads_are_float32_after_mixed_step():
         loss_scale=8192.0,
     )
     values = [jnp.array(p.value, dtype=jnp.float32) for p in m.params()]
-    _, grads_fp32, _ = step.mixed(values, X, y, 8192.0)
+    _, grads_fp32, _ = step.grads(values, X, y, 8192.0)
     for g in grads_fp32:
         assert jnp.asarray(g).dtype == jnp.float32, jnp.asarray(g).dtype
 
@@ -446,7 +490,7 @@ def test_weights_and_input_are_cast_to_compute_dtype_in_forward():
         loss_scale=1.0,
     )
     values = [jnp.array(p.value, dtype=jnp.float32) for p in m.params()]
-    step.mixed(values, X, y, 1.0)
+    step.grads(values, X, y, 1.0)
     print(f"  input dtypes: {[str(d) for d in seen['input_dtypes']]}")
     print(f"  weight dtypes: {[str(d) for d in seen['weight_dtypes']]}")
     assert all(d == jnp.bfloat16 for d in seen["input_dtypes"]), (

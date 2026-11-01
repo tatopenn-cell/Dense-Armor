@@ -44,21 +44,26 @@ import jax.numpy as jnp
 
 @dataclass
 class CompiledStep:
-    """A pair of step functions for a compiled Trainer.
+    """The compiled steps of a Trainer.
 
     Attributes:
         plain: ``(values, opt_state, x, y, epoch_t) -> (values, opt_state, loss)``.
-        mixed: ``(values, x, y, scale) -> (grads_fp16, grads_fp32, loss)``,
-            or ``None`` when the trainer is not in mixed-precision mode.
+        mixed: ``(values, opt_state, x, y, epoch_t, scale) -> (values,
+            opt_state, loss, finite)``, the whole mixed-precision step in
+            one compiled function, or ``None`` when the trainer is not in
+            mixed-precision mode.
+        grads: ``(values, x, y, scale) -> (grads_fp16, grads_fp32, loss)``,
+            the gradient part of the mixed step alone, or ``None``.
     """
 
     plain: Callable | None
     mixed: Callable | None
+    grads: Callable | None = None
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         """Run the plain step; the mixed step is reached through ``mixed``."""
         if self.plain is None:
-            raise TypeError("this step is mixed: call .mixed(values, x, y, scale)")
+            raise TypeError("this step is mixed: call .mixed(...)")
         return self.plain(*args, **kwargs)
 
 
@@ -312,10 +317,15 @@ def make_step(
         A ``CompiledStep``. Called as ``step(values, opt_state, x, y,
         epoch_t)`` it returns ``(new_values, new_opt_state, loss_value)``.
         When ``compute_dtype`` or ``loss_scale`` is given, ``step.mixed(
-        values, x, y, scale)`` returns ``(grads_fp16, grads_fp32, loss)``:
-        the scaled gradients in the compute dtype (for the overflow
-        check), and the gradients divided by ``scale``, in float32 and
-        clipped, ready for the optimizer.
+        values, opt_state, x, y, epoch_t, scale)`` is the whole step in one
+        compiled function: forward and backward in the compute dtype, the
+        gradients divided by ``scale`` and clipped in float32, the
+        optimizer update, and the skip of the step when a gradient is not
+        finite. It returns ``(new_values, new_opt_state, loss, finite)``;
+        when ``finite`` is false the values and the state are the old
+        ones. ``step.grads(values, x, y, scale)`` returns ``(grads_fp16,
+        grads_fp32, loss)``: the scaled gradients in the compute dtype and
+        the unscaled, clipped gradients in float32.
 
     Raises:
         ValueError: on an unsupported optimizer, on a model with state
@@ -371,7 +381,7 @@ def make_step(
         )
     dtype = _DTYPE_MAP[compute_dtype] if compute_dtype is not None else None
 
-    def _mixed_step(values: list, x: Any, y: Any, scale: Any):
+    def _grads(values: list, x: Any, y: Any, scale: Any):
         cast_values = _cast(values, dtype)
         _write_values(model, cast_values)
         for pp in model.params():
@@ -389,12 +399,35 @@ def make_step(
             grads_fp32 = _clip_grads(grads_fp32, clip_norm)
         return grads_fp16, grads_fp32, loss_value
 
+    def _mixed_step(
+        values: list, opt_state: Any, x: Any, y: Any, lr: Any, eta: Any, scale: Any
+    ):
+        grads_fp16, grads_fp32, loss_value = _grads(values, x, y, scale)
+        finite = jnp.all(jnp.stack([jnp.all(jnp.isfinite(g)) for g in grads_fp16]))
+        new_values, new_state = _apply_update(
+            optimizer, values, grads_fp32, opt_state, lr, eta, weight_decay, decay
+        )
+        kept_values = [jnp.where(finite, n, v) for n, v in zip(new_values, values)]
+        kept_state = jax.tree_util.tree_map(
+            lambda n, o: jnp.where(finite, n, o), new_state, opt_state
+        )
+        return kept_values, kept_state, loss_value, finite
+
+    grads_jitted = jax.jit(_grads)
     mixed_jitted = jax.jit(_mixed_step)
 
-    def _mixed(values: list, x: Any, y: Any, scale: float):
-        return mixed_jitted(values, x, y, jnp.float32(scale))
+    def _grads_public(values: list, x: Any, y: Any, scale: float):
+        return grads_jitted(values, x, y, jnp.float32(scale))
 
-    return CompiledStep(plain=None, mixed=_mixed)
+    def _mixed(
+        values: list, opt_state: Any, x: Any, y: Any, epoch_t: float, scale: float
+    ):
+        tt = float(epoch_t)
+        lr = schedule(tt)
+        eta = schedule.multiplier(tt)
+        return mixed_jitted(values, opt_state, x, y, lr, eta, jnp.float32(scale))
+
+    return CompiledStep(plain=None, mixed=_mixed, grads=_grads_public)
 
 
 __all__ = [

@@ -41,7 +41,7 @@ def first_grad(scale):
         compute_dtype='float16', loss_scale=scale,
     )
     values = [jnp.array(p.value, dtype=jnp.float32) for p in m.params()]
-    grads16, _, _ = step.mixed(values, X, y, scale)
+    grads16, _, _ = step.grads(values, X, y, scale)
     return np.asarray(grads16[0])
 
 g1 = first_grad(1.0)
@@ -186,34 +186,55 @@ scaling is not needed.
 `d_model=512`, sequence 256, batch 32, on synthetic data (seed 0), with
 SGD at learning rate `0.01`. Each mode runs in a process of its own,
 because the peak memory of a process only grows. The loss is the loss of
-step 200 on one batch repeated, 3 sessions of 20 steps for the speed.
-Values in `benchmarks/mixed_precision_gpu.json`, `backend: gpu`, on a
-Kaggle GPU kernel; the model of the card is not recorded in the file.
+step 200 on one batch repeated; the speed is the median of 3 sessions of
+20 steps.
 
-| mode | loss at step 1 | loss at step 200 | steps/s (median, range) | peak bytes |
+TPU: `TPU v5 lite`, jax 0.11.2, `benchmarks/mixed_precision_tpu.json`.
+
+| mode | loss at step 1 | loss at step 200 | steps/s, median (range) | peak bytes |
+|---|---|---|---|---|
+| float32 | 2.2080 | 0.946706 | 77.20 (76.76 to 77.31) | 2 815 623 680 |
+| bfloat16 | 2.2080 | 0.946207 | 18.22 (17.31 to 18.77) | 456 712 704 |
+| float16 (dynamic) | 2.2080 | 0.946104 | 18.65 (18.42 to 18.84) | 461 934 080 |
+
+GPU: a Kaggle GPU kernel, `benchmarks/mixed_precision_gpu.json` (the model
+of the card is not recorded in that file).
+
+| mode | loss at step 1 | loss at step 200 | steps/s, median (range) | peak bytes |
 |---|---|---|---|---|
 | float32 | 2.2085 | 0.945989 | 3.386 (3.386 to 3.396) | 2 407 757 056 |
 | bfloat16 | 2.2085 | 0.945990 | 2.734 (2.712 to 2.739) | 2 463 308 800 |
 | float16 (dynamic) | 2.2084 | 0.945968 | 2.783 (2.782 to 2.790) | 2 463 308 800 |
 
-Claim 1 (the loss of bfloat16 at step 200 within 5% of float32):
-**holds**, the relative difference is `4.4e-7`; the loss moves from
-`2.2085` to `0.946` in the 200 steps, so the claim is tested on a model
-that trains. Claim 2 (peak memory of the lower precision at most 0.7
-times that of float32): **does not hold**, the ratio is `1.023`. Claim 3
-(the faster of bfloat16 and float16 has at least 1.3 times the steps per
-second of float32): **does not hold**, the faster is float16 and the
-ratio is `0.822`. The claims are reported as they were written before the
-run. Why the lower precision is not faster nor smaller on this card is
-not measured here; a GPU with bfloat16 tensor cores may give another
-result.
+The claims were written before the first run and are reported unchanged:
+
+| Claim | TPU v5 lite | GPU |
+|---|---|---|
+| 1. loss of bfloat16 at step 200 within 5% of float32 | **holds**, `5.3e-4` | **holds**, `4.4e-7` |
+| 2. peak memory of the lower precision at most 0.7 times float32 | **holds**, ratio `0.162` | **does not hold**, ratio `1.023` |
+| 3. the faster of bfloat16 and float16 has at least 1.3 times the steps/s of float32 | **does not hold**, float16, ratio `0.242` | **does not hold**, float16, ratio `0.822` |
+
+In every run the loss falls from about `2.21` to about `0.946`, so claim 1
+is tested on a model that trains.
+
+What these numbers do not separate: the float32 mode is the plain compiled
+step, one compiled function that includes the optimizer update. The two
+lower-precision modes use the mixed step, which is compiled up to the
+gradients; the unscale and the optimizer update then run outside the
+compiled function, and the overflow flag is read on the host at every
+step. The speed and the peak memory of the lower precision therefore
+include the cost of that structure, and the effect of the dtype alone is
+not isolated. The TPU peak memory ratio of `0.162` is smaller than the
+factor 2 that halving the activations would give; the reason is not
+measured.
 
 ### Not measured
 
-The reason of claims 2 and 3, the model of the GPU, the float32
-reductions of Section 3.3, training at scale on a natural-language
-corpus, and a comparison with a statistic (Wilcoxon, A12): the claims
-above compare one run per mode.
+The effect of the dtype alone on speed and memory (a mixed step that
+includes the optimizer update in the compiled function), the reason of the
+TPU memory ratio, the model of the GPU, the float32 reductions of Section
+3.3, training at scale on a natural-language corpus, and a comparison with
+a statistic (Wilcoxon, A12): the claims above compare one run per mode.
 
 ### Development diary
 
