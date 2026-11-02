@@ -5,6 +5,24 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 ## [Unreleased]
 
 ### Changed
+- `AdaptiveConformalRegressor.budget_s` and `memory_class` are now properties that
+  read the wrapped model. `budget_s` sums two model calls (predict_one and
+  learn_one) plus 5e-4, and is `None` if the model declares no budget;
+  `memory_class` is the larger of the model class and O(window), `unknown` if the
+  model declares something else. With `budget_s` None, `RealtimePipeline` with
+  `require_budget=True` refuses the wrapper.
+- `_Pipeline` forwards `t` to every `transform_one` in `_forward`, `learn_one`,
+  `transform_one`, `predict_one`, `predict_proba_one`, not just to `learn_one`.
+- `SignalBatch` with zero rows has `t = None` instead of raising `IndexError`.
+- `ChauvenetScorer` declares `score_is_inverted = True`; `AnomalyGate` and
+  `Protected` raise `ValueError` on it. `AnomalyDetector` declares
+  `score_is_inverted = False` on the base class.
+- New check `check_clone_drops_learned_state`: `clone()` must not carry learned
+  state. Can make `check_estimator` fail on third-party estimators whose
+  constructor is not rebuildable from `get_params` or whose `clone()` copies
+  learned state; the failure is `NotImplementedError` (not applicable) or
+  `AssertionError` (real bug).
+
 - `Protected` with a drift detector reads the flag from the last
   `learn_one`, so the first `fallback` is returned on the sample after
   the one that triggered drift. Documented in the class docstring and

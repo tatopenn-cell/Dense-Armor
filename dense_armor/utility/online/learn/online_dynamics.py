@@ -85,8 +85,12 @@ class RecursiveLeastSquares(Regressor):
     Ljung, L., Soderstrom, T. (1983). MIT Press.
     """
 
-    def __init__(self, lam: float = 1.0, delta: float = 1e6,
-                 feature_keys: Sequence[str] | None = None):
+    def __init__(
+        self,
+        lam: float = 1.0,
+        delta: float = 1e6,
+        feature_keys: Sequence[str] | None = None,
+    ):
         self.lam = lam
         self.delta = delta
         self.feature_keys = feature_keys
@@ -131,7 +135,6 @@ class RecursiveLeastSquares(Regressor):
         return float(self._w @ xv)
 
 
-
 _FEATURE_NAMES = ("qdd", "qd", "sign_qd", "g", "one")
 
 
@@ -166,15 +169,15 @@ class ResidualDynamicsLearner:
     (2,)
     """
 
-    def __init__(self, model: RigidBodyModel, lam: float = 1.0,
-                 delta: float = 1e6):
+    def __init__(self, model: RigidBodyModel, lam: float = 1.0, delta: float = 1e6):
         self.model = model
         self.n = model.n
         self.lam = lam
         self.delta = delta
         self._rls = [
-            RecursiveLeastSquares(lam=lam, delta=delta,
-                                  feature_keys=list(_FEATURE_NAMES))
+            RecursiveLeastSquares(
+                lam=lam, delta=delta, feature_keys=list(_FEATURE_NAMES)
+            )
             for _ in range(self.n)
         ]
 
@@ -216,9 +219,7 @@ class ResidualDynamicsLearner:
         tau_nominal, g = self._nominal_terms(q, qd, qdd)
         residual = np.zeros(self.n)
         for j in range(self.n):
-            residual[j] = self._rls[j].predict_one(
-                self._joint_features(j, qd, qdd, g)
-            )
+            residual[j] = self._rls[j].predict_one(self._joint_features(j, qd, qdd, g))
         return tau_nominal + residual
 
 
@@ -279,21 +280,27 @@ class DriftAwareResidualDynamicsLearner(ResidualDynamicsLearner):
     (2,)
     """
 
-    def __init__(self, model: RigidBodyModel, lam: float = 0.99,
-                 delta: float = 1e6, fast_lam: float = 0.9,
-                 warmup_steps: int = 20, drift_radius: int = 10,
-                 drift_ref_mult: int = 3, drift_k: float = 0.5,
-                 drift_h: float = 20.0, drift_two_sided: bool = True,
-                 drift_reference: str = "adaptive",
-                 detector_warmup: int = 0,
-                 trigger: str = "hampel",
-                 hampel_radius: int = 20,
-                 hampel_n_sigmas: float = 3.0):
+    def __init__(
+        self,
+        model: RigidBodyModel,
+        lam: float = 0.99,
+        delta: float = 1e6,
+        fast_lam: float = 0.9,
+        warmup_steps: int = 20,
+        drift_radius: int = 10,
+        drift_ref_mult: int = 3,
+        drift_k: float = 0.5,
+        drift_h: float = 20.0,
+        drift_two_sided: bool = True,
+        drift_reference: str = "adaptive",
+        detector_warmup: int = 0,
+        trigger: str = "hampel",
+        hampel_radius: int = 20,
+        hampel_n_sigmas: float = 3.0,
+    ):
         super().__init__(model, lam=lam, delta=delta)
         if trigger not in ("hampel", "cusum"):
-            raise ValueError(
-                f"trigger must be 'hampel' or 'cusum', got {trigger!r}"
-            )
+            raise ValueError(f"trigger must be 'hampel' or 'cusum', got {trigger!r}")
         self.fast_lam = fast_lam
         self.warmup_steps = warmup_steps
         self.drift_radius = drift_radius
@@ -315,11 +322,14 @@ class DriftAwareResidualDynamicsLearner(ResidualDynamicsLearner):
             ]
         else:
             self._drift_detectors = [
-                CUSUMDriftDetector(radius=drift_radius,
-                                   ref_mult=drift_ref_mult,
-                                   k=drift_k, h=drift_h,
-                                   two_sided=drift_two_sided,
-                                   reference=drift_reference)
+                CUSUMDriftDetector(
+                    radius=drift_radius,
+                    ref_mult=drift_ref_mult,
+                    k=drift_k,
+                    h=drift_h,
+                    two_sided=drift_two_sided,
+                    reference=drift_reference,
+                )
                 for _ in range(self.n)
             ]
 
@@ -361,13 +371,13 @@ class DriftAwareResidualDynamicsLearner(ResidualDynamicsLearner):
         return self
 
 
-def write_minimal_urdf(path: str | None = None,
-                       payload_mass: float = 0.0) -> str:
+def write_minimal_urdf(path: str | None = None, payload_mass: float = 0.0) -> str:
     """Write a minimal 2-link revolute URDF, optionally with an extra point
     mass at link2's own frame origin. Returns the path.
     """
     if path is None:
         import tempfile
+
         fd, path = tempfile.mkstemp(suffix=".urdf")
         os.close(fd)
     m2 = 0.5 + payload_mass

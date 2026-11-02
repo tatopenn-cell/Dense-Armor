@@ -235,7 +235,6 @@ class LinearRegression(Regressor):
         return new_state, pred
 
 
-
 class LogisticRegression(Classifier):
     """Online binary logistic regression with log loss.
 
@@ -444,4 +443,3 @@ class LogisticRegression(Classifier):
             lambda: (new_w, new_opt_state),
         )
         return new_state, p
-

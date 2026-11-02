@@ -17,7 +17,8 @@ class Protected(Estimator):
             sample that triggers drift is predicted normally, the next
             one is the first returned as ``fallback``. This is the
             semantics of a gate that stops learning after drift, not of
-            a detector that classifies the current sample. An object with ``classify`` (an ``AnomalyGate``) flags
+            a detector that classifies the current sample.
+ An object with ``classify`` (an ``AnomalyGate``) flags
             when ``classify(score_one(x))`` is true. A drift detector
             (``update`` and ``drift_detected``) flags when it reports a drift
             after it has seen the value of ``feature``; only ``learn_one``

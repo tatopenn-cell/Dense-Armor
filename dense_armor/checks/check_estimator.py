@@ -97,14 +97,14 @@ def check_clone_independent(est: Root) -> None:
 def check_clone_drops_learned_state(est: Root) -> None:
     """``clone()`` must not carry the learned state of the original.
 
-    Build a fresh instance from the constructor parameters to rule out
-    an estimator whose constructor itself sets a trailing-underscore
-    attribute (that estimator does not follow the convention and cannot
-    be tested here). A constructor that does not accept its own
-    ``get_params`` as keyword arguments raises ``NotImplementedError``,
-    so ``check_estimator`` reports the check as not applicable instead
-    of silently passing it. The check only runs when ``est`` has already
-    learned, so it does not call ``clone()`` on a fresh estimator.
+    Build a fresh instance from the constructor parameters. A constructor
+    that does not accept its own ``get_params`` as keyword arguments
+    raises ``NotImplementedError``, so ``check_estimator`` reports the
+    check as not applicable instead of silently passing it. The check
+    only runs when ``est`` has already learned, so it does not call
+    ``clone()`` on a fresh estimator. Every trailing-underscore attribute
+    of the clone must equal the constructor default (arrays and ``nan``
+    compared with ``_same``, not ``==``).
     """
     try:
         fresh = type(est)(**est.get_params(deep=False))
@@ -120,10 +120,19 @@ def check_clone_drops_learned_state(est: Root) -> None:
         for k in fresh.__dict__
         if k.endswith("_") and not k.startswith("__")
     }
+    import jax.numpy as jnp
+
+    def _same(a, b) -> bool:
+        aa = jnp.asarray(a)
+        bb = jnp.asarray(b)
+        if aa.shape != bb.shape:
+            return False
+        return bool(jnp.all(jnp.equal(aa, bb) | (jnp.isnan(aa) & jnp.isnan(bb))))
+
     for k, v in c.__dict__.items():
         if k.startswith("__") or not k.endswith("_"):
             continue
-        assert k in fresh_underscore and v == fresh_underscore[k], (
+        assert k in fresh_underscore and _same(v, fresh_underscore[k]), (
             f"clone() carried learned state in {k}: "
             f"constructor default {fresh_underscore.get(k, '<missing>')}, clone {v}"
         )

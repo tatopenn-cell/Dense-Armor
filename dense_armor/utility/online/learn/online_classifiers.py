@@ -430,4 +430,3 @@ class DriftAdaptiveClassifier(Classifier):
             "classifier": OnlineGaussianNB(),
             "detector": CUSUMDriftDetector(reference="adaptive"),
         }
-

@@ -5,9 +5,17 @@ from dense_armor.roles.estimator import Estimator
 
 
 class AnomalyDetector(Estimator):
-    """Unsupervised anomaly detector; ``score_one`` high = anomalous."""
+    """Unsupervised anomaly detector; ``score_one`` high = anomalous.
+
+    Subclasses that violate this contract must set ``score_is_inverted = True``.
+    The only sanctioned exception is ``ChauvenetScorer``, whose criterion
+    rejects when the score is small. ``AnomalyGate`` and ``Protected`` refuse
+    a detector that declares ``score_is_inverted``. Any other consumer of
+    ``score_one`` must check the attribute itself.
+    """
 
     _supervised = False
+    score_is_inverted: bool = False
 
     def learn_one(self, x: dict, t: float | None = None) -> "AnomalyDetector":
         raise NotImplementedError
