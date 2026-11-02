@@ -1,23 +1,21 @@
 """A gate on a signal: look at the other stream only when it matters.
 
 ``GatedCrossAttention`` wraps a :class:`MultiHeadCrossAttention` and
-adds its output, multiplied by ``1.0`` where the signal is strictly
-greater than a fixed threshold and by ``0.0`` elsewhere, to the
-query itself. The threshold is a fixed rule stated by whoever
-assembles the system: it is not learned, and it is stored unchanged.
+multiplies each row of its output by ``1.0`` where the signal is
+strictly greater than a fixed threshold and by ``0.0`` elsewhere. The
+threshold is a fixed rule stated by whoever assembles the system: it
+is not learned, and it is stored unchanged. The gate is a hard step of
+the signal, so it has no gradient of its own.
 
-A closed step returns the query unchanged: the identity path carries
-the static part of the query and the attention adds the dynamic part
-only where the gate is open. At a closed step the gradient of the
-query is the incoming gradient (identity), and the gradient of the
-context and of every parameter is zero: nothing to learn from a step
-the gate has closed.
+A closed step produces the zero vector and sends no gradient to the
+queries, to the context or to any parameter: the gate is applied to
+the output and then again to the incoming gradient before the inner
+attention's ``backward``.
 
-The output is ``xq + g * attention(xq, xc)``. Multiplying only the
-attention output by ``g`` (``g * attention(xq, xc)``) would give a zero
-vector at a closed step, which discards the static part of the query
-and cuts the gradient path of the query; the sum keeps both. This
-construction is our own choice and is not taken from a paper.
+To keep the static part of the query at a closed step, add the query
+to the output outside of this class, with a ``Residual`` or a
+``Parallel``. The construction (attention, multiplied by a gate read
+from a signal) is ours and is not taken from a paper.
 """
 
 from __future__ import annotations
@@ -89,23 +87,22 @@ class GatedCrossAttention:
         if signal.shape not in allowed:
             raise ValueError(f"signal shape {signal.shape}, expected one of {allowed}")
         gate = jnp.where(signal > self.threshold, 1.0, 0.0)
-        y_attn = self.attention.forward(xq, xc, training=training)
+        y = self.attention.forward(xq, xc, training=training)
         if self._squeeze:
             g = gate[:, None]
         elif gate.ndim == 1:
             g = gate[None, :, None]
         else:
             g = gate[:, :, None]
-        out = xq + y_attn * g
+        out = y * g
         self.gate_ = gate
         return out
 
     def backward(self, g_out: Any):
         """Gradients of the queries and of the context.
 
-        The gate is multiplied into the gradient that goes through the
-        attention, so a closed step sends no gradient to ``xc`` or to a
-        parameter, and its gradient to ``xq`` is the incoming gradient.
+        The gate is multiplied into the incoming gradient, so a closed
+        step sends no gradient to ``xq``, to ``xc`` or to a parameter.
 
         Args:
             g_out: gradient of the output, of the shape of the output.
@@ -125,6 +122,4 @@ class GatedCrossAttention:
             g = self.gate_[None, :, None]
         else:
             g = self.gate_[:, :, None]
-        dxq_attn, dxc = self.attention.backward(g_out * g)
-        dxq = g_out + dxq_attn
-        return dxq, dxc
+        return self.attention.backward(g_out * g)
