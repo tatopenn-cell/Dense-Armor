@@ -31,7 +31,7 @@ from typing import Any
 import numpy as np
 
 from dense_armor.roles import Transformer
-from dense_armor.roles._util import call_learn_one
+from dense_armor.roles._util import call_learn_one, sum_budgets, worst_memory_class
 
 DIMENSIONLESS = "1"
 
@@ -144,6 +144,20 @@ class UnitCheckedPipeline(Transformer):
                         )
             self.step_units.append((spec.inputs, spec.outputs))
             prev_outputs = spec.outputs
+
+    @property
+    def budget_s(self) -> float | None:
+        """Latency of ``learn_one``: ``transform_one`` and ``learn_one`` of every transformer, and ``learn_one`` of the last step.
+
+        ``None`` if a step declares no ``budget_s``.
+        """
+        weights = [2.0] * (len(self.steps) - 1) + [1.0]
+        return sum_budgets(zip(weights, self.steps))
+
+    @property
+    def memory_class(self) -> str:
+        """The largest memory class of the steps."""
+        return worst_memory_class(self.steps)
 
     def learn_one(self, x, y=None, t=None):
         h = x

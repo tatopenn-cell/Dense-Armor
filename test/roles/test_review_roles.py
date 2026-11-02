@@ -13,6 +13,7 @@ from dense_armor.roles import (
     AnomalyDetector,
     AnomalyGate,
     Protected,
+    RealtimePipeline,
     Regressor,
     SafeEstimator,
     Signal,
@@ -248,12 +249,68 @@ def test_protected_drift_detector_on_an_empty_sample_gets_zero():
     assert det.seen == [0.0]
 
 
-def test_batch_signal_holds_one_tuple_per_channel_and_the_single_form_one_float():
-    batch = Signal(jnp.ones((3, 2)), ["a", "b"], ["m", "m"])
-    assert batch["a"] == (1.0, 1.0, 1.0)
-    assert batch.array.shape == (3, 2)
+def test_signal_is_a_dict_of_floats_and_a_matrix_is_refused():
     single = Signal(jnp.ones(2), ["a", "b"], ["m", "m"])
     assert single["a"] == 1.0
+    with pytest.raises(ValueError, match="SignalBatch"):
+        Signal(jnp.ones((3, 2)), ["a", "b"], ["m", "m"])
+
+
+class _B(Transformer):
+    """Declares a budget and a memory class, and does nothing else."""
+
+    threshold = 1.0
+
+    def __init__(self, budget_s=None, memory_class="O(1)"):
+        if budget_s is not None:
+            self.budget_s = budget_s
+        self.memory_class = memory_class
+
+    def transform_one(self, x, t=None):
+        return x
+
+
+def test_wrappers_declare_the_budget_of_what_they_cost():
+    assert AnomalyGate(_B(1e-3)).budget_s == pytest.approx(2e-3)
+    assert Protected(_B(1e-3), _B(5e-4)).budget_s == pytest.approx(1.5e-3)
+    both = Protected(_B(1e-3), _B(5e-4), train_detector=True)
+    assert both.budget_s == pytest.approx(2e-3)
+    assert SafeEstimator(_B(1e-3), guard=lambda x: False).budget_s == pytest.approx(
+        2e-3
+    )
+    assert UnitCheckedPipeline(
+        [_B(1e-3), _B(2e-3), _B(4e-3)]
+    ).budget_s == pytest.approx(1e-2)
+    assert (_B(1e-3) + _B(2e-3)).budget_s == pytest.approx(3e-3)
+    assert (_B(1e-3) * _B(2e-3)).budget_s == pytest.approx(3e-3)
+
+
+def test_a_wrapper_with_a_part_that_declares_no_budget_declares_none():
+    assert AnomalyGate(_B()).budget_s is None
+    assert Protected(_B(1e-3), _B()).budget_s is None
+    assert SafeEstimator(_B(), guard=lambda x: False).budget_s is None
+    assert (_B(1e-3) + _B()).budget_s is None
+
+
+def test_wrappers_take_the_largest_memory_class_of_their_parts():
+    assert Protected(_B(1e-3), _B(1e-3)).memory_class == "O(1)"
+    assert Protected(_B(1e-3), _B(1e-3, "O(window)")).memory_class == "O(window)"
+    assert Protected(_B(1e-3), _B(1e-3, "O(n)")).memory_class == "unknown"
+    assert (
+        SafeEstimator(_B(1e-3, "O(window)"), guard=lambda x: False).memory_class
+        == "O(window)"
+    )
+
+
+def test_realtime_pipeline_accepts_a_wrapper_and_checks_its_real_cost():
+    wrapped = SafeEstimator(_B(1e-3), guard=lambda x: False)
+    assert RealtimePipeline([wrapped], period_s=1e-2).total_budget_s == pytest.approx(
+        2e-3
+    )
+    with pytest.raises(ValueError, match="exceeds"):
+        RealtimePipeline([wrapped], period_s=1.5e-3)
+    with pytest.raises(ValueError, match="do not declare"):
+        RealtimePipeline([SafeEstimator(_B(), guard=lambda x: False)], period_s=1.0)
 
 
 class _ThresholdOnly:

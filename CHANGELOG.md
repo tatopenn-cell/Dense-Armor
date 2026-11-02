@@ -29,7 +29,18 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   the query, add it outside of the class with `Residual` or `Parallel`; the page
   `docs/neural/composable_attention.md` shows it.
 
+- **Incompatible:** `Signal` takes only a vector of shape `(n_channels,)`; a matrix raises `ValueError`. Several
+  samples are a `SignalBatch`, and `Signal.stacked` returns one. The batch form of `Signal` was a dict whose
+  values were tuples, which no estimator of the library accepts, and its docstring said that any estimator took it.
+
 ### Added
+- `SignalBatch` (in `dense_armor.roles`): `n` samples of `d` channels for the code that works on `array`
+  (shape `(n, d)`). It is not a dict; `row(i)` gives the sample `i` as a `Signal`; `times` and `t` carry the
+  timestamps.
+- `budget_s` and `memory_class` of the wrappers: `AnomalyGate`, `Protected`, `SafeEstimator`,
+  `UnitCheckedPipeline`, the `|` pipeline and the union and product of transformers declare the cost of their
+  parts (`None` if a part declares none), so that `RealtimePipeline` takes them as a step and checks their real
+  cost. Before, none declared a budget and `RealtimePipeline` refused every wrapper.
 - `dense_armor/utility/deep/neural/rotary_decoder.py`: `RotaryDecoderBlock`, `RotaryDecoder` and the builder
   `rotary_decoder`, a causal language model with RMSNorm, rotary causal attention and a SwiGLU feed-forward
   (pre-norm), with `remat=True` to recompute the activations in `backward`. `transformer_decoder` is unchanged.

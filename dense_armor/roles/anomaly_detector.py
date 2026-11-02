@@ -1,6 +1,6 @@
 """Anomaly detector role (high score = anomalous)."""
 
-from dense_armor.roles._util import call_with_t
+from dense_armor.roles._util import call_with_t, sum_budgets, worst_memory_class
 from dense_armor.roles.estimator import Estimator
 
 
@@ -81,6 +81,19 @@ class AnomalyGate(Estimator):
         if self.threshold is not None:
             return score > self.threshold
         return score > float(getattr(self.detector, "threshold"))
+
+    @property
+    def budget_s(self) -> float | None:
+        """Latency of ``learn_one``: a ``score_one`` and a ``learn_one`` of the detector.
+
+        ``None`` if the detector declares no ``budget_s``.
+        """
+        return sum_budgets([(2.0, self.detector)])
+
+    @property
+    def memory_class(self) -> str:
+        """The memory class of the detector."""
+        return worst_memory_class([self.detector])
 
     def learn_one(self, x: dict, t: float | None = None) -> "AnomalyGate":
         s = call_with_t(self.detector.score_one, x, t=t)

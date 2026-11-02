@@ -7,7 +7,7 @@ arXiv:2012.04740) and the parameter / clone / inspect contract of a general-purp
 
 from typing import Any
 
-from dense_armor.roles._util import call_with_t
+from dense_armor.roles._util import call_with_t, sum_budgets, worst_memory_class
 from dense_armor.roles.root import Root
 
 
@@ -41,6 +41,20 @@ class _Pipeline(Root):
             s_any: Any = s
             x = s_any.transform_one(x)
         return x
+
+    @property
+    def budget_s(self) -> float | None:
+        """Latency of ``learn_one``: ``transform_one`` and ``learn_one`` of every transformer, and ``learn_one`` of the last step.
+
+        ``None`` if a step declares no ``budget_s``.
+        """
+        weights = [2.0] * (len(self.steps) - 1) + [1.0]
+        return sum_budgets(zip(weights, (s for _, s in self.steps)))
+
+    @property
+    def memory_class(self) -> str:
+        """The largest memory class of the steps."""
+        return worst_memory_class([s for _, s in self.steps])
 
     def learn_one(self, x: dict, y: Any = None, t: float | None = None) -> '_Pipeline':
         h = x

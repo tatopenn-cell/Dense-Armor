@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from dense_armor.roles._util import call_with_t
+from dense_armor.roles._util import call_with_t, sum_budgets, worst_memory_class
 from dense_armor.roles.estimator import Estimator
 
 
@@ -57,6 +57,21 @@ class Protected(Estimator):
         self.feature = feature
         self.train_detector = train_detector
         self._last_good = fallback
+
+    @property
+    def budget_s(self) -> float | None:
+        """Latency of ``learn_one``: the model, plus the detector once to decide.
+
+        With ``train_detector`` the detector costs twice (it also learns).
+        ``None`` if the model or the detector declares no ``budget_s``.
+        """
+        n = 2.0 if self.train_detector else 1.0
+        return sum_budgets([(1.0, self.model), (n, self.detector)])
+
+    @property
+    def memory_class(self) -> str:
+        """The larger memory class of the model and the detector."""
+        return worst_memory_class([self.model, self.detector])
 
     def _score(self, x: dict) -> float:
         if hasattr(self.detector, "score_one"):

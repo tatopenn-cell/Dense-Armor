@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from dense_armor.roles._util import call_with_t
+from dense_armor.roles._util import call_with_t, sum_budgets, worst_memory_class
 from dense_armor.roles.estimator import Estimator
 
 
@@ -60,6 +60,16 @@ class _PairTransformer(Transformer):
     def __init__(self, a, b):
         self.a = a
         self.b = b
+
+    @property
+    def budget_s(self) -> float | None:
+        """Latency of one sample: both transformers. ``None`` if one declares none."""
+        return sum_budgets([(1.0, self.a), (1.0, self.b)])
+
+    @property
+    def memory_class(self) -> str:
+        """The larger memory class of the two transformers."""
+        return worst_memory_class([self.a, self.b])
 
     def learn_one(self, x, y=None, t=None):
         for tr in (self.a, self.b):

@@ -35,7 +35,12 @@ from pathlib import Path
 from typing import Any
 
 from dense_armor.roles import Estimator, Root
-from dense_armor.roles._util import call_learn_one, call_with_t
+from dense_armor.roles._util import (
+    call_learn_one,
+    call_with_t,
+    sum_budgets,
+    worst_memory_class,
+)
 
 CHECKPOINT_VERSION = 1
 
@@ -181,6 +186,20 @@ class SafeEstimator(Estimator):
     def health(self) -> Health:
         """Current :class:`Health` state."""
         return self.monitor.state
+
+    @property
+    def budget_s(self) -> float | None:
+        """Latency of ``learn_one``: a ``predict_one`` and a ``learn_one`` of the model.
+
+        The guard and the health monitor are not counted: they are a few
+        comparisons. ``None`` if the model declares no ``budget_s``.
+        """
+        return sum_budgets([(2.0, self.model)])
+
+    @property
+    def memory_class(self) -> str:
+        """The memory class of the wrapped model."""
+        return worst_memory_class([self.model])
 
     def learn_one(self, x: Any, y: Any = None, t: float | None = None):
         """Learn from ``(x, y)`` unless the guard flags ``x``.
