@@ -140,6 +140,57 @@ def test_clone_that_changes_an_array_default_is_rejected():
         check_clone_drops_learned_state(est)
 
 
+class _Part:
+    """A sub-object with no ``__eq__``: two instances are never equal."""
+
+
+class _BuildsParts(Regressor):
+    """Constructor builds objects, alone and in a list, in ``_``-suffixed attributes."""
+
+    def __init__(self):
+        self.tokenizer_ = _Part()
+        self.layers_ = [_Part(), _Part()]
+        self.table_ = {"a": _Part()}
+
+    def learn_one(self, x, y, t=None):
+        self.n_ = getattr(self, "n_", 0) + 1
+        return self
+
+    def predict_one(self, x, t=None, return_std=False):
+        return 0.0
+
+
+class _SharesPart(_BuildsParts):
+    """Clone hands over the very list the original learned into, which is a bug."""
+
+    def clone(self, new_params=None, include_attributes=False):
+        c = type(self)()
+        c.layers_ = self.layers_
+        return c
+
+
+def test_objects_built_by_the_constructor_pass():
+    est = _BuildsParts()
+    est.learn_one({"a": 1.0}, 0.0)
+    check_clone_drops_learned_state(est)
+
+
+def test_clone_sharing_the_learned_object_is_rejected():
+    est = _SharesPart()
+    est.learn_one({"a": 1.0}, 0.0)
+    with pytest.raises(AssertionError, match="shares the object in layers_"):
+        check_clone_drops_learned_state(est)
+
+
+def test_lists_of_different_length_are_not_the_default():
+    from dense_armor.checks.check_estimator import _same_default
+
+    assert not _same_default([_Part()], [_Part(), _Part()])
+    assert not _same_default({"a": 1}, {"b": 1})
+    assert not _same_default(np.zeros(2), np.zeros(3))
+    assert _same_default(float("nan"), float("nan"))
+
+
 def test_constructor_not_rebuildable_from_params_is_not_applicable():
     with pytest.raises(NotImplementedError, match="cannot be rebuilt from get_params"):
         check_clone_drops_learned_state(_NotRebuildable(required=1))

@@ -103,9 +103,9 @@ def check_clone_drops_learned_state(est: Root) -> None:
     check as not applicable instead of silently passing it. The check
     only runs when ``est`` has already learned, so it does not call
     ``clone()`` on a fresh estimator. Every trailing-underscore attribute
-    of the clone must equal the constructor default (numbers and arrays,
-    ``nan`` included, compared with ``_same``; ``None``, strings and
-    dicts with ``==``).
+    of the clone must equal the constructor default (see
+    ``_same_default``) and must not be the object the original learned
+    into.
     """
     try:
         fresh = type(est)(**est.get_params(deep=False))
@@ -121,27 +121,61 @@ def check_clone_drops_learned_state(est: Root) -> None:
         for k in fresh.__dict__
         if k.endswith("_") and not k.startswith("__")
     }
-    import jax.numpy as jnp
-
-    def _same(a, b) -> bool:
-        if a is b:
-            return True
-        try:
-            aa = jnp.asarray(a)
-            bb = jnp.asarray(b)
-        except (TypeError, ValueError):
-            return bool(a == b)
-        if aa.shape != bb.shape:
-            return False
-        return bool(jnp.all(jnp.equal(aa, bb) | (jnp.isnan(aa) & jnp.isnan(bb))))
-
     for k, v in c.__dict__.items():
         if k.startswith("__") or not k.endswith("_"):
             continue
-        assert k in fresh_underscore and _same(v, fresh_underscore[k]), (
+        assert k in fresh_underscore and _same_default(v, fresh_underscore[k]), (
             f"clone() carried learned state in {k}: "
             f"constructor default {fresh_underscore.get(k, '<missing>')}, clone {v}"
         )
+        assert not _is_shared_object(v, est.__dict__.get(k), fresh_underscore[k]), (
+            f"clone() shares the object in {k} with the original"
+        )
+
+
+def _same_default(a, b) -> bool:
+    """True if ``a`` is the value the constructor gives, ``b``.
+
+    Numbers and arrays are compared by shape and value, ``nan`` equal to
+    ``nan``. Lists, tuples and dicts are compared item by item. Anything
+    else is compared with ``==``; two objects of the same class that
+    ``==`` calls different (a layer, a tokenizer, a network built by the
+    constructor) count as equal, since two fresh instances often are
+    not. Whether such an object has learned cannot be told here; the
+    check only refuses the clone that holds the original's own object.
+    """
+    if a is b:
+        return True
+    try:
+        import jax.numpy as jnp
+
+        aa, bb = jnp.asarray(a), jnp.asarray(b)
+    except (TypeError, ValueError):
+        pass
+    else:
+        if aa.shape != bb.shape:
+            return False
+        return bool(jnp.all(jnp.equal(aa, bb) | (jnp.isnan(aa) & jnp.isnan(bb))))
+    if isinstance(a, (list, tuple)) and type(a) is type(b):
+        return len(a) == len(b) and all(_same_default(x, y) for x, y in zip(a, b))
+    if isinstance(a, dict) and type(a) is type(b):
+        return a.keys() == b.keys() and all(_same_default(a[k], b[k]) for k in a)
+    try:
+        if bool(a == b):
+            return True
+    except (TypeError, ValueError):
+        pass
+    return type(a) is type(b)
+
+
+_VALUE_TYPES = (type(None), bool, int, float, complex, str, bytes, tuple, frozenset)
+
+
+def _is_shared_object(v, original, default) -> bool:
+    """True if the clone holds the very object the original learned into."""
+    if v is default or v is not original:
+        return False
+    return not isinstance(v, _VALUE_TYPES)
 
 
 def check_get_params_signature(est: Root) -> None:
