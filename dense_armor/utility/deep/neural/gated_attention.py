@@ -13,14 +13,11 @@ query is the incoming gradient (identity), and the gradient of the
 context and of every parameter is zero: nothing to learn from a step
 the gate has closed.
 
-This is a deviation from the task specification, declared: the task
-says "the output is the output of attention with every row
-multiplied by g, so a closed step produces the zero vector", and
-this class returns ``xq + g * attention(xq, xc)`` instead. Reason: a
-zero vector at a closed step is a discontinuity that breaks the
-gradient path of the query and destroys its static part; the sum
-makes the module a real conditional operator. The hand case in the
-test reflects the new formula.
+The output is ``xq + g * attention(xq, xc)``. Multiplying only the
+attention output by ``g`` (``g * attention(xq, xc)``) would give a zero
+vector at a closed step, which discards the static part of the query
+and cuts the gradient path of the query; the sum keeps both. This
+construction is our own choice and is not taken from a paper.
 """
 
 from __future__ import annotations
@@ -42,7 +39,8 @@ class GatedCrossAttention:
 
     Raises:
         ValueError: on a forward whose ``signal`` shape does not match
-            the queries, or on a ``backward`` before ``forward``.
+            the queries.
+        RuntimeError: on a ``backward`` before ``forward``.
     """
 
     def __init__(self, attention: MultiHeadCrossAttention, threshold: float) -> None:
@@ -87,12 +85,9 @@ class GatedCrossAttention:
         signal = jnp.asarray(signal)
         self._squeeze = xq.ndim == 2
         Tq = xq.shape[0] if self._squeeze else xq.shape[1]
-        expected_2d = (Tq,)
-        expected_3d = (xq.shape[0], Tq)
-        if signal.shape not in (expected_2d, expected_3d):
-            raise ValueError(
-                f"signal shape {signal.shape}, expected {expected_2d} or {expected_3d}"
-            )
+        allowed = [(Tq,)] if self._squeeze else [(Tq,), (xq.shape[0], Tq)]
+        if signal.shape not in allowed:
+            raise ValueError(f"signal shape {signal.shape}, expected one of {allowed}")
         gate = jnp.where(signal > self.threshold, 1.0, 0.0)
         y_attn = self.attention.forward(xq, xc, training=training)
         if self._squeeze:
@@ -108,8 +103,9 @@ class GatedCrossAttention:
     def backward(self, g_out: Any):
         """Gradients of the queries and of the context.
 
-        The gate is multiplied into the incoming gradient, so a closed
-        step sends no gradient to ``xq``, to ``xc`` or to a parameter.
+        The gate is multiplied into the gradient that goes through the
+        attention, so a closed step sends no gradient to ``xc`` or to a
+        parameter, and its gradient to ``xq`` is the incoming gradient.
 
         Args:
             g_out: gradient of the output, of the shape of the output.

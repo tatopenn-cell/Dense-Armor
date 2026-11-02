@@ -125,6 +125,15 @@ def test_repr_contains_threshold():
     assert "MultiHeadCrossAttention" in repr(g)
 
 
+def test_square_signal_with_2d_queries_is_refused():
+    m = _identity_model()
+    g = GatedCrossAttention(m, 0.5)
+    xq = jnp.ones((2, 2))
+    xc = jnp.ones((3, 2))
+    with pytest.raises(ValueError):
+        g.forward(xq, xc, jnp.ones((2, 2)))
+
+
 def test_signal_batch_shape_mismatch():
     m = _identity_model()
     g = GatedCrossAttention(m, 0.5)
