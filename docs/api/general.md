@@ -1442,6 +1442,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.online.tree.batch`
 *Bases:* Classifier
+*Guide:* [fit.md](../fit.md)
 
 Batch CART classifier.
 
@@ -3260,6 +3261,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.signals.stats.mixture`
 *Bases:* Transformer
+*Guide:* [stats/mixture.md](../stats/mixture.md)
 
 Online Gaussian mixture with diagonal covariance.
 
@@ -3287,6 +3289,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.signals.stats.shrinkage`
 *Bases:* Transformer
+*Guide:* [finance/portfolio.md](../finance/portfolio.md)
 
 Online covariance with linear shrinkage toward ``(1/p) I``.
 
@@ -3618,6 +3621,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.signals.stats.similarity`
+*Guide:* [preprocessing/text_vectorizer.md](../preprocessing/text_vectorizer.md)
 
 A sparse index of documents for cosine ranking, built once.
 
@@ -3634,6 +3638,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.signals.stats.student_t`
 *Bases:* Transformer
+*Guide:* [stats/student_t.md](../stats/student_t.md)
 
 Online Student-t location-scale estimator with fixed ``nu``.
 
@@ -3991,6 +3996,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.signals.preprocessing.vectorizer`
 *Bases:* Transformer
+*Guide:* [preprocessing/text_vectorizer.md](../preprocessing/text_vectorizer.md)
 
 TF-IDF vectorizer with a fixed vocabulary, batch or online.
 
@@ -4203,6 +4209,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.signals.vision.streams`
 *Bases:* VideoStream
+*Guide:* [vision/frames.md](../vision/frames.md)
 
 Iterate over a multi-channel cube ``(T, H, W, C)``.
 
@@ -4235,6 +4242,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.signals.vision.registration`
 *Bases:* Transformer
+*Guide:* [vision/kinematics.md](../vision/kinematics.md)
 
 Difference between the stabilised frame and a robust reference.
 
@@ -4259,6 +4267,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.signals.vision.quality`
 *Bases:* Transformer
+*Guide:* [vision/quality.md](../vision/quality.md)
 
 Accumulate an event stream into a frame, one event at a time.
 
@@ -4283,6 +4292,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.signals.vision.visualize`
 *Bases:* Transformer
+*Guide:* [vision/quality.md](../vision/quality.md)
 
 Bring any single-channel frame into a visible RGB image.
 
@@ -4307,6 +4317,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.signals.vision.adapters`
 *Bases:* Transformer
+*Guide:* [vision/tracking.md](../vision/tracking.md)
 
 Turn a dict of scalar features into a Signal.
 
@@ -4331,6 +4342,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.signals.vision.scene`
 *Bases:* Transformer
+*Guide:* [vision/motion.md](../vision/motion.md)
 
 Score a frame with the patch memory of the library.
 
@@ -4380,6 +4392,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.signals.vision.fusion`
 *Bases:* Transformer
+*Guide:* [vision/tracking.md](../vision/tracking.md)
 
 Estimate the camera latency by correlating video motion and joint speed.
 
@@ -4408,6 +4421,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.signals.vision.robustness`
 *Bases:* Transformer
+*Guide:* [robustness.md](../robustness.md)
 
 Bring a frame into ``[0, 1]`` and flag the difficult cases.
 
@@ -4432,6 +4446,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.signals.vision.quality`
 *Bases:* Transformer
+*Guide:* [vision/quality.md](../vision/quality.md)
 
 Per-frame sharpness, exposure, noise and difficulty flags.
 
@@ -4456,6 +4471,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.signals.vision.window`
 *Bases:* Transformer
+*Guide:* [vision/motion.md](../vision/motion.md)
 
 Ring buffer of the last ``n`` frames or ``s`` seconds, with statistics.
 
@@ -4480,6 +4496,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.signals.vision.motion`
 *Bases:* Transformer
+*Guide:* [vision/motion.md](../vision/motion.md)
 
 Estimate the global scene shift with phase correlation.
 
@@ -4529,6 +4546,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.signals.vision.landmarks`
 *Bases:* Transformer
+*Guide:* [vision/kinematics.md](../vision/kinematics.md)
 
 Angles, speeds, symmetry and cycle residual from landmark points.
 
@@ -4553,6 +4571,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.signals.vision.landmarks`
 *Bases:* Transformer
+*Guide:* [vision/kinematics.md](../vision/kinematics.md)
 
 Causal Hampel filter plus gap filling on a landmark stream.
 
@@ -4576,6 +4595,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.signals.vision.landmarks`
+*Guide:* [vision/kinematics.md](../vision/kinematics.md)
 
 A stream of landmark samples, one per frame.
 
@@ -4584,6 +4604,7 @@ A stream of landmark samples, one per frame.
 
 *Module:* `dense_armor.utility.signals.vision.motion`
 *Bases:* Transformer
+*Guide:* [vision/motion.md](../vision/motion.md)
 
 Per-frame motion energy from the difference against the previous frame.
 
@@ -4632,6 +4653,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.signals.vision.tracking`
 *Bases:* Transformer
+*Guide:* [vision/tracking.md](../vision/tracking.md)
 
 Track moving objects from a frame stream or from external boxes.
 
@@ -4657,6 +4679,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.signals.vision.visualize`
 *Bases:* Transformer
+*Guide:* [vision/quality.md](../vision/quality.md)
 
 Draw the analysis on a frame.
 
@@ -4795,6 +4818,7 @@ Iterate over image files in a folder.
 
 *Module:* `dense_armor.utility.signals.vision.registration`
 *Bases:* Transformer
+*Guide:* [vision/kinematics.md](../vision/kinematics.md)
 
 Estimate the translation between a frame and a reference.
 
@@ -4820,6 +4844,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.signals.vision.scene`
 *Bases:* Transformer
+*Guide:* [vision/motion.md](../vision/motion.md)
 
 Scalar distance between consecutive frames, given to a drift detector.
 
@@ -4844,6 +4869,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.signals.vision.registration`
 *Bases:* Transformer
+*Guide:* [vision/kinematics.md](../vision/kinematics.md)
 
 Shift a frame back to the reference, so the scene looks fixed.
 
@@ -4868,6 +4894,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.signals.vision.quality`
 *Bases:* Transformer
+*Guide:* [vision/quality.md](../vision/quality.md)
 
 Estimate and apply the clock offset between two streams.
 
@@ -4895,6 +4922,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.signals.vision.adapters`
 *Bases:* Transformer
+*Guide:* [vision/tracking.md](../vision/tracking.md)
 
 Turn one track of the tracker into a Signal.
 
@@ -4919,6 +4947,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.signals.vision.streams`
 *Bases:* VideoStream
+*Guide:* [vision/frames.md](../vision/frames.md)
 
 Read a video from a file, an URL, a glob of files or a network stream.
 
@@ -4933,6 +4962,7 @@ Common interface of the frame sources.
 
 
 *Module:* `dense_armor.utility.signals.vision.visualize`
+*Guide:* [vision/quality.md](../vision/quality.md)
 
 Write a video and a summary image of the signals over time.
 
@@ -5340,6 +5370,7 @@ Public methods:
 
 *Module:* `dense_armor.bridges.sklearn`
 *Bases:* ClassifierMixin, _DenseWrapper, BaseEstimator
+*Guide:* [bridges/sklearn.md](../bridges/sklearn.md)
 
 A Dense-Armor classifier behind the scikit-learn classifier interface.
 
@@ -5361,6 +5392,7 @@ Public methods:
 
 *Module:* `dense_armor.bridges.sklearn`
 *Bases:* RegressorMixin, _DenseWrapper, BaseEstimator
+*Guide:* [bridges/sklearn.md](../bridges/sklearn.md)
 
 A Dense-Armor regressor behind the scikit-learn regressor interface.
 
@@ -5380,6 +5412,7 @@ Public methods:
 
 *Module:* `dense_armor.bridges.sklearn`
 *Bases:* TransformerMixin, _DenseWrapper, BaseEstimator
+*Guide:* [bridges/sklearn.md](../bridges/sklearn.md)
 
 A Dense-Armor transformer behind the scikit-learn transformer interface.
 
@@ -5399,6 +5432,7 @@ Public methods:
 
 
 *Module:* `dense_armor.bridges.torch`
+*Guide:* [bridges/torch.md](../bridges/torch.md)
 
 A ``torch.nn.Module`` usable inside Dense-Armor.
 
@@ -5411,6 +5445,7 @@ Public methods:
 
 *Module:* `dense_armor.bridges.torch`
 *Bases:* Module
+*Guide:* [bridges/torch.md](../bridges/torch.md)
 
 A Dense-Armor model wrapped as a ``torch.nn.Module``.
 
@@ -5517,6 +5552,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.compiled`
+*Guide:* [neural/compiled_training.md](../neural/compiled_training.md)
 
 The compiled pieces of a step that accumulates the gradient.
 
@@ -5524,6 +5560,7 @@ The compiled pieces of a step that accumulates the gradient.
 
 
 *Module:* `dense_armor.utility.deep.neural.models`
+*Guide:* [neural/sequence_layers.md](../neural/sequence_layers.md)
 
 Add the sinusoidal positions of page 6 of Vaswani et al. 2017.
 
@@ -5537,6 +5574,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.continual`
+*Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
 
 A-GEM (Chaudhry et al. 2019, Eq. 11 p. 5).
 
@@ -5550,6 +5588,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.consolidation.archival`
+*Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
 
 Unforgetting architetturale: residual tree + lifecycle + dual memory.
 
@@ -5567,6 +5606,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.deep.neural.adapter`
 *Bases:* Transformer
+*Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
 
 A layer exposed as a ``Transformer``.
 
@@ -5590,6 +5630,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.autoencoder`
+*Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
 
 An encoder and a decoder, joined end to end.
 
@@ -5606,6 +5647,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.conv`
+*Guide:* [neural/vision_layers.md](../neural/vision_layers.md)
 
 1-D average pooling. Input ``(L, c)`` or ``(B, L, c)``.
 
@@ -5619,6 +5661,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.conv`
+*Guide:* [neural/vision_layers.md](../neural/vision_layers.md)
 
 2-D average pooling. Input ``(H, W, c)`` or ``(B, H, W, c)``.
 
@@ -5632,6 +5675,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.background`
+*Guide:* [neural/continuous.md](../neural/continuous.md)
 
 Learn on a worker thread; predict on the last served copy.
 
@@ -5646,6 +5690,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.norm`
+*Guide:* [neural/layers.md](../neural/layers.md)
 
 Batch normalisation of a 2-D batch ``(m, n_features)``.
 
@@ -5659,6 +5704,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.losses`
+*Guide:* [neural/index.md](../neural/index.md)
 
 Binary cross-entropy with logits, with a cached last logits and targets.
 
@@ -5671,6 +5717,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.bidirectional`
+*Guide:* [neural/deep.md](../neural/deep.md)
 
 A forward and a backward recurrent layer, concatenated.
 
@@ -5684,6 +5731,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.bottleneck`
+*Guide:* [neural/composable_attention.md](../neural/composable_attention.md)
 
 One fusion layer of Nagrani et al. 2021, Eq.(7) to Eq.(9).
 
@@ -5697,6 +5745,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.compiled`
+*Guide:* [neural/compiled_training.md](../neural/compiled_training.md)
 
 The compiled steps of a Trainer.
 
@@ -5704,6 +5753,7 @@ The compiled steps of a Trainer.
 
 
 *Module:* `dense_armor.utility.deep.neural.schedules`
+*Guide:* [neural/training.md](../neural/training.md)
 
 A constant learning rate.
 
@@ -5715,6 +5765,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.conv`
+*Guide:* [neural/vision_layers.md](../neural/vision_layers.md)
 
 1-D cross-correlation with zero padding, optional causal shift.
 
@@ -5730,6 +5781,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.conv`
+*Guide:* [neural/vision_layers.md](../neural/vision_layers.md)
 
 2-D cross-correlation with zero padding, channels last.
 
@@ -5743,6 +5795,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.conv_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
 
 3-D cross-correlation with zero padding, channels last.
 
@@ -5756,6 +5809,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.convtranspose`
+*Guide:* [neural/deep.md](../neural/deep.md)
 
 1-D transposed convolution, channels last.
 
@@ -5769,6 +5823,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.convtranspose`
+*Guide:* [neural/deep.md](../neural/deep.md)
 
 2-D transposed convolution, channels last.
 
@@ -5782,6 +5837,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.schedules`
+*Guide:* [neural/training.md](../neural/training.md)
 
 Cosine annealing with warm restarts.
 
@@ -5793,6 +5849,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.stream`
+*Guide:* [neural/memory_and_data.md](../neural/memory_and_data.md)
 
 Batches of ``(x, y)`` from arrays, memory-mapped files or a generator.
 
@@ -5800,6 +5857,7 @@ Batches of ``(x, y)`` from arrays, memory-mapped files or a generator.
 
 
 *Module:* `dense_armor.utility.deep.neural.generative_replay`
+*Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
 
 Deep generative replay (Shin et al. 2017, sec. 2.3 p. 3).
 
@@ -5813,6 +5871,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.layers`
+*Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
 
 A dense layer ``y = x @ W + b``.
 
@@ -5826,6 +5885,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.conv_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
 
 Depthwise 2-D convolution: one square kernel per channel.
 
@@ -5839,6 +5899,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.layers`
+*Guide:* [neural/layers.md](../neural/layers.md)
 
 Random dropout with the scaling of Hinton et al. 2012.
 
@@ -5852,6 +5913,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.consolidation.memory`
+*Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
 
 Dual memory (HiCL, Kapoor et al. 2026, adapted to dense networks).
 
@@ -5867,6 +5929,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.activations_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
 
 ELU with a scale ``alpha`` (Eq.(15), page 5 of Clevert et al.).
 
@@ -5879,6 +5942,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.layers`
+*Guide:* [neural/layers.md](../neural/layers.md)
 
 A lookup table ``E[ids]``.
 
@@ -5892,6 +5956,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.continual`
+*Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
 
 Elastic weight consolidation (Kirkpatrick et al. 2017, Eq. 3 p. 3).
 
@@ -5906,6 +5971,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.conv`
+*Guide:* [neural/vision_layers.md](../neural/vision_layers.md)
 
 Flatten every axis after the batch axis.
 
@@ -5919,6 +5985,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.losses_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
 
 Focal loss ``-alpha_t (1 - p_t)**gamma * log(p_t)``.
 
@@ -5931,6 +5998,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.gated_attention`
+*Guide:* [neural/composable_attention.md](../neural/composable_attention.md)
 
 Cross-attention gated by a per-query signal.
 
@@ -5944,6 +6012,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.activations_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
 
 GELU (exact or approximate) with a forward and a backward.
 
@@ -5956,6 +6025,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.continual`
+*Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
 
 Gradient Episodic Memory (Lopez-Paz & Ranzato 2017, Eq. 8 QP and Eq. 11 dual, p. 4).
 
@@ -5969,6 +6039,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.glu`
+*Guide:* [neural/modern_blocks.md](../neural/modern_blocks.md)
 
 The feed-forward layer ``(act(x W) * (x V)) W2`` of Shazeer 2020.
 
@@ -5982,6 +6053,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.norm_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
 
 Group normalization of the channels of a sample.
 
@@ -5995,6 +6067,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.recurrent`
+*Guide:* [neural/sequence_layers.md](../neural/sequence_layers.md)
 
 GRU layer, Eqs.(5) to (8), page 3 of Cho et al. 2014.
 
@@ -6011,6 +6084,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.deep.neural.hedge`
 *Bases:* Classifier
+*Guide:* [neural/continuous.md](../neural/continuous.md)
 
 Online deep learning with Hedge Backpropagation.
 
@@ -6037,6 +6111,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.losses_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
 
 Hinge loss ``max(0, 1 - y * pred)`` for ``y`` in {-1, +1}.
 
@@ -6049,6 +6124,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.losses`
+*Guide:* [neural/index.md](../neural/index.md)
 
 Huber loss with a cached last prediction and target.
 
@@ -6061,6 +6137,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.norm_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
 
 Instance normalization: one group per channel.
 
@@ -6074,6 +6151,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.losses_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
 
 Kullback-Leibler divergence ``sum_k y_k (log y_k - log p_k)``.
 
@@ -6086,6 +6164,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.losses_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
 
 Mean absolute error with cached last call.
 
@@ -6098,6 +6177,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.losses_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
 
 Softmax cross-entropy with smoothed labels, cached last call.
 
@@ -6110,6 +6190,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.models`
+*Guide:* [neural/sequence_layers.md](../neural/sequence_layers.md)
 
 Take the last step of a sequence ``(B, T, n)``, giving ``(B, n)``.
 
@@ -6123,6 +6204,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.latent_attention`
+*Guide:* [neural/composable_attention.md](../neural/composable_attention.md)
 
 Cross-attention whose queries are a learned latent array.
 
@@ -6136,6 +6218,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.norm`
+*Guide:* [neural/layers.md](../neural/layers.md)
 
 Layer normalisation over the features of each sample.
 
@@ -6149,6 +6232,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.activations_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
 
 Leaky ReLU with a fixed slope (no Param).
 
@@ -6161,6 +6245,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.positions`
+*Guide:* [neural/attention.md](../neural/attention.md)
 
 Add a learned vector to each position of a sequence.
 
@@ -6174,6 +6259,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.consolidation.memory`
+*Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
 
 Lifecycle-quantised memory (SuperLocalMemory V3.3, Bhardwaj 2026, p.1).
 
@@ -6190,6 +6276,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.schedules_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
 
 Linear warmup: ``lr_start`` then a linear ramp to ``lr_end``.
 
@@ -6201,6 +6288,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.recurrent`
+*Guide:* [neural/sequence_layers.md](../neural/sequence_layers.md)
 
 Vanilla LSTM with peepholes, Greff et al. 2017 pages 1-2.
 
@@ -6216,6 +6304,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.matryoshka`
+*Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
 
 The multi-size loss of Matryoshka Representation Learning.
 
@@ -6231,6 +6320,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.conv`
+*Guide:* [neural/vision_layers.md](../neural/vision_layers.md)
 
 1-D max pooling with the first maximum going to the gradient.
 
@@ -6244,6 +6334,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.conv`
+*Guide:* [neural/vision_layers.md](../neural/vision_layers.md)
 
 2-D max pooling with the first maximum going to the gradient.
 
@@ -6257,6 +6348,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.models`
+*Guide:* [neural/sequence_layers.md](../neural/sequence_layers.md)
 
 Mean over the time axis of ``(B, T, n)`` or ``(T, n)``.
 
@@ -6270,6 +6362,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.losses`
+*Guide:* [neural/continuous.md](../neural/continuous.md)
 
 Mean squared error with a cached last prediction and target.
 
@@ -6282,6 +6375,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.cross_attention`
+*Guide:* [neural/composable_attention.md](../neural/composable_attention.md)
 
 Multi-head attention with queries and context from two streams.
 
@@ -6298,6 +6392,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.attention`
+*Guide:* [neural/attention.md](../neural/attention.md)
 
 Multi-head self-attention of Vaswani et al. 2017, page 5.
 
@@ -6315,6 +6410,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.losses_lm`
+*Guide:* [neural/decoder_lm.md](../neural/decoder_lm.md)
 
 Cross-entropy of the logits at ``t`` against the token at ``t+1``.
 
@@ -6327,6 +6423,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.schedules_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
 
 Noam schedule: linear warmup then inverse-square-root decay.
 
@@ -6339,6 +6436,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.deep.neural.online_autoencoder`
 *Bases:* AnomalyDetector
+*Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
 
 An autoencoder trained one sample at a time, as an anomaly score.
 
@@ -6364,6 +6462,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.deep.neural.online`
 *Bases:* Classifier
+*Guide:* [neural/continuous.md](../neural/continuous.md)
 
 A network classifier trained one sample at a time.
 
@@ -6390,6 +6489,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.deep.neural.online`
 *Bases:* Regressor
+*Guide:* [neural/continuous.md](../neural/continuous.md)
 
 A network trained one sample at a time.
 
@@ -6414,6 +6514,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.deep.neural.online_vector`
 *Bases:* Regressor
+*Guide:* [neural/deep.md](../neural/deep.md)
 
 A network trained one sample at a time, on vector targets.
 
@@ -6437,6 +6538,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.chain`
+*Guide:* [neural/chains.md](../neural/chains.md)
 
 Several branches on the same input, merged on the output.
 
@@ -6451,6 +6553,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.params`
+*Guide:* [neural/deep.md](../neural/deep.md)
 
 A jax array with a gradient of the same shape and dtype.
 
@@ -6463,6 +6566,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.consolidation.vq`
+*Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
 
 Product quantisation (Jégou, Douze, Schmid 2011, IEEE TPAMI 33(1)).
 
@@ -6477,6 +6581,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.activations`
+*Guide:* [neural/index.md](../neural/index.md)
 
 PReLU with ``a`` as a ``Param``; ``backward`` fills ``a.grad``.
 
@@ -6490,6 +6595,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.activations`
+*Guide:* [neural/chains.md](../neural/chains.md)
 
 ReLU: ``forward`` caches ``x`` and ``y``; ``backward`` returns ``dx``.
 
@@ -6502,6 +6608,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.layers`
+*Guide:* [neural/layers.md](../neural/layers.md)
 
 ``y = x + inner.forward(x)`` (He et al. 2015, Eqn.(1) page 3).
 
@@ -6515,6 +6622,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.consolidation.tree`
+*Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
 
 Residual tree (DeltaMem, Tan et al. 2026, adapted to dense networks).
 
@@ -6532,6 +6640,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.norm_rms`
+*Guide:* [neural/modern_blocks.md](../neural/modern_blocks.md)
 
 RMS layer normalisation over the features of each sample.
 
@@ -6545,6 +6654,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.recurrent`
+*Guide:* [neural/deep.md](../neural/deep.md)
 
 Elman recurrent layer ``h = tanh(W x + U h_prev + b)``.
 
@@ -6560,6 +6670,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.rotary_decoder`
+*Guide:* [neural/rotary_decoder.md](../neural/rotary_decoder.md)
 
 ``Embedding``, ``n_layers`` modern blocks, ``RMSNorm`` and a ``Dense`` head.
 
@@ -6576,6 +6687,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.rotary_decoder`
+*Guide:* [neural/rotary_decoder.md](../neural/rotary_decoder.md)
 
 Pre-norm decoder block: ``x + Attn(RMSNorm(x))``, then ``+ FFN(RMSNorm(.))``.
 
@@ -6591,6 +6703,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.conv_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
 
 Separable 2-D convolution: depthwise then pointwise.
 
@@ -6604,6 +6717,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.seq2seq`
+*Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
 
 A recurrent encoder, a recurrent decoder, a dense head.
 
@@ -6617,6 +6731,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.chain`
+*Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
 
 A chain of layers, applied in order.
 
@@ -6634,6 +6749,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.activations`
+*Guide:* [neural/index.md](../neural/index.md)
 
 Sigmoid: ``forward`` caches ``x`` and ``y``; ``backward`` returns ``dx``.
 
@@ -6646,6 +6762,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.activations_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
 
 SiLU: ``x * sigmoid(x)``.
 
@@ -6658,6 +6775,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.activations`
+*Guide:* [neural/index.md](../neural/index.md)
 
 Softmax over the last axis: ``forward`` caches ``x`` and ``y``; ``backward`` returns ``dx``.
 
@@ -6682,6 +6800,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.activations_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
 
 Softplus with a scale ``beta``.
 
@@ -6694,6 +6813,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.moe`
+*Guide:* [neural/moe_testtime.md](../neural/moe_testtime.md)
 
 Sparse mixture of experts with dispatch.
 
@@ -6710,6 +6830,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.schedules`
+*Guide:* [neural/training.md](../neural/training.md)
 
 Step schedule: ``lr * gamma ** floor(epoch / step)``.
 
@@ -6721,6 +6842,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.activations`
+*Guide:* [neural/index.md](../neural/index.md)
 
 Tanh: ``forward`` caches ``x`` and ``y``; ``backward`` returns ``dx``.
 
@@ -6733,6 +6855,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.test_time`
+*Guide:* [neural/moe_testtime.md](../neural/moe_testtime.md)
 
 Test-time compute wrapper.
 
@@ -6746,6 +6869,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.consolidation.memory`
+*Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
 
 Classical Hopfield capacity as a forgetting bound (placeholder).
 
@@ -6758,6 +6882,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.trainer`
+*Guide:* [neural/training.md](../neural/training.md)
 
 Train a model on a dataset, with mini-batches and schedules.
 
@@ -6771,6 +6896,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.attention`
+*Guide:* [neural/attention.md](../neural/attention.md)
 
 The encoder block of Vaswani et al. 2017.
 
@@ -6786,6 +6912,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.decoder`
+*Guide:* [neural/decoder_lm.md](../neural/decoder_lm.md)
 
 One decoder layer of Vaswani et al. 2017.
 
@@ -6799,6 +6926,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.convtranspose`
+*Guide:* [neural/deep.md](../neural/deep.md)
 
 Nearest-neighbour upsampling along the length, channels last.
 
@@ -6812,6 +6940,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.convtranspose`
+*Guide:* [neural/deep.md](../neural/deep.md)
 
 Nearest-neighbour upsampling along both spatial axes, channels last.
 
@@ -6825,6 +6954,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.quantize`
+*Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
 
 Nearest-code quantizer with the straight-through gradient.
 
@@ -6841,6 +6971,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.deep.neural.consolidation.vq`
+*Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
 
 Vector-quantised memory (van den Oord et al. 2017, Eq. 1-4 p. 3).
 
@@ -6917,6 +7048,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.online.linear.bayes`
 *Bases:* Regressor
+*Guide:* [linear/bayes.md](../linear/bayes.md)
 
 Online Bayesian linear regression with a conjugate Gaussian prior.
 
@@ -6941,6 +7073,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.online.linear.glm`
 *Bases:* Regressor
+*Guide:* [linear/glm.md](../linear/glm.md)
 
 Online linear regression with squared loss.
 
@@ -6967,6 +7100,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.online.linear.glm`
 *Bases:* Classifier
+*Guide:* [linear/glm.md](../linear/glm.md)
 
 Online binary logistic regression with log loss.
 
@@ -6995,6 +7129,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.online.linear.payload`
 *Bases:* Regressor
+*Guide:* [linear/payload.md](../linear/payload.md)
 
 Recursive least squares estimate of a point mass on a link.
 
@@ -7021,6 +7156,7 @@ Public methods:
 
 *Module:* `dense_armor.ml.ensemble`
 *Bases:* MLBase
+*Guide:* [ml/ensemble.md](../ml/ensemble.md)
 
 Bagging: one model per bootstrap sample, probabilities averaged.
 
@@ -7045,6 +7181,7 @@ Public methods:
 
 *Module:* `dense_armor.ml.tree`
 *Bases:* MLBase
+*Guide:* [ml/tree.md](../ml/tree.md)
 
 Binary decision tree with the gini impurity, grown recursively on the whole table.
 
@@ -7069,6 +7206,7 @@ Public methods:
 
 *Module:* `dense_armor.ml.linear`
 *Bases:* MLBase
+*Guide:* [ml/linear.md](../ml/linear.md)
 
 Bayesian linear regression with a Gaussian prior, in closed form.
 
@@ -7092,6 +7230,7 @@ Public methods:
 
 *Module:* `dense_armor.ml.ensemble`
 *Bases:* MLBase
+*Guide:* [ml/ensemble.md](../ml/ensemble.md)
 
 AdaBoost with the multiclass weights SAMME (Zhu et al. 2009).
 
@@ -7116,6 +7255,7 @@ Public methods:
 
 *Module:* `dense_armor.ml.stats`
 *Bases:* MLBase
+*Guide:* [ml/stats.md](../ml/stats.md)
 
 The moments of every column of a matrix.
 
@@ -7138,6 +7278,7 @@ Public methods:
 
 *Module:* `dense_armor.ml.stats`
 *Bases:* Covariance
+*Guide:* [ml/stats.md](../ml/stats.md)
 
 Pearson correlation of two channels over the whole dataset.
 
@@ -7160,6 +7301,7 @@ Public methods:
 
 *Module:* `dense_armor.ml.stats`
 *Bases:* MLBase
+*Guide:* [ml/stats.md](../ml/stats.md)
 
 Sample covariance (``n - 1``) and Pearson correlation of two channels.
 
@@ -7182,6 +7324,7 @@ Public methods:
 
 *Module:* `dense_armor.ml.tree`
 *Bases:* _Tree
+*Guide:* [ml/ensemble.md](../ml/ensemble.md)
 
 CART classification tree: splits that maximise the Gini decrease.
 
@@ -7206,6 +7349,7 @@ Public methods:
 
 *Module:* `dense_armor.ml.tree`
 *Bases:* _Tree
+*Guide:* [ml/tree.md](../ml/tree.md)
 
 CART regression tree: splits that maximise the variance reduction; leaves hold the mean.
 
@@ -7229,6 +7373,7 @@ Public methods:
 
 *Module:* `dense_armor.ml.vision`
 *Bases:* MLBase
+*Guide:* [ml/vision.md](../ml/vision.md)
 
 Horn-Schunck optical flow between two frames.
 
@@ -7251,6 +7396,7 @@ Public methods:
 
 *Module:* `dense_armor.ml.ensemble`
 *Bases:* MLBase
+*Guide:* [ml/ensemble.md](../ml/ensemble.md)
 
 Weights ``exp(-eta L_m)`` from the total loss of each model on the data (Hedge).
 
@@ -7274,6 +7420,7 @@ Public methods:
 
 *Module:* `dense_armor.ml.forest`
 *Bases:* MLBase
+*Guide:* [ml/forest.md](../ml/forest.md)
 
 Extremely randomised trees: the whole sample and a random threshold at each split.
 
@@ -7297,6 +7444,7 @@ Public methods:
 
 *Module:* `dense_armor.ml.vision`
 *Bases:* MLBase
+*Guide:* [ml/vision.md](../ml/vision.md)
 
 Global shift between two frames by phase correlation.
 
@@ -7319,6 +7467,7 @@ Public methods:
 
 *Module:* `dense_armor.ml.linear`
 *Bases:* MLBase
+*Guide:* [ml/multioutput.md](../ml/multioutput.md)
 
 Ridge regression in closed form.
 
@@ -7342,6 +7491,7 @@ Public methods:
 
 *Module:* `dense_armor.ml.linear`
 *Bases:* MLBase
+*Guide:* [ml/linear.md](../ml/linear.md)
 
 Binary logistic regression by Newton steps on the mean log loss.
 
@@ -7366,6 +7516,7 @@ Public methods:
 
 *Module:* `dense_armor.ml.base`
 *Bases:* SklearnCompat, Root
+*Guide:* [ml/index.md](../ml/index.md)
 
 Root of the classes: parameters, ``clone`` and ``state_dict``.
 
@@ -7388,6 +7539,7 @@ Public methods:
 
 *Module:* `dense_armor.ml.stats`
 *Bases:* MLBase
+*Guide:* [ml/stats.md](../ml/stats.md)
 
 Mean, variance (``n - 1``), skewness, excess kurtosis, min, max, range.
 
@@ -7410,6 +7562,7 @@ Public methods:
 
 *Module:* `dense_armor.ml.vision`
 *Bases:* MLBase
+*Guide:* [ml/vision.md](../ml/vision.md)
 
 Mask of the pixels whose flow magnitude is large, from the two components of a flow field.
 
@@ -7432,6 +7585,7 @@ Public methods:
 
 *Module:* `dense_armor.ml.vision`
 *Bases:* MLBase
+*Guide:* [ml/vision.md](../ml/vision.md)
 
 Principal components of a table: the top ``k`` eigenvectors of its covariance.
 
@@ -7455,6 +7609,7 @@ Public methods:
 
 *Module:* `dense_armor.ml.forest`
 *Bases:* MLBase
+*Guide:* [ml/forest.md](../ml/forest.md)
 
 Random forest: trees on bootstrap samples with ``sqrt(d)`` random features per split.
 
@@ -7479,6 +7634,7 @@ Public methods:
 
 *Module:* `dense_armor.ml.stats`
 *Bases:* MLBase
+*Guide:* [ml/stats.md](../ml/stats.md)
 
 Linear shrinkage toward ``(1/p) I`` on the sample covariance of all rows.
 
@@ -7501,6 +7657,7 @@ Public methods:
 
 *Module:* `dense_armor.ml.preprocessing`
 *Bases:* MLBase
+*Guide:* [ml/preprocessing.md](../ml/preprocessing.md)
 
 TF-IDF matrix of a corpus with a fixed vocabulary.
 
@@ -7525,6 +7682,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.online.optim.adagrad`
+*Guide:* [optim/adagrad.md](../optim/adagrad.md)
 
 AdaGrad with per-coordinate adaptive step sizes.
 
@@ -7538,6 +7696,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.online.optim.adam`
+*Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
 
 Adam with bias-corrected moment estimates.
 
@@ -7552,6 +7711,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.online.optim.adamw`
 *Bases:* Adam
+*Guide:* [neural/modern_blocks.md](../neural/modern_blocks.md)
 
 Adam with weight decay decoupled from the gradient.
 
@@ -7565,6 +7725,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.online.optim.ftrl`
+*Guide:* [optim/ftrl.md](../optim/ftrl.md)
 
 FTRL with a quadratic + L1 + L2 regularizer.
 
@@ -7578,6 +7739,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.online.optim.newton`
+*Guide:* [optim/newton.md](../optim/newton.md)
 
 Second-order online update with a rank-one running Hessian.
 
@@ -7592,6 +7754,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.online.optim.rmsprop`
+*Guide:* [neural/deep.md](../neural/deep.md)
 
 RMSProp with an exponentially decaying average of squared gradients.
 
@@ -7605,6 +7768,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.online.optim.sgd`
+*Guide:* [neural/continuous.md](../neural/continuous.md)
 
 Gradient descent with optional momentum and Nesterov momentum.
 
@@ -7621,6 +7785,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.online.timeseries.cycle`
 *Bases:* Transformer
+*Guide:* [timeseries/cycle.md](../timeseries/cycle.md)
 
 Cycle residual of a repetitive scalar stream.
 
@@ -7645,6 +7810,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.online.timeseries.garch`
 *Bases:* Transformer
+*Guide:* [timeseries/garch.md](../timeseries/garch.md)
 
 GARCH(1, 1) conditional variance with fixed parameters.
 
@@ -7672,6 +7838,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.online.timeseries.kalman`
 *Bases:* KalmanFilter
+*Guide:* [timeseries/kalman.md](../timeseries/kalman.md)
 
 Adaptive Kalman filter after Popescu et al. (2026).
 
@@ -7699,6 +7866,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.online.timeseries.kalman`
 *Bases:* Transformer
+*Guide:* [timeseries/kalman.md](../timeseries/kalman.md)
 
 Linear Kalman filter with fixed matrices.
 
@@ -7726,6 +7894,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.online.timeseries.ar`
 *Bases:* Transformer
+*Guide:* [timeseries/ar.md](../timeseries/ar.md)
 
 Online univariate autoregressive model of order ``order``.
 
@@ -7753,6 +7922,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.online.timeseries.ar`
 *Bases:* Transformer
+*Guide:* [timeseries/ar.md](../timeseries/ar.md)
 
 Online vector autoregressive model, TIRSO of Zaman et al. 2019.
 
@@ -7778,6 +7948,7 @@ Public methods:
 
 *Module:* `dense_armor.utility.online.timeseries.kalman`
 *Bases:* KalmanFilter
+*Guide:* [timeseries/kalman.md](../timeseries/kalman.md)
 
 Variational Bayesian adaptive Kalman filter.
 
