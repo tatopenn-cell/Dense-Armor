@@ -1,4 +1,5 @@
 """Tests for dense_armor/roles/uncertainty.py."""
+
 import doctest
 
 import jax.numpy as jnp
@@ -59,9 +60,7 @@ def test_estimate_negative_variance_is_clamped():
 
 
 def test_aci_coverage_close_to_target_on_stationary_stream():
-    aci = AdaptiveConformalRegressor(
-        _Mean(), alpha=0.1, gamma=0.01, window=100
-    )
+    aci = AdaptiveConformalRegressor(_Mean(), alpha=0.1, gamma=0.01, window=100)
     for x, y in _stream(2000, noise=0.2, seed=1):
         aci.learn_one(x, y)
     assert abs(aci.coverage - 0.9) < 0.05, aci.coverage
@@ -120,9 +119,32 @@ def test_aci_transform_one_reports_alpha_t_and_coverage():
     assert d["lo"] <= d["hi"]
 
 
-def test_aci_has_robot_contract():
+def test_aci_propagates_the_missing_contract_of_its_model():
+    # _Mean declares no budget_s and no memory_class: the wrapper must not
+    # invent one, otherwise RealtimePipeline would accept a loop the wrapped
+    # model cannot honour.
     aci = AdaptiveConformalRegressor(_Mean())
-    assert aci.budget_s is not None
+    assert aci.budget_s is None
+    assert aci.memory_class == "unknown"
+
+
+def test_aci_sums_the_model_budget_and_caps_the_memory_class():
+    class _WithContract(Regressor):
+        budget_s = 1e-4
+        memory_class = "O(1)"
+
+        def __init__(self):
+            self._last = 0.0
+
+        def learn_one(self, x, y, t=None):
+            self._last = float(y)
+            return self
+
+        def predict_one(self, x, t=None, return_std=False):
+            return self._last
+
+    aci = AdaptiveConformalRegressor(_WithContract())
+    assert aci.budget_s == 2 * 1e-4 + AdaptiveConformalRegressor._CONFORMAL_OVERHEAD_S
     assert aci.memory_class == "O(window)"
 
 

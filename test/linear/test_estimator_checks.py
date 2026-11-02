@@ -150,22 +150,20 @@ def test_check_p99_within_budget_rejects_slow_learner():
         check_estimator(_SlowLearner())
 
 
-def test_step_is_pure_skip_is_honoured_for_linear():
+def test_step_is_pure_passes_for_linear():
     from dense_armor.checks.robot import check_step_is_pure
 
     est = LinearRegression(optimizer=SGD(lr=0.1))
-    assert "check_step_is_pure" in est._unit_test_skips()
-    with pytest.raises(TypeError, match="scalar"):
-        check_step_is_pure(est)
+    assert "check_step_is_pure" not in est._unit_test_skips()
+    check_step_is_pure(est)
 
 
-def test_step_is_pure_skip_is_honoured_for_logistic():
+def test_step_is_pure_passes_for_logistic():
     from dense_armor.checks.robot import check_step_is_pure
 
     est = LogisticRegression(optimizer=SGD(lr=0.1))
-    assert "check_step_is_pure" in est._unit_test_skips()
-    with pytest.raises(TypeError, match="scalar"):
-        check_step_is_pure(est)
+    assert "check_step_is_pure" not in est._unit_test_skips()
+    check_step_is_pure(est)
 
 
 def test_clone_skip_is_honoured_for_payload():

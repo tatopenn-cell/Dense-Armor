@@ -142,15 +142,6 @@ class OnlineAR(Transformer):
         except (TypeError, ValueError, KeyError, IndexError):
             return None
 
-    def _unit_test_skips(self) -> set:
-        """Skip checks that assume a scalar state.
-
-        ``check_step_is_pure`` converts every leaf of the state to a
-        Python float. The state of this model contains a history
-        vector and a full inverse-Hessian matrix, so that check
-        cannot run. ``check_step_is_jittable`` still runs and passes.
-        """
-        return {"check_step_is_pure"}
 
     def learn_one(self, x: dict, y: Any = None, t: float | None = None) -> "OnlineAR":
         """One sample: update the coefficients, then push it to the history."""

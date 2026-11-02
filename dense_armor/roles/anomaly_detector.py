@@ -70,6 +70,13 @@ class AnomalyGate(Estimator):
         protect: bool = True,
         threshold: float | None = None,
     ):
+        if getattr(detector, "score_is_inverted", False):
+            raise ValueError(
+                f"{type(detector).__name__} has score_one inverted "
+                f"(low score = anomalous); AnomalyGate expects "
+                f"'high score = anomalous'. Use HampelScorer, "
+                f"SigmaClipScorer or TukeyScorer."
+            )
         decides_itself = type(self).classify is not AnomalyGate.classify
         if (
             threshold is None

@@ -431,5 +431,3 @@ class DriftAdaptiveClassifier(Classifier):
             "detector": CUSUMDriftDetector(reference="adaptive"),
         }
 
-    def _unit_test_skips(self):
-        return {"check_roc_auc"}

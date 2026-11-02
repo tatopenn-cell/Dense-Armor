@@ -130,8 +130,6 @@ class RecursiveLeastSquares(Regressor):
         xv = self._to_vec(x)
         return float(self._w @ xv)
 
-    def _unit_test_skips(self):
-        return {"check_roc_auc"}
 
 
 _FEATURE_NAMES = ("qdd", "qd", "sign_qd", "g", "one")

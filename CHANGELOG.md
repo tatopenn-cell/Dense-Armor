@@ -5,6 +5,10 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 ## [Unreleased]
 
 ### Changed
+- `Protected` with a drift detector reads the flag from the last
+  `learn_one`, so the first `fallback` is returned on the sample after
+  the one that triggered drift. Documented in the class docstring and
+  enforced by `test_predict_after_drift_returns_the_fallback_on_the_next_sample`.
 - `Armatura` is now `Armor`, the module `dense_armor/armatura.py` is now
   `dense_armor/armor.py`, and the docs page `shields/armatura.md` is now
   `shields/armor.md`. The old import path `dense_armor.armatura` still works
@@ -52,6 +56,13 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   decoder trained on tiny Shakespeare on a Tesla T4, with the unigram and bigram baselines.
 
 ### Fixed
+- `ChauvenetScorer` declares `score_is_inverted = True`; `AnomalyGate` and
+  `Protected` raise `ValueError` when the detector declares that attribute,
+  because its `score_one` is inverted with respect to the
+  "high score = anomalous" contract. Before, both gates classified
+  inliers as anomalies. Use `HampelScorer`, `SigmaClipScorer` or
+  `TukeyScorer` with the gates, or call `ChauvenetScorer.is_outlier`
+  directly.
 - `rotary_angles` accepts a traced `offset` (it built the positions with `jnp.arange(offset, ...)`, which needs
   a concrete value, so a compiled step with a traced position failed).
 - `UnitCheckedPipeline.learn_one` trains every transformer of the pipeline, as `|` does. It only
@@ -72,10 +83,8 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   first key of the dict. New argument `feature`. A detector with `score_one` and a `threshold` attribute is
   applied (it was never flagged). New argument `train_detector` (default `False`, behaviour unchanged): with
   `True`, `learn_one` trains the detector on the samples that are not flagged; a detector that nobody trains
-  flags nothing. A drift detector sees each sample once: `predict_one`, `score_one` and `learn_one` each called
-  `update`, so a sample that was predicted and then learned counted twice. The first call with a sample updates
-  the detector and the later calls with the same unchanged object reuse the answer; a new sample, or the same
-  object after a change, or the same object after a `learn_one`, updates it.
+  flags nothing. A drift detector is fed by `learn_one` only, once per sample: `predict_one` and `score_one`
+  updated it too, so a sample that was predicted and then learned counted twice; they now read its current state.
 - Documented, no change of behaviour: the batch form of `Signal` holds a tuple per channel and is not accepted
   by `learn_one`; `SafeEstimator.learn_one` costs a `predict_one` and a `learn_one` of the model.
 - `GatedCrossAttention` refuses a signal of shape `(Tq, Tq)` for a 2-D query (it was accepted and gave an output

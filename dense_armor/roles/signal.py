@@ -252,7 +252,7 @@ class SignalBatch:
         self.units: list[str] = units
         self.mask: jnp.ndarray = mask
         self.times: tuple[float | None, ...] = ts
-        self.t: float | None = ts[0] if all(tt == ts[0] for tt in ts) else None
+        self.t: float | None = ts[0] if ts and all(tt == ts[0] for tt in ts) else None
 
     def __len__(self) -> int:
         return int(self.array.shape[0])
