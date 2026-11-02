@@ -333,9 +333,14 @@ class RigidBodyModel:
 
     def bias_forces(self, q, qd):
         """Real Coriolis/centrifugal generalized-force vector C(q,qdot)*qdot, shape (n,)."""
-        mv = lambda qq: self.mass_matrix(qq) @ qd
+
+        def mv(qq):
+            return self.mass_matrix(qq) @ qd
+
+        def quad(qq):
+            return qd @ self.mass_matrix(qq) @ qd
+
         mdot_qd = jax.jvp(mv, (q,), (qd,))[1]
-        quad = lambda qq: qd @ self.mass_matrix(qq) @ qd
         return mdot_qd - 0.5 * jax.grad(quad)(q)
 
     def forward_dynamics(self, q, qd, tau):

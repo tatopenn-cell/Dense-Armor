@@ -49,7 +49,10 @@ from collections import deque
 
 import numpy as np
 
-from dense_armor.utility.online.protect.arbiter import _robust_center_scale, classify_segments
+from dense_armor.utility.online.protect.arbiter import (
+    _robust_center_scale,
+    classify_segments,
+)
 
 
 def _feature_value(x, feature):

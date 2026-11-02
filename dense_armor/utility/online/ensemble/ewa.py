@@ -169,7 +169,7 @@ class ExponentiallyWeightedAverageRegressor(Regressor):
                 preds.append(0.0)
         l_min = min(self.losses_)
         w = np.array(
-            [math.exp(-self.eta * min(l - l_min, 700.0)) for l in self.losses_],
+            [math.exp(-self.eta * min(loss - l_min, 700.0)) for loss in self.losses_],
             dtype=float,
         )
         z = float(w.sum())

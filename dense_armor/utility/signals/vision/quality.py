@@ -196,11 +196,14 @@ class Sync(Transformer):
         max_shift = min(max_shift, n - 4)
         for sh in range(-max_shift, max_shift + 1):
             if sh > 0:
-                aa = a[sh:]; bb = b[:n - sh]
+                aa = a[sh:]
+                bb = b[: n - sh]
             elif sh < 0:
-                aa = a[:n + sh]; bb = b[-sh:]
+                aa = a[: n + sh]
+                bb = b[-sh:]
             else:
-                aa = a; bb = b
+                aa = a
+                bb = b
             if len(aa) < 4 or aa.std() < 1e-9 or bb.std() < 1e-9:
                 continue
             c = float(np.corrcoef(aa, bb)[0, 1])
@@ -270,7 +273,9 @@ class EventFrame(Transformer):
             events = [x]
         for ev in events:
             if isinstance(ev, dict):
-                ex = int(ev["x"]); ey = int(ev["y"]); pol = int(ev.get("polarity", 1))
+                ex = int(ev["x"])
+                ey = int(ev["y"])
+                pol = int(ev.get("polarity", 1))
                 tt = float(ev.get("t", t if t is not None else 0.0))
             else:
                 ex, ey, pol, tt = int(ev[0]), int(ev[1]), int(ev[2]), float(ev[3])

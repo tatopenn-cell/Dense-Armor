@@ -69,6 +69,12 @@ extend-exclude = [".claude"]
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F", "I", "UP"]
 
+[tool.ruff.lint.per-file-ignores]
+"dense_armor/__init__.py" = ["E402"]
+"dense_armor/checks/check_estimator.py" = ["E402"]
+"dense_armor/roles/__init__.py" = ["E402", "F401"]
+"dense_armor/core/__init__.py" = ["F401"]
+
 [[tool.mypy.overrides]]
 module = ["pyulog", "pyulog.*", "pymavlink", "pymavlink.*", "paho.*", "yaml", "psutil", "scipy", "scipy.*", "zmq", "confluent_kafka"]
 ignore_missing_imports = true
