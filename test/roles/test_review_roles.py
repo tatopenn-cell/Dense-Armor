@@ -229,6 +229,7 @@ class _Drift:
 
     def update(self, value, t=None):
         self.seen.append(value)
+        self.drift_detected = value > 5.0
         return self
 
 
