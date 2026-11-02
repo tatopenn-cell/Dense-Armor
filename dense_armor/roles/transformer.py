@@ -26,7 +26,7 @@ class Transformer(Estimator):
         >>> t.transform_one({"v": 0.0})
         {'a': 1.0, 'b': 2.0, 'c': 3.0}
         >>> (Shift("a", 1.0) * Shift("b", 2.0)).transform_one({"v": 1.0})
-        {'a*b': 4.0}
+        {'a*b': 6.0}
     """
 
     _supervised = False

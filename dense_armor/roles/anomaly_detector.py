@@ -78,10 +78,9 @@ class AnomalyGate(Estimator):
 
     def classify(self, score: float) -> bool:
         """``True`` if ``score`` is above the threshold."""
-        limit = (
-            self.threshold if self.threshold is not None else self.detector.threshold
-        )
-        return score > limit
+        if self.threshold is not None:
+            return score > self.threshold
+        return score > float(getattr(self.detector, "threshold"))
 
     def learn_one(self, x: dict, t: float | None = None) -> "AnomalyGate":
         s = call_with_t(self.detector.score_one, x, t=t)

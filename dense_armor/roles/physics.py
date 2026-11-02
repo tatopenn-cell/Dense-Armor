@@ -188,7 +188,7 @@ class JointLimits:
 
     def in_bounds(self, q: Sequence[float] | np.ndarray) -> bool:
         """Return ``True`` if ``q`` is inside ``[lower, upper]`` everywhere."""
-        q_arr = np.asarray(q, dtype=float)
+        q_arr: np.ndarray = np.asarray(q, dtype=float)
         if q_arr.shape != (self.n,):
             raise ValueError(f"q has shape {q_arr.shape}, expected ({self.n},)")
         return bool(np.all(q_arr >= self.lower) and np.all(q_arr <= self.upper))
