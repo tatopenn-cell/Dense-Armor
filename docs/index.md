@@ -221,6 +221,8 @@ past.
 
 - **[Streams and datasets](stream/index.md)** — CSV, ROS bag, array, merge by time,
   shuffle; the Casper, DriftStream and SyntheticArm datasets.
+- **[Shared-memory containers](api/data_shared.md)** — let worker processes read a very
+  large list without every worker copying it.
 - **[Statistics](stats/index.md)** — moments, robust statistics, streaming quantiles
   (t-digest, DDSketch), dependence, sketches.
 - **[Preprocessing](preprocessing/index.md)** — scalers per feature and per joint,
@@ -236,10 +238,20 @@ past.
   controller, full 6-DoF controller, xacro and mimic joints.
 - **[Benchmark](benchmarks/real_robot_benchmark.md)** — CASPER on the UR3e.
 
-**Vision** — native image features and patch memory.
+**Vision, video and tracking** — from a frame with a timestamp to objects, joints and events.
 
 - **[Vision](vision/index.md)** — HOG, moments, Lucas–Kanade optical flow, colour
   features, patch descriptors, visual vocabulary.
+- **[Frames](vision/frames.md)** — the frame with a timestamp, the currency of every video.
+- **[Features](vision/features.md)** — what a frame carries: edges and their direction.
+- **[Optical flow](vision/flow.md)** — how far things moved between two frames.
+- **[Reduce](vision/reduce.md)** — fewer numbers, same meaning: random projection, PCA,
+  the whole chain.
+- **[Motion in time](vision/motion.md)** — energy, global shift, scene changes.
+- **[Tracking](vision/tracking.md)** — objects without a detector, signals, joints.
+- **[Kinematics](vision/kinematics.md)** — landmarks, kinematics, registration.
+- **[Quality](vision/quality.md)** — frame quality, sync, event cameras, visualisation,
+  benchmark.
 - **[Patches](vision/patches.md)** — PatchFeatures and PatchMemory (native PatchCore),
   reservoir and coreset.
 
