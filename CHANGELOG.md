@@ -20,9 +20,9 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 - **Incompatible with 1.2.0:** `GatedCrossAttention` returns `g * attention(xq, xc)` again, as the item B of
   the task asked, and not `xq + g * attention(xq, xc)`. A closed step produces the zero vector and sends no
-  gradient to the queries, to the context or to a parameter. The change of 1.2.0 was a deviation from the
-  specification made in a review, without the approval of the owner. To keep the static part of the query, add it
-  outside of the class with `Residual` or `Parallel`; the page `docs/neural/composable_attention.md` shows it.
+  gradient to the queries, to the context or to a parameter. The form of 1.2.0 is gone. To keep the static part of
+  the query, add it outside of the class with `Residual` or `Parallel`; the page
+  `docs/neural/composable_attention.md` shows it.
 - `GatedCrossAttention` refuses a signal of shape `(Tq, Tq)` for a 2-D query (it was accepted and gave an output
   of the wrong shape); the example of `sinusoidal_positions` no longer depends on the float type.
 
