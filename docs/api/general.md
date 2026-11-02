@@ -10,7 +10,7 @@ the link leads there for the full explanation and examples.
 
 ## Classes by subsystem
 
-**Jump to:** [Roles](#roles) &nbsp;·&nbsp; [Metrics](#metrics) &nbsp;·&nbsp; [Evaluate](#evaluate) &nbsp;·&nbsp; [Core](#core) &nbsp;·&nbsp; [Mcp_server](#mcp_server) &nbsp;·&nbsp; [Anomaly](#anomaly) &nbsp;·&nbsp; [Drift](#drift) &nbsp;·&nbsp; [Trees](#trees) &nbsp;·&nbsp; [Naive Bayes](#naive-bayes) &nbsp;·&nbsp; [Distributions](#distributions) &nbsp;·&nbsp; [Nearest neighbours](#nearest-neighbours) &nbsp;·&nbsp; [Multiclass](#multiclass) &nbsp;·&nbsp; [Multi-output](#multi-output) &nbsp;·&nbsp; [Forests](#forests) &nbsp;·&nbsp; [Ensembles](#ensembles) &nbsp;·&nbsp; [Bandits](#bandits) &nbsp;·&nbsp; [Active learning](#active-learning) &nbsp;·&nbsp; [Factorization machines](#factorization-machines) &nbsp;·&nbsp; [Recommenders](#recommenders) &nbsp;·&nbsp; [Rules](#rules) &nbsp;·&nbsp; [Clustering](#clustering) &nbsp;·&nbsp; [Stats](#stats) &nbsp;·&nbsp; [Preprocessing](#preprocessing) &nbsp;·&nbsp; [Compose](#compose) &nbsp;·&nbsp; [Vision](#vision) &nbsp;·&nbsp; [Learn](#learn) &nbsp;·&nbsp; [Datasets](#datasets) &nbsp;·&nbsp; [Protect](#protect) &nbsp;·&nbsp; [Bridges](#bridges) &nbsp;·&nbsp; [Armor](#armor) &nbsp;·&nbsp; [Misc](#misc) &nbsp;·&nbsp; [Dynamics](#dynamics)
+**Jump to:** [Roles](#roles) &nbsp;·&nbsp; [Metrics](#metrics) &nbsp;·&nbsp; [Evaluate](#evaluate) &nbsp;·&nbsp; [Core](#core) &nbsp;·&nbsp; [Mcp_server](#mcp_server) &nbsp;·&nbsp; [Anomaly](#anomaly) &nbsp;·&nbsp; [Drift](#drift) &nbsp;·&nbsp; [Trees](#trees) &nbsp;·&nbsp; [Naive Bayes](#naive-bayes) &nbsp;·&nbsp; [Distributions](#distributions) &nbsp;·&nbsp; [Nearest neighbours](#nearest-neighbours) &nbsp;·&nbsp; [Multiclass](#multiclass) &nbsp;·&nbsp; [Multi-output](#multi-output) &nbsp;·&nbsp; [Forests](#forests) &nbsp;·&nbsp; [Ensembles](#ensembles) &nbsp;·&nbsp; [Bandits](#bandits) &nbsp;·&nbsp; [Active learning](#active-learning) &nbsp;·&nbsp; [Factorization machines](#factorization-machines) &nbsp;·&nbsp; [Recommenders](#recommenders) &nbsp;·&nbsp; [Rules](#rules) &nbsp;·&nbsp; [Clustering](#clustering) &nbsp;·&nbsp; [Stats](#stats) &nbsp;·&nbsp; [Preprocessing](#preprocessing) &nbsp;·&nbsp; [Compose](#compose) &nbsp;·&nbsp; [Vision](#vision) &nbsp;·&nbsp; [Learn](#learn) &nbsp;·&nbsp; [Datasets](#datasets) &nbsp;·&nbsp; [Protect](#protect) &nbsp;·&nbsp; [Bridges](#bridges) &nbsp;·&nbsp; [Armor](#armor) &nbsp;·&nbsp; [Dynamics](#dynamics)
 
 ---
 
@@ -3505,6 +3505,55 @@ Public methods:
 - `update(x: dict, y=None, t=None)`
 - `window_samples(seconds: float)`
 
+### SDFT
+
+
+*Module:* `dense_armor.utility.signals.stats.sdft`
+*Bases:* Root
+*Guide:* [reco/index.md](../reco/index.md)
+
+Sliding DFT: the N-point DFT of the last N samples, O(N) per update.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `set_params(**params: Any)`
+- `spectrum()`
+- `state_dict()`
+- `update(v: float)`
+- `update_many(values)`
+- `window_samples(seconds: float)`
+
+### Skyline
+
+
+*Module:* `dense_armor.utility.signals.stats.skyline`
+*Bases:* Root
+*Guide:* [reco/index.md](../reco/index.md)
+
+Skyline of a sliding window over a stream of points.
+
+Public methods:
+
+- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, typing.Any])`
+- `mutate(new_attrs: dict[str, typing.Any])`
+- `set_params(**params: Any)`
+- `skyline()`
+- `skyline_points()`
+- `state_dict()`
+- `update(point)`
+- `update_many(points)`
+- `window_samples(seconds: float)`
+
 ## Preprocessing
 
 ### BagOfWords
@@ -3833,6 +3882,16 @@ Public methods:
 - `transform_many(X, t=None)`
 - `transform_one(x: Any, t=None)`
 - `window_samples(seconds: float)`
+
+### Metro
+
+
+*Module:* `dense_armor.utility.signals.preprocessing.metro`
+
+Public methods:
+
+- `dec(v_new: float, fact: float)`
+- `enc(raw_v: float)`
 
 ## Compose
 
@@ -4510,67 +4569,6 @@ Public methods:
 - `referto(serie: ndarray, nome='serie', riferimento=None)`
 - `referto_json(serie: ndarray, nome='serie', riferimento=None)`
 - `set_livello(livello: float)`
-
-## Misc
-
-### Metro
-
-
-*Module:* `dense_armor.utility.infrastructure.misc.metro`
-
-Public methods:
-
-- `dec(v_new: float, fact: float)`
-- `enc(raw_v: float)`
-
-### SDFT
-
-
-*Module:* `dense_armor.utility.infrastructure.misc.sdft`
-*Bases:* Root
-*Guide:* [reco/index.md](../reco/index.md)
-
-Sliding DFT: the N-point DFT of the last N samples, O(N) per update.
-
-Public methods:
-
-- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
-- `describe()`
-- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
-- `get_params(deep: bool = True)`
-- `load_state_dict(state: dict[str, typing.Any])`
-- `mutate(new_attrs: dict[str, typing.Any])`
-- `set_params(**params: Any)`
-- `spectrum()`
-- `state_dict()`
-- `update(v: float)`
-- `update_many(values)`
-- `window_samples(seconds: float)`
-
-### Skyline
-
-
-*Module:* `dense_armor.utility.infrastructure.misc.skyline`
-*Bases:* Root
-*Guide:* [reco/index.md](../reco/index.md)
-
-Skyline of a sliding window over a stream of points.
-
-Public methods:
-
-- `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
-- `describe()`
-- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
-- `get_params(deep: bool = True)`
-- `load_state_dict(state: dict[str, typing.Any])`
-- `mutate(new_attrs: dict[str, typing.Any])`
-- `set_params(**params: Any)`
-- `skyline()`
-- `skyline_points()`
-- `state_dict()`
-- `update(point)`
-- `update_many(points)`
-- `window_samples(seconds: float)`
 
 ## Dynamics
 

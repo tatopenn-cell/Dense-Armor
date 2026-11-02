@@ -1,8 +1,15 @@
-"""Fixes of the defects found by reading: batch tree, linear models, metric learning, misc."""
+"""Fixes of the defects found by reading: batch tree, linear models, metric learning, Metro and diag."""
 
 import numpy as np
 import pytest
 
+from dense_armor.utility.evaluation.evaluate import (
+    evaluate_events,
+    progressive_val_score,
+)
+from dense_armor.utility.evaluation.evaluate.diagnostic import diag
+from dense_armor.utility.evaluation.evaluate.model_selection import OnlineModelSelection
+from dense_armor.utility.evaluation.metrics import Accuracy
 from dense_armor.utility.online.drift import (
     ADWIN,
     KSWIN,
@@ -11,18 +18,14 @@ from dense_armor.utility.online.drift import (
     PageHinkley,
 )
 from dense_armor.utility.online.drift.cusum import cusum_detector
-from dense_armor.utility.evaluation.evaluate import evaluate_events, progressive_val_score
-from dense_armor.utility.evaluation.evaluate.model_selection import OnlineModelSelection
 from dense_armor.utility.online.learn.calibration import OnlinePlattScaling
 from dense_armor.utility.online.learn.metric_learning import LEGO
 from dense_armor.utility.online.learn.online_dynamics import RecursiveLeastSquares
 from dense_armor.utility.online.linear.bayes import BayesianLinearRegression
 from dense_armor.utility.online.linear.glm import LogisticRegression
-from dense_armor.utility.evaluation.metrics import Accuracy
-from dense_armor.utility.infrastructure.misc.diagnostic import diag
-from dense_armor.utility.infrastructure.misc.metro import Metro
 from dense_armor.utility.online.optim import SGD
 from dense_armor.utility.online.tree.batch import BatchDecisionTreeClassifier
+from dense_armor.utility.signals.preprocessing.metro import Metro
 
 
 class _Const:
@@ -284,7 +287,10 @@ def test_stream_checks(tmp_path):
 
 def test_stats_missing_and_extremes():
     from dense_armor.utility.signals.stats.dependence import Autocorrelation
-    from dense_armor.utility.signals.stats.moments import RunningMoments, RunningMomentsVector
+    from dense_armor.utility.signals.stats.moments import (
+        RunningMoments,
+        RunningMomentsVector,
+    )
     from dense_armor.utility.signals.stats.quantiles import TDigest
     from dense_armor.utility.signals.stats.shrinkage import OnlineShrinkageCovariance
     from dense_armor.utility.signals.stats.sketches import _hash64

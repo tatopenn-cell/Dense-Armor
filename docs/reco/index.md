@@ -158,7 +158,7 @@ machine precision (max absolute difference `4.24e-15` in the check below).
 
 ~~~python
 import numpy as np
-from dense_armor.utility.infrastructure.misc import SDFT
+from dense_armor.utility.signals.stats.sdft import SDFT
 
 rng = np.random.default_rng(42)
 vals = rng.normal(size=20)
@@ -178,7 +178,7 @@ orange triangles the skyline after 40 points. The skyline is the set of points n
 by any other point of the window (Börzsönyi et al. 2001, Section 2, page 2).
 
 ~~~python
-from dense_armor.utility.infrastructure.misc import Skyline
+from dense_armor.utility.signals.stats.skyline import Skyline
 
 s = Skyline(window=5)
 for p in [{"x": 1.0, "y": 5.0}, {"x": 3.0, "y": 3.0},

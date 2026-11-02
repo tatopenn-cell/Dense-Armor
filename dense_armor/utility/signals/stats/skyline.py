@@ -66,7 +66,7 @@ class Skyline(Root):
         ValueError: if ``window < 1``.
 
     Examples:
-        >>> from dense_armor.utility.infrastructure.misc.skyline import Skyline
+        >>> from dense_armor.utility.signals.stats.skyline import Skyline
         >>> s = Skyline(window=3)
         >>> _ = s.update({"x": 1.0, "y": 5.0})
         >>> _ = s.update({"x": 3.0, "y": 3.0})

@@ -196,6 +196,7 @@ nav:
               - Streaming quantiles: stats/streaming.md
               - Dependence: stats/dependence.md
               - Sketches: stats/sketches.md
+              - Skyline: stats/skyline.md
           - Preprocessing:
               - preprocessing/index.md
               - Scaling features and joints: preprocessing/scaling.md
@@ -294,7 +295,6 @@ nav:
           - Toolkit:
               - toolkit/index.md
               - Toolkit: toolkit/toolkit.md
-          - Skyline: misc/skyline.md
           - Live Demo: demo.md
           - MCP Server: mcp.md
       - API Reference:

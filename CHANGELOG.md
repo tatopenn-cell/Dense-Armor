@@ -17,6 +17,12 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   example `dense_armor.utility.bandit.ucb`, still work and resolve to the
   same module object as `dense_armor.utility.online.bandit.ucb`. The entries
   below keep the old paths.
+- The `misc` folder is dissolved: `SDFT` and `Skyline` are in `utility/signals/stats`, `Metro` in
+  `utility/signals/preprocessing`, `diag` in `utility/evaluation/evaluate` and `lodat` in
+  `utility/signals/stream`. There are 32 subpackages in six groups. The old paths
+  (`dense_armor.utility.misc.sdft`, `dense_armor.utility.infrastructure.misc.metro`, ...) still resolve to
+  the same modules, and the old package `misc` gives `SDFT` and `Skyline`. The page `docs/misc/skyline.md`
+  is now `docs/stats/skyline.md`; the tests moved with the modules.
 
 ### Added
 - `dense_armor/utility/deep/neural/rotary_decoder.py`: `RotaryDecoderBlock`, `RotaryDecoder` and the builder

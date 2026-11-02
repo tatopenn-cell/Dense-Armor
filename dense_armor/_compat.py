@@ -29,10 +29,10 @@ ALIASES = {
     "dense_armor.learn.metric_learning": "dense_armor.utility.online.learn.metric_learning",
     "dense_armor.learn.online_classifiers": "dense_armor.utility.online.learn.online_classifiers",
     "dense_armor.learn.online_dynamics": "dense_armor.utility.online.learn.online_dynamics",
-    "dense_armor.misc": "dense_armor.utility.infrastructure.misc",
-    "dense_armor.misc.diagnostic": "dense_armor.utility.infrastructure.misc.diagnostic",
-    "dense_armor.misc.iodat": "dense_armor.utility.infrastructure.misc.iodat",
-    "dense_armor.misc.metro": "dense_armor.utility.infrastructure.misc.metro",
+    "dense_armor.misc": "dense_armor.utility.signals.stats",
+    "dense_armor.misc.diagnostic": "dense_armor.utility.evaluation.evaluate.diagnostic",
+    "dense_armor.misc.iodat": "dense_armor.utility.signals.stream.iodat",
+    "dense_armor.misc.metro": "dense_armor.utility.signals.preprocessing.metro",
     "dense_armor.protect": "dense_armor.utility.online.protect",
     "dense_armor.protect.arbiter": "dense_armor.utility.online.protect.arbiter",
     "dense_armor.protect.healing": "dense_armor.utility.online.protect.healing",
@@ -44,12 +44,12 @@ ALIASES = {
     "dense_armor.utility.cbf_filter": "dense_armor.utility.robot.control.cbf_filter",
     "dense_armor.utility.curvature": "dense_armor.utility.online.anomaly.curvature",
     "dense_armor.utility.cusum": "dense_armor.utility.online.drift.cusum",
-    "dense_armor.utility.diagnostic": "dense_armor.utility.infrastructure.misc.diagnostic",
+    "dense_armor.utility.diagnostic": "dense_armor.utility.evaluation.evaluate.diagnostic",
     "dense_armor.utility.healing": "dense_armor.utility.online.protect.healing",
-    "dense_armor.utility.iodat": "dense_armor.utility.infrastructure.misc.iodat",
+    "dense_armor.utility.iodat": "dense_armor.utility.signals.stream.iodat",
     "dense_armor.utility.kinematic_controller": "dense_armor.utility.robot.control.kinematic_controller",
     "dense_armor.utility.metric_learning": "dense_armor.utility.online.learn.metric_learning",
-    "dense_armor.utility.metro": "dense_armor.utility.infrastructure.misc.metro",
+    "dense_armor.utility.metro": "dense_armor.utility.signals.preprocessing.metro",
     "dense_armor.utility.one_sided": "dense_armor.utility.online.anomaly.one_sided",
     "dense_armor.utility.online_classifiers": "dense_armor.utility.online.learn.online_classifiers",
     "dense_armor.utility.orca": "dense_armor.utility.online.protect.orca",
@@ -66,6 +66,18 @@ ALIASES = {
     "dense_armor.utility.trajectory": "dense_armor.utility.robot.control.trajectory",
 }
 
+_FROM_MISC = {
+    "sdft": "dense_armor.utility.signals.stats.sdft",
+    "skyline": "dense_armor.utility.signals.stats.skyline",
+    "metro": "dense_armor.utility.signals.preprocessing.metro",
+    "diagnostic": "dense_armor.utility.evaluation.evaluate.diagnostic",
+    "iodat": "dense_armor.utility.signals.stream.iodat",
+}
+for _prefix in ("dense_armor.utility.misc", "dense_armor.utility.infrastructure.misc"):
+    ALIASES[_prefix] = "dense_armor.utility.signals.stats"
+    for _name, _new in _FROM_MISC.items():
+        ALIASES[f"{_prefix}.{_name}"] = _new
+
 
 UTILITY_GROUPS = {
     "online": ("learn", "optim", "linear", "timeseries", "cluster", "tree", "forest", "ensemble", "bandit",
@@ -75,7 +87,7 @@ UTILITY_GROUPS = {
     "signals": ("stream", "stats", "preprocessing", "vision", "datasets"),
     "robot": ("control",),
     "evaluation": ("evaluate", "metrics"),
-    "infrastructure": ("compose", "data", "misc"),
+    "infrastructure": ("compose", "data"),
 }
 _GROUP_OF = {folder: group for group, folders in UTILITY_GROUPS.items() for folder in folders}
 

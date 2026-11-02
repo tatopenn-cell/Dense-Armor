@@ -12,6 +12,7 @@ Uso da codice:
     pulito, K, anomalie = a.analizza(serie)
     pulito, K, anomalie = a.analizza(serie_oggi, riferimento=baseline_di_ieri)  # anti-deriva
 """
+
 import os
 import sys
 
@@ -21,7 +22,7 @@ from .core.hybrid_engine import (  # motore phi_ab/trigger, vedi CHANGELOG 1.1.0
     _local_nan_fill,
     hybrid_shield,
 )
-from .utility.infrastructure.misc.metro import Metro  # scaler anti-underflow, intatto
+from .utility.signals.preprocessing.metro import Metro  # scaler anti-underflow, intatto
 
 
 class Armor:
@@ -40,9 +41,14 @@ class Armor:
     passa la tua baseline storica come `riferimento`.
     """
 
-    def __init__(self, static_threshold: float = 0.15, initial_damping: float = 0.85,
-                 alpha: float = 0.05, soglia_anomalia: float | None = None,
-                 livello_ia: float = 1.0) -> None:
+    def __init__(
+        self,
+        static_threshold: float = 0.15,
+        initial_damping: float = 0.85,
+        alpha: float = 0.05,
+        soglia_anomalia: float | None = None,
+        livello_ia: float = 1.0,
+    ) -> None:
         """static_threshold/initial_damping/alpha — mantenuti per compatibilità di
         firma con le versioni precedenti, non usati dal motore hybrid (che non ha
         stato/calibrazione: è una funzione pura, vedi CHANGELOG 1.1.0).
@@ -59,7 +65,10 @@ class Armor:
     def livello_da_entropia(entropia: float, vocab_size: int) -> float:
         """Livello MISURATO: 1 - entropia/log(V) (stessa formula dello sfogo dinamico)."""
         import math
-        return max(0.0, min(1.0, 1.0 - entropia / (math.log(max(2, vocab_size)) + 1e-12)))
+
+        return max(
+            0.0, min(1.0, 1.0 - entropia / (math.log(max(2, vocab_size)) + 1e-12))
+        )
 
     def analizza(
         self, serie: np.ndarray, riferimento: np.ndarray | None = None
@@ -82,15 +91,21 @@ class Armor:
         # LOCALE, non media dell'intera serie: altrimenti uno spike altrove
         # nella serie distorce il sostituto di ogni NaN, non solo quelli
         # vicini (vedi CHANGELOG 1.1.1).
-        radius_fill = max(3 if len(grezza) < 3 else min(20, max(3, len(grezza) // 3)), 3)
-        grezza_pulita = _local_nan_fill(np.where(np.isinf(grezza), np.nan, grezza), radius_fill)
+        radius_fill = max(
+            3 if len(grezza) < 3 else min(20, max(3, len(grezza) // 3)), 3
+        )
+        grezza_pulita = _local_nan_fill(
+            np.where(np.isinf(grezza), np.nan, grezza), radius_fill
+        )
 
         # INTERVENTO clippato dal livello dell'IA
         clip = 1.0 - self.livello_ia
         pulito = grezza_pulita - (K * clip) * (grezza_pulita - pulito_pieno)
 
         dev = np.abs(grezza_pulita - pulito_pieno)
-        soglia = self.soglia if self.soglia is not None else (dev.mean() + 2.0 * dev.std())
+        soglia = (
+            self.soglia if self.soglia is not None else (dev.mean() + 2.0 * dev.std())
+        )
         anomalie = {int(i) for i in np.where(dev > max(soglia, 1e-12))[0]}
 
         # rilevatore robusto (mediana/MAD), indipendente dal motore hybrid —
@@ -136,11 +151,16 @@ class Armor:
         significativa = abs(spostamento) > 3.0 * rumore_mediane
         # METRO: risolve la scala dell'infinitesimo (leggibile anche a 1e-12)
         _v_new, fact = Metro().enc(abs(tasso))
-        esponente = float(np.log10(fact)) - (-4.0) if fact > 0 else 0.0  # = -log10(|tasso|)
+        esponente = (
+            float(np.log10(fact)) - (-4.0) if fact > 0 else 0.0
+        )  # = -log10(|tasso|)
         return tasso, bool(significativa), esponente
 
     def referto_json(
-        self, serie: np.ndarray, nome: str = "serie", riferimento: np.ndarray | None = None
+        self,
+        serie: np.ndarray,
+        nome: str = "serie",
+        riferimento: np.ndarray | None = None,
     ) -> dict:
         """Referto MACCHINA-LEGGIBILE (dict pronto per json.dumps).
         Pensato per IA e altri programmi: niente prosa, solo dati.
@@ -148,51 +168,77 @@ class Armor:
         pulito, K, anomalie = self.analizza(serie, riferimento)
         s = np.asarray(serie, dtype=np.float64).ravel()
         tasso, sig, esp = self.deriva(serie)
+
         def _num(v: float) -> float | str:
             """Converte in float, o in "NaN" (stringa, per restare JSON-valido) se non finito."""
             return float(v) if np.isfinite(v) else "NaN"
+
         return {
             "nome": nome,
             "punti": int(s.size),
             "livello_ia": self.livello_ia,
-            "anomalie": [{"indice": int(i), "grezzo": _num(s[i]),
-                          "pulito": _num(pulito[i]), "K": _num(K[i])} for i in anomalie],
+            "anomalie": [
+                {
+                    "indice": int(i),
+                    "grezzo": _num(s[i]),
+                    "pulito": _num(pulito[i]),
+                    "K": _num(K[i]),
+                }
+                for i in anomalie
+            ],
             "K_medio": _num(np.mean(K)),
-            "deriva": {"tasso_per_passo": _num(tasso), "significativa": bool(sig),
-                       "esponente_metro": _num(esp)},
+            "deriva": {
+                "tasso_per_passo": _num(tasso),
+                "significativa": bool(sig),
+                "esponente_metro": _num(esp),
+            },
         }
 
     def referto(
-        self, serie: np.ndarray, nome: str = "serie", riferimento: np.ndarray | None = None
+        self,
+        serie: np.ndarray,
+        nome: str = "serie",
+        riferimento: np.ndarray | None = None,
     ) -> list[int]:
         """Analisi + referto leggibile."""
         pulito, K, anomalie = self.analizza(serie, riferimento)
         s = np.asarray(serie, dtype=np.float64).ravel()
-        print(f"[ARMATURA] {nome}: {len(s)} punti | livello IA {self.livello_ia:.2f} | anomalie: {len(anomalie)}")
+        print(
+            f"[ARMATURA] {nome}: {len(s)} punti | livello IA {self.livello_ia:.2f} | anomalie: {len(anomalie)}"
+        )
         for i in anomalie[:10]:
-            print(f"   -> indice {i}: valore {s[i]!r} (pulito: {pulito[i]:.4f}, K={K[i]:.3f})")
+            print(
+                f"   -> indice {i}: valore {s[i]!r} (pulito: {pulito[i]:.4f}, K={K[i]:.3f})"
+            )
         if len(anomalie) > 10:
             print(f"   ... e altre {len(anomalie) - 10}")
         tasso, sig, esp = self.deriva(serie)
         if sig:
-            print(f"   ⚠ DERIVA LENTA rilevata (Metro): {tasso:+.2e} per passo (scala 10^-{esp:.1f})")
+            print(
+                f"   ⚠ DERIVA LENTA rilevata (Metro): {tasso:+.2e} per passo (scala 10^-{esp:.1f})"
+            )
         return anomalie
 
 
 def main() -> None:
     """Entry point CLI: `python -m dense_armor [--json] <file_o_numeri...>`."""
     import re as _re
+
     argv = sys.argv[1:]
     come_json = "--json" in argv
     argv = [a for a in argv if a != "--json"]
     if not argv:
-        print("USO: python -m dense_armor [--json] <file_con_numeri>  oppure  python -m dense_armor [--json] n1 n2 n3 ...")
+        print(
+            "USO: python -m dense_armor [--json] <file_con_numeri>  oppure  python -m dense_armor [--json] n1 n2 n3 ..."
+        )
         sys.exit(0)
     if len(argv) == 1 and os.path.exists(argv[0]):
         with open(argv[0], encoding="utf-8", errors="ignore") as fh:
             testo = fh.read()
-        numeri = [float(x) if x.lower() != "nan" else float("nan")
-                  for x in _re.findall(r"[-+]?(?:\d+\.?\d*(?:[eE][-+]?\d+)?|nan|NaN)", testo)]
+        numeri = [
+            float(x) if x.lower() != "nan" else float("nan")
+            for x in _re.findall(r"[-+]?(?:\d+\.?\d*(?:[eE][-+]?\d+)?|nan|NaN)", testo)
+        ]
         nome = os.path.basename(argv[0])
     else:
         numeri = [float(x) if x.lower() != "nan" else float("nan") for x in argv]
@@ -200,6 +246,7 @@ def main() -> None:
     serie = np.asarray(numeri, dtype=np.float64)
     if come_json:
         import json as _json
+
         print(_json.dumps(Armor().referto_json(serie, nome), ensure_ascii=False))
     else:
         Armor().referto(serie, nome)

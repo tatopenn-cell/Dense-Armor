@@ -5,8 +5,8 @@ import doctest
 import numpy as np
 import pytest
 
-from dense_armor.utility.infrastructure.misc import SDFT
-from dense_armor.utility.infrastructure.misc import sdft as sdft_module
+from dense_armor.utility.signals.stats import sdft as sdft_module
+from dense_armor.utility.signals.stats.sdft import SDFT
 
 
 def test_matches_numpy_fft_on_every_window():
@@ -78,7 +78,7 @@ def test_doctest():
 def test_sdft_is_zero_before_the_first_sample_and_the_spectrum_is_a_copy():
     import numpy as np
 
-    from dense_armor.utility.infrastructure.misc import SDFT
+    from dense_armor.utility.signals.stats.sdft import SDFT
 
     s = SDFT(n=4)
     assert np.array_equal(s.X, np.zeros(4, dtype=complex))

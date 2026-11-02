@@ -1,4 +1,5 @@
 """The folders of dense_armor/utility sit in six groups, and the old paths still work."""
+
 import importlib
 from pathlib import Path
 
@@ -12,7 +13,9 @@ UTILITY = Path(dense_armor.__file__).parent / "utility"
 
 
 def test_utility_holds_only_the_six_groups():
-    folders = {p.name for p in UTILITY.iterdir() if p.is_dir() and p.name != "__pycache__"}
+    folders = {
+        p.name for p in UTILITY.iterdir() if p.is_dir() and p.name != "__pycache__"
+    }
     assert folders == set(UTILITY_GROUPS)
 
 
@@ -32,3 +35,30 @@ def test_old_submodule_is_the_same_object():
     new = importlib.import_module("dense_armor.utility.online.bandit.ucb")
     old = importlib.import_module("dense_armor.utility.bandit.ucb")
     assert old is new
+
+
+MISC_MODULES = {
+    "sdft": "signals.stats.sdft",
+    "skyline": "signals.stats.skyline",
+    "metro": "signals.preprocessing.metro",
+    "diagnostic": "evaluation.evaluate.diagnostic",
+    "iodat": "signals.stream.iodat",
+}
+MISC_PREFIXES = ("dense_armor.utility.misc", "dense_armor.utility.infrastructure.misc")
+
+
+@pytest.mark.parametrize("prefix", MISC_PREFIXES)
+@pytest.mark.parametrize("name,new", MISC_MODULES.items())
+def test_old_misc_module_is_the_module_in_its_new_home(prefix, name, new):
+    old = importlib.import_module(f"{prefix}.{name}")
+    assert old is importlib.import_module(f"dense_armor.utility.{new}")
+
+
+@pytest.mark.parametrize("prefix", MISC_PREFIXES)
+def test_old_misc_package_still_gives_sdft_and_skyline(prefix):
+    from dense_armor.utility.signals.stats.sdft import SDFT
+    from dense_armor.utility.signals.stats.skyline import Skyline
+
+    old = importlib.import_module(prefix)
+    assert old.SDFT is SDFT
+    assert old.Skyline is Skyline
