@@ -8,7 +8,7 @@ one warm-up call; the JSON has the first call, the median and the range of
 the repeats, and whether the two paths give the same tokens.
 
 Usage:
-    python benchmarks/neural/kv_cache.py --json benchmarks/neural/kv_cache_cpu.json
+    python benchmarks/neural/kv_cache.py --json benchmarks/kv_cache_cpu.json
     python benchmarks/neural/kv_cache.py --smoke --json out.json
 """
 
