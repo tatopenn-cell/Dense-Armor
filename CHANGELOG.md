@@ -5,6 +5,10 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 ## [Unreleased]
 
 ### Changed
+- `core/engine.py` no longer asks JAX for `float64`: it computes in the default dtype of JAX, so
+  `float32` as it comes, and `float64` when the user sets `jax_enable_x64`. Before, the
+  explicit request was silently cut to `float32` with a `UserWarning` unless x64 was on.
+  The arrays returned by `AdaptiveSignalStabilizer` follow the same dtype.
 - `Armatura` is now `Armor`, the module `dense_armor/armatura.py` is now
   `dense_armor/armor.py`, and the docs page `shields/armatura.md` is now
   `shields/armor.md`. The old import path `dense_armor.armatura` still works
