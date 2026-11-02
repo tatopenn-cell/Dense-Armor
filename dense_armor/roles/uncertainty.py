@@ -37,6 +37,7 @@ Gibbs, I., Candes, E. J. (2021). Adaptive conformal inference under
 Gupta, C., Ramdas, A. (2023). Online Platt scaling with calibeating.
     In ICML. arXiv:2305.00070.
 """
+
 from collections import deque
 from dataclasses import dataclass
 from typing import Any
@@ -131,6 +132,11 @@ class AdaptiveConformalRegressor(Regressor):
         hi = min(lo + 1, len(s) - 1)
         return s[lo] + (pos - lo) * (s[hi] - s[lo])
 
+    def _residual_mean_square(self) -> float:
+        if not self.residuals_:
+            return 0.0
+        return sum(r * r for r in self.residuals_) / len(self.residuals_)
+
     def learn_one(
         self, x: Signal | dict, y: Any, t: float | None = None
     ) -> "AdaptiveConformalRegressor":
@@ -177,14 +183,33 @@ class AdaptiveConformalRegressor(Regressor):
         return_std: bool = False,
         return_estimate: bool = False,
     ) -> Any:
-        """Predict one value, optionally with an uncertainty."""
+        """Predict one value, optionally with an uncertainty.
+
+        ``return_std`` gives the pair ``(mean, std)`` and ``return_estimate``
+        an :class:`Estimate`. Here ``std`` is the root mean square of the
+        residuals in the window, ``sqrt(mean(|y - yhat|**2))``, the scale
+        of the error of the wrapped model, and ``Estimate.var`` is its
+        square, ``mean(|y - yhat|**2)``. It is ``0.0`` while the window is
+        empty. The paper (Gibbs and Candes 2021) has intervals and no
+        variance, so this is our choice; the conformal half-width ``Q_t``
+        is not a standard deviation and is given by :meth:`predict_interval`.
+
+        Args:
+            x: the input.
+            t: the timestamp, in seconds.
+            return_std: return ``(mean, std)``.
+            return_estimate: return an :class:`Estimate`.
+
+        Returns:
+            The mean, the pair ``(mean, std)`` or an :class:`Estimate`.
+        """
         self._time_step(t)
         mean = float(call_with_t(self.model.predict_one, x, t=t))
         if return_estimate or return_std:
-            std = self._quantile(1.0 - self.alpha_t_)
+            var = self._residual_mean_square()
             if return_estimate:
-                return Estimate(mean=mean, var=std * std)
-            return mean, std
+                return Estimate(mean=mean, var=var)
+            return mean, var**0.5
         return mean
 
     @property
@@ -194,9 +219,7 @@ class AdaptiveConformalRegressor(Regressor):
             return 0.0
         return 1.0 - self.n_miss_ / self.n_
 
-    def transform_one(
-        self, x: Signal | dict, t: float | None = None
-    ) -> dict:
+    def transform_one(self, x: Signal | dict, t: float | None = None) -> dict:
         lo, hi = self.predict_interval(x, t=t)
         return {
             "lo": lo,

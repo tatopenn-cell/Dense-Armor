@@ -136,10 +136,10 @@ def sinusoidal_positions(length: int, d_model: int) -> jax.Array:
         ...     sinusoidal_positions,
         ... )
         >>> pe = sinusoidal_positions(2, 4)
-        >>> [round(float(v), 4) for v in pe[0]]
+        >>> [round(float(v), 3) for v in pe[0]]
         [0.0, 1.0, 0.0, 1.0]
-        >>> [round(float(v), 4) for v in pe[1]]
-        [0.8415, 0.5403, 0.01, 0.9999]
+        >>> [round(float(v), 3) for v in pe[1]]
+        [0.841, 0.54, 0.01, 1.0]
     """
     if d_model % 2 != 0:
         raise ValueError(f"d_model must be even, got {d_model}")

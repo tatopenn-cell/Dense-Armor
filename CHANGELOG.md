@@ -23,8 +23,24 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   (`dense_armor.utility.misc.sdft`, `dense_armor.utility.infrastructure.misc.metro`, ...) still resolve to
   the same modules, and the old package `misc` gives `SDFT` and `Skyline`. The page `docs/misc/skyline.md`
   is now `docs/stats/skyline.md`; the tests moved with the modules.
+- **Incompatible with 1.2.0:** `GatedCrossAttention` returns `g * attention(xq, xc)` again, as the item B of
+  the task asked, and not `xq + g * attention(xq, xc)`. A closed step produces the zero vector and sends no
+  gradient to the queries, to the context or to a parameter. The form of 1.2.0 is gone. To keep the static part of
+  the query, add it outside of the class with `Residual` or `Parallel`; the page
+  `docs/neural/composable_attention.md` shows it.
+
+- **Incompatible:** `Signal` takes only a vector of shape `(n_channels,)`; a matrix raises `ValueError`. Several
+  samples are a `SignalBatch`, and `Signal.stacked` returns one. The batch form of `Signal` was a dict whose
+  values were tuples, which no estimator of the library accepts, and its docstring said that any estimator took it.
 
 ### Added
+- `SignalBatch` (in `dense_armor.roles`): `n` samples of `d` channels for the code that works on `array`
+  (shape `(n, d)`). It is not a dict; `row(i)` gives the sample `i` as a `Signal`; `times` and `t` carry the
+  timestamps.
+- `budget_s` and `memory_class` of the wrappers: `AnomalyGate`, `Protected`, `SafeEstimator`,
+  `UnitCheckedPipeline`, the `|` pipeline and the union and product of transformers declare the cost of their
+  parts (`None` if a part declares none), so that `RealtimePipeline` takes them as a step and checks their real
+  cost. Before, none declared a budget and `RealtimePipeline` refused every wrapper.
 - `dense_armor/utility/deep/neural/rotary_decoder.py`: `RotaryDecoderBlock`, `RotaryDecoder` and the builder
   `rotary_decoder`, a causal language model with RMSNorm, rotary causal attention and a SwiGLU feed-forward
   (pre-norm), with `remat=True` to recompute the activations in `backward`. `transformer_decoder` is unchanged.
@@ -38,6 +54,32 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 ### Fixed
 - `rotary_angles` accepts a traced `offset` (it built the positions with `jnp.arange(offset, ...)`, which needs
   a concrete value, so a compiled step with a traced position failed).
+- `UnitCheckedPipeline.learn_one` trains every transformer of the pipeline, as `|` does. It only
+  transformed with them, so an adaptive transformer never learned inside it.
+- `Transformer`: the result of `a + b` and `a * b` is a `Transformer`, so `(a + b) + c`, `(a * b) * c` and
+  `a + (b * c)` work (they raised `AttributeError`).
+- `AnomalyGate` takes a `threshold` argument, and raises `ValueError` for a detector that has no `threshold`
+  attribute and no argument. The default of `0.0` classified as anomalous every positive score, and with
+  `protect=True` the detector stopped learning after the first sample. `StreamingDeviationScorer`, `PatchMemory`
+  and `OnlineAutoencoder` need `threshold=`.
+- `AdaptiveConformalRegressor.predict_one(return_std=True)` and `(return_estimate=True)` give the root mean
+  square of the residuals of the window, and its square as the variance. They gave the half-width of the
+  conformal interval (a quantile, not a standard deviation) and its square. `predict_interval` is unchanged.
+- `call_json` always writes valid JSON: a float that is not finite is the string `"Infinity"`, `"-Infinity"` or
+  `"NaN"` (it wrote the constants `Infinity` and `NaN`, which JSON does not have, for the `inf` score of a
+  flagged sample).
+- `Protected` feeds a drift detector the value of `feature`, the smallest key when it is `None`, and not the
+  first key of the dict. New argument `feature`. A detector with `score_one` and a `threshold` attribute is
+  applied (it was never flagged). New argument `train_detector` (default `False`, behaviour unchanged): with
+  `True`, `learn_one` trains the detector on the samples that are not flagged; a detector that nobody trains
+  flags nothing. A drift detector sees each sample once: `predict_one`, `score_one` and `learn_one` each called
+  `update`, so a sample that was predicted and then learned counted twice. The first call with a sample updates
+  the detector and the later calls with the same unchanged object reuse the answer; a new sample, or the same
+  object after a change, or the same object after a `learn_one`, updates it.
+- Documented, no change of behaviour: the batch form of `Signal` holds a tuple per channel and is not accepted
+  by `learn_one`; `SafeEstimator.learn_one` costs a `predict_one` and a `learn_one` of the model.
+- `GatedCrossAttention` refuses a signal of shape `(Tq, Tq)` for a 2-D query (it was accepted and gave an output
+  of the wrong shape); the example of `sinusoidal_positions` no longer depends on the float type.
 
 ### Removed
 - Nothing yet.

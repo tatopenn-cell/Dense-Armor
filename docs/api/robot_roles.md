@@ -58,8 +58,15 @@ assert bool(s.mask[0]) is True
 assert s.n_missing == 1
 ```
 
-A sensor glitch never becomes a silent zero. `Signal` can stack into a
-batch along a new axis with `.stacked([...])`.
+A sensor glitch never becomes a silent zero.
+
+Several samples are a `SignalBatch`, built with `.stacked([...])`. It is
+not a dict, because a batch cannot be given to an estimator that takes one
+sample: its numbers are the JAX matrix `batch.array`, of shape `(n, d)`,
+for the code that works on whole arrays (`jax.jit`, `jax.vmap`,
+`jax.lax.scan`). `batch.row(i)` gives sample `i` as a `Signal`, and
+`batch.times` the `n` timestamps (`batch.t` is the one they share, or
+`None`). `Signal` itself takes only a vector of shape `(n_channels,)`.
 
 ## 2. The real-time contract
 
@@ -74,6 +81,20 @@ A robot estimator declares two attributes:
 `RealtimePipeline(steps, period_s)` refuses to build if the sum of the
 declared budgets exceeds the period, or if some step does not declare
 one.
+
+A wrapper or a pipeline declares the cost of its parts, so that it can be
+a step: `budget_s` is `None` as soon as one part declares none, and
+`memory_class` is the largest of the parts. For `learn_one`:
+
+| class | `budget_s` |
+|---|---|
+| `AnomalyGate` | 2 × the detector (it scores, then learns) |
+| `Protected` | the model + the detector (2 × the detector with `train_detector`) |
+| `SafeEstimator` | 2 × the model (it predicts, then learns) |
+| `UnitCheckedPipeline` and the `\|` pipeline | 2 × every transformer + the last step |
+| `a + b` and `a * b` of two transformers | `a` + `b` |
+
+The guard and the health monitor of `SafeEstimator` are not counted.
 
 ```python
 from dense_armor.roles import RealtimePipeline, PureEW

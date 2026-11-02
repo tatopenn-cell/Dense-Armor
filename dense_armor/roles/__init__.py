@@ -62,6 +62,7 @@ __all__ = [
     "Root",
     "SafeEstimator",
     "Signal",
+    "SignalBatch",
     "Transformer",
     "TransformerSupervised",
     "UnitCheckedPipeline",
@@ -84,7 +85,7 @@ from dense_armor.roles.safety import (
     Health,
     SafeEstimator,
 )
-from dense_armor.roles.signal import Signal
+from dense_armor.roles.signal import Signal, SignalBatch
 from dense_armor.roles.uncertainty import (
     AdaptiveConformalRegressor,
     Estimate,

@@ -1,26 +1,21 @@
 """A gate on a signal: look at the other stream only when it matters.
 
 ``GatedCrossAttention`` wraps a :class:`MultiHeadCrossAttention` and
-adds its output, multiplied by ``1.0`` where the signal is strictly
-greater than a fixed threshold and by ``0.0`` elsewhere, to the
-query itself. The threshold is a fixed rule stated by whoever
-assembles the system: it is not learned, and it is stored unchanged.
+multiplies each row of its output by ``1.0`` where the signal is
+strictly greater than a fixed threshold and by ``0.0`` elsewhere. The
+threshold is a fixed rule stated by whoever assembles the system: it
+is not learned, and it is stored unchanged. The gate is a hard step of
+the signal, so it has no gradient of its own.
 
-A closed step returns the query unchanged: the identity path carries
-the static part of the query and the attention adds the dynamic part
-only where the gate is open. At a closed step the gradient of the
-query is the incoming gradient (identity), and the gradient of the
-context and of every parameter is zero: nothing to learn from a step
-the gate has closed.
+A closed step produces the zero vector and sends no gradient to the
+queries, to the context or to any parameter: the gate is applied to
+the output and then again to the incoming gradient before the inner
+attention's ``backward``.
 
-This is a deviation from the task specification, declared: the task
-says "the output is the output of attention with every row
-multiplied by g, so a closed step produces the zero vector", and
-this class returns ``xq + g * attention(xq, xc)`` instead. Reason: a
-zero vector at a closed step is a discontinuity that breaks the
-gradient path of the query and destroys its static part; the sum
-makes the module a real conditional operator. The hand case in the
-test reflects the new formula.
+To keep the static part of the query at a closed step, add the query
+to the output outside of this class, with a ``Residual`` or a
+``Parallel``. The construction (attention, multiplied by a gate read
+from a signal) is ours and is not taken from a paper.
 """
 
 from __future__ import annotations
@@ -42,7 +37,8 @@ class GatedCrossAttention:
 
     Raises:
         ValueError: on a forward whose ``signal`` shape does not match
-            the queries, or on a ``backward`` before ``forward``.
+            the queries.
+        RuntimeError: on a ``backward`` before ``forward``.
     """
 
     def __init__(self, attention: MultiHeadCrossAttention, threshold: float) -> None:
@@ -87,21 +83,18 @@ class GatedCrossAttention:
         signal = jnp.asarray(signal)
         self._squeeze = xq.ndim == 2
         Tq = xq.shape[0] if self._squeeze else xq.shape[1]
-        expected_2d = (Tq,)
-        expected_3d = (xq.shape[0], Tq)
-        if signal.shape not in (expected_2d, expected_3d):
-            raise ValueError(
-                f"signal shape {signal.shape}, expected {expected_2d} or {expected_3d}"
-            )
+        allowed = [(Tq,)] if self._squeeze else [(Tq,), (xq.shape[0], Tq)]
+        if signal.shape not in allowed:
+            raise ValueError(f"signal shape {signal.shape}, expected one of {allowed}")
         gate = jnp.where(signal > self.threshold, 1.0, 0.0)
-        y_attn = self.attention.forward(xq, xc, training=training)
+        y = self.attention.forward(xq, xc, training=training)
         if self._squeeze:
             g = gate[:, None]
         elif gate.ndim == 1:
             g = gate[None, :, None]
         else:
             g = gate[:, :, None]
-        out = xq + y_attn * g
+        out = y * g
         self.gate_ = gate
         return out
 
@@ -129,6 +122,4 @@ class GatedCrossAttention:
             g = self.gate_[None, :, None]
         else:
             g = self.gate_[:, :, None]
-        dxq_attn, dxc = self.attention.backward(g_out * g)
-        dxq = g_out + dxq_attn
-        return dxq, dxc
+        return self.attention.backward(g_out * g)

@@ -23,6 +23,7 @@ References
 Page, E. S. (1954). Continuous inspection schemes. Biometrika 41,
     100-114.
 """
+
 import hashlib
 import hmac
 import io
@@ -34,14 +35,21 @@ from pathlib import Path
 from typing import Any
 
 from dense_armor.roles import Estimator, Root
-from dense_armor.roles._util import call_learn_one, call_with_t
+from dense_armor.roles._util import (
+    call_learn_one,
+    call_with_t,
+    sum_budgets,
+    worst_memory_class,
+)
 
 CHECKPOINT_VERSION = 1
 
 
 class _EnvelopeUnpickler(pickle.Unpickler):
     def find_class(self, module, name):
-        raise pickle.UnpicklingError(f"checkpoint envelope may not reference {module}.{name}")
+        raise pickle.UnpicklingError(
+            f"checkpoint envelope may not reference {module}.{name}"
+        )
 
 
 class Health(str, Enum):
@@ -109,11 +117,7 @@ class HealthMonitor(Root):
         if len(self.recent_) > self.window:
             self.recent_.pop(0)
         state = self._state_from_window()
-        if (
-            state is Health.NOMINAL
-            and self.baseline_ is None
-            and self.n_ > self.warmup
-        ):
+        if state is Health.NOMINAL and self.baseline_ is None and self.n_ > self.warmup:
             self.baseline_ = sum(self.recent_) / len(self.recent_)
         return state
 
@@ -183,8 +187,32 @@ class SafeEstimator(Estimator):
         """Current :class:`Health` state."""
         return self.monitor.state
 
+    @property
+    def budget_s(self) -> float | None:
+        """Latency of ``learn_one``: a ``predict_one`` and a ``learn_one`` of the model.
+
+        The guard and the health monitor are not counted: they are a few
+        comparisons. ``None`` if the model declares no ``budget_s``.
+        """
+        return sum_budgets([(2.0, self.model)])
+
+    @property
+    def memory_class(self) -> str:
+        """The memory class of the wrapped model."""
+        return worst_memory_class([self.model])
+
     def learn_one(self, x: Any, y: Any = None, t: float | None = None):
-        """Learn from ``(x, y)`` unless the guard flags ``x``."""
+        """Learn from ``(x, y)`` unless the guard flags ``x``.
+
+        When ``y`` is given and the model has ``predict_one``, the model
+        predicts before it learns, because the residual (or the miss, for a
+        classifier) is what the health monitor reads. A call therefore costs
+        one ``predict_one`` and one ``learn_one`` of the wrapped model, about
+        twice its ``learn_one``. The wrapper declares no ``budget_s`` of its
+        own, so a :class:`~dense_armor.roles.realtime.RealtimePipeline` with
+        ``require_budget=True`` refuses it until a budget that accounts for
+        this cost is set.
+        """
         self._time_step(t)
         if self.is_flagged(x):
             self.n_blocked_ += 1

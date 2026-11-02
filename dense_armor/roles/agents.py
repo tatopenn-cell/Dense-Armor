@@ -24,6 +24,7 @@ References
 ----------
 JSON Schema draft-07 (IETF draft-handrews-json-schema-01).
 """
+
 import json
 from collections.abc import Mapping
 from typing import Any
@@ -126,7 +127,10 @@ def call_json(est: Any, payload: str | Mapping[str, Any]) -> str:
 
     The response is a JSON string. On success it has the shape
     ``{"ok": true, "result": ...}``. On error it has the shape
-    ``{"ok": false, "error": "<message>"}``.
+    ``{"ok": false, "error": "<message>"}``. The response is always valid
+    JSON: a float that is not finite (the ``inf`` score of a flagged
+    sample, a ``nan``) is written as the string ``"Infinity"``,
+    ``"-Infinity"`` or ``"NaN"``.
 
     Args:
         est: the estimator.
@@ -157,10 +161,12 @@ def call_json(est: Any, payload: str | Mapping[str, Any]) -> str:
     if not method_name:
         return json.dumps({"ok": False, "error": "missing 'method' key"})
     if not hasattr(est, method_name):
-        return json.dumps({
-            "ok": False,
-            "error": f"{type(est).__name__} has no method {method_name!r}",
-        })
+        return json.dumps(
+            {
+                "ok": False,
+                "error": f"{type(est).__name__} has no method {method_name!r}",
+            }
+        )
     method = getattr(est, method_name)
     x_raw = obj.get("x")
     x = {} if x_raw is None or method_name == "update" else _to_signal_or_dict(x_raw)
@@ -181,16 +187,29 @@ def call_json(est: Any, payload: str | Mapping[str, Any]) -> str:
             result = method()
     except Exception as e:  # noqa: BLE001
         return json.dumps({"ok": False, "error": f"{type(e).__name__}: {e}"})
-    return json.dumps({"ok": True, "result": _jsonable(result)})
+    return json.dumps({"ok": True, "result": _jsonable(result)}, allow_nan=False)
 
 
 def _jsonable(v: Any) -> Any:
-    if v is None or isinstance(v, (str, int, float, bool)):
+    """Turn ``v`` into a value that ``json.dumps(allow_nan=False)`` accepts.
+
+    The JSON standard has no ``NaN``, ``Infinity`` or ``-Infinity``. A float
+    that is not finite is written as the string ``"NaN"``, ``"Infinity"`` or
+    ``"-Infinity"``, so a score of ``inf`` (a flagged sample) reaches the
+    caller as a value it can read.
+    """
+    if isinstance(v, float):
+        if v != v:
+            return "NaN"
+        if v in (float("inf"), float("-inf")):
+            return "Infinity" if v > 0 else "-Infinity"
+        return v
+    if v is None or isinstance(v, (str, int, bool)):
         return v
     if isinstance(v, dict):
         return {str(k): _jsonable(val) for k, val in v.items()}
     if isinstance(v, (list, tuple)):
         return [_jsonable(item) for item in v]
     if hasattr(v, "tolist"):
-        return v.tolist()
+        return _jsonable(v.tolist())
     return repr(v)

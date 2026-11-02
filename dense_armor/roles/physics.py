@@ -21,6 +21,7 @@ References
 Fitzpatrick, R. (2008). Maxwell's equations and the principles of
     electromagnetism. Jones & Bartlett — for the SI unit conventions.
 """
+
 import xml.etree.ElementTree as ET
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
@@ -30,7 +31,7 @@ from typing import Any
 import numpy as np
 
 from dense_armor.roles import Transformer
-from dense_armor.roles._util import call_learn_one
+from dense_armor.roles._util import call_learn_one, sum_budgets, worst_memory_class
 
 DIMENSIONLESS = "1"
 
@@ -121,8 +122,9 @@ class UnitCheckedPipeline(Transformer):
     ) -> None:
         self.steps = list(steps)
         self.output_units = dict(output_units) if output_units else None
-        self.step_units: list[tuple[Mapping[str, str] | None,
-                                    Mapping[str, str] | None]] = []
+        self.step_units: list[
+            tuple[Mapping[str, str] | None, Mapping[str, str] | None]
+        ] = []
         prev_outputs: Mapping[str, str] | None = None
         for i, step in enumerate(self.steps):
             spec = unit_spec_of(step)
@@ -143,10 +145,27 @@ class UnitCheckedPipeline(Transformer):
             self.step_units.append((spec.inputs, spec.outputs))
             prev_outputs = spec.outputs
 
+    @property
+    def budget_s(self) -> float | None:
+        """Latency of ``learn_one``: ``transform_one`` and ``learn_one`` of every transformer, and ``learn_one`` of the last step.
+
+        ``None`` if a step declares no ``budget_s``.
+        """
+        weights = [2.0] * (len(self.steps) - 1) + [1.0]
+        return sum_budgets(zip(weights, self.steps))
+
+    @property
+    def memory_class(self) -> str:
+        """The largest memory class of the steps."""
+        return worst_memory_class(self.steps)
+
     def learn_one(self, x, y=None, t=None):
         h = x
         for step in self.steps[:-1]:
-            h = step.transform_one(h, t=t) if t is not None else step.transform_one(h)
+            out = step.transform_one(h, t=t) if t is not None else step.transform_one(h)
+            if hasattr(step, "learn_one"):
+                call_learn_one(step.learn_one, h, y, t=t)
+            h = out
         last = self.steps[-1]
         if hasattr(last, "learn_one"):
             call_learn_one(last.learn_one, h, y, t=t)
@@ -183,11 +202,9 @@ class JointLimits:
 
     def in_bounds(self, q: Sequence[float] | np.ndarray) -> bool:
         """Return ``True`` if ``q`` is inside ``[lower, upper]`` everywhere."""
-        q_arr = np.asarray(q, dtype=float)
+        q_arr: np.ndarray = np.asarray(q, dtype=float)
         if q_arr.shape != (self.n,):
-            raise ValueError(
-                f"q has shape {q_arr.shape}, expected ({self.n},)"
-            )
+            raise ValueError(f"q has shape {q_arr.shape}, expected ({self.n},)")
         return bool(np.all(q_arr >= self.lower) and np.all(q_arr <= self.upper))
 
     def as_guard(self):
@@ -203,9 +220,7 @@ class JointLimits:
             if "q" in x:
                 q = np.asarray(x["q"], dtype=float)
             else:
-                q = np.asarray(
-                    [float(x.get(f"q{i}", 0.0)) for i in range(self.n)]
-                )
+                q = np.asarray([float(x.get(f"q{i}", 0.0)) for i in range(self.n)])
             return not self.in_bounds(q)
 
         return _guard
@@ -287,7 +302,5 @@ class PhysicalLimitsGuard:
         if "q" in x:
             q = np.asarray(x["q"], dtype=float)
         else:
-            q = np.asarray(
-                [float(x.get(f"q{i}", 0.0)) for i in range(self.limits.n)]
-            )
+            q = np.asarray([float(x.get(f"q{i}", 0.0)) for i in range(self.limits.n)])
         return not bool(np.all(q >= self._lo) and np.all(q <= self._hi))
