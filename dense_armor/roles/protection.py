@@ -11,19 +11,41 @@ class Protected(Estimator):
 
     Args:
         model: the wrapped estimator.
-        detector: an anomaly or drift detector with ``score_one`` or
-            ``update``.
+        detector: what decides that a sample is flagged, tried in this
+            order. An object with ``classify`` (an ``AnomalyGate``) flags
+            when ``classify(score_one(x))`` is true. A drift detector
+            (``update`` and ``drift_detected``) flags when it reports a drift
+            after it has seen the value of ``feature``. A detector with
+            ``score_one`` and a ``threshold`` attribute flags when the score
+            is above the threshold. A detector with only ``score_one`` has no
+            way to decide and never flags.
         fallback: value returned for flagged samples before any good
             prediction; after the first unflagged sample the last good
             prediction is used.
+        feature: for a drift detector, the key of ``x`` whose value is fed
+            to ``update``. ``None`` takes the feature with the smallest key,
+            so the result does not depend on the order of the keys, as in
+            the other detectors of the library. An anomaly detector reads
+            the whole of ``x`` and ignores it.
+
+    Raises:
+        KeyError: on a sample without the ``feature`` key, when a drift
+            detector is used.
     """
 
     _supervised = False
 
-    def __init__(self, model: Estimator, detector: Any, fallback: Any = None):
+    def __init__(
+        self,
+        model: Estimator,
+        detector: Any,
+        fallback: Any = None,
+        feature: str | None = None,
+    ):
         self.model = model
         self.detector = detector
         self.fallback = fallback
+        self.feature = feature
         self._last_good = fallback
 
     def _score(self, x: dict) -> float:
@@ -35,9 +57,17 @@ class Protected(Estimator):
         if hasattr(self.detector, "classify"):
             return bool(self.detector.classify(self._score(x)))
         if hasattr(self.detector, "drift_detected"):
-            self.detector.update(float(next(iter(x.values()), 0.0)))
+            self.detector.update(self._watched(x))
             return bool(self.detector.drift_detected)
+        if hasattr(self.detector, "score_one") and hasattr(self.detector, "threshold"):
+            return bool(self._score(x) > self.detector.threshold)
         return False
+
+    def _watched(self, x: dict) -> float:
+        if not x:
+            return 0.0
+        key = self.feature if self.feature is not None else min(x)
+        return float(x[key])
 
     def learn_one(self, x: dict, y: Any = None, t: float | None = None):
         if self._flagged(x):

@@ -38,6 +38,15 @@ import numpy as np
 class Signal(dict):
     """Dict-like one-sample reading, with vector form and metadata.
 
+    With ``values`` of shape ``(n_channels,)`` the Signal is a reading of
+    one sample: it is a dict ``{name: float}`` and any estimator that takes
+    a dict takes it. With ``values`` of shape ``(n, d)`` it holds ``n``
+    samples: ``array`` is the matrix and the dict has, for each channel, a
+    tuple of ``n`` floats. That form is for the code that reads ``array``
+    (``stacked`` builds it); an estimator with ``learn_one`` or
+    ``predict_one`` expects one float per channel and fails on a tuple, so
+    give it one sample at a time.
+
     Args:
         values: JAX array of shape ``(n_channels,)`` or ``(n, d)`` for a
             batch. The first axis is the channel axis for a single
@@ -68,23 +77,17 @@ class Signal(dict):
         units = list(units)
         if len(names) != n_channels:
             raise ValueError(
-                f"names has {len(names)} entries, values has "
-                f"{n_channels} channels"
+                f"names has {len(names)} entries, values has {n_channels} channels"
             )
         if len(units) != n_channels:
             raise ValueError(
-                f"units has {len(units)} entries, values has "
-                f"{n_channels} channels"
+                f"units has {len(units)} entries, values has {n_channels} channels"
             )
         self.array: jnp.ndarray = v
         self.names: list[str] = names
         self.units: list[str] = units
         self.t: float | None = t
-        mask = (
-            jnp.isnan(v)
-            if missing is None
-            else jnp.asarray(missing, dtype=bool)
-        )
+        mask = jnp.isnan(v) if missing is None else jnp.asarray(missing, dtype=bool)
         if mask.shape != v.shape:
             raise ValueError(
                 f"missing has shape {mask.shape}, values has shape {v.shape}"
@@ -96,9 +99,7 @@ class Signal(dict):
                 d[name] = float(v[i])
         else:
             for j, name in enumerate(names):
-                d[name] = tuple(
-                    float(v[i, j]) for i in range(v.shape[0])
-                )
+                d[name] = tuple(float(v[i, j]) for i in range(v.shape[0]))
         dict.__init__(self, d)
 
     @classmethod

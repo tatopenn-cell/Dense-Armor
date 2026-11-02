@@ -120,9 +120,22 @@ print(round(model.dt, 4), round(model.rate, 1))
 
 ### Protection
 
-`Protected(model, detector, fallback)` scores each sample first;
+`Protected(model, detector, fallback, feature)` scores each sample first;
 flagged samples are not learned and the prediction is the fallback (or
 the last prediction made on an unflagged sample).
+
+The detector decides, in this order: an `AnomalyGate` flags when its
+`classify` is true; a drift detector flags when it reports a drift after
+`update` has seen the value of `feature` (the smallest key when `feature`
+is `None`); a detector with `score_one` and a `threshold` attribute flags
+when the score is above the threshold; a detector with only `score_one`
+never flags. `Protected` does not train the detector: call
+`detector.learn_one(x)` on the samples it should learn from.
+
+`AnomalyGate(detector, protect, threshold)` classifies a score as anomalous
+when it is above `threshold`, or above the `threshold` attribute of the
+detector when the argument is `None`. A detector with no `threshold` and no
+argument raises `ValueError`.
 
 ```python
 from dense_armor.roles import Protected

@@ -21,6 +21,7 @@ References
 Fitzpatrick, R. (2008). Maxwell's equations and the principles of
     electromagnetism. Jones & Bartlett — for the SI unit conventions.
 """
+
 import xml.etree.ElementTree as ET
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
@@ -121,8 +122,9 @@ class UnitCheckedPipeline(Transformer):
     ) -> None:
         self.steps = list(steps)
         self.output_units = dict(output_units) if output_units else None
-        self.step_units: list[tuple[Mapping[str, str] | None,
-                                    Mapping[str, str] | None]] = []
+        self.step_units: list[
+            tuple[Mapping[str, str] | None, Mapping[str, str] | None]
+        ] = []
         prev_outputs: Mapping[str, str] | None = None
         for i, step in enumerate(self.steps):
             spec = unit_spec_of(step)
@@ -146,7 +148,10 @@ class UnitCheckedPipeline(Transformer):
     def learn_one(self, x, y=None, t=None):
         h = x
         for step in self.steps[:-1]:
-            h = step.transform_one(h, t=t) if t is not None else step.transform_one(h)
+            out = step.transform_one(h, t=t) if t is not None else step.transform_one(h)
+            if hasattr(step, "learn_one"):
+                call_learn_one(step.learn_one, h, y, t=t)
+            h = out
         last = self.steps[-1]
         if hasattr(last, "learn_one"):
             call_learn_one(last.learn_one, h, y, t=t)
@@ -185,9 +190,7 @@ class JointLimits:
         """Return ``True`` if ``q`` is inside ``[lower, upper]`` everywhere."""
         q_arr = np.asarray(q, dtype=float)
         if q_arr.shape != (self.n,):
-            raise ValueError(
-                f"q has shape {q_arr.shape}, expected ({self.n},)"
-            )
+            raise ValueError(f"q has shape {q_arr.shape}, expected ({self.n},)")
         return bool(np.all(q_arr >= self.lower) and np.all(q_arr <= self.upper))
 
     def as_guard(self):
@@ -203,9 +206,7 @@ class JointLimits:
             if "q" in x:
                 q = np.asarray(x["q"], dtype=float)
             else:
-                q = np.asarray(
-                    [float(x.get(f"q{i}", 0.0)) for i in range(self.n)]
-                )
+                q = np.asarray([float(x.get(f"q{i}", 0.0)) for i in range(self.n)])
             return not self.in_bounds(q)
 
         return _guard
@@ -287,7 +288,5 @@ class PhysicalLimitsGuard:
         if "q" in x:
             q = np.asarray(x["q"], dtype=float)
         else:
-            q = np.asarray(
-                [float(x.get(f"q{i}", 0.0)) for i in range(self.limits.n)]
-            )
+            q = np.asarray([float(x.get(f"q{i}", 0.0)) for i in range(self.limits.n)])
         return not bool(np.all(q >= self._lo) and np.all(q <= self._hi))
