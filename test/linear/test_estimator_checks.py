@@ -175,6 +175,18 @@ def test_clone_skip_is_honoured_for_payload():
         check_clone(est)
 
 
+def test_clone_drops_learned_state_skip_is_honoured_for_payload():
+    from dense_armor.checks import check_estimator
+
+    est = PayloadEstimator(RigidBodyModel(URDF), link="panda_link7")
+    assert "check_clone_drops_learned_state" in est._unit_test_skips()
+    report = check_estimator(
+        est, allow_not_applicable={"check_pickle_roundtrip": "jit closure"}
+    )
+    assert "check_clone_drops_learned_state" not in report["run"]
+    assert report["failed"] == []
+
+
 def test_repr_clone_equal_skip_is_honoured_for_payload():
     from dense_armor.checks.check_estimator import check_repr_clone_equal
 

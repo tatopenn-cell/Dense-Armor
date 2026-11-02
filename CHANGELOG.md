@@ -14,15 +14,15 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 - `_Pipeline` forwards `t` to every `transform_one` in `_forward`, `learn_one`,
   `transform_one`, `predict_one`, `predict_proba_one`, not just to `learn_one`.
 - `SignalBatch` with zero rows has `t = None` instead of raising `IndexError`.
-- `ChauvenetScorer` declares `score_is_inverted = True`; `AnomalyGate` and
-  `Protected` raise `ValueError` on it. `AnomalyDetector` declares
-  `score_is_inverted = False` on the base class.
+- `AnomalyDetector` declares `score_is_inverted = False` on the base class;
+  a subclass whose `score_one` is not "high = anomalous" must set it to `True`
+  (see the `ChauvenetScorer` entry under Fixed).
 - New check `check_clone_drops_learned_state`: `clone()` must not carry learned
   state. Can make `check_estimator` fail on third-party estimators whose
-  constructor is not rebuildable from `get_params` or whose `clone()` copies
-  learned state; the failure is `NotImplementedError` (not applicable) or
-  `AssertionError` (real bug).
-
+  constructor is not rebuildable from `get_params` (reported as not applicable,
+  which `check_estimator` turns into an `AssertionError` unless the check is in
+  `allow_not_applicable` or in `_unit_test_skips`) or whose `clone()` copies
+  learned state (`AssertionError`).
 - `Protected` with a drift detector reads the flag from the last
   `learn_one`, so the first `fallback` is returned on the sample after
   the one that triggered drift. Documented in the class docstring and

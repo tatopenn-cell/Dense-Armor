@@ -12,18 +12,17 @@ class Protected(Estimator):
     Args:
         model: the wrapped estimator.
         detector: what decides that a sample is flagged, tried in this
-            order. A drift detector flags a sample from the flag left by
-            the last ``learn_one``, not from the current sample: the
-            sample that triggers drift is predicted normally, the next
-            one is the first returned as ``fallback``. This is the
-            semantics of a gate that stops learning after drift, not of
-            a detector that classifies the current sample.
- An object with ``classify`` (an ``AnomalyGate``) flags
+            order. An object with ``classify`` (an ``AnomalyGate``) flags
             when ``classify(score_one(x))`` is true. A drift detector
             (``update`` and ``drift_detected``) flags when it reports a drift
             after it has seen the value of ``feature``; only ``learn_one``
             feeds it, once per sample, and ``predict_one`` and ``score_one``
-            read its current state without an ``update``. A detector with
+            read its current state without an ``update``. It flags from the
+            flag left by the last ``learn_one``, not from the current sample:
+            the sample that triggers drift is predicted normally, the next
+            one is the first returned as ``fallback``. This is the semantics
+            of a gate that stops learning after drift, not of a detector that
+            classifies the current sample. A detector with
             ``score_one`` and a ``threshold`` attribute flags when the score
             is above the threshold. A detector with only ``score_one`` has no
             way to decide and never flags.

@@ -103,8 +103,9 @@ def check_clone_drops_learned_state(est: Root) -> None:
     check as not applicable instead of silently passing it. The check
     only runs when ``est`` has already learned, so it does not call
     ``clone()`` on a fresh estimator. Every trailing-underscore attribute
-    of the clone must equal the constructor default (arrays and ``nan``
-    compared with ``_same``, not ``==``).
+    of the clone must equal the constructor default (numbers and arrays,
+    ``nan`` included, compared with ``_same``; ``None``, strings and
+    dicts with ``==``).
     """
     try:
         fresh = type(est)(**est.get_params(deep=False))
@@ -123,8 +124,13 @@ def check_clone_drops_learned_state(est: Root) -> None:
     import jax.numpy as jnp
 
     def _same(a, b) -> bool:
-        aa = jnp.asarray(a)
-        bb = jnp.asarray(b)
+        if a is b:
+            return True
+        try:
+            aa = jnp.asarray(a)
+            bb = jnp.asarray(b)
+        except (TypeError, ValueError):
+            return bool(a == b)
         if aa.shape != bb.shape:
             return False
         return bool(jnp.all(jnp.equal(aa, bb) | (jnp.isnan(aa) & jnp.isnan(bb))))

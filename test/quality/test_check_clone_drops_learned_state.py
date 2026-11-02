@@ -1,5 +1,6 @@
 """check_clone_drops_learned_state rejects a clone that carries learned state."""
 
+import numpy as np
 import pytest
 
 from dense_armor.checks.check_estimator import check_clone_drops_learned_state
@@ -96,6 +97,46 @@ def test_clone_that_copies_constructor_underscore_attribute_is_rejected():
     est = _Broken()
     est.learn_one({"a": 1.0}, 0.0)
     with pytest.raises(AssertionError, match="carried learned state in n_"):
+        check_clone_drops_learned_state(est)
+
+
+class _Defaults(Regressor):
+    """Constructor sets None, dict, string, nan and array defaults, all ``_``-suffixed."""
+
+    def __init__(self):
+        self.last_ = None
+        self.counts_ = {}
+        self.name_ = "x"
+        self.gain_ = float("nan")
+        self.w_ = np.zeros(3)
+
+    def learn_one(self, x, y, t=None):
+        self.n_ = getattr(self, "n_", 0) + 1
+        return self
+
+    def predict_one(self, x, t=None, return_std=False):
+        return 0.0
+
+
+class _CarriesArray(_Defaults):
+    """Clone keeps the learned array, which is a bug."""
+
+    def clone(self, new_params=None, include_attributes=False):
+        c = type(self)()
+        c.w_ = np.ones(3)
+        return c
+
+
+def test_none_dict_string_nan_and_array_defaults_pass():
+    est = _Defaults()
+    est.learn_one({"a": 1.0}, 0.0)
+    check_clone_drops_learned_state(est)
+
+
+def test_clone_that_changes_an_array_default_is_rejected():
+    est = _CarriesArray()
+    est.learn_one({"a": 1.0}, 0.0)
+    with pytest.raises(AssertionError, match="carried learned state in w_"):
         check_clone_drops_learned_state(est)
 
 
