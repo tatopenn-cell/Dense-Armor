@@ -45,6 +45,14 @@ def check_step_is_pure(est: Any) -> None:
     import jax
     import jax.numpy as jnp
 
+    def _same(a, b) -> bool:
+        """Compare two leaves, scalar or array, with the same value."""
+        aa = jnp.asarray(a)
+        bb = jnp.asarray(b)
+        if aa.shape != bb.shape:
+            return False
+        return bool(jnp.all(jnp.equal(aa, bb) | (jnp.isnan(aa) & jnp.isnan(bb))))
+
     state = init()
     v = jnp.array(1.5)
     s1, o1 = step(state, v)
@@ -53,12 +61,12 @@ def check_step_is_pure(est: Any) -> None:
     flat_o2 = jax.tree_util.tree_leaves(o2)
     assert len(flat_o1) == len(flat_o2)
     for a, b in zip(flat_o1, flat_o2):
-        assert float(a) == float(b), "step is not pure: outputs differ"
+        assert _same(a, b), "step is not pure: outputs differ"
     flat_s1 = jax.tree_util.tree_leaves(s1)
     flat_s2 = jax.tree_util.tree_leaves(s2)
     assert len(flat_s1) == len(flat_s2)
     for a, b in zip(flat_s1, flat_s2):
-        assert float(a) == float(b), "step is not pure: states differ"
+        assert _same(a, b), "step is not pure: states differ"
 
 
 def check_step_is_jittable(est: Any) -> None:

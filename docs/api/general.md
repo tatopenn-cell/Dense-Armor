@@ -6,11 +6,11 @@ Complete map of every public class in Dense-Armor: description,
 base classes, public methods. When a class has a guide page,
 the link leads there for the full explanation and examples.
 
-**220 classes**, 2193 public methods, 118 public modules.
+**392 classes**, 3478 public methods, 204 public modules.
 
 ## Classes by subsystem
 
-**Jump to:** [Roles](#roles) &nbsp;·&nbsp; [Metrics](#metrics) &nbsp;·&nbsp; [Evaluate](#evaluate) &nbsp;·&nbsp; [Core](#core) &nbsp;·&nbsp; [Mcp_server](#mcp_server) &nbsp;·&nbsp; [Anomaly](#anomaly) &nbsp;·&nbsp; [Drift](#drift) &nbsp;·&nbsp; [Trees](#trees) &nbsp;·&nbsp; [Naive Bayes](#naive-bayes) &nbsp;·&nbsp; [Distributions](#distributions) &nbsp;·&nbsp; [Nearest neighbours](#nearest-neighbours) &nbsp;·&nbsp; [Multiclass](#multiclass) &nbsp;·&nbsp; [Multi-output](#multi-output) &nbsp;·&nbsp; [Forests](#forests) &nbsp;·&nbsp; [Ensembles](#ensembles) &nbsp;·&nbsp; [Bandits](#bandits) &nbsp;·&nbsp; [Active learning](#active-learning) &nbsp;·&nbsp; [Factorization machines](#factorization-machines) &nbsp;·&nbsp; [Recommenders](#recommenders) &nbsp;·&nbsp; [Rules](#rules) &nbsp;·&nbsp; [Clustering](#clustering) &nbsp;·&nbsp; [Stats](#stats) &nbsp;·&nbsp; [Preprocessing](#preprocessing) &nbsp;·&nbsp; [Compose](#compose) &nbsp;·&nbsp; [Vision](#vision) &nbsp;·&nbsp; [Learn](#learn) &nbsp;·&nbsp; [Datasets](#datasets) &nbsp;·&nbsp; [Protect](#protect) &nbsp;·&nbsp; [Bridges](#bridges) &nbsp;·&nbsp; [Armor](#armor) &nbsp;·&nbsp; [Dynamics](#dynamics)
+**Jump to:** [Roles](#roles) &nbsp;·&nbsp; [Metrics](#metrics) &nbsp;·&nbsp; [Evaluate](#evaluate) &nbsp;·&nbsp; [Core](#core) &nbsp;·&nbsp; [Mcp_server](#mcp_server) &nbsp;·&nbsp; [Anomaly](#anomaly) &nbsp;·&nbsp; [Drift](#drift) &nbsp;·&nbsp; [Trees](#trees) &nbsp;·&nbsp; [Naive Bayes](#naive-bayes) &nbsp;·&nbsp; [Distributions](#distributions) &nbsp;·&nbsp; [Nearest neighbours](#nearest-neighbours) &nbsp;·&nbsp; [Multiclass](#multiclass) &nbsp;·&nbsp; [Multi-output](#multi-output) &nbsp;·&nbsp; [Forests](#forests) &nbsp;·&nbsp; [Ensembles](#ensembles) &nbsp;·&nbsp; [Bandits](#bandits) &nbsp;·&nbsp; [Active learning](#active-learning) &nbsp;·&nbsp; [Factorization machines](#factorization-machines) &nbsp;·&nbsp; [Recommenders](#recommenders) &nbsp;·&nbsp; [Rules](#rules) &nbsp;·&nbsp; [Clustering](#clustering) &nbsp;·&nbsp; [Stats](#stats) &nbsp;·&nbsp; [Preprocessing](#preprocessing) &nbsp;·&nbsp; [Compose](#compose) &nbsp;·&nbsp; [Vision](#vision) &nbsp;·&nbsp; [Learn](#learn) &nbsp;·&nbsp; [Datasets](#datasets) &nbsp;·&nbsp; [Protect](#protect) &nbsp;·&nbsp; [Bridges](#bridges) &nbsp;·&nbsp; [Armor](#armor) &nbsp;·&nbsp; [Dynamics](#dynamics) &nbsp;·&nbsp; [Deep learning](#deep-learning) &nbsp;·&nbsp; [Infrastructure](#infrastructure) &nbsp;·&nbsp; [Linear](#linear) &nbsp;·&nbsp; [ML](#ml) &nbsp;·&nbsp; [Optimizers](#optimizers) &nbsp;·&nbsp; [Time series](#time-series)
 
 ---
 
@@ -386,6 +386,17 @@ Public methods:
 - `from_dict(x: dict, units=None, t=None, names=None)`
 - `stacked(others: Iterable)`
 - `to_dict()`
+
+### SignalBatch
+
+
+*Module:* `dense_armor.roles.signal`
+
+``n`` samples of ``d`` channels, for the code that works on vectors.
+
+Public methods:
+
+- `row(i: int)`
 
 ### Transformer
 
@@ -1331,6 +1342,28 @@ Public methods:
 - `update_many(X, t=None)`
 - `window_samples(seconds: float)`
 
+### BayesianOnlineChangepoint
+
+
+*Module:* `dense_armor.utility.online.drift.bocpd`
+*Bases:* DriftDetector
+
+Online changepoint detection with a Normal-Inverse-Gamma model.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `update(x: 'float', t: 'float | None' = None)`
+- `update_many(X, t=None)`
+- `window_samples(seconds: float)`
+
 ### CUSUMDriftDetector
 
 
@@ -1403,6 +1436,57 @@ Public methods:
 - `window_samples(seconds: float)`
 
 ## Trees
+
+### BatchDecisionTreeClassifier
+
+
+*Module:* `dense_armor.utility.online.tree.batch`
+*Bases:* Classifier
+*Guide:* [fit.md](../fit.md)
+
+Batch CART classifier.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X: 'Any', y: 'Any' = None, t: 'Any' = None, epochs: 'int' = 1, shuffle: 'bool' = False, seed: 'int | None' = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: 'dict', y: 'Any', t: 'float | None' = None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `predict_many(X, t=None)`
+- `predict_one(x: 'dict', t: 'float | None' = None)`
+- `predict_proba_many(X, t=None)`
+- `predict_proba_one(x: 'dict', t: 'float | None' = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### FIMTDDRegressor
+
+
+*Module:* `dense_armor.utility.online.tree.fimt`
+*Bases:* Regressor
+
+Fast Incremental Model Tree with Drift Detection (FIMT-DD).
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: dict, y: Any, t: float | None = None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `predict_many(X, t=None, return_std=False)`
+- `predict_one(x: dict, t: float | None = None, return_std: bool = False)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
 
 ### HoeffdingAdaptiveTreeClassifier
 
@@ -3172,6 +3256,61 @@ Public methods:
 - `update(x: dict, y=None, t=None)`
 - `window_samples(seconds: float)`
 
+### OnlineGaussianMixture
+
+
+*Module:* `dense_armor.utility.signals.stats.mixture`
+*Bases:* Transformer
+*Guide:* [stats/mixture.md](../stats/mixture.md)
+
+Online Gaussian mixture with diagonal covariance.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x: dict, y: Any = None, t: float | None = None)`
+- `load_state_dict(state: dict[str, Any])`
+- `merge(other: 'OnlineGaussianMixture')`
+- `mutate(new_attrs: dict[str, Any])`
+- `score_one(x: dict)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x: dict, t: float | None = None)`
+- `update(x: dict, y: Any = None, t: float | None = None)`
+- `window_samples(seconds: float)`
+
+### OnlineShrinkageCovariance
+
+
+*Module:* `dense_armor.utility.signals.stats.shrinkage`
+*Bases:* Transformer
+*Guide:* [finance/portfolio.md](../finance/portfolio.md)
+
+Online covariance with linear shrinkage toward ``(1/p) I``.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x: 'dict', y=None, t: 'float | None' = None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `sample_covariance()`
+- `set_params(**params: Any)`
+- `shrinkage()`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x: 'dict', t: 'float | None' = None)`
+- `window_samples(seconds: float)`
+
 ### RollingCorrelation
 
 
@@ -3476,6 +3615,50 @@ Public methods:
 - `transform_many(X, t=None)`
 - `transform_one(x: dict, t=None)`
 - `update(x: dict, y=None, t=None)`
+- `window_samples(seconds: float)`
+
+### SparseCosineIndex
+
+
+*Module:* `dense_armor.utility.signals.stats.similarity`
+*Guide:* [preprocessing/text_vectorizer.md](../preprocessing/text_vectorizer.md)
+
+A sparse index of documents for cosine ranking, built once.
+
+Public methods:
+
+- `from_csr(M, vocabulary: 'dict')`
+- `query(q: 'dict')`
+- `query_many(queries: 'list[dict]')`
+- `query_many_sparse(Q: 'sparse.spmatrix', normalized: 'bool' = False)`
+- `top_k_threshold(q: 'dict', k: 'int' = 5)`
+
+### StudentT
+
+
+*Module:* `dense_armor.utility.signals.stats.student_t`
+*Bases:* Transformer
+*Guide:* [stats/student_t.md](../stats/student_t.md)
+
+Online Student-t location-scale estimator with fixed ``nu``.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x: dict, y: Any = None, t: float | None = None)`
+- `load_state_dict(state: dict[str, Any])`
+- `merge(other: 'StudentT')`
+- `mutate(new_attrs: dict[str, Any])`
+- `score_one(x: dict)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x: dict, t: float | None = None)`
+- `update(x: dict, y: Any = None, t: float | None = None)`
 - `window_samples(seconds: float)`
 
 ### TDigest
@@ -3808,6 +3991,33 @@ Public methods:
 - `transform_one(x: Any, t=None)`
 - `window_samples(seconds: float)`
 
+### TextVectorizer
+
+
+*Module:* `dense_armor.utility.signals.preprocessing.vectorizer`
+*Bases:* Transformer
+*Guide:* [preprocessing/text_vectorizer.md](../preprocessing/text_vectorizer.md)
+
+TF-IDF vectorizer with a fixed vocabulary, batch or online.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: 'int' = 1, shuffle: 'bool' = False, seed: 'int | None' = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x, y=None, t: 'float | None' = None)`
+- `load_state_dict(state: 'dict')`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform(documents: 'Iterable')`
+- `transform_many(X, t=None)`
+- `transform_matrix(documents)`
+- `transform_one(x, t: 'float | None' = None)`
+- `window_samples(seconds: float)`
+
 ### TFIDF
 
 
@@ -3994,6 +4204,164 @@ Public methods:
 - `transform_one(x: Any, t=None)`
 - `window_samples(seconds: float)`
 
+### CubeStream
+
+
+*Module:* `dense_armor.utility.signals.vision.streams`
+*Bases:* VideoStream
+*Guide:* [vision/frames.md](../vision/frames.md)
+
+Iterate over a multi-channel cube ``(T, H, W, C)``.
+
+### DenseFlow
+
+
+*Module:* `dense_armor.utility.signals.vision.dense`
+*Bases:* Transformer
+
+Dense optical flow with the Horn-Schunck iteration.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x, y=None, t=None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x, t=None)`
+- `window_samples(seconds: float)`
+
+### DifferenceImage
+
+
+*Module:* `dense_armor.utility.signals.vision.registration`
+*Bases:* Transformer
+*Guide:* [vision/kinematics.md](../vision/kinematics.md)
+
+Difference between the stabilised frame and a robust reference.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x, y=None, t=None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x, t=None)`
+- `window_samples(seconds: float)`
+
+### EventFrame
+
+
+*Module:* `dense_armor.utility.signals.vision.quality`
+*Bases:* Transformer
+*Guide:* [vision/quality.md](../vision/quality.md)
+
+Accumulate an event stream into a frame, one event at a time.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x, y=None, t=None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x=None, t=None)`
+- `window_samples(seconds: float)`
+
+### FalseColor
+
+
+*Module:* `dense_armor.utility.signals.vision.visualize`
+*Bases:* Transformer
+*Guide:* [vision/quality.md](../vision/quality.md)
+
+Bring any single-channel frame into a visible RGB image.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x, y=None, t=None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x, t=None)`
+- `window_samples(seconds: float)`
+
+### FeatureToSignal
+
+
+*Module:* `dense_armor.utility.signals.vision.adapters`
+*Bases:* Transformer
+*Guide:* [vision/tracking.md](../vision/tracking.md)
+
+Turn a dict of scalar features into a Signal.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x, y=None, t=None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x, t=None)`
+- `window_samples(seconds: float)`
+
+### FrameAnomaly
+
+
+*Module:* `dense_armor.utility.signals.vision.scene`
+*Bases:* Transformer
+*Guide:* [vision/motion.md](../vision/motion.md)
+
+Score a frame with the patch memory of the library.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x, y=None, t=None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x, t=None)`
+- `window_samples(seconds: float)`
+
 ### FrameFeatures
 
 
@@ -4019,6 +4387,135 @@ Public methods:
 - `transform_one(x: Any, t=None)`
 - `window_samples(seconds: float)`
 
+### FrameJointFusion
+
+
+*Module:* `dense_armor.utility.signals.vision.fusion`
+*Bases:* Transformer
+*Guide:* [vision/tracking.md](../vision/tracking.md)
+
+Estimate the camera latency by correlating video motion and joint speed.
+
+Public methods:
+
+- `add_frame(frame, t: float)`
+- `add_joint_speed(speed: float, t: float)`
+- `add_video_velocity(velocity: float, t: float)`
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `estimate()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x, y=None, t=None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x, t=None)`
+- `window_samples(seconds: float)`
+
+### FrameNormalizer
+
+
+*Module:* `dense_armor.utility.signals.vision.robustness`
+*Bases:* Transformer
+*Guide:* [robustness.md](../robustness.md)
+
+Bring a frame into ``[0, 1]`` and flag the difficult cases.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x, y=None, t=None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x, t=None)`
+- `window_samples(seconds: float)`
+
+### FrameQuality
+
+
+*Module:* `dense_armor.utility.signals.vision.quality`
+*Bases:* Transformer
+*Guide:* [vision/quality.md](../vision/quality.md)
+
+Per-frame sharpness, exposure, noise and difficulty flags.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x, y=None, t=None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x, t=None)`
+- `window_samples(seconds: float)`
+
+### FrameWindow
+
+
+*Module:* `dense_armor.utility.signals.vision.window`
+*Bases:* Transformer
+*Guide:* [vision/motion.md](../vision/motion.md)
+
+Ring buffer of the last ``n`` frames or ``s`` seconds, with statistics.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x, y=None, t=None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x, t=None)`
+- `window_samples(seconds: float)`
+
+### GlobalMotion
+
+
+*Module:* `dense_armor.utility.signals.vision.motion`
+*Bases:* Transformer
+*Guide:* [vision/motion.md](../vision/motion.md)
+
+Estimate the global scene shift with phase correlation.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x, y=None, t=None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x, t=None)`
+- `window_samples(seconds: float)`
+
 ### IncrementalPCA
 
 
@@ -4042,6 +4539,164 @@ Public methods:
 - `state_dict()`
 - `transform_many(X, t=None)`
 - `transform_one(x: dict, t=None)`
+- `window_samples(seconds: float)`
+
+### Kinematics
+
+
+*Module:* `dense_armor.utility.signals.vision.landmarks`
+*Bases:* Transformer
+*Guide:* [vision/kinematics.md](../vision/kinematics.md)
+
+Angles, speeds, symmetry and cycle residual from landmark points.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x, y=None, t=None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x, t=None)`
+- `window_samples(seconds: float)`
+
+### LandmarkCleaner
+
+
+*Module:* `dense_armor.utility.signals.vision.landmarks`
+*Bases:* Transformer
+*Guide:* [vision/kinematics.md](../vision/kinematics.md)
+
+Causal Hampel filter plus gap filling on a landmark stream.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x, y=None, t=None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x, t=None)`
+- `window_samples(seconds: float)`
+
+### LandmarkStream
+
+
+*Module:* `dense_armor.utility.signals.vision.landmarks`
+*Guide:* [vision/kinematics.md](../vision/kinematics.md)
+
+A stream of landmark samples, one per frame.
+
+### MotionEnergy
+
+
+*Module:* `dense_armor.utility.signals.vision.motion`
+*Bases:* Transformer
+*Guide:* [vision/motion.md](../vision/motion.md)
+
+Per-frame motion energy from the difference against the previous frame.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x, y=None, t=None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x, t=None)`
+- `window_samples(seconds: float)`
+
+### MotionMask
+
+
+*Module:* `dense_armor.utility.signals.vision.dense`
+*Bases:* Transformer
+
+Boolean mask of the pixels whose residual flow is large.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x, y=None, t=None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x, t=None)`
+- `window_samples(seconds: float)`
+
+### MovingObjectTracker
+
+
+*Module:* `dense_armor.utility.signals.vision.tracking`
+*Bases:* Transformer
+*Guide:* [vision/tracking.md](../vision/tracking.md)
+
+Track moving objects from a frame stream or from external boxes.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x, y=None, t=None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x, t=None)`
+- `update(boxes)`
+- `window_samples(seconds: float)`
+
+### Overlay
+
+
+*Module:* `dense_armor.utility.signals.vision.visualize`
+*Bases:* Transformer
+*Guide:* [vision/quality.md](../vision/quality.md)
+
+Draw the analysis on a frame.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x, y=None, t=None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x, t=None)`
 - `window_samples(seconds: float)`
 
 ### PatchFeatures
@@ -4157,6 +4812,165 @@ Public methods:
 *Guide:* [vision/frames.md](../vision/frames.md)
 
 Iterate over image files in a folder.
+
+### Registration
+
+
+*Module:* `dense_armor.utility.signals.vision.registration`
+*Bases:* Transformer
+*Guide:* [vision/kinematics.md](../vision/kinematics.md)
+
+Estimate the translation between a frame and a reference.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x, y=None, t=None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `set_reference(img)`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x, t=None)`
+- `window_samples(seconds: float)`
+
+### SceneChange
+
+
+*Module:* `dense_armor.utility.signals.vision.scene`
+*Bases:* Transformer
+*Guide:* [vision/motion.md](../vision/motion.md)
+
+Scalar distance between consecutive frames, given to a drift detector.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x, y=None, t=None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x, t=None)`
+- `window_samples(seconds: float)`
+
+### Stabilizer
+
+
+*Module:* `dense_armor.utility.signals.vision.registration`
+*Bases:* Transformer
+*Guide:* [vision/kinematics.md](../vision/kinematics.md)
+
+Shift a frame back to the reference, so the scene looks fixed.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x, y=None, t=None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x, t=None)`
+- `window_samples(seconds: float)`
+
+### Sync
+
+
+*Module:* `dense_armor.utility.signals.vision.quality`
+*Bases:* Transformer
+*Guide:* [vision/quality.md](../vision/quality.md)
+
+Estimate and apply the clock offset between two streams.
+
+Public methods:
+
+- `add_a(value: float, t: float)`
+- `add_b(value: float, t: float)`
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `estimate()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x, y=None, t=None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x=None, t=None)`
+- `window_samples(seconds: float)`
+
+### TrackToSignal
+
+
+*Module:* `dense_armor.utility.signals.vision.adapters`
+*Bases:* Transformer
+*Guide:* [vision/tracking.md](../vision/tracking.md)
+
+Turn one track of the tracker into a Signal.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x, y=None, t=None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x, t=None)`
+- `window_samples(seconds: float)`
+
+### VideoFileStream
+
+
+*Module:* `dense_armor.utility.signals.vision.streams`
+*Bases:* VideoStream
+*Guide:* [vision/frames.md](../vision/frames.md)
+
+Read a video from a file, an URL, a glob of files or a network stream.
+
+### VideoStream
+
+
+*Module:* `dense_armor.utility.signals.vision.streams`
+
+Common interface of the frame sources.
+
+### VideoWriter
+
+
+*Module:* `dense_armor.utility.signals.vision.visualize`
+*Guide:* [vision/quality.md](../vision/quality.md)
+
+Write a video and a summary image of the signals over time.
+
+Public methods:
+
+- `close()`
+- `log(name: str, value: float)`
+- `write(rgb)`
 
 ## Learn
 
@@ -4551,6 +5365,143 @@ Public methods:
 - `state_dict()`
 - `window_samples(seconds: float)`
 
+### SklearnClassifier
+
+
+*Module:* `dense_armor.bridges.sklearn`
+*Bases:* ClassifierMixin, _DenseWrapper, BaseEstimator
+*Guide:* [bridges/sklearn.md](../bridges/sklearn.md)
+
+A Dense-Armor classifier behind the scikit-learn classifier interface.
+
+Public methods:
+
+- `fit(X: 'Any', y: 'Any')`
+- `get_metadata_routing()`
+- `get_params(deep=True)`
+- `partial_fit(X: 'Any', y: 'Any', classes: 'Any' = None)`
+- `predict(X: 'Any')`
+- `predict_proba(X: 'Any')`
+- `score(X, y, sample_weight=None)`
+- `set_params(**params)`
+- `set_partial_fit_request(*, classes: Union[bool, NoneType, str] = '$UNCHANGED$')`
+- `set_score_request(*, sample_weight: Union[bool, NoneType, str] = '$UNCHANGED$')`
+
+### SklearnRegressor
+
+
+*Module:* `dense_armor.bridges.sklearn`
+*Bases:* RegressorMixin, _DenseWrapper, BaseEstimator
+*Guide:* [bridges/sklearn.md](../bridges/sklearn.md)
+
+A Dense-Armor regressor behind the scikit-learn regressor interface.
+
+Public methods:
+
+- `fit(X: 'Any', y: 'Any')`
+- `get_metadata_routing()`
+- `get_params(deep=True)`
+- `partial_fit(X: 'Any', y: 'Any')`
+- `predict(X: 'Any')`
+- `score(X, y, sample_weight=None)`
+- `set_params(**params)`
+- `set_score_request(*, sample_weight: Union[bool, NoneType, str] = '$UNCHANGED$')`
+
+### SklearnTransformer
+
+
+*Module:* `dense_armor.bridges.sklearn`
+*Bases:* TransformerMixin, _DenseWrapper, BaseEstimator
+*Guide:* [bridges/sklearn.md](../bridges/sklearn.md)
+
+A Dense-Armor transformer behind the scikit-learn transformer interface.
+
+Public methods:
+
+- `fit(X: 'Any', y: 'Any' = None)`
+- `fit_transform(X, y=None, **fit_params)`
+- `get_feature_names_out(input_features: 'Any' = None)`
+- `get_metadata_routing()`
+- `get_params(deep=True)`
+- `partial_fit(X: 'Any', y: 'Any' = None)`
+- `set_output(*, transform=None)`
+- `set_params(**params)`
+- `transform(X: 'Any')`
+
+### TorchAdapter
+
+
+*Module:* `dense_armor.bridges.torch`
+*Guide:* [bridges/torch.md](../bridges/torch.md)
+
+A ``torch.nn.Module`` usable inside Dense-Armor.
+
+Public methods:
+
+- `apply(x: 'Any')`
+
+### TorchModule
+
+
+*Module:* `dense_armor.bridges.torch`
+*Bases:* Module
+*Guide:* [bridges/torch.md](../bridges/torch.md)
+
+A Dense-Armor model wrapped as a ``torch.nn.Module``.
+
+Public methods:
+
+- `add_module(name: str, module: Optional[ForwardRef('Module')])`
+- `apply(fn: collections.abc.Callable[['Module'], None])`
+- `bfloat16()`
+- `buffers(recurse: bool = True)`
+- `children()`
+- `compile(*args, **kwargs)`
+- `cpu()`
+- `cuda(device: int | torch.device | None = None)`
+- `double()`
+- `eval()`
+- `extra_repr()`
+- `float()`
+- `forward(x: 'torch.Tensor')`
+- `get_buffer(target: str)`
+- `get_extra_state()`
+- `get_parameter(target: str)`
+- `get_submodule(target: str)`
+- `half()`
+- `ipu(device: int | torch.device | None = None)`
+- `load_state_dict(state_dict: collections.abc.Mapping[str, Any], strict: bool = True, assign: bool = False)`
+- `modules(remove_duplicate: bool = True)`
+- `mtia(device: int | torch.device | None = None)`
+- `named_buffers(prefix: str = '', recurse: bool = True, remove_duplicate: bool = True)`
+- `named_children()`
+- `named_modules(memo: set['Module'] | None = None, prefix: str = '', remove_duplicate: bool = True)`
+- `named_parameters(prefix: str = '', recurse: bool = True, remove_duplicate: bool = True)`
+- `parameters(recurse: bool = True)`
+- `register_backward_hook(hook: collections.abc.Callable[['Module', tuple[torch.Tensor, ...] | torch.Tensor, tuple[torch.Tensor, ...] | torch.Tensor], tuple[torch.Tensor, ...] | torch.Tensor | None])`
+- `register_buffer(name: str, tensor: torch.Tensor | None, persistent: bool = True)`
+- `register_forward_hook(hook: collections.abc.Callable[[~T, tuple[Any, ...], Any], Any | None] | collections.abc.Callable[[~T, tuple[Any, ...], dict[str, Any], Any], Any | None], *, prepend: bool = False, with_kwargs: bool = False, always_call: bool = False)`
+- `register_forward_pre_hook(hook: collections.abc.Callable[[~T, tuple[Any, ...]], Any | None] | collections.abc.Callable[[~T, tuple[Any, ...], dict[str, Any]], tuple[Any, dict[str, Any]] | None], *, prepend: bool = False, with_kwargs: bool = False)`
+- `register_full_backward_hook(hook: collections.abc.Callable[['Module', tuple[torch.Tensor, ...] | torch.Tensor, tuple[torch.Tensor, ...] | torch.Tensor], tuple[torch.Tensor, ...] | torch.Tensor | None], prepend: bool = False)`
+- `register_full_backward_pre_hook(hook: collections.abc.Callable[['Module', tuple[torch.Tensor, ...] | torch.Tensor], tuple[torch.Tensor, ...] | torch.Tensor | None], prepend: bool = False)`
+- `register_load_state_dict_post_hook(hook)`
+- `register_load_state_dict_pre_hook(hook)`
+- `register_module(name: str, module: Optional[ForwardRef('Module')])`
+- `register_parameter(name: str, param: torch.nn.parameter.Parameter | None)`
+- `register_state_dict_post_hook(hook)`
+- `register_state_dict_pre_hook(hook)`
+- `requires_grad_(requires_grad: bool = True)`
+- `set_extra_state(state: Any)`
+- `set_submodule(target: str, module: 'Module', strict: bool = False)`
+- `share_memory()`
+- `state_dict(*args, destination=None, prefix='', keep_vars=False)`
+- `to(*args, **kwargs)`
+- `to_empty(*, device: str | torch.device | int | None, recurse: bool = True)`
+- `train(mode: bool = True)`
+- `type(dst_type: torch.dtype | str)`
+- `xpu(device: int | torch.device | None = None)`
+- `zero_grad(set_to_none: bool = True)`
+
 ## Armor
 
 ### Armor
@@ -4595,3 +5546,2427 @@ Public methods:
 - `potential_energy(q)`
 - `total_energy(q, qd)`
 
+## Deep learning
+
+### AccumulatingStep
+
+
+*Module:* `dense_armor.utility.deep.neural.compiled`
+*Guide:* [neural/compiled_training.md](../neural/compiled_training.md)
+
+The compiled pieces of a step that accumulates the gradient.
+
+### AddPositions
+
+
+*Module:* `dense_armor.utility.deep.neural.models`
+*Guide:* [neural/sequence_layers.md](../neural/sequence_layers.md)
+
+Add the sinusoidal positions of page 6 of Vaswani et al. 2017.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### AGEM
+
+
+*Module:* `dense_armor.utility.deep.neural.continual`
+*Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
+
+A-GEM (Chaudhry et al. 2019, Eq. 11 p. 5).
+
+Public methods:
+
+- `memory()`
+- `observe(x: 'Any', y: 'Any', task_id: 'int')`
+- `project(g: 'jnp.ndarray', g_ref: 'jnp.ndarray')`
+
+### ArchivalMemory
+
+
+*Module:* `dense_armor.utility.deep.neural.consolidation.archival`
+*Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
+
+Unforgetting architetturale: residual tree + lifecycle + dual memory.
+
+Public methods:
+
+- `importance(x: 'jnp.ndarray', t: 'float' = 0.0)`
+- `read(x: 'jnp.ndarray')`
+- `reconstruct(idx: 'int')`
+- `transition(state: 'str', accesses: 'int', age_s: 'float')`
+- `write(x: 'jnp.ndarray', t: 'float' = 0.0)`
+- `write_depth(importance: 'float')`
+
+### AsTransformer
+
+
+*Module:* `dense_armor.utility.deep.neural.adapter`
+*Bases:* Transformer
+*Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
+
+A layer exposed as a ``Transformer``.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x: 'dict', y: 'Any' = None, t: 'float | None' = None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x: 'dict', t: 'float | None' = None)`
+- `window_samples(seconds: float)`
+
+### Autoencoder
+
+
+*Module:* `dense_armor.utility.deep.neural.autoencoder`
+*Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
+
+An encoder and a decoder, joined end to end.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `decode(z: 'jax.Array')`
+- `encode(x: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+- `reconstruction_error(x: 'jax.Array')`
+
+### AvgPool1D
+
+
+*Module:* `dense_armor.utility.deep.neural.conv`
+*Guide:* [neural/vision_layers.md](../neural/vision_layers.md)
+
+1-D average pooling. Input ``(L, c)`` or ``(B, L, c)``.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### AvgPool2D
+
+
+*Module:* `dense_armor.utility.deep.neural.conv`
+*Guide:* [neural/vision_layers.md](../neural/vision_layers.md)
+
+2-D average pooling. Input ``(H, W, c)`` or ``(B, H, W, c)``.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### BackgroundLearner
+
+
+*Module:* `dense_armor.utility.deep.neural.background`
+*Guide:* [neural/continuous.md](../neural/continuous.md)
+
+Learn on a worker thread; predict on the last served copy.
+
+Public methods:
+
+- `close()`
+- `flush(timeout: 'float | None' = None)`
+- `learn_one(x: 'Any', y: 'Any' = None, t: 'float | None' = None)`
+- `predict_one(x: 'Any', t: 'float | None' = None)`
+
+### BatchNorm
+
+
+*Module:* `dense_armor.utility.deep.neural.norm`
+*Guide:* [neural/layers.md](../neural/layers.md)
+
+Batch normalisation of a 2-D batch ``(m, n_features)``.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### BCEWithLogits
+
+
+*Module:* `dense_armor.utility.deep.neural.losses`
+*Guide:* [neural/index.md](../neural/index.md)
+
+Binary cross-entropy with logits, with a cached last logits and targets.
+
+Public methods:
+
+- `backward()`
+- `forward(logits: 'jax.Array', targets: 'jax.Array')`
+
+### Bidirectional
+
+
+*Module:* `dense_armor.utility.deep.neural.bidirectional`
+*Guide:* [neural/deep.md](../neural/deep.md)
+
+A forward and a backward recurrent layer, concatenated.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### BottleneckFusion
+
+
+*Module:* `dense_armor.utility.deep.neural.bottleneck`
+*Guide:* [neural/composable_attention.md](../neural/composable_attention.md)
+
+One fusion layer of Nagrani et al. 2021, Eq.(7) to Eq.(9).
+
+Public methods:
+
+- `backward(ga: 'Any', gb: 'Any', gfsn: 'Any')`
+- `forward(a: 'Any', b: 'Any', fsn: 'Any' = None, training: 'bool' = True)`
+- `params()`
+
+### CompiledStep
+
+
+*Module:* `dense_armor.utility.deep.neural.compiled`
+*Guide:* [neural/compiled_training.md](../neural/compiled_training.md)
+
+The compiled steps of a Trainer.
+
+### ConstantLR
+
+
+*Module:* `dense_armor.utility.deep.neural.schedules`
+*Guide:* [neural/training.md](../neural/training.md)
+
+A constant learning rate.
+
+Public methods:
+
+- `multiplier(epoch: 'float')`
+
+### Conv1D
+
+
+*Module:* `dense_armor.utility.deep.neural.conv`
+*Guide:* [neural/vision_layers.md](../neural/vision_layers.md)
+
+1-D cross-correlation with zero padding, optional causal shift.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `init_buffer()`
+- `params()`
+- `step(x_t: 'jax.Array', buffer: 'jax.Array')`
+
+### Conv2D
+
+
+*Module:* `dense_armor.utility.deep.neural.conv`
+*Guide:* [neural/vision_layers.md](../neural/vision_layers.md)
+
+2-D cross-correlation with zero padding, channels last.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### Conv3D
+
+
+*Module:* `dense_armor.utility.deep.neural.conv_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
+
+3-D cross-correlation with zero padding, channels last.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### ConvTranspose1D
+
+
+*Module:* `dense_armor.utility.deep.neural.convtranspose`
+*Guide:* [neural/deep.md](../neural/deep.md)
+
+1-D transposed convolution, channels last.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### ConvTranspose2D
+
+
+*Module:* `dense_armor.utility.deep.neural.convtranspose`
+*Guide:* [neural/deep.md](../neural/deep.md)
+
+2-D transposed convolution, channels last.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### CosineWarmRestarts
+
+
+*Module:* `dense_armor.utility.deep.neural.schedules`
+*Guide:* [neural/training.md](../neural/training.md)
+
+Cosine annealing with warm restarts.
+
+Public methods:
+
+- `multiplier(epoch: 'float')`
+
+### DataStream
+
+
+*Module:* `dense_armor.utility.deep.neural.stream`
+*Guide:* [neural/memory_and_data.md](../neural/memory_and_data.md)
+
+Batches of ``(x, y)`` from arrays, memory-mapped files or a generator.
+
+### DeepGenerativeReplay
+
+
+*Module:* `dense_armor.utility.deep.neural.generative_replay`
+*Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
+
+Deep generative replay (Shin et al. 2017, sec. 2.3 p. 3).
+
+Public methods:
+
+- `predict(x: 'Any')`
+- `sample(generator: 'Sequential', n: 'int')`
+- `train_task(x_real: 'Any', y_real: 'Any', n_epochs: 'int' = 5, batch_size: 'int' = 32)`
+
+### Dense
+
+
+*Module:* `dense_armor.utility.deep.neural.layers`
+*Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
+
+A dense layer ``y = x @ W + b``.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### DepthwiseConv2D
+
+
+*Module:* `dense_armor.utility.deep.neural.conv_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
+
+Depthwise 2-D convolution: one square kernel per channel.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### Dropout
+
+
+*Module:* `dense_armor.utility.deep.neural.layers`
+*Guide:* [neural/layers.md](../neural/layers.md)
+
+Random dropout with the scaling of Hinton et al. 2012.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### DualMemory
+
+
+*Module:* `dense_armor.utility.deep.neural.consolidation.memory`
+*Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
+
+Dual memory (HiCL, Kapoor et al. 2026, adapted to dense networks).
+
+Public methods:
+
+- `consolidate()`
+- `replay(n: 'int', t_now: 'float' = 0.0)`
+- `size()`
+- `top_k_separation(x: 'jnp.ndarray')`
+- `write(x: 'jnp.ndarray', t: 'float' = 0.0)`
+
+### ELU
+
+
+*Module:* `dense_armor.utility.deep.neural.activations_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
+
+ELU with a scale ``alpha`` (Eq.(15), page 5 of Clevert et al.).
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array')`
+
+### Embedding
+
+
+*Module:* `dense_armor.utility.deep.neural.layers`
+*Guide:* [neural/layers.md](../neural/layers.md)
+
+A lookup table ``E[ids]``.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(ids: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### EWC
+
+
+*Module:* `dense_armor.utility.deep.neural.continual`
+*Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
+
+Elastic weight consolidation (Kirkpatrick et al. 2017, Eq. 3 p. 3).
+
+Public methods:
+
+- `consolidate(x: 'Any', y: 'Any')`
+- `flat_params()`
+- `penalty(theta: 'jnp.ndarray | None' = None)`
+- `set_flat_params(theta: 'jnp.ndarray')`
+
+### Flatten
+
+
+*Module:* `dense_armor.utility.deep.neural.conv`
+*Guide:* [neural/vision_layers.md](../neural/vision_layers.md)
+
+Flatten every axis after the batch axis.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### FocalLoss
+
+
+*Module:* `dense_armor.utility.deep.neural.losses_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
+
+Focal loss ``-alpha_t (1 - p_t)**gamma * log(p_t)``.
+
+Public methods:
+
+- `backward()`
+- `forward(logits: 'jax.Array', y: 'jax.Array')`
+
+### GatedCrossAttention
+
+
+*Module:* `dense_armor.utility.deep.neural.gated_attention`
+*Guide:* [neural/composable_attention.md](../neural/composable_attention.md)
+
+Cross-attention gated by a per-query signal.
+
+Public methods:
+
+- `backward(g_out: 'Any')`
+- `forward(xq: 'Any', xc: 'Any', signal: 'Any', training: 'bool' = True)`
+- `params()`
+
+### GELU
+
+
+*Module:* `dense_armor.utility.deep.neural.activations_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
+
+GELU (exact or approximate) with a forward and a backward.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array')`
+
+### GEM
+
+
+*Module:* `dense_armor.utility.deep.neural.continual`
+*Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
+
+Gradient Episodic Memory (Lopez-Paz & Ranzato 2017, Eq. 8 QP and Eq. 11 dual, p. 4).
+
+Public methods:
+
+- `memory()`
+- `observe(x: 'Any', y: 'Any', task_id: 'int')`
+- `project(g: 'jnp.ndarray', mem_grads: 'Sequence[jnp.ndarray]')`
+
+### GLUFeedForward
+
+
+*Module:* `dense_armor.utility.deep.neural.glu`
+*Guide:* [neural/modern_blocks.md](../neural/modern_blocks.md)
+
+The feed-forward layer ``(act(x W) * (x V)) W2`` of Shazeer 2020.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### GroupNorm
+
+
+*Module:* `dense_armor.utility.deep.neural.norm_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
+
+Group normalization of the channels of a sample.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### GRU
+
+
+*Module:* `dense_armor.utility.deep.neural.recurrent`
+*Guide:* [neural/sequence_layers.md](../neural/sequence_layers.md)
+
+GRU layer, Eqs.(5) to (8), page 3 of Cho et al. 2014.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `init_state(batch: 'int | None' = None)`
+- `params()`
+- `step(x_t: 'jax.Array', state: 'jax.Array')`
+
+### HedgeNetClassifier
+
+
+*Module:* `dense_armor.utility.deep.neural.hedge`
+*Bases:* Classifier
+*Guide:* [neural/continuous.md](../neural/continuous.md)
+
+Online deep learning with Hedge Backpropagation.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: 'bool' = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: 'dict', y: 'Any', t: 'float | None' = None)`
+- `load_state_dict(state: 'dict[str, Any]')`
+- `mutate(new_attrs: dict[str, Any])`
+- `params()`
+- `predict_many(X, t=None)`
+- `predict_one(x: 'dict', t: 'float | None' = None)`
+- `predict_proba_many(X, t=None)`
+- `predict_proba_one(x: 'dict', t: 'float | None' = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### HingeLoss
+
+
+*Module:* `dense_armor.utility.deep.neural.losses_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
+
+Hinge loss ``max(0, 1 - y * pred)`` for ``y`` in {-1, +1}.
+
+Public methods:
+
+- `backward()`
+- `forward(pred: 'jax.Array', y: 'jax.Array')`
+
+### Huber
+
+
+*Module:* `dense_armor.utility.deep.neural.losses`
+*Guide:* [neural/index.md](../neural/index.md)
+
+Huber loss with a cached last prediction and target.
+
+Public methods:
+
+- `backward()`
+- `forward(pred: 'jax.Array', target: 'jax.Array')`
+
+### InstanceNorm
+
+
+*Module:* `dense_armor.utility.deep.neural.norm_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
+
+Instance normalization: one group per channel.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### KLDivLoss
+
+
+*Module:* `dense_armor.utility.deep.neural.losses_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
+
+Kullback-Leibler divergence ``sum_k y_k (log y_k - log p_k)``.
+
+Public methods:
+
+- `backward()`
+- `forward(logits: 'jax.Array', target_probs: 'jax.Array')`
+
+### L1Loss
+
+
+*Module:* `dense_armor.utility.deep.neural.losses_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
+
+Mean absolute error with cached last call.
+
+Public methods:
+
+- `backward()`
+- `forward(pred: 'jax.Array', target: 'jax.Array')`
+
+### LabelSmoothingCE
+
+
+*Module:* `dense_armor.utility.deep.neural.losses_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
+
+Softmax cross-entropy with smoothed labels, cached last call.
+
+Public methods:
+
+- `backward()`
+- `forward(logits: 'jax.Array', labels: 'jax.Array')`
+
+### LastStep
+
+
+*Module:* `dense_armor.utility.deep.neural.models`
+*Guide:* [neural/sequence_layers.md](../neural/sequence_layers.md)
+
+Take the last step of a sequence ``(B, T, n)``, giving ``(B, n)``.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### LatentCrossAttention
+
+
+*Module:* `dense_armor.utility.deep.neural.latent_attention`
+*Guide:* [neural/composable_attention.md](../neural/composable_attention.md)
+
+Cross-attention whose queries are a learned latent array.
+
+Public methods:
+
+- `backward(g: 'Any')`
+- `forward(xc: 'Any', training: 'bool' = True)`
+- `params()`
+
+### LayerNorm
+
+
+*Module:* `dense_armor.utility.deep.neural.norm`
+*Guide:* [neural/layers.md](../neural/layers.md)
+
+Layer normalisation over the features of each sample.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### LeakyReLU
+
+
+*Module:* `dense_armor.utility.deep.neural.activations_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
+
+Leaky ReLU with a fixed slope (no Param).
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array')`
+
+### LearnedPositions
+
+
+*Module:* `dense_armor.utility.deep.neural.positions`
+*Guide:* [neural/attention.md](../neural/attention.md)
+
+Add a learned vector to each position of a sequence.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### LifecycleMemory
+
+
+*Module:* `dense_armor.utility.deep.neural.consolidation.memory`
+*Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
+
+Lifecycle-quantised memory (SuperLocalMemory V3.3, Bhardwaj 2026, p.1).
+
+Public methods:
+
+- `access(idx: 'int', t: 'float' = 0.0)`
+- `mse_of(idx: 'int')`
+- `read(idx: 'int')`
+- `state_of(idx: 'int')`
+- `tick(t: 'float' = 0.0)`
+- `write(x: 'jnp.ndarray', t: 'float' = 0.0)`
+
+### LinearWarmup
+
+
+*Module:* `dense_armor.utility.deep.neural.schedules_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
+
+Linear warmup: ``lr_start`` then a linear ramp to ``lr_end``.
+
+Public methods:
+
+- `multiplier(epoch: 'float')`
+
+### LSTM
+
+
+*Module:* `dense_armor.utility.deep.neural.recurrent`
+*Guide:* [neural/sequence_layers.md](../neural/sequence_layers.md)
+
+Vanilla LSTM with peepholes, Greff et al. 2017 pages 1-2.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `init_state(batch: 'int | None' = None)`
+- `params()`
+- `step(x_t: 'jax.Array', state: 'tuple[jax.Array, jax.Array]')`
+
+### MatryoshkaLoss
+
+
+*Module:* `dense_armor.utility.deep.neural.matryoshka`
+*Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
+
+The multi-size loss of Matryoshka Representation Learning.
+
+Public methods:
+
+- `backward()`
+- `forward(z: 'jax.Array', y: 'Any')`
+- `logits(z: 'jax.Array', m: 'int')`
+- `params()`
+- `truncate(z: 'jax.Array', m: 'int')`
+
+### MaxPool1D
+
+
+*Module:* `dense_armor.utility.deep.neural.conv`
+*Guide:* [neural/vision_layers.md](../neural/vision_layers.md)
+
+1-D max pooling with the first maximum going to the gradient.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### MaxPool2D
+
+
+*Module:* `dense_armor.utility.deep.neural.conv`
+*Guide:* [neural/vision_layers.md](../neural/vision_layers.md)
+
+2-D max pooling with the first maximum going to the gradient.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### MeanOverTime
+
+
+*Module:* `dense_armor.utility.deep.neural.models`
+*Guide:* [neural/sequence_layers.md](../neural/sequence_layers.md)
+
+Mean over the time axis of ``(B, T, n)`` or ``(T, n)``.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### MSE
+
+
+*Module:* `dense_armor.utility.deep.neural.losses`
+*Guide:* [neural/continuous.md](../neural/continuous.md)
+
+Mean squared error with a cached last prediction and target.
+
+Public methods:
+
+- `backward()`
+- `forward(pred: 'jax.Array', target: 'jax.Array')`
+
+### MultiHeadCrossAttention
+
+
+*Module:* `dense_armor.utility.deep.neural.cross_attention`
+*Guide:* [neural/composable_attention.md](../neural/composable_attention.md)
+
+Multi-head attention with queries and context from two streams.
+
+Public methods:
+
+- `append_context(cache: 'tuple[jax.Array, jax.Array]', xc_t: 'jax.Array')`
+- `backward(g: 'jax.Array')`
+- `forward(xq: 'jax.Array', xc: 'jax.Array', training: 'bool' = True, mask: 'jax.Array | None' = None)`
+- `init_cache()`
+- `params()`
+- `step(xq_t: 'jax.Array', cache: 'tuple[jax.Array, jax.Array]')`
+
+### MultiHeadSelfAttention
+
+
+*Module:* `dense_armor.utility.deep.neural.attention`
+*Guide:* [neural/attention.md](../neural/attention.md)
+
+Multi-head self-attention of Vaswani et al. 2017, page 5.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `init_cache()`
+- `init_static_cache(length: 'int')`
+- `params()`
+- `step(x_t: 'jax.Array', cache: 'tuple[jax.Array, jax.Array]')`
+- `step_static(x_t: 'jax.Array', cache: 'tuple[jax.Array, jax.Array]', pos: 'jax.Array')`
+
+### NextTokenLoss
+
+
+*Module:* `dense_armor.utility.deep.neural.losses_lm`
+*Guide:* [neural/decoder_lm.md](../neural/decoder_lm.md)
+
+Cross-entropy of the logits at ``t`` against the token at ``t+1``.
+
+Public methods:
+
+- `backward()`
+- `forward(logits: 'jax.Array', y: 'jax.Array')`
+
+### NoamSchedule
+
+
+*Module:* `dense_armor.utility.deep.neural.schedules_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
+
+Noam schedule: linear warmup then inverse-square-root decay.
+
+Public methods:
+
+- `multiplier(epoch: 'float')`
+
+### OnlineAutoencoder
+
+
+*Module:* `dense_armor.utility.deep.neural.online_autoencoder`
+*Bases:* AnomalyDetector
+*Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
+
+An autoencoder trained one sample at a time, as an anomaly score.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `encode_one(x: 'dict', t: 'float | None' = None)`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: 'bool' = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x: 'dict', t: 'float | None' = None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `score_many(X, t=None)`
+- `score_one(x: 'dict', t: 'float | None' = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### OnlineNetClassifier
+
+
+*Module:* `dense_armor.utility.deep.neural.online`
+*Bases:* Classifier
+*Guide:* [neural/continuous.md](../neural/continuous.md)
+
+A network classifier trained one sample at a time.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: 'bool' = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: 'dict', y: 'Any', t: 'float | None' = None)`
+- `load_state_dict(state: 'dict[str, Any]')`
+- `mutate(new_attrs: dict[str, Any])`
+- `predict_many(X, t=None)`
+- `predict_one(x: 'dict', t: 'float | None' = None)`
+- `predict_proba_many(X, t=None)`
+- `predict_proba_one(x: 'dict', t: 'float | None' = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### OnlineNetRegressor
+
+
+*Module:* `dense_armor.utility.deep.neural.online`
+*Bases:* Regressor
+*Guide:* [neural/continuous.md](../neural/continuous.md)
+
+A network trained one sample at a time.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: 'bool' = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: 'dict', y: 'Any', t: 'float | None' = None)`
+- `load_state_dict(state: 'dict[str, Any]')`
+- `mutate(new_attrs: dict[str, Any])`
+- `predict_many(X, t=None, return_std=False)`
+- `predict_one(x: 'dict', t: 'float | None' = None, return_std: 'bool' = False)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### OnlineNetVector
+
+
+*Module:* `dense_armor.utility.deep.neural.online_vector`
+*Bases:* Regressor
+*Guide:* [neural/deep.md](../neural/deep.md)
+
+A network trained one sample at a time, on vector targets.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: 'bool' = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: 'Any', y: 'Any', t: 'float | None' = None)`
+- `load_state_dict(state: 'dict[str, Any]')`
+- `mutate(new_attrs: dict[str, Any])`
+- `predict_many(X, t=None, return_std=False)`
+- `predict_one(x: 'Any', t: 'float | None' = None, return_std: 'bool' = False)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### Parallel
+
+
+*Module:* `dense_armor.utility.deep.neural.chain`
+*Guide:* [neural/chains.md](../neural/chains.md)
+
+Several branches on the same input, merged on the output.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+- `zero_grad()`
+
+### Param
+
+
+*Module:* `dense_armor.utility.deep.neural.params`
+*Guide:* [neural/deep.md](../neural/deep.md)
+
+A jax array with a gradient of the same shape and dtype.
+
+Public methods:
+
+- `update(optimizer: 'Any')`
+- `zero_grad()`
+
+### PQMemory
+
+
+*Module:* `dense_armor.utility.deep.neural.consolidation.vq`
+*Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
+
+Product quantisation (Jégou, Douze, Schmid 2011, IEEE TPAMI 33(1)).
+
+Public methods:
+
+- `asymmetric_distance(q: 'jnp.ndarray', code: 'jnp.ndarray')`
+- `decode(code: 'jnp.ndarray')`
+- `encode(x: 'jnp.ndarray')`
+- `fit(documents: 'jnp.ndarray')`
+
+### PRelu
+
+
+*Module:* `dense_armor.utility.deep.neural.activations`
+*Guide:* [neural/index.md](../neural/index.md)
+
+PReLU with ``a`` as a ``Param``; ``backward`` fills ``a.grad``.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array')`
+- `params()`
+
+### Relu
+
+
+*Module:* `dense_armor.utility.deep.neural.activations`
+*Guide:* [neural/chains.md](../neural/chains.md)
+
+ReLU: ``forward`` caches ``x`` and ``y``; ``backward`` returns ``dx``.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array')`
+
+### Residual
+
+
+*Module:* `dense_armor.utility.deep.neural.layers`
+*Guide:* [neural/layers.md](../neural/layers.md)
+
+``y = x + inner.forward(x)`` (He et al. 2015, Eqn.(1) page 3).
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### ResidualTree
+
+
+*Module:* `dense_armor.utility.deep.neural.consolidation.tree`
+*Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
+
+Residual tree (DeltaMem, Tan et al. 2026, adapted to dense networks).
+
+Public methods:
+
+- `consolidate()`
+- `insert(x: 'jnp.ndarray')`
+- `max_nodes()`
+- `n_events()`
+- `n_nodes()`
+- `read(x: 'jnp.ndarray')`
+- `state_size_bytes()`
+
+### RMSNorm
+
+
+*Module:* `dense_armor.utility.deep.neural.norm_rms`
+*Guide:* [neural/modern_blocks.md](../neural/modern_blocks.md)
+
+RMS layer normalisation over the features of each sample.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### RNN
+
+
+*Module:* `dense_armor.utility.deep.neural.recurrent`
+*Guide:* [neural/deep.md](../neural/deep.md)
+
+Elman recurrent layer ``h = tanh(W x + U h_prev + b)``.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `init_state(batch: 'int | None' = None)`
+- `params()`
+- `step(x_t: 'jax.Array', state: 'jax.Array')`
+
+### RotaryDecoder
+
+
+*Module:* `dense_armor.utility.deep.neural.rotary_decoder`
+*Guide:* [neural/rotary_decoder.md](../neural/rotary_decoder.md)
+
+``Embedding``, ``n_layers`` modern blocks, ``RMSNorm`` and a ``Dense`` head.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(ids: 'jax.Array', training: 'bool' = True)`
+- `init_static_cache(length: 'int')`
+- `params()`
+- `step_compiled(token: 'jax.Array', caches: 'list[tuple[jax.Array, jax.Array]]', pos: 'int')`
+- `step_static(token: 'jax.Array', caches: 'list[tuple[jax.Array, jax.Array]]', pos: 'jax.Array')`
+
+### RotaryDecoderBlock
+
+
+*Module:* `dense_armor.utility.deep.neural.rotary_decoder`
+*Guide:* [neural/rotary_decoder.md](../neural/rotary_decoder.md)
+
+Pre-norm decoder block: ``x + Attn(RMSNorm(x))``, then ``+ FFN(RMSNorm(.))``.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `init_static_cache(length: 'int')`
+- `params()`
+- `step_static(x_t: 'jax.Array', cache: 'tuple[jax.Array, jax.Array]', pos: 'jax.Array')`
+
+### SeparableConv2D
+
+
+*Module:* `dense_armor.utility.deep.neural.conv_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
+
+Separable 2-D convolution: depthwise then pointwise.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### Seq2Seq
+
+
+*Module:* `dense_armor.utility.deep.neural.seq2seq`
+*Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
+
+A recurrent encoder, a recurrent decoder, a dense head.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### Sequential
+
+
+*Module:* `dense_armor.utility.deep.neural.chain`
+*Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
+
+A chain of layers, applied in order.
+
+Public methods:
+
+- `add(layer: 'Any')`
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `load_state_dict(state: 'list[np.ndarray]')`
+- `params()`
+- `state_dict()`
+- `zero_grad()`
+
+### Sigmoid
+
+
+*Module:* `dense_armor.utility.deep.neural.activations`
+*Guide:* [neural/index.md](../neural/index.md)
+
+Sigmoid: ``forward`` caches ``x`` and ``y``; ``backward`` returns ``dx``.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array')`
+
+### SiLU
+
+
+*Module:* `dense_armor.utility.deep.neural.activations_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
+
+SiLU: ``x * sigmoid(x)``.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array')`
+
+### Softmax
+
+
+*Module:* `dense_armor.utility.deep.neural.activations`
+*Guide:* [neural/index.md](../neural/index.md)
+
+Softmax over the last axis: ``forward`` caches ``x`` and ``y``; ``backward`` returns ``dx``.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array')`
+
+### SoftmaxCrossEntropy
+
+
+*Module:* `dense_armor.utility.deep.neural.losses`
+
+Softmax cross-entropy with a cached last logits and labels.
+
+Public methods:
+
+- `backward()`
+- `forward(logits: 'jax.Array', labels: 'jax.Array')`
+
+### Softplus
+
+
+*Module:* `dense_armor.utility.deep.neural.activations_more`
+*Guide:* [neural/deep.md](../neural/deep.md)
+
+Softplus with a scale ``beta``.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array')`
+
+### SparseMoE
+
+
+*Module:* `dense_armor.utility.deep.neural.moe`
+*Guide:* [neural/moe_testtime.md](../neural/moe_testtime.md)
+
+Sparse mixture of experts with dispatch.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `dropped_fraction()`
+- `expert_usage()`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `load_balancing_loss()`
+- `params()`
+
+### StepLR
+
+
+*Module:* `dense_armor.utility.deep.neural.schedules`
+*Guide:* [neural/training.md](../neural/training.md)
+
+Step schedule: ``lr * gamma ** floor(epoch / step)``.
+
+Public methods:
+
+- `multiplier(epoch: 'float')`
+
+### Tanh
+
+
+*Module:* `dense_armor.utility.deep.neural.activations`
+*Guide:* [neural/index.md](../neural/index.md)
+
+Tanh: ``forward`` caches ``x`` and ``y``; ``backward`` returns ``dx``.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array')`
+
+### TestTimeCompute
+
+
+*Module:* `dense_armor.utility.deep.neural.test_time`
+*Guide:* [neural/moe_testtime.md](../neural/moe_testtime.md)
+
+Test-time compute wrapper.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### TheoreticalBound
+
+
+*Module:* `dense_armor.utility.deep.neural.consolidation.memory`
+*Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
+
+Classical Hopfield capacity as a forgetting bound (placeholder).
+
+Public methods:
+
+- `bound(n_events: 'int')`
+- `capacity()`
+
+### Trainer
+
+
+*Module:* `dense_armor.utility.deep.neural.trainer`
+*Guide:* [neural/training.md](../neural/training.md)
+
+Train a model on a dataset, with mini-batches and schedules.
+
+Public methods:
+
+- `evaluate(X: 'Any', y: 'Any')`
+- `fit(X: 'Any', y: 'Any', epochs: 'int', batch_size: 'int | None', key: 'Any', X_val: 'Any' = None, y_val: 'Any' = None, patience: 'int | None' = None, min_delta: 'float' = 0.0, shuffle: 'bool' = True, stream: 'DataStream | None' = None)`
+- `predict(X: 'Any')`
+
+### TransformerBlock
+
+
+*Module:* `dense_armor.utility.deep.neural.attention`
+*Guide:* [neural/attention.md](../neural/attention.md)
+
+The encoder block of Vaswani et al. 2017.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `init_cache()`
+- `params()`
+- `step(x_t: 'jax.Array', cache: 'tuple[jax.Array, jax.Array]')`
+
+### TransformerDecoderBlock
+
+
+*Module:* `dense_armor.utility.deep.neural.decoder`
+*Guide:* [neural/decoder_lm.md](../neural/decoder_lm.md)
+
+One decoder layer of Vaswani et al. 2017.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', memory: 'jax.Array | None' = None, training: 'bool' = True)`
+- `params()`
+
+### Upsample1D
+
+
+*Module:* `dense_armor.utility.deep.neural.convtranspose`
+*Guide:* [neural/deep.md](../neural/deep.md)
+
+Nearest-neighbour upsampling along the length, channels last.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### Upsample2D
+
+
+*Module:* `dense_armor.utility.deep.neural.convtranspose`
+*Guide:* [neural/deep.md](../neural/deep.md)
+
+Nearest-neighbour upsampling along both spatial axes, channels last.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `forward(x: 'jax.Array', training: 'bool' = True)`
+- `params()`
+
+### VectorQuantizer
+
+
+*Module:* `dense_armor.utility.deep.neural.quantize`
+*Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
+
+Nearest-code quantizer with the straight-through gradient.
+
+Public methods:
+
+- `backward(g: 'jax.Array')`
+- `decode_indices(idx: 'jax.Array')`
+- `encode_indices(z_e: 'jax.Array')`
+- `forward(z_e: 'jax.Array', training: 'bool' = True)`
+- `loss()`
+- `params()`
+
+### VQMemory
+
+
+*Module:* `dense_armor.utility.deep.neural.consolidation.vq`
+*Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
+
+Vector-quantised memory (van den Oord et al. 2017, Eq. 1-4 p. 3).
+
+Public methods:
+
+- `backward(g: 'jnp.ndarray')`
+- `decode(z_q: 'jnp.ndarray')`
+- `encode(x: 'jnp.ndarray')`
+- `fit(x: 'jnp.ndarray', n_steps: 'int' = 5, lr: 'float' = 0.01)`
+- `forward(x: 'jnp.ndarray')`
+- `params()`
+- `quantize(z_e: 'jnp.ndarray')`
+- `update_codebook()`
+
+## Infrastructure
+
+### SharedArray
+
+
+*Module:* `dense_armor.utility.infrastructure.data.shared`
+
+A numeric numpy array in one shared memory block.
+
+Public methods:
+
+- `close()`
+- `unlink()`
+
+### SharedDict
+
+
+*Module:* `dense_armor.utility.infrastructure.data.shared`
+*Bases:* Mapping
+
+Separate key and value buffers with offsets.
+
+Public methods:
+
+- `close()`
+- `get(key, default=None)`
+- `items()`
+- `keys()`
+- `unlink()`
+- `values()`
+
+### SharedList
+
+
+*Module:* `dense_armor.utility.infrastructure.data.shared`
+
+A flat buffer of pickled items plus int64 offsets.
+
+Public methods:
+
+- `close()`
+- `unlink()`
+
+### SharedStrings
+
+
+*Module:* `dense_armor.utility.infrastructure.data.shared`
+
+A list of strings as one UTF-8 blob plus int64 offsets.
+
+Public methods:
+
+- `close()`
+- `unlink()`
+
+## Linear
+
+### BayesianLinearRegression
+
+
+*Module:* `dense_armor.utility.online.linear.bayes`
+*Bases:* Regressor
+*Guide:* [linear/bayes.md](../linear/bayes.md)
+
+Online Bayesian linear regression with a conjugate Gaussian prior.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: dict, y: Any, t: float | None = None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `predict_many(X, t=None, return_std=False)`
+- `predict_one(x: dict, t: float | None = None, return_std: bool = False, return_estimate: bool = False)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### LinearRegression
+
+
+*Module:* `dense_armor.utility.online.linear.glm`
+*Bases:* Regressor
+*Guide:* [linear/glm.md](../linear/glm.md)
+
+Online linear regression with squared loss.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `init_state(dim: int = 1)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: dict, y: Any, t: float | None = None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `predict_many(X, t=None, return_std=False)`
+- `predict_one(x: dict, t: float | None = None, return_std: bool = False)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `step(state: tuple, v: Any)`
+- `window_samples(seconds: float)`
+
+### LogisticRegression
+
+
+*Module:* `dense_armor.utility.online.linear.glm`
+*Bases:* Classifier
+*Guide:* [linear/glm.md](../linear/glm.md)
+
+Online binary logistic regression with log loss.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `init_state(dim: int = 1)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: dict, y: Any, t: float | None = None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `predict_many(X, t=None)`
+- `predict_one(x: dict, t: float | None = None, return_std: bool = False)`
+- `predict_proba_many(X, t=None)`
+- `predict_proba_one(x: dict, t: float | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `step(state: tuple, v: Any)`
+- `window_samples(seconds: float)`
+
+### PayloadEstimator
+
+
+*Module:* `dense_armor.utility.online.linear.payload`
+*Bases:* Regressor
+*Guide:* [linear/payload.md](../linear/payload.md)
+
+Recursive least squares estimate of a point mass on a link.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, y, t=None)`
+- `learn_one(x: Any, y: Any = None, t: float | None = None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `predict_many(X, t=None, return_std=False)`
+- `predict_one(x: dict | None = None, t: float | None = None, return_std: bool = False)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+## ML
+
+### BaggingClassifier
+
+
+*Module:* `dense_armor.ml.ensemble`
+*Bases:* MLBase
+*Guide:* [ml/ensemble.md](../ml/ensemble.md)
+
+Bagging: one model per bootstrap sample, probabilities averaged.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None)`
+- `fit_transform(X: 'Any', y: 'Any' = None, **fit_params: 'Any')`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `predict(X)`
+- `predict_proba(X)`
+- `score(X: 'Any', y: 'Any', sample_weight: 'Any' = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### BatchDecisionTreeClassifier
+
+
+*Module:* `dense_armor.ml.tree`
+*Bases:* MLBase
+*Guide:* [ml/tree.md](../ml/tree.md)
+
+Binary decision tree with the gini impurity, grown recursively on the whole table.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None)`
+- `fit_transform(X: 'Any', y: 'Any' = None, **fit_params: 'Any')`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `predict(X)`
+- `predict_proba(X)`
+- `score(X: 'Any', y: 'Any', sample_weight: 'Any' = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### BayesianLinearRegression
+
+
+*Module:* `dense_armor.ml.linear`
+*Bases:* MLBase
+*Guide:* [ml/linear.md](../ml/linear.md)
+
+Bayesian linear regression with a Gaussian prior, in closed form.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None)`
+- `fit_transform(X: 'Any', y: 'Any' = None, **fit_params: 'Any')`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `predict(X, return_std: 'bool' = False)`
+- `score(X: 'Any', y: 'Any', sample_weight: 'Any' = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### BoostingClassifier
+
+
+*Module:* `dense_armor.ml.ensemble`
+*Bases:* MLBase
+*Guide:* [ml/ensemble.md](../ml/ensemble.md)
+
+AdaBoost with the multiclass weights SAMME (Zhu et al. 2009).
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None)`
+- `fit_transform(X: 'Any', y: 'Any' = None, **fit_params: 'Any')`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `predict(X)`
+- `predict_proba(X)`
+- `score(X: 'Any', y: 'Any', sample_weight: 'Any' = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### ColumnMoments
+
+
+*Module:* `dense_armor.ml.stats`
+*Bases:* MLBase
+*Guide:* [ml/stats.md](../ml/stats.md)
+
+The moments of every column of a matrix.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None)`
+- `fit_transform(X: 'Any', y: 'Any' = None, **fit_params: 'Any')`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `score(X: 'Any', y: 'Any', sample_weight: 'Any' = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### Correlation
+
+
+*Module:* `dense_armor.ml.stats`
+*Bases:* Covariance
+*Guide:* [ml/stats.md](../ml/stats.md)
+
+Pearson correlation of two channels over the whole dataset.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None)`
+- `fit_transform(X: 'Any', y: 'Any' = None, **fit_params: 'Any')`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `score(X: 'Any', y: 'Any', sample_weight: 'Any' = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### Covariance
+
+
+*Module:* `dense_armor.ml.stats`
+*Bases:* MLBase
+*Guide:* [ml/stats.md](../ml/stats.md)
+
+Sample covariance (``n - 1``) and Pearson correlation of two channels.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None)`
+- `fit_transform(X: 'Any', y: 'Any' = None, **fit_params: 'Any')`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `score(X: 'Any', y: 'Any', sample_weight: 'Any' = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### DecisionTreeClassifier
+
+
+*Module:* `dense_armor.ml.tree`
+*Bases:* _Tree
+*Guide:* [ml/ensemble.md](../ml/ensemble.md)
+
+CART classification tree: splits that maximise the Gini decrease.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, sample_weight=None)`
+- `fit_transform(X: 'Any', y: 'Any' = None, **fit_params: 'Any')`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `predict(X)`
+- `predict_proba(X)`
+- `score(X: 'Any', y: 'Any', sample_weight: 'Any' = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### DecisionTreeRegressor
+
+
+*Module:* `dense_armor.ml.tree`
+*Bases:* _Tree
+*Guide:* [ml/tree.md](../ml/tree.md)
+
+CART regression tree: splits that maximise the variance reduction; leaves hold the mean.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None)`
+- `fit_transform(X: 'Any', y: 'Any' = None, **fit_params: 'Any')`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `predict(X)`
+- `score(X: 'Any', y: 'Any', sample_weight: 'Any' = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### DenseFlow
+
+
+*Module:* `dense_armor.ml.vision`
+*Bases:* MLBase
+*Guide:* [ml/vision.md](../ml/vision.md)
+
+Horn-Schunck optical flow between two frames.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None)`
+- `fit_transform(X: 'Any', y: 'Any' = None, **fit_params: 'Any')`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `score(X: 'Any', y: 'Any', sample_weight: 'Any' = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### ExponentiallyWeightedAverage
+
+
+*Module:* `dense_armor.ml.ensemble`
+*Bases:* MLBase
+*Guide:* [ml/ensemble.md](../ml/ensemble.md)
+
+Weights ``exp(-eta L_m)`` from the total loss of each model on the data (Hedge).
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None)`
+- `fit_transform(X: 'Any', y: 'Any' = None, **fit_params: 'Any')`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `predict(X)`
+- `score(X: 'Any', y: 'Any', sample_weight: 'Any' = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### ExtraTreesRegressor
+
+
+*Module:* `dense_armor.ml.forest`
+*Bases:* MLBase
+*Guide:* [ml/forest.md](../ml/forest.md)
+
+Extremely randomised trees: the whole sample and a random threshold at each split.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None)`
+- `fit_transform(X: 'Any', y: 'Any' = None, **fit_params: 'Any')`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `predict(X)`
+- `score(X: 'Any', y: 'Any', sample_weight: 'Any' = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### GlobalMotion
+
+
+*Module:* `dense_armor.ml.vision`
+*Bases:* MLBase
+*Guide:* [ml/vision.md](../ml/vision.md)
+
+Global shift between two frames by phase correlation.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None)`
+- `fit_transform(X: 'Any', y: 'Any' = None, **fit_params: 'Any')`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `score(X: 'Any', y: 'Any', sample_weight: 'Any' = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### LinearRegression
+
+
+*Module:* `dense_armor.ml.linear`
+*Bases:* MLBase
+*Guide:* [ml/multioutput.md](../ml/multioutput.md)
+
+Ridge regression in closed form.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None)`
+- `fit_transform(X: 'Any', y: 'Any' = None, **fit_params: 'Any')`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `predict(X)`
+- `score(X: 'Any', y: 'Any', sample_weight: 'Any' = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### LogisticRegression
+
+
+*Module:* `dense_armor.ml.linear`
+*Bases:* MLBase
+*Guide:* [ml/linear.md](../ml/linear.md)
+
+Binary logistic regression by Newton steps on the mean log loss.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None)`
+- `fit_transform(X: 'Any', y: 'Any' = None, **fit_params: 'Any')`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `predict(X)`
+- `predict_proba(X)`
+- `score(X: 'Any', y: 'Any', sample_weight: 'Any' = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### MLBase
+
+
+*Module:* `dense_armor.ml.base`
+*Bases:* SklearnCompat, Root
+*Guide:* [ml/index.md](../ml/index.md)
+
+Root of the classes: parameters, ``clone`` and ``state_dict``.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None)`
+- `fit_transform(X: 'Any', y: 'Any' = None, **fit_params: 'Any')`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `score(X: 'Any', y: 'Any', sample_weight: 'Any' = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### Moments
+
+
+*Module:* `dense_armor.ml.stats`
+*Bases:* MLBase
+*Guide:* [ml/stats.md](../ml/stats.md)
+
+Mean, variance (``n - 1``), skewness, excess kurtosis, min, max, range.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None)`
+- `fit_transform(X: 'Any', y: 'Any' = None, **fit_params: 'Any')`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `score(X: 'Any', y: 'Any', sample_weight: 'Any' = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### MotionMask
+
+
+*Module:* `dense_armor.ml.vision`
+*Bases:* MLBase
+*Guide:* [ml/vision.md](../ml/vision.md)
+
+Mask of the pixels whose flow magnitude is large, from the two components of a flow field.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None)`
+- `fit_transform(X: 'Any', y: 'Any' = None, **fit_params: 'Any')`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `score(X: 'Any', y: 'Any', sample_weight: 'Any' = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### PCA
+
+
+*Module:* `dense_armor.ml.vision`
+*Bases:* MLBase
+*Guide:* [ml/vision.md](../ml/vision.md)
+
+Principal components of a table: the top ``k`` eigenvectors of its covariance.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None)`
+- `fit_transform(X: 'Any', y: 'Any' = None, **fit_params: 'Any')`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `score(X: 'Any', y: 'Any', sample_weight: 'Any' = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform(X)`
+- `window_samples(seconds: float)`
+
+### RandomForestClassifier
+
+
+*Module:* `dense_armor.ml.forest`
+*Bases:* MLBase
+*Guide:* [ml/forest.md](../ml/forest.md)
+
+Random forest: trees on bootstrap samples with ``sqrt(d)`` random features per split.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None)`
+- `fit_transform(X: 'Any', y: 'Any' = None, **fit_params: 'Any')`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `predict(X)`
+- `predict_proba(X)`
+- `score(X: 'Any', y: 'Any', sample_weight: 'Any' = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### ShrinkageCovariance
+
+
+*Module:* `dense_armor.ml.stats`
+*Bases:* MLBase
+*Guide:* [ml/stats.md](../ml/stats.md)
+
+Linear shrinkage toward ``(1/p) I`` on the sample covariance of all rows.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None)`
+- `fit_transform(X: 'Any', y: 'Any' = None, **fit_params: 'Any')`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `score(X: 'Any', y: 'Any', sample_weight: 'Any' = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### TextVectorizer
+
+
+*Module:* `dense_armor.ml.preprocessing`
+*Bases:* MLBase
+*Guide:* [ml/preprocessing.md](../ml/preprocessing.md)
+
+TF-IDF matrix of a corpus with a fixed vocabulary.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None)`
+- `fit_transform(X: 'Any', y: 'Any' = None, **fit_params: 'Any')`
+- `get_params(deep: bool = True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `score(X: 'Any', y: 'Any', sample_weight: 'Any' = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform(documents)`
+- `window_samples(seconds: float)`
+
+## Optimizers
+
+### AdaGrad
+
+
+*Module:* `dense_armor.utility.online.optim.adagrad`
+*Guide:* [optim/adagrad.md](../optim/adagrad.md)
+
+AdaGrad with per-coordinate adaptive step sizes.
+
+Public methods:
+
+- `init_state(dim: int)`
+- `step(weights: numpy.ndarray, gradient: numpy.ndarray)`
+- `update(state: dict[str, Any], weights: jax.Array, gradient: jax.Array)`
+
+### Adam
+
+
+*Module:* `dense_armor.utility.online.optim.adam`
+*Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
+
+Adam with bias-corrected moment estimates.
+
+Public methods:
+
+- `init_state(dim: int)`
+- `step(weights: numpy.ndarray, gradient: numpy.ndarray)`
+- `update(state: dict[str, Any], weights: jax.Array, gradient: jax.Array)`
+
+### AdamW
+
+
+*Module:* `dense_armor.utility.online.optim.adamw`
+*Bases:* Adam
+*Guide:* [neural/modern_blocks.md](../neural/modern_blocks.md)
+
+Adam with weight decay decoupled from the gradient.
+
+Public methods:
+
+- `init_state(dim: int)`
+- `step(weights: numpy.ndarray, gradient: numpy.ndarray)`
+- `update(state: dict[str, Any], weights: Any, gradient: Any)`
+
+### FTRLProximal
+
+
+*Module:* `dense_armor.utility.online.optim.ftrl`
+*Guide:* [optim/ftrl.md](../optim/ftrl.md)
+
+FTRL with a quadratic + L1 + L2 regularizer.
+
+Public methods:
+
+- `init_state(dim: int)`
+- `step(weights: numpy.ndarray, gradient: numpy.ndarray)`
+- `update(state: dict[str, Any], weights: jax.Array, gradient: jax.Array)`
+
+### OnlineNewtonStep
+
+
+*Module:* `dense_armor.utility.online.optim.newton`
+*Guide:* [optim/newton.md](../optim/newton.md)
+
+Second-order online update with a rank-one running Hessian.
+
+Public methods:
+
+- `from_bounds(G: float, D: float, alpha: float)`
+- `init_state(dim: int)`
+- `step(weights: numpy.ndarray, gradient: numpy.ndarray)`
+- `update(state: dict[str, Any], weights: jax.Array, gradient: jax.Array)`
+
+### RMSProp
+
+
+*Module:* `dense_armor.utility.online.optim.rmsprop`
+*Guide:* [neural/deep.md](../neural/deep.md)
+
+RMSProp with an exponentially decaying average of squared gradients.
+
+Public methods:
+
+- `init_state(dim: int)`
+- `step(weights: numpy.ndarray, gradient: numpy.ndarray)`
+- `update(state: dict[str, Any], weights: jax.Array, gradient: jax.Array)`
+
+### SGD
+
+
+*Module:* `dense_armor.utility.online.optim.sgd`
+*Guide:* [neural/continuous.md](../neural/continuous.md)
+
+Gradient descent with optional momentum and Nesterov momentum.
+
+Public methods:
+
+- `init_state(dim: int)`
+- `step(weights: numpy.ndarray, gradient: numpy.ndarray)`
+- `update(state: dict[str, Any], weights: jax.Array, gradient: jax.Array)`
+
+## Time series
+
+### CycleResidual
+
+
+*Module:* `dense_armor.utility.online.timeseries.cycle`
+*Bases:* Transformer
+*Guide:* [timeseries/cycle.md](../timeseries/cycle.md)
+
+Cycle residual of a repetitive scalar stream.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x: dict, y: Any = None, t: float | None = None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x: dict, t: float | None = None)`
+- `window_samples(seconds: float)`
+
+### GARCH11
+
+
+*Module:* `dense_armor.utility.online.timeseries.garch`
+*Bases:* Transformer
+*Guide:* [timeseries/garch.md](../timeseries/garch.md)
+
+GARCH(1, 1) conditional variance with fixed parameters.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x: dict, y: Any = None, t: float | None = None)`
+- `load_state_dict(state: dict[str, Any])`
+- `merge(other: 'GARCH11')`
+- `mutate(new_attrs: dict[str, Any])`
+- `score_one(x: dict)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x: dict, t: float | None = None)`
+- `update(x: dict, y: Any = None, t: float | None = None)`
+- `window_samples(seconds: float)`
+
+### InnovationAdaptiveKalman
+
+
+*Module:* `dense_armor.utility.online.timeseries.kalman`
+*Bases:* KalmanFilter
+*Guide:* [timeseries/kalman.md](../timeseries/kalman.md)
+
+Adaptive Kalman filter after Popescu et al. (2026).
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `init_state(dim: int = 1)`
+- `learn_many(X, t=None)`
+- `learn_one(x: dict, y: Any = None, t: float | None = None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `predict_one(x: dict | None = None, t: float | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `step(state: tuple, v: Any)`
+- `transform_many(X, t=None)`
+- `transform_one(x: dict, t: float | None = None)`
+- `window_samples(seconds: float)`
+
+### KalmanFilter
+
+
+*Module:* `dense_armor.utility.online.timeseries.kalman`
+*Bases:* Transformer
+*Guide:* [timeseries/kalman.md](../timeseries/kalman.md)
+
+Linear Kalman filter with fixed matrices.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `init_state(dim: int = 1)`
+- `learn_many(X, t=None)`
+- `learn_one(x: dict, y: Any = None, t: float | None = None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `predict_one(x: dict | None = None, t: float | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `step(state: tuple, v: Any)`
+- `transform_many(X, t=None)`
+- `transform_one(x: dict, t: float | None = None)`
+- `window_samples(seconds: float)`
+
+### OnlineAR
+
+
+*Module:* `dense_armor.utility.online.timeseries.ar`
+*Bases:* Transformer
+*Guide:* [timeseries/ar.md](../timeseries/ar.md)
+
+Online univariate autoregressive model of order ``order``.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `init_state(dim: int = 1)`
+- `learn_many(X, t=None)`
+- `learn_one(x: dict, y: Any = None, t: float | None = None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `predict_one(x: dict, t: float | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `step(state: tuple, v: Any)`
+- `transform_many(X, t=None)`
+- `transform_one(x: dict, t: float | None = None)`
+- `window_samples(seconds: float)`
+
+### OnlineVAR
+
+
+*Module:* `dense_armor.utility.online.timeseries.ar`
+*Bases:* Transformer
+*Guide:* [timeseries/ar.md](../timeseries/ar.md)
+
+Online vector autoregressive model, TIRSO of Zaman et al. 2019.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `learn_many(X, t=None)`
+- `learn_one(x: dict, y: Any = None, t: float | None = None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `predict_one(x: dict, t: float | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform_many(X, t=None)`
+- `transform_one(x: dict, t: float | None = None)`
+- `window_samples(seconds: float)`
+
+### VBAdaptiveKalman
+
+
+*Module:* `dense_armor.utility.online.timeseries.kalman`
+*Bases:* KalmanFilter
+*Guide:* [timeseries/kalman.md](../timeseries/kalman.md)
+
+Variational Bayesian adaptive Kalman filter.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None = None, include_attributes: bool = False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `get_params(deep: bool = True)`
+- `init_state(dim: int = 1)`
+- `learn_many(X, t=None)`
+- `learn_one(x: dict, y: Any = None, t: float | None = None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `predict_one(x: dict | None = None, t: float | None = None)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `step(state: tuple, v: Any)`
+- `transform_many(X, t=None)`
+- `transform_one(x: dict, t: float | None = None)`
+- `window_samples(seconds: float)`

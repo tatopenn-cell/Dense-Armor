@@ -152,10 +152,6 @@ class KalmanFilter(Transformer):
             return {"innovation": np.zeros(m), "S": np.zeros((m, m))}
         return {"innovation": self._innovation.copy(), "S": self._S.copy()}
 
-    def _unit_test_skips(self) -> set:
-        """Skip the pure check: state holds vectors, not scalars."""
-        return {"check_step_is_pure"}
-
     def init_state(self, dim: int = 1) -> tuple:
         """Return the initial ``(x, P)`` state as JAX arrays.
 
@@ -289,10 +285,6 @@ class VBAdaptiveKalman(KalmanFilter):
         """Current estimate of the measurement noise covariance."""
         m = self.R.shape[0]
         return self._V / (self._nu - m - 1.0)
-
-    def _unit_test_skips(self) -> set:
-        """Skip the pure check: the state holds vectors, not scalars."""
-        return {"check_step_is_pure"}
 
     def init_state(self, dim: int = 1) -> tuple:
         """Return ``(x, P, nu, V)`` as JAX arrays.
@@ -452,10 +444,6 @@ class InnovationAdaptiveKalman(KalmanFilter):
         self._innovation = inn
         self._S = S
         return self
-
-    def _unit_test_skips(self) -> set:
-        """Skip the pure check: the state holds vectors, not scalars."""
-        return {"check_step_is_pure"}
 
     def init_state(self, dim: int = 1) -> tuple:
         """Return ``(x, P, buf_inn, buf_res, fill, head, R, Q)``.

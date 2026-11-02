@@ -72,7 +72,9 @@ def _counts(y: np.ndarray) -> dict:
 
 
 def _best_split(
-    X: np.ndarray, y: np.ndarray, feature_names: list[str],
+    X: np.ndarray,
+    y: np.ndarray,
+    feature_names: list[str],
 ) -> tuple[str | None, float | None, float]:
     """Return (best_feature, best_threshold, best_gini).
 
@@ -115,8 +117,7 @@ def _best_split(
         n_left: np.ndarray = np.arange(1, n, dtype=float)
         n_right = n - n_left
         g_left = 1.0 - np.sum((left_counts / n_left[:, None]) ** 2, axis=1)
-        g_right = 1.0 - np.sum(
-            (right_counts / n_right[:, None]) ** 2, axis=1)
+        g_right = 1.0 - np.sum((right_counts / n_right[:, None]) ** 2, axis=1)
         weighted = (n_left * g_left + n_right * g_right) / n
         wv = np.where(valid, weighted, np.inf)
         k = int(np.argmin(wv))
@@ -191,16 +192,11 @@ class BatchDecisionTreeClassifier(Classifier):
         if max_depth is not None and max_depth < 0:
             raise ValueError(f"max_depth must be >= 0, got {max_depth}")
         if min_samples_split < 2:
-            raise ValueError(
-                f"min_samples_split must be >= 2, got {min_samples_split}"
-            )
+            raise ValueError(f"min_samples_split must be >= 2, got {min_samples_split}")
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
         self._root: _Node | None = None
         self._feature_names: list[str] = []
-
-    def _unit_test_skips(self) -> set:
-        return {"check_step_is_pure", "check_step_is_jittable"}
 
     def _build(
         self,
@@ -226,9 +222,7 @@ class BatchDecisionTreeClassifier(Classifier):
         leaf.threshold = threshold
         leaf.counts = counts
         leaf.left = self._build(X[mask], y[mask], feature_names, depth + 1)
-        leaf.right = self._build(
-            X[~mask], y[~mask], feature_names, depth + 1
-        )
+        leaf.right = self._build(X[~mask], y[~mask], feature_names, depth + 1)
         return leaf
 
     def fit(
@@ -272,11 +266,11 @@ class BatchDecisionTreeClassifier(Classifier):
             try:
                 rows.append([float(row[k]) for k in feature_names])
             except KeyError as err:
-                raise ValueError(
-                    f"row {i} has no feature {err.args[0]!r}"
-                ) from None
+                raise ValueError(f"row {i} has no feature {err.args[0]!r}") from None
             except (TypeError, ValueError):
-                raise ValueError(f"row {i} holds a value that is not a number") from None
+                raise ValueError(
+                    f"row {i} holds a value that is not a number"
+                ) from None
         X_arr = np.asarray(rows, dtype=float)
         if not np.all(np.isfinite(X_arr)):
             raise ValueError("X holds a NaN or an infinite value")
@@ -319,6 +313,8 @@ class BatchDecisionTreeClassifier(Classifier):
             return {}
         return {c: v / total for c, v in leaf.counts.items()}
 
-    def learn_one(self, x: dict, y: Any, t: float | None = None) -> BatchDecisionTreeClassifier:
+    def learn_one(
+        self, x: dict, y: Any, t: float | None = None
+    ) -> BatchDecisionTreeClassifier:
         """No-op after the fit; the tree is frozen."""
         return self

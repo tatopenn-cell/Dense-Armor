@@ -110,7 +110,7 @@ graph TD
 |---|---|---|
 | `_util.py` | `accepts_kwarg`, `call_with_t` | helpers shared by the role classes |
 | `agents.py` | `schema`, `call_json` | schema and dispatch of JSON calls |
-| `anomaly_detector.py` | `AnomalyDetector`, `AnomalyGate` | base anomaly detector and its gate |
+| `anomaly_detector.py` | `AnomalyDetector`, `AnomalyGate` | base anomaly detector (`score_one`: high = anomalous; `score_is_inverted = False` unless a subclass breaks that, see 1.3) and its gate |
 | `classifier.py` | `Classifier` | base class for supervised classifiers |
 | `drift_detector.py` | `DriftDetector` | base class for drift detectors |
 | `estimator.py` | `Estimator` | root estimator with pipeline composition |
@@ -120,10 +120,49 @@ graph TD
 | `regressor.py` | `Regressor` | base class for supervised regressors |
 | `root.py` | `InconsistentVersionWarning`, `Root` | root of the estimator stack, with the entry point `fit` that feeds a whole dataset to `learn_one` |
 | `safety.py` | `Health`, `HealthMonitor`, `SafeEstimator` | health monitor and safe wrapper |
-| `signal.py` | `Signal` | dict-like one-sample reading with units and timestamp |
+| `signal.py` | `Signal`, `SignalBatch` | `Signal`: dict-like one-sample reading with units and timestamp. `SignalBatch`: ``n`` samples of ``d`` channels for code that works on vectors; it is not a dict, `row(i)` gives a `Signal`, and a batch with zero rows is valid (`t` is `None`) |
 | `transformer.py` | `Transformer`, `TransformerSupervised` | base classes for transformers |
-| `uncertainty.py` | `Estimate`, `AdaptiveConformalRegressor`, `OnlinePlattScaling` (re-exported from `utility/online/learn`) | prediction estimate and conformal regressor |
+| `uncertainty.py` | `Estimate`, `AdaptiveConformalRegressor`, `OnlinePlattScaling` (resolved lazily from `utility/online/learn` by a module `__getattr__`, see 1.4) | prediction estimate and conformal regressor; `budget_s` and `memory_class` are read from the wrapped model |
 | `wrapper.py` | `ModelWrapper` | delegation wrapper |
+
+### 1.1 Method contracts
+
+Every estimator is a `Root` (`get_params`, `set_params`, `clone`, `mutate`, `state_dict`, `load_state_dict`, `describe`, and `fit`, which feeds a whole dataset to `learn_one`). The role decides the methods:
+
+| role | learns with | answers with |
+|---|---|---|
+| `Classifier` | `learn_one(x, y, t=None)` | `predict_proba_one(x, t=None)` returns a dict; `predict_one(x, t=None)` returns `None` when that dict is empty |
+| `Regressor` | `learn_one(x, y, t=None)` | `predict_one(x, t=None, return_std=False)` |
+| `AnomalyDetector` | `learn_one(x, t=None)` | `score_one(x, t=None)` returns a float, high = anomalous |
+| `DriftDetector` | `update(x, t=None)`, returns `self` | `drift_detected` is true only on the step where the drift fires |
+| `Transformer` | `learn_one(x, t=None)` | `transform_one(x, t=None)` returns a dict |
+
+`t` is the timestamp of the sample. A caller never passes it to a method that does not declare it: `call_with_t` (in `_util.py`) adds `t` only when the callable accepts it. The pipeline built with `|` (`_Pipeline` in `estimator.py`) forwards `t` to every `transform_one` and `learn_one` of its steps, and to the `predict_one` / `predict_proba_one` of the last one.
+
+### 1.2 Budget and memory
+
+`budget_s` is the p99 latency, in seconds, of the public method that the role exposes for one sample (`learn_one` for an estimator, `transform_one` for a pure transformer). `memory_class` is `"O(1)"` or `"O(window)"`: a structure that grows has a finite cap. Both are class attributes of a leaf estimator and properties of a wrapper, which builds them from its parts with `sum_budgets` and `worst_memory_class` (`_util.py`):
+
+| wrapper | `budget_s` | `memory_class` |
+|---|---|---|
+| `SafeEstimator` | 2 × model | that of the model |
+| `AnomalyGate` | 2 × detector (one `score_one`, one `learn_one`) | that of the detector |
+| `Protected` | model + detector (detector twice with `train_detector=True`) | the worst of the two |
+| `_Pipeline`, `UnitCheckedPipeline` | 2 × each transformer, 1 × the last step | the worst of the steps |
+| union and product of transformers (`a + b`, `a * b`) | `a` + `b` | the worst of the two |
+| `AdaptiveConformalRegressor` | 2 × model (it calls `predict_one` and `learn_one`) + 5e-4 s | `"O(window)"` for a model of class `"O(1)"` or `"O(window)"` (the deque of residuals), `"unknown"` otherwise |
+
+A part that declares no `budget_s` makes the total `None`, not a smaller number: a sum with a missing term would be too low. `RealtimePipeline` refuses a step with no budget while `require_budget` is `True` (the default). A part whose `memory_class` is anything but the two values makes the wrapper `"unknown"`.
+
+### 1.3 Anomaly scores, gates and `Protected`
+
+`AnomalyDetector.score_one` is high for an anomaly. A subclass that cannot honour this sets `score_is_inverted = True`; today only `ChauvenetScorer` does (its criterion rejects when the score is small, use its `is_outlier`). `AnomalyGate` and `Protected` raise `ValueError` in the constructor when the detector declares it. Any other code that thresholds `score_one` has to read the attribute itself.
+
+`AnomalyGate.classify(score)` compares the score with `threshold`; a subclass that overrides `classify` decides by itself and needs no threshold. `Protected` decides whether a sample is flagged with the first rule that applies to the detector: `classify` of a gate, then `drift_detected` of a drift detector, then `score_one` above `threshold`. A drift detector is fed by `learn_one` only, once per sample, and `predict_one` and `score_one` read the flag it left. So the sample that triggers the drift is predicted normally and the next one is the first answered with `fallback`; the gate and the score rules judge the current sample instead.
+
+### 1.4 Import direction
+
+`utility` and `ml` import `roles`; `roles` does not import them at module level. The one case that needed the opposite is `OnlinePlattScaling`: `utility/online/learn/calibration.py` imports `Classifier` and `ModelWrapper` from `roles`, whose `__init__` imports `uncertainty`. `uncertainty.py` therefore resolves the name with a module `__getattr__` (PEP 562) and keeps a `TYPE_CHECKING` import for static tools; both import orders work.
 
 ## 2. utility
 
@@ -510,8 +549,40 @@ Internal helpers, not public: `utility/_validation.py` (`as_dict`, `is_number`, 
 
 | file | public names | what it is |
 |---|---|---|
-| `check_estimator.py` | `check_repr`, `check_repr_clone_equal`, `check_clone`, `check_clone_new_params`, `check_clone_independent`, `check_get_params_signature`, `check_default_params_non_mutable`, `check_mutate_idempotent`, `check_pickle_roundtrip`, `check_docstring`, `check_describe_serializable`, `check_state_dict_roundtrip`, `check_learn_one_does_not_modify_x`, `check_predict_before_learning`, `check_classifier_proba_sum`, `check_classifier_multiclass_bool`, `check_dt_accepted`, `check_non_increasing_t_raises`, `check_estimator`, `check_roc_auc` | API and behaviour checks for estimators |
+| `check_estimator.py` | `check_repr`, `check_repr_clone_equal`, `check_clone`, `check_clone_new_params`, `check_clone_independent`, `check_get_params_signature`, `check_default_params_non_mutable`, `check_mutate_idempotent`, `check_pickle_roundtrip`, `check_docstring`, `check_describe_serializable`, `check_state_dict_roundtrip`, `check_learn_one_does_not_modify_x`, `check_clone_drops_learned_state`, `check_predict_before_learning`, `check_classifier_proba_sum`, `check_classifier_multiclass_bool`, `check_dt_accepted`, `check_non_increasing_t_raises`, `check_estimator`, `check_roc_auc` | API and behaviour checks for estimators |
 | `robot.py` | `check_step_is_pure`, `check_step_is_jittable`, `check_p99_within_budget`, `check_memory_growth_bounded`, `check_estimate_variance_non_negative`, `check_schema_json`, `check_health_is_reachable`, `check_checkpoint_roundtrip` | robot-oriented checks |
+
+### 4.1 How `check_estimator` runs
+
+`check_estimator(est, allow_not_applicable=None)` runs the checks of both files in a fixed order on one estimator, which learns along the way: construction and cloning (`repr`, `clone`, `get_params_signature`, `default_params_non_mutable`, `mutate_idempotent`), serialisation (`pickle_roundtrip`, `describe_serializable`, `state_dict_roundtrip`), learning (`learn_one_does_not_modify_x`, `clone_drops_learned_state`, `predict_before_learning`), the role checks (`classifier_proba_sum`, `classifier_multiclass_bool`, `roc_auc`), time (`dt_accepted`, `non_increasing_t_raises`) and the robot checks (`step_is_pure`, `step_is_jittable`, `p99_within_budget`, `memory_growth_bounded`, `estimate_variance_non_negative`, `schema_json`, `health_is_reachable`, `checkpoint_roundtrip`).
+
+Each check ends in one of four ways:
+
+| result | what `check_estimator` does |
+|---|---|
+| the check passes | the name goes to `run` |
+| `AssertionError`, or any other exception | the check fails; the call raises `AssertionError` with every failure |
+| `NotImplementedError` or `AttributeError` | not applicable; the call raises `AssertionError` unless the check is in `allow_not_applicable` |
+| the name is in `est._unit_test_skips()` | the check does not run; the name goes to `skipped` |
+
+A skip name matches with or without the `check_` prefix. The call returns `{"run", "not_applicable", "skipped", "failed"}`.
+
+### 4.2 Declared skips
+
+`Root._unit_test_skips()` returns an empty set. The estimators that override it with a non-empty set are:
+
+| estimator | skipped | reason | test that proves the skip |
+|---|---|---|---|
+| `ChauvenetScorer` | `check_roc_auc` | the score is inverted (ROC-AUC 0.0) | `test_chauvenet_skip_is_honored` in `test/anomaly/test_streaming_filters.py` |
+| `PayloadEstimator` | `check_clone`, `check_repr_clone_equal`, `check_clone_drops_learned_state` | the model is a robot and cannot be cloned | `test_clone_skip_is_honoured_for_payload`, `test_repr_clone_equal_skip_is_honoured_for_payload` and `test_clone_drops_learned_state_skip_is_honoured_for_payload` in `test/linear/test_estimator_checks.py` |
+
+A new skip needs a test of the same kind: it shows that the skip is declared, that `check_estimator` leaves the check out, and, where it can, that the check would fail on that estimator.
+
+### 4.3 Two checks worth knowing
+
+`check_clone_drops_learned_state` builds a fresh instance from `get_params(deep=False)`; a constructor that does not accept its own parameters makes the check not applicable. It runs on an estimator that has already learned, clones it, and requires every attribute of the clone with a trailing underscore to equal the value the constructor gives. Numbers and arrays, `nan` included, are compared with `_same` (values and shape); `None`, strings and dicts with `==`.
+
+`check_step_is_pure` calls `step(state, v)` twice from the same state and compares every leaf of the new state and of the output with `_same`, so scalars, vectors and matrices (Kalman filters, `OnlineAR`) are covered.
 
 ## 5. bridges
 

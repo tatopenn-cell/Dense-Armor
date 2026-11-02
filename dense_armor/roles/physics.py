@@ -88,9 +88,11 @@ class UnitCheckedPipeline(Transformer):
             used.
 
     Raises:
-        ValueError: if any two consecutive steps disagree on a unit, or
-            if a step declares an output unit for a channel that the
-            next step does not declare.
+        ValueError: if two consecutive steps both declare the same
+            channel with different units. A channel declared by only one
+            of the two steps is not checked: the coupling between that
+            step and its two neighbours is not verified, the rest of the
+            chain still is.
 
     Examples:
         >>> from dense_armor.roles.physics import UnitCheckedPipeline, UnitSpec

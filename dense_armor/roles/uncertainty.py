@@ -40,18 +40,37 @@ Gupta, C., Ramdas, A. (2023). Online Platt scaling with calibeating.
 
 from collections import deque
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from dense_armor.roles import Regressor
+
+if TYPE_CHECKING:
+    from dense_armor.utility.online.learn.calibration import OnlinePlattScaling
 from dense_armor.roles._util import call_with_t
 from dense_armor.roles.signal import Signal
-from dense_armor.utility.online.learn.calibration import OnlinePlattScaling
 
 __all__ = [
     "AdaptiveConformalRegressor",
     "Estimate",
     "OnlinePlattScaling",
 ]
+
+
+def __getattr__(name: str):
+    """Resolve ``OnlinePlattScaling`` lazily to break the import cycle.
+
+    ``calibration.py`` imports ``Classifier`` and ``ModelWrapper`` from
+    :mod:`dense_armor.roles`, whose ``__init__`` imports this module.
+    Importing ``OnlinePlattScaling`` here at module level closes a cycle
+    where ``calibration.py`` is still partially initialised. The lazy
+    ``__getattr__`` (PEP 562) resolves the name on first access, after
+    both modules are ready.
+    """
+    if name == "OnlinePlattScaling":
+        from dense_armor.utility.online.learn.calibration import OnlinePlattScaling
+
+        return OnlinePlattScaling
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 @dataclass
@@ -100,8 +119,7 @@ class AdaptiveConformalRegressor(Regressor):
         window: number of past residuals used to compute ``Q_t``.
     """
 
-    budget_s: float | None = 5e-4
-    memory_class: str = "O(window)"
+    _CONFORMAL_OVERHEAD_S: float = 5e-4
 
     def __init__(
         self,
@@ -120,6 +138,36 @@ class AdaptiveConformalRegressor(Regressor):
         self.n_miss_ = 0
         self._last_lo_: float | None = None
         self._last_hi_: float | None = None
+
+    @property
+    def budget_s(self) -> float | None:
+        """Latency of ``learn_one``: two model calls plus the conformal update.
+
+        ``learn_one`` calls ``model.predict_one`` to build the interval
+        and ``model.learn_one`` to update the base model, so the model
+        costs twice per sample, as in
+        :class:`~dense_armor.roles.safety.SafeEstimator`. ``None`` if the
+        wrapped model declares no ``budget_s``, since a total that is
+        missing a term would be too low for
+        :class:`~dense_armor.roles.realtime.RealtimePipeline`.
+        """
+        model_budget = getattr(self.model, "budget_s", None)
+        if model_budget is None:
+            return None
+        return 2.0 * model_budget + self._CONFORMAL_OVERHEAD_S
+
+    @property
+    def memory_class(self) -> str:
+        """The larger of the model's class and ``O(window)`` for the residual deque.
+
+        ``"unknown"`` if the wrapped model declares anything else. The
+        residual window is always ``O(window)``, so a model of ``O(1)``
+        still gives ``O(window)`` here.
+        """
+        model_class = getattr(self.model, "memory_class", "unknown")
+        if model_class in ("O(1)", "O(window)"):
+            return "O(window)"
+        return "unknown"
 
     def _quantile(self, p: float) -> float:
         if not self.residuals_:

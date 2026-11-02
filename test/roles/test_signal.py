@@ -119,3 +119,29 @@ def test_signal_stacked_rejects_mismatch():
     b = Signal(values=[2.0], names=["x"], units=["s"])
     with pytest.raises(ValueError, match="share"):
         a.stacked([b])
+
+
+def test_signal_batch_empty_is_valid_and_t_is_none():
+    # A batch with zero rows is a valid empty stream. It must not raise:
+    # ``ts`` is empty, so the shared timestamp is None and the length is 0.
+    batch = SignalBatch(jnp.zeros((0, 3)), ["a", "b", "c"], ["", "", ""])
+    assert len(batch) == 0
+    assert batch.t is None
+    assert batch.times == ()
+    assert "SignalBatch(n=0" in repr(batch)
+    assert batch.array.shape == (0, 3)
+    assert batch.mask.shape == (0, 3)
+    assert batch.names == ["a", "b", "c"]
+    assert batch.units == ["", "", ""]
+    with pytest.raises(IndexError):
+        batch.row(0)
+
+
+def test_signal_batch_empty_is_not_a_dict():
+    # SignalBatch is deliberately not a dict: an estimator that takes one
+    # sample cannot take a batch. The empty case must not smuggle a dict
+    # interface in either.
+    batch = SignalBatch(jnp.zeros((0, 3)), ["a", "b", "c"], ["", "", ""])
+    assert not isinstance(batch, dict)
+    with pytest.raises(TypeError):
+        dict(batch)

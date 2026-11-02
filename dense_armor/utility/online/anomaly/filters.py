@@ -25,7 +25,6 @@ before the value being scored; the value is never part of its own window.
 See `ISTRUZIONI.md`, section "Important: centred vs causal windows".
 """
 
-
 import math
 from collections import deque
 
@@ -159,9 +158,6 @@ class HampelScorer(AnomalyDetector):
         """Score above which a sample is an outlier (``n_sigmas``)."""
         return self.n_sigmas
 
-    def _unit_test_skips(self):
-        return {"check_roc_auc"}
-
 
 class TukeyScorer(AnomalyDetector):
     """Tukey-fences outlier scorer on the causal window.
@@ -253,9 +249,6 @@ class TukeyScorer(AnomalyDetector):
     def is_outlier(self, x) -> bool:
         return self.score_one(x) > 0.0
 
-    def _unit_test_skips(self):
-        return {"check_roc_auc"}
-
 
 class ChauvenetScorer(AnomalyDetector):
     """Chauvenet outlier scorer on the causal window.
@@ -282,6 +275,15 @@ class ChauvenetScorer(AnomalyDetector):
     they are already distorted before the central point is judged. That is
     a known limitation of the original criterion and not specific to this
     implementation.
+
+    **Not usable with the gates.** ``score_one`` is inverted with respect
+    to the "high score = anomalous" convention of the role, so
+    :class:`~dense_armor.roles.anomaly_detector.AnomalyGate` and
+    :class:`~dense_armor.roles.protection.Protected` refuse it: the class
+    sets ``score_is_inverted = True`` and their constructors raise
+    ``ValueError`` when they receive it. Use ``HampelScorer``,
+    ``SigmaClipScorer`` or ``TukeyScorer`` instead, or call
+    :meth:`is_outlier` directly.
 
     Parameters
     ----------
@@ -310,6 +312,8 @@ class ChauvenetScorer(AnomalyDetector):
     Chauvenet, W. (1863). A Manual of Spherical and Practical Astronomy,
     Vol. II, Appendix on the Method of Least Squares.
     """
+
+    score_is_inverted = True
 
     def __init__(
         self,
@@ -451,9 +455,6 @@ class SigmaClipScorer(AnomalyDetector):
     def is_outlier(self, x) -> bool:
         return self.score_one(x) > self.n_sigmas
 
-    def _unit_test_skips(self):
-        return {"check_roc_auc"}
-
 
 class HampelFilter(Transformer):
     """Streaming Hampel filter: replaces outliers with the causal-window median.
@@ -527,6 +528,3 @@ class HampelFilter(Transformer):
             return {**x, key: v}
         w = np.fromiter(self._scorer._buffer, dtype=float)
         return {**x, key: float(np.median(w))}
-
-    def _unit_test_skips(self):
-        return {"check_roc_auc"}

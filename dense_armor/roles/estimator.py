@@ -36,10 +36,10 @@ class _Pipeline(Root):
             return NotImplemented
         return _Pipeline(self.steps + [(type(other).__name__, other)])
 
-    def _forward(self, x: dict) -> dict:
+    def _forward(self, x: dict, t: float | None = None) -> dict:
         for _, s in self.steps[:-1]:
             s_any: Any = s
-            x = s_any.transform_one(x)
+            x = call_with_t(s_any.transform_one, x, t=t)
         return x
 
     @property
@@ -60,7 +60,7 @@ class _Pipeline(Root):
         h = x
         for _, s in self.steps[:-1]:
             s_any: Any = s
-            out = s_any.transform_one(h)
+            out = call_with_t(s_any.transform_one, h, t=t)
             if hasattr(s_any, "learn_one"):
                 call_with_t(s_any.learn_one, h, t=t)
             h = out
@@ -72,19 +72,19 @@ class _Pipeline(Root):
         return self
 
     def predict_one(self, x: dict, t: float | None = None):
-        h = self._forward(x)
+        h = self._forward(x, t=t)
         last: Any = self.steps[-1][1]
         return call_with_t(last.predict_one, h, t=t)
 
     def predict_proba_one(self, x: dict, t: float | None = None):
-        h = self._forward(x)
+        h = self._forward(x, t=t)
         last: Any = self.steps[-1][1]
         return call_with_t(last.predict_proba_one, h, t=t)
 
     def transform_one(self, x: dict, t: float | None = None) -> dict:
         for _, s in self.steps:
             s_any: Any = s
-            x = s_any.transform_one(x)
+            x = call_with_t(s_any.transform_one, x, t=t)
         return x
 
     def __repr__(self) -> str:

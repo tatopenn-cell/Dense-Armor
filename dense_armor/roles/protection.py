@@ -15,10 +15,14 @@ class Protected(Estimator):
             order. An object with ``classify`` (an ``AnomalyGate``) flags
             when ``classify(score_one(x))`` is true. A drift detector
             (``update`` and ``drift_detected``) flags when it reports a drift
-            after it has seen the value of ``feature``; it sees each sample once,
-            whether the sample goes through ``predict_one``, ``score_one``,
-            ``learn_one`` or all of them, and the answer for a sample is the
-            one of the detector after that sample. A detector with
+            after it has seen the value of ``feature``; only ``learn_one``
+            feeds it, once per sample, and ``predict_one`` and ``score_one``
+            read its current state without an ``update``. It flags from the
+            flag left by the last ``learn_one``, not from the current sample:
+            the sample that triggers drift is predicted normally, the next
+            one is the first returned as ``fallback``. This is the semantics
+            of a gate that stops learning after drift, not of a detector that
+            classifies the current sample. A detector with
             ``score_one`` and a ``threshold`` attribute flags when the score
             is above the threshold. A detector with only ``score_one`` has no
             way to decide and never flags.
@@ -54,13 +58,19 @@ class Protected(Estimator):
         feature: str | None = None,
         train_detector: bool = False,
     ):
+        if getattr(detector, "score_is_inverted", False):
+            raise ValueError(
+                f"{type(detector).__name__} has score_one inverted "
+                f"(low score = anomalous); Protected expects "
+                f"'high score = anomalous'. Use HampelScorer, "
+                f"SigmaClipScorer or TukeyScorer."
+            )
         self.model = model
         self.detector = detector
         self.fallback = fallback
         self.feature = feature
         self.train_detector = train_detector
         self._last_good = fallback
-        self._pending: tuple[dict, dict, bool] | None = None
 
     @property
     def budget_s(self) -> float | None:
@@ -82,28 +92,13 @@ class Protected(Estimator):
             return float(self.detector.score_one(x))
         return 0.0
 
-    def _drift_flag(self, x: dict) -> bool:
-        """Feed the drift detector with ``x`` once, and give the same answer again.
-
-        A sample that is predicted and then learned goes through two or
-        three calls. The first call updates the detector; a later call with
-        the same object, unchanged since, returns the stored answer instead
-        of counting the sample again. A new sample, or the same object after
-        a change, updates the detector.
-        """
-        pending = self._pending
-        if pending is not None and pending[0] is x and pending[1] == x:
-            return pending[2]
-        self.detector.update(self._watched(x))
-        flag = bool(self.detector.drift_detected)
-        self._pending = (x, dict(x), flag)
-        return flag
-
-    def _flagged(self, x: dict) -> bool:
+    def _flagged(self, x: dict, update: bool = False) -> bool:
         if hasattr(self.detector, "classify"):
             return bool(self.detector.classify(self._score(x)))
         if hasattr(self.detector, "drift_detected"):
-            return self._drift_flag(x)
+            if update:
+                self.detector.update(self._watched(x))
+            return bool(self.detector.drift_detected)
         if hasattr(self.detector, "score_one") and hasattr(self.detector, "threshold"):
             return bool(self._score(x) > self.detector.threshold)
         return False
@@ -115,9 +110,7 @@ class Protected(Estimator):
         return float(x[key])
 
     def learn_one(self, x: dict, y: Any = None, t: float | None = None):
-        flagged = self._flagged(x)
-        self._pending = None
-        if flagged:
+        if self._flagged(x, update=True):
             return self
         m: Any = self.model
         if y is None:

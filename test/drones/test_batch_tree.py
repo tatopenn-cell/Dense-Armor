@@ -110,7 +110,7 @@ def test_classification_on_iris_like_data():
 def test_passes_check_estimator():
     out = check_estimator(BatchDecisionTreeClassifier(max_depth=3))
     assert out["not_applicable"] == []
-    assert len(out["skipped"]) == 2
+    assert out["skipped"] == []
 
 
 def test_clone_independent():
