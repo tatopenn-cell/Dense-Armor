@@ -15,7 +15,9 @@ class Protected(Estimator):
             order. An object with ``classify`` (an ``AnomalyGate``) flags
             when ``classify(score_one(x))`` is true. A drift detector
             (``update`` and ``drift_detected``) flags when it reports a drift
-            after it has seen the value of ``feature``. A detector with
+            after it has seen the value of ``feature``; only ``learn_one``
+            feeds it, once per sample, and ``predict_one`` and ``score_one``
+            read its current state without an ``update``. A detector with
             ``score_one`` and a ``threshold`` attribute flags when the score
             is above the threshold. A detector with only ``score_one`` has no
             way to decide and never flags.
@@ -78,11 +80,12 @@ class Protected(Estimator):
             return float(self.detector.score_one(x))
         return 0.0
 
-    def _flagged(self, x: dict) -> bool:
+    def _flagged(self, x: dict, update: bool = False) -> bool:
         if hasattr(self.detector, "classify"):
             return bool(self.detector.classify(self._score(x)))
         if hasattr(self.detector, "drift_detected"):
-            self.detector.update(self._watched(x))
+            if update:
+                self.detector.update(self._watched(x))
             return bool(self.detector.drift_detected)
         if hasattr(self.detector, "score_one") and hasattr(self.detector, "threshold"):
             return bool(self._score(x) > self.detector.threshold)
@@ -95,7 +98,7 @@ class Protected(Estimator):
         return float(x[key])
 
     def learn_one(self, x: dict, y: Any = None, t: float | None = None):
-        if self._flagged(x):
+        if self._flagged(x, update=True):
             return self
         m: Any = self.model
         if y is None:

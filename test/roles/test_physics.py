@@ -16,7 +16,6 @@ from dense_armor.roles.physics import (
     unit_spec_of,
 )
 
-
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "urdf"
 
 

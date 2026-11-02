@@ -5,8 +5,14 @@ import numpy as np
 import pytest
 
 from dense_armor.roles import (
-    AnomalyDetector, AnomalyGate, Root, Classifier, DriftDetector, Protected,
-    Regressor, Transformer, TransformerSupervised,
+    AnomalyDetector,
+    AnomalyGate,
+    Classifier,
+    DriftDetector,
+    Protected,
+    Regressor,
+    Root,
+    Transformer,
 )
 
 
