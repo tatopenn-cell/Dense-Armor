@@ -117,7 +117,3 @@ The class has no classifier and no regressor: it is a summary structure. Feed it
 ### Measured cost
 
 The benchmark `benchmarks/facto_quality.py` contains `check_skyline_equals_bruteforce`: it runs `Skyline(window=10)` on 50 random points and compares the result with a brute-force computation of the skyline. The check passes on every point. The measured time per update is not recorded on this page; the class attribute `budget_s = 1.5e-2` is the number the code declares for the check of the budget.
-
-### Development diary
-
-This page was written after the main work of the branch, on request of the owner, because the class existed with a full docstring and a test but without a page of its own: a reader could find it in the API list and not know what it was for. The page is added on the same branch, in a separate commit, so that the owner can move it to a different PR if wanted.
