@@ -107,7 +107,7 @@ samples that were modified, and a one-word verdict.
 
 ```python
 import numpy as np
-from dense_armor.utility.infrastructure.misc.diagnostic import diag
+from dense_armor.utility.evaluation.evaluate.diagnostic import diag
 
 rng = np.random.default_rng(0)
 orig = rng.normal(size=2000).astype(np.float32)
@@ -129,7 +129,7 @@ only scaled the signal by 0.98. `removed_energy`, `peak_distortion_db` and
 samples touched. `verdict` summarises the fidelity: `micro_edits` above 99.5,
 `balanced` between 95 and 99.5, `aggressive` below 95.
 
-::: dense_armor.utility.infrastructure.misc.diagnostic
+::: dense_armor.utility.evaluation.evaluate.diagnostic
 
 ---
 
@@ -139,7 +139,7 @@ branching on the caller's side.
 
 ```python
 import numpy as np, h5py
-from dense_armor.utility.infrastructure.misc.iodat import lodat
+from dense_armor.utility.signals.stream.iodat import lodat
 
 with h5py.File("data.h5", "w") as f:
     f.create_dataset("temperature", data=np.arange(12).reshape(3, 4))
@@ -153,7 +153,7 @@ print(tensore.shape)
 
 Requires `pip install dense-armor[data]` for the HDF5 / NetCDF readers.
 
-::: dense_armor.utility.infrastructure.misc.iodat
+::: dense_armor.utility.signals.stream.iodat
 
 ## Similarity search
 

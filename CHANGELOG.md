@@ -17,6 +17,27 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   example `dense_armor.utility.bandit.ucb`, still work and resolve to the
   same module object as `dense_armor.utility.online.bandit.ucb`. The entries
   below keep the old paths.
+- The `misc` folder is dissolved: `SDFT` and `Skyline` are in `utility/signals/stats`, `Metro` in
+  `utility/signals/preprocessing`, `diag` in `utility/evaluation/evaluate` and `lodat` in
+  `utility/signals/stream`. There are 32 subpackages in six groups. The old paths
+  (`dense_armor.utility.misc.sdft`, `dense_armor.utility.infrastructure.misc.metro`, ...) still resolve to
+  the same modules, and the old package `misc` gives `SDFT` and `Skyline`. The page `docs/misc/skyline.md`
+  is now `docs/stats/skyline.md`; the tests moved with the modules.
+
+### Added
+- `dense_armor/utility/deep/neural/rotary_decoder.py`: `RotaryDecoderBlock`, `RotaryDecoder` and the builder
+  `rotary_decoder`, a causal language model with RMSNorm, rotary causal attention and a SwiGLU feed-forward
+  (pre-norm), with `remat=True` to recompute the activations in `backward`. `transformer_decoder` is unchanged.
+- `MultiHeadSelfAttention.init_static_cache` and `step_static`: one token against a key/value cache of fixed
+  shape, so the step compiles once. `generate` uses it for a model that has `init_static_cache` and
+  `step_compiled` (`RotaryDecoder`); any other model is run again on the whole prefix, as before.
+  `benchmarks/neural/kv_cache.py` measures the two paths; page `docs/neural/rotary_decoder.md`.
+- `benchmarks/train_small_lm.py`, its two GPU JSONs and the page `docs/neural/lm_training.md`: a 14.2-million-parameter
+  decoder trained on tiny Shakespeare on a Tesla T4, with the unigram and bigram baselines.
+
+### Fixed
+- `rotary_angles` accepts a traced `offset` (it built the positions with `jnp.arange(offset, ...)`, which needs
+  a concrete value, so a compiled step with a traced position failed).
 
 ### Removed
 - Nothing yet.

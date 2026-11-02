@@ -97,7 +97,7 @@ class DeepGenerativeReplay:
         y_real: Any,
         n_epochs: int = 5,
         batch_size: int = 32,
-    ) -> "DeepGenerativeReplay":
+    ) -> DeepGenerativeReplay:
         """Train the solver on the real batch and on the past fake batches.
 
         Then train a new generator on the real batch of the current task.

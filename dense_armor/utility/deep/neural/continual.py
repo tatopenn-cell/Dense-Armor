@@ -10,7 +10,6 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
-import jax
 import jax.numpy as jnp
 import numpy as np
 
@@ -71,7 +70,7 @@ class EWC:
         pred = self.model.forward(x, training=False)
         return float(-self.loss.forward(pred, y))
 
-    def consolidate(self, x: Any, y: Any) -> "EWC":
+    def consolidate(self, x: Any, y: Any) -> EWC:
         """Store ``F`` (diagonal Fisher) and ``theta*`` from ``(x, y)``.
 
         The Fisher is computed with central finite differences on the flat
@@ -134,7 +133,7 @@ class GEM:
         self._memories: dict[int, tuple[np.ndarray, np.ndarray]] = {}
         self._rng = np.random.RandomState(seed)
 
-    def observe(self, x: Any, y: Any, task_id: int) -> "GEM":
+    def observe(self, x: Any, y: Any, task_id: int) -> GEM:
         """Store one sample into the memory of ``task_id``.
 
         ``x`` is stored as a 1D array of length ``d_model``; ``y`` keeps its
@@ -247,7 +246,7 @@ class AGEM:
         self._memories: dict[int, tuple[np.ndarray, np.ndarray]] = {}
         self._rng = np.random.RandomState(seed)
 
-    def observe(self, x: Any, y: Any, task_id: int) -> "AGEM":
+    def observe(self, x: Any, y: Any, task_id: int) -> AGEM:
         """Store one sample into the memory of ``task_id``.
 
         ``x`` is stored as a 1D array of length ``d_model``; ``y`` keeps its

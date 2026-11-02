@@ -196,6 +196,7 @@ nav:
               - Streaming quantiles: stats/streaming.md
               - Dependence: stats/dependence.md
               - Sketches: stats/sketches.md
+              - Skyline: stats/skyline.md
           - Preprocessing:
               - preprocessing/index.md
               - Scaling features and joints: preprocessing/scaling.md
@@ -236,6 +237,7 @@ nav:
       - Encoders and decoders: neural/encoder_decoder.md
       - Decoder language models: neural/decoder_lm.md
       - Language-model training: neural/lm_training.md
+      - Rotary decoder and generation cache: neural/rotary_decoder.md
       - Deep: neural/deep.md
       - Composable attention: neural/composable_attention.md
       - Continual learning: neural/continual_learning.md
@@ -293,7 +295,6 @@ nav:
           - Toolkit:
               - toolkit/index.md
               - Toolkit: toolkit/toolkit.md
-          - Skyline: misc/skyline.md
           - Live Demo: demo.md
           - MCP Server: mcp.md
       - API Reference:

@@ -7,7 +7,7 @@ pytest.importorskip("h5py", reason="h5py is optional (dense-armor[data])")
 
 import h5py  # noqa: E402
 
-from dense_armor.utility.infrastructure.misc.iodat import lodat  # noqa: E402
+from dense_armor.utility.signals.stream.iodat import lodat  # noqa: E402
 
 
 def test_read_h5(tmp_path):

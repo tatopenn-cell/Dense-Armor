@@ -171,7 +171,7 @@ Dense-Armor provides online implementations of the following families of algorit
 - Calibration and metric learning
 - Imbalanced learning
 - [Vision](https://tatopenn-cell.github.io/Dense-Armor/vision/) (video files, frame features, patches, vocabulary, online reduction, motion, tracking, registration, dense flow)
-- [Deep learning](https://tatopenn-cell.github.io/Dense-Armor/neural/) (layers, attention, convolutional and recurrent blocks, batch and streaming training, continual learning with EWC, GEM, A-GEM, memory consolidation with VQ, PQ, residual tree, dual and archival memory)
+- [Deep learning](https://tatopenn-cell.github.io/Dense-Armor/neural/) (layers, attention, convolutional and recurrent blocks, batch and streaming training, continual learning with EWC, GEM, A-GEM, memory consolidation with VQ, PQ, residual tree, dual and archival memory, a decoder language model with RMSNorm, rotary attention and SwiGLU, and generation against a static key/value cache)
 - Robot control (rate limits, control barrier functions, trajectories, kinematic tracking)
 - Robot dynamics (URDF, passivity + CBF controllers)
 - Shielding (1D series cleanup, input/output shield, per-point routing)
@@ -322,4 +322,6 @@ Dense-Armor takes inspiration from [River](https://riverml.xyz) (Montiel et al.,
 - Deep Learning: [Composable attention: how do I make a network look at one sensor only when another one says it matters, and fuse two sensors through a few numbers?](docs/neural/composable_attention.md).
 - Deep Learning: [Continual learning: how do I keep a network from forgetting the past, and how do I measure what it remembers?](docs/neural/continual_learning.md).
 - Deep Learning: [Sparse mixture of experts and test-time compute: how do I make a network use only part of its parameters on each sample, and how do I spend more compute at inference to get a better answer?](docs/neural/moe_testtime.md).
+- Deep Learning: [Language-model training: how do I train a small language model with Dense-Armor?](docs/neural/lm_training.md).
+- Deep Learning: [Rotary decoder: how do I generate text without running the whole sequence again at every token?](docs/neural/rotary_decoder.md).
 - Machine learning: [the families of `dense_armor.ml`](docs/ml/index.md), grown on the whole table: statistics, preprocessing, linear models, trees, forests, ensembles, anomaly and change detection, vision.

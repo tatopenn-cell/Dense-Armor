@@ -24,7 +24,7 @@ Four deviations from Baldini, each declared in the page:
 - the signal is the gyro (differentiated), not the acceleration. The
   synthetic stream puts the vibration on the gyro; the acceleration
   in synthetic_flight does not carry it.
-- the spectrum is the SDFT of dense_armor.utility.infrastructure.misc, not Goertzel.
+- the spectrum is the SDFT of dense_armor.utility.signals.stats, not Goertzel.
   The SDFT is the library's nearest tool to the DFT of the paper;
   it is O(N) per sample and gives the same amplitude spectrum.
 - the band Omega is fixed at [40, 55] Hz. Baldini defines Omega
@@ -74,7 +74,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from dense_armor.utility.infrastructure.misc import SDFT
+from dense_armor.utility.signals.stats.sdft import SDFT
 
 DEFAULT_N = 128
 DEFAULT_WARMUP = 50

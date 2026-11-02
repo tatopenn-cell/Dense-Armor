@@ -1,4 +1,5 @@
 """Edge paths of the online statistics: update aliases, transform_one, empty states, merges."""
+
 import math
 
 import numpy as np
@@ -6,7 +7,12 @@ import pytest
 
 import dense_armor.utility.signals.stats as st
 
-CLASSES = [getattr(st, n) for n in st.__all__ if isinstance(getattr(st, n), type)]
+OTHER_CONTRACT = ("SDFT", "Skyline")
+CLASSES = [
+    getattr(st, n)
+    for n in st.__all__
+    if isinstance(getattr(st, n), type) and n not in OTHER_CONTRACT
+]
 
 
 @pytest.mark.parametrize("cls", CLASSES, ids=lambda c: c.__name__)
@@ -17,8 +23,22 @@ def test_update_alias_transform_and_properties(cls):
         m.update({"x": float(rng.normal()), "y": float(rng.normal())}, t=i * 0.01)
     out = m.transform_one({"x": 1.0, "y": 2.0})
     assert isinstance(out, dict)
-    for name in ("count", "n_missing", "window_size", "n_pairs", "min", "max", "n_tracked",
-                 "width", "depth", "n_bits", "n_hashes", "fill_ratio", "count_total", "std"):
+    for name in (
+        "count",
+        "n_missing",
+        "window_size",
+        "n_pairs",
+        "min",
+        "max",
+        "n_tracked",
+        "width",
+        "depth",
+        "n_bits",
+        "n_hashes",
+        "fill_ratio",
+        "count_total",
+        "std",
+    ):
         if hasattr(type(m), name):
             getattr(m, name)
 

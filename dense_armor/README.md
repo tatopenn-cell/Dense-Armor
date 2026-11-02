@@ -18,6 +18,8 @@ Riferimento per chi vuole contribuire al codice, non per chi vuole solo installa
 
 ## `$ utility/`
 
+Le sottocartelle di `utility/` sono 32, in sei gruppi: `online/` (`learn`, `optim`, `linear`, `timeseries`, `cluster`, `tree`, `forest`, `ensemble`, `bandit`, `active`, `facto`, `reco`, `rules`, `bayes`, `neighbors`, `multiclass`, `multioutput`, `proba`, `anomaly`, `drift`, `protect`), `deep/` (`neural`, comprese le reti per il linguaggio con la cache statica di chiavi e valori), `signals/` (`stream`, `stats`, `preprocessing`, `vision`, `datasets`), `robot/` (`control`), `evaluation/` (`evaluate`, `metrics`) e `infrastructure/` (`compose`, `data`). I vecchi percorsi, per esempio `dense_armor.utility.bandit`, restano validi (`_compat.py`).
+
 | modulo | cosa fa |
 |---|---|
 | `orca.py` | `Orca` — lo scudo input/output a 4 fasi. Vedi README principale. |

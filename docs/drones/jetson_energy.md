@@ -44,7 +44,7 @@ TX2 2898.80 mW
 Xavier NX 4230.41 mW
 ~~~
 
-The four lines are the ones of Table I, page 4: AGX Orin `1.02x + 3115.39`, Xavier NX `1.10x + 3130.41`, TX2 `0.90x + 1998.80`, Nano `1.11x + 232.60`, with errors of 3%, 2%, 3%, 0.8%. The default of every function that could apply them is to leave the reading as it is, and the owner decides whether the calibration holds on a different setup.
+The four lines are the ones of Table I, page 4: AGX Orin `1.02x + 3115.39`, Xavier NX `1.10x + 3130.41`, TX2 `0.90x + 1998.80`, Nano `1.11x + 232.60`, with errors of 3%, 2%, 3%, 0.8%. The default of every function that could apply them is to leave the reading as it is, and you decide whether the calibration holds on a different setup.
 
 ## 2. The benchmark: online against batch, paired by seed
 
@@ -114,7 +114,7 @@ Without `POWER_NODE` the same script prints one line that says the energy was no
 - The power source of the smoke run is a constant 5000 mW, `SyntheticPowerSource(mw=5000.0, dt_s=0.1)`. The wall time is the one measured between `start()` and `stop()`, and the energy is the constant power times that wall time. The label `synthetic` is in the code, in the JSON and in the table.
 - `dt_s = 0.1` is the interval chosen for the smoke run. The paper states that the sampling rate changes the precision (2306.13107, page 1) and gives no recommended interval, so the interval is a parameter without a default for the sysfs source, and the smoke run fixes it at 0.1 s.
 - The idle power is measured for `idle_s` seconds before the runs and subtracted at every sample. In `--smoke` `idle_s` is zero and the idle is not measured; on a board the default is 30 s.
-- The calibration of Table I is not applied by default. The page shows the four lines, and the owner decides whether the setup of the paper holds on a different board.
+- The calibration of Table I is not applied by default. The page shows the four lines, and you decide whether the setup of the paper holds on a different board.
 - The paired Wilcoxon is computed only when there are at least six pairs. With fewer, the JSON writes `null` and the reason in `wilcoxon_note` instead of a number.
 - `--smoke` and `--power-node` are mutually exclusive: a synthetic run labelled `synthetic` next to a real sensor would mix the two.
 - The empty table is declared empty in the text next to it. A number in it without a board would be an invented number.

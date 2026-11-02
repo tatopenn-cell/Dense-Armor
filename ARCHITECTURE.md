@@ -8,11 +8,13 @@ every file. Update it whenever a module is added, moved or renamed.
 1. `roles` — the base classes every estimator builds on: `Estimator`, `Classifier`,
    `Regressor`, `Transformer`, `AnomalyDetector`, `DriftDetector`, `Protected`, `Signal` and
    the other support classes.
-2. `utility` — the online-learning library, one subpackage per section of the programme:
-   `stream`, `datasets`, `compose`, `preprocessing`, `stats`, `metrics`, `evaluate`, `learn`,
-   `tree`, `cluster`, `anomaly`, `drift`, `protect`, `vision`, `control`, `misc`, `bayes`,
-   `linear`, `multiclass`, `multioutput`, `neighbors`, `optim`, `proba`, `rules`, `timeseries`,
-   `forest`, `ensemble`, `bandit`, `active`, `facto`, `reco`, `neural`, `data`.
+2. `utility` — the online-learning library: 32 subpackages in six groups.
+   `online/` (`learn`, `optim`, `linear`, `timeseries`, `cluster`, `tree`, `forest`, `ensemble`,
+   `bandit`, `active`, `facto`, `reco`, `rules`, `bayes`, `neighbors`, `multiclass`, `multioutput`,
+   `proba`, `anomaly`, `drift`, `protect`), `deep/` (`neural`), `signals/` (`stream`, `stats`,
+   `preprocessing`, `vision`, `datasets`), `robot/` (`control`), `evaluation/` (`evaluate`,
+   `metrics`) and `infrastructure/` (`compose`, `data`). The old paths, for example
+   `dense_armor.utility.bandit.ucb`, still resolve to the same modules (`_compat.py`).
 3. `dynamics` — rigid-body dynamics from URDF.
 4. `checks` — `check_estimator` and the robot checks.
 5. `bridges` — optional bridges (LLM embeddings, and a bridge to existing online-learning
@@ -47,7 +49,6 @@ graph TD
         PROTECT["protect: classify_segments,<br/>healing_filter, Orca"]
         VISION["vision: VideoFileStream, FrameFeatures,<br/>MotionEnergy, MovingObjectTracker,<br/>PatchFeatures, PatchMemory"]
         CONTROL["control: cbf_safety_filter,<br/>quintic_trajectory"]
-        MISC["misc: Metro, diag,<br/>SDFT, Skyline"]
         BAYES["bayes: MultinomialNB, BernoulliNB,<br/>ComplementNB, CategoricalNB"]
         LINEAR["linear: LinearRegression,<br/>LogisticRegression,<br/>BayesianLinearRegression"]
         MULTI["multiclass, multioutput:<br/>OneVsRestClassifier,<br/>ClassifierChain"]
@@ -62,7 +63,7 @@ graph TD
         ACTIVE["active: FixedUncertainty,<br/>VariableUncertainty"]
         FACTO["facto: FMRegressor, FFMRegressor,<br/>FwFMRegressor, HOFMRegressor"]
         RECO["reco: Baseline, BiasedMF, FunkMF"]
-        NEURAL["neural: Dense, Sequential, Conv2D,<br/>LSTM, MultiHeadSelfAttention,<br/>RMSNorm, GLUFeedForward,<br/>TransformerDecoderBlock, generate,<br/>Trainer"]
+        NEURAL["neural: Dense, Sequential, Conv2D,<br/>LSTM, MultiHeadSelfAttention,<br/>RMSNorm, GLUFeedForward,<br/>TransformerDecoderBlock,<br/>RotaryDecoder, generate,<br/>Trainer"]
     end
 
     subgraph DYN["3. dynamics/"]
@@ -126,6 +127,9 @@ graph TD
 
 ## 2. utility
 
+The sections below follow the subpackages; the path of each one is
+`utility/<group>/<subpackage>`, with the group named in the list at the top.
+
 ### 2.1 stream
 
 | file | public names | what it is |
@@ -135,6 +139,7 @@ graph TD
 | `merge.py` | `merge_by_time` | k-way merge in time order |
 | `rosbag.py` | `iter_rosbag` | ROS 1 and ROS 2 bag reader |
 | `shuffle.py` | `shuffle` | bounded-buffer shuffle |
+| `iodat.py` | `lodat` | Loads HDF5 and NetCDF datasets |
 
 ### 2.2 datasets
 
@@ -161,6 +166,7 @@ graph TD
 | `select.py` | `VarianceThreshold`, `SelectKBest` | feature selection |
 | `text.py` | `Tokenizer`, `BagOfWords`, `TFIDF`, `FeatureHasher` | text transformers |
 | `vectorizer.py` | `TextVectorizer` | Text vectorizer: a fixed vocabulary, TF-IDF, and batch or online fit |
+| `metro.py` | `Metro` | Logarithmic scaler against underflow: `enc` projects a tiny value into a visible range, `dec` brings it back |
 
 ### 2.5 stats
 
@@ -176,6 +182,8 @@ graph TD
 | `sketches.py` | `CountMinSketch`, `HyperLogLog`, `BloomFilter`, `SpaceSaving` | streaming sketches |
 | `stable.py` | `stable_var`, `stable_moments` | variance and moments that stay exact when the mean is far from zero (the kernel behind the `ml/` statistics) |
 | `student_t.py` | `StudentT` | online Student-t location-scale estimator with fixed degrees of freedom |
+| `sdft.py` | `SDFT` | Sliding discrete Fourier transform, one sample at a time |
+| `skyline.py` | `Skyline` | Skyline of the points of a sliding window (Börzsönyi et al.; Tao and Papadias) |
 
 ### 2.6 metrics
 
@@ -195,6 +203,7 @@ graph TD
 | `events.py` | `evaluate_events` | event evaluation on a detector |
 | `model_selection.py` | `OnlineModelSelection`, `best_of` | online model selection |
 | `prequential.py` | `progressive_val_score`, `progressive_val_proba_score` | test-then-train evaluation |
+| `diagnostic.py` | `diag` | Differential comparison of an original and a filtered signal: residual variance and fidelity |
 
 ### 2.8 learn
 
@@ -294,17 +303,7 @@ graph TD
 | `rate_limiter.py` | `rate_limited_follower` | rate-limited follower |
 | `trajectory.py` | `quintic_trajectory` | quintic trajectory |
 
-### 2.16 misc
-
-| file | public names | what it is |
-|---|---|---|
-| `diagnostic.py` | `diag` | diagnostic helper |
-| `iodat.py` | `lodat` | I/O helper |
-| `metro.py` | `Metro` | scaler |
-| `sdft.py` | `SDFT` | sliding discrete Fourier transform, one sample at a time |
-| `skyline.py` | `Skyline` | skyline of the points of a sliding window (Börzsönyi et al.; Tao and Papadias) |
-
-### 2.17 bayes
+### 2.16 bayes
 
 | file | public names | what it is |
 |---|---|---|
@@ -313,7 +312,7 @@ graph TD
 | `complement.py` | `ComplementNB` | complement naive Bayes with Laplace smoothing |
 | `multinomial.py` | `MultinomialNB` | multinomial naive Bayes with Laplace smoothing |
 
-### 2.18 linear
+### 2.17 linear
 
 | file | public names | what it is |
 |---|---|---|
@@ -321,25 +320,25 @@ graph TD
 | `glm.py` | `LinearRegression`, `LogisticRegression` | online linear and logistic regression |
 | `payload.py` | `PayloadEstimator` | recursive least squares estimate of a point mass on a link |
 
-### 2.19 multiclass
+### 2.18 multiclass
 
 | file | public names | what it is |
 |---|---|---|
 | `multiclass.py` | `OneVsRestClassifier`, `OneVsOneClassifier`, `OutputCodeClassifier` | one-vs-rest, one-vs-one and output-code multiclass wrappers |
 
-### 2.20 multioutput
+### 2.19 multioutput
 
 | file | public names | what it is |
 |---|---|---|
 | `multioutput.py` | `PerOutputClassifier`, `PerOutputRegressor`, `ClassifierChain`, `RegressorChain`, `ProbabilisticClassifierChain` | per-output models and chains for several targets |
 
-### 2.21 neighbors
+### 2.20 neighbors
 
 | file | public names | what it is |
 |---|---|---|
 | `knn.py` | `LazySearch`, `KNNClassifier`, `KNNRegressor` | k-nearest neighbours over a sliding window |
 
-### 2.22 optim
+### 2.21 optim
 
 | file | public names | what it is |
 |---|---|---|
@@ -351,7 +350,7 @@ graph TD
 | `rmsprop.py` | `RMSProp` | RMSProp with a running mean of the squared gradient |
 | `sgd.py` | `SGD` | stochastic gradient descent with a fixed step, optional momentum and Nesterov |
 
-### 2.23 proba
+### 2.22 proba
 
 | file | public names | what it is |
 |---|---|---|
@@ -359,13 +358,13 @@ graph TD
 | `gaussian.py` | `Gaussian` | univariate Gaussian updated with Welford's algorithm |
 | `multinomial.py` | `Multinomial` | Dirichlet count model over K categories |
 
-### 2.24 rules
+### 2.23 rules
 
 | file | public names | what it is |
 |---|---|---|
 | `amrules.py` | `AMRulesRegressor` | adaptive model rules regressor (Duarte, Gama and Bifet) |
 
-### 2.25 timeseries
+### 2.24 timeseries
 
 | file | public names | what it is |
 |---|---|---|
@@ -374,7 +373,7 @@ graph TD
 | `garch.py` | `GARCH11` | GARCH(1,1) conditional variance, recursive, with fixed parameters |
 | `kalman.py` | `KalmanFilter`, `VBAdaptiveKalman`, `InnovationAdaptiveKalman` | linear Kalman filter and two adaptive variants |
 
-### 2.26 forest
+### 2.25 forest
 
 | file | public names | what it is |
 |---|---|---|
@@ -382,7 +381,7 @@ graph TD
 | `arf.py` | `SubspaceHoeffdingTree`, `AdaptiveRandomForestClassifier` | adaptive random forest and its subspace Hoeffding tree |
 | `oxt.py` | `OnlineExtraTreesRegressor` | online extra trees regressor (Mastelini et al.) |
 
-### 2.27 ensemble
+### 2.26 ensemble
 
 | file | public names | what it is |
 |---|---|---|
@@ -392,7 +391,7 @@ graph TD
 | `stacking.py` | `StackingClassifier` | stacking with a meta-model on the members' predictions |
 | `voting.py` | `VotingClassifier` | hard or soft vote over a fixed list of classifiers |
 
-### 2.28 bandit
+### 2.27 bandit
 
 | file | public names | what it is |
 |---|---|---|
@@ -405,14 +404,14 @@ graph TD
 | `evaluate.py` | `offline_replay` | unbiased offline evaluation of a policy on logged data (Li et al.) |
 | `robot.py` | `RobotKpSelector` | chooses the gain `kp` of the kinematic tracking controller with UCB1 on a robot stream |
 
-### 2.29 active
+### 2.28 active
 
 | file | public names | what it is |
 |---|---|---|
 | `base.py` | `ActiveStrategy` | base class of the labelling strategies: `should_label`, labelling budget |
 | `strategies.py` | `RandomStrategy`, `FixedUncertainty`, `VariableUncertainty`, `VariableRandomizedUncertainty` | random, fixed-threshold, variable-threshold and randomised-threshold uncertainty with a labelling budget (Zliobaite et al.) |
 
-### 2.30 facto
+### 2.29 facto
 
 | file | public names | what it is |
 |---|---|---|
@@ -421,13 +420,13 @@ graph TD
 | `fwfm.py` | `FwFMRegressor`, `FwFMClassifier` | field-weighted factorization machine (Pan et al.) |
 | `hofm.py` | `HOFMRegressor`, `HOFMClassifier` | higher-order factorization machine, ANOVA kernel of degree `m` (Blondel et al.) |
 
-### 2.31 reco
+### 2.30 reco
 
 | file | public names | what it is |
 |---|---|---|
 | `reco.py` | `Baseline`, `BiasedMF`, `FunkMF` | global mean with biases, regularised matrix factorization with biases, and without (Paterek; Koren et al.); `rank` returns the items by predicted rating |
 
-### 2.32 neural
+### 2.31 neural
 
 Networks as layers with `forward`, `backward` and `params()`: parameters, initialisations, activations and losses, dense, normalisation, convolution, recurrent and attention layers, chains and architectures, the training loop, the optimizer-side pieces (gradient clipping, warmup schedules), online and background learners, encoders and decoders, with schedules and mini-batches. A layer joins a pipeline of `roles/` through `AsTransformer`.
 
@@ -436,7 +435,7 @@ Networks as layers with `forward`, `backward` and `params()`: parameters, initia
 | `activations.py` | `relu_forward`, `relu_backward`, `prelu_forward`, `prelu_backward`, `sigmoid_forward`, `sigmoid_backward`, `tanh_forward`, `tanh_backward`, `softmax_forward`, `softmax_backward`, `Relu`, `PRelu`, `Sigmoid`, `Tanh`, `Softmax` | Activations with a forward and a backward, on a batch or one sample |
 | `activations_more.py` | `gelu_forward`, `gelu_backward`, `gelu_approx_forward`, `gelu_approx_backward`, `silu_forward`, `silu_backward`, `elu_forward`, `elu_backward`, `leaky_relu_forward`, `leaky_relu_backward`, `softplus_forward`, `softplus_backward`, `GELU`, `SiLU`, `ELU`, `LeakyReLU`, `Softplus` | More activations: GELU, SiLU, ELU, LeakyReLU, Softplus |
 | `adapter.py` | `AsTransformer` | A layer seen as a ``Transformer`` of the library |
-| `attention.py` | `scaled_dot_product_attention`, `scaled_dot_product_attention_backward`, `sinusoidal_positions`, `MultiHeadSelfAttention`, `TransformerBlock` | Attention layers; `MultiHeadSelfAttention(..., rotary=True)` rotates queries and keys (also in the cached `step`, with the position offset) |
+| `attention.py` | `scaled_dot_product_attention`, `scaled_dot_product_attention_backward`, `sinusoidal_positions`, `MultiHeadSelfAttention`, `TransformerBlock` | Attention layers; `MultiHeadSelfAttention(..., rotary=True)` rotates queries and keys (also in the cached `step`, with the position offset); `init_static_cache` and `step_static` run one token against a key/value cache of fixed shape |
 | `autoencoder.py` | `Autoencoder` | An autoencoder: an encoder, a decoder and the reconstruction error |
 | `background.py` | `BackgroundLearner` | A background learner: the main program is never blocked |
 | `batching.py` | `minibatches` | Mini-batch generator |
@@ -458,7 +457,7 @@ Networks as layers with `forward`, `backward` and `params()`: parameters, initia
 | `decoder.py` | `TransformerDecoderBlock` | Decoder block (Vaswani et al., post-norm): causal self-attention, optional cross-attention over a memory (then `backward` returns `(dx, dmemory)`), feed-forward |
 | `gated_attention.py` | `GatedCrossAttention` | A gate on a signal: look at the other stream only when it matters |
 | `generative_replay.py` | `DeepGenerativeReplay` | Deep generative replay (Shin et al. 2017) |
-| `generate.py` | `generate` | Greedy or sampled generation from a causal language model, capped at `max_len` |
+| `generate.py` | `generate` | Greedy or sampled generation from a causal language model, capped at `max_len`; a model with `init_static_cache` and `step_compiled` (`RotaryDecoder`) runs one token at a time against a static key/value cache, any other model re-runs the whole prefix |
 | `glu.py` | `GLUFeedForward` | Gated feed-forward of Shazeer 2020: GLU, GEGLU or SwiGLU (Eq. 4-6) |
 | `gradcheck.py` | `gradcheck` | Gradient check against central finite differences |
 | `hedge.py` | `HedgeNetClassifier` | Hedge Backpropagation (Sahoo et al. 2018) |
@@ -471,6 +470,7 @@ Networks as layers with `forward`, `backward` and `params()`: parameters, initia
 | `matryoshka.py` | `MatryoshkaLoss` | The Matryoshka Representation Learning loss of Kusupati et al. 2022 |
 | `moe.py` | `forward_pure`, `SparseMoE` | Sparse mixture of experts, dispatched in JAX |
 | `models.py` | `mlp`, `resnet_mlp`, `LastStep`, `MeanOverTime`, `AddPositions`, `cnn`, `recurrent_net`, `transformer_encoder`, `transformer_decoder` | standard architectures (MLP, residual MLP, CNN, recurrent net, transformer encoder, causal transformer decoder with an optional tied output head) and the small layers that join them to a head |
+| `rotary_decoder.py` | `RotaryDecoderBlock`, `RotaryDecoder`, `rotary_decoder` | A causal language model with RMSNorm, rotary causal attention and a SwiGLU feed-forward (pre-norm); `remat=True` recomputes the activations in `backward`; `step_static` is the step with the static cache used by `generate` |
 | `norm.py` | `BatchNorm`, `LayerNorm` | BatchNorm and LayerNorm, with a forward and a backward |
 | `norm_more.py` | `GroupNorm`, `InstanceNorm` | GroupNorm and InstanceNorm |
 | `norm_rms.py` | `RMSNorm` | Root-mean-square normalisation of Zhang and Sennrich (Eq. 4), without mean or bias |
@@ -490,7 +490,7 @@ Networks as layers with `forward`, `backward` and `params()`: parameters, initia
 
 Notes on the network files: `Embedding` in `layers.py` skips its range check on ids under `jax.jit`; `Trainer(compile=True)` builds its step with `compiled.py`; `decoder.py`, `generate.py`, `losses_lm.py` and the `transformer_decoder` builder form the language-model path (token embedding, sinusoidal positions, decoder blocks, final layer norm, head).
 
-### 2.33 data
+### 2.32 data
 
 | file | public names | what it is |
 |---|---|---|

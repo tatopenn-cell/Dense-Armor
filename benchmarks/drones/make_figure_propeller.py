@@ -21,7 +21,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dense_armor.utility.infrastructure.misc import SDFT
+from dense_armor.utility.signals.stats.sdft import SDFT
 from pipelines.drones.io import synthetic_flight
 from pipelines.drones.propeller_health import DEFAULT_BAND_HZ, run
 

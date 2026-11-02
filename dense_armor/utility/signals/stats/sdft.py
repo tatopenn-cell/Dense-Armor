@@ -35,7 +35,7 @@ class SDFT(Root):
         ValueError: if ``n < 1``.
 
     Examples:
-        >>> from dense_armor.utility.infrastructure.misc.sdft import SDFT
+        >>> from dense_armor.utility.signals.stats.sdft import SDFT
         >>> s = SDFT(n=4)
         >>> for v in [1.0, 2.0, 3.0, 4.0]:
         ...     _ = s.update(v)

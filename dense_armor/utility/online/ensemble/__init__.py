@@ -7,7 +7,9 @@ The classes here follow the papers cited in their own module.
 
 from dense_armor.utility.online.ensemble.bagging import OnlineBaggingClassifier
 from dense_armor.utility.online.ensemble.boosting import OnlineBoostingClassifier
-from dense_armor.utility.online.ensemble.ewa import ExponentiallyWeightedAverageRegressor
+from dense_armor.utility.online.ensemble.ewa import (
+    ExponentiallyWeightedAverageRegressor,
+)
 from dense_armor.utility.online.ensemble.stacking import StackingClassifier
 from dense_armor.utility.online.ensemble.voting import VotingClassifier
 

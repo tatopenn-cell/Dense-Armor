@@ -24,6 +24,7 @@ from dense_armor.utility.signals.stats.robust import (
     RollingMedianVector,
     RollingQuantile,
 )
+from dense_armor.utility.signals.stats.sdft import SDFT
 from dense_armor.utility.signals.stats.similarity import (
     cosine_similarity,
     cosine_similarity_many,
@@ -34,6 +35,7 @@ from dense_armor.utility.signals.stats.sketches import (
     HyperLogLog,
     SpaceSaving,
 )
+from dense_armor.utility.signals.stats.skyline import Skyline
 from dense_armor.utility.signals.stats.stable import stable_moments, stable_var
 from dense_armor.utility.signals.stats.student_t import StudentT
 
@@ -56,6 +58,8 @@ __all__ = [
     "OnlineGaussianMixture",
     "RunningMoments",
     "RunningMomentsVector",
+    "SDFT",
+    "Skyline",
     "SpaceSaving",
     "StudentT",
     "stable_moments",

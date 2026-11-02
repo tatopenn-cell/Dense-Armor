@@ -31,7 +31,7 @@ The class stores the points in a deque with a maximum length. When a new point a
 The recomputation is O(W^2) per update, where W is the window size. The paper also gives an incremental algorithm (Tao and Papadias 2006), which is not implemented here: the module docstring says so explicitly, and the choice is restated in Details.
 
 ```python
-from dense_armor.utility.infrastructure.misc import Skyline
+from dense_armor.utility.signals.stats.skyline import Skyline
 
 s = Skyline(window=3)
 for p in [
@@ -54,7 +54,7 @@ The three points fit in the window. Point 1 (1000 EUR, 1.2 kg) is dominated by p
 A sliding window forgets. A point that was on the skyline five minutes ago can leave the window and stop being counted. The point that leaves is the oldest one, not the worst one.
 
 ```python
-from dense_armor.utility.infrastructure.misc import Skyline
+from dense_armor.utility.signals.stats.skyline import Skyline
 
 s = Skyline(window=2)
 for p in [
@@ -77,7 +77,7 @@ The window holds two points at a time. After the third update the window is (800
 A point that is missing a dimension, that is not a dict, or that carries `NaN` or `inf` is counted in `n_missing` and dropped; it does not enter the window and does not raise.
 
 ```python
-from dense_armor.utility.infrastructure.misc import Skyline
+from dense_armor.utility.signals.stats.skyline import Skyline
 
 s = Skyline(window=3)
 _ = s.update({"price": 800.0, "weight_kg": 1.2})
@@ -117,7 +117,3 @@ The class has no classifier and no regressor: it is a summary structure. Feed it
 ### Measured cost
 
 The benchmark `benchmarks/facto_quality.py` contains `check_skyline_equals_bruteforce`: it runs `Skyline(window=10)` on 50 random points and compares the result with a brute-force computation of the skyline. The check passes on every point. The measured time per update is not recorded on this page; the class attribute `budget_s = 1.5e-2` is the number the code declares for the check of the budget.
-
-### Development diary
-
-This page was written after the main work of the branch, on request of the owner, because the class existed with a full docstring and a test but without a page of its own: a reader could find it in the API list and not know what it was for. The page is added on the same branch, in a separate commit, so that the owner can move it to a different PR if wanted.

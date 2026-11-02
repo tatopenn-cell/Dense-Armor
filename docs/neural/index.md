@@ -371,6 +371,8 @@ The left panel is the five activations on `x` in `[-4, 4]`, the right panel the 
 ## See also
 
 - [Sparse mixture of experts and test-time compute: how do I make a network use only part of its parameters on each sample, and how do I spend more compute at inference to get a better answer?](moe_testtime.md)
+- [Language-model training: how do I train a small language model with Dense-Armor?](lm_training.md)
+- [Rotary decoder: how do I generate text without running the whole sequence again at every token?](rotary_decoder.md)
 
 ## Details
 
