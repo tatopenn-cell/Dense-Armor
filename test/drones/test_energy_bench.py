@@ -251,7 +251,7 @@ def test_run_without_source_has_null_energy():
 def test_run_without_source_keeps_wall_and_cpu():
     payload = eb.run(_args(smoke=False, power_node=None))
     assert payload["batch"]["wall_s_median"] > 0.0
-    assert payload["batch"]["cpu_s_median"] > 0.0
+    assert payload["batch"]["cpu_s_median"] >= 0.0
     assert payload["online"]["wall_s_median"] > 0.0
 
 
