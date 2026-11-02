@@ -336,17 +336,38 @@ def test_protected_feeds_the_drift_detector_once_per_sample():
     x = {"v": 1.0}
     p.predict_one(x)
     p.score_one(x)
-    assert det.seen == []
     p.learn_one(x)
     assert det.seen == [1.0]
 
 
-def test_protected_predict_and_score_read_the_state_the_learning_left():
+def test_protected_counts_a_changed_or_a_new_sample_again():
+    det = _Drift()
+    p = Protected(_Predicting(), det)
+    x = {"v": 1.0}
+    p.predict_one(x)
+    x["v"] = 2.0
+    p.predict_one(x)
+    p.predict_one({"v": 2.0})
+    p.learn_one({"v": 2.0})
+    assert det.seen == [1.0, 2.0, 2.0, 2.0]
+
+
+def test_protected_after_a_learn_the_same_object_is_a_new_time_step():
+    det = _Drift()
+    p = Protected(_Predicting(), det)
+    x = {"v": 1.0}
+    p.learn_one(x)
+    p.learn_one(x)
+    assert det.seen == [1.0, 1.0]
+
+
+def test_protected_judges_each_sample_by_the_detector_after_that_sample():
     det = _Drift()
     p = Protected(_Predicting(), det, fallback=-1.0)
-    p.learn_one({"v": 9.0})
-    assert p.predict_one({"v": 0.0}) == -1.0
-    assert p.score_one({"v": 0.0}) == float("inf")
+    assert p.predict_one({"v": 9.0}) == -1.0
+    assert p.predict_one({"v": 0.0}) == 1.0
+    assert p.score_one({"v": 9.0}) == float("inf")
+    assert det.seen == [9.0, 0.0, 9.0]
 
 
 class _ThresholdOnly:

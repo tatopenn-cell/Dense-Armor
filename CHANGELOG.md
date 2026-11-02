@@ -72,8 +72,10 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   first key of the dict. New argument `feature`. A detector with `score_one` and a `threshold` attribute is
   applied (it was never flagged). New argument `train_detector` (default `False`, behaviour unchanged): with
   `True`, `learn_one` trains the detector on the samples that are not flagged; a detector that nobody trains
-  flags nothing. A drift detector is fed by `learn_one` only, once per sample: `predict_one` and `score_one`
-  updated it too, so a sample that was predicted and then learned counted twice; they now read its current state.
+  flags nothing. A drift detector sees each sample once: `predict_one`, `score_one` and `learn_one` each called
+  `update`, so a sample that was predicted and then learned counted twice. The first call with a sample updates
+  the detector and the later calls with the same unchanged object reuse the answer; a new sample, or the same
+  object after a change, or the same object after a `learn_one`, updates it.
 - Documented, no change of behaviour: the batch form of `Signal` holds a tuple per channel and is not accepted
   by `learn_one`; `SafeEstimator.learn_one` costs a `predict_one` and a `learn_one` of the model.
 - `GatedCrossAttention` refuses a signal of shape `(Tq, Tq)` for a 2-D query (it was accepted and gave an output
