@@ -4,6 +4,8 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-11-02
+
 ### Changed
 - `core/engine.py` no longer asks JAX for `float64`: it computes in the default dtype of JAX, so
   `float32` as it comes, and `float64` when the user sets `jax_enable_x64`. Before, the
