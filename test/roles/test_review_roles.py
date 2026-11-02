@@ -143,6 +143,15 @@ def test_gate_protects_only_above_the_threshold():
     assert below.learned == 1
 
 
+def test_a_gate_subclass_that_defines_classify_needs_no_threshold():
+    class Fixed(AnomalyGate):
+        def classify(self, score):
+            return score > 3.0
+
+    assert Fixed(_Scored(5.0)).classify(5.0)
+    assert not Fixed(_Scored(5.0)).classify(2.0)
+
+
 def test_gate_threshold_is_a_parameter():
     gate = AnomalyGate(_WithThreshold(), protect=False, threshold=2.5)
     assert gate.get_params(deep=False)["threshold"] == 2.5

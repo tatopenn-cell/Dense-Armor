@@ -42,9 +42,12 @@ class AnomalyGate(Estimator):
         threshold: the score above which a sample is anomalous. ``None``
             reads the ``threshold`` attribute of the detector.
 
+    A subclass that defines its own ``classify`` decides by itself and needs
+    neither the argument nor the attribute.
+
     Raises:
-        ValueError: if ``threshold`` is ``None`` and the detector has no
-            ``threshold`` attribute.
+        ValueError: if ``threshold`` is ``None``, the detector has no
+            ``threshold`` attribute and ``classify`` is not overridden.
 
     Examples:
         >>> from dense_armor.roles.anomaly_detector import AnomalyDetector, AnomalyGate
@@ -67,7 +70,12 @@ class AnomalyGate(Estimator):
         protect: bool = True,
         threshold: float | None = None,
     ):
-        if threshold is None and not hasattr(detector, "threshold"):
+        decides_itself = type(self).classify is not AnomalyGate.classify
+        if (
+            threshold is None
+            and not decides_itself
+            and not hasattr(detector, "threshold")
+        ):
             raise ValueError(
                 f"{type(detector).__name__} has no 'threshold' attribute: "
                 "pass threshold= to AnomalyGate"
