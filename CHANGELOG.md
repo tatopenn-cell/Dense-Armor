@@ -5,6 +5,10 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 ## [Unreleased]
 
 ### Changed
+- `core/engine.py` no longer asks JAX for `float64`: it computes in the default dtype of JAX, so
+  `float32` as it comes, and `float64` when the user sets `jax_enable_x64`. Before, the
+  explicit request was silently cut to `float32` with a `UserWarning` unless x64 was on.
+  The arrays returned by `AdaptiveSignalStabilizer` follow the same dtype.
 - `AdaptiveConformalRegressor.budget_s` and `memory_class` are now properties that
   read the wrapped model. `budget_s` sums two model calls (predict_one and
   learn_one) plus 5e-4, and is `None` if the model declares no budget;
