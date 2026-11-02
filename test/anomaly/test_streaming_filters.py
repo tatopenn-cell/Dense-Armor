@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Unit tests for dense_armor/utility/streaming_filters.py.
 
 The scorers are causal: they see only the `2 * radius` samples strictly
@@ -7,17 +6,20 @@ preceding the value being scored. The reference is the batch formula from
 output on a centred window -- see `ISTRUZIONI.md`, section "Important:
 centred vs causal windows".
 """
+
 import doctest
-import importlib
 import math
-import sys
 
 import numpy as np
 import pytest
 
 import dense_armor.utility.online.anomaly.filters as streaming_filters  # noqa: E402
 from dense_armor.utility.online.anomaly.filters import (  # noqa: E402
-    HampelScorer, TukeyScorer, ChauvenetScorer, SigmaClipScorer, HampelFilter,
+    ChauvenetScorer,
+    HampelFilter,
+    HampelScorer,
+    SigmaClipScorer,
+    TukeyScorer,
 )
 
 
@@ -99,10 +101,11 @@ def test_hampel_equivalence_causal():
     r = 5
     s = HampelScorer(radius=r, n_sigmas=3.0)
     for i, v in enumerate(stream):
-        window = stream[max(0, i - 2 * r):i]
+        window = stream[max(0, i - 2 * r) : i]
         if len(window) >= 4:
-            assert s.score_one({"v": v}) == pytest.approx(
-                _ref_hampel(window, v)), f"i={i}"
+            assert s.score_one({"v": v}) == pytest.approx(_ref_hampel(window, v)), (
+                f"i={i}"
+            )
         s.learn_one({"v": v})
 
 
@@ -111,10 +114,11 @@ def test_tukey_equivalence_causal():
     r = 5
     s = TukeyScorer(radius=r, k=1.5)
     for i, v in enumerate(stream):
-        window = stream[max(0, i - 2 * r):i]
+        window = stream[max(0, i - 2 * r) : i]
         if len(window) >= 4:
-            assert s.score_one({"v": v}) == pytest.approx(
-                _ref_tukey(window, v)), f"i={i}"
+            assert s.score_one({"v": v}) == pytest.approx(_ref_tukey(window, v)), (
+                f"i={i}"
+            )
         s.learn_one({"v": v})
 
 
@@ -123,10 +127,11 @@ def test_chauvenet_equivalence_causal():
     r = 5
     s = ChauvenetScorer(radius=r, threshold=0.5)
     for i, v in enumerate(stream):
-        window = stream[max(0, i - 2 * r):i]
+        window = stream[max(0, i - 2 * r) : i]
         if len(window) >= 4:
-            assert s.score_one({"v": v}) == pytest.approx(
-                _ref_chauvenet(window, v)), f"i={i}"
+            assert s.score_one({"v": v}) == pytest.approx(_ref_chauvenet(window, v)), (
+                f"i={i}"
+            )
         s.learn_one({"v": v})
 
 
@@ -135,19 +140,23 @@ def test_sigmaclip_equivalence_causal():
     r = 5
     s = SigmaClipScorer(radius=r, n_sigmas=3.0)
     for i, v in enumerate(stream):
-        window = stream[max(0, i - 2 * r):i]
+        window = stream[max(0, i - 2 * r) : i]
         if len(window) >= 4:
-            assert s.score_one({"v": v}) == pytest.approx(
-                _ref_sigmaclip(window, v)), f"i={i}"
+            assert s.score_one({"v": v}) == pytest.approx(_ref_sigmaclip(window, v)), (
+                f"i={i}"
+            )
         s.learn_one({"v": v})
 
 
-@pytest.mark.parametrize("cls,kw", [
-    (HampelScorer, {}),
-    (TukeyScorer, {}),
-    (ChauvenetScorer, {}),
-    (SigmaClipScorer, {}),
-])
+@pytest.mark.parametrize(
+    "cls,kw",
+    [
+        (HampelScorer, {}),
+        (TukeyScorer, {}),
+        (ChauvenetScorer, {}),
+        (SigmaClipScorer, {}),
+    ],
+)
 def test_warmup_no_anomaly(cls, kw):
     s = cls(**kw)
     for v in [1.0, 2.0, 3.0]:
@@ -220,10 +229,15 @@ def test_docstring_examples():
 
 def test_check_estimator():
     from dense_armor.checks import check_estimator
-    for cls in (HampelScorer, TukeyScorer, ChauvenetScorer, SigmaClipScorer,
-                HampelFilter):
-        check_estimator(cls())
 
+    for cls in (
+        HampelScorer,
+        TukeyScorer,
+        ChauvenetScorer,
+        SigmaClipScorer,
+        HampelFilter,
+    ):
+        check_estimator(cls())
 
 
 def _detect(cls, stream, truth, **kwargs):
@@ -255,9 +269,12 @@ def test_detection_on_seeded_sine_with_spikes():
     signal[spike_idx] += sign * mag
 
     results = {}
-    for name, cls in [("Hampel", HampelScorer), ("Tukey", TukeyScorer),
-                      ("Chauvenet", ChauvenetScorer),
-                      ("SigmaClip", SigmaClipScorer)]:
+    for name, cls in [
+        ("Hampel", HampelScorer),
+        ("Tukey", TukeyScorer),
+        ("Chauvenet", ChauvenetScorer),
+        ("SigmaClip", SigmaClipScorer),
+    ]:
         prec, rec, fp, fn, _ = _detect(cls, signal, truth, radius=15)
         results[name] = (prec, rec, fp, fn)
 
@@ -270,6 +287,7 @@ def test_detection_on_seeded_sine_with_spikes():
 
 def test_per_sample_time_budget():
     import time
+
     rng = np.random.default_rng(0)
     stream = rng.normal(0.0, 1.0, 5000)
     s = HampelScorer(radius=15)
@@ -296,3 +314,50 @@ def test_sigma_clip_stats_edge_cases():
     assert _clean_stats(np.array([1.0, 1.0, 1.0, 1.0]), 3.0) == (1.0, 0.0)
     mu, sigma = _clean_stats(np.array([0.0, 0.0, 0.0, 100.0]), 0.5)
     assert np.isfinite(mu) and np.isfinite(sigma)
+
+
+def test_chauvenet_skip_is_honored():
+    """ChauvenetScorer skips check_roc_auc because its score is inverted.
+
+    ``is_outlier`` rejects when the score is small, the natural direction
+    of Chauvenet's criterion, documented in the class docstring. The
+    check must fail on the raw score, which is why the skip is needed.
+    """
+    from dense_armor.checks import check_estimator
+    from dense_armor.checks.check_estimator import check_roc_auc
+    from dense_armor.utility.online.anomaly.filters import ChauvenetScorer
+
+    est = ChauvenetScorer()
+    assert "check_roc_auc" in est._unit_test_skips()
+
+    with pytest.raises(AssertionError, match="ROC-AUC"):
+        check_roc_auc(ChauvenetScorer())
+
+    report = check_estimator(est)
+    assert "check_roc_auc" not in report["run"]
+    assert report["failed"] == []
+
+
+def test_anomaly_gate_refuses_chauvenet_scorer():
+    from dense_armor.roles import AnomalyGate
+    from dense_armor.utility.online.anomaly.filters import ChauvenetScorer
+
+    assert ChauvenetScorer.score_is_inverted is True
+    with pytest.raises(ValueError, match="score_one inverted"):
+        AnomalyGate(ChauvenetScorer(), threshold=0.5)
+
+
+def test_protected_refuses_chauvenet_scorer():
+    from dense_armor.roles import Protected
+    from dense_armor.roles.regressor import Regressor
+    from dense_armor.utility.online.anomaly.filters import ChauvenetScorer
+
+    class _M(Regressor):
+        def learn_one(self, x, y, t=None):
+            return self
+
+        def predict_one(self, x, t=None, return_std=False):
+            return 0.0
+
+    with pytest.raises(ValueError, match="score_one inverted"):
+        Protected(_M(), ChauvenetScorer())

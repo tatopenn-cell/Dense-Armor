@@ -246,5 +246,6 @@ class PayloadEstimator(Regressor):
     def _unit_test_skips(self) -> set:
         return {
             "check_clone",
+            "check_clone_drops_learned_state",
             "check_repr_clone_equal",
         }

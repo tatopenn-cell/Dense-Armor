@@ -94,6 +94,90 @@ def check_clone_independent(est: Root) -> None:
             assert getattr(est, k) != "sentinel"
 
 
+def check_clone_drops_learned_state(est: Root) -> None:
+    """``clone()`` must not carry the learned state of the original.
+
+    Build a fresh instance from the constructor parameters. A constructor
+    that does not accept its own ``get_params`` as keyword arguments
+    raises ``NotImplementedError``, so ``check_estimator`` reports the
+    check as not applicable instead of silently passing it. The check
+    only runs when ``est`` has already learned, so it does not call
+    ``clone()`` on a fresh estimator. Every trailing-underscore attribute
+    of the clone must equal the constructor default (see
+    ``_same_default``) and must not be the object the original learned
+    into.
+    """
+    try:
+        fresh = type(est)(**est.get_params(deep=False))
+    except (TypeError, ValueError) as e:
+        raise NotImplementedError(
+            f"{type(est).__name__} cannot be rebuilt from get_params: {e}"
+        ) from e
+    if not est._has_learned():
+        return
+    c = est.clone()
+    fresh_underscore = {
+        k: getattr(fresh, k)
+        for k in fresh.__dict__
+        if k.endswith("_") and not k.startswith("__")
+    }
+    for k, v in c.__dict__.items():
+        if k.startswith("__") or not k.endswith("_"):
+            continue
+        assert k in fresh_underscore and _same_default(v, fresh_underscore[k]), (
+            f"clone() carried learned state in {k}: "
+            f"constructor default {fresh_underscore.get(k, '<missing>')}, clone {v}"
+        )
+        assert not _is_shared_object(v, est.__dict__.get(k), fresh_underscore[k]), (
+            f"clone() shares the object in {k} with the original"
+        )
+
+
+def _same_default(a, b) -> bool:
+    """True if ``a`` is the value the constructor gives, ``b``.
+
+    Numbers and arrays are compared by shape and value, ``nan`` equal to
+    ``nan``. Lists, tuples and dicts are compared item by item. Anything
+    else is compared with ``==``; two objects of the same class that
+    ``==`` calls different (a layer, a tokenizer, a network built by the
+    constructor) count as equal, since two fresh instances often are
+    not. Whether such an object has learned cannot be told here; the
+    check only refuses the clone that holds the original's own object.
+    """
+    if a is b:
+        return True
+    try:
+        import jax.numpy as jnp
+
+        aa, bb = jnp.asarray(a), jnp.asarray(b)
+    except (TypeError, ValueError):
+        pass
+    else:
+        if aa.shape != bb.shape:
+            return False
+        return bool(jnp.all(jnp.equal(aa, bb) | (jnp.isnan(aa) & jnp.isnan(bb))))
+    if isinstance(a, (list, tuple)) and type(a) is type(b):
+        return len(a) == len(b) and all(_same_default(x, y) for x, y in zip(a, b))
+    if isinstance(a, dict) and type(a) is type(b):
+        return a.keys() == b.keys() and all(_same_default(a[k], b[k]) for k in a)
+    try:
+        if bool(a == b):
+            return True
+    except (TypeError, ValueError):
+        pass
+    return type(a) is type(b)
+
+
+_VALUE_TYPES = (type(None), bool, int, float, complex, str, bytes, tuple, frozenset)
+
+
+def _is_shared_object(v, original, default) -> bool:
+    """True if the clone holds the very object the original learned into."""
+    if v is default or v is not original:
+        return False
+    return not isinstance(v, _VALUE_TYPES)
+
+
 def check_get_params_signature(est: Root) -> None:
     sig = est._init_signature()
     expected = {
@@ -318,6 +402,7 @@ def check_estimator(
         check_describe_serializable,
         check_state_dict_roundtrip,
         check_learn_one_does_not_modify_x,
+        check_clone_drops_learned_state,
         check_predict_before_learning,
         check_classifier_proba_sum,
         check_classifier_multiclass_bool,
@@ -346,9 +431,7 @@ def check_estimator(
         except AssertionError as e:
             failures.append((chk.__name__, str(e)))
         except (NotImplementedError, AttributeError) as e:
-            not_applicable.append(
-                (chk.__name__, f"{type(e).__name__}: {e}")
-            )
+            not_applicable.append((chk.__name__, f"{type(e).__name__}: {e}"))
         except Exception as e:  # noqa: BLE001
             failures.append((chk.__name__, f"{type(e).__name__}: {e}"))
     if failures:
@@ -356,9 +439,7 @@ def check_estimator(
         raise AssertionError(f"{type(est).__name__} failed check_estimator:\n{lines}")
     unallowed = [n for n, _ in not_applicable if n not in allow_not_applicable]
     if unallowed:
-        lines = "\n".join(
-            f"  - {n}: {r}" for n, r in not_applicable if n in unallowed
-        )
+        lines = "\n".join(f"  - {n}: {r}" for n, r in not_applicable if n in unallowed)
         raise AssertionError(
             f"{type(est).__name__}: not-applicable checks not in the allow-list:\n{lines}"
         )

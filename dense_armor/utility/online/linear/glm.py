@@ -83,11 +83,6 @@ class LinearRegression(Regressor):
         test/optim/test_glm_object_vs_pure.py: below 1e-5 over 30
         samples with ``intercept=True`` and Adam.
 
-        The ``check_step_is_pure`` check from ``dense_armor.checks`` is
-        skipped (see ``_unit_test_skips``): the check passes a bare
-        scalar to ``step``, and the model expects a dict with the
-        feature keys. The skip is a known limitation of the check, not
-        a bug in the estimator.
     """
 
     budget_s: float = 1e-3
@@ -239,11 +234,6 @@ class LinearRegression(Regressor):
         )
         return new_state, pred
 
-    def _unit_test_skips(self) -> set:
-        return {
-            "check_step_is_pure",
-        }
-
 
 class LogisticRegression(Classifier):
     """Online binary logistic regression with log loss.
@@ -285,11 +275,6 @@ class LogisticRegression(Classifier):
         test/optim/test_glm_object_vs_pure.py: below 1e-5 over 30
         samples with ``intercept=True`` and Adam.
 
-        The ``check_step_is_pure`` check from ``dense_armor.checks`` is
-        skipped (see ``_unit_test_skips``): the check passes a bare
-        scalar to ``step``, and the model expects a dict with the
-        feature keys. The skip is a known limitation of the check, not
-        a bug in the estimator.
     """
 
     budget_s: float = 5e-3
@@ -458,8 +443,3 @@ class LogisticRegression(Classifier):
             lambda: (new_w, new_opt_state),
         )
         return new_state, p
-
-    def _unit_test_skips(self) -> set:
-        return {
-            "check_step_is_pure",
-        }

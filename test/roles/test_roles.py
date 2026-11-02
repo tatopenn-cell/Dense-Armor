@@ -1,4 +1,5 @@
 """Direct tests of dense_armor.roles roles, Protected and Root utilities."""
+
 import pickle
 
 import numpy as np
@@ -97,7 +98,9 @@ def test_regressor_batch_and_std():
 def test_transformer_one_and_many():
     s = Scale(3.0)
     assert s.learn_one({"a": 1.0}).transform_one({"a": 1.0}) == {"a": 3.0}
-    out = s.learn_many([{"a": 1.0}, {"a": 2.0}]).transform_many([{"a": 1.0}, {"a": 2.0}])
+    out = s.learn_many([{"a": 1.0}, {"a": 2.0}]).transform_many(
+        [{"a": 1.0}, {"a": 2.0}]
+    )
     assert len(out) == 2
 
 
@@ -175,6 +178,7 @@ def test_repr_floats_nested_and_stochastic():
     class P(Root):
         def __init__(self, a=0.0, b=100000.0, c=-2e-7, inner=None, seed=None):
             self.a, self.b, self.c, self.inner, self.seed = a, b, c, inner, seed
+
     r = repr(P(inner=MeanReg()))
     assert "a=0.0" in r and "b=100000.0" in r and "c=-2e-07" in r and "MeanReg" in r
     assert str(P()) == "P"
@@ -191,7 +195,92 @@ def test_union_and_product_of_transformers():
 
 def test_call_logger_logs_public_calls(caplog):
     import logging
+
     with caplog.at_level(logging.DEBUG, logger="dense_armor.roles"):
         with Root._call_logger(klass=MeanReg):
             MeanReg().learn_one({"a": 0.0}, 1.0)
     assert any("learn_one" in m for m in caplog.messages)
+
+
+class _Tee(Transformer):
+    """Transformer that records the ``t`` it receives, to prove forwarding."""
+
+    def __init__(self) -> None:
+        self.seen: list = []
+        self.seen_learn: list = []
+
+    def transform_one(self, x, t=None):
+        self.seen.append(t)
+        return x
+
+    def learn_one(self, x, y=None, t=None):
+        self.seen_learn.append(t)
+        return self
+
+
+class _TeePredictor(Classifier):
+    """Classifier that records the ``t`` it receives, to prove forwarding."""
+
+    def __init__(self) -> None:
+        self.seen: list = []
+        self.seen_learn: list = []
+        self.seen_predict: list = []
+        self.seen_proba: list = []
+
+    def transform_one(self, x, t=None):
+        self.seen.append(t)
+        return x
+
+    def learn_one(self, x, y, t=None):
+        self.seen_learn.append(t)
+        return self
+
+    def predict_one(self, x, t=None):
+        self.seen_predict.append(t)
+        return 0
+
+    def predict_proba_one(self, x, t=None):
+        self.seen_proba.append(t)
+        return {0: 1.0}
+
+
+def test_pipeline_forwards_t_to_transform_one():
+    tee = _Tee()
+    pipe = tee | _Tee()
+    pipe.transform_one({"a": 1.0}, t=42.0)
+    assert pipe.steps[0][1].seen == [42.0]
+    assert pipe.steps[1][1].seen == [42.0]
+
+
+def test_pipeline_forwards_t_to_learn_one():
+    a = _Tee()
+    b = _Tee()
+    pipe = a | b
+    pipe.learn_one({"a": 1.0}, t=42.0)
+    assert a.seen == [42.0]
+    assert a.seen_learn == [42.0]
+    assert b.seen_learn == [42.0]
+
+
+def test_pipeline_forwards_t_to_predict_one():
+    a = _Tee()
+    b = _TeePredictor()
+    pipe = a | b
+    out = pipe.predict_one({"a": 1.0}, t=42.0)
+    assert out == 0
+    # _forward runs transform_one on the intermediate steps only, so
+    # ``a`` sees t through transform_one and ``b`` through predict_one.
+    assert a.seen == [42.0]
+    assert b.seen == []
+    assert b.seen_predict == [42.0]
+
+
+def test_pipeline_forwards_t_to_predict_proba_one():
+    a = _Tee()
+    b = _TeePredictor()
+    pipe = a | b
+    out = pipe.predict_proba_one({"a": 1.0}, t=42.0)
+    assert out == {0: 1.0}
+    assert a.seen == [42.0]
+    assert b.seen == []
+    assert b.seen_proba == [42.0]

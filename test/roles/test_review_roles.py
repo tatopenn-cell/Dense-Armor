@@ -229,7 +229,18 @@ class _Drift:
 
     def update(self, value, t=None):
         self.seen.append(value)
-        self.drift_detected = value > 5.0
+        return self
+
+
+class _DriftThresholded:
+    def __init__(self, threshold: float = 5.0):
+        self.threshold = threshold
+        self.seen = []
+        self.drift_detected = False
+
+    def update(self, value, t=None):
+        self.seen.append(value)
+        self.drift_detected = value > self.threshold
         return self
 
 
@@ -337,38 +348,17 @@ def test_protected_feeds_the_drift_detector_once_per_sample():
     x = {"v": 1.0}
     p.predict_one(x)
     p.score_one(x)
+    assert det.seen == []
     p.learn_one(x)
     assert det.seen == [1.0]
 
 
-def test_protected_counts_a_changed_or_a_new_sample_again():
-    det = _Drift()
-    p = Protected(_Predicting(), det)
-    x = {"v": 1.0}
-    p.predict_one(x)
-    x["v"] = 2.0
-    p.predict_one(x)
-    p.predict_one({"v": 2.0})
-    p.learn_one({"v": 2.0})
-    assert det.seen == [1.0, 2.0, 2.0, 2.0]
-
-
-def test_protected_after_a_learn_the_same_object_is_a_new_time_step():
-    det = _Drift()
-    p = Protected(_Predicting(), det)
-    x = {"v": 1.0}
-    p.learn_one(x)
-    p.learn_one(x)
-    assert det.seen == [1.0, 1.0]
-
-
-def test_protected_judges_each_sample_by_the_detector_after_that_sample():
-    det = _Drift()
+def test_predict_after_drift_returns_the_fallback_on_the_next_sample():
+    det = _DriftThresholded(threshold=5.0)
     p = Protected(_Predicting(), det, fallback=-1.0)
-    assert p.predict_one({"v": 9.0}) == -1.0
-    assert p.predict_one({"v": 0.0}) == 1.0
-    assert p.score_one({"v": 9.0}) == float("inf")
-    assert det.seen == [9.0, 0.0, 9.0]
+    p.learn_one({"v": 9.0})
+    assert p.predict_one({"v": 0.0}) == -1.0
+    assert p.score_one({"v": 0.0}) == float("inf")
 
 
 class _ThresholdOnly:

@@ -29,9 +29,9 @@ class StreamingDeviationScorer(AnomalyDetector):
         Window length multiplier.
     feature
         Key of the feature to watch; `None` takes the feature with the smallest key, so the
-        result does not depend on the order of the keys. The `check_roc_auc` of that library (a
-        multi-feature fraud dataset, downloaded at test time) is skipped: this scorer watches
-        one feature.
+        result does not depend on the order of the keys. On the Dense-Armor side the checker
+        uses synthetic inlier/anomaly data, and this scorer watches only one feature, which is
+        enough for the split it builds (ROC-AUC 1.0 on it).
     eps
         Below this scale the window is treated as flat.
 
@@ -79,6 +79,3 @@ class StreamingDeviationScorer(AnomalyDetector):
             self.n_missing_ += 1
             return
         self._detector.update(v)
-
-    def _unit_test_skips(self):
-        return {"check_roc_auc"}
