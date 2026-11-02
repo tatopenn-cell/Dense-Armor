@@ -28,6 +28,14 @@ class Protected(Estimator):
             the other detectors of the library. An anomaly detector reads
             the whole of ``x`` and ignores it.
 
+        train_detector: when True, ``learn_one`` also calls
+            ``detector.learn_one(x)`` on the samples that are not flagged, so
+            the detector learns what is normal from the same stream and
+            nothing else has to feed it. When False (the default) the
+            detector is only read: whoever builds it trains it, and a
+            detector that is never trained flags nothing. A drift detector
+            has no ``learn_one`` and is fed by ``update`` in both cases.
+
     Raises:
         KeyError: on a sample without the ``feature`` key, when a drift
             detector is used.
@@ -41,11 +49,13 @@ class Protected(Estimator):
         detector: Any,
         fallback: Any = None,
         feature: str | None = None,
+        train_detector: bool = False,
     ):
         self.model = model
         self.detector = detector
         self.fallback = fallback
         self.feature = feature
+        self.train_detector = train_detector
         self._last_good = fallback
 
     def _score(self, x: dict) -> float:
@@ -77,6 +87,8 @@ class Protected(Estimator):
             call_with_t(m.learn_one, x, t=t)
         else:
             call_with_t(m.learn_one, x, y, t=t)
+        if self.train_detector and hasattr(self.detector, "learn_one"):
+            call_with_t(self.detector.learn_one, x, t=t)
         return self
 
     def predict_one(self, x: dict, t: float | None = None):

@@ -120,7 +120,7 @@ print(round(model.dt, 4), round(model.rate, 1))
 
 ### Protection
 
-`Protected(model, detector, fallback, feature)` scores each sample first;
+`Protected(model, detector, fallback, feature, train_detector)` scores each sample first;
 flagged samples are not learned and the prediction is the fallback (or
 the last prediction made on an unflagged sample).
 
@@ -129,8 +129,10 @@ The detector decides, in this order: an `AnomalyGate` flags when its
 `update` has seen the value of `feature` (the smallest key when `feature`
 is `None`); a detector with `score_one` and a `threshold` attribute flags
 when the score is above the threshold; a detector with only `score_one`
-never flags. `Protected` does not train the detector: call
-`detector.learn_one(x)` on the samples it should learn from.
+never flags. By default `Protected` only reads the detector: whoever builds
+it trains it with `detector.learn_one(x)`, and a detector that is never
+trained flags nothing. With `train_detector=True`, `learn_one` also trains
+the detector on the samples that are not flagged.
 
 `AnomalyGate(detector, protect, threshold)` classifies a score as anomalous
 when it is above `threshold`, or above the `threshold` attribute of the
@@ -142,7 +144,9 @@ from dense_armor.roles import Protected
 from dense_armor.utility.online.anomaly.filters import HampelScorer
 from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB
 
-safe = Protected(OnlineGaussianNB(), HampelScorer(radius=5), fallback=0)
+safe = Protected(
+    OnlineGaussianNB(), HampelScorer(radius=5), fallback=0, train_detector=True
+)
 ```
 
 ### State

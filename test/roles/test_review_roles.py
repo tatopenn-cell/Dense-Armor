@@ -274,6 +274,28 @@ def test_protected_applies_the_threshold_of_a_scoring_detector():
     assert above.score_one({"v": 1.0}) == float("inf")
 
 
+class _Learning(_ThresholdOnly):
+    def __init__(self, score):
+        super().__init__(score)
+        self.learned = 0
+
+    def learn_one(self, x, t=None):
+        self.learned += 1
+        return self
+
+
+def test_protected_trains_the_detector_only_on_unflagged_samples_and_only_if_asked():
+    normal = _Learning(1.0)
+    Protected(_Sink(), normal, train_detector=True).learn_one({"v": 1.0})
+    assert normal.learned == 1
+    flagged = _Learning(3.0)
+    Protected(_Sink(), flagged, train_detector=True).learn_one({"v": 1.0})
+    assert flagged.learned == 0
+    default = _Learning(1.0)
+    Protected(_Sink(), default).learn_one({"v": 1.0})
+    assert default.learned == 0
+
+
 def test_safe_estimator_predicts_then_learns_once_each():
     calls = []
 

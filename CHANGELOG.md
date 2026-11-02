@@ -56,7 +56,9 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   flagged sample).
 - `Protected` feeds a drift detector the value of `feature`, the smallest key when it is `None`, and not the
   first key of the dict. New argument `feature`. A detector with `score_one` and a `threshold` attribute is
-  applied (it was never flagged).
+  applied (it was never flagged). New argument `train_detector` (default `False`, behaviour unchanged): with
+  `True`, `learn_one` trains the detector on the samples that are not flagged; a detector that nobody trains
+  flags nothing.
 - Documented, no change of behaviour: the batch form of `Signal` holds a tuple per channel and is not accepted
   by `learn_one`; `SafeEstimator.learn_one` costs a `predict_one` and a `learn_one` of the model.
 
