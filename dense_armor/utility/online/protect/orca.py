@@ -13,6 +13,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.core.damping_operator import apply_damping_blend
 from dense_armor.core.engine import AdaptiveSignalStabilizer
 from dense_armor.core.memory import UniversalMemoryGuard
@@ -178,7 +179,7 @@ class Orca:
             slice_shape, deque(maxlen=self._reference_memory_size)
         )
         for b in range(x_reference_np.shape[0]):
-            bank.append(np.asarray(x_reference_np[b].flatten(), dtype=np.float64))
+            bank.append(np.asarray(x_reference_np[b].flatten(), dtype=get_default_dtype()))
 
     def tipi_corruzione_visti(self, slice_shape: tuple) -> Counter:
         """Quali etichette dell'arbitro ('clean'/'spike'/'regime') sono gia'
@@ -252,7 +253,7 @@ class Orca:
         rigettano gli outlier statistici gravi con una mediana locale (rigetto
         quasi totale, a differenza del floor del 25%), POI si passa la serie
         ripulita nel motore ricorsivo per la memoria causale sull'intera storia."""
-        v = np.asarray(co_row_flat, dtype=np.float64)
+        v = np.asarray(co_row_flat, dtype=get_default_dtype())
         finiti = v[np.isfinite(v)]
         fallback = float(np.median(finiti)) if finiti.size else 0.0
         v_safe = np.where(np.isfinite(v), v, fallback)
@@ -266,7 +267,7 @@ class Orca:
         is_gross_outlier = np.abs(v_safe - local_med) > 6.0 * resid_std
         v_pre_cleaned = np.where(is_gross_outlier, local_med, v_safe)
         rif = self.stabilizer.filter_data_stream(v_pre_cleaned)
-        return np.asarray(rif, dtype=np.float64)
+        return np.asarray(rif, dtype=get_default_dtype())
 
     def _run_input_shield_kernel(
         self,
@@ -320,7 +321,7 @@ class Orca:
         self, cl_chunk_raw: np.ndarray, co_chunk_raw: np.ndarray
     ) -> tuple:
         """Le 4 fasi dello scudo entrata su un chunk flat gia' pronto; ritorna (decompresso, margine)."""
-        v64_cl, v64_co = np.float64(cl_chunk_raw), np.float64(co_chunk_raw)
+        v64_cl, v64_co = get_default_dtype().type(cl_chunk_raw), get_default_dtype().type(co_chunk_raw)
         # Sbarramento di sicurezza: intensita' del rumore sui dati GREZZI
         # originali, prima di qualunque compressione log10 -- la compressione
         # rinormalizza ogni valore individualmente alla stessa scala target,
@@ -459,8 +460,8 @@ class Orca:
         # valle in filter_batch_scenarios_independent su original_shape[0]).
         # astype preserva sempre la shape, per qualunque n di elementi.
         v64_cl, v64_co = (
-            cl_batch_raw.astype(np.float64),
-            co_batch_raw.astype(np.float64),
+            cl_batch_raw.astype(get_default_dtype()),
+            co_batch_raw.astype(get_default_dtype()),
         )
         raw_noise = np.abs(v64_co - v64_cl)
         mask_cl = v64_cl != 0.0
@@ -597,8 +598,8 @@ class Orca:
             else:
                 x_reference_np = np.array(x_reference)
                 self._remember_reference(x_reference_np, slice_shape)
-            purified_batch = np.zeros(orig_shape, dtype=np.float64)
-            margine_batch = np.zeros(orig_shape, dtype=np.float64)
+            purified_batch = np.zeros(orig_shape, dtype=get_default_dtype())
+            margine_batch = np.zeros(orig_shape, dtype=get_default_dtype())
             flat_cl_all = x_reference_np.reshape(B, -1)
             flat_co_all = x_corrupted_np.reshape(B, -1)
             total_elements = flat_cl_all.shape[1]
@@ -640,7 +641,7 @@ class Orca:
 
             if use_arbiter:
                 etichette_batch = np.empty(orig_shape, dtype=object)
-                incertezza_batch = np.zeros(orig_shape, dtype=np.float64)
+                incertezza_batch = np.zeros(orig_shape, dtype=get_default_dtype())
                 for b in range(B):
                     co_flat = x_corrupted_np[b].flatten()
                     pur_flat = purified_batch[b].flatten()

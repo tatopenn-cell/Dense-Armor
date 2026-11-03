@@ -15,6 +15,7 @@ experiment alone.
 
 DESIGN CHOICE, made explicit rather than left implicit: this is
 "Variant A" -- stability is judged from a REFERENCE signal, separate
+from dense_armor._dtype import get_default_dtype
 from the signal actually being analyzed for anomalies (e.g. a
 teleoperated robot arm's commanded leader position, separate from the
 leader-follower tracking-offset signal being analyzed). This matters:
@@ -104,7 +105,7 @@ def velocity_gated_stable_mask(
     >>> velocity_gated_stable_mask(gyro_magnitude, vel_threshold=0.5, already_rate=True)
     array([ True,  True, False,  True])
     """
-    reference = np.asarray(reference, dtype=np.float64)
+    reference = np.asarray(reference, dtype=get_default_dtype())
     if reference.ndim not in (1, 2):
         raise ValueError(f"reference must be 1D or 2D, got shape {reference.shape}")
 
