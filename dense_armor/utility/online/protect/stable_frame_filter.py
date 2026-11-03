@@ -15,7 +15,6 @@ experiment alone.
 
 DESIGN CHOICE, made explicit rather than left implicit: this is
 "Variant A" -- stability is judged from a REFERENCE signal, separate
-from dense_armor._dtype import get_default_dtype
 from the signal actually being analyzed for anomalies (e.g. a
 teleoperated robot arm's commanded leader position, separate from the
 leader-follower tracking-offset signal being analyzed). This matters:
@@ -51,6 +50,8 @@ Discovery, "Predicting a robot teleoperation calibration-offset regime"
 """
 
 import numpy as np
+
+from dense_armor._dtype import get_default_dtype
 
 
 def velocity_gated_stable_mask(

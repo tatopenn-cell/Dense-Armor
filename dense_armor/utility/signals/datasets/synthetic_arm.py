@@ -33,6 +33,7 @@ from pathlib import Path
 import jax
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 from dense_armor.roles import Signal
 

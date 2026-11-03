@@ -114,6 +114,7 @@ from typing import Any
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import Classifier, Regressor
 
 _LOG2 = math.log(2.0)

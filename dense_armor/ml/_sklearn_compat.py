@@ -32,6 +32,8 @@ from typing import Any
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
+
 _CLASSIFIER = "classifier"
 _REGRESSOR = "regressor"
 _TRANSFORMER = "transformer"

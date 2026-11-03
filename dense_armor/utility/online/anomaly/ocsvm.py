@@ -91,6 +91,7 @@ from collections.abc import Sequence
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import AnomalyDetector
 
 
