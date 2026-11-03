@@ -12,7 +12,7 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   modules and the MCP server no longer turn on `jax_enable_x64` for the whole process on import.
   Left in float64: `Armor` and `hybrid_engine` (below about 1e-38 float32 loses the drift: measured), `BayesianLinearRegression`
   and the Mondrian forests (their float32 audit failed: negative variance, copied `M2`), `Beta` and `Multinomial`
-  (prudential, not measured: float32 counters lose exactness above 2^24), `Metro` and `gradcheck`.
+  (prudential, not measured: float32 counters lose exactness above 2^24), `Metro`, `gradcheck`, and the `dynamics` modules (`RigidBodyModel` and the two passivity controllers: the QP goes to OSQP in float64; the drift of `forward_dynamics` in float32 is not measured).
 
 ## [1.4.0] - 2026-11-02
 
