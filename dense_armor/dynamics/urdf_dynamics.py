@@ -40,11 +40,24 @@ independent coordinate of its own, its motion computed from its master's via
 `multiplier`/`offset`, chain-ruled onto the master's own column in the
 hand-built geometric Jacobian used for the mass matrix.
 """
+import functools
 import xml.etree.ElementTree as ET
 
 import jax
 import jax.numpy as jnp
 import numpy as np
+
+
+def _in_float64(fn):
+    """Run ``fn`` with x64 on, only inside it: the model is float64 while the rest of the library is float32."""
+
+    @functools.wraps(fn)
+    def wrapper(*args, **kwargs):
+        with jax.enable_x64(True):
+            return fn(*args, **kwargs)
+
+    return wrapper
+
 
 _G = 9.81
 
@@ -223,6 +236,7 @@ class RigidBodyModel:
             return q[master_idx] * mult + offset
         return q[self.dof_index[j["name"]]]
 
+    @_in_float64
     def forward_kinematics(self, q):
         """Real link poses and joint axes in world frame, as a function of q.
 
@@ -258,6 +272,7 @@ class RigidBodyModel:
         walk(self.root_link, jnp.zeros(3), jnp.eye(3))
         return pos, rot, joint_axis_world
 
+    @_in_float64
     def com_positions(self, q):
         """World-frame center-of-mass position of every link, shape (n_links, 3)."""
         pos, rot, _ = self.forward_kinematics(q)
@@ -290,6 +305,7 @@ class RigidBodyModel:
             m = m + self.links[name]["mass"] * (jv.T @ jv) + jw.T @ i_world @ jw
         return m
 
+    @_in_float64
     def mass_matrix(self, q):
         """Real joint-space mass matrix M(q), shape (n, n) -- symmetric positive-definite.
 
@@ -303,21 +319,25 @@ class RigidBodyModel:
             self.__dict__["_mass_jit"] = fn
         return fn(q)
 
+    @_in_float64
     def potential_energy(self, q):
         """Real total gravitational potential energy at configuration q."""
         com = self.com_positions(q)
         masses = jnp.array([self.links[name]["mass"] for name in self.link_names])
         return jnp.sum(masses * com[:, 2]) * _G
 
+    @_in_float64
     def kinetic_energy(self, q, qd):
         """Real total kinetic energy, 0.5*qdot^T*M(q)*qdot."""
         m = self.mass_matrix(q)
         return 0.5 * qd @ m @ qd
 
+    @_in_float64
     def total_energy(self, q, qd):
         """Real total mechanical energy (kinetic + potential)."""
         return self.kinetic_energy(q, qd) + self.potential_energy(q)
 
+    @_in_float64
     def gravity_forces(self, q):
         """Real gravity generalized-force vector g(q), shape (n,).
 
@@ -329,6 +349,7 @@ class RigidBodyModel:
             self.__dict__["_grav_jit"] = fn
         return fn(q)
 
+    @_in_float64
     def bias_forces(self, q, qd):
         """Real Coriolis/centrifugal generalized-force vector C(q,qdot)*qdot, shape (n,)."""
 
@@ -341,17 +362,20 @@ class RigidBodyModel:
         mdot_qd = jax.jvp(mv, (q,), (qd,))[1]
         return mdot_qd - 0.5 * jax.grad(quad)(q)
 
+    @_in_float64
     def forward_dynamics(self, q, qd, tau):
         """Real joint acceleration qddot solving M(q)qddot + C(q,qdot)qdot + g(q) = tau."""
         m = self.mass_matrix(q)
         rhs = tau - self.bias_forces(q, qd) - self.gravity_forces(q)
         return jnp.linalg.solve(m, rhs)
 
+    @_in_float64
     def link_position(self, q, link_name):
         """Real world-frame origin position of the named link's own frame."""
         pos, rot, _ = self.forward_kinematics(q)
         return pos[link_name]
 
+    @_in_float64
     def link_jacobian(self, q, link_name):
         """Real translational Jacobian of the named link's own frame origin, shape (3, n)."""
         pos, rot, joint_axis_world = self.forward_kinematics(q)
@@ -365,11 +389,13 @@ class RigidBodyModel:
                 jv = jv.at[:, dof_idx].add(scale * jnp.cross(axis_w, pos[link_name] - p_joint))
         return jv
 
+    @_in_float64
     def link_pose(self, q, link_name):
         """Real (position, rotation matrix) of the named link's own frame, in world frame."""
         pos, rot, _ = self.forward_kinematics(q)
         return pos[link_name], rot[link_name]
 
+    @_in_float64
     def link_spatial_jacobian(self, q, link_name):
         """Real 6xN spatial Jacobian [angular; linear] of the named link, in world frame."""
         pos, rot, joint_axis_world = self.forward_kinematics(q)
