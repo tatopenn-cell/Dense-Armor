@@ -81,6 +81,7 @@ from collections.abc import Sequence
 
 import numpy as np
 
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import AnomalyDetector
 
 
@@ -212,7 +213,7 @@ class OnlineIsolationForest(AnomalyDetector):
         self._ready = True
 
     def _to_vec(self, x: dict) -> np.ndarray:
-        return np.array([float(x[k]) for k in self._keys], dtype=float)
+        return as_default_array([float(x[k]) for k in self._keys], copy=True)
 
     def _random_path_length(self, n: int) -> float:
         if n < self.max_leaf_samples:
@@ -321,7 +322,7 @@ class OnlineIsolationForest(AnomalyDetector):
         if not self._ready:
             self._lazy_init(x)
         try:
-            v = np.array([float(x[k]) for k in self._keys], dtype=float)
+            v = as_default_array([float(x[k]) for k in self._keys], copy=True)
         except (KeyError, TypeError, ValueError):
             self.n_missing_ += 1
             return self
@@ -374,7 +375,7 @@ class OnlineIsolationForest(AnomalyDetector):
             xv = self._to_vec(x)
         except (KeyError, TypeError, ValueError):
             return 1.0
-        depths = np.empty(self.n_trees, dtype=float)
+        depths = np.empty(self.n_trees, dtype=get_default_dtype())
         for tr in range(self.n_trees):
             cur = self._trees[tr]
             if cur is None:

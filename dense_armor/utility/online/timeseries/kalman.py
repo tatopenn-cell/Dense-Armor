@@ -23,6 +23,7 @@ from typing import Any
 import jax.numpy as jnp
 import numpy as np
 
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Transformer
 
 
@@ -64,13 +65,13 @@ class KalmanFilter(Transformer):
         x0: np.ndarray | None = None,
         P0: np.ndarray | None = None,
     ) -> None:
-        self.F = np.asarray(F, dtype=float)
-        self.H = np.asarray(H, dtype=float)
-        self.Q = np.asarray(Q, dtype=float)
-        self.R = np.asarray(R, dtype=float)
+        self.F = as_default_array(F)
+        self.H = as_default_array(H)
+        self.Q = as_default_array(Q)
+        self.R = as_default_array(R)
         n = self.F.shape[0]
-        self.x0 = np.zeros(n) if x0 is None else np.asarray(x0, dtype=float)
-        self.P0 = np.eye(n) if P0 is None else np.asarray(P0, dtype=float)
+        self.x0 = np.zeros(n, dtype=get_default_dtype()) if x0 is None else as_default_array(x0)
+        self.P0 = np.eye(n, dtype=get_default_dtype()) if P0 is None else as_default_array(P0)
         self._x: np.ndarray | None = None
         self._P: np.ndarray | None = None
         self._innovation: np.ndarray | None = None
@@ -87,9 +88,9 @@ class KalmanFilter(Transformer):
             return None
         m = self.H.shape[0]
         if not x:
-            return np.zeros(m)
+            return np.zeros(m, dtype=get_default_dtype())
         try:
-            v = np.array([float(x[k]) for k in sorted(x)], dtype=float)
+            v = as_default_array([float(x[k]) for k in sorted(x)], copy=True)
         except (TypeError, ValueError, KeyError):
             return None
         if v.size != m or not np.all(np.isfinite(v)):
@@ -133,7 +134,7 @@ class KalmanFilter(Transformer):
         S = self.H @ P_pred @ self.H.T + self.R
         K = P_pred @ self.H.T @ np.linalg.inv(S)
         self._x = x_pred + K @ y_inn
-        self._P = (np.eye(self._P.shape[0]) - K @ self.H) @ P_pred
+        self._P = (np.eye(self._P.shape[0], dtype=get_default_dtype()) - K @ self.H) @ P_pred
         self._P = 0.5 * (self._P + self._P.T)
         self._innovation = y_inn
         self._S = S
@@ -149,7 +150,7 @@ class KalmanFilter(Transformer):
         """Innovation and its covariance, as dict entries."""
         if self._innovation is None or self._S is None:
             m = self.H.shape[0]
-            return {"innovation": np.zeros(m), "S": np.zeros((m, m))}
+            return {"innovation": np.zeros(m, dtype=get_default_dtype()), "S": np.zeros((m, m), dtype=get_default_dtype())}
         return {"innovation": self._innovation.copy(), "S": self._S.copy()}
 
     def init_state(self, dim: int = 1) -> tuple:
@@ -384,8 +385,8 @@ class InnovationAdaptiveKalman(KalmanFilter):
         m = self.R.shape[0]
         self._Q = self.Q.copy()
         self._R = self.R.copy()
-        self._buf_inn = np.zeros((self.window, m))
-        self._buf_res = np.zeros((self.window, m))
+        self._buf_inn = np.zeros((self.window, m), dtype=get_default_dtype())
+        self._buf_res = np.zeros((self.window, m), dtype=get_default_dtype())
         self._fill = 0
         self._head = 0
 
@@ -419,7 +420,7 @@ class InnovationAdaptiveKalman(KalmanFilter):
         S = H @ P_pred @ H.T + self._R
         K = P_pred @ H.T @ np.linalg.inv(S)
         x_upd = x_pred + K @ inn
-        P_upd = (np.eye(P_pred.shape[0]) - K @ H) @ P_pred
+        P_upd = (np.eye(P_pred.shape[0], dtype=get_default_dtype()) - K @ H) @ P_pred
         P_upd = 0.5 * (P_upd + P_upd.T)
         res = z - H @ x_upd
         self._buf_inn[self._head] = inn

@@ -96,6 +96,7 @@ def _stream_with_spikes(seed=0, n=300):
     return stream
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_hampel_equivalence_causal():
     stream = _stream_with_spikes()
     r = 5
@@ -135,6 +136,7 @@ def test_chauvenet_equivalence_causal():
         s.learn_one({"v": v})
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_sigmaclip_equivalence_causal():
     stream = _stream_with_spikes(seed=3)
     r = 5

@@ -32,6 +32,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Classifier, Regressor
 
 
@@ -131,14 +132,14 @@ class LinearRegression(Regressor):
     def _row(self, x) -> np.ndarray:
         x = self._as_dict(x)
         keys = self._resolve_keys(x)
-        xv = np.asarray([float(x.get(k, 0.0)) for k in keys], dtype=float)
+        xv = as_default_array([float(x.get(k, 0.0)) for k in keys])
         if self.intercept:
             return np.concatenate([[1.0], xv])
         return xv
 
     def _ensure_weights(self, n: int) -> None:
         if self._w is None:
-            self._w = np.zeros(n, dtype=float)
+            self._w = np.zeros(n, dtype=get_default_dtype())
 
     def learn_one(self, x: dict, y: Any, t: float | None = None) -> "LinearRegression":
         """One gradient step on the squared loss of a single sample.
@@ -323,14 +324,14 @@ class LogisticRegression(Classifier):
     def _row(self, x) -> np.ndarray:
         x = self._as_dict(x)
         keys = self._resolve_keys(x)
-        xv = np.asarray([float(x.get(k, 0.0)) for k in keys], dtype=float)
+        xv = as_default_array([float(x.get(k, 0.0)) for k in keys])
         if self.intercept:
             return np.concatenate([[1.0], xv])
         return xv
 
     def _ensure_weights(self, n: int) -> None:
         if self._w is None:
-            self._w = np.zeros(n, dtype=float)
+            self._w = np.zeros(n, dtype=get_default_dtype())
 
     def learn_one(
         self, x: dict, y: Any, t: float | None = None

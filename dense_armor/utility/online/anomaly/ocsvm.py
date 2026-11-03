@@ -90,6 +90,7 @@ from collections.abc import Sequence
 
 import numpy as np
 
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import AnomalyDetector
 
 
@@ -219,10 +220,10 @@ class OneClassSGD(AnomalyDetector):
         self._keys_ready = True
 
     def _to_vec(self, x: dict) -> np.ndarray:
-        return np.array([float(x[k]) for k in self._keys], dtype=float)
+        return as_default_array([float(x[k]) for k in self._keys], copy=True)
 
     def _finalise_stats(self) -> None:
-        arr = np.array(self._init_buf, dtype=float)
+        arr = as_default_array(self._init_buf, copy=True)
         self._init_buf = []
         d = arr.shape[1]
         self._mean = arr.mean(axis=0)
@@ -232,7 +233,7 @@ class OneClassSGD(AnomalyDetector):
         sd = float(np.sqrt(2.0 * self.gamma))
         self._omega = rng.normal(0.0, sd, size=(self.n_features_rff, d))
         self._scale = float(np.sqrt(2.0 / self.n_features_rff))
-        self._w = np.zeros(2 * self.n_features_rff, dtype=float)
+        self._w = np.zeros(2 * self.n_features_rff, dtype=get_default_dtype())
         self._rho = 0.0
         self._n = 0
         self._ready = True
@@ -245,7 +246,7 @@ class OneClassSGD(AnomalyDetector):
     def _rff(self, x_unit: np.ndarray) -> np.ndarray:
         assert self._omega is not None
         arg = self._omega @ x_unit
-        z = np.empty(2 * self.n_features_rff, dtype=float)
+        z = np.empty(2 * self.n_features_rff, dtype=get_default_dtype())
         z[0::2] = np.sin(arg)
         z[1::2] = np.cos(arg)
         z *= self._scale

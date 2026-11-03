@@ -5,6 +5,8 @@ from typing import Any
 import jax.numpy as jnp
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
+
 
 class AdaGrad:
     """AdaGrad with per-coordinate adaptive step sizes.
@@ -46,7 +48,7 @@ class AdaGrad:
             raise ValueError(f"eps must be > 0, got {eps}")
         self.lr = float(lr)
         self.eps = float(eps)
-        self._G: np.ndarray = np.zeros(0)
+        self._G: np.ndarray = np.zeros(0, dtype=get_default_dtype())
 
     def __eq__(self, other: object) -> Any:
         if type(other) is not type(self):

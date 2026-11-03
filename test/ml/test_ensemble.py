@@ -74,6 +74,7 @@ def test_boosting_samme_hand_case():
     assert one.alphas_[0] == 1.0
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_exponentially_weighted_average_hand_case():
     P = [[1.0, 5.0], [2.0, 5.0], [3.0, 5.0]]
     m = ExponentiallyWeightedAverage(eta=1.0).fit(P, [1.0, 2.0, 3.0])

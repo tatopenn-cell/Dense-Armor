@@ -54,21 +54,32 @@ def test_logistic_separates():
         correct += int(p == y)
     assert correct > 90
 
+def _factory(cls, **kw):
+    """Build the optimizer inside the test, after the dtype fixtures, not at import."""
+
+    def make():
+        return cls(**kw)
+
+    make.__name__ = cls.__name__
+    return make
+
 
 @pytest.mark.parametrize(
-    "cls,opt",
+    "cls,make_opt",
     [
-        (LinearRegression, SGD(lr=0.1)),
-        (LinearRegression, AdaGrad(lr=0.5)),
-        (LinearRegression, Adam(lr=0.05)),
-        (LinearRegression, FTRLProximal(l2=0.1)),
-        (LinearRegression, OnlineNewtonStep()),
-        (LogisticRegression, SGD(lr=0.5)),
-        (LogisticRegression, AdaGrad(lr=0.5)),
+        (LinearRegression, _factory(SGD, lr=0.1)),
+        (LinearRegression, _factory(AdaGrad, lr=0.5)),
+        (LinearRegression, _factory(Adam, lr=0.05)),
+        (LinearRegression, _factory(FTRLProximal, l2=0.1)),
+        (LinearRegression, _factory(OnlineNewtonStep)),
+        (LogisticRegression, _factory(SGD, lr=0.5)),
+        (LogisticRegression, _factory(AdaGrad, lr=0.5)),
     ],
     ids=lambda o: getattr(o, "__name__", type(o).__name__),
 )
-def test_object_matches_pure(cls, opt):
+@pytest.mark.usefixtures("float64_default", "x64")
+def test_object_matches_pure(cls, make_opt):
+    opt = make_opt()
     est = cls(optimizer=opt, intercept=False, feature_keys=["a", "b"])
     state = est.init_state(2)
     rng = np.random.default_rng(0)

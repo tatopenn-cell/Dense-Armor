@@ -5,6 +5,7 @@ from typing import Any
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import Classifier, Regressor
 from dense_armor.utility.online.facto._common import _sigmoid
 
@@ -71,7 +72,7 @@ class _FMBase:
             return
         n = len(keys)
         rng = np.random.default_rng(self.seed)
-        theta = np.zeros(1 + n + n * self.k, dtype=float)
+        theta = np.zeros(1 + n + n * self.k, dtype=get_default_dtype())
         theta[1 + n :] = rng.normal(0.0, self.init_scale, size=n * self.k)
         self._theta = theta
 
@@ -102,8 +103,8 @@ class _FMBase:
         w0, w, V = self._unpack()
         active = self._active(x)
         linear = w0
-        s = np.zeros(self.k)
-        sq = np.zeros(self.k)
+        s = np.zeros(self.k, dtype=get_default_dtype())
+        sq = np.zeros(self.k, dtype=get_default_dtype())
         for i, val in active:
             linear += w[i] * val
             s += V[i] * val
@@ -148,7 +149,7 @@ class _FMBase:
         n = len(self._keys) if self._keys is not None else 0
         _, _, V = self._unpack()
         active = self._active(x)
-        s = np.zeros(self.k)
+        s = np.zeros(self.k, dtype=get_default_dtype())
         for i, val in active:
             s += V[i] * val
         grad = np.zeros_like(self._theta)

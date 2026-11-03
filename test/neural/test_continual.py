@@ -40,6 +40,7 @@ def test_ewc_penalty_grows_quadratically():
     assert abs(p3 - 9 * p1) < 1e-6
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_ewc_consolidate_gives_fisher_squared():
     """The Fisher in ``consolidate`` matches ``(dlogp/dtheta)^2``.
 

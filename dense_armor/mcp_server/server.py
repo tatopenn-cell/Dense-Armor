@@ -35,9 +35,7 @@ executing) with `mcp` already assigned. Reordering `mcp = MCPServer(...)`
 to after the tool import would break this (same convention as
 Dense-Evolution's tools/mcp_server/server.py).
 """
-import jax
 
-jax.config.update("jax_enable_x64", True)
 
 from mcp.server import MCPServer  # noqa: E402
 

@@ -22,6 +22,7 @@ video clock.
 
 import numpy as np
 
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Signal, Transformer
 
 
@@ -85,7 +86,7 @@ class TrackToSignal(Transformer):
         tr = self._prev
         if tr is None:
             return Signal(
-                values=np.zeros(5, dtype=float),
+                values=np.zeros(5, dtype=get_default_dtype()),
                 names=["cx", "cy", "w", "h", "speed"],
                 units=[self.units.get(k, "") for k in
                        ("cx", "cy", "w", "h", "speed")],
@@ -107,7 +108,7 @@ class TrackToSignal(Transformer):
         self._last = (cx, cy, float(t) if t is not None else 0.0)
         names = ["cx", "cy", "w", "h", "speed"]
         return Signal(
-            values=np.array([cx, cy, w, h, speed], dtype=float),
+            values=as_default_array([cx, cy, w, h, speed], copy=True),
             names=names,
             units=[self.units.get(k, "") for k in names],
             t=float(t) if t is not None else 0.0,
@@ -166,12 +167,12 @@ class FeatureToSignal(Transformer):
                 vals.append(0.0)
         if not keys:
             return Signal(
-                values=np.zeros(1, dtype=float),
+                values=np.zeros(1, dtype=get_default_dtype()),
                 names=["empty"], units=[""],
                 t=float(t) if t is not None else 0.0,
             )
         return Signal(
-            values=np.array(vals, dtype=float),
+            values=as_default_array(vals, copy=True),
             names=list(keys),
             units=[self.units.get(k, "") for k in keys],
             t=float(t) if t is not None else 0.0,

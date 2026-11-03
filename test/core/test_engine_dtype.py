@@ -1,4 +1,4 @@
-"""The engine computes in the default dtype of JAX: float32, float64 if the user asks.
+"""The engine computes in float64 on its own, whether x64 is on or off for the rest.
 
 test/conftest.py turns x64 on for the whole session, so each case runs in a
 fresh interpreter where the setting is the one under test.
@@ -29,7 +29,9 @@ print(stream.dtype, batch.dtype, bool(np.isfinite(stream).all()), bool(np.isfini
 
 
 def _run(x64: bool) -> list[str]:
-    env = dict(os.environ)
+    env = {
+        k: v for k, v in os.environ.items() if not k.startswith(("COV_CORE_", "COVERAGE_"))
+    }
     env["PYTHONPATH"] = str(ROOT)
     env.pop("JAX_ENABLE_X64", None)
     if x64:
@@ -47,9 +49,9 @@ def _run(x64: bool) -> list[str]:
 
 
 @pytest.mark.parametrize(
-    "x64, dtype", [(False, "float32"), (True, "float64")], ids=["default", "x64"]
+    "x64, dtype", [(False, "float64"), (True, "float64")], ids=["x64_off", "x64_on"]
 )
-def test_engine_follows_the_jax_default_dtype(x64, dtype):
+def test_engine_is_float64_with_x64_off_and_on(x64, dtype):
     stream_dtype, batch_dtype, stream_ok, batch_ok = _run(x64)
     assert stream_dtype == dtype
     assert batch_dtype == dtype

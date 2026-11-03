@@ -18,6 +18,7 @@ from dense_armor.ml.anomaly import (
 SPIKE = [1.0, 1.0, 1.0, 1.0, 10.0, 1.0, 1.0, 1.0, 1.0]
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_doctests():
     r = doctest.testmod(A)
     assert r.failed == 0 and r.attempted >= 8

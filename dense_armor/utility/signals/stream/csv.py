@@ -22,6 +22,7 @@ from typing import Any
 
 import numpy as np
 
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Signal
 
 
@@ -158,10 +159,10 @@ def iter_csv(
                         vals.append(v)
                         mask.append(False)
             if not vals:
-                sig = Signal(values=np.zeros(0), names=[], units=[], t=t_val)
+                sig = Signal(values=np.zeros(0, dtype=get_default_dtype()), names=[], units=[], t=t_val)
             else:
                 sig = Signal(
-                    values=np.asarray(vals, dtype=float),
+                    values=as_default_array(vals),
                     names=feat_names,
                     units=feat_units,
                     t=t_val,

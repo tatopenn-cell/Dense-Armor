@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.ml.base import MLBase
 from dense_armor.ml.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
@@ -54,7 +55,7 @@ class RandomForestClassifier(MLBase):
         self.seed = seed
 
     def fit(self, X, y=None):  # type: ignore[override]
-        A = np.asarray(X, dtype=float)
+        A = as_default_array(X)
         t = np.asarray(y)
         self.classes_ = np.unique(t)
         rng = np.random.default_rng(self.seed)
@@ -72,7 +73,7 @@ class RandomForestClassifier(MLBase):
 
     def predict_proba(self, X) -> np.ndarray:
         """Mean over the trees of the class frequencies of their leaves."""
-        out = np.zeros((np.asarray(X).shape[0], len(self.classes_)))
+        out = np.zeros((np.asarray(X).shape[0], len(self.classes_)), dtype=get_default_dtype())
         for tree in self.trees_:
             P = tree.predict_proba(X)
             for j, c in enumerate(tree.classes_):
@@ -113,8 +114,8 @@ class ExtraTreesRegressor(MLBase):
         self.seed = seed
 
     def fit(self, X, y=None):  # type: ignore[override]
-        A = np.asarray(X, dtype=float)
-        t = np.asarray(y, dtype=float)
+        A = as_default_array(X)
+        t = as_default_array(y)
         rng = np.random.default_rng(self.seed)
         self.trees_ = [
             DecisionTreeRegressor(

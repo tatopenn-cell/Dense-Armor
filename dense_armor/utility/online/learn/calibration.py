@@ -7,6 +7,7 @@ import math
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import Classifier, ModelWrapper
 
 
@@ -98,7 +99,7 @@ class OnlinePlattScaling(ModelWrapper, Classifier):
         self.radius = radius
         self.clip = clip
         self._theta = np.array([1.0, 0.0])
-        self._A = rho * np.eye(2)
+        self._A = rho * np.eye(2, dtype=get_default_dtype())
 
     @property
     def _wrapped_model(self):
@@ -124,7 +125,7 @@ class OnlinePlattScaling(ModelWrapper, Classifier):
         lo, hi = 0.0, 1.0
 
         def f(lam):
-            return np.linalg.solve(self._A + lam * np.eye(2), self._A @ t)
+            return np.linalg.solve(self._A + lam * np.eye(2, dtype=get_default_dtype()), self._A @ t)
 
         while f(hi) @ f(hi) > self.radius**2:
             hi *= 2.0

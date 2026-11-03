@@ -95,6 +95,7 @@ from typing import Any
 
 import numpy as np
 
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Regressor
 
 _PREDICTIONS = ("adaptive", "mean", "perceptron")
@@ -171,9 +172,9 @@ class _Splits:
     def best(self, total_n: float, total_s: float, total_q: float) -> tuple | None:
         if len(self.xs) < 2:
             return None
-        n: np.ndarray = np.cumsum(np.asarray(self.n, dtype=float))[:-1]
-        s: np.ndarray = np.cumsum(np.asarray(self.s, dtype=float))[:-1]
-        q: np.ndarray = np.cumsum(np.asarray(self.q, dtype=float))[:-1]
+        n: np.ndarray = np.cumsum(as_default_array(self.n))[:-1]
+        s: np.ndarray = np.cumsum(as_default_array(self.s))[:-1]
+        q: np.ndarray = np.cumsum(as_default_array(self.q))[:-1]
         rn, rs, rq = total_n - n, total_s - s, total_q - q
         ok = (n > 0) & (rn > 0)
         var_e = total_q / total_n - (total_s / total_n) ** 2
@@ -280,7 +281,7 @@ class _Rule:
             z: np.ndarray = np.append(self._standardise(v), 1.0)
             yn = (y - self.target.mean) / self._target_scale()
             w = self.w - eta * (float(self.w @ z) - yn) * z
-            self.w = w if np.isfinite(w).all() else np.zeros(self.d + 1)
+            self.w = w if np.isfinite(w).all() else np.zeros(self.d + 1, dtype=get_default_dtype())
         for j in range(self.d):
             self.attrs[j].update(float(v[j]))
             self.splits[j].add(float(v[j]), y, cap)
@@ -464,7 +465,7 @@ class AMRulesRegressor(Regressor):
                 list(self.feature_keys) if self.feature_keys is not None else sorted(d)
             )
         try:
-            v = np.array([float(d[k]) for k in self._keys], dtype=float)
+            v = as_default_array([float(d[k]) for k in self._keys], copy=True)
         except (KeyError, TypeError, ValueError):
             return None
         return v if np.isfinite(v).all() else None

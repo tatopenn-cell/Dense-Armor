@@ -11,11 +11,25 @@ The numeric constants below are fixed hyper-parameters of the damping curve.
 They have no physical or mathematical meaning beyond shaping the gain.
 """
 
+import functools
 from collections.abc import Callable
 
 import jax
 import jax.numpy as jnp
 import numpy as np
+
+from dense_armor._dtype import x64_context
+
+
+def _in_float64(fn: Callable) -> Callable:
+    """Run ``fn`` with x64 on, only inside it: the engine is float64 while the rest of the library is float32."""
+
+    @functools.wraps(fn)
+    def wrapper(*args, **kwargs):
+        with x64_context(True):
+            return fn(*args, **kwargs)
+
+    return wrapper
 
 _PHI_128 = np.longdouble(1.0 + np.sqrt(5.0)) / 2.0
 _ZETA_TOTAL_128 = np.longdouble(60.16762236065194)
@@ -147,6 +161,7 @@ class AdaptiveSignalStabilizer:
         )
         return jax.lax.scan(_wrapped_step, init_state, scan_inputs)
 
+    @_in_float64
     def calibrate_macro_context(self, raw_batch: np.ndarray) -> None:
         """Calibrate the dynamic thresholds on the global context of the batch.
 
@@ -183,6 +198,7 @@ class AdaptiveSignalStabilizer:
         self.dyn_dmp = float(_SIGMA * (1.0 + self.noise_scalar))
         self.dyn_alp = float(0.75 + (_SIGMA * self.noise_scalar))
 
+    @_in_float64
     def calibrate_macro_context_independent(
         self, raw_batch: np.ndarray
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
@@ -222,6 +238,7 @@ class AdaptiveSignalStabilizer:
         dyn_alp = np.where(panic, 0.999, 0.75 + (_SIGMA * noise_scalar))
         return dyn_thr, dyn_dmp, dyn_alp, noise_scalar
 
+    @_in_float64
     def filter_batch_scenarios_independent(
         self, raw_batch: np.ndarray, hard_clamp_mask: np.ndarray | None = None
     ) -> np.ndarray:
@@ -282,19 +299,19 @@ class AdaptiveSignalStabilizer:
             self.calibrate_macro_context_independent(flat_per_unit)
         )
 
-        j_batch = jnp.array(structured_batch)
+        j_batch = jnp.array(structured_batch, dtype=jnp.float64)
         j_mask = jnp.array(structured_mask, dtype=jnp.bool_)
 
         filtered_structured = self._compiled_batch_filter_independent(
             j_batch,
-            jnp.array(dyn_thr),
-            jnp.array(dyn_dmp),
-            jnp.array(dyn_alp),
-            jnp.array(noise_scalar),
+            jnp.array(dyn_thr, dtype=jnp.float64),
+            jnp.array(dyn_dmp, dtype=jnp.float64),
+            jnp.array(dyn_alp, dtype=jnp.float64),
+            jnp.array(noise_scalar, dtype=jnp.float64),
             j_mask,
         )
 
-        filtered_np = np.array(filtered_structured)
+        filtered_np = np.array(filtered_structured, dtype=jnp.float64)
         return filtered_np.reshape(original_shape)
 
     def _step_kernel(
@@ -370,10 +387,10 @@ class AdaptiveSignalStabilizer:
         local_scale = jnp.maximum(jnp.abs(local_ref), 1e-3)
         local_coherence = jnp.clip(1.0 - (local_diff / (2.0 * local_scale)), 0.0, 1.0)
 
-        alpha_j = jnp.asarray(self.alpha)
+        alpha_j = jnp.float64(self.alpha)
         new_vol = (1.0 - alpha_j) * rolling_volatility + alpha_j * diff
 
-        sigma_mult = jnp.asarray(self.anomaly_sigma_mult)
+        sigma_mult = jnp.float64(self.anomaly_sigma_mult)
         dyn_thr = thr + (new_vol * sigma_mult)
 
         is_anomaly = jnp.logical_or(diff > dyn_thr, is_nan_input)
@@ -390,20 +407,20 @@ class AdaptiveSignalStabilizer:
 
         coherence_mix = 0.5 * coherence_signal + 0.5 * local_coherence
 
-        c_gate = jnp.asarray(_ALPHA + _SIGMA)
+        c_gate = jnp.float64(_ALPHA + _SIGMA)
         K_coherent = jnp.clip(
             coherence_mix * (c_gate / (c_gate + new_vol + eps)),
-            jnp.asarray(_ALPHA - _SIGMA),
-            jnp.asarray(1.0 - (_ALPHA - _SIGMA)),
+            jnp.float64(_ALPHA - _SIGMA),
+            jnp.float64(1.0 - (_ALPHA - _SIGMA)),
         )
 
         k_anom_min = jnp.where(
-            hard_clamp_flag, jnp.asarray(0.0), jnp.asarray(self.k_anom_min)
+            hard_clamp_flag, jnp.float64(0.0), jnp.float64(self.k_anom_min)
         )
-        k_anom_max = jnp.asarray(self.k_anom_max)
+        k_anom_max = jnp.float64(self.k_anom_max)
 
-        c_anom_base = jnp.asarray(1.0 / (float(_PHI_128) ** 2))
-        local_scale_ref = jnp.maximum(jnp.abs(prev_filtered), jnp.asarray(1e-8))
+        c_anom_base = jnp.float64(1.0 / (float(_PHI_128) ** 2))
+        local_scale_ref = jnp.maximum(jnp.abs(prev_filtered), jnp.float64(1e-8))
         c_anom = c_anom_base * local_scale_ref
         K_anomalous_raw = c_anom / (c_anom + diff + eps)
         K_anomalous = jnp.clip(K_anomalous_raw, k_anom_min, k_anom_max)
@@ -429,7 +446,7 @@ class AdaptiveSignalStabilizer:
         raw_l2 = raw_next * l2_scale
         local_blend = smooth_weight_local * raw_smooth + l2_weight_local * raw_l2
 
-        g = jnp.asarray(self.smooth_l2_blend)
+        g = jnp.float64(self.smooth_l2_blend)
         next_filtered = g * raw_smooth + (1.0 - g) * local_blend
 
         calculated_damping = dynamic_damping_gain(diff)
@@ -437,7 +454,7 @@ class AdaptiveSignalStabilizer:
 
         w_rad = max(self.window_radius, 1)
         ema_alpha = 1.0 / float(w_rad + 1)
-        ema_alpha_j = jnp.asarray(ema_alpha)
+        ema_alpha_j = jnp.float64(ema_alpha)
         next_local_mean = (1.0 - ema_alpha_j) * local_mean + ema_alpha_j * next_filtered
 
         return (
@@ -485,11 +502,11 @@ class AdaptiveSignalStabilizer:
         upper_neighbors = jnp.roll(scenario_matrix, shift=1, axis=0)
         upper_neighbors = upper_neighbors.at[0, :].set(scenario_matrix[0, :]).flatten()
 
-        start_val = jnp.asarray(flat_scen[0])
+        start_val = jnp.float64(flat_scen[0])
         init_state = (
             start_val,
-            jnp.asarray(dmp),
-            jnp.asarray(0.0),
+            jnp.float64(dmp),
+            jnp.float64(0.0),
             start_val,
         )
 
@@ -536,7 +553,7 @@ class AdaptiveSignalStabilizer:
             prev, dmp_state, vol = carry
 
             diff = jnp.abs(current_val - prev)
-            alpha_j = jnp.asarray(self.alpha)
+            alpha_j = jnp.float64(self.alpha)
             new_vol = (1.0 - alpha_j) * vol + alpha_j * diff
 
             coherence = 1.0 - (diff / 2.0)
@@ -550,22 +567,22 @@ class AdaptiveSignalStabilizer:
                 5.0,
             )
 
-            c_lyap = jnp.asarray((float(_PHI_128) ** 3) + 0.23606797)
+            c_lyap = jnp.float64((float(_PHI_128) ** 3) + 0.23606797)
             dynamic_shift_legacy = c_lyap * log_ratio * coherence_legacy
 
-            is_anomaly_legacy = jnp.abs(dynamic_shift_legacy) > jnp.asarray(
+            is_anomaly_legacy = jnp.abs(dynamic_shift_legacy) > jnp.float64(
                 self.threshold
             )
 
-            c_gate = jnp.asarray(_ALPHA + _SIGMA)
+            c_gate = jnp.float64(_ALPHA + _SIGMA)
             K_coherent = jnp.clip(
-                coherence_legacy * c_gate, jnp.asarray(_SIGMA), c_gate
+                coherence_legacy * c_gate, jnp.float64(_SIGMA), c_gate
             )
 
-            c_anom_scale = jnp.asarray(_ALPHA / 2.0)
+            c_anom_scale = jnp.float64(_ALPHA / 2.0)
             K_anomalous = jnp.clip(
                 c_anom_scale / (c_anom_scale + jnp.abs(dynamic_shift_legacy)),
-                jnp.asarray(_ALPHA),
+                jnp.float64(_ALPHA),
                 c_gate,
             )
             K = jnp.where(is_anomaly_legacy, K_anomalous, K_coherent)
@@ -584,6 +601,7 @@ class AdaptiveSignalStabilizer:
 
         return _run
 
+    @_in_float64
     def filter_data_stream(self, raw_data: np.ndarray) -> np.ndarray:
         """Filter a single 1D time series.
 
@@ -596,30 +614,31 @@ class AdaptiveSignalStabilizer:
         if raw_data.size == 0:
             return np.zeros_like(raw_data)
 
-        j_raw = jnp.array(raw_data)
-        init_val = jnp.asarray(j_raw[0])
+        j_raw = jnp.array(raw_data, dtype=jnp.float64)
+        init_val = jnp.float64(j_raw[0])
 
         init_state = (
             init_val,
-            jnp.asarray(self.damping),
-            jnp.asarray(0.0),
+            jnp.float64(self.damping),
+            jnp.float64(0.0),
             init_val,
         )
 
         _, gated_stream = self._compiled_single_stream_filter(
             init_state,
             j_raw[1:],
-            jnp.asarray(self.dyn_thr),
-            jnp.asarray(self.dyn_dmp),
-            jnp.asarray(self.dyn_alp),
-            jnp.asarray(self.noise_scalar),
+            jnp.float64(self.dyn_thr),
+            jnp.float64(self.dyn_dmp),
+            jnp.float64(self.dyn_alp),
+            jnp.float64(self.noise_scalar),
             init_val,
         )
 
-        gated_np = np.asarray(gated_stream)
-        final_stream = np.insert(gated_np, 0, np.asarray(init_val))
+        gated_np = np.asarray(gated_stream, dtype=np.float64)
+        final_stream = np.insert(gated_np, 0, np.asarray(init_val, dtype=np.float64))
         return final_stream
 
+    @_in_float64
     def filter_batch_scenarios(
         self, raw_batch: np.ndarray, hard_clamp_mask: np.ndarray | None = None
     ) -> np.ndarray:
@@ -680,18 +699,18 @@ class AdaptiveSignalStabilizer:
                 f"tensor geometry not supported by the engine: {original_shape}"
             )
 
-        j_batch = jnp.array(structured_batch)
+        j_batch = jnp.array(structured_batch, dtype=jnp.float64)
         j_mask = jnp.array(structured_mask, dtype=jnp.bool_)
 
         filtered_structured = self._compiled_batch_filter(
             j_batch,
-            jnp.asarray(self.dyn_thr),
-            jnp.asarray(self.dyn_dmp),
-            jnp.asarray(self.dyn_alp),
-            jnp.asarray(self.noise_scalar),
+            jnp.float64(self.dyn_thr),
+            jnp.float64(self.dyn_dmp),
+            jnp.float64(self.dyn_alp),
+            jnp.float64(self.noise_scalar),
             j_mask,
         )
 
-        filtered_np = np.array(filtered_structured)
+        filtered_np = np.array(filtered_structured, dtype=jnp.float64)
 
         return filtered_np.reshape(original_shape)

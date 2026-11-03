@@ -14,6 +14,7 @@ import math
 
 import numpy as np
 
+from dense_armor._dtype import as_default_array
 from dense_armor.ml.base import MLBase
 
 __all__ = ["Beta", "Gaussian", "Multinomial"]
@@ -106,7 +107,7 @@ class Gaussian(MLBase):
         self.n = n
 
     def fit(self, X, y=None):  # type: ignore[override]
-        x = np.asarray(X, dtype=float).ravel()
+        x = as_default_array(X).ravel()
         m = x.size
         if m == 0:
             self.n_, self.mean_, self.var_ = (

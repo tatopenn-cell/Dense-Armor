@@ -32,6 +32,7 @@ from pathlib import Path
 import jax
 import numpy as np
 
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 from dense_armor.roles import Signal
 
@@ -70,8 +71,8 @@ def _joint_limits(urdf_path: str | Path, n: int) -> tuple[np.ndarray, np.ndarray
         from dense_armor.roles import limits_from_urdf
 
         lim = limits_from_urdf(urdf_path)
-        lower = np.asarray(getattr(lim, "lower", None), dtype=float)
-        upper = np.asarray(getattr(lim, "upper", None), dtype=float)
+        lower = as_default_array(getattr(lim, "lower", None))
+        upper = as_default_array(getattr(lim, "upper", None))
         if lower.shape == (n,) and upper.shape == (n,):
             return lower, upper
     except (AttributeError, TypeError, ValueError):
@@ -204,13 +205,13 @@ class SyntheticArm:
             ``mass_matrix(q) @ qdd + bias_forces(q, qd)
             + gravity_forces(q)``.
         """
-        M = np.asarray(self._mass_matrix(q), dtype=float)
-        b = np.asarray(self._bias(q, qd), dtype=float)
-        g = np.asarray(self._gravity(q), dtype=float)
+        M = as_default_array(self._mass_matrix(q))
+        b = as_default_array(self._bias(q, qd))
+        g = as_default_array(self._gravity(q))
         return M @ qdd + b + g
 
     def _fault_term(self, q: np.ndarray, qd: np.ndarray, t: float) -> np.ndarray:
-        out = np.zeros(self.n_joints)
+        out = np.zeros(self.n_joints, dtype=get_default_dtype())
         if self.fault_at_s is None or t < self.fault_at_s:
             return out
         if self.fault == "friction":
@@ -220,7 +221,7 @@ class SyntheticArm:
 
     def payload_torque(self, q: np.ndarray) -> np.ndarray:
         """Gravity torque of the payload mass, ``m * g * J_z(q)``."""
-        jz = np.asarray(self._jac(q), dtype=float)[2]
+        jz = as_default_array(self._jac(q))[2]
         return self.payload_mass * 9.81 * jz
 
     def stream(self) -> Iterator[tuple[Signal, int]]:
@@ -249,7 +250,7 @@ class SyntheticArm:
                 vals.append(qd[j] + rng.normal(0.0, self.noise_std[1]))
                 vals.append(tau[j] + rng.normal(0.0, self.noise_std[2]))
             sig = Signal(
-                values=np.asarray(vals, dtype=float),
+                values=as_default_array(vals),
                 names=names,
                 units=units,
                 t=t,

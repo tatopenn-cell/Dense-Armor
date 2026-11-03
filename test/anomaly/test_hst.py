@@ -64,6 +64,7 @@ def _walk_node_ranges(hst, tr):
 
 
 @pytest.mark.parametrize("d", [1, 2, 4])
+@pytest.mark.usefixtures("float64_default")
 def test_hst_split_is_midpoint_of_node_range(d):
     """Every split value is the mid-point of its node's range on its feature.
 

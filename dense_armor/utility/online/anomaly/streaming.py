@@ -49,6 +49,7 @@ from collections import deque
 
 import numpy as np
 
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.utility.online.protect.arbiter import (
     _robust_center_scale,
     classify_segments,
@@ -134,7 +135,7 @@ class MultiChannelStreamingDeviationDetector:
 
     def update(self, x_vec) -> np.ndarray:
         """x_vec: lunghezza n_channels. Ritorna array bool (n_channels,)."""
-        x_vec = np.asarray(x_vec, dtype=np.float64).ravel()
+        x_vec = as_default_array(x_vec).ravel()
         if x_vec.size != self.n_channels:
             raise ValueError(f"attesi {self.n_channels} canali, ricevuti {x_vec.size}")
         return np.array([det.update(float(v)) for det, v in zip(self._detectors, x_vec)], dtype=bool)
@@ -151,11 +152,11 @@ def classify_segments_multichannel(
 
     Ritorna (etichette, deviazione, incertezza), ognuno (n_campioni,
     n_canali)."""
-    X = np.asarray(X, dtype=np.float64)
+    X = as_default_array(X)
     n, c = X.shape
     etichette = np.empty((n, c), dtype=object)
-    deviazione = np.zeros((n, c), dtype=np.float64)
-    incertezza = np.zeros((n, c), dtype=np.float64)
+    deviazione = np.zeros((n, c), dtype=get_default_dtype())
+    incertezza = np.zeros((n, c), dtype=get_default_dtype())
     for j in range(c):
         e, d, u = classify_segments(X[:, j], radius=radius, ref_mult=ref_mult,
                                      n_sigmas=n_sigmas, spike_run_max=spike_run_max, eps=eps)

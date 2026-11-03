@@ -5,6 +5,7 @@ from typing import Any
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import Classifier, Regressor
 from dense_armor.utility.online.facto._common import _sigmoid
 
@@ -118,10 +119,10 @@ class _FwFMBase:
         n = len(self._keys)
         f = len(self._field_names)
         rng = np.random.default_rng(self.seed)
-        w0 = np.zeros(1)
-        w = np.zeros(n)
+        w0 = np.zeros(1, dtype=get_default_dtype())
+        w = np.zeros(n, dtype=get_default_dtype())
         V = rng.normal(0.0, self.init_scale, size=(n, self.k))
-        R = np.ones((f, f))
+        R = np.ones((f, f), dtype=get_default_dtype())
         self._theta = np.concatenate([w0, w, V.ravel(), R.ravel()])
 
     def _unpack(self) -> tuple[float, np.ndarray, np.ndarray, np.ndarray]:

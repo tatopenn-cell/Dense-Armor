@@ -40,6 +40,7 @@ def test_doctests():
 # ------------------------------------------------------------------
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_multinomial_hand_computation():
     """With alpha=1 the class-conditional probabilities are exact.
 
@@ -79,6 +80,7 @@ def test_multinomial_hand_computation():
 # ------------------------------------------------------------------
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_bernoulli_hand_computation():
     """With alpha=1 the per-word present probability is exact.
 

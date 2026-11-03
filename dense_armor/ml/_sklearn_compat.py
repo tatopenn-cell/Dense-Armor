@@ -31,6 +31,8 @@ from typing import Any
 
 import numpy as np
 
+from dense_armor._dtype import as_default_array, get_default_dtype
+
 _CLASSIFIER = "classifier"
 _REGRESSOR = "regressor"
 _TRANSFORMER = "transformer"
@@ -88,13 +90,13 @@ def _score(self: Any, X: Any, y: Any, sample_weight: Any = None) -> float:
     """Accuracy of a classifier, coefficient of determination of a regressor."""
     pred = np.asarray(self.predict(X))
     true = np.asarray(y)
-    w = None if sample_weight is None else np.asarray(sample_weight, dtype=float)
+    w = None if sample_weight is None else as_default_array(sample_weight)
     if estimator_kind(type(self)) == _CLASSIFIER:
         return float(np.average(pred == true, weights=w))
-    true = true.astype(float)
-    pred = pred.astype(float)
+    true = true.astype(get_default_dtype())
+    pred = pred.astype(get_default_dtype())
     if w is None:
-        w = np.ones(true.shape[0])
+        w = np.ones(true.shape[0], dtype=get_default_dtype())
     w = w.reshape((-1,) + (1,) * (true.ndim - 1))
     ss_res = np.sum(w * (true - pred) ** 2, axis=0)
     mean = np.sum(w * true, axis=0) / np.sum(w)

@@ -39,6 +39,7 @@ def _two_link():
     return model_nom, model_true
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_rls_matches_lstsq_lam1_large_delta():
     rng = np.random.default_rng(0)
     n, d = 200, 5

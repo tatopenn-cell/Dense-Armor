@@ -26,6 +26,7 @@ from collections import deque
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import Transformer
 
 
@@ -183,7 +184,7 @@ class Sync(Transformer):
         t1 = min(ta[-1], tb[-1])
         if t1 <= t0:
             return {"offset_s": 0.0, "correlation": 0.0}
-        ts = np.linspace(t0, t1, self.window)
+        ts = np.linspace(t0, t1, self.window, dtype=get_default_dtype())
         a = np.interp(ts, ta, va)
         b = np.interp(ts, tb, vb)
         a = (a - a.mean()) / (a.std() + 1e-9)

@@ -48,6 +48,7 @@ from typing import Any
 
 import numpy as np
 
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Regressor
 
 
@@ -204,9 +205,9 @@ class _Perceptron:
 
     def __init__(self, dim: int, eta0: float = 0.1, etad: float = 0.005) -> None:
         self.n = 0
-        self.w = np.zeros(dim + 1, dtype=float)
-        self.mean = np.zeros(dim, dtype=float)
-        self.m2 = np.zeros(dim, dtype=float)
+        self.w = np.zeros(dim + 1, dtype=get_default_dtype())
+        self.mean = np.zeros(dim, dtype=get_default_dtype())
+        self.m2 = np.zeros(dim, dtype=get_default_dtype())
         self.eta0 = float(eta0)
         self.etad = float(etad)
 
@@ -487,7 +488,7 @@ class FIMTDDRegressor(Regressor):
 
     def _row(self, x: dict) -> np.ndarray:
         assert self._keys is not None
-        return np.asarray([float(x.get(k, 0.0)) for k in self._keys], dtype=float)
+        return as_default_array([float(x.get(k, 0.0)) for k in self._keys])
 
     def _quantize(self, feature: str, value: float) -> float:
         lo, hi = self._ranges.get(feature, (0.0, 0.0))

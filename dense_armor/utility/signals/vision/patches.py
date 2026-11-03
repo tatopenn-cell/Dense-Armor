@@ -59,6 +59,7 @@ from typing import Any
 
 import numpy as np
 
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import AnomalyDetector, Transformer
 from dense_armor.utility.signals.vision.features import _as_array, _to_gray
 
@@ -165,7 +166,7 @@ class PatchFeatures(Transformer):
         ang = np.mod(np.arctan2(iy, ix), 2.0 * np.pi)
         bin_float = np.floor(ang / (2.0 * np.pi / self.n_bins))
         bin_idx = np.clip(bin_float, 0, self.n_bins - 1).astype(np.intp)
-        desc = np.zeros((ny, nx, d), dtype=np.float64)
+        desc = np.zeros((ny, nx, d), dtype=get_default_dtype())
         for j in range(ny):
             y = j * s
             sy = slice(y, y + p)
@@ -175,7 +176,7 @@ class PatchFeatures(Transformer):
                 m = mag[sy, sx].ravel()
                 b = bin_idx[sy, sx].ravel()
                 hist = np.bincount(b, weights=m, minlength=self.n_bins).astype(
-                    np.float64
+                    get_default_dtype()
                 )
                 nrm = float(np.linalg.norm(hist)) + self.eps
                 hist = hist / nrm
@@ -241,7 +242,7 @@ class PatchFeatures(Transformer):
         if not np.isfinite(img).all():
             self.n_missing_ += 1
             return {"descriptors": None, "positions": None}
-        lum = _to_gray(img).astype(np.float64, copy=False)
+        lum = _to_gray(img).astype(get_default_dtype(), copy=False)
         grid = self._patch_grid(lum.shape)
         if grid is None:
             self.n_missing_ += 1
@@ -347,7 +348,7 @@ class PatchMemory(AnomalyDetector):
             return None, None
         if desc is None:
             return None, None
-        desc = np.asarray(desc, dtype=np.float64)
+        desc = as_default_array(desc)
         if desc.ndim != 2 or desc.size == 0:
             return None, None
         if not np.isfinite(desc).all():
@@ -505,7 +506,7 @@ class PatchMemory(AnomalyDetector):
         if self._sq_bank is None:
             self._sq_bank = np.einsum("ij,ij->i", bank, bank)
         sq_bank = self._sq_bank
-        out = np.empty(q.shape[0], dtype=np.float64)
+        out = np.empty(q.shape[0], dtype=get_default_dtype())
         for i in range(0, q.shape[0], chunk):
             qi = q[i : i + chunk]
             sq_q = np.einsum("ij,ij->i", qi, qi)
@@ -564,5 +565,5 @@ class PatchMemory(AnomalyDetector):
         """
         _ = self.score_one(x)
         if self.last_patch_scores_ is None or self.last_positions_ is None:
-            return np.zeros(0), np.zeros((0, 2), dtype=np.intp)
+            return np.zeros(0, dtype=get_default_dtype()), np.zeros((0, 2), dtype=np.intp)
         return self.last_patch_scores_, self.last_positions_

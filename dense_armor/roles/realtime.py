@@ -34,6 +34,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import Root
 from dense_armor.roles._util import call_with_t
 from dense_armor.roles.signal import Signal
@@ -133,7 +134,7 @@ def profile(
         end_bytes = int(est._raw_memory_usage)
     else:
         end_bytes = 0
-    arr = np.asarray(latencies) if latencies else np.zeros(1)
+    arr = np.asarray(latencies) if latencies else np.zeros(1, dtype=get_default_dtype())
     return ProfileResult(
         p50_s=float(np.percentile(arr, 50)),
         p99_s=float(np.percentile(arr, 99)),

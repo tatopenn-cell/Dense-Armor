@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.ml.base import MLBase
 
 __all__ = ["CUSUMDriftDetector"]
@@ -68,11 +69,11 @@ class CUSUMDriftDetector(MLBase):
         self.eps = eps
 
     def fit(self, X, y=None):  # type: ignore[override]
-        x = np.asarray(X, dtype=float).ravel()
+        x = as_default_array(X).ravel()
         n = x.size
         span = self.radius * self.ref_mult
         self.flagged_ = np.zeros(n, dtype=bool)
-        self.cusum_ = np.zeros(n)
+        self.cusum_ = np.zeros(n, dtype=get_default_dtype())
         self.median_ = self.scale_ = float("nan")
         if n <= span or not np.all(np.isfinite(x[:span])):
             return self

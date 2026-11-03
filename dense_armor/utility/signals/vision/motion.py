@@ -45,6 +45,7 @@ References:
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import Transformer
 
 
@@ -236,7 +237,7 @@ class GlobalMotion(Transformer):
         return set()
 
     def _to_float_gray(self, img: np.ndarray) -> np.ndarray:
-        g = _to_gray(img).astype(np.float64)
+        g = _to_gray(img).astype(get_default_dtype())
         g = g - g.mean()
         if self.window > 0:
             h, w = g.shape
@@ -244,10 +245,10 @@ class GlobalMotion(Transformer):
             wx = np.hanning(min(self.window, w))
             if wy.shape[0] < h:
                 pad = (h - wy.shape[0]) // 2
-                wy = np.concatenate([np.zeros(pad), wy, np.zeros(h - wy.shape[0] - pad)])
+                wy = np.concatenate([np.zeros(pad, dtype=get_default_dtype()), wy, np.zeros(h - wy.shape[0] - pad, dtype=get_default_dtype())])
             if wx.shape[0] < w:
                 pad = (w - wx.shape[0]) // 2
-                wx = np.concatenate([np.zeros(pad), wx, np.zeros(w - wx.shape[0] - pad)])
+                wx = np.concatenate([np.zeros(pad, dtype=get_default_dtype()), wx, np.zeros(w - wx.shape[0] - pad, dtype=get_default_dtype())])
             g = g * wy[:, None] * wx[None, :]
         return g
 

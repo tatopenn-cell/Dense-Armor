@@ -59,6 +59,7 @@ from typing import Any
 
 import numpy as np
 
+from dense_armor._dtype import as_default_array
 from dense_armor.roles import Transformer
 
 
@@ -70,7 +71,7 @@ def _vec(x: Any) -> np.ndarray | None:
             return None
         x = x[min(x)]
     try:
-        v = np.asarray(x, dtype=float).ravel()
+        v = as_default_array(x).ravel()
     except (TypeError, ValueError):
         return None
     if v.size == 0 or not np.all(np.isfinite(v)):

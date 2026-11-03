@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import Transformer
 from dense_armor.utility.signals.stats.dependence import RunningCovariance
 
@@ -111,7 +112,7 @@ class OnlineShrinkageCovariance(Transformer):
         alpha = 1.0 - (tr_s * tr_s / n) / denom
         alpha = float(min(max(alpha, 0.0), 1.0))
         beta = (1.0 - alpha) * tr_s
-        shrunk = alpha * s + (beta / p) * np.eye(p)
+        shrunk = alpha * s + (beta / p) * np.eye(p, dtype=get_default_dtype())
         return shrunk, alpha, beta
 
     def transform_one(self, x: dict, t: float | None = None) -> dict:

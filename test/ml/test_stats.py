@@ -1,5 +1,6 @@
 """Hand cases, edge cases and the saved difference of the statistics."""
 
+import pytest
 import doctest
 
 import numpy as np
@@ -49,6 +50,7 @@ def test_rolling_hand_case():
     assert abs(ok.corr_ - 1.0) < 1e-12
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_autocorrelation_hand_case():
     a = Autocorrelation(lag=1).fit([1.0, 2.0, 1.0, 2.0, 1.0])
     assert abs(a.value_ - (-0.8)) < 1e-12 and a.n_pairs_ == 4
@@ -56,6 +58,7 @@ def test_autocorrelation_hand_case():
     assert np.isnan(Autocorrelation(lag=1).fit([2.0, 2.0, 2.0]).value_)
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_moments_hand_case():
     m = Moments().fit([1.0, 2.0, 3.0, 4.0, float("inf")])
     assert m.n_missing_ == 1 and m.count_ == 4

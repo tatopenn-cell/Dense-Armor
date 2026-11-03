@@ -73,6 +73,7 @@ from collections.abc import Sequence
 
 import numpy as np
 
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import AnomalyDetector
 
 
@@ -215,8 +216,8 @@ class HalfSpaceTrees(AnomalyDetector):
                 raise ValueError(
                     f"feature_ranges has {len(ranges)} entries, expected {d}"
                 )
-            self._lo = np.array([r[0] for r in ranges], dtype=float)
-            self._hi = np.array([r[1] for r in ranges], dtype=float)
+            self._lo = as_default_array([r[0] for r in ranges], copy=True)
+            self._hi = as_default_array([r[1] for r in ranges], copy=True)
             self._finalise_range()
 
     def _finalise_range(self) -> None:
@@ -267,7 +268,7 @@ class HalfSpaceTrees(AnomalyDetector):
         assert self._work_lo is not None and self._work_hi is not None
         feature = self._feature
         n_internal = 2**self.depth - 1
-        midpoints = np.zeros((self.n_trees, n_internal), dtype=float)
+        midpoints = np.zeros((self.n_trees, n_internal), dtype=get_default_dtype())
         t_idx = np.arange(self.n_trees)[:, None]
         lo_cur = self._work_lo[:, None, :].copy()
         hi_cur = self._work_hi[:, None, :].copy()
@@ -291,7 +292,7 @@ class HalfSpaceTrees(AnomalyDetector):
         return midpoints
 
     def _to_norm(self, x: dict) -> np.ndarray:
-        v = np.array([float(x[k]) for k in self._keys], dtype=float)
+        v = as_default_array([float(x[k]) for k in self._keys], copy=True)
         lo = self._lo
         hi = self._hi
         assert lo is not None and hi is not None
@@ -377,7 +378,7 @@ class HalfSpaceTrees(AnomalyDetector):
             self._lazy_init(x)
             if not self._ready:
                 try:
-                    v_r = np.array([float(x[k]) for k in self._keys], dtype=float)
+                    v_r = as_default_array([float(x[k]) for k in self._keys], copy=True)
                 except (KeyError, TypeError, ValueError):
                     self.n_missing_ += 1
                     return self
@@ -386,7 +387,7 @@ class HalfSpaceTrees(AnomalyDetector):
                     return self
                 self._range_buf.append(v_r)
                 if len(self._range_buf) >= self.range_init:
-                    arr = np.array(self._range_buf, dtype=float)
+                    arr = as_default_array(self._range_buf, copy=True)
                     lo = arr.min(axis=0)
                     hi = arr.max(axis=0)
                     span = np.maximum(hi - lo, self.eps)
@@ -395,7 +396,7 @@ class HalfSpaceTrees(AnomalyDetector):
                     self._finalise_range()
                 return self
         try:
-            v_check = np.array([x[k] for k in self._keys], dtype=float)
+            v_check = as_default_array([x[k] for k in self._keys], copy=True)
         except (KeyError, TypeError, ValueError):
             self.n_missing_ += 1
             return self

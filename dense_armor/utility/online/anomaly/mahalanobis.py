@@ -88,6 +88,7 @@ from collections.abc import Sequence
 
 import numpy as np
 
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import AnomalyDetector
 
 
@@ -244,7 +245,7 @@ class OnlineRobustMahalanobis(AnomalyDetector):
 
     def _to_vec(self, x) -> np.ndarray:
         keys = self._resolve_keys(x)
-        return np.array([float(x[k]) for k in keys], dtype=float)
+        return as_default_array([float(x[k]) for k in keys], copy=True)
 
     def _gamma(self, n: int) -> float:
         return self.c_gamma * (n + self.n0 + 1) ** (-self.gamma_exp)
@@ -264,12 +265,12 @@ class OnlineRobustMahalanobis(AnomalyDetector):
         return m
 
     def _offline_init(self) -> None:
-        pts = np.array(self._init_buf, dtype=float)
+        pts = as_default_array(self._init_buf, copy=True)
         self._init_buf = []
         d = pts.shape[1]
         if pts.shape[0] < d + 1:
             self._m = pts.mean(axis=0)
-            self._V = np.eye(d)
+            self._V = np.eye(d, dtype=get_default_dtype())
             self._m_bar = self._m.copy()
             self._V_bar = self._V.copy()
         else:

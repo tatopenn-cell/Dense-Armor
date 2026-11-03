@@ -51,6 +51,8 @@ Discovery, "Predicting a robot teleoperation calibration-offset regime"
 
 import numpy as np
 
+from dense_armor._dtype import as_default_array
+
 
 def velocity_gated_stable_mask(
     reference: np.ndarray, vel_threshold: float, axis: int | None = None,
@@ -104,7 +106,7 @@ def velocity_gated_stable_mask(
     >>> velocity_gated_stable_mask(gyro_magnitude, vel_threshold=0.5, already_rate=True)
     array([ True,  True, False,  True])
     """
-    reference = np.asarray(reference, dtype=np.float64)
+    reference = as_default_array(reference)
     if reference.ndim not in (1, 2):
         raise ValueError(f"reference must be 1D or 2D, got shape {reference.shape}")
 

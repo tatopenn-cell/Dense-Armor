@@ -31,6 +31,7 @@ from typing import Any
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import Transformer
 from dense_armor.utility.online.cluster.kmeans import OnlineKMeans
 
@@ -112,7 +113,7 @@ class BagOfVisualWords(Transformer):
     def _descriptors(self, img: np.ndarray) -> np.ndarray:
         lum = _to_gray(img)
         if lum.ndim != 2 or lum.size == 0 or not np.isfinite(lum).all():
-            return np.zeros((0, self.n_bins))
+            return np.zeros((0, self.n_bins), dtype=get_default_dtype())
         ix = np.zeros_like(lum)
         iy = np.zeros_like(lum)
         ix[:, 1:-1] = 0.5 * (lum[:, 2:] - lum[:, :-2])
@@ -134,7 +135,7 @@ class BagOfVisualWords(Transformer):
                 nrm = float(np.linalg.norm(counts)) + 1e-8
                 descs.append(counts / nrm)
         if not descs:
-            return np.zeros((0, self.n_bins))
+            return np.zeros((0, self.n_bins), dtype=get_default_dtype())
         return np.stack(descs, axis=0)
 
     def learn_one(
@@ -163,7 +164,7 @@ class BagOfVisualWords(Transformer):
         descs = self._descriptors(img)
         if descs.shape[0] == 0 or self.kmeans_.centers_ is None:
             return {"hist": [0.0] * self.n_words}
-        hist = np.zeros(self.n_words)
+        hist = np.zeros(self.n_words, dtype=get_default_dtype())
         for d in descs:
             j = self.kmeans_.predict_one({"_d": d.tolist()})
             hist[j] += 1.0

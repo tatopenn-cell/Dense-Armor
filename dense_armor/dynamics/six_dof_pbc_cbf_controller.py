@@ -35,8 +35,6 @@ import numpy as np
 import osqp
 from scipy import sparse
 
-jax.config.update("jax_enable_x64", True)
-
 
 def manipulability(j):
     """Manipulability index sqrt(det(J J^T)) -- zero at a kinematic singularity."""

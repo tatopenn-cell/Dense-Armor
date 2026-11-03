@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.ml.base import MLBase
 
 __all__ = ["KNNClassifier", "KNNRegressor"]
@@ -34,13 +35,13 @@ class _KNN(MLBase):
         self.eps = eps
 
     def fit(self, X, y=None):  # type: ignore[override]
-        self.X_ = np.asarray(X, dtype=float)
+        self.X_ = as_default_array(X)
         self.X_ = self.X_[:, None] if self.X_.ndim == 1 else self.X_
         self.y_ = np.asarray(y)
         return self
 
     def _neighbours(self, X) -> tuple[np.ndarray, np.ndarray]:
-        Q = np.asarray(X, dtype=float)
+        Q = as_default_array(X)
         Q = Q[:, None] if Q.ndim == 1 else Q
         d = (np.abs(Q[:, None, :] - self.X_[None, :, :]) ** self.p).sum(axis=2) ** (
             1.0 / self.p
@@ -75,7 +76,7 @@ class KNNClassifier(_KNN):
     def predict_proba(self, X) -> np.ndarray:
         """Share of the vote of each class among the neighbours."""
         idx, w = self._neighbours(X)
-        votes = np.zeros((idx.shape[0], len(self.classes_)))
+        votes = np.zeros((idx.shape[0], len(self.classes_)), dtype=get_default_dtype())
         for j, c in enumerate(self.classes_):
             votes[:, j] = (w * (self.y_[idx] == c)).sum(axis=1)
         return votes / votes.sum(axis=1, keepdims=True)
@@ -102,4 +103,4 @@ class KNNRegressor(_KNN):
     def predict(self, X) -> np.ndarray:
         """The weighted mean target of the ``k`` nearest rows."""
         idx, w = self._neighbours(X)
-        return (w * self.y_[idx].astype(float)).sum(axis=1) / w.sum(axis=1)
+        return (w * self.y_[idx].astype(get_default_dtype())).sum(axis=1) / w.sum(axis=1)

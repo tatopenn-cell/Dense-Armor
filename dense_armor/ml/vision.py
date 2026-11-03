@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.ml.base import MLBase
 
 __all__ = ["DenseFlow", "GlobalMotion", "MotionMask", "PCA", "RandomProjection"]
@@ -57,7 +58,7 @@ STOPPED = {
 
 
 def _gray(img) -> np.ndarray:
-    a = np.asarray(img, dtype=float)
+    a = as_default_array(img)
     if a.ndim == 3 and a.shape[2] >= 3:
         return a[..., 0] * 0.299 + a[..., 1] * 0.587 + a[..., 2] * 0.114
     if a.ndim == 3:
@@ -152,7 +153,7 @@ class MotionMask(MLBase):
         self.dilation = dilation
 
     def fit(self, X, y=None):  # type: ignore[override]
-        mag = np.hypot(np.asarray(X, dtype=float), np.asarray(y, dtype=float))
+        mag = np.hypot(as_default_array(X), as_default_array(y))
         med = float(np.median(mag))
         scale = 1.4826 * float(np.median(np.abs(mag - med)))
         mask = (
@@ -210,10 +211,10 @@ class GlobalMotion(MLBase):
             wx = np.hanning(min(self.window, w))
             if wy.shape[0] < h:
                 p = (h - wy.shape[0]) // 2
-                wy = np.concatenate([np.zeros(p), wy, np.zeros(h - wy.shape[0] - p)])
+                wy = np.concatenate([np.zeros(p, dtype=get_default_dtype()), wy, np.zeros(h - wy.shape[0] - p, dtype=get_default_dtype())])
             if wx.shape[0] < w:
                 p = (w - wx.shape[0]) // 2
-                wx = np.concatenate([np.zeros(p), wx, np.zeros(w - wx.shape[0] - p)])
+                wx = np.concatenate([np.zeros(p, dtype=get_default_dtype()), wx, np.zeros(w - wx.shape[0] - p, dtype=get_default_dtype())])
             g = g * wy[:, None] * wx[None, :]
         return g
 
@@ -275,7 +276,7 @@ class RandomProjection(MLBase):
         self.seed = seed
 
     def fit(self, X, y=None):  # type: ignore[override]
-        d = np.asarray(X, dtype=float).shape[1]
+        d = as_default_array(X).shape[1]
         self.W_ = np.random.default_rng(self.seed).standard_normal(
             (d, self.k)
         ) / np.sqrt(self.k)
@@ -283,7 +284,7 @@ class RandomProjection(MLBase):
 
     def transform(self, X) -> np.ndarray:
         """The rows times the matrix."""
-        return np.asarray(X, dtype=float) @ self.W_
+        return as_default_array(X) @ self.W_
 
 
 class PCA(MLBase):
@@ -310,7 +311,7 @@ class PCA(MLBase):
         self.k = k
 
     def fit(self, X, y=None):  # type: ignore[override]
-        A = np.asarray(X, dtype=float)
+        A = as_default_array(X)
         self.mean_ = A.mean(axis=0)
         C = (A - self.mean_).T @ (A - self.mean_) / len(A)
         val, vec = np.linalg.eigh(C)
@@ -324,4 +325,4 @@ class PCA(MLBase):
 
     def transform(self, X) -> np.ndarray:
         """Coordinates of the rows on the components."""
-        return (np.asarray(X, dtype=float) - self.mean_) @ self.components_.T
+        return (as_default_array(X) - self.mean_) @ self.components_.T

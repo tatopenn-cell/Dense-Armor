@@ -19,6 +19,8 @@ import math
 import numpy as np
 from scipy import sparse
 
+from dense_armor._dtype import as_default_array, get_default_dtype
+
 
 def cosine_similarity(a: dict, b: dict) -> float:
     """Cosine similarity of two ``{term: score}`` dicts.
@@ -70,8 +72,7 @@ def cosine_similarity_many(query: dict, matrix: list[dict]) -> np.ndarray:
         ...     {"a": 1.0}, [{"a": 1.0}, {"a": 0.0}]).tolist()
         [1.0, 0.0]
     """
-    return np.array([cosine_similarity(query, d) for d in matrix],
-                    dtype=float)
+    return as_default_array([cosine_similarity(query, d) for d in matrix], copy=True)
 
 class SparseCosineIndex:
     """A sparse index of documents for cosine ranking, built once.
@@ -268,7 +269,7 @@ class SparseCosineIndex:
         if n == 0:
             return np.zeros((self.n_documents_, 0), dtype=self.dtype_)
         rows, cols, vals = [], [], []
-        norms = np.zeros(n, dtype=np.float64)
+        norms = np.zeros(n, dtype=get_default_dtype())
         for j, q in enumerate(queries):
             for term, v in q.items():
                 norms[j] += float(v) * float(v)

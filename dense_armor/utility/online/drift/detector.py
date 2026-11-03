@@ -4,6 +4,7 @@ from collections import deque
 
 import numpy as np
 
+from dense_armor._dtype import as_default_array
 from dense_armor.roles import DriftDetector
 from dense_armor.utility.online.drift.cusum import two_sided_arl
 from dense_armor.utility.online.protect.arbiter import _robust_center_scale
@@ -148,7 +149,7 @@ class CUSUMDriftDetector(DriftDetector):
     def _try_build_fixed_reference(self) -> bool:
         if len(self._fixed_buffer) < self._span:
             return False
-        arr: np.ndarray = np.asarray(self._fixed_buffer, dtype=float)
+        arr: np.ndarray = as_default_array(self._fixed_buffer)
         med, scale = _robust_center_scale(arr)
         if not np.isfinite(scale) or scale < self.eps:
             return False
@@ -178,7 +179,7 @@ class CUSUMDriftDetector(DriftDetector):
         if len(self._buffer) < 4:
             self._buffer.append(x)
             return self
-        arr: np.ndarray = np.asarray(self._buffer, dtype=float)
+        arr: np.ndarray = as_default_array(self._buffer)
         med, scale = _robust_center_scale(arr)
         if not np.isfinite(scale) or scale < self.eps:
             self._buffer.append(x)

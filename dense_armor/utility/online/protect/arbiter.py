@@ -59,6 +59,8 @@ completa sui 7 scenari con questo fix.
 
 import numpy as np
 
+from dense_armor._dtype import as_default_array, get_default_dtype
+
 
 def _window(x: np.ndarray, i: int, radius: int) -> np.ndarray:
     n = len(x)
@@ -101,12 +103,12 @@ def classify_segments(
                      lunghezza della sequenza) -- non quanto e' "corretto",
                      ma quanto la classificazione stessa e' precaria.
     """
-    x = np.asarray(x, dtype=np.float64).ravel()
+    x = as_default_array(x).ravel()
     n = x.size
     deviante = np.zeros(n, dtype=bool)
-    deviazione = np.zeros(n, dtype=np.float64)
-    scarto_normalizzato = np.zeros(n, dtype=np.float64)  # |dev|/soglia, per l'incertezza
-    med_rif = np.zeros(n, dtype=np.float64)  # mediana della finestra di riferimento, per punto
+    deviazione = np.zeros(n, dtype=get_default_dtype())
+    scarto_normalizzato = np.zeros(n, dtype=get_default_dtype())  # |dev|/soglia, per l'incertezza
+    med_rif = np.zeros(n, dtype=get_default_dtype())  # mediana della finestra di riferimento, per punto
 
     for i in range(n):
         w_rif = _window_causal(x, i, radius * ref_mult)
@@ -130,7 +132,7 @@ def classify_segments(
             scarto_normalizzato[i] = deviazione[i] / n_sigmas
 
     etichette = np.full(n, "clean", dtype=object)
-    incertezza = np.zeros(n, dtype=np.float64)
+    incertezza = np.zeros(n, dtype=get_default_dtype())
 
     # Incertezza sulla soglia deviante/pulito: vicino a scarto_normalizzato==1
     # (cioe' esattamente al confine n_sigmas) -> massima ambiguita'.
@@ -207,7 +209,7 @@ def route_and_correct(
                           dal singolo impulso breve).
 
     Ritorna (pulito, etichette, incertezza)."""
-    x = np.asarray(x, dtype=np.float64).ravel()
+    x = as_default_array(x).ravel()
     n = x.size
     etichette, _, incertezza = classify_segments(x, radius, ref_mult, n_sigmas, spike_run_max)
 

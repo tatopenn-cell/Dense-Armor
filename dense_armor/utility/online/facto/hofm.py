@@ -5,6 +5,7 @@ from typing import Any
 
 import numpy as np
 
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Classifier, Regressor
 from dense_armor.utility.online.facto._common import _sigmoid
 
@@ -20,7 +21,7 @@ def _anova_forward(
     ``a[j, t] = 0`` for ``j < t``.
     """
     nz = len(idx)
-    a = np.zeros((nz + 1, m + 1))
+    a = np.zeros((nz + 1, m + 1), dtype=get_default_dtype())
     a[:, 0] = 1.0
     for t in range(1, m + 1):
         for j in range(t, nz + 1):
@@ -36,7 +37,7 @@ def _anova_grad(p: np.ndarray, idx: np.ndarray, vals: np.ndarray, m: int) -> np.
     """
     nz = len(idx)
     a = _anova_forward(p, idx, vals, m)
-    atilde = np.zeros((nz + 1, m + 2))
+    atilde = np.zeros((nz + 1, m + 2), dtype=get_default_dtype())
     atilde[nz, m] = 1.0
     for t in range(m, 0, -1):
         for j in range(nz - 1, t - 1, -1):
@@ -153,7 +154,7 @@ class _HOFMBase:
         assert self._keys is not None
         d = len(self._keys)
         rng = np.random.default_rng(self.seed)
-        w = np.zeros(d)
+        w = np.zeros(d, dtype=get_default_dtype())
         P_blocks = []
         for _ in range(self.m - 1):
             P_blocks.append(rng.normal(0.0, self.init_scale, size=(d, self.k)))
@@ -186,7 +187,7 @@ class _HOFMBase:
             if fv != 0.0:
                 idx_list.append(i)
                 val_list.append(fv)
-        return np.asarray(idx_list, dtype=int), np.asarray(val_list, dtype=float)
+        return np.asarray(idx_list, dtype=int), as_default_array(val_list)
 
     def _y_hat(self, x: Any) -> float:
         if self._theta is None:

@@ -9,6 +9,7 @@ from collections import deque
 
 import numpy as np
 
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Classifier, Root
 
 
@@ -33,7 +34,7 @@ class MetricLearner(Root):
         if self._feature_names is None:
             self._feature_names = sorted(x.keys(), key=str)
             self._feature_index = {k: i for i, k in enumerate(self._feature_names)}
-        out = np.zeros(len(self._feature_names))
+        out = np.zeros(len(self._feature_names), dtype=get_default_dtype())
         idx = self._feature_index
         for k, v in x.items():
             i = idx.get(k)
@@ -93,7 +94,7 @@ class OASIS(MetricLearner):
 
     def _ensure_W(self, n: int) -> None:
         if self.W is None:
-            self.W = np.identity(n)
+            self.W = np.identity(n, dtype=get_default_dtype())
 
     def learn_triplet(self, x: dict, x_pos: dict, x_neg: dict) -> None:
         xa = self._to_array(x)
@@ -155,7 +156,7 @@ class LEGO(MetricLearner):
 
     def _ensure_A(self, n: int) -> None:
         if self.A is None:
-            self.A = np.identity(n)
+            self.A = np.identity(n, dtype=get_default_dtype())
 
     def learn_pair(self, x: dict, x2: dict, y: float) -> None:
         u = self._to_array(x)
@@ -188,7 +189,7 @@ class LEGO(MetricLearner):
         Returns (near, far). Raises ValueError when the set has no pair of
         the same class or no pair of different classes.
         """
-        X = np.asarray(X, dtype=float)
+        X = as_default_array(X)
         y = np.asarray(y)
         D2 = np.sum((X[:, None, :] - X[None, :, :]) ** 2, axis=-1)
         same = y[:, None] == y[None, :]
@@ -238,7 +239,7 @@ class POLA(MetricLearner):
 
     def _ensure_A(self, n: int) -> None:
         if self.A is None:
-            self.A = np.zeros((n, n))
+            self.A = np.zeros((n, n), dtype=get_default_dtype())
 
     def learn_pair(self, x: dict, x2: dict, y: int) -> None:
         u = self._to_array(x)

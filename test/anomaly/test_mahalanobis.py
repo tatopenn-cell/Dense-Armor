@@ -273,6 +273,7 @@ def test_mahalanobis_cap_bounds_the_step():
     assert m_uncapped > 7.0, f"uncapped max = {m_uncapped:.3f}"
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_mahalanobis_step_index_counts_from_the_first_sample():
     """The first update after the initialisation uses ``n = n_init + 1``.
 

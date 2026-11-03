@@ -10,6 +10,7 @@ from dense_armor.utility.signals.preprocessing.scale import (
 )
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_standard_matches_batch():
     rng = np.random.default_rng(0)
     data = rng.normal(size=200)
@@ -23,6 +24,7 @@ def test_standard_matches_batch():
     assert got == pytest.approx(want, rel=1e-9, abs=1e-9)
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_standard_per_joint_vector_matches_numpy():
     rng = np.random.default_rng(0)
     data = rng.normal(size=(100, 3))
@@ -41,6 +43,7 @@ def test_standard_unseen_passes():
     assert sc.transform_one({"y": 3.0}) == {"y": 3.0}
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_ew_scaler_hand_case():
     sc = EWScaler(alpha=0.5)
     for v in [1.0, 2.0, 3.0]:
@@ -50,6 +53,7 @@ def test_ew_scaler_hand_case():
     assert got == pytest.approx(0.75 / var ** 0.5, rel=1e-12)
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_robust_scaler_matches_numpy():
     data = [0.1, 0.5, 0.3, 0.8, 0.2, 0.9, 0.4, 0.6]
     sc = RobustScaler(window=8)

@@ -146,6 +146,7 @@ def test_predict_proba_covers_all_seen_classes():
     assert knn.predict_proba_one({"x": 0.1}) == {"A": 1.0, "B": 0.0}
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_pola_projects_negative_eigenvalue():
     pola = POLA(b_init=0.5)
     pola.learn_pair({"x": 0.0, "y": 0.0}, {"x": 1.0, "y": 1.0}, +1)

@@ -14,6 +14,7 @@ from typing import Any
 
 import numpy as np
 
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Classifier
 
 
@@ -109,7 +110,7 @@ class OnlineGaussianNB(Classifier):
 
     def _to_vec(self, x) -> np.ndarray:
         keys = self._resolve_keys(x)
-        return np.array([float(x.get(k, 0.0)) for k in keys], dtype=float)
+        return as_default_array([float(x.get(k, 0.0)) for k in keys], copy=True)
 
     def learn_one(self, x, y):
         z = self._to_vec(x)
@@ -120,8 +121,8 @@ class OnlineGaussianNB(Classifier):
     def _learn_one_float64(self, z, y):
         if y not in self._n:
             self._n[y] = 0.0
-            self._mu[y] = np.zeros(z.size)
-            self._m2[y] = np.zeros(z.size)
+            self._mu[y] = np.zeros(z.size, dtype=get_default_dtype())
+            self._m2[y] = np.zeros(z.size, dtype=get_default_dtype())
         n_old = self._n[y]
         n_new = (1.0 - self.alpha) * n_old + 1.0
         delta = z - self._mu[y]
@@ -145,8 +146,8 @@ class OnlineGaussianNB(Classifier):
             self._c1[y] = np.zeros(zf.size, dtype=np.float32)
             self._s2[y] = np.zeros(zf.size, dtype=np.float32)
             self._c2[y] = np.zeros(zf.size, dtype=np.float32)
-            self._mu[y] = np.zeros(zf.size)
-            self._m2[y] = np.zeros(zf.size)
+            self._mu[y] = np.zeros(zf.size, dtype=get_default_dtype())
+            self._m2[y] = np.zeros(zf.size, dtype=get_default_dtype())
         K = self._K[y]
         dv = zf - K
         s1, e1 = _two_sum(self._s1[y], dv)
@@ -162,8 +163,8 @@ class OnlineGaussianNB(Classifier):
         s2c = self._s2[y] + self._c2[y]
         mean_y = s1c / n32
         var_pop = s2c / n32 - mean_y * mean_y
-        self._mu[y] = (K + mean_y).astype(np.float64)
-        self._m2[y] = (var_pop * n32).astype(np.float64)
+        self._mu[y] = (K + mean_y).astype(get_default_dtype())
+        self._m2[y] = (var_pop * n32).astype(get_default_dtype())
         return self
 
     def _log_likelihood(self, z, y) -> float:
@@ -264,7 +265,7 @@ class OnlineSoftmaxRegression(Classifier):
 
     def _to_vec(self, x) -> np.ndarray:
         keys = self._resolve_keys(x)
-        return np.array([float(x.get(k, 0.0)) for k in keys] + [1.0], dtype=float)
+        return as_default_array([float(x.get(k, 0.0)) for k in keys] + [1.0], copy=True)
 
     def _softmax(self, logits):
         mx = max(logits.values())
@@ -275,8 +276,8 @@ class OnlineSoftmaxRegression(Classifier):
     def learn_one(self, x, y):
         z = self._to_vec(x)
         if y not in self._W:
-            self._W[y] = np.zeros(z.size)
-            self._G[y] = np.ones(z.size)
+            self._W[y] = np.zeros(z.size, dtype=get_default_dtype())
+            self._G[y] = np.ones(z.size, dtype=get_default_dtype())
             self._classes.append(y)
         logits = {c: float(self._W[c] @ z) for c in self._classes}
         probs = self._softmax(logits)

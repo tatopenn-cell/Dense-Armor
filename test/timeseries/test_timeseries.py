@@ -81,6 +81,7 @@ def test_check_estimator(est):
     check_estimator(est)
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_online_ar_matches_batch_ls():
     """``lam=1`` reproduces batch least squares on the same series."""
     rng = np.random.default_rng(0)
@@ -114,6 +115,7 @@ def test_online_ar_step_jittable():
     check_step_is_jittable(ar)
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_online_var_runs():
     var = OnlineVAR(order=1, feature_keys=["a", "b"])
     for i in range(50):
@@ -213,6 +215,7 @@ def _literal_vb_akf(rho, zs, F, H, Q, R0, n_iter=5):
     return sigma, m
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_vb_akf_equals_algorithm_1_at_rho_one():
     F = np.array([[1.0, 0.1], [0.0, 1.0]])
     H = np.array([[1.0, 0.0]])
@@ -255,6 +258,7 @@ def test_adaptive_kalman_scan_equals_learn_one():
     np.testing.assert_allclose(a.Q_estimate, np.asarray(state[7]), rtol=1e-4, atol=1e-8)
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_innovation_adaptive_keeps_constructor_parameters():
     F = np.eye(2)
     H = np.eye(2)
@@ -379,6 +383,7 @@ def test_cycle_residual_rises_after_fault(arm_series):
     assert first_after is not None and first_after >= fault_idx
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_cycle_residual_is_nan_until_the_template_exists():
     cr = CycleResidual(period=20, n_cycles=3)
     outs = [

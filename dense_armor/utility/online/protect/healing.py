@@ -1,5 +1,7 @@
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
+
 
 def healing_filter(x: np.ndarray, radius: int = 2, sustain_threshold: float = 0.7, wide_mult: int = 3) -> np.ndarray:
     """
@@ -49,7 +51,7 @@ def healing_filter(x: np.ndarray, radius: int = 2, sustain_threshold: float = 0.
       140 seed gia' verificata sopra.
     """
     n = len(x)
-    out = np.zeros(n)
+    out = np.zeros(n, dtype=get_default_dtype())
     wide = radius * wide_mult
     for i in range(n):
         lo_wide, hi_wide = max(0, i - wide), min(n, i + wide + 1)

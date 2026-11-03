@@ -8,9 +8,10 @@ from . import _compat
 
 _compat.install()
 
+from ._dtype import get_default_dtype, set_default_dtype
 from .armor import Armor
 
-__all__ = ["Armor"]
+__all__ = ["Armor", "get_default_dtype", "set_default_dtype"]
 
 
 def __getattr__(name):

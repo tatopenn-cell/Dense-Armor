@@ -26,6 +26,7 @@ from typing import Any
 
 import numpy as np
 
+from dense_armor._dtype import as_default_array
 from dense_armor.roles import Root
 
 
@@ -111,7 +112,7 @@ class Skyline(Root):
         if self.dims is None:
             self.dims = sorted(d)
         try:
-            arr = np.asarray([float(d[k]) for k in self.dims], dtype=float)
+            arr = as_default_array([float(d[k]) for k in self.dims])
         except (KeyError, TypeError, ValueError):
             return None
         if not np.all(np.isfinite(arr)):

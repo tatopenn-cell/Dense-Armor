@@ -31,6 +31,7 @@ def _anova_bruteforce(p, idx, vals, m):
     return total
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_anova_dp_matches_bruteforce():
     """Algorithm 1 page 4 equals the direct sum of eq. (5) page 2."""
     rng = np.random.default_rng(0)
@@ -47,6 +48,7 @@ def test_anova_dp_matches_bruteforce():
             assert abs(dp - brute) < 1e-10, f"dp={dp} brute={brute} m={m}"
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_anova_grad_matches_finite_differences():
     """Algorithm 2 page 4 equals the finite-difference gradient."""
     rng = np.random.default_rng(1)

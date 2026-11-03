@@ -31,6 +31,7 @@ References:
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import Transformer
 
 
@@ -102,7 +103,7 @@ class Registration(Transformer):
         arr = img["array"] if isinstance(img, dict) else (
             img.array if hasattr(img, "array") else img
         )
-        g = _to_gray(np.asarray(arr)).astype(np.float64)
+        g = _to_gray(np.asarray(arr)).astype(get_default_dtype())
         g = g - g.mean()
         if self.window > 0:
             h, w = g.shape
@@ -110,10 +111,10 @@ class Registration(Transformer):
             wx = np.hanning(min(self.window, w))
             if wy.shape[0] < h:
                 pad = (h - wy.shape[0]) // 2
-                wy = np.concatenate([np.zeros(pad), wy, np.zeros(h - wy.shape[0] - pad)])
+                wy = np.concatenate([np.zeros(pad, dtype=get_default_dtype()), wy, np.zeros(h - wy.shape[0] - pad, dtype=get_default_dtype())])
             if wx.shape[0] < w:
                 pad = (w - wx.shape[0]) // 2
-                wx = np.concatenate([np.zeros(pad), wx, np.zeros(w - wx.shape[0] - pad)])
+                wx = np.concatenate([np.zeros(pad, dtype=get_default_dtype()), wx, np.zeros(w - wx.shape[0] - pad, dtype=get_default_dtype())])
             g = g * wy[:, None] * wx[None, :]
         self._ref = g
 
@@ -155,7 +156,7 @@ class Registration(Transformer):
         arr = x["array"] if isinstance(x, dict) else (
             x.array if hasattr(x, "array") else x
         )
-        cur = _to_gray(np.asarray(arr)).astype(np.float64)
+        cur = _to_gray(np.asarray(arr)).astype(get_default_dtype())
         cur = cur - cur.mean()
         if self.window > 0:
             h, w = cur.shape
@@ -163,10 +164,10 @@ class Registration(Transformer):
             wx = np.hanning(min(self.window, w))
             if wy.shape[0] < h:
                 pad = (h - wy.shape[0]) // 2
-                wy = np.concatenate([np.zeros(pad), wy, np.zeros(h - wy.shape[0] - pad)])
+                wy = np.concatenate([np.zeros(pad, dtype=get_default_dtype()), wy, np.zeros(h - wy.shape[0] - pad, dtype=get_default_dtype())])
             if wx.shape[0] < w:
                 pad = (w - wx.shape[0]) // 2
-                wx = np.concatenate([np.zeros(pad), wx, np.zeros(w - wx.shape[0] - pad)])
+                wx = np.concatenate([np.zeros(pad, dtype=get_default_dtype()), wx, np.zeros(w - wx.shape[0] - pad, dtype=get_default_dtype())])
             cur = cur * wy[:, None] * wx[None, :]
         if self._ref is None or self._ref.shape != cur.shape:
             self.set_reference(x)

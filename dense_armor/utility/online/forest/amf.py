@@ -113,6 +113,7 @@ from typing import Any
 
 import numpy as np
 
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Classifier, Regressor
 
 _LOG2 = math.log(2.0)
@@ -210,8 +211,8 @@ class _AmfTree:
     ) -> None:
         self.max_nodes = max_nodes
         self.d = d
-        self.low = np.full(d, low, dtype=float)
-        self.high = np.full(d, high, dtype=float)
+        self.low = np.full(d, low, dtype=get_default_dtype())
+        self.high = np.full(d, high, dtype=get_default_dtype())
         self.step = step
         self.fc = forecaster
         self.rng = rng
@@ -357,7 +358,7 @@ class _Forest:
             )
             self._keys = keys
         try:
-            v = np.array([float(d[k]) for k in self._keys], dtype=float)
+            v = as_default_array([float(d[k]) for k in self._keys], copy=True)
         except (KeyError, TypeError, ValueError):
             return None
         if not np.isfinite(v).all():
