@@ -29,7 +29,9 @@ print(stream.dtype, batch.dtype, bool(np.isfinite(stream).all()), bool(np.isfini
 
 
 def _run(x64: bool) -> list[str]:
-    env = dict(os.environ)
+    env = {
+        k: v for k, v in os.environ.items() if not k.startswith(("COV_CORE_", "COVERAGE_"))
+    }
     env["PYTHONPATH"] = str(ROOT)
     env.pop("JAX_ENABLE_X64", None)
     if x64:
