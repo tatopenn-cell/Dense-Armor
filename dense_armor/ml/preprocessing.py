@@ -31,7 +31,7 @@ from collections import Counter
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.ml.base import MLBase
 from dense_armor.ml.stats import EWStats
 
@@ -59,7 +59,7 @@ _TOKEN_RE = re.compile(r"[A-Za-z0-9_]+")
 
 
 def _table(X) -> np.ndarray:
-    A = np.asarray(X, dtype=get_default_dtype())
+    A = as_default_array(X)
     return A[:, None] if A.ndim == 1 else A
 
 
@@ -227,7 +227,7 @@ class SelectKBest(MLBase):
 
     def fit(self, X, y=None):  # type: ignore[override]
         A = _table(X)
-        t = np.asarray(y, dtype=get_default_dtype())
+        t = as_default_array(y)
         c = np.array(
             [
                 abs(np.corrcoef(A[:, j], t)[0, 1])
@@ -271,7 +271,7 @@ class JointDerivatives(MLBase):
 
     def fit(self, X, y=None):  # type: ignore[override]
         q = _table(X)
-        t = np.asarray(y, dtype=get_default_dtype())
+        t = as_default_array(y)
         n, d = q.shape
         out = np.zeros((3, n, d), dtype=get_default_dtype())
         for i in range(n):

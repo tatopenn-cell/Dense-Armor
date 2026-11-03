@@ -38,7 +38,7 @@ References:
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Transformer
 from dense_armor.utility.online.timeseries.kalman import KalmanFilter
 
@@ -99,7 +99,7 @@ class _Track:
 
     def __init__(self, tid: int, box, score: float, kf: KalmanFilter) -> None:
         self.id = tid
-        self.box = np.asarray(box, dtype=get_default_dtype())
+        self.box = as_default_array(box)
         self.score = float(score)
         self.missing = 0
         self.kf = kf
@@ -112,12 +112,12 @@ class _Track:
 
     def predict(self) -> np.ndarray:
         p = self.kf.predict_one({})
-        p = np.asarray(p, dtype=get_default_dtype()).reshape(-1)
+        p = as_default_array(p).reshape(-1)
         x0, y0, w, h = p[0], p[1], p[2], p[3]
         return np.array([x0, y0, x0 + w, y0 + h])
 
     def update(self, box, score: float) -> None:
-        self.box = np.asarray(box, dtype=get_default_dtype())
+        self.box = as_default_array(box)
         self.score = float(score)
         self.missing = 0
         self.kf.learn_one({
@@ -428,8 +428,7 @@ class MovingObjectTracker(Transformer):
         filter on the given boxes. The output has the same shape as
         :meth:`transform_one`.
         """
-        dets = [np.asarray(b[:5] if len(b) >= 5 else (b[0], b[1], b[2], b[3], 1.0),
-                           dtype=get_default_dtype()) for b in boxes]
+        dets = [as_default_array(b[:5] if len(b) >= 5 else (b[0], b[1], b[2], b[3], 1.0)) for b in boxes]
         return self._step(dets)
 
     def transform_one(self, x, t=None):

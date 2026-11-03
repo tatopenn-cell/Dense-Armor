@@ -13,7 +13,7 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 
 Event = tuple[dict, Any, float]
 
@@ -92,7 +92,7 @@ def offline_replay(
         raise ValueError("the stream is empty")
     if not kept:
         raise ValueError("no event was retained by the policy")
-    arr = np.asarray(kept, dtype=get_default_dtype())
+    arr = as_default_array(kept)
     mean = float(arr.mean())
     rng = np.random.default_rng(seed)
     n = len(arr)

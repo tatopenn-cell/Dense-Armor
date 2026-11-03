@@ -21,7 +21,7 @@ from itertools import product
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.ml.base import MLBase
 
 __all__ = [
@@ -64,7 +64,7 @@ class PerOutputClassifier(MLBase):
         self.seed = seed
 
     def fit(self, X, y=None):  # type: ignore[override]
-        A, Y = np.asarray(X, dtype=get_default_dtype()), np.asarray(y)
+        A, Y = as_default_array(X), np.asarray(y)
         self.estimators_ = [self.factory().fit(A, Y[:, j]) for j in range(Y.shape[1])]
         return self
 
@@ -101,7 +101,7 @@ class PerOutputRegressor(MLBase):
         self.seed = seed
 
     def fit(self, X, y=None):  # type: ignore[override]
-        A, Y = np.asarray(X, dtype=get_default_dtype()), np.asarray(y, dtype=get_default_dtype())
+        A, Y = as_default_array(X), as_default_array(y)
         self.estimators_ = [self.factory().fit(A, Y[:, j]) for j in range(Y.shape[1])]
         return self
 
@@ -138,7 +138,7 @@ class ClassifierChain(MLBase):
         self.seed = seed
 
     def fit(self, X, y=None):  # type: ignore[override]
-        A, Y = np.asarray(X, dtype=get_default_dtype()), np.asarray(y)
+        A, Y = as_default_array(X), np.asarray(y)
         self.order_ = _order(self.order, Y.shape[1], self.seed)
         self.estimators_ = []
         for pos, j in enumerate(self.order_):
@@ -148,7 +148,7 @@ class ClassifierChain(MLBase):
 
     def predict_proba(self, X) -> np.ndarray:
         """Probability of the positive class of every target, in the columns of ``Y``."""
-        A = np.asarray(X, dtype=get_default_dtype())
+        A = as_default_array(X)
         out = np.zeros((A.shape[0], len(self.order_)), dtype=get_default_dtype())
         for pos, (j, e) in enumerate(zip(self.order_, self.estimators_)):
             Z = np.hstack([A, (out[:, self.order_[:pos]] >= 0.5).astype(get_default_dtype())])
@@ -184,7 +184,7 @@ class RegressorChain(MLBase):
         self.seed = seed
 
     def fit(self, X, y=None):  # type: ignore[override]
-        A, Y = np.asarray(X, dtype=get_default_dtype()), np.asarray(y, dtype=get_default_dtype())
+        A, Y = as_default_array(X), as_default_array(y)
         self.order_ = _order(self.order, Y.shape[1], self.seed)
         self.estimators_ = []
         for pos, j in enumerate(self.order_):
@@ -194,7 +194,7 @@ class RegressorChain(MLBase):
 
     def predict(self, X) -> np.ndarray:
         """The prediction of every target, each link using the earlier predictions."""
-        A = np.asarray(X, dtype=get_default_dtype())
+        A = as_default_array(X)
         out = np.zeros((A.shape[0], len(self.order_)), dtype=get_default_dtype())
         for pos, (j, e) in enumerate(zip(self.order_, self.estimators_)):
             out[:, j] = e.predict(np.hstack([A, out[:, self.order_[:pos]]]))
@@ -223,7 +223,7 @@ class ProbabilisticClassifierChain(ClassifierChain):
 
     def joint_proba(self, X) -> tuple[np.ndarray, np.ndarray]:
         """The label vectors and the joint probability of each, one row per sample."""
-        A = np.asarray(X, dtype=get_default_dtype())
+        A = as_default_array(X)
         m = len(self.order_)
         combos = np.array(list(product([0, 1], repeat=m)))
         joint = np.ones((A.shape[0], len(combos)), dtype=get_default_dtype())

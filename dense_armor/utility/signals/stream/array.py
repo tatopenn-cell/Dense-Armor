@@ -15,7 +15,7 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Signal
 
 
@@ -59,7 +59,7 @@ def iter_array(
     if t is None:
         t_arr = np.arange(n, dtype=get_default_dtype())
     else:
-        t_arr = np.asarray(t, dtype=get_default_dtype())
+        t_arr = as_default_array(t)
         if len(t_arr) != n:
             raise ValueError(f"t has {len(t_arr)} entries, X has {n} rows")
     for i in range(n):

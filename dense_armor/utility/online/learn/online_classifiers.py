@@ -14,7 +14,7 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Classifier
 
 
@@ -110,7 +110,7 @@ class OnlineGaussianNB(Classifier):
 
     def _to_vec(self, x) -> np.ndarray:
         keys = self._resolve_keys(x)
-        return np.array([float(x.get(k, 0.0)) for k in keys], dtype=get_default_dtype())
+        return as_default_array([float(x.get(k, 0.0)) for k in keys], copy=True)
 
     def learn_one(self, x, y):
         z = self._to_vec(x)
@@ -265,7 +265,7 @@ class OnlineSoftmaxRegression(Classifier):
 
     def _to_vec(self, x) -> np.ndarray:
         keys = self._resolve_keys(x)
-        return np.array([float(x.get(k, 0.0)) for k in keys] + [1.0], dtype=get_default_dtype())
+        return as_default_array([float(x.get(k, 0.0)) for k in keys] + [1.0], copy=True)
 
     def _softmax(self, logits):
         mx = max(logits.values())

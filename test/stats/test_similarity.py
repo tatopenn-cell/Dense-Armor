@@ -77,6 +77,7 @@ class TestSparseCosineIndex:
         want = cosine_similarity_many(q, docs)
         np.testing.assert_allclose(got, want, atol=1e-12)
 
+    @pytest.mark.usefixtures("float64_default")
     def test_unknown_terms_count_in_the_norm_not_in_the_product(self):
         """A term outside the index reduces the score through the norm.
 
@@ -158,6 +159,7 @@ def test_query_many_matches_query():
         np.testing.assert_allclose(got[:, j], idx.query(q), atol=1e-12)
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_query_norm_counts_terms_outside_index():
     idx = SparseCosineIndex([{"a": 1.0}])
     got = idx.query({"a": 1.0, "z": 1.0})[0]

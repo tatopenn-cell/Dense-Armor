@@ -43,7 +43,7 @@ similarity score, a confidence score bounded on both sides).
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 
 
 def _causal_median(x: np.ndarray, span: int) -> np.ndarray:
@@ -83,7 +83,7 @@ def one_sided_upper_filter(
         flags, with any True where x[i] <= its causal reference median
         set to False.
     """
-    x = np.asarray(x, dtype=get_default_dtype()).ravel()
+    x = as_default_array(x).ravel()
     flags = np.asarray(flags, dtype=bool).ravel()
     if x.shape != flags.shape:
         raise ValueError(f"x and flags must have the same shape, got {x.shape} vs {flags.shape}")

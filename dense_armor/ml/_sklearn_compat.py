@@ -14,7 +14,6 @@ on the whole table, but a ``Pipeline``, ``cross_val_score`` or
   the target.
 
 The mixin changes no algorithm and no default. The kind of a class comes
-from dense_armor._dtype import get_default_dtype
 from its name and its methods: ``predict_proba`` or a name ending in
 ``Classifier`` makes a classifier, a name ending in ``Regressor`` or
 ``Regression`` a regressor, and ``transform`` a transformer.
@@ -32,7 +31,7 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 
 _CLASSIFIER = "classifier"
 _REGRESSOR = "regressor"
@@ -91,7 +90,7 @@ def _score(self: Any, X: Any, y: Any, sample_weight: Any = None) -> float:
     """Accuracy of a classifier, coefficient of determination of a regressor."""
     pred = np.asarray(self.predict(X))
     true = np.asarray(y)
-    w = None if sample_weight is None else np.asarray(sample_weight, dtype=get_default_dtype())
+    w = None if sample_weight is None else as_default_array(sample_weight)
     if estimator_kind(type(self)) == _CLASSIFIER:
         return float(np.average(pred == true, weights=w))
     true = true.astype(get_default_dtype())

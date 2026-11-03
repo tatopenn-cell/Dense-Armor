@@ -22,7 +22,7 @@ from itertools import combinations
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.ml.base import MLBase
 
 __all__ = ["OneVsRestClassifier", "OneVsOneClassifier", "OutputCodeClassifier"]
@@ -48,7 +48,7 @@ class OneVsRestClassifier(MLBase):
         self.binary_factory = binary_factory
 
     def fit(self, X, y=None):  # type: ignore[override]
-        A = np.asarray(X, dtype=get_default_dtype())
+        A = as_default_array(X)
         t = np.asarray(y)
         self.classes_ = np.unique(t)
         self.estimators_ = [
@@ -86,7 +86,7 @@ class OneVsOneClassifier(MLBase):
         self.binary_factory = binary_factory
 
     def fit(self, X, y=None):  # type: ignore[override]
-        A = np.asarray(X, dtype=get_default_dtype())
+        A = as_default_array(X)
         t = np.asarray(y)
         self.classes_ = np.unique(t)
         self.pairs_ = list(combinations(range(len(self.classes_)), 2))
@@ -102,7 +102,7 @@ class OneVsOneClassifier(MLBase):
 
     def votes(self, X) -> np.ndarray:
         """Number of pairwise votes of every class, one row per sample."""
-        n = np.asarray(X, dtype=get_default_dtype()).shape[0]
+        n = as_default_array(X).shape[0]
         v = np.zeros((n, len(self.classes_)), dtype=get_default_dtype())
         for (i, j), e in zip(self.pairs_, self.estimators_):
             pj = e.predict_proba(X) >= 0.5
@@ -145,7 +145,7 @@ class OutputCodeClassifier(MLBase):
         self.seed = seed
 
     def fit(self, X, y=None):  # type: ignore[override]
-        A = np.asarray(X, dtype=get_default_dtype())
+        A = as_default_array(X)
         t = np.asarray(y)
         self.classes_ = np.unique(t)
         k = len(self.classes_)

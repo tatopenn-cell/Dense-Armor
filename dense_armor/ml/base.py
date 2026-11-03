@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array
 from dense_armor.ml._sklearn_compat import SklearnCompat
 from dense_armor.roles import Root
 
@@ -39,7 +39,7 @@ def finite(x) -> tuple[np.ndarray, int]:
         >>> finite([1.0, float("nan"), 3.0])[1]
         1
     """
-    a = np.asarray(x, dtype=get_default_dtype()).ravel()
+    a = as_default_array(x).ravel()
     ok = np.isfinite(a)
     return a[ok], int((~ok).sum())
 
@@ -52,7 +52,7 @@ def finite_pairs(x, y) -> tuple[np.ndarray, np.ndarray, int]:
         >>> a.tolist(), k
         ([1.0, 3.0], 1)
     """
-    a = np.asarray(x, dtype=get_default_dtype()).ravel()
-    b = np.asarray(y, dtype=get_default_dtype()).ravel()
+    a = as_default_array(x).ravel()
+    b = as_default_array(y).ravel()
     ok = np.isfinite(a) & np.isfinite(b)
     return a[ok], b[ok], int((~ok).sum())

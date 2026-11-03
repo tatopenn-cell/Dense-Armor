@@ -21,7 +21,7 @@ change (documented in the latency table of `arbiter.md`).
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array
 
 
 def _robust_center_scale(w: np.ndarray) -> tuple[float, float]:
@@ -84,7 +84,7 @@ class StreamingArbiter:
 
     def _causal_window(self, i: int) -> np.ndarray:
         lo = max(0, i - self.radius * self.ref_mult)
-        return np.asarray(self._x[lo:i], dtype=get_default_dtype())
+        return as_default_array(self._x[lo:i])
 
     def _compute_deviante(self, i: int) -> None:
         w = self._causal_window(i)
@@ -104,7 +104,7 @@ class StreamingArbiter:
         run_len = j - s
         if run_len <= self.spike_run_max:
             return "spike"
-        run_vals = np.asarray(self._x[s:j], dtype=get_default_dtype())
+        run_vals = as_default_array(self._x[s:j])
         run_spread = float(np.std(run_vals))
         run_jump = float(abs(np.median(run_vals) - self._med_rif[s]))
         coerente = run_spread < 0.5 * max(run_jump, self.eps)
@@ -227,7 +227,7 @@ class StreamingHealing:
         dev_i = x_i - baseline
         if abs(dev_i) < 1e-9:
             return x_i
-        window = np.asarray(self._x[lo:hi], dtype=get_default_dtype())
+        window = as_default_array(self._x[lo:hi])
         devs = window - baseline
         same_sign_share = float(np.mean(
             (np.sign(devs) == np.sign(dev_i))

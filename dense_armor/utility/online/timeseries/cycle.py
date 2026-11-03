@@ -16,7 +16,7 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Transformer
 
 
@@ -133,7 +133,7 @@ class CycleResidual(Transformer):
     def _find_period(self) -> int | None:
         n = len(self._buf)
         max_lag = min(self.max_period, n - 2)
-        y = np.asarray(self._buf, dtype=get_default_dtype())
+        y = as_default_array(self._buf)
         y = y - y.mean()
         F = np.fft.rfft(y, n=2 * n)
         acf = np.fft.irfft(F * np.conj(F))[:n]

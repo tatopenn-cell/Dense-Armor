@@ -22,7 +22,7 @@ from scipy.signal import lfilter
 from scipy.stats import kurtosis as _kurt
 from scipy.stats import skew as _skew
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.ml.base import MLBase, finite, finite_pairs
 
 STOPPED = {
@@ -231,7 +231,7 @@ class ColumnMoments(MLBase):
         self.features = features
 
     def fit(self, X, y=None):  # type: ignore[override]
-        A = np.asarray(X, dtype=get_default_dtype())
+        A = as_default_array(X)
         if A.ndim == 1:
             A = A[:, None]
         cols = [Moments().fit(A[:, j]) for j in range(A.shape[1])]
@@ -302,7 +302,7 @@ class RollingMedian(MLBase):
         self.features = features
 
     def fit(self, X, y=None):  # type: ignore[override]
-        A = np.asarray(X, dtype=get_default_dtype())
+        A = as_default_array(X)
         if A.ndim == 1:
             A = A[:, None]
         w = self.window
@@ -340,7 +340,7 @@ class ShrinkageCovariance(MLBase):
         self.feature_prefix = feature_prefix
 
     def fit(self, X, y=None):  # type: ignore[override]
-        A = np.asarray(X, dtype=get_default_dtype())
+        A = as_default_array(X)
         self.n_seen_ = int(A.shape[0])
         p = self.n_features
         s = np.cov(A.T) if A.shape[0] > 1 else np.zeros((p, p), dtype=get_default_dtype())

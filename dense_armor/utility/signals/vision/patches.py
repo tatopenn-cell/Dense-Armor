@@ -59,7 +59,7 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import AnomalyDetector, Transformer
 from dense_armor.utility.signals.vision.features import _as_array, _to_gray
 
@@ -348,7 +348,7 @@ class PatchMemory(AnomalyDetector):
             return None, None
         if desc is None:
             return None, None
-        desc = np.asarray(desc, dtype=get_default_dtype())
+        desc = as_default_array(desc)
         if desc.ndim != 2 or desc.size == 0:
             return None, None
         if not np.isfinite(desc).all():

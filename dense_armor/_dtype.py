@@ -28,3 +28,23 @@ def x64_context(enabled: bool = True):
     if ctx is None:
         from jax.experimental import enable_x64 as ctx
     return ctx(enabled)
+
+
+def as_default_array(x, copy: bool = False) -> np.ndarray:
+    """``x`` as an array of the default dtype, float64 if a finite value does not fit in float32.
+
+    With the default dtype at float32, a value above about 3.4e38 would become ``inf``
+    and be taken for a missing value. Such an input keeps float64 instead.
+    """
+    a = np.asarray(x)
+    d = _default
+    if d == np.float32 and a.dtype != np.float32:
+        with np.errstate(over="ignore", invalid="ignore"):
+            try:
+                a32 = a.astype(np.float32)
+            except (TypeError, ValueError):
+                return a.astype(d, copy=copy)
+        if np.isinf(a32).any() and not np.isinf(a).any():
+            return a.astype(np.float64, copy=copy)
+        return a32
+    return a.astype(d, copy=copy)

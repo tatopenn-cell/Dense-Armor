@@ -24,7 +24,7 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Classifier, Regressor
 
 
@@ -83,12 +83,12 @@ class LazySearch:
 
     def _to_vec(self, x: dict) -> np.ndarray:
         keys = self._resolve_keys(x)
-        return np.array([float(x.get(k, 0.0)) for k in keys], dtype=get_default_dtype())
+        return as_default_array([float(x.get(k, 0.0)) for k in keys], copy=True)
 
     def add(self, x: dict, y: Any) -> None:
         """Add one sample. If the window is full the oldest is dropped."""
         keys = self._resolve_keys(x)
-        vec = np.array([float(x.get(k, 0.0)) for k in keys], dtype=get_default_dtype())
+        vec = as_default_array([float(x.get(k, 0.0)) for k in keys], copy=True)
         self._X.append(vec)
         self._y.append(y)
 
@@ -103,7 +103,7 @@ class LazySearch:
     def _distance_to_window(self, xv: np.ndarray) -> np.ndarray:
         if not self._X:
             return np.zeros(0, dtype=get_default_dtype())
-        W = np.array(self._X, dtype=get_default_dtype())
+        W = as_default_array(self._X, copy=True)
         if self.metric is not None:
             keys = self._keys or []
             d = np.empty(len(W), dtype=get_default_dtype())
@@ -366,7 +366,7 @@ class KNNRegressor(Regressor):
             if not np.isfinite(fv):
                 return 0.0
         ys, ds = self._search.neighbours(x)
-        y_arr = np.asarray([float(yv) for yv in ys], dtype=get_default_dtype())
+        y_arr = as_default_array([float(yv) for yv in ys])
         if self.weights == "uniform":
             out = float(y_arr.mean())
         else:

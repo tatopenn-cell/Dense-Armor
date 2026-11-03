@@ -237,6 +237,7 @@ DECLARED = {
 
 
 @pytest.mark.parametrize("cls", list(DECLARED), ids=lambda c: c.__name__)
+@pytest.mark.usefixtures("float64_default")
 def test_check_estimator_fails_only_on_the_declared_checks(cls):
     from sklearn.utils.estimator_checks import check_estimator
 

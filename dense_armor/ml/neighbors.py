@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.ml.base import MLBase
 
 __all__ = ["KNNClassifier", "KNNRegressor"]
@@ -35,13 +35,13 @@ class _KNN(MLBase):
         self.eps = eps
 
     def fit(self, X, y=None):  # type: ignore[override]
-        self.X_ = np.asarray(X, dtype=get_default_dtype())
+        self.X_ = as_default_array(X)
         self.X_ = self.X_[:, None] if self.X_.ndim == 1 else self.X_
         self.y_ = np.asarray(y)
         return self
 
     def _neighbours(self, X) -> tuple[np.ndarray, np.ndarray]:
-        Q = np.asarray(X, dtype=get_default_dtype())
+        Q = as_default_array(X)
         Q = Q[:, None] if Q.ndim == 1 else Q
         d = (np.abs(Q[:, None, :] - self.X_[None, :, :]) ** self.p).sum(axis=2) ** (
             1.0 / self.p

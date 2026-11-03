@@ -5,7 +5,7 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array
 from dense_armor.roles import Root
 
 
@@ -97,7 +97,7 @@ class SDFT(Root):
         self._buffer.append(fv)
         self.n_seen_ += 1
         if not was_full:
-            self._X = np.fft.fft(np.asarray(self._buffer, dtype=get_default_dtype()), n=self.n)
+            self._X = np.fft.fft(as_default_array(self._buffer), n=self.n)
             return self
         k = np.arange(self.n)
         rot = np.exp(1j * 2.0 * np.pi * k / self.n)

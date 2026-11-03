@@ -57,7 +57,7 @@ from collections import deque
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import AnomalyDetector
 
 _EPS = 1e-10
@@ -209,7 +209,7 @@ class LocalOutlierFactor(AnomalyDetector):
 
     def _to_vec(self, x) -> np.ndarray:
         keys = self._resolve_keys(x)
-        return np.array([float(x[k]) for k in keys], dtype=get_default_dtype())
+        return as_default_array([float(x[k]) for k in keys], copy=True)
 
     def learn_one(self, x: dict, t: float | None = None) -> "LocalOutlierFactor":
         """Append one sample to the window.
@@ -262,7 +262,7 @@ class LocalOutlierFactor(AnomalyDetector):
         return self._lof(v)
 
     def _lof(self, x: np.ndarray) -> float:
-        W = np.array(self._buf, dtype=get_default_dtype())
+        W = as_default_array(self._buf, copy=True)
         N = len(W)
         k = self.n_neighbors
 

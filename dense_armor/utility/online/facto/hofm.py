@@ -5,7 +5,7 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Classifier, Regressor
 from dense_armor.utility.online.facto._common import _sigmoid
 
@@ -187,7 +187,7 @@ class _HOFMBase:
             if fv != 0.0:
                 idx_list.append(i)
                 val_list.append(fv)
-        return np.asarray(idx_list, dtype=int), np.asarray(val_list, dtype=get_default_dtype())
+        return np.asarray(idx_list, dtype=int), as_default_array(val_list)
 
     def _y_hat(self, x: Any) -> float:
         if self._theta is None:

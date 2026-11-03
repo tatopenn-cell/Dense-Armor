@@ -59,7 +59,7 @@ not implemented here.
 """
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 
 
 def quintic_trajectory(q0, qf, T: float, v0=None, a0=None, vf=None, af=None, n_samples: int = 100):
@@ -83,13 +83,13 @@ def quintic_trajectory(q0, qf, T: float, v0=None, a0=None, vf=None, af=None, n_s
     q, v, a : ndarray, shape (n_samples, n_dof)
         Position, velocity, acceleration at each sampled time.
     """
-    q0 = np.atleast_1d(np.asarray(q0, dtype=get_default_dtype()))
-    qf = np.atleast_1d(np.asarray(qf, dtype=get_default_dtype()))
+    q0 = np.atleast_1d(as_default_array(q0))
+    qf = np.atleast_1d(as_default_array(qf))
     n_dof = q0.shape[0]
-    v0 = np.zeros(n_dof, dtype=get_default_dtype()) if v0 is None else np.atleast_1d(np.asarray(v0, dtype=get_default_dtype()))
-    a0 = np.zeros(n_dof, dtype=get_default_dtype()) if a0 is None else np.atleast_1d(np.asarray(a0, dtype=get_default_dtype()))
-    vf = np.zeros(n_dof, dtype=get_default_dtype()) if vf is None else np.atleast_1d(np.asarray(vf, dtype=get_default_dtype()))
-    af = np.zeros(n_dof, dtype=get_default_dtype()) if af is None else np.atleast_1d(np.asarray(af, dtype=get_default_dtype()))
+    v0 = np.zeros(n_dof, dtype=get_default_dtype()) if v0 is None else np.atleast_1d(as_default_array(v0))
+    a0 = np.zeros(n_dof, dtype=get_default_dtype()) if a0 is None else np.atleast_1d(as_default_array(a0))
+    vf = np.zeros(n_dof, dtype=get_default_dtype()) if vf is None else np.atleast_1d(as_default_array(vf))
+    af = np.zeros(n_dof, dtype=get_default_dtype()) if af is None else np.atleast_1d(as_default_array(af))
     for a in (q0, qf, v0, a0, vf, af):
         if a.shape != (n_dof,):
             raise ValueError("q0, qf, v0, a0, vf, af must be 1-D with the same number of joints")

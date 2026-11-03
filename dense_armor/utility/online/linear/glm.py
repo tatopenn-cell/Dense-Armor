@@ -32,7 +32,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Classifier, Regressor
 
 
@@ -132,7 +132,7 @@ class LinearRegression(Regressor):
     def _row(self, x) -> np.ndarray:
         x = self._as_dict(x)
         keys = self._resolve_keys(x)
-        xv = np.asarray([float(x.get(k, 0.0)) for k in keys], dtype=get_default_dtype())
+        xv = as_default_array([float(x.get(k, 0.0)) for k in keys])
         if self.intercept:
             return np.concatenate([[1.0], xv])
         return xv
@@ -324,7 +324,7 @@ class LogisticRegression(Classifier):
     def _row(self, x) -> np.ndarray:
         x = self._as_dict(x)
         keys = self._resolve_keys(x)
-        xv = np.asarray([float(x.get(k, 0.0)) for k in keys], dtype=get_default_dtype())
+        xv = as_default_array([float(x.get(k, 0.0)) for k in keys])
         if self.intercept:
             return np.concatenate([[1.0], xv])
         return xv

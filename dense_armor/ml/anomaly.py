@@ -19,7 +19,7 @@ from abc import abstractmethod
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.ml.base import MLBase
 
 __all__ = [
@@ -58,7 +58,7 @@ class _Windowed(MLBase):
         """The replacement of x[i] when it is an outlier, else ``None``."""
 
     def fit(self, X, y=None):  # type: ignore[override]
-        x = np.asarray(X, dtype=get_default_dtype()).ravel()
+        x = as_default_array(X).ravel()
         self.cleaned_ = x.copy()
         anomalies = []
         for i in range(len(x)):
@@ -248,7 +248,7 @@ class LocalOutlierFactor(MLBase):
         self.n_neighbors = n_neighbors
 
     def fit(self, X, y=None):  # type: ignore[override]
-        W = np.asarray(X, dtype=get_default_dtype())
+        W = as_default_array(X)
         k = self.n_neighbors
         if len(W) < k + 1:
             raise ValueError("the table needs at least n_neighbors + 1 rows")
@@ -273,7 +273,7 @@ class LocalOutlierFactor(MLBase):
         """LOF of new rows against the fitted table (the neighbours of a row are among the fitted rows)."""
         out = []
         k = self.n_neighbors
-        for x in np.asarray(X, dtype=get_default_dtype()):
+        for x in as_default_array(X):
             dx = np.sqrt(((self.X_ - x) ** 2).sum(axis=1))
             kd = float(np.sort(dx)[k - 1])
             idx = np.flatnonzero(dx <= kd)

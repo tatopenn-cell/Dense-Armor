@@ -13,7 +13,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.core.damping_operator import apply_damping_blend
 from dense_armor.core.engine import AdaptiveSignalStabilizer
 from dense_armor.core.memory import UniversalMemoryGuard
@@ -179,7 +179,7 @@ class Orca:
             slice_shape, deque(maxlen=self._reference_memory_size)
         )
         for b in range(x_reference_np.shape[0]):
-            bank.append(np.asarray(x_reference_np[b].flatten(), dtype=get_default_dtype()))
+            bank.append(as_default_array(x_reference_np[b].flatten()))
 
     def tipi_corruzione_visti(self, slice_shape: tuple) -> Counter:
         """Quali etichette dell'arbitro ('clean'/'spike'/'regime') sono gia'
@@ -253,7 +253,7 @@ class Orca:
         rigettano gli outlier statistici gravi con una mediana locale (rigetto
         quasi totale, a differenza del floor del 25%), POI si passa la serie
         ripulita nel motore ricorsivo per la memoria causale sull'intera storia."""
-        v = np.asarray(co_row_flat, dtype=get_default_dtype())
+        v = as_default_array(co_row_flat)
         finiti = v[np.isfinite(v)]
         fallback = float(np.median(finiti)) if finiti.size else 0.0
         v_safe = np.where(np.isfinite(v), v, fallback)
@@ -267,7 +267,7 @@ class Orca:
         is_gross_outlier = np.abs(v_safe - local_med) > 6.0 * resid_std
         v_pre_cleaned = np.where(is_gross_outlier, local_med, v_safe)
         rif = self.stabilizer.filter_data_stream(v_pre_cleaned)
-        return np.asarray(rif, dtype=get_default_dtype())
+        return as_default_array(rif)
 
     def _run_input_shield_kernel(
         self,

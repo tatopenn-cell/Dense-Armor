@@ -48,7 +48,7 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Regressor
 
 
@@ -488,7 +488,7 @@ class FIMTDDRegressor(Regressor):
 
     def _row(self, x: dict) -> np.ndarray:
         assert self._keys is not None
-        return np.asarray([float(x.get(k, 0.0)) for k in self._keys], dtype=get_default_dtype())
+        return as_default_array([float(x.get(k, 0.0)) for k in self._keys])
 
     def _quantize(self, feature: str, value: float) -> float:
         lo, hi = self._ranges.get(feature, (0.0, 0.0))

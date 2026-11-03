@@ -59,7 +59,7 @@ completa sui 7 scenari con questo fix.
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 
 
 def _window(x: np.ndarray, i: int, radius: int) -> np.ndarray:
@@ -103,7 +103,7 @@ def classify_segments(
                      lunghezza della sequenza) -- non quanto e' "corretto",
                      ma quanto la classificazione stessa e' precaria.
     """
-    x = np.asarray(x, dtype=get_default_dtype()).ravel()
+    x = as_default_array(x).ravel()
     n = x.size
     deviante = np.zeros(n, dtype=bool)
     deviazione = np.zeros(n, dtype=get_default_dtype())
@@ -209,7 +209,7 @@ def route_and_correct(
                           dal singolo impulso breve).
 
     Ritorna (pulito, etichette, incertezza)."""
-    x = np.asarray(x, dtype=get_default_dtype()).ravel()
+    x = as_default_array(x).ravel()
     n = x.size
     etichette, _, incertezza = classify_segments(x, radius, ref_mult, n_sigmas, spike_run_max)
 

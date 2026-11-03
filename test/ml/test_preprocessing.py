@@ -1,5 +1,6 @@
 """Hand cases and edge cases of the preprocessing of the machine learning package."""
 
+import pytest
 import doctest
 
 import numpy as np
@@ -22,6 +23,7 @@ from dense_armor.ml.preprocessing import (
 )
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_doctests():
     r = doctest.testmod(P)
     assert r.failed == 0 and r.attempted > 10
@@ -43,6 +45,7 @@ def test_ew_scaler_hand_case():
     assert np.allclose(s.transform([[2.5 + np.sqrt(0.75)]]), [[1.0]])
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_robust_scaler_hand_case():
     X = [[100.0], [1.0], [2.0], [9.0]]
     s = RobustScaler(window=3, scale=1.0).fit(X)
@@ -133,6 +136,7 @@ def test_feature_hasher_hand_case():
     assert abs(M[1][j]) in (1.0, 0.0, 2.0)
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_text_vectorizer():
     docs = ["a b", "a c", "a b c", None]
     v = TextVectorizer(ngram_range=(1, 1)).fit(docs)

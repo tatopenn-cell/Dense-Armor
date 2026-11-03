@@ -53,6 +53,7 @@ def test_loda_rejects_bad_params():
         LODA(range_init=0)
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_loda_projection_orthonormal():
     ds = LODA(
         n_projections=5,

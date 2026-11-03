@@ -36,7 +36,7 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Transformer
 
 
@@ -107,7 +107,7 @@ class RandomProjection(Transformer):
 
     def _to_vec(self, x: dict) -> np.ndarray:
         keys = self._keys if self._keys is not None else sorted(x)
-        return np.array([float(x[k]) for k in keys], dtype=get_default_dtype())
+        return as_default_array([float(x[k]) for k in keys], copy=True)
 
     def learn_one(
         self, x: dict, y: Any = None, t: float | None = None
@@ -224,7 +224,7 @@ class IncrementalPCA(Transformer):
 
     def _to_vec(self, x: dict) -> np.ndarray:
         keys = self._keys if self._keys is not None else sorted(x)
-        return np.array([float(x[k]) for k in keys], dtype=get_default_dtype())
+        return as_default_array([float(x[k]) for k in keys], copy=True)
 
     def learn_one(
         self, x: dict, y: Any = None, t: float | None = None

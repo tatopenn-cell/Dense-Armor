@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.ml.base import MLBase
 
 __all__ = [
@@ -64,7 +64,7 @@ class BaggingClassifier(MLBase):
         self.seed = seed
 
     def fit(self, X, y=None):  # type: ignore[override]
-        A, t = np.asarray(X, dtype=get_default_dtype()), np.asarray(y)
+        A, t = as_default_array(X), np.asarray(y)
         self.classes_ = np.unique(t)
         rng = np.random.default_rng(self.seed)
         self.models_ = []
@@ -111,7 +111,7 @@ class BoostingClassifier(MLBase):
         self.seed = seed
 
     def fit(self, X, y=None):  # type: ignore[override]
-        A, t = np.asarray(X, dtype=get_default_dtype()), np.asarray(y)
+        A, t = as_default_array(X), np.asarray(y)
         self.classes_ = np.unique(t)
         K = len(self.classes_)
         w = np.full(A.shape[0], 1.0 / A.shape[0])
@@ -168,15 +168,15 @@ class ExponentiallyWeightedAverage(MLBase):
         self.eta = eta
 
     def fit(self, X, y=None):  # type: ignore[override]
-        P = np.asarray(X, dtype=get_default_dtype())
-        loss = ((P - np.asarray(y, dtype=get_default_dtype())[:, None]) ** 2).sum(axis=0)
+        P = as_default_array(X)
+        loss = ((P - as_default_array(y)[:, None]) ** 2).sum(axis=0)
         w = np.exp(-self.eta * (loss - loss.min()))
         self.weights_ = w / w.sum()
         return self
 
     def predict(self, X) -> np.ndarray:
         """The weighted average of the model predictions in the columns of ``X``."""
-        return np.asarray(X, dtype=get_default_dtype()) @ self.weights_
+        return as_default_array(X) @ self.weights_
 
 
 class VotingClassifier(MLBase):
@@ -204,13 +204,13 @@ class VotingClassifier(MLBase):
         self.weights = weights
 
     def fit(self, X, y=None):  # type: ignore[override]
-        A, t = np.asarray(X, dtype=get_default_dtype()), np.asarray(y)
+        A, t = as_default_array(X), np.asarray(y)
         self.classes_ = np.unique(t)
         self.models_ = [m.clone().fit(A, t) for m in self.models]
         self.w_ = (
             np.ones(len(self.models), dtype=get_default_dtype())
             if self.weights is None
-            else np.asarray(self.weights, dtype=get_default_dtype())
+            else as_default_array(self.weights)
         )
         return self
 
@@ -257,7 +257,7 @@ class StackingClassifier(MLBase):
         self.cv = cv
 
     def fit(self, X, y=None):  # type: ignore[override]
-        A, t = np.asarray(X, dtype=get_default_dtype()), np.asarray(y)
+        A, t = as_default_array(X), np.asarray(y)
         self.classes_ = np.unique(t)
         folds = np.arange(A.shape[0]) % self.cv
         Z = np.zeros((A.shape[0], len(self.models) * len(self.classes_)), dtype=get_default_dtype())

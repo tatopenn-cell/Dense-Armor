@@ -45,7 +45,7 @@ from typing import Any
 import jax
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Regressor
 
 
@@ -207,13 +207,13 @@ class PayloadEstimator(Regressor):
         self._prev_qd = qd
         self._prev_t = t_sample
 
-        M = np.asarray(self._mm(q), dtype=get_default_dtype())
-        b = np.asarray(self._bf(q, qd), dtype=get_default_dtype())
-        gr = np.asarray(self._gf(q), dtype=get_default_dtype())
+        M = as_default_array(self._mm(q))
+        b = as_default_array(self._bf(q, qd))
+        gr = as_default_array(self._gf(q))
         tau_nom = M @ qdd + b + gr
         residual = tau - tau_nom
 
-        jz = np.asarray(self._lj(q), dtype=get_default_dtype())[2]
+        jz = as_default_array(self._lj(q))[2]
         phi = self.g * jz
 
         self._P = self._P / self.lam

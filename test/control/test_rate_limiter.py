@@ -7,6 +7,7 @@ from Dense-Evolution-Discovery after validation on two independent
 real physical domains (SO-101, ALOHA -- see utility/rate_limiter.py's
 own docstring for the real numbers).
 """
+import pytest
 import numpy as np
 
 from dense_armor.utility.robot.control.rate_limiter import rate_limited_follower
@@ -27,6 +28,7 @@ def test_velocity_never_exceeds_max_vel():
     assert np.all(np.abs(np.diff(out)) <= 2.0 + 1e-9)
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_acceleration_never_exceeds_max_accel():
     x = np.concatenate([np.zeros(5), np.full(20, 1000.0)])
     out = rate_limited_follower(x, max_vel=100.0, max_accel=0.3)

@@ -41,7 +41,6 @@ where that identity needs 1. The implementation keeps the printed
 prefactor. With the prefactor ``sqrt(1/d)``, which gives
 ``z(x)^T z(y)`` close to ``K(x, y)``, the benchmark ROC-AUC
 (``learn-on-healthy``) moves from 0.856 to 0.871 on SyntheticArm and
-from dense_armor._dtype import get_default_dtype
 from 0.987 to 0.972 on DriftStream, so the printed prefactor stays.
 
 Details not fixed by the paper, stated explicitly:
@@ -91,7 +90,7 @@ from collections.abc import Sequence
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import AnomalyDetector
 
 
@@ -221,10 +220,10 @@ class OneClassSGD(AnomalyDetector):
         self._keys_ready = True
 
     def _to_vec(self, x: dict) -> np.ndarray:
-        return np.array([float(x[k]) for k in self._keys], dtype=get_default_dtype())
+        return as_default_array([float(x[k]) for k in self._keys], copy=True)
 
     def _finalise_stats(self) -> None:
-        arr = np.array(self._init_buf, dtype=get_default_dtype())
+        arr = as_default_array(self._init_buf, copy=True)
         self._init_buf = []
         d = arr.shape[1]
         self._mean = arr.mean(axis=0)

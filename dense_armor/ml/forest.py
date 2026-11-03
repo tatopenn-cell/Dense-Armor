@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.ml.base import MLBase
 from dense_armor.ml.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
@@ -55,7 +55,7 @@ class RandomForestClassifier(MLBase):
         self.seed = seed
 
     def fit(self, X, y=None):  # type: ignore[override]
-        A = np.asarray(X, dtype=get_default_dtype())
+        A = as_default_array(X)
         t = np.asarray(y)
         self.classes_ = np.unique(t)
         rng = np.random.default_rng(self.seed)
@@ -114,8 +114,8 @@ class ExtraTreesRegressor(MLBase):
         self.seed = seed
 
     def fit(self, X, y=None):  # type: ignore[override]
-        A = np.asarray(X, dtype=get_default_dtype())
-        t = np.asarray(y, dtype=get_default_dtype())
+        A = as_default_array(X)
+        t = as_default_array(y)
         rng = np.random.default_rng(self.seed)
         self.trees_ = [
             DecisionTreeRegressor(

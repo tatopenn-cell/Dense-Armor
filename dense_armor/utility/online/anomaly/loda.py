@@ -36,7 +36,7 @@ from collections.abc import Sequence
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import AnomalyDetector
 
 
@@ -160,8 +160,8 @@ class LODA(AnomalyDetector):
                 raise ValueError(
                     f"feature_ranges has {len(ranges)} entries, expected {d}"
                 )
-            self._lo = np.array([r[0] for r in ranges], dtype=get_default_dtype())
-            self._hi = np.array([r[1] for r in ranges], dtype=get_default_dtype())
+            self._lo = as_default_array([r[0] for r in ranges], copy=True)
+            self._hi = as_default_array([r[1] for r in ranges], copy=True)
             self._finalise()
 
     def _finalise(self) -> None:
@@ -189,7 +189,7 @@ class LODA(AnomalyDetector):
         self._ready = True
 
     def _to_norm(self, x: dict) -> np.ndarray:
-        v = np.array([float(x[k]) for k in self._keys], dtype=get_default_dtype())
+        v = as_default_array([float(x[k]) for k in self._keys], copy=True)
         lo = self._lo
         hi = self._hi
         assert lo is not None and hi is not None
@@ -231,7 +231,7 @@ class LODA(AnomalyDetector):
             self._lazy_init(x)
             if not self._ready:
                 try:
-                    v_r = np.array([float(x[k]) for k in self._keys], dtype=get_default_dtype())
+                    v_r = as_default_array([float(x[k]) for k in self._keys], copy=True)
                 except (KeyError, TypeError, ValueError):
                     self.n_missing_ += 1
                     return self
@@ -240,7 +240,7 @@ class LODA(AnomalyDetector):
                     return self
                 self._range_buf.append(v_r)
                 if len(self._range_buf) >= self.range_init:
-                    arr = np.array(self._range_buf, dtype=get_default_dtype())
+                    arr = as_default_array(self._range_buf, copy=True)
                     lo = arr.min(axis=0)
                     hi = arr.max(axis=0)
                     span = np.maximum(hi - lo, self.eps)
@@ -249,7 +249,7 @@ class LODA(AnomalyDetector):
                     self._finalise()
                 return self
         try:
-            v = np.array([float(x[k]) for k in self._keys], dtype=get_default_dtype())
+            v = as_default_array([float(x[k]) for k in self._keys], copy=True)
         except (KeyError, TypeError, ValueError):
             self.n_missing_ += 1
             return self

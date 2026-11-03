@@ -42,7 +42,7 @@ from typing import Any
 import jax.numpy as jnp
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Transformer
 from dense_armor.utility.online.learn.online_dynamics import RecursiveLeastSquares
 
@@ -113,7 +113,7 @@ class OnlineAR(Transformer):
         """Coefficients from the oldest lag to the newest."""
         if self._rls is None or self._rls._w is None:
             return np.zeros(self.order, dtype=get_default_dtype())
-        return np.asarray(self._rls._w, dtype=get_default_dtype()).copy()
+        return as_default_array(self._rls._w).copy()
 
     def _key_of(self, x: dict) -> str:
         if self.feature is not None:
@@ -301,7 +301,7 @@ class OnlineVAR(Transformer):
             return None
         keys = self._resolve_keys(x)
         try:
-            v = np.array([float(x[k]) for k in keys], dtype=get_default_dtype())
+            v = as_default_array([float(x[k]) for k in keys], copy=True)
         except (TypeError, ValueError, KeyError):
             return None
         if not np.all(np.isfinite(v)):

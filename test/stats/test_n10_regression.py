@@ -37,6 +37,7 @@ def test_rolling_mad_pinned():
     assert rmad.window_s == 5.0
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_online_ar_pinned():
     ar = OnlineAR(order=2)
     for v in (0.1, 0.2, 0.3, 0.25, 0.15, 0.18, 0.22, 0.19, 0.21, 0.20):

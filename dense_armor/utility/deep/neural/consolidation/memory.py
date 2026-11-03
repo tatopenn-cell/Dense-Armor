@@ -5,7 +5,7 @@ from __future__ import annotations
 import jax.numpy as jnp
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 
 
 class LifecycleMemory:
@@ -194,7 +194,7 @@ class DualMemory:
 
     def write(self, x: jnp.ndarray, t: float = 0.0) -> int:
         """Write ``x`` in the fast memory; return its index."""
-        xa = np.asarray(x, dtype=get_default_dtype()).reshape(-1)[: self.d_model]
+        xa = as_default_array(x).reshape(-1)[: self.d_model]
         if len(self.fast_) >= self.fast_capacity:
             self.fast_.pop(0)
             self._fast_t.pop(0)
@@ -207,7 +207,7 @@ class DualMemory:
         if not self.fast_:
             return []
         F = np.stack(self.fast_, axis=0)
-        xa = np.asarray(x, dtype=get_default_dtype()).reshape(-1)[: self.d_model]
+        xa = as_default_array(x).reshape(-1)[: self.d_model]
         d = np.sum((F - xa[None, :]) ** 2, axis=1)
         order = np.argsort(d)[::-1]
         return [int(i) for i in order[: self.top_k]]
@@ -237,7 +237,7 @@ class DualMemory:
         """
         if not self.slow_:
             return []
-        nov = np.asarray(self._slow_novelty, dtype=get_default_dtype())
+        nov = as_default_array(self._slow_novelty)
         # age is the recency: older events (lower index) have higher age
         age = np.arange(len(self.slow_), 0, -1, dtype=get_default_dtype())
         w = (nov + 1e-6) * age

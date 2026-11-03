@@ -23,7 +23,7 @@ from typing import Any
 import jax.numpy as jnp
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Transformer
 
 
@@ -65,13 +65,13 @@ class KalmanFilter(Transformer):
         x0: np.ndarray | None = None,
         P0: np.ndarray | None = None,
     ) -> None:
-        self.F = np.asarray(F, dtype=get_default_dtype())
-        self.H = np.asarray(H, dtype=get_default_dtype())
-        self.Q = np.asarray(Q, dtype=get_default_dtype())
-        self.R = np.asarray(R, dtype=get_default_dtype())
+        self.F = as_default_array(F)
+        self.H = as_default_array(H)
+        self.Q = as_default_array(Q)
+        self.R = as_default_array(R)
         n = self.F.shape[0]
-        self.x0 = np.zeros(n, dtype=get_default_dtype()) if x0 is None else np.asarray(x0, dtype=get_default_dtype())
-        self.P0 = np.eye(n, dtype=get_default_dtype()) if P0 is None else np.asarray(P0, dtype=get_default_dtype())
+        self.x0 = np.zeros(n, dtype=get_default_dtype()) if x0 is None else as_default_array(x0)
+        self.P0 = np.eye(n, dtype=get_default_dtype()) if P0 is None else as_default_array(P0)
         self._x: np.ndarray | None = None
         self._P: np.ndarray | None = None
         self._innovation: np.ndarray | None = None
@@ -90,7 +90,7 @@ class KalmanFilter(Transformer):
         if not x:
             return np.zeros(m, dtype=get_default_dtype())
         try:
-            v = np.array([float(x[k]) for k in sorted(x)], dtype=get_default_dtype())
+            v = as_default_array([float(x[k]) for k in sorted(x)], copy=True)
         except (TypeError, ValueError, KeyError):
             return None
         if v.size != m or not np.all(np.isfinite(v)):

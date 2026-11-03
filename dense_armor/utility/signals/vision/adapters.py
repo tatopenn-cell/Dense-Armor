@@ -22,7 +22,7 @@ video clock.
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Signal, Transformer
 
 
@@ -108,7 +108,7 @@ class TrackToSignal(Transformer):
         self._last = (cx, cy, float(t) if t is not None else 0.0)
         names = ["cx", "cy", "w", "h", "speed"]
         return Signal(
-            values=np.array([cx, cy, w, h, speed], dtype=get_default_dtype()),
+            values=as_default_array([cx, cy, w, h, speed], copy=True),
             names=names,
             units=[self.units.get(k, "") for k in names],
             t=float(t) if t is not None else 0.0,
@@ -172,7 +172,7 @@ class FeatureToSignal(Transformer):
                 t=float(t) if t is not None else 0.0,
             )
         return Signal(
-            values=np.array(vals, dtype=get_default_dtype()),
+            values=as_default_array(vals, copy=True),
             names=list(keys),
             units=[self.units.get(k, "") for k in keys],
             t=float(t) if t is not None else 0.0,

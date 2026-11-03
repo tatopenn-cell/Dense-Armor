@@ -9,7 +9,7 @@ from collections import deque
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Classifier, Root
 
 
@@ -189,7 +189,7 @@ class LEGO(MetricLearner):
         Returns (near, far). Raises ValueError when the set has no pair of
         the same class or no pair of different classes.
         """
-        X = np.asarray(X, dtype=get_default_dtype())
+        X = as_default_array(X)
         y = np.asarray(y)
         D2 = np.sum((X[:, None, :] - X[None, :, :]) ** 2, axis=-1)
         same = y[:, None] == y[None, :]

@@ -138,6 +138,7 @@ def test_malformed_input_scores_zero():
 
 
 @pytest.mark.parametrize("d,k,w", [(2, 20, 100), (5, 10, 150), (3, 5, 60)])
+@pytest.mark.usefixtures("float64_default")
 def test_matches_scikit_learn(d, k, w):
     sk = pytest.importorskip("sklearn.neighbors")
     rng = np.random.default_rng(0)

@@ -5,7 +5,7 @@ from __future__ import annotations
 import jax.numpy as jnp
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array
 
 from .vq import VQMemory
 
@@ -98,7 +98,7 @@ class ResidualTree:
 
     def _extend_box(self, node: dict, x: jnp.ndarray) -> None:
         """Extend the node's box with ``x``."""
-        xa = np.asarray(x, dtype=get_default_dtype()).reshape(-1)
+        xa = as_default_array(x).reshape(-1)
         if node["lb_"] is None:
             node["lb_"] = xa.copy()
             node["ub_"] = xa.copy()
@@ -113,7 +113,7 @@ class ResidualTree:
         """
         if node["lb_"] is None:
             return float("inf")
-        xa = np.asarray(x, dtype=get_default_dtype()).reshape(-1)
+        xa = as_default_array(x).reshape(-1)
         lo = np.minimum(node["lb_"], xa)
         hi = np.maximum(node["ub_"], xa)
         return float(np.sum((node["lb_"] - lo) + (hi - node["ub_"])))

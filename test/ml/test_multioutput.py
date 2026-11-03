@@ -1,5 +1,6 @@
 """Hand cases of the multi-target models of the machine learning package."""
 
+import pytest
 import doctest
 
 import numpy as np
@@ -42,6 +43,7 @@ def rules(*rs):
     return lambda: Rec(next(it))
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_doctests():
     r = doctest.testmod(MO)
     assert r.failed == 0 and r.attempted >= 20
@@ -57,6 +59,7 @@ def test_per_output_hand_case():
     assert np.allclose(r.predict([[4.0]]), [[8.0, -3.0]])
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_chain_sees_the_earlier_targets():
     m = ClassifierChain(
         rules(lambda r: 0.8, lambda r: 0.9 if r[-1] >= 0.5 else 0.1), order=[0, 1]
@@ -70,6 +73,7 @@ def test_chain_sees_the_earlier_targets():
     assert sorted(rnd.order_) == [0, 1]
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_regressor_chain_hand_case():
     Yr = np.c_[2.0 * X[:, 0] + 1.0, 4.0 * X[:, 0] + 2.0 + 0.5 * X[:, 0] ** 2]
     m = RegressorChain(lambda: LinearRegression(l2=1e-9), order=[0, 1]).fit(X, Yr)

@@ -216,6 +216,7 @@ def test_subbagging_chance():
     assert 300 <= counts[0.5] <= 500
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_warning_starts_a_background_tree_that_trains_and_does_not_vote_then_drift_promotes_it():
     m = OnlineExtraTreesRegressor(
         n_models=1, p=1.0, drift_detector=_Fire(8), warning_detector=_Fire(5), seed=0

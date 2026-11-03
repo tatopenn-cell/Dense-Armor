@@ -24,7 +24,7 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Transformer
 
 
@@ -113,7 +113,7 @@ class JointDerivatives(Transformer):
         if t is None or self.q_key not in x:
             return None
         try:
-            qv = np.asarray(x[self.q_key], dtype=get_default_dtype())
+            qv = as_default_array(x[self.q_key])
         except (TypeError, ValueError):
             return None
         if qv.ndim == 0:
@@ -228,8 +228,8 @@ class JointPower(Transformer):
         if self.tau_key not in d or self.qd_key not in d:
             self.n_missing_ += 1
             return out
-        tau = np.asarray(d[self.tau_key], dtype=get_default_dtype())
-        qd = np.asarray(d[self.qd_key], dtype=get_default_dtype())
+        tau = as_default_array(d[self.tau_key])
+        qd = as_default_array(d[self.qd_key])
         if tau.shape != qd.shape:
             self.n_missing_ += 1
             return out

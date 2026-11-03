@@ -21,7 +21,7 @@ from abc import abstractmethod
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.ml.base import MLBase
 
 __all__ = [
@@ -75,7 +75,7 @@ class BatchDecisionTreeClassifier(MLBase):
         self.min_samples_split = min_samples_split
 
     def _grow(self, X: np.ndarray, y: np.ndarray, depth: int) -> dict:
-        counts = np.array([(y == c).sum() for c in self.classes_], dtype=get_default_dtype())
+        counts = as_default_array([(y == c).sum() for c in self.classes_], copy=True)
         leaf = {"counts": counts}
         n = len(y)
         if (
@@ -108,7 +108,7 @@ class BatchDecisionTreeClassifier(MLBase):
         }
 
     def fit(self, X, y=None):  # type: ignore[override]
-        A, t = np.asarray(X, dtype=get_default_dtype()), np.asarray(y)
+        A, t = as_default_array(X), np.asarray(y)
         self.classes_ = np.unique(t)
         self.tree_ = self._grow(A, t, 0)
         return self
@@ -125,7 +125,7 @@ class BatchDecisionTreeClassifier(MLBase):
 
     def predict_proba(self, X) -> np.ndarray:
         """Class frequencies of the leaf each row falls in."""
-        c = np.array([self._leaf_counts(r) for r in np.asarray(X, dtype=get_default_dtype())])
+        c = np.array([self._leaf_counts(r) for r in as_default_array(X)])
         return c / c.sum(axis=1, keepdims=True)
 
     def predict(self, X) -> np.ndarray:
@@ -251,7 +251,7 @@ class _Tree(MLBase):
 
     def _leaves(self, X) -> list[dict]:
         out = []
-        for row in np.asarray(X, dtype=get_default_dtype()):
+        for row in as_default_array(X):
             node = self.tree_
             while "feature" in node:
                 node = (
@@ -311,12 +311,12 @@ class DecisionTreeClassifier(_Tree):
         self.seed = seed
 
     def fit(self, X, y=None, sample_weight=None):  # type: ignore[override]
-        A = np.asarray(X, dtype=get_default_dtype())
+        A = as_default_array(X)
         t = np.asarray(y)
         self.classes_ = np.unique(t)
         S = (t[:, None] == self.classes_[None, :]).astype(get_default_dtype())
         if sample_weight is not None:
-            S = S * np.asarray(sample_weight, dtype=get_default_dtype())[:, None]
+            S = S * as_default_array(sample_weight)[:, None]
         self.tree_ = self._grow(A, S, 0, np.random.default_rng(self.seed), "cls")
         return self
 
@@ -364,8 +364,8 @@ class DecisionTreeRegressor(_Tree):
         self.seed = seed
 
     def fit(self, X, y=None):  # type: ignore[override]
-        A = np.asarray(X, dtype=get_default_dtype())
-        t = np.asarray(y, dtype=get_default_dtype())
+        A = as_default_array(X)
+        t = as_default_array(y)
         self.tree_ = self._grow(
             A, t[:, None], 0, np.random.default_rng(self.seed), "reg"
         )

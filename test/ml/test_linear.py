@@ -1,5 +1,6 @@
 """Hand cases and edge cases of the linear models of the machine learning package."""
 
+import pytest
 import doctest
 
 import numpy as np
@@ -25,6 +26,7 @@ def test_ridge_hand_case():
     assert np.allclose(line.predict([3.0]), [7.0])
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_logistic_stationarity():
     X = np.array([[0.0], [1.0], [2.0], [3.0], [1.5]])
     y = np.array([0.0, 0.0, 1.0, 1.0, 1.0])

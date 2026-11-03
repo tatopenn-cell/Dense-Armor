@@ -28,7 +28,7 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Classifier
 
 
@@ -51,7 +51,7 @@ def _gini(counts: dict) -> float:
     total = sum(counts.values())
     if total == 0:
         return 0.0
-    p = np.array(list(counts.values()), dtype=get_default_dtype()) / total
+    p = as_default_array(list(counts.values()), copy=True) / total
     return float(1.0 - np.sum(p * p))
 
 
@@ -272,7 +272,7 @@ class BatchDecisionTreeClassifier(Classifier):
                 raise ValueError(
                     f"row {i} holds a value that is not a number"
                 ) from None
-        X_arr = np.asarray(rows, dtype=get_default_dtype())
+        X_arr = as_default_array(rows)
         if not np.all(np.isfinite(X_arr)):
             raise ValueError("X holds a NaN or an infinite value")
         self._feature_names = feature_names

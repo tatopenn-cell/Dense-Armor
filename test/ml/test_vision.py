@@ -15,6 +15,7 @@ from dense_armor.ml.vision import (
 )
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_doctests():
     r = doctest.testmod(V)
     assert r.failed == 0 and r.attempted >= 5

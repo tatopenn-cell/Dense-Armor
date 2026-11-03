@@ -17,6 +17,7 @@ def test_doctests():
     assert r.failed == 0 and r.attempted >= 8
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_multinomial_hand_case():
     m = MultinomialNB().fit(COUNTS, Y)
     assert np.allclose(np.exp(m.feature_log_prob_), [[0.75, 0.25], [0.25, 0.75]])
@@ -25,12 +26,14 @@ def test_multinomial_hand_case():
     assert abs(skew.predict_proba([[1, 1]])[0, 0] - 0.75) < 1e-12
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_bernoulli_hand_case():
     m = BernoulliNB().fit([[1, 0], [1, 1], [0, 1], [0, 1]], Y)
     assert abs(m.predict_proba([[1, 0]])[0, 0] - 6.0 / 7.0) < 1e-12
     assert m.predict([[0, 1]]).tolist() == [1]
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_categorical_hand_case():
     m = CategoricalNB().fit([[0, 1], [0, 0], [1, 1], [1, 0]], Y)
     assert abs(m.predict_proba([[0, 1]])[0, 0] - 0.75) < 1e-12

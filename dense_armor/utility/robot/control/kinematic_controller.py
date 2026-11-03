@@ -61,7 +61,7 @@ stack already uses.
 """
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array
 
 
 def kinematic_tracking_controller(q, q_ref, qd_ref, kp: float):
@@ -84,9 +84,9 @@ def kinematic_tracking_controller(q, q_ref, qd_ref, kp: float):
         Desired velocity command u_des -- feed this into rate_limiter/
         cbf_filter before sending it to a real motor.
     """
-    q = np.atleast_1d(np.asarray(q, dtype=get_default_dtype()))
-    q_ref = np.atleast_1d(np.asarray(q_ref, dtype=get_default_dtype()))
-    qd_ref = np.atleast_1d(np.asarray(qd_ref, dtype=get_default_dtype()))
+    q = np.atleast_1d(as_default_array(q))
+    q_ref = np.atleast_1d(as_default_array(q_ref))
+    qd_ref = np.atleast_1d(as_default_array(qd_ref))
     if not q.shape == q_ref.shape == qd_ref.shape:
         raise ValueError("q, q_ref, qd_ref must have the same number of joints")
     return qd_ref + kp * (q_ref - q)

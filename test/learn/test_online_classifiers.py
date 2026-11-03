@@ -35,6 +35,7 @@ def _batch_nb_proba(x, classes, means, vars_, priors, eps=1e-12):
     return {c: p / s for c, p in ex.items()}
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_gaussian_nb_matches_batch_at_alpha_zero():
     rng = np.random.default_rng(0)
     n, d = 500, 4

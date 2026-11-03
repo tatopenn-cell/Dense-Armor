@@ -19,7 +19,7 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Transformer
 from dense_armor.utility.signals.stats.moments import EWStats, RunningMoments
 from dense_armor.utility.signals.stats.robust import RollingMAD, RollingMedian
@@ -37,17 +37,17 @@ def _to_vec(v: Any) -> tuple[np.ndarray | None, bool]:
     if isinstance(v, bool):
         return None, True
     if isinstance(v, (int, float)):
-        return np.asarray([float(v)], dtype=get_default_dtype()), True
+        return as_default_array([float(v)]), True
     if isinstance(v, np.ndarray):
         if v.ndim == 0:
-            return np.asarray([float(v)], dtype=get_default_dtype()), True
+            return as_default_array([float(v)]), True
         try:
             return v.astype(get_default_dtype()).ravel(), False
         except (TypeError, ValueError):
             return None, True
     if isinstance(v, (list, tuple)):
         try:
-            return np.asarray(v, dtype=get_default_dtype()).ravel(), False
+            return as_default_array(v).ravel(), False
         except (TypeError, ValueError):
             return None, True
     return None, True
@@ -154,7 +154,7 @@ class StandardScaler(Transformer):
         """
         if not isinstance(X, dict):
             return super().learn_many(X, t)
-        cols = {k: np.asarray(v, dtype=get_default_dtype()) for k, v in X.items()}
+        cols = {k: as_default_array(v) for k, v in X.items()}
         cols = {k: (v[:, None] if v.ndim == 1 else v) for k, v in cols.items()}
         if not cols or min(v.shape[0] for v in cols.values()) == 0:
             return self

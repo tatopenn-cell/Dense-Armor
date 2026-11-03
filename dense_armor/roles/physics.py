@@ -30,7 +30,7 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array
 from dense_armor.roles import Transformer
 from dense_armor.roles._util import call_learn_one, sum_budgets, worst_memory_class
 
@@ -205,7 +205,7 @@ class JointLimits:
 
     def in_bounds(self, q: Sequence[float] | np.ndarray) -> bool:
         """Return ``True`` if ``q`` is inside ``[lower, upper]`` everywhere."""
-        q_arr: np.ndarray = np.asarray(q, dtype=get_default_dtype())
+        q_arr: np.ndarray = as_default_array(q)
         if q_arr.shape != (self.n,):
             raise ValueError(f"q has shape {q_arr.shape}, expected ({self.n},)")
         return bool(np.all(q_arr >= self.lower) and np.all(q_arr <= self.upper))
@@ -221,7 +221,7 @@ class JointLimits:
 
         def _guard(x: Mapping[str, Any]) -> bool:
             if "q" in x:
-                q = np.asarray(x["q"], dtype=get_default_dtype())
+                q = as_default_array(x["q"])
             else:
                 q = np.asarray([float(x.get(f"q{i}", 0.0)) for i in range(self.n)])
             return not self.in_bounds(q)
@@ -277,10 +277,10 @@ def limits_from_urdf(source: str | Path | Any) -> JointLimits:
         raise ValueError(f"no joint with a <limit> block in {path}")
     return JointLimits(
         joint_names=tuple(names),
-        lower=np.asarray(lower, dtype=get_default_dtype()),
-        upper=np.asarray(upper, dtype=get_default_dtype()),
-        velocity=np.asarray(velocity, dtype=get_default_dtype()),
-        effort=np.asarray(effort, dtype=get_default_dtype()),
+        lower=as_default_array(lower),
+        upper=as_default_array(upper),
+        velocity=as_default_array(velocity),
+        effort=as_default_array(effort),
     )
 
 
@@ -303,7 +303,7 @@ class PhysicalLimitsGuard:
 
     def __call__(self, x: Mapping[str, Any]) -> bool:
         if "q" in x:
-            q = np.asarray(x["q"], dtype=get_default_dtype())
+            q = as_default_array(x["q"])
         else:
             q = np.asarray([float(x.get(f"q{i}", 0.0)) for i in range(self.limits.n)])
         return not bool(np.all(q >= self._lo) and np.all(q <= self._hi))

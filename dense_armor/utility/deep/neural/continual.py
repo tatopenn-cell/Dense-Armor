@@ -13,7 +13,7 @@ from typing import Any
 import jax.numpy as jnp
 import numpy as np
 
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array
 
 
 class EWC:
@@ -90,7 +90,7 @@ class EWC:
         does not pay.  Treat ``F_`` as a lower bound of the diagonal
         Fisher, not as the Fisher.
         """
-        theta = np.asarray(self.flat_params(), dtype=get_default_dtype())
+        theta = as_default_array(self.flat_params())
         eps = 1e-6
         grad = np.zeros_like(theta)
         for i in range(theta.size):
@@ -151,7 +151,7 @@ class GEM:
         and needs a per-task ``n_seen`` counter, which the class does not
         keep.
         """
-        xa = np.asarray(x, dtype=get_default_dtype()).reshape(-1)
+        xa = as_default_array(x).reshape(-1)
         ya = np.asarray(y).reshape(-1)
         if ya.size != 1:
             raise ValueError(f"y must be a scalar, got shape {ya.shape}")
@@ -264,7 +264,7 @@ class AGEM:
         and needs a per-task ``n_seen`` counter, which the class does not
         keep.
         """
-        xa = np.asarray(x, dtype=get_default_dtype()).reshape(-1)
+        xa = as_default_array(x).reshape(-1)
         ya = np.asarray(y).reshape(-1)
         if ya.size != 1:
             raise ValueError(f"y must be a scalar, got shape {ya.shape}")

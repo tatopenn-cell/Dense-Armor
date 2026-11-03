@@ -61,6 +61,7 @@ def test_bridge_keeps_the_loop_for_a_model_without_a_block_path():
     assert np.all(np.isfinite(out))
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_overflow_input_through_the_bridge_keeps_the_mean_finite():
     v = np.finfo(np.float64).max / 1e5 / 1e2
     sc = SklearnTransformer(StandardScaler)
@@ -74,6 +75,7 @@ def test_overflow_input_through_the_bridge_keeps_the_mean_finite():
 
 
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
+@pytest.mark.usefixtures("float64_default")
 def test_large_offset_input_through_the_bridge_matches_numpy():
     x = np.random.default_rng(0).normal(1e300, 1e290, size=(20000, 1))
     r = SklearnTransformer(StandardScaler).fit(x).model_.stats_[0][0]
@@ -81,6 +83,7 @@ def test_large_offset_input_through_the_bridge_matches_numpy():
     assert r.mean == pytest.approx(float(x.mean()), rel=TOL)
 
 
+@pytest.mark.usefixtures("float64_default")
 def test_full_reproducer_through_the_bridge():
     v = np.finfo(np.float64).max / 1e5 / 1e2
     sc = SklearnTransformer(StandardScaler)

@@ -23,9 +23,7 @@ Examples:
 from collections.abc import Callable
 from typing import Any
 
-import numpy as np
-
-from dense_armor._dtype import get_default_dtype
+from dense_armor._dtype import as_default_array
 from dense_armor.roles import Signal, Transformer
 
 
@@ -98,14 +96,14 @@ class FuncTransformer(Transformer):
             names = list(out.keys())
             if names == list(x.names):
                 return Signal(
-                    values=np.asarray(vals, dtype=get_default_dtype()),
+                    values=as_default_array(vals),
                     names=names,
                     units=list(x.units),
                     t=x.t,
                     missing=x.mask,
                 )
             return Signal(
-                values=np.asarray(vals, dtype=get_default_dtype()),
+                values=as_default_array(vals),
                 names=names,
                 units=["" for _ in names],
                 t=x.t,
@@ -125,7 +123,7 @@ class FuncTransformer(Transformer):
                 if new is not None:
                     vals[j] = float(new)
             return Signal(
-                values=np.asarray(vals, dtype=get_default_dtype()),
+                values=as_default_array(vals),
                 names=list(x.names),
                 units=list(x.units),
                 t=x.t,
