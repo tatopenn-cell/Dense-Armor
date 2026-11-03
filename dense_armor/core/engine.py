@@ -18,13 +18,15 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from dense_armor._dtype import x64_context
+
 
 def _in_float64(fn: Callable) -> Callable:
     """Run ``fn`` with x64 on, only inside it: the engine is float64 while the rest of the library is float32."""
 
     @functools.wraps(fn)
     def wrapper(*args, **kwargs):
-        with jax.enable_x64(True):
+        with x64_context(True):
             return fn(*args, **kwargs)
 
     return wrapper

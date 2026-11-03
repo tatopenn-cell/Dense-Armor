@@ -18,3 +18,13 @@ def set_default_dtype(dtype) -> None:
     if d not in _FLOATS:
         raise ValueError(f"default dtype must be float32 or float64, got {dtype!r}")
     _default = d
+
+
+def x64_context(enabled: bool = True):
+    """Context manager that sets x64 inside the block only, on any version of JAX."""
+    import jax
+
+    ctx = getattr(jax, "enable_x64", None)
+    if ctx is None:
+        from jax.experimental import enable_x64 as ctx
+    return ctx(enabled)

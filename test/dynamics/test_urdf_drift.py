@@ -2,17 +2,17 @@
 
 The public methods of RigidBodyModel run in float64 (a local x64 context). The
 float32 run uses a subclass whose methods are the undecorated ones, under
-``jax.enable_x64(False)``, with float32 inputs. Both runs integrate the same
+``x64_context(False)``, with float32 inputs. Both runs integrate the same
 joint-space PD controller with gravity compensation from the same state.
 """
 
 import os
 from pathlib import Path
 
-import jax
 import numpy as np
 import pytest
 
+from dense_armor._dtype import x64_context
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 
 URDF = str(Path(__file__).resolve().parents[1] / "fixtures" / "urdf" / "panda.urdf")
@@ -56,7 +56,7 @@ def _run(model, dtype, steps):
 @pytest.mark.heavy
 def test_forward_dynamics_float32_drift_is_below_threshold():
     traj64, qdd64 = _run(RigidBodyModel(URDF), np.float64, STEPS)
-    with jax.enable_x64(False):
+    with x64_context(False):
         traj32, qdd32 = _run(_Float32Model(URDF), np.float32, STEPS)
     rel_single = float(np.linalg.norm(qdd32 - qdd64) / np.linalg.norm(qdd64))
     rel_traj = float(
