@@ -176,7 +176,7 @@ class PatchFeatures(Transformer):
                 m = mag[sy, sx].ravel()
                 b = bin_idx[sy, sx].ravel()
                 hist = np.bincount(b, weights=m, minlength=self.n_bins).astype(
-                    np.float64
+                    get_default_dtype()
                 )
                 nrm = float(np.linalg.norm(hist)) + self.eps
                 hist = hist / nrm
@@ -565,5 +565,5 @@ class PatchMemory(AnomalyDetector):
         """
         _ = self.score_one(x)
         if self.last_patch_scores_ is None or self.last_positions_ is None:
-            return np.zeros(0), np.zeros((0, 2), dtype=np.intp)
+            return np.zeros(0, dtype=get_default_dtype()), np.zeros((0, 2), dtype=np.intp)
         return self.last_patch_scores_, self.last_positions_

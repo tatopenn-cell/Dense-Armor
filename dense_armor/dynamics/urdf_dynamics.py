@@ -46,6 +46,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
+
 _G = 9.81
 
 
@@ -66,10 +68,10 @@ def _parse_urdf(path):
         name = link_el.get("name")
         inertial = link_el.find("inertial")
         if inertial is None:
-            links[name] = dict(mass=0.0, com=np.zeros(3), inertia=np.zeros((3, 3)))
+            links[name] = dict(mass=0.0, com=np.zeros(3, dtype=get_default_dtype()), inertia=np.zeros((3, 3), dtype=get_default_dtype()))
             continue
         origin = inertial.find("origin")
-        xyz = np.array(_floats(origin.get("xyz", "0 0 0"))) if origin is not None else np.zeros(3)
+        xyz = np.array(_floats(origin.get("xyz", "0 0 0"))) if origin is not None else np.zeros(3, dtype=get_default_dtype())
         mass = float(inertial.find("mass").get("value"))
         i_el = inertial.find("inertia")
         ixx, ixy, ixz = float(i_el.get("ixx")), float(i_el.get("ixy")), float(i_el.get("ixz"))
@@ -84,8 +86,8 @@ def _parse_urdf(path):
         parent = joint_el.find("parent").get("link")
         child = joint_el.find("child").get("link")
         origin = joint_el.find("origin")
-        xyz = np.array(_floats(origin.get("xyz", "0 0 0"))) if origin is not None else np.zeros(3)
-        rpy = np.array(_floats(origin.get("rpy", "0 0 0"))) if origin is not None else np.zeros(3)
+        xyz = np.array(_floats(origin.get("xyz", "0 0 0"))) if origin is not None else np.zeros(3, dtype=get_default_dtype())
+        rpy = np.array(_floats(origin.get("rpy", "0 0 0"))) if origin is not None else np.zeros(3, dtype=get_default_dtype())
         axis_el = joint_el.find("axis")
         axis = np.array(_floats(axis_el.get("xyz"))) if axis_el is not None else np.array([1.0, 0.0, 0.0])
         limit_el = joint_el.find("limit")

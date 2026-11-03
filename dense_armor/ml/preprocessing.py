@@ -31,6 +31,7 @@ from collections import Counter
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.ml.base import MLBase
 from dense_armor.ml.stats import EWStats
 
@@ -58,7 +59,7 @@ _TOKEN_RE = re.compile(r"[A-Za-z0-9_]+")
 
 
 def _table(X) -> np.ndarray:
-    A = np.asarray(X, dtype=float)
+    A = np.asarray(X, dtype=get_default_dtype())
     return A[:, None] if A.ndim == 1 else A
 
 
@@ -83,7 +84,7 @@ class _Scaler(MLBase):
         """Apply the fitted centre and scale; columns with a scale below ``eps`` pass through."""
         A = _table(X)
         ok = np.isfinite(self.scale_) & (self.scale_ > self.eps)
-        out: np.ndarray = A.astype(float).copy()
+        out: np.ndarray = A.astype(get_default_dtype()).copy()
         out[:, ok] = (A[:, ok] - self.center_[ok]) / self.scale_[ok]
         return out
 
@@ -226,7 +227,7 @@ class SelectKBest(MLBase):
 
     def fit(self, X, y=None):  # type: ignore[override]
         A = _table(X)
-        t = np.asarray(y, dtype=float)
+        t = np.asarray(y, dtype=get_default_dtype())
         c = np.array(
             [
                 abs(np.corrcoef(A[:, j], t)[0, 1])
@@ -270,9 +271,9 @@ class JointDerivatives(MLBase):
 
     def fit(self, X, y=None):  # type: ignore[override]
         q = _table(X)
-        t = np.asarray(y, dtype=float)
+        t = np.asarray(y, dtype=get_default_dtype())
         n, d = q.shape
-        out = np.zeros((3, n, d))
+        out = np.zeros((3, n, d), dtype=get_default_dtype())
         for i in range(n):
             k = min(self.order, i)
             if k == 0:
@@ -467,7 +468,7 @@ class FeatureHasher(MLBase):
 
     def fit_transform(self, X, y=None, **fit_params) -> np.ndarray:
         """The hashed matrix of the documents, one row each; ``y`` is not used."""
-        out = np.zeros((len(X), self.n_features))
+        out = np.zeros((len(X), self.n_features), dtype=get_default_dtype())
         for i, doc in enumerate(X):
             for term, w in doc.items():
                 dg = hashlib.sha256(f"{self.seed}:{term}".encode()).digest()
@@ -530,7 +531,7 @@ class TextVectorizer(MLBase):
     def transform(self, documents) -> np.ndarray:
         """Dense TF-IDF matrix of the documents on the fitted vocabulary."""
         idx = {t: i for i, t in enumerate(self.vocabulary_)}
-        M = np.zeros((len(documents), len(idx)))
+        M = np.zeros((len(documents), len(idx)), dtype=get_default_dtype())
         for r, doc in enumerate(documents):
             toks = self._tokens(doc)
             counts = Counter(toks)

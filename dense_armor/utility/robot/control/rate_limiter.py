@@ -65,6 +65,8 @@ streaming.py, cusum.py) for that instead.
 """
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
+
 
 def rate_limited_follower(x_raw: np.ndarray, max_vel: float, max_accel: float, dt: float = 1.0) -> np.ndarray:
     """Causally tracks a raw incoming command stream with an applied
@@ -99,7 +101,7 @@ def rate_limited_follower(x_raw: np.ndarray, max_vel: float, max_accel: float, d
         The applied (rate-limited) command stream, same length as x_raw.
     """
     n = len(x_raw)
-    out = np.empty(n)
+    out = np.empty(n, dtype=get_default_dtype())
     pos = float(x_raw[0])
     vel = 0.0
     out[0] = pos

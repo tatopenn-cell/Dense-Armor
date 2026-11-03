@@ -73,7 +73,7 @@ def cosine_similarity_many(query: dict, matrix: list[dict]) -> np.ndarray:
         [1.0, 0.0]
     """
     return np.array([cosine_similarity(query, d) for d in matrix],
-                    dtype=float)
+                    dtype=get_default_dtype())
 
 class SparseCosineIndex:
     """A sparse index of documents for cosine ranking, built once.

@@ -29,13 +29,14 @@ from collections import deque
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import Transformer
 
 
 def _hampel_value(window: deque, value: float, n_sigmas: float) -> tuple:
     if len(window) < 3:
         return value, False
-    arr = np.asarray(window, dtype=float)
+    arr = np.asarray(window, dtype=get_default_dtype())
     med = float(np.median(arr))
     mad = float(np.median(np.abs(arr - med)))
     scale = 1.4826 * mad
@@ -47,8 +48,8 @@ def _hampel_value(window: deque, value: float, n_sigmas: float) -> tuple:
 
 
 def _angle(a, b, c) -> float:
-    v1 = np.asarray(a, dtype=float) - np.asarray(b, dtype=float)
-    v2 = np.asarray(c, dtype=float) - np.asarray(b, dtype=float)
+    v1 = np.asarray(a, dtype=get_default_dtype()) - np.asarray(b, dtype=get_default_dtype())
+    v2 = np.asarray(c, dtype=get_default_dtype()) - np.asarray(b, dtype=get_default_dtype())
     n1 = np.linalg.norm(v1)
     n2 = np.linalg.norm(v2)
     if n1 <= 1e-12 or n2 <= 1e-12:
@@ -101,9 +102,9 @@ class LandmarkStream:
                 )
             self.confidence = c
         if times is None:
-            self.times = np.arange(len(pts), dtype=float) / fps
+            self.times = np.arange(len(pts), dtype=get_default_dtype()) / fps
         else:
-            tt = np.asarray(times, dtype=float)
+            tt = np.asarray(times, dtype=get_default_dtype())
             if tt.shape != (len(pts),):
                 raise ValueError(
                     f"times must be ({len(pts)},), got {tt.shape}"
@@ -189,22 +190,22 @@ class LandmarkCleaner(Transformer):
 
     def transform_one(self, x, t=None):
         if isinstance(x, dict):
-            pts = np.asarray(x["points"], dtype=float)
+            pts = np.asarray(x["points"], dtype=get_default_dtype())
             conf = x.get("confidence")
         else:
-            pts = np.asarray(x, dtype=float)
+            pts = np.asarray(x, dtype=get_default_dtype())
             conf = None
         n = pts.shape[0]
         if conf is None:
-            conf = np.ones(n, dtype=float)
+            conf = np.ones(n, dtype=get_default_dtype())
         else:
-            conf = np.asarray(conf, dtype=float)
+            conf = np.asarray(conf, dtype=get_default_dtype())
 
         if self._last is None or self._last.shape[0] != n:
             self._last = pts.copy()
             self._gap = np.zeros(n, dtype=int)
 
-        out = np.array(pts, dtype=float)
+        out = np.array(pts, dtype=get_default_dtype())
         cleaned = np.zeros(n, dtype=int)
 
         for i in range(n):
@@ -226,7 +227,7 @@ class LandmarkCleaner(Transformer):
                 if len(buf) > self.window:
                     buf.pop(0)
                 if len(buf) >= 3:
-                    arr = np.asarray(buf, dtype=float)
+                    arr = np.asarray(buf, dtype=get_default_dtype())
                     med = float(np.median(arr))
                     mad = float(np.median(np.abs(arr - med)))
                     scale = 1.4826 * mad
@@ -291,10 +292,10 @@ class Kinematics(Transformer):
 
     def transform_one(self, x, t=None):
         if hasattr(x, "get"):
-            pts = np.asarray(x["points"], dtype=float)
+            pts = np.asarray(x["points"], dtype=get_default_dtype())
             tt = float(x.get("t", t if t is not None else 0.0))
         else:
-            pts = np.asarray(x, dtype=float)
+            pts = np.asarray(x, dtype=get_default_dtype())
             tt = float(t) if t is not None else 0.0
         out = {}
         for i, j, k in self.triples:

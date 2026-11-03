@@ -31,6 +31,7 @@ from pathlib import Path
 import jax.numpy as jnp
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 from dense_armor.roles import Regressor
 from dense_armor.utility.online.anomaly.filters import HampelScorer
@@ -110,11 +111,11 @@ class RecursiveLeastSquares(Regressor):
     def _to_vec(self, x) -> np.ndarray:
         """Feature vector in the order of the keys; a key missing from ``x`` counts as 0.0."""
         keys = self._resolve_keys(x)
-        return np.array([float(x.get(k, 0.0)) for k in keys], dtype=float)
+        return np.array([float(x.get(k, 0.0)) for k in keys], dtype=get_default_dtype())
 
     def _init(self, d: int) -> None:
-        self._w = np.zeros(d)
-        self._P = self.delta * np.eye(d)
+        self._w = np.zeros(d, dtype=get_default_dtype())
+        self._P = self.delta * np.eye(d, dtype=get_default_dtype())
 
     def learn_one(self, x, y):
         xv = self._to_vec(x)
@@ -200,10 +201,10 @@ class ResidualDynamicsLearner:
         }
 
     def learn_one(self, q, qd, qdd, tau_measured):
-        q = np.asarray(q, dtype=float)
-        qd = np.asarray(qd, dtype=float)
-        qdd = np.asarray(qdd, dtype=float)
-        tau = np.asarray(tau_measured, dtype=float)
+        q = np.asarray(q, dtype=get_default_dtype())
+        qd = np.asarray(qd, dtype=get_default_dtype())
+        qdd = np.asarray(qdd, dtype=get_default_dtype())
+        tau = np.asarray(tau_measured, dtype=get_default_dtype())
         tau_nominal, g = self._nominal_terms(q, qd, qdd)
         residual = tau - tau_nominal
         for j in range(self.n):
@@ -213,11 +214,11 @@ class ResidualDynamicsLearner:
         return self
 
     def predict_torque(self, q, qd, qdd) -> np.ndarray:
-        q = np.asarray(q, dtype=float)
-        qd = np.asarray(qd, dtype=float)
-        qdd = np.asarray(qdd, dtype=float)
+        q = np.asarray(q, dtype=get_default_dtype())
+        qd = np.asarray(qd, dtype=get_default_dtype())
+        qdd = np.asarray(qdd, dtype=get_default_dtype())
         tau_nominal, g = self._nominal_terms(q, qd, qdd)
-        residual = np.zeros(self.n)
+        residual = np.zeros(self.n, dtype=get_default_dtype())
         for j in range(self.n):
             residual[j] = self._rls[j].predict_one(self._joint_features(j, qd, qdd, g))
         return tau_nominal + residual
@@ -338,10 +339,10 @@ class DriftAwareResidualDynamicsLearner(ResidualDynamicsLearner):
             rls.lam = value
 
     def learn_one(self, q, qd, qdd, tau_measured):
-        q = np.asarray(q, dtype=float)
-        qd = np.asarray(qd, dtype=float)
-        qdd = np.asarray(qdd, dtype=float)
-        tau = np.asarray(tau_measured, dtype=float)
+        q = np.asarray(q, dtype=get_default_dtype())
+        qd = np.asarray(qd, dtype=get_default_dtype())
+        qdd = np.asarray(qdd, dtype=get_default_dtype())
+        tau = np.asarray(tau_measured, dtype=get_default_dtype())
         tau_nominal, g = self._nominal_terms(q, qd, qdd)
         residual = tau - tau_nominal
         self._seen += 1

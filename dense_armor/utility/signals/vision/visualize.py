@@ -27,6 +27,7 @@ from pathlib import Path
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import Transformer
 
 
@@ -219,8 +220,8 @@ class Overlay(Transformer):
                 rgb[m] = 0.5 * rgb[m] + 0.5 * np.asarray(self.color_mask,
                                                         dtype=np.float32)
         if flow is not None:
-            u = np.asarray(flow["u"], dtype=float)
-            v = np.asarray(flow["v"], dtype=float)
+            u = np.asarray(flow["u"], dtype=get_default_dtype())
+            v = np.asarray(flow["v"], dtype=get_default_dtype())
             h, w = rgb.shape[:2]
             step = max(1, self.draw_flow_step)
             for y in range(step // 2, h, step):

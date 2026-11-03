@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.ml.base import MLBase
 
 __all__ = ["MultinomialNB", "BernoulliNB", "CategoricalNB", "ComplementNB"]
@@ -36,17 +37,17 @@ class _NB(MLBase):
         if self.class_prior is None:
             self.log_prior_ = np.log(counts / counts.sum())
         else:
-            p = np.array([self.class_prior[c] for c in self.classes_], dtype=float)
+            p = np.array([self.class_prior[c] for c in self.classes_], dtype=get_default_dtype())
             self.log_prior_ = np.log(p / p.sum())
 
     def predict_proba(self, X) -> np.ndarray:
         """Posterior probability of every class, one row per sample."""
-        return _softmax(self._scores(np.asarray(X, dtype=float)))
+        return _softmax(self._scores(np.asarray(X, dtype=get_default_dtype())))
 
     def predict(self, X) -> np.ndarray:
         """The most probable class of every row."""
         return self.classes_[
-            np.argmax(self._scores(np.asarray(X, dtype=float)), axis=1)
+            np.argmax(self._scores(np.asarray(X, dtype=get_default_dtype())), axis=1)
         ]
 
 
@@ -71,7 +72,7 @@ class MultinomialNB(_NB):
         self.class_prior = class_prior
 
     def fit(self, X, y=None):  # type: ignore[override]
-        A = np.asarray(X, dtype=float)
+        A = np.asarray(X, dtype=get_default_dtype())
         t = np.asarray(y)
         self._prior(t)
         N = np.array([A[t == c].sum(axis=0) for c in self.classes_])
@@ -106,10 +107,10 @@ class BernoulliNB(_NB):
         self.class_prior = class_prior
 
     def fit(self, X, y=None):  # type: ignore[override]
-        B = (np.asarray(X, dtype=float) > 0).astype(float)
+        B = (np.asarray(X, dtype=get_default_dtype()) > 0).astype(get_default_dtype())
         t = np.asarray(y)
         self._prior(t)
-        n = np.array([(t == c).sum() for c in self.classes_], dtype=float)[:, None]
+        n = np.array([(t == c).sum() for c in self.classes_], dtype=get_default_dtype())[:, None]
         k = np.array([B[t == c].sum(axis=0) for c in self.classes_])
         theta = (k + self.alpha) / (n + 2.0 * self.alpha)
         self.log_theta_ = np.log(theta)
@@ -117,7 +118,7 @@ class BernoulliNB(_NB):
         return self
 
     def _scores(self, X):
-        B = (X > 0).astype(float)
+        B = (X > 0).astype(get_default_dtype())
         return (
             self.log_prior_ + B @ self.log_theta_.T + (1.0 - B) @ self.log_1m_theta_.T
         )
@@ -149,7 +150,7 @@ class CategoricalNB(_NB):
         t = np.asarray(y)
         self._prior(t)
         self.categories_ = [np.unique(A[:, j]) for j in range(A.shape[1])]
-        n = np.array([(t == c).sum() for c in self.classes_], dtype=float)
+        n = np.array([(t == c).sum() for c in self.classes_], dtype=get_default_dtype())
         self.log_prob_ = []
         self.log_unseen_ = []
         for j, cats in enumerate(self.categories_):
@@ -159,7 +160,7 @@ class CategoricalNB(_NB):
                     [np.sum((t == c) & (A[:, j] == k)) for k in cats]
                     for c in self.classes_
                 ],
-                dtype=float,
+                dtype=get_default_dtype(),
             )
             den = (n + self.alpha * K)[:, None]
             self.log_prob_.append(np.log((cnt + self.alpha) / den))
@@ -205,7 +206,7 @@ class ComplementNB(_NB):
         self.norm = norm
 
     def fit(self, X, y=None):  # type: ignore[override]
-        A = np.asarray(X, dtype=float)
+        A = np.asarray(X, dtype=get_default_dtype())
         t = np.asarray(y)
         self._prior(t)
         N = np.array([A[t == c].sum(axis=0) for c in self.classes_])

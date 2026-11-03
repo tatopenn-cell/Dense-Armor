@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.ml.base import MLBase
 
 STOPPED = {
@@ -23,9 +24,9 @@ __all__ = ["LinearRegression", "LogisticRegression", "BayesianLinearRegression"]
 
 
 def _design(X, intercept: bool) -> np.ndarray:
-    A = np.asarray(X, dtype=float)
+    A = np.asarray(X, dtype=get_default_dtype())
     A = A[:, None] if A.ndim == 1 else A
-    return np.hstack([np.ones((A.shape[0], 1)), A]) if intercept else A
+    return np.hstack([np.ones((A.shape[0], 1), dtype=get_default_dtype()), A]) if intercept else A
 
 
 class LinearRegression(MLBase):
@@ -51,16 +52,16 @@ class LinearRegression(MLBase):
 
     def fit(self, X, y=None):  # type: ignore[override]
         A = _design(X, self.intercept)
-        t = np.asarray(y, dtype=float)
+        t = np.asarray(y, dtype=get_default_dtype())
         n, d = A.shape
-        w = np.linalg.solve(A.T @ A + (n * self.l2 / 2.0) * np.eye(d), A.T @ t)
+        w = np.linalg.solve(A.T @ A + (n * self.l2 / 2.0) * np.eye(d, dtype=get_default_dtype()), A.T @ t)
         self.intercept_ = float(w[0]) if self.intercept else 0.0
         self.coef_ = w[1:] if self.intercept else w
         return self
 
     def predict(self, X) -> np.ndarray:
         """``X coef + intercept`` for every row."""
-        A = np.asarray(X, dtype=float)
+        A = np.asarray(X, dtype=get_default_dtype())
         A = A[:, None] if A.ndim == 1 else A
         return A @ self.coef_ + self.intercept_
 
@@ -96,13 +97,13 @@ class LogisticRegression(MLBase):
 
     def fit(self, X, y=None):  # type: ignore[override]
         A = _design(X, self.intercept)
-        t = np.asarray(y, dtype=float)
+        t = np.asarray(y, dtype=get_default_dtype())
         n, d = A.shape
-        w = np.zeros(d)
+        w = np.zeros(d, dtype=get_default_dtype())
         for i in range(self.max_iter):
             p = 1.0 / (1.0 + np.exp(-(A @ w)))
             g = A.T @ (p - t) / n + self.l2 * w
-            H = (A.T * (p * (1 - p))) @ A / n + self.l2 * np.eye(d)
+            H = (A.T * (p * (1 - p))) @ A / n + self.l2 * np.eye(d, dtype=get_default_dtype())
             step = np.linalg.solve(H, g)
             w = w - step
             if np.abs(step).max() < self.tol:
@@ -114,7 +115,7 @@ class LogisticRegression(MLBase):
 
     def predict_proba(self, X) -> np.ndarray:
         """``P(y = 1 | x)`` for every row."""
-        A = np.asarray(X, dtype=float)
+        A = np.asarray(X, dtype=get_default_dtype())
         A = A[:, None] if A.ndim == 1 else A
         return 1.0 / (1.0 + np.exp(-(A @ self.coef_ + self.intercept_)))
 

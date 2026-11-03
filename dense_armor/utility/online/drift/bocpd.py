@@ -56,6 +56,7 @@ from __future__ import annotations
 import numpy as np
 from scipy import stats
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import DriftDetector
 
 
@@ -160,12 +161,12 @@ class BayesianOnlineChangepoint(DriftDetector):
         self.n_missing_: int = 0
         self.n_alarms_: int = 0
         self.n_seen_: int = 0
-        self.run_length_: np.ndarray = np.zeros(1, dtype=float)
+        self.run_length_: np.ndarray = np.zeros(1, dtype=get_default_dtype())
         self.run_length_[0] = 1.0
-        self.mu_: np.ndarray = np.full(1, self.mu0, dtype=float)
-        self.kappa_: np.ndarray = np.full(1, self.kappa0, dtype=float)
-        self.alpha_: np.ndarray = np.full(1, self.alpha0, dtype=float)
-        self.beta_: np.ndarray = np.full(1, self.beta0, dtype=float)
+        self.mu_: np.ndarray = np.full(1, self.mu0, dtype=get_default_dtype())
+        self.kappa_: np.ndarray = np.full(1, self.kappa0, dtype=get_default_dtype())
+        self.alpha_: np.ndarray = np.full(1, self.alpha0, dtype=get_default_dtype())
+        self.beta_: np.ndarray = np.full(1, self.beta0, dtype=get_default_dtype())
         self.map_run_length_: int = 0
         self.changepoint_mass_: float = 1.0
         self.short_run_mass_: float = 1.0
@@ -224,17 +225,17 @@ class BayesianOnlineChangepoint(DriftDetector):
         growth = self.run_length_ * pi * (1.0 - hazard)
         cp_mass = float(np.sum(self.run_length_ * pi * hazard))
 
-        new_r = np.empty(len(growth) + 1, dtype=float)
+        new_r = np.empty(len(growth) + 1, dtype=get_default_dtype())
         new_r[0] = cp_mass
         new_r[1:] = growth
 
         mu_n, kappa_n, alpha_n, beta_n = self._update_nig(
             x, self.mu_, self.kappa_, self.alpha_, self.beta_)
 
-        new_mu = np.empty(len(growth) + 1, dtype=float)
-        new_kappa = np.empty(len(growth) + 1, dtype=float)
-        new_alpha = np.empty(len(growth) + 1, dtype=float)
-        new_beta = np.empty(len(growth) + 1, dtype=float)
+        new_mu = np.empty(len(growth) + 1, dtype=get_default_dtype())
+        new_kappa = np.empty(len(growth) + 1, dtype=get_default_dtype())
+        new_alpha = np.empty(len(growth) + 1, dtype=get_default_dtype())
+        new_beta = np.empty(len(growth) + 1, dtype=get_default_dtype())
         new_mu[0] = self.mu0
         new_kappa[0] = self.kappa0
         new_alpha[0] = self.alpha0

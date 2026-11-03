@@ -207,8 +207,8 @@ class FrameFeatures(Transformer):
     ) -> list[tuple[slice, slice]]:
         h, w = shape
         ny, nx = grid
-        ys = np.linspace(0, h, ny + 1).astype(int)
-        xs = np.linspace(0, w, nx + 1).astype(int)
+        ys = np.linspace(0, h, ny + 1, dtype=get_default_dtype()).astype(int)
+        xs = np.linspace(0, w, nx + 1, dtype=get_default_dtype()).astype(int)
         out: list[tuple[slice, slice]] = []
         for j in range(ny):
             for i in range(nx):
@@ -276,8 +276,8 @@ class FrameFeatures(Transformer):
         """
         h, w = prev.shape
         ny, nx = self.flow_cells
-        u_pp = np.zeros((h, w))
-        v_pp = np.zeros((h, w))
+        u_pp = np.zeros((h, w), dtype=get_default_dtype())
+        v_pp = np.zeros((h, w), dtype=get_default_dtype())
         for k, (sy, sx) in enumerate(self._grid_slices(prev.shape, (ny, nx))):
             fy = k // nx
             fx = k % nx
@@ -300,8 +300,8 @@ class FrameFeatures(Transformer):
         else:
             warped = self._warp_grid(prev, u0, v0)
         wix, wiy = self._gradients(warped)
-        u_new = np.zeros((ny, nx))
-        v_new = np.zeros((ny, nx))
+        u_new = np.zeros((ny, nx), dtype=get_default_dtype())
+        v_new = np.zeros((ny, nx), dtype=get_default_dtype())
         for k, (sy, sx) in enumerate(self._grid_slices(cur.shape, (ny, nx))):
             fy = k // nx
             fx = k % nx
@@ -320,8 +320,8 @@ class FrameFeatures(Transformer):
     def _flow(self, cur: np.ndarray, prev: np.ndarray) -> dict[str, float]:
         ny, nx = self.flow_cells
         if self.flow_levels == 1:
-            u0 = np.zeros((ny, nx))
-            v0 = np.zeros((ny, nx))
+            u0 = np.zeros((ny, nx), dtype=get_default_dtype())
+            v0 = np.zeros((ny, nx), dtype=get_default_dtype())
             u, v = self._flow_cells_one_level(cur, prev, u0, v0)
         else:
             cur_pyr: list[np.ndarray] = [cur]
@@ -329,14 +329,14 @@ class FrameFeatures(Transformer):
             for _ in range(self.flow_levels - 1):
                 cur_pyr.append(_downsample(cur_pyr[-1]))
                 prev_pyr.append(_downsample(prev_pyr[-1]))
-            u = np.zeros((ny, nx))
-            v = np.zeros((ny, nx))
+            u = np.zeros((ny, nx), dtype=get_default_dtype())
+            v = np.zeros((ny, nx), dtype=get_default_dtype())
             for lvl in reversed(range(len(cur_pyr))):
                 cur_l = cur_pyr[lvl]
                 prev_l = prev_pyr[lvl]
                 if lvl == len(cur_pyr) - 1:
-                    u_l = np.zeros((ny, nx))
-                    v_l = np.zeros((ny, nx))
+                    u_l = np.zeros((ny, nx), dtype=get_default_dtype())
+                    v_l = np.zeros((ny, nx), dtype=get_default_dtype())
                 else:
                     u_l = u * 2.0
                     v_l = v * 2.0

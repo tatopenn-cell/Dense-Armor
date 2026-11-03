@@ -6,6 +6,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
+
 
 class OnlineNewtonStep:
     """Second-order online update with a rank-one running Hessian.
@@ -120,7 +122,7 @@ class OnlineNewtonStep:
         if D is not None and D <= 0.0:
             raise ValueError(f"D must be > 0 when given, got {D}")
         self.D = None if D is None else float(D)
-        self._A_inv: np.ndarray = np.zeros(0)
+        self._A_inv: np.ndarray = np.zeros(0, dtype=get_default_dtype())
 
     @classmethod
     def from_bounds(cls, G: float, D: float, alpha: float) -> "OnlineNewtonStep":
@@ -177,7 +179,7 @@ class OnlineNewtonStep:
         if float(y @ y) <= radius * radius:
             return y
         d = y.size
-        eye = np.eye(d)
+        eye = np.eye(d, dtype=get_default_dtype())
 
         def norm_sq(lam: float) -> float:
             mat = np.linalg.inv(eye + lam * A_inv)
@@ -204,7 +206,7 @@ class OnlineNewtonStep:
         diameter D in the norm induced by the updated ``A``.
         """
         if self._A_inv.size == 0:
-            self._A_inv = np.eye(weights.size) / self.eps
+            self._A_inv = np.eye(weights.size, dtype=get_default_dtype()) / self.eps
         v = self._A_inv @ gradient
         denom = 1.0 + float(gradient @ v)
         self._A_inv = self._A_inv - np.outer(v, v) / denom

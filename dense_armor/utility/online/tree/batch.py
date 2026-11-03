@@ -28,6 +28,7 @@ from typing import Any
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import Classifier
 
 
@@ -50,7 +51,7 @@ def _gini(counts: dict) -> float:
     total = sum(counts.values())
     if total == 0:
         return 0.0
-    p = np.array(list(counts.values()), dtype=float) / total
+    p = np.array(list(counts.values()), dtype=get_default_dtype()) / total
     return float(1.0 - np.sum(p * p))
 
 
@@ -94,7 +95,7 @@ def _best_split(
     classes = sorted(parent_counts.keys())
     cidx = {c: i for i, c in enumerate(classes)}
     K = len(classes)
-    Y = np.zeros((n, K))
+    Y = np.zeros((n, K), dtype=get_default_dtype())
     for i, v in enumerate(y):
         Y[i, cidx[v.item() if hasattr(v, "item") else v]] = 1.0
 
@@ -114,7 +115,7 @@ def _best_split(
         total = cum[-1]  # (K,)
         left_counts = cum[:-1]  # (n-1, K)
         right_counts = total[None, :] - left_counts  # (n-1, K)
-        n_left: np.ndarray = np.arange(1, n, dtype=float)
+        n_left: np.ndarray = np.arange(1, n, dtype=get_default_dtype())
         n_right = n - n_left
         g_left = 1.0 - np.sum((left_counts / n_left[:, None]) ** 2, axis=1)
         g_right = 1.0 - np.sum((right_counts / n_right[:, None]) ** 2, axis=1)
@@ -271,7 +272,7 @@ class BatchDecisionTreeClassifier(Classifier):
                 raise ValueError(
                     f"row {i} holds a value that is not a number"
                 ) from None
-        X_arr = np.asarray(rows, dtype=float)
+        X_arr = np.asarray(rows, dtype=get_default_dtype())
         if not np.all(np.isfinite(X_arr)):
             raise ValueError("X holds a NaN or an infinite value")
         self._feature_names = feature_names

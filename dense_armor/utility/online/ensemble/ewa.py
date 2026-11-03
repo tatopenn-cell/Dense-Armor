@@ -37,6 +37,7 @@ from typing import Any
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import Regressor
 from dense_armor.utility.online.ensemble._common import as_dict, finite, new_member
 
@@ -170,7 +171,7 @@ class ExponentiallyWeightedAverageRegressor(Regressor):
         l_min = min(self.losses_)
         w = np.array(
             [math.exp(-self.eta * min(loss - l_min, 700.0)) for loss in self.losses_],
-            dtype=float,
+            dtype=get_default_dtype(),
         )
         z = float(w.sum())
         y_hat = float(np.dot(w, np.array(preds)) / z)

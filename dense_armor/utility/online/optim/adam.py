@@ -5,6 +5,8 @@ from typing import Any
 import jax.numpy as jnp
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
+
 
 class Adam:
     """Adam with bias-corrected moment estimates.
@@ -74,8 +76,8 @@ class Adam:
         self.beta1 = float(beta1)
         self.beta2 = float(beta2)
         self.eps = float(eps)
-        self._m: np.ndarray = np.zeros(0)
-        self._v: np.ndarray = np.zeros(0)
+        self._m: np.ndarray = np.zeros(0, dtype=get_default_dtype())
+        self._v: np.ndarray = np.zeros(0, dtype=get_default_dtype())
         self._t = 0
 
     def __eq__(self, other: object) -> Any:

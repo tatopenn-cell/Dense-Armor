@@ -48,6 +48,7 @@ from typing import Any
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import Transformer
 
 
@@ -286,8 +287,8 @@ class MotionMask(Transformer):
         return mask
 
     def transform_one(self, x, t=None):
-        u = np.asarray(x["u"], dtype=float)
-        v = np.asarray(x["v"], dtype=float)
+        u = np.asarray(x["u"], dtype=get_default_dtype())
+        v = np.asarray(x["v"], dtype=get_default_dtype())
         mag = np.hypot(u, v)
         med = float(np.median(mag))
         mad = float(np.median(np.abs(mag - med)))

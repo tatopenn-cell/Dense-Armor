@@ -30,6 +30,7 @@ from collections import deque
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import AnomalyDetector, Transformer
 from dense_armor.utility.online.anomaly.streaming import _feature_value
 
@@ -142,7 +143,7 @@ class HampelScorer(AnomalyDetector):
         v = self._value(x)
         if v is None or len(self._buffer) < 4:
             return 0.0
-        w = np.fromiter(self._buffer, dtype=float)
+        w = np.fromiter(self._buffer, dtype=get_default_dtype())
         med = float(np.median(w))
         scale = _scaled_mad(w)
         dev = abs(v - med)
@@ -233,7 +234,7 @@ class TukeyScorer(AnomalyDetector):
         v = self._value(x)
         if v is None or len(self._buffer) < 4:
             return 0.0
-        w = np.fromiter(self._buffer, dtype=float)
+        w = np.fromiter(self._buffer, dtype=get_default_dtype())
         q1, q3 = np.percentile(w, [25, 75])
         iqr = float(q3 - q1)
         if iqr < self.eps:
@@ -348,7 +349,7 @@ class ChauvenetScorer(AnomalyDetector):
         v = self._value(x)
         if v is None or len(self._buffer) < 4:
             return float("inf")
-        w = np.fromiter(self._buffer, dtype=float)
+        w = np.fromiter(self._buffer, dtype=get_default_dtype())
         n = w.size
         mu = float(np.mean(w))
         sigma = float(np.std(w))
@@ -445,7 +446,7 @@ class SigmaClipScorer(AnomalyDetector):
         v = self._value(x)
         if v is None or len(self._buffer) < 4:
             return 0.0
-        w = np.fromiter(self._buffer, dtype=float)
+        w = np.fromiter(self._buffer, dtype=get_default_dtype())
         mu, sigma = _clean_stats(w, self.n_sigmas, self.max_iters, self.eps)
         dev = abs(v - mu)
         if sigma < self.eps:
@@ -526,5 +527,5 @@ class HampelFilter(Transformer):
             return {**x, key: v}
         if not self._scorer.is_outlier(x):
             return {**x, key: v}
-        w = np.fromiter(self._scorer._buffer, dtype=float)
+        w = np.fromiter(self._scorer._buffer, dtype=get_default_dtype())
         return {**x, key: float(np.median(w))}

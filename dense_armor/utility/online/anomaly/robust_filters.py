@@ -31,6 +31,8 @@ import math
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
+
 
 def _window(x: np.ndarray, i: int, radius: int) -> np.ndarray:
     n = len(x)
@@ -66,11 +68,11 @@ def _jensen_shannon(a: np.ndarray, b: np.ndarray, n_bins: int = None, pseudo: fl
         return 0.0
     if n_bins is None:
         n_bins = max(3, min(10, (a.size + b.size) // 6))
-    edges = np.linspace(lo, hi, n_bins + 1)
+    edges = np.linspace(lo, hi, n_bins + 1, dtype=get_default_dtype())
     p, _ = np.histogram(a, bins=edges)
     q, _ = np.histogram(b, bins=edges)
-    p = p.astype(float) + pseudo
-    q = q.astype(float) + pseudo
+    p = p.astype(get_default_dtype()) + pseudo
+    q = q.astype(get_default_dtype()) + pseudo
     p /= p.sum()
     q /= q.sum()
     m = 0.5 * (p + q)
@@ -94,7 +96,7 @@ def chauvenet_criterion(x: np.ndarray, radius: int = 10) -> tuple[np.ndarray, li
     documentato del criterio originale, non specifico di questa implementazione;
     per finestre con outlier multipli preferire hampel_filter o tukey_fences,
     che usano statistiche robuste)."""
-    x = np.asarray(x, dtype=float)
+    x = np.asarray(x, dtype=get_default_dtype())
     n = len(x)
     out = np.copy(x)
     anomalie = []
@@ -120,7 +122,7 @@ def tukey_fences(x: np.ndarray, radius: int = 10, k: float = 1.5) -> tuple[np.nd
     outlier se fuori da [Q1 - k*IQR, Q3 + k*IQR] (k=1.5 e' lo standard, k=3.0
     la variante "extreme outliers"). Nessuna assunzione sulla distribuzione --
     l'unico dei quattro a non presupporre normalita'."""
-    x = np.asarray(x, dtype=float)
+    x = np.asarray(x, dtype=get_default_dtype())
     n = len(x)
     out = np.copy(x)
     anomalie = []
@@ -146,7 +148,7 @@ def hampel_filter(x: np.ndarray, radius: int = 10, n_sigmas: float = 3.0) -> tup
     ma senza mai calcolare una media/std vera -- ogni singola statistica
     usata qui e' gia' robusta, a differenza di Chauvenet). Outlier se
     |x[i] - mediana| > n_sigmas * scaled_MAD."""
-    x = np.asarray(x, dtype=float)
+    x = np.asarray(x, dtype=get_default_dtype())
     n = len(x)
     out = np.copy(x)
     anomalie = []
@@ -178,7 +180,7 @@ def sigma_clip(x: np.ndarray, radius: int = 10, n_sigmas: float = 3.0, max_iters
     ripete fino a stabilita' o max_iters. Il punto i e' outlier se fuori da
     n_sigmas dalla media/std FINALI (ripulite dagli altri outlier della
     finestra, a differenza di chauvenet_criterion che usa mean/std grezze)."""
-    x = np.asarray(x, dtype=float)
+    x = np.asarray(x, dtype=get_default_dtype())
     n = len(x)
     out = np.copy(x)
     anomalie = []
@@ -187,7 +189,7 @@ def sigma_clip(x: np.ndarray, radius: int = 10, n_sigmas: float = 3.0, max_iters
         neighbor_idx = [j for j in range(lo, hi) if j != i]
         if len(neighbor_idx) < 3:
             continue
-        w = x[neighbor_idx].astype(float)
+        w = x[neighbor_idx].astype(get_default_dtype())
         mask = np.ones(w.shape, dtype=bool)
         for _ in range(max_iters):
             subset = w[mask]
@@ -360,9 +362,9 @@ def pressure_valve(
     la deviazione combinata continua per ogni punto, `soglia_effettiva' la
     soglia realmente applicata in quel punto (>= soglia_pressione, si vede
     dove/quanto la molla ha ceduto)."""
-    x = np.asarray(x, dtype=float)
+    x = np.asarray(x, dtype=get_default_dtype())
     n = len(x)
-    pressione = np.zeros(n)
+    pressione = np.zeros(n, dtype=get_default_dtype())
     soglia_effettiva = np.full(n, soglia_pressione)
 
     for i in range(n):
@@ -423,7 +425,7 @@ def pressure_valve(
 
         neighbor_idx = [j for j in range(max(0, i - radius), min(n, i + radius + 1)) if j != i]
         if len(neighbor_idx) >= 3:
-            w_neighbors = x[neighbor_idx].astype(float)
+            w_neighbors = x[neighbor_idx].astype(get_default_dtype())
             mask = np.ones(w_neighbors.shape, dtype=bool)
             for _ in range(5):
                 subset = w_neighbors[mask]
@@ -461,7 +463,7 @@ def pressure_valve(
             jsd = _jensen_shannon(w, w_riferimento)
             soglia_effettiva[i] = soglia_pressione * (1.0 + k_molla * jsd)
 
-    out = np.copy(x).astype(float)
+    out = np.copy(x).astype(get_default_dtype())
     anomalie = []
     for i in range(n):
         if pressione[i] > soglia_effettiva[i]:

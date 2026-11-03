@@ -17,6 +17,7 @@ online averaged stochastic gradient immediately refines the estimate
 as soon as new samples arrive. This is a choice, not the paper's
 offline initialisation. Without an offline initialisation the ASGD
 updates, whose gradients are normalised to unit Frobenius norm, start
+from dense_armor._dtype import get_default_dtype
 from the identity matrix and never reach the scale of the data.
 
 Two steps of the full method are not implemented. First, Guillot et
@@ -244,7 +245,7 @@ class OnlineRobustMahalanobis(AnomalyDetector):
 
     def _to_vec(self, x) -> np.ndarray:
         keys = self._resolve_keys(x)
-        return np.array([float(x[k]) for k in keys], dtype=float)
+        return np.array([float(x[k]) for k in keys], dtype=get_default_dtype())
 
     def _gamma(self, n: int) -> float:
         return self.c_gamma * (n + self.n0 + 1) ** (-self.gamma_exp)
@@ -264,12 +265,12 @@ class OnlineRobustMahalanobis(AnomalyDetector):
         return m
 
     def _offline_init(self) -> None:
-        pts = np.array(self._init_buf, dtype=float)
+        pts = np.array(self._init_buf, dtype=get_default_dtype())
         self._init_buf = []
         d = pts.shape[1]
         if pts.shape[0] < d + 1:
             self._m = pts.mean(axis=0)
-            self._V = np.eye(d)
+            self._V = np.eye(d, dtype=get_default_dtype())
             self._m_bar = self._m.copy()
             self._V_bar = self._V.copy()
         else:

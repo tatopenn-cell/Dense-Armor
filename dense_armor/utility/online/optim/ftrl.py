@@ -5,6 +5,8 @@ from typing import Any
 import jax.numpy as jnp
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
+
 
 class FTRLProximal:
     """FTRL with a quadratic + L1 + L2 regularizer.
@@ -71,7 +73,7 @@ class FTRLProximal:
         self.beta = float(beta)
         self.l1 = float(l1)
         self.l2 = float(l2)
-        self._z: np.ndarray = np.zeros(0)
+        self._z: np.ndarray = np.zeros(0, dtype=get_default_dtype())
         self._t = 0
 
     def __eq__(self, other: object) -> Any:

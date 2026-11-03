@@ -15,6 +15,7 @@ from typing import Any
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import Classifier
 
 
@@ -99,7 +100,7 @@ class BernoulliNB(Classifier):
             self.n_missing_ += 1
             return self
         keys = self._resolve_keys(x)
-        row = np.empty(len(keys), dtype=float)
+        row = np.empty(len(keys), dtype=get_default_dtype())
         for i, k in enumerate(keys):
             try:
                 v = float(x[k])
@@ -111,7 +112,7 @@ class BernoulliNB(Classifier):
                 return self
             row[i] = 1.0 if v > 0.0 else 0.0
         if y not in self._present:
-            self._present[y] = np.zeros(len(keys))
+            self._present[y] = np.zeros(len(keys), dtype=get_default_dtype())
             self._class_n[y] = 0
         self._present[y] = self._present[y] + row
         self._class_n[y] += 1
@@ -137,7 +138,7 @@ class BernoulliNB(Classifier):
         if not self._present or not isinstance(x, dict) or not x:
             return {}
         keys = self._keys or self._resolve_keys(x)
-        row = np.zeros(len(keys), dtype=float)
+        row = np.zeros(len(keys), dtype=get_default_dtype())
         for i, k in enumerate(keys):
             try:
                 v = float(x.get(k, 0.0))

@@ -27,6 +27,7 @@ from typing import Any
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import Classifier
 
 
@@ -288,7 +289,7 @@ class OutputCodeClassifier(_BaseMulticlass):
     def _new_code(self) -> np.ndarray:
         rng = np.random.default_rng(self.seed + len(self._codes))
         bits = rng.integers(0, 2, size=self.code_size) * 2 - 1
-        return bits.astype(float)
+        return bits.astype(get_default_dtype())
 
     def _ensure_class(self, y: Any) -> None:
         if y not in self._codes:
@@ -313,7 +314,7 @@ class OutputCodeClassifier(_BaseMulticlass):
         self._time_step(t)
         if not self._codes or self._check(x) is None:
             return {}
-        bits = np.zeros(self.code_size)
+        bits = np.zeros(self.code_size, dtype=get_default_dtype())
         for j in range(self.code_size):
             p = self._binary[j].predict_proba_one(x)
             bits[j] = 1.0 if p.get(1, 0.0) >= 0.5 else -1.0

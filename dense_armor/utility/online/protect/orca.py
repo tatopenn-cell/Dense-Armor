@@ -258,7 +258,7 @@ class Orca:
         fallback = float(np.median(finiti)) if finiti.size else 0.0
         v_safe = np.where(np.isfinite(v), v, fallback)
         n = v_safe.size
-        local_med = np.empty(n)
+        local_med = np.empty(n, dtype=get_default_dtype())
         for i in range(n):
             a, b = max(0, i - 3), min(n, i + 4)
             local_med[i] = np.median(v_safe[a:b])

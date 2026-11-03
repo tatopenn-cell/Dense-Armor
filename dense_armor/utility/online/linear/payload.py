@@ -45,6 +45,7 @@ from typing import Any
 import jax
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import Regressor
 
 
@@ -152,9 +153,9 @@ class PayloadEstimator(Regressor):
         )
 
     def _extract(self, d: dict) -> tuple | None:
-        q = np.empty(self._n)
-        qd = np.empty(self._n)
-        tau = np.empty(self._n)
+        q = np.empty(self._n, dtype=get_default_dtype())
+        qd = np.empty(self._n, dtype=get_default_dtype())
+        tau = np.empty(self._n, dtype=get_default_dtype())
         try:
             for j in range(self._n):
                 q[j] = float(d[f"q_{j}"])
@@ -206,13 +207,13 @@ class PayloadEstimator(Regressor):
         self._prev_qd = qd
         self._prev_t = t_sample
 
-        M = np.asarray(self._mm(q), dtype=float)
-        b = np.asarray(self._bf(q, qd), dtype=float)
-        gr = np.asarray(self._gf(q), dtype=float)
+        M = np.asarray(self._mm(q), dtype=get_default_dtype())
+        b = np.asarray(self._bf(q, qd), dtype=get_default_dtype())
+        gr = np.asarray(self._gf(q), dtype=get_default_dtype())
         tau_nom = M @ qdd + b + gr
         residual = tau - tau_nom
 
-        jz = np.asarray(self._lj(q), dtype=float)[2]
+        jz = np.asarray(self._lj(q), dtype=get_default_dtype())[2]
         phi = self.g * jz
 
         self._P = self._P / self.lam

@@ -19,6 +19,7 @@ from collections import deque
 import numpy as np
 from scipy.stats import ks_2samp
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import DriftDetector
 
 
@@ -76,7 +77,7 @@ class KSWIN(DriftDetector):
         self._window.append(float(x))
         if len(self._window) < self.window_size:
             return self
-        arr = np.asarray(self._window, dtype=float)
+        arr = np.asarray(self._window, dtype=get_default_dtype())
         new = arr[-self.stat_size:]
         pool = arr[:-self.stat_size]
         if pool.size < self.stat_size:

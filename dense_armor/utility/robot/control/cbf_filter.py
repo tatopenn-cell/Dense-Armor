@@ -63,6 +63,8 @@ it does not retroactively fix an already-unsafe initial state.
 """
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
+
 
 def cbf_safety_filter(x: float, u_des: float, obstacle: float, safe_dist: float, alpha_gain: float = 1.0) -> float:
     """Minimally modifies u_des so the applied single-integrator state
@@ -155,7 +157,7 @@ def cbf_filtered_trajectory(x_raw: np.ndarray, obstacle: float, safe_dist: float
     if n_substeps < 1:
         raise ValueError("n_substeps must be at least 1")
     n = len(x_raw)
-    out = np.empty(n)
+    out = np.empty(n, dtype=get_default_dtype())
     x = float(x_raw[0])
     out[0] = x
     sub_dt = 1.0 / n_substeps

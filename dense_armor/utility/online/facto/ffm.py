@@ -5,6 +5,7 @@ from typing import Any
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import Classifier, Regressor
 from dense_armor.utility.online.facto._common import _sigmoid
 
@@ -125,7 +126,7 @@ class _FFMBase:
         f = len(self._field_names)
         rng = np.random.default_rng(self.seed)
         self._w = rng.uniform(0.0, 1.0 / np.sqrt(self.k), size=(n, f, self.k))
-        self._G = np.ones((n, f, self.k), dtype=float)
+        self._G = np.ones((n, f, self.k), dtype=get_default_dtype())
 
     def _active(self, x: Any) -> list[tuple[int, int, float]]:
         xv = self._as_dict(x)

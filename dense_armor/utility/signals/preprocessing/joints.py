@@ -24,6 +24,7 @@ from typing import Any
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import Transformer
 
 
@@ -112,7 +113,7 @@ class JointDerivatives(Transformer):
         if t is None or self.q_key not in x:
             return None
         try:
-            qv = np.asarray(x[self.q_key], dtype=float)
+            qv = np.asarray(x[self.q_key], dtype=get_default_dtype())
         except (TypeError, ValueError):
             return None
         if qv.ndim == 0:
@@ -155,9 +156,9 @@ class JointDerivatives(Transformer):
         ts = [p[0] for p in hist]
         qs = np.stack([p[1] for p in hist], axis=0)
         _, d = qs.shape
-        v = np.zeros(d)
-        a = np.zeros(d)
-        j = np.zeros(d)
+        v = np.zeros(d, dtype=get_default_dtype())
+        a = np.zeros(d, dtype=get_default_dtype())
+        j = np.zeros(d, dtype=get_default_dtype())
         for k in range(d):
             vk, ak, jk = _derivatives_at_last(ts, qs[:, k].tolist())
             v[k], a[k], j[k] = vk, ak, jk
@@ -172,9 +173,9 @@ class JointDerivatives(Transformer):
         ts = [p[0] for p in hist]
         qs = np.stack([p[1] for p in hist], axis=0)
         _, d = qs.shape
-        v = np.zeros(d)
-        a = np.zeros(d)
-        j = np.zeros(d)
+        v = np.zeros(d, dtype=get_default_dtype())
+        a = np.zeros(d, dtype=get_default_dtype())
+        j = np.zeros(d, dtype=get_default_dtype())
         for k in range(d):
             vk, ak, jk = _derivatives_at_last(ts, qs[:, k].tolist())
             v[k], a[k], j[k] = vk, ak, jk
@@ -227,8 +228,8 @@ class JointPower(Transformer):
         if self.tau_key not in d or self.qd_key not in d:
             self.n_missing_ += 1
             return out
-        tau = np.asarray(d[self.tau_key], dtype=float)
-        qd = np.asarray(d[self.qd_key], dtype=float)
+        tau = np.asarray(d[self.tau_key], dtype=get_default_dtype())
+        qd = np.asarray(d[self.qd_key], dtype=get_default_dtype())
         if tau.shape != qd.shape:
             self.n_missing_ += 1
             return out

@@ -44,6 +44,7 @@ from collections.abc import Iterator
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import Signal
 
 
@@ -124,7 +125,7 @@ class DriftStream:
         self._mu = [_make_concept(rng, n_features, j) for j in range(n_drifts + 1)]
         self._scale = self._mu[0][1]
         if n_drifts == 0:
-            self.drift_positions = np.zeros(0)
+            self.drift_positions = np.zeros(0, dtype=get_default_dtype())
         else:
             self.drift_positions = np.array(
                 [(j + 1) / (n_drifts + 1) for j in range(n_drifts)]
@@ -172,7 +173,7 @@ class DriftStream:
             ``(n_samples,)``.
         """
         rng = np.random.default_rng(None if self.seed is None else self.seed + 1)
-        X = np.zeros((self.n_samples, self.n_features))
+        X = np.zeros((self.n_samples, self.n_features), dtype=get_default_dtype())
         y = np.zeros(self.n_samples, dtype=int)
         concepts = np.zeros(self.n_samples, dtype=int)
         for i in range(self.n_samples):

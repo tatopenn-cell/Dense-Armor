@@ -71,6 +71,7 @@ from typing import Any
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import DriftDetector, Regressor
 from dense_armor.utility.online.drift.adwin import ADWIN
 
@@ -164,7 +165,7 @@ class _LeafModel:
 
     def __init__(self, d: int) -> None:
         self.attrs = [_Moments() for _ in range(d)]
-        self.w = np.zeros(d + 1)
+        self.w = np.zeros(d + 1, dtype=get_default_dtype())
         self.target = _Moments()
         self.t_mean = self.n_mean = self.t_lin = self.n_lin = 0.0
 
@@ -410,7 +411,7 @@ class OnlineExtraTreesRegressor(Regressor):
                 list(self.feature_keys) if self.feature_keys is not None else sorted(d)
             )
         try:
-            v = np.array([float(d[k]) for k in self._keys], dtype=float)
+            v = np.array([float(d[k]) for k in self._keys], dtype=get_default_dtype())
         except (KeyError, TypeError, ValueError):
             return None
         return v if np.isfinite(v).all() else None

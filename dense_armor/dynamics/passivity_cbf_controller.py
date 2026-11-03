@@ -40,6 +40,8 @@ import numpy as np
 import osqp
 from scipy import sparse
 
+from dense_armor._dtype import get_default_dtype
+
 
 def manipulability(j):
     """Manipulability index sqrt(det(J J^T)) -- zero at a kinematic singularity."""
@@ -205,7 +207,7 @@ def solve_control_qp(model, link_name, q, qd, p_des, pd_des, pdd_des,
         jnp.asarray(pd_des), jnp.asarray(pdd_des), kp_task, kd_task, kd_null,
         eps, ka[0], ka[1])
 
-    p_mat = sparse.csc_matrix(np.eye(n) * (1.0 + w_reg))
+    p_mat = sparse.csc_matrix(np.eye(n, dtype=get_default_dtype()) * (1.0 + w_reg))
     q_vec = -np.asarray(qdd_nom)
 
     qdd_lb_raw = np.asarray(qdd_lb)
@@ -226,7 +228,7 @@ def solve_control_qp(model, link_name, q, qd, p_des, pd_des, pdd_des,
     if has_real_limits:
         qdd_lb_np = np.clip(qdd_lb_raw, -1e20, 1e20)
         qdd_ub_np = np.clip(qdd_ub_raw, -1e20, 1e20)
-        identity_n = sparse.csc_matrix(np.eye(n))
+        identity_n = sparse.csc_matrix(np.eye(n, dtype=get_default_dtype()))
         a_full = sparse.vstack(rows_a1a2 + [identity_n]).tocsc()
         l_full = np.concatenate([l_a1a2, qdd_lb_np])
         u_full = np.concatenate([u_a1a2, qdd_ub_np])
@@ -243,7 +245,7 @@ def solve_control_qp(model, link_name, q, qd, p_des, pd_des, pdd_des,
         # Soft passivity constraint dropped; hard CBF + joint-limit constraints kept.
         if has_real_limits:
             a_cbf = sparse.vstack([sparse.csc_matrix(np.asarray(a2).reshape(1, n)),
-                                    sparse.csc_matrix(np.eye(n))]).tocsc()
+                                    sparse.csc_matrix(np.eye(n, dtype=get_default_dtype()))]).tocsc()
             l_cbf = np.concatenate([[-1e20], qdd_lb_np])
             u_cbf = np.concatenate([[float(u2)], qdd_ub_np])
         else:

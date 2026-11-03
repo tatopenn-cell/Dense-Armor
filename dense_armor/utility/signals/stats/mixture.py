@@ -87,6 +87,7 @@ Neal, R. M., Hinton, G. E. (1998). A view of the EM algorithm that
 import math
 from typing import Any
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import Transformer
 
 _REG_COVAR_DEFAULT = 1e-6
@@ -221,7 +222,7 @@ class OnlineGaussianMixture(Transformer):
     def _log_component(self, v: list[float]) -> Any:
         import numpy as np
 
-        x: np.ndarray = np.asarray(v, dtype=float)
+        x: np.ndarray = np.asarray(v, dtype=get_default_dtype())
         var = self.variances_ + self.reg_covar
         diff = x[None, :] - self.means_
         # reg_covar can be 0, so var can be 0 when all the data in a
@@ -251,7 +252,7 @@ class OnlineGaussianMixture(Transformer):
         r = r / float(np.sum(r))
 
         gamma = self.learning_rate
-        x_arr: np.ndarray = np.asarray(v, dtype=float)
+        x_arr: np.ndarray = np.asarray(v, dtype=get_default_dtype())
         w_old = self.weights_.copy()
         mu_old = self.means_.copy()
         var_old = self.variances_.copy()

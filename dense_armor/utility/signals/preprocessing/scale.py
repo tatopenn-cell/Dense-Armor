@@ -19,6 +19,7 @@ from typing import Any
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import Transformer
 from dense_armor.utility.signals.stats.moments import EWStats, RunningMoments
 from dense_armor.utility.signals.stats.robust import RollingMAD, RollingMedian
@@ -36,17 +37,17 @@ def _to_vec(v: Any) -> tuple[np.ndarray | None, bool]:
     if isinstance(v, bool):
         return None, True
     if isinstance(v, (int, float)):
-        return np.asarray([float(v)], dtype=float), True
+        return np.asarray([float(v)], dtype=get_default_dtype()), True
     if isinstance(v, np.ndarray):
         if v.ndim == 0:
-            return np.asarray([float(v)], dtype=float), True
+            return np.asarray([float(v)], dtype=get_default_dtype()), True
         try:
-            return v.astype(float).ravel(), False
+            return v.astype(get_default_dtype()).ravel(), False
         except (TypeError, ValueError):
             return None, True
     if isinstance(v, (list, tuple)):
         try:
-            return np.asarray(v, dtype=float).ravel(), False
+            return np.asarray(v, dtype=get_default_dtype()).ravel(), False
         except (TypeError, ValueError):
             return None, True
     return None, True
@@ -153,7 +154,7 @@ class StandardScaler(Transformer):
         """
         if not isinstance(X, dict):
             return super().learn_many(X, t)
-        cols = {k: np.asarray(v, dtype=float) for k, v in X.items()}
+        cols = {k: np.asarray(v, dtype=get_default_dtype()) for k, v in X.items()}
         cols = {k: (v[:, None] if v.ndim == 1 else v) for k, v in cols.items()}
         if not cols or min(v.shape[0] for v in cols.values()) == 0:
             return self
@@ -182,7 +183,7 @@ class StandardScaler(Transformer):
             vec, is_scalar = _to_vec(out[k])
             if vec is None or vec.size != len(s_list):
                 continue
-            res = np.empty(vec.size, dtype=float)
+            res = np.empty(vec.size, dtype=get_default_dtype())
             for i, s in enumerate(s_list):
                 if s.count >= 2 and s.std > self.eps:
                     res[i] = (vec[i] - s.mean) / s.std
@@ -273,7 +274,7 @@ class EWScaler(Transformer):
             vec, is_scalar = _to_vec(out[k])
             if vec is None or vec.size != len(s_list):
                 continue
-            res = np.empty(vec.size, dtype=float)
+            res = np.empty(vec.size, dtype=get_default_dtype())
             for i, s in enumerate(s_list):
                 if s.count >= 1 and s.std > self.eps:
                     res[i] = (vec[i] - s.mean) / s.std
@@ -373,7 +374,7 @@ class RobustScaler(Transformer):
             if vec is None or vec.size != len(med_list):
                 continue
             mad_list = self.mads_[k]
-            res = np.empty(vec.size, dtype=float)
+            res = np.empty(vec.size, dtype=get_default_dtype())
             for i, med in enumerate(med_list):
                 mad = mad_list[i].value
                 if med.count >= 1 and mad > self.eps:
@@ -456,7 +457,7 @@ class MinMaxScaler(Transformer):
             vec, is_scalar = _to_vec(out[k])
             if vec is None or vec.size != len(s_list):
                 continue
-            res = np.empty(vec.size, dtype=float)
+            res = np.empty(vec.size, dtype=get_default_dtype())
             for i, s in enumerate(s_list):
                 lo, hi = s.min, s.max
                 if lo is None or hi is None:

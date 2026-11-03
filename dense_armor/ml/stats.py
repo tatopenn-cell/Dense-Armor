@@ -22,6 +22,7 @@ from scipy.signal import lfilter
 from scipy.stats import kurtosis as _kurt
 from scipy.stats import skew as _skew
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.ml.base import MLBase, finite, finite_pairs
 
 STOPPED = {
@@ -121,8 +122,8 @@ class RollingCovariance(MLBase):
         a, b, self.n_missing_ = finite_pairs(X, y)
         w = self.window
         if a.size < w:
-            self.cov_series_ = np.empty(0)
-            self.corr_series_ = np.empty(0)
+            self.cov_series_ = np.empty(0, dtype=get_default_dtype())
+            self.corr_series_ = np.empty(0, dtype=get_default_dtype())
         else:
             wa = sliding_window_view(a, w)
             wb = sliding_window_view(b, w)
@@ -230,7 +231,7 @@ class ColumnMoments(MLBase):
         self.features = features
 
     def fit(self, X, y=None):  # type: ignore[override]
-        A = np.asarray(X, dtype=float)
+        A = np.asarray(X, dtype=get_default_dtype())
         if A.ndim == 1:
             A = A[:, None]
         cols = [Moments().fit(A[:, j]) for j in range(A.shape[1])]
@@ -301,12 +302,12 @@ class RollingMedian(MLBase):
         self.features = features
 
     def fit(self, X, y=None):  # type: ignore[override]
-        A = np.asarray(X, dtype=float)
+        A = np.asarray(X, dtype=get_default_dtype())
         if A.ndim == 1:
             A = A[:, None]
         w = self.window
         if A.shape[0] < w:
-            self.series_ = np.empty((0, A.shape[1]))
+            self.series_ = np.empty((0, A.shape[1]), dtype=get_default_dtype())
         else:
             self.series_ = np.median(sliding_window_view(A, w, axis=0), axis=-1)
         self.median_ = (
@@ -339,10 +340,10 @@ class ShrinkageCovariance(MLBase):
         self.feature_prefix = feature_prefix
 
     def fit(self, X, y=None):  # type: ignore[override]
-        A = np.asarray(X, dtype=float)
+        A = np.asarray(X, dtype=get_default_dtype())
         self.n_seen_ = int(A.shape[0])
         p = self.n_features
-        s = np.cov(A.T) if A.shape[0] > 1 else np.zeros((p, p))
+        s = np.cov(A.T) if A.shape[0] > 1 else np.zeros((p, p), dtype=get_default_dtype())
         n = max(self.n_seen_, 1)
         tr_s = float(np.trace(s))
         tr_s2 = float(np.sum(s * s))
@@ -353,5 +354,5 @@ class ShrinkageCovariance(MLBase):
             self.alpha_ = 1.0 - (tr_s * tr_s / n) / denom
             self.beta_ = (1.0 - self.alpha_) * tr_s
         self.sample_ = s
-        self.shrunk_ = self.alpha_ * s + self.beta_ * np.eye(p) / p
+        self.shrunk_ = self.alpha_ * s + self.beta_ * np.eye(p, dtype=get_default_dtype()) / p
         return self

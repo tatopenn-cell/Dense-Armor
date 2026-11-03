@@ -42,6 +42,7 @@ from typing import Any
 import jax.numpy as jnp
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import Transformer
 from dense_armor.utility.online.learn.online_dynamics import RecursiveLeastSquares
 
@@ -111,8 +112,8 @@ class OnlineAR(Transformer):
     def coef_(self) -> np.ndarray:
         """Coefficients from the oldest lag to the newest."""
         if self._rls is None or self._rls._w is None:
-            return np.zeros(self.order)
-        return np.asarray(self._rls._w, dtype=float).copy()
+            return np.zeros(self.order, dtype=get_default_dtype())
+        return np.asarray(self._rls._w, dtype=get_default_dtype()).copy()
 
     def _key_of(self, x: dict) -> str:
         if self.feature is not None:
@@ -122,7 +123,7 @@ class OnlineAR(Transformer):
         return self._key
 
     def _init(self) -> None:
-        self._hist = np.zeros(self.order)
+        self._hist = np.zeros(self.order, dtype=get_default_dtype())
         keys = [f"h{j:04d}" for j in range(self.order)]
         self._rls = RecursiveLeastSquares(
             lam=self.lam, delta=self.delta, feature_keys=keys
@@ -300,7 +301,7 @@ class OnlineVAR(Transformer):
             return None
         keys = self._resolve_keys(x)
         try:
-            v = np.array([float(x[k]) for k in keys], dtype=float)
+            v = np.array([float(x[k]) for k in keys], dtype=get_default_dtype())
         except (TypeError, ValueError, KeyError):
             return None
         if not np.all(np.isfinite(v)):
@@ -309,10 +310,10 @@ class OnlineVAR(Transformer):
 
     def _init(self, n: int) -> None:
         np_dim = n * self.order
-        self._hist = np.zeros((self.order, n))
-        self._phi = self.sigma2 * np.eye(np_dim)
-        self._r = np.zeros((n, np_dim))
-        self._a = np.zeros((n, np_dim))
+        self._hist = np.zeros((self.order, n), dtype=get_default_dtype())
+        self._phi = self.sigma2 * np.eye(np_dim, dtype=get_default_dtype())
+        self._r = np.zeros((n, np_dim), dtype=get_default_dtype())
+        self._a = np.zeros((n, np_dim), dtype=get_default_dtype())
 
     def learn_one(self, x: dict, y: Any = None, t: float | None = None) -> "OnlineVAR":
         """One sample: predict, update, push to history."""

@@ -33,6 +33,7 @@ Relation to the Mondrian forest of the library. The Mondrian forest
 smooths the prediction of a tree with a fixed hierarchical prior over
 where a path leaves the tree, so a node weighs the same whatever the
 tree has predicted. AMF replaces that fixed prior with weights learned
+from dense_armor._dtype import get_default_dtype
 from the loss of every node, so a cell that has predicted badly is
 discounted, at a cost of two weights per node and no lifetime
 parameter.
@@ -210,8 +211,8 @@ class _AmfTree:
     ) -> None:
         self.max_nodes = max_nodes
         self.d = d
-        self.low = np.full(d, low, dtype=float)
-        self.high = np.full(d, high, dtype=float)
+        self.low = np.full(d, low, dtype=get_default_dtype())
+        self.high = np.full(d, high, dtype=get_default_dtype())
         self.step = step
         self.fc = forecaster
         self.rng = rng
@@ -357,7 +358,7 @@ class _Forest:
             )
             self._keys = keys
         try:
-            v = np.array([float(d[k]) for k in self._keys], dtype=float)
+            v = np.array([float(d[k]) for k in self._keys], dtype=get_default_dtype())
         except (KeyError, TypeError, ValueError):
             return None
         if not np.isfinite(v).all():
