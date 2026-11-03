@@ -11,6 +11,8 @@ import json
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
+
 from .models import (
     CleanSignalInput,
     DetectAnomaliesInput,
@@ -77,7 +79,7 @@ def _to_array(values) -> np.ndarray:
     """JSON `null` entries arrive as Python None inside the list -- convert
     to NaN before anything touches the array as float64, matching how
     dense_armor's own CLI (`python -m dense_armor --json`) accepts gaps."""
-    return np.array([np.nan if v is None else v for v in values], dtype=np.float64)
+    return np.array([np.nan if v is None else v for v in values], dtype=get_default_dtype())
 
 
 def _nan_to_none(arr) -> list:

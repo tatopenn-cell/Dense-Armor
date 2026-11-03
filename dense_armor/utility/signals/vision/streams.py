@@ -24,6 +24,8 @@ from pathlib import Path
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
+
 
 @dataclass
 class Frame:
@@ -100,13 +102,13 @@ def _to_dtype(arr: np.ndarray, dtype: str, gray: bool, bgr: bool = False) -> np.
         if dtype == "uint8":
             if a.dtype == np.uint8:
                 return a.astype(np.uint8, copy=False)
-            f = a.astype(np.float64) * (255.0 / float(np.iinfo(a.dtype).max))
+            f = a.astype(get_default_dtype()) * (255.0 / float(np.iinfo(a.dtype).max))
             return np.clip(f, 0.0, 255.0).astype(np.uint8)
         if a.dtype == np.uint16:
             return a.astype(np.uint16, copy=False)
-        f = a.astype(np.float64) * (65535.0 / float(np.iinfo(a.dtype).max))
+        f = a.astype(get_default_dtype()) * (65535.0 / float(np.iinfo(a.dtype).max))
         return np.clip(f, 0.0, 65535.0).astype(np.uint16)
-    f = np.clip(a.astype(np.float64), 0.0, 1.0) * top
+    f = np.clip(a.astype(get_default_dtype()), 0.0, 1.0) * top
     return np.round(f).astype(np.dtype(dtype))
 
 

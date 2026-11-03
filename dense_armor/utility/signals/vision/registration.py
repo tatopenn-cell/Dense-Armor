@@ -31,6 +31,7 @@ References:
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import Transformer
 
 
@@ -102,7 +103,7 @@ class Registration(Transformer):
         arr = img["array"] if isinstance(img, dict) else (
             img.array if hasattr(img, "array") else img
         )
-        g = _to_gray(np.asarray(arr)).astype(np.float64)
+        g = _to_gray(np.asarray(arr)).astype(get_default_dtype())
         g = g - g.mean()
         if self.window > 0:
             h, w = g.shape
@@ -155,7 +156,7 @@ class Registration(Transformer):
         arr = x["array"] if isinstance(x, dict) else (
             x.array if hasattr(x, "array") else x
         )
-        cur = _to_gray(np.asarray(arr)).astype(np.float64)
+        cur = _to_gray(np.asarray(arr)).astype(get_default_dtype())
         cur = cur - cur.mean()
         if self.window > 0:
             h, w = cur.shape

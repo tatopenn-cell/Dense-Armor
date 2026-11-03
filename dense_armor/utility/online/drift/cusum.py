@@ -53,6 +53,8 @@ introducing a second, incompatible notion of scale.
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
+
 
 def _window_causal(x: np.ndarray, i: int, span: int) -> np.ndarray:
     lo = max(0, i - span)
@@ -152,10 +154,10 @@ def cusum_detector(
     """
     if reference not in ("adaptive", "fixed"):
         raise ValueError(f"reference must be 'adaptive' or 'fixed', got {reference!r}")
-    x = np.asarray(x, dtype=np.float64).ravel()
+    x = np.asarray(x, dtype=get_default_dtype()).ravel()
     n = x.size
     flagged: np.ndarray = np.zeros(n, dtype=bool)
-    cusum: np.ndarray = np.zeros(n, dtype=np.float64)
+    cusum: np.ndarray = np.zeros(n, dtype=get_default_dtype())
     s_pos, s_neg = 0.0, 0.0
     span = radius * ref_mult
 

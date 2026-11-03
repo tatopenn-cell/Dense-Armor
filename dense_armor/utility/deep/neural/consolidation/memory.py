@@ -5,6 +5,8 @@ from __future__ import annotations
 import jax.numpy as jnp
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
+
 
 class LifecycleMemory:
     """Lifecycle-quantised memory (SuperLocalMemory V3.3, Bhardwaj 2026, p.1).
@@ -192,7 +194,7 @@ class DualMemory:
 
     def write(self, x: jnp.ndarray, t: float = 0.0) -> int:
         """Write ``x`` in the fast memory; return its index."""
-        xa = np.asarray(x, dtype=np.float64).reshape(-1)[: self.d_model]
+        xa = np.asarray(x, dtype=get_default_dtype()).reshape(-1)[: self.d_model]
         if len(self.fast_) >= self.fast_capacity:
             self.fast_.pop(0)
             self._fast_t.pop(0)
@@ -205,7 +207,7 @@ class DualMemory:
         if not self.fast_:
             return []
         F = np.stack(self.fast_, axis=0)
-        xa = np.asarray(x, dtype=np.float64).reshape(-1)[: self.d_model]
+        xa = np.asarray(x, dtype=get_default_dtype()).reshape(-1)[: self.d_model]
         d = np.sum((F - xa[None, :]) ** 2, axis=1)
         order = np.argsort(d)[::-1]
         return [int(i) for i in order[: self.top_k]]
@@ -235,9 +237,9 @@ class DualMemory:
         """
         if not self.slow_:
             return []
-        nov = np.asarray(self._slow_novelty, dtype=np.float64)
+        nov = np.asarray(self._slow_novelty, dtype=get_default_dtype())
         # age is the recency: older events (lower index) have higher age
-        age = np.arange(len(self.slow_), 0, -1, dtype=np.float64)
+        age = np.arange(len(self.slow_), 0, -1, dtype=get_default_dtype())
         w = (nov + 1e-6) * age
         w = w / np.sum(w)
         idx = self._rng.choice(len(self.slow_), size=n, replace=True, p=w)

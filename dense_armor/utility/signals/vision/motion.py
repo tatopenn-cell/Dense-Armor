@@ -45,6 +45,7 @@ References:
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import Transformer
 
 
@@ -236,7 +237,7 @@ class GlobalMotion(Transformer):
         return set()
 
     def _to_float_gray(self, img: np.ndarray) -> np.ndarray:
-        g = _to_gray(img).astype(np.float64)
+        g = _to_gray(img).astype(get_default_dtype())
         g = g - g.mean()
         if self.window > 0:
             h, w = g.shape

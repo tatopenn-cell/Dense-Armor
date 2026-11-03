@@ -4,6 +4,15 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- The library is float32 by default. `dense_armor.set_default_dtype("float64")` and `get_default_dtype()` change it.
+  The classes that build numpy arrays (the vision, the anomaly scorers, the CUSUM detector, the continual-learning
+  and consolidation classes, the similarity index, the MCP tools) use it. `core/engine.py` stays float64: it runs
+  its computations inside a local x64 context, so the rest of the process is not forced to x64. The `dynamics`
+  modules and the MCP server no longer turn on `jax_enable_x64` for the whole process on import.
+  Left in float64: `Armor`, `hybrid_engine`, `BayesianLinearRegression`, the Mondrian forests, `Beta`, `Multinomial`,
+  `Metro`, `Orca`, the arbiter and `gradcheck`.
+
 ## [1.4.0] - 2026-11-02
 
 ### Changed

@@ -33,6 +33,7 @@ from typing import Any
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import Transformer
 
 
@@ -282,8 +283,8 @@ class FrameFeatures(Transformer):
             fx = k % nx
             u_pp[sy, sx] = float(u[fy, fx])
             v_pp[sy, sx] = float(v[fy, fx])
-        rr = np.arange(h, dtype=np.float64)[:, None] - v_pp
-        cc = np.arange(w, dtype=np.float64)[None, :] - u_pp
+        rr = np.arange(h, dtype=get_default_dtype())[:, None] - v_pp
+        cc = np.arange(w, dtype=get_default_dtype())[None, :] - u_pp
         return _bilinear(prev, rr, cc)
 
     def _flow_cells_one_level(

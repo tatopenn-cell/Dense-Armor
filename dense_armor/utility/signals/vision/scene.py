@@ -35,6 +35,7 @@ References:
 
 import numpy as np
 
+from dense_armor._dtype import get_default_dtype
 from dense_armor.roles import Transformer
 from dense_armor.utility.signals.vision.patches import PatchFeatures, PatchMemory
 
@@ -51,7 +52,7 @@ def _to_gray(img: np.ndarray) -> np.ndarray:
 def _histogram(img: np.ndarray, bins: int, lo: float, hi: float) -> np.ndarray:
     h, _ = np.histogram(img, bins=bins, range=(lo, hi))
     s = h.sum()
-    return h / s if s > 0 else h.astype(np.float64)
+    return h / s if s > 0 else h.astype(get_default_dtype())
 
 
 class SceneChange(Transformer):

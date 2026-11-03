@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
 
-import jax
-
-jax.config.update("jax_enable_x64", True)
-
 # I test CAT-A/B/D/E (test_bound*.py) stampano box-drawing/emoji decorativi
 # nei loro report -- su Windows, sys.stdout di default usa la codepage
 # della console (cp1252), che non li rappresenta e solleva
