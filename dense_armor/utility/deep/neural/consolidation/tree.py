@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import jax.numpy as jnp
 import numpy as np
+from scipy.cluster.vq import kmeans2
 
 from dense_armor._dtype import as_default_array
 
@@ -40,8 +41,8 @@ class ResidualTree:
 
     Deviations from the paper (declared):
         - the nodes are vector-quantised memories, not residual modules;
-        - the consolidation is a k-means on the children codes, not the
-          paper's confidence rule;
+        - the consolidation is a k-means on the decoded children codebooks,
+          followed by a brief VQ training (5 steps); not the paper's confidence rule;
         - ``alpha`` and ``kappa`` are per-node scalars in the paper; here
           ``kappa`` is the threshold and ``alpha`` is the mean residual
           of the node.
@@ -230,9 +231,14 @@ class ResidualTree:
     def consolidate(self) -> int:
         """Merge every node that has ``branching`` children into a parent.
 
-        Returns the number of nodes removed. The parent's codebook is the
-        concatenation of the children centroids, reduced by k-means to
-        ``n_codes / branching``; the children are dropped.
+        Returns the number of nodes removed. Each group of ``branching``
+        children is decoded into input space, clustered by k-means to
+        ``n_codes / branching`` centroids, and the parent's VQ is rebuilt
+        with that reduced codebook. The k-means centroids are used as an
+        initialization; the parent's VQ is then briefly trained (5 steps) on
+        the decoded centroids, so the final codebook is a trained
+        representation of the children, not the k-means centroids
+        themselves. The children are dropped.
         """
         removed = 0
 
@@ -240,10 +246,30 @@ class ResidualTree:
             nonlocal removed
             while len(node["children"]) >= self.branching:
                 kids = node["children"][: self.branching]
-                node["vq"].fit(
-                    jnp.concatenate([k["vq"].codebook.value for k in kids], axis=0),
-                    n_steps=3,
+                # 1. decode the children codebooks into input space
+                decoded = []
+                for k in kids:
+                    cb = k["vq"].codebook.value
+                    dec = k["vq"].decode(cb)
+                    decoded.append(np.asarray(dec))
+                X = np.concatenate(decoded, axis=0)
+                # 2. k-means to n_codes // branching
+                new_n_codes = max(1, self.n_codes // self.branching)
+                centroids, _ = kmeans2(X, new_n_codes, minit="++", seed=0)
+                centroids = np.asarray(centroids, dtype=np.float32)
+                # 3. rebuild the parent VQ with the reduced codebook
+                new_vq = VQMemory(
+                    n_x=self.d_model,
+                    d_model=min(4, self.d_model),
+                    n_codes=new_n_codes,
+                    seed=0,
                 )
+                z = new_vq.encode(jnp.asarray(centroids, dtype=jnp.float32))
+                new_vq.codebook.value = jnp.asarray(z, dtype=jnp.float32)
+                # 4. brief fit to align encoder/decoder
+                new_vq.fit(jnp.asarray(X, dtype=jnp.float32), n_steps=5)
+                node["vq"] = new_vq
+                # 5. metadata and drop children
                 node["support"] = sum(k["support"] for k in kids)
                 node["alpha"] = float(np.mean([k["alpha"] for k in kids]))
                 node["children"] = node["children"][self.branching :]
