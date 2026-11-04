@@ -21,11 +21,9 @@ class ArchivalMemory:
     - ``write_depth(importance) = round(importance * max_depth)``;
     - ``transition(state, event)``: promote after ``promote_threshold``
       accesses, decay one band after ``decay_horizon_s`` seconds;
-    - ``promote(node)``: the children's codebooks are decoded into input
-      space, clustered by k-means to ``n_codes // branching`` centroids,
-      and the parent's VQ is rebuilt with that reduced codebook and then
-      briefly trained (5 steps) on the decoded centroids. The k-means
-      centroids are an initialization, not the final codebook.
+    - ``ResidualTree.consolidate``: the parent's VQ is rebuilt with
+      ``n_codes // branching`` codes initialized from a k-means of the
+      decoded children codebooks, then trained for 5 steps.
 
     The four functions are in ``RULE.md`` section 1 to 4; the class
     implements them as methods, and the test pins the three cases each.

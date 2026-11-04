@@ -235,10 +235,17 @@ class ResidualTree:
         children is decoded into input space, clustered by k-means to
         ``n_codes / branching`` centroids, and the parent's VQ is rebuilt
         with that reduced codebook. The k-means centroids are used as an
-        initialization; the parent's VQ is then briefly trained (5 steps) on
-        the decoded centroids, so the final codebook is a trained
+        initialization; the parent's VQ is then briefly trained (5 steps)
+        on the decoded centroids, so the final codebook is a trained
         representation of the children, not the k-means centroids
         themselves. The children are dropped.
+
+        If the parent was already consolidated before (its codebook is
+        smaller than ``n_codes``), its decoded codebook is added to the
+        k-means input, so the previous consolidation is preserved. Each
+        rebuilt node gets a seed derived from ``self.seed`` and the
+        number of nodes already removed, so different rebuilds do not
+        share the same weights.
         """
         removed = 0
 
@@ -246,30 +253,27 @@ class ResidualTree:
             nonlocal removed
             while len(node["children"]) >= self.branching:
                 kids = node["children"][: self.branching]
-                # 1. decode the children codebooks into input space
                 decoded = []
                 for k in kids:
                     cb = k["vq"].codebook.value
-                    dec = k["vq"].decode(cb)
-                    decoded.append(np.asarray(dec))
+                    decoded.append(np.asarray(k["vq"].decode(cb)))
+                parent_cb = node["vq"].codebook.value
+                if parent_cb.shape[0] != self.n_codes:
+                    decoded.append(np.asarray(node["vq"].decode(parent_cb)))
                 X = np.concatenate(decoded, axis=0)
-                # 2. k-means to n_codes // branching
                 new_n_codes = max(1, self.n_codes // self.branching)
-                centroids, _ = kmeans2(X, new_n_codes, minit="++", seed=0)
-                centroids = np.asarray(centroids, dtype=np.float32)
-                # 3. rebuild the parent VQ with the reduced codebook
+                seed = int(self.seed) + removed
+                centroids, _ = kmeans2(X, new_n_codes, minit="++", seed=seed)
+                centroids = as_default_array(np.asarray(centroids))
                 new_vq = VQMemory(
                     n_x=self.d_model,
                     d_model=min(4, self.d_model),
                     n_codes=new_n_codes,
-                    seed=0,
+                    seed=seed,
                 )
-                z = new_vq.encode(jnp.asarray(centroids, dtype=jnp.float32))
-                new_vq.codebook.value = jnp.asarray(z, dtype=jnp.float32)
-                # 4. brief fit to align encoder/decoder
-                new_vq.fit(jnp.asarray(X, dtype=jnp.float32), n_steps=5)
+                new_vq.codebook.value = new_vq.encode(as_default_array(centroids))
+                new_vq.fit(as_default_array(X), n_steps=5)
                 node["vq"] = new_vq
-                # 5. metadata and drop children
                 node["support"] = sum(k["support"] for k in kids)
                 node["alpha"] = float(np.mean([k["alpha"] for k in kids]))
                 node["children"] = node["children"][self.branching :]
@@ -280,7 +284,6 @@ class ResidualTree:
 
         visit(self.root)
         return removed
-
     def n_nodes(self) -> int:
         """Number of nodes in the tree."""
         return self._n_nodes
