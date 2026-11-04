@@ -76,6 +76,7 @@ class ResidualTree:
         self.root = self._new_node(depth=0)
         self._n_nodes = 1
         self._n_events = 0
+        self._n_rebuilds = 0
 
     def _new_node(self, depth: int) -> dict:
         seed = int(self._rng.randint(0, 2**31 - 1))
@@ -244,8 +245,8 @@ class ResidualTree:
         smaller than ``n_codes``), its decoded codebook is added to the
         k-means input, so the previous consolidation is preserved. Each
         rebuilt node gets a seed derived from ``self.seed`` and the
-        number of nodes already removed, so different rebuilds do not
-        share the same weights.
+        number of parents this tree has rebuilt so far (across calls),
+        so different rebuilds do not share the same weights.
         """
         removed = 0
 
@@ -262,7 +263,8 @@ class ResidualTree:
                     decoded.append(np.asarray(node["vq"].decode(parent_cb)))
                 X = np.concatenate(decoded, axis=0)
                 new_n_codes = max(1, self.n_codes // self.branching)
-                seed = int(self.seed) + removed
+                seed = int(self.seed) + self._n_rebuilds
+                self._n_rebuilds += 1
                 centroids, _ = kmeans2(X, new_n_codes, minit="++", seed=seed)
                 centroids = as_default_array(np.asarray(centroids))
                 new_vq = VQMemory(
@@ -284,6 +286,7 @@ class ResidualTree:
 
         visit(self.root)
         return removed
+
     def n_nodes(self) -> int:
         """Number of nodes in the tree."""
         return self._n_nodes
