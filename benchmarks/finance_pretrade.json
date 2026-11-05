@@ -1,0 +1,34 @@
+{
+  "backend": "python",
+  "machine": {
+    "platform": "Linux-6.6.159+-x86_64-with-glibc2.39",
+    "python": "3.13.18",
+    "processor": "x86_64"
+  },
+  "sessions": [
+    {
+      "duplicate": 57,
+      "ok": 500,
+      "rate": 424,
+      "size": 19
+    },
+    {
+      "duplicate": 57,
+      "ok": 500,
+      "rate": 424,
+      "size": 19
+    },
+    {
+      "duplicate": 57,
+      "ok": 500,
+      "rate": 424,
+      "size": 19
+    }
+  ],
+  "time_per_call_us": {
+    "median": 30.22700002475176,
+    "min": 5.272000180411851,
+    "max": 486.35900020599365,
+    "n": 3000
+  }
+}
