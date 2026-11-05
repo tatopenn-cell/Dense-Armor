@@ -1,0 +1,28 @@
+{
+  "backend": "python",
+  "machine": {
+    "platform": "Linux-6.6.159+-x86_64-with-glibc2.39",
+    "python": "3.13.18",
+    "processor": "x86_64"
+  },
+  "sessions": [
+    {
+      "messages": 100000,
+      "exception": null
+    },
+    {
+      "messages": 100000,
+      "exception": null
+    },
+    {
+      "messages": 100000,
+      "exception": null
+    }
+  ],
+  "time_per_message_us": {
+    "median": 2.7790001695393585,
+    "min": 2.623999989737058,
+    "max": 739.3630003207363,
+    "n": 300000
+  }
+}
