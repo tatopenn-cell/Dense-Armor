@@ -75,6 +75,7 @@ nav:
           - Risk: finance/risk.md
           - Execution: finance/execution.md
           - Schedules: finance/schedule.md
+          - Pre-trade limits: finance/pretrade.md
           - Single ticker: finance/single_ticker.md
           - Static vs online: finance/static_vs_online.md
           - Fraud detection: finance/fraud.md

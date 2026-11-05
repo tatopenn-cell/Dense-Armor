@@ -11,6 +11,7 @@ This page serves as the index for sixteen software pipelines that handle the dai
 | **Value-at-Risk Estimation** | Sequential quantile sketch architectures for streaming tail-risk monitoring. | [Risk](risk.md) |
 | **Algorithmic Execution** | High-frequency pre-trade risk validation and automated order damping. | [Execution](execution.md) |
 | **Execution Schedules** | TWAP and VWAP split of a parent order across time buckets. | [Schedules](schedule.md) |
+| **Pre-trade limits** | Five controls of SEC Rule 15c3-5 (c)(1): size, price band, duplicate, rate, notional. | [Pre-trade limits](pretrade.md) |
 | **Single Ticker Monitoring** | Dual-model online anomaly isolation for individual equity validation. | [Single ticker](single_ticker.md) |
 | **Static vs Online Analysis** | Statistical divergence benchmarking between fixed-cutoff and adaptive frameworks. | [Static vs online](static_vs_online.md) |
 | **Supervised Fraud Detection** | Real-time transaction classification via sequential ensemble tree models. | [Fraud detection](fraud.md) |
