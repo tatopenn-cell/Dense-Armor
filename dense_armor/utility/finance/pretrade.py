@@ -35,18 +35,21 @@ class PreTradeChecker:
        PDF page 128).
 
     A rejected order does not change the open notional, the rate window,
-    the duplicate window or the time of the last sample seen. An approved
-    order records its timestamp as the new ``_last_t``, adds its entry to
-    the rate and duplicate windows, adds ``size * price`` to the open
-    notional, and returns ``Decision(True, "ok")``. A ``t`` smaller than
-    the last approved ``t`` raises ``ValueError`` before the five controls
-    run, so the stream that reaches the checker is monotone in time. The windows are
+    the duplicate window or the time of the last approved sample. An
+    approved order records its timestamp as the new ``_last_t``, adds its
+    entry to the rate and duplicate windows, adds ``size * price`` to the
+    open notional, and returns ``Decision(True, "ok")``. A ``t`` smaller
+    than the last **approved** ``t`` raises ``ValueError`` before the five
+    controls run: the sequence of approved timestamps is monotone, but the
+    sequence of timestamps of all orders, rejected ones included, is not. The windows are
     filtered to the alive entries on every ``check`` call, so an entry
     that is older than the window is never counted and never written
-    back. The cost of one ``check`` is O(entries alive in the account's
-    rate and duplicate windows); the open notional map is never pruned,
-    and an account that stops trading keeps its last notional until
-    ``release`` brings it back to zero. The value exactly at a limit is
+    back. Every ``check`` first calls ``_prune``, which drops the entries
+    of every account that are older than the two windows; the cost is
+    O(accounts with entries in the rate or duplicate lists, plus the
+    entries that survive). The open notional map is never pruned: an
+    account that stops trading keeps its last notional until ``release``
+    brings it back to zero. The value exactly at a limit is
     approved; one tick above is rejected. Only approved
     orders count for the rate and for the duplicates: that is our choice,
     the rule does not say it.
@@ -129,6 +132,19 @@ class PreTradeChecker:
         self._dup: dict[str, list[tuple[float, float, float, float, str]]] = {}
         self._last_t = -float("inf")
 
+    def _prune(self, t: float) -> None:
+        """Drop the entries of every account that are older than the windows."""
+        lo = t - self.window_s
+        dlo = t - self.duplicate_window_s
+        for k in list(self._rate.keys()):
+            self._rate[k] = [u for u in self._rate[k] if u >= lo]
+            if not self._rate[k]:
+                del self._rate[k]
+        for k in list(self._dup.keys()):
+            self._dup[k] = [r for r in self._dup[k] if r[0] >= dlo]
+            if not self._dup[k]:
+                del self._dup[k]
+
     def check(
         self,
         account: str,
@@ -156,6 +172,7 @@ class PreTradeChecker:
             raise ValueError(f"ref_price must be positive, got {ref_price}")
         if tf < self._last_t:
             raise ValueError(f"t must be >= the previous t ({self._last_t}), got {t}")
+        self._prune(tf)
         rate_alive = [u for u in self._rate.get(account, []) if u >= tf - self.window_s]
         dup_alive = [
             r
@@ -194,15 +211,21 @@ class PreTradeChecker:
 
         Raises:
             ValueError: if ``notional`` is not finite, if it is not ``> 0``,
-                or if it is larger than the open notional of the account.
+                or if it is larger than the open notional of the account by
+                more than ``1e-9`` of the open notional (or ``1e-9`` in
+                absolute value, whichever is larger). This tolerance covers
+                the floating point residue of a sequence of approvals and
+                releases that cancel each other; an exact equality in float
+                would raise a spurious ``ValueError`` after such a sequence.
         """
         cur = self._open.get(account, 0.0)
         n = float(notional)
-        if not math.isfinite(n) or not (0.0 < n <= cur):
+        tol = 1e-9 * max(abs(cur), 1.0)
+        if not math.isfinite(n) or not (0.0 < n <= cur + tol):
             raise ValueError(
                 f"release of {notional} is not allowed: open notional is {cur}"
             )
-        self._open[account] = cur - n
+        self._open[account] = max(cur - n, 0.0)
 
     def open_notional(self, account: str) -> float:
         """The open notional of the account."""
