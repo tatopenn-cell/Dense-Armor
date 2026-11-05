@@ -8,7 +8,7 @@ every file. Update it whenever a module is added, moved or renamed.
 1. `roles` — the base classes every estimator builds on: `Estimator`, `Classifier`,
    `Regressor`, `Transformer`, `AnomalyDetector`, `DriftDetector`, `Protected`, `Signal` and
    the other support classes.
-2. `utility` — the online-learning library: 32 subpackages in six groups.
+2. `utility` — the online-learning library: 32 subpackages in seven groups.
    `online/` (`learn`, `optim`, `linear`, `timeseries`, `cluster`, `tree`, `forest`, `ensemble`,
    `bandit`, `active`, `facto`, `reco`, `rules`, `bayes`, `neighbors`, `multiclass`, `multioutput`,
    `proba`, `anomaly`, `drift`, `protect`), `deep/` (`neural`), `signals/` (`stream`, `stats`,

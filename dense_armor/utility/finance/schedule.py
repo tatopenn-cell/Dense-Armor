@@ -21,10 +21,11 @@ def twap_schedule(total: float, n: int) -> np.ndarray:
         n: the number of slices; must be ``>= 1``.
 
     Returns:
-        A float64 array of shape ``(n,)`` whose sum is ``total``.
+        A float64 array of shape ``(n,)`` whose sum is ``total`` within
+        the rounding of the summation; see the description above.
 
     Raises:
-        ValueError: if ``n < 1`` or ``total < 0``.
+        ValueError: if ``n < 1`` or ``total`` is not finite and ``>= 0``.
 
     Examples:
         >>> twap_schedule(3.0, 3)
@@ -74,11 +75,13 @@ def vwap_schedule(total: float, history: np.ndarray) -> np.ndarray:
             must be finite and strictly positive.
 
     Returns:
-        A float64 array of shape ``(n_buckets,)`` whose sum is ``total``.
+        A float64 array of shape ``(n_buckets,)`` whose sum is ``total``
+        within the rounding of the summation.
 
     Raises:
-        ValueError: if ``total < 0``, if ``history`` is not 2-D, if it has
-            no bucket, or if a volume is not finite and strictly positive.
+        ValueError: if ``total`` is not finite and ``>= 0``, if
+            ``history`` is not 2-D, if it has no session or no bucket, or
+            if a volume is not finite and strictly positive.
 
     Examples:
         >>> h = np.array([[1.0, 2.0], [4.0, 2.0]])

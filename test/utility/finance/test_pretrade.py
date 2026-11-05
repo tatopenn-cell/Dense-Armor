@@ -183,9 +183,49 @@ def test_release_negative_is_rejected():
         c.release("a", float("inf"))
 
 
+def test_rejected_order_does_not_remove_live_duplicate_entries():
+    c = _checker(
+        max_size=1.0,
+        price_band=1.0,
+        max_orders=5,
+        window_s=1000.0,
+        duplicate_window_s=1000.0,
+        max_notional=1e9,
+    )
+    assert c.check("a", "buy", 0.5, 100.0, 100.0, 10.0).approved
+    d = c.check("a", "buy", 100.0, 100.0, 100.0, 20.0)
+    assert d.reason == "size"
+    d2 = c.check("a", "buy", 0.5, 100.0, 100.0, 15.0)
+    assert d2.reason == "duplicate"
+    d3 = c.check("a", "buy", 0.5, 100.0, 100.0, 30.0)
+    assert d3.reason == "duplicate"
+
+
 def test_rejected_order_does_not_update_last_t():
-    c = _checker(max_size=1.0)
+    c = _checker(
+        max_size=1.0,
+        price_band=1.0,
+        max_orders=100,
+        window_s=0.001,
+        duplicate_window_s=0.001,
+        max_notional=1e9,
+    )
     assert c.check("a", "buy", 0.5, 100.0, 100.0, 10.0).approved
     d = c.check("a", "buy", 100.0, 100.0, 100.0, 20.0)
     assert d.reason == "size"
     assert c.check("a", "buy", 0.5, 100.0, 100.0, 15.0).approved
+
+
+def test_rejected_order_does_not_remove_live_rate_entries():
+    c = _checker(
+        max_size=1.0,
+        price_band=1.0,
+        max_orders=1,
+        window_s=1000.0,
+        duplicate_window_s=1000.0,
+        max_notional=1e9,
+    )
+    assert c.check("a", "buy", 0.5, 100.0, 100.0, 10.0).approved
+    assert c.check("a", "buy", 100.0, 100.0, 100.0, 20.0).reason == "size"
+    d = c.check("a", "buy", 0.5, 101.0, 100.0, 15.0)
+    assert d.reason == "rate"

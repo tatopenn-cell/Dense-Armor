@@ -34,13 +34,18 @@ class PreTradeChecker:
        credit or capital thresholds, in the aggregate for each customer,
        PDF page 128).
 
-    A rejected order changes no state, including the time of the last
-    sample seen. An approved order adds ``size * price`` to the open
-    notional of its account and records the timestamp. The cost of one
-    ``check`` is ``O(accounts with recent orders)`` because ``_evict``
-    scans every account that has an entry in the rate or duplicate lists;
-    with one account the cost is constant. The open notional map is never
-    pruned; an account that stops trading keeps its last notional until
+    A rejected order does not change the open notional, the rate window,
+    the duplicate window or the time of the last sample seen. An approved
+    order records its timestamp as the new ``_last_t``, adds its entry to
+    the rate and duplicate windows, adds ``size * price`` to the open
+    notional, and returns ``Decision(True, "ok")``. A ``t`` smaller than
+    the last approved ``t`` raises ``ValueError`` before the five controls
+    run, so the stream that reaches the checker is monotone in time. The windows are
+    filtered to the alive entries on every ``check`` call, so an entry
+    that is older than the window is never counted and never written
+    back. The cost of one ``check`` is O(entries alive in the account's
+    rate and duplicate windows); the open notional map is never pruned,
+    and an account that stops trading keeps its last notional until
     ``release`` brings it back to zero. The value exactly at a limit is
     approved; one tick above is rejected. Only approved
     orders count for the rate and for the duplicates: that is our choice,
@@ -124,18 +129,6 @@ class PreTradeChecker:
         self._dup: dict[str, list[tuple[float, float, float, float, str]]] = {}
         self._last_t = -float("inf")
 
-    def _evict(self, t: float) -> None:
-        lo = t - self.window_s
-        for k in list(self._rate.keys()):
-            self._rate[k] = [u for u in self._rate[k] if u >= lo]
-            if not self._rate[k]:
-                del self._rate[k]
-        dlo = t - self.duplicate_window_s
-        for k in list(self._dup.keys()):
-            self._dup[k] = [r for r in self._dup[k] if r[0] >= dlo]
-            if not self._dup[k]:
-                del self._dup[k]
-
     def check(
         self,
         account: str,
@@ -163,16 +156,21 @@ class PreTradeChecker:
             raise ValueError(f"ref_price must be positive, got {ref_price}")
         if tf < self._last_t:
             raise ValueError(f"t must be >= the previous t ({self._last_t}), got {t}")
-        self._evict(tf)
+        rate_alive = [u for u in self._rate.get(account, []) if u >= tf - self.window_s]
+        dup_alive = [
+            r
+            for r in self._dup.get(account, [])
+            if r[0] >= tf - self.duplicate_window_s
+        ]
         if sz > self.max_size:
             return Decision(False, "size")
         rel = abs(px / rpx - 1.0)
         if rel > self.price_band:
             return Decision(False, "price_band")
-        for r in self._dup.get(account, []):
+        for r in dup_alive:
             if r[1] == sz and r[2] == px and r[4] == side:
                 return Decision(False, "duplicate")
-        if len(self._rate.get(account, [])) >= self.max_orders:
+        if len(rate_alive) >= self.max_orders:
             return Decision(False, "rate")
         open_now = self._open.get(account, 0.0)
         add = sz * px
@@ -180,8 +178,10 @@ class PreTradeChecker:
             return Decision(False, "notional")
         self._last_t = tf
         self._open[account] = open_now + add
-        self._rate.setdefault(account, []).append(tf)
-        self._dup.setdefault(account, []).append((tf, sz, px, rpx, side))
+        rate_alive.append(tf)
+        dup_alive.append((tf, sz, px, rpx, side))
+        self._rate[account] = rate_alive
+        self._dup[account] = dup_alive
         return Decision(True, "ok")
 
     def release(self, account: str, notional: float) -> None:

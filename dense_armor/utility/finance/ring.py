@@ -16,13 +16,14 @@ class RingBuffer:
     producer), ``tail`` (written only by the consumer) and ``_len`` (the
     number of rows stored, incremented by the producer and decremented by
     the consumer). ``_len`` is a read-modify-write shared between the two
-    threads; its correctness on one producer and one consumer rests on
-    the global interpreter lock of CPython, which makes ``+= 1`` and
-    ``-= 1`` atomic against the other thread on a CPython build with the
-    GIL. No claim is made for a free-threaded build of Python, nor for
-    several producers or several consumers; a version that does not rely
-    on the GIL would compute ``len`` from ``head`` and ``tail`` (with a
-    full flag to distinguish full from empty) and drop ``_len``.
+    threads. On CPython 3.10 and later the interpreter does not switch
+    threads between the load and the store of a ``+= 1``, so today the
+    increment is not lost; this is a detail of the CPython implementation,
+    not a property of the language, and no claim is made for CPython 3.9
+    or earlier, for a free-threaded build, nor for several producers or
+    several consumers. A version that does not depend on this detail
+    would compute ``len`` from ``head`` and ``tail`` (with a full flag to
+    distinguish full from empty) and drop ``_len``.
 
     Args:
         capacity: the maximum number of rows stored; at least 1.

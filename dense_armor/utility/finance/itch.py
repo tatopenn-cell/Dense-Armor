@@ -40,13 +40,17 @@ def decode_message(buf: bytes) -> dict:
     midnight.
 
     Args:
-        buf: the bytes of one message, without any framing.
+        buf: the bytes of one message, without any framing. ``bytes``,
+            ``bytearray`` and ``memoryview`` are accepted; a
+            ``bytearray`` or a ``memoryview`` is converted to ``bytes``
+            before decoding.
 
     Returns:
         A dict with the key ``"type"`` and one key per field of the table.
 
     Raises:
-        TypeError: if ``buf`` is not bytes.
+        TypeError: if ``buf`` is not ``bytes``, ``bytearray`` or
+            ``memoryview``.
         ValueError: if ``buf`` is empty, if its type is not one of the
             seven, or if its length is not the length of its type.
 
