@@ -88,6 +88,7 @@ UTILITY_GROUPS = {
     "robot": ("control",),
     "evaluation": ("evaluate", "metrics"),
     "infrastructure": ("compose", "data"),
+    "finance": (),
 }
 _GROUP_OF = {folder: group for group, folders in UTILITY_GROUPS.items() for folder in folders}
 
