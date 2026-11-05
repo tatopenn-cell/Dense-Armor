@@ -243,7 +243,12 @@ class ResidualTree:
 
         If the parent was already consolidated before (its codebook is
         smaller than ``n_codes``), its decoded codebook is added to the
-        k-means input, so the previous consolidation is preserved. Each
+        k-means input, so the previous consolidation is preserved. A
+        parent that was never consolidated is replaced by its children:
+        its own codebook is not part of the k-means input. The two cases
+        are told apart by the codebook size, so with ``branching == 1``
+        (where ``n_codes // branching == n_codes``) a consolidated
+        parent is not recognised as such. Each
         rebuilt node gets a seed derived from ``self.seed`` and the
         number of parents this tree has rebuilt so far (across calls),
         so different rebuilds do not share the same weights.

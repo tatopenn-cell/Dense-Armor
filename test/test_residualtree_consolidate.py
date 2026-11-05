@@ -1,7 +1,8 @@
 """Regression tests for ResidualTree.consolidate with d_model >= 5."""
-import numpy as np
 import jax.numpy as jnp
+import numpy as np
 import pytest
+
 from dense_armor.utility.deep.neural.consolidation import ResidualTree
 
 
@@ -54,3 +55,34 @@ def test_consolidate_does_not_degrade_read():
     t.consolidate()
     after = mean_rel_err()
     assert after <= before + 0.05, f"read degraded: {before:.4f} -> {after:.4f}"
+
+
+def test_second_consolidation_keeps_parent_and_reseeds(monkeypatch):
+    """A second consolidate() adds the parent codebook and uses a new seed.
+
+    The first call has two fresh children (``2 * n_codes`` points). The
+    second call has two fresh children plus the already reduced parent
+    codebook (``2 * n_codes + n_codes // branching`` points). The seeds
+    passed to k-means must differ between the two calls.
+    """
+    import dense_armor.utility.deep.neural.consolidation.tree as tree_mod
+
+    calls = []
+    real = tree_mod.kmeans2
+
+    def spy(X, k, **kw):
+        calls.append((X.shape[0], kw["seed"]))
+        return real(X, k, **kw)
+
+    monkeypatch.setattr(tree_mod, "kmeans2", spy)
+    d_model, n_codes, branching, max_depth = 5, 8, 2, 1
+    t, _ = _build(d_model, n_codes, branching, max_depth)
+    assert t.consolidate() > 0
+    rng = np.random.RandomState(1)
+    for _ in range(40):
+        t.insert(jnp.asarray(rng.randn(d_model), dtype=jnp.float32))
+    assert t.consolidate() > 0
+    assert calls == [
+        (branching * n_codes, 0),
+        (branching * n_codes + n_codes // branching, 1),
+    ]
