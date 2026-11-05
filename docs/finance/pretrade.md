@@ -2,7 +2,7 @@
 
 Before an order leaves the desk it passes five checks. Each one answers a specific question: is it too big, is the price too far from the reference, is it a duplicate, has the account sent too many orders in a short time, is the open notional above the credit line. The five checks are the ones that paragraph (c)(1) of SEC Rule 15c3-5 describes.
 
-This page builds the checker, shows one order that each check refuses, and runs the checker on 1,000 real BTC/USD trades.
+This page builds the checker, shows one order that each check refuses, and runs the checker on 1,000 BTC/USD trades from a session of the Coinbase BTC/USD market.
 
 ## 1. Build the checker and send one order
 
@@ -114,7 +114,7 @@ Decision(approved=False, reason='notional')
 
 A value exactly at a limit is approved; one tick above is rejected. The order of the checks is fixed: the first one that fails gives the reason, and an order that breaks two limits reports only the first.
 
-## 3. The 1,000 real BTC/USD trades
+## 3. The 1,000 BTC/USD trades of one session
 
 The benchmark in `benchmarks/finance_pretrade.py` runs the checker on the 1,000 trades of `test/fixtures/finance/coinbase_btcusd_trades.csv`, each trade as an order with `ref_price` the price of the previous trade, three sessions shifted in time so the rate and duplicate windows do not carry over. The block reads the JSON the script wrote and prints the count of decisions per reason in each session.
 
@@ -140,8 +140,8 @@ The three sessions give the same counts. The time per call is recorded in the JS
 ## Details
 
 **References.**
-- SEC Release 34-63241, Rule 15c3-5 (c)(1)(i): pre-set credit or capital thresholds, in the aggregate for each customer, PDF page 128.
-- SEC Release 34-63241, Rule 15c3-5 (c)(1)(ii): price or size parameters, on an order-by-order basis or over a short period of time, duplicative orders, PDF page 128.
+- SEC Release 34-63241, Rule 15c3-5 (c)(1)(i): pre-set credit or capital thresholds, in the aggregate for each customer, PDF page 128 (label 128 on the page).
+- SEC Release 34-63241, Rule 15c3-5 (c)(1)(ii): price or size parameters, on an order-by-order basis or over a short period of time, duplicative orders, PDF page 128 (label 128 on the page).
 
 **Choices stated explicitly.**
 - The order of the five controls (size, price band, duplicate, rate, notional) is our choice. The rule lists the two categories of controls in (c)(1)(i) and (c)(1)(ii) but does not impose an order between them.
@@ -150,6 +150,8 @@ The three sessions give the same counts. The time per call is recorded in the JS
 - `release` subtracts a notional after a fill or a cancel and raises `ValueError` if the release is larger than the open notional. The rule does not name a release step; it is the caller's job to call it.
 
 **Measured cost.** The JSON records the median, the minimum and the maximum of the time per `check` call over 3,000 calls, on the machine that ran the benchmark (platform and Python version are in the JSON under `machine`). The page does not claim a percentile other than the median.
+
+**Parameters of the benchmark.** The limits in `benchmarks/finance_pretrade.py` (`max_notional=200_000.0`, `max_size=0.1`, `price_band=0.0005`, `max_orders=500`) were set after a first run with stricter values, which rejected 872 of the 1,000 orders for notional. The first run confirmed that the script works; the parameters were then chosen to produce a mix of all five reasons on the same fixture. The claim of the script ("the counts per reason are identical in the 3 sessions") holds with the values that are in the code, and is the only claim on the numbers.
 
 **Declared limits.**
 - It is not a compliance system and does not replace the controls of a broker.

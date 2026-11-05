@@ -20,7 +20,7 @@ The function returns a float64 array whose sum is the parent order (the last sli
 
 ## 2. Weight by past volume (VWAP)
 
-Real markets do not trade at constant volume: the open and the close are busier than the middle of the session. The **VWAP** schedule weights each bucket by the volume the market traded in that bucket in the past sessions, and it uses the **harmonic mean** of those volumes, not the arithmetic mean.
+Markets do not trade at constant volume: the open and the close are busier than the middle of the session. The **VWAP** schedule weights each bucket by the volume the market traded in that bucket in the past sessions, and it uses the **harmonic mean** of those volumes, not the arithmetic mean.
 
 ~~~python
 from dense_armor.utility.finance import vwap_schedule
@@ -35,9 +35,9 @@ print([round(float(x), 4) for x in vwap_schedule(3.6, h)])
 
 Bucket 1 gets `1 / mean(1/1, 1/4) = 1.6`; bucket 2 gets `1 / mean(1/2, 1/2) = 2.0`. The slices sum to 3.6, the parent order (the sell-off condition, equation (2.3), PDF page 2 of Kato 2014). When the history is constant across buckets, the harmonic mean equals the constant volume and the VWAP schedule equals the TWAP schedule (Remark 3, PDF page 5).
 
-## 3. A real session
+## 3. One session of the Coinbase BTC/USD fixture
 
-The fixture `test/fixtures/finance/coinbase_btcusd_trades.csv` has 1,000 real BTC/USD trades from one short session. The block sorts the trades by time, splits the session into 10 consecutive buckets of equal duration, sums the traded size per bucket, and prints the TWAP and VWAP schedules of 1.0 BTC.
+The fixture `test/fixtures/finance/coinbase_btcusd_trades.csv` has 1,000 BTC/USD trades from a short session of the Coinbase BTC/USD market. The block sorts the trades by time, splits the session into 10 consecutive buckets of equal duration, sums the traded size per bucket, and prints the TWAP and VWAP schedules of 1.0 BTC.
 
 ~~~python
 import numpy as np

@@ -51,9 +51,9 @@ False
 
 The third push returns `False` because the buffer already holds two rows (its capacity). The caller decides what to do with the refused row: retry, drop, or keep a count. The buffer does not choose.
 
-## 3. The 1,000 real BTC/USD trades
+## 3. The 1,000 BTC/USD trades of one session
 
-The block pushes the 1,000 trades of `test/fixtures/finance/coinbase_btcusd_trades.csv` through a ring buffer of the same capacity and checks that every row comes out equal to the row that went in. The columns are the size, the price and the seconds since the first trade.
+The block pushes the 1,000 trades of `test/fixtures/finance/coinbase_btcusd_trades.csv` (one session of a Coinbase BTC/USD market) through a ring buffer of the same capacity and checks that every row comes out equal to the row that went in. The columns are the size, the price and the seconds since the first trade.
 
 ~~~python
 import numpy as np
@@ -95,20 +95,22 @@ import json
 from pathlib import Path
 
 j = json.loads(Path("benchmarks/finance_ring.json").read_text())
-print("n:", j["n"], "capacity:", j["capacity"], "width:", j["width"])
+print("n per session:", j["n_per_session"], "sessions:", j["sessions"])
+print("capacity:", j["capacity"], "width:", j["width"])
 print("same sequence:", j["same_sequence"])
-print("ring_buffer_us:", j["ring_buffer_us"])
-print("bounded_stream_us:", j["bounded_stream_us"])
+print("Wilcoxon two-sided p:", j["wilcoxon_two_sided_p"])
+print("A12 (ring slower than bounded):", j["a12_ring_slower_than_bounded"])
 ~~~
 
 ~~~
-n: 200000 capacity: 256 width: 4
+n per session: 200000 sessions: 20
+capacity: 256 width: 4
 same sequence: True
-ring_buffer_us: {'median': 3.95500001104665, 'min': 2.0110001059947535, 'max': 2244.024999981775}
-bounded_stream_us: {'median': 0.9089999366551638, 'min': 0.49700020099407993, 'max': 2545.037999880151}
+Wilcoxon two-sided p: 8.844915021211901e-05
+A12 (ring slower than bounded): 0.0
 ~~~
 
-Both queues return the same sequence of rows (the claim of the benchmark, written before any run). On this workload the median of `RingBuffer` is 3.96 microseconds per push-pop pair, and the median of `BoundedStream` is 0.91 microseconds per pair; the ratio is 4.4. The maximum of each is one garbage-collector pause (2.24 milliseconds and 2.55 milliseconds). The page reports the number; it does not choose which queue is better for the caller, because the trade-off (a numpy array with preallocated storage against a `deque` of Python objects) depends on what the caller does with the rows.
+Both queues return the same sequence of rows (the claim of the benchmark, written before any run). Over 20 sessions, the median of the medians is 2.26 microseconds per push-pop pair for `RingBuffer` and 0.55 microseconds per pair for `BoundedStream`; the ratio is 4.12. The paired Wilcoxon on the 20 medians gives p = 0.000088, and the A12 effect size (the probability that a random `RingBuffer` measurement is slower than a random `BoundedStream` measurement) is 0.000, which is large. The page reports the numbers; it does not choose which queue the caller should use, because the trade-off (a numpy array with preallocated storage against a `deque` of Python objects) depends on what the caller does with the rows.
 
 ## Details
 
@@ -121,7 +123,7 @@ Both queues return the same sequence of rows (the claim of the benchmark, writte
 - The buffer does not raise on shape: a row that is not `(width,)` raises `ValueError`. This is the check that a list without `.shape` would skip.
 - The class takes no lock. Its correctness for one producer and one consumer rests on the GIL of CPython and on the rule that `head` is written only by the producer and `tail` only by the consumer.
 
-**Measured cost.** The JSON records the median, the minimum and the maximum of the time per push-pop pair for `RingBuffer` and for `BoundedStream`, with the platform and the Python version under `machine`. The page reports the medians and the maximums; it does not claim a percentile other than the median.
+**Measured cost.** The JSON records the median of each of the 20 sessions for `RingBuffer` and for `BoundedStream`, plus the paired Wilcoxon p-value and the A12 effect size, with the platform and the Python version under `machine`. The page reports the median of the medians; it does not claim a percentile other than the median.
 
 **Declared limits.**
 - One producer and one consumer. Several producers or several consumers are not supported and not measured.
