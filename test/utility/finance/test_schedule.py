@@ -63,6 +63,8 @@ def test_vwap_errors():
     with pytest.raises(ValueError):
         vwap_schedule(1.0, np.ones(3))
     with pytest.raises(ValueError):
+        vwap_schedule(1.0, np.zeros((2, 0)))
+    with pytest.raises(ValueError):
         vwap_schedule(1.0, np.array([[1.0, np.nan]]))
     with pytest.raises(ValueError):
         vwap_schedule(1.0, np.array([[1.0, 0.0]]))
