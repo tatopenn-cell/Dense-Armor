@@ -1,6 +1,6 @@
 # Financial pipelines: multi-model streaming architectures for risk, execution, and fraud detection
 
-This page serves as the index for sixteen software pipelines that handle the daily data challenges faced by market analysts, banking infrastructure, and payment desks. Every pipeline chains together the core mathematical blocks of the package to solve practical business questions—like identifying market anomalies, filtering out fraudulent transactions, or sizing trade orders safely before execution.
+This page serves as the index for twenty software pipelines that handle the daily data challenges faced by market analysts, banking infrastructure, and payment desks. Every pipeline chains together the core mathematical blocks of the package to solve practical business questions—like identifying market anomalies, filtering out fraudulent transactions, or sizing trade orders safely before execution.
 
 
 ## Operational Pipelines Matrix
@@ -10,6 +10,10 @@ This page serves as the index for sixteen software pipelines that handle the dai
 | **Market Surveillance** | Multi-stage statistical processing and online anomaly consensus orchestration. | [Surveillance](surveillance.md) |
 | **Value-at-Risk Estimation** | Sequential quantile sketch architectures for streaming tail-risk monitoring. | [Risk](risk.md) |
 | **Algorithmic Execution** | High-frequency pre-trade risk validation and automated order damping. | [Execution](execution.md) |
+| **Execution Schedules** | TWAP and VWAP split of a parent order across time buckets. | [Schedules](schedule.md) |
+| **Pre-trade limits** | Five controls of SEC Rule 15c3-5 (c)(1): size, price band, duplicate, rate, notional. | [Pre-trade limits](pretrade.md) |
+| **ITCH messages** | Decode the seven order messages of Nasdaq TotalView-ITCH 5.0. | [ITCH messages](itch.md) |
+| **Ring buffer** | Fixed-capacity queue with preallocated storage; cost against `BoundedStream`. | [Ring buffer](ring.md) |
 | **Single Ticker Monitoring** | Dual-model online anomaly isolation for individual equity validation. | [Single ticker](single_ticker.md) |
 | **Static vs Online Analysis** | Statistical divergence benchmarking between fixed-cutoff and adaptive frameworks. | [Static vs online](static_vs_online.md) |
 | **Supervised Fraud Detection** | Real-time transaction classification via sequential ensemble tree models. | [Fraud detection](fraud.md) |

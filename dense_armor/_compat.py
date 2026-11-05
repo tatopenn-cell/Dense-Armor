@@ -1,4 +1,5 @@
 """Old import paths, kept working: each name resolves to the same module object."""
+
 import importlib
 import importlib.abc
 import importlib.util
@@ -80,16 +81,39 @@ for _prefix in ("dense_armor.utility.misc", "dense_armor.utility.infrastructure.
 
 
 UTILITY_GROUPS = {
-    "online": ("learn", "optim", "linear", "timeseries", "cluster", "tree", "forest", "ensemble", "bandit",
-               "active", "facto", "reco", "rules", "bayes", "neighbors", "multiclass", "multioutput", "proba",
-               "anomaly", "drift", "protect"),
+    "online": (
+        "learn",
+        "optim",
+        "linear",
+        "timeseries",
+        "cluster",
+        "tree",
+        "forest",
+        "ensemble",
+        "bandit",
+        "active",
+        "facto",
+        "reco",
+        "rules",
+        "bayes",
+        "neighbors",
+        "multiclass",
+        "multioutput",
+        "proba",
+        "anomaly",
+        "drift",
+        "protect",
+    ),
     "deep": ("neural",),
     "signals": ("stream", "stats", "preprocessing", "vision", "datasets"),
     "robot": ("control",),
     "evaluation": ("evaluate", "metrics"),
     "infrastructure": ("compose", "data"),
+    "finance": (),
 }
-_GROUP_OF = {folder: group for group, folders in UTILITY_GROUPS.items() for folder in folders}
+_GROUP_OF = {
+    folder: group for group, folders in UTILITY_GROUPS.items() for folder in folders
+}
 
 
 def _target(name):
@@ -97,7 +121,7 @@ def _target(name):
         return ALIASES[name]
     prefix = "dense_armor.utility."
     if name.startswith(prefix):
-        folder, dot, rest = name[len(prefix):].partition(".")
+        folder, dot, rest = name[len(prefix) :].partition(".")
         if folder in _GROUP_OF:
             return prefix + _GROUP_OF[folder] + "." + folder + dot + rest
     return None

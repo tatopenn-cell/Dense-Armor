@@ -1,4 +1,11 @@
-"""The folders of dense_armor/utility sit in six groups, and the old paths still work."""
+"""The folders of dense_armor/utility sit in the declared groups, and the old paths still work.
+
+The set of groups is the one in ``UTILITY_GROUPS``; the test compares the
+folders of ``dense_armor/utility/`` with that set, not with a fixed number.
+A group with no folder (``finance``) is a valid entry: it has no subfolder
+to alias, and ``test_every_folder_is_in_its_group`` does not produce a case
+for it.
+"""
 
 import importlib
 from pathlib import Path
@@ -12,7 +19,7 @@ CASES = [(g, f) for g, fs in UTILITY_GROUPS.items() for f in fs]
 UTILITY = Path(dense_armor.__file__).parent / "utility"
 
 
-def test_utility_holds_only_the_six_groups():
+def test_utility_holds_only_the_declared_groups():
     folders = {
         p.name for p in UTILITY.iterdir() if p.is_dir() and p.name != "__pycache__"
     }

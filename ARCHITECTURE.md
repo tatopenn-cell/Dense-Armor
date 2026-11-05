@@ -8,13 +8,14 @@ every file. Update it whenever a module is added, moved or renamed.
 1. `roles` — the base classes every estimator builds on: `Estimator`, `Classifier`,
    `Regressor`, `Transformer`, `AnomalyDetector`, `DriftDetector`, `Protected`, `Signal` and
    the other support classes.
-2. `utility` — the online-learning library: 32 subpackages in six groups.
+2. `utility` — the online-learning library: 33 subpackages in seven groups.
    `online/` (`learn`, `optim`, `linear`, `timeseries`, `cluster`, `tree`, `forest`, `ensemble`,
    `bandit`, `active`, `facto`, `reco`, `rules`, `bayes`, `neighbors`, `multiclass`, `multioutput`,
    `proba`, `anomaly`, `drift`, `protect`), `deep/` (`neural`), `signals/` (`stream`, `stats`,
    `preprocessing`, `vision`, `datasets`), `robot/` (`control`), `evaluation/` (`evaluate`,
-   `metrics`) and `infrastructure/` (`compose`, `data`). The old paths, for example
-   `dense_armor.utility.bandit.ucb`, still resolve to the same modules (`_compat.py`).
+   `metrics`), `infrastructure/` (`compose`, `data`) and `finance/` (`schedule`, `pretrade`,
+   `itch`, `ring`). The old paths, for example `dense_armor.utility.bandit.ucb`, still
+   resolve to the same modules (`_compat.py`).
 3. `dynamics` — rigid-body dynamics from URDF.
 4. `checks` — `check_estimator` and the robot checks.
 5. `bridges` — optional bridges (LLM embeddings, and a bridge to existing online-learning
