@@ -229,3 +229,17 @@ def test_rejected_order_does_not_remove_live_rate_entries():
     assert c.check("a", "buy", 100.0, 100.0, 100.0, 20.0).reason == "size"
     d = c.check("a", "buy", 0.5, 101.0, 100.0, 15.0)
     assert d.reason == "rate"
+
+
+def test_rejected_order_does_not_prune_short_windows():
+    c = _checker(
+        max_size=1.0,
+        price_band=1.0,
+        max_orders=5,
+        window_s=6.0,
+        duplicate_window_s=6.0,
+        max_notional=1e9,
+    )
+    assert c.check("a", "buy", 0.5, 100.0, 100.0, 10.0).approved
+    assert c.check("a", "buy", 100.0, 100.0, 100.0, 20.0).reason == "size"
+    assert c.check("a", "buy", 0.5, 100.0, 100.0, 15.0).reason == "duplicate"

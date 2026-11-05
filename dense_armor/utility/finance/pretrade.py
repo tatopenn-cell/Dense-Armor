@@ -44,10 +44,12 @@ class PreTradeChecker:
     sequence of timestamps of all orders, rejected ones included, is not. The windows are
     filtered to the alive entries on every ``check`` call, so an entry
     that is older than the window is never counted and never written
-    back. Every ``check`` first calls ``_prune``, which drops the entries
-    of every account that are older than the two windows; the cost is
+    back. Every approved order calls ``_prune``, which drops the entries
+    of every account that are older than the two windows; a rejected
+    order never calls it. The cost of an approved order is
     O(accounts with entries in the rate or duplicate lists, plus the
-    entries that survive). The open notional map is never pruned: an
+    entries that survive); a rejected one costs O(entries of its own
+    account). The open notional map is never pruned: an
     account that stops trading keeps its last notional until ``release``
     brings it back to zero. The value exactly at a limit is
     approved; one tick above is rejected. Only approved
@@ -172,7 +174,6 @@ class PreTradeChecker:
             raise ValueError(f"ref_price must be positive, got {ref_price}")
         if tf < self._last_t:
             raise ValueError(f"t must be >= the previous t ({self._last_t}), got {t}")
-        self._prune(tf)
         rate_alive = [u for u in self._rate.get(account, []) if u >= tf - self.window_s]
         dup_alive = [
             r
@@ -195,6 +196,7 @@ class PreTradeChecker:
             return Decision(False, "notional")
         self._last_t = tf
         self._open[account] = open_now + add
+        self._prune(tf)
         rate_alive.append(tf)
         dup_alive.append((tf, sz, px, rpx, side))
         self._rate[account] = rate_alive
