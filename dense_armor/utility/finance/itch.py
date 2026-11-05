@@ -65,8 +65,12 @@ def decode_message(buf: bytes) -> dict:
         Nasdaq TotalView-ITCH 5.0, Data Types PDF page 4 and message
         layouts PDF pages 13 to 16.
     """
+    if isinstance(buf, (bytearray, memoryview)):
+        buf = bytes(buf)
     if not isinstance(buf, bytes):
-        raise TypeError(f"buf must be bytes, got {type(buf).__name__}")
+        raise TypeError(
+            f"buf must be bytes, bytearray or memoryview, got {type(buf).__name__}"
+        )
     if len(buf) == 0:
         raise ValueError("buf is empty")
     t = chr(buf[0])

@@ -114,3 +114,25 @@ def test_push_accepts_a_list_and_checks_its_shape():
     out = np.zeros(3)
     assert b.pop_into(out)
     assert out.tolist() == [1.0, 2.0, 3.0]
+
+
+def test_pop_into_rejects_non_ndarray():
+    b = RingBuffer(2, 2)
+    with pytest.raises(ValueError):
+        b.pop_into([0.0, 0.0])
+
+
+def test_pop_into_rejects_float32():
+    b = RingBuffer(2, 2)
+    with pytest.raises(ValueError):
+        b.pop_into(np.zeros(2, dtype=np.float32))
+
+
+def test_len_is_consistent_after_wraparound():
+    b = RingBuffer(3, 1)
+    out = np.zeros(1)
+    for i in range(10):
+        assert b.push(np.array([float(i)]))
+        assert len(b) == 1
+        assert b.pop_into(out)
+        assert len(b) == 0

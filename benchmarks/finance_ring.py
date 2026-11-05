@@ -82,8 +82,10 @@ def main() -> None:
         bt = _run_bounded()
         ring_med.append(statistics.median(rt))
         bounded_med.append(statistics.median(bt))
-        print(f"  session {s + 1:2d}/{SESSIONS}: "
-              f"ring={ring_med[-1]:.4f} us  bounded={bounded_med[-1]:.4f} us")
+        print(
+            f"  session {s + 1:2d}/{SESSIONS}: "
+            f"ring={ring_med[-1]:.4f} us  bounded={bounded_med[-1]:.4f} us"
+        )
     try:
         p = float(wilcoxon(ring_med, bounded_med, alternative="two-sided").pvalue)
     except ValueError:

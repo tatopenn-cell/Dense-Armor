@@ -1,5 +1,6 @@
 """Pre-trade limits for one order, from SEC Rule 15c3-5 (c)(1)."""
 
+import math
 from dataclasses import dataclass
 
 
@@ -33,15 +34,30 @@ class PreTradeChecker:
        credit or capital thresholds, in the aggregate for each customer,
        PDF page 128).
 
-    A rejected order changes no state. An approved order adds
-    ``size * price`` to the open notional of its account. The value exactly
-    at a limit is approved; one tick above is rejected. Only approved
+    A rejected order changes no state, including the time of the last
+    sample seen. An approved order adds ``size * price`` to the open
+    notional of its account and records the timestamp. The cost of one
+    ``check`` is ``O(accounts with recent orders)`` because ``_evict``
+    scans every account that has an entry in the rate or duplicate lists;
+    with one account the cost is constant. The open notional map is never
+    pruned; an account that stops trading keeps its last notional until
+    ``release`` brings it back to zero. The value exactly at a limit is
+    approved; one tick above is rejected. Only approved
     orders count for the rate and for the duplicates: that is our choice,
     the rule does not say it.
 
+    The ``notional`` control is per account, not aggregated across
+    accounts for the broker or dealer. Rule 15c3-5 (c)(1)(i) requires the
+    aggregate limit for each customer **and** the broker or dealer; the
+    broker-wide aggregate is not implemented. This is a declared limit,
+    not a deviation from the rule: the class does not replace the
+    broker's own controls.
+
     Args:
         max_notional: the largest open notional an account can carry, in
-            the currency of the prices; strictly positive.
+            the currency of the prices; strictly positive. This is the
+            per-account limit; the aggregate for the broker is not
+            implemented (see above).
         max_size: the largest size of one order, in shares; strictly
             positive.
         price_band: the largest relative distance of the price from the
@@ -90,8 +106,11 @@ class PreTradeChecker:
             ("window_s", window_s),
             ("duplicate_window_s", duplicate_window_s),
         ):
-            if float(v) <= 0.0:
-                raise ValueError(f"{name} must be strictly positive, got {v}")
+            fv = float(v)
+            if not (math.isfinite(fv) and fv > 0.0):
+                raise ValueError(
+                    f"{name} must be a finite number strictly positive, got {v}"
+                )
         if int(max_orders) < 1:
             raise ValueError(f"max_orders must be >= 1, got {max_orders}")
         self.max_notional = float(max_notional)
@@ -129,45 +148,61 @@ class PreTradeChecker:
         """Decide one order. A rejected order leaves the state unchanged."""
         if side not in ("buy", "sell"):
             raise ValueError(f'side must be "buy" or "sell", got {side!r}')
-        if float(size) <= 0.0:
+        sz = float(size)
+        px = float(price)
+        rpx = float(ref_price)
+        tf = float(t)
+        for name, v in (("size", sz), ("price", px), ("ref_price", rpx), ("t", tf)):
+            if not math.isfinite(v):
+                raise ValueError(f"{name} must be a finite number, got {v}")
+        if not sz > 0.0:
             raise ValueError(f"size must be positive, got {size}")
-        if float(price) <= 0.0:
+        if not px > 0.0:
             raise ValueError(f"price must be positive, got {price}")
-        if float(ref_price) <= 0.0:
+        if not rpx > 0.0:
             raise ValueError(f"ref_price must be positive, got {ref_price}")
-        if float(t) < self._last_t:
+        if tf < self._last_t:
             raise ValueError(f"t must be >= the previous t ({self._last_t}), got {t}")
-        self._last_t = float(t)
-        self._evict(float(t))
-        if float(size) > self.max_size:
+        self._evict(tf)
+        if sz > self.max_size:
             return Decision(False, "size")
-        rel = abs(float(price) / float(ref_price) - 1.0)
+        rel = abs(px / rpx - 1.0)
         if rel > self.price_band:
             return Decision(False, "price_band")
         for r in self._dup.get(account, []):
-            if r[1] == float(size) and r[2] == float(price) and r[4] == side:
+            if r[1] == sz and r[2] == px and r[4] == side:
                 return Decision(False, "duplicate")
         if len(self._rate.get(account, [])) >= self.max_orders:
             return Decision(False, "rate")
         open_now = self._open.get(account, 0.0)
-        add = float(size) * float(price)
+        add = sz * px
         if open_now + add > self.max_notional:
             return Decision(False, "notional")
+        self._last_t = tf
         self._open[account] = open_now + add
-        self._rate.setdefault(account, []).append(float(t))
-        self._dup.setdefault(account, []).append(
-            (float(t), float(size), float(price), float(ref_price), side)
-        )
+        self._rate.setdefault(account, []).append(tf)
+        self._dup.setdefault(account, []).append((tf, sz, px, rpx, side))
         return Decision(True, "ok")
 
     def release(self, account: str, notional: float) -> None:
-        """Subtract a notional after a fill or a cancel."""
+        """Subtract a notional after a fill or a cancel.
+
+        Args:
+            account: the account whose open notional is reduced.
+            notional: the notional to release, a finite number ``> 0`` and
+                ``<=`` the current open notional of the account.
+
+        Raises:
+            ValueError: if ``notional`` is not finite, if it is not ``> 0``,
+                or if it is larger than the open notional of the account.
+        """
         cur = self._open.get(account, 0.0)
-        if float(notional) > cur:
+        n = float(notional)
+        if not math.isfinite(n) or not (0.0 < n <= cur):
             raise ValueError(
-                f"release of {notional} is larger than open notional {cur}"
+                f"release of {notional} is not allowed: open notional is {cur}"
             )
-        self._open[account] = cur - float(notional)
+        self._open[account] = cur - n
 
     def open_notional(self, account: str) -> float:
         """The open notional of the account."""

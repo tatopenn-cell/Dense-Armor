@@ -70,3 +70,27 @@ def test_vwap_errors():
         vwap_schedule(1.0, np.array([[1.0, 0.0]]))
     with pytest.raises(ValueError):
         vwap_schedule(1.0, np.array([[1.0, -0.5]]))
+
+
+def test_nan_or_inf_total_is_rejected():
+    for total in (float("nan"), float("inf"), float("-inf")):
+        with pytest.raises(ValueError):
+            twap_schedule(total, 3)
+        with pytest.raises(ValueError):
+            vwap_schedule(total, np.ones((1, 3)))
+
+
+def test_vwap_empty_history_is_rejected():
+    with pytest.raises(ValueError):
+        vwap_schedule(1.0, np.empty((0, 3)))
+
+
+def test_twap_and_vwap_sum_to_total_over_many_values():
+    for n in range(1, 50):
+        for total in (0.1, 1.0 / 3.0, 7.3):
+            s = twap_schedule(total, n)
+            assert abs(float(s.sum()) - total) < 1e-9
+    for n in range(1, 50):
+        h = np.full((3, n), 2.5)
+        s = vwap_schedule(1.0 / 3.0, h)
+        assert abs(float(s.sum()) - 1.0 / 3.0) < 1e-9

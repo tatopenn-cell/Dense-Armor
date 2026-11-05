@@ -12,12 +12,17 @@ class RingBuffer:
     copies the oldest row into ``out`` and returns ``True``, or returns
     ``False`` when the buffer is empty. The order is first in, first out.
 
-    The class has two integer counters, ``head`` (written only by the
-    producer) and ``tail`` (written only by the consumer), and takes no
-    lock. Its correctness for one producer thread and one consumer thread
-    rests on this rule and on the global interpreter lock of CPython.
-    No claim is made for a free-threaded build of Python, nor for several
-    producers or several consumers.
+    The class has three integer counters: ``head`` (written only by the
+    producer), ``tail`` (written only by the consumer) and ``_len`` (the
+    number of rows stored, incremented by the producer and decremented by
+    the consumer). ``_len`` is a read-modify-write shared between the two
+    threads; its correctness on one producer and one consumer rests on
+    the global interpreter lock of CPython, which makes ``+= 1`` and
+    ``-= 1`` atomic against the other thread on a CPython build with the
+    GIL. No claim is made for a free-threaded build of Python, nor for
+    several producers or several consumers; a version that does not rely
+    on the GIL would compute ``len`` from ``head`` and ``tail`` (with a
+    full flag to distinguish full from empty) and drop ``_len``.
 
     Args:
         capacity: the maximum number of rows stored; at least 1.
@@ -74,9 +79,21 @@ class RingBuffer:
         return True
 
     def pop_into(self, out: np.ndarray) -> bool:
-        """Copy the oldest row into ``out``, or return ``False`` if empty."""
-        arr = np.asarray(out, dtype=np.float64)
-        self._check_row(arr)
+        """Copy the oldest row into ``out``, or return ``False`` if empty.
+
+        ``out`` must be a numpy array of dtype float64 and shape
+        ``(width,)``. A different dtype would be coerced by ``np.asarray``
+        and the values would be written back into the caller's array with
+        a conversion, which allocates; a list is rejected because the
+        contract is a preallocated array, not a list.
+
+        Raises:
+            ValueError: if ``out`` is not a numpy array of dtype float64,
+                or if its shape is not ``(width,)``.
+        """
+        if not isinstance(out, np.ndarray) or out.dtype != np.float64:
+            raise ValueError("out must be a numpy array of dtype float64")
+        self._check_row(out)
         if self._len == 0:
             return False
         out[...] = self._buf[self.tail]

@@ -176,3 +176,15 @@ def test_type_and_length_errors():
         decode_message(b"A" + b"\x00" * 34)
     with pytest.raises(TypeError):
         decode_message("A not bytes")
+
+
+def test_bytearray_and_memoryview_are_accepted():
+    m = (
+        b"D"
+        + (1).to_bytes(2, "big")
+        + (2).to_bytes(2, "big")
+        + (0).to_bytes(6, "big")
+        + (7).to_bytes(8, "big")
+    )
+    assert decode_message(bytearray(m)) == decode_message(m)
+    assert decode_message(memoryview(m)) == decode_message(m)

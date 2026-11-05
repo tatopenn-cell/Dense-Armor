@@ -136,3 +136,56 @@ def test_check_rejects_bad_inputs():
     with pytest.raises(ValueError):
         c.check("a", "buy", 1.0, 100.0, 100.0, 1.0)
         c.check("a", "buy", 1.0, 100.0, 100.0, 0.5)
+
+
+def test_nan_inputs_are_rejected():
+    c = _checker()
+    for kw in (
+        dict(size=float("nan")),
+        dict(size=float("inf")),
+        dict(price=float("nan")),
+        dict(price=float("inf")),
+        dict(ref_price=float("nan")),
+        dict(ref_price=float("inf")),
+        dict(t=float("nan")),
+        dict(t=float("inf")),
+    ):
+        kwargs = dict(
+            account="a", side="buy", size=1.0, price=100.0, ref_price=100.0, t=0.0
+        )
+        kwargs.update(kw)
+        with pytest.raises(ValueError):
+            c.check(**kwargs)
+
+
+def test_nan_limits_are_rejected():
+    for kw in (
+        "max_notional",
+        "max_size",
+        "price_band",
+        "window_s",
+        "duplicate_window_s",
+    ):
+        with pytest.raises(ValueError):
+            _checker(**{kw: float("nan")})
+        with pytest.raises(ValueError):
+            _checker(**{kw: float("inf")})
+
+
+def test_release_negative_is_rejected():
+    c = _checker(max_notional=1000.0)
+    assert c.check("a", "buy", 5.0, 100.0, 100.0, 0.0).approved
+    with pytest.raises(ValueError):
+        c.release("a", -1e9)
+    with pytest.raises(ValueError):
+        c.release("a", float("nan"))
+    with pytest.raises(ValueError):
+        c.release("a", float("inf"))
+
+
+def test_rejected_order_does_not_update_last_t():
+    c = _checker(max_size=1.0)
+    assert c.check("a", "buy", 0.5, 100.0, 100.0, 10.0).approved
+    d = c.check("a", "buy", 100.0, 100.0, 100.0, 20.0)
+    assert d.reason == "size"
+    assert c.check("a", "buy", 0.5, 100.0, 100.0, 15.0).approved

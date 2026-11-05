@@ -10,7 +10,11 @@ def twap_schedule(total: float, n: int) -> np.ndarray:
     sold at constant speed, ``total / n`` per bucket, which is the optimal
     static strategy when the traded volume is constant (Remark 3, PDF
     page 5 of Kato 2014). The last slice absorbs the floating point
-    residue, so the array sums to ``total``.
+    residue in sequential summation: the array sums to ``total`` when the
+    slices are added left to right. ``np.sum`` uses pairwise summation and
+    may differ from ``total`` by a rounding of the last bit; the test
+    checks the property with a tolerance over many values of ``total``
+    and ``n``.
 
     Args:
         total: the size of the parent order, in shares; must be ``>= 0``.
@@ -29,15 +33,16 @@ def twap_schedule(total: float, n: int) -> np.ndarray:
         1.0
 
     References:
-        Kato, T. (2014). An optimal execution problem with market impact
-        and stochastic volume. Remark 3, PDF page 5: when the volume is a
-        constant, the optimal strategy sells at constant speed.
+        Kato, T. (2014). VWAP Execution as an Optimal Strategy. arXiv
+        1408.6118, first version 26 August 2014, this version 31 January
+        2017. Remark 3, PDF page 5: when the volume is a constant, the
+        optimal strategy sells at constant speed.
     """
     if n < 1:
         raise ValueError(f"n must be >= 1, got n={n}")
-    if total < 0:
-        raise ValueError(f"total must be >= 0, got total={total}")
     total = float(total)
+    if not np.isfinite(total) or total < 0:
+        raise ValueError(f"total must be a finite number >= 0, got total={total}")
     slice_size = total / n
     slices: np.ndarray = np.full(n, slice_size, dtype=np.float64)
     slices[-1] = total - slice_size * (n - 1)
@@ -83,19 +88,22 @@ def vwap_schedule(total: float, history: np.ndarray) -> np.ndarray:
         [1.8, 1.8]
 
     References:
-        Kato, T. (2014). An optimal execution problem with market impact
-        and stochastic volume. Sell-off condition equation (2.3), PDF
-        page 2; temporary impact equation (3.2), PDF page 3; static
-        strategy ``A_stat``, PDF page 4; Theorem 2 and Remark 3, PDF
-        page 5.
+        Kato, T. (2014). VWAP Execution as an Optimal Strategy. arXiv
+        1408.6118, first version 26 August 2014, this version 31 January
+        2017. Sell-off condition equation (2.3), PDF page 2; temporary
+        impact equation (3.2), PDF page 3; static strategy ``A_stat``,
+        PDF page 4; Theorem 2 and Remark 3, PDF page 5.
     """
-    if total < 0:
-        raise ValueError(f"total must be >= 0, got total={total}")
+    total = float(total)
+    if not np.isfinite(total) or total < 0:
+        raise ValueError(f"total must be a finite number >= 0, got total={total}")
     history = np.asarray(history, dtype=np.float64)
     if history.ndim != 2:
         raise ValueError(
             f"history must be 2-D (n_sessions, n_buckets), got ndim={history.ndim}"
         )
+    if history.shape[0] < 1:
+        raise ValueError(f"history must have at least one session, got {history.shape}")
     if history.shape[1] < 1:
         raise ValueError(f"history must have at least one bucket, got {history.shape}")
     if not np.all(np.isfinite(history)):

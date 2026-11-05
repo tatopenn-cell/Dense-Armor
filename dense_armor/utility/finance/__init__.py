@@ -1,4 +1,5 @@
-"""Execution schedules and pre-trade limits for a parent order."""
+"""Building blocks for trading systems: schedules, pre-trade limits,
+exchange message decoding and a preallocated ring buffer."""
 
 from dense_armor.utility.finance.itch import decode_message
 from dense_armor.utility.finance.pretrade import Decision, PreTradeChecker

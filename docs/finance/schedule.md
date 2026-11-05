@@ -75,7 +75,7 @@ The fixture is one session, so the history has one row and the harmonic mean of 
 ## Details
 
 **References.**
-- Kato, T. (2014). *An optimal execution problem with market impact and stochastic volume.* Sell-off condition equation (2.3), PDF page 2; Definition 1 (VWAP strategy), PDF page 3; temporary market impact equation (3.2), PDF page 3; static strategy `A_stat`, PDF page 4; Theorem 2 and Remark 3, PDF page 5.
+- Kato, T. (2014). *VWAP Execution as an Optimal Strategy.* arXiv 1408.6118, first version 26 August 2014, this version 31 January 2017. Sell-off condition equation (2.3), PDF page 2; Definition 1 (VWAP strategy), PDF page 3; temporary market impact equation (3.2), PDF page 3; static strategy `A_stat`, PDF page 4; Theorem 2 and Remark 3, PDF page 5.
 - Almgren, R. and Chriss, N. (2001). *Optimal execution of portfolio transactions.* Journal of Risk 3(2), 5-39. Not read: the PDF was not available in the session.
 
 **Choices stated explicitly.**
