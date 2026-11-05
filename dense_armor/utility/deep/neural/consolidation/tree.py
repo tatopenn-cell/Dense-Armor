@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import jax.numpy as jnp
 import numpy as np
+from scipy.cluster.vq import kmeans2
 
 from dense_armor._dtype import as_default_array
 
@@ -40,8 +41,8 @@ class ResidualTree:
 
     Deviations from the paper (declared):
         - the nodes are vector-quantised memories, not residual modules;
-        - the consolidation is a k-means on the children codes, not the
-          paper's confidence rule;
+        - the consolidation is a k-means on the decoded children codebooks,
+          followed by a brief VQ training (5 steps); not the paper's confidence rule;
         - ``alpha`` and ``kappa`` are per-node scalars in the paper; here
           ``kappa`` is the threshold and ``alpha`` is the mean residual
           of the node.
@@ -75,6 +76,7 @@ class ResidualTree:
         self.root = self._new_node(depth=0)
         self._n_nodes = 1
         self._n_events = 0
+        self._n_rebuilds = 0
 
     def _new_node(self, depth: int) -> dict:
         seed = int(self._rng.randint(0, 2**31 - 1))
@@ -230,9 +232,26 @@ class ResidualTree:
     def consolidate(self) -> int:
         """Merge every node that has ``branching`` children into a parent.
 
-        Returns the number of nodes removed. The parent's codebook is the
-        concatenation of the children centroids, reduced by k-means to
-        ``n_codes / branching``; the children are dropped.
+        Returns the number of nodes removed. Each group of ``branching``
+        children is decoded into input space, clustered by k-means to
+        ``n_codes / branching`` centroids, and the parent's VQ is rebuilt
+        with that reduced codebook. The k-means centroids are used as an
+        initialization; the parent's VQ is then briefly trained (5 steps)
+        on the decoded centroids, so the final codebook is a trained
+        representation of the children, not the k-means centroids
+        themselves. The children are dropped.
+
+        If the parent was already consolidated before (its codebook is
+        smaller than ``n_codes``), its decoded codebook is added to the
+        k-means input, so the previous consolidation is preserved. A
+        parent that was never consolidated is replaced by its children:
+        its own codebook is not part of the k-means input. The two cases
+        are told apart by the codebook size, so with ``branching == 1``
+        (where ``n_codes // branching == n_codes``) a consolidated
+        parent is not recognised as such. Each
+        rebuilt node gets a seed derived from ``self.seed`` and the
+        number of parents this tree has rebuilt so far (across calls),
+        so different rebuilds do not share the same weights.
         """
         removed = 0
 
@@ -240,10 +259,28 @@ class ResidualTree:
             nonlocal removed
             while len(node["children"]) >= self.branching:
                 kids = node["children"][: self.branching]
-                node["vq"].fit(
-                    jnp.concatenate([k["vq"].codebook.value for k in kids], axis=0),
-                    n_steps=3,
+                decoded = []
+                for k in kids:
+                    cb = k["vq"].codebook.value
+                    decoded.append(np.asarray(k["vq"].decode(cb)))
+                parent_cb = node["vq"].codebook.value
+                if parent_cb.shape[0] != self.n_codes:
+                    decoded.append(np.asarray(node["vq"].decode(parent_cb)))
+                X = np.concatenate(decoded, axis=0)
+                new_n_codes = max(1, self.n_codes // self.branching)
+                seed = int(self.seed) + self._n_rebuilds
+                self._n_rebuilds += 1
+                centroids, _ = kmeans2(X, new_n_codes, minit="++", seed=seed)
+                centroids = as_default_array(np.asarray(centroids))
+                new_vq = VQMemory(
+                    n_x=self.d_model,
+                    d_model=min(4, self.d_model),
+                    n_codes=new_n_codes,
+                    seed=seed,
                 )
+                new_vq.codebook.value = new_vq.encode(as_default_array(centroids))
+                new_vq.fit(as_default_array(X), n_steps=5)
+                node["vq"] = new_vq
                 node["support"] = sum(k["support"] for k in kids)
                 node["alpha"] = float(np.mean([k["alpha"] for k in kids]))
                 node["children"] = node["children"][self.branching :]

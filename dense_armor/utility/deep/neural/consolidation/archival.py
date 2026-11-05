@@ -21,12 +21,15 @@ class ArchivalMemory:
     - ``write_depth(importance) = round(importance * max_depth)``;
     - ``transition(state, event)``: promote after ``promote_threshold``
       accesses, decay one band after ``decay_horizon_s`` seconds;
-    - ``promote(node)``: the codebook of the parent is the concatenation
-      of the children's centroids, reduced by k-means to
-      ``n_codes // branching``.
+    - ``promote(node)``: not a method of this class; it is done by
+      ``ResidualTree.consolidate``, which rebuilds the parent's VQ with
+      ``n_codes // branching`` codes initialized from a k-means of the
+      decoded children codebooks, then trains it for 5 steps.
 
     The four functions are in ``RULE.md`` section 1 to 4; the class
-    implements them as methods, and the test pins the three cases each.
+    implements the first three as methods (``importance``,
+    ``write_depth``, ``transition``), and the test pins the three cases
+    each.
     """
 
     def __init__(
