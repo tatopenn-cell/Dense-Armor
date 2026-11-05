@@ -1,0 +1,22 @@
+{
+  "backend": "python",
+  "machine": {
+    "platform": "Linux-6.6.159+-x86_64-with-glibc2.39",
+    "python": "3.13.18",
+    "processor": "x86_64"
+  },
+  "n": 200000,
+  "capacity": 256,
+  "width": 4,
+  "same_sequence": true,
+  "ring_buffer_us": {
+    "median": 3.95500001104665,
+    "min": 2.0110001059947535,
+    "max": 2244.024999981775
+  },
+  "bounded_stream_us": {
+    "median": 0.9089999366551638,
+    "min": 0.49700020099407993,
+    "max": 2545.037999880151
+  }
+}
