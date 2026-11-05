@@ -50,9 +50,7 @@ class RingBuffer:
             raise ValueError(f"width must be >= 1, got {width}")
         self.capacity = int(capacity)
         self.width = int(width)
-        self._buf: np.ndarray = np.zeros(
-            (self.capacity, self.width), dtype=np.float64
-        )
+        self._buf: np.ndarray = np.zeros((self.capacity, self.width), dtype=np.float64)
         self.head = 0
         self.tail = 0
         self._len = 0
