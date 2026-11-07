@@ -42,7 +42,7 @@ stdout: {"counts": {"notional": 116, "ok": 32, "size": 345}, "elapsed_s": "<floa
 `counts` has three reasons (`notional`, `ok`, `size`); the sum is 493, which is
 `n_orders`. `n_messages` is 1,000. `verified` is `true`: the log written by the
 run is a valid chain. `schedule_sum` is 100.0, the total of the schedule.
-`elapsed_s` is one run of this page on the machine named in Details.
+`elapsed_s` is one run of this page, on Python 3.13.18 on Linux, in a Colab session. It is not a measurement of speed.
 
 ## 2. Verify the log with the status command
 
@@ -138,11 +138,10 @@ docstring or test says it is fast or fixed.
 **Declared limits.**
 - The feed is synthetic: it has the byte layout of ITCH and none of its
   statistics. There is no Nasdaq connection, no real order and no execution
-  report. The demo builds a book of orders on paper, sends them to a checker
+  report. The demo sends the orders to a checker
   that decides on the numbers of the configuration, and records the decisions.
 - No execution is simulated. An `A` is an order that arrived; an approved
   decision is a decision, not a fill.
-- The stop is checked once, at the start. A stop file created during the run
   does not interrupt it.
 - The log has no signature and no retention policy. It is a chain, not a legal
   record.

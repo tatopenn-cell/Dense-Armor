@@ -74,7 +74,7 @@ def _parse_line(line: str, index: int) -> dict:
 
 
 class DecisionLog:
-    """A JSON-lines file whose records carry the SHA-256 of the previous one.
+    r"""A JSON-lines file whose records carry the SHA-256 of the previous one.
 
     A record is one UTF-8 JSON line with five keys: ``seq`` (0 for the first
     line), ``t`` (finite float), ``payload`` (JSON object), ``prev`` (64 hex
@@ -89,6 +89,10 @@ class DecisionLog:
     every line is a valid record, ``seq`` is the line index, ``prev`` is the
     ``hash`` of the previous line (or ``GENESIS_HASH`` for the first) and
     ``hash`` equals the recomputed one.
+
+    ``append`` re-reads and re-hashes the whole file at every call, so the
+    cost is O(n) per record and O(n**2) for n records. This is declared,
+    not optimised.
 
     Args:
         path: the file path, as :class:`str` or :class:`pathlib.Path`.
@@ -114,11 +118,11 @@ class DecisionLog:
         (1, True, True)
 
     References:
-        NIST FIPS 180-4. *Secure Hash Standard*. SHA-256 is section 6.2
-        (PDF pages 27 and 28), message padding is section 5.1.1 (PDF
-        page 18), available in ``papers/fips180_4_secure_hash_standard.pdf``.
-        JSON Lines, ``papers/jsonlines_org.html``: UTF-8, one JSON value per
-        line, line terminator ``\n``.
+        NIST. FIPS 180-4, *Secure Hash Standard*. August 2015. SHA-256 is
+        section 6.2 (pages 27 and 28 of the PDF); message padding is
+        section 5.1.1 (page 18). JSON Lines, jsonlines.org, version 1.0:
+        UTF-8, one JSON value per line, line terminator ``\n``. The PDFs
+        are not in this repository; the citations are bibliographic.
     """
 
     GENESIS_HASH = GENESIS_HASH
