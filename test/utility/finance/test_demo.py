@@ -6,6 +6,12 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
+skip_py310 = pytest.mark.skipif(
+    sys.version_info < (3, 11), reason="tomllib needs Python 3.11 or later"
+)
+
 FIXTURE = Path(__file__).resolve().parents[2] / "fixtures" / "finance" / "demo.toml"
 
 
@@ -28,6 +34,7 @@ def _run(tmp_path: Path, n: int = 200) -> subprocess.CompletedProcess:
     )
 
 
+@skip_py310
 def test_demo_run(tmp_path):
     r = _run(tmp_path, n=200)
     assert r.returncode == 0, r.stderr
@@ -111,6 +118,7 @@ def test_demo_missing_config(tmp_path):
     assert payload["ok"] is False
 
 
+@skip_py310
 def test_demo_ring_width_must_be_4(tmp_path):
     cfg = tmp_path / "bad_width.toml"
     body = FIXTURE.read_text(encoding="utf-8").replace("width = 4", "width = 2")
@@ -133,6 +141,7 @@ def test_demo_ring_width_must_be_4(tmp_path):
     assert "ring.width" in payload["error"]
 
 
+@skip_py310
 def test_demo_emergency_stop(tmp_path):
     cfg = tmp_path / "demo.toml"
     shutil.copy(FIXTURE, cfg)
@@ -192,6 +201,7 @@ def _fake_itch_two_orders_same_stock():
     return len(a).to_bytes(2, "big") + a + len(d).to_bytes(2, "big") + d
 
 
+@skip_py310
 def test_demo_ref_price_is_first_of_stock(tmp_path, monkeypatch):
     """The ref_price of the second A of AAPL is the price of the first,
     so a 10% move exceeds the price_band and is refused."""
@@ -218,6 +228,7 @@ def test_demo_ref_price_is_first_of_stock(tmp_path, monkeypatch):
     )
 
 
+@skip_py310
 def test_demo_verify_call_is_used(tmp_path, monkeypatch):
     """The demo returns DecisionLog.verify()'s result, not a hardcoded True."""
     import contextlib

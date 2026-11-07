@@ -4,8 +4,14 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 from dense_armor.utility.finance.decision_log import DecisionLog
 from dense_armor.utility.finance.status import main
+
+skip_py310 = pytest.mark.skipif(
+    sys.version_info < (3, 11), reason="tomllib needs Python 3.11 or later"
+)
 
 BASE_TOML = """\
 [schedule]
@@ -37,6 +43,7 @@ def _write(tmp_path: Path, body: str = BASE_TOML) -> Path:
     return p
 
 
+@skip_py310
 def test_1_valid_configuration_subprocess(tmp_path):
     cfg = _write(tmp_path)
     r = subprocess_run(["--config", str(cfg)])
@@ -54,6 +61,7 @@ def test_1_valid_configuration_subprocess(tmp_path):
     assert payload["feed"]["exists"] is False
 
 
+@skip_py310
 def test_2_invalid_configuration_inprocess(tmp_path, capsys):
     body = BASE_TOML.replace("max_size = 10.0\n", "")
     cfg = _write(tmp_path, body=body)
@@ -67,6 +75,7 @@ def test_2_invalid_configuration_inprocess(tmp_path, capsys):
     assert "pretrade.max_size" in payload["error"]
 
 
+@skip_py310
 def test_3_emergency_stop_file_present(tmp_path):
     cfg = _write(tmp_path)
     (tmp_path / "STOP").write_bytes(b"")
@@ -78,6 +87,7 @@ def test_3_emergency_stop_file_present(tmp_path):
     assert payload["emergency_stop"] is True
 
 
+@skip_py310
 def test_4_log_written_and_after_deletion(tmp_path):
     cfg = _write(tmp_path)
     log = DecisionLog(tmp_path / "log.jsonl")
@@ -124,6 +134,7 @@ def test_5_missing_config_exits_two(capsys):
     assert "--config" in err
 
 
+@skip_py310
 def test_6_broken_log_middle_gives_verified_false(tmp_path):
     """A record edited in the middle gives verified False and exit 0."""
     cfg = _write(tmp_path)
