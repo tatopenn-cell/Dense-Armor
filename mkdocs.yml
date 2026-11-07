@@ -78,6 +78,12 @@ nav:
           - Pre-trade limits: finance/pretrade.md
           - ITCH messages: finance/itch.md
           - Ring buffer: finance/ring.md
+          - Configuration: finance/config.md
+          - Decision log: finance/decision_log.md
+          - Feed file: finance/feed.md
+          - Status: finance/status.md
+          - Synthetic feed: finance/synthetic.md
+          - Demo: finance/demo.md
           - Single ticker: finance/single_ticker.md
           - Static vs online: finance/static_vs_online.md
           - Fraud detection: finance/fraud.md
