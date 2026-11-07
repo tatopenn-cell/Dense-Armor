@@ -188,9 +188,9 @@ first token knows which table is wrong.
   v1.0.0 defines no path semantics, so this is our choice, stated here and
   tested in `test_relative_path_resolved_against_file_folder`.
 - `load_config` builds each block once, so the ranges are validated by the
-  blocks of F1, F2 and F4 and not by a second copy of their rules. A test
-  that removes the dry run of `PreTradeChecker` fails at least one test in
-  `test_config.py`.
+  blocks of F1, F2 and F4 and not by a second copy of their rules. The tests
+  `test_out_of_range_names_the_table` and `test_huge_int_in_number_gives_value_error`
+  exercise that path.
 - `tomllib` is imported inside `load_config`, so a Python 3.10 session raises
   `RuntimeError("tomllib needs Python 3.11 or later")` only when a
   configuration is read, not at import time.

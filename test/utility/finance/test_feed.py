@@ -143,3 +143,44 @@ def test_4b_truncated_body_count(tmp_path):
         ValueError, match=r"offset 38.*body is 10 bytes.*expected 40.*after 1 messages"
     ):
         list(iter_itch(path))
+
+
+def test_5b_known_type_with_wrong_length_reports_offset(tmp_path):
+    path = tmp_path / "wrong_length.bin"
+    a = _A(1, "B", 10, "AAPL", 100)
+    path.write_bytes(_record(a) + _record(b"A" + bytes(9)))
+    with pytest.raises(ValueError, match=r"offset 38.*after 1 messages"):
+        list(iter_itch(path))
+
+
+def test_9_messages_before_a_bad_record_were_yielded(tmp_path):
+    path = tmp_path / "partial.bin"
+    a = _A(1, "B", 10, "AAPL", 100)
+    d = _D(1)
+    path.write_bytes(_record(a) + _record(d) + (40).to_bytes(2, "big") + bytes(10))
+    seen = []
+    with pytest.raises(ValueError, match="offset 59"):
+        for msg in iter_itch(path):
+            seen.append(msg["type"])
+    assert seen == ["A", "D"]
+
+
+def test_10_file_is_closed_when_the_generator_is_closed(tmp_path, monkeypatch):
+    path = tmp_path / "two.bin"
+    a = _A(1, "B", 10, "AAPL", 100)
+    path.write_bytes(_record(a) + _record(_D(1)))
+    opened = []
+    real_open = type(path).open
+
+    def spy(self, *args, **kwargs):
+        handle = real_open(self, *args, **kwargs)
+        opened.append(handle)
+        return handle
+
+    monkeypatch.setattr(type(path), "open", spy)
+    it = iter_itch(path)
+    next(it)
+    assert len(opened) == 1
+    assert opened[0].closed is False
+    it.close()
+    assert opened[0].closed is True

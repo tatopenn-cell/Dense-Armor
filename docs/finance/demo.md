@@ -143,7 +143,6 @@ docstring or test says it is fast or fixed.
   that decides on the numbers of the configuration, and records the decisions.
 - No execution is simulated. An `A` is an order that arrived; an approved
   decision is a decision, not a fill.
-  does not interrupt it.
 - The log has no signature and no retention policy. It is a chain, not a legal
   record.
 - `elapsed_s` is one run on one machine, not a measurement of speed.

@@ -135,7 +135,7 @@ def test_6_broken_log_middle_gives_verified_false(tmp_path):
         (tmp_path / "log.jsonl").read_text(encoding="utf-8").splitlines(keepends=True)
     )
     (tmp_path / "log.jsonl").write_text(
-        lines[0] + lines[1].replace('"a":2', '"a":99"') + lines[2],
+        lines[0] + lines[1].replace('"a":2', '"a":99') + lines[2],
         encoding="utf-8",
         newline="\n",
     )

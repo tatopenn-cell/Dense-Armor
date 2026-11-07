@@ -123,6 +123,9 @@ verify tampered: False
   test `test_8_deleting_tail_is_not_detected` makes this explicit.
 - No retention policy and no legal value: the page describes what the code
   does with the file, not what a regulator accepts.
+- `append` re-reads and re-hashes the whole file at every call: the cost is
+  O(n) per record and O(n**2) for n records, and the demo with a large `--n`
+  grows accordingly. This is declared, not optimised.
 - One writer at a time. The file is opened, written and closed for each
   record, but two processes appending at the same time are not protected by a
   lock.

@@ -246,7 +246,6 @@ def test_12_prev_check_isolated(tmp_path):
         + "\n"
     )
 
-    # record 1: prev WRONG ("f"*64 invece di hash0), ma hash corretto sul contenuto
     payload1 = {"a": 2}
     prev1_wrong = "f" * 64
     canon1 = json.dumps(
@@ -285,7 +284,6 @@ def test_13_seq_check_isolated(tmp_path):
     import hashlib
 
     path = tmp_path / "log.jsonl"
-    # record 0 ok
     payload0 = {"a": 1}
     prev0 = "0" * 64
     canon0 = json.dumps(
@@ -307,7 +305,6 @@ def test_13_seq_check_isolated(tmp_path):
         + "\n"
     )
 
-    # record 1: seq WRONG (=5 invece di 1), prev corretto (hash0), hash corretto su seq=5
     payload1 = {"a": 2}
     bad_seq = 5
     canon1 = json.dumps(
@@ -398,7 +395,7 @@ def test_16_huge_int_in_t_returns_false(tmp_path):
 
 
 def test_17_deep_nesting_returns_false(tmp_path):
-    """Deep nesting can raise RecursionError in json.dumps."""
+    """Deep nesting can raise RecursionError while reading or hashing a line."""
     deep = "[" * 5000 + "]" * 5000
     path = tmp_path / "log.jsonl"
     path.write_text(

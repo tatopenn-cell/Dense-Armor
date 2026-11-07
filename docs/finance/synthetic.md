@@ -129,6 +129,10 @@ U 106
 - The layout is real (a message decoded by `decode_message` returns the same
   keys as a real ITCH message). The statistics are not: the shares, the
   prices and the type distribution are formulas of the byte stream.
+- The `locate` is drawn for every message, including `E`, `C`, `X`, `D` and
+  `U`. A real feed keeps the locate of the order an update refers to; the
+  synthetic feed does not, so the `locate` of an update can differ from the
+  one of the `A` it updates.
 - The feed is not a model of a market. There is no matching engine, no book,
   no price process, no cross. It is a source of ITCH messages with the right
   bytes.

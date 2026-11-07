@@ -144,7 +144,7 @@ class DecisionLog:
             return GENESIS_HASH, 0
         try:
             last = _parse_line(lines[-1], len(lines) - 1)
-        except ValueError:
+        except (ValueError, RecursionError):
             return GENESIS_HASH, 0
         return last["hash"], len(lines)
 

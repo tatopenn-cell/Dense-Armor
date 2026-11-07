@@ -210,7 +210,6 @@ def test_demo_ref_price_is_first_of_stock(tmp_path, monkeypatch):
         code = demo_mod.main(["--config", str(cfg), "--n", "2"])
     assert code == 0
     payload = json.loads(buf.getvalue().strip())
-    # dovrebbe cadere nel price_band se ref_price = 100.0, non se ref_price = 110.0
     counts = payload["counts"]
     reasons = set(counts.keys())
     assert "price_band" in reasons, (

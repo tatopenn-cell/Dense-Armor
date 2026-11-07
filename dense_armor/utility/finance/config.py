@@ -245,10 +245,10 @@ def load_config(path: str | Path) -> FinanceConfig:
     the table name, ``[pretrade]: ...``.
 
     The TOML syntax (tables, integers, floats, strings, ``nan`` and ``inf``
-    as valid floats) is the one of the TOML v1.0.0 specification in
-    specification, sections ``Table``, ``Integer``, ``Float``, ``String``.
-    The specification is not in this repository; the citation is
-    bibliographic.
+    as valid floats) is the one of the TOML v1.0.0 specification
+    (toml.io/en/v1.0.0), sections ``Table``, ``Integer``, ``Float``,
+    ``String``. The specification is not in this repository; the citation
+    is bibliographic.
 
     Args:
         path: the path of the TOML file. A missing file raises
