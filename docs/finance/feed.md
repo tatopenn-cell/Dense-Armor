@@ -123,14 +123,13 @@ the count of messages that `iter_itch` already yielded.
 ## Details
 
 **References.**
-- Nasdaq. *TotalView-ITCH 5.0 specification*,
-  `papers/nasdaq_totalview_itch_50.pdf`. Data types on PDF page 4; Add Order
-  `A` and `F` on PDF page 13; Order Executed `E` and Order Executed With Price
-  `C` on PDF page 14; Order Cancel `X` and Order Delete `D` on PDF page 15;
-  Order Replace `U` on PDF page 16.
+- Nasdaq. *TotalView-ITCH 5.0 specification*, 2018. Data types on
+  page 4 of the PDF; Add Order `A` and `F` on page 13; Order Executed `E`
+  and Order Executed With Price `C` on page 14; Order Cancel `X` and Order
+  Delete `D` on page 15; Order Replace `U` on page 16.
 - The container (a 2-byte length in front of every message) is **our
-  choice**, stated in `CONTESTO.md` and in this page. It is not in the ITCH
-  specification: the standard describes the bytes of a message, not a file.
+  choice**, stated in this page. It is not in the ITCH specification: the
+  standard describes the bytes of a message, not a file.
 
 **Choices stated explicitly.**
 - The length prefix is 2 bytes, big endian, unsigned. A message longer than

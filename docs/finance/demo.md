@@ -110,9 +110,10 @@ that was edited; the chain is broken at the second record.
 ## Details
 
 **References.**
-- Nasdaq TotalView-ITCH 5.0, `papers/nasdaq_totalview_itch_50.pdf`, PDF pages
-  13 to 16 for the message layouts (see the feed page of F7).
-- NIST FIPS 180-4 for the SHA-256 of the log (see the decision log page of F6).
+- Nasdaq. *TotalView-ITCH 5.0 specification*, 2018. Message layouts on
+  pages 13 to 16 of the PDF.
+- NIST. FIPS 180-4, *Secure Hash Standard*. August 2015. SHA-256 is
+  section 6.2, pages 27 and 28 of the PDF.
 
 **Choices stated explicitly.**
 - The `account` passed to the checker is the stock symbol. A real desk would

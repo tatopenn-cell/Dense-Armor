@@ -13,7 +13,7 @@ MAX_MESSAGE = 65535
 def frame(message: bytes | bytearray | memoryview) -> bytes:
     """Return the 2-byte length followed by the message bytes.
 
-    The container is our choice (``CONTESTO.md``): each record is a 2-byte
+    The container is our choice, not the ITCH specification: each record is a 2-byte
     big-endian unsigned length ``L`` followed by ``L`` bytes of one
     message. It is not part of the ITCH specification.
 

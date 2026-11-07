@@ -101,11 +101,10 @@ U 106
 ## Details
 
 **References.**
-- Nasdaq. *TotalView-ITCH 5.0 specification*,
-  `papers/nasdaq_totalview_itch_50.pdf`. Data types on PDF page 4; Add Order
-  `A` and `F` on PDF page 13; Order Executed `E` and Order Executed With Price
-  `C` on PDF page 14; Order Cancel `X` and Order Delete `D` on PDF page 15;
-  Order Replace `U` on PDF page 16.
+- Nasdaq. *TotalView-ITCH 5.0 specification*, 2018. Data types on
+  page 4 of the PDF; Add Order `A` and `F` on page 13; Order Executed `E`
+  and Order Executed With Price `C` on page 14; Order Cancel `X` and Order
+  Delete `D` on page 15; Order Replace `U` on page 16.
 
 **Choices stated explicitly.**
 - The byte stream is SHA-256 of `(seed, block_index)`. A user can reproduce

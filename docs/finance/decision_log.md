@@ -94,11 +94,11 @@ verify tampered: False
 ## Details
 
 **References.**
-- NIST FIPS 180-4. *Secure Hash Standard*. SHA-256 is section 6.2 (PDF
-  pages 27 and 28), message padding is section 5.1.1 (PDF page 18),
-  `papers/fips180_4_secure_hash_standard.pdf`.
-- JSON Lines, `papers/jsonlines_org.html`: UTF-8, one JSON value per line,
-  line terminator `\n`, no byte order mark.
+- NIST. FIPS 180-4, *Secure Hash Standard*. August 2015. SHA-256 is
+  section 6.2 (pages 27 and 28 of the PDF); message padding is section
+  5.1.1 (page 18).
+- JSON Lines, jsonlines.org, version 1.0: UTF-8, one JSON value per
+  line, line terminator `\n`, no byte order mark.
 
 **Choices stated explicitly.**
 - The canonical text is `json.dumps(..., sort_keys=True,
