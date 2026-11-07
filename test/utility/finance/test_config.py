@@ -9,9 +9,7 @@ import pytest
 from dense_armor.utility.finance.config import load_config
 
 PY310 = sys.version_info < (3, 11)
-skip_py310 = pytest.mark.skipif(
-    PY310, reason="tomllib needs Python 3.11 or later"
-)
+skip_py310 = pytest.mark.skipif(PY310, reason="tomllib needs Python 3.11 or later")
 
 BASE_TOML = """\
 [schedule]
@@ -115,15 +113,18 @@ def test_unknown_key_and_unknown_table(tmp_path):
 
 
 @skip_py310
-@pytest.mark.parametrize("old,new,match", [
-    ("max_size = 10.0", 'max_size = "big"', r"pretrade\.max_size"),
-    ("max_size = 10.0", "max_size = true", r"pretrade\.max_size"),
-    ("max_notional = 1000000.0", "max_notional = true", r"pretrade\.max_notional"),
-    ("max_orders = 5", "max_orders = true", r"pretrade\.max_orders"),
-    ("n = 4", "n = 2.5", r"schedule\.n"),
-    ("n = 4", "n = true", r"schedule\.n"),
-    ('log = "log.jsonl"', "log = 42", r"paths\.log"),
-])
+@pytest.mark.parametrize(
+    "old,new,match",
+    [
+        ("max_size = 10.0", 'max_size = "big"', r"pretrade\.max_size"),
+        ("max_size = 10.0", "max_size = true", r"pretrade\.max_size"),
+        ("max_notional = 1000000.0", "max_notional = true", r"pretrade\.max_notional"),
+        ("max_orders = 5", "max_orders = true", r"pretrade\.max_orders"),
+        ("n = 4", "n = 2.5", r"schedule\.n"),
+        ("n = 4", "n = true", r"schedule\.n"),
+        ('log = "log.jsonl"', "log = 42", r"paths\.log"),
+    ],
+)
 def test_wrong_type(tmp_path, old, new, match):
     body = BASE_TOML.replace(old, new)
     with pytest.raises(ValueError, match=match):
@@ -167,6 +168,7 @@ def test_tomllib_missing_is_runtime_error(tmp_path, monkeypatch):
 @skip_py310
 def test_make_checker_returns_new_checker(tmp_path):
     from dense_armor.utility.finance.pretrade import PreTradeChecker
+
     c = load_config(_write(tmp_path))
     a = c.make_checker()
     b = c.make_checker()
@@ -178,6 +180,7 @@ def test_make_checker_returns_new_checker(tmp_path):
 @skip_py310
 def test_make_ring_returns_new_ring(tmp_path):
     from dense_armor.utility.finance.ring import RingBuffer
+
     c = load_config(_write(tmp_path))
     a = c.make_ring()
     b = c.make_ring()
@@ -190,7 +193,7 @@ def test_make_ring_returns_new_ring(tmp_path):
 def test_table_key_that_is_not_a_table(tmp_path):
     body = BASE_TOML.replace(
         "[schedule]\ntotal = 100.0\nn = 4\n",
-        "schedule = \"not a table\"\n",
+        'schedule = "not a table"\n',
     )
     with pytest.raises(ValueError, match="schedule must be a table"):
         load_config(_write(tmp_path, body=body))
