@@ -11,11 +11,29 @@ from dense_armor.utility.finance.config import load_config
 from dense_armor.utility.finance.decision_log import DecisionLog
 
 
-def _inspect(config_path: str) -> tuple[int, dict]:
-    try:
-        config = load_config(config_path)
-    except (FileNotFoundError, ValueError, RuntimeError) as e:
-        return 2, {"error": str(e), "ok": False}
+def collect_status(config_path: str) -> dict:
+    """Return the status of a configuration as a dict.
+
+    This is the function that the status command prints and that the
+    dashboard of G2 exposes on ``GET /status``. It reads the configuration
+    and three paths, and returns one dict. What :func:`load_config` raises
+    (``FileNotFoundError``, ``ValueError``, ``RuntimeError``) is raised to
+    the caller: the command turns it into an error object, the dashboard
+    turns it into a ``ValueError`` at construction.
+
+    Args:
+        config_path: the path of the TOML configuration.
+
+    Returns:
+        A dict with ``config``, ``ok``, ``emergency_stop``, ``feed`` and
+        ``log``, in the form of the status command.
+
+    Raises:
+        FileNotFoundError: if ``config_path`` does not exist.
+        ValueError: if the configuration is invalid.
+        RuntimeError: if ``tomllib`` is not available.
+    """
+    config = load_config(config_path)
 
     stop_exists = config.paths.emergency_stop.exists()
     feed_exists = config.paths.feed.exists()
@@ -34,14 +52,20 @@ def _inspect(config_path: str) -> tuple[int, dict]:
         log["last_hash"] = dlog.last_hash
         log["verified"] = dlog.verify()
 
-    payload = {
+    return {
         "config": config_path,
         "ok": True,
         "emergency_stop": stop_exists,
         "feed": {"exists": feed_exists, "path": str(config.paths.feed)},
         "log": log,
     }
-    return 0, payload
+
+
+def _inspect(config_path: str) -> tuple[int, dict]:
+    try:
+        return 0, collect_status(config_path)
+    except (FileNotFoundError, ValueError, RuntimeError) as e:
+        return 2, {"error": str(e), "ok": False}
 
 
 def main(argv: list[str] | None = None) -> int:
