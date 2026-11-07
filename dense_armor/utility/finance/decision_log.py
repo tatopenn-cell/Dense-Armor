@@ -130,18 +130,25 @@ class DecisionLog:
     def _read_state(self) -> tuple[str, int]:
         if not self.path.exists() or self.path.stat().st_size == 0:
             return GENESIS_HASH, 0
-        with self.path.open("r", encoding="utf-8", newline="\n") as f:
-            lines = f.read().splitlines()
-        if not lines:
+        try:
+            with self.path.open("r", encoding="utf-8", newline="\n") as f:
+                lines = f.read().splitlines()
+        except (OSError, UnicodeDecodeError):
             return GENESIS_HASH, 0
-        last = _parse_line(lines[-1], len(lines) - 1)
+        try:
+            last = _parse_line(lines[-1], len(lines) - 1)
+        except ValueError:
+            return GENESIS_HASH, 0
         return last["hash"], len(lines)
 
     def _verify_file(self) -> tuple[bool, str, int]:
         if not self.path.exists() or self.path.stat().st_size == 0:
             return True, GENESIS_HASH, 0
-        with self.path.open("r", encoding="utf-8", newline="\n") as f:
-            text = f.read()
+        try:
+            with self.path.open("r", encoding="utf-8", newline="\n") as f:
+                text = f.read()
+        except (OSError, UnicodeDecodeError):
+            return False, GENESIS_HASH, 0
         if text and not text.endswith("\n"):
             return False, GENESIS_HASH, 0
         lines = text.splitlines()
