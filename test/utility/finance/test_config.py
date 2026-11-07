@@ -206,3 +206,11 @@ def test_integer_accepted_for_number(tmp_path):
     c = load_config(_write(tmp_path, body=body))
     assert c.pretrade.max_size == 10.0
     assert isinstance(c.pretrade.max_size, float)
+
+
+@skip_py310
+def test_huge_int_in_number_gives_value_error(tmp_path):
+    """A TOML integer too large for float() raises ValueError, not OverflowError."""
+    body = BASE_TOML.replace("max_size = 10.0", "max_size = 1" + "0" * 400)
+    with pytest.raises(ValueError, match=r"pretrade\.max_size"):
+        load_config(_write(tmp_path, body=body))

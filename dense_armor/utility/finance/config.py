@@ -154,27 +154,45 @@ def _resolve_paths(folder: Path, raw: dict[str, str]) -> PathsConfig:
     )
 
 
+def _to_number(table: str, key: str, v: Any) -> float:
+    try:
+        return float(v)
+    except (OverflowError, ValueError) as e:
+        raise ValueError(f"{table}.{key}: {e}") from e
+
+
+def _to_integer(table: str, key: str, v: Any) -> int:
+    try:
+        return int(v)
+    except (OverflowError, ValueError) as e:
+        raise ValueError(f"{table}.{key}: {e}") from e
+
+
 def _build(doc: dict[str, Any], path: Path) -> FinanceConfig:
     folder = path.resolve().parent
 
-    total = float(doc["schedule"]["total"])
-    n = int(doc["schedule"]["n"])
+    total = _to_number("schedule", "total", doc["schedule"]["total"])
+    n = _to_integer("schedule", "n", doc["schedule"]["n"])
 
-    max_notional = float(doc["pretrade"]["max_notional"])
-    max_size = float(doc["pretrade"]["max_size"])
-    price_band = float(doc["pretrade"]["price_band"])
-    max_orders = int(doc["pretrade"]["max_orders"])
-    window_s = float(doc["pretrade"]["window_s"])
-    duplicate_window_s = float(doc["pretrade"]["duplicate_window_s"])
+    max_notional = _to_number(
+        "pretrade", "max_notional", doc["pretrade"]["max_notional"]
+    )
+    max_size = _to_number("pretrade", "max_size", doc["pretrade"]["max_size"])
+    price_band = _to_number("pretrade", "price_band", doc["pretrade"]["price_band"])
+    max_orders = _to_integer("pretrade", "max_orders", doc["pretrade"]["max_orders"])
+    window_s = _to_number("pretrade", "window_s", doc["pretrade"]["window_s"])
+    duplicate_window_s = _to_number(
+        "pretrade", "duplicate_window_s", doc["pretrade"]["duplicate_window_s"]
+    )
 
-    capacity = int(doc["ring"]["capacity"])
-    width = int(doc["ring"]["width"])
+    capacity = _to_integer("ring", "capacity", doc["ring"]["capacity"])
+    width = _to_integer("ring", "width", doc["ring"]["width"])
 
     paths = _resolve_paths(folder, doc["paths"])
 
     try:
         twap_schedule(total, n)
-    except ValueError as e:
+    except (ValueError, OverflowError) as e:
         raise ValueError(f"[schedule]: {e}") from e
 
     try:
@@ -186,12 +204,12 @@ def _build(doc: dict[str, Any], path: Path) -> FinanceConfig:
             window_s=window_s,
             duplicate_window_s=duplicate_window_s,
         )
-    except ValueError as e:
+    except (ValueError, OverflowError) as e:
         raise ValueError(f"[pretrade]: {e}") from e
 
     try:
         _ = RingBuffer(capacity=capacity, width=width)
-    except ValueError as e:
+    except (ValueError, OverflowError) as e:
         raise ValueError(f"[ring]: {e}") from e
 
     return FinanceConfig(
@@ -267,7 +285,12 @@ def load_config(path: str | Path) -> FinanceConfig:
     except ImportError as e:
         raise RuntimeError("tomllib needs Python 3.11 or later") from e
     p = Path(path)
-    text = p.read_text(encoding="utf-8")
+    try:
+        text = p.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        raise
+    except OSError as e:
+        raise ValueError(f"cannot read the configuration: {e}") from e
     doc = tomllib.loads(text)
     _check_structure(doc)
     return _build(doc, p)

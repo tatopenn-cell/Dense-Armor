@@ -100,6 +100,13 @@ def synthetic_itch(n: int, seed: int) -> bytes:
     ``original_ref``, 2 bytes for ``shares``, 2 bytes for ``price_raw``,
     and uses the same stock and side of the original order.
 
+    The ``locate`` is drawn from one byte for every message, including
+    ``E``, ``C``, ``X``, ``D`` and ``U``. A real feed keeps the locate of
+    the order an update refers to; the synthetic feed does not, and the
+    ``locate`` of an update can differ from the one of the ``A`` it
+    updates. This is a declared difference from the real feed, not a bug
+    of the bytes.
+
     The feed has the byte layout of ITCH and none of its statistics: it is
     not a model of a market.
 
