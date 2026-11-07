@@ -9,6 +9,7 @@ from dense_armor.utility.finance.config import (
     ScheduleConfig,
     load_config,
 )
+from dense_armor.utility.finance.decision_log import GENESIS_HASH, DecisionLog
 from dense_armor.utility.finance.itch import decode_message
 from dense_armor.utility.finance.pretrade import Decision, PreTradeChecker
 from dense_armor.utility.finance.ring import RingBuffer
@@ -18,7 +19,9 @@ __all__ = [
     "RingBuffer",
     "decode_message",
     "Decision",
+    "DecisionLog",
     "FinanceConfig",
+    "GENESIS_HASH",
     "PathsConfig",
     "PreTradeChecker",
     "PreTradeConfig",
