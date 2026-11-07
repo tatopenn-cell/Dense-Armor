@@ -4,6 +4,8 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-11-07
+
 ### Changed
 - The library is float32 by default. `dense_armor.set_default_dtype("float64")` and `get_default_dtype()` change it.
   The classes that build numpy arrays (the vision, the anomaly scorers, the CUSUM detector, `Orca`, the arbiter, the continual-learning
@@ -13,6 +15,12 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   Left in float64: `Armor` and `hybrid_engine` (below about 1e-38 float32 loses the drift: measured), `BayesianLinearRegression`
   and the Mondrian forests (their float32 audit failed: negative variance, copied `M2`), `Beta` and `Multinomial`
   (prudential, not measured: float32 counters lose exactness above 2^24), `Metro`, `gradcheck`, and the `dynamics` modules (`RigidBodyModel` and the two passivity controllers: the QP goes to OSQP in float64; the drift of `forward_dynamics` in float32 is not measured).
+
+### Added
+- `dense_armor.utility.finance`, four building blocks for trading systems, each with tests, a benchmark and a page under `docs/finance/`: `twap_schedule` and `vwap_schedule`; `PreTradeChecker` and `Decision`, the five controls of SEC Rule 15c3-5 (c)(1) (size, price band, duplicate, rate, notional); `decode_message`, for the seven Nasdaq TotalView-ITCH 5.0 order messages (`A`, `F`, `E`, `C`, `X`, `D`, `U`); `RingBuffer`, with the storage allocated once at construction.
+
+### Fixed
+- `ResidualTree.consolidate()` raised `TypeError: dot_general requires contracting dimensions to have the same shape` for `d_model >= 5`: it passed the codebooks of the children, which live in latent space, to `VQMemory.fit`, which expects data in input space. It now decodes the codebooks of the children, runs k-means down to `n_codes // branching` centroids, rebuilds the parent `VQMemory` from them and fits it for 5 steps.
 
 ## [1.4.0] - 2026-11-02
 
