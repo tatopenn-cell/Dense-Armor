@@ -31,7 +31,10 @@ def _hash(seq: int, t: float, payload: Any, prev: str) -> str:
 def _is_finite_number(v: Any) -> bool:
     if isinstance(v, bool) or not isinstance(v, (int, float)):
         return False
-    return math.isfinite(float(v))
+    try:
+        return math.isfinite(float(v))
+    except (OverflowError, ValueError):
+        return False
 
 
 def _validate_input(t: Any, payload: Any) -> tuple[float, dict]:
@@ -156,12 +159,12 @@ class DecisionLog:
         for i, line in enumerate(lines):
             try:
                 obj = _parse_line(line, i)
-            except ValueError:
-                return False, GENESIS_HASH, 0
-            if obj["seq"] != i or obj["prev"] != prev:
-                return False, GENESIS_HASH, 0
-            expected = _hash(obj["seq"], obj["t"], obj["payload"], obj["prev"])
-            if obj["hash"] != expected:
+                if obj["seq"] != i or obj["prev"] != prev:
+                    return False, GENESIS_HASH, 0
+                expected = _hash(obj["seq"], obj["t"], obj["payload"], obj["prev"])
+                if obj["hash"] != expected:
+                    return False, GENESIS_HASH, 0
+            except (ValueError, RecursionError, OverflowError):
                 return False, GENESIS_HASH, 0
             prev = obj["hash"]
         return True, prev, len(lines)

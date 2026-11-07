@@ -122,3 +122,26 @@ def test_5_missing_config_exits_two(capsys):
     assert code == 2
     err = capsys.readouterr().err
     assert "--config" in err
+
+
+def test_6_broken_log_middle_gives_verified_false(tmp_path):
+    """A record edited in the middle gives verified False and exit 0."""
+    cfg = _write(tmp_path)
+    log = DecisionLog(tmp_path / "log.jsonl")
+    log.append(1.0, {"a": 1})
+    log.append(2.0, {"a": 2})
+    log.append(3.0, {"a": 3})
+    lines = (
+        (tmp_path / "log.jsonl").read_text(encoding="utf-8").splitlines(keepends=True)
+    )
+    (tmp_path / "log.jsonl").write_text(
+        lines[0] + lines[1].replace('"a":2', '"a":99"') + lines[2],
+        encoding="utf-8",
+        newline="\n",
+    )
+    r = subprocess_run(["--config", str(cfg)])
+    assert r.returncode == 0
+    payload = json.loads(r.stdout)
+    assert payload["log"]["exists"] is True
+    assert payload["log"]["records"] == 3
+    assert payload["log"]["verified"] is False

@@ -225,7 +225,6 @@ def test_12_prev_check_isolated(tmp_path):
     import hashlib
 
     path = tmp_path / "log.jsonl"
-    # record 0: canonical, hash calcolato a mano
     payload0 = {"a": 1}
     prev0 = "0" * 64
     canon0 = json.dumps(
@@ -339,3 +338,78 @@ def test_13_seq_check_isolated(tmp_path):
     path.write_text(line0 + line1, encoding="utf-8", newline="\n")
     log = DecisionLog(path)
     assert log.verify() is False
+
+
+def _write_one_line(path, obj):
+    import json as _json
+
+    path.write_text(
+        _json.dumps(obj, sort_keys=True, separators=(",", ":")) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+
+def test_14_nan_in_payload_returns_false(tmp_path):
+    """json.loads accepts NaN; _hash with allow_nan=False raises; verify() must return False."""
+    path = tmp_path / "log.jsonl"
+    path.write_text(
+        '{"hash":"'
+        + "a" * 64
+        + '","payload":{"a":NaN},"prev":"'
+        + "0" * 64
+        + '","seq":0,"t":1.0}\n',
+        encoding="utf-8",
+        newline="\n",
+    )
+    assert DecisionLog(path).verify() is False
+
+
+def test_15_infinity_in_payload_returns_false(tmp_path):
+    path = tmp_path / "log.jsonl"
+    path.write_text(
+        '{"hash":"'
+        + "a" * 64
+        + '","payload":{"a":Infinity},"prev":"'
+        + "0" * 64
+        + '","seq":0,"t":1.0}\n',
+        encoding="utf-8",
+        newline="\n",
+    )
+    assert DecisionLog(path).verify() is False
+
+
+def test_16_huge_int_in_t_returns_false(tmp_path):
+    """float(10**400) raises OverflowError in _is_finite_number."""
+    huge = 10**400
+    path = tmp_path / "log.jsonl"
+    path.write_text(
+        '{"hash":"'
+        + "a" * 64
+        + '","payload":{},"prev":"'
+        + "0" * 64
+        + '","seq":0,"t":'
+        + str(huge)
+        + "}\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+    assert DecisionLog(path).verify() is False
+
+
+def test_17_deep_nesting_returns_false(tmp_path):
+    """Deep nesting can raise RecursionError in json.dumps."""
+    deep = "[" * 5000 + "]" * 5000
+    path = tmp_path / "log.jsonl"
+    path.write_text(
+        '{"hash":"'
+        + "a" * 64
+        + '","payload":{"x":'
+        + deep
+        + '},"prev":"'
+        + "0" * 64
+        + '","seq":0,"t":1.0}\n',
+        encoding="utf-8",
+        newline="\n",
+    )
+    assert DecisionLog(path).verify() is False

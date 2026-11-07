@@ -13,15 +13,44 @@ shares split over 4 slices, a 10-share pre-trade cap, a 3-row ring, three
 relative paths.
 
 ~~~python
+import tempfile
+import textwrap
+from pathlib import Path
 from dense_armor.utility.finance.config import load_config
 
-c = load_config("/tmp/finance_page/config.toml")
-print("schedule:", c.schedule.total, "in", c.schedule.n, "slices")
-print("pretrade max_size:", c.pretrade.max_size)
-print("ring:", c.ring.capacity, "rows x", c.ring.width)
-print("log name:", c.paths.log.name)
-print("feed name:", c.paths.feed.name)
-print("stop name:", c.paths.emergency_stop.name)
+TOML = """
+[schedule]
+total = 100.0
+n = 4
+
+[pretrade]
+max_notional = 1000000.0
+max_size = 10.0
+price_band = 0.01
+max_orders = 5
+window_s = 1.0
+duplicate_window_s = 0.1
+
+[ring]
+capacity = 3
+width = 2
+
+[paths]
+log = "log.jsonl"
+feed = "feed.bin"
+emergency_stop = "STOP"
+"""
+
+with tempfile.TemporaryDirectory() as d:
+    cfg = Path(d) / "config.toml"
+    cfg.write_text(textwrap.dedent(TOML), encoding="utf-8", newline="\n")
+    c = load_config(cfg)
+    print("schedule:", c.schedule.total, "in", c.schedule.n, "slices")
+    print("pretrade max_size:", c.pretrade.max_size)
+    print("ring:", c.ring.capacity, "rows x", c.ring.width)
+    print("log name:", c.paths.log.name)
+    print("feed name:", c.paths.feed.name)
+    print("stop name:", c.paths.emergency_stop.name)
 ~~~
 
 ~~~
@@ -46,12 +75,41 @@ the blocks.
 not cache: two calls return two independent objects.
 
 ~~~python
+import tempfile
+import textwrap
+from pathlib import Path
 from dense_armor.utility.finance.config import load_config
 
-c = load_config("/tmp/finance_page/config.toml")
-checker = c.make_checker()
-d = checker.check("AAPL", "buy", size=5.0, price=100.0, ref_price=100.0, t=0.0)
-print(d)
+TOML = """
+[schedule]
+total = 100.0
+n = 4
+
+[pretrade]
+max_notional = 1000000.0
+max_size = 10.0
+price_band = 0.01
+max_orders = 5
+window_s = 1.0
+duplicate_window_s = 0.1
+
+[ring]
+capacity = 3
+width = 2
+
+[paths]
+log = "log.jsonl"
+feed = "feed.bin"
+emergency_stop = "STOP"
+"""
+
+with tempfile.TemporaryDirectory() as d:
+    cfg = Path(d) / "config.toml"
+    cfg.write_text(textwrap.dedent(TOML), encoding="utf-8", newline="\n")
+    c = load_config(cfg)
+    checker = c.make_checker()
+    dd = checker.check("AAPL", "buy", size=5.0, price=100.0, ref_price=100.0, t=0.0)
+    print(dd)
 ~~~
 
 ~~~
@@ -68,9 +126,38 @@ integer, so the structure passes, and the `PreTradeChecker` refuses it. The
 message names the table.
 
 ~~~python
+import tempfile
+import textwrap
+from pathlib import Path
 from dense_armor.utility.finance.config import load_config
 
-load_config("/tmp/finance_page/bad.toml")
+BAD = """
+[schedule]
+total = 100.0
+n = 4
+
+[pretrade]
+max_notional = 1000000.0
+max_size = 10.0
+price_band = 0.01
+max_orders = 0
+window_s = 1.0
+duplicate_window_s = 0.1
+
+[ring]
+capacity = 3
+width = 2
+
+[paths]
+log = "log.jsonl"
+feed = "feed.bin"
+emergency_stop = "STOP"
+"""
+
+with tempfile.TemporaryDirectory() as d:
+    cfg = Path(d) / "bad.toml"
+    cfg.write_text(textwrap.dedent(BAD), encoding="utf-8", newline="\n")
+    load_config(cfg)
 ~~~
 
 ~~~
@@ -84,7 +171,7 @@ first token knows which table is wrong.
 ## Details
 
 **References.**
-- TOML v1.0.0 specification, `papers/toml_v1_0_0_spec.html`, sections
+- TOML v1.0.0 specification, sections
   [Table](https://toml.io/en/v1.0.0#table),
   [Integer](https://toml.io/en/v1.0.0#integer),
   [Float](https://toml.io/en/v1.0.0#float),
@@ -96,19 +183,20 @@ first token knows which table is wrong.
 - An integer is accepted where a number is expected, and stored as `float`.
   TOML v1.0.0 has both types, and a hand-written file often writes `5`
   where the block wants `5.0`; refusing it would be a rule of ours, not of the
-  spec.
-- A relative path is resolved against the folder of the TOML file. TOML v1.0.0 defines no path semantics, so this is our choice, stated here and tested in
-  `test_relative_path_resolved_against_file_folder`.
+  language.
+- A relative path is resolved against the folder of the TOML file. TOML
+  v1.0.0 defines no path semantics, so this is our choice, stated here and
+  tested in `test_relative_path_resolved_against_file_folder`.
 - `load_config` builds each block once, so the ranges are validated by the
-  blocks of F1, F2 and F4 and not by a second copy of their rules. The
-  removal test in the delivery shows that dropping the dry run makes a test
-  fail.
+  blocks of F1, F2 and F4 and not by a second copy of their rules. A test
+  that removes the dry run of `PreTradeChecker` fails at least one test in
+  `test_config.py`.
 - `tomllib` is imported inside `load_config`, so a Python 3.10 session raises
   `RuntimeError("tomllib needs Python 3.11 or later")` only when a
   configuration is read, not at import time.
 
-**Measured cost.** Not measured. The page reports no timing, because no script
-of the repository printed a time for these functions.
+**Measured cost.** Not measured. The page reports no timing, because no
+script of the repository printed a time for these functions.
 
 **Declared limits.**
 - No environment variables, no includes, no hot reload. The file is read once

@@ -197,3 +197,12 @@ def test_table_key_that_is_not_a_table(tmp_path):
     )
     with pytest.raises(ValueError, match="schedule must be a table"):
         load_config(_write(tmp_path, body=body))
+
+
+@skip_py310
+def test_integer_accepted_for_number(tmp_path):
+    """An integer where a number is expected is accepted and stored as float."""
+    body = BASE_TOML.replace("max_size = 10.0", "max_size = 10")
+    c = load_config(_write(tmp_path, body=body))
+    assert c.pretrade.max_size == 10.0
+    assert isinstance(c.pretrade.max_size, float)

@@ -65,7 +65,7 @@ A price: 123.4567
 ~~~
 
 The `A` message is 36 bytes (offset 0 to 35), the `D` message is 19 bytes
-(offset 0 to 18). `frame` adds two bytes in front of each, so the file is 57
+(offset 0 to 18). `frame` adds two bytes in front of each, so the file is 59
 bytes long in total.
 
 ## 2. Read the messages back

@@ -202,7 +202,6 @@ def test_demo_ref_price_is_first_of_stock(tmp_path, monkeypatch):
 
     cfg = tmp_path / "demo.toml"
     shutil.copy(FIXTURE, cfg)
-    # forzo synthetic_itch a restituire il feed a mano
     fake = _fake_itch_two_orders_same_stock()
     monkeypatch.setattr(demo_mod, "synthetic_itch", lambda n, s: fake)
 
@@ -211,7 +210,6 @@ def test_demo_ref_price_is_first_of_stock(tmp_path, monkeypatch):
         code = demo_mod.main(["--config", str(cfg), "--n", "2"])
     assert code == 0
     payload = json.loads(buf.getvalue().strip())
-    # il primo ordine passa (ref_price = 100.0), il secondo a 110.0
     # dovrebbe cadere nel price_band se ref_price = 100.0, non se ref_price = 110.0
     counts = payload["counts"]
     reasons = set(counts.keys())
@@ -222,8 +220,7 @@ def test_demo_ref_price_is_first_of_stock(tmp_path, monkeypatch):
 
 
 def test_demo_verify_call_is_used(tmp_path, monkeypatch):
-    """Removing the call to verify() should make this test fail: the
-    hardcoded True passes the main test, this one does not."""
+    """The demo returns DecisionLog.verify()'s result, not a hardcoded True."""
     import contextlib
     import io
 
