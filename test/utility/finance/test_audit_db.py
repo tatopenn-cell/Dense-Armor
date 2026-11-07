@@ -39,14 +39,18 @@ def test_1_upgrade_creates_table_and_downgrade_removes_it(pg_url):
         cols = conn.execute(
             sqlalchemy.text(
                 "select column_name, data_type from information_schema.columns "
-                "where table_name = 'decisions' order by ordinal_position"
+                "where table_name = 'decisions' "
+                "and table_schema = current_schema() "
+                "order by ordinal_position"
             )
         ).all()
         assert [c[0] for c in cols] == ["seq", "t", "payload", "prev", "hash"]
         uniq = conn.execute(
             sqlalchemy.text(
                 "select count(*) from information_schema.table_constraints "
-                "where table_name = 'decisions' and constraint_type = 'UNIQUE'"
+                "where table_name = 'decisions' "
+                "and table_schema = current_schema() "
+                "and constraint_type = 'UNIQUE'"
             )
         ).scalar()
         assert int(uniq) >= 2
@@ -58,7 +62,8 @@ def test_1_upgrade_creates_table_and_downgrade_removes_it(pg_url):
         n = conn.execute(
             sqlalchemy.text(
                 "select count(*) from information_schema.tables "
-                "where table_name = 'decisions'"
+                "where table_name = 'decisions' "
+                "and table_schema = current_schema()"
             )
         ).scalar()
         assert int(n) == 0
