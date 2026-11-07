@@ -94,11 +94,10 @@ first token knows which table is wrong.
 
 **Choices stated explicitly.**
 - An integer is accepted where a number is expected, and stored as `float`.
-  The TOML spec has both types, and a hand-written file often writes `5`
+  TOML v1.0.0 has both types, and a hand-written file often writes `5`
   where the block wants `5.0`; refusing it would be a rule of ours, not of the
   spec.
-- A relative path is resolved against the folder of the TOML file. The spec
-  says nothing about paths, so this is our choice, stated here and tested in
+- A relative path is resolved against the folder of the TOML file. TOML v1.0.0 defines no path semantics, so this is our choice, stated here and tested in
   `test_relative_path_resolved_against_file_folder`.
 - `load_config` builds each block once, so the ranges are validated by the
   blocks of F1, F2 and F4 and not by a second copy of their rules. The
