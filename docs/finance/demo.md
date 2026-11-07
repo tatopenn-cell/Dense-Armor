@@ -13,7 +13,7 @@ paths in the folder of the configuration, and its limits are chosen so that the
 1,000-message run of seed 0 shows at least three different reasons.
 
 ~~~python
-import os, subprocess, sys
+import json, os, subprocess, sys
 from pathlib import Path
 work = Path("/tmp/f10_page")
 work.mkdir(parents=True, exist_ok=True)
@@ -28,13 +28,15 @@ r = subprocess.run(
      "--config", "demo.toml", "--n", "1000"],
     capture_output=True, text=True, cwd=str(work), env=env,
 )
+payload = json.loads(r.stdout)
+payload["elapsed_s"] = "<float>"
 print("exit:", r.returncode)
-print("stdout:", r.stdout.strip())
+print("stdout:", json.dumps(payload, sort_keys=True))
 ~~~
 
 ~~~
 exit: 0
-stdout: {"counts": {"notional": 116, "ok": 32, "size": 345}, "elapsed_s": 3.40209638899978, "log": {"last_hash": "5573286aec2926ff070501e3092c25f6a22db2e638db7a47b553fdaa2343f482", "records": 493, "verified": true}, "n_messages": 1000, "n_orders": 493, "ok": true, "python": "3.13.18", "schedule_sum": 100.0}
+stdout: {"counts": {"notional": 116, "ok": 32, "size": 345}, "elapsed_s": "<float>", "log": {"last_hash": "5573286aec2926ff070501e3092c25f6a22db2e638db7a47b553fdaa2343f482", "records": 493, "verified": true}, "n_messages": 1000, "n_orders": 493, "ok": true, "python": "3.13.18", "schedule_sum": 100.0}
 ~~~
 
 `counts` has three reasons (`notional`, `ok`, `size`); the sum is 493, which is
