@@ -217,3 +217,125 @@ def test_11_parse_line_rejects_bad_fields(tmp_path):
             '{"seq":0,"t":1.0,"payload":{},"prev":"' + good_prev + '","hash":"ZZZ"}',
             0,
         )
+
+
+def test_12_prev_check_isolated(tmp_path):
+    """A record with the correct hash but the wrong prev: only the prev check
+    can catch it, because the hash is recomputed on the wrong content."""
+    import hashlib
+
+    path = tmp_path / "log.jsonl"
+    # record 0: canonical, hash calcolato a mano
+    payload0 = {"a": 1}
+    prev0 = "0" * 64
+    canon0 = json.dumps(
+        {"payload": payload0, "prev": prev0, "seq": 0, "t": 1.0},
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+        allow_nan=False,
+    )
+    hash0 = hashlib.sha256(canon0.encode("ascii")).hexdigest()
+    line0 = (
+        json.dumps(
+            {"hash": hash0, "payload": payload0, "prev": prev0, "seq": 0, "t": 1.0},
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=True,
+            allow_nan=False,
+        )
+        + "\n"
+    )
+
+    # record 1: prev WRONG ("f"*64 invece di hash0), ma hash corretto sul contenuto
+    payload1 = {"a": 2}
+    prev1_wrong = "f" * 64
+    canon1 = json.dumps(
+        {"payload": payload1, "prev": prev1_wrong, "seq": 1, "t": 2.0},
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+        allow_nan=False,
+    )
+    hash1 = hashlib.sha256(canon1.encode("ascii")).hexdigest()
+    line1 = (
+        json.dumps(
+            {
+                "hash": hash1,
+                "payload": payload1,
+                "prev": prev1_wrong,
+                "seq": 1,
+                "t": 2.0,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=True,
+            allow_nan=False,
+        )
+        + "\n"
+    )
+
+    path.write_text(line0 + line1, encoding="utf-8", newline="\n")
+    log = DecisionLog(path)
+    assert log.verify() is False
+
+
+def test_13_seq_check_isolated(tmp_path):
+    """A record with the correct hash but a wrong seq: only the seq check
+    can catch it, because the hash is recomputed on the wrong content."""
+    import hashlib
+
+    path = tmp_path / "log.jsonl"
+    # record 0 ok
+    payload0 = {"a": 1}
+    prev0 = "0" * 64
+    canon0 = json.dumps(
+        {"payload": payload0, "prev": prev0, "seq": 0, "t": 1.0},
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+        allow_nan=False,
+    )
+    hash0 = hashlib.sha256(canon0.encode("ascii")).hexdigest()
+    line0 = (
+        json.dumps(
+            {"hash": hash0, "payload": payload0, "prev": prev0, "seq": 0, "t": 1.0},
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=True,
+            allow_nan=False,
+        )
+        + "\n"
+    )
+
+    # record 1: seq WRONG (=5 invece di 1), prev corretto (hash0), hash corretto su seq=5
+    payload1 = {"a": 2}
+    bad_seq = 5
+    canon1 = json.dumps(
+        {"payload": payload1, "prev": hash0, "seq": bad_seq, "t": 2.0},
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+        allow_nan=False,
+    )
+    hash1 = hashlib.sha256(canon1.encode("ascii")).hexdigest()
+    line1 = (
+        json.dumps(
+            {
+                "hash": hash1,
+                "payload": payload1,
+                "prev": hash0,
+                "seq": bad_seq,
+                "t": 2.0,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=True,
+            allow_nan=False,
+        )
+        + "\n"
+    )
+
+    path.write_text(line0 + line1, encoding="utf-8", newline="\n")
+    log = DecisionLog(path)
+    assert log.verify() is False
