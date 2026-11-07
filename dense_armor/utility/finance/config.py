@@ -161,32 +161,25 @@ def _to_number(table: str, key: str, v: Any) -> float:
         raise ValueError(f"{table}.{key}: {e}") from e
 
 
-def _to_integer(table: str, key: str, v: Any) -> int:
-    try:
-        return int(v)
-    except (OverflowError, ValueError) as e:
-        raise ValueError(f"{table}.{key}: {e}") from e
-
-
 def _build(doc: dict[str, Any], path: Path) -> FinanceConfig:
     folder = path.resolve().parent
 
     total = _to_number("schedule", "total", doc["schedule"]["total"])
-    n = _to_integer("schedule", "n", doc["schedule"]["n"])
+    n = int(doc["schedule"]["n"])
 
     max_notional = _to_number(
         "pretrade", "max_notional", doc["pretrade"]["max_notional"]
     )
     max_size = _to_number("pretrade", "max_size", doc["pretrade"]["max_size"])
     price_band = _to_number("pretrade", "price_band", doc["pretrade"]["price_band"])
-    max_orders = _to_integer("pretrade", "max_orders", doc["pretrade"]["max_orders"])
+    max_orders = int(doc["pretrade"]["max_orders"])
     window_s = _to_number("pretrade", "window_s", doc["pretrade"]["window_s"])
     duplicate_window_s = _to_number(
         "pretrade", "duplicate_window_s", doc["pretrade"]["duplicate_window_s"]
     )
 
-    capacity = _to_integer("ring", "capacity", doc["ring"]["capacity"])
-    width = _to_integer("ring", "width", doc["ring"]["width"])
+    capacity = int(doc["ring"]["capacity"])
+    width = int(doc["ring"]["width"])
 
     paths = _resolve_paths(folder, doc["paths"])
 

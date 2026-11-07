@@ -214,3 +214,9 @@ def test_huge_int_in_number_gives_value_error(tmp_path):
     body = BASE_TOML.replace("max_size = 10.0", "max_size = 1" + "0" * 400)
     with pytest.raises(ValueError, match=r"pretrade\.max_size"):
         load_config(_write(tmp_path, body=body))
+
+
+@skip_py310
+def test_path_that_is_a_folder_gives_value_error(tmp_path):
+    with pytest.raises(ValueError, match="cannot read the configuration"):
+        load_config(tmp_path)
