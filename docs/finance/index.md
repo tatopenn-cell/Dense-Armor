@@ -16,6 +16,7 @@ This page serves as the index for twenty software pipelines that handle the dail
 | **Ring buffer** | Fixed-capacity queue with preallocated storage; cost against `BoundedStream`. | [Ring buffer](ring.md) |
 | **Configuration** | One TOML file with the parameters of the four blocks; frozen dataclasses, paths resolved against the file. | [Configuration](config.md) |
 | **Decision log** | JSON lines with a SHA-256 hash chain; each record carries the hash of the previous one. | [Decision log](decision_log.md) |
+| **Feed file** | Framed Nasdaq ITCH messages read one record at a time by `iter_itch`, decoded by `decode_message`. | [Feed file](feed.md) |
 | **Single Ticker Monitoring** | Dual-model online anomaly isolation for individual equity validation. | [Single ticker](single_ticker.md) |
 | **Static vs Online Analysis** | Statistical divergence benchmarking between fixed-cutoff and adaptive frameworks. | [Static vs online](static_vs_online.md) |
 | **Supervised Fraud Detection** | Real-time transaction classification via sequential ensemble tree models. | [Fraud detection](fraud.md) |
