@@ -117,7 +117,7 @@ U 106
   does not say how a synthetic price should be chosen.
 - The type cuts (`< 96 A`, `< 128 F`, `< 160 E`, `< 176 C`, `< 200 X`, `< 232 D`,
   else `U`) are chosen to give all seven types a visible share in 1,000
-  messages. The spec does not prescribe a distribution.
+  messages. The ITCH specification does not prescribe a distribution.
 - A message type of `E`, `C`, `X`, `D` or `U` with no live order at that
   point is turned into `A`. A real feed never does that; a synthetic feed
   needs the rule to keep the stream consistent.
