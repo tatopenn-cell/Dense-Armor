@@ -34,6 +34,7 @@ vision = ["opencv-python"]
 drone = ["pyulog", "pymavlink", "paho-mqtt", "pyyaml"]
 ros = ["rosbags>=0.9.18"]
 llm = []  # the LLM bridge needs no extra package
+finance-ops = ["flask", "sqlalchemy", "alembic", "psycopg2-binary"]
 dev = ["pytest", "pytest-cov", "coverage>=7.10", "filterpy", "matplotlib", "river>=0.26; python_version >= '3.11'", "scikit-learn"]
 docs = [
     "mkdocs>=1.6.0",
@@ -78,3 +79,11 @@ select = ["E4", "E7", "E9", "F", "I", "UP"]
 [[tool.mypy.overrides]]
 module = ["pyulog", "pyulog.*", "pymavlink", "pymavlink.*", "paho.*", "yaml", "psutil", "scipy", "scipy.*", "zmq", "confluent_kafka"]
 ignore_missing_imports = true
+
+
+[tool.pytest.ini_options]
+markers = [
+    "needs_postgres: requires a PostgreSQL server (DENSE_ARMOR_TEST_PG_URL)",
+    "needs_browser: requires Chromium via Playwright",
+    "needs_fix: requires a running FIX acceptor",
+]

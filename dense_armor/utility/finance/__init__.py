@@ -1,6 +1,7 @@
 """Building blocks for trading systems: schedules, pre-trade limits,
 exchange message decoding and a preallocated ring buffer."""
 
+from dense_armor.utility.finance.audit_db import AuditDB
 from dense_armor.utility.finance.config import (
     FinanceConfig,
     PathsConfig,
@@ -9,7 +10,11 @@ from dense_armor.utility.finance.config import (
     ScheduleConfig,
     load_config,
 )
-from dense_armor.utility.finance.decision_log import GENESIS_HASH, DecisionLog
+from dense_armor.utility.finance.decision_log import (
+    GENESIS_HASH,
+    DecisionLog,
+    record_hash,
+)
 from dense_armor.utility.finance.feed import frame, iter_itch
 from dense_armor.utility.finance.itch import decode_message
 from dense_armor.utility.finance.pretrade import Decision, PreTradeChecker
@@ -21,7 +26,9 @@ __all__ = [
     "RingBuffer",
     "decode_message",
     "Decision",
+    "AuditDB",
     "DecisionLog",
+    "record_hash",
     "FinanceConfig",
     "GENESIS_HASH",
     "PathsConfig",
