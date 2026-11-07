@@ -15,6 +15,7 @@ from dense_armor.utility.finance.itch import decode_message
 from dense_armor.utility.finance.pretrade import Decision, PreTradeChecker
 from dense_armor.utility.finance.ring import RingBuffer
 from dense_armor.utility.finance.schedule import twap_schedule, vwap_schedule
+from dense_armor.utility.finance.synthetic import synthetic_itch
 
 __all__ = [
     "RingBuffer",
@@ -31,6 +32,7 @@ __all__ = [
     "frame",
     "iter_itch",
     "load_config",
+    "synthetic_itch",
     "twap_schedule",
     "vwap_schedule",
 ]
