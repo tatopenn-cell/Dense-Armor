@@ -82,6 +82,7 @@ nav:
           - Decision log: finance/decision_log.md
           - Feed file: finance/feed.md
           - Status: finance/status.md
+          - Synthetic feed: finance/synthetic.md
           - Single ticker: finance/single_ticker.md
           - Static vs online: finance/static_vs_online.md
           - Fraud detection: finance/fraud.md

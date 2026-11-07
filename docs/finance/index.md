@@ -18,6 +18,7 @@ This page serves as the index for twenty software pipelines that handle the dail
 | **Decision log** | JSON lines with a SHA-256 hash chain; each record carries the hash of the previous one. | [Decision log](decision_log.md) |
 | **Feed file** | Framed Nasdaq ITCH messages read one record at a time by `iter_itch`, decoded by `decode_message`. | [Feed file](feed.md) |
 | **Status** | One JSON object with the configuration, the emergency stop, the feed and the log state. | [Status](status.md) |
+| **Synthetic feed** | ITCH messages from a seed, byte-identical on every machine, same layout, no statistics. | [Synthetic feed](synthetic.md) |
 | **Single Ticker Monitoring** | Dual-model online anomaly isolation for individual equity validation. | [Single ticker](single_ticker.md) |
 | **Static vs Online Analysis** | Statistical divergence benchmarking between fixed-cutoff and adaptive frameworks. | [Static vs online](static_vs_online.md) |
 | **Supervised Fraud Detection** | Real-time transaction classification via sequential ensemble tree models. | [Fraud detection](fraud.md) |
