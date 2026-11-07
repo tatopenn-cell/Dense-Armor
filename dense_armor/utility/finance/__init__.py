@@ -10,6 +10,7 @@ from dense_armor.utility.finance.config import (
     load_config,
 )
 from dense_armor.utility.finance.decision_log import GENESIS_HASH, DecisionLog
+from dense_armor.utility.finance.feed import frame, iter_itch
 from dense_armor.utility.finance.itch import decode_message
 from dense_armor.utility.finance.pretrade import Decision, PreTradeChecker
 from dense_armor.utility.finance.ring import RingBuffer
@@ -27,6 +28,8 @@ __all__ = [
     "PreTradeConfig",
     "RingConfig",
     "ScheduleConfig",
+    "frame",
+    "iter_itch",
     "load_config",
     "twap_schedule",
     "vwap_schedule",
