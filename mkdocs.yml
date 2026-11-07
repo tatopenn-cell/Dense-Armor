@@ -85,6 +85,7 @@ nav:
           - Synthetic feed: finance/synthetic.md
           - Demo: finance/demo.md
           - Audit table: finance/audit_db.md
+          - Dashboard: finance/dashboard.md
           - Single ticker: finance/single_ticker.md
           - Static vs online: finance/static_vs_online.md
           - Fraud detection: finance/fraud.md
