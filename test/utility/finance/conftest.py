@@ -52,3 +52,24 @@ def pg_url():
         with engine.begin() as conn:
             conn.execute(sqlalchemy.text(f'DROP SCHEMA IF EXISTS "{schema}" CASCADE'))
         engine.dispose()
+
+
+@pytest.fixture
+def chromium_available():
+    """Skip if Chromium is not available; fail if REQUIRE_SERVICES=1."""
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError as e:
+        if _require("browser"):
+            pytest.fail(f"Chromium not available: playwright is not installed: {e}")
+        pytest.skip(f"Chromium not available: playwright is not installed: {e}")
+    try:
+        with sync_playwright() as p:
+            b = p.chromium.launch()
+            version = b.version
+            b.close()
+    except Exception as e:
+        if _require("browser"):
+            pytest.fail(f"Chromium not available: {e}")
+        pytest.skip(f"Chromium not available: {e}")
+    return version

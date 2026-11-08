@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Emergency stop</title>
+<style>
+body { font-family: sans-serif; max-width: 40em; margin: 2em auto; padding: 1em; }
+#stop { display: block; width: 100%; padding: 2em; font-size: 1.6em;
+        font-weight: bold; background: #c00; color: white;
+        border: 0; border-radius: 8px; cursor: pointer; }
+#stop:active { background: #800; }
+#stopped, #error { margin-top: 1em; padding: 1em; border-radius: 4px; }
+#stopped { background: #cfc; color: #060; }
+#error { background: #fcc; color: #600; }
+[hidden] { display: none; }
+p.hint { color: #555; font-size: 0.9em; margin-top: 2em; }
+</style>
+</head>
+<body>
+<h1>Emergency stop</h1>
+<button id="stop" type="button">STOP</button>
+<p id="stopped" hidden>Stop raised. The status command reports it; the demo refuses to start.</p>
+<p id="error" hidden></p>
+<p class="hint">Lifting the stop is a manual operation on the server: this page
+can only raise it.</p>
+<script>
+(function () {
+  var stop = document.getElementById("stop");
+  var stopped = document.getElementById("stopped");
+  var error = document.getElementById("error");
+  function onStop() {
+    fetch("/emergency-stop", { method: "POST" })
+      .then(function (r) {
+        if (r.status === 200) {
+          stopped.hidden = false;
+          error.hidden = true;
+        } else {
+          return r.text().then(function (t) {
+            error.textContent = "Stop not raised (HTTP " + r.status + "): " + t;
+            error.hidden = false;
+            stopped.hidden = true;
+          });
+        }
+      })
+      .catch(function (e) {
+        error.textContent = "Stop not raised: " + e;
+        error.hidden = false;
+        stopped.hidden = true;
+      });
+  }
+  stop.addEventListener("click", onStop);
+  fetch("/status")
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (s) { if (s && s.emergency_stop) stopped.hidden = false; })
+    .catch(function () {});
+})();
+</script>
+</body>
+</html>

@@ -99,6 +99,11 @@ def create_app(config_path: str) -> Any:
     config = load_config(config_path)
     app = Flask(__name__)
 
+    @app.get("/")
+    def index() -> Any:
+        html_path = STATIC_DIR / "emergency.html"
+        return Response(html_path.read_text(encoding="utf-8"), mimetype="text/html")
+
     @app.get("/status")
     def status() -> Any:
         return jsonify(collect_status(config_path))
