@@ -73,3 +73,114 @@ def chromium_available():
             pytest.fail(f"Chromium not available: {e}")
         pytest.skip(f"Chromium not available: {e}")
     return version
+
+
+@pytest.fixture
+def fix_acceptor(tmp_path):
+    """Start the test FIX acceptor in a subprocess, return its initiator cfg path.
+
+    Two settings files are written in ``tmp_path``: one for the acceptor,
+    one for the initiator. The port is a free port found by binding a
+    socket to port 0. The acceptor is terminated at the end.
+    """
+    import socket
+    import subprocess
+    import sys
+    import time
+    from pathlib import Path as _P
+
+    fix_import_error = None
+    try:
+        import quickfix  # noqa: F401
+    except ImportError as e:
+        fix_import_error = e
+
+    if fix_import_error is not None:
+        if _require("fix"):
+            pytest.fail(f"QuickFIX not available: {fix_import_error}")
+        pytest.skip(f"QuickFIX not available: {fix_import_error}")
+
+    root = _P(__file__).resolve().parents[3]
+    executor = root / "test" / "fixtures" / "finance" / "fix_executor.py"
+    dictionary = root / "test" / "fixtures" / "finance" / "FIX44.xml"
+    if not executor.exists() or not dictionary.exists():
+        if _require("fix"):
+            pytest.fail("acceptor fixture missing")
+        pytest.skip("acceptor fixture missing")
+
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        port = s.getsockname()[1]
+
+    # due settings file semplici
+    acceptor_cfg = tmp_path / "acceptor.cfg"
+    acceptor_cfg.write_text(
+        "[DEFAULT]\n"
+        "ConnectionType=acceptor\n"
+        "BeginString=FIX.4.4\n"
+        "SenderCompID=SERVER\n"
+        "TargetCompID=CLIENT\n"
+        f"SocketAcceptPort={port}\n"
+        "StartTime=00:00:00\n"
+        "EndTime=00:00:00\n"
+        "HeartBtInt=5\n"
+        f"FileStorePath={tmp_path / 'store_acceptor'}\n"
+        f"FileLogPath={tmp_path / 'log_acceptor'}\n"
+        f"DataDictionary={dictionary}\n"
+        "UseDataDictionary=Y\n"
+        "\n"
+        "[SESSION]\n"
+        "BeginString=FIX.4.4\n"
+        "SenderCompID=SERVER\n"
+        "TargetCompID=CLIENT\n"
+        "ConnectionType=acceptor\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+    initiator_cfg = tmp_path / "initiator.cfg"
+    initiator_cfg.write_text(
+        "[DEFAULT]\n"
+        "ConnectionType=initiator\n"
+        "BeginString=FIX.4.4\n"
+        "SenderCompID=CLIENT\n"
+        "TargetCompID=SERVER\n"
+        f"SocketConnectPort={port}\n"
+        "SocketConnectHost=127.0.0.1\n"
+        "StartTime=00:00:00\n"
+        "EndTime=00:00:00\n"
+        "HeartBtInt=5\n"
+        "ReconnectInterval=1\n"
+        f"FileStorePath={tmp_path / 'store_init'}\n"
+        f"FileLogPath={tmp_path / 'log_init'}\n"
+        f"DataDictionary={dictionary}\n"
+        "UseDataDictionary=Y\n"
+        "\n"
+        "[SESSION]\n"
+        "BeginString=FIX.4.4\n"
+        "SenderCompID=CLIENT\n"
+        "TargetCompID=SERVER\n"
+        "ConnectionType=initiator\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+    proc = subprocess.Popen(
+        [sys.executable, str(executor), str(acceptor_cfg)],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    # wait for the port
+    for _ in range(100):
+        try:
+            with socket.create_connection(("127.0.0.1", port), timeout=0.1):
+                break
+        except OSError:
+            time.sleep(0.1)
+    try:
+        yield initiator_cfg
+    finally:
+        proc.terminate()
+        try:
+            proc.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            proc.kill()
