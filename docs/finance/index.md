@@ -23,6 +23,7 @@ This page serves as the index for twenty software pipelines that handle the dail
 | **Audit table** | The decision log of F6 in a PostgreSQL table, with a migration and a trigger that forbids UPDATE and DELETE. | [Audit table](audit_db.md) |
 | **Dashboard** | Flask app with `GET /status`, `POST /emergency-stop`, `GET /decisions.svg`. | [Dashboard](dashboard.md) |
 | **Red button** | `GET /` serves a single HTML page with a red button that creates the stop file. | [Red button](emergency.md) |
+| **FIX gateway** | FIX 4.4 initiator that sends limit orders to a test acceptor and collects the execution reports. | [FIX gateway](fix_gateway.md) |
 | **Single Ticker Monitoring** | Dual-model online anomaly isolation for individual equity validation. | [Single ticker](single_ticker.md) |
 | **Static vs Online Analysis** | Statistical divergence benchmarking between fixed-cutoff and adaptive frameworks. | [Static vs online](static_vs_online.md) |
 | **Supervised Fraud Detection** | Real-time transaction classification via sequential ensemble tree models. | [Fraud detection](fraud.md) |

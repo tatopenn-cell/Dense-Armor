@@ -14,7 +14,7 @@ every file. Update it whenever a module is added, moved or renamed.
    `proba`, `anomaly`, `drift`, `protect`), `deep/` (`neural`), `signals/` (`stream`, `stats`,
    `preprocessing`, `vision`, `datasets`), `robot/` (`control`), `evaluation/` (`evaluate`,
    `metrics`), `infrastructure/` (`compose`, `data`) and `finance/` (`schedule`, `pretrade`,
-   `itch`, `ring`, `config`, `decision_log`, `feed`, `status`, `synthetic`, `demo`, `audit_db`, `dashboard`, `static/emergency.html`). The old paths, for example `dense_armor.utility.bandit.ucb`, still
+   `itch`, `ring`, `config`, `decision_log`, `feed`, `status`, `synthetic`, `demo`, `audit_db`, `dashboard`, `static/emergency.html`, `fix_gateway`). The old paths, for example `dense_armor.utility.bandit.ucb`, still
    resolve to the same modules (`_compat.py`).
 3. `dynamics` — rigid-body dynamics from URDF.
 4. `checks` — `check_estimator` and the robot checks.

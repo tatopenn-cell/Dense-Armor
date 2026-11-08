@@ -87,6 +87,7 @@ nav:
           - Audit table: finance/audit_db.md
           - Dashboard: finance/dashboard.md
           - Red button: finance/emergency.md
+          - FIX gateway: finance/fix_gateway.md
           - Single ticker: finance/single_ticker.md
           - Static vs online: finance/static_vs_online.md
           - Fraud detection: finance/fraud.md

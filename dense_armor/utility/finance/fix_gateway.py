@@ -169,7 +169,7 @@ def send_orders(
     app = _make_application(collector)
     settings = fix.SessionSettings(str(settings_path))
     store = fix.FileStoreFactory(settings)
-    log = fix.ScreenLogFactory(settings)
+    log = fix.FileLogFactory(settings)
     initiator = fix.SocketInitiator(app, store, settings, log)
     started = False
     try:
