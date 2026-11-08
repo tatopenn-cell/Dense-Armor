@@ -142,6 +142,8 @@ def send_orders(
     collects the execution reports until each ``ClOrdID`` has an
     ``OrdStatus`` of ``2`` (filled) or ``8`` (rejected), then logs out and
     stops the initiator. The initiator is stopped also on an exception.
+    ``timeout_s`` is the budget of the whole call: the wait for the logon
+    and the wait for the reports share it.
 
     Args:
         settings_path: the QuickFIX settings file of the initiator.
@@ -175,6 +177,7 @@ def send_orders(
     try:
         initiator.start()
         started = True
+        start = time.monotonic()
         if not collector.logged_on.wait(timeout=timeout_s):
             raise TimeoutError(f"logon did not arrive within {timeout_s} s")
         for o in orders:
@@ -191,7 +194,7 @@ def send_orders(
             msg.setField(fix.OrderQty(float(o["qty"])))
             msg.setField(fix.Price(float(o["price"])))
             fix.Session.sendToTarget(msg, collector.session_id)
-        deadline = time.monotonic() + timeout_s
+        deadline = start + timeout_s
         wanted = {o["cl_ord_id"] for o in orders}
         while time.monotonic() < deadline:
             with collector.lock:

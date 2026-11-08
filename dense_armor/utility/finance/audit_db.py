@@ -80,6 +80,8 @@ class AuditDB:
 
     Raises:
         ValueError: if the dialect of ``url`` is not ``postgresql``.
+        sqlalchemy.exc.ProgrammingError: if the table ``decisions`` does not
+            exist: run ``alembic upgrade head`` first.
 
     Examples:
         >>> import os
@@ -99,21 +101,7 @@ class AuditDB:
             raise ValueError(f"only PostgreSQL is supported, got dialect {dialect}")
         self._engine = engine
         with self._engine.connect() as conn:
-            row = conn.execute(
-                sqlalchemy.text(
-                    "select coalesce(max(seq), -1), count(*) from decisions"
-                )
-            ).one()
-        max_seq, count = row[0], int(row[1])
-        if count == 0:
-            self._last = GENESIS_HASH
-        else:
-            with self._engine.connect() as conn:
-                h = conn.execute(
-                    sqlalchemy.text("select hash from decisions where seq = :s"),
-                    {"s": int(max_seq)},
-                ).scalar()
-            self._last = str(h)
+            conn.execute(sqlalchemy.text("select 1 from decisions limit 1"))
 
     def __len__(self) -> int:
         import sqlalchemy
@@ -125,7 +113,14 @@ class AuditDB:
 
     @property
     def last_hash(self) -> str:
-        return self._last
+        """The ``hash`` of the last row, read from the table at each call."""
+        import sqlalchemy
+
+        with self._engine.connect() as conn:
+            h = conn.execute(
+                sqlalchemy.text("select hash from decisions order by seq desc limit 1")
+            ).scalar()
+        return GENESIS_HASH if h is None else str(h)
 
     def append(self, t: float, payload: dict) -> str:
         """Append one record and return its ``hash``.
@@ -181,7 +176,6 @@ class AuditDB:
                 ),
                 {"seq": seq, "t": t, "payload": text, "prev": prev, "hash": h},
             )
-        self._last = h
         return h
 
     def verify(self) -> bool:
@@ -191,7 +185,8 @@ class AuditDB:
         stored payload text is hashed again, and ``seq``, ``prev`` and
         ``hash`` are checked. A difference, a missing row or a garbage
         text gives ``False``. An empty table is ``True``. The method does
-        not raise for the content of the table.
+        not raise for the content of the table; an error of the connection
+        is raised, not turned into ``False``.
 
         Returns:
             ``True`` for a valid chain, ``False`` otherwise.
@@ -233,6 +228,6 @@ class AuditDB:
                         prev = h
                         expected_seq += 1
                     offset += batch
-        except Exception:
+        except (ValueError, TypeError, OverflowError):
             return False
         return True

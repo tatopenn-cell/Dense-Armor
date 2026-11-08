@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import html
 import json
 import sys
 from pathlib import Path
@@ -27,13 +28,14 @@ def _svg(rows: list[tuple[str, int]]) -> str:
     n = len(rows)
     w = 400
     h = 200
-    bar_w = max(20, (w - 40) // max(n, 1) - 10)
+    bar_w = max(4, (w - 40) // max(n, 1) - 10)
     max_count = max(c for _, c in rows) or 1
     parts = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}">']
     for i, (reason, count) in enumerate(rows):
         bh = int((count / max_count) * (h - 60))
         x = 20 + i * (bar_w + 10)
         y = h - 20 - bh
+        reason = html.escape(reason, quote=True)
         parts.append(
             f'<rect x="{x}" y="{y}" width="{bar_w}" height="{bh}" '
             f'data-reason="{reason}" data-count="{count}"/>'
@@ -75,9 +77,10 @@ def _count_reasons(log_path: Path) -> list[tuple[str, int]]:
 def create_app(config_path: str) -> Any:
     """Return a Flask application for a configuration.
 
-    The configuration is loaded once, here. A missing or invalid
-    configuration raises ``ValueError`` (or ``FileNotFoundError``), not a
-    500 later. ``flask`` is imported inside this function, so that
+    The configuration is checked here, and read again at each request, as
+    ``GET /status`` does, so that the three routes use the same file. A
+    missing or invalid configuration raises ``ValueError`` (or
+    ``FileNotFoundError``) here, not a 500 later. ``flask`` is imported inside this function, so that
     ``import dense_armor.utility.finance`` does not need it.
 
     Args:
@@ -96,7 +99,7 @@ def create_app(config_path: str) -> Any:
     """
     from flask import Flask, Response, jsonify
 
-    config = load_config(config_path)
+    load_config(config_path)
     app = Flask(__name__)
 
     @app.get("/")
@@ -110,14 +113,14 @@ def create_app(config_path: str) -> Any:
 
     @app.post("/emergency-stop")
     def emergency_stop() -> Any:
-        stop = config.paths.emergency_stop
+        stop = load_config(config_path).paths.emergency_stop
         stop.parent.mkdir(parents=True, exist_ok=True)
         stop.write_bytes(b"")
         return jsonify({"emergency_stop": True})
 
     @app.get("/decisions.svg")
     def decisions_svg() -> Any:
-        rows = _count_reasons(config.paths.log)
+        rows = _count_reasons(load_config(config_path).paths.log)
         return Response(_svg(rows), mimetype="image/svg+xml")
 
     return app

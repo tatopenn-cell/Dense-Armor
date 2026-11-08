@@ -1,4 +1,4 @@
-"""create the decisions table and the trigger that forbids update and delete
+"""create the decisions table and the trigger that forbids update, delete and truncate
 
 Revision ID: 0001_decisions
 Revises:
@@ -40,9 +40,17 @@ def upgrade() -> None:
         FOR EACH ROW EXECUTE FUNCTION decisions_forbid_change();
         """
     )
+    op.execute(
+        """
+        CREATE TRIGGER decisions_no_truncate
+        BEFORE TRUNCATE ON decisions
+        FOR EACH STATEMENT EXECUTE FUNCTION decisions_forbid_change();
+        """
+    )
 
 
 def downgrade() -> None:
+    op.execute("DROP TRIGGER IF EXISTS decisions_no_truncate ON decisions")
     op.execute("DROP TRIGGER IF EXISTS decisions_no_change ON decisions")
     op.execute("DROP FUNCTION IF EXISTS decisions_forbid_change()")
     op.drop_table("decisions")
