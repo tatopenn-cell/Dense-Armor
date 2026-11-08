@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 title: "dense-armor"
-message: "If you use dense-armor in your research, please cite both this software and the works it builds upon (see references)."
+message: "If you use dense-armor in your research, cite this software and the works it builds upon."
 type: software
 authors:
   - family-names: "Pennacchio"
@@ -8,7 +8,7 @@ authors:
     affiliation: "Independent"
     email: "tatopenn@gmail.com"
 version: "1.5.0"
-abstract: "Robot-AI Online Shielding & Learning: JAX estimators that learn one sample at a time, with streams, trees and forests, clustering, vision, uncertainty, drift and anomaly detection, protected learning and robot command safety"
+abstract: "Robot-AI Online Shielding & Learning: online estimators, streaming algorithms, anomaly detection, drift, protected learning, robot command safety."
 license: MIT
 repository-code: "https://github.com/tatopenn-cell/Dense-Armor"
 date-released: "2026-11-08"
@@ -22,25 +22,223 @@ keywords:
 references:
   - type: article
     authors:
+      - family-names: "Breiman"
+        given-names: "L."
+    year: 1996
+    title: "Bagging predictors, Machine Learning 24(2): bootstrap
+        samples and the mean of the models (not in the folder, bibliographic
+        only).
+    Freund, Y"
+  - type: article
+    authors:
+      - family-names: "Breiman"
+        given-names: "L."
+    year: 2001
+    title: "Random forests, Machine Learning 45(1): a tree per
+        bootstrap sample, a random subset of features at each split (not in
+        the folder, bibliographic only).
+    Geurts, P"
+  - type: article
+    authors:
+      - family-names: "Geurts"
+        given-names: "P."
+      - family-names: "Ernst"
+        given-names: "D."
+      - family-names: "Wehenkel"
+        given-names: "L."
+    year: 2006
+    title: "Extremely randomized trees,
+        Machine Learning 63(1): the whole sample and a random threshold at
+        each split (not in the folder, bibliographic only)"
+  - type: generic
+    authors:
+      - family-names: "Silajev"
+    year: 2026
+    title: "Reference text: Silajev (2026)"
+  - type: article
+    authors:
+      - family-names: "Breiman"
+        given-names: "L."
+      - family-names: "Friedman"
+        given-names: "J."
+      - family-names: "Olshen"
+        given-names: "R."
+      - family-names: "Stone"
+        given-names: "C."
+    year: 1984
+    title: "Classification and
+        Regression Trees, Wadsworth, chapter 2: the gini impurity and the
+        recursive binary splitting (not in the folder, bibliographic only).
+    Lakshminarayanan, B"
+  - type: article
+    authors:
+      - family-names: "Dembczynski"
+        given-names: "K."
+      - family-names: "Cheng"
+        given-names: "W."
+      - family-names: "Hullermeier"
+        given-names: "E."
+    year: 2010
+    title: "Bayes optimal
+        multilabel classification via probabilistic classifier chains, Eq. (10)
+        to (12) (not in the folder, bibliographic only)"
+  - type: article
+    authors:
+      - family-names: "Duarte"
+        given-names: "J."
+      - family-names: "Gama"
+        given-names: "J."
+      - family-names: "Bifet"
+        given-names: "A."
+    year: 2016
+    title: "Adaptive model rules from
+        high-speed data streams, ACM TKDD 10(3): the rule set grows and is
+        revised as examples arrive (not in the folder, bibliographic only)"
+  - type: article
+    authors:
+      - family-names: "Rifkin"
+        given-names: "R."
+      - family-names: "Klautau"
+        given-names: "A."
+    year: 2004
+    title: "In defense of one-vs-all classification:
+        one binary problem per class (not in the folder, bibliographic only).
+    Furnkranz, J"
+  - type: article
+    authors:
+      - family-names: "Furnkranz"
+        given-names: "J."
+    year: 2002
+    title: "Round robin classification, JMLR 2: one binary problem
+        per pair of classes, decided by votes (not in the folder,
+        bibliographic only).
+    Dietterich, T"
+  - type: generic
+    authors:
+      - family-names: "Bakiri"
+        given-names: "G."
+    year: 1995
+    title: "Reference text: Bakiri, G. (1995)"
+  - type: article
+    authors:
+      - family-names: "McCallum"
+        given-names: "A."
+      - family-names: "Nigam"
+        given-names: "K."
+    year: 1998
+    title: "A comparison of event models for naive
+        Bayes text classification, page 4 (multinomial and Bernoulli models)
+        (not in the folder, bibliographic only).
+    Rennie, J"
+  - type: article
+    authors:
+      - family-names: "Sander"
+        given-names: "J."
+    year: 2000
+    title: "LOF:
+        Identifying Density-Based Local Outliers. In Proceedings of the 2000
+        ACM SIGMOD International Conference on Management of Data, pages
+        93-104"
+  - type: generic
+    authors:
+      - family-names: "Chauvenet"
+    year: 1863
+    title: "Reference text: Chauvenet (1863)"
+  - type: generic
+    authors:
+      - family-names: "Tukey"
+    year: 1977
+    title: "Reference text: Tukey (1977)"
+  - type: generic
+    authors:
+      - family-names: "Hampel"
+    year: 1974
+    title: "Reference text: Hampel (1974)"
+  - type: generic
+    authors:
+      - family-names: "Davies"
+      - family-names: "Gather"
+    year: 1993
+    title: "Reference text: Davies and Gather (1993)"
+  - type: article
+    authors:
       - family-names: "Orabona"
         given-names: "F."
     year: 2019
-    title: "A modern introduction to online learning, Algorithms 2"
+    title: "A modern introduction to online learning, Algorithms 2.1,
+        4"
   - type: article
     authors:
       - family-names: "Ba"
         given-names: "J."
     year: 2015
-    title: "Adam, Algorithm 1; Hazan, E"
+    title: "Adam, Algorithm 1; Hazan, E.,
+        Agarwal, A"
+  - type: article
+    authors:
+      - family-names: "Hazan"
+        given-names: "E."
+      - family-names: "Agarwal"
+        given-names: "A."
+      - family-names: "Kale"
+        given-names: "S."
+    year: 2007
+    title: "Logarithmic regret algorithms for online
+        convex optimization, Algorithm 2: update rules applied to the gradient
+        of one example at a time (not in the folder, bibliographic only)"
   - type: article
     authors:
       - family-names: "Ziani"
     year: 2025
-    title: "Methods to a Multiresolution Horn-Schunck"
+    title: "Methods to a Multiresolution Horn-Schunck. arXiv:2511"
     identifiers:
       - type: other
         value: "arXiv:2511.16535"
         description: "arXiv preprint"
+  - type: generic
+    authors:
+      - family-names: "Lindenstrauss"
+        given-names: "J."
+    year: 1984
+    title: "Reference text: Lindenstrauss, J. (1984)"
+  - type: article
+    authors:
+      - family-names: "Balsubramani"
+        given-names: "A."
+      - family-names: "Dasgupta"
+        given-names: "S."
+      - family-names: "Freund"
+        given-names: "Y."
+    year: 2013
+    title: "The fast convergence of
+        incremental PCA, NIPS: the target of the rule is the top eigenvector of
+        the covariance (not in the folder, bibliographic only).
+    ``GlobalMotion``: the algorithm of the online class ``GlobalMotion`` of
+        ``dense_armor"
+  - type: article
+    authors:
+      - family-names: "Parolya"
+        given-names: "N."
+    year: 2014
+    title: "Optimal linear shrinkage
+        estimator for large dimensional precision matrix, Eq"
+  - type: article
+    authors:
+      - family-names: "Cover"
+        given-names: "T."
+      - family-names: "Hart"
+        given-names: "P."
+    year: 1967
+    title: "Nearest neighbor pattern classification,
+        IEEE Trans. Information Theory 13(1) (not in the folder,
+        bibliographic only)"
+  - type: article
+    authors:
+      - family-names: "Fitzpatrick"
+        given-names: "R."
+    year: 2008
+    title: "Maxwell's equations and the principles of
+    electromagnetism. Jones & Bartlett — for the SI unit conventions"
   - type: article
     authors:
       - family-names: "Gupta"
@@ -48,10 +246,28 @@ references:
       - family-names: "Ramdas"
         given-names: "A."
     year: 2023
-    title: "Online Platt scaling with calibeating"
+    title: "Online Platt scaling with calibeating.
+    In ICML"
     identifiers:
       - type: other
         value: "arXiv:2305.00070"
+        description: "arXiv preprint"
+  - type: article
+    authors:
+      - family-names: "Kanade"
+        given-names: "T."
+    year: 1981
+    title: "An iterative image registration
+        technique with an application to stereo vision"
+  - type: article
+    authors:
+      - family-names: "Ziani"
+    year: 2025
+    title: "Methods to a Multiresolution Horn-Schunck.
+        arXiv:2511"
+    identifiers:
+      - type: other
+        value: "arXiv:2511.16535"
         description: "arXiv preprint"
   - type: article
     authors:
@@ -60,7 +276,8 @@ references:
       - family-names: "Huang"
         given-names: "J."
     year: 2017
-    title: "Work cited in dense-armor"
+    title: "A fast HOG descriptor using lookup table
+        and integral image. arXiv:1703"
     identifiers:
       - type: other
         value: "arXiv:1703.06256"
@@ -80,48 +297,222 @@ references:
       - family-names: "Gehler"
         given-names: "P."
     year: 2021
-    title: "Towards total recall in industrial anomaly detection"
+    title: "Towards total recall in industrial anomaly detection.
+    arXiv:2106"
     identifiers:
       - type: other
         value: "arXiv:2106.08265"
         description: "arXiv preprint"
   - type: article
     authors:
-      - family-names: "Ma"
-      - family-names: "Y. et al."
-    year: 2023
-    title: "Adaptive confidence threshold for ByteTrack"
+      - family-names: "Huang"
+        given-names: "C."
+      - family-names: "Huang"
+        given-names: "J."
+    year: 2017
+    title: "A fast HOG descriptor using lookup table
+    and integral image. arXiv:1703"
     identifiers:
       - type: other
-        value: "arXiv:2312.01650"
+        value: "arXiv:1703.06256"
         description: "arXiv preprint"
   - type: article
     authors:
-      - family-names: "NIPS"
-    year: 1998
-    title: "Not in the folder, bibliographic only"
+      - family-names: "Sarkka"
+        given-names: "S."
+    year: 2013
+    title: "Moment conditions for
+        convergence of the variational Bayes approximation in Kalman
+        filtering. arXiv:1308"
+    identifiers:
+      - type: other
+        value: "arXiv:1308.5875"
+        description: "arXiv preprint"
   - type: article
+    authors:
+      - family-names: "Bifet"
+        given-names: "A."
+      - family-names: "Gavalda"
+        given-names: "R."
+    year: 2007
+    title: "Learning from time-changing data with
+        adaptive windowing. In SIAM SDM"
+  - type: article
+    authors:
+      - family-names: "Pébay"
+        given-names: "P."
+    year: 2008
+    title: "Formulas for robust, one-pass parallel computation of
+    covariances and arbitrary-order statistical moments. Sandia Report
+    SAND2008-6212"
+  - type: article
+    authors:
+      - family-names: "Fan"
+        given-names: "Y."
+    year: 1996
+    title: "Sample quantiles in statistical
+    packages. The American Statistician 50(4), 361-365"
+  - type: article
+    authors:
+      - family-names: "Reid"
+        given-names: "N."
+    year: 2026
+    title: "Robust Regression
+    with Student's T: The Role of Degrees of Freedom. arXiv:2603"
+    identifiers:
+      - type: other
+        value: "arXiv:2603.00269"
+        description: "arXiv preprint"
+    doi: "10.1080/01621459"
+  - type: article
+    authors:
+      - family-names: "Zellner"
+        given-names: "A."
+    year: 1976
+    title: "Bayesian and non-Bayesian analysis of the
+    Student-t model. JASA 71(354), 400-405"
+    doi: "10.1080/01621459"
+  - type: article
+    authors:
+      - family-names: "Cappé"
+        given-names: "O."
+      - family-names: "Moulines"
+        given-names: "E."
+    year: 2009
+    title: "On-line expectation-maximization
+    algorithm for latent data models. Journal of the Royal Statistical
+    Society: Series B 71(3), 593-613"
+  - type: generic
+    authors:
+      - family-names: "Parolya"
+        given-names: "N."
+    year: 2014
+    title: "Reference text: Parolya, N. (2014)"
+  - type: article
+    authors:
+      - family-names: "Dunning"
+        given-names: "T."
+      - family-names: "Ertl"
+        given-names: "O."
+    year: 2019
+    title: "Computing extremely accurate quantiles
+    using t-digests. arXiv:1902"
+    identifiers:
+      - type: other
+        value: "arXiv:1902.04023"
+        description: "arXiv preprint"
+  - type: article
+    authors:
+      - family-names: "Chatfield"
+        given-names: "C."
+    year: 2003
+    title: "The Analysis of Time Series: An Introduction,
+    6th ed. Chapman & Hall/CRC"
+  - type: article
+    authors:
+      - family-names: "Oishi"
+        given-names: "S."
+    year: 2005
+    title: "Accurate Sum and Dot
+        Product. SIAM Journal on Scientific Computing 26(6), 1955-1988"
+  - type: article
+    authors:
+      - family-names: "Healy"
+        given-names: "J."
+    year: 2022
+    title: "Accurate and consistent calculation of the mean and
+        variance in Monte-Carlo simulations. arXiv:2206"
+    identifiers:
+      - type: other
+        value: "arXiv:2206.10662"
+        description: "arXiv preprint"
+  - type: generic
+    authors:
+      - family-names: "Healy"
+    year: 2022
+    title: "Reference text: Healy (2022)"
+  - type: generic
+    authors:
+      - family-names: "Chan"
+      - family-names: "Golub"
+      - family-names: "LeVeque"
+    year: 1983
+    title: "Reference text: Chan, Golub and LeVeque (1983)"
+  - type: article
+    authors:
+      - family-names: "Cormode"
+        given-names: "G."
+      - family-names: "Muthukrishnan"
+        given-names: "S."
+    year: 2005
+    title: "An improved data stream summary:
+    the Count-Min sketch and its applications"
+  - type: article
+    authors:
+      - family-names: "Flajolet"
+        given-names: "P."
+      - family-names: "Fusy"
+        given-names: "E."
+      - family-names: "Gandouet"
+        given-names: "O."
+      - family-names: "Meunier"
+        given-names: "F."
+    year: 2007
+    title: "HyperLogLog:
+    the analysis of a near-optimal cardinality estimation algorithm.
+    In AofA"
+  - type: article
+    authors:
+      - family-names: "Abbadi"
+        given-names: "A."
+    year: 2005
+    title: "Efficient computation
+    of frequent and top-k elements in data streams"
+  - type: generic
     authors:
       - family-names: "Silajev"
         given-names: "I."
     year: 2026
-    title: "Work cited in dense-armor"
-    identifiers:
-      - type: other
-        value: "arXiv:2609.14016"
-        description: "arXiv preprint"
+    title: "Reference text: Silajev, I. (2026)"
+  - type: article
+    authors:
+      - family-names: "Weisberg"
+        given-names: "S."
+    year: 1982
+    title: "Residuals and Influence in
+    Regression. Chapman & Hall"
+  - type: article
+    authors:
+      - family-names: "Vovk"
+        given-names: "V."
+      - family-names: "Gammerman"
+        given-names: "A."
+      - family-names: "Shafer"
+        given-names: "G."
+    year: 2005
+    title: "Algorithmic Learning in a
+    Random World"
+  - type: article
+    authors:
+      - family-names: "Bamber"
+        given-names: "D."
+    year: 1975
+    title: "The area above the ordinal dominance graph and the
+    area below the receiver operating characteristic graph. Journal
+    of Mathematical Psychology 12(4), 387-415"
   - type: article
     authors:
       - family-names: "Cohen"
         given-names: "J."
     year: 1960
-    title: "A coefficient of agreement for nominal scales"
+    title: "A coefficient of agreement for nominal scales.
+    Educational and Psychological Measurement 20(1), 37-46"
   - type: article
     authors:
       - family-names: "Sasaki"
         given-names: "Y."
     year: 2007
-    title: "The truth of the F-measure"
+    title: "The truth of the F-measure. Teach Tutor Mater"
   - type: article
     authors:
       - family-names: "Zdonik"
@@ -131,10 +522,77 @@ references:
       - family-names: "Gottschlich"
         given-names: "J."
     year: 2018
-    title: "Precision and recall for time series"
+    title: "Precision and recall for time series. In NeurIPS"
+    identifiers:
+      - type: other
+        value: "arXiv:1803.03639"
+        description: "arXiv preprint"
+  - type: article
+    authors:
+      - family-names: "Lavin"
+        given-names: "A."
+      - family-names: "Ahmad"
+        given-names: "S."
+    year: 2015
+    title: "Evaluating real-time anomaly detection
+    algorithms --- the Numenta Anomaly Benchmark. In IEEE ICMLA"
     identifiers:
       - type: other
         value: "arXiv:2109.05257"
+        description: "arXiv preprint"
+  - type: article
+    authors:
+      - family-names: "Kim"
+        given-names: "S."
+      - family-names: "Choi"
+        given-names: "K."
+      - family-names: "Choi"
+        given-names: "H. -S."
+      - family-names: "Lee"
+        given-names: "B."
+      - family-names: "Yoon"
+        given-names: "S."
+    year: 2021
+    title: "Towards a
+    rigorous evaluation of time-series anomaly detection. arXiv:2109"
+    identifiers:
+      - type: other
+        value: "arXiv:2109.05257"
+        description: "arXiv preprint"
+  - type: article
+    authors:
+      - family-names: "Ksieniewicz"
+        given-names: "P."
+      - family-names: "Zyblewski"
+        given-names: "P."
+    year: 2020
+    title: "Stream-learn. arXiv:2001"
+    identifiers:
+      - type: other
+        value: "arXiv:2001.11077"
+        description: "arXiv preprint"
+  - type: article
+    authors:
+      - family-names: "Dagdia"
+        given-names: "Z."
+    year: 2024
+    title: "arXiv:2409"
+    identifiers:
+      - type: other
+        value: "arXiv:2409.10111"
+        description: "arXiv preprint"
+  - type: article
+    authors:
+      - family-names: "Ksieniewicz"
+        given-names: "P."
+      - family-names: "Zyblewski"
+        given-names: "P."
+    year: 2020
+    title: "Stream-learn: open-source Python
+    library for difficult data stream batch analysis. arXiv:2001"
+    identifiers:
+      - type: other
+        value: "arXiv:2001.11077"
         description: "arXiv preprint"
   - type: article
     authors:
@@ -147,7 +605,9 @@ references:
       - family-names: "Sun"
         given-names: "J."
     year: 2015
-    title: "Work cited in dense-armor"
+    title: "Delving Deep into
+        Rectifiers: Surpassing Human-Level Performance on ImageNet
+        Classification. arXiv:1502"
     identifiers:
       - type: other
         value: "arXiv:1502.01852"
@@ -159,10 +619,60 @@ references:
       - family-names: "Gimpel"
         given-names: "K."
     year: 2016
-    title: "Work cited in dense-armor"
+    title: "Gaussian Error Linear Units
+        (GELUs). arXiv:1606"
     identifiers:
       - type: other
         value: "arXiv:1606.08415"
+        description: "arXiv preprint"
+  - type: article
+    authors:
+      - family-names: "Elfwing"
+        given-names: "S."
+      - family-names: "Uchibe"
+        given-names: "E."
+      - family-names: "Doya"
+        given-names: "K."
+    year: 2017
+    title: "Sigmoid-weighted linear
+        units for neural network function approximation in
+        reinforcement learning. arXiv:1702"
+    identifiers:
+      - type: other
+        value: "arXiv:1702.03118"
+        description: "arXiv preprint"
+  - type: article
+    authors:
+      - family-names: "Clevert"
+        given-names: "D. -A."
+      - family-names: "Unterthiner"
+        given-names: "T."
+      - family-names: "Hochreiter"
+        given-names: "S."
+    year: 2016
+    title: "Fast and
+        accurate deep network learning by exponential linear units
+        (ELUs). arXiv:1511"
+    identifiers:
+      - type: other
+        value: "arXiv:1511.07289"
+        description: "arXiv preprint"
+  - type: article
+    authors:
+      - family-names: "He"
+        given-names: "K."
+      - family-names: "Zhang"
+        given-names: "X."
+      - family-names: "Ren"
+        given-names: "S."
+      - family-names: "Sun"
+        given-names: "J."
+    year: 2015
+    title: "Delving deep into
+        rectifiers. arXiv:1502"
+    identifiers:
+      - type: other
+        value: "arXiv:1502.01852"
         description: "arXiv preprint"
   - type: article
     authors:
@@ -171,7 +681,9 @@ references:
       - family-names: "Szegedy"
         given-names: "C."
     year: 2015
-    title: "Work cited in dense-armor"
+    title: "Batch Normalization: Accelerating
+        Deep Network Training by Reducing Internal Covariate Shift.
+        arXiv:1502"
     identifiers:
       - type: other
         value: "arXiv:1502.03167"
@@ -187,7 +699,8 @@ references:
       - family-names: "Sun"
         given-names: "J."
     year: 2016
-    title: "Work cited in dense-armor"
+    title: "Deep Residual Learning
+        for Image Recognition. arXiv:1512"
     identifiers:
       - type: other
         value: "arXiv:1512.03385"
@@ -205,34 +718,22 @@ references:
       - family-names: "Paluri"
         given-names: "M."
     year: 2015
-    title: "Work cited in dense-armor"
+    title: "Learning spatiotemporal features with 3D convolutional
+        networks. arXiv:1412"
     identifiers:
       - type: other
         value: "arXiv:1412.0767"
         description: "arXiv preprint"
   - type: article
     authors:
-      - family-names: "Mohamed"
-      - family-names: "Hinton"
-    year: 2013
-    title: "The output layer of Eq"
-  - type: article
-    authors:
-      - family-names: "Lin"
-      - family-names: "T.-Y."
-      - family-names: "Goyal"
-        given-names: "P."
-      - family-names: "Girshick"
-        given-names: "R."
-      - family-names: "He"
-        given-names: "K."
-      - family-names: "Dollar"
-        given-names: "P."
+      - family-names: "Chollet"
+        given-names: "F."
     year: 2017
-    title: "Focal Loss for Dense Object Detection"
+    title: "Xception: Deep learning with depthwise
+        separable convolutions. arXiv:1610"
     identifiers:
       - type: other
-        value: "arXiv:1708.02002"
+        value: "arXiv:1610.02357"
         description: "arXiv preprint"
   - type: article
     authors:
@@ -247,10 +748,29 @@ references:
       - family-names: "Wojna"
         given-names: "Z."
     year: 2016
-    title: "Work cited in dense-armor"
+    title: "Rethinking the Inception Architecture for Computer
+        Vision. arXiv:1512"
     identifiers:
       - type: other
         value: "arXiv:1512.00567"
+        description: "arXiv preprint"
+  - type: article
+    authors:
+      - family-names: "Lin"
+        given-names: "T. -Y."
+      - family-names: "Goyal"
+        given-names: "P."
+      - family-names: "Girshick"
+        given-names: "R."
+      - family-names: "He"
+        given-names: "K."
+      - family-names: "Dollar"
+        given-names: "P."
+    year: 2017
+    title: "Focal Loss for Dense Object Detection. arXiv:1708"
+    identifiers:
+      - type: other
+        value: "arXiv:1708.02002"
         description: "arXiv preprint"
   - type: article
     authors:
@@ -259,38 +779,99 @@ references:
       - family-names: "He"
         given-names: "K."
     year: 2018
-    title: "Group Normalization"
+    title: "Group Normalization. arXiv:1803"
     identifiers:
       - type: other
         value: "arXiv:1803.08494"
         description: "arXiv preprint"
   - type: article
     authors:
+      - family-names: "Ulyanov"
+        given-names: "D."
+      - family-names: "Vedaldi"
+        given-names: "A."
+      - family-names: "Lempitsky"
+        given-names: "V."
+    year: 2016
+    title: "Instance
+        Normalization: The Missing Ingredient for Fast Stylization.
+        arXiv:1607"
+    identifiers:
+      - type: other
+        value: "arXiv:1607.08022"
+        description: "arXiv preprint"
+  - type: article
+    authors:
+      - family-names: "Kaiser"
+        given-names: "L."
+      - family-names: "Polosukhin"
+        given-names: "I."
+    year: 2017
+    title: "Attention Is
+        All You Need. arXiv:1706"
+    identifiers:
+      - type: other
+        value: "arXiv:1706.03762"
+        description: "arXiv preprint"
+  - type: article
+    authors:
       - family-names: "Orabona"
         given-names: "F."
     year: 2019
-    title: "A Modern Introduction to Online Learning"
+    title: "A Modern Introduction to Online Learning.
+    Kingma, D"
     identifiers:
       - type: other
         value: "arXiv:1412.6980"
         description: "arXiv preprint"
   - type: article
     authors:
-      - family-names: "Pevny"
-    year: 2016
-    title: "Details not fixed by Lou et al"
+      - family-names: "Ba"
+        given-names: "J."
+    year: 2014
+    title: "Adam: a method for stochastic
+    optimization. arXiv:1412"
+    identifiers:
+      - type: other
+        value: "arXiv:1412.6980"
+        description: "arXiv preprint"
+  - type: article
+    authors:
+      - family-names: "Suk"
+        given-names: "J."
+      - family-names: "Kpotufe"
+        given-names: "S."
+    year: 2025
+    title: "An efficient variant of one-class SVM
+    with lifelong online learning guarantees. arXiv:2512"
+    identifiers:
+      - type: other
+        value: "arXiv:2512.11052"
+        description: "arXiv preprint"
+  - type: article
+    authors:
+      - family-names: "Rahimi"
+        given-names: "A."
+      - family-names: "Recht"
+        given-names: "B."
+    year: 2007
+    title: "Random features for large-scale kernel
+    machines"
   - type: article
     authors:
       - family-names: "Pevny"
         given-names: "T."
     year: 2016
-    title: "LODA: Lightweight on-line detector of anomalies"
+    title: "LODA: Lightweight on-line detector of anomalies.
+    Machine Learning 102(2), 275-304"
   - type: article
     authors:
       - family-names: "Sander"
         given-names: "J."
     year: 2000
-    title: "LOF: Identifying Density-Based Local Outliers"
+    title: "LOF: Identifying Density-Based Local Outliers. In Proceedings of
+    the 2000 ACM SIGMOD International Conference on Management of
+    Data, pages 93-104"
   - type: article
     authors:
       - family-names: "Oplatkova"
@@ -298,10 +879,26 @@ references:
       - family-names: "Vala"
         given-names: "R."
     year: 2025
-    title: "Isolation Forest in Novelty Detection Scenario"
+    title: "Isolation Forest in Novelty Detection Scenario.
+    arXiv:2505"
     identifiers:
       - type: other
         value: "arXiv:2505.08489"
+        description: "arXiv preprint"
+  - type: article
+    authors:
+      - family-names: "Guillot"
+        given-names: "A."
+      - family-names: "Godichon-Baggioni"
+        given-names: "A."
+      - family-names: "Robin"
+        given-names: "S."
+    year: 2025
+    title: "Online robust
+    covariance and outlier detection. arXiv:2601"
+    identifiers:
+      - type: other
+        value: "arXiv:2601.03957"
         description: "arXiv preprint"
   - type: article
     authors:
@@ -310,9 +907,10 @@ references:
       - family-names: "Cenac"
         given-names: "P."
       - family-names: "Zitt"
-      - family-names: "P.-A."
+        given-names: "P. -A."
     year: 2013
-    title: "Bernoulli 19(1), 18-43"
+    title: "Bernoulli 19(1), 18-43.
+Cardot, H"
   - type: article
     authors:
       - family-names: "Cardot"
@@ -330,35 +928,25 @@ references:
       - family-names: "Boracchi"
         given-names: "G."
     year: 2024
-    title: "Online Isolation Forest"
+    title: "Online Isolation Forest. arXiv:2505"
     identifiers:
       - type: other
         value: "arXiv:2505.09593"
         description: "arXiv preprint"
   - type: article
     authors:
-      - family-names: "Cesa-Bianchi"
-      - family-names: "Fischer"
-    year: 2002
-    title: "The formulas follow the paper as cited"
-  - type: article
-    authors:
-      - family-names: "Oza"
-      - family-names: "Russell"
-    year: 2001
-    title: "The online AdaBoost of Oza and Russell (2001), Section 3 and Figure 2"
-  - type: article
-    authors:
       - family-names: "Russell"
         given-names: "S."
     year: 2001
-    title: "Online bagging and boosting"
+    title: "Online bagging and boosting. In
+        Artificial Intelligence and Statistics 2001, 105-112"
   - type: article
     authors:
       - family-names: "Moshkovitz"
         given-names: "M."
     year: 2021
-    title: "Online k-means clustering on arbitrary data streams"
+    title: "Online k-means clustering on arbitrary data streams.
+        arXiv:2102"
     identifiers:
       - type: other
         value: "arXiv:2102.09101"
@@ -370,7 +958,8 @@ references:
       - family-names: "Atalay"
         given-names: "V."
     year: 2020
-    title: "Work cited in dense-armor"
+    title: "Data stream clustering: a
+        review. arXiv:2007"
     identifiers:
       - type: other
         value: "arXiv:2007.10781"
@@ -388,24 +977,119 @@ references:
       - family-names: "Griffin"
         given-names: "R."
     year: 2024
-    title: "Work cited in dense-armor"
+    title: "Physically Consistent Online Inertial Adaptation for
+    Humanoid Loco-manipulation. arXiv:2405"
     identifiers:
       - type: other
         value: "arXiv:2405.07901"
         description: "arXiv preprint"
   - type: article
     authors:
-      - family-names: "Raab"
-      - family-names: "Heusinger"
-      - family-names: "Schleif"
-    year: 2020
-    title: "KSWIN keeps a sliding window of size ``window_size``"
+      - family-names: "Ljung"
+        given-names: "L."
+      - family-names: "Soderstrom"
+        given-names: "T."
+    year: 1983
+    title: "Theory and Practice of
+    Recursive Identification. MIT Press"
   - type: article
     authors:
-      - family-names: "Bifet"
-      - family-names: "Gavalda"
-    year: 2006
-    title: "Two algorithms share this name"
+      - family-names: "Orabona"
+        given-names: "F."
+    year: 2019
+    title: "A Modern Introduction to Online Learning.
+    Chapter 2 (Online Gradient Descent), Chapter 4 (AdaGrad),
+    Chapter 7 (Follow-the-Regularized-Leader, Online Newton Step)"
+    identifiers:
+      - type: other
+        value: "arXiv:1412.6980"
+        description: "arXiv preprint"
+  - type: article
+    authors:
+      - family-names: "Sarkka"
+        given-names: "S."
+      - family-names: "Vihola"
+        given-names: "M."
+      - family-names: "Haario"
+        given-names: "H."
+    year: 2013
+    title: "Adaptive Metropolis algorithm using variational Bayesian adaptive
+    Kalman filter. arXiv:1308"
+    identifiers:
+      - type: other
+        value: "arXiv:1308.5875"
+        description: "arXiv preprint"
+  - type: article
+    authors:
+      - family-names: "Popescu"
+        given-names: "M."
+      - family-names: "Mronga"
+        given-names: "D."
+      - family-names: "Kumar"
+        given-names: "S."
+      - family-names: "Kirchner"
+        given-names: "F."
+    year: 2026
+    title: "Residual-based adaptive Kalman filtering for legged robot state
+    estimation. arXiv:2608"
+    identifiers:
+      - type: other
+        value: "arXiv:2608.02316"
+        description: "arXiv preprint"
+  - type: article
+    authors:
+      - family-names: "Bollerslev"
+        given-names: "T."
+    year: 1986
+    title: "Generalized autoregressive conditional
+    heteroskedasticity. Journal of Econometrics 31(3), 307-327"
+    doi: "10.1016/0304-4076(86"
+  - type: article
+    authors:
+      - family-names: "Gerencsér"
+        given-names: "L."
+      - family-names: "Orlovits"
+        given-names: "Z."
+    year: 2012
+    title: "Recursive estimation of GARCH
+    processes. Not in the folder, bibliographic only"
+  - type: article
+    authors:
+      - family-names: "Romero"
+        given-names: "D."
+      - family-names: "Beferull-Lozano"
+        given-names: "B."
+    year: 2019
+    title: "Online topology identification from vector autoregressive
+    time series. arXiv:1904"
+    identifiers:
+      - type: other
+        value: "arXiv:1904.01864"
+        description: "arXiv preprint"
+  - type: article
+    authors:
+      - family-names: "Ljung"
+        given-names: "L."
+      - family-names: "Soderstrom"
+        given-names: "T."
+    year: 1983
+    title: "Theory and Practice of Recursive
+Identification. MIT Press"
+  - type: generic
+    authors:
+      - family-names: "Breiman"
+      - family-names: "Friedman"
+      - family-names: "Olshen"
+      - family-names: "Stone"
+    year: 1984
+    title: "Reference text: Breiman, Friedman, Olshen, Stone (1984)"
+  - type: article
+    authors:
+      - family-names: "Salehi"
+        given-names: "M."
+    year: 2018
+    title: "Extremely fast
+        decision tree. In KDD, Algorithm 3"
   - type: article
     authors:
       - family-names: "Domingos"
@@ -413,4 +1097,60 @@ references:
       - family-names: "Hulten"
         given-names: "G."
     year: 2000
-    title: "Mining high-speed data streams"
+    title: "Mining high-speed data streams.
+        In KDD"
+  - type: article
+    authors:
+      - family-names: "Bifet"
+        given-names: "A."
+      - family-names: "Gavalda"
+        given-names: "R."
+    year: 2009
+    title: "Adaptive learning from evolving
+        data streams"
+  - type: article
+    authors:
+      - family-names: "Esteban"
+        given-names: "A."
+      - family-names: "Cano"
+        given-names: "A."
+      - family-names: "Zafra"
+        given-names: "A."
+      - family-names: "Ventura"
+        given-names: "S."
+    year: 2024
+    title: "Hoeffding
+        adaptive trees for multi-label classification on data streams.
+    Domingos, P"
+  - type: article
+    authors:
+      - family-names: "Gouk"
+        given-names: "H."
+      - family-names: "Pfahringer"
+        given-names: "B."
+      - family-names: "Frank"
+        given-names: "E."
+    year: 2019
+    title: "Stochastic gradient
+        trees. In ACML, sections 3"
+  - type: article
+    authors:
+      - family-names: "Salehi"
+        given-names: "M."
+    year: 2018
+    title: "Extremely fast
+        decision tree"
+  - type: article
+    authors:
+      - family-names: "Enembreck"
+        given-names: "F."
+      - family-names: "Pfahringer"
+        given-names: "B."
+      - family-names: "Holmes"
+        given-names: "G."
+      - family-names: "Abdessalem"
+        given-names: "T."
+    year: 2017
+    title: "Adaptive
+        random forests for evolving data stream classification. Machine
+        Learning 106, 1469-1495"
