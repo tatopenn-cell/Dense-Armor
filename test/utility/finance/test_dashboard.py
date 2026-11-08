@@ -11,6 +11,11 @@ import pytest
 from dense_armor.utility.finance.dashboard import create_app, main
 from dense_armor.utility.finance.decision_log import DecisionLog
 
+
+@pytest.fixture(autouse=True)
+def _require_flask():
+    pytest.importorskip("flask", reason="flask not installed")
+
 BASE_TOML = """\
 [schedule]
 total = 10.0

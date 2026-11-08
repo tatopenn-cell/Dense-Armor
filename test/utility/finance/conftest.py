@@ -24,13 +24,14 @@ def _require(name: str) -> bool:
 @pytest.fixture
 def pg_url():
     """A URL with a fresh, empty schema as ``search_path``."""
-    import sqlalchemy
-
     base = os.environ.get("DENSE_ARMOR_TEST_PG_URL")
     if not base:
         if _require("postgres"):
             pytest.fail("DENSE_ARMOR_TEST_PG_URL is not set")
         pytest.skip("PostgreSQL not reachable: DENSE_ARMOR_TEST_PG_URL is not set")
+    pytest.importorskip("sqlalchemy", reason="sqlalchemy not installed")
+    pytest.importorskip("psycopg2", reason="psycopg2 not installed")
+    import sqlalchemy
     if "?" in base:
         head, sep, tail = base.partition("?")
     else:

@@ -91,12 +91,41 @@ def test_4_invalid_order_no_acceptor_needed():
         )
 
 
-def test_5_no_acceptor_timeout():
+def test_5_no_acceptor_timeout(tmp_path):
+    pytest.importorskip("quickfix", reason="quickfix not installed")
     from dense_armor.utility.finance.fix_gateway import send_orders
 
+    root = Path(__file__).resolve().parents[2]
+    dictionary = root / "fixtures" / "finance" / "FIX44.xml"
+    cfg = tmp_path / "no_acceptor.cfg"
+    cfg.write_text(
+        "[DEFAULT]\n"
+        "ConnectionType=initiator\n"
+        "BeginString=FIX.4.4\n"
+        "SenderCompID=CLIENT\n"
+        "TargetCompID=SERVER\n"
+        "SocketConnectPort=1\n"
+        "SocketConnectHost=127.0.0.1\n"
+        "StartTime=00:00:00\n"
+        "EndTime=00:00:00\n"
+        "HeartBtInt=5\n"
+        "ReconnectInterval=1\n"
+        f"FileStorePath={tmp_path / 'store'}\n"
+        f"FileLogPath={tmp_path / 'log'}\n"
+        f"DataDictionary={dictionary}\n"
+        "UseDataDictionary=Y\n"
+        "\n"
+        "[SESSION]\n"
+        "BeginString=FIX.4.4\n"
+        "SenderCompID=CLIENT\n"
+        "TargetCompID=SERVER\n"
+        "ConnectionType=initiator\n",
+        encoding="utf-8",
+        newline="\n",
+    )
     t0 = time.monotonic()
     with pytest.raises(TimeoutError, match="logon"):
-        send_orders("/tmp/no_acceptor.cfg", [_order("S1")], timeout_s=2.0)
+        send_orders(cfg, [_order("S1")], timeout_s=2.0)
     assert time.monotonic() - t0 < 5.0
 
 
@@ -191,6 +220,7 @@ def test_12_collector_add_done():
 
 def test_13_application_methods_directly():
     """Call the _App methods without a session, to cover them."""
+    pytest.importorskip("quickfix", reason="quickfix not installed")
     from dense_armor.utility.finance.fix_gateway import _Collector, _make_application
 
     c = _Collector()
@@ -209,6 +239,7 @@ def test_13_application_methods_directly():
 
 def test_14_from_app_ignores_non_execution_report():
     """A heartbeat in fromApp returns without a report."""
+    pytest.importorskip("quickfix", reason="quickfix not installed")
     import quickfix as fix
 
     from dense_armor.utility.finance.fix_gateway import _Collector, _make_application
@@ -224,6 +255,7 @@ def test_14_from_app_ignores_non_execution_report():
 
 def test_15_from_app_reads_execution_report():
     """An ExecutionReport in fromApp fills the collector."""
+    pytest.importorskip("quickfix", reason="quickfix not installed")
     import quickfix as fix
 
     from dense_armor.utility.finance.fix_gateway import _Collector, _make_application
