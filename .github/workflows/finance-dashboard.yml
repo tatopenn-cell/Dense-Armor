@@ -1,0 +1,38 @@
+name: finance-dashboard
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  finance-dashboard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: dense_armor_test
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      DENSE_ARMOR_REQUIRE_SERVICES: "1"
+      DENSE_ARMOR_TEST_PG_URL: postgresql+psycopg2://postgres:postgres@127.0.0.1:5432/dense_armor_test
+      DENSE_ARMOR_PG_URL: postgresql+psycopg2://postgres:postgres@127.0.0.1:5432/dense_armor_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev,finance-ops]"
+      - run: playwright install --with-deps chromium
+      - run: pytest test/utility/finance -q -m "needs_postgres or needs_browser or needs_fix" -rs
