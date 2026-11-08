@@ -45,6 +45,11 @@ def _validate(orders: list[dict[str, Any]], timeout_s: float) -> None:
                 )
 
 
+# OrdStatus values after which an order does not change any more (FIX 4.4): filled, canceled,
+# rejected, expired.
+_FINAL_STATUS = ("2", "4", "8", "C")
+
+
 class _Collector:
     def __init__(self) -> None:
         self.reports: list[dict[str, Any]] = []
@@ -56,7 +61,7 @@ class _Collector:
     def add(self, r: dict[str, Any]) -> None:
         with self.lock:
             self.reports.append(r)
-            if r["ord_status"] in ("2", "8"):
+            if r["ord_status"] in _FINAL_STATUS:
                 self.done.add(r["cl_ord_id"])
 
 
@@ -140,8 +145,8 @@ def send_orders(
     ``quickfix.SocketInitiator`` with the settings file, waits for the
     logon, sends one ``NewOrderSingle`` (``OrdType=2``, limit) per order,
     collects the execution reports until each ``ClOrdID`` has an
-    ``OrdStatus`` of ``2`` (filled) or ``8`` (rejected), then logs out and
-    stops the initiator. The initiator is stopped also on an exception.
+    ``OrdStatus`` of ``2`` (filled), ``4`` (canceled), ``8`` (rejected) or
+    ``C`` (expired), then stops the initiator. The initiator is stopped also on an exception.
     ``timeout_s`` is the budget of the whole call: the wait for the logon
     and the wait for the reports share it.
 

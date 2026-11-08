@@ -18,7 +18,9 @@ import pytest
 
 
 def _require(name: str) -> bool:
-    return os.environ.get("DENSE_ARMOR_REQUIRE_SERVICES", "0") == "1"
+    """True if ``DENSE_ARMOR_REQUIRE_SERVICES`` is ``1`` (all services) or lists ``name``."""
+    value = os.environ.get("DENSE_ARMOR_REQUIRE_SERVICES", "0")
+    return value == "1" or name in value.split(",")
 
 
 @pytest.fixture

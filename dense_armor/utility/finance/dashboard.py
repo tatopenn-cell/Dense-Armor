@@ -7,6 +7,7 @@ import html
 import json
 import sys
 from pathlib import Path
+from urllib.parse import urlparse
 from typing import Any
 
 from dense_armor.utility.finance.config import load_config
@@ -90,14 +91,16 @@ def create_app(config_path: str) -> Any:
         A :class:`flask.Flask` application with three routes:
         ``GET /status`` (the JSON of :func:`collect_status`),
         ``POST /emergency-stop`` (create the stop file, return
-        ``{"emergency_stop": true}``) and ``GET /decisions.svg`` (a bar
+        ``{"emergency_stop": true}``; a request that carries an ``Origin``
+        of another host gets ``403``, so a page open in the same browser
+        cannot press the button) and ``GET /decisions.svg`` (a bar
         chart of the reasons in the log).
 
     Raises:
         FileNotFoundError: if the configuration file does not exist.
         ValueError: if the configuration is invalid.
     """
-    from flask import Flask, Response, jsonify
+    from flask import Flask, Response, jsonify, request
 
     load_config(config_path)
     app = Flask(__name__)
@@ -113,6 +116,9 @@ def create_app(config_path: str) -> Any:
 
     @app.post("/emergency-stop")
     def emergency_stop() -> Any:
+        origin = request.headers.get("Origin")
+        if origin and urlparse(origin).netloc != request.host:
+            return jsonify({"error": "cross-origin request refused"}), 403
         stop = load_config(config_path).paths.emergency_stop
         stop.parent.mkdir(parents=True, exist_ok=True)
         stop.write_bytes(b"")
@@ -130,7 +136,7 @@ def main(argv: list[str] | None = None) -> int:
     """Run the dashboard and return the exit code.
 
     The command loads the configuration, starts the Flask development
-    server on ``--host`` and ``--port``, and returns 0 when the server
+    server (meant for ``127.0.0.1``, the default host, not for a network) on ``--host`` and ``--port``, and returns 0 when the server
     stops. An invalid configuration prints ``{"error": ..., "ok": false}``
     on stdout and returns 2.
 

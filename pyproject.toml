@@ -81,13 +81,5 @@ module = ["pyulog", "pyulog.*", "pymavlink", "pymavlink.*", "paho.*", "yaml", "p
 ignore_missing_imports = true
 
 
-[tool.pytest.ini_options]
-markers = [
-    "needs_postgres: requires a PostgreSQL server (DENSE_ARMOR_TEST_PG_URL)",
-    "needs_browser: requires Chromium via Playwright",
-    "needs_fix: requires a running FIX acceptor",
-]
-
-
 [tool.setuptools.package-data]
 "dense_armor.utility.finance" = ["static/*.html"]
