@@ -1,0 +1,170 @@
+{
+  "title": "dense-armor",
+  "description": "<p>Robot-AI Online Shielding & Learning: JAX estimators that learn one sample at a time, with streams, trees and forests, clustering, vision, uncertainty, drift and anomaly detection, protected learning and robot command safety</p><p>Software with 38 bibliographic references (see related_identifiers and references).</p>",
+  "creators": [
+    {
+      "name": "Pennacchio, Salvatore",
+      "affiliation": "Independent"
+    }
+  ],
+  "upload_type": "software",
+  "access_right": "open",
+  "license": "MIT",
+  "version": "1.5.0",
+  "publication_date": "2026-11-08",
+  "keywords": [
+    "machine-learning",
+    "online-learning",
+    "streaming-data",
+    "anomaly-detection",
+    "concept-drift",
+    "finance"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "arXiv:2511.16535",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2305.00070",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1703.06256",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2106.08265",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2312.01650",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2609.14016",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2109.05257",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1502.01852",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1606.08415",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1502.03167",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1512.03385",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1412.0767",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1708.02002",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1512.00567",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1803.08494",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1412.6980",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2505.08489",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2505.09593",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2102.09101",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2007.10781",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2405.07901",
+      "relation": "cites",
+      "scheme": "arxiv"
+    }
+  ],
+  "references": [
+    "Orabona, F. (2019). A modern introduction to online learning, Algorithms 2.",
+    "Ba, J. (2015). Adam, Algorithm 1; Hazan, E.",
+    "Ziani (2025). Methods to a Multiresolution Horn-Schunck. arXiv:2511.16535.",
+    "Gupta, C.; Ramdas, A. (2023). Online Platt scaling with calibeating. arXiv:2305.00070.",
+    "Huang, C.; Huang, J. (2017). arXiv:1703.06256.",
+    "Roth, K.; Pemula, L.; Zepeda, J.; Scholkopf, B.; Brox, T.; Gehler, P. (2021). Towards total recall in industrial anomaly detection. arXiv:2106.08265.",
+    "Ma; Y. et al. (2023). Adaptive confidence threshold for ByteTrack. arXiv:2312.01650.",
+    "NIPS (1998). Not in the folder, bibliographic only.",
+    "Silajev, I. (2026). arXiv:2609.14016.",
+    "Cohen, J. (1960). A coefficient of agreement for nominal scales.",
+    "Sasaki, Y. (2007). The truth of the F-measure.",
+    "Zdonik, S.; Alam, M.; Gottschlich, J. (2018). Precision and recall for time series. arXiv:2109.05257.",
+    "He, K.; Zhang, X.; Ren, S.; Sun, J. (2015). arXiv:1502.01852.",
+    "Hendrycks, D.; Gimpel, K. (2016). arXiv:1606.08415.",
+    "Ioffe, S.; Szegedy, C. (2015). arXiv:1502.03167.",
+    "He, K.; Zhang, X.; Ren, S.; Sun, J. (2016). arXiv:1512.03385.",
+    "Tran, D.; Bourdev, L.; Fergus, R.; Torresani, L.; Paluri, M. (2015). arXiv:1412.0767.",
+    "Mohamed; Hinton (2013). The output layer of Eq.",
+    "Lin; T.-Y.; Goyal, P.; Girshick, R.; He, K.; Dollar, P. (2017). Focal Loss for Dense Object Detection. arXiv:1708.02002.",
+    "Szegedy, C.; Vanhoucke, V.; Ioffe, S.; Shlens, J.; Wojna, Z. (2016). arXiv:1512.00567.",
+    "Wu, Y.; He, K. (2018). Group Normalization. arXiv:1803.08494.",
+    "Orabona, F. (2019). A Modern Introduction to Online Learning. arXiv:1412.6980.",
+    "Pevny (2016). Details not fixed by Lou et al.",
+    "Pevny, T. (2016). LODA: Lightweight on-line detector of anomalies.",
+    "Sander, J. (2000). LOF: Identifying Density-Based Local Outliers.",
+    "Oplatkova, Z.; Vala, R. (2025). Isolation Forest in Novelty Detection Scenario. arXiv:2505.08489.",
+    "Cardot, H.; Cenac, P.; Zitt; P.-A. (2013). Bernoulli 19(1), 18-43.",
+    "Cardot, H.; Godichon-Baggioni, A. (2017). TEST 26(3), 461-480.",
+    "Pfahringer, B.; Bifet, A.; Boracchi, G. (2024). Online Isolation Forest. arXiv:2505.09593.",
+    "Cesa-Bianchi; Fischer (2002). The formulas follow the paper as cited.",
+    "Oza; Russell (2001). The online AdaBoost of Oza and Russell (2001), Section 3 and Figure 2.",
+    "Russell, S. (2001). Online bagging and boosting.",
+    "Moshkovitz, M. (2021). Online k-means clustering on arbitrary data streams. arXiv:2102.09101.",
+    "Zubaroglu, A.; Atalay, V. (2020). arXiv:2007.10781.",
+    "Foster, J.; McCrory, S.; DeBuys, C.; Bertrand, S.; Griffin, R. (2024). arXiv:2405.07901.",
+    "Raab; Heusinger; Schleif (2020). KSWIN keeps a sliding window of size ``window_size``.",
+    "Bifet; Gavalda (2006). Two algorithms share this name.",
+    "Domingos, P.; Hulten, G. (2000). Mining high-speed data streams."
+  ]
+}
