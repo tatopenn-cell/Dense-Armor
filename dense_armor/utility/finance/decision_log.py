@@ -24,8 +24,39 @@ def _canonical(seq: int, t: float, payload: Any, prev: str) -> bytes:
     return text.encode("ascii")
 
 
-def _hash(seq: int, t: float, payload: Any, prev: str) -> str:
+def record_hash(seq: int, t: float, payload: Any, prev: str) -> str:
+    """Return the SHA-256 of the canonical text of four keys.
+
+    The canonical text is ``json.dumps({"seq": seq, "t": t,
+    "payload": payload, "prev": prev}, sort_keys=True,
+    separators=(",", ":"), ensure_ascii=True, allow_nan=False)`` encoded
+    in ASCII. This is the function that computes the hash of a record of
+    ``DecisionLog`` and of the row of ``AuditDB``: both use it, so the
+    same record has the same hash in the file and in the table.
+
+    Args:
+        seq: the sequence number, 0 for the first record.
+        t: the timestamp, a finite number.
+        payload: the payload, a JSON-serializable dict.
+        prev: the ``hash`` of the previous record, ``GENESIS_HASH`` for
+            the first.
+
+    Returns:
+        The 64 lowercase hexadecimal characters of the SHA-256.
+
+    Raises:
+        ValueError: if ``payload`` is not JSON-serializable with
+            ``allow_nan=False``.
+
+    Examples:
+        >>> record_hash(0, 1.5, {"a": 1}, "0" * 64)[:8]
+        'c1b491c7'
+    """
     return hashlib.sha256(_canonical(seq, t, payload, prev)).hexdigest()
+
+
+def _hash(seq: int, t: float, payload: Any, prev: str) -> str:
+    return record_hash(seq, t, payload, prev)
 
 
 def _is_finite_number(v: Any) -> bool:

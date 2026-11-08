@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <h3>Run a real learner on a real stream</h3>
+  <form id="learn-form">
+    <label>learner
+      <select id="learner">
+        <option>HoeffdingTreeClassifier</option>
+        <option>HoeffdingAdaptiveTreeClassifier</option>
+        <option>MondrianForestClassifier</option>
+        <option>AggregatedMondrianForestClassifier</option>
+      </select>
+    </label>
+    <label>stream
+      <select id="stream">
+        <option>sudden</option>
+        <option>gradual</option>
+        <option>incremental</option>
+      </select>
+    </label>
+    <label>n <input type="number" id="n" min="100" max="5000" value="1000"></label>
+    <label>seed <input type="number" id="seed" min="0" value="0"></label>
+    <label>window <input type="number" id="window" min="10" max="500" value="100"></label>
+    <button type="submit" id="learn-btn">Run</button>
+    <span id="learn-status" class="sub"></span>
+  </form>
+  <div id="learn-metrics" class="counts"></div>
+  <h4 style="margin:1em 0 .4em;color:#607d8b;font-size:.85em;text-transform:uppercase;letter-spacing:.05em;">Accuracy (cumulative and rolling)</h4>
+  <div id="learn-chart" class="chart"></div>
+</section>
+{% endblock %}

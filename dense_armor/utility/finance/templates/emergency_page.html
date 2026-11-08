@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <h3>Emergency stop</h3>
+  <p class="sub">Press the button to raise the stop. The file <code>{{ config.paths.emergency_stop }}</code> is created; the status command reports it and the demo refuses to start. Lifting the stop is a manual operation on the server.</p>
+  <div class="stop-wrap">
+    <button id="stop" class="btn stop">■ STOP</button>
+    <div class="stop-side">
+      <p id="stopped" class="stop-stopped" hidden>Stop raised. The status command reports it; the demo refuses to start.</p>
+      <p id="error" class="stop-error" hidden></p>
+    </div>
+  </div>
+</section>
+<script>
+(function () {
+  const btn = document.getElementById("stop");
+  const ok = document.getElementById("stopped");
+  const err = document.getElementById("error");
+  async function refresh() {
+    try {
+      const r = await fetch("/status");
+      const s = await r.json();
+      if (s.emergency_stop) {
+        ok.hidden = false; err.hidden = true;
+        btn.disabled = true;
+      } else {
+        ok.hidden = true; err.hidden = true;
+        btn.disabled = false;
+      }
+    } catch (e) { /* silent */ }
+  }
+  btn.addEventListener("click", async () => {
+    try {
+      const r = await fetch("/emergency-stop", {method: "POST"});
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      ok.hidden = false; err.hidden = true; btn.disabled = true;
+    } catch (e) {
+      err.textContent = "Failed: " + e.message;
+      err.hidden = false;
+    }
+  });
+  refresh();
+})();
+</script>
+{% endblock %}

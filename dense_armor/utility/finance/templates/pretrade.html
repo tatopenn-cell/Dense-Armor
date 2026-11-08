@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <p class="sub">One order sent to <code>config.make_checker()</code>:</p>
+  <dl>
+    <dt>approved</dt><dd class="{{ 'good' if decision.approved else 'bad' }}">{{ decision.approved }}</dd>
+    <dt>reason</dt><dd>{{ decision.reason }}</dd>
+  </dl>
+  <h3>Limits</h3>
+  <dl>
+    <dt>max_size</dt><dd>{{ config.pretrade.max_size }}</dd>
+    <dt>max_notional</dt><dd>{{ config.pretrade.max_notional }}</dd>
+    <dt>price_band</dt><dd>{{ config.pretrade.price_band }}</dd>
+    <dt>max_orders</dt><dd>{{ config.pretrade.max_orders }}</dd>
+    <dt>window_s</dt><dd>{{ config.pretrade.window_s }}</dd>
+  </dl>
+</section>
+{% endblock %}

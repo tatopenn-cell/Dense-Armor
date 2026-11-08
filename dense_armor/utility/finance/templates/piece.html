@@ -1,0 +1,1029 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="piece-page">
+  <header class="piece-header">
+    <div class="piece-header-left">
+      <nav class="piece-breadcrumb" aria-label="breadcrumb">
+        <a href="/{{ section }}?cat={{ category }}">{{ section|capitalize }}</a>
+        <span class="bc-sep">›</span>
+        <a href="/{{ section }}?cat={{ category }}">{{ category }}</a>
+        <span class="bc-sep">›</span>
+        <span class="bc-current">{{ meta.name }}</span>
+      </nav>
+      <h1 class="piece-title">{{ meta.name }}</h1>
+      <div class="piece-meta-line">
+        <span class="mono">{{ meta.module }}</span>
+      </div>
+      <div class="role-badges" id="role-badges"></div>
+      <div class="piece-bases mono">{% for b in meta.bases %}← {{ b }} {% endfor %}</div>
+    </div>
+    <div class="piece-header-right">
+      {% if meta.prev_id %}
+      <a href="/piece/{{ section }}/{{ category }}/{{ meta.prev_id }}" class="piece-nav-btn" title="previous: {{ meta.prev_id }}">← {{ meta.prev_id }}</a>
+      {% endif %}
+      {% if meta.next_id %}
+      <a href="/piece/{{ section }}/{{ category }}/{{ meta.next_id }}" class="piece-nav-btn" title="next: {{ meta.next_id }}">{{ meta.next_id }} →</a>
+      {% endif %}
+      <button type="button" class="piece-nav-btn" id="copy-link-btn" title="copy link with current params">🔗 copy link</button>
+      <a href="/{{ section }}?cat={{ category }}" class="piece-back">← back</a>
+    </div>
+  </header>
+
+  <div class="piece-params-strip" id="piece-params-strip">
+    <form id="params-form" class="piece-params-form">
+        {% for p in meta.params %}
+        <label title="{{ p.type }}{% if p.required %} (required){% endif %}">
+          {{ p.name }}
+          <input type="text" name="{{ p.name }}"
+                 value="{{ p.default if not p.required else '' }}"
+                 placeholder="{{ p.type or 'value' }}{% if p.required %} *{% endif %}">
+        </label>
+        {% endfor %}
+        <button type="submit" id="piece-run">▶ Run with these parameters</button>
+        <span id="run-status" class="sub">press Run</span>
+        <button type="button" id="piece-use" class="piece-use-btn">📌 use in chain</button>
+      </form>
+  </div>
+
+
+  <div id="kpi-row" class="kpi-row"></div>
+
+  <div class="piece-body">
+    <div class="piece-chart-xl">
+      <div class="chart-head">
+        <h3 id="chart-title">accuracy (cumulative)</h3>
+        <span id="acc-badge" class="chart-badge muted">—</span>
+      </div>
+      <div id="chart" class="chart-body-xl"></div>
+      <div id="chart-legend" class="chart-legend"></div>
+    </div>
+
+    <div class="piece-grid-3">
+      <div class="mini-card"><h4>Confusion matrix</h4><div id="confusion-matrix" class="mini-body"><div class="cm-body"></div></div></div>
+      <div class="mini-card"><h4>ROC curve</h4><div id="roc-curve" class="mini-body"><div class="roc-body"></div></div></div>
+      <div class="mini-card"><h4>Calibration</h4><div id="calibration" class="mini-body"></div></div>
+    </div>
+
+    <aside class="piece-side">
+      <div class="piece-doc">{{ meta.docstring.split('\n\n')[0] if meta.docstring else '' }}</div>
+      
+      <div class="piece-output">
+        <h4>Metrics</h4>
+        <div id="piece-output" class="piece-output-body">—</div>
+      </div>
+      <div class="piece-extra" id="piece-per-class" style="display:none">
+        <h4 id="per-class-title">Per-class</h4>
+        <div id="per-class-body" class="piece-extra-body"></div>
+      </div>
+      <div class="piece-extra" id="piece-explain" style="display:none">
+        <h4>explain_one</h4>
+        <div id="explain-body" class="piece-extra-body"></div>
+      </div>
+    </aside>
+  </div>
+</section>
+<script>
+(function () {
+
+// ============================================================
+// Esporta un grafico SVG in PNG (senza dipendenze esterne)
+// ============================================================
+window.exportChartPNG = function (containerId, filename) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const svg = container.querySelector("svg");
+  if (!svg) return;
+
+  const clone = svg.cloneNode(true);
+  const vb = svg.viewBox.baseVal;
+  const w = vb && vb.width ? vb.width : 800;
+  const h = vb && vb.height ? vb.height : 400;
+  clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+  clone.setAttribute("width", w);
+  clone.setAttribute("height", h);
+
+  const bg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+  bg.setAttribute("width", "100%");
+  bg.setAttribute("height", "100%");
+  bg.setAttribute("fill", "#0d141c");
+  clone.insertBefore(bg, clone.firstChild);
+
+  const xml = new XMLSerializer().serializeToString(clone);
+  const blob = new Blob([xml], {type: "image/svg+xml;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement("canvas");
+    const scale = 2;
+    canvas.width = w * scale;
+    canvas.height = h * scale;
+    const ctx = canvas.getContext("2d");
+    ctx.scale(scale, scale);
+    ctx.drawImage(img, 0, 0, w, h);
+    URL.revokeObjectURL(url);
+    canvas.toBlob((pngBlob) => {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(pngBlob);
+      a.download = (filename || "chart") + ".png";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    }, "image/png");
+  };
+  img.src = url;
+};
+
+// Aggiunge un pulsante ⤓ a ogni chart-head E a ogni .mini-card h4
+window.attachChartExport = function () {
+  // 1) chart-head classico
+  document.querySelectorAll(".chart-head").forEach(head => {
+    if (head.querySelector(".chart-export")) return;
+    const card = head.closest(".chain-card, .piece-chart-xl, .mini-card");
+    if (!card) return;
+    const target = card.querySelector("[id='chart'], [id='confusion-matrix'], [id='roc-curve'], [id='calibration']");
+    if (!target || !target.id) return;
+    const hasSvg = !!target.querySelector("svg");
+    const btn = document.createElement("button");
+    btn.className = "chart-export" + (hasSvg ? "" : " disabled");
+    btn.textContent = "⤓ PNG";
+    btn.title = hasSvg ? "export chart as PNG" : "no chart yet";
+    btn.disabled = !hasSvg;
+    if (hasSvg) {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        btn.disabled = true;
+        try { exportChartPNG(target.id, target.id); }
+        finally { setTimeout(() => { btn.disabled = false; }, 600); }
+      });
+    }
+    head.appendChild(btn);
+  });
+  // 2) mini-card h4 (confusion, roc, calibration)
+  document.querySelectorAll(".mini-card").forEach(card => {
+    const h4 = card.querySelector("h4");
+    if (!h4 || h4.querySelector(".chart-export")) return;
+    const target = card.querySelector("[id='chart'], [id='confusion-matrix'], [id='roc-curve'], [id='calibration']");
+    if (!target || !target.id) return;
+    const hasSvg = !!target.querySelector("svg");
+    const btn = document.createElement("button");
+    btn.className = "chart-export" + (hasSvg ? "" : " disabled");
+    btn.textContent = "⤓ PNG";
+    btn.title = hasSvg ? "export chart as PNG" : "no chart yet";
+    btn.disabled = !hasSvg;
+    btn.style.marginLeft = "auto";
+    if (hasSvg) {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        btn.disabled = true;
+        try { exportChartPNG(target.id, target.id); }
+        finally { setTimeout(() => { btn.disabled = false; }, 600); }
+      });
+    }
+    h4.style.display = "flex";
+    h4.style.alignItems = "center";
+    h4.appendChild(btn);
+  });
+};
+
+
+// ============================================================
+// Tooltip universale per i grafici SVG (polyline)
+// ============================================================
+window.attachChartTooltip = function (container) {
+  if (!container || container._tooltipBound) return;
+  container._tooltipBound = true;
+  container.classList.add("chart-container");
+
+  const tip = document.createElement("div");
+  tip.className = "chart-tooltip";
+  document.body.appendChild(tip);
+
+  const crosshair = document.createElement("div");
+  crosshair.className = "chart-crosshair";
+  container.appendChild(crosshair);
+
+  container.addEventListener("mousemove", (e) => {
+    const svg = container.querySelector("svg");
+    if (!svg) { tip.classList.remove("show"); return; }
+    const rect = svg.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    // trova la polyline con più punti (la serie principale)
+    const polys = Array.from(svg.querySelectorAll("polyline"));
+    if (!polys.length) { tip.classList.remove("show"); return; }
+
+    let best = null;
+    for (const poly of polys) {
+      const pts = poly.getAttribute("points").trim().split(/\s+/).map(p => {
+        const [x, y] = p.split(",").map(Number);
+        return { x, y };
+      });
+      if (!pts.length) continue;
+      // trova il punto con x più vicino a mx (in coordinate SVG)
+      const scaleX = rect.width / svg.viewBox.baseVal.width;
+      const targetX = mx / scaleX;
+      let nearest = pts[0];
+      let bestDx = Math.abs(pts[0].x - targetX);
+      for (const pt of pts) {
+        const dx = Math.abs(pt.x - targetX);
+        if (dx < bestDx) { bestDx = dx; nearest = pt; }
+      }
+      if (!best || bestDx < best.dx) {
+        best = { dx: bestDx, x: nearest.x, y: nearest.y, poly };
+      }
+    }
+    if (!best) { tip.classList.remove("show"); return; }
+
+    // posiziona crosshair alla x del punto
+    const px = best.x * (rect.width / svg.viewBox.baseVal.width);
+    crosshair.style.left = px + "px";
+    crosshair.classList.add("active");
+
+    // valore y in coordinate dati (dallo y del SVG al valore)
+    // non abbiamo la scala, ma possiamo mostrare x, y in pixel e il valore approssimato
+    // Se il grafico ha un attributo data-scale, lo usiamo
+    let valueTxt = "";
+    if (svg.dataset.yMin !== undefined && svg.dataset.yMax !== undefined) {
+      const yMin = +svg.dataset.yMin, yMax = +svg.dataset.yMax;
+      const vb = svg.viewBox.baseVal;
+      const padT = +(svg.dataset.padT || 10);
+      const padB = +(svg.dataset.padB || 26);
+      const h = vb.height - padT - padB;
+      const yVal = yMax - ((best.y - padT) / h) * (yMax - yMin);
+      valueTxt = yVal.toFixed(4);
+    } else {
+      valueTxt = "y=" + best.y.toFixed(1);
+    }
+
+    tip.innerHTML = '<span class="tt-k">x</span><span class="tt-v">' + best.x.toFixed(0) +
+                    '</span> <span class="tt-k">' + valueTxt + '</span>';
+    tip.style.left = (e.clientX + 12) + "px";
+    tip.style.top = (e.clientY - 28) + "px";
+    tip.classList.add("show");
+  });
+
+  container.addEventListener("mouseleave", () => {
+    tip.classList.remove("show");
+    crosshair.classList.remove("active");
+  });
+};
+
+  const NS = "http://www.w3.org/2000/svg";
+  const section = "{{ section }}";
+  const category = "{{ category }}";
+  const piece_id = "{{ piece_id }}";
+  const form = document.getElementById("params-form");
+  const runBtn = document.getElementById("piece-run");
+  const runStatus = document.getElementById("run-status");
+  const output = document.getElementById("piece-output");
+  const badge = document.getElementById("acc-badge");
+  const chartTitle = document.getElementById("chart-title");
+  const legend = document.getElementById("chart-legend");
+  const perClassBox = document.getElementById("piece-per-class");
+  const perClassTitle = document.getElementById("per-class-title");
+  const perClassBody = document.getElementById("per-class-body");
+  const explainBox = document.getElementById("piece-explain");
+  const explainBody = document.getElementById("explain-body");
+
+  function draw(series, kind, opts) {
+    opts = opts || {};
+    const root = document.getElementById("chart");
+    root.innerHTML = "";
+    legend.innerHTML = "";
+    if (!series || series.length < 2) {
+      root.innerHTML = '<div class="sub" style="padding:1em">no data (' + series.length + ' pts)</div>';
+      return;
+    }
+    const W = 900, H = 500, padL = 60, padR = 20, padT = 24, padB = 44;
+    const xs = series.map(p => p.i), vs = series.map(p => p.v);
+    const xMin = xs[0], xMax = xs[xs.length - 1];
+    let yMin, yMax;
+    if (kind === "classifier") { yMin = 0; yMax = 1; }
+    else { yMin = Math.min(...vs); yMax = Math.max(...vs); }
+    if (yMax <= yMin) yMax = yMin + 1;
+    const sx = i => padL + (i - xMin) / Math.max(1, xMax - xMin) * (W - padL - padR);
+    const sy = v => H - padB - (v - yMin) / (yMax - yMin) * (H - padT - padB);
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+    svg.setAttribute("width", "100%");
+    svg.dataset.yMin = yMin; svg.dataset.yMax = yMax;
+    svg.dataset.padT = padT; svg.dataset.padB = padB;
+    svg.setAttribute("height", "100%");
+    for (let k = 0; k <= 5; k++) {
+      const v = yMin + (yMax - yMin) * k / 5;
+      const y = sy(v);
+      const l = document.createElementNS(NS, "line");
+      l.setAttribute("x1", padL); l.setAttribute("x2", W - padR);
+      l.setAttribute("y1", y); l.setAttribute("y2", y);
+      l.setAttribute("stroke", "#263441");
+      svg.appendChild(l);
+      const tx = document.createElementNS(NS, "text");
+      tx.setAttribute("x", padL - 8); tx.setAttribute("y", y + 4);
+      tx.setAttribute("text-anchor", "end");
+      tx.setAttribute("font-size", "11"); tx.setAttribute("fill", "#8a9aa8");
+      tx.textContent = v.toFixed(2);
+      svg.appendChild(tx);
+    }
+    if (kind === "classifier" && series[0].lo !== undefined) {
+      const upper = series.map(p => sx(p.i) + "," + sy(p.hi)).join(" ");
+      const lower = series.slice().reverse().map(p => sx(p.i) + "," + sy(p.lo)).join(" ");
+      const band = document.createElementNS(NS, "polygon");
+      band.setAttribute("points", upper + " " + lower);
+      band.setAttribute("fill", "#4a9eff");
+      band.setAttribute("opacity", "0.15");
+      svg.appendChild(band);
+    }
+    if (kind === "classifier" && opts.drift_markers) {
+      for (const m of opts.drift_markers) {
+        const x = sx(m.i);
+        const l = document.createElementNS(NS, "line");
+        l.setAttribute("x1", x); l.setAttribute("x2", x);
+        l.setAttribute("y1", padT); l.setAttribute("y2", H - padB);
+        l.setAttribute("stroke", "#3fb950"); l.setAttribute("stroke-dasharray", "3 3");
+        l.setAttribute("opacity", "0.5");
+        svg.appendChild(l);
+      }
+    }
+    if (kind === "drift" && opts.alarms) {
+      for (const a of opts.alarms) {
+        const x = sx(a);
+        const l = document.createElementNS(NS, "line");
+        l.setAttribute("x1", x); l.setAttribute("x2", x);
+        l.setAttribute("y1", padT); l.setAttribute("y2", H - padB);
+        l.setAttribute("stroke", "#f85149"); l.setAttribute("opacity", "0.45");
+        svg.appendChild(l);
+      }
+    }
+    const color = kind === "anomaly" ? "#e67e22" : kind === "drift" ? "#a371f7" : "#4a9eff";
+    const pts = series.map(p => sx(p.i) + "," + sy(p.v)).join(" ");
+    const poly = document.createElementNS(NS, "polyline");
+    poly.setAttribute("points", pts);
+    poly.setAttribute("fill", "none");
+    poly.setAttribute("stroke", color);
+    poly.setAttribute("stroke-width", "2");
+    poly.setAttribute("vector-effect", "non-scaling-stroke");
+    svg.appendChild(poly);
+    if (kind === "anomaly" && opts.threshold !== undefined) {
+      const y = sy(opts.threshold);
+      const l = document.createElementNS(NS, "line");
+      l.setAttribute("x1", padL); l.setAttribute("x2", W - padR);
+      l.setAttribute("y1", y); l.setAttribute("y2", y);
+      l.setAttribute("stroke", "#f85149"); l.setAttribute("stroke-dasharray", "4 3");
+      svg.appendChild(l);
+    }
+    for (let k = 0; k <= 5; k++) {
+      const i = xMin + (xMax - xMin) * k / 5;
+      const x = sx(i);
+      const tx = document.createElementNS(NS, "text");
+      tx.setAttribute("x", x); tx.setAttribute("y", H - padB + 20);
+      tx.setAttribute("text-anchor", "middle");
+      tx.setAttribute("font-size", "11"); tx.setAttribute("fill", "#8a9aa8");
+      tx.textContent = Math.round(i);
+      svg.appendChild(tx);
+    }
+    const lg = [{color: color, label: (kind === "classifier" ? "accuracy" : kind === "anomaly" ? "score" : "signal")}];
+    if (kind === "classifier") lg.push({color: "#4a9eff", label: "Wilson 95%", opacity: 0.3});
+    if (kind === "classifier" && opts.drift_markers) lg.push({color: "#3fb950", label: "node growth"});
+    if (kind === "drift" && opts.alarms) lg.push({color: "#f85149", label: "alarm"});
+    if (kind === "anomaly" && opts.threshold !== undefined) lg.push({color: "#f85149", label: "threshold=" + opts.threshold});
+    for (const item of lg) {
+      const sw = document.createElement("span");
+      sw.className = "legend-item";
+      sw.innerHTML = '<span class="legend-swatch" style="background:' + item.color + ';opacity:' + (item.opacity || 1) + '"></span>' + item.label;
+      legend.appendChild(sw);
+    }
+    root.appendChild(svg);
+  }
+
+  function drawScatter(points, split, predictions) {
+    const root = document.getElementById("chart");
+    root.innerHTML = "";
+    legend.innerHTML = "";
+    if (!points || points.length < 2) {
+      root.innerHTML = '<div class="sub" style="padding:1em">no data</div>';
+      return;
+    }
+    const W = 900, H = 500, padL = 60, padR = 20, padT = 20, padB = 44;
+    const xs = points.map(p => p.ret), ys = points.map(p => p.abs_ret);
+    const xMin = Math.min(...xs), xMax = Math.max(...xs);
+    const yMin = Math.min(...ys), yMax = Math.max(...ys);
+    const sx = x => padL + (x - xMin) / Math.max(1e-6, xMax - xMin) * (W - padL - padR);
+    const sy = y => H - padB - (y - yMin) / Math.max(1e-6, yMax - yMin) * (H - padT - padB);
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+    svg.setAttribute("width", "100%");
+    svg.setAttribute("height", "100%");
+    // grid x (tau)
+    for (let k = 0; k <= 5; k++) {
+      const v = xMin + (xMax - xMin) * k / 5;
+      const x = sx(v);
+      const l = document.createElementNS(NS, "line");
+      l.setAttribute("x1", x); l.setAttribute("x2", x);
+      l.setAttribute("y1", padT); l.setAttribute("y2", H - padB);
+      l.setAttribute("stroke", "#1b232c");
+      svg.appendChild(l);
+      const tx = document.createElementNS(NS, "text");
+      tx.setAttribute("x", x); tx.setAttribute("y", H - padB + 18);
+      tx.setAttribute("text-anchor", "middle");
+      tx.setAttribute("font-size", "11"); tx.setAttribute("fill", "#8a9aa8");
+      tx.textContent = v.toFixed(1);
+      svg.appendChild(tx);
+    }
+    // grid y (qd)
+    for (let k = 0; k <= 5; k++) {
+      const v = yMin + (yMax - yMin) * k / 5;
+      const y = sy(v);
+      const l = document.createElementNS(NS, "line");
+      l.setAttribute("x1", padL); l.setAttribute("x2", W - padR);
+      l.setAttribute("y1", y); l.setAttribute("y2", y);
+      l.setAttribute("stroke", "#263441");
+      svg.appendChild(l);
+      const tx = document.createElementNS(NS, "text");
+      tx.setAttribute("x", padL - 8); tx.setAttribute("y", y + 4);
+      tx.setAttribute("text-anchor", "end");
+      tx.setAttribute("font-size", "11"); tx.setAttribute("fill", "#8a9aa8");
+      tx.textContent = v.toFixed(2);
+      svg.appendChild(tx);
+    }
+    // axis labels
+    const lblX = document.createElementNS(NS, "text");
+    lblX.setAttribute("x", W / 2); lblX.setAttribute("y", H - 6);
+    lblX.setAttribute("text-anchor", "middle");
+    lblX.setAttribute("font-size", "12"); lblX.setAttribute("fill", "#8a9aa8");
+    lblX.textContent = "ret (log return t-1)";
+    svg.appendChild(lblX);
+    const lblY = document.createElementNS(NS, "text");
+    lblY.setAttribute("x", 14); lblY.setAttribute("y", H / 2);
+    lblY.setAttribute("text-anchor", "middle");
+    lblY.setAttribute("font-size", "12"); lblY.setAttribute("fill", "#8a9aa8");
+    lblY.setAttribute("transform", "rotate(-90 14 " + (H/2) + ")");
+    lblY.textContent = "abs_ret (|return t-1|)";
+    svg.appendChild(lblY);
+    // split line (verticale su tau)
+    if (split) {
+      const x = sx(split.threshold);
+      const l = document.createElementNS(NS, "line");
+      l.setAttribute("x1", x); l.setAttribute("x2", x);
+      l.setAttribute("y1", padT); l.setAttribute("y2", H - padB);
+      l.setAttribute("stroke", "#f85149");
+      l.setAttribute("stroke-dasharray", "5 4");
+      l.setAttribute("stroke-width", "1.5");
+      svg.appendChild(l);
+      const tx = document.createElementNS(NS, "text");
+      tx.setAttribute("x", x + 4); tx.setAttribute("y", padT + 12);
+      tx.setAttribute("font-size", "11"); tx.setAttribute("fill", "#f85149");
+      tx.textContent = "split " + split.feature + "=" + split.threshold.toFixed(4);
+      svg.appendChild(tx);
+    }
+    // punti per classe
+    for (const p of points) {
+      const c = document.createElementNS(NS, "circle");
+      c.setAttribute("cx", sx(p.ret));
+      c.setAttribute("cy", sy(p.abs_ret));
+      c.setAttribute("r", "3");
+      c.setAttribute("fill", p.y === 0 ? "#4a9eff" : "#3fb950");
+      c.setAttribute("opacity", "0.55");
+      svg.appendChild(c);
+    }
+    // prediction markers
+    if (predictions) for (const q of predictions) {
+      const x = sx(q.ret), y = sy(q.abs_ret);
+      const m = document.createElementNS(NS, "rect");
+      m.setAttribute("x", x - 5); m.setAttribute("y", y - 5);
+      m.setAttribute("width", "10"); m.setAttribute("height", "10");
+      m.setAttribute("fill", "none");
+      m.setAttribute("stroke", "#f7b731"); m.setAttribute("stroke-width", "2");
+      svg.appendChild(m);
+      const tx = document.createElementNS(NS, "text");
+      tx.setAttribute("x", x + 8); tx.setAttribute("y", y - 8);
+      tx.setAttribute("font-size", "11"); tx.setAttribute("fill", "#f7b731");
+      tx.textContent = "pred=" + q.y_pred + " @ret=" + q.ret;
+      svg.appendChild(tx);
+    }
+    // legenda
+    const items = [
+      {color: "#4a9eff", label: "class 0 (idle)"},
+      {color: "#3fb950", label: "class 1 (loaded)"},
+      {color: "#f85149", label: "split"},
+      {color: "#f7b731", label: "query"},
+    ];
+    for (const it of items) {
+      const sw = document.createElement("span");
+      sw.className = "legend-item";
+      sw.innerHTML = '<span class="legend-swatch" style="background:' + it.color + '"></span>' + it.label;
+      legend.appendChild(sw);
+    }
+    root.appendChild(svg);
+  }
+
+  function drawConfusion(cm) {
+    const root = document.querySelector("#confusion-matrix .cm-body");
+      attachChartTooltip(document.getElementById("chart"));
+    if (!root || !cm) return;
+    root.innerHTML = "";
+    // normalizza a 0..1
+    const max = Math.max(...Object.values(cm), 1);
+    const cells = [
+      ["00", cm["true=0,pred=0"] || 0, "TN"],
+      ["01", cm["true=0,pred=1"] || 0, "FP"],
+      ["10", cm["true=1,pred=0"] || 0, "FN"],
+      ["11", cm["true=1,pred=1"] || 0, "TP"],
+    ];
+    const grid = document.createElement("div");
+    grid.className = "cm-grid";
+    for (const [key, v, label] of cells) {
+      const d = document.createElement("div");
+      const intensity = v / max;
+      const bg = key === "11" || key === "00"
+        ? "rgba(74,158,255," + (0.15 + 0.65 * intensity) + ")"
+        : "rgba(248,81,73," + (0.15 + 0.65 * intensity) + ")";
+      d.className = "cm-cell";
+      d.style.background = bg;
+      const total = Object.values(cm).reduce((a, b) => a + (b || 0), 0);
+      const pct = total > 0 ? Math.round(100 * v / total) : 0;
+      d.innerHTML = '<div class="cm-lbl">' + label + '</div><div class="cm-val">' + v + '</div><div class="cm-pct">' + pct + '%</div>';
+      grid.appendChild(d);
+    }
+    root.appendChild(grid);
+  }
+
+  function drawCalibration(cal) {
+    const root = document.getElementById("calibration");
+      attachChartTooltip(document.getElementById("chart"));
+    if (!root) return;
+    if (!cal || cal.length === 0) {
+      root.innerHTML = '<span class="sub">no data</span>';
+      return;
+    }
+    root.innerHTML = "";
+    const NS = "http://www.w3.org/2000/svg";
+    const W = 280, H = 220, pad = 24;
+    const sx = v => pad + v * (W - 2 * pad);
+    const sy = v => H - pad - v * (H - 2 * pad);
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+    svg.setAttribute("width", "100%");
+    // diagonale (perfect calibration)
+    const diag = document.createElementNS(NS, "line");
+    diag.setAttribute("x1", pad); diag.setAttribute("y1", H - pad);
+    diag.setAttribute("x2", W - pad); diag.setAttribute("y2", pad);
+    diag.setAttribute("stroke", "#263441"); diag.setAttribute("stroke-dasharray", "3 3");
+    svg.appendChild(diag);
+    // punti
+    for (const c of cal) {
+      const circle = document.createElementNS(NS, "circle");
+      circle.setAttribute("cx", sx(c.bin));
+      circle.setAttribute("cy", sy(c.freq));
+      circle.setAttribute("r", "4");
+      circle.setAttribute("fill", "#3fb950");
+      svg.appendChild(circle);
+    }
+    // labels
+    const xt = document.createElementNS(NS, "text");
+    xt.setAttribute("x", W / 2); xt.setAttribute("y", H - 4);
+    xt.setAttribute("text-anchor", "middle"); xt.setAttribute("font-size", "9");
+    xt.setAttribute("fill", "#8a9aa8"); xt.textContent = "predicted prob";
+    svg.appendChild(xt);
+    const yt = document.createElementNS(NS, "text");
+    yt.setAttribute("x", 4); yt.setAttribute("y", H / 2);
+    yt.setAttribute("transform", "rotate(-90 4 " + (H / 2) + ")");
+    yt.setAttribute("text-anchor", "middle"); yt.setAttribute("font-size", "9");
+    yt.setAttribute("fill", "#8a9aa8"); yt.textContent = "observed freq";
+    svg.appendChild(yt);
+    root.appendChild(svg);
+  }
+
+  function drawROC(roc, auc) {
+    const root = document.querySelector("#roc-curve .roc-body");
+      attachChartTooltip(document.getElementById("chart"));
+    if (!root) return;
+    if (!roc || roc.length < 2) {
+      root.innerHTML = '<span class="sub">auc —</span>';
+      return;
+    }
+    root.innerHTML = "";
+    const NS = "http://www.w3.org/2000/svg";
+    const W = 280, H = 220, pad = 24;
+    const sx = v => pad + v * (W - 2 * pad);
+    const sy = v => H - pad - v * (H - 2 * pad);
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+    svg.setAttribute("width", "100%");
+    // diagonale
+    const diag = document.createElementNS(NS, "line");
+    diag.setAttribute("x1", pad); diag.setAttribute("y1", H - pad);
+    diag.setAttribute("x2", W - pad); diag.setAttribute("y2", pad);
+    diag.setAttribute("stroke", "#263441"); diag.setAttribute("stroke-dasharray", "3 3");
+    svg.appendChild(diag);
+    // asse
+    svg.appendChild((() => {
+      const l = document.createElementNS(NS, "line");
+      l.setAttribute("x1", pad); l.setAttribute("x2", W - pad);
+      l.setAttribute("y1", H - pad); l.setAttribute("y2", H - pad);
+      l.setAttribute("stroke", "#263441"); return l;
+    })());
+    svg.appendChild((() => {
+      const l = document.createElementNS(NS, "line");
+      l.setAttribute("x1", pad); l.setAttribute("x2", pad);
+      l.setAttribute("y1", pad); l.setAttribute("y2", H - pad);
+      l.setAttribute("stroke", "#263441"); return l;
+    })());
+    // curva
+    const poly = document.createElementNS(NS, "polyline");
+    poly.setAttribute("points", roc.map(p => sx(p.fpr) + "," + sy(p.tpr)).join(" "));
+    poly.setAttribute("fill", "none");
+    poly.setAttribute("stroke", "#3fb950");
+    poly.setAttribute("stroke-width", "2");
+    poly.setAttribute("vector-effect", "non-scaling-stroke");
+    svg.appendChild(poly);
+    // labels
+    const xt = document.createElementNS(NS, "text");
+    xt.setAttribute("x", W / 2); xt.setAttribute("y", H - 4);
+    xt.setAttribute("text-anchor", "middle"); xt.setAttribute("font-size", "9");
+    xt.setAttribute("fill", "#8a9aa8"); xt.textContent = "FPR";
+    svg.appendChild(xt);
+    const yt = document.createElementNS(NS, "text");
+    yt.setAttribute("x", 4); yt.setAttribute("y", H / 2);
+    yt.setAttribute("transform", "rotate(-90 4 " + (H / 2) + ")");
+    yt.setAttribute("text-anchor", "middle"); yt.setAttribute("font-size", "9");
+    yt.setAttribute("fill", "#8a9aa8"); yt.textContent = "TPR";
+    svg.appendChild(yt);
+    root.appendChild(svg);
+    const badge = document.createElement("div");
+    badge.className = "roc-auc";
+    badge.textContent = "AUC = " + (auc === null ? "—" : auc.toFixed(3));
+    root.appendChild(badge);
+  }
+
+  function renderKPI(m) {
+    const root = document.getElementById("kpi-row");
+    if (!root) return;
+    root.innerHTML = "";
+    const kpis = [
+      ["Accuracy", m.accuracy, m.accuracy >= 0.6 ? "good" : m.accuracy >= 0.5 ? "warn" : "bad"],
+      ["F1", m.f1, m.f1 >= 0.5 ? "good" : "warn"],
+      ["ROC AUC", m.roc_auc, m.roc_auc >= 0.6 ? "good" : "warn"],
+      ["LogLoss", m.logloss, ""],
+      ["N", m.n, ""],
+      ["Nodes", m.n_nodes, ""],
+    ];
+    for (const [k, v, cls] of kpis) {
+      if (v === undefined || v === null) continue;
+      const d = document.createElement("div");
+      d.className = "kpi " + (cls || "");
+      d.innerHTML = '<div class="kpi-val">' + v + '</div><div class="kpi-lbl">' + k + '</div>';
+      root.appendChild(d);
+    }
+  }
+
+  function addRow(parent, k, v) {
+    const row = document.createElement("div");
+    row.className = "rrow";
+    row.innerHTML = '<span class="rk">' + k + '</span><span class="rv">' + v + '</span>';
+    parent.appendChild(row);
+  }
+
+  function render(data) {
+    output.innerHTML = "";
+    perClassBox.style.display = "none"; perClassBody.innerHTML = "";
+    explainBox.style.display = "none"; explainBody.innerHTML = "";
+    const m = data.metrics || {};
+    const rows = [["kind", m.kind]];
+    if (m.kind === "classifier") {
+      rows.push(["accuracy", m.accuracy]);
+      if (m.class_count) {
+        rows.push(["true 0", m.class_count.true_0]);
+        rows.push(["true 1", m.class_count.true_1]);
+      }
+      if (m.n_nodes) rows.push(["nodes", m.n_nodes]);
+    } else if (m.kind === "anomaly") {
+      rows.push(["mean score", m.score_mean]);
+      rows.push(["p95 score", m.score_p95]);
+      if (m.alerts_above_threshold !== undefined)
+        rows.push(["alerts > thr", m.alerts_above_threshold]);
+    } else if (m.kind === "drift") {
+      rows.push(["alarms", m.alarms]);
+      rows.push(["drift score", m.drift_score]);
+      rows.push(["drift type", m.drift_type]);
+      if (m.first_alarm !== undefined) rows.push(["first alarm", m.first_alarm]);
+    }
+    rows.push(["n", m.n]);
+    if (m.budget_s !== undefined) rows.push(["budget_s", m.budget_s + " s"]);
+    if (m.memory_class !== undefined) rows.push(["memory_class", m.memory_class]);
+    if (m.dtype !== undefined) rows.push(["dtype", m.dtype]);
+    for (const [k, v] of rows) {
+      if (v === undefined || v === null) continue;
+      addRow(output, k, v);
+    }
+    // role badges (dal contratto dei ruoli)
+    const rb = document.getElementById("role-badges");
+    if (rb) {
+      rb.innerHTML = "";
+      const items = [];
+      if (m.budget_s !== undefined)
+        items.push({cls: "good", txt: "budget " + (m.budget_s*1000).toFixed(2) + " ms"});
+      if (m.memory_class !== undefined)
+        items.push({cls: "", txt: m.memory_class});
+      if (m.score_is_inverted)
+        items.push({cls: "warn", txt: "⚠ score invertito"});
+      if (m.health !== undefined)
+        items.push({cls: m.health === "nominal" ? "good" : m.health === "degraded" ? "bad" : "warn",
+                    txt: "health: " + m.health});
+      if (m.n_blocked !== undefined && m.n_blocked > 0)
+        items.push({cls: "warn", txt: "bloccati: " + m.n_blocked});
+      if (m.coverage !== undefined)
+        items.push({cls: m.coverage >= 0.85 ? "good" : "warn",
+                    txt: "coverage " + (m.coverage*100).toFixed(1) + "%"});
+      if (m.alpha_t !== undefined)
+        items.push({cls: "", txt: "alpha_t " + m.alpha_t.toFixed(3)});
+      if (m.drift_detected)
+        items.push({cls: "bad", txt: "drift"});
+      for (const it of items) {
+        const span = document.createElement("span");
+        span.className = "role-badge " + it.cls;
+        span.textContent = it.txt;
+        rb.appendChild(span);
+      }
+    }
+
+    // state_keys (se presenti): mostra le chiavi dello stato imparato
+    if (m.state_keys && m.state_keys.length) {
+      perClassBox.style.display = "block";
+      perClassTitle.textContent = "Stato imparato (" + m.state_keys.length + " chiavi)";
+      perClassBody.innerHTML = "";
+      for (const k of m.state_keys) addRow(perClassBody, k, "");
+    }
+
+    // units (se dichiarate): mostra input/output
+    if (m.units && (Object.keys(m.units.inputs).length || Object.keys(m.units.outputs).length)) {
+      explainBox.style.display = "block";
+      for (const k of Object.keys(m.units.inputs))
+        addRow(explainBody, "in " + k, m.units.inputs[k]);
+      for (const k of Object.keys(m.units.outputs))
+        addRow(explainBody, "out " + k, m.units.outputs[k]);
+    }
+
+    // KPI row
+    renderKPI(m);
+    // confusion + ROC + calibration
+    if (m.kind === "classifier") {
+      drawConfusion(m.confusion);
+      drawROC(data.roc, m.roc_auc);
+      drawCalibration(data.calibration);
+    }
+    // per-class (classifier)
+    if (m.kind === "classifier" && m.per_class) {
+      perClassBox.style.display = "block";
+      perClassTitle.textContent = "Per-class (P / R / F1)";
+      for (const c of [0, 1]) {
+        const pc = m.per_class[c];
+        if (!pc) continue;
+        addRow(perClassBody, "class " + c,
+               "P=" + pc.precision + " R=" + pc.recall + " F1=" + pc.f1 + " (n=" + pc.support + ")");
+      }
+    }
+    // histogram (anomaly)
+    if (m.kind === "anomaly" && m.histogram) {
+      perClassBox.style.display = "block";
+      perClassTitle.textContent = "Score histogram";
+      const h = m.histogram;
+      const maxC = Math.max(...h.counts, 1);
+      for (let i = 0; i < h.counts.length; i++) {
+        const barW = Math.round((h.counts[i] / maxC) * 100);
+        const row = document.createElement("div");
+        row.className = "rrow";
+        row.innerHTML = '<span class="rk">' + h.edges[i].toFixed(2) + '–' + h.edges[i+1].toFixed(2) + '</span>' +
+                        '<span class="rv"><span style="display:inline-block;background:#e67e22;height:6px;width:' + barW + 'px;vertical-align:middle"></span> ' + h.counts[i] + '</span>';
+        perClassBody.appendChild(row);
+      }
+    }
+    // explain_one (se presente)
+    if (m.explain && m.explain.length) {
+      explainBox.style.display = "block";
+      for (const step of m.explain) {
+        addRow(explainBody, step.feature, step.side + " of " + step.threshold);
+      }
+    }
+    // tree_votes (se presenti)
+    if (m.tree_votes && m.tree_votes.length) {
+      explainBox.style.display = "block";
+      for (let i = 0; i < m.tree_votes.length; i++) {
+        const v = m.tree_votes[i];
+        addRow(explainBody, "tree " + i, Array.isArray(v) ? v.join(", ") : v);
+      }
+    }
+
+    // scatter (trees §1): disegna scatter + predictions + explain
+    if (m.kind === "scatter") {
+      drawScatter(data.scatter, data.split, data.predictions);
+      attachChartTooltip(document.getElementById("chart"));
+      chartTitle.textContent = "GSPC ret x |ret| (sign of next return)";
+      badge.textContent = String(m.accuracy ?? "—");
+      // predictions nell'extra
+      if (data.predictions && data.predictions.length) {
+        explainBox.style.display = "block";
+        for (const p of data.predictions) {
+          addRow(explainBody, "ret=" + p.ret + " abs=" + p.abs_ret, "→ " + p.y_pred);
+        }
+        if (data.split) {
+          addRow(explainBody, "explain_one(ret=0.005)",
+                 data.split.feature + " " + data.split.side + " of " + data.split.threshold.toFixed(4));
+        }
+      }
+        runStatus.textContent = "done";
+      return;
+    }
+    badge.textContent = m.kind === "classifier" ? String(m.accuracy ?? "—")
+                       : m.kind === "anomaly" ? String(m.score_p95 ?? "—")
+                       : String(m.drift_score ?? "—");
+    badge.className = "chart-badge";
+    chartTitle.textContent = m.kind === "classifier" ? "accuracy (cumulative, Wilson 95%)"
+                          : m.kind === "anomaly" ? "anomaly score"
+                          : "drift signal";
+    draw(data.series, m.kind, {
+      drift_markers: data.drift_markers,
+      alarms: data.alarms,
+      threshold: m.kind === "anomaly" ? (m.threshold ?? m.score_p95) : undefined,
+    });
+      attachChartTooltip(document.getElementById("chart"));
+  }
+
+  function readParamsFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    if (![...params.keys()].length) return false;
+    const form = document.getElementById("params-form");
+    if (!form) return false;
+    let any = false;
+    for (const [k, v] of params.entries()) {
+      const inp = form.querySelector(`input[name="${k}"]`);
+      if (inp) { inp.value = v; any = true; }
+    }
+    return any;
+  }
+
+  function writeParamsToURL() {
+    const form = document.getElementById("params-form");
+    if (!form) return;
+    const params = new URLSearchParams();
+    for (const inp of form.querySelectorAll("input[name]")) {
+      const k = inp.name, v = inp.value.trim();
+      if (v !== "") params.set(k, v);
+    }
+    const newUrl = window.location.pathname + "?" + params.toString();
+    window.history.replaceState(null, "", newUrl);
+  }
+
+  function setupDirtyState() {
+    const form = document.getElementById("params-form");
+    const runBtn = document.getElementById("piece-run");
+    if (!form || !runBtn) return;
+
+    // leggi parametri dall'URL
+    const urlHadParams = readParamsFromURL();
+
+    let snapshot = window._lastRunSnapshot;
+    if (!snapshot) {
+      snapshot = new Map();
+      for (const inp of form.querySelectorAll("input[name]")) {
+        snapshot.set(inp.name, inp.value);
+      }
+    }
+
+    function checkDirty() {
+      const snap = window._lastRunSnapshot || snapshot;
+      let dirty = false;
+      for (const inp of form.querySelectorAll("input[name]")) {
+        if ((snap.get(inp.name) || "") !== inp.value) { dirty = true; break; }
+      }
+      if (dirty) {
+        runBtn.classList.add("piece-dirty");
+        if (!runBtn.textContent.includes("params changed")) {
+          runBtn.textContent = "▶ Run (params changed)";
+        }
+      } else {
+        runBtn.classList.remove("piece-dirty");
+        runBtn.textContent = "▶ Run with these parameters";
+      }
+      writeParamsToURL();
+    }
+
+    for (const inp of form.querySelectorAll("input[name]")) {
+      inp.addEventListener("input", checkDirty);
+      inp.addEventListener("change", checkDirty);
+    }
+  }
+
+  async function run() {
+    runBtn.disabled = true;
+    runStatus.textContent = "running…";
+    output.textContent = "running…";
+    const params = {};
+    for (const inp of form.querySelectorAll("input[name]")) {
+      const k = inp.name, v = inp.value.trim();
+      if (v !== "") params[k] = v;
+    }
+    try {
+      const r = await fetch(`/api/piece/${section}/${category}/${piece_id}/run`, {
+        method: "POST",
+        headers: {"content-type": "application/json"},
+        body: JSON.stringify({params: params}),
+      });
+      const d = await r.json();
+      if (!d.ok) {
+        const errMsg = d.error || "(nessun messaggio)";
+        output.textContent = "error: " + errMsg;
+        runStatus.textContent = "error";
+        // mostra errore nel chart body principale
+        const chartRoot = document.getElementById("chart");
+        if (chartRoot) {
+          chartRoot.innerHTML =
+            '<div class="piece-error">' +
+            '<div class="piece-error-title">⚠ Run failed</div>' +
+            '<div class="piece-error-body">' + errMsg.replace(/</g, "&lt;") + '</div>' +
+            '<div class="piece-error-hint">Parameter <code>drift_detector</code> or other required fields may be missing. ' +
+            'Edit the params above and click Run.</div>' +
+            '</div>';
+        }
+        const badge = document.getElementById("acc-badge");
+        if (badge) { badge.textContent = "error"; badge.className = "chart-badge bad"; }
+        const title = document.getElementById("chart-title");
+        if (title) title.textContent = "run failed";
+        // nascondi i 3 mini-panel
+        const grid = document.querySelector(".piece-grid-3");
+        if (grid) grid.style.opacity = "0.35";
+      } else {
+        const grid = document.querySelector(".piece-grid-3");
+        if (grid) grid.style.opacity = "1";
+        render(d);
+        attachChartExport();
+        runStatus.textContent = "done";
+      }
+    } catch (e) {
+      output.textContent = "error: " + e.message;
+    } finally {
+      try {
+        const snap = new Map();
+        for (const inp of form.querySelectorAll("input[name]")) {
+          snap.set(inp.name, inp.value);
+        }
+        window._lastRunSnapshot = snap;
+        runBtn.classList.remove("piece-dirty");
+        runBtn.textContent = "▶ Run with these parameters";
+        writeParamsToURL();
+      } catch (e) {}
+      runBtn.disabled = false;
+    }
+  }
+
+  form.addEventListener("submit", (e) => { e.preventDefault(); run(); });
+
+  // use-in-chain: scrive la scelta nello slot giusto di localStorage
+  const useBtn = document.getElementById("piece-use");
+  if (useBtn) useBtn.addEventListener("click", () => {
+    const slotMap = {
+      "data": "data", "features": "features", "signal": "signal",
+      "portfolio": "portfolio", "risk": "risk", "execution": "execution",
+    };
+    const slot = slotMap[section] || section;
+    let picks = {};
+    try { picks = JSON.parse(localStorage.getItem("chain_picks") || "{}"); } catch (e) {}
+    picks[slot] = piece_id;
+    localStorage.setItem("chain_picks", JSON.stringify(picks));
+    useBtn.textContent = "✓ in chain (" + slot + "=" + piece_id + ")";
+    useBtn.disabled = true;
+    setTimeout(() => {
+      useBtn.textContent = "📌 use in chain";
+      useBtn.disabled = false;
+    }, 2000);
+  });
+
+
+  // copy link: copia URL corrente (con params) negli appunti
+  (function () {
+    const btn = document.getElementById("copy-link-btn");
+    if (!btn) return;
+    btn.addEventListener("click", async () => {
+      const url = window.location.href;
+      try {
+        await navigator.clipboard.writeText(url);
+        const orig = btn.textContent;
+        btn.textContent = "✓ copied";
+        btn.classList.add("piece-nav-btn-copied");
+        setTimeout(() => {
+          btn.textContent = orig;
+          btn.classList.remove("piece-nav-btn-copied");
+        }, 1500);
+      } catch (e) {
+        // fallback: seleziona l'URL
+        btn.textContent = "✗ clipboard blocked";
+        setTimeout(() => { btn.textContent = "🔗 copy link"; }, 1500);
+      }
+    });
+  })();
+
+  setupDirtyState();
+  setTimeout(run, 200);
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <p class="sub">3 synthetic messages, decoded by <code>decode_message</code>.</p>
+  {% for m in messages %}
+    <h3>{{ m.type }} — order_ref {{ m.order_ref if m.order_ref is defined else '—' }}</h3>
+    <dl>
+      {% for k, v in m.items()|sort %}
+        <dt>{{ k }}</dt><dd class="mono">{{ v }}</dd>
+      {% endfor %}
+    </dl>
+  {% endfor %}
+</section>
+{% endblock %}

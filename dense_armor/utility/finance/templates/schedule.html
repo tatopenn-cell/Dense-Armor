@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <p class="sub">total {{ total }}, n {{ n }}</p>
+  <h3>TWAP</h3>
+  <table>
+    <thead><tr><th>#</th><th>slice</th></tr></thead>
+    <tbody>
+    {% for s in twap %}<tr><td>{{ loop.index0 }}</td><td>{{ '%.4f'|format(s) }}</td></tr>{% endfor %}
+    </tbody>
+  </table>
+  <h3>VWAP (flat history)</h3>
+  <table>
+    <thead><tr><th>#</th><th>slice</th></tr></thead>
+    <tbody>
+    {% for s in vwap %}<tr><td>{{ loop.index0 }}</td><td>{{ '%.4f'|format(s) }}</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}
