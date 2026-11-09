@@ -17,7 +17,7 @@ def main() -> int:
     from playwright.sync_api import sync_playwright
     from werkzeug.serving import make_server
 
-    from dense_armor.utility.finance.dashboard import create_app
+    from dashboard.app import create_app
 
     OUT.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as d:

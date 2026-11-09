@@ -8,7 +8,7 @@ from xml.etree import ElementTree
 
 import pytest
 
-from dense_armor.utility.finance.dashboard import create_app, main
+from dashboard.app import create_app, main
 from dense_armor.utility.finance.decision_log import DecisionLog
 
 
@@ -182,7 +182,7 @@ def test_10_main_with_valid_config_and_mocked_run(tmp_path, monkeypatch):
     app = create_app(str(cfg))
     monkeypatch.setattr(app, "run", lambda host, port: None)
     monkeypatch.setattr(
-        "dense_armor.utility.finance.dashboard.create_app", lambda p, **kw: app
+        "dashboard.app.create_app", lambda p, **kw: app
     )
     code = main(["--config", str(cfg), "--port", "9999"])
     assert code == 0
@@ -192,7 +192,7 @@ def test_11_main_guard():
     import runpy
 
     try:
-        runpy.run_module("dense_armor.utility.finance.dashboard", run_name="__main__")
+        runpy.run_module("dashboard.app", run_name="__main__")
     except SystemExit as e:
         assert e.code == 2
 
@@ -266,7 +266,7 @@ def test_18_playground_refuses_empty_long_and_bad_input(tmp_path):
 
 
 def test_19_playground_environment_keeps_only_the_allowed_keys(monkeypatch):
-    from dense_armor.utility.finance.dashboard import _playground_env
+    from dashboard.app import _playground_env
 
     monkeypatch.setenv("DENSE_ARMOR_PG_URL", "postgresql://u:p@h/db")
     monkeypatch.setenv("PATH", "/usr/bin")

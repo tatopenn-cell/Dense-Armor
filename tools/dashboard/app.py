@@ -217,6 +217,9 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
         static_folder=str(STATIC_DIR),
     )
 
+    from dashboard.sections import _SIGNAL_CLASSES_EXT
+    app.jinja_env.globals["piece_has_page"] = lambda cat, pid: (cat, pid) in _SIGNAL_CLASSES_EXT
+
     def base_ctx(**kw: Any) -> dict[str, Any]:
         ctx = {
             "config": config,
@@ -499,7 +502,7 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
     @app.post("/api/chain/run")
     def api_chain_run() -> Any:
         from flask import request
-        from dense_armor.utility.finance.chain import run_chain
+        from dashboard.chain import run_chain
 
         body = request.get_json(silent=True) or {}
         picks = {s: body.get(s, "none") for s in
@@ -703,7 +706,7 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
 
     @app.get("/api/chain/catalog")
     def api_chain_catalog() -> Any:
-        from dense_armor.utility.finance.chain import CATALOG
+        from dashboard.chain import CATALOG
         out = {}
         for slot, pieces in CATALOG.items():
             out[slot] = [{"id": k, **(v if isinstance(v, dict) else {"class": v})}
@@ -734,49 +737,49 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
 
     @app.get("/s/data")
     def s_data() -> Any:
-        from dense_armor.utility.finance.sections import data_page
+        from dashboard.sections import data_page
         return data_page(render_template, base_ctx())
 
     @app.get("/s/features")
     def s_features() -> Any:
-        from dense_armor.utility.finance.sections import features_page
+        from dashboard.sections import features_page
         from flask import request
         cat = request.args.get("cat", "scaling")
         return features_page(cat, render_template, base_ctx())
 
     @app.get("/s/signal")
     def s_signal() -> Any:
-        from dense_armor.utility.finance.sections import signal_page
+        from dashboard.sections import signal_page
         from flask import request
         cat = request.args.get("cat", "trees")
         return signal_page(cat, render_template, base_ctx())
 
     @app.get("/s/portfolio")
     def s_portfolio() -> Any:
-        from dense_armor.utility.finance.sections import portfolio_page
+        from dashboard.sections import portfolio_page
         return portfolio_page(render_template, base_ctx())
 
     @app.get("/s/risk")
     def s_risk() -> Any:
-        from dense_armor.utility.finance.sections import risk_page
+        from dashboard.sections import risk_page
         from flask import request
         cat = request.args.get("cat", "anomaly")
         return risk_page(cat, render_template, base_ctx())
 
     @app.get("/s/execution")
     def s_execution() -> Any:
-        from dense_armor.utility.finance.sections import execution_page
+        from dashboard.sections import execution_page
         return execution_page(render_template, base_ctx())
 
     @app.get("/s/more")
     def s_more() -> Any:
-        from dense_armor.utility.finance.sections import stub_page
+        from dashboard.sections import stub_page
         return stub_page("More", 0, ["Reserved"],
                           render_template, base_ctx())
 
     @app.get("/piece/<section>/<category>/<piece_id>")
     def piece_page(section: str, category: str, piece_id: str) -> Any:
-        from dense_armor.utility.finance.sections import piece_meta
+        from dashboard.sections import piece_meta
         meta = piece_meta(section, category, piece_id)
         if not meta.get("ok"):
             return Response(f"unknown piece: {meta.get('error')}", status=404)
@@ -789,7 +792,7 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
     @app.post("/api/piece/<section>/<category>/<piece_id>/run")
     def api_piece_run(section: str, category: str, piece_id: str) -> Any:
         from flask import request
-        from dense_armor.utility.finance.sections import piece_detail
+        from dashboard.sections import piece_detail
         try:
             body = request.get_json(silent=True) or {}
             params = dict(body.get("params", {}) or {})
@@ -801,7 +804,7 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
 
     @app.get("/api/pieces/search")
     def api_pieces_search() -> Any:
-        from dense_armor.utility.finance.sections import _SIGNAL_CLASSES_EXT
+        from dashboard.sections import _SIGNAL_CLASSES_EXT
         from flask import request
         q = (request.args.get("q") or "").lower().strip()
         out = []
@@ -1223,7 +1226,7 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
 def main(argv: list[str] | None = None) -> int:
     """Run the dashboard."""
     parser = argparse.ArgumentParser(
-        prog="python -m dense_armor.utility.finance.dashboard"
+        prog="python -m dashboard.app"
     )
     parser.add_argument("--config", required=True)
     parser.add_argument("--host", default="127.0.0.1")

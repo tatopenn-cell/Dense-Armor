@@ -342,6 +342,40 @@ def _load_data(data_id: str, n: int, seed: int):
     return rows, ys, {"kind": "finance", "source": ticker + ".csv", "n": len(rows)}
 
 
+class _ScoreGate:
+    """An alarm when a score is more than 3 standard deviations above the running mean of the scores before it.
+
+    The detectors of the chain have scores of different scales (a local outlier factor is about 1, a tree of
+    isolation is in [0, 1]), so one fixed threshold would fire on all of them or on none. The gate learns the
+    scale of the scores of the detector it is given. It waits for 30 scores, and for a detector whose score is
+    inverted it fires below the mean. A score that is not a finite number is ignored.
+    """
+
+    WARMUP = 30
+    SIGMAS = 3.0
+
+    def __init__(self, inverted: bool = False) -> None:
+        self.inverted = inverted
+        self.n = 0
+        self.mean = 0.0
+        self.m2 = 0.0
+
+    def alarm(self, score: float) -> bool:
+        if score != score or score in (float("inf"), float("-inf")):
+            return False
+        fired = False
+        if self.n >= self.WARMUP:
+            sd = (self.m2 / (self.n - 1)) ** 0.5
+            if sd > 0:
+                z = (score - self.mean) / sd
+                fired = z < -self.SIGMAS if self.inverted else z > self.SIGMAS
+        self.n += 1
+        delta = score - self.mean
+        self.mean += delta / self.n
+        self.m2 += delta * (score - self.mean)
+        return fired
+
+
 def _maybe_call(obj, **kwargs):
     """Call obj(**kwargs) ignoring params it does not accept."""
     import inspect
@@ -404,6 +438,7 @@ def run_chain(section_picks: dict, n: int = 500, seed: int = 0) -> dict:
     correct = 0
     risk_alarms = 0
     errors = {k: {"n": 0, "first": None} for k in ("features", "signal", "risk")}
+    gate = _ScoreGate(inverted=bool(getattr(risk_obj, "score_is_inverted", False)))
 
     def _note(stage: str, exc: BaseException) -> None:
         errors[stage]["n"] += 1
@@ -444,7 +479,7 @@ def run_chain(section_picks: dict, n: int = 500, seed: int = 0) -> dict:
                 elif hasattr(risk_obj, "score_one"):
                     s = risk_obj.score_one(x_used)
                     risk_obj.learn_one(x_used)
-                    if s is not None and float(s) > 1.5:
+                    if s is not None and gate.alarm(float(s)):
                         risk_alarms += 1
                         alarms.append(i)
                 elif hasattr(risk_obj, "learn_one"):
@@ -496,7 +531,7 @@ def run_chain(section_picks: dict, n: int = 500, seed: int = 0) -> dict:
             exec_out = {"error": f"{type(e).__name__}: {e}"}
 
     # legge gli attributi dei ruoli delle primitive effettivamente usate
-    from dense_armor.utility.finance.sections import _role_attributes
+    from dashboard.sections import _role_attributes
     role_attrs = {}
     for _name, _obj in (("features", feat), ("signal", sig_obj), ("risk", risk_obj)):
         role_attrs[_name] = _role_attributes(_obj)

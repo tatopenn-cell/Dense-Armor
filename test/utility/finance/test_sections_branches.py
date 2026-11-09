@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from dense_armor.utility.finance import sections as sec
+from dashboard import sections as sec
 
 REPO = Path(__file__).resolve().parents[3]
 
@@ -520,4 +520,42 @@ def test_the_signal_page_when_a_default_or_a_preview_fails(monkeypatch):
 
     with monkeypatch.context() as m:
         m.setattr(sec, "_sig_preview", boom)
-        assert sec.signal_page("trees", render, {})["pieces"]
+        assert sec.signal_page("trees", render, {})["pieces"]
+
+
+def test_the_threshold_of_an_anomaly_scorer_without_one_is_learned_from_its_scores(monkeypatch):
+    mod = types.ModuleType("fake_spiky")
+
+    class Spiky:
+        calls = 0
+
+        def score_one(self, x):
+            Spiky.calls += 1
+            return 10.0 if Spiky.calls == 100 else 1.0 + (Spiky.calls % 2) * 0.1
+
+        def learn_one(self, x):
+            pass
+
+    mod.Spiky = Spiky
+    monkeypatch.setitem(sys.modules, "fake_spiky", mod)
+    monkeypatch.setitem(sec._SIGNAL_CLASSES_EXT, ("fake", "Spiky"), ("fake_spiky", "Spiky"))
+    monkeypatch.setattr(sec, "_gspc_classification_stream", lambda n=500: (XS, YS))
+    m = sec.piece_detail("signal", "fake", "Spiky", {})["metrics"]
+    assert m["kind"] == "anomaly" and m["threshold_rule"].startswith("mean + 3")
+    assert 1.1 < m["threshold"] < 10.0
+    assert m["alerts_above_threshold"] == 1
+
+
+def test_a_piece_that_predicts_nothing_is_a_statistic_with_no_accuracy(monkeypatch):
+    mod = types.ModuleType("fake_stat")
+
+    class Counter:
+        def learn_one(self, x):
+            pass
+
+    mod.Counter = Counter
+    monkeypatch.setitem(sys.modules, "fake_stat", mod)
+    monkeypatch.setitem(sec._SIGNAL_CLASSES_EXT, ("fake", "Counter"), ("fake_stat", "Counter"))
+    monkeypatch.setattr(sec, "_gspc_classification_stream", lambda n=500: (XS, YS))
+    out = sec.piece_detail("signal", "fake", "Counter", {})
+    assert out["ok"] is True and out["metrics"]["kind"] == "stat" and out["series"] == []

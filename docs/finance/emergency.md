@@ -15,7 +15,7 @@ reads `GET /status`; if the stop is already raised, `#stopped` is shown.
 import threading
 import urllib.request
 from werkzeug.serving import make_server
-from dense_armor.utility.finance.dashboard import create_app
+from dashboard.app import create_app
 
 app = create_app("/tmp/emergency_demo/c.toml")
 server = make_server("127.0.0.1", 0, app)
@@ -63,7 +63,7 @@ import json
 import threading
 import urllib.request
 from werkzeug.serving import make_server
-from dense_armor.utility.finance.dashboard import create_app
+from dashboard.app import create_app
 
 app = create_app("/tmp/emergency_demo/c.toml")
 server = make_server("127.0.0.1", 0, app)

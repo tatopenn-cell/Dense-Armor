@@ -726,7 +726,7 @@ window.attachChartTooltip = function (container) {
       if (m.memory_class !== undefined)
         items.push({cls: "", txt: m.memory_class});
       if (m.score_is_inverted)
-        items.push({cls: "warn", txt: "⚠ score invertito"});
+        items.push({cls: "warn", txt: "⚠ inverted score"});
       if (m.health !== undefined)
         items.push({cls: m.health === "nominal" ? "good" : m.health === "degraded" ? "bad" : "warn",
                     txt: "health: " + m.health});
@@ -931,7 +931,7 @@ window.attachChartTooltip = function (container) {
       });
       const d = await r.json();
       if (!d.ok) {
-        const errMsg = d.error || "(nessun messaggio)";
+        const errMsg = d.error || "(no message)";
         output.textContent = "error: " + errMsg;
         runStatus.textContent = "error";
         // mostra errore nel chart body principale

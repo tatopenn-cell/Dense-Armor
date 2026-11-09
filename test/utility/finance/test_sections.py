@@ -1,4 +1,4 @@
-"""Tests for dense_armor.utility.finance.sections."""
+"""Tests for dashboard.sections."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from dense_armor.utility.finance import sections as sec
+from dashboard import sections as sec
 
 
 class _FakeTemplate:

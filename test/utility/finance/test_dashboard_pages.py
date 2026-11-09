@@ -7,7 +7,7 @@ import pytest
 pytest.importorskip("flask", reason="flask not installed")
 pytest.importorskip("tomllib", reason="load_config needs tomllib, Python 3.11 or later")
 
-from dense_armor.utility.finance.dashboard import create_app  # noqa: E402
+from dashboard.app import create_app  # noqa: E402
 from dense_armor.utility.finance.decision_log import DecisionLog  # noqa: E402
 from dense_armor.utility.finance.synthetic import synthetic_itch  # noqa: E402
 
@@ -170,7 +170,7 @@ def test_the_feed_page_reports_a_feed_that_cannot_be_read(client, monkeypatch):
         raise ValueError("bad feed")
         yield
 
-    monkeypatch.setattr("dense_armor.utility.finance.dashboard.iter_itch", boom)
+    monkeypatch.setattr("dashboard.app.iter_itch", boom)
     r = client.get("/feed")
     assert r.status_code == 200 and b"bad feed" in r.data
 
@@ -198,7 +198,7 @@ def test_the_chain_route_reports_a_run_that_raises(client, monkeypatch):
     def boom(*a, **k):
         raise RuntimeError("chain down")
 
-    monkeypatch.setattr("dense_armor.utility.finance.chain.run_chain", boom)
+    monkeypatch.setattr("dashboard.chain.run_chain", boom)
     r = client.post("/api/chain/run", json={})
     assert r.status_code == 500 and r.get_json()["error"] == "RuntimeError: chain down"
 
@@ -227,3 +227,11 @@ def test_the_playground_reports_a_timeout_and_a_list_body(tmp_path, monkeypatch)
     monkeypatch.setattr(subprocess, "run", slow)
     out = client.post("/api/playground/run", json={"code": "pass"}).get_json()
     assert out["ok"] is False and "timeout" in out["stderr"]
+
+
+def test_section_pages_link_only_pieces_that_have_a_page(client):
+    import re
+    for sec in ("data", "portfolio", "execution"):
+        html = client.get(f"/s/{sec}").get_data(as_text=True)
+        for href in re.findall(r'class="piece-expand" href="(/piece/[^"]+)"', html):
+            assert client.get(href).status_code == 200, href
