@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <p class="sub">Status of the system at <code>{{ config_path }}</code></p>
+  <pre>{{ result|tojson(indent=2) }}</pre>
+</section>
+{% endblock %}

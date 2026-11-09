@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <p class="sub">{{ rows|length }} decisions in the log.</p>
+  <table>
+    <thead><tr><th>seq</th><th>t</th><th>reason</th><th>stock</th><th>approved</th><th>order_ref</th><th>hash</th></tr></thead>
+    <tbody>
+    {% for r in rows %}
+      <tr>
+        <td>{{ r.seq }}</td>
+        <td>{{ '%.3f'|format(r.t or 0) }}</td>
+        <td>{{ r.reason or '' }}</td>
+        <td>{{ r.stock or '' }}</td>
+        <td class="{{ 'good' if r.approved else 'bad' }}">{{ r.approved }}</td>
+        <td>{{ r.order_ref if r.order_ref is not none else '' }}</td>
+        <td class="mono">{{ (r.hash or '')[:16] }}…</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

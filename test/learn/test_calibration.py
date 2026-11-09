@@ -6,9 +6,7 @@ import random
 
 import pytest
 
-pytest.importorskip("river")
-
-from river import metrics  # noqa: E402
+from dense_armor.utility.evaluation.metrics import LogLoss  # noqa: E402
 
 import dense_armor.utility.online.learn.calibration as calibration  # noqa: E402
 from dense_armor.roles import Classifier  # noqa: E402
@@ -89,7 +87,7 @@ def test_int_labels_match_bool_labels():
 
 
 def test_calibrates_overconfident_model():
-    raw, ops = metrics.LogLoss(), metrics.LogLoss()
+    raw, ops = LogLoss(), LogLoss()
     base_model = Overconfident()
     m = OnlinePlattScaling(Overconfident())
     for x, y in stream(5000):
@@ -155,3 +153,75 @@ def test_online_platt_scaling_handles_nan():
     assert not any(isinstance(v, float) and math.isinf(v) for v in res.values())
     assert res[True] == 0.5
     assert res[False] == 0.5
+
+def test_wrapped_hoeffding_tree_with_no_opinion():
+    """River PR #1988: a real tree returns {} until it has seen a class.
+    The wrapper must not invent a label, and must not move _theta while
+    there is nothing to calibrate. Mirrors river's test_wrapped_model_with_no_opinion
+    but with the real primitive, not a fake classifier.
+    """
+    from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
+
+    cal = OnlinePlattScaling(HoeffdingTreeClassifier())
+    x = {"a": 1.0, "b": 2.0}
+
+    # before anything is learned: no opinion in, no opinion out
+    assert cal.predict_proba_one(x) == {}
+    assert cal.predict_one(x) is None
+
+    # the sample reaches the wrapped tree, and _theta is untouched
+    cal.learn_one(x, True)
+    assert cal._theta.tolist() == [1.0, 0.0]
+    assert float(cal._A[0, 0]) == pytest.approx(100.0)
+    assert float(cal._A[1, 1]) == pytest.approx(100.0)
+
+    # once the tree has an opinion, calibration resumes
+    for _ in range(5):
+        cal.learn_one(x, True)
+        cal.learn_one({"a": -1.0, "b": -2.0}, False)
+    proba = cal.predict_proba_one(x)
+    assert set(proba) == {False, True}
+    assert abs(sum(proba.values()) - 1.0) < 1e-9
+    # _theta has moved from the identity
+    assert not (cal._theta[0] == 1.0 and cal._theta[1] == 0.0)
+
+
+def test_score_is_sigmoid_of_theta_dot_u():
+    """The returned probability is exactly sigmoid(_theta @ u), where
+    u = [logit(clip(p)), 1] and p is the base's probability of True.
+    This pins the formula, not just the behaviour.
+    """
+    class Known(Classifier):
+        def __init__(self, p):
+            self.p = p
+        def learn_one(self, x, y):
+            pass
+        def predict_proba_one(self, x):
+            return {False: 1.0 - self.p, True: self.p}
+
+    for base_p in (0.2, 0.5, 0.8, 0.95, 0.01):
+        cal = OnlinePlattScaling(Known(base_p))
+        # force a non-identity theta so the formula is not trivially the identity
+        cal._theta = __import__("numpy").array([0.7, -0.3])
+        # base p clipped to [clip, 1-clip]
+        p_clip = min(max(base_p, cal.clip), 1.0 - cal.clip)
+        logit_p = math.log(p_clip / (1.0 - p_clip))
+        expected = 1.0 / (1.0 + math.exp(-(cal._theta[0] * logit_p + cal._theta[1] * 1.0)))
+        got = cal.predict_proba_one({})[True]
+        assert got == pytest.approx(expected, abs=1e-12)
+
+
+def test_learn_one_does_not_use_current_sample_for_scoring():
+    """The score fed to the sigmoid is the base's prediction BEFORE it learns.
+    So a single learn_one on a fresh tree leaves _theta at the identity, even
+    though the tree itself has moved. This is the out-of-sample flavour from
+    River's docstring line 21-22.
+    """
+    from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
+
+    cal = OnlinePlattScaling(HoeffdingTreeClassifier())
+    x = {"a": 1.0, "b": 2.0}
+    cal.learn_one(x, True)
+    # the tree has learned (opinion now exists), but _theta did not move
+    assert cal.classifier.predict_proba_one(x) != {}
+    assert cal._theta.tolist() == [1.0, 0.0]

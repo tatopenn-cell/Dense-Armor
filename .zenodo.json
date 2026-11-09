@@ -1,0 +1,531 @@
+{
+  "title": "Dense-Armor: Robot-AI Online Shielding & Learning",
+  "description": "<p>Robot-AI Online Shielding &amp; Learning: online estimators, streaming algorithms, anomaly detection, drift, protected learning, robot command safety.</p><p>This software cites <strong>188</strong> bibliographic works. See the References section and the related_identifiers for arXiv/DOI links.</p>",
+  "creators": [
+    {
+      "name": "Pennacchio, Salvatore",
+      "email": "jtatopenn@libero.it"
+    }
+  ],
+  "upload_type": "software",
+  "access_right": "open",
+  "license": "AGPL-3.0-or-later",
+  "version": "1.5.0",
+  "publication_date": "2026-11-08",
+  "keywords": [
+    "machine-learning",
+    "online-learning",
+    "streaming-data",
+    "anomaly-detection",
+    "concept-drift",
+    "robot-safety",
+    "finance"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "arXiv:1706.03762",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1512.03385",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1502.01852",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1502.03167",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1607.06450",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1803.08494",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1607.08022",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1207.0580",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1606.08415",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1702.03118",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1511.07289",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2002.05202",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1711.05101",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1706.02677",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1512.00567",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1708.02002",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1603.07285",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1412.0767",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1610.02357",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2101.03961",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1711.03705",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1901.03407",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2505.08489",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2406.05999",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2505.09593",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2601.03957",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2512.11052",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:0710.3742",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1906.10529",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1412.6980",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1912.13213",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1609.04747",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1212.0901",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1308.2608",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2007.10781",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2102.09101",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2106.08265",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1904.01864",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1807.08390",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1308.5875",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2608.02316",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1803.03639",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1510.03336",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2109.05257",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2001.11077",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2409.10111",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1902.04023",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2206.10662",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2609.14016",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2603.00269",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2511.16535",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1703.06256",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2108.04172",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2312.01650",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2410.00713",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1903.11199",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2105.04830",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2405.07901",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2412.07859",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2305.00070",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:1309.0238",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2012.04740",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2303.01300",
+      "relation": "cites",
+      "scheme": "arxiv"
+    }
+  ],
+  "references": [
+    "Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, L., Polosukhin, I. (2017). Attention Is All You Need. arXiv:1706.03762.",
+    "He, K., Zhang, X., Ren, S., Sun, J. (2016). Deep Residual Learning for Image Recognition. arXiv:1512.03385.",
+    "He, K., Zhang, X., Ren, S., Sun, J. (2015). Delving Deep into Rectifiers: Surpassing Human-Level Performance on ImageNet Classification. arXiv:1502.01852.",
+    "Ioffe, S., Szegedy, C. (2015). Batch Normalization. arXiv:1502.03167.",
+    "Ba, J. L., Kiros, J. R., Hinton, G. E. (2016). Layer Normalization. arXiv:1607.06450.",
+    "Wu, Y., He, K. (2018). Group Normalization. arXiv:1803.08494.",
+    "Ulyanov, D., Vedaldi, A., Lempitsky, V. (2016). Instance Normalization. arXiv:1607.08022.",
+    "Hinton, G. E., Srivastava, N., Krizhevsky, A., Sutskever, I., Salakhutdinov, R. R. (2012). Improving neural networks by preventing co-adaptation of feature detectors. arXiv:1207.0580.",
+    "Hendrycks, D., Gimpel, K. (2016). Gaussian Error Linear Units (GELUs). arXiv:1606.08415.",
+    "Elfwing, S., Uchibe, E., Doya, K. (2017). Sigmoid-weighted linear units (SiLU). arXiv:1702.03118.",
+    "Clevert, D.-A., Unterthiner, T., Hochreiter, S. (2016). Fast and accurate deep network learning by exponential linear units (ELUs). arXiv:1511.07289.",
+    "Dugas, C., Bengio, Y., Bélisle, F., Nadeau, C., Garcia, R. (2001). Incorporating second-order functional knowledge for better option pricing. NIPS.",
+    "Shazeer, N. (2020). GLU Variants Improve Transformer. arXiv:2002.05202.",
+    "Nagrani, A., Yang, S., Arnab, A., Jansen, A., Schmid, C., Sun, C. (2021). Attention Bottlenecks for Multimodal Fusion. NeurIPS.",
+    "Jaegle, A., Gimeno, F., Brock, A., Vinyals, O., Zisserman, A., Carreira, J. (2021). Perceiver: General Perception with Iterative Attention. ICML.",
+    "Cho, K., van Merriënboer, B., Gulcehre, C., Bahdanau, D., Bougares, F., Schwenk, H., Bengio, Y. (2014). Learning Phrase Representations using RNN Encoder-Decoder. EMNLP.",
+    "Greff, K., Srivastava, R. K., Koutník, J., Steunebrink, B. R., Schmidhuber, J. (2017). LSTM: A Search Space Odyssey. IEEE TNNLS.",
+    "Sutskever, I., Vinyals, O., Le, Q. V. (2014). Sequence to Sequence Learning with Neural Networks. NeurIPS.",
+    "Loshchilov, I., Hutter, F. (2019). Decoupled Weight Decay Regularization. ICLR. arXiv:1711.05101.",
+    "Loshchilov, I., Hutter, F. (2017). SGDR: Stochastic Gradient Descent with Warm Restarts. ICLR.",
+    "Goyal, P., Dollár, P., Girshick, R., Noordhuis, P., Wesolowski, L., Kyrola, A., Tulloch, A., Jia, Y., He, K. (2017). Accurate, Large Minibatch SGD. arXiv:1706.02677.",
+    "Szegedy, C., Vanhoucke, V., Ioffe, S., Shlens, J., Wojna, Z. (2016). Rethinking the Inception Architecture for Computer Vision. arXiv:1512.00567.",
+    "Lin, T.-Y., Goyal, P., Girshick, R., He, K., Dollár, P. (2017). Focal Loss for Dense Object Detection. arXiv:1708.02002.",
+    "Dumoulin, V., Visin, F. (2016/2018). A guide to convolution arithmetic for deep learning. arXiv:1603.07285.",
+    "Tran, D., Bourdev, L., Fergus, R., Torresani, L., Paluri, M. (2015). Learning spatiotemporal features with 3D convolutional networks. arXiv:1412.0767.",
+    "Chollet, F. (2017). Xception: Deep learning with depthwise separable convolutions. arXiv:1610.02357.",
+    "Fedus, W., Zoph, B., Shazeer, N. (2021). Switch Transformers. arXiv:2101.03961.",
+    "Shazeer, N., Mirhoseini, A., Maziarz, K., Davis, A., Le, Q., Hinton, G., Dean, J. (2017). Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer. ICLR.",
+    "Sahoo, D., Pham, Q., Lu, J., Hoi, S. C. H. (2018). Online Deep Learning: Learning Deep Neural Networks on the Fly. arXiv:1711.03705.",
+    "van den Oord, A., Vinyals, O., Kavukcuoglu, K. (2017). Neural Discrete Representation Learning (VQ-VAE). NeurIPS.",
+    "Graves, A., Mohamed, A.-R., Hinton, G. (2013). Speech Recognition with Deep Recurrent Neural Networks. ICASSP.",
+    "Jégou, H., Douze, M., Schmid, C. (2011). Product Quantization for Nearest Neighbor Search. IEEE TPAMI 33(1).",
+    "Kusupati, A., et al. (2022). Matryoshka Representation Learning. NeurIPS.",
+    "Shin, H., Lee, J. K., Kim, J., Kim, J. (2017). Continual Learning with Deep Generative Replay. NeurIPS.",
+    "Kirkpatrick, J., et al. (2017). Overcoming catastrophic forgetting in neural networks (EWC). PNAS.",
+    "Lopez-Paz, D., Ranzato, M. (2017). Gradient Episodic Memory for Continual Learning. NeurIPS.",
+    "Chaudhry, A., Ranzato, M., Rohrbach, M., Elhoseiny, M. (2019). Efficient Lifelong Learning with A-GEM. ICLR.",
+    "Chalapathy, R., Chawla, S. (2019). Deep Learning for Anomaly Detection: A Survey. arXiv:1901.03407.",
+    "Tan, S. C., Ting, K. M., Liu, T. F. (2011). Fast anomaly detection for streaming data (HS-Trees). IJCAI, 1511-1516.",
+    "Ulrich, A., Krnavek, J., Senkerik, R., Kominkova Oplatkova, Z., Vala, R. (2025). Isolation Forest in Novelty Detection Scenario. arXiv:2505.08489.",
+    "Breunig, M. M., Kriegel, H.-P., Ng, R. T., Sander, J. (2000). LOF: Identifying Density-Based Local Outliers. SIGMOD, 93-104.",
+    "Lou, B., Boland, D., Leong, P. H. W. (2024). fSEAD: A Composable FPGA-based Streaming Ensemble Anomaly Detection Library. arXiv:2406.05999.",
+    "Pevny, T. (2016). LODA: Lightweight on-line detector of anomalies. Machine Learning 102(2), 275-304.",
+    "Leveni, F., Cassales, G. W., Pfahringer, B., Bifet, A., Boracchi, G. (2024). Online Isolation Forest. arXiv:2505.09593.",
+    "Guillot, A., Godichon-Baggioni, A., Robin, S. (2025). Online robust covariance and outlier detection. arXiv:2601.03957.",
+    "Cardot, H., Cenac, P., Zitt, P.-A. (2013). Efficient and fast estimation of the geometric median. Bernoulli 19(1), 18-43.",
+    "Cardot, H., Godichon-Baggioni, A. (2017). Fast estimation of the median covariation matrix. TEST 26(3), 461-480.",
+    "Suk, J., Kpotufe, S. (2025). An efficient variant of one-class SVM with lifelong online learning guarantees (SONAR). arXiv:2512.11052.",
+    "Rahimi, A., Recht, B. (2007). Random features for large-scale kernel machines. NIPS.",
+    "Chauvenet, W. (1863). A Manual of Spherical and Practical Astronomy.",
+    "Tukey, J. W. (1977). Exploratory Data Analysis. Addison-Wesley.",
+    "Hampel, F. R. (1974). The influence curve and its role in robust estimation. JASA 69(346), 383-393.",
+    "Davies, L., Gather, U. (1993). The identification of multiple outliers. JASA 88(423), 782-792.",
+    "Page, E. S. (1954). Continuous inspection schemes. Biometrika 41(1-2), 100-115.",
+    "Hawkins, D. M., Olwell, D. H. (1998). Cumulative Sum Charts and Charting for Quality Improvement. Springer.",
+    "Adams, R. P., MacKay, D. J. C. (2007). Bayesian Online Changepoint Detection. arXiv:0710.3742.",
+    "Bifet, A., Gavaldà, R. (2006). Learning from time-changing data with adaptive windowing (ADWIN). SIAM SDM.",
+    "Raab, C., Heusinger, M., Schleif, F.-M. (2020). Reactive soft prototype computing for concept drift (KSWIN). Neurocomputing 416, 340-351.",
+    "Xie, Y., Zou, S., Xie, Y., Veeravalli, V. V. (2021). Sequential (Quickest) Change Detection: Classical Results and New Directions. IEEE JSAIT.",
+    "Domingos, P., Hulten, G. (2000). Mining high-speed data streams. KDD.",
+    "Manapragada, C., Webb, G. I., Salehi, M. (2018). Extremely fast decision tree (HATT/EFDT). KDD.",
+    "Bifet, A., Gavaldà, R. (2009). Adaptive learning from evolving data streams (HAT). IDA.",
+    "Esteban, A., Cano, A., Zafra, A., Ventura, S. (2024). Hoeffding adaptive trees for multi-label classification on data streams.",
+    "Ikonomovska, E. (2012). Learning Model Trees from Time-Changing Data Streams. PhD thesis, Jožef Stefan International Postgraduate School, Chapter 6.",
+    "Lakshminarayanan, B., Roy, D. M., Teh, Y. W. (2014). Mondrian forests: efficient online random forests. NIPS.",
+    "Lakshminarayanan, B., Roy, D. M., Teh, Y. W. (2016). Mondrian forests for large-scale regression when uncertainty matters. AISTATS.",
+    "Roy, D. M., Teh, Y. W. (2009). The Mondrian process. NIPS.",
+    "Mourtada, J., Gaiffas, S., Scornet, E. AMF: Aggregated Mondrian forests for online learning. arXiv:1906.10529v2.",
+    "Gomes, H. M., Bifet, A., Read, J., Barddal, J. P., Enembreck, F., Pfahringer, B., Holmes, G., Abdessalem, T. (2017). Adaptive random forests for evolving data stream classification. Machine Learning 106, 1469-1495.",
+    "Mastelini, S. M., Nakano, F. K., Vens, C., de Carvalho, A. C. P. L. F. (2023). Online Extra Trees Regressor. IEEE TNNLS 34(10), 6755-6767.",
+    "Mastelini, S. M. (2023). Efficient online tree, rule-based and distance-based algorithms. Doctoral thesis, ICMC-USP, chapter 6.",
+    "Gouk, H., Pfahringer, B., Frank, E. (2019). Stochastic gradient trees. ACML.",
+    "Breiman, L., Friedman, J., Olshen, R., Stone, C. (1984). Classification and Regression Trees. Wadsworth, chapter 2.",
+    "Breiman, L. (1996). Bagging predictors. Machine Learning 24(2).",
+    "Breiman, L. (2001). Random forests. Machine Learning 45(1).",
+    "Geurts, P., Ernst, D., Wehenkel, L. (2006). Extremely randomized trees. Machine Learning 63(1).",
+    "Oza, N. C., Russell, S. (2001). Online bagging and boosting. AISTATS, 105-112.",
+    "Freund, Y., Schapire, R. E. (1997). A decision-theoretic generalization of on-line learning and an application to boosting. JCSS 55(1), 119-139.",
+    "Kivinen, J., Warmuth, M. K. (1997). Exponentiated gradient versus gradient descent for linear predictors. Information and Computation 132(1), 1-63.",
+    "Zhu, J., Zou, H., Rosset, S., Hastie, T. (2009). Multi-class AdaBoost. Statistics and Its Interface 2(3), 349-360.",
+    "Wolpert, D. H. (1992). Stacked generalization. Neural Networks 5(2), 241-259.",
+    "Bishop, C. M. (2006). Pattern Recognition and Machine Learning. Springer, Section 3.3.",
+    "Sherman, J., Morrison, W. J. (1950). Adjustment of an inverse matrix. Annals of Mathematical Statistics 21(1), 124-127.",
+    "Kingma, D. P., Ba, J. (2014/2015). Adam: a method for stochastic optimization. ICLR. arXiv:1412.6980.",
+    "Orabona, F. (2019). A Modern Introduction to Online Learning. arXiv:1912.13213.",
+    "Hazan, E., Agarwal, A., Kale, S. (2007). Logarithmic regret algorithms for online convex optimization. Machine Learning 69(2-3), 169-192.",
+    "Ruder, S. (2016). An overview of gradient descent optimization algorithms. arXiv:1609.04747.",
+    "Boulanger-Lewandowski, N., Pascanu, R., Vincent, P. (2012). Modeling temporal dependencies in high-dimensional sequences. arXiv:1212.0901.",
+    "McMahan, H. B., et al. (2013). Ad click prediction: a view from the trenches (FTRL-Proximal). KDD.",
+    "McCallum, A., Nigam, K. (1998). A comparison of event models for naive Bayes text classification. AAAI Workshop.",
+    "Rennie, J. D. M., Shih, L., Teevan, J., Karger, D. R. (2003). Tackling the poor assumptions of naive Bayes text classifiers. ICML.",
+    "Murphy, K. P. (2007). Conjugate Bayesian analysis of the Gaussian distribution.",
+    "West, D. H. D. (1979). Updating mean and variance estimates: an improved method. CACM 22(9), 532-535.",
+    "Welford, B. P. (1962). Note on a method for calculating corrected sums of squares and products. Technometrics 4(3), 419-420.",
+    "Chan, T. F., Golub, G. H., LeVeque, R. J. (1979). Updating formulae and a pairwise algorithm for computing sample variances. Compstat.",
+    "Chan, T. F., Golub, G. H., LeVeque, R. J. (1983). Algorithms for computing the sample variance. The American Statistician 37(3), 242-247.",
+    "Pébay, P. (2008). Formulas for robust, one-pass parallel computation of covariances and arbitrary-order statistical moments. Sandia Report SAND2008-6212.",
+    "Bodnar, T., Gupta, A. K., Parolya, N. (2014). On the strong convergence of the optimal linear shrinkage estimator for large dimensional covariance matrix. arXiv:1308.2608.",
+    "Cappé, O., Moulines, E. (2009). On-line expectation-maximization algorithm for latent data models. JRSS-B 71(3), 593-613.",
+    "Neal, R. M., Hinton, G. E. (1998). A view of the EM algorithm that justifies incremental, sparse, and other variants. NIPS.",
+    "Liu, C., Rubin, D. B. (1995). ML estimation of the t distribution with unknown degrees of freedom. Statistics and Computing 5, 19-28.",
+    "Zellner, A. (1976). Bayesian and non-Bayesian analysis of the Student-t model. JASA 71(354), 400-405.",
+    "Auer, P., Cesa-Bianchi, N., Fischer, P. (2002). Finite-time analysis of the multiarmed bandit problem. Machine Learning 47(2-3), 235-256.",
+    "Chapelle, O., Li, L. (2011). An empirical evaluation of Thompson sampling. NIPS.",
+    "Li, L., Chu, W., Langford, J., Schapire, R. E. (2010). A contextual-bandit approach to personalized news article recommendation (LinUCB). WWW.",
+    "Li, L., Chu, W., Langford, J., Wang, X. (2011). Unbiased offline evaluation of contextual-bandit-based news article recommendation algorithms. WSDM.",
+    "Kaufmann, E., Cappé, O., Garivier, A. (2012). On Bayesian upper confidence bounds for bandit problems. AISTATS.",
+    "Zliobaite, I., Bifet, A., Pfahringer, B., Holmes, G. (2011). Active learning with drifting streaming data. IEEE TNNLS.",
+    "Rendle, S. (2010). Factorization machines. ICDM.",
+    "Juan, Y., Zhuang, Y., Chin, W.-S., Lin, C.-J. (2016). Field-aware factorization machines for CTR prediction. RecSys.",
+    "Pan, J., Xu, J., Ruiz, A., Zhao, W., Pan, S., Lu, Y., Zhang, Q., Zhang, Y. (2018). Field-weighted factorization machines for click-through rate prediction. WWW.",
+    "Blondel, M., Fujino, A., Ueda, N., Ishihata, M. (2016). Higher-order factorization machines. NIPS.",
+    "Paterek, A. (2007). Improving regularized singular value decomposition for collaborative filtering. KDD Cup.",
+    "Koren, Y. (2009). The BellKor solution to the Netflix Grand Prize.",
+    "Duarte, J., Gama, J., Bifet, A. (2016). Adaptive model rules from high-speed data streams (AMRules). ACM TKDD 10(3), article 30.",
+    "Zubaroglu, A., Atalay, V. (2020). Data stream clustering: a review. arXiv:2007.10781.",
+    "Bhattacharjee, R., Dasgupta, S., Imola, J. J., Moshkovitz, M. (2021). Online k-means clustering on arbitrary data streams. arXiv:2102.09101.",
+    "Roth, K., Pemula, L., Zepeda, J., Schölkopf, B., Brox, T., Gehler, P. (2021). Towards total recall in industrial anomaly detection. arXiv:2106.08265.",
+    "Cover, T., Hart, P. (1967). Nearest neighbor pattern classification. IEEE Trans. Information Theory 13(1), 21-27.",
+    "Zaman, B., Lopez Ramos, L. M., Romero, D., Beferull-Lozano, B. (2019). Online topology identification from vector autoregressive time series. arXiv:1904.01864.",
+    "Csáji, B. Cs. (2018). Score permutation based finite sample inference for GARCH models. arXiv:1807.08390.",
+    "Bollerslev, T. (1986). Generalized autoregressive conditional heteroskedasticity. Journal of Econometrics 31(3), 307-327.",
+    "Gerencsér, L., Orlovits, Z. (2012). Recursive estimation of GARCH processes.",
+    "Mbalawata, I. S., Särkkä, S., Vihola, M., Haario, H. (2013). Adaptive Metropolis algorithm using variational Bayesian adaptive Kalman filter. arXiv:1308.5875.",
+    "Popescu, M., Mronga, D., Kumar, S., Kirchner, F. (2026). Residual-based adaptive Kalman filtering for legged robot state estimation. arXiv:2608.02316.",
+    "Ljung, L., Söderström, T. (1983). Theory and Practice of Recursive Identification. MIT Press.",
+    "Rifkin, R., Klautau, A. (2004). In defense of one-vs-all classification. JMLR 5, 101-141.",
+    "Fürnkranz, J. (2002). Round robin classification. JMLR 2, 721-747.",
+    "Dietterich, T. G., Bakiri, G. (1995). Solving multiclass learning problems via error-correcting output codes. JAIR 2, 263-286.",
+    "Spyromitros-Xioufis, E., Tsoumakas, G., Groves, W., Vlahavas, I. (2016). Multi-target regression via input space expansion. Machine Learning 104(1), 55-98.",
+    "Read, J., Pfahringer, B., Holmes, G., Frank, E. (2009). Classifier chains for multi-label classification. ECML PKDD.",
+    "Dembczyński, K., Cheng, W., Hüllermeier, E. (2010). Bayes optimal multilabel classification via probabilistic classifier chains. ICML.",
+    "Brier, G. W. (1950). Verification of forecasts expressed in terms of probability. Monthly Weather Review 78(1), 1-3.",
+    "Cohen, J. (1960). A coefficient of agreement for nominal scales. Educational and Psychological Measurement 20(1), 37-46.",
+    "Sasaki, Y. (2007). The truth of the F-measure. Teach Tutor Mater.",
+    "Good, I. J. (1952). Rational decisions. JRSS-B 14(1), 107-114.",
+    "Cook, R. D., Weisberg, S. (1982). Residuals and Influence in Regression. Chapman & Hall.",
+    "Vovk, V., Gammerman, A., Shafer, G. (2005). Algorithmic Learning in a Random World. Springer.",
+    "Mann, H. B., Whitney, D. R. (1947). On a test of whether one of two random variables is stochastically larger than the other. Annals of Mathematical Statistics 18(1), 50-60.",
+    "Bamber, D. (1975). The area above the ordinal dominance graph and the area below the receiver operating characteristic graph. Journal of Mathematical Psychology 12(4), 387-415.",
+    "Tatbul, N., Lee, T. J., Zdonik, S., Alam, M., Gottschlich, J. (2018). Precision and recall for time series. NeurIPS. arXiv:1803.03639.",
+    "Lavin, A., Ahmad, S. (2015). Evaluating real-time anomaly detection algorithms — the Numenta Anomaly Benchmark. IEEE ICMLA. arXiv:1510.03336.",
+    "Kim, S., Choi, K., Choi, H.-S., Lee, B., Yoon, S. (2021). Towards a rigorous evaluation of time-series anomaly detection. arXiv:2109.05257.",
+    "Xu, H., et al. (2018). Unsupervised anomaly detection via variational auto-encoder for seasonal KPIs in web applications. WWW.",
+    "Ksieniewicz, P., Zyblewski, P. (2020). Stream-learn: open-source Python library for difficult data stream batch analysis. SoftwareX 11. arXiv:2001.11077.",
+    "Amekoe, K. M., Lebbah, M., Jaffre, G., Azzag, H., Chelly Dagdia, Z. (2024). arXiv:2409.10111.",
+    "Hyndman, R. J., Fan, Y. (1996). Sample quantiles in statistical packages. The American Statistician 50(4), 361-365.",
+    "Chatfield, C. (2003). The Analysis of Time Series: An Introduction, 6th ed. Chapman & Hall/CRC.",
+    "Masson, C., Rim, J. E., Lee, H. K. (2019). DDSketch: a fast and fully-mergeable quantile sketch with relative-error guarantees. PVLDB 12(12), 2195-2205.",
+    "Dunning, T., Ertl, O. (2019). Computing extremely accurate quantiles using t-digests. arXiv:1902.04023.",
+    "Cormode, G., Muthukrishnan, S. (2005). An improved data stream summary: the Count-Min sketch and its applications. Journal of Algorithms 55(1), 58-75.",
+    "Flajolet, P., Fusy, E., Gandouet, O., Meunier, F. (2007). HyperLogLog: the analysis of a near-optimal cardinality estimation algorithm. AofA.",
+    "Bloom, B. H. (1970). Space/time trade-offs in hash coding with allowable errors. CACM 13(7), 422-426.",
+    "Metwally, A., Agrawal, D., El Abbadi, A. (2005). Efficient computation of frequent and top-k elements in data streams. ICDE.",
+    "Börzsönyi, S., Kossmann, D., Stocker, K. (2001). The Skyline operator. ICDE.",
+    "Tao, Y., Papadias, D. (2006). Maintaining sliding window skylines on data streams. IEEE TKDE 18(3), 377-391.",
+    "Ogita, T., Rump, S. M., Oishi, S. (2005). Accurate Sum and Dot Product. SIAM Journal on Scientific Computing 26(6), 1955-1988.",
+    "Shewchuk, J. R. (1997). Adaptive Precision Floating-Point Arithmetic and Fast Robust Geometric Predicates. Discrete and Computational Geometry 18(3), 305-363.",
+    "Healy, J. (2022). Accurate and consistent calculation of the mean and variance in Monte-Carlo simulations. arXiv:2206.10662v7.",
+    "Silajev, I. (2026). TF-IDF and BM25 as exact KL divergences. arXiv:2609.14016.",
+    "Weinberger, K., Dasgupta, A., Langford, J., Smola, A., Attenberg, J. (2009). Feature hashing for large scale multitask learning. ICML.",
+    "Malialis, K., Panayiotou, C., Polycarpou, M. M. (2018). Queue-based resampling for online class imbalance learning. ICANN.",
+    "Jacobsen, E., Lyons, R. (2003). The sliding DFT. IEEE Signal Processing Magazine 20(2), 74-80.",
+    "Ng, A., Zhu, S., Zhang, A. G., Reid, N. (2026). Robust Regression with Student's T: The Role of Degrees of Freedom. arXiv:2603.00269.",
+    "Horn, B. K., Schunck, B. G. (1981). Determining optical flow. Artificial Intelligence 17(1-3), 185-203.",
+    "Ziani (2025). Methods to a Multiresolution Horn-Schunck. arXiv:2511.16535.",
+    "Huang, C., Huang, J. (2017). A fast HOG descriptor using lookup table and integral image. arXiv:1703.06256.",
+    "Lucas, B. D., Kanade, T. (1981). An iterative image registration technique with an application to stereo vision. IJCAI.",
+    "Johnson, W. B., Lindenstrauss, J. (1984). Extensions of Lipschitz mappings into a Hilbert space. Contemporary Mathematics 26, 189-206.",
+    "Ghojogh, B., Karray, F., Crowley, M. (2021). Johnson-Lindenstrauss Lemma, Linear and Nonlinear Random Projections, Random Features, and Random Kitchen Sinks. arXiv:2108.04172.",
+    "Balsubramani, A., Dasgupta, S., Freund, Y. (2013). The fast convergence of incremental PCA. NIPS.",
+    "Pearson, K. (2016). Note on Hampel filter.",
+    "Ma, Y., et al. (2023). Adaptive confidence threshold for ByteTrack. arXiv:2312.01650.",
+    "Chang, X., Ye, Z., et al. (2024). RAD: A Realistic Multi-View Benchmark for Pose-Agnostic Anomaly Detection. arXiv:2410.00713.",
+    "Ames, A. D., Coogan, S., Egerstedt, M., Notomista, G., Sreenath, K., Tabuada, P. (2019). Control Barrier Functions: Theory and Applications. ECC. arXiv:1903.11199.",
+    "Berscheid, L., Kröger, T. (2021). Jerk-limited Real-time Trajectory Generation with Arbitrary Target States. RSS. arXiv:2105.04830.",
+    "Foster, J., McCrory, S., DeBuys, C., Bertrand, S., Griffin, R. (2024). Physically Consistent Online Inertial Adaptation for Humanoid Loco-manipulation. arXiv:2405.07901.",
+    "Rucker, C., Wensing, P. M. (2022). Smooth parameterization of rigid-body inertia. IEEE RA-L 7(2), 2771-2778.",
+    "Lozer, Scalera, Boscariol, Gasparetto. Planning optimal minimum-jerk trajectories for redundant robots. Robotics and Autonomous Systems.",
+    "Fried, Paternain. A Bi-Level Optimization Approach to Joint Trajectory Optimization for Redundant Manipulators. arXiv:2412.07859.",
+    "Piazzi, A., Visioli, A. (2000). Global minimum-jerk trajectory planning of robot manipulators. IEEE Transactions on Industrial Electronics 47(1), 140-149.",
+    "Gibbs, I., Candès, E. J. (2021). Adaptive conformal inference under distribution shift. NeurIPS.",
+    "Gupta, C., Ramdas, A. (2023). Online Platt scaling with calibeating. ICML. arXiv:2305.00070.",
+    "Buitinck, L., et al. (2013). API design for machine learning software: experiences from the scikit-learn project. arXiv:1309.0238.",
+    "Montiel, J., et al. (2020). River: machine learning for streaming data in Python. arXiv:2012.04740.",
+    "Fitzpatrick, R. (2008). Maxwell's Equations and the Principles of Electromagnetism. Jones & Bartlett.",
+    "JSON Schema draft-07. IETF draft-handrews-json-schema-01.",
+    "Kayan, H., Rana, O., Burnap, P., Perera, C. (2023). CASPER: Context-Aware Anomaly Detection System for Industrial Robotic Arms. arXiv:2303.01300."
+  ]
+}

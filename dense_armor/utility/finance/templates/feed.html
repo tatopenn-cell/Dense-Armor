@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  {% if not info.available %}
+    <p class="bad">Feed file not found at {{ config.paths.feed }}</p>
+  {% else %}
+    <p class="sub">{{ info.total }} messages read.</p>
+    <div class="counts">
+      {% for k, v in info.types.items()|sort %}
+        <div class="count"><div class="num">{{ v }}</div><div class="lbl">{{ k }}</div></div>
+      {% endfor %}
+    </div>
+    {% if info.error %}<p class="bad">{{ info.error }}</p>{% endif %}
+  {% endif %}
+</section>
+{% endblock %}

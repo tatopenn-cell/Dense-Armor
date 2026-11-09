@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="pg">
+  <div class="pg-split">
+    <div class="pg-left">
+      <div class="pg-topbar-left">
+        <button id="pg-run">▶ Run</button>
+        <span id="pg-status" class="sub">ready</span>
+      </div>
+      <div class="pg-params">
+        <label>stream
+          <select id="p-stream">
+            <option>sudden</option><option>gradual</option><option>incremental</option>
+          </select>
+        </label>
+        <label>learner
+          <select id="p-learner">
+            <option>HoeffdingTreeClassifier</option>
+            <option>HoeffdingAdaptiveTreeClassifier</option>
+            <option>MondrianForestClassifier</option>
+            <option>AggregatedMondrianForestClassifier</option>
+          </select>
+        </label>
+        <label>n <input type="number" id="p-n" value="1000" min="100" max="5000"></label>
+        <label>seed <input type="number" id="p-seed" value="0" min="0"></label>
+      </div>
+      <textarea id="pg-code" spellcheck="false">import json
+import numpy as np
+from dense_armor.utility.signals.datasets import DriftStream
+
+# chain injected: STREAM_KIND, LEARNER_NAME, N, SEED, ANOMALY, MIXTURE, GARCH
+
+est = LEARNERS[LEARNER_NAME]()
+ds = DriftStream(n_samples=N, n_features=4, n_drifts=1,
+                 kind=STREAM_KIND, seed=SEED)
+X, y = ds.data()
+names = [f"x{i}" for i in range(X.shape[1])]
+correct = np.zeros(N, dtype=np.int8)
+for i in range(N):
+    x = {k: float(X[i, j]) for j, k in enumerate(names)}
+    p = est.predict_one(x)
+    est.learn_one(x, int(y[i]))
+    if p is not None and int(p) == int(y[i]):
+        correct[i] = 1
+    if ANOMALY is not None:
+        ANOMALY.score_one(x); ANOMALY.learn_one(x)
+    if MIXTURE is not None:
+        MIXTURE.learn_one(x)
+    if GARCH is not None and i > 0:
+        GARCH.learn_one({"x": float(X[i, 0]) - float(X[i - 1, 0])})
+cum = np.cumsum(correct) / np.arange(1, N + 1)
+print("accuracy finale:", round(float(cum[-1]), 4))
+step = max(1, N // 120)
+points = [{"i": int(i), "cum": round(float(cum[i]), 4)}
+          for i in range(0, N, step)]
+drift = [int(p * N) for p in (getattr(ds, "drift_positions", []) or [])]
+print(json.dumps({"__chart__": {"kind": "line", "points": points,
+                                "drifts": drift}}))</textarea>
+    </div>
+    <div class="pg-right">
+      <div class="card chain-card">
+        <h4>Chain</h4>
+        <div id="chain-visual" class="chain-visual">
+          <div class="node active" data-node="stream">Stream<small></small></div>
+          <div class="arrow">→</div>
+          <div class="node active" data-node="learner">Learner<small></small></div>
+          <div class="arrow">→</div>
+          <div class="node" data-node="anomaly">Anomaly<small>off</small></div>
+          <div class="arrow">→</div>
+          <div class="node" data-node="mixture">Mixture<small>off</small></div>
+          <div class="arrow">→</div>
+          <div class="node" data-node="garch">GARCH<small>off</small></div>
+        </div>
+        <div class="chain-toggles">
+          <label class="pill"><input type="checkbox" id="chk-anomaly" data-node="anomaly"> Anomaly</label>
+          <label class="pill"><input type="checkbox" id="chk-mixture" data-node="mixture"> Mixture</label>
+          <label class="pill"><input type="checkbox" id="chk-garch" data-node="garch"> GARCH</label>
+        </div>
+      </div>
+      <div class="card demo-card">
+        <h4>Demo (F1-F10 product)</h4>
+        <div id="demo-summary" class="demo-summary sub">loading…</div>
+      </div>
+      <div class="card">
+        <h4>Run output</h4>
+        <div id="pg-stdout" class="pg-out">click Run</div>
+        <div id="pg-chart" class="chart"></div>
+        <pre id="pg-stderr" class="pg-err"></pre>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

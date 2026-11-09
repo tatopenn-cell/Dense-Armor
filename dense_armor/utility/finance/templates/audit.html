@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  {% if info.available %}
+    <dl>
+      <dt>url</dt><dd class="mono">{{ info.url }}</dd>
+      <dt>records</dt><dd>{{ info.records }}</dd>
+      <dt>verified</dt><dd class="{{ 'good' if info.verified else 'bad' }}">{{ info.verified }}</dd>
+      <dt>last_hash</dt><dd class="mono">{{ info.last_hash }}</dd>
+    </dl>
+  {% else %}
+    <p class="bad">Not available: {{ info.error }}</p>
+    <p>Set <code>DENSE_ARMOR_PG_URL</code>, run <code>docker-compose up -d</code> and <code>alembic upgrade head</code>.</p>
+  {% endif %}
+</section>
+{% endblock %}

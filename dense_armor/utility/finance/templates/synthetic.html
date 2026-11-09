@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <form method="get" action="/synthetic">
+    <label>n <input type="number" name="n" min="1" max="1000" value="{{ n }}"></label>
+    <button>generate</button>
+  </form>
+  <dl>
+    <dt>bytes</dt><dd>{{ size }}</dd>
+    <dt>messages</dt><dd>{{ n }}</dd>
+  </dl>
+  <div class="counts">
+    {% for k, v in types.items()|sort %}
+      <div class="count"><div class="num">{{ v }}</div><div class="lbl">{{ k }}</div></div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="grid">
+  <div class="card">
+    <h3>Status</h3>
+    <dl id="status">
+      <dt>ok</dt><dd data-k="ok">…</dd>
+      <dt>emergency_stop</dt><dd data-k="emergency_stop">…</dd>
+      <dt>feed.exists</dt><dd data-k="feed.exists">…</dd>
+      <dt>log.exists</dt><dd data-k="log.exists">…</dd>
+      <dt>log.records</dt><dd data-k="log.records">…</dd>
+      <dt>log.verified</dt><dd data-k="log.verified">…</dd>
+      <dt>log.last_hash</dt><dd data-k="log.last_hash">…</dd>
+    </dl>
+  </div>
+  <div class="card">
+    <h3>Configuration</h3>
+    <dl>
+      <dt>schedule.total</dt><dd>{{ config.schedule.total }}</dd>
+      <dt>schedule.n</dt><dd>{{ config.schedule.n }}</dd>
+      <dt>pretrade.max_size</dt><dd>{{ config.pretrade.max_size }}</dd>
+      <dt>pretrade.max_notional</dt><dd>{{ config.pretrade.max_notional }}</dd>
+      <dt>pretrade.max_orders</dt><dd>{{ config.pretrade.max_orders }}</dd>
+      <dt>ring</dt><dd>{{ config.ring.capacity }} × {{ config.ring.width }}</dd>
+      <dt>log path</dt><dd>{{ config.paths.log }}</dd>
+      <dt>feed path</dt><dd>{{ config.paths.feed }}</dd>
+      <dt>stop path</dt><dd>{{ config.paths.emergency_stop }}</dd>
+    </dl>
+  </div>
+</section>
+<section class="card">
+  <h3>Decisions by reason</h3>
+  <div id="counts" class="counts">…</div>
+</section>
+<section class="card">
+  <h3>Latest decisions</h3>
+  <table id="latest">
+    <thead><tr><th>seq</th><th>t</th><th>reason</th><th>stock</th><th>approved</th><th>order_ref</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</section>
+{% endblock %}

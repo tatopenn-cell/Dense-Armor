@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  {% if info.available %}
+    <dl>
+      <dt>quickfix</dt><dd class="good">installed ({{ info.version }})</dd>
+    </dl>
+    <p class="sub">The FIX gateway sends limit orders to a test acceptor. It is used by the command line only; no acceptor is started by this page.</p>
+  {% else %}
+    <p class="bad">Not available: {{ info.error }}</p>
+    <p>Install the extra: <code>pip install -e ".[finance-ops]"</code></p>
+  {% endif %}
+</section>
+{% endblock %}

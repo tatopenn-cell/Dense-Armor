@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="sec-page">
+  <header class="sec-head">
+    <div class="sec-title-row">
+      <span class="sec-count">{{ total }} pezzi</span>
+    </div>
+    <div class="sec-dots">
+      {% set slugs = cat_slugs if cat_slugs is defined else None %}
+      {% for cat in categories %}
+      <a href="?cat={{ slugs[loop.index0] if slugs else ('anomaly' if cat=='Anomaly' else 'drift' if cat=='Drift & Pipelines' else loop.index0) }}"
+         class="dot {{ 'active' if loop.index0 == active_cat }}" title="{{ cat }}"></a>
+      {% endfor %}
+      <span class="sec-cat-name">{{ categories[active_cat] }}</span>
+    </div>
+  </header>
+
+  <div class="sec-body">
+    <div class="sec-grid">
+      {% for p in pieces %}
+      <article class="piece piece-{{ p.size|default('S') }}" data-size="{{ p.size|default('S') }}">
+        <div class="piece-head">
+          <div class="piece-name" title="{{ p.name }}">{{ p.name }}</div>
+          <a class="piece-expand" href="/piece/{{ page }}/{{ cat_slugs[active_cat] if cat_slugs is defined else categories[active_cat]|lower }}/{{ p.id }}" title="enlarge">[ ]</a>
+          <div class="piece-kind">{{ p.kind }}</div>
+        </div>
+        <div class="piece-chart">{{ p.svg|safe }}</div>
+        <form class="piece-form">
+          <div class="pf-row">
+            <label>p1<input type="text" name="p1" placeholder="—"></label>
+            <label>p2<input type="text" name="p2" placeholder="—"></label>
+            <label>p3<input type="text" name="p3" placeholder="—"></label>
+          </div>
+          <div class="pf-actions">
+            <button type="button" class="piece-use"
+                data-section="{{ page }}"
+                data-category="{{ cat_slugs[active_cat] if cat_slugs is defined else categories[active_cat]|lower }}"
+                data-piece="{{ p.id }}">use in chain</button>
+          </div>
+        </form>
+      </article>
+      {% endfor %}
+      {% if not pieces %}
+      <div class="empty-section">
+        <p>{{ section }} — {{ total }} pezzi</p>
+        <p class="sub">la griglia si popolerà quando attivo la sezione</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  const SLOT_MAP = {
+    "data": "data", "features": "features", "signal": "signal",
+    "portfolio": "portfolio", "risk": "risk", "execution": "execution",
+  };
+  document.querySelectorAll(".piece-use").forEach(btn => {
+    btn.disabled = false;
+    btn.addEventListener("click", () => {
+      const section = btn.dataset.section;
+      const category = btn.dataset.category;
+      const piece = btn.dataset.piece;
+      const slot = SLOT_MAP[section] || section;
+      let picks = {};
+      try { picks = JSON.parse(localStorage.getItem("chain_picks") || "{}"); } catch (e) {}
+      picks[slot] = piece;
+      // se la categoria è una sub-sezione (es. trees, linear, anomaly, drift),
+      // la salvo anche come nota per il debug
+      picks["_category_" + slot] = category;
+      localStorage.setItem("chain_picks", JSON.stringify(picks));
+      const orig = btn.textContent;
+      btn.textContent = "✓ " + slot + "=" + piece;
+      btn.disabled = true;
+      setTimeout(() => {
+        btn.textContent = orig;
+        btn.disabled = false;
+      }, 2200);
+    });
+  });
+})();
+</script>
+{% endblock %}

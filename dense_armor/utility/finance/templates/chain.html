@@ -1,0 +1,591 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="chain-wrap">
+  <div class="chain-hero">
+    <div class="chain-chain">
+      <div class="chain-node" data-node="data">
+        <span class="cn-tag">Data</span>
+        <input type="text" class="cn-search" data-search="data" placeholder="filter…">
+        <select id="sel-data" class="cn-select"></select>
+        <span class="cn-budget" data-slot="data"></span>
+      </div>
+      <div class="chain-arrow">→</div>
+      <div class="chain-node" data-node="features">
+        <span class="cn-tag">Features</span>
+        <input type="text" class="cn-search" data-search="features" placeholder="filter…">
+        <select id="sel-features" class="cn-select"></select>
+        <span class="cn-budget" data-slot="features"></span>
+      </div>
+      <div class="chain-arrow">→</div>
+      <div class="chain-node" data-node="signal">
+        <span class="cn-tag">Signal</span>
+        <input type="text" class="cn-search" data-search="signal" placeholder="filter…">
+        <select id="sel-signal" class="cn-select"></select>
+        <span class="cn-budget" data-slot="signal"></span>
+      </div>
+      <div class="chain-arrow">→</div>
+      <div class="chain-node" data-node="portfolio">
+        <span class="cn-tag">Portfolio</span>
+        <input type="text" class="cn-search" data-search="portfolio" placeholder="filter…">
+        <select id="sel-portfolio" class="cn-select"></select>
+        <span class="cn-budget" data-slot="portfolio"></span>
+      </div>
+      <div class="chain-arrow">→</div>
+      <div class="chain-node" data-node="risk">
+        <span class="cn-tag">Risk</span>
+        <input type="text" class="cn-search" data-search="risk" placeholder="filter…">
+        <select id="sel-risk" class="cn-select"></select>
+        <span class="cn-budget" data-slot="risk"></span>
+      </div>
+      <div class="chain-arrow">→</div>
+      <div class="chain-node" data-node="execution">
+        <span class="cn-tag">Execution</span>
+        <input type="text" class="cn-search" data-search="execution" placeholder="filter…">
+        <select id="sel-execution" class="cn-select"></select>
+        <span class="cn-budget" data-slot="execution"></span>
+      </div>
+    </div>
+    <div class="chain-params-bar">
+      <button id="chain-run">▶ Run</button>
+      <span id="chain-status" class="sub">loading…</span>
+      <span id="chain-budget" class="chain-budget muted">budget: —</span>
+      <div class="chain-params-inline">
+        <label>n <input type="number" id="sel-n" value="1253" min="50" max="5000"></label>
+        <label>seed <input type="number" id="sel-seed" value="0" min="0"></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="chain-grid">
+    <div class="chain-card chart-main">
+      <div class="chart-head">
+        <h3>accuracy (signal)</h3>
+        <span id="badge-acc" class="chart-badge muted">—</span>
+      </div>
+      <div id="chart-acc" class="chart-body"></div>
+    </div>
+    <div class="chain-card">
+      <div class="chart-head">
+        <h3>anomaly / drift</h3>
+        <span id="badge-anom" class="chart-badge muted">—</span>
+      </div>
+      <div id="chart-anom" class="chart-body"></div>
+    </div>
+    <div class="chain-card">
+      <div class="chart-head">
+        <h3>features</h3>
+        <span id="badge-feat" class="chart-badge muted">—</span>
+      </div>
+      <div id="chart-feat" class="chart-body"></div>
+    </div>
+    <div class="chain-card">
+      <div class="chart-head">
+        <h3>portfolio / execution</h3>
+        <span id="badge-port" class="chart-badge muted">—</span>
+      </div>
+      <div id="chart-port" class="chart-body"></div>
+    </div>
+  </div>
+  <div class="chain-meta" id="chain-meta"></div>
+</section>
+<script>
+(function () {
+
+// ============================================================
+// Esporta un grafico SVG in PNG (senza dipendenze esterne)
+// ============================================================
+window.exportChartPNG = function (containerId, filename) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const svg = container.querySelector("svg");
+  if (!svg) return;
+
+  const clone = svg.cloneNode(true);
+  const vb = svg.viewBox.baseVal;
+  const w = vb && vb.width ? vb.width : 800;
+  const h = vb && vb.height ? vb.height : 400;
+  clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+  clone.setAttribute("width", w);
+  clone.setAttribute("height", h);
+
+  const bg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+  bg.setAttribute("width", "100%");
+  bg.setAttribute("height", "100%");
+  bg.setAttribute("fill", "#0d141c");
+  clone.insertBefore(bg, clone.firstChild);
+
+  const xml = new XMLSerializer().serializeToString(clone);
+  const blob = new Blob([xml], {type: "image/svg+xml;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement("canvas");
+    const scale = 2;
+    canvas.width = w * scale;
+    canvas.height = h * scale;
+    const ctx = canvas.getContext("2d");
+    ctx.scale(scale, scale);
+    ctx.drawImage(img, 0, 0, w, h);
+    URL.revokeObjectURL(url);
+    canvas.toBlob((pngBlob) => {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(pngBlob);
+      a.download = (filename || "chart") + ".png";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    }, "image/png");
+  };
+  img.src = url;
+};
+
+// Aggiunge un pulsante ⤓ a ogni chart-head E a ogni .mini-card h4
+window.attachChartExport = function () {
+  // 1) chart-head classico
+  document.querySelectorAll(".chart-head").forEach(head => {
+    if (head.querySelector(".chart-export")) return;
+    const card = head.closest(".chain-card, .piece-chart-xl, .mini-card");
+    if (!card) return;
+    const target = card.querySelector("[id='chart'], [id='confusion-matrix'], [id='roc-curve'], [id='calibration']");
+    if (!target || !target.id) return;
+    const hasSvg = !!target.querySelector("svg");
+    const btn = document.createElement("button");
+    btn.className = "chart-export" + (hasSvg ? "" : " disabled");
+    btn.textContent = "⤓ PNG";
+    btn.title = hasSvg ? "export chart as PNG" : "no chart yet";
+    btn.disabled = !hasSvg;
+    if (hasSvg) {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        btn.disabled = true;
+        try { exportChartPNG(target.id, target.id); }
+        finally { setTimeout(() => { btn.disabled = false; }, 600); }
+      });
+    }
+    head.appendChild(btn);
+  });
+  // 2) mini-card h4 (confusion, roc, calibration)
+  document.querySelectorAll(".mini-card").forEach(card => {
+    const h4 = card.querySelector("h4");
+    if (!h4 || h4.querySelector(".chart-export")) return;
+    const target = card.querySelector("[id='chart'], [id='confusion-matrix'], [id='roc-curve'], [id='calibration']");
+    if (!target || !target.id) return;
+    const hasSvg = !!target.querySelector("svg");
+    const btn = document.createElement("button");
+    btn.className = "chart-export" + (hasSvg ? "" : " disabled");
+    btn.textContent = "⤓ PNG";
+    btn.title = hasSvg ? "export chart as PNG" : "no chart yet";
+    btn.disabled = !hasSvg;
+    btn.style.marginLeft = "auto";
+    if (hasSvg) {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        btn.disabled = true;
+        try { exportChartPNG(target.id, target.id); }
+        finally { setTimeout(() => { btn.disabled = false; }, 600); }
+      });
+    }
+    h4.style.display = "flex";
+    h4.style.alignItems = "center";
+    h4.appendChild(btn);
+  });
+};
+
+
+// ============================================================
+// Tooltip universale per i grafici SVG (polyline)
+// ============================================================
+window.attachChartTooltip = function (container) {
+  if (!container || container._tooltipBound) return;
+  container._tooltipBound = true;
+  container.classList.add("chart-container");
+
+  const tip = document.createElement("div");
+  tip.className = "chart-tooltip";
+  document.body.appendChild(tip);
+
+  const crosshair = document.createElement("div");
+  crosshair.className = "chart-crosshair";
+  container.appendChild(crosshair);
+
+  container.addEventListener("mousemove", (e) => {
+    const svg = container.querySelector("svg");
+    if (!svg) { tip.classList.remove("show"); return; }
+    const rect = svg.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    // trova la polyline con più punti (la serie principale)
+    const polys = Array.from(svg.querySelectorAll("polyline"));
+    if (!polys.length) { tip.classList.remove("show"); return; }
+
+    let best = null;
+    for (const poly of polys) {
+      const pts = poly.getAttribute("points").trim().split(/\s+/).map(p => {
+        const [x, y] = p.split(",").map(Number);
+        return { x, y };
+      });
+      if (!pts.length) continue;
+      // trova il punto con x più vicino a mx (in coordinate SVG)
+      const scaleX = rect.width / svg.viewBox.baseVal.width;
+      const targetX = mx / scaleX;
+      let nearest = pts[0];
+      let bestDx = Math.abs(pts[0].x - targetX);
+      for (const pt of pts) {
+        const dx = Math.abs(pt.x - targetX);
+        if (dx < bestDx) { bestDx = dx; nearest = pt; }
+      }
+      if (!best || bestDx < best.dx) {
+        best = { dx: bestDx, x: nearest.x, y: nearest.y, poly };
+      }
+    }
+    if (!best) { tip.classList.remove("show"); return; }
+
+    // posiziona crosshair alla x del punto
+    const px = best.x * (rect.width / svg.viewBox.baseVal.width);
+    crosshair.style.left = px + "px";
+    crosshair.classList.add("active");
+
+    // valore y in coordinate dati (dallo y del SVG al valore)
+    // non abbiamo la scala, ma possiamo mostrare x, y in pixel e il valore approssimato
+    // Se il grafico ha un attributo data-scale, lo usiamo
+    let valueTxt = "";
+    if (svg.dataset.yMin !== undefined && svg.dataset.yMax !== undefined) {
+      const yMin = +svg.dataset.yMin, yMax = +svg.dataset.yMax;
+      const vb = svg.viewBox.baseVal;
+      const padT = +(svg.dataset.padT || 10);
+      const padB = +(svg.dataset.padB || 26);
+      const h = vb.height - padT - padB;
+      const yVal = yMax - ((best.y - padT) / h) * (yMax - yMin);
+      valueTxt = yVal.toFixed(4);
+    } else {
+      valueTxt = "y=" + best.y.toFixed(1);
+    }
+
+    tip.innerHTML = '<span class="tt-k">x</span><span class="tt-v">' + best.x.toFixed(0) +
+                    '</span> <span class="tt-k">' + valueTxt + '</span>';
+    tip.style.left = (e.clientX + 12) + "px";
+    tip.style.top = (e.clientY - 28) + "px";
+    tip.classList.add("show");
+  });
+
+  container.addEventListener("mouseleave", () => {
+    tip.classList.remove("show");
+    crosshair.classList.remove("active");
+  });
+};
+
+  const NS = "http://www.w3.org/2000/svg";
+  const sel = {
+    data: document.getElementById("sel-data"),
+    features: document.getElementById("sel-features"),
+    signal: document.getElementById("sel-signal"),
+    portfolio: document.getElementById("sel-portfolio"),
+    risk: document.getElementById("sel-risk"),
+    execution: document.getElementById("sel-execution"),
+  };
+  const nIn = document.getElementById("sel-n");
+  const seedIn = document.getElementById("sel-seed");
+  const btn = document.getElementById("chain-run");
+  const status = document.getElementById("chain-status");
+  const metaEl = document.getElementById("chain-meta");
+
+  function fill(s, items, preferred) {
+    s.innerHTML = "";
+    for (const it of items) {
+      const o = document.createElement("option");
+      o.value = it.id; o.textContent = it.id;
+      s.appendChild(o);
+    }
+    if (preferred && [...s.options].some(o => o.value === preferred)) s.value = preferred;
+  }
+
+  async function loadCatalog() {
+    const r = await fetch("/api/chain/catalog");
+    const cat = await r.json();
+    fill(sel.data, cat.data, "gspc");
+    fill(sel.features, cat.features, "standard_scaler");
+    fill(sel.signal, cat.signal, "hoeffding");
+    fill(sel.portfolio, cat.portfolio, "min_variance");
+    fill(sel.risk, cat.risk, "lof");
+    fill(sel.execution, cat.execution, "pipeline");
+    // applica picks dal localStorage (use-in-chain delle card)
+    try {
+      const picks = JSON.parse(localStorage.getItem("chain_picks") || "{}");
+      for (const [slot, val] of Object.entries(picks)) {
+        if (sel[slot] && [...sel[slot].options].some(o => o.value === val)) {
+          sel[slot].value = val;
+        }
+      }
+    } catch (e) {}
+    status.textContent = "ready";
+  }
+
+  function draw(root, pts, opts) {
+    root.innerHTML = "";
+    if (!pts || pts.length < 2) {
+      root.innerHTML = '<div class="sub" style="padding:.6em">no data</div>';
+      return;
+    }
+    const W = 760, H = 220, padL = 46, padR = 14, padT = 10, padB = 26;
+    const xs = pts.map(p => p.i), vs = pts.map(p => p.v);
+    const xMin = xs[0], xMax = xs[xs.length - 1];
+    let yMin = (opts && opts.yMin !== undefined) ? opts.yMin : Math.min(...vs);
+    let yMax = (opts && opts.yMax !== undefined) ? opts.yMax : Math.max(...vs);
+    if (!isFinite(yMin)) yMin = 0;
+    if (!isFinite(yMax)) yMax = 1;
+    if (yMax <= yMin) yMax = yMin + 1;
+    const sx = i => padL + (i - xMin) / Math.max(1, xMax - xMin) * (W - padL - padR);
+    const sy = v => H - padB - (v - yMin) / (yMax - yMin) * (H - padT - padB);
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+    svg.setAttribute("width", "100%");
+    svg.dataset.yMin = yMin; svg.dataset.yMax = yMax;
+    svg.dataset.padT = padT; svg.dataset.padB = padB;
+    for (let k = 0; k <= 4; k++) {
+      const v = yMin + (yMax - yMin) * k / 4;
+      const y = sy(v);
+      const l = document.createElementNS(NS, "line");
+      l.setAttribute("x1", padL); l.setAttribute("x2", W - padR);
+      l.setAttribute("y1", y); l.setAttribute("y2", y);
+      l.setAttribute("stroke", "#263441");
+      svg.appendChild(l);
+      const tx = document.createElementNS(NS, "text");
+      tx.setAttribute("x", padL - 6); tx.setAttribute("y", y + 4);
+      tx.setAttribute("text-anchor", "end");
+      tx.setAttribute("font-size", "10"); tx.setAttribute("fill", "#8a9aa8");
+      tx.textContent = v.toFixed(2);
+      svg.appendChild(tx);
+    }
+    if (opts && opts.marks) for (const m of opts.marks.slice(0, 200)) {
+      const x = sx(m);
+      const l = document.createElementNS(NS, "line");
+      l.setAttribute("x1", x); l.setAttribute("x2", x);
+      l.setAttribute("y1", padT); l.setAttribute("y2", H - padB);
+      l.setAttribute("stroke", opts.markColor || "#f85149");
+      l.setAttribute("opacity", "0.4");
+      svg.appendChild(l);
+    }
+    const poly = document.createElementNS(NS, "polyline");
+    poly.setAttribute("points", pts.map(p => sx(p.i) + "," + sy(p.v)).join(" "));
+    poly.setAttribute("fill", "none");
+    poly.setAttribute("stroke", (opts && opts.color) || "#4a9eff");
+    poly.setAttribute("stroke-width", "1.6");
+    poly.setAttribute("vector-effect", "non-scaling-stroke");
+    svg.appendChild(poly);
+    root.appendChild(svg);
+  }
+
+  function badge(id, v) {
+    const el = document.getElementById(id);
+    if (v == null) { el.textContent = "off"; el.className = "chart-badge muted"; }
+    else { el.textContent = String(v); el.className = "chart-badge"; }
+  }
+
+  function updateSlotBadges(roleAttrs) {
+    const slots = ["data", "features", "signal", "portfolio", "risk", "execution"];
+    for (const slot of slots) {
+      const el = document.querySelector(`.cn-budget[data-slot="${slot}"]`);
+      if (!el) continue;
+      const attrs = (roleAttrs || {})[slot];
+      if (!attrs || attrs.budget_s === undefined) {
+        el.textContent = "";
+        el.className = "cn-budget";
+        continue;
+      }
+      const b = attrs.budget_s;
+      const mc = attrs.memory_class || "?";
+      el.textContent = `${(b*1000).toFixed(1)}ms · ${mc}`;
+      el.className = "cn-budget " + (mc === "O(window)" ? "warn" : "good");
+    }
+  }
+
+  function bindSearchFilters() {
+    document.querySelectorAll(".cn-search").forEach(inp => {
+      const slot = inp.dataset.search;
+      const sel = document.getElementById("sel-" + slot);
+      if (!sel) return;
+      // salva tutte le opzioni originali
+      const original = Array.from(sel.options).map(o => ({
+        value: o.value, text: o.textContent
+      }));
+      inp.addEventListener("input", () => {
+        const q = inp.value.trim().toLowerCase();
+        const current = sel.value;
+        sel.innerHTML = "";
+        let kept = 0;
+        for (const o of original) {
+          if (!q || o.value.toLowerCase().includes(q) || o.text.includes(q)) {
+            const opt = document.createElement("option");
+            opt.value = o.value;
+            opt.textContent = o.text;
+            sel.appendChild(opt);
+            kept++;
+          }
+        }
+        // ripristina la selezione se ancora presente
+        if ([...sel.options].some(o => o.value === current)) sel.value = current;
+        // aggiorna anche il badge budget se presente (per features/signal/risk)
+        const badge = document.querySelector(`.cn-budget[data-slot="${slot}"]`);
+        if (badge && kept === 0) { badge.textContent = ""; badge.className = "cn-budget"; }
+      });
+      // Invio chiude il filtro e ripristina tutte le opzioni
+      inp.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          inp.value = "";
+          sel.innerHTML = "";
+          for (const o of original) {
+            const opt = document.createElement("option");
+            opt.value = o.value; opt.textContent = o.text;
+            sel.appendChild(opt);
+          }
+          sel.focus();
+        }
+      });
+    });
+  }
+
+  async function run() {
+    btn.disabled = true; status.textContent = "running…";
+    const body = {
+      data: sel.data.value,
+      features: sel.features.value,
+      signal: sel.signal.value,
+      portfolio: sel.portfolio.value,
+      risk: sel.risk.value,
+      execution: sel.execution.value,
+      n: parseInt(nIn.value, 10) || 1253,
+      seed: parseInt(seedIn.value, 10) || 0,
+    };
+    try {
+      const r = await fetch("/api/chain/run", {
+        method: "POST", headers: {"content-type": "application/json"},
+        body: JSON.stringify(body),
+      });
+      const d = await r.json();
+      if (!d.ok) { status.textContent = "error: " + (d.error || "?"); return; }
+      const m = d.metrics || {};
+      draw(document.getElementById("chart-acc"), d.series.accuracy, {yMin:0,yMax:1});
+      attachChartTooltip(document.getElementById("chart-acc"));
+      badge("badge-acc", m.accuracy);
+      if (body.risk === "none") {
+        draw(document.getElementById("chart-anom"), [], {});
+      attachChartTooltip(document.getElementById("chart-anom"));
+        badge("badge-anom", null);
+      } else {
+        draw(document.getElementById("chart-anom"), d.series.risk || [],
+             {color:"#e056fd", marks: d.alarms});
+      attachChartTooltip(document.getElementById("chart-anom"));
+        badge("badge-anom", (m.risk_alarms ?? 0) + " alarms");
+      }
+      draw(document.getElementById("chart-feat"), d.series.features || [], {color:"#f7b731"});
+      attachChartTooltip(document.getElementById("chart-feat"));
+      badge("badge-feat", (d.series.features || []).length + " pts");
+      const port = m.portfolio;
+      const w = port && port.weights ? port.weights : (port && port.weights_min_var ? port.weights_min_var : null);
+      if (w) {
+        const wpts = w.map((v, i) => ({i, v}));
+        draw(document.getElementById("chart-port"), wpts, {color:"#3fb950"});
+      attachChartTooltip(document.getElementById("chart-port"));
+        badge("badge-port", w.length + " assets");
+      } else {
+        draw(document.getElementById("chart-port"), [], {});
+      attachChartTooltip(document.getElementById("chart-port"));
+        badge("badge-port", null);
+      }
+      const portTxt = port && !port.error
+        ? (port.weights_min_var ? "min_var=" + JSON.stringify(port.weights_min_var.slice(0,4))
+                                : "weights=" + JSON.stringify((port.weights || []).slice(0,4)))
+        : (port && port.error ? "err" : "—");
+      const exec = m.execution;
+      const execTxt = exec && !exec.error
+        ? (exec.sent_size !== undefined ? "sent=" + exec.sent_size : "ok")
+        : (exec && exec.error ? "err" : "—");
+      metaEl.innerHTML =
+        '<span><b>source:</b> ' + esc(d.data_meta.source || "?") + '</span>' +
+        '<span><b>n:</b> ' + esc(m.n) + '</span>' +
+        '<span><b>portfolio:</b> ' + esc(portTxt) + '</span>' +
+        '<span><b>execution:</b> ' + esc(execTxt) + '</span>' +
+        Object.entries(m.errors || {}).filter(([, e]) => e.n > 0).map(([stage, e]) =>
+          '<span class="bad"><b>' + esc(stage) + ' errors:</b> ' + esc(e.n) + ' (first: ' + esc(e.first) + ')</span>').join('');
+      updateSlotBadges(m.role_attributes);
+
+      // budget totale della chain (dai role_attributes)
+      const budgetEl = document.getElementById("chain-budget");
+      if (budgetEl) {
+        const tb = m.total_budget_s;
+        const roleAttrs = m.role_attributes || {};
+        const nDeclared = Object.keys(roleAttrs).filter(k => roleAttrs[k] && roleAttrs[k].budget_s !== undefined).length;
+        const nSlots = 6;
+        const allDeclared = nDeclared === nSlots;
+        if (tb != null) {
+          const ms = (tb * 1000).toFixed(2);
+          if (allDeclared) {
+            budgetEl.textContent = `budget totale: ${ms} ms (6/6)`;
+            budgetEl.className = "chain-budget good";
+          } else {
+            budgetEl.textContent = `budget: ≥${ms} ms (${nDeclared}/${nSlots} dichiarati)`;
+            budgetEl.className = "chain-budget warn";
+          }
+          const missing = Object.keys(roleAttrs).filter(k => !roleAttrs[k] || roleAttrs[k].budget_s === undefined);
+          const notDecl = ["data", "portfolio", "execution"].filter(s => !roleAttrs[s]);
+          const tips = [];
+          if (missing.length) tips.push("senza budget: " + missing.join(", "));
+          if (notDecl.length) tips.push("non istanza: " + notDecl.join(", "));
+          budgetEl.title = tips.join(" · ");
+        } else {
+          budgetEl.textContent = "budget: non dichiarato";
+          budgetEl.className = "chain-budget warn";
+          budgetEl.title = "nessuno slot dichiara budget_s";
+        }
+      }
+      // aggiorna il pannello aside
+      const ds = document.getElementById("demo-summary");
+      if (ds) {
+        ds.innerHTML = '<div><b>accuracy:</b> ' + esc(m.accuracy) + '</div>' +
+                       '<div><b>risk alarms:</b> ' + esc(m.risk_alarms ?? "—") + '</div>' +
+                       '<div><b>portfolio:</b> ' + (w ? w.length + " assets" : "—") + '</div>';
+      }
+      attachChartExport();
+      status.textContent = "done";
+    } catch (e) {
+      status.textContent = "error: " + e.message;
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  btn.addEventListener("click", run);
+  loadCatalog().then(() => { bindSearchFilters(); setTimeout(run, 200); });
+
+  // aside mini-mappa: toggle visivo + sync con i select
+  document.querySelectorAll("#chain-mini-visual .node").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const key = btn.dataset.node;
+      if (sel[key]) {
+        const on = btn.dataset.on !== "true";
+        btn.dataset.on = on ? "true" : "false";
+        btn.classList.toggle("active", on);
+      }
+    });
+  });
+
+  // status aside
+  async function loadStatus() {
+    const root = document.getElementById("status-side");
+    if (!root) return;
+    try {
+      const r = await fetch("/status");
+      const s = await r.json();
+      for (const dd of root.querySelectorAll("dd[data-k]")) {
+        const k = dd.getAttribute("data-k");
+        const v = k.split(".").reduce((o, kk) => (o == null ? undefined : o[kk]), s);
+        if (typeof v === "boolean") { dd.textContent = v ? "true" : "false"; dd.className = v ? "good" : "bad"; }
+        else dd.textContent = v == null ? "—" : String(v);
+      }
+    } catch (e) {}
+  }
+  loadStatus();
+})();
+</script>
+{% endblock %}

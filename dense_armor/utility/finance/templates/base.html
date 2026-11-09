@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{ title }} — Dense-Armor Finance</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+  <script>
+    function esc(v) {
+      return String(v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+  </script>
+</head>
+<body class="app page-{{ page }}">
+  <nav class="rail" aria-label="sections">
+    <div class="rail-logo" title="Dense-Armor">DA</div>
+    <a href="/chain"        class="rail-item {{ 'active' if page=='chain' }}"     title="Chain">⛓</a>
+    <a href="/s/data"       class="rail-item {{ 'active' if page=='data' }}"      title="Data">▦</a>
+    <a href="/s/features"   class="rail-item {{ 'active' if page=='features' }}"  title="Features">⚙</a>
+    <a href="/s/signal"     class="rail-item {{ 'active' if page=='signal' }}"    title="Signal">◈</a>
+    <a href="/s/portfolio"  class="rail-item {{ 'active' if page=='portfolio' }}" title="Portfolio">⚖</a>
+    <a href="/s/risk"       class="rail-item {{ 'active' if page=='risk' }}"      title="Risk">⚠</a>
+    <a href="/s/execution"  class="rail-item {{ 'active' if page=='execution' }}" title="Execution">⇶</a>
+    <a href="/s/more"       class="rail-item {{ 'active' if page=='more' }}"      title="More">▢</a>
+    <div class="rail-sep"></div>
+    <a href="/emergency" class="rail-item danger {{ 'active' if page=='emergency' }}" title="Emergency stop">■</a>
+  </nav>
+
+  <main class="main">
+    <header class="topbar">
+      <h2>{{ title }}</h2>
+      <span class="config-path">{{ config.paths.log.parent }}</span>
+    </header>
+    {% block content %}{% endblock %}
+  </main>
+
+  <aside class="aside">
+    <div class="card chain-mini">
+      <h4>CHAIN — CLICK TO ENABLE A PIECE</h4>
+      <div id="chain-mini-visual" class="chain-mini-visual">
+        <button class="node active" data-node="data" data-on="true">data</button>
+        <div class="arrow">→</div>
+        <button class="node" data-node="features" data-on="false">features</button>
+        <div class="arrow">→</div>
+        <button class="node active" data-node="signal" data-on="true">signal</button>
+        <div class="arrow">→</div>
+        <button class="node" data-node="portfolio" data-on="false">portfolio</button>
+        <div class="arrow">→</div>
+        <button class="node" data-node="risk" data-on="false">risk</button>
+        <div class="arrow">→</div>
+        <button class="node" data-node="execution" data-on="false">execution</button>
+      </div>
+      <div class="chain-hint sub" style="margin-top:.5em;font-size:.75em;">Click to toggle a piece in the chain.</div>
+    </div>
+    <div class="card status-mini">
+      <h4>STATUS</h4>
+      <dl id="status-side" class="compact">
+        <dt>ok</dt><dd data-k="ok">…</dd>
+        <dt>stop</dt><dd data-k="emergency_stop">…</dd>
+        <dt>log rec</dt><dd data-k="log.records">…</dd>
+        <dt>verified</dt><dd data-k="log.verified">…</dd>
+      </dl>
+    </div>
+    <div class="card demo-mini">
+      <h4>CHAIN RUN</h4>
+      <div id="demo-summary" class="demo-summary sub">click Run in the chain</div>
+    </div>
+    <div class="card actions-mini">
+      <a href="/chain" class="btn primary">▶ Run</a>
+      <a href="/emergency" class="btn danger">■ Emergency stop</a>
+    </div>
+  </aside>
+
+  <footer class="statusbar">
+    <span>Python {{ pyver }}</span>
+    <span>{{ machine }}</span>
+    <span class="mono">{{ config_path }}</span>
+  </footer>
+
+  <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+
+  <div id="cmd-palette" class="cmd-overlay" style="display:none">
+    <div class="cmd-box">
+      <input id="cmd-input" type="text" placeholder="Search pieces… (Cmd+K / Ctrl+K)" autocomplete="off">
+      <div id="cmd-results" class="cmd-results"></div>
+      <div class="cmd-footer">↑↓ navigate · ⏎ open · esc close</div>
+    </div>
+  </div>
+    <span id="cmd-hint" title="open command palette" style="
+      position: fixed; bottom: 34px; right: 12px;
+      background: var(--panel-2); border: 1px solid var(--line);
+      padding: 3px 8px; border-radius: 4px;
+      font-family: ui-monospace, monospace; font-size: .72em;
+      color: var(--dim); cursor: pointer; z-index: 50;
+    " onclick="document.dispatchEvent(new KeyboardEvent('keydown',{key:'k',metaKey:true,ctrlKey:true,bubbles:true}))">⌘K search</span>
+</body>
+</html>
