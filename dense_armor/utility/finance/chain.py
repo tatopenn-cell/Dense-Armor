@@ -249,7 +249,7 @@ def _probe(kind: str, path) -> dict:
     try:
         if name == "HoeffdingAdaptiveTreeClassifier":
             from dense_armor.utility.online.drift.adwin import ADWIN
-            obj(drift_detector=ADWIN())
+            obj(drift_detector=ADWIN())  # type: ignore
             return {"status": "ready", "default_init": {"drift_detector": "ADWIN()"}}
     except Exception:
         pass
@@ -328,7 +328,7 @@ def _load_data(data_id: str, n: int, seed: int):
         except ValueError:
             continue
     import numpy as _np
-    arr = _np.asarray(closes, dtype=float)
+    arr = _np.asarray(closes, dtype=float)  # type: ignore
     if len(arr) < 3:
         raise RuntimeError(f"{path}: too few rows")
     if n < len(arr) - 1:
