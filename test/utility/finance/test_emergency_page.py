@@ -62,7 +62,7 @@ def test_1_click_raises_stop(tmp_path, chromium_available):
         with sync_playwright() as p:
             browser = p.chromium.launch()
             page = browser.new_page()
-            page.goto(url)
+            page.goto(url + "emergency")
             page.click("#stop")
             page.wait_for_selector("#stopped", state="visible", timeout=5000)
             browser.close()
@@ -85,7 +85,7 @@ def test_2_stop_already_raised(tmp_path, chromium_available):
         with sync_playwright() as p:
             browser = p.chromium.launch()
             page = browser.new_page()
-            page.goto(url)
+            page.goto(url + "emergency")
             page.wait_for_selector("#stopped", state="visible", timeout=5000)
             visible = page.eval_on_selector(
                 "#stopped", "el => !el.hasAttribute('hidden')"
@@ -108,7 +108,7 @@ def test_3_server_down_shows_error(tmp_path, chromium_available):
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
-        page.goto(url)
+        page.goto(url + "emergency")
         # fermo il server, poi clicco: fetch deve fallire, #error visibile
         server.shutdown()
         thread.join(timeout=2)

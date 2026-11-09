@@ -185,8 +185,8 @@ class AuditDB:
         stored payload text is hashed again, and ``seq``, ``prev`` and
         ``hash`` are checked. A difference, a missing row or a garbage
         text gives ``False``. An empty table is ``True``. The method does
-        not raise for the content of the table; an error of the connection
-        is raised, not turned into ``False``.
+        not raise: a connection that cannot be opened or a failed read
+        also gives ``False``, because the chain could not be verified.
 
         Returns:
             ``True`` for a valid chain, ``False`` otherwise.
@@ -228,6 +228,6 @@ class AuditDB:
                         prev = h
                         expected_seq += 1
                     offset += batch
-        except (ValueError, TypeError, OverflowError):
+        except Exception:
             return False
         return True

@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import argparse
+import html
 import json
 import os
 import platform
 import sys
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 from dense_armor.utility.finance.config import load_config
 from dense_armor.utility.finance.decision_log import DecisionLog
@@ -22,6 +24,21 @@ from dense_armor.utility.finance.synthetic import synthetic_itch
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 TEMPLATE_DIR = Path(__file__).resolve().parent / "templates"
+
+LOOPBACK_HOSTS = ("127.0.0.1", "localhost", "::1")
+
+# The playground runs the code that a visitor posts. Its subprocess gets only these variables of the
+# environment of the server (and PYTHONPATH), never the rest: the database URL and any token stay out.
+_PLAYGROUND_ENV_KEYS = (
+    "PATH", "SYSTEMROOT", "SYSTEMDRIVE", "TEMP", "TMP", "TMPDIR", "HOME", "USERPROFILE", "LANG", "LC_ALL",
+)
+
+
+def _playground_env(pythonpath: str) -> dict[str, str]:
+    """The environment of the playground subprocess: the allowed keys of ``os.environ`` and PYTHONPATH."""
+    env = {k: os.environ[k] for k in _PLAYGROUND_ENV_KEYS if k in os.environ}
+    env["PYTHONPATH"] = pythonpath
+    return env
 
 
 def _iter_decisions(log_path: Path) -> list[dict]:
@@ -182,8 +199,15 @@ def _count_reasons(log_path: Path) -> dict[str, int]:
     except Exception as e:
         return {"ok": False, "error": f"{type(e).__name__}: {e}"}
 
-def create_app(config_path: str) -> Any:
-    """Return the Flask application for one configuration."""
+def create_app(config_path: str, enable_playground: bool = False) -> Any:
+    """Return the Flask application for one configuration.
+
+    The configuration is loaded once, here. ``GET /status``, ``POST /emergency-stop`` and
+    ``GET /decisions.svg`` read the file again at each request, so that the three agree.
+    ``POST /emergency-stop`` answers ``403`` when the request carries an ``Origin`` of another
+    host. ``POST /api/playground/run`` executes the code of the request, so it answers ``403``
+    unless ``enable_playground`` is true (``--enable-playground`` on the command line).
+    """
     from flask import Flask, Response, jsonify, render_template
 
     config = load_config(config_path)
@@ -824,6 +848,13 @@ def create_app(config_path: str) -> Any:
 
         from flask import request
 
+        if not enable_playground:
+            return jsonify({
+                "ok": False,
+                "error": "playground disabled: it executes the code that is posted; "
+                         "start the dashboard with --enable-playground on the loopback",
+            }), 403
+
         try:
             body = request.get_json(silent=True) or {}
             code = str(body.get("code", ""))
@@ -887,8 +918,7 @@ def create_app(config_path: str) -> Any:
         )
         full_code = preamble + code
 
-        env = os.environ.copy()
-        env["PYTHONPATH"] = str(Path(__file__).resolve().parents[3])
+        env = _playground_env(str(Path(__file__).resolve().parents[3]))
         t0 = time.perf_counter()
         try:
             r = _sp.run(
@@ -1134,7 +1164,12 @@ def create_app(config_path: str) -> Any:
 
     @app.post("/emergency-stop")
     def emergency_stop() -> Any:
-        stop = config.paths.emergency_stop
+        from flask import request
+
+        origin = request.headers.get("Origin")
+        if origin and urlparse(origin).netloc != request.host:
+            return jsonify({"error": "cross-origin request refused"}), 403
+        stop = load_config(config_path).paths.emergency_stop
         stop.parent.mkdir(parents=True, exist_ok=True)
         stop.write_bytes(b"")
         return jsonify({"emergency_stop": True})
@@ -1147,7 +1182,7 @@ def create_app(config_path: str) -> Any:
 
     @app.get("/decisions.svg")
     def decisions_svg() -> Any:
-        rows = sorted(_count_reasons(config.paths.log).items())
+        rows = sorted(_count_reasons(load_config(config_path).paths.log).items())
         if not rows:
             return Response(
                 '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100"></svg>',
@@ -1155,13 +1190,14 @@ def create_app(config_path: str) -> Any:
             )
         n = len(rows)
         w, h = 400, 200
-        bar_w = max(20, (w - 40) // max(n, 1) - 10)
+        bar_w = max(4, (w - 40) // max(n, 1) - 10)
         max_count = max(c for _, c in rows) or 1
         parts = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}">']
         for i, (reason, count) in enumerate(rows):
             bh = int((count / max_count) * (h - 60))
             x = 20 + i * (bar_w + 10)
             y = h - 20 - bh
+            reason = html.escape(reason, quote=True)
             parts.append(
                 f'<rect x="{x}" y="{y}" width="{bar_w}" height="{bh}" '
                 f'data-reason="{reason}" data-count="{count}"/>'
@@ -1188,12 +1224,21 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--config", required=True)
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8080)
+    parser.add_argument(
+        "--enable-playground", action="store_true",
+        help="allow POST /api/playground/run, which executes the code that is posted (loopback only)",
+    )
     try:
         args = parser.parse_args(argv)
     except SystemExit as e:
         return int(e.code) if e.code is not None else 2
+    if args.enable_playground and args.host not in LOOPBACK_HOSTS:
+        sys.stdout.write(json.dumps({
+            "error": "--enable-playground needs --host 127.0.0.1 (or localhost, ::1)", "ok": False,
+        }, sort_keys=True) + "\n")
+        return 2
     try:
-        app = create_app(args.config)
+        app = create_app(args.config, enable_playground=args.enable_playground)
     except (FileNotFoundError, ValueError, RuntimeError) as e:
         sys.stdout.write(json.dumps({"error": str(e), "ok": False}, sort_keys=True) + "\n")
         return 2

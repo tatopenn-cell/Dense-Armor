@@ -400,6 +400,12 @@ def run_chain(section_picks: dict, n: int = 500, seed: int = 0) -> dict:
     alarms = []
     correct = 0
     risk_alarms = 0
+    errors = {k: {"n": 0, "first": None} for k in ("features", "signal", "risk")}
+
+    def _note(stage: str, exc: BaseException) -> None:
+        errors[stage]["n"] += 1
+        if errors[stage]["first"] is None:
+            errors[stage]["first"] = f"{type(exc).__name__}: {exc}"
 
     for i, (x, y) in enumerate(zip(rows, ys)):
         x_used = x
@@ -413,8 +419,8 @@ def run_chain(section_picks: dict, n: int = 500, seed: int = 0) -> dict:
                         first_val = next(iter(tr.values()), None)
                         if first_val is not None and hasattr(first_val, "__float__"):
                             feat_series.append({"i": i, "v": round(float(first_val), 6)})
-            except Exception:
-                pass
+            except Exception as e:
+                _note("features", e)
         try:
             pred = sig_obj.predict_one(x_used)
             sig_obj.learn_one(x_used, y)
@@ -422,8 +428,8 @@ def run_chain(section_picks: dict, n: int = 500, seed: int = 0) -> dict:
                 correct += 1
             if i % step == 0:
                 acc_series.append({"i": i, "v": round(correct / (i + 1), 4)})
-        except Exception:
-            pass
+        except Exception as e:
+            _note("signal", e)
         if risk_obj is not None:
             try:
                 if hasattr(risk_obj, "update") and not hasattr(risk_obj, "learn_one"):
@@ -442,8 +448,8 @@ def run_chain(section_picks: dict, n: int = 500, seed: int = 0) -> dict:
                     risk_obj.learn_one(x_used)
                 if i % step == 0:
                     risk_series.append({"i": i, "v": int(risk_alarms)})
-            except Exception:
-                pass
+            except Exception as e:
+                _note("risk", e)
 
     # portfolio: usa load_panel (4 asset GSPC, AAPL, MSFT, TSLA) e cov 4x4
     port_out = None
@@ -515,5 +521,6 @@ def run_chain(section_picks: dict, n: int = 500, seed: int = 0) -> dict:
             "role_attributes": role_attrs,
             "total_budget_s": round(total_budget, 6) if not budget_missing else None,
             "budget_missing": budget_missing,
+            "errors": errors,
         },
     }

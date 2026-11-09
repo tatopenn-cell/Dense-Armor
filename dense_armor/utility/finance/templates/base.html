@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <title>{{ title }} — Dense-Armor Finance</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+  <script>
+    function esc(v) {
+      return String(v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+  </script>
 </head>
 <body class="app page-{{ page }}">
   <nav class="rail" aria-label="sections">

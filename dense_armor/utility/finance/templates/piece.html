@@ -390,7 +390,7 @@ window.attachChartTooltip = function (container) {
     for (const item of lg) {
       const sw = document.createElement("span");
       sw.className = "legend-item";
-      sw.innerHTML = '<span class="legend-swatch" style="background:' + item.color + ';opacity:' + (item.opacity || 1) + '"></span>' + item.label;
+      sw.innerHTML = '<span class="legend-swatch" style="background:' + esc(item.color) + ';opacity:' + esc(item.opacity || 1) + '"></span>' + esc(item.label);
       legend.appendChild(sw);
     }
     root.appendChild(svg);
@@ -511,7 +511,7 @@ window.attachChartTooltip = function (container) {
     for (const it of items) {
       const sw = document.createElement("span");
       sw.className = "legend-item";
-      sw.innerHTML = '<span class="legend-swatch" style="background:' + it.color + '"></span>' + it.label;
+      sw.innerHTML = '<span class="legend-swatch" style="background:' + esc(it.color) + '"></span>' + esc(it.label);
       legend.appendChild(sw);
     }
     root.appendChild(svg);
@@ -542,7 +542,7 @@ window.attachChartTooltip = function (container) {
       d.style.background = bg;
       const total = Object.values(cm).reduce((a, b) => a + (b || 0), 0);
       const pct = total > 0 ? Math.round(100 * v / total) : 0;
-      d.innerHTML = '<div class="cm-lbl">' + label + '</div><div class="cm-val">' + v + '</div><div class="cm-pct">' + pct + '%</div>';
+      d.innerHTML = '<div class="cm-lbl">' + esc(label) + '</div><div class="cm-val">' + esc(v) + '</div><div class="cm-pct">' + pct + '%</div>';
       grid.appendChild(d);
     }
     root.appendChild(grid);
@@ -672,7 +672,7 @@ window.attachChartTooltip = function (container) {
       if (v === undefined || v === null) continue;
       const d = document.createElement("div");
       d.className = "kpi " + (cls || "");
-      d.innerHTML = '<div class="kpi-val">' + v + '</div><div class="kpi-lbl">' + k + '</div>';
+      d.innerHTML = '<div class="kpi-val">' + esc(v) + '</div><div class="kpi-lbl">' + esc(k) + '</div>';
       root.appendChild(d);
     }
   }
@@ -680,7 +680,7 @@ window.attachChartTooltip = function (container) {
   function addRow(parent, k, v) {
     const row = document.createElement("div");
     row.className = "rrow";
-    row.innerHTML = '<span class="rk">' + k + '</span><span class="rv">' + v + '</span>';
+    row.innerHTML = '<span class="rk">' + esc(k) + '</span><span class="rv">' + esc(v) + '</span>';
     parent.appendChild(row);
   }
 

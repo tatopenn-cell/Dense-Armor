@@ -71,7 +71,7 @@ def test_dashboard_cards_shape():
 
 def test_feature_bar_placeholder():
     svg = sec._feature_bar_placeholder()
-    assert svg.startswith("<svg") and "<rect" in svg
+    assert svg.startswith("<svg") and "<rect" not in svg
 
 
 def test_svg_line_placeholder():

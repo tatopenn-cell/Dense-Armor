@@ -286,7 +286,8 @@ def _feature_series(module_path: str, class_name: str,
 
 
 def _feature_bar_placeholder(color: str = "#607d8b") -> str:
-    return _svg_bars([0.5] * 3, color=color)
+    """The thumbnail of a piece that has no series to draw: an empty drawing, never made-up bars."""
+    return '<svg viewBox="0 0 220 90"></svg>'
 
 
 

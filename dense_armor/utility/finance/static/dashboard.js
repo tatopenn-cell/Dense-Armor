@@ -77,11 +77,11 @@ function drawRunTable(rows) {
   }
   for (const r of rows.slice().reverse()) {
     const tr = document.createElement("tr");
-    tr.innerHTML = "<td>" + r.seq + "</td><td>" +
+    tr.innerHTML = "<td>" + esc(r.seq) + "</td><td>" +
                    (typeof r.t === "number" ? r.t.toFixed(3) : "") + "</td><td>" +
-                   (r.reason || "") + "</td><td>" + (r.stock || "") +
+                   esc(r.reason || "") + "</td><td>" + esc(r.stock || "") +
                    "</td><td class='" + (r.approved ? "good" : "bad") + "'>" +
-                   r.approved + "</td><td>" +
+                   esc(r.approved) + "</td><td>" +
                    (r.order_ref == null ? "" : r.order_ref) + "</td>";
     tb.appendChild(tr);
   }
@@ -98,7 +98,7 @@ async function loadDashboard() {
   for (const [k, v] of entries) {
     const d = document.createElement("div");
     d.className = "count";
-    d.innerHTML = '<div class="num">' + v + '</div><div class="lbl">' + k + '</div>';
+    d.innerHTML = '<div class="num">' + esc(v) + '</div><div class="lbl">' + esc(k) + '</div>';
     root.appendChild(d);
   }
   const latest = await getJson("/api/decisions?limit=10");
@@ -106,9 +106,9 @@ async function loadDashboard() {
   tb.innerHTML = "";
   for (const r of latest) {
     const tr = document.createElement("tr");
-    tr.innerHTML = "<td>" + r.seq + "</td><td>" + r.t.toFixed(3) + "</td><td>" + r.reason +
-                   "</td><td>" + (r.stock || "") + "</td><td>" + r.approved +
-                   "</td><td>" + (r.order_ref == null ? "" : r.order_ref) + "</td>";
+    tr.innerHTML = "<td>" + r.seq + "</td><td>" + r.t.toFixed(3) + "</td><td>" + esc(r.reason) +
+                   "</td><td>" + esc(r.stock || "") + "</td><td>" + esc(r.approved) +
+                   "</td><td>" + (r.order_ref == null ? "" : esc(r.order_ref)) + "</td>";
     tb.appendChild(tr);
   }
 }
@@ -151,7 +151,7 @@ if (runForm) {
       for (const [k, v] of Object.entries(data.counts).sort((a, b) => b[1] - a[1])) {
         const d = document.createElement("div");
         d.className = "count";
-        d.innerHTML = '<div class="num">' + v + '</div><div class="lbl">' + k + '</div>';
+        d.innerHTML = '<div class="num">' + esc(v) + '</div><div class="lbl">' + esc(k) + '</div>';
         result.appendChild(d);
       }
     } catch (e) {
@@ -277,7 +277,7 @@ if (learnForm) {
       for (const [k, v] of show) {
         const d = document.createElement("div");
         d.className = "count";
-        d.innerHTML = '<div class="num">' + v + '</div><div class="lbl">' + k + '</div>';
+        d.innerHTML = '<div class="num">' + esc(v) + '</div><div class="lbl">' + esc(k) + '</div>';
         metrics.appendChild(d);
       }
       drawCurve(data.points, data.drift_positions);
@@ -288,8 +288,8 @@ if (learnForm) {
         for (const s of data.slices) {
           const d = document.createElement("div");
           d.className = "count";
-          d.innerHTML = '<div class="num">' + s.acc + '</div><div class="lbl">' +
-                        s.from + "–" + s.to + '</div>';
+          d.innerHTML = '<div class="num">' + esc(s.acc) + '</div><div class="lbl">' +
+                        esc(s.from) + "–" + esc(s.to) + '</div>';
           slRoot.appendChild(d);
         }
         metrics.appendChild(slRoot);
@@ -461,9 +461,9 @@ if (document.getElementById("status-side")) {
       row.className = "cmd-row" + (i === activeIdx ? " active" : "");
       row.href = `/piece/${p.section}/${p.category}/${p.id}`;
       row.innerHTML =
-        `<span class="cmd-section">${p.section}</span>` +
-        `<span class="cmd-cat">${p.category}</span>` +
-        `<span class="cmd-name">${p.name}</span>`;
+        `<span class="cmd-section">${esc(p.section)}</span>` +
+        `<span class="cmd-cat">${esc(p.category)}</span>` +
+        `<span class="cmd-name">${esc(p.name)}</span>`;
       row.addEventListener("mouseenter", () => { activeIdx = i; render(); });
       results.appendChild(row);
     });

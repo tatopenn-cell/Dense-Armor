@@ -43,7 +43,7 @@ def main() -> int:
             with sync_playwright() as p:
                 b = p.chromium.launch()
                 page = b.new_page(viewport={"width": 640, "height": 360})
-                page.goto(url)
+                page.goto(url + "emergency")
                 page.screenshot(path=str(OUT / "before.png"))
                 page.click("#stop")
                 page.wait_for_selector("#stopped", state="visible", timeout=5000)

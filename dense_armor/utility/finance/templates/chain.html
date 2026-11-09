@@ -502,10 +502,12 @@ window.attachChartTooltip = function (container) {
         ? (exec.sent_size !== undefined ? "sent=" + exec.sent_size : "ok")
         : (exec && exec.error ? "err" : "—");
       metaEl.innerHTML =
-        '<span><b>source:</b> ' + (d.data_meta.source || "?") + '</span>' +
-        '<span><b>n:</b> ' + m.n + '</span>' +
-        '<span><b>portfolio:</b> ' + portTxt + '</span>' +
-        '<span><b>execution:</b> ' + execTxt + '</span>';
+        '<span><b>source:</b> ' + esc(d.data_meta.source || "?") + '</span>' +
+        '<span><b>n:</b> ' + esc(m.n) + '</span>' +
+        '<span><b>portfolio:</b> ' + esc(portTxt) + '</span>' +
+        '<span><b>execution:</b> ' + esc(execTxt) + '</span>' +
+        Object.entries(m.errors || {}).filter(([, e]) => e.n > 0).map(([stage, e]) =>
+          '<span class="bad"><b>' + esc(stage) + ' errors:</b> ' + esc(e.n) + ' (first: ' + esc(e.first) + ')</span>').join('');
       updateSlotBadges(m.role_attributes);
 
       // budget totale della chain (dai role_attributes)
@@ -540,8 +542,8 @@ window.attachChartTooltip = function (container) {
       // aggiorna il pannello aside
       const ds = document.getElementById("demo-summary");
       if (ds) {
-        ds.innerHTML = '<div><b>accuracy:</b> ' + m.accuracy + '</div>' +
-                       '<div><b>risk alarms:</b> ' + (m.risk_alarms ?? "—") + '</div>' +
+        ds.innerHTML = '<div><b>accuracy:</b> ' + esc(m.accuracy) + '</div>' +
+                       '<div><b>risk alarms:</b> ' + esc(m.risk_alarms ?? "—") + '</div>' +
                        '<div><b>portfolio:</b> ' + (w ? w.length + " assets" : "—") + '</div>';
       }
       attachChartExport();

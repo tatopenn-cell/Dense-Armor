@@ -7,8 +7,7 @@ with one click.
 
 ## 1. What the page is
 
-`GET /` returns `static/emergency.html`, a single file with no external script,
-style or font. It has a red `<button id="stop">`, a `<p id="stopped">` hidden at
+`GET /emergency` returns the page `templates/emergency_page.html` (the home `GET /` is the dashboard). It has a red `<button id="stop">`, a `<p id="stopped">` hidden at
 the start, and a `<p id="error">` hidden at the start. When the page loads it
 reads `GET /status`; if the stop is already raised, `#stopped` is shown.
 

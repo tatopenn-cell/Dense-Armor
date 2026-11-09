@@ -203,6 +203,21 @@ no bar.
   running process.
 - The stop is a file. A second click leaves one file, not two; lifting the
   stop is a manual operation on the server.
+- `POST /emergency-stop` answers `403` when the request carries an `Origin`
+  of another host, so a page open in the same browser cannot press the
+  button; a request with no `Origin` (curl, a test client) is accepted. It is
+  not a login: anything that can reach the port can still post.
+- The playground (`/playground`, `POST /api/playground/run`) **executes the
+  Python code that is posted**, in a subprocess with a timeout of 20 s. It is
+  off by default and answers `403`. `--enable-playground` turns it on and is
+  refused unless `--host` is `127.0.0.1`, `localhost` or `::1`. The subprocess
+  gets only `PATH`, the system and temp folders, `HOME`, the locale variables
+  and `PYTHONPATH`: the database URL and any token of the server stay out. It
+  is not a sandbox: the code can read and write the files of the user that
+  runs the dashboard.
+- `GET /status`, `POST /emergency-stop` and `GET /decisions.svg` read the
+  configuration file again at each request; the other pages use the
+  configuration loaded at the start.
 - The server is Flask's development server, not a production server. It is
   started with `make_server` in the tests and with `app.run` in `main`.
 - One process. A second dashboard on the same port is refused by the
