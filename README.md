@@ -196,15 +196,6 @@ Dense-Armor also provides other online utilities:
 - Core engine (`UniversalMemoryGuard`, `AdaptiveSignalStabilizer`, `AIHardwareProfiler`)
 
 Check out [the API](https://tatopenn-cell.github.io/Dense-Armor/api/) for a comprehensive overview.
-
----
-
-## References
-
-Dense-Armor builds on 188 works across online learning, streaming statistics, robot control, deep learning and finance. The full list is in [REFERENCES.md](REFERENCES.md).
-
-Key references: [River](https://riverml.xyz) (Montiel et al., 2020, [arXiv:2012.04740](https://arxiv.org/abs/2012.04740)), [scikit-learn](https://scikit-learn.org) (Buitinck et al., 2013), [CASPER](https://arxiv.org/abs/2303.01300) (Kayan et al., 2023), ADWIN (Bifet & Gavaldà, 2006), CBF (Ames et al., 2019), EWC (Kirkpatrick et al., 2017).
-
 ---
 
 ## Why Dense-Armor
@@ -235,6 +226,31 @@ Some specifics:
 - [Sister project (Dense-Evolution)](https://github.com/tatopenn-cell/Dense-Evolution)
 - [DOI](https://doi.org/10.5281/zenodo.24030156)
 
+## Speed
+
+The per-sample cost of the main estimators, measured by
+`benchmarks/speed.py` on an Intel Xeon 2.20 GHz with 2 cores, 20 seeds,
+2000 samples per seed, first 200 discarded. Full table and machine in
+`benchmarks/speed_log.md`.
+
+| component | median µs | p99 µs |
+|---|---|---|
+| Hoeffding tree | 9.1 | 18.1 |
+| Gaussian naive Bayes | 44.2 | 85.8 |
+| Adaptive random forest (10 models) | 754.1 | 1374.0 |
+| Half-Space Trees (25 trees) | 1285.2 | 2412.3 |
+| ADWIN (`update`) | 9.5 | 16.2 |
+
+`stable_var` is the compensated float32 variance. On `[4096, 4096]`, `axis=1`, it costs 3.59x the plain two-term formula on CPU (range [3.55, 4.60] over three sessions) and 2.24x on a T4 GPU (range [2.20, 2.27]): the compensated tree is `log2(n)` vectorised levels, so it runs on both backends. The maximum relative error against `np.var(float64)` is below the baseline formula on three of the four datasets of the task in each combination (CPU eager, CPU jit, GPU eager, GPU jit). The two JSON files are `benchmarks/stable_variance_float32.json` (CPU) and `benchmarks/stable_variance_float32_gpu.json` (GPU). The shift by the first element, on which the kernel is built, is the shifted-data algorithm with K = x[0] (Healy 2022, Algorithm 2); the local centring, the compensated TwoSum tree and the float32 evaluation with `vmap` are by Salvatore Pennacchio.
+
+The Hoeffding Anytime tree (`HoeffdingAnytimeTreeClassifier`) is 26-58x faster than the adaptive random forest on the drift benchmark of `benchmarks/neural/efdt_vs_arf.py` (21-51 µs per sample against 723-1563 µs): at parity on sudden and gradual drift, 30.0 pp behind after the change on incremental drift, no native drift detection. An opt-in speed option, not a replacement.
+
+The robot-side components stay inside a 1 kHz control-loop budget
+(1000 µs) at the median: 36.5 µs for the rate-limited follower, 0.9 µs
+for the control barrier function filter, 8.1 µs for the kinematic
+tracking controller, 66 µs for the rigid-body mass matrix and 55 µs for
+the gravity forces (the last two through `jax.jit`).
+
 ---
 
 ## Team
@@ -260,33 +276,8 @@ Contributions are welcome. The library is built to be extended one estimator at 
   doi       = {10.5281/zenodo.24030156}
 }
 ```
-
 ---
 
-## Speed
-
-The per-sample cost of the main estimators, measured by
-`benchmarks/speed.py` on an Intel Xeon 2.20 GHz with 2 cores, 20 seeds,
-2000 samples per seed, first 200 discarded. Full table and machine in
-`benchmarks/speed_log.md`.
-
-| component | median µs | p99 µs |
-|---|---|---|
-| Hoeffding tree | 9.1 | 18.1 |
-| Gaussian naive Bayes | 44.2 | 85.8 |
-| Adaptive random forest (10 models) | 754.1 | 1374.0 |
-| Half-Space Trees (25 trees) | 1285.2 | 2412.3 |
-| ADWIN (`update`) | 9.5 | 16.2 |
-
-`stable_var` is the compensated float32 variance. On `[4096, 4096]`, `axis=1`, it costs 3.59x the plain two-term formula on CPU (range [3.55, 4.60] over three sessions) and 2.24x on a T4 GPU (range [2.20, 2.27]): the compensated tree is `log2(n)` vectorised levels, so it runs on both backends. The maximum relative error against `np.var(float64)` is below the baseline formula on three of the four datasets of the task in each combination (CPU eager, CPU jit, GPU eager, GPU jit). The two JSON files are `benchmarks/stable_variance_float32.json` (CPU) and `benchmarks/stable_variance_float32_gpu.json` (GPU). The shift by the first element, on which the kernel is built, is the shifted-data algorithm with K = x[0] (Healy 2022, Algorithm 2); the local centring, the compensated TwoSum tree and the float32 evaluation with `vmap` are by Salvatore Pennacchio.
-
-The Hoeffding Anytime tree (`HoeffdingAnytimeTreeClassifier`) is 26-58x faster than the adaptive random forest on the drift benchmark of `benchmarks/neural/efdt_vs_arf.py` (21-51 µs per sample against 723-1563 µs): at parity on sudden and gradual drift, 30.0 pp behind after the change on incremental drift, no native drift detection. An opt-in speed option, not a replacement.
-
-The robot-side components stay inside a 1 kHz control-loop budget
-(1000 µs) at the median: 36.5 µs for the rate-limited follower, 0.9 µs
-for the control barrier function filter, 8.1 µs for the kinematic
-tracking controller, 66 µs for the rigid-body mass matrix and 55 µs for
-the gravity forces (the last two through `jax.jit`).
 
 ## Acknowledgements
 
@@ -320,6 +311,13 @@ Dense-Armor takes inspiration from [River](https://riverml.xyz) (Montiel et al.,
 - Deep Learning: [Language-model training: how do I train a small language model with Dense-Armor?](docs/neural/lm_training.md).
 - Deep Learning: [Rotary decoder: how do I generate text without running the whole sequence again at every token?](docs/neural/rotary_decoder.md).
 - Machine learning: [the families of `dense_armor.ml`](docs/ml/index.md), grown on the whole table: statistics, preprocessing, linear models, trees, forests, ensembles, anomaly and change detection, vision.
+---
+
+## References
+
+Dense-Armor builds on 188 works across online learning, streaming statistics, robot control, deep learning and finance. The full list is in [REFERENCES.md](REFERENCES.md).
+
+Key references: [River](https://riverml.xyz) (Montiel et al., 2020, [arXiv:2012.04740](https://arxiv.org/abs/2012.04740)), [scikit-learn](https://scikit-learn.org) (Buitinck et al., 2013), [CASPER](https://arxiv.org/abs/2303.01300) (Kayan et al., 2023), ADWIN (Bifet & Gavaldà, 2006), CBF (Ames et al., 2019), EWC (Kirkpatrick et al., 2017).
 
    
 ## License
