@@ -18,7 +18,7 @@
 
 <h3 align="center">Library of Primitives from__Robot__to__AI__ </h3>
 
-<p align="center"><strong>A library for online learning on trading, AI and sensor streams, one sample at a time: pre-trade risk with a tamper-evident decision log, drift and anomaly detection on returns, streaming statistics that stay accurate in float32, neural network training with continual learning and memory consolidation, robust time-series models, drone and robot safety, and bridges to scikit-learn, PyTorch, TensorFlow, River and LLM agents.</strong></p>
+<p align="center"><strong>A library for online learning on trading, AI and sensor streams, one sample at a time. Pre-trade risk with a tamper-evident decision log, drift and anomaly detection on returns, neural network training with continual learning, robust time-series models, safe commands for drones and robots. Built to run inside the loop, and to be defended in front of a reviewer.</strong></p>
 
 <p align="center">📖 <a href="https://tatopenn-cell.github.io/Dense-Armor/"><strong>Full documentation, API reference, quick guide →</strong></a></p>
 
@@ -26,49 +26,48 @@
 
 ## Who is this for
 
-Python developers working on systems where data arrives one sample at a time and the model has to learn or stay stable *while it runs*: trading desks and market surveillance, neural network training loops, drone and sensor pipelines, robot control loops, any streaming workload. A fixed dataset works too: the [Machine learning](https://tatopenn-cell.github.io/Dense-Armor/ml/) classes of `dense_armor.ml` read the whole table at once.
+Python developers working on systems where data arrives one sample at a time and the model has to learn, or stay stable, while it runs. That is a trading desk watching returns and orders, a neural network training loop that cannot stop, a drone streaming sensors, a robot arm holding a payload, or any pipeline that never asks for the whole dataset first. A fixed dataset works too: the [Machine learning](https://tatopenn-cell.github.io/Dense-Armor/ml/) classes of `dense_armor.ml` read the whole table at once, with the same interface as the online ones.
 
 ## Use cases
 
-The primitives are domain-agnostic: anything that ingests data one sample at a time and has to react when the stream changes. It has been measured on stock and crypto prices, card transactions, network flows and a telemarketing log (the [finance pages](https://tatopenn-cell.github.io/Dense-Armor/finance/)), on neural networks trained on a stream, on drone and sensor streams, and on a robot arm (CASPER on a UR3e). The layers above and below the model are the same shape everywhere.
+The primitives are domain-agnostic: anything that ingests data one sample at a time and has to react when the stream changes. They have been measured on stock and crypto prices, card transactions, network flows and a telemarketing log (the [finance pages](https://tatopenn-cell.github.io/Dense-Armor/finance/)), on neural networks trained one batch at a time, on drone and sensor streams, and on a robot arm (CASPER on a UR3e). The layers above and below the model are the same shape everywhere: one dict in, one answer out.
 
 | domain | what Dense-Armor brings |
 |---|---|
-| Trading and market surveillance | pre-trade risk (size, price band, duplicate, rate, notional), tamper-evident decision log, regime and drift on returns, order flow imbalance, portfolio weights |
+| Trading and market surveillance | pre-trade risk (size, price band, duplicate, rate, notional), a tamper-evident decision log, regime and drift on returns, order flow imbalance, portfolio weights |
 | Neural network training | layers, attention (rotary, causal, cross), convolutional and recurrent blocks, batch and streaming training, continual learning (EWC, GEM, A-GEM), memory consolidation, a decoder language model |
 | Drones and IoT | actuator fault, sensor consistency, battery endurance, link health, visual landing, noisy multichannel input |
 | Robot control loops | bounded commands (rate limits, CBF), drift and anomaly on joint streams, calibrated intervals |
 | Deployed ML models | input drift detection, runtime shielding of `NaN` and spikes, no retraining required |
 | Live monitoring | Prometheus-style metrics with drift detection, sketches, quantiles in constant memory |
-| Search / ranking | monitoring layer around the ranker: drift on user behaviour, streaming metrics |
-| Antivirus / security | event stream statistics, behavioural drift, anomaly scoring one event at a time |
+| Search and ranking | a monitoring layer around the ranker: drift on user behaviour, streaming metrics |
+| Antivirus and security | event stream statistics, behavioural drift, anomaly scoring one event at a time |
 
 ## What it expects from you
 
-No specific model. Any estimator that follows the same contract: `learn_one(x, y)` updates the model from one sample, `predict_one(x)` returns a prediction, `transform_one(x)` returns a transform or a residual, `score_one(x)` returns an anomaly score (high = anomalous), `update(x)` advances a drift detector. Inputs and outputs are dicts of numpy-compatible scalars or arrays. A trading tick, a sensor reading and a neural network mini-batch all look the same to it: one dict in, one answer out. Runs on CPU or GPU through JAX. A shield can wrap any callable from tensor to tensor.
+No specific model. Any estimator that follows the same contract: `learn_one(x, y)` updates the model from one sample, `predict_one(x)` returns a prediction, `transform_one(x)` returns a transform or a residual, `score_one(x)` returns an anomaly score (high = anomalous), `update(x)` advances a drift detector. Inputs and outputs are dicts of numpy-compatible scalars or arrays. A trading tick, a sensor reading and a neural network mini-batch all look the same to it: one dict in, one answer out. It runs on CPU or GPU through JAX, and a shield can wrap any callable from tensor to tensor.
 
 ## What changes when you use it
 
-- An order is checked against five limits before it leaves, and every decision lands in a hash chain that anyone can verify.
-- A slow regime change in returns is caught by an explicit detector instead of silently moving the risk model.
+- An order is checked against the five limits of SEC Rule 15c3-5(c)(1) before it leaves, and every decision lands in a hash chain that anyone can verify.
+- A slow regime change in returns is caught by an explicit detector, instead of silently moving the risk model.
 - Anomalies in a price-and-volume stream come back as a score, one day at a time.
 - A neural network keeps training on a stream without blocking the loop, and does not forget what it learned on the previous task.
 - A drone's battery estimate carries a calibrated interval, and its actuator residual is watched on every tick.
-- Predictions can carry a calibrated uncertainty interval, on a trading signal or on a robot joint.
-- The model keeps learning even when the stream has `NaN`, spikes, or missing samples, and every correction reports how far it moved.
-- Robot commands are bounded (rate limits, control barrier functions) before they reach the actuator.
+- A robot's commands are bounded before they reach the actuator, so a spike or a NaN never turns into motion.
+- The model keeps learning even when the stream has missing samples, and every correction reports how far it moved.
 
-In this library, *shielding* means cleaning the data a model sees (NaN, spikes, anomalous samples) and bounding the commands a robot receives, around any online learner that follows the `learn_one` / `score_one` contract. It is not the formal shield of safe reinforcement learning.
+In this library, *shielding* means cleaning the data a model sees — NaN, spikes, anomalous samples — and bounding the commands a robot receives, around any online learner that follows the `learn_one` / `score_one` contract. It is not the formal shield of safe reinforcement learning.
 
 ## What it does
 
-Dense-Armor is a Python machine learning library with an online part. Every online estimator learns one sample at a time, at control-loop speed, on JAX, and the machine learning classes of `dense_armor.ml` read a whole dataset with `fit`. The same `learn_one` / `predict_one` / `transform_one` contract runs on a market tick, a neural network mini-batch, a drone sensor stream, a robot joint stream, a video frame, a token stream, and a shield can sit in front of any of them. On top of that, `dense_armor.utility.deep.neural` has the deep-learning pieces (layers, attention, convolutional and recurrent blocks, batch and streaming training, continual learning with EWC/GEM/A-GEM, memory consolidation with vector quantization, product quantization and a residual tree), and `dense_armor.utility.signals.stats` and `.timeseries` have the robust models (Student-t, Gaussian mixture, GARCH, AR/VAR/Kalman).
+Dense-Armor is a Python machine learning library with an online part. Every online estimator learns one sample at a time, at control-loop speed, on JAX, and the machine learning classes of `dense_armor.ml` read a whole dataset with `fit`. The same `learn_one` / `predict_one` / `transform_one` contract runs on a market tick, a neural network mini-batch, a drone sensor stream, a robot joint stream, a video frame, a token stream, and a shield can sit in front of any of them. On top of that, `dense_armor.utility.deep.neural` has the deep-learning pieces — layers, attention, convolutional and recurrent blocks, batch and streaming training, continual learning with EWC, GEM and A-GEM, memory consolidation with vector quantization, product quantization and a residual tree — and `dense_armor.utility.signals.stats` and `.timeseries` have the robust models: Student-t, Gaussian mixture, GARCH, and the AR, VAR and Kalman families.
 
 ---
 
 ## Quickstart
 
-A reproducible Nasdaq feed meets the five controls of SEC Rule 15c3-5(c)(1), and every decision lands in a hash chain that anyone can verify. No external data, no app.
+A reproducible Nasdaq feed meets the five pre-trade controls of SEC Rule 15c3-5(c)(1), and every decision lands in a hash chain that anyone can verify. No external data, no app, no API key.
 
 ```bash
 pip install dense-armor
@@ -83,7 +82,7 @@ from dense_armor.utility.finance.feed import iter_itch
 # 1. a Nasdaq ITCH feed that is byte-identical on every machine, from a seed
 Path("feed.bin").write_bytes(synthetic_itch(1000, seed=0))
 
-# 2. the five controls of SEC Rule 15c3-5(c)(1), and a tamper-evident decision log
+# 2. the five pre-trade controls, and a tamper-evident decision log
 checker = PreTradeChecker(
     max_notional=50_000.0, max_size=0.2, price_band=0.001,
     max_orders=3, window_s=10.0, duplicate_window_s=1.0,
@@ -124,7 +123,7 @@ print(f"Verify after tamper: {DecisionLog('decisions.jsonl').verify()}")
 Verify after tamper: False
 ```
 
-What just happened: the checker has refused, approved or clamped each order against five limits (size, price band, duplicate, rate, notional); the log has hashed every decision with the hash of the previous one; the edit has broken the chain, and `verify()` has seen it. The full specification is in [`docs/finance/pretrade.md`](https://tatopenn-cell.github.io/Dense-Armor/finance/pretrade/) and [`docs/finance/decision_log.md`](https://tatopenn-cell.github.io/Dense-Armor/finance/decision_log/).
+What just happened: every order has been approved, refused or clamped against the five limits — size, price band, duplicate, rate, notional — and the outcome of each one has been chained to the previous decision. The edit has broken the chain, and verify() has caught it. This is the same log a reviewer will ask for, and the same check they will run. The specification is in docs/finance/pretrade.md and docs/finance/decision_log.md.
 
 ---
 
