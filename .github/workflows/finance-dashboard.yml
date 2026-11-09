@@ -35,10 +35,4 @@ jobs:
           python-version: "3.12"
       - run: pip install -e ".[dev,finance-ops]"
       - run: playwright install --with-deps chromium
-      - run: pytest test/utility/finance -q -m "needs_postgres or needs_browser or needs_fix" -rs --cov=dense_armor --cov-report=xml
-      - uses: codecov/codecov-action@v4
-        with:
-          files: coverage.xml
-          flags: finance-dashboard
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: false
+      - run: pytest test/utility/finance -q -m "needs_postgres or needs_browser or needs_fix" -rs
