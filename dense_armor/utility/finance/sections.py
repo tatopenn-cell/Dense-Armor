@@ -1,11 +1,21 @@
 from __future__ import annotations
 
+import logging
+
 import inspect
 import importlib
 """Section pages: static skeleton, one per icon of the rail."""
 
 
 from typing import Any
+
+_log = logging.getLogger(__name__)
+
+
+def _swallow(exc: BaseException, where: str) -> None:
+    """Log a swallowed exception at DEBUG. Visible with --log-level DEBUG."""
+    _log.debug("swallowed %s in %s: %s", type(exc).__name__, where, exc)
+
 
 
 def _svg_preview(values: list[float], w: int = 220, h: int = 90,
@@ -123,8 +133,8 @@ def _risk_preview(kind: str, piece_id: str) -> dict:
                         first_exc = e
                 try:
                     det.learn_one(r)
-                except Exception:
-                    pass
+                except Exception as _e:
+                    _swallow(_e, "line 136")
             out = {"svg": _svg_preview(scores, color="#e67e22"),
                    "n": len(scores), "error": None}
         elif kind == "drift":
@@ -145,8 +155,8 @@ def _risk_preview(kind: str, piece_id: str) -> dict:
                     det.update(r["ret"])
                     if bool(getattr(det, "_drift_detected", False)):
                         cnt += 1
-                except Exception:
-                    pass
+                except Exception as _e:
+                    _swallow(_e, "line 158")
                 cum.append(cnt)
             out = {"svg": _svg_preview(cum, color="#f85149"),
                    "n": len(cum), "error": None}
@@ -239,8 +249,8 @@ def _feature_series(module_path: str, class_name: str,
         x = {"ret": float(v)}
         try:
             instance.learn_one(x)
-        except Exception:
-            pass
+        except Exception as _e:
+            _swallow(_e, "line 252")
         try:
             if extract == "transform.ret":
                 r = instance.transform_one(x)
@@ -360,8 +370,8 @@ def _auto_init_kwargs(cls, base_kwargs: dict | None = None) -> dict:
                 try:
                     from dense_armor.utility.online.optim.sgd import SGD
                     kwargs[name] = SGD()
-                except Exception:
-                    pass
+                except Exception as _e:
+                    _swallow(_e, "line 373")
             elif low in ("loss", "loss_fn", "loss_function"):
                 kwargs[name] = "log_loss"
             elif low in ("link", "inverse_link", "link_fn"):
@@ -369,8 +379,8 @@ def _auto_init_kwargs(cls, base_kwargs: dict | None = None) -> dict:
             elif "metric" in low and "learner" in low:
                 from dense_armor.utility.online.learn.metric_learning import LEGO
                 kwargs[name] = LEGO()
-        except Exception:
-            pass
+        except Exception as _e:
+            _swallow(_e, "line 382")
     return kwargs
 
 def _sig_preview(module_path: str, class_name: str,
@@ -409,8 +419,8 @@ def _sig_preview(module_path: str, class_name: str,
                 first_exc = e
         try:
             instance.learn_one(x, y)
-        except Exception:
-            pass
+        except Exception as _e:
+            _swallow(_e, "line 422")
         acc.append(correct / (i + 1))
     out["n"] = len(acc)
     if acc:
@@ -768,24 +778,24 @@ def signal_page(category: str, render_template, ctx: dict) -> Any:
             ("online_kmeans", "OnlineKMeans", "dense_armor.utility.online.cluster.kmeans", "OnlineKMeans", "k"),
         ]
 
-    # preview: real se l'init è None o dict semplice, placeholder altrimenti
+    # preview: has_real_preview se l'init è None o dict semplice, placeholder altrimenti
     pieces_out = []
     for entry in pieces:
         pid, name, mod, cls, special = entry
         init_kwargs = None
-        real = False
+        has_real_preview = False
         if special is None:
             init_kwargs = {}
-            real = True
+            has_real_preview = True
         elif isinstance(special, dict):
             if special.get("drift_detector") == "ADWIN":
                 try:
                     from dense_armor.utility.online.drift.adwin import ADWIN
                     init_kwargs = {"drift_detector": ADWIN()}
-                    real = True
-                except Exception:
-                    pass
-        if real and init_kwargs is not None:
+                    has_real_preview = True
+                except Exception as _e:
+                    _swallow(_e, "line 796")
+        if has_real_preview and init_kwargs is not None:
             try:
                 prev = _sig_preview(mod, cls, init_kwargs)
                 if prev["svg"]:
@@ -796,8 +806,8 @@ def signal_page(category: str, render_template, ctx: dict) -> Any:
                         "size": "M",
                     })
                     continue
-            except Exception:
-                pass
+            except Exception as _e:
+                _swallow(_e, "line 809")
         pieces_out.append({
             "id": pid, "name": name, "kind": "classifier",
             "svg": _feature_bar_placeholder("#607d8b"), "n": 0,
@@ -1054,8 +1064,8 @@ def piece_detail(section: str, category: str, piece_id: str, params: dict) -> di
                 v = _coerce(name, str(params[name]), typ)
                 if v is not None:
                     kwargs[name] = v
-            except Exception:
-                pass
+            except Exception as _e:
+                _swallow(_e, "line 1067")
 
     # Fornisci default per kwargs obbligatori noti (helper condiviso con i preview)
     kwargs = _auto_init_kwargs(cls, kwargs)
@@ -1085,8 +1095,8 @@ def piece_detail(section: str, category: str, piece_id: str, params: dict) -> di
         if "feature_keys" in str(sig.parameters):
             try:
                 instance = cls(feature_keys=["ret", "abs_ret"], **kwargs)
-            except Exception:
-                pass
+            except Exception as _e:
+                _swallow(_e, "line 1098")
 
     correct = 0
     n = 0
@@ -1105,8 +1115,8 @@ def piece_detail(section: str, category: str, piece_id: str, params: dict) -> di
                 v = float(next(iter(x.values())))
                 try:
                     instance.update(v)
-                except Exception:
-                    pass
+                except Exception as _e:
+                    _swallow(_e, "line 1118")
                 if getattr(instance, "_drift_detected", False):
                     alarms.append(i)
                 if i % step == 0:
@@ -1124,8 +1134,8 @@ def piece_detail(section: str, category: str, piece_id: str, params: dict) -> di
                             scores.append(sv)
                             if i % step == 0:
                                 scores_curve.append({"i": i, "v": round(sv, 4)})
-                except Exception:
-                    pass
+                except Exception as _e:
+                    _swallow(_e, "line 1137")
                 n += 1
             else:
                 pred = instance.predict_one(x) if has_predict else None
@@ -1146,8 +1156,8 @@ def piece_detail(section: str, category: str, piece_id: str, params: dict) -> di
                         n_nodes_curve.append({"i": i, "v": nn})
                     curve.append({"i": i, "v": round(correct / max(n, 1), 4),
                                   "lo": round(lo, 4), "hi": round(hi, 4)})
-        except Exception:
-            pass
+        except Exception as _e:
+            _swallow(_e, "line 1159")
 
     kind = ("drift" if has_update else
             "anomaly" if has_score and not has_predict else "classifier")
@@ -1189,8 +1199,8 @@ def piece_detail(section: str, category: str, piece_id: str, params: dict) -> di
                      "side": str(p.get("side", ""))}
                     for p in path[:10]
                 ]
-        except Exception:
-            pass
+        except Exception as _e:
+            _swallow(_e, "line 1202")
 
     # predict_unaggregated_one per Mondrian/AMF
     if hasattr(instance, "predict_unaggregated_one"):
@@ -1202,10 +1212,10 @@ def piece_detail(section: str, category: str, piece_id: str, params: dict) -> di
                     metrics["tree_votes"] = [float(v) if not hasattr(v, "tolist")
                                              else [float(x) for x in v.tolist()[:5]]
                                              for v in list(votes)[:10]]
-                except Exception:
-                    pass
-        except Exception:
-            pass
+                except Exception as _e:
+                    _swallow(_e, "line 1215")
+        except Exception as _e:
+            _swallow(_e, "line 1217")
     if kind == "classifier":
         metrics["confusion"] = {k: v for k, v in confusion.items() if v > 0}
         # precision / recall / F1 per classe, dalla confusion
@@ -1480,8 +1490,8 @@ def _piece_hoeffding(params: dict) -> dict:
                     "count": int(mask.sum()),
                     "freq": round(float(arr_t[mask].mean()), 4),
                 })
-    except Exception:
-        pass
+    except Exception as _e:
+        _swallow(_e, "line 1493")
 
     metrics = {
         "kind": "classifier", "dataset": dataset,

@@ -3,7 +3,6 @@
 Data -> Features -> Signal -> Portfolio -> Risk -> Execution.
 Each section has its own dropdown in /chain. The catalog is static: a
 class enters only after it is listed here and passes the run on GSPC.
-River is a subset of this library, not the other way around.
 """
 
 from __future__ import annotations
