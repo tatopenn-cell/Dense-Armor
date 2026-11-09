@@ -293,6 +293,9 @@ def _instantiate(path: str | None) -> Any:
     import inspect
     if inspect.isfunction(cls):
         return cls
+    if name == "HoeffdingAdaptiveTreeClassifier":
+        from dense_armor.utility.online.drift.adwin import ADWIN
+        return cls(drift_detector=ADWIN())
     try:
         return cls()
     except Exception:

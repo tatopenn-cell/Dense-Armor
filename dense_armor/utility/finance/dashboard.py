@@ -890,13 +890,14 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
             "USE_ANOMALY = " + repr(use_anomaly) + "\n"
             "USE_MIXTURE = " + repr(use_mixture) + "\n"
             "USE_GARCH = " + repr(use_garch) + "\n"
+            "from dense_armor.utility.online.drift.adwin import ADWIN\n"
             "from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier\n"
             "from dense_armor.utility.online.tree.adaptive import HoeffdingAdaptiveTreeClassifier\n"
             "from dense_armor.utility.online.tree.mondrian import MondrianForestClassifier\n"
             "from dense_armor.utility.online.forest.amf import AggregatedMondrianForestClassifier\n"
             "LEARNERS = {\n"
             "    'HoeffdingTreeClassifier': lambda: HoeffdingTreeClassifier(),\n"
-            "    'HoeffdingAdaptiveTreeClassifier': lambda: HoeffdingAdaptiveTreeClassifier(),\n"
+            "    'HoeffdingAdaptiveTreeClassifier': lambda: HoeffdingAdaptiveTreeClassifier(drift_detector=ADWIN()),\n"
             "    'MondrianForestClassifier': lambda: MondrianForestClassifier(seed=SEED),\n"
             "    'AggregatedMondrianForestClassifier': lambda: AggregatedMondrianForestClassifier(seed=SEED),\n"
             "}\n"
@@ -987,6 +988,7 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
         window = max(10, min(window, 500))
 
         try:
+            from dense_armor.utility.online.drift.adwin import ADWIN
             from dense_armor.utility.online.forest.amf import (
                 AggregatedMondrianForestClassifier,
             )
@@ -1003,7 +1005,9 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
 
             catalog = {
                 "HoeffdingTreeClassifier": lambda: HoeffdingTreeClassifier(),
-                "HoeffdingAdaptiveTreeClassifier": lambda: HoeffdingAdaptiveTreeClassifier(),
+                "HoeffdingAdaptiveTreeClassifier": lambda: HoeffdingAdaptiveTreeClassifier(
+                    drift_detector=ADWIN()
+                ),
                 "MondrianForestClassifier": lambda: MondrianForestClassifier(seed=seed),
                 "AggregatedMondrianForestClassifier": lambda: AggregatedMondrianForestClassifier(seed=seed),
             }
