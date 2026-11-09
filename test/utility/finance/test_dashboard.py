@@ -15,6 +15,7 @@ from dense_armor.utility.finance.decision_log import DecisionLog
 @pytest.fixture(autouse=True)
 def _require_flask():
     pytest.importorskip("flask", reason="flask not installed")
+    pytest.importorskip("tomllib", reason="load_config needs tomllib, Python 3.11 or later")
 
 BASE_TOML = """\
 [schedule]
