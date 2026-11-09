@@ -53,7 +53,7 @@ def _serve(app):
 def test_1_click_raises_stop(tmp_path, chromium_available):
     from playwright.sync_api import sync_playwright
 
-    from dense_armor.utility.finance.dashboard import create_app
+    from dashboard.app import create_app
 
     cfg = _cfg(tmp_path)
     app = create_app(str(cfg))
@@ -75,7 +75,7 @@ def test_1_click_raises_stop(tmp_path, chromium_available):
 def test_2_stop_already_raised(tmp_path, chromium_available):
     from playwright.sync_api import sync_playwright
 
-    from dense_armor.utility.finance.dashboard import create_app
+    from dashboard.app import create_app
 
     cfg = _cfg(tmp_path)
     (tmp_path / "STOP").write_bytes(b"")
@@ -100,7 +100,7 @@ def test_2_stop_already_raised(tmp_path, chromium_available):
 def test_3_server_down_shows_error(tmp_path, chromium_available):
     from playwright.sync_api import sync_playwright
 
-    from dense_armor.utility.finance.dashboard import create_app
+    from dashboard.app import create_app
 
     cfg = _cfg(tmp_path)
     app = create_app(str(cfg))
@@ -123,7 +123,7 @@ def test_3_server_down_shows_error(tmp_path, chromium_available):
 
 def test_4_package_data(chromium_available):
     ref = (
-        importlib.resources.files("dense_armor.utility.finance")
+        importlib.resources.files("dashboard")
         / "static"
         / "emergency.html"
     )
@@ -132,19 +132,19 @@ def test_4_package_data(chromium_available):
     assert 'fetch("/emergency-stop"' in text
 
 
-def test_5_package_data_declared(chromium_available):
-    """The pyproject.toml declares static/*.html as package data.
+def test_5_the_web_application_is_not_in_the_wheel(chromium_available):
+    """The web application is in tools/dashboard, as in Dense-Evolution, not in the package that goes to PyPI.
 
-    importlib.resources reads from the source tree in editable mode, so it
-    does not prove the wheel would include the file. This test checks the
-    contract that the wheel honours.
+    ``packages.find`` lists what the wheel contains; ``dashboard`` and ``tools`` must not match it, so the
+    templates and the static files are not shipped and nothing of the application sits inside ``dense_armor``.
     """
     from pathlib import Path
 
     import tomllib
 
     root = Path(__file__).resolve().parents[3]
-    pyproject = root / "pyproject.toml"
-    data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
-    pkg_data = data.get("tool", {}).get("setuptools", {}).get("package-data", {})
-    assert "static/*.html" in pkg_data.get("dense_armor.utility.finance", [])
+    data = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
+    include = data["tool"]["setuptools"]["packages"]["find"]["include"]
+    assert all(not p.startswith(("dashboard", "tools", "webapp")) for p in include), include
+    assert (root / "tools" / "dashboard" / "app.py").is_file()
+    assert not (root / "dense_armor" / "webapp").exists() and not (root / "dense_armor" / "dashboard").exists()

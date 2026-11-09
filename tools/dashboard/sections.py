@@ -1088,6 +1088,9 @@ def piece_detail(section: str, category: str, piece_id: str, params: dict) -> di
     has_score = hasattr(instance, "score_one")
     has_update = hasattr(instance, "update") and not hasattr(instance, "learn_one")
     has_proba = hasattr(instance, "predict_proba_one")
+    is_stat = not (has_predict or has_proba or has_score or has_update)
+    if is_stat:
+        xs, ys = [], []
 
     # anomaly: due feature per LOF/IForest/GMM/HST (una feature è troppo piatta)
     if has_score and not has_predict:
@@ -1161,7 +1164,8 @@ def piece_detail(section: str, category: str, piece_id: str, params: dict) -> di
             _swallow(_e, "line 1159")
 
     kind = ("drift" if has_update else
-            "anomaly" if has_score and not has_predict else "classifier")
+            "anomaly" if has_score and not has_predict else
+            "stat" if is_stat else "classifier")
 
     metrics = {
         "accuracy": round(correct / max(n, 1), 4),
@@ -1254,8 +1258,19 @@ def piece_detail(section: str, category: str, piece_id: str, params: dict) -> di
             metrics["rolling_accuracy"] = rolling
     if kind == "anomaly":
         # alert count sopra threshold
-        thr_val = metrics.get("threshold", 1.5)
-        n_above = sum(1 for sv in scores if sv > thr_val)  # type: ignore
+        thr_val = None
+        try:
+            tv = float(probe_thr)
+            if tv == tv and 0 < tv < 100:
+                thr_val = tv
+        except (TypeError, ValueError):
+            pass
+        if thr_val is None and len(scores) > 1:
+            import numpy as _np
+            thr_val = float(_np.mean(scores) + 3.0 * _np.std(scores))
+            metrics["threshold"] = round(thr_val, 4)
+            metrics["threshold_rule"] = "mean + 3 standard deviations of the scores"
+        n_above = sum(1 for sv in scores if thr_val is not None and sv > thr_val)  # type: ignore
         metrics["alerts_above_threshold"] = n_above
         # istogramma degli score (10 bin tra min e max)
         if scores:

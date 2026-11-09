@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from dense_armor.utility.finance import chain
+from dashboard import chain
 
 REPO = Path(__file__).resolve().parents[3]
 
@@ -25,7 +25,7 @@ def test_the_probe_names_what_it_finds():
     assert chain._probe("data", {"source": "A.csv"}) == {"status": "stream", "source": "A.csv"}
     assert chain._probe("signal", "no.such.module.Thing")["status"] == "import_error"
     assert chain._probe("execution", "dense_armor.utility.finance.schedule.twap_schedule") == {"status": "func"}
-    assert chain._probe("signal", "dense_armor.utility.finance.dashboard.STATIC_DIR") == {"status": "not_a_class"}
+    assert chain._probe("signal", "dashboard.app.STATIC_DIR") == {"status": "not_a_class"}
     assert chain._probe("signal", "dense_armor.utility.online.tree.hoeffding.HoeffdingTreeClassifier") == {"status": "ready"}
     adaptive = chain._probe("signal", "dense_armor.utility.online.tree.adaptive.HoeffdingAdaptiveTreeClassifier")
     assert adaptive["status"] == "ready" and "drift_detector" in adaptive["default_init"]
@@ -305,4 +305,44 @@ def test_a_portfolio_or_an_execution_that_raises_is_reported_in_the_metrics(monk
     out = chain.run_chain(_picks(portfolio="min_variance", execution="pipeline"), n=60, seed=0)
     assert out["ok"] is True
     assert out["metrics"]["portfolio"] == {"error": "RuntimeError: no panel"}
-    assert out["metrics"]["execution"] == {"error": "RuntimeError: no order"}
+    assert out["metrics"]["execution"] == {"error": "RuntimeError: no order"}
+
+
+def test_the_score_gate_waits_learns_the_scale_and_fires_on_an_outlier():
+    gate = chain._ScoreGate()
+    assert not any(gate.alarm(1.0 + (i % 3) * 0.01) for i in range(60))
+    assert gate.alarm(5.0) is True
+    big = chain._ScoreGate()
+    assert not any(big.alarm(100.0 + (i % 3)) for i in range(60))
+    assert big.alarm(500.0) is True
+    warm = chain._ScoreGate()
+    assert [warm.alarm(float(i)) for i in range(30)] == [False] * 30
+
+
+def test_the_score_gate_of_an_inverted_score_fires_below_the_mean_and_skips_what_is_not_a_number():
+    inverted = chain._ScoreGate(inverted=True)
+    for i in range(40):
+        inverted.alarm(1.0 + (i % 3) * 0.01)
+    assert inverted.alarm(5.0) is False
+    assert inverted.alarm(-5.0) is True
+    ignore = chain._ScoreGate()
+    assert ignore.alarm(float("nan")) is False and ignore.alarm(float("inf")) is False and ignore.n == 0
+
+
+def test_a_risk_detector_with_a_big_scale_alarms_on_its_outlier_only(monkeypatch):
+    class Score100:
+        calls = 0
+        score_is_inverted = False
+
+        def score_one(self, x):
+            Score100.calls += 1
+            return 1000.0 if Score100.calls == 51 else 100.0 + (Score100.calls % 3) * 0.1
+
+        def learn_one(self, x):
+            pass
+
+    real = chain._instantiate
+    monkeypatch.setattr(chain, "_instantiate", lambda path: Score100() if path and "anomaly" in path else real(path))
+    out = chain.run_chain(_picks(risk="lof"), n=80, seed=0)
+    assert out["ok"] is True
+    assert out["metrics"]["risk_alarms"] == 1 and out["alarms"] == [50]

@@ -8,6 +8,8 @@ something that has one.
 
 ## 1. Run the demo, then start the dashboard
 
+**One command.** From a clone of the repository, `tools\dashboard\start-dashboard.bat` (Windows) or `sh tools/dashboard/start-dashboard.sh` (Linux, macOS) installs flask if it is missing, copies the demo configuration to `tools/dashboard/run/` and starts the dashboard on http://127.0.0.1:8080/. Options such as `--port 9000` are passed on.
+
 The demo of F10 writes a synthetic feed, sends the orders through the pre-trade
 checker, records the decisions in the log. The dashboard reads that log.
 
@@ -74,7 +76,7 @@ subprocess.run(
     capture_output=True, text=True, cwd=str(work), env=env,
 )
 from werkzeug.serving import make_server
-from dense_armor.utility.finance.dashboard import create_app
+from dashboard.app import create_app
 
 app = create_app(str(work / "demo.toml"))
 server = make_server("127.0.0.1", 0, app)
@@ -142,7 +144,7 @@ subprocess.run(
     capture_output=True, text=True, cwd=str(work), env=env,
 )
 from werkzeug.serving import make_server
-from dense_armor.utility.finance.dashboard import create_app
+from dashboard.app import create_app
 
 app = create_app(str(work / "demo.toml"))
 server = make_server("127.0.0.1", 0, app)
@@ -203,6 +205,9 @@ no bar.
   running process.
 - The stop is a file. A second click leaves one file, not two; lifting the
   stop is a manual operation on the server.
+- The alarms of the chain: a drift detector fires on its own flag; a risk detector with a score fires when the score
+  is more than 3 standard deviations above the running mean of its own scores (below it when the score is
+  inverted), after 30 scores. The scales of the scores differ from one detector to the other, so no fixed threshold is used.
 - `POST /emergency-stop` answers `403` when the request carries an `Origin`
   of another host, so a page open in the same browser cannot press the
   button; a request with no `Origin` (curl, a test client) is accepted. It is

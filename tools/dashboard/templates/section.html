@@ -3,7 +3,7 @@
 <section class="sec-page">
   <header class="sec-head">
     <div class="sec-title-row">
-      <span class="sec-count">{{ total }} pezzi</span>
+      <span class="sec-count">{{ total }} pieces</span>
     </div>
     <div class="sec-dots">
       {% set slugs = cat_slugs if cat_slugs is defined else None %}
@@ -21,16 +21,12 @@
       <article class="piece piece-{{ p.size|default('S') }}" data-size="{{ p.size|default('S') }}">
         <div class="piece-head">
           <div class="piece-name" title="{{ p.name }}">{{ p.name }}</div>
-          <a class="piece-expand" href="/piece/{{ page }}/{{ cat_slugs[active_cat] if cat_slugs is defined else categories[active_cat]|lower }}/{{ p.id }}" title="enlarge">[ ]</a>
+          {% set slug = cat_slugs[active_cat] if cat_slugs is defined else categories[active_cat]|lower %}
+          {% if piece_has_page(slug, p.id) %}<a class="piece-expand" href="/piece/{{ page }}/{{ slug }}/{{ p.id }}" title="enlarge">[ ]</a>{% endif %}
           <div class="piece-kind">{{ p.kind }}</div>
         </div>
         <div class="piece-chart">{{ p.svg|safe }}</div>
         <form class="piece-form">
-          <div class="pf-row">
-            <label>p1<input type="text" name="p1" placeholder="—"></label>
-            <label>p2<input type="text" name="p2" placeholder="—"></label>
-            <label>p3<input type="text" name="p3" placeholder="—"></label>
-          </div>
           <div class="pf-actions">
             <button type="button" class="piece-use"
                 data-section="{{ page }}"
@@ -42,7 +38,7 @@
       {% endfor %}
       {% if not pieces %}
       <div class="empty-section">
-        <p>{{ section }} — {{ total }} pezzi</p>
+        <p>{{ section }} — {{ total }} pieces</p>
         <p class="sub">la griglia si popolerà quando attivo la sezione</p>
       </div>
       {% endif %}

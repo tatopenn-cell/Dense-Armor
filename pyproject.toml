@@ -81,5 +81,3 @@ module = ["pyulog", "pyulog.*", "pymavlink", "pymavlink.*", "paho.*", "yaml", "p
 ignore_missing_imports = true
 
 
-[tool.setuptools.package-data]
-"dense_armor.utility.finance" = ["static/*.html"]

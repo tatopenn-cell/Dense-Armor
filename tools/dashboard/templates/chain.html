@@ -524,7 +524,7 @@ window.attachChartTooltip = function (container) {
             budgetEl.textContent = `budget totale: ${ms} ms (6/6)`;
             budgetEl.className = "chain-budget good";
           } else {
-            budgetEl.textContent = `budget: ≥${ms} ms (${nDeclared}/${nSlots} dichiarati)`;
+            budgetEl.textContent = `budget: ≥${ms} ms (${nDeclared}/${nSlots} declared)`;
             budgetEl.className = "chain-budget warn";
           }
           const missing = Object.keys(roleAttrs).filter(k => !roleAttrs[k] || roleAttrs[k].budget_s === undefined);
@@ -534,9 +534,9 @@ window.attachChartTooltip = function (container) {
           if (notDecl.length) tips.push("non istanza: " + notDecl.join(", "));
           budgetEl.title = tips.join(" · ");
         } else {
-          budgetEl.textContent = "budget: non dichiarato";
+          budgetEl.textContent = "budget: not declared";
           budgetEl.className = "chain-budget warn";
-          budgetEl.title = "nessuno slot dichiara budget_s";
+          budgetEl.title = "no slot declares budget_s";
         }
       }
       // aggiorna il pannello aside

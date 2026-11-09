@@ -14,7 +14,7 @@ every file. Update it whenever a module is added, moved or renamed.
    `proba`, `anomaly`, `drift`, `protect`), `deep/` (`neural`), `signals/` (`stream`, `stats`,
    `preprocessing`, `vision`, `datasets`), `robot/` (`control`), `evaluation/` (`evaluate`,
    `metrics`), `infrastructure/` (`compose`, `data`) and `finance/` (`schedule`, `pretrade`,
-   `itch`, `ring`, `config`, `decision_log`, `feed`, `status`, `synthetic`, `demo`, `audit_db`, `dashboard`, `static/emergency.html`, `fix_gateway`). The old paths, for example `dense_armor.utility.bandit.ucb`, still
+   `itch`, `ring`, `config`, `decision_log`, `feed`, `status`, `synthetic`, `demo`, `audit_db`, `fix_gateway`). The old paths, for example `dense_armor.utility.bandit.ucb`, still
    resolve to the same modules (`_compat.py`).
 3. `dynamics` — rigid-body dynamics from URDF.
 4. `checks` — `check_estimator` and the robot checks.
@@ -658,3 +658,7 @@ model can be wrapped in `roles/Protected`, with a detector from `utility/online/
 `utility/online/drift`, to skip learning on flagged samples.
 
 A table that is already complete is read at once by the classes of `ml/` with `fit`. A network of `utility/deep/neural` is built from layers, joined in a `Sequential`, trained by a `Trainer` on mini-batches, and placed in a pipeline of `roles/` through `AsTransformer`.
+
+## Outside the package
+
+`tools/dashboard/` is the web application (the dashboard of the finance system: `app.py`, `chain.py`, `sections.py`, `templates/` and `static/`), in the second tree `tools/` as the dashboard of Dense-Evolution is. It is not a part of `dense_armor`: `pyproject.toml` lists only `dense_armor*` and `pipelines*` as packages, so the wheel on PyPI does not contain it. It imports the finance primitives of `utility/finance/` and is not imported by them. It is imported as `dashboard` with `tools` on the path and runs with `python -m dashboard.app --config <file.toml>`.

@@ -1209,3 +1209,35 @@ body.page-chain .chart-body > svg {
   gap: .3em;
   min-height: 0;
 }
+
+/* -------- form controls: sizes in px, so that nested em units do not shrink them --------
+   The fields of the pieces had font sizes of 5 to 9 px (a label of .58em, an input of .85em of it, inside a
+   panel of .8em): the text that a person types could not be read. A field is 12 or 13 px and a label 10 or
+   11 px, whatever it sits in. */
+input, select, textarea { font-size: 13px; }
+.pf-row label { font-size: 10px; }
+.pf-row input { width: 60px; padding: 3px 5px; font-size: 12px; }
+.piece-params-form label { font-size: 11px; }
+.piece-params-form input { padding: 4px 6px; font-size: 13px; }
+.piece-params-form button, .piece-params-strip button { font-size: 12px; }
+.piece-params-strip { flex-wrap: wrap; max-height: none; overflow: visible; }
+.piece-params-strip label { font-size: 10px; }
+.piece-params-strip input { width: 96px; padding: 4px 6px; font-size: 13px; }
+.chain-node .cn-tag { font-size: 10px; }
+.chain-node .cn-search { font-size: 12px; padding: 3px 6px; }
+.chain-node .cn-select { font-size: 13px; padding: 4px 6px; }
+.chain-params-bar { font-size: 12px; }
+.chain-params-inline { font-size: 12px; }
+.chain-params-inline label { font-size: 11px; }
+.chain-params-inline input { font-size: 13px; padding: 4px 6px; width: 84px; }
+
+/* -------- chain page: a chart never grows out of its card, and a short window scrolls instead of clipping -------- */
+.chain-card .chart-body { position: relative; overflow: hidden; }
+.chain-card .chart-body svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.chain-grid { min-height: 540px; }
+body.page-chain .main { overflow-y: auto; }
+
+/* -------- section pages: cards wide enough for the name of a piece -------- */
+.sec-grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+.piece-name { font-size: 12px; }
+.piece-kind { font-size: 10px; }
