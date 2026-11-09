@@ -239,7 +239,7 @@ Some specifics:
 
 ## Team
 
-Maintained by [Salvatore Pennacchio](jtatopenn@libero.it). Issues and pull requests on [GitHub](https://github.com/tatopenn-cell/Dense-Armor/issues); questions and general discussion in [GitHub Discussions](https://github.com/tatopenn-cell/Dense-Armor/discussions).
+Maintained by [Salvatore Pennacchio](mailto:jtatopenn@libero.it). Issues and pull requests on [GitHub](https://github.com/tatopenn-cell/Dense-Armor/issues); questions and general discussion in [GitHub Discussions](https://github.com/tatopenn-cell/Dense-Armor/discussions).
 
 ---
 
