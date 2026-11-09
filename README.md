@@ -205,6 +205,14 @@ Check out [the API](https://tatopenn-cell.github.io/Dense-Armor/api/) for a comp
 
 ---
 
+## References
+
+Dense-Armor builds on 188 works across online learning, streaming statistics, robot control, deep learning and finance. The full list is in [REFERENCES.md](REFERENCES.md).
+
+Key references: [River](https://riverml.xyz) (Montiel et al., 2020, [arXiv:2012.04740](https://arxiv.org/abs/2012.04740)), [scikit-learn](https://scikit-learn.org) (Buitinck et al., 2013), [CASPER](https://arxiv.org/abs/2303.01300) (Kayan et al., 2023), ADWIN (Bifet & Gavaldà, 2006), CBF (Ames et al., 2019), EWC (Kirkpatrick et al., 2017).
+
+---
+
 ## Should I be using Dense-Armor?
 
 Learning on the whole dataset does the job for many problems, and Dense-Armor covers it with the machine learning classes of `dense_armor.ml`. An online approach fits when:
@@ -235,6 +243,12 @@ Some specifics:
 
 ---
 
+## Team
+
+Maintained by [Salvatore Pennacchio](jtatopenn@libero.it). Issues and pull requests on [GitHub](https://github.com/tatopenn-cell/Dense-Armor/issues); questions and general discussion in [GitHub Discussions](https://github.com/tatopenn-cell/Dense-Armor/discussions).
+
+---
+
 ## Contributing
 
 Contributions are welcome. The library is built to be extended one estimator at a time, following the same interface (`learn_one` / `predict_one` / `transform_one`) and the same checks (`dense_armor.checks`). Code style is checked with `ruff check dense_armor`, configured in `pyproject.toml`.
@@ -246,7 +260,7 @@ Contributions are welcome. The library is built to be extended one estimator at 
 ```bibtex
 @software{pennacchio_dense_armor,
   author    = {Pennacchio, Salvatore},
-  title     = {Dense-Armor: Robot-AI Online Shielding \\& Learning},
+  title     = {Dense-Armor: Robot-AI Online Shielding \& Learning},
   year      = 2026,
   publisher = {Zenodo},
   doi       = {10.5281/zenodo.24030156}
@@ -254,19 +268,6 @@ Contributions are welcome. The library is built to be extended one estimator at 
 ```
 
 ---
-
-## License
-
-GNU Affero General Public License v3.0 or later. See [LICENSE](LICENSE).
-Releases up to 1.1.32 were published under the Business Source License 1.1:
-[LICENSE-BUSL-1.1-until-1.1.32.md](LICENSE-BUSL-1.1-until-1.1.32.md).
-A commercial licence is available on request.
-
-`© 2026 Salvatore Pennacchio <jtatopenn@libero.it>`
-
-Twin project of [Dense-Evolution](https://github.com/tatopenn-cell/Dense-Evolution)
-(NISQ quantum circuit simulator).
-
 
 ## Speed
 
@@ -325,3 +326,16 @@ Dense-Armor takes inspiration from [River](https://riverml.xyz) (Montiel et al.,
 - Deep Learning: [Language-model training: how do I train a small language model with Dense-Armor?](docs/neural/lm_training.md).
 - Deep Learning: [Rotary decoder: how do I generate text without running the whole sequence again at every token?](docs/neural/rotary_decoder.md).
 - Machine learning: [the families of `dense_armor.ml`](docs/ml/index.md), grown on the whole table: statistics, preprocessing, linear models, trees, forests, ensembles, anomaly and change detection, vision.
+  
+## License
+
+GNU Affero General Public License v3.0 or later. See [LICENSE](LICENSE).
+Releases up to 1.1.32 were published under the Business Source License 1.1:
+[LICENSE-BUSL-1.1-until-1.1.32.md](LICENSE-BUSL-1.1-until-1.1.32.md).
+A commercial licence is available on request.
+
+`© 2026 Salvatore Pennacchio <jtatopenn@libero.it>`
+
+Twin project of [Dense-Evolution](https://github.com/tatopenn-cell/Dense-Evolution)
+(NISQ quantum circuit simulator).
+
