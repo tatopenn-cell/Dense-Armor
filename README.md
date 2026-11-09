@@ -208,15 +208,15 @@ Key references: [River](https://riverml.xyz) (Montiel et al., 2020, [arXiv:2012.
 
 ---
 
-## Should I be using Dense-Armor?
+## Why Dense-Armor
 
-Learning on the whole dataset does the job for many problems, and Dense-Armor covers it with the machine learning classes of `dense_armor.ml`. An online approach fits when:
+**Same interface, no rewrite.** Any estimator that follows the `learn_one` / `predict_one` / `predict_proba_one` / `score_one` contract plugs into a pipeline. If you already have an online loop, you do not rewrite it to use this library.
 
-- you want a model that learns from new data without revisiting past data
-- you want a model that is robust to concept drift
-- the production context is event-based, not batch-based, and you want the code to look like it
-- you want the model to be protected from corrupted input, NaN, spikes, or slow drift without retraining it
-- you work with a real robot and need command-side safety in the same library that learns the model
+**The areas the online-ML toolchain leaves open.** Each of these comes with a measured claim against an external reference, not a promise. Neural network training on a stream, with an error well below a constant baseline and a classifier that reaches full accuracy on a standard dataset. Streaming recommenders, with an error an order of magnitude below the mean. Seven streaming metrics — log-loss, Brier, Cohen's kappa, precision, recall, F-beta2 and softmax cross-entropy — that agree with their batch counterparts to numerical precision. Model selection on a stream, where the best candidate clearly outperforms the average. Bandits, where the policy earns far more than random play. Anomaly detection from recent literature, with a strong ranking quality on a public credit-card fraud dataset, zero training labels, and a fit measured in seconds.
+
+**The operational layer.** These sit next to the model, not in a separate project. Pre-trade risk against the five controls of SEC Rule 15c3-5(c)(1): size, price band, duplicate, rate, notional. A tamper-evident decision log, built as a SHA-256 hash chain in JSON Lines, with the same chain in PostgreSQL and a trigger that forbids editing or deleting a record. A Nasdaq ITCH decoder and a synthetic feed that reproduces byte-identically from a seed. A FIX gateway, TWAP and VWAP schedules, and a streaming value-at-risk that updates without rescanning the past. Market surveillance with two independent detectors that must agree, on years of S&P 500 history. Shielding for NaN, spikes and anomalous samples around any online learner. Rate-limited and barrier-bounded commands on a real robot. Drone and sensor pipelines. Native vision.
+
+**What this is not.** A larger model, a faster GPU kernel, a new optimizer. It is the layer that turns a model into something you can put in front of a desk, a flight controller or a sensor, and defend in front of a reviewer.
 
 Some specifics:
 
