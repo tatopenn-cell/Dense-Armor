@@ -1,69 +1,104 @@
 # API Reference
 
-A starting point for finding the right tool. Say what you have in front of you (a single series of numbers, a model, several signals that interact) and this page tells you which part of the library to use.
-
-Dense-Armor has two kinds of entry point. A **shield** cleans a whole series or a whole
-model in one call. A **single-purpose module** does one thing (score a sample, detect a
-drift, bound a command) and composes with the others.
+A starting point for finding the right tool. Say what you have in front of you (an order to check, a stream of returns, a table, a network to train) and this page tells you which part of the library to use. The examples are about finance first, then neural networks.
 
 Start from what you have in front of you:
 
-- You have a **1D series** (a loss curve, one sensor channel, a token stream) → `Armor`.
-- You have a **model and a corrupted input** → `Orca`.
-- You need **one score per sample** → the anomaly detectors.
-- You have **several channels that interact** (a robot joint's torque and position, a
-  sensor bank) → the **multivariate detectors**.
-- You need **one alarm for a slow drift** → CUSUM.
-- You need **a safe command for a real robot** → the control modules.
+- You have **an order to approve before it leaves** → the pre-trade checker and the decision log.
+- You have **a stream of returns or prices** → the drift and regime detectors.
+- You have **transactions to screen for fraud, or a stream with strange points** → the anomaly detectors.
+- You have **a portfolio, a risk number or an execution schedule to compute on a stream** → the finance pipelines.
+- You have **a whole table** → machine learning (`fit` / `predict`).
+- You have **a model that must learn one sample at a time** → online learning.
+- You have **a network to train, on a dataset or on a stream** → deep learning.
 - You need **to pick one option at a time and learn from the reward** → the bandit policies.
 - You need **to ask for a label only on the samples that matter** → the active-learning strategies.
-- You need **the physical model of a robot** → the dynamics modules.
 
-## The two shields
+## Finance
 
-- **[`Armor`](../shields/armor.md)** — wearable shield for a single 1D series. Built
-  on the [hybrid engine](../shields/hybrid_engine.md).
-- **[`Orca`](../shields/orca.md)** — full input + output shield for an entire model. Built
-  on the [adaptive engine](../shields/engine.md) (`AdaptiveSignalStabilizer`, Stage 1)
-  plus a Collatz-based gate (Stage 2). Optional `use_arbiter=True` adds per-point routing
-  (see [Arbiter](../protect/arbiter.md)) instead of one gate for the whole signal.
+The first thing to read. Every page opens with the question it answers, and every example runs without external data.
 
-## Per-sample scoring and routing
+- **[Pre-trade limits](../finance/pretrade.md)** — the five controls of SEC Rule 15c3-5(c)(1): size, price band, duplicate, rate, notional. `PreTradeChecker.check(...)` returns a `Decision`.
+- **[Decision log](../finance/decision_log.md)** — a JSON Lines file with a SHA-256 hash chain; `DecisionLog.verify()` is `False` as soon as one record is edited. The same chain in PostgreSQL is the [audit table](../finance/audit_db.md).
+- **[Feed, ITCH and synthetic feed](../finance/feed.md)** — a Nasdaq ITCH decoder and a feed that is byte-identical on every machine, from a seed.
+- **[Execution schedules](../finance/schedule.md)** and the **[FIX gateway](../finance/fix_gateway.md)** — TWAP and VWAP, and orders to a test acceptor.
+- **[Value-at-Risk](../finance/risk.md)**, **[portfolio](../finance/portfolio.md)** and **[order book](../finance/order_book.md)** — streaming tail risk, minimum-variance weights, order flow imbalance.
+- **[Regime](../finance/regime.md)** and **[drift versus noise](../finance/drift_vs_noise.md)** — a change in returns, told apart from noise.
+- **[Market surveillance](../finance/surveillance.md)**, **[fraud](../finance/fraud.md)**, **[intrusion](../finance/intrusion.md)** and **[credit scoring](../finance/credit_scoring.md)** — pipelines that chain the blocks below on a stream.
+- **[Dashboard](../finance/dashboard.md)**, **[status and emergency stop](../finance/emergency.md)** — the web application that shows the log and stops the system.
 
-- **[Arbiter](../protect/arbiter.md)** — classifies each point as clean / spike / regime
-  against a wide causal reference window, then routes it. Also callable on its own
-  (`classify_segments` / `route_and_correct`), not only through `Orca(use_arbiter=True)`.
-- **[Streaming](../anomaly/streaming.md)** — a per-sample port of
-  Arbiter's causal deviation check (not the spike/regime label, which needs lookahead and
-  stays batch-only), plus native multi-channel wrappers.
-- **[Robust filters](../anomaly/robust_filters.md)** — the same four classic detectors
-  (Chauvenet, Tukey, Hampel, sigma clipping) on whole series, and `pressure_valve`.
-- **[Curvature](../anomaly/curvature.md)** — a bounded proximity-to-reference score in
-  `[0, 1)`, used internally by `Orca`'s input shield.
-- **[CUSUM and ARL theory](../drift/cusum.md)** — accumulates small, sustained deviations
-  Arbiter's per-point threshold is structurally blind to, plus a closed-form
-  pre-flight estimate (`detectability_report`) of expected detection / false-alarm
-  latency.
+The two calls that make the first example, from the quickstart of the README:
 
-## Factorization machines and recommenders
+```python
+from dense_armor.utility.finance import PreTradeChecker, DecisionLog
 
-- **[Factorization machines](../facto/index.md)** — `FMRegressor`, `FMClassifier` (Rendle 2010),
-  `FFMClassifier`, `FFMRegressor` (Juan 2016), `FwFMClassifier`, `FwFMRegressor` (Pan 2018),
-  `HOFMClassifier`, `HOFMRegressor` (Blondel 2016). Each `learn_one(x, y)` where `x` is a dict
-  of features.
-- **[Recommenders](../reco/index.md)** — `Baseline`, `BiasedMF`, `FunkMF` (Paterek 2007,
-  Koren 2009). Signature `learn_one(user, item, rating)`, `predict_one(user, item)`, `rank`.
+checker = PreTradeChecker(
+    max_notional=50_000.0, max_size=0.2, price_band=0.001,
+    max_orders=3, window_s=10.0, duplicate_window_s=1.0,
+)
+log = DecisionLog("decisions.jsonl")
+d = checker.check("MSFT", "buy", 5.0, 100.0, 100.0, t=0.0)
+log.append(t=0.0, payload={"account": "MSFT", "approved": d.approved, "reason": d.reason})
+print(log.verify())
+```
 
-## Small structures
+```
+True
+```
 
-- **[Sliding DFT and sliding-window skyline](../reco/index.md)** — `SDFT` (the N-point DFT of
-  the last N samples, O(N) per sample) and `Skyline` (non-dominated points of a window).
+A change in the mean of daily returns (in percent, synthetic), caught by ADWIN while the stream runs:
 
-## Multivariate detectors
+```python
+import numpy as np
+from dense_armor.utility.online.drift.adwin import ADWIN
 
-Five detectors for when a fault touches several channels at once. Each has a different
-bias — pick by the shape of the fault and by the cost you can pay per sample — and all
-five go through `AnomalyGate` and `Protected` unchanged.
+rng = np.random.default_rng(0)
+r = np.r_[rng.normal(0.04, 0.6, 400), rng.normal(2.0, 0.6, 400)]
+d = ADWIN()
+for t, x in enumerate(r):
+    d.update(x)
+    if d.drift_detected:
+        print(t)
+        break
+```
+
+```
+441
+```
+
+## Deep learning
+
+The object the library is built towards: networks made of layers, with a gradient that can be checked, trained one batch or one sample at a time.
+
+- **[Foundations](../neural/index.md)**, **[layers](../neural/layers.md)** and **[chains](../neural/chains.md)** — the smallest pieces and how to join them.
+- **[Convolution and pooling](../neural/vision_layers.md)**, **[recurrent layers](../neural/sequence_layers.md)** and **[attention](../neural/attention.md)**.
+- **[Training](../neural/training.md)** and **[continuous training](../neural/continuous.md)** — schedules, mini-batches, early stopping, a background learner.
+- **[Continual learning](../neural/continual_learning.md)** — EWC, GEM, A-GEM, and how to measure what the network remembers.
+- **[Encoders and decoders](../neural/encoder_decoder.md)**, **[mixture of experts](../neural/moe_testtime.md)** and **[composable attention](../neural/composable_attention.md)**.
+- **[Decoder language models](../neural/decoder_lm.md)**, **[language-model training](../neural/lm_training.md)** and the **[rotary decoder](../neural/rotary_decoder.md)** — generation against a static key/value cache.
+
+## Machine learning
+
+The classes of `dense_armor.ml` read a whole table with `fit(X, y)`. The [overview](../ml/index.md) has one page per family: statistics, preprocessing, linear models, trees, forests, ensembles, anomaly and change detection, vision.
+
+## Online learning
+
+Models that learn one sample at a time, with the same `learn_one` / `predict_one` contract everywhere.
+
+- **[Optimizers](../optim/index.md)**, **[linear models](../linear/glm.md)**, **[trees](../tree/index.md)**, **[clustering](../cluster/index.md)**.
+- **[Calibration](../learn/calibration.md)** — online Platt scaling: honest probabilities from any classifier.
+- **[Metric learning](../learn/metric_learning.md)** — OASIS, LEGO and POLA, and a k-NN classifier that learns its distance online.
+- **[Fraud](../finance/fraud.md)**, **[credit scoring](../finance/credit_scoring.md)** and **[static against online](../finance/static_vs_online.md)** — online trees and ensembles on a stream of transactions.
+- **[Ensembles](../ensemble/index.md)** — a group of models that answer together, from a plain vote to a second model on top of the members' predictions.
+- **Factorization machines and recommenders** — **[Factorization machines](../facto/index.md)** (`FMRegressor`, `FMClassifier`, `FFMClassifier`, `FwFMClassifier`, `HOFMClassifier` and the regressors), **[recommenders](../reco/index.md)** (`Baseline`, `BiasedMF`, `FunkMF`; `learn_one(user, item, rating)`), `SDFT` and `Skyline`.
+
+## Anomaly and drift detection
+
+- **[Streaming detectors](../anomaly/streaming.md)**, **[robust filters](../anomaly/robust_filters.md)** (Chauvenet, Tukey, Hampel, sigma clipping) and **[curvature](../anomaly/curvature.md)** — one score per sample.
+- **[Drift detectors](../drift/detectors.md)** — ADWIN, KSWIN, Page–Hinkley, and the CUSUM family; **[CUSUM and ARL theory](../drift/cusum.md)** for the expected detection and false-alarm latency.
+- **[Arbiter](../protect/arbiter.md)** — classifies each point as clean / spike / regime against a wide causal reference window, then routes it.
+
+Five multivariate detectors, for when a change touches several channels at once. Each has a different bias, and all five go through `AnomalyGate` and `Protected` unchanged.
 
 | Detector | Bias | Cost |
 |---|---|---|
@@ -73,63 +108,27 @@ five go through `AnomalyGate` and `Protected` unchanged.
 | `OneClassSGD` (`anomaly.ocsvm`) | distance from a learned kernel boundary (SONAR) | O(1) |
 | `OnlineRobustMahalanobis` (`anomaly.mahalanobis`) | distance from a robust median under the MCM | O(1) |
 
-On the streams of the repository (SyntheticArm payload fault and one sudden drift),
-`OnlineRobustMahalanobis` and `LODA` are the strongest, `HalfSpaceTrees` follows, and
-`OneClassSGD` needs more samples than a few hundred healthy points to converge. The full
-table is in the anomaly benchmark. Narrative pages come with the docs task; for now the
-classes are reachable from the API reference and from the source modules under
-`dense_armor.utility.online.anomaly`.
-
-## Control
-
-Each page bounds a different aspect of a command, on the same single-integrator joint
-model, and they compose in this order:
-
-- **[Trajectory](../control/trajectory.md)** — generates a smooth, minimum-jerk
-  point-to-point path (the reference to follow).
-- **[Kinematic controller](../control/kinematic_controller.md)** — turns that reference
-  into a joint velocity command with an exact exponential convergence guarantee.
-- **[Rate limiter](../control/rate_limiter.md)** — bounds how fast the command can
-  physically change (WHEN / HOW FAST).
-- **[CBF filter](../control/cbf_filter.md)** — bounds where the command can go (WHERE).
-
-## Robot dynamics
-
-- **[Rigid-body dynamics](../dynamics/urdf_dynamics.md)** — mass matrix, gravity, forward
-  dynamics, and kinematics of any link, from the robot's URDF file.
-- **[Passivity + singularity-CBF controller](../dynamics/passivity_cbf_controller.md)** —
-  task-space control that stays away from kinematic singularities.
-- **[Full 6-DoF controller](../dynamics/six_dof_pbc_cbf_controller.md)** — the same, for
-  position *and* orientation.
-- **[Xacro files](../dynamics/xacro_support.md)** and **[mimic joints](../dynamics/mimic_joints.md)** —
-  loading robots described with macros, and modelling coupled joints.
-
-## Online learning
-
-- **[Calibration](../learn/calibration.md)** — online Platt scaling: honest probabilities
-  from any classifier.
-- **[Metric learning](../learn/metric_learning.md)** — OASIS, LEGO and POLA, and a k-NN
-  classifier that learns its distance online.
-- **[Online classifiers](../learn/online_classifiers.md)** — robot-state classifiers that
-  adapt when the data drifts.
-- **[Online dynamics](../learn/online_dynamics.md)** — learns, sample by sample, the
-  torque the URDF model misses.
-- **[Ensembles](../ensemble/index.md)** — a group of models that answer together, from
-  a plain vote to a second model on top of the members' predictions.
-
 ## The library by section
 
 The same pages, grouped the way the package is organised (`dense_armor.<section>`):
 
 | Section | What it is for | Pages |
 |---|---|---|
-| [Shields](../shields/index.md) | one object that cleans a whole series or a whole model | Armor, Orca, their engines |
-| [Anomaly detection](../anomaly/index.md) | a score per sample: high means it does not look like the recent past | Streaming, Robust filters, Curvature; multivariate: HalfSpaceTrees, OnlineIsolationForest, LODA, OneClassSGD, OnlineRobustMahalanobis |
-| [Drift detection](../drift/index.md) | one alarm when a slow, sustained change is real | CUSUM and ARL theory |
-| [Protection](../protect/index.md) | what to do with a wrong-looking sample: pass, repair, or route | Arbiter (batch and streaming) |
-| [Online learning](../learn/index.md) | models that learn one sample at a time while the robot runs | Calibration, Metric learning, Classifiers, Dynamics |
-| [Ensembles](../ensemble/index.md) | a group of models that answer together | Voting, Bagging, Boosting, Exponentially weighted average, Stacking |
-| [Control](../control/index.md) | commands: where a robot may go, how fast, along which path | Rate limiter, CBF filter, Trajectory, Kinematic controller |
-| [Robot dynamics](../dynamics/index.md) | the physical model of a real robot from its URDF | Rigid-body dynamics, Controllers, Xacro, Mimic joints |
-| [Benchmarks](../benchmarks/index.md) | the library on recordings from real robots | Real robot arm (CASPER, UR3e) |
-| [Toolkit](../toolkit/index.md) | generic tools the shields use | Toolkit |
+| [Finance](../finance/index.md) | pre-trade risk, decision log, drift and fraud on streams | the pages above |
+| [Deep learning](../neural/index.md) | layers, attention, training, continual learning, language models | Layers, Chains, Attention, Training, Decoder |
+| [Machine learning](../ml/index.md) | `fit` / `predict` on a whole table | one page per family |
+| [Online learning](../learn/index.md) | models that learn one sample at a time | Calibration, Metric learning, fraud and credit trees |
+| [Ensembles](../ensemble/index.md) | a group of models that answer together | Voting, Bagging, Boosting, Stacking |
+| [Anomaly detection](../anomaly/index.md) | a score per sample: high means it does not look like the recent past | Streaming, Robust filters, Curvature, multivariate detectors |
+| [Drift detection](../drift/index.md) | one alarm when a slow, sustained change is real | Detectors, CUSUM and ARL theory |
+| [Toolkit](../toolkit/index.md) | generic tools | Toolkit |
+
+<small>
+
+**Also in the library**, as attributes of the same building blocks and not as the main subject:
+
+- The **shields** [`Armor`](../shields/armor.md) (one 1D series) and [`Orca`](../shields/orca.md) (a model, input and output), built on the [hybrid engine](../shields/hybrid_engine.md) and the [adaptive engine](../shields/engine.md); [Protection](../protect/index.md) groups them with Arbiter.
+- **Online learning on a robot**: [online classifiers](../learn/online_classifiers.md) (its state from the joint signals) and [online dynamics](../learn/online_dynamics.md) (the torque a rigid-body model misses).
+- **Robot control and dynamics**: [trajectory](../control/trajectory.md), [kinematic controller](../control/kinematic_controller.md), [rate limiter](../control/rate_limiter.md), [CBF filter](../control/cbf_filter.md), [rigid-body dynamics](../dynamics/urdf_dynamics.md), [passivity + singularity-CBF controller](../dynamics/passivity_cbf_controller.md), [6-DoF controller](../dynamics/six_dof_pbc_cbf_controller.md), [xacro](../dynamics/xacro_support.md), [mimic joints](../dynamics/mimic_joints.md); the [real robot benchmark](../benchmarks/index.md) (CASPER, UR3e).
+
+</small>

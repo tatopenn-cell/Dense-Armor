@@ -1,8 +1,8 @@
 # Dense-Armor
 
-Dense-Armor is a library that learns from a robot's numbers (and from images and text) in three ways: one sample at a time, on a whole table at once, and with deep networks. It can spot strange readings, notice slow changes, protect against bad data and keep robot commands safe.
+Dense-Armor is a library that learns from streams of numbers (and from images and text) in three ways: one sample at a time, on a whole table at once, and with deep networks. Its first use is finance: orders checked before they leave, a decision log that anyone can verify, drift and fraud caught on a stream. Its destination is deep learning: networks that keep training on a stream without forgetting.
 
-**A library for three kinds of learning: online learning on robot, vision, and AI streams; machine learning on a whole dataset; and deep learning.**
+**A library for three kinds of learning: online learning on market, sensor and AI streams; machine learning on a whole dataset; and deep learning.**
 
 ## The three kinds of learning
 
@@ -17,7 +17,7 @@ Dense-Armor is a library that learns from a robot's numbers (and from images and
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                                 APPLICATIONS                                │
 │                                                                             │
-│ Robot control, dynamics, URDF    Vision    LLM agents, tools    AI models   │
+│ FINANCE: pre-trade risk, decision log, drift and fraud       Vision    LLM  │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                           THREE KINDS OF LEARNING                           │
 │                                                                             │
@@ -26,10 +26,6 @@ Dense-Armor is a library that learns from a robot's numbers (and from images and
 │ classifiers, regressors  whole table              training, language        │
 │ trees, anomaly, drift   statistics, linear,      models, continual         │
 │ detectors, clustering    trees, ensembles         learning                  │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                PROTECTION (optional, around any online model)               │
-│                                                                             │
-│ Armor (1D series)    Orca (input + output)    Arbiter (per-point routing)   │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                    SIGNALS & STATISTICS (the layer below)                   │
 │                                                                             │
@@ -42,46 +38,7 @@ Dense-Armor is a library that learns from a robot's numbers (and from images and
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-The three kinds of learning are the core. The shield (Armor, Orca, Arbiter) is optional protection around an online model. Robot, vision, LLM and the AI models are the applications this core was built for.
-
-## Online learning in practice: four ways to use it, and where the shield goes
-
-Four ways to use the online part, from the simplest to the most protected.
-
-**1 — Learn from a clean stream.** You have a model and the data is trustworthy.
-
-```
-  sample ──► ESTIMATOR.learn_one(x, y) ──► updated
-  sample ──► ESTIMATOR.predict_one(x)  ──► prediction
-```
-
-**2 — Learn from a stream that can be corrupted.** Add a shield. Same estimator, one
-wrapper.
-
-```
-  sample ──► [ SHIELD ] ──► ESTIMATOR.learn_one   (skipped if the sample is flagged)
-                  │
-                  └──► ESTIMATOR.predict_one     (always runs)
-```
-
-**3 — Score each sample without learning.** You only need a number: high means the sample
-does not look like the recent past.
-
-```
-  sample ──► [ DETECTOR.score_one ] ──► score ──► threshold ──► flag
-```
-
-**4 — Score the joint vector, not the single channel.** When several channels move
-together and a per-channel detector is blind to the combination.
-
-```
-  residual of every joint ──► [ MULTIVARIATE DETECTOR ] ──► score
-                                looks at the joint vector
-                                as one point in d dimensions
-```
-
-Recipe 1 is the online core. Recipe 2 adds the shield. Recipes 3 and 4 are the shield used on
-its own, for when you only need a detector.
+The three kinds of learning are the core. Finance is the application the examples follow, and deep learning is where the library is going. Shielding, robot control and drones are attributes of the same blocks, listed at the end of this page.
 
 ## Install
 
@@ -89,40 +46,62 @@ its own, for when you only need a detector.
 pip install dense-armor
 ```
 
-## The first learned model, in five lines
+## The first checked order, in a few lines
+
+A reproducible Nasdaq feed meets the five pre-trade controls, and every decision is chained to the previous one.
 
 ```python
-from dense_armor.utility.online.learn.online_dynamics import RecursiveLeastSquares
+from dense_armor.utility.finance import PreTradeChecker, DecisionLog
 
-model = RecursiveLeastSquares(lam=1.0, feature_keys=["one", "q", "qd"])
-for t, (x, y) in enumerate(stream):
-    model.learn_one({"one": 1.0, "q": q[t], "qd": qd[t]}, tau[t])
-```
-
-Each call to `learn_one` updates the model with the new sample. No epochs, no batches.
-
-## The first protected model, in five lines
-
-```python
-from dense_armor.roles import AnomalyGate, Protected
-from dense_armor.utility.online.anomaly.hst import HalfSpaceTrees
-from dense_armor.utility.online.learn.online_dynamics import RecursiveLeastSquares
-
-detector = AnomalyGate(HalfSpaceTrees(n_trees=25, depth=8, window=200))
-model = Protected(
-    model=RecursiveLeastSquares(lam=1.0, feature_keys=["one"]),
-    detector=detector,
-    fallback=0.0,
+checker = PreTradeChecker(
+    max_notional=50_000.0, max_size=0.2, price_band=0.001,
+    max_orders=3, window_s=10.0, duplicate_window_s=1.0,
 )
-for t, (x, y) in enumerate(stream):
-    model.learn_one({"one": 1.0}, tau[t])
+log = DecisionLog("decisions.jsonl")
+d = checker.check("MSFT", "buy", 5.0, 100.0, 100.0, t=0.0)
+log.append(t=0.0, payload={"account": "MSFT", "approved": d.approved, "reason": d.reason})
+print(log.verify())
 ```
 
-Same call as before, but when the detector flags the sample as anomalous, `learn_one` on
-the inner model is skipped and the prediction falls back to the last clean value. A
-payload fault no longer poisons the model's state.
+```
+True
+```
+
+The [pre-trade page](finance/pretrade.md) and the [decision log](finance/decision_log.md) have the full feed and the tamper check.
+
+## The first stream detector, in a few lines
+
+A change in the mean of daily returns (in percent, synthetic), caught by ADWIN while the stream runs.
+
+```python
+import numpy as np
+from dense_armor.utility.online.drift.adwin import ADWIN
+
+rng = np.random.default_rng(0)
+r = np.r_[rng.normal(0.04, 0.6, 400), rng.normal(2.0, 0.6, 400)]
+d = ADWIN()
+for t, x in enumerate(r):
+    d.update(x)
+    if d.drift_detected:
+        print(t)
+        break
+```
+
+```
+441
+```
+
+Each call to `update` takes one sample. No epochs, no batches. The same `learn_one` / `predict_one` / `score_one` / `update` contract runs on a market tick, a neural network mini-batch and a sensor.
 
 ## What is in here
+
+**Finance** — the first application, and the one the examples follow. Pages open with the question they answer.
+
+- **[Pre-trade limits](finance/pretrade.md)** and **[decision log](finance/decision_log.md)** — the five controls of SEC Rule 15c3-5(c)(1) and a hash-chained log that anyone can verify.
+- **[Regime](finance/regime.md)**, **[drift versus noise](finance/drift_vs_noise.md)** and **[stress](finance/stress.md)** — a change in returns, told apart from noise.
+- **[Risk](finance/risk.md)**, **[portfolio](finance/portfolio.md)**, **[order book](finance/order_book.md)** and **[execution](finance/execution.md)** — streaming value-at-risk, weights, order flow, TWAP and VWAP.
+- **[Surveillance](finance/surveillance.md)**, **[fraud](finance/fraud.md)**, **[intrusion](finance/intrusion.md)** and **[credit scoring](finance/credit_scoring.md)** — pipelines on a stream.
+- **[All the finance pages](finance/index.md)**, the **[dashboard](finance/dashboard.md)** and the **[emergency stop](finance/emergency.md)**.
 
 **Deep learning** — networks built from layers, with a gradient that can be checked.
 
@@ -171,25 +150,15 @@ same data.
 - **[Optimizers](optim/index.md)** — SGD, AdaGrad, Adam, FTRLProximal,
   OnlineNewtonStep, each in object and pure JAX form.
 - **[Linear models](linear/glm.md)** — LinearRegression, LogisticRegression,
-  BayesianLinearRegression, PayloadEstimator.
+  BayesianLinearRegression.
 - **[Calibration](learn/calibration.md)** — online Platt scaling: honest probabilities
   from any classifier.
 - **[Metric learning](learn/metric_learning.md)** — OASIS, LEGO, POLA, and a k-NN
   classifier that learns its distance.
-- **[Online classifiers](learn/online_classifiers.md)** — robot-state classifiers that
-  adapt when the data drifts.
-- **[Online dynamics](learn/online_dynamics.md)** — learns, sample by sample, the torque
-  the URDF model misses.
+- **[Fraud](finance/fraud.md)** and **[credit scoring](finance/credit_scoring.md)** — online trees and ensembles on a stream of transactions and customers.
 - **[Clustering](cluster/index.md)** — k-means online, DenStream.
 - **[Trees](tree/index.md)** — Hoeffding, Hoeffding Anytime, Hoeffding Adaptive with
   per-node ADWIN, Mondrian forests with uncertainty, stochastic gradient trees.
-
-**Shielding** — the protection that sits between the data and the learning.
-
-- **[Armor](shields/armor.md)** — wearable shield for a single 1D series.
-- **[Orca](shields/orca.md)** — full input + output shield for an entire model.
-- **[Hybrid engine](shields/hybrid_engine.md)** and
-  **[adaptive engine](shields/engine.md)** — the two causal engines the shields sit on.
 
 **Detection** — one number per sample, high means the sample does not look like the recent
 past.
@@ -212,7 +181,7 @@ past.
 - **[Online Robust Mahalanobis](anomaly/mahalanobis.md)** — distance from a robust median
   under the median covariation matrix.
 - **[LODA](anomaly/loda.md)** — rare bins in many random 1D projections.
-- **[Half-Space Trees](anomaly/hst.md)** — sparse regions of the joint space.
+- **[Half-Space Trees](anomaly/hst.md)** — sparse regions of the space.
 - **[Online Isolation Forest](anomaly/oiforest.md)** — depth needed to isolate a point.
 - **[One-Class SGD (SONAR)](anomaly/ocsvm.md)** — signed distance from a learned kernel
   boundary with a formal error bound.
@@ -229,14 +198,6 @@ past.
   text tokenisation, selection, resampling.
 - **[Metrics and evaluation](metrics/index.md)** — classification, regression, intervals,
   rolling, ROC-AUC, prequential, event-based (Tatbul PRF, NAB, detection delay).
-
-**Robot** — the physical side of the library.
-
-- **[Control](control/index.md)** — rate limiter, CBF filter, trajectory generation,
-  kinematic controller.
-- **[Dynamics](dynamics/index.md)** — rigid-body dynamics from a URDF, passivity-CBF
-  controller, full 6-DoF controller, xacro and mimic joints.
-- **[Benchmark](benchmarks/real_robot_benchmark.md)** — CASPER on the UR3e.
 
 **Vision, video and tracking** — from a frame with a timestamp to objects, joints and events.
 
@@ -255,19 +216,37 @@ past.
 - **[Patches](vision/patches.md)** — PatchFeatures and PatchMemory (native PatchCore),
   reservoir and coreset.
 
-**Applications** — pipelines that chain the blocks above on a synthetic stream.
-
-- **[Finance](finance/index.md)** — streaming pipelines for risk, execution and fraud
-  detection.
-- **[Drones](drones/index.md)** — one page per question about a flying robot: actuator
-  fault, sensor consistency, battery endurance, link health, visual landing and others.
-
 **Tools** — the parts that do not participate in the anomaly shield.
 
 - **[Toolkit](toolkit/toolkit.md)** — op compiler, memory guard, profiler, logging and
   provenance export, audio / HDF5 / NetCDF I/O.
 - **[MCP server](mcp.md)** — estimators exposed as LLM tools.
 - **[API reference](api/index.md)** — the base classes every estimator builds on.
+
+<small>
+
+**Also in the library**, as attributes of the same building blocks and not as the main subject:
+
+**Shielding** — the protection that sits between the data and the learning.
+
+- **[Armor](shields/armor.md)** — wearable shield for a single 1D series.
+- **[Orca](shields/orca.md)** — full input + output shield for an entire model.
+- **[Hybrid engine](shields/hybrid_engine.md)** and
+  **[adaptive engine](shields/engine.md)** — the two causal engines the shields sit on.
+
+**Robot** — the physical side of the library.
+
+- **[Control](control/index.md)** — rate limiter, CBF filter, trajectory generation,
+  kinematic controller.
+- **[Dynamics](dynamics/index.md)** — rigid-body dynamics from a URDF, passivity-CBF
+  controller, full 6-DoF controller, xacro and mimic joints.
+- **[Benchmark](benchmarks/real_robot_benchmark.md)** — CASPER on the UR3e.
+
+- **[Online classifiers](learn/online_classifiers.md)** and **[online dynamics](learn/online_dynamics.md)** — online learning on a robot: its own state from the joint signals, and the torque a rigid-body model misses.
+
+- **[Drones](drones/index.md)** — one page per question about a flying robot: actuator fault, sensor consistency, battery endurance, link health, visual landing and others.
+
+</small>
 
 ## Honest results
 
