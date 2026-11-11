@@ -9,10 +9,13 @@ set "RUNDIR=%CD%\tools\dashboard\run"
 if not exist "%RUNDIR%" mkdir "%RUNDIR%"
 if not exist "%RUNDIR%\demo.toml" copy /y "test\fixtures\finance\demo.toml" "%RUNDIR%\demo.toml" >nul
 
-python -c "import flask" 2>nul
+set "PY=python"
+if exist "%CD%\.venv\Scripts\python.exe" set "PY=%CD%\.venv\Scripts\python.exe"
+
+"%PY%" -c "import flask" 2>nul
 if errorlevel 1 (
   echo Flask is not installed: installing it...
-  python -m pip install flask
+  "%PY%" -m pip install flask
   if errorlevel 1 goto :fail
 )
 
@@ -21,7 +24,7 @@ echo Dense-Armor dashboard on http://127.0.0.1:8080/   (Ctrl+C stops it)
 echo The log, the feed and the stop file are in %RUNDIR%
 echo.
 start "" "http://127.0.0.1:8080/"
-python -m dashboard.app --config "%RUNDIR%\demo.toml" %*
+"%PY%" -m dashboard.app --config "%RUNDIR%\demo.toml" %*
 if errorlevel 1 goto :fail
 goto :eof
 

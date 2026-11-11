@@ -131,17 +131,17 @@ What just happened: every order has been approved, refused or clamped against th
 
 ## Dashboard: one command
 
-The web dashboard of the finance system (chain of pieces, decisions, emergency stop) is not in the pip package: it lives in the repository, in `tools/dashboard/`. Press Download at the top, unzip the file and double-click `tools\dashboard\start-dashboard.bat`; or clone the repository and start it from a terminal.
+The web dashboard of the finance system (chain of pieces, decisions, emergency stop) is not in the pip package: it lives in the repository, in `tools/dashboard/`.
 
-**Windows**, in PowerShell or a terminal:
+**Windows, like any program:**
 
-```bash
-git clone https://github.com/tatopenn-cell/Dense-Armor.git
-cd Dense-Armor
-tools\dashboard\start-dashboard.bat
-```
+1. Press **Download for Windows** at the top and unzip the file.
+2. Double-click `tools\dashboard\install-dashboard.bat`. It installs Python 3.12 if the computer has none, makes a private environment and installs the packages (a few minutes the first time).
+3. The icon **Dense-Armor Dashboard** appears on the desktop. Double-click it: the dashboard opens in the browser at http://127.0.0.1:8080/.
 
-**Linux and macOS**:
+The program is installed in `%LOCALAPPDATA%\Dense-Armor`; you can delete the downloaded folder. Running the installer again updates it.
+
+**Without installing**, from a clone of the repository:
 
 ```bash
 git clone https://github.com/tatopenn-cell/Dense-Armor.git
@@ -149,7 +149,7 @@ cd Dense-Armor
 sh tools/dashboard/start-dashboard.sh
 ```
 
-The script installs `flask` if it is missing, writes the demo configuration to `tools/dashboard/run/` and opens http://127.0.0.1:8080/. Python 3.11 or later is needed. Options are passed on, for example `--port 9000`. The file [start-dashboard.bat](tools/dashboard/start-dashboard.bat) cannot run alone: it needs the rest of the repository next to it, so download it by cloning, not by saving the single file. More in [the dashboard page](https://tatopenn-cell.github.io/Dense-Armor/finance/dashboard/).
+On Windows the same without the icon is `tools\dashboard\start-dashboard.bat`. Options are passed on, for example `--port 9000`. Python 3.11 or later is needed.
 
 ---
 
