@@ -4,7 +4,7 @@ You already have a recorded series: a joint velocity at 100 Hz, a temperature lo
 sensor reading. A few samples in it are wrong, and you want to know which ones and to see
 the series with them replaced. That is what this page does.
 
-<img width="2327" height="1498" alt="deepseek_mermaid_20261017_d1e5de" src="https://github.com/user-attachments/assets/ee3933b5-d2b3-4025-9590-adcef02ade07" />
+<img width="2327" height="1498" alt="Diagram: a recorded series with one spike goes through four filters (Hampel, Tukey fences, Chauvenet, sigma clipping); pressure_valve, with weight 1/scale squared, returns the clean series, the flagged samples and the pressure score against the threshold" src="https://github.com/user-attachments/assets/ee3933b5-d2b3-4025-9590-adcef02ade07" />
 
 
 The library has four classic batch filters for this job: **Hampel**, **Tukey fences**,

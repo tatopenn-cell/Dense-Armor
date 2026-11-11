@@ -9,7 +9,7 @@ sample by its signed distance from that boundary. In a control loop it answers o
 per reading: does this residual look like the healthy run, or does it fall outside the
 region the detector has learned to call normal?
 
-<img width="6348" height="561" alt="deepseek_mermaid_20261017_901454" src="https://github.com/user-attachments/assets/f0f7a197-5e71-40b4-b29a-2f4f1874d254" />
+<img width="6348" height="561" alt="Diagram: the classical one-class SVM keeps all healthy points in memory, builds the exact kernel and a Gram matrix with O(N squared) memory and gives a batch solution; SONAR takes one sample at a time with learn_one, maps it with random Fourier features, updates by SGD with O(d) memory and keeps the boundary (w, rho) online" src="https://github.com/user-attachments/assets/f0f7a197-5e71-40b4-b29a-2f4f1874d254" />
 
 
 

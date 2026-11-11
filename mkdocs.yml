@@ -1,5 +1,5 @@
 site_name: Dense-Armor
-site_description: Robot-AI Online Shielding & Learning - JAX estimators that learn one sample at a time from robot and AI data, with drift and anomaly detection, protected learning and robot command safety.
+site_description: Online learning, machine learning and deep learning in JAX - pre-trade risk with a verifiable decision log, drift and anomaly detection on streams, neural network training with continual learning; shielding and robot control as optional layers.
 site_url: https://tatopenn-cell.github.io/Dense-Armor/
 repo_url: https://github.com/tatopenn-cell/Dense-Armor
 repo_name: tatopenn-cell/Dense-Armor
@@ -71,6 +71,7 @@ nav:
   - Applications:
       - Finance:
           - finance/index.md
+          - Primitives map: finance/PRIMITIVES.md
           - Surveillance: finance/surveillance.md
           - Risk: finance/risk.md
           - Execution: finance/execution.md
@@ -217,6 +218,7 @@ nav:
               - Scaling features and joints: preprocessing/scaling.md
               - Speed, acceleration, jerk and power: preprocessing/signals.md
               - Text: preprocessing/text.md
+              - Text vectorizer: preprocessing/text_vectorizer.md
               - Features and rare events: preprocessing/features.md
           - Metrics and evaluation:
               - metrics/index.md
