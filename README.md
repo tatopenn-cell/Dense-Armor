@@ -22,7 +22,7 @@
 
 <p align="center">📖 <a href="https://tatopenn-cell.github.io/Dense-Armor/"><strong>Full documentation, API reference, quick guide →</strong></a></p>
 
-<p align="center">🖥️ <a href="https://github.com/tatopenn-cell/Dense-Armor/blob/master/tools/dashboard/start-dashboard.bat"><strong>Dashboard for Windows: start-dashboard.bat →</strong></a> &nbsp;·&nbsp; <a href="#dashboard-one-command">how to run it</a></p>
+<p align="center"><a href="https://github.com/tatopenn-cell/Dense-Armor/archive/refs/heads/master.zip"><img alt="Download for Windows" src="https://img.shields.io/badge/Download-for_Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white"></a> <a href="#dashboard-one-command"><img alt="How to run" src="https://img.shields.io/badge/Dashboard-how_to_run-2ea44f?style=for-the-badge&logo=gitbook&logoColor=white"></a></p>
 
 ---
 
@@ -131,7 +131,7 @@ What just happened: every order has been approved, refused or clamped against th
 
 ## Dashboard: one command
 
-The web dashboard of the finance system (chain of pieces, decisions, emergency stop) is not in the pip package: it lives in the repository, in `tools/dashboard/`. Clone the repository, then start it.
+The web dashboard of the finance system (chain of pieces, decisions, emergency stop) is not in the pip package: it lives in the repository, in `tools/dashboard/`. Press Download at the top, unzip the file and double-click `tools\dashboard\start-dashboard.bat`; or clone the repository and start it from a terminal.
 
 **Windows**, in PowerShell or a terminal:
 
