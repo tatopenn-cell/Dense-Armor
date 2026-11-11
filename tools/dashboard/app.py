@@ -440,6 +440,13 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
 
     # ------------------------------------------------------------ emergency
 
+    @app.get("/ping")
+    def ping() -> Any:
+        import time as _time
+
+        app.config["LAST_PING"] = _time.time()
+        return jsonify({"ok": True})
+
     @app.get("/status")
     def status_json() -> Any:
         return jsonify(collect_status(config_path))

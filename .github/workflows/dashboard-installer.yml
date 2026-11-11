@@ -1,0 +1,114 @@
+name: dashboard-installer
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'tools/dashboard/**'
+      - '.github/workflows/dashboard-installer.yml'
+  pull_request:
+    paths:
+      - 'tools/dashboard/**'
+      - '.github/workflows/dashboard-installer.yml'
+  workflow_dispatch:
+
+jobs:
+  windows:
+    name: build, install, run, uninstall (Windows)
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup -y --no-progress
+
+      - name: Stage the files
+        shell: pwsh
+        run: |
+          $s = "$PWD\stage"
+          New-Item -ItemType Directory -Force $s | Out-Null
+          Copy-Item pyproject.toml, README.md, LICENSE $s
+          foreach ($d in 'dense_armor', 'pipelines', 'tools\dashboard') {
+            robocopy $d "$s\$d" /E /XD __pycache__ run /XF *.pyc /NFL /NDL /NJH /NJS /NP | Out-Null
+            if ($LASTEXITCODE -ge 8) { throw "robocopy $d failed" }
+          }
+          New-Item -ItemType Directory -Force "$s\test\fixtures" | Out-Null
+          robocopy test\fixtures\finance "$s\test\fixtures\finance" /E /NFL /NDL /NJH /NJS /NP | Out-Null
+          $global:LASTEXITCODE = 0
+
+      - name: Build the setup
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          & $iscc "/DStage=$PWD\stage" "/DOutDir=$PWD\out" tools\dashboard\installer\dense-armor.iss
+          if ($LASTEXITCODE -ne 0) { throw 'ISCC failed' }
+          Get-Item out\Dense-Armor-Setup.exe
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Dense-Armor-Setup
+          path: out/Dense-Armor-Setup.exe
+
+      - name: Install silently in a chosen folder
+        shell: pwsh
+        run: |
+          $app = "$env:RUNNER_TEMP\DenseArmorApp"
+          $p = Start-Process out\Dense-Armor-Setup.exe -ArgumentList "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/DIR=$app", "/TASKS=desktopicon", "/LOG=$env:RUNNER_TEMP\setup.log" -Wait -PassThru
+          if (Test-Path "$app\install.log") { Get-Content "$app\install.log" | Select-Object -Last 15 }
+          if ($p.ExitCode -ne 0) { Get-Content "$env:RUNNER_TEMP\setup.log" | Select-Object -Last 40; throw "setup exit code $($p.ExitCode)" }
+
+      - name: Files and icons exist
+        shell: pwsh
+        run: |
+          $app = "$env:RUNNER_TEMP\DenseArmorApp"
+          foreach ($f in '.venv\Scripts\pythonw.exe', 'tools\dashboard\launcher.py', 'tools\dashboard\dense-armor.ico', 'LICENSE', 'unins000.exe') {
+            if (-not (Test-Path "$app\$f")) { throw "missing $f" }
+          }
+          $desk = [Environment]::GetFolderPath('Desktop')
+          $lnk = "$desk\Dense-Armor.lnk"
+          if (-not (Test-Path $lnk)) { throw "no desktop icon in $desk" }
+          $t = (New-Object -ComObject WScript.Shell).CreateShortcut($lnk)
+          "$($t.TargetPath) $($t.Arguments)"
+          if ($t.TargetPath -notlike '*pythonw.exe') { throw 'the icon does not start pythonw (a console would appear)' }
+          if (-not (Test-Path "$([Environment]::GetFolderPath('Programs'))\Dense-Armor\Dense-Armor.lnk")) { throw 'no Start menu entry' }
+
+      - name: The icon starts the app without a console and the app stops by itself
+        shell: pwsh
+        run: |
+          $app = "$env:RUNNER_TEMP\DenseArmorApp"
+          $t = (New-Object -ComObject WScript.Shell).CreateShortcut("$([Environment]::GetFolderPath('Desktop'))\Dense-Armor.lnk")
+          $argsList = "$($t.Arguments) --no-browser --port 8765 --idle-seconds 20 --first-page-seconds 120"
+          $proc = Start-Process $t.TargetPath -ArgumentList $argsList -WorkingDirectory $t.WorkingDirectory -PassThru
+          $ok = $false
+          for ($i = 0; $i -lt 120; $i++) {
+            try { $r = Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8765/status -TimeoutSec 3; if ($r.StatusCode -eq 200) { $ok = $true; break } } catch { }
+            Start-Sleep -Seconds 1
+          }
+          if (-not $ok) { Get-Content "$app\tools\dashboard\run\dashboard.log" -ErrorAction SilentlyContinue | Select-Object -Last 30; throw 'the dashboard did not answer' }
+          foreach ($path in '/', '/chain', '/ping') {
+            $r = Invoke-WebRequest -UseBasicParsing "http://127.0.0.1:8765$path" -TimeoutSec 30
+            "$path $($r.StatusCode)"
+            if ($r.StatusCode -ne 200) { throw "$path answered $($r.StatusCode)" }
+          }
+          if ((Get-Process -Id $proc.Id).MainWindowHandle -ne 0) { throw 'a window was opened by the launcher' }
+          $gone = $false
+          for ($i = 0; $i -lt 60; $i++) {
+            if (-not (Get-Process -Id $proc.Id -ErrorAction SilentlyContinue)) { $gone = $true; break }
+            Start-Sleep -Seconds 2
+          }
+          if (-not $gone) { throw 'the dashboard did not stop after the last page went away' }
+          'stopped by itself'
+
+      - name: Uninstall
+        shell: pwsh
+        run: |
+          $app = "$env:RUNNER_TEMP\DenseArmorApp"
+          $p = Start-Process "$app\unins000.exe" -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART' -Wait -PassThru
+          Start-Sleep -Seconds 5
+          if (Test-Path "$app\.venv") { throw '.venv was left behind' }
+          if (Test-Path "$app\tools") { throw 'the program files were left behind' }
+          if (Test-Path "$([Environment]::GetFolderPath('Desktop'))\Dense-Armor.lnk") { throw 'the desktop icon was left behind' }
+          if (Test-Path "$([Environment]::GetFolderPath('Programs'))\Dense-Armor") { throw 'the Start menu entry was left behind' }
+          'removed'
