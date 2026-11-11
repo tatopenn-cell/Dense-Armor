@@ -75,8 +75,9 @@ weight ``1 / (n + 1)`` with the same ``n``, which is the paper's
 
 References
 ----------
-Guillot, A., Godichon-Baggioni, A., Robin, S. (2025). Online robust
-    covariance and outlier detection. arXiv:2601.03957. Section 2.3
+Guillot, A., Godichon-Baggioni, A., Robin, S., Sansonnet, L. (2025).
+    Streaming robust covariance estimation and sequential outlier
+    detection. arXiv:2601.03957. Section 2.3
     (offline reconstruction of the eigenvalues), Section 3.2 (online
     algorithm and initialisation), Section 3.3 (streaming version),
     Section 3.4 (outlier detection).
@@ -175,7 +176,7 @@ class OnlineRobustMahalanobis(AnomalyDetector):
         True
 
     References:
-        Guillot, A., Godichon-Baggioni, A., Robin, S. (2025).
+        Guillot, A., Godichon-Baggioni, A., Robin, S., Sansonnet, L. (2025).
         arXiv:2601.03957. Sections 2.3, 3.2, 3.3, 3.4.
     """
 

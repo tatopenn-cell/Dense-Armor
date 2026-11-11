@@ -1,103 +1,142 @@
 # Online Robust Mahalanobis
 
-Online Robust Mahalanobis tells you how far a new reading is from the usual. It learns from healthy readings where the numbers usually are and how much they usually move, and it measures the distance in units of that usual movement. A distance of 0 means exactly usual; the default alarm level is 7. 'Robust' means that a few strange readings do not spoil what it has learned.
+**How far is today from usual — in units the market actually uses.**
 
-Online Robust Mahalanobis scores each sample by how far it is from the centre of the
-healthy joint residual, measured in units of the residual's own spread. In a control loop
-it answers one question per reading: how many standard deviations of the healthy
-distribution away is this point, in the joint-space metric the healthy arm actually has?
+A single strange day should not ruin what the detector has learned. Online Robust Mahalanobis learns where the normal days sit and how they move together, then reports how far a new day is from that centre, measured in the usual spread. A distance of `0` means exactly usual; the default alarm is `7`. A few strange days do not spoil the estimate.
 
-## 1. What it is
+---
 
-The healthy residuals of a robot joint form a cloud around zero. Its shape is not a
-sphere: the joints are correlated, and a fault along one direction costs more than a fault
-along another. The classical way to measure distance in this cloud is the Mahalanobis
-distance: subtract the mean, divide by the covariance, take the Euclidean norm of the
-result. A sample that is far in *units of its own distribution* is anomalous.
+## The problem
 
-The classical estimator uses the sample mean and the sample covariance. Both are sensitive
-to outliers. A single extreme sample can drag the mean far from the cloud, and inflate the
-covariance along its own direction so much that the same outlier looks normal under the
-new metric — the *masking* effect. Robust estimates of location and scatter fix this.
+A detector fitted with the sample mean and covariance can be spoiled by the very outliers it is meant to catch. A single extreme sample drags the mean away from the cloud and inflates the covariance along its own direction — so the outlier ends up looking *normal* under the new metric. This is the **masking effect**, and it is the reason classical Mahalanobis distance is dangerous on a live market stream.
 
-This module uses the geometric median for location and the median covariation matrix
-(MCM) for scatter. Both are `50 %` breakdown estimators: half the samples must be corrupted
-before the estimate moves, against one outlier for the mean. Both are estimated online by
-averaged stochastic gradient (ASGD), one sample at a time.
+Online Robust Mahalanobis fixes this with two `50 %`-breakdown estimators: the **geometric median** for location and the **median covariation matrix (MCM)** for scatter. Half the samples must be corrupted before the estimate moves. One bad day moves the median by at most one step of length `gamma_n`.
 
-The score of a sample is the Mahalanobis distance under the current MCM:
+---
 
-    D(x) = sqrt( sum_j (1 / delta_j) * <x - m_bar, P_j>^2 )
+## One example: a crash among normal days
 
-where `m_bar` is the current location estimate, `P_j` is the j-th eigenvector of the
-averaged MCM `V_bar`, and `delta_j` the corresponding eigenvalue. The sum is over the `d`
-eigenvalues: it is the Mahalanobis distance written without inverting the matrix, using
-the eigendecomposition instead.
-
-## 2. How it works
-
-Two running estimates are maintained. `m` tracks the geometric median, `V` tracks the MCM.
-Both are updated by averaged stochastic gradient, one sample at a time.
-
-For the geometric median, the paper's recurrence is
-
-    m_{n+1}     = m_n + gamma_{n+1} * (X_{n+1} - m_n) / ||X_{n+1} - m_n||
-    m_bar_{n+1} = m_bar_n + (1 / (n + 2)) * (m_{n+1} - m_bar_n)
-
-The first line is a stochastic gradient step toward the sample, normalised so that every
-step has the same length. The normalisation is the robustness: a distant sample moves `m`
-by at most `gamma_{n+1}`, no matter how far it is. The second line averages the iterates,
-which accelerates convergence (Cardot, Cénac and Zitt 2013).
-
-For the MCM, the same shape:
-
-    V_{n+1}     = V_n + gamma_{n+1} * (outer_{n+1} - V_n) / ||outer_{n+1} - V_n||_F
-    V_bar_{n+1} = V_bar_n + (1 / (n + 2)) * (V_{n+1} - V_bar_n)
-
-with `outer_{n+1} = (X_{n+1} - m_bar_n) (X_{n+1} - m_bar_n)^T` the centred outer product of
-the new sample. The gradient is again normalised, this time to unit Frobenius norm.
-
-The step size is
-
-    gamma_n = c_gamma * (n + n0) ** (-gamma_exp)
-
-with `gamma_exp` in `(1/2, 1)` for convergence (Cardot and Godichon-Baggioni 2017).
-
-The first `n_init` samples are not used for the ASGD updates. They are kept in a small
-buffer and used to compute an initial estimate of the location and scatter, from which the
-ASGD starts. Without the initialisation the ASGD gradients, whose scale is unit and not
-the scale of the data, would never reach the data.
-
-## 3. Smallest example
+Each day has two numbers: the return in percent and the log volume. The detector learns `500` normal days (returns around `0.05 %` with a spread of `0.8 %`), then scores `100` new normal days and `100` days of a crash (returns around `-3 %`, volume up).
 
 ```python
 import numpy as np
-from dense_armor.utility.online.anomaly.mahalanobis import (
-    OnlineRobustMahalanobis,
-)
+from dense_armor.utility.online.anomaly.mahalanobis import OnlineRobustMahalanobis
 
 rng = np.random.default_rng(0)
-det = OnlineRobustMahalanobis(feature_keys=["a", "b"], n_init=200)
 
+def day(crash):
+    if crash:
+        return {"ret": float(rng.normal(-3.0, 1.5)), "vol": float(rng.normal(1.5, 0.3))}
+    return {"ret": float(rng.normal(0.05, 0.8)), "vol": float(rng.normal(0.0, 0.3))}
+
+det = OnlineRobustMahalanobis(feature_keys=["ret", "vol"], n_init=200)
 for _ in range(500):
-    x = rng.standard_normal(2)
-    det.learn_one({"a": float(x[0]), "b": float(x[1])})
+    det.learn_one(day(False))
 
-print(f"healthy  {det.score_one({'a': 0.0, 'b': 0.0}):.3f}")
-print(f"far      {det.score_one({'a': 10.0, 'b': 10.0}):.3f}")
+ok = np.median([det.score_one(day(False)) for _ in range(100)])
+cr = np.median([det.score_one(day(True)) for _ in range(100)])
+print(f"normal days  {ok:.3f}")
+print(f"crash days   {cr:.3f}")
 ```
 
 ```
-healthy  0.080
-far      15.880
+normal days  1.325
+crash days   7.038
 ```
 
-The healthy point sits at the centre of the cloud: under a standard bivariate Gaussian its
-Mahalanobis distance is small, and the score is `0.080`. The far point is ten units away
-along both axes: the distance is large, and the score rises to `15.880`, well past the
-default `threshold` of `7.0`, the classical value for low-dimensional Gaussians.
+The median crash day lands **right at the default threshold of `7.0`**. This crash is a mild one in volume, so half of its days are not flagged: a limit of the default threshold on this stream, not a feature. The distance still rises **more than five times** over the normal days.
 
-## 4. On a real arm
+In this example: `1.3` on a normal day, `7.0` on a crash day. The threshold is not universal: calibrate it on your own normal days.
+
+---
+
+## What the detector actually learns
+
+The Mahalanobis distance is a scalar, but the metric behind it is an ellipsoid in the feature space. The ellipsoid *is* the model: inside it, the day is usual; outside it, the day is flagged.
+
+![95 % ellipsoid learned in the r2-r3 plane](../assets/mahalanobis/ellipse_2d.png)
+
+Two joints' residuals of the robot case study below: first `200` healthy samples (green dots), then `30` fault samples (red crosses). The black ellipse is the `95 %` quantile of the current MCM; the fault samples all fall outside.
+
+---
+
+## How it works
+
+Two running estimates, updated one sample at a time by **averaged stochastic gradient (ASGD)**:
+
+- **`m`** — the geometric median. Each step has the same length `gamma_n`, so a distant sample moves `m` by at most `gamma_n`, no matter how far it is. That normalisation *is* the robustness.
+- **`V`** — the MCM. The centred outer product of each new sample is folded in with a unit-Frobenius-norm step, and the iterates are averaged to accelerate convergence (Cardot, Cénac and Zitt 2013; Cardot and Godichon-Baggioni 2017).
+
+The score of a sample is the Mahalanobis distance under the current `V_bar`, computed from the eigendecomposition rather than by inverting the matrix:
+
+```
+D(x) = sqrt( sum_j (1 / delta_j) * <x - m_bar, P_j>^2 )
+```
+
+The first `n_init` samples are used for an offline initialisation (Weiszfeld for the median, average of centred outer products for the MCM) — without it the unit-normalised ASGD steps would start from the identity matrix and never reach the scale of the data.
+
+---
+
+## Why the score stays bounded
+
+The literal Section 3.2 update of Guillot et al. (2025, page 7), run without safeguards, **crosses the zero matrix** on the SyntheticArm payload fault: with `c_gamma = 1.0` the final `trace(V_bar)` is `-2.88e-04`, `19` of `80` steps have a non-positive eigenvalue, and the maximum score reaches `11.36` on *healthy* samples. The cause is the scale of the normalised step (`~0.04` in Frobenius norm) against the scale of `V` (`~2.6e-03`): the average oscillates through the origin and `1 / delta` blows up.
+
+Two numerical guards keep the score bounded **without changing the algorithm**:
+
+- **`max_step_frac = 0.1`** — a single large sample cannot move `V` by more than a fraction of its own norm.
+- **Eigenvalue floor** at `trace(V_bar) / d * 1e-3` — keeps the metric well-defined while the ASGD is still converging.
+
+With the guards, on the same `80` samples, the maximum score stays below the threshold (see `test_mahalanobis_healthy_scores_stay_below_threshold`).
+
+---
+
+## What it is not
+
+Two steps of the full paper are **not** implemented:
+
+- the Robbins–Monro reconstruction of the true covariance eigenvalues from the MCM (Section 2.3, eqs. 4–5);
+- the `chi2_d(0.5) / med(D_1..n)` scaling of the distances (eq. 1).
+
+Neither is needed for flagging: the MCM metric with a calibrated `threshold` is already usable, and the `7.0` default is the classical value for low-dimensional Gaussians. The threshold is the one **you** calibrate.
+
+---
+
+## Parameters
+
+`OnlineRobustMahalanobis(...)`, in `dense_armor.utility.online.anomaly.mahalanobis`. `learn_one(x)` takes a dict with one key per channel; `score_one(x)` returns the distance as a float, `0.0` until the offline initialisation is done.
+
+| Parameter | Default | Meaning |
+|---|---|---|
+| `feature_keys` | `None` | the dict keys, one per channel; `None` takes the sorted keys of the first dict |
+| `n_init` | `100` | samples accumulated before the offline initialisation; at least `d + 1` for `d` channels |
+| `threshold` | `7.0` | the alarm level on the distance |
+| `c_gamma` | `1.0` | numerator of the step size `gamma_n = c_gamma * (n + n0) ** (-gamma_exp)` |
+| `gamma_exp` | `0.7` | exponent of the step size, in `(1/2, 1)` |
+| `n0` | `0` | warm-up offset in the step size |
+| `max_step_frac` | `0.1` | cap on the step length, as a fraction of the norm of `V` and `m`; a numerical safeguard, not part of the paper |
+| `eps` | `1e-9` | numerical guard for divisions and degenerate eigenvalues |
+
+---
+
+## Cost
+
+At the benchmark defaults (`n_init=100`, 4 features), on one CPU thread:
+
+- **`0.036 ms`** per sample for `learn_one` + `score_one`, measured on the arm stream;
+- **memory flat**: `d + d^2` arrays, independent of stream length;
+- declared `budget_s = 0.005`.
+
+---
+
+## Where it comes from
+
+Guillot, Godichon-Baggioni, Robin and Sansonnet (2025), *Streaming robust covariance estimation and sequential outlier detection*, arXiv:2601.03957. Section and equation numbers on this page are those of arXiv v1 (7 January 2026), whose title is *Online robust covariance matrix estimation and outlier detection*. Geometric median recurrence: eq. 8. MCM recurrence: eq. 10. Mahalanobis distance under the MCM: eq. 1, Section 2.2. Step size `gamma_n = c * n ** -gamma` with `gamma` in `(1/2, 1)`: Cardot, Cénac and Zitt (2013); Cardot and Godichon-Baggioni (2017).
+
+## Appendix — technical notes
+
+The sections below are for implementers and auditors: the robot case study, the measured numbers and the development notes.
+
+## On a robot: the SyntheticArm payload fault
 
 The residual of joints 1-4 on a `SyntheticArm` payload fault. The fault (5 kg added at
 t = 2 s) shifts the residual on joints 1-5 by tens of N·m; the healthy run stays within
@@ -138,19 +177,11 @@ towards the new distribution — but the detector has already flagged every post
 sample until the update catches up. Bottom: `DriftStream`. The score rises cleanly at the
 drift and stays above the threshold.
 
-## 5. The learned 95 % region
+## The learned 95 % region on the robot case
 
-The Mahalanobis distance is a scalar, but the metric it uses is a `d`-dimensional ellipsoid.
-Plotting it in two dimensions makes the shape visible.
+The ellipse learned on the residuals of two joints is the one drawn in [What the detector actually learns](#what-the-detector-actually-learns): a new sample inside it has a Mahalanobis distance below `chi2_2(0.95)`, outside it the sample is flagged. On the fault of this case the fault samples all fall outside.
 
-![95 % ellipsoid learned in the r2-r3 plane](../assets/mahalanobis/ellipse_2d.png)
-
-Two joints' residuals, first 200 samples of healthy training (green dots), then 30 fault
-samples (red crosses). The black ellipse is the 95 % quantile of the MCM currently
-estimated: a new sample inside the ellipse has Mahalanobis distance below `chi2_2(0.95)`,
-outside it is flagged. The fault samples all fall outside.
-
-## 6. Numbers
+## Numbers
 
 `SyntheticArm` (200 samples, 100 healthy, 100 fault) and `DriftStream` (2000 samples, one
 sudden drift at half), every detector built with its defaults.
@@ -165,41 +196,8 @@ sudden drift at half), every detector built with its defaults.
 The default `n_init` is `100`, and on `SyntheticArm` the healthy part has exactly `100`
 samples: in the benchmark run the detector is still in its initialisation when the healthy
 part ends, so every healthy score is `0.0` and the false-alarm value `0.000` on
-`SyntheticArm` follows from that, not from a decision of the detector. The class is the
-most accurate of the five on this repository's benchmark and the fastest (`0.036 ms` per
-sample on the arm).
-
-## A finance example: a crash among normal days
-
-The same detector on a market stream. Each day has two numbers: the return in percent and the log volume, standardised. The detector learns 500 normal days (returns around 0.05 % with a spread of 0.8 %); then it scores 100 new normal days and 100 days of a crash (returns around -3 % with a wide spread, and volume up).
-
-```python
-import numpy as np
-from dense_armor.utility.online.anomaly.mahalanobis import OnlineRobustMahalanobis
-
-rng = np.random.default_rng(0)
-
-def day(crash):
-    if crash:
-        return {"ret": float(rng.normal(-3.0, 1.5)), "vol": float(rng.normal(1.5, 0.3))}
-    return {"ret": float(rng.normal(0.05, 0.8)), "vol": float(rng.normal(0.0, 0.3))}
-
-det = OnlineRobustMahalanobis(feature_keys=["ret", "vol"], n_init=200)
-for _ in range(500):
-    det.learn_one(day(False))
-
-ok = np.median([det.score_one(day(False)) for _ in range(100)])
-cr = np.median([det.score_one(day(True)) for _ in range(100)])
-print(f"normal days  {ok:.3f}")
-print(f"crash days   {cr:.3f}")
-```
-
-```
-normal days  1.325
-crash days   7.038
-```
-
-The score is a robust Mahalanobis distance and the default `threshold` is `7.0`. The median crash day lands right at that line: this crash is a mild one in volume, so half of its days are not flagged. The distance still rises more than five times over the normal days.
+`SyntheticArm` follows from that, not from a decision of the detector. On these two streams, with the defaults, the ROC-AUC is `1.000` and `0.993`, at
+`0.036 ms` per sample on the arm.
 
 ## Details
 
@@ -278,3 +276,7 @@ the maximum is `3.739 < 7` (80 of the 100 scores non-zero).
 
 [OCSVM](ocsvm.md) is the alternative when the fault is not a shift but a change of the
 distribution's shape.
+
+---
+
+*Appendix — the robotics case study (`SyntheticArm`, payload fault on joints 1–4), the measured benchmark numbers and the development notes are in the sections above, from "On a robot" to "Details". [OCSVM](ocsvm.md) is the alternative when the fault is not a shift but a change of the distribution's shape.*

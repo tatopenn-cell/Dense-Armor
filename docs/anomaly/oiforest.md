@@ -1,5 +1,7 @@
 # Online Isolation Forest
 
+On a market, Online Isolation Forest tells you when a new day looks strange by asking how hard it is to set it apart from the normal ones. A crash day is alone after a few random cuts of the space of return and volume; a normal day, surrounded by many others, needs many cuts.
+
 Online Isolation Forest tells you when a new reading looks strange by asking how hard it is to set it apart from the normal ones. It cuts the space of numbers at random, again and again. A strange reading is alone after a few cuts; a normal one, surrounded by many others, needs many cuts. Few cuts give a high score, many cuts a low one.
 
 Online Isolation Forest scores each sample by how quickly a random tree isolates it from
@@ -8,6 +10,8 @@ sit in a dense part of the space, or is it a point the tree can peel off with ju
 splits?
 
 ## 1. What it is
+
+On a market, a crash day is far from the bulk of the normal days in return and volume, so a random tree isolates it after a few cuts. The same task on a robot is below.
 
 An Isolation Forest is a random forest whose trees are built by recursive random cuts. A
 point that lands in a leaf reached by very few cuts is anomalous: the tree isolated it
@@ -86,6 +90,38 @@ isolate it, so `E(D)` is large and the score is `0.405`. The far point falls int
 the tree reaches after fewer cuts, and the score rises to `0.594`. That value is below
 the default `threshold` of `0.6`: with the defaults neither point is flagged.
 
+## A finance example: a crash among normal days
+
+The same detector on a market stream. Each day has two numbers: the return in percent and the log volume, standardised. The detector learns 500 normal days (returns around 0.05 % with a spread of 0.8 %); then it scores 100 new normal days and 100 days of a crash (returns around -3 % with a wide spread, and volume up).
+
+```python
+import numpy as np
+from dense_armor.utility.online.anomaly.oiforest import OnlineIsolationForest
+
+rng = np.random.default_rng(0)
+
+def day(crash):
+    if crash:
+        return {"ret": float(rng.normal(-3.0, 1.5)), "vol": float(rng.normal(1.5, 0.3))}
+    return {"ret": float(rng.normal(0.05, 0.8)), "vol": float(rng.normal(0.0, 0.3))}
+
+det = OnlineIsolationForest(n_trees=8, window=512, max_leaf_samples=8, seed=0)
+for _ in range(500):
+    det.learn_one(day(False))
+
+ok = np.median([det.score_one(day(False)) for _ in range(100)])
+cr = np.median([det.score_one(day(True)) for _ in range(100)])
+print(f"normal days  {ok:.3f}")
+print(f"crash days   {cr:.3f}")
+```
+
+```
+normal days  0.433
+crash days   0.582
+```
+
+The score grows with how quickly a point is isolated. The crash days score clearly above the normal days; the gap is smaller than for the other detectors on this stream, because with two features the forest has little to cut on.
+
 ## 4. On a real arm
 
 The residual of joints 1-4 on a `SyntheticArm` payload fault. The fault (5 kg added at
@@ -153,38 +189,6 @@ detector does not work. The drift number is in line with the paper's own benchma
 stream whose distribution changes slowly, the forest tracks the new distribution and the
 score rises. The values come from `benchmarks/anomaly_streaming.py`, protocol
 `learn-on-healthy` (same protocol as `anomaly/index.md`).
-
-## A finance example: a crash among normal days
-
-The same detector on a market stream. Each day has two numbers: the return in percent and the log volume, standardised. The detector learns 500 normal days (returns around 0.05 % with a spread of 0.8 %); then it scores 100 new normal days and 100 days of a crash (returns around -3 % with a wide spread, and volume up).
-
-```python
-import numpy as np
-from dense_armor.utility.online.anomaly.oiforest import OnlineIsolationForest
-
-rng = np.random.default_rng(0)
-
-def day(crash):
-    if crash:
-        return {"ret": float(rng.normal(-3.0, 1.5)), "vol": float(rng.normal(1.5, 0.3))}
-    return {"ret": float(rng.normal(0.05, 0.8)), "vol": float(rng.normal(0.0, 0.3))}
-
-det = OnlineIsolationForest(n_trees=8, window=512, max_leaf_samples=8, seed=0)
-for _ in range(500):
-    det.learn_one(day(False))
-
-ok = np.median([det.score_one(day(False)) for _ in range(100)])
-cr = np.median([det.score_one(day(True)) for _ in range(100)])
-print(f"normal days  {ok:.3f}")
-print(f"crash days   {cr:.3f}")
-```
-
-```
-normal days  0.433
-crash days   0.582
-```
-
-The score grows with how quickly a point is isolated. The crash days score clearly above the normal days; the gap is smaller than for the other detectors on this stream, because with two features the forest has little to cut on.
 
 ## Details
 
