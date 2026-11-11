@@ -169,6 +169,38 @@ part ends, so every healthy score is `0.0` and the false-alarm value `0.000` on
 most accurate of the five on this repository's benchmark and the fastest (`0.036 ms` per
 sample on the arm).
 
+## A finance example: a crash among normal days
+
+The same detector on a market stream. Each day has two numbers: the return in percent and the log volume, standardised. The detector learns 500 normal days (returns around 0.05 % with a spread of 0.8 %); then it scores 100 new normal days and 100 days of a crash (returns around -3 % with a wide spread, and volume up).
+
+```python
+import numpy as np
+from dense_armor.utility.online.anomaly.mahalanobis import OnlineRobustMahalanobis
+
+rng = np.random.default_rng(0)
+
+def day(crash):
+    if crash:
+        return {"ret": float(rng.normal(-3.0, 1.5)), "vol": float(rng.normal(1.5, 0.3))}
+    return {"ret": float(rng.normal(0.05, 0.8)), "vol": float(rng.normal(0.0, 0.3))}
+
+det = OnlineRobustMahalanobis(feature_keys=["ret", "vol"], n_init=200)
+for _ in range(500):
+    det.learn_one(day(False))
+
+ok = np.median([det.score_one(day(False)) for _ in range(100)])
+cr = np.median([det.score_one(day(True)) for _ in range(100)])
+print(f"normal days  {ok:.3f}")
+print(f"crash days   {cr:.3f}")
+```
+
+```
+normal days  1.325
+crash days   7.038
+```
+
+The score is a robust Mahalanobis distance and the default `threshold` is `7.0`. The median crash day lands right at that line: this crash is a mild one in volume, so half of its days are not flagged. The distance still rises more than five times over the normal days.
+
 ## Details
 
 ### Where the rules come from

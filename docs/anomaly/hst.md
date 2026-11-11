@@ -187,6 +187,38 @@ The trees and the work spaces are random. Six seeds (0 to 5) give, with `learn-o
 ROC-AUC 1.000 on SyntheticArm for every seed and 0.982, 0.985, 0.976, 0.986, 0.983 and
 0.969 on DriftStream.
 
+## A finance example: a crash among normal days
+
+The same detector on a market stream. Each day has two numbers: the return in percent and the log volume, standardised. The detector learns 500 normal days (returns around 0.05 % with a spread of 0.8 %); then it scores 100 new normal days and 100 days of a crash (returns around -3 % with a wide spread, and volume up).
+
+```python
+import numpy as np
+from dense_armor.utility.online.anomaly.hst import HalfSpaceTrees
+
+rng = np.random.default_rng(0)
+
+def day(crash):
+    if crash:
+        return {"ret": float(rng.normal(-3.0, 1.5)), "vol": float(rng.normal(1.5, 0.3))}
+    return {"ret": float(rng.normal(0.05, 0.8)), "vol": float(rng.normal(0.0, 0.3))}
+
+det = HalfSpaceTrees(n_trees=15, depth=8, window=100, range_init=10, seed=0)
+for _ in range(500):
+    det.learn_one(day(False))
+
+ok = np.median([det.score_one(day(False)) for _ in range(100)])
+cr = np.median([det.score_one(day(True)) for _ in range(100)])
+print(f"normal days  {ok:.3f}")
+print(f"crash days   {cr:.3f}")
+```
+
+```
+normal days  0.107
+crash days   0.907
+```
+
+The score is in `[0, 1]` and the line between normal and anomalous is `0.5`: the median normal day sits well below it and the median crash day well above it.
+
 ## Details
 
 ### Where the rules come from

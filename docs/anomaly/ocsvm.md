@@ -166,6 +166,38 @@ the 1000 healthy samples before the drift give the boundary enough updates to re
 detectors — it is the only one with a formal bound on both Type I and Type II errors — and
 because when the healthy stream is long enough the separation is crisp.
 
+## A finance example: a crash among normal days
+
+The same detector on a market stream. Each day has two numbers: the return in percent and the log volume, standardised. The detector learns 500 normal days (returns around 0.05 % with a spread of 0.8 %); then it scores 100 new normal days and 100 days of a crash (returns around -3 % with a wide spread, and volume up).
+
+```python
+import numpy as np
+from dense_armor.utility.online.anomaly.ocsvm import OneClassSGD
+
+rng = np.random.default_rng(0)
+
+def day(crash):
+    if crash:
+        return {"ret": float(rng.normal(-3.0, 1.5)), "vol": float(rng.normal(1.5, 0.3))}
+    return {"ret": float(rng.normal(0.05, 0.8)), "vol": float(rng.normal(0.0, 0.3))}
+
+det = OneClassSGD(n_features_rff=64, nu=0.05, n_init=50, seed=0)
+for _ in range(500):
+    det.learn_one(day(False))
+
+ok = np.median([det.score_one(day(False)) for _ in range(100)])
+cr = np.median([det.score_one(day(True)) for _ in range(100)])
+print(f"normal days  {ok:+.4f}")
+print(f"crash days   {cr:+.4f}")
+```
+
+```
+normal days  -0.0051
+crash days   +0.0126
+```
+
+The score is the signed distance from the learned boundary: negative inside the region of normal days, positive outside. The median normal day is inside and the median crash day is outside.
+
 ## Details
 
 ### Where the rules come from

@@ -221,7 +221,7 @@ past.
 
 - **[Streams and datasets](stream/index.md)** — CSV, ROS bag, array, merge by time,
   shuffle; the Casper, DriftStream and SyntheticArm datasets.
-- **[Shared-memory containers](api/data_shared.md)** — let worker processes read a very
+- **[Shared memory for big datasets](api/data_shared.md)** — let worker processes read a very
   large list without every worker copying it.
 - **[Statistics](stats/index.md)** — moments, robust statistics, streaming quantiles
   (t-digest, DDSketch), dependence, sketches.

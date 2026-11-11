@@ -201,6 +201,7 @@ nav:
           - multioutput/index.md
       - Signals:
           - Streams and datasets: stream/index.md
+          - Shared memory for big datasets: api/data_shared.md
           - Statistics:
               - stats/index.md
               - Moments: stats/moments.md
@@ -303,7 +304,6 @@ nav:
               - Real robot arm (CASPER, UR3e): benchmarks/real_robot_benchmark.md
       - Roles:
           - Estimator foundation: api/roles.md
-          - Shared memory: api/data_shared.md
           - Robot layer (signals, real time, safety): api/robot_roles.md
       - Tools:
           - Toolkit:
