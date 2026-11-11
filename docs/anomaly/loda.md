@@ -1,5 +1,7 @@
 # LODA
 
+On a market, LODA tells you when a new day looks strange. It looks at the numbers of the day (return, volume, spread) from many different points of view and averages how rare the day is in each one: the higher the score, the stranger the day.
+
 LODA tells you when a new reading from your robot looks strange. It looks at the numbers from many different points of view: each one squeezes the readings into a single number and keeps a tally of the values it saw recently. A new reading that lands on a value almost never seen looks strange from that point of view. LODA averages all the points of view and gives back a score: the higher it is, the stranger the reading.
 
 LODA scores each sample by how rare its position is in a few random one-dimensional
@@ -7,6 +9,8 @@ projections of the joint residual. In a control loop it answers one question per
 does this residual land in a part of the space the healthy run almost never visits?
 
 ## 1. What it is
+
+On a market, a day is a point in the space of its return, its volume and its spread. On a crash the point moves to a part of that space that normal days rarely or never visit. The same task on a robot is below.
 
 A robot produces, per joint, a torque residual — the difference between the measured torque
 and the torque the URDF model predicts. On a healthy arm this residual stays within a
@@ -104,6 +108,38 @@ clipped to the outermost bin of every projection; those bins are the ones the wi
 almost never visits, so the score rises to `4.648`. That value is below `log2(201) =
 7.651`, the score of an empty bin in every projection, because some projections still
 land the far point in a bin the window visits.
+
+## A finance example: a crash among normal days
+
+The same detector on a market stream. Each day has two numbers: the return in percent and the log volume, standardised. The detector learns 500 normal days (returns around 0.05 % with a spread of 0.8 %); then it scores 100 new normal days and 100 days of a crash (returns around -3 % with a wide spread, and volume up).
+
+```python
+import numpy as np
+from dense_armor.utility.online.anomaly.loda import LODA
+
+rng = np.random.default_rng(0)
+
+def day(crash):
+    if crash:
+        return {"ret": float(rng.normal(-3.0, 1.5)), "vol": float(rng.normal(1.5, 0.3))}
+    return {"ret": float(rng.normal(0.05, 0.8)), "vol": float(rng.normal(0.0, 0.3))}
+
+det = LODA(n_projections=50, n_bins=10, window=200, range_init=50, seed=0)
+for _ in range(500):
+    det.learn_one(day(False))
+
+ok = np.median([det.score_one(day(False)) for _ in range(100)])
+cr = np.median([det.score_one(day(True)) for _ in range(100)])
+print(f"normal days  {ok:.3f}")
+print(f"crash days   {cr:.3f}")
+```
+
+```
+normal days  2.692
+crash days   4.964
+```
+
+LODA has no fixed line: the score is the mean rarity of the point over the random projections, so it is read against the normal days. The crash days score almost twice as high.
 
 ## 4. On a real arm
 

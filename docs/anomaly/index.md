@@ -24,6 +24,7 @@ These detectors look at the joint vector, one sample at a time.
 | [Half-Space Trees](hst.md) | few reference samples in the region | 1.105 ms | 1.000 | 0.982 |
 | [OnlineIsolationForest](oiforest.md) | depth to isolate a point | 0.701 ms | 0.337 | 0.724 |
 | [OneClassSGD](ocsvm.md) | distance from a learned kernel boundary | 0.131 ms | 0.856 | 0.987 |
+| [LOF](lof.md) | density of the point against its nearest neighbours | 1.675 ms | 1.000 | 0.997 |
 
 The two benchmark streams are `SyntheticArm` (payload fault, 200 samples, 100 healthy) and
 `DriftStream` (one sudden drift at half, 2000 samples). The table reports the
@@ -37,9 +38,9 @@ mean (the arm benchmark), `OnlineRobustMahalanobis` is the strongest. On a strea
 fault is a change of the distribution's shape, `Half-Space Trees` and `LODA` see things the
 mean-shift detector misses. On a stream whose fault proportion is well above the paper's
 "anomalies are few" assumption, `OnlineIsolationForest` needs a longer healthy run to
-converge — its own page documents the assumption. `OneClassSGD` reaches 0.978 on
+converge — its own page documents the assumption. `OneClassSGD` reaches 0.987 on
 `DriftStream` and 0.856 on the arm (200 samples, 100 healthy). The default
 `step=1.0` gives the `eta_t = 1 / t` of Suk and Kpotufe (2025, Lemma 5).
 
-All five detectors go through `AnomalyGate` and `Protected` unchanged: each exposes a
+All six detectors go through `AnomalyGate` and `Protected` unchanged: each exposes a
 `threshold`, and any of them can drive the protection of an estimator that learns online.

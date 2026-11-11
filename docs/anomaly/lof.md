@@ -110,7 +110,7 @@ On the same `DriftStream` sudden drift, median of five seeds, every detector at 
 
 ![Anomaly detectors on DriftStream, sudden drift, median of 5 seeds](../assets/lof/lof_comparison.png)
 
-| detector       | protocol          | AUC med | IQR   | us/sample |
+| detector       | protocol          | AUC med | IQR   | ms/sample |
 |----------------|-------------------|---------|-------|-----------|
 | LOF            | learn-on-healthy  | 1.000   | 0.003 | 1.1       |
 | LOF            | learn-on-all      | 0.523   | 0.004 | 1.1       |
@@ -121,7 +121,7 @@ On the same `DriftStream` sudden drift, median of five seeds, every detector at 
 | Mahalanobis    | learn-on-healthy  | 1.000   | 0.007 | 0.0       |
 | Mahalanobis    | learn-on-all      | 0.971   | 0.036 | 0.0       |
 
-On `learn-on-healthy`, LOF, LODA and Mahalanobis all reach AUC 1.000, and LOF is the slowest of the three, 1.1 us per sample against 0.2 for LODA and 0.0 for Mahalanobis, because the exact k-NN search over the window is heavier than the projection-based or matrix-based methods. On `learn-on-all`, Mahalanobis stays at 0.971 because its state is the whole history, while LOF drops to 0.523 because its window is a sliding one. This is the shape of the two protocols at work, not a defect of LOF.
+On `learn-on-healthy`, LOF, LODA and Mahalanobis all reach AUC 1.000, and LOF is the slowest of the three, 1.1 ms per sample against 0.2 for LODA and 0.0 for Mahalanobis, because the exact k-NN search over the window is heavier than the projection-based or matrix-based methods. On `learn-on-all`, Mahalanobis stays at 0.971 because its state is the whole history, while LOF drops to 0.523 because its window is a sliding one. This is the shape of the two protocols at work, not a defect of LOF.
 
 ## 7. Numbers
 

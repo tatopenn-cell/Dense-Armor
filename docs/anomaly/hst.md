@@ -1,24 +1,16 @@
 # Half-Space Trees
 
+On a market, Half-Space Trees tell you when a new day, tick or payment looks strange. A market sends numbers all the time, for example the return and the volume of each day; when it is quiet they stay in a familiar range. Half-Space Trees learn that range from normal days and give each new day a score between 0 and 1: close to 0 means 'normal', close to 1 means 'I have almost never seen anything like this'.
+
 Half-Space Trees tell you when a new reading from your robot looks strange. A robot sends you numbers all the time, for example how hard each joint is pushing; when everything is fine they stay in a familiar range. Half-Space Trees learn that range from healthy readings. For every new reading they check how many recent healthy readings were close to it, and give back a score between 0 and 1: close to 0 means 'normal', close to 1 means 'I have almost never seen anything like this'.
 
 Half-Space Trees score each sample by how few normal samples fall in the region around it.
 In a control loop they answer one question per joint reading: does this torque residual come
 from a part of the space we usually see, or from a region we almost never visit?
 
-## Streaming Anomaly Detection for AI & Robots
-
-### 💡 Quick Overview (TL;DR)
-Imagine a digital "security guard" living inside a robot's computer. Its only job is to monitor the robot's motors and ask one simple question: *"Is this movement normal, or is something strange happening?"*
-
-Instead of reading the whole database at once, this algorithm works while the robot is moving. It divides the robot's movement data into physical "boxes" (or spaces). Every time the robot performs a healthy, normal action, the guard drops a token into that specific box. 
-
-Over time, boxes representing normal behavior become packed with tokens, while areas representing broken gears, loose cables, or sudden overloads remain completely empty. If a new movement falls into an empty box, the score rises close to **1.0** (Alarm!). If it falls into a crowded box, the score stays near **0.0** (All good!). 
-
-This allows a robot to detect if it is damaged or carrying the wrong payload within milliseconds, protecting itself before a mechanical failure happens.
-
-
 ## 1. What it is
+
+On a market the numbers of a day are the return, the volume and the spread. On normal days they stay in a familiar range; on a crash, or when a feed sends a wrong price, the day moves to a range the detector has never seen. The same task on a robot is below.
 
 A robot's torque residual is the difference between the torque the motors actually deliver
 and the torque the URDF model predicts. On a healthy joint this residual is small, always
@@ -111,6 +103,38 @@ samples, so its score is close to 0. The far point is outside the range seen in 
 ten samples and falls in nodes with few reference samples, so its score is close to 1.
 The line between the two is `0.5`.
 
+## A finance example: a crash among normal days
+
+The same detector on a market stream. Each day has two numbers: the return in percent and the log volume, standardised. The detector learns 500 normal days (returns around 0.05 % with a spread of 0.8 %); then it scores 100 new normal days and 100 days of a crash (returns around -3 % with a wide spread, and volume up).
+
+```python
+import numpy as np
+from dense_armor.utility.online.anomaly.hst import HalfSpaceTrees
+
+rng = np.random.default_rng(0)
+
+def day(crash):
+    if crash:
+        return {"ret": float(rng.normal(-3.0, 1.5)), "vol": float(rng.normal(1.5, 0.3))}
+    return {"ret": float(rng.normal(0.05, 0.8)), "vol": float(rng.normal(0.0, 0.3))}
+
+det = HalfSpaceTrees(n_trees=15, depth=8, window=100, range_init=10, seed=0)
+for _ in range(500):
+    det.learn_one(day(False))
+
+ok = np.median([det.score_one(day(False)) for _ in range(100)])
+cr = np.median([det.score_one(day(True)) for _ in range(100)])
+print(f"normal days  {ok:.3f}")
+print(f"crash days   {cr:.3f}")
+```
+
+```
+normal days  0.107
+crash days   0.907
+```
+
+The score is in `[0, 1]` and the line between normal and anomalous is `0.5`: the median normal day sits well below it and the median crash day well above it.
+
 ## 4. On a real arm
 
 The residual of joints 0-3 on a `SyntheticArm` payload fault. The fault (5 kg added at
@@ -186,6 +210,17 @@ stream is `0.500`.
 The trees and the work spaces are random. Six seeds (0 to 5) give, with `learn-on-healthy`,
 ROC-AUC 1.000 on SyntheticArm for every seed and 0.982, 0.985, 0.976, 0.986, 0.983 and
 0.969 on DriftStream.
+
+## Streaming Anomaly Detection for AI & Robots
+
+### 💡 Quick Overview (TL;DR)
+Imagine a digital "security guard" living inside a robot's computer. Its only job is to monitor the robot's motors and ask one simple question: *"Is this movement normal, or is something strange happening?"*
+
+Instead of reading the whole database at once, this algorithm works while the robot is moving. It divides the robot's movement data into physical "boxes" (or spaces). Every time the robot performs a healthy, normal action, the guard drops a token into that specific box. 
+
+Over time, boxes representing normal behavior become packed with tokens, while areas representing broken gears, loose cables, or sudden overloads remain completely empty. If a new movement falls into an empty box, the score rises close to **1.0** (Alarm!). If it falls into a crowded box, the score stays near **0.0** (All good!). 
+
+This allows a robot to detect if it is damaged or carrying the wrong payload within milliseconds once the trees are initialised, protecting itself before a mechanical failure happens.
 
 ## Details
 

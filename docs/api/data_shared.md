@@ -78,6 +78,35 @@ if __name__ == "__main__":
 
 This is a script, not a notebook cell: `spawn` workers import the file, so `read` must live at module level.
 
+## 4. A finance example: the tick files of a desk
+
+A desk keeps one file of ticks per ticker and per day, and the list of paths grows to hundreds of thousands of names. Every worker that prices or checks a day needs that list. With a plain list each worker pays for its own copy; with `SharedStrings` they all read the same block. The example is small, 4 tickers over 5 days, and each worker reads one name and takes the ticker out of it.
+
+```python
+import multiprocessing as mp
+from dense_armor.utility.infrastructure.data import SharedStrings
+
+
+def ticker(args):
+    ss, i = args
+    return ss[i].split("/")[-1].split("_")[0]
+
+
+if __name__ == "__main__":
+    tickers = ["AAPL", "MSFT", "NVDA", "AMZN"]
+    files = [f"/ticks/{t}_2026-11-{d:02d}.csv" for t in tickers for d in range(1, 6)]
+    with SharedStrings(files) as ss:
+        with mp.get_context("spawn").Pool(4) as pool:
+            out = pool.map(ticker, [(ss, i) for i in (0, 5, 10, 15)])
+    print(len(files), out)
+```
+
+```text
+20 ['AAPL', 'MSFT', 'NVDA', 'AMZN']
+```
+
+The 20 names are stored once. Each worker receives the handle, which weighs less than 1 KiB, and decodes only the item it is asked for.
+
 ## Results
 
 `fork`, fraction 1.0 (every item read), 1,000,000 synthetic paths, 4 workers, 5 runs, median and IQR, from `benchmarks/data_shared_memory.py`:

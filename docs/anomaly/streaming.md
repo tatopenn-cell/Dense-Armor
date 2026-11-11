@@ -95,8 +95,8 @@ print(round(sc.score_one({"v": 50.0}), 1), round(sc.score_one({"v": 1.1}), 2))
 
 A reading of 50 scores 330.5 standard deviations; a reading of 1.1 scores 0.67, ordinary.
 `score_one` never changes the estimator; `learn_one` adds the value to the window. A score above
-`n_sigmas` is exactly a flag of `StreamingDeviationDetector`. It needs the streaming extra:
-needs the streaming extra; the install command is on the bridge page of the API reference.
+`n_sigmas` is exactly a flag of `StreamingDeviationDetector`. It needs the streaming extra; the install
+command is on the bridge page of the API reference.
 
 ## 4. The classic robust filters, one sample at a time
 
@@ -207,7 +207,7 @@ $$m_{n+1} = m_n + \gamma_{n+1}\,\frac{X_{n+1} - m_n}{\lVert X_{n+1} - m_n\rVert}
 and the same for the covariation matrix with the outer product $(X - m)(X - m)^\top$. Dividing
 by the distance means one absurd sample moves the estimate by at most $\gamma$, whatever its
 size: that is what makes it robust. Source: Guillot, Godichon-Baggioni, Robin and Sansonnet
-(arXiv:2601.03957), the online scheme of section 2.2.
+(arXiv:2601.03957), the online scheme of section 3.2 (the recursion of the median is equation 8, in Appendix A.1; section numbers are those of arXiv v1).
 
 ![Density of the Mahalanobis distance of an outlier under four contamination scenarios, from Guillot et al.](../assets/streaming/guillot_fig2.png)
 
