@@ -1,5 +1,7 @@
 # One-Class SGD (SONAR)
 
+On a market, One-Class SGD learns where the normal days are and draws a boundary around them. A new day gets a number: negative means inside the boundary (normal), positive means outside (strange), and the bigger the number, the further outside. It learns one day at a time, so it follows the market while it moves.
+
 One-Class SGD learns where the normal readings are and draws a boundary around them. For every new reading it gives back a number: negative means inside the boundary (normal), positive means outside (strange), and the bigger the number, the further outside. It learns one reading at a time, so it can follow the robot while it works.
 
 One-Class SGD learns a boundary around the healthy joint residual and scores each new
@@ -7,11 +9,13 @@ sample by its signed distance from that boundary. In a control loop it answers o
 per reading: does this residual look like the healthy run, or does it fall outside the
 region the detector has learned to call normal?
 
-<img width="6348" height="561" alt="deepseek_mermaid_20261017_901454" src="https://github.com/user-attachments/assets/f0f7a197-5e71-40b4-b29a-2f4f1874d254" />
+<img width="6348" height="561" alt="Diagram: the classical one-class SVM keeps all healthy points in memory, builds the exact kernel and a Gram matrix with O(N squared) memory and gives a batch solution; SONAR takes one sample at a time with learn_one, maps it with random Fourier features, updates by SGD with O(d) memory and keeps the boundary (w, rho) online" src="https://github.com/user-attachments/assets/f0f7a197-5e71-40b4-b29a-2f4f1874d254" />
 
 
 
 ## 1. What it is
+
+The normal days of a market cluster around their usual return and volume; on a crash they move outside that cluster. The same task on a robot is below.
 
 The healthy residuals of a robot joint cluster around zero. When the payload changes, or a
 joint wears, the residuals move outside that cluster. A One-Class SVM finds the smallest
@@ -62,8 +66,9 @@ The score of a sample is the signed distance from the boundary:
     score(x) = rho - w^T z(x)
 
 Positive means the sample is outside the boundary (anomalous), negative means inside
-(normal). The class flag `threshold` defaults to `0.0`: any point on the wrong side of the
-boundary is flagged.
+(normal). With `threshold=0.0` any point on the wrong side of the boundary is flagged. The
+default is `threshold=None`: the detector uses the adaptive `0.95` quantile of the last `500` scores
+(see Details).
 
 ## 3. Smallest example
 
@@ -93,6 +98,38 @@ The healthy point lies just inside the boundary: its signed distance is slightly
 (`-0.0013`). The anomaly lies outside: its score is positive (`+0.0088`). OCSVM returns a
 signed distance, not a probability, so the numerical contrast is small even when the two
 points are on opposite sides of the boundary.
+
+## A finance example: a crash among normal days
+
+The same detector on a market stream. Each day has two numbers: the return in percent and the log volume, standardised. The detector learns 500 normal days (returns around 0.05 % with a spread of 0.8 %); then it scores 100 new normal days and 100 days of a crash (returns around -3 % with a wide spread, and volume up).
+
+```python
+import numpy as np
+from dense_armor.utility.online.anomaly.ocsvm import OneClassSGD
+
+rng = np.random.default_rng(0)
+
+def day(crash):
+    if crash:
+        return {"ret": float(rng.normal(-3.0, 1.5)), "vol": float(rng.normal(1.5, 0.3))}
+    return {"ret": float(rng.normal(0.05, 0.8)), "vol": float(rng.normal(0.0, 0.3))}
+
+det = OneClassSGD(n_features_rff=64, nu=0.05, n_init=50, seed=0)
+for _ in range(500):
+    det.learn_one(day(False))
+
+ok = np.median([det.score_one(day(False)) for _ in range(100)])
+cr = np.median([det.score_one(day(True)) for _ in range(100)])
+print(f"normal days  {ok:+.4f}")
+print(f"crash days   {cr:+.4f}")
+```
+
+```
+normal days  -0.0051
+crash days   +0.0126
+```
+
+The score is the signed distance from the learned boundary: negative inside the region of normal days, positive outside. The median normal day is inside and the median crash day is outside.
 
 ## 4. On a real arm
 

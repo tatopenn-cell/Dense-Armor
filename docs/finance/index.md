@@ -1,6 +1,6 @@
 # Financial pipelines: multi-model streaming architectures for risk, execution, and fraud detection
 
-This page serves as the index for twenty software pipelines that handle the daily data challenges faced by market analysts, banking infrastructure, and payment desks. Every pipeline chains together the core mathematical blocks of the package to solve practical business questions—like identifying market anomalies, filtering out fraudulent transactions, or sizing trade orders safely before execution.
+This page serves as the index for nine analytical pipelines, and for the parts of the pre-trade system around them, that handle the daily data challenges faced by market analysts, banking infrastructure, and payment desks. Every pipeline chains together the core mathematical blocks of the package to solve practical business questions—like identifying market anomalies, filtering out fraudulent transactions, or sizing trade orders safely before execution.
 
 
 ## Operational Pipelines Matrix

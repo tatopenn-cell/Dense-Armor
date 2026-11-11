@@ -1,6 +1,6 @@
 # Dense-Armor
 
-Dense-Armor is a library that learns from a robot's numbers (and from images and text) in three ways: one sample at a time, on a whole table at once, and with deep networks. It can spot strange readings, notice slow changes, protect against bad data and keep robot commands safe.
+Dense-Armor is a library that learns from streams of numbers (and from images and text) in three ways: one sample at a time, on a whole table at once, and with deep networks. It can spot strange readings, notice slow changes, protect against bad data and keep robot commands safe.
 
 **A library for three kinds of learning: online learning on robot, vision, and AI streams; machine learning on a whole dataset; and deep learning.**
 
@@ -221,7 +221,7 @@ past.
 
 - **[Streams and datasets](stream/index.md)** — CSV, ROS bag, array, merge by time,
   shuffle; the Casper, DriftStream and SyntheticArm datasets.
-- **[Shared-memory containers](api/data_shared.md)** — let worker processes read a very
+- **[Shared memory for big datasets](api/data_shared.md)** — let worker processes read a very
   large list without every worker copying it.
 - **[Statistics](stats/index.md)** — moments, robust statistics, streaming quantiles
   (t-digest, DDSketch), dependence, sketches.
@@ -271,7 +271,7 @@ past.
 
 ## Honest results
 
-Adversarial robustness (see `test/test_boundA-E.py` for the actual attack code, not just
+Adversarial robustness (see `test/experiments/test_boundA.py` to `test_boundE.py` for the actual attack code, not just
 the reported numbers):
 
 | attack | type | defense |
@@ -288,8 +288,7 @@ yet fixed: it builds a spatially-smooth perturbation across the whole grid in on
 and no purely local coherence check (comparing a point to its immediate neighbours) can
 distinguish genuinely-smooth structure from adversarially-smooth structure without an
 external reference. See the
-[README](https://github.com/tatopenn-cell/Dense-Armor#-limits---known) for the full
-"known limits" list.
+[known limits](limits.md) page for the full list.
 
 ## Citation
 
@@ -297,10 +296,10 @@ If you use Dense-Armor in a paper, cite the Zenodo release:
 
 ```
 @software{dense_armor,
-  author  = {tatopenn-cell},
-  title   = {Dense-Armor: Robot-AI Online Learning with Shielding},
+  author  = {Pennacchio, Salvatore},
+  title   = {Dense-Armor: Robot-AI Online Shielding \& Learning},
   year    = {2026},
-  doi     = {10.5281/zenodo.23340608},
+  doi     = {10.5281/zenodo.24030156},
   url     = {https://github.com/tatopenn-cell/Dense-Armor}
 }
 ```
