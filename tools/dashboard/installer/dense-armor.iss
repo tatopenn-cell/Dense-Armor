@@ -59,6 +59,7 @@ Type: filesandordirs; Name: "{app}\.venv"
 Type: filesandordirs; Name: "{app}\tools\dashboard\run"
 Type: filesandordirs; Name: "{app}\dense_armor.egg-info"
 Type: files; Name: "{app}\install.log"
+Type: filesandordirs; Name: "{app}"
 
 [Code]
 procedure CurStepChanged(CurStep: TSetupStep);
