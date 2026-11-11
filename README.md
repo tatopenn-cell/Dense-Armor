@@ -22,6 +22,8 @@
 
 <p align="center">📖 <a href="https://tatopenn-cell.github.io/Dense-Armor/"><strong>Full documentation, API reference, quick guide →</strong></a></p>
 
+<p align="center">🖥️ <a href="https://github.com/tatopenn-cell/Dense-Armor/blob/master/tools/dashboard/start-dashboard.bat"><strong>Dashboard for Windows: start-dashboard.bat →</strong></a> &nbsp;·&nbsp; <a href="#dashboard-one-command">how to run it</a></p>
+
 ---
 
 ## Who is this for
@@ -124,6 +126,30 @@ Verify after tamper: False
 ```
 
 What just happened: every order has been approved, refused or clamped against the five limits — size, price band, duplicate, rate, notional — and the outcome of each one has been chained to the previous decision. The edit has broken the chain, and verify() has caught it. This is the same log a reviewer will ask for, and the same check they will run. The specification is in docs/finance/pretrade.md and docs/finance/decision_log.md.
+
+---
+
+## Dashboard: one command
+
+The web dashboard of the finance system (chain of pieces, decisions, emergency stop) is not in the pip package: it lives in the repository, in `tools/dashboard/`. Clone the repository, then start it.
+
+**Windows**, in PowerShell or a terminal:
+
+```bash
+git clone https://github.com/tatopenn-cell/Dense-Armor.git
+cd Dense-Armor
+tools\dashboard\start-dashboard.bat
+```
+
+**Linux and macOS**:
+
+```bash
+git clone https://github.com/tatopenn-cell/Dense-Armor.git
+cd Dense-Armor
+sh tools/dashboard/start-dashboard.sh
+```
+
+The script installs `flask` if it is missing, writes the demo configuration to `tools/dashboard/run/` and opens http://127.0.0.1:8080/. Python 3.11 or later is needed. Options are passed on, for example `--port 9000`. The file [start-dashboard.bat](tools/dashboard/start-dashboard.bat) cannot run alone: it needs the rest of the repository next to it, so download it by cloning, not by saving the single file. More in [the dashboard page](https://tatopenn-cell.github.io/Dense-Armor/finance/dashboard/).
 
 ---
 
