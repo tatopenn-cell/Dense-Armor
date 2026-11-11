@@ -132,13 +132,24 @@ def _bench_pipeline(
     }
 
 
+def _cpu_freq_mhz() -> float | None:
+    """CPU frequency in MHz, or None if the host does not expose it.
+
+    ``psutil.cpu_freq`` does not exist on every platform (it is missing on the
+    macOS runners), and on some it raises or returns None.
+    """
+    try:
+        freq = psutil.cpu_freq()
+    except (AttributeError, OSError, NotImplementedError):
+        return None
+    return float(freq.current) if freq else None
+
+
 def _host() -> dict:
     return {
         "hostname": socket.gethostname(),
         "cpu_count": psutil.cpu_count(logical=True),
-        "cpu_freq_mhz": (
-            psutil.cpu_freq().current if psutil.cpu_freq() else None
-        ),
+        "cpu_freq_mhz": _cpu_freq_mhz(),
         "cpu_temp_c": _cpu_temp_c(),
         "python": sys.version.split()[0],
         "platform": sys.platform,

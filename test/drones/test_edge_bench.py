@@ -69,6 +69,23 @@ def test_host():
     assert "python" in h
 
 
+def test_cpu_freq_missing_or_empty(monkeypatch):
+    import edge.edge_bench as eb
+
+    monkeypatch.delattr(eb.psutil, "cpu_freq", raising=False)
+    assert eb._cpu_freq_mhz() is None
+    assert eb._host()["cpu_freq_mhz"] is None
+
+    monkeypatch.setattr(eb.psutil, "cpu_freq", lambda: None, raising=False)
+    assert eb._cpu_freq_mhz() is None
+
+    class _F:
+        current = 2400.0
+
+    monkeypatch.setattr(eb.psutil, "cpu_freq", lambda: _F(), raising=False)
+    assert eb._cpu_freq_mhz() == 2400.0
+
+
 def test_main_smoke(tmp_path, monkeypatch):
     out = tmp_path / "bench.json"
     monkeypatch.setattr(sys, "argv",
