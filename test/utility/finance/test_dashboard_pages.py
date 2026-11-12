@@ -236,3 +236,19 @@ def test_section_pages_link_only_pieces_that_have_a_page(client):
         html = client.get(f"/s/{sec}").get_data(as_text=True)
         for href in re.findall(r'class="piece-expand" href="(/piece/[^"]+)"', html):
             assert client.get(href).status_code == 200, href
+
+
+def test_ping_records_the_time_of_the_last_page(client):
+    assert client.application.config.get("LAST_PING") is None
+    r = client.get("/ping")
+    assert r.status_code == 200 and r.get_json() == {"ok": True}
+    assert client.application.config["LAST_PING"] > 0
+
+
+def test_launcher_stops_when_the_last_page_goes_away():
+    from dashboard.launcher import idle_expired
+
+    assert not idle_expired(100.0, 0.0, None, 120.0, 180.0)
+    assert idle_expired(200.0, 0.0, None, 120.0, 180.0)
+    assert not idle_expired(200.0, 0.0, 150.0, 120.0, 180.0)
+    assert idle_expired(300.0, 0.0, 150.0, 120.0, 180.0)

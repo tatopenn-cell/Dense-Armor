@@ -540,4 +540,10 @@ if (document.getElementById("status-side")) {
   } else {
     setup();
   }
+})();
+
+(function () {
+  function ping() { fetch('/ping', { cache: 'no-store' }).catch(function () {}); }
+  ping();
+  setInterval(ping, 5000);
 })();
