@@ -4,6 +4,15 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- `TextInput` (`core/signals/preprocessing/text_input.py`) and `VideoInput` (`core/signals/vision/video_input.py`): one
+  adapter each that gives documents or frames to any primitive of the library in the form it takes (a drift detector
+  gets one number, `score_one` scores and learns, `predict_one` and `learn_one` predict and learn with the label,
+  `transform_one` learns and transforms). They extend `AudioInput`, so the choice of the method is not copied, and
+  use the existing `TextVectorizer` and `FrameFeatures` to make the numbers. The 40 classifiers, regressors, anomaly
+  scorers and drift detectors of `core/online` that are built without arguments ran on 24 documents and on 24 frames
+  without an error; the 28 that need arguments were not tried.
+
 ### Changed
 - The names of two folders are swapped. The library (the online learning, the deep learning, the signals, the
   robot, the evaluation, the infrastructure, the finance and the audio section) is now `dense_armor.core`; the

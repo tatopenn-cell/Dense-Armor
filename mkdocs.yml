@@ -219,6 +219,7 @@ nav:
               - Speed, acceleration, jerk and power: preprocessing/signals.md
               - Text: preprocessing/text.md
               - Text vectorizer: preprocessing/text_vectorizer.md
+              - Text into any primitive: preprocessing/text_input.md
               - Features and rare events: preprocessing/features.md
           - Metrics and evaluation:
               - metrics/index.md
@@ -237,6 +238,7 @@ nav:
           - Kinematics: vision/kinematics.md
           - Quality: vision/quality.md
           - Patches: vision/patches.md
+          - Video into any primitive: vision/video_input.md
   - Deep learning:
       - Foundations: neural/index.md
       - Layers: neural/layers.md
