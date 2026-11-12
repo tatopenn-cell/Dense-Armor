@@ -41,9 +41,17 @@ print(b.sr, b.n, round(b.duration, 2))
 
 `write_wav` writes 16-bit PCM by default (`pcm24`, `pcm32` and `float32` are also available). `read_wav` returns an `Audio` with the samples as floats in `[-1, 1)`. A file it cannot decode raises `ValueError` and the message names the format found.
 
+![The waveform of a plucked string and its spectrogram](../assets/audio/wave_spectrogram.png)
+
+*Above, the waveform of the plucked string: it dies away, but not to zero. The random burst does not average to zero, and Karplus and Strong note that the tone decays to a constant value, which is the bright line at 0 Hz below. Below, the harmonics of 440 Hz fade, the high ones first; the spectrogram is explained in the next step.*
+
 ## 3. Look at it by frequency, and go back
 
 The short-time Fourier transform cuts the sound into overlapping frames, multiplies each by a window and takes its spectrum. The windows are `rectangular`, `hann`, `hamming` and `blackman`, each in a periodic and a symmetric form (Harris 1978). With a Hann window and a hop of half the frame, adding the inverse of the frames gives the sound back exactly in the middle of the signal (overlap-add, Allen and Rabiner 1977).
+
+![The four windows and their spectra](../assets/audio/windows.png)
+
+*Left, the shape of each window. Right, how much each lets leak into the other frequencies: the rectangular window has the narrowest main lobe and the highest side lobes, the Blackman window the lowest side lobes and the widest lobe.*
 
 ```python
 import numpy as np

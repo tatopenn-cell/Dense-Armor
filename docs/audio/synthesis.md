@@ -52,6 +52,10 @@ The additive kinds have no aliasing but cost more at low frequencies (one sine p
 
 The phase of sample `n` is the sum of the frequencies before `n`, so the first sample is at phase 0. Eq. (10) and (11) of Hayes sum up to and including `n`, which is the same wave one sample earlier.
 
+![One kind of oscillator in each panel, three cycles at 700 Hz](../assets/audio/oscillators.png)
+
+*Three cycles of each kind. The additive square shows the ripple of its finite sum of harmonics; the polyBLEP kinds have the jump smoothed over two samples; the pulse is `+1` for a quarter of each cycle.*
+
 ## 3. Noise and loudness
 
 `white_noise(n, seed)` has mean 0 and variance 1. `pink_noise(n, seed, beta)` has a power spectrum that falls as `1 / frequency^beta` (Timmer and Koenig 1995): it draws two Gaussian numbers for each Fourier frequency, scales them by `(1/w)^(beta/2)` and takes the inverse transform. `ADSR` gives the loudness envelope of a note (Hayes and others 2023, Eq. 15).
@@ -73,6 +77,10 @@ print(round(float(np.polyfit(np.log(np.arange(1, len(X))), np.log(X[1:]), 1)[0])
 ```
 
 The envelope rises to 1 in 0.1 s, falls to the sustain level 0.5, holds it until the note ends at 1 s and returns to 0 in 0.3 s. The slope of the noise spectrum on a log-log plot is -1.01. The pink noise sets the component at zero frequency to 0 and scales to unit variance, which the paper does not fix.
+
+![The ADSR envelope, and the power spectrum of the pink noise on a log-log plot](../assets/audio/adsr_pink.png)
+
+*Left, the envelope with its four moments. Right, the power of each frequency of the pink noise (dots) and the fitted line of slope -1.01: ten times the frequency, a tenth of the power.*
 
 ## 4. Round the corners
 
@@ -106,3 +114,7 @@ print(db(hard_clip(s, 1.0)), db(hard_clip_blamp(s, 1.0)))
 ```
 
 The first line is the triangle (plain, then corrected), the second the clipped sine. The corrected corners are slightly rounded: the peaks of the triangle are 0.133 lower. `hard_clip_blamp` leaves a jump from above `level` to below `-level` between two samples uncorrected: no four-point polyBLAMP removes it.
+
+![The spectrum of the naive wave and of the corrected wave, for a triangle, a clipped sine and a sawtooth](../assets/audio/aliasing.png)
+
+*The spectrum of each wave: the tall lines are the harmonics, and everything between them is aliasing. Red is the naive wave, green the corrected one; the numbers are the share of the energy that lies off the harmonics. The corrected waves have a lower floor between the harmonics (the sawtooth, by 17 dB).*

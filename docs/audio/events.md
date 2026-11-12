@@ -46,6 +46,10 @@ print(detect_events(bl)[0][0])
 
 The first alarm is at 1.984 s: the block that starts at 1.984 s ends at 2.048 s and contains the start of the tone. The same function takes the blocks of `AudioFileStream` (a file) or `AudioLiveStream` (a live input), and gives the same alarms for the same samples.
 
+![The sound, the feature b0, the HampelScorer score and the first alarm](../assets/audio/events.png)
+
+*From the top: the sound; the feature `b0` of each block, which jumps when the tone starts; the score of `HampelScorer`, which is 0 for the first blocks (the window is not full) and then high while the tone is new, and falls when the median of the window catches up; and the first alarm (red line), a little before the dashed start of the tone because the block that contains it starts at 1.984 s.*
+
 ## 5. Any estimator, in the form it takes
 
 `detect_events` is one path built by hand. `AudioInput(primitive)` is the general one: it gives a block of sound to any primitive of Dense-Armor, in the form the primitive takes (the table is in the [overview](index.md)), and `run(blocks, label)` feeds every block of a stream. When a primitive raises on the dict, the adapter tries again with one number, and from then on gives it the number.
