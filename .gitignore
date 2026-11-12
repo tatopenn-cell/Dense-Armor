@@ -38,3 +38,6 @@ notebook.ipynb
 
 requirements.txt
 tools/dashboard/run/
+
+# impostazioni locali dell'editor, non per il repo pubblico
+.claude/
