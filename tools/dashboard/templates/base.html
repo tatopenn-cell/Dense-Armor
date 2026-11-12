@@ -21,7 +21,10 @@
     <a href="/s/portfolio"  class="rail-item {{ 'active' if page=='portfolio' }}" title="Portfolio">⚖</a>
     <a href="/s/risk"       class="rail-item {{ 'active' if page=='risk' }}"      title="Risk">⚠</a>
     <a href="/s/execution"  class="rail-item {{ 'active' if page=='execution' }}" title="Execution">⇶</a>
-    <a href="/s/more"       class="rail-item {{ 'active' if page=='more' }}"      title="More">▢</a>
+    <div class="rail-sep"></div>
+    <a href="/schedule"     class="rail-item {{ 'active' if page=='schedule' }}"  title="Order plan: TWAP and VWAP">⏱</a>
+    <a href="/pretrade"     class="rail-item {{ 'active' if page=='pretrade' }}"  title="Check my orders">✔</a>
+    <a href="/s/more"       class="rail-item {{ 'active' if page=='more' }}"      title="More: the other pages">▢</a>
     <div class="rail-sep"></div>
     <a href="/emergency" class="rail-item danger {{ 'active' if page=='emergency' }}" title="Emergency stop">■</a>
   </nav>
@@ -31,6 +34,7 @@
       <h2>{{ title }}</h2>
       <span class="config-path">{{ config.paths.log.parent }}</span>
     </header>
+    <div class="notice">A tool to try ideas. The demo runs on <b>synthetic data</b>; the results on your own files are for study, not for trading decisions. There is no login: keep it on this computer.</div>
     {% block content %}{% endblock %}
   </main>
 

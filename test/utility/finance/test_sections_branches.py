@@ -286,7 +286,7 @@ def _csv_tree(tmp_path, lines):
 
 
 def test_the_classification_stream_needs_the_file_and_enough_valid_rows(tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(sec, "FIXTURES", tmp_path / "test" / "fixtures" / "finance")
     assert sec._gspc_classification_stream(50) == ([], [])
     _csv_tree(tmp_path, ["Date,Close", "short", "2020,notafloat", "2020,10", "2020,11"])
     assert sec._gspc_classification_stream(50) == ([], [])
@@ -519,7 +519,7 @@ def test_the_signal_page_when_a_default_or_a_preview_fails(monkeypatch):
 
     with monkeypatch.context() as m:
         m.setattr(sec, "_sig_preview", boom)
-        assert sec.signal_page("trees", render, {})["pieces"]
+        assert sec.signal_page("trees", render, {})["pieces"]
 
 
 def test_the_threshold_of_an_anomaly_scorer_without_one_is_learned_from_its_scores(monkeypatch):

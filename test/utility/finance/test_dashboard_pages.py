@@ -87,10 +87,15 @@ def test_a_run_of_the_demo_writes_the_last_run_log(client):
     assert client.post("/api/run", json={"n": 20}).status_code == 200
 
 
-def test_the_demo_summary_answers(client):
+def test_the_demo_summary_never_runs_the_demo_and_the_post_does(client):
     r = client.get("/api/demo/summary")
-    assert r.status_code == 200
-    assert isinstance(r.get_json(), dict)
+    assert r.status_code == 404 and r.get_json()["ok"] is False
+    run = client.post("/api/demo/run")
+    j = run.get_json()
+    assert run.status_code == 200 and j["ok"] and j["synthetic"] is True and j["n_orders"] > 0
+    assert j["log"]["records"] == j["n_orders"] and j["log"]["verified"] is True
+    assert sum(j["counts"].values()) == j["n_orders"]
+    assert client.get("/api/demo/summary").get_json() == j
 
 
 def _first_two_pieces_of_each_category(client):

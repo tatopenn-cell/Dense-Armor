@@ -5,6 +5,12 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- The dashboard works on the visitor's own files: a CSV of prices into the chain (with a report to download as CSV),
+  a volume history into the TWAP and VWAP plan, and a CSV of orders into the pre-trade checker (with the decisions and
+  the hash-chained log to download). Each page has a sample file and says what is wrong with a file, naming the row or
+  the column. A notice on every page says that the demo runs on synthetic data and that the results are not for trading
+  decisions. The code is `tools/dashboard/own_data.py`.
+- `DecisionLog.append_many`, which verifies the file once for a whole batch (`append` is now one call of it).
 - `TextInput` (`core/signals/preprocessing/text_input.py`) and `VideoInput` (`core/signals/vision/video_input.py`): one
   adapter each that gives documents or frames to any primitive of the library in the form it takes (a drift detector
   gets one number, `score_one` scores and learns, `predict_one` and `learn_one` predict and learn with the label,
@@ -22,6 +28,15 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   the last release (`dense_armor.utility.online.bandit.ucb`) and the engine modules under the old name
   (`dense_armor.core.engine`). The only import that changes meaning is the package itself: `from
   dense_armor.utility import X` and `from dense_armor.core import X` now give the names of the other package.
+
+### Fixed
+- The chain and the section pages read `test/fixtures/finance/...` from the folder where the program was started, so they
+  failed when it was started from `tools/dashboard` (as the icon of the installer does). The paths are now built from the
+  place of the code (`tools/dashboard/paths.py`).
+- The demo reported `verified: true` after its log file had been deleted, and a missing file counts as a valid chain, so
+  nothing had been verified. The log is now checked while the file exists.
+- `GET /api/demo/summary` ran the whole demo (about 7 seconds). It now returns the last result, and the demo is run by
+  `POST /api/demo/run`, which takes a few hundredths of a second because the log is written in one batch.
 
 ## [1.5.0] - 2026-11-07
 

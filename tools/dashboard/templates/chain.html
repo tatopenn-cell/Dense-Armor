@@ -45,8 +45,17 @@
         <span class="cn-budget" data-slot="execution"></span>
       </div>
     </div>
+    <div class="own-data">
+      <span class="cn-tag">Your prices</span>
+      <input type="file" id="own-file" accept=".csv,.txt,text/csv,text/plain">
+      <button id="own-upload" type="button">Use my file</button>
+      <select id="own-column" class="cn-select" hidden title="the price column the signal learns from"></select>
+      <a href="/sample/prices.csv" class="sub">sample file</a>
+      <span id="own-status" class="sub">A CSV with the names of the columns in the first row, a date column and one column of prices for each asset.</span>
+    </div>
     <div class="chain-params-bar">
       <button id="chain-run">▶ Run</button>
+      <a id="chain-download" class="btn" href="#" hidden>⬇ Report (CSV)</a>
       <span id="chain-status" class="sub">loading…</span>
       <span id="chain-budget" class="chain-budget muted">budget: —</span>
       <div class="chain-params-inline">
@@ -289,6 +298,42 @@ window.attachChartTooltip = function (container) {
   const btn = document.getElementById("chain-run");
   const status = document.getElementById("chain-status");
   const metaEl = document.getElementById("chain-meta");
+  const ownFile = document.getElementById("own-file");
+  const ownBtn = document.getElementById("own-upload");
+  const ownCol = document.getElementById("own-column");
+  const ownStatus = document.getElementById("own-status");
+  const dlLink = document.getElementById("chain-download");
+
+  async function uploadOwn() {
+    if (!ownFile.files.length) { ownStatus.textContent = "choose a CSV file first"; return; }
+    const fd = new FormData();
+    fd.append("file", ownFile.files[0]);
+    ownStatus.classList.remove("bad");
+    ownStatus.textContent = "checking the file…";
+    try {
+      const r = await fetch("/api/data/upload", {method: "POST", body: fd});
+      const d = await r.json();
+      if (!d.ok) { ownStatus.classList.add("bad"); ownStatus.textContent = "error: " + (d.error || "?"); return; }
+      let opt = [...sel.data.options].find(o => o.value === d.id);
+      if (!opt) {
+        opt = document.createElement("option");
+        opt.value = d.id;
+        sel.data.insertBefore(opt, sel.data.firstChild);
+      }
+      opt.textContent = "my file: " + d.name;
+      sel.data.value = d.id;
+      ownCol.innerHTML = "";
+      for (const c of d.columns) {
+        const o = document.createElement("option");
+        o.value = c; o.textContent = c;
+        ownCol.appendChild(o);
+      }
+      ownCol.hidden = d.columns.length < 2;
+      ownStatus.textContent = d.n_rows + " rows" + (d.first_date ? ", " + d.first_date + " to " + d.last_date : "") +
+        ", columns: " + d.columns.join(", ") + (d.dropped ? " (" + d.dropped + " rows skipped)" : "");
+    } catch (e) { ownStatus.classList.add("bad"); ownStatus.textContent = "error: " + e; }
+  }
+  ownBtn.addEventListener("click", uploadOwn);
 
   function fill(s, items, preferred) {
     s.innerHTML = "";
@@ -457,6 +502,8 @@ window.attachChartTooltip = function (container) {
       n: parseInt(nIn.value, 10) || 1253,
       seed: parseInt(seedIn.value, 10) || 0,
     };
+    if (body.data.startsWith("up_") && !ownCol.hidden && ownCol.value) body.column = ownCol.value;
+    dlLink.hidden = true;
     try {
       const r = await fetch("/api/chain/run", {
         method: "POST", headers: {"content-type": "application/json"},
@@ -464,6 +511,7 @@ window.attachChartTooltip = function (container) {
       });
       const d = await r.json();
       if (!d.ok) { status.textContent = "error: " + (d.error || "?"); return; }
+      if (d.run_id) { dlLink.href = "/api/report/" + d.run_id + ".csv"; dlLink.hidden = false; }
       const m = d.metrics || {};
       draw(document.getElementById("chart-acc"), d.series.accuracy, {yMin:0,yMax:1});
       attachChartTooltip(document.getElementById("chart-acc"));
