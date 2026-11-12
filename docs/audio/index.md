@@ -71,7 +71,77 @@ print(round(float(z.std() / n.x.std()), 3))
 White noise has the same strength at every frequency, so the filtered noise keeps a fraction of
 it. `highpass`, `bandpass`, `notch`, `peaking`, `lowshelf` and `highshelf` work the same way.
 
-## 4. Find the moment something happens
+`FIR` is the other kind of filter: it adds the last few inputs, each multiplied by a weight
+(the taps `h`). `convolve` does the same on a whole block, and `DelayLine` repeats a sample
+`d` steps later:
+
+```python
+from dense_armor.utility.signals.audio import FIR, DelayLine, convolve
+print(convolve([1.0, 2.0, 3.0], [1.0, 1.0]).tolist())
+print(FIR([0.5, 0.5]).update_many([1.0, 1.0, 3.0]).tolist())
+print(DelayLine(2).update_many([1.0, 2.0, 3.0, 4.0]).tolist())
+```
+
+```text
+[1.0, 3.0, 5.0, 3.0]
+[0.5, 1.0, 2.0]
+[0.0, 0.0, 1.0, 2.0]
+```
+
+The filter with taps 0.5 and 0.5 averages two neighbouring samples, which smooths the sound.
+
+## 4. Round the corners, shape the loudness, add noise
+
+A triangle wave and a clipped sine both have sharp corners, and a sharp corner puts energy at
+frequencies the sound should not have (aliasing). `triangle_blamp` and `hard_clip_blamp` round
+each corner with the four-point polyBLAMP of Esqueda, Valimaki and Bilbao. The number below is
+the share of the energy that lies away from the harmonics, in dB, at 3141.5926 Hz and 44100 Hz:
+
+```python
+import numpy as np
+from dense_armor.utility.signals.audio import hard_clip, hard_clip_blamp, triangle_blamp
+sr, f0 = 44100, 3141.5926
+def db(x):
+    X = np.abs(np.fft.rfft(x * np.hanning(len(x)))) ** 2
+    m = np.zeros(len(X), bool)
+    for h in range(1, int(sr / 2 / f0) + 1):
+        c = int(round(h * f0)); m[max(0, c - 3):c + 4] = True
+    return round(float(10 * np.log10(X[~m].sum() / X.sum())), 1)
+p = (np.arange(sr) * f0 / sr) % 1
+print(db(1 - 4 * np.abs(p - 0.5)), db(triangle_blamp(f0, sr, sr)))
+s = 2 * np.sin(2 * np.pi * f0 * np.arange(sr) / sr)
+print(db(hard_clip(s, 1.0)), db(hard_clip_blamp(s, 1.0)))
+```
+
+```text
+-34.3 -42.3
+-31.3 -42.2
+```
+
+The first line is the triangle (plain, then corrected), the second the clipped sine. The
+corrected corners are slightly rounded: the peaks of the triangle are 0.133 lower.
+
+`ADSR` gives the loudness envelope of a note (attack, decay, sustain, release) and `pink_noise`
+noise whose power falls as one over the frequency:
+
+```python
+from dense_armor.utility.signals.audio import ADSR, pink_noise
+e = ADSR(0.1, 0.2, 0.5, 0.3, 1.0, 1000)
+print([round(e.value(t), 2) for t in (0.0, 0.05, 0.1, 0.2, 0.3, 1.0, 1.15, 1.3)])
+x = pink_noise(1 << 16, 3)
+X = np.abs(np.fft.rfft(x)) ** 2
+print(round(float(np.polyfit(np.log(np.arange(1, len(X))), np.log(X[1:]), 1)[0]), 2))
+```
+
+```text
+[0.0, 0.5, 1.0, 0.75, 0.5, 0.5, 0.25, 0.0]
+-1.01
+```
+
+The envelope rises to 1 in 0.1 s, falls to the sustain level 0.5, holds it until the note ends at
+1 s and returns to 0 in 0.3 s. The slope of the noise spectrum on a log-log plot is -1.01.
+
+## 5. Find the moment something happens
 
 `detect_events` reads blocks of sound, turns each into a few numbers (the mean magnitude of
 eight bands of frequencies), scores the first band against the blocks before it, and gives the
@@ -95,7 +165,7 @@ The first alarm is at 1.984 s: the block that starts at 1.984 s ends at 2.048 s 
 the start of the tone. The same function takes the blocks of `AudioFileStream` (a file) or
 `AudioLiveStream` (a live input).
 
-## 5. Give the sound to any estimator
+## 6. Give the sound to any estimator
 
 `run_estimators(blocks, {"name": estimator, ...}, label=...)` turns each block into the dict
 of band magnitudes and calls every estimator in the way its class asks for: a drift detector
@@ -114,8 +184,8 @@ peer-reviewed paper. Plucked string: Karplus and Strong (1983), Computer Music J
 pages 3 and 4 of the PDF. Additive sawtooth and square: Hayes et al. (2023), Eq. (10) and (11).
 PolyBLEP: the residual of Eq. (1) of Du et al. (2026), PDF page 2. Non-negative matrix
 factorisation: Lee and Seung (2001), NIPS 13, Eq. (4) and (5). Resampling: Falkenberg (2026),
-Algorithm 3, a preprint by one author. Frequency and cents: the same preprint, Algorithm 1.
-Hard clipping: Esqueda, Valimaki and Bilbao (2016), Eq. (14).
+Algorithm 3, a preprint by one author. Frequency and cents: the same preprint, Algorithm 1. FIR filter and convolution: Hayes et al. (2023), Eq. (6). Delay line: Karplus and Strong (1983), page 3.
+Hard clipping and the triangle: Esqueda, Valimaki and Bilbao (2016), Eq. (8) to (14) and Table 1. Pink noise: Timmer and Koenig (1995), Sec. 3. ADSR: Hayes et al. (2023), Eq. (15).
 
 **Choices stated.** The Karplus-Strong `y[-1]` is 0 and `p = round(sr / f - 1/2)`. The PolyBLEP
 subtracts both residual terms: Eq. (2) of the source adds the second term, and with that sign
@@ -125,15 +195,12 @@ better than the naive sawtooth at -10.9 dB, while subtracting both gives -27.9 d
 at 1e-12. The separation keeps the phase of the mixture. The band grouping of `AudioFeatures`
 is the mean magnitude over nearly equal groups of bins, with no source behind it. The
 resampler interpolates linearly, as the source does, so its stopband is not that of a windowed
-FIR filter. Ties in `freq_to_note` round half to even.
+FIR filter. Ties in `freq_to_note` round half to even. The polyBLAMP residual is derived by integrating the cubic B-spline twice and subtracting the ramp, as the paper describes: it reproduces three of the four bottom rows of Table 1 exactly, and the fourth row is garbled in the text layer of the PDF. The pink noise sets the component at zero frequency to 0 and scales to unit variance, which the paper does not fix. The triangle and the clipper have a block form only, with no streaming form.
 
-**Not in this section.** The triangle wave and polyBLAMP clipping (the formulas of
-Esqueda et al. are not implemented), pink noise and the ADSR envelope (the sources are a scan
-and an equation whose brackets are lost in the text), the chirp, FIR and IIR filters of any
-order, the delay line, convolution, the envelope follower and gain curve, waveshapers,
-dithering and quantisation, pan, mid/side and interaural delay, RMS and loudness meters, mel
-and MFCC, pitch, onset, GCC-PHAT, scales and note events: no source in the project folder
-defines them.
+**Not in this section.** The chirp, IIR filters of any order, convolution by the FFT,
+the envelope follower and gain curve, waveshapers, dithering and quantisation,
+pan, mid/side and interaural delay, RMS and loudness meters, mel and MFCC, pitch, onset,
+GCC-PHAT, scales and note events: no source in the project folder defines them.
 
 **Measured cost.** Each stateful primitive declares `budget_s` and `memory_class`; the values
 are the ones in the classes and have not been re-measured on a reference machine.

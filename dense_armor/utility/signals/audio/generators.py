@@ -8,7 +8,10 @@ Sources:
       of the second term of Eq. (2) corrected as the docstring of :class:`Oscillator` states;
       the two-point polynomial BLEP is introduced in Valimaki and Pekonen (2012), JASA 132(2);
     * Karplus-Strong: Karplus and Strong (1983), Computer Music Journal 7(2), pages 3 and 4
-      of the PDF.
+      of the PDF;
+    * pink noise: Timmer and Koenig (1995), "On generating power law noise", A&A 300, 707,
+      Sec. 3 (PDF pages 2 and 3, read as images: the text layer of the PDF is empty);
+    * ADSR: Hayes et al. (2023), Eq. (15), PDF page 27, after Masuda and Saito (2023).
 """
 
 from collections import deque
@@ -181,3 +184,117 @@ def plucked_string(freq: float, sr: int, duration: float, seed: int = 0) -> Audi
     p = max(2, int(round(sr / freq - 0.5)))
     n = int(round(duration * sr))
     return Audio(KarplusStrong(p, seed).update_many(np.zeros(n)), sr)
+
+
+def pink_noise(n: int, seed: int = 0, beta: float = 1.0) -> np.ndarray:
+    """Noise with a power spectrum ``S(w) ~ (1 / w)^beta`` (``beta = 1`` is pink noise).
+
+    The algorithm of Timmer and Koenig (1995), Sec. 3: for each Fourier frequency draw two
+    Gaussian numbers, multiply them by ``(1 / w)^(beta / 2)`` and use them as the real and
+    imaginary part of the Fourier transform; at the Nyquist frequency of an even ``n`` only
+    one number is drawn, the negative frequencies are the complex conjugates, and the signal
+    is the inverse transform. Choices stated: the component at ``w = 0`` is set to 0 (a power
+    law is not defined there) and the result is scaled to unit variance; the paper fixes
+    neither.
+
+    Args:
+        n: number of samples, at least 2.
+        seed: seed of the generator.
+        beta: exponent of the spectrum, ``beta = 2`` is a random walk.
+
+    Raises:
+        ValueError: if ``n < 2``.
+
+    Example:
+        >>> pink_noise(8, 0).shape
+        (8,)
+    """
+    if n < 2:
+        raise ValueError(f"n must be >= 2, got {n}")
+    rng = np.random.default_rng(seed)
+    m = n // 2 + 1
+    amp = np.zeros(m)
+    amp[1:] = np.arange(1, m) ** (-beta / 2.0)
+    f = rng.standard_normal(m) * amp + 1j * rng.standard_normal(m) * amp
+    if n % 2 == 0:
+        f[-1] = f[-1].real
+    x = np.fft.irfft(f, n)
+    return x / x.std()
+
+
+class ADSR(Root):
+    """The attack-decay-sustain-release envelope of Masuda and Saito (2023).
+
+    ``u(t) = |t v_max / t_atk|[0, v_max] + |(t - t_atk)(v_sus - v_max) / t_dec|[v_sus - v_max, 0]
+    + |-(t - t_off) v_sus / t_rel|[-v_sus, 0]`` with ``|x|[a, b] = min(max(x, a), b)``
+    (Eq. 15). The value is 0 at ``t = 0``, ``v_max`` at ``t_atk``, ``v_sus`` from
+    ``t_atk + t_dec`` to ``t_off``, and 0 at ``t_off + t_rel``.
+
+    Args:
+        t_atk: attack time in seconds, positive.
+        t_dec: decay time, positive.
+        v_sus: sustain level, between 0 and ``v_max``.
+        t_rel: release time, positive.
+        t_off: note-off time, not before ``t_atk + t_dec``.
+        sr: sample rate.
+        v_max: peak level.
+
+    Raises:
+        ValueError: if a time is not positive, ``v_sus`` is outside ``[0, v_max]`` or
+            ``t_off < t_atk + t_dec``.
+
+    Example:
+        >>> e = ADSR(0.1, 0.1, 0.5, 0.2, 0.5, 100)
+        >>> [round(e.update().out, 3) for _ in range(12)][-3:]
+        [0.9, 1.0, 0.95]
+    """
+
+    budget_s: float = 2e-4
+    memory_class: str = "O(1)"
+
+    def __init__(
+        self,
+        t_atk: float = 0.01,
+        t_dec: float = 0.1,
+        v_sus: float = 0.7,
+        t_rel: float = 0.2,
+        t_off: float = 1.0,
+        sr: int = 44100,
+        v_max: float = 1.0,
+    ) -> None:
+        if min(t_atk, t_dec, t_rel) <= 0 or sr <= 0:
+            raise ValueError("t_atk, t_dec, t_rel and sr must be positive")
+        if not 0.0 <= v_sus <= v_max:
+            raise ValueError("v_sus must be in [0, v_max]")
+        if t_off < t_atk + t_dec:
+            raise ValueError("t_off must not precede t_atk + t_dec")
+        self.t_atk = t_atk
+        self.t_dec = t_dec
+        self.v_sus = v_sus
+        self.t_rel = t_rel
+        self.t_off = t_off
+        self.sr = int(sr)
+        self.v_max = v_max
+        self.n_ = 0
+        self.out = 0.0
+
+    def value(self, t: float) -> float:
+        """The envelope at time ``t`` seconds."""
+        vm, vs = self.v_max, self.v_sus
+        a = min(max(t * vm / self.t_atk, 0.0), vm)
+        d = min(max((t - self.t_atk) * (vs - vm) / self.t_dec, vs - vm), 0.0)
+        r = min(max(-(t - self.t_off) * vs / self.t_rel, -vs), 0.0)
+        return float(a + d + r)
+
+    def update(self, _v: float = 0.0) -> "ADSR":
+        """Output the next sample of the envelope; the argument is ignored."""
+        self.out = self.value(self.n_ / self.sr)
+        self.n_ += 1
+        return self
+
+    def update_many(self, values: Any) -> np.ndarray:
+        """Output ``len(values)`` samples."""
+        out = np.empty(len(values))
+        for i in range(len(values)):
+            out[i] = self.update().out
+        return out

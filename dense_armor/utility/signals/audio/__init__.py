@@ -10,8 +10,14 @@ from dense_armor.utility.signals.audio.biquad import (
     notch,
     peaking,
 )
+from dense_armor.utility.signals.audio.blamp import (
+    blamp_residual,
+    hard_clip_blamp,
+    triangle_blamp,
+)
 from dense_armor.utility.signals.audio.clipping import hard_clip
 from dense_armor.utility.signals.audio.features import AudioFeatures, run_estimators
+from dense_armor.utility.signals.audio.fir import FIR, DelayLine, convolve
 from dense_armor.utility.signals.audio.fourier import (
     StreamingSTFT,
     cola_ok,
@@ -19,8 +25,10 @@ from dense_armor.utility.signals.audio.fourier import (
     stft,
 )
 from dense_armor.utility.signals.audio.generators import (
+    ADSR,
     KarplusStrong,
     Oscillator,
+    pink_noise,
     plucked_string,
     white_noise,
 )
@@ -44,6 +52,9 @@ from dense_armor.utility.signals.audio.windows import (
 )
 
 __all__ = [
+    "ADSR",
+    "DelayLine",
+    "FIR",
     "Audio",
     "AudioFeatures",
     "AudioFileStream",
@@ -54,15 +65,18 @@ __all__ = [
     "Resampler",
     "StreamingSTFT",
     "bandpass",
+    "blamp_residual",
     "blackman",
     "cents_to_freq",
     "cola_ok",
+    "convolve",
     "freq_to_cents",
     "freq_to_note",
     "get_window",
     "hamming",
     "hann",
     "hard_clip",
+    "hard_clip_blamp",
     "highpass",
     "highshelf",
     "istft",
@@ -72,6 +86,7 @@ __all__ = [
     "note_to_freq",
     "notch",
     "peaking",
+    "pink_noise",
     "plucked_string",
     "read_wav",
     "rectangular",
@@ -79,6 +94,7 @@ __all__ = [
     "run_estimators",
     "separate",
     "stft",
+    "triangle_blamp",
     "white_noise",
     "write_wav",
 ]

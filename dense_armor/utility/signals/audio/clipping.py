@@ -1,7 +1,7 @@
 """Hard clipping.
 
 Source: Esqueda, Valimaki and Bilbao (2016), "Rounding corners with BLAMP", DAFx-16, Eq. (14),
-PDF page 5. The polyBLAMP correction of the same paper is not implemented here.
+PDF page 5. The polyBLAMP-corrected version is ``hard_clip_blamp`` in ``blamp.py``.
 """
 
 import numpy as np
