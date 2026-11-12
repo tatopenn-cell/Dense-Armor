@@ -105,7 +105,7 @@ UTILITY_GROUPS = {
         "protect",
     ),
     "deep": ("neural",),
-    "signals": ("stream", "stats", "preprocessing", "vision", "datasets"),
+    "signals": ("stream", "stats", "preprocessing", "vision", "datasets", "audio"),
     "robot": ("control",),
     "evaluation": ("evaluate", "metrics"),
     "infrastructure": ("compose", "data"),

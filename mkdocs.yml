@@ -237,6 +237,8 @@ nav:
           - Kinematics: vision/kinematics.md
           - Quality: vision/quality.md
           - Patches: vision/patches.md
+      - Audio:
+          - audio/index.md
   - Deep learning:
       - Foundations: neural/index.md
       - Layers: neural/layers.md
