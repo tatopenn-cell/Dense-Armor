@@ -1241,3 +1241,16 @@ body.page-chain .main { overflow-y: auto; }
 .sec-grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
 .piece-name { font-size: 12px; }
 .piece-kind { font-size: 10px; }
+
+/* the visitor's own files: prices, orders, volumes */
+.notice { margin: 0 0 .8em; padding: .5em .9em; border: 1px solid var(--warn); border-left-width: 4px;
+  border-radius: 4px; background: rgba(230, 126, 34, .08); color: var(--text); font-size: .82em; }
+.own-data { display: flex; flex-wrap: wrap; gap: .6em; align-items: center; margin: .5em 0; }
+.own-data input[type=file] { max-width: 260px; font-size: .85em; }
+.form-row { display: flex; flex-wrap: wrap; gap: .8em; align-items: center; margin: .5em 0; }
+.form-row label { display: flex; flex-direction: column; gap: 2px; font-size: .8em; color: var(--dim); }
+.form-row.limits input[type=number] { width: 120px; }
+.form-block { display: block; font-size: .85em; color: var(--dim); margin: .6em 0; }
+.form-block textarea { width: 100%; box-sizing: border-box; padding: 6px 8px; border: 1px solid var(--line);
+  background: var(--panel); color: var(--text); border-radius: 4px; font-family: monospace; }
+tfoot th { border-top: 2px solid var(--line); border-bottom: 0; }

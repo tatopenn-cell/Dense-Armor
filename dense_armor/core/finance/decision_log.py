@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
@@ -122,8 +123,8 @@ class DecisionLog:
     ``hash`` equals the recomputed one.
 
     ``append`` re-reads and re-hashes the whole file at every call, so the
-    cost is O(n) per record and O(n**2) for n records. This is declared,
-    not optimised.
+    cost is O(n) per record and O(n**2) for n records. ``append_many``
+    verifies the file once for a whole batch and costs O(n).
 
     Args:
         path: the file path, as :class:`str` or :class:`pathlib.Path`.
@@ -223,28 +224,64 @@ class DecisionLog:
             ValueError: if ``t`` is not finite, ``payload`` is not a
                 serializable dict, or the existing file does not verify.
         """
-        t, payload = _validate_input(t, payload)
-        ok, last_hash, n = self._verify_file()
+        return self.append_many([(t, payload)])[0]
+
+    def append_many(self, items: Iterable[tuple[float, dict]]) -> list[str]:
+        """Append several records and return their ``hash`` values, in order.
+
+        The file is verified once for the whole batch, so ``n`` records cost
+        O(n) and not the O(n**2) of ``n`` calls of :meth:`append`. Every
+        record is checked before anything is written: if one is refused, the
+        file is byte-for-byte unchanged. The file is the same one that ``n``
+        calls of :meth:`append` would write.
+
+        Args:
+            items: pairs ``(t, payload)``, each as for :meth:`append`.
+
+        Returns:
+            The hashes of the new records; an empty list for no items.
+
+        Raises:
+            ValueError: if a ``t`` is not finite, a ``payload`` is not a
+                serializable dict, or the existing file does not verify.
+
+        Examples:
+            >>> import tempfile
+            >>> from pathlib import Path
+            >>> with tempfile.TemporaryDirectory() as d:
+            ...     log = DecisionLog(Path(d) / "log.jsonl")
+            ...     hs = log.append_many([(1.0, {"a": 1}), (2.0, {"a": 2})])
+            ...     (len(hs), len(log), log.verify(), log.last_hash == hs[-1])
+            (2, 2, True, True)
+        """
+        checked = [_validate_input(t, payload) for t, payload in items]
+        if not checked:
+            return []
+        ok, prev, n = self._verify_file()
         if not ok:
             raise ValueError("log chain is broken; refusing to extend it")
-        seq = n
-        h = _hash(seq, t, payload, last_hash)
-        record = {"seq": seq, "t": t, "payload": payload, "prev": last_hash, "hash": h}
-        line = (
-            json.dumps(
-                record,
-                sort_keys=True,
-                separators=(",", ":"),
-                ensure_ascii=True,
-                allow_nan=False,
+        lines: list[str] = []
+        hashes: list[str] = []
+        for k, (t, payload) in enumerate(checked):
+            h = _hash(n + k, t, payload, prev)
+            record = {"seq": n + k, "t": t, "payload": payload, "prev": prev, "hash": h}
+            lines.append(
+                json.dumps(
+                    record,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                    ensure_ascii=True,
+                    allow_nan=False,
+                )
+                + "\n"
             )
-            + "\n"
-        )
+            hashes.append(h)
+            prev = h
         with self.path.open("a", encoding="utf-8", newline="\n") as f:
-            f.write(line)
-        self.last_hash = h
-        self._len = n + 1
-        return h
+            f.write("".join(lines))
+        self.last_hash = prev
+        self._len = n + len(checked)
+        return hashes
 
     def verify(self) -> bool:
         """Return ``True`` if the file is a valid chain, ``False`` otherwise.
