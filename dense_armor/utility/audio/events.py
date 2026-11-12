@@ -2,10 +2,10 @@
 
 from collections.abc import Iterable
 
-from dense_armor.utility.online.anomaly.filters import HampelScorer
-from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
 from dense_armor.utility.audio.features import AudioFeatures
 from dense_armor.utility.audio.signal import Audio
+from dense_armor.utility.online.anomaly.filters import HampelScorer
+from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
 
 
 def detect_events(

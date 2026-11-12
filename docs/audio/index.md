@@ -145,12 +145,12 @@ The envelope rises to 1 in 0.1 s, falls to the sustain level 0.5, holds it until
 ## 5. Choose an oscillator
 
 An oscillator makes a repeating wave, one sample at a time, at the frequency you give it at
-each step, so the pitch can glide without a click. `Oscillator(kind, sr)` has eight kinds:
+each step, so the pitch can glide without a click. `Oscillator(kind, sr)` has seven kinds:
 
 | kind | wave | how it is made |
 | --- | --- | --- |
 | `sine` | sine | `sin(2 pi phi)` |
-| `sawtooth_additive`, `square_additive`, `triangle_additive` | sawtooth, square, triangle | sum of the harmonics below half the sample rate |
+| `sawtooth_additive`, `square_additive` | sawtooth, square | sum of the harmonics below half the sample rate |
 | `sawtooth_polyblep`, `square_polyblep`, `pulse_polyblep` | sawtooth, square, pulse with `duty` | the naive wave with its jumps smoothed (polyBLEP) |
 | `triangle_blamp` | triangle | the naive wave with its corners rounded (polyBLAMP), two samples late |
 
@@ -158,14 +158,13 @@ each step, so the pitch can glide without a click. `Oscillator(kind, sr)` has ei
 import numpy as np
 from dense_armor.utility.audio import Oscillator
 f = np.full(8, 1000.0)
-for k in ("sine", "triangle_additive", "square_polyblep", "triangle_blamp"):
+for k in ("sine", "square_polyblep", "triangle_blamp"):
     print(k, Oscillator(k, 8000).update_many(f).round(2).tolist())
 print(Oscillator("pulse_polyblep", 8000, 0.25).update_many(f).round(2).tolist())
 ```
 
 ```text
 sine [0.0, 0.71, 1.0, 0.71, 0.0, -0.71, -1.0, -0.71]
-triangle_additive [0.0, 0.51, 0.9, 0.51, 0.0, -0.51, -0.9, -0.51]
 square_polyblep [0.0, 1.0, 1.0, 1.0, 0.0, -1.0, -1.0, -1.0]
 triangle_blamp [0.0, 0.0, -0.77, -0.49, 0.0, 0.49, 0.77, 0.49]
 [0.0, 1.0, 0.0, -1.0, -1.0, -1.0, -1.0, -1.0]
@@ -178,22 +177,9 @@ sample two calls earlier (the first two are 0) and its frequency must stay below
 the sample rate. The pulse is `+1` for the first `duty` of each period and `-1` after it, so
 the last line is a pulse of a quarter period at 1000 Hz and 8000 samples per second.
 
-`chirp(f0, f1, duration, sr)` sweeps the frequency of any kind from `f0` to `f1`, in a line
-(`method="linear"`) or in a geometric ratio (`method="log"`):
-
-```python
-from dense_armor.utility.audio import chirp
-c = chirp(100.0, 1000.0, 1.0, 8000)
-z = np.diff(np.sign(c.x)) != 0
-print(c.n, int(z[:800].sum()), int(z[-800:].sum()))
-```
-
-```text
-8000 29 191
-```
-
-The wave crosses zero 29 times in the first tenth of a second and 191 times in the last, so
-the pitch rose. White noise, pink noise and the plucked string are in section 4 and section 1.
+The square and the pulse follow Valimaki and Pekonen (2012): the residual of the sawtooth is
+added at the rising edge and subtracted at the falling edge, which sits at the duty cycle.
+White noise, pink noise and the plucked string are in section 4 and section 1.
 
 ## 6. Find the moment something happens
 
@@ -221,10 +207,37 @@ the start of the tone. The same function takes the blocks of `AudioFileStream` (
 
 ## 7. Give the sound to any estimator
 
-`run_estimators(blocks, {"name": estimator, ...}, label=...)` turns each block into the dict
-of band magnitudes and calls every estimator in the way its class asks for: a drift detector
-gets one number, an anomaly scorer scores and then learns, a classifier or regressor predicts
-and then learns with `label(block)`, a scaler learns and transforms. The tests run it with 27
+Dense-Armor already has the estimators, the detectors, the scalers and the filters, and none of
+them is copied for sound. `AudioInput(primitive)` is the one adapter that opens them to it: it
+looks at the methods the primitive has and gives it a block of sound in the form it takes.
+
+| the primitive has | it gets |
+| --- | --- |
+| `update` and `drift_detected` (drift detectors) | one number per block |
+| `score_one` (anomaly scorers) | the dict of band magnitudes, then learns it |
+| `predict_one` and `learn_one` (classifiers, regressors) | the dict, then the label `y` |
+| `transform_one` (scalers) | the dict, learned and transformed |
+| only `update_many` (filters, `SDFT`) | the samples of the block |
+
+```python
+from dense_armor.utility.audio import AudioInput
+from dense_armor.utility.online.anomaly.filters import HampelScorer
+from dense_armor.utility.signals.stats.sdft import SDFT
+a = AudioInput(SDFT(8))
+a.feed(Audio(np.arange(8.0), 8))
+print(a.mode, np.allclose(a.primitive.spectrum(), np.fft.fft(np.arange(8.0))))
+h = AudioInput(HampelScorer())
+print(h.run([Audio(np.sin(np.arange(64) * k), 64) for k in range(1, 9)])[-1] >= 0.0, h.mode)
+```
+
+```text
+samples True
+True score
+```
+
+`AudioInput(...).run(blocks)` takes the blocks of `AudioFileStream` or `AudioLiveStream`.
+`run_estimators(blocks, {"name": primitive, ...}, label=...)` does the same for several
+primitives at once, computing the features of each block one time. The tests run it with 27
 estimators from the online anomaly, drift, cluster, classifier, regressor, tree, neighbour,
 time-series, scaler and statistics groups, on a synthetic signal.
 
@@ -242,16 +255,16 @@ Algorithm 3, a preprint by one author. Frequency and cents: the same preprint, A
 Hard clipping and the triangle: Esqueda, Valimaki and Bilbao (2016), Eq. (8) to (14) and Table 1. Pink noise: Timmer and Koenig (1995), Sec. 3. ADSR: Hayes et al. (2023), Eq. (15).
 
 **Choices stated.** The Karplus-Strong `y[-1]` is 0 and `p = round(sr / f - 1/2)`. The PolyBLEP
-subtracts both residual terms: Eq. (2) of the source adds the second term, and with that sign
+subtracts both residual terms: Eq. (2) of the source (PDF page 2) prints a `+` before the second term, and with that sign
 the energy outside the harmonics of a sawtooth at 3141.5926 Hz and 44100 Hz is -10.2 dB, no
 better than the naive sawtooth at -10.9 dB, while subtracting both gives -27.9 dB (the test
 `test_polyblep_has_less_aliasing_than_naive` measures the two). The NMF floors its denominators
 at 1e-12. The separation keeps the phase of the mixture. The band grouping of `AudioFeatures`
 is the mean magnitude over nearly equal groups of bins, with no source behind it. The
 resampler interpolates linearly, as the source does, so its stopband is not that of a windowed
-FIR filter. Ties in `freq_to_note` round half to even. The polyBLAMP residual is derived by integrating the cubic B-spline twice and subtracting the ramp, as the paper describes: it reproduces three of the four bottom rows of Table 1 exactly, and the fourth row is garbled in the text layer of the PDF. The pink noise sets the component at zero frequency to 0 and scales to unit variance, which the paper does not fix. The clipper has a block form only, with no streaming form. The additive triangle is the textbook Fourier series, the square and the pulse are the naive wave with the sawtooth polyBLEP residual added at the rising edge and subtracted at the falling edge, and the chirp feeds the frequency at the time of each sample to an oscillator: no source in the project folder defines these four. The streaming `triangle_blamp` equals the block `triangle_blamp` two samples later, except for the last two samples of the block, whose corners lie beyond its end.
+FIR filter. Ties in `freq_to_note` round half to even. The four bottom rows of Table 1 (the polyBLAMP residual) were checked with sympy against the integral of the cubic B-spline taken twice minus the ramp, and against the polynomials of the code: all four agree. The pink noise sets the component at zero frequency to 0 and scales to unit variance, which the paper does not fix. The clipper has a block form only, with no streaming form. The square and the pulse are the naive wave with the sawtooth polyBLEP residual added at the rising edge and subtracted at the falling edge, as in Valimaki and Pekonen (2012), Eq. (12) and (13). The streaming `triangle_blamp` equals the block `triangle_blamp` two samples later, except for the last two samples of the block, whose corners lie beyond its end.
 
-**Not in this section.** IIR filters of any order, convolution by the FFT,
+**Not in this section.** The chirp (the source, Farina 2000, is not in the folder), IIR filters of any order, convolution by the FFT,
 the envelope follower and gain curve, waveshapers, dithering and quantisation,
 pan, mid/side and interaural delay, RMS and loudness meters, mel and MFCC, pitch, onset,
 GCC-PHAT, scales and note events: no source in the project folder defines them.

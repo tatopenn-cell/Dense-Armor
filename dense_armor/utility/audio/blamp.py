@@ -3,9 +3,10 @@
 Source: Esqueda, Valimaki and Bilbao (2016), "Rounding corners with BLAMP", DAFx-16.
 The residual is the cubic B-spline basis function of Table 1 (PDF page 3), integrated twice
 (the polyBLAMP) minus the ramp ``max(t, 0)``, as the paper describes; it has the peak 7/30
-at the corner (Fig. 3d) and is zero for ``|t| >= 2`` samples. Three of the four bottom rows
-of Table 1 are reproduced exactly by these polynomials; the fourth row (the span ``[0, T]``)
-is misread in the text layer of the PDF, so the polynomials here are derived, not copied.
+at the corner (Fig. 3d) and is zero for ``|t| >= 2`` samples. The four bottom rows of Table 1
+(the residual, as polynomials of the fractional delay ``d`` in each span) were checked with
+sympy: they equal the second integral of the B-spline minus the ramp, and the polynomials of
+this module, written in the offset ``t`` from the corner.
 
 * Triangle (Sec. 4.1): a trivial triangle is built from a modulo counter; at every corner the
   residual, scaled by the slope jump ``2 mu`` with ``mu = 4 f0 / fs``, is added with a

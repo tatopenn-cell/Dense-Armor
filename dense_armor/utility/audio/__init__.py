@@ -1,5 +1,6 @@
 """Audio: sound as a value, WAV files, windows, STFT, generators, filters, NMF and streams."""
 
+from dense_armor.utility.audio.adapter import AudioInput, run_estimators
 from dense_armor.utility.audio.biquad import (
     Biquad,
     bandpass,
@@ -17,7 +18,7 @@ from dense_armor.utility.audio.blamp import (
 )
 from dense_armor.utility.audio.clipping import hard_clip
 from dense_armor.utility.audio.events import detect_events
-from dense_armor.utility.audio.features import AudioFeatures, run_estimators
+from dense_armor.utility.audio.features import AudioFeatures
 from dense_armor.utility.audio.fir import FIR, DelayLine, convolve
 from dense_armor.utility.audio.fourier import (
     StreamingSTFT,
@@ -29,7 +30,6 @@ from dense_armor.utility.audio.generators import (
     ADSR,
     KarplusStrong,
     Oscillator,
-    chirp,
     pink_noise,
     plucked_string,
     white_noise,
@@ -60,6 +60,7 @@ __all__ = [
     "Audio",
     "AudioFeatures",
     "AudioFileStream",
+    "AudioInput",
     "AudioLiveStream",
     "Biquad",
     "KarplusStrong",
@@ -70,7 +71,6 @@ __all__ = [
     "blamp_residual",
     "blackman",
     "cents_to_freq",
-    "chirp",
     "cola_ok",
     "convolve",
     "detect_events",

@@ -1,8 +1,8 @@
 """Window functions: rectangular, Hann, Hamming and Blackman.
 
 All of them are sums of cosines, ``w[m] = sum_k (-1)^k a_k cos(2 pi k m / M)``, which is the
-form of Harris (1978), Eq. (31a) for the Blackman family, with ``M = n`` for the periodic
-(DFT-even) window and ``M = n - 1`` for the symmetric one.
+form of Harris (1978), Eq. (33) (the Blackman-Harris family, ``n = 0 .. N - 1``), with
+``M = n`` for the periodic (DFT-even) window and ``M = n - 1`` for the symmetric one.
 """
 
 import numpy as np

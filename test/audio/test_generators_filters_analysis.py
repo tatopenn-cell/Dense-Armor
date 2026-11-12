@@ -17,7 +17,6 @@ from dense_armor.utility.audio import (
     StreamingSTFT,
     bandpass,
     cents_to_freq,
-    chirp,
     freq_to_cents,
     freq_to_note,
     hard_clip,
@@ -136,16 +135,6 @@ def test_oscillator_errors_and_contract():
     assert o.budget_s > 0 and o.memory_class == "O(1)"
 
 
-def test_triangle_additive_harmonic_amplitudes():
-    sr, f = 4096, 64.0
-    y = Oscillator("triangle_additive", sr).update_many(np.full(sr, f))
-    A = np.abs(np.fft.rfft(y)) / (sr / 2)
-    for k in (1, 3, 5):
-        assert A[int(f) * k] == pytest.approx(8 / (np.pi**2 * k**2), rel=1e-6)
-    assert A[int(f) * 2] < 1e-9
-    assert y[0] == 0.0 and y[1] > 0.0 and y.max() <= 1.0
-
-
 def test_square_and_pulse_polyblep_have_less_aliasing_than_naive():
     n = SR
     ph = (np.arange(n) * F0 / SR) % 1
@@ -172,21 +161,6 @@ def test_triangle_blamp_oscillator_is_the_block_triangle_two_samples_late():
     assert np.allclose(st[2:n], triangle_blamp(F0, SR, n)[: n - 2], atol=1e-9)
     with pytest.raises(ValueError):
         Oscillator("triangle_blamp", SR).update(SR / 4)
-
-
-def test_chirp_rises_and_errors():
-    for method in ("linear", "log"):
-        c = chirp(100.0, 1000.0, 1.0, 8000, method=method)
-        z = np.diff(np.sign(c.x)) != 0
-        assert (c.n, c.sr) == (8000, 8000)
-        assert z[-800:].sum() > 3 * z[:800].sum()
-    for args, kw in (
-        ((1.0, 2.0, 0.0, 8000), {}),
-        ((1.0, 2.0, 1.0, 8000), {"method": "cubic"}),
-        ((0.0, 2.0, 1.0, 8000), {"method": "log"}),
-    ):
-        with pytest.raises(ValueError):
-            chirp(*args, **kw)
 
 
 def test_white_noise_moments():

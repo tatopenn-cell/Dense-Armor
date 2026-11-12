@@ -5,6 +5,17 @@ import sys
 import numpy as np
 import pytest
 
+from dense_armor.utility.audio import (
+    Audio,
+    AudioFeatures,
+    AudioFileStream,
+    AudioInput,
+    AudioLiveStream,
+    detect_events,
+    run_estimators,
+    white_noise,
+    write_wav,
+)
 from dense_armor.utility.online.anomaly.filters import (
     ChauvenetScorer,
     HampelScorer,
@@ -27,16 +38,6 @@ from dense_armor.utility.online.timeseries.ar import OnlineAR
 from dense_armor.utility.online.timeseries.garch import GARCH11
 from dense_armor.utility.online.tree.fimt import FIMTDDRegressor
 from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
-from dense_armor.utility.audio import (
-    Audio,
-    AudioFeatures,
-    AudioFileStream,
-    AudioLiveStream,
-    detect_events,
-    run_estimators,
-    white_noise,
-    write_wav,
-)
 from dense_armor.utility.signals.preprocessing.scale import (
     EWScaler,
     MinMaxScaler,
@@ -198,6 +199,33 @@ def test_run_estimators_needs_labels_and_reports_errors():
 
     rep = run_estimators(blocks, {"b": Broken()})
     assert rep["b"]["error"].startswith("RuntimeError") and rep["b"]["n"] == 0
+
+
+def test_audio_input_opens_existing_primitives_in_the_form_they_take():
+    from dense_armor.utility.audio import Biquad, lowpass
+    from dense_armor.utility.audio.adapter import NeedsLabels
+    from dense_armor.utility.signals.stats.sdft import SDFT
+
+    blocks = _blocks(_signal(1.0))
+    sd = AudioInput(SDFT(8))
+    sd.feed(Audio(np.arange(8.0), 8))
+    assert sd.mode == "samples"
+    assert np.allclose(sd.primitive.spectrum(), np.fft.fft(np.arange(8.0)))
+    b, a = lowpass(1000.0, SR)
+    flt = AudioInput(Biquad(b, a))
+    assert flt.feed(blocks[0]).shape == (blocks[0].n,) and flt.mode == "samples"
+    for prim, mode in (
+        (CUSUMDriftDetector(), "drift"),
+        (HampelScorer(), "score"),
+        (StandardScaler(), "transform"),
+    ):
+        ad = AudioInput(prim)
+        out = ad.run(blocks)
+        assert ad.mode == mode and len(out) == ad.n == len(blocks)
+    with pytest.raises(NeedsLabels):
+        AudioInput(OnlineGaussianNB()).feed(blocks[0])
+    lab = AudioInput(OnlineGaussianNB())
+    assert len(lab.run(blocks, label=lambda blk: int(blk.t0 >= 0.5))) == len(blocks)
 
 
 def test_detect_events_finds_tone_and_stays_quiet_on_noise(tmp_path):

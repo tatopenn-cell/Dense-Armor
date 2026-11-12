@@ -1,22 +1,24 @@
-"""Oscillators, chirp, white noise and the Karplus-Strong plucked string.
+"""Oscillators, white noise and the Karplus-Strong plucked string.
 
 Sources:
     * additive sawtooth and square: Hayes, Shier, Fazekas, McPherson, Saitis (2023),
       "A review of differentiable digital signal processing for music and speech
       synthesis", Eq. (10) and (11), PDF page 23, after Masuda and Saito (2021);
-    * PolyBLEP residual: Eq. (1) of Du et al. (2026), "DDSP-QbE++", PDF page 2, with the sign
-      of the second term of Eq. (2) corrected as the docstring of :class:`Oscillator` states;
-      the two-point polynomial BLEP is introduced in Valimaki and Pekonen (2012), JASA 132(2);
+    * PolyBLEP residual: Eq. (1) of Du et al. (2026), "DDSP-QbE++", PDF page 2. Its Eq. (2)
+      prints a ``+`` before the second residual term; the docstring of :class:`Oscillator`
+      says why both terms are subtracted;
+    * pulse and square waves by polyBLEP: Valimaki and Pekonen (2012), JASA 132(2), PDF page 4,
+      Eq. (12) and (13): the fractional delay of a discontinuity is the value of the modulo
+      counter after it, divided by the step; for the downward edge of a pulse of duty cycle
+      ``P`` the counter is taken after it exceeds ``P``, with ``P`` subtracted; every second
+      correction is inverted;
     * Karplus-Strong: Karplus and Strong (1983), Computer Music Journal 7(2), pages 3 and 4
       of the PDF;
     * pink noise: Timmer and Koenig (1995), "On generating power law noise", A&A 300, 707,
-      Sec. 3 (PDF pages 2 and 3, read as images: the text layer of the PDF is empty);
+      Sec. 3 (PDF page 3: two Gaussian numbers per Fourier frequency, amplitude
+      ``(1/w)^(beta/2)``, a real Nyquist term, conjugate negative frequencies, inverse transform);
     * ADSR: Hayes et al. (2023), Eq. (15), PDF page 27, after Masuda and Saito (2023);
     * triangle with polyBLAMP: Esqueda, Valimaki and Bilbao (2016), see ``blamp.py``.
-
-No source in the project folder defines the additive triangle, the square and pulse waves
-by polyBLEP and the chirp; they are choices stated in the docstrings of
-:class:`Oscillator` and :func:`chirp`.
 """
 
 from collections import deque
@@ -32,7 +34,6 @@ KINDS = (
     "sine",
     "sawtooth_additive",
     "square_additive",
-    "triangle_additive",
     "sawtooth_polyblep",
     "square_polyblep",
     "pulse_polyblep",
@@ -51,7 +52,10 @@ def _blep_residual(t: float) -> float:
 class Oscillator(StatefulRoot):
     """A phase-accumulator oscillator whose frequency may change at every sample.
 
-    The phase is the running sum of ``f / sr``, so it stays continuous when ``f`` changes.
+    The phase is the running sum of ``f / sr``, so it stays continuous when ``f`` changes. The
+    phase of sample ``n`` is the sum of the frequencies before ``n`` (the first sample is at
+    phase 0); Eq. (10) and (11) of the source sum up to and including ``n``, which is the same
+    wave one sample earlier.
 
     * ``"sine"``: ``sin(2 pi phi)``.
     * ``"sawtooth_additive"``: ``sum_{k=1..K} 2 / (pi k) sin(2 pi k phi)`` (Eq. 10), a
@@ -61,13 +65,11 @@ class Oscillator(StatefulRoot):
       of the source at the wrap, taken at ``phi / d`` and at ``(phi - 1) / d`` with
       ``d = f / sr``. Eq. (2) of the source adds the second term; with that sign the
       aliasing is not reduced (measured in the tests), so both terms are subtracted.
-    * ``"triangle_additive"``: ``(8 / pi^2) sum_{m odd} (-1)^((m-1)/2) sin(2 pi m phi) / m^2``,
-      the textbook Fourier series of a triangle that rises from 0 to 1 at ``phi = 1/4``
-      (choice stated: not in the sources of this section).
     * ``"square_polyblep"`` and ``"pulse_polyblep"``: ``+1`` for ``phi < duty`` and ``-1``
-      after it (``duty = 1/2`` for the square), with the polyBLEP residual of the sawtooth
-      added at the rising edge (``phi = 0``) and subtracted at the falling edge
-      (``phi = duty``). Choice stated: the two edges are two sawtooth wraps of opposite sign.
+      after it (``duty = 1/2`` for the square). The residual of Eq. (1) is added at the rising
+      edge (``phi = 0``) and subtracted at the falling edge (``phi = duty``), the second one
+      taken at ``(phi - duty) mod 1`` as in Valimaki and Pekonen (2012), Eq. (13) for a pulse
+      wave; the polarity of the two corrections is opposite, as the paper says.
     * ``"triangle_blamp"``: the triangle of :func:`triangle_blamp`, from ``-1`` at
       ``phi = 0`` up to ``+1`` at ``phi = 1/2``, one sample at a time. A corner changes the
       two samples before it and the one after, so ``out`` is the sample **two calls
@@ -116,11 +118,7 @@ class Oscillator(StatefulRoot):
         if self.kind == "sawtooth_additive":
             return float(np.sum(2.0 / (np.pi * k) * np.sin(2.0 * np.pi * k * p)))
         k = k[k % 2 == 1]
-        if self.kind == "square_additive":
-            return float(np.sum(4.0 / (np.pi * k) * np.sin(2.0 * np.pi * k * p)))
-        s = np.where((k // 2) % 2 == 0, 1.0, -1.0)
-        amp = 8.0 / (np.pi**2 * k**2) * s
-        return float(np.sum(amp * np.sin(2.0 * np.pi * k * p)))
+        return float(np.sum(4.0 / (np.pi * k) * np.sin(2.0 * np.pi * k * p)))
 
     def _pulse(self, p: float, step: float) -> float:
         duty = 0.5 if self.kind == "square_polyblep" else self.duty
@@ -160,7 +158,7 @@ class Oscillator(StatefulRoot):
         step = f / self.sr
         if self.kind == "sine":
             y = np.sin(2.0 * np.pi * p)
-        elif self.kind in ("sawtooth_additive", "square_additive", "triangle_additive"):
+        elif self.kind in ("sawtooth_additive", "square_additive"):
             y = self._additive(f, p)
         elif self.kind == "sawtooth_polyblep":
             y = 2.0 * p - 1.0
@@ -299,51 +297,6 @@ def pink_noise(n: int, seed: int = 0, beta: float = 1.0) -> np.ndarray:
         f[-1] = f[-1].real
     x = np.fft.irfft(f, n)
     return x / x.std()
-
-
-def chirp(
-    f0: float,
-    f1: float,
-    duration: float,
-    sr: int,
-    kind: str = "sine",
-    method: str = "linear",
-) -> Audio:
-    """A tone whose frequency goes from ``f0`` to ``f1`` Hz in ``duration`` seconds.
-
-    The frequency at the time of each sample is given to an :class:`Oscillator` of ``kind``,
-    so the phase stays continuous. Choice stated: ``"linear"`` is
-    ``f0 + (f1 - f0) t / duration`` and ``"log"`` is ``f0 (f1 / f0)^(t / duration)``; no source
-    in the project folder defines the chirp.
-
-    Args:
-        f0: start frequency in Hz.
-        f1: end frequency in Hz.
-        duration: length in seconds, positive.
-        sr: sample rate.
-        kind: any kind of :class:`Oscillator`.
-        method: ``"linear"`` or ``"log"``.
-
-    Raises:
-        ValueError: if ``duration`` or ``sr`` is not positive, ``method`` is unknown, or
-            ``method="log"`` with a non-positive frequency.
-
-    Example:
-        >>> chirp(100.0, 400.0, 0.5, 8000).n
-        4000
-    """
-    if duration <= 0 or sr <= 0:
-        raise ValueError("duration and sr must be positive")
-    if method not in ("linear", "log"):
-        raise ValueError(f"unknown method {method!r}, expected 'linear' or 'log'")
-    if method == "log" and (f0 <= 0 or f1 <= 0):
-        raise ValueError("log chirp needs positive f0 and f1")
-    t = np.arange(int(round(duration * sr))) / sr
-    if method == "linear":
-        f = f0 + (f1 - f0) * t / duration
-    else:
-        f = f0 * (f1 / f0) ** (t / duration)
-    return Audio(Oscillator(kind, sr).update_many(f), sr)
 
 
 class ADSR(StatefulRoot):
