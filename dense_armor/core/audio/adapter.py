@@ -1,5 +1,6 @@
 """One adapter that opens any Dense-Armor primitive to sound."""
 
+import math
 from collections.abc import Callable, Iterable
 from typing import Any
 
@@ -7,6 +8,43 @@ from dense_armor.core.audio.features import AudioFeatures
 from dense_armor.core.audio.signal import Audio
 
 _DICT_ERRORS = (TypeError, ValueError, KeyError, AttributeError, IndexError)
+
+# The scaling that each primitive learned best with, on synthetic tones (5 series of 300 blocks,
+# one task per role; see docs/audio/sources.md). A primitive that is not listed gets the band
+# magnitudes as they are. ``std``: each band standardised online; ``logstd``: ``log(1 + x)`` of
+# each band, then standardised.
+SCALING = {
+    "AMRulesRegressor": "std",
+    "OneClassSGD": "std",
+    "AggregatedMondrianForestRegressor": "logstd",
+    "OnlineExtraTreesRegressor": "logstd",
+}
+_SCALINGS = (None, "auto", "std", "logstd")
+
+
+class _Standardizer:
+    """Standardise each key online: ``(x - mean) / std`` with the mean and the std seen so far.
+
+    The first block gives 0.0 (no spread yet), and so does a key whose spread is zero.
+    """
+
+    def __init__(self, log: bool) -> None:
+        self.log = log
+        self.n = 0
+        self.mean: dict[str, float] = {}
+        self.m2: dict[str, float] = {}
+
+    def __call__(self, x: dict[str, float]) -> dict[str, float]:
+        self.n += 1
+        out: dict[str, float] = {}
+        for k, v in x.items():
+            v = math.log1p(v) if self.log else float(v)
+            delta = v - self.mean.get(k, 0.0)
+            self.mean[k] = self.mean.get(k, 0.0) + delta / self.n
+            self.m2[k] = self.m2.get(k, 0.0) + delta * (v - self.mean[k])
+            sd = math.sqrt(self.m2[k] / (self.n - 1)) if self.n > 1 else 0.0
+            out[k] = (v - self.mean[k]) / sd if sd > 1e-12 else 0.0
+        return out
 
 
 class NeedsLabels(ValueError):
@@ -39,11 +77,20 @@ class AudioInput:
     primitive is called again with the feature ``key`` as a scalar, and from then on gets the
     scalar.
 
+    The band magnitudes are given as they are, except to the primitives of ``SCALING``, which
+    learned better with them standardised online (and, for some, after ``log(1 + x)``).
+
     Args:
         primitive: any object of Dense-Armor with the methods above.
         key: the feature given to scalar primitives.
         n_bands: bands of :class:`AudioFeatures`.
         features: an :class:`AudioFeatures` to share between adapters.
+        scaling: ``"auto"`` (the default) takes the scaling of ``SCALING`` for the class of the
+            primitive, and none if it is not there; ``None`` gives the magnitudes as they are;
+            ``"std"`` and ``"logstd"`` force one. The result is in ``scaling``.
+
+    Raises:
+        ValueError: if ``scaling`` is not one of the above.
 
     Example:
         >>> from dense_armor.core.signals.stats.sdft import SDFT
@@ -60,10 +107,17 @@ class AudioInput:
         key: str = "b0",
         n_bands: int = 8,
         features: AudioFeatures | None = None,
+        scaling: str | None = "auto",
     ) -> None:
+        if scaling not in _SCALINGS:
+            raise ValueError(f"scaling must be one of {_SCALINGS}, got {scaling!r}")
         self.primitive = primitive
         self.key = key
         self.features = features if features is not None else AudioFeatures(n_bands)
+        if scaling == "auto":
+            scaling = SCALING.get(type(primitive).__name__)
+        self.scaling = scaling
+        self._scale = _Standardizer(scaling == "logstd") if scaling else None
         self.mode: str | None = None
         self.scalar = False
         self.n = 0
@@ -92,6 +146,8 @@ class AudioInput:
             return out
         if x is None:
             x = self.features.transform(block)
+        if self._scale is not None:
+            x = self._scale(x)
         s = x[self.key]
         if is_drift:
             self.mode = "drift"

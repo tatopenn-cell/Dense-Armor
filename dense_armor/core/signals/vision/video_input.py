@@ -45,7 +45,7 @@ class VideoInput(AudioInput):
         key: str = "mean",
         extractor: FrameFeatures | None = None,
     ) -> None:
-        super().__init__(primitive, key)
+        super().__init__(primitive, key, scaling=None)
         self.extractor = extractor if extractor is not None else FrameFeatures()
 
     def feed(self, frame: Any, y: Any = None, x: dict[str, float] | None = None) -> Any:

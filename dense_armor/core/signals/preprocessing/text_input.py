@@ -54,7 +54,7 @@ class TextInput(AudioInput):
         key: str = N_TERMS,
         vectorizer: TextVectorizer | None = None,
     ) -> None:
-        super().__init__(primitive, key)
+        super().__init__(primitive, key, scaling=None)
         self.vectorizer = vectorizer if vectorizer is not None else TextVectorizer()
 
     def feed(self, text: Any, y: Any = None, x: dict[str, float] | None = None) -> Any:
