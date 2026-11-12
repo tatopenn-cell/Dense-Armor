@@ -1,20 +1,73 @@
 {% extends "base.html" %}
 {% block content %}
 <section class="card">
-  <p class="sub">total {{ total }}, n {{ n }}</p>
-  <h3>TWAP</h3>
-  <table>
-    <thead><tr><th>#</th><th>slice</th></tr></thead>
-    <tbody>
-    {% for s in twap %}<tr><td>{{ loop.index0 }}</td><td>{{ '%.4f'|format(s) }}</td></tr>{% endfor %}
-    </tbody>
-  </table>
-  <h3>VWAP (flat history)</h3>
-  <table>
-    <thead><tr><th>#</th><th>slice</th></tr></thead>
-    <tbody>
-    {% for s in vwap %}<tr><td>{{ loop.index0 }}</td><td>{{ '%.4f'|format(s) }}</td></tr>{% endfor %}
-    </tbody>
-  </table>
+  <h3>Split an order into slices</h3>
+  <p class="sub">TWAP sells the same amount in every bucket. VWAP follows the volume that was traded in each bucket in past sessions: give those volumes below, one session per line and one volume per bucket (the sample file shows the format). Without them the volume is taken as flat, and VWAP equals TWAP.</p>
+  <div class="form-row">
+    <label>total size <input type="number" id="pl-total" value="{{ total }}" min="0" step="any"></label>
+    <label>buckets <input type="number" id="pl-n" value="{{ n }}" min="1" max="1000" step="1"></label>
+  </div>
+  <label class="form-block">volume of past sessions <span class="sub">(optional)</span>
+    <textarea id="pl-hist" rows="6" spellcheck="false" placeholder="1200,900,700,650,800,1100&#10;1300,950,720,610,780,1050"></textarea>
+  </label>
+  <div class="form-row">
+    <input type="file" id="pl-file" accept=".csv,.txt,text/csv,text/plain">
+    <a href="/sample/volumes.csv" class="sub">sample file</a>
+    <button id="pl-run" type="button">Make the plan</button>
+    <a id="pl-dl" class="btn" href="#" hidden>⬇ Plan (CSV)</a>
+    <span id="pl-status" class="sub"></span>
+  </div>
 </section>
+<section class="card">
+  <table id="pl-table">
+    <thead><tr><th>bucket</th><th>TWAP</th><th>VWAP</th></tr></thead>
+    <tbody>
+    {% for i in range(twap|length) %}<tr><td>{{ i }}</td><td>{{ '%.4f'|format(twap[i]) }}</td><td>{{ '%.4f'|format(vwap[i]) }}</td></tr>{% endfor %}
+    </tbody>
+    <tfoot><tr><th>sum</th><th id="pl-sum-twap">{{ '%.4f'|format(twap|sum) }}</th><th id="pl-sum-vwap">{{ '%.4f'|format(vwap|sum) }}</th></tr></tfoot>
+  </table>
+  <p class="sub" id="pl-note">Flat volume: the numbers come from the configuration (total {{ total }}, {{ n }} buckets).</p>
+</section>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  let blobUrl = null;
+  $("pl-file").addEventListener("change", async () => {
+    const f = $("pl-file").files[0];
+    if (f) $("pl-hist").value = await f.text();
+  });
+  $("pl-run").addEventListener("click", async () => {
+    const st = $("pl-status");
+    st.classList.remove("bad");
+    st.textContent = "working…";
+    try {
+      const r = await fetch("/api/schedule", {
+        method: "POST", headers: {"content-type": "application/json"},
+        body: JSON.stringify({total: $("pl-total").value, n: $("pl-n").value, history: $("pl-hist").value}),
+      });
+      const d = await r.json();
+      if (!d.ok) { st.classList.add("bad"); st.textContent = "error: " + (d.error || "?"); return; }
+      const body = $("pl-table").tBodies[0];
+      body.innerHTML = "";
+      d.twap.forEach((t, i) => {
+        const tr = document.createElement("tr");
+        [i, t.toFixed(4), d.vwap[i].toFixed(4)].forEach(v => {
+          const td = document.createElement("td"); td.textContent = v; tr.appendChild(td);
+        });
+        body.appendChild(tr);
+      });
+      $("pl-sum-twap").textContent = d.twap.reduce((a, b) => a + b, 0).toFixed(4);
+      $("pl-sum-vwap").textContent = d.vwap.reduce((a, b) => a + b, 0).toFixed(4);
+      $("pl-note").textContent = d.flat_history
+        ? "Flat volume: VWAP equals TWAP."
+        : "VWAP from " + d.sessions + " past session" + (d.sessions === 1 ? "" : "s") + ".";
+      if (blobUrl) URL.revokeObjectURL(blobUrl);
+      blobUrl = URL.createObjectURL(new Blob([d.csv], {type: "text/csv"}));
+      const dl = $("pl-dl");
+      dl.href = blobUrl; dl.download = "dense-armor-plan.csv"; dl.hidden = false;
+      st.textContent = d.n + " buckets, total " + d.total;
+    } catch (e) { st.classList.add("bad"); st.textContent = "error: " + e; }
+  });
+})();
+</script>
 {% endblock %}
