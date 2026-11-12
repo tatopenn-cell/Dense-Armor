@@ -1,18 +1,95 @@
 {% extends "base.html" %}
 {% block content %}
 <section class="card">
+  <h3>Check my orders</h3>
+  <p class="sub">Every order of your file goes to the pre-trade checker, one after the other in time order. The controls are the five of SEC Rule 15c3-5 (c)(1): size, price band, duplicate, rate and notional; the first one that fails is the reason. The file needs a header with the columns account (or stock, symbol, ticker), side (buy or sell), size (or shares, quantity, qty) and price; ref_price and a time (seconds or an ISO date) are optional. Without a time the orders are one second apart.</p>
+  <div class="form-row">
+    <input type="file" id="pt-file" accept=".csv,.txt,text/csv,text/plain">
+    <a href="/sample/orders.csv" class="sub">sample file</a>
+  </div>
+  <h4>Limits <span class="sub">(the numbers of the configuration; change any of them for this check)</span></h4>
+  <div class="form-row limits">
+    <label>max_size <input type="number" id="lim-max_size" step="any" min="0" placeholder="{{ config.pretrade.max_size }}"></label>
+    <label>max_notional <input type="number" id="lim-max_notional" step="any" min="0" placeholder="{{ config.pretrade.max_notional }}"></label>
+    <label>price_band <input type="number" id="lim-price_band" step="any" min="0" placeholder="{{ config.pretrade.price_band }}"></label>
+    <label>max_orders <input type="number" id="lim-max_orders" step="1" min="1" placeholder="{{ config.pretrade.max_orders }}"></label>
+    <label>window_s <input type="number" id="lim-window_s" step="any" min="0" placeholder="{{ config.pretrade.window_s }}"></label>
+    <label>duplicate_window_s <input type="number" id="lim-duplicate_window_s" step="any" min="0" placeholder="{{ config.pretrade.duplicate_window_s }}"></label>
+  </div>
+  <div class="form-row">
+    <button id="pt-run" type="button">Check the orders</button>
+    <a id="pt-dl-csv" class="btn" href="#" hidden>⬇ Decisions (CSV)</a>
+    <a id="pt-dl-log" class="btn" href="#" hidden>⬇ Log (JSONL)</a>
+    <span id="pt-status" class="sub"></span>
+  </div>
+</section>
+<section class="card" id="pt-result" hidden>
+  <h3 id="pt-summary"></h3>
+  <p class="sub" id="pt-log"></p>
+  <table id="pt-counts"><thead><tr><th>reason</th><th>orders</th></tr></thead><tbody></tbody></table>
+  <h4>Orders <span class="sub" id="pt-cut"></span></h4>
+  <table id="pt-table">
+    <thead><tr><th>row</th><th>account</th><th>side</th><th>size</th><th>price</th><th>ref price</th><th>time</th><th>decision</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</section>
+<section class="card">
+  <h3>One order, from the configuration</h3>
   <p class="sub">One order sent to <code>config.make_checker()</code>:</p>
   <dl>
     <dt>approved</dt><dd class="{{ 'good' if decision.approved else 'bad' }}">{{ decision.approved }}</dd>
     <dt>reason</dt><dd>{{ decision.reason }}</dd>
   </dl>
-  <h3>Limits</h3>
-  <dl>
-    <dt>max_size</dt><dd>{{ config.pretrade.max_size }}</dd>
-    <dt>max_notional</dt><dd>{{ config.pretrade.max_notional }}</dd>
-    <dt>price_band</dt><dd>{{ config.pretrade.price_band }}</dd>
-    <dt>max_orders</dt><dd>{{ config.pretrade.max_orders }}</dd>
-    <dt>window_s</dt><dd>{{ config.pretrade.window_s }}</dd>
-  </dl>
 </section>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const KEYS = ["max_size", "max_notional", "price_band", "max_orders", "window_s", "duplicate_window_s"];
+  function cell(tr, v, cls) {
+    const td = document.createElement("td");
+    td.textContent = v;
+    if (cls) td.className = cls;
+    tr.appendChild(td);
+  }
+  $("pt-run").addEventListener("click", async () => {
+    const st = $("pt-status");
+    st.classList.remove("bad");
+    const f = $("pt-file").files[0];
+    if (!f) { st.textContent = "choose a CSV file of orders first"; return; }
+    const fd = new FormData();
+    fd.append("file", f);
+    KEYS.forEach(k => { const v = $("lim-" + k).value; if (v !== "") fd.append(k, v); });
+    st.textContent = "checking…";
+    try {
+      const r = await fetch("/api/pretrade/check", {method: "POST", body: fd});
+      const d = await r.json();
+      if (!d.ok) { st.classList.add("bad"); st.textContent = "error: " + (d.error || "?"); return; }
+      st.textContent = "";
+      $("pt-result").hidden = false;
+      $("pt-summary").textContent = d.approved + " of " + d.n + " orders approved, " + (d.n - d.approved) + " refused";
+      $("pt-log").textContent = "Decision log: " + d.log.records + " records, chain " +
+        (d.log.verified ? "verified" : "BROKEN") + ", last hash " + d.log.last_hash.slice(0, 16) + "…";
+      const cb = $("pt-counts").tBodies[0];
+      cb.innerHTML = "";
+      Object.entries(d.counts).sort((a, b) => b[1] - a[1]).forEach(([k, n]) => {
+        const tr = document.createElement("tr");
+        cell(tr, k, k === "ok" ? "good" : "bad"); cell(tr, n);
+        cb.appendChild(tr);
+      });
+      const tb = $("pt-table").tBodies[0];
+      tb.innerHTML = "";
+      d.results.forEach(o => {
+        const tr = document.createElement("tr");
+        cell(tr, o.row); cell(tr, o.account); cell(tr, o.side); cell(tr, o.size);
+        cell(tr, o.price); cell(tr, o.ref_price); cell(tr, o.t);
+        cell(tr, o.approved ? "approved" : "refused: " + o.reason, o.approved ? "good" : "bad");
+        tb.appendChild(tr);
+      });
+      $("pt-cut").textContent = d.truncated ? "(the first " + d.results.length + "; the download has all of them)" : "";
+      $("pt-dl-csv").href = "/api/pretrade/" + d.run_id + ".csv"; $("pt-dl-csv").hidden = false;
+      $("pt-dl-log").href = "/api/pretrade/" + d.run_id + ".jsonl"; $("pt-dl-log").hidden = false;
+    } catch (e) { st.classList.add("bad"); st.textContent = "error: " + e; }
+  });
+})();
+</script>
 {% endblock %}

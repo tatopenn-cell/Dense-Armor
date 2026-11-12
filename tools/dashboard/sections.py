@@ -9,6 +9,8 @@ import importlib
 
 from typing import Any
 
+from dashboard.paths import FIXTURES
+
 _log = logging.getLogger(__name__)
 
 
@@ -85,7 +87,7 @@ def _risk_preview(kind: str, piece_id: str) -> dict:
     from pathlib import Path as _P
     out = {"svg": "", "n": 0, "error": None}
     try:
-        vals = _returns_preview("test/fixtures/finance/GSPC.csv", n=200)
+        vals = _returns_preview(str(FIXTURES / "GSPC.csv"), n=200)
         if not vals:
             _RISK_CACHE[key] = out
             return out
@@ -221,7 +223,7 @@ _FEAT_CACHE: dict[str, dict] = {}
 
 
 def _gspc_returns_200() -> list[float]:
-    return _returns_preview("test/fixtures/finance/GSPC.csv", n=200)
+    return _returns_preview(str(FIXTURES / "GSPC.csv"), n=200)
 
 
 def _feature_series(module_path: str, class_name: str,
@@ -311,7 +313,7 @@ def _gspc_classification_stream(n: int = 200):
     """(x, y) pairs from GSPC returns, y = sign of next return."""
     import numpy as _np
     from pathlib import Path as _P
-    p = _P("test/fixtures/finance/GSPC.csv")
+    p = _P(str(FIXTURES / "GSPC.csv"))
     if not p.exists():
         return [], []
     rows = p.read_text(encoding="utf-8", errors="replace").splitlines()
@@ -433,7 +435,7 @@ def _sig_preview(module_path: str, class_name: str,
 def data_page(render_template, ctx: dict) -> Any:
     pieces = []
     for ticker in ("GSPC", "AAPL", "MSFT", "TSLA"):
-        vals = _returns_preview(f"test/fixtures/finance/{ticker}.csv")
+        vals = _returns_preview(str(FIXTURES / f"{ticker}.csv"))
         pieces.append({
             "id": ticker.lower(),
             "name": ticker,
@@ -1334,7 +1336,7 @@ def _finance_features(n: int = 1500, change_at_frac: float = 0.5):
     First half: normal vol. Second half: vol x 2 (dichiarato, come manuale §6).
     Target: high-volatility regime next day (learnable by construction)."""
     import numpy as _np
-    rets = _returns_preview("test/fixtures/finance/GSPC.csv", n=1500)
+    rets = _returns_preview(str(FIXTURES / "GSPC.csv"), n=1500)
     if len(rets) < 60:
         return [], []
     arr = _np.asarray(rets, dtype=float)  # type: ignore

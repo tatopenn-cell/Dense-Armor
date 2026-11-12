@@ -13,6 +13,8 @@ from typing import Any
 
 import numpy as _np
 
+from dashboard.paths import FIXTURES
+
 
 CATALOG: dict[str, dict[str, Any]] = {
     "data": {
@@ -304,8 +306,48 @@ def _instantiate(path: str | None) -> Any:
             return cls(**kwargs)
         raise
 
-def _load_data(data_id: str, n: int, seed: int):
+def _series_to_rows(series, n: int):
+    """Rows ``{"ret": r}`` and the sign of the next return, from the last ``n + 1`` prices."""
+    arr = _np.asarray(series, dtype=float)
+    if len(arr) < 3:
+        raise RuntimeError("too few rows")
+    if n < len(arr) - 1:
+        arr = arr[-n - 1:]
+    rets = _np.diff(_np.log(arr))
+    rows = [{"ret": float(rets[i])} for i in range(len(rets) - 1)]
+    ys = [int(rets[i + 1] > 0) for i in range(len(rets) - 1)]
+    return rows, ys
+
+
+def _load_upload(folder, data_id: str, n: int, column: str | None):
+    """Return (rows, ys, meta) from a file the visitor uploaded: one column of its prices."""
+    from dashboard import own_data as od
+
+    parsed, meta = od.load_prices(folder, data_id)
+    names = parsed["columns"]
+    if column is not None and column not in names:
+        raise RuntimeError(f"the file has no column {column!r}; its columns are {', '.join(names)}")
+    j = 0 if column is None else names.index(column)
+    rows, ys = _series_to_rows(parsed["prices"][:, j], n)
+    return rows, ys, {"kind": "upload", "source": meta["name"], "n": len(rows), "column": names[j],
+                      "columns": names}
+
+
+def _upload_panel(folder, data_id: str, n: int):
+    """The log returns of every column of an uploaded file, the last ``n`` rows: the portfolio panel."""
+    from dashboard import own_data as od
+
+    parsed, _meta = od.load_prices(folder, data_id)
+    rets = od.log_returns(parsed["prices"])
+    return rets[-n:] if n < len(rets) else rets
+
+
+def _load_data(data_id: str, n: int, seed: int, folder=None, column: str | None = None):
     """Return (rows, ys, meta) from the data section."""
+    if data_id.startswith("up_"):
+        if folder is None:
+            raise RuntimeError("no place to read an uploaded file from")
+        return _load_upload(folder, data_id, n, column)
     if data_id.startswith("driftstream"):
         from dense_armor.utility.signals.datasets import DriftStream
         kind = data_id.replace("driftstream_", "")
@@ -315,7 +357,7 @@ def _load_data(data_id: str, n: int, seed: int):
         rows = [{k: float(X[i, j]) for j, k in enumerate(names)} for i in range(n)]
         return rows, [int(v) for v in y], {"kind": "synthetic", "source": data_id}
     ticker = data_id.upper()
-    path = f"test/fixtures/finance/{ticker}.csv"
+    path = str(FIXTURES / f"{ticker}.csv")
     if not Path(path).exists():
         raise RuntimeError(f"{path} missing")
     rows_raw = Path(path).read_text(encoding="utf-8", errors="replace").splitlines()
@@ -387,14 +429,21 @@ def _maybe_call(obj, **kwargs):
     return obj(**{k: v for k, v in kwargs.items() if k in accepted})
 
 
-def run_chain(section_picks: dict, n: int = 500, seed: int = 0) -> dict:
+def run_chain(section_picks: dict, n: int = 500, seed: int = 0, folder=None,
+              column: str | None = None) -> dict:
     """Run the six-section chain. section_picks has keys:
     data, features, signal, portfolio, risk, execution.
+
+    ``data`` is an id of the catalog or ``up_...``, a file the visitor uploaded and ``folder`` holds;
+    ``column`` picks one of its price columns (the first by default). The portfolio of an uploaded
+    file is built from all its columns.
     """
     for s in ("data", "features", "signal", "portfolio", "risk", "execution"):
         if s not in section_picks:
             return {"ok": False, "error": f"missing section {s}"}
-        if section_picks[s] not in CATALOG[s]:
+        if section_picks[s] not in CATALOG[s] and not (
+            s == "data" and str(section_picks[s]).startswith("up_")
+        ):
             return {"ok": False, "error": f"unknown {s}: {section_picks[s]!r}"}
 
     data_id = section_picks["data"]
@@ -405,7 +454,7 @@ def run_chain(section_picks: dict, n: int = 500, seed: int = 0) -> dict:
     exec_id = section_picks["execution"]
 
     try:
-        rows, ys, meta = _load_data(data_id, n, seed)
+        rows, ys, meta = _load_data(data_id, n, seed, folder, column)
     except Exception as e:
         return {"ok": False, "error": f"data: {type(e).__name__}: {e}"}
 
@@ -495,16 +544,21 @@ def run_chain(section_picks: dict, n: int = 500, seed: int = 0) -> dict:
         try:
             import numpy as _np
             from pipelines.finance.portfolio import load_panel
-            panel = load_panel("test/fixtures/finance")
+            if data_id.startswith("up_"):
+                panel = _upload_panel(folder, data_id, n)
+                if panel.shape[1] < 2:
+                    raise RuntimeError("the portfolio needs at least two price columns in the file")
+            else:
+                panel = load_panel(str(FIXTURES))
             cov = _np.cov(panel, rowvar=False)
             if port_id == "pipeline":
                 pipe = port_callable()
                 result = pipe.run(panel)
                 port_out = {
                     "weights_min_var": [round(float(v), 4)
-                                        for v in result.weights_min_var[:4]],
+                                        for v in result.weights_min_var[:12]],
                     "weights_inv_vol": [round(float(v), 4)
-                                        for v in result.weights_inv_vol[:4]],
+                                        for v in result.weights_inv_vol[:12]],
                     "realised_vol_min_var": round(result.realised_vol_min_var, 5),
                     "realised_vol_inv_vol": round(result.realised_vol_inv_vol, 5),
                     "n_samples": int(result.n_samples),

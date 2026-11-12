@@ -220,6 +220,11 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
     from dashboard.sections import _SIGNAL_CLASSES_EXT
     app.jinja_env.globals["piece_has_page"] = lambda cat, pid: (cat, pid) in _SIGNAL_CLASSES_EXT
 
+    from dashboard import own_data as od
+    from dashboard.paths import FIXTURES
+
+    data_dir = config.paths.log.parent
+
     def base_ctx(**kw: Any) -> dict[str, Any]:
         ctx = {
             "config": config,
@@ -452,8 +457,7 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
         return jsonify(collect_status(config_path))
 
     # ------------------------------------------------------ learners
-    @app.get("/api/demo/summary")
-    def api_demo_summary() -> Any:
+    def _run_demo() -> dict[str, Any]:
         import tempfile
         import time
 
@@ -465,6 +469,7 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
             feed_path.write_bytes(synthetic_itch(1000, 0))
             checker = config.make_checker()
             dlog = DecisionLog(log_path)
+            records: list[tuple[float, dict]] = []
             ref_price: dict[str, float] = {}
             counts: dict[str, int] = {}
             n_messages = 0
@@ -485,26 +490,174 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
                     ref_price=ref_price[stock], t=t_order,
                 )
                 counts[dec.reason] = counts.get(dec.reason, 0) + 1
-                dlog.append(t_order, {
+                records.append((t_order, {
                     "approved": bool(dec.approved),
                     "order_ref": m["order_ref"],
                     "reason": dec.reason,
                     "stock": stock,
-                })
+                }))
+            dlog.append_many(records)
+            # the log is checked here, while its file still exists: a missing file counts as a valid chain
+            log_info = {"records": len(dlog), "verified": dlog.verify(), "last_hash": dlog.last_hash}
         elapsed = time.perf_counter() - t0
         twap = twap_schedule(config.schedule.total, config.schedule.n)
-        return jsonify({
+        return {
             "ok": True,
             "n_messages": n_messages,
             "n_orders": n_orders,
             "counts": counts,
-            "log": {"records": len(dlog), "verified": dlog.verify(),
-                    "last_hash": dlog.last_hash},
+            "log": log_info,
             "schedule": {"total": config.schedule.total,
                          "n": config.schedule.n,
                          "sum": round(float(twap.sum()), 4)},
             "elapsed_s": round(elapsed, 3),
+            "synthetic": True,
+        }
+
+    @app.post("/api/demo/run")
+    def api_demo_run() -> Any:
+        """Run the demo on a synthetic feed (about 7 seconds) and keep the answer."""
+        app.config["LAST_DEMO"] = _run_demo()
+        return jsonify(app.config["LAST_DEMO"])
+
+    @app.get("/api/demo/summary")
+    def api_demo_summary() -> Any:
+        """The answer of the last ``POST /api/demo/run``; a GET never runs the demo."""
+        last = app.config.get("LAST_DEMO")
+        if last is None:
+            return jsonify({"ok": False, "error": "the demo has not been run: POST /api/demo/run"}), 404
+        return jsonify(last)
+
+    # ------------------------------------------------------ the visitor's own files
+
+    def _json_error(message: str, code: int = 400) -> Any:
+        return jsonify({"ok": False, "error": message}), code
+
+    def _csv_response(text: str, filename: str) -> Any:
+        return Response(
+            text, mimetype="text/csv",
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        )
+
+    def _sent_csv() -> tuple[str, str]:
+        """The text and the name of the CSV of the request: the form field ``file``, or JSON ``{"csv": ...}``."""
+        from flask import request
+
+        f = request.files.get("file")
+        if f is not None:
+            return od.decode(f.read(od.MAX_BYTES + 1)), f.filename or "file.csv"
+        body = request.get_json(silent=True) or {}
+        if isinstance(body.get("csv"), str):
+            return od.decode(body["csv"].encode("utf-8")), str(body.get("name") or "pasted.csv")
+        raise od.DataError("send a CSV file in the form field 'file', or JSON {\"csv\": \"...\"}")
+
+    @app.post("/api/data/upload")
+    def api_data_upload() -> Any:
+        """Check and keep a CSV of prices; the answer says what was found in it."""
+        from flask import request
+
+        f = request.files.get("file")
+        if f is None:
+            return _json_error("send the CSV of prices in the form field 'file'")
+        try:
+            meta = od.store_prices(data_dir, f.filename or "prices.csv", f.read(od.MAX_BYTES + 1))
+        except od.DataError as e:
+            return _json_error(str(e))
+        return jsonify({"ok": True, **meta})
+
+    @app.get("/api/data/uploads")
+    def api_data_uploads() -> Any:
+        return jsonify(od.list_uploads(data_dir))
+
+    @app.get("/api/report/<name>")
+    def api_report(name: str) -> Any:
+        """The result of a chain run, as ``<run id>.csv`` or ``<run id>.json``."""
+        rid, _, ext = name.rpartition(".")
+        try:
+            result = od.load_report(data_dir, rid)
+        except od.DataError as e:
+            return _json_error(str(e), 404)
+        if ext == "csv":
+            return _csv_response(od.report_csv(result), f"dense-armor-run-{rid}.csv")
+        if ext == "json":
+            return Response(json.dumps(result), mimetype="application/json")
+        return _json_error("the report is a .csv or a .json", 404)
+
+    @app.get("/sample/prices.csv")
+    def sample_prices() -> Any:
+        return _csv_response(od.sample_prices_csv(FIXTURES), "sample-prices.csv")
+
+    @app.get("/sample/orders.csv")
+    def sample_orders() -> Any:
+        return _csv_response(od.sample_orders_csv(), "sample-orders.csv")
+
+    @app.get("/sample/volumes.csv")
+    def sample_volumes() -> Any:
+        return _csv_response(od.sample_volumes_csv(), "sample-volumes.csv")
+
+    @app.post("/api/pretrade/check")
+    def api_pretrade_check() -> Any:
+        """Send every order of a CSV to the pre-trade checker, with the limits of the form or of the config."""
+        from dataclasses import asdict
+
+        from flask import request
+
+        try:
+            text, name = _sent_csv()
+            given = {k: request.form.get(k) for k in od.LIMIT_KEYS}
+            body = request.get_json(silent=True) or {}
+            if isinstance(body.get("limits"), dict):
+                given.update(body["limits"])
+            limits = od.read_limits(asdict(config.pretrade), given)
+            orders = od.parse_orders(text)
+            rid = od.new_run_id()
+            reports = data_dir / "reports"
+            reports.mkdir(parents=True, exist_ok=True)
+            out = od.check_orders(orders, limits, reports / f"{rid}.log.jsonl")
+        except od.DataError as e:
+            return _json_error(str(e))
+        (reports / f"{rid}.orders.csv").write_text(od.orders_csv(out["results"]), encoding="utf-8")
+        shown = out["results"][:500]
+        return jsonify({
+            "ok": True, "run_id": rid, "name": name, "limits": limits,
+            "n": out["n"], "approved": out["approved"], "counts": out["counts"], "log": out["log"],
+            "results": shown, "truncated": len(out["results"]) > len(shown),
         })
+
+    @app.get("/api/pretrade/<name>")
+    def api_pretrade_download(name: str) -> Any:
+        """The checked orders (``<run id>.csv``) or their hash-chained log (``<run id>.jsonl``)."""
+        rid, _, ext = name.rpartition(".")
+        suffix = {"csv": "orders.csv", "jsonl": "log.jsonl"}.get(ext)
+        if suffix is None:
+            return _json_error("the download is a .csv or a .jsonl", 404)
+        try:
+            path = od.report_path(data_dir, rid, suffix)
+        except od.DataError as e:
+            return _json_error(str(e), 404)
+        text = path.read_text(encoding="utf-8")
+        if ext == "csv":
+            return _csv_response(text, f"dense-armor-orders-{rid}.csv")
+        return Response(text, mimetype="application/x-ndjson", headers={
+            "Content-Disposition": f'attachment; filename="dense-armor-log-{rid}.jsonl"'})
+
+    @app.post("/api/schedule")
+    def api_schedule() -> Any:
+        """The TWAP and VWAP slices of an order; ``history`` is the volume of past sessions, as text or lists."""
+        from flask import request
+
+        body = request.get_json(silent=True) or {}
+        try:
+            history = body.get("history")
+            if isinstance(history, str) and history.strip():
+                history = od.parse_history(history)
+            elif not history:
+                history = None
+            plan = od.schedule_plan(body.get("total", config.schedule.total),
+                                    body.get("n", config.schedule.n), history)
+        except od.DataError as e:
+            return _json_error(str(e))
+        return jsonify({"ok": True, **plan})
 
     @app.post("/api/chain/run")
     def api_chain_run() -> Any:
@@ -521,10 +674,13 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
         n = max(50, min(int(body.get("n", 1253)), 5000))
         seed = int(body.get("seed", 0))
         try:
-            out = run_chain(picks, n=n, seed=seed)
+            out = run_chain(picks, n=n, seed=seed, folder=data_dir,
+                            column=body.get("column") or None)
         except Exception as e:
             return jsonify({"ok": False,
                             "error": f"{type(e).__name__}: {e}"}), 500
+        if out.get("ok"):
+            od.save_report(data_dir, out)
         return jsonify(out)
 
         body = request.get_json(silent=True) or {}
@@ -1124,6 +1280,7 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
             feed_path.write_bytes(synthetic_itch(n, seed))
             checker = config.make_checker()
             dlog = DecisionLog(last_run_log)
+            records: list[tuple[float, dict]] = []
             ref_price: dict[str, float] = {}
             counts: dict[str, int] = {}
             n_messages = 0
@@ -1146,12 +1303,13 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
                     t=t_order,
                 )
                 counts[decision.reason] = counts.get(decision.reason, 0) + 1
-                dlog.append(t_order, {
+                records.append((t_order, {
                     "approved": bool(decision.approved),
                     "order_ref": m["order_ref"],
                     "reason": decision.reason,
                     "stock": stock,
-                })
+                }))
+            dlog.append_many(records)
         elapsed = time.perf_counter() - t0
         return jsonify({
             "ok": True,

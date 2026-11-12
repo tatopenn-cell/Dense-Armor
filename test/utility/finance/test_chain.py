@@ -248,7 +248,7 @@ def test_a_ticker_file_with_bad_lines_and_too_few_rows(tmp_path, monkeypatch):
     folder.mkdir(parents=True)
     lines = ["Date,Close", "short", "2020,notafloat", "2020,10", "2020,11"]
     (folder / "ZZZ.csv").write_text(chr(10).join(lines) + chr(10), encoding="utf-8")
-    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(chain, "FIXTURES", folder)
     with pytest.raises(RuntimeError, match="too few rows"):
         chain._load_data("zzz", 50, 0)
 
@@ -305,7 +305,7 @@ def test_a_portfolio_or_an_execution_that_raises_is_reported_in_the_metrics(monk
     out = chain.run_chain(_picks(portfolio="min_variance", execution="pipeline"), n=60, seed=0)
     assert out["ok"] is True
     assert out["metrics"]["portfolio"] == {"error": "RuntimeError: no panel"}
-    assert out["metrics"]["execution"] == {"error": "RuntimeError: no order"}
+    assert out["metrics"]["execution"] == {"error": "RuntimeError: no order"}
 
 
 def test_the_score_gate_waits_learns_the_scale_and_fires_on_an_outlier():
