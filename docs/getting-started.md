@@ -15,9 +15,9 @@ Python 3.10 or newer. The computation runs on JAX, which is installed with it.
 A normal model is trained once on a table and then used. An online model reads one sample, answers, and only then learns from it. Three methods describe every estimator in the library: `predict_one(x)` answers, `learn_one(x, y)` learns, `score_one(x)` says how strange `x` is.
 
 ```python
-from dense_armor.utility.signals.datasets import DriftStream
-from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB
-from dense_armor.utility.evaluation.metrics import Accuracy
+from dense_armor.core.signals.datasets import DriftStream
+from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB
+from dense_armor.core.evaluation.metrics import Accuracy
 
 ds = DriftStream(n_samples=2000, n_features=5, n_drifts=1, kind="sudden", seed=0)
 nb = OnlineGaussianNB()
@@ -42,7 +42,7 @@ A model can fail quietly when the world changes. A drift detector watches one nu
 
 ```python
 import numpy as np
-from dense_armor.utility.online.drift.page_hinkley import PageHinkley
+from dense_armor.core.online.drift.page_hinkley import PageHinkley
 
 rng = np.random.default_rng(0)
 xs = np.concatenate([rng.normal(0, 1, 500), rng.normal(3, 1, 500)])
@@ -66,7 +66,7 @@ The mean of the stream moves from 0 to 3 at sample 500. The detector fires at sa
 Some data has no label. Anomaly detectors learn what normal looks like and give each new point a score: high means far from normal. They follow the same `learn_one` / `score_one` pair.
 
 ```python
-from dense_armor.utility.online.anomaly.mahalanobis import OnlineRobustMahalanobis
+from dense_armor.core.online.anomaly.mahalanobis import OnlineRobustMahalanobis
 
 rng = np.random.default_rng(0)
 det = OnlineRobustMahalanobis()
@@ -108,7 +108,7 @@ The names are Italian: `analizza` is "analyse", `livello_ia=0.0` means the shiel
 A controller that receives a spike can send it to a motor. `rate_limited_follower` follows a command but never changes faster than the limits you give.
 
 ```python
-from dense_armor.utility.robot.control.rate_limiter import rate_limited_follower
+from dense_armor.core.robot.control.rate_limiter import rate_limited_follower
 
 raw = np.sin(np.linspace(0, 6, 200))
 raw[50] = 1e6

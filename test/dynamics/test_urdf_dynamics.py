@@ -15,6 +15,7 @@ import numpy as np
 import pytest
 
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
+
 pytestmark = pytest.mark.heavy
 
 
@@ -46,8 +47,9 @@ def test_mass_matrix_symmetric_positive_definite(urdf_file, expected_n):
 
 @pytest.mark.parametrize("urdf_file,expected_n", ROBOTS)
 def test_energy_conserved_under_free_dynamics(urdf_file, expected_n):
-    import jax
     from functools import partial
+
+    import jax
 
     m = RigidBodyModel(os.path.join(FIXTURES, urdf_file))
     rng = np.random.default_rng(1)

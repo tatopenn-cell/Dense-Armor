@@ -15,7 +15,7 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dense_armor.utility.deep.neural.activations import (
+from dense_armor.core.deep.neural.activations import (
     prelu_backward,
     prelu_forward,
     relu_backward,

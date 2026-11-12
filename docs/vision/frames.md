@@ -7,7 +7,7 @@ Every source gives the same object, a `Frame` with the image in `.array`
 
 ```python
 import numpy as np
-from dense_armor.utility.signals.vision import ArrayStream
+from dense_armor.core.signals.vision import ArrayStream
 
 frames = np.zeros((5, 120, 160), dtype=np.float32)
 s = ArrayStream(frames, fps=30.0)
@@ -65,7 +65,7 @@ with time keeps the true time of every frame.
     >>> for i in range(5):
     ...     _ = w.write(np.full((8, 8, 3), i * 50, dtype=np.uint8))
     >>> w.release()
-    >>> from dense_armor.utility.signals.vision.streams import VideoFileStream
+    >>> from dense_armor.core.signals.vision.streams import VideoFileStream
     >>> for fr in VideoFileStream(str(d)):
     ...     print(round(fr.t, 2))
     0.0

@@ -28,8 +28,8 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from dense_armor.utility.deep.neural.generate import generate  # noqa: E402
-from dense_armor.utility.deep.neural.rotary_decoder import rotary_decoder  # noqa: E402
+from dense_armor.core.deep.neural.generate import generate  # noqa: E402
+from dense_armor.core.deep.neural.rotary_decoder import rotary_decoder  # noqa: E402
 
 
 class _ForwardOnly:

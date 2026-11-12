@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.signals.preprocessing.select import SelectKBest, _CorrStats
+from dense_armor.core.signals.preprocessing.select import SelectKBest, _CorrStats
 
 
 def test_default_matches_hand_welford_bivariate():

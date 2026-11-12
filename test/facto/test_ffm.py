@@ -6,8 +6,8 @@ import numpy as np
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.online.facto import FFMClassifier, FFMRegressor
-from dense_armor.utility.online.facto import ffm as ffm_module
+from dense_armor.core.online.facto import FFMClassifier, FFMRegressor
+from dense_armor.core.online.facto import ffm as ffm_module
 
 FIELDS = {"a": "F1", "b": "F1", "c": "F2", "d": "F2"}
 

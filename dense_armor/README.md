@@ -1,10 +1,10 @@
 # `$ architettura interna`
 
-Riferimento per chi vuole contribuire al codice, non per chi vuole solo installare e usare il pacchetto — per quello vedi il [README principale](../README.md). Qui si mappano tutti i moduli di `core/` e `utility/`, oltre a quelli già coperti (`damping_operator.py`, `hybrid_engine.py`, `engine.py`, `orca.py`, `collatz.py`).
+Riferimento per chi vuole contribuire al codice, non per chi vuole solo installare e usare il pacchetto — per quello vedi il [README principale](../README.md). Qui si mappano tutti i moduli di `utility/` (il motore di schermatura) e `core/` (la libreria), oltre a quelli già coperti (`damping_operator.py`, `hybrid_engine.py`, `engine.py`, `orca.py`, `collatz.py`).
 
 ---
 
-## `$ core/`
+## `$ utility/`
 
 | modulo | cosa fa |
 |---|---|
@@ -16,9 +16,9 @@ Riferimento per chi vuole contribuire al codice, non per chi vuole solo installa
 
 ---
 
-## `$ utility/`
+## `$ core/`
 
-Le sottocartelle di `utility/` sono 32, in sei gruppi: `online/` (`learn`, `optim`, `linear`, `timeseries`, `cluster`, `tree`, `forest`, `ensemble`, `bandit`, `active`, `facto`, `reco`, `rules`, `bayes`, `neighbors`, `multiclass`, `multioutput`, `proba`, `anomaly`, `drift`, `protect`), `deep/` (`neural`, comprese le reti per il linguaggio con la cache statica di chiavi e valori), `signals/` (`stream`, `stats`, `preprocessing`, `vision`, `datasets`), `robot/` (`control`), `evaluation/` (`evaluate`, `metrics`) e `infrastructure/` (`compose`, `data`). I vecchi percorsi, per esempio `dense_armor.utility.bandit`, restano validi (`_compat.py`).
+Le sottocartelle di `core/` sono 32, in sei gruppi: `online/` (`learn`, `optim`, `linear`, `timeseries`, `cluster`, `tree`, `forest`, `ensemble`, `bandit`, `active`, `facto`, `reco`, `rules`, `bayes`, `neighbors`, `multiclass`, `multioutput`, `proba`, `anomaly`, `drift`, `protect`), `deep/` (`neural`, comprese le reti per il linguaggio con la cache statica di chiavi e valori), `signals/` (`stream`, `stats`, `preprocessing`, `vision`, `datasets`), `robot/` (`control`), `evaluation/` (`evaluate`, `metrics`) e `infrastructure/` (`compose`, `data`). I vecchi percorsi, per esempio `dense_armor.utility.bandit` o `dense_armor.utility.online.bandit`, restano validi (`_compat.py`), e così i vecchi percorsi del motore, per esempio `dense_armor.core.engine`. Fino a questa versione la libreria si chiamava `utility/` e il motore di schermatura `core/`: i due nomi sono stati scambiati.
 
 | modulo | cosa fa |
 |---|---|

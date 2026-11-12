@@ -1,16 +1,21 @@
 # -*- coding: utf-8 -*-
 """Regressione per il fix di direzione di K_anomalous in apply_damping_blend
-(dense_armor/core/damping_operator.py): la formula originale
+(dense_armor/utility/damping_operator.py): la formula originale
 c_anom/(c_anom+diff) dava K_anomalous ALTO a differenza piccola e BASSO a
 differenza grande -- l'opposto di quanto dichiarato nella docstring della
 funzione. Questo test riproduce il protocollo usato per verificare il fix
 (sinusoide + rumore gaussiano a 4 livelli, riferimento = mediana mobile,
 30 seed per livello) e caratterizza sia il miglioramento (rumore medio/alto)
 sia il limite noto non ancora risolto (rumore molto basso)."""
-import numpy as np
 import jax.numpy as jnp
-from dense_armor.core.damping_operator import (
-    apply_damping_blend, _PHI, _ALPHA, _SIGMA, _K_MAX_ZETA,
+import numpy as np
+
+from dense_armor.utility.damping_operator import (
+    _ALPHA,
+    _K_MAX_ZETA,
+    _PHI,
+    _SIGMA,
+    apply_damping_blend,
 )
 
 N_SEED = 30

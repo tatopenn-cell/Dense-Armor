@@ -5,7 +5,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.deep.neural.consolidation import (
+from dense_armor.core.deep.neural.consolidation import (
     ArchivalMemory,
     DualMemory,
     LifecycleMemory,
@@ -833,7 +833,7 @@ def test_vqmemory_fit_updates_lr_after_first_call():
     """
     import jax.numpy as jnp
 
-    from dense_armor.utility.deep.neural.consolidation import VQMemory
+    from dense_armor.core.deep.neural.consolidation import VQMemory
 
     m = VQMemory(n_x=2, d_model=4, n_codes=8, seed=0)
     x = jnp.asarray([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])
@@ -852,7 +852,7 @@ def test_pq_decode_before_fit_raises():
     """
     import pytest
 
-    from dense_armor.utility.deep.neural.consolidation import PQMemory
+    from dense_armor.core.deep.neural.consolidation import PQMemory
 
     pq = PQMemory(d_model=4, n_subspaces=2, n_centroids=4, seed=0)
     with pytest.raises(RuntimeError, match="fit"):
@@ -866,7 +866,7 @@ def test_pq_asymmetric_distance_before_fit_raises():
     """
     import pytest
 
-    from dense_armor.utility.deep.neural.consolidation import PQMemory
+    from dense_armor.core.deep.neural.consolidation import PQMemory
 
     pq = PQMemory(d_model=4, n_subspaces=2, n_centroids=4, seed=0)
     with pytest.raises(RuntimeError, match="fit"):
@@ -882,7 +882,7 @@ def test_archival_importance_with_slow_memory():
     distinct slow events, a point equal to one of them must have a
     higher novelty than a point far from both.
     """
-    from dense_armor.utility.deep.neural.consolidation import ArchivalMemory
+    from dense_armor.core.deep.neural.consolidation import ArchivalMemory
 
     m = ArchivalMemory(d_model=2, slow_capacity=16, seed=0)
     m.write(jnp.asarray([10.0, 0.0], dtype=jnp.float32))

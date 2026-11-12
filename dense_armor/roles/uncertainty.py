@@ -45,7 +45,7 @@ from typing import TYPE_CHECKING, Any
 from dense_armor.roles import Regressor
 
 if TYPE_CHECKING:
-    from dense_armor.utility.online.learn.calibration import OnlinePlattScaling
+    from dense_armor.core.online.learn.calibration import OnlinePlattScaling
 from dense_armor.roles._util import call_with_t
 from dense_armor.roles.signal import Signal
 
@@ -67,7 +67,7 @@ def __getattr__(name: str):
     both modules are ready.
     """
     if name == "OnlinePlattScaling":
-        from dense_armor.utility.online.learn.calibration import OnlinePlattScaling
+        from dense_armor.core.online.learn.calibration import OnlinePlattScaling
 
         return OnlinePlattScaling
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

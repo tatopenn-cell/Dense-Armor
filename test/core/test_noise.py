@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import dense_armor.core.noise as noise_module
-from dense_armor.core.noise import AIHardwareProfiler
+import dense_armor.utility.noise as noise_module
+from dense_armor.utility.noise import AIHardwareProfiler
 
 
 def test_ai_hardware_profiler_espone_i_campi_attesi():

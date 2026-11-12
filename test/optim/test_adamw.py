@@ -9,12 +9,12 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.deep.neural.losses import MSE
-from dense_armor.utility.deep.neural.models import mlp
-from dense_armor.utility.deep.neural.params import Param
-from dense_armor.utility.deep.neural.schedules import StepLR
-from dense_armor.utility.deep.neural.trainer import Trainer
-from dense_armor.utility.online.optim import Adam, AdamW
+from dense_armor.core.deep.neural.losses import MSE
+from dense_armor.core.deep.neural.models import mlp
+from dense_armor.core.deep.neural.params import Param
+from dense_armor.core.deep.neural.schedules import StepLR
+from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.online.optim import Adam, AdamW
 
 
 def test_first_two_steps_by_hand():

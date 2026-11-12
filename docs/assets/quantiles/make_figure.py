@@ -1,11 +1,12 @@
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dense_armor.utility.signals.stats import DDSketch, TDigest
+from dense_armor.core.signals.stats import DDSketch, TDigest
 
 rng = np.random.default_rng(0)
 x = rng.pareto(1.5, 20000) + 1.0

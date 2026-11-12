@@ -1,10 +1,10 @@
 import numpy as np
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.online.drift.adwin import ADWIN
-from dense_armor.utility.evaluation.metrics import Accuracy
-from dense_armor.utility.online.tree.adaptive import HoeffdingAdaptiveTreeClassifier
-from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
+from dense_armor.core.evaluation.metrics import Accuracy
+from dense_armor.core.online.drift.adwin import ADWIN
+from dense_armor.core.online.tree.adaptive import HoeffdingAdaptiveTreeClassifier
+from dense_armor.core.online.tree.hoeffding import HoeffdingTreeClassifier
 
 
 class _PeriodicDetector:
@@ -131,7 +131,7 @@ def test_check_estimator_hat():
 
 
 def test_hat_recovers_when_classes_swap_under_the_same_split():
-    from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
+    from dense_armor.core.online.tree.hoeffding import HoeffdingTreeClassifier
 
     rng = np.random.default_rng(1)
     ht = HoeffdingTreeClassifier(grace_period=100)

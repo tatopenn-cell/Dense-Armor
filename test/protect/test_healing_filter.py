@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Regressione per dense_armor/utility/healing.py.
+"""Regressione per dense_armor/core/healing.py.
 
 Costruzione degli scenari verificata riga per riga con l'autore dopo un
 primo giro di test che divergeva dai numeri attesi (vedi storia in git):
@@ -26,7 +26,8 @@ conteggio vittorie (deterministico, riprodotto esattamente) come criterio
 primario, non un rapporto statistico che fallirebbe anche sul caso corretto.
 """
 import numpy as np
-from dense_armor.utility.online.protect.healing import healing_filter
+
+from dense_armor.core.online.protect.healing import healing_filter
 
 N = 200
 

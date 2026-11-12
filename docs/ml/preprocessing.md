@@ -214,7 +214,7 @@ The class of a sketch is the exact value the sketch approximates, and the class 
 
 ### Development diary
 
-The classes are new and independent of the online classes of dense_armor.utility.
+The classes are new and independent of the online classes of dense_armor.core.
 
 Classes without a form:
 - `QueueResampler`: the reference describes a queue over a stream: the algorithm of the reference is written for one example or one window at a time

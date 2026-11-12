@@ -8,17 +8,17 @@ the branch is covered and the message is asserted.
 
 import pytest
 
-from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.utility.online.linear.bayes import BayesianLinearRegression
-from dense_armor.utility.online.linear.glm import LinearRegression
-from dense_armor.utility.online.linear.payload import PayloadEstimator
-from dense_armor.utility.online.optim import (
+from dense_armor.core.online.linear.bayes import BayesianLinearRegression
+from dense_armor.core.online.linear.glm import LinearRegression
+from dense_armor.core.online.linear.payload import PayloadEstimator
+from dense_armor.core.online.optim import (
     SGD,
     AdaGrad,
     Adam,
     FTRLProximal,
     OnlineNewtonStep,
 )
+from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 
 
 def test_sgd_rejects_non_positive_lr():

@@ -5,7 +5,7 @@ vendored for Armor), and pressure_valve (JSD-adaptive threshold, already
 in robust_filters.py but never wired into either pipeline).
 
 pressure_valve is a batch/offline filter (its own docstring: not for
-core/hybrid_engine.py's real-time cycle) -- run here on the whole series at
+utility/hybrid_engine.py's real-time cycle) -- run here on the whole series at
 once, same as the other two, for a fair like-for-like RMSE comparison.
 """
 import importlib.util
@@ -13,13 +13,14 @@ import logging
 import pathlib
 
 import jax
+
 jax.config.update("jax_enable_x64", True)
 
 import numpy as np
 
-from dense_armor.core.hybrid_engine import hybrid_shield
-from dense_armor.utility.online.protect.orca import Orca
-from dense_armor.utility.online.anomaly.robust_filters import pressure_valve
+from dense_armor.core.online.anomaly.robust_filters import pressure_valve
+from dense_armor.core.online.protect.orca import Orca
+from dense_armor.utility.hybrid_engine import hybrid_shield
 
 _TEST_DIR = pathlib.Path(__file__).resolve().parent
 

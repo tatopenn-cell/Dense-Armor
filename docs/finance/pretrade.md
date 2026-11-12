@@ -9,7 +9,7 @@ This page builds the checker, shows one order that each check refuses, and runs 
 The checker is configured with five limits, and one order is sent.
 
 ~~~python
-from dense_armor.utility.finance import PreTradeChecker
+from dense_armor.core.finance import PreTradeChecker
 
 c = PreTradeChecker(
     max_notional=50_000.0, max_size=0.2, price_band=0.001,
@@ -31,7 +31,7 @@ Each of the five controls is shown with a single order that triggers it. The oth
 **Size.** `size > max_size`.
 
 ~~~python
-from dense_armor.utility.finance import PreTradeChecker
+from dense_armor.core.finance import PreTradeChecker
 
 c = PreTradeChecker(
     max_notional=1e9, max_size=0.2, price_band=1.0,
@@ -47,7 +47,7 @@ Decision(approved=False, reason='size')
 **Price band.** `abs(price / ref_price - 1) > price_band`.
 
 ~~~python
-from dense_armor.utility.finance import PreTradeChecker
+from dense_armor.core.finance import PreTradeChecker
 
 c = PreTradeChecker(
     max_notional=1e9, max_size=1.0, price_band=0.001,
@@ -63,7 +63,7 @@ Decision(approved=False, reason='price_band')
 **Duplicate.** An approved order with the same account, side, size and price in the last `duplicate_window_s` seconds.
 
 ~~~python
-from dense_armor.utility.finance import PreTradeChecker
+from dense_armor.core.finance import PreTradeChecker
 
 c = PreTradeChecker(
     max_notional=1e9, max_size=1.0, price_band=1.0,
@@ -81,7 +81,7 @@ Decision(approved=False, reason='duplicate')
 **Rate.** `max_orders` or more approved orders of the account in the last `window_s` seconds.
 
 ~~~python
-from dense_armor.utility.finance import PreTradeChecker
+from dense_armor.core.finance import PreTradeChecker
 
 c = PreTradeChecker(
     max_notional=1e9, max_size=1.0, price_band=1.0,
@@ -99,7 +99,7 @@ Decision(approved=False, reason='rate')
 **Notional.** The open notional of the account plus `size * price` above `max_notional`.
 
 ~~~python
-from dense_armor.utility.finance import PreTradeChecker
+from dense_armor.core.finance import PreTradeChecker
 
 c = PreTradeChecker(
     max_notional=10_000.0, max_size=1.0, price_band=1.0,

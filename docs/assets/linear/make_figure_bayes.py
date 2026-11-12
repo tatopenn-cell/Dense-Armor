@@ -1,13 +1,15 @@
 import sys
 from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dense_armor.utility.online.linear.bayes import BayesianLinearRegression
+from dense_armor.core.online.linear.bayes import BayesianLinearRegression
 
 out = Path(__file__).parent
 rng = np.random.default_rng(0)

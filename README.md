@@ -63,7 +63,7 @@ In this library, *shielding* means cleaning the data a model sees — NaN, spike
 
 ## What it does
 
-Dense-Armor is a Python machine learning library with an online part. Every online estimator learns one sample at a time, at control-loop speed, on JAX, and the machine learning classes of `dense_armor.ml` read a whole dataset with `fit`. The same `learn_one` / `predict_one` / `transform_one` contract runs on a market tick, a neural network mini-batch, a drone sensor stream, a robot joint stream, a video frame, a token stream, and a shield can sit in front of any of them. On top of that, `dense_armor.utility.deep.neural` has the deep-learning pieces — layers, attention, convolutional and recurrent blocks, batch and streaming training, continual learning with EWC, GEM and A-GEM, memory consolidation with vector quantization, product quantization and a residual tree — and `dense_armor.utility.signals.stats` and `.timeseries` have the robust models: Student-t, Gaussian mixture, GARCH, and the AR, VAR and Kalman families.
+Dense-Armor is a Python machine learning library with an online part. Every online estimator learns one sample at a time, at control-loop speed, on JAX, and the machine learning classes of `dense_armor.ml` read a whole dataset with `fit`. The same `learn_one` / `predict_one` / `transform_one` contract runs on a market tick, a neural network mini-batch, a drone sensor stream, a robot joint stream, a video frame, a token stream, and a shield can sit in front of any of them. On top of that, `dense_armor.core.deep.neural` has the deep-learning pieces — layers, attention, convolutional and recurrent blocks, batch and streaming training, continual learning with EWC, GEM and A-GEM, memory consolidation with vector quantization, product quantization and a residual tree — and `dense_armor.core.signals.stats` and `.timeseries` have the robust models: Student-t, Gaussian mixture, GARCH, and the AR, VAR and Kalman families.
 
 ---
 
@@ -77,9 +77,9 @@ pip install dense-armor
 
 ```python
 from pathlib import Path
-from dense_armor.utility.finance import PreTradeChecker, DecisionLog
-from dense_armor.utility.finance.synthetic import synthetic_itch
-from dense_armor.utility.finance.feed import iter_itch
+from dense_armor.core.finance import PreTradeChecker, DecisionLog
+from dense_armor.core.finance.synthetic import synthetic_itch
+from dense_armor.core.finance.feed import iter_itch
 
 # 1. a Nasdaq ITCH feed that is byte-identical on every machine, from a seed
 Path("feed.bin").write_bytes(synthetic_itch(1000, seed=0))

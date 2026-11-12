@@ -16,7 +16,7 @@ own (`test_memory.py`, `test_preset.py`, `test_noise.py`, `test_diagnostic.py`,
 before a heavy allocation, and computes how many chunks a batch needs to fit safely.
 
 ```python
-from dense_armor.core import UniversalMemoryGuard
+from dense_armor.utility import UniversalMemoryGuard
 
 guard = UniversalMemoryGuard(min_free_ram_percentage=0.10)
 guard.check_memory_safety()
@@ -29,7 +29,7 @@ ok
 
 Raises `MemoryPressureError` if free RAM is below 10 %.
 
-::: dense_armor.core.memory
+::: dense_armor.utility.memory
 
 ## Hardware and profiling
 
@@ -37,7 +37,7 @@ Raises `MemoryPressureError` if free RAM is below 10 %.
 safe maximum tensor size for it.
 
 ```python
-from dense_armor.core import AIHardwareProfiler
+from dense_armor.utility import AIHardwareProfiler
 
 profile = AIHardwareProfiler()
 print(profile.get_profile_summary())
@@ -52,7 +52,7 @@ calibrated against anything specific to this package. The `SafeMaxDim` value is
 host-dependent — on a small Colab instance it lands in the tens, on a large server it
 is in the thousands. Treat it as a starting guess, not a guarantee.
 
-::: dense_armor.core.noise
+::: dense_armor.utility.noise
 
 ## Configuration
 
@@ -61,7 +61,7 @@ is in the thousands. Treat it as a starting guess, not a guarantee.
 [`AdaptiveSignalStabilizer`](../shields/engine.md) (Orca's Stage 1).
 
 ```python
-from dense_armor.core.preset import SIGNAL_STABILIZER_PRESETS
+from dense_armor.utility.preset import SIGNAL_STABILIZER_PRESETS
 
 print(sorted(SIGNAL_STABILIZER_PRESETS.keys()))
 ```
@@ -76,8 +76,8 @@ each preset differs by roughly a factor of two:
 
 ```python
 import numpy as np
-from dense_armor.core.preset import SIGNAL_STABILIZER_PRESETS
-from dense_armor.core.engine import AdaptiveSignalStabilizer
+from dense_armor.utility.preset import SIGNAL_STABILIZER_PRESETS
+from dense_armor.utility.engine import AdaptiveSignalStabilizer
 
 x = 0.5 + 0.1 * np.random.default_rng(42).standard_normal(3000)
 x[1500] = 2.5
@@ -97,7 +97,7 @@ print(round(float(np.var(x - s_bal.filter_data_stream(x))), 6),
 `pure_1d_time_v1` regime tracks the signal more closely, and pays for it with a
 noisier output. The two presets really do configure different filtering behaviour.
 
-::: dense_armor.core.preset
+::: dense_armor.utility.preset
 
 ## Audio and data I/O
 
@@ -107,7 +107,7 @@ samples that were modified, and a one-word verdict.
 
 ```python
 import numpy as np
-from dense_armor.utility.evaluation.evaluate.diagnostic import diag
+from dense_armor.core.evaluation.evaluate.diagnostic import diag
 
 rng = np.random.default_rng(0)
 orig = rng.normal(size=2000).astype(np.float32)
@@ -129,7 +129,7 @@ only scaled the signal by 0.98. `removed_energy`, `peak_distortion_db` and
 samples touched. `verdict` summarises the fidelity: `micro_edits` above 99.5,
 `balanced` between 95 and 99.5, `aggressive` below 95.
 
-::: dense_armor.utility.evaluation.evaluate.diagnostic
+::: dense_armor.core.evaluation.evaluate.diagnostic
 
 ---
 
@@ -139,7 +139,7 @@ branching on the caller's side.
 
 ```python
 import numpy as np, h5py
-from dense_armor.utility.signals.stream.iodat import lodat
+from dense_armor.core.signals.stream.iodat import lodat
 
 with h5py.File("data.h5", "w") as f:
     f.create_dataset("temperature", data=np.arange(12).reshape(3, 4))
@@ -153,7 +153,7 @@ print(tensore.shape)
 
 Requires `pip install dense-armor[data]` for the HDF5 / NetCDF readers.
 
-::: dense_armor.utility.signals.stream.iodat
+::: dense_armor.core.signals.stream.iodat
 
 ## Similarity search
 
@@ -162,7 +162,7 @@ and each row of a matrix, modulated by the same damping operator Orca's gating u
 
 ```python
 import numpy as np
-from dense_armor.utility.online.anomaly.resonance_search import apply_fast_resonance
+from dense_armor.core.online.anomaly.resonance_search import apply_fast_resonance
 
 rng = np.random.default_rng(0)
 db = rng.standard_normal((5, 8)).astype(np.float32)
@@ -200,7 +200,7 @@ retrieval value. See
 `test_apply_fast_resonance_ranking_e_indistinguibile_da_cosine_puro` in
 `test/test_resonance_search.py` for the full numbers.
 
-::: dense_armor.utility.online.anomaly.resonance_search
+::: dense_armor.core.online.anomaly.resonance_search
 
 ---
 

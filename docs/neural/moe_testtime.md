@@ -17,7 +17,7 @@ page 5).
 
 ~~~python
 import jax
-from dense_armor.utility.deep.neural.moe import SparseMoE
+from dense_armor.core.deep.neural.moe import SparseMoE
 
 m = SparseMoE(n_x=2, n_y=2, n_experts=4, top_k=2, hidden=7, seed=0)
 x = jax.random.normal(jax.random.PRNGKey(0), (16, 2))
@@ -48,7 +48,7 @@ no expert sees more than 50.
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.deep.neural.moe import SparseMoE
+from dense_armor.core.deep.neural.moe import SparseMoE
 
 m = SparseMoE(n_x=2, n_y=2, n_experts=4, top_k=2, hidden=7, seed=0,
               capacity_factor=1.0)
@@ -85,7 +85,7 @@ and they are not executed.
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.deep.neural.moe import SparseMoE
+from dense_armor.core.deep.neural.moe import SparseMoE
 
 m = SparseMoE(n_x=2, n_y=2, n_experts=4, top_k=2, hidden=7, seed=0,
               capacity_factor=None)
@@ -129,7 +129,7 @@ takes every token (`f_0 = 1`, the others `0`, and `P_0 = 0.9`), the sum is
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.deep.neural.moe import SparseMoE
+from dense_armor.core.deep.neural.moe import SparseMoE
 
 m = SparseMoE(n_x=2, n_y=2, n_experts=4, top_k=2, hidden=7, seed=0)
 m.forward(jnp.ones((10, 2)))
@@ -162,10 +162,10 @@ available:
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.deep.neural.activations import Relu
-from dense_armor.utility.deep.neural.chain import Sequential
-from dense_armor.utility.deep.neural.layers import Dense
-from dense_armor.utility.deep.neural.test_time import TestTimeCompute
+from dense_armor.core.deep.neural.activations import Relu
+from dense_armor.core.deep.neural.chain import Sequential
+from dense_armor.core.deep.neural.layers import Dense
+from dense_armor.core.deep.neural.test_time import TestTimeCompute
 
 base = Sequential([
     Dense(2, 16, jax.random.PRNGKey(0)),

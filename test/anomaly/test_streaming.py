@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Unit tests for dense_armor/utility/streaming.py -- promoted from
+Unit tests for dense_armor/core/streaming.py -- promoted from
 Dense-Evolution-Discovery (Experiments 48-49) after validation on two
 independent real physical domains (SO-101 robot arm, real UCI HAR
 IMU). The real correctness bar re-verified here: StreamingDeviation
@@ -15,12 +15,12 @@ from collections import defaultdict
 
 import numpy as np
 
-from dense_armor.utility.online.anomaly.streaming import (
-    StreamingDeviationDetector,
+from dense_armor.core.online.anomaly.streaming import (
     MultiChannelStreamingDeviationDetector,
+    StreamingDeviationDetector,
     classify_segments_multichannel,
 )
-from dense_armor.utility.online.protect.arbiter import classify_segments
+from dense_armor.core.online.protect.arbiter import classify_segments
 
 _AGENT_TELEMETRY = pathlib.Path(__file__).resolve().parent.parent / "agent_v2" / "telemetry_v2_frozen.jsonl"
 RADIUS, REF_MULT, N_SIGMAS = 5, 2, 3.0

@@ -35,6 +35,7 @@ import time
 from pathlib import Path
 
 import numpy as np
+
 _roc_auc_score = None
 
 def _roc_auc_score(y_true, y_score):
@@ -60,8 +61,8 @@ def _roc_auc_score(y_true, y_score):
     return (rank_sum - n_pos * (n_pos + 1) / 2.0) / (n_pos * n_neg)
 
 
-from dense_armor.utility.online.anomaly.mahalanobis import OnlineRobustMahalanobis
-from dense_armor.utility.signals.vision import (
+from dense_armor.core.online.anomaly.mahalanobis import OnlineRobustMahalanobis
+from dense_armor.core.signals.vision import (
     FrameFeatures,
     ImageFolderStream,
     IncrementalPCA,

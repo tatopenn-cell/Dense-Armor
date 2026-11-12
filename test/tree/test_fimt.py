@@ -6,8 +6,8 @@ import numpy as np
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.online.tree import FIMTDDRegressor
-from dense_armor.utility.online.tree import fimt as fimt_module
+from dense_armor.core.online.tree import FIMTDDRegressor
+from dense_armor.core.online.tree import fimt as fimt_module
 
 
 def _factory():

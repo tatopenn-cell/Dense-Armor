@@ -5,10 +5,10 @@ import json
 import pytest
 
 import dense_armor.roles.agents as agents_mod
+from dense_armor.core.signals.stats.moments import RunningMoments
 from dense_armor.roles import Regressor
 from dense_armor.roles.agents import call_json, schema
 from dense_armor.roles.physics import UnitSpec
-from dense_armor.utility.signals.stats.moments import RunningMoments
 
 
 class _TypedReg(Regressor):

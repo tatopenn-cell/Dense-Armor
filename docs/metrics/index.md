@@ -26,9 +26,9 @@ numbers: delay, missed events, false alarms per hour.
 
 ## API reference
 
-::: dense_armor.utility.evaluation.metrics
+::: dense_armor.core.evaluation.metrics
 
-::: dense_armor.utility.evaluation.evaluate
+::: dense_armor.core.evaluation.evaluate
 
 ---
 

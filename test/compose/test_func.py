@@ -1,7 +1,7 @@
 """Tests for FuncTransformer."""
 
+from dense_armor.core.infrastructure.compose import FuncTransformer, Select
 from dense_armor.roles import Signal
-from dense_armor.utility.infrastructure.compose import FuncTransformer, Select
 
 
 def test_scale_selected_channel():

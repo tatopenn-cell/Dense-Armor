@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.online.anomaly.ocsvm import OneClassSGD
+from dense_armor.core.online.anomaly.ocsvm import OneClassSGD
 
 
 def _learn_normal(ds, n=800, seed=0):

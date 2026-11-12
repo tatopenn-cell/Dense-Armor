@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
-import dense_armor.utility.online.anomaly.resonance_search as resonance_search
-from dense_armor.utility.online.anomaly.resonance_search import smoke_test, apply_fast_resonance
 import numpy as np
+
+import dense_armor.core.online.anomaly.resonance_search as resonance_search
+from dense_armor.core.online.anomaly.resonance_search import (
+    apply_fast_resonance,
+    smoke_test,
+)
 
 
 def test_smoke_test_passa():

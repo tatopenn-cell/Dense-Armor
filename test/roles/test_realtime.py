@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 
 import dense_armor.roles.realtime as rt_mod
+from dense_armor.core.signals.stats.moments import RunningMoments
 from dense_armor.roles.realtime import (
     DEFAULT_WARMUP,
     ProfileResult,
@@ -15,7 +16,6 @@ from dense_armor.roles.realtime import (
     profile,
 )
 from dense_armor.roles.signal import Signal
-from dense_armor.utility.signals.stats.moments import RunningMoments
 
 
 def _stream(n: int = 100):

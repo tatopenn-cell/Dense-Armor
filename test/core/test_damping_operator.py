@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 import numpy as np
 
-from dense_armor.core.damping_operator import apply_damping_blend
+from dense_armor.utility.damping_operator import apply_damping_blend
 
 
 def test_nessun_nan_in_uscita_anche_con_nan_in_ingresso():
@@ -24,7 +24,7 @@ def test_blend_range_limitato():
 
 
 def _peso_del_riferimento(distanza):
-    from dense_armor.core.damping_operator import _ALPHA, _SIGMA
+    from dense_armor.utility.damping_operator import _ALPHA, _SIGMA
 
     grezzo = jnp.array([1.0], dtype=jnp.float32)
     riferimento = jnp.array([1.0 + distanza], dtype=jnp.float32)

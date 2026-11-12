@@ -24,11 +24,11 @@ first-layer gradient.
 import numpy as np
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.deep.neural.models import mlp
-from dense_armor.utility.deep.neural.losses import MSE
-from dense_armor.utility.deep.neural.compiled import make_step
-from dense_armor.utility.deep.neural.schedules import ConstantLR
-from dense_armor.utility.online.optim import SGD
+from dense_armor.core.deep.neural.models import mlp
+from dense_armor.core.deep.neural.losses import MSE
+from dense_armor.core.deep.neural.compiled import make_step
+from dense_armor.core.deep.neural.schedules import ConstantLR
+from dense_armor.core.online.optim import SGD
 
 X = np.random.default_rng(1).normal(size=(16, 2)).astype(np.float32)
 y = np.random.default_rng(2).normal(size=(16, 1)).astype(np.float32)
@@ -81,10 +81,10 @@ each epoch and the scale at the end of each epoch.
 ```python
 import numpy as np
 import jax
-from dense_armor.utility.deep.neural.models import mlp
-from dense_armor.utility.deep.neural.losses import MSE
-from dense_armor.utility.deep.neural.trainer import Trainer
-from dense_armor.utility.online.optim import SGD
+from dense_armor.core.deep.neural.models import mlp
+from dense_armor.core.deep.neural.losses import MSE
+from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.online.optim import SGD
 
 X = np.random.default_rng(1).normal(size=(64, 2)).astype(np.float32)
 y = np.random.default_rng(2).normal(size=(64, 1)).astype(np.float32)
@@ -123,10 +123,10 @@ No loss scaling is needed; the gradients do not underflow.
 ```python
 import numpy as np
 import jax
-from dense_armor.utility.deep.neural.models import mlp
-from dense_armor.utility.deep.neural.losses import MSE
-from dense_armor.utility.deep.neural.trainer import Trainer
-from dense_armor.utility.online.optim import SGD
+from dense_armor.core.deep.neural.models import mlp
+from dense_armor.core.deep.neural.losses import MSE
+from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.online.optim import SGD
 
 X = np.random.default_rng(1).normal(size=(16, 2)).astype(np.float32)
 y = np.random.default_rng(2).normal(size=(16, 1)).astype(np.float32)

@@ -4,7 +4,7 @@
 UNA chiamata (jax.vmap, calibrazione per-riga) invece di B dispatch JAX
 separati (era il collo di bottiglia di latenza documentato nell'esperimento
 APT29 + AI-shield, ~87% dispatch secondo lo stesso profiling che ha motivato
-la vettorizzazione di Armor in core/hybrid_engine.py).
+la vettorizzazione di Armor in utility/hybrid_engine.py).
 
 Il rischio esplicito da coprire (non ipotetico): filter_batch_scenarios
 esistente condivide UNA calibrazione (calibrate_macro_context) su TUTTO il
@@ -16,7 +16,7 @@ diversa (fattore 0.1x-20x) apposta per far emergere quella contaminazione se
 mai tornasse."""
 import numpy as np
 
-from dense_armor.utility.online.protect.orca import Orca
+from dense_armor.core.online.protect.orca import Orca
 
 
 def _batch_scale_diversa(seed: int, B: int, F: int):

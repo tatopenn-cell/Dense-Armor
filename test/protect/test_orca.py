@@ -7,15 +7,15 @@
 import types
 from unittest.mock import patch
 
-import numpy as np
-import pytest
 import jax
 import jax.numpy as jnp
+import numpy as np
+import pytest
 
-import dense_armor.core.memory as memory_module
-import dense_armor.utility.online.protect.orca as orca_module
-from dense_armor.core.memory import MemoryPressureError
-from dense_armor.utility.online.protect.orca import Orca
+import dense_armor.core.online.protect.orca as orca_module
+import dense_armor.utility.memory as memory_module
+from dense_armor.core.online.protect.orca import Orca
+from dense_armor.utility.memory import MemoryPressureError
 
 
 def test_segno_preservato_con_riferimento():

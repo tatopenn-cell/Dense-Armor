@@ -2,7 +2,7 @@
 
 import pytest
 
-from dense_armor.utility.finance.itch import decode_message
+from dense_armor.core.finance.itch import decode_message
 
 
 def test_a_add_order_no_attribution():

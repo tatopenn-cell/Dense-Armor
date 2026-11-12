@@ -1,4 +1,4 @@
-"""Unit tests for dense_armor/utility/metric_learning.py."""
+"""Unit tests for dense_armor/core/metric_learning.py."""
 import doctest
 import importlib
 import sys
@@ -6,9 +6,12 @@ import sys
 import numpy as np
 import pytest
 
-import dense_armor.utility.online.learn.metric_learning as ml  # noqa: E402
-from dense_armor.utility.online.learn.metric_learning import (  # noqa: E402
-    LEGO, MetricKNNClassifier, OASIS, POLA,
+import dense_armor.core.online.learn.metric_learning as ml  # noqa: E402
+from dense_armor.core.online.learn.metric_learning import (  # noqa: E402
+    LEGO,
+    OASIS,
+    POLA,
+    MetricKNNClassifier,
 )
 
 
@@ -112,7 +115,7 @@ def test_docstring_examples():
 
 
 def test_base_class_methods_are_abstract():
-    from dense_armor.utility.online.learn.metric_learning import MetricLearner
+    from dense_armor.core.online.learn.metric_learning import MetricLearner
     m = MetricLearner()
     for call in (
         lambda: m.learn_triplet({}, {}, {}),

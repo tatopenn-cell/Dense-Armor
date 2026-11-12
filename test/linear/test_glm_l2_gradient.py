@@ -2,8 +2,8 @@
 
 import numpy as np
 
-from dense_armor.utility.online.linear.glm import LinearRegression, LogisticRegression
-from dense_armor.utility.online.optim import SGD
+from dense_armor.core.online.linear.glm import LinearRegression, LogisticRegression
+from dense_armor.core.online.optim import SGD
 
 
 def _linear_loss(w, xv, y, l2):

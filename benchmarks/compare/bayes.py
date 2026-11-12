@@ -5,11 +5,11 @@ from __future__ import annotations
 import common
 import numpy as np
 
+from dense_armor.core.online.bayes.bernoulli import BernoulliNB
+from dense_armor.core.online.bayes.categorical import CategoricalNB
+from dense_armor.core.online.bayes.complement import ComplementNB
+from dense_armor.core.online.bayes.multinomial import MultinomialNB
 from dense_armor.ml import bayes as ml
-from dense_armor.utility.online.bayes.bernoulli import BernoulliNB
-from dense_armor.utility.online.bayes.categorical import CategoricalNB
-from dense_armor.utility.online.bayes.complement import ComplementNB
-from dense_armor.utility.online.bayes.multinomial import MultinomialNB
 
 
 def _counts(seed, n=200, d=6):

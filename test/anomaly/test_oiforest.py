@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.online.anomaly.oiforest import OnlineIsolationForest
+from dense_armor.core.online.anomaly.oiforest import OnlineIsolationForest
 
 
 def _learn_normal(ds, n=400, seed=0):

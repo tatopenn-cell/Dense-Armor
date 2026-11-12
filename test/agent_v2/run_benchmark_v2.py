@@ -56,6 +56,7 @@ if str(_THIS_DIR) not in sys.path:
     sys.path.insert(0, str(_THIS_DIR))
 
 from agent import run_step  # noqa: E402
+
 from tools import _KNOWLEDGE  # noqa: E402
 
 MATH_TASKS = [

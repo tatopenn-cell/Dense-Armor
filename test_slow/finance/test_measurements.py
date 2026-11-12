@@ -2,7 +2,7 @@
 
 Every test reads a CSV under test/fixtures/finance/ with the standard
 library csv reader (the same pattern used by
-dense_armor.utility.signals.datasets.casper), and runs one pipeline on it.
+dense_armor.core.signals.datasets.casper), and runs one pipeline on it.
 
 The numbers asserted here are the ones reported on the doc pages
 under docs/finance/. If they change, the pages must be updated in

@@ -1,14 +1,18 @@
 # -*- coding: utf-8 -*-
-"""Regressione per dense_armor/utility/robust_filters.py -- i quattro
+"""Regressione per dense_armor/core/robust_filters.py -- i quattro
 rilevatori di anomalie "a basso costo" (Chauvenet, Tukey/IQR, Hampel,
 sigma-clipping), su finestra locale centrata (batch/offline, non il ciclo
-causale real-time di core/hybrid_engine.py).
+causale real-time di utility/hybrid_engine.py).
 """
 import numpy as np
 import pytest
 
-from dense_armor.utility.online.anomaly.robust_filters import (
-    chauvenet_criterion, tukey_fences, hampel_filter, sigma_clip, pressure_valve,
+from dense_armor.core.online.anomaly.robust_filters import (
+    chauvenet_criterion,
+    hampel_filter,
+    pressure_valve,
+    sigma_clip,
+    tukey_fences,
 )
 
 METODI = [
@@ -44,7 +48,7 @@ def test_pochi_falsi_positivi_su_rumore_puro(nome, fn):
 
 @pytest.mark.parametrize('nome,fn', METODI)
 def test_gradino_genuino_si_stabilizza_senza_restare_a_meta_strada(nome, fn):
-    # Stesso scenario che ha rotto core/hybrid_engine.py prima del fix
+    # Stesso scenario che ha rotto utility/hybrid_engine.py prima del fix
     # 1.1.2 (vedi CHANGELOG): un cambiamento di livello genuino e sostenuto
     # non deve restare bloccato su un valore intermedio sbagliato. La
     # finestra centrata (non causale) di questi 4 filtri li rende

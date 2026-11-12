@@ -1,7 +1,7 @@
 import numpy as np
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.online.tree.efdt import HoeffdingAnytimeTreeClassifier
+from dense_armor.core.online.tree.efdt import HoeffdingAnytimeTreeClassifier
 
 
 def _iter_nodes(root):

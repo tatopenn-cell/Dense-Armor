@@ -1,6 +1,6 @@
 """Surveillance pipeline: five Dense-Armor tools in sequence on a tick stream.
 
-The pipeline chains five primitive tools of :mod:`dense_armor.utility`
+The pipeline chains five primitive tools of :mod:`dense_armor.core`
 to watch a stock-market index in real time. Each tick is passed through
 all five stages; the result is a :class:`TickResult` with the verdict of
 every stage. No stage modifies the next one: they share the same tick
@@ -25,11 +25,11 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from dense_armor.utility.online.anomaly.filters import HampelScorer
-from dense_armor.utility.online.anomaly.hst import HalfSpaceTrees
-from dense_armor.utility.online.anomaly.loda import LODA
-from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
-from dense_armor.utility.online.protect.orca import Orca
+from dense_armor.core.online.anomaly.filters import HampelScorer
+from dense_armor.core.online.anomaly.hst import HalfSpaceTrees
+from dense_armor.core.online.anomaly.loda import LODA
+from dense_armor.core.online.drift.detector import CUSUMDriftDetector
+from dense_armor.core.online.protect.orca import Orca
 
 
 @dataclass
@@ -75,13 +75,13 @@ class FinancePipeline:
 
     Stages, in order:
 
-    1. **Armor** (:class:`~dense_armor.utility.online.anomaly.filters.HampelScorer`)
+    1. **Armor** (:class:`~dense_armor.core.online.anomaly.filters.HampelScorer`)
        drops absurd ticks.
-    2. **CUSUM** (:class:`~dense_armor.utility.online.drift.detector.CUSUMDriftDetector`)
+    2. **CUSUM** (:class:`~dense_armor.core.online.drift.detector.CUSUMDriftDetector`)
        flags a change of trend.
     3. **LODA** and **Half-Space Trees** score the (return, volume)
        pair; a day is anomalous when both scores pass their thresholds.
-    4. **Orca** (:class:`~dense_armor.utility.online.protect.orca.Orca`)
+    4. **Orca** (:class:`~dense_armor.core.online.protect.orca.Orca`)
        dampens the simulated order derived from the tick.
 
     Args:

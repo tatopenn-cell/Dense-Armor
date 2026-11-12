@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
-"""Regressione per il bug di duplicazione verbatim in core/preset.py
+"""Regressione per il bug di duplicazione verbatim in utility/preset.py
 (l'intero dizionario dei preset era definito due volte nello stesso
 file)."""
 import ast
 import pathlib
 
 import jax
+
 jax.config.update("jax_enable_x64", True)
 import numpy as np
 
-from dense_armor.core.preset import SIGNAL_STABILIZER_PRESETS
-from dense_armor.core.engine import AdaptiveSignalStabilizer
+from dense_armor.utility.engine import AdaptiveSignalStabilizer
+from dense_armor.utility.preset import SIGNAL_STABILIZER_PRESETS
 
 REQUIRED_KEYS = {
     "static_threshold",
@@ -39,7 +40,7 @@ def test_ogni_preset_ha_tutte_le_chiavi_numeriche_richieste():
 
 
 def test_il_file_definisce_i_preset_una_sola_volta():
-    import dense_armor.core.preset as preset_module
+    import dense_armor.utility.preset as preset_module
 
     source = pathlib.Path(preset_module.__file__).read_text(encoding="utf-8")
     tree = ast.parse(source)

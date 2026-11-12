@@ -5,9 +5,9 @@ from __future__ import annotations
 import common
 import numpy as np
 
+from dense_armor.core.online.anomaly import robust_filters as rf
+from dense_armor.core.online.anomaly.lof import LocalOutlierFactor
 from dense_armor.ml import anomaly as ml
-from dense_armor.utility.online.anomaly import robust_filters as rf
-from dense_armor.utility.online.anomaly.lof import LocalOutlierFactor
 
 
 def _series(seed):

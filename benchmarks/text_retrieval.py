@@ -30,8 +30,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from dense_armor.utility.signals.preprocessing.vectorizer import TextVectorizer
-from dense_armor.utility.signals.stats.similarity import (
+from dense_armor.core.signals.preprocessing.vectorizer import TextVectorizer
+from dense_armor.core.signals.stats.similarity import (
     SparseCosineIndex,
     cosine_similarity_many,
 )

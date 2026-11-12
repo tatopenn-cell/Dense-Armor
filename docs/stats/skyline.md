@@ -31,7 +31,7 @@ The class stores the points in a deque with a maximum length. When a new point a
 The recomputation is O(W^2) per update, where W is the window size. The paper also gives an incremental algorithm (Tao and Papadias 2006), which is not implemented here: the module docstring says so explicitly, and the choice is restated in Details.
 
 ```python
-from dense_armor.utility.signals.stats.skyline import Skyline
+from dense_armor.core.signals.stats.skyline import Skyline
 
 s = Skyline(window=3)
 for p in [
@@ -54,7 +54,7 @@ The three points fit in the window. Point 1 (1000 EUR, 1.2 kg) is dominated by p
 A sliding window forgets. A point that was on the skyline five minutes ago can leave the window and stop being counted. The point that leaves is the oldest one, not the worst one.
 
 ```python
-from dense_armor.utility.signals.stats.skyline import Skyline
+from dense_armor.core.signals.stats.skyline import Skyline
 
 s = Skyline(window=2)
 for p in [
@@ -77,7 +77,7 @@ The window holds two points at a time. After the third update the window is (800
 A point that is missing a dimension, that is not a dict, or that carries `NaN` or `inf` is counted in `n_missing` and dropped; it does not enter the window and does not raise.
 
 ```python
-from dense_armor.utility.signals.stats.skyline import Skyline
+from dense_armor.core.signals.stats.skyline import Skyline
 
 s = Skyline(window=3)
 _ = s.update({"price": 800.0, "weight_kg": 1.2})

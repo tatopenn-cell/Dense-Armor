@@ -21,7 +21,7 @@ arm has at least one sample before the comparison.
 
 ```python
 import numpy as np
-from dense_armor.utility.online.bandit import EpsilonGreedy
+from dense_armor.core.online.bandit import EpsilonGreedy
 
 rng = np.random.default_rng(0)
 p = EpsilonGreedy(arms=["cold", "warm", "hot"], epsilon=0.1, seed=0)
@@ -44,7 +44,7 @@ the number of plays (Auer et al. 2002, page 5).
 Index: mean + sqrt(2 ln n / n_j). Theorem 1 (page 3) bounds the regret.
 
 ```python
-from dense_armor.utility.online.bandit import UCB1
+from dense_armor.core.online.bandit import UCB1
 p = UCB1(arms=["cold", "warm", "hot"], seed=0)
 for _ in range(500):
     a = p.pull()
@@ -61,7 +61,7 @@ hot
 Sample Beta(1 + S_j, 1 + F_j) per arm (Chapelle-Li 2011, Algorithm 2, page 3).
 
 ```python
-from dense_armor.utility.online.bandit import ThompsonSampling
+from dense_armor.core.online.bandit import ThompsonSampling
 p = ThompsonSampling(arms=["cold", "warm", "hot"], family="bernoulli", seed=0)
 for _ in range(500):
     a = p.pull()
@@ -78,7 +78,7 @@ hot
 Index theta_a^T x + alpha * sqrt(x^T A_a^{-1} x) (Li et al. 2010, Algorithm 1, page 4).
 
 ```python
-from dense_armor.utility.online.bandit import LinUCBDisjoint
+from dense_armor.core.online.bandit import LinUCBDisjoint
 rng = np.random.default_rng(0)
 p = LinUCBDisjoint(arms=["left", "right"], alpha=0.1, feature_keys=("side", "bias"))
 for _ in range(300):
@@ -101,7 +101,7 @@ Keep the events whose arm matches the policy, average the rewards (Li et al. 201
 
 ```python
 import numpy as np
-from dense_armor.utility.online.bandit import offline_replay
+from dense_armor.core.online.bandit import offline_replay
 rng = np.random.default_rng(0)
 log = []
 for _ in range(3000):
@@ -119,7 +119,7 @@ print(round(out["mean"], 3), out["ci_low"] < 0.7 < out["ci_high"])
 ## 7. Robot test: choose a controller gain
 
 ```python
-from dense_armor.utility.online.bandit import RobotKpSelector
+from dense_armor.core.online.bandit import RobotKpSelector
 sel = RobotKpSelector(arms=[0.5, 8.0, 30.0], period_s=0.5, n_cycles=2, seed=0)
 for _ in range(9):
     sel.run_round()

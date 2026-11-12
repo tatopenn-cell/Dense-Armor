@@ -5,8 +5,8 @@ from __future__ import annotations
 import common
 import numpy as np
 
+from dense_armor.core.online.neighbors.knn import KNNClassifier, KNNRegressor
 from dense_armor.ml import neighbors as ml
-from dense_armor.utility.online.neighbors.knn import KNNClassifier, KNNRegressor
 
 
 def _data(seed, n=150):

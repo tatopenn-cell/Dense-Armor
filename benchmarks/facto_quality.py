@@ -37,19 +37,19 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from dense_armor.utility.online.facto import (
+from dense_armor.core.online.facto import (
     FFMClassifier,
     FMClassifier,
     FMRegressor,
     FwFMClassifier,
     HOFMClassifier,
 )
-from dense_armor.utility.online.linear.glm import LogisticRegression
-from dense_armor.utility.online.optim import SGD
-from dense_armor.utility.online.reco import BiasedMF
-from dense_armor.utility.signals.datasets import DriftStream
-from dense_armor.utility.signals.stats.sdft import SDFT
-from dense_armor.utility.signals.stats.skyline import Skyline
+from dense_armor.core.online.linear.glm import LogisticRegression
+from dense_armor.core.online.optim import SGD
+from dense_armor.core.online.reco import BiasedMF
+from dense_armor.core.signals.datasets import DriftStream
+from dense_armor.core.signals.stats.sdft import SDFT
+from dense_armor.core.signals.stats.skyline import Skyline
 
 
 def _machine():

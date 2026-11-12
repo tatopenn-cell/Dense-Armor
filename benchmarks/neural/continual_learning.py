@@ -23,14 +23,14 @@ import jax.numpy as jnp
 import numpy as np
 from scipy.stats import wilcoxon
 
-from dense_armor.utility.deep.neural.chain import Sequential
-from dense_armor.utility.deep.neural.continual import AGEM, EWC, GEM
-from dense_armor.utility.deep.neural.generative_replay import DeepGenerativeReplay
-from dense_armor.utility.deep.neural.layers import Dense
-from dense_armor.utility.deep.neural.activations import Relu
-from dense_armor.utility.deep.neural.losses import SoftmaxCrossEntropy
-from dense_armor.utility.deep.neural.trainer import Trainer
-from dense_armor.utility.online.optim import Adam
+from dense_armor.core.deep.neural.activations import Relu
+from dense_armor.core.deep.neural.chain import Sequential
+from dense_armor.core.deep.neural.continual import AGEM, EWC, GEM
+from dense_armor.core.deep.neural.generative_replay import DeepGenerativeReplay
+from dense_armor.core.deep.neural.layers import Dense
+from dense_armor.core.deep.neural.losses import SoftmaxCrossEntropy
+from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.online.optim import Adam
 
 
 def make_tasks(n_tasks: int, n_per: int, seed: int):

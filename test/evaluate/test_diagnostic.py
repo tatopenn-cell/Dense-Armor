@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from scipy.io import wavfile
 
-from dense_armor.utility.evaluation.evaluate.diagnostic import diag
+from dense_armor.core.evaluation.evaluate.diagnostic import diag
 
 
 def _write_wav(path, data, sr=44100):

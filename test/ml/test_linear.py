@@ -1,9 +1,9 @@
 """Hand cases and edge cases of the linear models of the machine learning package."""
 
-import pytest
 import doctest
 
 import numpy as np
+import pytest
 
 import dense_armor.ml.linear as L
 from dense_armor.ml.linear import (

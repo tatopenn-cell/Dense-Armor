@@ -41,7 +41,7 @@ This page serves as the index for nine analytical pipelines, and for the parts o
 
 ## Architectural Integration & Layout Standard
 
-Every operational pipeline is engineered by chaining algorithmic primitives directly from `dense_armor.utility` in a deterministic, documented execution workflow. The components introduce no additional external code dependencies, ensuring constant-memory processing and strict execution boundaries. To guarantee consistency across the enterprise documentation suite, each module enforces a standardized structural template:
+Every operational pipeline is engineered by chaining algorithmic primitives directly from `dense_armor.core` in a deterministic, documented execution workflow. The components introduce no additional external code dependencies, ensuring constant-memory processing and strict execution boundaries. To guarantee consistency across the enterprise documentation suite, each module enforces a standardized structural template:
 
 - **Executive Value Proposition:** Detailed deployment scenarios ("The scene"), structured core capabilities, functional execution workflows, and measured results on public benchmarks.
 - **Technical Reference Specifications:** Pipeline internals, production code implementation blocks, hyperparameter tables, and peer-reviewed algorithmic citations.

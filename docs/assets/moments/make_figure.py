@@ -1,11 +1,12 @@
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dense_armor.utility.signals.stats import EWStats, RunningMoments
+from dense_armor.core.signals.stats import EWStats, RunningMoments
 
 rng = np.random.default_rng(0)
 x = np.concatenate([rng.normal(0, 1, 200), rng.normal(3, 1, 200)])

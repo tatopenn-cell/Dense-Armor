@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from dense_armor.utility.online.bandit.evaluate import offline_replay
+from dense_armor.core.online.bandit.evaluate import offline_replay
 
 
 def _stream(n=2000, p0=0.8, p1=0.2, seed=0):

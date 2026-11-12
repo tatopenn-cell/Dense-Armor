@@ -7,17 +7,17 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.deep.neural.chain import Sequential
-from dense_armor.utility.deep.neural.conv import Conv2D
-from dense_armor.utility.deep.neural.convtranspose import (
+from dense_armor.core.deep.neural.chain import Sequential
+from dense_armor.core.deep.neural.conv import Conv2D
+from dense_armor.core.deep.neural.convtranspose import (
     ConvTranspose1D,
     ConvTranspose2D,
     Upsample1D,
     Upsample2D,
 )
-from dense_armor.utility.deep.neural.losses import MSE
-from dense_armor.utility.deep.neural.trainer import Trainer
-from dense_armor.utility.online.optim import Adam
+from dense_armor.core.deep.neural.losses import MSE
+from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.online.optim import Adam
 
 
 def test_convtranspose1d_hand_case_stride2_no_padding():

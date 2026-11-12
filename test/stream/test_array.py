@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from dense_armor.utility.signals.stream import iter_array
+from dense_armor.core.signals.stream import iter_array
 
 
 def test_iter_array_default_names():

@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from dense_armor.utility.signals.stats.shrinkage import OnlineShrinkageCovariance
+from dense_armor.core.signals.stats.shrinkage import OnlineShrinkageCovariance
 
 
 def _data(n=500, p=4, seed=0):

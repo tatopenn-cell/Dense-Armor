@@ -110,4 +110,4 @@ The class of a sketch is the exact value the sketch approximates, and the class 
 
 ### Development diary
 
-The classes are new and independent of the online classes of dense_armor.utility.
+The classes are new and independent of the online classes of dense_armor.core.

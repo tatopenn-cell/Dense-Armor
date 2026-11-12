@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import importlib
+import inspect
 import logging
 
-import inspect
-import importlib
 """Section pages: static skeleton, one per icon of the rail."""
 
 
@@ -81,8 +81,9 @@ def _risk_preview(kind: str, piece_id: str) -> dict:
     key = f"{kind}:{piece_id}"
     if key in _RISK_CACHE:
         return _RISK_CACHE[key]
-    import numpy as _np
     from pathlib import Path as _P
+
+    import numpy as _np
     out = {"svg": "", "n": 0, "error": None}
     try:
         vals = _returns_preview("test/fixtures/finance/GSPC.csv", n=200)
@@ -91,15 +92,20 @@ def _risk_preview(kind: str, piece_id: str) -> dict:
             return out
         rows = [{"ret": float(v)} for v in vals]
         if kind == "anomaly":
-            from dense_armor.utility.online.anomaly.lof import LocalOutlierFactor
-            from dense_armor.utility.online.anomaly.hst import HalfSpaceTrees
-            from dense_armor.utility.online.anomaly.loda import LODA
-            from dense_armor.utility.online.anomaly.oiforest import OnlineIsolationForest
-            from dense_armor.utility.online.anomaly.mahalanobis import OnlineRobustMahalanobis
-            from dense_armor.utility.online.anomaly.ocsvm import OneClassSGD
-            from dense_armor.utility.online.anomaly.filters import (
-                HampelScorer, ChauvenetScorer, SigmaClipScorer, TukeyScorer,
+            from dense_armor.core.online.anomaly.filters import (
+                ChauvenetScorer,
+                HampelScorer,
+                SigmaClipScorer,
+                TukeyScorer,
             )
+            from dense_armor.core.online.anomaly.hst import HalfSpaceTrees
+            from dense_armor.core.online.anomaly.loda import LODA
+            from dense_armor.core.online.anomaly.lof import LocalOutlierFactor
+            from dense_armor.core.online.anomaly.mahalanobis import (
+                OnlineRobustMahalanobis,
+            )
+            from dense_armor.core.online.anomaly.ocsvm import OneClassSGD
+            from dense_armor.core.online.anomaly.oiforest import OnlineIsolationForest
             classes = {
                 "lof": LocalOutlierFactor, "hst": HalfSpaceTrees,
                 "loda": LODA, "iforest": OnlineIsolationForest,
@@ -138,11 +144,11 @@ def _risk_preview(kind: str, piece_id: str) -> dict:
             out = {"svg": _svg_preview(scores, color="#e67e22"),
                    "n": len(scores), "error": None}
         elif kind == "drift":
-            from dense_armor.utility.online.drift.adwin import ADWIN
-            from dense_armor.utility.online.drift.page_hinkley import PageHinkley
-            from dense_armor.utility.online.drift.kswin import KSWIN
-            from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
-            from dense_armor.utility.online.drift.bocpd import BayesianOnlineChangepoint
+            from dense_armor.core.online.drift.adwin import ADWIN
+            from dense_armor.core.online.drift.bocpd import BayesianOnlineChangepoint
+            from dense_armor.core.online.drift.detector import CUSUMDriftDetector
+            from dense_armor.core.online.drift.kswin import KSWIN
+            from dense_armor.core.online.drift.page_hinkley import PageHinkley
             classes = {
                 "adwin": ADWIN, "page_hinkley": PageHinkley, "kswin": KSWIN,
                 "cusum": CUSUMDriftDetector, "bocpd": BayesianOnlineChangepoint,
@@ -169,6 +175,7 @@ def _risk_preview(kind: str, piece_id: str) -> dict:
 
 def _returns_preview(path: str, n: int = 100) -> list[float]:
     from pathlib import Path as _P
+
     import numpy as _np
     p = _P(path)
     if not p.exists():
@@ -195,7 +202,7 @@ def _returns_preview(path: str, n: int = 100) -> list[float]:
 
 def _driftstream_preview(kind: str, n: int = 100) -> list[float]:
     try:
-        from dense_armor.utility.signals.datasets import DriftStream
+        from dense_armor.core.signals.datasets import DriftStream
     except Exception:
         return []
     ds = DriftStream(n_samples=n, n_features=1, n_drifts=1, kind=kind, seed=0)
@@ -309,8 +316,9 @@ def _wilson_band(k: int, n: int, z: float = 1.96):
 
 def _gspc_classification_stream(n: int = 200):
     """(x, y) pairs from GSPC returns, y = sign of next return."""
-    import numpy as _np
     from pathlib import Path as _P
+
+    import numpy as _np
     p = _P("test/fixtures/finance/GSPC.csv")
     if not p.exists():
         return [], []
@@ -356,20 +364,24 @@ def _auto_init_kwargs(cls, base_kwargs: dict | None = None) -> dict:
         low = name.lower()
         try:
             if "drift" in low and "detector" in low:
-                from dense_armor.utility.online.drift.adwin import ADWIN
+                from dense_armor.core.online.drift.adwin import ADWIN
                 kwargs[name] = ADWIN()
             elif "warning" in low and "detector" in low:
-                from dense_armor.utility.online.drift.adwin import ADWIN
+                from dense_armor.core.online.drift.adwin import ADWIN
                 kwargs[name] = ADWIN()
             elif low in ("model", "estimator", "base_model", "base_estimator"):
-                from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
+                from dense_armor.core.online.tree.hoeffding import (
+                    HoeffdingTreeClassifier,
+                )
                 kwargs[name] = HoeffdingTreeClassifier()
             elif low == "classifier":
-                from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
+                from dense_armor.core.online.tree.hoeffding import (
+                    HoeffdingTreeClassifier,
+                )
                 kwargs[name] = HoeffdingTreeClassifier()
             elif low == "optimizer":
                 try:
-                    from dense_armor.utility.online.optim.sgd import SGD
+                    from dense_armor.core.online.optim.sgd import SGD
                     kwargs[name] = SGD()
                 except Exception as _e:
                     _swallow(_e, "line 373")
@@ -378,7 +390,7 @@ def _auto_init_kwargs(cls, base_kwargs: dict | None = None) -> dict:
             elif low in ("link", "inverse_link", "link_fn"):
                 kwargs[name] = "logistic"
             elif "metric" in low and "learner" in low:
-                from dense_armor.utility.online.learn.metric_learning import LEGO
+                from dense_armor.core.online.learn.metric_learning import LEGO
                 kwargs[name] = LEGO()
         except Exception as _e:
             _swallow(_e, "line 382")
@@ -615,11 +627,11 @@ def features_page(category: str, render_template, ctx: dict) -> Any:
 
     if category == "scaling" or not category:
         scaling = [
-            ("standard_scaler", "StandardScaler", "dense_armor.utility.signals.preprocessing.scale", "StandardScaler"),
-            ("minmax_scaler", "MinMaxScaler", "dense_armor.utility.signals.preprocessing.scale", "MinMaxScaler"),
-            ("robust_scaler", "RobustScaler", "dense_armor.utility.signals.preprocessing.scale", "RobustScaler"),
-            ("ew_scaler", "EWScaler", "dense_armor.utility.signals.preprocessing.scale", "EWScaler"),
-            ("metro", "Metro", "dense_armor.utility.signals.preprocessing.metro", "Metro"),
+            ("standard_scaler", "StandardScaler", "dense_armor.core.signals.preprocessing.scale", "StandardScaler"),
+            ("minmax_scaler", "MinMaxScaler", "dense_armor.core.signals.preprocessing.scale", "MinMaxScaler"),
+            ("robust_scaler", "RobustScaler", "dense_armor.core.signals.preprocessing.scale", "RobustScaler"),
+            ("ew_scaler", "EWScaler", "dense_armor.core.signals.preprocessing.scale", "EWScaler"),
+            ("metro", "Metro", "dense_armor.core.signals.preprocessing.metro", "Metro"),
         ]
         for pid, name, mod, cls in scaling:
             prev = _feature_series(mod, cls, "transform.ret")
@@ -627,14 +639,14 @@ def features_page(category: str, render_template, ctx: dict) -> Any:
                            "svg": prev["svg"], "n": prev["n"], "size": "M"})
     elif category == "moments":
         moments = [
-            ("running_moments", "RunningMoments", "dense_armor.utility.signals.stats.moments", "RunningMoments", "running_mean"),
-            ("ew_stats", "EWStats", "dense_armor.utility.signals.stats.moments", "EWStats", "running_mean"),
-            ("rolling_median", "RollingMedian", "dense_armor.utility.signals.stats.robust", "RollingMedian", "running_median"),
-            ("rolling_mad", "RollingMAD", "dense_armor.utility.signals.stats.robust", "RollingMAD", "running_median"),
-            ("rolling_iqr", "RollingIQR", "dense_armor.utility.signals.stats.robust", "RollingIQR", "running_median"),
-            ("rolling_quantile", "RollingQuantile", "dense_armor.utility.signals.stats.robust", "RollingQuantile", "running_median"),
-            ("running_moments_vec", "RunningMomentsVector", "dense_armor.utility.signals.stats.moments", "RunningMomentsVector", None),
-            ("rolling_median_vec", "RollingMedianVector", "dense_armor.utility.signals.stats.robust", "RollingMedianVector", None),
+            ("running_moments", "RunningMoments", "dense_armor.core.signals.stats.moments", "RunningMoments", "running_mean"),
+            ("ew_stats", "EWStats", "dense_armor.core.signals.stats.moments", "EWStats", "running_mean"),
+            ("rolling_median", "RollingMedian", "dense_armor.core.signals.stats.robust", "RollingMedian", "running_median"),
+            ("rolling_mad", "RollingMAD", "dense_armor.core.signals.stats.robust", "RollingMAD", "running_median"),
+            ("rolling_iqr", "RollingIQR", "dense_armor.core.signals.stats.robust", "RollingIQR", "running_median"),
+            ("rolling_quantile", "RollingQuantile", "dense_armor.core.signals.stats.robust", "RollingQuantile", "running_median"),
+            ("running_moments_vec", "RunningMomentsVector", "dense_armor.core.signals.stats.moments", "RunningMomentsVector", None),
+            ("rolling_median_vec", "RollingMedianVector", "dense_armor.core.signals.stats.robust", "RollingMedianVector", None),
         ]
         for pid, name, mod, cls, extract in moments:
             if extract is None:
@@ -646,12 +658,12 @@ def features_page(category: str, render_template, ctx: dict) -> Any:
                            "svg": svg, "n": n, "size": "M"})
     elif category == "sketches":
         sketches = [
-            ("ddsketch", "DDSketch", "dense_armor.utility.signals.stats.quantiles", "DDSketch"),
-            ("tdigest", "TDigest", "dense_armor.utility.signals.stats.quantiles", "TDigest"),
-            ("bloom", "BloomFilter", "dense_armor.utility.signals.stats.sketches", "BloomFilter"),
-            ("cms", "CountMinSketch", "dense_armor.utility.signals.stats.sketches", "CountMinSketch"),
-            ("hll", "HyperLogLog", "dense_armor.utility.signals.stats.sketches", "HyperLogLog"),
-            ("space_saving", "SpaceSaving", "dense_armor.utility.signals.stats.sketches", "SpaceSaving"),
+            ("ddsketch", "DDSketch", "dense_armor.core.signals.stats.quantiles", "DDSketch"),
+            ("tdigest", "TDigest", "dense_armor.core.signals.stats.quantiles", "TDigest"),
+            ("bloom", "BloomFilter", "dense_armor.core.signals.stats.sketches", "BloomFilter"),
+            ("cms", "CountMinSketch", "dense_armor.core.signals.stats.sketches", "CountMinSketch"),
+            ("hll", "HyperLogLog", "dense_armor.core.signals.stats.sketches", "HyperLogLog"),
+            ("space_saving", "SpaceSaving", "dense_armor.core.signals.stats.sketches", "SpaceSaving"),
         ]
         for pid, name, mod, cls in sketches:
             prev = _feature_series(mod, cls, "quantile_0.5")
@@ -663,35 +675,35 @@ def features_page(category: str, render_template, ctx: dict) -> Any:
                            "svg": svg, "n": n, "size": "S"})
     elif category == "dependence":
         dep = [
-            ("autocorr", "Autocorrelation", "dense_armor.utility.signals.stats.dependence", "Autocorrelation"),
-            ("running_corr", "RunningCorrelation", "dense_armor.utility.signals.stats.dependence", "RunningCorrelation"),
-            ("running_cov", "RunningCovariance", "dense_armor.utility.signals.stats.dependence", "RunningCovariance"),
-            ("rolling_corr", "RollingCorrelation", "dense_armor.utility.signals.stats.dependence", "RollingCorrelation"),
-            ("rolling_cov", "RollingCovariance", "dense_armor.utility.signals.stats.dependence", "RollingCovariance"),
+            ("autocorr", "Autocorrelation", "dense_armor.core.signals.stats.dependence", "Autocorrelation"),
+            ("running_corr", "RunningCorrelation", "dense_armor.core.signals.stats.dependence", "RunningCorrelation"),
+            ("running_cov", "RunningCovariance", "dense_armor.core.signals.stats.dependence", "RunningCovariance"),
+            ("rolling_corr", "RollingCorrelation", "dense_armor.core.signals.stats.dependence", "RollingCorrelation"),
+            ("rolling_cov", "RollingCovariance", "dense_armor.core.signals.stats.dependence", "RollingCovariance"),
         ]
         for pid, name, mod, cls in dep:
             pieces.append({"id": pid, "name": name, "kind": "dependence",
                            "svg": _feature_bar_placeholder("#e67e22"), "n": 0, "size": "S"})
     elif category == "selection":
         sel = [
-            ("select_kbest", "SelectKBest", "dense_armor.utility.signals.preprocessing.select"),
-            ("var_threshold", "VarianceThreshold", "dense_armor.utility.signals.preprocessing.select"),
-            ("select", "Select", "dense_armor.utility.infrastructure.compose.select"),
-            ("discard", "Discard", "dense_armor.utility.infrastructure.compose.select"),
-            ("func_transformer", "FuncTransformer", "dense_armor.utility.infrastructure.compose.func"),
+            ("select_kbest", "SelectKBest", "dense_armor.core.signals.preprocessing.select"),
+            ("var_threshold", "VarianceThreshold", "dense_armor.core.signals.preprocessing.select"),
+            ("select", "Select", "dense_armor.core.infrastructure.compose.select"),
+            ("discard", "Discard", "dense_armor.core.infrastructure.compose.select"),
+            ("func_transformer", "FuncTransformer", "dense_armor.core.infrastructure.compose.func"),
         ]
         for pid, name, mod in sel:
             pieces.append({"id": pid, "name": name, "kind": "compose",
                            "svg": _feature_bar_placeholder("#607d8b"), "n": 0, "size": "S"})
     else:  # distribution
         dist = [
-            ("shrinkage_cov", "OnlineShrinkageCovariance", "dense_armor.utility.signals.stats.shrinkage"),
-            ("gmm", "OnlineGaussianMixture", "dense_armor.utility.signals.stats.mixture"),
-            ("student_t", "StudentT", "dense_armor.utility.signals.stats.student_t"),
-            ("sdft", "SDFT", "dense_armor.utility.signals.stats.sdft"),
-            ("skyline", "Skyline", "dense_armor.utility.signals.stats.skyline"),
-            ("queue_resampler", "QueueResampler", "dense_armor.utility.signals.preprocessing.imbalance"),
-            ("locate", "Locate", "dense_armor.utility.signals.stream.iodat"),
+            ("shrinkage_cov", "OnlineShrinkageCovariance", "dense_armor.core.signals.stats.shrinkage"),
+            ("gmm", "OnlineGaussianMixture", "dense_armor.core.signals.stats.mixture"),
+            ("student_t", "StudentT", "dense_armor.core.signals.stats.student_t"),
+            ("sdft", "SDFT", "dense_armor.core.signals.stats.sdft"),
+            ("skyline", "Skyline", "dense_armor.core.signals.stats.skyline"),
+            ("queue_resampler", "QueueResampler", "dense_armor.core.signals.preprocessing.imbalance"),
+            ("locate", "Locate", "dense_armor.core.signals.stream.iodat"),
         ]
         for pid, name, mod in dist:
             pieces.append({"id": pid, "name": name, "kind": "distribution",
@@ -718,65 +730,65 @@ def signal_page(category: str, render_template, ctx: dict) -> Any:
 
     if category == "trees" or not category:
         pieces = [
-            ("hoeffding", "HoeffdingTreeClassifier", "dense_armor.utility.online.tree.hoeffding", "HoeffdingTreeClassifier", None),
-            ("anytime", "HoeffdingAnytimeTreeClassifier", "dense_armor.utility.online.tree.efdt", "HoeffdingAnytimeTreeClassifier", None),
-            ("adaptive", "HoeffdingAdaptiveTreeClassifier", "dense_armor.utility.online.tree.adaptive", "HoeffdingAdaptiveTreeClassifier", {"drift_detector": "ADWIN"}),
-            ("mondrian", "MondrianForestClassifier", "dense_armor.utility.online.tree.mondrian", "MondrianForestClassifier", None),
-            ("mondrian_reg", "MondrianForestRegressor", "dense_armor.utility.online.tree.mondrian", "MondrianForestRegressor", None),
-            ("sgt_clf", "SGTClassifier", "dense_armor.utility.online.tree.sgt", "SGTClassifier", None),
-            ("sgt_reg", "SGTRegressor", "dense_armor.utility.online.tree.sgt", "SGTRegressor", None),
-            ("batch_tree", "BatchDecisionTreeClassifier", "dense_armor.utility.online.tree.batch", "BatchDecisionTreeClassifier", None),
-            ("fimtdd", "FIMTDDRegressor", "dense_armor.utility.online.tree.fimt", "FIMTDDRegressor", None),
-            ("amf", "AggregatedMondrianForestClassifier", "dense_armor.utility.online.forest.amf", "AggregatedMondrianForestClassifier", None),
-            ("amf_reg", "AggregatedMondrianForestRegressor", "dense_armor.utility.online.forest.amf", "AggregatedMondrianForestRegressor", None),
-            ("arf", "AdaptiveRandomForestClassifier", "dense_armor.utility.online.forest.arf", "AdaptiveRandomForestClassifier", None),
-            ("oxt", "OnlineExtraTreesRegressor", "dense_armor.utility.online.forest.oxt", "OnlineExtraTreesRegressor", None),
-            ("subspace_ht", "SubspaceHoeffdingTree", "dense_armor.utility.online.forest.arf", "SubspaceHoeffdingTree", None),
+            ("hoeffding", "HoeffdingTreeClassifier", "dense_armor.core.online.tree.hoeffding", "HoeffdingTreeClassifier", None),
+            ("anytime", "HoeffdingAnytimeTreeClassifier", "dense_armor.core.online.tree.efdt", "HoeffdingAnytimeTreeClassifier", None),
+            ("adaptive", "HoeffdingAdaptiveTreeClassifier", "dense_armor.core.online.tree.adaptive", "HoeffdingAdaptiveTreeClassifier", {"drift_detector": "ADWIN"}),
+            ("mondrian", "MondrianForestClassifier", "dense_armor.core.online.tree.mondrian", "MondrianForestClassifier", None),
+            ("mondrian_reg", "MondrianForestRegressor", "dense_armor.core.online.tree.mondrian", "MondrianForestRegressor", None),
+            ("sgt_clf", "SGTClassifier", "dense_armor.core.online.tree.sgt", "SGTClassifier", None),
+            ("sgt_reg", "SGTRegressor", "dense_armor.core.online.tree.sgt", "SGTRegressor", None),
+            ("batch_tree", "BatchDecisionTreeClassifier", "dense_armor.core.online.tree.batch", "BatchDecisionTreeClassifier", None),
+            ("fimtdd", "FIMTDDRegressor", "dense_armor.core.online.tree.fimt", "FIMTDDRegressor", None),
+            ("amf", "AggregatedMondrianForestClassifier", "dense_armor.core.online.forest.amf", "AggregatedMondrianForestClassifier", None),
+            ("amf_reg", "AggregatedMondrianForestRegressor", "dense_armor.core.online.forest.amf", "AggregatedMondrianForestRegressor", None),
+            ("arf", "AdaptiveRandomForestClassifier", "dense_armor.core.online.forest.arf", "AdaptiveRandomForestClassifier", None),
+            ("oxt", "OnlineExtraTreesRegressor", "dense_armor.core.online.forest.oxt", "OnlineExtraTreesRegressor", None),
+            ("subspace_ht", "SubspaceHoeffdingTree", "dense_armor.core.online.forest.arf", "SubspaceHoeffdingTree", None),
         ]
     elif category == "linear":
         pieces = [
-            ("logistic", "LogisticRegression", "dense_armor.utility.online.linear.glm", "LogisticRegression", "optimizer"),  # type: ignore
-            ("bayes_gauss", "BayesianLinearRegression", "dense_armor.utility.online.linear.bayes", "BayesianLinearRegression", None),
-            ("multinomial_nb", "MultinomialNB", "dense_armor.utility.online.bayes.multinomial", "MultinomialNB", None),
-            ("bernoulli_nb", "BernoulliNB", "dense_armor.utility.online.bayes.bernoulli", "BernoulliNB", None),
-            ("complement_nb", "ComplementNB", "dense_armor.utility.online.bayes.complement", "ComplementNB", None),
-            ("categorical_nb", "CategoricalNB", "dense_armor.utility.online.bayes.categorical", "CategoricalNB", None),
-            ("gaussian_nb", "OnlineGaussianNB", "dense_armor.utility.online.learn.online_classifiers", "OnlineGaussianNB", None),
-            ("softmax", "OnlineSoftmaxRegression", "dense_armor.utility.online.learn.online_classifiers", "OnlineSoftmaxRegression", None),
-            ("platt", "OnlinePlattScaling", "dense_armor.utility.online.learn.calibration", "OnlinePlattScaling", "classifier"),  # type: ignore
-            ("rls", "RecursiveLeastSquares", "dense_armor.utility.online.learn.online_dynamics", "RecursiveLeastSquares", None),
-            ("metric_knn", "MetricKNNClassifier", "dense_armor.utility.online.learn.metric_learning", "MetricKNNClassifier", "metric_learner"),  # type: ignore
+            ("logistic", "LogisticRegression", "dense_armor.core.online.linear.glm", "LogisticRegression", "optimizer"),  # type: ignore
+            ("bayes_gauss", "BayesianLinearRegression", "dense_armor.core.online.linear.bayes", "BayesianLinearRegression", None),
+            ("multinomial_nb", "MultinomialNB", "dense_armor.core.online.bayes.multinomial", "MultinomialNB", None),
+            ("bernoulli_nb", "BernoulliNB", "dense_armor.core.online.bayes.bernoulli", "BernoulliNB", None),
+            ("complement_nb", "ComplementNB", "dense_armor.core.online.bayes.complement", "ComplementNB", None),
+            ("categorical_nb", "CategoricalNB", "dense_armor.core.online.bayes.categorical", "CategoricalNB", None),
+            ("gaussian_nb", "OnlineGaussianNB", "dense_armor.core.online.learn.online_classifiers", "OnlineGaussianNB", None),
+            ("softmax", "OnlineSoftmaxRegression", "dense_armor.core.online.learn.online_classifiers", "OnlineSoftmaxRegression", None),
+            ("platt", "OnlinePlattScaling", "dense_armor.core.online.learn.calibration", "OnlinePlattScaling", "classifier"),  # type: ignore
+            ("rls", "RecursiveLeastSquares", "dense_armor.core.online.learn.online_dynamics", "RecursiveLeastSquares", None),
+            ("metric_knn", "MetricKNNClassifier", "dense_armor.core.online.learn.metric_learning", "MetricKNNClassifier", "metric_learner"),  # type: ignore
         ]
     elif category == "ensembles":
         pieces = [
-            ("bagging", "OnlineBaggingClassifier", "dense_armor.utility.online.ensemble.bagging", "OnlineBaggingClassifier", "mode"),  # type: ignore
-            ("boosting", "OnlineBoostingClassifier", "dense_armor.utility.online.ensemble.boosting", "OnlineBoostingClassifier", "mode"),  # type: ignore
-            ("stacking", "StackingClassifier", "dense_armor.utility.online.ensemble.stacking", "StackingClassifier", "factory"),  # type: ignore
-            ("voting", "VotingClassifier", "dense_armor.utility.online.ensemble.voting", "VotingClassifier", "factory"),  # type: ignore
-            ("ewa_reg", "ExponentiallyWeightedAverageRegressor", "dense_armor.utility.online.ensemble.ewa", "ExponentiallyWeightedAverageRegressor", "members"),  # type: ignore
-            ("amrules", "AMRulesRegressor", "dense_armor.utility.online.rules.amrules", "AMRulesRegressor", None),
+            ("bagging", "OnlineBaggingClassifier", "dense_armor.core.online.ensemble.bagging", "OnlineBaggingClassifier", "mode"),  # type: ignore
+            ("boosting", "OnlineBoostingClassifier", "dense_armor.core.online.ensemble.boosting", "OnlineBoostingClassifier", "mode"),  # type: ignore
+            ("stacking", "StackingClassifier", "dense_armor.core.online.ensemble.stacking", "StackingClassifier", "factory"),  # type: ignore
+            ("voting", "VotingClassifier", "dense_armor.core.online.ensemble.voting", "VotingClassifier", "factory"),  # type: ignore
+            ("ewa_reg", "ExponentiallyWeightedAverageRegressor", "dense_armor.core.online.ensemble.ewa", "ExponentiallyWeightedAverageRegressor", "members"),  # type: ignore
+            ("amrules", "AMRulesRegressor", "dense_armor.core.online.rules.amrules", "AMRulesRegressor", None),
         ]
     elif category == "facto":
         pieces = [
-            ("fm", "FMClassifier", "dense_armor.utility.online.facto.fm", "FMClassifier", "optimizer"),  # type: ignore
-            ("ffm", "FFMClassifier", "dense_armor.utility.online.facto.ffm", "FFMClassifier", "fields"),  # type: ignore
-            ("fwfm", "FwFMClassifier", "dense_armor.utility.online.facto.fwfm", "FwFMClassifier", "optimizer"),  # type: ignore
-            ("hofm", "HOFMClassifier", "dense_armor.utility.online.facto.hofm", "HOFMClassifier", "optimizer"),  # type: ignore
-            ("baseline", "Baseline", "dense_armor.utility.online.reco.reco", "Baseline", None),
-            ("biased_mf", "BiasedMF", "dense_armor.utility.online.reco.reco", "BiasedMF", None),
-            ("funk_mf", "FunkMF", "dense_armor.utility.online.reco.reco", "FunkMF", None),
+            ("fm", "FMClassifier", "dense_armor.core.online.facto.fm", "FMClassifier", "optimizer"),  # type: ignore
+            ("ffm", "FFMClassifier", "dense_armor.core.online.facto.ffm", "FFMClassifier", "fields"),  # type: ignore
+            ("fwfm", "FwFMClassifier", "dense_armor.core.online.facto.fwfm", "FwFMClassifier", "optimizer"),  # type: ignore
+            ("hofm", "HOFMClassifier", "dense_armor.core.online.facto.hofm", "HOFMClassifier", "optimizer"),  # type: ignore
+            ("baseline", "Baseline", "dense_armor.core.online.reco.reco", "Baseline", None),
+            ("biased_mf", "BiasedMF", "dense_armor.core.online.reco.reco", "BiasedMF", None),
+            ("funk_mf", "FunkMF", "dense_armor.core.online.reco.reco", "FunkMF", None),
         ]
     else:  # multi
         pieces = [
-            ("ovr", "OneVsRestClassifier", "dense_armor.utility.online.multiclass.multiclass", "OneVsRestClassifier", "factory"),  # type: ignore
-            ("ovo", "OneVsOneClassifier", "dense_armor.utility.online.multiclass.multiclass", "OneVsOneClassifier", "factory"),  # type: ignore
-            ("output_code", "OutputCodeClassifier", "dense_armor.utility.online.multiclass.multiclass", "OutputCodeClassifier", "factory"),  # type: ignore
-            ("chain_clf", "ClassifierChain", "dense_armor.utility.online.multioutput.multioutput", "ClassifierChain", "factory"),  # type: ignore
-            ("chain_reg", "RegressorChain", "dense_armor.utility.online.multioutput.multioutput", "RegressorChain", "factory"),  # type: ignore
-            ("knn", "KNNClassifier", "dense_armor.utility.online.neighbors.knn", "KNNClassifier", None),
-            ("knn_reg", "KNNRegressor", "dense_armor.utility.online.neighbors.knn", "KNNRegressor", None),
-            ("denstream", "DenStream", "dense_armor.utility.online.cluster.denstream", "DenStream", None),
-            ("online_kmeans", "OnlineKMeans", "dense_armor.utility.online.cluster.kmeans", "OnlineKMeans", "k"),  # type: ignore
+            ("ovr", "OneVsRestClassifier", "dense_armor.core.online.multiclass.multiclass", "OneVsRestClassifier", "factory"),  # type: ignore
+            ("ovo", "OneVsOneClassifier", "dense_armor.core.online.multiclass.multiclass", "OneVsOneClassifier", "factory"),  # type: ignore
+            ("output_code", "OutputCodeClassifier", "dense_armor.core.online.multiclass.multiclass", "OutputCodeClassifier", "factory"),  # type: ignore
+            ("chain_clf", "ClassifierChain", "dense_armor.core.online.multioutput.multioutput", "ClassifierChain", "factory"),  # type: ignore
+            ("chain_reg", "RegressorChain", "dense_armor.core.online.multioutput.multioutput", "RegressorChain", "factory"),  # type: ignore
+            ("knn", "KNNClassifier", "dense_armor.core.online.neighbors.knn", "KNNClassifier", None),
+            ("knn_reg", "KNNRegressor", "dense_armor.core.online.neighbors.knn", "KNNRegressor", None),
+            ("denstream", "DenStream", "dense_armor.core.online.cluster.denstream", "DenStream", None),
+            ("online_kmeans", "OnlineKMeans", "dense_armor.core.online.cluster.kmeans", "OnlineKMeans", "k"),  # type: ignore
         ]
 
     # preview: has_real_preview se l'init è None o dict semplice, placeholder altrimenti
@@ -791,7 +803,7 @@ def signal_page(category: str, render_template, ctx: dict) -> Any:
         elif isinstance(special, dict):
             if special.get("drift_detector") == "ADWIN":
                 try:
-                    from dense_armor.utility.online.drift.adwin import ADWIN
+                    from dense_armor.core.online.drift.adwin import ADWIN
                     init_kwargs = {"drift_detector": ADWIN()}
                     has_real_preview = True
                 except Exception as _e:
@@ -826,89 +838,89 @@ def signal_page(category: str, render_template, ctx: dict) -> Any:
 
 _SIGNAL_CLASSES_EXT = {
     # trees
-    ("trees", "hoeffding"): ("dense_armor.utility.online.tree.hoeffding", "HoeffdingTreeClassifier"),
-    ("trees", "anytime"): ("dense_armor.utility.online.tree.efdt", "HoeffdingAnytimeTreeClassifier"),
-    ("trees", "adaptive"): ("dense_armor.utility.online.tree.adaptive", "HoeffdingAdaptiveTreeClassifier"),
-    ("trees", "mondrian"): ("dense_armor.utility.online.tree.mondrian", "MondrianForestClassifier"),
-    ("trees", "mondrian_reg"): ("dense_armor.utility.online.tree.mondrian", "MondrianForestRegressor"),
-    ("trees", "sgt_clf"): ("dense_armor.utility.online.tree.sgt", "SGTClassifier"),
-    ("trees", "sgt_reg"): ("dense_armor.utility.online.tree.sgt", "SGTRegressor"),
-    ("trees", "batch_tree"): ("dense_armor.utility.online.tree.batch", "BatchDecisionTreeClassifier"),
-    ("trees", "fimtdd"): ("dense_armor.utility.online.tree.fimt", "FIMTDDRegressor"),
-    ("trees", "amf"): ("dense_armor.utility.online.forest.amf", "AggregatedMondrianForestClassifier"),
-    ("trees", "amf_reg"): ("dense_armor.utility.online.forest.amf", "AggregatedMondrianForestRegressor"),
-    ("trees", "arf"): ("dense_armor.utility.online.forest.arf", "AdaptiveRandomForestClassifier"),
-    ("trees", "oxt"): ("dense_armor.utility.online.forest.oxt", "OnlineExtraTreesRegressor"),
-    ("trees", "subspace_ht"): ("dense_armor.utility.online.forest.arf", "SubspaceHoeffdingTree"),
+    ("trees", "hoeffding"): ("dense_armor.core.online.tree.hoeffding", "HoeffdingTreeClassifier"),
+    ("trees", "anytime"): ("dense_armor.core.online.tree.efdt", "HoeffdingAnytimeTreeClassifier"),
+    ("trees", "adaptive"): ("dense_armor.core.online.tree.adaptive", "HoeffdingAdaptiveTreeClassifier"),
+    ("trees", "mondrian"): ("dense_armor.core.online.tree.mondrian", "MondrianForestClassifier"),
+    ("trees", "mondrian_reg"): ("dense_armor.core.online.tree.mondrian", "MondrianForestRegressor"),
+    ("trees", "sgt_clf"): ("dense_armor.core.online.tree.sgt", "SGTClassifier"),
+    ("trees", "sgt_reg"): ("dense_armor.core.online.tree.sgt", "SGTRegressor"),
+    ("trees", "batch_tree"): ("dense_armor.core.online.tree.batch", "BatchDecisionTreeClassifier"),
+    ("trees", "fimtdd"): ("dense_armor.core.online.tree.fimt", "FIMTDDRegressor"),
+    ("trees", "amf"): ("dense_armor.core.online.forest.amf", "AggregatedMondrianForestClassifier"),
+    ("trees", "amf_reg"): ("dense_armor.core.online.forest.amf", "AggregatedMondrianForestRegressor"),
+    ("trees", "arf"): ("dense_armor.core.online.forest.arf", "AdaptiveRandomForestClassifier"),
+    ("trees", "oxt"): ("dense_armor.core.online.forest.oxt", "OnlineExtraTreesRegressor"),
+    ("trees", "subspace_ht"): ("dense_armor.core.online.forest.arf", "SubspaceHoeffdingTree"),
     # risk anomaly
-    ("anomaly", "lof"): ("dense_armor.utility.online.anomaly.lof", "LocalOutlierFactor"),
-    ("anomaly", "hst"): ("dense_armor.utility.online.anomaly.hst", "HalfSpaceTrees"),
-    ("anomaly", "loda"): ("dense_armor.utility.online.anomaly.loda", "LODA"),
-    ("anomaly", "iforest"): ("dense_armor.utility.online.anomaly.oiforest", "OnlineIsolationForest"),
-    ("anomaly", "mahalanobis"): ("dense_armor.utility.online.anomaly.mahalanobis", "OnlineRobustMahalanobis"),
-    ("anomaly", "ocsvm"): ("dense_armor.utility.online.anomaly.ocsvm", "OneClassSGD"),
-    ("anomaly", "hampel"): ("dense_armor.utility.online.anomaly.filters", "HampelScorer"),
-    ("anomaly", "chauvenet"): ("dense_armor.utility.online.anomaly.filters", "ChauvenetScorer"),
-    ("anomaly", "sigma_clip"): ("dense_armor.utility.online.anomaly.filters", "SigmaClipScorer"),
-    ("anomaly", "tukey"): ("dense_armor.utility.online.anomaly.filters", "TukeyScorer"),
+    ("anomaly", "lof"): ("dense_armor.core.online.anomaly.lof", "LocalOutlierFactor"),
+    ("anomaly", "hst"): ("dense_armor.core.online.anomaly.hst", "HalfSpaceTrees"),
+    ("anomaly", "loda"): ("dense_armor.core.online.anomaly.loda", "LODA"),
+    ("anomaly", "iforest"): ("dense_armor.core.online.anomaly.oiforest", "OnlineIsolationForest"),
+    ("anomaly", "mahalanobis"): ("dense_armor.core.online.anomaly.mahalanobis", "OnlineRobustMahalanobis"),
+    ("anomaly", "ocsvm"): ("dense_armor.core.online.anomaly.ocsvm", "OneClassSGD"),
+    ("anomaly", "hampel"): ("dense_armor.core.online.anomaly.filters", "HampelScorer"),
+    ("anomaly", "chauvenet"): ("dense_armor.core.online.anomaly.filters", "ChauvenetScorer"),
+    ("anomaly", "sigma_clip"): ("dense_armor.core.online.anomaly.filters", "SigmaClipScorer"),
+    ("anomaly", "tukey"): ("dense_armor.core.online.anomaly.filters", "TukeyScorer"),
     # risk drift
-    ("drift", "adwin"): ("dense_armor.utility.online.drift.adwin", "ADWIN"),
-    ("drift", "page_hinkley"): ("dense_armor.utility.online.drift.page_hinkley", "PageHinkley"),
-    ("drift", "kswin"): ("dense_armor.utility.online.drift.kswin", "KSWIN"),
-    ("drift", "cusum"): ("dense_armor.utility.online.drift.detector", "CUSUMDriftDetector"),
-    ("drift", "bocpd"): ("dense_armor.utility.online.drift.bocpd", "BayesianOnlineChangepoint"),
+    ("drift", "adwin"): ("dense_armor.core.online.drift.adwin", "ADWIN"),
+    ("drift", "page_hinkley"): ("dense_armor.core.online.drift.page_hinkley", "PageHinkley"),
+    ("drift", "kswin"): ("dense_armor.core.online.drift.kswin", "KSWIN"),
+    ("drift", "cusum"): ("dense_armor.core.online.drift.detector", "CUSUMDriftDetector"),
+    ("drift", "bocpd"): ("dense_armor.core.online.drift.bocpd", "BayesianOnlineChangepoint"),
     # features scaling
-    ("scaling", "standard_scaler"): ("dense_armor.utility.signals.preprocessing.scale", "StandardScaler"),
-    ("scaling", "minmax_scaler"): ("dense_armor.utility.signals.preprocessing.scale", "MinMaxScaler"),
-    ("scaling", "robust_scaler"): ("dense_armor.utility.signals.preprocessing.scale", "RobustScaler"),
-    ("scaling", "ew_scaler"): ("dense_armor.utility.signals.preprocessing.scale", "EWScaler"),
+    ("scaling", "standard_scaler"): ("dense_armor.core.signals.preprocessing.scale", "StandardScaler"),
+    ("scaling", "minmax_scaler"): ("dense_armor.core.signals.preprocessing.scale", "MinMaxScaler"),
+    ("scaling", "robust_scaler"): ("dense_armor.core.signals.preprocessing.scale", "RobustScaler"),
+    ("scaling", "ew_scaler"): ("dense_armor.core.signals.preprocessing.scale", "EWScaler"),
     # features moments
-    ("moments", "running_moments"): ("dense_armor.utility.signals.stats.moments", "RunningMoments"),
-    ("moments", "ew_stats"): ("dense_armor.utility.signals.stats.moments", "EWStats"),
-    ("moments", "rolling_median"): ("dense_armor.utility.signals.stats.robust", "RollingMedian"),
+    ("moments", "running_moments"): ("dense_armor.core.signals.stats.moments", "RunningMoments"),
+    ("moments", "ew_stats"): ("dense_armor.core.signals.stats.moments", "EWStats"),
+    ("moments", "rolling_median"): ("dense_armor.core.signals.stats.robust", "RollingMedian"),
 
     # signal / linear
-    ("linear", "logistic"): ("dense_armor.utility.online.linear.glm", "LogisticRegression"),
-    ("linear", "bayes_gauss"): ("dense_armor.utility.online.linear.bayes", "BayesianLinearRegression"),
-    ("linear", "multinomial_nb"): ("dense_armor.utility.online.bayes.multinomial", "MultinomialNB"),
-    ("linear", "bernoulli_nb"): ("dense_armor.utility.online.bayes.bernoulli", "BernoulliNB"),
-    ("linear", "complement_nb"): ("dense_armor.utility.online.bayes.complement", "ComplementNB"),
-    ("linear", "categorical_nb"): ("dense_armor.utility.online.bayes.categorical", "CategoricalNB"),
-    ("linear", "gaussian_nb"): ("dense_armor.utility.online.learn.online_classifiers", "OnlineGaussianNB"),
-    ("linear", "softmax"): ("dense_armor.utility.online.learn.online_classifiers", "OnlineSoftmaxRegression"),
-    ("linear", "rls"): ("dense_armor.utility.online.learn.online_dynamics", "RecursiveLeastSquares"),
+    ("linear", "logistic"): ("dense_armor.core.online.linear.glm", "LogisticRegression"),
+    ("linear", "bayes_gauss"): ("dense_armor.core.online.linear.bayes", "BayesianLinearRegression"),
+    ("linear", "multinomial_nb"): ("dense_armor.core.online.bayes.multinomial", "MultinomialNB"),
+    ("linear", "bernoulli_nb"): ("dense_armor.core.online.bayes.bernoulli", "BernoulliNB"),
+    ("linear", "complement_nb"): ("dense_armor.core.online.bayes.complement", "ComplementNB"),
+    ("linear", "categorical_nb"): ("dense_armor.core.online.bayes.categorical", "CategoricalNB"),
+    ("linear", "gaussian_nb"): ("dense_armor.core.online.learn.online_classifiers", "OnlineGaussianNB"),
+    ("linear", "softmax"): ("dense_armor.core.online.learn.online_classifiers", "OnlineSoftmaxRegression"),
+    ("linear", "rls"): ("dense_armor.core.online.learn.online_dynamics", "RecursiveLeastSquares"),
     # signal / ensembles
-    ("ensembles", "bagging"): ("dense_armor.utility.online.ensemble.bagging", "OnlineBaggingClassifier"),
-    ("ensembles", "boosting"): ("dense_armor.utility.online.ensemble.boosting", "OnlineBoostingClassifier"),
-    ("ensembles", "amrules"): ("dense_armor.utility.online.rules.amrules", "AMRulesRegressor"),
+    ("ensembles", "bagging"): ("dense_armor.core.online.ensemble.bagging", "OnlineBaggingClassifier"),
+    ("ensembles", "boosting"): ("dense_armor.core.online.ensemble.boosting", "OnlineBoostingClassifier"),
+    ("ensembles", "amrules"): ("dense_armor.core.online.rules.amrules", "AMRulesRegressor"),
     # signal / facto
-    ("facto", "baseline"): ("dense_armor.utility.online.reco.reco", "Baseline"),
-    ("facto", "biased_mf"): ("dense_armor.utility.online.reco.reco", "BiasedMF"),
-    ("facto", "funk_mf"): ("dense_armor.utility.online.reco.reco", "FunkMF"),
+    ("facto", "baseline"): ("dense_armor.core.online.reco.reco", "Baseline"),
+    ("facto", "biased_mf"): ("dense_armor.core.online.reco.reco", "BiasedMF"),
+    ("facto", "funk_mf"): ("dense_armor.core.online.reco.reco", "FunkMF"),
     # signal / multi
-    ("multi", "knn"): ("dense_armor.utility.online.neighbors.knn", "KNNClassifier"),
-    ("multi", "knn_reg"): ("dense_armor.utility.online.neighbors.knn", "KNNRegressor"),
-    ("multi", "denstream"): ("dense_armor.utility.online.cluster.denstream", "DenStream"),
+    ("multi", "knn"): ("dense_armor.core.online.neighbors.knn", "KNNClassifier"),
+    ("multi", "knn_reg"): ("dense_armor.core.online.neighbors.knn", "KNNRegressor"),
+    ("multi", "denstream"): ("dense_armor.core.online.cluster.denstream", "DenStream"),
     # features / sketches
-    ("sketches", "ddsketch"): ("dense_armor.utility.signals.stats.quantiles", "DDSketch"),
-    ("sketches", "tdigest"): ("dense_armor.utility.signals.stats.quantiles", "TDigest"),
-    ("sketches", "bloom"): ("dense_armor.utility.signals.stats.sketches", "BloomFilter"),
-    ("sketches", "cms"): ("dense_armor.utility.signals.stats.sketches", "CountMinSketch"),
-    ("sketches", "hll"): ("dense_armor.utility.signals.stats.sketches", "HyperLogLog"),
-    ("sketches", "space_saving"): ("dense_armor.utility.signals.stats.sketches", "SpaceSaving"),
+    ("sketches", "ddsketch"): ("dense_armor.core.signals.stats.quantiles", "DDSketch"),
+    ("sketches", "tdigest"): ("dense_armor.core.signals.stats.quantiles", "TDigest"),
+    ("sketches", "bloom"): ("dense_armor.core.signals.stats.sketches", "BloomFilter"),
+    ("sketches", "cms"): ("dense_armor.core.signals.stats.sketches", "CountMinSketch"),
+    ("sketches", "hll"): ("dense_armor.core.signals.stats.sketches", "HyperLogLog"),
+    ("sketches", "space_saving"): ("dense_armor.core.signals.stats.sketches", "SpaceSaving"),
     # features / dependence
-    ("dependence", "autocorr"): ("dense_armor.utility.signals.stats.dependence", "Autocorrelation"),
-    ("dependence", "running_corr"): ("dense_armor.utility.signals.stats.dependence", "RunningCorrelation"),
-    ("dependence", "running_cov"): ("dense_armor.utility.signals.stats.dependence", "RunningCovariance"),
+    ("dependence", "autocorr"): ("dense_armor.core.signals.stats.dependence", "Autocorrelation"),
+    ("dependence", "running_corr"): ("dense_armor.core.signals.stats.dependence", "RunningCorrelation"),
+    ("dependence", "running_cov"): ("dense_armor.core.signals.stats.dependence", "RunningCovariance"),
     # features / moments extra
-    ("moments", "rolling_mad"): ("dense_armor.utility.signals.stats.robust", "RollingMAD"),
-    ("moments", "rolling_iqr"): ("dense_armor.utility.signals.stats.robust", "RollingIQR"),
-    ("moments", "rolling_quantile"): ("dense_armor.utility.signals.stats.robust", "RollingQuantile"),
+    ("moments", "rolling_mad"): ("dense_armor.core.signals.stats.robust", "RollingMAD"),
+    ("moments", "rolling_iqr"): ("dense_armor.core.signals.stats.robust", "RollingIQR"),
+    ("moments", "rolling_quantile"): ("dense_armor.core.signals.stats.robust", "RollingQuantile"),
     # features / distribution
-    ("distribution", "gmm"): ("dense_armor.utility.signals.stats.mixture", "OnlineGaussianMixture"),
-    ("distribution", "student_t"): ("dense_armor.utility.signals.stats.student_t", "StudentT"),
+    ("distribution", "gmm"): ("dense_armor.core.signals.stats.mixture", "OnlineGaussianMixture"),
+    ("distribution", "student_t"): ("dense_armor.core.signals.stats.student_t", "StudentT"),
     # risk anomaly extra
-    ("anomaly", "streaming_dev"): ("dense_armor.utility.online.anomaly.deviation", "StreamingDeviationScorer"),
+    ("anomaly", "streaming_dev"): ("dense_armor.core.online.anomaly.deviation", "StreamingDeviationScorer"),
 }
 
 
@@ -1394,7 +1406,8 @@ def _synthetic_features(n: int = 2000, change_at: int = 1000):
 
 def _piece_hoeffding(params: dict) -> dict:
     import numpy as _np
-    from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
+
+    from dense_armor.core.online.tree.hoeffding import HoeffdingTreeClassifier
 
     dataset = str(params.pop("dataset", "manual")).lower()
 

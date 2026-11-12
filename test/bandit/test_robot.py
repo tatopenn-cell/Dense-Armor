@@ -1,8 +1,9 @@
 """Robot test: UCB chooses the gain kp on SyntheticArm."""
 
 
-from dense_armor.utility.online.bandit import RobotKpSelector
 import pytest
+
+from dense_armor.core.online.bandit import RobotKpSelector
 
 
 @pytest.mark.heavy

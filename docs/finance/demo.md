@@ -24,7 +24,7 @@ shutil.copy("/content/Dense-Armor/test/fixtures/finance/demo.toml", work / "demo
 env = os.environ.copy()
 env["PYTHONPATH"] = "/content/Dense-Armor"
 r = subprocess.run(
-    [sys.executable, "-m", "dense_armor.utility.finance.demo",
+    [sys.executable, "-m", "dense_armor.core.finance.demo",
      "--config", "demo.toml", "--n", "1000"],
     capture_output=True, text=True, cwd=str(work), env=env,
 )
@@ -56,7 +56,7 @@ work = Path("/tmp/f10_page")
 env = os.environ.copy()
 env["PYTHONPATH"] = "/content/Dense-Armor"
 r = subprocess.run(
-    [sys.executable, "-m", "dense_armor.utility.finance.status",
+    [sys.executable, "-m", "dense_armor.core.finance.status",
      "--config", "demo.toml"],
     capture_output=True, text=True, cwd=str(work), env=env,
 )
@@ -90,7 +90,7 @@ log.write_text(
 env = os.environ.copy()
 env["PYTHONPATH"] = "/content/Dense-Armor"
 r = subprocess.run(
-    [sys.executable, "-m", "dense_armor.utility.finance.status",
+    [sys.executable, "-m", "dense_armor.core.finance.status",
      "--config", "demo.toml"],
     capture_output=True, text=True, cwd=str(work), env=env,
 )

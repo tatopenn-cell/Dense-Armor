@@ -15,7 +15,7 @@ import subprocess, sys
 from pathlib import Path
 Path("/tmp/f8_page/STOP").unlink(missing_ok=True)
 Path("/tmp/f8_page/log.jsonl").unlink(missing_ok=True)
-cmd = [sys.executable, "-m", "dense_armor.utility.finance.status",
+cmd = [sys.executable, "-m", "dense_armor.core.finance.status",
        "--config", "/tmp/f8_page/config.toml"]
 r = subprocess.run(cmd, capture_output=True, text=True, cwd="/content/Dense-Armor")
 print("exit:", r.returncode)
@@ -44,7 +44,7 @@ import subprocess, sys
 from pathlib import Path
 Path("/tmp/f8_page/log.jsonl").unlink(missing_ok=True)
 Path("/tmp/f8_page/STOP").write_bytes(b"")
-cmd = [sys.executable, "-m", "dense_armor.utility.finance.status",
+cmd = [sys.executable, "-m", "dense_armor.core.finance.status",
        "--config", "/tmp/f8_page/config.toml"]
 r = subprocess.run(cmd, capture_output=True, text=True, cwd="/content/Dense-Armor")
 print("exit:", r.returncode)
@@ -68,7 +68,7 @@ records, the last hash, and `verify()`. Here the log has three records.
 
 ~~~python
 from pathlib import Path
-from dense_armor.utility.finance.decision_log import DecisionLog
+from dense_armor.core.finance.decision_log import DecisionLog
 Path("/tmp/f8_page/log.jsonl").unlink(missing_ok=True)
 Path("/tmp/f8_page/STOP").unlink(missing_ok=True)
 log = DecisionLog("/tmp/f8_page/log.jsonl")
@@ -77,7 +77,7 @@ log.append(1.0, {"a": 2})
 log.append(1.5, {"a": 3})
 
 import subprocess, sys
-cmd = [sys.executable, "-m", "dense_armor.utility.finance.status",
+cmd = [sys.executable, "-m", "dense_armor.core.finance.status",
        "--config", "/tmp/f8_page/config.toml"]
 r = subprocess.run(cmd, capture_output=True, text=True, cwd="/content/Dense-Armor")
 print("exit:", r.returncode)
@@ -101,7 +101,7 @@ Path("/tmp/f8_page/log.jsonl").write_text(
 )
 
 import subprocess, sys
-cmd = [sys.executable, "-m", "dense_armor.utility.finance.status",
+cmd = [sys.executable, "-m", "dense_armor.core.finance.status",
        "--config", "/tmp/f8_page/config.toml"]
 r = subprocess.run(cmd, capture_output=True, text=True, cwd="/content/Dense-Armor")
 print("exit:", r.returncode)

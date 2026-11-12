@@ -5,12 +5,12 @@ from __future__ import annotations
 import common
 import numpy as np
 
-from dense_armor.ml import tree as ml
-from dense_armor.utility.online.tree.batch import BatchDecisionTreeClassifier
-from dense_armor.utility.online.tree.mondrian import (
+from dense_armor.core.online.tree.batch import BatchDecisionTreeClassifier
+from dense_armor.core.online.tree.mondrian import (
     MondrianForestClassifier,
     MondrianForestRegressor,
 )
+from dense_armor.ml import tree as ml
 
 
 def _cls(seed):

@@ -14,6 +14,14 @@ from pathlib import Path
 import jax
 import numpy as np
 
+from dense_armor.core.deep.neural.background import BackgroundLearner
+from dense_armor.core.deep.neural.losses import MSE
+from dense_armor.core.deep.neural.models import mlp
+from dense_armor.core.deep.neural.online import OnlineNetRegressor
+from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.online.anomaly.filters import HampelScorer
+from dense_armor.core.online.optim import SGD, Adam
+from dense_armor.core.signals.stats.moments import RunningMoments
 from dense_armor.roles import (
     AnomalyGate,
     Protected,
@@ -22,14 +30,6 @@ from dense_armor.roles import (
     Signal,
     profile,
 )
-from dense_armor.utility.online.anomaly.filters import HampelScorer
-from dense_armor.utility.deep.neural.background import BackgroundLearner
-from dense_armor.utility.deep.neural.losses import MSE
-from dense_armor.utility.deep.neural.models import mlp
-from dense_armor.utility.deep.neural.online import OnlineNetRegressor
-from dense_armor.utility.deep.neural.trainer import Trainer
-from dense_armor.utility.online.optim import SGD, Adam
-from dense_armor.utility.signals.stats.moments import RunningMoments
 
 
 def _stream(n=100, seed=0):
@@ -119,7 +119,7 @@ def test_profile_online_regressor_fits():
 
 
 def test_profile_hedge_fits():
-    from dense_armor.utility.deep.neural.hedge import HedgeNetClassifier
+    from dense_armor.core.deep.neural.hedge import HedgeNetClassifier
 
     h = HedgeNetClassifier(
         [2, 4], jax.random.PRNGKey(0), classes=[0, 1], feature_keys=["a", "b"]

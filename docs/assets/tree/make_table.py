@@ -12,20 +12,23 @@ Stream specification (must match the text in the page):
 
 import sys
 from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 import time
+
 import numpy as np
 
-from dense_armor.utility.evaluation.metrics import Accuracy, MeanAbsoluteError
-from dense_armor.utility.online.drift.adwin import ADWIN
-from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
-from dense_armor.utility.online.tree.efdt import HoeffdingAnytimeTreeClassifier
-from dense_armor.utility.online.tree.adaptive import HoeffdingAdaptiveTreeClassifier
-from dense_armor.utility.online.tree.sgt import SGTClassifier, SGTRegressor
-from dense_armor.utility.online.tree.mondrian import (
-    MondrianForestClassifier, MondrianForestRegressor,
+from dense_armor.core.evaluation.metrics import Accuracy, MeanAbsoluteError
+from dense_armor.core.online.drift.adwin import ADWIN
+from dense_armor.core.online.tree.adaptive import HoeffdingAdaptiveTreeClassifier
+from dense_armor.core.online.tree.efdt import HoeffdingAnytimeTreeClassifier
+from dense_armor.core.online.tree.hoeffding import HoeffdingTreeClassifier
+from dense_armor.core.online.tree.mondrian import (
+    MondrianForestClassifier,
+    MondrianForestRegressor,
 )
+from dense_armor.core.online.tree.sgt import SGTClassifier, SGTRegressor
 
 N = 4000
 CHANGE_AT = 2000

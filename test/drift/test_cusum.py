@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Unit tests for dense_armor/utility/online/drift/cusum.py.
+"""Unit tests for dense_armor/core/online/drift/cusum.py.
 
 cusum_detector was only exercised indirectly through
 test_benchmark_v0_runtime_behavioral_drift.py before this file (that
@@ -18,7 +18,7 @@ import warnings
 import numpy as np
 import pytest
 
-from dense_armor.utility.online.drift.cusum import cusum_detector
+from dense_armor.core.online.drift.cusum import cusum_detector
 
 
 # ---------------------------------------------------------------------------

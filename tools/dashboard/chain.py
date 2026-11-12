@@ -13,7 +13,6 @@ from typing import Any
 
 import numpy as _np
 
-
 CATALOG: dict[str, dict[str, Any]] = {
     "data": {
         "gspc":  {"kind": "finance", "source": "GSPC.csv",  "target": "sign next log return"},
@@ -26,90 +25,90 @@ CATALOG: dict[str, dict[str, Any]] = {
     },
     "features": {
         "none": None,
-        "standard_scaler": "dense_armor.utility.signals.preprocessing.scale.StandardScaler",
-        "minmax_scaler":   "dense_armor.utility.signals.preprocessing.scale.MinMaxScaler",
-        "robust_scaler":   "dense_armor.utility.signals.preprocessing.scale.RobustScaler",
-        "ew_scaler":       "dense_armor.utility.signals.preprocessing.scale.EWScaler",
-        "select_kbest":    "dense_armor.utility.signals.preprocessing.select.SelectKBest",
-        "var_threshold":   "dense_armor.utility.signals.preprocessing.select.VarianceThreshold",
-        "running_moments":     "dense_armor.utility.signals.stats.moments.RunningMoments",
-        "ew_stats":            "dense_armor.utility.signals.stats.moments.EWStats",
-        "rolling_median":      "dense_armor.utility.signals.stats.robust.RollingMedian",
-        "rolling_mad":         "dense_armor.utility.signals.stats.robust.RollingMAD",
-        "rolling_iqr":         "dense_armor.utility.signals.stats.robust.RollingIQR",
-        "rolling_quantile":    "dense_armor.utility.signals.stats.robust.RollingQuantile",
-        "ddsketch":            "dense_armor.utility.signals.stats.quantiles.DDSketch",
-        "tdigest":             "dense_armor.utility.signals.stats.quantiles.TDigest",
-        "running_correlation": "dense_armor.utility.signals.stats.dependence.RunningCorrelation",
-        "running_covariance":  "dense_armor.utility.signals.stats.dependence.RunningCovariance",
-        "online_shrinkage_cov":"dense_armor.utility.signals.stats.shrinkage.OnlineShrinkageCovariance",
-        "autocorrelation":     "dense_armor.utility.signals.stats.dependence.Autocorrelation",
-        "bloom":               "dense_armor.utility.signals.stats.sketches.BloomFilter",
-        "cms":                 "dense_armor.utility.signals.stats.sketches.CountMinSketch",
-        "hll":                 "dense_armor.utility.signals.stats.sketches.HyperLogLog",
-        "space_saving":        "dense_armor.utility.signals.stats.sketches.SpaceSaving",
-        "sdft":                "dense_armor.utility.signals.stats.sdft.SDFT",
-        "skyline":             "dense_armor.utility.signals.stats.skyline.Skyline",
-        "garch":               "dense_armor.utility.online.timeseries.garch.GARCH11",
-        "online_ar":           "dense_armor.utility.online.timeseries.ar.OnlineAR",
-        "online_var":          "dense_armor.utility.online.timeseries.ar.OnlineVAR",
-        "kalman":              "dense_armor.utility.online.timeseries.kalman.KalmanFilter",
-        "innovation_kalman":   "dense_armor.utility.online.timeseries.kalman.InnovationAdaptiveKalman",
-        "vb_kalman":           "dense_armor.utility.online.timeseries.kalman.VBAdaptiveKalman",
-        "cycle_residual":      "dense_armor.utility.online.timeseries.cycle.CycleResidual",
-        "gmm":                 "dense_armor.utility.signals.stats.mixture.OnlineGaussianMixture",
-        "beta":                "dense_armor.utility.online.proba.beta.Beta",
-        "gaussian":            "dense_armor.utility.online.proba.gaussian.Gaussian",
-        "multinomial_dist":    "dense_armor.utility.online.proba.multinomial.Multinomial",
+        "standard_scaler": "dense_armor.core.signals.preprocessing.scale.StandardScaler",
+        "minmax_scaler":   "dense_armor.core.signals.preprocessing.scale.MinMaxScaler",
+        "robust_scaler":   "dense_armor.core.signals.preprocessing.scale.RobustScaler",
+        "ew_scaler":       "dense_armor.core.signals.preprocessing.scale.EWScaler",
+        "select_kbest":    "dense_armor.core.signals.preprocessing.select.SelectKBest",
+        "var_threshold":   "dense_armor.core.signals.preprocessing.select.VarianceThreshold",
+        "running_moments":     "dense_armor.core.signals.stats.moments.RunningMoments",
+        "ew_stats":            "dense_armor.core.signals.stats.moments.EWStats",
+        "rolling_median":      "dense_armor.core.signals.stats.robust.RollingMedian",
+        "rolling_mad":         "dense_armor.core.signals.stats.robust.RollingMAD",
+        "rolling_iqr":         "dense_armor.core.signals.stats.robust.RollingIQR",
+        "rolling_quantile":    "dense_armor.core.signals.stats.robust.RollingQuantile",
+        "ddsketch":            "dense_armor.core.signals.stats.quantiles.DDSketch",
+        "tdigest":             "dense_armor.core.signals.stats.quantiles.TDigest",
+        "running_correlation": "dense_armor.core.signals.stats.dependence.RunningCorrelation",
+        "running_covariance":  "dense_armor.core.signals.stats.dependence.RunningCovariance",
+        "online_shrinkage_cov":"dense_armor.core.signals.stats.shrinkage.OnlineShrinkageCovariance",
+        "autocorrelation":     "dense_armor.core.signals.stats.dependence.Autocorrelation",
+        "bloom":               "dense_armor.core.signals.stats.sketches.BloomFilter",
+        "cms":                 "dense_armor.core.signals.stats.sketches.CountMinSketch",
+        "hll":                 "dense_armor.core.signals.stats.sketches.HyperLogLog",
+        "space_saving":        "dense_armor.core.signals.stats.sketches.SpaceSaving",
+        "sdft":                "dense_armor.core.signals.stats.sdft.SDFT",
+        "skyline":             "dense_armor.core.signals.stats.skyline.Skyline",
+        "garch":               "dense_armor.core.online.timeseries.garch.GARCH11",
+        "online_ar":           "dense_armor.core.online.timeseries.ar.OnlineAR",
+        "online_var":          "dense_armor.core.online.timeseries.ar.OnlineVAR",
+        "kalman":              "dense_armor.core.online.timeseries.kalman.KalmanFilter",
+        "innovation_kalman":   "dense_armor.core.online.timeseries.kalman.InnovationAdaptiveKalman",
+        "vb_kalman":           "dense_armor.core.online.timeseries.kalman.VBAdaptiveKalman",
+        "cycle_residual":      "dense_armor.core.online.timeseries.cycle.CycleResidual",
+        "gmm":                 "dense_armor.core.signals.stats.mixture.OnlineGaussianMixture",
+        "beta":                "dense_armor.core.online.proba.beta.Beta",
+        "gaussian":            "dense_armor.core.online.proba.gaussian.Gaussian",
+        "multinomial_dist":    "dense_armor.core.online.proba.multinomial.Multinomial",
     },
     "signal": {
-        "hoeffding":      "dense_armor.utility.online.tree.hoeffding.HoeffdingTreeClassifier",
-        "anytime":        "dense_armor.utility.online.tree.efdt.HoeffdingAnytimeTreeClassifier",
-        "adaptive":       "dense_armor.utility.online.tree.adaptive.HoeffdingAdaptiveTreeClassifier",
-        "mondrian":       "dense_armor.utility.online.tree.mondrian.MondrianForestClassifier",
-        "mondrian_reg":   "dense_armor.utility.online.tree.mondrian.MondrianForestRegressor",
-        "sgt_clf":        "dense_armor.utility.online.tree.sgt.SGTClassifier",
-        "sgt_reg":        "dense_armor.utility.online.tree.sgt.SGTRegressor",
-        "batch_tree":     "dense_armor.utility.online.tree.batch.BatchDecisionTreeClassifier",
-        "fimtdd":         "dense_armor.utility.online.tree.fimt.FIMTDDRegressor",
-        "amf":            "dense_armor.utility.online.forest.amf.AggregatedMondrianForestClassifier",
-        "amf_reg":        "dense_armor.utility.online.forest.amf.AggregatedMondrianForestRegressor",
-        "arf":            "dense_armor.utility.online.forest.arf.AdaptiveRandomForestClassifier",
-        "oxt":            "dense_armor.utility.online.forest.oxt.OnlineExtraTreesRegressor",
-        "subspace_ht":    "dense_armor.utility.online.forest.arf.SubspaceHoeffdingTree",
-        "gaussian_nb":    "dense_armor.utility.online.learn.online_classifiers.OnlineGaussianNB",
-        "softmax":        "dense_armor.utility.online.learn.online_classifiers.OnlineSoftmaxRegression",
-        "platt":          "dense_armor.utility.online.learn.calibration.OnlinePlattScaling",
-        "rls":            "dense_armor.utility.online.learn.online_dynamics.RecursiveLeastSquares",
-        "metric_knn":     "dense_armor.utility.online.learn.metric_learning.MetricKNNClassifier",
-        "logistic":       "dense_armor.utility.online.linear.glm.LogisticRegression",
-        "bayes_gauss":    "dense_armor.utility.online.linear.bayes.BayesianLinearRegression",
-        "multinomial_nb": "dense_armor.utility.online.bayes.multinomial.MultinomialNB",
-        "bernoulli_nb":   "dense_armor.utility.online.bayes.bernoulli.BernoulliNB",
-        "complement_nb":  "dense_armor.utility.online.bayes.complement.ComplementNB",
-        "categorical_nb": "dense_armor.utility.online.bayes.categorical.CategoricalNB",
-        "knn":            "dense_armor.utility.online.neighbors.knn.KNNClassifier",
-        "knn_reg":        "dense_armor.utility.online.neighbors.knn.KNNRegressor",
-        "bagging":        "dense_armor.utility.online.ensemble.bagging.OnlineBaggingClassifier",
-        "boosting":       "dense_armor.utility.online.ensemble.boosting.OnlineBoostingClassifier",
-        "stacking":       "dense_armor.utility.online.ensemble.stacking.StackingClassifier",
-        "voting":         "dense_armor.utility.online.ensemble.voting.VotingClassifier",
-        "ewa_reg":        "dense_armor.utility.online.ensemble.ewa.ExponentiallyWeightedAverageRegressor",
-        "amrules":        "dense_armor.utility.online.rules.amrules.AMRulesRegressor",
-        "ovr":            "dense_armor.utility.online.multiclass.multiclass.OneVsRestClassifier",
-        "ovo":            "dense_armor.utility.online.multiclass.multiclass.OneVsOneClassifier",
-        "output_code":    "dense_armor.utility.online.multiclass.multiclass.OutputCodeClassifier",
-        "chain_clf":      "dense_armor.utility.online.multioutput.multioutput.ClassifierChain",
-        "chain_reg":      "dense_armor.utility.online.multioutput.multioutput.RegressorChain",
-        "fm":             "dense_armor.utility.online.facto.fm.FMClassifier",
-        "ffm":            "dense_armor.utility.online.facto.ffm.FFMClassifier",
-        "fwfm":           "dense_armor.utility.online.facto.fwfm.FwFMClassifier",
-        "hofm":           "dense_armor.utility.online.facto.hofm.HOFMClassifier",
-        "baseline":       "dense_armor.utility.online.reco.reco.Baseline",
-        "biased_mf":      "dense_armor.utility.online.reco.reco.BiasedMF",
-        "funk_mf":        "dense_armor.utility.online.reco.reco.FunkMF",
-        "denstream":      "dense_armor.utility.online.cluster.denstream.DenStream",
-        "online_kmeans":  "dense_armor.utility.online.cluster.kmeans.OnlineKMeans",
+        "hoeffding":      "dense_armor.core.online.tree.hoeffding.HoeffdingTreeClassifier",
+        "anytime":        "dense_armor.core.online.tree.efdt.HoeffdingAnytimeTreeClassifier",
+        "adaptive":       "dense_armor.core.online.tree.adaptive.HoeffdingAdaptiveTreeClassifier",
+        "mondrian":       "dense_armor.core.online.tree.mondrian.MondrianForestClassifier",
+        "mondrian_reg":   "dense_armor.core.online.tree.mondrian.MondrianForestRegressor",
+        "sgt_clf":        "dense_armor.core.online.tree.sgt.SGTClassifier",
+        "sgt_reg":        "dense_armor.core.online.tree.sgt.SGTRegressor",
+        "batch_tree":     "dense_armor.core.online.tree.batch.BatchDecisionTreeClassifier",
+        "fimtdd":         "dense_armor.core.online.tree.fimt.FIMTDDRegressor",
+        "amf":            "dense_armor.core.online.forest.amf.AggregatedMondrianForestClassifier",
+        "amf_reg":        "dense_armor.core.online.forest.amf.AggregatedMondrianForestRegressor",
+        "arf":            "dense_armor.core.online.forest.arf.AdaptiveRandomForestClassifier",
+        "oxt":            "dense_armor.core.online.forest.oxt.OnlineExtraTreesRegressor",
+        "subspace_ht":    "dense_armor.core.online.forest.arf.SubspaceHoeffdingTree",
+        "gaussian_nb":    "dense_armor.core.online.learn.online_classifiers.OnlineGaussianNB",
+        "softmax":        "dense_armor.core.online.learn.online_classifiers.OnlineSoftmaxRegression",
+        "platt":          "dense_armor.core.online.learn.calibration.OnlinePlattScaling",
+        "rls":            "dense_armor.core.online.learn.online_dynamics.RecursiveLeastSquares",
+        "metric_knn":     "dense_armor.core.online.learn.metric_learning.MetricKNNClassifier",
+        "logistic":       "dense_armor.core.online.linear.glm.LogisticRegression",
+        "bayes_gauss":    "dense_armor.core.online.linear.bayes.BayesianLinearRegression",
+        "multinomial_nb": "dense_armor.core.online.bayes.multinomial.MultinomialNB",
+        "bernoulli_nb":   "dense_armor.core.online.bayes.bernoulli.BernoulliNB",
+        "complement_nb":  "dense_armor.core.online.bayes.complement.ComplementNB",
+        "categorical_nb": "dense_armor.core.online.bayes.categorical.CategoricalNB",
+        "knn":            "dense_armor.core.online.neighbors.knn.KNNClassifier",
+        "knn_reg":        "dense_armor.core.online.neighbors.knn.KNNRegressor",
+        "bagging":        "dense_armor.core.online.ensemble.bagging.OnlineBaggingClassifier",
+        "boosting":       "dense_armor.core.online.ensemble.boosting.OnlineBoostingClassifier",
+        "stacking":       "dense_armor.core.online.ensemble.stacking.StackingClassifier",
+        "voting":         "dense_armor.core.online.ensemble.voting.VotingClassifier",
+        "ewa_reg":        "dense_armor.core.online.ensemble.ewa.ExponentiallyWeightedAverageRegressor",
+        "amrules":        "dense_armor.core.online.rules.amrules.AMRulesRegressor",
+        "ovr":            "dense_armor.core.online.multiclass.multiclass.OneVsRestClassifier",
+        "ovo":            "dense_armor.core.online.multiclass.multiclass.OneVsOneClassifier",
+        "output_code":    "dense_armor.core.online.multiclass.multiclass.OutputCodeClassifier",
+        "chain_clf":      "dense_armor.core.online.multioutput.multioutput.ClassifierChain",
+        "chain_reg":      "dense_armor.core.online.multioutput.multioutput.RegressorChain",
+        "fm":             "dense_armor.core.online.facto.fm.FMClassifier",
+        "ffm":            "dense_armor.core.online.facto.ffm.FFMClassifier",
+        "fwfm":           "dense_armor.core.online.facto.fwfm.FwFMClassifier",
+        "hofm":           "dense_armor.core.online.facto.hofm.HOFMClassifier",
+        "baseline":       "dense_armor.core.online.reco.reco.Baseline",
+        "biased_mf":      "dense_armor.core.online.reco.reco.BiasedMF",
+        "funk_mf":        "dense_armor.core.online.reco.reco.FunkMF",
+        "denstream":      "dense_armor.core.online.cluster.denstream.DenStream",
+        "online_kmeans":  "dense_armor.core.online.cluster.kmeans.OnlineKMeans",
     },
     "portfolio": {
         "none": None,
@@ -119,33 +118,33 @@ CATALOG: dict[str, dict[str, Any]] = {
     },
     "risk": {
         "none": None,
-        "lof":            "dense_armor.utility.online.anomaly.lof.LocalOutlierFactor",
-        "hst":            "dense_armor.utility.online.anomaly.hst.HalfSpaceTrees",
-        "loda":           "dense_armor.utility.online.anomaly.loda.LODA",
-        "iforest":        "dense_armor.utility.online.anomaly.oiforest.OnlineIsolationForest",
-        "mahalanobis":    "dense_armor.utility.online.anomaly.mahalanobis.OnlineRobustMahalanobis",
-        "ocsvm":          "dense_armor.utility.online.anomaly.ocsvm.OneClassSGD",
-        "hampel_scorer":  "dense_armor.utility.online.anomaly.filters.HampelScorer",
-        "chauvenet":      "dense_armor.utility.online.anomaly.filters.ChauvenetScorer",
-        "sigma_clip":     "dense_armor.utility.online.anomaly.filters.SigmaClipScorer",
-        "tukey":          "dense_armor.utility.online.anomaly.filters.TukeyScorer",
-        "adwin":          "dense_armor.utility.online.drift.adwin.ADWIN",
-        "page_hinkley":   "dense_armor.utility.online.drift.page_hinkley.PageHinkley",
-        "kswin":          "dense_armor.utility.online.drift.kswin.KSWIN",
-        "cusum":          "dense_armor.utility.online.drift.detector.CUSUMDriftDetector",
-        "bocpd":          "dense_armor.utility.online.drift.bocpd.BayesianOnlineChangepoint",
+        "lof":            "dense_armor.core.online.anomaly.lof.LocalOutlierFactor",
+        "hst":            "dense_armor.core.online.anomaly.hst.HalfSpaceTrees",
+        "loda":           "dense_armor.core.online.anomaly.loda.LODA",
+        "iforest":        "dense_armor.core.online.anomaly.oiforest.OnlineIsolationForest",
+        "mahalanobis":    "dense_armor.core.online.anomaly.mahalanobis.OnlineRobustMahalanobis",
+        "ocsvm":          "dense_armor.core.online.anomaly.ocsvm.OneClassSGD",
+        "hampel_scorer":  "dense_armor.core.online.anomaly.filters.HampelScorer",
+        "chauvenet":      "dense_armor.core.online.anomaly.filters.ChauvenetScorer",
+        "sigma_clip":     "dense_armor.core.online.anomaly.filters.SigmaClipScorer",
+        "tukey":          "dense_armor.core.online.anomaly.filters.TukeyScorer",
+        "adwin":          "dense_armor.core.online.drift.adwin.ADWIN",
+        "page_hinkley":   "dense_armor.core.online.drift.page_hinkley.PageHinkley",
+        "kswin":          "dense_armor.core.online.drift.kswin.KSWIN",
+        "cusum":          "dense_armor.core.online.drift.detector.CUSUMDriftDetector",
+        "bocpd":          "dense_armor.core.online.drift.bocpd.BayesianOnlineChangepoint",
         "surveillance":   "pipelines.finance.surveillance.FinancePipeline",
         "risk_pipeline":  "pipelines.finance.risk.RiskPipeline",
         "regime_pipeline":"pipelines.finance.regime.RegimePipeline",
         "drift_vs_noise": "pipelines.finance.drift_vs_noise.DriftVsNoisePipeline",
-        "pretrade":       "dense_armor.utility.finance.pretrade.PreTradeChecker",
+        "pretrade":       "dense_armor.core.finance.pretrade.PreTradeChecker",
     },
     "execution": {
         "none": None,
         "pipeline":    "pipelines.finance.execution.ExecutionPipeline",
-        "fix_gateway": "dense_armor.utility.finance.fix_gateway.send_orders",
-        "twap":        "dense_armor.utility.finance.schedule.twap_schedule",
-        "vwap":        "dense_armor.utility.finance.schedule.vwap_schedule",
+        "fix_gateway": "dense_armor.core.finance.fix_gateway.send_orders",
+        "twap":        "dense_armor.core.finance.schedule.twap_schedule",
+        "vwap":        "dense_armor.core.finance.schedule.vwap_schedule",
     },
 }
 
@@ -158,9 +157,9 @@ def _auto_defaults(obj) -> dict:
     except (ValueError, TypeError):
         return {}
     try:
-        from dense_armor.utility.online.drift.adwin import ADWIN
-        from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
-        from dense_armor.utility.online.optim.sgd import SGD
+        from dense_armor.core.online.drift.adwin import ADWIN
+        from dense_armor.core.online.optim.sgd import SGD
+        from dense_armor.core.online.tree.hoeffding import HoeffdingTreeClassifier
     except Exception:
         return {}
     import numpy as _np
@@ -176,7 +175,7 @@ def _auto_defaults(obj) -> dict:
                 out[name] = HoeffdingTreeClassifier()
             elif low == "metric_learner":
                 try:
-                    from dense_armor.utility.online.learn.metric_learning import LEGO
+                    from dense_armor.core.online.learn.metric_learning import LEGO
                     out[name] = LEGO()
                 except Exception:
                     return {}
@@ -248,7 +247,7 @@ def _probe(kind: str, path) -> dict:
     # Special case: some classes need a keyword even if None is the default.
     try:
         if name == "HoeffdingAdaptiveTreeClassifier":
-            from dense_armor.utility.online.drift.adwin import ADWIN
+            from dense_armor.core.online.drift.adwin import ADWIN
             obj(drift_detector=ADWIN())  # type: ignore
             return {"status": "ready", "default_init": {"drift_detector": "ADWIN()"}}
     except Exception:
@@ -294,7 +293,7 @@ def _instantiate(path: str | None) -> Any:
     if inspect.isfunction(cls):
         return cls
     if name == "HoeffdingAdaptiveTreeClassifier":
-        from dense_armor.utility.online.drift.adwin import ADWIN
+        from dense_armor.core.online.drift.adwin import ADWIN
         return cls(drift_detector=ADWIN())
     try:
         return cls()
@@ -307,7 +306,7 @@ def _instantiate(path: str | None) -> Any:
 def _load_data(data_id: str, n: int, seed: int):
     """Return (rows, ys, meta) from the data section."""
     if data_id.startswith("driftstream"):
-        from dense_armor.utility.signals.datasets import DriftStream
+        from dense_armor.core.signals.datasets import DriftStream
         kind = data_id.replace("driftstream_", "")
         ds = DriftStream(n_samples=n, n_features=4, n_drifts=1, kind=kind, seed=seed)
         X, y = ds.data()
@@ -494,6 +493,7 @@ def run_chain(section_picks: dict, n: int = 500, seed: int = 0) -> dict:
     if port_callable is not None:
         try:
             import numpy as _np
+
             from pipelines.finance.portfolio import load_panel
             panel = load_panel("test/fixtures/finance")
             cov = _np.cov(panel, rowvar=False)

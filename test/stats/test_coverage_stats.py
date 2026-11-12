@@ -5,7 +5,7 @@ import math
 import numpy as np
 import pytest
 
-import dense_armor.utility.signals.stats as st
+import dense_armor.core.signals.stats as st
 
 OTHER_CONTRACT = ("SDFT", "Skyline")
 CLASSES = [

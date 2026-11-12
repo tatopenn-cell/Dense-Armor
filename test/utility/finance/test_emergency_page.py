@@ -51,9 +51,8 @@ def _serve(app):
 
 
 def test_1_click_raises_stop(tmp_path, chromium_available):
-    from playwright.sync_api import sync_playwright
-
     from dashboard.app import create_app
+    from playwright.sync_api import sync_playwright
 
     cfg = _cfg(tmp_path)
     app = create_app(str(cfg))
@@ -73,9 +72,8 @@ def test_1_click_raises_stop(tmp_path, chromium_available):
 
 
 def test_2_stop_already_raised(tmp_path, chromium_available):
-    from playwright.sync_api import sync_playwright
-
     from dashboard.app import create_app
+    from playwright.sync_api import sync_playwright
 
     cfg = _cfg(tmp_path)
     (tmp_path / "STOP").write_bytes(b"")
@@ -98,9 +96,8 @@ def test_2_stop_already_raised(tmp_path, chromium_available):
 
 
 def test_3_server_down_shows_error(tmp_path, chromium_available):
-    from playwright.sync_api import sync_playwright
-
     from dashboard.app import create_app
+    from playwright.sync_api import sync_playwright
 
     cfg = _cfg(tmp_path)
     app = create_app(str(cfg))

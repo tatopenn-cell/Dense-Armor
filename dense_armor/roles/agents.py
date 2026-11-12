@@ -75,7 +75,7 @@ def schema(est: Any) -> dict:
 
     Examples:
         >>> from dense_armor.roles.agents import schema
-        >>> from dense_armor.utility.signals.stats.moments import RunningMoments
+        >>> from dense_armor.core.signals.stats.moments import RunningMoments
         >>> s = schema(RunningMoments())
         >>> s["name"]
         'RunningMoments'
@@ -141,7 +141,7 @@ def call_json(est: Any, payload: str | Mapping[str, Any]) -> str:
 
     Examples:
         >>> from dense_armor.roles.agents import call_json
-        >>> from dense_armor.utility.signals.stats.moments import RunningMoments
+        >>> from dense_armor.core.signals.stats.moments import RunningMoments
         >>> import json
         >>> out = call_json(
         ...     RunningMoments(),

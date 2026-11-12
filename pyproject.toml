@@ -25,7 +25,7 @@ tensorflow = ["tensorflow-cpu>=2.16"]
 torch = ["torch>=2.0"]
 sklearn = ["scikit-learn>=1.6"]
 finance-stream = ["pyzmq>=25", "confluent-kafka>=2"]
-audio = ["scipy"]
+audio = ["scipy", "sounddevice"]
 data = ["h5py", "netCDF4"]
 quantum = ["dense-evolution"]
 mcp = ["mcp>=2.0.0", "pydantic>=2.0"]
@@ -74,10 +74,10 @@ select = ["E4", "E7", "E9", "F", "I", "UP"]
 "dense_armor/__init__.py" = ["E402"]
 "dense_armor/checks/check_estimator.py" = ["E402"]
 "dense_armor/roles/__init__.py" = ["E402", "F401"]
-"dense_armor/core/__init__.py" = ["F401"]
+"dense_armor/utility/__init__.py" = ["F401"]
 
 [[tool.mypy.overrides]]
-module = ["pyulog", "pyulog.*", "pymavlink", "pymavlink.*", "paho.*", "yaml", "psutil", "scipy", "scipy.*", "zmq", "confluent_kafka", "quickfix"]
+module = ["sounddevice", "pyulog", "pyulog.*", "pymavlink", "pymavlink.*", "paho.*", "yaml", "psutil", "scipy", "scipy.*", "zmq", "confluent_kafka", "quickfix"]
 ignore_missing_imports = true
 
 

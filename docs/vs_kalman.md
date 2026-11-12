@@ -35,7 +35,7 @@ the same corrupted stream; the mean squared error against the clean signal:
 
 ```python
 import numpy as np
-from dense_armor.utility.online.anomaly.mahalanobis import OnlineRobustMahalanobis
+from dense_armor.core.online.anomaly.mahalanobis import OnlineRobustMahalanobis
 
 rng = np.random.default_rng(0)
 est = OnlineRobustMahalanobis()

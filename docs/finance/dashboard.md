@@ -25,7 +25,7 @@ shutil.copy(
 env = os.environ.copy()
 env["PYTHONPATH"] = "/content/Dense-Armor"
 r = subprocess.run(
-    [sys.executable, "-m", "dense_armor.utility.finance.demo",
+    [sys.executable, "-m", "dense_armor.core.finance.demo",
      "--config", str(work / "demo.toml"), "--n", "200"],
     capture_output=True, text=True, cwd=str(work), env=env,
 )
@@ -71,7 +71,7 @@ shutil.copy(
 env = os.environ.copy()
 env["PYTHONPATH"] = "/content/Dense-Armor"
 subprocess.run(
-    [sys.executable, "-m", "dense_armor.utility.finance.demo",
+    [sys.executable, "-m", "dense_armor.core.finance.demo",
      "--config", str(work / "demo.toml"), "--n", "200"],
     capture_output=True, text=True, cwd=str(work), env=env,
 )
@@ -139,7 +139,7 @@ shutil.copy(
 env = os.environ.copy()
 env["PYTHONPATH"] = "/content/Dense-Armor"
 subprocess.run(
-    [sys.executable, "-m", "dense_armor.utility.finance.demo",
+    [sys.executable, "-m", "dense_armor.core.finance.demo",
      "--config", str(work / "demo.toml"), "--n", "200"],
     capture_output=True, text=True, cwd=str(work), env=env,
 )
@@ -183,7 +183,7 @@ no bar.
 - The dashboard uses `flask`, `sqlalchemy`, `alembic`, `psycopg2-binary` as
   optional dependencies of the extra `finance-ops`, not of the base
   `dependencies`. `flask` is imported inside `create_app`, so importing
-  `dense_armor.utility.finance` does not need it.
+  `dense_armor.core.finance` does not need it.
 
 **Choices stated explicitly.**
 - The SVG is written by hand. A plotting library would add a dependency and a

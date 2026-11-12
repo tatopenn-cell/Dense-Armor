@@ -20,14 +20,13 @@ import pytest
 from dense_armor.checks import check_estimator
 from dense_armor.roles import Estimator
 
-
 PACKAGES = [
-    "dense_armor.utility.online.bayes",
-    "dense_armor.utility.online.neighbors",
-    "dense_armor.utility.online.multiclass",
-    "dense_armor.utility.online.multioutput",
-    "dense_armor.utility.online.forest",
-    "dense_armor.utility.online.rules",
+    "dense_armor.core.online.bayes",
+    "dense_armor.core.online.neighbors",
+    "dense_armor.core.online.multiclass",
+    "dense_armor.core.online.multioutput",
+    "dense_armor.core.online.forest",
+    "dense_armor.core.online.rules",
 ]
 
 # Reasons for a check that cannot apply. Empty by default: this module

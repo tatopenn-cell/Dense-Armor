@@ -55,8 +55,8 @@ Transformers compose with `+` (union) and `*` (product); anything
 composes with `|`:
 
 ```python
-from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB
-from dense_armor.utility.online.anomaly.filters import HampelFilter
+from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB
+from dense_armor.core.online.anomaly.filters import HampelFilter
 
 model = HampelFilter(radius=5, feature="v") | OnlineGaussianNB()
 model.learn_one({"v": 1.0, "other": 2.0}, 0)
@@ -110,7 +110,7 @@ subpackage, the `Hampel*` filters, the `Protected` wrapper) currently do
 not.
 
 ```python
-from dense_armor.utility.signals.stats.robust import RollingMedian
+from dense_armor.core.signals.stats.robust import RollingMedian
 
 model = RollingMedian(window=5)
 for i in range(100):
@@ -141,8 +141,8 @@ argument raises `ValueError`.
 
 ```python
 from dense_armor.roles import Protected
-from dense_armor.utility.online.anomaly.filters import HampelScorer
-from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB
+from dense_armor.core.online.anomaly.filters import HampelScorer
+from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB
 
 safe = Protected(
     OnlineGaussianNB(), HampelScorer(radius=5), fallback=0, train_detector=True
@@ -157,7 +157,7 @@ attributes); `load_state_dict(s)` restores it. Separate from
 losing its hyper-parameters.
 
 ```python
-from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB
+from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB
 
 model = OnlineGaussianNB()
 model.learn_one({"v": 1.0}, 0)

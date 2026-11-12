@@ -7,15 +7,15 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.deep.neural.activations import Relu, Sigmoid, Tanh
-from dense_armor.utility.deep.neural.gradcheck import gradcheck
-from dense_armor.utility.deep.neural.layers import Dense
-from dense_armor.utility.deep.neural.losses import (
+from dense_armor.core.deep.neural.activations import Relu, Sigmoid, Tanh
+from dense_armor.core.deep.neural.gradcheck import gradcheck
+from dense_armor.core.deep.neural.layers import Dense
+from dense_armor.core.deep.neural.losses import (
     bce_with_logits_backward,
     bce_with_logits_forward,
 )
-from dense_armor.utility.deep.neural.models import mlp, resnet_mlp
-from dense_armor.utility.online.optim.adam import Adam
+from dense_armor.core.deep.neural.models import mlp, resnet_mlp
+from dense_armor.core.online.optim.adam import Adam
 
 
 def test_mlp_shapes():
@@ -81,8 +81,8 @@ def test_resnet_mlp_gradcheck():
 
 
 def test_resnet_block_zero_second_dense_is_the_rectifier_of_input():
-    from dense_armor.utility.deep.neural.chain import Sequential
-    from dense_armor.utility.deep.neural.layers import Residual
+    from dense_armor.core.deep.neural.chain import Sequential
+    from dense_armor.core.deep.neural.layers import Residual
 
     r = resnet_mlp(4, 1, 4, 1, jax.random.PRNGKey(0))
     block = None

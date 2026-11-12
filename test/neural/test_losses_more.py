@@ -7,11 +7,11 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.deep.neural.losses import (
+from dense_armor.core.deep.neural.losses import (
     BCEWithLogits,
     SoftmaxCrossEntropy,
 )
-from dense_armor.utility.deep.neural.losses_more import (
+from dense_armor.core.deep.neural.losses_more import (
     FocalLoss,
     HingeLoss,
     KLDivLoss,

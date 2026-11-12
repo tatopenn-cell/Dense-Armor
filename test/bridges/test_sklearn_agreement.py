@@ -22,10 +22,10 @@ from dense_armor.bridges.sklearn import (
     SklearnTransformer,
     from_sklearn,
 )
-from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB
-from dense_armor.utility.online.linear.glm import LinearRegression
-from dense_armor.utility.online.optim import SGD
-from dense_armor.utility.signals.preprocessing.scale import MinMaxScaler
+from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB
+from dense_armor.core.online.linear.glm import LinearRegression
+from dense_armor.core.online.optim import SGD
+from dense_armor.core.signals.preprocessing.scale import MinMaxScaler
 
 
 def _data(seed=0, n=40, d=3):

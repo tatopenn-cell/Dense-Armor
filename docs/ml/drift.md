@@ -39,7 +39,7 @@ The class of a sketch is the exact value the sketch approximates, and the class 
 
 ### Development diary
 
-The classes are new and independent of the online classes of dense_armor.utility.
+The classes are new and independent of the online classes of dense_armor.core.
 
 Classes without a form:
 - `ADWIN`: the reference defines the test on a stream, with a window or a running statistic that moves at each new value: the algorithm of the reference is written for one value at a time

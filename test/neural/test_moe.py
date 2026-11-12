@@ -5,8 +5,8 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.deep.neural.gradcheck import gradcheck
-from dense_armor.utility.deep.neural.moe import SparseMoE, forward_pure
+from dense_armor.core.deep.neural.gradcheck import gradcheck
+from dense_armor.core.deep.neural.moe import SparseMoE, forward_pure
 
 
 def _model(n_experts=3, top_k=2, n_x=2, n_y=2, hidden=4, seed=0, cf=1.25):

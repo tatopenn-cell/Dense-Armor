@@ -16,10 +16,10 @@ import sys
 code = """
 import numpy as np
 import jax
-from dense_armor.utility.deep.neural.models import mlp
-from dense_armor.utility.deep.neural.losses import MSE
-from dense_armor.utility.deep.neural.trainer import Trainer
-from dense_armor.utility.online.optim import SGD
+from dense_armor.core.deep.neural.models import mlp
+from dense_armor.core.deep.neural.losses import MSE
+from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.online.optim import SGD
 
 X = np.random.default_rng(0).normal(size=(32, 2)).astype(np.float32)
 y = np.random.default_rng(1).normal(size=(32, 1)).astype(np.float32)
@@ -88,10 +88,10 @@ import sys
 code = """
 import numpy as np
 import jax
-from dense_armor.utility.deep.neural.models import mlp
-from dense_armor.utility.deep.neural.losses import MSE
-from dense_armor.utility.deep.neural.trainer import Trainer
-from dense_armor.utility.online.optim import SGD
+from dense_armor.core.deep.neural.models import mlp
+from dense_armor.core.deep.neural.losses import MSE
+from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.online.optim import SGD
 
 X = np.random.default_rng(0).normal(size=(32, 2)).astype(np.float32)
 y = np.random.default_rng(1).normal(size=(32, 1)).astype(np.float32)
@@ -123,8 +123,8 @@ None [2.42154, 2.16323, 1.94653]
 A larger global batch gives a less noisy gradient, and the learning rate can grow with it. The linear scaling rule (Goyal et al. 2017, Section 2.1, page 2): when the batch is multiplied by `k`, multiply the learning rate by `k`. `linear_scaling(lr, batch, base_batch)` computes it. At the start of training a large learning rate can make the model diverge, so the paper raises the learning rate gradually over the first epochs (Section 2.2, page 3); `LinearWarmup` does that.
 
 ```python
-from dense_armor.utility.deep.neural.data_parallel import linear_scaling
-from dense_armor.utility.deep.neural.schedules_more import LinearWarmup
+from dense_armor.core.deep.neural.data_parallel import linear_scaling
+from dense_armor.core.deep.neural.schedules_more import LinearWarmup
 
 lr = linear_scaling(0.1, 256, 32)
 s = LinearWarmup(0.1, lr, 5)

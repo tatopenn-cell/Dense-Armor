@@ -5,14 +5,14 @@ import doctest
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.online.linear.glm import LogisticRegression
-from dense_armor.utility.online.multiclass import (
+from dense_armor.core.online.linear.glm import LogisticRegression
+from dense_armor.core.online.multiclass import (
     OneVsOneClassifier,
     OneVsRestClassifier,
     OutputCodeClassifier,
 )
-from dense_armor.utility.online.multiclass import multiclass as mc_mod
-from dense_armor.utility.online.optim import SGD
+from dense_armor.core.online.multiclass import multiclass as mc_mod
+from dense_armor.core.online.optim import SGD
 
 
 def factory():

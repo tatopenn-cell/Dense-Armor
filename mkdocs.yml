@@ -260,6 +260,16 @@ nav:
       - Continual learning: neural/continual_learning.md
       - Mixture of experts and test-time compute: neural/moe_testtime.md
       - Stable variance in float32: stats/stable_variance.md
+  - Audio:
+      - Overview: audio/index.md
+      - Sound, files and frequency: audio/sound.md
+      - Filters: audio/filters.md
+      - Making sound: audio/synthesis.md
+      - Pitch: audio/pitch.md
+      - Resampling: audio/resampling.md
+      - Separating sources: audio/analysis.md
+      - Events and streams: audio/events.md
+      - Sources and checks: audio/sources.md
   - Library:
       - Home: index.md
       - Getting Started: getting-started.md

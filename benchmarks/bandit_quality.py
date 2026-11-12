@@ -37,13 +37,13 @@ from pathlib import Path
 import numpy as np
 from scipy.stats import wilcoxon
 
-from dense_armor.utility.online.active import (
+from dense_armor.core.online.active import (
     FixedUncertainty,
     RandomStrategy,
     VariableRandomizedUncertainty,
     VariableUncertainty,
 )
-from dense_armor.utility.online.bandit import (
+from dense_armor.core.online.bandit import (
     UCB1,
     BayesUCB,
     EpsilonGreedy,
@@ -53,8 +53,8 @@ from dense_armor.utility.online.bandit import (
     ThompsonSampling,
     UCB1Tuned,
 )
-from dense_armor.utility.signals.datasets import DriftStream
-from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB
+from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB
+from dense_armor.core.signals.datasets import DriftStream
 
 N_STEPS = 2000
 DRIFT_AT = 1000
@@ -250,7 +250,7 @@ def _run_robot(seeds, rounds):
         latencies.append(dt / rounds)
         picks.append(sel.best_gain())
         # regret vs the best fixed gain, measured on the same dataset
-        from dense_armor.utility.online.bandit.robot import _episode
+        from dense_armor.core.online.bandit.robot import _episode
         best_fixed = max(
             (a for a in ROBOT_ARMS),
             key=lambda a: _episode(sel.ds_, a),

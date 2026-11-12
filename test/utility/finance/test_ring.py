@@ -5,7 +5,7 @@ import threading
 import numpy as np
 import pytest
 
-from dense_armor.utility.finance.ring import RingBuffer
+from dense_armor.core.finance.ring import RingBuffer
 
 
 def test_fifo_order():

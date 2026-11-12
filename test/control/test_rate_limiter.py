@@ -7,10 +7,10 @@ from Dense-Evolution-Discovery after validation on two independent
 real physical domains (SO-101, ALOHA -- see utility/rate_limiter.py's
 own docstring for the real numbers).
 """
-import pytest
 import numpy as np
+import pytest
 
-from dense_armor.utility.robot.control.rate_limiter import rate_limited_follower
+from dense_armor.core.robot.control.rate_limiter import rate_limited_follower
 
 
 def test_causal_output_unaffected_by_truncating_future_data():

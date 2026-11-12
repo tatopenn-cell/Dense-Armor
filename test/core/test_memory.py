@@ -3,8 +3,8 @@ import types
 
 import pytest
 
-import dense_armor.core.memory as memory_module
-from dense_armor.core.memory import UniversalMemoryGuard, MemoryPressureError
+import dense_armor.utility.memory as memory_module
+from dense_armor.utility.memory import MemoryPressureError, UniversalMemoryGuard
 
 
 def _fake_virtual_memory(total, available):
@@ -13,7 +13,7 @@ def _fake_virtual_memory(total, available):
 
 def test_check_memory_safety_passa_con_ram_abbondante(monkeypatch):
     monkeypatch.setattr(
-        "dense_armor.core.memory.psutil.virtual_memory",
+        "dense_armor.utility.memory.psutil.virtual_memory",
         lambda: _fake_virtual_memory(total=100, available=90),
     )
     guard = UniversalMemoryGuard(min_free_ram_percentage=0.15, force_gc=False)
@@ -22,7 +22,7 @@ def test_check_memory_safety_passa_con_ram_abbondante(monkeypatch):
 
 def test_check_memory_safety_solleva_sotto_soglia(monkeypatch):
     monkeypatch.setattr(
-        "dense_armor.core.memory.psutil.virtual_memory",
+        "dense_armor.utility.memory.psutil.virtual_memory",
         lambda: _fake_virtual_memory(total=100, available=1),
     )
     guard = UniversalMemoryGuard(min_free_ram_percentage=0.15, force_gc=False)
@@ -32,7 +32,7 @@ def test_check_memory_safety_solleva_sotto_soglia(monkeypatch):
 
 def test_check_memory_safety_soft_gc_non_cambia_esito_se_ram_resta_bassa(monkeypatch):
     monkeypatch.setattr(
-        "dense_armor.core.memory.psutil.virtual_memory",
+        "dense_armor.utility.memory.psutil.virtual_memory",
         lambda: _fake_virtual_memory(total=100, available=1),
     )
     guard = UniversalMemoryGuard(min_free_ram_percentage=0.15, force_gc=True)
@@ -48,7 +48,7 @@ def test_get_gpu_free_memory_nvidia_ritorna_frazione_valida():
 
 def test_calculate_optimal_chunks_un_solo_chunk_se_ci_sta(monkeypatch):
     monkeypatch.setattr(
-        "dense_armor.core.memory.psutil.virtual_memory",
+        "dense_armor.utility.memory.psutil.virtual_memory",
         lambda: _fake_virtual_memory(total=1_000_000, available=1_000_000),
     )
     guard = UniversalMemoryGuard(min_free_ram_percentage=0.05, force_gc=False)
@@ -58,7 +58,7 @@ def test_calculate_optimal_chunks_un_solo_chunk_se_ci_sta(monkeypatch):
 
 def test_calculate_optimal_chunks_piu_chunk_se_i_dati_non_ci_stanno(monkeypatch):
     monkeypatch.setattr(
-        "dense_armor.core.memory.psutil.virtual_memory",
+        "dense_armor.utility.memory.psutil.virtual_memory",
         lambda: _fake_virtual_memory(total=1_000, available=1_000),
     )
     guard = UniversalMemoryGuard(min_free_ram_percentage=0.05, force_gc=False)

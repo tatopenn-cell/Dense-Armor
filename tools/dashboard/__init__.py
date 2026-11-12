@@ -8,5 +8,5 @@ templates and static files are not shipped. It is imported as ``dashboard`` with
 
 ``app`` is the Flask application and its command line, ``chain`` composes the six slots of the finance
 chain, ``sections`` builds the pages of the pieces, and ``templates/`` and ``static/`` are its pages, style
-and script. The finance primitives that it shows stay in ``dense_armor.utility.finance``.
+and script. The finance primitives that it shows stay in ``dense_armor.core.finance``.
 """

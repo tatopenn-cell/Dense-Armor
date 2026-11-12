@@ -12,8 +12,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from dense_armor.utility.signals.datasets import SyntheticArm
-from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
+from dense_armor.core.online.drift.detector import CUSUMDriftDetector
+from dense_armor.core.signals.datasets import SyntheticArm
 
 URDF = Path("test/fixtures/urdf/panda.urdf")
 PERIOD = 1.0

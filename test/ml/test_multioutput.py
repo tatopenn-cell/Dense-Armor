@@ -1,9 +1,9 @@
 """Hand cases of the multi-target models of the machine learning package."""
 
-import pytest
 import doctest
 
 import numpy as np
+import pytest
 
 import dense_armor.ml.multioutput as MO
 from dense_armor.ml.linear import LinearRegression

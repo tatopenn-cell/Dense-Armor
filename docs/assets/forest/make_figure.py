@@ -22,14 +22,14 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 
-from dense_armor.utility.signals.datasets import DriftStream
-from dense_armor.utility.online.drift.adwin import ADWIN
-from dense_armor.utility.online.forest import (
+from dense_armor.core.online.drift.adwin import ADWIN
+from dense_armor.core.online.forest import (
     AdaptiveRandomForestClassifier,
     AggregatedMondrianForestRegressor,
 )
-from dense_armor.utility.online.forest.amf import _AmfTree, _Mean
-from dense_armor.utility.online.tree import HoeffdingAdaptiveTreeClassifier
+from dense_armor.core.online.forest.amf import _AmfTree, _Mean
+from dense_armor.core.online.tree import HoeffdingAdaptiveTreeClassifier
+from dense_armor.core.signals.datasets import DriftStream
 
 HERE = Path(__file__).resolve().parent
 N, D, CUT = 2000, 4, 1000

@@ -16,7 +16,7 @@ delimited.
 ~~~python
 import os
 from pathlib import Path
-from dense_armor.utility.finance.feed import frame
+from dense_armor.core.finance.feed import frame
 
 os.makedirs("/tmp/f7_page", exist_ok=True)
 
@@ -75,7 +75,7 @@ record at a time (`read(2)` for the length, then `read(L)` for the body), and
 closes the file at the end or when the generator is closed.
 
 ~~~python
-from dense_armor.utility.finance.feed import iter_itch
+from dense_armor.core.finance.feed import iter_itch
 msgs = list(iter_itch("/tmp/f7_page/feed.bin"))
 print("count:", len(msgs))
 for m in msgs:
@@ -102,7 +102,7 @@ error names the exact place.
 
 ~~~python
 from pathlib import Path
-from dense_armor.utility.finance.feed import iter_itch
+from dense_armor.core.finance.feed import iter_itch
 src = Path("/tmp/f7_page/feed.bin").read_bytes()
 truncated = src[:-10]
 Path("/tmp/f7_page/bad.bin").write_bytes(truncated)

@@ -47,19 +47,19 @@ MODELS = {
 
 
 def _mlp():
-    from dense_armor.utility.deep.neural.models import mlp
+    from dense_armor.core.deep.neural.models import mlp
 
     return mlp([2, 4, 1], jax.random.PRNGKey(0))
 
 
 def _resnet():
-    from dense_armor.utility.deep.neural.models import resnet_mlp
+    from dense_armor.core.deep.neural.models import resnet_mlp
 
     return resnet_mlp(width=4, depth=3, n_in=2, n_out=1, key=jax.random.PRNGKey(0))
 
 
 def _cnn():
-    from dense_armor.utility.deep.neural.models import cnn
+    from dense_armor.core.deep.neural.models import cnn
 
     return cnn(
         input_shape=(8, 8, 1),
@@ -71,7 +71,7 @@ def _cnn():
 
 
 def _rnn():
-    from dense_armor.utility.deep.neural.models import recurrent_net
+    from dense_armor.core.deep.neural.models import recurrent_net
 
     return recurrent_net(
         n_in=2,
@@ -84,7 +84,7 @@ def _rnn():
 
 
 def _transformer():
-    from dense_armor.utility.deep.neural.models import transformer_encoder
+    from dense_armor.core.deep.neural.models import transformer_encoder
 
     return transformer_encoder(4, 8, 2, 16, 1, 3, jax.random.PRNGKey(0), 16)
 

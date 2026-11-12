@@ -37,7 +37,7 @@ _THIS_DIR = pathlib.Path(__file__).resolve().parent
 if str(_THIS_DIR) not in sys.path:
     sys.path.insert(0, str(_THIS_DIR))
 
-from tools import TOOL_SPECS, TOOL_FUNCS  # noqa: E402
+from tools import TOOL_FUNCS, TOOL_SPECS  # noqa: E402
 
 MODEL = "qwen:latest"
 

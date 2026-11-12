@@ -20,7 +20,7 @@ Each day has two numbers: the return in percent and the log volume. The detector
 
 ```python
 import numpy as np
-from dense_armor.utility.online.anomaly.mahalanobis import OnlineRobustMahalanobis
+from dense_armor.core.online.anomaly.mahalanobis import OnlineRobustMahalanobis
 
 rng = np.random.default_rng(0)
 
@@ -103,7 +103,7 @@ Neither is needed for flagging: the MCM metric with a calibrated `threshold` is 
 
 ## Parameters
 
-`OnlineRobustMahalanobis(...)`, in `dense_armor.utility.online.anomaly.mahalanobis`. `learn_one(x)` takes a dict with one key per channel; `score_one(x)` returns the distance as a float, `0.0` until the offline initialisation is done.
+`OnlineRobustMahalanobis(...)`, in `dense_armor.core.online.anomaly.mahalanobis`. `learn_one(x)` takes a dict with one key per channel; `score_one(x)` returns the distance as a float, `0.0` until the offline initialisation is done.
 
 | Parameter | Default | Meaning |
 |---|---|---|
@@ -144,10 +144,10 @@ t = 2 s) shifts the residual on joints 1-5 by tens of N·m; the healthy run stay
 
 ```python
 from pathlib import Path
-from dense_armor.utility.online.anomaly.mahalanobis import (
+from dense_armor.core.online.anomaly.mahalanobis import (
     OnlineRobustMahalanobis,
 )
-from dense_armor.utility.signals.datasets import SyntheticArm
+from dense_armor.core.signals.datasets import SyntheticArm
 
 ds = SyntheticArm(
     Path("test/fixtures/urdf/panda.urdf"),

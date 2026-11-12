@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from dense_armor.utility.online.bandit import BayesUCB
+from dense_armor.core.online.bandit import BayesUCB
 
 
 def test_bayes_ucb_bernoulli_finds_best_arm():

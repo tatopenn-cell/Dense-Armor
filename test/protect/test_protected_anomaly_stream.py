@@ -24,17 +24,17 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from dense_armor.roles import AnomalyGate, Protected
-from dense_armor.utility.online.anomaly.hst import HalfSpaceTrees
-from dense_armor.utility.online.anomaly.loda import LODA
-from dense_armor.utility.online.anomaly.lof import LocalOutlierFactor
-from dense_armor.utility.online.anomaly.mahalanobis import (
+from dense_armor.core.online.anomaly.hst import HalfSpaceTrees
+from dense_armor.core.online.anomaly.loda import LODA
+from dense_armor.core.online.anomaly.lof import LocalOutlierFactor
+from dense_armor.core.online.anomaly.mahalanobis import (
     OnlineRobustMahalanobis,
 )
-from dense_armor.utility.online.anomaly.ocsvm import OneClassSGD
-from dense_armor.utility.online.anomaly.oiforest import OnlineIsolationForest
-from dense_armor.utility.signals.datasets import SyntheticArm
-from dense_armor.utility.online.learn.online_dynamics import RecursiveLeastSquares
+from dense_armor.core.online.anomaly.ocsvm import OneClassSGD
+from dense_armor.core.online.anomaly.oiforest import OnlineIsolationForest
+from dense_armor.core.online.learn.online_dynamics import RecursiveLeastSquares
+from dense_armor.core.signals.datasets import SyntheticArm
+from dense_armor.roles import AnomalyGate, Protected
 
 URDF = Path("test/fixtures/urdf/panda.urdf")
 

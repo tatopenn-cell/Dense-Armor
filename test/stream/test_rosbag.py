@@ -10,7 +10,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from dense_armor.utility.signals.stream import iter_rosbag
+from dense_armor.core.signals.stream import iter_rosbag
 
 ROS1_WRITER_WINDOWS = pytest.mark.skipif(
     sys.platform == "win32",
@@ -92,6 +92,6 @@ def test_iter_rosbag_missing_package(monkeypatch):
     monkeypatch.setattr(builtins, "__import__", fake_import)
     import importlib
 
-    mod = importlib.reload(importlib.import_module("dense_armor.utility.signals.stream.rosbag"))
+    mod = importlib.reload(importlib.import_module("dense_armor.core.signals.stream.rosbag"))
     with pytest.raises(ImportError):
         list(mod.iter_rosbag("/anything"))

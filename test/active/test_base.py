@@ -2,7 +2,7 @@
 
 import pytest
 
-from dense_armor.utility.online.active.base import ActiveStrategy
+from dense_armor.core.online.active.base import ActiveStrategy
 
 
 def test_base_strategy_is_abstract():

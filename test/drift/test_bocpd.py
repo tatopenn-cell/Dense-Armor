@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from scipy import stats
 
-from dense_armor.utility.online.drift.bocpd import BayesianOnlineChangepoint
+from dense_armor.core.online.drift.bocpd import BayesianOnlineChangepoint
 
 
 def _brute_force(xs, lam, mu0, kappa0, alpha0, beta0):

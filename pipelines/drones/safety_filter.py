@@ -73,7 +73,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from dense_armor.utility.robot.control.cbf_filter import (
+from dense_armor.core.robot.control.cbf_filter import (
     cbf_safety_filter_live,
 )
 

@@ -23,14 +23,14 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 
-from dense_armor.utility.signals.vision.features import FrameFeatures
-from dense_armor.utility.signals.vision.reduce import (
+from dense_armor.core.online.drift.page_hinkley import PageHinkley
+from dense_armor.core.signals.vision.features import FrameFeatures
+from dense_armor.core.signals.vision.reduce import (
     IncrementalPCA,
     RandomProjection,
 )
-from dense_armor.utility.online.drift.page_hinkley import PageHinkley
-from dense_armor.utility.signals.vision.scene import SceneChange
-from dense_armor.utility.signals.vision.streams import ArrayStream, CubeStream
+from dense_armor.core.signals.vision.scene import SceneChange
+from dense_armor.core.signals.vision.streams import ArrayStream, CubeStream
 
 HERE = Path(__file__).resolve().parent
 BLUE = "#2a78d6"
@@ -388,9 +388,10 @@ def fig_09_chain():
 
 def fig_10_motion():
     """MotionEnergy on a smooth stream, and GlobalMotion on a known shift."""
-    from dense_armor.utility.signals.vision.motion import MotionEnergy, GlobalMotion
-    from dense_armor.utility.signals.vision.streams import ArrayStream
     from scipy.ndimage import gaussian_filter
+
+    from dense_armor.core.signals.vision.motion import GlobalMotion, MotionEnergy
+    from dense_armor.core.signals.vision.streams import ArrayStream
 
     rng = np.random.default_rng(0)
     frames = []
@@ -452,9 +453,9 @@ def fig_10_motion():
 
 def fig_11_scenes():
     """SceneChange and FrameAnomaly on synthetic cuts."""
-    from dense_armor.utility.online.drift.page_hinkley import PageHinkley
-    from dense_armor.utility.signals.vision.scene import SceneChange, FrameAnomaly
-    from dense_armor.utility.signals.vision.window import FrameWindow
+    from dense_armor.core.online.drift.page_hinkley import PageHinkley
+    from dense_armor.core.signals.vision.scene import FrameAnomaly, SceneChange
+    from dense_armor.core.signals.vision.window import FrameWindow
 
     rng = np.random.default_rng(0)
     frames = []
@@ -515,7 +516,7 @@ def fig_11_scenes():
 
 def fig_12_tracking():
     """MovingObjectTracker on boxes from a known ground truth."""
-    from dense_armor.utility.signals.vision.tracking import MovingObjectTracker
+    from dense_armor.core.signals.vision.tracking import MovingObjectTracker
 
     rng = np.random.default_rng(0)
     frames = []
@@ -553,7 +554,7 @@ def fig_12_tracking():
 
 def fig_13_signals():
     """FrameJointFusion: estimate the lag between video velocity and joints."""
-    from dense_armor.utility.signals.vision.fusion import FrameJointFusion
+    from dense_armor.core.signals.vision.fusion import FrameJointFusion
 
     fps = 30.0
     T = 6.0
@@ -593,8 +594,10 @@ def fig_13_signals():
 
 def fig_14_landmarks():
     """Kinematics on a 3-point chain: elbow angle raw vs cleaned."""
-    from dense_armor.utility.signals.vision.landmarks import (
-        Kinematics, LandmarkCleaner, LandmarkStream,
+    from dense_armor.core.signals.vision.landmarks import (
+        Kinematics,
+        LandmarkCleaner,
+        LandmarkStream,
     )
 
     fps = 30.0
@@ -646,8 +649,10 @@ def fig_14_landmarks():
 def fig_15_registration():
     """Stabilizer and DifferenceImage on a known shift."""
     from scipy.ndimage import gaussian_filter
-    from dense_armor.utility.signals.vision.registration import (
-        DifferenceImage, Stabilizer,
+
+    from dense_armor.core.signals.vision.registration import (
+        DifferenceImage,
+        Stabilizer,
     )
 
     rng = np.random.default_rng(0)
@@ -695,8 +700,10 @@ def fig_16_dense_flow():
     Second scene: a synthetic flow field, global (1.0, 0.5) plus noise,
     with a 12 by 12 square moving by an extra (2.0, 2.0); IoU over 20 seeds.
     """
-    from scipy.ndimage import gaussian_filter, shift as nd_shift
-    from dense_armor.utility.signals.vision.dense import DenseFlow, MotionMask
+    from scipy.ndimage import gaussian_filter
+    from scipy.ndimage import shift as nd_shift
+
+    from dense_armor.core.signals.vision.dense import DenseFlow, MotionMask
 
     rng = np.random.default_rng(0)
     big = gaussian_filter(rng.normal(0, 1, (96, 96)), 3.0)
@@ -774,7 +781,8 @@ def fig_16_dense_flow():
 def fig_17_quality():
     """FrameQuality: sharp, blurred and black."""
     from scipy.ndimage import gaussian_filter
-    from dense_armor.utility.signals.vision.quality import FrameQuality
+
+    from dense_armor.core.signals.vision.quality import FrameQuality
 
     rng = np.random.default_rng(0)
     sharp = rng.normal(0.5, 0.3, (64, 64)).astype(np.float32)
@@ -807,7 +815,7 @@ def fig_17_quality():
 
 def fig_18_visualise():
     """FalseColor on a thermal band and Overlay with a box."""
-    from dense_armor.utility.signals.vision.visualize import FalseColor, Overlay
+    from dense_armor.core.signals.vision.visualize import FalseColor, Overlay
 
     rng = np.random.default_rng(0)
     band = rng.normal(300.0, 5.0, (64, 64)).astype(np.float32)
@@ -836,7 +844,7 @@ def fig_18_visualise():
 
 def fig_19_event():
     """EventFrame on 200 random events."""
-    from dense_armor.utility.signals.vision.quality import EventFrame
+    from dense_armor.core.signals.vision.quality import EventFrame
 
     rng = np.random.default_rng(0)
     ef = EventFrame(shape=(64, 64), decay=0.9)

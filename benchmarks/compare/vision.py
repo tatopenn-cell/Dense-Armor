@@ -5,10 +5,10 @@ from __future__ import annotations
 import common
 import numpy as np
 
+from dense_armor.core.signals.vision.dense import DenseFlow, MotionMask
+from dense_armor.core.signals.vision.motion import GlobalMotion
+from dense_armor.core.signals.vision.reduce import IncrementalPCA, RandomProjection
 from dense_armor.ml import vision as ml
-from dense_armor.utility.signals.vision.dense import DenseFlow, MotionMask
-from dense_armor.utility.signals.vision.motion import GlobalMotion
-from dense_armor.utility.signals.vision.reduce import IncrementalPCA, RandomProjection
 
 
 def _frames(seed):

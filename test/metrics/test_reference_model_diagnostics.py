@@ -14,7 +14,7 @@ from scipy import special
 
 scoring = pytest.importorskip("model_diagnostics.scoring")
 
-from dense_armor.utility.evaluation.metrics import (  # noqa: E402
+from dense_armor.core.evaluation.metrics import (  # noqa: E402
     BrierScore,
     LogLoss,
     MeanAbsoluteError,

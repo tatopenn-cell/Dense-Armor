@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 
 import dense_armor.roles.uncertainty as unc_mod
+from dense_armor.core.signals.stats.moments import RunningMoments
 from dense_armor.roles import Regressor
 from dense_armor.roles.signal import Signal
 from dense_armor.roles.uncertainty import (
@@ -14,7 +15,6 @@ from dense_armor.roles.uncertainty import (
     Estimate,
     OnlinePlattScaling,
 )
-from dense_armor.utility.signals.stats.moments import RunningMoments
 
 
 class _Mean(Regressor):

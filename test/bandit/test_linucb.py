@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from dense_armor.utility.online.bandit import LinUCBDisjoint
+from dense_armor.core.online.bandit import LinUCBDisjoint
 
 
 def test_linucb_picks_best_arm_from_context():

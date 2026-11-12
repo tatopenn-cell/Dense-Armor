@@ -1,6 +1,7 @@
-import sys
 import os
+import sys
 import time
+
 import jax
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
@@ -10,11 +11,12 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 # di modulo, importato o no) -- ogni categoria girerebbe due volte, una
 # volta qui direttamente e una dentro test_adversarial_suite_summary sotto
 # (verificato: raddoppiava il tempo del file, 91s invece di 45s).
+import pytest
 from test_boundA import test_gradient_based_attacks as _test_A
 from test_boundB import test_geometric_spatial_attacks as _test_B
 from test_boundC import test_optimization_based_attacks as _test_C
 from test_boundD import test_fourier_domain_attacks as _test_D
-import pytest
+
 
 @pytest.mark.heavy
 def test_adversarial_suite_summary():

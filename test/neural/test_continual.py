@@ -5,11 +5,11 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.deep.neural.chain import Sequential
-from dense_armor.utility.deep.neural.continual import AGEM, EWC, GEM
-from dense_armor.utility.deep.neural.gradcheck import gradcheck
-from dense_armor.utility.deep.neural.layers import Dense
-from dense_armor.utility.deep.neural.losses import SoftmaxCrossEntropy
+from dense_armor.core.deep.neural.chain import Sequential
+from dense_armor.core.deep.neural.continual import AGEM, EWC, GEM
+from dense_armor.core.deep.neural.gradcheck import gradcheck
+from dense_armor.core.deep.neural.layers import Dense
+from dense_armor.core.deep.neural.losses import SoftmaxCrossEntropy
 
 KEY = jax.random.PRNGKey(0)
 
@@ -250,7 +250,7 @@ def test_solve_nonneg_qp_stops_with_tol():
     """
     import jax.numpy as jnp
 
-    from dense_armor.utility.deep.neural.continual import GEM
+    from dense_armor.core.deep.neural.continual import GEM
 
     A = jnp.asarray([[2.0, 0.0], [0.0, 2.0]])
     b = jnp.asarray([-1.0, -1.0])

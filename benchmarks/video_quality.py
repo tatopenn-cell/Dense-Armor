@@ -34,32 +34,38 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from dense_armor.utility.signals.vision.adapters import (  # noqa: E402
+from dense_armor.core.signals.vision.adapters import (  # noqa: E402
     FeatureToSignal,
     TrackToSignal,
 )
-from dense_armor.utility.signals.vision.dense import DenseFlow, MotionMask  # noqa: E402
-from dense_armor.utility.signals.vision.fusion import FrameJointFusion  # noqa: E402
-from dense_armor.utility.signals.vision.motion import GlobalMotion, MotionEnergy  # noqa: E402
-from dense_armor.utility.signals.vision.quality import (  # noqa: E402
+from dense_armor.core.signals.vision.dense import DenseFlow, MotionMask  # noqa: E402
+from dense_armor.core.signals.vision.fusion import FrameJointFusion  # noqa: E402
+from dense_armor.core.signals.vision.motion import (  # noqa: E402
+    GlobalMotion,
+    MotionEnergy,
+)
+from dense_armor.core.signals.vision.quality import (  # noqa: E402
     EventFrame,
     FrameQuality,
     Sync,
 )
-from dense_armor.utility.signals.vision.registration import (  # noqa: E402
+from dense_armor.core.signals.vision.registration import (  # noqa: E402
     DifferenceImage,
     Registration,
     Stabilizer,
 )
-from dense_armor.utility.signals.vision.robustness import FrameNormalizer  # noqa: E402
-from dense_armor.utility.signals.vision.scene import FrameAnomaly, SceneChange  # noqa: E402
-from dense_armor.utility.signals.vision.streams import ArrayStream  # noqa: E402
-from dense_armor.utility.signals.vision.tracking import MovingObjectTracker  # noqa: E402
-from dense_armor.utility.signals.vision.visualize import (  # noqa: E402
+from dense_armor.core.signals.vision.robustness import FrameNormalizer  # noqa: E402
+from dense_armor.core.signals.vision.scene import (  # noqa: E402
+    FrameAnomaly,
+    SceneChange,
+)
+from dense_armor.core.signals.vision.streams import ArrayStream  # noqa: E402
+from dense_armor.core.signals.vision.tracking import MovingObjectTracker  # noqa: E402
+from dense_armor.core.signals.vision.visualize import (  # noqa: E402
     FalseColor,
     Overlay,
 )
-from dense_armor.utility.signals.vision.window import FrameWindow  # noqa: E402
+from dense_armor.core.signals.vision.window import FrameWindow  # noqa: E402
 
 N = 15
 WARM = 3

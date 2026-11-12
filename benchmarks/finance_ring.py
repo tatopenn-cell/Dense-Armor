@@ -15,7 +15,7 @@ from pathlib import Path
 import numpy as np
 from scipy.stats import wilcoxon
 
-from dense_armor.utility.finance.ring import RingBuffer
+from dense_armor.core.finance.ring import RingBuffer
 from pipelines.finance.connectors import BoundedStream
 
 ROOT = Path(__file__).resolve().parents[1]

@@ -18,18 +18,18 @@ import time
 
 import numpy as np
 
-from dense_armor.utility.signals.datasets import DriftStream
-from dense_armor.utility.online.drift.adwin import ADWIN
-from dense_armor.utility.online.forest import (
+from dense_armor.core.online.drift.adwin import ADWIN
+from dense_armor.core.online.forest import (
     AdaptiveRandomForestClassifier,
     AggregatedMondrianForestClassifier,
     AggregatedMondrianForestRegressor,
 )
-from dense_armor.utility.online.tree import (
+from dense_armor.core.online.tree import (
     HoeffdingAdaptiveTreeClassifier,
     MondrianForestClassifier,
     MondrianForestRegressor,
 )
+from dense_armor.core.signals.datasets import DriftStream
 
 N, D, CUT = 2000, 4, 1000
 WINDOWS = {"before": (700, 1000), "first100": (1000, 1100), "after+200": (1200, 1500)}

@@ -7,12 +7,12 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.deep.neural.gradcheck import gradcheck
-from dense_armor.utility.deep.neural.losses import (
+from dense_armor.core.deep.neural.gradcheck import gradcheck
+from dense_armor.core.deep.neural.losses import (
     bce_with_logits_backward,
     bce_with_logits_forward,
 )
-from dense_armor.utility.deep.neural.models import (
+from dense_armor.core.deep.neural.models import (
     AddPositions,
     LastStep,
     MeanOverTime,
@@ -20,7 +20,7 @@ from dense_armor.utility.deep.neural.models import (
     recurrent_net,
     transformer_encoder,
 )
-from dense_armor.utility.online.optim.adam import Adam
+from dense_armor.core.online.optim.adam import Adam
 
 
 def test_laststep_forward_and_backward_hand():

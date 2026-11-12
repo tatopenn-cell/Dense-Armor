@@ -8,7 +8,7 @@ utility/kinematic_controller.py's own docstring for the real numbers).
 """
 import numpy as np
 
-from dense_armor.utility.robot.control.kinematic_controller import (
+from dense_armor.core.robot.control.kinematic_controller import (
     kinematic_tracking_controller,
 )
 
@@ -72,7 +72,7 @@ def test_mismatched_shapes_raise():
 
 
 def test_chains_with_quintic_trajectory_recovers_from_real_perturbation():
-    from dense_armor.utility.robot.control.trajectory import quintic_trajectory
+    from dense_armor.core.robot.control.trajectory import quintic_trajectory
     t, q_ref, qd_ref, _ = quintic_trajectory([0.0], [10.0], 3.0, n_samples=1000)
     dt = t[1] - t[0]
     kp = 5.0

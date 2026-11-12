@@ -1,7 +1,7 @@
 """Edge paths of the compose transformers."""
 
+from dense_armor.core.infrastructure.compose import FuncTransformer, Select
 from dense_armor.roles import Signal
-from dense_armor.utility.infrastructure.compose import FuncTransformer, Select
 
 
 def test_select_nothing_and_func_whole_and_missing_keys():

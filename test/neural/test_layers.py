@@ -7,9 +7,9 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.deep.neural.activations import Sigmoid
-from dense_armor.utility.deep.neural.gradcheck import gradcheck
-from dense_armor.utility.deep.neural.layers import (
+from dense_armor.core.deep.neural.activations import Sigmoid
+from dense_armor.core.deep.neural.gradcheck import gradcheck
+from dense_armor.core.deep.neural.layers import (
     Dense,
     Dropout,
     Embedding,
@@ -17,10 +17,10 @@ from dense_armor.utility.deep.neural.layers import (
     dense_backward,
     dense_forward,
 )
-from dense_armor.utility.deep.neural.losses import (
+from dense_armor.core.deep.neural.losses import (
     bce_with_logits_backward,
 )
-from dense_armor.utility.online.optim.sgd import SGD
+from dense_armor.core.online.optim.sgd import SGD
 
 
 def test_dense_backward_matches_finite_differences_for_x():

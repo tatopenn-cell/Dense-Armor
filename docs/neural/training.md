@@ -9,7 +9,7 @@ This page builds the four pieces: the **schedules** of the learning rate, the **
 A schedule is a function of the epoch (which can be fractional, because the trainer reads it at each batch) that returns a learning rate. The `ConstantLR` keeps the same rate. The `StepLR` drops by a factor every `step` epochs. The `CosineWarmRestarts` drops along a cosine and restarts every `t0` epochs.
 
 ~~~python
-from dense_armor.utility.deep.neural.schedules import (
+from dense_armor.core.deep.neural.schedules import (
     ConstantLR, StepLR, CosineWarmRestarts,
 )
 print(ConstantLR(0.1)(5.0))
@@ -31,7 +31,7 @@ print(round(c(0.0), 4), round(c(2.5), 4), round(c(5.0), 4))
 A mini-batch generator takes the length `n` of the dataset and the size `batch_size` and yields arrays of indices. With a `jax.random` key the order is a permutation, so every epoch sees a different order; without a key the order is `0, 1, ..., n-1`.
 
 ~~~python
-from dense_armor.utility.deep.neural.batching import minibatches
+from dense_armor.core.deep.neural.batching import minibatches
 print([b.tolist() for b in minibatches(10, 3)])
 print([len(b) for b in minibatches(10, 3, drop_last=True)])
 ~~~
@@ -51,10 +51,10 @@ A `Trainer` wraps a model (any object with `forward`, `backward` and `params()`)
 ~~~python
 import jax
 import numpy as np
-from dense_armor.utility.deep.neural.trainer import Trainer
-from dense_armor.utility.deep.neural.models import mlp
-from dense_armor.utility.deep.neural.losses import MSE
-from dense_armor.utility.online.optim import SGD
+from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.deep.neural.models import mlp
+from dense_armor.core.deep.neural.losses import MSE
+from dense_armor.core.online.optim import SGD
 
 rng = np.random.default_rng(0)
 X = rng.normal(0.0, 1.0, (40, 2)).astype(np.float32)
@@ -82,10 +82,10 @@ Weight decay shrinks the weights slightly at each step, to prevent them from gro
 ~~~python
 import jax
 import numpy as np
-from dense_armor.utility.deep.neural.trainer import Trainer
-from dense_armor.utility.deep.neural.models import mlp
-from dense_armor.utility.deep.neural.losses import MSE
-from dense_armor.utility.online.optim import SGD
+from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.deep.neural.models import mlp
+from dense_armor.core.deep.neural.losses import MSE
+from dense_armor.core.online.optim import SGD
 
 rng = np.random.default_rng(0)
 X = rng.normal(0.0, 1.0, (20, 2)).astype(np.float32)
@@ -117,10 +117,10 @@ With a validation set and a `patience`, the trainer stops at the end of the epoc
 ~~~python
 import jax
 import numpy as np
-from dense_armor.utility.deep.neural.trainer import Trainer
-from dense_armor.utility.deep.neural.models import mlp
-from dense_armor.utility.deep.neural.losses import MSE
-from dense_armor.utility.online.optim import Adam
+from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.deep.neural.models import mlp
+from dense_armor.core.deep.neural.losses import MSE
+from dense_armor.core.online.optim import Adam
 
 rng = np.random.default_rng(0)
 X = rng.normal(0.0, 1.0, (40, 2)).astype(np.float32)
@@ -150,10 +150,10 @@ The trainer also provides `evaluate(X, y)`, which computes the loss of the whole
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.deep.neural.trainer import Trainer
-from dense_armor.utility.deep.neural.models import mlp
-from dense_armor.utility.deep.neural.losses import MSE
-from dense_armor.utility.online.optim import SGD
+from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.deep.neural.models import mlp
+from dense_armor.core.deep.neural.losses import MSE
+from dense_armor.core.online.optim import SGD
 
 X = jnp.ones((4, 2))
 y = jnp.zeros((4, 1))

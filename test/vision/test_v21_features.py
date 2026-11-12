@@ -9,16 +9,16 @@ run everywhere.
 import numpy as np
 import pytest
 
-from dense_armor.utility.signals.vision.adapters import (
+from dense_armor.core.signals.vision.adapters import (
     FeatureToSignal,
     TrackToSignal,
 )
-from dense_armor.utility.signals.vision.fusion import FrameJointFusion
-from dense_armor.utility.signals.vision.motion import GlobalMotion, MotionEnergy
-from dense_armor.utility.signals.vision.scene import FrameAnomaly, SceneChange
-from dense_armor.utility.signals.vision.streams import ArrayStream
-from dense_armor.utility.signals.vision.tracking import MovingObjectTracker
-from dense_armor.utility.signals.vision.window import FrameWindow
+from dense_armor.core.signals.vision.fusion import FrameJointFusion
+from dense_armor.core.signals.vision.motion import GlobalMotion, MotionEnergy
+from dense_armor.core.signals.vision.scene import FrameAnomaly, SceneChange
+from dense_armor.core.signals.vision.streams import ArrayStream
+from dense_armor.core.signals.vision.tracking import MovingObjectTracker
+from dense_armor.core.signals.vision.window import FrameWindow
 
 
 def test_motion_energy_zero_on_first_frame():

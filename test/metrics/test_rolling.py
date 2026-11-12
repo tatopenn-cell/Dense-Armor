@@ -1,17 +1,17 @@
-"""Tests for dense_armor/utility/evaluation/metrics/rolling.py."""
+"""Tests for dense_armor/core/evaluation/metrics/rolling.py."""
 import doctest
 
 import jax.numpy as jnp
 import pytest
 
-import dense_armor.utility.evaluation.metrics.rolling as rolling_mod
-from dense_armor.roles import Classifier, Regressor, Signal
-from dense_armor.utility.evaluation.metrics import (
+import dense_armor.core.evaluation.metrics.rolling as rolling_mod
+from dense_armor.core.evaluation.metrics import (
     Accuracy,
     MeanAbsoluteError,
     MeanSquaredError,
 )
-from dense_armor.utility.evaluation.metrics.rolling import Rolling
+from dense_armor.core.evaluation.metrics.rolling import Rolling
+from dense_armor.roles import Classifier, Regressor, Signal
 
 
 def test_rolling_accuracy_window():

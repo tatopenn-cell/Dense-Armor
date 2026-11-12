@@ -1,7 +1,7 @@
 """Machine learning algorithms: the algorithm of the paper on the whole dataset.
 
 Each module is a family of the library. The online classes of
-``dense_armor.utility`` are a separate part of the library.
+``dense_armor.core`` are a separate part of the library.
 """
 
 from dense_armor.ml import (  # noqa: F401

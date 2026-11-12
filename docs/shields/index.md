@@ -41,7 +41,7 @@ signal.
 
 ```python
 import numpy as np
-from dense_armor.utility.online.protect.orca import Orca
+from dense_armor.core.online.protect.orca import Orca
 
 rng = np.random.default_rng(0)
 ref = np.sin(np.linspace(0, 6, 200))[None, :] + 0.01 * rng.standard_normal((4, 200))

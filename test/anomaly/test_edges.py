@@ -2,11 +2,11 @@
 
 import pytest
 
-from dense_armor.utility.online.anomaly.hst import HalfSpaceTrees
-from dense_armor.utility.online.anomaly.loda import LODA
-from dense_armor.utility.online.anomaly.mahalanobis import OnlineRobustMahalanobis
-from dense_armor.utility.online.anomaly.ocsvm import OneClassSGD
-from dense_armor.utility.online.anomaly.oiforest import OnlineIsolationForest
+from dense_armor.core.online.anomaly.hst import HalfSpaceTrees
+from dense_armor.core.online.anomaly.loda import LODA
+from dense_armor.core.online.anomaly.mahalanobis import OnlineRobustMahalanobis
+from dense_armor.core.online.anomaly.ocsvm import OneClassSGD
+from dense_armor.core.online.anomaly.oiforest import OnlineIsolationForest
 
 NAMES = ["hst", "loda", "ocsvm", "oiforest", "mahalanobis"]
 BAD_INPUTS: list = [

@@ -482,7 +482,7 @@ Input and output units of an estimator, as ``{name: unit}`` dicts.
 ### Accuracy
 
 
-*Module:* `dense_armor.utility.evaluation.metrics.classification`
+*Module:* `dense_armor.core.evaluation.metrics.classification`
 *Bases:* Metric
 
 Fraction of samples where ``y_pred == y_true``.
@@ -498,7 +498,7 @@ Public methods:
 ### BalancedAccuracy
 
 
-*Module:* `dense_armor.utility.evaluation.metrics.classification`
+*Module:* `dense_armor.core.evaluation.metrics.classification`
 *Bases:* Metric
 
 Mean of the per-class recall.
@@ -514,7 +514,7 @@ Public methods:
 ### BrierScore
 
 
-*Module:* `dense_armor.utility.evaluation.metrics.classification`
+*Module:* `dense_armor.core.evaluation.metrics.classification`
 *Bases:* Metric
 
 Mean squared error of predicted probabilities.
@@ -530,7 +530,7 @@ Public methods:
 ### CohenKappa
 
 
-*Module:* `dense_armor.utility.evaluation.metrics.classification`
+*Module:* `dense_armor.core.evaluation.metrics.classification`
 *Bases:* Metric
 
 Cohen's kappa: agreement corrected for chance.
@@ -546,7 +546,7 @@ Public methods:
 ### ConfusionMatrix
 
 
-*Module:* `dense_armor.utility.evaluation.metrics.classification`
+*Module:* `dense_armor.core.evaluation.metrics.classification`
 *Bases:* Metric
 
 Multiclass confusion matrix.
@@ -562,7 +562,7 @@ Public methods:
 ### EventMetrics
 
 
-*Module:* `dense_armor.utility.evaluation.metrics.events`
+*Module:* `dense_armor.core.evaluation.metrics.events`
 
 Collect the event metrics for a stream of alarms.
 
@@ -582,7 +582,7 @@ Public methods:
 ### EventWindow
 
 
-*Module:* `dense_armor.utility.evaluation.metrics.events`
+*Module:* `dense_armor.core.evaluation.metrics.events`
 
 A labelled event interval.
 
@@ -594,7 +594,7 @@ Public methods:
 ### F1
 
 
-*Module:* `dense_armor.utility.evaluation.metrics.classification`
+*Module:* `dense_armor.core.evaluation.metrics.classification`
 *Bases:* FBeta
 
 F1 score: the harmonic mean of precision and recall.
@@ -610,7 +610,7 @@ Public methods:
 ### FBeta
 
 
-*Module:* `dense_armor.utility.evaluation.metrics.classification`
+*Module:* `dense_armor.core.evaluation.metrics.classification`
 *Bases:* _PRFBase
 
 Weighted harmonic mean of precision and recall.
@@ -626,7 +626,7 @@ Public methods:
 ### GaussianNLL
 
 
-*Module:* `dense_armor.utility.evaluation.metrics.regression`
+*Module:* `dense_armor.core.evaluation.metrics.regression`
 *Bases:* Metric
 
 Gaussian negative log-likelihood.
@@ -642,7 +642,7 @@ Public methods:
 ### IntervalCoverage
 
 
-*Module:* `dense_armor.utility.evaluation.metrics.regression`
+*Module:* `dense_armor.core.evaluation.metrics.regression`
 *Bases:* Metric
 
 Fraction of true labels inside a prediction interval.
@@ -658,7 +658,7 @@ Public methods:
 ### LogLoss
 
 
-*Module:* `dense_armor.utility.evaluation.metrics.classification`
+*Module:* `dense_armor.core.evaluation.metrics.classification`
 *Bases:* Metric
 
 Binary log-loss (cross-entropy).
@@ -674,7 +674,7 @@ Public methods:
 ### MeanAbsoluteError
 
 
-*Module:* `dense_armor.utility.evaluation.metrics.regression`
+*Module:* `dense_armor.core.evaluation.metrics.regression`
 *Bases:* Metric
 
 Mean absolute error, one sample at a time.
@@ -690,7 +690,7 @@ Public methods:
 ### MeanIntervalWidth
 
 
-*Module:* `dense_armor.utility.evaluation.metrics.regression`
+*Module:* `dense_armor.core.evaluation.metrics.regression`
 *Bases:* Metric
 
 Mean width of a prediction interval.
@@ -706,7 +706,7 @@ Public methods:
 ### MeanSquaredError
 
 
-*Module:* `dense_armor.utility.evaluation.metrics.regression`
+*Module:* `dense_armor.core.evaluation.metrics.regression`
 *Bases:* Metric
 
 Mean squared error, one sample at a time.
@@ -722,7 +722,7 @@ Public methods:
 ### Metric
 
 
-*Module:* `dense_armor.utility.evaluation.metrics.base`
+*Module:* `dense_armor.core.evaluation.metrics.base`
 
 Base class for online metrics.
 
@@ -737,7 +737,7 @@ Public methods:
 ### PointAdjustedF1
 
 
-*Module:* `dense_armor.utility.evaluation.metrics.events`
+*Module:* `dense_armor.core.evaluation.metrics.events`
 *Bases:* Metric
 
 Point-adjusted F1 (Xu et al. 2018).
@@ -753,7 +753,7 @@ Public methods:
 ### Precision
 
 
-*Module:* `dense_armor.utility.evaluation.metrics.classification`
+*Module:* `dense_armor.core.evaluation.metrics.classification`
 *Bases:* _PRFBase
 
 Fraction of predicted positives that are correct.
@@ -769,7 +769,7 @@ Public methods:
 ### R2Score
 
 
-*Module:* `dense_armor.utility.evaluation.metrics.regression`
+*Module:* `dense_armor.core.evaluation.metrics.regression`
 *Bases:* Metric
 
 Coefficient of determination, Welford running mean.
@@ -785,7 +785,7 @@ Public methods:
 ### Recall
 
 
-*Module:* `dense_armor.utility.evaluation.metrics.classification`
+*Module:* `dense_armor.core.evaluation.metrics.classification`
 *Bases:* _PRFBase
 
 Fraction of true positives that are detected.
@@ -801,7 +801,7 @@ Public methods:
 ### Rolling
 
 
-*Module:* `dense_armor.utility.evaluation.metrics.rolling`
+*Module:* `dense_armor.core.evaluation.metrics.rolling`
 *Bases:* Metric
 
 Rolling window over any metric with ``revert``.
@@ -817,7 +817,7 @@ Public methods:
 ### RollingAUC
 
 
-*Module:* `dense_armor.utility.evaluation.metrics.roc_auc`
+*Module:* `dense_armor.core.evaluation.metrics.roc_auc`
 *Bases:* Metric
 
 Rolling ROC-AUC, exact on the last ``window`` samples.
@@ -833,7 +833,7 @@ Public methods:
 ### RootMeanSquaredError
 
 
-*Module:* `dense_armor.utility.evaluation.metrics.regression`
+*Module:* `dense_armor.core.evaluation.metrics.regression`
 *Bases:* MeanSquaredError
 
 Square root of the mean squared error.
@@ -851,7 +851,7 @@ Public methods:
 ### OnlineModelSelection
 
 
-*Module:* `dense_armor.utility.evaluation.evaluate.model_selection`
+*Module:* `dense_armor.core.evaluation.evaluate.model_selection`
 
 Track several models on a stream and expose the current best.
 
@@ -867,7 +867,7 @@ Public methods:
 ### AIHardwareProfiler
 
 
-*Module:* `dense_armor.core.noise`
+*Module:* `dense_armor.utility.noise`
 *Guide:* [toolkit/toolkit.md](../toolkit/toolkit.md)
 
 Profiles the host architecture (CPU/GPU/JAX) to set the damping thresholds.
@@ -879,7 +879,7 @@ Public methods:
 ### AdaptiveSignalStabilizer
 
 
-*Module:* `dense_armor.core.engine`
+*Module:* `dense_armor.utility.engine`
 *Guide:* [shields/engine.md](../shields/engine.md)
 
 Adaptive anti-panic filter for chaotic AI signals.
@@ -895,7 +895,7 @@ Public methods:
 ### MemoryPressureError
 
 
-*Module:* `dense_armor.core.memory`
+*Module:* `dense_armor.utility.memory`
 *Bases:* Exception
 *Guide:* [toolkit/toolkit.md](../toolkit/toolkit.md)
 
@@ -904,7 +904,7 @@ Raised when system memory (RAM/VRAM) is insufficient.
 ### UniversalMemoryGuard
 
 
-*Module:* `dense_armor.core.memory`
+*Module:* `dense_armor.utility.memory`
 *Guide:* [toolkit/toolkit.md](../toolkit/toolkit.md)
 
 Pre-flight RAM and VRAM check before every heavy allocation.
@@ -991,7 +991,7 @@ Public methods:
 ### ChauvenetScorer
 
 
-*Module:* `dense_armor.utility.online.anomaly.filters`
+*Module:* `dense_armor.core.online.anomaly.filters`
 *Bases:* AnomalyDetector
 *Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
 
@@ -1017,7 +1017,7 @@ Public methods:
 ### HalfSpaceTrees
 
 
-*Module:* `dense_armor.utility.online.anomaly.hst`
+*Module:* `dense_armor.core.online.anomaly.hst`
 *Bases:* AnomalyDetector
 
 Half-Space Trees for streaming anomaly detection.
@@ -1042,7 +1042,7 @@ Public methods:
 ### HampelFilter
 
 
-*Module:* `dense_armor.utility.online.anomaly.filters`
+*Module:* `dense_armor.core.online.anomaly.filters`
 *Bases:* Transformer
 *Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
 
@@ -1067,7 +1067,7 @@ Public methods:
 ### HampelScorer
 
 
-*Module:* `dense_armor.utility.online.anomaly.filters`
+*Module:* `dense_armor.core.online.anomaly.filters`
 *Bases:* AnomalyDetector
 *Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
 
@@ -1093,7 +1093,7 @@ Public methods:
 ### LODA
 
 
-*Module:* `dense_armor.utility.online.anomaly.loda`
+*Module:* `dense_armor.core.online.anomaly.loda`
 *Bases:* AnomalyDetector
 
 Lightweight Online Detector of Anomalies.
@@ -1118,7 +1118,7 @@ Public methods:
 ### OneClassSGD
 
 
-*Module:* `dense_armor.utility.online.anomaly.ocsvm`
+*Module:* `dense_armor.core.online.anomaly.ocsvm`
 *Bases:* AnomalyDetector
 
 One-Class SVM solved by SGD on random Fourier features.
@@ -1143,7 +1143,7 @@ Public methods:
 ### OnlineIsolationForest
 
 
-*Module:* `dense_armor.utility.online.anomaly.oiforest`
+*Module:* `dense_armor.core.online.anomaly.oiforest`
 *Bases:* AnomalyDetector
 
 Online Isolation Forest.
@@ -1168,7 +1168,7 @@ Public methods:
 ### OnlineRobustMahalanobis
 
 
-*Module:* `dense_armor.utility.online.anomaly.mahalanobis`
+*Module:* `dense_armor.core.online.anomaly.mahalanobis`
 *Bases:* AnomalyDetector
 *Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
 
@@ -1194,7 +1194,7 @@ Public methods:
 ### SigmaClipScorer
 
 
-*Module:* `dense_armor.utility.online.anomaly.filters`
+*Module:* `dense_armor.core.online.anomaly.filters`
 *Bases:* AnomalyDetector
 *Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
 
@@ -1220,7 +1220,7 @@ Public methods:
 ### StreamingDeviationScorer
 
 
-*Module:* `dense_armor.utility.online.anomaly.deviation`
+*Module:* `dense_armor.core.online.anomaly.deviation`
 *Bases:* AnomalyDetector
 *Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
 
@@ -1245,7 +1245,7 @@ Public methods:
 ### TukeyScorer
 
 
-*Module:* `dense_armor.utility.online.anomaly.filters`
+*Module:* `dense_armor.core.online.anomaly.filters`
 *Bases:* AnomalyDetector
 *Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
 
@@ -1271,7 +1271,7 @@ Public methods:
 ### MultiChannelStreamingDeviationDetector
 
 
-*Module:* `dense_armor.utility.online.anomaly.streaming`
+*Module:* `dense_armor.core.online.anomaly.streaming`
 *Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
 
 N independent ``StreamingDeviationDetector`` instances, one per channel.
@@ -1283,7 +1283,7 @@ Public methods:
 ### StreamingDeviationDetector
 
 
-*Module:* `dense_armor.utility.online.anomaly.streaming`
+*Module:* `dense_armor.core.online.anomaly.streaming`
 *Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
 
 Causal per-sample deviation flag, one point at a time.
@@ -1295,7 +1295,7 @@ Public methods:
 ### LocalOutlierFactor
 
 
-*Module:* `dense_armor.utility.online.anomaly.lof`
+*Module:* `dense_armor.core.online.anomaly.lof`
 *Bases:* AnomalyDetector
 *Guide:* [anomaly/lof.md](../anomaly/lof.md)
 
@@ -1322,7 +1322,7 @@ Public methods:
 ### ADWIN
 
 
-*Module:* `dense_armor.utility.online.drift.adwin`
+*Module:* `dense_armor.core.online.drift.adwin`
 *Bases:* DriftDetector
 *Guide:* [drift/detectors.md](../drift/detectors.md)
 
@@ -1345,7 +1345,7 @@ Public methods:
 ### BayesianOnlineChangepoint
 
 
-*Module:* `dense_armor.utility.online.drift.bocpd`
+*Module:* `dense_armor.core.online.drift.bocpd`
 *Bases:* DriftDetector
 
 Online changepoint detection with a Normal-Inverse-Gamma model.
@@ -1367,7 +1367,7 @@ Public methods:
 ### CUSUMDriftDetector
 
 
-*Module:* `dense_armor.utility.online.drift.detector`
+*Module:* `dense_armor.core.online.drift.detector`
 *Bases:* DriftDetector
 *Guide:* [drift/detectors.md](../drift/detectors.md)
 
@@ -1392,7 +1392,7 @@ Public methods:
 ### KSWIN
 
 
-*Module:* `dense_armor.utility.online.drift.kswin`
+*Module:* `dense_armor.core.online.drift.kswin`
 *Bases:* DriftDetector
 *Guide:* [drift/detectors.md](../drift/detectors.md)
 
@@ -1415,7 +1415,7 @@ Public methods:
 ### PageHinkley
 
 
-*Module:* `dense_armor.utility.online.drift.page_hinkley`
+*Module:* `dense_armor.core.online.drift.page_hinkley`
 *Bases:* DriftDetector
 *Guide:* [drift/detectors.md](../drift/detectors.md)
 
@@ -1440,7 +1440,7 @@ Public methods:
 ### BatchDecisionTreeClassifier
 
 
-*Module:* `dense_armor.utility.online.tree.batch`
+*Module:* `dense_armor.core.online.tree.batch`
 *Bases:* Classifier
 *Guide:* [fit.md](../fit.md)
 
@@ -1467,7 +1467,7 @@ Public methods:
 ### FIMTDDRegressor
 
 
-*Module:* `dense_armor.utility.online.tree.fimt`
+*Module:* `dense_armor.core.online.tree.fimt`
 *Bases:* Regressor
 
 Fast Incremental Model Tree with Drift Detection (FIMT-DD).
@@ -1491,7 +1491,7 @@ Public methods:
 ### HoeffdingAdaptiveTreeClassifier
 
 
-*Module:* `dense_armor.utility.online.tree.adaptive`
+*Module:* `dense_armor.core.online.tree.adaptive`
 *Bases:* HoeffdingTreeClassifier
 *Guide:* [tree/index.md](../tree/index.md)
 
@@ -1519,7 +1519,7 @@ Public methods:
 ### HoeffdingAnytimeTreeClassifier
 
 
-*Module:* `dense_armor.utility.online.tree.efdt`
+*Module:* `dense_armor.core.online.tree.efdt`
 *Bases:* HoeffdingTreeClassifier
 *Guide:* [tree/index.md](../tree/index.md)
 
@@ -1547,7 +1547,7 @@ Public methods:
 ### HoeffdingTreeClassifier
 
 
-*Module:* `dense_armor.utility.online.tree.hoeffding`
+*Module:* `dense_armor.core.online.tree.hoeffding`
 *Bases:* Classifier
 *Guide:* [tree/index.md](../tree/index.md)
 
@@ -1575,7 +1575,7 @@ Public methods:
 ### MondrianForestClassifier
 
 
-*Module:* `dense_armor.utility.online.tree.mondrian`
+*Module:* `dense_armor.core.online.tree.mondrian`
 *Bases:* Classifier, _MondrianBase
 *Guide:* [tree/index.md](../tree/index.md)
 
@@ -1602,7 +1602,7 @@ Public methods:
 ### MondrianForestRegressor
 
 
-*Module:* `dense_armor.utility.online.tree.mondrian`
+*Module:* `dense_armor.core.online.tree.mondrian`
 *Bases:* Regressor, _MondrianBase
 *Guide:* [tree/index.md](../tree/index.md)
 
@@ -1627,7 +1627,7 @@ Public methods:
 ### SGTClassifier
 
 
-*Module:* `dense_armor.utility.online.tree.sgt`
+*Module:* `dense_armor.core.online.tree.sgt`
 *Bases:* Classifier, _SGTBase
 *Guide:* [tree/index.md](../tree/index.md)
 
@@ -1655,7 +1655,7 @@ Public methods:
 ### SGTRegressor
 
 
-*Module:* `dense_armor.utility.online.tree.sgt`
+*Module:* `dense_armor.core.online.tree.sgt`
 *Bases:* Regressor, _SGTBase
 *Guide:* [tree/index.md](../tree/index.md)
 
@@ -1683,7 +1683,7 @@ Public methods:
 ### MultinomialNB
 
 
-*Module:* `dense_armor.utility.online.bayes.multinomial`
+*Module:* `dense_armor.core.online.bayes.multinomial`
 *Bases:* Classifier
 *Guide:* [bayes/index.md](../bayes/index.md)
 
@@ -1710,7 +1710,7 @@ Public methods:
 ### BernoulliNB
 
 
-*Module:* `dense_armor.utility.online.bayes.bernoulli`
+*Module:* `dense_armor.core.online.bayes.bernoulli`
 *Bases:* Classifier
 *Guide:* [bayes/index.md](../bayes/index.md)
 
@@ -1737,7 +1737,7 @@ Public methods:
 ### ComplementNB
 
 
-*Module:* `dense_armor.utility.online.bayes.complement`
+*Module:* `dense_armor.core.online.bayes.complement`
 *Bases:* Classifier
 *Guide:* [bayes/index.md](../bayes/index.md)
 
@@ -1764,7 +1764,7 @@ Public methods:
 ### CategoricalNB
 
 
-*Module:* `dense_armor.utility.online.bayes.categorical`
+*Module:* `dense_armor.core.online.bayes.categorical`
 *Bases:* Classifier
 *Guide:* [bayes/index.md](../bayes/index.md)
 
@@ -1793,7 +1793,7 @@ Public methods:
 ### Beta
 
 
-*Module:* `dense_armor.utility.online.proba.beta`
+*Module:* `dense_armor.core.online.proba.beta`
 *Bases:* object
 *Guide:* [proba/index.md](../proba/index.md)
 
@@ -1814,7 +1814,7 @@ Public methods:
 ### Gaussian
 
 
-*Module:* `dense_armor.utility.online.proba.gaussian`
+*Module:* `dense_armor.core.online.proba.gaussian`
 *Bases:* object
 *Guide:* [proba/index.md](../proba/index.md)
 
@@ -1837,7 +1837,7 @@ Public methods:
 ### Multinomial
 
 
-*Module:* `dense_armor.utility.online.proba.multinomial`
+*Module:* `dense_armor.core.online.proba.multinomial`
 *Bases:* object
 *Guide:* [proba/index.md](../proba/index.md)
 
@@ -1859,7 +1859,7 @@ Public methods:
 ### KNNClassifier
 
 
-*Module:* `dense_armor.utility.online.neighbors.knn`
+*Module:* `dense_armor.core.online.neighbors.knn`
 *Bases:* Classifier
 *Guide:* [neighbors/index.md](../neighbors/index.md)
 
@@ -1886,7 +1886,7 @@ Public methods:
 ### KNNRegressor
 
 
-*Module:* `dense_armor.utility.online.neighbors.knn`
+*Module:* `dense_armor.core.online.neighbors.knn`
 *Bases:* Regressor
 *Guide:* [neighbors/index.md](../neighbors/index.md)
 
@@ -1911,7 +1911,7 @@ Public methods:
 ### LazySearch
 
 
-*Module:* `dense_armor.utility.online.neighbors.knn`
+*Module:* `dense_armor.core.online.neighbors.knn`
 *Bases:* object
 *Guide:* [neighbors/index.md](../neighbors/index.md)
 
@@ -1928,7 +1928,7 @@ Public methods:
 ### OneVsRestClassifier
 
 
-*Module:* `dense_armor.utility.online.multiclass.multiclass`
+*Module:* `dense_armor.core.online.multiclass.multiclass`
 *Guide:* [multiclass/index.md](../multiclass/index.md)
 
 One-vs-all multiclass wrapper.
@@ -1954,7 +1954,7 @@ Public methods:
 ### OneVsOneClassifier
 
 
-*Module:* `dense_armor.utility.online.multiclass.multiclass`
+*Module:* `dense_armor.core.online.multiclass.multiclass`
 *Guide:* [multiclass/index.md](../multiclass/index.md)
 
 Round-robin (pairwise) multiclass wrapper.
@@ -1980,7 +1980,7 @@ Public methods:
 ### OutputCodeClassifier
 
 
-*Module:* `dense_armor.utility.online.multiclass.multiclass`
+*Module:* `dense_armor.core.online.multiclass.multiclass`
 *Guide:* [multiclass/index.md](../multiclass/index.md)
 
 Error-correcting output code wrapper.
@@ -2008,7 +2008,7 @@ Public methods:
 ### PerOutputClassifier
 
 
-*Module:* `dense_armor.utility.online.multioutput.multioutput`
+*Module:* `dense_armor.core.online.multioutput.multioutput`
 *Bases:* Classifier
 *Guide:* [multioutput/index.md](../multioutput/index.md)
 
@@ -2035,7 +2035,7 @@ Public methods:
 ### PerOutputRegressor
 
 
-*Module:* `dense_armor.utility.online.multioutput.multioutput`
+*Module:* `dense_armor.core.online.multioutput.multioutput`
 *Bases:* Regressor
 *Guide:* [multioutput/index.md](../multioutput/index.md)
 
@@ -2060,7 +2060,7 @@ Public methods:
 ### ClassifierChain
 
 
-*Module:* `dense_armor.utility.online.multioutput.multioutput`
+*Module:* `dense_armor.core.online.multioutput.multioutput`
 *Bases:* Classifier
 *Guide:* [multioutput/index.md](../multioutput/index.md)
 
@@ -2087,7 +2087,7 @@ Public methods:
 ### RegressorChain
 
 
-*Module:* `dense_armor.utility.online.multioutput.multioutput`
+*Module:* `dense_armor.core.online.multioutput.multioutput`
 *Bases:* Regressor
 *Guide:* [multioutput/index.md](../multioutput/index.md)
 
@@ -2112,7 +2112,7 @@ Public methods:
 ### ProbabilisticClassifierChain
 
 
-*Module:* `dense_armor.utility.online.multioutput.multioutput`
+*Module:* `dense_armor.core.online.multioutput.multioutput`
 *Bases:* Classifier
 *Guide:* [multioutput/index.md](../multioutput/index.md)
 
@@ -2142,7 +2142,7 @@ Public methods:
 ### AdaptiveRandomForestClassifier
 
 
-*Module:* `dense_armor.utility.online.forest.arf`
+*Module:* `dense_armor.core.online.forest.arf`
 *Bases:* Classifier
 *Guide:* [forest/index.md](../forest/index.md)
 
@@ -2169,7 +2169,7 @@ Public methods:
 ### AggregatedMondrianForestClassifier
 
 
-*Module:* `dense_armor.utility.online.forest.amf`
+*Module:* `dense_armor.core.online.forest.amf`
 *Bases:* Classifier
 *Guide:* [forest/index.md](../forest/index.md)
 
@@ -2197,7 +2197,7 @@ Public methods:
 ### AggregatedMondrianForestRegressor
 
 
-*Module:* `dense_armor.utility.online.forest.amf`
+*Module:* `dense_armor.core.online.forest.amf`
 *Bases:* Regressor
 *Guide:* [forest/index.md](../forest/index.md)
 
@@ -2223,7 +2223,7 @@ Public methods:
 ### SubspaceHoeffdingTree
 
 
-*Module:* `dense_armor.utility.online.forest.arf`
+*Module:* `dense_armor.core.online.forest.arf`
 *Bases:* HoeffdingTreeClassifier
 *Guide:* [forest/index.md](../forest/index.md)
 
@@ -2252,7 +2252,7 @@ Public methods:
 ### OnlineExtraTreesRegressor
 
 
-*Module:* `dense_armor.utility.online.forest.oxt`
+*Module:* `dense_armor.core.online.forest.oxt`
 *Bases:* Regressor
 *Guide:* [forest/index.md](../forest/index.md)
 
@@ -2279,7 +2279,7 @@ Public methods:
 ### ExponentiallyWeightedAverageRegressor
 
 
-*Module:* `dense_armor.utility.online.ensemble.ewa`
+*Module:* `dense_armor.core.online.ensemble.ewa`
 *Bases:* Regressor
 *Guide:* [ensemble/index.md](../ensemble/index.md)
 
@@ -2305,7 +2305,7 @@ Public methods:
 ### OnlineBaggingClassifier
 
 
-*Module:* `dense_armor.utility.online.ensemble.bagging`
+*Module:* `dense_armor.core.online.ensemble.bagging`
 *Bases:* Classifier
 *Guide:* [ensemble/index.md](../ensemble/index.md)
 
@@ -2332,7 +2332,7 @@ Public methods:
 ### OnlineBoostingClassifier
 
 
-*Module:* `dense_armor.utility.online.ensemble.boosting`
+*Module:* `dense_armor.core.online.ensemble.boosting`
 *Bases:* Classifier
 *Guide:* [ensemble/index.md](../ensemble/index.md)
 
@@ -2359,7 +2359,7 @@ Public methods:
 ### StackingClassifier
 
 
-*Module:* `dense_armor.utility.online.ensemble.stacking`
+*Module:* `dense_armor.core.online.ensemble.stacking`
 *Bases:* Classifier
 *Guide:* [ensemble/index.md](../ensemble/index.md)
 
@@ -2386,7 +2386,7 @@ Public methods:
 ### VotingClassifier
 
 
-*Module:* `dense_armor.utility.online.ensemble.voting`
+*Module:* `dense_armor.core.online.ensemble.voting`
 *Bases:* Classifier
 *Guide:* [ensemble/index.md](../ensemble/index.md)
 
@@ -2415,7 +2415,7 @@ Public methods:
 ### BanditPolicy
 
 
-*Module:* `dense_armor.utility.online.bandit.base`
+*Module:* `dense_armor.core.online.bandit.base`
 *Bases:* Root
 *Guide:* [bandit/index.md](../bandit/index.md)
 
@@ -2438,7 +2438,7 @@ Public methods:
 ### BayesUCB
 
 
-*Module:* `dense_armor.utility.online.bandit.bayes_ucb`
+*Module:* `dense_armor.core.online.bandit.bayes_ucb`
 *Bases:* BanditPolicy
 *Guide:* [bandit/index.md](../bandit/index.md)
 
@@ -2461,7 +2461,7 @@ Public methods:
 ### EpsilonGreedy
 
 
-*Module:* `dense_armor.utility.online.bandit.ucb`
+*Module:* `dense_armor.core.online.bandit.ucb`
 *Bases:* BanditPolicy
 *Guide:* [bandit/index.md](../bandit/index.md)
 
@@ -2484,7 +2484,7 @@ Public methods:
 ### Exp3
 
 
-*Module:* `dense_armor.utility.online.bandit.exp3`
+*Module:* `dense_armor.core.online.bandit.exp3`
 *Bases:* BanditPolicy
 *Guide:* [bandit/index.md](../bandit/index.md)
 
@@ -2507,7 +2507,7 @@ Public methods:
 ### LinUCBDisjoint
 
 
-*Module:* `dense_armor.utility.online.bandit.linucb`
+*Module:* `dense_armor.core.online.bandit.linucb`
 *Bases:* Root
 *Guide:* [bandit/index.md](../bandit/index.md)
 
@@ -2530,7 +2530,7 @@ Public methods:
 ### RobotKpSelector
 
 
-*Module:* `dense_armor.utility.online.bandit.robot`
+*Module:* `dense_armor.core.online.bandit.robot`
 *Bases:* Root
 *Guide:* [bandit/index.md](../bandit/index.md)
 
@@ -2553,7 +2553,7 @@ Public methods:
 ### ThompsonSampling
 
 
-*Module:* `dense_armor.utility.online.bandit.ts`
+*Module:* `dense_armor.core.online.bandit.ts`
 *Bases:* BanditPolicy
 *Guide:* [bandit/index.md](../bandit/index.md)
 
@@ -2576,7 +2576,7 @@ Public methods:
 ### UCB1
 
 
-*Module:* `dense_armor.utility.online.bandit.ucb`
+*Module:* `dense_armor.core.online.bandit.ucb`
 *Bases:* BanditPolicy
 *Guide:* [bandit/index.md](../bandit/index.md)
 
@@ -2599,7 +2599,7 @@ Public methods:
 ### UCB1Tuned
 
 
-*Module:* `dense_armor.utility.online.bandit.ucb`
+*Module:* `dense_armor.core.online.bandit.ucb`
 *Bases:* UCB1
 *Guide:* [bandit/index.md](../bandit/index.md)
 
@@ -2624,7 +2624,7 @@ Public methods:
 ### ActiveStrategy
 
 
-*Module:* `dense_armor.utility.online.active.base`
+*Module:* `dense_armor.core.online.active.base`
 *Bases:* Root
 *Guide:* [active/index.md](../active/index.md)
 
@@ -2646,7 +2646,7 @@ Public methods:
 ### FixedUncertainty
 
 
-*Module:* `dense_armor.utility.online.active.strategies`
+*Module:* `dense_armor.core.online.active.strategies`
 *Bases:* ActiveStrategy
 *Guide:* [active/index.md](../active/index.md)
 
@@ -2668,7 +2668,7 @@ Public methods:
 ### RandomStrategy
 
 
-*Module:* `dense_armor.utility.online.active.strategies`
+*Module:* `dense_armor.core.online.active.strategies`
 *Bases:* ActiveStrategy
 *Guide:* [active/index.md](../active/index.md)
 
@@ -2690,7 +2690,7 @@ Public methods:
 ### VariableRandomizedUncertainty
 
 
-*Module:* `dense_armor.utility.online.active.strategies`
+*Module:* `dense_armor.core.online.active.strategies`
 *Bases:* VariableUncertainty
 *Guide:* [active/index.md](../active/index.md)
 
@@ -2712,7 +2712,7 @@ Public methods:
 ### VariableUncertainty
 
 
-*Module:* `dense_armor.utility.online.active.strategies`
+*Module:* `dense_armor.core.online.active.strategies`
 *Bases:* ActiveStrategy
 *Guide:* [active/index.md](../active/index.md)
 
@@ -2736,7 +2736,7 @@ Public methods:
 ### FFMClassifier
 
 
-*Module:* `dense_armor.utility.online.facto.ffm`
+*Module:* `dense_armor.core.online.facto.ffm`
 *Bases:* _FFMBase, Classifier
 *Guide:* [facto/index.md](../facto/index.md)
 
@@ -2763,7 +2763,7 @@ Public methods:
 ### FFMRegressor
 
 
-*Module:* `dense_armor.utility.online.facto.ffm`
+*Module:* `dense_armor.core.online.facto.ffm`
 *Bases:* _FFMBase, Regressor
 *Guide:* [facto/index.md](../facto/index.md)
 
@@ -2788,7 +2788,7 @@ Public methods:
 ### FMClassifier
 
 
-*Module:* `dense_armor.utility.online.facto.fm`
+*Module:* `dense_armor.core.online.facto.fm`
 *Bases:* _FMBase, Classifier
 *Guide:* [facto/index.md](../facto/index.md)
 
@@ -2815,7 +2815,7 @@ Public methods:
 ### FMRegressor
 
 
-*Module:* `dense_armor.utility.online.facto.fm`
+*Module:* `dense_armor.core.online.facto.fm`
 *Bases:* _FMBase, Regressor
 *Guide:* [facto/index.md](../facto/index.md)
 
@@ -2840,7 +2840,7 @@ Public methods:
 ### FwFMClassifier
 
 
-*Module:* `dense_armor.utility.online.facto.fwfm`
+*Module:* `dense_armor.core.online.facto.fwfm`
 *Bases:* _FwFMBase, Classifier
 *Guide:* [facto/index.md](../facto/index.md)
 
@@ -2867,7 +2867,7 @@ Public methods:
 ### FwFMRegressor
 
 
-*Module:* `dense_armor.utility.online.facto.fwfm`
+*Module:* `dense_armor.core.online.facto.fwfm`
 *Bases:* _FwFMBase, Regressor
 *Guide:* [facto/index.md](../facto/index.md)
 
@@ -2892,7 +2892,7 @@ Public methods:
 ### HOFMClassifier
 
 
-*Module:* `dense_armor.utility.online.facto.hofm`
+*Module:* `dense_armor.core.online.facto.hofm`
 *Bases:* _HOFMBase, Classifier
 *Guide:* [facto/index.md](../facto/index.md)
 
@@ -2919,7 +2919,7 @@ Public methods:
 ### HOFMRegressor
 
 
-*Module:* `dense_armor.utility.online.facto.hofm`
+*Module:* `dense_armor.core.online.facto.hofm`
 *Bases:* _HOFMBase, Regressor
 *Guide:* [facto/index.md](../facto/index.md)
 
@@ -2946,7 +2946,7 @@ Public methods:
 ### Baseline
 
 
-*Module:* `dense_armor.utility.online.reco.reco`
+*Module:* `dense_armor.core.online.reco.reco`
 *Bases:* _RecoBase
 *Guide:* [reco/index.md](../reco/index.md)
 
@@ -2969,7 +2969,7 @@ Public methods:
 ### BiasedMF
 
 
-*Module:* `dense_armor.utility.online.reco.reco`
+*Module:* `dense_armor.core.online.reco.reco`
 *Bases:* _RecoBase
 *Guide:* [reco/index.md](../reco/index.md)
 
@@ -2993,7 +2993,7 @@ Public methods:
 ### FunkMF
 
 
-*Module:* `dense_armor.utility.online.reco.reco`
+*Module:* `dense_armor.core.online.reco.reco`
 *Bases:* _RecoBase
 *Guide:* [reco/index.md](../reco/index.md)
 
@@ -3019,7 +3019,7 @@ Public methods:
 ### AMRulesRegressor
 
 
-*Module:* `dense_armor.utility.online.rules.amrules`
+*Module:* `dense_armor.core.online.rules.amrules`
 *Bases:* Regressor
 *Guide:* [rules/index.md](../rules/index.md)
 
@@ -3047,7 +3047,7 @@ Public methods:
 ### DenStream
 
 
-*Module:* `dense_armor.utility.online.cluster.denstream`
+*Module:* `dense_armor.core.online.cluster.denstream`
 *Bases:* Transformer
 *Guide:* [cluster/index.md](../cluster/index.md)
 
@@ -3073,7 +3073,7 @@ Public methods:
 ### OnlineKMeans
 
 
-*Module:* `dense_armor.utility.online.cluster.kmeans`
+*Module:* `dense_armor.core.online.cluster.kmeans`
 *Bases:* Transformer
 *Guide:* [cluster/index.md](../cluster/index.md)
 
@@ -3101,7 +3101,7 @@ Public methods:
 ### Autocorrelation
 
 
-*Module:* `dense_armor.utility.signals.stats.dependence`
+*Module:* `dense_armor.core.signals.stats.dependence`
 *Bases:* Transformer
 
 Running autocorrelation of a single channel at a fixed lag.
@@ -3126,7 +3126,7 @@ Public methods:
 ### BloomFilter
 
 
-*Module:* `dense_armor.utility.signals.stats.sketches`
+*Module:* `dense_armor.core.signals.stats.sketches`
 *Bases:* Transformer
 
 Bloom membership filter (Bloom 1970).
@@ -3153,7 +3153,7 @@ Public methods:
 ### CountMinSketch
 
 
-*Module:* `dense_armor.utility.signals.stats.sketches`
+*Module:* `dense_armor.core.signals.stats.sketches`
 *Bases:* Transformer
 
 Count-Min frequency sketch (Cormode & Muthukrishnan 2005).
@@ -3180,7 +3180,7 @@ Public methods:
 ### DDSketch
 
 
-*Module:* `dense_armor.utility.signals.stats.quantiles`
+*Module:* `dense_armor.core.signals.stats.quantiles`
 *Bases:* Transformer
 
 Relative-error quantile sketch (Masson, Rim, Lee 2019).
@@ -3207,7 +3207,7 @@ Public methods:
 ### EWStats
 
 
-*Module:* `dense_armor.utility.signals.stats.moments`
+*Module:* `dense_armor.core.signals.stats.moments`
 *Bases:* Transformer
 
 Exponentially weighted mean and variance, one sample at a time.
@@ -3232,7 +3232,7 @@ Public methods:
 ### HyperLogLog
 
 
-*Module:* `dense_armor.utility.signals.stats.sketches`
+*Module:* `dense_armor.core.signals.stats.sketches`
 *Bases:* Transformer
 
 HyperLogLog distinct-count sketch (Flajolet et al. 2007).
@@ -3259,7 +3259,7 @@ Public methods:
 ### OnlineGaussianMixture
 
 
-*Module:* `dense_armor.utility.signals.stats.mixture`
+*Module:* `dense_armor.core.signals.stats.mixture`
 *Bases:* Transformer
 *Guide:* [stats/mixture.md](../stats/mixture.md)
 
@@ -3287,7 +3287,7 @@ Public methods:
 ### OnlineShrinkageCovariance
 
 
-*Module:* `dense_armor.utility.signals.stats.shrinkage`
+*Module:* `dense_armor.core.signals.stats.shrinkage`
 *Bases:* Transformer
 *Guide:* [finance/portfolio.md](../finance/portfolio.md)
 
@@ -3314,7 +3314,7 @@ Public methods:
 ### RollingCorrelation
 
 
-*Module:* `dense_armor.utility.signals.stats.dependence`
+*Module:* `dense_armor.core.signals.stats.dependence`
 *Bases:* Transformer
 
 Pearson correlation of two channels over a bounded window.
@@ -3339,7 +3339,7 @@ Public methods:
 ### RollingCovariance
 
 
-*Module:* `dense_armor.utility.signals.stats.dependence`
+*Module:* `dense_armor.core.signals.stats.dependence`
 *Bases:* Transformer
 
 Sample covariance of two channels over a bounded window.
@@ -3364,7 +3364,7 @@ Public methods:
 ### RollingIQR
 
 
-*Module:* `dense_armor.utility.signals.stats.robust`
+*Module:* `dense_armor.core.signals.stats.robust`
 *Bases:* _RollingWindow
 
 Interquartile range of the last ``window`` samples.
@@ -3389,7 +3389,7 @@ Public methods:
 ### RollingMAD
 
 
-*Module:* `dense_armor.utility.signals.stats.robust`
+*Module:* `dense_armor.core.signals.stats.robust`
 *Bases:* _RollingWindow
 
 Median absolute deviation of the last ``window`` samples, scaled.
@@ -3414,7 +3414,7 @@ Public methods:
 ### RollingMedian
 
 
-*Module:* `dense_armor.utility.signals.stats.robust`
+*Module:* `dense_armor.core.signals.stats.robust`
 *Bases:* _RollingWindow
 
 Median of the last ``window`` samples.
@@ -3439,7 +3439,7 @@ Public methods:
 ### RollingMedianVector
 
 
-*Module:* `dense_armor.utility.signals.stats.robust`
+*Module:* `dense_armor.core.signals.stats.robust`
 *Bases:* Transformer
 
 One :class:`RollingMedian` per channel, one update call.
@@ -3464,7 +3464,7 @@ Public methods:
 ### RollingQuantile
 
 
-*Module:* `dense_armor.utility.signals.stats.robust`
+*Module:* `dense_armor.core.signals.stats.robust`
 *Bases:* _RollingWindow
 
 Arbitrary quantile of the last ``window`` samples.
@@ -3489,7 +3489,7 @@ Public methods:
 ### RunningCorrelation
 
 
-*Module:* `dense_armor.utility.signals.stats.dependence`
+*Module:* `dense_armor.core.signals.stats.dependence`
 *Bases:* Transformer
 
 Incremental Pearson correlation between two channels.
@@ -3514,7 +3514,7 @@ Public methods:
 ### RunningCovariance
 
 
-*Module:* `dense_armor.utility.signals.stats.dependence`
+*Module:* `dense_armor.core.signals.stats.dependence`
 *Bases:* Transformer
 
 Incremental covariance of two channels.
@@ -3540,7 +3540,7 @@ Public methods:
 ### RunningMoments
 
 
-*Module:* `dense_armor.utility.signals.stats.moments`
+*Module:* `dense_armor.core.signals.stats.moments`
 *Bases:* Transformer
 
 Incremental mean, variance, skewness, kurtosis for one feature.
@@ -3566,7 +3566,7 @@ Public methods:
 ### RunningMomentsVector
 
 
-*Module:* `dense_armor.utility.signals.stats.moments`
+*Module:* `dense_armor.core.signals.stats.moments`
 *Bases:* Transformer
 
 One ``RunningMoments`` per channel, updated in a single call.
@@ -3592,7 +3592,7 @@ Public methods:
 ### SpaceSaving
 
 
-*Module:* `dense_armor.utility.signals.stats.sketches`
+*Module:* `dense_armor.core.signals.stats.sketches`
 *Bases:* Transformer
 
 Space-Saving heavy hitters (Metwally et al. 2005).
@@ -3620,7 +3620,7 @@ Public methods:
 ### SparseCosineIndex
 
 
-*Module:* `dense_armor.utility.signals.stats.similarity`
+*Module:* `dense_armor.core.signals.stats.similarity`
 *Guide:* [preprocessing/text_vectorizer.md](../preprocessing/text_vectorizer.md)
 
 A sparse index of documents for cosine ranking, built once.
@@ -3636,7 +3636,7 @@ Public methods:
 ### StudentT
 
 
-*Module:* `dense_armor.utility.signals.stats.student_t`
+*Module:* `dense_armor.core.signals.stats.student_t`
 *Bases:* Transformer
 *Guide:* [stats/student_t.md](../stats/student_t.md)
 
@@ -3664,7 +3664,7 @@ Public methods:
 ### TDigest
 
 
-*Module:* `dense_armor.utility.signals.stats.quantiles`
+*Module:* `dense_armor.core.signals.stats.quantiles`
 *Bases:* Transformer
 
 Clustered sketch with small clusters near the tails (Dunning 2019).
@@ -3691,7 +3691,7 @@ Public methods:
 ### SDFT
 
 
-*Module:* `dense_armor.utility.signals.stats.sdft`
+*Module:* `dense_armor.core.signals.stats.sdft`
 *Bases:* Root
 *Guide:* [reco/index.md](../reco/index.md)
 
@@ -3715,7 +3715,7 @@ Public methods:
 ### Skyline
 
 
-*Module:* `dense_armor.utility.signals.stats.skyline`
+*Module:* `dense_armor.core.signals.stats.skyline`
 *Bases:* Root
 *Guide:* [reco/index.md](../reco/index.md)
 
@@ -3742,7 +3742,7 @@ Public methods:
 ### BagOfWords
 
 
-*Module:* `dense_armor.utility.signals.preprocessing.text`
+*Module:* `dense_armor.core.signals.preprocessing.text`
 *Bases:* Transformer
 *Guide:* [preprocessing/index.md](../preprocessing/index.md)
 
@@ -3767,7 +3767,7 @@ Public methods:
 ### EWScaler
 
 
-*Module:* `dense_armor.utility.signals.preprocessing.scale`
+*Module:* `dense_armor.core.signals.preprocessing.scale`
 *Bases:* Transformer
 *Guide:* [preprocessing/index.md](../preprocessing/index.md)
 
@@ -3792,7 +3792,7 @@ Public methods:
 ### FeatureHasher
 
 
-*Module:* `dense_armor.utility.signals.preprocessing.text`
+*Module:* `dense_armor.core.signals.preprocessing.text`
 *Bases:* Transformer
 *Guide:* [preprocessing/index.md](../preprocessing/index.md)
 
@@ -3817,7 +3817,7 @@ Public methods:
 ### JointDerivatives
 
 
-*Module:* `dense_armor.utility.signals.preprocessing.joints`
+*Module:* `dense_armor.core.signals.preprocessing.joints`
 *Bases:* Transformer
 *Guide:* [preprocessing/index.md](../preprocessing/index.md)
 
@@ -3842,7 +3842,7 @@ Public methods:
 ### JointPower
 
 
-*Module:* `dense_armor.utility.signals.preprocessing.joints`
+*Module:* `dense_armor.core.signals.preprocessing.joints`
 *Bases:* Transformer
 *Guide:* [preprocessing/index.md](../preprocessing/index.md)
 
@@ -3867,7 +3867,7 @@ Public methods:
 ### MinMaxScaler
 
 
-*Module:* `dense_armor.utility.signals.preprocessing.scale`
+*Module:* `dense_armor.core.signals.preprocessing.scale`
 *Bases:* Transformer
 *Guide:* [preprocessing/index.md](../preprocessing/index.md)
 
@@ -3892,7 +3892,7 @@ Public methods:
 ### QueueResampler
 
 
-*Module:* `dense_armor.utility.signals.preprocessing.imbalance`
+*Module:* `dense_armor.core.signals.preprocessing.imbalance`
 *Bases:* Classifier
 *Guide:* [preprocessing/index.md](../preprocessing/index.md)
 
@@ -3919,7 +3919,7 @@ Public methods:
 ### RobustScaler
 
 
-*Module:* `dense_armor.utility.signals.preprocessing.scale`
+*Module:* `dense_armor.core.signals.preprocessing.scale`
 *Bases:* Transformer
 *Guide:* [preprocessing/index.md](../preprocessing/index.md)
 
@@ -3944,7 +3944,7 @@ Public methods:
 ### SelectKBest
 
 
-*Module:* `dense_armor.utility.signals.preprocessing.select`
+*Module:* `dense_armor.core.signals.preprocessing.select`
 *Bases:* Transformer
 *Guide:* [preprocessing/index.md](../preprocessing/index.md)
 
@@ -3969,7 +3969,7 @@ Public methods:
 ### StandardScaler
 
 
-*Module:* `dense_armor.utility.signals.preprocessing.scale`
+*Module:* `dense_armor.core.signals.preprocessing.scale`
 *Bases:* Transformer
 *Guide:* [preprocessing/index.md](../preprocessing/index.md)
 
@@ -3994,7 +3994,7 @@ Public methods:
 ### TextVectorizer
 
 
-*Module:* `dense_armor.utility.signals.preprocessing.vectorizer`
+*Module:* `dense_armor.core.signals.preprocessing.vectorizer`
 *Bases:* Transformer
 *Guide:* [preprocessing/text_vectorizer.md](../preprocessing/text_vectorizer.md)
 
@@ -4021,7 +4021,7 @@ Public methods:
 ### TFIDF
 
 
-*Module:* `dense_armor.utility.signals.preprocessing.text`
+*Module:* `dense_armor.core.signals.preprocessing.text`
 *Bases:* Transformer
 *Guide:* [preprocessing/index.md](../preprocessing/index.md)
 
@@ -4046,7 +4046,7 @@ Public methods:
 ### Tokenizer
 
 
-*Module:* `dense_armor.utility.signals.preprocessing.text`
+*Module:* `dense_armor.core.signals.preprocessing.text`
 *Bases:* Transformer
 *Guide:* [preprocessing/index.md](../preprocessing/index.md)
 
@@ -4071,7 +4071,7 @@ Public methods:
 ### VarianceThreshold
 
 
-*Module:* `dense_armor.utility.signals.preprocessing.select`
+*Module:* `dense_armor.core.signals.preprocessing.select`
 *Bases:* Transformer
 *Guide:* [preprocessing/index.md](../preprocessing/index.md)
 
@@ -4096,7 +4096,7 @@ Public methods:
 ### Metro
 
 
-*Module:* `dense_armor.utility.signals.preprocessing.metro`
+*Module:* `dense_armor.core.signals.preprocessing.metro`
 
 Public methods:
 
@@ -4108,7 +4108,7 @@ Public methods:
 ### Discard
 
 
-*Module:* `dense_armor.utility.infrastructure.compose.select`
+*Module:* `dense_armor.core.infrastructure.compose.select`
 *Bases:* Transformer
 
 Drop the named channels.
@@ -4132,7 +4132,7 @@ Public methods:
 ### FuncTransformer
 
 
-*Module:* `dense_armor.utility.infrastructure.compose.func`
+*Module:* `dense_armor.core.infrastructure.compose.func`
 *Bases:* Transformer
 
 Apply ``fn`` to channels, or to the whole dict.
@@ -4156,7 +4156,7 @@ Public methods:
 ### Select
 
 
-*Module:* `dense_armor.utility.infrastructure.compose.select`
+*Module:* `dense_armor.core.infrastructure.compose.select`
 *Bases:* Transformer
 
 Keep only the named channels.
@@ -4182,7 +4182,7 @@ Public methods:
 ### BagOfVisualWords
 
 
-*Module:* `dense_armor.utility.signals.vision.vocabulary`
+*Module:* `dense_armor.core.signals.vision.vocabulary`
 *Bases:* Transformer
 *Guide:* [cluster/index.md](../cluster/index.md)
 
@@ -4207,7 +4207,7 @@ Public methods:
 ### CubeStream
 
 
-*Module:* `dense_armor.utility.signals.vision.streams`
+*Module:* `dense_armor.core.signals.vision.streams`
 *Bases:* VideoStream
 *Guide:* [vision/frames.md](../vision/frames.md)
 
@@ -4216,7 +4216,7 @@ Iterate over a multi-channel cube ``(T, H, W, C)``.
 ### DenseFlow
 
 
-*Module:* `dense_armor.utility.signals.vision.dense`
+*Module:* `dense_armor.core.signals.vision.dense`
 *Bases:* Transformer
 
 Dense optical flow with the Horn-Schunck iteration.
@@ -4240,7 +4240,7 @@ Public methods:
 ### DifferenceImage
 
 
-*Module:* `dense_armor.utility.signals.vision.registration`
+*Module:* `dense_armor.core.signals.vision.registration`
 *Bases:* Transformer
 *Guide:* [vision/kinematics.md](../vision/kinematics.md)
 
@@ -4265,7 +4265,7 @@ Public methods:
 ### EventFrame
 
 
-*Module:* `dense_armor.utility.signals.vision.quality`
+*Module:* `dense_armor.core.signals.vision.quality`
 *Bases:* Transformer
 *Guide:* [vision/quality.md](../vision/quality.md)
 
@@ -4290,7 +4290,7 @@ Public methods:
 ### FalseColor
 
 
-*Module:* `dense_armor.utility.signals.vision.visualize`
+*Module:* `dense_armor.core.signals.vision.visualize`
 *Bases:* Transformer
 *Guide:* [vision/quality.md](../vision/quality.md)
 
@@ -4315,7 +4315,7 @@ Public methods:
 ### FeatureToSignal
 
 
-*Module:* `dense_armor.utility.signals.vision.adapters`
+*Module:* `dense_armor.core.signals.vision.adapters`
 *Bases:* Transformer
 *Guide:* [vision/tracking.md](../vision/tracking.md)
 
@@ -4340,7 +4340,7 @@ Public methods:
 ### FrameAnomaly
 
 
-*Module:* `dense_armor.utility.signals.vision.scene`
+*Module:* `dense_armor.core.signals.vision.scene`
 *Bases:* Transformer
 *Guide:* [vision/motion.md](../vision/motion.md)
 
@@ -4365,7 +4365,7 @@ Public methods:
 ### FrameFeatures
 
 
-*Module:* `dense_armor.utility.signals.vision.features`
+*Module:* `dense_armor.core.signals.vision.features`
 *Bases:* Transformer
 *Guide:* [vision/features.md](../vision/features.md)
 
@@ -4390,7 +4390,7 @@ Public methods:
 ### FrameJointFusion
 
 
-*Module:* `dense_armor.utility.signals.vision.fusion`
+*Module:* `dense_armor.core.signals.vision.fusion`
 *Bases:* Transformer
 *Guide:* [vision/tracking.md](../vision/tracking.md)
 
@@ -4419,7 +4419,7 @@ Public methods:
 ### FrameNormalizer
 
 
-*Module:* `dense_armor.utility.signals.vision.robustness`
+*Module:* `dense_armor.core.signals.vision.robustness`
 *Bases:* Transformer
 *Guide:* [robustness.md](../robustness.md)
 
@@ -4444,7 +4444,7 @@ Public methods:
 ### FrameQuality
 
 
-*Module:* `dense_armor.utility.signals.vision.quality`
+*Module:* `dense_armor.core.signals.vision.quality`
 *Bases:* Transformer
 *Guide:* [vision/quality.md](../vision/quality.md)
 
@@ -4469,7 +4469,7 @@ Public methods:
 ### FrameWindow
 
 
-*Module:* `dense_armor.utility.signals.vision.window`
+*Module:* `dense_armor.core.signals.vision.window`
 *Bases:* Transformer
 *Guide:* [vision/motion.md](../vision/motion.md)
 
@@ -4494,7 +4494,7 @@ Public methods:
 ### GlobalMotion
 
 
-*Module:* `dense_armor.utility.signals.vision.motion`
+*Module:* `dense_armor.core.signals.vision.motion`
 *Bases:* Transformer
 *Guide:* [vision/motion.md](../vision/motion.md)
 
@@ -4519,7 +4519,7 @@ Public methods:
 ### IncrementalPCA
 
 
-*Module:* `dense_armor.utility.signals.vision.reduce`
+*Module:* `dense_armor.core.signals.vision.reduce`
 *Bases:* Transformer
 *Guide:* [vision/reduce.md](../vision/reduce.md)
 
@@ -4544,7 +4544,7 @@ Public methods:
 ### Kinematics
 
 
-*Module:* `dense_armor.utility.signals.vision.landmarks`
+*Module:* `dense_armor.core.signals.vision.landmarks`
 *Bases:* Transformer
 *Guide:* [vision/kinematics.md](../vision/kinematics.md)
 
@@ -4569,7 +4569,7 @@ Public methods:
 ### LandmarkCleaner
 
 
-*Module:* `dense_armor.utility.signals.vision.landmarks`
+*Module:* `dense_armor.core.signals.vision.landmarks`
 *Bases:* Transformer
 *Guide:* [vision/kinematics.md](../vision/kinematics.md)
 
@@ -4594,7 +4594,7 @@ Public methods:
 ### LandmarkStream
 
 
-*Module:* `dense_armor.utility.signals.vision.landmarks`
+*Module:* `dense_armor.core.signals.vision.landmarks`
 *Guide:* [vision/kinematics.md](../vision/kinematics.md)
 
 A stream of landmark samples, one per frame.
@@ -4602,7 +4602,7 @@ A stream of landmark samples, one per frame.
 ### MotionEnergy
 
 
-*Module:* `dense_armor.utility.signals.vision.motion`
+*Module:* `dense_armor.core.signals.vision.motion`
 *Bases:* Transformer
 *Guide:* [vision/motion.md](../vision/motion.md)
 
@@ -4627,7 +4627,7 @@ Public methods:
 ### MotionMask
 
 
-*Module:* `dense_armor.utility.signals.vision.dense`
+*Module:* `dense_armor.core.signals.vision.dense`
 *Bases:* Transformer
 
 Boolean mask of the pixels whose residual flow is large.
@@ -4651,7 +4651,7 @@ Public methods:
 ### MovingObjectTracker
 
 
-*Module:* `dense_armor.utility.signals.vision.tracking`
+*Module:* `dense_armor.core.signals.vision.tracking`
 *Bases:* Transformer
 *Guide:* [vision/tracking.md](../vision/tracking.md)
 
@@ -4677,7 +4677,7 @@ Public methods:
 ### Overlay
 
 
-*Module:* `dense_armor.utility.signals.vision.visualize`
+*Module:* `dense_armor.core.signals.vision.visualize`
 *Bases:* Transformer
 *Guide:* [vision/quality.md](../vision/quality.md)
 
@@ -4702,7 +4702,7 @@ Public methods:
 ### PatchFeatures
 
 
-*Module:* `dense_armor.utility.signals.vision.patches`
+*Module:* `dense_armor.core.signals.vision.patches`
 *Bases:* Transformer
 *Guide:* [vision/patches.md](../vision/patches.md)
 
@@ -4727,7 +4727,7 @@ Public methods:
 ### PatchMemory
 
 
-*Module:* `dense_armor.utility.signals.vision.patches`
+*Module:* `dense_armor.core.signals.vision.patches`
 *Bases:* AnomalyDetector
 *Guide:* [vision/patches.md](../vision/patches.md)
 
@@ -4755,7 +4755,7 @@ Public methods:
 ### RandomProjection
 
 
-*Module:* `dense_armor.utility.signals.vision.reduce`
+*Module:* `dense_armor.core.signals.vision.reduce`
 *Bases:* Transformer
 *Guide:* [vision/reduce.md](../vision/reduce.md)
 
@@ -4780,7 +4780,7 @@ Public methods:
 ### ArrayStream
 
 
-*Module:* `dense_armor.utility.signals.vision.streams`
+*Module:* `dense_armor.core.signals.vision.streams`
 *Guide:* [vision/frames.md](../vision/frames.md)
 
 Iterate over a numpy array of frames.
@@ -4788,7 +4788,7 @@ Iterate over a numpy array of frames.
 ### CameraStream
 
 
-*Module:* `dense_armor.utility.signals.vision.streams`
+*Module:* `dense_armor.core.signals.vision.streams`
 *Guide:* [vision/frames.md](../vision/frames.md)
 
 Iterate over camera frames through OpenCV.
@@ -4796,7 +4796,7 @@ Iterate over camera frames through OpenCV.
 ### Frame
 
 
-*Module:* `dense_armor.utility.signals.vision.streams`
+*Module:* `dense_armor.core.signals.vision.streams`
 *Guide:* [vision/frames.md](../vision/frames.md)
 
 One image frame with its timestamp.
@@ -4808,7 +4808,7 @@ Public methods:
 ### ImageFolderStream
 
 
-*Module:* `dense_armor.utility.signals.vision.streams`
+*Module:* `dense_armor.core.signals.vision.streams`
 *Guide:* [vision/frames.md](../vision/frames.md)
 
 Iterate over image files in a folder.
@@ -4816,7 +4816,7 @@ Iterate over image files in a folder.
 ### Registration
 
 
-*Module:* `dense_armor.utility.signals.vision.registration`
+*Module:* `dense_armor.core.signals.vision.registration`
 *Bases:* Transformer
 *Guide:* [vision/kinematics.md](../vision/kinematics.md)
 
@@ -4842,7 +4842,7 @@ Public methods:
 ### SceneChange
 
 
-*Module:* `dense_armor.utility.signals.vision.scene`
+*Module:* `dense_armor.core.signals.vision.scene`
 *Bases:* Transformer
 *Guide:* [vision/motion.md](../vision/motion.md)
 
@@ -4867,7 +4867,7 @@ Public methods:
 ### Stabilizer
 
 
-*Module:* `dense_armor.utility.signals.vision.registration`
+*Module:* `dense_armor.core.signals.vision.registration`
 *Bases:* Transformer
 *Guide:* [vision/kinematics.md](../vision/kinematics.md)
 
@@ -4892,7 +4892,7 @@ Public methods:
 ### Sync
 
 
-*Module:* `dense_armor.utility.signals.vision.quality`
+*Module:* `dense_armor.core.signals.vision.quality`
 *Bases:* Transformer
 *Guide:* [vision/quality.md](../vision/quality.md)
 
@@ -4920,7 +4920,7 @@ Public methods:
 ### TrackToSignal
 
 
-*Module:* `dense_armor.utility.signals.vision.adapters`
+*Module:* `dense_armor.core.signals.vision.adapters`
 *Bases:* Transformer
 *Guide:* [vision/tracking.md](../vision/tracking.md)
 
@@ -4945,7 +4945,7 @@ Public methods:
 ### VideoFileStream
 
 
-*Module:* `dense_armor.utility.signals.vision.streams`
+*Module:* `dense_armor.core.signals.vision.streams`
 *Bases:* VideoStream
 *Guide:* [vision/frames.md](../vision/frames.md)
 
@@ -4954,14 +4954,14 @@ Read a video from a file, an URL, a glob of files or a network stream.
 ### VideoStream
 
 
-*Module:* `dense_armor.utility.signals.vision.streams`
+*Module:* `dense_armor.core.signals.vision.streams`
 
 Common interface of the frame sources.
 
 ### VideoWriter
 
 
-*Module:* `dense_armor.utility.signals.vision.visualize`
+*Module:* `dense_armor.core.signals.vision.visualize`
 *Guide:* [vision/quality.md](../vision/quality.md)
 
 Write a video and a summary image of the signals over time.
@@ -4977,7 +4977,7 @@ Public methods:
 ### DriftAdaptiveClassifier
 
 
-*Module:* `dense_armor.utility.online.learn.online_classifiers`
+*Module:* `dense_armor.core.online.learn.online_classifiers`
 *Bases:* Classifier
 *Guide:* [learn/online_classifiers.md](../learn/online_classifiers.md)
 
@@ -5004,7 +5004,7 @@ Public methods:
 ### LEGO
 
 
-*Module:* `dense_armor.utility.online.learn.metric_learning`
+*Module:* `dense_armor.core.online.learn.metric_learning`
 *Bases:* MetricLearner
 *Guide:* [learn/metric_learning.md](../learn/metric_learning.md)
 
@@ -5029,7 +5029,7 @@ Public methods:
 ### MetricKNNClassifier
 
 
-*Module:* `dense_armor.utility.online.learn.metric_learning`
+*Module:* `dense_armor.core.online.learn.metric_learning`
 *Bases:* Classifier
 *Guide:* [learn/metric_learning.md](../learn/metric_learning.md)
 
@@ -5056,7 +5056,7 @@ Public methods:
 ### MetricLearner
 
 
-*Module:* `dense_armor.utility.online.learn.metric_learning`
+*Module:* `dense_armor.core.online.learn.metric_learning`
 *Bases:* Root
 *Guide:* [learn/metric_learning.md](../learn/metric_learning.md)
 
@@ -5080,7 +5080,7 @@ Public methods:
 ### OASIS
 
 
-*Module:* `dense_armor.utility.online.learn.metric_learning`
+*Module:* `dense_armor.core.online.learn.metric_learning`
 *Bases:* MetricLearner
 *Guide:* [learn/metric_learning.md](../learn/metric_learning.md)
 
@@ -5104,7 +5104,7 @@ Public methods:
 ### OnlineGaussianNB
 
 
-*Module:* `dense_armor.utility.online.learn.online_classifiers`
+*Module:* `dense_armor.core.online.learn.online_classifiers`
 *Bases:* Classifier
 *Guide:* [learn/online_classifiers.md](../learn/online_classifiers.md)
 
@@ -5131,7 +5131,7 @@ Public methods:
 ### OnlinePlattScaling
 
 
-*Module:* `dense_armor.utility.online.learn.calibration`
+*Module:* `dense_armor.core.online.learn.calibration`
 *Bases:* ModelWrapper, Classifier
 *Guide:* [learn/calibration.md](../learn/calibration.md)
 
@@ -5158,7 +5158,7 @@ Public methods:
 ### OnlineSoftmaxRegression
 
 
-*Module:* `dense_armor.utility.online.learn.online_classifiers`
+*Module:* `dense_armor.core.online.learn.online_classifiers`
 *Bases:* Classifier
 *Guide:* [learn/online_classifiers.md](../learn/online_classifiers.md)
 
@@ -5185,7 +5185,7 @@ Public methods:
 ### POLA
 
 
-*Module:* `dense_armor.utility.online.learn.metric_learning`
+*Module:* `dense_armor.core.online.learn.metric_learning`
 *Bases:* MetricLearner
 *Guide:* [learn/metric_learning.md](../learn/metric_learning.md)
 
@@ -5209,7 +5209,7 @@ Public methods:
 ### RecursiveLeastSquares
 
 
-*Module:* `dense_armor.utility.online.learn.online_dynamics`
+*Module:* `dense_armor.core.online.learn.online_dynamics`
 *Bases:* Regressor
 *Guide:* [learn/online_dynamics.md](../learn/online_dynamics.md)
 
@@ -5234,7 +5234,7 @@ Public methods:
 ### DriftAwareResidualDynamicsLearner
 
 
-*Module:* `dense_armor.utility.online.learn.online_dynamics`
+*Module:* `dense_armor.core.online.learn.online_dynamics`
 *Bases:* ResidualDynamicsLearner
 *Guide:* [learn/online_dynamics.md](../learn/online_dynamics.md)
 
@@ -5248,7 +5248,7 @@ Public methods:
 ### ResidualDynamicsLearner
 
 
-*Module:* `dense_armor.utility.online.learn.online_dynamics`
+*Module:* `dense_armor.core.online.learn.online_dynamics`
 *Guide:* [learn/online_dynamics.md](../learn/online_dynamics.md)
 
 Online residual torque learner over a nominal ``RigidBodyModel``.
@@ -5263,7 +5263,7 @@ Public methods:
 ### Casper
 
 
-*Module:* `dense_armor.utility.signals.datasets.casper`
+*Module:* `dense_armor.core.signals.datasets.casper`
 
 CASPER UR3e joint stream.
 
@@ -5275,7 +5275,7 @@ Public methods:
 ### DriftStream
 
 
-*Module:* `dense_armor.utility.signals.datasets.drift_stream`
+*Module:* `dense_armor.core.signals.datasets.drift_stream`
 
 Synthetic binary stream with concept drift.
 
@@ -5287,7 +5287,7 @@ Public methods:
 ### SyntheticArm
 
 
-*Module:* `dense_armor.utility.signals.datasets.synthetic_arm`
+*Module:* `dense_armor.core.signals.datasets.synthetic_arm`
 
 Periodic joint stream from a URDF with an optional fault.
 
@@ -5303,7 +5303,7 @@ Public methods:
 ### Orca
 
 
-*Module:* `dense_armor.utility.online.protect.orca`
+*Module:* `dense_armor.core.online.protect.orca`
 *Guide:* [shields/orca.md](../shields/orca.md)
 
 Public methods:
@@ -5314,7 +5314,7 @@ Public methods:
 ### StreamingArbiter
 
 
-*Module:* `dense_armor.utility.online.protect.streaming_arbiter`
+*Module:* `dense_armor.core.online.protect.streaming_arbiter`
 *Guide:* [protect/arbiter.md](../protect/arbiter.md)
 
 Bounded-delay streaming version of `arbiter.classify_segments`.
@@ -5327,7 +5327,7 @@ Public methods:
 ### StreamingHealing
 
 
-*Module:* `dense_armor.utility.online.protect.streaming_arbiter`
+*Module:* `dense_armor.core.online.protect.streaming_arbiter`
 *Guide:* [protect/arbiter.md](../protect/arbiter.md)
 
 One-sample-at-a-time version of `healing.healing_filter`.
@@ -5551,7 +5551,7 @@ Public methods:
 ### AccumulatingStep
 
 
-*Module:* `dense_armor.utility.deep.neural.compiled`
+*Module:* `dense_armor.core.deep.neural.compiled`
 *Guide:* [neural/compiled_training.md](../neural/compiled_training.md)
 
 The compiled pieces of a step that accumulates the gradient.
@@ -5559,7 +5559,7 @@ The compiled pieces of a step that accumulates the gradient.
 ### AddPositions
 
 
-*Module:* `dense_armor.utility.deep.neural.models`
+*Module:* `dense_armor.core.deep.neural.models`
 *Guide:* [neural/sequence_layers.md](../neural/sequence_layers.md)
 
 Add the sinusoidal positions of page 6 of Vaswani et al. 2017.
@@ -5573,7 +5573,7 @@ Public methods:
 ### AGEM
 
 
-*Module:* `dense_armor.utility.deep.neural.continual`
+*Module:* `dense_armor.core.deep.neural.continual`
 *Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
 
 A-GEM (Chaudhry et al. 2019, Eq. 11 p. 5).
@@ -5587,7 +5587,7 @@ Public methods:
 ### ArchivalMemory
 
 
-*Module:* `dense_armor.utility.deep.neural.consolidation.archival`
+*Module:* `dense_armor.core.deep.neural.consolidation.archival`
 *Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
 
 Unforgetting architetturale: residual tree + lifecycle + dual memory.
@@ -5604,7 +5604,7 @@ Public methods:
 ### AsTransformer
 
 
-*Module:* `dense_armor.utility.deep.neural.adapter`
+*Module:* `dense_armor.core.deep.neural.adapter`
 *Bases:* Transformer
 *Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
 
@@ -5629,7 +5629,7 @@ Public methods:
 ### Autoencoder
 
 
-*Module:* `dense_armor.utility.deep.neural.autoencoder`
+*Module:* `dense_armor.core.deep.neural.autoencoder`
 *Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
 
 An encoder and a decoder, joined end to end.
@@ -5646,7 +5646,7 @@ Public methods:
 ### AvgPool1D
 
 
-*Module:* `dense_armor.utility.deep.neural.conv`
+*Module:* `dense_armor.core.deep.neural.conv`
 *Guide:* [neural/vision_layers.md](../neural/vision_layers.md)
 
 1-D average pooling. Input ``(L, c)`` or ``(B, L, c)``.
@@ -5660,7 +5660,7 @@ Public methods:
 ### AvgPool2D
 
 
-*Module:* `dense_armor.utility.deep.neural.conv`
+*Module:* `dense_armor.core.deep.neural.conv`
 *Guide:* [neural/vision_layers.md](../neural/vision_layers.md)
 
 2-D average pooling. Input ``(H, W, c)`` or ``(B, H, W, c)``.
@@ -5674,7 +5674,7 @@ Public methods:
 ### BackgroundLearner
 
 
-*Module:* `dense_armor.utility.deep.neural.background`
+*Module:* `dense_armor.core.deep.neural.background`
 *Guide:* [neural/continuous.md](../neural/continuous.md)
 
 Learn on a worker thread; predict on the last served copy.
@@ -5689,7 +5689,7 @@ Public methods:
 ### BatchNorm
 
 
-*Module:* `dense_armor.utility.deep.neural.norm`
+*Module:* `dense_armor.core.deep.neural.norm`
 *Guide:* [neural/layers.md](../neural/layers.md)
 
 Batch normalisation of a 2-D batch ``(m, n_features)``.
@@ -5703,7 +5703,7 @@ Public methods:
 ### BCEWithLogits
 
 
-*Module:* `dense_armor.utility.deep.neural.losses`
+*Module:* `dense_armor.core.deep.neural.losses`
 *Guide:* [neural/index.md](../neural/index.md)
 
 Binary cross-entropy with logits, with a cached last logits and targets.
@@ -5716,7 +5716,7 @@ Public methods:
 ### Bidirectional
 
 
-*Module:* `dense_armor.utility.deep.neural.bidirectional`
+*Module:* `dense_armor.core.deep.neural.bidirectional`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 A forward and a backward recurrent layer, concatenated.
@@ -5730,7 +5730,7 @@ Public methods:
 ### BottleneckFusion
 
 
-*Module:* `dense_armor.utility.deep.neural.bottleneck`
+*Module:* `dense_armor.core.deep.neural.bottleneck`
 *Guide:* [neural/composable_attention.md](../neural/composable_attention.md)
 
 One fusion layer of Nagrani et al. 2021, Eq.(7) to Eq.(9).
@@ -5744,7 +5744,7 @@ Public methods:
 ### CompiledStep
 
 
-*Module:* `dense_armor.utility.deep.neural.compiled`
+*Module:* `dense_armor.core.deep.neural.compiled`
 *Guide:* [neural/compiled_training.md](../neural/compiled_training.md)
 
 The compiled steps of a Trainer.
@@ -5752,7 +5752,7 @@ The compiled steps of a Trainer.
 ### ConstantLR
 
 
-*Module:* `dense_armor.utility.deep.neural.schedules`
+*Module:* `dense_armor.core.deep.neural.schedules`
 *Guide:* [neural/training.md](../neural/training.md)
 
 A constant learning rate.
@@ -5764,7 +5764,7 @@ Public methods:
 ### Conv1D
 
 
-*Module:* `dense_armor.utility.deep.neural.conv`
+*Module:* `dense_armor.core.deep.neural.conv`
 *Guide:* [neural/vision_layers.md](../neural/vision_layers.md)
 
 1-D cross-correlation with zero padding, optional causal shift.
@@ -5780,7 +5780,7 @@ Public methods:
 ### Conv2D
 
 
-*Module:* `dense_armor.utility.deep.neural.conv`
+*Module:* `dense_armor.core.deep.neural.conv`
 *Guide:* [neural/vision_layers.md](../neural/vision_layers.md)
 
 2-D cross-correlation with zero padding, channels last.
@@ -5794,7 +5794,7 @@ Public methods:
 ### Conv3D
 
 
-*Module:* `dense_armor.utility.deep.neural.conv_more`
+*Module:* `dense_armor.core.deep.neural.conv_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 3-D cross-correlation with zero padding, channels last.
@@ -5808,7 +5808,7 @@ Public methods:
 ### ConvTranspose1D
 
 
-*Module:* `dense_armor.utility.deep.neural.convtranspose`
+*Module:* `dense_armor.core.deep.neural.convtranspose`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 1-D transposed convolution, channels last.
@@ -5822,7 +5822,7 @@ Public methods:
 ### ConvTranspose2D
 
 
-*Module:* `dense_armor.utility.deep.neural.convtranspose`
+*Module:* `dense_armor.core.deep.neural.convtranspose`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 2-D transposed convolution, channels last.
@@ -5836,7 +5836,7 @@ Public methods:
 ### CosineWarmRestarts
 
 
-*Module:* `dense_armor.utility.deep.neural.schedules`
+*Module:* `dense_armor.core.deep.neural.schedules`
 *Guide:* [neural/training.md](../neural/training.md)
 
 Cosine annealing with warm restarts.
@@ -5848,7 +5848,7 @@ Public methods:
 ### DataStream
 
 
-*Module:* `dense_armor.utility.deep.neural.stream`
+*Module:* `dense_armor.core.deep.neural.stream`
 *Guide:* [neural/memory_and_data.md](../neural/memory_and_data.md)
 
 Batches of ``(x, y)`` from arrays, memory-mapped files or a generator.
@@ -5856,7 +5856,7 @@ Batches of ``(x, y)`` from arrays, memory-mapped files or a generator.
 ### DeepGenerativeReplay
 
 
-*Module:* `dense_armor.utility.deep.neural.generative_replay`
+*Module:* `dense_armor.core.deep.neural.generative_replay`
 *Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
 
 Deep generative replay (Shin et al. 2017, sec. 2.3 p. 3).
@@ -5870,7 +5870,7 @@ Public methods:
 ### Dense
 
 
-*Module:* `dense_armor.utility.deep.neural.layers`
+*Module:* `dense_armor.core.deep.neural.layers`
 *Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
 
 A dense layer ``y = x @ W + b``.
@@ -5884,7 +5884,7 @@ Public methods:
 ### DepthwiseConv2D
 
 
-*Module:* `dense_armor.utility.deep.neural.conv_more`
+*Module:* `dense_armor.core.deep.neural.conv_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Depthwise 2-D convolution: one square kernel per channel.
@@ -5898,7 +5898,7 @@ Public methods:
 ### Dropout
 
 
-*Module:* `dense_armor.utility.deep.neural.layers`
+*Module:* `dense_armor.core.deep.neural.layers`
 *Guide:* [neural/layers.md](../neural/layers.md)
 
 Random dropout with the scaling of Hinton et al. 2012.
@@ -5912,7 +5912,7 @@ Public methods:
 ### DualMemory
 
 
-*Module:* `dense_armor.utility.deep.neural.consolidation.memory`
+*Module:* `dense_armor.core.deep.neural.consolidation.memory`
 *Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
 
 Dual memory (HiCL, Kapoor et al. 2026, adapted to dense networks).
@@ -5928,7 +5928,7 @@ Public methods:
 ### ELU
 
 
-*Module:* `dense_armor.utility.deep.neural.activations_more`
+*Module:* `dense_armor.core.deep.neural.activations_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 ELU with a scale ``alpha`` (Eq.(15), page 5 of Clevert et al.).
@@ -5941,7 +5941,7 @@ Public methods:
 ### Embedding
 
 
-*Module:* `dense_armor.utility.deep.neural.layers`
+*Module:* `dense_armor.core.deep.neural.layers`
 *Guide:* [neural/layers.md](../neural/layers.md)
 
 A lookup table ``E[ids]``.
@@ -5955,7 +5955,7 @@ Public methods:
 ### EWC
 
 
-*Module:* `dense_armor.utility.deep.neural.continual`
+*Module:* `dense_armor.core.deep.neural.continual`
 *Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
 
 Elastic weight consolidation (Kirkpatrick et al. 2017, Eq. 3 p. 3).
@@ -5970,7 +5970,7 @@ Public methods:
 ### Flatten
 
 
-*Module:* `dense_armor.utility.deep.neural.conv`
+*Module:* `dense_armor.core.deep.neural.conv`
 *Guide:* [neural/vision_layers.md](../neural/vision_layers.md)
 
 Flatten every axis after the batch axis.
@@ -5984,7 +5984,7 @@ Public methods:
 ### FocalLoss
 
 
-*Module:* `dense_armor.utility.deep.neural.losses_more`
+*Module:* `dense_armor.core.deep.neural.losses_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Focal loss ``-alpha_t (1 - p_t)**gamma * log(p_t)``.
@@ -5997,7 +5997,7 @@ Public methods:
 ### GatedCrossAttention
 
 
-*Module:* `dense_armor.utility.deep.neural.gated_attention`
+*Module:* `dense_armor.core.deep.neural.gated_attention`
 *Guide:* [neural/composable_attention.md](../neural/composable_attention.md)
 
 Cross-attention gated by a per-query signal.
@@ -6011,7 +6011,7 @@ Public methods:
 ### GELU
 
 
-*Module:* `dense_armor.utility.deep.neural.activations_more`
+*Module:* `dense_armor.core.deep.neural.activations_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 GELU (exact or approximate) with a forward and a backward.
@@ -6024,7 +6024,7 @@ Public methods:
 ### GEM
 
 
-*Module:* `dense_armor.utility.deep.neural.continual`
+*Module:* `dense_armor.core.deep.neural.continual`
 *Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
 
 Gradient Episodic Memory (Lopez-Paz & Ranzato 2017, Eq. 8 QP and Eq. 11 dual, p. 4).
@@ -6038,7 +6038,7 @@ Public methods:
 ### GLUFeedForward
 
 
-*Module:* `dense_armor.utility.deep.neural.glu`
+*Module:* `dense_armor.core.deep.neural.glu`
 *Guide:* [neural/modern_blocks.md](../neural/modern_blocks.md)
 
 The feed-forward layer ``(act(x W) * (x V)) W2`` of Shazeer 2020.
@@ -6052,7 +6052,7 @@ Public methods:
 ### GroupNorm
 
 
-*Module:* `dense_armor.utility.deep.neural.norm_more`
+*Module:* `dense_armor.core.deep.neural.norm_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Group normalization of the channels of a sample.
@@ -6066,7 +6066,7 @@ Public methods:
 ### GRU
 
 
-*Module:* `dense_armor.utility.deep.neural.recurrent`
+*Module:* `dense_armor.core.deep.neural.recurrent`
 *Guide:* [neural/sequence_layers.md](../neural/sequence_layers.md)
 
 GRU layer, Eqs.(5) to (8), page 3 of Cho et al. 2014.
@@ -6082,7 +6082,7 @@ Public methods:
 ### HedgeNetClassifier
 
 
-*Module:* `dense_armor.utility.deep.neural.hedge`
+*Module:* `dense_armor.core.deep.neural.hedge`
 *Bases:* Classifier
 *Guide:* [neural/continuous.md](../neural/continuous.md)
 
@@ -6110,7 +6110,7 @@ Public methods:
 ### HingeLoss
 
 
-*Module:* `dense_armor.utility.deep.neural.losses_more`
+*Module:* `dense_armor.core.deep.neural.losses_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Hinge loss ``max(0, 1 - y * pred)`` for ``y`` in {-1, +1}.
@@ -6123,7 +6123,7 @@ Public methods:
 ### Huber
 
 
-*Module:* `dense_armor.utility.deep.neural.losses`
+*Module:* `dense_armor.core.deep.neural.losses`
 *Guide:* [neural/index.md](../neural/index.md)
 
 Huber loss with a cached last prediction and target.
@@ -6136,7 +6136,7 @@ Public methods:
 ### InstanceNorm
 
 
-*Module:* `dense_armor.utility.deep.neural.norm_more`
+*Module:* `dense_armor.core.deep.neural.norm_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Instance normalization: one group per channel.
@@ -6150,7 +6150,7 @@ Public methods:
 ### KLDivLoss
 
 
-*Module:* `dense_armor.utility.deep.neural.losses_more`
+*Module:* `dense_armor.core.deep.neural.losses_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Kullback-Leibler divergence ``sum_k y_k (log y_k - log p_k)``.
@@ -6163,7 +6163,7 @@ Public methods:
 ### L1Loss
 
 
-*Module:* `dense_armor.utility.deep.neural.losses_more`
+*Module:* `dense_armor.core.deep.neural.losses_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Mean absolute error with cached last call.
@@ -6176,7 +6176,7 @@ Public methods:
 ### LabelSmoothingCE
 
 
-*Module:* `dense_armor.utility.deep.neural.losses_more`
+*Module:* `dense_armor.core.deep.neural.losses_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Softmax cross-entropy with smoothed labels, cached last call.
@@ -6189,7 +6189,7 @@ Public methods:
 ### LastStep
 
 
-*Module:* `dense_armor.utility.deep.neural.models`
+*Module:* `dense_armor.core.deep.neural.models`
 *Guide:* [neural/sequence_layers.md](../neural/sequence_layers.md)
 
 Take the last step of a sequence ``(B, T, n)``, giving ``(B, n)``.
@@ -6203,7 +6203,7 @@ Public methods:
 ### LatentCrossAttention
 
 
-*Module:* `dense_armor.utility.deep.neural.latent_attention`
+*Module:* `dense_armor.core.deep.neural.latent_attention`
 *Guide:* [neural/composable_attention.md](../neural/composable_attention.md)
 
 Cross-attention whose queries are a learned latent array.
@@ -6217,7 +6217,7 @@ Public methods:
 ### LayerNorm
 
 
-*Module:* `dense_armor.utility.deep.neural.norm`
+*Module:* `dense_armor.core.deep.neural.norm`
 *Guide:* [neural/layers.md](../neural/layers.md)
 
 Layer normalisation over the features of each sample.
@@ -6231,7 +6231,7 @@ Public methods:
 ### LeakyReLU
 
 
-*Module:* `dense_armor.utility.deep.neural.activations_more`
+*Module:* `dense_armor.core.deep.neural.activations_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Leaky ReLU with a fixed slope (no Param).
@@ -6244,7 +6244,7 @@ Public methods:
 ### LearnedPositions
 
 
-*Module:* `dense_armor.utility.deep.neural.positions`
+*Module:* `dense_armor.core.deep.neural.positions`
 *Guide:* [neural/attention.md](../neural/attention.md)
 
 Add a learned vector to each position of a sequence.
@@ -6258,7 +6258,7 @@ Public methods:
 ### LifecycleMemory
 
 
-*Module:* `dense_armor.utility.deep.neural.consolidation.memory`
+*Module:* `dense_armor.core.deep.neural.consolidation.memory`
 *Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
 
 Lifecycle-quantised memory (SuperLocalMemory V3.3, Bhardwaj 2026, p.1).
@@ -6275,7 +6275,7 @@ Public methods:
 ### LinearWarmup
 
 
-*Module:* `dense_armor.utility.deep.neural.schedules_more`
+*Module:* `dense_armor.core.deep.neural.schedules_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Linear warmup: ``lr_start`` then a linear ramp to ``lr_end``.
@@ -6287,7 +6287,7 @@ Public methods:
 ### LSTM
 
 
-*Module:* `dense_armor.utility.deep.neural.recurrent`
+*Module:* `dense_armor.core.deep.neural.recurrent`
 *Guide:* [neural/sequence_layers.md](../neural/sequence_layers.md)
 
 Vanilla LSTM with peepholes, Greff et al. 2017 pages 1-2.
@@ -6303,7 +6303,7 @@ Public methods:
 ### MatryoshkaLoss
 
 
-*Module:* `dense_armor.utility.deep.neural.matryoshka`
+*Module:* `dense_armor.core.deep.neural.matryoshka`
 *Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
 
 The multi-size loss of Matryoshka Representation Learning.
@@ -6319,7 +6319,7 @@ Public methods:
 ### MaxPool1D
 
 
-*Module:* `dense_armor.utility.deep.neural.conv`
+*Module:* `dense_armor.core.deep.neural.conv`
 *Guide:* [neural/vision_layers.md](../neural/vision_layers.md)
 
 1-D max pooling with the first maximum going to the gradient.
@@ -6333,7 +6333,7 @@ Public methods:
 ### MaxPool2D
 
 
-*Module:* `dense_armor.utility.deep.neural.conv`
+*Module:* `dense_armor.core.deep.neural.conv`
 *Guide:* [neural/vision_layers.md](../neural/vision_layers.md)
 
 2-D max pooling with the first maximum going to the gradient.
@@ -6347,7 +6347,7 @@ Public methods:
 ### MeanOverTime
 
 
-*Module:* `dense_armor.utility.deep.neural.models`
+*Module:* `dense_armor.core.deep.neural.models`
 *Guide:* [neural/sequence_layers.md](../neural/sequence_layers.md)
 
 Mean over the time axis of ``(B, T, n)`` or ``(T, n)``.
@@ -6361,7 +6361,7 @@ Public methods:
 ### MSE
 
 
-*Module:* `dense_armor.utility.deep.neural.losses`
+*Module:* `dense_armor.core.deep.neural.losses`
 *Guide:* [neural/continuous.md](../neural/continuous.md)
 
 Mean squared error with a cached last prediction and target.
@@ -6374,7 +6374,7 @@ Public methods:
 ### MultiHeadCrossAttention
 
 
-*Module:* `dense_armor.utility.deep.neural.cross_attention`
+*Module:* `dense_armor.core.deep.neural.cross_attention`
 *Guide:* [neural/composable_attention.md](../neural/composable_attention.md)
 
 Multi-head attention with queries and context from two streams.
@@ -6391,7 +6391,7 @@ Public methods:
 ### MultiHeadSelfAttention
 
 
-*Module:* `dense_armor.utility.deep.neural.attention`
+*Module:* `dense_armor.core.deep.neural.attention`
 *Guide:* [neural/attention.md](../neural/attention.md)
 
 Multi-head self-attention of Vaswani et al. 2017, page 5.
@@ -6409,7 +6409,7 @@ Public methods:
 ### NextTokenLoss
 
 
-*Module:* `dense_armor.utility.deep.neural.losses_lm`
+*Module:* `dense_armor.core.deep.neural.losses_lm`
 *Guide:* [neural/decoder_lm.md](../neural/decoder_lm.md)
 
 Cross-entropy of the logits at ``t`` against the token at ``t+1``.
@@ -6422,7 +6422,7 @@ Public methods:
 ### NoamSchedule
 
 
-*Module:* `dense_armor.utility.deep.neural.schedules_more`
+*Module:* `dense_armor.core.deep.neural.schedules_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Noam schedule: linear warmup then inverse-square-root decay.
@@ -6434,7 +6434,7 @@ Public methods:
 ### OnlineAutoencoder
 
 
-*Module:* `dense_armor.utility.deep.neural.online_autoencoder`
+*Module:* `dense_armor.core.deep.neural.online_autoencoder`
 *Bases:* AnomalyDetector
 *Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
 
@@ -6460,7 +6460,7 @@ Public methods:
 ### OnlineNetClassifier
 
 
-*Module:* `dense_armor.utility.deep.neural.online`
+*Module:* `dense_armor.core.deep.neural.online`
 *Bases:* Classifier
 *Guide:* [neural/continuous.md](../neural/continuous.md)
 
@@ -6487,7 +6487,7 @@ Public methods:
 ### OnlineNetRegressor
 
 
-*Module:* `dense_armor.utility.deep.neural.online`
+*Module:* `dense_armor.core.deep.neural.online`
 *Bases:* Regressor
 *Guide:* [neural/continuous.md](../neural/continuous.md)
 
@@ -6512,7 +6512,7 @@ Public methods:
 ### OnlineNetVector
 
 
-*Module:* `dense_armor.utility.deep.neural.online_vector`
+*Module:* `dense_armor.core.deep.neural.online_vector`
 *Bases:* Regressor
 *Guide:* [neural/deep.md](../neural/deep.md)
 
@@ -6537,7 +6537,7 @@ Public methods:
 ### Parallel
 
 
-*Module:* `dense_armor.utility.deep.neural.chain`
+*Module:* `dense_armor.core.deep.neural.chain`
 *Guide:* [neural/chains.md](../neural/chains.md)
 
 Several branches on the same input, merged on the output.
@@ -6552,7 +6552,7 @@ Public methods:
 ### Param
 
 
-*Module:* `dense_armor.utility.deep.neural.params`
+*Module:* `dense_armor.core.deep.neural.params`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 A jax array with a gradient of the same shape and dtype.
@@ -6565,7 +6565,7 @@ Public methods:
 ### PQMemory
 
 
-*Module:* `dense_armor.utility.deep.neural.consolidation.vq`
+*Module:* `dense_armor.core.deep.neural.consolidation.vq`
 *Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
 
 Product quantisation (Jégou, Douze, Schmid 2011, IEEE TPAMI 33(1)).
@@ -6580,7 +6580,7 @@ Public methods:
 ### PRelu
 
 
-*Module:* `dense_armor.utility.deep.neural.activations`
+*Module:* `dense_armor.core.deep.neural.activations`
 *Guide:* [neural/index.md](../neural/index.md)
 
 PReLU with ``a`` as a ``Param``; ``backward`` fills ``a.grad``.
@@ -6594,7 +6594,7 @@ Public methods:
 ### Relu
 
 
-*Module:* `dense_armor.utility.deep.neural.activations`
+*Module:* `dense_armor.core.deep.neural.activations`
 *Guide:* [neural/chains.md](../neural/chains.md)
 
 ReLU: ``forward`` caches ``x`` and ``y``; ``backward`` returns ``dx``.
@@ -6607,7 +6607,7 @@ Public methods:
 ### Residual
 
 
-*Module:* `dense_armor.utility.deep.neural.layers`
+*Module:* `dense_armor.core.deep.neural.layers`
 *Guide:* [neural/layers.md](../neural/layers.md)
 
 ``y = x + inner.forward(x)`` (He et al. 2015, Eqn.(1) page 3).
@@ -6621,7 +6621,7 @@ Public methods:
 ### ResidualTree
 
 
-*Module:* `dense_armor.utility.deep.neural.consolidation.tree`
+*Module:* `dense_armor.core.deep.neural.consolidation.tree`
 *Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
 
 Residual tree (DeltaMem, Tan et al. 2026, adapted to dense networks).
@@ -6639,7 +6639,7 @@ Public methods:
 ### RMSNorm
 
 
-*Module:* `dense_armor.utility.deep.neural.norm_rms`
+*Module:* `dense_armor.core.deep.neural.norm_rms`
 *Guide:* [neural/modern_blocks.md](../neural/modern_blocks.md)
 
 RMS layer normalisation over the features of each sample.
@@ -6653,7 +6653,7 @@ Public methods:
 ### RNN
 
 
-*Module:* `dense_armor.utility.deep.neural.recurrent`
+*Module:* `dense_armor.core.deep.neural.recurrent`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Elman recurrent layer ``h = tanh(W x + U h_prev + b)``.
@@ -6669,7 +6669,7 @@ Public methods:
 ### RotaryDecoder
 
 
-*Module:* `dense_armor.utility.deep.neural.rotary_decoder`
+*Module:* `dense_armor.core.deep.neural.rotary_decoder`
 *Guide:* [neural/rotary_decoder.md](../neural/rotary_decoder.md)
 
 ``Embedding``, ``n_layers`` modern blocks, ``RMSNorm`` and a ``Dense`` head.
@@ -6686,7 +6686,7 @@ Public methods:
 ### RotaryDecoderBlock
 
 
-*Module:* `dense_armor.utility.deep.neural.rotary_decoder`
+*Module:* `dense_armor.core.deep.neural.rotary_decoder`
 *Guide:* [neural/rotary_decoder.md](../neural/rotary_decoder.md)
 
 Pre-norm decoder block: ``x + Attn(RMSNorm(x))``, then ``+ FFN(RMSNorm(.))``.
@@ -6702,7 +6702,7 @@ Public methods:
 ### SeparableConv2D
 
 
-*Module:* `dense_armor.utility.deep.neural.conv_more`
+*Module:* `dense_armor.core.deep.neural.conv_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Separable 2-D convolution: depthwise then pointwise.
@@ -6716,7 +6716,7 @@ Public methods:
 ### Seq2Seq
 
 
-*Module:* `dense_armor.utility.deep.neural.seq2seq`
+*Module:* `dense_armor.core.deep.neural.seq2seq`
 *Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
 
 A recurrent encoder, a recurrent decoder, a dense head.
@@ -6730,7 +6730,7 @@ Public methods:
 ### Sequential
 
 
-*Module:* `dense_armor.utility.deep.neural.chain`
+*Module:* `dense_armor.core.deep.neural.chain`
 *Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
 
 A chain of layers, applied in order.
@@ -6748,7 +6748,7 @@ Public methods:
 ### Sigmoid
 
 
-*Module:* `dense_armor.utility.deep.neural.activations`
+*Module:* `dense_armor.core.deep.neural.activations`
 *Guide:* [neural/index.md](../neural/index.md)
 
 Sigmoid: ``forward`` caches ``x`` and ``y``; ``backward`` returns ``dx``.
@@ -6761,7 +6761,7 @@ Public methods:
 ### SiLU
 
 
-*Module:* `dense_armor.utility.deep.neural.activations_more`
+*Module:* `dense_armor.core.deep.neural.activations_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 SiLU: ``x * sigmoid(x)``.
@@ -6774,7 +6774,7 @@ Public methods:
 ### Softmax
 
 
-*Module:* `dense_armor.utility.deep.neural.activations`
+*Module:* `dense_armor.core.deep.neural.activations`
 *Guide:* [neural/index.md](../neural/index.md)
 
 Softmax over the last axis: ``forward`` caches ``x`` and ``y``; ``backward`` returns ``dx``.
@@ -6787,7 +6787,7 @@ Public methods:
 ### SoftmaxCrossEntropy
 
 
-*Module:* `dense_armor.utility.deep.neural.losses`
+*Module:* `dense_armor.core.deep.neural.losses`
 
 Softmax cross-entropy with a cached last logits and labels.
 
@@ -6799,7 +6799,7 @@ Public methods:
 ### Softplus
 
 
-*Module:* `dense_armor.utility.deep.neural.activations_more`
+*Module:* `dense_armor.core.deep.neural.activations_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Softplus with a scale ``beta``.
@@ -6812,7 +6812,7 @@ Public methods:
 ### SparseMoE
 
 
-*Module:* `dense_armor.utility.deep.neural.moe`
+*Module:* `dense_armor.core.deep.neural.moe`
 *Guide:* [neural/moe_testtime.md](../neural/moe_testtime.md)
 
 Sparse mixture of experts with dispatch.
@@ -6829,7 +6829,7 @@ Public methods:
 ### StepLR
 
 
-*Module:* `dense_armor.utility.deep.neural.schedules`
+*Module:* `dense_armor.core.deep.neural.schedules`
 *Guide:* [neural/training.md](../neural/training.md)
 
 Step schedule: ``lr * gamma ** floor(epoch / step)``.
@@ -6841,7 +6841,7 @@ Public methods:
 ### Tanh
 
 
-*Module:* `dense_armor.utility.deep.neural.activations`
+*Module:* `dense_armor.core.deep.neural.activations`
 *Guide:* [neural/index.md](../neural/index.md)
 
 Tanh: ``forward`` caches ``x`` and ``y``; ``backward`` returns ``dx``.
@@ -6854,7 +6854,7 @@ Public methods:
 ### TestTimeCompute
 
 
-*Module:* `dense_armor.utility.deep.neural.test_time`
+*Module:* `dense_armor.core.deep.neural.test_time`
 *Guide:* [neural/moe_testtime.md](../neural/moe_testtime.md)
 
 Test-time compute wrapper.
@@ -6868,7 +6868,7 @@ Public methods:
 ### TheoreticalBound
 
 
-*Module:* `dense_armor.utility.deep.neural.consolidation.memory`
+*Module:* `dense_armor.core.deep.neural.consolidation.memory`
 *Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
 
 Classical Hopfield capacity as a forgetting bound (placeholder).
@@ -6881,7 +6881,7 @@ Public methods:
 ### Trainer
 
 
-*Module:* `dense_armor.utility.deep.neural.trainer`
+*Module:* `dense_armor.core.deep.neural.trainer`
 *Guide:* [neural/training.md](../neural/training.md)
 
 Train a model on a dataset, with mini-batches and schedules.
@@ -6895,7 +6895,7 @@ Public methods:
 ### TransformerBlock
 
 
-*Module:* `dense_armor.utility.deep.neural.attention`
+*Module:* `dense_armor.core.deep.neural.attention`
 *Guide:* [neural/attention.md](../neural/attention.md)
 
 The encoder block of Vaswani et al. 2017.
@@ -6911,7 +6911,7 @@ Public methods:
 ### TransformerDecoderBlock
 
 
-*Module:* `dense_armor.utility.deep.neural.decoder`
+*Module:* `dense_armor.core.deep.neural.decoder`
 *Guide:* [neural/decoder_lm.md](../neural/decoder_lm.md)
 
 One decoder layer of Vaswani et al. 2017.
@@ -6925,7 +6925,7 @@ Public methods:
 ### Upsample1D
 
 
-*Module:* `dense_armor.utility.deep.neural.convtranspose`
+*Module:* `dense_armor.core.deep.neural.convtranspose`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Nearest-neighbour upsampling along the length, channels last.
@@ -6939,7 +6939,7 @@ Public methods:
 ### Upsample2D
 
 
-*Module:* `dense_armor.utility.deep.neural.convtranspose`
+*Module:* `dense_armor.core.deep.neural.convtranspose`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Nearest-neighbour upsampling along both spatial axes, channels last.
@@ -6953,7 +6953,7 @@ Public methods:
 ### VectorQuantizer
 
 
-*Module:* `dense_armor.utility.deep.neural.quantize`
+*Module:* `dense_armor.core.deep.neural.quantize`
 *Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
 
 Nearest-code quantizer with the straight-through gradient.
@@ -6970,7 +6970,7 @@ Public methods:
 ### VQMemory
 
 
-*Module:* `dense_armor.utility.deep.neural.consolidation.vq`
+*Module:* `dense_armor.core.deep.neural.consolidation.vq`
 *Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
 
 Vector-quantised memory (van den Oord et al. 2017, Eq. 1-4 p. 3).
@@ -6991,7 +6991,7 @@ Public methods:
 ### SharedArray
 
 
-*Module:* `dense_armor.utility.infrastructure.data.shared`
+*Module:* `dense_armor.core.infrastructure.data.shared`
 
 A numeric numpy array in one shared memory block.
 
@@ -7003,7 +7003,7 @@ Public methods:
 ### SharedDict
 
 
-*Module:* `dense_armor.utility.infrastructure.data.shared`
+*Module:* `dense_armor.core.infrastructure.data.shared`
 *Bases:* Mapping
 
 Separate key and value buffers with offsets.
@@ -7020,7 +7020,7 @@ Public methods:
 ### SharedList
 
 
-*Module:* `dense_armor.utility.infrastructure.data.shared`
+*Module:* `dense_armor.core.infrastructure.data.shared`
 
 A flat buffer of pickled items plus int64 offsets.
 
@@ -7032,7 +7032,7 @@ Public methods:
 ### SharedStrings
 
 
-*Module:* `dense_armor.utility.infrastructure.data.shared`
+*Module:* `dense_armor.core.infrastructure.data.shared`
 
 A list of strings as one UTF-8 blob plus int64 offsets.
 
@@ -7046,7 +7046,7 @@ Public methods:
 ### BayesianLinearRegression
 
 
-*Module:* `dense_armor.utility.online.linear.bayes`
+*Module:* `dense_armor.core.online.linear.bayes`
 *Bases:* Regressor
 *Guide:* [linear/bayes.md](../linear/bayes.md)
 
@@ -7071,7 +7071,7 @@ Public methods:
 ### LinearRegression
 
 
-*Module:* `dense_armor.utility.online.linear.glm`
+*Module:* `dense_armor.core.online.linear.glm`
 *Bases:* Regressor
 *Guide:* [linear/glm.md](../linear/glm.md)
 
@@ -7098,7 +7098,7 @@ Public methods:
 ### LogisticRegression
 
 
-*Module:* `dense_armor.utility.online.linear.glm`
+*Module:* `dense_armor.core.online.linear.glm`
 *Bases:* Classifier
 *Guide:* [linear/glm.md](../linear/glm.md)
 
@@ -7127,7 +7127,7 @@ Public methods:
 ### PayloadEstimator
 
 
-*Module:* `dense_armor.utility.online.linear.payload`
+*Module:* `dense_armor.core.online.linear.payload`
 *Bases:* Regressor
 *Guide:* [linear/payload.md](../linear/payload.md)
 
@@ -7681,7 +7681,7 @@ Public methods:
 ### AdaGrad
 
 
-*Module:* `dense_armor.utility.online.optim.adagrad`
+*Module:* `dense_armor.core.online.optim.adagrad`
 *Guide:* [optim/adagrad.md](../optim/adagrad.md)
 
 AdaGrad with per-coordinate adaptive step sizes.
@@ -7695,7 +7695,7 @@ Public methods:
 ### Adam
 
 
-*Module:* `dense_armor.utility.online.optim.adam`
+*Module:* `dense_armor.core.online.optim.adam`
 *Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
 
 Adam with bias-corrected moment estimates.
@@ -7709,7 +7709,7 @@ Public methods:
 ### AdamW
 
 
-*Module:* `dense_armor.utility.online.optim.adamw`
+*Module:* `dense_armor.core.online.optim.adamw`
 *Bases:* Adam
 *Guide:* [neural/modern_blocks.md](../neural/modern_blocks.md)
 
@@ -7724,7 +7724,7 @@ Public methods:
 ### FTRLProximal
 
 
-*Module:* `dense_armor.utility.online.optim.ftrl`
+*Module:* `dense_armor.core.online.optim.ftrl`
 *Guide:* [optim/ftrl.md](../optim/ftrl.md)
 
 FTRL with a quadratic + L1 + L2 regularizer.
@@ -7738,7 +7738,7 @@ Public methods:
 ### OnlineNewtonStep
 
 
-*Module:* `dense_armor.utility.online.optim.newton`
+*Module:* `dense_armor.core.online.optim.newton`
 *Guide:* [optim/newton.md](../optim/newton.md)
 
 Second-order online update with a rank-one running Hessian.
@@ -7753,7 +7753,7 @@ Public methods:
 ### RMSProp
 
 
-*Module:* `dense_armor.utility.online.optim.rmsprop`
+*Module:* `dense_armor.core.online.optim.rmsprop`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 RMSProp with an exponentially decaying average of squared gradients.
@@ -7767,7 +7767,7 @@ Public methods:
 ### SGD
 
 
-*Module:* `dense_armor.utility.online.optim.sgd`
+*Module:* `dense_armor.core.online.optim.sgd`
 *Guide:* [neural/continuous.md](../neural/continuous.md)
 
 Gradient descent with optional momentum and Nesterov momentum.
@@ -7783,7 +7783,7 @@ Public methods:
 ### CycleResidual
 
 
-*Module:* `dense_armor.utility.online.timeseries.cycle`
+*Module:* `dense_armor.core.online.timeseries.cycle`
 *Bases:* Transformer
 *Guide:* [timeseries/cycle.md](../timeseries/cycle.md)
 
@@ -7808,7 +7808,7 @@ Public methods:
 ### GARCH11
 
 
-*Module:* `dense_armor.utility.online.timeseries.garch`
+*Module:* `dense_armor.core.online.timeseries.garch`
 *Bases:* Transformer
 *Guide:* [timeseries/garch.md](../timeseries/garch.md)
 
@@ -7836,7 +7836,7 @@ Public methods:
 ### InnovationAdaptiveKalman
 
 
-*Module:* `dense_armor.utility.online.timeseries.kalman`
+*Module:* `dense_armor.core.online.timeseries.kalman`
 *Bases:* KalmanFilter
 *Guide:* [timeseries/kalman.md](../timeseries/kalman.md)
 
@@ -7864,7 +7864,7 @@ Public methods:
 ### KalmanFilter
 
 
-*Module:* `dense_armor.utility.online.timeseries.kalman`
+*Module:* `dense_armor.core.online.timeseries.kalman`
 *Bases:* Transformer
 *Guide:* [timeseries/kalman.md](../timeseries/kalman.md)
 
@@ -7892,7 +7892,7 @@ Public methods:
 ### OnlineAR
 
 
-*Module:* `dense_armor.utility.online.timeseries.ar`
+*Module:* `dense_armor.core.online.timeseries.ar`
 *Bases:* Transformer
 *Guide:* [timeseries/ar.md](../timeseries/ar.md)
 
@@ -7920,7 +7920,7 @@ Public methods:
 ### OnlineVAR
 
 
-*Module:* `dense_armor.utility.online.timeseries.ar`
+*Module:* `dense_armor.core.online.timeseries.ar`
 *Bases:* Transformer
 *Guide:* [timeseries/ar.md](../timeseries/ar.md)
 
@@ -7946,7 +7946,7 @@ Public methods:
 ### VBAdaptiveKalman
 
 
-*Module:* `dense_armor.utility.online.timeseries.kalman`
+*Module:* `dense_armor.core.online.timeseries.kalman`
 *Bases:* KalmanFilter
 *Guide:* [timeseries/kalman.md](../timeseries/kalman.md)
 

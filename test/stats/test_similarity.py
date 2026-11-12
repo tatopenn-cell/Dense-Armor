@@ -5,7 +5,7 @@ import math
 import numpy as np
 import pytest
 
-from dense_armor.utility.signals.stats.similarity import (
+from dense_armor.core.signals.stats.similarity import (
     SparseCosineIndex,
     cosine_similarity,
     cosine_similarity_many,

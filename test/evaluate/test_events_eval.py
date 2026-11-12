@@ -1,4 +1,4 @@
-"""Tests for dense_armor/utility/evaluation/evaluate/events.py."""
+"""Tests for dense_armor/core/evaluation/evaluate/events.py."""
 import doctest
 import importlib.util
 from pathlib import Path
@@ -6,9 +6,9 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-import dense_armor.utility.evaluation.evaluate.events as ev_mod
-from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
-from dense_armor.utility.evaluation.evaluate import evaluate_events
+import dense_armor.core.evaluation.evaluate.events as ev_mod
+from dense_armor.core.evaluation.evaluate import evaluate_events
+from dense_armor.core.online.drift.detector import CUSUMDriftDetector
 
 BENCH = Path(__file__).resolve().parents[2] / "benchmarks" / "casper_benchmark.py"
 

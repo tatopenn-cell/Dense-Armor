@@ -1,12 +1,13 @@
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
-from dense_armor.utility.evaluation.metrics import events
+from dense_armor.core.evaluation.metrics import events
+from dense_armor.core.online.drift.detector import CUSUMDriftDetector
 
 out = Path(__file__).parent
 rng = np.random.default_rng(1)

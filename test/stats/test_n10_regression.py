@@ -10,8 +10,8 @@ reverted or declared.
 import numpy as np
 import pytest
 
-from dense_armor.utility.signals.stats import RollingMAD, RunningMoments
-from dense_armor.utility.online.timeseries import KalmanFilter, OnlineAR
+from dense_armor.core.online.timeseries import KalmanFilter, OnlineAR
+from dense_armor.core.signals.stats import RollingMAD, RunningMoments
 
 
 def test_running_moments_pinned():

@@ -8,8 +8,8 @@ Two thousand samples of synthetic flight, sixteen features per sample (gyro x, y
 
 | Side | Class | Protocol |
 |---|---|---|
-| Batch | `BatchDecisionTreeClassifier` (`dense_armor/utility/online/tree/batch.py`) | `fit(X, y)` once on the whole training half, then `predict_one` on the test half |
-| Online | `HoeffdingTreeClassifier` (`dense_armor/utility/online/tree/hoeffding.py`, `grace_period=50`) | `predict_one` then `learn_one` on each test sample, in order |
+| Batch | `BatchDecisionTreeClassifier` (`dense_armor/core/online/tree/batch.py`) | `fit(X, y)` once on the whole training half, then `predict_one` on the test half |
+| Online | `HoeffdingTreeClassifier` (`dense_armor/core/online/tree/hoeffding.py`, `grace_period=50`) | `predict_one` then `learn_one` on each test sample, in order |
 
 The batch tree is a CART tree: gini impurity `I(t) = 1 - sum_k p_k^2`, recursive binary split (Breiman et al. 1984; also Bourel et al. 2026, arXiv:2606.13984, page 8 and page 14). The online tree is a Hoeffding tree (Hoeffding 1963). Both are classifiers of the library; the pipeline only splits, scores, and compares.
 
@@ -18,7 +18,7 @@ The batch tree is a CART tree: gini impurity `I(t) = 1 - sum_k p_k^2`, recursive
 The batch tree sees the whole training half in one call to `fit`, then never changes. The online tree sees one test sample at a time: first `predict_one`, then `learn_one`, in the shuffled order of the test half. On the same toy set of four samples the two agree on the split:
 
 ```python
-from dense_armor.utility.online.tree.batch import BatchDecisionTreeClassifier
+from dense_armor.core.online.tree.batch import BatchDecisionTreeClassifier
 
 X = [{"x": 0.0}, {"x": 1.0}, {"x": 2.0}, {"x": 3.0}]
 y = [0, 0, 1, 1]

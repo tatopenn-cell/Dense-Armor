@@ -17,13 +17,13 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 
-from dense_armor.utility.online.linear.glm import LogisticRegression
-from dense_armor.utility.online.multiclass import (
+from dense_armor.core.online.linear.glm import LogisticRegression
+from dense_armor.core.online.multiclass import (
     OneVsOneClassifier,
     OneVsRestClassifier,
     OutputCodeClassifier,
 )
-from dense_armor.utility.online.optim import SGD
+from dense_armor.core.online.optim import SGD
 
 HERE = Path(__file__).resolve().parent
 

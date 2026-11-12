@@ -6,8 +6,8 @@ import pytest
 
 pytest.importorskip("river")
 
-from dense_armor.utility.online.anomaly.filters import HampelFilter
-from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB
+from dense_armor.core.online.anomaly.filters import HampelFilter
+from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB
 
 
 def test_bridge_raises_without_river(monkeypatch):

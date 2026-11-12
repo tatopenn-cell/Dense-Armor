@@ -6,7 +6,6 @@ import math
 from pathlib import Path
 
 import pytest
-
 from dashboard import sections as sec
 
 
@@ -106,7 +105,7 @@ def test_role_attributes_empty_instance():
 
 
 def test_role_attributes_full():
-    from dense_armor.utility.online.anomaly.lof import LocalOutlierFactor
+    from dense_armor.core.online.anomaly.lof import LocalOutlierFactor
     inst = LocalOutlierFactor(n_neighbors=5, window=20)
     attrs = sec._role_attributes(inst)
     assert attrs["budget_s"] > 0
@@ -115,7 +114,7 @@ def test_role_attributes_full():
 
 
 def test_role_attributes_with_state():
-    from dense_armor.utility.online.drift.adwin import ADWIN
+    from dense_armor.core.online.drift.adwin import ADWIN
     det = ADWIN()
     for v in [0.1, 0.2, 0.3]:
         det.update(v)
@@ -148,26 +147,26 @@ def test_piece_prev_next_unknown():
 
 
 def test_auto_init_drift_detector():
-    from dense_armor.utility.online.tree.adaptive import HoeffdingAdaptiveTreeClassifier
+    from dense_armor.core.online.tree.adaptive import HoeffdingAdaptiveTreeClassifier
     kwargs = sec._auto_init_kwargs(HoeffdingAdaptiveTreeClassifier)
     assert "drift_detector" in kwargs
     assert kwargs["drift_detector"] is not None
 
 
 def test_auto_init_optimizer():
-    from dense_armor.utility.online.linear.glm import LogisticRegression
+    from dense_armor.core.online.linear.glm import LogisticRegression
     kwargs = sec._auto_init_kwargs(LogisticRegression)
     assert "optimizer" in kwargs
 
 
 def test_auto_init_nothing_needed():
-    from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
+    from dense_armor.core.online.tree.hoeffding import HoeffdingTreeClassifier
     kwargs = sec._auto_init_kwargs(HoeffdingTreeClassifier)
     assert kwargs == {}
 
 
 def test_auto_init_base_kwargs_kept():
-    from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
+    from dense_armor.core.online.tree.hoeffding import HoeffdingTreeClassifier
     kwargs = sec._auto_init_kwargs(HoeffdingTreeClassifier, {"grace_period": 50})
     assert kwargs["grace_period"] == 50
 
@@ -232,7 +231,7 @@ def test_gspc_classification_stream():
 
 def test_feature_series_scaler():
     prev = sec._feature_series(
-        "dense_armor.utility.signals.preprocessing.scale",
+        "dense_armor.core.signals.preprocessing.scale",
         "StandardScaler",
         "transform.ret",
     )
@@ -242,7 +241,7 @@ def test_feature_series_scaler():
 
 def test_sig_preview_hoeffding():
     prev = sec._sig_preview(
-        "dense_armor.utility.online.tree.hoeffding",
+        "dense_armor.core.online.tree.hoeffding",
         "HoeffdingTreeClassifier",
         {},
     )

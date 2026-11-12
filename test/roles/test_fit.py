@@ -1,10 +1,10 @@
 import numpy as np
 import pytest
 
-from dense_armor.utility.online.linear.glm import LinearRegression
-from dense_armor.utility.online.optim.sgd import SGD
-from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
-from dense_armor.utility.signals.stats.moments import RunningMoments
+from dense_armor.core.online.linear.glm import LinearRegression
+from dense_armor.core.online.optim.sgd import SGD
+from dense_armor.core.online.tree.hoeffding import HoeffdingTreeClassifier
+from dense_armor.core.signals.stats.moments import RunningMoments
 
 
 def _data(n=200):

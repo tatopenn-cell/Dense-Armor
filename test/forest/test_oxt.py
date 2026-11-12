@@ -7,10 +7,9 @@ import numpy as np
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.roles import DriftDetector
-from dense_armor.utility.online.forest import OnlineExtraTreesRegressor
-from dense_armor.utility.online.forest import oxt as mod
-from dense_armor.utility.online.forest.oxt import (
+from dense_armor.core.online.forest import OnlineExtraTreesRegressor
+from dense_armor.core.online.forest import oxt as mod
+from dense_armor.core.online.forest.oxt import (
     _as_dict,
     _LeafModel,
     _Moments,
@@ -18,6 +17,7 @@ from dense_armor.utility.online.forest.oxt import (
     _RandomTree,
     _split_choice,
 )
+from dense_armor.roles import DriftDetector
 
 
 class _Fire(DriftDetector):

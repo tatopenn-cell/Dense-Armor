@@ -1,19 +1,19 @@
-"""Tests for dense_armor/utility/signals/stats/dependence.py."""
+"""Tests for dense_armor/core/signals/stats/dependence.py."""
 import doctest
 import math
 
 import numpy as np
 import pytest
 
-import dense_armor.utility.signals.stats.dependence as dep_mod
-from dense_armor.utility.signals.stats.dependence import (
-    RunningCovariance,
-    RunningCorrelation,
-    RollingCovariance,
-    RollingCorrelation,
-    Autocorrelation,
-)
+import dense_armor.core.signals.stats.dependence as dep_mod
 from dense_armor.checks import check_estimator
+from dense_armor.core.signals.stats.dependence import (
+    Autocorrelation,
+    RollingCorrelation,
+    RollingCovariance,
+    RunningCorrelation,
+    RunningCovariance,
+)
 
 
 def _pair(n: int = 2000, seed: int = 0, rho: float = 0.7):
@@ -205,7 +205,7 @@ def test_corr_small_scale():
     so corr returned 0.083 instead of 1. The zero check after the max could
     not fire.
     """
-    from dense_armor.utility.signals.stats.dependence import RunningCovariance
+    from dense_armor.core.signals.stats.dependence import RunningCovariance
 
     rc = RunningCovariance()
     for k in range(10):

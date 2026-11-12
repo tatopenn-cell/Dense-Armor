@@ -4,10 +4,10 @@ import numpy as np
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.online.drift.adwin import ADWIN
-from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
-from dense_armor.utility.online.drift.kswin import KSWIN
-from dense_armor.utility.online.drift.page_hinkley import PageHinkley
+from dense_armor.core.online.drift.adwin import ADWIN
+from dense_armor.core.online.drift.detector import CUSUMDriftDetector
+from dense_armor.core.online.drift.kswin import KSWIN
+from dense_armor.core.online.drift.page_hinkley import PageHinkley
 
 
 def _stream(n0, mu0, n1, mu1, sigma=1.0, seed=0):
@@ -234,10 +234,10 @@ def test_invalid_arguments():
 def test_doctests():
     import doctest
 
-    import dense_armor.utility.online.drift.adwin as m1
-    import dense_armor.utility.online.drift.detector as m2
-    import dense_armor.utility.online.drift.kswin as m3
-    import dense_armor.utility.online.drift.page_hinkley as m4
+    import dense_armor.core.online.drift.adwin as m1
+    import dense_armor.core.online.drift.detector as m2
+    import dense_armor.core.online.drift.kswin as m3
+    import dense_armor.core.online.drift.page_hinkley as m4
 
     for mod in (m1, m2, m3, m4):
         assert doctest.testmod(mod).failed == 0

@@ -19,7 +19,7 @@ where `mu` is the running mean of the ratings seen so far, `b_u` the bias of the
 `b_i` the bias of the item. A rating updates the two biases one step of SGD with L2.
 
 ~~~python
-from dense_armor.utility.online.reco import Baseline
+from dense_armor.core.online.reco import Baseline
 
 b = Baseline(lr=0.05, l2=0.0, seed=0)
 for _ in range(200):
@@ -47,7 +47,7 @@ A rating updates `mu` (running mean), `b_u`, `b_i`, `p_u` and `q_i` one step of 
 
 ~~~python
 import numpy as np
-from dense_armor.utility.online.reco import BiasedMF
+from dense_armor.core.online.reco import BiasedMF
 
 rng = np.random.default_rng(0)
 P = rng.normal(size=(10, 3))
@@ -88,7 +88,7 @@ the noise floor of `0.01` (dashed line). The recovery is the property the task a
 
 ~~~python
 import numpy as np
-from dense_armor.utility.online.reco import FunkMF
+from dense_armor.core.online.reco import FunkMF
 
 rng = np.random.default_rng(0)
 P = rng.normal(size=(10, 3))
@@ -120,7 +120,7 @@ items sorted by decreasing predicted score::
 
 ~~~python
 import numpy as np
-from dense_armor.utility.online.reco import BiasedMF
+from dense_armor.core.online.reco import BiasedMF
 
 rng = np.random.default_rng(0)
 P = rng.normal(size=(10, 3))
@@ -158,7 +158,7 @@ machine precision (max absolute difference `4.24e-15` in the check below).
 
 ~~~python
 import numpy as np
-from dense_armor.utility.signals.stats.sdft import SDFT
+from dense_armor.core.signals.stats.sdft import SDFT
 
 rng = np.random.default_rng(42)
 vals = rng.normal(size=20)
@@ -178,7 +178,7 @@ orange triangles the skyline after 40 points. The skyline is the set of points n
 by any other point of the window (Börzsönyi et al. 2001, Section 2, page 2).
 
 ~~~python
-from dense_armor.utility.signals.stats.skyline import Skyline
+from dense_armor.core.signals.stats.skyline import Skyline
 
 s = Skyline(window=5)
 for p in [{"x": 1.0, "y": 5.0}, {"x": 3.0, "y": 3.0},

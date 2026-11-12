@@ -5,7 +5,7 @@ from __future__ import annotations
 import jax
 import pytest
 
-from dense_armor.utility.deep.neural.batching import minibatches
+from dense_armor.core.deep.neural.batching import minibatches
 
 
 def test_no_key_returns_indices_in_order():

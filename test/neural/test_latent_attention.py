@@ -7,9 +7,9 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.deep.neural.cross_attention import MultiHeadCrossAttention
-from dense_armor.utility.deep.neural.gradcheck import gradcheck
-from dense_armor.utility.deep.neural.latent_attention import LatentCrossAttention
+from dense_armor.core.deep.neural.cross_attention import MultiHeadCrossAttention
+from dense_armor.core.deep.neural.gradcheck import gradcheck
+from dense_armor.core.deep.neural.latent_attention import LatentCrossAttention
 
 KEY = jax.random.PRNGKey(0)
 

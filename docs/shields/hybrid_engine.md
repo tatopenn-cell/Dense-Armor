@@ -15,7 +15,7 @@ from how the sample relates to the recent past.
 
 ```python
 import numpy as np
-from dense_armor.core.hybrid_engine import hybrid_shield
+from dense_armor.utility.hybrid_engine import hybrid_shield
 
 rng = np.random.default_rng(42)
 x = 0.5 + 0.1 * rng.standard_normal(300)
@@ -58,7 +58,7 @@ and replaces them with the window median:
 
 ```python
 import numpy as np
-from dense_armor.core.hybrid_engine import hybrid_shield
+from dense_armor.utility.hybrid_engine import hybrid_shield
 
 rng = np.random.default_rng(42)
 x = 0.5 + 0.1 * rng.standard_normal(300)
@@ -82,7 +82,7 @@ trigger runs, so the windows never contain a non-finite value.
 
 ## API reference
 
-::: dense_armor.core.hybrid_engine
+::: dense_armor.utility.hybrid_engine
 
 ---
 

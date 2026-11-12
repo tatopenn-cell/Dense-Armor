@@ -6,8 +6,8 @@ compressione. Pensate per essere confrontabili con algoritmi classici
 (mediana, Kalman...) sugli stessi tre criteri per cui quelli restano
 fondamentali: semplicita', costo di calcolo, interpretabilita'.
 
-Non toccano ne' sostituiscono lo shield vero (dense_armor/core/engine.py,
-dense_armor/utility/infrastructure/misc/collatz.py, rimosso in v1.1.0) -- sono una distillazione a parte, per
+Non toccano ne' sostituiscono lo shield vero (dense_armor/utility/engine.py,
+dense_armor/core/infrastructure/misc/collatz.py, rimosso in v1.1.0) -- sono una distillazione a parte, per
 capire sperimentalmente (vedi test_algoritmi_essenziali.py) se e quanto
 ciascun meccanismo contribuisce da solo, e se combinarli aiuta o no.
 """

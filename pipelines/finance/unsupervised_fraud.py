@@ -24,9 +24,9 @@ and the ensemble score is the average of the three quantiles.
 from collections import deque
 from dataclasses import dataclass
 
-from dense_armor.utility.online.anomaly.hst import HalfSpaceTrees
-from dense_armor.utility.online.anomaly.loda import LODA
-from dense_armor.utility.online.anomaly.mahalanobis import (
+from dense_armor.core.online.anomaly.hst import HalfSpaceTrees
+from dense_armor.core.online.anomaly.loda import LODA
+from dense_armor.core.online.anomaly.mahalanobis import (
     OnlineRobustMahalanobis,
 )
 

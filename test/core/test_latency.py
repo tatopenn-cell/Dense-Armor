@@ -21,20 +21,21 @@ import time
 from unittest.mock import MagicMock, patch
 
 import jax
+
 jax.config.update("jax_enable_x64", True)
 
 import numpy as np
 import pytest
 
-from dense_armor.core.engine import AdaptiveSignalStabilizer
-from dense_armor.utility.online.protect.orca import Orca
+from dense_armor.core.online.protect.orca import Orca
+from dense_armor.utility.engine import AdaptiveSignalStabilizer
 
 
 def _ram_abbondante() -> MagicMock:
     """psutil.virtual_memory() finto con RAM abbondante libera (90%).
 
     Orca._gc_se_ram_bassa() delega a UniversalMemoryGuard.check_memory_safety()
-    (core/memory.py), che sotto una soglia di RAM libera chiama
+    (utility/memory.py), che sotto una soglia di RAM libera chiama
     jax.clear_caches() -- svuota la cache di compilazione JIT di TUTTO il
     processo, non solo di questo test. Se la macchina/CI reale scende sotto
     quella soglia mentre gira questo test (dipende dal carico del momento,
@@ -78,7 +79,7 @@ def test_filter_data_stream_usa_la_cache_jit_non_ricompila_ogni_volta():
     )
 
 
-@patch("dense_armor.core.memory.psutil.virtual_memory", side_effect=_ram_abbondante)
+@patch("dense_armor.utility.memory.psutil.virtual_memory", side_effect=_ram_abbondante)
 def test_orca_protect_and_forward_usa_la_cache_jit_non_ricompila_ogni_volta(_mock_ram):
     def modello_finto(x):
         return x * 2 + 1

@@ -6,7 +6,7 @@ The robot reports positions; velocity, acceleration and jerk come from differenc
 samples divided by the real time between them, even when the samples are not evenly spaced.
 
 ```python
-from dense_armor.utility.signals.preprocessing.joints import JointDerivatives
+from dense_armor.core.signals.preprocessing.joints import JointDerivatives
 
 jd = JointDerivatives(order=3)
 for t in [0.0, 0.3, 1.1]:
@@ -30,7 +30,7 @@ point gives the derivative there.
 ## 5. Power
 
 ```python
-from dense_armor.utility.signals.preprocessing.joints import JointPower
+from dense_armor.core.signals.preprocessing.joints import JointPower
 
 out = JointPower().transform_one({"tau": [1.0, 2.0], "qd": [3.0, 4.0]})
 print(out["power"], out["power_total"])

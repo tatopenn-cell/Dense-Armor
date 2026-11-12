@@ -4,13 +4,18 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dense_armor.utility.online.linear.glm import LinearRegression
-from dense_armor.utility.online.optim import (
-    SGD, AdaGrad, Adam, FTRLProximal, OnlineNewtonStep,
+from dense_armor.core.online.linear.glm import LinearRegression
+from dense_armor.core.online.optim import (
+    SGD,
+    AdaGrad,
+    Adam,
+    FTRLProximal,
+    OnlineNewtonStep,
 )
 
 out = Path(__file__).parent

@@ -7,15 +7,15 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.deep.neural.init import (
+from dense_armor.core.deep.neural.init import (
     fan_in,
     glorot_uniform,
     he_normal,
     xavier_normal,
     zeros_bias,
 )
-from dense_armor.utility.deep.neural.params import Param
-from dense_armor.utility.online.optim.sgd import SGD
+from dense_armor.core.deep.neural.params import Param
+from dense_armor.core.online.optim.sgd import SGD
 
 
 def test_param_starts_with_zero_grad_of_value_shape():

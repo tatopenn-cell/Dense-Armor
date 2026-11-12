@@ -18,10 +18,10 @@ from pathlib import Path
 import pytest
 
 MODULES = [
-    "dense_armor/utility/online/forest/arf.py",
-    "dense_armor/utility/online/forest/amf.py",
-    "dense_armor/utility/online/forest/oxt.py",
-    "dense_armor/utility/online/rules/amrules.py",
+    "dense_armor/core/online/forest/arf.py",
+    "dense_armor/core/online/forest/amf.py",
+    "dense_armor/core/online/forest/oxt.py",
+    "dense_armor/core/online/rules/amrules.py",
 ]
 
 # The only PDF present in a Colab session that supports a printed-page
@@ -87,7 +87,7 @@ def test_printed_pages_exist_in_the_thesis():
     N pages the printed pages run from 1 to N-1 (page 1 of the PDF is
     the frontispiece, printed page 1 is PDF page 2 in the digital copy).
     """
-    doc = _module_doc("dense_armor/utility/online/forest/oxt.py")
+    doc = _module_doc("dense_armor/core/online/forest/oxt.py")
     if not re.search(r"page numbers below are printed pages", doc, re.I):
         pytest.skip("oxt.py does not claim printed pages")
 

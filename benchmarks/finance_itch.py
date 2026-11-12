@@ -10,7 +10,7 @@ import statistics
 import time
 from pathlib import Path
 
-from dense_armor.utility.finance.itch import decode_message
+from dense_armor.core.finance.itch import decode_message
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "benchmarks/finance_itch.json"

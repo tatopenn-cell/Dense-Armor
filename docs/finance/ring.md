@@ -10,7 +10,7 @@ A `RingBuffer` holds up to `capacity` rows of `width` float64 values. Rows come 
 
 ~~~python
 import numpy as np
-from dense_armor.utility.finance import RingBuffer
+from dense_armor.core.finance import RingBuffer
 
 b = RingBuffer(4, 1)
 out = np.zeros(1)
@@ -35,7 +35,7 @@ When the buffer is full, a push is refused. The stored rows are not touched.
 
 ~~~python
 import numpy as np
-from dense_armor.utility.finance import RingBuffer
+from dense_armor.core.finance import RingBuffer
 
 b = RingBuffer(2, 1)
 print(b.push(np.array([1.0])))
@@ -59,7 +59,7 @@ The block pushes the 1,000 trades of `test/fixtures/finance/coinbase_btcusd_trad
 import numpy as np
 from datetime import datetime
 from pathlib import Path
-from dense_armor.utility.finance import RingBuffer
+from dense_armor.core.finance import RingBuffer
 
 rows = Path("test/fixtures/finance/coinbase_btcusd_trades.csv").read_text().splitlines()
 head = rows[0].split(",")

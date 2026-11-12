@@ -1,7 +1,7 @@
 import numpy as np
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.signals.vision.vocabulary import BagOfVisualWords
+from dense_armor.core.signals.vision.vocabulary import BagOfVisualWords
 
 
 def _vertical_stripes(size=64, freq=0.7):

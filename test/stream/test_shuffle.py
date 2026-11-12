@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from dense_armor.utility.signals.stream import iter_array, shuffle
+from dense_armor.core.signals.stream import iter_array, shuffle
 
 
 def test_shuffle_same_multiset():

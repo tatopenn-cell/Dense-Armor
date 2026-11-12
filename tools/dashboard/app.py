@@ -12,15 +12,15 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-from dense_armor.utility.finance.config import load_config
-from dense_armor.utility.finance.decision_log import DecisionLog
-from dense_armor.utility.finance.feed import frame, iter_itch
-from dense_armor.utility.finance.itch import decode_message
-from dense_armor.utility.finance.pretrade import Decision, PreTradeChecker
-from dense_armor.utility.finance.ring import RingBuffer
-from dense_armor.utility.finance.schedule import twap_schedule, vwap_schedule
-from dense_armor.utility.finance.status import collect_status
-from dense_armor.utility.finance.synthetic import synthetic_itch
+from dense_armor.core.finance.config import load_config
+from dense_armor.core.finance.decision_log import DecisionLog
+from dense_armor.core.finance.feed import frame, iter_itch
+from dense_armor.core.finance.itch import decode_message
+from dense_armor.core.finance.pretrade import Decision, PreTradeChecker
+from dense_armor.core.finance.ring import RingBuffer
+from dense_armor.core.finance.schedule import twap_schedule, vwap_schedule
+from dense_armor.core.finance.status import collect_status
+from dense_armor.core.finance.synthetic import synthetic_itch
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 TEMPLATE_DIR = Path(__file__).resolve().parent / "templates"
@@ -87,7 +87,7 @@ def _count_reasons(log_path: Path) -> dict[str, int]:
     except TypeError as e:
         return {"ok": False, "error": f"instantiation failed: {e}"}
 
-    from dense_armor.utility.signals.datasets import DriftStream
+    from dense_armor.core.signals.datasets import DriftStream
     ds = DriftStream(n_samples=n, n_features=4, n_drifts=1, kind="sudden", seed=seed)
     X, y = ds.data()
     names = [f"x{i}" for i in range(X.shape[1])]
@@ -272,7 +272,7 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
     def audit() -> Any:
         info: dict[str, Any] = {"available": False}
         try:
-            from dense_armor.utility.finance.audit_db import AuditDB
+            from dense_armor.core.finance.audit_db import AuditDB
 
             url = (
                 os.environ.get("DENSE_ARMOR_PG_URL")
@@ -502,6 +502,7 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
     @app.post("/api/chain/run")
     def api_chain_run() -> Any:
         from flask import request
+
         from dashboard.chain import run_chain
 
         body = request.get_json(silent=True) or {}
@@ -590,11 +591,15 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
             return jsonify({"ok": False, "error": "bad stream"}), 400
         n = max(100, min(n, 5000))
 
-        from dense_armor.utility.online.forest.amf import AggregatedMondrianForestClassifier
-        from dense_armor.utility.online.tree.adaptive import HoeffdingAdaptiveTreeClassifier
-        from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
-        from dense_armor.utility.online.tree.mondrian import MondrianForestClassifier
-        from dense_armor.utility.signals.datasets import DriftStream
+        from dense_armor.core.online.forest.amf import (
+            AggregatedMondrianForestClassifier,
+        )
+        from dense_armor.core.online.tree.adaptive import (
+            HoeffdingAdaptiveTreeClassifier,
+        )
+        from dense_armor.core.online.tree.hoeffding import HoeffdingTreeClassifier
+        from dense_armor.core.online.tree.mondrian import MondrianForestClassifier
+        from dense_armor.core.signals.datasets import DriftStream
 
         catalog = {
             "HoeffdingTreeClassifier": lambda: HoeffdingTreeClassifier(),
@@ -610,13 +615,13 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
         garch = None
         try:
             if use_anomaly:
-                from dense_armor.utility.online.anomaly.lof import LocalOutlierFactor
+                from dense_armor.core.online.anomaly.lof import LocalOutlierFactor
                 anomaly = LocalOutlierFactor()
             if use_mixture:
-                from dense_armor.utility.signals.stats import OnlineGaussianMixture
+                from dense_armor.core.signals.stats import OnlineGaussianMixture
                 mixture = OnlineGaussianMixture(n_components=2)
             if use_garch:
-                from dense_armor.utility.online.timeseries.garch import GARCH11
+                from dense_armor.core.online.timeseries.garch import GARCH11
                 garch = GARCH11()
         except Exception as e:
             return jsonify({"ok": False, "error": f"chain build: {e}"}), 500
@@ -742,15 +747,17 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
 
     @app.get("/s/features")
     def s_features() -> Any:
-        from dashboard.sections import features_page
         from flask import request
+
+        from dashboard.sections import features_page
         cat = request.args.get("cat", "scaling")
         return features_page(cat, render_template, base_ctx())
 
     @app.get("/s/signal")
     def s_signal() -> Any:
-        from dashboard.sections import signal_page
         from flask import request
+
+        from dashboard.sections import signal_page
         cat = request.args.get("cat", "trees")
         return signal_page(cat, render_template, base_ctx())
 
@@ -761,8 +768,9 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
 
     @app.get("/s/risk")
     def s_risk() -> Any:
-        from dashboard.sections import risk_page
         from flask import request
+
+        from dashboard.sections import risk_page
         cat = request.args.get("cat", "anomaly")
         return risk_page(cat, render_template, base_ctx())
 
@@ -792,6 +800,7 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
     @app.post("/api/piece/<section>/<category>/<piece_id>/run")
     def api_piece_run(section: str, category: str, piece_id: str) -> Any:
         from flask import request
+
         from dashboard.sections import piece_detail
         try:
             body = request.get_json(silent=True) or {}
@@ -804,8 +813,9 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
 
     @app.get("/api/pieces/search")
     def api_pieces_search() -> Any:
-        from dashboard.sections import _SIGNAL_CLASSES_EXT
         from flask import request
+
+        from dashboard.sections import _SIGNAL_CLASSES_EXT
         q = (request.args.get("q") or "").lower().strip()
         out = []
         for (cat, pid), (mod_name, cls_name) in _SIGNAL_CLASSES_EXT.items():
@@ -893,11 +903,11 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
             "USE_ANOMALY = " + repr(use_anomaly) + "\n"
             "USE_MIXTURE = " + repr(use_mixture) + "\n"
             "USE_GARCH = " + repr(use_garch) + "\n"
-            "from dense_armor.utility.online.drift.adwin import ADWIN\n"
-            "from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier\n"
-            "from dense_armor.utility.online.tree.adaptive import HoeffdingAdaptiveTreeClassifier\n"
-            "from dense_armor.utility.online.tree.mondrian import MondrianForestClassifier\n"
-            "from dense_armor.utility.online.forest.amf import AggregatedMondrianForestClassifier\n"
+            "from dense_armor.core.online.drift.adwin import ADWIN\n"
+            "from dense_armor.core.online.tree.hoeffding import HoeffdingTreeClassifier\n"
+            "from dense_armor.core.online.tree.adaptive import HoeffdingAdaptiveTreeClassifier\n"
+            "from dense_armor.core.online.tree.mondrian import MondrianForestClassifier\n"
+            "from dense_armor.core.online.forest.amf import AggregatedMondrianForestClassifier\n"
             "LEARNERS = {\n"
             "    'HoeffdingTreeClassifier': lambda: HoeffdingTreeClassifier(),\n"
             "    'HoeffdingAdaptiveTreeClassifier': lambda: HoeffdingAdaptiveTreeClassifier(drift_detector=ADWIN()),\n"
@@ -910,13 +920,13 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
             "MIXTURE = None\n"
             "GARCH = None\n"
             "if USE_ANOMALY:\n"
-            "    from dense_armor.utility.online.anomaly.lof import LocalOutlierFactor\n"
+            "    from dense_armor.core.online.anomaly.lof import LocalOutlierFactor\n"
             "    ANOMALY = LocalOutlierFactor()\n"
             "if USE_MIXTURE:\n"
-            "    from dense_armor.utility.signals.stats import OnlineGaussianMixture\n"
+            "    from dense_armor.core.signals.stats import OnlineGaussianMixture\n"
             "    MIXTURE = OnlineGaussianMixture(n_components=2)\n"
             "if USE_GARCH:\n"
-            "    from dense_armor.utility.online.timeseries.garch import GARCH11\n"
+            "    from dense_armor.core.online.timeseries.garch import GARCH11\n"
             "    GARCH = GARCH11()\n"
             "\n"
         )
@@ -991,20 +1001,20 @@ def create_app(config_path: str, enable_playground: bool = False) -> Any:
         window = max(10, min(window, 500))
 
         try:
-            from dense_armor.utility.online.drift.adwin import ADWIN
-            from dense_armor.utility.online.forest.amf import (
+            from dense_armor.core.online.drift.adwin import ADWIN
+            from dense_armor.core.online.forest.amf import (
                 AggregatedMondrianForestClassifier,
             )
-            from dense_armor.utility.online.tree.adaptive import (
+            from dense_armor.core.online.tree.adaptive import (
                 HoeffdingAdaptiveTreeClassifier,
             )
-            from dense_armor.utility.online.tree.hoeffding import (
+            from dense_armor.core.online.tree.hoeffding import (
                 HoeffdingTreeClassifier,
             )
-            from dense_armor.utility.online.tree.mondrian import (
+            from dense_armor.core.online.tree.mondrian import (
                 MondrianForestClassifier,
             )
-            from dense_armor.utility.signals.datasets import DriftStream
+            from dense_armor.core.signals.datasets import DriftStream
 
             catalog = {
                 "HoeffdingTreeClassifier": lambda: HoeffdingTreeClassifier(),

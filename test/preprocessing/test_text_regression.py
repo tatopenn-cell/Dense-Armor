@@ -4,7 +4,7 @@ Written before items A and B add stop_words and norm, so a change of the
 default behaviour fails here.
 """
 
-from dense_armor.utility.signals.preprocessing.text import TFIDF, Tokenizer
+from dense_armor.core.signals.preprocessing.text import TFIDF, Tokenizer
 
 CORPUS = ['the quick brown fox jumps over the lazy dog', 'a quick brown dog', 'the fox and the dog']
 TOKENS = [['the', 'quick', 'brown', 'fox', 'jumps', 'over', 'the', 'lazy', 'dog', 'the quick', 'quick brown', 'brown fox', 'fox jumps', 'jumps over', 'over the', 'the lazy', 'lazy dog'], ['a', 'quick', 'brown', 'dog', 'a quick', 'quick brown', 'brown dog'], ['the', 'fox', 'and', 'the', 'dog', 'the fox', 'fox and', 'and the', 'the dog']]

@@ -1,6 +1,12 @@
-import sys, os
-import pytest, numpy as np, jax, jax.numpy as jnp
-from dense_armor.core.engine import AdaptiveSignalStabilizer
+import os
+import sys
+
+import jax
+import jax.numpy as jnp
+import numpy as np
+import pytest
+
+from dense_armor.utility.engine import AdaptiveSignalStabilizer
 
 jax.config.update("jax_enable_x64", True)
 H, W = 32, 32

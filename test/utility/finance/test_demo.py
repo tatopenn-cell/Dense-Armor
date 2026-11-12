@@ -23,7 +23,7 @@ def _run(tmp_path: Path, n: int = 200) -> subprocess.CompletedProcess:
         [
             sys.executable,
             "-m",
-            "dense_armor.utility.finance.demo",
+            "dense_armor.core.finance.demo",
             "--config",
             str(cfg),
             "--n",
@@ -64,7 +64,7 @@ def test_demo_n_not_integer(tmp_path):
         [
             sys.executable,
             "-m",
-            "dense_armor.utility.finance.demo",
+            "dense_armor.core.finance.demo",
             "--config",
             str(cfg),
             "--n",
@@ -86,7 +86,7 @@ def test_demo_seed_not_integer(tmp_path):
         [
             sys.executable,
             "-m",
-            "dense_armor.utility.finance.demo",
+            "dense_armor.core.finance.demo",
             "--config",
             str(cfg),
             "--seed",
@@ -106,7 +106,7 @@ def test_demo_missing_config(tmp_path):
         [
             sys.executable,
             "-m",
-            "dense_armor.utility.finance.demo",
+            "dense_armor.core.finance.demo",
             "--config",
             str(cfg),
         ],
@@ -127,7 +127,7 @@ def test_demo_ring_width_must_be_4(tmp_path):
         [
             sys.executable,
             "-m",
-            "dense_armor.utility.finance.demo",
+            "dense_armor.core.finance.demo",
             "--config",
             str(cfg),
             "--n",
@@ -150,7 +150,7 @@ def test_demo_emergency_stop(tmp_path):
         [
             sys.executable,
             "-m",
-            "dense_armor.utility.finance.demo",
+            "dense_armor.core.finance.demo",
             "--config",
             str(cfg),
             "--n",
@@ -173,7 +173,7 @@ def test_demo_main_guard():
     try:
         _sys.argv = ["demo", "--config", "/nonexistent/x.toml"]
         try:
-            runpy.run_module("dense_armor.utility.finance.demo", run_name="__main__")
+            runpy.run_module("dense_armor.core.finance.demo", run_name="__main__")
         except SystemExit as e:
             assert e.code == 2
     finally:
@@ -208,7 +208,7 @@ def test_demo_ref_price_is_first_of_stock(tmp_path, monkeypatch):
     import contextlib
     import io
 
-    from dense_armor.utility.finance import demo as demo_mod
+    from dense_armor.core.finance import demo as demo_mod
 
     cfg = tmp_path / "demo.toml"
     shutil.copy(FIXTURE, cfg)
@@ -234,8 +234,8 @@ def test_demo_verify_call_is_used(tmp_path, monkeypatch):
     import contextlib
     import io
 
-    from dense_armor.utility.finance import decision_log as dl_mod
-    from dense_armor.utility.finance import demo as demo_mod
+    from dense_armor.core.finance import decision_log as dl_mod
+    from dense_armor.core.finance import demo as demo_mod
 
     cfg = tmp_path / "demo.toml"
     shutil.copy(FIXTURE, cfg)

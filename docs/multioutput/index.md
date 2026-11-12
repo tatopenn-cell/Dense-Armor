@@ -31,9 +31,9 @@ The **order of the chain is a hyperparameter**. It is a permutation of the targe
 Two targets, one feature, a logistic regression as the base learner.
 
 ```python
-from dense_armor.utility.online.linear.glm import LogisticRegression
-from dense_armor.utility.online.multioutput import ClassifierChain
-from dense_armor.utility.online.optim import SGD
+from dense_armor.core.online.linear.glm import LogisticRegression
+from dense_armor.core.online.multioutput import ClassifierChain
+from dense_armor.core.online.optim import SGD
 
 def factory():
     return LogisticRegression(optimizer=SGD(lr=0.5), intercept=True)

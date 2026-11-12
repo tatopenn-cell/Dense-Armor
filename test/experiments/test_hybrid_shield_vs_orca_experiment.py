@@ -1,5 +1,5 @@
 """
-Compares dense_armor.core.hybrid_engine.hybrid_shield (the phi_ab-based
+Compares dense_armor.utility.hybrid_engine.hybrid_shield (the phi_ab-based
 engine that already replaced ABCollatz for Armor) against Orca's own
 default pipeline (constant compute_damping_gating), on the same 7 scenarios
 testKalman.py uses -- to check whether the already-vendored phi_ab approach
@@ -15,12 +15,13 @@ import logging
 import pathlib
 
 import jax
+
 jax.config.update("jax_enable_x64", True)
 
 import numpy as np
 
-from dense_armor.core.hybrid_engine import hybrid_shield
-from dense_armor.utility.online.protect.orca import Orca
+from dense_armor.core.online.protect.orca import Orca
+from dense_armor.utility.hybrid_engine import hybrid_shield
 
 _TEST_DIR = pathlib.Path(__file__).resolve().parent
 

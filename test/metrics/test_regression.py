@@ -1,13 +1,12 @@
-"""Tests for dense_armor/utility/evaluation/metrics/regression.py."""
+"""Tests for dense_armor/core/evaluation/metrics/regression.py."""
 import doctest
 import math
 
 import pytest
 from sklearn import metrics as skm
 
-import dense_armor.utility.evaluation.metrics.regression as reg_mod
-from dense_armor.roles import Classifier, Estimate, Regressor
-from dense_armor.utility.evaluation.metrics import (
+import dense_armor.core.evaluation.metrics.regression as reg_mod
+from dense_armor.core.evaluation.metrics import (
     GaussianNLL,
     IntervalCoverage,
     MeanAbsoluteError,
@@ -16,6 +15,7 @@ from dense_armor.utility.evaluation.metrics import (
     R2Score,
     RootMeanSquaredError,
 )
+from dense_armor.roles import Classifier, Estimate, Regressor
 
 
 def _stream(n: int = 500, seed: int = 0):

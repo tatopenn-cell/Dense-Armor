@@ -22,7 +22,7 @@ not implemented: the covariance is diagonal, positive by construction.
 ## 1. The first estimator
 
 ```python
-from dense_armor.utility.signals.stats import OnlineGaussianMixture
+from dense_armor.core.signals.stats import OnlineGaussianMixture
 
 mx = OnlineGaussianMixture(n_components=2, learning_rate=0.1)
 for v in [-2.0, -1.9, -2.1, 2.0, 2.1, 1.9] * 200:
@@ -44,7 +44,7 @@ and it moves only the left mean; a sample between the modes gets
 `r_left = r_right = 0.5`, and it moves both means a little.
 
 ```python
-from dense_armor.utility.signals.stats import OnlineGaussianMixture
+from dense_armor.core.signals.stats import OnlineGaussianMixture
 
 mx = OnlineGaussianMixture(
     n_components=2, learning_rate=0.1, init_means=[[-2.0], [2.0]]
@@ -87,7 +87,7 @@ separate.
 
 ```python
 import numpy as np
-from dense_armor.utility.signals.stats import OnlineGaussianMixture
+from dense_armor.core.signals.stats import OnlineGaussianMixture
 
 rng = np.random.default_rng(20261026)
 n = 2000
@@ -118,7 +118,7 @@ variance change at the midpoint.
 
 ```python
 import numpy as np
-from dense_armor.utility.signals.stats import OnlineGaussianMixture
+from dense_armor.core.signals.stats import OnlineGaussianMixture
 
 rng = np.random.default_rng(20261026)
 n = 2000
@@ -148,7 +148,7 @@ the domain the mixture exists for.
 
 ```python
 import numpy as np
-from dense_armor.utility.signals.stats import OnlineGaussianMixture
+from dense_armor.core.signals.stats import OnlineGaussianMixture
 
 rng = np.random.default_rng(20261026)
 n = 2000

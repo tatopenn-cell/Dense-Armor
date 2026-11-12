@@ -8,12 +8,12 @@ import numpy as np
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.deep.neural.activations import Relu
-from dense_armor.utility.deep.neural.adapter import AsTransformer
-from dense_armor.utility.deep.neural.chain import Parallel, Sequential
-from dense_armor.utility.deep.neural.gradcheck import gradcheck
-from dense_armor.utility.deep.neural.layers import Dense
-from dense_armor.utility.deep.neural.norm import LayerNorm
+from dense_armor.core.deep.neural.activations import Relu
+from dense_armor.core.deep.neural.adapter import AsTransformer
+from dense_armor.core.deep.neural.chain import Parallel, Sequential
+from dense_armor.core.deep.neural.gradcheck import gradcheck
+from dense_armor.core.deep.neural.layers import Dense
+from dense_armor.core.deep.neural.norm import LayerNorm
 
 
 def _seq3():
@@ -226,7 +226,7 @@ def test_parallel_add_is_the_sum_of_branches():
 
 
 def test_parallel_nested_in_sequential_and_residual():
-    from dense_armor.utility.deep.neural.layers import Residual
+    from dense_armor.core.deep.neural.layers import Residual
 
     inner = Parallel(
         [

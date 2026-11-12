@@ -11,7 +11,7 @@ A dense layer holds a weight matrix `W` of shape `(n_in, n_out)` and a bias `b` 
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.deep.neural.layers import Dense
+from dense_armor.core.deep.neural.layers import Dense
 
 d = Dense(3, 2, jax.random.PRNGKey(0))
 x = jnp.array([1.0, 2.0, 3.0])
@@ -32,7 +32,7 @@ An embedding turns an integer id into a vector. The table `E` has shape `(n_toke
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.deep.neural.layers import Embedding
+from dense_armor.core.deep.neural.layers import Embedding
 
 e = Embedding(10, 4, jax.random.PRNGKey(0))
 print(e.forward(jnp.array([1, 1, 3])).shape)
@@ -51,7 +51,7 @@ Dropout keeps each element with probability `1 - p` and multiplies the kept elem
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.deep.neural.layers import Dropout
+from dense_armor.core.deep.neural.layers import Dropout
 
 d = Dropout(0.5, jax.random.PRNGKey(0))
 x = jnp.ones(10000)
@@ -74,7 +74,7 @@ A residual wraps an inner layer and returns `y = x + inner.forward(x)`. The addi
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.deep.neural.layers import Dense, Residual
+from dense_armor.core.deep.neural.layers import Dense, Residual
 
 d = Dense(4, 4, jax.random.PRNGKey(0))
 d.W.value = jnp.zeros_like(d.W.value)
@@ -96,7 +96,7 @@ Batch norm makes the mean and the variance of every feature the same over the ba
 ~~~python
 import jax.numpy as jnp
 import numpy as np
-from dense_armor.utility.deep.neural.norm import BatchNorm
+from dense_armor.core.deep.neural.norm import BatchNorm
 
 rng = np.random.default_rng(0)
 x = rng.normal(3.0, 2.0, (64, 4)).astype(np.float32)
@@ -118,7 +118,7 @@ Layer norm normalises each sample over its own features, not across the batch: `
 ~~~python
 import jax.numpy as jnp
 import numpy as np
-from dense_armor.utility.deep.neural.norm import LayerNorm
+from dense_armor.core.deep.neural.norm import LayerNorm
 
 x = np.array([[1.0, 2.0, 3.0], [10.0, 10.5, 11.0]], dtype=np.float32)
 ln = LayerNorm(3)
@@ -140,8 +140,8 @@ The layers above are not `Transformer` of the library. `AsTransformer` is the br
 
 ~~~python
 import jax
-from dense_armor.utility.deep.neural.adapter import AsTransformer
-from dense_armor.utility.deep.neural.layers import Dense
+from dense_armor.core.deep.neural.adapter import AsTransformer
+from dense_armor.core.deep.neural.layers import Dense
 
 a = AsTransformer(Dense(3, 2, jax.random.PRNGKey(0)), ["a", "b", "c"])
 out = a.transform_one({"a": 1.0, "b": 0.0, "c": 0.0})

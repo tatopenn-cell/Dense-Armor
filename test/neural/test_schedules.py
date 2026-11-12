@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from dense_armor.utility.deep.neural.schedules import (
+from dense_armor.core.deep.neural.schedules import (
     ConstantLR,
     CosineWarmRestarts,
     StepLR,

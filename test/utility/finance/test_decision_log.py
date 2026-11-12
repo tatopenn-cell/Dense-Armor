@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from dense_armor.utility.finance.decision_log import GENESIS_HASH, DecisionLog
+from dense_armor.core.finance.decision_log import GENESIS_HASH, DecisionLog
 
 CANONICAL_FIRST = '{"payload":{"a":1},"prev":"' + "0" * 64 + '","seq":0,"t":1.5}'
 
@@ -171,7 +171,7 @@ def test_9_read_state_tolerates_binary_file(tmp_path):
 
 
 def test_10_is_finite_number_bool_and_str():
-    from dense_armor.utility.finance.decision_log import _is_finite_number
+    from dense_armor.core.finance.decision_log import _is_finite_number
 
     assert _is_finite_number(True) is False
     assert _is_finite_number("1.0") is False
@@ -181,7 +181,7 @@ def test_10_is_finite_number_bool_and_str():
 
 
 def test_11_parse_line_rejects_bad_fields(tmp_path):
-    from dense_armor.utility.finance.decision_log import _parse_line
+    from dense_armor.core.finance.decision_log import _parse_line
 
     good_prev = "0" * 64
     good_hash = "a" * 64

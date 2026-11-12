@@ -1,9 +1,9 @@
 """Hand cases, edge cases and the saved difference of the statistics."""
 
-import pytest
 import doctest
 
 import numpy as np
+import pytest
 
 import dense_armor.ml.stats as S
 from dense_armor.ml.stats import (

@@ -5,8 +5,8 @@ from __future__ import annotations
 import common
 import numpy as np
 
+from dense_armor.core.online.drift.cusum import cusum_detector
 from dense_armor.ml import drift as ml
-from dense_armor.utility.online.drift.cusum import cusum_detector
 
 
 def c_cusum(seed):

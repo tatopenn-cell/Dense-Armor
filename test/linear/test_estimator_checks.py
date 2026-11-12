@@ -20,11 +20,11 @@ import time
 import pytest
 
 from dense_armor.checks.check_estimator import check_estimator
+from dense_armor.core.online.linear.glm import LinearRegression, LogisticRegression
+from dense_armor.core.online.linear.payload import PayloadEstimator
+from dense_armor.core.online.optim import SGD
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 from dense_armor.roles import Regressor
-from dense_armor.utility.online.linear.glm import LinearRegression, LogisticRegression
-from dense_armor.utility.online.linear.payload import PayloadEstimator
-from dense_armor.utility.online.optim import SGD
 
 URDF = "test/fixtures/urdf/panda.urdf"
 

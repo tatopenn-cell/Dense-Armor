@@ -2,7 +2,7 @@
 
 import pytest
 
-from dense_armor.utility.online.bandit.base import BanditPolicy
+from dense_armor.core.online.bandit.base import BanditPolicy
 
 
 def test_base_policy_pull_and_update_are_abstract():

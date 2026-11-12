@@ -7,8 +7,8 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.deep.neural.activations import PRelu
-from dense_armor.utility.deep.neural.activations_more import (
+from dense_armor.core.deep.neural.activations import PRelu
+from dense_armor.core.deep.neural.activations_more import (
     ELU,
     GELU,
     LeakyReLU,
@@ -21,11 +21,11 @@ from dense_armor.utility.deep.neural.activations_more import (
     silu_forward,
     softplus_forward,
 )
-from dense_armor.utility.deep.neural.chain import Sequential
-from dense_armor.utility.deep.neural.layers import Dense
-from dense_armor.utility.deep.neural.losses import MSE
-from dense_armor.utility.deep.neural.trainer import Trainer
-from dense_armor.utility.online.optim import SGD
+from dense_armor.core.deep.neural.chain import Sequential
+from dense_armor.core.deep.neural.layers import Dense
+from dense_armor.core.deep.neural.losses import MSE
+from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.online.optim import SGD
 
 
 def test_gelu_exact_hand_case():

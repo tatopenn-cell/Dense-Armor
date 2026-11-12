@@ -6,7 +6,7 @@ A sentence becomes a list of words, then counts; TF-IDF weighs each word by how 
 appears in this document and how rare it is across all documents seen.
 
 ```python
-from dense_armor.utility.signals.preprocessing.text import TFIDF, BagOfWords, Tokenizer
+from dense_armor.core.signals.preprocessing.text import TFIDF, BagOfWords, Tokenizer
 
 tk, bw, tf = Tokenizer(), BagOfWords(), TFIDF()
 docs = ["joint three overheats", "joint three ok", "gripper ok"]
@@ -41,7 +41,7 @@ positive score; it is off by default because the paper's formula does not includ
 ## 7. Text in a fixed size: hashing
 
 ```python
-from dense_armor.utility.signals.preprocessing.text import FeatureHasher
+from dense_armor.core.signals.preprocessing.text import FeatureHasher
 
 fh = FeatureHasher(n_features=8, seed=0)
 print(fh.transform_one({"counts": {"joint": 1.0, "three": 1.0, "overheats": 1.0}})["hashed"])

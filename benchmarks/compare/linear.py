@@ -5,10 +5,10 @@ from __future__ import annotations
 import common
 import numpy as np
 
+from dense_armor.core.online.linear.bayes import BayesianLinearRegression
+from dense_armor.core.online.linear.glm import LinearRegression, LogisticRegression
+from dense_armor.core.online.optim.sgd import SGD
 from dense_armor.ml import linear as ml
-from dense_armor.utility.online.linear.bayes import BayesianLinearRegression
-from dense_armor.utility.online.linear.glm import LinearRegression, LogisticRegression
-from dense_armor.utility.online.optim.sgd import SGD
 
 NAMES = ["a", "b", "c"]
 
