@@ -6,6 +6,64 @@ Flask app with three routes. It is not a production server: it runs on
 `127.0.0.1` and it has no login, so it must stay on the loopback or behind
 something that has one.
 
+It is a tool to try ideas. The demo runs on **synthetic data**, and the results on
+your own files are for study, not for trading decisions.
+
+## Use your own files
+
+The dashboard works on your files, not only on the demo. There are three jobs; each
+page has a sample file to download, so you see the format before you use your own.
+
+| page | you give it | you get |
+| --- | --- | --- |
+| Chain (`/chain`) | a CSV of prices: the names of the columns in the first row, a date column, one column of prices for each asset | the chain (features, signal, risk, portfolio) run on your prices, with the accuracy, the alarms and a report to download as CSV |
+| Order plan (`/schedule`) | a total size, a number of buckets and, if you have it, the volume of past sessions | the TWAP and VWAP slices, as a table and as a CSV |
+| Check my orders (`/pretrade`) | a CSV of orders and, if you want, other limits | each order approved or refused with the reason, a log with a hash chain, and the decisions as a CSV |
+
+![The chain run on a file of prices: the file, the accuracy, the alarms and the portfolio](../assets/finance/dashboard_chain_own_prices.png)
+
+*The chain on the sample prices (500 days of four assets). "Use my file" checks the file and says what it found; the second box picks which column the signal learns from; after a run, "Report (CSV)" downloads the result.*
+
+**The prices.** The first row holds the names. A column called Date, Time, Timestamp or
+Datetime is the date; every other column of numbers is the price of one asset. A file from
+Yahoo Finance (Open, High, Low, Close, Volume) works: only Close is used. Commas, semicolons
+and tabs separate the columns, and a semicolon file may use a decimal comma. A row with a missing
+price is skipped and counted. A price of 0 or less, fewer than 30 usable rows, more than
+200 000 rows or a file above 5 MB is refused, and the message names the column and the row.
+The chain works on the log returns of the chosen column; the portfolio is built from all the
+columns, so it needs at least two.
+
+![The plan of an order from the volume of 20 past sessions](../assets/finance/dashboard_schedule_own_volumes.png)
+
+*An order of 100 in 10 buckets. TWAP is 10 in each bucket; VWAP follows the volume of the sample sessions, which is high at the open and at the close.*
+
+**The volume.** One session on each line and one volume for each bucket, all above 0, with an
+optional header line. Without it the volume is flat and VWAP equals TWAP.
+
+![Orders checked: reasons, the log and the decision of each order](../assets/finance/dashboard_pretrade_own_orders.png)
+
+*The sample orders: 42 of 60 approved; the others refused for the notional (12), a duplicate (3), the price band (2) or the size (1). The log has 60 records and its chain is verified.*
+
+**The orders.** A header with the columns account (or stock, symbol, ticker), side (buy or sell),
+size (or shares, quantity, qty) and price; ref_price and a time (seconds, or an ISO date) are
+optional. Without ref_price the first price of the account is its reference, and without a time
+the orders are one second apart. The orders are checked in time order, with the controls of
+SEC Rule 15c3-5 (c)(1) and the limits of the configuration, or the ones you type. The log is the
+`DecisionLog` of the finance system: every record holds the hash of the one before, and the
+page says whether the chain verifies.
+
+**The report of a chain run** is a CSV with the columns `section,name,index,value`: the chain you
+picked, the data, the metrics, the series of the accuracy and the alarms, one value on each line, so
+that a spreadsheet opens it as it is.
+
+**From a script**, the same jobs are routes: `POST /api/data/upload` (the CSV in the form field
+`file`) answers with an `id` that starts with `up_`; `POST /api/chain/run` with `data` set to that
+id (and `column` if the file has several) answers with a `run_id`; `GET /api/report/<run_id>.csv`
+(or `.json`) is the report; `POST /api/pretrade/check` takes the CSV and the limits and `GET
+/api/pretrade/<run_id>.csv` (or `.jsonl`) gives the decisions and the log; `POST /api/schedule`
+takes `total`, `n` and `history`. `POST /api/demo/run` runs the demo and `GET /api/demo/summary` gives
+the last result: a GET never runs it.
+
 ## 1. Run the demo, then start the dashboard
 
 **One command.** From a clone of the repository, `tools\dashboard\start-dashboard.bat` (Windows) or `sh tools/dashboard/start-dashboard.sh` (Linux, macOS) installs flask if it is missing, copies the demo configuration to `tools/dashboard/run/` and starts the dashboard on http://127.0.0.1:8080/. Options such as `--port 9000` are passed on.
