@@ -11,7 +11,7 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor.utility.signals.audio._state import StatefulRoot
+from dense_armor.utility.audio._state import StatefulRoot
 
 
 def convolve(x: Any, h: Any) -> np.ndarray:

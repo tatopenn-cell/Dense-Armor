@@ -24,9 +24,9 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor.utility.signals.audio._state import StatefulRoot
-from dense_armor.utility.signals.audio.blamp import _r as _blamp_r
-from dense_armor.utility.signals.audio.signal import Audio
+from dense_armor.utility.audio._state import StatefulRoot
+from dense_armor.utility.audio.blamp import _r as _blamp_r
+from dense_armor.utility.audio.signal import Audio
 
 KINDS = (
     "sine",

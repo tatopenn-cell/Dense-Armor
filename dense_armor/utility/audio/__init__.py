@@ -1,6 +1,6 @@
 """Audio: sound as a value, WAV files, windows, STFT, generators, filters, NMF and streams."""
 
-from dense_armor.utility.signals.audio.biquad import (
+from dense_armor.utility.audio.biquad import (
     Biquad,
     bandpass,
     highpass,
@@ -10,22 +10,22 @@ from dense_armor.utility.signals.audio.biquad import (
     notch,
     peaking,
 )
-from dense_armor.utility.signals.audio.blamp import (
+from dense_armor.utility.audio.blamp import (
     blamp_residual,
     hard_clip_blamp,
     triangle_blamp,
 )
-from dense_armor.utility.signals.audio.clipping import hard_clip
-from dense_armor.utility.signals.audio.events import detect_events
-from dense_armor.utility.signals.audio.features import AudioFeatures, run_estimators
-from dense_armor.utility.signals.audio.fir import FIR, DelayLine, convolve
-from dense_armor.utility.signals.audio.fourier import (
+from dense_armor.utility.audio.clipping import hard_clip
+from dense_armor.utility.audio.events import detect_events
+from dense_armor.utility.audio.features import AudioFeatures, run_estimators
+from dense_armor.utility.audio.fir import FIR, DelayLine, convolve
+from dense_armor.utility.audio.fourier import (
     StreamingSTFT,
     cola_ok,
     istft,
     stft,
 )
-from dense_armor.utility.signals.audio.generators import (
+from dense_armor.utility.audio.generators import (
     ADSR,
     KarplusStrong,
     Oscillator,
@@ -34,18 +34,18 @@ from dense_armor.utility.signals.audio.generators import (
     plucked_string,
     white_noise,
 )
-from dense_armor.utility.signals.audio.nmf import nmf, separate
-from dense_armor.utility.signals.audio.pitch_units import (
+from dense_armor.utility.audio.nmf import nmf, separate
+from dense_armor.utility.audio.pitch_units import (
     cents_to_freq,
     freq_to_cents,
     freq_to_note,
     note_to_freq,
 )
-from dense_armor.utility.signals.audio.resample import Resampler, resample
-from dense_armor.utility.signals.audio.signal import Audio
-from dense_armor.utility.signals.audio.streams import AudioFileStream, AudioLiveStream
-from dense_armor.utility.signals.audio.wav import read_wav, write_wav
-from dense_armor.utility.signals.audio.windows import (
+from dense_armor.utility.audio.resample import Resampler, resample
+from dense_armor.utility.audio.signal import Audio
+from dense_armor.utility.audio.streams import AudioFileStream, AudioLiveStream
+from dense_armor.utility.audio.wav import read_wav, write_wav
+from dense_armor.utility.audio.windows import (
     blackman,
     get_window,
     hamming,

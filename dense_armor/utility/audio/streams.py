@@ -11,8 +11,8 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor.utility.signals.audio.signal import Audio
-from dense_armor.utility.signals.audio.wav import read_wav
+from dense_armor.utility.audio.signal import Audio
+from dense_armor.utility.audio.wav import read_wav
 
 
 class AudioFileStream:
@@ -28,7 +28,7 @@ class AudioFileStream:
 
     Example:
         >>> import tempfile, os
-        >>> from dense_armor.utility.signals.audio.wav import write_wav
+        >>> from dense_armor.utility.audio.wav import write_wav
         >>> p = os.path.join(tempfile.mkdtemp(), "a.wav")
         >>> write_wav(p, Audio(np.zeros(100), 100))
         >>> len(list(AudioFileStream(p, 50)))

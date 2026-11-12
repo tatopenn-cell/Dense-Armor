@@ -5,7 +5,7 @@ from pathlib import Path
 
 import numpy as np
 
-from dense_armor.utility.signals.audio.signal import Audio
+from dense_armor.utility.audio.signal import Audio
 
 _SUBTYPES = {
     "pcm16": (1, 16),

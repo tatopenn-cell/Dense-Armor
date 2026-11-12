@@ -10,8 +10,8 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor.utility.signals.audio._state import StatefulRoot
-from dense_armor.utility.signals.audio.windows import get_window
+from dense_armor.utility.audio._state import StatefulRoot
+from dense_armor.utility.audio.windows import get_window
 
 
 def _win(window: str | np.ndarray, n_fft: int) -> np.ndarray:

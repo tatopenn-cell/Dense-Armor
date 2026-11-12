@@ -105,11 +105,12 @@ UTILITY_GROUPS = {
         "protect",
     ),
     "deep": ("neural",),
-    "signals": ("stream", "stats", "preprocessing", "vision", "datasets", "audio"),
+    "signals": ("stream", "stats", "preprocessing", "vision", "datasets"),
     "robot": ("control",),
     "evaluation": ("evaluate", "metrics"),
     "infrastructure": ("compose", "data"),
     "finance": (),
+    "audio": (),
 }
 _GROUP_OF = {
     folder: group for group, folders in UTILITY_GROUPS.items() for folder in folders

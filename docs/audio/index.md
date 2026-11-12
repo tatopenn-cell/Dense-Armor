@@ -15,7 +15,7 @@ that dies away. `plucked_string(440.0, 8000, 0.5)` makes half a second of it at 
 
 ```python
 import numpy as np
-from dense_armor.utility.signals.audio import plucked_string, read_wav, write_wav
+from dense_armor.utility.audio import plucked_string, read_wav, write_wav
 a = plucked_string(440.0, 8000, 0.5)
 write_wav("pluck.wav", a)
 b = read_wav("pluck.wav")
@@ -36,7 +36,7 @@ window and takes its spectrum. With a Hann window and a hop of half the frame, a
 inverse of the frames gives the sound back exactly in the middle of the signal.
 
 ```python
-from dense_armor.utility.signals.audio import istft, stft
+from dense_armor.utility.audio import istft, stft
 S = stft(b.x, 256, 128, "hann")
 y = istft(S, 128, "hann", 256)
 print(S.shape, bool(np.max(np.abs(y[128:-128] - b.x[128:len(y) - 128])) < 1e-9))
@@ -58,7 +58,7 @@ and the two previous outputs. `lowpass(500.0, 8000.0)` gives the coefficients th
 is below 500 Hz.
 
 ```python
-from dense_armor.utility.signals.audio import Audio, Biquad, lowpass
+from dense_armor.utility.audio import Audio, Biquad, lowpass
 n = Audio(np.random.default_rng(0).standard_normal(8000), 8000)
 f = Biquad(*lowpass(500.0, 8000.0))
 z = f.update_many(n.x)
@@ -77,7 +77,7 @@ it. `highpass`, `bandpass`, `notch`, `peaking`, `lowshelf` and `highshelf` work 
 `d` steps later:
 
 ```python
-from dense_armor.utility.signals.audio import FIR, DelayLine, convolve
+from dense_armor.utility.audio import FIR, DelayLine, convolve
 print(convolve([1.0, 2.0, 3.0], [1.0, 1.0]).tolist())
 print(FIR([0.5, 0.5]).update_many([1.0, 1.0, 3.0]).tolist())
 print(DelayLine(2).update_many([1.0, 2.0, 3.0, 4.0]).tolist())
@@ -100,7 +100,7 @@ the share of the energy that lies away from the harmonics, in dB, at 3141.5926 H
 
 ```python
 import numpy as np
-from dense_armor.utility.signals.audio import hard_clip, hard_clip_blamp, triangle_blamp
+from dense_armor.utility.audio import hard_clip, hard_clip_blamp, triangle_blamp
 sr, f0 = 44100, 3141.5926
 def db(x):
     X = np.abs(np.fft.rfft(x * np.hanning(len(x)))) ** 2
@@ -126,7 +126,7 @@ corrected corners are slightly rounded: the peaks of the triangle are 0.133 lowe
 noise whose power falls as one over the frequency:
 
 ```python
-from dense_armor.utility.signals.audio import ADSR, pink_noise
+from dense_armor.utility.audio import ADSR, pink_noise
 e = ADSR(0.1, 0.2, 0.5, 0.3, 1.0, 1000)
 print([round(e.value(t), 2) for t in (0.0, 0.05, 0.1, 0.2, 0.3, 1.0, 1.15, 1.3)])
 x = pink_noise(1 << 16, 3)
@@ -156,7 +156,7 @@ each step, so the pitch can glide without a click. `Oscillator(kind, sr)` has ei
 
 ```python
 import numpy as np
-from dense_armor.utility.signals.audio import Oscillator
+from dense_armor.utility.audio import Oscillator
 f = np.full(8, 1000.0)
 for k in ("sine", "triangle_additive", "square_polyblep", "triangle_blamp"):
     print(k, Oscillator(k, 8000).update_many(f).round(2).tolist())
@@ -182,7 +182,7 @@ the last line is a pulse of a quarter period at 1000 Hz and 8000 samples per sec
 (`method="linear"`) or in a geometric ratio (`method="log"`):
 
 ```python
-from dense_armor.utility.signals.audio import chirp
+from dense_armor.utility.audio import chirp
 c = chirp(100.0, 1000.0, 1.0, 8000)
 z = np.diff(np.sign(c.x)) != 0
 print(c.n, int(z[:800].sum()), int(z[-800:].sum()))
@@ -204,7 +204,7 @@ seconds:
 
 ```python
 import numpy as np
-from dense_armor.utility.signals.audio import Audio, detect_events, white_noise
+from dense_armor.utility.audio import Audio, detect_events, white_noise
 t = np.arange(24000) / 8000
 x = 0.1 * white_noise(24000, 1) + np.where(t >= 2.0, np.sin(2 * np.pi * 440 * t), 0.0)
 bl = [Audio(x[i:i + 512], 8000, i / 8000) for i in range(0, 24000 - 511, 512)]

@@ -237,8 +237,6 @@ nav:
           - Kinematics: vision/kinematics.md
           - Quality: vision/quality.md
           - Patches: vision/patches.md
-      - Audio:
-          - audio/index.md
   - Deep learning:
       - Foundations: neural/index.md
       - Layers: neural/layers.md
@@ -262,6 +260,8 @@ nav:
       - Continual learning: neural/continual_learning.md
       - Mixture of experts and test-time compute: neural/moe_testtime.md
       - Stable variance in float32: stats/stable_variance.md
+  - Audio:
+      - Sound in Dense-Armor: audio/index.md
   - Library:
       - Home: index.md
       - Getting Started: getting-started.md

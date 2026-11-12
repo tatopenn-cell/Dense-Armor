@@ -6,8 +6,8 @@ from typing import Any
 import numpy as np
 
 from dense_armor.roles import Root
-from dense_armor.utility.signals.audio.signal import Audio
-from dense_armor.utility.signals.audio.windows import get_window
+from dense_armor.utility.audio.signal import Audio
+from dense_armor.utility.audio.windows import get_window
 
 
 class AudioFeatures(Root):

@@ -27,7 +27,7 @@ from dense_armor.utility.online.timeseries.ar import OnlineAR
 from dense_armor.utility.online.timeseries.garch import GARCH11
 from dense_armor.utility.online.tree.fimt import FIMTDDRegressor
 from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
-from dense_armor.utility.signals.audio import (
+from dense_armor.utility.audio import (
     Audio,
     AudioFeatures,
     AudioFileStream,
@@ -228,5 +228,5 @@ def test_detect_events_live_equals_file(tmp_path):
 
 @pytest.mark.parametrize("name", ["streams", "features", "events"])
 def test_doctests(name):
-    mod = importlib.import_module(f"dense_armor.utility.signals.audio.{name}")
+    mod = importlib.import_module(f"dense_armor.utility.audio.{name}")
     assert doctest.testmod(mod, extraglobs={"np": np, "Audio": Audio}).failed == 0

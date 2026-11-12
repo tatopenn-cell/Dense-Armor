@@ -9,7 +9,7 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor.utility.signals.audio._state import StatefulRoot
+from dense_armor.utility.audio._state import StatefulRoot
 
 
 def _w0_alpha(f0: float, sr: float, q: float) -> tuple[float, float]:

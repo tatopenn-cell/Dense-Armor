@@ -7,8 +7,8 @@ that the cost does not increase under these updates.
 
 import numpy as np
 
-from dense_armor.utility.signals.audio.fourier import istft, stft
-from dense_armor.utility.signals.audio.signal import Audio
+from dense_armor.utility.audio.fourier import istft, stft
+from dense_armor.utility.audio.signal import Audio
 
 
 def nmf(

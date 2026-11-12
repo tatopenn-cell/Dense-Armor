@@ -4,7 +4,7 @@ import wave
 import numpy as np
 import pytest
 
-from dense_armor.utility.signals.audio import (
+from dense_armor.utility.audio import (
     Audio,
     StreamingSTFT,
     blackman,
@@ -18,9 +18,9 @@ from dense_armor.utility.signals.audio import (
     stft,
     write_wav,
 )
-from dense_armor.utility.signals.audio import fourier as stft_mod
-from dense_armor.utility.signals.audio import signal as signal_mod
-from dense_armor.utility.signals.audio import windows as windows_mod
+from dense_armor.utility.audio import fourier as stft_mod
+from dense_armor.utility.audio import signal as signal_mod
+from dense_armor.utility.audio import windows as windows_mod
 
 
 def test_audio_properties_and_errors():
