@@ -66,7 +66,7 @@ The class of a sketch is the exact value the sketch approximates, and the class 
 
 ### Development diary
 
-The classes are new and independent of the online classes of dense_armor.utility.
+The classes are new and independent of the online classes of dense_armor.core.
 
 Classes without a form:
 - `PayloadEstimator`: the reference estimates the payload with the dynamics model of the robot; the interface on a table of regressors and residuals is not in it

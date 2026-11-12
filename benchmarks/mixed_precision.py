@@ -37,10 +37,10 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from dense_armor.utility.deep.neural.losses import MSE  # noqa: E402
-from dense_armor.utility.deep.neural.models import transformer_encoder  # noqa: E402
-from dense_armor.utility.deep.neural.trainer import Trainer  # noqa: E402
-from dense_armor.utility.online.optim import SGD  # noqa: E402
+from dense_armor.core.deep.neural.losses import MSE  # noqa: E402
+from dense_armor.core.deep.neural.models import transformer_encoder  # noqa: E402
+from dense_armor.core.deep.neural.trainer import Trainer  # noqa: E402
+from dense_armor.core.online.optim import SGD  # noqa: E402
 
 SEED = 0
 N_SESSIONS = 3

@@ -9,7 +9,7 @@ This page builds the bytes of an Add Order, a partial execution and a delete, de
 An Add Order of type `A` is 36 bytes. The block builds the bytes field by field from the table of the specification, then decodes them.
 
 ~~~python
-from dense_armor.utility.finance import decode_message
+from dense_armor.core.finance import decode_message
 
 m = (
     b"A"
@@ -37,7 +37,7 @@ Every integer is big endian and unsigned. The stock is ASCII, right padded with 
 An order is added, partially executed, then deleted. The three messages carry the same `order_ref` (7), so the three dictionaries line up.
 
 ~~~python
-from dense_armor.utility.finance import decode_message
+from dense_armor.core.finance import decode_message
 
 add = (
     b"A"
@@ -84,7 +84,7 @@ An `A` message adds 100 shares, an `E` message executes 40, a `D` message delete
 The timestamp is 6 bytes of nanoseconds since midnight, read as one big endian number. The two byte sequences below are not the same number in another order.
 
 ~~~python
-from dense_armor.utility.finance import decode_message
+from dense_armor.core.finance import decode_message
 
 m = (
     b"D"

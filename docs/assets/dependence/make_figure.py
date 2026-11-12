@@ -1,11 +1,12 @@
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dense_armor.utility.signals.stats import RollingCorrelation, RunningCorrelation
+from dense_armor.core.signals.stats import RollingCorrelation, RunningCorrelation
 
 rng = np.random.default_rng(0)
 f = rng.normal(size=250)

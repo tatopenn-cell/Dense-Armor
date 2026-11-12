@@ -3,7 +3,7 @@ import math
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.signals.preprocessing.text import (
+from dense_armor.core.signals.preprocessing.text import (
     TFIDF,
     BagOfWords,
     FeatureHasher,

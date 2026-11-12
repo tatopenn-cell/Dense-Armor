@@ -8,8 +8,9 @@ pytest.importorskip("flask", reason="flask not installed")
 pytest.importorskip("tomllib", reason="load_config needs tomllib, Python 3.11 or later")
 
 from dashboard.app import create_app  # noqa: E402
-from dense_armor.utility.finance.decision_log import DecisionLog  # noqa: E402
-from dense_armor.utility.finance.synthetic import synthetic_itch  # noqa: E402
+
+from dense_armor.core.finance.decision_log import DecisionLog  # noqa: E402
+from dense_armor.core.finance.synthetic import synthetic_itch  # noqa: E402
 
 TOML = """\
 [schedule]
@@ -160,7 +161,7 @@ def test_the_audit_page_with_a_database_that_answers(client, monkeypatch):
         def verify(self):
             return True
 
-    monkeypatch.setattr("dense_armor.utility.finance.audit_db.AuditDB", Db)
+    monkeypatch.setattr("dense_armor.core.finance.audit_db.AuditDB", Db)
     r = client.get("/audit")
     assert r.status_code == 200 and b"abc" in r.data
 
@@ -208,7 +209,7 @@ def test_the_learners_route_reports_a_stream_that_raises(client, monkeypatch):
         def __init__(self, **k):
             raise RuntimeError("stream down")
 
-    monkeypatch.setattr("dense_armor.utility.signals.datasets.DriftStream", Boom)
+    monkeypatch.setattr("dense_armor.core.signals.datasets.DriftStream", Boom)
     r = client.post("/api/learners/run", json={"n": 100})
     assert r.status_code == 500 and "stream down" in r.get_json()["error"]
 

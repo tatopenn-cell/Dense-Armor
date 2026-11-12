@@ -29,7 +29,7 @@ with the initial value `sigma^2_0 = omega / (1 - alpha - beta)`
 ## 1. The first estimator
 
 ```python
-from dense_armor.utility.online.timeseries import GARCH11
+from dense_armor.core.online.timeseries import GARCH11
 
 g = GARCH11(omega=1e-6, alpha=0.08, beta=0.90)
 for x in [0.01, -0.02, 0.015, -0.005, 0.03]:
@@ -58,7 +58,7 @@ The sum `alpha + beta` is the persistence of the model. A high value
 value means the variance returns to the constant quickly.
 
 ```python
-from dense_armor.utility.online.timeseries import GARCH11
+from dense_armor.core.online.timeseries import GARCH11
 
 g = GARCH11(omega=1e-6, alpha=0.05, beta=0.90)
 for x in [0.10, -0.10, 0.05, -0.02]:
@@ -97,7 +97,7 @@ changes at the midpoint.
 
 ```python
 import numpy as np
-from dense_armor.utility.online.timeseries import GARCH11
+from dense_armor.core.online.timeseries import GARCH11
 
 rng = np.random.default_rng(20261026)
 n = 2000
@@ -129,7 +129,7 @@ model can follow.
 
 ```python
 import numpy as np
-from dense_armor.utility.online.timeseries import GARCH11
+from dense_armor.core.online.timeseries import GARCH11
 
 rng = np.random.default_rng(20261026)
 n = 2000

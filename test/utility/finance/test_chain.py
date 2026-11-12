@@ -5,7 +5,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-
 from dashboard import chain
 
 REPO = Path(__file__).resolve().parents[3]
@@ -24,12 +23,12 @@ def test_the_probe_names_what_it_finds():
     assert chain._probe("features", None) == {"status": "none"}
     assert chain._probe("data", {"source": "A.csv"}) == {"status": "stream", "source": "A.csv"}
     assert chain._probe("signal", "no.such.module.Thing")["status"] == "import_error"
-    assert chain._probe("execution", "dense_armor.utility.finance.schedule.twap_schedule") == {"status": "func"}
+    assert chain._probe("execution", "dense_armor.core.finance.schedule.twap_schedule") == {"status": "func"}
     assert chain._probe("signal", "dashboard.app.STATIC_DIR") == {"status": "not_a_class"}
-    assert chain._probe("signal", "dense_armor.utility.online.tree.hoeffding.HoeffdingTreeClassifier") == {"status": "ready"}
-    adaptive = chain._probe("signal", "dense_armor.utility.online.tree.adaptive.HoeffdingAdaptiveTreeClassifier")
+    assert chain._probe("signal", "dense_armor.core.online.tree.hoeffding.HoeffdingTreeClassifier") == {"status": "ready"}
+    adaptive = chain._probe("signal", "dense_armor.core.online.tree.adaptive.HoeffdingAdaptiveTreeClassifier")
     assert adaptive["status"] == "ready" and "drift_detector" in adaptive["default_init"]
-    needs = chain._probe("signal", "dense_armor.utility.finance.audit_db.AuditDB")
+    needs = chain._probe("signal", "dense_armor.core.finance.audit_db.AuditDB")
     assert needs["status"] == "needs_args" and needs["error"]
 
 
@@ -64,11 +63,11 @@ def test_the_defaults_fill_the_arguments_that_a_class_requires():
 
 def test_instantiate_gives_none_a_function_a_class_and_raises_for_the_rest():
     assert chain._instantiate(None) is None
-    assert callable(chain._instantiate("dense_armor.utility.finance.schedule.twap_schedule"))
-    obj = chain._instantiate("dense_armor.utility.online.tree.hoeffding.HoeffdingTreeClassifier")
+    assert callable(chain._instantiate("dense_armor.core.finance.schedule.twap_schedule"))
+    obj = chain._instantiate("dense_armor.core.online.tree.hoeffding.HoeffdingTreeClassifier")
     assert hasattr(obj, "learn_one")
     with pytest.raises(Exception):
-        chain._instantiate("dense_armor.utility.finance.audit_db.AuditDB")
+        chain._instantiate("dense_armor.core.finance.audit_db.AuditDB")
 
 
 def test_maybe_call_drops_the_keywords_that_the_class_does_not_take():
@@ -195,14 +194,14 @@ def test_the_defaults_survive_a_signature_that_cannot_be_read_and_a_missing_defa
         assert chain._auto_defaults(Needs) == {}
         assert chain._maybe_call(Needs, drift_detector=1) is Needs
     with monkeypatch.context() as m:
-        m.setitem(sys.modules, "dense_armor.utility.online.drift.adwin", None)
+        m.setitem(sys.modules, "dense_armor.core.online.drift.adwin", None)
         assert chain._auto_defaults(Needs) == {}
     with monkeypatch.context() as m:
         class Raising:
             def __init__(self):
                 raise RuntimeError("no")
 
-        m.setattr("dense_armor.utility.online.tree.hoeffding.HoeffdingTreeClassifier", Raising)
+        m.setattr("dense_armor.core.online.tree.hoeffding.HoeffdingTreeClassifier", Raising)
 
         class NeedsClassifier:
             def __init__(self, classifier):
@@ -210,7 +209,7 @@ def test_the_defaults_survive_a_signature_that_cannot_be_read_and_a_missing_defa
 
         assert chain._auto_defaults(NeedsClassifier) == {}
     with monkeypatch.context() as m:
-        m.setitem(sys.modules, "dense_armor.utility.online.learn.metric_learning", None)
+        m.setitem(sys.modules, "dense_armor.core.online.learn.metric_learning", None)
 
         class NeedsMetric:
             def __init__(self, metric_learner):
@@ -238,8 +237,8 @@ def test_the_probe_of_a_class_whose_defaults_do_not_build_it(monkeypatch):
         def __init__(self):
             raise RuntimeError("adwin")
 
-    monkeypatch.setattr("dense_armor.utility.online.drift.adwin.ADWIN", BrokenAdwin)
-    adaptive = chain._probe("signal", "dense_armor.utility.online.tree.adaptive.HoeffdingAdaptiveTreeClassifier")
+    monkeypatch.setattr("dense_armor.core.online.drift.adwin.ADWIN", BrokenAdwin)
+    adaptive = chain._probe("signal", "dense_armor.core.online.tree.adaptive.HoeffdingAdaptiveTreeClassifier")
     assert adaptive["status"] in ("ready", "needs_args")
 
 

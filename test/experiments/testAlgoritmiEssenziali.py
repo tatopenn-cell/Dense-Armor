@@ -13,14 +13,19 @@ Uso:
 import logging
 import time
 
-import numpy as np
 import jax
+import numpy as np
+
 jax.config.update("jax_enable_x64", True)
 
-from dense_armor.utility.online.protect.orca import Orca
+from algoritmi_essenziali import (
+    abcollatz_essenziale,
+    combinato_essenziale,
+    damping_essenziale,
+)
+from testKalman import X_CLEAN, N, genera_scenari, kalman_1d, modello_a_valle
 
-from testKalman import genera_scenari, kalman_1d, modello_a_valle, X_CLEAN, N
-from algoritmi_essenziali import damping_essenziale, abcollatz_essenziale, combinato_essenziale
+from dense_armor.core.online.protect.orca import Orca
 
 
 def rmse(out: np.ndarray, target: np.ndarray, mask: np.ndarray) -> float:

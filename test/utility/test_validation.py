@@ -1,8 +1,8 @@
-"""Tests for dense_armor/utility/_validation.py."""
+"""Tests for dense_armor/core/_validation.py."""
 
 import pytest
 
-from dense_armor.utility._validation import as_dict, finite_row, is_number
+from dense_armor.core._validation import as_dict, finite_row, is_number
 
 
 class _ToDict:

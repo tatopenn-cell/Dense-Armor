@@ -2,7 +2,7 @@
 
 import pytest
 
-from dense_armor.utility.finance.feed import frame, iter_itch
+from dense_armor.core.finance.feed import frame, iter_itch
 
 
 def _A(order_ref: int, side: str, shares: int, stock: str, price_raw: int) -> bytes:

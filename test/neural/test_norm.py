@@ -6,8 +6,8 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.deep.neural.gradcheck import gradcheck
-from dense_armor.utility.deep.neural.norm import BatchNorm, LayerNorm
+from dense_armor.core.deep.neural.gradcheck import gradcheck
+from dense_armor.core.deep.neural.norm import BatchNorm, LayerNorm
 
 
 def test_batchnorm_training_mean_and_variance():

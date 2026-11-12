@@ -1,9 +1,9 @@
 """Hand cases and edge cases of the preprocessing of the machine learning package."""
 
-import pytest
 import doctest
 
 import numpy as np
+import pytest
 
 import dense_armor.ml.preprocessing as P
 from dense_armor.ml.preprocessing import (

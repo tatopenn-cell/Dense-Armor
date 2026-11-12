@@ -20,12 +20,14 @@ import time
 from pathlib import Path
 from typing import Dict, Tuple
 
-import numpy as np
 import jax
+import numpy as np
+
 jax.config.update("jax_enable_x64", True)
 
-from dense_armor.utility.online.protect.orca import Orca
 from filterpy.kalman import KalmanFilter
+
+from dense_armor.core.online.protect.orca import Orca
 
 np.random.seed(42)
 X_CLEAN = 120.0

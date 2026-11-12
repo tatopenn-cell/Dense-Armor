@@ -31,7 +31,7 @@ and keeps the running mean, variance, skewness, kurtosis, minimum and
 maximum.
 
 ```python
-from dense_armor.utility.signals.stats.moments import RunningMoments
+from dense_armor.core.signals.stats.moments import RunningMoments
 
 m = RunningMoments()
 for v in [1.0, 2.0, 3.0, 4.0, 5.0]:
@@ -57,7 +57,7 @@ The full set of properties reads:
 The input is always a dict. A specific feature can be named:
 
 ```python
-from dense_armor.utility.signals.stats.moments import RunningMoments
+from dense_armor.core.signals.stats.moments import RunningMoments
 
 m = RunningMoments()
 for v in [1.0, 2.0, 3.0, 4.0, 5.0]:
@@ -73,7 +73,7 @@ and the running summary is left untouched. A robot with an intermittent
 sensor therefore does not see its average poisoned by a missing value.
 
 ```python
-from dense_armor.utility.signals.stats.moments import RunningMoments
+from dense_armor.core.signals.stats.moments import RunningMoments
 
 m = RunningMoments()
 for v in [1.0, 2.0, 3.0, 4.0, 5.0]:
@@ -180,7 +180,7 @@ $$
 The code produces exactly these numbers:
 
 ```python
-from dense_armor.utility.signals.stats.moments import RunningMoments
+from dense_armor.core.signals.stats.moments import RunningMoments
 
 m = RunningMoments()
 for v in [1.0, 2.0, 3.0, 4.0, 5.0]:
@@ -201,7 +201,7 @@ Golub and LeVeque (1979) for the variance, extended by Pébay (2008) to
 the third and fourth moments.
 
 ```python
-from dense_armor.utility.signals.stats.moments import RunningMoments
+from dense_armor.core.signals.stats.moments import RunningMoments
 
 m = RunningMoments()
 for v in [1.0, 2.0, 3.0, 4.0, 5.0]:
@@ -235,7 +235,7 @@ get wrong. `RunningMomentsVector` keeps one `RunningMoments` per
 channel and updates all of them from a single dict.
 
 ```python
-from dense_armor.utility.signals.stats.moments import RunningMomentsVector
+from dense_armor.core.signals.stats.moments import RunningMomentsVector
 
 v = RunningMomentsVector()
 for q in ([0.1, 0.2], [0.11, 0.19], [0.09, 0.21]):
@@ -270,7 +270,7 @@ last value; `α = 0.05` corresponds roughly to averaging over the last
 twenty samples.
 
 ```python
-from dense_armor.utility.signals.stats.moments import EWStats
+from dense_armor.core.signals.stats.moments import EWStats
 
 e = EWStats(alpha=0.05)
 for _ in range(500):
@@ -293,7 +293,7 @@ seconds. When timestamps are given at a fixed rate, the base exposes
 the median inter-sample interval `dt` and its reciprocal `rate`.
 
 ```python
-from dense_armor.utility.signals.stats.moments import RunningMoments
+from dense_armor.core.signals.stats.moments import RunningMoments
 
 m = RunningMoments()
 for i in range(100):
@@ -314,9 +314,9 @@ Each row is one sample and feeds the moments of every joint in one
 call.
 
 ```python
-from dense_armor.utility.online.learn.online_dynamics import write_minimal_urdf
+from dense_armor.core.online.learn.online_dynamics import write_minimal_urdf
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.utility.signals.stats.moments import RunningMomentsVector
+from dense_armor.core.signals.stats.moments import RunningMomentsVector
 
 model = RigidBodyModel(write_minimal_urdf())
 import numpy as np

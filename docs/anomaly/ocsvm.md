@@ -74,7 +74,7 @@ default is `threshold=None`: the detector uses the adaptive `0.95` quantile of t
 
 ```python
 import numpy as np
-from dense_armor.utility.online.anomaly.ocsvm import OneClassSGD
+from dense_armor.core.online.anomaly.ocsvm import OneClassSGD
 
 rng = np.random.default_rng(0)
 det = OneClassSGD(n_features_rff=64, nu=0.05, n_init=50, seed=0)
@@ -105,7 +105,7 @@ The same detector on a market stream. Each day has two numbers: the return in pe
 
 ```python
 import numpy as np
-from dense_armor.utility.online.anomaly.ocsvm import OneClassSGD
+from dense_armor.core.online.anomaly.ocsvm import OneClassSGD
 
 rng = np.random.default_rng(0)
 
@@ -138,8 +138,8 @@ t = 2 s) shifts the residual on joints 1-5 by tens of N·m.
 
 ```python
 from pathlib import Path
-from dense_armor.utility.online.anomaly.ocsvm import OneClassSGD
-from dense_armor.utility.signals.datasets import SyntheticArm
+from dense_armor.core.online.anomaly.ocsvm import OneClassSGD
+from dense_armor.core.signals.datasets import SyntheticArm
 
 ds = SyntheticArm(
     Path("test/fixtures/urdf/panda.urdf"),

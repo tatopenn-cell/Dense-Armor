@@ -16,7 +16,7 @@ canonical text of the other four keys).
 ~~~python
 import os
 from pathlib import Path
-from dense_armor.utility.finance import DecisionLog
+from dense_armor.core.finance import DecisionLog
 os.makedirs("/tmp/f6_page", exist_ok=True)
 for f in ["log.jsonl", "log_tampered.jsonl"]:
     p = Path("/tmp/f6_page") / f
@@ -53,7 +53,7 @@ recomputing its own `hash` still breaks the next record's `prev`.
 raises for the content of the file: a malformed line returns `False`.
 
 ~~~python
-from dense_armor.utility.finance import DecisionLog
+from dense_armor.core.finance import DecisionLog
 log = DecisionLog("/tmp/f6_page/log.jsonl")
 print("verify:", log.verify())
 print("records:", len(log))
@@ -78,7 +78,7 @@ own `hash` no longer matches and the third record's `prev` no longer matches.
 
 ~~~python
 from pathlib import Path
-from dense_armor.utility.finance import DecisionLog
+from dense_armor.core.finance import DecisionLog
 src = Path("/tmp/f6_page/log.jsonl")
 lines = src.read_text().splitlines(keepends=True)
 tampered = Path("/tmp/f6_page/log_tampered.jsonl")

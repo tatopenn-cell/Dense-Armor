@@ -1,7 +1,7 @@
 import numpy as np
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
+from dense_armor.core.online.tree.hoeffding import HoeffdingTreeClassifier
 
 
 def _two_blob_stream(n, rng):

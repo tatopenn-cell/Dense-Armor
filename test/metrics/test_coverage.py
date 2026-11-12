@@ -2,12 +2,11 @@
 import numpy as np
 import pytest
 
-from dense_armor.roles import Classifier, Regressor
-from dense_armor.utility.evaluation.evaluate import (
+from dense_armor.core.evaluation.evaluate import (
     OnlineModelSelection,
     progressive_val_proba_score,
 )
-from dense_armor.utility.evaluation.metrics import (
+from dense_armor.core.evaluation.metrics import (
     F1,
     Accuracy,
     BalancedAccuracy,
@@ -28,6 +27,7 @@ from dense_armor.utility.evaluation.metrics import (
     RollingAUC,
     RootMeanSquaredError,
 )
+from dense_armor.roles import Classifier, Regressor
 
 LABELS = [(0, 0), (1, 1), (0, 1), (2, 2), (1, 0), (2, 1)]
 PROBS = [(1, 0.9), (0, 0.2), (1, 0.6), (0, 0.4)]

@@ -2,133 +2,133 @@
   "estimator_totali": 138,
   "random_classes": [
     {
-      "module": "dense_armor.utility.online.cluster.denstream",
+      "module": "dense_armor.core.online.cluster.denstream",
       "class": "DenStream",
       "has_seed": false,
       "seed_default": "'<absent>'"
     },
     {
-      "module": "dense_armor.utility.online.forest.amf",
+      "module": "dense_armor.core.online.forest.amf",
       "class": "AggregatedMondrianForestClassifier",
       "has_seed": true,
       "seed_default": "None"
     },
     {
-      "module": "dense_armor.utility.online.forest.amf",
+      "module": "dense_armor.core.online.forest.amf",
       "class": "AggregatedMondrianForestRegressor",
       "has_seed": true,
       "seed_default": "None"
     },
     {
-      "module": "dense_armor.utility.online.forest.arf",
+      "module": "dense_armor.core.online.forest.arf",
       "class": "AdaptiveRandomForestClassifier",
       "has_seed": true,
       "seed_default": "None"
     },
     {
-      "module": "dense_armor.utility.online.forest.arf",
+      "module": "dense_armor.core.online.forest.arf",
       "class": "SubspaceHoeffdingTree",
       "has_seed": true,
       "seed_default": "None"
     },
     {
-      "module": "dense_armor.utility.online.forest.oxt",
+      "module": "dense_armor.core.online.forest.oxt",
       "class": "OnlineExtraTreesRegressor",
       "has_seed": true,
       "seed_default": "None"
     },
     {
-      "module": "dense_armor.utility.signals.preprocessing.scale",
+      "module": "dense_armor.core.signals.preprocessing.scale",
       "class": "EWScaler",
       "has_seed": false,
       "seed_default": "'<absent>'"
     },
     {
-      "module": "dense_armor.utility.signals.preprocessing.scale",
+      "module": "dense_armor.core.signals.preprocessing.scale",
       "class": "MinMaxScaler",
       "has_seed": false,
       "seed_default": "'<absent>'"
     },
     {
-      "module": "dense_armor.utility.signals.preprocessing.scale",
+      "module": "dense_armor.core.signals.preprocessing.scale",
       "class": "RobustScaler",
       "has_seed": false,
       "seed_default": "'<absent>'"
     },
     {
-      "module": "dense_armor.utility.signals.preprocessing.scale",
+      "module": "dense_armor.core.signals.preprocessing.scale",
       "class": "StandardScaler",
       "has_seed": false,
       "seed_default": "'<absent>'"
     },
     {
-      "module": "dense_armor.utility.signals.preprocessing.select",
+      "module": "dense_armor.core.signals.preprocessing.select",
       "class": "SelectKBest",
       "has_seed": false,
       "seed_default": "'<absent>'"
     },
     {
-      "module": "dense_armor.utility.signals.preprocessing.select",
+      "module": "dense_armor.core.signals.preprocessing.select",
       "class": "VarianceThreshold",
       "has_seed": false,
       "seed_default": "'<absent>'"
     },
     {
-      "module": "dense_armor.utility.online.rules.amrules",
+      "module": "dense_armor.core.online.rules.amrules",
       "class": "AMRulesRegressor",
       "has_seed": true,
       "seed_default": "None"
     },
     {
-      "module": "dense_armor.utility.signals.stats.moments",
+      "module": "dense_armor.core.signals.stats.moments",
       "class": "RunningMomentsVector",
       "has_seed": false,
       "seed_default": "'<absent>'"
     },
     {
-      "module": "dense_armor.utility.signals.stats.robust",
+      "module": "dense_armor.core.signals.stats.robust",
       "class": "RollingMedianVector",
       "has_seed": false,
       "seed_default": "'<absent>'"
     },
     {
-      "module": "dense_armor.utility.online.tree.efdt",
+      "module": "dense_armor.core.online.tree.efdt",
       "class": "HoeffdingAnytimeTreeClassifier",
       "has_seed": false,
       "seed_default": "'<absent>'"
     },
     {
-      "module": "dense_armor.utility.online.tree.hoeffding",
+      "module": "dense_armor.core.online.tree.hoeffding",
       "class": "HoeffdingTreeClassifier",
       "has_seed": false,
       "seed_default": "'<absent>'"
     },
     {
-      "module": "dense_armor.utility.online.tree.mondrian",
+      "module": "dense_armor.core.online.tree.mondrian",
       "class": "MondrianForestClassifier",
       "has_seed": true,
       "seed_default": "0"
     },
     {
-      "module": "dense_armor.utility.online.tree.mondrian",
+      "module": "dense_armor.core.online.tree.mondrian",
       "class": "MondrianForestRegressor",
       "has_seed": true,
       "seed_default": "0"
     },
     {
-      "module": "dense_armor.utility.online.tree.sgt",
+      "module": "dense_armor.core.online.tree.sgt",
       "class": "SGTClassifier",
       "has_seed": false,
       "seed_default": "'<absent>'"
     },
     {
-      "module": "dense_armor.utility.online.tree.sgt",
+      "module": "dense_armor.core.online.tree.sgt",
       "class": "SGTRegressor",
       "has_seed": false,
       "seed_default": "'<absent>'"
     },
     {
-      "module": "dense_armor.utility.signals.vision.vocabulary",
+      "module": "dense_armor.core.signals.vision.vocabulary",
       "class": "BagOfVisualWords",
       "has_seed": true,
       "seed_default": "0"
@@ -136,186 +136,186 @@
   ],
   "seed_default_none": [
     {
-      "module": "dense_armor.utility.online.anomaly.hst",
+      "module": "dense_armor.core.online.anomaly.hst",
       "class": "HalfSpaceTrees"
     },
     {
-      "module": "dense_armor.utility.online.anomaly.loda",
+      "module": "dense_armor.core.online.anomaly.loda",
       "class": "LODA"
     },
     {
-      "module": "dense_armor.utility.online.anomaly.lof",
+      "module": "dense_armor.core.online.anomaly.lof",
       "class": "LocalOutlierFactor"
     },
     {
-      "module": "dense_armor.utility.online.anomaly.mahalanobis",
+      "module": "dense_armor.core.online.anomaly.mahalanobis",
       "class": "OnlineRobustMahalanobis"
     },
     {
-      "module": "dense_armor.utility.online.anomaly.ocsvm",
+      "module": "dense_armor.core.online.anomaly.ocsvm",
       "class": "OneClassSGD"
     },
     {
-      "module": "dense_armor.utility.online.anomaly.oiforest",
+      "module": "dense_armor.core.online.anomaly.oiforest",
       "class": "OnlineIsolationForest"
     },
     {
-      "module": "dense_armor.utility.online.drift.kswin",
+      "module": "dense_armor.core.online.drift.kswin",
       "class": "KSWIN"
     },
     {
-      "module": "dense_armor.utility.online.forest.amf",
+      "module": "dense_armor.core.online.forest.amf",
       "class": "AggregatedMondrianForestClassifier"
     },
     {
-      "module": "dense_armor.utility.online.forest.amf",
+      "module": "dense_armor.core.online.forest.amf",
       "class": "AggregatedMondrianForestRegressor"
     },
     {
-      "module": "dense_armor.utility.online.forest.arf",
+      "module": "dense_armor.core.online.forest.arf",
       "class": "AdaptiveRandomForestClassifier"
     },
     {
-      "module": "dense_armor.utility.online.forest.arf",
+      "module": "dense_armor.core.online.forest.arf",
       "class": "SubspaceHoeffdingTree"
     },
     {
-      "module": "dense_armor.utility.online.forest.oxt",
+      "module": "dense_armor.core.online.forest.oxt",
       "class": "OnlineExtraTreesRegressor"
     },
     {
-      "module": "dense_armor.utility.online.rules.amrules",
+      "module": "dense_armor.core.online.rules.amrules",
       "class": "AMRulesRegressor"
     }
   ],
   "skipped": [
     [
-      "dense_armor.utility.online.cluster.kmeans",
+      "dense_armor.core.online.cluster.kmeans",
       "OnlineKMeans",
       "TypeError: OnlineKMeans.__init__() missing 1 required positional argument: 'k'"
     ],
     [
-      "dense_armor.utility.infrastructure.compose.func",
+      "dense_armor.core.infrastructure.compose.func",
       "FuncTransformer",
       "TypeError: FuncTransformer.__init__() missing 1 required positional argument: 'fn'"
     ],
     [
-      "dense_armor.utility.online.ensemble.bagging",
+      "dense_armor.core.online.ensemble.bagging",
       "OnlineBaggingClassifier",
       "TypeError: OnlineBaggingClassifier.__init__() missing 1 required positional argument: 'model'"
     ],
     [
-      "dense_armor.utility.online.ensemble.boosting",
+      "dense_armor.core.online.ensemble.boosting",
       "OnlineBoostingClassifier",
       "TypeError: OnlineBoostingClassifier.__init__() missing 1 required positional argument: 'model'"
     ],
     [
-      "dense_armor.utility.online.ensemble.ewa",
+      "dense_armor.core.online.ensemble.ewa",
       "ExponentiallyWeightedAverageRegressor",
       "TypeError: ExponentiallyWeightedAverageRegressor.__init__() missing 1 required positional argument: 'models'"
     ],
     [
-      "dense_armor.utility.online.ensemble.stacking",
+      "dense_armor.core.online.ensemble.stacking",
       "StackingClassifier",
       "TypeError: StackingClassifier.__init__() missing 2 required positional arguments: 'models' and 'meta_model'"
     ],
     [
-      "dense_armor.utility.online.ensemble.voting",
+      "dense_armor.core.online.ensemble.voting",
       "VotingClassifier",
       "TypeError: VotingClassifier.__init__() missing 1 required positional argument: 'models'"
     ],
     [
-      "dense_armor.utility.online.facto.ffm",
+      "dense_armor.core.online.facto.ffm",
       "FFMClassifier",
       "TypeError: _FFMBase.__init__() missing 1 required positional argument: 'fields'"
     ],
     [
-      "dense_armor.utility.online.facto.ffm",
+      "dense_armor.core.online.facto.ffm",
       "FFMRegressor",
       "TypeError: _FFMBase.__init__() missing 1 required positional argument: 'fields'"
     ],
     [
-      "dense_armor.utility.online.facto.fm",
+      "dense_armor.core.online.facto.fm",
       "FMClassifier",
       "TypeError: _FMBase.__init__() missing 1 required positional argument: 'optimizer'"
     ],
     [
-      "dense_armor.utility.online.facto.fm",
+      "dense_armor.core.online.facto.fm",
       "FMRegressor",
       "TypeError: _FMBase.__init__() missing 1 required positional argument: 'optimizer'"
     ],
     [
-      "dense_armor.utility.online.facto.fwfm",
+      "dense_armor.core.online.facto.fwfm",
       "FwFMClassifier",
       "TypeError: _FwFMBase.__init__() missing 2 required positional arguments: 'optimizer' and 'fields'"
     ],
     [
-      "dense_armor.utility.online.facto.fwfm",
+      "dense_armor.core.online.facto.fwfm",
       "FwFMRegressor",
       "TypeError: _FwFMBase.__init__() missing 2 required positional arguments: 'optimizer' and 'fields'"
     ],
     [
-      "dense_armor.utility.online.facto.hofm",
+      "dense_armor.core.online.facto.hofm",
       "HOFMClassifier",
       "TypeError: _HOFMBase.__init__() missing 1 required positional argument: 'optimizer'"
     ],
     [
-      "dense_armor.utility.online.facto.hofm",
+      "dense_armor.core.online.facto.hofm",
       "HOFMRegressor",
       "TypeError: _HOFMBase.__init__() missing 1 required positional argument: 'optimizer'"
     ],
     [
-      "dense_armor.utility.online.linear.glm",
+      "dense_armor.core.online.linear.glm",
       "LinearRegression",
       "TypeError: LinearRegression.__init__() missing 1 required positional argument: 'optimizer'"
     ],
     [
-      "dense_armor.utility.online.linear.glm",
+      "dense_armor.core.online.linear.glm",
       "LogisticRegression",
       "TypeError: LogisticRegression.__init__() missing 1 required positional argument: 'optimizer'"
     ],
     [
-      "dense_armor.utility.online.linear.payload",
+      "dense_armor.core.online.linear.payload",
       "PayloadEstimator",
       "TypeError: PayloadEstimator.__init__() missing 2 required positional arguments: 'model' and 'link'"
     ],
     [
-      "dense_armor.utility.signals.preprocessing.imbalance",
+      "dense_armor.core.signals.preprocessing.imbalance",
       "QueueResampler",
       "TypeError: QueueResampler.__init__() missing 1 required positional argument: 'classifier'"
     ],
     [
-      "dense_armor.utility.online.timeseries.kalman",
+      "dense_armor.core.online.timeseries.kalman",
       "InnovationAdaptiveKalman",
       "TypeError: InnovationAdaptiveKalman.__init__() missing 4 required positional arguments: 'F', 'H', 'Q', and 'R'"
     ],
     [
-      "dense_armor.utility.online.timeseries.kalman",
+      "dense_armor.core.online.timeseries.kalman",
       "KalmanFilter",
       "TypeError: KalmanFilter.__init__() missing 4 required positional arguments: 'F', 'H', 'Q', and 'R'"
     ],
     [
-      "dense_armor.utility.online.timeseries.kalman",
+      "dense_armor.core.online.timeseries.kalman",
       "VBAdaptiveKalman",
       "TypeError: VBAdaptiveKalman.__init__() missing 4 required positional arguments: 'F', 'H', 'Q', and 'R'"
     ],
     [
-      "dense_armor.utility.online.tree.adaptive",
+      "dense_armor.core.online.tree.adaptive",
       "HoeffdingAdaptiveTreeClassifier",
       "ValueError: drift_detector is required"
     ],
     [
-      "dense_armor.utility.signals.vision.reduce",
+      "dense_armor.core.signals.vision.reduce",
       "IncrementalPCA",
       "TypeError: IncrementalPCA.__init__() missing 1 required positional argument: 'k'"
     ],
     [
-      "dense_armor.utility.signals.vision.reduce",
+      "dense_armor.core.signals.vision.reduce",
       "RandomProjection",
       "TypeError: RandomProjection.__init__() missing 1 required positional argument: 'k'"
     ],
     [
-      "dense_armor.utility.signals.vision.window",
+      "dense_armor.core.signals.vision.window",
       "FrameWindow",
       "ValueError: exactly one of n and seconds must be given"
     ]

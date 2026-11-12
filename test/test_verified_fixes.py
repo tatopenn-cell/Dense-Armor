@@ -3,29 +3,29 @@
 import numpy as np
 import pytest
 
-from dense_armor.utility.evaluation.evaluate import (
+from dense_armor.core.evaluation.evaluate import (
     evaluate_events,
     progressive_val_score,
 )
-from dense_armor.utility.evaluation.evaluate.diagnostic import diag
-from dense_armor.utility.evaluation.evaluate.model_selection import OnlineModelSelection
-from dense_armor.utility.evaluation.metrics import Accuracy
-from dense_armor.utility.online.drift import (
+from dense_armor.core.evaluation.evaluate.diagnostic import diag
+from dense_armor.core.evaluation.evaluate.model_selection import OnlineModelSelection
+from dense_armor.core.evaluation.metrics import Accuracy
+from dense_armor.core.online.drift import (
     ADWIN,
     KSWIN,
     BayesianOnlineChangepoint,
     CUSUMDriftDetector,
     PageHinkley,
 )
-from dense_armor.utility.online.drift.cusum import cusum_detector
-from dense_armor.utility.online.learn.calibration import OnlinePlattScaling
-from dense_armor.utility.online.learn.metric_learning import LEGO
-from dense_armor.utility.online.learn.online_dynamics import RecursiveLeastSquares
-from dense_armor.utility.online.linear.bayes import BayesianLinearRegression
-from dense_armor.utility.online.linear.glm import LogisticRegression
-from dense_armor.utility.online.optim import SGD
-from dense_armor.utility.online.tree.batch import BatchDecisionTreeClassifier
-from dense_armor.utility.signals.preprocessing.metro import Metro
+from dense_armor.core.online.drift.cusum import cusum_detector
+from dense_armor.core.online.learn.calibration import OnlinePlattScaling
+from dense_armor.core.online.learn.metric_learning import LEGO
+from dense_armor.core.online.learn.online_dynamics import RecursiveLeastSquares
+from dense_armor.core.online.linear.bayes import BayesianLinearRegression
+from dense_armor.core.online.linear.glm import LogisticRegression
+from dense_armor.core.online.optim import SGD
+from dense_armor.core.online.tree.batch import BatchDecisionTreeClassifier
+from dense_armor.core.signals.preprocessing.metro import Metro
 
 
 class _Const:
@@ -191,14 +191,14 @@ def test_diag_scales_by_dtype_and_refuses_mixed_arguments():
 
 
 def test_control_validation():
-    from dense_armor.utility.robot.control.cbf_filter import (
+    from dense_armor.core.robot.control.cbf_filter import (
         cbf_filtered_trajectory,
         cbf_safety_filter_live,
     )
-    from dense_armor.utility.robot.control.kinematic_controller import (
+    from dense_armor.core.robot.control.kinematic_controller import (
         kinematic_tracking_controller,
     )
-    from dense_armor.utility.robot.control.trajectory import quintic_trajectory
+    from dense_armor.core.robot.control.trajectory import quintic_trajectory
 
     with pytest.raises(ValueError):
         kinematic_tracking_controller([0.0, 1.0], [0.0], [0.0, 0.0], 1.0)
@@ -215,8 +215,8 @@ def test_control_validation():
 
 
 def test_func_transformer_whole():
+    from dense_armor.core.infrastructure.compose import FuncTransformer
     from dense_armor.roles import Signal
-    from dense_armor.utility.infrastructure.compose import FuncTransformer
 
     s = Signal(values=[1.0, 2.0], names=["a", "b"], units=["m", "s"], t=0.0, missing=[False, True])
     out = FuncTransformer(lambda d: {k: v + 1.0 for k, v in d.items()}, whole=True).transform_one(s)
@@ -228,7 +228,7 @@ def test_func_transformer_whole():
 
 
 def test_kmeans_warmup_shape_mismatch():
-    from dense_armor.utility.online.cluster.kmeans import OnlineKMeans
+    from dense_armor.core.online.cluster.kmeans import OnlineKMeans
 
     km = OnlineKMeans(k=2, warmup=4)
     km.learn_one({"x": [0.0]})
@@ -237,8 +237,8 @@ def test_kmeans_warmup_shape_mismatch():
 
 
 def test_bandit_fixes():
-    from dense_armor.utility.online.bandit import BayesUCB
-    from dense_armor.utility.online.bandit.evaluate import offline_replay
+    from dense_armor.core.online.bandit import BayesUCB
+    from dense_armor.core.online.bandit.evaluate import offline_replay
 
     p = BayesUCB(arms=[0], family="gaussian", estimate_var=True)
     xs = [1e6 + d for d in (-1.0, 0.0, 1.0, 2.0, -2.0)]
@@ -250,9 +250,9 @@ def test_bandit_fixes():
 
 
 def test_anomaly_missing_key():
-    from dense_armor.utility.online.anomaly.deviation import StreamingDeviationScorer
-    from dense_armor.utility.online.anomaly.filters import HampelFilter, HampelScorer
-    from dense_armor.utility.online.anomaly.streaming import StreamingDeviationDetector
+    from dense_armor.core.online.anomaly.deviation import StreamingDeviationScorer
+    from dense_armor.core.online.anomaly.filters import HampelFilter, HampelScorer
+    from dense_armor.core.online.anomaly.streaming import StreamingDeviationDetector
 
     s = HampelScorer(radius=5, feature="v")
     for v in range(10):
@@ -273,8 +273,8 @@ def test_anomaly_missing_key():
 
 
 def test_stream_checks(tmp_path):
+    from dense_armor.core.signals.stream import iter_csv, merge_by_time
     from dense_armor.roles import Signal
-    from dense_armor.utility.signals.stream import iter_csv, merge_by_time
 
     p = tmp_path / "a.csv"
     p.write_text("a,t\n1,0\n2,1\n")
@@ -286,14 +286,14 @@ def test_stream_checks(tmp_path):
 
 
 def test_stats_missing_and_extremes():
-    from dense_armor.utility.signals.stats.dependence import Autocorrelation
-    from dense_armor.utility.signals.stats.moments import (
+    from dense_armor.core.signals.stats.dependence import Autocorrelation
+    from dense_armor.core.signals.stats.moments import (
         RunningMoments,
         RunningMomentsVector,
     )
-    from dense_armor.utility.signals.stats.quantiles import TDigest
-    from dense_armor.utility.signals.stats.shrinkage import OnlineShrinkageCovariance
-    from dense_armor.utility.signals.stats.sketches import _hash64
+    from dense_armor.core.signals.stats.quantiles import TDigest
+    from dense_armor.core.signals.stats.shrinkage import OnlineShrinkageCovariance
+    from dense_armor.core.signals.stats.sketches import _hash64
 
     m = RunningMoments(feature="a")
     m.learn_many(np.array([1.0, np.nan, 2.0, np.inf]))
@@ -328,7 +328,7 @@ def test_stats_missing_and_extremes():
 def test_stats_empty_and_non_number_counted(module, name):
     import importlib
 
-    est = getattr(importlib.import_module(f"dense_armor.utility.signals.stats.{module}"), name)()
+    est = getattr(importlib.import_module(f"dense_armor.core.signals.stats.{module}"), name)()
     est.learn_one({})
     est.learn_one({"a": "text"})
     est.learn_one({"a": None})
@@ -337,7 +337,7 @@ def test_stats_empty_and_non_number_counted(module, name):
 
 @pytest.mark.parametrize("name", ["TukeyScorer", "ChauvenetScorer", "SigmaClipScorer", "HampelScorer"])
 def test_filter_scorers_missing_key(name):
-    from dense_armor.utility.online.anomaly import filters
+    from dense_armor.core.online.anomaly import filters
 
     s = getattr(filters, name)(radius=5, feature="v")
     for v in range(10):
@@ -351,7 +351,7 @@ def test_filter_scorers_missing_key(name):
 
 
 def test_hampel_filter_missing_and_outlier():
-    from dense_armor.utility.online.anomaly.filters import HampelFilter
+    from dense_armor.core.online.anomaly.filters import HampelFilter
 
     f = HampelFilter(radius=5, feature="v")
     for v in range(10):
@@ -364,14 +364,14 @@ def test_hampel_filter_missing_and_outlier():
 
 
 def test_active_strategy_n_missing_property():
-    from dense_armor.utility.online.active.strategies import RandomStrategy
+    from dense_armor.core.online.active.strategies import RandomStrategy
 
     s = RandomStrategy(budget=0.5)
     assert s.n_missing == 0 and s.n_missing_ == 0
 
 
 def test_platt_project_shrinks_a_long_vector():
-    from dense_armor.utility.online.learn.calibration import OnlinePlattScaling
+    from dense_armor.core.online.learn.calibration import OnlinePlattScaling
 
     p = OnlinePlattScaling(classifier=None, radius=0.5)
     out = p._project(np.array([5.0, 5.0]))
@@ -394,7 +394,7 @@ def test_diag_unsigned_and_sample_rate(tmp_path):
 
 @pytest.mark.parametrize("name", ["CountMinSketch", "HyperLogLog", "BloomFilter", "SpaceSaving"])
 def test_sketches_count_missing_key(name):
-    from dense_armor.utility.signals.stats import sketches
+    from dense_armor.core.signals.stats import sketches
 
     s = getattr(sketches, name)(feature="a")
     s.learn_one({"a": "x"})
@@ -408,7 +408,7 @@ def test_sketches_count_missing_key(name):
 
 
 def test_ffm_orphan_feature_allocates_nothing():
-    from dense_armor.utility.online.facto.ffm import FFMClassifier
+    from dense_armor.core.online.facto.ffm import FFMClassifier
 
     m = FFMClassifier(fields={"a": "f1", "b": "f2"}, k=3, feature_keys=["a", "b", "z"])
     m.learn_one({"a": 1.0, "b": 1.0, "z": 5.0}, 1)

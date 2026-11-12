@@ -6,10 +6,10 @@ label (the fault flag). The question is: how much accuracy does the
 offline model buy, and at what cost in time and memory?
 
 The batch model is :class:`BatchDecisionTreeClassifier`
-(``dense_armor/utility/online/tree/batch.py``), a CART tree fitted on the whole
+(``dense_armor/core/online/tree/batch.py``), a CART tree fitted on the whole
 training set in one call. The online model is
 :class:`HoeffdingTreeClassifier`
-(``dense_armor/utility/online/tree/hoeffding.py``), which learns one sample at
+(``dense_armor/core/online/tree/hoeffding.py``), which learns one sample at
 a time and predicts each test sample before learning from it
 (prequential).
 
@@ -48,8 +48,8 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.stats import wilcoxon
 
-from dense_armor.utility.online.tree.batch import BatchDecisionTreeClassifier
-from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
+from dense_armor.core.online.tree.batch import BatchDecisionTreeClassifier
+from dense_armor.core.online.tree.hoeffding import HoeffdingTreeClassifier
 from pipelines.drones.io import synthetic_flight
 
 N_FEATURES = 16

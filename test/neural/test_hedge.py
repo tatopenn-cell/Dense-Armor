@@ -7,7 +7,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.deep.neural.hedge import HedgeNetClassifier
+from dense_armor.core.deep.neural.hedge import HedgeNetClassifier
 
 
 def _data(n=200, seed=0):

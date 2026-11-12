@@ -25,16 +25,20 @@ replacement for ARF-10 on drifting streams. The number -30.0 pp is
 the declared limit of the option.
 """
 
-import sys, time, statistics
+import statistics
+import sys
+import time
+
 sys.path.insert(0, "/content/Dense-Armor")
 import numpy as np
-from dense_armor.utility.signals.datasets import DriftStream
-from dense_armor.utility.online.tree import (
-    HoeffdingAnytimeTreeClassifier,
+
+from dense_armor.core.online.drift.adwin import ADWIN
+from dense_armor.core.online.forest import AdaptiveRandomForestClassifier
+from dense_armor.core.online.tree import (
     HoeffdingAdaptiveTreeClassifier,
+    HoeffdingAnytimeTreeClassifier,
 )
-from dense_armor.utility.online.forest import AdaptiveRandomForestClassifier
-from dense_armor.utility.online.drift.adwin import ADWIN
+from dense_armor.core.signals.datasets import DriftStream
 
 N, D, CUT = 2000, 4, 1000
 WINDOWS = {"before": (700, 1000), "first100": (1000, 1100), "after+200": (1200, 1500)}

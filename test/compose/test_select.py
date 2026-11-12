@@ -2,8 +2,8 @@
 
 import pytest
 
+from dense_armor.core.infrastructure.compose import Discard, Select
 from dense_armor.roles import Signal
-from dense_armor.utility.infrastructure.compose import Discard, Select
 
 
 def _sig():

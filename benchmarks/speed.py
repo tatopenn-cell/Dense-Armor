@@ -27,12 +27,12 @@ sys.path.insert(0, ROOT)
 
 import numpy as np
 
-from dense_armor.utility.signals.datasets import DriftStream
-from dense_armor.utility.online.drift.adwin import ADWIN as OurADWIN
-from dense_armor.utility.online.anomaly.hst import HalfSpaceTrees as OurHST
-from dense_armor.utility.online.forest.arf import AdaptiveRandomForestClassifier as OurARF
-from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB as OurNB
-from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier as OurHT
+from dense_armor.core.online.anomaly.hst import HalfSpaceTrees as OurHST
+from dense_armor.core.online.drift.adwin import ADWIN as OurADWIN
+from dense_armor.core.online.forest.arf import AdaptiveRandomForestClassifier as OurARF
+from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB as OurNB
+from dense_armor.core.online.tree.hoeffding import HoeffdingTreeClassifier as OurHT
+from dense_armor.core.signals.datasets import DriftStream
 
 HAVE_REF = False
 if REF_NAME:

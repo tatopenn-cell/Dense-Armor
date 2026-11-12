@@ -1,7 +1,7 @@
 """Risk pipeline: how much can we lose today, and when to warn.
 
-Uses dense_armor.utility.signals.stats.quantiles to keep the tail without
-storing the history, and dense_armor.utility.online.drift to detect a slow
+Uses dense_armor.core.signals.stats.quantiles to keep the tail without
+storing the history, and dense_armor.core.online.drift to detect a slow
 change in volatility.
 
 Cliente: risk manager, fund, bank.
@@ -9,8 +9,8 @@ Cliente: risk manager, fund, bank.
 
 from dataclasses import dataclass
 
-from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
-from dense_armor.utility.signals.stats.quantiles import DDSketch
+from dense_armor.core.online.drift.detector import CUSUMDriftDetector
+from dense_armor.core.signals.stats.quantiles import DDSketch
 
 
 @dataclass

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Unit tests for dense_armor/utility/streaming_arbiter.py.
+"""Unit tests for dense_armor/core/streaming_arbiter.py.
 
 The streaming arbiter decides with a bounded delay: each sample gets a
 provisional label at once and a final label after at most ``max_delay``
@@ -18,13 +18,17 @@ wide correction window still extends ``radius * ref_mult`` past the last
 index of the run.
 """
 import doctest
+
 import numpy as np
 import pytest
 
-import dense_armor.utility.online.protect.streaming_arbiter as streaming_arbiter
-from dense_armor.utility.online.protect.arbiter import classify_segments, route_and_correct
-from dense_armor.utility.online.protect.healing import healing_filter
-from dense_armor.utility.online.protect.streaming_arbiter import StreamingArbiter, StreamingHealing
+import dense_armor.core.online.protect.streaming_arbiter as streaming_arbiter
+from dense_armor.core.online.protect.arbiter import classify_segments, route_and_correct
+from dense_armor.core.online.protect.healing import healing_filter
+from dense_armor.core.online.protect.streaming_arbiter import (
+    StreamingArbiter,
+    StreamingHealing,
+)
 
 
 def _seeded_spike_signal(seed=0, n=400):

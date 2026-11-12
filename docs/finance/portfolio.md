@@ -8,7 +8,7 @@ The answer is a shrunk covariance: a weighted average of the sample covariance a
 
 ```python
 import numpy as np
-from dense_armor.utility.signals.stats.shrinkage import OnlineShrinkageCovariance
+from dense_armor.core.signals.stats.shrinkage import OnlineShrinkageCovariance
 
 rng = np.random.default_rng(0)
 x = rng.normal(size=(500, 4))

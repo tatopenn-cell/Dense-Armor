@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 from scipy.signal import lfilter
 
-from dense_armor.utility.audio import (
+from dense_armor.core.audio import (
     YIN,
     AllPole,
     Audio,
@@ -211,5 +211,5 @@ def test_rational_ratio_page_3():
 
 @pytest.mark.parametrize("name", ["pitch", "allpole", "resample"])
 def test_doctests(name):
-    mod = importlib.import_module(f"dense_armor.utility.audio.{name}")
+    mod = importlib.import_module(f"dense_armor.core.audio.{name}")
     assert doctest.testmod(mod, extraglobs={"np": np}).failed == 0

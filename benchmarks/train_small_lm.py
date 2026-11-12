@@ -66,18 +66,18 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from dense_armor.roles import Root  # noqa: E402
-from dense_armor.utility.deep.neural.attention import (
+from dense_armor.core.deep.neural.attention import (
     MultiHeadSelfAttention,  # noqa: E402
 )
-from dense_armor.utility.deep.neural.generate import generate  # noqa: E402
-from dense_armor.utility.deep.neural.glu import GLUFeedForward  # noqa: E402
-from dense_armor.utility.deep.neural.layers import Dense, Embedding  # noqa: E402
-from dense_armor.utility.deep.neural.losses_lm import NextTokenLoss  # noqa: E402
-from dense_armor.utility.deep.neural.norm_rms import RMSNorm  # noqa: E402
-from dense_armor.utility.deep.neural.trainer import Trainer  # noqa: E402
-from dense_armor.utility.online.optim.adam import Adam  # noqa: E402
-from dense_armor.utility.signals.stats.stable import stable_var  # noqa: E402
+from dense_armor.core.deep.neural.generate import generate  # noqa: E402
+from dense_armor.core.deep.neural.glu import GLUFeedForward  # noqa: E402
+from dense_armor.core.deep.neural.layers import Dense, Embedding  # noqa: E402
+from dense_armor.core.deep.neural.losses_lm import NextTokenLoss  # noqa: E402
+from dense_armor.core.deep.neural.norm_rms import RMSNorm  # noqa: E402
+from dense_armor.core.deep.neural.trainer import Trainer  # noqa: E402
+from dense_armor.core.online.optim.adam import Adam  # noqa: E402
+from dense_armor.core.signals.stats.stable import stable_var  # noqa: E402
+from dense_armor.roles import Root  # noqa: E402
 
 SEED = 0
 N_SESSIONS = 3

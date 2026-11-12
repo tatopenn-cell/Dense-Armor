@@ -17,7 +17,7 @@ A small model, the identity times two, and a 4×200 batch of sine waves with one
 
 ```python
 import numpy as np
-from dense_armor.utility.online.protect.orca import Orca
+from dense_armor.core.online.protect.orca import Orca
 
 rng = np.random.default_rng(0)
 ref = np.sin(np.linspace(0, 6, 200))[None, :] + 0.01 * rng.standard_normal((4, 200))
@@ -78,7 +78,7 @@ point by point, which of the two Stage-1 behaviours to use.
 
 ```python
 import numpy as np
-from dense_armor.utility.online.protect.orca import Orca
+from dense_armor.core.online.protect.orca import Orca
 
 rng = np.random.default_rng(0)
 ref = np.sin(np.linspace(0, 6, 200))[None, :] + 0.01 * rng.standard_normal((4, 200))
@@ -99,7 +99,7 @@ that shape (here `(200,)`), counted only when `use_arbiter=True` and `x_referenc
 
 ## API reference
 
-::: dense_armor.utility.online.protect.orca
+::: dense_armor.core.online.protect.orca
 
 ---
 

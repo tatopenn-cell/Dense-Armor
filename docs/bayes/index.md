@@ -47,7 +47,7 @@ In words: the count of feature `f` in class `c`, plus one, divided by the total 
 Four documents, two features each. The first two are class `X`, the last two class `Y`:
 
 ```python
-from dense_armor.utility.online.bayes import MultinomialNB
+from dense_armor.core.online.bayes import MultinomialNB
 
 docs = [
     ({"a": 2, "b": 1, "c": 0}, "X"),

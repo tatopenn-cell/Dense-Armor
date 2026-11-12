@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from dense_armor.utility.online.bandit import UCB1, EpsilonGreedy, UCB1Tuned
+from dense_armor.core.online.bandit import UCB1, EpsilonGreedy, UCB1Tuned
 
 
 def test_ucb1_plays_every_arm_once():

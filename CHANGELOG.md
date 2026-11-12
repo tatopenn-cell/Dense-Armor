@@ -4,6 +4,16 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- The names of two folders are swapped. The library (the online learning, the deep learning, the signals, the
+  robot, the evaluation, the infrastructure, the finance and the audio section) is now `dense_armor.core`; the
+  shielding engine (`engine`, `hybrid_engine`, `damping_operator`, `memory`, `noise`, `preset`) is now
+  `dense_armor.utility`. Before, they were the other way round. Every old path still resolves to the same
+  module object through `dense_armor/_compat.py`: the flat ones (`dense_armor.utility.bandit.ucb`), the paths of
+  the last release (`dense_armor.utility.online.bandit.ucb`) and the engine modules under the old name
+  (`dense_armor.core.engine`). The only import that changes meaning is the package itself: `from
+  dense_armor.utility import X` and `from dense_armor.core import X` now give the names of the other package.
+
 ## [1.5.0] - 2026-11-07
 
 ### Changed

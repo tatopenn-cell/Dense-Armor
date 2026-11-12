@@ -7,7 +7,7 @@ A trader who has to sell a large block of shares does not send one order: the or
 The simplest schedule splits the parent order into `n` equal slices. If the parent order is 3 shares over 3 buckets, each bucket gets 1 share.
 
 ~~~python
-from dense_armor.utility.finance import twap_schedule
+from dense_armor.core.finance import twap_schedule
 
 print(repr(twap_schedule(3.0, 3)))
 ~~~
@@ -23,7 +23,7 @@ The function returns a float64 array whose sum is the parent order (the last sli
 Markets do not trade at constant volume: the open and the close are busier than the middle of the session. The **VWAP** schedule weights each bucket by the volume the market traded in that bucket in the past sessions, and it uses the **harmonic mean** of those volumes, not the arithmetic mean.
 
 ~~~python
-from dense_armor.utility.finance import vwap_schedule
+from dense_armor.core.finance import vwap_schedule
 
 h = [[1.0, 2.0], [4.0, 2.0]]
 print([round(float(x), 4) for x in vwap_schedule(3.6, h)])
@@ -43,7 +43,7 @@ The fixture `test/fixtures/finance/coinbase_btcusd_trades.csv` has 1,000 BTC/USD
 import numpy as np
 from datetime import datetime
 from pathlib import Path
-from dense_armor.utility.finance import twap_schedule, vwap_schedule
+from dense_armor.core.finance import twap_schedule, vwap_schedule
 
 rows = Path("test/fixtures/finance/coinbase_btcusd_trades.csv").read_text().splitlines()
 head = rows[0].split(",")

@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.online.anomaly.hst import HalfSpaceTrees
+from dense_armor.core.online.anomaly.hst import HalfSpaceTrees
 
 
 def test_hst_shapes():

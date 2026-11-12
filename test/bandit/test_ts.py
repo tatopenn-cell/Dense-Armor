@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from dense_armor.utility.online.bandit import ThompsonSampling
+from dense_armor.core.online.bandit import ThompsonSampling
 
 
 def test_ts_bernoulli_finds_best_arm():

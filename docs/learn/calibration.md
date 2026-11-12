@@ -77,9 +77,9 @@ calibration is supposed to do.
 
 ```python
 import numpy as np
-from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB
-from dense_armor.utility.online.learn.calibration import OnlinePlattScaling
-from dense_armor.utility.evaluation.metrics import LogLoss
+from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB
+from dense_armor.core.online.learn.calibration import OnlinePlattScaling
+from dense_armor.core.evaluation.metrics import LogLoss
 
 rng = np.random.default_rng(0)
 base = OnlineGaussianNB()
@@ -116,7 +116,7 @@ passes the `check_estimator` of an existing online-learning library.
 
 ## API reference
 
-::: dense_armor.utility.online.learn.calibration
+::: dense_armor.core.online.learn.calibration
 
 ---
 

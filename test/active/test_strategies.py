@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from dense_armor.utility.online.active import (
+from dense_armor.core.online.active import (
     FixedUncertainty,
     RandomStrategy,
     VariableRandomizedUncertainty,

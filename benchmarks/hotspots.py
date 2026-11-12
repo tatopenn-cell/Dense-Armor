@@ -39,7 +39,7 @@ def _profile(label, run, top=10):
 
 
 def _harf(n, seed=0):
-    from dense_armor.utility.online.forest.arf import AdaptiveRandomForestClassifier
+    from dense_armor.core.online.forest.arf import AdaptiveRandomForestClassifier
     rng = np.random.default_rng(seed)
     m = AdaptiveRandomForestClassifier(n_models=5, seed=seed)
     for i in range(n):
@@ -50,7 +50,7 @@ def _harf(n, seed=0):
 
 
 def _hmon(n, seed=0):
-    from dense_armor.utility.online.tree.mondrian import MondrianForestRegressor
+    from dense_armor.core.online.tree.mondrian import MondrianForestRegressor
     rng = np.random.default_rng(seed)
     m = MondrianForestRegressor(n_trees=5, seed=seed)
     for i in range(n):
@@ -61,7 +61,7 @@ def _hmon(n, seed=0):
 
 
 def _hfimt(n, seed=0):
-    from dense_armor.utility.online.tree.fimt import FIMTDDRegressor
+    from dense_armor.core.online.tree.fimt import FIMTDDRegressor
     rng = np.random.default_rng(seed)
     m = FIMTDDRegressor()
     for i in range(n):
@@ -75,7 +75,7 @@ def _hfimt(n, seed=0):
 
 
 def _hgm(n_frames, seed=0):
-    from dense_armor.utility.signals.vision.motion import GlobalMotion
+    from dense_armor.core.signals.vision.motion import GlobalMotion
     rng = np.random.default_rng(seed)
     m = GlobalMotion()
     for i in range(n_frames):
@@ -85,7 +85,7 @@ def _hgm(n_frames, seed=0):
 
 
 def _hdf(n_frames, seed=0):
-    from dense_armor.utility.signals.vision.dense import DenseFlow
+    from dense_armor.core.signals.vision.dense import DenseFlow
     rng = np.random.default_rng(seed)
     m = DenseFlow(alpha=1.0, n_iter=10)
     for i in range(n_frames):

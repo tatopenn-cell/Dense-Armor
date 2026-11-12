@@ -9,11 +9,11 @@ import jax
 import numpy as np
 import pytest
 
-from dense_armor.utility.deep.neural.background import BackgroundLearner
-from dense_armor.utility.deep.neural.losses import MSE
-from dense_armor.utility.deep.neural.models import mlp
-from dense_armor.utility.deep.neural.online import OnlineNetRegressor
-from dense_armor.utility.online.optim import SGD
+from dense_armor.core.deep.neural.background import BackgroundLearner
+from dense_armor.core.deep.neural.losses import MSE
+from dense_armor.core.deep.neural.models import mlp
+from dense_armor.core.deep.neural.online import OnlineNetRegressor
+from dense_armor.core.online.optim import SGD
 
 
 class SlowRegressor:
@@ -276,7 +276,7 @@ def test_learn_one_queue_empty_race(monkeypatch):
 
 def test_learn_one_keeps_non_sample_when_full(monkeypatch):
     """Full and the oldest item is not a sample: put it back, drop the sample."""
-    from dense_armor.utility.deep.neural.background import _Flush
+    from dense_armor.core.deep.neural.background import _Flush
 
     b = BackgroundLearner(SlowRegressor(), maxsize=2)
     b._queue.put_nowait(_Flush())

@@ -3,7 +3,7 @@
 import jax.numpy as jnp
 import numpy as np
 
-from dense_armor.utility.deep.neural.generative_replay import DeepGenerativeReplay
+from dense_armor.core.deep.neural.generative_replay import DeepGenerativeReplay
 
 
 def _blob_a(n: int = 100, seed: int = 0):

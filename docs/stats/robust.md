@@ -34,7 +34,7 @@ median, the rolling MAD and the rolling IQR do not move.
 answers with their median.
 
 ```python
-from dense_armor.utility.signals.stats.robust import RollingMedian
+from dense_armor.core.signals.stats.robust import RollingMedian
 
 m = RollingMedian(window=5)
 for v in [3.0, 1.0, 4.0, 1.0, 5.0, 9.0, 2.0]:
@@ -57,7 +57,7 @@ and the queue is full, the oldest sample is dropped and the new one is
 added.
 
 ```python
-from dense_armor.utility.signals.stats.robust import RollingMedian
+from dense_armor.core.signals.stats.robust import RollingMedian
 
 m = RollingMedian(window=5)
 for v in [3.0, 1.0, 4.0, 1.0, 5.0, 9.0, 2.0]:
@@ -75,7 +75,7 @@ The output is `20.0`. The window went from `[10, 20, 30]` to
 The window can also be given in **seconds**, using the timestamps:
 
 ```python
-from dense_armor.utility.signals.stats.robust import RollingMedian
+from dense_armor.core.signals.stats.robust import RollingMedian
 
 m = RollingMedian(window=5)
 for v in [3.0, 1.0, 4.0, 1.0, 5.0, 9.0, 2.0]:
@@ -152,7 +152,7 @@ Hampel (1974). If you want the raw MAD without the scaling, pass
 `scale=1.0`:
 
 ```python
-from dense_armor.utility.signals.stats.robust import RollingMAD
+from dense_armor.core.signals.stats.robust import RollingMAD
 
 m = RollingMAD(window=5, scale=1.0)
 for v in [1.0, 2.0, 3.0, 4.0, 5.0]:
@@ -170,7 +170,7 @@ Sorted: `[0, 1, 1, 2, 2]`. The median of those is `1`. The default
 `RollingMAD` multiplies by `1.4826`:
 
 ```python
-from dense_armor.utility.signals.stats.robust import RollingMAD
+from dense_armor.core.signals.stats.robust import RollingMAD
 
 m = RollingMAD(window=5)
 for v in [1.0, 2.0, 3.0, 4.0, 5.0]:
@@ -197,7 +197,7 @@ constant gives a scale comparable to `σ`. The module provides the raw
 IQR by default and the sigma-equivalent scale on request:
 
 ```python
-from dense_armor.utility.signals.stats.robust import IQR_SCALE, RollingIQR
+from dense_armor.core.signals.stats.robust import IQR_SCALE, RollingIQR
 
 m = RollingIQR(window=5, scale=IQR_SCALE)
 for v in [1.0, 2.0, 3.0, 4.0, 5.0]:
@@ -228,7 +228,7 @@ service-level agreement usually refers to ("99% of requests under
 same linear interpolation as `numpy.percentile`.
 
 ```python
-from dense_armor.utility.signals.stats.robust import RollingQuantile
+from dense_armor.core.signals.stats.robust import RollingQuantile
 
 m = RollingQuantile(q=0.9, window=5)
 for v in [1.0, 2.0, 3.0, 4.0, 5.0]:
@@ -250,7 +250,7 @@ A robot has many joints. `RollingMedianVector` keeps one rolling median
 per channel and updates all of them from a single dict.
 
 ```python
-from dense_armor.utility.signals.stats.robust import RollingMedianVector
+from dense_armor.core.signals.stats.robust import RollingMedianVector
 
 v = RollingMedianVector(window=3)
 for q in ([0.1, 0.2], [0.12, 0.18], [0.11, 0.21], [0.09, 0.19]):
@@ -271,9 +271,9 @@ right filter when the stream contains occasional spikes that must be
 ignored but not removed.
 
 ```python
-from dense_armor.utility.online.learn.online_dynamics import write_minimal_urdf
+from dense_armor.core.online.learn.online_dynamics import write_minimal_urdf
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.utility.signals.stats.robust import RollingMedianVector
+from dense_armor.core.signals.stats.robust import RollingMedianVector
 
 model = RigidBodyModel(write_minimal_urdf())
 import numpy as np
@@ -300,7 +300,7 @@ Every rolling robust statistic also carries the number of samples seen
 and the number of `NaN` samples skipped:
 
 ```python
-from dense_armor.utility.signals.stats.robust import RollingMedian
+from dense_armor.core.signals.stats.robust import RollingMedian
 
 m = RollingMedian(window=5)
 for v in [3.0, 1.0, 4.0, 1.0, 5.0, 9.0, 2.0]:

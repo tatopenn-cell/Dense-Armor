@@ -1,4 +1,4 @@
-"""Unit tests for dense_armor/utility/streaming_filters.py.
+"""Unit tests for dense_armor/core/streaming_filters.py.
 
 The scorers are causal: they see only the `2 * radius` samples strictly
 preceding the value being scored. The reference is the batch formula from
@@ -13,8 +13,8 @@ import math
 import numpy as np
 import pytest
 
-import dense_armor.utility.online.anomaly.filters as streaming_filters  # noqa: E402
-from dense_armor.utility.online.anomaly.filters import (  # noqa: E402
+import dense_armor.core.online.anomaly.filters as streaming_filters  # noqa: E402
+from dense_armor.core.online.anomaly.filters import (  # noqa: E402
     ChauvenetScorer,
     HampelFilter,
     HampelScorer,
@@ -311,7 +311,7 @@ def test_flat_window_scores(cls):
 
 
 def test_sigma_clip_stats_edge_cases():
-    from dense_armor.utility.online.anomaly.filters import _clean_stats
+    from dense_armor.core.online.anomaly.filters import _clean_stats
 
     assert _clean_stats(np.array([1.0, 1.0, 1.0, 1.0]), 3.0) == (1.0, 0.0)
     mu, sigma = _clean_stats(np.array([0.0, 0.0, 0.0, 100.0]), 0.5)
@@ -327,7 +327,7 @@ def test_chauvenet_skip_is_honored():
     """
     from dense_armor.checks import check_estimator
     from dense_armor.checks.check_estimator import check_roc_auc
-    from dense_armor.utility.online.anomaly.filters import ChauvenetScorer
+    from dense_armor.core.online.anomaly.filters import ChauvenetScorer
 
     est = ChauvenetScorer()
     assert "check_roc_auc" in est._unit_test_skips()
@@ -341,8 +341,8 @@ def test_chauvenet_skip_is_honored():
 
 
 def test_anomaly_gate_refuses_chauvenet_scorer():
+    from dense_armor.core.online.anomaly.filters import ChauvenetScorer
     from dense_armor.roles import AnomalyGate
-    from dense_armor.utility.online.anomaly.filters import ChauvenetScorer
 
     assert ChauvenetScorer.score_is_inverted is True
     with pytest.raises(ValueError, match="score_one inverted"):
@@ -350,9 +350,9 @@ def test_anomaly_gate_refuses_chauvenet_scorer():
 
 
 def test_protected_refuses_chauvenet_scorer():
+    from dense_armor.core.online.anomaly.filters import ChauvenetScorer
     from dense_armor.roles import Protected
     from dense_armor.roles.regressor import Regressor
-    from dense_armor.utility.online.anomaly.filters import ChauvenetScorer
 
     class _M(Regressor):
         def learn_one(self, x, y, t=None):

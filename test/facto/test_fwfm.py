@@ -6,9 +6,9 @@ import numpy as np
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.online.facto import FwFMClassifier, FwFMRegressor
-from dense_armor.utility.online.facto import fwfm as fwfm_module
-from dense_armor.utility.online.optim import SGD
+from dense_armor.core.online.facto import FwFMClassifier, FwFMRegressor
+from dense_armor.core.online.facto import fwfm as fwfm_module
+from dense_armor.core.online.optim import SGD
 
 FIELDS = {"a": "F1", "b": "F1", "c": "F2", "d": "F2"}
 

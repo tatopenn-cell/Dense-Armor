@@ -14,7 +14,7 @@ The model begins with a default rule that covers every sample. Each new sample u
 
 ```python
 import numpy as np
-from dense_armor.utility.online.rules import AMRulesRegressor
+from dense_armor.core.online.rules import AMRulesRegressor
 
 rng = np.random.default_rng(0)
 m = AMRulesRegressor(n_min=100, seed=0)

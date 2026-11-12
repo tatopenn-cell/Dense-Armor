@@ -65,7 +65,7 @@ needs many cuts has large `E(D)` and score close to 0.
 
 ```python
 import numpy as np
-from dense_armor.utility.online.anomaly.oiforest import OnlineIsolationForest
+from dense_armor.core.online.anomaly.oiforest import OnlineIsolationForest
 
 rng = np.random.default_rng(0)
 det = OnlineIsolationForest(n_trees=8, window=512, max_leaf_samples=8, seed=0)
@@ -96,7 +96,7 @@ The same detector on a market stream. Each day has two numbers: the return in pe
 
 ```python
 import numpy as np
-from dense_armor.utility.online.anomaly.oiforest import OnlineIsolationForest
+from dense_armor.core.online.anomaly.oiforest import OnlineIsolationForest
 
 rng = np.random.default_rng(0)
 
@@ -130,8 +130,8 @@ t = 2 s) shifts the residual on joints 1-5 by tens of N·m; the healthy run stay
 
 ```python
 from pathlib import Path
-from dense_armor.utility.online.anomaly.oiforest import OnlineIsolationForest
-from dense_armor.utility.signals.datasets import SyntheticArm
+from dense_armor.core.online.anomaly.oiforest import OnlineIsolationForest
+from dense_armor.core.signals.datasets import SyntheticArm
 
 ds = SyntheticArm(
     Path("test/fixtures/urdf/panda.urdf"),

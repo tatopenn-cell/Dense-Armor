@@ -53,7 +53,7 @@ coefficient of a first-order autoregression from a stream:
 
 ```python
 import numpy as np
-from dense_armor.utility.online.timeseries import OnlineAR
+from dense_armor.core.online.timeseries import OnlineAR
 
 rng = np.random.default_rng(0)
 x = 0.0
@@ -84,8 +84,8 @@ every new sample sits from the template:
 
 ```python
 from pathlib import Path
-from dense_armor.utility.signals.datasets import SyntheticArm
-from dense_armor.utility.online.timeseries import CycleResidual
+from dense_armor.core.signals.datasets import SyntheticArm
+from dense_armor.core.online.timeseries import CycleResidual
 
 ds = SyntheticArm(
     Path("test/fixtures/urdf/panda.urdf"),

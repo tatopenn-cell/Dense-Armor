@@ -21,10 +21,10 @@ per second:
 import time
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.deep.neural.trainer import Trainer
-from dense_armor.utility.deep.neural.models import mlp
-from dense_armor.utility.deep.neural.losses import MSE
-from dense_armor.utility.online.optim import SGD
+from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.deep.neural.models import mlp
+from dense_armor.core.deep.neural.losses import MSE
+from dense_armor.core.online.optim import SGD
 
 m = mlp([512, 512, 512, 512, 512], jax.random.PRNGKey(0))
 X = jax.random.normal(jax.random.PRNGKey(1), (256, 512))
@@ -60,10 +60,10 @@ with `compile=True`:
 ```python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.deep.neural.trainer import Trainer
-from dense_armor.utility.deep.neural.models import mlp
-from dense_armor.utility.deep.neural.losses import MSE
-from dense_armor.utility.online.optim import SGD
+from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.deep.neural.models import mlp
+from dense_armor.core.deep.neural.losses import MSE
+from dense_armor.core.online.optim import SGD
 
 m = mlp([512, 512, 512, 512, 512], jax.random.PRNGKey(0))
 X = jax.random.normal(jax.random.PRNGKey(1), (256, 512))
@@ -83,10 +83,10 @@ compilation, the step is one call:
 import time
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.deep.neural.trainer import Trainer
-from dense_armor.utility.deep.neural.models import mlp
-from dense_armor.utility.deep.neural.losses import MSE
-from dense_armor.utility.online.optim import SGD
+from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.deep.neural.models import mlp
+from dense_armor.core.deep.neural.losses import MSE
+from dense_armor.core.online.optim import SGD
 
 m = mlp([512, 512, 512, 512, 512], jax.random.PRNGKey(0))
 X = jax.random.normal(jax.random.PRNGKey(1), (256, 512))
@@ -118,10 +118,10 @@ the same data and the same seed:
 ```python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.deep.neural.trainer import Trainer
-from dense_armor.utility.deep.neural.models import mlp
-from dense_armor.utility.deep.neural.losses import MSE
-from dense_armor.utility.online.optim import SGD
+from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.deep.neural.models import mlp
+from dense_armor.core.deep.neural.losses import MSE
+from dense_armor.core.online.optim import SGD
 
 X = jax.random.normal(jax.random.PRNGKey(1), (256, 512))
 y = jax.random.normal(jax.random.PRNGKey(2), (256, 512))
@@ -213,7 +213,7 @@ The transformer is run on the GPU only.
 
 The formulas of the optimisers (SGD with momentum and Nesterov,
 Adam, RMSProp, AdaGrad) are the ones of their object forms in
-`dense_armor.utility.online.optim`, which cite the original papers. The
+`dense_armor.core.online.optim`, which cite the original papers. The
 weight decay is Algorithm 1 line 9 and Algorithm 2 line 12 of
 Loshchilov and Hutter 2019 (the decoupled term is eta_t times
 lambda times theta_t_minus_1, with eta_t the schedule multiplier).

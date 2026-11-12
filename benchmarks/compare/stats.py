@@ -6,21 +6,21 @@ import common
 import numpy as np
 from common import feed
 
-from dense_armor.ml import stats as ml
-from dense_armor.utility.signals.stats.dependence import (
+from dense_armor.core.signals.stats.dependence import (
     Autocorrelation,
     RollingCorrelation,
     RollingCovariance,
     RunningCorrelation,
     RunningCovariance,
 )
-from dense_armor.utility.signals.stats.moments import (
+from dense_armor.core.signals.stats.moments import (
     EWStats,
     RunningMoments,
     RunningMomentsVector,
 )
-from dense_armor.utility.signals.stats.robust import RollingMedianVector
-from dense_armor.utility.signals.stats.shrinkage import OnlineShrinkageCovariance
+from dense_armor.core.signals.stats.robust import RollingMedianVector
+from dense_armor.core.signals.stats.shrinkage import OnlineShrinkageCovariance
+from dense_armor.ml import stats as ml
 
 
 def _xy(seed, n=300):

@@ -2,8 +2,8 @@
 
 import numpy as np
 
-from dense_armor.utility.online.ensemble import OnlineBoostingClassifier
-from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
+from dense_armor.core.online.ensemble import OnlineBoostingClassifier
+from dense_armor.core.online.tree.hoeffding import HoeffdingTreeClassifier
 
 
 def _tree():

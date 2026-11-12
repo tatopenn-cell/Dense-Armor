@@ -14,7 +14,7 @@ The derivation is in the docstring of :meth:`min_variance_weights` and
 is tested against a direct numerical minimisation.
 
 The covariance is the one of :class:`OnlineShrinkageCovariance`
-(:mod:`dense_armor.utility.signals.stats.shrinkage`, Bodnar, Gupta and Parolya
+(:mod:`dense_armor.core.signals.stats.shrinkage`, Bodnar, Gupta and Parolya
 2014, arXiv:1308.2608, equation 4.2 page 12), whose intensities are
 computed from the running moments. The inverse-volatility weights
 ``w_i proportional to 1 / sigma_i`` are this implementation's choice:
@@ -29,7 +29,7 @@ from pathlib import Path
 
 import numpy as np
 
-from dense_armor.utility.signals.stats.shrinkage import OnlineShrinkageCovariance
+from dense_armor.core.signals.stats.shrinkage import OnlineShrinkageCovariance
 
 _YAHOO_HEADER_ROWS = 3
 TICKERS = ("AAPL", "GSPC", "MSFT", "TSLA")

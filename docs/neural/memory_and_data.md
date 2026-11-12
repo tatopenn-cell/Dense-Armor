@@ -11,7 +11,7 @@ The next block serves six samples in batches of four, then serves them again thr
 ```python
 import jax
 import numpy as np
-from dense_armor.utility.deep.neural.stream import DataStream
+from dense_armor.core.deep.neural.stream import DataStream
 
 X = np.arange(12, dtype=np.float32).reshape(6, 2)
 y = np.arange(6)
@@ -33,11 +33,11 @@ import tempfile
 from pathlib import Path
 import jax
 import numpy as np
-from dense_armor.utility.deep.neural.models import mlp
-from dense_armor.utility.deep.neural.losses import MSE
-from dense_armor.utility.deep.neural.stream import DataStream
-from dense_armor.utility.deep.neural.trainer import Trainer
-from dense_armor.utility.online.optim import SGD
+from dense_armor.core.deep.neural.models import mlp
+from dense_armor.core.deep.neural.losses import MSE
+from dense_armor.core.deep.neural.stream import DataStream
+from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.online.optim import SGD
 
 rng = np.random.default_rng(0)
 X = rng.normal(size=(64, 2)).astype(np.float32)
@@ -64,10 +64,10 @@ The next block trains the same network with a batch of 32 and with four accumula
 ```python
 import jax
 import numpy as np
-from dense_armor.utility.deep.neural.models import mlp
-from dense_armor.utility.deep.neural.losses import MSE
-from dense_armor.utility.deep.neural.trainer import Trainer
-from dense_armor.utility.online.optim import SGD
+from dense_armor.core.deep.neural.models import mlp
+from dense_armor.core.deep.neural.losses import MSE
+from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.online.optim import SGD
 
 rng = np.random.default_rng(0)
 X = rng.normal(size=(64, 2)).astype(np.float32)
@@ -98,7 +98,7 @@ The next block runs one block with and without `remat`, on the same weights, for
 ```python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.deep.neural.attention import TransformerBlock
+from dense_armor.core.deep.neural.attention import TransformerBlock
 
 k = jax.random.PRNGKey(0)
 x = jax.random.normal(jax.random.PRNGKey(1), (5, 8))

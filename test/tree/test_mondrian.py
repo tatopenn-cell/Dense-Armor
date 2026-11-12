@@ -1,7 +1,7 @@
 import numpy as np
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.online.tree.mondrian import (
+from dense_armor.core.online.tree.mondrian import (
     MondrianForestClassifier,
     MondrianForestRegressor,
 )
@@ -117,7 +117,7 @@ def test_mondrian_extension_inserts_parent_with_cut_in_extension():
 
 
 def test_mondrian_branch_probability_uses_time_difference():
-    from dense_armor.utility.online.tree.mondrian import _MNode
+    from dense_armor.core.online.tree.mondrian import _MNode
 
     f = MondrianForestRegressor(n_trees=1, seed=0)
     f.learn_one({"a": 0.0}, y=0.0)

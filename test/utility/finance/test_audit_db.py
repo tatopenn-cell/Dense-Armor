@@ -11,8 +11,8 @@ from pathlib import Path
 
 import pytest
 
-from dense_armor.utility.finance.audit_db import AuditDB, metadata
-from dense_armor.utility.finance.decision_log import DecisionLog
+from dense_armor.core.finance.audit_db import AuditDB, metadata
+from dense_armor.core.finance.decision_log import DecisionLog
 
 pytestmark = pytest.mark.needs_postgres
 
@@ -224,7 +224,7 @@ def test_9_continues_chain(pg_url):
 
 def test_10_refused_input_also_on_audit_db(pg_url):
     """The _is_finite_number branch: bool, string, huge int."""
-    from dense_armor.utility.finance.audit_db import _is_finite_number
+    from dense_armor.core.finance.audit_db import _is_finite_number
 
     assert _is_finite_number(True) is False
     assert _is_finite_number("1.0") is False

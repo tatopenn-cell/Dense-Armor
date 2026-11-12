@@ -2,15 +2,15 @@ import random
 
 import pytest
 
+from dense_armor.core.evaluation.evaluate import progressive_val_score
+from dense_armor.core.evaluation.metrics import Recall
+from dense_armor.core.signals.preprocessing.imbalance import QueueResampler
 from dense_armor.roles import Classifier
-from dense_armor.utility.evaluation.evaluate import progressive_val_score
-from dense_armor.utility.evaluation.metrics import Recall
-from dense_armor.utility.signals.preprocessing.imbalance import QueueResampler
 
 
 def _make_classifier():
     module = pytest.importorskip(
-        "dense_armor.utility.online.learn.online_classifiers"
+        "dense_armor.core.online.learn.online_classifiers"
     )
     for name in ("OnlineGaussianNB", "OnlineSoftmaxRegression"):
         cls = getattr(module, name, None)

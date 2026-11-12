@@ -7,7 +7,7 @@ import sys
 def test_package_import_does_not_pull_sqlalchemy():
     code = (
         "import sys\n"
-        "import dense_armor.utility.finance\n"
+        "import dense_armor.core.finance\n"
         "assert 'sqlalchemy' not in sys.modules, 'sqlalchemy imported'\n"
         "print('OK')\n"
     )

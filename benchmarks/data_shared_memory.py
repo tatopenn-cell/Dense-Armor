@@ -12,7 +12,7 @@ import numpy as np
 import psutil
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from dense_armor.utility.infrastructure.data import SharedList, SharedStrings
+from dense_armor.core.infrastructure.data import SharedList, SharedStrings
 
 _handle = None
 

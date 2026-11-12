@@ -16,7 +16,7 @@ relative paths.
 import tempfile
 import textwrap
 from pathlib import Path
-from dense_armor.utility.finance.config import load_config
+from dense_armor.core.finance.config import load_config
 
 TOML = """
 [schedule]
@@ -78,7 +78,7 @@ not cache: two calls return two independent objects.
 import tempfile
 import textwrap
 from pathlib import Path
-from dense_armor.utility.finance.config import load_config
+from dense_armor.core.finance.config import load_config
 
 TOML = """
 [schedule]
@@ -129,7 +129,7 @@ message names the table.
 import tempfile
 import textwrap
 from pathlib import Path
-from dense_armor.utility.finance.config import load_config
+from dense_armor.core.finance.config import load_config
 
 BAD = """
 [schedule]

@@ -4,6 +4,7 @@ import doctest
 import pytest
 
 import dense_armor.roles.safety as safety_mod
+from dense_armor.core.signals.stats.moments import RunningMoments
 from dense_armor.roles import Regressor
 from dense_armor.roles.safety import (
     CHECKPOINT_VERSION,
@@ -11,7 +12,6 @@ from dense_armor.roles.safety import (
     HealthMonitor,
     SafeEstimator,
 )
-from dense_armor.utility.signals.stats.moments import RunningMoments
 
 
 class _LastValue(Regressor):

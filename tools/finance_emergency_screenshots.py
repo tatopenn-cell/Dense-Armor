@@ -14,10 +14,9 @@ if str(ROOT) not in sys.path:
 
 
 def main() -> int:
+    from dashboard.app import create_app
     from playwright.sync_api import sync_playwright
     from werkzeug.serving import make_server
-
-    from dashboard.app import create_app
 
     OUT.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as d:

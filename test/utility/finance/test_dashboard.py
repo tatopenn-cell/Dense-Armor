@@ -7,9 +7,9 @@ from pathlib import Path
 from xml.etree import ElementTree
 
 import pytest
-
 from dashboard.app import create_app, main
-from dense_armor.utility.finance.decision_log import DecisionLog
+
+from dense_armor.core.finance.decision_log import DecisionLog
 
 
 @pytest.fixture(autouse=True)

@@ -99,7 +99,7 @@ The class of a sketch is the exact value the sketch approximates, and the class 
 
 ### Development diary
 
-The classes are new and independent of the online classes of dense_armor.utility.
+The classes are new and independent of the online classes of dense_armor.core.
 
 Classes without a form:
 - `StreamingDeviationScorer`: the reference defines the score on the window of the values learned before the one scored, or on statistics that move at each new value: the algorithm of the reference is written for one example or one window at a time

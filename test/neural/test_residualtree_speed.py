@@ -1,10 +1,10 @@
 """Structural tests for the ResidualTree speed fix."""
 
-import numpy as np
 import jax.numpy as jnp
+import numpy as np
 import pytest
 
-from dense_armor.utility.deep.neural.consolidation import (
+from dense_armor.core.deep.neural.consolidation import (
     ArchivalMemory,
     ResidualTree,
     VQMemory,

@@ -1,15 +1,17 @@
 import sys
 from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
+from dense_armor.core.online.linear.payload import PayloadEstimator
+from dense_armor.core.signals.datasets import SyntheticArm
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.utility.online.linear.payload import PayloadEstimator
-from dense_armor.utility.signals.datasets import SyntheticArm
 
 out = Path(__file__).parent
 URDF = Path("test/fixtures/urdf/panda.urdf")

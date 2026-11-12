@@ -18,12 +18,13 @@ processarlo come UNA istanza con N campioni correlati, e riportare
 output/margini alla forma 1D originale prima del return.
 """
 import jax
+
 jax.config.update("jax_enable_x64", True)
 
 import numpy as np
 import pytest
 
-from dense_armor.utility.online.protect.orca import Orca
+from dense_armor.core.online.protect.orca import Orca
 
 
 def _modello_lineare(x):

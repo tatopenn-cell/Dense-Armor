@@ -26,7 +26,7 @@ The x component of the gyro is a slow oscillation around 0.5 Hz (the trajectory)
 
 ```python
 import numpy as np
-from dense_armor.utility.signals.stats.sdft import SDFT
+from dense_armor.core.signals.stats.sdft import SDFT
 from pipelines.drones.io import synthetic_flight
 
 stream = list(synthetic_flight(n=2000, seed=0, fault="propeller"))

@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.signals.preprocessing.scale import (
+from dense_armor.core.signals.preprocessing.scale import (
     EWScaler,
     MinMaxScaler,
     RobustScaler,

@@ -14,7 +14,7 @@ Two states of an arm: idle (0) and carrying a load (1). The load raises the join
 
 ```python
 import numpy as np
-from dense_armor.utility.online.tree import HoeffdingTreeClassifier
+from dense_armor.core.online.tree import HoeffdingTreeClassifier
 
 rng = np.random.default_rng(0)
 ht = HoeffdingTreeClassifier(grace_period=100)
@@ -50,7 +50,7 @@ every `grace_period` samples and replaces its split when another one wins by the
 
 ```python
 import numpy as np
-from dense_armor.utility.online.tree import HoeffdingAnytimeTreeClassifier, HoeffdingTreeClassifier
+from dense_armor.core.online.tree import HoeffdingAnytimeTreeClassifier, HoeffdingTreeClassifier
 
 rng = np.random.default_rng(2)
 ht = HoeffdingTreeClassifier(grace_period=100)
@@ -83,9 +83,9 @@ accurate.
 
 ```python
 import numpy as np
-from dense_armor.utility.online.drift.adwin import ADWIN
-from dense_armor.utility.evaluation.metrics import Accuracy
-from dense_armor.utility.online.tree import HoeffdingAdaptiveTreeClassifier, HoeffdingTreeClassifier
+from dense_armor.core.online.drift.adwin import ADWIN
+from dense_armor.core.evaluation.metrics import Accuracy
+from dense_armor.core.online.tree import HoeffdingAdaptiveTreeClassifier, HoeffdingTreeClassifier
 
 rng = np.random.default_rng(1)
 ht = HoeffdingTreeClassifier(grace_period=100)
@@ -122,8 +122,8 @@ predicts the gravity torque of the first joint of a two-link arm from the two jo
 
 ```python
 import numpy as np
-from dense_armor.utility.evaluation.metrics import MeanAbsoluteError
-from dense_armor.utility.online.tree import SGTRegressor
+from dense_armor.core.evaluation.metrics import MeanAbsoluteError
+from dense_armor.core.online.tree import SGTRegressor
 
 rng = np.random.default_rng(3)
 sgt = SGTRegressor()
@@ -166,7 +166,7 @@ A forest of 10 random trees that also says how sure it is; trained on joint posi
 
 ```python
 import numpy as np
-from dense_armor.utility.online.tree import MondrianForestRegressor
+from dense_armor.core.online.tree import MondrianForestRegressor
 
 rng = np.random.default_rng(4)
 mf = MondrianForestRegressor(n_trees=10, seed=0)
@@ -227,11 +227,11 @@ change.
 
 ## API reference
 
-::: dense_armor.utility.online.tree.hoeffding
-::: dense_armor.utility.online.tree.efdt
-::: dense_armor.utility.online.tree.adaptive
-::: dense_armor.utility.online.tree.sgt
-::: dense_armor.utility.online.tree.mondrian
+::: dense_armor.core.online.tree.hoeffding
+::: dense_armor.core.online.tree.efdt
+::: dense_armor.core.online.tree.adaptive
+::: dense_armor.core.online.tree.sgt
+::: dense_armor.core.online.tree.mondrian
 
 ---
 

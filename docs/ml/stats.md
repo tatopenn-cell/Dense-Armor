@@ -172,7 +172,7 @@ The class of a sketch is the exact value the sketch approximates, and the class 
 
 ### Development diary
 
-The classes are new and independent of the online classes of dense_armor.utility.
+The classes are new and independent of the online classes of dense_armor.core.
 
 Classes without a form:
 - `DDSketch`: a sketch is the same for every order of the rows: its form on the whole table is the online class itself, and the exact quantile differs from the algorithm of Masson et al.

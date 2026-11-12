@@ -6,16 +6,17 @@ import pickle
 import sys
 from copy import deepcopy
 
+import jax
+import jax.numpy as jnp
 import numpy as np
 import pytest
 
-import jax
-import jax.numpy as jnp
-
-import dense_armor.utility.online.learn.online_dynamics as online_dynamics  # noqa: E402
-from dense_armor.utility.online.learn.online_dynamics import (  # noqa: E402
-    RecursiveLeastSquares, ResidualDynamicsLearner,
-    DriftAwareResidualDynamicsLearner, write_minimal_urdf,
+import dense_armor.core.online.learn.online_dynamics as online_dynamics  # noqa: E402
+from dense_armor.core.online.learn.online_dynamics import (  # noqa: E402
+    DriftAwareResidualDynamicsLearner,
+    RecursiveLeastSquares,
+    ResidualDynamicsLearner,
+    write_minimal_urdf,
 )
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel  # noqa: E402
 

@@ -23,7 +23,7 @@ at construction, not estimated.
 ## 1. The first estimator
 
 ```python
-from dense_armor.utility.signals.stats import StudentT
+from dense_armor.core.signals.stats import StudentT
 
 st = StudentT(nu=5.0, learning_rate=0.1)
 for v in [1.0, 2.0, 3.0, 4.0, 5.0]:
@@ -47,7 +47,7 @@ very heavy: an outlier is treated as a plausible draw from a wide
 distribution, and its effect on the location is small.
 
 ```python
-from dense_armor.utility.signals.stats import StudentT
+from dense_armor.core.signals.stats import StudentT
 
 for nu in (3.0, 30.0):
     st = StudentT(nu=nu, learning_rate=0.1)
@@ -74,7 +74,7 @@ high is anomalous, the same direction as every anomaly detector in the
 library.
 
 ```python
-from dense_armor.utility.signals.stats import StudentT
+from dense_armor.core.signals.stats import StudentT
 
 st = StudentT(nu=5.0, learning_rate=0.1)
 for v in [1.0, 2.0, 3.0, 4.0, 5.0] * 20:
@@ -93,7 +93,7 @@ in the mean. The true mean is about 0.11 radians.
 
 ```python
 import numpy as np
-from dense_armor.utility.signals.stats import StudentT, RunningMoments
+from dense_armor.core.signals.stats import StudentT, RunningMoments
 
 rng = np.random.default_rng(20261026)
 n = 2000
@@ -126,7 +126,7 @@ variance change at the midpoint.
 
 ```python
 import numpy as np
-from dense_armor.utility.signals.stats import StudentT
+from dense_armor.core.signals.stats import StudentT
 
 rng = np.random.default_rng(20261026)
 n = 2000
@@ -155,7 +155,7 @@ zero.
 
 ```python
 import numpy as np
-from dense_armor.utility.signals.stats import StudentT
+from dense_armor.core.signals.stats import StudentT
 
 rng = np.random.default_rng(20261026)
 n = 2000

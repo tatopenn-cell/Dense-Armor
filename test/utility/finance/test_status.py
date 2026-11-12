@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from dense_armor.utility.finance.decision_log import DecisionLog
-from dense_armor.utility.finance.status import main
+from dense_armor.core.finance.decision_log import DecisionLog
+from dense_armor.core.finance.status import main
 
 skip_py310 = pytest.mark.skipif(
     sys.version_info < (3, 11), reason="tomllib needs Python 3.11 or later"
@@ -121,7 +121,7 @@ def subprocess_run(args):
     import subprocess as _sp
 
     return _sp.run(
-        [sys.executable, "-m", "dense_armor.utility.finance.status", *args],
+        [sys.executable, "-m", "dense_armor.core.finance.status", *args],
         capture_output=True,
         text=True,
     )

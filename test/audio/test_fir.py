@@ -3,8 +3,8 @@ import doctest
 import numpy as np
 import pytest
 
-from dense_armor.utility.audio import FIR, DelayLine, convolve
-from dense_armor.utility.audio import fir as fir_mod
+from dense_armor.core.audio import FIR, DelayLine, convolve
+from dense_armor.core.audio import fir as fir_mod
 
 
 def test_convolve_matches_numpy_and_hand_case():

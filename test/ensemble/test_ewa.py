@@ -2,8 +2,8 @@
 
 import numpy as np
 
+from dense_armor.core.online.ensemble import ExponentiallyWeightedAverageRegressor
 from dense_armor.roles import Regressor
-from dense_armor.utility.online.ensemble import ExponentiallyWeightedAverageRegressor
 
 
 class _Const(Regressor):

@@ -67,9 +67,9 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from dense_armor.utility.signals.vision.dense import DenseFlow, MotionMask
-from dense_armor.utility.signals.vision.motion import GlobalMotion
-from dense_armor.utility.signals.vision.scene import FrameAnomaly
+from dense_armor.core.signals.vision.dense import DenseFlow, MotionMask
+from dense_armor.core.signals.vision.motion import GlobalMotion
+from dense_armor.core.signals.vision.scene import FrameAnomaly
 
 FRAME_H = 360
 _MOTION_MASK_MIN_CC = 100

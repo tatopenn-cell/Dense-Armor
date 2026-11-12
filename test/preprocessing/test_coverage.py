@@ -2,20 +2,20 @@
 import numpy as np
 import pytest
 
-from dense_armor.utility.signals.preprocessing.joints import JointDerivatives, JointPower
-from dense_armor.utility.signals.preprocessing.scale import (
+from dense_armor.core.signals.preprocessing.joints import JointDerivatives, JointPower
+from dense_armor.core.signals.preprocessing.scale import (
     EWScaler,
     MinMaxScaler,
     RobustScaler,
     StandardScaler,
     _to_vec,
 )
-from dense_armor.utility.signals.preprocessing.select import (
+from dense_armor.core.signals.preprocessing.select import (
     SelectKBest,
     VarianceThreshold,
     _CorrStats,
 )
-from dense_armor.utility.signals.preprocessing.text import TFIDF, Tokenizer
+from dense_armor.core.signals.preprocessing.text import TFIDF, Tokenizer
 
 SCALERS = [StandardScaler, EWScaler, RobustScaler, MinMaxScaler]
 

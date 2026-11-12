@@ -1,17 +1,17 @@
-"""Tests for dense_armor/utility/signals/stats/sketches.py."""
+"""Tests for dense_armor/core/signals/stats/sketches.py."""
 import doctest
 
 import numpy as np
 import pytest
 
-import dense_armor.utility.signals.stats.sketches as sketches_mod
-from dense_armor.utility.signals.stats.sketches import (
+import dense_armor.core.signals.stats.sketches as sketches_mod
+from dense_armor.checks import check_estimator
+from dense_armor.core.signals.stats.sketches import (
+    BloomFilter,
     CountMinSketch,
     HyperLogLog,
-    BloomFilter,
     SpaceSaving,
 )
-from dense_armor.checks import check_estimator
 
 
 def test_countmin_never_underestimates():

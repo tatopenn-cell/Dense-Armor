@@ -46,7 +46,7 @@ The object form updates the posterior one sample at a time:
 
 ```python
 import numpy as np
-from dense_armor.utility.online.linear.bayes import BayesianLinearRegression
+from dense_armor.core.online.linear.bayes import BayesianLinearRegression
 
 model = BayesianLinearRegression(alpha=1.0, beta=1.0,
                                  intercept=False, feature_keys=["x"])
@@ -90,7 +90,7 @@ That is the Bayesian signature: the model admits it does not know.
 deviation of the prediction as a single named tuple, without a second call:
 
 ```python
-from dense_armor.utility.online.linear.bayes import BayesianLinearRegression
+from dense_armor.core.online.linear.bayes import BayesianLinearRegression
 
 model = BayesianLinearRegression(alpha=1.0, beta=1.0,
                                  intercept=False, feature_keys=["x"])
@@ -121,8 +121,8 @@ velocity:
 ```python
 from pathlib import Path
 import numpy as np
-from dense_armor.utility.signals.datasets import SyntheticArm
-from dense_armor.utility.online.linear.bayes import BayesianLinearRegression
+from dense_armor.core.signals.datasets import SyntheticArm
+from dense_armor.core.online.linear.bayes import BayesianLinearRegression
 
 ds = SyntheticArm(Path("test/fixtures/urdf/panda.urdf"),
                   period_s=1.0, rate_hz=50.0, n_cycles=2, seed=0)

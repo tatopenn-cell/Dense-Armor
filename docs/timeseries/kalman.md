@@ -35,7 +35,7 @@ by the velocity at every step.
 
 ```python
 import numpy as np
-from dense_armor.utility.online.timeseries import KalmanFilter
+from dense_armor.core.online.timeseries import KalmanFilter
 
 F = np.array([[1.0, 1.0], [0.0, 1.0]])
 H = np.array([[1.0, 0.0]])
@@ -75,7 +75,7 @@ follows:
 
 ```python
 import numpy as np
-from dense_armor.utility.online.timeseries import VBAdaptiveKalman
+from dense_armor.core.online.timeseries import VBAdaptiveKalman
 
 F = np.array([[1.0, 1.0], [0.0, 1.0]])
 H = np.array([[1.0, 0.0]])
@@ -106,7 +106,7 @@ of `window` samples.
 
 ```python
 import numpy as np
-from dense_armor.utility.online.timeseries import InnovationAdaptiveKalman
+from dense_armor.core.online.timeseries import InnovationAdaptiveKalman
 
 F = np.array([[1.0, 1.0], [0.0, 1.0]])
 H = np.array([[1.0, 0.0]])
@@ -145,8 +145,8 @@ one sample of `dt = 1/50 s`.
 ```python
 import numpy as np
 from pathlib import Path
-from dense_armor.utility.signals.datasets import SyntheticArm
-from dense_armor.utility.online.timeseries import KalmanFilter
+from dense_armor.core.signals.datasets import SyntheticArm
+from dense_armor.core.online.timeseries import KalmanFilter
 
 dt = 0.02
 omega = 2 * np.pi

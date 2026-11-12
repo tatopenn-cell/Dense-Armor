@@ -15,8 +15,8 @@ import textwrap
 
 import pytest
 
-from dense_armor.utility.deep.neural.data_parallel import linear_scaling
-from dense_armor.utility.deep.neural.schedules_more import LinearWarmup
+from dense_armor.core.deep.neural.data_parallel import linear_scaling
+from dense_armor.core.deep.neural.schedules_more import LinearWarmup
 
 
 def test_linear_scaling_hand_case():
@@ -53,18 +53,18 @@ import json
 import numpy as np
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.deep.neural.models import mlp
-from dense_armor.utility.deep.neural.losses import MSE
-from dense_armor.utility.deep.neural.trainer import Trainer
-from dense_armor.utility.deep.neural.stream import DataStream
-from dense_armor.utility.deep.neural.compiled import (
+from dense_armor.core.deep.neural.models import mlp
+from dense_armor.core.deep.neural.losses import MSE
+from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.deep.neural.stream import DataStream
+from dense_armor.core.deep.neural.compiled import (
     make_step,
     make_step_parallel,
     _read_values,
     _init_state,
 )
-from dense_armor.utility.deep.neural.schedules import ConstantLR
-from dense_armor.utility.online.optim import SGD, Adam
+from dense_armor.core.deep.neural.schedules import ConstantLR
+from dense_armor.core.online.optim import SGD, Adam
 
 CHECK = (1, 10, 50, 200)
 rng = np.random.default_rng(0)

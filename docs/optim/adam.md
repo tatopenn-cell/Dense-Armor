@@ -49,7 +49,7 @@ The object form owns its state and offers `step(weights, gradient) -> weights`:
 
 ```python
 import numpy as np
-from dense_armor.utility.online.optim import Adam
+from dense_armor.core.online.optim import Adam
 
 opt = Adam(lr=0.1)
 w = opt.step(np.zeros(2), np.array([1.0, 1.0]))
@@ -67,7 +67,7 @@ arrays, so it runs inside `jax.jit` and `jax.lax.scan`:
 ```python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.online.optim import Adam
+from dense_armor.core.online.optim import Adam
 
 opt = Adam(lr=0.1)
 state = opt.init_state(2)
@@ -122,9 +122,9 @@ velocity, one sample at a time. `Adam` is the optimizer:
 ```python
 from pathlib import Path
 import numpy as np
-from dense_armor.utility.signals.datasets import SyntheticArm
-from dense_armor.utility.online.linear.glm import LinearRegression
-from dense_armor.utility.online.optim import Adam
+from dense_armor.core.signals.datasets import SyntheticArm
+from dense_armor.core.online.linear.glm import LinearRegression
+from dense_armor.core.online.optim import Adam
 
 ds = SyntheticArm(Path("test/fixtures/urdf/panda.urdf"),
                   period_s=1.0, rate_hz=50.0, n_cycles=8, seed=0)

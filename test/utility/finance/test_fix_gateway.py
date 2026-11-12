@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import time
+from pathlib import Path
 
 import pytest
 
@@ -28,7 +27,7 @@ def _order(
 
 
 def test_1_one_order_one_report(fix_acceptor):
-    from dense_armor.utility.finance.fix_gateway import send_orders
+    from dense_armor.core.finance.fix_gateway import send_orders
 
     reports = send_orders(fix_acceptor, [_order("S1")], timeout_s=5.0)
     assert len(reports) == 1
@@ -43,7 +42,7 @@ def test_1_one_order_one_report(fix_acceptor):
 
 
 def test_2_two_orders_two_reports(fix_acceptor):
-    from dense_armor.utility.finance.fix_gateway import send_orders
+    from dense_armor.core.finance.fix_gateway import send_orders
 
     reports = send_orders(
         fix_acceptor,
@@ -61,7 +60,7 @@ def test_2_two_orders_two_reports(fix_acceptor):
 
 
 def test_3_acceptor_log_has_logon_order_report_logout(fix_acceptor):
-    from dense_armor.utility.finance.fix_gateway import send_orders
+    from dense_armor.core.finance.fix_gateway import send_orders
 
     send_orders(fix_acceptor, [_order("S1")], timeout_s=5.0)
     log_dir = fix_acceptor.parent / "log_acceptor"
@@ -80,7 +79,7 @@ def test_3_acceptor_log_has_logon_order_report_logout(fix_acceptor):
 
 
 def test_4_invalid_order_no_acceptor_needed():
-    from dense_armor.utility.finance.fix_gateway import send_orders
+    from dense_armor.core.finance.fix_gateway import send_orders
 
     with pytest.raises(ValueError, match="qty"):
         send_orders("/nonexistent.cfg", [_order("S1", qty=float("nan"))])
@@ -95,7 +94,7 @@ def test_4_invalid_order_no_acceptor_needed():
 
 def test_5_no_acceptor_timeout(tmp_path):
     pytest.importorskip("quickfix", reason="quickfix not installed")
-    from dense_armor.utility.finance.fix_gateway import send_orders
+    from dense_armor.core.finance.fix_gateway import send_orders
 
     root = Path(__file__).resolve().parents[2]
     dictionary = root / "fixtures" / "finance" / "FIX44.xml"
@@ -135,7 +134,7 @@ def test_5_no_acceptor_timeout(tmp_path):
 
 
 def test_6_validate_timeout_s_zero():
-    from dense_armor.utility.finance.fix_gateway import _validate
+    from dense_armor.core.finance.fix_gateway import _validate
 
     with pytest.raises(ValueError, match="timeout_s"):
         _validate([], 0.0)
@@ -144,42 +143,42 @@ def test_6_validate_timeout_s_zero():
 
 
 def test_7_validate_not_a_dict():
-    from dense_armor.utility.finance.fix_gateway import _validate
+    from dense_armor.core.finance.fix_gateway import _validate
 
     with pytest.raises(ValueError, match=r"orders\[0\] must be a dict"):
         _validate([42], 1.0)  # type: ignore[list-item]
 
 
 def test_8_validate_missing_key():
-    from dense_armor.utility.finance.fix_gateway import _validate
+    from dense_armor.core.finance.fix_gateway import _validate
 
     with pytest.raises(ValueError, match="missing key price"):
         _validate([{"cl_ord_id": "S1", "symbol": "AAPL", "side": "buy", "qty": 1}], 1.0)
 
 
 def test_9_validate_cl_ord_id_empty():
-    from dense_armor.utility.finance.fix_gateway import _validate
+    from dense_armor.core.finance.fix_gateway import _validate
 
     with pytest.raises(ValueError, match="cl_ord_id must be a non-empty str"):
         _validate([_order("")], 1.0)
 
 
 def test_10_validate_symbol_empty():
-    from dense_armor.utility.finance.fix_gateway import _validate
+    from dense_armor.core.finance.fix_gateway import _validate
 
     with pytest.raises(ValueError, match="symbol must be a non-empty str"):
         _validate([_order("S1", symbol="")], 1.0)
 
 
 def test_11_validate_qty_not_number():
-    from dense_armor.utility.finance.fix_gateway import _validate
+    from dense_armor.core.finance.fix_gateway import _validate
 
     with pytest.raises(ValueError, match="qty must be a number"):
         _validate([_order("S1", qty="100")], 1.0)  # type: ignore[arg-type]
 
 
 def test_12_collector_add_done():
-    from dense_armor.utility.finance.fix_gateway import _Collector
+    from dense_armor.core.finance.fix_gateway import _Collector
 
     c = _Collector()
     c.add(
@@ -223,7 +222,7 @@ def test_12_collector_add_done():
 def test_13_application_methods_directly():
     """Call the _App methods without a session, to cover them."""
     pytest.importorskip("quickfix", reason="quickfix not installed")
-    from dense_armor.utility.finance.fix_gateway import _Collector, _make_application
+    from dense_armor.core.finance.fix_gateway import _Collector, _make_application
 
     c = _Collector()
     app = _make_application(c)
@@ -244,7 +243,7 @@ def test_14_from_app_ignores_non_execution_report():
     pytest.importorskip("quickfix", reason="quickfix not installed")
     import quickfix as fix
 
-    from dense_armor.utility.finance.fix_gateway import _Collector, _make_application
+    from dense_armor.core.finance.fix_gateway import _Collector, _make_application
 
     c = _Collector()
     app = _make_application(c)
@@ -260,7 +259,7 @@ def test_15_from_app_reads_execution_report():
     pytest.importorskip("quickfix", reason="quickfix not installed")
     import quickfix as fix
 
-    from dense_armor.utility.finance.fix_gateway import _Collector, _make_application
+    from dense_armor.core.finance.fix_gateway import _Collector, _make_application
 
     c = _Collector()
     app = _make_application(c)

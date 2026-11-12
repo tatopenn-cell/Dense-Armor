@@ -1,4 +1,4 @@
-"""Unit tests for dense_armor/utility/calibration.py (Online Platt scaling)."""
+"""Unit tests for dense_armor/core/calibration.py (Online Platt scaling)."""
 
 import doctest
 import math
@@ -6,12 +6,13 @@ import random
 
 import pytest
 
-from dense_armor.utility.evaluation.metrics import LogLoss  # noqa: E402
-
-import dense_armor.utility.online.learn.calibration as calibration  # noqa: E402
+import dense_armor.core.online.learn.calibration as calibration  # noqa: E402
+from dense_armor.core.evaluation.metrics import LogLoss  # noqa: E402
+from dense_armor.core.online.learn.calibration import OnlinePlattScaling  # noqa: E402
+from dense_armor.core.online.learn.online_classifiers import (
+    OnlineGaussianNB,  # noqa: E402
+)
 from dense_armor.roles import Classifier  # noqa: E402
-from dense_armor.utility.online.learn.calibration import OnlinePlattScaling  # noqa: E402
-from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB  # noqa: E402
 
 
 class Fixed(Classifier):
@@ -160,7 +161,7 @@ def test_wrapped_hoeffding_tree_with_no_opinion():
     there is nothing to calibrate. Mirrors river's test_wrapped_model_with_no_opinion
     but with the real primitive, not a fake classifier.
     """
-    from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
+    from dense_armor.core.online.tree.hoeffding import HoeffdingTreeClassifier
 
     cal = OnlinePlattScaling(HoeffdingTreeClassifier())
     x = {"a": 1.0, "b": 2.0}
@@ -217,7 +218,7 @@ def test_learn_one_does_not_use_current_sample_for_scoring():
     though the tree itself has moved. This is the out-of-sample flavour from
     River's docstring line 21-22.
     """
-    from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
+    from dense_armor.core.online.tree.hoeffding import HoeffdingTreeClassifier
 
     cal = OnlinePlattScaling(HoeffdingTreeClassifier())
     x = {"a": 1.0, "b": 2.0}

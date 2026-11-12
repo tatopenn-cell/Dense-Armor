@@ -1,6 +1,6 @@
 """Seed audit: every random estimator takes a seed.
 
-Walks every public class of ``dense_armor.utility``, instantiates it with
+Walks every public class of ``dense_armor.core``, instantiates it with
 the first kwargs of ``_unit_test_params``, runs it twice on the same 200
 rows of a fixed synthetic stream and compares ``state_dict()``. A class
 whose two runs differ is *random*. For every random class the audit
@@ -55,7 +55,7 @@ def _probe():
 def _walk_estimators():
     """Yield (module, class) for every public Estimator subclass."""
     found = []
-    root = Path("dense_armor/utility")
+    root = Path("dense_armor/core")
     for path in root.rglob("*.py"):
         if "__pycache__" in str(path) or path.name.startswith("_"):
             continue

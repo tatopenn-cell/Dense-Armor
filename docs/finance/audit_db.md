@@ -51,7 +51,7 @@ hash, insert. `verify()` reads the rows in batches and recomputes every hash.
 
 ~~~python
 import os, sqlalchemy
-from dense_armor.utility.finance.audit_db import AuditDB
+from dense_armor.core.finance.audit_db import AuditDB
 db = AuditDB(os.environ["DENSE_ARMOR_TEST_PG_URL"])
 db.append(1.0, {"account": "AAPL", "reason": "ok"})
 db.append(2.0, {"account": "MSFT", "reason": "size"})
@@ -91,7 +91,7 @@ try:
         conn.execute(sqlalchemy.text("UPDATE decisions SET t = 999 WHERE seq = 0"))
 except Exception as ex:
     print("UPDATE:", type(ex).__name__, "-", str(ex).splitlines()[0][:80])
-from dense_armor.utility.finance.audit_db import AuditDB
+from dense_armor.core.finance.audit_db import AuditDB
 db = AuditDB(os.environ["DENSE_ARMOR_TEST_PG_URL"])
 with e.begin() as conn:
     conn.execute(sqlalchemy.text("ALTER TABLE decisions DISABLE TRIGGER decisions_no_change"))

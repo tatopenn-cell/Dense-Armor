@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Unit tests for dense_armor/utility/stable_frame_filter.py -- promoted
+Unit tests for dense_armor/core/stable_frame_filter.py -- promoted
 from Dense-Evolution-Discovery after validation on two independent real
 physical domains (a teleoperated robot arm's leader-position channel,
 and human IMU gyroscope/accelerometer data). Previously only exercised
@@ -9,7 +9,9 @@ indirectly through that real experiment data.
 import numpy as np
 import pytest
 
-from dense_armor.utility.online.protect.stable_frame_filter import velocity_gated_stable_mask
+from dense_armor.core.online.protect.stable_frame_filter import (
+    velocity_gated_stable_mask,
+)
 
 
 def test_1d_flags_slow_changing_region_stable():
@@ -69,7 +71,7 @@ def test_real_detector_composition_smoke():
     synthetic flags array -- the real intended usage pattern: gate an
     analyzed signal's anomaly labels by whether a companion reference
     was stable at each point."""
-    from dense_armor.utility.online.protect.arbiter import classify_segments
+    from dense_armor.core.online.protect.arbiter import classify_segments
 
     rng = np.random.default_rng(1)
     reference = rng.normal(0.0, 0.1, 200)  # e.g. a real command/position channel

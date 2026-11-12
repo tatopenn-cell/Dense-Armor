@@ -16,21 +16,21 @@ For every class:
 import numpy as np
 import pytest
 
-from dense_armor.utility.signals.stats.dependence import (
+from dense_armor.core.signals.stats.dependence import (
     Autocorrelation,
     RollingCorrelation,
     RollingCovariance,
     RunningCorrelation,
     RunningCovariance,
 )
-from dense_armor.utility.signals.stats.mixture import OnlineGaussianMixture
-from dense_armor.utility.signals.stats.moments import (
+from dense_armor.core.signals.stats.mixture import OnlineGaussianMixture
+from dense_armor.core.signals.stats.moments import (
     EWStats,
     RunningMoments,
     RunningMomentsVector,
 )
-from dense_armor.utility.signals.stats.shrinkage import OnlineShrinkageCovariance
-from dense_armor.utility.signals.stats.student_t import StudentT
+from dense_armor.core.signals.stats.shrinkage import OnlineShrinkageCovariance
+from dense_armor.core.signals.stats.student_t import StudentT
 
 
 def _stream(n=200, seed=0):

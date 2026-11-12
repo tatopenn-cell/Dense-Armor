@@ -3,14 +3,15 @@
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dense_armor.utility.online.drift.adwin import ADWIN
-from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
-from dense_armor.utility.online.drift.kswin import KSWIN
-from dense_armor.utility.online.drift.page_hinkley import PageHinkley
+from dense_armor.core.online.drift.adwin import ADWIN
+from dense_armor.core.online.drift.detector import CUSUMDriftDetector
+from dense_armor.core.online.drift.kswin import KSWIN
+from dense_armor.core.online.drift.page_hinkley import PageHinkley
 
 OUT = Path(__file__).parent
 

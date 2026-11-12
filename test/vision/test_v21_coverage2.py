@@ -3,20 +3,20 @@
 import numpy as np
 import pytest
 
-from dense_armor.utility.signals.vision import motion, streams
-from dense_armor.utility.signals.vision.adapters import FeatureToSignal
-from dense_armor.utility.signals.vision.dense import DenseFlow
-from dense_armor.utility.signals.vision.fusion import FrameJointFusion
-from dense_armor.utility.signals.vision.landmarks import Kinematics
-from dense_armor.utility.signals.vision.motion import GlobalMotion, MotionEnergy
-from dense_armor.utility.signals.vision.quality import FrameQuality, Sync
-from dense_armor.utility.signals.vision.registration import DifferenceImage, Registration
-from dense_armor.utility.signals.vision.robustness import FrameNormalizer
-from dense_armor.utility.signals.vision.scene import FrameAnomaly
-from dense_armor.utility.signals.vision.streams import ArrayStream, CubeStream, Frame
-from dense_armor.utility.signals.vision.tracking import MovingObjectTracker
-from dense_armor.utility.signals.vision.visualize import Overlay
-from dense_armor.utility.signals.vision.window import FrameWindow
+from dense_armor.core.signals.vision import motion, streams
+from dense_armor.core.signals.vision.adapters import FeatureToSignal
+from dense_armor.core.signals.vision.dense import DenseFlow
+from dense_armor.core.signals.vision.fusion import FrameJointFusion
+from dense_armor.core.signals.vision.landmarks import Kinematics
+from dense_armor.core.signals.vision.motion import GlobalMotion, MotionEnergy
+from dense_armor.core.signals.vision.quality import FrameQuality, Sync
+from dense_armor.core.signals.vision.registration import DifferenceImage, Registration
+from dense_armor.core.signals.vision.robustness import FrameNormalizer
+from dense_armor.core.signals.vision.scene import FrameAnomaly
+from dense_armor.core.signals.vision.streams import ArrayStream, CubeStream, Frame
+from dense_armor.core.signals.vision.tracking import MovingObjectTracker
+from dense_armor.core.signals.vision.visualize import Overlay
+from dense_armor.core.signals.vision.window import FrameWindow
 
 
 def _frames(n=2, shape=(24, 24)):
@@ -37,8 +37,8 @@ def test_stream_argument_checks_and_the_interface():
 
 
 def test_fuse_frames_joints_merges_in_time_order():
+    from dense_armor.core.signals.vision.fusion import fuse_frames_joints
     from dense_armor.roles import Signal
-    from dense_armor.utility.signals.vision.fusion import fuse_frames_joints
 
     def a():
         for t in (0.0, 0.2):
@@ -129,7 +129,7 @@ def test_quality_on_a_tiny_image_and_window_on_one_pixel_frames():
 
 
 def test_frame_anomaly_resets_its_parts_and_survives_a_failing_memory():
-    from dense_armor.utility.signals.vision.patches import PatchFeatures, PatchMemory
+    from dense_armor.core.signals.vision.patches import PatchFeatures, PatchMemory
 
     class P(PatchFeatures):
         def _reset(self):

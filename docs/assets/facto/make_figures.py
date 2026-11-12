@@ -5,7 +5,7 @@ Run from the repository root::
     python docs/assets/facto/make_figures.py
 
 Every quantity in every figure is computed by the library primitives
-(``dense_armor.utility.online.facto``, ``reco``, ``signals.stats``); matplotlib only
+(``dense_armor.core.online.facto``, ``reco``, ``signals.stats``); matplotlib only
 draws. The measured values are stored in ``figures.json`` by
 ``benchmarks/facto_quality.py``. Figure standard (task 16):
 ``figsize=(7.2, 3.6)``, ``dpi=150``, surface ``#fcfcfb``, data
@@ -26,13 +26,13 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 
-from dense_armor.utility.online.facto import (
+from dense_armor.core.online.facto import (
     FMRegressor,
 )
-from dense_armor.utility.online.optim import SGD
-from dense_armor.utility.online.reco import BiasedMF
-from dense_armor.utility.signals.stats.sdft import SDFT
-from dense_armor.utility.signals.stats.skyline import Skyline
+from dense_armor.core.online.optim import SGD
+from dense_armor.core.online.reco import BiasedMF
+from dense_armor.core.signals.stats.sdft import SDFT
+from dense_armor.core.signals.stats.skyline import Skyline
 
 HERE = Path(__file__).resolve().parent
 FACTO = HERE / "facto"

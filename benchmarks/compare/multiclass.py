@@ -5,15 +5,15 @@ from __future__ import annotations
 import common
 import numpy as np
 
-from dense_armor.ml import linear as mll
-from dense_armor.ml import multiclass as ml
-from dense_armor.utility.online.linear.glm import LogisticRegression
-from dense_armor.utility.online.multiclass.multiclass import (
+from dense_armor.core.online.linear.glm import LogisticRegression
+from dense_armor.core.online.multiclass.multiclass import (
     OneVsOneClassifier,
     OneVsRestClassifier,
     OutputCodeClassifier,
 )
-from dense_armor.utility.online.optim.sgd import SGD
+from dense_armor.core.online.optim.sgd import SGD
+from dense_armor.ml import linear as mll
+from dense_armor.ml import multiclass as ml
 
 NAMES = ["a", "b"]
 

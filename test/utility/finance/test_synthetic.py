@@ -4,8 +4,8 @@ from collections import Counter
 
 import pytest
 
-from dense_armor.utility.finance.feed import iter_itch
-from dense_armor.utility.finance.synthetic import synthetic_itch
+from dense_armor.core.finance.feed import iter_itch
+from dense_armor.core.finance.synthetic import synthetic_itch
 
 
 def test_1_same_seed_same_bytes():

@@ -31,7 +31,7 @@ inside the page for reproducibility.
 
 ```python
 import numpy as np
-from dense_armor.utility.online.timeseries import OnlineAR
+from dense_armor.core.online.timeseries import OnlineAR
 
 rng = np.random.default_rng(0)
 x = 0.0
@@ -63,7 +63,7 @@ samples already seen, never on a value the caller passes in.
 
 ```python
 import numpy as np
-from dense_armor.utility.online.timeseries import OnlineAR
+from dense_armor.core.online.timeseries import OnlineAR
 
 rng = np.random.default_rng(0)
 x = 0.0
@@ -89,7 +89,7 @@ the residual means the signal broke the pattern.
 
 ```python
 import numpy as np
-from dense_armor.utility.online.timeseries import OnlineAR
+from dense_armor.core.online.timeseries import OnlineAR
 
 ar = OnlineAR(order=1, lam=1.0)
 for v in [0.1, 0.2, 0.15, 0.18]:
@@ -117,7 +117,7 @@ cross-channel couplings):
 
 ```python
 import numpy as np
-from dense_armor.utility.online.timeseries import OnlineVAR
+from dense_armor.core.online.timeseries import OnlineVAR
 
 rng = np.random.default_rng(0)
 var = OnlineVAR(order=1, lam=0.99, group_lambda=0.0,
@@ -153,7 +153,7 @@ sets the penalty to zero on the diagonal.
 
 ```python
 import numpy as np
-from dense_armor.utility.online.timeseries import OnlineVAR
+from dense_armor.core.online.timeseries import OnlineVAR
 
 rng = np.random.default_rng(0)
 var = OnlineVAR(order=1, lam=0.99, group_lambda=0.1,
@@ -188,8 +188,8 @@ stays small; a payload shifts the pattern, and the residual grows.
 
 ```python
 from pathlib import Path
-from dense_armor.utility.signals.datasets import SyntheticArm
-from dense_armor.utility.online.timeseries import OnlineAR
+from dense_armor.core.signals.datasets import SyntheticArm
+from dense_armor.core.online.timeseries import OnlineAR
 
 ds = SyntheticArm(
     Path("test/fixtures/urdf/panda.urdf"),

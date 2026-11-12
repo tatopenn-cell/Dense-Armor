@@ -7,9 +7,9 @@ import numpy as np
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.online.rules import AMRulesRegressor
-from dense_armor.utility.online.rules import amrules as mod
-from dense_armor.utility.online.rules.amrules import _Moments, _Rule, _side, _Splits
+from dense_armor.core.online.rules import AMRulesRegressor
+from dense_armor.core.online.rules import amrules as mod
+from dense_armor.core.online.rules.amrules import _Moments, _Rule, _side, _Splits
 
 
 def _step_stream(n: int, seed: int = 0, flip: bool = False):

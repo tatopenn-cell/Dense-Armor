@@ -7,7 +7,7 @@ A starting point for finding the right tool. Say what you have in front of you (
 | | Online learning | Machine learning | Deep learning |
 |---|---|---|---|
 | It reads | one sample at a time, at control-loop speed | a whole table, with `fit` and `predict` | batches or a stream, through layers |
-| Module | `dense_armor.utility.online` | `dense_armor.ml` | `dense_armor.utility.deep.neural` |
+| Module | `dense_armor.core.online` | `dense_armor.ml` | `dense_armor.core.deep.neural` |
 | It has | classifiers, regressors, trees, forests, bandits, anomaly and drift detectors, clustering, time series | statistics, preprocessing, linear models, trees, forests, ensembles, anomaly and change detection | layers, attention, convolutional and recurrent blocks, training, continual learning, decoder language models |
 | Start with | [Online learning](../learn/index.md) | [Machine learning](../ml/index.md) | [Deep learning](../neural/index.md) |
 
@@ -29,7 +29,7 @@ The three kinds of learning are the core. Finance is the application the example
 The two calls that make the first example, from the quickstart of the README:
 
 ```python
-from dense_armor.utility.finance import PreTradeChecker, DecisionLog
+from dense_armor.core.finance import PreTradeChecker, DecisionLog
 
 checker = PreTradeChecker(
     max_notional=50_000.0, max_size=0.2, price_band=0.001,
@@ -49,7 +49,7 @@ A change in the mean of daily returns (in percent, synthetic), caught by ADWIN w
 
 ```python
 import numpy as np
-from dense_armor.utility.online.drift.adwin import ADWIN
+from dense_armor.core.online.drift.adwin import ADWIN
 
 rng = np.random.default_rng(0)
 r = np.r_[rng.normal(0.04, 0.6, 400), rng.normal(2.0, 0.6, 400)]

@@ -9,10 +9,10 @@ import doctest
 import numpy as np
 import pytest
 
-from dense_armor.utility.online.proba import Beta, Gaussian, Multinomial
-from dense_armor.utility.online.proba import beta as beta_mod
-from dense_armor.utility.online.proba import gaussian as gaussian_mod
-from dense_armor.utility.online.proba import multinomial as multinomial_mod
+from dense_armor.core.online.proba import Beta, Gaussian, Multinomial
+from dense_armor.core.online.proba import beta as beta_mod
+from dense_armor.core.online.proba import gaussian as gaussian_mod
+from dense_armor.core.online.proba import multinomial as multinomial_mod
 
 
 def test_doctests():
@@ -228,7 +228,7 @@ def test_gaussian_edge_cases():
     with pytest.raises(ValueError):
         g.variance()
     # the pdf of an empty Gaussian uses the constructor's var
-    from math import sqrt, pi
+    from math import pi, sqrt
     assert abs(g.pdf(0.0) - 1.0 / sqrt(2.0 * pi)) < 1e-12
     g2 = Gaussian(var=2.0)
     assert abs(g2.pdf(0.0) - 1.0 / sqrt(2.0 * pi * 2.0)) < 1e-12
@@ -278,7 +278,8 @@ def test_gaussian_pdf_uses_constructor_var():
     keeps ``var0`` for the empty case.
     """
     from math import pi, sqrt
-    from dense_armor.utility.online.proba.gaussian import Gaussian
+
+    from dense_armor.core.online.proba.gaussian import Gaussian
 
     for v in (0.5, 1.0, 2.0, 5.0):
         g = Gaussian(var=v)
@@ -301,7 +302,8 @@ def test_pdf_small_variance_peak():
     flatter than the true one. With the fix both use ``var``.
     """
     import math
-    from dense_armor.utility.online.proba.gaussian import Gaussian
+
+    from dense_armor.core.online.proba.gaussian import Gaussian
 
     for var in (1e-16, 1e-17, 1e-20):
         g = Gaussian(mean=0.0, var=var, n=1.0)

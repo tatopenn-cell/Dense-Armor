@@ -69,7 +69,7 @@ def main(family: str) -> None:
         "### Choices stated explicitly\n\nThe class of a sketch is the exact value the sketch approximates, and the class of a statistic is the textbook formula on the whole array: both are `our choice`, because the references name no other batch algorithm.\n"
     )
     out.append(
-        "### Development diary\n\nThe classes are new and independent of the online classes of dense_armor.utility.\n"
+        "### Development diary\n\nThe classes are new and independent of the online classes of dense_armor.core.\n"
     )
     if stopped:
         out.append(

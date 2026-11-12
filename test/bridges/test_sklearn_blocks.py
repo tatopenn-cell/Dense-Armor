@@ -11,7 +11,7 @@ import pytest
 pytest.importorskip("sklearn")
 
 from dense_armor.bridges.sklearn import SklearnTransformer  # noqa: E402
-from dense_armor.utility.signals.preprocessing.scale import (  # noqa: E402
+from dense_armor.core.signals.preprocessing.scale import (  # noqa: E402
     EWScaler,
     StandardScaler,
 )

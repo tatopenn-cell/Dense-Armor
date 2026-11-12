@@ -9,7 +9,7 @@ Dense-Armor is a library that learns from streams of numbers (and from images an
 | | Online learning | Machine learning | Deep learning |
 |---|---|---|---|
 | It reads | one sample at a time, at control-loop speed | a whole table, with `fit` and `predict` | batches or a stream, through layers |
-| Module | `dense_armor.utility.online` | `dense_armor.ml` | `dense_armor.utility.deep.neural` |
+| Module | `dense_armor.core.online` | `dense_armor.ml` | `dense_armor.core.deep.neural` |
 | It has | classifiers, regressors, trees, forests, bandits, anomaly and drift detectors, clustering, time series | statistics, preprocessing, linear models, trees, forests, ensembles, anomaly and change detection | layers, attention, convolutional and recurrent blocks, training, continual learning, decoder language models |
 | Start with | [Online learning](learn/index.md) | [Machine learning](ml/index.md) | [Deep learning](neural/index.md) |
 
@@ -92,7 +92,7 @@ pip install dense-armor
 ## The first learned model, in five lines
 
 ```python
-from dense_armor.utility.online.learn.online_dynamics import RecursiveLeastSquares
+from dense_armor.core.online.learn.online_dynamics import RecursiveLeastSquares
 
 model = RecursiveLeastSquares(lam=1.0, feature_keys=["one", "q", "qd"])
 for t, (x, y) in enumerate(stream):
@@ -105,8 +105,8 @@ Each call to `learn_one` updates the model with the new sample. No epochs, no ba
 
 ```python
 from dense_armor.roles import AnomalyGate, Protected
-from dense_armor.utility.online.anomaly.hst import HalfSpaceTrees
-from dense_armor.utility.online.learn.online_dynamics import RecursiveLeastSquares
+from dense_armor.core.online.anomaly.hst import HalfSpaceTrees
+from dense_armor.core.online.learn.online_dynamics import RecursiveLeastSquares
 
 detector = AnomalyGate(HalfSpaceTrees(n_trees=25, depth=8, window=200))
 model = Protected(

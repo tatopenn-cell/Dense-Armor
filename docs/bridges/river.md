@@ -11,7 +11,7 @@ The two steps below use a synthetic stream of 60 samples: 30 of class 0 with `a`
 ```python
 from river import metrics
 from dense_armor.bridges.river import to_river
-from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB
+from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB
 
 s = [({"a": 0.1 * i, "b": 1.0}, 0) for i in range(30)]
 s += [({"a": 5 + 0.1 * i, "b": 1.0}, 1) for i in range(30)]
@@ -38,7 +38,7 @@ The first sample has no prediction (the classifier has seen nothing), so the acc
 ```python
 from river import linear_model
 from dense_armor.bridges.river import from_river
-from dense_armor.utility.signals.preprocessing.scale import StandardScaler
+from dense_armor.core.signals.preprocessing.scale import StandardScaler
 
 s = [({"a": 0.1 * i, "b": 1.0}, False) for i in range(30)]
 s += [({"a": 5 + 0.1 * i, "b": 1.0}, True) for i in range(30)]

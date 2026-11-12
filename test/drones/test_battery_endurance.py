@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from dense_armor.utility.online.linear.glm import LinearRegression
+from dense_armor.core.online.linear.glm import LinearRegression
 from pipelines.drones.battery_endurance import (
     BETA_SOLO,
     DEFAULT_CAPACITY_WH,
@@ -110,10 +110,10 @@ def test_custom_parameters():
 
 
 def test_conformal_and_digest_used():
+    from dense_armor.core.signals.stats.quantiles import TDigest as TD
     from dense_armor.roles import AdaptiveConformalRegressor as ACR
-    from dense_armor.utility.signals.stats.quantiles import TDigest as TD
     acr = ACR(LinearRegression(optimizer=None) if False else
-              LinearRegression(optimizer=__import__("dense_armor.utility.online.optim.adagrad",
+              LinearRegression(optimizer=__import__("dense_armor.core.online.optim.adagrad",
                                                      fromlist=["AdaGrad"]).AdaGrad()))
     assert hasattr(acr, "predict_interval")
     td = TD()

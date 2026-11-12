@@ -15,8 +15,8 @@ Python version, on NumPy or on `random`.
 ~~~python
 import os
 from pathlib import Path
-from dense_armor.utility.finance.synthetic import synthetic_itch
-from dense_armor.utility.finance.feed import iter_itch
+from dense_armor.core.finance.synthetic import synthetic_itch
+from dense_armor.core.finance.feed import iter_itch
 
 os.makedirs("/tmp/f9_page", exist_ok=True)
 Path("/tmp/f9_page/feed.bin").write_bytes(synthetic_itch(5, 0))
@@ -42,7 +42,7 @@ seed produces a different stream.
 
 ~~~python
 import hashlib
-from dense_armor.utility.finance.synthetic import synthetic_itch
+from dense_armor.core.finance.synthetic import synthetic_itch
 
 a = synthetic_itch(20, 0)
 b = synthetic_itch(20, 0)
@@ -76,8 +76,8 @@ documentation, not by a model of a market.
 ~~~python
 from collections import Counter
 from pathlib import Path
-from dense_armor.utility.finance.synthetic import synthetic_itch
-from dense_armor.utility.finance.feed import iter_itch
+from dense_armor.core.finance.synthetic import synthetic_itch
+from dense_armor.core.finance.feed import iter_itch
 
 Path("/tmp/f9_page/big.bin").write_bytes(synthetic_itch(1000, 0))
 msgs = list(iter_itch("/tmp/f9_page/big.bin"))

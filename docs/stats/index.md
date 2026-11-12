@@ -28,7 +28,7 @@ stream is still arriving**. Every estimator:
 ## The first five lines
 
 ```python
-from dense_armor.utility.signals.stats.moments import RunningMoments
+from dense_armor.core.signals.stats.moments import RunningMoments
 
 m = RunningMoments()
 for v in [1.0, 2.0, 3.0, 4.0, 5.0]:
@@ -84,7 +84,7 @@ Every statistic inherits from `dense_armor.roles.Transformer` and reads
 the same kind of input: a dict with one or more features.
 
 ```python
-from dense_armor.utility.signals.stats.moments import RunningMoments
+from dense_armor.core.signals.stats.moments import RunningMoments
 
 m = RunningMoments()
 for v in [1.0, 2.0, 3.0, 4.0, 5.0]:
@@ -97,7 +97,7 @@ key, so the result never depends on the order in which the keys appear.
 A specific key can be named at construction:
 
 ```python
-from dense_armor.utility.signals.stats.moments import RunningMoments
+from dense_armor.core.signals.stats.moments import RunningMoments
 
 m = RunningMoments()
 for v in [1.0, 2.0, 3.0, 4.0, 5.0]:
@@ -112,7 +112,7 @@ and bumps an internal `n_missing` counter, so a sensor glitch never
 poisons the state:
 
 ```python
-from dense_armor.utility.signals.stats.moments import RunningMoments
+from dense_armor.core.signals.stats.moments import RunningMoments
 
 m = RunningMoments()
 for v in [1.0, 2.0, 3.0, 4.0, 5.0]:
@@ -136,7 +136,7 @@ machines: each shard builds a summary of its own data, then the
 summaries are merged.
 
 ```python
-from dense_armor.utility.signals.stats.moments import RunningMoments
+from dense_armor.core.signals.stats.moments import RunningMoments
 
 left, right = RunningMoments(), RunningMoments()
 for v in range(10):
@@ -165,7 +165,7 @@ inter-sample intervals and exposes three derived quantities:
 A window given in seconds becomes a number of samples automatically:
 
 ```python
-from dense_armor.utility.signals.stats.robust import RollingMedian
+from dense_armor.core.signals.stats.robust import RollingMedian
 
 import numpy as np
 
@@ -187,9 +187,9 @@ Each row is one sample, and each sample goes into the statistic of
 interest.
 
 ```python
-from dense_armor.utility.online.learn.online_dynamics import write_minimal_urdf
+from dense_armor.core.online.learn.online_dynamics import write_minimal_urdf
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.utility.signals.stats.moments import RunningMomentsVector
+from dense_armor.core.signals.stats.moments import RunningMomentsVector
 
 model = RigidBodyModel(write_minimal_urdf())
 import numpy as np
@@ -233,12 +233,12 @@ read last.
 ## Where each thing lives
 
 ```
-dense_armor/utility/signals/stats/__init__.py       the family index
-dense_armor/utility/signals/stats/moments.py        RunningMoments, RunningMomentsVector, EWStats
-dense_armor/utility/signals/stats/robust.py         RollingMedian, RollingMAD, RollingIQR, RollingQuantile, RollingMedianVector
-dense_armor/utility/signals/stats/quantiles.py      DDSketch, TDigest
-dense_armor/utility/signals/stats/dependence.py     RunningCovariance, RunningCorrelation, RollingCovariance, RollingCorrelation, Autocorrelation
-dense_armor/utility/signals/stats/sketches.py       CountMinSketch, HyperLogLog, BloomFilter, SpaceSaving
+dense_armor/core/signals/stats/__init__.py       the family index
+dense_armor/core/signals/stats/moments.py        RunningMoments, RunningMomentsVector, EWStats
+dense_armor/core/signals/stats/robust.py         RollingMedian, RollingMAD, RollingIQR, RollingQuantile, RollingMedianVector
+dense_armor/core/signals/stats/quantiles.py      DDSketch, TDigest
+dense_armor/core/signals/stats/dependence.py     RunningCovariance, RunningCorrelation, RollingCovariance, RollingCorrelation, Autocorrelation
+dense_armor/core/signals/stats/sketches.py       CountMinSketch, HyperLogLog, BloomFilter, SpaceSaving
 ```
 
 Every class inherits from `dense_armor.roles.Transformer`, passes

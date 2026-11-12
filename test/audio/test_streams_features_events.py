@@ -5,7 +5,7 @@ import sys
 import numpy as np
 import pytest
 
-from dense_armor.utility.audio import (
+from dense_armor.core.audio import (
     Audio,
     AudioFeatures,
     AudioFileStream,
@@ -16,40 +16,40 @@ from dense_armor.utility.audio import (
     white_noise,
     write_wav,
 )
-from dense_armor.utility.online.anomaly.filters import (
+from dense_armor.core.online.anomaly.filters import (
     ChauvenetScorer,
     HampelScorer,
     TukeyScorer,
 )
-from dense_armor.utility.online.bayes.multinomial import MultinomialNB
-from dense_armor.utility.online.cluster.kmeans import OnlineKMeans
-from dense_armor.utility.online.drift.adwin import ADWIN
-from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
-from dense_armor.utility.online.drift.kswin import KSWIN
-from dense_armor.utility.online.drift.page_hinkley import PageHinkley
-from dense_armor.utility.online.learn.online_classifiers import (
+from dense_armor.core.online.bayes.multinomial import MultinomialNB
+from dense_armor.core.online.cluster.kmeans import OnlineKMeans
+from dense_armor.core.online.drift.adwin import ADWIN
+from dense_armor.core.online.drift.detector import CUSUMDriftDetector
+from dense_armor.core.online.drift.kswin import KSWIN
+from dense_armor.core.online.drift.page_hinkley import PageHinkley
+from dense_armor.core.online.learn.online_classifiers import (
     OnlineGaussianNB,
     OnlineSoftmaxRegression,
 )
-from dense_armor.utility.online.learn.online_dynamics import RecursiveLeastSquares
-from dense_armor.utility.online.linear.bayes import BayesianLinearRegression
-from dense_armor.utility.online.neighbors.knn import KNNClassifier, KNNRegressor
-from dense_armor.utility.online.timeseries.ar import OnlineAR
-from dense_armor.utility.online.timeseries.garch import GARCH11
-from dense_armor.utility.online.tree.fimt import FIMTDDRegressor
-from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
-from dense_armor.utility.signals.preprocessing.scale import (
+from dense_armor.core.online.learn.online_dynamics import RecursiveLeastSquares
+from dense_armor.core.online.linear.bayes import BayesianLinearRegression
+from dense_armor.core.online.neighbors.knn import KNNClassifier, KNNRegressor
+from dense_armor.core.online.timeseries.ar import OnlineAR
+from dense_armor.core.online.timeseries.garch import GARCH11
+from dense_armor.core.online.tree.fimt import FIMTDDRegressor
+from dense_armor.core.online.tree.hoeffding import HoeffdingTreeClassifier
+from dense_armor.core.signals.preprocessing.scale import (
     EWScaler,
     MinMaxScaler,
     RobustScaler,
     StandardScaler,
 )
-from dense_armor.utility.signals.stats.dependence import (
+from dense_armor.core.signals.stats.dependence import (
     Autocorrelation,
     RunningCovariance,
 )
-from dense_armor.utility.signals.stats.mixture import OnlineGaussianMixture
-from dense_armor.utility.signals.stats.moments import RunningMoments
+from dense_armor.core.signals.stats.mixture import OnlineGaussianMixture
+from dense_armor.core.signals.stats.moments import RunningMoments
 
 SR = 8000
 
@@ -202,9 +202,9 @@ def test_run_estimators_needs_labels_and_reports_errors():
 
 
 def test_audio_input_opens_existing_primitives_in_the_form_they_take():
-    from dense_armor.utility.audio import Biquad, lowpass
-    from dense_armor.utility.audio.adapter import NeedsLabels
-    from dense_armor.utility.signals.stats.sdft import SDFT
+    from dense_armor.core.audio import Biquad, lowpass
+    from dense_armor.core.audio.adapter import NeedsLabels
+    from dense_armor.core.signals.stats.sdft import SDFT
 
     blocks = _blocks(_signal(1.0))
     sd = AudioInput(SDFT(8))
@@ -256,5 +256,5 @@ def test_detect_events_live_equals_file(tmp_path):
 
 @pytest.mark.parametrize("name", ["streams", "features", "events"])
 def test_doctests(name):
-    mod = importlib.import_module(f"dense_armor.utility.audio.{name}")
+    mod = importlib.import_module(f"dense_armor.core.audio.{name}")
     assert doctest.testmod(mod, extraglobs={"np": np, "Audio": Audio}).failed == 0

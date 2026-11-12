@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from dense_armor.utility.finance.config import load_config
+from dense_armor.core.finance.config import load_config
 
 PY310 = sys.version_info < (3, 11)
 skip_py310 = pytest.mark.skipif(PY310, reason="tomllib needs Python 3.11 or later")
@@ -167,7 +167,7 @@ def test_tomllib_missing_is_runtime_error(tmp_path, monkeypatch):
 
 @skip_py310
 def test_make_checker_returns_new_checker(tmp_path):
-    from dense_armor.utility.finance.pretrade import PreTradeChecker
+    from dense_armor.core.finance.pretrade import PreTradeChecker
 
     c = load_config(_write(tmp_path))
     a = c.make_checker()
@@ -179,7 +179,7 @@ def test_make_checker_returns_new_checker(tmp_path):
 
 @skip_py310
 def test_make_ring_returns_new_ring(tmp_path):
-    from dense_armor.utility.finance.ring import RingBuffer
+    from dense_armor.core.finance.ring import RingBuffer
 
     c = load_config(_write(tmp_path))
     a = c.make_ring()

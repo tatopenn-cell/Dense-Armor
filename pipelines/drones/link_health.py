@@ -48,7 +48,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
+from dense_armor.core.online.drift.detector import CUSUMDriftDetector
 
 FAULT_KINDS = (None, "link_degradation", "link_dropout")
 FAULT_AT_FRACTION = 0.6

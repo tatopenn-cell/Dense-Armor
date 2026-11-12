@@ -84,6 +84,6 @@ the logic already verified in Dense-Evolution's own
 
 ## Details
 
-**See also**: [Hybrid engine](hybrid_engine.md) — the `core/hybrid_engine.py` module
+**See also**: [Hybrid engine](hybrid_engine.md) — the `utility/hybrid_engine.py` module
 `Armor` is built on. [Orca](orca.md) — the full input + output shield for an entire
 model, if you have a model rather than a bare series.

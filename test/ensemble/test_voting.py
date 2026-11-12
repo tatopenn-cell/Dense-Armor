@@ -1,9 +1,9 @@
 """Voting classifier: hard vote and soft vote."""
 
 
+from dense_armor.core.online.ensemble import VotingClassifier
+from dense_armor.core.online.tree.hoeffding import HoeffdingTreeClassifier
 from dense_armor.roles import Classifier
-from dense_armor.utility.online.ensemble import VotingClassifier
-from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
 
 
 def _tree():

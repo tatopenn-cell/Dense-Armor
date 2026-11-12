@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.online.anomaly.loda import LODA
+from dense_armor.core.online.anomaly.loda import LODA
 
 
 def _learn_normal(ds, n=400, seed=0):

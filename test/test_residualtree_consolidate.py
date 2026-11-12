@@ -3,7 +3,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.deep.neural.consolidation import ResidualTree
+from dense_armor.core.deep.neural.consolidation import ResidualTree
 
 
 def _build(d_model, n_codes, branching, max_depth, n_events=40, seed=0):
@@ -65,7 +65,7 @@ def test_second_consolidation_keeps_parent_and_reseeds(monkeypatch):
     codebook (``2 * n_codes + n_codes // branching`` points). The seeds
     passed to k-means must differ between the two calls.
     """
-    import dense_armor.utility.deep.neural.consolidation.tree as tree_mod
+    import dense_armor.core.deep.neural.consolidation.tree as tree_mod
 
     calls = []
     real = tree_mod.kmeans2

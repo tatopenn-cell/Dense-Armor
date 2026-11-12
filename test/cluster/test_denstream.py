@@ -35,7 +35,7 @@ import numpy as np
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.online.cluster.denstream import DenStream
+from dense_armor.core.online.cluster.denstream import DenStream
 
 
 def _blobs_with_noise(rng, n_per=150, noise=100):

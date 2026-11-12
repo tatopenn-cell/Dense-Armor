@@ -23,7 +23,7 @@ difference is what the learner has to model.
 ```python
 import numpy as np
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.utility.online.learn.online_dynamics import ResidualDynamicsLearner, write_minimal_urdf
+from dense_armor.core.online.learn.online_dynamics import ResidualDynamicsLearner, write_minimal_urdf
 
 nom = RigidBodyModel(write_minimal_urdf())
 real = RigidBodyModel(write_minimal_urdf(payload_mass=0.5))
@@ -108,7 +108,7 @@ w ← (0, 0) + 5 · (0.2, 0.4) = (1.0, 2.0)
 ```
 
 ```python
-from dense_armor.utility.online.learn.online_dynamics import RecursiveLeastSquares
+from dense_armor.core.online.learn.online_dynamics import RecursiveLeastSquares
 
 rls = RecursiveLeastSquares(lam=1.0, delta=1e6)
 rls.learn_one({"a": 1.0, "b": 2.0}, 5.0)
@@ -136,7 +136,7 @@ predicted torques have lower RMSE than the nominal URDF prediction on held-out d
 ```python
 import numpy as np
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.utility.online.learn.online_dynamics import ResidualDynamicsLearner, write_minimal_urdf
+from dense_armor.core.online.learn.online_dynamics import ResidualDynamicsLearner, write_minimal_urdf
 
 nom, real = RigidBodyModel(write_minimal_urdf()), RigidBodyModel(write_minimal_urdf(payload_mass=0.5))
 tau = lambda m, s: np.asarray(m.mass_matrix(s[0])) @ s[2] + np.asarray(m.bias_forces(s[0], s[1]))
@@ -167,7 +167,7 @@ pre-change samples over ~100 samples and tracks the new regime.
 
 ```python
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.utility.online.learn.online_dynamics import ResidualDynamicsLearner, DriftAwareResidualDynamicsLearner, write_minimal_urdf
+from dense_armor.core.online.learn.online_dynamics import ResidualDynamicsLearner, DriftAwareResidualDynamicsLearner, write_minimal_urdf
 
 model = RigidBodyModel(write_minimal_urdf())
 fast = ResidualDynamicsLearner(model, lam=0.99, delta=1e6)
@@ -216,7 +216,7 @@ it does for a pure function. In a control loop, patch the model once at construc
 ```python
 import jax
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.utility.online.learn.online_dynamics import write_minimal_urdf
+from dense_armor.core.online.learn.online_dynamics import write_minimal_urdf
 
 model = RigidBodyModel(write_minimal_urdf())
 model.mass_matrix = jax.jit(model.mass_matrix)
@@ -248,7 +248,7 @@ RLS update itself.
 
 ## API reference
 
-::: dense_armor.utility.online.learn.online_dynamics
+::: dense_armor.core.online.learn.online_dynamics
 
 ---
 

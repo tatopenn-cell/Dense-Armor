@@ -1,14 +1,13 @@
-"""Tests for dense_armor/utility/evaluation/metrics/{base,classification}.py."""
+"""Tests for dense_armor/core/evaluation/metrics/{base,classification}.py."""
 import doctest
 
 import numpy as np
 import pytest
 from sklearn import metrics as skm
 
-import dense_armor.utility.evaluation.metrics.base as base_mod
-import dense_armor.utility.evaluation.metrics.classification as cls_mod
-from dense_armor.roles import Classifier, Regressor
-from dense_armor.utility.evaluation.metrics import (
+import dense_armor.core.evaluation.metrics.base as base_mod
+import dense_armor.core.evaluation.metrics.classification as cls_mod
+from dense_armor.core.evaluation.metrics import (
     F1,
     Accuracy,
     BalancedAccuracy,
@@ -20,6 +19,7 @@ from dense_armor.utility.evaluation.metrics import (
     Precision,
     Recall,
 )
+from dense_armor.roles import Classifier, Regressor
 
 
 def _stream(n: int = 500, seed: int = 0):

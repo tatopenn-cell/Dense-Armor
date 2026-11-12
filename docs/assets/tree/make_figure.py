@@ -17,8 +17,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dense_armor.utility.online.drift.adwin import ADWIN
-from dense_armor.utility.online.tree import (
+from dense_armor.core.online.drift.adwin import ADWIN
+from dense_armor.core.online.tree import (
     HoeffdingAdaptiveTreeClassifier,
     HoeffdingTreeClassifier,
     MondrianForestRegressor,

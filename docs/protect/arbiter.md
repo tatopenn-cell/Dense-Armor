@@ -54,7 +54,7 @@ rng = np.random.default_rng(42)
 v = 0.5 + 0.1 * rng.standard_normal(3000)
 v[1500] = 2.5
 v[2000:] += 1.0
-from dense_armor.utility.online.protect.arbiter import classify_segments
+from dense_armor.core.online.protect.arbiter import classify_segments
 
 lab, dev, unc = classify_segments(v, radius=20, ref_mult=3)
 print(lab[1500], np.flatnonzero(lab == "regime")[[0, -1]], (lab == "spike").sum())
@@ -77,7 +77,7 @@ rng = np.random.default_rng(42)
 v = 0.5 + 0.1 * rng.standard_normal(3000)
 v[1500] = 2.5
 v[2000:] += 1.0
-from dense_armor.utility.online.protect.arbiter import route_and_correct
+from dense_armor.core.online.protect.arbiter import route_and_correct
 
 corrected, lab, dev = route_and_correct(v, radius=20, ref_mult=3)
 print(round(float(corrected[1500]), 3), np.array_equal(corrected[lab == "regime"], v[lab == "regime"]))
@@ -113,7 +113,7 @@ scenarios `test/testKalman.py` uses: never worse than the default (no Arbiter), 
 on 5 of 7.
 
 ```python
-from dense_armor.utility.online.protect.orca import Orca
+from dense_armor.core.online.protect.orca import Orca
 
 import numpy as np
 rng = np.random.default_rng(0)
@@ -137,7 +137,7 @@ rng = np.random.default_rng(42)
 v = 0.5 + 0.1 * rng.standard_normal(3000)
 v[1500] = 2.5
 v[2000:] += 1.0
-from dense_armor.utility.online.protect.streaming_arbiter import StreamingArbiter
+from dense_armor.core.online.protect.streaming_arbiter import StreamingArbiter
 
 arb = StreamingArbiter(radius=20, ref_mult=3, max_delay=200)
 lab = {j: l for x in v for j, l, _ in arb.update(x)}
@@ -156,7 +156,7 @@ Smaller `max_delay` trades exactness for latency: labels near run boundaries may
 ## 7. StreamingHealing
 
 `StreamingHealing` is the same bounded-delay idea applied to the healing filter
-(`dense_armor.utility.online.protect.healing.healing_filter`): a point is judged against a wide local
+(`dense_armor.core.online.protect.healing.healing_filter`): a point is judged against a wide local
 baseline and replaced when the deviation is not shared by the majority of a narrow
 window of neighbours. Each sample gets its corrected value as soon as the wide symmetric
 window around it is fully available.
@@ -167,7 +167,7 @@ rng = np.random.default_rng(42)
 v = 0.5 + 0.1 * rng.standard_normal(3000)
 v[1500] = 2.5
 v[2000:] += 1.0
-from dense_armor.utility.online.protect.streaming_arbiter import StreamingHealing
+from dense_armor.core.online.protect.streaming_arbiter import StreamingHealing
 
 sh = StreamingHealing(radius=2, wide_mult=3, max_delay=30)
 out = [o for x in v for o in sh.update(x)] + sh.flush()
@@ -195,9 +195,9 @@ Labels: **spike, clean, spike**: 15 and 16 are replaced by 10, the 8 is kept.
 
 ## API reference
 
-::: dense_armor.utility.online.protect.arbiter
+::: dense_armor.core.online.protect.arbiter
 
-::: dense_armor.utility.online.protect.streaming_arbiter
+::: dense_armor.core.online.protect.streaming_arbiter
 
 ---
 

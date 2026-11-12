@@ -8,7 +8,7 @@ from, so the rounding of the input is not counted as error.
 import numpy as np
 import pytest
 
-from dense_armor.utility.online.proba import Gaussian
+from dense_armor.core.online.proba import Gaussian
 
 STORED = [0.0, 1.0, 2.5, 4.0, 7.0, 11.0]
 

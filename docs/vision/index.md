@@ -53,11 +53,11 @@ four decades of mathematics went into making that possible.
 
 ## API reference
 
-::: dense_armor.utility.signals.vision.streams
+::: dense_armor.core.signals.vision.streams
 
-::: dense_armor.utility.signals.vision.features
+::: dense_armor.core.signals.vision.features
 
-::: dense_armor.utility.signals.vision.reduce
+::: dense_armor.core.signals.vision.reduce
 
 ---
 

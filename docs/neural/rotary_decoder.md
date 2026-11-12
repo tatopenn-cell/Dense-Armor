@@ -8,7 +8,7 @@ The decoder is an embedding, a stack of blocks, a final norm and a linear head t
 
 ```python
 import jax
-from dense_armor.utility.deep.neural.rotary_decoder import rotary_decoder
+from dense_armor.core.deep.neural.rotary_decoder import rotary_decoder
 
 m = rotary_decoder(65, 64, 4, 2, 256, key=jax.random.PRNGKey(0))
 print(sum(int(p.value.size) for p in m.params()))
@@ -27,7 +27,7 @@ The cache holds, for every block, the keys and the values of the tokens seen so 
 ```python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.deep.neural.rotary_decoder import rotary_decoder
+from dense_armor.core.deep.neural.rotary_decoder import rotary_decoder
 
 m = rotary_decoder(65, 64, 4, 2, 256, key=jax.random.PRNGKey(0))
 ids = jnp.arange(8, dtype=jnp.int32)
@@ -53,8 +53,8 @@ True
 ```python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.deep.neural.generate import generate
-from dense_armor.utility.deep.neural.rotary_decoder import rotary_decoder
+from dense_armor.core.deep.neural.generate import generate
+from dense_armor.core.deep.neural.rotary_decoder import rotary_decoder
 
 m = rotary_decoder(65, 64, 4, 2, 256, key=jax.random.PRNGKey(0))
 ids = jnp.arange(8, dtype=jnp.int32)
@@ -74,8 +74,8 @@ A model that has only `forward` is run again on the whole text at every token, a
 ```python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.deep.neural.generate import generate
-from dense_armor.utility.deep.neural.rotary_decoder import rotary_decoder
+from dense_armor.core.deep.neural.generate import generate
+from dense_armor.core.deep.neural.rotary_decoder import rotary_decoder
 
 m = rotary_decoder(65, 64, 4, 2, 256, key=jax.random.PRNGKey(0))
 ids = jnp.arange(8, dtype=jnp.int32)
@@ -104,7 +104,7 @@ True
 
 ```python
 import jax
-from dense_armor.utility.deep.neural.rotary_decoder import rotary_decoder
+from dense_armor.core.deep.neural.rotary_decoder import rotary_decoder
 
 m = rotary_decoder(65, 64, 4, 2, 256, key=jax.random.PRNGKey(0), remat=True)
 print(m.blocks[0])

@@ -6,8 +6,8 @@ import numpy as np
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.online.neighbors import KNNClassifier, KNNRegressor, LazySearch
-from dense_armor.utility.online.neighbors import knn as knn_mod
+from dense_armor.core.online.neighbors import KNNClassifier, KNNRegressor, LazySearch
+from dense_armor.core.online.neighbors import knn as knn_mod
 
 
 def test_doctests():

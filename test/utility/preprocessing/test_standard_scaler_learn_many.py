@@ -7,7 +7,7 @@ test states on both sides: equal inside it, different outside it.
 import numpy as np
 import pytest
 
-from dense_armor.utility.signals.preprocessing.scale import StandardScaler
+from dense_armor.core.signals.preprocessing.scale import StandardScaler
 
 TOL = 1e-12
 

@@ -6,9 +6,9 @@ import numpy as np
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.online.facto import FMClassifier, FMRegressor
-from dense_armor.utility.online.facto import fm as fm_module
-from dense_armor.utility.online.optim import SGD
+from dense_armor.core.online.facto import FMClassifier, FMRegressor
+from dense_armor.core.online.facto import fm as fm_module
+from dense_armor.core.online.optim import SGD
 
 
 def _factory_reg():

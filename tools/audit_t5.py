@@ -536,11 +536,11 @@ blocked_by_copy = {"MondrianForestRegressor", "_MondrianTree (mondrian)"}
 
 
 def main():
-    from dense_armor.utility.online.forest import oxt
-    from dense_armor.utility.online.rules import amrules
+    from dense_armor.core.online.forest import oxt
+    from dense_armor.core.online.rules import amrules
 
     t0 = time.perf_counter()
-    from dense_armor.utility.online.tree import fimt, hoeffding, mondrian, sgt
+    from dense_armor.core.online.tree import fimt, hoeffding, mondrian, sgt
 
     x = stream()[:, 0]
     X2 = stream(d=2)

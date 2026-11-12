@@ -2,7 +2,7 @@
 
 import pytest
 
-from dense_armor.utility.finance.pretrade import Decision, PreTradeChecker
+from dense_armor.core.finance.pretrade import Decision, PreTradeChecker
 
 
 def _checker(**kw):

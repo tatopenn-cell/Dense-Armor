@@ -17,7 +17,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 
-from dense_armor.utility.online.bayes import BernoulliNB, MultinomialNB
+from dense_armor.core.online.bayes import BernoulliNB, MultinomialNB
 
 HERE = Path(__file__).resolve().parent
 

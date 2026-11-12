@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from dense_armor.utility.signals.datasets import Casper
+from dense_armor.core.signals.datasets import Casper
 
 
 def _write_mini(path: Path) -> None:

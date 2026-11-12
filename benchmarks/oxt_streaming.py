@@ -24,10 +24,10 @@ import time
 import numpy as np
 from scipy.stats import wilcoxon
 
-from dense_armor.utility.signals.datasets import DriftStream
-from dense_armor.utility.online.forest import OnlineExtraTreesRegressor
-from dense_armor.utility.online.rules import AMRulesRegressor
-from dense_armor.utility.online.tree import MondrianForestRegressor
+from dense_armor.core.online.forest import OnlineExtraTreesRegressor
+from dense_armor.core.online.rules import AMRulesRegressor
+from dense_armor.core.online.tree import MondrianForestRegressor
+from dense_armor.core.signals.datasets import DriftStream
 
 N, D = 2000, 4
 WINDOWS = {"before": (700, 1000), "first100": (1000, 1100), "after+200": (1200, 1500)}

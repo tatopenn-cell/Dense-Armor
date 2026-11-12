@@ -14,7 +14,7 @@ The attacks are the common ones against a signal filter: gradient attacks
 (PGD, BIM, MI-FGSM), geometric attacks (affine, elastic), a frequency-domain
 attack (Fourier broadband), and three optimisation attacks (Carlini-Wagner
 in L2 and L-inf, DeepFool). Every attack runs against the *same* engine the
-library ships — `dense_armor.core.engine.AdaptiveSignalStabilizer` — not a
+library ships — `dense_armor.utility.engine.AdaptiveSignalStabilizer` — not a
 simplified copy.
 
 ## 2. The measured defense
@@ -70,7 +70,7 @@ the toolkit that runs the benchmark is in [toolkit/toolkit.md](toolkit/toolkit.m
 ### Choices stated explicitly
 
 - **The attacks run against the shipped engine, not a copy.** The tests
-  import `dense_armor.core.engine.AdaptiveSignalStabilizer` directly.
+  import `dense_armor.utility.engine.AdaptiveSignalStabilizer` directly.
   A number measured on a re-implementation would not generalise.
 - **The tables report the defense, not the loss.** The metric is the
   fraction of the original signal preserved after the attack, or the

@@ -74,7 +74,7 @@ select = ["E4", "E7", "E9", "F", "I", "UP"]
 "dense_armor/__init__.py" = ["E402"]
 "dense_armor/checks/check_estimator.py" = ["E402"]
 "dense_armor/roles/__init__.py" = ["E402", "F401"]
-"dense_armor/core/__init__.py" = ["F401"]
+"dense_armor/utility/__init__.py" = ["F401"]
 
 [[tool.mypy.overrides]]
 module = ["sounddevice", "pyulog", "pyulog.*", "pymavlink", "pymavlink.*", "paho.*", "yaml", "psutil", "scipy", "scipy.*", "zmq", "confluent_kafka", "quickfix"]

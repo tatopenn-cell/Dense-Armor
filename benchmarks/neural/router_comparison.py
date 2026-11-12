@@ -1,12 +1,15 @@
 """Benchmark: linear vs mondrian vs random router of ResidualTree."""
 
-import sys, time
+import sys
+import time
 from pathlib import Path
-import numpy as np
+
 import jax.numpy as jnp
+import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from dense_armor.utility.deep.neural.consolidation import ResidualTree
+from dense_armor.core.deep.neural.consolidation import ResidualTree
+
 
 def make_data(n, seed):
     rng = np.random.RandomState(seed)
@@ -63,6 +66,7 @@ for name in ("linear", "mondrian", "random"):
 
 # Wilcoxon su insert e read linear vs mondrian
 from scipy.stats import wilcoxon
+
 for metric in ("insert_ms", "read_ms", "mse", "n_nodes"):
     a = np.array([r[metric] for r in all_rows["mondrian"]])
     b = np.array([r[metric] for r in all_rows["linear"]])

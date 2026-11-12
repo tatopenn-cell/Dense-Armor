@@ -45,7 +45,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
+from dense_armor.core.online.drift.detector import CUSUMDriftDetector
 
 GRAVITY_NED = np.array([0.0, 0.0, 9.81])
 DEFAULT_CUSUM = {

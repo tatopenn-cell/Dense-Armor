@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from dense_armor.utility.finance.schedule import twap_schedule, vwap_schedule
+from dense_armor.core.finance.schedule import twap_schedule, vwap_schedule
 
 
 def test_vwap_hand_case_from_the_item():

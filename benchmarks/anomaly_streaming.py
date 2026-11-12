@@ -39,6 +39,7 @@ import time
 from pathlib import Path
 
 import numpy as np
+
 _roc_auc_score = None
 
 def _roc_auc_score(y_true, y_score):
@@ -66,15 +67,15 @@ def _roc_auc_score(y_true, y_score):
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from dense_armor.utility.online.anomaly.hst import HalfSpaceTrees
-from dense_armor.utility.online.anomaly.loda import LODA
-from dense_armor.utility.online.anomaly.lof import LocalOutlierFactor
-from dense_armor.utility.online.anomaly.mahalanobis import (
+from dense_armor.core.online.anomaly.hst import HalfSpaceTrees
+from dense_armor.core.online.anomaly.loda import LODA
+from dense_armor.core.online.anomaly.lof import LocalOutlierFactor
+from dense_armor.core.online.anomaly.mahalanobis import (
     OnlineRobustMahalanobis,
 )
-from dense_armor.utility.online.anomaly.ocsvm import OneClassSGD
-from dense_armor.utility.online.anomaly.oiforest import OnlineIsolationForest
-from dense_armor.utility.signals.datasets import DriftStream, SyntheticArm
+from dense_armor.core.online.anomaly.ocsvm import OneClassSGD
+from dense_armor.core.online.anomaly.oiforest import OnlineIsolationForest
+from dense_armor.core.signals.datasets import DriftStream, SyntheticArm
 
 URDF = Path("test/fixtures/urdf/panda.urdf")
 

@@ -13,7 +13,7 @@ import numpy as np
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.signals.stats import StudentT
+from dense_armor.core.signals.stats import StudentT
 
 SEED = 20261026
 

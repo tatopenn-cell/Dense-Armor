@@ -28,8 +28,8 @@ from pathlib import Path
 
 import numpy as np
 
-from dense_armor.utility.signals.vision.dense import DenseFlow
-from dense_armor.utility.signals.vision.features import FrameFeatures
+from dense_armor.core.signals.vision.dense import DenseFlow
+from dense_armor.core.signals.vision.features import FrameFeatures
 
 SHIFTS = [(1, 1), (3, 2), (6, 4), (10, 6)]
 SIZES = [64, 128]

@@ -1,12 +1,12 @@
-"""Tests for dense_armor/utility/signals/stats/quantiles.py."""
+"""Tests for dense_armor/core/signals/stats/quantiles.py."""
 import doctest
 
 import numpy as np
 import pytest
 
-import dense_armor.utility.signals.stats.quantiles as quantiles_mod
-from dense_armor.utility.signals.stats.quantiles import DDSketch, TDigest
+import dense_armor.core.signals.stats.quantiles as quantiles_mod
 from dense_armor.checks import check_estimator
+from dense_armor.core.signals.stats.quantiles import DDSketch, TDigest
 
 
 def _stream(n: int = 5000, seed: int = 0, loc: float = 0.0, scale: float = 1.0):

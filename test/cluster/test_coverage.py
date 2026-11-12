@@ -2,9 +2,9 @@
 import numpy as np
 import pytest
 
-from dense_armor.utility.online.cluster.denstream import DenStream
-from dense_armor.utility.online.cluster.kmeans import OnlineKMeans
-from dense_armor.utility.signals.vision.vocabulary import BagOfVisualWords
+from dense_armor.core.online.cluster.denstream import DenStream
+from dense_armor.core.online.cluster.kmeans import OnlineKMeans
+from dense_armor.core.signals.vision.vocabulary import BagOfVisualWords
 
 
 def test_kmeans_invalid_inputs_and_arguments():

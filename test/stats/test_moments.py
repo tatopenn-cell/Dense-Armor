@@ -1,17 +1,17 @@
-"""Tests for dense_armor/utility/signals/stats/moments.py."""
+"""Tests for dense_armor/core/signals/stats/moments.py."""
 import doctest
 
 import numpy as np
 import pytest
 from scipy import stats as scipy_stats
 
-import dense_armor.utility.signals.stats.moments as moments_mod
-from dense_armor.utility.signals.stats.moments import (
+import dense_armor.core.signals.stats.moments as moments_mod
+from dense_armor.checks import check_estimator
+from dense_armor.core.signals.stats.moments import (
+    EWStats,
     RunningMoments,
     RunningMomentsVector,
-    EWStats,
 )
-from dense_armor.checks import check_estimator
 
 
 def _stream(n: int = 1000, seed: int = 0):

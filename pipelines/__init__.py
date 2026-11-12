@@ -1,6 +1,6 @@
 """Ready-to-use pipelines. THE PRODUCT.
 
-A pipeline chains the primitive tools from :mod:`dense_armor.utility`
+A pipeline chains the primitive tools from :mod:`dense_armor.core`
 in a documented order to solve one standard client problem. Pipelines
 do not implement new algorithms; they only orchestrate existing ones
 and expose them under a single class with a clear input / output.

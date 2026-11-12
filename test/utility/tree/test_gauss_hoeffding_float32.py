@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier, _Gauss
+from dense_armor.core.online.tree.hoeffding import HoeffdingTreeClassifier, _Gauss
 
 
 def _stream(n=100_000, seed=0):

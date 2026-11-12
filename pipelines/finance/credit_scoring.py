@@ -16,8 +16,8 @@ respectively.
 
 from dataclasses import dataclass
 
-from dense_armor.utility.online.tree.mondrian import MondrianForestClassifier
-from dense_armor.utility.online.tree.sgt import SGTClassifier
+from dense_armor.core.online.tree.mondrian import MondrianForestClassifier
+from dense_armor.core.online.tree.sgt import SGTClassifier
 
 
 @dataclass

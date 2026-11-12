@@ -4,12 +4,12 @@ import numpy as np
 import pytest
 from sklearn import metrics as skm
 
-from dense_armor.utility.evaluation.evaluate import (
+from dense_armor.core.evaluation.evaluate import (
     best_of,
     progressive_val_proba_score,
     progressive_val_score,
 )
-from dense_armor.utility.evaluation.metrics import (
+from dense_armor.core.evaluation.metrics import (
     F1,
     Accuracy,
     BrierScore,

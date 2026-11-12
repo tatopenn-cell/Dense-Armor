@@ -17,7 +17,7 @@ SCRIPT = """
 import warnings
 warnings.filterwarnings("error", message=".*requested dtype.*")
 import numpy as np
-from dense_armor.core.engine import AdaptiveSignalStabilizer
+from dense_armor.utility.engine import AdaptiveSignalStabilizer
 
 x = np.random.default_rng(0).normal(size=64)
 x[20] = 40.0

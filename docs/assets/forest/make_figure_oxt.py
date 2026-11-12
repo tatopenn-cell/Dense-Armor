@@ -1,16 +1,18 @@
 import sys
 from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dense_armor.utility.signals.datasets import DriftStream
-from dense_armor.utility.online.forest import OnlineExtraTreesRegressor
-from dense_armor.utility.online.rules import AMRulesRegressor
-from dense_armor.utility.online.tree import MondrianForestRegressor
+from dense_armor.core.online.forest import OnlineExtraTreesRegressor
+from dense_armor.core.online.rules import AMRulesRegressor
+from dense_armor.core.online.tree import MondrianForestRegressor
+from dense_armor.core.signals.datasets import DriftStream
 
 out = Path(__file__).parent
 N, D = 2000, 4

@@ -25,7 +25,7 @@ from pathlib import Path
 
 import numpy as np
 
-from dense_armor.utility.online.drift.cusum import cusum_detector, two_sided_arl
+from dense_armor.core.online.drift.cusum import cusum_detector, two_sided_arl
 
 K = 0.5
 N = 1000

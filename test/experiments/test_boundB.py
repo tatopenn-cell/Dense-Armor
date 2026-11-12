@@ -1,7 +1,14 @@
-import sys, os, time
-import pytest, numpy as np, jax, jax.numpy as jnp
+import os
+import sys
+import time
+
+import jax
+import jax.numpy as jnp
+import numpy as np
 import psutil  # Rilevamento telemetria hardware live
-from dense_armor.core.engine import AdaptiveSignalStabilizer
+import pytest
+
+from dense_armor.utility.engine import AdaptiveSignalStabilizer
 
 # Configurazione globale asse XLA
 jax.config.update("jax_enable_x64", True)

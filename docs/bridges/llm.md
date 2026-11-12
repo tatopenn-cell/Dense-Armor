@@ -10,7 +10,7 @@ The bridge has no extra package: `embed` is yours. The examples use the length o
 
 ```python
 from dense_armor.bridges.llm import LLMEmbeddingClassifier
-from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB
+from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB
 
 def embed(t):
     return [len(t)]
@@ -36,7 +36,7 @@ short long
 ```python
 import json
 from dense_armor.bridges.llm import LLMEmbeddingClassifier
-from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB
+from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB
 
 def embed(t):
     return [len(t)]
@@ -63,7 +63,7 @@ A `label` that is missing or `null` raises `ValueError`, because a label-less sa
 
 ```python
 from dense_armor.bridges.llm import LLMEmbeddingClassifier
-from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB
+from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB
 
 def embed(t):
     return [len(t)]

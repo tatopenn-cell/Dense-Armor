@@ -17,7 +17,7 @@ import time
 import numpy as np
 
 from dense_armor.bridges.sklearn import SklearnTransformer
-from dense_armor.utility.signals.preprocessing.scale import StandardScaler
+from dense_armor.core.signals.preprocessing.scale import StandardScaler
 
 CLAIM = "the block path is not slower than the row loop, median of 7 runs"
 

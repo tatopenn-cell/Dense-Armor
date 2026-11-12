@@ -61,7 +61,7 @@ adapts when the class-conditional distributions change.
 
 ```python
 import numpy as np
-from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB
+from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB
 
 rng = np.random.default_rng(42)
 s = np.zeros(6000, int)
@@ -128,8 +128,8 @@ gives the detector a stable scale.
 
 ```python
 import numpy as np
-from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB, DriftAdaptiveClassifier
-from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
+from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB, DriftAdaptiveClassifier
+from dense_armor.core.online.drift.detector import CUSUMDriftDetector
 
 rng = np.random.default_rng(42)
 s = np.zeros(6000, int)
@@ -209,7 +209,7 @@ could be timed.
 
 ## API reference
 
-::: dense_armor.utility.online.learn.online_classifiers
+::: dense_armor.core.online.learn.online_classifiers
 
 ---
 

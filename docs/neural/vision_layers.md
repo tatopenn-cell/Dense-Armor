@@ -32,7 +32,7 @@ A `Conv2D` holds a weight of shape `(k, k, c_in, c_out)` and a bias of shape `(c
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.deep.neural.conv import Conv2D
+from dense_armor.core.deep.neural.conv import Conv2D
 
 c = Conv2D(1, 1, 3, jax.random.PRNGKey(0))
 c.W.value = jnp.ones_like(c.W.value)
@@ -57,7 +57,7 @@ A `MaxPool2D(2)` divides the image into 2 by 2 blocks with no overlap and return
 ~~~python
 import jax.numpy as jnp
 import numpy as np
-from dense_armor.utility.deep.neural.conv import MaxPool2D
+from dense_armor.core.deep.neural.conv import MaxPool2D
 
 p = MaxPool2D(2)
 x = jnp.arange(16.0).reshape(4, 4, 1)
@@ -77,7 +77,7 @@ A `MaxPool1D` slides a window along the length of a sequence, channel by channel
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.deep.neural.conv import MaxPool1D
+from dense_armor.core.deep.neural.conv import MaxPool1D
 
 p = MaxPool1D(2)
 x = jnp.array([[1.0], [3.0], [2.0], [4.0]])
@@ -100,7 +100,7 @@ An `AvgPool1D` computes the same windows of `MaxPool1D` but returns the mean, no
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.deep.neural.conv import AvgPool1D
+from dense_armor.core.deep.neural.conv import AvgPool1D
 
 p = AvgPool1D(2)
 x = jnp.array([[1.0], [3.0], [2.0], [4.0]])
@@ -123,7 +123,7 @@ An `AvgPool2D` is the same idea in two dimensions: 2 by 2 windows with no overla
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.deep.neural.conv import AvgPool2D
+from dense_armor.core.deep.neural.conv import AvgPool2D
 
 p = AvgPool2D(2)
 x = jnp.array([[[1.0], [2.0]], [[3.0], [4.0]]])
@@ -146,7 +146,7 @@ A `Flatten` merges every axis after the first (the batch axis, when there is one
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.utility.deep.neural.conv import Flatten
+from dense_armor.core.deep.neural.conv import Flatten
 
 f = Flatten()
 print(f.forward(jnp.ones((2, 3, 4))).shape)
@@ -167,7 +167,7 @@ A CNN is a chain: a `Conv2D`, an activation, a `MaxPool2D`, then a `Flatten` and
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.deep.neural.models import cnn
+from dense_armor.core.deep.neural.models import cnn
 
 m = cnn((8, 8, 1), [4], 2, jax.random.PRNGKey(0))
 print(len(m.params()))
@@ -190,7 +190,7 @@ A causal `Conv1D` predicts the step `t` from the steps up to `t`. The library pa
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.deep.neural.conv import Conv1D
+from dense_armor.core.deep.neural.conv import Conv1D
 
 c = Conv1D(1, 1, 3, jax.random.PRNGKey(0), causal=True)
 seq = jnp.arange(6.0).reshape(6, 1)
@@ -217,7 +217,7 @@ A convolution works on a batch and on a single sample with the same `forward` an
 import jax
 import jax.numpy as jnp
 import numpy as np
-from dense_armor.utility.deep.neural.conv import Conv2D
+from dense_armor.core.deep.neural.conv import Conv2D
 
 c = Conv2D(1, 2, 3, jax.random.PRNGKey(0))
 xb = jax.random.normal(jax.random.PRNGKey(1), (4, 5, 5, 1))

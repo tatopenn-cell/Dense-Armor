@@ -19,7 +19,7 @@ The table below is the full run (1,000,000 items, 5 runs, median and IQR), from 
 `SharedStrings` stores the strings in one UTF-8 buffer, with an `int64` offsets array; reading item `i` decodes only item `i`. `SharedList` stores the pickled items in one buffer, with the same offsets array; reading item `i` unpickles only item `i`. Both keep the data off the Python heap, in a `SharedMemory` block (`/dev/shm` on Linux).
 
 ```python
-from dense_armor.utility.infrastructure.data import SharedStrings
+from dense_armor.core.infrastructure.data import SharedStrings
 
 paths = [f"/data/img_{i:06d}.png" for i in range(1000)]
 ss = SharedStrings(paths)
@@ -40,7 +40,7 @@ A handle can be pickled. The pickle carries only the block names and the lengths
 
 ```python
 import pickle
-from dense_armor.utility.infrastructure.data import SharedStrings
+from dense_armor.core.infrastructure.data import SharedStrings
 
 ss = SharedStrings([f"/data/img_{i:06d}.png" for i in range(100_000)])
 att = pickle.loads(pickle.dumps(ss))
@@ -58,7 +58,7 @@ The unpickled handle `att` attaches to the same blocks; closing it never frees t
 
 ```python
 import multiprocessing as mp
-from dense_armor.utility.infrastructure.data import SharedStrings
+from dense_armor.core.infrastructure.data import SharedStrings
 
 
 def read(args):
@@ -84,7 +84,7 @@ A desk keeps one file of ticks per ticker and per day, and the list of paths gro
 
 ```python
 import multiprocessing as mp
-from dense_armor.utility.infrastructure.data import SharedStrings
+from dense_armor.core.infrastructure.data import SharedStrings
 
 
 def ticker(args):

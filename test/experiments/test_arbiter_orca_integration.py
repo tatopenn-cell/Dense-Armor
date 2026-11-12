@@ -17,11 +17,12 @@ import logging
 import pathlib
 
 import jax
+
 jax.config.update("jax_enable_x64", True)
 
 import numpy as np
 
-from dense_armor.utility.online.protect.orca import Orca
+from dense_armor.core.online.protect.orca import Orca
 
 _TEST_DIR = pathlib.Path(__file__).resolve().parent
 
@@ -87,7 +88,7 @@ def test_arbiter_detects_the_real_regime_transition_in_scenario_f():
     # gli indici etichettati 'regime' devono includere la transizione
     # vera (indice 60) -- prima del fix alla finestra causale, NESSUN
     # punto veniva etichettato 'regime' qui (deviazione sempre 0).
-    from dense_armor.utility.online.protect.arbiter import classify_segments
+    from dense_armor.core.online.protect.arbiter import classify_segments
     _, dati, _ = SCENARI["F"]
     etichette, _, _ = classify_segments(dati)
     regime_idx = np.where(etichette == "regime")[0]

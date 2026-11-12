@@ -11,7 +11,7 @@ import time
 from collections import Counter
 from pathlib import Path
 
-from dense_armor.utility.finance.pretrade import PreTradeChecker
+from dense_armor.core.finance.pretrade import PreTradeChecker
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = ROOT / "test/fixtures/finance/coinbase_btcusd_trades.csv"

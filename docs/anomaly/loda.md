@@ -82,7 +82,7 @@ bin the window never visits.
 
 ```python
 import numpy as np
-from dense_armor.utility.online.anomaly.loda import LODA
+from dense_armor.core.online.anomaly.loda import LODA
 
 rng = np.random.default_rng(0)
 det = LODA(n_projections=50, n_bins=10, window=200, range_init=50, seed=0)
@@ -115,7 +115,7 @@ The same detector on a market stream. Each day has two numbers: the return in pe
 
 ```python
 import numpy as np
-from dense_armor.utility.online.anomaly.loda import LODA
+from dense_armor.core.online.anomaly.loda import LODA
 
 rng = np.random.default_rng(0)
 
@@ -149,8 +149,8 @@ t = 2 s) shifts the residual on joints 1-5 by tens of N·m; the healthy run stay
 
 ```python
 from pathlib import Path
-from dense_armor.utility.online.anomaly.loda import LODA
-from dense_armor.utility.signals.datasets import SyntheticArm
+from dense_armor.core.online.anomaly.loda import LODA
+from dense_armor.core.signals.datasets import SyntheticArm
 
 ds = SyntheticArm(
     Path("test/fixtures/urdf/panda.urdf"),

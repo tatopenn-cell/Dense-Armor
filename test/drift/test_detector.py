@@ -1,9 +1,9 @@
-"""Unit tests for dense_armor/utility/online/drift/detector.py."""
+"""Unit tests for dense_armor/core/online/drift/detector.py."""
 import numpy as np
 import pytest
 
-from dense_armor.utility.online.drift.cusum import cusum_detector
-from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
+from dense_armor.core.online.drift.cusum import cusum_detector
+from dense_armor.core.online.drift.detector import CUSUMDriftDetector
 
 
 def test_equivalence_with_batch_adaptive():

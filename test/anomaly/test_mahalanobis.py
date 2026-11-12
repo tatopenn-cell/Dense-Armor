@@ -19,7 +19,7 @@ import numpy as np
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.online.anomaly.mahalanobis import (
+from dense_armor.core.online.anomaly.mahalanobis import (
     OnlineRobustMahalanobis,
 )
 

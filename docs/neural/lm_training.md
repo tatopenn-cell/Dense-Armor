@@ -85,7 +85,7 @@ On one device the final validation loss is 2.0124, the bigram baseline is 2.4819
 
 ## 5. The variance: the training stabilises on one device, not on two
 
-The variance of the per-step training loss, computed by `stable_var` from `dense_armor.utility.signals.stats.stable`. Two windows: the first 100 steps against the last 100, and the last 100 against the 100 before them (401-500 vs 301-400). The second is the honest one: the first window includes the descent from 4.80 to 2.50, so its variance is large by construction.
+The variance of the per-step training loss, computed by `stable_var` from `dense_armor.core.signals.stats.stable`. Two windows: the first 100 steps against the last 100, and the last 100 against the 100 before them (401-500 vs 301-400). The second is the honest one: the first window includes the descent from 4.80 to 2.50, so its variance is large by construction.
 
 ```python
 import json

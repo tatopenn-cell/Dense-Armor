@@ -8,8 +8,8 @@ An online algorithm learns one row at a time with `learn_one`. `fit` takes all t
 
 ```python
 import numpy as np
-from dense_armor.utility.online.linear.glm import LinearRegression
-from dense_armor.utility.online.optim.sgd import SGD
+from dense_armor.core.online.linear.glm import LinearRegression
+from dense_armor.core.online.optim.sgd import SGD
 
 rng = np.random.default_rng(0)
 X = [{"a": float(u), "b": float(v)} for u, v in rng.normal(size=(200, 2))]
@@ -50,7 +50,7 @@ Most of the library learns one row at a time. Three pieces learn from all the ro
 `BatchDecisionTreeClassifier` builds a CART tree from all the rows at once.
 
 ```python
-from dense_armor.utility.online.tree.batch import BatchDecisionTreeClassifier
+from dense_armor.core.online.tree.batch import BatchDecisionTreeClassifier
 
 X = [{"x": 0.0}, {"x": 1.0}, {"x": 2.0}, {"x": 3.0}]
 y = [0, 0, 1, 1]
@@ -69,8 +69,8 @@ At each node the tree takes the feature and the threshold with the lowest weight
 `OnlineBaggingClassifier.fit_batch` fits each member on a bootstrap of the dataset, the same size with replacement, as in the batch protocol of Oza and Russell (2001), section 2, page 2.
 
 ```python
-from dense_armor.utility.online.ensemble.bagging import OnlineBaggingClassifier
-from dense_armor.utility.online.tree.batch import BatchDecisionTreeClassifier
+from dense_armor.core.online.ensemble.bagging import OnlineBaggingClassifier
+from dense_armor.core.online.tree.batch import BatchDecisionTreeClassifier
 
 X = [{"x": float(i)} for i in range(8)]
 y = [0, 0, 0, 0, 1, 1, 1, 1]
@@ -90,7 +90,7 @@ The row with `x = 1.0` gets the class 0, the row with `x = 6.0` the class 1, and
 `TextVectorizer.fit` builds the vocabulary and the document frequencies from a list of documents; `learn_one` builds the same state one document at a time.
 
 ```python
-from dense_armor.utility.signals.preprocessing.vectorizer import TextVectorizer
+from dense_armor.core.signals.preprocessing.vectorizer import TextVectorizer
 
 docs = ["the quick brown fox", "a quick brown dog", "the fox and the dog"]
 a = TextVectorizer().fit(docs)

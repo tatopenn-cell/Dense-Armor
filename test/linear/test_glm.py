@@ -1,4 +1,4 @@
-"""Tests for the online GLM in dense_armor.utility.online.linear.glm."""
+"""Tests for the online GLM in dense_armor.core.online.linear.glm."""
 
 import doctest
 
@@ -6,16 +6,16 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.roles.signal import Signal
-from dense_armor.utility.online.linear import glm as glm_mod
-from dense_armor.utility.online.linear.glm import LinearRegression, LogisticRegression
-from dense_armor.utility.online.optim import (
+from dense_armor.core.online.linear import glm as glm_mod
+from dense_armor.core.online.linear.glm import LinearRegression, LogisticRegression
+from dense_armor.core.online.optim import (
     SGD,
     AdaGrad,
     Adam,
     FTRLProximal,
     OnlineNewtonStep,
 )
+from dense_armor.roles.signal import Signal
 
 
 def test_doctests():

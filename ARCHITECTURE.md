@@ -8,7 +8,9 @@ every file. Update it whenever a module is added, moved or renamed.
 1. `roles` — the base classes every estimator builds on: `Estimator`, `Classifier`,
    `Regressor`, `Transformer`, `AnomalyDetector`, `DriftDetector`, `Protected`, `Signal` and
    the other support classes.
-2. `utility` — the online-learning library: 33 subpackages in seven groups, and the audio section.
+2. `core` — the online-learning library: 33 subpackages in seven groups, and the audio section.
+   (Before the names were swapped this folder was `utility` and the shielding engine of item 6
+   was `core`.)
    `online/` (`learn`, `optim`, `linear`, `timeseries`, `cluster`, `tree`, `forest`, `ensemble`,
    `bandit`, `active`, `facto`, `reco`, `rules`, `bayes`, `neighbors`, `multiclass`, `multioutput`,
    `proba`, `anomaly`, `drift`, `protect`), `deep/` (`neural`), `signals/` (`stream`, `stats`,
@@ -16,13 +18,14 @@ every file. Update it whenever a module is added, moved or renamed.
    `metrics`), `infrastructure/` (`compose`, `data`) and `finance/` (`schedule`, `pretrade`,
    `itch`, `ring`, `config`, `decision_log`, `feed`, `status`, `synthetic`, `demo`, `audit_db`, `fix_gateway`).
    The audio section is the folder `audio/`, beside these groups: `Audio`, WAV, windows, STFT,
-   generators, filters, NMF, pitch units and streams, in modules of their own. The old paths, for example `dense_armor.utility.bandit.ucb`, still
-   resolve to the same modules (`_compat.py`).
+   generators, filters, NMF, pitch units and streams, in modules of their own. The old paths, for example `dense_armor.utility.bandit.ucb` or
+   `dense_armor.utility.online.bandit.ucb`, still resolve to the same modules, and so do the old
+   engine paths `dense_armor.core.engine` and the like (`_compat.py`).
 3. `dynamics` — rigid-body dynamics from URDF.
 4. `checks` — `check_estimator` and the robot checks.
 5. `bridges` — optional bridges (LLM embeddings, and a bridge to existing online-learning
    libraries, scikit-learn, PyTorch and TensorFlow/Keras).
-6. `core` and `armor.py` — the signal-shielding engine and its public class `Armor`.
+6. `utility` and `armor.py` — the signal-shielding engine and its public class `Armor`.
 7. `mcp_server` — the MCP tool adapter.
 8. `ml` — the machine learning classes: they read a whole table with `fit`, family by family.
 
@@ -36,7 +39,7 @@ graph TD
         PROT["Protected, Signal"]
     end
 
-    subgraph UTIL["2. utility/"]
+    subgraph UTIL["2. core/"]
         STREAM["stream: iter_csv, iter_rosbag,<br/>merge_by_time, shuffle"]
         DATASETS["datasets: Casper, DriftStream,<br/>SyntheticArm"]
         COMPOSE["compose: Select, Discard,<br/>FuncTransformer"]
@@ -87,7 +90,7 @@ graph TD
         TFB["from_keras, to_tf"]
     end
 
-    subgraph CORE["6. core/ and armor.py"]
+    subgraph CORE["6. utility/ and armor.py"]
         ARM["Armor"]
         HYB["hybrid_shield,<br/>AdaptiveSignalStabilizer"]
     end
@@ -125,7 +128,7 @@ graph TD
 | `safety.py` | `Health`, `HealthMonitor`, `SafeEstimator` | health monitor and safe wrapper |
 | `signal.py` | `Signal`, `SignalBatch` | `Signal`: dict-like one-sample reading with units and timestamp. `SignalBatch`: ``n`` samples of ``d`` channels for code that works on vectors; it is not a dict, `row(i)` gives a `Signal`, and a batch with zero rows is valid (`t` is `None`) |
 | `transformer.py` | `Transformer`, `TransformerSupervised` | base classes for transformers |
-| `uncertainty.py` | `Estimate`, `AdaptiveConformalRegressor`, `OnlinePlattScaling` (resolved lazily from `utility/online/learn` by a module `__getattr__`, see 1.4) | prediction estimate and conformal regressor; `budget_s` and `memory_class` are read from the wrapped model |
+| `uncertainty.py` | `Estimate`, `AdaptiveConformalRegressor`, `OnlinePlattScaling` (resolved lazily from `core/online/learn` by a module `__getattr__`, see 1.4) | prediction estimate and conformal regressor; `budget_s` and `memory_class` are read from the wrapped model |
 | `wrapper.py` | `ModelWrapper` | delegation wrapper |
 
 ### 1.1 Method contracts
@@ -165,12 +168,12 @@ A part that declares no `budget_s` makes the total `None`, not a smaller number:
 
 ### 1.4 Import direction
 
-`utility` and `ml` import `roles`; `roles` does not import them at module level. The one case that needed the opposite is `OnlinePlattScaling`: `utility/online/learn/calibration.py` imports `Classifier` and `ModelWrapper` from `roles`, whose `__init__` imports `uncertainty`. `uncertainty.py` therefore resolves the name with a module `__getattr__` (PEP 562) and keeps a `TYPE_CHECKING` import for static tools; both import orders work.
+`core` and `ml` import `roles`; `roles` does not import them at module level. The one case that needed the opposite is `OnlinePlattScaling`: `core/online/learn/calibration.py` imports `Classifier` and `ModelWrapper` from `roles`, whose `__init__` imports `uncertainty`. `uncertainty.py` therefore resolves the name with a module `__getattr__` (PEP 562) and keeps a `TYPE_CHECKING` import for static tools; both import orders work.
 
-## 2. utility
+## 2. core
 
 The sections below follow the subpackages; the path of each one is
-`utility/<group>/<subpackage>`, with the group named in the list at the top.
+`core/<group>/<subpackage>`, with the group named in the list at the top.
 
 ### 2.1 stream
 
@@ -538,7 +541,7 @@ Notes on the network files: `Embedding` in `layers.py` skips its range check on 
 |---|---|---|
 | `shared.py` | `SharedArray`, `SharedStrings`, `SharedList`, `SharedDict`, `to_shared` | Objects placed in shared memory, so that several processes read one copy |
 
-Internal helpers, not public: `utility/_validation.py` (`as_dict`, `is_number`, `finite_row`, the three checks shared by several modules), `utility/online/ensemble/_common.py` (`as_dict`, `finite`, `new_member`) and `utility/online/facto/_common.py` (helpers of the factorization machines).
+Internal helpers, not public: `core/_validation.py` (`as_dict`, `is_number`, `finite_row`, the three checks shared by several modules), `core/online/ensemble/_common.py` (`as_dict`, `finite`, `new_member`) and `core/online/facto/_common.py` (helpers of the factorization machines).
 
 ## 3. dynamics
 
@@ -597,7 +600,7 @@ A new skip needs a test of the same kind: it shows that the skip is declared, th
 | `tensorflow.py` | `to_jax`, `to_tf`, `KerasLayer`, `KerasAdapter`, `from_keras` | tensors and Keras layers to and from JAX (needs TensorFlow) |
 | `torch.py` | `to_jax`, `to_torch`, `TorchModule`, `TorchAdapter`, `from_torch` | tensors and `torch.nn` modules to and from JAX (needs PyTorch) |
 
-## 6. core/ and armor.py
+## 6. utility/ and armor.py
 
 | file | public names | what it is |
 |---|---|---|
@@ -646,21 +649,21 @@ One module per family. A class subclasses `MLBase` (which includes `SklearnCompa
 
 ## How data flows
 
-A sample enters as a `Signal` from a reader in `utility/signals/stream` (`iter_csv`, `iter_rosbag`,
-`iter_array`, `merge_by_time`, `shuffle`). It passes through transformers from `utility/infrastructure/compose`
-(`Select`, `Discard`, `FuncTransformer`) and `utility/signals/preprocessing` (scalers, joint
+A sample enters as a `Signal` from a reader in `core/signals/stream` (`iter_csv`, `iter_rosbag`,
+`iter_array`, `merge_by_time`, `shuffle`). It passes through transformers from `core/infrastructure/compose`
+(`Select`, `Discard`, `FuncTransformer`) and `core/signals/preprocessing` (scalers, joint
 derivatives, text). The transformed sample reaches an estimator built on `roles/` — a classifier,
-regressor or anomaly detector from `utility/online/learn`, `utility/online/tree`, `utility/online/forest`,
-`utility/online/bayes`, `utility/online/linear`, `utility/online/neighbors`, `utility/online/rules`, `utility/online/timeseries`,
-`utility/online/ensemble`,
-`utility/online/cluster`. Its
-predictions are scored by a metric from `utility/evaluation/metrics` (`Accuracy`, `RollingAUC`,
-`EventMetrics`) driven by `utility/evaluation/evaluate` (`progressive_val_score`, `evaluate_events`). A
-model can be wrapped in `roles/Protected`, with a detector from `utility/online/anomaly` or
-`utility/online/drift`, to skip learning on flagged samples.
+regressor or anomaly detector from `core/online/learn`, `core/online/tree`, `core/online/forest`,
+`core/online/bayes`, `core/online/linear`, `core/online/neighbors`, `core/online/rules`, `core/online/timeseries`,
+`core/online/ensemble`,
+`core/online/cluster`. Its
+predictions are scored by a metric from `core/evaluation/metrics` (`Accuracy`, `RollingAUC`,
+`EventMetrics`) driven by `core/evaluation/evaluate` (`progressive_val_score`, `evaluate_events`). A
+model can be wrapped in `roles/Protected`, with a detector from `core/online/anomaly` or
+`core/online/drift`, to skip learning on flagged samples.
 
-A table that is already complete is read at once by the classes of `ml/` with `fit`. A network of `utility/deep/neural` is built from layers, joined in a `Sequential`, trained by a `Trainer` on mini-batches, and placed in a pipeline of `roles/` through `AsTransformer`.
+A table that is already complete is read at once by the classes of `ml/` with `fit`. A network of `core/deep/neural` is built from layers, joined in a `Sequential`, trained by a `Trainer` on mini-batches, and placed in a pipeline of `roles/` through `AsTransformer`.
 
 ## Outside the package
 
-`tools/dashboard/` is the web application (the dashboard of the finance system: `app.py`, `chain.py`, `sections.py`, `templates/` and `static/`), in the second tree `tools/` as the dashboard of Dense-Evolution is. It is not a part of `dense_armor`: `pyproject.toml` lists only `dense_armor*` and `pipelines*` as packages, so the wheel on PyPI does not contain it. It imports the finance primitives of `utility/finance/` and is not imported by them. It is imported as `dashboard` with `tools` on the path and runs with `python -m dashboard.app --config <file.toml>`.
+`tools/dashboard/` is the web application (the dashboard of the finance system: `app.py`, `chain.py`, `sections.py`, `templates/` and `static/`), in the second tree `tools/` as the dashboard of Dense-Evolution is. It is not a part of `dense_armor`: `pyproject.toml` lists only `dense_armor*` and `pipelines*` as packages, so the wheel on PyPI does not contain it. It imports the finance primitives of `core/finance/` and is not imported by them. It is imported as `dashboard` with `tools` on the path and runs with `python -m dashboard.app --config <file.toml>`.

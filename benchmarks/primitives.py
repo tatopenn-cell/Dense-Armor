@@ -16,8 +16,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from text_retrieval import build_corpus
 
-from dense_armor.utility.signals.preprocessing.vectorizer import TextVectorizer
-from dense_armor.utility.signals.stats.similarity import SparseCosineIndex
+from dense_armor.core.signals.preprocessing.vectorizer import TextVectorizer
+from dense_armor.core.signals.stats.similarity import SparseCosineIndex
 
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "primitives.json"

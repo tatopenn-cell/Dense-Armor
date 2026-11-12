@@ -34,7 +34,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from dense_armor.utility.deep.neural.consolidation import (
+from dense_armor.core.deep.neural.consolidation import (
     ArchivalMemory,
     LifecycleMemory,
     PQMemory,
@@ -197,12 +197,12 @@ def main():
 
 def measure_archival_forgetting(seeds, n_events=100):
     """Forgetting of a Trainer with ArchivalMemory as replay source vs baseline."""
-    from dense_armor.utility.deep.neural.activations import Relu
-    from dense_armor.utility.deep.neural.chain import Sequential
-    from dense_armor.utility.deep.neural.layers import Dense
-    from dense_armor.utility.deep.neural.losses import SoftmaxCrossEntropy
-    from dense_armor.utility.deep.neural.trainer import Trainer
-    from dense_armor.utility.online.optim import Adam
+    from dense_armor.core.deep.neural.activations import Relu
+    from dense_armor.core.deep.neural.chain import Sequential
+    from dense_armor.core.deep.neural.layers import Dense
+    from dense_armor.core.deep.neural.losses import SoftmaxCrossEntropy
+    from dense_armor.core.deep.neural.trainer import Trainer
+    from dense_armor.core.online.optim import Adam
     rows = []
     for seed in seeds:
         rng = np.random.RandomState(seed)

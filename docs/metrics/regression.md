@@ -8,8 +8,8 @@ score it before each update.
 
 ```python
 import numpy as np
-from dense_armor.utility.online.learn.online_dynamics import RecursiveLeastSquares
-from dense_armor.utility.evaluation.metrics import MeanAbsoluteError, R2Score, RootMeanSquaredError
+from dense_armor.core.online.learn.online_dynamics import RecursiveLeastSquares
+from dense_armor.core.evaluation.metrics import MeanAbsoluteError, R2Score, RootMeanSquaredError
 
 rng = np.random.default_rng(0)
 rls, ms = RecursiveLeastSquares(), [MeanAbsoluteError(), RootMeanSquaredError(), R2Score()]
@@ -34,7 +34,7 @@ predicting the mean: 0.998 means the model explains almost all the variation.
 A robot arm has several joints. Pass the vector and the metric reports each joint and the mean.
 
 ```python
-from dense_armor.utility.evaluation.metrics import MeanAbsoluteError
+from dense_armor.core.evaluation.metrics import MeanAbsoluteError
 
 m = MeanAbsoluteError()
 m.update([1.0, 2.0], [1.5, 2.5])
@@ -56,8 +56,8 @@ how often the truth falls inside (**coverage**) and how wide the interval is (**
 ```python
 import numpy as np
 from dense_armor.roles import AdaptiveConformalRegressor
-from dense_armor.utility.online.learn.online_dynamics import RecursiveLeastSquares
-from dense_armor.utility.evaluation.metrics import IntervalCoverage, MeanIntervalWidth
+from dense_armor.core.online.learn.online_dynamics import RecursiveLeastSquares
+from dense_armor.core.evaluation.metrics import IntervalCoverage, MeanIntervalWidth
 
 rng = np.random.default_rng(0)
 acr, cov, wid = AdaptiveConformalRegressor(RecursiveLeastSquares(), alpha=0.1), IntervalCoverage(), MeanIntervalWidth()
@@ -82,7 +82,7 @@ at once.
 
 ```python
 from dense_armor.roles import Estimate
-from dense_armor.utility.evaluation.metrics import GaussianNLL
+from dense_armor.core.evaluation.metrics import GaussianNLL
 
 m = GaussianNLL()
 m.update(0.1, Estimate(mean=0.0, var=0.01))

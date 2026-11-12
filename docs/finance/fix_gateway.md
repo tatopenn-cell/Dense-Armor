@@ -65,7 +65,7 @@ for _ in range(100):
     except OSError:
         time.sleep(0.1)
 
-from dense_armor.utility.finance.fix_gateway import send_orders
+from dense_armor.core.finance.fix_gateway import send_orders
 
 reports = send_orders(
     initiator_cfg,
@@ -108,7 +108,7 @@ and unique in the list, `symbol` non-empty, `side` `buy` or `sell`, `qty` and
 `price` finite numbers greater than 0.
 
 ~~~python
-from dense_armor.utility.finance.fix_gateway import send_orders
+from dense_armor.core.finance.fix_gateway import send_orders
 
 try:
     send_orders(
@@ -133,7 +133,7 @@ A `SocketConnectPort` with nothing behind it makes `quickfix` retry forever.
 `ClOrdID` still missing and stops the initiator.
 
 ~~~python
-from dense_armor.utility.finance.fix_gateway import send_orders
+from dense_armor.core.finance.fix_gateway import send_orders
 
 try:
     send_orders(

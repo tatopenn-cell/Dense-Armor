@@ -15,10 +15,10 @@ import time
 
 import numpy as np
 
-from dense_armor.utility.online.learn.online_dynamics import RecursiveLeastSquares
-from dense_armor.utility.online.linear.bayes import BayesianLinearRegression
-from dense_armor.utility.online.linear.glm import LinearRegression
-from dense_armor.utility.online.optim import (
+from dense_armor.core.online.learn.online_dynamics import RecursiveLeastSquares
+from dense_armor.core.online.linear.bayes import BayesianLinearRegression
+from dense_armor.core.online.linear.glm import LinearRegression
+from dense_armor.core.online.optim import (
     SGD,
     AdaGrad,
     Adam,

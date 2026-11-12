@@ -16,7 +16,7 @@ joint velocities as a list; here three joints and three rows.
 
 ```python
 from pathlib import Path
-from dense_armor.utility.signals.stream import iter_csv
+from dense_armor.core.signals.stream import iter_csv
 
 p = Path("arm.csv")
 p.write_text(
@@ -47,7 +47,7 @@ needs them as one stream, in time order.
 
 ```python
 import numpy as np
-from dense_armor.utility.signals.stream import iter_array, merge_by_time
+from dense_armor.core.signals.stream import iter_array, merge_by_time
 
 cam = iter_array(np.array([[1.0], [2.0]]), t=np.array([0.0, 1 / 30]), names=["frame"])
 joints = iter_array(np.array([[0.1], [0.2], [0.3], [0.4]]), t=np.arange(4) / 100, names=["q0"])
@@ -75,7 +75,7 @@ first two, with the torque scaled.
 
 ```python
 from dense_armor.roles import Signal
-from dense_armor.utility.infrastructure.compose import FuncTransformer, Select
+from dense_armor.core.infrastructure.compose import FuncTransformer, Select
 
 sig = Signal(values=[0.5, 2.0, 9.0], names=["q0", "tau0", "temp"], units=["rad", "N m", "C"], t=1.0)
 pipe = Select(keys=("q0", "tau0")) | FuncTransformer(lambda v: v * 2.0, keys=("tau0",))
@@ -98,7 +98,7 @@ stream changes its concept once, half way, gradually: near the change each sampl
 old or the new concept with a probability that follows a sigmoid.
 
 ```python
-from dense_armor.utility.signals.datasets import DriftStream
+from dense_armor.core.signals.datasets import DriftStream
 
 ds = DriftStream(n_samples=20000, n_features=2, n_drifts=1, kind="gradual", spacing=20.0, seed=0)
 ds.data()
@@ -142,7 +142,7 @@ dynamics, sensor noise, and from second 2 a 5 kg payload on the last link.
 
 ```python
 import numpy as np
-from dense_armor.utility.signals.datasets import SyntheticArm
+from dense_armor.core.signals.datasets import SyntheticArm
 
 ds = SyntheticArm("test/fixtures/urdf/panda.urdf", period_s=2.0, rate_hz=50.0, n_cycles=2,
                   fault_at_s=2.0, fault="payload", payload_mass=5.0, seed=0)
@@ -194,9 +194,9 @@ comparison.
 ```python
 from dense_armor.roles.anomaly_detector import AnomalyGate
 from dense_armor.roles.protection import Protected
-from dense_armor.utility.online.anomaly.filters import HampelScorer
-from dense_armor.utility.signals.datasets import SyntheticArm
-from dense_armor.utility.online.learn.online_dynamics import RecursiveLeastSquares
+from dense_armor.core.online.anomaly.filters import HampelScorer
+from dense_armor.core.signals.datasets import SyntheticArm
+from dense_armor.core.online.learn.online_dynamics import RecursiveLeastSquares
 
 ds = SyntheticArm("test/fixtures/urdf/panda.urdf", period_s=2.0, rate_hz=50.0, n_cycles=2,
                   fault_at_s=2.0, fault="payload", payload_mass=5.0, seed=0)
@@ -224,11 +224,11 @@ estimating "normal" while the robot is in trouble.
 
 ## API reference
 
-::: dense_armor.utility.signals.stream
+::: dense_armor.core.signals.stream
 
-::: dense_armor.utility.signals.datasets
+::: dense_armor.core.signals.datasets
 
-::: dense_armor.utility.infrastructure.compose
+::: dense_armor.core.infrastructure.compose
 
 ---
 

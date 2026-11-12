@@ -6,12 +6,13 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dense_armor.utility.online.anomaly.ocsvm import OneClassSGD
-from dense_armor.utility.signals.datasets import DriftStream, SyntheticArm
+from dense_armor.core.online.anomaly.ocsvm import OneClassSGD
+from dense_armor.core.signals.datasets import DriftStream, SyntheticArm
 
 OUT = Path(__file__).parent
 URDF = Path("test/fixtures/urdf/panda.urdf")

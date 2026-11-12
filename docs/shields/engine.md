@@ -21,7 +21,7 @@ starting at sample 2000.
 import jax
 jax.config.update("jax_enable_x64", True)
 import numpy as np
-from dense_armor.core.engine import AdaptiveSignalStabilizer
+from dense_armor.utility.engine import AdaptiveSignalStabilizer
 
 x = 0.5 + 0.1 * np.random.default_rng(42).standard_normal(3000)
 x[1500] = 2.5
@@ -71,8 +71,8 @@ Four calibrated parameter sets ship with the library:
 
 ```python
 import numpy as np
-from dense_armor.core.preset import SIGNAL_STABILIZER_PRESETS
-from dense_armor.core.engine import AdaptiveSignalStabilizer
+from dense_armor.utility.preset import SIGNAL_STABILIZER_PRESETS
+from dense_armor.utility.engine import AdaptiveSignalStabilizer
 
 x = 0.5 + 0.1 * np.random.default_rng(42).standard_normal(3000)
 x[1500] = 2.5
@@ -109,7 +109,7 @@ stabilizer exposes batch methods that vmap over rows:
 
 ```python
 import numpy as np
-from dense_armor.core.engine import AdaptiveSignalStabilizer
+from dense_armor.utility.engine import AdaptiveSignalStabilizer
 
 batch = np.random.default_rng(0).standard_normal((4, 500))
 
@@ -128,7 +128,7 @@ the rows come from different sensors with different amplitudes.
 
 ## API reference
 
-::: dense_armor.core.engine
+::: dense_armor.utility.engine
 
 ---
 

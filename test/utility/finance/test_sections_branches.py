@@ -7,7 +7,6 @@ import types
 from pathlib import Path
 
 import pytest
-
 from dashboard import sections as sec
 
 REPO = Path(__file__).resolve().parents[3]
@@ -134,8 +133,8 @@ def test_a_default_that_cannot_be_imported_is_left_out(monkeypatch):
         def __init__(self, optimizer, metric_learner):
             pass
 
-    monkeypatch.setitem(sys.modules, "dense_armor.utility.online.optim.sgd", None)
-    monkeypatch.setitem(sys.modules, "dense_armor.utility.online.learn.metric_learning", None)
+    monkeypatch.setitem(sys.modules, "dense_armor.core.online.optim.sgd", None)
+    monkeypatch.setitem(sys.modules, "dense_armor.core.online.learn.metric_learning", None)
     assert sec._auto_init_kwargs(Needs) == {}
 
 
@@ -198,7 +197,7 @@ def test_the_returns_of_a_csv_file_and_of_a_stream(tmp_path):
 
 
 def test_a_stream_preview_without_the_datasets_module_is_empty(monkeypatch):
-    monkeypatch.setitem(sys.modules, "dense_armor.utility.signals.datasets", None)
+    monkeypatch.setitem(sys.modules, "dense_armor.core.signals.datasets", None)
     assert sec._driftstream_preview("sudden") == []
 
 
@@ -220,7 +219,7 @@ def test_a_risk_preview_of_a_detector_that_fails_in_each_step(monkeypatch):
         def learn_one(self, r):
             raise ValueError("learn")
 
-    monkeypatch.setattr("dense_armor.utility.online.anomaly.lof.LocalOutlierFactor", Flaky)
+    monkeypatch.setattr("dense_armor.core.online.anomaly.lof.LocalOutlierFactor", Flaky)
     out = sec._risk_preview("anomaly", "lof")
     assert out["error"] is None and out["n"] == 0
 
@@ -228,7 +227,7 @@ def test_a_risk_preview_of_a_detector_that_fails_in_each_step(monkeypatch):
         def __init__(self):
             raise RuntimeError("never")
 
-    monkeypatch.setattr("dense_armor.utility.online.anomaly.hst.HalfSpaceTrees", Never)
+    monkeypatch.setattr("dense_armor.core.online.anomaly.hst.HalfSpaceTrees", Never)
     assert "cannot instantiate Never" in sec._risk_preview("anomaly", "hst")["error"]
 
 
@@ -243,8 +242,8 @@ def test_a_risk_preview_of_a_drift_detector_counts_and_swallows(monkeypatch):
         def update(self, v):
             raise ValueError("update")
 
-    monkeypatch.setattr("dense_armor.utility.online.drift.adwin.ADWIN", Always)
-    monkeypatch.setattr("dense_armor.utility.online.drift.kswin.KSWIN", Raises)
+    monkeypatch.setattr("dense_armor.core.online.drift.adwin.ADWIN", Always)
+    monkeypatch.setattr("dense_armor.core.online.drift.kswin.KSWIN", Raises)
     always = sec._risk_preview("drift", "adwin")
     assert always["n"] > 0 and always["svg"].startswith("<svg")
     assert sec._risk_preview("drift", "kswin")["n"] > 0
@@ -314,7 +313,7 @@ def test_a_detector_that_needs_a_default_is_built_from_the_defaults(monkeypatch)
         def learn_one(self, r):
             pass
 
-    monkeypatch.setattr("dense_armor.utility.online.anomaly.hst.HalfSpaceTrees", Needs)
+    monkeypatch.setattr("dense_armor.core.online.anomaly.hst.HalfSpaceTrees", Needs)
     out = sec._risk_preview("anomaly", "hst")
     assert out["error"] is None and out["n"] > 0
 
@@ -491,7 +490,7 @@ def test_the_hoeffding_piece_with_an_empty_dataset_or_a_tree_that_fails(monkeypa
         m.setattr(sec, "_finance_features", lambda n=1500, **k: ([], []))
         empty = sec.piece_detail("signal", "trees", "hoeffding", {"dataset": "finance"})
         assert empty == {"ok": False, "error": "dataset vuoto"}
-    from dense_armor.utility.online.tree.hoeffding import HoeffdingTreeClassifier
+    from dense_armor.core.online.tree.hoeffding import HoeffdingTreeClassifier
 
     def boom(self, x):
         raise RuntimeError("proba")
@@ -511,7 +510,7 @@ def test_the_signal_page_when_a_default_or_a_preview_fails(monkeypatch):
         return kw
 
     with monkeypatch.context() as m:
-        m.setitem(sys.modules, "dense_armor.utility.online.drift.adwin", None)
+        m.setitem(sys.modules, "dense_armor.core.online.drift.adwin", None)
         m.setattr(sec, "_sig_preview", lambda *a, **k: {"svg": "<svg></svg>", "n": 1, "final_acc": 0.5, "error": None})
         assert sec.signal_page("trees", render, {})["pieces"]
 

@@ -9,7 +9,7 @@ scikit-learn fits a model on the whole table at once; Dense-Armor learns one sam
 ```python
 import numpy as np
 from dense_armor.bridges.sklearn import SklearnClassifier
-from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB
+from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB
 
 X = np.array([[0.0], [1.0], [2.0], [3.0], [4.0], [5.0]])
 y = np.array([0, 0, 0, 1, 1, 1])
@@ -28,8 +28,8 @@ The same pattern covers a Dense-Armor regressor with `SklearnRegressor` and a De
 ```python
 import numpy as np
 from dense_armor.bridges.sklearn import SklearnRegressor
-from dense_armor.utility.online.linear.glm import LinearRegression
-from dense_armor.utility.online.optim import SGD
+from dense_armor.core.online.linear.glm import LinearRegression
+from dense_armor.core.online.optim import SGD
 
 X = np.array([[0.0], [1.0], [2.0], [3.0], [4.0], [5.0]])
 y = np.array([0.0, 1.0, 2.0, 3.0, 4.0, 5.0])
@@ -88,7 +88,7 @@ The block below feeds 100 batches of 500,000 rows of the constant `1.79e301` (th
 ```python
 import numpy as np
 from dense_armor.bridges.sklearn import SklearnTransformer
-from dense_armor.utility.signals.preprocessing.scale import StandardScaler
+from dense_armor.core.signals.preprocessing.scale import StandardScaler
 
 v = np.finfo(float).max / 1e7
 sc = SklearnTransformer(StandardScaler)
@@ -124,7 +124,7 @@ The count is the number of samples, the mean is finite and equal to the value, a
 
 ### Measured cost
 
-The bridge adds one `partial_fit` call per row on the wrapped scikit-learn estimator, and one `predict_one` per row on the wrapper. The Dense-Armor `utility/` classifiers it wraps are O(window) or O(1) per `learn_one`. A benchmark is not part of this page: the numbers above are correctness only.
+The bridge adds one `partial_fit` call per row on the wrapped scikit-learn estimator, and one `predict_one` per row on the wrapper. The Dense-Armor `core/` classifiers it wraps are O(window) or O(1) per `learn_one`. A benchmark is not part of this page: the numbers above are correctness only.
 
 ### Development diary
 

@@ -1,11 +1,17 @@
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dense_armor.utility.signals.stats import RollingIQR, RollingMAD, RollingMedian, RunningMoments
+from dense_armor.core.signals.stats import (
+    RollingIQR,
+    RollingMAD,
+    RollingMedian,
+    RunningMoments,
+)
 
 rng = np.random.default_rng(0)
 x = rng.normal(0, 1, 200)

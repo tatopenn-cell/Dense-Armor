@@ -10,16 +10,16 @@ import numpy as np
 import pytest
 
 from dense_armor.checks import check_estimator
-from dense_armor.utility.online.bayes import (
+from dense_armor.core.online.bayes import (
     BernoulliNB,
     CategoricalNB,
     ComplementNB,
     MultinomialNB,
 )
-from dense_armor.utility.online.bayes import bernoulli as bern_mod
-from dense_armor.utility.online.bayes import categorical as cat_mod
-from dense_armor.utility.online.bayes import complement as comp_mod
-from dense_armor.utility.online.bayes import multinomial as multi_mod
+from dense_armor.core.online.bayes import bernoulli as bern_mod
+from dense_armor.core.online.bayes import categorical as cat_mod
+from dense_armor.core.online.bayes import complement as comp_mod
+from dense_armor.core.online.bayes import multinomial as multi_mod
 
 FIXTURE_DOCS = [
     ({"a": 2, "b": 1, "c": 0}, "X"),

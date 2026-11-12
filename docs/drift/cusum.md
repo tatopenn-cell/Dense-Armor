@@ -18,7 +18,7 @@ For the other three detectors and a benchmark on a real robot arm, see
 
 ```python
 import numpy as np
-from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
+from dense_armor.core.online.drift.detector import CUSUMDriftDetector
 
 rng = np.random.default_rng(0)
 x = np.concatenate([rng.normal(0, 1, 500), rng.normal(1.5, 1, 500)])
@@ -98,7 +98,7 @@ Two ways to choose the window:
 The *average run length* (ARL) is the expected number of samples before an alarm.
 
 ```python
-from dense_armor.utility.online.drift.cusum import two_sided_arl
+from dense_armor.core.online.drift.cusum import two_sided_arl
 
 print(round(two_sided_arl(mu=0.0, k=0.5, h=5.0), 1))
 print(round(two_sided_arl(mu=1.0, k=0.5, h=5.0), 1))
@@ -146,7 +146,7 @@ read the measured columns for the cost of a threshold on a real stream.
 signal and the size of the shift you care about.
 
 ```python
-from dense_armor.utility.online.drift.cusum import detectability_report
+from dense_armor.core.online.drift.cusum import detectability_report
 
 r = detectability_report(local_noise_scale=0.02, k=0.5, h=20.0, candidate_shift=0.04)
 for key, val in r.items():
@@ -165,7 +165,7 @@ expected only once in about 1.6 billion samples. The detector reports the same t
 own settings:
 
 ```python
-from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
+from dense_armor.core.online.drift.detector import CUSUMDriftDetector
 
 det = CUSUMDriftDetector(reference="fixed")
 print(round(det.expected_detection_delay(1.0), 1))
@@ -187,8 +187,8 @@ the streaming detector.
 
 ```python
 import numpy as np
-from dense_armor.utility.online.drift.cusum import cusum_detector
-from dense_armor.utility.online.drift.detector import CUSUMDriftDetector
+from dense_armor.core.online.drift.cusum import cusum_detector
+from dense_armor.core.online.drift.detector import CUSUMDriftDetector
 
 rng = np.random.default_rng(0)
 x = np.concatenate([rng.normal(0, 1, 500), rng.normal(1.5, 1, 500)])
@@ -225,9 +225,9 @@ step changes. ADWIN never raised a false alarm here but is the slowest on small 
 
 ## API reference
 
-::: dense_armor.utility.online.drift.cusum
+::: dense_armor.core.online.drift.cusum
 
-::: dense_armor.utility.online.drift.detector
+::: dense_armor.core.online.drift.detector
 
 ## Details
 

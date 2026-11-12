@@ -7,16 +7,16 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.deep.neural.autoencoder import Autoencoder
-from dense_armor.utility.deep.neural.chain import Sequential
-from dense_armor.utility.deep.neural.clip import clip_grad_norm
-from dense_armor.utility.deep.neural.layers import Dense
-from dense_armor.utility.deep.neural.losses import MSE, SoftmaxCrossEntropy
-from dense_armor.utility.deep.neural.online import OnlineNetClassifier, OnlineNetRegressor
-from dense_armor.utility.deep.neural.online_autoencoder import OnlineAutoencoder
-from dense_armor.utility.deep.neural.params import Param
-from dense_armor.utility.deep.neural.trainer import Trainer
-from dense_armor.utility.online.optim import SGD
+from dense_armor.core.deep.neural.autoencoder import Autoencoder
+from dense_armor.core.deep.neural.chain import Sequential
+from dense_armor.core.deep.neural.clip import clip_grad_norm
+from dense_armor.core.deep.neural.layers import Dense
+from dense_armor.core.deep.neural.losses import MSE, SoftmaxCrossEntropy
+from dense_armor.core.deep.neural.online import OnlineNetClassifier, OnlineNetRegressor
+from dense_armor.core.deep.neural.online_autoencoder import OnlineAutoencoder
+from dense_armor.core.deep.neural.params import Param
+from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.online.optim import SGD
 
 W_TRAINER = [
     [
@@ -208,7 +208,7 @@ def test_online_regressor_clip_norm_bounds_step():
 
 
 def test_exploding_gradient_clipped():
-    from dense_armor.utility.deep.neural.recurrent import RNN
+    from dense_armor.core.deep.neural.recurrent import RNN
 
     r = RNN(1, 1, jax.random.PRNGKey(0))
     r.W.value = jnp.array([[1.0]])

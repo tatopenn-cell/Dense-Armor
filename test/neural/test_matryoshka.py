@@ -7,9 +7,9 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from dense_armor.utility.deep.neural.losses import softmax_cross_entropy_forward
-from dense_armor.utility.deep.neural.matryoshka import MatryoshkaLoss
-from dense_armor.utility.online.optim import Adam
+from dense_armor.core.deep.neural.losses import softmax_cross_entropy_forward
+from dense_armor.core.deep.neural.matryoshka import MatryoshkaLoss
+from dense_armor.core.online.optim import Adam
 
 
 def _hand(weights=None):

@@ -46,7 +46,7 @@ def test_nan_vicino_a_spike_non_viene_sanato_con_la_media_globale():
 
 
 def test_gradino_sostenuto_non_viene_appiattito_ma_lo_spike_isolato_si():
-    # Proprieta' centrale del motore hybrid (core/hybrid_engine.py) rispetto
+    # Proprieta' centrale del motore hybrid (utility/hybrid_engine.py) rispetto
     # al vecchio gate dinamico (rimosso in v1.1.0): un cambiamento VERO e sostenuto deve passare,
     # uno spike isolato no -- anche se entrambi, al primo istante, sembrano
     # "un salto grande" allo stesso modo. Il gate dinamico non garantiva

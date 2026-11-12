@@ -43,7 +43,7 @@ The object form owns its state and offers `step(weights, gradient) -> weights`:
 
 ```python
 import numpy as np
-from dense_armor.utility.online.optim import AdaGrad
+from dense_armor.core.online.optim import AdaGrad
 
 opt = AdaGrad(lr=0.5)
 w = np.zeros(2)
@@ -62,7 +62,7 @@ arrays, so it runs inside `jax.jit` and `jax.lax.scan`:
 ```python
 import jax
 import jax.numpy as jnp
-from dense_armor.utility.online.optim import AdaGrad
+from dense_armor.core.online.optim import AdaGrad
 
 opt = AdaGrad(lr=0.5)
 state = opt.init_state(2)
@@ -114,9 +114,9 @@ velocity, one sample at a time. `AdaGrad` is the optimizer:
 ```python
 from pathlib import Path
 import numpy as np
-from dense_armor.utility.signals.datasets import SyntheticArm
-from dense_armor.utility.online.linear.glm import LinearRegression
-from dense_armor.utility.online.optim import AdaGrad
+from dense_armor.core.signals.datasets import SyntheticArm
+from dense_armor.core.online.linear.glm import LinearRegression
+from dense_armor.core.online.optim import AdaGrad
 
 ds = SyntheticArm(Path("test/fixtures/urdf/panda.urdf"),
                   period_s=1.0, rate_hz=50.0, n_cycles=2, seed=0)
@@ -161,7 +161,7 @@ algorithm, not this variant.
 - **Scalar learning rate.** Algorithm 4.1 uses a per-coordinate step that
   depends on the domain diameter `D_i`. This implementation takes a single
   `lr` at construction and keeps the adaptation only in the accumulator `G`.
-  The variant is what `dense_armor.utility.online.optim.AdaGrad(lr)` promises in
+  The variant is what `dense_armor.core.online.optim.AdaGrad(lr)` promises in
   its signature, and it matches the form that has become standard in machine
   learning.
 - **No projection.** The source assumes a hyperrectangle feasible set and a

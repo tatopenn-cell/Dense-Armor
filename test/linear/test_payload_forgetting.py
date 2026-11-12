@@ -3,11 +3,11 @@
 from pathlib import Path
 
 import numpy as np
-
-from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.utility.signals.datasets.synthetic_arm import SyntheticArm
-from dense_armor.utility.online.linear.payload import PayloadEstimator
 import pytest
+
+from dense_armor.core.online.linear.payload import PayloadEstimator
+from dense_armor.core.signals.datasets.synthetic_arm import SyntheticArm
+from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 
 URDF = str(Path(__file__).parent.parent / "fixtures/urdf/panda.urdf")
 

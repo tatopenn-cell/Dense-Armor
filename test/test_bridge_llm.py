@@ -4,7 +4,7 @@ import json
 import pytest
 
 from dense_armor.bridges.llm import LLMEmbeddingClassifier
-from dense_armor.utility.online.learn.online_classifiers import OnlineGaussianNB
+from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB
 
 
 def _stub_embed(text: str):
@@ -50,7 +50,7 @@ def test_learn_json_and_predict_json_roundtrip():
 
 
 def test_works_with_an_arbitrary_wrapped_estimator():
-    from dense_armor.utility.online.learn.metric_learning import OASIS, MetricKNNClassifier
+    from dense_armor.core.online.learn.metric_learning import OASIS, MetricKNNClassifier
 
     clf = LLMEmbeddingClassifier(
         _stub_embed,

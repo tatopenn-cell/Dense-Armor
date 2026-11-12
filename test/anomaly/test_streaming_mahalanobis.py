@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Unit tests for dense_armor/utility/online/anomaly/mahalanobis.py.
+"""Unit tests for dense_armor/core/online/anomaly/mahalanobis.py.
 
 The online robust Mahalanobis detector (minimal version, no Robbins-Monro
 reconstruction) is built on the geometric median and the median
@@ -17,8 +17,8 @@ from copy import deepcopy
 
 import numpy as np
 
-import dense_armor.utility.online.anomaly.mahalanobis as streaming_mahalanobis
-from dense_armor.utility.online.anomaly.mahalanobis import (
+import dense_armor.core.online.anomaly.mahalanobis as streaming_mahalanobis
+from dense_armor.core.online.anomaly.mahalanobis import (
     OnlineRobustMahalanobis,
 )
 

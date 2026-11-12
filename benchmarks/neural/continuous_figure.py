@@ -23,12 +23,12 @@ import jax
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dense_armor.utility.deep.neural.background import BackgroundLearner
-from dense_armor.utility.deep.neural.hedge import HedgeNetClassifier
-from dense_armor.utility.deep.neural.losses import BCEWithLogits
-from dense_armor.utility.deep.neural.models import mlp
-from dense_armor.utility.deep.neural.online import OnlineNetClassifier
-from dense_armor.utility.online.optim import SGD
+from dense_armor.core.deep.neural.background import BackgroundLearner
+from dense_armor.core.deep.neural.hedge import HedgeNetClassifier
+from dense_armor.core.deep.neural.losses import BCEWithLogits
+from dense_armor.core.deep.neural.models import mlp
+from dense_armor.core.deep.neural.online import OnlineNetClassifier
+from dense_armor.core.online.optim import SGD
 
 HERE = Path(__file__).resolve().parents[2]
 OUT = HERE / "docs" / "assets" / "neural" / "continuous.png"
