@@ -108,7 +108,9 @@ def hard_clip_blamp(x: np.ndarray, level: float) -> np.ndarray:
     At every crossing of ``level`` or ``-level`` between two samples with a sample before and
     a sample after available, the crossing position and slope are found as in the module
     docstring and the residual times the slope jump of the clipped signal is added to the four
-    samples around it. Crossings at the first or last samples are left uncorrected.
+    samples around it. Crossings at the first or last samples are left uncorrected, and so is a
+    jump from above ``level`` to below ``-level`` (or the reverse) between two samples, which
+    is a discontinuity of the clipped signal that no four-point polyBLAMP removes.
 
     Args:
         x: samples, shape ``(n,)``.
@@ -124,8 +126,6 @@ def hard_clip_blamp(x: np.ndarray, level: float) -> np.ndarray:
     clipped = np.abs(x) >= level
     events: list[int] = (np.nonzero(clipped[1:-2] != clipped[2:-1])[0] + 1).tolist()
     for na in events:
-        if np.sign(x[na]) * np.sign(x[na + 1]) < 0 and clipped[na] and clipped[na + 1]:
-            continue
         a, b, c, e = _fit(x, na)
         rho = level if (x[na] + x[na + 1]) >= 0 else -level
         D = 1.5

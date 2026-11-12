@@ -10,7 +10,7 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor.roles import Root
+from dense_armor.utility.signals.audio._state import StatefulRoot
 from dense_armor.utility.signals.audio.windows import get_window
 
 
@@ -118,7 +118,7 @@ def istft(
     return out / c
 
 
-class StreamingSTFT(Root):
+class StreamingSTFT(StatefulRoot):
     """The :func:`stft` one sample at a time.
 
     ``update(v)`` pushes a sample; after the first ``n_fft`` samples, and then every ``hop``
@@ -138,7 +138,8 @@ class StreamingSTFT(Root):
     """
 
     budget_s: float = 1e-3
-    memory_class: str = "O(n_fft)"
+    memory_class: str = "O(window)"
+    _state_attrs = ("_buf", "_S")
 
     def __init__(self, n_fft: int = 256, hop: int = 128, window: str = "hann") -> None:
         if n_fft < 1 or hop < 1:

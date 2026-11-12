@@ -9,7 +9,7 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor.roles import Root
+from dense_armor.utility.signals.audio._state import StatefulRoot
 
 
 def _w0_alpha(f0: float, sr: float, q: float) -> tuple[float, float]:
@@ -110,7 +110,7 @@ def highshelf(f0: float, sr: float, gain_db: float, q: float = 0.707106781186547
     )
 
 
-class Biquad(Root):
+class Biquad(StatefulRoot):
     """Direct Form 1 biquad, ``y[n] = b0 x[n] + b1 x[n-1] + b2 x[n-2] - a1 y[n-1] - a2 y[n-2]``.
 
     Eq. (4) of the cookbook, with the coefficients divided by ``a0``.
@@ -132,6 +132,7 @@ class Biquad(Root):
 
     budget_s: float = 2e-4
     memory_class: str = "O(1)"
+    _state_attrs = ("_x1", "_x2", "_y1", "_y2", "out")
 
     def __init__(self, b: Any, a: Any) -> None:
         b = np.asarray(b, dtype=float)

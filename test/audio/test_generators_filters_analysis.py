@@ -5,13 +5,19 @@ import numpy as np
 import pytest
 
 from dense_armor.utility.signals.audio import (
+    ADSR,
+    FIR,
     Audio,
+    AudioFeatures,
     Biquad,
+    DelayLine,
     KarplusStrong,
     Oscillator,
     Resampler,
+    StreamingSTFT,
     bandpass,
     cents_to_freq,
+    chirp,
     freq_to_cents,
     freq_to_note,
     hard_clip,
@@ -26,6 +32,7 @@ from dense_armor.utility.signals.audio import (
     plucked_string,
     resample,
     separate,
+    triangle_blamp,
     white_noise,
 )
 
@@ -127,6 +134,59 @@ def test_oscillator_errors_and_contract():
     assert o.update(0.0).out == 0.0
     assert o.clone().get_params() == o.get_params()
     assert o.budget_s > 0 and o.memory_class == "O(1)"
+
+
+def test_triangle_additive_harmonic_amplitudes():
+    sr, f = 4096, 64.0
+    y = Oscillator("triangle_additive", sr).update_many(np.full(sr, f))
+    A = np.abs(np.fft.rfft(y)) / (sr / 2)
+    for k in (1, 3, 5):
+        assert A[int(f) * k] == pytest.approx(8 / (np.pi**2 * k**2), rel=1e-6)
+    assert A[int(f) * 2] < 1e-9
+    assert y[0] == 0.0 and y[1] > 0.0 and y.max() <= 1.0
+
+
+def test_square_and_pulse_polyblep_have_less_aliasing_than_naive():
+    n = SR
+    ph = (np.arange(n) * F0 / SR) % 1
+    for kind, duty in (("square_polyblep", 0.5), ("pulse_polyblep", 0.25)):
+        naive = np.where(ph < duty, 1.0, -1.0)
+        y = Oscillator(kind, SR, duty).update_many(np.full(n, F0))
+        off_y = _off_harmonic_db(y - y.mean(), F0, SR)
+        assert off_y < _off_harmonic_db(naive - naive.mean(), F0, SR) - 10
+    y = Oscillator("pulse_polyblep", 8000, 0.25).update_many(np.full(8000, 100.0))
+    assert y.mean() == pytest.approx(-0.5, abs=0.01)
+    assert (
+        Oscillator("square_polyblep", 8000, 0.1).update_many(np.full(80, 100.0))[10]
+        == 1.0
+    )
+    for bad in (0.0, 1.0):
+        with pytest.raises(ValueError):
+            Oscillator("pulse_polyblep", 8000, bad)
+
+
+def test_triangle_blamp_oscillator_is_the_block_triangle_two_samples_late():
+    n = 3000
+    st = Oscillator("triangle_blamp", SR).update_many(np.full(n + 2, F0))
+    assert st[:2].tolist() == [0.0, 0.0]
+    assert np.allclose(st[2:n], triangle_blamp(F0, SR, n)[: n - 2], atol=1e-9)
+    with pytest.raises(ValueError):
+        Oscillator("triangle_blamp", SR).update(SR / 4)
+
+
+def test_chirp_rises_and_errors():
+    for method in ("linear", "log"):
+        c = chirp(100.0, 1000.0, 1.0, 8000, method=method)
+        z = np.diff(np.sign(c.x)) != 0
+        assert (c.n, c.sr) == (8000, 8000)
+        assert z[-800:].sum() > 3 * z[:800].sum()
+    for args, kw in (
+        ((1.0, 2.0, 0.0, 8000), {}),
+        ((1.0, 2.0, 1.0, 8000), {"method": "cubic"}),
+        ((0.0, 2.0, 1.0, 8000), {"method": "log"}),
+    ):
+        with pytest.raises(ValueError):
+            chirp(*args, **kw)
 
 
 def test_white_noise_moments():
@@ -332,20 +392,42 @@ def test_doctests(name):
     assert doctest.testmod(mod, extraglobs={"np": np, "Audio": Audio}).failed == 0
 
 
-def test_root_contract_clone_and_state_roundtrip():
-    from dense_armor.utility.signals.audio import AudioFeatures, StreamingSTFT
+_B, _A = lowpass(1000.0, 8000.0)
+_STATEFUL = {
+    "sine": (lambda: Oscillator("sine", 8000), True),
+    "triangle_blamp": (lambda: Oscillator("triangle_blamp", 8000), True),
+    "pulse": (lambda: Oscillator("pulse_polyblep", 8000, 0.3), True),
+    "biquad": (lambda: Biquad(_B, _A), False),
+    "fir": (lambda: FIR([0.5, 0.25, 0.25]), False),
+    "delay": (lambda: DelayLine(5), False),
+    "karplus": (lambda: KarplusStrong(20, 1), False),
+    "stft": (lambda: StreamingSTFT(16, 8), False),
+    "resampler": (lambda: Resampler(1.5), False),
+    "adsr": (lambda: ADSR(0.1, 0.1, 0.5, 0.2, 0.5, 100), False),
+}
 
-    b, a = lowpass(1000.0, 8000.0)
-    objs = [
-        Oscillator("sine", 8000),
-        Biquad(b, a),
-        KarplusStrong(20, 1),
-        StreamingSTFT(16, 8),
-        Resampler(1.5),
-        AudioFeatures(4),
-    ]
-    for o in objs:
-        c = o.clone()
-        assert type(c) is type(o)
-        c.load_state_dict(o.state_dict())
-        assert o.budget_s > 0 and isinstance(o.memory_class, str)
+
+@pytest.mark.parametrize("name", list(_STATEFUL))
+def test_state_dict_restores_behaviour(name):
+    make, is_freq = _STATEFUL[name]
+    rng = np.random.default_rng(7)
+    first, second = (
+        (rng.uniform(100, 900, n) if is_freq else rng.standard_normal(n))
+        for n in (37, 60)
+    )
+    o = make()
+    o.update_many(first)
+    c = make()
+    c.load_state_dict(o.state_dict())
+    got = np.asarray(c.update_many(second))
+    assert got.size > 0 and np.allclose(got, np.asarray(o.update_many(second)))
+    fresh = np.asarray(make().update_many(second))
+    assert got.shape != fresh.shape or not np.allclose(got, fresh)
+
+
+def test_root_contract_clone_and_memory_class():
+    for make, _ in _STATEFUL.values():
+        o = make()
+        assert type(o.clone()) is type(o)
+        assert o.budget_s > 0 and o.memory_class in ("O(1)", "O(window)")
+    assert AudioFeatures(4).memory_class == "O(1)"

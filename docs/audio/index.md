@@ -3,8 +3,9 @@
 Sound is a long list of numbers, one for each tiny slice of time. The audio section gives you
 a value for it (`Audio`), a way to read and write files, a way to look at it by frequency
 (the short-time Fourier transform), a few sounds you can make from nothing, a filter, and a
-way to hand each block of sound to the estimators Dense-Armor already has. Everything uses
-NumPy only; a live input needs the optional extra `audio`.
+way to hand each block of sound to the estimators Dense-Armor already has. The sound itself
+is handled with NumPy (the estimators it connects to need JAX); a live input needs the
+optional extra `audio`.
 
 ## 1. Make a sound and save it
 
@@ -141,7 +142,60 @@ print(round(float(np.polyfit(np.log(np.arange(1, len(X))), np.log(X[1:]), 1)[0])
 The envelope rises to 1 in 0.1 s, falls to the sustain level 0.5, holds it until the note ends at
 1 s and returns to 0 in 0.3 s. The slope of the noise spectrum on a log-log plot is -1.01.
 
-## 5. Find the moment something happens
+## 5. Choose an oscillator
+
+An oscillator makes a repeating wave, one sample at a time, at the frequency you give it at
+each step, so the pitch can glide without a click. `Oscillator(kind, sr)` has eight kinds:
+
+| kind | wave | how it is made |
+| --- | --- | --- |
+| `sine` | sine | `sin(2 pi phi)` |
+| `sawtooth_additive`, `square_additive`, `triangle_additive` | sawtooth, square, triangle | sum of the harmonics below half the sample rate |
+| `sawtooth_polyblep`, `square_polyblep`, `pulse_polyblep` | sawtooth, square, pulse with `duty` | the naive wave with its jumps smoothed (polyBLEP) |
+| `triangle_blamp` | triangle | the naive wave with its corners rounded (polyBLAMP), two samples late |
+
+```python
+import numpy as np
+from dense_armor.utility.signals.audio import Oscillator
+f = np.full(8, 1000.0)
+for k in ("sine", "triangle_additive", "square_polyblep", "triangle_blamp"):
+    print(k, Oscillator(k, 8000).update_many(f).round(2).tolist())
+print(Oscillator("pulse_polyblep", 8000, 0.25).update_many(f).round(2).tolist())
+```
+
+```text
+sine [0.0, 0.71, 1.0, 0.71, 0.0, -0.71, -1.0, -0.71]
+triangle_additive [0.0, 0.51, 0.9, 0.51, 0.0, -0.51, -0.9, -0.51]
+square_polyblep [0.0, 1.0, 1.0, 1.0, 0.0, -1.0, -1.0, -1.0]
+triangle_blamp [0.0, 0.0, -0.77, -0.49, 0.0, 0.49, 0.77, 0.49]
+[0.0, 1.0, 0.0, -1.0, -1.0, -1.0, -1.0, -1.0]
+```
+
+The additive kinds have no aliasing but cost more at low frequencies (one sine per harmonic);
+the polyBLEP and polyBLAMP kinds cost the same at any frequency and keep a little aliasing.
+`triangle_blamp` needs two samples of look-ahead around each corner, so its output is the
+sample two calls earlier (the first two are 0) and its frequency must stay below a quarter of
+the sample rate. The pulse is `+1` for the first `duty` of each period and `-1` after it, so
+the last line is a pulse of a quarter period at 1000 Hz and 8000 samples per second.
+
+`chirp(f0, f1, duration, sr)` sweeps the frequency of any kind from `f0` to `f1`, in a line
+(`method="linear"`) or in a geometric ratio (`method="log"`):
+
+```python
+from dense_armor.utility.signals.audio import chirp
+c = chirp(100.0, 1000.0, 1.0, 8000)
+z = np.diff(np.sign(c.x)) != 0
+print(c.n, int(z[:800].sum()), int(z[-800:].sum()))
+```
+
+```text
+8000 29 191
+```
+
+The wave crosses zero 29 times in the first tenth of a second and 191 times in the last, so
+the pitch rose. White noise, pink noise and the plucked string are in section 4 and section 1.
+
+## 6. Find the moment something happens
 
 `detect_events` reads blocks of sound, turns each into a few numbers (the mean magnitude of
 eight bands of frequencies), scores the first band against the blocks before it, and gives the
@@ -149,8 +203,8 @@ score to a drift detector. Noise for three seconds with a 440 Hz tone that start
 seconds:
 
 ```python
-from dense_armor.utility.signals.audio import white_noise
-from dense_armor.utility.signals.audio.events import detect_events
+import numpy as np
+from dense_armor.utility.signals.audio import Audio, detect_events, white_noise
 t = np.arange(24000) / 8000
 x = 0.1 * white_noise(24000, 1) + np.where(t >= 2.0, np.sin(2 * np.pi * 440 * t), 0.0)
 bl = [Audio(x[i:i + 512], 8000, i / 8000) for i in range(0, 24000 - 511, 512)]
@@ -165,7 +219,7 @@ The first alarm is at 1.984 s: the block that starts at 1.984 s ends at 2.048 s 
 the start of the tone. The same function takes the blocks of `AudioFileStream` (a file) or
 `AudioLiveStream` (a live input).
 
-## 6. Give the sound to any estimator
+## 7. Give the sound to any estimator
 
 `run_estimators(blocks, {"name": estimator, ...}, label=...)` turns each block into the dict
 of band magnitudes and calls every estimator in the way its class asks for: a drift detector
@@ -195,9 +249,9 @@ better than the naive sawtooth at -10.9 dB, while subtracting both gives -27.9 d
 at 1e-12. The separation keeps the phase of the mixture. The band grouping of `AudioFeatures`
 is the mean magnitude over nearly equal groups of bins, with no source behind it. The
 resampler interpolates linearly, as the source does, so its stopband is not that of a windowed
-FIR filter. Ties in `freq_to_note` round half to even. The polyBLAMP residual is derived by integrating the cubic B-spline twice and subtracting the ramp, as the paper describes: it reproduces three of the four bottom rows of Table 1 exactly, and the fourth row is garbled in the text layer of the PDF. The pink noise sets the component at zero frequency to 0 and scales to unit variance, which the paper does not fix. The triangle and the clipper have a block form only, with no streaming form.
+FIR filter. Ties in `freq_to_note` round half to even. The polyBLAMP residual is derived by integrating the cubic B-spline twice and subtracting the ramp, as the paper describes: it reproduces three of the four bottom rows of Table 1 exactly, and the fourth row is garbled in the text layer of the PDF. The pink noise sets the component at zero frequency to 0 and scales to unit variance, which the paper does not fix. The clipper has a block form only, with no streaming form. The additive triangle is the textbook Fourier series, the square and the pulse are the naive wave with the sawtooth polyBLEP residual added at the rising edge and subtracted at the falling edge, and the chirp feeds the frequency at the time of each sample to an oscillator: no source in the project folder defines these four. The streaming `triangle_blamp` equals the block `triangle_blamp` two samples later, except for the last two samples of the block, whose corners lie beyond its end.
 
-**Not in this section.** The chirp, IIR filters of any order, convolution by the FFT,
+**Not in this section.** IIR filters of any order, convolution by the FFT,
 the envelope follower and gain curve, waveshapers, dithering and quantisation,
 pan, mid/side and interaural delay, RMS and loudness meters, mel and MFCC, pitch, onset,
 GCC-PHAT, scales and note events: no source in the project folder defines them.

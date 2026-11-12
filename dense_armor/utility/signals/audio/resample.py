@@ -11,11 +11,11 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor.roles import Root
+from dense_armor.utility.signals.audio._state import StatefulRoot
 from dense_armor.utility.signals.audio.signal import Audio
 
 
-class Resampler(Root):
+class Resampler(StatefulRoot):
     """Demand-driven resampler; ``q`` is the input step per output sample.
 
     ``q = 2`` reads the input at twice the speed (half as many output samples, an octave up);
@@ -33,6 +33,7 @@ class Resampler(Root):
 
     budget_s: float = 2e-4
     memory_class: str = "O(window)"
+    _state_attrs = ("_buf", "_u")
 
     def __init__(self, q: float = 1.0) -> None:
         if q <= 0.0:

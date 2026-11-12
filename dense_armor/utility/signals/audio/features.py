@@ -23,6 +23,10 @@ class AudioFeatures(Root):
         n_bands: number of groups, at least 1.
         window: a window name.
 
+    Raises:
+        ValueError: from ``transform``, if a block has fewer frequency bins
+            (``len(block) // 2 + 1``) than ``n_bands``.
+
     Example:
         >>> f = AudioFeatures(n_bands=2)
         >>> sorted(f.transform(Audio(np.ones(16), 16)))
@@ -42,6 +46,10 @@ class AudioFeatures(Root):
         """Features of one mono block."""
         x: np.ndarray = np.asarray(block.to_mono().x, dtype=float)
         mag = np.abs(np.fft.rfft(x * get_window(self.window, len(x))))
+        if self.n_bands > len(mag):
+            raise ValueError(
+                f"n_bands is {self.n_bands} but the block has only {len(mag)} frequency bins"
+            )
         parts = np.array_split(mag, self.n_bands)
         return {f"b{i}": float(p.mean()) for i, p in enumerate(parts)}
 
@@ -69,9 +77,10 @@ def run_estimators(
     ``drift_detected``) gets the feature ``key`` as a scalar; an estimator with ``score_one``
     scores the block and then learns it; one with ``predict_one`` needs ``label(block)`` to
     learn (else it is reported as ``"needs labels"``); one with ``transform_one`` learns and
-    transforms; any other with ``learn_one`` just learns. An estimator that takes a scalar
-    instead of a dict (such as ``HampelScorer``) gets the feature ``key``. An estimator that
-    raises is reported with the first error and not called again.
+    transforms; any other with ``learn_one`` just learns. An estimator whose first call with the dict
+    raises ``TypeError``, ``ValueError``, ``KeyError``, ``AttributeError`` or ``IndexError`` is
+    called again with the feature ``key`` as a scalar, and from then on gets the scalar. An
+    estimator that raises is reported with the first error and not called again.
 
     Args:
         blocks: audio blocks, from a file stream or a live stream.
@@ -82,7 +91,8 @@ def run_estimators(
 
     Returns:
         For each name: ``mode``, ``n`` (blocks processed), ``last`` (the last score, flag or
-        transform), ``alarms`` (blocks where a drift was detected) and ``error``.
+        transform), ``alarms`` (blocks where a drift was detected), ``error`` and ``scalar``
+        (True when the estimator was switched to the scalar form).
     """
     fe = AudioFeatures(n_bands)
     rep: dict[str, dict[str, Any]] = {

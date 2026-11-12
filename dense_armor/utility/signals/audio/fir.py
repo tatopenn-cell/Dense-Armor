@@ -11,7 +11,7 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor.roles import Root
+from dense_armor.utility.signals.audio._state import StatefulRoot
 
 
 def convolve(x: Any, h: Any) -> np.ndarray:
@@ -38,7 +38,7 @@ def convolve(x: Any, h: Any) -> np.ndarray:
     return y
 
 
-class FIR(Root):
+class FIR(StatefulRoot):
     """Finite impulse response filter, ``y[n] = sum_{m=0}^{M-1} h[m] x[n - m]`` (Eq. 6).
 
     Before ``M`` samples have arrived the missing past inputs are 0. The result of the
@@ -58,6 +58,7 @@ class FIR(Root):
 
     budget_s: float = 2e-4
     memory_class: str = "O(window)"
+    _state_attrs = ("_x", "out")
 
     def __init__(self, h: Any) -> None:
         h = np.asarray(h, dtype=float)
@@ -84,7 +85,7 @@ class FIR(Root):
         return out
 
 
-class DelayLine(Root):
+class DelayLine(StatefulRoot):
     """A delay of ``d`` samples: ``y[n] = x[n - d]``, 0 before the first ``d`` samples arrive.
 
     Args:
@@ -100,6 +101,7 @@ class DelayLine(Root):
 
     budget_s: float = 2e-4
     memory_class: str = "O(window)"
+    _state_attrs = ("_b", "out")
 
     def __init__(self, d: int = 1) -> None:
         if d < 1:

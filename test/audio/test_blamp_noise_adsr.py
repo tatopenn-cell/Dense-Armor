@@ -60,8 +60,10 @@ def test_triangle_blamp_aliasing_and_shape():
     assert _off_harmonic_db(tb, F0, SR) < _off_harmonic_db(naive, F0, SR) - 5
     assert np.max(np.abs(tb)) <= 1.0 + 1e-9
     assert np.max(np.abs(tb - naive)) < 4 * 4 * F0 / SR * 7 / 30
-    wrong = naive.copy()
-    assert _off_harmonic_db(wrong, F0, SR) > _off_harmonic_db(tb, F0, SR)
+    peaks = np.where((naive[1:-1] > naive[:-2]) & (naive[1:-1] >= naive[2:]))[0] + 1
+    valleys = np.where((naive[1:-1] < naive[:-2]) & (naive[1:-1] <= naive[2:]))[0] + 1
+    assert np.all((tb - naive)[peaks[1:-1]] < 0.0)
+    assert np.all((tb - naive)[valleys[1:-1]] > 0.0)
 
 
 def test_triangle_blamp_corners_are_rounded_and_errors():

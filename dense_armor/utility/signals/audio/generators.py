@@ -1,4 +1,4 @@
-"""Oscillators, white noise and the Karplus-Strong plucked string.
+"""Oscillators, chirp, white noise and the Karplus-Strong plucked string.
 
 Sources:
     * additive sawtooth and square: Hayes, Shier, Fazekas, McPherson, Saitis (2023),
@@ -11,7 +11,12 @@ Sources:
       of the PDF;
     * pink noise: Timmer and Koenig (1995), "On generating power law noise", A&A 300, 707,
       Sec. 3 (PDF pages 2 and 3, read as images: the text layer of the PDF is empty);
-    * ADSR: Hayes et al. (2023), Eq. (15), PDF page 27, after Masuda and Saito (2023).
+    * ADSR: Hayes et al. (2023), Eq. (15), PDF page 27, after Masuda and Saito (2023);
+    * triangle with polyBLAMP: Esqueda, Valimaki and Bilbao (2016), see ``blamp.py``.
+
+No source in the project folder defines the additive triangle, the square and pulse waves
+by polyBLEP and the chirp; they are choices stated in the docstrings of
+:class:`Oscillator` and :func:`chirp`.
 """
 
 from collections import deque
@@ -19,10 +24,20 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor.roles import Root
+from dense_armor.utility.signals.audio._state import StatefulRoot
+from dense_armor.utility.signals.audio.blamp import _r as _blamp_r
 from dense_armor.utility.signals.audio.signal import Audio
 
-KINDS = ("sine", "sawtooth_additive", "square_additive", "sawtooth_polyblep")
+KINDS = (
+    "sine",
+    "sawtooth_additive",
+    "square_additive",
+    "triangle_additive",
+    "sawtooth_polyblep",
+    "square_polyblep",
+    "pulse_polyblep",
+    "triangle_blamp",
+)
 
 
 def _blep_residual(t: float) -> float:
@@ -33,7 +48,7 @@ def _blep_residual(t: float) -> float:
     return 0.0
 
 
-class Oscillator(Root):
+class Oscillator(StatefulRoot):
     """A phase-accumulator oscillator whose frequency may change at every sample.
 
     The phase is the running sum of ``f / sr``, so it stays continuous when ``f`` changes.
@@ -46,13 +61,27 @@ class Oscillator(Root):
       of the source at the wrap, taken at ``phi / d`` and at ``(phi - 1) / d`` with
       ``d = f / sr``. Eq. (2) of the source adds the second term; with that sign the
       aliasing is not reduced (measured in the tests), so both terms are subtracted.
+    * ``"triangle_additive"``: ``(8 / pi^2) sum_{m odd} (-1)^((m-1)/2) sin(2 pi m phi) / m^2``,
+      the textbook Fourier series of a triangle that rises from 0 to 1 at ``phi = 1/4``
+      (choice stated: not in the sources of this section).
+    * ``"square_polyblep"`` and ``"pulse_polyblep"``: ``+1`` for ``phi < duty`` and ``-1``
+      after it (``duty = 1/2`` for the square), with the polyBLEP residual of the sawtooth
+      added at the rising edge (``phi = 0``) and subtracted at the falling edge
+      (``phi = duty``). Choice stated: the two edges are two sawtooth wraps of opposite sign.
+    * ``"triangle_blamp"``: the triangle of :func:`triangle_blamp`, from ``-1`` at
+      ``phi = 0`` up to ``+1`` at ``phi = 1/2``, one sample at a time. A corner changes the
+      two samples before it and the one after, so ``out`` is the sample **two calls
+      earlier** (``0.0`` for the first two calls) and ``f`` must be below ``sr / 4``.
 
     Args:
         kind: one of ``KINDS``.
         sr: sample rate in Hz.
+        duty: fraction of the period at ``+1`` for ``"pulse_polyblep"``, in ``(0, 1)``;
+            ignored by the other kinds.
 
     Raises:
-        ValueError: for an unknown ``kind`` or a non-positive ``sr``.
+        ValueError: for an unknown ``kind``, a non-positive ``sr`` or a ``duty`` outside
+            ``(0, 1)``.
 
     Example:
         >>> o = Oscillator("sine", 8000)
@@ -62,39 +91,88 @@ class Oscillator(Root):
 
     budget_s: float = 2e-4
     memory_class: str = "O(1)"
+    _state_attrs = ("_w", "_last_step", "out")
 
-    def __init__(self, kind: str = "sine", sr: int = 44100) -> None:
+    def __init__(self, kind: str = "sine", sr: int = 44100, duty: float = 0.5) -> None:
         if kind not in KINDS:
             raise ValueError(f"unknown kind {kind!r}, expected one of {KINDS}")
         if sr <= 0:
             raise ValueError(f"sr must be positive, got {sr}")
+        if not 0.0 < duty < 1.0:
+            raise ValueError(f"duty must be in (0, 1), got {duty}")
         self.kind = kind
         self.sr = int(sr)
+        self.duty = float(duty)
         self.phase_ = 0.0
+        self.n_ = 0
         self.out = 0.0
+        self._w = [0.0, 0.0, 0.0]
+        self._last_step = 0.0
+
+    def _additive(self, f: float, p: float) -> float:
+        kmax = int(self.sr / 2.0 / f) if f > 0 else 0
+        k = np.arange(1, kmax + 1)
+        k = k[k * f < self.sr / 2.0]
+        if self.kind == "sawtooth_additive":
+            return float(np.sum(2.0 / (np.pi * k) * np.sin(2.0 * np.pi * k * p)))
+        k = k[k % 2 == 1]
+        if self.kind == "square_additive":
+            return float(np.sum(4.0 / (np.pi * k) * np.sin(2.0 * np.pi * k * p)))
+        s = np.where((k // 2) % 2 == 0, 1.0, -1.0)
+        amp = 8.0 / (np.pi**2 * k**2) * s
+        return float(np.sum(amp * np.sin(2.0 * np.pi * k * p)))
+
+    def _pulse(self, p: float, step: float) -> float:
+        duty = 0.5 if self.kind == "square_polyblep" else self.duty
+        y = 1.0 if p < duty else -1.0
+        if step > 0.0:
+            q = (p - duty) % 1.0
+            y += _blep_residual(p / step) + _blep_residual((p - 1.0) / step)
+            y -= _blep_residual(q / step) + _blep_residual((q - 1.0) / step)
+        return y
+
+    def _triangle_blamp(self, p: float, step: float) -> float:
+        if step >= 0.25:
+            raise ValueError("triangle_blamp needs f < sr / 4")
+        if self.n_ == 0:
+            self._last_step = step
+        w = [self._w[0], self._w[1], self._w[2] + 1.0 - 4.0 * abs(p - 0.5), 0.0]
+        ls = self._last_step
+        if ls > 0.0:
+            pp = p - ls
+            sign = 0.0
+            if pp < 0.0:
+                sign, delta = 1.0, p / ls
+            elif pp < 0.5 <= p:
+                sign, delta = -1.0, (p - 0.5) / ls
+            if sign:
+                for k in (-2, -1, 0, 1):
+                    if self.n_ + k >= 0:
+                        w[k + 2] += sign * 8.0 * ls * _blamp_r(k + delta)
+        self._w = w[1:]
+        self._last_step = step
+        return w[0]
 
     def update(self, f: float) -> "Oscillator":
         """Output one sample at frequency ``f`` Hz, then advance the phase."""
         f = abs(float(f))
         p = self.phase_
+        step = f / self.sr
         if self.kind == "sine":
             y = np.sin(2.0 * np.pi * p)
-        elif self.kind in ("sawtooth_additive", "square_additive"):
-            kmax = int(self.sr / 2.0 / f) if f > 0 else 0
-            k = np.arange(1, kmax + 1)
-            k = k[k * f < self.sr / 2.0]
-            if self.kind == "sawtooth_additive":
-                y = float(np.sum(2.0 / (np.pi * k) * np.sin(2.0 * np.pi * k * p)))
-            else:
-                k = k[k % 2 == 1]
-                y = float(np.sum(4.0 / (np.pi * k) * np.sin(2.0 * np.pi * k * p)))
-        else:
-            d = f / self.sr
+        elif self.kind in ("sawtooth_additive", "square_additive", "triangle_additive"):
+            y = self._additive(f, p)
+        elif self.kind == "sawtooth_polyblep":
             y = 2.0 * p - 1.0
-            if d > 0.0:
-                y -= _blep_residual(p / d) + _blep_residual((p - 1.0) / d)
+            if step > 0.0:
+                y -= _blep_residual(p / step) + _blep_residual((p - 1.0) / step)
+        elif self.kind == "triangle_blamp":
+            y = self._triangle_blamp(p, step)
+        else:
+            y = self._pulse(p, step)
         self.out = float(y)
-        self.phase_ = (p + f / self.sr) % 1.0
+        self.phase_ = (p + step) % 1.0
+        self.n_ += 1
         return self
 
     def update_many(self, freqs: Any) -> np.ndarray:
@@ -116,7 +194,7 @@ def white_noise(n: int, seed: int = 0) -> np.ndarray:
     return np.random.default_rng(seed).standard_normal(n)
 
 
-class KarplusStrong(Root):
+class KarplusStrong(StatefulRoot):
     """The plucked-string algorithm of Karplus and Strong.
 
     A delay line of ``p`` samples is loaded with a burst of values ``+1`` or ``-1`` chosen at
@@ -136,7 +214,8 @@ class KarplusStrong(Root):
     """
 
     budget_s: float = 2e-4
-    memory_class: str = "O(p)"
+    memory_class: str = "O(window)"
+    _state_attrs = ("_hist", "_i", "out")
 
     def __init__(self, p: int = 100, seed: int = 0) -> None:
         if p < 2:
@@ -222,7 +301,52 @@ def pink_noise(n: int, seed: int = 0, beta: float = 1.0) -> np.ndarray:
     return x / x.std()
 
 
-class ADSR(Root):
+def chirp(
+    f0: float,
+    f1: float,
+    duration: float,
+    sr: int,
+    kind: str = "sine",
+    method: str = "linear",
+) -> Audio:
+    """A tone whose frequency goes from ``f0`` to ``f1`` Hz in ``duration`` seconds.
+
+    The frequency at the time of each sample is given to an :class:`Oscillator` of ``kind``,
+    so the phase stays continuous. Choice stated: ``"linear"`` is
+    ``f0 + (f1 - f0) t / duration`` and ``"log"`` is ``f0 (f1 / f0)^(t / duration)``; no source
+    in the project folder defines the chirp.
+
+    Args:
+        f0: start frequency in Hz.
+        f1: end frequency in Hz.
+        duration: length in seconds, positive.
+        sr: sample rate.
+        kind: any kind of :class:`Oscillator`.
+        method: ``"linear"`` or ``"log"``.
+
+    Raises:
+        ValueError: if ``duration`` or ``sr`` is not positive, ``method`` is unknown, or
+            ``method="log"`` with a non-positive frequency.
+
+    Example:
+        >>> chirp(100.0, 400.0, 0.5, 8000).n
+        4000
+    """
+    if duration <= 0 or sr <= 0:
+        raise ValueError("duration and sr must be positive")
+    if method not in ("linear", "log"):
+        raise ValueError(f"unknown method {method!r}, expected 'linear' or 'log'")
+    if method == "log" and (f0 <= 0 or f1 <= 0):
+        raise ValueError("log chirp needs positive f0 and f1")
+    t = np.arange(int(round(duration * sr))) / sr
+    if method == "linear":
+        f = f0 + (f1 - f0) * t / duration
+    else:
+        f = f0 * (f1 / f0) ** (t / duration)
+    return Audio(Oscillator(kind, sr).update_many(f), sr)
+
+
+class ADSR(StatefulRoot):
     """The attack-decay-sustain-release envelope of Masuda and Saito (2023).
 
     ``u(t) = |t v_max / t_atk|[0, v_max] + |(t - t_atk)(v_sus - v_max) / t_dec|[v_sus - v_max, 0]
@@ -251,6 +375,7 @@ class ADSR(Root):
 
     budget_s: float = 2e-4
     memory_class: str = "O(1)"
+    _state_attrs = ("out",)
 
     def __init__(
         self,

@@ -32,11 +32,11 @@ from dense_armor.utility.signals.audio import (
     AudioFeatures,
     AudioFileStream,
     AudioLiveStream,
+    detect_events,
     run_estimators,
     white_noise,
     write_wav,
 )
-from dense_armor.utility.signals.audio.events import detect_events
 from dense_armor.utility.signals.preprocessing.scale import (
     EWScaler,
     MinMaxScaler,
@@ -130,6 +130,9 @@ def test_features_keys_sine_band_and_errors():
     assert fe.transform(st) == pytest.approx(f)
     with pytest.raises(ValueError):
         AudioFeatures(0)
+    with pytest.raises(ValueError):
+        AudioFeatures(8).transform(Audio(np.ones(8), 8))
+    assert len(AudioFeatures(5).transform(Audio(np.ones(8), 8))) == 5
 
 
 def _estimators():

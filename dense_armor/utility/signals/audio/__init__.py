@@ -16,6 +16,7 @@ from dense_armor.utility.signals.audio.blamp import (
     triangle_blamp,
 )
 from dense_armor.utility.signals.audio.clipping import hard_clip
+from dense_armor.utility.signals.audio.events import detect_events
 from dense_armor.utility.signals.audio.features import AudioFeatures, run_estimators
 from dense_armor.utility.signals.audio.fir import FIR, DelayLine, convolve
 from dense_armor.utility.signals.audio.fourier import (
@@ -28,6 +29,7 @@ from dense_armor.utility.signals.audio.generators import (
     ADSR,
     KarplusStrong,
     Oscillator,
+    chirp,
     pink_noise,
     plucked_string,
     white_noise,
@@ -68,8 +70,10 @@ __all__ = [
     "blamp_residual",
     "blackman",
     "cents_to_freq",
+    "chirp",
     "cola_ok",
     "convolve",
+    "detect_events",
     "freq_to_cents",
     "freq_to_note",
     "get_window",
