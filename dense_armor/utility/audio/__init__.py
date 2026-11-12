@@ -1,6 +1,7 @@
 """Audio: sound as a value, WAV files, windows, STFT, generators, filters, NMF and streams."""
 
 from dense_armor.utility.audio.adapter import AudioInput, run_estimators
+from dense_armor.utility.audio.allpole import AllPole, reflection_to_lpc
 from dense_armor.utility.audio.biquad import (
     Biquad,
     bandpass,
@@ -35,13 +36,19 @@ from dense_armor.utility.audio.generators import (
     white_noise,
 )
 from dense_armor.utility.audio.nmf import nmf, separate
+from dense_armor.utility.audio.pitch import YIN, cmndf, yin_f0
 from dense_armor.utility.audio.pitch_units import (
     cents_to_freq,
     freq_to_cents,
     freq_to_note,
     note_to_freq,
 )
-from dense_armor.utility.audio.resample import Resampler, resample
+from dense_armor.utility.audio.resample import (
+    Resampler,
+    pitch_ratio_transition,
+    rational_ratio,
+    resample,
+)
 from dense_armor.utility.audio.signal import Audio
 from dense_armor.utility.audio.streams import AudioFileStream, AudioLiveStream
 from dense_armor.utility.audio.wav import read_wav, write_wav
@@ -57,6 +64,8 @@ __all__ = [
     "ADSR",
     "DelayLine",
     "FIR",
+    "YIN",
+    "AllPole",
     "Audio",
     "AudioFeatures",
     "AudioFileStream",
@@ -71,6 +80,7 @@ __all__ = [
     "blamp_residual",
     "blackman",
     "cents_to_freq",
+    "cmndf",
     "cola_ok",
     "convolve",
     "detect_events",
@@ -91,9 +101,12 @@ __all__ = [
     "notch",
     "peaking",
     "pink_noise",
+    "pitch_ratio_transition",
     "plucked_string",
+    "rational_ratio",
     "read_wav",
     "rectangular",
+    "reflection_to_lpc",
     "resample",
     "run_estimators",
     "separate",
@@ -101,4 +114,5 @@ __all__ = [
     "triangle_blamp",
     "white_noise",
     "write_wav",
+    "yin_f0",
 ]

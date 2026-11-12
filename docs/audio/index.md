@@ -181,7 +181,69 @@ The square and the pulse follow Valimaki and Pekonen (2012): the residual of the
 added at the rising edge and subtracted at the falling edge, which sits at the duty cycle.
 White noise, pink noise and the plucked string are in section 4 and section 1.
 
-## 6. Find the moment something happens
+## 6. Pitch, poles and glides
+
+Three more primitives, each from a source in the folder, and each given its sound through
+`AudioInput`, like any primitive that Dense-Armor already has.
+
+`YIN(sr, f0_min, threshold)` finds the fundamental frequency of a block (Strahl and Mueller 2025,
+Eq. 1 and 2, with the threshold and the parabolic interpolation of YIN). The block should hold
+at least two periods of the lowest pitch you look for; the answer is `nan` when no lag is
+below the threshold.
+
+```python
+from dense_armor.utility.audio import YIN, AllPole, Audio, AudioInput, Resampler
+from dense_armor.utility.audio import pitch_ratio_transition, rational_ratio, reflection_to_lpc
+n = np.arange(1024)
+blk = Audio(np.sin(2 * np.pi * 440 * n / 8000), 8000)
+print(round(float(AudioInput(YIN(8000, 100.0, 0.1)).feed(blk)), 1))
+```
+
+```text
+440.9
+```
+
+The estimate is 3.6 cents above 440 Hz: the parabola through the three lags around the minimum
+is not exactly the shape of the function. For tones from 110 to 1000 Hz the error was
+at most 12 cents.
+
+`AllPole(a)` is the filter `y[n] = x[n] - a_1 y[n-1] - ... - a_M y[n-M]` (Yu et al. 2024,
+Eq. 1), whose coefficients can change at every sample. `reflection_to_lpc(k)` builds the
+coefficients from reflection coefficients (Hayes et al. 2023, Eq. 5), and with `|k| < 1` the
+filter is stable:
+
+```python
+a = reflection_to_lpc([0.5, 0.25])
+f = AllPole(a)
+print(a.tolist(), f.stable, f.update_many([1.0, 0, 0, 0]).round(4).tolist())
+```
+
+```text
+[0.625, 0.25] True [1.0, -0.625, 0.1406, 0.0684]
+```
+
+The two papers do not write the sign of the filter in the same way. Hayes writes
+`y = e + sum a y` (Eq. 4); with that sign the coefficients of his Eq. 5 gave an unstable
+filter in 1570 of 2000 random cases, and with the sign of Yu all 2000 were stable, so the
+module uses the sign of Yu for both.
+
+The `Resampler` has the gain `G` of Algorithm 3 of Falkenberg (2026), and the same preprint
+gives the path of a pitch change: `pitch_ratio_transition` returns the steps `q` of Algorithm 4,
+linear in the ratio or linear in cents, and `rational_ratio` the step as a fraction of two
+integers (page 3). Give each step to `Resampler.set_ratio` and the read position is never reset:
+
+```python
+q = pitch_ratio_transition(1.0, 2.0, 8000, 8000, 4, "cents-linear")
+print(q.round(4).tolist(), rational_ratio(1.5, 4))
+```
+
+```text
+[1.0, 1.1892, 1.4142, 1.6818, 2.0] (3, 2)
+```
+
+An octave in four equal steps of 300 cents; `(3, 2)` is `D` and `U` with `D / U = 1.5`.
+
+## 7. Find the moment something happens
 
 `detect_events` reads blocks of sound, turns each into a few numbers (the mean magnitude of
 eight bands of frequencies), scores the first band against the blocks before it, and gives the
@@ -205,7 +267,7 @@ The first alarm is at 1.984 s: the block that starts at 1.984 s ends at 2.048 s 
 the start of the tone. The same function takes the blocks of `AudioFileStream` (a file) or
 `AudioLiveStream` (a live input).
 
-## 7. Give the sound to any estimator
+## 8. Give the sound to any estimator
 
 Dense-Armor already has the estimators, the detectors, the scalers and the filters, and none of
 them is copied for sound. `AudioInput(primitive)` is the one adapter that opens them to it: it
@@ -251,7 +313,7 @@ peer-reviewed paper. Plucked string: Karplus and Strong (1983), Computer Music J
 pages 3 and 4 of the PDF. Additive sawtooth and square: Hayes et al. (2023), Eq. (10) and (11).
 PolyBLEP: the residual of Eq. (1) of Du et al. (2026), PDF page 2. Non-negative matrix
 factorisation: Lee and Seung (2001), NIPS 13, Eq. (4) and (5). Resampling: Falkenberg (2026),
-Algorithm 3, a preprint by one author. Frequency and cents: the same preprint, Algorithm 1. FIR filter and convolution: Hayes et al. (2023), Eq. (6). Delay line: Karplus and Strong (1983), page 3.
+Algorithm 3 and 4 and the rational step on page 3, a preprint by one author. Frequency and cents: the same preprint, Algorithm 1. Pitch: Strahl and Mueller (2025), Sec. II-A, Eq. (1) and (2). All-pole filter: Yu et al. (2024), Eq. (1); reflection coefficients: Hayes et al. (2023), Eq. (5). FIR filter and convolution: Hayes et al. (2023), Eq. (6). Delay line: Karplus and Strong (1983), page 3.
 Hard clipping and the triangle: Esqueda, Valimaki and Bilbao (2016), Eq. (8) to (14) and Table 1. Pink noise: Timmer and Koenig (1995), Sec. 3. ADSR: Hayes et al. (2023), Eq. (15).
 
 **Choices stated.** The Karplus-Strong `y[-1]` is 0 and `p = round(sr / f - 1/2)`. The PolyBLEP
@@ -264,10 +326,13 @@ is the mean magnitude over nearly equal groups of bins, with no source behind it
 resampler interpolates linearly, as the source does, so its stopband is not that of a windowed
 FIR filter. Ties in `freq_to_note` round half to even. The four bottom rows of Table 1 (the polyBLAMP residual) were checked with sympy against the integral of the cubic B-spline taken twice minus the ramp, and against the polynomials of the code: all four agree. The pink noise sets the component at zero frequency to 0 and scales to unit variance, which the paper does not fix. The clipper has a block form only, with no streaming form. The square and the pulse are the naive wave with the sawtooth polyBLEP residual added at the rising edge and subtracted at the falling edge, as in Valimaki and Pekonen (2012), Eq. (12) and (13). The streaming `triangle_blamp` equals the block `triangle_blamp` two samples later, except for the last two samples of the block, whose corners lie beyond its end.
 
-**Not in this section.** The chirp (the source, Farina 2000, is not in the folder), IIR filters of any order, convolution by the FFT,
+**Not in this section.** The chirp (the source, Farina 2000, is not in the folder), IIR filters
+other than the biquads and the all-pole filter, convolution by the FFT,
 the envelope follower and gain curve, waveshapers, dithering and quantisation,
-pan, mid/side and interaural delay, RMS and loudness meters, mel and MFCC, pitch, onset,
-GCC-PHAT, scales and note events: no source in the project folder defines them.
+pan, mid/side and interaural delay, RMS and loudness meters, mel and MFCC, onset,
+GCC-PHAT, scales and note events: no source in the project folder defines them. The YIN of this
+section stops at step 2: the refinement by the neighbouring frames (step 3) is described in
+one sentence in the paper, and the original paper of YIN is not in the folder.
 
 **Measured cost.** Each stateful primitive declares `budget_s` and `memory_class`; the values
 are the ones in the classes and have not been re-measured on a reference machine.
