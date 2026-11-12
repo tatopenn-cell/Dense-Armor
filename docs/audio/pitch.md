@@ -25,6 +25,10 @@ The estimate is 3.6 cents above 440 Hz: the parabola through the three lags is n
 
 `YIN` stops at step 2 of the method. Step 3, a second pass that narrows the search with the neighbouring frames, is one sentence in the paper, and the original paper of YIN is not in the folder.
 
+![The normalised difference function of a 440 Hz sine, and the pitch that YIN finds on a glide](../assets/audio/yin.png)
+
+*Left, `cmndf` of the 440 Hz block of the example: it dips to nearly zero at multiples of the period, the first dip below the threshold (red) is chosen, and the parabola moves it to 18.14 samples (green). Right, YIN on a sound that glides from 150 to 400 Hz, one answer for each block of 1024 samples.*
+
 ## 2. Name a frequency
 
 `freq_to_cents(f, fref)` is `1200 log2(f / fref)`: 1200 cents are an octave and 100 cents a semitone. `freq_to_note(f, fref, names)` gives the note as `(j, o, delta)`: the semitone `j` in `0..11` above the note at `fref`, the octave `o` and the leftover `delta` in cents, within half a semitone (Falkenberg 2026, Algorithm 1). The reference frequency has no default: 440 Hz is the usual concert pitch, but you say it.

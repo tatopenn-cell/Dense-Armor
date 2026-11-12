@@ -40,3 +40,7 @@ print(q.round(4).tolist(), rational_ratio(1.5, 4))
 ```
 
 An octave in four equal steps of 300 cents. `rational_ratio(q, b)` writes the step as a fraction of two integers `D / U` (page 3 of the paper): `A = round(b q)`, then divide `A` and `b` by their greatest common divisor. Here `(3, 2)` is `D` and `U` with `D / U = 1.5`.
+
+![The steps of an octave glide in the two modes, and the same paths in cents](../assets/audio/glide.png)
+
+*An octave in 20 steps. Left, the step `q` given to `set_ratio`; right, the pitch it gives, in cents: the cents-linear path is a straight line, the ratio-linear one rises faster at the start.*

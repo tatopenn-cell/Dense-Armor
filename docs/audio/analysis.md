@@ -45,3 +45,7 @@ print(len(parts), peaks)
 ```
 
 A tone of 440 Hz in the first second and a tone of 1000 Hz in the second: the two parts have their spectral peaks at 440 and 1000 Hz.
+
+![The spectrogram of the mixture, and the two parts found by the factorisation](../assets/audio/nmf.png)
+
+*The factorisation of the example. Left, the spectrogram of the mixture. Middle, the columns of `W`: each part has one spectral peak, at 440 Hz and at 1000 Hz. Right, the rows of `H`: each part is on in one of the two seconds.*

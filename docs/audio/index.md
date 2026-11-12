@@ -18,6 +18,10 @@ A drift detector wants one number per block. An anomaly scorer wants a dict of n
 
 The dict is the one of `AudioFeatures`: the mean magnitude of the spectrum in `n_bands` groups of frequencies, with the fixed keys `b0 .. b7`.
 
+![A block of sound enters AudioInput, which gives the dict of band magnitudes, one number, or the samples, depending on the methods of the primitive](../assets/audio/adapter.png)
+
+*The adapter looks at the methods of the primitive (right) and gives the block in the form it takes.*
+
 ```python
 import numpy as np
 from dense_armor.core.audio import Audio, AudioInput
