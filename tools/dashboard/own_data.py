@@ -490,8 +490,8 @@ def check_orders(
     The orders are checked in time order (the rate and duplicate controls need it); a row keeps
     its ``row`` number. The log is verified here, with its file in place.
     """
-    from dense_armor.utility.finance.decision_log import DecisionLog
-    from dense_armor.utility.finance.pretrade import PreTradeChecker
+    from dense_armor.core.finance.decision_log import DecisionLog
+    from dense_armor.core.finance.pretrade import PreTradeChecker
 
     try:
         checker = PreTradeChecker(**limits)
@@ -568,7 +568,7 @@ def schedule_plan(
         DataError: if ``total`` is not a number of 0 or more, ``n`` is not a whole number from 1 to
             1000, or a row of the history has not ``n`` volumes above 0.
     """
-    from dense_armor.utility.finance.schedule import twap_schedule, vwap_schedule
+    from dense_armor.core.finance.schedule import twap_schedule, vwap_schedule
 
     try:
         total = float(total)

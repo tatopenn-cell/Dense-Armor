@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from dense_armor.utility.finance.decision_log import GENESIS_HASH, DecisionLog
+from dense_armor.core.finance.decision_log import GENESIS_HASH, DecisionLog
 
 ITEMS = [
     (
