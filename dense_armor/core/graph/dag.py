@@ -4,10 +4,6 @@ Every node is an estimator, every edge is a ``Signal`` flow. The
 execution order is the topological order.
 
 References:
-    Cheng, Wu, Hu (2024), "Dataflow-Guided Retrieval Augmentation for
-    Repository-Level Code Completion", arXiv:2405.19782
-    (bibliographic only: no PDF in ``papers/``, no section verified; the paper is about code-completion
-    retrieval, not estimator networks).
     Kahn (1962), "Topological sorting of large networks", CACM
     (bibliographic only).
 """

@@ -6,7 +6,9 @@ with preconditions checked before the effects are applied.
 References:
     Fikes, Nilsson (1971), "STRIPS: A New Approach to the Application
     of Theorem Proving to Problem Solving", Artificial Intelligence
-    (bibliographic only, the PDF is not in ``papers/``).
+    (bibliographic only).
+    Vijay, Ethiraj (2025), arXiv:2512.20275, Section 3.2: an action is
+    validated on the subgraph it operates on before it is executed.
 """
 
 from __future__ import annotations
@@ -19,12 +21,18 @@ from dense_armor.core.graph.ontology import TypedGraph, type_ok
 
 
 class ActionRejected(Exception):
-    """Raised when a precondition of an Action fails."""
+    """Raised when an Action is refused.
 
-    def __init__(self, action: str, failed: list[tuple]) -> None:
+    ``what`` says why: a failed precondition (the default), or an edge
+    constraint broken before or after the action.
+    """
+
+    def __init__(
+        self, action: str, failed: list[tuple], what: str = "precondition(s) failed"
+    ) -> None:
         self.action = action
         self.failed = failed
-        msg = f"action {action!r} rejected: {len(failed)} precondition(s) failed"
+        msg = f"action {action!r} rejected: {len(failed)} {what}"
         super().__init__(msg)
 
 
@@ -109,14 +117,27 @@ class Action:
 def apply_action(
     graph: TypedGraph, action: Action, params: dict[str, Any] | None = None
 ) -> TypedGraph:
-    """Apply ``action`` to ``graph``, validating before and after."""
-    before = graph.validate()
-    if before:
-        raise ActionRejected(action.name, before)
+    """Apply ``action`` to ``graph``; refuse it if it breaks a rule that held.
+
+    A large system always has some broken rules, so the graph is not
+    required to be valid. The rules broken before the action are the
+    baseline: the action is refused only if it breaks a rule that held.
+
+    Only the relations of the nodes that the effects change are checked
+    (the validation of the affected subgraph, as in arXiv:2512.20275,
+    Section 3.2): a rule reads the states of its two ends, so no other
+    relation can change status, and the result is the one of checking the
+    whole graph.
+    """
+    params = params or {}
+    touched = {params.get(node, node) for node, *_ in action.effects}
+    before = set(graph.validate(nodes=touched))
     new = action.apply(graph, params)
-    after = new.validate()
-    if after:
-        raise ActionRejected(action.name, after)
+    introduced = [v for v in new.validate(nodes=touched) if v not in before]
+    if introduced:
+        raise ActionRejected(
+            action.name, introduced, "new constraint(s) broken by the action"
+        )
     return new
 
 

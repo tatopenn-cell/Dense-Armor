@@ -80,8 +80,36 @@ print(gate.passed, gate.blocked, det.n)
 
 The sample 10.0 scores above the threshold 5.0, so the gate returns `None`, node `b` is skipped, and the detector does not learn it: it learned 2 samples out of 3. The gate declares `budget_s` (a `score_one` and a `learn_one` of the detector) and `memory_class` (that of the detector).
 
+## 3. Describe the flow, then build it
+
+`Dataflow` is a way to write the same network as a description. You declare where each signal comes from, ask where a node's signal came from, and then build the `ExecutionDAG`.
+
+```python
+from dense_armor.core.graph import Dataflow
+from dense_armor.roles import Signal
+
+
+class Inc:
+    def learn_one(self, x, y=None):
+        return self
+
+    def transform_one(self, x):
+        return {k: float(v) + 1.0 for k, v in dict(x).items()}
+
+
+d = Dataflow().source("raw", Inc()).then("clean", Inc(), after="raw").then("score", Inc(), after="clean")
+print(d.lineage("score"), d.edges())
+out = d.build().run({"raw": Signal([1.0], names=["x"], units=[""])})
+print({k: float(v["x"]) for k, v in out.items()})
+```
+
+```text
+['raw', 'clean', 'score'] [('raw', 'clean'), ('clean', 'score')]
+{'raw': 2.0, 'clean': 3.0, 'score': 4.0}
+```
+
+`source(name, estimator)` declares a node that receives a signal from outside, and `then(name, estimator, after=...)` declares a node that receives the output of another. `lineage(name)` lists the nodes from the source down to `name`, and `build(provenance=...)` returns the `ExecutionDAG`, with the log if you give one. A name used twice, or a node that comes after a name not declared before it, raises `ValueError`.
+
 ## Details
 
 Every node has at most one predecessor, so the network is a tree and the run is one pass over the topological order. A node with two predecessors raises `ValueError` when `run` is called. A network with joins is a different design, left out on purpose. A repeated edge is kept once. The log of what each node did is the subject of [the next page](provenance.md).
-
-An early version of the DAG made a regressor learn before it predicted, with the label set to `None`; and the gate scored every sample twice, once to decide and once inside the learning step. Both were changed in the second review.

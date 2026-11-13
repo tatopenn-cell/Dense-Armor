@@ -1,8 +1,8 @@
-"""Generate the figures of docs/graph/.
+"""Generate the figures of docs/ontology/.
 
 Run from the repository root:
 
-    python docs/assets/graph/make_figures.py
+    python docs/assets/ontology/make_figures.py
 
 Every curve is computed with the functions of ``dense_armor.core.graph``.
 """

@@ -43,7 +43,7 @@ print((low_pass(g.laplacian, 0.5) @ r).round(3).tolist())
 
 The result has negative values at the two ends even though the input has none: cutting the spectrum sharply makes the signal ring. The sharp cut-off is a choice of this module; the papers describe the general filter and not a low-pass shape. The heat kernel, whose weight falls smoothly, does not ring.
 
-![A spike on a path, smoothed by the heat kernel and by the low-pass filter, and the error of the Chebyshev filter at each order](../assets/graph/filters.png)
+![A spike on a path, smoothed by the heat kernel and by the low-pass filter, and the error of the Chebyshev filter at each order](../assets/ontology/filters.png)
 
 *Left: the spike (dots), the heat kernel (smooth, positive) and the low-pass filter (rings at the ends). Right: the largest error of the Chebyshev filter of the next section against the exact filter, at each order.*
 
@@ -64,17 +64,63 @@ f = lambda lam: np.exp(-lam)
 ye = apply_filter(r, g.laplacian, f)
 for k in (2, 4, 8, 20):
     yc = chebyshev_filter(r, g.laplacian, chebyshev_coefficients(f, 4.0, k), 4.0)
-    print(k, float(np.abs(yc - ye).max()))
+    print(k, f"{np.abs(yc - ye).max():.0e}")
 ```
 
 ```text
-2 0.14503891278255218
-4 0.007731605056688309
-8 2.078349342737873e-06
-20 5.995204332975845e-15
+2 1e-01
+4 8e-03
+8 2e-06
+20 6e-15
 ```
 
 The error falls by orders of magnitude at each step, down to the rounding of the machine at order 20. `lmax` must not be below the largest eigenvalue of `L`: for a graph with degrees `d` it is at most twice the largest degree, so 4.0 holds for this path. A `lmax` that is too small sends the spectrum outside `[-1, 1]` and the recurrence grows without bound. A `lmax` or an `order` out of range raises `ValueError`.
+
+## 4. The same filters as objects
+
+`SpectralFilter` and `ChebyshevFilter` hold a graph and a filter, so that you build them once and apply them to many signals. `SpectralFilter` finds the basis once. `SpectralFilter.heat(g, tau)` and `SpectralFilter.low_pass(g, cutoff)` are the two filters of the first sections. `ChebyshevFilter(g, response, lmax, order)` computes its coefficients once and never needs the eigenvectors; `lmax` is required.
+
+```python
+import numpy as np
+from dense_armor.core.graph import ChebyshevFilter, Graph, SpectralFilter
+
+g = Graph(10, [(i, i + 1, 1.0) for i in range(9)])
+r = np.zeros(10)
+r[4] = 5.0
+heat = SpectralFilter.heat(g, 1.0)
+cheb = ChebyshevFilter(g, lambda w: np.exp(-w), lmax=4.0, order=20)
+print(heat.apply(r).round(3).tolist())
+print(float(np.abs(cheb.apply(r) - heat.apply(r)).max()) < 1e-10)
+```
+
+```text
+[0.041, 0.145, 0.466, 1.076, 1.543, 1.076, 0.466, 0.144, 0.034, 0.008]
+True
+```
+
+The two give the same smoothed signal, the first with the exact heat kernel and the second with a polynomial of order 20. A `response` that does not return one value per node raises `ValueError`.
+
+## 5. Wavelets: a signal at several scales
+
+A filter keeps or removes frequencies. A **wavelet** looks at the signal around each node at a chosen distance, so it finds changes that are local. `SpectralWavelet` builds a scaling function, which keeps the slow part of the signal, and wavelets at the scales you give, which keep the part around that scale. The construction is the one of Liu and others (2024, Section 3.1): the Chebyshev polynomial of order `k` becomes `(1 - T_k(lambda - 1)) / 2`, the even orders give the wavelets and the odd ones give the scaling function.
+
+```python
+import numpy as np
+from dense_armor.core.graph import Graph, SpectralWavelet
+
+g = Graph(8, [(i, (i + 1) % 8, 1.0) for i in range(8)])
+w = SpectralWavelet(g, a=[1.0], b=[1.0], scales=[1.0, 2.0])
+x = np.arange(8.0)
+print(w.scaling(x).shape, w.wavelets(x).shape)
+```
+
+```text
+(8,) (2, 8)
+```
+
+`a` holds the coefficients of the wavelet and `b` the coefficients of the scaling function, as many of each as there are terms, and `scales` the scale of each wavelet. `w.scaling(x)` gives one value for each node, and `w.wavelets(x)` gives one row for each scale. A wavelet is exactly 0 for the frequencies of the graph that, multiplied by the scale, leave `[0, 2]`: a larger scale squeezes the wavelet towards the low frequencies. `w.frame_sum()` is `h^2 + sum_j g_j^2` for each frequency, and the wavelets keep the energy of the signal where it is 1.
+
+The paper learns the coefficients with a neural network. Here you give them, and the properties that the construction guarantees are tested: the wavelet is 0 at frequency 0, the scaling function is 1 there, and the first terms are `(2 - lambda) / 2` and `lambda (2 - lambda)`.
 
 ## Details
 

@@ -6,9 +6,13 @@ SHA-256 of the values in ``Signal.names`` order. ``elapsed_ms`` is written
 as 0.0 by ``ExecutionDAG`` (the time is not measured).
 
 References:
+    Wang and others (2026), "From Agent Traces to Trust: A Survey of
+    Evidence Tracing and Execution Provenance in LLM Agents",
+    arXiv:2606.04990: execution provenance as a typed graph of a run, and
+    the gap of traces that are not tamper-evident (abstract only).
     Cheney, Chiticariu, Tan (2009), "Provenance in Databases: Why,
     How, and Where", Foundations and Trends in Databases
-    (bibliographic only: no PDF in ``papers/``).
+    (bibliographic only).
 """
 
 from __future__ import annotations
@@ -32,14 +36,38 @@ def _signal_hash(signal) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+_GENESIS = "0" * 64
+_FIELDS = (
+    "t",
+    "node",
+    "method",
+    "input_hash",
+    "output_hash",
+    "parent_nodes",
+    "elapsed_ms",
+)
+
+
+def _record_hash(prev: str, body: dict) -> str:
+    data = json.dumps(body, sort_keys=True, separators=(",", ":")).encode()
+    return hashlib.sha256(prev.encode() + data).hexdigest()
+
+
 class Provenance:
     """A log of node runs; ``chain`` follows ``parent_nodes``.
+
+    The records are linked by a hash chain: each one holds the hash of the
+    one before (``prev_record_hash``) and its own (``record_hash``, the
+    SHA-256 of the previous hash and of the fields of the record). A record
+    that is changed, removed, inserted or moved breaks the chain from that
+    point on, and :meth:`verify` says so. The last hash, :attr:`head`, kept
+    elsewhere, also shows that records were cut off the end of the log.
 
     Choices stated explicitly:
         The record format is a JSONL of
         ``{t, node, method, input_hash, output_hash, parent_nodes,
-        elapsed_ms}``; the hashes are SHA-256 of the values in
-        ``Signal.names`` order. This is a design choice of this module. The
+        elapsed_ms, prev_record_hash, record_hash}``; the hashes of the
+        signals are SHA-256 of the values in ``Signal.names`` order. This is a design choice of this module. The
         paper cited in the module (Cheney, Chiticariu, Tan 2009)
         formalises provenance for databases, not a concrete log
         format. A PROV-JSON export or a different hash (BLAKE2) would
@@ -59,17 +87,53 @@ class Provenance:
         parents: list[str],
         elapsed_ms: float = 0.0,
     ) -> None:
+        body = {
+            "t": float(t),
+            "node": str(node),
+            "method": str(method),
+            "input_hash": _signal_hash(signal_in),
+            "output_hash": _signal_hash(output),
+            "parent_nodes": list(parents),
+            "elapsed_ms": float(elapsed_ms),
+        }
+        prev = self.head
         self._records.append(
-            {
-                "t": float(t),
-                "node": str(node),
-                "method": str(method),
-                "input_hash": _signal_hash(signal_in),
-                "output_hash": _signal_hash(output),
-                "parent_nodes": list(parents),
-                "elapsed_ms": float(elapsed_ms),
-            }
+            {**body, "prev_record_hash": prev, "record_hash": _record_hash(prev, body)}
         )
+
+    @property
+    def head(self) -> str:
+        """The hash of the last record (a fixed string for an empty log)."""
+        return self._records[-1]["record_hash"] if self._records else _GENESIS
+
+    def broken_at(self) -> int | None:
+        """The index of the first record that breaks the chain, or ``None``.
+
+        A record breaks it if a field is missing or changed, if it does not
+        point to the hash of the record before, or if it was inserted or
+        moved.
+        """
+        prev = _GENESIS
+        for i, r in enumerate(self._records):
+            if any(k not in r for k in _FIELDS):
+                return i
+            body = {k: r[k] for k in _FIELDS}
+            if r.get("prev_record_hash") != prev:
+                return i
+            if r.get("record_hash") != _record_hash(prev, body):
+                return i
+            prev = r["record_hash"]
+        return None
+
+    def verify(self, head: str | None = None) -> bool:
+        """``True`` if the chain is intact.
+
+        Args:
+            head: the value of :attr:`head` saved when the log was written. If
+                it is given, the log must also end at that record, which shows
+                that nothing was cut off the end.
+        """
+        return self.broken_at() is None and (head is None or head == self.head)
 
     def records(self) -> list[dict[str, Any]]:
         return list(self._records)

@@ -37,7 +37,7 @@ def test_gft_matches_pygsp():
     # Gli autovettori sono definiti a meno del segno: si confronta il
     # modulo, non i valori con segno. Il gauge fisso (fix_sign) rende
     # confrontabili i segni, ma PyGSP usa un gauge suo, quindi il test
-    # confronta |gft| (pattern 17 del kit).
+    # gft is compared on |gft|: the sign of an eigenvector is arbitrary.
     pytest.importorskip("pygsp")
     import pygsp
 
