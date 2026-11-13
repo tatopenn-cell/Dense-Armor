@@ -53,4 +53,13 @@ coverage:
 flag_management:
   default_rules:
     carryforward: true
+  # The `finance-dashboard` workflow runs pytest but no longer uploads a
+  # report. Its last upload, from before the core/utility rename, lists
+  # the library under `dense_armor/utility/` (about 28 000 lines at 2%),
+  # and carryforward copied it to every later commit, so the project read
+  # 54% instead of 97%. Without carryforward the stale flag drops out of
+  # the report.
+  individual_flags:
+    - name: finance-dashboard
+      carryforward: false
 
