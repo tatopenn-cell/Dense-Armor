@@ -284,6 +284,9 @@ nav:
       - Execution DAG: ontology/dag.md
       - Provenance: ontology/provenance.md
       - Anomaly detection: ontology/anomaly.md
+      - Recovering a signal: ontology/recovery.md
+      - Learning a graph: ontology/learning.md
+      - Following a graph online: ontology/online.md
       - Causality: ontology/causal.md
   - Library:
       - Home: index.md

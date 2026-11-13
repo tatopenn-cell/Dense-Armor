@@ -18,10 +18,13 @@ A set of parts and relations is a graph, so the mathematics of graphs gives the 
 | --- | --- | --- |
 | [Types, rules and actions](typed.md) | `TypedGraph`, `Constraint`, `Action` | describe the system, check the rules, change it safely |
 | [Graph and spectrum](spectral.md) | `Graph`, `GraphFourier`, `gft`, `GraphSignal` | put one number on every part and study how it varies across the relations |
-| [Filters](filters.md) | `SpectralFilter`, `ChebyshevFilter`, `heat_kernel`, `low_pass`, `chebyshev_filter` | smooth those numbers over the relations |
+| [Filters](filters.md) | `SpectralFilter`, `ChebyshevFilter`, `SpectralWavelet`, `heat_kernel`, `low_pass`, `chebyshev_filter` | smooth those numbers over the relations |
 | [Execution DAG](dag.md) | `Dataflow`, `ExecutionDAG`, `GateNode` | run estimators in a chain, and stop a chain when a reading is anomalous |
 | [Provenance](provenance.md) | `Provenance` | know which part produced which output |
 | [Anomaly detection](anomaly.md) | `page_rank`, `random_walk_restart`, `graph_anomaly_score`, `structural_change` | find the part that is wrong, and see what changed when the graph itself changes |
+| [Recovering a signal](recovery.md) | `recover_graph_signal` | estimate the true readings from noisy, missing and wrong ones, on a graph that may move |
+| [Learning a graph](learning.md) | `learn_graph`, `weights_from_drops` | build the graph from the readings, with what you already know |
+| [Following a graph online](online.md) | `AdaCGP` | update the estimate of the links at every sample |
 | [Causality](causal.md) | `CausalGraph` | tell what causes what from what merely moves together |
 
 The code is in `dense_armor/core/graph/`. The structure and the spectral functions need NumPy and SciPy. The ontology, the DAG, PageRank and the causal graph use NetworkX, and the effect estimate uses DoWhy and pandas:
@@ -41,6 +44,10 @@ Every number shown in these pages was printed by the code above it, and the figu
 | --- | --- | --- |
 | `core`, `spectral`, `fourier` | Niresi, Kuhn, Frusque, Fink (2024), arXiv:2406.03898, Section II.A: `L := D - W` and Eq. (2) | the Laplacian |
 | `fourier`, `filters`, `spectral` | Liu, He, Laurent, Di Giovanni, Bronstein, Bresson (2024), arXiv:2405.13806, Sections 2 and 3.1 | the transform `U^T f`, the Chebyshev recurrence |
+| `recovery` | Yamagata, Naganuma, Ono (2022), arXiv:2202.06432, Section III, Algorithm 1 | the problem (13), the proximity operators (23)-(28), the algorithm |
+| `learning` | Niresi, Kuhn, Frusque, Fink (2024), arXiv:2406.03898, Section III | the physics-inspired weights and the problem (9)-(11) |
+| `adacgp` | Jenkins and others (2024), arXiv:2411.01567, Sections II-IV | the model (5), Algorithm 1 and 2, the constants of IV.D |
+| `wavelet` | Liu and others (2024), arXiv:2405.13806, Sections 2 and 3.1 | the transformed Chebyshev terms (4)-(5) |
 | `change` | Jenkins, Variddhisai, El-Medany, Ng, Mandic (2024), arXiv:2411.01567, Section VI | the idea of following the weights and the topology of a graph over time; the two measures are defined in this module |
 | `dag`, `ontology`, `causal`, `anomaly` | the papers named in each docstring | background references |
 

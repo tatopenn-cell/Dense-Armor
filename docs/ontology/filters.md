@@ -100,6 +100,24 @@ True
 
 The two give the same smoothed signal, the first with the exact heat kernel and the second with a polynomial of order 20. A `response` that does not return one value per node raises `ValueError`.
 
+## 5. Wavelets: a signal at several scales
+
+A filter keeps or removes frequencies. A **wavelet** looks at the signal around each node at a chosen distance, so it finds changes that are local. `SpectralWavelet` builds a scaling function, which keeps the slow part of the signal, and wavelets at the scales you give, which keep the part around that scale. The construction is the one of Liu and others (2024, Section 3.1): the Chebyshev polynomial of order `k` becomes `(1 - T_k(lambda - 1)) / 2`, the even orders give the wavelets and the odd ones give the scaling function.
+
+```python
+import numpy as np
+from dense_armor.core.graph import Graph, SpectralWavelet
+
+g = Graph(8, [(i, (i + 1) % 8, 1.0) for i in range(8)])
+w = SpectralWavelet(g, a=[1.0], b=[1.0], scales=[1.0, 2.0])
+x = np.arange(8.0)
+print(w.scaling(x).shape, w.wavelets(x).shape)
+```
+
+`a` holds the coefficients of the wavelet and `b` the coefficients of the scaling function, as many of each as there are terms, and `scales` the scale of each wavelet. `w.scaling(x)` gives one value for each node, and `w.wavelets(x)` gives one row for each scale. A wavelet is exactly 0 for the frequencies of the graph that, multiplied by the scale, leave `[0, 2]`: a larger scale squeezes the wavelet towards the low frequencies. `w.frame_sum()` is `h^2 + sum_j g_j^2` for each frequency, and the wavelets keep the energy of the signal where it is 1.
+
+The paper learns the coefficients with a neural network. Here you give them, and the properties that the construction guarantees are tested: the wavelet is 0 at frequency 0, the scaling function is 1 there, and the first terms are `(2 - lambda) / 2` and `lambda (2 - lambda)`.
+
 ## Details
 
 `apply_filter` and `low_pass` call `numpy.linalg.eigh` at every call, so use them when the graph is small or the filter is applied once. The Chebyshev filter takes a dense or a sparse `L` and handles one signal of shape `(n,)`. The heat kernel was checked against PyGSP `Heat` with `scale = tau * lmax`.
