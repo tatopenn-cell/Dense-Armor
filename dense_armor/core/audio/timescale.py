@@ -186,9 +186,11 @@ def _period_at(f0: Any, position: float, sr: float, fallback: float) -> float:
 def psola_time_stretch(x: Any, sr: float, f0: Any, rate: float) -> np.ndarray:
     """Make ``x`` ``rate`` times longer by repeating or dropping whole periods (TD-PSOLA).
 
-    The marks are one period apart: the first one at the largest sample of the first period, the
-    next ones one period (``sr / f0``) after the previous, each moved to the largest sample within
-    a quarter of a period. Each analysis segment is the samples within one period on each side of a
+    The marks are one period apart: the first one at the highest sample of the first period (the
+    largest value, not the largest in modulus: a sound with several partials has positive and
+    negative peaks, and marks that jump from one kind to the other are not synchronous with the
+    phase), the next ones one period (``sr / f0``) after the previous, each moved to the highest
+    sample within a quarter of a period. Each analysis segment is the samples within one period on each side of a
     mark, multiplied by a Hann window. The output has marks one period apart as well, so the
     pitch does not change; the output mark at time ``s`` takes the segment of the analysis mark
     nearest to ``s / rate``, and the segments are added. The output has ``round(len(x) * rate)``
@@ -233,7 +235,7 @@ def psola_time_stretch(x: Any, sr: float, f0: Any, rate: float) -> np.ndarray:
     n_out = int(round(n * rate))
     fallback = 0.01 * sr
     t0 = _period_at(f0, 0, sr, fallback)
-    first = int(np.argmax(np.abs(v[: max(1, int(round(t0)))])))
+    first = int(np.argmax(v[: max(1, int(round(t0)))]))
     marks = [float(first)]
     while marks[-1] < n:
         step = _period_at(f0, marks[-1], sr, fallback)
@@ -242,7 +244,7 @@ def psola_time_stretch(x: Any, sr: float, f0: Any, rate: float) -> np.ndarray:
         if lo >= n:
             marks.append(nxt)
             break
-        seg = np.abs(v[max(lo, 0) : min(hi, n)])
+        seg = v[max(lo, 0) : min(hi, n)]
         marks.append(float(max(lo, 0) + int(np.argmax(seg))) if len(seg) else nxt)
     marks_arr = np.array(marks)
     out = np.zeros(n_out + 4 * int(fallback) + 8)
