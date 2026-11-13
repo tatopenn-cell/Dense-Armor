@@ -1,6 +1,7 @@
 """Dynamics: a compressor, a lookahead limiter and a soft clipper with oversampling."""
 
 import math
+from collections import deque
 from typing import Any
 
 import numpy as np
@@ -151,6 +152,130 @@ class Compressor(StatefulRoot):
 
     def update_many(self, values: Any) -> np.ndarray:
         """Compress a block; returns the output samples."""
+        v = np.asarray(values, dtype=float)
+        out = np.empty(len(v))
+        for i, x in enumerate(v):
+            out[i] = self.update(x).out
+        return out
+
+
+class Limiter(StatefulRoot):
+    """Brickwall limiter with lookahead: no output sample is above ``ceiling_db``.
+
+    The gain reduction is the one of :func:`gain_curve` with an infinite ratio, as a gain: a
+    sample of level ``|x|`` above the ceiling ``C`` asks for ``C / |x|``. With ``L`` the lookahead
+    in samples, each step is:
+
+    1. the asked gain ``r[n]``;
+    2. ``s[n]``, the smallest of ``r`` over the last ``L + 1`` samples;
+    3. ``y[n]``, which follows ``s`` down at once and up with a one-pole filter of time
+       ``release_s``;
+    4. ``g[n]``, the mean of ``y`` over the last ``L + 1`` samples;
+    5. the output is ``x[n - L] * g[n]``.
+
+    Every term of the mean in step 4 is at most ``r[n - L]``, so ``g[n] <= r[n - L]`` and the output
+    is at most ``C`` in modulus, with no exception and no overshoot. The gain falls over ``L``
+    samples before the loud sample reaches the output, and the output is delayed by ``L`` samples
+    (``latency``). The last reduction is in ``gain_reduction_db`` and the output in ``out``.
+
+    Choice stated: the attack is the lookahead window, a minimum followed by a mean, and not an
+    exponential attack; an exponential one cannot give the guarantee above. The release is
+    exponential.
+
+    Args:
+        ceiling_db: the ceiling in dB, at most 0 for a signal in ``[-1, 1]``.
+        lookahead_s: lookahead in seconds, positive.
+        release_s: release time in seconds, at least 0.
+        sr: sampling rate in hertz, positive.
+
+    Raises:
+        ValueError: if ``lookahead_s`` or ``sr`` is not positive, or ``release_s`` is negative.
+
+    Example:
+        >>> lim = Limiter(ceiling_db=-6.0, lookahead_s=0.001, sr=1000.0)
+        >>> y = lim.update_many(np.array([0.0] * 5 + [1.0] * 5 + [0.0] * 5))
+        >>> bool(np.abs(y).max() <= 10 ** (-6 / 20) + 1e-12)
+        True
+
+    References:
+        The lookahead limiter of the dynamics-processing literature, with its gain computer
+        from :func:`gain_curve`: Giannoulis, Massberg and Reiss (2012), J. Audio Eng. Soc.
+        60(6), 399-408, and Zolzer (ed.) (2011), DAFX: Digital Audio Effects, 2nd ed., Wiley,
+        ISBN 978-0-470-66599-2. Bibliographic only (not in ``papers/``): the guarantee is a
+        short proof (above) and a test on random signals with bursts (see
+        ``test_no_sample_is_above_the_ceiling``).
+    """
+
+    budget_s: float = 2e-4
+    memory_class: str = "O(window)"
+    _state_attrs = (
+        "_delay",
+        "_minq",
+        "_avg",
+        "_total",
+        "_y",
+        "_n",
+        "gain_reduction_db",
+        "out",
+    )
+
+    def __init__(
+        self,
+        ceiling_db: float = -0.1,
+        lookahead_s: float = 0.005,
+        release_s: float = 0.05,
+        sr: float = 44100.0,
+    ) -> None:
+        if lookahead_s <= 0.0 or sr <= 0.0 or release_s < 0.0:
+            raise ValueError("lookahead_s and sr must be > 0 and release_s >= 0")
+        self.ceiling_db = float(ceiling_db)
+        self.lookahead_s = float(lookahead_s)
+        self.release_s = float(release_s)
+        self.sr = float(sr)
+        n = self.latency
+        self._delay: deque = deque([0.0] * n, maxlen=n)
+        self._minq: deque = deque()
+        self._avg: deque = deque([1.0] * (n + 1), maxlen=n + 1)
+        self._total = float(n + 1)
+        self._y = 1.0
+        self._n = 0
+        self.gain_reduction_db = 0.0
+        self.out = 0.0
+
+    @property
+    def latency(self) -> int:
+        """The delay of the output, in samples: the lookahead."""
+        return max(1, round(self.lookahead_s * self.sr))
+
+    def update(self, x: float) -> "Limiter":
+        """Limit one sample; the result is ``out``, delayed by ``latency`` samples."""
+        n_look = self.latency
+        ceiling = 10.0 ** (self.ceiling_db / 20.0)
+        a_rel = _smoothing_coefficient(self.release_s, self.sr)
+        x = float(x)
+        ax = abs(x)
+        r = ceiling / ax if ax > ceiling else 1.0
+        q = self._minq
+        while q and q[-1][1] >= r:
+            q.pop()
+        q.append((self._n, r))
+        while q[0][0] < self._n - n_look:
+            q.popleft()
+        s = q[0][1]
+        y = s if s < self._y else a_rel * self._y + (1.0 - a_rel) * s
+        self._y = y
+        self._total += y - self._avg[0]
+        self._avg.append(y)
+        g = self._total / (n_look + 1)
+        delayed = self._delay[0]
+        self._delay.append(x)
+        self._n += 1
+        self.gain_reduction_db = -20.0 * math.log10(g)
+        self.out = delayed * g
+        return self
+
+    def update_many(self, values: Any) -> np.ndarray:
+        """Limit a block; returns the output samples, delayed by ``latency``."""
         v = np.asarray(values, dtype=float)
         out = np.empty(len(v))
         for i, x in enumerate(v):
