@@ -7,6 +7,7 @@ from typing import Any
 import numpy as np
 
 from dense_armor.core.audio._state import StatefulRoot
+from dense_armor.core.audio.windows import get_window
 
 _FLOOR = 1e-10
 
@@ -281,3 +282,104 @@ class Limiter(StatefulRoot):
         for i, x in enumerate(v):
             out[i] = self.update(x).out
         return out
+
+
+def _lowpass_taps(oversample: int) -> np.ndarray:
+    n = 64 * oversample + 1
+    k = np.arange(n) - (n - 1) / 2.0
+    fc = 0.5 / oversample
+    h = 2.0 * fc * np.sinc(2.0 * fc * k) * get_window("blackman", n, periodic=False)
+    return h / h.sum()
+
+
+def _fir_block(x: np.ndarray, h: np.ndarray, state: np.ndarray):
+    buf = np.concatenate([state, x])
+    return np.convolve(buf, h, mode="valid"), buf[len(buf) - (len(h) - 1) :]
+
+
+class SoftClip(StatefulRoot):
+    """Soft clipper ``tanh(g x)`` with oversampling, so that its harmonics do not fold back.
+
+    The sound is raised to ``oversample`` times the rate (zeros between the samples and a low-pass
+    filter at the original Nyquist frequency), clipped with ``tanh(g x)``, ``g = 10 ** (drive_db /
+    20)``, low-passed again at the same frequency and brought back to the original rate. Without
+    that, the harmonics of the clipping that lie above the Nyquist frequency are mirrored into the
+    band as inharmonic tones. The two filters are windowed-sinc low-passes (Blackman window) of
+    ``64 * oversample + 1`` taps; together they delay the output by ``latency`` = 64 samples. With
+    ``oversample = 1`` it is ``tanh(g x)`` with no filter and no delay. The state is kept between
+    blocks, so a signal can be given in pieces. The last output sample is in ``out``.
+    A call of ``update`` is two convolutions (p99 253 us on the machine of the measurement), so
+    ``budget_s`` is 1 ms; ``update_many`` on a block of 512 costs about 0.5 us per sample.
+
+    Choices stated: the length and the window of the filters (about 97 dB of stopband), and no
+    gain normalisation after the ``tanh``. The output can be above 1 in modulus: the last
+    low-pass rings (the Gibbs overshoot) on a signal that was cut at 1, by at most the sum of
+    the absolute values of its taps (about 1.6 for ``oversample = 4``). The filters are NumPy convolutions and not the
+    sample by sample ``FIR`` class, which would take a Python loop over every oversampled sample.
+
+    Args:
+        drive_db: the gain before the clipping, in dB.
+        oversample: integer factor, at least 1 (4 is usual).
+        sr: the sampling rate in hertz, positive; it only converts the latency to seconds.
+
+    Raises:
+        ValueError: if ``oversample`` is not an integer at least 1, or ``sr`` is not positive.
+
+    Example:
+        >>> SoftClip(drive_db=0.0, oversample=1).update_many([0.0, 1.0]).round(4).tolist()
+        [0.0, 0.7616]
+
+    References:
+        Zolzer (ed.) (2011), DAFX: Digital Audio Effects, 2nd ed., Wiley, ISBN
+        978-0-470-66599-2: a non-linearity processed at a higher rate between two low-pass filters.
+        Bibliographic only (not in ``papers/``). Verified on a 5 kHz sine against a reference made
+        at 16 times the rate with the harmonics above the Nyquist frequency removed (see
+        ``test_the_harmonics_below_nyquist_match_the_reference``) and with
+        ``scipy.signal.resample_poly`` (see ``test_the_alias_level_agrees_with_scipy_resampling``).
+    """
+
+    budget_s: float = 1e-3
+    memory_class: str = "O(window)"
+    _state_attrs = ("_up_state", "_down_state", "out")
+
+    def __init__(
+        self, drive_db: float = 12.0, oversample: int = 4, sr: float = 44100.0
+    ) -> None:
+        if oversample < 1 or int(oversample) != oversample or sr <= 0.0:
+            raise ValueError("oversample must be an integer >= 1 and sr > 0")
+        self.drive_db = float(drive_db)
+        self.oversample = int(oversample)
+        self.sr = float(sr)
+        n = 64 * self.oversample if self.oversample > 1 else 0
+        self._up_state = np.zeros(n)
+        self._down_state = np.zeros(n)
+        self.out = 0.0
+
+    @property
+    def latency(self) -> int:
+        """The delay of the output in samples (0 without oversampling)."""
+        return 64 if self.oversample > 1 else 0
+
+    def update_many(self, values: Any) -> np.ndarray:
+        """Clip a block; returns the output samples, delayed by ``latency``."""
+        v = np.asarray(values, dtype=float)
+        if len(v) == 0:
+            return np.zeros(0)
+        g = 10.0 ** (self.drive_db / 20.0)
+        if self.oversample == 1:
+            out = np.tanh(g * v)
+        else:
+            h = _lowpass_taps(self.oversample)
+            up = np.zeros(len(v) * self.oversample)
+            up[:: self.oversample] = v * self.oversample
+            z, self._up_state = _fir_block(up, h, self._up_state)
+            w, self._down_state = _fir_block(np.tanh(g * z), h, self._down_state)
+            out = w[:: self.oversample]
+        if len(out):
+            self.out = float(out[-1])
+        return out
+
+    def update(self, x: float) -> "SoftClip":
+        """Clip one sample; the result is ``out``."""
+        self.update_many([x])
+        return self

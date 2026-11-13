@@ -18,7 +18,12 @@ from dense_armor.core.audio.blamp import (
     triangle_blamp,
 )
 from dense_armor.core.audio.clipping import hard_clip
-from dense_armor.core.audio.dynamics import Compressor, Limiter, gain_curve
+from dense_armor.core.audio.dynamics import (
+    Compressor,
+    Limiter,
+    SoftClip,
+    gain_curve,
+)
 from dense_armor.core.audio.envelope import envelope_follower, hilbert
 from dense_armor.core.audio.events import detect_events
 from dense_armor.core.audio.features import AudioFeatures
@@ -93,6 +98,7 @@ __all__ = [
     "Limiter",
     "Oscillator",
     "Resampler",
+    "SoftClip",
     "StreamingSTFT",
     "bandpass",
     "blamp_residual",

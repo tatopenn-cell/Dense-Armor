@@ -3,7 +3,12 @@
 import numpy as np
 import pytest
 
-from dense_armor.core.audio.dynamics import Compressor, Limiter, gain_curve
+from dense_armor.core.audio.dynamics import (
+    Compressor,
+    Limiter,
+    SoftClip,
+    gain_curve,
+)
 
 SR = 8000.0
 
@@ -223,3 +228,117 @@ def test_the_limiter_parameters_are_checked_and_clone_and_state_work():
     twin = lim.clone()
     twin.load_state_dict(lim.state_dict())
     assert np.allclose(twin.update_many(x[200:]), lim.update_many(x[200:]))
+
+
+def _tone_report(y, f0, sr, n_harm):
+    spec = np.abs(np.fft.rfft(y)) ** 2
+    step = int(round(f0 * len(y) / sr))
+    harm = [spec[step * m] for m in range(1, n_harm + 1)]
+    thd = np.sqrt(sum(harm[1:])) / np.sqrt(harm[0])
+    mask = np.ones(len(spec), bool)
+    mask[::step] = False
+    mask[0] = False
+    return thd, 10 * np.log10(spec[mask].sum() / harm[0])
+
+
+def _reference_thd(f0, sr, drive_db, n_harm, factor=16):
+    n = int(sr)
+    t = np.arange(n * factor) / (sr * factor)
+    y = np.tanh(10 ** (drive_db / 20.0) * np.sin(2 * np.pi * f0 * t))
+    spec = np.abs(np.fft.rfft(y))
+    harm = [spec[int(f0 * m)] for m in range(1, n_harm + 1)]
+    return np.sqrt(sum(h * h for h in harm[1:])) / harm[0]
+
+
+CSR = 44100.0
+SEG = slice(4410, 4410 + 8820)
+
+
+@pytest.mark.parametrize(("f0", "n_harm"), [(1000.0, 22), (5000.0, 4)])
+def test_the_harmonics_below_nyquist_match_the_reference(f0, n_harm):
+    x = np.sin(2 * np.pi * f0 * np.arange(int(CSR)) / CSR)
+    y = SoftClip(12.0, 4, CSR).update_many(x)[SEG]
+    thd, _ = _tone_report(y, f0, CSR, n_harm)
+    assert abs(thd - _reference_thd(f0, CSR, 12.0, n_harm)) < 0.005
+
+
+def test_oversampling_removes_the_folded_harmonics_of_a_high_tone():
+    f0 = 5000.0
+    x = np.sin(2 * np.pi * f0 * np.arange(int(CSR)) / CSR)
+    _, alias_naive = _tone_report(
+        SoftClip(12.0, 1, CSR).update_many(x)[SEG], f0, CSR, 4
+    )
+    _, alias_4 = _tone_report(SoftClip(12.0, 4, CSR).update_many(x)[SEG], f0, CSR, 4)
+    assert alias_naive > -30.0
+    assert alias_4 < -40.0 and alias_4 < alias_naive - 40.0
+
+
+def test_a_1_khz_tone_has_its_aliases_more_than_40_db_below_the_fundamental():
+    x = np.sin(2 * np.pi * 1000.0 * np.arange(int(CSR)) / CSR)
+    _, alias = _tone_report(SoftClip(12.0, 4, CSR).update_many(x)[SEG], 1000.0, CSR, 22)
+    assert alias < -40.0
+
+
+def test_the_alias_level_agrees_with_scipy_resampling():
+    signal = pytest.importorskip("scipy.signal")
+    f0 = 5000.0
+    x = np.sin(2 * np.pi * f0 * np.arange(int(CSR)) / CSR)
+    up = signal.resample_poly(x, 4, 1)
+    y = signal.resample_poly(np.tanh(10 ** (12.0 / 20.0) * up), 1, 4)[SEG]
+    thd_s, alias_s = _tone_report(y, f0, CSR, 4)
+    thd, alias = _tone_report(SoftClip(12.0, 4, CSR).update_many(x)[SEG], f0, CSR, 4)
+    assert abs(thd - thd_s) < 0.005
+    assert alias < -40.0 and alias_s < -40.0
+
+
+def test_without_oversampling_it_is_tanh_of_the_driven_signal_and_has_no_latency():
+    x = np.random.default_rng(0).uniform(-1, 1, 300)
+    sc = SoftClip(6.0, 1, CSR)
+    assert sc.latency == 0
+    assert np.allclose(sc.update_many(x), np.tanh(10 ** (6.0 / 20.0) * x), atol=1e-15)
+
+
+def test_a_small_signal_comes_out_amplified_by_the_drive_and_delayed_by_the_latency():
+    f0 = 200.0
+    x = 0.001 * np.sin(2 * np.pi * f0 * np.arange(4000) / CSR)
+    sc = SoftClip(20.0, 4, CSR)
+    y = sc.update_many(x)
+    n = sc.latency
+    assert n == 64
+    assert np.allclose(y[n + 300 :], 10.0 * x[300 : len(x) - n], atol=2e-5)
+
+
+def test_a_signal_in_pieces_gives_the_same_output_as_in_one_block():
+    x = np.random.default_rng(1).uniform(-1, 1, 1000)
+    whole = SoftClip(12.0, 4, CSR).update_many(x)
+    sc = SoftClip(12.0, 4, CSR)
+    pieces = np.concatenate([sc.update_many(x[:300]), sc.update_many(x[300:])])
+    assert np.allclose(pieces, whole, atol=1e-12)
+    one = SoftClip(12.0, 4, CSR)
+    for v in x[:10]:
+        one.update(v)
+    assert one.out == pytest.approx(whole[9], abs=1e-12)
+
+
+def test_the_output_can_overshoot_one_but_not_the_sum_of_the_taps_and_empty_is_a_noop():
+    from dense_armor.core.audio.dynamics import _lowpass_taps
+
+    sc = SoftClip(30.0, 4, CSR)
+    y = sc.update_many(np.random.default_rng(2).uniform(-1, 1, 2000))
+    peak = np.abs(y).max()
+    assert 1.0 < peak <= np.abs(_lowpass_taps(4)).sum()
+    last = sc.out
+    assert sc.update_many([]).shape == (0,) and sc.out == last
+
+
+def test_the_soft_clip_parameters_are_checked_and_clone_and_state_work():
+    for kw in ({"oversample": 0}, {"oversample": 2.5}, {"sr": 0.0}):
+        with pytest.raises(ValueError, match="oversample must be an integer"):
+            SoftClip(**kw)
+    sc = SoftClip(9.0, 2, CSR)
+    assert sc.clone().get_params() == sc.get_params()
+    x = np.random.default_rng(3).uniform(-1, 1, 400)
+    sc.update_many(x[:200])
+    twin = sc.clone()
+    twin.load_state_dict(sc.state_dict())
+    assert np.allclose(twin.update_many(x[200:]), sc.update_many(x[200:]))
