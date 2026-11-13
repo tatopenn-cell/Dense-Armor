@@ -2,6 +2,8 @@
 
 import numpy as np
 
+from dense_armor.core.audio.fourier import stft
+
 _F_SP = 200.0 / 3.0
 _MIN_LOG_HZ = 1000.0
 _MIN_LOG_MEL = _MIN_LOG_HZ / _F_SP
@@ -116,3 +118,52 @@ def mel_filterbank(
     upper = ramps[2:] / fdiff[1:, None]
     weights = np.maximum(0.0, np.minimum(lower, upper))
     return weights * (2.0 / (edges[2:] - edges[:-2]))[:, None]
+
+
+def mel_spectrogram(
+    x: np.ndarray,
+    sr: float,
+    n_mels: int = 128,
+    n_fft: int = 2048,
+    hop: int = 512,
+    fmin: float = 0.0,
+    fmax: float | None = None,
+    window: str = "hann",
+) -> np.ndarray:
+    """Power spectrogram of ``x`` projected on the mel filterbank.
+
+    It is ``|STFT|**2`` of :func:`dense_armor.core.audio.fourier.stft` times the filterbank of
+    :func:`mel_filterbank`, with no logarithm and no other scaling. The STFT has no padding:
+    frame ``m`` is ``x[m hop : m hop + n_fft]`` times the window, so a signal shorter than
+    ``n_fft`` gives zero frames. ``librosa.feature.melspectrogram`` centres the frames by
+    padding ``n_fft // 2`` samples on each side, so the two agree with ``center=False``.
+
+    Args:
+        x: real samples, shape ``(n,)``.
+        sr: sampling rate in hertz.
+        n_mels: number of mel filters.
+        n_fft: frame length.
+        hop: frame step.
+        fmin: lowest edge of the filterbank in hertz.
+        fmax: highest edge in hertz; ``None`` means ``sr / 2``.
+        window: a window name of :mod:`dense_armor.core.audio.windows`.
+
+    Returns:
+        Array of shape ``(n_frames, n_mels)``.
+
+    Example:
+        >>> t = np.arange(4096) / 8000.0
+        >>> mel_spectrogram(np.sin(2 * np.pi * 440 * t), 8000.0, n_mels=20).shape
+        (5, 20)
+
+    References:
+        Allen and Rabiner (1977), A unified approach to short-time Fourier analysis and
+        synthesis, Proc. IEEE 65(11), for the STFT (see :func:`stft`). Purwins et al. (2019),
+        Deep Learning for Audio Signal Processing, IEEE JSTSP, page 3, says that the mel
+        filter bank is made of triangular filters and that the log-mel spectrum is a common
+        feature; it gives no formula. The projection is verified against
+        ``librosa.feature.melspectrogram(center=False)`` (see
+        ``test_mel_spectrogram_matches_librosa``).
+    """
+    power = np.abs(stft(x, n_fft, hop, window)) ** 2
+    return power @ mel_filterbank(n_mels, n_fft, sr, fmin, fmax).T

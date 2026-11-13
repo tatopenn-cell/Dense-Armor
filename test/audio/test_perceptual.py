@@ -6,6 +6,7 @@ import pytest
 from dense_armor.core.audio.perceptual import (
     hz_to_mel,
     mel_filterbank,
+    mel_spectrogram,
     mel_to_hz,
 )
 
@@ -88,3 +89,41 @@ def test_mel_filterbank_matches_librosa(n_mels, n_fft, sr, fmin, fmax):
     ours = mel_filterbank(n_mels, n_fft, sr, fmin, fmax)
     assert ours.shape == ref.shape
     assert np.max(np.abs(ours - ref)) < 1e-6
+
+
+def _tone(f=440.0, sr=8000, n=8000):
+    return np.sin(2 * np.pi * f * np.arange(n) / sr)
+
+
+def test_the_mel_spectrogram_shape_and_that_a_tone_peaks_in_its_filter():
+    sr = 8000.0
+    mel = mel_spectrogram(_tone(440.0), sr, n_mels=40, n_fft=1024, hop=256)
+    assert mel.shape == (1 + (8000 - 1024) // 256, 40)
+    assert (mel >= 0.0).all()
+    fb = mel_filterbank(40, 1024, sr)
+    centre = fb.argmax(axis=1) * sr / 1024
+    best = int(mel.mean(axis=0).argmax())
+    assert abs(centre[best] - 440.0) < 60.0
+
+
+def test_the_mel_spectrogram_is_the_filterbank_applied_to_the_power_of_the_stft():
+    from dense_armor.core.audio.fourier import stft
+
+    x = np.random.default_rng(0).standard_normal(3000)
+    ref = (np.abs(stft(x, 512, 128, "hann")) ** 2) @ mel_filterbank(20, 512, 8000.0).T
+    assert np.allclose(mel_spectrogram(x, 8000.0, 20, 512, 128), ref, rtol=1e-12)
+
+
+def test_a_signal_shorter_than_one_frame_gives_zero_frames():
+    assert mel_spectrogram(np.zeros(100), 8000.0, 20, 512, 128).shape == (0, 20)
+
+
+def test_mel_spectrogram_matches_librosa():
+    librosa = pytest.importorskip("librosa")
+    x = np.random.default_rng(1).standard_normal(8000)
+    ref = librosa.feature.melspectrogram(
+        y=x, sr=8000, n_fft=2048, hop_length=512, n_mels=128, center=False
+    )
+    ours = mel_spectrogram(x, 8000.0)
+    assert ours.shape == ref.T.shape
+    assert np.max(np.abs(ours - ref.T)) / np.max(np.abs(ref)) < 1e-5
