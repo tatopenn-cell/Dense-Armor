@@ -57,6 +57,12 @@ from dense_armor.core.audio.resample import (
     resample,
 )
 from dense_armor.core.audio.signal import Audio
+from dense_armor.core.audio.spectral import (
+    spectral_centroid,
+    spectral_flatness,
+    spectral_flux,
+    spectral_rolloff,
+)
 from dense_armor.core.audio.streams import AudioFileStream, AudioLiveStream
 from dense_armor.core.audio.wav import read_wav, write_wav
 from dense_armor.core.audio.windows import (
@@ -122,6 +128,10 @@ __all__ = [
     "resample",
     "run_estimators",
     "separate",
+    "spectral_centroid",
+    "spectral_flatness",
+    "spectral_flux",
+    "spectral_rolloff",
     "stft",
     "triangle_blamp",
     "white_noise",
