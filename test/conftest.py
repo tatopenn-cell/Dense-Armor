@@ -68,3 +68,33 @@ def pytest_runtestloop(session):
             pass
     if bad:
         print(f"\nconftest: removed {len(bad)} unusable coverage file(s): " + ", ".join(os.path.basename(p) for p in bad))
+
+
+
+def _slow_entries():
+    from pathlib import Path
+
+    path = Path(__file__).parent / "slow_tests.txt"
+    if not path.exists():
+        return set()
+    return {
+        line.strip()
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.startswith("#")
+    }
+
+
+def pytest_collection_modifyitems(config, items):
+    """Mark as slow the tests listed in ``test/slow_tests.txt``.
+
+    An entry is a file, or a test function (all its parameters). The CI
+    skips the slow tests; run them locally with ``pytest -m slow``.
+    """
+    entries = _slow_entries()
+    if not entries:
+        return
+    for item in items:
+        file = item.nodeid.split("::")[0]
+        func = item.nodeid.split("[")[0]
+        if file in entries or func in entries:
+            item.add_marker(pytest.mark.slow)
