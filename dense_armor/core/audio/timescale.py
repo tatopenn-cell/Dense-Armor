@@ -15,8 +15,8 @@ def _overlap_add(frames: np.ndarray, hop: int, window: str, n_fft: int) -> np.nd
     """Overlap-add of the inverse transforms, divided by the sum of the windows that overlap.
 
     The sum of the windows is not constant in the first and the last ``n_fft - hop`` samples, where
-    fewer frames overlap; dividing by the sum itself (floored at 1% of its largest value) is exact
-    there for a stationary sound.
+    fewer frames overlap; dividing by the sum itself (floored at 0.1% of its largest value, which
+    only touches the first 30 samples or so) is exact there for a stationary sound.
     """
     w = get_window(window, n_fft)
     time = np.fft.irfft(frames, n=n_fft, axis=1)
@@ -26,7 +26,7 @@ def _overlap_add(frames: np.ndarray, hop: int, window: str, n_fft: int) -> np.nd
     for m in range(len(frames)):
         out[m * hop : m * hop + n_fft] += time[m]
         norm[m * hop : m * hop + n_fft] += w
-    return out / np.maximum(norm, 0.01 * norm.max())
+    return out / np.maximum(norm, 0.001 * norm.max())
 
 
 def time_stretch(
@@ -42,8 +42,9 @@ def time_stretch(
     ``rate > 1`` lengthens, ``rate < 1`` shortens; the output has ``round(len(x) * rate)``
     samples. (``librosa.effects.time_stretch`` takes the inverse: its ``rate`` speeds up.)
 
-    The signal is cut into frames by :func:`~dense_armor.core.audio.fourier.stft` with step ``hop``
-    (no padding: every frame lies inside the signal). Output frame ``j`` is built at the analysis
+    The signal is cut into frames by :func:`~dense_armor.core.audio.fourier.stft` with step ``hop``,
+    after ``n_fft`` zeros at the end so that the last samples are covered (nothing at the start: see
+    below). Output frame ``j`` is built at the analysis
     position ``p = j / rate``, in frames, and kept at the last frame if ``p`` goes past it:
 
     * its magnitude is the interpolation, with ``p - floor(p)``, of the magnitudes of the
@@ -59,11 +60,12 @@ def time_stretch(
     by the sum of the windows that overlap, which is exact also in the first and the last
     ``n_fft - hop`` samples, where fewer frames overlap.
 
-    Why there is no padding: the phase is accumulated and never locked again, so an error in the
-    phase step of one frame stays in every later frame. A signal padded by reflection has a kink at
-    the join, the frames that cross it give wrong phase steps, and the bins next to a partial lose
-    their phase relation: the amplitude of the output falls (to 0.37 of the input at ``rate = 0.5``
-    in a first version, with exact results at ``rate = 1`` and ``2``).
+    Why nothing is added at the start: the phase is accumulated and never locked again, so an
+    error in the phase step of one frame stays in every later frame. A signal padded at the start
+    (by reflection: a kink at the join) has frames that cross the join, they give wrong phase steps,
+    and the bins next to a partial lose their phase relation: the amplitude of the output falls (to
+    0.37 of the input at ``rate = 0.5`` in a first version, with exact results at ``rate = 1`` and
+    ``2``). At the end there is no later frame to harm, so zeros can be added there.
 
     Args:
         x: real samples, shape ``(n,)``.
@@ -100,12 +102,11 @@ def time_stretch(
     if v.ndim != 1 or v.size == 0 or rate <= 0.0:
         raise ValueError("x must be a non-empty 1D array and rate positive")
     n_out = int(round(v.size * rate))
-    signal = v if v.size >= n_fft else np.pad(v, (0, n_fft - v.size))
-    spec = stft(signal, n_fft, hop, window)
+    spec = stft(np.concatenate([v, np.zeros(n_fft)]), n_fft, hop, window)
     n_frames, n_bins = spec.shape
-    spec = np.vstack([spec, spec[-1:]])
+    spec = np.vstack([spec, np.zeros((1, n_bins), dtype=complex)])
     omega = 2.0 * np.pi * hop * np.arange(n_bins) / n_fft
-    n_steps = max(1, int(math.ceil((n_out - n_fft) / hop)) + 1)
+    n_steps = int(math.ceil(n_out / hop)) + n_fft // hop
     positions = np.minimum(np.arange(n_steps) / rate, n_frames - 1.0)
     phase = np.angle(spec[0])
     frames = np.empty((n_steps, n_bins), dtype=complex)
