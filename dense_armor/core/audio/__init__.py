@@ -18,6 +18,7 @@ from dense_armor.core.audio.blamp import (
     triangle_blamp,
 )
 from dense_armor.core.audio.clipping import hard_clip
+from dense_armor.core.audio.envelope import envelope_follower, hilbert
 from dense_armor.core.audio.events import detect_events
 from dense_armor.core.audio.features import AudioFeatures
 from dense_armor.core.audio.fir import FIR, DelayLine, convolve
@@ -98,6 +99,7 @@ __all__ = [
     "cola_ok",
     "convolve",
     "detect_events",
+    "envelope_follower",
     "freq_to_cents",
     "freq_to_note",
     "get_window",
@@ -107,6 +109,7 @@ __all__ = [
     "hard_clip_blamp",
     "highpass",
     "highshelf",
+    "hilbert",
     "hz_to_mel",
     "istft",
     "lowpass",
