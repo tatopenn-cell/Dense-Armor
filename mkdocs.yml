@@ -269,6 +269,7 @@ nav:
       - Making sound: audio/synthesis.md
       - Pitch: audio/pitch.md
       - Resampling: audio/resampling.md
+      - Perceptual analysis: audio/perceptual.md
       - Separating sources: audio/analysis.md
       - Events and streams: audio/events.md
       - Sources and checks: audio/sources.md

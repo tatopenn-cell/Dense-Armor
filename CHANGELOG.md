@@ -5,6 +5,11 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- Audio, perceptual analysis (`dense_armor/core/audio/perceptual.py`, `spectral.py`, `onset.py`, `envelope.py`): `hz_to_mel`,
+  `mel_to_hz`, `mel_filterbank`, `mel_spectrogram`, `mfcc`, `spectral_centroid`, `spectral_rolloff`, `spectral_flatness`,
+  `spectral_flux`, `onset_detect`, `hilbert` and `envelope_follower`. They agree with `librosa` and `scipy` (largest difference
+  between 0 and 1.5e-7 on the filterbank, the mel spectrogram, the MFCC, the spectral features and the analytic signal; the onsets
+  agree with `librosa` at F1 0.945). A page with figures (`docs/audio/perceptual.md`) and a golden file (`test/audio/golden/`).
 - The dashboard works on the visitor's own files: a CSV of prices into the chain (with a report to download as CSV),
   a volume history into the TWAP and VWAP plan, and a CSV of orders into the pre-trade checker (with the decisions and
   the hash-chained log to download). Each page has a sample file and says what is wrong with a file, naming the row or

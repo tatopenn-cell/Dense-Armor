@@ -31,20 +31,28 @@ from dense_armor.core.audio import (  # noqa: E402
     bandpass,
     cmndf,
     detect_events,
+    envelope_follower,
     get_window,
     hard_clip,
     hard_clip_blamp,
     highpass,
     highshelf,
+    hilbert,
+    hz_to_mel,
     lowpass,
     lowshelf,
+    mel_filterbank,
+    mel_spectrogram,
+    mfcc,
     nmf,
     notch,
+    onset_detect,
     peaking,
     pink_noise,
     pitch_ratio_transition,
     plucked_string,
     reflection_to_lpc,
+    spectral_flux,
     stft,
     triangle_blamp,
     white_noise,
@@ -563,6 +571,125 @@ def fig_events():
     _save(fig, "events.png")
 
 
+def fig_mel():
+    fb = mel_filterbank(20, 1024, 8000.0)
+    f = np.linspace(0, 4000.0, fb.shape[1])
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(12, 4.2), facecolor=BG)
+    for ax in (a1, a2):
+        _style(ax)
+    cmap = plt.get_cmap("viridis")
+    for i, row in enumerate(fb):
+        a1.plot(f, row, color=cmap(i / 19), lw=1.4)
+    a1.set_xlabel("frequency (Hz)")
+    a1.set_ylabel("weight")
+    a1.set_title("mel_filterbank(20, 1024, 8000): narrow low, wide high, same area")
+    hz = np.linspace(0, 8000, 800)
+    a2.plot(hz, hz_to_mel(hz), color=BLUE, lw=2)
+    a2.axvline(1000, color=GREY, ls="--", lw=0.9)
+    a2.text(1100, 3, "1 kHz: line, then logarithm", fontsize=9, color=GREY)
+    a2.set_xlabel("frequency (Hz)")
+    a2.set_ylabel("mel")
+    a2.set_title("hz_to_mel: a straight line to 1 kHz, then a logarithm")
+    _save(fig, "mel.png")
+
+
+def fig_mel_mfcc():
+    sr = 8000
+    t = np.arange(int(1.5 * sr)) / sr
+    x = np.sin(2 * np.pi * np.where(t < 0.75, 440.0, 1760.0) * t)
+    mel = mel_spectrogram(x, float(sr), 40, 512, 128)
+    cep = mfcc(x, float(sr), 13, 40, 512, 128)
+    ts = (np.arange(len(mel)) * 128 + 256) / sr
+    db = 10 * np.log10(np.maximum(mel, 1e-10)).T
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(12, 4.4), facecolor=BG)
+    im = a1.imshow(
+        db,
+        origin="lower",
+        aspect="auto",
+        extent=[ts[0], ts[-1], 0, 40],
+        cmap="magma",
+        vmin=db.max() - 70,
+        vmax=db.max(),
+    )
+    a1.set_xlabel("time (s)")
+    a1.set_ylabel("mel filter")
+    a1.set_title("mel_spectrogram: 440 Hz, then 1760 Hz")
+    fig.colorbar(im, ax=a1, label="dB", pad=0.02)
+    im2 = a2.imshow(
+        cep.T,
+        origin="lower",
+        aspect="auto",
+        extent=[ts[0], ts[-1], -0.5, 12.5],
+        cmap="coolwarm",
+    )
+    a2.set_xlabel("time (s)")
+    a2.set_ylabel("coefficient")
+    a2.set_title("mfcc: 13 numbers per frame, they change when the tone changes")
+    fig.colorbar(im2, ax=a2, pad=0.02)
+    _save(fig, "mel_mfcc.png")
+
+
+def fig_onset():
+    sr = 8000
+    rng = np.random.default_rng(5)
+    x = 0.005 * rng.standard_normal(3 * sr)
+    truth = np.array([0.4, 1.0, 1.35, 2.2, 2.65])
+    for t0 in truth:
+        i = int(t0 * sr)
+        m = int(0.02 * sr)
+        x[i : i + m] += (
+            np.exp(-np.arange(m) / (0.004 * sr)) * rng.standard_normal(m) * 0.8
+        )
+    found = onset_detect(x, float(sr), 1024, 256)
+    flux = spectral_flux(x, 1024, 256)
+    tf = (np.arange(len(flux)) * 256 + 512) / sr
+    fig, (a1, a2) = plt.subplots(2, 1, figsize=(10, 5.6), facecolor=BG, sharex=True)
+    for ax in (a1, a2):
+        _style(ax)
+    a1.plot(np.arange(len(x)) / sr, x, color=BLUE, lw=0.6)
+    for k, t0 in enumerate(truth):
+        a1.axvline(t0, color=GREEN, ls="--", lw=1.1, label="click" if k == 0 else None)
+    for k, t0 in enumerate(found):
+        a1.axvline(t0, color=RED, lw=1.1, label="onset_detect" if k == 0 else None)
+    a1.set_ylabel("amplitude")
+    a1.legend(frameon=False, loc="upper right")
+    a1.set_title(
+        f"Five clicks: {len(found)} onsets, each within {np.abs(found - truth).max() * 1000:.0f} ms"
+    )
+    a2.plot(tf, flux / flux.max(), color=VIOLET, lw=1.4)
+    a2.set_ylabel("spectral flux")
+    a2.set_xlabel("time (s)")
+    a2.set_title("spectral_flux: it rises when the spectrum gains energy")
+    _save(fig, "onset.png")
+
+
+def fig_envelope():
+    sr = 8000
+    e = ADSR(0.1, 0.2, 0.5, 0.3, 1.0, sr)
+    t = np.arange(int(1.6 * sr)) / sr
+    amp = np.array([e.value(v) for v in t])
+    x = amp * np.sin(2 * np.pi * 440.0 * t)
+    raw = np.abs(hilbert(x))
+    env = envelope_follower(x, float(sr), 0.01, 0.1)
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(12, 4.2), facecolor=BG, sharey=True)
+    for ax in (a1, a2):
+        _style(ax)
+    a1.plot(t, x, color=BLUE, lw=0.4, alpha=0.6, label="the sound")
+    a1.plot(t, amp, color=GREEN, lw=1.8, label="ADSR that made it")
+    a1.set_title("A 440 Hz note shaped by ADSR(0.1, 0.2, 0.5, 0.3, 1.0)")
+    a1.legend(frameon=False, loc="upper right")
+    a2.plot(t, raw, color=AMBER, lw=1.2, label="|hilbert(x)|")
+    a2.plot(
+        t, env, color=RED, lw=2, label="envelope_follower: attack 10 ms, release 100 ms"
+    )
+    a2.set_title("The envelope: raw, and smoothed with an attack and a release")
+    a2.legend(frameon=False, loc="upper right")
+    for ax in (a1, a2):
+        ax.set_xlabel("time (s)")
+    a1.set_ylabel("amplitude")
+    _save(fig, "envelope.png")
+
+
 if __name__ == "__main__":
     for f in (
         fig_adapter,
@@ -577,5 +704,9 @@ if __name__ == "__main__":
         fig_glide,
         fig_nmf,
         fig_events,
+        fig_mel,
+        fig_mel_mfcc,
+        fig_onset,
+        fig_envelope,
     ):
         f()
