@@ -4,7 +4,11 @@ import numpy as np
 import pytest
 
 from dense_armor.core.audio import yin_f0
-from dense_armor.core.audio.timescale import pitch_shift, time_stretch
+from dense_armor.core.audio.timescale import (
+    pitch_shift,
+    psola_time_stretch,
+    time_stretch,
+)
 
 SR = 8000.0
 
@@ -167,3 +171,92 @@ def test_pitch_shift_agrees_with_librosa(semitones):
     )
     assert len(y) == len(ref)
     assert abs(_peak(y[1000:-1000]) - _peak(ref[1000:-1000])) < 1.0
+
+
+def _voice(n=4000, f0=200.0, harmonics=6):
+    t = np.arange(n) / SR
+    return sum(np.sin(2 * np.pi * f0 * k * t) / k for k in range(1, harmonics + 1))
+
+
+@pytest.mark.parametrize("rate", [0.5, 1.0, 1.7, 2.0])
+@pytest.mark.parametrize("n", [4000, 2503])
+def test_psola_makes_the_length_the_input_length_times_the_rate(rate, n):
+    assert len(psola_time_stretch(_voice(n), SR, 200.0, rate)) == round(n * rate)
+
+
+@pytest.mark.parametrize("rate", [0.5, 2.0])
+def test_psola_keeps_the_pitch(rate):
+    y = psola_time_stretch(_sine(200.0, 4000), SR, 200.0, rate)
+    assert abs(_cents(_peak(y), 200.0)) < 10.0
+    frames = [
+        yin_f0(y[i : i + 400], SR, 80.0, 0.1) for i in range(0, len(y) - 400, 100)
+    ]
+    assert np.nanmax(np.abs(_cents(np.array(frames[1:-1]), 200.0))) < 20.0
+
+
+def test_the_output_is_periodic_with_the_period_of_the_input():
+    y = psola_time_stretch(_voice(), SR, 200.0, 2.0)[1000:-1000]
+    lag = 40
+    corr = np.corrcoef(y[:-lag], y[lag:])[0, 1]
+    assert corr > 0.99
+
+
+def test_the_harmonics_keep_their_relative_level():
+    x = _voice(4000)
+    y = psola_time_stretch(x, SR, 200.0, 1.7)
+
+    def level(s, f):
+        spec = np.abs(np.fft.rfft(s * np.hanning(len(s)), 16 * len(s)))
+        freq = np.fft.rfftfreq(16 * len(s), 1 / SR)
+        return spec[np.argmin(np.abs(freq - f))]
+
+    for k in (2, 3, 4):
+        ratio_in = level(x, 200.0 * k) / level(x, 200.0)
+        ratio_out = level(y, 200.0 * k) / level(y, 200.0)
+        assert ratio_out == pytest.approx(ratio_in, rel=0.1)
+
+
+def test_a_rate_of_one_gives_back_a_periodic_sound_and_keeps_its_level():
+    x = _voice()
+    y = psola_time_stretch(x, SR, 200.0, 1.0)
+    assert np.corrcoef(x[500:-500], y[500:-500])[0, 1] > 0.99
+    assert _rms(y[500:-500]) == pytest.approx(_rms(x[500:-500]), rel=0.05)
+
+
+def test_a_track_of_f0_that_is_constant_gives_the_same_as_a_number():
+    x = _voice(2000)
+    a = psola_time_stretch(x, SR, 200.0, 1.5)
+    b = psola_time_stretch(x, SR, np.full(len(x), 200.0), 1.5)
+    assert np.allclose(a, b)
+
+
+def test_unvoiced_samples_get_the_default_period_and_the_length_holds():
+    x = _voice(3000)
+    f0 = np.full(len(x), 200.0)
+    f0[1000:1500] = np.nan
+    f0[1500:1800] = 0.0
+    y = psola_time_stretch(x, SR, f0, 1.3)
+    assert len(y) == round(3000 * 1.3) and np.isfinite(y).all()
+
+
+def test_a_track_that_follows_a_glide_keeps_the_glide():
+    n = 6000
+    t = np.arange(n) / SR
+    f = 150.0 + 100.0 * t / t[-1]
+    x = np.sin(2 * np.pi * np.cumsum(f) / SR)
+    y = psola_time_stretch(x, SR, f, 2.0)
+    first = yin_f0(y[1000:1400], SR, 80.0, 0.1)
+    last = yin_f0(y[-1500:-1100], SR, 80.0, 0.1)
+    assert 140.0 < first < 190.0 and 200.0 < last < 260.0 and last > first + 30.0
+
+
+def test_psola_refuses_what_it_cannot_do():
+    x = _voice(1000)
+    with pytest.raises(ValueError, match="non-empty 1D"):
+        psola_time_stretch(np.zeros(0), SR, 200.0, 2.0)
+    for kw in ({"sr": 0.0}, {"rate": 0.0}, {"rate": -1.0}):
+        args = {"sr": SR, "rate": 2.0, **kw}
+        with pytest.raises(ValueError, match="positive"):
+            psola_time_stretch(x, args["sr"], 200.0, args["rate"])
+    with pytest.raises(ValueError, match="one value for each sample"):
+        psola_time_stretch(x, SR, np.full(10, 200.0), 2.0)
