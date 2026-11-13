@@ -1,10 +1,11 @@
 """Tests for CausalGraph."""
 
 import numpy as np
-import pandas as pd
 import pytest
 
-from dense_armor.core.graph import CausalGraph
+pd = pytest.importorskip("pandas")
+
+from dense_armor.core.graph import CausalGraph  # noqa: E402
 
 
 def _data(n=2000, seed=0):
@@ -43,6 +44,7 @@ def test_estimate_effect():
 
 def test_confounder():
     """Un vero confondente: C -> Z, C -> Y, Z -> Y."""
+    pytest.importorskip("dowhy")
     cg = CausalGraph(nodes=["C", "Z", "Y"], edges=[("C", "Z"), ("C", "Y"), ("Z", "Y")])
     df = _data_with_confounder()
     eff = cg.estimate_effect("Z", 1.0, df, outcome="Y")

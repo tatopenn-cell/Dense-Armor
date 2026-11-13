@@ -42,12 +42,12 @@ def test_gate_uses_detector_threshold():
     assert gate(_sig(10.0)) is None
 
 
-def test_gate_no_learn():
+def test_gate_learns_only_from_passed_samples():
     det = _FakeDetector()
     gate = GateNode(det)
     gate(_sig(1.0))
     gate(_sig(10.0))
-    assert det.n == 0  # AnomalyGate(protect=False) non chiama learn_one
+    assert det.n == 1
 
 
 class _Counter:

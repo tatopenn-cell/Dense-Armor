@@ -31,8 +31,8 @@ def low_pass(L, cutoff: float) -> np.ndarray:
     ``g(lambda) = 1`` for ``lambda <= cutoff``, ``0`` otherwise.
 
     Choices stated explicitly:
-        The sharp cutoff (an indicator function) is a choice of this
-        kit. The papers cited in the module describe the general
+        The sharp cutoff (an indicator function) is a design choice of this
+        module. The papers cited in the module describe the general
         spectral filter ``g(L) = U g(Lambda) U^T`` but do not prescribe
         a low-pass shape; a smooth cutoff (heat kernel or Chebyshev)
         would be a different choice.
@@ -65,7 +65,7 @@ def chebyshev_coefficients(g, lmax: float, order: int) -> np.ndarray:
     # interpola g sulla variabile y in [-1, 1]
     nodes = np.cos(np.pi * (np.arange(order + 1) + 0.5) / (order + 1))
     vals = g((nodes + 1.0) * lmax / 2.0)
-    # DCT-I inversa: coefficienti di Chebyshev
+    # Chebyshev-Gauss quadrature: Chebyshev coefficients
     N = order + 1
     c = np.zeros(N)
     for k in range(N):
@@ -99,8 +99,6 @@ def chebyshev_filter(x, L, coeffs, lmax: float) -> np.ndarray:
     if coeffs.size == 0:
         raise ValueError("coeffs must be non-empty")
     x = np.asarray(x, dtype=float)
-    A = (2.0 / lmax) * L - (L if not hasattr(L, "toarray") else L.toarray()) * 0
-    # costruiamo A come (2/lmax) L - I, gestendo sparse e dense
     if hasattr(L, "toarray"):
         import scipy.sparse as sp
 

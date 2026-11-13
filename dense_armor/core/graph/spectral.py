@@ -13,9 +13,7 @@ from __future__ import annotations
 import numpy as np
 
 
-def eigendecomposition(
-    L, *, dense_threshold: int = 2000
-) -> tuple[np.ndarray, np.ndarray]:
+def eigendecomposition(L) -> tuple[np.ndarray, np.ndarray]:
     """Return ``(eigenvalues, eigenvectors)`` of the symmetric ``L``.
 
     Eigenvalues ascending; ``eigenvectors[:, k]`` is the eigenvector of
@@ -23,7 +21,8 @@ def eigendecomposition(
     sign, which is fixed by ``fix_sign`` when needed).
 
     Args:
-        L: symmetric matrix, dense or scipy sparse.
+        L: symmetric matrix, dense or scipy sparse. The decomposition is
+            dense (``numpy.linalg.eigh``): O(n^3) time, O(n^2) memory.
 
     Returns:
         ``(eigenvalues, eigenvectors)`` with shapes ``(n,)`` and

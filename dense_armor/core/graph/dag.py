@@ -5,8 +5,9 @@ execution order is the topological order.
 
 References:
     Cheng, Wu, Hu (2024), "Dataflow-Guided Retrieval Augmentation for
-    Repository-Level Code Completion", arXiv:2405.19782, Section 3.2
-    (the repo-specific context graph as a DAG of dependencies).
+    Repository-Level Code Completion", arXiv:2405.19782
+    (bibliographic only: no PDF in ``papers/``, no section verified; the paper is about code-completion
+    retrieval, not estimator networks).
     Kahn (1962), "Topological sorting of large networks", CACM
     (bibliographic only).
 """
@@ -15,10 +16,14 @@ from __future__ import annotations
 
 from typing import Any
 
-import networkx as nx  # type: ignore[import-untyped]
-
 from dense_armor.core.graph.provenance import Provenance
 from dense_armor.roles import Signal
+
+
+def _nx():
+    import networkx as nx  # type: ignore[import-untyped]
+
+    return nx
 
 
 class ExecutionDAG:
@@ -35,7 +40,7 @@ class ExecutionDAG:
         Each node has at most one predecessor (a tree, not a general
         DAG): the execution is a linear pass over the topological
         order, and a node with two predecessors is refused at run
-        time. This is a choice of the kit: a general dataflow graph
+        time. This is a design choice of this module: a general dataflow graph
         with joins (Naiad-style differential dataflow) is a different
         design, out of scope here. The provenance is recorded in the
         same pass, so the log order is the topological order.
@@ -52,7 +57,7 @@ class ExecutionDAG:
         self._provenance = provenance if provenance is not None else Provenance()
         self._t = 0.0
         self._t_step = 1.0
-        self._g = nx.DiGraph()
+        self._g = _nx().DiGraph()
         self._g.add_nodes_from(self._nodes.keys())
         for src, dst in self._edges:
             if src not in self._nodes:
@@ -60,7 +65,7 @@ class ExecutionDAG:
             if dst not in self._nodes:
                 raise ValueError(f"unknown node in edge: {dst}")
             self._g.add_edge(src, dst)
-        if not nx.is_directed_acyclic_graph(self._g):
+        if not _nx().is_directed_acyclic_graph(self._g):
             raise ValueError("graph has a cycle")
 
     @property
@@ -76,16 +81,16 @@ class ExecutionDAG:
         return self._edges
 
     def is_acyclic(self) -> bool:
-        return nx.is_directed_acyclic_graph(self._g)
+        return _nx().is_directed_acyclic_graph(self._g)
 
     def topological_order(self) -> list[str]:
-        return list(nx.topological_sort(self._g))
+        return list(_nx().topological_sort(self._g))
 
     def ancestors(self, name: str) -> list[str]:
-        return sorted(nx.ancestors(self._g, name))
+        return sorted(_nx().ancestors(self._g, name))
 
     def descendants(self, name: str) -> list[str]:
-        return sorted(nx.descendants(self._g, name))
+        return sorted(_nx().descendants(self._g, name))
 
     def to_networkx(self):
         return self._g.copy()
@@ -100,6 +105,12 @@ class ExecutionDAG:
         returned ``None``, the node is skipped (``out[name] = None``).
         """
         order = self.topological_order()
+        for name in order:
+            n_pred = self._g.in_degree(name)
+            if n_pred > 1:
+                raise ValueError(
+                    f"node {name} has {n_pred} predecessors, expected at most 1"
+                )
         out: dict[str, Signal | None] = {}
         for name in order:
             preds = list(self._g.predecessors(name))
@@ -161,5 +172,9 @@ class ExecutionDAG:
                     names=[str(k) for k in pred.keys()],
                     units=[""] * len(pred),
                 )
-            return Signal([float(pred)], names=[name], units=["pred"])
+            return Signal(
+                [float("nan") if pred is None else float(pred)],
+                names=[name],
+                units=["pred"],
+            )
         return x

@@ -1,8 +1,9 @@
-"""Provenance: a JSONL log of every learn / predict on a DAG node.
+"""Provenance: a JSONL log of every run of a DAG node.
 
 Each record is ``{t, node, method, input_hash, output_hash,
 parent_nodes, elapsed_ms}``. ``input_hash`` and ``output_hash`` are
-SHA-256 of the values in ``Signal.names`` order.
+SHA-256 of the values in ``Signal.names`` order. ``elapsed_ms`` is written
+as 0.0 by ``ExecutionDAG`` (the time is not measured).
 
 References:
     Cheney, Chiticariu, Tan (2009), "Provenance in Databases: Why,
@@ -32,13 +33,13 @@ def _signal_hash(signal) -> str:
 
 
 class Provenance:
-    """A log of learn / predict calls, with a chain per output hash.
+    """A log of node runs; ``chain`` follows ``parent_nodes``.
 
     Choices stated explicitly:
         The record format is a JSONL of
         ``{t, node, method, input_hash, output_hash, parent_nodes,
         elapsed_ms}``; the hashes are SHA-256 of the values in
-        ``Signal.names`` order. This is a choice of the kit. The
+        ``Signal.names`` order. This is a design choice of this module. The
         paper cited in the module (Cheney, Chiticariu, Tan 2009)
         formalises provenance for databases, not a concrete log
         format. A PROV-JSON export or a different hash (BLAKE2) would
@@ -74,19 +75,34 @@ class Provenance:
         return list(self._records)
 
     def chain(self, output_hash: str) -> list[dict[str, Any]]:
-        """All records that led to ``output_hash``, in topological order."""
-        out = []
-        stack = [output_hash]
-        seen = set()
+        """The records that led to the latest record with ``output_hash``.
+
+        The chain follows ``parent_nodes``: the parent of a record is the
+        most recent earlier record of that node, so equal values at
+        different nodes or times are not mixed. The records are in log
+        order, which is the topological order of a run.
+        """
+        last = max(
+            (i for i, r in enumerate(self._records) if r["output_hash"] == output_hash),
+            default=None,
+        )
+        if last is None:
+            return []
+        seen: set[int] = set()
+        stack = [last]
         while stack:
-            h = stack.pop()
-            for r in self._records:
-                key = (h, r["node"], r["method"])
-                if r["output_hash"] == h and key not in seen:
-                    seen.add(key)
-                    out.append(r)
-                    stack.append(r["input_hash"])
-        return out[::-1]
+            i = stack.pop()
+            if i in seen:
+                continue
+            seen.add(i)
+            for parent in self._records[i]["parent_nodes"]:
+                j = max(
+                    (k for k in range(i) if self._records[k]["node"] == parent),
+                    default=None,
+                )
+                if j is not None:
+                    stack.append(j)
+        return [self._records[i] for i in sorted(seen)]
 
     def to_jsonl(self, path) -> None:
         p = Path(path)

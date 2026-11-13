@@ -28,7 +28,7 @@ class Graph:
 
     Args:
         n_nodes: number of nodes, at least 1.
-        edges: list of ``(i, j, w)`` triples with ``0 <= i < j < n``,
+        edges: list of ``(i, j, w)`` triples with ``0 <= i, j < n``,
             ``w > 0`` finite. No self-loops, no repeated pair
             (``(i, j)`` and ``(j, i)`` are the same).
 

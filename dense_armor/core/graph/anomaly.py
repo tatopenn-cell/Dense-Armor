@@ -6,16 +6,21 @@ References:
     Tong, Faloutsos, Pan (2006), "Fast Random Walk with Restart and
     Its Applications", ICDM (bibliographic only).
     Wang (2026), "AgentTrace: Causal Graph Tracing for Root Cause
-    Analysis in Deployed Multi-Agent Systems", arXiv:2603.14688,
-    Section 3.4 (node ranking for root cause).
+    Analysis in Deployed Multi-Agent Systems", arXiv:2603.14688
+    (bibliographic only: no PDF in ``papers/``, no section verified).
     Akoglu, Tong, Koutra (2015), "Graph based anomaly detection and
     description: a survey", DMKD (bibliographic only).
 """
 
 from __future__ import annotations
 
-import networkx as nx  # type: ignore[import-untyped]
 import numpy as np
+
+
+def _nx():
+    import networkx as nx  # type: ignore[import-untyped]
+
+    return nx
 
 
 def page_rank(graph, alpha: float = 0.85, personalization: dict | None = None) -> dict:
@@ -24,17 +29,19 @@ def page_rank(graph, alpha: float = 0.85, personalization: dict | None = None) -
         raise ValueError(f"alpha must be in (0, 1), got {alpha}")
     if hasattr(graph, "to_networkx"):
         graph = graph.to_networkx()
-    return nx.pagerank(graph, alpha=alpha, personalization=personalization)
+    return _nx().pagerank(graph, alpha=alpha, personalization=personalization)
 
 
 def random_walk_restart(graph, seed, alpha: float = 0.85) -> dict:
     """PageRank with a restart concentrated on ``seed`` (RWR)."""
+    if not (0 < alpha < 1):
+        raise ValueError(f"alpha must be in (0, 1), got {alpha}")
     if hasattr(graph, "to_networkx"):
         graph = graph.to_networkx()
     if seed not in graph.nodes:
         raise ValueError(f"unknown seed {seed!r}")
     pers = {n: (1.0 if n == seed else 0.0) for n in graph.nodes}
-    return nx.pagerank(graph, alpha=alpha, personalization=pers)
+    return _nx().pagerank(graph, alpha=alpha, personalization=pers)
 
 
 def graph_anomaly_score(graph, signal, alpha: float = 0.85, tau: float = 1.0) -> dict:
@@ -61,7 +68,7 @@ def graph_anomaly_score(graph, signal, alpha: float = 0.85, tau: float = 1.0) ->
 
     Choices stated explicitly:
         The combination ``zscore(|x - exp(-tau L) x|) + page_rank`` is
-        a choice of this kit. The papers in ``papers/`` describe the
+        a design choice of this module. The papers in ``papers/`` describe the
         heat kernel and PageRank separately; neither defines a
         node-level anomaly score. A different residual (e.g. the
         median deviation instead of the heat kernel smoothing) would

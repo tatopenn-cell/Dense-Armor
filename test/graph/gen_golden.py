@@ -7,6 +7,7 @@ The files are committed. ``test_golden.py`` loads them and checks that
 the current code reproduces them. The path of the golden files is
 ``Path(__file__).parent / "golden"``, never an absolute path.
 """
+
 from __future__ import annotations
 
 import json
@@ -15,22 +16,19 @@ from pathlib import Path
 import numpy as np
 
 from dense_armor.core.graph import (
-    CausalGraph,
+    Action,
     ExecutionDAG,
     Graph,
     Provenance,
     TypedGraph,
-    Action,
     eigendecomposition,
     fix_sign,
     gft,
-    graph_anomaly_score,
     heat_kernel,
     page_rank,
     random_walk_restart,
 )
 from dense_armor.roles import Signal
-
 
 GOLDEN = Path(__file__).parent / "golden"
 GOLD = GOLDEN  # alias usato dalle funzioni gen_*
@@ -42,9 +40,19 @@ def _path(n: int) -> Graph:
 
 def _dag10() -> Graph:
     """A 10-node graph for PageRank and RWR."""
-    edges = [(0, 1, 1.0), (0, 2, 1.0), (1, 3, 1.0), (2, 3, 1.0),
-             (3, 4, 1.0), (4, 5, 1.0), (4, 6, 1.0), (5, 7, 1.0),
-             (6, 8, 1.0), (7, 9, 1.0), (8, 9, 1.0)]
+    edges = [
+        (0, 1, 1.0),
+        (0, 2, 1.0),
+        (1, 3, 1.0),
+        (2, 3, 1.0),
+        (3, 4, 1.0),
+        (4, 5, 1.0),
+        (4, 6, 1.0),
+        (5, 7, 1.0),
+        (6, 8, 1.0),
+        (7, 9, 1.0),
+        (8, 9, 1.0),
+    ]
     return Graph(10, edges)
 
 
@@ -100,8 +108,7 @@ def gen_g2() -> None:
     )
     prov.to_jsonl(GOLD / "dag3_provenance.jsonl")
     # output come JSON
-    outputs = {k: float(v["x"]) if v is not None else None
-               for k, v in out.items()}
+    outputs = {k: float(v["x"]) if v is not None else None for k, v in out.items()}
     (GOLD / "dag3_outputs.json").write_text(json.dumps(outputs))
 
 
@@ -132,23 +139,36 @@ def gen_g3() -> None:
         tname: {fname: t.__name__ for fname, t in fields.items()}
         for tname, fields in SCHEMA.items()
     }
-    (GOLD / "briefcase.json").write_text(json.dumps({
-        "schema": schema_names,
-        "nodes": {
-            "r": {"type": "robot", "state": {"location": "loc_a", "status": "idle"}},
-            "b": {"type": "briefcase", "state": {"location": "loc_a"}},
-        },
-        "action": {
-            "name": "move",
-            "preconditions": [["r", "status", "==", "idle"]],
-            "effects": [["r", "location", "set", "loc_b"]],
-        },
-    }, indent=2))
+    (GOLD / "briefcase.json").write_text(
+        json.dumps(
+            {
+                "schema": schema_names,
+                "nodes": {
+                    "r": {
+                        "type": "robot",
+                        "state": {"location": "loc_a", "status": "idle"},
+                    },
+                    "b": {"type": "briefcase", "state": {"location": "loc_a"}},
+                },
+                "action": {
+                    "name": "move",
+                    "preconditions": [["r", "status", "==", "idle"]],
+                    "effects": [["r", "location", "set", "loc_b"]],
+                },
+            },
+            indent=2,
+        )
+    )
     after = action.apply(g)
-    (GOLD / "briefcase_after.json").write_text(json.dumps({
-        "r": dict(after.graph.nodes["r"]["state"]),
-        "b": dict(after.graph.nodes["b"]["state"]),
-    }, indent=2))
+    (GOLD / "briefcase_after.json").write_text(
+        json.dumps(
+            {
+                "r": dict(after.graph.nodes["r"]["state"]),
+                "b": dict(after.graph.nodes["b"]["state"]),
+            },
+            indent=2,
+        )
+    )
     # rejected: cambia status a "moving", poi l'azione non può partire
     g2 = _briefcase_graph()
     g2.update("r", status="moving")
@@ -162,10 +182,15 @@ def gen_g3() -> None:
         raise SystemExit("expected rejection")
     except Exception:
         pass
-    (GOLD / "briefcase_rejected.json").write_text(json.dumps({
-        "r": dict(g2.graph.nodes["r"]["state"]),
-        "b": dict(g2.graph.nodes["b"]["state"]),
-    }, indent=2))
+    (GOLD / "briefcase_rejected.json").write_text(
+        json.dumps(
+            {
+                "r": dict(g2.graph.nodes["r"]["state"]),
+                "b": dict(g2.graph.nodes["b"]["state"]),
+            },
+            indent=2,
+        )
+    )
 
 
 # ------------------------------------------------------------
@@ -178,12 +203,17 @@ def gen_g4() -> None:
     rwr = random_walk_restart(g, seed=0)
     (GOLD / "dag10_rwr.json").write_text(json.dumps(rwr, sort_keys=True))
     # causal: 3 nodi, effetto 2.0 noto a mano (Z = X + noise, Y = 2 Z + noise)
-    (GOLD / "causal_dag3.json").write_text(json.dumps({
-        "nodes": ["X", "Z", "Y"],
-        "edges": [["X", "Z"], ["Z", "Y"]],
-        "expected_effect": 2.0,
-        "tolerance": 0.1,
-    }, indent=2))
+    (GOLD / "causal_dag3.json").write_text(
+        json.dumps(
+            {
+                "nodes": ["X", "Z", "Y"],
+                "edges": [["X", "Z"], ["Z", "Y"]],
+                "expected_effect": 2.0,
+                "tolerance": 0.1,
+            },
+            indent=2,
+        )
+    )
 
 
 if __name__ == "__main__":

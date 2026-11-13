@@ -71,16 +71,33 @@ class Action:
         new.graph = copy.deepcopy(graph.graph)
         for node, field_name, kind, value in self.effects:
             node_name = params.get(node, node) if node in params else node
+            if node_name not in new.graph:
+                raise ActionRejected(
+                    self.name, [(node, field_name, kind, value, "no such node")]
+                )
+            typ = new.graph.nodes[node_name]["type"]
+            expected = new.schema[typ].get(field_name)
+            if expected is None:
+                raise ValueError(f"field {field_name!r} not in schema for type {typ!r}")
             state = dict(new.graph.nodes[node_name]["state"])
             if kind == "set":
+                if not isinstance(value, expected):
+                    raise ValueError(
+                        f"field {field_name!r} must be {expected.__name__}, "
+                        f"got {type(value).__name__}"
+                    )
                 state[field_name] = value
-            elif kind == "add":
-                lst = list(state.get(field_name, []))
-                lst.append(value)
-                state[field_name] = lst
-            elif kind == "delete":
-                lst = list(state.get(field_name, []))
-                if value in lst:
+            elif kind in ("add", "delete"):
+                current = state.get(field_name, [])
+                if not isinstance(current, list):
+                    raise ValueError(
+                        f"effect {kind!r} needs a list field, {field_name!r} "
+                        f"holds {type(current).__name__}"
+                    )
+                lst = list(current)
+                if kind == "add":
+                    lst.append(value)
+                elif value in lst:
                     lst.remove(value)
                 state[field_name] = lst
             else:

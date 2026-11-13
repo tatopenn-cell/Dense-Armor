@@ -27,6 +27,8 @@ sklearn = ["scikit-learn>=1.6"]
 finance-stream = ["pyzmq>=25", "confluent-kafka>=2"]
 audio = ["scipy", "sounddevice"]
 data = ["h5py", "netCDF4"]
+graph = ["networkx", "pygsp>=0.6"]
+causal = ["dowhy", "pandas"]
 quantum = ["dense-evolution"]
 mcp = ["mcp>=2.0.0", "pydantic>=2.0"]
 river = ["river>=0.26; python_version >= '3.11'"]
@@ -35,7 +37,7 @@ drone = ["pyulog", "pymavlink", "paho-mqtt", "pyyaml"]
 ros = ["rosbags>=0.9.18"]
 llm = []  # the LLM bridge needs no extra package
 finance-ops = ["flask", "sqlalchemy", "alembic", "psycopg2-binary", "playwright", "quickfix"]
-dev = ["pytest", "pytest-cov", "coverage>=7.10", "filterpy", "matplotlib", "river>=0.26; python_version >= '3.11'", "scikit-learn", "flask"]
+dev = ["pytest", "pytest-cov", "coverage>=7.10", "filterpy", "matplotlib", "river>=0.26; python_version >= '3.11'", "scikit-learn", "flask", "networkx", "pygsp>=0.6", "pandas"]
 docs = [
     "mkdocs>=1.6.0",
     "ruff>=0.6",

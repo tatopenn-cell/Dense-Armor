@@ -6,9 +6,8 @@ A node has a ``type`` and a ``state`` (a dict). An edge has a
 
 References:
     Babaei Giglou, D'Souza, Auer (2023), "LLMs4OL: Large Language
-    Models for Ontology Learning", arXiv:2307.16648, Section 2 "The
-    LLMs4OL Task Paradigm" and the "Types" subsection (schema of the
-    ontology).
+    Models for Ontology Learning", arXiv:2307.16648
+    (bibliographic only: no PDF in ``papers/``, no section verified; the paper is about ontology learning).
 """
 
 from __future__ import annotations
@@ -17,7 +16,11 @@ import builtins
 from collections.abc import Callable
 from typing import Any
 
-import networkx as nx  # type: ignore[import-untyped]
+
+def _nx():
+    import networkx as nx  # type: ignore[import-untyped]
+
+    return nx
 
 
 class TypedGraph:
@@ -33,7 +36,7 @@ class TypedGraph:
     Choices stated explicitly:
         The schema is a plain ``dict[str, dict[str, type]]``; the
         edges carry a ``relation`` and an optional ``constraint``
-        function. This is a choice of the kit: the paper (LLMs4OL)
+        function. This is a design choice of this module: the paper (LLMs4OL)
         describes ontology *learning*, not a typed graph API, and a
         full OWL/SHACL implementation would be a different choice
         (heavier, with its own parser).
@@ -41,7 +44,7 @@ class TypedGraph:
 
     def __init__(self, schema: dict[str, dict[str, type]]) -> None:
         self.schema = {k: dict(v) for k, v in schema.items()}
-        self.graph = nx.MultiDiGraph()
+        self.graph = _nx().MultiDiGraph()
         self._relations: set[str] = set()
 
     def add_node(self, name: str, node_type: str, **state: Any) -> TypedGraph:

@@ -1,4 +1,5 @@
 """Tests against the committed golden files."""
+
 import json
 from pathlib import Path
 
@@ -22,7 +23,6 @@ from dense_armor.core.graph import (
 )
 from dense_armor.roles import Signal
 
-
 GOLD = Path(__file__).parent / "golden"
 
 
@@ -40,9 +40,17 @@ def _path(n: int) -> Graph:
 
 def _dag10() -> Graph:
     edges = [
-        (0, 1, 1.0), (0, 2, 1.0), (1, 3, 1.0), (2, 3, 1.0),
-        (3, 4, 1.0), (4, 5, 1.0), (4, 6, 1.0), (5, 7, 1.0),
-        (6, 8, 1.0), (7, 9, 1.0), (8, 9, 1.0),
+        (0, 1, 1.0),
+        (0, 2, 1.0),
+        (1, 3, 1.0),
+        (2, 3, 1.0),
+        (3, 4, 1.0),
+        (4, 5, 1.0),
+        (4, 6, 1.0),
+        (5, 7, 1.0),
+        (6, 8, 1.0),
+        (7, 9, 1.0),
+        (8, 9, 1.0),
     ]
     return Graph(10, edges)
 
@@ -175,10 +183,9 @@ def test_causal_dag3_golden():
     pytest.importorskip("dowhy")
     import numpy as np
     import pandas as pd
+
     data = json.loads((GOLD / "causal_dag3.json").read_text())
-    cg = CausalGraph(
-        nodes=data["nodes"], edges=[tuple(e) for e in data["edges"]]
-    )
+    cg = CausalGraph(nodes=data["nodes"], edges=[tuple(e) for e in data["edges"]])
     n = 2000
     rng = np.random.default_rng(0)
     X = rng.standard_normal(n)
@@ -191,10 +198,18 @@ def test_causal_dag3_golden():
 
 def test_golden_files_present():
     expected = {
-        "path10_graph.npz", "path10_signal.npy", "path10_gft.npy",
-        "path10_filtered.npy", "dag3_graph.npz", "dag3_provenance.jsonl",
-        "dag3_outputs.json", "briefcase.json", "briefcase_after.json",
-        "briefcase_rejected.json", "dag10_pagerank.json", "dag10_rwr.json",
+        "path10_graph.npz",
+        "path10_signal.npy",
+        "path10_gft.npy",
+        "path10_filtered.npy",
+        "dag3_graph.npz",
+        "dag3_provenance.jsonl",
+        "dag3_outputs.json",
+        "briefcase.json",
+        "briefcase_after.json",
+        "briefcase_rejected.json",
+        "dag10_pagerank.json",
+        "dag10_rwr.json",
         "causal_dag3.json",
     }
     present = {f.name for f in GOLD.iterdir() if f.is_file()}
