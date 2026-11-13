@@ -58,6 +58,14 @@ def graph_anomaly_score(graph, signal, alpha: float = 0.85, tau: float = 1.0) ->
 
     Returns:
         dict ``{node_index: score}``.
+
+    Choices stated explicitly:
+        The combination ``zscore(|x - exp(-tau L) x|) + page_rank`` is
+        a choice of this kit. The papers in ``papers/`` describe the
+        heat kernel and PageRank separately; neither defines a
+        node-level anomaly score. A different residual (e.g. the
+        median deviation instead of the heat kernel smoothing) would
+        be a different choice.
     """
     from dense_armor.core.graph.core import Graph
     from dense_armor.core.graph.filters import heat_kernel

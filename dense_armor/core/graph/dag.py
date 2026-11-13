@@ -30,6 +30,15 @@ class ExecutionDAG:
 
     Raises:
         ValueError: on duplicate node, unknown node in an edge, cycle.
+
+    Choices stated explicitly:
+        Each node has at most one predecessor (a tree, not a general
+        DAG): the execution is a linear pass over the topological
+        order, and a node with two predecessors is refused at run
+        time. This is a choice of the kit: a general dataflow graph
+        with joins (Naiad-style differential dataflow) is a different
+        design, out of scope here. The provenance is recorded in the
+        same pass, so the log order is the topological order.
     """
 
     def __init__(

@@ -32,7 +32,18 @@ def _signal_hash(signal) -> str:
 
 
 class Provenance:
-    """A log of learn / predict calls, with a chain per output hash."""
+    """A log of learn / predict calls, with a chain per output hash.
+
+    Choices stated explicitly:
+        The record format is a JSONL of
+        ``{t, node, method, input_hash, output_hash, parent_nodes,
+        elapsed_ms}``; the hashes are SHA-256 of the values in
+        ``Signal.names`` order. This is a choice of the kit. The
+        paper cited in the module (Cheney, Chiticariu, Tan 2009)
+        formalises provenance for databases, not a concrete log
+        format. A PROV-JSON export or a different hash (BLAKE2) would
+        be a different choice.
+    """
 
     def __init__(self) -> None:
         self._records: list[dict[str, Any]] = []

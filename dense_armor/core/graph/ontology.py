@@ -29,6 +29,14 @@ class TypedGraph:
     Raises:
         ValueError: on an unknown type, a field not in the schema, or
             a field value of the wrong type.
+
+    Choices stated explicitly:
+        The schema is a plain ``dict[str, dict[str, type]]``; the
+        edges carry a ``relation`` and an optional ``constraint``
+        function. This is a choice of the kit: the paper (LLMs4OL)
+        describes ontology *learning*, not a typed graph API, and a
+        full OWL/SHACL implementation would be a different choice
+        (heavier, with its own parser).
     """
 
     def __init__(self, schema: dict[str, dict[str, type]]) -> None:

@@ -28,7 +28,15 @@ def heat_kernel(L, tau: float) -> np.ndarray:
 
 def low_pass(L, cutoff: float) -> np.ndarray:
     """Low-pass spectral filter: ``U g(Lambda) U^T`` with
-    ``g(lambda) = 1`` for ``lambda <= cutoff``, ``0`` otherwise."""
+    ``g(lambda) = 1`` for ``lambda <= cutoff``, ``0`` otherwise.
+
+    Choices stated explicitly:
+        The sharp cutoff (an indicator function) is a choice of this
+        kit. The papers cited in the module describe the general
+        spectral filter ``g(L) = U g(Lambda) U^T`` but do not prescribe
+        a low-pass shape; a smooth cutoff (heat kernel or Chebyshev)
+        would be a different choice.
+    """
     L_d = _as_dense(L)
     w, U = np.linalg.eigh(L_d)
     g = (w <= float(cutoff)).astype(float)

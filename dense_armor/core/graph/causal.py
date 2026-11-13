@@ -25,6 +25,16 @@ class CausalGraph:
 
     Raises:
         ValueError: on an unknown node in an edge, or a cycle.
+
+    Choices stated explicitly:
+        The effect is estimated with DoWhy's
+        ``backdoor.linear_regression`` on the parents of the treatment
+        as ``common_causes``. This is a choice of the kit: DoWhy also
+        offers instrumental variables, front-door, and propensity
+        scores, and the paper (EvoCause) describes a different
+        estimator (LLM-guided causal graph evolution). The kit picks
+        the simplest DoWhy estimator on purpose, so that the effect
+        is identifiable and testable on a known DAG.
     """
 
     def __init__(self, nodes: list[str], edges: list[tuple[str, str]]) -> None:

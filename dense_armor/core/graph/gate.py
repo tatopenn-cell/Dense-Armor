@@ -13,6 +13,13 @@ class GateNode:
     Args:
         detector: an anomaly detector with ``score_one``.
         threshold: optional, otherwise the detector's own threshold.
+
+    Choices stated explicitly:
+        ``GateNode`` wraps ``AnomalyGate(protect=False)``: the gate does
+        not call ``learn_one`` on the detector, so a blocked sample is
+        scored but not learned. This is a choice of the kit; a gate
+        that learns after blocking would be a different choice, and a
+        user who wants it wraps the detector differently.
     """
 
     def __init__(self, detector: Any, threshold: float | None = None) -> None:
