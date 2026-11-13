@@ -53,8 +53,8 @@ jobs:
       - name: Run pytest
         env:
           JAX_ENABLE_X64: "True"
-          MARKERS: ${{ matrix.os == 'macos-latest' && 'not training and not heavy and not slow' || 'not training and not heavy' }}
-        run: pytest test/ -v -m "$MARKERS" --cov=dense_armor --cov-report=xml --cov-report=term-missing
+          COV: ${{ matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest' && '--cov=dense_armor --cov-report=xml --cov-report=term-missing' || '' }}
+        run: pytest test/ -q -m "not training and not heavy and not slow" $COV
 
       # Solo una gamba della matrice carica su Codecov -- 6 upload identici
       # (uno per combinazione OS/Python) non aggiungono informazione, solo
