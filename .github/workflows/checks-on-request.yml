@@ -1,0 +1,36 @@
+name: checks-on-request
+
+on:
+  workflow_dispatch:
+
+jobs:
+  float32-sections:
+    name: float32 pages match the benchmark JSON
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check the float32 cost lines of the pages
+        run: python tools/render_float32_sections.py --check
+
+  build-check:
+    name: build sdist/wheel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build tools
+        run: pip install build twine
+
+      - name: Build package
+        run: python -m build
+
+      - name: Validate package metadata
+        run: python -m twine check dist/*

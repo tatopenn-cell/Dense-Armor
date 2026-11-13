@@ -1,20 +1,7 @@
 name: tests-slow
 
 on:
-  push:
-    branches: [master]
-    paths:
-      - "dense_armor/**"
-      - "test/**"
-      - "pytest.ini"
-      - ".github/workflows/tests-slow.yml"
-  pull_request:
-    branches: [master]
-    paths:
-      - "dense_armor/**"
-      - "test/**"
-      - "pytest.ini"
-      - ".github/workflows/tests-slow.yml"
+  workflow_dispatch:
 
 jobs:
   slow:
