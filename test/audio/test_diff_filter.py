@@ -20,9 +20,12 @@ from dense_armor.core.deep.neural.losses import mse_backward, mse_forward
 
 
 @pytest.fixture
-def x64():
-    with jax.enable_x64(True):
-        yield
+def f32():
+    """JAX in its default 32 bits: other test modules switch x64 on for the whole session."""
+    old = bool(jax.config.jax_enable_x64)
+    jax.config.update("jax_enable_x64", False)
+    yield
+    jax.config.update("jax_enable_x64", old)
 
 
 def _noise(n, seed=0):
@@ -60,7 +63,7 @@ def test_jax_lowpass_equals_the_numpy_lowpass_in_float64(x64, f0, sr, q):
     assert float(a[0]) == 1.0
 
 
-def test_jax_lowpass_in_float32_is_within_float32_rounding_of_numpy():
+def test_jax_lowpass_in_float32_is_within_float32_rounding_of_numpy(f32):
     b, a = jax_lowpass(1000.0, 8000.0, 0.707)
     bn, an = lowpass(1000.0, 8000.0, 0.707)
     assert b.dtype == jnp.float32
@@ -112,7 +115,7 @@ def test_jax_biquad_equals_the_numpy_biquad_in_float64(x64):
         assert np.max(np.abs(y - Biquad(b, a).update_many(x))) < 1e-10
 
 
-def test_jax_biquad_in_float32_is_within_float32_rounding_of_numpy():
+def test_jax_biquad_in_float32_is_within_float32_rounding_of_numpy(f32):
     x = _noise(1000)
     b, a = lowpass(1000.0, 8000.0, 0.707)
     y = np.asarray(JaxBiquad(b, a).forward(x))

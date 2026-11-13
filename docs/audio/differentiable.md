@@ -128,7 +128,7 @@ The two papers are in the papers folder and the sections and equations above wer
 
 ### Numerical precision
 
-JAX computes in 32 bits unless told otherwise, and the library does the same. The comparisons to 1e-10 above were made in 64 bits, inside `jax.enable_x64(True)` for the duration of the test, not for the whole process; in this version of JAX the manager is `jax.enable_x64`, the older `jax.experimental.enable_x64` is not there. In 32 bits the difference from the NumPy filters is of the order of 2e-7, as measured above, and the tests bound it with 1e-6 (coefficients) and 1e-5 (signal); the bounds were not widened to make a test pass.
+JAX computes in 32 bits unless told otherwise, and the library does the same. The comparisons to 1e-10 above were made in 64 bits, switched on with `jax.config.update("jax_enable_x64", True)` for the duration of the test and put back afterwards, as `gradcheck` does; the context managers for this have a different name in different releases of JAX (the CI runs 0.6.2, where `jax.enable_x64` does not exist), so the config call is used. The tests that check 32 bits switch it off the same way, because other test modules of the library switch it on for the whole session. In 32 bits the difference from the NumPy filters is of the order of 2e-7, as measured above, and the tests bound it with 1e-6 (coefficients) and 1e-5 (signal); the bounds were not widened to make a test pass.
 
 ### Limits
 

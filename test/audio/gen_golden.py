@@ -35,9 +35,13 @@ SR = 8000
 
 def _jax_lowpass_output(x):
     """``JaxBiquad`` with the cookbook low-pass, in float64 so the file does not depend on float32 rounding."""
-    with jax.enable_x64(True):
+    old = bool(jax.config.jax_enable_x64)
+    jax.config.update("jax_enable_x64", True)
+    try:
         b, a = jax_lowpass(1000.0, float(SR), 0.707)
         return np.asarray(JaxBiquad(b, a).forward(np.asarray(x, dtype=np.float64)))
+    finally:
+        jax.config.update("jax_enable_x64", old)
 
 
 OUTPUTS = {
