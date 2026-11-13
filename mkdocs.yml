@@ -276,15 +276,15 @@ nav:
       - Separating sources: audio/analysis.md
       - Events and streams: audio/events.md
       - Sources and checks: audio/sources.md
-  - Graph:
-      - Overview: graph/index.md
-      - Graph and spectrum: graph/spectral.md
-      - Filters: graph/filters.md
-      - A network of estimators: graph/dag.md
-      - Provenance: graph/provenance.md
-      - A graph with rules: graph/ontology.md
-      - Which node is wrong?: graph/anomaly.md
-      - What causes what?: graph/causal.md
+  - Ontology:
+      - Overview: ontology/index.md
+      - Types, rules and actions: ontology/typed.md
+      - Graph and spectrum: ontology/spectral.md
+      - Filters: ontology/filters.md
+      - Execution DAG: ontology/dag.md
+      - Provenance: ontology/provenance.md
+      - Anomaly detection: ontology/anomaly.md
+      - Causality: ontology/causal.md
   - Library:
       - Home: index.md
       - Getting Started: getting-started.md

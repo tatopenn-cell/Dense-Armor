@@ -10,7 +10,7 @@ of zeros in the normalized Laplacian, the convention of
 References:
     Niresi, Kuhn, Frusque, Fink (2024), "Informed Graph Learning By
     Domain Knowledge Injection and Smooth Graph Signal
-    Representation", arXiv:2406.03898, Section II.A, Eq. (1)-(3):
+    Representation", arXiv:2406.03898, Section II.A, the definition of ``L := D - W`` and Eq. (2):
     ``L = D - W`` and ``S_2(x) = x^T L x``.
     Shuman et al. (2013): the normalized Laplacian (bibliographic
     only, the PDF is not in ``papers/``).

@@ -18,7 +18,7 @@ from dense_armor.core.graph.filters import (
 )
 from dense_armor.core.graph.fourier import gft, igft
 from dense_armor.core.graph.gate import GateNode
-from dense_armor.core.graph.ontology import TypedGraph
+from dense_armor.core.graph.ontology import Constraint, ConstraintViolation, TypedGraph
 from dense_armor.core.graph.provenance import Provenance
 from dense_armor.core.graph.signal import GraphSignal
 from dense_armor.core.graph.spectral import (
@@ -34,6 +34,8 @@ __all__ = [
     "GateNode",
     "Provenance",
     "TypedGraph",
+    "Constraint",
+    "ConstraintViolation",
     "Action",
     "ActionRejected",
     "apply_action",

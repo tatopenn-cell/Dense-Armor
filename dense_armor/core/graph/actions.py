@@ -19,12 +19,18 @@ from dense_armor.core.graph.ontology import TypedGraph, type_ok
 
 
 class ActionRejected(Exception):
-    """Raised when a precondition of an Action fails."""
+    """Raised when an Action is refused.
 
-    def __init__(self, action: str, failed: list[tuple]) -> None:
+    ``what`` says why: a failed precondition (the default), or an edge
+    constraint broken before or after the action.
+    """
+
+    def __init__(
+        self, action: str, failed: list[tuple], what: str = "precondition(s) failed"
+    ) -> None:
         self.action = action
         self.failed = failed
-        msg = f"action {action!r} rejected: {len(failed)} precondition(s) failed"
+        msg = f"action {action!r} rejected: {len(failed)} {what}"
         super().__init__(msg)
 
 
@@ -109,14 +115,19 @@ class Action:
 def apply_action(
     graph: TypedGraph, action: Action, params: dict[str, Any] | None = None
 ) -> TypedGraph:
-    """Apply ``action`` to ``graph``, validating before and after."""
-    before = graph.validate()
-    if before:
-        raise ActionRejected(action.name, before)
+    """Apply ``action`` to ``graph``; refuse it if it breaks a rule that held.
+
+    A large system always has some broken rules, so the graph is not
+    required to be valid. The rules broken before the action are the
+    baseline: the action is refused only if it breaks a rule that held.
+    """
+    before = set(graph.validate())
     new = action.apply(graph, params)
-    after = new.validate()
-    if after:
-        raise ActionRejected(action.name, after)
+    introduced = [v for v in new.validate() if v not in before]
+    if introduced:
+        raise ActionRejected(
+            action.name, introduced, "new constraint(s) broken by the action"
+        )
     return new
 
 

@@ -41,7 +41,7 @@ print(fiedler_vector(g.laplacian).round(4).tolist())
 
 The first eigenvalue is 0 and goes with a constant pattern: no change from node to node. The larger the eigenvalue, the faster the pattern changes along the edges. The second eigenvector is the Fiedler vector: it has one sign change, and it splits the path in the middle.
 
-![The first four eigenvectors of a path of ten nodes](../assets/graph/eigenvectors.png)
+![The first four eigenvectors of a path of ten nodes](../assets/ontology/eigenvectors.png)
 
 *The four lowest patterns of a path of ten nodes. The eigenvalue 0 is a flat line; each next one crosses zero once more.*
 
@@ -88,4 +88,4 @@ print(gs.n_nodes, gs.values.tolist(), gs.to_signal() is s)
 
 ## Details
 
-The library has no function that builds a graph from data: the edges are yours. `to_networkx()` and `to_pygsp()` hand the same weights to those libraries. `fix_sign` flips each column so that its first entry above 1e-9 is positive. The tests compare `gft` with PyGSP on the absolute value, because the two libraries do not choose the same sign. `g.laplacian` is a CSR sparse matrix; it was a COO matrix before the second review, which does not support `g.laplacian[0, 0]`.
+The library has no function that builds a graph from data: the edges are yours. `to_networkx()` and `to_pygsp()` hand the same weights to those libraries. `fix_sign` flips each column so that its first entry above 1e-9 is positive. The tests compare `gft` with PyGSP on the absolute value, because the two libraries do not choose the same sign. The paper of the transform (Liu and others 2024, Section 2) takes the eigenvectors of the normalised Laplacian, whose eigenvalues lie in `[0, 2]`; `gft` accepts the eigenvectors of any symmetric Laplacian, so `eigendecomposition(g.normalized_laplacian)` gives the paper's basis and `eigendecomposition(g.laplacian)` the combinatorial one used on this page. `g.laplacian` is a CSR sparse matrix, so `g.laplacian[0, 0]` works.

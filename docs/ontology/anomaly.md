@@ -56,7 +56,7 @@ print({k: round(v, 3) for k, v in s.items()}, max(s, key=s.get))
 
 Node 3 holds 6.0 while the others hold values near 0, and it has the highest score. The Fourier magnitude of the signal is not used: it is a frequency and says nothing about which node is wrong.
 
-![The anomaly score and the PageRank of each node of a path, with a spike on node 3](../assets/graph/anomaly.png)
+![The anomaly score and the PageRank of each node of a path, with a spike on node 3](../assets/ontology/anomaly.png)
 
 *The score of each node of the path above and its PageRank. The score follows the spike; PageRank only follows the shape of the graph.*
 
@@ -65,5 +65,3 @@ If the signal is the same on every node, the residual is zero up to rounding, an
 ## Details
 
 The score `zscore(|r|) + page_rank` is a choice of this module. The papers describe the heat kernel and PageRank, none of them defines a score per node. The two parts have different scales: the z-score has unit spread and PageRank sums to 1, so on a large graph the residual dominates. A different residual, for example the deviation from the median of the neighbours, would be another choice. A signal of the wrong length raises a NumPy error, and a negative `tau` is not refused.
-
-In the first version the score used the Fourier magnitude, and for a signal with equal values the z-score of the rounding noise gave scores near 2 instead of the PageRank: the spread is now compared with the rounding before dividing by it.

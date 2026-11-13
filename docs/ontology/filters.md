@@ -43,7 +43,7 @@ print((low_pass(g.laplacian, 0.5) @ r).round(3).tolist())
 
 The result has negative values at the two ends even though the input has none: cutting the spectrum sharply makes the signal ring. The sharp cut-off is a choice of this module; the papers describe the general filter and not a low-pass shape. The heat kernel, whose weight falls smoothly, does not ring.
 
-![A spike on a path, smoothed by the heat kernel and by the low-pass filter, and the error of the Chebyshev filter at each order](../assets/graph/filters.png)
+![A spike on a path, smoothed by the heat kernel and by the low-pass filter, and the error of the Chebyshev filter at each order](../assets/ontology/filters.png)
 
 *Left: the spike (dots), the heat kernel (smooth, positive) and the low-pass filter (rings at the ends). Right: the largest error of the Chebyshev filter of the next section against the exact filter, at each order.*
 

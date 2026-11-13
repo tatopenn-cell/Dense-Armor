@@ -83,5 +83,3 @@ The sample 10.0 scores above the threshold 5.0, so the gate returns `None`, node
 ## Details
 
 Every node has at most one predecessor, so the network is a tree and the run is one pass over the topological order. A node with two predecessors raises `ValueError` when `run` is called. A network with joins is a different design, left out on purpose. A repeated edge is kept once. The log of what each node did is the subject of [the next page](provenance.md).
-
-An early version of the DAG made a regressor learn before it predicted, with the label set to `None`; and the gate scored every sample twice, once to decide and once inside the learning step. Both were changed in the second review.

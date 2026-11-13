@@ -126,3 +126,43 @@ def test_int_is_a_float_and_bool_is_not_an_int():
 def test_set_accepts_int_for_float():
     a = Action(name="b", effects=[("s1", "battery", "set", 42)])
     assert a.apply(_graph()).graph.nodes["s1"]["state"]["battery"] == 42
+
+
+def test_rejection_says_whether_a_constraint_or_a_precondition_failed():
+    g = _graph()
+    g.add_edge("sys", "s1", "monitors", constraint=lambda a, b: b["status"] == "active")
+    a = Action(name="off", effects=[("s1", "status", "set", "off")])
+    with pytest.raises(ActionRejected, match="new constraint.*broken by the action"):
+        apply_action(g, a)
+    b = Action(name="b", preconditions=[("s1", "battery", "<", 1.0)])
+    with pytest.raises(ActionRejected, match="precondition"):
+        apply_action(g, b)
+
+
+def test_a_graph_that_already_breaks_a_rule_can_still_be_changed_safely():
+    g = _graph()
+    g.add_node("s2", "sensor", battery=50.0, status="off", alarms=[])
+    g.add_edge("sys", "s1", "monitors", constraint=lambda a, b: b["status"] == "active")
+    g.add_edge("sys", "s2", "monitors", constraint=lambda a, b: b["status"] == "active")
+    assert g.validate() == [("sys", "s2", "monitors")]
+    ok = Action(name="charge", effects=[("s1", "battery", "set", 90.0)])
+    assert apply_action(g, ok).graph.nodes["s1"]["state"]["battery"] == 90.0
+    bad = Action(name="off", effects=[("s1", "status", "set", "off")])
+    with pytest.raises(ActionRejected) as exc:
+        apply_action(g, bad)
+    assert exc.value.failed == [("sys", "s1", "monitors")]
+
+
+def test_constraint_is_named_and_validate_can_raise():
+    from dense_armor.core.graph import Constraint, ConstraintViolation
+
+    rule = Constraint("active only", lambda a, b: b["status"] == "active")
+    g = _graph()
+    g.add_edge("sys", "s1", "monitors", constraint=rule)
+    assert repr(rule) == "Constraint('active only')"
+    assert g.validate(raise_on_violation=True) == []
+    g.update("s1", status="off")
+    with pytest.raises(ConstraintViolation) as exc:
+        g.validate(raise_on_violation=True)
+    assert exc.value.failed == [("sys", "s1", "monitors")]
+    assert g.validate() == [("sys", "s1", "monitors")]

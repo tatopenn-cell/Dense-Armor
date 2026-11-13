@@ -86,10 +86,10 @@ Nine bugs found and fixed:
 
 ## The documentation
 
-`docs/graph/` has eight pages (overview, graph and spectrum, filters,
+`docs/ontology/` has eight pages (overview, graph and spectrum, filters,
 network of estimators, provenance, graph with rules, anomaly,
 causality) and three figures made by
-`docs/assets/graph/make_figures.py`. Every code block was run and its
+`docs/assets/ontology/make_figures.py`. Every code block was run and its
 printed output is the one in the page.
 
 ## What is NOT in it

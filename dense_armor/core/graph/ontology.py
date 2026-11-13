@@ -23,6 +23,42 @@ def _nx():
     return nx
 
 
+class ConstraintViolation(ValueError):
+    """Raised by ``TypedGraph.validate(raise_on_violation=True)``.
+
+    ``failed`` lists the broken relations as ``(src, dst, relation)``.
+    """
+
+    def __init__(self, failed: list[tuple]) -> None:
+        self.failed = failed
+        super().__init__(f"{len(failed)} constraint(s) violated: {failed[:3]}")
+
+
+class Constraint:
+    """A named rule on the two ends of an edge.
+
+    Args:
+        name: what the rule says, used in messages.
+        check: ``check(state_src, state_dst) -> bool``, ``False`` when the
+            relation is broken.
+
+    Example:
+        >>> c = Constraint("no test db in production", lambda s, d: not (s["tier"] == "production" and d["env"] == "test"))
+        >>> c({"tier": "production"}, {"env": "test"})
+        False
+    """
+
+    def __init__(self, name: str, check: Callable[[dict, dict], bool]) -> None:
+        self.name = name
+        self.check = check
+
+    def __call__(self, src: dict, dst: dict) -> bool:
+        return bool(self.check(src, dst))
+
+    def __repr__(self) -> str:
+        return f"Constraint({self.name!r})"
+
+
 def type_ok(value: Any, expected: type) -> bool:
     """``isinstance`` with the two numeric rules of the schema.
 
@@ -86,7 +122,7 @@ class TypedGraph:
         src: str,
         dst: str,
         relation: str,
-        constraint: Callable[[dict, dict], bool] | None = None,
+        constraint: Constraint | Callable[[dict, dict], bool] | None = None,
     ) -> TypedGraph:
         if src not in self.graph or dst not in self.graph:
             raise ValueError(f"unknown node in edge ({src}, {dst})")
@@ -112,8 +148,13 @@ class TypedGraph:
         node["state"] = current
         return self
 
-    def validate(self) -> list[tuple]:
-        """Check every edge constraint. Return the failed ones."""
+    def validate(self, raise_on_violation: bool = False) -> list[tuple]:
+        """Check every edge constraint. Return the failed ones.
+
+        Args:
+            raise_on_violation: raise :class:`ConstraintViolation` if any
+                constraint is violated, instead of returning the list.
+        """
         failures: list[tuple] = []
         for u, v, key, data in self.graph.edges(keys=True, data=True):
             fn = data.get("constraint")
@@ -121,6 +162,8 @@ class TypedGraph:
                 continue
             if not fn(self.graph.nodes[u]["state"], self.graph.nodes[v]["state"]):
                 failures.append((u, v, data.get("relation", "?")))
+        if failures and raise_on_violation:
+            raise ConstraintViolation(failures)
         return failures
 
     def to_networkx(self):
