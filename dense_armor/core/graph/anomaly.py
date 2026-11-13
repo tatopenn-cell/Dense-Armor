@@ -94,8 +94,8 @@ def graph_anomaly_score(graph, signal, alpha: float = 0.85, tau: float = 1.0) ->
     residual = x - H @ x
     mag = np.abs(residual)
     mu = mag.mean()
-    sd = mag.std() if mag.std() > 0 else 1.0
-    z = (mag - mu) / sd
+    sd = mag.std()
+    z = (mag - mu) / sd if sd > 1e-12 * max(float(np.abs(x).max()), 1.0) else 0.0 * mag
     pr = page_rank(g, alpha=alpha)
     pr_vec = np.array([pr[i] for i in range(n)])
     return {i: float(z[i] + pr_vec[i]) for i in range(n)}

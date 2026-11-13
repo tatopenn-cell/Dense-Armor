@@ -56,15 +56,17 @@ def test_rwr_unknown_seed():
 def test_graph_anomaly_score_isolates_outlier():
     g = _star(10)
     rng = np.random.default_rng(0)
-    sig = rng.standard_normal(10)
-    sig[0] = 5.0
+    sig = rng.standard_normal(10) * 0.1
+    sig[4] = 5.0
     scores = graph_anomaly_score(g, sig)
-    # il residuo locale del nodo 0 è alto (5.0 - smussato)
-    assert max(scores, key=scores.get) == 0
+    pr = page_rank(g)
+    assert max(pr, key=pr.get) == 0
+    assert max(scores, key=scores.get) == 4
 
 
-def test_graph_anomaly_score_uniform_no_threshold():
+def test_graph_anomaly_score_uniform_is_page_rank():
     g = _path(5)
-    sig = np.ones(5)
-    scores = graph_anomaly_score(g, sig)
-    assert max(scores.values()) < 3.0
+    scores = graph_anomaly_score(g, np.ones(5))
+    pr = page_rank(g)
+    for i in range(5):
+        assert abs(scores[i] - pr[i]) < 1e-12

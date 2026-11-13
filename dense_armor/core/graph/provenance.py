@@ -74,16 +74,23 @@ class Provenance:
     def records(self) -> list[dict[str, Any]]:
         return list(self._records)
 
-    def chain(self, output_hash: str) -> list[dict[str, Any]]:
+    def chain(self, output_hash: str, node: str | None = None) -> list[dict[str, Any]]:
         """The records that led to the latest record with ``output_hash``.
 
+        The hash is of the values only, so two nodes with equal output
+        share it: pass ``node`` to take the latest record of that node.
         The chain follows ``parent_nodes``: the parent of a record is the
         most recent earlier record of that node, so equal values at
         different nodes or times are not mixed. The records are in log
         order, which is the topological order of a run.
         """
         last = max(
-            (i for i, r in enumerate(self._records) if r["output_hash"] == output_hash),
+            (
+                i
+                for i, r in enumerate(self._records)
+                if r["output_hash"] == output_hash
+                and (node is None or r["node"] == node)
+            ),
             default=None,
         )
         if last is None:

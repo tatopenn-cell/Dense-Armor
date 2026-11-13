@@ -1,8 +1,8 @@
 # Graph Engine — branch `feature/graph-engine`
 
 This branch adds the **Graph Engine** to Dense-Armor: from a single
-signal to a system of signals in relation. Four levels, one squashed
-commit, 84 tests passing.
+signal to a system of signals in relation. Four levels, 103 tests
+passing, 8 documentation pages.
 
 ## What is in it
 
@@ -57,7 +57,7 @@ cd Dense-Armor
 git checkout feature/graph-engine
 pip install -e ".[dev]"
 pip install ruff mypy pygsp dowhy
-python -m pytest test/graph/ -q          # 84 passed
+python -m pytest test/graph/ -q          # 103 passed
 python -m ruff check dense_armor/core/graph/ test/graph/
 python -m mypy --follow-imports=skip dense_armor/core/graph/*.py
 mkdocs build --strict --site-dir /tmp/_site
@@ -84,30 +84,32 @@ Nine bugs found and fixed, all documented in `REVISIONE.md`:
    serializable.
 9. `gen_golden.py`: `GOLD` not defined.
 
-## What is NOT in it (declared gaps)
+## The documentation
 
-- **The docs pages** (`docs/graph/*.md`, `mkdocs.yml` nav): item H
-  of the four tasks is `not done`. The strict build passes only
-  because the pages are not in the nav. This is the piece that is
-  missing before saying "G1–G4 complete".
+`docs/graph/` has eight pages (overview, graph and spectrum, filters,
+network of estimators, provenance, graph with rules, anomaly,
+causality) and three figures made by
+`docs/assets/graph/make_figures.py`. Every code block was run and its
+printed output is the one in the page.
+
+## What is NOT in it
+
 - `ROLES_API.md`, `METRICS_API.md`, `REVISIONE_IA.md` are **not in
   the repo**: the review was done by reading the documents from the
   session. `REVISIONE.md` says so.
+- Four of the six cited papers (Cheng, Babaei Giglou, Zan, Wang) are
+  bibliographic only: no PDF, no section checked.
 
 ## Numbers
 
 | Item | Value |
 |---|---|
-| Tests | 84 passed |
-| ruff check | All checks passed |
-| ruff format | 26 files formatted |
+| Tests | 103 passed, none skipped |
+| ruff check / format | clean |
 | mypy | Success: no issues found in 13 source files |
+| mkdocs build --strict | passes, graph pages in the nav |
 | Golden files | 13 (in `test/graph/golden/`) |
-| Golden tests | 12 passed |
-| New files | 13 source + 13 test + 13 golden = 39 |
-| Lines | ~2100 |
 
-## Commit
+## Commits
 
-One commit above `16f71a0` (the merge of `feature/audio-l2`).
-No push before this one, no PR (this is the first push).
+See `git log --oneline 16f71a0..HEAD`.

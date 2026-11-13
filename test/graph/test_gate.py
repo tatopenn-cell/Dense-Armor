@@ -81,3 +81,22 @@ def test_gate_inside_dag():
     dag.run({"a": _sig(1.0)})
     assert gate.passed == 1
     assert counter.n == 1
+
+
+def test_gate_scores_each_sample_once_and_declares_budget():
+    class _Counting(_FakeDetector):
+        def __init__(self):
+            super().__init__()
+            self.scored = 0
+
+        def score_one(self, x, t=None):
+            self.scored += 1
+            return super().score_one(x, t)
+
+    det = _Counting()
+    gate = GateNode(det)
+    gate(_sig(1.0))
+    gate(_sig(10.0))
+    assert det.scored == 2
+    assert gate.budget_s == 2.0 * det.budget_s
+    assert gate.memory_class == "O(1)"

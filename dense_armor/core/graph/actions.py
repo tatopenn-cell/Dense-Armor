@@ -15,7 +15,7 @@ import copy
 from dataclasses import dataclass, field
 from typing import Any
 
-from dense_armor.core.graph.ontology import TypedGraph
+from dense_armor.core.graph.ontology import TypedGraph, type_ok
 
 
 class ActionRejected(Exception):
@@ -81,7 +81,7 @@ class Action:
                 raise ValueError(f"field {field_name!r} not in schema for type {typ!r}")
             state = dict(new.graph.nodes[node_name]["state"])
             if kind == "set":
-                if not isinstance(value, expected):
+                if not type_ok(value, expected):
                     raise ValueError(
                         f"field {field_name!r} must be {expected.__name__}, "
                         f"got {type(value).__name__}"

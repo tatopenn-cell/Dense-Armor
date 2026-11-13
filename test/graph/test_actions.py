@@ -112,3 +112,17 @@ def test_deepcopy_other_nodes():
     # modificare g2 non deve toccare g
     g2.graph.nodes["s2"]["state"]["battery"] = 0.0
     assert g.graph.nodes["s2"]["state"]["battery"] == 50.0
+
+
+def test_int_is_a_float_and_bool_is_not_an_int():
+    g = _graph()
+    g.add_node("s3", "sensor", battery=80, status="active", alarms=[])
+    with pytest.raises(ValueError):
+        g.update("s3", battery=True)
+    with pytest.raises(ValueError):
+        g.add_node("s1", "sensor", battery=1.0)
+
+
+def test_set_accepts_int_for_float():
+    a = Action(name="b", effects=[("s1", "battery", "set", 42)])
+    assert a.apply(_graph()).graph.nodes["s1"]["state"]["battery"] == 42

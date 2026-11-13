@@ -75,3 +75,14 @@ def test_dag_integration():
     assert [r["node"] for r in chain] == ["a", "b", "c"]
     # t cresce
     assert recs[0]["t"] < recs[1]["t"] < recs[2]["t"]
+
+
+def test_chain_with_equal_outputs_at_two_nodes_takes_the_named_node():
+    prov = Provenance()
+    sig = Signal([1.0], names=["x"], units=[""])
+    out = Signal([2.0], names=["y"], units=[""])
+    prov.record(0.0, "a", "run", sig, out, [])
+    prov.record(1.0, "b", "run", sig, out, [])
+    h = prov.records()[0]["output_hash"]
+    assert [r["node"] for r in prov.chain(h)] == ["b"]
+    assert [r["node"] for r in prov.chain(h, node="a")] == ["a"]

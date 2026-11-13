@@ -34,7 +34,7 @@ class ExecutionDAG:
         edges: list of ``(src, dst)``, every name must be in ``nodes``.
 
     Raises:
-        ValueError: on duplicate node, unknown node in an edge, cycle.
+        ValueError: on an unknown node in an edge, or a cycle.
 
     Choices stated explicitly:
         Each node has at most one predecessor (a tree, not a general
@@ -53,7 +53,7 @@ class ExecutionDAG:
         provenance: Provenance | None = None,
     ) -> None:
         self._nodes = dict(nodes)
-        self._edges = list(edges)
+        self._edges = list(dict.fromkeys((s, d) for s, d in edges))
         self._provenance = provenance if provenance is not None else Provenance()
         self._t = 0.0
         self._t_step = 1.0
@@ -95,7 +95,11 @@ class ExecutionDAG:
     def to_networkx(self):
         return self._g.copy()
 
-    def run(self, signals: dict[str, Signal]) -> dict[str, Signal | None]:
+    def run(
+        self,
+        signals: dict[str, Signal],
+        labels: dict[str, Any] | None = None,
+    ) -> dict[str, Signal | None]:
         """Run the DAG on ``signals``, one per source node.
 
         Every node receives the signal of its single predecessor and
@@ -103,7 +107,12 @@ class ExecutionDAG:
         ``signals[name]``. A node with more than one predecessor is
         refused at run time. If the predecessor is a ``GateNode`` that
         returned ``None``, the node is skipped (``out[name] = None``).
+
+        ``labels`` maps a node name to the true label of this sample. A
+        regressor or classifier node predicts first and learns after,
+        only if it has a label in ``labels``.
         """
+        labels = labels or {}
         order = self.topological_order()
         for name in order:
             n_pred = self._g.in_degree(name)
@@ -128,7 +137,7 @@ class ExecutionDAG:
                     out[name] = None
                     continue
             est = self._nodes[name]
-            out[name] = self._apply(name, est, x)
+            out[name] = self._apply(name, est, x, labels.get(name))
             self._provenance.record(
                 t=self._t,
                 node=name,
@@ -141,8 +150,8 @@ class ExecutionDAG:
         return out
 
     @staticmethod
-    def _apply(name: str, est: Any, x: Signal) -> Signal | None:
-        # GateNode: non chiama learn_one del detector (protect=False)
+    def _apply(name: str, est: Any, x: Signal, y: Any = None) -> Signal | None:
+        # GateNode: scores, learns only the samples that pass
         if hasattr(est, "blocked") and callable(est):
             return est(x)
         # AnomalyDetector: score_one
@@ -161,11 +170,11 @@ class ExecutionDAG:
                 names=[str(k) for k in trans.keys()],
                 units=[""] * len(trans),
             )
-        # Regressor / Classifier: learn_one + predict_one
+        # Regressor / Classifier: predict_one, then learn_one if there is a label
         if hasattr(est, "predict_one"):
-            if hasattr(est, "learn_one"):
-                est.learn_one(x, None)
             pred = est.predict_one(x)
+            if y is not None and hasattr(est, "learn_one"):
+                est.learn_one(x, y)
             if isinstance(pred, dict):
                 return Signal(
                     list(pred.values()),

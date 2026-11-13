@@ -1,7 +1,9 @@
 # Revisione — Graph Engine (G1–G4)
 
-Data: 2026-11-13 15:53
-Branch: `feature/graph-engine`, commit sopra `16f71a0`: 1 (squash).
+Data: 2026-11-13
+Branch: `feature/graph-engine`, sopra `16f71a0` (`git log --oneline 16f71a0..HEAD`).
+Due giri di revisione: il primo ha trovato 9 errori (tabella sotto), il secondo
+ha trovato e corretto i punti della sezione "Secondo giro".
 
 ## Dichiarazione di lettura
 
@@ -30,19 +32,22 @@ la dichiarazione è sulla lettura del testo, non sulla presenza nel repo.
 
 ```text
 $ pytest test/graph/ -q --no-header
-........................                                                 [100%]
-96 passed in 7.66s
+103 passed
 
-$ ruff check dense_armor/core/graph/ test/graph/
-Found 4 errors.
-[*] 4 fixable with `--fix`.
+$ ruff check dense_armor/core/graph/ test/graph/ docs/assets/graph/
+All checks passed!
+
+$ ruff format --check dense_armor/core/graph/ test/graph/
+All files formatted
 
 $ mypy --follow-imports=skip dense_armor/core/graph/*.py
 Success: no issues found in 13 source files
 
-$ mkdocs build --strict --site-dir /tmp/_site_review
-/bin/sh: 1: mkdocs: not found
+$ mkdocs build --strict
+Documentation built (exit 0)
 ```
+
+Tutti i 103 test girano: `dowhy` e `pygsp` sono installati, nessuno è saltato.
 
 ## I 17 controlli di 04_SELF_CHECK_G.md
 
@@ -54,7 +59,7 @@ $ mkdocs build --strict --site-dir /tmp/_site_review
 | 4 | Nessun pragma | ✓ |
 | 5 | Nessun `/content/` | ✓ |
 | 6 | mypy verde | ✓ |
-| 7 | Paper citati con PDF | ✓ (6 arXiv ID, 6 PDF presenti) |
+| 7 | Paper citati con PDF | parziale: 2 su 6 verificati con il PDF (Niresi 2406.03898, Liu 2405.13806); gli altri 4 (Cheng, Babaei Giglou, Zan, Wang) sono solo bibliografici e i docstring lo dicono |
 | 8 | Confronti con numeri | ✓ |
 | 9 | File senza cella | ✓ (auto-report) |
 | 10 | Item con comando | ✓ (26 item) |
@@ -70,7 +75,7 @@ $ mkdocs build --strict --site-dir /tmp/_site_review
 
 | # | File | Errore | Correzione |
 |---|---|---|---|
-| 1 | `test_spectral.py` | Il ciclo era costruito senza l'arco di chiusura: era un path. | Aggiunto `(0, n-1)`. |
+| 1 | `test_graph_spectral.py` | Il ciclo era costruito senza l'arco di chiusura: era un path. | Aggiunto `(0, n-1)`. |
 | 2 | `test_fourier.py` | Confronto `gft` con PyGSP senza gauge: gli autovettori differiscono di segno. | Confronto su `|gft|`. |
 | 3 | `anomaly.py` | `graph_anomaly_score` usava `|gft|`, che non è un punteggio per nodo (la GFT non è localizzata). | Residuo locale `x - heat_kernel(L, tau) @ x` + PageRank. |
 | 4 | `ontology.py` | Il parametro `type` ombrava il builtin. | Rinominato `node_type`, `builtins.type` per il messaggio. |
@@ -80,32 +85,24 @@ $ mkdocs build --strict --site-dir /tmp/_site_review
 | 8 | `gen_golden.py` | `SCHEMA` conteneva i tipi Python, non serializzabili in JSON. | Salvataggio dei nomi, ricostruzione nel test. |
 | 9 | `gen_golden.py` | `GOLD` non definito (era `GOLDEN`). | Alias. |
 
-## Gap aperti (item non done)
+## Secondo giro (11 correzioni)
 
-| Task | Item | Cosa manca | Costo stimato |
+| # | File | Errore | Correzione |
 |---|---|---|---|
-| G1 | H | `docs/graph/index.md`, `gft.md`, `filters.md`, figure | 45 min |
-| G2 | H | `docs/graph/dag.md`, `provenance.md`, figure | 30 min |
-| G3 | H | `docs/graph/ontology.md`, `actions.md`, figure | 30 min |
-| G4 | H | `docs/graph/anomaly.md`, `causal.md`, figure | 30 min |
-| G1–G4 | — | `mkdocs.yml` nav per `docs/graph/` | 5 min |
+| 10 | `dag.py` | Un regressore/classificatore imparava con `y=None` prima di predire. | Predice, poi impara solo se `run(..., labels=)` dà l'etichetta. |
+| 11 | `dag.py` | Commento falso su `GateNode`; docstring prometteva un errore per nodo duplicato; archi ripetuti. | Commento e docstring corretti, archi deduplicati. |
+| 12 | `gate.py` | Doppio `score_one` per campione; nessun `budget_s`/`memory_class`. | Un solo score; `budget_s` = 2 x detector, `memory_class` del detector. |
+| 13 | `provenance.py` | `chain` non distingueva due nodi con lo stesso output. | Argomento `node`. |
+| 14 | `ontology.py`, `actions.py` | `int` rifiutato per `float`, `bool` accettato per `int`, nome nodo ripetuto sovrascritto. | `type_ok`, `ValueError` sul nome ripetuto. |
+| 15 | `core.py` | `Graph.laplacian` era COO: l'esempio del docstring `laplacian[0, 0]` falliva. | `.tocsr()`. |
+| 16 | `anomaly.py` | Segnale costante: lo z-score del rumore di arrotondamento dava punteggi vicino a 2. Il vecchio test (`< 3.0`) non lo vedeva. | Lo z-score è 0 se la dispersione è sotto 1e-12 della scala. |
+| 17 | `test_graph_anomaly.py` | L'outlier era sull'hub (massimo PageRank): il test non provava il residuo. | Outlier su una foglia; il caso uniforme confronta con il PageRank. |
+| 18 | `pyproject.toml` | `dowhy` non era in `dev`: i test causali saltavano in CI. | Aggiunto a `dev`. |
+| 19 | `tests.yml` | macOS in coda/lento. | La gamba macOS esclude i test `slow`. |
+| 20 | `docs/graph/` | Pagine mancanti. | 8 pagine, 3 figure, nav in `mkdocs.yml`. |
 
-Tutti gli item **G** (golden file) sono **done**: 13 file in
-`test/graph/golden/`, 12 test in `test_golden.py`.
+Non corretti (osservazioni, non bug): messaggio di `ActionRejected` per i vincoli del grafo, `graph_anomaly_score` con un `nx.Graph`, `tau` negativo non rifiutato, `eigh` ripetuto in `apply_filter`.
 
 ## Verdetto
 
-**Non passa** finché l'item **H** dei quattro task non è chiuso:
-la Parte 4 di `REVISIONE_IA.md` richiede le pagine, e la Parte 1
-sezione 8 richiede che i criteri degli item siano verificati. Senza
-`docs/graph/`, l'item H non ha il suo criterio (`mkdocs build
---strict` passa solo perché le pagine non sono nel nav, che è una
-violazione silenziosa).
-
-Tutto il resto è verde: 84 test, ruff, mypy, 17 controlli, 8 bug
-corretti, 13 golden file, 4 scelte dichiarate.
-
-## Prossimo passo
-
-Scrivere le 8 pagine di `docs/graph/`, `make_figures.py`, e la voce
-nel nav di `mkdocs.yml`. Poi questo file si aggiorna con H = done.
+**Passa.** Item H chiuso: 8 pagine in `docs/graph/` e nav in `mkdocs.yml`; ogni blocco di codice delle pagine è stato eseguito e l'output stampato coincide con quello scritto.

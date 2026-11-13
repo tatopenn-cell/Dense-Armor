@@ -66,3 +66,9 @@ def test_errors():
         Graph(3, [(0, 1, 1.0), (1, 0, 2.0)])
     with pytest.raises(ValueError):
         Graph(3, [(0, 5, 1.0)])
+
+
+def test_laplacian_is_indexable():
+    g = Graph(3, [(0, 1, 1.0), (1, 2, 2.0)])
+    assert float(g.laplacian[0, 0]) == 1.0
+    assert float(g.laplacian[1, 1]) == 3.0

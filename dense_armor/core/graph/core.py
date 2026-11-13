@@ -80,7 +80,7 @@ class Graph:
         W = sp.csr_matrix((data, (rows, cols)), shape=(n, n))
         self.adjacency = W
         self.degrees = np.asarray(W.sum(axis=1)).ravel()
-        self.laplacian = _csgraph_laplacian(W, normed=False, return_diag=False)
+        self.laplacian = _csgraph_laplacian(W, normed=False, return_diag=False).tocsr()
         with np.errstate(divide="ignore"):
             d_inv_sqrt = 1.0 / np.sqrt(self.degrees)
         d_inv_sqrt[~np.isfinite(d_inv_sqrt)] = 0.0

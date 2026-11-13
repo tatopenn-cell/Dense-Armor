@@ -23,6 +23,19 @@ def _nx():
     return nx
 
 
+def type_ok(value: Any, expected: type) -> bool:
+    """``isinstance`` with the two numeric rules of the schema.
+
+    An ``int`` is a valid ``float``, and a ``bool`` is neither an
+    ``int`` nor a ``float``.
+    """
+    if isinstance(value, bool):
+        return expected is bool or expected is object
+    if expected is float:
+        return isinstance(value, (int, float))
+    return isinstance(value, expected)
+
+
 class TypedGraph:
     """A typed graph with a schema and constraints.
 
@@ -30,8 +43,10 @@ class TypedGraph:
         schema: dict ``{type_name: {field_name: type}}``.
 
     Raises:
-        ValueError: on an unknown type, a field not in the schema, or
-            a field value of the wrong type.
+        ValueError: on an unknown type, a node name already used, a field
+            not in the schema, or a field value of the wrong type (an
+            ``int`` is accepted for a ``float`` field; a ``bool`` only
+            for a ``bool`` field).
 
     Choices stated explicitly:
         The schema is a plain ``dict[str, dict[str, type]]``; the
@@ -50,13 +65,15 @@ class TypedGraph:
     def add_node(self, name: str, node_type: str, **state: Any) -> TypedGraph:
         if node_type not in self.schema:
             raise ValueError(f"unknown type {node_type!r}")
+        if name in self.graph:
+            raise ValueError(f"node {name!r} already exists")
         expected = self.schema[node_type]
         for field, value in state.items():
             if field not in expected:
                 raise ValueError(
                     f"field {field!r} not in schema for type {node_type!r}"
                 )
-            if not isinstance(value, expected[field]):
+            if not type_ok(value, expected[field]):
                 raise ValueError(
                     f"field {field!r} must be {expected[field].__name__}, "
                     f"got {builtins.type(value).__name__}"
@@ -86,8 +103,11 @@ class TypedGraph:
         for field, value in state.items():
             if field not in self.schema[typ]:
                 raise ValueError(f"field {field!r} not in schema")
-            if not isinstance(value, self.schema[typ][field]):
-                raise ValueError(f"field {field!r} has wrong type")
+            if not type_ok(value, self.schema[typ][field]):
+                raise ValueError(
+                    f"field {field!r} must be {self.schema[typ][field].__name__}, "
+                    f"got {builtins.type(value).__name__}"
+                )
             current[field] = value
         node["state"] = current
         return self
