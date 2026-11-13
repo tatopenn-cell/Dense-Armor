@@ -18,6 +18,7 @@ from dense_armor.core.audio.blamp import (
     triangle_blamp,
 )
 from dense_armor.core.audio.clipping import hard_clip
+from dense_armor.core.audio.dynamics import Compressor, gain_curve
 from dense_armor.core.audio.envelope import envelope_follower, hilbert
 from dense_armor.core.audio.events import detect_events
 from dense_armor.core.audio.features import AudioFeatures
@@ -87,6 +88,7 @@ __all__ = [
     "AudioInput",
     "AudioLiveStream",
     "Biquad",
+    "Compressor",
     "KarplusStrong",
     "Oscillator",
     "Resampler",
@@ -102,6 +104,7 @@ __all__ = [
     "envelope_follower",
     "freq_to_cents",
     "freq_to_note",
+    "gain_curve",
     "get_window",
     "hamming",
     "hann",
