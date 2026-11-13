@@ -18,6 +18,12 @@ from dense_armor.core.audio.blamp import (
     triangle_blamp,
 )
 from dense_armor.core.audio.clipping import hard_clip
+from dense_armor.core.audio.diff_filter import (
+    JaxBiquad,
+    jax_allpole_time_varying,
+    jax_biquad,
+    jax_lowpass,
+)
 from dense_armor.core.audio.dynamics import (
     Compressor,
     Limiter,
@@ -100,6 +106,10 @@ __all__ = [
     "DelayLine",
     "FIR",
     "Harmonizer",
+    "JaxBiquad",
+    "jax_allpole_time_varying",
+    "jax_biquad",
+    "jax_lowpass",
     "YIN",
     "AllPole",
     "AllpassFilter",

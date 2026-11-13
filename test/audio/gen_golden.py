@@ -11,12 +11,15 @@ behaviour of a primitive on purpose, and the commit says so.
 
 from pathlib import Path
 
+import jax
 import numpy as np
 
 from dense_armor.core.audio import (
     Audio,
     Compressor,
+    JaxBiquad,
     SchroederReverb,
+    jax_lowpass,
     mel_spectrogram,
     mfcc,
     onset_detect,
@@ -29,6 +32,14 @@ from dense_armor.core.audio import (
 GOLDEN = Path(__file__).resolve().parent / "golden"
 SR = 8000
 
+
+def _jax_lowpass_output(x):
+    """``JaxBiquad`` with the cookbook low-pass, in float64 so the file does not depend on float32 rounding."""
+    with jax.enable_x64(True):
+        b, a = jax_lowpass(1000.0, float(SR), 0.707)
+        return np.asarray(JaxBiquad(b, a).forward(np.asarray(x, dtype=np.float64)))
+
+
 OUTPUTS = {
     "sine_440_mel.npy": lambda x: mel_spectrogram(x, SR),
     "sine_440_mfcc.npy": lambda x: mfcc(x, SR),
@@ -37,6 +48,7 @@ OUTPUTS = {
     "sine_440_reverb.npy": lambda x: SchroederReverb(sr=SR).update_many(x),
     "sine_440_stretch_2x.npy": lambda x: time_stretch(x, SR, 2.0),
     "sine_440_shift_up_octave.npy": lambda x: pitch_shift(x, SR, 12.0),
+    "sine_440_jaxlowpass.npy": _jax_lowpass_output,
 }
 
 
