@@ -166,3 +166,40 @@ def test_constraint_is_named_and_validate_can_raise():
         g.validate(raise_on_violation=True)
     assert exc.value.failed == [("sys", "s1", "monitors")]
     assert g.validate() == [("sys", "s1", "monitors")]
+
+
+def _facts(graph):
+    return {
+        (n, f, repr(v))
+        for n, d in graph.graph.nodes(data=True)
+        for f, v in d["state"].items()
+    }
+
+
+def test_action_matches_the_classical_strips_semantics():
+    g = _graph()
+    pre = {("s1", "status", repr("active")), ("s1", "battery", repr(80.0))}
+    delete = {("s1", "status", repr("active"))}
+    add = {("s1", "status", repr("maintenance"))}
+    state = _facts(g)
+    assert pre <= state
+    expected = (state - delete) | add
+    a = Action(
+        name="maintain",
+        preconditions=[("s1", "status", "==", "active"), ("s1", "battery", "==", 80.0)],
+        effects=[("s1", "status", "set", "maintenance")],
+    )
+    assert _facts(a.apply(g)) == expected
+
+
+def test_action_with_a_false_precondition_leaves_the_state_alone():
+    g = _graph()
+    before = _facts(g)
+    a = Action(
+        name="maintain",
+        preconditions=[("s1", "status", "==", "off")],
+        effects=[("s1", "status", "set", "maintenance")],
+    )
+    with pytest.raises(ActionRejected):
+        a.apply(g)
+    assert _facts(g) == before

@@ -59,16 +59,38 @@ g = Graph(4, [(0, 1, 1.0), (1, 2, 1.0), (2, 3, 1.0)])
 w, U = eigendecomposition(g.laplacian)
 x = np.array([1.0, 2.0, 3.0, 4.0])
 xh = gft(x, U)
-print(xh.round(4).tolist(), np.allclose(igft(xh, U), x), round(float(x @ x), 4), round(float(xh @ xh), 4))
+print(np.abs(xh).round(4).tolist(), np.allclose(igft(xh, U), x), round(float(x @ x), 4), round(float(xh @ xh), 4))
 ```
 
 ```text
-[-5.0, -2.2304, 0.0, 0.1585] True 30.0 30.0
+[5.0, 2.2304, 0.0, 0.1585] True 30.0 30.0
 ```
 
 The signal rises by one at every node, so it sits almost entirely in the first two frequencies. The sign of each number depends on the sign of its eigenvector, which is arbitrary; `fix_sign(U)` makes it fixed. The transform keeps the energy (30 and 30, the Parseval relation) and `igft` returns the signal.
 
-## 4. A signal that knows its graph
+The numbers are shown in absolute value because the sign of each one depends on the sign of its eigenvector.
+
+## 4. The same transform as an object
+
+When you transform many signals on the same graph, find the basis once. `GraphFourier(graph)` does the decomposition when it is created and keeps the frequencies and the basis.
+
+```python
+from dense_armor.core.graph import Graph, GraphFourier
+
+g = Graph(4, [(0, 1, 1.0), (1, 2, 1.0), (2, 3, 1.0)])
+f = GraphFourier(g)
+print(abs(f.eigenvalues).round(4).tolist())
+print(abs(f.transform([1.0, 2.0, 3.0, 4.0])).round(4).tolist())
+```
+
+```text
+[0.0, 0.5858, 2.0, 3.4142]
+[5.0, 2.2304, 0.0, 0.1585]
+```
+
+`f.eigenvalues` are the frequencies, `f.basis` holds the patterns as columns, `f.transform(x)` is `U^T x` and `f.inverse(x_hat)` goes back. `GraphFourier(g, normalized=True)` uses the normalised Laplacian, whose frequencies lie in `[0, 2]`.
+
+## 5. A signal that knows its graph
 
 `GraphSignal(signal, graph)` joins a `Signal` with one channel per node to the graph. `values` is the array of the channels in the order of `signal.names`; a signal with a different number of channels raises `ValueError`.
 

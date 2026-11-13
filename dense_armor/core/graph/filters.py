@@ -118,3 +118,85 @@ def chebyshev_filter(x, L, coeffs, lmax: float) -> np.ndarray:
         out = out + coeffs[k] * T2
         T0, T1 = T1, T2
     return out
+
+
+class SpectralFilter:
+    """A spectral filter of one graph, with the basis found once.
+
+    The filter keeps each frequency ``lambda`` of the graph with the weight
+    ``response(lambda)``: ``U g(Lambda) U^T x``.
+
+    Args:
+        graph: a :class:`Graph`.
+        response: a function of the eigenvalues, returning an array.
+        normalized: use the normalised Laplacian.
+
+    Raises:
+        ValueError: if ``response`` does not return one value per node.
+
+    Example:
+        >>> from dense_armor.core.graph.core import Graph
+        >>> g = Graph(3, [(0, 1, 1.0), (1, 2, 1.0)])
+        >>> f = SpectralFilter.heat(g, 1.0)
+        >>> round(float(f.apply([0.0, 3.0, 0.0]).sum()), 6)
+        3.0
+    """
+
+    def __init__(self, graph, response, normalized: bool = False) -> None:
+        from dense_armor.core.graph.fourier import GraphFourier
+
+        self._fourier = GraphFourier(graph, normalized)
+        g = np.asarray(response(self._fourier.eigenvalues), dtype=float)
+        if g.shape != (graph.n_nodes,):
+            raise ValueError(
+                f"response must return one value per node, got shape {g.shape}"
+            )
+        self.response = g
+
+    @classmethod
+    def heat(cls, graph, tau: float, normalized: bool = False) -> SpectralFilter:
+        """The heat kernel ``exp(-tau lambda)``."""
+        return cls(graph, lambda w: np.exp(-float(tau) * w), normalized)
+
+    @classmethod
+    def low_pass(
+        cls, graph, cutoff: float, normalized: bool = False
+    ) -> SpectralFilter:
+        """1 for the frequencies up to ``cutoff``, 0 above."""
+        return cls(graph, lambda w: (w <= float(cutoff)).astype(float), normalized)
+
+    def apply(self, x) -> np.ndarray:
+        """Filter the signal ``x``."""
+        return self._fourier.inverse(self.response * self._fourier.transform(x))
+
+
+class ChebyshevFilter:
+    """A Chebyshev polynomial filter of one graph, with no eigenvectors.
+
+    Args:
+        graph: a :class:`Graph`.
+        response: a function of the eigenvalues, vectorised.
+        lmax: a bound of the largest eigenvalue of the Laplacian; required.
+        order: the degree of the polynomial, at least 0.
+        normalized: use the normalised Laplacian.
+
+    Example:
+        >>> from dense_armor.core.graph.core import Graph
+        >>> g = Graph(3, [(0, 1, 1.0), (1, 2, 1.0)])
+        >>> f = ChebyshevFilter(g, lambda w: np.exp(-w), lmax=4.0, order=12)
+        >>> exact = SpectralFilter.heat(g, 1.0).apply([0.0, 3.0, 0.0])
+        >>> bool(np.allclose(f.apply([0.0, 3.0, 0.0]), exact, atol=1e-8))
+        True
+    """
+
+    def __init__(
+        self, graph, response, lmax: float, order: int, normalized: bool = False
+    ) -> None:
+        self._L = graph.normalized_laplacian if normalized else graph.laplacian
+        self.lmax = float(lmax)
+        self.order = int(order)
+        self.coefficients = chebyshev_coefficients(response, self.lmax, self.order)
+
+    def apply(self, x) -> np.ndarray:
+        """Filter the signal ``x``."""
+        return chebyshev_filter(x, self._L, self.coefficients, self.lmax)

@@ -7,16 +7,20 @@ from dense_armor.core.graph.anomaly import (
     random_walk_restart,
 )
 from dense_armor.core.graph.causal import CausalGraph
+from dense_armor.core.graph.change import structural_change
 from dense_armor.core.graph.core import Graph
 from dense_armor.core.graph.dag import ExecutionDAG
+from dense_armor.core.graph.dataflow import Dataflow
 from dense_armor.core.graph.filters import (
+    ChebyshevFilter,
+    SpectralFilter,
     apply_filter,
     chebyshev_coefficients,
     chebyshev_filter,
     heat_kernel,
     low_pass,
 )
-from dense_armor.core.graph.fourier import gft, igft
+from dense_armor.core.graph.fourier import GraphFourier, gft, igft
 from dense_armor.core.graph.gate import GateNode
 from dense_armor.core.graph.ontology import Constraint, ConstraintViolation, TypedGraph
 from dense_armor.core.graph.provenance import Provenance
@@ -30,7 +34,11 @@ from dense_armor.core.graph.spectral import (
 __all__ = [
     "Graph",
     "GraphSignal",
+    "GraphFourier",
+    "SpectralFilter",
+    "ChebyshevFilter",
     "ExecutionDAG",
+    "Dataflow",
     "GateNode",
     "Provenance",
     "TypedGraph",
@@ -42,6 +50,7 @@ __all__ = [
     "graph_anomaly_score",
     "page_rank",
     "random_walk_restart",
+    "structural_change",
     "CausalGraph",
     "apply_filter",
     "chebyshev_coefficients",

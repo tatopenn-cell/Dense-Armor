@@ -76,6 +76,30 @@ for k in (2, 4, 8, 20):
 
 The error falls by orders of magnitude at each step, down to the rounding of the machine at order 20. `lmax` must not be below the largest eigenvalue of `L`: for a graph with degrees `d` it is at most twice the largest degree, so 4.0 holds for this path. A `lmax` that is too small sends the spectrum outside `[-1, 1]` and the recurrence grows without bound. A `lmax` or an `order` out of range raises `ValueError`.
 
+## 4. The same filters as objects
+
+`SpectralFilter` and `ChebyshevFilter` hold a graph and a filter, so that you build them once and apply them to many signals. `SpectralFilter` finds the basis once. `SpectralFilter.heat(g, tau)` and `SpectralFilter.low_pass(g, cutoff)` are the two filters of the first sections. `ChebyshevFilter(g, response, lmax, order)` computes its coefficients once and never needs the eigenvectors; `lmax` is required.
+
+```python
+import numpy as np
+from dense_armor.core.graph import ChebyshevFilter, Graph, SpectralFilter
+
+g = Graph(10, [(i, i + 1, 1.0) for i in range(9)])
+r = np.zeros(10)
+r[4] = 5.0
+heat = SpectralFilter.heat(g, 1.0)
+cheb = ChebyshevFilter(g, lambda w: np.exp(-w), lmax=4.0, order=20)
+print(heat.apply(r).round(3).tolist())
+print(float(np.abs(cheb.apply(r) - heat.apply(r)).max()) < 1e-10)
+```
+
+```text
+[0.041, 0.145, 0.466, 1.076, 1.543, 1.076, 0.466, 0.144, 0.034, 0.008]
+True
+```
+
+The two give the same smoothed signal, the first with the exact heat kernel and the second with a polynomial of order 20. A `response` that does not return one value per node raises `ValueError`.
+
 ## Details
 
 `apply_filter` and `low_pass` call `numpy.linalg.eigh` at every call, so use them when the graph is small or the filter is applied once. The Chebyshev filter takes a dense or a sparse `L` and handles one signal of shape `(n,)`. The heat kernel was checked against PyGSP `Heat` with `scale = tau * lmax`.
