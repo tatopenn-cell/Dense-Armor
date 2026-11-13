@@ -17,6 +17,10 @@ g, w = learn_graph(x, return_weights=True)
 print(g.n_nodes, bool(w[0, 1] > w[0, 2]))
 ```
 
+```text
+3 True
+```
+
 The first two sensors read almost the same values and the third reads something different. The weight between the first two is larger than the one between the first and the third. `w` is the symmetric matrix of weights and `g` has an edge wherever a weight is above `threshold`.
 
 Three terms are balanced in the problem (Eq. (9)): the smoothness of the readings on the graph, a barrier on the degrees that gives every sensor at least one link (weight `alpha`), and a small penalty on the size of the weights (weight `beta`).
@@ -39,6 +43,10 @@ on = known > 0
 print(bool(abs(informed[on] - 1.0).mean() < abs(free[on] - 1.0).mean()))
 ```
 
+```text
+True
+```
+
 The chain `known` links neighbouring sensors with weight 1. With `upsilon` large, the learned weights on those links are closer to 1 than without the prior.
 
 ## 3. Weights from the physics of the links
@@ -49,6 +57,10 @@ When you know how a quantity drops along each link, a small drop means a strong 
 from dense_armor.core.graph import weights_from_drops
 
 print(weights_from_drops([0.0, 1.0, 2.0, 20.0]).tolist())
+```
+
+```text
+[0.0, 1.0, 0.5, 0.0]
 ```
 
 A drop of 0 stands for no link and gets weight 0. The drop 1 is the smallest, so its weight is 1; the drop 2 gives 0.5; the drop 20 gives 0.05, which is below the cut of 0.1 and is removed.

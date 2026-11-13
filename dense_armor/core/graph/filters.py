@@ -159,9 +159,7 @@ class SpectralFilter:
         return cls(graph, lambda w: np.exp(-float(tau) * w), normalized)
 
     @classmethod
-    def low_pass(
-        cls, graph, cutoff: float, normalized: bool = False
-    ) -> SpectralFilter:
+    def low_pass(cls, graph, cutoff: float, normalized: bool = False) -> SpectralFilter:
         """1 for the frequencies up to ``cutoff``, 0 above."""
         return cls(graph, lambda w: (w <= float(cutoff)).astype(float), normalized)
 

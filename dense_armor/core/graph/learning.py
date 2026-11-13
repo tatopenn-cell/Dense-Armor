@@ -125,7 +125,9 @@ def learn_graph(
     else:
         K = np.asarray(known, dtype=float)
         if K.shape != (n, n) or not np.allclose(K, K.T) or np.any(np.diag(K) != 0):
-            raise ValueError("known must be a symmetric (n, n) matrix with a zero diagonal")
+            raise ValueError(
+                "known must be a symmetric (n, n) matrix with a zero diagonal"
+            )
         w_pi = K[i, j]
         m_vec = (w_pi != 0).astype(float)
     S = _degree_operator(n)
@@ -140,13 +142,17 @@ def learn_graph(
         wn = np.maximum(w - tau * (grad + S.T @ v), 0.0)
         u = v + sigma * (S @ (2.0 * wn - w))
         x = u / sigma
-        v = u - sigma * (x + np.sqrt(x * x + 4.0 * alpha / sigma)) / 2.0
-        change = np.linalg.norm(wn - w) / max(np.linalg.norm(w), 1e-300)
-        w = wn
-        if change <= tol:
+        vn = u - sigma * (x + np.sqrt(x * x + 4.0 * alpha / sigma)) / 2.0
+        change = float(np.linalg.norm(wn - w)) / max(float(np.linalg.norm(w)), 1.0)
+        change_v = float(np.linalg.norm(vn - v)) / max(float(np.linalg.norm(v)), 1.0)
+        w, v = wn, vn
+        if change <= tol and change_v <= tol:
             break
     W = np.zeros((n, n))
     W[i, j] = w
     W = W + W.T
-    G = Graph(n, [(int(a), int(b), float(W[a, b])) for a, b in zip(i, j) if W[a, b] > threshold])
+    G = Graph(
+        n,
+        [(int(a), int(b), float(W[a, b])) for a, b in zip(i, j) if W[a, b] > threshold],
+    )
     return (G, W) if return_weights else G

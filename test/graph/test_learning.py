@@ -41,7 +41,9 @@ def test_the_solution_matches_a_generic_solver():
     X = _signals()
     n = X.shape[0]
     alpha, beta = 1.0, 0.1
-    _, W = learn_graph(X, alpha=alpha, beta=beta, return_weights=True, max_iter=20000, tol=1e-12)
+    _, W = learn_graph(
+        X, alpha=alpha, beta=beta, return_weights=True, max_iter=20000, tol=1e-12
+    )
     z, m, w_pi = _objective_args(X, alpha, beta, 0.0, None)
     S = _degree_operator(n)
     i, j = _pairs(n)
@@ -67,7 +69,9 @@ def test_a_prior_pulls_the_weights_towards_the_known_graph():
     for a in range(5):
         known[a, a + 1] = known[a + 1, a] = 1.0
     _, free = learn_graph(X, return_weights=True, max_iter=8000)
-    _, informed = learn_graph(X, known=known, upsilon=5.0, return_weights=True, max_iter=8000)
+    _, informed = learn_graph(
+        X, known=known, upsilon=5.0, return_weights=True, max_iter=8000
+    )
     on = known > 0
     assert np.abs(informed[on] - 1.0).mean() < np.abs(free[on] - 1.0).mean()
 
@@ -75,7 +79,9 @@ def test_a_prior_pulls_the_weights_towards_the_known_graph():
 def test_similar_signals_get_a_stronger_edge_than_different_ones():
     rng = np.random.default_rng(3)
     base = rng.standard_normal(12)
-    X = np.stack([base, base + 0.01 * rng.standard_normal(12), rng.standard_normal(12) * 3])
+    X = np.stack(
+        [base, base + 0.01 * rng.standard_normal(12), rng.standard_normal(12) * 3]
+    )
     _, W = learn_graph(X, return_weights=True, max_iter=8000)
     assert W[0, 1] > W[0, 2]
 

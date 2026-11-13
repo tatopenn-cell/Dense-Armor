@@ -19,6 +19,10 @@ xh = recover_graph_signal(y, g, lam=0.05, eps=0.9 * 0.1 * np.sqrt(n * p), tempor
 print(np.sqrt(np.mean((y - x0) ** 2)) > np.sqrt(np.mean((xh - x0) ** 2)))
 ```
 
+```text
+True
+```
+
 The true signal `x0` varies smoothly along the path and in time. `y` is `x0` plus noise of size 0.1. `eps` is the radius of the ball around `y` that the estimate must stay in: the paper takes it as 0.9 times the noise size times the square root of the number of readings. The last line compares the error of the noisy table with the error of the estimate, and the estimate is closer to the truth.
 
 ## 2. Missing values and wrong readings
@@ -39,6 +43,10 @@ mask = np.ones((n, p))
 mask[7, 2] = 0.0
 x, s = recover_graph_signal(y, g, mask=mask, lam=0.05, eps=0.1, eta=4.0, return_outliers=True)
 print(x.shape, float(abs(s).sum()) <= 4.0 * 1.001)
+```
+
+```text
+(10, 12) True
 ```
 
 The reading at `(3, 4)` is wrong by 5 and the one at `(7, 2)` is missing. The outlier table `s` is the part of the readings that the method explains as errors: its total size never exceeds `eta`. The estimate `x` has the shape of `y`.

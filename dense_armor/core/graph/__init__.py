@@ -23,17 +23,17 @@ from dense_armor.core.graph.filters import (
 )
 from dense_armor.core.graph.fourier import GraphFourier, gft, igft
 from dense_armor.core.graph.gate import GateNode
-from dense_armor.core.graph.ontology import Constraint, ConstraintViolation, TypedGraph
 from dense_armor.core.graph.learning import learn_graph, weights_from_drops
+from dense_armor.core.graph.ontology import Constraint, ConstraintViolation, TypedGraph
 from dense_armor.core.graph.provenance import Provenance
 from dense_armor.core.graph.recovery import recover_graph_signal
 from dense_armor.core.graph.signal import GraphSignal
-from dense_armor.core.graph.wavelet import SpectralWavelet, chebyshev_wavelet_terms
 from dense_armor.core.graph.spectral import (
     eigendecomposition,
     fiedler_vector,
     fix_sign,
 )
+from dense_armor.core.graph.wavelet import SpectralWavelet, chebyshev_wavelet_terms
 
 __all__ = [
     "Graph",
@@ -41,6 +41,7 @@ __all__ = [
     "GraphFourier",
     "SpectralFilter",
     "ChebyshevFilter",
+    "SpectralWavelet",
     "ExecutionDAG",
     "Dataflow",
     "GateNode",
@@ -59,7 +60,6 @@ __all__ = [
     "learn_graph",
     "weights_from_drops",
     "recover_graph_signal",
-    "SpectralWavelet",
     "chebyshev_wavelet_terms",
     "CausalGraph",
     "apply_filter",

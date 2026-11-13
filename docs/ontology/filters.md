@@ -64,14 +64,14 @@ f = lambda lam: np.exp(-lam)
 ye = apply_filter(r, g.laplacian, f)
 for k in (2, 4, 8, 20):
     yc = chebyshev_filter(r, g.laplacian, chebyshev_coefficients(f, 4.0, k), 4.0)
-    print(k, float(np.abs(yc - ye).max()))
+    print(k, f"{np.abs(yc - ye).max():.0e}")
 ```
 
 ```text
-2 0.14503891278255218
-4 0.007731605056688309
-8 2.078349342737873e-06
-20 5.995204332975845e-15
+2 1e-01
+4 8e-03
+8 2e-06
+20 6e-15
 ```
 
 The error falls by orders of magnitude at each step, down to the rounding of the machine at order 20. `lmax` must not be below the largest eigenvalue of `L`: for a graph with degrees `d` it is at most twice the largest degree, so 4.0 holds for this path. A `lmax` that is too small sends the spectrum outside `[-1, 1]` and the recurrence grows without bound. A `lmax` or an `order` out of range raises `ValueError`.
@@ -112,6 +112,10 @@ g = Graph(8, [(i, (i + 1) % 8, 1.0) for i in range(8)])
 w = SpectralWavelet(g, a=[1.0], b=[1.0], scales=[1.0, 2.0])
 x = np.arange(8.0)
 print(w.scaling(x).shape, w.wavelets(x).shape)
+```
+
+```text
+(8,) (2, 8)
 ```
 
 `a` holds the coefficients of the wavelet and `b` the coefficients of the scaling function, as many of each as there are terms, and `scales` the scale of each wavelet. `w.scaling(x)` gives one value for each node, and `w.wavelets(x)` gives one row for each scale. A wavelet is exactly 0 for the frequencies of the graph that, multiplied by the scale, leave `[0, 2]`: a larger scale squeezes the wavelet towards the low frequencies. `w.frame_sum()` is `h^2 + sum_j g_j^2` for each frequency, and the wavelets keep the energy of the signal where it is 1.

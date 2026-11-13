@@ -41,7 +41,9 @@ def test_the_filter_of_a_graph_process_is_recovered():
 
 
 def test_path_one_gives_weights_of_the_right_shape():
-    m = AdaCGP(3, order=2, forgetting=0.99, mu=0.01, gamma=0.1, alpha=0.01, beta=0.01, path=1)
+    m = AdaCGP(
+        3, order=2, forgetting=0.99, mu=0.01, gamma=0.1, alpha=0.01, beta=0.01, path=1
+    )
     rng = np.random.default_rng(0)
     for _ in range(30):
         m.update(rng.standard_normal(3))

@@ -62,7 +62,10 @@ def test_denoising_beats_the_noisy_signal():
     Xh = recover_graph_signal(
         Y, _path_laplacian(n), lam=0.05, eps=eps, temporal="l2", max_iter=3000
     )
-    rmse = lambda A: np.sqrt(np.mean((A - X0) ** 2))
+
+    def rmse(A):
+        return np.sqrt(np.mean((A - X0) ** 2))
+
     assert rmse(Xh) < rmse(Y)
 
 
@@ -82,7 +85,13 @@ def test_missing_values_are_filled_from_the_neighbours():
     Y = mask * (X0 + sigma * rng.standard_normal((n, p)))
     eps = 0.9 * sigma * np.sqrt(mask.sum())
     Xh = recover_graph_signal(
-        Y, _path_laplacian(n), mask=mask, lam=0.05, eps=eps, temporal="l2", max_iter=4000
+        Y,
+        _path_laplacian(n),
+        mask=mask,
+        lam=0.05,
+        eps=eps,
+        temporal="l2",
+        max_iter=4000,
     )
     missing = mask == 0
     assert np.sqrt(np.mean((Xh[missing] - X0[missing]) ** 2)) < 0.5
@@ -93,7 +102,13 @@ def test_outliers_are_returned_and_bounded():
     Y = _truth(n, p)
     Y[3, 4] += 5.0
     X, S = recover_graph_signal(
-        Y, _path_laplacian(n), lam=0.05, eps=0.1, eta=4.0, max_iter=3000, return_outliers=True
+        Y,
+        _path_laplacian(n),
+        lam=0.05,
+        eps=0.1,
+        eta=4.0,
+        max_iter=3000,
+        return_outliers=True,
     )
     assert X.shape == S.shape == (n, p)
     assert np.abs(S).sum() <= 4.0 * 1.001

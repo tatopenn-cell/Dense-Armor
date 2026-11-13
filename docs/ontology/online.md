@@ -23,6 +23,10 @@ for _ in range(3000):
 print(round(float(np.linalg.norm(model.psi - h) / np.linalg.norm(h)), 2) < 0.3)
 ```
 
+```text
+True
+```
+
 The signal lives on a ring of four nodes and follows `H = 0.2 I + 0.3 W`. After 3000 samples the estimate `model.psi` of `H` is within 30% of the true one, measured in relative norm.
 
 ## 2. Sparse weights, and the two paths

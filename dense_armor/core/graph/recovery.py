@@ -187,8 +187,8 @@ def recover_graph_signal(
         else:
             v1 = v1 - g2 * z1 / (2.0 * lam / g2 + 1.0)
         v2 = v2 - g2 * project_l2_ball(v2 / g2, Yo, eps)
-        rx = np.linalg.norm(Xn - X) / max(np.linalg.norm(X), 1e-300)
-        rs = np.linalg.norm(Sn - S) / max(np.linalg.norm(S), 1e-300)
+        rx = float(np.linalg.norm(Xn - X)) / max(float(np.linalg.norm(X)), 1e-300)
+        rs = float(np.linalg.norm(Sn - S)) / max(float(np.linalg.norm(S)), 1e-300)
         X, S = Xn, Sn
         if rx <= tol and rs <= tol:
             break
