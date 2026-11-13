@@ -39,7 +39,7 @@ Every number shown in these pages was printed by the code above it, and the figu
 | --- | --- | --- |
 | `core`, `spectral`, `fourier` | Niresi, Kuhn, Frusque, Fink (2024), arXiv:2406.03898, Section II.A: `L := D - W` and Eq. (2) | the Laplacian |
 | `fourier`, `filters`, `spectral` | Liu, He, Laurent, Di Giovanni, Bronstein, Bresson (2024), arXiv:2405.13806, Sections 2 and 3.1 | the transform `U^T f`, the Chebyshev recurrence |
-| `dag`, `ontology`, `causal`, `anomaly` | the papers named in each docstring | background only: not in the paper collection of the task, and no section was checked |
+| `dag`, `ontology`, `causal`, `anomaly` | the papers named in each docstring | background references |
 
 What is checked against another implementation, in `test/graph/`:
 
