@@ -36,6 +36,7 @@ from dense_armor.core.audio.generators import (
     white_noise,
 )
 from dense_armor.core.audio.nmf import nmf, separate
+from dense_armor.core.audio.perceptual import hz_to_mel, mel_filterbank, mel_to_hz
 from dense_armor.core.audio.pitch import YIN, cmndf, yin_f0
 from dense_armor.core.audio.pitch_units import (
     cents_to_freq,
@@ -93,9 +94,12 @@ __all__ = [
     "hard_clip_blamp",
     "highpass",
     "highshelf",
+    "hz_to_mel",
     "istft",
     "lowpass",
     "lowshelf",
+    "mel_filterbank",
+    "mel_to_hz",
     "nmf",
     "note_to_freq",
     "notch",
