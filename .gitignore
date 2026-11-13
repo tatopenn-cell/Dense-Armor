@@ -41,3 +41,6 @@ tools/dashboard/run/
 
 # impostazioni locali dell'editor, non per il repo pubblico
 .claude/
+
+# internal review notes: never pushed
+REVISIONE*.md

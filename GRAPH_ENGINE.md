@@ -65,7 +65,7 @@ mkdocs build --strict --site-dir /tmp/_site
 
 ## What was fixed in this session
 
-Nine bugs found and fixed, all documented in `REVISIONE.md`:
+Nine bugs found and fixed:
 
 1. `test_spectral.py`: the cycle was built without its closing edge
    (it was a path).
@@ -94,9 +94,6 @@ printed output is the one in the page.
 
 ## What is NOT in it
 
-- `ROLES_API.md`, `METRICS_API.md`, `REVISIONE_IA.md` are **not in
-  the repo**: the review was done by reading the documents from the
-  session. `REVISIONE.md` says so.
 - Four of the six cited papers (Cheng, Babaei Giglou, Zan, Wang) are
   bibliographic only: no PDF, no section checked.
 

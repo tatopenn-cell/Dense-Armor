@@ -46,4 +46,4 @@ What is checked against another implementation, in `test/graph/`:
 
 ## Details
 
-The section was built in four steps: graph and spectrum, DAG and provenance, typed graph and actions, PageRank and causality. A first review found nine mistakes, listed in `REVISIONE.md`, among them an anomaly score built on the Fourier magnitude, which is a frequency and not a per-node quantity, and a copy of an action that shared the state of the other nodes. A second review changed the points marked "Details" in [the DAG](dag.md), [provenance](provenance.md), [the typed graph](ontology.md) and [the anomaly score](anomaly.md).
+The section was built in four steps: graph and spectrum, DAG and provenance, typed graph and actions, PageRank and causality. A first review found nine mistakes, among them an anomaly score built on the Fourier magnitude, which is a frequency and not a per-node quantity, and a copy of an action that shared the state of the other nodes. A second review changed the points marked "Details" in [the DAG](dag.md), [provenance](provenance.md), [the typed graph](ontology.md) and [the anomaly score](anomaly.md).
