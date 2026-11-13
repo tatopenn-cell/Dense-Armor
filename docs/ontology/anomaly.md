@@ -83,6 +83,32 @@ print(round(c["topology_change"], 4), round(c["weight_change"], 4))
 
 The edge `(1, 3)` was added, `(2, 3)` was removed, and the weight of `(1, 2)` went from 2 to 3. `topology_change` is the share of edges that are not in both graphs (the Jaccard distance: 0 for the same edges, 1 for edges with nothing in common), and `weight_change` is the size of the weight differences against the larger of the two weight sizes. Both are 0 for equal graphs. `tol` hides a weight that moved by no more than that. Graphs with a different number of nodes raise `ValueError`.
 
+## 5. A walk that follows the dependencies
+
+The score of the previous section looks at the values on the nodes. When the nodes are services that call each other, a failure in one service makes the services that call it look bad as well, and the loudest one is often a victim and not the cause. `root_cause_walk` starts from the observed anomaly and runs backward along the calls, so that a caller collects the score of the services it calls. It is the iterative random walk with restart of Khan and Farea (2026, arXiv:2608.08073), in its basic form and in the enhanced form of their Algorithm 1.
+
+```python
+import numpy as np
+from dense_armor.core.graph import root_cause_walk
+
+w = np.zeros((4, 4))
+w[0, 1], w[0, 2], w[1, 3], w[2, 3] = 0.6, 0.4, 1.0, 1.0
+s = [0.12, 0.41, 0.22, 0.25]
+basic = root_cause_walk(w, s, alpha=0.3, enhanced=False)
+better = root_cause_walk(w, s, resilience=0.3, beta=1.0, alpha=0.3, rho=0.5, q=2.0)
+print(basic.round(3).tolist())
+print(better.round(3).tolist())
+```
+
+```text
+[0.143, 0.176, 0.118, 0.075]
+[0.255, 0.332, 0.258, 0.282]
+```
+
+`w[i, j]` is the traffic from service `i` to service `j`: service 0 calls 1 and 2, and both call 3. The anomaly `s` is loudest at service 1, a victim, while the service that fails is 3. The two lines are the score of each service from the basic walk and from the enhanced one. In the basic walk the root cause, service 3, is the last of the four (0.075). The enhanced walk moves score towards the services that look like sources: service 3 rises to 0.282, second after service 1 (0.332). On a graph this small the loudest victim still comes first; the point is the shift of score towards the source, which matters when the root cause is quiet and far from the loudest symptoms.
+
+`alpha` is the restart probability. In the enhanced walk, `resilience` and `beta` make a node that is already anomalous propagate more, `rho` adds backward edges, `q` sharpens the restart towards the most suspicious nodes, and `outer` repeats the refinement of the belief. The weights can be a dense or sparse matrix, or a `Graph`, which is read as symmetric.
+
 ## Details
 
 The score `zscore(|r|) + page_rank` is a choice of this module. The papers describe the heat kernel and PageRank, none of them defines a score per node. The two parts have different scales: the z-score has unit spread and PageRank sums to 1, so on a large graph the residual dominates. A different residual, for example the deviation from the median of the neighbours, would be another choice. A signal of the wrong length raises a NumPy error, and a negative `tau` is not refused.

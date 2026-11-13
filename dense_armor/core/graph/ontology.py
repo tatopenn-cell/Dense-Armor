@@ -5,9 +5,13 @@ A node has a ``type`` and a ``state`` (a dict). An edge has a
 ``(state_src, state_dst) -> bool``).
 
 References:
-    Babaei Giglou, D'Souza, Auer (2023), "LLMs4OL: Large Language
-    Models for Ontology Learning", arXiv:2307.16648
-    (bibliographic only: no PDF in ``papers/``, no section verified; the paper is about ontology learning).
+    Vijay, Ethiraj (2025), "Graph-Symbolic Policy Enforcement and Control
+    (G-SPEC): A Neuro-Symbolic Framework for Safe Agentic AI in 5G
+    Autonomous Networks", arXiv:2512.20275, Sections 1-3: a knowledge graph
+    used as an executable state machine, where an action is allowed only
+    if it operates on a valid subgraph and satisfies the policy; the
+    validation cost follows the size of the subgraph. Introduction and
+    problem formulation read; the evaluation was not.
 """
 
 from __future__ import annotations
@@ -87,10 +91,9 @@ class TypedGraph:
     Choices stated explicitly:
         The schema is a plain ``dict[str, dict[str, type]]``; the
         edges carry a ``relation`` and an optional ``constraint``
-        function. This is a design choice of this module: the paper (LLMs4OL)
-        describes ontology *learning*, not a typed graph API, and a
-        full OWL/SHACL implementation would be a different choice
-        (heavier, with its own parser).
+        function. This is a design choice of this module: a full OWL/SHACL
+        implementation would be a different choice (heavier, with its own
+        parser).
     """
 
     def __init__(self, schema: dict[str, dict[str, type]]) -> None:
@@ -148,15 +151,31 @@ class TypedGraph:
         node["state"] = current
         return self
 
-    def validate(self, raise_on_violation: bool = False) -> list[tuple]:
-        """Check every edge constraint. Return the failed ones.
+    def validate(self, raise_on_violation: bool = False, nodes=None) -> list[tuple]:
+        """Check the edge constraints. Return the failed ones.
 
         Args:
             raise_on_violation: raise :class:`ConstraintViolation` if any
                 constraint is violated, instead of returning the list.
+            nodes: check only the edges that touch one of these nodes. A
+                constraint reads the states of its two ends, so after a change
+                of some nodes only their edges can change status: the cost
+                follows the size of that subgraph, not of the whole graph.
         """
+        if nodes is None:
+            edges = self.graph.edges(keys=True, data=True)
+        else:
+            seen: dict = {}
+            for n in nodes:
+                if n not in self.graph:
+                    continue
+                for u, v, key, data in self.graph.in_edges(n, keys=True, data=True):
+                    seen[(u, v, key)] = data
+                for u, v, key, data in self.graph.out_edges(n, keys=True, data=True):
+                    seen[(u, v, key)] = data
+            edges = [(u, v, key, data) for (u, v, key), data in seen.items()]
         failures: list[tuple] = []
-        for u, v, key, data in self.graph.edges(keys=True, data=True):
+        for u, v, key, data in edges:
             fn = data.get("constraint")
             if fn is None:
                 continue

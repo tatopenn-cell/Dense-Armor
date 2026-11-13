@@ -1,9 +1,12 @@
 """CausalGraph: a DAG with the DoWhy do-calculus.
 
 References:
-    Zan et al. (2026), "EvoCause: LLM-Guided Evolution of Causal
-    Graphs for Root Cause Analysis", arXiv:2607.27290
-    (bibliographic only: no PDF in ``papers/``, no section verified).
+    Sharma, Kiciman (2020), "DoWhy: An End-to-End Library for Causal
+    Inference", arXiv:2011.04216: the four steps the estimator follows
+    (model, identify, estimate, refute) and the library it calls.
+    Blobaum, Gotz, Budhathoki, Mastakouri, Janzing (2022), "DoWhy-GCM: An
+    extension of DoWhy for causal inference in graphical causal models",
+    arXiv:2206.06821, JMLR 25(147), 2024 (abstract only).
     Pearl (2009), "Causality: Models, Reasoning, and Inference",
     Cambridge University Press (bibliographic only).
     DoWhy 0.14 (MIT): CausalModel, identify_effect,
@@ -34,10 +37,9 @@ class CausalGraph:
         ``backdoor.linear_regression`` on the parents of the treatment
         as ``common_causes``. This is a design choice of this module: DoWhy also
         offers instrumental variables, front-door, and propensity
-        scores, and the paper (EvoCause) describes a different
-        estimator (LLM-guided causal graph evolution). This module picks
-        the simplest DoWhy estimator on purpose, so that the effect
-        is identifiable and testable on a known DAG.
+        scores. This module picks the simplest DoWhy estimator on
+        purpose, so that the effect is identifiable and testable on a
+        known DAG.
     """
 
     def __init__(self, nodes: list[str], edges: list[tuple[str, str]]) -> None:

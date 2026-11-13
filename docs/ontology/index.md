@@ -49,7 +49,10 @@ Every number shown in these pages was printed by the code above it, and the figu
 | `adacgp` | Jenkins and others (2024), arXiv:2411.01567, Sections II-IV | the model (5), Algorithm 1 and 2, the constants of IV.D |
 | `wavelet` | Liu and others (2024), arXiv:2405.13806, Sections 2 and 3.1 | the transformed Chebyshev terms (4)-(5) |
 | `change` | Jenkins, Variddhisai, El-Medany, Ng, Mandic (2024), arXiv:2411.01567, Section VI | the idea of following the weights and the topology of a graph over time; the two measures are defined in this module |
-| `dag`, `ontology`, `causal`, `anomaly` | the papers named in each docstring | background references |
+| `anomaly` (`root_cause_walk`) | Khan, Farea (2026), arXiv:2608.08073, Sections 3.1-3.5, Algorithm 1 | the iterative random walk with restart and its enhanced form |
+| `ontology`, `actions` | Vijay, Ethiraj (2025), arXiv:2512.20275, Sections 1-3 | a knowledge graph as a state machine, actions validated on the subgraph they touch |
+| `causal` | Sharma, Kiciman (2020), arXiv:2011.04216 | the library the estimator calls and its four steps |
+| `provenance`, `dag` | Wang and others (2026), arXiv:2606.04990 (abstract only) | execution provenance as a typed graph of a run |
 
 What is checked against another implementation, in `test/graph/`:
 

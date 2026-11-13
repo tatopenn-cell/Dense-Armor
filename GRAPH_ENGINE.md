@@ -110,8 +110,10 @@ printed output is the one in the page.
 
 ## What is NOT in it
 
-- Four of the six cited papers (Cheng, Babaei Giglou, Zan, Wang) are
-  bibliographic only: no PDF, no section checked.
+- Papers read for the abstract only: arXiv:2402.01140, 2603.14688,
+  2206.06821 and 2606.04990. The methods of 2608.08073 (`root_cause_walk`)
+  and the formulation of 2512.20275 (validation of the affected subgraph)
+  were read.
 
 ## Numbers
 

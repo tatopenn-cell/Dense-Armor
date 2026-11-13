@@ -86,3 +86,82 @@ def test_chain_with_equal_outputs_at_two_nodes_takes_the_named_node():
     h = prov.records()[0]["output_hash"]
     assert [r["node"] for r in prov.chain(h)] == ["b"]
     assert [r["node"] for r in prov.chain(h, node="a")] == ["a"]
+
+
+def _log(n=3):
+    prov = Provenance()
+    for i in range(n):
+        s = Signal([float(i)], names=["x"], units=[""])
+        o = Signal([float(i) + 1.0], names=["x"], units=[""])
+        prov.record(float(i), f"n{i}", "run", s, o, [f"n{i - 1}"] if i else [])
+    return prov
+
+
+def test_the_hash_of_a_record_by_hand():
+    import hashlib
+    import json
+
+    prov = _log(2)
+    r0, r1 = prov.records()
+    fields = (
+        "t",
+        "node",
+        "method",
+        "input_hash",
+        "output_hash",
+        "parent_nodes",
+        "elapsed_ms",
+    )
+    body = {k: r0[k] for k in fields}
+    data = json.dumps(body, sort_keys=True, separators=(",", ":")).encode()
+    assert r0["prev_record_hash"] == "0" * 64
+    assert r0["record_hash"] == hashlib.sha256(b"0" * 64 + data).hexdigest()
+    assert r1["prev_record_hash"] == r0["record_hash"]
+    assert prov.head == r1["record_hash"]
+
+
+def test_an_intact_log_verifies():
+    prov = _log()
+    assert prov.verify() and prov.broken_at() is None
+    assert prov.verify(head=prov.head)
+    assert Provenance().verify() and Provenance().head == "0" * 64
+
+
+def test_a_changed_record_breaks_the_chain_at_that_record():
+    prov = _log()
+    prov.records()[1]["output_hash"] = "f" * 64
+    assert prov.broken_at() == 1 and not prov.verify()
+
+
+def test_a_removed_record_breaks_the_chain_at_the_next_one():
+    prov = _log(4)
+    del prov._records[1]
+    assert prov.broken_at() == 1
+
+
+def test_moved_records_break_the_chain():
+    prov = _log(3)
+    prov._records[0], prov._records[1] = prov._records[1], prov._records[0]
+    assert prov.broken_at() == 0
+
+
+def test_a_record_cut_off_the_end_is_seen_with_the_saved_head():
+    prov = _log(3)
+    saved = prov.head
+    del prov._records[-1]
+    assert prov.broken_at() is None
+    assert not prov.verify(head=saved)
+
+
+def test_a_record_with_a_missing_hash_breaks_the_chain():
+    prov = _log(2)
+    del prov._records[0]["record_hash"]
+    assert prov.broken_at() == 0
+
+
+def test_the_chain_survives_the_jsonl_roundtrip(tmp_path):
+    prov = _log()
+    p = tmp_path / "log.jsonl"
+    prov.to_jsonl(p)
+    back = Provenance.from_jsonl(p)
+    assert back.verify(head=prov.head)

@@ -1,5 +1,6 @@
 """Tests for Action and apply_action (STRIPS)."""
 
+import numpy as np
 import pytest
 
 from dense_armor.core.graph import (
@@ -203,3 +204,51 @@ def test_action_with_a_false_precondition_leaves_the_state_alone():
     with pytest.raises(ActionRejected):
         a.apply(g)
     assert _facts(g) == before
+
+
+def _random_system(seed, n=30):
+    rng = np.random.default_rng(seed)
+    g = TypedGraph({"part": {"level": int}})
+    for i in range(n):
+        g.add_node(f"p{i}", "part", level=int(rng.integers(0, 4)))
+    for _ in range(3 * n):
+        a, b = rng.integers(0, n, 2)
+        if a != b:
+            g.add_edge(f"p{a}", f"p{b}", "feeds", lambda s, d: s["level"] <= d["level"])
+    return g, rng
+
+
+def _full_check(g, action, params):
+    before = set(g.validate())
+    new = action.apply(g, params)
+    return [v for v in new.validate() if v not in before]
+
+
+def test_checking_only_the_changed_nodes_equals_checking_the_whole_graph():
+    for seed in range(25):
+        g, rng = _random_system(seed)
+        node = f"p{int(rng.integers(0, 30))}"
+        action = Action(
+            name="set",
+            effects=[("x", "level", "set", int(rng.integers(0, 4)))],
+        )
+        expected = _full_check(g, action, {"x": node})
+        if expected:
+            with pytest.raises(ActionRejected) as exc:
+                apply_action(g, action, {"x": node})
+            assert sorted(exc.value.failed) == sorted(expected)
+        else:
+            assert apply_action(g, action, {"x": node}) is not None
+
+
+def test_validate_of_some_nodes_lists_only_their_relations():
+    g = TypedGraph({"part": {"level": int}})
+    for name, level in (("a", 3), ("b", 1), ("c", 1), ("d", 3)):
+        g.add_node(name, "part", level=level)
+    g.add_edge("a", "b", "feeds", lambda s, d: s["level"] <= d["level"])
+    g.add_edge("c", "d", "feeds", lambda s, d: s["level"] <= d["level"])
+    g.add_edge("d", "a", "feeds", lambda s, d: s["level"] <= d["level"])
+    assert g.validate() == [("a", "b", "feeds")]
+    assert g.validate(nodes=["c"]) == []
+    assert g.validate(nodes=["b"]) == [("a", "b", "feeds")]
+    assert g.validate(nodes=["zzz"]) == []

@@ -6,7 +6,9 @@ with preconditions checked before the effects are applied.
 References:
     Fikes, Nilsson (1971), "STRIPS: A New Approach to the Application
     of Theorem Proving to Problem Solving", Artificial Intelligence
-    (bibliographic only, the PDF is not in ``papers/``).
+    (bibliographic only).
+    Vijay, Ethiraj (2025), arXiv:2512.20275, Section 3.2: an action is
+    validated on the subgraph it operates on before it is executed.
 """
 
 from __future__ import annotations
@@ -120,10 +122,18 @@ def apply_action(
     A large system always has some broken rules, so the graph is not
     required to be valid. The rules broken before the action are the
     baseline: the action is refused only if it breaks a rule that held.
+
+    Only the relations of the nodes that the effects change are checked
+    (the validation of the affected subgraph, as in arXiv:2512.20275,
+    Section 3.2): a rule reads the states of its two ends, so no other
+    relation can change status, and the result is the one of checking the
+    whole graph.
     """
-    before = set(graph.validate())
+    params = params or {}
+    touched = {params.get(node, node) for node, *_ in action.effects}
+    before = set(graph.validate(nodes=touched))
     new = action.apply(graph, params)
-    introduced = [v for v in new.validate() if v not in before]
+    introduced = [v for v in new.validate(nodes=touched) if v not in before]
     if introduced:
         raise ActionRejected(
             action.name, introduced, "new constraint(s) broken by the action"

@@ -6,6 +6,7 @@ from dense_armor.core.graph.anomaly import (
     graph_anomaly_score,
     page_rank,
     random_walk_restart,
+    root_cause_walk,
 )
 from dense_armor.core.graph.causal import CausalGraph
 from dense_armor.core.graph.change import structural_change
@@ -55,6 +56,7 @@ __all__ = [
     "graph_anomaly_score",
     "page_rank",
     "random_walk_restart",
+    "root_cause_walk",
     "structural_change",
     "AdaCGP",
     "learn_graph",

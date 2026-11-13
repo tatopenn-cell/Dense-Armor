@@ -121,6 +121,7 @@ def test_dag3_provenance_golden():
     prov = Provenance.from_jsonl(GOLD / "dag3_provenance.jsonl")
     chain = prov.chain(prov.records()[-1]["output_hash"])
     assert [r["node"] for r in chain] == ["a", "b", "c"]
+    assert prov.verify()
 
 
 # ------------------------------------------------------------
