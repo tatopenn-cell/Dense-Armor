@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from dense_armor.core.audio import yin_f0
-from dense_armor.core.audio.timescale import time_stretch
+from dense_armor.core.audio.timescale import pitch_shift, time_stretch
 
 SR = 8000.0
 
@@ -118,3 +118,52 @@ def test_time_stretch_refuses_what_it_cannot_do():
     for rate in (0.0, -1.0):
         with pytest.raises(ValueError, match="rate positive"):
             time_stretch(_sine(440.0), SR, rate)
+
+
+@pytest.mark.parametrize("semitones", [12.0, -12.0, 7.0, -5.0, 0.5])
+@pytest.mark.parametrize("n", [8000, 5003])
+def test_the_length_is_kept(semitones, n):
+    assert len(pitch_shift(_sine(440.0, n), SR, semitones)) == n
+
+
+@pytest.mark.parametrize("semitones", [12.0, -12.0, 7.0, -5.0])
+def test_the_frequency_is_multiplied_by_the_ratio_of_the_shift(semitones):
+    y = pitch_shift(_sine(440.0), SR, semitones)
+    cut = 1000
+    want = 440.0 * 2 ** (semitones / 12)
+    assert abs(_cents(_peak(y[cut:-cut]), want)) < 20.0
+
+
+def test_plus_12_semitones_doubles_the_frequency():
+    y = pitch_shift(_sine(440.0), SR, 12.0)
+    assert abs(_cents(_peak(y[1000:-1000]), 880.0)) < 20.0
+    frames = [
+        yin_f0(y[i : i + 1024], SR, 80.0, 0.1) for i in range(0, len(y) - 1024, 512)
+    ]
+    assert abs(_cents(np.nanmedian(frames[2:-2]), 880.0)) < 20.0
+
+
+def test_no_shift_is_the_input_except_the_first_and_the_last_samples():
+    x = np.random.default_rng(1).standard_normal(5000)
+    y = pitch_shift(x, SR, 0.0)
+    assert np.max(np.abs(y[64:-1] - x[64:-1])) < 1e-9
+    assert y[-1] == 0.0
+
+
+def test_the_level_is_kept():
+    x = _sine(440.0)
+    for semitones in (12.0, -12.0, 7.0):
+        y = pitch_shift(x, SR, semitones)
+        assert _rms(y[1000:-1000]) == pytest.approx(_rms(x), rel=0.05)
+
+
+@pytest.mark.parametrize("semitones", [12.0, -12.0, 7.0])
+def test_pitch_shift_agrees_with_librosa(semitones):
+    librosa = pytest.importorskip("librosa")
+    x = _sine(440.0)
+    y = pitch_shift(x, SR, semitones)
+    ref = librosa.effects.pitch_shift(
+        x, sr=SR, n_steps=semitones, n_fft=2048, hop_length=512
+    )
+    assert len(y) == len(ref)
+    assert abs(_peak(y[1000:-1000]) - _peak(ref[1000:-1000])) < 1.0

@@ -140,6 +140,7 @@ def pitch_shift(
     Choice stated: the resampler interpolates linearly and has no anti-alias filter (its
     docstring says so), so for a shift up the partials above ``sr / (2 r)`` fold back, and the
     result is best for sounds with little energy there.
+    The resampler reads the next sample to interpolate, so the last sample of the output is 0.
 
     Args:
         x: real samples, shape ``(n,)``.

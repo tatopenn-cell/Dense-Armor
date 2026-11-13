@@ -80,7 +80,7 @@ from dense_armor.core.audio.spectral import (
     spectral_rolloff,
 )
 from dense_armor.core.audio.streams import AudioFileStream, AudioLiveStream
-from dense_armor.core.audio.timescale import time_stretch
+from dense_armor.core.audio.timescale import pitch_shift, time_stretch
 from dense_armor.core.audio.wav import read_wav, write_wav
 from dense_armor.core.audio.windows import (
     blackman,
@@ -149,6 +149,7 @@ __all__ = [
     "onset_detect",
     "peaking",
     "pink_noise",
+    "pitch_shift",
     "pitch_ratio_transition",
     "plucked_string",
     "rational_ratio",
