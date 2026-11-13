@@ -1,0 +1,45 @@
+{
+  "schema": {
+    "robot": {
+      "location": "str",
+      "status": "str"
+    },
+    "briefcase": {
+      "location": "str"
+    }
+  },
+  "nodes": {
+    "r": {
+      "type": "robot",
+      "state": {
+        "location": "loc_a",
+        "status": "idle"
+      }
+    },
+    "b": {
+      "type": "briefcase",
+      "state": {
+        "location": "loc_a"
+      }
+    }
+  },
+  "action": {
+    "name": "move",
+    "preconditions": [
+      [
+        "r",
+        "status",
+        "==",
+        "idle"
+      ]
+    ],
+    "effects": [
+      [
+        "r",
+        "location",
+        "set",
+        "loc_b"
+      ]
+    ]
+  }
+}

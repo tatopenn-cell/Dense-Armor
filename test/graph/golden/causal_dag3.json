@@ -1,0 +1,19 @@
+{
+  "nodes": [
+    "X",
+    "Z",
+    "Y"
+  ],
+  "edges": [
+    [
+      "X",
+      "Z"
+    ],
+    [
+      "Z",
+      "Y"
+    ]
+  ],
+  "expected_effect": 2.0,
+  "tolerance": 0.1
+}

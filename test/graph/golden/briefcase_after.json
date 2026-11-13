@@ -1,0 +1,9 @@
+{
+  "r": {
+    "location": "loc_b",
+    "status": "idle"
+  },
+  "b": {
+    "location": "loc_a"
+  }
+}
