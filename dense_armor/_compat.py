@@ -113,6 +113,7 @@ UTILITY_GROUPS = {
     "infrastructure": ("compose", "data"),
     "finance": (),
     "audio": (),
+    "graph": (),
 }
 _GROUP_OF = {
     folder: group for group, folders in UTILITY_GROUPS.items() for folder in folders
