@@ -15,6 +15,8 @@ import numpy as np
 
 from dense_armor.core.audio import (
     Audio,
+    Compressor,
+    SchroederReverb,
     mel_spectrogram,
     mfcc,
     onset_detect,
@@ -29,6 +31,8 @@ OUTPUTS = {
     "sine_440_mel.npy": lambda x: mel_spectrogram(x, SR),
     "sine_440_mfcc.npy": lambda x: mfcc(x, SR),
     "sine_440_onset.npy": lambda x: onset_detect(x, SR),
+    "sine_440_compressed.npy": lambda x: Compressor(sr=SR).update_many(x),
+    "sine_440_reverb.npy": lambda x: SchroederReverb(sr=SR).update_many(x),
 }
 
 
