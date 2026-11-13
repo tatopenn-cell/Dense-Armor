@@ -110,7 +110,8 @@ def mel_filterbank(
     fmax = sr / 2.0 if fmax is None else float(fmax)
     if fmax <= fmin:
         raise ValueError("fmax must be above fmin")
-    edges = mel_to_hz(np.linspace(hz_to_mel(fmin), hz_to_mel(fmax), n_mels + 2))
+    mels = np.linspace(float(hz_to_mel(fmin)), float(hz_to_mel(fmax)), n_mels + 2)
+    edges = np.asarray(mel_to_hz(mels), dtype=float)
     bins = np.linspace(0.0, sr / 2.0, n_fft // 2 + 1)
     fdiff = np.diff(edges)
     ramps = edges[:, None] - bins[None, :]
