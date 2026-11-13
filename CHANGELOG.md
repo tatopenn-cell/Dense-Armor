@@ -5,6 +5,11 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- Audio, effects (`dense_armor/core/audio/dynamics.py`, `reverb.py`, `modulation.py`): `Compressor` and `gain_curve`, a lookahead
+  `Limiter` (no sample above the ceiling), `SoftClip` with oversampling, `CombFilter`, `AllpassFilter` and `SchroederReverb`
+  (the reverberation time measured on the impulse response is within 0.7% of the one asked), `reverberation_time`, `Chorus` and
+  `Phaser`. Filters and smoothing agree with `scipy.signal` to rounding. A page with figures (`docs/audio/effects.md`) and two
+  more golden files.
 - Audio, perceptual analysis (`dense_armor/core/audio/perceptual.py`, `spectral.py`, `onset.py`, `envelope.py`): `hz_to_mel`,
   `mel_to_hz`, `mel_filterbank`, `mel_spectrogram`, `mfcc`, `spectral_centroid`, `spectral_rolloff`, `spectral_flatness`,
   `spectral_flux`, `onset_detect`, `hilbert` and `envelope_follower`. They agree with `librosa` and `scipy` (largest difference

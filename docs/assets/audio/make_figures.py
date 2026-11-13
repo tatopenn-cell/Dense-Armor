@@ -27,11 +27,17 @@ from dense_armor.core.audio import (  # noqa: E402
     Audio,
     AudioFeatures,
     AudioInput,
+    Compressor,
+    Limiter,
     Oscillator,
+    Phaser,
+    SchroederReverb,
+    SoftClip,
     bandpass,
     cmndf,
     detect_events,
     envelope_follower,
+    gain_curve,
     get_window,
     hard_clip,
     hard_clip_blamp,
@@ -52,6 +58,7 @@ from dense_armor.core.audio import (  # noqa: E402
     pitch_ratio_transition,
     plucked_string,
     reflection_to_lpc,
+    reverberation_time,
     spectral_flux,
     stft,
     triangle_blamp,
@@ -690,6 +697,159 @@ def fig_envelope():
     _save(fig, "envelope.png")
 
 
+def fig_compressor():
+    x = np.linspace(-60, 0, 301)
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(12, 4.4), facecolor=BG)
+    for ax in (a1, a2):
+        _style(ax)
+    a1.plot(x, x, color=GREY, ls="--", lw=1, label="no compression")
+    a1.plot(x, gain_curve(x, -20, 4, 0), color=BLUE, lw=2, label="ratio 4, knee 0")
+    a1.plot(x, gain_curve(x, -20, 4, 12), color=RED, lw=2, label="ratio 4, knee 12 dB")
+    a1.axvline(-20, color=GREY, ls=":", lw=1)
+    a1.text(-19.5, -58, "threshold", fontsize=8, color=GREY)
+    a1.set_xlabel("input level (dB)")
+    a1.set_ylabel("output level (dB)")
+    a1.set_title("gain_curve: above the threshold 4 dB in give 1 dB out")
+    a1.legend(frameon=False, loc="upper left")
+    sr = 8000.0
+    t = np.arange(int(1.0 * sr)) / sr
+    amp = np.where((t > 0.25) & (t < 0.65), 10 ** (-8 / 20), 10 ** (-35 / 20))
+    sig = amp * np.sin(2 * np.pi * 440 * t)
+    c = Compressor(-20.0, 4.0, 0.02, 0.1, 0.0, 0.0, sr)
+    out = np.empty(len(sig))
+    gr = np.empty(len(sig))
+    for i, v in enumerate(sig):
+        out[i] = c.update(v).out
+        gr[i] = c.gain_reduction_db
+    a2.plot(t, sig, color=BLUE, lw=0.5, alpha=0.6, label="input")
+    a2.plot(t, out, color=RED, lw=0.6, label="output")
+    a2.set_xlabel("time (s)")
+    a2.set_ylabel("amplitude")
+    b2 = a2.twinx()
+    b2.plot(t, gr, color=GREEN, lw=2, label="gain reduction (dB)")
+    b2.set_ylabel("gain reduction (dB)", color=GREEN)
+    a2.set_title(
+        "A burst with its peak 12 dB above the threshold: the gain falls, then recovers"
+    )
+    a2.legend(frameon=False, loc="upper right")
+    _save(fig, "compressor.png")
+
+
+def fig_limiter():
+    sr = 8000.0
+    t = np.arange(int(0.8 * sr)) / sr
+    amp = np.where((t > 0.3) & (t < 0.45), 1.2, 0.25)
+    x = amp * np.sin(2 * np.pi * 200 * t)
+    lim = Limiter(-6.0, 0.005, 0.05, sr)
+    y = lim.update_many(x)
+    ceiling = 10 ** (-6 / 20)
+    fig, ax = plt.subplots(figsize=(10, 4.2), facecolor=BG)
+    _style(ax)
+    ax.plot(t, x, color=BLUE, lw=0.8, label="input")
+    ax.plot(t, y, color=RED, lw=1.0, label="output, delayed by 5 ms")
+    for s in (1, -1):
+        ax.axhline(s * ceiling, color=GREY, ls="--", lw=1)
+    ax.text(0.01, ceiling + 0.03, "ceiling -6 dB", fontsize=8, color=GREY)
+    ax.set_xlabel("time (s)")
+    ax.set_ylabel("amplitude")
+    peak_db = 20 * np.log10(np.abs(y).max())
+    ax.set_title(
+        f"Limiter(-6, 0.005): the burst is brought to the ceiling, output peak {peak_db:.2f} dB"
+    )
+    ax.legend(frameon=False, loc="upper right")
+    _save(fig, "limiter.png")
+
+
+def fig_softclip():
+    sr = 44100.0
+    f0 = 5000.0
+    x = np.sin(2 * np.pi * f0 * np.arange(int(sr)) / sr)
+    seg = slice(4410, 4410 + 8820)
+    fig, ax = plt.subplots(figsize=(10, 4.4), facecolor=BG)
+    _style(ax)
+    for os, col in ((1, RED), (4, BLUE)):
+        y = SoftClip(12.0, os, sr).update_many(x)[seg]
+        spec = np.abs(np.fft.rfft(y)) ** 2
+        db = 10 * np.log10(spec / spec.max() + 1e-14)
+        f = np.fft.rfftfreq(len(y), 1 / sr) / 1000
+        step = int(round(f0 * len(y) / sr))
+        mask = np.ones(len(spec), bool)
+        mask[::step] = False
+        mask[0] = False
+        alias = 10 * np.log10(spec[mask].sum() / spec[step])
+        ax.plot(
+            f,
+            db,
+            color=col,
+            lw=0.8,
+            label=f"oversample {os}: the rest is {alias:.0f} dB below the tone",
+        )
+    ax.set_ylim(-120, 5)
+    ax.set_xlabel("frequency (kHz)")
+    ax.set_ylabel("dB")
+    ax.set_title("SoftClip(12): a 5 kHz sine, with and without oversampling")
+    ax.legend(frameon=False, loc="upper right")
+    _save(fig, "softclip.png")
+
+
+def fig_reverb():
+    sr = 8000.0
+    r = SchroederReverb(0.5, 0.0, 1.0, 0.0, sr)
+    h = r.update_many(np.r_[1.0, np.zeros(int(2.8 * sr) - 1)])
+    t = np.arange(len(h)) / sr
+    edc = np.cumsum((h**2)[::-1])[::-1]
+    db = 10 * np.log10(np.maximum(edc / edc[0], 1e-12))
+    measured = reverberation_time(h, sr)
+    fig, (a1, a2) = plt.subplots(2, 1, figsize=(10, 6), facecolor=BG, sharex=True)
+    for ax in (a1, a2):
+        _style(ax)
+    a1.plot(t, h, color=BLUE, lw=0.5)
+    a1.set_ylabel("amplitude")
+    a1.set_title("The response of SchroederReverb(0.5, 0) to one impulse")
+    a2.plot(t, db, color=VIOLET, lw=1.6, label="energy decay (dB)")
+    a2.axhline(-60, color=GREY, ls=":", lw=1)
+    a2.axvline(r.t60_s, color=GREEN, ls="--", lw=1.4, label=f"asked: {r.t60_s:.2f} s")
+    a2.axvline(measured, color=RED, lw=1.2, label=f"measured: {measured:.2f} s")
+    a2.set_ylim(-80, 3)
+    a2.set_xlabel("time (s)")
+    a2.set_ylabel("dB")
+    a2.set_title("The time to fall by 60 dB is the one that was asked")
+    a2.legend(frameon=False, loc="upper right")
+    _save(fig, "reverb.png")
+
+
+def fig_modulation():
+    sr = 8000.0
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(12, 4.2), facecolor=BG)
+    for ax in (a1, a2):
+        _style(ax)
+    t = np.linspace(0, 4, 800)
+    a1.plot(t, 15.0 + 5.0 * np.sin(2 * np.pi * 0.5 * t), color=BLUE, lw=2)
+    a1.set_xlabel("time (s)")
+    a1.set_ylabel("delay (ms)")
+    a1.set_title("Chorus(0.5, 5): the delay swings between 10 and 20 ms")
+    p = Phaser(0.05, 1.0, 4, sr, 0.5)
+    n_late = int(sr / (4 * 0.05))
+    for n, col in ((0, BLUE), (n_late, RED)):
+        q = p.clone()
+        q._n = n
+        h = q.update_many(np.r_[1.0, np.zeros(4095)])
+        f = np.fft.rfftfreq(len(h), 1 / sr)
+        a2.plot(
+            f,
+            np.abs(np.fft.rfft(h)),
+            color=col,
+            lw=1.4,
+            label=f"corner {q.corner_frequency(n):.0f} Hz",
+        )
+    a2.set_xlim(0, 4000)
+    a2.set_xlabel("frequency (Hz)")
+    a2.set_ylabel("gain")
+    a2.set_title("Phaser(0.05, 1, 4): two notches, and they move with the LFO")
+    a2.legend(frameon=False)
+    _save(fig, "modulation.png")
+
+
 if __name__ == "__main__":
     for f in (
         fig_adapter,
@@ -708,5 +868,10 @@ if __name__ == "__main__":
         fig_mel_mfcc,
         fig_onset,
         fig_envelope,
+        fig_compressor,
+        fig_limiter,
+        fig_softclip,
+        fig_reverb,
+        fig_modulation,
     ):
         f()

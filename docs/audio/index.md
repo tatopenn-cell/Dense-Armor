@@ -52,6 +52,7 @@ True score
 | [Pitch](pitch.md) | find the pitch of a block, and name a frequency | `YIN`, `yin_f0`, `freq_to_cents`, `freq_to_note` |
 | [Resampling](resampling.md) | change the sample rate, or glide the pitch, without a click | `Resampler`, `resample`, `pitch_ratio_transition`, `rational_ratio` |
 | [Perceptual analysis](perceptual.md) | describe a sound as a listener would: bands, cepstrum, brightness, onsets, envelope | `mel_filterbank`, `mel_spectrogram`, `mfcc`, `spectral_centroid`, `spectral_flux`, `onset_detect`, `hilbert`, `envelope_follower` |
+| [Effects](effects.md) | change how loud, how clean, how roomy or how moving a sound is | `Compressor`, `Limiter`, `SoftClip`, `SchroederReverb`, `Chorus`, `Phaser` |
 | [Separating sources](analysis.md) | split a sound into parts | `nmf`, `separate` |
 | [Events and streams](events.md) | read a file or a live input and find the moment something happens | `AudioFileStream`, `AudioLiveStream`, `AudioFeatures`, `AudioInput`, `run_estimators`, `detect_events` |
 | [Sources and checks](sources.md) | see which paper each primitive comes from, what was checked, and what is missing | |

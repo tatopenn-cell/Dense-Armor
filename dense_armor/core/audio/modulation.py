@@ -21,7 +21,8 @@ class Chorus(StatefulRoot):
     in ``out``.
 
     Choices stated: a sine LFO, linear interpolation and the centre delay ``delay_ms`` (15 ms by
-    default) are the ones of this code; the task gives only the rate, the depth and the mix.
+    default) are the ones of this code; the rate, the depth and the mix are the parameters of the
+    effect.
 
     Args:
         rate_hz: frequency of the LFO, at least 0.
@@ -122,8 +123,8 @@ class Phaser(StatefulRoot):
     that centre. The last output is in ``out``.
 
     Choices stated: the sweep range 200 to 2000 Hz, the sine LFO and the mix of 0.5 by default,
-    which gives the deepest notches. The task text says that ``stages`` stages give ``stages``
-    notches: they give ``stages // 2``, a notch for every 360 degrees of turn after the first 180.
+    which gives the deepest notches. It is often said that ``stages`` stages give ``stages``
+    notches: they give ``stages // 2``, because the phase turns by at most half a turn in each stage.
 
     Args:
         rate_hz: frequency of the LFO, at least 0.
