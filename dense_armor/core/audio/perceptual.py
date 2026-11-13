@@ -167,3 +167,73 @@ def mel_spectrogram(
     """
     power = np.abs(stft(x, n_fft, hop, window)) ** 2
     return power @ mel_filterbank(n_mels, n_fft, sr, fmin, fmax).T
+
+
+def _dct_ii_matrix(n_out: int, n_in: int) -> np.ndarray:
+    """Orthonormal DCT-II matrix of shape ``(n_out, n_in)`` (the first ``n_out`` rows)."""
+    k = np.arange(n_out)[:, None]
+    n = np.arange(n_in)[None, :]
+    mat = np.sqrt(2.0 / n_in) * np.cos(np.pi * k * (2 * n + 1) / (2 * n_in))
+    mat[0] = np.sqrt(1.0 / n_in)
+    return mat
+
+
+def mfcc(
+    x: np.ndarray,
+    sr: float,
+    n_mfcc: int = 13,
+    n_mels: int = 128,
+    n_fft: int = 2048,
+    hop: int = 512,
+    top_db: float = 80.0,
+) -> np.ndarray:
+    """Mel-frequency cepstral coefficients: the DCT-II of the log mel spectrogram.
+
+    Steps: :func:`mel_spectrogram`, then the power in decibels
+    ``10 log10(max(power, 1e-10))`` floored at ``top_db`` below its largest value (all frames
+    together), then the orthonormal DCT-II along the mel axis, keeping the first ``n_mfcc``
+    coefficients.
+
+    Choices stated: the logarithm is in decibels with the floor of ``librosa`` (not
+    ``log10`` of the energies as in the original paper), so that the result can be compared
+    with ``librosa.feature.mfcc``; the DCT is written as a matrix so that the library does not
+    need ``scipy``.
+
+    Args:
+        x: real samples, shape ``(n,)``.
+        sr: sampling rate in hertz.
+        n_mfcc: number of coefficients, between 1 and ``n_mels``.
+        n_mels: number of mel filters.
+        n_fft: frame length.
+        hop: frame step.
+        top_db: the floor, in decibels below the largest value; ``None`` for no floor.
+
+    Returns:
+        Array of shape ``(n_frames, n_mfcc)``.
+
+    Raises:
+        ValueError: if ``n_mfcc`` is not between 1 and ``n_mels``.
+
+    Example:
+        >>> t = np.arange(4096) / 8000.0
+        >>> mfcc(np.sin(2 * np.pi * 440 * t), 8000.0, n_mfcc=5).shape
+        (5, 5)
+
+    References:
+        Davis and Mermelstein (1980), Comparison of parametric representations for
+        monosyllabic word recognition in continuously spoken sentences, IEEE Trans. ASSP
+        28(4), 357-366, DOI 10.1109/TASSP.1980.1163420: the cosine transform of the log
+        energies of a mel filterbank. Bibliographic only (the paper is not in ``papers/``);
+        the formula is verified against ``librosa.feature.mfcc`` (see
+        ``test_mfcc_matches_librosa``) and against ``scipy.fft.dct`` (see
+        ``test_the_dct_matrix_is_the_orthonormal_dct_ii``).
+    """
+    if not 1 <= n_mfcc <= n_mels:
+        raise ValueError("n_mfcc must be between 1 and n_mels")
+    mel = mel_spectrogram(x, sr, n_mels, n_fft, hop)
+    if mel.size == 0:
+        return np.zeros((0, n_mfcc))
+    log_mel = 10.0 * np.log10(np.maximum(mel, 1e-10))
+    if top_db is not None:
+        log_mel = np.maximum(log_mel, log_mel.max() - top_db)
+    return log_mel @ _dct_ii_matrix(n_mfcc, n_mels).T

@@ -4,10 +4,12 @@ import numpy as np
 import pytest
 
 from dense_armor.core.audio.perceptual import (
+    _dct_ii_matrix,
     hz_to_mel,
     mel_filterbank,
     mel_spectrogram,
     mel_to_hz,
+    mfcc,
 )
 
 
@@ -127,3 +129,48 @@ def test_mel_spectrogram_matches_librosa():
     ours = mel_spectrogram(x, 8000.0)
     assert ours.shape == ref.T.shape
     assert np.max(np.abs(ours - ref.T)) / np.max(np.abs(ref)) < 1e-5
+
+
+def test_the_dct_matrix_is_orthonormal_and_a_constant_has_only_the_first_coefficient():
+    mat = _dct_ii_matrix(16, 16)
+    assert np.allclose(mat @ mat.T, np.eye(16), atol=1e-12)
+    out = _dct_ii_matrix(5, 16) @ np.full(16, 3.0)
+    assert out[0] == pytest.approx(3.0 * np.sqrt(16.0), abs=1e-12)
+    assert np.allclose(out[1:], 0.0, atol=1e-12)
+
+
+def test_the_dct_matrix_is_the_orthonormal_dct_ii():
+    fft = pytest.importorskip("scipy.fft")
+    v = np.random.default_rng(2).standard_normal(40)
+    ours = _dct_ii_matrix(13, 40) @ v
+    assert np.max(np.abs(ours - fft.dct(v, type=2, norm="ortho")[:13])) < 1e-12
+
+
+def test_mfcc_shape_and_the_floor_of_the_log():
+    x = _tone(440.0)
+    out = mfcc(x, 8000.0, n_mfcc=13, n_mels=40, n_fft=1024, hop=256)
+    assert out.shape == (1 + (8000 - 1024) // 256, 13)
+    mel = mel_spectrogram(x, 8000.0, 40, 1024, 256)
+    log_mel = 10.0 * np.log10(np.maximum(mel, 1e-10))
+    floored = np.maximum(log_mel, log_mel.max() - 80.0)
+    assert np.allclose(out, floored @ _dct_ii_matrix(13, 40).T, atol=1e-9)
+    no_floor = mfcc(x, 8000.0, 13, 40, 1024, 256, top_db=None)
+    assert np.allclose(no_floor, log_mel @ _dct_ii_matrix(13, 40).T, atol=1e-9)
+
+
+def test_mfcc_of_a_short_signal_has_no_frames_and_n_mfcc_is_checked():
+    assert mfcc(np.zeros(100), 8000.0, 13, 40, 512, 128).shape == (0, 13)
+    for bad in (0, 41):
+        with pytest.raises(ValueError, match="between 1 and n_mels"):
+            mfcc(_tone(), 8000.0, bad, 40, 512, 128)
+
+
+def test_mfcc_matches_librosa():
+    librosa = pytest.importorskip("librosa")
+    x = np.random.default_rng(3).standard_normal(8000)
+    ref = librosa.feature.mfcc(
+        y=x, sr=8000, n_mfcc=13, n_mels=128, n_fft=2048, hop_length=512, center=False
+    )
+    ours = mfcc(x, 8000.0)
+    assert ours.shape == ref.T.shape
+    assert np.max(np.abs(ours - ref.T)) < 1e-4

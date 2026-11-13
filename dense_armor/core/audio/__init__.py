@@ -41,6 +41,7 @@ from dense_armor.core.audio.perceptual import (
     mel_filterbank,
     mel_spectrogram,
     mel_to_hz,
+    mfcc,
 )
 from dense_armor.core.audio.pitch import YIN, cmndf, yin_f0
 from dense_armor.core.audio.pitch_units import (
@@ -106,6 +107,7 @@ __all__ = [
     "mel_filterbank",
     "mel_spectrogram",
     "mel_to_hz",
+    "mfcc",
     "nmf",
     "note_to_freq",
     "notch",
