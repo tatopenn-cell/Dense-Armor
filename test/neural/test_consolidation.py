@@ -602,7 +602,7 @@ def test_promote_preserves_mse():
 
 
 def test_vq_backward_before_forward_raises():
-    """backward() before forward() raises RuntimeError (REVISIONE_IA.md §2b)."""
+    """backward() before forward() raises RuntimeError."""
     import pytest
 
     vq = VQMemory(n_x=2, d_model=4, n_codes=8, seed=0)
@@ -621,7 +621,7 @@ def test_vq_quantization_is_discrete_declared():
     tested by property (``test_vq_straight_through``: with commitment 0,
     ``dz_e = dz_q``; ``test_codebook_gradient_independent_of_commitment``:
     the commitment term does not change the codebook gradient), not by
-    ``gradcheck``. This is a declared deviation from REVISIONE_IA.md §2b.
+    ``gradcheck``.
     """
     vq = VQMemory(n_x=2, d_model=4, n_codes=8, seed=0)
     x = jnp.asarray(np.random.RandomState(0).randn(4, 2), dtype=jnp.float32)
