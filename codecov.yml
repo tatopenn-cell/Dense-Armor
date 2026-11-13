@@ -11,6 +11,26 @@ ignore:
   - "benchmarks"
   - "test"
   - "docs"
+  # Paths that no longer exist. On 2026-11-12 the folders `core` and `utility`
+  # of `dense_armor` swapped their names. The reports uploaded before that day
+  # (and carried forward, see below) list the library under the old names, so
+  # every folder was counted twice: once covered under `core/`, once at 0%
+  # under `utility/`. That put the project at 53% instead of 94%. These paths
+  # are not in the repository; listing them here removes only the stale copies.
+  - "dense_armor/utility/_validation.py"
+  - "dense_armor/utility/deep"
+  - "dense_armor/utility/evaluation"
+  - "dense_armor/utility/finance"
+  - "dense_armor/utility/infrastructure"
+  - "dense_armor/utility/online"
+  - "dense_armor/utility/robot"
+  - "dense_armor/utility/signals"
+  - "dense_armor/core/damping_operator.py"
+  - "dense_armor/core/engine.py"
+  - "dense_armor/core/hybrid_engine.py"
+  - "dense_armor/core/memory.py"
+  - "dense_armor/core/noise.py"
+  - "dense_armor/core/preset.py"
 
 coverage:
   status:
