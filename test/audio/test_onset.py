@@ -78,6 +78,31 @@ def test_silence_and_a_signal_shorter_than_a_frame_have_no_onsets():
     assert onset_detect(np.zeros(100), 8000).shape == (0,)
 
 
+def test_a_steady_tone_has_no_onsets_but_a_note_that_starts_has_one():
+    t = np.arange(16000) / 8000.0
+    tone = 0.5 * np.sin(2 * np.pi * 440.0 * t)
+    assert onset_detect(tone, 8000).shape == (0,)
+    note = np.where(t > 1.0, tone, 0.0)
+    found = onset_detect(note, 8000)
+    assert len(found) == 1 and abs(found[0] - 1.0) < 0.2
+
+
+def test_two_events_closer_than_a_frame_are_one_onset_unless_the_frame_is_short():
+    x = np.zeros(24000)
+    x[6000:6040] = np.hanning(40)
+    x[7200:7240] = np.hanning(40)
+    assert len(onset_detect(x, 8000)) == 1
+    assert len(onset_detect(x, 8000, n_fft=512, hop=128)) == 2
+
+
+def test_min_flux_zero_turns_the_test_off_and_a_negative_one_is_refused():
+    t = np.arange(16000) / 8000.0
+    tone = 0.5 * np.sin(2 * np.pi * 440.0 * t)
+    assert len(onset_detect(tone, 8000, min_flux=0.0)) > 0
+    with pytest.raises(ValueError, match="min_flux"):
+        onset_detect(tone, 8000, min_flux=-0.1)
+
+
 def test_min_gap_removes_the_weaker_of_two_close_peaks():
     x = np.zeros(24000)
     x[6000:6040] = np.hanning(40)

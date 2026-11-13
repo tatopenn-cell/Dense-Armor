@@ -9,6 +9,13 @@ def _magnitude(x: np.ndarray, n_fft: int, hop: int, window: str) -> np.ndarray:
     return np.abs(stft(x, n_fft, hop, window))
 
 
+def _flux(mag: np.ndarray) -> np.ndarray:
+    flux = np.zeros(len(mag))
+    if len(mag) > 1:
+        flux[1:] = np.maximum(0.0, np.diff(mag, axis=0)).sum(axis=1)
+    return flux
+
+
 def spectral_centroid(
     x: np.ndarray, sr: float, n_fft: int = 2048, hop: int = 512, window: str = "hann"
 ) -> np.ndarray:
@@ -158,8 +165,4 @@ def spectral_flux(
         function, so it is verified against a hand computation (see
         ``test_flux_is_the_rectified_difference``).
     """
-    mag = _magnitude(x, n_fft, hop, window)
-    flux = np.zeros(len(mag))
-    if len(mag) > 1:
-        flux[1:] = np.maximum(0.0, np.diff(mag, axis=0)).sum(axis=1)
-    return flux
+    return _flux(_magnitude(x, n_fft, hop, window))

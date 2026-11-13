@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from dense_armor.core.audio.spectral import spectral_flux
+from dense_armor.core.audio.spectral import _flux, _magnitude
 
 
 def onset_detect(
@@ -14,11 +14,14 @@ def onset_detect(
     delta: float = 0.1,
     min_gap: float = 0.1,
     context: float = 0.25,
+    min_flux: float = 0.05,
 ) -> np.ndarray:
     """Times in seconds of the onsets of ``x``: peaks of the spectral flux.
 
-    Steps: :func:`~dense_armor.core.audio.spectral.spectral_flux`, divided by its largest
-    value; a threshold that follows the signal, the median of the flux over ``context`` seconds
+    Steps: :func:`~dense_armor.core.audio.spectral.spectral_flux`; if its largest value is below
+    ``min_flux`` times the mean magnitude of a frame there is no onset (a steady sound has a
+    tiny flux, and dividing it by its own maximum would turn the ripple into peaks); the flux
+    divided by its largest value; a threshold that follows the signal, the median of the flux over ``context`` seconds
     on each side plus ``delta``; the frames that are at or above the threshold and are the
     largest within ``min_gap`` seconds; the time of a frame is its centre,
     ``(m hop + n_fft / 2) / sr``.
@@ -40,14 +43,19 @@ def onset_detect(
         window: a window name of :mod:`dense_armor.core.audio.windows`.
         delta: height above the local median that a peak needs, as a fraction of the largest
             flux.
-        min_gap: smallest distance between two onsets, in seconds.
+        min_gap: smallest distance between two onsets, in seconds. It is never below the length
+            of a frame, ``n_fft / sr``: an event shows in ``n_fft / hop`` successive frames, and
+            two onsets closer than a frame cannot be told apart.
         context: half width in seconds of the window of the median.
+        min_flux: smallest largest flux, relative to the mean sum of the magnitudes of a frame;
+            0 turns the test off.
 
     Returns:
         Increasing onset times in seconds, shape ``(n_onsets,)``; empty if there is none.
 
     Raises:
-        ValueError: if ``sr``, ``min_gap`` or ``context`` is not positive.
+        ValueError: if ``sr``, ``min_gap`` or ``context`` is not positive, or ``min_flux`` is
+            negative.
 
     Example:
         >>> x = np.zeros(16000)
@@ -66,8 +74,11 @@ def onset_detect(
     """
     if sr <= 0 or min_gap <= 0 or context <= 0:
         raise ValueError("sr, min_gap and context must be positive")
-    flux = spectral_flux(x, n_fft, hop, window)
-    if len(flux) == 0 or flux.max() <= 0.0:
+    if min_flux < 0:
+        raise ValueError("min_flux must be >= 0")
+    mag = _magnitude(x, n_fft, hop, window)
+    flux = _flux(mag)
+    if len(flux) == 0 or flux.max() <= min_flux * mag.sum(axis=1).mean():
         return np.zeros(0)
     flux = flux / flux.max()
     w = max(1, round(context * sr / hop))
@@ -75,7 +86,7 @@ def onset_detect(
     median = np.median(
         np.lib.stride_tricks.sliding_window_view(padded, 2 * w + 1), axis=1
     )
-    gap = max(1, round(min_gap * sr / hop))
+    gap = max(1, round(max(min_gap, n_fft / sr) * sr / hop))
     candidates = np.nonzero(flux >= median + delta)[0]
     kept: list[int] = []
     for m in candidates[np.argsort(-flux[candidates], kind="stable")]:
