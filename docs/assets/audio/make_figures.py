@@ -45,6 +45,8 @@ from dense_armor.core.audio import (  # noqa: E402
     highshelf,
     hilbert,
     hz_to_mel,
+    jax_biquad,
+    jax_lowpass,
     lowpass,
     lowshelf,
     mel_filterbank,
@@ -881,6 +883,66 @@ def fig_timescale():
     _save(fig, "timescale.png")
 
 
+def fig_differentiable():
+    import jax
+    import jax.numpy as jnp
+
+    sr = 8000.0
+    x = jnp.asarray(np.random.default_rng(0).standard_normal(2000), dtype=jnp.float32)
+    target = jax_biquad(*jax_lowpass(1000.0, sr), x)
+
+    def loss(log_f0):
+        return jnp.mean(
+            (jax_biquad(*jax_lowpass(jnp.exp(log_f0), sr), x) - target) ** 2
+        )
+
+    step = jax.jit(jax.value_and_grad(loss))
+    u = jnp.log(2000.0)
+    history = []
+    for _ in range(60):
+        value, grad = step(u)
+        history.append((float(jnp.exp(u)), float(value)))
+        u = u - 2.0 * grad
+    w = np.linspace(0.001, np.pi, 600)
+    z = np.exp(-1j * w)
+
+    def response(f0):
+        b, a = lowpass(f0, sr)
+        return 20 * np.log10(
+            np.abs((b[0] + b[1] * z + b[2] * z**2) / (1 + a[1] * z + a[2] * z**2))
+        )
+
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4), facecolor=BG)
+    ax = axes[0]
+    _style(ax)
+    for n, color in ((0, AMBER), (1, VIOLET), (2, GREEN)):
+        ax.plot(
+            w * sr / (2 * np.pi),
+            response(history[n][0]),
+            color=color,
+            label=f"step {n}: {history[n][0]:.0f} Hz",
+        )
+    ax.plot(
+        w * sr / (2 * np.pi),
+        response(1000.0),
+        "--",
+        color=GREY,
+        label="target: 1000 Hz",
+    )
+    ax.set_ylim(-40, 5)
+    ax.set_xlabel("frequency (Hz)")
+    ax.set_ylabel("magnitude (dB)")
+    ax.set_title("the cutoff moves to the target", fontsize=10)
+    ax.legend(fontsize=8)
+    ax = axes[1]
+    _style(ax)
+    ax.semilogy(range(len(history)), [h[1] + 1e-16 for h in history], color=BLUE)
+    ax.set_xlabel("gradient step")
+    ax.set_ylabel("mean squared error")
+    ax.set_title("the loss, through jax_lowpass and jax_biquad", fontsize=10)
+    _save(fig, "differentiable.png")
+
+
 if __name__ == "__main__":
     for f in (
         fig_adapter,
@@ -905,5 +967,6 @@ if __name__ == "__main__":
         fig_reverb,
         fig_modulation,
         fig_timescale,
+        fig_differentiable,
     ):
         f()

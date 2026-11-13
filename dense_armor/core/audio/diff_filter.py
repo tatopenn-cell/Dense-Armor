@@ -116,8 +116,8 @@ class JaxBiquad:
     ``b`` and ``a`` are ``Param`` objects (``b`` and ``a`` of the cookbook divided by ``a[0]``).
     ``forward`` filters along the time axis (see :func:`jax_biquad`) and remembers what ``backward``
     needs; ``backward(g)`` returns the gradient of the input and adds to ``b.grad`` and ``a.grad``.
-    The gradient of ``a[0]`` is the gradient of a coefficient that the filter does not use after the
-    division, and is 0.
+    ``a[0]`` starts at 1 and has a gradient, the one through the division by ``a[0]``; an optimiser
+    can move it away from 1 and the filter then normalises by it, so what matters is the ratios.
 
     Stability is not checked, because the coefficients change while training: unlike ``Biquad``,
     a pole outside the unit circle is not refused.

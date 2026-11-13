@@ -5,6 +5,10 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- Audio, differentiable filters (`dense_armor/core/audio/diff_filter.py`): `jax_lowpass`, `jax_biquad`, `JaxBiquad`
+  (a layer in the pattern of `core/deep/neural`) and `jax_allpole_time_varying`, with the gradients of
+  Yu and others (2024); equal to the NumPy filters to 1e-15 in 64 bits and 3e-7 in 32 bits. A page
+  (`docs/audio/differentiable.md`) and a golden file.
 - Audio, time and pitch (`dense_armor/core/audio/timescale.py`): `time_stretch` (a phase vocoder), `pitch_shift`,
   `psola_time_stretch` and `Harmonizer`; the pitch of the output is kept to a few cents, the level is kept, and a rate of 1 gives
   the input back. Multichannel live input (`AudioLiveStream(channels=...)`, `Audio.channel`, `run_channels`). A page
