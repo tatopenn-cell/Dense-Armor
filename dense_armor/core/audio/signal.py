@@ -49,6 +49,21 @@ class Audio:
         """Duration in seconds."""
         return self.n / self.sr
 
+    def channel(self, k: int) -> "Audio":
+        """Return channel ``k`` as a one-channel ``Audio`` (a view, not a copy).
+
+        Raises:
+            IndexError: if ``k`` is not a channel of this sound.
+
+        Example:
+            >>> a = Audio(np.arange(6.0).reshape(3, 2), 8000)
+            >>> a.channel(1).x.tolist()
+            [1.0, 3.0, 5.0]
+        """
+        if not 0 <= k < self.channels:
+            raise IndexError(f"channel {k} is not in 0..{self.channels - 1}")
+        return self if self.x.ndim == 1 else Audio(self.x[:, k], self.sr, self.t0)
+
     def to_mono(self) -> "Audio":
         """Return the mean of the channels as a one-channel ``Audio``."""
         if self.x.ndim == 1:

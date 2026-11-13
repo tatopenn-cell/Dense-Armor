@@ -64,6 +64,12 @@ class AudioLiveStream:
         queue_size: places in the queue.
         device: device passed to ``sounddevice``.
         backend: a function ``backend(callback, sr, block, device)`` returning a stream.
+        channels: channels of the input. With 1 (the default) a block is one-channel; with more, a
+            block has shape ``(block, channels)`` and ``Audio.channel(k)`` gives channel ``k``. A
+            custom ``backend`` has to deliver that many channels.
+
+    Raises:
+        ValueError: if ``channels`` is below 1.
     """
 
     def __init__(
@@ -73,7 +79,11 @@ class AudioLiveStream:
         queue_size: int = 8,
         device: Any = None,
         backend: Any = None,
+        channels: int = 1,
     ) -> None:
+        if channels < 1:
+            raise ValueError(f"channels must be >= 1, got {channels}")
+        self.channels = int(channels)
         self.sr = int(sr)
         self.block = int(block)
         self.queue_size = int(queue_size)
@@ -89,18 +99,16 @@ class AudioLiveStream:
                     samplerate=sr,
                     blocksize=block,
                     device=device,
-                    channels=1,
+                    channels=self.channels,
                     callback=cb,
                 )
 
         self._stream = backend(self._callback, self.sr, self.block, device)
 
     def _callback(self, indata, frames, time, status) -> None:
-        b = Audio(
-            np.array(indata, dtype=float).reshape(frames, -1)[:, 0],
-            self.sr,
-            self._n / self.sr,
-        )
+        data = np.array(indata, dtype=float).reshape(frames, -1)
+        samples = data[:, 0] if self.channels == 1 else data[:, : self.channels]
+        b = Audio(samples, self.sr, self._n / self.sr)
         self._n += frames
         try:
             self._q.put_nowait(b)

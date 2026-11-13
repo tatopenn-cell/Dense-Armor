@@ -1,6 +1,6 @@
 """Audio: sound as a value, WAV files, windows, STFT, generators, filters, NMF and streams."""
 
-from dense_armor.core.audio.adapter import AudioInput, run_estimators
+from dense_armor.core.audio.adapter import AudioInput, run_channels, run_estimators
 from dense_armor.core.audio.allpole import AllPole, reflection_to_lpc
 from dense_armor.core.audio.biquad import (
     Biquad,
@@ -158,6 +158,7 @@ __all__ = [
     "reflection_to_lpc",
     "resample",
     "reverberation_time",
+    "run_channels",
     "run_estimators",
     "separate",
     "spectral_centroid",
