@@ -68,6 +68,7 @@ plugins:
             heading_level: 2
 
 nav:
+  - Home: index.md
   - Applications:
       - Finance:
           - finance/index.md
@@ -286,7 +287,6 @@ nav:
       - Which node is wrong?: graph/anomaly.md
       - What causes what?: graph/causal.md
   - Library:
-      - Home: index.md
       - Getting Started: getting-started.md
       - Speed: speed.md
       - Comparisons & limits:
