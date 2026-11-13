@@ -36,6 +36,7 @@ from dense_armor.core.audio.generators import (
     white_noise,
 )
 from dense_armor.core.audio.nmf import nmf, separate
+from dense_armor.core.audio.onset import onset_detect
 from dense_armor.core.audio.perceptual import (
     hz_to_mel,
     mel_filterbank,
@@ -117,6 +118,7 @@ __all__ = [
     "nmf",
     "note_to_freq",
     "notch",
+    "onset_detect",
     "peaking",
     "pink_noise",
     "pitch_ratio_transition",
