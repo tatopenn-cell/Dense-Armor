@@ -42,6 +42,7 @@ from dense_armor.core.audio.generators import (
     plucked_string,
     white_noise,
 )
+from dense_armor.core.audio.modulation import Chorus
 from dense_armor.core.audio.nmf import nmf, separate
 from dense_armor.core.audio.onset import onset_detect
 from dense_armor.core.audio.perceptual import (
@@ -101,6 +102,7 @@ __all__ = [
     "AudioInput",
     "AudioLiveStream",
     "Biquad",
+    "Chorus",
     "CombFilter",
     "Compressor",
     "KarplusStrong",
