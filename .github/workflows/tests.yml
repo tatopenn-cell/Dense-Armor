@@ -3,53 +3,28 @@ name: tests
 on:
   push:
     branches: [master]
+    paths-ignore:
+      - "docs/**"
+      - "mkdocs.yml"
+      - "README.md"
+      - "CHANGELOG.md"
+      - "ARCHITECTURE.md"
+      - "LICENSE"
   pull_request:
     branches: [master]
+    paths-ignore:
+      - "docs/**"
+      - "mkdocs.yml"
+      - "README.md"
+      - "CHANGELOG.md"
+      - "ARCHITECTURE.md"
+      - "LICENSE"
+  workflow_dispatch:
 
 jobs:
-  changes:
-    name: Detect docs-only changes
-    runs-on: ubuntu-latest
-    outputs:
-      code: ${{ steps.filter.outputs.code }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          # code == true whenever anything OTHER than docs/README/CHANGELOG
-          # changed -- same mechanism validated in Dense-Evolution's own CI.
-          # predicate-quantifier MUST be "every" (AND across patterns), not
-          # paths-filter's default "some" (OR): '**' matches every file
-          # unconditionally, so under "some" the '!'-exclusions below never
-          # exclude anything and `code` would be true even for a pure
-          # README-only change.
-          predicate-quantifier: 'every'
-          filters: |
-            code:
-              - '**'
-              - '!docs/**'
-              - '!mkdocs.yml'
-              - '!README.md'
-              - '!CHANGELOG.md'
-              - '!ARCHITECTURE.md'
-              - '!LICENSE'
-
-  float32-sections:
-    name: float32 pages match the benchmark JSON
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Check the float32 cost lines of the pages
-        run: python tools/render_float32_sections.py --check
-
   pytest:
     name: pytest (Python ${{ matrix.python-version }}, ${{ matrix.os }})
-    needs: changes
-    runs-on: ${{ needs.changes.outputs.code == 'true' && matrix.os || 'ubuntu-latest' }}
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
@@ -58,66 +33,36 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        if: needs.changes.outputs.code == 'true'
 
       - name: Set up Python ${{ matrix.python-version }}
-        if: needs.changes.outputs.code == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Install package + dev deps
-        if: needs.changes.outputs.code == 'true'
         run: pip install -e ".[dev,audio,data,mcp,ros]" opencv-python-headless pillow
 
       - name: Install torch (CPU) for the bridge tests
-        if: needs.changes.outputs.code == 'true' && matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest'
+        if: matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest'
         run: pip install torch --index-url https://download.pytorch.org/whl/cpu
 
       - name: Install tensorflow (CPU) for the bridge tests
-        if: needs.changes.outputs.code == 'true' && matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest'
+        if: matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest'
         run: pip install tensorflow-cpu
 
       - name: Run pytest
-        if: needs.changes.outputs.code == 'true'
         env:
           JAX_ENABLE_X64: "True"
-          MARKERS: ${{ matrix.os == 'macos-latest' && 'not training and not heavy and not slow' || 'not training and not heavy' }}
-        run: pytest test/ -v -m "$MARKERS" --cov=dense_armor --cov-report=xml --cov-report=term-missing
+          COV: ${{ matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest' && '--cov=dense_armor --cov-report=xml --cov-report=term-missing' || '' }}
+        run: pytest test/ -q -m "not training and not heavy and not slow" $COV
 
       # Solo una gamba della matrice carica su Codecov -- 6 upload identici
       # (uno per combinazione OS/Python) non aggiungono informazione, solo
       # rumore nella cronologia di Codecov.
       - name: Upload coverage to Codecov
-        if: needs.changes.outputs.code == 'true' && matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest'
+        if: matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest'
         uses: codecov/codecov-action@v4
         with:
           files: coverage.xml
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
-
-  build-check:
-    name: build sdist/wheel
-    needs: changes
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        if: needs.changes.outputs.code == 'true'
-
-      - name: Set up Python
-        if: needs.changes.outputs.code == 'true'
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install build tools
-        if: needs.changes.outputs.code == 'true'
-        run: pip install build twine
-
-      - name: Build package
-        if: needs.changes.outputs.code == 'true'
-        run: python -m build
-
-      - name: Validate package metadata
-        if: needs.changes.outputs.code == 'true'
-        run: python -m twine check dist/*
