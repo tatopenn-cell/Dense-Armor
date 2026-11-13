@@ -196,6 +196,51 @@ class AudioInput:
         return [self.feed(b, label(b) if label is not None else None) for b in blocks]
 
 
+def run_channels(
+    blocks: Iterable[Audio],
+    make: Callable[[int], dict[str, Any]],
+    key: str = "b0",
+    label: Callable[[Audio], Any] | None = None,
+    n_bands: int = 8,
+) -> list[dict[str, dict[str, Any]]]:
+    """Read every channel of multichannel blocks with its own primitives.
+
+    For channel ``k``, ``make(k)`` builds a dict of name to primitive, and the channel ``k`` of every
+    block is fed to them as :func:`run_estimators` does. A block with one channel is channel 0.
+
+    Args:
+        blocks: audio blocks with the same number of channels, from a file stream or a live one.
+        make: function from the index of a channel to the dict of primitives that read it.
+        key: the feature given to scalar primitives.
+        label: optional function from a block to a label or target.
+        n_bands: bands of :class:`AudioFeatures`.
+
+    Returns:
+        One result of :func:`run_estimators` for each channel, in order.
+
+    Raises:
+        ValueError: if the blocks do not all have the same number of channels, or there is none.
+
+    Example:
+        >>> import numpy as np
+        >>> from dense_armor.core.online.anomaly.filters import HampelScorer
+        >>> x = np.zeros((2048, 2))
+        >>> out = run_channels([Audio(x, 8000)], lambda k: {"h": HampelScorer()})
+        >>> len(out), out[1]["h"]["n"]
+        (2, 1)
+    """
+    blocks = list(blocks)
+    if not blocks:
+        raise ValueError("there is no block")
+    n = blocks[0].channels
+    if any(b.channels != n for b in blocks):
+        raise ValueError("the blocks do not all have the same number of channels")
+    return [
+        run_estimators([b.channel(k) for b in blocks], make(k), key, label, n_bands)
+        for k in range(n)
+    ]
+
+
 def run_estimators(
     blocks: Iterable[Audio],
     estimators: dict[str, Any],

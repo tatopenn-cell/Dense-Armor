@@ -5,6 +5,24 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- Audio, differentiable filters (`dense_armor/core/audio/diff_filter.py`): `jax_lowpass`, `jax_biquad`, `JaxBiquad`
+  (a layer in the pattern of `core/deep/neural`) and `jax_allpole_time_varying`, with the gradients of
+  Yu and others (2024); equal to the NumPy filters to 1e-15 in 64 bits and 3e-7 in 32 bits. A page
+  (`docs/audio/differentiable.md`) and a golden file.
+- Audio, time and pitch (`dense_armor/core/audio/timescale.py`): `time_stretch` (a phase vocoder), `pitch_shift`,
+  `psola_time_stretch` and `Harmonizer`; the pitch of the output is kept to a few cents, the level is kept, and a rate of 1 gives
+  the input back. Multichannel live input (`AudioLiveStream(channels=...)`, `Audio.channel`, `run_channels`). A page
+  (`docs/audio/timescale.md`) and two more golden files.
+- Audio, effects (`dense_armor/core/audio/dynamics.py`, `reverb.py`, `modulation.py`): `Compressor` and `gain_curve`, a lookahead
+  `Limiter` (no sample above the ceiling), `SoftClip` with oversampling, `CombFilter`, `AllpassFilter` and `SchroederReverb`
+  (the reverberation time measured on the impulse response is within 0.7% of the one asked), `reverberation_time`, `Chorus` and
+  `Phaser`. Filters and smoothing agree with `scipy.signal` to rounding. A page with figures (`docs/audio/effects.md`) and two
+  more golden files.
+- Audio, perceptual analysis (`dense_armor/core/audio/perceptual.py`, `spectral.py`, `onset.py`, `envelope.py`): `hz_to_mel`,
+  `mel_to_hz`, `mel_filterbank`, `mel_spectrogram`, `mfcc`, `spectral_centroid`, `spectral_rolloff`, `spectral_flatness`,
+  `spectral_flux`, `onset_detect`, `hilbert` and `envelope_follower`. They agree with `librosa` and `scipy` (largest difference
+  between 0 and 1.5e-7 on the filterbank, the mel spectrogram, the MFCC, the spectral features and the analytic signal; the onsets
+  agree with `librosa` at F1 0.945). A page with figures (`docs/audio/perceptual.md`) and a golden file (`test/audio/golden/`).
 - The dashboard works on the visitor's own files: a CSV of prices into the chain (with a report to download as CSV),
   a volume history into the TWAP and VWAP plan, and a CSV of orders into the pre-trade checker (with the decisions and
   the hash-chained log to download). Each page has a sample file and says what is wrong with a file, naming the row or

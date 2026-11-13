@@ -27,25 +27,44 @@ from dense_armor.core.audio import (  # noqa: E402
     Audio,
     AudioFeatures,
     AudioInput,
+    Compressor,
+    Limiter,
     Oscillator,
+    Phaser,
+    SchroederReverb,
+    SoftClip,
     bandpass,
     cmndf,
     detect_events,
+    envelope_follower,
+    gain_curve,
     get_window,
     hard_clip,
     hard_clip_blamp,
     highpass,
     highshelf,
+    hilbert,
+    hz_to_mel,
+    jax_biquad,
+    jax_lowpass,
     lowpass,
     lowshelf,
+    mel_filterbank,
+    mel_spectrogram,
+    mfcc,
     nmf,
     notch,
+    onset_detect,
     peaking,
     pink_noise,
     pitch_ratio_transition,
+    pitch_shift,
     plucked_string,
     reflection_to_lpc,
+    reverberation_time,
+    spectral_flux,
     stft,
+    time_stretch,
     triangle_blamp,
     white_noise,
 )
@@ -563,6 +582,367 @@ def fig_events():
     _save(fig, "events.png")
 
 
+def fig_mel():
+    fb = mel_filterbank(20, 1024, 8000.0)
+    f = np.linspace(0, 4000.0, fb.shape[1])
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(12, 4.2), facecolor=BG)
+    for ax in (a1, a2):
+        _style(ax)
+    cmap = plt.get_cmap("viridis")
+    for i, row in enumerate(fb):
+        a1.plot(f, row, color=cmap(i / 19), lw=1.4)
+    a1.set_xlabel("frequency (Hz)")
+    a1.set_ylabel("weight")
+    a1.set_title("mel_filterbank(20, 1024, 8000): narrow low, wide high, same area")
+    hz = np.linspace(0, 8000, 800)
+    a2.plot(hz, hz_to_mel(hz), color=BLUE, lw=2)
+    a2.axvline(1000, color=GREY, ls="--", lw=0.9)
+    a2.text(1100, 3, "1 kHz: line, then logarithm", fontsize=9, color=GREY)
+    a2.set_xlabel("frequency (Hz)")
+    a2.set_ylabel("mel")
+    a2.set_title("hz_to_mel: a straight line to 1 kHz, then a logarithm")
+    _save(fig, "mel.png")
+
+
+def fig_mel_mfcc():
+    sr = 8000
+    t = np.arange(int(1.5 * sr)) / sr
+    x = np.sin(2 * np.pi * np.where(t < 0.75, 440.0, 1760.0) * t)
+    mel = mel_spectrogram(x, float(sr), 40, 512, 128)
+    cep = mfcc(x, float(sr), 13, 40, 512, 128)
+    ts = (np.arange(len(mel)) * 128 + 256) / sr
+    db = 10 * np.log10(np.maximum(mel, 1e-10)).T
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(12, 4.4), facecolor=BG)
+    im = a1.imshow(
+        db,
+        origin="lower",
+        aspect="auto",
+        extent=[ts[0], ts[-1], 0, 40],
+        cmap="magma",
+        vmin=db.max() - 70,
+        vmax=db.max(),
+    )
+    a1.set_xlabel("time (s)")
+    a1.set_ylabel("mel filter")
+    a1.set_title("mel_spectrogram: 440 Hz, then 1760 Hz")
+    fig.colorbar(im, ax=a1, label="dB", pad=0.02)
+    im2 = a2.imshow(
+        cep.T,
+        origin="lower",
+        aspect="auto",
+        extent=[ts[0], ts[-1], -0.5, 12.5],
+        cmap="coolwarm",
+    )
+    a2.set_xlabel("time (s)")
+    a2.set_ylabel("coefficient")
+    a2.set_title("mfcc: 13 numbers per frame, they change when the tone changes")
+    fig.colorbar(im2, ax=a2, pad=0.02)
+    _save(fig, "mel_mfcc.png")
+
+
+def fig_onset():
+    sr = 8000
+    rng = np.random.default_rng(5)
+    x = 0.005 * rng.standard_normal(3 * sr)
+    truth = np.array([0.4, 1.0, 1.35, 2.2, 2.65])
+    for t0 in truth:
+        i = int(t0 * sr)
+        m = int(0.02 * sr)
+        x[i : i + m] += (
+            np.exp(-np.arange(m) / (0.004 * sr)) * rng.standard_normal(m) * 0.8
+        )
+    found = onset_detect(x, float(sr), 1024, 256)
+    flux = spectral_flux(x, 1024, 256)
+    tf = (np.arange(len(flux)) * 256 + 512) / sr
+    fig, (a1, a2) = plt.subplots(2, 1, figsize=(10, 5.6), facecolor=BG, sharex=True)
+    for ax in (a1, a2):
+        _style(ax)
+    a1.plot(np.arange(len(x)) / sr, x, color=BLUE, lw=0.6)
+    for k, t0 in enumerate(truth):
+        a1.axvline(t0, color=GREEN, ls="--", lw=1.1, label="click" if k == 0 else None)
+    for k, t0 in enumerate(found):
+        a1.axvline(t0, color=RED, lw=1.1, label="onset_detect" if k == 0 else None)
+    a1.set_ylabel("amplitude")
+    a1.legend(frameon=False, loc="upper right")
+    a1.set_title(
+        f"Five clicks: {len(found)} onsets, each within {np.abs(found - truth).max() * 1000:.0f} ms"
+    )
+    a2.plot(tf, flux / flux.max(), color=VIOLET, lw=1.4)
+    a2.set_ylabel("spectral flux")
+    a2.set_xlabel("time (s)")
+    a2.set_title("spectral_flux: it rises when the spectrum gains energy")
+    _save(fig, "onset.png")
+
+
+def fig_envelope():
+    sr = 8000
+    e = ADSR(0.1, 0.2, 0.5, 0.3, 1.0, sr)
+    t = np.arange(int(1.6 * sr)) / sr
+    amp = np.array([e.value(v) for v in t])
+    x = amp * np.sin(2 * np.pi * 440.0 * t)
+    raw = np.abs(hilbert(x))
+    env = envelope_follower(x, float(sr), 0.01, 0.1)
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(12, 4.2), facecolor=BG, sharey=True)
+    for ax in (a1, a2):
+        _style(ax)
+    a1.plot(t, x, color=BLUE, lw=0.4, alpha=0.6, label="the sound")
+    a1.plot(t, amp, color=GREEN, lw=1.8, label="ADSR that made it")
+    a1.set_title("A 440 Hz note shaped by ADSR(0.1, 0.2, 0.5, 0.3, 1.0)")
+    a1.legend(frameon=False, loc="upper right")
+    a2.plot(t, raw, color=AMBER, lw=1.2, label="|hilbert(x)|")
+    a2.plot(
+        t, env, color=RED, lw=2, label="envelope_follower: attack 10 ms, release 100 ms"
+    )
+    a2.set_title("The envelope: raw, and smoothed with an attack and a release")
+    a2.legend(frameon=False, loc="upper right")
+    for ax in (a1, a2):
+        ax.set_xlabel("time (s)")
+    a1.set_ylabel("amplitude")
+    _save(fig, "envelope.png")
+
+
+def fig_compressor():
+    x = np.linspace(-60, 0, 301)
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(12, 4.4), facecolor=BG)
+    for ax in (a1, a2):
+        _style(ax)
+    a1.plot(x, x, color=GREY, ls="--", lw=1, label="no compression")
+    a1.plot(x, gain_curve(x, -20, 4, 0), color=BLUE, lw=2, label="ratio 4, knee 0")
+    a1.plot(x, gain_curve(x, -20, 4, 12), color=RED, lw=2, label="ratio 4, knee 12 dB")
+    a1.axvline(-20, color=GREY, ls=":", lw=1)
+    a1.text(-19.5, -58, "threshold", fontsize=8, color=GREY)
+    a1.set_xlabel("input level (dB)")
+    a1.set_ylabel("output level (dB)")
+    a1.set_title("gain_curve: above the threshold 4 dB in give 1 dB out")
+    a1.legend(frameon=False, loc="upper left")
+    sr = 8000.0
+    t = np.arange(int(1.0 * sr)) / sr
+    amp = np.where((t > 0.25) & (t < 0.65), 10 ** (-8 / 20), 10 ** (-35 / 20))
+    sig = amp * np.sin(2 * np.pi * 440 * t)
+    c = Compressor(-20.0, 4.0, 0.02, 0.1, 0.0, 0.0, sr)
+    out = np.empty(len(sig))
+    gr = np.empty(len(sig))
+    for i, v in enumerate(sig):
+        out[i] = c.update(v).out
+        gr[i] = c.gain_reduction_db
+    a2.plot(t, sig, color=BLUE, lw=0.5, alpha=0.6, label="input")
+    a2.plot(t, out, color=RED, lw=0.6, label="output")
+    a2.set_xlabel("time (s)")
+    a2.set_ylabel("amplitude")
+    b2 = a2.twinx()
+    b2.plot(t, gr, color=GREEN, lw=2, label="gain reduction (dB)")
+    b2.set_ylabel("gain reduction (dB)", color=GREEN)
+    a2.set_title(
+        "A burst with its peak 12 dB above the threshold: the gain falls, then recovers"
+    )
+    a2.legend(frameon=False, loc="upper right")
+    _save(fig, "compressor.png")
+
+
+def fig_limiter():
+    sr = 8000.0
+    t = np.arange(int(0.8 * sr)) / sr
+    amp = np.where((t > 0.3) & (t < 0.45), 1.2, 0.25)
+    x = amp * np.sin(2 * np.pi * 200 * t)
+    lim = Limiter(-6.0, 0.005, 0.05, sr)
+    y = lim.update_many(x)
+    ceiling = 10 ** (-6 / 20)
+    fig, ax = plt.subplots(figsize=(10, 4.2), facecolor=BG)
+    _style(ax)
+    ax.plot(t, x, color=BLUE, lw=0.8, label="input")
+    ax.plot(t, y, color=RED, lw=1.0, label="output, delayed by 5 ms")
+    for s in (1, -1):
+        ax.axhline(s * ceiling, color=GREY, ls="--", lw=1)
+    ax.text(0.01, ceiling + 0.03, "ceiling -6 dB", fontsize=8, color=GREY)
+    ax.set_xlabel("time (s)")
+    ax.set_ylabel("amplitude")
+    peak_db = 20 * np.log10(np.abs(y).max())
+    ax.set_title(
+        f"Limiter(-6, 0.005): the burst is brought to the ceiling, output peak {peak_db:.2f} dB"
+    )
+    ax.legend(frameon=False, loc="upper right")
+    _save(fig, "limiter.png")
+
+
+def fig_softclip():
+    sr = 44100.0
+    f0 = 5000.0
+    x = np.sin(2 * np.pi * f0 * np.arange(int(sr)) / sr)
+    seg = slice(4410, 4410 + 8820)
+    fig, ax = plt.subplots(figsize=(10, 4.4), facecolor=BG)
+    _style(ax)
+    for os, col in ((1, RED), (4, BLUE)):
+        y = SoftClip(12.0, os, sr).update_many(x)[seg]
+        spec = np.abs(np.fft.rfft(y)) ** 2
+        db = 10 * np.log10(spec / spec.max() + 1e-14)
+        f = np.fft.rfftfreq(len(y), 1 / sr) / 1000
+        step = int(round(f0 * len(y) / sr))
+        mask = np.ones(len(spec), bool)
+        mask[::step] = False
+        mask[0] = False
+        alias = 10 * np.log10(spec[mask].sum() / spec[step])
+        ax.plot(
+            f,
+            db,
+            color=col,
+            lw=0.8,
+            label=f"oversample {os}: the rest is {alias:.0f} dB below the tone",
+        )
+    ax.set_ylim(-120, 5)
+    ax.set_xlabel("frequency (kHz)")
+    ax.set_ylabel("dB")
+    ax.set_title("SoftClip(12): a 5 kHz sine, with and without oversampling")
+    ax.legend(frameon=False, loc="upper right")
+    _save(fig, "softclip.png")
+
+
+def fig_reverb():
+    sr = 8000.0
+    r = SchroederReverb(0.5, 0.0, 1.0, 0.0, sr)
+    h = r.update_many(np.r_[1.0, np.zeros(int(2.8 * sr) - 1)])
+    t = np.arange(len(h)) / sr
+    edc = np.cumsum((h**2)[::-1])[::-1]
+    db = 10 * np.log10(np.maximum(edc / edc[0], 1e-12))
+    measured = reverberation_time(h, sr)
+    fig, (a1, a2) = plt.subplots(2, 1, figsize=(10, 6), facecolor=BG, sharex=True)
+    for ax in (a1, a2):
+        _style(ax)
+    a1.plot(t, h, color=BLUE, lw=0.5)
+    a1.set_ylabel("amplitude")
+    a1.set_title("The response of SchroederReverb(0.5, 0) to one impulse")
+    a2.plot(t, db, color=VIOLET, lw=1.6, label="energy decay (dB)")
+    a2.axhline(-60, color=GREY, ls=":", lw=1)
+    a2.axvline(r.t60_s, color=GREEN, ls="--", lw=1.4, label=f"asked: {r.t60_s:.2f} s")
+    a2.axvline(measured, color=RED, lw=1.2, label=f"measured: {measured:.2f} s")
+    a2.set_ylim(-80, 3)
+    a2.set_xlabel("time (s)")
+    a2.set_ylabel("dB")
+    a2.set_title("The time to fall by 60 dB is the one that was asked")
+    a2.legend(frameon=False, loc="upper right")
+    _save(fig, "reverb.png")
+
+
+def fig_modulation():
+    sr = 8000.0
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(12, 4.2), facecolor=BG)
+    for ax in (a1, a2):
+        _style(ax)
+    t = np.linspace(0, 4, 800)
+    a1.plot(t, 15.0 + 5.0 * np.sin(2 * np.pi * 0.5 * t), color=BLUE, lw=2)
+    a1.set_xlabel("time (s)")
+    a1.set_ylabel("delay (ms)")
+    a1.set_title("Chorus(0.5, 5): the delay swings between 10 and 20 ms")
+    p = Phaser(0.05, 1.0, 4, sr, 0.5)
+    n_late = int(sr / (4 * 0.05))
+    for n, col in ((0, BLUE), (n_late, RED)):
+        q = p.clone()
+        q._n = n
+        h = q.update_many(np.r_[1.0, np.zeros(4095)])
+        f = np.fft.rfftfreq(len(h), 1 / sr)
+        a2.plot(
+            f,
+            np.abs(np.fft.rfft(h)),
+            color=col,
+            lw=1.4,
+            label=f"corner {q.corner_frequency(n):.0f} Hz",
+        )
+    a2.set_xlim(0, 4000)
+    a2.set_xlabel("frequency (Hz)")
+    a2.set_ylabel("gain")
+    a2.set_title("Phaser(0.05, 1, 4): two notches, and they move with the LFO")
+    a2.legend(frameon=False)
+    _save(fig, "modulation.png")
+
+
+def fig_timescale():
+    sr = 8000
+    t = np.arange(sr) / sr
+    x = np.sin(2 * np.pi * np.where(t < 0.5, 440.0, 660.0) * t)
+    cases = [
+        ("the sound: 440 Hz, then 660 Hz", x),
+        ("time_stretch(x, sr, 2): twice as long, same pitch", time_stretch(x, sr, 2.0)),
+        ("pitch_shift(x, sr, 12): same length, an octave up", pitch_shift(x, sr, 12.0)),
+    ]
+    fig, axes = plt.subplots(1, 3, figsize=(13, 4.2), facecolor=BG)
+    for ax, (title, y) in zip(axes, cases):
+        spec = stft(y, 256, 64, "hann")
+        db = 20 * np.log10(np.abs(spec).T + 1e-9)
+        ax.imshow(
+            db,
+            origin="lower",
+            aspect="auto",
+            extent=[0, len(y) / sr, 0, sr / 2],
+            cmap="magma",
+            vmin=db.max() - 70,
+            vmax=db.max(),
+        )
+        ax.set_ylim(0, 2000)
+        ax.set_xlabel("time (s)")
+        ax.set_title(title, fontsize=9)
+    axes[0].set_ylabel("frequency (Hz)")
+    _save(fig, "timescale.png")
+
+
+def fig_differentiable():
+    import jax
+    import jax.numpy as jnp
+
+    sr = 8000.0
+    x = jnp.asarray(np.random.default_rng(0).standard_normal(2000), dtype=jnp.float32)
+    target = jax_biquad(*jax_lowpass(1000.0, sr), x)
+
+    def loss(log_f0):
+        return jnp.mean(
+            (jax_biquad(*jax_lowpass(jnp.exp(log_f0), sr), x) - target) ** 2
+        )
+
+    step = jax.jit(jax.value_and_grad(loss))
+    u = jnp.log(2000.0)
+    history = []
+    for _ in range(60):
+        value, grad = step(u)
+        history.append((float(jnp.exp(u)), float(value)))
+        u = u - 2.0 * grad
+    w = np.linspace(0.001, np.pi, 600)
+    z = np.exp(-1j * w)
+
+    def response(f0):
+        b, a = lowpass(f0, sr)
+        return 20 * np.log10(
+            np.abs((b[0] + b[1] * z + b[2] * z**2) / (1 + a[1] * z + a[2] * z**2))
+        )
+
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4), facecolor=BG)
+    ax = axes[0]
+    _style(ax)
+    for n, color in ((0, AMBER), (1, VIOLET), (2, GREEN)):
+        ax.plot(
+            w * sr / (2 * np.pi),
+            response(history[n][0]),
+            color=color,
+            label=f"step {n}: {history[n][0]:.0f} Hz",
+        )
+    ax.plot(
+        w * sr / (2 * np.pi),
+        response(1000.0),
+        "--",
+        color=GREY,
+        label="target: 1000 Hz",
+    )
+    ax.set_ylim(-40, 5)
+    ax.set_xlabel("frequency (Hz)")
+    ax.set_ylabel("magnitude (dB)")
+    ax.set_title("the cutoff moves to the target", fontsize=10)
+    ax.legend(fontsize=8)
+    ax = axes[1]
+    _style(ax)
+    ax.semilogy(range(len(history)), [h[1] + 1e-16 for h in history], color=BLUE)
+    ax.set_xlabel("gradient step")
+    ax.set_ylabel("mean squared error")
+    ax.set_title("the loss, through jax_lowpass and jax_biquad", fontsize=10)
+    _save(fig, "differentiable.png")
+
+
 if __name__ == "__main__":
     for f in (
         fig_adapter,
@@ -577,5 +957,16 @@ if __name__ == "__main__":
         fig_glide,
         fig_nmf,
         fig_events,
+        fig_mel,
+        fig_mel_mfcc,
+        fig_onset,
+        fig_envelope,
+        fig_compressor,
+        fig_limiter,
+        fig_softclip,
+        fig_reverb,
+        fig_modulation,
+        fig_timescale,
+        fig_differentiable,
     ):
         f()

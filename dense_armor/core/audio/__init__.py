@@ -1,6 +1,6 @@
 """Audio: sound as a value, WAV files, windows, STFT, generators, filters, NMF and streams."""
 
-from dense_armor.core.audio.adapter import AudioInput, run_estimators
+from dense_armor.core.audio.adapter import AudioInput, run_channels, run_estimators
 from dense_armor.core.audio.allpole import AllPole, reflection_to_lpc
 from dense_armor.core.audio.biquad import (
     Biquad,
@@ -18,6 +18,19 @@ from dense_armor.core.audio.blamp import (
     triangle_blamp,
 )
 from dense_armor.core.audio.clipping import hard_clip
+from dense_armor.core.audio.diff_filter import (
+    JaxBiquad,
+    jax_allpole_time_varying,
+    jax_biquad,
+    jax_lowpass,
+)
+from dense_armor.core.audio.dynamics import (
+    Compressor,
+    Limiter,
+    SoftClip,
+    gain_curve,
+)
+from dense_armor.core.audio.envelope import envelope_follower, hilbert
 from dense_armor.core.audio.events import detect_events
 from dense_armor.core.audio.features import AudioFeatures
 from dense_armor.core.audio.fir import FIR, DelayLine, convolve
@@ -35,7 +48,16 @@ from dense_armor.core.audio.generators import (
     plucked_string,
     white_noise,
 )
+from dense_armor.core.audio.modulation import Chorus, Phaser
 from dense_armor.core.audio.nmf import nmf, separate
+from dense_armor.core.audio.onset import onset_detect
+from dense_armor.core.audio.perceptual import (
+    hz_to_mel,
+    mel_filterbank,
+    mel_spectrogram,
+    mel_to_hz,
+    mfcc,
+)
 from dense_armor.core.audio.pitch import YIN, cmndf, yin_f0
 from dense_armor.core.audio.pitch_units import (
     cents_to_freq,
@@ -49,8 +71,27 @@ from dense_armor.core.audio.resample import (
     rational_ratio,
     resample,
 )
+from dense_armor.core.audio.reverb import (
+    AllpassFilter,
+    CombFilter,
+    SchroederReverb,
+    comb_gain,
+    reverberation_time,
+)
 from dense_armor.core.audio.signal import Audio
+from dense_armor.core.audio.spectral import (
+    spectral_centroid,
+    spectral_flatness,
+    spectral_flux,
+    spectral_rolloff,
+)
 from dense_armor.core.audio.streams import AudioFileStream, AudioLiveStream
+from dense_armor.core.audio.timescale import (
+    Harmonizer,
+    pitch_shift,
+    psola_time_stretch,
+    time_stretch,
+)
 from dense_armor.core.audio.wav import read_wav, write_wav
 from dense_armor.core.audio.windows import (
     blackman,
@@ -64,17 +105,30 @@ __all__ = [
     "ADSR",
     "DelayLine",
     "FIR",
+    "Harmonizer",
+    "JaxBiquad",
+    "jax_allpole_time_varying",
+    "jax_biquad",
+    "jax_lowpass",
     "YIN",
     "AllPole",
+    "AllpassFilter",
     "Audio",
     "AudioFeatures",
     "AudioFileStream",
     "AudioInput",
     "AudioLiveStream",
     "Biquad",
+    "Chorus",
+    "CombFilter",
+    "Compressor",
     "KarplusStrong",
+    "Limiter",
     "Oscillator",
+    "Phaser",
     "Resampler",
+    "SchroederReverb",
+    "SoftClip",
     "StreamingSTFT",
     "bandpass",
     "blamp_residual",
@@ -82,10 +136,13 @@ __all__ = [
     "cents_to_freq",
     "cmndf",
     "cola_ok",
+    "comb_gain",
     "convolve",
     "detect_events",
+    "envelope_follower",
     "freq_to_cents",
     "freq_to_note",
+    "gain_curve",
     "get_window",
     "hamming",
     "hann",
@@ -93,14 +150,23 @@ __all__ = [
     "hard_clip_blamp",
     "highpass",
     "highshelf",
+    "hilbert",
+    "hz_to_mel",
     "istft",
     "lowpass",
     "lowshelf",
+    "mel_filterbank",
+    "mel_spectrogram",
+    "mel_to_hz",
+    "mfcc",
     "nmf",
     "note_to_freq",
     "notch",
+    "onset_detect",
     "peaking",
     "pink_noise",
+    "pitch_shift",
+    "psola_time_stretch",
     "pitch_ratio_transition",
     "plucked_string",
     "rational_ratio",
@@ -108,9 +174,16 @@ __all__ = [
     "rectangular",
     "reflection_to_lpc",
     "resample",
+    "reverberation_time",
+    "run_channels",
     "run_estimators",
     "separate",
+    "spectral_centroid",
+    "spectral_flatness",
+    "spectral_flux",
+    "spectral_rolloff",
     "stft",
+    "time_stretch",
     "triangle_blamp",
     "white_noise",
     "write_wav",

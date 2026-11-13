@@ -269,6 +269,10 @@ nav:
       - Making sound: audio/synthesis.md
       - Pitch: audio/pitch.md
       - Resampling: audio/resampling.md
+      - Perceptual analysis: audio/perceptual.md
+      - Effects: audio/effects.md
+      - Time and pitch: audio/timescale.md
+      - Filters you can train: audio/differentiable.md
       - Separating sources: audio/analysis.md
       - Events and streams: audio/events.md
       - Sources and checks: audio/sources.md
