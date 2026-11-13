@@ -41,10 +41,34 @@ How to read the last column:
 - Ties in `freq_to_note` round half to even.
 - The `budget_s` of each primitive is a measurement on one machine, not a guarantee: for example the p99 of `YIN` on a block of 1024 samples was 3.2e-4 s and its budget is 4e-3 s.
 
-## 3. What is not in the section
+## 3. The scaling of the bands, measured
+
+Purwins et al. (2019), *Deep Learning for Audio Signal Processing*, page 3, says that audio models take logarithmic magnitudes (the log-mel spectrum), that the bands follow a mel scale, and that "value distributions differ significantly between frequency bands. To counter this, spectrograms can be standardized separately per band." It is a statement about deep networks and gives no formula or number to recompute. It does not say which online primitive of Dense-Armor profits from it, so this was measured.
+
+The test: for each of the 40 classifiers, regressors, anomaly scorers and drift detectors of `core/online` that are built without arguments, one task of its role on synthetic tones (8 kHz, blocks of 512 samples, 300 blocks): two groups of tones to tell apart, a frequency to estimate, bursts of noise to find among tones, a jump of amplitude to detect. Each primitive got the band magnitudes as they are, standardised online band by band, and with `log(1 + x)` before the standardising. The same on 5 different series of data. A primitive "learns" when it reaches 0.75 accuracy, or its error is at most 0.80 of the error of predicting the mean, or its AUC is at least 0.75, or it fires within 40 blocks of the change with at most one false alarm. These thresholds are my choice.
+
+| scaling | primitives that learn, summed over the 5 series (40 x 5 = 200) |
+| --- | --- |
+| magnitudes as they are | 119 |
+| standardised | 115 |
+| `log(1 + x)` and standardised | 104 |
+| the best of the three for each primitive, chosen on 4 series and tried on the fifth, in turn | 139 |
+
+No single scaling is better for all. Four primitives profit and are in `SCALING`, so `AudioInput` gives them the scaling by default (`scaling="auto"`): `AMRulesRegressor` and `OneClassSGD` with `std`; `AggregatedMondrianForestRegressor` and `OnlineExtraTreesRegressor` with `logstd`. On two further series, never seen, run through `AudioInput` itself, the error of `AMRulesRegressor` over the baseline went from 1.00 (twice) to 0.21 and 0.20, the AUC of `OneClassSGD` from 0.55 and 0.59 to 0.83 and 0.80, and the two forests went from 0.95 and 0.93 to 0.84 and 0.79 (`AggregatedMondrianForestRegressor`) and from 0.79 and 1.04 to 0.66 and 0.73 (`OnlineExtraTreesRegressor`).
+
+The others get the magnitudes as they are, for these reasons:
+
+- `ComplementNB` and `MultinomialNB` stop answering when the numbers can be negative, as a standardised band is. This is the likely cause, not checked.
+- A drift detector looks for a change of level, and a standardising with a mean that follows the signal removes it: `ADWIN` learned in 5 series with the magnitudes and in none with a standardising.
+- Two primitives preferred another scaling in one or two series out of five only (`BayesianOnlineChangepoint`, `HampelScorer`). It is not enough, and they stay as they are.
+- 10 primitives learned in no series, whatever the scaling: `BatchDecisionTreeClassifier` (it never answers), `BernoulliNB`, `CategoricalNB`, `SGTClassifier`, `SGTRegressor`, `FIMTDDRegressor`, `CUSUMDriftDetector`, `KSWIN`, `TukeyScorer` and `ChauvenetScorer`. Why was not looked for.
+
+What it does not show: the data are synthetic tones from one generator, the primitives have their default parameters, and no real recording was used. The mel scale of the frequencies, the third thing the paper names, was not tried: the bands of `AudioFeatures` are 8 groups of the same width. `AudioInput(primitive, scaling=None)` gives the magnitudes as they are, and `"std"` or `"logstd"` force one. `TextInput` and `VideoInput` do not use this table, which was measured on sound only.
+
+## 4. What is not in the section
 
 Because no source in the folder defines them: the chirp (Farina 2000 is not in the folder), IIR filters other than the biquads and the all-pole filter, convolution by the FFT, the envelope follower and the gain curve of a compressor, waveshapers, dithering and quantisation, pan, mid/side and interaural delay, RMS and loudness meters (the K-weighting filter is in ITU-R BS.1770, which is not in the folder), mel and MFCC, onset detection, GCC-PHAT, scales and note events. YIN stops at step 2.
 
-## 4. Where the section lives
+## 5. Where the section lives
 
 The audio section is `dense_armor/core/audio/`. In this release the names of the folders `core` and `utility` of `dense_armor` were swapped: the library is now `dense_armor.core` and the shielding engine `dense_armor.utility`. The old paths still work (see the changelog).

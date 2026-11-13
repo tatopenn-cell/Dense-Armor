@@ -11,6 +11,17 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   the column. A notice on every page says that the demo runs on synthetic data and that the results are not for trading
   decisions. The code is `tools/dashboard/own_data.py`.
 - `DecisionLog.append_many`, which verifies the file once for a whole batch (`append` is now one call of it).
+- `AudioInput(scaling=...)`: `AMRulesRegressor`, `OneClassSGD` (standardised band by band) and `AggregatedMondrianForestRegressor`,
+  `OnlineExtraTreesRegressor` (`log(1 + x)` and standardised) get their band magnitudes scaled by default, because they learned
+  better so (5 series of synthetic tones, then 2 more series through `AudioInput`); every other primitive gets the magnitudes as
+  they are, and `scaling=None` turns it off. The measurement is in `docs/audio/sources.md`. `TextInput` and `VideoInput` do not use it.
+- `TextInput` (`core/signals/preprocessing/text_input.py`) and `VideoInput` (`core/signals/vision/video_input.py`): one
+  adapter each that gives documents or frames to any primitive of the library in the form it takes (a drift detector
+  gets one number, `score_one` scores and learns, `predict_one` and `learn_one` predict and learn with the label,
+  `transform_one` learns and transforms). They extend `AudioInput`, so the choice of the method is not copied, and
+  use the existing `TextVectorizer` and `FrameFeatures` to make the numbers. The 40 classifiers, regressors, anomaly
+  scorers and drift detectors of `core/online` that are built without arguments ran on 24 documents and on 24 frames
+  without an error; the 28 that need arguments were not tried.
 
 ### Changed
 - The names of two folders are swapped. The library (the online learning, the deep learning, the signals, the
