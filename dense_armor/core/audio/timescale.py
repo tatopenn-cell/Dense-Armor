@@ -257,9 +257,7 @@ def psola_time_stretch(x: Any, sr: float, f0: Any, rate: float) -> np.ndarray:
         seg = np.zeros(2 * half + 1)
         src = v[max(lo, 0) : min(hi, n)]
         seg[max(0, -lo) : max(0, -lo) + len(src)] = src
-        win = 0.5 * (
-            1.0 - np.cos(2.0 * np.pi * (np.arange(2 * half + 1) + 1) / (2 * half + 2))
-        )
+        win = 0.5 * (1.0 - np.cos(2.0 * np.pi * np.arange(2 * half + 1) / (2 * half)))
         at = int(round(s)) - half
         a, b = max(at, 0), min(at + 2 * half + 1, len(out))
         if b > a:
