@@ -56,11 +56,13 @@ from dense_armor.core.audio import (  # noqa: E402
     peaking,
     pink_noise,
     pitch_ratio_transition,
+    pitch_shift,
     plucked_string,
     reflection_to_lpc,
     reverberation_time,
     spectral_flux,
     stft,
+    time_stretch,
     triangle_blamp,
     white_noise,
 )
@@ -850,6 +852,35 @@ def fig_modulation():
     _save(fig, "modulation.png")
 
 
+def fig_timescale():
+    sr = 8000
+    t = np.arange(sr) / sr
+    x = np.sin(2 * np.pi * np.where(t < 0.5, 440.0, 660.0) * t)
+    cases = [
+        ("the sound: 440 Hz, then 660 Hz", x),
+        ("time_stretch(x, sr, 2): twice as long, same pitch", time_stretch(x, sr, 2.0)),
+        ("pitch_shift(x, sr, 12): same length, an octave up", pitch_shift(x, sr, 12.0)),
+    ]
+    fig, axes = plt.subplots(1, 3, figsize=(13, 4.2), facecolor=BG)
+    for ax, (title, y) in zip(axes, cases):
+        spec = stft(y, 256, 64, "hann")
+        db = 20 * np.log10(np.abs(spec).T + 1e-9)
+        ax.imshow(
+            db,
+            origin="lower",
+            aspect="auto",
+            extent=[0, len(y) / sr, 0, sr / 2],
+            cmap="magma",
+            vmin=db.max() - 70,
+            vmax=db.max(),
+        )
+        ax.set_ylim(0, 2000)
+        ax.set_xlabel("time (s)")
+        ax.set_title(title, fontsize=9)
+    axes[0].set_ylabel("frequency (Hz)")
+    _save(fig, "timescale.png")
+
+
 if __name__ == "__main__":
     for f in (
         fig_adapter,
@@ -873,5 +904,6 @@ if __name__ == "__main__":
         fig_softclip,
         fig_reverb,
         fig_modulation,
+        fig_timescale,
     ):
         f()

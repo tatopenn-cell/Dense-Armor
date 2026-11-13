@@ -81,6 +81,7 @@ from dense_armor.core.audio.spectral import (
 )
 from dense_armor.core.audio.streams import AudioFileStream, AudioLiveStream
 from dense_armor.core.audio.timescale import (
+    Harmonizer,
     pitch_shift,
     psola_time_stretch,
     time_stretch,
@@ -98,6 +99,7 @@ __all__ = [
     "ADSR",
     "DelayLine",
     "FIR",
+    "Harmonizer",
     "YIN",
     "AllPole",
     "AllpassFilter",

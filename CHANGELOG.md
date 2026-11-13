@@ -5,6 +5,10 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- Audio, time and pitch (`dense_armor/core/audio/timescale.py`): `time_stretch` (a phase vocoder), `pitch_shift`,
+  `psola_time_stretch` and `Harmonizer`; the pitch of the output is kept to a few cents, the level is kept, and a rate of 1 gives
+  the input back. Multichannel live input (`AudioLiveStream(channels=...)`, `Audio.channel`, `run_channels`). A page
+  (`docs/audio/timescale.md`) and two more golden files.
 - Audio, effects (`dense_armor/core/audio/dynamics.py`, `reverb.py`, `modulation.py`): `Compressor` and `gain_curve`, a lookahead
   `Limiter` (no sample above the ceiling), `SoftClip` with oversampling, `CombFilter`, `AllpassFilter` and `SchroederReverb`
   (the reverberation time measured on the impulse response is within 0.7% of the one asked), `reverberation_time`, `Chorus` and

@@ -5,6 +5,7 @@ import pytest
 
 from dense_armor.core.audio import yin_f0
 from dense_armor.core.audio.timescale import (
+    Harmonizer,
     pitch_shift,
     psola_time_stretch,
     time_stretch,
@@ -260,3 +261,49 @@ def test_psola_refuses_what_it_cannot_do():
             psola_time_stretch(x, args["sr"], 200.0, args["rate"])
     with pytest.raises(ValueError, match="one value for each sample"):
         psola_time_stretch(x, SR, np.full(10, 200.0), 2.0)
+
+
+def _peaks(y, floor=0.2, pad=16):
+    spec = np.abs(np.fft.rfft(y * np.hanning(len(y)), pad * len(y)))
+    freq = np.fft.rfftfreq(pad * len(y), 1 / SR)
+    idx = [
+        i
+        for i in range(1, len(spec) - 1)
+        if spec[i] > spec[i - 1]
+        and spec[i] > spec[i + 1]
+        and spec[i] > floor * spec.max()
+    ]
+    return [(float(freq[i]), float(spec[i])) for i in idx]
+
+
+def test_the_harmonizer_gives_the_three_pitches():
+    x = _sine(440.0)
+    z = Harmonizer((-12, 0, 12), SR).process(x)[1000:-1000]
+    found = _peaks(z)
+    assert len(found) == 3
+    for (f, _), want in zip(sorted(found), (220.0, 440.0, 880.0)):
+        assert abs(_cents(f, want)) < 20.0
+    levels = [a for _, a in sorted(found)]
+    assert max(levels) / min(levels) < 1.15
+
+
+def test_the_harmonizer_is_the_mean_of_the_shifted_copies():
+    x = _sine(440.0, 6000)
+    h = Harmonizer((0, 7, -5), SR)
+    want = (x + pitch_shift(x, SR, 7.0) + pitch_shift(x, SR, -5.0)) / 3
+    assert np.allclose(h.process(x), want, atol=1e-12)
+    assert np.allclose(Harmonizer((0,), SR).process(x), x)
+
+
+def test_the_harmonizer_keeps_the_length_and_its_parameters():
+    h = Harmonizer([-12, 0, 7], SR, 1024, 256)
+    assert h.intervals_semitones == (-12.0, 0.0, 7.0)
+    assert len(h.process(_sine(440.0, 5003))) == 5003
+    assert h.clone().get_params() == h.get_params()
+
+
+def test_the_harmonizer_refuses_no_interval_and_no_rate():
+    with pytest.raises(ValueError, match="must not be empty"):
+        Harmonizer((), SR)
+    with pytest.raises(ValueError, match="must not be empty"):
+        Harmonizer((0,), 0.0)

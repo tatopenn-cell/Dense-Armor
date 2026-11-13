@@ -20,7 +20,9 @@ from dense_armor.core.audio import (
     mel_spectrogram,
     mfcc,
     onset_detect,
+    pitch_shift,
     read_wav,
+    time_stretch,
     write_wav,
 )
 
@@ -33,6 +35,8 @@ OUTPUTS = {
     "sine_440_onset.npy": lambda x: onset_detect(x, SR),
     "sine_440_compressed.npy": lambda x: Compressor(sr=SR).update_many(x),
     "sine_440_reverb.npy": lambda x: SchroederReverb(sr=SR).update_many(x),
+    "sine_440_stretch_2x.npy": lambda x: time_stretch(x, SR, 2.0),
+    "sine_440_shift_up_octave.npy": lambda x: pitch_shift(x, SR, 12.0),
 }
 
 

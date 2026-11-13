@@ -53,6 +53,7 @@ True score
 | [Resampling](resampling.md) | change the sample rate, or glide the pitch, without a click | `Resampler`, `resample`, `pitch_ratio_transition`, `rational_ratio` |
 | [Perceptual analysis](perceptual.md) | describe a sound as a listener would: bands, cepstrum, brightness, onsets, envelope | `mel_filterbank`, `mel_spectrogram`, `mfcc`, `spectral_centroid`, `spectral_flux`, `onset_detect`, `hilbert`, `envelope_follower` |
 | [Effects](effects.md) | change how loud, how clean, how roomy or how moving a sound is | `Compressor`, `Limiter`, `SoftClip`, `SchroederReverb`, `Chorus`, `Phaser` |
+| [Time and pitch](timescale.md) | make a sound longer or shorter, or higher or lower, without changing the other | `time_stretch`, `pitch_shift`, `psola_time_stretch`, `Harmonizer` |
 | [Separating sources](analysis.md) | split a sound into parts | `nmf`, `separate` |
 | [Events and streams](events.md) | read a file or a live input and find the moment something happens | `AudioFileStream`, `AudioLiveStream`, `AudioFeatures`, `AudioInput`, `run_estimators`, `detect_events` |
 | [Sources and checks](sources.md) | see which paper each primitive comes from, what was checked, and what is missing | |
