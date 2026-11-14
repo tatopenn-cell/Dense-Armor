@@ -2,6 +2,8 @@
 
 This is a small program that lets an AI assistant use Dense-Armor's tools directly, as if they were its own, without importing the library.
 
+> This page is about the shielding component (`Armor`, `Orca` and their engine), a separate part of Dense-Armor. It is not the learning toolkit, which is described in the [README](https://github.com/tatopenn-cell/Dense-Armor#readme) and on the home page.
+
 Dense-Armor ships a Model Context Protocol server: a small process that exposes the
 library's shields and detectors over the MCP protocol, so an LLM agent that already
 speaks MCP can call them as tools without importing anything.
