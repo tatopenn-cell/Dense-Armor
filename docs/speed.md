@@ -50,5 +50,4 @@ From the repository root:
 
 The script writes a JSON next to the working directory and prints the
 per-component table. It reads only the library under `dense_armor/` and
-the standard library; a reference implementation is imported only if the
-environment variable `SPEED_REF` names the module to import.
+the standard library.

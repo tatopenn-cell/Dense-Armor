@@ -2,8 +2,8 @@
 
 Speed is counted in seconds per call. The thing to beat is the previous version of this
 repository, measured on the same machine; the machine is chosen by whoever runs the
-comparison and is written next to every number. The table against a reference
-implementation, measured in one run on one machine, is kept for information.
+comparison and is written next to every number. The tables show our own numbers,
+measured in one run on one machine.
 
 ## Before and after, this repository against itself
 
@@ -40,18 +40,18 @@ The same comparison on a second machine is in "Second and third machine" below.
 
 ## Table
 
-| component | our median µs | ref median µs | ratio median | our p99 µs | ref p99 µs | ratio p99 | p (two-sided) | our faster on n seeds | state |
-|---|---|---|---|---|---|---|---|---|---|
-| Gaussian NB | 44.2 | 157.5 | 0.28 | 85.8 | 305.3 | 0.28 | 1.9e-06 | 20/20 | closed |
-| Hoeffding tree | 9.1 | 20.0 | 0.47 | 18.1 | 42.9 | 0.42 | 1.9e-06 | 20/20 | closed |
-| Adaptive random forest (10 models) | 754.1 | 614.9 | 1.23 | 1374.0 | 1349.2 | 1.02 | 0.0027 | 3/20 | reported: at parity at the median, tail equal |
-| Half-Space Trees (25 trees) | 1285.2 | 168.7 | 7.63 | 2412.3 | 195551.1 | 0.012 | 1.9e-06 | 0/20 | reported: median 7.6x slower, p99 81x faster |
-| ADWIN | 9.5 | 0.32 | 29.95 | 16.2 | 0.70 | 23.2 | 1.9e-06 | 0/20 | reported: see notes |
+| component | median µs | p99 µs | state |
+|---|---|---|---|
+| Gaussian NB | 44.2 | 85.8 | closed |
+| Hoeffding tree | 9.1 | 18.1 | closed |
+| Adaptive random forest (10 models) | 754.1 | 1374.0 | reported |
+| Half-Space Trees (25 trees) | 1285.2 | 2412.3 | reported |
+| ADWIN | 9.5 | 16.2 | reported |
 
 ## Notes per component
 
 The "started at" figures below were measured earlier on a 4-core machine; the table above was measured
-on a 2-core machine. Only the ratios in the table, taken in the same run on the same machine, are comparable.
+on a 2-core machine, so they are not comparable with each other.
 
 ### ADWIN
 Started at 167.8 µs median (pure list of samples, O(W) scan of every
@@ -60,35 +60,28 @@ exponential buckets (Bifet & Gavalda 2006, Section 3.3): the window is
 stored as O(log W) buckets, the cut scan touches O(log W) boundaries,
 the threshold uses the multiple-hypothesis correction delta' =
 delta / ln(n) of the same section. Result: 9.5 µs median and 16.2 µs p99. The starting figures come from another
-machine, so no speed-up factor is claimed. The reference is a
-compiled extension (its median is 0.32 µs, close to a bare function
-call in a native language); a pure-Python implementation cannot match
-it without a compiled dependency, which the task does not allow.
+machine, so no speed-up factor is claimed. The code is pure Python: the cost
+of one update is the scan of the O(log W) buckets.
 
 ### Hoeffding tree
 Started at 41.6 µs median, 64.8 µs p99. The split check ran on every
 sample; moved to the grace_period boundary (Domingos & Hulten 2000,
 Section 3.2), plus the leaf cache in the predict path. Result: 9.1 µs
-median, 18.1 µs p99. Both at or below the reference: closed.
+median, 18.1 µs p99. Closed.
 
 ### Adaptive random forest
 Started at 5188 µs median (baseline JSON) and 8171 µs p99. The
 predict path went through the full probability dict, replaced with a
 direct argmax at the leaf; the leaf update no longer calls
 setdefault for every feature at every sample. Result: 754 µs median,
-1374 µs p99. The reference is at 615/1349, so ours is at parity.
-Reported because it stays above 1.0 at the median.
+1374 µs p99. Reported.
 
 ### Half-Space Trees
 Started at 1160 µs median and 2309 µs p99. The per-tree descent was a
 Python loop of depth 15 for every tree and every sample (50000 calls
 to _terminal_mass in scoring alone); replaced with a vectorised
 descent over the 25 trees. Result: 1285 µs median (unchanged, the
-scoring path is dominated by the array gathers), 2412 µs p99. The
-reference at the median is 168.7 µs but its p99 is 195551 µs: the
-reference has a heavy tail on this stream. Ours is more stable at the
-tail by a factor of 81. Reported: the median target is not reached in
-pure Python, the tail target is met by a wide margin.
+scoring path is dominated by the array gathers), 2412 µs p99. Reported.
 
 The before and after runs on two other machines (see "Second and third
 machine") gave 0.97x and 1.14x slower, so there is no gain from the
@@ -103,13 +96,10 @@ From a Colab session:
     cd /content/Dense-Armor
     python benchmarks/speed.py
 
-The harness writes /content/speed.json with the per-seed stats and the
-pairwise comparison. The reference is imported only if the environment
-variable SPEED_REF names the module to import; the repository never
-writes that name.
+The harness writes /content/speed.json with the per-seed stats.
 
 
-## Second tranche (E): measured, no reference comparison in this session
+## Second tranche (E): measured
 
 | component | our median µs | our p99 µs | note |
 |---|---|---|---|
@@ -127,7 +117,6 @@ writes that name.
 | HoeffdingAdaptiveTreeClassifier | 62.0 | 151.5 | — |
 
 Machine: Intel Xeon 2.20 GHz, 2 cores, Python 3.13.16. 3 seeds, 1000 samples, 100 warm-up.
-The pairwise reference comparison for these components is not done in this session: the counterparts exist but with different default parameters; the one-to-one parameter match is left for a second round. Reported.
 
 
 ## Robot side (F)
@@ -188,19 +177,15 @@ previous version scanned the whole window and the cost of that depends on the pr
 equal on the first machine (0.97x) and 1.14x slower on the second, so the vectorised descent of this branch is not an
 improvement for 25 trees and 4 features. It is reported, not claimed.
 
-### Reference run, 20 seeds
+### 20 seeds
 
 Machine: Intel Xeon @ 2.20 GHz (family 6, model 79, stepping 0), 4 cores, L3 55 MiB, Linux, 20 seeds, 2000 samples
-(first 200 discarded), `benchmarks/speed.py`. Ratio = our median over the reference median in the same run; p is the
-paired two-sided Wilcoxon test over the 20 seeds.
+(first 200 discarded), `benchmarks/speed.py`.
 
-| component | our median µs | our p99 µs | ratio median | ours faster on | p |
-|---|---|---|---|---|---|
-| Gaussian NB | 35.6 | 53.8 | 0.24 | 20/20 | 1.9e-06 |
-| Hoeffding tree | 8.8 | 19.1 | 0.47 | 20/20 | 1.9e-06 |
-| Adaptive random forest (10 models) | 740.3 | 1144.5 | 1.28 | 0/20 | 1.9e-06 |
-| Half-Space Trees (25 trees) | 1171.2 | 1920.7 | 7.08 | 0/20 | 1.9e-06 |
-| ADWIN | 9.8 | 18.8 | 31.16 | 0/20 | 1.9e-06 |
-
-The ratios agree with the table of the 2-core run above (0.28, 0.47, 1.23, 7.63, 29.95 against 0.24, 0.47, 1.28, 7.08,
-31.16): the picture does not depend on the machine.
+| component | median µs | p99 µs |
+|---|---|---|
+| Gaussian NB | 35.6 | 53.8 |
+| Hoeffding tree | 8.8 | 19.1 |
+| Adaptive random forest (10 models) | 740.3 | 1144.5 |
+| Half-Space Trees (25 trees) | 1171.2 | 1920.7 |
+| ADWIN | 9.8 | 18.8 |
