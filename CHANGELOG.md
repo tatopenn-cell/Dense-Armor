@@ -45,7 +45,10 @@ nine pytest jobs, and a swap of the names of the folders
   the pre-trade checker and writes every decision to the log.
 - The dashboard, a browser front-end for the finance system (`tools/dashboard/`, one command, Flask and NumPy, no network at run
   time), and a setup wizard for Windows (`dashboard-installer.yml` builds, installs, runs and uninstalls it) with a launcher that
-  starts without a console and stops when the page is closed.
+  starts without a console and stops when the page is closed. The dashboard and its installer are a work in progress.
+- `ADWIN(clock=...)`: the cut test runs once every `clock` updates. The default is `1`, which flags exactly the same updates as
+  before (checked on six streams); a larger value makes `update` cheaper and delays a flag by less than `clock` updates. The
+  loops of `update` use local variables (9.0 to 8.4 µs per update on one machine).
 - Tests that were missing for `armor.py` (the drift detector, the report and the command line), for the two CBF controllers
   (they ran only in the heavy tests: six-joint arm, the solver forced to fail at each level), for every tensor geometry of
   `AdaptiveSignalStabilizer`, and for `python -m dense_armor`.
@@ -91,6 +94,7 @@ nine pytest jobs, and a swap of the names of the folders
 - The 172 tests that take three seconds or more are marked `slow` from the list `test/slow_tests.txt` and are left out of the
   workflow; run them locally with `pytest -m slow`. On one core the selection of the workflow went from 1306 s to 610 s. The
   coverage that Codecov sees is lower, because it no longer counts them.
+- `benchmarks/speed.py` measures only the estimators of this library.
 - The speed pages (`docs/speed.md`, `benchmarks/speed_log.md`, `benchmarks/speed_delivery.md`) show only the numbers of this
   library.
 - `codecov.yml`: the folder names from before the swap of `core` and `utility` are ignored (Codecov counted the library twice and
