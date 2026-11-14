@@ -11,7 +11,7 @@ license = "AGPL-3.0-or-later"
 license-files = ["LICENSE"]
 authors = [{ name = "Salvatore Pennacchio", email = "jtatopenn@libero.it" }]
 requires-python = ">=3.10"
-keywords = ["online-learning", "streaming", "robotics", "anomaly-detection", "drift-detection", "ai-safety", "robust-statistics", "jax"]
+keywords = ["online-learning", "deep-learning", "machine-learning", "streaming", "robotics", "robot-control", "anomaly-detection", "drift-detection", "ontology", "audio", "video", "finance", "ai-safety", "robust-statistics", "jax"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Intended Audience :: Science/Research",
