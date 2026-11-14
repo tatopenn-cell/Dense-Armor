@@ -6,11 +6,11 @@ Complete map of every public class in Dense-Armor: description,
 base classes, public methods. When a class has a guide page,
 the link leads there for the full explanation and examples.
 
-**434 classes**, 3765 public methods, 233 public modules.
+**449 classes**, 3783 public methods, 241 public modules.
 
 ## Classes by subsystem
 
-**Jump to:** [Roles](#roles) &nbsp;·&nbsp; [Metrics](#metrics) &nbsp;·&nbsp; [Evaluate](#evaluate) &nbsp;·&nbsp; [Core](#core) &nbsp;·&nbsp; [Mcp_server](#mcp_server) &nbsp;·&nbsp; [Anomaly](#anomaly) &nbsp;·&nbsp; [Drift](#drift) &nbsp;·&nbsp; [Trees](#trees) &nbsp;·&nbsp; [Naive Bayes](#naive-bayes) &nbsp;·&nbsp; [Distributions](#distributions) &nbsp;·&nbsp; [Nearest neighbours](#nearest-neighbours) &nbsp;·&nbsp; [Multiclass](#multiclass) &nbsp;·&nbsp; [Multi-output](#multi-output) &nbsp;·&nbsp; [Forests](#forests) &nbsp;·&nbsp; [Ensembles](#ensembles) &nbsp;·&nbsp; [Bandits](#bandits) &nbsp;·&nbsp; [Active learning](#active-learning) &nbsp;·&nbsp; [Factorization machines](#factorization-machines) &nbsp;·&nbsp; [Recommenders](#recommenders) &nbsp;·&nbsp; [Rules](#rules) &nbsp;·&nbsp; [Clustering](#clustering) &nbsp;·&nbsp; [Stats](#stats) &nbsp;·&nbsp; [Preprocessing](#preprocessing) &nbsp;·&nbsp; [Compose](#compose) &nbsp;·&nbsp; [Vision](#vision) &nbsp;·&nbsp; [Learn](#learn) &nbsp;·&nbsp; [Datasets](#datasets) &nbsp;·&nbsp; [Protect](#protect) &nbsp;·&nbsp; [Bridges](#bridges) &nbsp;·&nbsp; [Armor](#armor) &nbsp;·&nbsp; [Dynamics](#dynamics) &nbsp;·&nbsp; [Deep learning](#deep-learning) &nbsp;·&nbsp; [Infrastructure](#infrastructure) &nbsp;·&nbsp; [Linear](#linear) &nbsp;·&nbsp; [ML](#ml) &nbsp;·&nbsp; [Optimizers](#optimizers) &nbsp;·&nbsp; [Time series](#time-series) &nbsp;·&nbsp; [Audio](#audio) &nbsp;·&nbsp; [Graph (ontology)](#graph-ontology)
+**Jump to:** [Roles](#roles) &nbsp;·&nbsp; [Metrics](#metrics) &nbsp;·&nbsp; [Evaluate](#evaluate) &nbsp;·&nbsp; [Core](#core) &nbsp;·&nbsp; [Mcp_server](#mcp_server) &nbsp;·&nbsp; [Anomaly](#anomaly) &nbsp;·&nbsp; [Drift](#drift) &nbsp;·&nbsp; [Trees](#trees) &nbsp;·&nbsp; [Naive Bayes](#naive-bayes) &nbsp;·&nbsp; [Distributions](#distributions) &nbsp;·&nbsp; [Nearest neighbours](#nearest-neighbours) &nbsp;·&nbsp; [Multiclass](#multiclass) &nbsp;·&nbsp; [Multi-output](#multi-output) &nbsp;·&nbsp; [Forests](#forests) &nbsp;·&nbsp; [Ensembles](#ensembles) &nbsp;·&nbsp; [Bandits](#bandits) &nbsp;·&nbsp; [Active learning](#active-learning) &nbsp;·&nbsp; [Factorization machines](#factorization-machines) &nbsp;·&nbsp; [Recommenders](#recommenders) &nbsp;·&nbsp; [Rules](#rules) &nbsp;·&nbsp; [Clustering](#clustering) &nbsp;·&nbsp; [Stats](#stats) &nbsp;·&nbsp; [Preprocessing](#preprocessing) &nbsp;·&nbsp; [Compose](#compose) &nbsp;·&nbsp; [Vision](#vision) &nbsp;·&nbsp; [Learn](#learn) &nbsp;·&nbsp; [Datasets](#datasets) &nbsp;·&nbsp; [Protect](#protect) &nbsp;·&nbsp; [Bridges](#bridges) &nbsp;·&nbsp; [Armor](#armor) &nbsp;·&nbsp; [Dynamics](#dynamics) &nbsp;·&nbsp; [Deep learning](#deep-learning) &nbsp;·&nbsp; [Infrastructure](#infrastructure) &nbsp;·&nbsp; [Linear](#linear) &nbsp;·&nbsp; [ML](#ml) &nbsp;·&nbsp; [Optimizers](#optimizers) &nbsp;·&nbsp; [Time series](#time-series) &nbsp;·&nbsp; [Audio](#audio) &nbsp;·&nbsp; [Graph (ontology)](#graph-ontology) &nbsp;·&nbsp; [Finance](#finance)
 
 ---
 
@@ -4103,6 +4103,20 @@ Public methods:
 - `dec(v_new: float, fact: float)`
 - `enc(raw_v: float)`
 
+### TextInput
+
+
+*Module:* `dense_armor.core.signals.preprocessing.text_input`
+*Bases:* AudioInput
+*Guide:* [preprocessing/text_input.md](../preprocessing/text_input.md)
+
+Feed documents to a primitive that already exists, in the form it takes.
+
+Public methods:
+
+- `feed(text: Any, y: Any=None, x: dict[str, float] | None=None)`
+- `run(blocks: Iterable[Audio], label: Callable[[Audio], Any] | None=None)`
+
 ## Compose
 
 ### Discard
@@ -4972,6 +4986,20 @@ Public methods:
 - `log(name: str, value: float)`
 - `write(rgb)`
 
+### VideoInput
+
+
+*Module:* `dense_armor.core.signals.vision.video_input`
+*Bases:* AudioInput
+*Guide:* [vision/video_input.md](../vision/video_input.md)
+
+Feed frames to a primitive that already exists, in the form it takes.
+
+Public methods:
+
+- `feed(frame: Any, y: Any=None, x: dict[str, float] | None=None)`
+- `run(blocks: Iterable[Audio], label: Callable[[Audio], Any] | None=None)`
+
 ## Learn
 
 ### DriftAdaptiveClassifier
@@ -5501,6 +5529,30 @@ Public methods:
 - `type(dst_type: torch.dtype | str)`
 - `xpu(device: int | torch.device | None = None)`
 - `zero_grad(set_to_none: bool = True)`
+
+### KerasLayer
+
+
+*Module:* `dense_armor.bridges.tensorflow`
+*Bases:* Layer
+*Guide:* [bridges/tensorflow.md](../bridges/tensorflow.md)
+
+A Dense-Armor model as a ``tf.keras.layers.Layer``.
+
+Public methods:
+
+- `call(x: tf.Tensor, training: bool | None=None)`
+
+### KerasAdapter
+
+
+*Module:* `dense_armor.bridges.tensorflow`
+
+A ``tf.keras`` model usable inside Dense-Armor.
+
+Public methods:
+
+- `apply(x: Any)`
 
 ## Armor
 
@@ -8496,6 +8548,14 @@ Public methods:
 - `update_many(values)`
 - `window_samples(seconds: float)`
 
+### NeedsLabels
+
+
+*Module:* `dense_armor.core.audio.adapter`
+*Bases:* ValueError
+
+The primitive learns from labels and ``feed`` got none.
+
 ## Graph (ontology)
 
 ### Action
@@ -8731,3 +8791,112 @@ Public methods:
 - `to_networkx()`
 - `update(name: str, **state: Any)`
 - `validate(raise_on_violation: bool=False, nodes=None)`
+
+## Finance
+
+### AuditDB
+
+
+*Module:* `dense_armor.core.finance.audit_db`
+*Guide:* [finance/audit_db.md](../finance/audit_db.md)
+
+The decision log of F6 in a PostgreSQL table, with the same hash chain.
+
+Public methods:
+
+- `append(t: float, payload: dict)`
+- `verify()`
+
+### ScheduleConfig
+
+
+*Module:* `dense_armor.core.finance.config`
+*Guide:* [finance/PRIMITIVES.md](../finance/PRIMITIVES.md)
+
+Parameters of :func:`twap_schedule`.
+
+### PreTradeConfig
+
+
+*Module:* `dense_armor.core.finance.config`
+*Guide:* [finance/PRIMITIVES.md](../finance/PRIMITIVES.md)
+
+Parameters of :class:`PreTradeChecker`.
+
+### RingConfig
+
+
+*Module:* `dense_armor.core.finance.config`
+*Guide:* [finance/PRIMITIVES.md](../finance/PRIMITIVES.md)
+
+Parameters of :class:`RingBuffer`.
+
+### PathsConfig
+
+
+*Module:* `dense_armor.core.finance.config`
+*Guide:* [finance/PRIMITIVES.md](../finance/PRIMITIVES.md)
+
+The three paths a configuration names, resolved against the file.
+
+### FinanceConfig
+
+
+*Module:* `dense_armor.core.finance.config`
+*Guide:* [finance/PRIMITIVES.md](../finance/PRIMITIVES.md)
+
+A configuration that the finance blocks accept.
+
+Public methods:
+
+- `make_checker()`
+- `make_ring()`
+
+### DecisionLog
+
+
+*Module:* `dense_armor.core.finance.decision_log`
+*Guide:* [finance/decision_log.md](../finance/decision_log.md)
+
+A JSON-lines file whose records carry the SHA-256 of the previous one.
+
+Public methods:
+
+- `append(t: float, payload: dict)`
+- `append_many(items: Iterable[tuple[float, dict]])`
+- `verify()`
+
+### Decision
+
+
+*Module:* `dense_armor.core.finance.pretrade`
+*Guide:* [finance/pretrade.md](../finance/pretrade.md)
+
+One decision on one order.
+
+### PreTradeChecker
+
+
+*Module:* `dense_armor.core.finance.pretrade`
+*Guide:* [finance/pretrade.md](../finance/pretrade.md)
+
+Accept or reject one order with the five controls of (c)(1).
+
+Public methods:
+
+- `check(account: str, side: str, size: float, price: float, ref_price: float, t: float)`
+- `open_notional(account: str)`
+- `release(account: str, notional: float)`
+
+### RingBuffer
+
+
+*Module:* `dense_armor.core.finance.ring`
+*Guide:* [finance/ring.md](../finance/ring.md)
+
+A queue of fixed capacity, with the storage preallocated.
+
+Public methods:
+
+- `pop_into(out: np.ndarray)`
+- `push(row: np.ndarray)`

@@ -213,6 +213,7 @@ The sections below follow the subpackages; the path of each one is
 | `select.py` | `VarianceThreshold`, `SelectKBest` | feature selection |
 | `text.py` | `Tokenizer`, `BagOfWords`, `TFIDF`, `FeatureHasher` | text transformers |
 | `vectorizer.py` | `TextVectorizer` | Text vectorizer: a fixed vocabulary, TF-IDF, and batch or online fit |
+| `text_input.py` | `TextInput` | One adapter that opens any Dense-Armor primitive to text |
 | `metro.py` | `Metro` | Logarithmic scaler against underflow: `enc` projects a tiny value into a visible range, `dec` brings it back |
 
 ### 2.5 stats
@@ -340,6 +341,7 @@ The sections below follow the subpackages; the path of each one is
 | `visualize.py` | `FalseColor`, `Overlay`, `VideoWriter` | false colour, overlays and the annotated video writer |
 | `vocabulary.py` | `BagOfVisualWords` | bag of visual words |
 | `window.py` | `FrameWindow` | sliding window of frames with streaming statistics |
+| `video_input.py` | `VideoInput` | One adapter that opens any Dense-Armor primitive to video |
 
 ### 2.15 control
 
@@ -534,6 +536,8 @@ Networks as layers with `forward`, `backward` and `params()`: parameters, initia
 | `seq2seq.py` | `Seq2Seq` | A fixed-horizon sequence encoder and decoder |
 | `test_time.py` | `TestTimeCompute` | Test-time compute: generate candidates and pick the best |
 | `trainer.py` | `Trainer` | The standard training loop |
+| `stream.py` | `DataStream` | A data stream that serves batches without loading the dataset |
+| `data_parallel.py` | `linear_scaling` | Linear scaling of the learning rate for data-parallel training |
 
 Notes on the network files: `Embedding` in `layers.py` skips its range check on ids under `jax.jit`; `Trainer(compile=True)` builds its step with `compiled.py`; `decoder.py`, `generate.py`, `losses_lm.py` and the `transformer_decoder` builder form the language-model path (token embedding, sinusoidal positions, decoder blocks, final layer norm, head).
 
@@ -606,6 +610,25 @@ Path: `core/graph/`, beside the seven groups. The ontology: a typed graph with r
 | `wavelet.py` | `SpectralWavelet`, `chebyshev_wavelet_terms` | Graph spectral wavelets from Chebyshev polynomials of even and odd order |
 
 `networkx` is needed by `ontology.py`, `dag.py`, `causal.py` and the PageRank scores (extras `onto` and `graph`), `pygsp` only by the conversion in `core.py` (extra `graph`), and `dowhy` only by `CausalGraph` (extra `causal`).
+
+### 2.35 finance
+
+Path: `core/finance/`, beside the seven groups. The pre-trade checks, the hash-chained decision log, the Nasdaq ITCH feed and the FIX gateway. Guide: [Finance](docs/finance/index.md).
+
+| file | public names | what it is |
+|---|---|---|
+| `audit_db.py` | `AuditDB` | The decision log of F6 in a PostgreSQL table, with the same hash chain |
+| `config.py` | `ScheduleConfig`, `PreTradeConfig`, `RingConfig`, `PathsConfig`, `FinanceConfig`, `load_config` | Configuration of the finance blocks: one frozen dataclass per block |
+| `decision_log.py` | `record_hash`, `DecisionLog` | A decision log with a SHA-256 hash chain, one JSON line per record |
+| `demo.py` | `main` | Demo command: synthetic feed, checker, log, one JSON line on stdout |
+| `feed.py` | `frame`, `iter_itch` | Read a file of framed Nasdaq ITCH 5.0 order messages |
+| `fix_gateway.py` | `send_orders` | A FIX 4.4 initiator that sends limit orders and collects the reports |
+| `itch.py` | `decode_message` | Decode one Nasdaq TotalView-ITCH 5.0 order message |
+| `pretrade.py` | `Decision`, `PreTradeChecker` | Pre-trade limits for one order, from SEC Rule 15c3-5 (c)(1) |
+| `ring.py` | `RingBuffer` | A ring buffer with preallocated storage for one producer and one consumer |
+| `schedule.py` | `twap_schedule`, `vwap_schedule` | Schedules that split a parent order into slices over time |
+| `status.py` | `collect_status`, `main` | Status command: one JSON object with the configuration state |
+| `synthetic.py` | `synthetic_itch` | Synthetic Nasdaq ITCH 5.0 order messages, deterministic from SHA-256 |
 
 ## 3. dynamics
 
