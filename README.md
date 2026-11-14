@@ -63,7 +63,7 @@ In this library, *shielding* means cleaning the data a model sees — NaN, spike
 
 ## What it does
 
-Dense-Armor is a Python machine learning library with an online part. Every online estimator learns one sample at a time, at control-loop speed, on JAX, and the machine learning classes of `dense_armor.ml` read a whole dataset with `fit`. The same `learn_one` / `predict_one` / `transform_one` contract runs on a market tick, a neural network mini-batch, a drone sensor stream, a robot joint stream, a video frame, a token stream, and a shield can sit in front of any of them. On top of that, `dense_armor.core.deep.neural` has the deep-learning pieces — layers, attention, convolutional and recurrent blocks, batch and streaming training, continual learning with EWC, GEM and A-GEM, memory consolidation with vector quantization, product quantization and a residual tree — and `dense_armor.core.signals.stats` and `.timeseries` have the robust models: Student-t, Gaussian mixture, GARCH, and the AR, VAR and Kalman families.
+Dense-Armor is a low-level learning toolkit on three levels: online learning, deep learning and machine learning. Every online estimator learns one sample at a time, at control-loop speed, on JAX, and the machine learning classes of `dense_armor.ml` read a whole dataset with `fit`. The same `learn_one` / `predict_one` / `transform_one` contract runs on a market tick, a neural network mini-batch, a drone sensor stream, a robot joint stream, a video frame, a token stream. On top of that, `dense_armor.core.deep.neural` has the deep-learning pieces — layers, attention, convolutional and recurrent blocks, batch and streaming training, continual learning with EWC, GEM and A-GEM, memory consolidation with vector quantization, product quantization and a residual tree — and `dense_armor.core.signals.stats` and `.timeseries` have the robust models: Student-t, Gaussian mixture, GARCH, and the AR, VAR and Kalman families.
 
 ---
 
@@ -174,7 +174,7 @@ Works on Python 3.10+. JAX is the backend for every estimator.
 
 ## Features
 
-Dense-Armor provides online implementations of the following families of algorithms:
+Dense-Armor provides the following families of algorithms, online unless a line says otherwise:
 
 - Linear models, with a wide array of optimizers
 - Decision trees (including FIMT-DD regression model trees), online forests (adaptive random forest, aggregated Mondrian forests, online extra trees) and rule sets (adaptive model rules)

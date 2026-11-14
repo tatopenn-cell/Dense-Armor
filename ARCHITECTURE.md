@@ -8,7 +8,7 @@ every file. Update it whenever a module is added, moved or renamed.
 1. `roles` — the base classes every estimator builds on: `Estimator`, `Classifier`,
    `Regressor`, `Transformer`, `AnomalyDetector`, `DriftDetector`, `Protected`, `Signal` and
    the other support classes.
-2. `core` — the online-learning library: 33 subpackages in seven groups, the audio section and the graph package.
+2. `core` — the library: online learning, deep learning, signals, audio, graph ontology, finance, evaluation, robot control and infrastructure.
    (Before the names were swapped this folder was `utility` and the shielding engine of item 6
    was `core`.)
    `online/` (`learn`, `optim`, `linear`, `timeseries`, `cluster`, `tree`, `forest`, `ensemble`,

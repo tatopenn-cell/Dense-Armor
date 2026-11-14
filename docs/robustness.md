@@ -2,6 +2,8 @@
 
 We attacked the library's cleaning tools with nine kinds of deliberately bad data, to see how well they hold up. This page shows what held, what did not and the known weak point.
 
+> This page is about the shielding component (`Armor`, `Orca` and their engine), a separate part of Dense-Armor. It is not the learning toolkit, which is described in the [README](https://github.com/tatopenn-cell/Dense-Armor#readme) and on the home page.
+
 The shielding engines were tested against nine families of adversarial
 attacks. This page is the honest result: what held, what did not, and which
 attack is the known weak point. All numbers come from the real code in

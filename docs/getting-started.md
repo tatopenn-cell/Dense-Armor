@@ -1,6 +1,6 @@
 # Getting started
 
-Dense-Armor learns from data that arrives one sample at a time. This page starts with one model learning from a stream and ends with a command that cannot jump. Each step uses what the step before it showed.
+Dense-Armor learns in three ways: one sample at a time, on a whole table at once, and with deep networks. This page starts with the first: one model learning from a stream and ends with a command that cannot jump. Each step uses what the step before it showed.
 
 ## 1. Install
 
