@@ -6,9 +6,7 @@ on:
     paths:
       - "docs/**"
       - "mkdocs.yml"
-      - "README.md"
-      - "CHANGELOG.md"
-      - "ARCHITECTURE.md"
+      - "**.md"
       - ".github/workflows/docs-check.yml"
   workflow_dispatch:
 
