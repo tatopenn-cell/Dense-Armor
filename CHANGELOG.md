@@ -32,7 +32,7 @@ nine pytest jobs, and a swap of the names of the folders
 - `REFERENCES.md` cites 236 works (48 more: the papers of the audio section and of the ontology), and `.zenodo.json` lists the
   11 new arXiv identifiers.
 - `docs-check.yml`: a pull request that touches the documents runs the strict build of the site.
-- The audio section (`dense_armor/core/audio/`, twelve documentation pages with figures made by the library): `Audio`, the value
+- The audio section (`dense_armor/core/audio/`, 13 documentation pages with 23 figures made by the library): `Audio`, the value
   for sound (samples, sample rate, start time); WAV files (`read_wav`, `write_wav`) and live input (`AudioFileStream`,
   `AudioLiveStream`); windows, `stft`, `istft` and `StreamingSTFT`; oscillators, white and pink noise and `KarplusStrong`;
   `Biquad` (the formulas of the Audio EQ Cookbook), `FIR`, `AllPole`, `DelayLine` and `Resampler`; `YIN` for the pitch and the
