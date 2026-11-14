@@ -4,7 +4,54 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-11-14
+
+This release adds the audio section (sound as a value, filters, effects, synthesis, pitch, time and pitch change, mel and MFCC,
+event detection, and `AudioInput`, one adapter that gives sound to every estimator, detector and scaler), the ontology (the
+package `dense_armor.core.graph`, with its documentation section), the adapters `TextInput` and `VideoInput`, the finance
+system (a configuration file, a hash-chained decision log, a feed reader, a status command, a synthetic feed and a demo) with a
+browser dashboard, a Windows installer and a dashboard that works on the visitor's own files, a workflow that runs only the
+nine pytest jobs, and a swap of the names of the folders
+`core` and `utility` (see "Changed": the old import paths still resolve, but `from dense_armor.utility import X` and
+`from dense_armor.core import X` now give the names of the other package).
+
 ### Added
+- The ontology, the package `dense_armor.core.graph`: a weighted `Graph` with its Laplacians, `GraphSignal`, the Fourier transform
+  (`GraphFourier`) and the spectral filters (`SpectralFilter`, `ChebyshevFilter`, `SpectralWavelet`); a `TypedGraph` with
+  `Constraint` rules and `Action` with preconditions, validated on the subgraph an action touches (`apply_action`); an
+  `ExecutionDAG` of estimators with `Dataflow` and `GateNode`; a `Provenance` log chained by SHA-256 (`head`, `broken_at`,
+  `verify`); the scores `page_rank`, `random_walk_restart`, `root_cause_walk` and `graph_anomaly_score`;
+  `structural_change`; `CausalGraph` (DoWhy). Each part follows one paper (`REFERENCES.md`).
+- Graphs from signals: `AdaCGP`, an estimator that learns the weights of a graph one sample at a time (it follows the estimator
+  contract: `budget_s`, `memory_class`, `state_dict`), `recover_graph_signal` (a time-varying signal on a dynamic graph),
+  `learn_graph` and `weights_from_drops` (a graph from smooth signals and domain knowledge). Golden files in `test/graph/`.
+- The documentation section "Ontology" (11 pages, three figures): types, rules and actions, spectrum, filters, the execution DAG,
+  provenance, anomaly scores, recovery, learning, following a graph online, causality. The extras `onto`, `graph` and `causal`.
+- `docs/api/general.md`: the sections Audio, Graph (ontology) and Finance, and 15 classes that were missing (449 classes in
+  all). `ARCHITECTURE.md`: sections 2.33 audio, 2.34 graph and 2.35 finance. The README lists the audio section and the ontology.
+- `REFERENCES.md` cites 236 works (48 more: the papers of the audio section and of the ontology), and `.zenodo.json` lists the
+  11 new arXiv identifiers.
+- `docs-check.yml`: a pull request that touches the documents runs the strict build of the site.
+- The audio section (`dense_armor/core/audio/`, 13 documentation pages with 23 figures made by the library): `Audio`, the value
+  for sound (samples, sample rate, start time); WAV files (`read_wav`, `write_wav`) and live input (`AudioFileStream`,
+  `AudioLiveStream`); windows, `stft`, `istft` and `StreamingSTFT`; oscillators, white and pink noise and `KarplusStrong`;
+  `Biquad` (the formulas of the Audio EQ Cookbook), `FIR`, `AllPole`, `DelayLine` and `Resampler`; `YIN` for the pitch and the
+  units of frequency, cents and notes; `nmf` and `separate`; `AudioFeatures`, `detect_events`; and `AudioInput`, one adapter that
+  gives a block of sound to any estimator, detector, scaler or filter of the library.
+- The finance system, in `dense_armor/core/finance/`: `load_config` (a TOML file into a frozen `FinanceConfig`), `DecisionLog`
+  (one JSON record per line, chained by SHA-256, with `verify`), `iter_itch` and `frame` (a reader of framed Nasdaq ITCH 5.0
+  messages), a status command, `synthetic_itch` (a feed that is byte-identical on every machine for the same arguments) and a
+  demo command (`python -m dense_armor.core.finance.demo`) that splits an order with a TWAP schedule, passes each message through
+  the pre-trade checker and writes every decision to the log.
+- The dashboard, a browser front-end for the finance system (`tools/dashboard/`, one command, Flask and NumPy, no network at run
+  time), and a setup wizard for Windows (`dashboard-installer.yml` builds, installs, runs and uninstalls it) with a launcher that
+  starts without a console and stops when the page is closed. The dashboard and its installer are a work in progress.
+- `ADWIN(clock=...)`: the cut test runs once every `clock` updates. The default is `1`, which flags exactly the same updates as
+  before (checked on six streams); a larger value makes `update` cheaper and delays a flag by less than `clock` updates. The
+  loops of `update` use local variables (9.0 to 8.4 µs per update on one machine).
+- Tests that were missing for `armor.py` (the drift detector, the report and the command line), for the two CBF controllers
+  (they ran only in the heavy tests: six-joint arm, the solver forced to fail at each level), for every tensor geometry of
+  `AdaptiveSignalStabilizer`, and for `python -m dense_armor`.
 - Audio, differentiable filters (`dense_armor/core/audio/diff_filter.py`): `jax_lowpass`, `jax_biquad`, `JaxBiquad`
   (a layer in the pattern of `core/deep/neural`) and `jax_allpole_time_varying`, with the gradients of
   Yu and others (2024); equal to the NumPy filters to 1e-15 in 64 bits and 3e-7 in 32 bits. A page
@@ -42,6 +89,20 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   without an error; the 28 that need arguments were not tried.
 
 ### Changed
+- The workflow `tests` runs only the nine pytest jobs (Python 3.10, 3.11 and 3.12 on Ubuntu, Windows and macOS). A change that
+  touches only `.md` files, `docs/**`, `mkdocs.yml` or `LICENSE` does not run it. The other workflows run on request.
+- The 172 tests that take three seconds or more are marked `slow` from the list `test/slow_tests.txt` and are left out of the
+  workflow; run them locally with `pytest -m slow`. On one core the selection of the workflow went from 1306 s to 610 s. The
+  coverage that Codecov sees is lower, because it no longer counts them.
+- `benchmarks/speed.py` measures only the estimators of this library.
+- The speed pages (`docs/speed.md`, `benchmarks/speed_log.md`, `benchmarks/speed_delivery.md`) show only the numbers of this
+  library.
+- `codecov.yml`: the folder names from before the swap of `core` and `utility` are ignored (Codecov counted the library twice and
+  showed 53%), and the stale flag `finance-dashboard` no longer carries its last upload forward.
+- The documentation: Home is the first entry of the menu (the site opened inside Library), finance examples in five anomaly pages,
+  the API page rewritten after the Home, the shared-memory page moved to Online learning, and a review of the public text (the
+  alt text of two diagrams, the citation of the Zenodo record, two pages in the menu).
+- The folder `.claude/` is no longer in the repository (`.gitignore` lists it).
 - The names of two folders are swapped. The library (the online learning, the deep learning, the signals, the
   robot, the evaluation, the infrastructure, the finance and the audio section) is now `dense_armor.core`; the
   shielding engine (`engine`, `hybrid_engine`, `damping_operator`, `memory`, `noise`, `preset`) is now
