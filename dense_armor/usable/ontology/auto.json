@@ -1,0 +1,4942 @@
+{
+ "synonyms": [
+  [
+   "absolute",
+   "rank",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "accept",
+   "take",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "accumulate",
+   "collect",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "accumulates",
+   "collect",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "accumulates",
+   "accumulate",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "accumulating",
+   "collect",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "accumulating",
+   "accumulate",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "action",
+   "process",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "add",
+   "bring",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "add",
+   "total",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "added",
+   "add",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "added",
+   "bring",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "added",
+   "total",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "adjusted",
+   "correct",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "aggregated",
+   "mass",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "all",
+   "whole",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "alone",
+   "only",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "angles",
+   "weight",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "anomalies",
+   "anomaly",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "applied",
+   "apply",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "applied",
+   "hold",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "apply",
+   "hold",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "approximate",
+   "estimate",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "approximate",
+   "near",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "armed",
+   "arm",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "array",
+   "range",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "arrays",
+   "array",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "arrays",
+   "range",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "attack",
+   "round",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "attempts",
+   "attack",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "audio",
+   "sound",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "average",
+   "norm",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "average",
+   "mean",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "average",
+   "median",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "averaged",
+   "average",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "axes",
+   "axis",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "back",
+   "second",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "back",
+   "backward",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "bag",
+   "base",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "bagging",
+   "bag",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "bands",
+   "ring",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "base",
+   "floor",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "base",
+   "basis",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "base",
+   "root",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "base",
+   "found",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "base",
+   "mean",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "based",
+   "base",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "based",
+   "found",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "batch",
+   "mass",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "batches",
+   "batch",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "batches",
+   "mass",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "before",
+   "earlier",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "best",
+   "near",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "best",
+   "sound",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "bias",
+   "diagonal",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "biased",
+   "bias",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "biases",
+   "bias",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "biases",
+   "diagonal",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "block",
+   "cube",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "blocks",
+   "block",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "blocks",
+   "cube",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "bound",
+   "edge",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "bound",
+   "hold",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "bounded",
+   "bound",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "boxes",
+   "corner",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "branches",
+   "arm",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "branches",
+   "offset",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "branches",
+   "separate",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "bring",
+   "take",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "buffers",
+   "buffer",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "build",
+   "shape",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "build",
+   "frame",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "build",
+   "form",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "built",
+   "build",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "call",
+   "ring",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "call",
+   "predict",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "carry",
+   "take",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "carry",
+   "channel",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "carry",
+   "hold",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "case",
+   "instance",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "case",
+   "event",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "cases",
+   "case",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "cases",
+   "instance",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "cases",
+   "event",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "categorical",
+   "flat",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "categories",
+   "class",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "categories",
+   "category",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "category",
+   "class",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "centre",
+   "kernel",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "centre",
+   "core",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "centred",
+   "centre",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "chain",
+   "range",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "chain",
+   "string",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "chained",
+   "chain",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "chance",
+   "probability",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "change",
+   "shift",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "channel",
+   "line",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "channels",
+   "channel",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "channels",
+   "line",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "channels",
+   "carry",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "check",
+   "hold",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "check",
+   "delay",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "check",
+   "train",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "check",
+   "checker",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "check",
+   "learn",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "checked",
+   "check",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "checked",
+   "hold",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "checked",
+   "delay",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "checked",
+   "train",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "checked",
+   "checker",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "checked",
+   "learn",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "checks",
+   "check",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "checks",
+   "hold",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "checks",
+   "delay",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "checks",
+   "train",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "checks",
+   "checker",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "checks",
+   "learn",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "choose",
+   "take",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "choose",
+   "select",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "class",
+   "form",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "class",
+   "classify",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "class",
+   "separate",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "classes",
+   "class",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "classes",
+   "category",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "classes",
+   "form",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "classes",
+   "classify",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "classes",
+   "separate",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "classifiers",
+   "classifier",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "classify",
+   "separate",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "clip",
+   "time",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "clip",
+   "clipping",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "clipper",
+   "limiter",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "clock",
+   "time",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "closed",
+   "fold",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "clusters",
+   "clustering",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "codes",
+   "code",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "coefficients",
+   "coefficient",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "columns",
+   "column",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "combs",
+   "comb",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "compiled",
+   "collect",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "compiled",
+   "accumulate",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "component",
+   "factor",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "components",
+   "component",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "components",
+   "factor",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "consecutive",
+   "sequential",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "consecutive",
+   "straight",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "constraints",
+   "constraint",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "controls",
+   "hold",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "controls",
+   "check",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "copies",
+   "copy",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "core",
+   "kernel",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "corner",
+   "tree",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "corpus",
+   "principal",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "corrected",
+   "correct",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "correcting",
+   "correct",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "counts",
+   "count",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "criterion",
+   "standard",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "cross",
+   "track",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "current",
+   "stream",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "current",
+   "flow",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "cycle",
+   "round",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "decaying",
+   "decay",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "decision",
+   "determination",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "decrease",
+   "reduction",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "degree",
+   "point",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "delay",
+   "hold",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "delayed",
+   "delay",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "delayed",
+   "check",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "demand",
+   "take",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "demand",
+   "exact",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "dense",
+   "heavy",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "descent",
+   "line",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "describe",
+   "draw",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "describe",
+   "line",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "descriptors",
+   "form",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "deviation",
+   "divergence",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "deviation",
+   "difference",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "difference",
+   "divergence",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "difficult",
+   "hard",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "direct",
+   "target",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "direct",
+   "point",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "direct",
+   "take",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "direct",
+   "train",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "direct",
+   "head",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "direct",
+   "straight",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "distance",
+   "length",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "distance",
+   "space",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "divergence",
+   "variance",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "documents",
+   "document",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "draw",
+   "line",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "draw",
+   "string",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "draw",
+   "thread",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "draw",
+   "pass",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "drift",
+   "float",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "drift",
+   "range",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "driven",
+   "take",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "drop",
+   "flatten",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "drop",
+   "swing",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "earlier",
+   "other",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "edge",
+   "sharpness",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "ends",
+   "last",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "error",
+   "fault",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "estimates",
+   "estimate",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "estimates",
+   "approximate",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "estimators",
+   "estimator",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "exact",
+   "take",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "excess",
+   "extra",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "existing",
+   "live",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "exists",
+   "live",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "exposed",
+   "expose",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "factors",
+   "factor",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "factors",
+   "component",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "fault",
+   "shift",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "features",
+   "feature",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "feed",
+   "flow",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "field",
+   "plain",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "files",
+   "file",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "filling",
+   "take",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "fills",
+   "filling",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "fills",
+   "take",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "fires",
+   "attack",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "fires",
+   "raise",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "first",
+   "start",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "first",
+   "offset",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "fitted",
+   "check",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "fixed",
+   "rigid",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "flags",
+   "flag",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "flat",
+   "straight",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "flow",
+   "stream",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "following",
+   "next",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "forgetting",
+   "block",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "form",
+   "shape",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "form",
+   "pattern",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "form",
+   "frame",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "form",
+   "phase",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "found",
+   "chance",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "found",
+   "rule",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "frame",
+   "shape",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "frames",
+   "frame",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "frames",
+   "build",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "frames",
+   "shape",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "frames",
+   "form",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "free",
+   "release",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "gated",
+   "gate",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "given",
+   "hold",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "given",
+   "pass",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "given",
+   "apply",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "given",
+   "feed",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "giving",
+   "hold",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "giving",
+   "pass",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "giving",
+   "apply",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "giving",
+   "feed",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "going",
+   "loss",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "going",
+   "release",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "going",
+   "pass",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "going",
+   "sound",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "going",
+   "function",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "going",
+   "last",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "going",
+   "live",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "going",
+   "start",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "gradient",
+   "slope",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "gradients",
+   "gradient",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "gradients",
+   "slope",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "groups",
+   "group",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "grown",
+   "turn",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "grown",
+   "raise",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "guard",
+   "hold",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "hard",
+   "heavy",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "hard",
+   "strong",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "harmonics",
+   "harmonic",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "hashing",
+   "hash",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "head",
+   "principal",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "head",
+   "pass",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "head",
+   "point",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "heavy",
+   "sound",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "heavy",
+   "large",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "histograms",
+   "histogram",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "hold",
+   "keep",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "hold",
+   "sustain",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "hold",
+   "take",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "image",
+   "range",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "impulse",
+   "momentum",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "index",
+   "power",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "inner",
+   "inside",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "intervals",
+   "interval",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "item",
+   "point",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "item",
+   "token",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "items",
+   "item",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "items",
+   "point",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "items",
+   "token",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "iteration",
+   "loop",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "joined",
+   "link",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "keep",
+   "sustain",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "labelled",
+   "label",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "labels",
+   "label",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "last",
+   "live",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "last",
+   "net",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "layers",
+   "layer",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "learn",
+   "read",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "learn",
+   "take",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "learned",
+   "learn",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "learned",
+   "read",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "learned",
+   "take",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "learned",
+   "check",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "learners",
+   "learner",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "learning",
+   "learn",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "learning",
+   "read",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "learning",
+   "take",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "learning",
+   "check",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "learns",
+   "learn",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "learns",
+   "read",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "learns",
+   "take",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "learns",
+   "check",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "line",
+   "pipeline",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "linear",
+   "running",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "lines",
+   "line",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "lines",
+   "pipeline",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "lines",
+   "descent",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "lines",
+   "channel",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "lines",
+   "draw",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "lines",
+   "describe",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "links",
+   "link",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "lists",
+   "list",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "load",
+   "payload",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "location",
+   "position",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "looks",
+   "search",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "looks",
+   "count",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "lookup",
+   "search",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "loss",
+   "release",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "lower",
+   "small",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "makes",
+   "draw",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "makes",
+   "gain",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "makes",
+   "form",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "makes",
+   "build",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "makes",
+   "hold",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "makes",
+   "take",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "makes",
+   "score",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "matching",
+   "check",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "matching",
+   "pair",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "matrices",
+   "matrix",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "means",
+   "mean",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "membership",
+   "rank",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "memory",
+   "storage",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "metrics",
+   "metric",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "model",
+   "pattern",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "models",
+   "model",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "models",
+   "pattern",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "moment",
+   "second",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "moments",
+   "moment",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "moments",
+   "second",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "multinomial",
+   "polynomial",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "naive",
+   "primitive",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "named",
+   "call",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "named",
+   "describe",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "named",
+   "list",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "nearest",
+   "near",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "nearest",
+   "approximate",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "needs",
+   "demand",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "needs",
+   "take",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "neighbours",
+   "neighbour",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "net",
+   "network",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "networks",
+   "network",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "networks",
+   "net",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "nodes",
+   "node",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "nominal",
+   "token",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "normal",
+   "pattern",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "normal",
+   "rule",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "normalisation",
+   "standardization",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "normalisation",
+   "normalization",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "normalization",
+   "standardization",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "object",
+   "target",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "objects",
+   "object",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "objects",
+   "target",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "observed",
+   "keep",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "offset",
+   "start",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "offsets",
+   "first",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "offsets",
+   "start",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "offsets",
+   "offset",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "one",
+   "single",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "optical",
+   "visual",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "order",
+   "rate",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "order",
+   "rank",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "order",
+   "range",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "outliers",
+   "outlier",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "pages",
+   "page",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "pairs",
+   "pair",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "parent",
+   "raise",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "passes",
+   "pass",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "passes",
+   "head",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "passes",
+   "draw",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "patches",
+   "patch",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "pattern",
+   "shape",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "pattern",
+   "rule",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "pieces",
+   "patch",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "point",
+   "signal",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "point",
+   "target",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "points",
+   "point",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "points",
+   "item",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "points",
+   "degree",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "points",
+   "head",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "points",
+   "direct",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "points",
+   "signal",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "points",
+   "target",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "policies",
+   "policy",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "pooled",
+   "pool",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "pooling",
+   "pool",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "positions",
+   "position",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "positions",
+   "location",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "predicted",
+   "predict",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "predicted",
+   "call",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "probabilities",
+   "probability",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "probabilities",
+   "chance",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "quality",
+   "select",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "queries",
+   "query",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "raised",
+   "raise",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "raised",
+   "parent",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "randomised",
+   "randomized",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "range",
+   "rate",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "range",
+   "rank",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "rank",
+   "rate",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "ranking",
+   "rank",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "ranking",
+   "rate",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "ranking",
+   "range",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "ranking",
+   "order",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "rate",
+   "value",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "read",
+   "scan",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "read",
+   "take",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "records",
+   "read",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "refused",
+   "reject",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "regularized",
+   "order",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "rejected",
+   "reject",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "relations",
+   "relative",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "release",
+   "turn",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "residual",
+   "rest",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "returns",
+   "take",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "returns",
+   "revert",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "returns",
+   "recall",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "returns",
+   "pass",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "rolling",
+   "range",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "rolling",
+   "drift",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "round",
+   "turn",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "rows",
+   "words",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "rules",
+   "rule",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "rules",
+   "normal",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "rules",
+   "pattern",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "running",
+   "track",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "running",
+   "pass",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "running",
+   "flow",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "running",
+   "feed",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "running",
+   "function",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "running",
+   "range",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "running",
+   "carry",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "running",
+   "draw",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "runs",
+   "test",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "runs",
+   "running",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "runs",
+   "pass",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "runs",
+   "flow",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "runs",
+   "feed",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "runs",
+   "function",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "runs",
+   "range",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "runs",
+   "carry",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "runs",
+   "draw",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "sample",
+   "sampling",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "samples",
+   "sample",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "samples",
+   "sampling",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "saving",
+   "keep",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "saving",
+   "write",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "scaled",
+   "scale",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "scaling",
+   "scale",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "schedules",
+   "schedule",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "seconds",
+   "second",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "seconds",
+   "moment",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "seconds",
+   "back",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "sees",
+   "image",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "sees",
+   "learn",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "sees",
+   "check",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "segments",
+   "section",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "select",
+   "take",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "separate",
+   "split",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "served",
+   "function",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "served",
+   "process",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "shifted",
+   "shift",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "shifted",
+   "change",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "signals",
+   "signal",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "signals",
+   "point",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "signed",
+   "signal",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "sizes",
+   "size",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "sources",
+   "root",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "sources",
+   "generator",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "sources",
+   "reference",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "speed",
+   "velocity",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "speeds",
+   "speed",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "speeds",
+   "velocity",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "splits",
+   "split",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "splits",
+   "separate",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "square",
+   "straight",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "squared",
+   "square",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "squares",
+   "square",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "stages",
+   "phase",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "stages",
+   "degree",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "stages",
+   "point",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "steps",
+   "step",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "straight",
+   "true",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "strategies",
+   "strategy",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "streaming",
+   "stream",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "streams",
+   "stream",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "streams",
+   "flow",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "streams",
+   "current",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "string",
+   "train",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "string",
+   "thread",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "strings",
+   "string",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "strings",
+   "train",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "strings",
+   "chain",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "strings",
+   "thread",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "strings",
+   "draw",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "strong",
+   "warm",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "swapped",
+   "trade",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "swept",
+   "cross",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "swept",
+   "swing",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "tails",
+   "posterior",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "tails",
+   "track",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "take",
+   "train",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "taken",
+   "take",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "taken",
+   "direct",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "taken",
+   "read",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "taken",
+   "bring",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "taken",
+   "choose",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "taken",
+   "select",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "taken",
+   "accept",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "taken",
+   "demand",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "taken",
+   "learn",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "taken",
+   "exact",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "taken",
+   "train",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "taken",
+   "carry",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "taken",
+   "hold",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "takes",
+   "take",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "takes",
+   "direct",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "takes",
+   "read",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "takes",
+   "bring",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "takes",
+   "choose",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "takes",
+   "select",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "takes",
+   "accept",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "takes",
+   "demand",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "takes",
+   "learn",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "takes",
+   "exact",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "takes",
+   "train",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "takes",
+   "carry",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "takes",
+   "hold",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "targets",
+   "target",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "targets",
+   "object",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "targets",
+   "direct",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "targets",
+   "point",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "thresholds",
+   "threshold",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "tokens",
+   "token",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "tokens",
+   "item",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "trained",
+   "train",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "trained",
+   "check",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "trained",
+   "take",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "trained",
+   "direct",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "translation",
+   "version",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "transposed",
+   "transpose",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "trees",
+   "tree",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "trees",
+   "corner",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "unit",
+   "whole",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "units",
+   "unit",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "units",
+   "whole",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "updated",
+   "update",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "values",
+   "value",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "values",
+   "rate",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "variable",
+   "varying",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "varying",
+   "change",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "vote",
+   "voting",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "votes",
+   "vote",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "votes",
+   "voting",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "wavelets",
+   "wavelet",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "weighted",
+   "weight",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "weights",
+   "weight",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "words",
+   "word",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "wrapper",
+   "wrapping",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ]
+ ],
+ "antonyms": [
+  [
+   "added",
+   "take_away",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "added",
+   "subtract",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "armed",
+   "disarm",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "back",
+   "forward",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "backward",
+   "ahead",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "blocks",
+   "unblock",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "chained",
+   "unchain",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "clipping",
+   "unclip",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "corrected",
+   "falsify",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "correcting",
+   "falsify",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "delayed",
+   "rush",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "drop",
+   "sharpen",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "given",
+   "starve",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "giving",
+   "starve",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "going",
+   "malfunction",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "going",
+   "stop",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "hard",
+   "easy",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "nearest",
+   "far",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "nodes",
+   "antinode",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "observed",
+   "break",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "passes",
+   "fail",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "probabilities",
+   "improbability",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "raised",
+   "lower",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "raised",
+   "level",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "reduction",
+   "increase",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "refused",
+   "admit",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "rejected",
+   "accept",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "rejected",
+   "admit",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "release",
+   "confine",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "running",
+   "malfunction",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "runs",
+   "malfunction",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "square",
+   "crooked",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "strings",
+   "unstring",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "take",
+   "refuse",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "taken",
+   "give",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "taken",
+   "refuse",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "takes",
+   "give",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ],
+  [
+   "takes",
+   "refuse",
+   {
+    "source": "wordnet",
+    "license": "Princeton WordNet (MIT-like)"
+   }
+  ]
+ ]
+}

@@ -1,0 +1,992 @@
+{
+  "synonyms": [
+    [
+      "idf",
+      "tfidf"
+    ],
+    [
+      "cut",
+      "attenuate"
+    ],
+    [
+      "cut",
+      "trim"
+    ],
+    [
+      "frequency",
+      "pitch"
+    ],
+    [
+      "frequency",
+      "tone"
+    ],
+    [
+      "bass",
+      "low"
+    ],
+    [
+      "high",
+      "treble"
+    ],
+    [
+      "threshold",
+      "limit"
+    ],
+    [
+      "threshold",
+      "ceiling"
+    ],
+    [
+      "compressor",
+      "compression"
+    ],
+    [
+      "echo",
+      "delay"
+    ],
+    [
+      "echo",
+      "reverb"
+    ],
+    [
+      "delay",
+      "reverb"
+    ],
+    [
+      "noise",
+      "hiss"
+    ],
+    [
+      "signal",
+      "wave"
+    ],
+    [
+      "signal",
+      "waveform"
+    ],
+    [
+      "detect",
+      "find"
+    ],
+    [
+      "detect",
+      "identify"
+    ],
+    [
+      "anomaly",
+      "outlier"
+    ],
+    [
+      "anomaly",
+      "novelty"
+    ],
+    [
+      "forecast",
+      "predict"
+    ],
+    [
+      "forecast",
+      "prediction"
+    ],
+    [
+      "change",
+      "drift"
+    ],
+    [
+      "change",
+      "shift"
+    ],
+    [
+      "error",
+      "loss"
+    ],
+    [
+      "error",
+      "residual"
+    ],
+    [
+      "sample",
+      "sampling"
+    ],
+    [
+      "band",
+      "bandwidth"
+    ],
+    [
+      "fraud",
+      "intrusion"
+    ],
+    [
+      "fraud",
+      "breach"
+    ],
+    [
+      "image",
+      "picture"
+    ],
+    [
+      "image",
+      "frame"
+    ],
+    [
+      "mix",
+      "blend"
+    ],
+    [
+      "sound",
+      "audio"
+    ],
+    [
+      "volume",
+      "gain"
+    ],
+    [
+      "filter",
+      "attenuate"
+    ],
+    [
+      "noise",
+      "disturbance"
+    ],
+    [
+      "noise",
+      "interference"
+    ],
+    [
+      "damping",
+      "attenuation"
+    ],
+    [
+      "healing",
+      "repair"
+    ],
+    [
+      "heal",
+      "healing"
+    ],
+    [
+      "burst",
+      "spike"
+    ],
+    [
+      "spike",
+      "outlier"
+    ],
+    [
+      "channel",
+      "stream"
+    ],
+    [
+      "error",
+      "noise"
+    ],
+    [
+      "state",
+      "signal"
+    ],
+    [
+      "decay",
+      "damping"
+    ],
+    [
+      "quantile",
+      "percentile"
+    ],
+    [
+      "entropy",
+      "chaos"
+    ],
+    [
+      "entropy",
+      "disorder"
+    ],
+    [
+      "entropy",
+      "randomness"
+    ],
+    [
+      "entropy",
+      "uncertainty"
+    ],
+    [
+      "entropy",
+      "information"
+    ],
+    [
+      "uncertainty",
+      "confidence"
+    ],
+    [
+      "extrapolation",
+      "forecast"
+    ],
+    [
+      "extrapolation",
+      "prediction"
+    ],
+    [
+      "mitigation",
+      "correction"
+    ],
+    [
+      "mitigation",
+      "healing"
+    ],
+    [
+      "mitigation",
+      "repair"
+    ],
+    [
+      "tomography",
+      "reconstruction"
+    ],
+    [
+      "tomography",
+      "regression"
+    ],
+    [
+      "eigenvalue",
+      "eigen"
+    ],
+    [
+      "eigvalsh",
+      "eigenvalue"
+    ],
+    [
+      "eigvals",
+      "eigenvalue"
+    ],
+    [
+      "eigenvalues",
+      "eigenvalue"
+    ],
+    [
+      "entropies",
+      "entropy"
+    ],
+    [
+      "density",
+      "distribution"
+    ],
+    [
+      "qubit",
+      "quantum"
+    ],
+    [
+      "qubits",
+      "quantum"
+    ],
+    [
+      "unitary",
+      "quantum"
+    ],
+    [
+      "convolve",
+      "convolution"
+    ],
+    [
+      "convolved",
+      "convolution"
+    ],
+    [
+      "fidelity",
+      "accuracy"
+    ],
+    [
+      "calibration",
+      "drift"
+    ],
+    [
+      "covariance",
+      "correlation"
+    ],
+    [
+      "trace",
+      "sum"
+    ]
+  ],
+  "antonyms": [
+    [
+      "low",
+      "high"
+    ],
+    [
+      "bass",
+      "treble"
+    ],
+    [
+      "cut",
+      "boost"
+    ],
+    [
+      "attack",
+      "release"
+    ],
+    [
+      "increase",
+      "decrease"
+    ],
+    [
+      "fast",
+      "slow"
+    ],
+    [
+      "lowpass",
+      "highpass"
+    ],
+    [
+      "open",
+      "close"
+    ],
+    [
+      "noise",
+      "signal"
+    ],
+    [
+      "healthy",
+      "faulty"
+    ],
+    [
+      "stable",
+      "unstable"
+    ],
+    [
+      "clean",
+      "noisy"
+    ],
+    [
+      "order",
+      "disorder"
+    ],
+    [
+      "entropy",
+      "purity"
+    ],
+    [
+      "pure",
+      "mixed"
+    ],
+    [
+      "coherent",
+      "noisy"
+    ]
+  ],
+  "evokes": {
+    "audio_features": [
+      "filter",
+      "frequency",
+      "bass",
+      "treble",
+      "band",
+      "pitch",
+      "tone",
+      "compressor",
+      "compression",
+      "reverb",
+      "delay",
+      "echo",
+      "wave",
+      "sound",
+      "audio",
+      "amplitude",
+      "gain",
+      "volume",
+      "spectrum",
+      "mix",
+      "note",
+      "voice",
+      "envelope",
+      "oscillator",
+      "harmonic",
+      "attenuate",
+      "kick",
+      "synth",
+      "stem"
+    ],
+    "detect_anomaly": [
+      "anomaly",
+      "outlier",
+      "novelty",
+      "unusual",
+      "fraud",
+      "intrusion",
+      "burst",
+      "spike",
+      "faulty",
+      "unstable",
+      "noisy"
+    ],
+    "detect_drift": [
+      "drift",
+      "change",
+      "shift",
+      "calibration"
+    ],
+    "forecast": [
+      "forecast",
+      "trend",
+      "seasonality",
+      "kalman",
+      "extrapolation"
+    ],
+    "regress": [
+      "regression",
+      "regress",
+      "curve",
+      "fit",
+      "extrapolation",
+      "tomography"
+    ],
+    "classify": [
+      "classify",
+      "class",
+      "label",
+      "category"
+    ],
+    "text_features": [
+      "text",
+      "word",
+      "sentence",
+      "document",
+      "token",
+      "language"
+    ],
+    "vision_features": [
+      "image",
+      "picture",
+      "video",
+      "frame",
+      "camera",
+      "pixel"
+    ],
+    "robot": [
+      "robot",
+      "joint",
+      "torque",
+      "trajectory",
+      "arm",
+      "kinematics",
+      "manipulator",
+      "collision"
+    ],
+    "finance_controls": [
+      "price",
+      "order",
+      "trade",
+      "risk",
+      "portfolio",
+      "market",
+      "transaction",
+      "twap",
+      "vwap"
+    ],
+    "summarize_stream": [
+      "quantile",
+      "median",
+      "percentile",
+      "mean",
+      "variance",
+      "histogram",
+      "statistics",
+      "entropy",
+      "chaos",
+      "disorder",
+      "density",
+      "distribution",
+      "covariance",
+      "moment",
+      "skew",
+      "kurtosis"
+    ],
+    "resources": [
+      "memory",
+      "hardware",
+      "gpu",
+      "cpu"
+    ],
+    "heal": [
+      "healing",
+      "heal",
+      "repair",
+      "mitigation"
+    ]
+  },
+  "links": {
+    "filter": {
+      "Biquad": 1,
+      "FIR": 1,
+      "AllPole": 1,
+      "CombFilter": 1,
+      "AllpassFilter": 1,
+      "JaxBiquad": 0.5,
+      "SoftClip": 0.5
+    },
+    "cut": {
+      "Biquad": 0.5,
+      "FIR": 0.5,
+      "Limiter": 0.5
+    },
+    "frequency": {
+      "StreamingSTFT": 1,
+      "YIN": 1,
+      "AudioFeatures": 0.5,
+      "Oscillator": 0.5
+    },
+    "spectrum": {
+      "StreamingSTFT": 1,
+      "AudioFeatures": 1
+    },
+    "pitch": {
+      "YIN": 1,
+      "Harmonizer": 1
+    },
+    "band": {
+      "AudioFeatures": 1,
+      "Biquad": 0.5
+    },
+    "bass": {
+      "Biquad": 0.5
+    },
+    "compressor": {
+      "Compressor": 1,
+      "Limiter": 1,
+      "SoftClip": 0.5
+    },
+    "compression": {
+      "Compressor": 1,
+      "Limiter": 0.5
+    },
+    "threshold": {
+      "Compressor": 1,
+      "Limiter": 1
+    },
+    "reverb": {
+      "SchroederReverb": 1,
+      "CombFilter": 0.5,
+      "AllpassFilter": 0.5
+    },
+    "delay": {
+      "DelayLine": 1,
+      "CombFilter": 0.5,
+      "Chorus": 0.5
+    },
+    "echo": {
+      "DelayLine": 1,
+      "CombFilter": 0.5
+    },
+    "oscillator": {
+      "Oscillator": 1,
+      "KarplusStrong": 0.5
+    },
+    "envelope": {
+      "ADSR": 1
+    },
+    "sound": {
+      "Audio": 1,
+      "AudioInput": 1,
+      "AudioFeatures": 0.5
+    },
+    "noise": {
+      "AdaptiveSignalStabilizer": 1,
+      "StreamingHealing": 0.5,
+      "HampelScorer": 0.5
+    },
+    "damping": {
+      "AdaptiveSignalStabilizer": 1
+    },
+    "healing": {
+      "StreamingHealing": 1
+    },
+    "heal": {
+      "StreamingHealing": 1
+    },
+    "outlier": {
+      "HampelScorer": 1,
+      "TukeyScorer": 1,
+      "ChauvenetScorer": 0.5,
+      "SigmaClipScorer": 0.5
+    },
+    "anomaly": {
+      "HalfSpaceTrees": 1,
+      "OnlineRobustMahalanobis": 1,
+      "LODA": 0.5,
+      "OneClassSGD": 0.5,
+      "OnlineIsolationForest": 0.5
+    },
+    "fraud": {
+      "HalfSpaceTrees": 0.5,
+      "PreTradeChecker": 0.5
+    },
+    "drift": {
+      "ADWIN": 1,
+      "PageHinkley": 1,
+      "KSWIN": 0.5,
+      "CUSUMDriftDetector": 0.5
+    },
+    "change": {
+      "BayesianOnlineChangepoint": 1,
+      "ADWIN": 0.5
+    },
+    "kalman": {
+      "KalmanFilter": 1,
+      "InnovationAdaptiveKalman": 0.5,
+      "VBAdaptiveKalman": 0.5
+    },
+    "forecast": {
+      "OnlineAR": 1,
+      "KalmanFilter": 0.5,
+      "GARCH11": 0.5,
+      "CycleResidual": 0.5
+    },
+    "variance": {
+      "RunningMoments": 1,
+      "GARCH11": 0.5
+    },
+    "quantile": {
+      "TDigest": 1,
+      "DDSketch": 1,
+      "RollingQuantile": 0.5
+    },
+    "median": {
+      "RollingMedianVector": 1,
+      "RollingQuantile": 0.5
+    },
+    "classify": {
+      "HoeffdingTreeClassifier": 1,
+      "AdaptiveRandomForestClassifier": 0.5,
+      "OnlineGaussianNB": 0.5
+    },
+    "label": {
+      "HoeffdingTreeClassifier": 0.5
+    },
+    "regression": {
+      "FIMTDDRegressor": 1,
+      "LinearRegression": 1
+    },
+    "text": {
+      "TextVectorizer": 1,
+      "TextInput": 1,
+      "TFIDF": 0.5
+    },
+    "word": {
+      "Tokenizer": 1,
+      "BagOfWords": 1
+    },
+    "token": {
+      "Tokenizer": 1,
+      "BagOfWords": 0.5
+    },
+    "tfidf": {
+      "TFIDF": 1,
+      "TextVectorizer": 0.5
+    },
+    "cosine": {
+      "SparseCosineIndex": 1
+    },
+    "document": {
+      "TextVectorizer": 1,
+      "TFIDF": 1
+    },
+    "image": {
+      "FrameFeatures": 1,
+      "VideoInput": 0.5
+    },
+    "video": {
+      "VideoInput": 1,
+      "VideoFileStream": 1
+    },
+    "motion": {
+      "MotionEnergy": 1
+    },
+    "robot": {
+      "RigidBodyModel": 1
+    },
+    "joint": {
+      "RigidBodyModel": 1
+    },
+    "torque": {
+      "RigidBodyModel": 1
+    },
+    "order": {
+      "PreTradeChecker": 1,
+      "DecisionLog": 0.5
+    },
+    "twap": {
+      "PreTradeChecker": 1,
+      "DecisionLog": 0.5
+    },
+    "vwap": {
+      "PreTradeChecker": 1,
+      "DecisionLog": 0.5
+    },
+    "risk": {
+      "PreTradeChecker": 1
+    },
+    "transaction": {
+      "DecisionLog": 1
+    },
+    "graph": {
+      "Graph": 1,
+      "TypedGraph": 1
+    },
+    "cause": {
+      "CausalGraph": 1
+    },
+    "memory": {
+      "UniversalMemoryGuard": 1
+    },
+    "hardware": {
+      "AIHardwareProfiler": 1
+    },
+    "gpu": {
+      "AIHardwareProfiler": 1
+    },
+    "entropy": {
+      "SoftmaxCrossEntropy": 1,
+      "LogLoss": 1,
+      "KLDivLoss": 0.5,
+      "GaussianNLL": 0.5,
+      "BCEWithLogits": 0.5,
+      "LabelSmoothingCE": 0.5,
+      "OnlineGaussianMixture": 0.5,
+      "RunningMoments": 0.5,
+      "AdaptiveConformalRegressor": 0.5
+    },
+    "uncertainty": {
+      "AdaptiveConformalRegressor": 1,
+      "BayesianLinearRegression": 1,
+      "VBAdaptiveKalman": 0.5,
+      "VariableUncertainty": 0.5,
+      "FixedUncertainty": 0.5
+    },
+    "divergence": {
+      "KLDivLoss": 1
+    },
+    "density": {
+      "OnlineGaussianMixture": 1,
+      "Gaussian": 0.5
+    },
+    "distribution": {
+      "OnlineGaussianMixture": 1,
+      "Beta": 0.5,
+      "RunningMoments": 0.5
+    },
+    "matrix": {
+      "RunningCovariance": 0.5,
+      "PCA": 0.5
+    },
+    "covariance": {
+      "RunningCovariance": 1,
+      "ShrinkageCovariance": 1,
+      "OnlineShrinkageCovariance": 0.5,
+      "PCA": 0.5
+    },
+    "eigenvalue": {
+      "PCA": 1,
+      "SpectralFilter": 0.5,
+      "ChebyshevFilter": 0.5
+    },
+    "eigen": {
+      "PCA": 1
+    },
+    "convolution": {
+      "Conv1D": 1,
+      "Conv2D": 0.5
+    },
+    "extrapolation": {
+      "LinearRegression": 1,
+      "BayesianLinearRegression": 0.5,
+      "OnlineAR": 0.5,
+      "KalmanFilter": 0.5
+    },
+    "mitigation": {
+      "StreamingHealing": 1,
+      "AdaptiveSignalStabilizer": 0.5
+    },
+    "tomography": {
+      "BayesianLinearRegression": 1,
+      "AdaptiveConformalRegressor": 0.5,
+      "Sequential": 0.5
+    },
+    "calibration": {
+      "ADWIN": 0.5,
+      "PageHinkley": 0.5,
+      "KalmanFilter": 0.5
+    },
+    "quantum": {
+      "Sequential": 0.5,
+      "BayesianLinearRegression": 0.5,
+      "OnlineGaussianMixture": 0.5
+    },
+    "fidelity": {
+      "BrierScore": 0.5
+    }
+  },
+  "jobs": {
+    "classify": {
+      "roles": [
+        "Classifier"
+      ],
+      "domains": [
+        "tree",
+        "forest",
+        "ensemble",
+        "learn",
+        "ml",
+        "neural",
+        "bayes",
+        "neighbors",
+        "multiclass",
+        "proba",
+        "rules",
+        "bandit",
+        "active",
+        "reco",
+        "cluster"
+      ],
+      "modules": []
+    },
+    "regress": {
+      "roles": [
+        "Regressor",
+        "Transformer"
+      ],
+      "domains": [
+        "tree",
+        "forest",
+        "linear",
+        "timeseries",
+        "ml",
+        "neural",
+        "bayes",
+        "neighbors",
+        "multioutput",
+        "compose",
+        "optim",
+        "facto"
+      ],
+      "modules": []
+    },
+    "detect_drift": {
+      "roles": [
+        "DriftDetector"
+      ],
+      "domains": [
+        "drift",
+        "anomaly"
+      ],
+      "modules": []
+    },
+    "detect_anomaly": {
+      "roles": [
+        "AnomalyDetector"
+      ],
+      "domains": [
+        "anomaly",
+        "cluster",
+        "neighbors",
+        "proba",
+        "ml",
+        "active"
+      ],
+      "modules": []
+    },
+    "forecast": {
+      "roles": [],
+      "domains": [
+        "timeseries",
+        "kalman",
+        "dynamics"
+      ],
+      "modules": []
+    },
+    "audio_features": {
+      "roles": [],
+      "domains": [
+        "audio",
+        "preprocessing"
+      ],
+      "modules": []
+    },
+    "vision_features": {
+      "roles": [],
+      "domains": [
+        "vision",
+        "preprocessing",
+        "neural"
+      ],
+      "modules": []
+    },
+    "text_features": {
+      "roles": [],
+      "domains": [],
+      "modules": [
+        "signals.preprocessing.text",
+        "signals.preprocessing.vectorizer",
+        "signals.preprocessing.text_input"
+      ]
+    },
+    "robot": {
+      "roles": [],
+      "domains": [
+        "dynamics",
+        "utility",
+        "optim",
+        "graph",
+        "protect"
+      ],
+      "modules": []
+    },
+    "finance_controls": {
+      "roles": [],
+      "domains": [
+        "finance"
+      ],
+      "modules": []
+    },
+    "summarize_stream": {
+      "roles": [],
+      "domains": [
+        "stats",
+        "metrics",
+        "ml",
+        "neural",
+        "roles",
+        "proba",
+        "preprocessing",
+        "data",
+        "datasets",
+        "evaluate",
+        "consolidation",
+        "core",
+        "facto",
+        "bayes",
+        "cluster"
+      ],
+      "modules": []
+    },
+    "resources": {
+      "roles": [],
+      "domains": [
+        "utility",
+        "optim",
+        "core",
+        "evaluate",
+        "metrics"
+      ],
+      "modules": [
+        "utility.memory",
+        "utility.noise"
+      ]
+    },
+    "heal": {
+      "roles": [],
+      "domains": [
+        "protect"
+      ],
+      "modules": [
+        "utility.engine"
+      ]
+    }
+  }
+}

@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "usable card",
+  "description": "The card of an object (file, folder, repo, url) for the usable CLI.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "object",
+    "units"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "object": {
+      "type": "object",
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "file",
+            "code",
+            "text",
+            "table",
+            "sound",
+            "image",
+            "video",
+            "folder",
+            "repo",
+            "url",
+            "unsupported"
+          ]
+        },
+        "path": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "units": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "kind",
+          "name"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "features": {
+            "type": "object"
+          },
+          "evidence": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "n_files": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "n_units": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "classes_ranked": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "mass": {
+                "type": "number"
+              },
+              "from_files": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "translation": {
+          "type": "object",
+          "properties": {
+            "backend": {
+              "type": "string"
+            },
+            "available": {
+              "type": "boolean"
+            },
+            "lang": {
+              "type": "string"
+            },
+            "translated": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "total": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "n_files_seen": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "n_files_skipped": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "n_files_skipped_by_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "n_files_skipped_by_size": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

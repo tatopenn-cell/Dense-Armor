@@ -1,0 +1,7 @@
+# italian	reason
+# Entries of ontology/dictionary_it_en.tsv (ConceptNet) that the manual check found wrong. The backend returns None for them.
+ottocentouno	dictionary says "one" (1); the word is 801
+marchetta	dictionary says "token"; marked wrong by the manual check (required by test_dictionary_blocklist)
+pretensione	dictionary says "pre"; marked wrong by the manual check
+grassazione	dictionary says "armed"; marked wrong by the manual check
+riporto	dictionary says "forward"; marked wrong by the manual check
