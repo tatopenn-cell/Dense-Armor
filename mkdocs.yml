@@ -1,5 +1,5 @@
 site_name: Dense-Armor
-site_description: Online learning, machine learning and deep learning in JAX - pre-trade risk with a verifiable decision log, drift and anomaly detection on streams, neural network training with continual learning; shielding and robot control as optional layers.
+site_description: Low-level learning toolkit in JAX on three levels - online, deep and machine learning - with graph ontology, audio, vision and video, robot motion control, drift and anomaly detection, and finance blocks with a verifiable decision log.
 site_url: https://tatopenn-cell.github.io/Dense-Armor/
 repo_url: https://github.com/tatopenn-cell/Dense-Armor
 repo_name: tatopenn-cell/Dense-Armor

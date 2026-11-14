@@ -1,4 +1,4 @@
-"""Dense-Armor - the wearable AI-safety shield: runtime anomaly damping for any AI.
+"""Dense-Armor - a low-level learning toolkit: online, deep and machine learning, with ontology, audio, video, robot motion control and finance.
 Author: Salvatore Pennacchio (Napoli, 2026). Sister project: Dense-Evolution."""
 import logging
 

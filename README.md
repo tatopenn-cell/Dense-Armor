@@ -18,7 +18,7 @@
 
 <h3 align="center">Library of Primitives from__Robot__to__AI__ </h3>
 
-<p align="center"><strong>A library for online learning on trading, AI and sensor streams, one sample at a time. Pre-trade risk with a tamper-evident decision log, drift and anomaly detection on returns, neural network training with continual learning, robust time-series models, safe commands for drones and robots. Built to run inside the loop, and to be defended in front of a reviewer.</strong></p>
+<p align="center"><strong>A low-level learning toolkit on three levels: online learning one sample at a time, deep learning, and machine learning on a whole dataset. With a graph ontology, audio, vision and video, robot motion control, drift and anomaly detection, and finance blocks with a tamper-evident decision log. Built to run inside the loop, and to be defended in front of a reviewer.</strong></p>
 
 <p align="center">📖 <a href="https://tatopenn-cell.github.io/Dense-Armor/"><strong>Full documentation, API reference, quick guide →</strong></a></p>
 
@@ -299,7 +299,7 @@ Contributions are welcome. The library is built to be extended one estimator at 
 ```bibtex
 @software{pennacchio_dense_armor,
   author    = {Pennacchio, Salvatore},
-  title     = {Dense-Armor: Robot-AI Online Shielding \& Learning},
+  title     = {Dense-Armor: Low-Level Learning toolkit},
   year      = 2026,
   publisher = {Zenodo},
   doi       = {10.5281/zenodo.24030156}
