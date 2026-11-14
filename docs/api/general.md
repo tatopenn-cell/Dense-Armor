@@ -6,11 +6,11 @@ Complete map of every public class in Dense-Armor: description,
 base classes, public methods. When a class has a guide page,
 the link leads there for the full explanation and examples.
 
-**392 classes**, 3478 public methods, 204 public modules.
+**434 classes**, 3765 public methods, 233 public modules.
 
 ## Classes by subsystem
 
-**Jump to:** [Roles](#roles) &nbsp;·&nbsp; [Metrics](#metrics) &nbsp;·&nbsp; [Evaluate](#evaluate) &nbsp;·&nbsp; [Core](#core) &nbsp;·&nbsp; [Mcp_server](#mcp_server) &nbsp;·&nbsp; [Anomaly](#anomaly) &nbsp;·&nbsp; [Drift](#drift) &nbsp;·&nbsp; [Trees](#trees) &nbsp;·&nbsp; [Naive Bayes](#naive-bayes) &nbsp;·&nbsp; [Distributions](#distributions) &nbsp;·&nbsp; [Nearest neighbours](#nearest-neighbours) &nbsp;·&nbsp; [Multiclass](#multiclass) &nbsp;·&nbsp; [Multi-output](#multi-output) &nbsp;·&nbsp; [Forests](#forests) &nbsp;·&nbsp; [Ensembles](#ensembles) &nbsp;·&nbsp; [Bandits](#bandits) &nbsp;·&nbsp; [Active learning](#active-learning) &nbsp;·&nbsp; [Factorization machines](#factorization-machines) &nbsp;·&nbsp; [Recommenders](#recommenders) &nbsp;·&nbsp; [Rules](#rules) &nbsp;·&nbsp; [Clustering](#clustering) &nbsp;·&nbsp; [Stats](#stats) &nbsp;·&nbsp; [Preprocessing](#preprocessing) &nbsp;·&nbsp; [Compose](#compose) &nbsp;·&nbsp; [Vision](#vision) &nbsp;·&nbsp; [Learn](#learn) &nbsp;·&nbsp; [Datasets](#datasets) &nbsp;·&nbsp; [Protect](#protect) &nbsp;·&nbsp; [Bridges](#bridges) &nbsp;·&nbsp; [Armor](#armor) &nbsp;·&nbsp; [Dynamics](#dynamics) &nbsp;·&nbsp; [Deep learning](#deep-learning) &nbsp;·&nbsp; [Infrastructure](#infrastructure) &nbsp;·&nbsp; [Linear](#linear) &nbsp;·&nbsp; [ML](#ml) &nbsp;·&nbsp; [Optimizers](#optimizers) &nbsp;·&nbsp; [Time series](#time-series)
+**Jump to:** [Roles](#roles) &nbsp;·&nbsp; [Metrics](#metrics) &nbsp;·&nbsp; [Evaluate](#evaluate) &nbsp;·&nbsp; [Core](#core) &nbsp;·&nbsp; [Mcp_server](#mcp_server) &nbsp;·&nbsp; [Anomaly](#anomaly) &nbsp;·&nbsp; [Drift](#drift) &nbsp;·&nbsp; [Trees](#trees) &nbsp;·&nbsp; [Naive Bayes](#naive-bayes) &nbsp;·&nbsp; [Distributions](#distributions) &nbsp;·&nbsp; [Nearest neighbours](#nearest-neighbours) &nbsp;·&nbsp; [Multiclass](#multiclass) &nbsp;·&nbsp; [Multi-output](#multi-output) &nbsp;·&nbsp; [Forests](#forests) &nbsp;·&nbsp; [Ensembles](#ensembles) &nbsp;·&nbsp; [Bandits](#bandits) &nbsp;·&nbsp; [Active learning](#active-learning) &nbsp;·&nbsp; [Factorization machines](#factorization-machines) &nbsp;·&nbsp; [Recommenders](#recommenders) &nbsp;·&nbsp; [Rules](#rules) &nbsp;·&nbsp; [Clustering](#clustering) &nbsp;·&nbsp; [Stats](#stats) &nbsp;·&nbsp; [Preprocessing](#preprocessing) &nbsp;·&nbsp; [Compose](#compose) &nbsp;·&nbsp; [Vision](#vision) &nbsp;·&nbsp; [Learn](#learn) &nbsp;·&nbsp; [Datasets](#datasets) &nbsp;·&nbsp; [Protect](#protect) &nbsp;·&nbsp; [Bridges](#bridges) &nbsp;·&nbsp; [Armor](#armor) &nbsp;·&nbsp; [Dynamics](#dynamics) &nbsp;·&nbsp; [Deep learning](#deep-learning) &nbsp;·&nbsp; [Infrastructure](#infrastructure) &nbsp;·&nbsp; [Linear](#linear) &nbsp;·&nbsp; [ML](#ml) &nbsp;·&nbsp; [Optimizers](#optimizers) &nbsp;·&nbsp; [Time series](#time-series) &nbsp;·&nbsp; [Audio](#audio) &nbsp;·&nbsp; [Graph (ontology)](#graph-ontology)
 
 ---
 
@@ -7970,3 +7970,764 @@ Public methods:
 - `transform_many(X, t=None)`
 - `transform_one(x: dict, t: float | None = None)`
 - `window_samples(seconds: float)`
+
+## Audio
+
+### ADSR
+
+
+*Module:* `dense_armor.core.audio.generators`
+*Bases:* StatefulRoot
+*Guide:* [audio/perceptual.md](../audio/perceptual.md)
+
+The attack-decay-sustain-release envelope of Masuda and Saito (2023).
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None=None, include_attributes: bool=False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int=1, shuffle: bool=False, seed: int | None=None)`
+- `get_params(deep: bool=True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `update(_v: float=0.0)`
+- `update_many(values: Any)`
+- `value(t: float)`
+- `window_samples(seconds: float)`
+
+### AllPole
+
+
+*Module:* `dense_armor.core.audio.allpole`
+*Bases:* StatefulRoot
+*Guide:* [audio/filters.md](../audio/filters.md)
+
+Time-varying all-pole filter, ``y(n) = x(n) - sum_{i=1}^{M} a_i(n) y(n - i)`` (Eq. 1).
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None=None, include_attributes: bool=False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int=1, shuffle: bool=False, seed: int | None=None)`
+- `from_reflection(k: Any)`
+- `get_params(deep: bool=True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `update(x: float, a: Any=None)`
+- `update_many(values: Any, coeffs: Any=None)`
+- `window_samples(seconds: float)`
+
+### AllpassFilter
+
+
+*Module:* `dense_armor.core.audio.reverb`
+*Bases:* StatefulRoot
+*Guide:* [audio/effects.md](../audio/effects.md)
+
+The all-pass of Schroeder: ``H(z) = (z^-D - g) / (1 - g z^-D)``, gain 1 at every frequency.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None=None, include_attributes: bool=False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int=1, shuffle: bool=False, seed: int | None=None)`
+- `get_params(deep: bool=True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `update(x: float)`
+- `update_many(values: Any)`
+- `window_samples(seconds: float)`
+
+### Audio
+
+
+*Module:* `dense_armor.core.audio.signal`
+*Guide:* [audio/sound.md](../audio/sound.md)
+
+A block of sound.
+
+Public methods:
+
+- `channel(k: int)`
+- `to_mono()`
+
+### AudioFeatures
+
+
+*Module:* `dense_armor.core.audio.features`
+*Bases:* Root
+*Guide:* [audio/sources.md](../audio/sources.md)
+
+The magnitude spectrum of a block, averaged in ``n_bands`` groups of bins.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None=None, include_attributes: bool=False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int=1, shuffle: bool=False, seed: int | None=None)`
+- `get_params(deep: bool=True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `transform(block: Audio)`
+- `window_samples(seconds: float)`
+
+### AudioFileStream
+
+
+*Module:* `dense_armor.core.audio.streams`
+*Guide:* [audio/events.md](../audio/events.md)
+
+Blocks of ``block`` samples every ``hop`` samples from a WAV file.
+
+### AudioInput
+
+
+*Module:* `dense_armor.core.audio.adapter`
+*Guide:* [audio/sources.md](../audio/sources.md)
+
+Feed blocks of sound to a primitive that already exists, in the form it takes.
+
+Public methods:
+
+- `feed(block: Audio, y: Any=None, x: dict[str, float] | None=None)`
+- `run(blocks: Iterable[Audio], label: Callable[[Audio], Any] | None=None)`
+
+### AudioLiveStream
+
+
+*Module:* `dense_armor.core.audio.streams`
+*Guide:* [audio/events.md](../audio/events.md)
+
+Blocks from a live input, taken through a bounded queue.
+
+Public methods:
+
+- `read(timeout: float | None=None)`
+- `start()`
+- `stop()`
+
+### Biquad
+
+
+*Module:* `dense_armor.core.audio.biquad`
+*Bases:* StatefulRoot
+*Guide:* [audio/filters.md](../audio/filters.md)
+
+Direct Form 1 biquad, ``y[n] = b0 x[n] + b1 x[n-1] + b2 x[n-2] - a1 y[n-1] - a2 y[n-2]``.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None=None, include_attributes: bool=False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int=1, shuffle: bool=False, seed: int | None=None)`
+- `get_params(deep: bool=True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `update(x: float)`
+- `update_many(values: Any)`
+- `window_samples(seconds: float)`
+
+### Chorus
+
+
+*Module:* `dense_armor.core.audio.modulation`
+*Bases:* StatefulRoot
+*Guide:* [audio/effects.md](../audio/effects.md)
+
+A copy of the sound delayed by a time that a sine LFO makes swing, mixed with the original.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None=None, include_attributes: bool=False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int=1, shuffle: bool=False, seed: int | None=None)`
+- `get_params(deep: bool=True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `update(x: float)`
+- `update_many(values: Any)`
+- `window_samples(seconds: float)`
+
+### CombFilter
+
+
+*Module:* `dense_armor.core.audio.reverb`
+*Bases:* StatefulRoot
+*Guide:* [audio/effects.md](../audio/effects.md)
+
+A delay in a feedback loop: ``y[n] = x[n - D] + g y[n - D]``, with an optional damping.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None=None, include_attributes: bool=False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int=1, shuffle: bool=False, seed: int | None=None)`
+- `get_params(deep: bool=True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `update(x: float)`
+- `update_many(values: Any)`
+- `window_samples(seconds: float)`
+
+### Compressor
+
+
+*Module:* `dense_armor.core.audio.dynamics`
+*Bases:* StatefulRoot
+*Guide:* [audio/effects.md](../audio/effects.md)
+
+Feed-forward compressor with a soft knee and a smoothed gain.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None=None, include_attributes: bool=False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int=1, shuffle: bool=False, seed: int | None=None)`
+- `get_params(deep: bool=True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `update(x: float)`
+- `update_many(values: Any)`
+- `window_samples(seconds: float)`
+
+### DelayLine
+
+
+*Module:* `dense_armor.core.audio.fir`
+*Bases:* StatefulRoot
+*Guide:* [audio/filters.md](../audio/filters.md)
+
+A delay of ``d`` samples: ``y[n] = x[n - d]``, 0 before the first ``d`` samples arrive.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None=None, include_attributes: bool=False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int=1, shuffle: bool=False, seed: int | None=None)`
+- `get_params(deep: bool=True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `update(x: float)`
+- `update_many(values: Any)`
+- `window_samples(seconds: float)`
+
+### FIR
+
+
+*Module:* `dense_armor.core.audio.fir`
+*Bases:* StatefulRoot
+*Guide:* [audio/filters.md](../audio/filters.md)
+
+Finite impulse response filter, ``y[n] = sum_{m=0}^{M-1} h[m] x[n - m]`` (Eq. 6).
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None=None, include_attributes: bool=False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int=1, shuffle: bool=False, seed: int | None=None)`
+- `get_params(deep: bool=True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `update(x: float)`
+- `update_many(values: Any)`
+- `window_samples(seconds: float)`
+
+### Harmonizer
+
+
+*Module:* `dense_armor.core.audio.timescale`
+*Bases:* Root
+*Guide:* [audio/timescale.md](../audio/timescale.md)
+
+The sound plus copies of it shifted by intervals, added with the same weight.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None=None, include_attributes: bool=False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int=1, shuffle: bool=False, seed: int | None=None)`
+- `get_params(deep: bool=True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `process(x: Any)`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `window_samples(seconds: float)`
+
+### JaxBiquad
+
+
+*Module:* `dense_armor.core.audio.diff_filter`
+*Guide:* [audio/differentiable.md](../audio/differentiable.md)
+
+A biquad layer with trainable coefficients, in the layer pattern of ``core.deep.neural``.
+
+Public methods:
+
+- `backward(g: jax.Array)`
+- `forward(x: jax.Array, training: bool=True)`
+- `params()`
+
+### KarplusStrong
+
+
+*Module:* `dense_armor.core.audio.generators`
+*Bases:* StatefulRoot
+*Guide:* [audio/synthesis.md](../audio/synthesis.md)
+
+The plucked-string algorithm of Karplus and Strong.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None=None, include_attributes: bool=False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int=1, shuffle: bool=False, seed: int | None=None)`
+- `get_params(deep: bool=True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `update(_v: float=0.0)`
+- `update_many(values: Any)`
+- `window_samples(seconds: float)`
+
+### Limiter
+
+
+*Module:* `dense_armor.core.audio.dynamics`
+*Bases:* StatefulRoot
+*Guide:* [audio/effects.md](../audio/effects.md)
+
+Brickwall limiter with lookahead: no output sample is above ``ceiling_db``.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None=None, include_attributes: bool=False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int=1, shuffle: bool=False, seed: int | None=None)`
+- `get_params(deep: bool=True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `update(x: float)`
+- `update_many(values: Any)`
+- `window_samples(seconds: float)`
+
+### Oscillator
+
+
+*Module:* `dense_armor.core.audio.generators`
+*Bases:* StatefulRoot
+*Guide:* [audio/synthesis.md](../audio/synthesis.md)
+
+A phase-accumulator oscillator whose frequency may change at every sample.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None=None, include_attributes: bool=False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int=1, shuffle: bool=False, seed: int | None=None)`
+- `get_params(deep: bool=True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `update(f: float)`
+- `update_many(freqs: Any)`
+- `window_samples(seconds: float)`
+
+### Phaser
+
+
+*Module:* `dense_armor.core.audio.modulation`
+*Bases:* StatefulRoot
+*Guide:* [audio/effects.md](../audio/effects.md)
+
+First-order all-pass stages whose corner frequency is swept by an LFO, added to the original.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None=None, include_attributes: bool=False)`
+- `corner_frequency(n: int)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int=1, shuffle: bool=False, seed: int | None=None)`
+- `get_params(deep: bool=True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `update(x: float)`
+- `update_many(values: Any)`
+- `window_samples(seconds: float)`
+
+### Resampler
+
+
+*Module:* `dense_armor.core.audio.resample`
+*Bases:* StatefulRoot
+*Guide:* [audio/resampling.md](../audio/resampling.md)
+
+Demand-driven resampler; ``q`` is the input step per output sample.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None=None, include_attributes: bool=False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int=1, shuffle: bool=False, seed: int | None=None)`
+- `get_params(deep: bool=True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_gain(gain: float)`
+- `set_params(**params: Any)`
+- `set_ratio(q: float)`
+- `state_dict()`
+- `update_many(values: Any)`
+- `window_samples(seconds: float)`
+
+### SchroederReverb
+
+
+*Module:* `dense_armor.core.audio.reverb`
+*Bases:* StatefulRoot
+*Guide:* [audio/effects.md](../audio/effects.md)
+
+The reverberator of Schroeder: four combs in parallel, two all-passes in series.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None=None, include_attributes: bool=False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int=1, shuffle: bool=False, seed: int | None=None)`
+- `get_params(deep: bool=True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `update(x: float)`
+- `update_many(values: Any)`
+- `window_samples(seconds: float)`
+
+### SoftClip
+
+
+*Module:* `dense_armor.core.audio.dynamics`
+*Bases:* StatefulRoot
+*Guide:* [audio/effects.md](../audio/effects.md)
+
+Soft clipper ``tanh(g x)`` with oversampling, so that its harmonics do not fold back.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None=None, include_attributes: bool=False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int=1, shuffle: bool=False, seed: int | None=None)`
+- `get_params(deep: bool=True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `update(x: float)`
+- `update_many(values: Any)`
+- `window_samples(seconds: float)`
+
+### StreamingSTFT
+
+
+*Module:* `dense_armor.core.audio.fourier`
+*Bases:* StatefulRoot
+*Guide:* [audio/sound.md](../audio/sound.md)
+
+The :func:`stft` one sample at a time.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None=None, include_attributes: bool=False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int=1, shuffle: bool=False, seed: int | None=None)`
+- `get_params(deep: bool=True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `update(v: float)`
+- `update_many(values: Any)`
+- `window_samples(seconds: float)`
+
+### YIN
+
+
+*Module:* `dense_armor.core.audio.pitch`
+*Bases:* Root
+*Guide:* [audio/pitch.md](../audio/pitch.md)
+
+YIN as a primitive: ``update_many(frame)`` returns the F0 of that frame.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None=None, include_attributes: bool=False)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int=1, shuffle: bool=False, seed: int | None=None)`
+- `get_params(deep: bool=True)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `update_many(values)`
+- `window_samples(seconds: float)`
+
+## Graph (ontology)
+
+### Action
+
+
+*Module:* `dense_armor.core.graph.actions`
+*Guide:* [ontology/typed.md](../ontology/typed.md)
+
+A STRIPS action.
+
+Public methods:
+
+- `apply(graph: TypedGraph, params: dict[str, Any] | None=None)`
+- `check(graph: TypedGraph, params: dict[str, Any] | None=None)`
+
+### ActionRejected
+
+
+*Module:* `dense_armor.core.graph.actions`
+*Bases:* Exception
+*Guide:* [ontology/typed.md](../ontology/typed.md)
+
+Raised when an Action is refused.
+
+### AdaCGP
+
+
+*Module:* `dense_armor.core.graph.adacgp`
+*Bases:* Estimator
+*Guide:* [ontology/online.md](../ontology/online.md)
+
+Estimate, one sample at a time, the weights ``W`` of a causal graph process.
+
+Public methods:
+
+- `clone(new_params: dict[str, Any] | None=None, include_attributes: bool=False)`
+- `debias(x: Any, t: float | None=None)`
+- `describe()`
+- `fit(X, y=None, t=None, epochs: int=1, shuffle: bool=False, seed: int | None=None)`
+- `get_params(deep: bool=True)`
+- `learn_one(x: Any, t: float | None=None)`
+- `load_state_dict(state: dict[str, Any])`
+- `mutate(new_attrs: dict[str, Any])`
+- `set_params(**params: Any)`
+- `state_dict()`
+- `update(x: Any, t: float | None=None)`
+- `update_filter(x: Any, rho: float=0.01, eta: float=0.0, eps: float=0.001)`
+- `window_samples(seconds: float)`
+
+### CausalGraph
+
+
+*Module:* `dense_armor.core.graph.causal`
+*Guide:* [ontology/causal.md](../ontology/causal.md)
+
+A DAG of causal relations.
+
+Public methods:
+
+- `estimate_effect(treatment: str, value: float, data, outcome: str)`
+- `is_valid()`
+- `parents(name: str)`
+
+### ChebyshevFilter
+
+
+*Module:* `dense_armor.core.graph.filters`
+*Guide:* [ontology/filters.md](../ontology/filters.md)
+
+A Chebyshev polynomial filter of one graph, with no eigenvectors.
+
+Public methods:
+
+- `apply(x)`
+
+### Constraint
+
+
+*Module:* `dense_armor.core.graph.ontology`
+*Guide:* [ontology/typed.md](../ontology/typed.md)
+
+A named rule on the two ends of an edge.
+
+### ConstraintViolation
+
+
+*Module:* `dense_armor.core.graph.ontology`
+*Bases:* ValueError
+*Guide:* [ontology/typed.md](../ontology/typed.md)
+
+Raised by ``TypedGraph.validate(raise_on_violation=True)``.
+
+### Dataflow
+
+
+*Module:* `dense_armor.core.graph.dataflow`
+*Guide:* [ontology/dag.md](../ontology/dag.md)
+
+A description of estimators and of the flow of signals between them.
+
+Public methods:
+
+- `build(provenance: Provenance | None=None)`
+- `edges()`
+- `lineage(name: str)`
+- `source(name: str, estimator: Any)`
+- `then(name: str, estimator: Any, after: str)`
+
+### ExecutionDAG
+
+
+*Module:* `dense_armor.core.graph.dag`
+*Guide:* [ontology/dag.md](../ontology/dag.md)
+
+A DAG of estimators.
+
+Public methods:
+
+- `ancestors(name: str)`
+- `descendants(name: str)`
+- `is_acyclic()`
+- `run(signals: dict[str, Signal], labels: dict[str, Any] | None=None)`
+- `to_networkx()`
+- `topological_order()`
+
+### GateNode
+
+
+*Module:* `dense_armor.core.graph.gate`
+*Guide:* [ontology/dag.md](../ontology/dag.md)
+
+A node that blocks the downstream flow when the detector fires.
+
+### Graph
+
+
+*Module:* `dense_armor.core.graph.core`
+*Guide:* [ontology/spectral.md](../ontology/spectral.md)
+
+Weighted undirected graph on ``n_nodes`` nodes.
+
+Public methods:
+
+- `degree(i: int)`
+- `neighbors(i: int)`
+- `to_networkx()`
+- `to_pygsp()`
+
+### GraphFourier
+
+
+*Module:* `dense_armor.core.graph.fourier`
+*Guide:* [ontology/spectral.md](../ontology/spectral.md)
+
+The Graph Fourier Transform of one graph, with the basis found once.
+
+Public methods:
+
+- `inverse(x_hat)`
+- `transform(x)`
+
+### GraphSignal
+
+
+*Module:* `dense_armor.core.graph.signal`
+*Guide:* [ontology/spectral.md](../ontology/spectral.md)
+
+A :class:`Signal` (one channel per node) with a :class:`Graph`.
+
+Public methods:
+
+- `from_signal(signal: Signal, graph)`
+- `to_signal()`
+
+### Provenance
+
+
+*Module:* `dense_armor.core.graph.provenance`
+*Guide:* [ontology/provenance.md](../ontology/provenance.md)
+
+A log of node runs; ``chain`` follows ``parent_nodes``.
+
+Public methods:
+
+- `broken_at()`
+- `chain(output_hash: str, node: str | None=None)`
+- `from_jsonl(path)`
+- `record(t: float, node: str, method: str, signal_in, output, parents: list[str], elapsed_ms: float=0.0)`
+- `records()`
+- `to_jsonl(path)`
+- `verify(head: str | None=None)`
+
+### SpectralFilter
+
+
+*Module:* `dense_armor.core.graph.filters`
+*Guide:* [ontology/filters.md](../ontology/filters.md)
+
+A spectral filter of one graph, with the basis found once.
+
+Public methods:
+
+- `apply(x)`
+- `heat(graph, tau: float, normalized: bool=False)`
+- `low_pass(graph, cutoff: float, normalized: bool=False)`
+
+### SpectralWavelet
+
+
+*Module:* `dense_armor.core.graph.wavelet`
+*Guide:* [ontology/filters.md](../ontology/filters.md)
+
+The scaling function and the wavelets of a graph.
+
+Public methods:
+
+- `frame_sum()`
+- `scaling(x)`
+- `wavelets(x)`
+
+### TypedGraph
+
+
+*Module:* `dense_armor.core.graph.ontology`
+*Guide:* [ontology/typed.md](../ontology/typed.md)
+
+A typed graph with a schema and constraints.
+
+Public methods:
+
+- `add_edge(src: str, dst: str, relation: str, constraint: Constraint | Callable[[dict, dict], bool] | None=None)`
+- `add_node(name: str, node_type: str, **state: Any)`
+- `to_networkx()`
+- `update(name: str, **state: Any)`
+- `validate(raise_on_violation: bool=False, nodes=None)`

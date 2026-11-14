@@ -8,7 +8,7 @@ every file. Update it whenever a module is added, moved or renamed.
 1. `roles` — the base classes every estimator builds on: `Estimator`, `Classifier`,
    `Regressor`, `Transformer`, `AnomalyDetector`, `DriftDetector`, `Protected`, `Signal` and
    the other support classes.
-2. `core` — the online-learning library: 33 subpackages in seven groups, and the audio section.
+2. `core` — the online-learning library: 33 subpackages in seven groups, the audio section and the graph package.
    (Before the names were swapped this folder was `utility` and the shielding engine of item 6
    was `core`.)
    `online/` (`learn`, `optim`, `linear`, `timeseries`, `cluster`, `tree`, `forest`, `ensemble`,
@@ -17,7 +17,7 @@ every file. Update it whenever a module is added, moved or renamed.
    `preprocessing`, `vision`, `datasets`), `robot/` (`control`), `evaluation/` (`evaluate`,
    `metrics`), `infrastructure/` (`compose`, `data`) and `finance/` (`schedule`, `pretrade`,
    `itch`, `ring`, `config`, `decision_log`, `feed`, `status`, `synthetic`, `demo`, `audit_db`, `fix_gateway`).
-   The audio section is the folder `audio/`, beside these groups: `Audio`, WAV, windows, STFT,
+   The graph package is the folder `graph/`, beside these groups: `Graph`, spectrum and filters, `TypedGraph`, `ExecutionDAG`, `Provenance`, anomaly scores, `AdaCGP`. The audio section is the folder `audio/`, beside these groups: `Audio`, WAV, windows, STFT,
    generators, filters, NMF, pitch units and streams, in modules of their own. The old paths, for example `dense_armor.utility.bandit.ucb` or
    `dense_armor.utility.online.bandit.ucb`, still resolve to the same modules, and so do the old
    engine paths `dense_armor.core.engine` and the like (`_compat.py`).
@@ -69,6 +69,8 @@ graph TD
         ACTIVE["active: FixedUncertainty,<br/>VariableUncertainty"]
         FACTO["facto: FMRegressor, FFMRegressor,<br/>FwFMRegressor, HOFMRegressor"]
         RECO["reco: Baseline, BiasedMF, FunkMF"]
+        AUDIO["audio: Audio, AudioInput, Biquad,<br/>YIN, StreamingSTFT, Compressor"]
+        GRAPH["graph: Graph, TypedGraph,<br/>ExecutionDAG, Provenance,<br/>AdaCGP, SpectralFilter"]
         NEURAL["neural: Dense, Sequential, Conv2D,<br/>LSTM, MultiHeadSelfAttention,<br/>RMSNorm, GLUFeedForward,<br/>TransformerDecoderBlock,<br/>RotaryDecoder, generate,<br/>Trainer"]
     end
 
@@ -542,6 +544,68 @@ Notes on the network files: `Embedding` in `layers.py` skips its range check on 
 | `shared.py` | `SharedArray`, `SharedStrings`, `SharedList`, `SharedDict`, `to_shared` | Objects placed in shared memory, so that several processes read one copy |
 
 Internal helpers, not public: `core/_validation.py` (`as_dict`, `is_number`, `finite_row`, the three checks shared by several modules), `core/online/ensemble/_common.py` (`as_dict`, `finite`, `new_member`) and `core/online/facto/_common.py` (helpers of the factorization machines).
+
+### 2.33 audio
+
+Path: `core/audio/`, beside the seven groups. Sound as a value (`Audio`), the primitives that read, make, filter and measure it, and one adapter, `AudioInput`, that gives a block of sound to any estimator, detector, scaler or filter of the library. Guide: [Audio](docs/audio/index.md).
+
+| file | public names | what it is |
+|---|---|---|
+| `_state.py` |  | A ``Root`` whose ``state_dict`` also holds the private attributes named in ``_state_attrs`` |
+| `adapter.py` | `AudioInput`, `run_channels`, `run_estimators` | One adapter that opens any Dense-Armor primitive to sound |
+| `allpole.py` | `AllPole`, `reflection_to_lpc` | The all-pole filter and the reflection coefficients that make it stable |
+| `biquad.py` | `Biquad`, `bandpass`, `highpass`, `highshelf`, `lowpass`, `lowshelf`, `notch`, `peaking` | Biquad filters: the coefficient formulas of the Audio EQ Cookbook and a Direct Form 1 filter |
+| `blamp.py` | `blamp_residual`, `hard_clip_blamp`, `triangle_blamp` | Four-point polyBLAMP: an alias-reduced triangle wave and hard clipping |
+| `clipping.py` | `hard_clip` | Hard clipping |
+| `diff_filter.py` | `JaxBiquad`, `jax_allpole_time_varying`, `jax_biquad`, `jax_lowpass` | Differentiable filters in JAX: the cookbook low-pass, a biquad layer, a time-varying all-pole filter |
+| `dynamics.py` | `Compressor`, `Limiter`, `SoftClip`, `gain_curve` | Dynamics: a compressor, a lookahead limiter and a soft clipper with oversampling |
+| `envelope.py` | `envelope_follower`, `hilbert` | The analytic signal and an envelope follower with attack and release |
+| `events.py` | `detect_events` | From a sound to an alarm: block features, a causal Hampel score and a drift detector |
+| `features.py` | `AudioFeatures` | Frame features: the magnitude spectrum of a block in a few bands |
+| `fir.py` | `FIR`, `DelayLine`, `convolve` | Convolution, the FIR filter and the delay line |
+| `fourier.py` | `StreamingSTFT`, `cola_ok`, `istft`, `stft` | Short-time Fourier transform, its inverse by overlap-add, and a streaming form |
+| `generators.py` | `ADSR`, `KarplusStrong`, `Oscillator`, `pink_noise`, `plucked_string`, `white_noise` | Oscillators, white noise and the Karplus-Strong plucked string |
+| `modulation.py` | `Chorus`, `Phaser` | Modulation effects: a chorus (a delay modulated by an LFO) and a phaser (all-passes swept by an LFO) |
+| `nmf.py` | `nmf`, `separate` | Non-negative matrix factorisation with multiplicative updates, and source separation |
+| `onset.py` | `onset_detect` | Onset detection: the spectral flux and a peak picker |
+| `perceptual.py` | `hz_to_mel`, `mel_filterbank`, `mel_spectrogram`, `mel_to_hz`, `mfcc` | Perceptual analysis: the mel scale, the mel filterbank, the mel spectrogram and the MFCC |
+| `pitch.py` | `YIN`, `cmndf`, `yin_f0` | Fundamental frequency by the YIN method: the difference function and its normalisation |
+| `pitch_units.py` | `cents_to_freq`, `freq_to_cents`, `freq_to_note`, `note_to_freq` | Frequency, cents and note coordinates in equal temperament |
+| `resample.py` | `Resampler`, `pitch_ratio_transition`, `rational_ratio`, `resample` | Resampling by an arbitrary, possibly changing, ratio with linear interpolation |
+| `reverb.py` | `AllpassFilter`, `CombFilter`, `SchroederReverb`, `comb_gain`, `reverberation_time` | Artificial reverberation: the comb and all-pass filters of Schroeder and the reverberator |
+| `signal.py` | `Audio` | The value type for sound: samples, sample rate and start time |
+| `spectral.py` | `spectral_centroid`, `spectral_flatness`, `spectral_flux`, `spectral_rolloff` | Spectral features of a signal, one value per STFT frame |
+| `streams.py` | `AudioFileStream`, `AudioLiveStream` | Audio streams: from a WAV file and from a live input |
+| `timescale.py` | `Harmonizer`, `pitch_shift`, `psola_time_stretch`, `time_stretch` | Time and pitch: a phase vocoder (time-stretch, pitch-shift), PSOLA and a harmonizer |
+| `wav.py` | `read_wav`, `write_wav` | Reading and writing WAV files (RIFF) in PCM 16, 24, 32 bits and IEEE float 32 |
+| `windows.py` | `blackman`, `get_window`, `hamming`, `hann`, `rectangular` | Window functions: rectangular, Hann, Hamming and Blackman |
+
+### 2.34 graph
+
+Path: `core/graph/`, beside the seven groups. The ontology: a typed graph with rules and actions, the graph as a spectrum, filters and wavelets, an execution DAG of estimators with a hash-chained provenance, anomaly and root-cause scores, and the estimation, recovery and learning of a graph from signals. Guide: [Ontology](docs/ontology/index.md).
+
+| file | public names | what it is |
+|---|---|---|
+| `actions.py` | `Action`, `ActionRejected`, `apply_action` | Action: a STRIPS action with preconditions and effects |
+| `adacgp.py` | `AdaCGP` | AdaCGP: online estimation of the graph shift operator from a time series |
+| `anomaly.py` | `graph_anomaly_score`, `page_rank`, `random_walk_restart`, `root_cause_walk` | PageRank, random walk with restart, graph anomaly score |
+| `causal.py` | `CausalGraph` | CausalGraph: a DAG with the DoWhy do-calculus |
+| `change.py` | `structural_change` | Structural change between two graphs |
+| `core.py` | `Graph` | Graph structure: weighted undirected graph, Laplacians |
+| `dag.py` | `ExecutionDAG` | ExecutionDAG: a deterministic network of estimators |
+| `dataflow.py` | `Dataflow` | Dataflow: describe where each signal comes from, then build the DAG |
+| `filters.py` | `ChebyshevFilter`, `SpectralFilter`, `apply_filter`, `chebyshev_coefficients`, `chebyshev_filter`, `heat_kernel`, `low_pass` | Spectral filters on a graph (heat kernel, low-pass) and the |
+| `fourier.py` | `GraphFourier`, `gft`, `igft` | Graph Fourier Transform |
+| `gate.py` | `GateNode` | GateNode: an AnomalyGate as a node of an ExecutionDAG |
+| `learning.py` | `learn_graph`, `weights_from_drops` | Informed graph learning: a graph from smooth signals and domain knowledge |
+| `ontology.py` | `Constraint`, `ConstraintViolation`, `TypedGraph` | TypedGraph: a graph with node types, schema and constraints |
+| `provenance.py` | `Provenance` | Provenance: a JSONL log of every run of a DAG node |
+| `recovery.py` | `recover_graph_signal` | Recovery of a time-varying graph signal on a dynamic graph |
+| `signal.py` | `GraphSignal` | GraphSignal: a :class:`Signal` whose values live on the graph nodes |
+| `spectral.py` | `eigendecomposition`, `fiedler_vector`, `fix_sign` | Spectral decomposition of the graph Laplacian |
+| `wavelet.py` | `SpectralWavelet`, `chebyshev_wavelet_terms` | Graph spectral wavelets from Chebyshev polynomials of even and odd order |
+
+`networkx` is needed by `ontology.py`, `dag.py`, `causal.py` and the PageRank scores (extras `onto` and `graph`), `pygsp` only by the conversion in `core.py` (extra `graph`), and `dowhy` only by `CausalGraph` (extra `causal`).
 
 ## 3. dynamics
 

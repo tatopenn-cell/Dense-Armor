@@ -160,6 +160,7 @@ pip install dense-armor                 # core: numpy + jax
 pip install "dense-armor[vision]"       # + camera (OpenCV), image folder (Pillow), in-memory
 pip install "dense-armor[ros]"          # + rosbag readers
 pip install "dense-armor[audio,data]"   # + WAV, HDF5, NetCDF
+pip install "dense-armor[onto]"         # + networkx, for the ontology
 pip install "dense-armor[mcp]"          # + MCP server for LLM agents
 pip install "dense-armor[quantum]"      # + Dense-Evolution (NISQ simulator)
 pip install "dense-armor[sklearn]"      # + scikit-learn bridge
@@ -192,6 +193,8 @@ Dense-Armor provides online implementations of the following families of algorit
 - Imbalanced learning
 - [Vision](https://tatopenn-cell.github.io/Dense-Armor/vision/) (video files, frame features, patches, vocabulary, online reduction, motion, tracking, registration, dense flow)
 - [Deep learning](https://tatopenn-cell.github.io/Dense-Armor/neural/) (layers, attention, convolutional and recurrent blocks, batch and streaming training, continual learning with EWC, GEM, A-GEM, memory consolidation with VQ, PQ, residual tree, dual and archival memory, a decoder language model with RMSNorm, rotary attention and SwiGLU, and generation against a static key/value cache)
+- [Audio](https://tatopenn-cell.github.io/Dense-Armor/audio/) (sound as a value, WAV files and live input, filters, effects, synthesis, pitch, time and pitch change, mel and MFCC, event detection, and one adapter that gives sound to every estimator, detector and scaler)
+- [Ontology](https://tatopenn-cell.github.io/Dense-Armor/ontology/) (a typed graph with rules and actions, graph spectrum and filters, an execution DAG of estimators with a hash-chained provenance, anomaly and root-cause scores, recovery and learning of a graph, online graph estimation with `AdaCGP`, causal effects)
 - Robot control (rate limits, control barrier functions, trajectories, kinematic tracking)
 - Robot dynamics (URDF, passivity + CBF controllers)
 - Shielding (1D series cleanup, input/output shield, per-point routing)
