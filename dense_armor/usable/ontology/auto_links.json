@@ -1,0 +1,3082 @@
+{
+ "links": [
+  [
+   "neural",
+   "AGEM",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "rules",
+   "AMRulesRegressor",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "AccumulatingStep",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "metrics",
+   "Accuracy",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "graph",
+   "Action",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "graph",
+   "ActionRejected",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "active",
+   "ActiveStrategy",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "graph",
+   "AdaCGP",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "optim",
+   "AdaGrad",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "optim",
+   "Adam",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "optim",
+   "AdamW",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "AddPositions",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "forest",
+   "AggregatedMondrianForestClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "forest",
+   "AggregatedMondrianForestRegressor",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "consolidation",
+   "ArchivalMemory",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "core",
+   "Armor",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "ArrayStream",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "AsTransformer",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "AudioFileStream",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "AudioLiveStream",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "finance",
+   "AuditDB",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "Autocorrelation",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "stats",
+   "Autocorrelation",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "Autoencoder",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "AvgPool1D",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "AvgPool2D",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "BackgroundLearner",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "BagOfVisualWords",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "BaggingClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "metrics",
+   "BalancedAccuracy",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "bandit",
+   "BanditPolicy",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "reco",
+   "Baseline",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "BatchDecisionTreeClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "tree",
+   "BatchDecisionTreeClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "BatchNorm",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "bandit",
+   "BayesUCB",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "bayes",
+   "BernoulliNB",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "BernoulliNB",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "reco",
+   "BiasedMF",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "Bidirectional",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "stats",
+   "BloomFilter",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "BoostingClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "BottleneckFusion",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "CameraStream",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "datasets",
+   "Casper",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "bayes",
+   "CategoricalNB",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "CategoricalNB",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "ClassifierChain",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "multioutput",
+   "ClassifierChain",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "metrics",
+   "CohenKappa",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "ColumnMoments",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "CompiledStep",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "bayes",
+   "ComplementNB",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "ComplementNB",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "metrics",
+   "ConfusionMatrix",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "ConstantLR",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "graph",
+   "Constraint",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "graph",
+   "ConstraintViolation",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "Conv3D",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "ConvTranspose1D",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "ConvTranspose2D",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "Correlation",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "CosineWarmRestarts",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "stats",
+   "CountMinSketch",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "Covariance",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "CubeStream",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "DataStream",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "graph",
+   "Dataflow",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "finance",
+   "Decision",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "DecisionTreeClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "DecisionTreeRegressor",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "DeepGenerativeReplay",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "cluster",
+   "DenStream",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "Dense",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "DenseFlow",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "DenseFlow",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "DepthwiseConv2D",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "DifferenceImage",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "compose",
+   "Discard",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "learn",
+   "DriftAdaptiveClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "learn",
+   "DriftAwareResidualDynamicsLearner",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "datasets",
+   "DriftStream",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "Dropout",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "consolidation",
+   "DualMemory",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "ELU",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "EWC",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "EWScaler",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "preprocessing",
+   "EWScaler",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "EWStats",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "stats",
+   "EWStats",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "Embedding",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "bandit",
+   "EpsilonGreedy",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "EventFrame",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "metrics",
+   "EventMetrics",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "metrics",
+   "EventWindow",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "graph",
+   "ExecutionDAG",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "bandit",
+   "Exp3",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "ExponentiallyWeightedAverage",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ensemble",
+   "ExponentiallyWeightedAverageRegressor",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "ExtraTreesRegressor",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "metrics",
+   "F1",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "metrics",
+   "FBeta",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "facto",
+   "FFMClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "facto",
+   "FFMRegressor",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "facto",
+   "FMClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "facto",
+   "FMRegressor",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "optim",
+   "FTRLProximal",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "FalseColor",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "FeatureHasher",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "preprocessing",
+   "FeatureHasher",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "FeatureToSignal",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "Flatten",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "FocalLoss",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "Frame",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "FrameAnomaly",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "FrameJointFusion",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "FrameNormalizer",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "FrameQuality",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "FrameWindow",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "compose",
+   "FuncTransformer",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "reco",
+   "FunkMF",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "facto",
+   "FwFMClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "facto",
+   "FwFMRegressor",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "GELU",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "GEM",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "GLUFeedForward",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "GRU",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "graph",
+   "GateNode",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "GatedCrossAttention",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "GlobalMotion",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "GlobalMotion",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "graph",
+   "GraphFourier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "graph",
+   "GraphSignal",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "GroupNorm",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "facto",
+   "HOFMClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "facto",
+   "HOFMRegressor",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "anomaly",
+   "HampelFilter",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "HampelFilter",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "HedgeNetClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "HingeLoss",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "tree",
+   "HoeffdingAdaptiveTreeClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "tree",
+   "HoeffdingAnytimeTreeClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "Huber",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "stats",
+   "HyperLogLog",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "ImageFolderStream",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "IncrementalPCA",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "InstanceNorm",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "metrics",
+   "IntervalCoverage",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "JointDerivatives",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "preprocessing",
+   "JointDerivatives",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "JointPower",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "preprocessing",
+   "JointPower",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "KNNClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neighbors",
+   "KNNClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "KNNRegressor",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neighbors",
+   "KNNRegressor",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "Kinematics",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "L1Loss",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "learn",
+   "LEGO",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "LSTM",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "LandmarkCleaner",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "LandmarkStream",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "LastStep",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "LatentCrossAttention",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "LayerNorm",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neighbors",
+   "LazySearch",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "LeakyReLU",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "LearnedPositions",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "consolidation",
+   "LifecycleMemory",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "bandit",
+   "LinUCBDisjoint",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "LinearWarmup",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "anomaly",
+   "LocalOutlierFactor",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "LocalOutlierFactor",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "linear",
+   "LogisticRegression",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "LogisticRegression",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "MLBase",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "MSE",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "MatryoshkaLoss",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "MaxPool1D",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "MaxPool2D",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "metrics",
+   "MeanIntervalWidth",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "MeanOverTime",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "metrics",
+   "Metric",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "learn",
+   "MetricKNNClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "learn",
+   "MetricLearner",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "preprocessing",
+   "Metro",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "MinMaxScaler",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "preprocessing",
+   "MinMaxScaler",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "Moments",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "MondrianForestClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "tree",
+   "MondrianForestClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "MondrianForestRegressor",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "tree",
+   "MondrianForestRegressor",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "MotionMask",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "MotionMask",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "MovingObjectTracker",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "anomaly",
+   "MultiChannelStreamingDeviationDetector",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "MultiHeadCrossAttention",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "MultiHeadSelfAttention",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "Multinomial",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "proba",
+   "Multinomial",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "bayes",
+   "MultinomialNB",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "MultinomialNB",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "NeedsLabels",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "NextTokenLoss",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "NoamSchedule",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "learn",
+   "OASIS",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "OneVsOneClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "multiclass",
+   "OneVsOneClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "OneVsRestClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "multiclass",
+   "OneVsRestClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "OnlineAutoencoder",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ensemble",
+   "OnlineBaggingClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ensemble",
+   "OnlineBoostingClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "forest",
+   "OnlineExtraTreesRegressor",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "cluster",
+   "OnlineKMeans",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "evaluate",
+   "OnlineModelSelection",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "OnlineNetClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "OnlineNetRegressor",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "OnlineNetVector",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "optim",
+   "OnlineNewtonStep",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "learn",
+   "OnlinePlattScaling",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "learn",
+   "OnlineSoftmaxRegression",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "timeseries",
+   "OnlineVAR",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "protect",
+   "Orca",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "OutputCodeClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "multiclass",
+   "OutputCodeClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "Overlay",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "learn",
+   "POLA",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "consolidation",
+   "PQMemory",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "PRelu",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "Parallel",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "Param",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "PatchFeatures",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "PatchMemory",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "linear",
+   "PayloadEstimator",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "PerOutputClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "multioutput",
+   "PerOutputClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "PerOutputRegressor",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "multioutput",
+   "PerOutputRegressor",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "Phaser",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "metrics",
+   "PointAdjustedF1",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "metrics",
+   "Precision",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "ProbabilisticClassifierChain",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "multioutput",
+   "ProbabilisticClassifierChain",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "graph",
+   "Provenance",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "preprocessing",
+   "QueueResampler",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "metrics",
+   "R2Score",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "RMSNorm",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "optim",
+   "RMSProp",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "RNN",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "RandomForestClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "RandomProjection",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "RandomProjection",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "active",
+   "RandomStrategy",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "metrics",
+   "Recall",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "learn",
+   "RecursiveLeastSquares",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "Registration",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "RegressorChain",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "multioutput",
+   "RegressorChain",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "Relu",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "Resampler",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "Residual",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "learn",
+   "ResidualDynamicsLearner",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "consolidation",
+   "ResidualTree",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "finance",
+   "RingBuffer",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "bandit",
+   "RobotKpSelector",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "RobustScaler",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "preprocessing",
+   "RobustScaler",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "metrics",
+   "Rolling",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "metrics",
+   "RollingAUC",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "RollingCorrelation",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "stats",
+   "RollingCorrelation",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "RollingCovariance",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "stats",
+   "RollingCovariance",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "stats",
+   "RollingIQR",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "stats",
+   "RollingMAD",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "RollingMedian",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "stats",
+   "RollingMedian",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "RotaryDecoder",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "RotaryDecoderBlock",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "stats",
+   "RunningCorrelation",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "stats",
+   "RunningMomentsVector",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "stats",
+   "SDFT",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "optim",
+   "SGD",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "tree",
+   "SGTClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "tree",
+   "SGTRegressor",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "SceneChange",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "compose",
+   "Select",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "SelectKBest",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "preprocessing",
+   "SelectKBest",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "SeparableConv2D",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "Seq2Seq",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "Sequential",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "data",
+   "SharedArray",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "data",
+   "SharedDict",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "data",
+   "SharedList",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "data",
+   "SharedStrings",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "SiLU",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "Sigmoid",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "stats",
+   "Skyline",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "Softmax",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "Softplus",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "stats",
+   "SpaceSaving",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "SparseMoE",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "graph",
+   "SpectralWavelet",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "Stabilizer",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ensemble",
+   "StackingClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "StackingClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "StandardScaler",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "preprocessing",
+   "StandardScaler",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "StepLR",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "protect",
+   "StreamingArbiter",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "anomaly",
+   "StreamingDeviationDetector",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "anomaly",
+   "StreamingDeviationScorer",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "stats",
+   "StudentT",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "forest",
+   "SubspaceHoeffdingTree",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "Sync",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "datasets",
+   "SyntheticArm",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "Tanh",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "TestTimeCompute",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "consolidation",
+   "TheoreticalBound",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "bandit",
+   "ThompsonSampling",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "TrackToSignal",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "Trainer",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "TransformerBlock",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "TransformerDecoderBlock",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "roles",
+   "TransformerSupervised",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "bandit",
+   "UCB1",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "bandit",
+   "UCB1Tuned",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "roles",
+   "UnitCheckedPipeline",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "Upsample1D",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "Upsample2D",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "consolidation",
+   "VQMemory",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "active",
+   "VariableRandomizedUncertainty",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "VarianceThreshold",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "preprocessing",
+   "VarianceThreshold",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "neural",
+   "VectorQuantizer",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "VideoStream",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "vision",
+   "VideoWriter",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ensemble",
+   "VotingClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "ml",
+   "VotingClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ]
+ ]
+}

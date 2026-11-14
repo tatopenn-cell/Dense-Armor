@@ -1,0 +1,8 @@
+{
+ "payments.csv": {"expected": ["HoeffdingTreeClassifier", "AdaptiveRandomForestClassifier", "ADWIN", "PageHinkley", "HalfSpaceTrees"],
+   "note": "5000 transactions, 0.1 s apart, binary label is_fraud, the distribution changes halfway"},
+ "robot_joints.csv": {"expected": ["RigidBodyModel", "KalmanFilter", "HampelScorer", "OneClassSGD", "StreamingDeviationDetector", "AdaptiveSignalStabilizer"],
+   "note": "20000 rows at 1 kHz, six joint positions and six torques, no label"},
+ "tone.wav": {"expected": ["AudioInput", "AudioFeatures", "StreamingSTFT", "YIN", "HampelScorer", "ADWIN"],
+   "note": "1 s of a 440 Hz tone at 8 kHz with a click in it"}
+}
