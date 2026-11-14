@@ -6,6 +6,13 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [1.6.0] - 2026-11-14
 
+This release adds the audio section (sound as a value, filters, effects, synthesis, pitch, time and pitch change, mel and MFCC,
+event detection, and `AudioInput`, one adapter that gives sound to every estimator, detector and scaler), the ontology (the
+package `dense_armor.core.graph`, with its documentation section), the adapters `TextInput` and `VideoInput`, a dashboard that
+works on the visitor's own files, a workflow that runs only the nine pytest jobs, and a swap of the names of the folders
+`core` and `utility` (see "Changed": the old import paths still resolve, but `from dense_armor.utility import X` and
+`from dense_armor.core import X` now give the names of the other package).
+
 ### Added
 - The ontology, the package `dense_armor.core.graph`: a weighted `Graph` with its Laplacians, `GraphSignal`, the Fourier transform
   (`GraphFourier`) and the spectral filters (`SpectralFilter`, `ChebyshevFilter`, `SpectralWavelet`); a `TypedGraph` with
