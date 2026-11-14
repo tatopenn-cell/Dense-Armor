@@ -1,6 +1,5 @@
 """Speed harness: 5 components x 20 seeds x 2000 samples, 200 warm-up."""
 
-import importlib
 import json
 import math
 import os
@@ -16,7 +15,6 @@ SEEDS = 1 if SMOKE else 20
 WARM = 50 if SMOKE else 200
 OUT = os.environ.get("SPEED_OUT", "/content/speed.json")
 ROOT = os.environ.get("SPEED_ROOT", "/content/Dense-Armor")
-REF_NAME = os.environ.get("SPEED_REF", "")
 
 
 def sh(c):
@@ -34,19 +32,6 @@ from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB as
 from dense_armor.core.online.tree.hoeffding import HoeffdingTreeClassifier as OurHT
 from dense_armor.core.signals.datasets import DriftStream
 
-HAVE_REF = False
-if REF_NAME:
-    try:
-        _ref = importlib.import_module(REF_NAME)
-        _r_drift = importlib.import_module(REF_NAME + ".drift")
-        _r_forest = importlib.import_module(REF_NAME + ".forest")
-        _r_nb = importlib.import_module(REF_NAME + ".naive_bayes")
-        _r_tree = importlib.import_module(REF_NAME + ".tree")
-        _r_anom = importlib.import_module(REF_NAME + ".anomaly")
-        HAVE_REF = True
-    except Exception:
-        HAVE_REF = False
-
 D = 4
 
 
@@ -61,20 +46,11 @@ def squash(x):
 
 def models(seed):
     m = {
-        "gaussian_nb": (OurNB(), (lambda: _r_nb.GaussianNB()) if HAVE_REF else None, "clf"),
-        "hoeffding_tree": (
-            OurHT(),
-            (lambda: _r_tree.HoeffdingTreeClassifier(leaf_prediction="nb")) if HAVE_REF else None,
-            "clf",
-        ),
-        "adaptive_random_forest": (
-            OurARF(n_models=10, seed=seed),
-            (lambda: _r_forest.ARFClassifier(n_models=10, seed=seed)) if HAVE_REF else None,
-            "clf",
-        ),
+        "gaussian_nb": (OurNB(), "clf"),
+        "hoeffding_tree": (OurHT(), "clf"),
+        "adaptive_random_forest": (OurARF(n_models=10, seed=seed), "clf"),
         "half_space_trees": (
             OurHST(n_trees=25, depth=15, window=50, feature_ranges=[(0.0, 1.0)] * D, seed=seed),
-            (lambda: _r_anom.HalfSpaceTrees(n_trees=25, height=15, window_size=50, seed=seed)) if HAVE_REF else None,
             "anom",
         ),
     }
@@ -193,27 +169,18 @@ for seed in range(SEEDS):
     if seed in done_seeds:
         continue
     data = stream(seed)
-    for name, (ours, ref_f, kind) in models(seed).items():
-        for lib, mk in (("ours", ours), ("reference", ref_f)):
-            if mk is None:
-                continue
-            key = f"{name}|{lib}"
-            try:
-                m = mk if lib == "ours" else mk()
-                p, l = run_clf(m, data) if kind == "clf" else run_anom(m, data)
-                res["runs"].setdefault(key, []).append(stats(p, l))
-            except Exception:
-                res["errors"][f"{key}|seed{seed}"] = traceback.format_exc()[-400:]
+    for name, (model, kind) in models(seed).items():
+        try:
+            p, l = run_clf(model, data) if kind == "clf" else run_anom(model, data)
+            res["runs"].setdefault(name, []).append(stats(p, l))
+        except Exception:
+            res["errors"][f"{name}|seed{seed}"] = traceback.format_exc()[-400:]
     rng = np.random.default_rng(seed)
     errs = [float(v) for v in np.concatenate([rng.random(N // 2) < 0.1, rng.random(N - N // 2) < 0.5])]
-    for lib, mk in (("ours", lambda: OurADWIN()), ("reference", (lambda: _r_drift.ADWIN()) if HAVE_REF else None)):
-        if mk is None:
-            continue
-        key = f"adwin|{lib}"
-        try:
-            res["runs"].setdefault(key, []).append(adwin_run(mk(), errs))
-        except Exception:
-            res["errors"][f"{key}|seed{seed}"] = traceback.format_exc()[-400:]
+    try:
+        res["runs"].setdefault("adwin", []).append(adwin_run(OurADWIN(), errs))
+    except Exception:
+        res["errors"][f"adwin|seed{seed}"] = traceback.format_exc()[-400:]
     _save()
     print("seed", seed, "done", flush=True)
 
@@ -223,27 +190,6 @@ for key, rows in res["runs"].items():
     summary[key] = {f: float(np.median([r[f] for r in rows])) for f in fields}
 res["summary_median_over_seeds"] = summary
 
-try:
-    from scipy.stats import wilcoxon
-    comp = {}
-    for name in ("gaussian_nb", "hoeffding_tree", "adaptive_random_forest",
-                 "half_space_trees", "adwin"):
-        fld = "update_us_median" if name == "adwin" else "total_us_median"
-        a = [r[fld] for r in res["runs"].get(f"{name}|ours", [])]
-        b = [r[fld] for r in res["runs"].get(f"{name}|reference", [])]
-        if len(a) == len(b) and len(a) >= 6:
-            w = wilcoxon(a, b)
-            gt = sum(x < y for x, y in zip(a, b))
-            comp[name] = {
-                "ratio_ours_over_reference": float(np.median(np.array(a) / np.array(b))),
-                "ours_faster_on_seeds": int(gt),
-                "wilcoxon_two_sided_p": float(w.pvalue),
-            }
-    res["comparison"] = comp
-except Exception:
-    res["errors"]["comparison"] = traceback.format_exc()[-400:]
-
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 json.dump(res, open(OUT, "w"), indent=1)
-print(json.dumps({"summary": summary, "comparison": res.get("comparison"),
-                  "errors": list(res["errors"])}, indent=1)[:3500])
+print(json.dumps({"summary": summary, "errors": list(res["errors"])}, indent=1)[:3500])
