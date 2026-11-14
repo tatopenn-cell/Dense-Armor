@@ -1,6 +1,6 @@
 {
-  "title": "Dense-Armor: Robot-AI Online Shielding & Learning",
-  "description": "<p>Robot-AI Online Shielding &amp; Learning: online estimators, streaming algorithms, anomaly detection, drift, protected learning, robot command safety.</p><p>This software cites <strong>236</strong> bibliographic works. See the References section and the related_identifiers for arXiv/DOI links.</p>",
+  "title": "Dense-Armor: Low-Level Learning toolkit",
+  "description": "<p>Low-Level Learning toolkit on three levels: online learning, deep learning and machine learning. With a graph ontology, audio, vision and video, robot motion control, drift and anomaly detection, and finance blocks.</p><p>This software cites <strong>236</strong> bibliographic works. See the References section and the related_identifiers for arXiv/DOI links.</p>",
   "creators": [
     {
       "name": "Pennacchio, Salvatore",
