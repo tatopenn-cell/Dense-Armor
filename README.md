@@ -344,7 +344,7 @@ Dense-Armor takes inspiration from [River](https://riverml.xyz) (Montiel et al.,
 
 ## References
 
-Dense-Armor builds on 188 works across online learning, streaming statistics, robot control, deep learning and finance. The full list is in [REFERENCES.md](REFERENCES.md).
+Dense-Armor builds on 236 works across online learning, streaming statistics, robot control, deep learning and finance. The full list is in [REFERENCES.md](REFERENCES.md).
 
 Key references: [River](https://riverml.xyz) (Montiel et al., 2020, [arXiv:2012.04740](https://arxiv.org/abs/2012.04740)), [scikit-learn](https://scikit-learn.org) (Buitinck et al., 2013), [CASPER](https://arxiv.org/abs/2303.01300) (Kayan et al., 2023), ADWIN (Bifet & Gavaldà, 2006), CBF (Ames et al., 2019), EWC (Kirkpatrick et al., 2017).
 

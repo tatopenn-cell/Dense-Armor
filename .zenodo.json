@@ -1,6 +1,6 @@
 {
   "title": "Dense-Armor: Robot-AI Online Shielding & Learning",
-  "description": "<p>Robot-AI Online Shielding &amp; Learning: online estimators, streaming algorithms, anomaly detection, drift, protected learning, robot command safety.</p><p>This software cites <strong>188</strong> bibliographic works. See the References section and the related_identifiers for arXiv/DOI links.</p>",
+  "description": "<p>Robot-AI Online Shielding &amp; Learning: online estimators, streaming algorithms, anomaly detection, drift, protected learning, robot command safety.</p><p>This software cites <strong>236</strong> bibliographic works. See the References section and the related_identifiers for arXiv/DOI links.</p>",
   "creators": [
     {
       "name": "Pennacchio, Salvatore",
@@ -10,8 +10,8 @@
   "upload_type": "software",
   "access_right": "open",
   "license": "AGPL-3.0-or-later",
-  "version": "1.5.0",
-  "publication_date": "2026-11-08",
+  "version": "1.6.0",
+  "publication_date": "2026-11-14",
   "keywords": [
     "machine-learning",
     "online-learning",
@@ -334,6 +334,61 @@
     },
     {
       "identifier": "arXiv:2303.01300",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2011.04216",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2202.06432",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2206.06821",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2402.01140",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2405.13806",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2406.03898",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2411.01567",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2512.20275",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2603.14688",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2606.04990",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2608.08073",
       "relation": "cites",
       "scheme": "arxiv"
     }

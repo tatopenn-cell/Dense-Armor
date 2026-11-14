@@ -13,8 +13,8 @@ authors:
 repository-code: "https://github.com/tatopenn-cell/Dense-Armor"
 url: "https://tatopenn-cell.github.io/Dense-Armor/"
 license: AGPL-3.0-or-later
-version: "1.5.0"
-date-released: "2026-11-07"
+version: "1.6.0"
+date-released: "2026-11-14"
 doi: "10.5281/zenodo.24030156"
 keywords:
   - online-learning

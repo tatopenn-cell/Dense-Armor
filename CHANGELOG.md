@@ -4,7 +4,25 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-11-14
+
 ### Added
+- The ontology, the package `dense_armor.core.graph`: a weighted `Graph` with its Laplacians, `GraphSignal`, the Fourier transform
+  (`GraphFourier`) and the spectral filters (`SpectralFilter`, `ChebyshevFilter`, `SpectralWavelet`); a `TypedGraph` with
+  `Constraint` rules and `Action` with preconditions, validated on the subgraph an action touches (`apply_action`); an
+  `ExecutionDAG` of estimators with `Dataflow` and `GateNode`; a `Provenance` log chained by SHA-256 (`head`, `broken_at`,
+  `verify`); the scores `page_rank`, `random_walk_restart`, `root_cause_walk` and `graph_anomaly_score`;
+  `structural_change`; `CausalGraph` (DoWhy). Each part follows one paper (`REFERENCES.md`).
+- Graphs from signals: `AdaCGP`, an estimator that learns the weights of a graph one sample at a time (it follows the estimator
+  contract: `budget_s`, `memory_class`, `state_dict`), `recover_graph_signal` (a time-varying signal on a dynamic graph),
+  `learn_graph` and `weights_from_drops` (a graph from smooth signals and domain knowledge). Golden files in `test/graph/`.
+- The documentation section "Ontology" (11 pages, three figures): types, rules and actions, spectrum, filters, the execution DAG,
+  provenance, anomaly scores, recovery, learning, following a graph online, causality. The extras `onto`, `graph` and `causal`.
+- `docs/api/general.md`: the sections Audio, Graph (ontology) and Finance, and 15 classes that were missing (449 classes in
+  all). `ARCHITECTURE.md`: sections 2.33 audio, 2.34 graph and 2.35 finance. The README lists the audio section and the ontology.
+- `REFERENCES.md` cites 236 works (48 more: the papers of the audio section and of the ontology), and `.zenodo.json` lists the
+  11 new arXiv identifiers.
+- `docs-check.yml`: a pull request that touches the documents runs the strict build of the site.
 - Audio, differentiable filters (`dense_armor/core/audio/diff_filter.py`): `jax_lowpass`, `jax_biquad`, `JaxBiquad`
   (a layer in the pattern of `core/deep/neural`) and `jax_allpole_time_varying`, with the gradients of
   Yu and others (2024); equal to the NumPy filters to 1e-15 in 64 bits and 3e-7 in 32 bits. A page
@@ -42,6 +60,13 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
   without an error; the 28 that need arguments were not tried.
 
 ### Changed
+- The workflow `tests` runs only the nine pytest jobs (Python 3.10, 3.11 and 3.12 on Ubuntu, Windows and macOS). A change that
+  touches only `.md` files, `docs/**`, `mkdocs.yml` or `LICENSE` does not run it. The other workflows run on request.
+- The 172 tests that take three seconds or more are marked `slow` from the list `test/slow_tests.txt` and are left out of the
+  workflow; run them locally with `pytest -m slow`. On one core the selection of the workflow went from 1306 s to 610 s. The
+  coverage that Codecov sees is lower, because it no longer counts them.
+- The speed pages (`docs/speed.md`, `benchmarks/speed_log.md`, `benchmarks/speed_delivery.md`) show only the numbers of this
+  library.
 - The names of two folders are swapped. The library (the online learning, the deep learning, the signals, the
   robot, the evaluation, the infrastructure, the finance and the audio section) is now `dense_armor.core`; the
   shielding engine (`engine`, `hybrid_engine`, `damping_operator`, `memory`, `noise`, `preset`) is now
