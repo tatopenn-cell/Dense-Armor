@@ -609,7 +609,7 @@ Path: `core/graph/`, beside the seven groups. The ontology: a typed graph with r
 | `spectral.py` | `eigendecomposition`, `fiedler_vector`, `fix_sign` | Spectral decomposition of the graph Laplacian |
 | `wavelet.py` | `SpectralWavelet`, `chebyshev_wavelet_terms` | Graph spectral wavelets from Chebyshev polynomials of even and odd order |
 
-`networkx` is needed by `ontology.py`, `dag.py`, `causal.py` and the PageRank scores (extras `onto` and `graph`), `pygsp` only by the conversion in `core.py` (extra `graph`), and `dowhy` only by `CausalGraph` (extra `causal`).
+`ontology.py` and `dag.py` keep their graph in `_light.py` (a small directed multigraph, with the topological order of networkx) and need no graph package. `networkx` is needed by the PageRank scores, by `to_networkx()` and by `causal.py` (extra `graph`), `pygsp` only by the conversion in `core.py` (extra `graph`), and `dowhy` only by `CausalGraph` (extra `causal`).
 
 ### 2.35 finance
 

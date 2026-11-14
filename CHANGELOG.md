@@ -11,7 +11,7 @@ event detection, and `AudioInput`, one adapter that gives sound to every estimat
 package `dense_armor.core.graph`, with its documentation section), the adapters `TextInput` and `VideoInput`, the finance
 system (a configuration file, a hash-chained decision log, a feed reader, a status command, a synthetic feed and a demo) with a
 browser dashboard, a Windows installer and a dashboard that works on the visitor's own files, a workflow that runs only the
-nine pytest jobs, and a swap of the names of the folders
+nine pytest jobs, an ontology and an execution DAG that need no graph package (networkx is optional), and a swap of the names of the folders
 `core` and `utility` (see "Changed": the old import paths still resolve, but `from dense_armor.utility import X` and
 `from dense_armor.core import X` now give the names of the other package).
 
@@ -89,6 +89,11 @@ nine pytest jobs, and a swap of the names of the folders
   without an error; the 28 that need arguments were not tried.
 
 ### Changed
+- `TypedGraph` and `ExecutionDAG` no longer need networkx: they keep their graph in `dense_armor/core/graph/_light.py`, a small
+  directed multigraph whose topological order is the one of networkx (checked on 25 random graphs, and the golden files of the DAG
+  are unchanged). Importing the ontology costs nothing for networkx now (it took about 0.6 s). networkx is still used by
+  `page_rank`, `random_walk_restart`, `to_networkx()` and `CausalGraph`; the extras `onto` and `dag` stay for old install
+  commands and add nothing.
 - The workflow `tests` runs only the nine pytest jobs (Python 3.10, 3.11 and 3.12 on Ubuntu, Windows and macOS). A change that
   touches only `.md` files, `docs/**`, `mkdocs.yml` or `LICENSE` does not run it. The other workflows run on request.
 - The 172 tests that take three seconds or more are marked `slow` from the list `test/slow_tests.txt` and are left out of the

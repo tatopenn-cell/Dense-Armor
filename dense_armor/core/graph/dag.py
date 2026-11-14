@@ -12,14 +12,9 @@ from __future__ import annotations
 
 from typing import Any
 
+from dense_armor.core.graph._light import LightGraph
 from dense_armor.core.graph.provenance import Provenance
 from dense_armor.roles import Signal
-
-
-def _nx():
-    import networkx as nx  # type: ignore[import-untyped]
-
-    return nx
 
 
 class ExecutionDAG:
@@ -53,7 +48,7 @@ class ExecutionDAG:
         self._provenance = provenance if provenance is not None else Provenance()
         self._t = 0.0
         self._t_step = 1.0
-        self._g = _nx().DiGraph()
+        self._g = LightGraph()
         self._g.add_nodes_from(self._nodes.keys())
         for src, dst in self._edges:
             if src not in self._nodes:
@@ -61,7 +56,7 @@ class ExecutionDAG:
             if dst not in self._nodes:
                 raise ValueError(f"unknown node in edge: {dst}")
             self._g.add_edge(src, dst)
-        if not _nx().is_directed_acyclic_graph(self._g):
+        if not self._g.is_acyclic():
             raise ValueError("graph has a cycle")
 
     @property
@@ -77,19 +72,19 @@ class ExecutionDAG:
         return self._edges
 
     def is_acyclic(self) -> bool:
-        return _nx().is_directed_acyclic_graph(self._g)
+        return self._g.is_acyclic()
 
     def topological_order(self) -> list[str]:
-        return list(_nx().topological_sort(self._g))
+        return self._g.topological_order()
 
     def ancestors(self, name: str) -> list[str]:
-        return sorted(_nx().ancestors(self._g, name))
+        return sorted(self._g.ancestors(name))
 
     def descendants(self, name: str) -> list[str]:
-        return sorted(_nx().descendants(self._g, name))
+        return sorted(self._g.descendants(name))
 
     def to_networkx(self):
-        return self._g.copy()
+        return self._g.to_networkx(directed_simple=True)
 
     def run(
         self,
