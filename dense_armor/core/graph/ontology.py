@@ -2,7 +2,9 @@
 
 A node has a ``type`` and a ``state`` (a dict). An edge has a
 ``relation`` and an optional ``constraint`` (a function
-``(state_src, state_dst) -> bool``).
+``(state_src, state_dst) -> bool``). The graph is a small one of this package
+(``_light.py``): networkx is not needed, and ``to_networkx()`` makes one when
+it is wanted.
 
 References:
     Vijay, Ethiraj (2025), "Graph-Symbolic Policy Enforcement and Control
@@ -20,11 +22,7 @@ import builtins
 from collections.abc import Callable
 from typing import Any
 
-
-def _nx():
-    import networkx as nx  # type: ignore[import-untyped]
-
-    return nx
+from dense_armor.core.graph._light import LightGraph
 
 
 class ConstraintViolation(ValueError):
@@ -98,7 +96,7 @@ class TypedGraph:
 
     def __init__(self, schema: dict[str, dict[str, type]]) -> None:
         self.schema = {k: dict(v) for k, v in schema.items()}
-        self.graph = _nx().MultiDiGraph()
+        self.graph = LightGraph()
         self._relations: set[str] = set()
 
     def add_node(self, name: str, node_type: str, **state: Any) -> TypedGraph:
@@ -186,4 +184,5 @@ class TypedGraph:
         return failures
 
     def to_networkx(self):
-        return self.graph.copy()
+        """The graph as a networkx ``MultiDiGraph``; this is the only place that imports networkx."""
+        return self.graph.to_networkx()

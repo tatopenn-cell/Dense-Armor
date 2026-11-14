@@ -160,7 +160,7 @@ pip install dense-armor                 # core: numpy + jax
 pip install "dense-armor[vision]"       # + camera (OpenCV), image folder (Pillow), in-memory
 pip install "dense-armor[ros]"          # + rosbag readers
 pip install "dense-armor[audio,data]"   # + WAV, HDF5, NetCDF
-pip install "dense-armor[onto]"         # + networkx, for the ontology
+pip install "dense-armor[graph]"        # + networkx, for page rank and to_networkx()
 pip install "dense-armor[mcp]"          # + MCP server for LLM agents
 pip install "dense-armor[quantum]"      # + Dense-Evolution (NISQ simulator)
 pip install "dense-armor[sklearn]"      # + scikit-learn bridge

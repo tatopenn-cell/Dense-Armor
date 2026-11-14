@@ -4,6 +4,13 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- `TypedGraph` and `ExecutionDAG` no longer need networkx: they keep their graph in `dense_armor/core/graph/_light.py`, a small
+  directed multigraph whose topological order is the one of networkx (checked on 25 random graphs, and the golden files of the DAG
+  are unchanged). Importing the ontology costs nothing for networkx now (it took about 0.6 s). networkx is still used by
+  `page_rank`, `random_walk_restart`, `to_networkx()` and `CausalGraph`; the extras `onto` and `dag` stay for old install
+  commands and add nothing.
+
 ## [1.6.0] - 2026-11-14
 
 This release adds the audio section (sound as a value, filters, effects, synthesis, pitch, time and pitch change, mel and MFCC,

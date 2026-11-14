@@ -27,13 +27,11 @@ A set of parts and relations is a graph, so the mathematics of graphs gives the 
 | [Following a graph online](online.md) | `AdaCGP` | update the estimate of the links at every sample |
 | [Causality](causal.md) | `CausalGraph` | tell what causes what from what merely moves together |
 
-The code is in `dense_armor/core/graph/`. The structure and the spectral functions need NumPy and SciPy. The ontology, the DAG, PageRank and the causal graph use NetworkX, and the effect estimate uses DoWhy and pandas:
+The code is in `dense_armor/core/graph/`. The structure, the spectral functions, the typed graph with its rules and actions, and the execution DAG need NumPy and SciPy only: they start at once and import no graph package. PageRank, the random walk with restart, `to_networkx()` and the causal graph use NetworkX, and the effect estimate uses DoWhy and pandas:
 
 ```bash
 pip install "dense-armor[graph]"
 pip install "dense-armor[causal]"
-pip install "dense-armor[dag]"
-pip install "dense-armor[onto]"
 ```
 
 Every number shown in these pages was printed by the code above it, and the figures are drawn by `docs/assets/ontology/make_figures.py`.
