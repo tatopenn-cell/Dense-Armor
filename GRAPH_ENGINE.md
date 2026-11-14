@@ -1,8 +1,9 @@
-# Graph Engine — branch `feature/graph-engine`
+# Graph Engine
 
-This branch adds the **Graph Engine** to Dense-Armor: from a single
-signal to a system of signals in relation. Four levels, 103 tests
-passing, 8 documentation pages.
+The **Graph Engine** is the package `dense_armor.core.graph` (the ontology): from a single
+signal to a system of signals in relation. Four levels, 238 tests
+passing, 11 documentation pages. Since 1.6.0 the typed graph and the execution DAG run on
+a small graph of their own (`_light.py`), so networkx is optional.
 
 ## What is in it
 
@@ -54,10 +55,9 @@ passing, 8 documentation pages.
 ```bash
 git clone https://github.com/tatopenn-cell/Dense-Armor.git
 cd Dense-Armor
-git checkout feature/graph-engine
 pip install -e ".[dev]"
 pip install ruff mypy pygsp dowhy
-python -m pytest test/graph/ -q          # 103 passed
+python -m pytest test/graph/ -q          # 238 passed
 python -m ruff check dense_armor/core/graph/ test/graph/
 python -m mypy --follow-imports=skip dense_armor/core/graph/*.py
 mkdocs build --strict --site-dir /tmp/_site
@@ -102,9 +102,9 @@ Nine bugs found and fixed:
 
 ## The documentation
 
-`docs/ontology/` has eight pages (overview, graph and spectrum, filters,
+`docs/ontology/` has eleven pages (overview, graph and spectrum, filters,
 network of estimators, provenance, graph with rules, anomaly,
-causality) and three figures made by
+causality, recovery, learning, following a graph online) and three figures made by
 `docs/assets/ontology/make_figures.py`. Every code block was run and its
 printed output is the one in the page.
 
@@ -119,12 +119,7 @@ printed output is the one in the page.
 
 | Item | Value |
 |---|---|
-| Tests | 103 passed, none skipped |
-| ruff check / format | clean |
-| mypy | Success: no issues found in 13 source files |
+| Tests | 238 passed (`test/graph/`) |
+| mypy | Success: no issues found in 20 source files |
 | mkdocs build --strict | passes, graph pages in the nav |
-| Golden files | 13 (in `test/graph/golden/`) |
-
-## Commits
-
-See `git log --oneline 16f71a0..HEAD`.
+| Golden files | 19 (in `test/graph/golden/`) |
