@@ -1,6 +1,6 @@
 # Bibliographic references
 
-**Dense-Armor** cites **188 works**, extracted from the module docstrings. Each entry is the paper cited by one or more modules of the library.
+**Dense-Armor** cites **236 works**, extracted from the module docstrings, including the audio section and the ontology (the graph package). Each entry is the paper cited by one or more modules of the library.
 
 ## References
 
@@ -192,3 +192,51 @@
 186. Fitzpatrick, R. (2008). Maxwell's Equations and the Principles of Electromagnetism. Jones & Bartlett.
 187. JSON Schema draft-07. IETF draft-handrews-json-schema-01.
 188. Kayan, H., Rana, O., Burnap, P., Perera, C. (2023). CASPER: Context-Aware Anomaly Detection System for Industrial Robotic Arms. arXiv:2303.01300.
+189. Bristow-Johnson, R. Cookbook formulae for audio EQ biquad filter coefficients (the Audio EQ Cookbook, a technical note).
+190. Yu, C.-Y., Mitcheltree, C., Carson, A., Bilbao, S., Reiss, J. D., Fazekas, G. (2024). Differentiable all-pole filters for time-varying audio systems. DAFx-24.
+191. Comunità, M., Steinmetz, C. J., Reiss, J. D. (2025). NablAFx: A framework for differentiable black-box and gray-box modeling of audio effects.
+192. Hayes, B., Shier, J., Fazekas, G., McPherson, A., Saitis, C. (2023). A review of differentiable digital signal processing for music and speech synthesis.
+193. Du et al. (2026). DDSP-QbE++.
+194. Strahl, S., Müller, M. (2025). dYIN and dSWIPE: Differentiable Variants of Classical Fundamental Frequency Estimators. IEEE/ACM TASLP 33.
+195. de Cheveigné, A., Kawahara, H. (2002). YIN, a fundamental frequency estimator for speech and music. JASA 111(4), 1917-1930.
+196. Falkenberg, A. (2026). Real-Time Arbitrary Resampling for Phase-Continuous Microtuning in Audio Streams (preprint).
+197. Esqueda, F., Välimäki, V., Bilbao, S. (2016). Rounding corners with BLAMP. DAFx-16.
+198. Välimäki, V., Pekonen, J., Nam, J. (2012). Perceptually informed synthesis of bandlimited classical waveforms using integrated polynomial interpolation. JASA 132(2), 974-986.
+199. Karplus, K., Strong, A. (1983). Digital synthesis of plucked-string and drum timbres. Computer Music Journal 7(2), 43-55.
+200. Timmer, J., Koenig, M. (1995). On generating power law noise. Astronomy & Astrophysics 300, 707-710.
+201. Harris, F. J. (1978). On the use of windows for harmonic analysis with the discrete Fourier transform. Proc. IEEE 66(1), 51-83.
+202. Allen, J. B., Rabiner, L. R. (1977). A unified approach to short-time Fourier analysis and synthesis. Proc. IEEE 65(11), 1558-1564.
+203. Lee, D. D., Seung, H. S. (2001). Algorithms for Non-negative Matrix Factorization. NIPS 13.
+204. Giannoulis, D., Massberg, M., Reiss, J. D. (2012). Digital Dynamic Range Compressor Design - A Tutorial and Analysis. J. Audio Eng. Soc. 60(6), 399-408.
+205. Zölzer, U. (ed.) (2011). DAFX: Digital Audio Effects, 2nd ed. Wiley. ISBN 978-0-470-66599-2.
+206. Schroeder, M. R. (1962). Natural Sounding Artificial Reverberation. J. Audio Eng. Soc. 10(3), 219-223.
+207. Schroeder, M. R. (1965). New method of measuring reverberation time. J. Acoust. Soc. Am. 37(3), 409-412.
+208. Bello, J. P., Daudet, L., Abdallah, S., Duxbury, C., Davies, M., Sandler, M. B. (2005). A tutorial on onset detection in music signals. IEEE Trans. Speech and Audio Processing 13(5), 1035-1047.
+209. Slaney, M. (1998). Auditory Toolbox, Version 2. Interval Research Corporation Technical Report #1998-010.
+210. Davis, S. B., Mermelstein, P. (1980). Comparison of parametric representations for monosyllabic word recognition in continuously spoken sentences. IEEE Trans. ASSP 28(4), 357-366.
+211. Purwins, H., Li, B., Virtanen, T., Schlüter, J., Chang, S.-Y., Sainath, T. (2019). Deep Learning for Audio Signal Processing. IEEE JSTSP.
+212. Peeters, G. (2004). A large set of audio features for sound description (similarity and classification) in the CUIDADO project. IRCAM report.
+213. Flanagan, J. L., Golden, R. M. (1966). Phase Vocoder. Bell System Technical Journal 45(9), 1493-1509.
+214. Laroche, J., Dolson, M. (1999). New phase-vocoder techniques for pitch-shifting, harmonizing and other exotic effects. IEEE WASPAA, 91-94.
+215. Moulines, E., Laroche, J. (1995). Non-parametric techniques for pitch-scale and time-scale modification of speech. Speech Communication 16(2), 175-205.
+216. Moulines, E., Charpentier, F. (1990). Pitch-synchronous waveform processing techniques for text-to-speech synthesis using diphones. Speech Communication 9(5-6), 453-467.
+217. Vijay, Ethiraj (2025). Graph-Symbolic Policy Enforcement and Control (G-SPEC): A Neuro-Symbolic Framework for Safe Agentic AI in 5G Autonomous Networks. arXiv:2512.20275.
+218. Fikes, R. E., Nilsson, N. J. (1971). STRIPS: A new approach to the application of theorem proving to problem solving. Artificial Intelligence 2(3-4), 189-208.
+219. Niresi, Kuhn, Frusque, Fink (2024). Informed Graph Learning By Domain Knowledge Injection and Smooth Graph Signal Representation. arXiv:2406.03898.
+220. Jenkins, Variddhisai, El-Medany, Ng, Mandic (2024). Online Graph Topology Learning via Time-Vertex Adaptive Filters: From Theory to Cardiac Fibrillation. arXiv:2411.01567.
+221. Yamagata, Naganuma, Ono (2022). Robust Time-Varying Graph Signal Recovery for Dynamic Physical Sensor Network Data. arXiv:2202.06432.
+222. Liu, He, Laurent, Di Giovanni, Bronstein, Bresson (2024). A General Graph Spectral Wavelet Convolution via Chebyshev Order Decomposition. arXiv:2405.13806.
+223. Khan, Farea (2026). eIRWR: Enhanced Iterative Random Walk with Restart for Scalable Root Cause Analysis in Microservices. arXiv:2608.08073.
+224. Lin, Chang, Wang, Wang, Peng (2024). Root Cause Analysis In Microservice Using Neural Granger Causal Discovery. AAAI 2024. arXiv:2402.01140.
+225. Wang (2026). AgentTrace: Causal Graph Tracing for Root Cause Analysis in Deployed Multi-Agent Systems. arXiv:2603.14688.
+226. Wang and others (2026). From Agent Traces to Trust: A Survey of Evidence Tracing and Execution Provenance in LLM Agents. arXiv:2606.04990.
+227. Page, L., Brin, S., Motwani, R., Winograd, T. (1999). The PageRank Citation Ranking: Bringing Order to the Web. Stanford InfoLab.
+228. Tong, H., Faloutsos, C., Pan, J.-Y. (2006). Fast Random Walk with Restart and Its Applications. ICDM.
+229. Akoglu, L., Tong, H., Koutra, D. (2015). Graph based anomaly detection and description: a survey. Data Mining and Knowledge Discovery.
+230. Sharma, A., Kiciman, E. (2020). DoWhy: An End-to-End Library for Causal Inference. arXiv:2011.04216.
+231. Blöbaum, P., Götz, P., Budhathoki, K., Mastakouri, A. A., Janzing, D. (2022). DoWhy-GCM: An extension of DoWhy for causal inference in graphical causal models. arXiv:2206.06821.
+232. Pearl, J. (2009). Causality: Models, Reasoning, and Inference, 2nd ed. Cambridge University Press.
+233. Shuman, D. I., Narang, S. K., Frossard, P., Ortega, A., Vandergheynst, P. (2013). The emerging field of signal processing on graphs. IEEE Signal Processing Magazine 30(3), 83-98.
+234. Hammond, D. K., Vandergheynst, P., Gribonval, R. (2011). Wavelets on graphs via spectral graph theory. Applied and Computational Harmonic Analysis 30(2), 129-150.
+235. Kahn, A. B. (1962). Topological sorting of large networks. Communications of the ACM 5(11), 558-562.
+236. Cheney, J., Chiticariu, L., Tan, W.-C. (2009). Provenance in Databases: Why, How, and Where. Foundations and Trends in Databases 1(4).
