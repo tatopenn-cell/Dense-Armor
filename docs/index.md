@@ -232,6 +232,20 @@ past.
 - **[Metrics and evaluation](metrics/index.md)** — classification, regression, intervals,
   rolling, ROC-AUC, prequential, event-based (Tatbul PRF, NAB, detection delay).
 
+**Audio** — sound as a value, like any other signal of the library.
+
+- **[Sound](audio/sound.md)** — the `Audio` value, WAV files, live input, windows and the STFT.
+- **[Filters](audio/filters.md)**, **[effects](audio/effects.md)** and **[synthesis](audio/synthesis.md)** — biquad, FIR, compressor, limiter, reverb, oscillators.
+- **[Pitch](audio/pitch.md)**, **[perceptual analysis](audio/perceptual.md)** and **[events](audio/events.md)** — YIN, mel and MFCC, onsets and alarms.
+- **[Sources](audio/sources.md)** — `AudioInput`, one adapter that gives sound to any estimator, detector or scaler.
+
+**Ontology** — a graph of typed nodes, with rules, a spectrum and an execution DAG.
+
+- **[Typed graph](ontology/typed.md)** — node types, schema, constraints and actions.
+- **[Spectrum](ontology/spectral.md)** and **[filters](ontology/filters.md)** — graph Fourier transform, heat kernel, Chebyshev.
+- **[Execution DAG](ontology/dag.md)** and **[provenance](ontology/provenance.md)** — a network of estimators with a hash-chained log.
+- **[Anomaly](ontology/anomaly.md)**, **[recovery](ontology/recovery.md)**, **[learning](ontology/learning.md)** and **[causality](ontology/causal.md)**.
+
 **Robot** — the physical side of the library.
 
 - **[Control](control/index.md)** — rate limiter, CBF filter, trajectory generation,
