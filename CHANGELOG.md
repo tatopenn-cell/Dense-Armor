@@ -51,7 +51,8 @@ nine pytest jobs, an ontology and an execution DAG that need no graph package (n
   loops of `update` use local variables (9.0 to 8.4 µs per update on one machine).
 - Tests that were missing for `armor.py` (the drift detector, the report and the command line), for the two CBF controllers
   (they ran only in the heavy tests: six-joint arm, the solver forced to fail at each level), for every tensor geometry of
-  `AdaptiveSignalStabilizer`, and for `python -m dense_armor`.
+  `AdaptiveSignalStabilizer`, for `python -m dense_armor` and for the light graph of the ontology (`test/graph/test_light.py`: the same
+  answers as networkx, the graph at 100% coverage).
 - Audio, differentiable filters (`dense_armor/core/audio/diff_filter.py`): `jax_lowpass`, `jax_biquad`, `JaxBiquad`
   (a layer in the pattern of `core/deep/neural`) and `jax_allpole_time_varying`, with the gradients of
   Yu and others (2024); equal to the NumPy filters to 1e-15 in 64 bits and 3e-7 in 32 bits. A page

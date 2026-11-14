@@ -129,3 +129,34 @@ def test_to_networkx_still_works_and_needs_it():
     g.add_edge("a", "b", "r")
     assert isinstance(g.to_networkx(), nx.MultiDiGraph)
     assert np.isfinite(sum(d["state"]["v"] for _, d in g.to_networkx().nodes(data=True)))
+
+
+def test_a_graph_can_be_iterated_counted_and_asked_for_its_degrees():
+    g = LightGraph()
+    g.add_edge("a", "b")
+    g.add_edge("a", "c")
+    g.add_edge("b", "c")
+    assert list(g) == ["a", "b", "c"]
+    assert len(g) == g.number_of_nodes() == 3
+    assert g.number_of_edges() == 3
+    assert [g.out_degree(n) for n in "abc"] == [2, 1, 0]
+    assert [g.in_degree(n) for n in "abc"] == [0, 1, 2]
+    assert g.out_degree("missing") == 0
+
+
+def test_the_simple_graph_for_networkx_keeps_nodes_and_edges():
+    g = LightGraph()
+    g.add_node("a", role="source")
+    g.add_edge("a", "b", weight=2.0)
+    n = g.to_networkx(directed_simple=True)
+    assert isinstance(n, nx.DiGraph) and not n.is_multigraph()
+    assert n.nodes["a"]["role"] == "source"
+    assert list(n.edges(data="weight")) == [("a", "b", 2.0)]
+
+
+def test_the_execution_dag_gives_a_networkx_digraph():
+    dag = ExecutionDAG({"a": _Add(1), "b": _Add(2), "c": _Add(3)}, [("a", "b"), ("a", "c")])
+    n = dag.to_networkx()
+    assert isinstance(n, nx.DiGraph)
+    assert sorted(n.edges()) == [("a", "b"), ("a", "c")]
+    assert list(nx.topological_sort(n)) == dag.topological_order()
