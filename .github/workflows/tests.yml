@@ -6,18 +6,14 @@ on:
     paths-ignore:
       - "docs/**"
       - "mkdocs.yml"
-      - "README.md"
-      - "CHANGELOG.md"
-      - "ARCHITECTURE.md"
+      - "**.md"
       - "LICENSE"
   pull_request:
     branches: [master]
     paths-ignore:
       - "docs/**"
       - "mkdocs.yml"
-      - "README.md"
-      - "CHANGELOG.md"
-      - "ARCHITECTURE.md"
+      - "**.md"
       - "LICENSE"
   workflow_dispatch:
 
