@@ -1,3 +1,3 @@
-"""usable: the primitives of Dense-Armor that fit what you are building."""
+"""usable: the primitives of Dense-Armor that fit what you are building. Work in progress."""
 
 __version__ = "0.1.0"
