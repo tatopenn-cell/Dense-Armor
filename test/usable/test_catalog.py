@@ -56,8 +56,8 @@ def _independent_count(repo: Path) -> int:
 # --------------------------------------------------------------
 def test_catalog_count_matches_independent():
     cat = ct.get_catalog(REPO, refresh=True)
-    assert len(cat) == 447, (
-        f"catalog: {len(cat)} righe; atteso 447. "
+    assert len(cat) == 467, (
+        f"catalog: {len(cat)} rows; expected 467. "
         f"Lo script indipendente dice "
         f"{_independent_count(REPO)} classi (differenza attesa: "
         f"role/domain filtri)."

@@ -19,6 +19,15 @@
    }
   ],
   [
+   "graph",
+   "AbductionResult",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
    "neural",
    "AccumulatingStep",
    0.25,
@@ -120,6 +129,15 @@
   [
    "forest",
    "AggregatedMondrianForestRegressor",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "graph",
+   "ArcObject",
    0.25,
    {
     "source": "catalog domain of the class",
@@ -487,6 +505,15 @@
    }
   ],
   [
+   "graph",
+   "ConcreteAction",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
    "metrics",
    "ConfusionMatrix",
    0.25,
@@ -804,6 +831,24 @@
   [
    "stats",
    "EWStats",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "graph",
+   "Effector",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "graph",
+   "EffectorType",
    0.25,
    {
     "source": "catalog domain of the class",
@@ -1191,6 +1236,24 @@
   [
    "graph",
    "GraphSignal",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "graph",
+   "Grid",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "graph",
+   "GridSizeHypothesis",
    0.25,
    {
     "source": "catalog domain of the class",
@@ -1864,6 +1927,24 @@
    }
   ],
   [
+   "graph",
+   "ObjectEncoder",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "graph",
+   "ObjectHypothesis",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
    "ml",
    "OneVsOneClassifier",
    0.25,
@@ -2010,6 +2091,33 @@
   [
    "timeseries",
    "OnlineVAR",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "graph",
+   "OperationParams",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "graph",
+   "OperationResult",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "graph",
+   "OperationType",
    0.25,
    {
     "source": "catalog domain of the class",
@@ -2188,6 +2296,24 @@
    }
   ],
   [
+   "graph",
+   "Predicate",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "graph",
+   "PredicateType",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
    "ml",
    "ProbabilisticClassifierChain",
    0.25,
@@ -2199,6 +2325,15 @@
   [
    "multioutput",
    "ProbabilisticClassifierChain",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "graph",
+   "Program",
    0.25,
    {
     "source": "catalog domain of the class",
@@ -2530,6 +2665,15 @@
    }
   ],
   [
+   "graph",
+   "Rule",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
    "stats",
    "RunningCorrelation",
    0.25,
@@ -2577,6 +2721,15 @@
   [
    "tree",
    "SGTRegressor",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "graph",
+   "SSPSpace",
    0.25,
    {
     "source": "catalog domain of the class",
@@ -3000,6 +3153,24 @@
   [
    "consolidation",
    "VQMemory",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "graph",
+   "VSAObject",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "graph",
+   "VSAProgram",
    0.25,
    {
     "source": "catalog domain of the class",
