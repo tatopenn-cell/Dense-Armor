@@ -48,6 +48,13 @@ from dense_armor.core.graph.program import Program
 from dense_armor.core.graph.provenance import Provenance
 from dense_armor.core.graph.recovery import recover_graph_signal
 from dense_armor.core.graph.refine import refine
+from dense_armor.core.graph.relations import (
+    adjacent,
+    distance,
+    inside,
+    same_color,
+    same_shape,
+)
 from dense_armor.core.graph.rule_synthesis import Rule, render, synthesize
 from dense_armor.core.graph.search import explore
 from dense_armor.core.graph.signal import GraphSignal
@@ -201,4 +208,9 @@ __all__ = [
     "VSARule",
     "vsa_solve",
     "vsa_apply",
+    "adjacent",
+    "inside",
+    "same_shape",
+    "same_color",
+    "distance",
 ]
