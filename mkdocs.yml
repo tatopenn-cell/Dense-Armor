@@ -284,6 +284,7 @@ nav:
       - Typed grid graph: ontology/grid_graph.md
       - Transformations: ontology/transformations.md
       - Program search: ontology/program_search.md
+      - Rule synthesis: ontology/rule_synthesis.md
       - Graph and spectrum: ontology/spectral.md
       - Filters: ontology/filters.md
       - Execution DAG: ontology/dag.md

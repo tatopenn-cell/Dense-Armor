@@ -220,11 +220,45 @@ def program_search():
     plt.close(fig)
 
 
+def rule_synthesis():
+    from dense_armor.core.graph import (
+        Grid,
+        apply_to_test,
+        synthesize,
+    )
+
+    task = {
+        "train": [
+            {
+                "input": [[1, 1, 0], [1, 0, 0], [0, 0, 2]],
+                "output": [[3, 3, 0], [3, 0, 0], [0, 0, 2]],
+            },
+        ],
+        "test": [{"input": [[1, 1, 0], [1, 0, 2]]}],
+    }
+    rules = synthesize(task)
+    g_in = Grid.from_list(task["train"][0]["input"])
+    g_out = Grid.from_list(task["train"][0]["output"])
+    sub = apply_to_test(rules, task)
+    g_test_in = Grid.from_list(task["test"][0]["input"])
+    g_test_out = Grid.from_list(sub["test"][0]["output"])
+
+    fig, axs = plt.subplots(1, 4, figsize=(11.0, 3.2))
+    draw(axs[0], g_in, "train input")
+    draw(axs[1], g_out, "train output")
+    draw(axs[2], g_test_in, "test input")
+    draw(axs[3], g_test_out, "predicted output")
+    fig.tight_layout()
+    fig.savefig(OUT / "arc_grids_rule_synthesis.png", dpi=140)
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     grids_objects()
     grids_holes()
     grids_graph()
     transformations()
     program_search()
+    rule_synthesis()
     print(f"  wrote {OUT / 'arc_grids_objects.png'}")
     print(f"  wrote {OUT / 'arc_grids_holes.png'}")
