@@ -204,10 +204,27 @@ def transformations():
     plt.close(fig)
 
 
+def program_search():
+    from dense_armor.core.graph import Grid, Program, rot90
+
+    g_in = Grid.from_list([[1, 2, 3], [4, 5, 6]])
+    g_out = rot90(g_in)
+    p = Program([rot90])
+
+    fig, axs = plt.subplots(1, 3, figsize=(8.4, 3.2))
+    draw(axs[0], g_in, "input")
+    draw(axs[1], g_out, "expected output")
+    draw(axs[2], p.apply(g_in), "Program([rot90]).apply(input)")
+    fig.tight_layout()
+    fig.savefig(OUT / "arc_grids_program_search.png", dpi=140)
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     grids_objects()
     grids_holes()
     grids_graph()
     transformations()
+    program_search()
     print(f"  wrote {OUT / 'arc_grids_objects.png'}")
     print(f"  wrote {OUT / 'arc_grids_holes.png'}")
