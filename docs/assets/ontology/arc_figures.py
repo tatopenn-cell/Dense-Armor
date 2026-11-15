@@ -23,6 +23,7 @@ sys.path.insert(0, str(ROOT))
 
 from dense_armor.core.graph import (  # noqa: E402
     Grid,
+    build_grid_graph,
     extract_objects,
 )
 
@@ -110,8 +111,82 @@ def grids_holes():
     plt.close(fig)
 
 
+def grids_graph():
+    import networkx as nx
+
+    g = Grid.from_list(
+        [
+            [1, 1, 0],
+            [1, 0, 0],
+            [0, 0, 2],
+        ]
+    )
+    t = build_grid_graph(g)
+    G = t.to_networkx()
+
+    fig, (a, b) = plt.subplots(
+        1, 2, figsize=(10.0, 4.4), gridspec_kw={"width_ratios": [1, 1.4]}
+    )
+    draw(a, g, "3 by 3 grid")
+
+    pos = {}
+    for n in G.nodes():
+        if n.startswith("cell:"):
+            _, rc = n.split(":")
+            r, c = rc.split(",")
+            pos[n] = (int(c), -int(r))
+    for n in G.nodes():
+        if not n.startswith("obj:"):
+            continue
+        cells = G.nodes[n]["state"]["cells"]
+        rs = [rr for rr, _ in cells]
+        cs = [cc for _, cc in cells]
+        pos[n] = (sum(cs) / len(cs) + 0.6, -sum(rs) / len(rs) + 0.6)
+
+    cell_nodes = [n for n in G.nodes() if n.startswith("cell:")]
+    obj_nodes = [n for n in G.nodes() if n.startswith("obj:")]
+    belongs = [
+        (u, v) for u, v in G.edges() if u.startswith("cell:") and v.startswith("obj:")
+    ]
+    adj = [
+        (u, v) for u, v in G.edges() if u.startswith("obj:") and v.startswith("obj:")
+    ]
+
+    nx.draw_networkx_edges(G, pos, edgelist=belongs, ax=b, edge_color="#888", width=0.8)
+    nx.draw_networkx_edges(G, pos, edgelist=adj, ax=b, edge_color="#d9822b", width=2.4)
+    nx.draw_networkx_nodes(
+        G,
+        pos,
+        nodelist=cell_nodes,
+        ax=b,
+        node_size=180,
+        node_color="#7FDBFF",
+        edgecolors="#333",
+        linewidths=0.6,
+    )
+    nx.draw_networkx_nodes(
+        G,
+        pos,
+        nodelist=obj_nodes,
+        ax=b,
+        node_size=520,
+        node_color="#FFDC00",
+        edgecolors="#333",
+        linewidths=1.0,
+    )
+    labels = {n: n.split(":")[0] + ":" + n.split(":")[1] for n in obj_nodes}
+    nx.draw_networkx_labels(G, pos, labels=labels, ax=b, font_size=8)
+    b.set_title("typed graph", fontsize=10)
+    b.axis("off")
+
+    fig.tight_layout()
+    fig.savefig(OUT / "arc_grids_graph.png", dpi=140)
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     grids_objects()
     grids_holes()
+    grids_graph()
     print(f"  wrote {OUT / 'arc_grids_objects.png'}")
     print(f"  wrote {OUT / 'arc_grids_holes.png'}")

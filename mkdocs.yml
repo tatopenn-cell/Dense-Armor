@@ -281,6 +281,7 @@ nav:
       - Overview: ontology/index.md
       - Types, rules and actions: ontology/typed.md
       - Grids and objects: ontology/grids.md
+      - Typed grid graph: ontology/grid_graph.md
       - Graph and spectrum: ontology/spectral.md
       - Filters: ontology/filters.md
       - Execution DAG: ontology/dag.md
