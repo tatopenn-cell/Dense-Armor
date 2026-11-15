@@ -184,9 +184,30 @@ def grids_graph():
     plt.close(fig)
 
 
+def transformations():
+    g = Grid.from_list(
+        [
+            [1, 2, 3],
+            [4, 5, 6],
+        ]
+    )
+    from dense_armor.core.graph import hmirror, vmirror
+
+    s1 = hmirror(g)
+    s2 = vmirror(s1)
+    fig, axs = plt.subplots(1, 3, figsize=(8.4, 3.2))
+    draw(axs[0], g, "input")
+    draw(axs[1], s1, "after hmirror")
+    draw(axs[2], s2, "after hmirror, then vmirror")
+    fig.tight_layout()
+    fig.savefig(OUT / "arc_grids_transformations.png", dpi=140)
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     grids_objects()
     grids_holes()
     grids_graph()
+    transformations()
     print(f"  wrote {OUT / 'arc_grids_objects.png'}")
     print(f"  wrote {OUT / 'arc_grids_holes.png'}")
