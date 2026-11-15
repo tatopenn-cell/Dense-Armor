@@ -45,24 +45,20 @@ from dense_armor.core.graph.graph_diff import diff_graphs
 
 g_in = Grid.from_list([[1, 1, 0], [1, 0, 0], [0, 0, 2]])
 g_out = Grid.from_list([[3, 3, 0], [3, 0, 0], [0, 0, 2]])
-objs_in = extract_objects(g_in)
-objs_out = extract_objects(g_out)
-for i, o in enumerate(objs_in):
-    print(i, o.color, o.area, o.bbox)
-for j, o in enumerate(objs_out):
-    print(j, o.color, o.area, o.bbox)
-d = diff_graphs(g_in, g_out)
-print(d["matched"], d["created"], d["deleted"])
+for tag, g in (("in", g_in), ("out", g_out)):
+    for o in extract_objects(g):
+        print(tag, o.color, o.area, o.bbox)
+print(diff_graphs(g_in, g_out)["matched"])
 ~~~
 
 ~~~text
-0 1 3 (0, 0, 2, 2)
-1 0 5 (0, 0, 3, 3)
-2 2 1 (2, 2, 3, 3)
-0 3 3 (0, 0, 2, 2)
-1 0 5 (0, 0, 3, 3)
-2 2 1 (2, 2, 3, 3)
-[(0, 0), (1, 1), (2, 2)] [] []
+in 1 3 (0, 0, 2, 2)
+in 0 5 (0, 0, 3, 3)
+in 2 1 (2, 2, 3, 3)
+out 3 3 (0, 0, 2, 2)
+out 0 5 (0, 0, 3, 3)
+out 2 1 (2, 2, 3, 3)
+[(0, 0), (1, 1), (2, 2)]
 ~~~
 
 The input has three objects: a shape of colour 1 (3 cells), the background
@@ -114,17 +110,12 @@ rules that act on Level 2 nodes need it, the others ignore it.
 from dense_armor.core.graph import Grid, extract_objects, render, synthesize
 from dense_armor.core.graph.graph_diff import level2_nodes
 
-task = {
-    "train": [
-        {"input": [[1, 1, 0], [1, 0, 0], [0, 0, 2]],
-         "output": [[3, 3, 0], [3, 0, 0], [0, 0, 2]]},
-    ],
-    "test": [{"input": [[1, 1, 0], [1, 0, 2]]}],
-}
-rules = synthesize(task)
+task = {"train": [{"input": [[1, 1, 0], [1, 0, 0], [0, 0, 2]],
+                   "output": [[3, 3, 0], [3, 0, 0], [0, 0, 2]]}],
+        "test": [{"input": [[1, 1, 0], [1, 0, 2]]}]}
 g = Grid.from_list(task["train"][0]["input"])
 L2 = level2_nodes(g, extract_objects(g))
-print(render(g, rules, L2).to_list())
+print(render(g, synthesize(task), L2).to_list())
 ~~~
 
 ~~~text
