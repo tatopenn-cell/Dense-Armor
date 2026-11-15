@@ -117,6 +117,10 @@ nav:
           - ArduPilot: drones/ardupilot.md
           - Jetson power: drones/jetson_power.md
           - Jetson energy: drones/jetson_energy.md
+      - ARC:
+          - Overview: arc/index.md
+          - Start here: arc/start_here.md
+          - Limits: arc/limits.md
   - Bridges:
       - Overview: bridges/index.md
       - scikit-learn: bridges/sklearn.md
@@ -280,6 +284,12 @@ nav:
   - Ontology:
       - Overview: ontology/index.md
       - Types, rules and actions: ontology/typed.md
+      - Grids and objects: ontology/grids.md
+      - Typed grid graph: ontology/grid_graph.md
+      - Transformations: ontology/transformations.md
+      - Program search: ontology/program_search.md
+      - Rule synthesis: ontology/rule_synthesis.md
+      - Vector Symbolic Algebras: ontology/vsa.md
       - Graph and spectrum: ontology/spectral.md
       - Filters: ontology/filters.md
       - Execution DAG: ontology/dag.md
