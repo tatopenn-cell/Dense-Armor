@@ -22,6 +22,7 @@ A set of parts and relations is a graph, so the mathematics of graphs gives the 
 | [Transformations](transformations.md) | `rot90`, `hmirror`, `fill`, `Program` | change a grid, compose the changes, verify a program against pairs |
 | [Program search](program_search.md) | `explore`, `refine`, `solve`, `to_submission` | search for a program, refine it, write the submission |
 | [Rule synthesis](rule_synthesis.md) | `synthesize`, `render`, `Rule`, `diff_graphs`, `level2_nodes`, `apply_to_test` | infer a rule on objects from the training pairs, render it on a grid, write the submission |
+| [Vector Symbolic Algebras](vsa.md) | `similarity`, `bind`, `ObjectEncoder`, `perceive`, `execute_action`, `vsa_solve` | encode objects as high-dimensional vectors, solve a task with a VSA solver |
 | [Graph and spectrum](spectral.md) | `Graph`, `GraphFourier`, `gft`, `GraphSignal` | put one number on every part and study how it varies across the relations |
 | [Filters](filters.md) | `SpectralFilter`, `ChebyshevFilter`, `SpectralWavelet`, `heat_kernel`, `low_pass`, `chebyshev_filter` | smooth those numbers over the relations |
 | [Execution DAG](dag.md) | `Dataflow`, `ExecutionDAG`, `GateNode` | run estimators in a chain, and stop a chain when a reading is anomalous |

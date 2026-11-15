@@ -285,6 +285,7 @@ nav:
       - Transformations: ontology/transformations.md
       - Program search: ontology/program_search.md
       - Rule synthesis: ontology/rule_synthesis.md
+      - Vector Symbolic Algebras: ontology/vsa.md
       - Graph and spectrum: ontology/spectral.md
       - Filters: ontology/filters.md
       - Execution DAG: ontology/dag.md

@@ -253,6 +253,40 @@ def rule_synthesis():
     plt.close(fig)
 
 
+def vsa_figure():
+    from dense_armor.core.graph import (
+        Grid,
+        ObjectEncoder,
+        vsa_apply,
+        vsa_solve,
+    )
+
+    enc = ObjectEncoder(n=1024)
+    task = {
+        "train": [
+            {
+                "input": [[1, 1, 0], [1, 0, 0], [0, 0, 2]],
+                "output": [[3, 3, 0], [3, 0, 0], [0, 0, 2]],
+            },
+        ],
+        "test": [{"input": [[1, 1, 0], [1, 0, 2]]}],
+    }
+    program = vsa_solve(task, enc)
+    g_in = Grid.from_list(task["train"][0]["input"])
+    g_out = Grid.from_list(task["train"][0]["output"])
+    g_test_in = Grid.from_list(task["test"][0]["input"])
+    g_pred = vsa_apply(program, g_test_in, enc)
+
+    fig, axs = plt.subplots(1, 4, figsize=(11.0, 3.2))
+    draw(axs[0], g_in, "train input")
+    draw(axs[1], g_out, "train output")
+    draw(axs[2], g_test_in, "test input")
+    draw(axs[3], g_pred, "VSA predicted output")
+    fig.tight_layout()
+    fig.savefig(OUT / "arc_grids_vsa.png", dpi=140)
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     grids_objects()
     grids_holes()
@@ -260,5 +294,6 @@ if __name__ == "__main__":
     transformations()
     program_search()
     rule_synthesis()
+    vsa_figure()
     print(f"  wrote {OUT / 'arc_grids_objects.png'}")
     print(f"  wrote {OUT / 'arc_grids_holes.png'}")
