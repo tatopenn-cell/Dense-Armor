@@ -12,7 +12,7 @@ graph that links cells to objects with constraints, a small DSL of
 transformations, a search over programs, a search over rules on objects, and a
 solver based on Vector Symbolic Algebras.
 
-The sections below describe the two solvers on one task, where the rule is
+The sections below describe the three solvers on one task, where the rule is
 "recolour every object of colour 1 to colour 3". The full pages for the code
 are in [Ontology](../ontology/index.md).
 
@@ -34,7 +34,7 @@ The rule is simple: the shape of colour 1 in the top-left of the input is
 recoloured to colour 3, and everything else is left alone. A solver should
 find that rule from the single training pair and apply it to the test input.
 
-## Two solvers
+## three solvers
 
 Dense-Armor has three solvers, in `dense_armor/core/graph/`. They are
 independent; a user can pick any of them, or combine them.
@@ -58,22 +58,16 @@ independent; a user can pick any of them, or combine them.
 For the task of this page, all three find the rule:
 
 ~~~python
-from dense_armor.core.graph import (
-    Grid, ObjectEncoder, apply_to_test, synthesize, vsa_apply, vsa_solve,
-)
+from dense_armor.core.graph import Grid, ObjectEncoder, apply_to_test, synthesize, vsa_apply, vsa_solve
 
-task = {
-    "train": [
-        {"input": [[1, 1, 0], [1, 0, 0], [0, 0, 2]],
-         "output": [[3, 3, 0], [3, 0, 0], [0, 0, 2]]},
-    ],
-    "test": [{"input": [[1, 1, 0], [1, 0, 2]]}],
-}
+task = {"train": [{"input": [[1, 1, 0], [1, 0, 0], [0, 0, 2]],
+                   "output": [[3, 3, 0], [3, 0, 0], [0, 0, 2]]}],
+        "test": [{"input": [[1, 1, 0], [1, 0, 2]]}]}
 print(apply_to_test(synthesize(task), task)["test"][0]["output"])
 
 enc = ObjectEncoder(n=1024)
-pred = vsa_apply(vsa_solve(task, enc), Grid.from_list(task["test"][0]["input"]), enc)
-print(pred.to_list())
+p = vsa_solve(task, enc)
+print(vsa_apply(p, Grid.from_list(task["test"][0]["input"]), enc).to_list())
 ~~~
 
 ~~~text
@@ -88,9 +82,9 @@ colour 1` in its space.
 
 ## Where to start
 
-- [Start here](start_here.md): one task, the two solvers, the output, step by
+- [Start here](start_here.md): one task, the three solvers, the output, step by
   step. The page a new user reads first.
-- [Limits](limits.md): what the two solvers do not do, with the reasons.
+- [Limits](limits.md): what the three solvers do not do, with the reasons.
 - [Ontology](../ontology/index.md): the code. The pages
   [Grids and objects](../ontology/grids.md),
   [Typed grid graph](../ontology/grid_graph.md),

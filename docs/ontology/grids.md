@@ -56,15 +56,10 @@ edge.
 ~~~python
 from dense_armor.core.graph import Grid, extract_objects
 
-g = Grid.from_list([
-    [0, 1, 1, 0, 0],
-    [0, 1, 0, 0, 2],
-    [0, 1, 1, 0, 0],
-    [0, 0, 0, 3, 0],
-    [0, 0, 0, 0, 0],
-])
-objs = extract_objects(g)
-for o in objs:
+g = Grid.from_list([[0, 1, 1, 0, 0], [0, 1, 0, 0, 2],
+                    [0, 1, 1, 0, 0], [0, 0, 0, 3, 0],
+                    [0, 0, 0, 0, 0]])
+for o in extract_objects(g):
     print(o.color, o.area, o.bbox)
 ~~~
 
@@ -94,13 +89,9 @@ foreground objects. The number inside is the colour of the object.*
 ~~~python
 from dense_armor.core.graph import Grid, extract_objects
 
-g = Grid.from_list([
-    [0, 1, 1, 0, 0],
-    [0, 1, 0, 0, 2],
-    [0, 1, 1, 0, 0],
-    [0, 0, 0, 3, 0],
-    [0, 0, 0, 0, 0],
-])
+g = Grid.from_list([[0, 1, 1, 0, 0], [0, 1, 0, 0, 2],
+                    [0, 1, 1, 0, 0], [0, 0, 0, 3, 0],
+                    [0, 0, 0, 0, 0]])
 o = [x for x in extract_objects(g) if x.color == 1][0]
 print(sorted(o.cells))
 print(o.bbox, o.area, o.bbox_area(), o.is_rectangular())

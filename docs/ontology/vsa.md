@@ -35,9 +35,7 @@ inputs does not matter.
 
 ~~~python
 import numpy as np
-from dense_armor.core.graph import (
-    bind, bundle, random_unit_vector, similarity, unbind,
-)
+from dense_armor.core.graph import bind, bundle, random_unit_vector, similarity, unbind
 
 rng = np.random.default_rng(0)
 a = random_unit_vector(rng, 256)
@@ -124,15 +122,10 @@ of the same colour, or every non-zero cell as its own object.
 ~~~python
 from dense_armor.core.graph import Grid, ObjectEncoder, ObjectHypothesis, perceive
 
-g = Grid.from_list([
-    [1, 1, 0],
-    [1, 0, 0],
-    [0, 0, 2],
-])
+g = Grid.from_list([[1, 1, 0], [1, 0, 0], [0, 0, 2]])
 enc = ObjectEncoder(n=1024)
 for hyp in ObjectHypothesis:
-    objs = perceive(g, hyp, enc)
-    print(hyp.value, len(objs))
+    print(hyp.value, len(perceive(g, hyp, enc)))
 ~~~
 
 ~~~text
@@ -157,18 +150,14 @@ of eleven operations (recolour, delete, translate, ...) to one object and
 returns the resulting object, encoded as a vector.
 
 ~~~python
-from dense_armor.core.graph import (
-    Grid, ObjectEncoder, ObjectHypothesis,
-    OperationParams, OperationType, execute_action, perceive,
-)
+from dense_armor.core.graph import (Grid, ObjectEncoder, ObjectHypothesis,
+                                    OperationParams, OperationType,
+                                    execute_action, perceive)
 
-g = Grid.from_list([
-    [1, 1, 0],
-    [1, 0, 0],
-    [0, 0, 2],
-])
+g = Grid.from_list([[1, 1, 0], [1, 0, 0], [0, 0, 2]])
 enc = ObjectEncoder(n=1024)
-o = [x for x in perceive(g, ObjectHypothesis.FOUR_CONNECTED, enc) if x.colour == 1][0]
+o = [x for x in perceive(g, ObjectHypothesis.FOUR_CONNECTED, enc)
+     if x.colour == 1][0]
 r = execute_action(o.cells, o.colour, OperationType.RECOLOUR,
                    OperationParams(colour=7), g, enc)
 print(sorted(r[0].cells), r[0].colour)
@@ -190,18 +179,12 @@ corresponding output object, and stores one rule per action. `vsa_apply`
 applies the rules to a test grid.
 
 ~~~python
-from dense_armor.core.graph import (
-    Grid, ObjectEncoder, vsa_apply, vsa_solve,
-)
+from dense_armor.core.graph import Grid, ObjectEncoder, vsa_apply, vsa_solve
 
 enc = ObjectEncoder(n=1024)
-task = {
-    "train": [
-        {"input": [[1, 1, 0], [1, 0, 0], [0, 0, 2]],
-         "output": [[3, 3, 0], [3, 0, 0], [0, 0, 2]]},
-    ],
-    "test": [{"input": [[1, 1, 0], [1, 0, 2]]}],
-}
+task = {"train": [{"input": [[1, 1, 0], [1, 0, 0], [0, 0, 2]],
+                   "output": [[3, 3, 0], [3, 0, 0], [0, 0, 2]]}],
+        "test": [{"input": [[1, 1, 0], [1, 0, 2]]}]}
 program = vsa_solve(task, enc)
 print(program.hypothesis.value, len(program.rules))
 pred = vsa_apply(program, Grid.from_list(task["test"][0]["input"]), enc)

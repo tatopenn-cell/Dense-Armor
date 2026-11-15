@@ -81,13 +81,9 @@ it returns `None`.
 ~~~python
 from dense_armor.core.graph import synthesize
 
-task = {
-    "train": [
-        {"input": [[1, 1, 0], [1, 0, 0], [0, 0, 2]],
-         "output": [[3, 3, 0], [3, 0, 0], [0, 0, 2]]},
-    ],
-    "test": [{"input": [[1, 1, 0], [1, 0, 2]]}],
-}
+task = {"train": [{"input": [[1, 1, 0], [1, 0, 0], [0, 0, 2]],
+                   "output": [[3, 3, 0], [3, 0, 0], [0, 0, 2]]}],
+        "test": [{"input": [[1, 1, 0], [1, 0, 2]]}]}
 rules = synthesize(task)
 print(len(rules), rules[0].selector, rules[0].effector.kind.value)
 ~~~
@@ -134,13 +130,9 @@ each `"test"` entry with the output of `render` on the test input.
 ~~~python
 from dense_armor.core.graph import apply_to_test, synthesize
 
-task = {
-    "train": [
-        {"input": [[1, 1, 0], [1, 0, 0], [0, 0, 2]],
-         "output": [[3, 3, 0], [3, 0, 0], [0, 0, 2]]},
-    ],
-    "test": [{"input": [[1, 1, 0], [1, 0, 2]]}],
-}
+task = {"train": [{"input": [[1, 1, 0], [1, 0, 0], [0, 0, 2]],
+                   "output": [[3, 3, 0], [3, 0, 0], [0, 0, 2]]}],
+        "test": [{"input": [[1, 1, 0], [1, 0, 2]]}]}
 sub = apply_to_test(synthesize(task), task)
 print(sub["test"][0]["output"])
 ~~~

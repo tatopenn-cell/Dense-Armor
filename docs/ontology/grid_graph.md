@@ -59,11 +59,7 @@ node, and `state`, the fields of the node. `state` is a plain dict, so
 ~~~python
 from dense_armor.core.graph import Grid, build_grid_graph
 
-g = Grid.from_list([
-    [1, 1, 0],
-    [1, 0, 0],
-    [0, 0, 2],
-])
+g = Grid.from_list([[1, 1, 0], [1, 0, 0], [0, 0, 2]])
 t = build_grid_graph(g)
 for n, d in t.graph.nodes(data=True):
     if d["type"] != "object":
@@ -123,14 +119,9 @@ is listed.
 ~~~python
 from dense_armor.core.graph import Grid, build_grid_graph
 
-g = Grid.from_list([
-    [1, 1, 0],
-    [1, 0, 0],
-    [0, 0, 2],
-])
+g = Grid.from_list([[1, 1, 0], [1, 0, 0], [0, 0, 2]])
 t = build_grid_graph(g)
-s = t.graph.nodes["obj:0"]["state"]
-cells = list(s["cells"])
+cells = list(t.graph.nodes["obj:0"]["state"]["cells"])
 t.update("obj:0", cells=tuple(cells[1:]))
 print(t.validate())
 ~~~
