@@ -76,7 +76,6 @@ from dense_armor.core.graph.vsa_abduction import (
     grid_size_hypothesis,
     minimum_hitting_set,
 )
-from dense_armor.core.graph.vsa_estimator import VSAEstimator
 from dense_armor.core.graph.vsa_hypotheses import (
     ObjectHypothesis,
     VSAObject,
@@ -104,12 +103,6 @@ from dense_armor.core.graph.vsa_solver import (
 )
 from dense_armor.core.graph.vsa_solver import (
     solve as vsa_solve,
-)
-from dense_armor.core.graph.vsa_variant import (
-    VSAVariant,
-    learn_variant,
-    predict_variant,
-    select_best_variant,
 )
 from dense_armor.core.graph.wavelet import SpectralWavelet, chebyshev_wavelet_terms
 
@@ -208,9 +201,4 @@ __all__ = [
     "VSARule",
     "vsa_solve",
     "vsa_apply",
-    "VSAEstimator",
-    "VSAVariant",
-    "learn_variant",
-    "predict_variant",
-    "select_best_variant",
 ]
