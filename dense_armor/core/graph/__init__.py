@@ -58,6 +58,59 @@ from dense_armor.core.graph.spectral import (
     fix_sign,
 )
 from dense_armor.core.graph.submission import to_submission
+from dense_armor.core.graph.vsa import (
+    N_DIMENSIONS,
+    SSPSpace,
+    bind,
+    bundle,
+    invert,
+    random_unit_vector,
+    similarity,
+    unbind,
+)
+from dense_armor.core.graph.vsa_abduction import (
+    AbductionResult,
+    ConcreteAction,
+    GridSizeHypothesis,
+    abduct,
+    grid_size_hypothesis,
+    minimum_hitting_set,
+)
+from dense_armor.core.graph.vsa_estimator import VSAEstimator
+from dense_armor.core.graph.vsa_hypotheses import (
+    ObjectHypothesis,
+    VSAObject,
+    cleanup_centre,
+    cleanup_colour,
+    object_hypothesis_heuristic,
+    perceive,
+)
+from dense_armor.core.graph.vsa_objects import ObjectEncoder
+from dense_armor.core.graph.vsa_operations import (
+    OperationParams,
+    OperationResult,
+    OperationType,
+    execute_action,
+    result_to_grid,
+)
+from dense_armor.core.graph.vsa_solver import (
+    Rule as VSARule,
+)
+from dense_armor.core.graph.vsa_solver import (
+    VSAProgram,
+)
+from dense_armor.core.graph.vsa_solver import (
+    apply as vsa_apply,
+)
+from dense_armor.core.graph.vsa_solver import (
+    solve as vsa_solve,
+)
+from dense_armor.core.graph.vsa_variant import (
+    VSAVariant,
+    learn_variant,
+    predict_variant,
+    select_best_variant,
+)
 from dense_armor.core.graph.wavelet import SpectralWavelet, chebyshev_wavelet_terms
 
 __all__ = [
@@ -118,6 +171,32 @@ __all__ = [
     "heat_kernel",
     "igft",
     "low_pass",
+    "N_DIMENSIONS",
+    "SSPSpace",
+    "similarity",
+    "bind",
+    "unbind",
+    "invert",
+    "bundle",
+    "random_unit_vector",
+    "ObjectEncoder",
+    "ObjectHypothesis",
+    "VSAObject",
+    "perceive",
+    "cleanup_colour",
+    "cleanup_centre",
+    "object_hypothesis_heuristic",
+    "OperationType",
+    "OperationParams",
+    "OperationResult",
+    "execute_action",
+    "result_to_grid",
+    "GridSizeHypothesis",
+    "grid_size_hypothesis",
+    "ConcreteAction",
+    "AbductionResult",
+    "abduct",
+    "minimum_hitting_set",
     "apply_to_test",
     "diff_graphs",
     "hungarian_match",
@@ -125,4 +204,13 @@ __all__ = [
     "Rule",
     "synthesize",
     "render",
+    "VSAProgram",
+    "VSARule",
+    "vsa_solve",
+    "vsa_apply",
+    "VSAEstimator",
+    "VSAVariant",
+    "learn_variant",
+    "predict_variant",
+    "select_best_variant",
 ]
