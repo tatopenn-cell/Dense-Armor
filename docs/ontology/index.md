@@ -17,6 +17,7 @@ A set of parts and relations is a graph, so the mathematics of graphs gives the 
 | Page | The tool | What you use it for |
 | --- | --- | --- |
 | [Types, rules and actions](typed.md) | `TypedGraph`, `Constraint`, `Action` | describe the system, check the rules, change it safely |
+| [Grids and objects](grids.md) | `Grid`, `ArcObject`, `extract_objects`, `adjacent`, `inside`, `same_shape`, `same_color`, `distance` | read the cells and shapes of an ARC-AGI grid |
 | [Graph and spectrum](spectral.md) | `Graph`, `GraphFourier`, `gft`, `GraphSignal` | put one number on every part and study how it varies across the relations |
 | [Filters](filters.md) | `SpectralFilter`, `ChebyshevFilter`, `SpectralWavelet`, `heat_kernel`, `low_pass`, `chebyshev_filter` | smooth those numbers over the relations |
 | [Execution DAG](dag.md) | `Dataflow`, `ExecutionDAG`, `GateNode` | run estimators in a chain, and stop a chain when a reading is anomalous |
