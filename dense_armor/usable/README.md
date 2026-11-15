@@ -1,5 +1,7 @@
 # usable
 
+> **Work in progress.** `usable` is under development: the ontology links, the jobs and the output are still changing, and the answers are proposals, not measurements.
+
 Give it a file, get the primitives of Dense-Armor that fit it.
 
 ## What it does
