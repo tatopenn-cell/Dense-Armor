@@ -123,7 +123,8 @@ task = {"train": [{"input": [[1, 2, 3], [4, 5, 6]],
 program = solve(task, [rot90, hmirror], max_depth=2, beam_width=3,
                 refine_iterations=10, seed=0)
 sub = to_submission(program, task)
-print(sub["train"] == task["train"], sub["test"][0]["output"])
+print(sub["train"] == task["train"])
+print(sub["test"][0]["output"])
 ~~~
 
 ~~~text
