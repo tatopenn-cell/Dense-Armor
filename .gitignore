@@ -28,7 +28,7 @@ benchmarks/neural/*.json
 
 # CrunchDAO quickstarter downloads
 
-data/
+/data/
 
 .crunchdao/
 
@@ -44,3 +44,8 @@ tools/dashboard/run/
 
 # internal review notes: never pushed
 REVISIONE*.md
+
+# cache e temporanei (rigenerabili)
+dense_armor/usable/catalog.json
+dense_armor/usable/tmp/
+.mypy_cache/
