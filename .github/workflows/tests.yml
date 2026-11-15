@@ -10,11 +10,6 @@ on:
       - "LICENSE"
   pull_request:
     branches: [master]
-    paths-ignore:
-      - "docs/**"
-      - "mkdocs.yml"
-      - "**.md"
-      - "LICENSE"
   workflow_dispatch:
 
 jobs:
@@ -29,24 +24,44 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # master requires these checks. A pull request that changes only docs must still report them,
+      # so the jobs always start and skip the heavy steps when no code changed.
+      - name: Does the change touch code?
+        id: changes
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          elif git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -v -E '^(docs/|mkdocs\.yml$|LICENSE$)|\.md$' | grep -q .; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "code=false" >> "$GITHUB_OUTPUT"
+            echo "Only docs changed: the tests are not needed."
+          fi
 
       - name: Set up Python ${{ matrix.python-version }}
+        if: steps.changes.outputs.code == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Install package + dev deps
+        if: steps.changes.outputs.code == 'true'
         run: pip install -e ".[dev,audio,data,mcp,ros]" opencv-python-headless pillow
 
       - name: Install torch (CPU) for the bridge tests
-        if: matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest'
+        if: steps.changes.outputs.code == 'true' && matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest'
         run: pip install torch --index-url https://download.pytorch.org/whl/cpu
 
       - name: Install tensorflow (CPU) for the bridge tests
-        if: matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest'
+        if: steps.changes.outputs.code == 'true' && matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest'
         run: pip install tensorflow-cpu
 
       - name: Run pytest
+        if: steps.changes.outputs.code == 'true'
         env:
           JAX_ENABLE_X64: "True"
           COV: ${{ matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest' && '--cov=dense_armor --cov-report=xml --cov-report=term-missing' || '' }}
@@ -56,7 +71,7 @@ jobs:
       # (uno per combinazione OS/Python) non aggiungono informazione, solo
       # rumore nella cronologia di Codecov.
       - name: Upload coverage to Codecov
-        if: matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest'
+        if: steps.changes.outputs.code == 'true' && matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest'
         uses: codecov/codecov-action@v4
         with:
           files: coverage.xml
