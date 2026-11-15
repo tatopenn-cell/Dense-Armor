@@ -21,7 +21,6 @@ input object representations weighted by outcome" (Section 3.2.2, page
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
 
 import numpy as np
 
@@ -41,8 +40,6 @@ from dense_armor.core.graph.vsa_hypotheses import (
 )
 from dense_armor.core.graph.vsa_objects import ObjectEncoder
 from dense_armor.core.graph.vsa_operations import (
-    OperationParams,
-    OperationType,
     execute_action,
     result_to_grid,
 )
@@ -50,7 +47,12 @@ from dense_armor.core.graph.vsa_operations import (
 
 @dataclass
 class Rule:
-    """One learned rule: a condition (prototype) and an action."""
+    """One learned rule: a condition (prototype) and an action.
+
+    ``threshold`` is a cosine similarity chosen for this implementation. It is
+    not the paper's rule (Algorithm 3: the operation predictor, a neural network,
+    gives a probability, and the operation is executed from 50%).
+    """
 
     prototype: np.ndarray
     action: ConcreteAction
@@ -100,12 +102,15 @@ def _learn_rules(
             in_obj = _match_input(out_obj, objs_in)
             if in_obj is None:
                 continue
-            candidates = abduction.per_output_actions  # list of lists
             # find which action of the set actually maps in_obj to out_obj
             for action in abduction.action_set:
                 results = execute_action(
-                    in_obj.cells, in_obj.colour, action.op_type,
-                    action.params, grid_in, encoder,
+                    in_obj.cells,
+                    in_obj.colour,
+                    action.op_type,
+                    action.params,
+                    grid_in,
+                    encoder,
                 )
                 if not results:
                     continue
@@ -156,8 +161,12 @@ def _deduce(
             if sim < rule.threshold:
                 continue
             out = execute_action(
-                obj.cells, obj.colour, rule.action.op_type,
-                rule.action.params, grid_in, encoder,
+                obj.cells,
+                obj.colour,
+                rule.action.op_type,
+                rule.action.params,
+                grid_in,
+                encoder,
             )
             results.extend(out)
 
@@ -166,23 +175,26 @@ def _deduce(
         h, w = program.constant_size
         return _render_into(results, h, w)
     if program.size_hypothesis == GridSizeHypothesis.IDENTITY:
-        return _render_into(results, *grid_in.shape())
+        return _render_into(results, *grid_in.shape(), anchor=False)
     return result_to_grid(results)
 
 
-def _render_into(results, h: int, w: int) -> Grid:
-    """Render objects into a fixed-size grid (top-left anchored)."""
-    from collections import Counter
+def _render_into(results, h: int, w: int, anchor: bool = True) -> Grid:
+    """Render objects into a fixed-size grid.
+
+    With ``anchor`` the top-left cell of all the objects goes to ``(0, 0)``;
+    without it the cells keep their coordinates (same size as the input).
+    """
     if not results:
         return Grid.from_list([[0] * w for _ in range(h)])
     all_cells = set()
     for r in results:
         all_cells |= r.cells
-    r_min = min(r for r, _ in all_cells)
-    c_min = min(c for _, c in all_cells)
+    r_min = min(r for r, _ in all_cells) if anchor else 0
+    c_min = min(c for _, c in all_cells) if anchor else 0
     grid = [[0] * w for _ in range(h)]
     for r in results:
-        for (rr, cc) in r.cells:
+        for rr, cc in r.cells:
             nr, nc = rr - r_min, cc - c_min
             if 0 <= nr < h and 0 <= nc < w:
                 grid[nr][nc] = r.colour

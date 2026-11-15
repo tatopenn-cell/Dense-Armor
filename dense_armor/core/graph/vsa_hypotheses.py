@@ -226,13 +226,18 @@ def object_hypothesis_heuristic(
     grid_out: Grid,
     encoder: ObjectEncoder,
 ) -> list[tuple[ObjectHypothesis, float]]:
-    """Score each of the six hypotheses, following Section 3.2.1.
+    """Score each of the six hypotheses, after Section 3.2.1 (a variant).
 
     For every output object, compute the distribution of similarities to
     the input objects under this hypothesis, take the softmax, and record
     the maximum. The average maximum across output objects is the score.
     Higher is better: it means each output object is clearly similar to
     few input objects.
+
+    Differences from the paper: the similarities are not padded with 0 and 1
+    (with one input object the maximum is always 1), the softmax has a
+    temperature of 10, the score is divided by ``1 + 0.01 * (n_in + n_out)``,
+    and only the pair given is scored (``abduct`` passes the first pair).
 
     Args:
         grid_in: the input grid.

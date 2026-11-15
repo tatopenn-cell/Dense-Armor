@@ -14,6 +14,7 @@ instead of the paper's leave-one-out.
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 
 from dense_armor.core.graph.grid import Grid
@@ -24,6 +25,8 @@ from dense_armor.core.graph.vsa_variant import (
     learn_variant,
     predict_variant,
 )
+
+_log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -58,7 +61,8 @@ class VSAEstimator:
         task = {"train": self.pairs, "test": []}
         try:
             self.program = learn_variant(task, self._variant())
-        except Exception:
+        except Exception as exc:
+            _log.warning("VSA learning failed, no program: %r", exc)
             self.program = None
         return self
 

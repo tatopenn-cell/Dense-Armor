@@ -52,7 +52,7 @@ class ArcObject:
         }
         holes: list[frozenset[tuple[int, int]]] = []
         visited: set[tuple[int, int]] = set()
-        for start in sorted(inside - on_bbox_border):
+        for start in sorted(inside):
             if start in visited:
                 continue
             comp: set[tuple[int, int]] = set()
@@ -66,7 +66,8 @@ class ArcObject:
                     if nb in inside and nb not in visited:
                         visited.add(nb)
                         q.append(nb)
-            holes.append(frozenset(comp))
+            if not comp & on_bbox_border:
+                holes.append(frozenset(comp))
         return holes
 
 
@@ -93,6 +94,8 @@ def extract_objects(
 
     ``connectivity`` is 4 or 8. ``by_color`` means that two cells
     belong to the same object only if they have the same color.
+    With ``by_color=False`` every cell, background included, joins its
+    neighbours: the whole grid is one object with ``color=None``.
 
     Args:
         grid: the grid to analyse.

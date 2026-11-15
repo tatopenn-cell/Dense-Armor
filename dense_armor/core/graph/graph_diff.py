@@ -88,8 +88,9 @@ def _pair_cost(u: ArcObject, v: ArcObject, w: tuple[float, ...]) -> float:
     Args:
         u: input object.
         v: output object.
-        w: weights ``(w1, w2, w3, w4, w5)`` for shape, area, holes,
-            centroid distance, color.
+        w: weights ``(w1, w2, w3, w4, w5)`` for bbox shape, area, one
+            object having a color and the other not, centroid distance,
+            color. The holes are not part of the cost.
 
     Returns:
         the cost.

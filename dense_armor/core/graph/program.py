@@ -28,7 +28,7 @@ class Program:
         >>> from dense_armor.core.graph.grid import Grid
         >>> p = Program([rot90, hmirror])
         >>> p.apply(Grid.from_list([[1, 0], [0, 0]])).to_list()
-        [[1, 0], [0, 0]]
+        [[0, 0], [0, 1]]
     """
 
     def __init__(self, steps: Iterable[Step]) -> None:
@@ -54,6 +54,10 @@ class Program:
         Args:
             pairs: the ``(input, output)`` pairs to check.
 
+        A pair on which a step raises ``ValueError`` or ``IndexError`` (for
+        example a crop with no object, or a grid that becomes empty) counts
+        as not solved.
+
         Returns:
             a number in ``[0.0, 1.0]``; ``0.0`` when ``pairs`` is empty.
         """
@@ -61,7 +65,11 @@ class Program:
             return 0.0
         ok = 0
         for x, y in pairs:
-            if self.apply(x) == y:
+            try:
+                solved = self.apply(x) == y
+            except (ValueError, IndexError):
+                solved = False
+            if solved:
                 ok += 1
         return ok / len(pairs)
 

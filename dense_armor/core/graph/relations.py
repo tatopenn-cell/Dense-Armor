@@ -23,14 +23,18 @@ def adjacent(a: ArcObject, b: ArcObject) -> bool:
 
 
 def inside(a: ArcObject, b: ArcObject) -> bool:
-    """``a`` is inside ``b``'s bbox (strictly).
+    """The bounding box of ``a`` is inside the bounding box of ``b``.
+
+    The test is on the boxes, not on the cells: ``a`` may sit in a hole
+    of ``b``. Equal boxes count as inside; an object is not inside itself.
 
     Args:
         a: the inner object.
         b: the outer object.
 
     Returns:
-        True if the cells of ``a`` are a subset of the cells of ``b``.
+        True if the bbox of ``a`` is contained in the bbox of ``b`` and
+        ``a is not b``.
     """
     ar0, ac0, ar1, ac1 = a.bbox
     br0, bc0, br1, bc1 = b.bbox
@@ -38,19 +42,22 @@ def inside(a: ArcObject, b: ArcObject) -> bool:
 
 
 def same_shape(a: ArcObject, b: ArcObject) -> bool:
-    """Same area and same bbox shape.
+    """Same normalised cell mask: the same shape wherever the object is.
 
     Args:
         a: the first object.
         b: the second object.
 
     Returns:
-        True if the two objects have the same shape.
+        True if the cells of the two objects coincide once each is moved
+        to the top-left corner.
     """
-    return a.area == b.area and (
-        (a.bbox[2] - a.bbox[0], a.bbox[3] - a.bbox[1])
-        == (b.bbox[2] - b.bbox[0], b.bbox[3] - b.bbox[1])
-    )
+
+    def mask(o: ArcObject) -> frozenset[tuple[int, int]]:
+        r0, c0 = o.bbox[0], o.bbox[1]
+        return frozenset((r - r0, c - c0) for r, c in o.cells)
+
+    return mask(a) == mask(b)
 
 
 def same_color(a: ArcObject, b: ArcObject) -> bool:
@@ -74,7 +81,7 @@ def distance(a: ArcObject, b: ArcObject) -> float:
         b: the second object.
 
     Returns:
-        the Chebyshev distance between the two bounding boxes.
+        the smallest Chebyshev distance between a cell of ``a`` and a cell of ``b``.
     """
     best = float("inf")
     for r1, c1 in a.cells:

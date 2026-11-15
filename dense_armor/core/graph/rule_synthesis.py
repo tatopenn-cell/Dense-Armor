@@ -864,7 +864,7 @@ def synthesize(task: dict, max_rules: int = 5) -> list[Rule] | None:
         return [Rule(selector=(), effector=eff)]
 
     rules: list[Rule] = []
-    for eff in common:
+    for eff in sorted(common, key=repr):  # a fixed order, not the order of the set
         # collect per-pair positives and negatives (excluding -1)
         per_pair_pos_list: list[list[int]] = []
         per_pair_neg_list: list[list[int]] = []

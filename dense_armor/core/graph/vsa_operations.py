@@ -8,6 +8,10 @@ Operations (Table 1, page 11):
     IDENTITY, EXTRACT, RECOLOUR(COLOUR), RECENTRE(CENTRE),
     RESHAPE(SHAPE), MOVE(AMOUNT), GRAVITY(DIRECTION), GROW(DIRECTION),
     FILL, HOLLOW, GENERATE(COLOUR, CENTRE, SHAPE).
+
+Declared differences from the paper: ``GENERATE`` builds a filled rectangle
+(``shape_dims``), not an arbitrary pixel pattern; ``GRAVITY`` and ``GROW`` can be
+executed but the abduction (``vsa_abduction._candidate_actions``) does not propose them.
 """
 
 from __future__ import annotations
@@ -153,9 +157,8 @@ def _apply_reshape(
     if params.shape is None:
         return _apply_identity(cells, colour, params, grid, encoder)
     cur_r, cur_c = _centre_of(cells)
-    new_cells = frozenset(
-        (int(round(cur_r + dr)), int(round(cur_c + dc))) for dr, dc in params.shape
-    )
+    base_r, base_c = int(round(cur_r)), int(round(cur_c))
+    new_cells = frozenset((base_r + dr, base_c + dc) for dr, dc in params.shape)
     h, w = grid.shape()
     new_cells = _clamp_into_grid(new_cells, h, w)
     if not new_cells:
@@ -296,8 +299,9 @@ def _apply_generate(
     cr, cc = params.centre
     h, w = grid.shape()
     sh, sw = params.shape_dims
+    top, left = cr - (sh - 1) / 2, cc - (sw - 1) / 2
     new_cells = frozenset(
-        (int(round(cr - sh / 2 + r)), int(round(cc - sw / 2 + c)))
+        (int(round(top + r)), int(round(left + c)))
         for r in range(sh)
         for c in range(sw)
     )
