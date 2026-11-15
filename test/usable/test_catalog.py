@@ -13,16 +13,16 @@ REPO = ct.REPO
 # --------------------------------------------------------------
 def _independent_count(repo: Path) -> int:
     """Count the public classes with the rules of build_catalog, without
-    importing the catalog. The number must match that of an independent
-    script.
+    importing the catalog: its own ast reading, its own copy of the rules.
     """
     ABSTRACT = {
         "Estimator", "Classifier", "Regressor", "Transformer",
         "AnomalyDetector", "DriftDetector", "Root", "Signal",
     }
+    ROLES = ABSTRACT - {"Estimator", "Root", "Signal"}
     SKIP_SUFFIX = ("Error", "Config")
-    seen = set()
-    n = 0
+    classes = []
+    idx: dict[str, ast.ClassDef] = {}
     for p in sorted((repo / "dense_armor").rglob("*.py")):
         rel = p.relative_to(repo).parts
         if "__pycache__" in p.parts:
@@ -36,18 +36,34 @@ def _independent_count(repo: Path) -> int:
         except SyntaxError:
             continue
         for node in tree.body:
-            if not isinstance(node, ast.ClassDef):
-                continue
-            name = node.name
-            if name.startswith("_") or name in ABSTRACT:
-                continue
-            if name.endswith(SKIP_SUFFIX):
-                continue
-            # the domain/role rule excludes roles/, checks/, mcp_server/, bridges/
-            # if the class has no role. Approximation: count all the
-            # public classes that pass the filters above.
-            seen.add(name)
-            n += 1
+            if isinstance(node, ast.ClassDef):
+                classes.append((p, node))
+                idx.setdefault(node.name, node)
+
+    def role_of(node: ast.ClassDef, seen: tuple = ()) -> str | None:
+        for b in node.bases:
+            name = b.id if isinstance(b, ast.Name) else getattr(b, "attr", None)
+            if name in ROLES:
+                return name
+            if name in idx and name not in seen:
+                found = role_of(idx[name], seen + (name,))
+                if found:
+                    return found
+        return None
+
+    n = 0
+    for p, node in classes:
+        name = node.name
+        if name.startswith("_") or name in ABSTRACT or name.endswith(SKIP_SUFFIX):
+            continue
+        rel = p.relative_to(repo).parts
+        sub = rel[rel.index("core") + 1 : -1] if "core" in rel else rel[1:-1]
+        domain = sub[-1] if sub else "core"
+        # the folders of the contracts, the checks, the servers and the bridges
+        # hold classes that are not primitives, unless they carry a role
+        if domain in ("roles", "checks", "mcp_server", "bridges") and not role_of(node):
+            continue
+        n += 1
     return n
 
 
@@ -56,11 +72,9 @@ def _independent_count(repo: Path) -> int:
 # --------------------------------------------------------------
 def test_catalog_count_matches_independent():
     cat = ct.get_catalog(REPO, refresh=True)
-    assert len(cat) == 447, (
-        f"catalog: {len(cat)} righe; atteso 447. "
-        f"Lo script indipendente dice "
-        f"{_independent_count(REPO)} classi (differenza attesa: "
-        f"role/domain filtri)."
+    assert len(cat) == _independent_count(REPO), (
+        f"catalog: {len(cat)} rows; the independent count says "
+        f"{_independent_count(REPO)}."
     )
 
 
