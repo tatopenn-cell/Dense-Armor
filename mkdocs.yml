@@ -117,6 +117,8 @@ nav:
           - ArduPilot: drones/ardupilot.md
           - Jetson power: drones/jetson_power.md
           - Jetson energy: drones/jetson_energy.md
+      - ARC:
+          - Overview: arc/index.md
   - Bridges:
       - Overview: bridges/index.md
       - scikit-learn: bridges/sklearn.md
