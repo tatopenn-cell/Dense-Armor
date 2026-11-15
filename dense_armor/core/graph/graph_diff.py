@@ -127,6 +127,11 @@ def hungarian_match(
     block). A pair ``(i, j)`` is a match only if its cost is strictly
     below ``TAU_NULL``.
 
+    ``TAU_NULL`` is our choice, not the paper's. The cost of a real pair stays
+    well below it (about 80 at most with the default weights), so the threshold
+    never refuses a real pair: when the numbers of objects differ the extra ones
+    are created or deleted, and when they are equal every object is matched.
+
     Args:
         objects_I: the objects of the input grid.
         objects_O: the objects of the output grid.

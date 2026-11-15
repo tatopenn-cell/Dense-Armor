@@ -52,6 +52,11 @@ class Rule:
     ``threshold`` is a cosine similarity chosen for this implementation. It is
     not the paper's rule (Algorithm 3: the operation predictor, a neural network,
     gives a probability, and the operation is executed from 50%).
+
+    Simplifications with respect to Section 3.2.2: the prototype is the mean of
+    the objects the action was applied to (no negative examples); the condition
+    is never vacuous when all the labels are positive; an object that is similar
+    enough to more than one prototype triggers more than one rule.
     """
 
     prototype: np.ndarray

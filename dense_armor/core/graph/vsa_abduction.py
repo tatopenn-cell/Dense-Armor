@@ -8,6 +8,7 @@ References: Joffe & Eliasmith (2025), arXiv:2511.08747.
 
 from __future__ import annotations
 
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from enum import Enum
 
@@ -210,16 +211,38 @@ def _matches_grid(cells: frozenset[tuple[int, int]], colour: int, grid: Grid) ->
     return True
 
 
-def minimum_hitting_set(sets: list[set]) -> set:
-    """Smallest set that intersects every set in ``sets``.
+def action_cost(actions: Iterable[ConcreteAction]) -> int:
+    """The cost of an action set: 1 per distinct operation + 1 per distinct action.
 
-    Exact, by branch-and-bound on the smallest uncovered set.
+    Section 3.2.1 (page 12) says that the cost penalizes each additional
+    operation and parameter, so that a simple action set uses the fewest
+    operations and distinct operation-parameter compositions. The paper gives
+    no formula; this is our reading of it. Example: ``{RECOLOUR(5), RECOLOUR(8)}``
+    costs 1 + 2 = 3 and ``{RECOLOUR(5), MOVE((1, 0))}`` costs 2 + 2 = 4.
+
+    Args:
+        actions: the actions of the set.
+
+    Returns:
+        the cost.
+    """
+    acts = set(actions)
+    return len({a.op_type for a in acts}) + len(acts)
+
+
+def minimum_hitting_set(sets: list[set], cost: Callable[[set], float] = len) -> set:
+    """The set of least cost that intersects every set in ``sets``.
+
+    Exact, by branch-and-bound on the smallest uncovered set. ``cost`` must not
+    decrease when an element is added (the default is the size of the set;
+    ``abduct`` passes :func:`action_cost`).
 
     Args:
         sets: the sets to hit.
+        cost: the cost of a candidate set.
 
     Returns:
-        the minimum hitting set.
+        the hitting set of least cost.
     """
     sets = [s for s in sets if s]
     if not sets:
@@ -228,10 +251,10 @@ def minimum_hitting_set(sets: list[set]) -> set:
 
     def _rec(chosen: set, remaining: list[set]) -> None:
         if not remaining:
-            if len(chosen) < len(best[0]):
+            if cost(chosen) < cost(best[0]):
                 best[0] = set(chosen)
             return
-        if len(chosen) >= len(best[0]):
+        if cost(chosen) >= cost(best[0]):
             return
         # pick the smallest uncovered set
         smallest = min(remaining, key=len)
@@ -303,8 +326,9 @@ def abduct(
         if not ok:
             continue
         # Minimum hitting set: one action set covering every output object
-        action_set = minimum_hitting_set([set(c) for c in per_output_actions])
-        # Sanity: every output must be reachable by at least one action in the set
+        action_set = minimum_hitting_set(
+            [set(c) for c in per_output_actions], cost=action_cost
+        )
         return AbductionResult(
             hypothesis=hyp,
             action_set=action_set,

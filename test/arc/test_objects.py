@@ -54,3 +54,12 @@ def test_holes():
     holes = ones[0].holes(g)
     assert len(holes) == 1
     assert holes[0] == frozenset({(1, 1)})
+
+
+def test_holes_exclude_cavities_open_to_the_bbox_border():
+    ring = Grid.from_list([[1, 1, 1], [1, 0, 1], [1, 1, 1]])
+    u_shape = Grid.from_list([[1, 0, 1], [1, 0, 1], [1, 1, 1]])
+    ring_obj = [o for o in extract_objects(ring) if o.color == 1][0]
+    u_obj = [o for o in extract_objects(u_shape) if o.color == 1][0]
+    assert len(ring_obj.holes(ring)) == 1
+    assert u_obj.holes(u_shape) == []

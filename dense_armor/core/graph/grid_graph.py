@@ -7,7 +7,7 @@ from dense_armor.core.graph.ontology import Constraint, TypedGraph
 from .grid import Grid
 from .objects import extract_objects
 
-SCHEMA = {
+SCHEMA: dict[str, dict[str, type]] = {
     "cell": {"row": int, "col": int, "color": int},
     "object": {
         "color": int,

@@ -32,7 +32,16 @@ from dense_armor.core.graph.vsa_solver import (
 
 @dataclass
 class VSAVariant:
-    """One property hypothesis (which VSA component to use)."""
+    """One property hypothesis (which VSA component to use).
+
+    The projection (colour, centre or shape) is used where ``learn_variant``
+    chooses the input object that corresponds to each output object. The rules
+    (``_learn_rules``) and the deduction (``apply``) use the full vector of the
+    object in every variant, so the variants differ only in that matching. A
+    variant adds no operation: a task that needs one outside Table 1 (for
+    example a comparison of objects) is out of reach for all of them (paper,
+    Section 5.2).
+    """
 
     name: str
     encoder: ObjectEncoder
@@ -101,6 +110,7 @@ def learn_variant(
     from dense_armor.core.graph.vsa_abduction import (
         _candidate_actions,
         _input_object_for,
+        action_cost,
         grid_size_hypothesis,
         minimum_hitting_set,
     )
@@ -150,7 +160,9 @@ def learn_variant(
                 break
         if not ok:
             continue
-        action_set = minimum_hitting_set([set(c) for c in per_output_actions])
+        action_set = minimum_hitting_set(
+            [set(c) for c in per_output_actions], cost=action_cost
+        )
         from dense_armor.core.graph.vsa_abduction import AbductionResult
 
         abduction = AbductionResult(

@@ -31,7 +31,8 @@ def explore(
         beam_width: the number of candidates kept at each depth.
 
     Returns:
-        a list of ``Program`` ordered by descending verification score.
+        the ``beam_width`` best programs of every depth, ordered by descending
+        verification score and, on ties, by fewer steps.
 
     Raises:
         ValueError: if ``max_depth`` is negative or ``beam_width`` is not
@@ -45,6 +46,7 @@ def explore(
     if not prims:
         return [Program([])]
     scored: list[tuple[float, Program]] = [(Program([]).verify(pairs), Program([]))]
+    pool = list(scored)
     for _ in range(max_depth):
         candidates: list[tuple[float, Program]] = []
         for _, p in scored:
@@ -53,5 +55,6 @@ def explore(
                 candidates.append((candidate.verify(pairs), candidate))
         candidates.sort(key=lambda t: -t[0])
         scored = candidates[:beam_width]
-    scored.sort(key=lambda t: -t[0])
-    return [p for _, p in scored]
+        pool.extend(scored)
+    pool.sort(key=lambda t: (-t[0], len(t[1].steps)))
+    return [p for _, p in pool[:beam_width]]

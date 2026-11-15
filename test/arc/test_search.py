@@ -45,3 +45,11 @@ def test_explore_scores_descending():
     found = explore([dsl.hmirror, dsl.vmirror], pairs, max_depth=1, beam_width=2)
     scores = [p.verify(pairs) for p in found]
     assert scores == sorted(scores, reverse=True)
+
+
+def test_explore_keeps_the_shorter_program_of_an_earlier_depth():
+    g = Grid.from_list([[1, 2], [3, 4]])
+    pairs = [(g, dsl.rot90(g))]
+    found = explore([dsl.rot90, dsl.rot180], pairs, max_depth=2, beam_width=3)
+    assert found[0].verify(pairs) == 1.0
+    assert len(found[0].steps) == 1
