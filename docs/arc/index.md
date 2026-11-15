@@ -34,7 +34,7 @@ The rule is simple: the shape of colour 1 in the top-left of the input is
 recoloured to colour 3, and everything else is left alone. A solver should
 find that rule from the single training pair and apply it to the test input.
 
-## three solvers
+## Three solvers
 
 Dense-Armor has three solvers, in `dense_armor/core/graph/`. They are
 independent; a user can pick any of them, or combine them.

@@ -150,9 +150,7 @@ of eleven operations (recolour, delete, translate, ...) to one object and
 returns the resulting object, encoded as a vector.
 
 ~~~python
-from dense_armor.core.graph import (Grid, ObjectEncoder, ObjectHypothesis,
-                                    OperationParams, OperationType,
-                                    execute_action, perceive)
+from dense_armor.core.graph import Grid, ObjectEncoder, ObjectHypothesis, OperationParams, OperationType, execute_action, perceive
 
 g = Grid.from_list([[1, 1, 0], [1, 0, 0], [0, 0, 2]])
 enc = ObjectEncoder(n=1024)
