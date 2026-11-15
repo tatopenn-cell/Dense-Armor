@@ -17,14 +17,18 @@ of predicates and effectors.
   change is a separate hypothesis (`grid_size_hypothesis`) that the rule
   synthesis does not use.
 - **The whole grid.** A task whose rule is a transformation of the whole
-  grid (`rot90`, `hmirror`, `upscale`) is better handled by program search
-  than by rule synthesis. The two are separate solvers.
+  grid (`rot90`, `hmirror`, `upscale`) is handled by both solvers: the
+  program search composes the transformation directly, and the rule
+  synthesis applies it as a global effector (`GLOBAL_EFFECTORS` in
+  `rule_synthesis.py`). On this kind of task the program search is
+  usually simpler to write and to read.
 - **Comparison between objects.** A task whose rule is "recolour the
   object with the largest area" is solved (the predicate `is_largest` is in
   the vocabulary). A task whose rule is "recolour the object whose area is
-  the median" is not: there is no `rank_median` in the vocabulary. The
-  predicate vocabulary has ten types; a rule that needs an eleventh is not
-  expressible.
+  the median" is expressible with `RANK(k)` only if the number of objects
+  is known in advance (the median is `RANK((n+1)//2)` for `n` objects);
+  there is no dynamic median. The predicate vocabulary has ten types; a
+  rule that needs an eleventh is not expressible.
 - **More than three predicates.** A selector is a list of at most three
   predicates. A rule that needs four (`has_color(1) and not touches_border
   and area_gt(2) and is_square`) is not considered.

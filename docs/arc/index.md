@@ -36,8 +36,8 @@ find that rule from the single training pair and apply it to the test input.
 
 ## Two solvers
 
-Dense-Armor has two solvers, in `dense_armor/core/graph/`. They are
-independent; a user can pick either or both.
+Dense-Armor has three solvers, in `dense_armor/core/graph/`. They are
+independent; a user can pick any of them, or combine them.
 
 - **Program search** (`solve`, `explore`, `refine`): look for a program that
   is a sequence of grid transformations (`rot90`, `hmirror`, `fill`,

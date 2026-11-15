@@ -42,9 +42,9 @@ from dense_armor.core.graph import (
 rng = np.random.default_rng(0)
 a = random_unit_vector(rng, 256)
 b = random_unit_vector(rng, 256)
-print(similarity(unbind(bind(a, b), a), b))
-print(similarity(bind(a, a), a))
-print(similarity(bundle(a, b), a))
+print(f"{similarity(unbind(bind(a, b), a), b):.4f}")
+print(f"{similarity(bind(a, a), a):.4f}")
+print(f"{similarity(bundle(a, b), a):.4f}")
 ~~~
 
 ~~~text
@@ -73,9 +73,9 @@ ssp = SSPSpace(n=1024, length_scale=0.25, seed=0)
 p00 = ssp.encode(np.array([0.0, 0.0]))
 p05 = ssp.encode(np.array([0.5, 0.5]))
 p10 = ssp.encode(np.array([10.0, 0.0]))
-print(similarity(p00, p00))
-print(similarity(p00, p05))
-print(similarity(p00, p10))
+print(f"{similarity(p00, p00):.4f}")
+print(f"{similarity(p00, p05):.4f}")
+print(f"{similarity(p00, p10):.4f}")
 ~~~
 
 ~~~text

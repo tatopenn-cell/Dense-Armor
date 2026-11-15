@@ -119,6 +119,8 @@ nav:
           - Jetson energy: drones/jetson_energy.md
       - ARC:
           - Overview: arc/index.md
+          - Start here: arc/start_here.md
+          - Limits: arc/limits.md
   - Bridges:
       - Overview: bridges/index.md
       - scikit-learn: bridges/sklearn.md
