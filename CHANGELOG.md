@@ -4,6 +4,18 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+## [1.6.1] - 2026-11-16
+
+This release adds the ARC-AGI layer of the ontology (`dense_armor.core.graph`: grids, objects, a typed grid graph, a program search, a rule synthesis and a solver based on Vector Symbolic Algebras), the command line `usable` (it proposes the classes of the library for a file), and the documentation of both.
+
+### Added
+- ARC-AGI in `dense_armor.core.graph`: `Grid`, `ArcObject` and `extract_objects`, the relations (`inside`, `same_shape`, `distance`, `adjacent`, `same_color`), `build_grid_graph`, the eleven grid transformations and `Program`, `explore`, `refine` and `solve`, the rule synthesis (`synthesize`, `render`, `apply_to_test`), and the VSA solver (`ObjectEncoder`, the six object hypotheses, the eleven operations, `abduct`). Declared limits: a prototype in place of the neural predictors, no property selection, a threshold of 0.3 on the cosine similarity.
+- `usable`: a command line that proposes the classes of the library for a file (work in progress).
+- Documentation: six pages in the Ontology section (grids, typed grid graph, transformations, program search, rule synthesis, Vector Symbolic Algebras) and an ARC section (overview, start here, limits).
+
+### Changed
+- CI: a pull request that changes only documents reports the required pytest checks as green without running them.
+
 ## [1.6.0] - 2026-11-14
 
 This release adds the audio section (sound as a value, filters, effects, synthesis, pitch, time and pitch change, mel and MFCC,
