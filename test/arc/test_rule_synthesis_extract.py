@@ -30,7 +30,7 @@ def _around(h, w, r, c):
 def _positives(rows_in, rows_out):
     gi, go = Grid.from_list(rows_in), Grid.from_list(rows_out)
     diff = diff_graphs(gi, go)
-    return extract_positives(diff, gi, go, diff["L2_O"])
+    return extract_positives(diff, gi, go)
 
 
 def _by_kind(positives):

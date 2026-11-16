@@ -1,30 +1,27 @@
-"""Rule synthesis from graph diffs (v2: CLONE, FILL_L2, anchor, global selector).
+"""Rule synthesis from graph diffs.
 
-The v1 built only recolor/delete/translate/fill_holes/fill_bg on
-individual objects and intersected selectors literally. v2 closes the
-three gaps identified in the specification:
+Synthesizes a list of ``Rule(selector, effector)`` from the training
+pairs of an ARC task. A rule pairs a selector (at most three predicates
+on ``ArcObject``) with an effector (a change on the selected objects).
 
-- Buco A: ``created`` objects are covered by ``CLONE`` (an existing
-  object with the same ``shape_signature``, offset by ``anchor(v) - anchor(u)``)
-  or by ``FILL_L2`` (a Level 2 node already present at the same cells).
-  ``created`` no longer falls on the floor.
-- Buco B: parameters that vary across pairs are promoted to relational
-  queries. ``relation_vec(u, r) == theta_k`` gives candidate anchors ``R_k``;
-  a predicate of size <= 2 that isolates one anchor per pair is the
-  relational parameter.
-- Punto 3: the selector is synthesized once on the union of positives
-  and negatives of all pairs, not intersected literally across pairs.
+Effectors cover:
 
-The shape mismatch fix: ``extract_positives`` reads ``grid_O.shape()``
-for the background count on ``grid_O``. (Bug from v1: it used
-``grid_I.shape()`` for both, which crashed on 3x7 -> 3x3.)
+- object-scoped: RECOLOR, RECOLOR_BY_MAP (stable bijection),
+  RECOLOR_RELATIONAL (colour of the nearest anchor, or of an isolated
+  anchor per target), RECOLOR_NEAREST (nearest anchor by Chebyshev
+  distance), DELETE, TRANSLATE, CLONE_AROUND, CLONE, FILL_HOLES,
+  FILL_BG, FILL_L2.
+- global: ROT90, ROT180, ROT270, HMIRROR, VMIRROR, DMIRROR,
+  UPSCALE2, UPSCALE3, DOWNSCALE2, DOWNSCALE3.
 
-v2 limitations, declared:
-- Scale (output is a scaled copy of an input object): not covered.
-- Rotation (output is a rotated copy): not covered.
-- Merge (an output object is the union of multiple inputs): not covered.
-- The anchor predicate requires |phi| <= 2 and exactly one unique anchor
-  per pair; otherwise the effector is dropped (stricter than general LGG).
+When no single effector is common to every training pair,
+``RECOLOR_NEAREST`` is tried via ``_try_buco_b_recolor``: each target
+object takes the colour of the nearest object matching an anchor
+predicate, and the target predicate isolates the targets.
+
+Known limits: merge (an output object is the union of several inputs),
+generic LGG, and any rule whose selector would need more than three
+predicates are not covered.
 """
 
 from __future__ import annotations
@@ -61,7 +58,6 @@ class EffectorType(str, Enum):
 
     CLONE = "clone"
     CLONE_AROUND = "clone_around"
-    CONNECT = "connect"
     DELETE = "delete"
     FILL_BG = "fill_bg"
     FILL_HOLES = "fill_holes"
@@ -247,7 +243,7 @@ def anchor(obj: ArcObject) -> tuple[float, float]:
 
 
 def extract_positives(
-    diff: dict, grid_I: Grid, grid_O: Grid, L2_O: dict
+    diff: dict, grid_I: Grid, grid_O: Grid
 ) -> dict[Effector, list[int]]:
     """Map effectors to the input-side positive indices (or -1 for bg/L2).
 
@@ -255,7 +251,6 @@ def extract_positives(
         diff: result of ``diff_graphs``.
         grid_I: input grid.
         grid_O: output grid.
-        L2_O: Level 2 nodes of the output grid.
 
     Returns:
         a dict ``{effector: [indices into objects_I, or -1 for bg/L2]}``.
@@ -284,8 +279,6 @@ def extract_positives(
                     eff = Effector(EffectorType.FILL_HOLES, to_color=color)
                     positives.setdefault(eff, []).append(i)
 
-    # RECOLOR_BY_MAP: se ogni match cambia colore e la relazione e'
-    # una biiezione stabile tra le coppie, emetti una mappa globale.
     mapping_dict: dict[int, int] = {}
     all_matched_recolor = bool(diff["matched"])
     for i, j in diff["matched"]:
@@ -462,58 +455,6 @@ def synthesize_selector_global(
 # --- anchor discovery for parametrized effectors ---
 
 
-def _relation_vec(u: ArcObject, r: ArcObject, kind: str) -> tuple[int, int] | None:
-    ur0, uc0, ur1, uc1 = u.bbox
-    rr0, rc0, rr1, rc1 = r.bbox
-    if kind == "min":
-        return (rr0 - ur0, rc0 - uc0)
-    if kind == "max":
-        return (rr1 - ur1, rc1 - uc1)
-    if kind == "centroid":
-        ucr, ucc = anchor(u)
-        rcr, rcc = anchor(r)
-        return (int(round(rcr - ucr)), int(round(rcc - ucc)))
-    return None
-
-
-def _find_anchor_predicate(
-    pairs_u_r_theta: list[tuple[ArcObject, list[ArcObject], tuple[int, int]]],
-    objs_per_pair: list[list[ArcObject]],
-    grids_per_pair: list[Grid],
-) -> Predicate | None:
-    """Find a predicate that isolates one anchor per pair, consistent with theta.
-
-    Args:
-        pairs_u_r_theta: per pair, ``(source, candidate anchors R_k, theta)``.
-        objs_per_pair: all objects per pair.
-        grids_per_pair: grids per pair.
-
-    Returns:
-        a single predicate, or ``None`` if none isolates uniquely.
-    """
-    for size in (1, 2):
-        for sel in combinations(SIGMA_S, size):
-            ok = True
-            for (u, R, theta), objs, grid in zip(
-                pairs_u_r_theta, objs_per_pair, grids_per_pair
-            ):
-                matched = [
-                    r
-                    for r in objs
-                    if r is not u and _selector_matches(sel, r, objs, grid)
-                ]
-                if len(matched) != 1:
-                    ok = False
-                    break
-                r = matched[0]
-                if r not in R:
-                    ok = False
-                    break
-            if ok:
-                return sel[0] if size == 1 else sel  # type: ignore[return-value]
-    return None
-
-
 # --- render ---
 
 
@@ -557,7 +498,6 @@ def _render_effector(
     obj: ArcObject,
     grid: Grid,
     objs: list[ArcObject],
-    L2_I: dict,
 ) -> list[tuple[int, int, int]]:
     """Apply one effector to one object, returning (r, c, color) cells."""
     if eff.kind == EffectorType.RECOLOR:
@@ -797,7 +737,7 @@ def render(grid: Grid, rules: list[Rule], L2_I: dict) -> Grid:
         for obj in objs:
             if not _selector_matches(rule.selector, obj, objs, grid):
                 continue
-            for r, c, color in _render_effector(eff, obj, grid, objs, L2_I):
+            for r, c, color in _render_effector(eff, obj, grid, objs):
                 if 0 <= r < h and 0 <= c < w:
                     out[r][c] = color
     return Grid.from_list(out)
@@ -829,16 +769,14 @@ def synthesize(task: dict, max_rules: int = 5) -> list[Rule] | None:
     per_pair_objs: list[list[ArcObject]] = []
     per_pair_grids: list[Grid] = []
     per_pair_L2: list[dict] = []
-    diffs = []
 
     for grid_I, grid_O in pairs:
         d = diff_graphs(grid_I, grid_O)
-        pos = extract_positives(d, grid_I, grid_O, d["L2_O"])
+        pos = extract_positives(d, grid_I, grid_O)
         per_pair_pos.append(pos)
         per_pair_objs.append(d["objects_I"])
         per_pair_grids.append(grid_I)
         per_pair_L2.append(d["L2_I"])
-        diffs.append((d, grid_I, grid_O))
 
     # effectors that appear in every pair
     common = set(per_pair_pos[0])
@@ -951,7 +889,7 @@ def synthesize(task: dict, max_rules: int = 5) -> list[Rule] | None:
     for size in range(1, min(len(rules), max_rules) + 1):
         for subset in combinations(rules, size):
             ok = True
-            for (grid_I, grid_O), (_, _, _), L2_I in zip(pairs, diffs, per_pair_L2):
+            for (grid_I, grid_O), L2_I in zip(pairs, per_pair_L2):
                 if render(grid_I, list(subset), L2_I) != grid_O:
                     ok = False
                     break
