@@ -26,7 +26,7 @@ class GraphSignal:
             )
         self._signal = signal
         self._graph = graph
-        # valori come array float64, nell'ordine dei names
+        # values as a float64 array, in the order of names
         self.values = np.array([signal[n] for n in signal.names], dtype=float)
 
     @classmethod

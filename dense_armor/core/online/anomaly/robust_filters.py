@@ -1,31 +1,31 @@
 """
-robust_filters.py -- quattro rilevatori di anomalie "a basso costo", nessuna
-meccanica pesante (nessun modello dinamico, nessuno stato, nessuna
-differenziazione automatica): statistiche classiche, note e usate da decenni
-in telemetria/astronomia, ognuna calcolata su una finestra locale centrata
-(come healing_filter.py in questo stesso pacchetto -- non causale, pensate
-per pulizia offline/batch di una serie gia' registrata, non per il ciclo
-real-time di utility/hybrid_engine.py).
+robust_filters.py -- four "low-cost" anomaly detectors, no heavy
+machinery (no dynamic model, no state, no automatic
+differentiation): classical statistics, known and used for decades
+in telemetry/astronomy, each computed on a centered local window
+(like healing_filter.py in this same package -- non-causal, designed
+for offline/batch cleaning of an already recorded series, not for the
+real-time loop of utility/hybrid_engine.py).
 
-Ogni funzione ha la stessa firma (x, radius=..., **soglia) -> (pulito, anomalie):
-    pulito   -- array 1D, stessa shape di x: valore grezzo dove non anomalo,
-                mediana locale dove anomalo.
-    anomalie -- lista di indici (int) segnalati come anomali.
+Every function has the same signature (x, radius=..., **threshold) -> (pulito, anomalie):
+    pulito   -- 1D array, same shape as x: raw value where not anomalous,
+                local median where anomalous.
+    anomalie -- list of indices (int) flagged as anomalous.
 
-I quattro metodi, in ordine di introduzione storica:
-- Chauvenet (1863): soglia di rigetto basata sulla probabilita' attesa che un
-  campione della finestra locale (size N) si discosti tanto per puro caso --
-  se il numero atteso di tali eventi (N * P) e' < 0.5, il punto e' un
-  outlier statisticamente "troppo improbabile per il campione a disposizione".
-- Tukey's fences / IQR (anni '70): nessuna assunzione sulla distribuzione,
-  solo quartili -- oltre Q1-1.5*IQR o Q3+1.5*IQR e' outlier.
-- Hampel filter: mediana + MAD scalato (1.4826*MAD, costante di consistenza
-  per una gaussiana) come soglia -- la generalizzazione robusta di "3 sigma"
-  che non usa mai una media/std sensibile agli outlier che sta cercando.
-- Sigma-clipping iterativo: standard in astronomia (stacking di immagini,
-  fotometria) -- ricalcola media/std della finestra escludendo i punti oltre
-  N sigma, ripete finche' stabile o max_iters, poi giudica il punto centrale
-  contro le statistiche "ripulite".
+The four methods, in order of historical introduction:
+- Chauvenet (1863): rejection threshold based on the expected probability that a
+  sample of the local window (size N) deviates so much by pure chance --
+  if the expected number of such events (N * P) is < 0.5, the point is a
+  statistically "too improbable for the available sample" outlier.
+- Tukey's fences / IQR (1970s): no assumption on the distribution,
+  only quartiles -- beyond Q1-1.5*IQR or Q3+1.5*IQR it is an outlier.
+- Hampel filter: median + scaled MAD (1.4826*MAD, consistency constant
+  for a Gaussian) as the threshold -- the robust generalization of "3 sigma"
+  that never uses a mean/std sensitive to the outliers it is looking for.
+- Iterative sigma-clipping: standard in astronomy (image stacking,
+  photometry) -- recomputes mean/std of the window excluding the points beyond
+  N sigma, repeats until stable or max_iters, then judges the central point
+  against the "cleaned" statistics.
 """
 import math
 
@@ -41,27 +41,27 @@ def _window(x: np.ndarray, i: int, radius: int) -> np.ndarray:
 
 
 def _jensen_shannon(a: np.ndarray, b: np.ndarray, n_bins: int = None, pseudo: float = 1.0) -> float:
-    """Divergenza di Jensen-Shannon (in bit, log base 2) tra le distribuzioni
-    empiriche di `a` e `b` -- stessi bin per entrambe (istogramma sull'unione
-    dei due range). 0.0 = distribuzioni identiche, 1.0 = supporti
-    completamente disgiunti. Pura aritmetica su numpy (nessuna dipendenza da
-    scipy), stessa filosofia "leggera" degli altri rilevatori in questo modulo.
+    """Jensen-Shannon divergence (in bits, log base 2) between the empirical
+    distributions of `a` and `b` -- same bins for both (histogram on the union
+    of the two ranges). 0.0 = identical distributions, 1.0 = completely
+    disjoint supports. Pure numpy arithmetic (no dependency on
+    scipy), same "light" philosophy as the other detectors in this module.
 
-    Due accorgimenti per finestre piccole (verificato: senza questi, la JSD
-    risultava PIU' alta su rumore gaussiano puro stazionario che vicino a
-    una vera transizione di livello -- il segnale nella direzione sbagliata,
-    puro artefatto di pochi campioni per bin):
-    - n_bins adattivo (default None -> max(3, min(10, (len(a)+len(b))//6)),
-      circa 6 campioni per bin invece di un numero fisso indipendente dalla
-      dimensione della finestra;
-    - smoothing di Laplace vero (pseudo=1.0, uno pseudo-conteggio per bin,
-      non un epsilon quasi-zero solo per evitare log(0)) -- su pochi
-      campioni due istogrammi sparsi sembrano gia' "diversi" per puro
-      rumore di campionamento; lo smoothing li avvicina finche' una
-      differenza reale nella distribuzione non emerge comunque sopra di
-      esso. Verificato su rumore stazionario vs un vero gradino 1.0->5.0
-      (radius=10): media JSD stazionaria 0.018-0.025, media JSD vicino
-      alla transizione 0.04-0.08 (2-3x piu' alta, direzione corretta)."""
+    Two precautions for small windows (verified: without them, the JSD
+    came out HIGHER on pure stationary Gaussian noise than near
+    a real level transition -- the signal in the wrong direction,
+    a pure artifact of few samples per bin):
+    - adaptive n_bins (default None -> max(3, min(10, (len(a)+len(b))//6)),
+      about 6 samples per bin instead of a fixed number independent of the
+      window size;
+    - true Laplace smoothing (pseudo=1.0, one pseudo-count per bin,
+      not a near-zero epsilon just to avoid log(0)) -- with few
+      samples two sparse histograms already look "different" by pure
+      sampling noise; the smoothing brings them closer until a real
+      difference in the distribution emerges anyway above
+      it. Verified on stationary noise vs a true step 1.0->5.0
+      (radius=10): mean stationary JSD 0.018-0.025, mean JSD near
+      the transition 0.04-0.08 (2-3x higher, correct direction)."""
     lo = min(float(a.min()), float(b.min()))
     hi = max(float(a.max()), float(b.max()))
     if hi - lo < 1e-12:
@@ -82,20 +82,20 @@ def _jensen_shannon(a: np.ndarray, b: np.ndarray, n_bins: int = None, pseudo: fl
 
 
 def chauvenet_criterion(x: np.ndarray, radius: int = 10) -> tuple[np.ndarray, list[int]]:
-    """Criterio di Chauvenet (1863) su finestra locale di raggio `radius`.
+    """Chauvenet's criterion (1863) on a local window of radius `radius`.
 
-    Per il punto i, con la finestra come campione (media mu, std sigma, size
-    N): d = |x[i] - mu| / sigma; P = erfc(d / sqrt(2)) (probabilita' a due code
-    di un tale scostamento sotto ipotesi gaussiana). Se N*P < 0.5 -- il numero
-    atteso di scostamenti pari a questo, ripetendo l'esperimento, e' inferiore
-    a mezzo campione -- il punto e' rigettato come outlier.
+    For point i, with the window as the sample (mean mu, std sigma, size
+    N): d = |x[i] - mu| / sigma; P = erfc(d / sqrt(2)) (two-tailed probability
+    of such a deviation under a Gaussian hypothesis). If N*P < 0.5 -- the expected
+    number of deviations equal to this one, repeating the experiment, is less
+    than half a sample -- the point is rejected as an outlier.
 
-    Nota: usa mean/std (non robuste), come nella formulazione originale --
-    su una finestra con PIU' di un outlier, mean/std sono gia' distorte dagli
-    altri outlier prima ancora di giudicare il punto i (limite noto e
-    documentato del criterio originale, non specifico di questa implementazione;
-    per finestre con outlier multipli preferire hampel_filter o tukey_fences,
-    che usano statistiche robuste)."""
+    Note: it uses mean/std (not robust), as in the original formulation --
+    on a window with MORE than one outlier, mean/std are already distorted by the
+    other outliers before even judging point i (known and
+    documented limit of the original criterion, not specific to this implementation;
+    for windows with multiple outliers prefer hampel_filter or tukey_fences,
+    which use robust statistics)."""
     x = as_default_array(x)
     n = len(x)
     out = np.copy(x)
@@ -116,12 +116,12 @@ def chauvenet_criterion(x: np.ndarray, radius: int = 10) -> tuple[np.ndarray, li
 
 
 def tukey_fences(x: np.ndarray, radius: int = 10, k: float = 1.5) -> tuple[np.ndarray, list[int]]:
-    """Tukey's fences / IQR su finestra locale di raggio `radius`.
+    """Tukey's fences / IQR on a local window of radius `radius`.
 
-    Q1/Q3 = 25/75-esimo percentile della finestra, IQR = Q3-Q1. Il punto i e'
-    outlier se fuori da [Q1 - k*IQR, Q3 + k*IQR] (k=1.5 e' lo standard, k=3.0
-    la variante "extreme outliers"). Nessuna assunzione sulla distribuzione --
-    l'unico dei quattro a non presupporre normalita'."""
+    Q1/Q3 = 25th/75th percentile of the window, IQR = Q3-Q1. Point i is an
+    outlier if outside [Q1 - k*IQR, Q3 + k*IQR] (k=1.5 is the standard, k=3.0
+    the "extreme outliers" variant). No assumption on the distribution --
+    the only one of the four that does not presuppose normality."""
     x = as_default_array(x)
     n = len(x)
     out = np.copy(x)
@@ -140,14 +140,14 @@ def tukey_fences(x: np.ndarray, radius: int = 10, k: float = 1.5) -> tuple[np.nd
 
 
 def hampel_filter(x: np.ndarray, radius: int = 10, n_sigmas: float = 3.0) -> tuple[np.ndarray, list[int]]:
-    """Hampel filter su finestra locale di raggio `radius`.
+    """Hampel filter on a local window of radius `radius`.
 
-    mediana e MAD (Median Absolute Deviation) della finestra, scalato per
-    1.4826 (costante di consistenza: rende scaled_MAD uno stimatore
-    non distorto della deviazione standard SE il dato fosse gaussiano,
-    ma senza mai calcolare una media/std vera -- ogni singola statistica
-    usata qui e' gia' robusta, a differenza di Chauvenet). Outlier se
-    |x[i] - mediana| > n_sigmas * scaled_MAD."""
+    median and MAD (Median Absolute Deviation) of the window, scaled by
+    1.4826 (consistency constant: makes scaled_MAD an unbiased
+    estimator of the standard deviation IF the data were Gaussian,
+    but without ever computing a true mean/std -- every single statistic
+    used here is already robust, unlike Chauvenet). Outlier if
+    |x[i] - median| > n_sigmas * scaled_MAD."""
     x = as_default_array(x)
     n = len(x)
     out = np.copy(x)
@@ -171,15 +171,15 @@ def hampel_filter(x: np.ndarray, radius: int = 10, n_sigmas: float = 3.0) -> tup
 
 
 def sigma_clip(x: np.ndarray, radius: int = 10, n_sigmas: float = 3.0, max_iters: int = 5) -> tuple[np.ndarray, list[int]]:
-    """Sigma-clipping iterativo (standard in astronomia: stacking, fotometria)
-    su finestra locale di raggio `radius`.
+    """Iterative sigma-clipping (standard in astronomy: stacking, photometry)
+    on a local window of radius `radius`.
 
-    Sulla finestra (esclude il punto i stesso, cosi' un vero outlier al
-    centro non puo' auto-proteggersi gonfiando la propria std): calcola
-    media/std, scarta i punti oltre n_sigmas, ricalcola su quelli rimasti,
-    ripete fino a stabilita' o max_iters. Il punto i e' outlier se fuori da
-    n_sigmas dalla media/std FINALI (ripulite dagli altri outlier della
-    finestra, a differenza di chauvenet_criterion che usa mean/std grezze)."""
+    On the window (excluding point i itself, so a true outlier at the
+    center cannot protect itself by inflating its own std): computes
+    mean/std, discards the points beyond n_sigmas, recomputes on the remaining ones,
+    repeats until stable or max_iters. Point i is an outlier if outside
+    n_sigmas of the FINAL mean/std (cleaned of the other outliers of the
+    window, unlike chauvenet_criterion which uses raw mean/std)."""
     x = as_default_array(x)
     n = len(x)
     out = np.copy(x)
@@ -221,147 +221,147 @@ def pressure_valve(
     x: np.ndarray, radius: int = 10, soglia_pressione: float = 8.0, n_sigmas: float = 3.0,
     ref_mult: int = 3, k_molla: float = 3.0,
 ) -> tuple[np.ndarray, list[int], np.ndarray, np.ndarray]:
-    """Orchestratore automatico dei quattro rilevatori sopra: non un voto
-    (quanti metodi segnalano il punto), una combinazione a MINIMA VARIANZA
-    vincolata -- lo stimatore BLUE (Best Linear Unbiased Estimator) classico
-    della statistica, derivato con un moltiplicatore di Lagrange.
+    """Automatic orchestrator of the four detectors above: not a vote
+    (how many methods flag the point), but a CONSTRAINED MINIMUM-VARIANCE
+    combination -- the classic BLUE estimator (Best Linear Unbiased
+    Estimator) of statistics, derived with a Lagrange multiplier.
 
-    Ogni metodo produce una coppia (centro, scala) locale: Chauvenet usa
-    media/std (non robuste, la formulazione originale -- la debolezza e'
-    voluta, vedi sotto), sigma-clipping usa media/std ripulite
-    iterativamente dagli outlier della finestra, Hampel usa mediana/MAD
-    scalato (1.4826*MAD), Tukey usa mediana/IQR scalato (IQR/1.349, la
-    stessa costante che rende IQR uno stimatore di sigma per una gaussiana).
-    Quattro stime indipendenti dello stesso "vero" centro locale, ognuna con
-    la propria incertezza (scala).
+    Each method produces a local (center, scale) pair: Chauvenet uses
+    mean/std (not robust, the original formulation -- the weakness is
+    intended, see below), sigma-clipping uses mean/std iteratively cleaned
+    of the outliers of the window, Hampel uses median/scaled MAD
+    (1.4826*MAD), Tukey uses median/scaled IQR (IQR/1.349, the
+    same constant that makes IQR an estimator of sigma for a Gaussian).
+    Four independent estimates of the same "true" local center, each with
+    its own uncertainty (scale).
 
-    Combinarle non con una media semplice ma cercando i pesi w_k che
-    minimizzano la VARIANZA della combinazione pesata Sum(w_k * centro_k),
-    vincolati a Sum(w_k) = 1 (combinazione non distorta) -- un problema di
-    ottimizzazione vincolata, risolto con un moltiplicatore di Lagrange
+    Combining them not with a simple mean but by looking for the weights w_k that
+    minimize the VARIANCE of the weighted combination Sum(w_k * centro_k),
+    constrained to Sum(w_k) = 1 (unbiased combination) -- a
+    constrained optimization problem, solved with a Lagrange multiplier
     lambda:
         L(w, lambda) = Sum(w_k^2 * scala_k^2) - lambda * (Sum(w_k) - 1)
         dL/dw_k = 0  =>  w_k = lambda / (2 * scala_k^2)
-        dal vincolo  =>  w_k = (1/scala_k^2) / Sum_j(1/scala_j^2)
-    Il risultato (peso inversamente proporzionale al QUADRATO della propria
-    incertezza) e' lo stimatore a minima varianza tra tutte le combinazioni
-    lineari non distorte di stime indipendenti (Gauss-Markov) -- non e' un
-    peso scelto a mano, e' quello che il vincolo impone. Un metodo la cui
-    scala si gonfia (es. Chauvenet quando la finestra contiene gia' un
-    outlier, la sua std non e' robusta) viene automaticamente pesato meno,
-    senza bisogno di scartarlo esplicitamente.
+        from the constraint  =>  w_k = (1/scala_k^2) / Sum_j(1/scala_j^2)
+    The result (weight inversely proportional to the SQUARE of its own
+    uncertainty) is the minimum-variance estimator among all unbiased
+    linear combinations of independent estimates (Gauss-Markov) -- it is not a
+    hand-picked weight, it is what the constraint imposes. A method whose
+    scale inflates (e.g. Chauvenet when the window already contains an
+    outlier, its std is not robust) is automatically weighted less,
+    without needing to discard it explicitly.
 
     centro_combinato = Sum(w_k * centro_k)
-    scala_combinata  = 1 / sqrt(Sum(1/scala_k^2))   (la stessa derivazione
-                        da' anche la varianza della combinazione stessa --
-                        SEMPRE piu' stretta di qualunque scala_k singola,
-                        e' la proprieta' che rende utile combinare piu'
-                        stime indipendenti)
+    scala_combinata  = 1 / sqrt(Sum(1/scala_k^2))   (the same derivation
+                        also gives the variance of the combination itself --
+                        ALWAYS narrower than any single scala_k,
+                        it is the property that makes combining several
+                        independent estimates useful)
     pressione        = |x[i] - centro_combinato| / scala_combinata
 
-    Una singola soglia finale (soglia_pressione) decide -- trigger binario,
-    come il resto di questo ecosistema (utility/hybrid_engine.py,
-    dense_evolution/healing.py): mai un terzo stato intermedio, mai un
-    blend tra grezzo e pulito. Non e' piu' un valore "in sigma" nel senso
-    classico (scala_combinata e' piu' stretta di ogni scala_k, quindi la
-    stessa deviazione reale produce una pressione piu' alta che con un
-    singolo metodo) -- soglia_pressione=8.0 e' il default calibrato
-    direttamente (vedi test/test_robust_filters.py): su rumore gaussiano
-    puro (N=300, seed fisso) i percentili della pressione sono
-    50%=1.4, 95%=4.6, 99%=6.0, 99.9%=7.6 -- 8.0 lascia 1/300 falsi
-    positivi mantenendo comunque un vero outlier (pressione~88) e una
-    coppia di outlier ravvicinati (pressione~40) ben sopra soglia con
-    ampio margine. `n_sigmas` resta il parametro del sotto-passo
-    sigma-clipping interno (quante sigma oltre cui un vicino viene escluso
-    nell'iterazione, non la soglia finale).
+    A single final threshold (soglia_pressione) decides -- binary trigger,
+    like the rest of this ecosystem (utility/hybrid_engine.py,
+    dense_evolution/healing.py): never a third intermediate state, never a
+    blend between raw and clean. It is no longer a value "in sigma" in the
+    classical sense (scala_combinata is narrower than every scala_k, so the
+    same real deviation produces a higher pressure than with a
+    single method) -- soglia_pressione=8.0 is the default calibrated
+    directly (see test/test_robust_filters.py): on pure Gaussian noise
+    (N=300, fixed seed) the percentiles of the pressure are
+    50%=1.4, 95%=4.6, 99%=6.0, 99.9%=7.6 -- 8.0 leaves 1/300 false
+    positives while still keeping a true outlier (pressure~88) and a
+    pair of close outliers (pressure~40) well above the threshold with a
+    wide margin. `n_sigmas` remains the parameter of the internal
+    sigma-clipping sub-step (how many sigma beyond which a neighbor is excluded
+    in the iteration, not the final threshold).
 
-    LA MOLLA (JSD): la soglia stessa non e' fissa. Ad ogni punto si confronta
-    la finestra locale (raggio `radius`, la stessa usata dai 4 metodi) con
-    una finestra di riferimento piu' ampia (raggio `radius * ref_mult`,
-    default ref_mult=3 -- la stessa costante di healing_filter.py in questo
-    pacchetto) via la divergenza di Jensen-Shannon (_jensen_shannon, 0..1).
-    Se le due distribuzioni sono simili (rumore stazionario, nessuna vera
-    transizione in corso), JSD~0 e la soglia resta soglia_pressione. Se
-    sono molto diverse (una transizione di regime vera e' in corso: la
-    finestra locale, piu' vicina al nuovo livello, non somiglia piu' alla
-    finestra di riferimento, ancora dominata dal vecchio), JSD sale e la
-    soglia si allarga proporzionalmente:
+    THE SPRING (JSD): the threshold itself is not fixed. At each point the local
+    window (radius `radius`, the same used by the 4 methods) is compared with
+    a wider reference window (radius `radius * ref_mult`,
+    default ref_mult=3 -- the same constant as healing_filter.py in this
+    package) via the Jensen-Shannon divergence (_jensen_shannon, 0..1).
+    If the two distributions are similar (stationary noise, no real
+    transition in progress), JSD~0 and the threshold stays soglia_pressione. If
+    they are very different (a true regime transition is in progress: the
+    local window, closer to the new level, no longer resembles the
+    reference window, still dominated by the old one), JSD rises and the
+    threshold widens proportionally:
         soglia_effettiva[i] = soglia_pressione * (1 + k_molla * JSD[i])
-    "la molla cede" -- lo scudo diventa meno nervoso proprio nei punti dove
-    un cambiamento genuino e' piu' plausibile, senza mai smettere di
-    giudicare in binario (anomalia sopra soglia_effettiva, nient'altro).
+    "the spring yields" -- the shield becomes less nervous exactly at the points where
+    a genuine change is more plausible, without ever ceasing to
+    judge in binary (anomaly above soglia_effettiva, nothing else).
 
-    _jensen_shannon usa gia' n_bins adattivo e smoothing di Laplace (vedi il
-    suo docstring) apposta per questo uso: su finestre piccole, una JSD
-    "ingenua" (bin fissi, epsilon quasi-zero) risultava PIU' alta su rumore
-    stazionario puro che vicino a una vera transizione -- la molla si sarebbe
-    attivata ovunque, non "solo dove serve". Con la versione corretta,
-    verificato su rumore stazionario a bassa ampiezza vs un vero gradino
-    1.0->5.0 (radius=10, k_molla=3.0): soglia_effettiva media ~8.3 sul
-    rumore stazionario, ~8.7-8.8 in prossimita' della transizione (piu'
-    alta, direzione giusta) -- comunque un segnale rumoroso per natura (non
-    separa mai perfettamente le due code), ma la soglia puo' solo ALLARGARSI
-    (JSD >= 0), mai restringersi sotto soglia_pressione: anche nel caso
-    peggiore (molla che si attiva "a sproposito" su rumore), il risultato e'
-    uno scudo leggermente piu' permissivo, mai piu' nervoso.
+    _jensen_shannon already uses adaptive n_bins and Laplace smoothing (see its
+    docstring) precisely for this use: on small windows, a "naive" JSD
+    (fixed bins, near-zero epsilon) came out HIGHER on pure stationary
+    noise than near a true transition -- the spring would have
+    activated everywhere, not "only where needed". With the corrected version,
+    verified on low-amplitude stationary noise vs a true step
+    1.0->5.0 (radius=10, k_molla=3.0): mean soglia_effettiva ~8.3 on
+    stationary noise, ~8.7-8.8 near the transition (higher,
+    right direction) -- still a noisy signal by nature (it never
+    perfectly separates the two tails), but the threshold can only WIDEN
+    (JSD >= 0), never narrow below soglia_pressione: even in the
+    worst case (spring that activates "unnecessarily" on noise), the result is
+    a slightly more permissive shield, never more nervous.
 
-    Nessuna configurazione richiesta dal chiamante oltre i default: pensato
-    per un contesto dove chi legge il risultato non deve scegliere pesi o
-    soglie per metodo, solo leggere `anomalie`/`pressione`. Verificato
-    (test/test_robust_filters.py): pochi falsi positivi su rumore
-    gaussiano puro, rileva un vero outlier con pressione ben sopra soglia,
-    non tocca un gradino genuino sostenuto.
+    No configuration required from the caller beyond the defaults: designed
+    for a context where whoever reads the result must not choose weights or
+    thresholds per method, only read `anomalie`/`pressione`. Verified
+    (test/test_robust_filters.py): few false positives on pure Gaussian
+    noise, detects a true outlier with pressure well above the threshold,
+    does not touch a genuine sustained step.
 
-    LIMITE NOTO, ORA RISOLTO -- mascheramento reciproco tra outlier
-    ravvicinati su una baseline quasi piatta (test/test_pressure_valve_vs_
-    orca_experiment.py, scenario "impulsi alternati" +/-500 su fondo
-    costante 120, zero rumore reale): la finestra locale usata per ogni
-    stima ESCLUDE gia' il punto i stesso (fix applicato qui sotto), ma se
-    altri outlier della stessa esplosione restano nella finestra (qui:
-    raggio 10, 3 picchi entro 2 passi l'uno dall'altro), mediana/IQR e
-    mediana/MAD restano comunque ESATTAMENTE 0 -- non e' un bug della loro
-    implementazione, e' matematicamente corretto: con 18/20 punti della
-    finestra identici, MAD e IQR (breakdown ~50%/~25%) non vedono niente
-    di anomalo. Un M-estimator di Huber (IRLS, vedi Sung et al. 2019,
-    arXiv:1912.04982, usato li' per spettroscopia a 2 qubit con outlier
-    sperimentali) e' stato provato come alternativa e converge ANCH'ESSO a
-    scala 0, per lo stesso motivo di fondo (la sua scala finale e' a sua
-    volta una MAD dei residui). Letto direttamente il paper (non assunto
-    dalla formula): la loro tecnica robusta funziona perche' la scala
-    sigma^2=var(O_tau) viene stimata da MISURE RIPETUTE sullo STESSO punto
-    (rumore di shot, M ripetizioni proiettive), un asse dati ortogonale
-    alla finestra temporale -- non disponibile qui (una singola serie
-    scalare, nessuna ripetizione per punto), quindi la loro soluzione non
-    e' portabile cosi' com'e'.
+    KNOWN LIMIT, NOW RESOLVED -- mutual masking between close
+    outliers on a nearly flat baseline (test/test_pressure_valve_vs_
+    orca_experiment.py, scenario "alternating impulses" +/-500 on a constant
+    120 background, zero real noise): the local window used for each
+    estimate already EXCLUDES point i itself (fix applied below), but if
+    other outliers of the same burst remain in the window (here:
+    radius 10, 3 peaks within 2 steps of each other), median/IQR and
+    median/MAD still stay EXACTLY 0 -- it is not a bug in their
+    implementation, it is mathematically correct: with 18/20 points of the
+    window identical, MAD and IQR (breakdown ~50%/~25%) see nothing
+    anomalous. A Huber M-estimator (IRLS, see Sung et al. 2019,
+    arXiv:1912.04982, used there for 2-qubit spectroscopy with experimental
+    outliers) was tried as an alternative and ALSO converges to
+    scale 0, for the same underlying reason (its final scale is itself a
+    MAD of the residuals). Having read the paper directly (not assumed
+    from the formula): their robust technique works because the scale
+    sigma^2=var(O_tau) is estimated from REPEATED MEASUREMENTS on the SAME point
+    (shot noise, M projective repetitions), a data axis orthogonal
+    to the time window -- not available here (a single
+    scalar series, no repetition per point), so their solution is
+    not portable as it is.
 
-    Provata anche una scala di fallback dalla finestra di riferimento piu'
-    ampia (radius*ref_mult): VERIFICATA NON FUNZIONARE, e per un motivo
-    strutturale, non un errore di implementazione -- allargare la finestra
-    riduce sempre la FRAZIONE di outlier rispetto al totale (3 punti su 21
-    locali = 14%, 3 su 61 di riferimento = 5%), quindi non puo' mai far
-    superare a IQR/MAD (stimatori a breakdown frazionario fisso) la soglia
-    di rottura che li fa collassare a zero: verificato numericamente,
-    entrambe le scale restavano 0.0 anche sulla finestra di riferimento.
+    A fallback scale from the wider reference window (radius*ref_mult)
+    was also tried: VERIFIED NOT TO WORK, and for a structural
+    reason, not an implementation error -- widening the window
+    always reduces the FRACTION of outliers over the total (3 points out of 21
+    local = 14%, 3 out of 61 reference = 5%), so it can never make
+    IQR/MAD (estimators with a fixed fractional breakdown) exceed the breakdown
+    threshold that makes them collapse to zero: verified numerically,
+    both scales stayed 0.0 even on the reference window.
 
-    LA VERA CORREZIONE: quando IQR o MAD collassano davvero a zero
-    (finestra locale genuinamente omogenea) ma il punto i si scosta
-    comunque dalla mediana locale, quello NON e' "nessuna informazione" da
-    scartare -- e' la prova piu' forte possibile (deviazione reale contro
-    dispersione locale nulla). Il bug era scartare questa evidenza insieme
-    allo stimatore degenere. Ora: scala-locale-nulla + deviazione reale =>
-    pressione forzata a infinito (anomalia certa), bypassando la
-    combinazione pesata per quel punto. Verificato: sullo scenario reale
-    "impulsi alternati" (+/-500 su fondo 120 senza rumore), prima del fix
-    pressione ai 3 picchi = 3.16/5.19/3.16 (sotto soglia 8.0, zero
-    anomalie, RMSE=86.6); dopo il fix, tutti e 3 i picchi rilevati,
-    RMSE=0.0. Nessuna regressione: 223/223 test della suite passano,
-    incluso il tasso di falsi positivi su rumore gaussiano puro (invariato)
-    e tutti gli altri 6 scenari del confronto a tre vie.
+    THE REAL CORRECTION: when IQR or MAD truly collapse to zero
+    (genuinely homogeneous local window) but point i still departs
+    from the local median, that is NOT "no information" to
+    discard -- it is the strongest proof possible (real deviation against
+    null local dispersion). The bug was discarding this evidence together with
+    the degenerate estimator. Now: null-local-scale + real deviation =>
+    pressure forced to infinity (certain anomaly), bypassing the
+    weighted combination for that point. Verified: on the real scenario
+    "alternating impulses" (+/-500 on a 120 background without noise), before the fix
+    pressure at the 3 peaks = 3.16/5.19/3.16 (below threshold 8.0, zero
+    anomalies, RMSE=86.6); after the fix, all 3 peaks detected,
+    RMSE=0.0. No regression: 223/223 tests of the suite pass,
+    including the false-positive rate on pure Gaussian noise (unchanged)
+    and all the other 6 scenarios of the three-way comparison.
 
-    Ritorna (pulito, anomalie, pressione, soglia_effettiva): `pressione` e'
-    la deviazione combinata continua per ogni punto, `soglia_effettiva' la
-    soglia realmente applicata in quel punto (>= soglia_pressione, si vede
-    dove/quanto la molla ha ceduto)."""
+    Returns (pulito, anomalie, pressione, soglia_effettiva): `pressione` is
+    the continuous combined deviation for each point, `soglia_effettiva` the
+    threshold actually applied at that point (>= soglia_pressione, it shows
+    where/how much the spring yielded)."""
     x = as_default_array(x)
     n = len(x)
     pressione = np.zeros(n, dtype=get_default_dtype())
@@ -371,14 +371,14 @@ def pressure_valve(
         w_self = _window(x, i, radius)
         if w_self.size < 4:
             continue
-        # Punto i ESCLUSO dalla propria finestra (come gia' faceva solo il
-        # sotto-passo sigma-clipping sotto): includerlo permetteva a un
-        # outlier estremo di gonfiare la propria stessa scala di
-        # riferimento (mascheramento) -- verificato su impulsi isolati
-        # (+/-500 su fondo 120): con la finestra self-inclusive, pressione
-        # massima 4.6 (sotto qualunque soglia, zero anomalie rilevate);
-        # con la finestra esclusiva, l'outlier non contamina piu' la scala
-        # con cui viene giudicato.
+        # Point i EXCLUDED from its own window (as only the sigma-clipping
+        # sub-step below already did): including it allowed an extreme
+        # outlier to inflate its own reference scale
+        # (masking) -- verified on isolated impulses
+        # (+/-500 on a constant 120 background): with the self-inclusive window, maximum
+        # pressure 4.6 (below any threshold, zero anomalies detected);
+        # with the exclusive window, the outlier no longer contaminates the scale
+        # it is judged with.
         w = np.delete(w_self, min(i - max(0, i - radius), w_self.size - 1))
         w_riferimento = _window(x, i, radius * ref_mult)
 
@@ -402,22 +402,22 @@ def pressure_valve(
             centri.append(med)
             scale.append(scaled_mad)
 
-        # Scala-zero-e'-evidenza-certa: se IQR o MAD collassano davvero a
-        # zero (finestra locale genuinamente omogenea, >=25%/>=50% dei
-        # punti identici) MA il punto i si scosta comunque dal centro, non
-        # e' "nessuna informazione" da scartare -- e' la prova piu' forte
-        # possibile (deviazione reale rispetto a dispersione locale nulla).
-        # Il bug del "LIMITE NOTO" originale era proprio scartare questa
-        # evidenza insieme allo stimatore degenere. Non tentato: una scala
-        # di fallback dalla finestra di riferimento piu' ampia (provato e
-        # verificato NON funzionare -- vedi sotto: allargare la finestra
-        # riduce sempre la frazione di outlier, non puo' mai far rivivere
-        # una statistica a breakdown frazionario). Verificato sullo
-        # scenario reale "impulsi alternati" (test/test_pressure_valve_vs_
-        # orca_experiment.py, +/-500 su fondo 120 senza rumore): prima di
-        # questo fix, pressione ai 3 picchi = 3.16/5.19/3.16 (sotto soglia
-        # 8.0, zero anomalie, RMSE=86.6); con questo fix, tutti e 3 i
-        # picchi rilevati, RMSE=0.0.
+        # Zero-scale-is-certain-evidence: if IQR or MAD truly collapse to
+        # zero (genuinely homogeneous local window, >=25%/>=50% of the
+        # points identical) BUT point i still departs from the center, it is not
+        # "no information" to discard -- it is the strongest proof
+        # possible (real deviation against null local dispersion).
+        # The bug of the original "KNOWN LIMIT" was exactly discarding this
+        # evidence together with the degenerate estimator. Not attempted: a
+        # fallback scale from the wider reference window (tried and
+        # verified NOT to work -- see below: widening the window
+        # always reduces the fraction of outliers, it can never revive
+        # a statistic with a fixed fractional breakdown point). Verified on the
+        # real "alternating impulses" scenario (test/test_pressure_valve_vs_
+        # orca_experiment.py, +/-500 on a 120 background without noise): before
+        # this fix, pressure at the 3 peaks = 3.16/5.19/3.16 (below threshold
+        # 8.0, zero anomalies, RMSE=86.6); with this fix, all 3
+        # peaks detected, RMSE=0.0.
         scala_locale_nulla = (iqr_scale <= 1e-12) or (scaled_mad <= 1e-12)
         if scala_locale_nulla and abs(x[i] - med) > 1e-9:
             pressione[i] = float("inf")
@@ -451,7 +451,7 @@ def pressure_valve(
         centri_arr = np.array(centri)
         scale_arr = np.array(scale)
         pesi = (1.0 / scale_arr ** 2)
-        pesi /= pesi.sum()  # w_k = (1/scala_k^2) / Sum_j(1/scala_j^2), dal moltiplicatore di Lagrange
+        pesi /= pesi.sum()  # w_k = (1/scala_k^2) / Sum_j(1/scala_j^2), from the Lagrange multiplier
 
         centro_combinato = float(np.sum(pesi * centri_arr))
         scala_combinata = float(1.0 / np.sqrt(np.sum(1.0 / scale_arr ** 2)))

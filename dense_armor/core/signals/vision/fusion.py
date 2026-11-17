@@ -169,9 +169,9 @@ class FrameJointFusion(Transformer):
         jv = np.array([v for _, v in self._joints])
         if fv.std() < 1e-9 or jv.std() < 1e-9:
             return {"lag_s": 0.0, "correlation": 0.0, "n": len(fv)}
-        # interpoliamo la velocita' del giunto sui tempi dei frame
+        # interpolate the joint velocity on the frame times
         jv_at_f = np.interp(ft, jt, jv)
-        # normalizzo
+        # normalize
         fv_n = (fv - fv.mean()) / (fv.std() + 1e-9)
         jv_n = (jv_at_f - jv_at_f.mean()) / (jv_at_f.std() + 1e-9)
         dt = float(np.median(np.diff(ft))) if len(ft) > 1 else 1.0 / self.frame_rate_hz

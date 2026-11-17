@@ -1,49 +1,48 @@
 """
 utility/streaming.py
 =====================
-Promosso da Dense-Evolution-Discovery (Esperimenti 48-49) dopo
-validazione su due domini fisici reali indipendenti (braccio robotico
-teleoperato SO-101, IMU umano reale UCI HAR) -- stessa disciplina di
-promozione gia' usata per `stable_frame_filter.py`.
+Promoted from Dense-Evolution-Discovery (Experiments 48-49) after
+validation on two independent real physical domains (teleoperated SO-101
+robotic arm, real human IMU UCI HAR) -- same promotion discipline already
+used for `stable_frame_filter.py`.
 
-MOTIVAZIONE: un robot reale gira a 30-100Hz in tempo reale, non puo'
-aspettare un array gia' registrato -- ma leggendo `arbiter.classify_
-segments` riga per riga (non per assunzione) si trova un vincolo reale:
-l'etichetta finale spike/regime guarda `radius` punti AVANTI alla fine
-di una sequenza deviante (righe 178-186 di arbiter.py, il controllo
-"persiste") per decidere se la sequenza si assesta o torna indietro --
-quella meta' non puo' essere streaming a latenza zero. Un vero anello
-di sicurezza robotico non ha comunque bisogno di quella distinzione in
-tempo reale (e' una domanda di triage, risolvibile dopo); ha bisogno
-di "questo punto e' deviante ADESSO" -- esattamente il calcolo per-
-punto di classify_segments PRIMA della logica di lunghezza-sequenza.
-Solo questa meta' viene portata qui.
+MOTIVATION: a real robot runs at 30-100 Hz in real time, it cannot
+wait for an already recorded array -- but reading `arbiter.classify_
+segments` line by line (not by assumption) a real constraint appears:
+the final spike/regime label looks `radius` points AHEAD at the end
+of a deviating run (lines 178-186 of arbiter.py, the "persiste" check)
+to decide whether the run settles or goes back -- that half
+cannot be zero-latency streaming. A real robotic safety loop does not
+need that distinction in real time anyway (it is a triage question,
+solvable afterwards); it needs
+"this point is deviating NOW" -- exactly the per-point computation of
+classify_segments BEFORE the run-length logic.
+Only this half is brought here.
 
-CORRETTEZZA: `StreamingDeviationDetector`, alimentato un punto alla
-volta, deve riprodurre esattamente (bit-per-bit) l'array `deviante`
-interno di `classify_segments` -- verificato su dati reali (non solo
-sintetici) in Dense-Evolution-Discovery prima di questa promozione,
-ri-verificato qui in test/test_streaming.py sulla telemetria reale
-gia' congelata in questo repo (test/agent_v2/telemetry_v2_frozen.jsonl).
+CORRECTNESS: `StreamingDeviationDetector`, fed one point at a
+time, must reproduce exactly (bit for bit) the internal `deviante` array
+of `classify_segments` -- verified on real data (not only
+synthetic) in Dense-Evolution-Discovery before this promotion,
+re-verified here in test/test_streaming.py on the real telemetry
+already frozen in this repo (test/agent_v2/telemetry_v2_frozen.jsonl).
 
-PRESTAZIONI: buffer semplice (deque) che ricalcola mediana/MAD ogni
-passo -- O(span), non una struttura a due heap O(log span). Per le
-finestre gia' usate in tutto questo progetto (10-100 punti), misurato
-a ~18.6kHz sostenibile su hardware reale, oltre 180x il tasso reale di
-un anello di controllo robotico (30-100Hz) -- nessun compromesso di
-prestazioni reale da giustificare con maggiore complessita'.
+PERFORMANCE: a simple buffer (deque) that recomputes median/MAD at every
+step -- O(span), not a two-heap structure O(log span). For the windows
+already used throughout this project (10-100 points), measured at
+~18.6 kHz sustainable on real hardware, over 180x the real rate of a
+robotic control loop (30-100 Hz) -- no real performance trade-off to
+justify with greater complexity.
 
-SUPPORTO MULTI-CANALE: ogni esperimento robotico reale in Dense-
-Evolution-Discovery (le 6 giunture del braccio LeRobot, i piu' assi
-dell'IMU) ha richiesto un ciclo manuale per-canale attorno a funzioni
-pensate per un solo segnale 1D. `classify_segments_multichannel` e
-`MultiChannelStreamingDeviationDetector` applicano la STESSA logica
-per-canale gia' validata, senza richiedere quel ciclo -- ergonomia, non
-un nuovo algoritmo. Ogni canale mantiene la propria finestra di
-riferimento e la propria scala indipendenti per costruzione (un giunto
-veloce e uno quasi fermo hanno scale di rumore naturali molto diverse;
-una scala condivisa desensibilizzerebbe quello lento o darebbe falsi
-allarmi su quello attivo).
+MULTI-CHANNEL SUPPORT: every real robotic experiment in Dense-
+Evolution-Discovery (the 6 joints of the LeRobot arm, the several axes of
+the IMU) required a manual per-channel loop around functions
+designed for a single 1D signal. `classify_segments_multichannel` and
+`MultiChannelStreamingDeviationDetector` apply the SAME per-channel logic
+already validated, without requiring that loop -- ergonomics, not
+a new algorithm. Each channel keeps its own reference window and its own
+scale independent by construction (a fast joint and an almost still one
+have very different natural noise scales; a shared scale would
+desensitize the slow one or give false alarms on the active one).
 """
 from collections import deque
 
@@ -66,19 +65,19 @@ def _feature_value(x, feature):
 
 
 class StreamingDeviationDetector:
-    """Flag di deviazione causale a latenza zero, un punto alla volta --
-    stessa finestra causale (radius*ref_mult), stessa mediana/MAD
-    robusta, stessa regola di baseline degenere di classify_segments'
-    (arbiter.py), NON la distinzione spike/regime (che richiede uno
-    sguardo in avanti, resta una domanda batch/offline per design, non
-    una svista).
+    """Causal zero-latency deviation flag, one point at a time --
+    same causal window (radius*ref_mult), same robust median/MAD,
+    same degenerate-baseline rule as classify_segments'
+    (arbiter.py), NOT the spike/regime distinction (which requires a
+    look ahead, it stays a batch/offline question by design, not
+    an oversight).
 
     Examples
     --------
     >>> det = StreamingDeviationDetector(radius=5, ref_mult=2, n_sigmas=3.0)
     >>> import numpy as np
     >>> rng = np.random.default_rng(0)
-    >>> stream = list(rng.normal(0, 1, 20)) + [50.0]  # un grande outlier alla fine
+    >>> stream = list(rng.normal(0, 1, 20)) + [50.0]  # one large outlier at the end
     >>> flags = [det.update(x) for x in stream]
     >>> flags[-1]
     True
@@ -91,13 +90,13 @@ class StreamingDeviationDetector:
         self.eps = eps
         self._span = radius * ref_mult
         self._buffer = deque(maxlen=self._span)
-        self.last_deviation = 0.0  # informativo, non parte del contratto di correttezza
+        self.last_deviation = 0.0  # informative, not part of the correctness contract
 
     def update(self, x: float) -> bool:
-        """Alimenta un nuovo punto. Ritorna True se DEVIA rispetto alla
-        finestra dei punti strettamente PRECEDENTI (mai includendo se
-        stesso) -- stessa semantica di `_window_causal` in arbiter.py.
-        Un valore non finito non entra nel buffer e non e' deviante."""
+        """Feeds a new point. Returns True if it DEVIATES from the
+        window of the strictly PREVIOUS points (never including
+        itself) -- same semantics as `_window_causal` in arbiter.py.
+        A non-finite value does not enter the buffer and is not deviating."""
         if not np.isfinite(x):
             self.last_deviation = 0.0
             return False
@@ -120,10 +119,10 @@ class StreamingDeviationDetector:
 
 
 class MultiChannelStreamingDeviationDetector:
-    """N istanze indipendenti di `StreamingDeviationDetector`, una per
-    canale -- il flag di ogni canale e' calcolato esattamente come se
-    `StreamingDeviationDetector` girasse su quel canale da solo (i
-    canali non si influenzano mai a vicenda)."""
+    """N independent instances of `StreamingDeviationDetector`, one per
+    channel -- the flag of each channel is computed exactly as if
+    `StreamingDeviationDetector` ran on that channel alone (the
+    channels never influence each other)."""
 
     def __init__(self, n_channels: int, radius: int = 10, ref_mult: int = 3,
                  n_sigmas: float = 3.0, eps: float = 1e-9):
@@ -134,7 +133,7 @@ class MultiChannelStreamingDeviationDetector:
         ]
 
     def update(self, x_vec) -> np.ndarray:
-        """x_vec: lunghezza n_channels. Ritorna array bool (n_channels,)."""
+        """x_vec: length n_channels. Returns a bool array (n_channels,)."""
         x_vec = as_default_array(x_vec).ravel()
         if x_vec.size != self.n_channels:
             raise ValueError(f"attesi {self.n_channels} canali, ricevuti {x_vec.size}")
@@ -145,13 +144,13 @@ def classify_segments_multichannel(
     X: np.ndarray, radius: int = 10, ref_mult: int = 3,
     n_sigmas: float = 3.0, spike_run_max: int = 2, eps: float = 1e-9,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """X: (n_campioni, n_canali). Applica `classify_segments` (arbiter.py)
-    indipendentemente a ogni colonna -- stesso identico risultato per
-    canale che chiamarla singolarmente, solo impilato invece di
-    richiedere un ciclo manuale al chiamante.
+    """X: (n_samples, n_channels). Applies `classify_segments` (arbiter.py)
+    independently to each column -- exactly the same result per
+    channel as calling it individually, only stacked instead of
+    requiring a manual loop from the caller.
 
-    Ritorna (etichette, deviazione, incertezza), ognuno (n_campioni,
-    n_canali)."""
+    Returns (etichette, deviazione, incertezza), each (n_samples,
+    n_channels)."""
     X = as_default_array(X)
     n, c = X.shape
     etichette = np.empty((n, c), dtype=object)

@@ -80,7 +80,7 @@ class FrameQuality(Transformer):
             x.array if hasattr(x, "array") else x
         )
         g = _to_gray(np.asarray(arr))
-        # sharpness: varianza del laplaciano
+        # sharpness: variance of the Laplacian
         lap = (
             -4.0 * g
             + np.roll(g, 1, 0) + np.roll(g, -1, 0)
@@ -90,7 +90,7 @@ class FrameQuality(Transformer):
         exposure = float(g.mean())
         saturated_low = float((g <= 1e-6).mean())
         saturated_high = float((g >= 1 - 1e-6).mean())
-        # rumore: differenza tra il frame e se stesso filtrato con mediana 3x3
+        # noise: difference between the frame and itself filtered with a 3x3 median
         if g.shape[0] >= 3 and g.shape[1] >= 3:
             padded = np.pad(g, 1, mode="edge")
             stacked = np.stack([

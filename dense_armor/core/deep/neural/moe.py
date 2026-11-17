@@ -71,8 +71,8 @@ def _forward_pure_aux(
     n_tokens_local = x.shape[0]
     n_flat = n_tokens_local * top_k
     flat_expert = top_idx.reshape(-1)
-    # segment cumsum: rank 0-based di ogni (token, slot) nel suo esperto.
-    # Il costo dipende da n_flat = n_tokens * top_k, non da n_experts.
+    # segment cumsum: 0-based rank of each (token, slot) in its expert.
+    # The cost depends on n_flat = n_tokens * top_k, not on n_experts.
     order = jnp.argsort(flat_expert, stable=True)
     sorted_exp = flat_expert[order]
     new_seg = jnp.concatenate(

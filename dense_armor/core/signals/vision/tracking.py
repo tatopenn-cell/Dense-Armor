@@ -393,8 +393,8 @@ class MovingObjectTracker(Transformer):
         return out
 
     def _step(self, detections: list) -> dict:
-        # associazione in due round (le predizioni sono calcolate dentro
-        # _associate per ogni track, non serve una lista qui)
+        # two-round association (the predictions are computed inside
+        # _associate for each track, no list is needed here)
         pairs, unmatched_t, unmatched_d = self._associate(
             self._tracks, detections, self.high_score
         )
