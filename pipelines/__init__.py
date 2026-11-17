@@ -23,6 +23,11 @@ Currently available domains:
         intrusion.py           network intrusion detection
         credit_scoring.py      score customers for a telemarketing campaign
 
+    iot/
+        industrial_telemetry_guard.py
+                               spike shield, regime shift and failure
+                               alarm on a machine sensor stream
+
 Each domain gets its own subfolder. Adding a new domain means creating
 a new subfolder here, with the same structure: one file per pipeline,
 one ``__init__.py`` re-exporting the classes.
