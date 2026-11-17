@@ -18,7 +18,8 @@
 
 <h3 align="center">Library of Primitives from__Robot__to__AI__ </h3>
 
-<p align="center"><strong>A low-level learning toolkit on three levels: online learning one sample at a time, deep learning, and machine learning on a whole dataset. With a graph ontology, audio, vision and video, robot motion control, drift and anomaly detection, and finance blocks with a tamper-evident decision log. Built to run inside the loop, and to be defended in front of a reviewer.</strong></p>
+<p align="center"><strong>Composable, low-level primitives for real-time signal processing, physical sensor protection, and continuous learning. Run in microseconds on raw streams across online, deep, and batch ML—with native guards for robotics, audio, vision, and tamper-evident finance. Built to run inside the loop, and to be defended in front of a reviewer.</strong></p>
+
 
 <p align="center">📖 <a href="https://tatopenn-cell.github.io/Dense-Armor/"><strong>Full documentation, API reference, quick guide →</strong></a></p>
 
