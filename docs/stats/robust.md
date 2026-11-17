@@ -371,7 +371,7 @@ page.
 | vector median at `window=3` | `{'q0': 0.11, 'q1': 0.19}` |
 
 The batch comparison against `numpy.percentile` lives in
-`test/stats/test_robust.py` (21 tests, all green).
+`test/core/signals/stats/test_robust.py` (21 tests, all green).
 
 ### The figure on this page
 

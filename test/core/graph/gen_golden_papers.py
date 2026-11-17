@@ -1,7 +1,7 @@
 """Generate the golden files of the paper primitives.
 
 Run once:
-    python test/graph/gen_golden_papers.py
+    python test/core/graph/gen_golden_papers.py
 
 The files are committed. ``test_golden_papers.py`` loads them and checks
 that the current code reproduces them on every platform. Every input is

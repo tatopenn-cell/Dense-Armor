@@ -50,7 +50,7 @@ class AdamW(Adam):
         ``Trainer`` with ``decay="decoupled"`` decays only the arrays with
         two or more dimensions; the two give the same trajectory only when
         every parameter of the model is such an array and the multiplier is
-        the same (our statement, tested in ``test/optim/test_adamw.py``).
+        the same (our statement, tested in ``test/core/online/optim/test_adamw.py``).
 
     Examples:
         >>> import numpy as np

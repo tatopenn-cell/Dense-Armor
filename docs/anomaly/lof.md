@@ -134,7 +134,7 @@ On `learn-on-healthy`, LOF, LODA and Mahalanobis all reach AUC 1.000, and LOF is
 | DriftStream | learn-on-healthy | 0.997 | 0.007 | 1.5000 |
 | DriftStream | learn-on-all | 0.519 | 0.007 | 1.5000 |
 
-In the protection test of `test/protect/test_protected_anomaly_stream.py` the detector is wrapped in an `AnomalyGate` inside a `Protected`, next to a bare `RecursiveLeastSquares` model, on the same arm residuals. LOF flags `100` of the `100` fault samples and the protected model keeps the offset of the healthy phase: `err_prot = 0.0015` against `err_bare = 3.2886` for the model that keeps learning through the fault.
+In the protection test of `test/core/online/protect/test_protected_anomaly_stream.py` the detector is wrapped in an `AnomalyGate` inside a `Protected`, next to a bare `RecursiveLeastSquares` model, on the same arm residuals. LOF flags `100` of the `100` fault samples and the protected model keeps the offset of the healthy phase: `err_prot = 0.0015` against `err_bare = 3.2886` for the model that keeps learning through the fault.
 
 ## Details
 

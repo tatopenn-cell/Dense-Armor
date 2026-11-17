@@ -164,7 +164,7 @@ round(m.predict_one({"a": 1.0, "b": 0.5, "c": 0.3}), 3)
 The model is eq. (3) and eq. (6) of Blondel et al. (2016), page 2. `A_t` is computed with
 Algorithm 1 (page 4) and its gradient with Algorithm 2 (page 4), both in `O(nz(x) t)`. At
 `m = 2` the ANOVA kernel reduces to the plain pairwise FM (test
-`test_m2_equals_plain_fm` in `test/facto/test_hofm.py`).
+`test_m2_equals_plain_fm` in `test/core/online/facto/test_hofm.py`).
 
 ## 7. The four models on a stream with a sudden change
 

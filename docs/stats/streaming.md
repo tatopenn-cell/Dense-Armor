@@ -353,7 +353,7 @@ page.
 | centroids of `TDigest(delta=200)` on 10,000 Gaussian samples | ≤ `200` |
 
 The batch comparison against `numpy.quantile` lives in
-`test/stats/test_quantiles.py` (22 tests, all green).
+`test/core/signals/stats/test_quantiles.py` (22 tests, all green).
 
 ### The figure on this page
 

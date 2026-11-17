@@ -16,7 +16,7 @@ from pipelines.finance.portfolio import (
     run_on_fixtures,
 )
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 FIXTURES = ROOT / "test" / "fixtures" / "finance"
 
 

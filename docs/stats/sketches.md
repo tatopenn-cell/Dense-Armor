@@ -373,7 +373,7 @@ page.
 | `SpaceSaving(k=5)` top item on a stream with one heavy hitter | the heavy hitter, exact count |
 | `SpaceSaving(k=10)` error on the top-10 items | ≥ true count − n/10 |
 
-The tests in `test/stats/test_sketches.py` (27 tests, all green) verify
+The tests in `test/core/signals/stats/test_sketches.py` (27 tests, all green) verify
 these bounds empirically on synthetic streams.
 
 ### The figure on this page

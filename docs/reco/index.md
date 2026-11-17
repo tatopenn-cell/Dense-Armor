@@ -78,7 +78,7 @@ The figure shows the median absolute error on a planted low-rank matrix (`k = 3`
 `0.0053` (in `docs/assets/facto/figures.json` under `recovery.final_median_err`), close to
 the noise floor of `0.01` (dashed line). The recovery is the property the task asks for
 (check 3 of the task), and it is checked by the test
-`test_biased_mf_recovers_planted_low_rank` in `test/reco/test_reco.py`.
+`test_biased_mf_recovers_planted_low_rank` in `test/core/online/reco/test_reco.py`.
 
 ## 4. Plain matrix factorization
 

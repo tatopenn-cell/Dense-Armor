@@ -666,8 +666,8 @@ A skip name matches with or without the `check_` prefix. The call returns `{"run
 
 | estimator | skipped | reason | test that proves the skip |
 |---|---|---|---|
-| `ChauvenetScorer` | `check_roc_auc` | the score is inverted (ROC-AUC 0.0) | `test_chauvenet_skip_is_honored` in `test/anomaly/test_streaming_filters.py` |
-| `PayloadEstimator` | `check_clone`, `check_repr_clone_equal`, `check_clone_drops_learned_state` | the model is a robot and cannot be cloned | `test_clone_skip_is_honoured_for_payload`, `test_repr_clone_equal_skip_is_honoured_for_payload` and `test_clone_drops_learned_state_skip_is_honoured_for_payload` in `test/linear/test_estimator_checks.py` |
+| `ChauvenetScorer` | `check_roc_auc` | the score is inverted (ROC-AUC 0.0) | `test_chauvenet_skip_is_honored` in `test/core/online/anomaly/test_streaming_filters.py` |
+| `PayloadEstimator` | `check_clone`, `check_repr_clone_equal`, `check_clone_drops_learned_state` | the model is a robot and cannot be cloned | `test_clone_skip_is_honoured_for_payload`, `test_repr_clone_equal_skip_is_honoured_for_payload` and `test_clone_drops_learned_state_skip_is_honoured_for_payload` in `test/core/online/linear/test_estimator_checks.py` |
 
 A new skip needs a test of the same kind: it shows that the skip is declared, that `check_estimator` leaves the check out, and, where it can, that the check would fail on that estimator.
 

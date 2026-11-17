@@ -8,7 +8,7 @@ excluding the first 100 for the transient). The last column is the
 median per-sample latency measured with time.perf_counter over the
 whole stream.
 
-Run with: pytest test/linear/test_comparison_table.py -s -v
+Run with: pytest test/core/online/linear/test_comparison_table.py -s -v
 """
 
 import time

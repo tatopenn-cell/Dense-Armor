@@ -62,7 +62,7 @@ class OnlineNewtonStep:
         with lambda, mu > 0.
 
         Convergence on a generic convex problem. Measured on the
-        5-dimensional least-squares problem of test/optim/test_optim.py
+        5-dimensional least-squares problem of test/core/online/optim/test_optim.py
         (A 200x5, w* = [1, -2, 3, 0.5, -1], squared loss), 500 steps,
         max absolute error on the weights:
 

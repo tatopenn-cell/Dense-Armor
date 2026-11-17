@@ -234,7 +234,7 @@ the arm benchmark has 50 % positives after the fault, above that range.
 
 Measured on the arm with the defaults, ROC-AUC is `0.337` with `0.690` false alarms at
 the default threshold; on `DriftStream`, `0.724`. In
-`test/protect/test_protected_anomaly_stream.py` (5 kg payload) the detector flags 16 of
+`test/core/online/protect/test_protected_anomaly_stream.py` (5 kg payload) the detector flags 16 of
 100 faulty samples and the protected model ends worse than the bare one (`err_prot`
 `3.9550`, `err_bare` `3.2886`); the test excludes it for that reason. Table 4 of the
 paper reports ROC-AUC `0.572` to `0.998` for Online-iForest, on the datasets the paper

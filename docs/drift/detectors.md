@@ -192,7 +192,7 @@ One change can be flagged on several consecutive updates. ADWIN drops the oldest
 some cut passes the test; a change that has only just started leaves part of the old regime in the window,
 and the test passes again a few updates later, once more of the new regime has arrived. On a step of 3
 standard deviations, 500 samples into a stream, the first flag comes a few dozen samples after the step and
-the burst ends within 100 samples (`test/drift/test_adwin_alarms.py`). Act on the first flag of a burst, or
+the burst ends within 100 samples (`test/core/online/drift/test_adwin_alarms.py`). Act on the first flag of a burst, or
 start a new detector after it, to get one event per change.
 
 The robot-stream table of section 5 uses this version of ADWIN.

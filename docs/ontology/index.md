@@ -59,7 +59,7 @@ Every number shown in these pages was printed by the code above it, and the figu
 | `causal` | Sharma, Kiciman (2020), arXiv:2011.04216 | the library the estimator calls and its four steps |
 | `provenance`, `dag` | Wang and others (2026), arXiv:2606.04990 (abstract only) | execution provenance as a typed graph of a run |
 
-What is checked against another implementation, in `test/graph/`:
+What is checked against another implementation, in `test/core/graph/`:
 
 | What | Against | Tolerance |
 | --- | --- | --- |
@@ -72,4 +72,4 @@ What is checked against another implementation, in `test/graph/`:
 | topological order | Kahn's algorithm written by hand | exact |
 | `Action.apply` | the classical STRIPS rule on sets of facts: the preconditions are in the state, the new state is the state minus the deleted facts plus the added ones | exact |
 | `structural_change` | values worked out by hand on a small graph | 1e-12 |
-| the whole pipeline | the golden files in `test/graph/golden/`, made by `gen_golden.py` | exact |
+| the whole pipeline | the golden files in `test/core/graph/golden/`, made by `gen_golden.py` | exact |

@@ -8,7 +8,7 @@ import numpy as np
 
 from dense_armor.core.online.drift.detector import CUSUMDriftDetector
 
-HERE = Path(__file__).resolve().parents[2]
+HERE = Path(__file__).resolve().parents[4]
 spec = importlib.util.spec_from_file_location(
     "casper_hours_episodes",
     HERE / "benchmarks" / "casper_hours_episodes.py",

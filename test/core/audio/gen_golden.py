@@ -1,4 +1,4 @@
-"""Writes the golden files of ``test/audio/golden/``. Run it once; the files are committed.
+"""Writes the golden files of ``test/core/audio/golden/``. Run it once; the files are committed.
 
 ``sine_440.wav`` is one second of a 440 Hz sine of amplitude 0.5 at 8 kHz, PCM 16 bits. Every
 other file is the output of one primitive on the samples READ BACK from that file (so the
@@ -6,7 +6,7 @@ quantisation of the PCM is part of the reference). ``test_golden.py`` loads the 
 same primitives and compares with the ``.npy`` files. Changing a file means changing the
 behaviour of a primitive on purpose, and the commit says so.
 
-    python test/audio/gen_golden.py
+    python test/core/audio/gen_golden.py
 """
 
 from pathlib import Path

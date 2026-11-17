@@ -392,9 +392,9 @@ All numbers on this page were produced by running the code:
 | Suite | Result |
 |---|---|
 | `test/roles/` (signal, realtime, uncertainty, safety, physics, agents) | 120 passed |
-| `test/stats/` (Task 02 statistics) | 142 passed |
-| `test/learn/test_online_classifiers.py` | 8 passed |
-| `test/learn/test_calibration.py` (needs the online-learning extra) | 11 passed |
+| `test/core/signals/stats/` (Task 02 statistics) | 142 passed |
+| `test/core/online/learn/test_online_classifiers.py` | 8 passed |
+| `test/core/online/learn/test_calibration.py` (needs the online-learning extra) | 11 passed |
 | ruff check on `dense_armor/checks/`, `dense_armor/roles/` | clean |
 | mypy on the same | clean |
 

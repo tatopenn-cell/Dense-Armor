@@ -7,7 +7,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-SCRIPT = Path(__file__).resolve().parents[2] / "benchmarks" / "neural" / "kv_cache.py"
+SCRIPT = Path(__file__).resolve().parents[4] / "benchmarks" / "neural" / "kv_cache.py"
 
 
 def test_smoke_writes_every_field_and_both_paths_agree(tmp_path):

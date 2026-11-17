@@ -1,7 +1,7 @@
 """Generate the golden files for G1-G4.
 
 Run once:
-    python test/graph/gen_golden.py
+    python test/core/graph/gen_golden.py
 
 The files are committed. ``test_golden.py`` loads them and checks that
 the current code reproduces them. The path of the golden files is

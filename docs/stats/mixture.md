@@ -230,7 +230,7 @@ page, in the session of `benchmarks/statistics_online.py --smoke
 | Bimodal, true modes | -2.0, +2.0 |
 | Median per-sample latency of `learn_one` | 106 µs |
 
-The unit tests on `test/stats/test_mixture.py` (24 tests) check the
+The unit tests on `test/core/signals/stats/test_mixture.py` (24 tests) check the
 density against `scipy.stats.norm.logpdf` for one component within
 `1e-10`, the positive definiteness of every variance, the weights
 summing to one, the `ValueError` on invalid constructor arguments,

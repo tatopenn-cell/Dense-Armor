@@ -411,7 +411,7 @@ page.
 | autocorrelation of the same sine, `lag=10` | close to −1 |
 
 The batch comparison against `numpy.cov` and `numpy.corrcoef` lives in
-`test/stats/test_dependence.py` (23 tests, all green).
+`test/core/signals/stats/test_dependence.py` (23 tests, all green).
 
 ### The figure on this page
 

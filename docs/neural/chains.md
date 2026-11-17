@@ -118,7 +118,7 @@ print(np.asarray(dx).tolist())
 [[42.5, 97.5], [59.5, 136.5]]
 ~~~
 
-The same numbers by hand, step by step: `dW2 = relu(H)^T g = [[70], [102]]` and `db2 = g.sum(axis=0) = [6]`; `dH = g W2^T * mask = [[12.5, 15], [17.5, 21]]`, where the mask is 1 because both entries of `H` are positive; `dW1 = X^T dH = [[65, 78], [95, 114]]` and `db1 = dH.sum(axis=0) = [30, 36]`; and `dx = dH W1^T = [[42.5, 97.5], [59.5, 136.5]]`. The test `test_chain_two_layers_gradient_by_hand` in `test/neural/test_chain.py` checks all five arrays against these numbers within `1e-6`.
+The same numbers by hand, step by step: `dW2 = relu(H)^T g = [[70], [102]]` and `db2 = g.sum(axis=0) = [6]`; `dH = g W2^T * mask = [[12.5, 15], [17.5, 21]]`, where the mask is 1 because both entries of `H` are positive; `dW1 = X^T dH = [[65, 78], [95, 114]]` and `db1 = dH.sum(axis=0) = [30, 36]`; and `dx = dH W1^T = [[42.5, 97.5], [59.5, 136.5]]`. The test `test_chain_two_layers_gradient_by_hand` in `test/core/deep/neural/test_chain.py` checks all five arrays against these numbers within `1e-6`.
 
 ## 3. Branches that merge
 

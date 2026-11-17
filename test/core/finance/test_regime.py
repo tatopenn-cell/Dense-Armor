@@ -14,7 +14,7 @@ from pipelines.finance.regime import (
     synthetic_two_regime,
 )
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 GSPC = ROOT / "test" / "fixtures" / "finance" / "GSPC.csv"
 
 
