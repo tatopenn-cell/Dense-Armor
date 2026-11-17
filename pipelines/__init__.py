@@ -28,6 +28,10 @@ Currently available domains:
                                spike shield, regime shift and failure
                                alarm on a machine sensor stream
 
+    biomedical/
+        ecg_lead_guard.py      loose-lead shield and anomaly score on an
+                               ECG stream
+
 Each domain gets its own subfolder. Adding a new domain means creating
 a new subfolder here, with the same structure: one file per pipeline,
 one ``__init__.py`` re-exporting the classes.
