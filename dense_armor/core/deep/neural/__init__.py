@@ -1,7 +1,7 @@
 """Neural bricks: parameters, initialisations, activations, losses."""
 
-from dense_armor.core.deep.neural.adapter import AsTransformer
-from dense_armor.core.deep.neural.glu import GLUFeedForward
+from dense_armor.core.deep.neural.layers.adapter import AsTransformer
+from dense_armor.core.deep.neural.layers.glu import GLUFeedForward
 from dense_armor.core.deep.neural.layers import (
     Dense,
     Dropout,
@@ -10,9 +10,9 @@ from dense_armor.core.deep.neural.layers import (
     dense_backward,
     dense_forward,
 )
-from dense_armor.core.deep.neural.norm import BatchNorm, LayerNorm
-from dense_armor.core.deep.neural.norm_rms import RMSNorm
-from dense_armor.core.deep.neural.params import Param
+from dense_armor.core.deep.neural.layers.norm import BatchNorm, LayerNorm
+from dense_armor.core.deep.neural.layers.norm_rms import RMSNorm
+from dense_armor.core.deep.neural.layers.params import Param
 
 __all__ = [
     "Param",
@@ -36,8 +36,8 @@ from dense_armor.core.deep.neural.attention import (
     scaled_dot_product_attention_backward,
     sinusoidal_positions,
 )
-from dense_armor.core.deep.neural.chain import Parallel, Sequential
-from dense_armor.core.deep.neural.conv import (
+from dense_armor.core.deep.neural.layers.chain import Parallel, Sequential
+from dense_armor.core.deep.neural.layers.conv import (
     AvgPool1D,
     AvgPool2D,
     Conv1D,
@@ -46,9 +46,9 @@ from dense_armor.core.deep.neural.conv import (
     MaxPool1D,
     MaxPool2D,
 )
-from dense_armor.core.deep.neural.decoder import TransformerDecoderBlock
-from dense_armor.core.deep.neural.generate import generate
-from dense_armor.core.deep.neural.losses_lm import NextTokenLoss, perplexity
+from dense_armor.core.deep.neural.transformer.decoder import TransformerDecoderBlock
+from dense_armor.core.deep.neural.transformer.generate import generate
+from dense_armor.core.deep.neural.losses.losses_lm import NextTokenLoss, perplexity
 from dense_armor.core.deep.neural.models import (
     AddPositions,
     LastStep,
@@ -60,7 +60,7 @@ from dense_armor.core.deep.neural.models import (
     transformer_decoder,
     transformer_encoder,
 )
-from dense_armor.core.deep.neural.recurrent import GRU, LSTM, RNN
+from dense_armor.core.deep.neural.layers.recurrent import GRU, LSTM, RNN
 
 __all__ = list(__all__) + [
     "Parallel",
@@ -98,15 +98,15 @@ __all__ = list(__all__) + [
     "sinusoidal_positions",
 ]
 
-from dense_armor.core.deep.neural.batching import minibatches
-from dense_armor.core.deep.neural.data_parallel import linear_scaling
-from dense_armor.core.deep.neural.schedules import (
+from dense_armor.core.deep.neural.training.batching import minibatches
+from dense_armor.core.deep.neural.training.data_parallel import linear_scaling
+from dense_armor.core.deep.neural.training.schedules import (
     ConstantLR,
     CosineWarmRestarts,
     StepLR,
 )
-from dense_armor.core.deep.neural.stream import DataStream
-from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.deep.neural.training.stream import DataStream
+from dense_armor.core.deep.neural.training.trainer import Trainer
 
 __all__ = list(__all__) + [
     "minibatches",
@@ -118,8 +118,8 @@ __all__ = list(__all__) + [
     "linear_scaling",
 ]
 
-from dense_armor.core.deep.neural.background import BackgroundLearner
-from dense_armor.core.deep.neural.hedge import HedgeNetClassifier
+from dense_armor.core.deep.neural.training.background import BackgroundLearner
+from dense_armor.core.deep.neural.online.hedge import HedgeNetClassifier
 from dense_armor.core.deep.neural.online import (
     OnlineNetClassifier,
     OnlineNetRegressor,
@@ -132,11 +132,11 @@ __all__ = list(__all__) + [
     "OnlineNetRegressor",
 ]
 
-from dense_armor.core.deep.neural.autoencoder import Autoencoder
-from dense_armor.core.deep.neural.matryoshka import MatryoshkaLoss
-from dense_armor.core.deep.neural.online_autoencoder import OnlineAutoencoder
-from dense_armor.core.deep.neural.quantize import VectorQuantizer
-from dense_armor.core.deep.neural.seq2seq import Seq2Seq
+from dense_armor.core.deep.neural.models.autoencoder import Autoencoder
+from dense_armor.core.deep.neural.losses.matryoshka import MatryoshkaLoss
+from dense_armor.core.deep.neural.online.online_autoencoder import OnlineAutoencoder
+from dense_armor.core.deep.neural.models.quantize import VectorQuantizer
+from dense_armor.core.deep.neural.transformer.seq2seq import Seq2Seq
 
 __all__ = list(__all__) + [
     "Autoencoder",
@@ -147,7 +147,7 @@ __all__ = list(__all__) + [
 ]
 
 
-from dense_armor.core.deep.neural.activations_more import (
+from dense_armor.core.deep.neural.layers.activations_more import (
     ELU,
     GELU,
     LeakyReLU,
@@ -164,12 +164,12 @@ __all__ = list(__all__) + [
 ]
 
 
-from dense_armor.core.deep.neural.schedules_more import LinearWarmup, NoamSchedule
+from dense_armor.core.deep.neural.training.schedules_more import LinearWarmup, NoamSchedule
 
 __all__ = list(__all__) + ["LinearWarmup", "NoamSchedule"]
 
 
-from dense_armor.core.deep.neural.convtranspose import (
+from dense_armor.core.deep.neural.layers.convtranspose import (
     ConvTranspose1D,
     ConvTranspose2D,
     Upsample1D,
@@ -184,17 +184,17 @@ __all__ = list(__all__) + [
 ]
 
 
-from dense_armor.core.deep.neural.bidirectional import Bidirectional
+from dense_armor.core.deep.neural.layers.bidirectional import Bidirectional
 
 __all__ = list(__all__) + ["Bidirectional"]
 
 
-from dense_armor.core.deep.neural.norm_more import GroupNorm, InstanceNorm
+from dense_armor.core.deep.neural.layers.norm_more import GroupNorm, InstanceNorm
 
 __all__ = list(__all__) + ["GroupNorm", "InstanceNorm"]
 
 
-from dense_armor.core.deep.neural.conv_more import (
+from dense_armor.core.deep.neural.layers.conv_more import (
     Conv3D,
     DepthwiseConv2D,
     SeparableConv2D,
@@ -207,12 +207,12 @@ __all__ = list(__all__) + [
 ]
 
 
-from dense_armor.core.deep.neural.positions import LearnedPositions
+from dense_armor.core.deep.neural.attention.positions import LearnedPositions
 
 __all__ = list(__all__) + ["LearnedPositions"]
 
 
-from dense_armor.core.deep.neural.losses_more import (
+from dense_armor.core.deep.neural.losses.losses_more import (
     FocalLoss,
     HingeLoss,
     KLDivLoss,
@@ -229,12 +229,12 @@ __all__ = list(__all__) + [
 ]
 
 
-from dense_armor.core.deep.neural.online_vector import OnlineNetVector
+from dense_armor.core.deep.neural.online.online_vector import OnlineNetVector
 
 __all__ = list(__all__) + ["OnlineNetVector"]
 
 
-from dense_armor.core.deep.neural.cross_attention import MultiHeadCrossAttention
+from dense_armor.core.deep.neural.attention.cross_attention import MultiHeadCrossAttention
 
 __all__ = list(__all__) + ["MultiHeadCrossAttention"]
 
@@ -248,8 +248,8 @@ from dense_armor.core.deep.neural.consolidation import (
     TheoreticalBound,
     VQMemory,
 )
-from dense_armor.core.deep.neural.continual import AGEM, EWC, GEM
-from dense_armor.core.deep.neural.generative_replay import DeepGenerativeReplay
+from dense_armor.core.deep.neural.online.continual import AGEM, EWC, GEM
+from dense_armor.core.deep.neural.online.generative_replay import DeepGenerativeReplay
 
 __all__ = list(globals().get("__all__", [])) + [
     "AGEM",
@@ -265,10 +265,12 @@ __all__ = list(globals().get("__all__", [])) + [
     "VQMemory",
 ]
 
-from dense_armor.core.deep.neural.moe import SparseMoE
-from dense_armor.core.deep.neural.test_time import TestTimeCompute
+from dense_armor.core.deep.neural.attention.moe import SparseMoE
+from dense_armor.core.deep.neural.transformer.test_time import TestTimeCompute
 
 __all__ = list(globals().get("__all__", [])) + [
     "SparseMoE",
     "TestTimeCompute",
 ]
+
+from dense_armor.core.deep.neural import _moved  # noqa: E402,F401

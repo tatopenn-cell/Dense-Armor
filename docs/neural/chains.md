@@ -11,9 +11,9 @@ A chain applies its layers in order. The forward pass runs from the first layer 
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.core.deep.neural.chain import Sequential
+from dense_armor.core.deep.neural.layers.chain import Sequential
 from dense_armor.core.deep.neural.layers import Dense
-from dense_armor.core.deep.neural.activations import Relu
+from dense_armor.core.deep.neural.layers.activations import Relu
 
 s = Sequential([Dense(3, 4, jax.random.PRNGKey(0)), Relu(),
                 Dense(4, 2, jax.random.PRNGKey(1))])
@@ -35,7 +35,7 @@ A chain works on a batch and on a single sample with the same `forward` and `bac
 import numpy as np
 import jax
 import jax.numpy as jnp
-from dense_armor.core.deep.neural.chain import Sequential
+from dense_armor.core.deep.neural.layers.chain import Sequential
 from dense_armor.core.deep.neural.layers import Dense
 
 s = Sequential([Dense(3, 2, jax.random.PRNGKey(0))])
@@ -55,7 +55,7 @@ The batch and the single sample give the same output. The gradient has the same 
 import numpy as np
 import jax
 import jax.numpy as jnp
-from dense_armor.core.deep.neural.chain import Sequential
+from dense_armor.core.deep.neural.layers.chain import Sequential
 from dense_armor.core.deep.neural.layers import Dense
 
 s = Sequential([Dense(3, 2, jax.random.PRNGKey(0))])
@@ -89,9 +89,9 @@ The forward pass is `H = X W1 = [[7, 10], [15, 22]]`; the rectifier leaves it un
 import numpy as np
 import jax
 import jax.numpy as jnp
-from dense_armor.core.deep.neural.chain import Sequential
+from dense_armor.core.deep.neural.layers.chain import Sequential
 from dense_armor.core.deep.neural.layers import Dense
-from dense_armor.core.deep.neural.activations import Relu
+from dense_armor.core.deep.neural.layers.activations import Relu
 
 d1 = Dense(2, 2, jax.random.PRNGKey(0))
 d1.W.value = jnp.array([[1.0, 2.0], [3.0, 4.0]])
@@ -118,7 +118,7 @@ print(np.asarray(dx).tolist())
 [[42.5, 97.5], [59.5, 136.5]]
 ~~~
 
-The same numbers by hand, step by step: `dW2 = relu(H)^T g = [[70], [102]]` and `db2 = g.sum(axis=0) = [6]`; `dH = g W2^T * mask = [[12.5, 15], [17.5, 21]]`, where the mask is 1 because both entries of `H` are positive; `dW1 = X^T dH = [[65, 78], [95, 114]]` and `db1 = dH.sum(axis=0) = [30, 36]`; and `dx = dH W1^T = [[42.5, 97.5], [59.5, 136.5]]`. The test `test_chain_two_layers_gradient_by_hand` in `test/core/deep/neural/test_chain.py` checks all five arrays against these numbers within `1e-6`.
+The same numbers by hand, step by step: `dW2 = relu(H)^T g = [[70], [102]]` and `db2 = g.sum(axis=0) = [6]`; `dH = g W2^T * mask = [[12.5, 15], [17.5, 21]]`, where the mask is 1 because both entries of `H` are positive; `dW1 = X^T dH = [[65, 78], [95, 114]]` and `db1 = dH.sum(axis=0) = [30, 36]`; and `dx = dH W1^T = [[42.5, 97.5], [59.5, 136.5]]`. The test `test_chain_two_layers_gradient_by_hand` in `test/core/deep/neural/layers/test_chain.py` checks all five arrays against these numbers within `1e-6`.
 
 ## 3. Branches that merge
 
@@ -127,7 +127,7 @@ A branching sends the same input to several branches and merges the outputs. Wit
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.core.deep.neural.chain import Parallel
+from dense_armor.core.deep.neural.layers.chain import Parallel
 from dense_armor.core.deep.neural.layers import Dense
 
 d1 = Dense(3, 4, jax.random.PRNGKey(0))
@@ -146,7 +146,7 @@ Two branches of width 4, summed, still give a vector of width 4. With `concat` t
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.core.deep.neural.chain import Parallel
+from dense_armor.core.deep.neural.layers.chain import Parallel
 from dense_armor.core.deep.neural.layers import Dense
 
 p = Parallel([Dense(3, 4, jax.random.PRNGKey(0)),

@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from dense_armor.core.deep.neural.attention import MultiHeadSelfAttention
-from dense_armor.core.deep.neural.recurrent import GRU, LSTM
+from dense_armor.core.deep.neural.layers.recurrent import GRU, LSTM
 
 HERE = Path(__file__).resolve().parents[2]
 OUT = HERE / "docs" / "assets" / "neural" / "sequence.png"

@@ -197,11 +197,11 @@ def main():
 
 def measure_archival_forgetting(seeds, n_events=100):
     """Forgetting of a Trainer with ArchivalMemory as replay source vs baseline."""
-    from dense_armor.core.deep.neural.activations import Relu
-    from dense_armor.core.deep.neural.chain import Sequential
+    from dense_armor.core.deep.neural.layers.activations import Relu
+    from dense_armor.core.deep.neural.layers.chain import Sequential
     from dense_armor.core.deep.neural.layers import Dense
     from dense_armor.core.deep.neural.losses import SoftmaxCrossEntropy
-    from dense_armor.core.deep.neural.trainer import Trainer
+    from dense_armor.core.deep.neural.training.trainer import Trainer
     from dense_armor.core.online.optim import Adam
     rows = []
     for seed in seeds:

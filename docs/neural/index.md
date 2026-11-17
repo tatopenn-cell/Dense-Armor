@@ -10,7 +10,7 @@ A parameter is a number the network learns. It holds two arrays: the value, and 
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.core.deep.neural.params import Param
+from dense_armor.core.deep.neural.layers.params import Param
 from dense_armor.core.online.optim.sgd import SGD
 
 p = Param(jnp.array([1.0, 2.0]))
@@ -32,7 +32,7 @@ A weight matrix that starts too large or too small makes the network train badly
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.core.deep.neural.init import he_normal, xavier_normal
+from dense_armor.core.deep.neural.layers.init import he_normal, xavier_normal
 
 k = jax.random.PRNGKey(0)
 wh = he_normal(k, (1024, 1024))
@@ -52,7 +52,7 @@ An activation bends the output of a layer. ReLU keeps the positive part, zeroes 
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.core.deep.neural.activations import relu_forward, relu_backward
+from dense_armor.core.deep.neural.layers.activations import relu_forward, relu_backward
 
 x = jnp.array([-1.0, 0.0, 1.0])
 y = relu_forward(x)
@@ -69,7 +69,7 @@ The softmax turns a vector of logits into probabilities. On a very large number 
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.core.deep.neural.activations import softmax_forward
+from dense_armor.core.deep.neural.layers.activations import softmax_forward
 
 print(softmax_forward(jnp.array([[1000.0, 0.0, -1000.0]])))
 ~~~
@@ -87,7 +87,7 @@ A binary classifier ends with a raw score that can be any finite number, but a d
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.core.deep.neural.activations import Sigmoid
+from dense_armor.core.deep.neural.layers.activations import Sigmoid
 
 s = Sigmoid()
 print(round(float(s.forward(jnp.array(0.0))), 4))
@@ -109,7 +109,7 @@ A tanh has the shape of a sigmoid, shifted down by one half and stretched by two
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.core.deep.neural.activations import Tanh
+from dense_armor.core.deep.neural.layers.activations import Tanh
 
 t = Tanh()
 print(round(float(t.forward(jnp.array(0.0))), 4))
@@ -131,7 +131,7 @@ A classifier that has to choose among `K` classes ends with `K` scores, not with
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.core.deep.neural.activations import Softmax
+from dense_armor.core.deep.neural.layers.activations import Softmax
 
 sm = Softmax()
 print([round(float(v), 4) for v in sm.forward(jnp.array([0.0, 0.0]))])
@@ -153,7 +153,7 @@ A rectified linear unit lets a positive input through and blocks a negative one.
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.core.deep.neural.activations import PRelu
+from dense_armor.core.deep.neural.layers.activations import PRelu
 
 p = PRelu(0.25)
 print(round(float(p.forward(jnp.array(-1.0))), 4))
@@ -286,7 +286,7 @@ The pieces above are only useful if the gradient they compute is the true gradie
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.core.deep.neural.gradcheck import gradcheck
+from dense_armor.core.deep.neural.layers.gradcheck import gradcheck
 
 def f(x):
     return x * x
@@ -306,7 +306,7 @@ The largest relative error is `4e-10`, the precision of the finite difference it
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.core.deep.neural.gradcheck import gradcheck
+from dense_armor.core.deep.neural.layers.gradcheck import gradcheck
 
 def f(x):
     return x * x
@@ -350,7 +350,7 @@ The Glorot uniform initialisation is the distribution that the same paper uses i
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.core.deep.neural.init import glorot_uniform
+from dense_armor.core.deep.neural.layers.init import glorot_uniform
 
 g = glorot_uniform(jax.random.PRNGKey(0), (8, 4))
 print(round(float(jnp.min(g)), 4), round(float(jnp.max(g)), 4))

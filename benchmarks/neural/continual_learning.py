@@ -23,13 +23,13 @@ import jax.numpy as jnp
 import numpy as np
 from scipy.stats import wilcoxon
 
-from dense_armor.core.deep.neural.activations import Relu
-from dense_armor.core.deep.neural.chain import Sequential
-from dense_armor.core.deep.neural.continual import AGEM, EWC, GEM
-from dense_armor.core.deep.neural.generative_replay import DeepGenerativeReplay
+from dense_armor.core.deep.neural.layers.activations import Relu
+from dense_armor.core.deep.neural.layers.chain import Sequential
+from dense_armor.core.deep.neural.online.continual import AGEM, EWC, GEM
+from dense_armor.core.deep.neural.online.generative_replay import DeepGenerativeReplay
 from dense_armor.core.deep.neural.layers import Dense
 from dense_armor.core.deep.neural.losses import SoftmaxCrossEntropy
-from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.deep.neural.training.trainer import Trainer
 from dense_armor.core.online.optim import Adam
 
 

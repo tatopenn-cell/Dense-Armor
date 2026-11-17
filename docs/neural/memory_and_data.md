@@ -11,7 +11,7 @@ The next block serves six samples in batches of four, then serves them again thr
 ```python
 import jax
 import numpy as np
-from dense_armor.core.deep.neural.stream import DataStream
+from dense_armor.core.deep.neural.training.stream import DataStream
 
 X = np.arange(12, dtype=np.float32).reshape(6, 2)
 y = np.arange(6)
@@ -35,8 +35,8 @@ import jax
 import numpy as np
 from dense_armor.core.deep.neural.models import mlp
 from dense_armor.core.deep.neural.losses import MSE
-from dense_armor.core.deep.neural.stream import DataStream
-from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.deep.neural.training.stream import DataStream
+from dense_armor.core.deep.neural.training.trainer import Trainer
 from dense_armor.core.online.optim import SGD
 
 rng = np.random.default_rng(0)
@@ -66,7 +66,7 @@ import jax
 import numpy as np
 from dense_armor.core.deep.neural.models import mlp
 from dense_armor.core.deep.neural.losses import MSE
-from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.deep.neural.training.trainer import Trainer
 from dense_armor.core.online.optim import SGD
 
 rng = np.random.default_rng(0)

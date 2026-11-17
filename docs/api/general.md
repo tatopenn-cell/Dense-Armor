@@ -5603,7 +5603,7 @@ Public methods:
 ### AccumulatingStep
 
 
-*Module:* `dense_armor.core.deep.neural.compiled`
+*Module:* `dense_armor.core.deep.neural.training.compiled`
 *Guide:* [neural/compiled_training.md](../neural/compiled_training.md)
 
 The compiled pieces of a step that accumulates the gradient.
@@ -5625,7 +5625,7 @@ Public methods:
 ### AGEM
 
 
-*Module:* `dense_armor.core.deep.neural.continual`
+*Module:* `dense_armor.core.deep.neural.online.continual`
 *Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
 
 A-GEM (Chaudhry et al. 2019, Eq. 11 p. 5).
@@ -5656,7 +5656,7 @@ Public methods:
 ### AsTransformer
 
 
-*Module:* `dense_armor.core.deep.neural.adapter`
+*Module:* `dense_armor.core.deep.neural.layers.adapter`
 *Bases:* Transformer
 *Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
 
@@ -5681,7 +5681,7 @@ Public methods:
 ### Autoencoder
 
 
-*Module:* `dense_armor.core.deep.neural.autoencoder`
+*Module:* `dense_armor.core.deep.neural.models.autoencoder`
 *Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
 
 An encoder and a decoder, joined end to end.
@@ -5698,7 +5698,7 @@ Public methods:
 ### AvgPool1D
 
 
-*Module:* `dense_armor.core.deep.neural.conv`
+*Module:* `dense_armor.core.deep.neural.layers.conv`
 *Guide:* [neural/vision_layers.md](../neural/vision_layers.md)
 
 1-D average pooling. Input ``(L, c)`` or ``(B, L, c)``.
@@ -5712,7 +5712,7 @@ Public methods:
 ### AvgPool2D
 
 
-*Module:* `dense_armor.core.deep.neural.conv`
+*Module:* `dense_armor.core.deep.neural.layers.conv`
 *Guide:* [neural/vision_layers.md](../neural/vision_layers.md)
 
 2-D average pooling. Input ``(H, W, c)`` or ``(B, H, W, c)``.
@@ -5726,7 +5726,7 @@ Public methods:
 ### BackgroundLearner
 
 
-*Module:* `dense_armor.core.deep.neural.background`
+*Module:* `dense_armor.core.deep.neural.training.background`
 *Guide:* [neural/continuous.md](../neural/continuous.md)
 
 Learn on a worker thread; predict on the last served copy.
@@ -5741,7 +5741,7 @@ Public methods:
 ### BatchNorm
 
 
-*Module:* `dense_armor.core.deep.neural.norm`
+*Module:* `dense_armor.core.deep.neural.layers.norm`
 *Guide:* [neural/layers.md](../neural/layers.md)
 
 Batch normalisation of a 2-D batch ``(m, n_features)``.
@@ -5768,7 +5768,7 @@ Public methods:
 ### Bidirectional
 
 
-*Module:* `dense_armor.core.deep.neural.bidirectional`
+*Module:* `dense_armor.core.deep.neural.layers.bidirectional`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 A forward and a backward recurrent layer, concatenated.
@@ -5782,7 +5782,7 @@ Public methods:
 ### BottleneckFusion
 
 
-*Module:* `dense_armor.core.deep.neural.bottleneck`
+*Module:* `dense_armor.core.deep.neural.attention.bottleneck`
 *Guide:* [neural/composable_attention.md](../neural/composable_attention.md)
 
 One fusion layer of Nagrani et al. 2021, Eq.(7) to Eq.(9).
@@ -5796,7 +5796,7 @@ Public methods:
 ### CompiledStep
 
 
-*Module:* `dense_armor.core.deep.neural.compiled`
+*Module:* `dense_armor.core.deep.neural.training.compiled`
 *Guide:* [neural/compiled_training.md](../neural/compiled_training.md)
 
 The compiled steps of a Trainer.
@@ -5804,7 +5804,7 @@ The compiled steps of a Trainer.
 ### ConstantLR
 
 
-*Module:* `dense_armor.core.deep.neural.schedules`
+*Module:* `dense_armor.core.deep.neural.training.schedules`
 *Guide:* [neural/training.md](../neural/training.md)
 
 A constant learning rate.
@@ -5816,7 +5816,7 @@ Public methods:
 ### Conv1D
 
 
-*Module:* `dense_armor.core.deep.neural.conv`
+*Module:* `dense_armor.core.deep.neural.layers.conv`
 *Guide:* [neural/vision_layers.md](../neural/vision_layers.md)
 
 1-D cross-correlation with zero padding, optional causal shift.
@@ -5832,7 +5832,7 @@ Public methods:
 ### Conv2D
 
 
-*Module:* `dense_armor.core.deep.neural.conv`
+*Module:* `dense_armor.core.deep.neural.layers.conv`
 *Guide:* [neural/vision_layers.md](../neural/vision_layers.md)
 
 2-D cross-correlation with zero padding, channels last.
@@ -5846,7 +5846,7 @@ Public methods:
 ### Conv3D
 
 
-*Module:* `dense_armor.core.deep.neural.conv_more`
+*Module:* `dense_armor.core.deep.neural.layers.conv_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 3-D cross-correlation with zero padding, channels last.
@@ -5860,7 +5860,7 @@ Public methods:
 ### ConvTranspose1D
 
 
-*Module:* `dense_armor.core.deep.neural.convtranspose`
+*Module:* `dense_armor.core.deep.neural.layers.convtranspose`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 1-D transposed convolution, channels last.
@@ -5874,7 +5874,7 @@ Public methods:
 ### ConvTranspose2D
 
 
-*Module:* `dense_armor.core.deep.neural.convtranspose`
+*Module:* `dense_armor.core.deep.neural.layers.convtranspose`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 2-D transposed convolution, channels last.
@@ -5888,7 +5888,7 @@ Public methods:
 ### CosineWarmRestarts
 
 
-*Module:* `dense_armor.core.deep.neural.schedules`
+*Module:* `dense_armor.core.deep.neural.training.schedules`
 *Guide:* [neural/training.md](../neural/training.md)
 
 Cosine annealing with warm restarts.
@@ -5900,7 +5900,7 @@ Public methods:
 ### DataStream
 
 
-*Module:* `dense_armor.core.deep.neural.stream`
+*Module:* `dense_armor.core.deep.neural.training.stream`
 *Guide:* [neural/memory_and_data.md](../neural/memory_and_data.md)
 
 Batches of ``(x, y)`` from arrays, memory-mapped files or a generator.
@@ -5908,7 +5908,7 @@ Batches of ``(x, y)`` from arrays, memory-mapped files or a generator.
 ### DeepGenerativeReplay
 
 
-*Module:* `dense_armor.core.deep.neural.generative_replay`
+*Module:* `dense_armor.core.deep.neural.online.generative_replay`
 *Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
 
 Deep generative replay (Shin et al. 2017, sec. 2.3 p. 3).
@@ -5936,7 +5936,7 @@ Public methods:
 ### DepthwiseConv2D
 
 
-*Module:* `dense_armor.core.deep.neural.conv_more`
+*Module:* `dense_armor.core.deep.neural.layers.conv_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Depthwise 2-D convolution: one square kernel per channel.
@@ -5980,7 +5980,7 @@ Public methods:
 ### ELU
 
 
-*Module:* `dense_armor.core.deep.neural.activations_more`
+*Module:* `dense_armor.core.deep.neural.layers.activations_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 ELU with a scale ``alpha`` (Eq.(15), page 5 of Clevert et al.).
@@ -6007,7 +6007,7 @@ Public methods:
 ### EWC
 
 
-*Module:* `dense_armor.core.deep.neural.continual`
+*Module:* `dense_armor.core.deep.neural.online.continual`
 *Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
 
 Elastic weight consolidation (Kirkpatrick et al. 2017, Eq. 3 p. 3).
@@ -6022,7 +6022,7 @@ Public methods:
 ### Flatten
 
 
-*Module:* `dense_armor.core.deep.neural.conv`
+*Module:* `dense_armor.core.deep.neural.layers.conv`
 *Guide:* [neural/vision_layers.md](../neural/vision_layers.md)
 
 Flatten every axis after the batch axis.
@@ -6036,7 +6036,7 @@ Public methods:
 ### FocalLoss
 
 
-*Module:* `dense_armor.core.deep.neural.losses_more`
+*Module:* `dense_armor.core.deep.neural.losses.losses_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Focal loss ``-alpha_t (1 - p_t)**gamma * log(p_t)``.
@@ -6049,7 +6049,7 @@ Public methods:
 ### GatedCrossAttention
 
 
-*Module:* `dense_armor.core.deep.neural.gated_attention`
+*Module:* `dense_armor.core.deep.neural.attention.gated_attention`
 *Guide:* [neural/composable_attention.md](../neural/composable_attention.md)
 
 Cross-attention gated by a per-query signal.
@@ -6063,7 +6063,7 @@ Public methods:
 ### GELU
 
 
-*Module:* `dense_armor.core.deep.neural.activations_more`
+*Module:* `dense_armor.core.deep.neural.layers.activations_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 GELU (exact or approximate) with a forward and a backward.
@@ -6076,7 +6076,7 @@ Public methods:
 ### GEM
 
 
-*Module:* `dense_armor.core.deep.neural.continual`
+*Module:* `dense_armor.core.deep.neural.online.continual`
 *Guide:* [neural/continual_learning.md](../neural/continual_learning.md)
 
 Gradient Episodic Memory (Lopez-Paz & Ranzato 2017, Eq. 8 QP and Eq. 11 dual, p. 4).
@@ -6090,7 +6090,7 @@ Public methods:
 ### GLUFeedForward
 
 
-*Module:* `dense_armor.core.deep.neural.glu`
+*Module:* `dense_armor.core.deep.neural.layers.glu`
 *Guide:* [neural/modern_blocks.md](../neural/modern_blocks.md)
 
 The feed-forward layer ``(act(x W) * (x V)) W2`` of Shazeer 2020.
@@ -6104,7 +6104,7 @@ Public methods:
 ### GroupNorm
 
 
-*Module:* `dense_armor.core.deep.neural.norm_more`
+*Module:* `dense_armor.core.deep.neural.layers.norm_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Group normalization of the channels of a sample.
@@ -6118,7 +6118,7 @@ Public methods:
 ### GRU
 
 
-*Module:* `dense_armor.core.deep.neural.recurrent`
+*Module:* `dense_armor.core.deep.neural.layers.recurrent`
 *Guide:* [neural/sequence_layers.md](../neural/sequence_layers.md)
 
 GRU layer, Eqs.(5) to (8), page 3 of Cho et al. 2014.
@@ -6134,7 +6134,7 @@ Public methods:
 ### HedgeNetClassifier
 
 
-*Module:* `dense_armor.core.deep.neural.hedge`
+*Module:* `dense_armor.core.deep.neural.online.hedge`
 *Bases:* Classifier
 *Guide:* [neural/continuous.md](../neural/continuous.md)
 
@@ -6162,7 +6162,7 @@ Public methods:
 ### HingeLoss
 
 
-*Module:* `dense_armor.core.deep.neural.losses_more`
+*Module:* `dense_armor.core.deep.neural.losses.losses_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Hinge loss ``max(0, 1 - y * pred)`` for ``y`` in {-1, +1}.
@@ -6188,7 +6188,7 @@ Public methods:
 ### InstanceNorm
 
 
-*Module:* `dense_armor.core.deep.neural.norm_more`
+*Module:* `dense_armor.core.deep.neural.layers.norm_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Instance normalization: one group per channel.
@@ -6202,7 +6202,7 @@ Public methods:
 ### KLDivLoss
 
 
-*Module:* `dense_armor.core.deep.neural.losses_more`
+*Module:* `dense_armor.core.deep.neural.losses.losses_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Kullback-Leibler divergence ``sum_k y_k (log y_k - log p_k)``.
@@ -6215,7 +6215,7 @@ Public methods:
 ### L1Loss
 
 
-*Module:* `dense_armor.core.deep.neural.losses_more`
+*Module:* `dense_armor.core.deep.neural.losses.losses_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Mean absolute error with cached last call.
@@ -6228,7 +6228,7 @@ Public methods:
 ### LabelSmoothingCE
 
 
-*Module:* `dense_armor.core.deep.neural.losses_more`
+*Module:* `dense_armor.core.deep.neural.losses.losses_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Softmax cross-entropy with smoothed labels, cached last call.
@@ -6255,7 +6255,7 @@ Public methods:
 ### LatentCrossAttention
 
 
-*Module:* `dense_armor.core.deep.neural.latent_attention`
+*Module:* `dense_armor.core.deep.neural.attention.latent_attention`
 *Guide:* [neural/composable_attention.md](../neural/composable_attention.md)
 
 Cross-attention whose queries are a learned latent array.
@@ -6269,7 +6269,7 @@ Public methods:
 ### LayerNorm
 
 
-*Module:* `dense_armor.core.deep.neural.norm`
+*Module:* `dense_armor.core.deep.neural.layers.norm`
 *Guide:* [neural/layers.md](../neural/layers.md)
 
 Layer normalisation over the features of each sample.
@@ -6283,7 +6283,7 @@ Public methods:
 ### LeakyReLU
 
 
-*Module:* `dense_armor.core.deep.neural.activations_more`
+*Module:* `dense_armor.core.deep.neural.layers.activations_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Leaky ReLU with a fixed slope (no Param).
@@ -6296,7 +6296,7 @@ Public methods:
 ### LearnedPositions
 
 
-*Module:* `dense_armor.core.deep.neural.positions`
+*Module:* `dense_armor.core.deep.neural.attention.positions`
 *Guide:* [neural/attention.md](../neural/attention.md)
 
 Add a learned vector to each position of a sequence.
@@ -6327,7 +6327,7 @@ Public methods:
 ### LinearWarmup
 
 
-*Module:* `dense_armor.core.deep.neural.schedules_more`
+*Module:* `dense_armor.core.deep.neural.training.schedules_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Linear warmup: ``lr_start`` then a linear ramp to ``lr_end``.
@@ -6339,7 +6339,7 @@ Public methods:
 ### LSTM
 
 
-*Module:* `dense_armor.core.deep.neural.recurrent`
+*Module:* `dense_armor.core.deep.neural.layers.recurrent`
 *Guide:* [neural/sequence_layers.md](../neural/sequence_layers.md)
 
 Vanilla LSTM with peepholes, Greff et al. 2017 pages 1-2.
@@ -6355,7 +6355,7 @@ Public methods:
 ### MatryoshkaLoss
 
 
-*Module:* `dense_armor.core.deep.neural.matryoshka`
+*Module:* `dense_armor.core.deep.neural.losses.matryoshka`
 *Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
 
 The multi-size loss of Matryoshka Representation Learning.
@@ -6371,7 +6371,7 @@ Public methods:
 ### MaxPool1D
 
 
-*Module:* `dense_armor.core.deep.neural.conv`
+*Module:* `dense_armor.core.deep.neural.layers.conv`
 *Guide:* [neural/vision_layers.md](../neural/vision_layers.md)
 
 1-D max pooling with the first maximum going to the gradient.
@@ -6385,7 +6385,7 @@ Public methods:
 ### MaxPool2D
 
 
-*Module:* `dense_armor.core.deep.neural.conv`
+*Module:* `dense_armor.core.deep.neural.layers.conv`
 *Guide:* [neural/vision_layers.md](../neural/vision_layers.md)
 
 2-D max pooling with the first maximum going to the gradient.
@@ -6426,7 +6426,7 @@ Public methods:
 ### MultiHeadCrossAttention
 
 
-*Module:* `dense_armor.core.deep.neural.cross_attention`
+*Module:* `dense_armor.core.deep.neural.attention.cross_attention`
 *Guide:* [neural/composable_attention.md](../neural/composable_attention.md)
 
 Multi-head attention with queries and context from two streams.
@@ -6461,7 +6461,7 @@ Public methods:
 ### NextTokenLoss
 
 
-*Module:* `dense_armor.core.deep.neural.losses_lm`
+*Module:* `dense_armor.core.deep.neural.losses.losses_lm`
 *Guide:* [neural/decoder_lm.md](../neural/decoder_lm.md)
 
 Cross-entropy of the logits at ``t`` against the token at ``t+1``.
@@ -6474,7 +6474,7 @@ Public methods:
 ### NoamSchedule
 
 
-*Module:* `dense_armor.core.deep.neural.schedules_more`
+*Module:* `dense_armor.core.deep.neural.training.schedules_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Noam schedule: linear warmup then inverse-square-root decay.
@@ -6486,7 +6486,7 @@ Public methods:
 ### OnlineAutoencoder
 
 
-*Module:* `dense_armor.core.deep.neural.online_autoencoder`
+*Module:* `dense_armor.core.deep.neural.online.online_autoencoder`
 *Bases:* AnomalyDetector
 *Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
 
@@ -6564,7 +6564,7 @@ Public methods:
 ### OnlineNetVector
 
 
-*Module:* `dense_armor.core.deep.neural.online_vector`
+*Module:* `dense_armor.core.deep.neural.online.online_vector`
 *Bases:* Regressor
 *Guide:* [neural/deep.md](../neural/deep.md)
 
@@ -6589,7 +6589,7 @@ Public methods:
 ### Parallel
 
 
-*Module:* `dense_armor.core.deep.neural.chain`
+*Module:* `dense_armor.core.deep.neural.layers.chain`
 *Guide:* [neural/chains.md](../neural/chains.md)
 
 Several branches on the same input, merged on the output.
@@ -6604,7 +6604,7 @@ Public methods:
 ### Param
 
 
-*Module:* `dense_armor.core.deep.neural.params`
+*Module:* `dense_armor.core.deep.neural.layers.params`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 A jax array with a gradient of the same shape and dtype.
@@ -6632,7 +6632,7 @@ Public methods:
 ### PRelu
 
 
-*Module:* `dense_armor.core.deep.neural.activations`
+*Module:* `dense_armor.core.deep.neural.layers.activations`
 *Guide:* [neural/index.md](../neural/index.md)
 
 PReLU with ``a`` as a ``Param``; ``backward`` fills ``a.grad``.
@@ -6646,7 +6646,7 @@ Public methods:
 ### Relu
 
 
-*Module:* `dense_armor.core.deep.neural.activations`
+*Module:* `dense_armor.core.deep.neural.layers.activations`
 *Guide:* [neural/chains.md](../neural/chains.md)
 
 ReLU: ``forward`` caches ``x`` and ``y``; ``backward`` returns ``dx``.
@@ -6691,7 +6691,7 @@ Public methods:
 ### RMSNorm
 
 
-*Module:* `dense_armor.core.deep.neural.norm_rms`
+*Module:* `dense_armor.core.deep.neural.layers.norm_rms`
 *Guide:* [neural/modern_blocks.md](../neural/modern_blocks.md)
 
 RMS layer normalisation over the features of each sample.
@@ -6705,7 +6705,7 @@ Public methods:
 ### RNN
 
 
-*Module:* `dense_armor.core.deep.neural.recurrent`
+*Module:* `dense_armor.core.deep.neural.layers.recurrent`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Elman recurrent layer ``h = tanh(W x + U h_prev + b)``.
@@ -6721,7 +6721,7 @@ Public methods:
 ### RotaryDecoder
 
 
-*Module:* `dense_armor.core.deep.neural.rotary_decoder`
+*Module:* `dense_armor.core.deep.neural.transformer.rotary_decoder`
 *Guide:* [neural/rotary_decoder.md](../neural/rotary_decoder.md)
 
 ``Embedding``, ``n_layers`` modern blocks, ``RMSNorm`` and a ``Dense`` head.
@@ -6738,7 +6738,7 @@ Public methods:
 ### RotaryDecoderBlock
 
 
-*Module:* `dense_armor.core.deep.neural.rotary_decoder`
+*Module:* `dense_armor.core.deep.neural.transformer.rotary_decoder`
 *Guide:* [neural/rotary_decoder.md](../neural/rotary_decoder.md)
 
 Pre-norm decoder block: ``x + Attn(RMSNorm(x))``, then ``+ FFN(RMSNorm(.))``.
@@ -6754,7 +6754,7 @@ Public methods:
 ### SeparableConv2D
 
 
-*Module:* `dense_armor.core.deep.neural.conv_more`
+*Module:* `dense_armor.core.deep.neural.layers.conv_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Separable 2-D convolution: depthwise then pointwise.
@@ -6768,7 +6768,7 @@ Public methods:
 ### Seq2Seq
 
 
-*Module:* `dense_armor.core.deep.neural.seq2seq`
+*Module:* `dense_armor.core.deep.neural.transformer.seq2seq`
 *Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
 
 A recurrent encoder, a recurrent decoder, a dense head.
@@ -6782,7 +6782,7 @@ Public methods:
 ### Sequential
 
 
-*Module:* `dense_armor.core.deep.neural.chain`
+*Module:* `dense_armor.core.deep.neural.layers.chain`
 *Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
 
 A chain of layers, applied in order.
@@ -6800,7 +6800,7 @@ Public methods:
 ### Sigmoid
 
 
-*Module:* `dense_armor.core.deep.neural.activations`
+*Module:* `dense_armor.core.deep.neural.layers.activations`
 *Guide:* [neural/index.md](../neural/index.md)
 
 Sigmoid: ``forward`` caches ``x`` and ``y``; ``backward`` returns ``dx``.
@@ -6813,7 +6813,7 @@ Public methods:
 ### SiLU
 
 
-*Module:* `dense_armor.core.deep.neural.activations_more`
+*Module:* `dense_armor.core.deep.neural.layers.activations_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 SiLU: ``x * sigmoid(x)``.
@@ -6826,7 +6826,7 @@ Public methods:
 ### Softmax
 
 
-*Module:* `dense_armor.core.deep.neural.activations`
+*Module:* `dense_armor.core.deep.neural.layers.activations`
 *Guide:* [neural/index.md](../neural/index.md)
 
 Softmax over the last axis: ``forward`` caches ``x`` and ``y``; ``backward`` returns ``dx``.
@@ -6851,7 +6851,7 @@ Public methods:
 ### Softplus
 
 
-*Module:* `dense_armor.core.deep.neural.activations_more`
+*Module:* `dense_armor.core.deep.neural.layers.activations_more`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Softplus with a scale ``beta``.
@@ -6864,7 +6864,7 @@ Public methods:
 ### SparseMoE
 
 
-*Module:* `dense_armor.core.deep.neural.moe`
+*Module:* `dense_armor.core.deep.neural.attention.moe`
 *Guide:* [neural/moe_testtime.md](../neural/moe_testtime.md)
 
 Sparse mixture of experts with dispatch.
@@ -6881,7 +6881,7 @@ Public methods:
 ### StepLR
 
 
-*Module:* `dense_armor.core.deep.neural.schedules`
+*Module:* `dense_armor.core.deep.neural.training.schedules`
 *Guide:* [neural/training.md](../neural/training.md)
 
 Step schedule: ``lr * gamma ** floor(epoch / step)``.
@@ -6893,7 +6893,7 @@ Public methods:
 ### Tanh
 
 
-*Module:* `dense_armor.core.deep.neural.activations`
+*Module:* `dense_armor.core.deep.neural.layers.activations`
 *Guide:* [neural/index.md](../neural/index.md)
 
 Tanh: ``forward`` caches ``x`` and ``y``; ``backward`` returns ``dx``.
@@ -6906,7 +6906,7 @@ Public methods:
 ### TestTimeCompute
 
 
-*Module:* `dense_armor.core.deep.neural.test_time`
+*Module:* `dense_armor.core.deep.neural.transformer.test_time`
 *Guide:* [neural/moe_testtime.md](../neural/moe_testtime.md)
 
 Test-time compute wrapper.
@@ -6933,7 +6933,7 @@ Public methods:
 ### Trainer
 
 
-*Module:* `dense_armor.core.deep.neural.trainer`
+*Module:* `dense_armor.core.deep.neural.training.trainer`
 *Guide:* [neural/training.md](../neural/training.md)
 
 Train a model on a dataset, with mini-batches and schedules.
@@ -6963,7 +6963,7 @@ Public methods:
 ### TransformerDecoderBlock
 
 
-*Module:* `dense_armor.core.deep.neural.decoder`
+*Module:* `dense_armor.core.deep.neural.transformer.decoder`
 *Guide:* [neural/decoder_lm.md](../neural/decoder_lm.md)
 
 One decoder layer of Vaswani et al. 2017.
@@ -6977,7 +6977,7 @@ Public methods:
 ### Upsample1D
 
 
-*Module:* `dense_armor.core.deep.neural.convtranspose`
+*Module:* `dense_armor.core.deep.neural.layers.convtranspose`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Nearest-neighbour upsampling along the length, channels last.
@@ -6991,7 +6991,7 @@ Public methods:
 ### Upsample2D
 
 
-*Module:* `dense_armor.core.deep.neural.convtranspose`
+*Module:* `dense_armor.core.deep.neural.layers.convtranspose`
 *Guide:* [neural/deep.md](../neural/deep.md)
 
 Nearest-neighbour upsampling along both spatial axes, channels last.
@@ -7005,7 +7005,7 @@ Public methods:
 ### VectorQuantizer
 
 
-*Module:* `dense_armor.core.deep.neural.quantize`
+*Module:* `dense_armor.core.deep.neural.models.quantize`
 *Guide:* [neural/encoder_decoder.md](../neural/encoder_decoder.md)
 
 Nearest-code quantizer with the straight-through gradient.

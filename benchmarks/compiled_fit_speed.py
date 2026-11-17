@@ -20,7 +20,7 @@ import jax
 
 from dense_armor.core.deep.neural.losses import MSE
 from dense_armor.core.deep.neural.models import mlp, transformer_encoder
-from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.deep.neural.training.trainer import Trainer
 from dense_armor.core.online.optim import SGD
 
 SESSIONS = 3

@@ -30,10 +30,10 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from dense_armor.core.deep.neural.activations import Relu
-from dense_armor.core.deep.neural.chain import Sequential
-from dense_armor.core.deep.neural.continual import AGEM, EWC, GEM
-from dense_armor.core.deep.neural.generative_replay import DeepGenerativeReplay
+from dense_armor.core.deep.neural.layers.activations import Relu
+from dense_armor.core.deep.neural.layers.chain import Sequential
+from dense_armor.core.deep.neural.online.continual import AGEM, EWC, GEM
+from dense_armor.core.deep.neural.online.generative_replay import DeepGenerativeReplay
 from dense_armor.core.deep.neural.layers import Dense
 from dense_armor.core.deep.neural.losses import SoftmaxCrossEntropy
 from dense_armor.core.online.optim import Adam
