@@ -1,6 +1,6 @@
 """
-utility/arbiter.py
-===================
+core/online/protect/arbiter.py
+==============================
 Routes each point to the right specialist instead of forcing a single one
 on the whole signal -- born from the real comparison in
 test/test_pressure_valve_vs_orca_experiment.py: hybrid_shield (phi_ab)
@@ -44,7 +44,7 @@ with route_and_correct standalone), but it was an artifact: the raw data
 of that scenario already coincide EXACTLY with the target (the
 "corruption" is the jump itself, not added noise), so "pass everything
 raw" gives RMSE 0 regardless of how each point is labelled -- the real
-test was the integrated Orca pipeline (utility/orca.py,
+test was the integrated Orca pipeline (core/online/protect/orca.py,
 _applica_arbitro), where the missed detection translated into SAFE but
 not improving behaviour (9.4007 identical with or without the arbiter).
 With the CAUSAL window (above), detection becomes real and verifiable:
@@ -54,6 +54,8 @@ drops from 9.4007 (default) to 6.0449 (use_arbiter=True) -- a real
 improvement, no longer a tie. See test/test_arbiter_orca_integration.py
 for the full verification on the 7 scenarios with this fix.
 """
+
+from collections import deque
 
 import numpy as np
 
@@ -93,6 +95,9 @@ def classify_segments(
     """
     Returns (etichette, deviazione, incertezza):
       etichette   -- array of strings 'clean'/'spike'/'regime', one per point.
+                     A non-finite point is 'clean' and is left out of the
+                     reference windows of the following points, as in
+                     StreamingDeviationDetector.
       deviazione  -- |x[i] - reference| / scale (or only |x[i]-reference|
                      if the scale is degenerate), same unit for every point.
       incertezza  -- 0..1, how close the point is to the decision boundary
@@ -107,8 +112,12 @@ def classify_segments(
     scarto_normalizzato = np.zeros(n, dtype=get_default_dtype())  # |dev|/threshold, for the uncertainty
     med_rif = np.zeros(n, dtype=get_default_dtype())  # median of the reference window, per point
 
+    finite_seen: deque = deque(maxlen=radius * ref_mult)
     for i in range(n):
-        w_rif = _window_causal(x, i, radius * ref_mult)
+        if not np.isfinite(x[i]):
+            continue
+        w_rif = np.array(finite_seen, dtype=x.dtype)
+        finite_seen.append(x[i])
         if w_rif.size < 4:
             continue
         med, scala = _robust_center_scale(w_rif)
@@ -173,8 +182,10 @@ def classify_segments(
             # check scenario C stayed at RMSE 20.8 instead of ~0
             # (mistaken for a regime, passed raw instead of rejected).
             post_lo, post_hi = j, min(n, j + radius)
-            if post_hi > post_lo:
-                post_med = float(np.median(x[post_lo:post_hi]))
+            post_vals = x[post_lo:post_hi]
+            post_vals = post_vals[np.isfinite(post_vals)]
+            if post_vals.size:
+                post_med = float(np.median(post_vals))
                 run_med = float(np.median(run_vals))
                 persiste = abs(post_med - run_med) < abs(post_med - med_rif[i])
             else:
@@ -214,6 +225,8 @@ def route_and_correct(
     for i in range(n):
         if etichette[i] == "spike":
             w_rif = _window(x, i, radius * ref_mult)
-            pulito[i] = float(np.median(w_rif))
+            w_rif = w_rif[np.isfinite(w_rif)]
+            if w_rif.size:
+                pulito[i] = float(np.median(w_rif))
 
     return pulito, etichette, incertezza

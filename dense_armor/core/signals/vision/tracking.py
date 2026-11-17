@@ -6,11 +6,13 @@ The tracker works in two steps, both in numpy, both causal:
   the last few frames) and flags the pixels whose absolute difference
   from the background is more than ``n_sigmas`` times the robust scale
   of that difference. The mask is cleaned with a small morphological
-  open and grouped into connected components; every component becomes a
-  bounding box. No labels, no pretrained network, no assumption about
+  erosion (the boxes are one pixel smaller on each side) and grouped into
+  connected components; every component becomes a bounding box. The
+  background is fed by ``learn_one``: call it after ``transform_one``. No labels, no pretrained network, no assumption about
   the content: only "this pixel changed".
 - a **Kalman filter** per track predicts the box of the next frame
-  (constant velocity, then constant acceleration) and the association
+  (constant velocity; a track that is not matched is extrapolated one
+  more step for every missed frame) and the association
   matches predicted boxes to detected boxes. Following the ByteTrack
   idea (Ma et al. 2023), the association has two rounds: the first
   matches the detections with a high score to the tracks, the second
@@ -103,6 +105,10 @@ class _Track:
         self.score = float(score)
         self.missing = 0
         self.kf = kf
+        x0 = np.array(self.kf.x0, copy=True)
+        if x0.size >= 4:
+            x0[:4] = [box[0], box[1], box[2] - box[0], box[3] - box[1]]
+            self.kf.x0 = x0
         self.kf.learn_one({
             "a": float(box[0]),
             "b": float(box[1]),
@@ -111,7 +117,9 @@ class _Track:
         })
 
     def predict(self) -> np.ndarray:
-        p = self.kf.predict_one({})
+        state = as_default_array(self.kf.predict_one({})).reshape(-1)
+        steps = 1 + self.missing
+        p = np.linalg.matrix_power(self.kf.F, steps) @ state
         p = as_default_array(p).reshape(-1)
         x0, y0, w, h = p[0], p[1], p[2], p[3]
         return np.array([x0, y0, x0 + w, y0 + h])
@@ -204,7 +212,7 @@ class MovingObjectTracker(Transformer):
         True
     """
 
-    memory_class = "O(n_tracks * n_frames_bg)"
+    memory_class = "O(history * HW)"
 
     def __init__(
         self,
@@ -271,15 +279,10 @@ class MovingObjectTracker(Transformer):
         if mask.sum() == 0:
             return []
         eroded = mask.copy()
-        for y in range(1, mask.shape[0] - 1):
-            for x in range(1, mask.shape[1] - 1):
-                if not mask[y, x]:
-                    continue
-                if (mask[y - 1, x] and mask[y + 1, x] and
-                        mask[y, x - 1] and mask[y, x + 1]):
-                    eroded[y, x] = True
-                else:
-                    eroded[y, x] = False
+        eroded[1:-1, 1:-1] = (
+            mask[1:-1, 1:-1] & mask[:-2, 1:-1] & mask[2:, 1:-1]
+            & mask[1:-1, :-2] & mask[1:-1, 2:]
+        )
         return _components(eroded, self.min_area)
 
     def _associate(self, tracks, detections, hi_thresh) -> tuple[list, list, list]:
@@ -404,14 +407,14 @@ class MovingObjectTracker(Transformer):
             self._tracks[ti].update(det[:4], score)
         for ti in unmatched_t:
             self._tracks[ti].missing += 1
-        # nuove tracce
+        # new tracks
         for di in unmatched_d:
             det = detections[di]
             score = det[2] if len(det) > 2 else 1.0
             tr = _Track(self._next_id, det[:4], score, self.kf_factory())
             self._tracks.append(tr)
             self._next_id += 1
-        # scarta quelle troppo vecchie
+        # drop the tracks that have been missing for too long
         self._tracks = [t for t in self._tracks if t.missing <= self.max_missing]
         return {
             "tracks": [

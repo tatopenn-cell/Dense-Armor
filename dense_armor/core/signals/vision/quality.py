@@ -11,9 +11,9 @@ detector sees it. This module answers three questions:
   median filter.
 - :class:`Sync` estimates the clock offset between two streams that
   share the same physical event (two cameras, a camera and a sensor).
-  The offset is estimated from a cross-correlation of the feature
-  differences of the two streams, then applied to one of them so the
-  timestamps align.
+  The offset is estimated from a cross-correlation of the two signals,
+  resampled on a common time grid. The class only estimates: the
+  caller applies the offset to the timestamps of one stream.
 - :class:`EventFrame` accumulates an event stream ``(t, x, y, polarity)``
   into a frame: each event adds ``+1`` at its pixel for positive
   polarity and ``-1`` for negative, and the accumulated frame is
@@ -41,6 +41,10 @@ def _to_gray(img: np.ndarray) -> np.ndarray:
 
 class FrameQuality(Transformer):
     """Per-frame sharpness, exposure, noise and difficulty flags.
+
+    The frames are expected as floats in ``[0, 1]``: the saturation flags
+    and the thresholds below use that range (a ``uint8`` frame in
+    ``[0, 255]`` has to be divided by 255 first).
 
     Args:
         black_std: standard deviation below which a frame is flagged
@@ -81,10 +85,11 @@ class FrameQuality(Transformer):
         )
         g = _to_gray(np.asarray(arr))
         # sharpness: variance of the Laplacian
+        pg = np.pad(g, 1, mode="edge")
         lap = (
             -4.0 * g
-            + np.roll(g, 1, 0) + np.roll(g, -1, 0)
-            + np.roll(g, 1, 1) + np.roll(g, -1, 1)
+            + pg[:-2, 1:-1] + pg[2:, 1:-1]
+            + pg[1:-1, :-2] + pg[1:-1, 2:]
         )
         sharpness = float(lap.var())
         exposure = float(g.mean())
@@ -123,7 +128,11 @@ class FrameQuality(Transformer):
 
 
 class Sync(Transformer):
-    """Estimate and apply the clock offset between two streams.
+    """Estimate the clock offset between two streams.
+
+    ``estimate()`` returns ``offset_s`` as ``t_b - t_a``: a positive value
+    means that the timestamps of stream ``b`` are ahead of those of
+    stream ``a``. The class does not shift any timestamp.
 
     Args:
         window: number of paired samples used for the cross-correlation.
@@ -223,12 +232,17 @@ class Sync(Transformer):
 class EventFrame(Transformer):
     """Accumulate an event stream into a frame, one event at a time.
 
+    ``transform_one`` returns the accumulated frame, the time of the last
+    event, and ``n_events``, the number of events added since the previous
+    call (events of opposite polarity on one pixel cancel in the frame,
+    not in the count).
+
     Args:
         shape: ``(H, W)`` of the output frame. Default ``(64, 64)``.
-        decay: at every new frame the accumulator is multiplied by this
-            value before the events are added. ``1.0`` keeps every event
-            seen, useful for a fixed window; ``0.0`` clears the frame.
-            Default ``0.9``.
+        decay: after every frame returned by ``transform_one`` the
+            accumulator is multiplied by this value. ``1.0`` keeps every
+            event seen, useful for a fixed window; ``0.0`` clears the
+            frame. Default ``0.9``.
 
     Raises:
         ValueError: on a shape that is not two positive integers.
@@ -255,10 +269,12 @@ class EventFrame(Transformer):
         self.decay = float(decay)
         self._frame: np.ndarray | None = None
         self._last_t: float = 0.0
+        self._n_events: int = 0
 
     def _reset(self) -> None:
         self._frame = None
         self._last_t = 0.0
+        self._n_events = 0
 
     def _unit_test_skips(self) -> set:
         return set()
@@ -284,6 +300,7 @@ class EventFrame(Transformer):
                 self._frame = np.zeros(self.shape, dtype=np.float32)
             if 0 <= ey < self.shape[0] and 0 <= ex < self.shape[1]:
                 self._frame[ey, ex] += 1.0 if pol > 0 else -1.0
+                self._n_events += 1
             self._last_t = tt
         return self
 
@@ -291,8 +308,7 @@ class EventFrame(Transformer):
         if self._frame is None:
             self._frame = np.zeros(self.shape, dtype=np.float32)
         out = self._frame.copy()
-        if self.decay < 1.0:
-            self._frame = self._frame * self.decay
-        else:
-            self._frame = np.zeros(self.shape, dtype=np.float32)
-        return {"frame": out, "t": self._last_t, "n_events": int(np.abs(out).sum())}
+        self._frame = self._frame * self.decay
+        n_events = self._n_events
+        self._n_events = 0
+        return {"frame": out, "t": self._last_t, "n_events": n_events}

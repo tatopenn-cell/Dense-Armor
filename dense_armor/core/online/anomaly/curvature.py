@@ -2,13 +2,14 @@ import jax
 import jax.numpy as jnp
 
 
-# Versione ottimizzata ad altissima densità matematica (XLA-Fused)
+# Optimized version with a very high mathematical density (XLA-fused)
 @jax.jit
 def curvature(x_current: jnp.ndarray, x_reference: jnp.ndarray, scale: float = 1.0, delta: float = 1e-6) -> jnp.ndarray:
     """
     It is not a differential curvature: it is the monotonic saturation
     `sqrt(g + delta) / sqrt(1 + g + delta)` of the squared norm `g` of the analytic
-    gradient of `sum((x - ref)^2) / scale`, a proximity indicator in [0, 1).
+    gradient of `sum((x - ref)^2) / scale`, a distance indicator in [0, 1): about
+    0.001 at the reference, growing towards 1 as `x` moves away from it.
     The name `curvature` stays for compatibility with the already published APIs.
     It removes the tracing overhead of jax.grad while keeping numerical invariance.
 

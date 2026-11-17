@@ -16,10 +16,11 @@ joint readings are Signals too. This module aligns them.
   maximises the correlation between the two is the estimated latency.
   The estimate is causal, kept in a small ring buffer.
 
-The paper that the tracker uses for the adaptive noise of the Kalman
-filter is the same one that the fusion uses to keep the latency estimate
-stable over time; see the module docstring of
-:mod:`dense_armor.core.signals.vision.tracking`.
+The estimate is a plain cross-correlation over a sliding window, with no
+smoothing over time. Only lags of zero or more are searched (video behind
+the joints), and the lag is a whole number of frames. Each stream needs at
+least 8 samples inside the window, so ``window_s * frame_rate_hz`` should be
+at least 8: with fewer, ``estimate()`` always returns a lag of 0.
 """
 
 from collections import deque
