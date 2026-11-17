@@ -114,7 +114,35 @@ Alert episodes: 180; starting between 35 s and 50 s: [36.68 36.69 36.87 36.91 37
 | Alerts | 1157 samples, 180 episodes | 1.07% of the stream |
 | Time | 1.2 ms per sample | On one run, Windows |
 
-The shield does what the table says: all the injected faults are blocked and nothing else is. The alerts are a different matter. The threshold is the 0.992 quantile of the recent scores, so about 0.8% of the samples are above it whatever the signal. The 1.07% measured is of that order, and it says nothing about arrhythmias. In the zoom, one alert starts at 42.36 s, on the rising edge of the tall wave that follows (the signal reaches 3.65 mV there); most of the other alerts of the zoom fall on ordinary beats. The page does not say what the wave at 42.4 s is, because the dataset of scipy has no beat annotations, and there is no AUC for the same reason.
+The shield does what the table says: all the injected faults are blocked and nothing else is. The alerts are a different matter. The threshold is the 0.992 quantile of the recent scores, so about 0.8% of the samples are above it whatever the signal. The 1.07% measured is of that order, and it says nothing about arrhythmias. In the zoom, one alert starts at 42.36 s, on the rising edge of the tall wave that follows (the signal reaches 3.65 mV there); most of the other alerts of the zoom fall on ordinary beats. The next section checks the alerts against the beat annotations of the database.
+
+## 7. Against the beat annotations
+
+The copy of scipy has no annotations, but the original record has them. The excerpt of scipy is, sample for sample, the record 208 of the MIT-BIH Arrhythmia Database (lead MLII) from sample 422 820: the correlation with the original is 1.0 and the largest difference is 0.0 mV. The script `pipelines/biomedical/ecg_annotation_eval.py` runs the guard, reads the annotations of the record from PhysioNet with `wfdb`, and counts how many beats of each type have an alert within 150 ms. The excerpt holds 358 normal beats (N), 93 ventricular beats (V) and 56 fusion beats (F).
+
+```bash
+python pipelines/biomedical/ecg_annotation_eval.py
+```
+
+```
+Beats evaluated from sample 5500 (15.3 s); window +-54 samples
+  beat V: n=93, alert within window: 17.2%; shifted alerts: mean 12.3%, p95 18.3%, z=1.5
+  beat F: n=56, alert within window: 32.1%; shifted alerts: mean 11.9%, p95 19.6%, z=4.8
+  beat N: n=327, alert within window: 11.9%; shifted alerts: mean 12.1%, p95 14.7%, z=-0.1
+Alert episodes (merged within 54 samples): 110; near a V or F beat: 34; near only N beats: 38; near no beat: 38
+```
+
+The reference is the same alert track shifted by a random amount, 1000 times: if the alerts did not depend on the beats, the shifted track would score like the real one.
+
+| Beat | Beats | Alert within 150 ms | Shifted alerts (mean) |
+|---|---|---|---|
+| V, ventricular | 93 | 17.2% | 12.3% |
+| F, fusion | 56 | 32.1% | 11.9% |
+| N, normal | 327 | 11.9% | 12.1% |
+
+On the ventricular beats the detector is at the level of chance: 17.2% against 12.3%, below the 95th percentile of the shifted tracks (18.3%). It does not find them. On the fusion beats there is a signal (32.1% against 11.9%), on 56 beats, and this page does not explain it. On the normal beats the share is the one of chance. Of the 110 episodes, 34 are near a V or F beat, 38 only near normal beats and 38 near no annotated beat. The tall wave of the zoom is annotated as a normal beat (N) at 42.48 s.
+
+The alerts of this page are therefore an anomaly score of the signal, not a detector of ventricular beats.
 
 ## Details
 
@@ -132,6 +160,7 @@ The shield does what the table says: all the injected faults are blocked and not
 - **The HST ranges** come from the first 1000 samples with a margin of 10%. A later value outside the range falls in the outermost leaves.
 - **The threshold is a quantile.** 0.992 on the last 4000 scores. There is no ground truth to tune it on.
 - **A blocked sample is scored but not learned**, and its `cycle_jump` is set to 0.
+- **The evaluation** uses one record and five minutes, a window of 150 ms around the annotated beat, and beats from sample 5500 (alerts are not active before). The reference is the alert track shifted at random by at least 3 s, with the alerts before sample 5500 removed. The injected faults are not annotated, and do not enter the beat counts.
 
 ### Measured cost
 
