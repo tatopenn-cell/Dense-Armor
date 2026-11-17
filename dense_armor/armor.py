@@ -1,16 +1,16 @@
 """
-armor.py — L'Armor: istanza indossabile dello scudo per una serie 1D.
-Usa solo i moduli in core/ e utility/ di questo pacchetto.
+armor.py — Armor: the wearable instance of the shield for a 1D series.
+Uses only the modules in core/ and utility/ of this package.
 
-Uso rapido (CLI):
+Quick use (CLI):
     python -m dense_armor 1.2 1.3 9999 1.25 nan 1.3
-    python -m dense_armor file_con_numeri.txt
+    python -m dense_armor file_with_numbers.txt
 
-Uso da codice:
+Use from code:
     from dense_armor import Armor
-    a = Armor(livello_ia=0.0)        # 0=IA neonata (FILTRA) ... 1=matura (solo MARCA)
+    a = Armor(livello_ia=0.0)        # 0 = newborn AI (FILTERS) ... 1 = mature (only MARKS)
     pulito, K, anomalie = a.analizza(serie)
-    pulito, K, anomalie = a.analizza(serie_oggi, riferimento=baseline_di_ieri)  # anti-deriva
+    pulito, K, anomalie = a.analizza(today_series, riferimento=yesterday_baseline)  # anti-drift
 """
 
 import os
@@ -18,27 +18,27 @@ import sys
 
 import numpy as np
 
-from .core.signals.preprocessing.metro import Metro  # scaler anti-underflow, intatto
-from .utility.hybrid_engine import (  # motore phi_ab/trigger, vedi CHANGELOG 1.1.0
+from .core.signals.preprocessing.metro import Metro  # anti-underflow scaler, unchanged
+from .utility.hybrid_engine import (  # phi_ab/trigger engine, see CHANGELOG 1.1.0
     _local_nan_fill,
     hybrid_shield,
 )
 
 
 class Armor:
-    """Scudo indossabile con CLIP DINAMICO universale.
+    """Wearable shield with a universal DYNAMIC CLIP.
 
-    livello_ia (0..1): quanto e' matura l'IA che lo indossa.
-      0.0 -> clip pieno: lo scudo FILTRA il dato (corazza per IA neonata)
-      1.0 -> clip zero:  lo scudo NON tocca il dato, solo MARCA (lente per IA matura)
-    PAVIMENTO: la marcatura delle anomalie non viene MAI clippata — a nessun
-    livello lo scudo tace (l'anomalia puo' ESSERE la risposta: mai cancellarla
-    in silenzio). Il livello puo' essere misurato, non dichiarato:
+    livello_ia (0..1): how mature the AI that wears it is.
+      0.0 -> full clip: the shield FILTERS the data (armor for a newborn AI)
+      1.0 -> zero clip: the shield does NOT touch the data, it only MARKS (a lens for a mature AI)
+    FLOOR: the marking of anomalies is NEVER clipped — at no level does the
+    shield fall silent (the anomaly may BE the answer: never erase it
+    silently). The level can be measured, not declared:
     Armor.livello_da_entropia(entropia, vocab_size).
 
-    MEMORIA: lo scudo e' una funzione PURA, senza stato (leggero per design).
-    La memoria appartiene all'IA che lo indossa: per vedere la DERIVA LENTA
-    passa la tua baseline storica come `riferimento`.
+    MEMORY: the shield is a PURE function, with no state (light by design).
+    The memory belongs to the AI that wears it: to see SLOW DRIFT
+    pass your historical baseline as `riferimento`.
     """
 
     def __init__(
@@ -49,21 +49,21 @@ class Armor:
         soglia_anomalia: float | None = None,
         livello_ia: float = 1.0,
     ) -> None:
-        """static_threshold/initial_damping/alpha — mantenuti per compatibilità di
-        firma con le versioni precedenti, non usati dal motore hybrid (che non ha
-        stato/calibrazione: è una funzione pura, vedi CHANGELOG 1.1.0).
-        soglia_anomalia — soglia fissa opzionale (None = calcolata dai dati);
-        livello_ia — 0=neonata (filtra) .. 1=matura (solo marca)."""
+        """static_threshold/initial_damping/alpha — kept for signature compatibility
+        with earlier versions, not used by the hybrid engine (which has no
+        state or calibration: it is a pure function, see CHANGELOG 1.1.0).
+        soglia_anomalia — optional fixed threshold (None = computed from the data);
+        livello_ia — 0=newborn (filters) .. 1=mature (only marks)."""
         self.soglia = soglia_anomalia
         self.livello_ia = float(min(1.0, max(0.0, livello_ia)))
 
     def set_livello(self, livello: float) -> None:
-        """Aggiorna il livello dell'IA (0=debole -> filtra; 1=matura -> marca)."""
+        """Update the level of the AI (0=weak -> filters; 1=mature -> marks)."""
         self.livello_ia = float(min(1.0, max(0.0, livello)))
 
     @staticmethod
     def livello_da_entropia(entropia: float, vocab_size: int) -> float:
-        """Livello MISURATO: 1 - entropia/log(V) (stessa formula dello sfogo dinamico)."""
+        """MEASURED level: 1 - entropy/log(V) (same formula as the dynamic vent)."""
         import math
 
         return max(
@@ -73,24 +73,24 @@ class Armor:
     def analizza(
         self, serie: np.ndarray, riferimento: np.ndarray | None = None
     ) -> tuple[np.ndarray, np.ndarray, list[int]]:
-        """serie: 1D (lista/array). Per tensori N-D: passare tensore.ravel()
-        e rifare reshape dopo (lo scudo e' agnostico: la trasposizione basta).
-        Ritorna (pulito, K, indici_anomalie)."""
+        """serie: 1D (list/array). For N-D tensors pass tensor.ravel()
+        and reshape afterwards (the shield is agnostic: the transposition is enough).
+        Returns (pulito, K, anomaly indices)."""
         grezza = np.asarray(serie, dtype=np.float64).ravel()
 
         pulito_pieno, trigger, _meta = hybrid_shield(grezza, riferimento)
 
-        # PERCEZIONE a K pieno (pavimento: mai clippata) — binario per design:
-        # il trigger sottostante e' strettamente 0.0/1.0, non una sigmoide continua.
+        # PERCEPTION at full K (floor: never clipped) — binary by design:
+        # the underlying trigger is strictly 0.0/1.0, not a continuous sigmoid.
         K = 1.0 - trigger
 
-        # grezza sanificata (solo NaN/Inf -> mediana locale), stessa
-        # sanificazione usata internamente da hybrid_shield (vedi
-        # _local_nan_fill): e' il "non tocca il dato" reale a clip zero,
-        # non un segnale gia' pre-filtrato da uno stadio a monte. Mediana
-        # LOCALE, non media dell'intera serie: altrimenti uno spike altrove
-        # nella serie distorce il sostituto di ogni NaN, non solo quelli
-        # vicini (vedi CHANGELOG 1.1.1).
+        # raw series sanitized (only NaN/Inf -> local median), the same
+        # sanitization used internally by hybrid_shield (see
+        # _local_nan_fill): it is the real "does not touch the data" at zero
+        # clip, not a signal already pre-filtered by an upstream stage. LOCAL
+        # median, not the mean of the whole series: otherwise a spike elsewhere
+        # in the series distorts the substitute of every NaN, not only the
+        # nearby ones (see CHANGELOG 1.1.1).
         radius_fill = max(
             3 if len(grezza) < 3 else min(20, max(3, len(grezza) // 3)), 3
         )
@@ -98,7 +98,7 @@ class Armor:
             np.where(np.isinf(grezza), np.nan, grezza), radius_fill
         )
 
-        # INTERVENTO clippato dal livello dell'IA
+        # INTERVENTION clipped by the level of the AI
         clip = 1.0 - self.livello_ia
         pulito = grezza_pulita - (K * clip) * (grezza_pulita - pulito_pieno)
 
@@ -108,9 +108,9 @@ class Armor:
         )
         anomalie = {int(i) for i in np.where(dev > max(soglia, 1e-12))[0]}
 
-        # rilevatore robusto (mediana/MAD), indipendente dal motore hybrid —
-        # copre anche i primi 2 punti della serie, che il ciclo del trigger
-        # non valuta mai (vedi limite noto in hybrid_engine.hybrid_shield)
+        # robust detector (median/MAD), independent of the hybrid engine —
+        # it also covers the first 2 points of the series, which the trigger
+        # loop never evaluates (see known limit in hybrid_engine.hybrid_shield)
         finiti = grezza[np.isfinite(grezza)]
         if finiti.size >= 4:
             med = float(np.median(finiti))
@@ -122,25 +122,26 @@ class Armor:
         return pulito, K, sorted(anomalie)
 
     def deriva(self, serie: np.ndarray) -> tuple[float, bool, float]:
-        """RILEVATORE DI DERIVA LENTA (usa METRO, come suggerito da Salvatore).
+        """SLOW DRIFT DETECTOR (uses METRO, as suggested by Salvatore).
 
-        La rana bollita: incrementi infinitesimi (es. +0.004/passo) invisibili
-        allo scudo punto-per-punto. Qui si guarda la TENDENZA degli incrementi:
-        se la loro media e' sistematica rispetto al rumore, c'e' deriva — e
-        METRO (scaler logaritmico) ne risolve la scala anche quando e' sotto
-        la precisione visibile. Funziona SENZA baseline storica (ma la baseline
-        via `riferimento` in analizza() resta il metodo piu' forte).
+        The boiled frog: infinitesimal increments (e.g. +0.004/step) invisible
+        to the point-by-point shield. Here we look at the TREND of the
+        increments: if their mean is systematic with respect to the noise,
+        there is drift — and METRO (logarithmic scaler) resolves its scale
+        even when it is below the visible precision. It works WITHOUT a
+        historical baseline (but the baseline via `riferimento` in analizza()
+        remains the stronger method).
 
-        Ritorna (tasso_per_passo, significativa: bool, esponente_metro).
+        Returns (rate_per_step, significant: bool, metro_exponent).
         """
         v = np.asarray(serie, dtype=np.float64).ravel()
         v = v[np.isfinite(v)]
         if v.size < 9:
             return 0.0, False, 0.0
-        # la firma della deriva e' lo SPOSTAMENTO CUMULATIVO: mediana del primo
-        # terzo vs mediana dell'ultimo terzo (robusto agli spike), confrontato
-        # col rumore della serie. Gli incrementi singoli restano nel rumore —
-        # e' la somma che tradisce la rana.
+        # the signature of drift is the CUMULATIVE SHIFT: median of the first
+        # third vs median of the last third (robust to spikes), compared with
+        # the noise of the series. The single increments stay in the noise —
+        # it is the sum that betrays the frog.
         terzo = v.size // 3
         med_inizio = float(np.median(v[:terzo]))
         med_fine = float(np.median(v[-terzo:]))
@@ -149,7 +150,7 @@ class Armor:
         mad_serie = float(np.median(np.abs(v - np.median(v)))) or 1e-12
         rumore_mediane = 1.4826 * mad_serie / np.sqrt(terzo)
         significativa = abs(spostamento) > 3.0 * rumore_mediane
-        # METRO: risolve la scala dell'infinitesimo (leggibile anche a 1e-12)
+        # METRO: resolves the scale of the infinitesimal (readable even at 1e-12)
         _v_new, fact = Metro().enc(abs(tasso))
         esponente = (
             float(np.log10(fact)) - (-4.0) if fact > 0 else 0.0
@@ -162,15 +163,15 @@ class Armor:
         nome: str = "serie",
         riferimento: np.ndarray | None = None,
     ) -> dict:
-        """Referto MACCHINA-LEGGIBILE (dict pronto per json.dumps).
-        Pensato per IA e altri programmi: niente prosa, solo dati.
-        I valori non finiti diventano stringhe ("NaN") per dare JSON valido."""
+        """MACHINE-READABLE report (dict ready for json.dumps).
+        Meant for AIs and other programs: no prose, only data.
+        Non-finite values become strings ("NaN") to give valid JSON."""
         pulito, K, anomalie = self.analizza(serie, riferimento)
         s = np.asarray(serie, dtype=np.float64).ravel()
         tasso, sig, esp = self.deriva(serie)
 
         def _num(v: float) -> float | str:
-            """Converte in float, o in "NaN" (stringa, per restare JSON-valido) se non finito."""
+            """Convert to float, or to "NaN" (a string, to stay JSON-valid) if not finite."""
             return float(v) if np.isfinite(v) else "NaN"
 
         return {
@@ -200,7 +201,7 @@ class Armor:
         nome: str = "serie",
         riferimento: np.ndarray | None = None,
     ) -> list[int]:
-        """Analisi + referto leggibile."""
+        """Analysis + readable report."""
         pulito, K, anomalie = self.analizza(serie, riferimento)
         s = np.asarray(serie, dtype=np.float64).ravel()
         print(
@@ -221,7 +222,7 @@ class Armor:
 
 
 def main() -> None:
-    """Entry point CLI: `python -m dense_armor [--json] <file_o_numeri...>`."""
+    """CLI entry point: `python -m dense_armor [--json] <file_or_numbers...>`."""
     import re as _re
 
     argv = sys.argv[1:]
