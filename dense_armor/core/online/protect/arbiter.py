@@ -1,60 +1,58 @@
 """
 utility/arbiter.py
 ===================
-Instrada ogni punto verso lo specialista giusto invece di forzarne uno
-solo su tutto il segnale -- nato dal confronto reale in
+Routes each point to the right specialist instead of forcing a single one
+on the whole signal -- born from the real comparison in
 test/test_pressure_valve_vs_orca_experiment.py: hybrid_shield (phi_ab)
-vince nettamente sugli impulsi isolati (A, B, C, G) ma perde su un
-cambio di regime sostenuto (F), pressure_valve fa l'esatto contrario.
-Nessuno dei due batte l'altro ovunque -- la vera differenza tra i due
-casi e' la DURATA della deviazione, non la sua ampiezza.
+clearly wins on isolated impulses (A, B, C, G) but loses on a sustained
+regime change (F), pressure_valve does the exact opposite.
+Neither beats the other everywhere -- the real difference between the two
+cases is the DURATION of the deviation, not its amplitude.
 
-APPROCCIO: per ogni punto, si confronta con una finestra di riferimento
-LARGA (raggio*ref_mult, la stessa scala usata dalla "molla" JSD di
-pressure_valve) -- deliberatamente non con la finestra locale stretta,
-che nel benchmark si e' vista collassare (mediana/MAD/IQR esattamente 0)
-quando piu' outlier vicini finiscono nella stessa finestra piccola.
-Questa finestra e' CAUSALE (_window_causal: solo punti PRIMA di i, mai
-dopo) -- una finestra simmetrica, usata proprio a cavallo di una
-transizione di livello, mescolerebbe vecchio e nuovo livello nella
-propria scala, diluendo la deviazione che dovrebbe far scattare la
-soglia (era cosi' nella prima versione di questo modulo, corretto dopo
-un caso reale non rilevato -- vedi cronologia in CHANGELOG.md [1.1.10]).
-Una volta segnati i punti "devianti", la LUNGHEZZA della sequenza
-consecutiva di punti devianti decide: corta (<= spike_run_max) = impulso
-isolato, lunga = cambio di regime genuino.
+APPROACH: each point is compared with a WIDE reference window
+(radius*ref_mult, the same scale used by the JSD "spring" of
+pressure_valve) -- deliberately not with the narrow local window, which in
+the benchmark was seen to collapse (median/MAD/IQR exactly 0) when several
+nearby outliers end up in the same small window.
+This window is CAUSAL (_window_causal: only points BEFORE i, never after)
+-- a symmetric window, used right across a level transition, would mix the
+old and the new level in its own scale, diluting the deviation that should
+trigger the threshold (this was the case in the first version of this
+module, fixed after a real case that was not detected -- see the history in
+CHANGELOG.md [1.1.10]).
+Once the "deviating" points are marked, the LENGTH of the consecutive run
+of deviating points decides: short (<= spike_run_max) = isolated impulse,
+long = genuine regime change.
 
-CASO DEGENERE (baseline esattamente piatta, scala robusta = 0): non e'
-un problema di stimatore -- vedi il LIMITE NOTO nel docstring di
-pressure_valve, un M-estimator di Huber converge comunque a scala 0 per
-lo stesso motivo strutturale. Qui non si divide mai per una scala zero:
-se la dispersione della finestra di riferimento e' sotto epsilon, QUALSIASI
-scostamento non nullo dalla mediana e' trattato come deviante senza
-bisogno di una soglia in sigma (su una baseline davvero costante, "diverso
-da costante" e' gia' la risposta, non serve altro).
+DEGENERATE CASE (exactly flat baseline, robust scale = 0): this is not an
+estimator problem -- see the KNOWN LIMIT in the docstring of
+pressure_valve, a Huber M-estimator converges to scale 0 anyway for the
+same structural reason. Here we never divide by a zero scale:
+if the dispersion of the reference window is below epsilon, ANY non-zero
+departure from the median is treated as deviating, without needing a
+threshold in sigma (on a truly constant baseline, "different from
+constant" is already the answer, nothing more is needed).
 
-CRONOLOGIA (limite trovato e poi risolto nella stessa sessione): la prima
-versione usava una finestra di riferimento SIMMETRICA, e lo scenario F
-(rottura strutturale, salto di livello permanente) non veniva rilevato
-come 'regime' -- deviazione[i] restava 0 su tutta la sequenza attorno
-alla transizione, perche' la finestra simmetrica, usata proprio a
-cavallo del salto, conteneva meta' vecchio livello e meta' nuovo,
-gonfiando la propria scala (MAD) invece di restare piccola. Un primo
-test aveva scambiato questo per un successo (RMSE 0.0 con
-route_and_correct standalone), ma era un artefatto: i dati grezzi di
-quello scenario coincidono GIA' esattamente col target (la "corruzione"
-e' il salto stesso, non rumore aggiunto), quindi "passa tutto grezzo" da'
-RMSE 0 indipendentemente da come viene etichettato ogni punto -- il vero
-banco di prova era la pipeline integrata di Orca (utility/orca.py,
-_applica_arbitro), dove la mancata rilevazione si traduceva in
-comportamento SICURO ma non migliorativo (9.4007 identico con o senza
-l'arbitro). Passando alla finestra CAUSALE (sopra), la rilevazione
-diventa reale e verificabile: sullo scenario F, gli indici 60-74 (esatti,
-verificato -- la transizione vera e' a 60) vengono etichettati 'regime',
-e attraverso la pipeline reale di Orca l'RMSE scende da 9.4007 (default)
-a 6.0449 (use_arbiter=True) -- un miglioramento reale, non piu' un
-pareggio. Vedi test/test_arbiter_orca_integration.py per la verifica
-completa sui 7 scenari con questo fix.
+HISTORY (limit found and then fixed in the same session): the first
+version used a SYMMETRIC reference window, and scenario F (structural
+break, permanent level jump) was not detected as 'regime' --
+deviazione[i] stayed 0 over the whole sequence around the transition,
+because the symmetric window, used right across the jump, contained half
+the old level and half the new one, inflating its own scale (MAD) instead
+of staying small. A first test had mistaken this for a success (RMSE 0.0
+with route_and_correct standalone), but it was an artifact: the raw data
+of that scenario already coincide EXACTLY with the target (the
+"corruption" is the jump itself, not added noise), so "pass everything
+raw" gives RMSE 0 regardless of how each point is labelled -- the real
+test was the integrated Orca pipeline (utility/orca.py,
+_applica_arbitro), where the missed detection translated into SAFE but
+not improving behaviour (9.4007 identical with or without the arbiter).
+With the CAUSAL window (above), detection becomes real and verifiable:
+on scenario F, indices 60-74 (exact, verified -- the real transition is
+at 60) are labelled 'regime', and through the real Orca pipeline the RMSE
+drops from 9.4007 (default) to 6.0449 (use_arbiter=True) -- a real
+improvement, no longer a tie. See test/test_arbiter_orca_integration.py
+for the full verification on the 7 scenarios with this fix.
 """
 
 import numpy as np
@@ -69,16 +67,15 @@ def _window(x: np.ndarray, i: int, radius: int) -> np.ndarray:
 
 
 def _window_causal(x: np.ndarray, i: int, span: int) -> np.ndarray:
-    """Solo punti PRIMA di i (mai i stesso, mai punti dopo) -- usata per il
-    riferimento di rilevazione (non per il valore di correzione, che resta
-    sulla finestra simmetrica: una volta che un punto e' gia' classificato
-    'spike', usare anche il contesto futuro per stimare il valore pulito
-    e' corretto, lo stesso principio non-causale gia' dichiarato per
-    pressure_valve). Il motivo di questa finestra causale e' solo la
-    rilevazione: vedi il LIMITE NOTO (ora risolto) piu' sotto -- una
-    finestra simmetrica a cavallo di una transizione mescola vecchio e
-    nuovo livello nella propria scala, diluendo la deviazione che dovrebbe
-    far scattare la soglia."""
+    """Only points BEFORE i (never i itself, never points after) -- used for
+    the detection reference (not for the correction value, which stays
+    on the symmetric window: once a point is already classified
+    'spike', also using the future context to estimate the clean value
+    is correct, the same non-causal principle already declared for
+    pressure_valve). The reason for this causal window is detection only:
+    see the KNOWN LIMIT (now resolved) below -- a symmetric window across
+    a transition mixes the old and the new level in its own scale,
+    diluting the deviation that should trigger the threshold."""
     lo = max(0, i - span)
     return x[lo:i]
 
@@ -94,21 +91,21 @@ def classify_segments(
     n_sigmas: float = 3.0, spike_run_max: int = 2, eps: float = 1e-9,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
-    Ritorna (etichette, deviazione, incertezza):
-      etichette   -- array di stringhe 'clean'/'spike'/'regime', una per punto.
-      deviazione  -- |x[i] - riferimento| / scala (o solo |x[i]-riferimento|
-                     se la scala e' degenere), stessa unita' per ogni punto.
-      incertezza  -- 0..1, quanto il punto e' vicino al confine di decisione
-                     (soglia deviante/pulito, o soglia spike/regime sulla
-                     lunghezza della sequenza) -- non quanto e' "corretto",
-                     ma quanto la classificazione stessa e' precaria.
+    Returns (etichette, deviazione, incertezza):
+      etichette   -- array of strings 'clean'/'spike'/'regime', one per point.
+      deviazione  -- |x[i] - reference| / scale (or only |x[i]-reference|
+                     if the scale is degenerate), same unit for every point.
+      incertezza  -- 0..1, how close the point is to the decision boundary
+                     (deviating/clean threshold, or spike/regime threshold on
+                     the length of the run) -- not how "correct" it is,
+                     but how precarious the classification itself is.
     """
     x = as_default_array(x).ravel()
     n = x.size
     deviante = np.zeros(n, dtype=bool)
     deviazione = np.zeros(n, dtype=get_default_dtype())
-    scarto_normalizzato = np.zeros(n, dtype=get_default_dtype())  # |dev|/soglia, per l'incertezza
-    med_rif = np.zeros(n, dtype=get_default_dtype())  # mediana della finestra di riferimento, per punto
+    scarto_normalizzato = np.zeros(n, dtype=get_default_dtype())  # |dev|/threshold, for the uncertainty
+    med_rif = np.zeros(n, dtype=get_default_dtype())  # median of the reference window, per point
 
     for i in range(n):
         w_rif = _window_causal(x, i, radius * ref_mult)
@@ -118,11 +115,11 @@ def classify_segments(
         med_rif[i] = med
         scarto = abs(x[i] - med)
         if scala < eps:
-            # Baseline degenere: nessuna divisione, "diverso da costante"
-            # e' gia' la risposta. scarto_normalizzato satura a un valore
-            # alto/basso netto (mai vicino al confine per costruzione),
-            # cosi' l'incertezza su questi punti resta bassa -- il caso
-            # degenere e' l'UNICO dove la decisione e' davvero inequivocabile.
+            # Degenerate baseline: no division, "different from constant"
+            # is already the answer. scarto_normalizzato saturates at a clearly
+            # high/low value (never near the boundary by construction),
+            # so the uncertainty on these points stays low -- the
+            # degenerate case is the ONLY one where the decision is truly unambiguous.
             deviazione[i] = scarto
             deviante[i] = scarto > eps
             scarto_normalizzato[i] = 0.0 if deviante[i] else 10.0
@@ -134,8 +131,8 @@ def classify_segments(
     etichette = np.full(n, "clean", dtype=object)
     incertezza = np.zeros(n, dtype=get_default_dtype())
 
-    # Incertezza sulla soglia deviante/pulito: vicino a scarto_normalizzato==1
-    # (cioe' esattamente al confine n_sigmas) -> massima ambiguita'.
+    # Uncertainty on the deviating/clean threshold: near scarto_normalizzato==1
+    # (i.e. exactly at the n_sigmas boundary) -> maximum ambiguity.
     incertezza_soglia = np.exp(-4.0 * (scarto_normalizzato - 1.0) ** 2)
 
     i = 0
@@ -151,43 +148,43 @@ def classify_segments(
         if run_len <= spike_run_max:
             label = "spike"
         else:
-            # Una sequenza lunga e' un vero cambio di regime solo se i suoi
-            # punti si ASSESTANO su un nuovo livello coerente -- non basta
-            # che siano "diversi dal vecchio", devono anche essere simili
-            # TRA LORO. Verificato: 3 impulsi alternati (+500,-500,+500,
-            # scenario A) sono una sequenza di lunghezza 3 (> spike_run_max
-            # di default 2), ma la loro dispersione INTERNA e' enorme
-            # (std~471) -- senza questo controllo venivano scambiati per un
-            # regime e passati grezzi, RMSE 86.6 invece di ~0. Una sequenza
-            # che si assesta davvero (scenario F) ha dispersione interna
-            # piccola rispetto alla dimensione del salto stesso.
+            # A long run is a real regime change only if its points
+            # SETTLE on a new coherent level -- it is not enough that
+            # they are "different from the old one", they must also be similar
+            # TO EACH OTHER. Verified: 3 alternating impulses (+500,-500,+500,
+            # scenario A) are a run of length 3 (> spike_run_max
+            # default 2), but their INTERNAL dispersion is huge
+            # (std~471) -- without this check they were mistaken for a
+            # regime and passed raw, RMSE 86.6 instead of ~0. A run
+            # that really settles (scenario F) has small internal dispersion
+            # compared with the size of the jump itself.
             run_vals = x[i:j]
             run_spread = float(np.std(run_vals))
             run_jump = float(abs(np.median(run_vals) - med_rif[i]))
             coerente = run_spread < 0.5 * max(run_jump, eps)
 
-            # Coerenza interna non basta: un collasso temporaneo che poi
-            # TORNA al vecchio livello (scenario C, 3 zeri poi ritorno a
-            # 120) e' internamente coerente quanto un vero regime (spread
-            # interno zero in entrambi i casi) -- la differenza vera si
-            # vede SOLO guardando cosa succede subito dopo la sequenza:
-            # un regime vero (scenario F) resta vicino al NUOVO livello,
-            # un collasso torna verso quello VECCHIO. Senza questo
-            # controllo scenario C restava RMSE 20.8 invece di ~0
-            # (scambiato per regime, passato grezzo invece di respinto).
+            # Internal coherence is not enough: a temporary collapse that then
+            # RETURNS to the old level (scenario C, 3 zeros then return to
+            # 120) is internally as coherent as a true regime (internal
+            # spread zero in both cases) -- the real difference is seen
+            # ONLY by looking at what happens right after the run:
+            # a true regime (scenario F) stays near the NEW level,
+            # a collapse returns towards the OLD one. Without this
+            # check scenario C stayed at RMSE 20.8 instead of ~0
+            # (mistaken for a regime, passed raw instead of rejected).
             post_lo, post_hi = j, min(n, j + radius)
             if post_hi > post_lo:
                 post_med = float(np.median(x[post_lo:post_hi]))
                 run_med = float(np.median(run_vals))
                 persiste = abs(post_med - run_med) < abs(post_med - med_rif[i])
             else:
-                persiste = True  # fine serie: nessun "dopo" da controllare
+                persiste = True  # end of series: no "after" to check
 
             label = "regime" if (coerente and persiste) else "spike"
         etichette[i:j] = label
-        # Incertezza sulla soglia spike/regime: vicino a run_len==spike_run_max
-        # -> massima ambiguita' sulla lunghezza; combinata (media) con quella
-        # sulla soglia deviante/pulito dei singoli punti della sequenza.
+        # Uncertainty on the spike/regime threshold: near run_len==spike_run_max
+        # -> maximum ambiguity on the length; combined (mean) with the one
+        # on the deviating/clean threshold of the single points of the run.
         incertezza_run = float(np.exp(-1.0 * (run_len - spike_run_max) ** 2))
         incertezza[i:j] = 0.5 * incertezza_soglia[i:j] + 0.5 * incertezza_run
         i = j
@@ -200,15 +197,15 @@ def route_and_correct(
     n_sigmas: float = 3.0, spike_run_max: int = 2,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
-    Applica la classificazione e corregge ogni punto secondo l'etichetta:
-      'clean'/'regime' -> passa il valore grezzo (un cambio di regime
-                          genuino non va respinto, stessa filosofia del
-                          gate costante di Orca);
-      'spike'          -> sostituito con la mediana della finestra di
-                          riferimento larga (robusta, non contaminata
-                          dal singolo impulso breve).
+    Applies the classification and corrects each point according to its label:
+      'clean'/'regime' -> passes the raw value (a genuine regime change
+                          must not be rejected, same philosophy as the
+                          constant gate of Orca);
+      'spike'          -> replaced with the median of the wide reference
+                          window (robust, not contaminated by the single
+                          short impulse).
 
-    Ritorna (pulito, etichette, incertezza)."""
+    Returns (pulito, etichette, incertezza)."""
     x = as_default_array(x).ravel()
     n = x.size
     etichette, _, incertezza = classify_segments(x, radius, ref_mult, n_sigmas, spike_run_max)

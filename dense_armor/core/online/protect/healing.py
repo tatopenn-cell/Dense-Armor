@@ -5,50 +5,50 @@ from dense_armor._dtype import get_default_dtype
 
 def healing_filter(x: np.ndarray, radius: int = 2, sustain_threshold: float = 0.7, wide_mult: int = 3) -> np.ndarray:
     """
-    Filtro di recupero segnale ispirato a healing.py (Dense-Evolution) --
-    evoluzione portata su segnali IA generici. A differenza di ABCollatz e
-    del damping Stadio 1 (entrambi giudicano un punto guardando solo il
-    proprio residuo istantaneo), questo classifica ogni punto guardando
-    QUANTI VICINI condividono la stessa deviazione dalla baseline locale:
-      - deviazione isolata (nessun vicino la condivide) -> rumore/spike ->
-        sostituito con la baseline (mediana di una finestra piu' ampia)
-      - deviazione sostenuta (la maggioranza dei vicini nella finestra
-        stretta condivide segno e ampiezza) -> cambiamento vero del segnale
-        -> lasciato passare inalterato
+    Signal-recovery filter inspired by healing.py (Dense-Evolution) --
+    evolution brought to generic AI signals. Unlike ABCollatz and
+    the Stage 1 damping (both judge a point by looking only at its
+    own instantaneous residual), this classifies each point by looking at
+    HOW MANY NEIGHBORS share the same deviation from the local baseline:
+      - isolated deviation (no neighbor shares it) -> noise/spike ->
+        replaced with the baseline (median of a wider window)
+      - sustained deviation (the majority of neighbors in the
+        narrow window share sign and amplitude) -> true change of the signal
+        -> let through unchanged
 
-    Parametri tarati per grid search (40 seed, scenario salto+spike,
-    vedi test/test_healing_filter.py): radius=2, sustain_threshold=0.7,
-    wide_mult=3 -> 40/40 vittorie su mediana mobile r2, rapporto
-    media/std ~2.56 (non rumore statistico).
+    Parameters tuned by grid search (40 seeds, jump+spike scenario,
+    see test/test_healing_filter.py): radius=2, sustain_threshold=0.7,
+    wide_mult=3 -> 40/40 wins over moving median r2, mean/std
+    ratio ~2.56 (not statistical noise).
 
-    LIMITI NOTI (misurati, non ipotizzati):
-    - su segnale liscio + rumore gaussiano puro (nessun salto vero), perde
-      contro una semplice mediana mobile a basso/medio rumore (0/30, 0/30);
-      vince solo ad alto/molto alto rumore. Non e' il caso d'uso primario:
-      questo filtro serve dove ci sono transizioni vere da preservare, non
-      per denoising puro di segnali stazionari.
-    - variante spike piu' fitti (15% invece di 5%): vince 30/30 ma con
-      varianza alta (std=0.177 > media=0.124) -- il vantaggio e' consistente
-      in segno ma non uniforme in ampiezza, da approfondire se si useranno
-      densita' di spike elevate in produzione.
-    - O(n * wide) per chiamata (loop Python, non vettorizzato/JIT) --
-      prima di produzione va portato a JAX con jax.lax.scan o vmap su
-      finestre, come il resto della codebase.
-    - collasso TEMPORANEO (alcuni punti consecutivi a un valore estremo,
-      poi ritorno al livello originale) scambiato per un cambiamento vero
-      e lasciato passare: misurato su uno scenario reale con 3 punti
-      consecutivi collassati a zero su un fondo costante (poi tornato al
-      livello originale), RMSE 20.8 invece di ~0 -- vedi
-      test/testKalman.py scenario C e
-      test/test_arbiter_orca_integration.py in Dense-Armor per lo stesso
-      scenario. Causa: questa funzione decide punto per punto (nessun
-      raggruppamento in sequenze), quindi non ha modo di controllare cosa
-      succede DOPO una deviazione sostenuta per distinguere un collasso
-      temporaneo da un regime che si assesta davvero -- lo stesso
-      controllo aggiunto a `utility/arbiter.py` (che invece raggruppa in
-      sequenze) risolve questo caso li', ma richiederebbe un cambio di
-      design qui, non ancora fatto per non rischiare la calibrazione a
-      140 seed gia' verificata sopra.
+    KNOWN LIMITS (measured, not hypothesized):
+    - on a smooth signal + pure Gaussian noise (no true jump), it loses
+      against a simple moving median at low/medium noise (0/30, 0/30);
+      it wins only at high/very high noise. It is not the primary use case:
+      this filter is for where there are true transitions to preserve, not
+      for pure denoising of stationary signals.
+    - denser spike variant (15% instead of 5%): wins 30/30 but with high
+      variance (std=0.177 > mean=0.124) -- the advantage is consistent
+      in sign but not uniform in amplitude, to be investigated if high
+      spike densities will be used in production.
+    - O(n * wide) per call (Python loop, not vectorized/JIT) --
+      before production it must be ported to JAX with jax.lax.scan or vmap over
+      windows, like the rest of the codebase.
+    - TEMPORARY collapse (a few consecutive points at an extreme value,
+      then return to the original level) mistaken for a true change
+      and let through: measured on a real scenario with 3
+      consecutive points collapsed to zero on a constant background (then returned to the
+      original level), RMSE 20.8 instead of ~0 -- see
+      test/testKalman.py scenario C and
+      test/test_arbiter_orca_integration.py in Dense-Armor for the same
+      scenario. Cause: this function decides point by point (no
+      grouping into runs), so it has no way to check what
+      happens AFTER a sustained deviation to tell a
+      temporary collapse from a regime that really settles -- the same
+      check added to `utility/arbiter.py` (which does group into
+      runs) solves this case there, but would require a change of
+      design here, not yet done so as not to risk the calibration on
+      140 seeds already verified above.
     """
     n = len(x)
     out = np.zeros(n, dtype=get_default_dtype())
