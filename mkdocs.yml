@@ -119,6 +119,8 @@ nav:
           - Jetson energy: drones/jetson_energy.md
       - IoT:
           - Industrial telemetry guard: iot/industrial_telemetry_guard.md
+      - Biomedical:
+          - ECG lead guard: biomedical/ecg_lead_guard.md
       - ARC:
           - Overview: arc/index.md
           - Start here: arc/start_here.md

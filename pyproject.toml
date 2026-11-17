@@ -37,6 +37,7 @@ river = ["river>=0.26; python_version >= '3.11'"]
 vision = ["opencv-python"]
 drone = ["pyulog", "pymavlink", "paho-mqtt", "pyyaml"]
 iot = ["ucimlrepo", "matplotlib"]
+biomedical = ["scipy", "pooch", "matplotlib"]
 ros = ["rosbags>=0.9.18"]
 llm = []  # the LLM bridge needs no extra package
 finance-ops = ["flask", "sqlalchemy", "alembic", "psycopg2-binary", "playwright", "quickfix"]
