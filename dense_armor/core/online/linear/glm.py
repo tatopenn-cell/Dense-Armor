@@ -81,7 +81,7 @@ class LinearRegression(Regressor):
         JAX in 32-bit mode (the default) the pure form is float32 and
         the object form float64, with X64 enabled both are float64.
         The difference is measured in
-        test/optim/test_glm_object_vs_pure.py: below 1e-5 over 30
+        test/core/online/optim/test_glm_object_vs_pure.py: below 1e-5 over 30
         samples with ``intercept=True`` and Adam.
 
     """
@@ -273,7 +273,7 @@ class LogisticRegression(Classifier):
         JAX in 32-bit mode (the default) the pure form is float32 and
         the object form float64, with X64 enabled both are float64.
         The difference is measured in
-        test/optim/test_glm_object_vs_pure.py: below 1e-5 over 30
+        test/core/online/optim/test_glm_object_vs_pure.py: below 1e-5 over 30
         samples with ``intercept=True`` and Adam.
 
     """

@@ -135,7 +135,7 @@ class LocalOutlierFactor(AnomalyDetector):
     on the arm residuals, keeps the offset of the least-squares model
     at err_prot = 0.0015 against err_bare = 3.2886 (bare model), with
     100 of the 100 fault samples flagged. See
-    test/protect/test_protected_anomaly_stream.py.
+    test/core/online/protect/test_protected_anomaly_stream.py.
 
     No pure form. The exact k-NN search inside a sliding window is
     not naturally expressible as a pure function of a small state

@@ -57,8 +57,8 @@ git clone https://github.com/tatopenn-cell/Dense-Armor.git
 cd Dense-Armor
 pip install -e ".[dev]"
 pip install ruff mypy pygsp dowhy
-python -m pytest test/graph/ -q          # 238 passed
-python -m ruff check dense_armor/core/graph/ test/graph/
+python -m pytest test/core/graph/ -q          # 238 passed
+python -m ruff check dense_armor/core/graph/ test/core/graph/
 python -m mypy --follow-imports=skip dense_armor/core/graph/*.py
 mkdocs build --strict --site-dir /tmp/_site
 ```
@@ -119,7 +119,7 @@ printed output is the one in the page.
 
 | Item | Value |
 |---|---|
-| Tests | 238 passed (`test/graph/`) |
+| Tests | 238 passed (`test/core/graph/`) |
 | mypy | Success: no issues found in 20 source files |
 | mkdocs build --strict | passes, graph pages in the nav |
-| Golden files | 19 (in `test/graph/golden/`) |
+| Golden files | 19 (in `test/core/graph/golden/`) |

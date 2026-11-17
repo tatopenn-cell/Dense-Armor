@@ -188,7 +188,7 @@ With the sweep stopped, four stages give two notches, at 266.6 Hz and 1399.4 Hz.
 | `Chorus` | Zolzer (ed.) (2011) | a loop written out by hand; the rate of the LFO measured on the output | 2.3e-14; 2.0 and 1.3 Hz measured for 2.0 and 1.3 asked |
 | `Phaser` | Zolzer (ed.) (2011) | the notches from the phase of the all-pass; `scipy.signal.freqz` | the notches within 0.5 Hz; the response 9e-16 |
 
-The comparisons with `scipy` are in the tests with `pytest.importorskip`, because it is not a dependency of the library. The tests that always run use hand computations, and `test/audio/test_golden.py` compares a compressor and a reverberator with committed arrays.
+The comparisons with `scipy` are in the tests with `pytest.importorskip`, because it is not a dependency of the library. The tests that always run use hand computations, and `test/core/audio/test_golden.py` compares a compressor and a reverberator with committed arrays.
 
 The PDF of Schroeder (1962) was opened and its text read: the structure of the combs and all-passes, the equations 3, 12 and 15, the range of the delays (about 30 to 45 ms), the delays of the all-passes (about 5 and 1.7 ms) and their gain of 0.7. The other sources (Giannoulis, Massberg and Reiss; Zolzer; Schroeder 1965) are cited and not read: their formulas were derived and checked by hand or against a library, and no equation number is quoted from them.
 

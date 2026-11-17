@@ -237,7 +237,7 @@ page, in the session of `benchmarks/statistics_online.py --smoke
 | Finance, naive std | 0.039 |
 | Median per-sample latency of `learn_one` | 2.4 µs |
 
-The unit tests on `test/stats/test_student_t.py` (25 tests) check the
+The unit tests on `test/core/signals/stats/test_student_t.py` (25 tests) check the
 density against `scipy.stats.t.logpdf` within `1e-10`, the variance
 against the closed form, the `ValueError` on invalid constructor
 arguments, `merge`, `state_dict` roundtrip, `fit` vs `learn_one`

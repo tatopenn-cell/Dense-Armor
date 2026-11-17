@@ -174,7 +174,7 @@ OnlineNewtonStep                     1.7168     3.9491        23.8
 forget the pre-change fit, because their per-coordinate memory was tuned on
 the old weights. `OnlineNewtonStep` does not converge on this stream at all.
 The squared loss is not exp-concave, and the paper gives no guarantee outside
-that class. The table comes from `test/linear/test_comparison_table.py`,
+that class. The table comes from `test/core/online/linear/test_comparison_table.py`,
 which prints it at every run.
 
 ## Details

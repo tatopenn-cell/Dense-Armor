@@ -48,4 +48,4 @@ The detector fires 4 frames after the change, on the mean luminance.
 
 ## Checked
 
-All the 40 classifiers, regressors, anomaly scorers and drift detectors of `core/online` that are built without arguments were fed 24 frames of random noise through `VideoInput` without an error. The 28 that need arguments were not tried, and neither were the classes of other sections. The test is `test/vision/test_video_input.py`.
+All the 40 classifiers, regressors, anomaly scorers and drift detectors of `core/online` that are built without arguments were fed 24 frames of random noise through `VideoInput` without an error. The 28 that need arguments were not tried, and neither were the classes of other sections. The test is `test/core/signals/vision/test_video_input.py`.

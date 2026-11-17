@@ -1,7 +1,7 @@
 """End-to-end test of AnomalyGate + Protected on the SyntheticArm fault.
 
 The URDF physics is exercised in ``test_synthetic_arm.py``; the
-streaming detectors are exercised in ``test/anomaly/``. Here the focus
+streaming detectors are exercised in ``test/core/online/anomaly/``. Here the focus
 is the *integration*: every detector of this task goes through
 ``AnomalyGate`` inside ``Protected`` on the real residual of the
 SyntheticArm payload fault, next to a bare ``RecursiveLeastSquares``

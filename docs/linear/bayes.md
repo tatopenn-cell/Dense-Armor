@@ -68,7 +68,7 @@ runs through `learn_one` only.
 The streaming update is algebraically identical to the batch posterior:
 on the same stream the two produce the same `m` and the same `S` up to
 numerical precision (`max|dm| ~ 1e-16`, `max|dS| ~ 1e-19` on a 20-sample
-test). The tests in `test/linear/test_bayes.py` check this equivalence.
+test). The tests in `test/core/online/linear/test_bayes.py` check this equivalence.
 
 ## 3. The predictive interval
 

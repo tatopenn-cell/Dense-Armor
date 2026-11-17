@@ -171,4 +171,4 @@ GPU speed, the base architecture of the paper (`d_model=512`, six blocks), longe
 
 ### Development diary
 
-The page was written after the code: the block, the loss and the generation loop passed their tests (`test/neural/test_decoder.py`, 49 tests) before any prose was written. The outputs shown are the outputs of the last run of the blocks, not written by hand.
+The page was written after the code: the block, the loss and the generation loop passed their tests (`test/core/deep/neural/test_decoder.py`, 49 tests) before any prose was written. The outputs shown are the outputs of the last run of the blocks, not written by hand.

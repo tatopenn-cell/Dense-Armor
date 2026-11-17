@@ -204,7 +204,7 @@ is the gradient and `sqrt(v_hat)` its absolute value, so the Adam term is `0.1
 - `AdamW` decays every array it is given. `Trainer(decay="decoupled")` with
   `Adam` decays only the arrays with two or more dimensions. The two give
   the same trajectory when all the parameters of the model are such arrays
-  and the multiplier is the same (tested in `test/optim/test_adamw.py`); they
+  and the multiplier is the same (tested in `test/core/online/optim/test_adamw.py`); they
   differ when the model has biases, or when a schedule decays the learning
   rate and `eta` is not set.
 

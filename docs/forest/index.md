@@ -214,7 +214,7 @@ The aggregated forests implement the version of Section 2 of the paper, on an un
 ### Checks
 
 - The collapsed weights equal the exponentially weighted sum of equation 6 taken over every pruning of a small tree, with a difference below 1e-9 for `step` from 0.125 to 200 (a leaf of the finished tree stands for all its refinements, which have the same loss, so its prior mass is 1).
-- Lemma 1, Corollary 1 and Corollary 2 hold on the prequential streams of `test/forest/test_amf.py`.
+- Lemma 1, Corollary 1 and Corollary 2 hold on the prequential streams of `test/core/online/forest/test_amf.py`.
 - On a noiseless step function the aggregated prediction with `step = 1e4` equals the leaf prediction. On a noisy curve the two differ: with one tree, 300 training samples, queries at 100 of them, and a large `step`, the two differ by at most 0.19 (median 0.04). A large `step` selects the best pruning in hindsight, which is the deepest tree only when the data is clean.
 - `check_estimator` passes for the three classes with no check skipped. They have no pure `init_state` / `step` form, since the state is a set of trees of changing shape.
 - After `load_state_dict`, a pickle round trip and `clone(include_attributes=True)`, an aggregated classifier still accepts a label it has not seen and returns probabilities that sum to one.

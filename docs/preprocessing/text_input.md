@@ -49,4 +49,4 @@ This shows that the primitives run on text. It does not measure how well they le
 
 ## Checked
 
-All the 40 classifiers, regressors, anomaly scorers and drift detectors of `core/online` that are built without arguments were fed 24 documents through `TextInput` without an error. The 28 that need arguments were not tried. The test is `test/preprocessing/test_text_input.py`.
+All the 40 classifiers, regressors, anomaly scorers and drift detectors of `core/online` that are built without arguments were fed 24 documents through `TextInput` without an error. The 28 that need arguments were not tried. The test is `test/core/signals/preprocessing/test_text_input.py`.

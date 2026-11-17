@@ -10,7 +10,7 @@ import dense_armor.core.evaluation.evaluate.events as ev_mod
 from dense_armor.core.evaluation.evaluate import evaluate_events
 from dense_armor.core.online.drift.detector import CUSUMDriftDetector
 
-BENCH = Path(__file__).resolve().parents[2] / "benchmarks" / "casper_benchmark.py"
+BENCH = Path(__file__).resolve().parents[4] / "benchmarks" / "casper_benchmark.py"
 
 
 def _casper():

@@ -383,7 +383,7 @@ page, not estimated:
 | `dt` at 100 Hz | `0.01`, `rate = 100.0` |
 
 The batch comparison against `numpy` and `scipy.stats` lives in
-`test/stats/test_moments.py` (18 tests, all green).
+`test/core/signals/stats/test_moments.py` (18 tests, all green).
 
 ### The figure on this page
 

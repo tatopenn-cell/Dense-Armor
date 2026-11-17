@@ -41,7 +41,7 @@ fixes the order explicitly. Dembczynski et al. (2010), Section 4.3,
 note that the product rule does not depend on the order, but two
 different chains give different results because they train different
 models; the effect on the stream used in this repository is measured
-in ``test/multioutput/test_multioutput.py``.
+in ``test/core/online/multioutput/test_multioutput.py``.
 
 A sample with NaN or a missing key is skipped and counted in
 ``n_missing``.

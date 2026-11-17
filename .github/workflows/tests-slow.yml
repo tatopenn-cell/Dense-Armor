@@ -13,7 +13,7 @@ jobs:
       matrix:
         include:
           - name: training
-            args: "test/neural -m training"
+            args: "test/core/deep/neural -m training"
           - name: heavy-dynamics
             args: "test/dynamics -m heavy"
           - name: heavy-rest

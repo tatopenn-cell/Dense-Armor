@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 SCRIPT = (
-    Path(__file__).resolve().parents[2] / "benchmarks" / "neural" / "check_examples.py"
+    Path(__file__).resolve().parents[4] / "benchmarks" / "neural" / "check_examples.py"
 )
 
 

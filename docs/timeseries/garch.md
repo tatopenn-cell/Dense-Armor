@@ -202,7 +202,7 @@ page, in the session of `benchmarks/statistics_online.py --smoke
 | Finance, `sigma2_` after 2000 samples | 0.00088 |
 | Median per-sample latency of `learn_one` | 1.3 µs |
 
-The unit tests on `test/timeseries/test_garch.py` (19 tests) check the
+The unit tests on `test/core/online/timeseries/test_garch.py` (19 tests) check the
 log-likelihood against `scipy.stats.norm.logpdf` within `1e-12`,
 `sigma2_` positive at every step, the parameters unchanged, the initial
 value equal to the unconditional variance, the plausibility range of
