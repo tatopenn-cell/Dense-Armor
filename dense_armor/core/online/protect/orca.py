@@ -1,7 +1,7 @@
 """
-utility/orca.py
-Universal AI Orchestrator Shield (ORCA) -- orchestratore dinamico
-selettivo context-aware a 4 fasi.
+core/online/protect/orca.py
+Universal AI Orchestrator Shield (ORCA) -- dynamic, selective,
+context-aware orchestrator in 4 phases.
 """
 
 import logging
@@ -51,8 +51,13 @@ class Orca:
         min_free_ram_percentage: float = 0.15,
         reference_memory_size: int = 32,
         reference_recall_min_score: float = 0.90,
+        hard_clamp_threshold: float = 0.05,
     ) -> None:
         """val_e — target scale exponent for the input log10 compression;
+        hard_clamp_threshold — noise |corrupted - reference|, in the units of the
+        RAW data (before the log10 compression), above which the emergency
+        hard clamp is used. The default 0.05 suits data of order 1; for data of
+        a very different scale set it accordingly;
         chunk_threshold — size beyond which a batch is processed in blocks;
         None (default) auto-derives it from AIHardwareProfiler (RAM/backend
         of the current host, see _CHUNK_THRESHOLD_BASELINE* above) instead of the
@@ -80,6 +85,7 @@ class Orca:
         self.val_e = float(val_e)
         self.min_free_ram = min_free_ram_percentage
         self.reference_recall_min_score = float(reference_recall_min_score)
+        self.hard_clamp_threshold = float(hard_clamp_threshold)
         self.stabilizer = AdaptiveSignalStabilizer(
             static_threshold, initial_damping, alpha
         )
@@ -206,7 +212,7 @@ class Orca:
         radius: int = 10,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Routes each point to the right corrector instead of a single one
-        for the whole row (see utility/arbiter.py and
+        for the whole row (see core/online/protect/arbiter.py and
         test/test_arbiter_orca_integration.py for the real comparison that
         motivated this):
           'spike'  -> corrected with the median of the arbiter's wide
@@ -385,7 +391,7 @@ class Orca:
         co_chunk_np = np.clip(co_chunk_np, -clip_bound, clip_bound)
         c_chunk = jnp.array(c_chunk_np).reshape(1, -1)
         co_chunk = jnp.array(co_chunk_np).reshape(1, -1)
-        hard_clamp_mask = jnp.array(raw_noise > 0.05).reshape(1, -1)
+        hard_clamp_mask = jnp.array(raw_noise > self.hard_clamp_threshold).reshape(1, -1)
 
         # State Flush: the same authoritative signal of point 2 passed
         # to Stage 1 as well -- otherwise its minimum gain floor
@@ -474,7 +480,7 @@ class Orca:
         co_chunk_np = np.clip(co_chunk_np, -clip_bound, clip_bound)
         c_chunk = jnp.array(c_chunk_np)
         co_chunk = jnp.array(co_chunk_np)
-        hard_clamp_mask = jnp.array(raw_noise > 0.05)
+        hard_clamp_mask = jnp.array(raw_noise > self.hard_clamp_threshold)
 
         ref = self.stabilizer.filter_batch_scenarios_independent(
             co_chunk, hard_clamp_mask=hard_clamp_mask
@@ -547,7 +553,7 @@ class Orca:
         """Runs the 4 phases (input shield -> model -> output shield) and returns the protected output.
 
         use_arbiter — if True, after the standard input shield it routes each
-        point to the right corrector (utility/arbiter.py): isolated
+        point to the right corrector (core/online/protect/arbiter.py): isolated
         impulse -> hard rejection, sustained regime change -> passes
         raw, no point anomaly -> the result already
         produced by the standard shield remains (its soft damping, not a
@@ -555,6 +561,9 @@ class Orca:
         before this option on all the existing tests. It populates
         etichette_arbitro/incertezza_arbitro; if x_reference is known,
         it also updates tipi_corruzione_visti(slice_shape)."""
+        self.etichette_arbitro = None
+        self.incertezza_arbitro = None
+        self.incertezza_arbitro_media = 0.0
         is_simple_data_test = ai_model_callable is None or not use_model_injection
         if is_simple_data_test:
             logger.info(

@@ -1,6 +1,6 @@
 """
-utility/streaming.py
-=====================
+core/online/anomaly/streaming.py
+================================
 Promoted from Dense-Evolution-Discovery (Experiments 48-49) after
 validation on two independent real physical domains (teleoperated SO-101
 robotic arm, real human IMU UCI HAR) -- same promotion discipline already
@@ -136,7 +136,7 @@ class MultiChannelStreamingDeviationDetector:
         """x_vec: length n_channels. Returns a bool array (n_channels,)."""
         x_vec = as_default_array(x_vec).ravel()
         if x_vec.size != self.n_channels:
-            raise ValueError(f"attesi {self.n_channels} canali, ricevuti {x_vec.size}")
+            raise ValueError(f"expected {self.n_channels} channels, got {x_vec.size}")
         return np.array([det.update(float(v)) for det, v in zip(self._detectors, x_vec)], dtype=bool)
 
 

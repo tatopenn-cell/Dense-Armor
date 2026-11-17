@@ -147,7 +147,9 @@ def hampel_filter(x: np.ndarray, radius: int = 10, n_sigmas: float = 3.0) -> tup
     estimator of the standard deviation IF the data were Gaussian,
     but without ever computing a true mean/std -- every single statistic
     used here is already robust, unlike Chauvenet). Outlier if
-    |x[i] - median| > n_sigmas * scaled_MAD."""
+    |x[i] - median| > n_sigmas * scaled_MAD. When the scaled MAD is below
+    1e-12 (a flat window) any point farther than 1e-9 from the median is an
+    outlier."""
     x = as_default_array(x)
     n = len(x)
     out = np.copy(x)
@@ -250,6 +252,14 @@ def pressure_valve(
     scale inflates (e.g. Chauvenet when the window already contains an
     outlier, its std is not robust) is automatically weighted less,
     without needing to discard it explicitly.
+
+    Caveat: the optimality of these weights holds for INDEPENDENT unbiased
+    estimates whose scales are their standard errors. Here the four
+    estimates are computed on the same window (they are strongly correlated)
+    and each scala_k is the dispersion of the data, not the standard error of
+    the center. The combination is therefore a calibrated heuristic, not a
+    BLUE: scala_combinata is below every scala_k by construction, and
+    soglia_pressione=8.0 is an empirical value.
 
     centro_combinato = Sum(w_k * centro_k)
     scala_combinata  = 1 / sqrt(Sum(1/scala_k^2))   (the same derivation

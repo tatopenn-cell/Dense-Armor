@@ -31,6 +31,10 @@ def healing_filter(x: np.ndarray, radius: int = 2, sustain_threshold: float = 0.
       variance (std=0.177 > mean=0.124) -- the advantage is consistent
       in sign but not uniform in amplitude, to be investigated if high
       spike densities will be used in production.
+    - the window is centered, so the filter is not causal: it uses the
+      points after the one it judges. A non-finite point is replaced by the
+      baseline, and the baseline is the median of the finite points of the
+      wide window.
     - O(n * wide) per call (Python loop, not vectorized/JIT) --
       before production it must be ported to JAX with jax.lax.scan or vmap over
       windows, like the rest of the codebase.
@@ -45,7 +49,7 @@ def healing_filter(x: np.ndarray, radius: int = 2, sustain_threshold: float = 0.
       grouping into runs), so it has no way to check what
       happens AFTER a sustained deviation to tell a
       temporary collapse from a regime that really settles -- the same
-      check added to `utility/arbiter.py` (which does group into
+      check added to `core/online/protect/arbiter.py` (which does group into
       runs) solves this case there, but would require a change of
       design here, not yet done so as not to risk the calibration on
       140 seeds already verified above.
@@ -55,7 +59,9 @@ def healing_filter(x: np.ndarray, radius: int = 2, sustain_threshold: float = 0.
     wide = radius * wide_mult
     for i in range(n):
         lo_wide, hi_wide = max(0, i - wide), min(n, i + wide + 1)
-        baseline = np.median(x[lo_wide:hi_wide])
+        wide_vals = x[lo_wide:hi_wide]
+        wide_vals = wide_vals[np.isfinite(wide_vals)]
+        baseline = np.median(wide_vals) if wide_vals.size else np.nan
         lo, hi = max(0, i - radius), min(n, i + radius + 1)
         window = x[lo:hi]
         dev_i = x[i] - baseline
