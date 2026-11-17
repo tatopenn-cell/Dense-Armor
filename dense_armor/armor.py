@@ -75,7 +75,14 @@ class Armor:
     ) -> tuple[np.ndarray, np.ndarray, list[int]]:
         """serie: 1D (list/array). For N-D tensors pass tensor.ravel()
         and reshape afterwards (the shield is agnostic: the transposition is enough).
-        Returns (pulito, K, anomaly indices)."""
+        Returns (pulito, K, anomaly indices).
+
+        Notes: the first two points and the points found only by the robust
+        detector are marked but are not replaced in `pulito` (K is 0 there).
+        With the default threshold (mean + 2 std of the deviation) a share of
+        the points of a clean series is marked: about 9% on Gaussian noise.
+        When more than half of the values are equal the MAD is 0 and every
+        value different from the median is marked."""
         grezza = np.asarray(serie, dtype=np.float64).ravel()
 
         pulito_pieno, trigger, _meta = hybrid_shield(grezza, riferimento)
@@ -132,7 +139,10 @@ class Armor:
         historical baseline (but the baseline via `riferimento` in analizza()
         remains the stronger method).
 
-        Returns (rate_per_step, significant: bool, metro_exponent).
+        Returns (rate_per_step, significant: bool, metro_exponent). The
+        exponent is 0.0 when the rate is 0. `significant` compares the shift
+        with 3 times the noise of the medians; on white noise about 10% of
+        the series are flagged.
         """
         v = np.asarray(serie, dtype=np.float64).ravel()
         v = v[np.isfinite(v)]
@@ -153,7 +163,7 @@ class Armor:
         # METRO: resolves the scale of the infinitesimal (readable even at 1e-12)
         _v_new, fact = Metro().enc(abs(tasso))
         esponente = (
-            float(np.log10(fact)) - (-4.0) if fact > 0 else 0.0
+            float(np.log10(fact)) - (-4.0) if fact > 0 and tasso != 0 else 0.0
         )  # = -log10(|tasso|)
         return tasso, bool(significativa), esponente
 
@@ -165,14 +175,16 @@ class Armor:
     ) -> dict:
         """MACHINE-READABLE report (dict ready for json.dumps).
         Meant for AIs and other programs: no prose, only data.
-        Non-finite values become strings ("NaN") to give valid JSON."""
+        Non-finite values become strings ("NaN", "Inf", "-Inf") to give valid JSON."""
         pulito, K, anomalie = self.analizza(serie, riferimento)
         s = np.asarray(serie, dtype=np.float64).ravel()
         tasso, sig, esp = self.deriva(serie)
 
         def _num(v: float) -> float | str:
-            """Convert to float, or to "NaN" (a string, to stay JSON-valid) if not finite."""
-            return float(v) if np.isfinite(v) else "NaN"
+            """Convert to float, or to a string ("NaN", "Inf", "-Inf") if not finite, to stay JSON-valid."""
+            if np.isfinite(v):
+                return float(v)
+            return "NaN" if np.isnan(v) else ("Inf" if v > 0 else "-Inf")
 
         return {
             "nome": nome,
@@ -225,6 +237,9 @@ def main() -> None:
     """CLI entry point: `python -m dense_armor [--json] <file_or_numbers...>`."""
     import re as _re
 
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
     argv = sys.argv[1:]
     come_json = "--json" in argv
     argv = [a for a in argv if a != "--json"]
@@ -235,15 +250,20 @@ def main() -> None:
         sys.exit(0)
     if len(argv) == 1 and os.path.exists(argv[0]):
         with open(argv[0], encoding="utf-8", errors="ignore") as fh:
-            testo = fh.read()
-        numeri = [
-            float(x) if x.lower() != "nan" else float("nan")
-            for x in _re.findall(r"[-+]?(?:\d+\.?\d*(?:[eE][-+]?\d+)?|nan|NaN)", testo)
-        ]
+            token = [t for t in _re.split(r"[\s,;]+", fh.read()) if t]
         nome = os.path.basename(argv[0])
+        origine = f"nel file {nome}"
     else:
-        numeri = [float(x) if x.lower() != "nan" else float("nan") for x in argv]
+        token = argv
         nome = "serie da riga di comando"
+        origine = "e non e' un file esistente"
+    numeri = []
+    for t in token:
+        try:
+            numeri.append(float(t))
+        except ValueError:
+            print(f"ERRORE: '{t}' non e' un numero ({origine}).")
+            sys.exit(2)
     serie = np.asarray(numeri, dtype=np.float64)
     if come_json:
         import json as _json
