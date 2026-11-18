@@ -10,9 +10,13 @@ code underneath and a small, fixed set of bins per feature.
 
 New Year's Eve in London. A mysterious thief is emptying the banks of the city.
 
-The young detective does not only want to know where the thief will strike; he wants to estimate how much he will take. So he keeps a ledger. For every question he asks, he writes down two things: how wrong his estimate was and in which direction, and how quickly that error changes when he corrects the estimate.
+On his trail there is a young detective, but this time he has a double problem: he must not only guess if the thief will strike a bank (yes or no), but also how much money he will manage to steal.
 
-He does not add a new question because of a hunch. He adds it only when a test on the ledger says that the new question lowers his error for real, and not by luck. The rule is the same whether he is guessing a sum of money or a yes and a no: he follows what lowers his error.
+Traditional detectives use two completely different methods: one to make "yes/no" predictions and another to calculate numbers. Our detective instead reasons like a Stochastic Gradient Tree: he uses a single universal rule to do both things.
+
+To avoid mistakes, he keeps a small notebook where he writes down every mistake of his: by how much he missed the prediction and in which direction he must adjust his aim to get closer to the truth.
+
+He never adds a new question to his scheme at random or by simple intuition. He always checks the notebook and adds a new question only when the math proves to him with certainty that that question truly reduces his mistakes, and that it was not just a stroke of luck. By doing so, whether he has to guess a loot in millions or answer yes or no, he always and only follows what cuts away the mistake.
 
 ## 1. Flagging card payments
 

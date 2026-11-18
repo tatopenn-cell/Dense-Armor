@@ -108,34 +108,36 @@ def url(rel):
     )
 
 
-def main():
+def draw(pages, domains, title, subtitle, out, aria, tags, legend, script):
+    """Draw one map: the jobs of the ontology that reach domains[0], the pages and their classes."""
+    hub_label = domains[0]
     catalog = {
         i["class"]: i
         for i in get_catalog(REPO)
-        if i.get("kind", "class") == "class" and i["domain"] in ("tree", "forest")
+        if i.get("kind", "class") == "class" and i["domain"] in domains
     }
-    placed = [c for p in PAGES for c in p[4]]
+    placed = [c for p in pages for c in p[4]]
     missing = [c for c in placed if c not in catalog]
     assert not missing, f"not in the catalog of usable: {missing}"
-    tree_domain = {c for c, i in catalog.items() if i["domain"] == "tree"}
-    assert tree_domain <= set(placed), (
-        f"classes of the tree domain left out: {tree_domain - set(placed)}"
+    main_domain = {c for c, i in catalog.items() if i["domain"] == hub_label}
+    assert main_domain <= set(placed), (
+        f"classes of the {hub_label} domain left out: {main_domain - set(placed)}"
     )
-    for _, _, rel, _, _ in PAGES:
+    for _, _, rel, _, _ in pages:
         assert (DOCS / rel.partition("#")[0]).exists(), rel
 
     ontology = json.loads(
         (REPO / "dense_armor" / "usable" / "ontology.json").read_text(encoding="utf-8")
     )
-    jobs = [j for j, v in ontology["jobs"].items() if "tree" in v["domains"]]
-    assert jobs, "no job of the ontology reaches the tree domain"
+    jobs = [j for j, v in ontology["jobs"].items() if hub_label in v["domains"]]
+    assert jobs, f"no job of the ontology reaches the {hub_label} domain"
 
     row, gap, top = 25.0, 14.0, 112.0
     y = top
     groups = []
-    for title, sub, rel, col, classes in PAGES:
+    for ptitle, sub, rel, col, classes in pages:
         ys = [y + row * (k + 0.5) for k in range(len(classes))]
-        groups.append((title, sub, rel, col, classes, ys, sum(ys) / len(ys)))
+        groups.append((ptitle, sub, rel, col, classes, ys, sum(ys) / len(ys)))
         y += row * len(classes) + gap
     H = y + 44
     W = 1000.0
@@ -144,13 +146,13 @@ def main():
     jy = {j: mid + (k - (len(jobs) - 1) / 2) * 56 for k, j in enumerate(jobs)}
 
     o = [
-        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W:.0f} {H:.0f}" width="100%" role="img" aria-label="The map of the trees">',
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W:.0f} {H:.0f}" width="100%" role="img" aria-label="{aria}">',
         "<style>text{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif}.m{font-family:ui-monospace,Menlo,Consolas,monospace}"
         ".e{opacity:.32;transition:opacity .15s}.net:hover .e{opacity:.06}.net .pg:hover .e{opacity:1;stroke-width:2.2}"
         "a:hover .card{fill:#17303f;stroke-width:2.4}a:hover text.dn{fill:#ffffff}.back:hover .card{fill:#17303f}</style>",
         f'<rect width="{W:.0f}" height="{H:.0f}" fill="{BG}" rx="14"/>',
-        f'<text x="{W / 2:.0f}" y="38" fill="{TEXT}" font-size="24" font-weight="700" text-anchor="middle">THE MAP OF THE TREES</text>',
-        f'<text x="{W / 2:.0f}" y="62" fill="{CYAN}" font-size="12.5" text-anchor="middle">the job, the page of each tree and its classes; pass over a page to light its classes, click to open it</text>',
+        f'<text x="{W / 2:.0f}" y="38" fill="{TEXT}" font-size="24" font-weight="700" text-anchor="middle">{escape(title)}</text>',
+        f'<text x="{W / 2:.0f}" y="62" fill="{CYAN}" font-size="12.5" text-anchor="middle">{escape(subtitle)}</text>',
         f'<a class="back" href="{HOME}" target="_top"><title>back to the map by job</title>'
         f'<rect class="card" x="20" y="14" width="150" height="30" rx="15" fill="{CARD}" stroke="{PINK}" stroke-width="1.6"/>'
         f'<text class="dn" x="95" y="33.5" fill="{TEXT}" font-size="12" font-weight="700" text-anchor="middle">← map by job</text></a>',
@@ -163,7 +165,7 @@ def main():
         o.append(
             f'<path class="e" d="M214,{jy[j]:.1f} C262,{jy[j]:.1f} 282,{hub[1]:.1f} {hub[0] - 12:.0f},{hub[1]:.1f}" fill="none" stroke="{CYAN}" stroke-width="1.4"/>'
         )
-    for title, sub, rel, col, classes, ys, cy in groups:
+    for ptitle, sub, rel, col, classes, ys, cy in groups:
         o.append('<g class="pg">')
         o.append(
             f'<path class="e" d="M{hub[0] + 12:.0f},{hub[1]:.1f} C{hub[0] + 52:.0f},{hub[1]:.1f} 366,{cy:.1f} 408,{cy:.1f}" fill="none" stroke="{col}" stroke-width="1.4"/>'
@@ -184,18 +186,17 @@ def main():
         )
     o.append(
         f'<circle cx="{hub[0]:.0f}" cy="{hub[1]:.1f}" r="12" fill="{CARD}" stroke="{CYAN}" stroke-width="2"/>'
-        f'<text class="m" x="{hub[0]:.0f}" y="{hub[1] + 30:.1f}" fill="{TEXT}" font-size="12" font-weight="700" text-anchor="middle">tree</text>'
+        f'<text class="m" x="{hub[0]:.0f}" y="{hub[1] + 30:.1f}" fill="{TEXT}" font-size="12" font-weight="700" text-anchor="middle">{escape(hub_label)}</text>'
     )
-    for title, sub, rel, col, classes, ys, cy in groups:
+    for ptitle, sub, rel, col, classes, ys, cy in groups:
         o.append(
-            f'<a href="{url(rel)}" target="_top"><title>{escape(title)}: open {escape(rel)}</title>'
+            f'<a href="{url(rel)}" target="_top"><title>{escape(ptitle)}: open {escape(rel)}</title>'
             f'<rect class="card" x="410" y="{cy - 19:.1f}" width="216" height="38" rx="10" fill="{CARD}" stroke="{col}" stroke-width="1.6"/>'
-            f'<text class="dn" x="424" y="{cy - 3:.1f}" fill="{TEXT}" font-size="13" font-weight="700">{escape(title)}</text>'
+            f'<text class="dn" x="424" y="{cy - 3:.1f}" fill="{TEXT}" font-size="13" font-weight="700">{escape(ptitle)}</text>'
             f'<text x="424" y="{cy + 12:.1f}" fill="{MUTED}" font-size="9.5">{escape(sub)}</text></a>'
         )
         for name, cy2 in zip(classes, ys):
-            role = catalog[name]["role"]
-            tag = {"Classifier": "C", "Regressor": "R"}.get(role, "")
+            tag = tags.get(catalog[name]["role"], "")
             o.append(
                 f'<a href="{url(rel)}" target="_top"><title>{escape(name)}: open {escape(rel)}</title>'
                 f'<rect class="card" x="678" y="{cy2 - 10:.1f}" width="300" height="20" rx="10" fill="{CARD}" stroke="{col}" stroke-width="1.2"/>'
@@ -208,14 +209,28 @@ def main():
                 + "</a>"
             )
     o.append(
-        f'<text x="{W / 2:.0f}" y="{H - 16:.0f}" fill="{MUTED}" font-size="10.5" text-anchor="middle">C classifier, R regressor; jobs: dense_armor/usable/ontology.json; classes: dense_armor.usable.catalog; drawn by docs/assets/maps/make_tree_map.py</text>'
+        f'<text x="{W / 2:.0f}" y="{H - 16:.0f}" fill="{MUTED}" font-size="10.5" text-anchor="middle">{legend}jobs: dense_armor/usable/ontology.json; classes: dense_armor.usable.catalog; drawn by {script}</text>'
     )
     o.append("</svg>")
-    OUT.write_text("\n".join(o), encoding="utf-8")
+    out.write_text("\n".join(o), encoding="utf-8")
     print(
         "wrote",
-        OUT.relative_to(REPO),
-        f"{len(placed)} classes, {len(PAGES)} pages, jobs {jobs}",
+        out.relative_to(REPO),
+        f"{len(placed)} classes, {len(pages)} pages, jobs {jobs}",
+    )
+
+
+def main():
+    draw(
+        PAGES,
+        ("tree", "forest"),
+        "THE MAP OF THE TREES",
+        "the job, the page of each tree and its classes; pass over a page to light its classes, click to open it",
+        OUT,
+        "The map of the trees",
+        {"Classifier": "C", "Regressor": "R"},
+        "C classifier, R regressor; ",
+        "docs/assets/maps/make_tree_map.py",
     )
 
 

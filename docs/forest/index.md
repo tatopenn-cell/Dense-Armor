@@ -5,9 +5,11 @@ A single decision tree relies on a single rule, which breaks the moment a robot'
 
 ## 1. Why a forest
 
-Picture an AI assistant that must decide, from a few numbers about each incoming request, which of two models should answer it. A decision tree learns that rule one request at a time. The trouble is the day the requests change: the old rule is wrong, and a single tree must notice it, forget, and relearn, with nobody else to lean on.
+New Year's Eve in London. A mysterious thief is emptying the banks of the city.
 
-A forest spreads the risk. Each tree watches its own mistakes. When a tree starts failing it prepares a replacement in the background, and the forest keeps answering with the trees that still work. The two classes below do this in two different ways.
+So far on his trail there was only one detective. The problem is that if the thief changes trick all of a sudden, the old trail becomes useless: a detective alone has to notice the mistake, forget everything and start over, with no one to lean on.
+
+For this reason an entire team (a Forest) steps in that splits the risk. Every detective keeps an eye on his own mistakes: when one starts losing ground, he immediately prepares a replacement behind the scenes, while the team keeps chasing the thief with the detectives that still work.
 
 ## 2. Adaptive random forest: replace the trees that go wrong
 

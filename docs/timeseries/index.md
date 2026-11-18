@@ -1,14 +1,53 @@
 # Time series
 
-Robot signals change over time. These tools learn how a signal usually moves, so that they can predict the next value or notice when it behaves differently.
+A time series is a signal that arrives in order, one value after the other: the price of a stock, the reading of a sensor, a heartbeat, the torque of a robot joint. The tools in this section learn how the signal usually moves, so that they can predict the next value, follow a hidden state, or notice when the signal starts to behave differently. Like the rest of the library, they learn one sample at a time.
 
-Robot signals are time series. A joint torque repeats with the task cycle, a
-sensor reading has noise that changes over the day, and the next value of a
-signal is the natural "normal" to compare the current one against. The four
-estimators in this section learn one sample at a time and answer one of
-these questions.
+## The map of the time series
 
-## 1. The four families
+Click a page to open it, or a job on the left (or the button at the top) to go back to the [map by job](../index.md#find-a-tool-by-what-you-want-to-do).
+
+<object type="image/svg+xml" data="../assets/maps/timeseries.svg" style="width:100%"></object>
+
+## Gamestory
+
+New Year's Eve in London. A mysterious thief is emptying the banks of the city.
+
+So far the detectives were trying to guess which bank the thief would choose. Now instead a detective steps in who looks at the rhythm and time: he watches the thief's movements minute by minute to understand his pace and immediately notice if something strange happens.
+
+To do this he has four quick tricks:
+
+- **Guesses the next step** (`OnlineAR`): He looks at where the thief was one minute ago and two minutes ago, and immediately understands where he will put his foot in one second.
+- **Sees through the fog** (Kalman Filter): Even if the cameras are blurry and the clues are confused, he manages to calculate exactly where the thief is and how fast he is running.
+- **Breaks habits** (`CycleResidual`): If the night guard always does the same round every ten minutes, the detective memorizes the perfect rhythm. As soon as something breaks that rhythm, the alarm immediately goes off.
+- **Feels when chaos rises** (GARCH): He understands on the fly if the night is calm and predictable or if panic is about to break out and all the clues go crazy.
+
+## 1. A first example: the volatility of a stock
+
+A fund wants to know how risky a stock is *today*. The size of the daily moves is not constant: there are calm periods and agitated ones, and the agitated ones come in clusters. `GARCH11` follows that size, called the volatility, one day at a time. Here there are 250 calm days (moves of about 1 %), 50 days of turbulence (about 3 %) and 100 calm days again.
+
+```python
+import numpy as np
+from dense_armor.core.online.timeseries import GARCH11
+
+rng = np.random.default_rng(0)
+returns = np.concatenate([rng.normal(0.0, 0.01, 250), rng.normal(0.0, 0.03, 50), rng.normal(0.0, 0.01, 100)])
+g = GARCH11(omega=1e-6, alpha=0.08, beta=0.90)
+vol = []
+for r in returns:
+    g.learn_one({"x": float(r)})
+    vol.append(g.sigma2_**0.5)
+print([round(vol[i] * 100, 2) for i in (249, 299, 399)])
+```
+
+```
+[1.23, 2.58, 0.78]
+```
+
+![GARCH11 on 400 days of returns: the band of plus and minus two standard deviations expected before each day widens during the 50 days of turbulence, and the estimated volatility rises from about 1 percent to about 3 and falls back.](../assets/timeseries/garch_volatility.png)
+
+The estimated volatility is 1.2 % at day 250 (the true value is 1 %), 2.6 % at day 300, at the end of the turbulence (the true value is 3 %), and 0.8 % at day 400, after the calm has returned (1 %). The upper panel shows what the model expected before seeing each day, a band of two standard deviations: the first big days of the storm fall outside it, because the model can only learn from them after they happen, and then the band widens. Over the 400 days, 27 fall outside the band.
+
+## 2. The four families
 
 A **time-series estimator** is a model whose input is the recent past of a
 signal and whose output is a prediction about the future, a residual, or a
@@ -34,7 +73,12 @@ complete cycles, and returns the difference between the current sample and the
 template (`nan` until the template exists). When the motion repeats, the residual is small; when something
 breaks the pattern, the residual jumps.
 
-## 2. Which one on which stream
+`GARCH11` predicts how large the next moves will be, not their direction: it keeps a running
+estimate of the variance of a signal whose agitation comes in clusters, such as the returns of a
+stock or the noise of a sensor. The three weights of the model (`omega`, `alpha`, `beta`) are
+fixed when it is built, and the variance is followed one sample at a time.
+
+## 3. Which one on which stream
 
 | stream | what changes | estimator | page |
 |---|---|---|---|
@@ -45,7 +89,7 @@ breaks the pattern, the residual jumps.
 | a repeating motion (a pick-and-place cycle, a rotating joint) | the cycle is the normal | `CycleResidual` | [cycle.md](cycle.md) |
 | a return or a noise stream whose variance clusters | the variance is not constant | `GARCH11` | [garch.md](garch.md) |
 
-## 3. The shared shape
+## 4. The shared shape
 
 Every estimator in this section learns one sample at a time from a dict, the
 same way as the rest of the library. `OnlineAR` with `order=1` learns the
@@ -74,9 +118,9 @@ smaller `lam` older samples weight less, so the coefficient follows a
 changing signal. The same interface (`learn_one`, `predict_one`,
 `transform_one`) is shared by every class in the section.
 
-## 4. On a real arm
+## 5. A robot arm
 
-A `SyntheticArm` from a real Panda URDF gives `q`, `qd`, and `tau` at 50 Hz.
+This example needs the Panda description in `test/fixtures/urdf/`, which is in the repository and not in the installed package, so run it from a clone. A `SyntheticArm` from a real Panda URDF gives `q`, `qd`, and `tau` at 50 Hz.
 The arm repeats its motion every second, and a payload of 5 kg appears on
 the last link at `t = 12 s`. `CycleResidual` learns the period and the
 template of the joint-1 torque in the healthy part, then measures how far
@@ -105,12 +149,9 @@ Before the fault the residual is around `0.05 N m`; after the fault it is
 around `12.7 N m`, a factor of `266`. A control loop that watches this
 residual sees the change at once, without knowing the payload model.
 
-## 5. Numbers
+## 6. Cost per sample
 
-The suite runs on a desktop CPU. The default (`pytest -m "not slow"`) is
-fast: 26 tests in about 5 seconds. The two cycle tests are marked slow
-because the JAX compilation of `SyntheticArm` costs about 45 seconds on the
-first call; with them the full suite is 28 tests in about 50 seconds.
+Measured on a desktop CPU, the time each estimator takes for one sample is:
 
 | estimator | per-sample | memory class |
 |---|---|---|
@@ -153,6 +194,11 @@ arXiv:2608.02316 - the innovation and residual adaptation of
   standard rate.
 
 ### Measured cost
+
+The suite runs on a desktop CPU. The default (`pytest -m "not slow"`) is
+fast: 26 tests in about 5 seconds. The two cycle tests are marked slow
+because the JAX compilation of `SyntheticArm` costs about 45 seconds on the
+first call; with them the full suite is 28 tests in about 50 seconds.
 
 Per-sample latency is `budget_s = 1e-3 s` for every class, measured on the
 author machine as the p99 of `learn_one`. The cost is dominated by numpy
