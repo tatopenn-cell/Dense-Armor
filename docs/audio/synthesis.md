@@ -118,3 +118,22 @@ The first line is the triangle (plain, then corrected), the second the clipped s
 ![The spectrum of the naive wave and of the corrected wave, for a triangle, a clipped sine and a sawtooth](../assets/audio/aliasing.png)
 
 *The spectrum of each wave: the tall lines are the harmonics, and everything between them is aliasing. Red is the naive wave, green the corrected one; the numbers are the share of the energy that lies off the harmonics. The corrected waves have a lower floor between the harmonics (the sawtooth, by 17 dB).*
+
+### The correction itself
+
+The polyBLAMP kinds add a small correction around each corner of the wave. `blamp_residual(t)` is that correction at the offsets `t`, in samples, from the corner.
+
+```python
+import numpy as np
+from dense_armor.core.audio import blamp_residual
+
+t = np.arange(-2.5, 3.0, 0.5)
+print([round(float(v), 4) for v in blamp_residual(t)])
+```
+
+```text
+[0.0, 0.0, 0.0003, 0.0083, 0.0622, 0.2333, 0.0622, 0.0083, 0.0003, 0.0, 0.0]
+```
+
+The correction is largest at the corner itself (`t = 0`, 0.2333), falls off on both sides and is exactly 0 from two samples away (`|t| >= 2`).
+

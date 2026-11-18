@@ -2,9 +2,9 @@
 
 Sound is a long list of numbers, one for each tiny slice of time. This section gives you a value for it (`Audio`), the primitives that read it, make it, filter it and measure it, and **one adapter, `AudioInput`, that opens sound to every estimator, detector, scaler and filter that Dense-Armor already has**. Nothing that already exists is copied or rewritten for sound: the adapter looks at what a primitive can do and gives it a block of sound in the form it takes.
 
-![The map of audio: twelve pages in four groups, from holding a sound to finding events in it](../assets/audio/map.png)
+![The map of audio: the 26 classes of the audio domain of the catalog, in four groups, each with the page of this section that documents it](../assets/audio/map.png)
 
-*The pages of this section in four groups: hold and look, shape, make and change, find and split. Each box is a page, with the file name and what you can do on it; the figure is drawn by a script from the table below.*
+*The 26 classes of the audio domain of the catalog, in four groups: filters, effects, make and change, sound and streams. Each box is a class, with the page of this section that names it most often; `NeedsLabels` is an error that the adapter raises, and it is described in the pages of the text and video input. The figure is drawn by a script from the catalog, so it follows the code.*
 
 The code is in `dense_armor/core/audio/`. The sound itself is handled with NumPy; the estimators it connects to need JAX; a live input needs the optional extra `audio`.
 

@@ -105,6 +105,8 @@ def snippet(r: dict, need: str) -> str:
     """Code to start, built from the methods the class has and the arguments its constructor requires."""
     cls = r.get("class", r["name"])
     args = ", ".join(f"{a}=..." for a in r["required"])
+    if r.get("kind") == "function":
+        return f"from {r['module']} import {cls}\n    y = {cls}({args})"
     have = set(r.get("methods", []))
     use = []
     if r["role"] == "DriftDetector" and "update" in have:

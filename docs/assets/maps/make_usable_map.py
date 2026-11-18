@@ -9,6 +9,7 @@ or the ontology changes:
 """
 
 import json
+import re
 from collections import defaultdict
 from html import escape
 from pathlib import Path
@@ -27,6 +28,8 @@ MUTED = "#94a3b8"
 PINK = "#f72585"
 COLORS = ("#4cc9f0", "#ff9e00", "#f72585")
 PAGES = {
+    "datasets": "stream/index.md",
+    "linear": "linear/glm.md",
     "graph": "ontology/index.md",
     "evaluate": "metrics/index.md",
     "neural": "neural/overview.md",
@@ -44,11 +47,34 @@ PAGES = {
 }
 
 
+_TEXTS = {}
+_CLASSES = {}
+
+
+def _best_page(domain):
+    """The page of the docs that names the classes of the domain most often, written in backticks."""
+    if not _TEXTS:
+        for f in DOCS.rglob("*.md"):
+            if f.name in ("changelog.md", "general.md") or "assets" in f.parts:
+                continue
+            _TEXTS[f.relative_to(DOCS).as_posix()] = f.read_text(encoding="utf-8")
+        for i in get_catalog(REPO):
+            _CLASSES.setdefault(i["domain"], []).append(i["class"])
+    scores = {}
+    for name in _CLASSES.get(domain, []):
+        pattern = re.compile("`" + re.escape(name) + "[`(]")
+        for rel, text in _TEXTS.items():
+            scores[rel] = scores.get(rel, 0) + len(pattern.findall(text))
+    best = max(scores.items(), key=lambda kv: kv[1], default=(None, 0))
+    return best[0] if best[1] else None
+
+
 def page_of(domain):
+    """The page of a domain: a chosen one, the index of its folder, or the page that names its classes."""
     for rel in (PAGES.get(domain), f"{domain}/index.md"):
         if rel and (DOCS / rel).exists():
             return rel
-    return None
+    return _best_page(domain)
 
 
 def url_of(rel):
@@ -101,8 +127,11 @@ def draw():
     )
     jobs = onto["jobs"]
     by_domain = defaultdict(list)
+    functions = defaultdict(int)
     for i in get_catalog(REPO):
-        if i["class"] not in by_domain[i["domain"]]:
+        if i.get("kind", "class") == "function":
+            functions[i["domain"]] += 1
+        elif i["class"] not in by_domain[i["domain"]]:
             by_domain[i["domain"]].append(i["class"])
     order, domains = order_nodes(jobs)
     jh, dh = 44.0, 21.0
@@ -165,7 +194,7 @@ def draw():
         body = (
             f'<circle cx="410" cy="{y:.1f}" r="3.2" fill="#4cc9f0"/>{pill}'
             f'<text class="dn m" x="422" y="{y + 3.6:.1f}" fill="{TEXT if rel else MUTED}" font-size="11" font-weight="700">{escape(d)}</text>'
-            f'<text x="614" y="{y + 3.6:.1f}" fill="{"#4cc9f0" if rel else MUTED}" font-size="10" text-anchor="end">{len(classes)}</text>'
+            f'<text x="614" y="{y + 3.6:.1f}" fill="{"#4cc9f0" if rel else MUTED}" font-size="10" text-anchor="end">{len(classes)}{f" + {functions[d]} fn" if functions.get(d) else ""}</text>'
         )
         if rel:
             linked += 1
@@ -240,8 +269,12 @@ def png():
     )
     jobs = onto["jobs"]
     counts = defaultdict(set)
+    fn = defaultdict(int)
     for i in get_catalog(REPO):
-        counts[i["domain"]].add(i["class"])
+        if i.get("kind", "class") == "function":
+            fn[i["domain"]] += 1
+        else:
+            counts[i["domain"]].add(i["class"])
     order, domains = order_nodes(jobs)
     dh = 2.5
     jh = len(domains) * dh / len(order)
@@ -352,7 +385,7 @@ def png():
         ax.text(
             92.8,
             dy[d],
-            str(len(counts.get(d, ()))),
+            str(len(counts.get(d, ()))) + (f" + {fn[d]} fn" if fn.get(d) else ""),
             color="#4cc9f0" if has else MUTED,
             fontsize=7,
             ha="right",

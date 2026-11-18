@@ -60,6 +60,47 @@ NEURAL_SECTIONS = (
 )
 
 
+def audio_functions(repo: Path) -> list[dict]:
+    """The public functions of the audio modules, which are most of what the audio domain offers.
+
+    The rest of the catalog lists classes; in audio the primitives are mostly functions (``stft``,
+    ``lowpass``, ``mfcc``), so they are listed too, with ``kind`` equal to ``function``."""
+    rows = []
+    for p in sorted((repo / "dense_armor" / "core" / "audio").glob("*.py")):
+        if p.name.startswith("_"):
+            continue
+        try:
+            t = ast.parse(p.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        module = ".".join(p.relative_to(repo).with_suffix("").parts)
+        for n in t.body:
+            if not isinstance(n, ast.FunctionDef) or n.name.startswith("_"):
+                continue
+            pos = [a.arg for a in n.args.args]
+            required = pos[: len(pos) - len(n.args.defaults)]
+            doc = (ast.get_docstring(n) or "").strip()
+            rows.append(
+                {
+                    "name": n.name,
+                    "class": n.name,
+                    "kind": "function",
+                    "domain": "audio",
+                    "role": None,
+                    "module": module,
+                    "supervised": False,
+                    "consumes": "sound",
+                    "budget_s": None,
+                    "memory": None,
+                    "required": required,
+                    "methods": [],
+                    "doc": doc.split("\n")[0][:80],
+                    "doc_full": " ".join(doc.split("\n\n")[0].split())[:600],
+                }
+            )
+    return rows
+
+
 def build_catalog(repo: Path) -> list[dict]:
     """Every public class with its role, domain, budget and what it reads. Classes that share a name in two
     places (core and ml) are both kept; the name then carries the folder: ``TFIDF [ml]``."""
@@ -175,6 +216,7 @@ def build_catalog(repo: Path) -> list[dict]:
             {
                 "name": name,
                 "class": name,
+                "kind": "class",
                 "domain": domain,
                 "role": role,
                 "module": module,
@@ -190,6 +232,7 @@ def build_catalog(repo: Path) -> list[dict]:
                 )[:600],
             }
         )
+    rows.extend(audio_functions(repo))
     count: dict[str, int] = {}
     for r in rows:
         count[r["name"]] = count.get(r["name"], 0) + 1

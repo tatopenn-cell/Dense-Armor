@@ -128,6 +128,26 @@ The room asked for 1.6 s, and the tail measured 1.6 s. The `damping` parameter, 
 
 *Top, the response: a few separate echoes at the start, then a dense tail. Bottom, the energy of the tail in dB: it is a straight line, and it crosses -60 dB (dotted) where the asked time (green) and the measured time (red) both are.*
 
+### The gain of a comb for a reverberation time
+
+A comb filter sends the sound round a loop of delay `tau` and scales it by a gain `g` each time. `comb_gain(delay_s, t60_s)` gives the gain for which the tail falls by 60 dB in `t60_s` seconds, the reverberation time: `g = 10 ** (-3 tau / T)`.
+
+```python
+from dense_armor.core.audio import comb_gain
+
+for t60 in (0.5, 1.0, 2.0):
+    g = comb_gain(0.05, t60)
+    print(t60, round(g, 4), round(g ** (t60 / 0.05), 6))
+```
+
+```text
+0.5 0.5012 0.001
+1.0 0.7079 0.001
+2.0 0.8414 0.001
+```
+
+The columns are the reverberation time, the gain, and the gain raised to the number of trips round the loop in that time (`t60 / 0.05`). That last number is always 0.001, which is 60 dB below the start. A longer reverberation asks for a gain closer to 1.
+
 ## 5. The chorus
 
 A chorus makes one voice sound like several. It mixes the sound with a copy of itself that is delayed by a few milliseconds, and the delay slowly swings up and down, so that the two are never quite in tune. `Chorus(rate_hz, depth_ms, mix, sr)` has the speed of the swing, its size in milliseconds, and how much of the copy to mix in.

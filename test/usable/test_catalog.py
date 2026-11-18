@@ -65,6 +65,14 @@ def _independent_count(repo: Path) -> int:
         if domain in ("roles", "checks", "mcp_server") and not role_of(node):
             continue
         n += 1
+    # the public functions of the audio modules are listed too
+    for p in sorted((repo / "dense_armor" / "core" / "audio").glob("*.py")):
+        if p.name.startswith("_"):
+            continue
+        n += sum(
+            isinstance(x, ast.FunctionDef) and not x.name.startswith("_")
+            for x in ast.parse(p.read_text(encoding="utf-8")).body
+        )
     return n
 
 
@@ -170,3 +178,11 @@ def test_cache_invalidated_on_refresh():
     t = time.perf_counter() - t0
     # must not use the cache (must recompute)
     assert t >= 0.05, f"refresh troppo veloce: {t * 1e3:.0f} ms (non ha ricalcolato?)"
+
+
+def test_audio_functions_are_listed_with_their_kind():
+    cat = ct.get_catalog(REPO, refresh=True)
+    funcs = [r for r in cat if r.get("kind") == "function"]
+    assert len(funcs) >= 60 and {r["domain"] for r in funcs} == {"audio"}
+    assert {"stft", "lowpass", "get_window"} <= {r["class"] for r in funcs}
+    assert all(r.get("kind") == "class" for r in cat if r not in funcs)
