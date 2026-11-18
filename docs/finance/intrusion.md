@@ -83,8 +83,8 @@ This streaming security architecture is optimized for high-volume network enviro
 The pipeline is in `pipelines/finance/intrusion.py`.
 Primitives chained, each with its own page:
 
-- [Hoeffding Adaptive Tree](../tree/index.md#3-following-a-sudden-change-the-adaptive-tree)
-- [Hoeffding Tree](../tree/index.md#1-a-tree-that-learns-a-robot-state)
+- [Hoeffding Adaptive Tree](../tree/adaptive.md)
+- [Hoeffding Tree](../tree/hoeffding.md)
 
 ### References
 

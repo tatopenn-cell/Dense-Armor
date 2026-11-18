@@ -84,8 +84,8 @@ This streaming predictive architecture is optimized for retail banking and enter
 The pipeline is in `pipelines/finance/credit_scoring.py`.
 Primitives chained, each with its own page:
 
-- [Mondrian Forest](../tree/index.md#5-a-prediction-with-its-uncertainty-mondrian-forests)
-- [Stochastic Gradient Trees](../tree/index.md#4-predicting-a-number-the-torque-of-a-two-link-arm)
+- [Mondrian Forest](../tree/mondrian.md)
+- [Stochastic Gradient Trees](../tree/sgt.md)
 
 ### References
 

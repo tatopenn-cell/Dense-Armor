@@ -1499,7 +1499,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.tree.adaptive`
 *Bases:* HoeffdingTreeClassifier
-*Guide:* [tree/index.md](../tree/index.md)
+*Guide:* [tree/adaptive.md](../tree/adaptive.md)
 
 Hoeffding Adaptive Tree classifier.
 
@@ -1527,7 +1527,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.tree.efdt`
 *Bases:* HoeffdingTreeClassifier
-*Guide:* [tree/index.md](../tree/index.md)
+*Guide:* [tree/efdt.md](../tree/efdt.md)
 
 Hoeffding Anytime Tree classifier.
 
@@ -1555,7 +1555,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.tree.hoeffding`
 *Bases:* Classifier
-*Guide:* [tree/index.md](../tree/index.md)
+*Guide:* [tree/hoeffding.md](../tree/hoeffding.md)
 
 Hoeffding tree for incremental classification.
 
@@ -1583,7 +1583,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.tree.mondrian`
 *Bases:* Classifier, _MondrianBase
-*Guide:* [tree/index.md](../tree/index.md)
+*Guide:* [tree/mondrian.md](../tree/mondrian.md)
 
 Online Mondrian forest for classification.
 
@@ -1610,7 +1610,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.tree.mondrian`
 *Bases:* Regressor, _MondrianBase
-*Guide:* [tree/index.md](../tree/index.md)
+*Guide:* [tree/mondrian.md](../tree/mondrian.md)
 
 Online Mondrian forest for regression.
 
@@ -1635,7 +1635,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.tree.sgt`
 *Bases:* Classifier, _SGTBase
-*Guide:* [tree/index.md](../tree/index.md)
+*Guide:* [tree/sgt.md](../tree/sgt.md)
 
 Stochastic gradient tree for binary classification.
 
@@ -1663,7 +1663,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.tree.sgt`
 *Bases:* Regressor, _SGTBase
-*Guide:* [tree/index.md](../tree/index.md)
+*Guide:* [tree/sgt.md](../tree/sgt.md)
 
 Stochastic gradient tree for regression.
 
