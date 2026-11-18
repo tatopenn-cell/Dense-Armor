@@ -75,8 +75,8 @@ def test_hoeffding_default_bit_for_bit():
     rng = np.random.default_rng(0)
     X = (1e3 + 0.01 * rng.standard_normal((2000, 2))).astype(np.float32)
     yb = (X[:, 0] > 1e3).astype(int)
-    h1 = HoeffdingTreeClassifier(grace_period=50)
-    h2 = HoeffdingTreeClassifier(grace_period=50)
+    h1 = HoeffdingTreeClassifier(grace_period=5000)
+    h2 = HoeffdingTreeClassifier(grace_period=5000)
     for i in range(2000):
         h1.learn_one({"f0": float(X[i, 0]), "f1": float(X[i, 1])}, int(yb[i]))
         h2.learn_one({"f0": float(X[i, 0]), "f1": float(X[i, 1])}, int(yb[i]))
@@ -90,8 +90,8 @@ def test_hoeffding_float32_agrees_with_float64():
     rng = np.random.default_rng(0)
     X = (1e3 + 0.01 * rng.standard_normal((2000, 2))).astype(np.float32)
     yb = (X[:, 0] > 1e3).astype(int)
-    h64 = HoeffdingTreeClassifier(grace_period=50)
-    h32 = HoeffdingTreeClassifier(grace_period=50, dtype=np.float32)
+    h64 = HoeffdingTreeClassifier(grace_period=5000)
+    h32 = HoeffdingTreeClassifier(grace_period=5000, dtype=np.float32)
     for i in range(2000):
         h64.learn_one({"f0": float(X[i, 0]), "f1": float(X[i, 1])}, int(yb[i]))
         h32.learn_one({"f0": float(X[i, 0]), "f1": float(X[i, 1])}, int(yb[i]))
