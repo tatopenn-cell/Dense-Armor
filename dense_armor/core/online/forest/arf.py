@@ -99,6 +99,9 @@ class SubspaceHoeffdingTree(HoeffdingTreeClassifier):
         max_depth: maximum depth, or ``None``.
         max_nodes: maximum number of nodes, or ``None``.
         leaf: ``"nb"`` or ``"majority"``.
+        criterion, splitter, n_splits, nominal_attributes, max_active_leaves,
+            memory_period, quantile_radius: as in
+            :class:`HoeffdingTreeClassifier`.
         max_features: size ``m`` of the subset. ``None`` takes
             ``int(sqrt(M)) + 1`` for ``M`` features.
         seed: seed of the generator that draws the subsets.
@@ -118,6 +121,13 @@ class SubspaceHoeffdingTree(HoeffdingTreeClassifier):
         leaf: str = "nb",
         max_features: int | None = None,
         seed: int | None = None,
+        criterion: str = "entropy",
+        splitter: str = "class_means",
+        n_splits: int = 10,
+        nominal_attributes: Any = None,
+        max_active_leaves: int | None = 1000,
+        memory_period: int = 1000,
+        quantile_radius: float | None = None,
     ) -> None:
         super().__init__(
             grace_period=grace_period,
@@ -126,6 +136,13 @@ class SubspaceHoeffdingTree(HoeffdingTreeClassifier):
             max_depth=max_depth,
             max_nodes=max_nodes,
             leaf=leaf,
+            criterion=criterion,
+            splitter=splitter,
+            n_splits=n_splits,
+            nominal_attributes=nominal_attributes,
+            max_active_leaves=max_active_leaves,
+            memory_period=memory_period,
+            quantile_radius=quantile_radius,
         )
         if max_features is not None and max_features < 1:
             raise ValueError(f"max_features must be >= 1, got {max_features}")

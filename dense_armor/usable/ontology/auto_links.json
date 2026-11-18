@@ -1342,6 +1342,15 @@
    }
   ],
   [
+   "tree",
+   "HoeffdingTreeRegressor",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
    "neural",
    "Huber",
    0.25,
@@ -1911,6 +1920,24 @@
   [
    "neural",
    "NoamSchedule",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "tree",
+   "NominalObserver",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "tree",
+   "NumericObserver",
    0.25,
    {
     "source": "catalog domain of the class",
@@ -3027,6 +3054,24 @@
   [
    "neural",
    "Tanh",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "tree",
+   "TargetNominalObserver",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "tree",
+   "TargetNumericObserver",
    0.25,
    {
     "source": "catalog domain of the class",

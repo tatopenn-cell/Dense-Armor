@@ -1,10 +1,9 @@
 """Hoeffding tree classifier.
 
 A non-linear classifier that grows one sample at a time. Each leaf
-keeps enough statistics to estimate the information gain of a possible
-split; when the difference in gain between the best and the
-second-best candidate is larger than the Hoeffding bound, the leaf is
-split.
+keeps enough statistics to estimate the gain of a possible split; when
+the difference in gain between the best and the second-best candidate is
+larger than the Hoeffding bound, the leaf is split.
 
 The Hoeffding bound of equation 1 of Manapragada et al. 2018 is
 
@@ -12,14 +11,40 @@ The Hoeffding bound of equation 1 of Manapragada et al. 2018 is
 
     \\epsilon = \\sqrt{\\frac{R^2 \\ln(1/\\delta)}{2 n}}
 
-where ``R`` is the range of the split-evaluation function (here
-``log2(K)`` for ``K`` classes), ``delta`` is one minus the required
-confidence, and ``n`` is the number of samples seen at the leaf.
+where ``R`` is the range of the split-evaluation function (``log2(K)`` for
+the entropy and ``1 - 1/K`` for the Gini impurity, with ``K`` classes),
+``delta`` is one minus the required confidence, and ``n`` is the number of
+samples seen at the leaf.
 
-Numeric attributes are handled with a running Gaussian estimator per
-class and per feature inside each leaf. A candidate threshold is the
-midpoint between two consecutive class means; the fraction of each
-class on each side is estimated with the normal CDF.
+**Split criterion.** ``criterion="entropy"`` (information gain, the
+default) or ``"gini"`` (reduction of the Gini impurity).
+
+**Numeric features.** A running Gaussian per class and per feature inside
+each leaf (also the naive-Bayes leaf). The candidates of a split come from
+``splitter``: ``"class_means"`` (default; the midpoints between the means of
+the classes), ``"gaussian"`` (``n_splits`` thresholds between the smallest and
+the largest value, with the class shares from the normal CDF), ``"ebst"``
+(every boundary between two consecutive distinct values, on exact counts) or
+``"quantile"`` (the boundaries between the slots of a quantizer); see
+:mod:`dense_armor.core.online.tree.splitters`.
+
+**Categorical features.** A feature is categorical when its name is in
+``nominal_attributes``, or when ``nominal_attributes`` is ``"auto"`` and its
+first value is a string that is not a number (without either, a value that is
+not a number makes the sample count as missing, as before). A categorical feature is split as "the value is this category"
+against all the others; the leaf classifier uses a Laplace-smoothed
+``P(category | class)``.
+
+**Memory.** ``max_active_leaves`` (default ``1000``) bounds the statistics of
+the tree: every ``memory_period`` samples the leaves are ranked by the errors
+they have made (the promise of a leaf, ``p_l * e_l``, of Domingos and Hulten
+2000, since ``p_l * e_l`` is the share of the stream's errors made at the
+leaf) and only the most promising ones keep their statistics and go on trying
+to split. A deactivated leaf keeps counting the classes, so it still
+predicts the majority class, and it is reactivated, with new statistics, when
+it becomes one of the most promising. The tree itself is not capped (``max_nodes``
+defaults to ``None``) and can grow to any depth. ``max_nodes`` and
+``max_depth`` remain as hard limits when a user wants them.
 
 Examples:
     >>> import numpy as np
@@ -33,6 +58,17 @@ Examples:
     >>> h.predict_one({"x": 0.1}) != h.predict_one({"x": 5.0})
     True
 
+    A categorical feature, with the Gini criterion:
+
+    >>> h = HoeffdingTreeClassifier(
+    ...     grace_period=30, criterion="gini", nominal_attributes=["colour"]
+    ... )
+    >>> for _ in range(400):
+    ...     colour = "red" if rng.random() < 0.5 else "blue"
+    ...     _ = h.learn_one({"colour": colour}, y=colour == "red")
+    >>> h.predict_one({"colour": "red"}), h.predict_one({"colour": "blue"})
+    (True, False)
+
 References:
     Manapragada, C., Webb, G. I., Salehi, M. (2018). Extremely fast
         decision tree. In KDD.
@@ -43,17 +79,15 @@ References:
 import math
 from typing import Any
 
-import numpy as np
-
+from dense_armor.core.online.tree._stats import _Gauss, _phi, _two_sum  # noqa: F401
+from dense_armor.core.online.tree.splitters import (
+    CRITERIA,
+    SPLITTERS,
+    NominalObserver,
+    NumericObserver,
+    merit_range,
+)
 from dense_armor.roles import Classifier
-
-
-def _two_sum(a, b):
-    """Error-free transformation ``a + b = s + e`` in the dtype of ``a``."""
-    s = a + b
-    bb = s - a
-    e = (a - (s - bb)) + (b - bb)
-    return s, e
 
 
 def _as_dict(x: Any) -> dict:
@@ -63,11 +97,6 @@ def _as_dict(x: Any) -> dict:
         return dict(x)
     except (TypeError, ValueError):
         return {}
-
-
-def _phi(z: float) -> float:
-    """Standard normal cumulative distribution function."""
-    return 0.5 * (1.0 + math.erf(z / math.sqrt(2.0)))
 
 
 def _entropy(counts: dict) -> float:
@@ -82,99 +111,28 @@ def _entropy(counts: dict) -> float:
     return h
 
 
-class _Gauss:
-    """Running Gaussian for one (leaf, class, feature) triple.
-
-    With ``dtype=None`` (default) the update is Welford's and the
-    result is bit for bit the one of the previous version. With
-    ``dtype=numpy.float32`` the values are shifted by ``K = x[0]``, the
-    shift of the shifted-data algorithm of Healy (2022), Introduction
-    and Algorithm 2, PDF pages 2 and 4. Healy accumulates the sums
-    ``S = sum(y)`` and ``T = sum(y**2)`` with Kahan's compensation and
-    returns ``V = T/n - (M - K)**2``. This class is a variant: it keeps
-    Welford's recurrence on ``y = x - K`` (the mean of ``y`` and ``M2``),
-    and ``TwoSum`` carries the rounding error of the update of the mean
-    and of the update of ``M2``. ``var`` is ``M2 / n`` as in the
-    default path. ``m2_`` and ``mean_`` are kept as float64 so the tree
-    code that reads them does not change.
-    """
-
-    __slots__ = (
-        "m2_",
-        "mean_",
-        "n_",
-        "_f32",
-        "_K",
-        "_mean_y",
-        "_c_mean",
-        "_m2_y",
-        "_c_m2",
-        "dtype",
-    )
-
-    def __init__(self, dtype=None) -> None:
-        self.dtype = dtype
-        self.n_ = 0
-        self.mean_ = 0.0
-        self.m2_ = 0.0
-
-        self._f32 = dtype is not None and np.dtype(dtype) == np.float32
-        self._K: Any = None
-        self._mean_y: Any = np.float32(0.0)
-        self._c_mean = np.float32(0.0)
-        self._m2_y: Any = np.float32(0.0)
-        self._c_m2: Any = np.float32(0.0)
-
-    def update(self, v: float) -> None:
-        if not self._f32:
-            self.n_ += 1
-            d = v - self.mean_
-            self.mean_ += d / self.n_
-            self.m2_ += d * (v - self.mean_)
-            return
-
-        vf = np.float32(v)
-        if self._K is None:
-            self._K = vf
-        y = np.float32(vf - self._K)
-        self.n_ += 1
-        n = np.float32(self.n_)
-        delta = np.float32(y - self._mean_y)
-        d_over_n = np.float32(delta / n)
-        s, e = _two_sum(self._mean_y, d_over_n)
-        self._c_mean = np.float32(self._c_mean + e)
-        self._mean_y = s
-        term = np.float32(delta * np.float32(y - self._mean_y))
-        s2, e2 = _two_sum(self._m2_y, term)
-        self._c_m2 = np.float32(self._c_m2 + e2)
-        self._m2_y = s2
-        my = np.float32(self._mean_y + self._c_mean)
-        m2 = np.float32(self._m2_y + self._c_m2)
-        self.mean_ = float(self._K + my)
-        self.m2_ = float(m2)
-
-    @property
-    def var(self) -> float:
-        if self._f32:
-            if self.n_ <= 1:
-                return 0.0
-
-            n = np.float32(self.n_)
-            m2 = np.float32(self._m2_y + self._c_m2)
-            return float(np.float32(m2 / n))
-        return self.m2_ / self.n_ if self.n_ > 1 else 0.0
+def _observer(obj: Any) -> Any:
+    """An observer; a plain ``{class: _Gauss}`` dict is read as a numeric one."""
+    if hasattr(obj, "kind"):
+        return obj
+    ob = NumericObserver()
+    dict.update(ob, obj)
+    return ob
 
 
 class _Node:
     """One node of the tree: a leaf or an internal split."""
 
     __slots__ = (
+        "active_",
         "class_counts_",
         "depth",
+        "errors_",
         "feature_stats_",
         "left_",
         "n_",
         "right_",
+        "split_category_",
         "split_feature_",
         "split_threshold_",
     )
@@ -182,10 +140,13 @@ class _Node:
     def __init__(self, depth: int) -> None:
         self.depth = depth
         self.n_ = 0
+        self.errors_ = 0
+        self.active_ = True
         self.class_counts_: dict = {}
         self.feature_stats_: dict = {}
         self.split_feature_: str | None = None
         self.split_threshold_: float | None = None
+        self.split_category_: Any = None
         self.left_: _Node | None = None
         self.right_: _Node | None = None
 
@@ -193,12 +154,20 @@ class _Node:
     def is_leaf(self) -> bool:
         return self.split_feature_ is None
 
+    @property
+    def split_test(self) -> Any:
+        """The threshold of a numeric split, or the category of a categorical one."""
+        if self.split_category_ is not None:
+            return self.split_category_
+        return self.split_threshold_
+
 
 class HoeffdingTreeClassifier(Classifier):
     """Hoeffding tree for incremental classification.
 
-    Memory grows with the number of nodes; ``max_nodes`` (default
-    ``10000``) bounds the total, so ``memory_class`` is ``"O(window)"``.
+    Memory is bounded by ``max_active_leaves``: only that many leaves keep
+    statistics, so ``memory_class`` is ``"O(window)"`` in the statistics (the
+    nodes themselves are small, and ``max_nodes`` can cap them).
 
     ``budget_s`` = 1e-3 s: p99 of ``learn_one`` measured at 2.3e-5 s on a
     2000-sample, two-feature stream on a desktop CPU (default
@@ -209,19 +178,36 @@ class HoeffdingTreeClassifier(Classifier):
             is attempted.
         delta: one minus the confidence of the Hoeffding bound.
         tau: tie threshold.
-        max_depth: maximum depth, or ``None``.
-        max_nodes: maximum number of nodes. Default ``10000``.
+        max_depth: maximum depth, or ``None`` (default).
+        max_nodes: maximum number of nodes, or ``None`` (default).
         leaf: ``"nb"`` or ``"majority"``. With ``"nb"``, a leaf in which
             any class has fewer than two samples answers like
             ``"majority"``, because the Gaussian likelihood of that class
             cannot be estimated.
+        criterion: ``"entropy"`` (information gain, default) or ``"gini"``.
+        splitter: the candidates of a numeric split: ``"class_means"``
+            (default), ``"gaussian"``, ``"ebst"`` or ``"quantile"``.
+        n_splits: number of thresholds of the ``"gaussian"`` splitter.
+            Default 10.
+        nominal_attributes: names of the categorical features, or ``"auto"``
+            to take as categorical every feature whose first value is a
+            non-numeric string. Default ``None``: all the features are
+            numeric.
+        max_active_leaves: number of leaves that keep statistics, or ``None``
+            for no limit. Default 1000.
+        memory_period: samples between two memory checks. Default 1000.
+        quantile_radius: slot width of the ``"quantile"`` splitter, or
+            ``None`` for a third of the standard deviation of the first
+            30 values.
 
     Raises:
-        ValueError: on a bad ``leaf`` or a non-positive parameter.
+        ValueError: on a bad ``leaf``, ``criterion`` or ``splitter``, or a
+            non-positive parameter.
     """
 
     budget_s = 1e-3
     memory_class = "O(window)"
+    _keep_internal_stats = False
 
     def __init__(
         self,
@@ -229,9 +215,16 @@ class HoeffdingTreeClassifier(Classifier):
         delta: float = 1e-7,
         tau: float = 0.05,
         max_depth: int | None = None,
-        max_nodes: int | None = 10000,
+        max_nodes: int | None = None,
         leaf: str = "nb",
         dtype: Any = None,
+        criterion: str = "entropy",
+        splitter: str = "class_means",
+        n_splits: int = 10,
+        nominal_attributes: Any = None,
+        max_active_leaves: int | None = 1000,
+        memory_period: int = 1000,
+        quantile_radius: float | None = None,
     ) -> None:
         if grace_period < 1:
             raise ValueError(f"grace_period must be >= 1, got {grace_period}")
@@ -245,6 +238,18 @@ class HoeffdingTreeClassifier(Classifier):
             raise ValueError(f"max_nodes must be >= 1, got {max_nodes}")
         if leaf not in ("nb", "majority"):
             raise ValueError(f"leaf must be 'nb' or 'majority', got {leaf!r}")
+        if criterion not in CRITERIA:
+            raise ValueError(f"criterion must be one of {CRITERIA}, got {criterion!r}")
+        if splitter not in SPLITTERS:
+            raise ValueError(f"splitter must be one of {SPLITTERS}, got {splitter!r}")
+        if n_splits < 1:
+            raise ValueError(f"n_splits must be >= 1, got {n_splits}")
+        if max_active_leaves is not None and max_active_leaves < 1:
+            raise ValueError(f"max_active_leaves must be >= 1, got {max_active_leaves}")
+        if memory_period < 1:
+            raise ValueError(f"memory_period must be >= 1, got {memory_period}")
+        if quantile_radius is not None and quantile_radius <= 0.0:
+            raise ValueError(f"quantile_radius must be > 0, got {quantile_radius}")
         self.grace_period = grace_period
         self.delta = delta
         self.tau = tau
@@ -252,6 +257,24 @@ class HoeffdingTreeClassifier(Classifier):
         self.max_nodes = max_nodes
         self.leaf = leaf
         self.dtype = dtype
+        self.criterion = criterion
+        self.splitter = splitter
+        self.n_splits = n_splits
+        self.nominal_attributes = nominal_attributes
+        self.max_active_leaves = max_active_leaves
+        self.memory_period = memory_period
+        self.quantile_radius = quantile_radius
+        if isinstance(nominal_attributes, str) and nominal_attributes != "auto":
+            raise ValueError(
+                f"nominal_attributes must be a list of names or 'auto', got {nominal_attributes!r}"
+            )
+        self._auto_nominal = nominal_attributes == "auto"
+        self._nominal_set = (
+            frozenset()
+            if isinstance(nominal_attributes, str)
+            else frozenset(nominal_attributes or ())
+        )
+        self._kinds_: dict = {}
         self.root_: _Node | None = None
         self.n_nodes_ = 0
         self.classes_: set = set()
@@ -267,110 +290,150 @@ class HoeffdingTreeClassifier(Classifier):
     def depth_(self) -> int:
         return self._depth(self.root_)
 
+    @property
+    def n_active_leaves_(self) -> int:
+        """Number of leaves that keep statistics and try to split."""
+        return sum(1 for lf in self._leaves() if lf.active_)
+
     def _depth(self, node: _Node | None) -> int:
         if node is None or node.is_leaf:
             return 0
         return 1 + max(self._depth(node.left_), self._depth(node.right_))
+
+    def _leaves(self):
+        """The leaves of the main tree."""
+        stack = [self.root_] if self.root_ is not None else []
+        while stack:
+            node = stack.pop()
+            if node.is_leaf:
+                yield node
+            else:
+                stack.append(node.right_)
+                stack.append(node.left_)
 
     def _new_leaf(self, depth: int) -> _Node:
         node = _Node(depth)
         self.n_nodes_ += 1
         return node
 
+    def _kind_of(self, f: str, v: Any) -> str:
+        if f in self._nominal_set:
+            return "nom"
+        if self._auto_nominal and isinstance(v, (str, bytes)):
+            try:
+                float(v)
+            except ValueError:
+                return "nom"
+        return "num"
+
+    def _validate(self, x: Any, y: Any) -> dict | None:
+        """The sample with its numeric values as floats, or ``None`` if it is missing something."""
+        d = _as_dict(x)
+        if not d or y is None:
+            self.n_missing_ += 1
+            return None
+        out: dict = {}
+        new_kinds: dict = {}
+        for f, v in d.items():
+            if v is None:
+                self.n_missing_ += 1
+                return None
+            kind = self._kinds_.get(f) or new_kinds.get(f) or self._kind_of(f, v)
+            if kind == "num":
+                try:
+                    fv = float(v)
+                except (TypeError, ValueError):
+                    self.n_missing_ += 1
+                    return None
+                if not math.isfinite(fv):
+                    self.n_missing_ += 1
+                    return None
+                out[f] = fv
+            else:
+                try:
+                    hash(v)
+                except TypeError:
+                    self.n_missing_ += 1
+                    return None
+                if isinstance(v, float) and v != v:
+                    self.n_missing_ += 1
+                    return None
+                out[f] = v
+            if f not in self._kinds_:
+                new_kinds[f] = kind
+        self._kinds_.update(new_kinds)
+        return out
+
+    def _goes_left(self, node: _Node, v: Any) -> bool:
+        if node.split_category_ is not None:
+            return bool(v == node.split_category_)
+        return float(v) <= node.split_threshold_
+
     def _path(self, x: dict) -> list:
-        """Nodes from the root to the leaf of ``x`` (inputs already validated)."""
+        """Nodes from the root to the leaf of ``x``."""
         path: list = []
         cur: _Node | None = self.root_
         while cur is not None:
             path.append(cur)
             if cur.split_feature_ is None:
                 return path
-            f = cur.split_feature_
-            v = x.get(f)
+            v = x.get(cur.split_feature_)
             if v is None:
                 return path
-            cur = (
-                cur.left_
-                if cur.split_threshold_ is not None and float(v) <= cur.split_threshold_
-                else cur.right_
-            )
+            try:
+                left = self._goes_left(cur, v)
+            except (TypeError, ValueError):
+                return path
+            cur = cur.left_ if left else cur.right_
         return path
+
+    def _new_observer(self, f: str) -> Any:
+        if self._kinds_.get(f) == "nom":
+            return NominalObserver()
+        return NumericObserver(
+            self.splitter, self.dtype, self.n_splits, self.quantile_radius
+        )
 
     def _update_leaf(self, node: _Node, x: dict, y: Any) -> None:
         node.n_ += 1
         cc = node.class_counts_
+        if not cc or max(cc, key=cc.get) != y:
+            node.errors_ += 1
         cc[y] = cc.get(y, 0) + 1
-        fs = node.feature_stats_
         known = self.features_
-        for f, v in x.items():
-            per_class = fs.get(f)
-            if per_class is None:
-                per_class = {}
-                fs[f] = per_class
-            g = per_class.get(y)
-            if g is None:
-                g = _Gauss(dtype=self.dtype)
-                per_class[y] = g
-            g.update(float(v))
-            if f not in known:
-                known.add(f)
+        if node.active_:
+            fs = node.feature_stats_
+            for f, v in x.items():
+                obs = fs.get(f)
+                if obs is None:
+                    obs = self._new_observer(f)
+                    fs[f] = obs
+                obs.update(v, y)
+                if f not in known:
+                    known.add(f)
+        else:
+            known.update(x)
 
     def _entropy(self, node: _Node) -> float:
         return _entropy(node.class_counts_)
 
-    def _split_gain(self, node: _Node, f: str, s: float):
-        stats = node.feature_stats_.get(f)
-        if not stats:
+    def _split_gain(self, node: _Node, f: str, s: Any):
+        obs = node.feature_stats_.get(f)
+        if not obs or node.n_ <= 0:
             return None
-        n = node.n_
-        if n <= 0:
-            return None
-        h0 = self._entropy(node)
-        left_counts: dict = {}
-        right_counts: dict = {}
-        for k, g in stats.items():
-            if g.n_ <= 0:
-                continue
-            total_k = node.class_counts_.get(k, 0)
-            if g.var <= 0.0:
-                if g.mean_ <= s:
-                    left_counts[k] = total_k
-                else:
-                    right_counts[k] = total_k
-                continue
-            z = (s - g.mean_) / math.sqrt(g.var)
-            p_left = _phi(z)
-            left_counts[k] = p_left * total_k
-            right_counts[k] = (1.0 - p_left) * total_k
-        n_l = sum(left_counts.values())
-        n_r = sum(right_counts.values())
-        if n_l <= 0.0 or n_r <= 0.0:
-            return None
-        h_l = _entropy(left_counts)
-        h_r = _entropy(right_counts)
-        return h0 - (n_l / n) * h_l - (n_r / n) * h_r
+        obs = _observer(obs)
+        return obs.test_gain(self.criterion, node.class_counts_, node.n_, s)
 
     def _best_split(self, node: _Node):
         best_gain = -1.0
         best_f: str | None = None
-        best_s: float | None = None
+        best_s: Any = None
         second_gain = -1.0
-        for f, per_class in node.feature_stats_.items():
-            means = [g.mean_ for g in per_class.values() if g.n_ > 0]
-            if len(means) < 2:
-                continue
-            means.sort()
-            candidates = [
-                0.5 * (means[i] + means[i + 1]) for i in range(len(means) - 1)
-            ]
-            f_best = -1.0
-            f_s: float | None = None
-            for s in candidates:
-                g = self._split_gain(node, f, s)
-                if g is not None and g > f_best:
-                    f_best = g
-                    f_s = s
-            if f_best < 0.0:
+        cc = node.class_counts_
+        n = node.n_
+        for f, obs in node.feature_stats_.items():
+            f_best, f_s = _observer(obs).best_candidate(self.criterion, cc, n)
+            if f_s is None or f_best < 0.0:
                 continue
             if f_best > best_gain:
                 second_gain = best_gain
@@ -386,8 +449,21 @@ class HoeffdingTreeClassifier(Classifier):
         nodes_ok = self.max_nodes is None or self.n_nodes_ + 2 <= self.max_nodes
         return depth_ok and nodes_ok
 
+    def _set_split(self, node: _Node, f: str, test: Any) -> None:
+        node.split_feature_ = f
+        if self._kinds_.get(f) == "nom":
+            node.split_category_ = test
+            node.split_threshold_ = None
+        else:
+            node.split_threshold_ = test
+            node.split_category_ = None
+        node.left_ = self._new_leaf(node.depth + 1)
+        node.right_ = self._new_leaf(node.depth + 1)
+        if not self._keep_internal_stats:
+            node.feature_stats_ = {}
+
     def _try_split(self, node: _Node) -> bool:
-        if node.n_ < self.grace_period or not self._can_grow(node):
+        if not node.active_ or node.n_ < self.grace_period or not self._can_grow(node):
             return False
         k = len(node.class_counts_)
         if k < 2:
@@ -395,37 +471,48 @@ class HoeffdingTreeClassifier(Classifier):
         best, f, s, second = self._best_split(node)
         if f is None or s is None or best <= 0.0:
             return False
-        r = math.log2(k)
+        r = merit_range(self.criterion, k)
         eps = math.sqrt(r * r * math.log(1.0 / self.delta) / (2.0 * node.n_))
         if (best - second) > eps or eps < self.tau:
-            node.split_feature_ = f
-            node.split_threshold_ = s
-            node.left_ = self._new_leaf(node.depth + 1)
-            node.right_ = self._new_leaf(node.depth + 1)
+            self._set_split(node, f, s)
             return True
         return False
+
+    def _enforce_memory(self) -> None:
+        """Keep the statistics of the most promising leaves, drop those of the others."""
+        cap = self.max_active_leaves
+        if cap is None or self.root_ is None:
+            return
+        leaves = list(self._leaves())
+        if len(leaves) <= cap:
+            for lf in leaves:
+                lf.active_ = True
+            return
+        leaves.sort(
+            key=lambda lf: (lf.n_ < self.grace_period, lf.errors_), reverse=True
+        )
+        for i, lf in enumerate(leaves):
+            if i < cap:
+                lf.active_ = True
+            elif lf.active_:
+                lf.active_ = False
+                lf.feature_stats_ = {}
+
+    def _tick_memory(self) -> None:
+        if (
+            self.max_active_leaves is not None
+            and self.n_seen_ % self.memory_period == 0
+        ):
+            self._enforce_memory()
 
     def learn_one(
         self, x: Any, y: Any, t: float | None = None
     ) -> "HoeffdingTreeClassifier":
         """Update the tree with one sample."""
         self._time_step(t)
-        d = _as_dict(x)
-        if not d or y is None:
-            self.n_missing_ += 1
+        d = self._validate(x, y)
+        if d is None:
             return self
-        for v in d.values():
-            if v is None:
-                self.n_missing_ += 1
-                return self
-            try:
-                fv = float(v)
-            except (TypeError, ValueError):
-                self.n_missing_ += 1
-                return self
-            if not math.isfinite(fv):
-                self.n_missing_ += 1
-                return self
         self.classes_.add(y)
         if self.root_ is None:
             self.root_ = self._new_leaf(0)
@@ -435,6 +522,7 @@ class HoeffdingTreeClassifier(Classifier):
         self.n_seen_ += 1
         if leaf.is_leaf and leaf.n_ % self.grace_period == 0:
             self._try_split(leaf)
+        self._tick_memory()
         return self
 
     def _predict_proba_leaf(self, leaf: _Node, x: dict) -> dict:
@@ -463,14 +551,20 @@ class HoeffdingTreeClassifier(Classifier):
             prior = cc.get(c, 0) + 1.0
             lp = math.log(prior / total)
             for f, v in x.items():
-                per_class = fs.get(f)
-                if per_class is None:
+                obs = fs.get(f)
+                if obs is None:
                     continue
-                g = per_class.get(c)
+                if getattr(obs, "kind", "num") == "nom":
+                    lp += math.log(obs.cond_proba(v, c, cc.get(c, 0)))
+                    continue
+                g = obs.get(c)
                 if g is None or g.n_ < 2:
                     continue
                 var = g.m2_ / g.n_ + 1e-9
-                dd = float(v) - g.mean_
+                try:
+                    dd = float(v) - g.mean_
+                except (TypeError, ValueError):
+                    continue
                 lp -= 0.5 * math.log(6.283185307179586 * var) + 0.5 * dd * dd / var
             logp[c] = lp
         mx = max(logp.values())
@@ -516,14 +610,20 @@ class HoeffdingTreeClassifier(Classifier):
             prior = cc.get(c, 0) + 1.0
             lp = math.log(prior / total)
             for f, v in x.items():
-                per_class = fs.get(f)
-                if per_class is None:
+                obs = fs.get(f)
+                if obs is None:
                     continue
-                g = per_class.get(c)
+                if getattr(obs, "kind", "num") == "nom":
+                    lp += math.log(obs.cond_proba(v, c, cc.get(c, 0)))
+                    continue
+                g = obs.get(c)
                 if g is None or g.n_ < 2:
                     continue
                 var = g.m2_ / g.n_ + 1e-9
-                dd = float(v) - g.mean_
+                try:
+                    dd = float(v) - g.mean_
+                except (TypeError, ValueError):
+                    continue
                 lp -= 0.5 * (log_pi + math.log(var)) + 0.5 * dd * dd / var
             if lp > best_lp:
                 best_lp = lp
@@ -541,6 +641,9 @@ class HoeffdingTreeClassifier(Classifier):
     def explain_one(self, x: Any, t: float | None = None) -> list:
         """Return the path from root to leaf as a list of dicts.
 
+        A numeric split gives ``{"feature", "threshold", "side"}`` and a
+        categorical one ``{"feature", "category", "side"}``.
+
         Returns an empty list when the root itself is a leaf, that is
         when the tree never split from the root. This happens on
         small datasets where the Hoeffding bound (or the t-test for
@@ -555,16 +658,21 @@ class HoeffdingTreeClassifier(Classifier):
         out: list = []
         while cur is not None and not cur.is_leaf:
             f = cur.split_feature_
-            s = cur.split_threshold_
-            assert f is not None and s is not None
             v = d.get(f)
             if v is None:
                 break
             try:
-                fv = float(v)
+                left = self._goes_left(cur, v)
             except (TypeError, ValueError):
                 break
-            side = "left" if fv <= s else "right"
-            out.append({"feature": f, "threshold": s, "side": side})
-            cur = cur.left_ if side == "left" else cur.right_
+            side = "left" if left else "right"
+            if cur.split_category_ is not None:
+                out.append(
+                    {"feature": f, "category": cur.split_category_, "side": side}
+                )
+            else:
+                out.append(
+                    {"feature": f, "threshold": cur.split_threshold_, "side": side}
+                )
+            cur = cur.left_ if left else cur.right_
         return out

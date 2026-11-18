@@ -42,9 +42,9 @@ from typing import Any
 
 from dense_armor.core.online.tree.hoeffding import (
     HoeffdingTreeClassifier,
-    _as_dict,
     _Node,
 )
+from dense_armor.core.online.tree.splitters import merit_range
 
 
 class HoeffdingAnytimeTreeClassifier(HoeffdingTreeClassifier):
@@ -52,7 +52,9 @@ class HoeffdingAnytimeTreeClassifier(HoeffdingTreeClassifier):
 
     Same interface and same leaf classifiers as
     :class:`HoeffdingTreeClassifier`. Memory grows with the number of
-    nodes; ``max_nodes`` (default ``10000``) bounds the total.
+    nodes; ``max_nodes`` (default ``None``) can bound the total. Every node keeps
+    its statistics, because an internal node is re-evaluated; the leaves are
+    managed by ``max_active_leaves`` as in the base class.
 
     ``budget_s`` = 1e-3 s: p99 of ``learn_one`` measured at 2.8e-5 s on a
     2000-sample, two-feature stream on a desktop CPU (default
@@ -64,14 +66,22 @@ class HoeffdingAnytimeTreeClassifier(HoeffdingTreeClassifier):
         delta: one minus the confidence of the Hoeffding bound.
         tau: tie threshold.
         max_depth: maximum depth, or ``None``.
-        max_nodes: maximum number of nodes. Default ``10000``.
+        max_nodes: maximum number of nodes, or ``None`` (default).
         leaf: ``"nb"`` or ``"majority"``.
+        criterion: ``"entropy"`` or ``"gini"``, as in :class:`HoeffdingTreeClassifier`.
+        splitter: numeric splitter, as in :class:`HoeffdingTreeClassifier`.
+        n_splits: candidate thresholds of the ``"gaussian"`` splitter.
+        nominal_attributes: categorical features, as in :class:`HoeffdingTreeClassifier`.
+        max_active_leaves: leaves that keep statistics, as in :class:`HoeffdingTreeClassifier`.
+        memory_period: samples between two memory checks.
+        quantile_radius: slot width of the ``"quantile"`` splitter.
 
     Raises:
         ValueError: on a bad ``leaf`` or a non-positive parameter.
     """
 
     budget_s = 1e-3
+    _keep_internal_stats = True
 
     def __init__(
         self,
@@ -79,8 +89,15 @@ class HoeffdingAnytimeTreeClassifier(HoeffdingTreeClassifier):
         delta: float = 1e-7,
         tau: float = 0.05,
         max_depth: int | None = None,
-        max_nodes: int | None = 10000,
+        max_nodes: int | None = None,
         leaf: str = "nb",
+        criterion: str = "entropy",
+        splitter: str = "class_means",
+        n_splits: int = 10,
+        nominal_attributes: Any = None,
+        max_active_leaves: int | None = 1000,
+        memory_period: int = 1000,
+        quantile_radius: float | None = None,
     ) -> None:
         super().__init__(
             grace_period=grace_period,
@@ -89,6 +106,13 @@ class HoeffdingAnytimeTreeClassifier(HoeffdingTreeClassifier):
             max_depth=max_depth,
             max_nodes=max_nodes,
             leaf=leaf,
+            criterion=criterion,
+            splitter=splitter,
+            n_splits=n_splits,
+            nominal_attributes=nominal_attributes,
+            max_active_leaves=max_active_leaves,
+            memory_period=memory_period,
+            quantile_radius=quantile_radius,
         )
         self.n_reevals_ = 0
         self.n_replaced_ = 0
@@ -98,11 +122,11 @@ class HoeffdingAnytimeTreeClassifier(HoeffdingTreeClassifier):
         k = len(node.class_counts_)
         if k < 2:
             return math.inf
-        r = math.log2(k)
+        r = merit_range(self.criterion, k)
         return math.sqrt(r * r * math.log(1.0 / self.delta) / (2.0 * node.n_))
 
     def _try_split(self, node: _Node) -> bool:
-        if node.n_ < self.grace_period or not self._can_grow(node):
+        if not node.active_ or node.n_ < self.grace_period or not self._can_grow(node):
             return False
         k = len(node.class_counts_)
         if k < 2:
@@ -112,16 +136,13 @@ class HoeffdingAnytimeTreeClassifier(HoeffdingTreeClassifier):
             return False
         eps = self._bound(node)
         if best > eps or eps < self.tau:
-            node.split_feature_ = f
-            node.split_threshold_ = s
-            node.left_ = self._new_leaf(node.depth + 1)
-            node.right_ = self._new_leaf(node.depth + 1)
+            self._set_split(node, f, s)
             return True
         return False
 
     def _current_gain(self, node: _Node) -> float:
         f = node.split_feature_
-        s = node.split_threshold_
+        s = node.split_test
         if f is None or s is None:
             return 0.0
         g = self._split_gain(node, f, s)
@@ -130,6 +151,7 @@ class HoeffdingAnytimeTreeClassifier(HoeffdingTreeClassifier):
     def _collapse(self, node: _Node) -> None:
         node.split_feature_ = None
         node.split_threshold_ = None
+        node.split_category_ = None
         node.left_ = None
         node.right_ = None
 
@@ -144,10 +166,7 @@ class HoeffdingAnytimeTreeClassifier(HoeffdingTreeClassifier):
         current = self._current_gain(node)
         eps = self._bound(node)
         if f is not None and s is not None and best > current + eps:
-            node.split_feature_ = f
-            node.split_threshold_ = s
-            node.left_ = self._new_leaf(node.depth + 1)
-            node.right_ = self._new_leaf(node.depth + 1)
+            self._set_split(node, f, s)
             self.n_replaced_ += 1
             return
         if best < eps and current < eps:
@@ -158,22 +177,9 @@ class HoeffdingAnytimeTreeClassifier(HoeffdingTreeClassifier):
         self, x: Any, y: Any, t: float | None = None
     ) -> "HoeffdingAnytimeTreeClassifier":
         self._time_step(t)
-        d = _as_dict(x)
-        if not d or y is None:
-            self.n_missing_ += 1
+        d = self._validate(x, y)
+        if d is None:
             return self
-        for v in d.values():
-            if v is None:
-                self.n_missing_ += 1
-                return self
-            try:
-                fv = float(v)
-            except (TypeError, ValueError):
-                self.n_missing_ += 1
-                return self
-            if not math.isfinite(fv):
-                self.n_missing_ += 1
-                return self
         self.classes_.add(y)
         if self.root_ is None:
             self.root_ = self._new_leaf(0)
@@ -186,4 +192,5 @@ class HoeffdingAnytimeTreeClassifier(HoeffdingTreeClassifier):
                 self._try_split(n)
             elif n.n_ % self.grace_period == 0:
                 self._re_evaluate(n)
+        self._tick_memory()
         return self

@@ -4,6 +4,7 @@ from dense_armor.core.online.tree.adaptive import HoeffdingAdaptiveTreeClassifie
 from dense_armor.core.online.tree.efdt import HoeffdingAnytimeTreeClassifier
 from dense_armor.core.online.tree.fimt import FIMTDDRegressor
 from dense_armor.core.online.tree.hoeffding import HoeffdingTreeClassifier
+from dense_armor.core.online.tree.hoeffding_regressor import HoeffdingTreeRegressor
 from dense_armor.core.online.tree.mondrian import (
     MondrianForestClassifier,
     MondrianForestRegressor,
@@ -15,6 +16,7 @@ __all__ = [
     "HoeffdingAdaptiveTreeClassifier",
     "HoeffdingAnytimeTreeClassifier",
     "HoeffdingTreeClassifier",
+    "HoeffdingTreeRegressor",
     "MondrianForestClassifier",
     "MondrianForestRegressor",
     "SGTClassifier",

@@ -37,6 +37,7 @@ STOPPED = {
     "HoeffdingTreeClassifier": "the batch tree that the Hoeffding tree approaches is BatchDecisionTreeClassifier",
     "HoeffdingAnytimeTreeClassifier": "the batch tree that the Hoeffding tree approaches is BatchDecisionTreeClassifier",
     "HoeffdingAdaptiveTreeClassifier": "the batch tree that the Hoeffding tree approaches is BatchDecisionTreeClassifier; the replacement of subtrees on drift is defined on a stream",
+    "HoeffdingTreeRegressor": "the batch tree that the Hoeffding regression tree approaches is DecisionTreeRegressor",
     "FIMTDDRegressor": "the reference chapter (Ikonomovska 2012, chapter 6) lies outside the folder and the formulas of the chapter are outside the folder; the model tree with drift detection is defined on a stream",
     "SGTRegressor": _STREAM,
     "SGTClassifier": _STREAM,
