@@ -8,12 +8,6 @@
   box-shadow: none;
   border-bottom: 1px solid var(--da-line);
 }
-.md-header::after {
-  content: "";
-  display: block;
-  height: 2px;
-  background: linear-gradient(90deg, var(--da-a), var(--da-b));
-}
 .md-tabs {
   border-bottom: 1px solid var(--da-line);
 }
@@ -94,4 +88,20 @@
 .md-typeset .grid.cards > ul > li:hover,
 .md-typeset .grid > .card:hover {
   border-color: var(--da-a);
+}
+
+.md-tabs {
+  display: block;
+}
+.md-tabs__list {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.md-tabs__list::-webkit-scrollbar {
+  display: none;
+}
+@media screen and (max-width: 76.1875em) {
+  .md-header__button.md-icon[for="__drawer"] {
+    display: inline-block;
+  }
 }
