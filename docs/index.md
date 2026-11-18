@@ -15,36 +15,11 @@ Dense-Armor is a library that learns from streams of numbers (and from images an
 | It has | classifiers, regressors, trees, forests, bandits, anomaly and drift detectors, clustering, time series | statistics, preprocessing, linear models, trees, forests, ensembles, anomaly and change detection | layers, attention, convolutional and recurrent blocks, training, continual learning, decoder language models |
 | Start with | [Online learning](learn/index.md) | [Machine learning](ml/index.md) | [Deep learning](neural/index.md) |
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                                 APPLICATIONS                                │
-│                                                                             │
-│ Robot control, dynamics, URDF    Vision    LLM agents, tools    AI models   │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                           THREE KINDS OF LEARNING                           │
-│                                                                             │
-│ ONLINE                   MACHINE LEARNING         DEEP LEARNING             │
-│ one sample at a time     fit / predict on a       layers, attention,        │
-│ classifiers, regressors  whole table              training, language        │
-│ trees, anomaly, drift   statistics, linear,      models, continual         │
-│ detectors, clustering    trees, ensembles         learning                  │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                PROTECTION (optional, around any online model)               │
-│                                                                             │
-│ Armor (1D series)    Orca (input + output)    Arbiter (per-point routing)   │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                    SIGNALS & STATISTICS (the layer below)                   │
-│                                                                             │
-│ Signal   Streams   Datasets   Moments   Quantiles   Sketches   Metrics      │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                            ROLES (the foundation)                           │
-│                                                                             │
-│ Root > Estimator > AnomalyDetector, Classifier, Regressor, Transformer,     │
-│                    DriftDetector                                            │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
+![The map of Dense-Armor in five layers: applications, protection and bridges, the three kinds of learning, signals and statistics, and the roles](assets/home/map.png)
 
-The three kinds of learning are the core. The shield (Armor, Orca, Arbiter) is optional protection around an online model. Robot, vision, LLM and the AI models are the applications this core was built for.
+*Each layer uses the ones below it. The counts are the classes in the catalog of the library and are drawn by a script, so they follow the code.*
+
+The three kinds of learning are the core. The protection layer (`Armor`, `Orca`, `StreamingArbiter`, `StreamingHealing`) is optional and goes around an online model. Robot control, drones, finance, vision, audio and the IoT and biomedical pipelines are the applications this core was built for. Below the core are the signals, the statistics and the graphs, and at the bottom the [roles](roles/index.md): the short list of methods that the tools follow.
 
 ## Online learning in practice: four ways to use it, and where the shield goes
 
