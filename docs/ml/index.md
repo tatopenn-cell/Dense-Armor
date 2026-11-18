@@ -4,6 +4,10 @@ The classes of `dense_armor.ml` read a whole table at once. `fit(X, y)` takes th
 
 Each family below has its own page, with a self-contained block for every class and the output it prints.
 
+![The map of machine learning: fourteen families in three groups, with the number of classes in each](../assets/ml/map.png)
+
+*The families of this section in three groups: prepare a table, predict from it, and describe or detect. The number in each box is the count of classes of that family in the catalog of the library; the figure is drawn by a script, so it follows the code.*
+
 | Family | What it holds |
 |---|---|
 | [Statistics and sketches](stats.md) | A statistic such as a mean, a variance or a correlation is computed on a whole table at once. |
