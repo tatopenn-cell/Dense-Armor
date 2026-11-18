@@ -10,8 +10,8 @@
   "upload_type": "software",
   "access_right": "open",
   "license": "AGPL-3.0-or-later",
-  "version": "1.6.0",
-  "publication_date": "2026-11-14",
+  "version": "1.7.0",
+  "publication_date": "2026-11-18",
   "keywords": [
     "machine-learning",
     "online-learning",

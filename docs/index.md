@@ -296,7 +296,7 @@ If you use Dense-Armor in a paper, cite the Zenodo release:
   author  = {Pennacchio, Salvatore},
   title   = {Dense-Armor: Low-Level Learning toolkit},
   year    = {2026},
-  doi     = {10.5281/zenodo.24030156},
+  doi     = {10.5281/zenodo.24352804},
   url     = {https://github.com/tatopenn-cell/Dense-Armor}
 }
 ```
