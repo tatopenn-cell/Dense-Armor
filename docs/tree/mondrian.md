@@ -17,7 +17,7 @@ has nothing to say, and it says so.
 | `MondrianForestRegressor` | a number | a mean and a standard deviation (`return_estimate=True`) |
 | `MondrianForestClassifier` | a class | the probability of each class, flat when it does not know |
 
-## The idea, as a game
+## Gamestory
 
 A long time ago there was a painter called Piet Mondrian. At the beginning he painted normal
 trees and landscapes, but then he had a crazy idea: he decided to eliminate everything and to
