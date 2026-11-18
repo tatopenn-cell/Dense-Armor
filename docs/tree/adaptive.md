@@ -45,7 +45,7 @@ print(round(acc_plain.get(), 3), round(acc_adaptive.get(), 3), adaptive.n_drifts
 
 After the change the plain tree is right 4.4 % of the time: it keeps the old rule, so it is wrong almost every time. The adaptive tree is right 96.4 % of the time: its alarm rang 3 times (`n_drifts_`) and it swapped in the new subtree once (`n_swaps_`). The next sections show the same behaviour on a robot arm, with the figure of what happens sample by sample.
 
-## 2. For experts: a robot arm after a sudden change
+## 2. A robot arm after a sudden change
 
 After 3000 samples the meaning of the torque flips (the load is now the low-torque state). The
 same split on `tau` still separates the two states, but the answers are swapped. The adaptive

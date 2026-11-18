@@ -1,10 +1,11 @@
-# Hoeffding Anytime tree: it can change a split
+# Hoeffding Anytime tree: it can change its mind
 
-The Hoeffding tree never revisits a split. `HoeffdingAnytimeTreeClassifier` (the Extremely Fast
-Decision Tree, Manapragada et al. 2018) splits a leaf as soon as a question is *good enough*,
-and then keeps checking every internal node: when another question wins by the bound, it
-replaces the old one. It gets an answer early and a better tree later, which is why it is
-called anytime.
+A Hoeffding tree picks a question once and keeps it for ever, even if the data later show that
+another question is better. The Hoeffding Anytime tree, `HoeffdingAnytimeTreeClassifier`, does
+not: every so often it re-checks the questions it has already asked, and when a different
+question has clearly become the better one, it replaces the old one. So it can start acting
+early, with a first rough tree, and it keeps improving that tree while the data arrive. It is
+also called the Extremely Fast Decision Tree (Manapragada et al. 2018).
 
 ## Gamestory
 

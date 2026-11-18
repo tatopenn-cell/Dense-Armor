@@ -48,7 +48,7 @@ for x in ({"amount": 45.0, "hour": 15.0}, {"amount": 420.0, "hour": 2.0}):
 
 The tree is right 94.7 % of the time, with 3 nodes (one question and two leaves). The probabilities are less extreme than those of the Hoeffding tree on the same data (0.22 and 0.78, where the Hoeffding tree said 0 and 1): the penalty on the leaf values (`lambda_`) keeps them away from 0 and 1. The next sections use `SGTRegressor` on a robot arm.
 
-## 2. For experts: predicting a number, the torque of a two-link arm
+## 2. Predicting a number: the torque of a two-link arm
 
 A regression tree that splits on the gradient of the loss (stochastic gradient tree): it
 predicts the gravity torque of the first joint of a two-link arm from the two joint angles.
