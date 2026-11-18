@@ -100,9 +100,13 @@ class HoeffdingAdaptiveTreeClassifier(HoeffdingTreeClassifier):
         max_depth: maximum depth, or ``None``.
         max_nodes: maximum number of nodes, or ``None`` (default).
         leaf: ``"nb"`` or ``"majority"``.
-        criterion, splitter, n_splits, nominal_attributes, max_active_leaves,
-            memory_period, quantile_radius: as in
-            :class:`HoeffdingTreeClassifier`.
+        criterion: ``"entropy"`` or ``"gini"``, as in :class:`HoeffdingTreeClassifier`.
+        splitter: numeric splitter, as in :class:`HoeffdingTreeClassifier`.
+        n_splits: candidate thresholds of the ``"gaussian"`` splitter.
+        nominal_attributes: categorical features, as in :class:`HoeffdingTreeClassifier`.
+        max_active_leaves: leaves that keep statistics, as in :class:`HoeffdingTreeClassifier`.
+        memory_period: samples between two memory checks.
+        quantile_radius: slot width of the ``"quantile"`` splitter.
         drift_detector: a fresh ``DriftDetector`` instance, cloned per node.
         delta_alt: one minus the confidence of the alternate bound.
         kappa_alt: minimum samples for an alternate to be considered.
