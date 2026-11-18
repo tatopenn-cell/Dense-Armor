@@ -59,9 +59,10 @@ def _independent_count(repo: Path) -> int:
         rel = p.relative_to(repo).parts
         sub = rel[rel.index("core") + 1 : -1] if "core" in rel else rel[1:-1]
         domain = sub[-1] if sub else "core"
-        # the folders of the contracts, the checks, the servers and the bridges
-        # hold classes that are not primitives, unless they carry a role
-        if domain in ("roles", "checks", "mcp_server", "bridges") and not role_of(node):
+        # the folders of the contracts, the checks and the servers hold classes
+        # that are not primitives, unless they carry a role; the bridges are
+        # listed, so that a job can reach them
+        if domain in ("roles", "checks", "mcp_server") and not role_of(node):
             continue
         n += 1
     return n

@@ -2,11 +2,11 @@
 
 The classes of `dense_armor.ml` read a whole table at once. `fit(X, y)` takes the rows, leaves the results in attributes with a trailing underscore (`mean_`, `classes_`, `components_`), and the class then answers with `predict`, `transform` or `score`. The data in every block of these pages are `synthetic`.
 
-Each family below has its own page, with a self-contained block for every class and the output it prints.
-
 ![The map of machine learning: fourteen families in three groups, with the number of classes in each](../assets/ml/map.png)
 
 *The families of this section in three groups: prepare a table, predict from it, and describe or detect. The number in each box is the count of classes of that family in the catalog of the library; the figure is drawn by a script, so it follows the code.*
+
+Each family below has its own page, with a self-contained block for every class and the output it prints.
 
 | Family | What it holds |
 |---|---|

@@ -227,6 +227,30 @@ Dense-Armor also provides other online utilities:
 - Core engine (`UniversalMemoryGuard`, `AdaptiveSignalStabilizer`, `AIHardwareProfiler`)
 
 Check out [the API](https://tatopenn-cell.github.io/Dense-Armor/api/) for a comprehensive overview.
+
+<!-- usable-map:start -->
+<p align="center"><a href="https://tatopenn-cell.github.io/Dense-Armor/api/general/"><img src="docs/assets/maps/jobs.png" alt="The map of Dense-Armor by job: what you want to do, and the domains that serve it" width="860"></a></p>
+
+*What you want to do, and the domains of Dense-Armor that serve it, as `usable` knows them (15 jobs). Click the picture for the interactive map, where a domain opens its page and its classes are listed; the table below has the same links.*
+
+| Job | Domains |
+|---|---|
+| `text_features` | `signals.preprocessing.text` &middot; `signals.preprocessing.vectorizer` &middot; `signals.preprocessing.text_input` |
+| `detect_drift` | [drift](https://tatopenn-cell.github.io/Dense-Armor/drift/) &middot; [anomaly](https://tatopenn-cell.github.io/Dense-Armor/anomaly/) |
+| `classify` | [tree](https://tatopenn-cell.github.io/Dense-Armor/tree/) &middot; [forest](https://tatopenn-cell.github.io/Dense-Armor/forest/) &middot; [ensemble](https://tatopenn-cell.github.io/Dense-Armor/ensemble/) &middot; [learn](https://tatopenn-cell.github.io/Dense-Armor/learn/) &middot; [ml](https://tatopenn-cell.github.io/Dense-Armor/ml/) &middot; [neural](https://tatopenn-cell.github.io/Dense-Armor/neural/overview/) &middot; [bayes](https://tatopenn-cell.github.io/Dense-Armor/bayes/) &middot; [neighbors](https://tatopenn-cell.github.io/Dense-Armor/neighbors/) &middot; [multiclass](https://tatopenn-cell.github.io/Dense-Armor/multiclass/) &middot; [proba](https://tatopenn-cell.github.io/Dense-Armor/proba/) &middot; [rules](https://tatopenn-cell.github.io/Dense-Armor/rules/) &middot; [bandit](https://tatopenn-cell.github.io/Dense-Armor/bandit/) &middot; [active](https://tatopenn-cell.github.io/Dense-Armor/active/) &middot; [reco](https://tatopenn-cell.github.io/Dense-Armor/reco/) &middot; [cluster](https://tatopenn-cell.github.io/Dense-Armor/cluster/) |
+| `detect_anomaly` | [anomaly](https://tatopenn-cell.github.io/Dense-Armor/anomaly/) &middot; [cluster](https://tatopenn-cell.github.io/Dense-Armor/cluster/) &middot; [neighbors](https://tatopenn-cell.github.io/Dense-Armor/neighbors/) &middot; [proba](https://tatopenn-cell.github.io/Dense-Armor/proba/) &middot; [ml](https://tatopenn-cell.github.io/Dense-Armor/ml/) &middot; [active](https://tatopenn-cell.github.io/Dense-Armor/active/) |
+| `regress` | [tree](https://tatopenn-cell.github.io/Dense-Armor/tree/) &middot; [forest](https://tatopenn-cell.github.io/Dense-Armor/forest/) &middot; linear &middot; [timeseries](https://tatopenn-cell.github.io/Dense-Armor/timeseries/) &middot; [ml](https://tatopenn-cell.github.io/Dense-Armor/ml/) &middot; [neural](https://tatopenn-cell.github.io/Dense-Armor/neural/overview/) &middot; [bayes](https://tatopenn-cell.github.io/Dense-Armor/bayes/) &middot; [neighbors](https://tatopenn-cell.github.io/Dense-Armor/neighbors/) &middot; [multioutput](https://tatopenn-cell.github.io/Dense-Armor/multioutput/) &middot; compose &middot; [optim](https://tatopenn-cell.github.io/Dense-Armor/optim/) &middot; [facto](https://tatopenn-cell.github.io/Dense-Armor/facto/) |
+| `cluster` | [cluster](https://tatopenn-cell.github.io/Dense-Armor/cluster/) |
+| `forecast` | [timeseries](https://tatopenn-cell.github.io/Dense-Armor/timeseries/) &middot; [kalman](https://tatopenn-cell.github.io/Dense-Armor/timeseries/kalman/) &middot; [dynamics](https://tatopenn-cell.github.io/Dense-Armor/dynamics/) |
+| `vision_features` | [vision](https://tatopenn-cell.github.io/Dense-Armor/vision/) &middot; [preprocessing](https://tatopenn-cell.github.io/Dense-Armor/preprocessing/) &middot; [neural](https://tatopenn-cell.github.io/Dense-Armor/neural/overview/) |
+| `audio_features` | [audio](https://tatopenn-cell.github.io/Dense-Armor/audio/) &middot; [preprocessing](https://tatopenn-cell.github.io/Dense-Armor/preprocessing/) |
+| `summarize_stream` | [stats](https://tatopenn-cell.github.io/Dense-Armor/stats/) &middot; [metrics](https://tatopenn-cell.github.io/Dense-Armor/metrics/) &middot; [ml](https://tatopenn-cell.github.io/Dense-Armor/ml/) &middot; [neural](https://tatopenn-cell.github.io/Dense-Armor/neural/overview/) &middot; [roles](https://tatopenn-cell.github.io/Dense-Armor/roles/) &middot; [proba](https://tatopenn-cell.github.io/Dense-Armor/proba/) &middot; [preprocessing](https://tatopenn-cell.github.io/Dense-Armor/preprocessing/) &middot; data &middot; datasets &middot; [evaluate](https://tatopenn-cell.github.io/Dense-Armor/metrics/) &middot; consolidation &middot; core &middot; [facto](https://tatopenn-cell.github.io/Dense-Armor/facto/) &middot; [bayes](https://tatopenn-cell.github.io/Dense-Armor/bayes/) &middot; [cluster](https://tatopenn-cell.github.io/Dense-Armor/cluster/) |
+| `robot` | [dynamics](https://tatopenn-cell.github.io/Dense-Armor/dynamics/) &middot; utility &middot; [optim](https://tatopenn-cell.github.io/Dense-Armor/optim/) &middot; [graph](https://tatopenn-cell.github.io/Dense-Armor/ontology/) &middot; [protect](https://tatopenn-cell.github.io/Dense-Armor/protect/) |
+| `resources` | utility &middot; [optim](https://tatopenn-cell.github.io/Dense-Armor/optim/) &middot; core &middot; [evaluate](https://tatopenn-cell.github.io/Dense-Armor/metrics/) &middot; [metrics](https://tatopenn-cell.github.io/Dense-Armor/metrics/) |
+| `heal` | [protect](https://tatopenn-cell.github.io/Dense-Armor/protect/) |
+| `finance_controls` | [finance](https://tatopenn-cell.github.io/Dense-Armor/finance/) |
+| `interoperate` | [bridges](https://tatopenn-cell.github.io/Dense-Armor/bridges/) |
+<!-- usable-map:end -->
 ---
 
 ## Why Dense-Armor
