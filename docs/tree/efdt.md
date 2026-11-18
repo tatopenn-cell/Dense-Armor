@@ -37,6 +37,14 @@ The Hoeffding tree keeps its first question on `a` forever; the Anytime tree mov
 samples it has seen favour the new split, so it is slow after a sudden change: the next step is
 faster.
 
+![Plain and Anytime Hoeffding tree when the useful feature changes from a to b at sample 3000: the accuracy of both stays near 1, and the root question of the Anytime tree moves from a to b at sample 6600 while the plain tree keeps a.](../assets/tree/efdt_replace.png)
+
+The figure follows the same stream for 12000 samples. The two bars are the question at the root
+of each tree: the plain tree asks about `a` for ever; the Anytime tree asks about `a` until
+sample 6600, 3600 samples after the change, and about `b` after it. The accuracy (top) stays
+near 1.0 for both here, because the leaves below the root keep learning; what changes is the
+question the tree asks first, which is what `explain_one` shows to a person.
+
 ## API reference
 
 ::: dense_armor.core.online.tree.efdt

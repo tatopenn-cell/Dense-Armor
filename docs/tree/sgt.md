@@ -35,10 +35,12 @@ print(round(mae_sgt.get(), 3), round(mae_mean.get(), 3), sgt.n_nodes_)
 7.715 13.241 91
 ```
 
-![Stochastic gradient tree on the two-link gravity torque: the true function (left), the prediction after 20000 samples (centre) and the error (right).](../assets/tree/sgt_surface.png)
+![Stochastic gradient tree on the two-link gravity torque: the true surface, the tree after 20000 samples as steps, and the absolute error on a grid.](../assets/tree/sgt_3d.png)
 
 Tested before learning each sample, the tree's mean absolute error is 7.7 N·m against
-13.2 N·m for the running mean, with 91 nodes. A split is made only when a t-test says the loss
+13.2 N·m for the running mean, with 91 nodes. The error map in the figure is measured on a
+regular grid of angles after the 20000 samples (mean 7.0 N·m), and shows where the tree is
+still coarse: the two ridges of the torque, which it has cut into only a few steps. A split is made only when a t-test says the loss
 reduction is real (Gouk et al. 2019, eq. 16):
 
 $$t = \frac{\bar L}{s / \sqrt{n}}$$

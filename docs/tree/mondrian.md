@@ -17,6 +17,30 @@ has nothing to say, and it says so.
 | `MondrianForestRegressor` | a number | a mean and a standard deviation (`return_estimate=True`) |
 | `MondrianForestClassifier` | a class | the probability of each class, flat when it does not know |
 
+## The idea, as a game
+
+A long time ago there was a painter called Piet Mondrian. At the beginning he painted normal
+trees and landscapes, but then he had a crazy idea: he decided to eliminate everything and to
+use only straight black lines to divide the white canvas into many squares and rectangles,
+coloring them only in red, yellow and blue. His paintings looked like super tidy colored maps.
+
+Now imagine turning his paintings into a game to play with 10 friends. Each of you has a blank
+sheet of paper. Every time someone puts a colored dot on the sheet, you draw a straight line to
+enclose that dot inside its own rectangle. At the end you will have 10 Mondrian-style
+paintings, all different from each other.
+
+Then someone closes their eyes, points a finger at a spot on the sheet and asks: "What color is
+here?"
+
+- If all 10 of you look at your drawing and say "Red!", then you are super sure.
+- If instead one says "Red", one "Blue" and another "Yellow", you immediately understand that at
+  that spot you have no idea, and you say: "We don't know!"
+
+That is a Mondrian forest: a team of 10 "painters" that divides space into colored rectangles
+to guess things, and is smart enough to admit when it does not know the answer yet. In the
+library the painters are the trees (`n_trees=10` by default), the dots are the samples, the
+colors are the labels (or, for a number, the values) and the lines are drawn at random.
+
 ## 1. Random trees that grow with the data
 
 A Mondrian tree cuts the space of the features into boxes, like the paintings it is named

@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 743" width="100%" role="img" aria-label="The map of the trees">
+<style>text{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif}.m{font-family:ui-monospace,Menlo,Consolas,monospace}.e{opacity:.32;transition:opacity .15s}.net:hover .e{opacity:.06}.net .pg:hover .e{opacity:1;stroke-width:2.2}a:hover .card{fill:#17303f;stroke-width:2.4}a:hover text.dn{fill:#ffffff}.back:hover .card{fill:#17303f}</style>
+<rect width="1000" height="743" fill="#0d131a" rx="14"/>
+<text x="500" y="38" fill="#e0fbfc" font-size="24" font-weight="700" text-anchor="middle">THE MAP OF THE TREES</text>
+<text x="500" y="62" fill="#4cc9f0" font-size="12.5" text-anchor="middle">the job, the page of each tree and its classes; pass over a page to light its classes, click to open it</text>
+<a class="back" href="../../#find-a-tool-by-what-you-want-to-do" target="_top"><title>back to the map by job</title><rect class="card" x="20" y="14" width="150" height="30" rx="15" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="95" y="33.5" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">← map by job</text></a>
+<text x="24" y="98" fill="#f72585" font-size="12" font-weight="700">01  JOB</text>
+<text x="410" y="98" fill="#f72585" font-size="12" font-weight="700">02  PAGE</text>
+<text x="680" y="98" fill="#f72585" font-size="12" font-weight="700">03  CLASSES OF THE CATALOG</text>
+<g class="net">
+<path class="e" d="M214,376.8 C262,376.8 282,404.8 318,404.8" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M214,432.8 C262,432.8 282,404.8 318,404.8" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<g class="pg">
+<path class="e" d="M342,404.8 C382,404.8 366,187.0 408,187.0" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,187.0 C650,187.0 650,124.5 676,124.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M626,187.0 C650,187.0 650,149.5 676,149.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M626,187.0 C650,187.0 650,174.5 676,174.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M626,187.0 C650,187.0 650,199.5 676,199.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M626,187.0 C650,187.0 650,224.5 676,224.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M626,187.0 C650,187.0 650,249.5 676,249.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,404.8 C382,404.8 366,288.5 408,288.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,288.5 C650,288.5 650,288.5 676,288.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,404.8 C382,404.8 366,327.5 408,327.5" fill="none" stroke="#f72585" stroke-width="1.4"/>
+<path class="e" d="M626,327.5 C650,327.5 650,327.5 676,327.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,404.8 C382,404.8 366,379.0 408,379.0" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,379.0 C650,379.0 650,366.5 676,366.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M626,379.0 C650,379.0 650,391.5 676,391.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,404.8 C382,404.8 366,443.0 408,443.0" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,443.0 C650,443.0 650,430.5 676,430.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M626,443.0 C650,443.0 650,455.5 676,455.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,404.8 C382,404.8 366,494.5 408,494.5" fill="none" stroke="#64748b" stroke-width="1.4"/>
+<path class="e" d="M626,494.5 C650,494.5 650,494.5 676,494.5" fill="none" stroke="#64748b" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,404.8 C382,404.8 366,533.5 408,533.5" fill="none" stroke="#64748b" stroke-width="1.4"/>
+<path class="e" d="M626,533.5 C650,533.5 650,533.5 676,533.5" fill="none" stroke="#64748b" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,404.8 C382,404.8 366,622.5 408,622.5" fill="none" stroke="#f72585" stroke-width="1.4"/>
+<path class="e" d="M626,622.5 C650,622.5 650,572.5 676,572.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M626,622.5 C650,622.5 650,597.5 676,597.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M626,622.5 C650,622.5 650,622.5 676,622.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M626,622.5 C650,622.5 650,647.5 676,647.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M626,622.5 C650,622.5 650,672.5 676,672.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+</g>
+</g>
+<a href="../../#find-a-tool-by-what-you-want-to-do" target="_top"><title>classify: back to the map by job</title><rect class="card" x="20" y="357.8" width="190" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="34" y="374.8" fill="#e0fbfc" font-size="13" font-weight="700">classify</text><text x="34" y="388.8" fill="#94a3b8" font-size="9.5">job of the ontology</text></a>
+<a href="../../#find-a-tool-by-what-you-want-to-do" target="_top"><title>regress: back to the map by job</title><rect class="card" x="20" y="413.8" width="190" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="34" y="430.8" fill="#e0fbfc" font-size="13" font-weight="700">regress</text><text x="34" y="444.8" fill="#94a3b8" font-size="9.5">job of the ontology</text></a>
+<circle cx="330" cy="404.8" r="12" fill="#101a24" stroke="#4cc9f0" stroke-width="2"/><text class="m" x="330" y="434.8" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">tree</text>
+<a href="../../tree/hoeffding/" target="_top"><title>Hoeffding tree: open tree/hoeffding.md</title><rect class="card" x="410" y="168.0" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="184.0" fill="#e0fbfc" font-size="13" font-weight="700">Hoeffding tree</text><text x="424" y="199.0" fill="#94a3b8" font-size="9.5">waits for proof</text></a>
+<a href="../../tree/hoeffding/" target="_top"><title>HoeffdingTreeClassifier: open tree/hoeffding.md</title><rect class="card" x="678" y="114.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="128.3" fill="#e0fbfc" font-size="11">HoeffdingTreeClassifier</text><text x="966" y="128.3" fill="#4cc9f0" font-size="10" font-weight="700" text-anchor="end">C</text></a>
+<a href="../../tree/hoeffding/" target="_top"><title>HoeffdingTreeRegressor: open tree/hoeffding.md</title><rect class="card" x="678" y="139.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="153.3" fill="#e0fbfc" font-size="11">HoeffdingTreeRegressor</text><text x="966" y="153.3" fill="#ff9e00" font-size="10" font-weight="700" text-anchor="end">R</text></a>
+<a href="../../tree/hoeffding/" target="_top"><title>NumericObserver: open tree/hoeffding.md</title><rect class="card" x="678" y="164.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="178.3" fill="#e0fbfc" font-size="11">NumericObserver</text></a>
+<a href="../../tree/hoeffding/" target="_top"><title>NominalObserver: open tree/hoeffding.md</title><rect class="card" x="678" y="189.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="203.3" fill="#e0fbfc" font-size="11">NominalObserver</text></a>
+<a href="../../tree/hoeffding/" target="_top"><title>TargetNumericObserver: open tree/hoeffding.md</title><rect class="card" x="678" y="214.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="228.3" fill="#e0fbfc" font-size="11">TargetNumericObserver</text></a>
+<a href="../../tree/hoeffding/" target="_top"><title>TargetNominalObserver: open tree/hoeffding.md</title><rect class="card" x="678" y="239.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="253.3" fill="#e0fbfc" font-size="11">TargetNominalObserver</text></a>
+<a href="../../tree/efdt/" target="_top"><title>Anytime tree: open tree/efdt.md</title><rect class="card" x="410" y="269.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="285.5" fill="#e0fbfc" font-size="13" font-weight="700">Anytime tree</text><text x="424" y="300.5" fill="#94a3b8" font-size="9.5">changes a split</text></a>
+<a href="../../tree/efdt/" target="_top"><title>HoeffdingAnytimeTreeClassifier: open tree/efdt.md</title><rect class="card" x="678" y="278.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="292.3" fill="#e0fbfc" font-size="11">HoeffdingAnytimeTreeClassifier</text><text x="966" y="292.3" fill="#4cc9f0" font-size="10" font-weight="700" text-anchor="end">C</text></a>
+<a href="../../tree/adaptive/" target="_top"><title>Adaptive tree: open tree/adaptive.md</title><rect class="card" x="410" y="308.5" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="324.5" fill="#e0fbfc" font-size="13" font-weight="700">Adaptive tree</text><text x="424" y="339.5" fill="#94a3b8" font-size="9.5">follows a change</text></a>
+<a href="../../tree/adaptive/" target="_top"><title>HoeffdingAdaptiveTreeClassifier: open tree/adaptive.md</title><rect class="card" x="678" y="317.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="331.3" fill="#e0fbfc" font-size="11">HoeffdingAdaptiveTreeClassifier</text><text x="966" y="331.3" fill="#4cc9f0" font-size="10" font-weight="700" text-anchor="end">C</text></a>
+<a href="../../tree/sgt/" target="_top"><title>Stochastic gradient trees: open tree/sgt.md</title><rect class="card" x="410" y="360.0" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="376.0" fill="#e0fbfc" font-size="13" font-weight="700">Stochastic gradient trees</text><text x="424" y="391.0" fill="#94a3b8" font-size="9.5">one rule, any loss</text></a>
+<a href="../../tree/sgt/" target="_top"><title>SGTRegressor: open tree/sgt.md</title><rect class="card" x="678" y="356.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="370.3" fill="#e0fbfc" font-size="11">SGTRegressor</text><text x="966" y="370.3" fill="#ff9e00" font-size="10" font-weight="700" text-anchor="end">R</text></a>
+<a href="../../tree/sgt/" target="_top"><title>SGTClassifier: open tree/sgt.md</title><rect class="card" x="678" y="381.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="395.3" fill="#e0fbfc" font-size="11">SGTClassifier</text><text x="966" y="395.3" fill="#4cc9f0" font-size="10" font-weight="700" text-anchor="end">C</text></a>
+<a href="../../tree/mondrian/" target="_top"><title>Mondrian forests: open tree/mondrian.md</title><rect class="card" x="410" y="424.0" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="440.0" fill="#e0fbfc" font-size="13" font-weight="700">Mondrian forests</text><text x="424" y="455.0" fill="#94a3b8" font-size="9.5">a number and its doubt</text></a>
+<a href="../../tree/mondrian/" target="_top"><title>MondrianForestRegressor: open tree/mondrian.md</title><rect class="card" x="678" y="420.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="434.3" fill="#e0fbfc" font-size="11">MondrianForestRegressor</text><text x="966" y="434.3" fill="#ff9e00" font-size="10" font-weight="700" text-anchor="end">R</text></a>
+<a href="../../tree/mondrian/" target="_top"><title>MondrianForestClassifier: open tree/mondrian.md</title><rect class="card" x="678" y="445.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="459.3" fill="#e0fbfc" font-size="11">MondrianForestClassifier</text><text x="966" y="459.3" fill="#4cc9f0" font-size="10" font-weight="700" text-anchor="end">C</text></a>
+<a href="../../ml/tree/" target="_top"><title>Whole table: open ml/tree.md</title><rect class="card" x="410" y="475.5" width="216" height="38" rx="10" fill="#101a24" stroke="#64748b" stroke-width="1.6"/><text class="dn" x="424" y="491.5" fill="#e0fbfc" font-size="13" font-weight="700">Whole table</text><text x="424" y="506.5" fill="#94a3b8" font-size="9.5">trees on all the data</text></a>
+<a href="../../ml/tree/" target="_top"><title>BatchDecisionTreeClassifier: open ml/tree.md</title><rect class="card" x="678" y="484.5" width="300" height="20" rx="10" fill="#101a24" stroke="#64748b" stroke-width="1.2"/><text class="dn m" x="692" y="498.3" fill="#e0fbfc" font-size="11">BatchDecisionTreeClassifier</text><text x="966" y="498.3" fill="#4cc9f0" font-size="10" font-weight="700" text-anchor="end">C</text></a>
+<a href="../../api/general/#fimtddregressor" target="_top"><title>Model tree: open api/general.md#fimtddregressor</title><rect class="card" x="410" y="514.5" width="216" height="38" rx="10" fill="#101a24" stroke="#64748b" stroke-width="1.6"/><text class="dn" x="424" y="530.5" fill="#e0fbfc" font-size="13" font-weight="700">Model tree</text><text x="424" y="545.5" fill="#94a3b8" font-size="9.5">FIMT-DD, in the API</text></a>
+<a href="../../api/general/#fimtddregressor" target="_top"><title>FIMTDDRegressor: open api/general.md#fimtddregressor</title><rect class="card" x="678" y="523.5" width="300" height="20" rx="10" fill="#101a24" stroke="#64748b" stroke-width="1.2"/><text class="dn m" x="692" y="537.3" fill="#e0fbfc" font-size="11">FIMTDDRegressor</text><text x="966" y="537.3" fill="#ff9e00" font-size="10" font-weight="700" text-anchor="end">R</text></a>
+<a href="../../forest/" target="_top"><title>Forests: open forest/index.md</title><rect class="card" x="410" y="603.5" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="619.5" fill="#e0fbfc" font-size="13" font-weight="700">Forests</text><text x="424" y="634.5" fill="#94a3b8" font-size="9.5">built from these trees</text></a>
+<a href="../../forest/" target="_top"><title>AdaptiveRandomForestClassifier: open forest/index.md</title><rect class="card" x="678" y="562.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="576.3" fill="#e0fbfc" font-size="11">AdaptiveRandomForestClassifier</text><text x="966" y="576.3" fill="#4cc9f0" font-size="10" font-weight="700" text-anchor="end">C</text></a>
+<a href="../../forest/" target="_top"><title>SubspaceHoeffdingTree: open forest/index.md</title><rect class="card" x="678" y="587.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="601.3" fill="#e0fbfc" font-size="11">SubspaceHoeffdingTree</text><text x="966" y="601.3" fill="#4cc9f0" font-size="10" font-weight="700" text-anchor="end">C</text></a>
+<a href="../../forest/" target="_top"><title>OnlineExtraTreesRegressor: open forest/index.md</title><rect class="card" x="678" y="612.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="626.3" fill="#e0fbfc" font-size="11">OnlineExtraTreesRegressor</text><text x="966" y="626.3" fill="#ff9e00" font-size="10" font-weight="700" text-anchor="end">R</text></a>
+<a href="../../forest/" target="_top"><title>AggregatedMondrianForestClassifier: open forest/index.md</title><rect class="card" x="678" y="637.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="651.3" fill="#e0fbfc" font-size="11">AggregatedMondrianForestClassifier</text><text x="966" y="651.3" fill="#4cc9f0" font-size="10" font-weight="700" text-anchor="end">C</text></a>
+<a href="../../forest/" target="_top"><title>AggregatedMondrianForestRegressor: open forest/index.md</title><rect class="card" x="678" y="662.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="676.3" fill="#e0fbfc" font-size="11">AggregatedMondrianForestRegressor</text><text x="966" y="676.3" fill="#ff9e00" font-size="10" font-weight="700" text-anchor="end">R</text></a>
+<text x="500" y="727" fill="#94a3b8" font-size="10.5" text-anchor="middle">C classifier, R regressor; jobs: dense_armor/usable/ontology.json; classes: dense_armor.usable.catalog; drawn by docs/assets/maps/make_tree_map.py</text>
+</svg>

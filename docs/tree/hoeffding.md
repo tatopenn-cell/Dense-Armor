@@ -14,6 +14,14 @@ of questions behind each answer.
 Trees that change their mind after a split are on the next pages: the
 [Anytime tree](efdt.md) and the [Adaptive tree](adaptive.md).
 
+![A Hoeffding tree on a robot arm: the question it learned (tau above 3.50), the Hoeffding bound that shrinks with the samples, and the accuracy over time with the first split.](../assets/tree/hoeffding_story.png)
+
+Left: the 2000 samples of the first example, the two states of the arm and the one question the
+tree learned. Centre: the doubt it must overcome before asking it, the bound $\epsilon$, which
+falls as the leaf sees more samples. Right: the accuracy of the last 100 predictions, tested
+before the tree learns each sample; the first split comes at sample 100, the first moment the
+tree is allowed to check (`grace_period=100`).
+
 ## 1. A tree that learns a robot state
 
 Two states of an arm: idle (0) and carrying a load (1). The load raises the joint torque
@@ -82,6 +90,13 @@ print(round(mae.get(), 3), round(mae_mean.get(), 3), ht.n_nodes_, ht.n_active_le
 The mean absolute error is 5.2 N·m against 13.2 N·m for the running mean, with 73 nodes, 37 of
 them leaves that still keep statistics. The stochastic gradient tree on the [same
 problem](sgt.md) reaches 7.7 N·m with 91 nodes.
+
+![A Hoeffding regression tree against the true gravity torque: the true surface, the tree after 20000 samples as steps, and the absolute error on a grid.](../assets/tree/hoeffding_regressor_surface.png)
+
+The figure shows what the tree learned: the torque (left) cut into flat steps (centre), more
+and finer where the surface bends. The error map (right) is measured on a regular grid of
+angles after the 20000 samples (mean 3.1 N·m); the 5.2 N·m above is the error of each
+prediction tested before learning, so it includes the early samples, when the tree was small.
 
 ## API reference
 

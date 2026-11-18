@@ -6,6 +6,12 @@ A decision tree makes choices by asking a chain of questions (for example, "Is t
 Traditionally, these trees are trained in batches, meaning they require all the data to be available at once. In contrast, the trees described in this section grow dynamically—one single sample at a time—while the robot is actively working. They create a new branch (split a leaf) only when they have gathered enough data to prove the change is statistically accurate.
 Furthermore, they can adapt and change their mind if the robot's behavior shifts, and one specific family of trees can even communicate how confident it is in its own predictions.
 
+## The map of the trees
+
+Click a page to open it, or a job on the left (or the button at the top) to go back to the [map by job](../index.md#find-a-tool-by-what-you-want-to-do).
+
+<object type="image/svg+xml" data="../assets/maps/trees.svg" style="width:100%"></object>
+
 ## The trees, one page each
 
 | page | classes | what it is for |
