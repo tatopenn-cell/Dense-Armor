@@ -55,9 +55,10 @@ def test_max_depth_caps_tree():
     assert h.depth_ <= 2
 
 
-def test_max_nodes_default_finite():
+def test_memory_is_bounded_by_the_active_leaves_not_by_a_node_cap():
     h = HoeffdingTreeClassifier()
-    assert h.max_nodes == 10000
+    assert h.max_nodes is None
+    assert h.max_active_leaves == 1000
 
 
 def test_check_estimator_hoeffding():

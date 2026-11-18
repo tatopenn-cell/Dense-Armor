@@ -76,7 +76,9 @@ class ADWIN(DriftDetector):
     Args:
         delta: confidence parameter, in ``(0, 1)``. Default ``0.002``.
         max_window: maximum window size before the oldest samples start
-            being dropped. Default ``200``.
+            being dropped. Default ``200``. ``None`` means no limit, which is
+            the algorithm of the paper: the window is only cut when a change
+            is found, and the memory stays O(log W) thanks to the buckets.
         min_sub: minimum sub-window size considered during the cut
             scan. Default ``2``.
         max_buckets: maximum number of buckets kept per level before the
@@ -108,7 +110,7 @@ class ADWIN(DriftDetector):
     def __init__(
         self,
         delta: float = 0.002,
-        max_window: int = 200,
+        max_window: int | None = 200,
         min_sub: int = 2,
         max_buckets: int = 5,
         clock: int = 1,
@@ -118,7 +120,7 @@ class ADWIN(DriftDetector):
             raise ValueError(f"clock must be at least 1, got {clock}")
         if not 0.0 < delta < 1.0:
             raise ValueError(f"delta must be in (0, 1), got {delta}")
-        if max_window < 4 * min_sub:
+        if max_window is not None and max_window < 4 * min_sub:
             raise ValueError(
                 f"max_window must be at least {4 * min_sub}, got {max_window}"
             )
@@ -245,7 +247,7 @@ class ADWIN(DriftDetector):
             self.n_missing_ += 1
             return self
         self._add(float(x))
-        if self._n > self.max_window:
+        if self.max_window is not None and self._n > self.max_window:
             self._remove_oldest()
         self._ticks += 1
         if self._ticks % self.clock == 0:

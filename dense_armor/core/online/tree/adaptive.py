@@ -40,7 +40,6 @@ from typing import Any, cast
 
 from dense_armor.core.online.tree.hoeffding import (
     HoeffdingTreeClassifier,
-    _as_dict,
     _Node,
 )
 from dense_armor.roles import DriftDetector
@@ -87,7 +86,7 @@ class HoeffdingAdaptiveTreeClassifier(HoeffdingTreeClassifier):
     """Hoeffding Adaptive Tree classifier.
 
     Memory grows with the number of nodes of the main tree and of any
-    alternate subtrees; ``max_nodes`` (default ``10000``) bounds the
+    alternate subtrees; ``max_nodes`` (default ``None``) can bound the
     total.
 
     ``budget_s`` = 5e-3 s: p99 of ``learn_one`` measured at 3.7e-4 s on a
@@ -99,8 +98,11 @@ class HoeffdingAdaptiveTreeClassifier(HoeffdingTreeClassifier):
         delta: one minus the confidence of the Hoeffding bound for splits.
         tau: tie threshold.
         max_depth: maximum depth, or ``None``.
-        max_nodes: maximum number of nodes. Default ``10000``.
+        max_nodes: maximum number of nodes, or ``None`` (default).
         leaf: ``"nb"`` or ``"majority"``.
+        criterion, splitter, n_splits, nominal_attributes, max_active_leaves,
+            memory_period, quantile_radius: as in
+            :class:`HoeffdingTreeClassifier`.
         drift_detector: a fresh ``DriftDetector`` instance, cloned per node.
         delta_alt: one minus the confidence of the alternate bound.
         kappa_alt: minimum samples for an alternate to be considered.
@@ -118,12 +120,19 @@ class HoeffdingAdaptiveTreeClassifier(HoeffdingTreeClassifier):
         delta: float = 1e-7,
         tau: float = 0.05,
         max_depth: int | None = None,
-        max_nodes: int | None = 10000,
+        max_nodes: int | None = None,
         leaf: str = "nb",
         drift_detector: DriftDetector | None = None,
         delta_alt: float = 0.01,
         kappa_alt: int = 100,
         error_alpha: float = 0.005,
+        criterion: str = "entropy",
+        splitter: str = "class_means",
+        n_splits: int = 10,
+        nominal_attributes: Any = None,
+        max_active_leaves: int | None = 1000,
+        memory_period: int = 1000,
+        quantile_radius: float | None = None,
     ) -> None:
         super().__init__(
             grace_period=grace_period,
@@ -132,6 +141,13 @@ class HoeffdingAdaptiveTreeClassifier(HoeffdingTreeClassifier):
             max_depth=max_depth,
             max_nodes=max_nodes,
             leaf=leaf,
+            criterion=criterion,
+            splitter=splitter,
+            n_splits=n_splits,
+            nominal_attributes=nominal_attributes,
+            max_active_leaves=max_active_leaves,
+            memory_period=memory_period,
+            quantile_radius=quantile_radius,
         )
         if drift_detector is None:
             raise ValueError("drift_detector is required")
@@ -179,12 +195,15 @@ class HoeffdingAdaptiveTreeClassifier(HoeffdingTreeClassifier):
 
     def _descend(self, node: _ANode, x: dict) -> _ANode | None:
         f = node.split_feature_
-        s = node.split_threshold_
-        assert f is not None and s is not None
+        assert f is not None
         v = x.get(f)
         if v is None:
             return None
-        return cast(_ANode, node.left_ if float(v) <= s else node.right_)
+        try:
+            left = self._goes_left(node, v)
+        except (TypeError, ValueError):
+            return None
+        return cast(_ANode, node.left_ if left else node.right_)
 
     def _path_of(self, root: _ANode, d: dict) -> list:
         path: list = []
@@ -201,6 +220,9 @@ class HoeffdingAdaptiveTreeClassifier(HoeffdingTreeClassifier):
         main.feature_stats_ = alt.feature_stats_
         main.split_feature_ = alt.split_feature_
         main.split_threshold_ = alt.split_threshold_
+        main.split_category_ = alt.split_category_
+        main.active_ = alt.active_
+        main.errors_ = alt.errors_
         main.left_ = alt.left_
         main.right_ = alt.right_
         main.n_ = alt.n_
@@ -237,22 +259,9 @@ class HoeffdingAdaptiveTreeClassifier(HoeffdingTreeClassifier):
         self, x: Any, y: Any, t: float | None = None
     ) -> "HoeffdingAdaptiveTreeClassifier":
         self._time_step(t)
-        d = _as_dict(x)
-        if not d or y is None:
-            self.n_missing_ += 1
+        d = self._validate(x, y)
+        if d is None:
             return self
-        for v in d.values():
-            if v is None:
-                self.n_missing_ += 1
-                return self
-            try:
-                fv = float(v)
-            except (TypeError, ValueError):
-                self.n_missing_ += 1
-                return self
-            if not math.isfinite(fv):
-                self.n_missing_ += 1
-                return self
         self.classes_.add(y)
         if self.root_ is None:
             self.root_ = self._new_leaf(0)
@@ -285,4 +294,5 @@ class HoeffdingAdaptiveTreeClassifier(HoeffdingTreeClassifier):
             if isinstance(n, _ANode) and n.alt_ is not None:
                 n.main_wrong_ += 0 if correct else 1
                 self._grow_alt_on(n, d, y)
+        self._tick_memory()
         return self

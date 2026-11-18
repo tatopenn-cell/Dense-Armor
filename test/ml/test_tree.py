@@ -83,4 +83,4 @@ def test_mondrian_split_at_the_upper_edge_is_a_leaf():
 
 
 def test_stopped():
-    assert len(T.STOPPED) == 6 and all(T.STOPPED.values())
+    assert len(T.STOPPED) == 7 and all(T.STOPPED.values())
