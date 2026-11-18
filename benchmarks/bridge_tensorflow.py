@@ -37,7 +37,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from dense_armor.bridges.tensorflow import KerasLayer
 from dense_armor.core.deep.neural import Dense, Sequential
-from dense_armor.core.deep.neural.activations import Relu
+from dense_armor.core.deep.neural.layers.activations import Relu
 
 
 def _model():

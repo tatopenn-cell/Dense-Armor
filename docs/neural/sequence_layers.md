@@ -15,7 +15,7 @@ A 1-input, 1-hidden case with weights written down shows the numbers. `W_r = 1`,
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.core.deep.neural.recurrent import GRU
+from dense_armor.core.deep.neural.layers.recurrent import GRU
 
 g = GRU(1, 1, jax.random.PRNGKey(0))
 g.W_r.value = jnp.array([[1.0]]); g.U_r.value = jnp.array([[0.0]]); g.b_r.value = jnp.array([0.0])
@@ -40,7 +40,7 @@ The forward pass of page 2: `z = tanh(W_z x + R_z y_prev + b_z)`, `i = sigmoid(W
 ~~~python
 import jax
 import jax.numpy as jnp
-from dense_armor.core.deep.neural.recurrent import LSTM
+from dense_armor.core.deep.neural.layers.recurrent import LSTM
 
 ls = LSTM(1, 1, jax.random.PRNGKey(0))
 for n in ("W_z","W_i","W_f","W_o","R_z","R_i","R_f","R_o","b_z","b_i","b_f","b_o","p_i","p_f","p_o"):
@@ -65,7 +65,7 @@ The hand computation with `x = 0.5`, `y_prev = 0.1`, `c_prev = 0.2`, all biases 
 import jax
 import jax.numpy as jnp
 import numpy as np
-from dense_armor.core.deep.neural.recurrent import GRU
+from dense_armor.core.deep.neural.layers.recurrent import GRU
 
 g = GRU(2, 3, jax.random.PRNGKey(0))
 seq = jax.random.normal(jax.random.PRNGKey(1), (5, 2))

@@ -26,8 +26,8 @@ import jax
 import jax.numpy as jnp
 from dense_armor.core.deep.neural.models import mlp
 from dense_armor.core.deep.neural.losses import MSE
-from dense_armor.core.deep.neural.compiled import make_step
-from dense_armor.core.deep.neural.schedules import ConstantLR
+from dense_armor.core.deep.neural.training.compiled import make_step
+from dense_armor.core.deep.neural.training.schedules import ConstantLR
 from dense_armor.core.online.optim import SGD
 
 X = np.random.default_rng(1).normal(size=(16, 2)).astype(np.float32)
@@ -83,7 +83,7 @@ import numpy as np
 import jax
 from dense_armor.core.deep.neural.models import mlp
 from dense_armor.core.deep.neural.losses import MSE
-from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.deep.neural.training.trainer import Trainer
 from dense_armor.core.online.optim import SGD
 
 X = np.random.default_rng(1).normal(size=(64, 2)).astype(np.float32)
@@ -125,7 +125,7 @@ import numpy as np
 import jax
 from dense_armor.core.deep.neural.models import mlp
 from dense_armor.core.deep.neural.losses import MSE
-from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.deep.neural.training.trainer import Trainer
 from dense_armor.core.online.optim import SGD
 
 X = np.random.default_rng(1).normal(size=(16, 2)).astype(np.float32)

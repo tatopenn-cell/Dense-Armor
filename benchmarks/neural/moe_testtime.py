@@ -37,13 +37,13 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from dense_armor.core.deep.neural.activations import Relu
-from dense_armor.core.deep.neural.chain import Sequential
+from dense_armor.core.deep.neural.layers.activations import Relu
+from dense_armor.core.deep.neural.layers.chain import Sequential
 from dense_armor.core.deep.neural.layers import Dense
 from dense_armor.core.deep.neural.losses import SoftmaxCrossEntropy
-from dense_armor.core.deep.neural.moe import SparseMoE
-from dense_armor.core.deep.neural.test_time import TestTimeCompute
-from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.deep.neural.attention.moe import SparseMoE
+from dense_armor.core.deep.neural.transformer.test_time import TestTimeCompute
+from dense_armor.core.deep.neural.training.trainer import Trainer
 from dense_armor.core.online.optim import Adam
 
 

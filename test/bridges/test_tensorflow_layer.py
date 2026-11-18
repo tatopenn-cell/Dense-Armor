@@ -11,7 +11,7 @@ import tensorflow as tf
 
 from dense_armor.bridges.tensorflow import KerasLayer
 from dense_armor.core.deep.neural import Dense, Sequential
-from dense_armor.core.deep.neural.activations import Relu
+from dense_armor.core.deep.neural.layers.activations import Relu
 
 
 def _model(d_in=4, d_h=8, d_out=3):

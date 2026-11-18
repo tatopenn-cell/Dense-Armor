@@ -14,8 +14,8 @@ from dense_armor.core.audio import (
 )
 from dense_armor.core.audio.allpole import reflection_to_lpc
 from dense_armor.core.audio.diff_filter import _allpole_scan
-from dense_armor.core.deep.neural.chain import Sequential
-from dense_armor.core.deep.neural.conv import Conv1D
+from dense_armor.core.deep.neural.layers.chain import Sequential
+from dense_armor.core.deep.neural.layers.conv import Conv1D
 from dense_armor.core.deep.neural.losses import mse_backward, mse_forward
 
 

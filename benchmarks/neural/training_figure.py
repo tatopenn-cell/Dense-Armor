@@ -22,8 +22,8 @@ import numpy as np
 
 from dense_armor.core.deep.neural.losses import MSE
 from dense_armor.core.deep.neural.models import mlp
-from dense_armor.core.deep.neural.schedules import CosineWarmRestarts
-from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.deep.neural.training.schedules import CosineWarmRestarts
+from dense_armor.core.deep.neural.training.trainer import Trainer
 from dense_armor.core.online.optim import Adam
 
 HERE = Path(__file__).resolve().parents[2]

@@ -35,16 +35,16 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dense_armor.core.deep.neural.autoencoder import Autoencoder
-from dense_armor.core.deep.neural.chain import Sequential
+from dense_armor.core.deep.neural.models.autoencoder import Autoencoder
+from dense_armor.core.deep.neural.layers.chain import Sequential
 from dense_armor.core.deep.neural.layers import Dense
 from dense_armor.core.deep.neural.losses import MSE
-from dense_armor.core.deep.neural.matryoshka import MatryoshkaLoss
-from dense_armor.core.deep.neural.online_autoencoder import OnlineAutoencoder
-from dense_armor.core.deep.neural.quantize import VectorQuantizer
-from dense_armor.core.deep.neural.recurrent import LSTM
-from dense_armor.core.deep.neural.seq2seq import Seq2Seq
-from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.deep.neural.losses.matryoshka import MatryoshkaLoss
+from dense_armor.core.deep.neural.online.online_autoencoder import OnlineAutoencoder
+from dense_armor.core.deep.neural.models.quantize import VectorQuantizer
+from dense_armor.core.deep.neural.layers.recurrent import LSTM
+from dense_armor.core.deep.neural.transformer.seq2seq import Seq2Seq
+from dense_armor.core.deep.neural.training.trainer import Trainer
 from dense_armor.core.online.optim import Adam
 from dense_armor.ml.vision import PCA
 

@@ -10,10 +10,10 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from dense_armor.core.deep.neural.activations import Relu
-from dense_armor.core.deep.neural.chain import Sequential
+from dense_armor.core.deep.neural.layers.activations import Relu
+from dense_armor.core.deep.neural.layers.chain import Sequential
 from dense_armor.core.deep.neural.layers import Dense
-from dense_armor.core.deep.neural.params import Param
+from dense_armor.core.deep.neural.layers.params import Param
 
 
 class VQMemory:

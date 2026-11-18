@@ -24,7 +24,7 @@ import jax
 import jax.numpy as jnp
 from jax import lax
 
-from dense_armor.core.deep.neural.params import Param
+from dense_armor.core.deep.neural.layers.params import Param
 
 
 def _concrete(*values: Any) -> bool:

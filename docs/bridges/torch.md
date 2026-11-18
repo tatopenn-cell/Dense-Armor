@@ -30,7 +30,7 @@ The dtype is kept: a float32 tensor stays float32, no float64 is introduced. A t
 import torch, jax
 from dense_armor.bridges.torch import TorchModule
 from dense_armor.core.deep.neural import Dense, Sequential
-from dense_armor.core.deep.neural.activations import Relu
+from dense_armor.core.deep.neural.layers.activations import Relu
 
 model = Sequential([Dense(4, 8, key=jax.random.PRNGKey(0)), Relu(),
                     Dense(8, 3, key=jax.random.PRNGKey(1))])

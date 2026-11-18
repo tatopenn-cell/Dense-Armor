@@ -42,7 +42,7 @@ The block follows the post-norm order of the paper: `y = LayerNorm(x + Sublayer(
 ```python
 import jax
 import jax.numpy as jnp
-from dense_armor.core.deep.neural.decoder import TransformerDecoderBlock
+from dense_armor.core.deep.neural.transformer.decoder import TransformerDecoderBlock
 
 b = TransformerDecoderBlock(8, 2, 16, key=jax.random.PRNGKey(0))
 x = jax.random.normal(jax.random.PRNGKey(1), (4, 8))
@@ -67,7 +67,7 @@ The target of position `t` is the token at `t+1`. With a two-token vocabulary, `
 
 ```python
 import jax.numpy as jnp
-from dense_armor.core.deep.neural.losses_lm import NextTokenLoss, perplexity
+from dense_armor.core.deep.neural.losses.losses_lm import NextTokenLoss, perplexity
 
 L = NextTokenLoss()
 logits = jnp.array([[[2.0, 0.0], [0.0, 2.0], [2.0, 0.0]]])
@@ -92,7 +92,7 @@ At `temperature=0` the next token is the argmax of the last logits. At `temperat
 import jax
 import jax.numpy as jnp
 from dense_armor.core.deep.neural.models import transformer_decoder
-from dense_armor.core.deep.neural.generate import generate
+from dense_armor.core.deep.neural.transformer.generate import generate
 
 m = transformer_decoder(4, 8, 2, 1, 4, key=jax.random.PRNGKey(0))
 out = generate(m, jnp.array([0, 1]), max_new=2, max_len=4)
@@ -114,8 +114,8 @@ import numpy as np
 import jax
 import jax.numpy as jnp
 from dense_armor.core.deep.neural.models import transformer_decoder
-from dense_armor.core.deep.neural.losses_lm import NextTokenLoss
-from dense_armor.core.deep.neural.generate import generate
+from dense_armor.core.deep.neural.losses.losses_lm import NextTokenLoss
+from dense_armor.core.deep.neural.transformer.generate import generate
 from dense_armor.core.online.optim import Adam
 
 m = transformer_decoder(4, 16, 2, 1, 8, key=jax.random.PRNGKey(0))
@@ -171,4 +171,4 @@ GPU speed, the base architecture of the paper (`d_model=512`, six blocks), longe
 
 ### Development diary
 
-The page was written after the code: the block, the loss and the generation loop passed their tests (`test/core/deep/neural/test_decoder.py`, 49 tests) before any prose was written. The outputs shown are the outputs of the last run of the blocks, not written by hand.
+The page was written after the code: the block, the loss and the generation loop passed their tests (`test/core/deep/neural/transformer/test_decoder.py`, 49 tests) before any prose was written. The outputs shown are the outputs of the last run of the blocks, not written by hand.

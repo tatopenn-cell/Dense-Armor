@@ -150,8 +150,8 @@ The greedy text repeats "the": the mark of a 14.2-million-parameter model after 
 
 ### Choices stated explicitly
 
-- **`transformer_decoder` is not used.** The builder in `deep/neural/models.py` composes the 2017 blocks. The script composes RMSNorm, SwiGLU and rotary with the blocks of `deep/neural/`.
-- **AdamW via `Adam` plus decoupled decay.** `deep/neural/compiled.py` does not dispatch `AdamW`.
+- **`transformer_decoder` is not used.** The builder in `deep/neural/models/models.py` composes the 2017 blocks. The script composes RMSNorm, SwiGLU and rotary with the blocks of `deep/neural/`.
+- **AdamW via `Adam` plus decoupled decay.** `deep/neural/training/compiled.py` does not dispatch `AdamW`.
 - **bfloat16, not float16.** No loss scaling needed.
 - **30 new tokens, not 200.** `generate` has no KV cache: about 2 s/token on T4.
 - **Claim 5 uses the tail window** (401-500 vs 301-400), not the first window, so the descent from 4.80 to 2.50 does not enter the denominator. On fewer than 400 steps the claim is `None`.
