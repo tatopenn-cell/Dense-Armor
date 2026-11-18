@@ -21,16 +21,22 @@ scatter-based dispatch (Fedus et al. 2021, Section 2.3, page 5) replaces
 the loop on experts: the tokens are placed in the expert buffers with
 one scatter, not with a vmap over experts.
 
-The top-k selection is deterministic. Shazeer et al. (2017) use a noisy top-k
-gating (Eq. (4), page 4); this implementation does not, and the difference is
-declared here.
+The top-k selection is deterministic by default. Shazeer et al. (2017) use a
+noisy top-k gating (Eq. (4), page 4) with a learned noise scale; the option
+``noisy_gating=True`` adds Gaussian noise of fixed standard deviation
+``noise_std`` to the logits in ``forward(..., training=True)`` only, and the
+difference from the paper is declared here.
 
-The gate values are used as weights, not renormalised: this matches Shazeer
-et al. (2017), where the weighted sum uses the raw gate values. Fedus et al.
-(2021) uses top-1, where the weight is 1 by construction.
+The gate values are the softmax over all the experts, taken at the top_k
+experts and not renormalised, as in the softmax-then-top-k of Fedus et al.
+(2021), where the single selected expert has the softmax probability as its
+weight. Shazeer et al. (2017) write the softmax after the top-k selection
+(Eq. (3)), so that the k weights sum to 1; this implementation does not.
 
-The load-balancing loss is the auxiliary loss of Fedus et al. (2021), Eq. (4),
-page 7: loss = alpha * N * sum_i f_i * P_i.
+The load-balancing loss follows the auxiliary loss of Fedus et al. (2021),
+Eq. (4), page 7: loss = alpha * N * sum_i f_i * P_i. That equation is written
+for top-1: with top_k > 1 the fractions f_i sum to top_k, so the loss is top_k
+times larger than the top-1 form for the same balance.
 """
 
 from __future__ import annotations
@@ -59,12 +65,13 @@ def _forward_pure_aux(
     top_k: int,
     n_experts: int,
     rng_key: jax.Array | None = None,
+    noise_std: float = 1e-2,
 ) -> tuple[jax.Array, dict]:
     """MoE forward, returns (y, aux). Pure, jittable."""
     Wg, bg, W1, b1, W2, b2 = params
     logits = x @ Wg + bg
     if rng_key is not None:
-        logits = logits + 1e-2 * jax.random.normal(rng_key, logits.shape)
+        logits = logits + noise_std * jax.random.normal(rng_key, logits.shape)
     p = jax.nn.softmax(logits, axis=-1)
     top_vals, top_idx = jax.lax.top_k(p, top_k)
 
@@ -125,9 +132,10 @@ def forward_pure(
     top_k: int,
     n_experts: int,
     rng_key: jax.Array | None = None,
+    noise_std: float = 1e-2,
 ) -> jax.Array:
     """The MoE forward output, pure and jittable."""
-    y, _ = _forward_pure_aux(params, x, capacity, top_k, n_experts, rng_key)
+    y, _ = _forward_pure_aux(params, x, capacity, top_k, n_experts, rng_key, noise_std)
     return y
 
 
@@ -145,6 +153,9 @@ class SparseMoE:
         capacity_factor: max tokens per expert as a multiple of the average
             load. None means no dropping. Default 1.25 (Fedus et al. 2021,
             Section 2.2).
+        noisy_gating: add Gaussian noise to the gating logits in
+            ``forward(..., training=True)``. Default False.
+        noise_std: standard deviation of that noise. Default 1e-2.
 
     Raises:
         ValueError: if n_experts < 1, top_k outside [1, n_experts],
@@ -239,23 +250,23 @@ class SparseMoE:
 
     def forward(self, x: jax.Array, training: bool = True) -> jax.Array:
         """Dispatch the tokens to the top_k experts and combine the output."""
-        del training
         x_2d, was_1d = _to_2d(x)
         cap = self._capacity(x_2d.shape[0])
         params = self._params()
         cap_, top_k_, n_experts_ = cap, self.top_k, self.n_experts
+        noise_std_ = self.noise_std
 
-        if self.noisy_gating:
+        if self.noisy_gating and training:
             key = jax.random.fold_in(self._rng_key_, self._call_count_)
             self._call_count_ += 1
             self._last_rng_key_ = key
         else:
             key = None
 
-        y, aux = _forward_pure_aux(params, x_2d, cap_, top_k_, n_experts_, key)
+        y, aux = _forward_pure_aux(params, x_2d, cap_, top_k_, n_experts_, key, noise_std_)
 
         def f(p_, x_):
-            return forward_pure(p_, x_, cap_, top_k_, n_experts_, key)
+            return forward_pure(p_, x_, cap_, top_k_, n_experts_, key, noise_std_)
 
         _, self._vjp = jax.vjp(f, params, x_2d)
         self.aux_ = aux
