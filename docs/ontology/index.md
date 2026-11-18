@@ -8,6 +8,10 @@ An ontology says three things:
 2. **How they are related.** A service depends on a database; a sensor watches a machine.
 3. **What must be true.** A service in production must not depend on a test database. The rule is written once, and the library finds every relation that breaks it.
 
+![A system as a typed graph: eight services and six databases, the depends_on links between them, and the two links that break the rule that a production service must not depend on a test database](../assets/ontology/index.png)
+
+*The three ideas in one picture. The cyan circles are services and the orange squares are databases (the parts and their kinds). The lines are the `depends_on` links. The two pink lines are the links that break the rule "a production service must not depend on a test database": `validate()` found them.*
+
 That is what the page [Types, rules and actions](typed.md) teaches, step by step, and it is the page to read first.
 
 ## Why graph theory is here
@@ -41,7 +45,7 @@ pip install "dense-armor[graph]"
 pip install "dense-armor[causal]"
 ```
 
-Every number shown in these pages was printed by the code above it, and the figures are drawn by `docs/assets/ontology/make_figures.py`.
+Every number shown in these pages was printed by the code above it, and the figures are drawn by `docs/assets/ontology/make_figures.py`, and the figure at the top of this page by `docs/assets/ontology/make_index_figure.py`.
 
 ## Sources and checks
 
