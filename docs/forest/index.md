@@ -223,7 +223,7 @@ The aggregated forests implement the version of Section 2 of the paper, on an un
 
 p99 of one `learn_one` plus one `predict_one` over 3000 samples with four features, on a Kaggle CPU: 9.4 ms for the adaptive random forest of ten trees, 4.3 ms for the aggregated classifier and 4.0 ms for the aggregated regressor; `budget_s` is 0.1 s for the adaptive forest and 0.04 s for the two aggregated forests, about ten times the measured p99.
 
-The trees of both forests are bounded by `max_nodes`, so the state is constant in the length of the stream. The aggregated trees keep two weights per node and, on uniform inputs with 1, 2 and 4 features, between 3.6 and 4.0 nodes per sample until they reach the limit. The depth of a tree on two features was 21, 30 and 43 after 100, 1000 and 4000 samples.
+The trees of the adaptive random forest have no node cap by default: the statistics of each tree are bounded by `max_active_leaves` (the least promising leaves are deactivated), so they are constant in the length of the stream, and `max_nodes` or `max_depth` can still be set. The aggregated trees are bounded by `max_nodes`, so their state is constant in the length of the stream. The aggregated trees keep two weights per node and, on uniform inputs with 1, 2 and 4 features, between 3.6 and 4.0 nodes per sample until they reach the limit. The depth of a tree on two features was 21, 30 and 43 after 100, 1000 and 4000 samples.
 
 ### Development diary
 

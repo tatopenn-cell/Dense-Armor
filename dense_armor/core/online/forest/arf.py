@@ -97,7 +97,7 @@ class SubspaceHoeffdingTree(HoeffdingTreeClassifier):
         delta: one minus the confidence of the Hoeffding bound.
         tau: tie threshold.
         max_depth: maximum depth, or ``None``.
-        max_nodes: maximum number of nodes, or ``None``.
+        max_nodes: maximum number of nodes per tree, or ``None`` (default).
         leaf: ``"nb"`` or ``"majority"``.
         criterion, splitter, n_splits, nominal_attributes, max_active_leaves,
             memory_period, quantile_radius: as in
@@ -117,7 +117,7 @@ class SubspaceHoeffdingTree(HoeffdingTreeClassifier):
         delta: float = 1e-7,
         tau: float = 0.05,
         max_depth: int | None = None,
-        max_nodes: int | None = 10000,
+        max_nodes: int | None = None,
         leaf: str = "nb",
         max_features: int | None = None,
         seed: int | None = None,
@@ -219,10 +219,12 @@ class AdaptiveRandomForestClassifier(Classifier):
 
     Cost and memory. ``learn_one`` does ``n_models`` predictions, about
     ``n_models * lambda_`` tree updates and ``2 * n_models`` detector
-    updates; ``predict_one`` does ``n_models`` predictions. Each tree is
-    bounded by its ``max_nodes``, so the state is constant in the
+    updates; ``predict_one`` does ``n_models`` predictions. The statistics
+    of each tree are bounded by its ``max_active_leaves`` (the least
+    promising leaves are deactivated), so they are constant in the
     stream length and linear in ``n_models`` and in the number of
-    features. There is no pure ``init_state`` / ``step`` form: the state
+    features; the number of nodes follows the data unless ``max_nodes``
+    or ``max_depth`` is set. There is no pure ``init_state`` / ``step`` form: the state
     is a set of trees of changing shape, which a ``jax.lax.scan`` cannot
     carry.
 
