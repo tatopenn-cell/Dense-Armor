@@ -6,7 +6,49 @@ the **gradient of the loss** says a split would lower it, and a t-test decides w
 is real. `SGTRegressor` predicts a number and `SGTClassifier` a binary class, with the same
 code underneath and a small, fixed set of bins per feature.
 
-## 1. Predicting a number: the torque of a two-link arm
+## Gamestory
+
+New Year's Eve in London. A mysterious thief is emptying the banks of the city.
+
+The young detective does not only want to know where the thief will strike; he wants to estimate how much he will take. So he keeps a ledger. For every question he asks, he writes down two things: how wrong his estimate was and in which direction, and how quickly that error changes when he corrects the estimate.
+
+He does not add a new question because of a hunch. He adds it only when a test on the ledger says that the new question lowers his error for real, and not by luck. The rule is the same whether he is guessing a sum of money or a yes and a no: he follows what lowers his error.
+
+## 1. Flagging card payments
+
+The same card payments as in the first example of the [Hoeffding tree](hoeffding.md): 80 % normal, a few large ones at night that are fraud. `SGTClassifier` is binary: the label is 1 for fraud. Each payment is first predicted and then learned, and the accuracy is counted from payment 500 on.
+
+```python
+import numpy as np
+from dense_armor.core.evaluation.metrics import Accuracy
+from dense_armor.core.online.tree import SGTClassifier
+
+rng = np.random.default_rng(0)
+sgt = SGTClassifier()
+acc = Accuracy()
+for i in range(3000):
+    normal = rng.random() < 0.8
+    amount = rng.normal(60, 20) if normal else rng.normal(400, 100)
+    hour = rng.normal(14, 3) if normal else rng.normal(3, 2)
+    x = {"amount": amount, "hour": hour}
+    y = int(not normal)
+    if i >= 500:
+        acc.update(y, sgt.predict_one(x))
+    sgt.learn_one(x, y)
+print(round(acc.get(), 3), sgt.n_nodes_)
+for x in ({"amount": 45.0, "hour": 15.0}, {"amount": 420.0, "hour": 2.0}):
+    print(sgt.predict_one(x), round(sgt.predict_proba_one(x)[1], 3))
+```
+
+```
+0.947 3
+0 0.218
+1 0.776
+```
+
+The tree is right 94.7 % of the time, with 3 nodes (one question and two leaves). The probabilities are less extreme than those of the Hoeffding tree on the same data (0.22 and 0.78, where the Hoeffding tree said 0 and 1): the penalty on the leaf values (`lambda_`) keeps them away from 0 and 1. The next sections use `SGTRegressor` on a robot arm.
+
+## 2. For experts: predicting a number, the torque of a two-link arm
 
 A regression tree that splits on the gradient of the loss (stochastic gradient tree): it
 predicts the gravity torque of the first joint of a two-link arm from the two joint angles.
