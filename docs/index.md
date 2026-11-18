@@ -13,7 +13,7 @@ Dense-Armor is a library that learns from streams of numbers (and from images an
 | It reads | one sample at a time, at control-loop speed | a whole table, with `fit` and `predict` | batches or a stream, through layers |
 | Module | `dense_armor.core.online` | `dense_armor.ml` | `dense_armor.core.deep.neural` |
 | It has | classifiers, regressors, trees, forests, bandits, anomaly and drift detectors, clustering, time series | statistics, preprocessing, linear models, trees, forests, ensembles, anomaly and change detection | layers, attention, convolutional and recurrent blocks, training, continual learning, decoder language models |
-| Start with | [Online learning](learn/index.md) | [Machine learning](ml/index.md) | [Deep learning](neural/index.md) |
+| Start with | [Online learning](online/index.md) | [Machine learning](ml/index.md) | [Deep learning](neural/index.md) |
 
 ![The map of Dense-Armor in five layers: applications, protection and bridges, the three kinds of learning, signals and statistics, and the roles](assets/home/map.png)
 
