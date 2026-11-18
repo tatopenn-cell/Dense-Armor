@@ -71,7 +71,13 @@ def _floats(s):
 def _parse_urdf(path):
     """Parse a URDF file, or expand a `.xacro` one first via the real `xacro` package."""
     if str(path).endswith(".xacro"):
-        import xacro
+        try:
+            import xacro
+        except ImportError as exc:
+            raise ImportError(
+                "reading a .xacro file needs the `xacro` package: "
+                'pip install "dense-armor[dynamics]"'
+            ) from exc
         root = ET.fromstring(xacro.process_file(str(path)).toxml())
     else:
         root = ET.parse(path).getroot()

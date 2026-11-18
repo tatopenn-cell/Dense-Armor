@@ -157,7 +157,8 @@ On Windows the same without the icon is `tools\dashboard\start-dashboard.bat`. O
 ## Install
 
 ```bash
-pip install dense-armor                 # core: numpy + jax
+pip install dense-armor                 # core: numpy, jax, scipy, psutil
+pip install "dense-armor[dynamics]"     # + robot controllers (OSQP) and .xacro files
 pip install "dense-armor[vision]"       # + camera (OpenCV), image folder (Pillow), in-memory
 pip install "dense-armor[ros]"          # + rosbag readers
 pip install "dense-armor[audio,data]"   # + WAV, HDF5, NetCDF

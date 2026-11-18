@@ -32,8 +32,14 @@ from functools import partial
 import jax
 import jax.numpy as jnp
 import numpy as np
-import osqp
 from scipy import sparse
+
+try:
+    import osqp
+except ImportError as exc:
+    raise ImportError(
+        'this controller solves a QP with `osqp`: pip install "dense-armor[dynamics]"'
+    ) from exc
 
 
 def manipulability(j):
