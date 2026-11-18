@@ -6,6 +6,12 @@ Dense-Armor is a library that learns from streams of numbers (and from images an
 
 **A library for three kinds of learning: online learning on robot, vision, and AI streams; machine learning on a whole dataset; and deep learning.**
 
+## Find a tool by what you want to do
+
+<object type="image/svg+xml" data="assets/maps/jobs.svg" style="width:100%"></object>
+
+*Pass over a job to light its links; click a domain to open its page. The jobs, the domains and the classes are those of `usable`.*
+
 ## The three kinds of learning
 
 | | Online learning | Machine learning | Deep learning |
