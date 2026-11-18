@@ -106,6 +106,10 @@ except ConstraintViolation as e:
 
 ## 5. Change the system with an action
 
+![A change is checked before it happens: the action promote is accepted for search and rejected for reports, because it would break the rule on its database](../assets/ontology/typed.png)
+
+*The action of this section in one picture. The action `promote` moves a service from staging to production. For `search`, whose database is a production one, it is accepted. For `reports`, whose database is a test one, it would break the rule, so it is rejected and the graph is left as it was.*
+
 An action is a change with conditions. It has two lists:
 
 - **preconditions**, what must be true before: `(part, value, test, expected)`, with `test` one of `==`, `!=`, `<`, `>`, `<=`, `>=`;

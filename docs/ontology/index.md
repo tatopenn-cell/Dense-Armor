@@ -8,9 +8,9 @@ An ontology says three things:
 2. **How they are related.** A service depends on a database; a sensor watches a machine.
 3. **What must be true.** A service in production must not depend on a test database. The rule is written once, and the library finds every relation that breaks it.
 
-![A system as a typed graph: eight services and six databases, the depends_on links between them, and the two links that break the rule that a production service must not depend on a test database](../assets/ontology/index.png)
+![A system as a typed graph: the kinds of part, five services and five databases joined by depends_on links, the rule, and the two links that break it](../assets/ontology/index.png)
 
-*The three ideas in one picture. The cyan circles are services and the orange squares are databases (the parts and their kinds). The lines are the `depends_on` links. The two pink lines are the links that break the rule "a production service must not depend on a test database": `validate()` found them.*
+*The three ideas in one picture. Left: the two kinds of part, each with its typed field. Centre: five services (cyan) and five databases (orange) joined by `depends_on` links. Right: the rule, and what `validate()` answers. The two pink links are the ones that break the rule "a production service must not depend on a test database".*
 
 That is what the page [Types, rules and actions](typed.md) teaches, step by step, and it is the page to read first.
 

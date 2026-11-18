@@ -4,12 +4,43 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import numpy as np
+from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
 from dense_armor.core.graph import TypedGraph
 
 BG = "#0d131a"
+CARD = "#101a24"
+CYAN = "#4cc9f0"
+ORANGE = "#ff9e00"
+PINK = "#f72585"
+TEXT = "#e0fbfc"
+MUTED = "#94a3b8"
 OUT = Path(__file__).resolve().parent
+
+KINDS = {"service": {"tier": str}, "database": {"env": str}}
+SERVICES = (
+    ("billing", "production"),
+    ("search", "production"),
+    ("reports", "staging"),
+    ("auth", "production"),
+    ("jobs", "production"),
+)
+DATABASES = (
+    ("billing-db", "test"),
+    ("search-db", "production"),
+    ("reports-db", "test"),
+    ("auth-db", "production"),
+    ("jobs-db", "test"),
+)
+LINKS = (
+    ("billing", "billing-db"),
+    ("billing", "auth-db"),
+    ("search", "search-db"),
+    ("reports", "reports-db"),
+    ("auth", "auth-db"),
+    ("jobs", "jobs-db"),
+    ("jobs", "search-db"),
+)
 
 
 def rule(svc, db):
@@ -17,195 +48,241 @@ def rule(svc, db):
 
 
 def build():
-    g = TypedGraph({"service": {"tier": str}, "database": {"env": str}})
-    services = [
-        ("billing", "production"),
-        ("search", "production"),
-        ("reports", "staging"),
-        ("auth", "production"),
-        ("mailer", "staging"),
-        ("gateway", "production"),
-        ("cache", "staging"),
-        ("jobs", "production"),
-    ]
-    databases = [
-        ("billing-db", "test"),
-        ("search-db", "production"),
-        ("reports-db", "test"),
-        ("auth-db", "production"),
-        ("events-db", "production"),
-        ("jobs-db", "test"),
-    ]
-    for n, tier in services:
+    g = TypedGraph(KINDS)
+    for n, tier in SERVICES:
         g.add_node(n, "service", tier=tier)
-    for n, env in databases:
+    for n, env in DATABASES:
         g.add_node(n, "database", env=env)
-    links = [
-        ("billing", "billing-db"),
-        ("billing", "auth-db"),
-        ("search", "search-db"),
-        ("reports", "reports-db"),
-        ("auth", "auth-db"),
-        ("mailer", "events-db"),
-        ("gateway", "auth-db"),
-        ("gateway", "search-db"),
-        ("cache", "events-db"),
-        ("jobs", "jobs-db"),
-        ("jobs", "events-db"),
-    ]
-    for a, b in links:
+    for a, b in LINKS:
         g.add_edge(a, b, "depends_on", rule)
-    return g, [n for n, _ in services], [n for n, _ in databases], links
+    return g
+
+
+def card(ax, x, y, w, h, kind, name, color, field=None, size=9.5, lw=1.6):
+    ax.add_patch(
+        FancyBboxPatch(
+            (x, y),
+            w,
+            h,
+            boxstyle="round,pad=0.2,rounding_size=1.0",
+            fc=CARD,
+            ec=color,
+            lw=lw,
+        )
+    )
+    ax.text(
+        x + 0.9,
+        y + h - 1.5,
+        kind,
+        color=color,
+        fontsize=6.6,
+        fontweight="bold",
+        va="center",
+    )
+    ax.text(
+        x + 0.9,
+        y + h - 3.7,
+        name,
+        color=TEXT,
+        fontsize=size,
+        fontweight="bold",
+        va="center",
+    )
+    if field:
+        ax.text(
+            x + 0.9,
+            y + 1.3,
+            field,
+            color=MUTED,
+            fontsize=7.2,
+            family="monospace",
+            va="center",
+        )
 
 
 def draw():
-    g, svc, dbs, links = build()
+    g = build()
     bad = {(a, b) for a, b, _ in g.validate()}
-    pos = {}
-    for i, n in enumerate(svc):
-        t = 2 * np.pi * i / len(svc)
-        pos[n] = (3.6 * np.cos(t), 3.6 * np.sin(t), 1.0)
-    for i, n in enumerate(dbs):
-        t = 2 * np.pi * (i + 0.5) / len(dbs)
-        pos[n] = (2.5 * np.cos(t), 2.5 * np.sin(t), -1.0)
-    fig = plt.figure(figsize=(13.5, 6.0), facecolor=BG)
+    fig = plt.figure(figsize=(13.5, 6.4), facecolor=BG)
     fig.text(
         0.5,
-        0.93,
+        0.945,
         "PARTS, RELATIONS, RULES",
         ha="center",
         va="center",
         fontsize=22,
         fontweight="bold",
-        color="#e0fbfc",
+        color=TEXT,
     )
     fig.text(
         0.5,
-        0.865,
+        0.895,
         "A system as a typed graph: the library finds every relation that breaks a rule",
         ha="center",
         va="center",
         fontsize=10.5,
-        color="#4cc9f0",
+        color=CYAN,
     )
-    notes = (
-        (
-            0.06,
-            "01",
-            "WHAT THE PARTS ARE",
-            "TypedGraph({'service': ..., 'database': ...})",
-        ),
-        (
-            0.38,
-            "02",
-            "HOW THEY ARE RELATED",
-            "add_edge(a, b, 'depends_on', rule)",
-        ),
-        (0.70, "03", "WHAT MUST BE TRUE", f"validate() -> {len(bad)} wrong relations"),
-    )
-    for x0, num, name, code in notes:
-        fig.text(x0, 0.77, num, fontsize=14, fontweight="bold", color="#f72585")
-        fig.text(x0 + 0.04, 0.77, name, fontsize=12, fontweight="bold", color="#ffffff")
-        fig.text(x0, 0.715, code, fontsize=9.5, color="#cbd5e1", family="monospace")
-    ax = fig.add_axes([0.0, -0.05, 1.0, 0.78], projection="3d")
-    ax.set_facecolor(BG)
-    for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
-        axis.pane.fill = False
-        axis.pane.set_edgecolor("#1e293b")
-        axis._axinfo["grid"]["color"] = (0.20, 0.30, 0.42, 0.25)
-        axis._axinfo["grid"]["linewidth"] = 0.5
-    th = np.linspace(0, 2 * np.pi, 120)
-    ax.plot(
-        4.2 * np.cos(th),
-        4.2 * np.sin(th),
-        np.full_like(th, 1.0),
-        color="#4cc9f0",
-        linewidth=0.8,
-        alpha=0.35,
-    )
-    ax.plot(
-        3.1 * np.cos(th),
-        3.1 * np.sin(th),
-        np.full_like(th, -1.0),
-        color="#ff9e00",
-        linewidth=0.8,
-        alpha=0.35,
-    )
-    for a, b in links:
-        x = [pos[a][0], pos[b][0]]
-        y = [pos[a][1], pos[b][1]]
-        z = [pos[a][2], pos[b][2]]
-        if (a, b) in bad:
-            ax.plot(x, y, z, color="#f72585", linewidth=3.2, alpha=0.95)
-        else:
-            ax.plot(x, y, z, color="#4cc9f0", linewidth=1.1, alpha=0.55)
-    sx = np.array([pos[n] for n in svc])
-    dx = np.array([pos[n] for n in dbs])
-    ax.scatter(
-        sx[:, 0],
-        sx[:, 1],
-        sx[:, 2],
-        s=260,
-        color="#4cc9f0",
-        edgecolors="#e0fbfc",
-        linewidth=0.8,
-        depthshade=False,
-    )
-    ax.scatter(
-        dx[:, 0],
-        dx[:, 1],
-        dx[:, 2],
-        s=260,
-        color="#ff9e00",
-        edgecolors="#ffffff",
-        linewidth=0.8,
-        marker="s",
-        depthshade=False,
-    )
-    for n in svc + dbs:
-        x, y, z = pos[n]
+    ax = fig.add_axes([0.0, 0.0, 1.0, 0.86], facecolor=BG)
+    ax.set_xlim(0, 135)
+    ax.set_ylim(0, 60)
+    ax.axis("off")
+    for x, n, t in (
+        (2, "01", "THE PARTS"),
+        (38, "02", "THE RELATIONS"),
+        (108, "03", "THE RULE"),
+    ):
+        ax.text(x, 56, n, color=PINK, fontsize=13, fontweight="bold", va="center")
         ax.text(
-            x * 1.12,
-            y * 1.12,
-            z + (0.3 if z > 0 else -0.35),
-            n,
-            color="#e0fbfc",
-            fontsize=11,
-            ha="center",
+            x + 4.2, 56, t, color="#ffffff", fontsize=12, fontweight="bold", va="center"
         )
     ax.text(
-        -4.9,
-        0.0,
-        1.0,
-        "SERVICES",
-        color="#4cc9f0",
-        fontsize=10,
-        fontweight="bold",
-        ha="center",
+        2,
+        52.2,
+        "TypedGraph({'service': ..., 'database': ...})",
+        color=MUTED,
+        fontsize=7.4,
+        family="monospace",
+        va="center",
     )
     ax.text(
-        -4.9,
-        0.0,
-        -1.0,
-        "DATABASES",
-        color="#ff9e00",
-        fontsize=10,
-        fontweight="bold",
-        ha="center",
+        38,
+        52.2,
+        "add_edge(a, b, 'depends_on', rule)",
+        color=MUTED,
+        fontsize=7.4,
+        family="monospace",
+        va="center",
     )
-    ax.set_xlim(-5.4, 5.4)
-    ax.set_ylim(-5.4, 5.4)
-    ax.set_zlim(-1.6, 1.6)
-    ax.set_box_aspect((1, 1, 0.5), zoom=1.7)
-    ax.set_axis_off()
-    ax.view_init(elev=20, azim=-62)
+    ax.text(
+        108,
+        52.2,
+        "g.validate()",
+        color=MUTED,
+        fontsize=7.4,
+        family="monospace",
+        va="center",
+    )
+    # 01: the two kinds
+    card(ax, 2, 33, 27, 12, "KIND", "service", CYAN, "tier: str", size=11)
+    card(ax, 2, 15, 27, 12, "KIND", "database", ORANGE, "env: str", size=11)
+    ax.text(
+        2,
+        9.5,
+        "every part has a kind and typed fields:",
+        color=MUTED,
+        fontsize=8,
+        va="center",
+    )
+    ax.text(
+        2,
+        7.2,
+        "a wrong value is refused when added",
+        color=MUTED,
+        fontsize=8,
+        va="center",
+    )
+    # 02: services on top, databases below, links in between
+    w, h, step = 11.4, 8.4, 13.9
+    sx = {n: 36 + i * step for i, (n, _) in enumerate(SERVICES)}
+    dx = {n: 36 + i * step for i, (n, _) in enumerate(DATABASES)}
+    ytop, ybot = 36.0, 12.0
+    for a, b in LINKS:
+        p = (sx[a] + w / 2, ytop)
+        q = (dx[b] + w / 2, ybot + h)
+        broken = (a, b) in bad
+        ax.add_patch(
+            FancyArrowPatch(
+                p,
+                q,
+                arrowstyle="-|>",
+                mutation_scale=13,
+                color=PINK if broken else CYAN,
+                lw=2.6 if broken else 1.3,
+                alpha=1.0 if broken else 0.7,
+                shrinkA=0,
+                shrinkB=1,
+                zorder=3 if broken else 2,
+            )
+        )
+    for n, tier in SERVICES:
+        card(ax, sx[n], ytop, w, h, "SERVICE", n, CYAN, f"tier: {tier}", size=9)
+    for n, env in DATABASES:
+        card(ax, dx[n], ybot, w, h, "DATABASE", n, ORANGE, f"env: {env}", size=9)
+    ax.text(
+        36, 49.0, "services", color=CYAN, fontsize=8.5, fontweight="bold", va="center"
+    )
+    ax.text(
+        36, 8.6, "databases", color=ORANGE, fontsize=8.5, fontweight="bold", va="center"
+    )
+    # 03: the rule and its verdict
+    ax.add_patch(
+        FancyBboxPatch(
+            (108, 33),
+            25,
+            14,
+            boxstyle="round,pad=0.2,rounding_size=1.2",
+            fc=CARD,
+            ec=PINK,
+            lw=1.8,
+        )
+    )
+    ax.text(
+        109.2, 44.3, "RULE", color=PINK, fontsize=7.4, fontweight="bold", va="center"
+    )
+    ax.text(109.2, 41.0, "a production service", color=TEXT, fontsize=9.2, va="center")
+    ax.text(109.2, 38.4, "must not depend on", color=TEXT, fontsize=9.2, va="center")
+    ax.text(109.2, 35.8, "a test database", color=TEXT, fontsize=9.2, va="center")
+    ax.add_patch(
+        FancyBboxPatch(
+            (108, 9),
+            25,
+            19,
+            boxstyle="round,pad=0.2,rounding_size=1.2",
+            fc=CARD,
+            ec=PINK,
+            lw=1.8,
+            ls="--",
+        )
+    )
+    ax.text(
+        109.2,
+        25.2,
+        "validate()",
+        color=PINK,
+        fontsize=9.4,
+        fontweight="bold",
+        family="monospace",
+        va="center",
+    )
+    ax.text(
+        109.2, 22.0, f"{len(bad)} wrong relations:", color=TEXT, fontsize=9, va="center"
+    )
+    for i, (a, b) in enumerate(sorted(bad)):
+        ax.text(
+            109.2,
+            18.6 - i * 3.2,
+            f"{a} -> {b}",
+            color=PINK,
+            fontsize=9,
+            family="monospace",
+            va="center",
+        )
+    ax.text(
+        109.2,
+        11.6,
+        f"{len(LINKS) - len(bad)} of {len(LINKS)} are fine",
+        color=MUTED,
+        fontsize=8.2,
+        va="center",
+    )
     fig.text(
         0.5,
         0.025,
         "pink: a production service that depends on a test database",
         ha="center",
         fontsize=9.5,
-        color="#f72585",
+        color=PINK,
     )
     fig.savefig(OUT / "index.png", dpi=200, facecolor=BG)
     print("wrong relations:", sorted(bad))
