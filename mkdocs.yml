@@ -210,7 +210,13 @@ nav:
           - Cycle residual: timeseries/cycle.md
           - GARCH: timeseries/garch.md
       - Clustering: cluster/index.md
-      - Trees: tree/index.md
+      - Trees:
+          - tree/index.md
+          - Hoeffding tree: tree/hoeffding.md
+          - Hoeffding Anytime tree: tree/efdt.md
+          - Hoeffding Adaptive tree: tree/adaptive.md
+          - Stochastic gradient trees: tree/sgt.md
+          - Mondrian forests: tree/mondrian.md
       - Forests: forest/index.md
       - Ensembles: ensemble/index.md
       - Bandits: bandit/index.md
