@@ -72,3 +72,27 @@ print({k: (v["mode"], v["n"], v["error"]) for k, v in rep.items()})
 ```text
 {'hampel': ('score', 12, None), 'cusum': ('drift', 12, None), 'scaler': ('transform', 12, None)}
 ```
+
+## 6. Several channels, one set of primitives each
+
+A stereo file has two channels, and they may need different primitives. `run_channels(blocks, make)` calls `make(k)` for each channel `k`, which returns the dict of primitives that read that channel, and feeds them as `run_estimators` does. The result is one report per channel, in order.
+
+```python
+import numpy as np
+from dense_armor.core.audio import Audio, run_channels
+from dense_armor.core.online.anomaly.filters import HampelScorer
+from dense_armor.core.signals.preprocessing.scale import StandardScaler
+
+rng = np.random.default_rng(0)
+blocks = [Audio(rng.standard_normal((256, 2)), 8000, k * 256 / 8000) for k in range(6)]
+make = lambda k: {"hampel": HampelScorer()} if k == 0 else {"scaler": StandardScaler()}
+out = run_channels(blocks, make)
+print([{name: (r["mode"], r["n"]) for name, r in ch.items()} for ch in out])
+```
+
+```text
+[{'hampel': ('score', 6)}, {'scaler': ('transform', 6)}]
+```
+
+Channel 0 was read by the Hampel scorer and channel 1 by the scaler, over the 6 blocks. A block with one channel is channel 0, and blocks with different numbers of channels raise `ValueError`.
+

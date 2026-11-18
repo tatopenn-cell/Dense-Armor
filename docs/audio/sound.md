@@ -71,6 +71,49 @@ There are 30 frames of 129 frequencies each. The first and last frames do not ha
 
 `cola_ok(window, hop)` tells you whether a window and a hop can be inverted this way. `istft` raises `ValueError` if they cannot.
 
+### A window by name
+
+`get_window(name, n)` returns the window of length `n`. The names are `rectangular`, `hann`, `hamming` and `blackman`; any other name raises `ValueError` and lists them.
+
+```python
+from dense_armor.core.audio import get_window
+
+print([round(float(v), 3) for v in get_window("hann", 8)])
+print([round(float(v), 3) for v in get_window("hann", 8, periodic=False)])
+try:
+    get_window("kaiser", 8)
+except ValueError as e:
+    print(e)
+```
+
+```text
+[0.0, 0.146, 0.5, 0.854, 1.0, 0.854, 0.5, 0.146]
+[0.0, 0.188, 0.611, 0.95, 0.95, 0.611, 0.188, 0.0]
+unknown window 'kaiser', expected one of ['blackman', 'hamming', 'hann', 'rectangular']
+```
+
+The first window is the periodic one, the default and the one that `stft` uses: it starts at 0 and reaches 1.0 in the middle, and the next window would start again from 0. The second is the symmetric one (`periodic=False`): it touches 0 at both ends.
+
+### Do the shifted windows add up to a constant?
+
+The frames of a short-time transform overlap. If the copies of the window, shifted by the hop, add up to a constant, the frames can be put back together by adding them (constant overlap-add). `cola_constant(window, hop)` returns that constant, or `None` when the sum is not constant. It lives in `dense_armor.core.audio.fourier`.
+
+```python
+from dense_armor.core.audio import get_window
+from dense_armor.core.audio.fourier import cola_constant
+
+w = get_window("hann", 8)
+print([cola_constant(w, hop) for hop in (4, 2, 3)])
+print(cola_constant(get_window("rectangular", 8), 4))
+```
+
+```text
+[1.0, 2.0, None]
+2.0
+```
+
+The Hann window of 8 samples adds up to 1.0 with a hop of 4 (half a window), to 2.0 with a hop of 2, and not to a constant with a hop of 3, so the answer is `None`. The rectangular window with a hop of 4 adds up to 2.0, because every sample is covered by two frames.
+
 ## 4. One sample at a time
 
 `StreamingSTFT(n_fft, hop, window)` gives the same spectra from a stream: push samples, and a spectrum is ready after the first `n_fft` samples and then every `hop` samples. Dense-Armor also has `SDFT`, the sliding DFT of the last `N` samples with a rectangular window, in `dense_armor.core.signals.stats`; `StreamingSTFT` adds the hop and the other windows.

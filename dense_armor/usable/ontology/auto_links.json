@@ -3365,6 +3365,564 @@
     "source": "catalog domain of the class",
     "license": "Dense-Armor"
    }
+  ],
+  [
+   "audio",
+   "bandpass",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "blackman",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "blamp_residual",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "cents_to_freq",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "cmndf",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "cola_constant",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "cola_ok",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "comb_gain",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "convolve",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "detect_events",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "envelope_follower",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "freq_to_cents",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "freq_to_note",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "gain_curve",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "get_window",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "hamming",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "hann",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "hard_clip",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "hard_clip_blamp",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "highpass",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "highshelf",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "hilbert",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "hz_to_mel",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "istft",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "jax_allpole_time_varying",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "jax_biquad",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "jax_lowpass",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "lowpass",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "lowshelf",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "mel_filterbank",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "mel_spectrogram",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "mel_to_hz",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "mfcc",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "nmf",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "notch",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "note_to_freq",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "onset_detect",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "peaking",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "pink_noise",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "pitch_ratio_transition",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "pitch_shift",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "plucked_string",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "psola_time_stretch",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "rational_ratio",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "read_wav",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "rectangular",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "reflection_to_lpc",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "resample",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "reverberation_time",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "run_channels",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "run_estimators",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "separate",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "spectral_centroid",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "spectral_flatness",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "spectral_flux",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "spectral_rolloff",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "stft",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "time_stretch",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "triangle_blamp",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "white_noise",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "write_wav",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "audio",
+   "yin_f0",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
   ]
  ]
 }

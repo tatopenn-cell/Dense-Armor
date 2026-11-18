@@ -101,8 +101,11 @@ def draw():
     )
     jobs = onto["jobs"]
     by_domain = defaultdict(list)
+    functions = defaultdict(int)
     for i in get_catalog(REPO):
-        if i["class"] not in by_domain[i["domain"]]:
+        if i.get("kind", "class") == "function":
+            functions[i["domain"]] += 1
+        elif i["class"] not in by_domain[i["domain"]]:
             by_domain[i["domain"]].append(i["class"])
     order, domains = order_nodes(jobs)
     jh, dh = 44.0, 21.0
@@ -165,7 +168,7 @@ def draw():
         body = (
             f'<circle cx="410" cy="{y:.1f}" r="3.2" fill="#4cc9f0"/>{pill}'
             f'<text class="dn m" x="422" y="{y + 3.6:.1f}" fill="{TEXT if rel else MUTED}" font-size="11" font-weight="700">{escape(d)}</text>'
-            f'<text x="614" y="{y + 3.6:.1f}" fill="{"#4cc9f0" if rel else MUTED}" font-size="10" text-anchor="end">{len(classes)}</text>'
+            f'<text x="614" y="{y + 3.6:.1f}" fill="{"#4cc9f0" if rel else MUTED}" font-size="10" text-anchor="end">{len(classes)}{f" + {functions[d]} fn" if functions.get(d) else ""}</text>'
         )
         if rel:
             linked += 1
@@ -240,8 +243,12 @@ def png():
     )
     jobs = onto["jobs"]
     counts = defaultdict(set)
+    fn = defaultdict(int)
     for i in get_catalog(REPO):
-        counts[i["domain"]].add(i["class"])
+        if i.get("kind", "class") == "function":
+            fn[i["domain"]] += 1
+        else:
+            counts[i["domain"]].add(i["class"])
     order, domains = order_nodes(jobs)
     dh = 2.5
     jh = len(domains) * dh / len(order)
@@ -352,7 +359,7 @@ def png():
         ax.text(
             92.8,
             dy[d],
-            str(len(counts.get(d, ()))),
+            str(len(counts.get(d, ()))) + (f" + {fn[d]} fn" if fn.get(d) else ""),
             color="#4cc9f0" if has else MUTED,
             fontsize=7,
             ha="right",

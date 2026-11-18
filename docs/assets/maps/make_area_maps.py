@@ -8,6 +8,7 @@ The names of the areas and of the classes are those of the catalog of the librar
     python docs/assets/maps/make_area_maps.py ml audio   # some of them
 """
 
+import re
 import sys
 import textwrap
 from collections import defaultdict
@@ -269,7 +270,7 @@ def classes_of(prefix, depth):
     """The area -> exact class names of the catalog, for the modules under a prefix."""
     out = defaultdict(list)
     for i in get_catalog(REPO):
-        if i["module"].startswith(prefix):
+        if i["module"].startswith(prefix) and i.get("kind", "class") == "class":
             out[i["module"].split(".")[depth]].append(i["class"])
     return out
 
@@ -536,96 +537,105 @@ def neural_map():
 
 
 def audio_map():
-    n_classes = sum(len(v) for v in classes_of("dense_armor.core.audio.", 3).values())
+    """The classes of the audio domain of the catalog, each with the page of the docs that names it."""
+    rows = [
+        i
+        for i in get_catalog(REPO)
+        if i["module"].startswith("dense_armor.core.audio.")
+    ]
+    items = [i for i in rows if i.get("kind", "class") == "class"]
+    n_functions = len(rows) - len(items)
+    pages = {
+        f.stem: f.read_text(encoding="utf-8")
+        for f in sorted((DOCS / "audio").glob("*.md"))
+    }
+
+    def page_of(cls):
+        """The page that names the class most often (the index and the sources page only list it)."""
+        pattern = re.compile(rf"\b{re.escape(cls)}\b")
+        best, best_n = None, 0
+        for stem, text in pages.items():
+            if stem in ("index", "sources"):
+                continue
+            n = len(pattern.findall(text))
+            if n > best_n:
+                best, best_n = stem, n
+        if best:
+            return f"audio/{best}"
+        others = []
+        for f in DOCS.rglob("*.md"):
+            if f.parent.name == "audio" or f.name in ("general.md", "changelog.md"):
+                continue
+            n = len(pattern.findall(f.read_text(encoding="utf-8")))
+            if n:
+                others.append((n, f"{f.parent.name}/{f.stem}"))
+        return max(others)[1] if others else "not in the docs"
+
     spec = (
         (
             "01",
-            "HOLD AND LOOK",
-            "a sound, as numbers and as a listener hears it",
+            "FILTERS",
+            "a sound through poles, taps and biquads",
             CYAN,
-            (
-                (
-                    "Sound, files and frequency",
-                    "sound",
-                    "hold a sound, read and write WAV, look at it by frequency",
-                ),
-                (
-                    "Perceptual analysis",
-                    "perceptual",
-                    "bands, cepstrum, brightness, onsets, envelope",
-                ),
-                ("Pitch", "pitch", "find the pitch of a block, and name a frequency"),
-            ),
+            ("biquad", "allpole", "fir", "diff_filter"),
         ),
         (
             "02",
-            "SHAPE",
-            "filters and effects, fixed or trained",
+            "EFFECTS",
+            "how loud, how roomy, how moving",
             ORANGE,
-            (
-                ("Filters", "filters", "filter a sound by biquads, taps or poles"),
-                ("Effects", "effects", "how loud, how clean, how roomy or how moving"),
-                (
-                    "Filters you can train",
-                    "differentiable",
-                    "fit the numbers of a filter by gradient descent",
-                ),
-            ),
+            ("dynamics", "reverb", "modulation"),
         ),
         (
             "03",
             "MAKE AND CHANGE",
-            "make a sound, or change its length and pitch",
+            "make a sound, find its pitch, change its time",
             PINK,
-            (
-                (
-                    "Making sound",
-                    "synthesis",
-                    "make a sound from nothing, without aliasing",
-                ),
-                (
-                    "Resampling",
-                    "resampling",
-                    "change the sample rate, or glide the pitch",
-                ),
-                ("Time and pitch", "timescale", "longer or shorter, higher or lower"),
-            ),
+            ("generators", "pitch", "resample", "timescale"),
         ),
         (
             "04",
-            "FIND AND SPLIT",
-            "events, live input and sources",
+            "SOUND AND STREAMS",
+            "hold a sound, its spectrum, files and live input",
             CYAN,
-            (
-                ("Separating sources", "analysis", "split a sound into parts"),
-                (
-                    "Events and streams",
-                    "events",
-                    "read a file or a live input, find the moment something happens",
-                ),
-                (
-                    "Sources and checks",
-                    "sources",
-                    "which paper each primitive comes from, what was checked",
-                ),
-            ),
+            ("signal", "fourier", "features", "streams", "adapter"),
         ),
     )
-    text = (DOCS / "audio" / "index.md").read_text(encoding="utf-8")
-    for *_, cards in spec:
-        for name, page, desc in cards:
-            assert f"[{name}]({page}.md)" in text and desc.split(",")[0] in text, name
-    groups = [
-        (n, t, note, col, [(name, desc, None, page) for name, page, desc in cards])
-        for n, t, note, col, cards in spec
-    ]
+    mods = {i["module"].split(".")[-1] for i in items}
+    placed = {m for *_, ms in spec for m in ms}
+    assert mods == placed, (sorted(mods - placed), sorted(placed - mods))
+    groups = []
+    for n, t, note, col, ms in spec:
+        rows = [i for i in items if i["module"].split(".")[-1] in ms]
+        groups.append(
+            (
+                n,
+                t,
+                note,
+                col,
+                [
+                    (i["class"], "", None, page_of(i["class"]))
+                    for i in sorted(
+                        rows,
+                        key=lambda r: (
+                            ms.index(r["module"].split(".")[-1]),
+                            r["class"],
+                        ),
+                    )
+                ],
+            )
+        )
     tree(
         DOCS / "assets" / "audio" / "map.png",
         "THE MAP OF AUDIO",
-        f"twelve pages in four groups; {n_classes} classes in the catalog",
-        ("audio", "12 pages", f"{n_classes} classes"),
+        f"the {len(items)} classes of the audio domain of the catalog; the right column is the page that documents each one",
+        (
+            "audio",
+            f"{len(items)} classes",
+            f"and {n_functions} functions, in the catalog",
+        ),
         groups,
-        "page names and descriptions are those of the table of docs/audio/index.md",
+        "classes: dense_armor.usable.catalog; pages: the page of the docs that names the class most often",
     )
 
 

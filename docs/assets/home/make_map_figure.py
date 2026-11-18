@@ -23,7 +23,7 @@ REPO = OUT.parents[2]
 
 
 def counts():
-    items = get_catalog(REPO)
+    items = [i for i in get_catalog(REPO) if i.get("kind", "class") == "class"]
     c = Counter()
     roles = Counter()
     for i in items:
