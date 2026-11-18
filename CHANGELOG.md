@@ -4,6 +4,29 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-11-18
+
+This release completes the Hoeffding trees (a regressor, categorical splits, three more splitters, the Gini criterion and the deactivation of the least promising leaves), lightens the base install (`osqp` and `xacro` move to the extra `dynamics`), splits the neural package into sections, brings the fixes of the reviews of the core and of Armor, and renews the documentation: a new look, a Roles section, a main page and a map for the main tabs, and a map by job drawn from `usable`.
+
+### Added
+- `HoeffdingTreeRegressor`: splits on the variance reduction, with the `ebst` or the `quantile` splitter, categorical features and the deactivation of leaves.
+- Hoeffding trees (`HoeffdingTreeClassifier`, `HoeffdingAnytimeTreeClassifier`, `HoeffdingAdaptiveTreeClassifier` and the trees of the adaptive random forest): `criterion` (`entropy` or `gini`), `splitter` (`class_means`, `gaussian`, `ebst`, `quantile`), `n_splits`, `nominal_attributes` (a list of names, or `"auto"`), `max_active_leaves`, `memory_period` and `quantile_radius`.
+- `ADWIN`: `max_window=None` means no limit (the default stays 200).
+- `usable`: the 8 classes of `dense_armor.bridges` and the 62 public functions of the audio modules are listed in the catalog, with a field `kind` (`class` or `function`); the new job `interoperate` reaches the bridges.
+- Documentation: a Roles section of seven pages; a main page for the tabs Online learning, Deep learning and Applications; maps of the main sections with the exact names of `usable`; the map by job (clickable) in the home page and in the API page, and a picture with a table of links in the README; the five audio functions that had no page (`get_window`, `cola_constant`, `comb_gain`, `blamp_residual`, `run_channels`); the pages of the industrial telemetry guard and of the ECG lead guard, with the evaluation of its alerts.
+
+### Changed
+- The Hoeffding trees and the adaptive random forest have no default cap on the number of nodes (`max_nodes=None`; it was 10000 in the forest). The memory of the statistics is bounded by `max_active_leaves` (default 1000): the leaves that made the fewest errors stop keeping statistics and predict the majority class.
+- `osqp` and `xacro` are no longer base dependencies: they are in the extra `dynamics` (and in `dev`). The base install needs `numpy`, `jax`, `psutil` and `scipy`; the modules that use them raise an `ImportError` that names the extra.
+- The modules of `dense_armor.core.deep.neural` are in seven sections (`layers`, `attention`, `transformer`, `losses`, `training`, `online`, `models`); the old import paths still resolve. The tests mirror the layout of the sources.
+- The docstrings and the comments of `armor.py` and of the core modules are in English.
+- Documentation: a new look (cyan, with a light, dark or automatic choice in the header), the tab bar stays visible on narrow windows, the section Robot moves from Library to Applications, and the nested section of the tab Online learning is called Adaptive learners.
+- CI: the docs are deployed on every merge to master; Codecov ignores the old flat paths of the neural modules.
+
+### Fixed
+- The bugs found in the review of 12 core modules and the regression tests that cover them.
+- `armor.py`: the command line parser, the drift exponent, the JSON output and the notes on the thresholds.
+
 ## [1.6.1] - 2026-11-16
 
 This release adds the ARC-AGI layer of the ontology (`dense_armor.core.graph`: grids, objects, a typed grid graph, a program search, a rule synthesis and a solver based on Vector Symbolic Algebras), the command line `usable` (it proposes the classes of the library for a file), and the documentation of both.

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dense-armor"
-version = "1.6.1"
+version = "1.7.0"
 description = "Low-Level Learning toolkit on three levels: online learning (one sample at a time), deep learning (neural networks) and machine learning (the whole dataset); with ontology, audio, robot motion control, video and finance"
 readme = "README.md"
 license = "AGPL-3.0-or-later"
