@@ -2,6 +2,10 @@
 
 Two roles watch a stream instead of predicting from it. An anomaly detector says how unusual one sample is. A drift detector says whether a number has started to behave differently. Neither needs labels.
 
+![A score for every sample and a flag for every change: the score surface of an anomaly detector and the flag of a drift detector](../assets/roles/detectors.png)
+
+*Left: the score of `HalfSpaceTrees` over the plane, with ordinary points in white and four far points in pink. Right: the mean of a stream moves at step 200 and `PageHinkley` flags it at step 215.*
+
 ## 1. A score for every sample
 
 `learn_one(x)` shows a sample to the detector, and `score_one(x)` returns a number. By the contract of the role a high score means anomalous.

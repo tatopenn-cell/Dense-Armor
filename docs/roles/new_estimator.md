@@ -2,6 +2,10 @@
 
 To add a tool to Dense-Armor you pick a role, write its methods, and let `check_estimator` tell you whether you respect the contract.
 
+![The 28 checks of check_estimator, grouped, all passed for a small classifier](../assets/roles/checks.png)
+
+*The 28 checks that `check_estimator` ran on the `Majority` classifier of this page, in four groups. A failing check would stop the run with the name of the check.*
+
 ## 1. Write the tool
 
 Subclass a role, store every constructor argument unchanged, and keep what the tool learns in attributes whose name ends with an underscore. A docstring is required.

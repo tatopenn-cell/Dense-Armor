@@ -2,6 +2,10 @@
 
 A pipeline runs several tools one after the other on the same sample: the transformers prepare it, the last tool learns from it. You build one with `|`.
 
+![A sample travels through the chain StandardScaler then OnlineGaussianNB: the raw points, the scaled points and the probability surface](../assets/roles/pipelines.png)
+
+*The same 300 samples seen at each step of the chain. The scaler brings the two features to the same scale; the classifier then answers with a probability surface over the raw plane.*
+
 ## 1. Build a pipeline
 
 `a | b` is a pipeline of `a` then `b`. When you call `learn_one`, each transformer first transforms the sample and then learns from it, and the last step receives the result.

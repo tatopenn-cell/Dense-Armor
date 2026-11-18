@@ -2,6 +2,10 @@
 
 A supervised tool learns from a sample and its answer. A classifier learns a label and answers with probabilities; a regressor learns a number and answers with a number.
 
+![A classifier learns one sample at a time: the probability of class 1 over the plane after 12, 60 and 3000 samples](../assets/roles/supervised.png)
+
+*The same Gaussian naive Bayes classifier asked the same question over the plane `(a, b)` after more and more `learn_one` calls. After 12 samples the border between the two classes is rough; after 3000 it is a clean step.*
+
 ## 1. A classifier that has learned nothing
 
 Before the first `learn_one`, every classifier answers `None` to `predict_one` and an empty dict to `predict_proba_one`. A label that does not exist is never invented.

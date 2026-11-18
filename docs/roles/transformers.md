@@ -2,6 +2,10 @@
 
 A transformer turns the dict of a sample into another dict: it rescales a value, builds a new feature, drops a column. It learns without labels, from the samples alone.
 
+![Two scalers and their product: the scaled a, the scaled b and the feature a*b over the plane](../assets/roles/transformers.png)
+
+*Two `StandardScaler` objects, one for `a` and one for `b`, and the feature `a*b` of their product. The product is not a plane: it bends where one of the two values changes sign.*
+
 ## 1. Learn, then transform
 
 `learn_one(x)` updates what the transformer knows and `transform_one(x)` returns the new dict.
