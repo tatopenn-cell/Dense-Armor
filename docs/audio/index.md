@@ -2,6 +2,10 @@
 
 Sound is a long list of numbers, one for each tiny slice of time. This section gives you a value for it (`Audio`), the primitives that read it, make it, filter it and measure it, and **one adapter, `AudioInput`, that opens sound to every estimator, detector, scaler and filter that Dense-Armor already has**. Nothing that already exists is copied or rewritten for sound: the adapter looks at what a primitive can do and gives it a block of sound in the form it takes.
 
+![The map of audio: twelve pages in four groups, from holding a sound to finding events in it](../assets/audio/map.png)
+
+*The pages of this section in four groups: hold and look, shape, make and change, find and split. Each box is a page, with the file name and what you can do on it; the figure is drawn by a script from the table below.*
+
 The code is in `dense_armor/core/audio/`. The sound itself is handled with NumPy; the estimators it connects to need JAX; a live input needs the optional extra `audio`.
 
 ## 1. The one idea: give sound to any primitive
@@ -41,10 +45,6 @@ True score
 ```
 
 `SDFT` is the sliding DFT that Dense-Armor already had; it received the samples. `HampelScorer` is an anomaly scorer that already existed; it received the dict. [Events and streams](events.md) shows the adapter on a file and on a live input.
-
-![The map of audio: twelve pages in four groups, from holding a sound to finding events in it](../assets/audio/map.png)
-
-*The pages of this section in four groups: hold and look, shape, make and change, find and split. Each box is a page, with the file name and what you can do on it; the figure is drawn by a script from the table below.*
 
 ## 2. What is in the section
 

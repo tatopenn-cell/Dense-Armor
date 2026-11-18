@@ -154,7 +154,7 @@ def build_catalog(repo: Path) -> list[dict]:
         if len(sub) >= 2 and sub[-2] == "neural" and domain in NEURAL_SECTIONS:
             domain = "neural"
         role = role_of(n)
-        if domain in ("roles", "checks", "mcp_server", "bridges") and not role:
+        if domain in ("roles", "checks", "mcp_server") and not role:
             continue
         module = ".".join(p.relative_to(repo).with_suffix("").parts)
         sup = up(n, lambda nd: lit(nd, "_supervised"))

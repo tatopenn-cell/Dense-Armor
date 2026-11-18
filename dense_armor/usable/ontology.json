@@ -967,6 +967,13 @@
         "cluster"
       ],
       "modules": []
+    },
+    "interoperate": {
+      "roles": [],
+      "domains": [
+        "bridges"
+      ],
+      "modules": []
     }
   }
 }

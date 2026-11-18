@@ -8,6 +8,12 @@ the link leads there for the full explanation and examples.
 
 **449 classes**, 3783 public methods, 241 public modules.
 
+## Find a class by what you want to do
+
+<object type="image/svg+xml" data="../../assets/maps/jobs.svg" style="width:100%"></object>
+
+*The jobs, the domains that serve each job and their classes are those of `usable`. Pass over a job to light its links and click a domain to open its page.*
+
 ## Classes by subsystem
 
 **Jump to:** [Roles](#roles) &nbsp;·&nbsp; [Metrics](#metrics) &nbsp;·&nbsp; [Evaluate](#evaluate) &nbsp;·&nbsp; [Core](#core) &nbsp;·&nbsp; [Mcp_server](#mcp_server) &nbsp;·&nbsp; [Anomaly](#anomaly) &nbsp;·&nbsp; [Drift](#drift) &nbsp;·&nbsp; [Trees](#trees) &nbsp;·&nbsp; [Naive Bayes](#naive-bayes) &nbsp;·&nbsp; [Distributions](#distributions) &nbsp;·&nbsp; [Nearest neighbours](#nearest-neighbours) &nbsp;·&nbsp; [Multiclass](#multiclass) &nbsp;·&nbsp; [Multi-output](#multi-output) &nbsp;·&nbsp; [Forests](#forests) &nbsp;·&nbsp; [Ensembles](#ensembles) &nbsp;·&nbsp; [Bandits](#bandits) &nbsp;·&nbsp; [Active learning](#active-learning) &nbsp;·&nbsp; [Factorization machines](#factorization-machines) &nbsp;·&nbsp; [Recommenders](#recommenders) &nbsp;·&nbsp; [Rules](#rules) &nbsp;·&nbsp; [Clustering](#clustering) &nbsp;·&nbsp; [Stats](#stats) &nbsp;·&nbsp; [Preprocessing](#preprocessing) &nbsp;·&nbsp; [Compose](#compose) &nbsp;·&nbsp; [Vision](#vision) &nbsp;·&nbsp; [Learn](#learn) &nbsp;·&nbsp; [Datasets](#datasets) &nbsp;·&nbsp; [Protect](#protect) &nbsp;·&nbsp; [Bridges](#bridges) &nbsp;·&nbsp; [Armor](#armor) &nbsp;·&nbsp; [Dynamics](#dynamics) &nbsp;·&nbsp; [Deep learning](#deep-learning) &nbsp;·&nbsp; [Infrastructure](#infrastructure) &nbsp;·&nbsp; [Linear](#linear) &nbsp;·&nbsp; [ML](#ml) &nbsp;·&nbsp; [Optimizers](#optimizers) &nbsp;·&nbsp; [Time series](#time-series) &nbsp;·&nbsp; [Audio](#audio) &nbsp;·&nbsp; [Graph (ontology)](#graph-ontology) &nbsp;·&nbsp; [Finance](#finance)

@@ -1477,6 +1477,24 @@
    }
   ],
   [
+   "bridges",
+   "KerasAdapter",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "bridges",
+   "KerasLayer",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
    "vision",
    "Kinematics",
    0.25,
@@ -1497,6 +1515,15 @@
   [
    "learn",
    "LEGO",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "bridges",
+   "LLMEmbeddingClassifier",
    0.25,
    {
     "source": "catalog domain of the class",
@@ -2881,6 +2908,33 @@
    }
   ],
   [
+   "bridges",
+   "SklearnClassifier",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "bridges",
+   "SklearnRegressor",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "bridges",
+   "SklearnTransformer",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
    "stats",
    "Skyline",
    0.25,
@@ -3099,6 +3153,24 @@
   [
    "bandit",
    "ThompsonSampling",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "bridges",
+   "TorchAdapter",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "bridges",
+   "TorchModule",
    0.25,
    {
     "source": "catalog domain of the class",
