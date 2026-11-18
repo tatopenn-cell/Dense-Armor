@@ -556,6 +556,193 @@ def checks():
     fig.savefig(OUT / "checks.png", dpi=200, facecolor=BG)
 
 
+def card(fig, rect, num, name, code, lines):
+    ax = fig.add_axes(rect, facecolor="#101a24")
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    for sp in ax.spines.values():
+        sp.set_color("#4cc9f0")
+        sp.set_linewidth(1.2)
+    ax.text(
+        0.06,
+        0.92,
+        num,
+        color="#f72585",
+        fontsize=13,
+        fontweight="bold",
+        va="center",
+        transform=ax.transAxes,
+    )
+    ax.text(
+        0.22,
+        0.92,
+        name,
+        color="#ffffff",
+        fontsize=11,
+        fontweight="bold",
+        va="center",
+        transform=ax.transAxes,
+    )
+    ax.text(
+        0.06,
+        0.82,
+        code,
+        color="#cbd5e1",
+        fontsize=9.5,
+        family="monospace",
+        va="center",
+        transform=ax.transAxes,
+    )
+    for i, ln in enumerate(lines):
+        ax.text(
+            0.06,
+            0.68 - i * 0.092,
+            ln,
+            color="#e0fbfc",
+            fontsize=9.2,
+            family="monospace",
+            va="center",
+            transform=ax.transAxes,
+        )
+    return ax
+
+
+def root():
+    rng = np.random.default_rng(0)
+    sc = StandardScaler(features=["a"])
+    params = sc.get_params()
+    probe = {"a": 7.0}
+    ns, ys = [], []
+    for i in range(1, 501):
+        sc.learn_one({"a": float(rng.normal(5.0, 2.0))}, t=i * 0.01)
+        if i >= 4 and (i <= 30 or i % 5 == 0):
+            ns.append(i)
+            ys.append(sc.transform_one(probe)["a"])
+    state = sc.state_dict()
+    mom = state["stats_"]["a"][0]
+    sd = mom.std() if callable(mom.std) else mom.std
+    cl = sc.clone()
+    back = StandardScaler(features=["a"])
+    back.load_state_dict(state)
+    same = back.transform_one(probe) == sc.transform_one(probe)
+    desc = list(sc.describe())
+    fig = plt.figure(figsize=(13.5, 6.4), facecolor=BG)
+    title(
+        fig,
+        "PARAMETERS ON ONE SIDE, WHAT IT LEARNED ON THE OTHER",
+        "Root keeps the two apart, so a tool can be copied, restored and described",
+    )
+    card(
+        fig,
+        [0.03, 0.40, 0.25, 0.36],
+        "01",
+        "PARAMETERS",
+        "get_params()",
+        [f"{k}: {v!r}" for k, v in params.items()]
+        + ["", "set in __init__", "never change by learning"],
+    )
+    card(
+        fig,
+        [0.72, 0.40, 0.25, 0.36],
+        "02",
+        "LEARNED STATE",
+        "state_dict()",
+        [
+            "stats_['a'][0] is a",
+            "RunningMoments:",
+            f"  n_    = {mom.n_}",
+            f"  mean_ = {mom.mean_:.3f}",
+            f"  std   = {sd:.3f}",
+            "",
+            f"after {ns[-1]} learn_one",
+        ],
+    )
+    ax = fig.add_axes([0.335, 0.43, 0.34, 0.30], facecolor=BG)
+    ax.plot(ns, ys, color="#4cc9f0", linewidth=1.4)
+    ax.axhline(1.0, color="#ff9e00", linewidth=1.0, linestyle="--")
+    ax.text(
+        ns[-1],
+        1.0 + 0.04,
+        "true value 1.0",
+        color="#ff9e00",
+        fontsize=8.5,
+        ha="right",
+        va="bottom",
+    )
+    for sp in ax.spines.values():
+        sp.set_color("#1e293b")
+    ax.tick_params(colors="#64748b", labelsize=8)
+    ax.set_xlabel("learn_one calls", color="#90e0ef", fontsize=9, fontweight="bold")
+    ax.set_ylabel(
+        "answer for a = 7.0", color="#90e0ef", fontsize=8.5, fontweight="bold"
+    )
+    ax.grid(color="#1e293b", linewidth=0.6)
+    ax.set_ylim(0.0, 3.0)
+    fig.text(
+        0.505,
+        0.77,
+        "what the state makes the tool answer",
+        color="#cbd5e1",
+        fontsize=9.5,
+        ha="center",
+    )
+    for x in (0.295, 0.69):
+        fig.text(
+            x, 0.58, "\u279c", fontsize=22, color="#f72585", ha="center", va="center"
+        )
+    chips = (
+        (
+            "clone()",
+            "same parameters: "
+            + str(cl.get_params() == params)
+            + chr(10)
+            + "state: "
+            + str(cl.state_dict()),
+        ),
+        ("load_state_dict(s)", f"same answer again: {same}"),
+        (
+            "mutate({...})",
+            "only the attributes listed" + chr(10) + "in _mutable_attributes",
+        ),
+        ("dt, rate, jitter", f"{sc.dt:.2f} s, {sc.rate:.0f} Hz, {sc.jitter:.1f}"),
+        ("describe()", ", ".join(desc[:3]) + ", ..."),
+    )
+    w = 0.17
+    for i, (verb, what) in enumerate(chips):
+        x0 = 0.04 + i * (w + 0.0225)
+        a2 = fig.add_axes([x0, 0.07, w, 0.20], facecolor="#101a24")
+        a2.set_xticks([])
+        a2.set_yticks([])
+        for sp in a2.spines.values():
+            sp.set_color("#1e293b")
+        a2.text(
+            0.5,
+            0.74,
+            verb,
+            color="#ffffff",
+            fontsize=10,
+            fontweight="bold",
+            ha="center",
+            va="center",
+            family="monospace",
+            transform=a2.transAxes,
+        )
+        a2.text(
+            0.5,
+            0.30,
+            what,
+            color="#cbd5e1",
+            fontsize=8,
+            ha="center",
+            va="center",
+            wrap=True,
+            transform=a2.transAxes,
+        )
+    fig.savefig(OUT / "root.png", dpi=200, facecolor=BG)
+
+
 if __name__ == "__main__":
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
     if which in ("all", "overview"):
@@ -570,3 +757,5 @@ if __name__ == "__main__":
         pipelines()
     if which in ("all", "checks"):
         checks()
+    if which in ("all", "root"):
+        root()

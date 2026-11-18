@@ -2,6 +2,10 @@
 
 Every tool of Dense-Armor derives from `Root`. It gives each tool the same few abilities: tell its parameters, make a fresh copy, change a setting while it runs, save what it has learned, know its own clock and describe itself.
 
+![Parameters on one side and what the tool learned on the other: get_params, the learned state of a scaler after 500 samples, and the five things Root adds](../assets/roles/root.png)
+
+*A `StandardScaler` seen as `Root` sees it. Left: the parameters, fixed at construction. Right: the state it has learned from 500 samples. Between them, the answer of the tool converges to the true value as the state grows. Below, the five operations of this page.*
+
 ## 1. Read and set the parameters
 
 `get_params` returns the parameters that the constructor accepts, and `set_params` changes them and returns the object.
