@@ -9,8 +9,10 @@ import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
 
 from dense_armor.core.online.anomaly.hst import HalfSpaceTrees
+from dense_armor.core.online.drift.page_hinkley import PageHinkley
 from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB
 from dense_armor.core.online.tree.hoeffding_regressor import HoeffdingTreeRegressor
+from dense_armor.core.signals.preprocessing.scale import StandardScaler
 
 BG = "#0d131a"
 CMAP = LinearSegmentedColormap.from_list(
@@ -47,7 +49,7 @@ def surface(fn, g):
     return z
 
 
-def panel(fig, rect, g, z, zlabel, pts, zpts):
+def panel(fig, rect, g, z, zlabel, pts, zpts, xl="a", yl="b"):
     ax = fig.add_axes(rect, projection="3d")
     ax.set_facecolor(BG)
     for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
@@ -67,18 +69,19 @@ def panel(fig, rect, g, z, zlabel, pts, zpts):
         rstride=1,
         cstride=1,
     )
-    ax.scatter(
-        pts[:, 0],
-        pts[:, 1],
-        zpts,
-        color="#ffffff",
-        s=9,
-        alpha=0.9,
-        edgecolors="#90e0ef",
-        linewidth=0.3,
-    )
-    ax.set_xlabel("a", color="#90e0ef", fontsize=8, fontweight="bold")
-    ax.set_ylabel("b", color="#90e0ef", fontsize=8, fontweight="bold")
+    if pts is not None:
+        ax.scatter(
+            pts[:, 0],
+            pts[:, 1],
+            zpts,
+            color="#ffffff",
+            s=9,
+            alpha=0.9,
+            edgecolors="#90e0ef",
+            linewidth=0.3,
+        )
+    ax.set_xlabel(xl, color="#90e0ef", fontsize=8, fontweight="bold")
+    ax.set_ylabel(yl, color="#90e0ef", fontsize=8, fontweight="bold")
     ax.set_zlabel(zlabel, color="#90e0ef", fontsize=8, fontweight="bold")
     ax.tick_params(colors="#64748b", labelsize=7)
     ax.view_init(elev=24, azim=-58)
@@ -156,7 +159,177 @@ def overview():
     fig.savefig(OUT / "overview.png", dpi=200, facecolor=BG)
 
 
+def title(fig, big, small):
+    fig.text(
+        0.5,
+        0.94,
+        big,
+        ha="center",
+        va="center",
+        fontsize=22,
+        fontweight="bold",
+        color="#e0fbfc",
+    )
+    fig.text(0.5, 0.88, small, ha="center", va="center", fontsize=10.5, color="#4cc9f0")
+
+
+def heading(fig, x0, num, name, code):
+    fig.text(x0 + 0.04, 0.78, num, fontsize=13, fontweight="bold", color="#f72585")
+    fig.text(x0 + 0.075, 0.78, name, fontsize=11, fontweight="bold", color="#ffffff")
+    fig.text(x0 + 0.04, 0.735, code, fontsize=9.5, color="#cbd5e1", family="monospace")
+
+
+def supervised():
+    g = np.linspace(-3.5, 3.5, 36)
+    nb = OnlineGaussianNB()
+    seen = 0
+    fig = plt.figure(figsize=(13.5, 6.0), facecolor=BG)
+    title(
+        fig,
+        "A CLASSIFIER LEARNS ONE SAMPLE AT A TIME",
+        "The same model, asked the same question after more and more learn_one calls",
+    )
+    src = stream(3000, 0)
+    for i, (n, x0) in enumerate(((12, 0.02), (60, 0.35), (3000, 0.68))):
+        while seen < n:
+            x, k = next(src)
+            nb.learn_one(x, k)
+            seen += 1
+        z = surface(lambda x: nb.predict_proba_one(x).get(1, 0.0), g)
+        heading(fig, x0, f"0{i + 1}", f"AFTER {n} SAMPLES", "predict_proba_one(x)[1]")
+        ax = panel(fig, [x0, 0.0, 0.31, 0.74], g, z, "P(class 1)", None, None)
+        ax.set_zlim(0.0, 1.0)
+    fig.savefig(OUT / "supervised.png", dpi=200, facecolor=BG)
+
+
+def transformers():
+    rng = np.random.default_rng(3)
+    sa, sb = StandardScaler(features=["a"]), StandardScaler(features=["b"])
+    for _ in range(2000):
+        x = {"a": float(rng.normal(5.0, 2.0)), "b": float(rng.normal(-3.0, 0.5))}
+        sa.learn_one(x)
+        sb.learn_one(x)
+    prod = sa * sb
+    ga = np.linspace(1.0, 9.0, 36)
+    gb = np.linspace(-4.5, -1.5, 36)
+    a, b = np.meshgrid(ga, gb)
+
+    def grid(fn):
+        return np.vectorize(lambda u, v: fn({"a": float(u), "b": float(v)}))(a, b)
+
+    za = grid(lambda x: sa.transform_one(x)["a"])
+    zb = grid(lambda x: sb.transform_one(x)["b"])
+    zp = grid(lambda x: prod.transform_one(x)["a*b"])
+    fig = plt.figure(figsize=(13.5, 6.0), facecolor=BG)
+    title(
+        fig,
+        "TWO TRANSFORMERS, ONE PRODUCT",
+        "a * b makes one feature for each pair of features; here the two scaled values multiplied",
+    )
+    specs = (
+        (0.02, "01", "TRANSFORMER a", "StandardScaler(features=['a'])", za, "a scaled"),
+        (0.35, "02", "TRANSFORMER b", "StandardScaler(features=['b'])", zb, "b scaled"),
+        (0.68, "03", "PRODUCT a * b", "(a * b).transform_one(x)['a*b']", zp, "a*b"),
+    )
+    for x0, num, name, code, z, zl in specs:
+        heading(fig, x0, num, name, code)
+        ax = panel(fig, [x0, 0.0, 0.31, 0.74], ga, np.zeros((36, 36)), zl, None, None)
+        ax.collections[0].remove()
+        ax.plot_surface(
+            a,
+            b,
+            z,
+            cmap=CMAP,
+            alpha=0.78,
+            edgecolor="#48cae4",
+            linewidth=0.25,
+            rstride=1,
+            cstride=1,
+        )
+        ax.set_zlim(float(np.min(z)), float(np.max(z)))
+        ax.set_xlabel("a", color="#90e0ef", fontsize=8, fontweight="bold")
+        ax.set_ylabel("b", color="#90e0ef", fontsize=8, fontweight="bold")
+        ax.set_xlim(1.0, 9.0)
+        ax.set_ylim(-4.5, -1.5)
+    fig.savefig(OUT / "transformers.png", dpi=200, facecolor=BG)
+
+
+def detectors():
+    rng = np.random.default_rng(1)
+    hst = HalfSpaceTrees(seed=0)
+    for _ in range(600):
+        hst.learn_one({"a": float(rng.normal()), "b": float(rng.normal())})
+    g = np.linspace(-3.5, 3.5, 36)
+    z = surface(lambda x: hst.score_one(x), g)
+    ok = rng.normal(0.0, 1.0, (60, 2))
+    bad = np.array([[3.2, 3.0], [-3.0, 2.8], [2.9, -3.1], [-3.2, -3.0]])
+    zo = np.array([hst.score_one({"a": float(p[0]), "b": float(p[1])}) for p in ok])
+    zb = np.array([hst.score_one({"a": float(p[0]), "b": float(p[1])}) for p in bad])
+    fig = plt.figure(figsize=(13.5, 6.0), facecolor=BG)
+    title(
+        fig,
+        "A SCORE FOR EVERY SAMPLE, A FLAG FOR EVERY CHANGE",
+        "An anomaly detector scores each point; a drift detector watches one number over time",
+    )
+    heading(fig, 0.02, "01", "ANOMALY DETECTOR", "score_one(x)  (high = anomalous)")
+    ax = panel(fig, [0.02, 0.0, 0.46, 0.74], g, z, "score", ok, zo)
+    ax.scatter(
+        bad[:, 0],
+        bad[:, 1],
+        zb + 0.04,
+        color="#f72585",
+        s=140,
+        marker="^",
+        edgecolors="#ffffff",
+        linewidth=1.0,
+        depthshade=False,
+    )
+    heading(fig, 0.53, "02", "DRIFT DETECTOR", "update(v), then drift_detected")
+    ph = PageHinkley()
+    vals = rng.normal(0.0, 1.0, 400)
+    vals[200:] += 3.0
+    flag = None
+    for i, v in enumerate(vals):
+        ph.update(float(v))
+        if ph.drift_detected and flag is None:
+            flag = i
+    ax2 = fig.add_axes([0.56, 0.12, 0.40, 0.56], facecolor=BG)
+    ax2.plot(np.arange(400), vals, color="#4cc9f0", linewidth=0.9)
+    ax2.axvline(200, color="#ff9e00", linewidth=1.2, linestyle="--")
+    ax2.text(
+        196,
+        vals.max() - 0.3,
+        "mean changes: step 200",
+        color="#ff9e00",
+        fontsize=9,
+        ha="right",
+    )
+    if flag is not None:
+        ax2.axvline(flag, color="#f72585", linewidth=1.8)
+        ax2.text(
+            flag + 4,
+            vals.min() + 0.3,
+            f"flag: step {flag}",
+            color="#f72585",
+            fontsize=9,
+            fontweight="bold",
+        )
+    for sp in ax2.spines.values():
+        sp.set_color("#1e293b")
+    ax2.tick_params(colors="#64748b", labelsize=8)
+    ax2.set_xlabel("step", color="#90e0ef", fontsize=9, fontweight="bold")
+    ax2.set_ylabel("value", color="#90e0ef", fontsize=9, fontweight="bold")
+    ax2.grid(color="#1e293b", linewidth=0.6)
+    fig.savefig(OUT / "detectors.png", dpi=200, facecolor=BG)
+
+
 if __name__ == "__main__":
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
     if which in ("all", "overview"):
         overview()
+    if which in ("all", "supervised"):
+        supervised()
+    if which in ("all", "transformers"):
+        transformers()
+    if which in ("all", "detectors"):
+        detectors()
