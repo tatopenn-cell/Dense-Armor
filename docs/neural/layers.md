@@ -96,7 +96,7 @@ Batch norm makes the mean and the variance of every feature the same over the ba
 ~~~python
 import jax.numpy as jnp
 import numpy as np
-from dense_armor.core.deep.neural.norm import BatchNorm
+from dense_armor.core.deep.neural.layers.norm import BatchNorm
 
 rng = np.random.default_rng(0)
 x = rng.normal(3.0, 2.0, (64, 4)).astype(np.float32)
@@ -118,7 +118,7 @@ Layer norm normalises each sample over its own features, not across the batch: `
 ~~~python
 import jax.numpy as jnp
 import numpy as np
-from dense_armor.core.deep.neural.norm import LayerNorm
+from dense_armor.core.deep.neural.layers.norm import LayerNorm
 
 x = np.array([[1.0, 2.0, 3.0], [10.0, 10.5, 11.0]], dtype=np.float32)
 ln = LayerNorm(3)
@@ -140,7 +140,7 @@ The layers above are not `Transformer` of the library. `AsTransformer` is the br
 
 ~~~python
 import jax
-from dense_armor.core.deep.neural.adapter import AsTransformer
+from dense_armor.core.deep.neural.layers.adapter import AsTransformer
 from dense_armor.core.deep.neural.layers import Dense
 
 a = AsTransformer(Dense(3, 2, jax.random.PRNGKey(0)), ["a", "b", "c"])

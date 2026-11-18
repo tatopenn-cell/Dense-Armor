@@ -49,6 +49,16 @@ ROLES = ABSTRACT - {"Estimator", "Root", "Signal"}
 
 SKIP_SUFFIX = ("Error", "Config")
 
+NEURAL_SECTIONS = (
+    "layers",
+    "attention",
+    "transformer",
+    "losses",
+    "training",
+    "online",
+    "models",
+)
+
 
 def build_catalog(repo: Path) -> list[dict]:
     """Every public class with its role, domain, budget and what it reads. Classes that share a name in two
@@ -141,6 +151,8 @@ def build_catalog(repo: Path) -> list[dict]:
         rel = p.relative_to(repo).parts
         sub = rel[rel.index("core") + 1 : -1] if "core" in rel else rel[1:-1]
         domain = sub[-1] if sub else "core"
+        if len(sub) >= 2 and sub[-2] == "neural" and domain in NEURAL_SECTIONS:
+            domain = "neural"
         role = role_of(n)
         if domain in ("roles", "checks", "mcp_server", "bridges") and not role:
             continue

@@ -23,8 +23,8 @@ import jax
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dense_armor.core.deep.neural.background import BackgroundLearner
-from dense_armor.core.deep.neural.hedge import HedgeNetClassifier
+from dense_armor.core.deep.neural.training.background import BackgroundLearner
+from dense_armor.core.deep.neural.online.hedge import HedgeNetClassifier
 from dense_armor.core.deep.neural.losses import BCEWithLogits
 from dense_armor.core.deep.neural.models import mlp
 from dense_armor.core.deep.neural.online import OnlineNetClassifier

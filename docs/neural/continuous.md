@@ -40,7 +40,7 @@ Twenty samples fed one by one to `OnlineNetRegressor` leave the weights equal, w
 import jax
 import numpy as np
 from dense_armor.core.deep.neural.online import OnlineNetRegressor
-from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.deep.neural.training.trainer import Trainer
 from dense_armor.core.deep.neural.models import mlp
 from dense_armor.core.deep.neural.losses import MSE
 from dense_armor.core.online.optim import SGD
@@ -113,7 +113,7 @@ A Hedge network of Sahoo, Pham, Lu and Hoi (2018) has `L + 1` classifiers on the
 ~~~python
 import jax
 import numpy as np
-from dense_armor.core.deep.neural.hedge import HedgeNetClassifier
+from dense_armor.core.deep.neural.online.hedge import HedgeNetClassifier
 
 c = HedgeNetClassifier([2, 4, 4, 4], jax.random.PRNGKey(0), classes=[0, 1])
 print(c.L_)
@@ -132,7 +132,7 @@ On a stream where the pattern is linear, the shallow classifiers generalise well
 ~~~python
 import jax
 import numpy as np
-from dense_armor.core.deep.neural.hedge import HedgeNetClassifier
+from dense_armor.core.deep.neural.online.hedge import HedgeNetClassifier
 
 rng = np.random.default_rng(0)
 X = rng.normal(0.0, 1.0, (300, 2)).astype(np.float32)
@@ -157,7 +157,7 @@ The two shallow classifiers (`0` and `1`) together hold `0.501`, more than the d
 `BackgroundLearner` wraps any estimator with `learn_one` and `predict_one` and moves the training to a daemon worker thread. The main program puts the sample in a `queue.Queue` and returns at once; when the queue is full, the oldest sample is dropped and counted in `n_dropped_`, so the main program never waits and the newest data are kept.
 
 ~~~python
-from dense_armor.core.deep.neural.background import BackgroundLearner
+from dense_armor.core.deep.neural.training.background import BackgroundLearner
 from dense_armor.core.deep.neural.online import OnlineNetRegressor
 from dense_armor.core.deep.neural.models import mlp
 from dense_armor.core.deep.neural.losses import MSE

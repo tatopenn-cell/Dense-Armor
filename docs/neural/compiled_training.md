@@ -21,7 +21,7 @@ per second:
 import time
 import jax
 import jax.numpy as jnp
-from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.deep.neural.training.trainer import Trainer
 from dense_armor.core.deep.neural.models import mlp
 from dense_armor.core.deep.neural.losses import MSE
 from dense_armor.core.online.optim import SGD
@@ -60,7 +60,7 @@ with `compile=True`:
 ```python
 import jax
 import jax.numpy as jnp
-from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.deep.neural.training.trainer import Trainer
 from dense_armor.core.deep.neural.models import mlp
 from dense_armor.core.deep.neural.losses import MSE
 from dense_armor.core.online.optim import SGD
@@ -83,7 +83,7 @@ compilation, the step is one call:
 import time
 import jax
 import jax.numpy as jnp
-from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.deep.neural.training.trainer import Trainer
 from dense_armor.core.deep.neural.models import mlp
 from dense_armor.core.deep.neural.losses import MSE
 from dense_armor.core.online.optim import SGD
@@ -118,7 +118,7 @@ the same data and the same seed:
 ```python
 import jax
 import jax.numpy as jnp
-from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.deep.neural.training.trainer import Trainer
 from dense_armor.core.deep.neural.models import mlp
 from dense_armor.core.deep.neural.losses import MSE
 from dense_armor.core.online.optim import SGD

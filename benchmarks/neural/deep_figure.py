@@ -29,19 +29,19 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
 
-from dense_armor.core.deep.neural.activations import Relu
-from dense_armor.core.deep.neural.activations_more import (
+from dense_armor.core.deep.neural.layers.activations import Relu
+from dense_armor.core.deep.neural.layers.activations_more import (
     ELU,
     GELU,
     LeakyReLU,
     SiLU,
     Softplus,
 )
-from dense_armor.core.deep.neural.chain import Sequential
+from dense_armor.core.deep.neural.layers.chain import Sequential
 from dense_armor.core.deep.neural.layers import Dense
 from dense_armor.core.deep.neural.losses import MSE
-from dense_armor.core.deep.neural.schedules_more import LinearWarmup, NoamSchedule
-from dense_armor.core.deep.neural.trainer import Trainer
+from dense_armor.core.deep.neural.training.schedules_more import LinearWarmup, NoamSchedule
+from dense_armor.core.deep.neural.training.trainer import Trainer
 from dense_armor.core.online.optim import SGD, Adam, RMSProp
 
 HERE = Path(__file__).resolve().parents[2]

@@ -2,7 +2,7 @@
 
 A network trained on a sequence of tasks overwrites what it learned before. The page builds the pieces that fight that overwrite: a penalty that slows the movement of the important weights, a memory that projects the new gradient away from the past tasks, a generator that replays the past, and a family of quantised memories that store the past with a declared fidelity. The last sections measure what the whole thing remembers, per lifecycle state, and compare it with the baseline.
 
-The code lives in `dense_armor/core/deep/neural/continual.py`, `generative_replay.py` and `consolidation/` (`vq.py`, `tree.py`, `memory.py`, `archival.py`). Every piece shares the same batch and one-sample modes: `forward`, `backward` and `params()`.
+The code lives in `dense_armor/core/deep/neural/online/continual.py`, `generative_replay.py` and `consolidation/` (`vq.py`, `tree.py`, `memory.py`, `archival.py`). Every piece shares the same batch and one-sample modes: `forward`, `backward` and `params()`.
 
 ## 1. A penalty on the important weights (EWC)
 
@@ -10,11 +10,11 @@ The first piece is a penalty that adds to the loss a term proportional to how fa
 
 ~~~python
 import jax.numpy as jnp
-from dense_armor.core.deep.neural.continual import EWC
+from dense_armor.core.deep.neural.online.continual import EWC
 
 class M:
     def __init__(self):
-        from dense_armor.core.deep.neural.params import Param
+        from dense_armor.core.deep.neural.layers.params import Param
         self.p = [Param(jnp.array([1.0, 2.0]))]
     def params(self):
         return self.p
@@ -39,7 +39,7 @@ The second piece keeps a small memory of each task and projects the new gradient
 ~~~python
 import numpy as np
 import jax.numpy as jnp
-from dense_armor.core.deep.neural.continual import GEM
+from dense_armor.core.deep.neural.online.continual import GEM
 
 gem = GEM(memory_per_task=4, seed=0)
 g = jnp.array([1.0, 0.0])
@@ -61,7 +61,7 @@ The full projection solves a quadratic program with one variable per past task. 
 ~~~python
 import numpy as np
 import jax.numpy as jnp
-from dense_armor.core.deep.neural.continual import AGEM
+from dense_armor.core.deep.neural.online.continual import AGEM
 
 agem = AGEM(memory_per_task=4, seed=0)
 g = jnp.array([1.0, 0.0])
@@ -83,7 +83,7 @@ The fourth piece trains a small generator per task and replays the generated pas
 ~~~python
 import jax.numpy as jnp
 import numpy as np
-from dense_armor.core.deep.neural.generative_replay import DeepGenerativeReplay
+from dense_armor.core.deep.neural.online.generative_replay import DeepGenerativeReplay
 
 dgr = DeepGenerativeReplay(n_x=2, n_y=2, dim_z=4, hidden=8, n_fake=8, seed=0)
 x = jnp.asarray(np.random.RandomState(0).randn(20, 2).astype(np.float32))

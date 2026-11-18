@@ -101,7 +101,7 @@ Attention sees a set of steps and not an order: if the steps are shuffled, the o
 import jax
 import jax.numpy as jnp
 from dense_armor.core.deep.neural.attention import sinusoidal_positions
-from dense_armor.core.deep.neural.positions import LearnedPositions
+from dense_armor.core.deep.neural.attention.positions import LearnedPositions
 
 p = sinusoidal_positions(4, 4)
 print([round(float(v), 4) for v in p[1]])
