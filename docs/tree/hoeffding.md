@@ -8,21 +8,41 @@ of questions behind each answer.
 
 | class | predicts | page section |
 |---|---|---|
-| `HoeffdingTreeClassifier` | a class, with its probabilities | 1 |
-| `HoeffdingTreeRegressor` | a number | 2 |
+| `HoeffdingTreeClassifier` | a class, with its probabilities | 1 and 2 |
+| `HoeffdingTreeRegressor` | a number | 3 |
 
 Trees that change their mind after a split are on the next pages: the
 [Anytime tree](efdt.md) and the [Adaptive tree](adaptive.md).
 
-![A Hoeffding tree on a robot arm: the question it learned (tau above 3.50), the Hoeffding bound that shrinks with the samples, and the accuracy over time with the first split.](../assets/tree/hoeffding_story.png)
+## 1. A tree that flags card payments
 
-Left: the 2000 samples of the first example, the two states of the arm and the one question the
-tree learned. Centre: the doubt it must overcome before asking it, the bound $\epsilon$, which
-falls as the leaf sees more samples. Right: the accuracy of the last 100 predictions, tested
-before the tree learns each sample; the first split comes at sample 100, the first moment the
-tree is allowed to check (`grace_period=100`).
+A bank wants to flag card payments that look like fraud. Three thousand payments arrive one at a time: most are small and made in the afternoon (an amount around 60, at about 14:00), a few are large and made at night (an amount around 400, at about 03:00). After each payment the tree is told whether it was fraud.
 
-## 1. A tree that learns a robot state
+```python
+import numpy as np
+from dense_armor.core.online.tree import HoeffdingTreeClassifier
+
+rng = np.random.default_rng(0)
+tree = HoeffdingTreeClassifier(grace_period=100)
+for _ in range(3000):
+    normal = rng.random() < 0.8
+    amount = rng.normal(60, 20) if normal else rng.normal(400, 100)
+    hour = rng.normal(14, 3) if normal else rng.normal(3, 2)
+    tree.learn_one({"amount": amount, "hour": hour}, int(not normal))
+print(tree.predict_one({"amount": 45.0, "hour": 15.0}), tree.predict_one({"amount": 420.0, "hour": 2.0}))
+print(tree.explain_one({"amount": 420.0, "hour": 2.0}))
+print(tree.n_nodes_, tree.predict_proba_one({"amount": 420.0, "hour": 2.0}))
+```
+
+```
+0 1
+[{'feature': 'amount', 'threshold': 232.60942718228952, 'side': 'right'}]
+3 {0: 0.0, 1: 1.0}
+```
+
+The tree has 3 nodes: one question, *is the amount above 232.61?*, and two leaves. The threshold lies between the usual amounts and the suspicious ones, and the hour was not needed. `predict_proba_one` gives the probability of each class (here the tree is sure), and `explain_one` the path of questions behind an answer. When to split, and why the tree can be trusted to do so, is in the next section.
+
+## 2. For experts: a tree that learns a robot state
 
 Two states of an arm: idle (0) and carrying a load (1). The load raises the joint torque
 `tau`; the velocity `qd` says nothing about it.
@@ -57,7 +77,15 @@ $R$ is the range of the gain ($\log_2$ of the number of classes), $n$ the sample
 $\delta$ the probability of choosing the wrong split. With two classes ($R = 1$),
 $\delta = 10^{-7}$ and $n = 200$, $\epsilon = 0.20$: the best split must win by 0.20 bits.
 
-## 2. Predicting a number: `HoeffdingTreeRegressor`
+![A Hoeffding tree on a robot arm: the question it learned (tau above 3.50), the Hoeffding bound that shrinks with the samples, and the accuracy over time with the first split.](../assets/tree/hoeffding_story.png)
+
+Left: the 2000 samples of the first example, the two states of the arm and the one question the
+tree learned. Centre: the doubt it must overcome before asking it, the bound $\epsilon$, which
+falls as the leaf sees more samples. Right: the accuracy of the last 100 predictions, tested
+before the tree learns each sample; the first split comes at sample 100, the first moment the
+tree is allowed to check (`grace_period=100`).
+
+## 3. For experts: predicting a number, `HoeffdingTreeRegressor`
 
 The same idea for a number: a split is made when it lowers the variance of the target enough,
 by the same bound. It predicts the gravity torque of the first joint of a two-link arm from the

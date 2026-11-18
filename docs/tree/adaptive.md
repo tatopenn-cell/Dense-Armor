@@ -5,7 +5,47 @@ keeps giving the old answers. `HoeffdingAdaptiveTreeClassifier` puts a drift det
 internal node; when the error of a node jumps, it grows an alternative subtree in the
 background and swaps it in once the new one is clearly better.
 
-## 1. Following a sudden change
+## Gamestory
+
+New Year's Eve in London. A mysterious thief is emptying the banks of the city.
+
+The young detective keeps a notebook with his theory: "the thief strikes the banks with the richest vaults". For the first half of the night it works. A stubborn detective (the plain Hoeffding tree) would keep the same theory until dawn: when the thief starts to strike only the poorest banks, he would be wrong every single time and would never notice.
+
+Our detective reasons like a Hoeffding Adaptive tree. Next to every question of his theory there is a small alarm that counts how often that question is wrong. When an alarm rings, he does not throw the theory away: he opens a second notebook in the background, with the new clues, and goes on acting on the old one. He compares the two notebooks on the same cases, and as soon as the new one is clearly better he swaps them. Only the part of the theory that failed is replaced; everything else stays.
+
+## 1. When the meaning of an amount changes
+
+A fraud team watches card payments, half of them fraud. At first a fraud is a large payment (around 400) and a normal payment is small (around 60). After 3000 payments the fraudsters change habit: they now make small test charges, while the customers' payments grow. The meaning of the amount flips. Each payment is first predicted and then learned, and the accuracy is counted on the 3000 payments after the change.
+
+```python
+import numpy as np
+from dense_armor.core.evaluation.metrics import Accuracy
+from dense_armor.core.online.drift.adwin import ADWIN
+from dense_armor.core.online.tree import HoeffdingAdaptiveTreeClassifier, HoeffdingTreeClassifier
+
+rng = np.random.default_rng(0)
+plain = HoeffdingTreeClassifier(grace_period=100)
+adaptive = HoeffdingAdaptiveTreeClassifier(grace_period=100, drift_detector=ADWIN())
+acc_plain, acc_adaptive = Accuracy(), Accuracy()
+for i in range(6000):
+    fraud = int(rng.random() < 0.5)
+    big = fraud if i < 3000 else 1 - fraud
+    x = {"amount": rng.normal(400 if big else 60, 60 if big else 20), "hour": rng.normal(14, 3)}
+    if i >= 3000:
+        acc_plain.update(fraud, plain.predict_one(x))
+        acc_adaptive.update(fraud, adaptive.predict_one(x))
+    plain.learn_one(x, fraud)
+    adaptive.learn_one(x, fraud)
+print(round(acc_plain.get(), 3), round(acc_adaptive.get(), 3), adaptive.n_drifts_, adaptive.n_swaps_)
+```
+
+```
+0.044 0.964 3 1
+```
+
+After the change the plain tree is right 4.4 % of the time: it keeps the old rule, so it is wrong almost every time. The adaptive tree is right 96.4 % of the time: its alarm rang 3 times (`n_drifts_`) and it swapped in the new subtree once (`n_swaps_`). The next sections show the same behaviour on a robot arm, with the figure of what happens sample by sample.
+
+## 2. For experts: a robot arm after a sudden change
 
 After 3000 samples the meaning of the torque flips (the load is now the low-torque state). The
 same split on `tau` still separates the two states, but the answers are swapped. The adaptive

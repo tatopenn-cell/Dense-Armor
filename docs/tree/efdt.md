@@ -6,6 +6,16 @@ and then keeps checking every internal node: when another question wins by the b
 replaces the old one. It gets an answer early and a better tree later, which is why it is
 called anytime.
 
+## Gamestory
+
+New Year's Eve in London. A mysterious thief is emptying the banks of the city.
+
+On his trail there is a young detective. At the beginning, to understand where the thief will strike, the detective fixates on a first main question: "Is the bank located near the river? Yes or no?"
+
+A stubborn detective (the normal Hoeffding tree) would keep asking that same first question for the whole night, even if by now it is useless. Our detective instead reasons like a Hoeffding Anytime tree: he is fast at getting a first idea to act immediately, but every now and then he stops to recheck whether his main question is still the best one.
+
+In the middle of the night, the thief stops choosing the banks near the river and starts striking only those without guards. The detective takes a little while to notice, because he wants to collect enough proof before changing his mind. But as soon as the new clues exceed the old ones, he does a brilliant thing: he replaces his first question with the new one ("Are there guards at night?"), making all his reasoning much cleaner and faster.
+
 ## 1. Changing a split that is no longer the best
 
 At first variable `a` tells the state; after 3000 samples `a` stops mattering and `b` does. The
