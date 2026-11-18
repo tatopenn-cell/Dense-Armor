@@ -9,7 +9,7 @@ A starting point for finding the right tool. Say what you have in front of you (
 | It reads | one sample at a time, at control-loop speed | a whole table, with `fit` and `predict` | batches or a stream, through layers |
 | Module | `dense_armor.core.online` | `dense_armor.ml` | `dense_armor.core.deep.neural` |
 | It has | classifiers, regressors, trees, forests, bandits, anomaly and drift detectors, clustering, time series | statistics, preprocessing, linear models, trees, forests, ensembles, anomaly and change detection | layers, attention, convolutional and recurrent blocks, training, continual learning, decoder language models |
-| Start with | [Online learning](../learn/index.md) | [Machine learning](../ml/index.md) | [Deep learning](../neural/index.md) |
+| Start with | [Online learning](../online/index.md) | [Machine learning](../ml/index.md) | [Deep learning](../neural/overview.md) |
 
 The three kinds of learning are the core. Finance is the application the examples follow, and deep learning is where the library is going. The shields, the robot and the drones are attributes of the same blocks and are listed at the end of this page.
 
@@ -19,7 +19,7 @@ The three kinds of learning are the core. Finance is the application the example
 - **A stream of returns or prices** → the [drift detectors](../drift/detectors.md) and the [regime page](../finance/regime.md).
 - **Transactions to screen for fraud, or a stream with strange points** → the [anomaly detectors](../anomaly/index.md).
 - **A whole table** → [machine learning](../ml/index.md), with `fit` and `predict`.
-- **A model that must learn one sample at a time** → [online learning](../learn/index.md).
+- **A model that must learn one sample at a time** → [online learning](../online/index.md).
 - **A network to train, on a dataset or on a stream** → [deep learning](../neural/index.md).
 - **To pick one option at a time and learn from the reward** → the [bandit policies](../bandit/index.md).
 - **To ask for a label only on the samples that matter** → the [active-learning strategies](../active/index.md).

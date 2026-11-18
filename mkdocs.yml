@@ -79,6 +79,7 @@ plugins:
 nav:
   - Home: index.md
   - Applications:
+      - Overview: applications/index.md
       - Finance:
           - finance/index.md
           - Primitives map: finance/PRIMITIVES.md
@@ -167,7 +168,8 @@ nav:
       - Decision trees: ml/tree.md
       - Vision: ml/vision.md
   - Online learning:
-      - Online learning:
+      - Overview: online/index.md
+      - Adaptive learners:
           - learn/index.md
           - Calibration: learn/calibration.md
           - Metric learning: learn/metric_learning.md
@@ -266,6 +268,7 @@ nav:
           - Patches: vision/patches.md
           - Video into any primitive: vision/video_input.md
   - Deep learning:
+      - Overview: neural/overview.md
       - Foundations: neural/index.md
       - Layers: neural/layers.md
       - Chains: neural/chains.md

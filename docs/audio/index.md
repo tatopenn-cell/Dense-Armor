@@ -42,6 +42,10 @@ True score
 
 `SDFT` is the sliding DFT that Dense-Armor already had; it received the samples. `HampelScorer` is an anomaly scorer that already existed; it received the dict. [Events and streams](events.md) shows the adapter on a file and on a live input.
 
+![The map of audio: twelve pages in four groups, from holding a sound to finding events in it](../assets/audio/map.png)
+
+*The pages of this section in four groups: hold and look, shape, make and change, find and split. Each box is a page, with the file name and what you can do on it; the figure is drawn by a script from the table below.*
+
 ## 2. What is in the section
 
 | page | what you can do | main names |
