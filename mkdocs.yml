@@ -8,13 +8,11 @@ edit_uri: edit/master/docs/
 theme:
   name: material
   custom_dir: overrides
+  font: false
   palette:
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      primary: black
-      accent: cyan
+    - media: "(prefers-color-scheme)"
       toggle:
-        icon: material/brightness-4
+        icon: material/brightness-auto
         name: Switch to light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -23,6 +21,13 @@ theme:
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: cyan
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
   features:
     - navigation.instant
     - navigation.tracking
@@ -36,6 +41,10 @@ theme:
   icon:
     repo: fontawesome/brands/github
     logo: material/shield-half-full
+
+extra_css:
+  - stylesheets/extra.css
+  - stylesheets/palette_cyan.css
 
 markdown_extensions:
   - md_in_html
@@ -132,6 +141,14 @@ nav:
       - TensorFlow: bridges/tensorflow.md
       - river: bridges/river.md
       - LLM agents: bridges/llm.md
+  - Roles:
+      - Overview: roles/index.md
+      - The base (Root): roles/base.md
+      - Classifiers and regressors: roles/supervised.md
+      - Transformers: roles/transformers.md
+      - Anomaly and drift detectors: roles/detectors.md
+      - Pipelines and wrappers: roles/pipelines.md
+      - Write and check a new estimator: roles/new_estimator.md
   - Machine learning:
       - Overview: ml/index.md
       - scikit-learn tools: ml/sklearn.md
@@ -346,9 +363,7 @@ nav:
           - Benchmarks:
               - benchmarks/index.md
               - Real robot arm (CASPER, UR3e): benchmarks/real_robot_benchmark.md
-      - Roles:
-          - Estimator foundation: api/roles.md
-          - Robot layer (signals, real time, safety): api/robot_roles.md
+      - Robot layer (signals, real time, safety): api/robot_roles.md
       - Tools:
           - Toolkit:
               - toolkit/index.md
