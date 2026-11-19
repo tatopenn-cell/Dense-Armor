@@ -314,7 +314,9 @@ class DriftAdaptiveClassifier(Classifier):
     Wraps any ``Classifier`` with a drift detector. Per sample:
     predict, compute the log-loss ``-log(p_correct)``, feed the (smoothed)
     log-loss to the detector, learn, and if the detector fires start a
-    background copy trained only on new samples. Main and background are
+    background copy trained only on new samples (a second alarm while a
+    background copy is running does not restart it, so the copy keeps the
+    samples it has already seen). Main and background are
     both scored prequentially (each predicts a sample before learning it);
     when the background's accuracy over the last ``window`` samples beats
     the main classifier's over the same samples, the background is promoted
@@ -402,7 +404,7 @@ class DriftAdaptiveClassifier(Classifier):
         loss = float(-np.log(max(p, 1e-6)))
         self._err_buf.append(loss)
         self.detector.update(float(np.mean(self._err_buf)))
-        if self.detector.drift_detected:
+        if self.detector.drift_detected and self._bg is None:
             self._bg = deepcopy(self.classifier)
             self._bg_hits.clear()
         self._main.learn_one(x, y)

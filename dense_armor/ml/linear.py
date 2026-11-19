@@ -26,7 +26,11 @@ __all__ = ["LinearRegression", "LogisticRegression", "BayesianLinearRegression"]
 def _design(X, intercept: bool) -> np.ndarray:
     A = as_default_array(X)
     A = A[:, None] if A.ndim == 1 else A
-    return np.hstack([np.ones((A.shape[0], 1), dtype=get_default_dtype()), A]) if intercept else A
+    return (
+        np.hstack([np.ones((A.shape[0], 1), dtype=get_default_dtype()), A])
+        if intercept
+        else A
+    )
 
 
 class LinearRegression(MLBase):
@@ -39,6 +43,11 @@ class LinearRegression(MLBase):
     Args:
         l2: strength of the penalty, 0 for none.
         intercept: prepend a constant 1 to the features.
+
+    A one-dimensional ``y`` gives ``coef_`` of shape ``(n_features,)`` and a float
+    ``intercept_``. A two-dimensional ``y`` of shape ``(n, k)``, even with ``k = 1``,
+    gives ``coef_`` of shape ``(k, n_features)`` and ``intercept_`` of shape ``(k,)``
+    (zeros without intercept), and ``predict`` returns shape ``(n, k)``.
 
     Example:
         >>> m = LinearRegression().fit([[0.0], [1.0], [2.0]], [1.0, 3.0, 5.0])
@@ -54,15 +63,24 @@ class LinearRegression(MLBase):
         A = _design(X, self.intercept)
         t = as_default_array(y)
         n, d = A.shape
-        w = np.linalg.solve(A.T @ A + (n * self.l2 / 2.0) * np.eye(d, dtype=get_default_dtype()), A.T @ t)
-        self.intercept_ = float(w[0]) if self.intercept else 0.0
-        self.coef_ = w[1:] if self.intercept else w
+        w = np.linalg.solve(
+            A.T @ A + (n * self.l2 / 2.0) * np.eye(d, dtype=get_default_dtype()),
+            A.T @ t,
+        )
+        if t.ndim == 1:
+            self.intercept_ = float(w[0]) if self.intercept else 0.0
+            self.coef_ = w[1:] if self.intercept else w
+        else:
+            self.intercept_ = w[0] if self.intercept else np.zeros(t.shape[1])
+            self.coef_ = (w[1:] if self.intercept else w).T
         return self
 
     def predict(self, X) -> np.ndarray:
-        """``X coef + intercept`` for every row."""
+        """``X coef + intercept`` for every row; one column per target for a 2-d ``y``."""
         A = as_default_array(X)
         A = A[:, None] if A.ndim == 1 else A
+        if self.coef_.ndim == 2:
+            return A @ self.coef_.T + self.intercept_
         return A @ self.coef_ + self.intercept_
 
 
@@ -103,7 +121,9 @@ class LogisticRegression(MLBase):
         for i in range(self.max_iter):
             p = 1.0 / (1.0 + np.exp(-(A @ w)))
             g = A.T @ (p - t) / n + self.l2 * w
-            H = (A.T * (p * (1 - p))) @ A / n + self.l2 * np.eye(d, dtype=get_default_dtype())
+            H = (A.T * (p * (1 - p))) @ A / n + self.l2 * np.eye(
+                d, dtype=get_default_dtype()
+            )
             step = np.linalg.solve(H, g)
             w = w - step
             if np.abs(step).max() < self.tol:

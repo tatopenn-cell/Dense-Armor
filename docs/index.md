@@ -208,7 +208,7 @@ past.
 
 **Signals and statistics** — the layer the estimators live on.
 
-- **[Streams and datasets](stream/index.md)** — CSV, ROS bag, array, merge by time,
+- **[Streams](stream/index.md)** and **[datasets](stream/datasets.md)** — CSV, ROS bag, array, merge by time,
   shuffle; the Casper, DriftStream and SyntheticArm datasets.
 - **[Shared memory for big datasets](api/data_shared.md)** — let worker processes read a very
   large list without every worker copying it.

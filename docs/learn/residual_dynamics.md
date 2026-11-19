@@ -137,31 +137,63 @@ offset, the `sign(qd)` coefficient absorbs Coulomb friction).
 
 ## When a parameter changes mid-run
 
-If the payload changes at sample 200 of 400, a `λ = 1` learner (batch least squares)
-keeps the old weights and gets the new regime wrong. A `λ = 0.99` learner forgets the
-pre-change samples over ~100 samples and tracks the new regime.
+The payload of a 2-link arm is 0.5 kg for the first 200 samples and 1.5 kg for the next 200. Four learners see the same 400 samples, each learned after it is used: `lam = 1` (it weighs every sample the same), `lam = 0.99`, `lam = 0.9` and the drift-aware one. After 200, 250, 300 and 400 samples the torque error (RMSE, in N·m) of each learner is measured on 30 fixed states against the torque of the arm that holds the payload of that moment; the last column is the model alone.
 
 ```python
+import numpy as np
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
 from dense_armor.core.online.learn.online_dynamics import (
-    ResidualDynamicsLearner,
     DriftAwareResidualDynamicsLearner,
+    ResidualDynamicsLearner,
     write_minimal_urdf,
 )
 
-model = RigidBodyModel(write_minimal_urdf())
-fast = ResidualDynamicsLearner(model, lam=0.99, delta=1e6)
-aware = DriftAwareResidualDynamicsLearner(model, lam=0.99)
-print(type(fast).__name__, type(aware).__name__)
+
+def torque(m, s):
+    return np.asarray(m.mass_matrix(s[0])) @ s[2] + np.asarray(
+        m.bias_forces(s[0], s[1])
+    )
+
+
+nom = RigidBodyModel(write_minimal_urdf())
+light = RigidBodyModel(write_minimal_urdf(payload_mass=0.5))
+heavy = RigidBodyModel(write_minimal_urdf(payload_mass=1.5))
+rng = np.random.default_rng(0)
+states = rng.uniform(-1, 1, (400, 3, 2))
+test = rng.uniform(-1, 1, (30, 3, 2))
+learners = {
+    "lam=1": ResidualDynamicsLearner(nom, lam=1.0),
+    "lam=0.99": ResidualDynamicsLearner(nom, lam=0.99),
+    "lam=0.9": ResidualDynamicsLearner(nom, lam=0.9),
+    "drift-aware": DriftAwareResidualDynamicsLearner(nom, lam=0.99),
+}
+
+
+def error(predict, plant):
+    sq = [(torque(plant, s) - predict(*s)) ** 2 for s in test]
+    return round(float(np.sqrt(np.mean(sq))), 3)
+
+
+for i, s in enumerate(states):
+    plant = light if i < 200 else heavy
+    for learner in learners.values():
+        learner.learn_one(*s, torque(plant, s))
+    if i + 1 in (200, 250, 300, 400):
+        row = {k: error(v.predict_torque, plant) for k, v in learners.items()}
+        row["model alone"] = error(lambda *a: torque(nom, a), plant)
+        print(i + 1, row)
 ```
 
 ```
-ResidualDynamicsLearner DriftAwareResidualDynamicsLearner
+200 {'lam=1': 0.255, 'lam=0.99': 0.252, 'lam=0.9': 0.254, 'drift-aware': 0.251, 'model alone': 0.503}
+250 {'lam=1': 1.031, 'lam=0.99': 0.923, 'lam=0.9': 0.796, 'drift-aware': 0.793, 'model alone': 1.508}
+300 {'lam=1': 0.953, 'lam=0.99': 0.818, 'lam=0.9': 0.837, 'drift-aware': 0.761, 'model alone': 1.508}
+400 {'lam=1': 0.848, 'lam=0.99': 0.758, 'lam=0.9': 0.838, 'drift-aware': 0.76, 'model alone': 1.508}
 ```
 
-The choice of `λ` is a trade-off: too small and the learner is noisy (it always fits
-the last few samples), too large and it is slow to adapt. `0.99` is a reasonable default
-for a joint that changes over seconds.
+Before the change all four learners are at 0.25 N·m, half of the 0.50 of the model alone: the learner does not bring the error to zero. After the change the model alone is at 1.51. Fifty samples after it, `lam = 1` is at 1.03, `lam = 0.99` at 0.92, `lam = 0.9` at 0.80 and the drift-aware learner at 0.79. After 200 samples `lam = 1` is at 0.85, `lam = 0.99` at 0.76, `lam = 0.9` at 0.84 and the drift-aware learner at 0.76.
+
+So forgetting helps a little (0.76 against 0.85 after 200 samples for `lam = 0.99`, and the drift-aware learner is the lowest after 100 samples), but no learner comes back to the 0.25 that it had before the change: all end at three times that value. This test does not show that `lam = 0.99` tracks the new payload, and it does not show a clear winner among the three forgetting learners; it is one run, one payload change and one set of 30 test states. Why the error stays above its earlier level was not investigated.
 
 ## Performance note
 

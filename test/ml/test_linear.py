@@ -63,3 +63,21 @@ def test_bayesian_posterior_hand_case():
 
 def test_payload_is_declared_stopped():
     assert "PayloadEstimator" in L.STOPPED
+
+
+def test_linear_regression_two_dimensional_target():
+    rng = np.random.default_rng(0)
+    X = rng.normal(size=(50, 3))
+    Y = X @ rng.normal(size=(3, 2)) + np.array([1.0, -2.0])
+    for intercept in (True, False):
+        both = LinearRegression(intercept=intercept).fit(X, Y)
+        assert both.coef_.shape == (2, 3)
+        assert np.shape(both.intercept_) == (2,)
+        assert both.predict(X).shape == (50, 2)
+        for j in range(2):
+            one = LinearRegression(intercept=intercept).fit(X, Y[:, j])
+            assert np.allclose(both.coef_[j], one.coef_, atol=1e-5)
+            assert np.isclose(both.intercept_[j], one.intercept_, atol=1e-5)
+            assert np.allclose(both.predict(X)[:, j], one.predict(X), atol=1e-5)
+    single = LinearRegression().fit(X, Y[:, :1])
+    assert single.coef_.shape == (1, 3) and np.shape(single.intercept_) == (1,)
