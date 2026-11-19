@@ -28,7 +28,7 @@ MUTED = "#94a3b8"
 PINK = "#f72585"
 COLORS = ("#4cc9f0", "#ff9e00", "#f72585")
 PAGES = {
-    "datasets": "stream/datasets.md",
+    "datasets": "datasets/index.md",
     "linear": "linear/index.md",
     "graph": "ontology/index.md",
     "evaluate": "metrics/index.md",

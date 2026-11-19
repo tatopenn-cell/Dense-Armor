@@ -2,6 +2,12 @@
 
 Raw sensor numbers come in different sizes and units. These tools put them on a common scale and turn them into the numbers that matter (such as speed or power), one reading at a time, so that a model can learn from them.
 
+## The map of preprocessing
+
+Click a page to open it, or the job on the left (or the button at the top) to go back to the [map of the library](../index.md#the-library-folder-by-folder).
+
+<object type="image/svg+xml" data="../assets/maps/preprocessing.svg" style="width:100%"></object>
+
 Raw sensor numbers come in different units and sizes — a joint position in radians, a torque in
 newton-metres, a word in a sentence. Before a model can learn from them they are put on a common
 scale, turned into the quantities that matter (speed, power, word weights), filtered, and
@@ -15,6 +21,13 @@ about which features to keep and how to handle rare events.
 - [Speed, acceleration, jerk and power](signals.md) (steps 4-5)
 - [Text: words, counts, weights and hashing](text.md) (steps 6-7)
 - [Choosing features and rare events](features.md) (steps 8-9)
+
+## Classes documented on other pages
+
+These classes of the folder have no guide page of this group; they are in the [API reference](#api-reference) below.
+
+- `EWScaler`: per-feature standardisation with exponentially weighted statistics.
+- `MinMaxScaler`: rescales each feature to `[0, 1]` with the running minimum and maximum.
 
 ## API reference
 

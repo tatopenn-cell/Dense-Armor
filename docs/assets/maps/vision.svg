@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 785" width="100%" role="img" aria-label="The map of vision">
+<style>text{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif}.m{font-family:ui-monospace,Menlo,Consolas,monospace}.e{opacity:.32;transition:opacity .15s}.net:hover .e{opacity:.06}.net .pg:hover .e{opacity:1;stroke-width:2.2}a:hover .card{fill:#17303f;stroke-width:2.4}a:hover text.dn{fill:#ffffff}.back:hover .card{fill:#17303f}</style>
+<rect width="1000" height="785" fill="#0d131a" rx="14"/>
+<text x="500" y="38" fill="#e0fbfc" font-size="24" font-weight="700" text-anchor="middle">THE MAP OF VISION</text>
+<text x="500" y="62" fill="#4cc9f0" font-size="12.5" text-anchor="middle">the job, the page of each tool and its classes; pass over a page to light it, click to open it</text>
+<a class="back" href="../../#the-library-folder-by-folder" target="_top"><title>back to the map of the library</title><rect class="card" x="20" y="14" width="150" height="30" rx="15" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="95" y="33.5" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">← map of the library</text></a>
+<text x="24" y="98" fill="#f72585" font-size="12" font-weight="700">01  JOB</text>
+<text x="410" y="98" fill="#f72585" font-size="12" font-weight="700">02  PAGE</text>
+<text x="680" y="98" fill="#f72585" font-size="12" font-weight="700">03  CLASSES OF THE CATALOG</text>
+<g class="net">
+<path class="e" d="M214,407.0 C262,407.0 282,407.0 318,407.0" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<g class="pg">
+<path class="e" d="M342,407.0 C382,407.0 366,124.5 408,124.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,124.5 C650,124.5 650,124.5 676,124.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,407.0 C382,407.0 366,163.5 408,163.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,163.5 C650,163.5 650,163.5 676,163.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,407.0 C382,407.0 366,215.0 408,215.0" fill="none" stroke="#f72585" stroke-width="1.4"/>
+<path class="e" d="M626,215.0 C650,215.0 650,202.5 676,202.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M626,215.0 C650,215.0 650,227.5 676,227.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,407.0 C382,407.0 366,279.0 408,279.0" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,279.0 C650,279.0 650,266.5 676,266.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M626,279.0 C650,279.0 650,291.5 676,291.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,407.0 C382,407.0 366,330.5 408,330.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,330.5 C650,330.5 650,330.5 676,330.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,407.0 C382,407.0 366,407.0 408,407.0" fill="none" stroke="#f72585" stroke-width="1.4"/>
+<path class="e" d="M626,407.0 C650,407.0 650,369.5 676,369.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M626,407.0 C650,407.0 650,394.5 676,394.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M626,407.0 C650,407.0 650,419.5 676,419.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M626,407.0 C650,407.0 650,444.5 676,444.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,407.0 C382,407.0 366,483.5 408,483.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,483.5 C650,483.5 650,483.5 676,483.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,407.0 C382,407.0 366,522.5 408,522.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,522.5 C650,522.5 650,522.5 676,522.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,407.0 C382,407.0 366,574.0 408,574.0" fill="none" stroke="#f72585" stroke-width="1.4"/>
+<path class="e" d="M626,574.0 C650,574.0 650,561.5 676,561.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M626,574.0 C650,574.0 650,586.5 676,586.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,407.0 C382,407.0 366,625.5 408,625.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,625.5 C650,625.5 650,625.5 676,625.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,407.0 C382,407.0 366,689.5 408,689.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,689.5 C650,689.5 650,664.5 676,664.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M626,689.5 C650,689.5 650,689.5 676,689.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M626,689.5 C650,689.5 650,714.5 676,714.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+</g>
+<a href="../../#the-library-folder-by-folder" target="_top"><title>vision_features: back to the map of the library</title><rect class="card" x="20" y="388.0" width="190" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="34" y="405.0" fill="#e0fbfc" font-size="13" font-weight="700">vision_features</text><text x="34" y="419.0" fill="#94a3b8" font-size="9.5">job of the ontology</text></a>
+<circle cx="330" cy="407.0" r="12" fill="#101a24" stroke="#4cc9f0" stroke-width="2"/><text class="m" x="330" y="437.0" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">vision</text>
+<a href="../../vision/frames/" target="_top"><title>Frames: open vision/frames.md</title><rect class="card" x="410" y="105.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="121.5" fill="#e0fbfc" font-size="13" font-weight="700">Frames</text><text x="424" y="136.5" fill="#94a3b8" font-size="9.5">6 classes</text></a>
+<a href="../../vision/frames/" target="_top"><title>6 classes: Frame, ArrayStream  +4: open vision/frames.md</title><rect class="card" x="678" y="114.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="128.3" fill="#e0fbfc" font-size="11">6 classes: Frame, ArrayStream  +4</text></a>
+<a href="../../vision/features/" target="_top"><title>Features: open vision/features.md</title><rect class="card" x="410" y="144.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="160.5" fill="#e0fbfc" font-size="13" font-weight="700">Features</text><text x="424" y="175.5" fill="#94a3b8" font-size="9.5">1 class</text></a>
+<a href="../../vision/features/" target="_top"><title>FrameFeatures: open vision/features.md</title><rect class="card" x="678" y="153.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="167.3" fill="#e0fbfc" font-size="11">FrameFeatures</text></a>
+<a href="../../vision/flow/" target="_top"><title>Flow: open vision/flow.md</title><rect class="card" x="410" y="196.0" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="212.0" fill="#e0fbfc" font-size="13" font-weight="700">Flow</text><text x="424" y="227.0" fill="#94a3b8" font-size="9.5">2 classes</text></a>
+<a href="../../vision/flow/" target="_top"><title>DenseFlow: open vision/flow.md</title><rect class="card" x="678" y="192.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="206.3" fill="#e0fbfc" font-size="11">DenseFlow</text></a>
+<a href="../../vision/flow/" target="_top"><title>MotionMask: open vision/flow.md</title><rect class="card" x="678" y="217.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="231.3" fill="#e0fbfc" font-size="11">MotionMask</text></a>
+<a href="../../vision/reduce/" target="_top"><title>Reduce: open vision/reduce.md</title><rect class="card" x="410" y="260.0" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="276.0" fill="#e0fbfc" font-size="13" font-weight="700">Reduce</text><text x="424" y="291.0" fill="#94a3b8" font-size="9.5">2 classes</text></a>
+<a href="../../vision/reduce/" target="_top"><title>RandomProjection: open vision/reduce.md</title><rect class="card" x="678" y="256.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="270.3" fill="#e0fbfc" font-size="11">RandomProjection</text></a>
+<a href="../../vision/reduce/" target="_top"><title>IncrementalPCA: open vision/reduce.md</title><rect class="card" x="678" y="281.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="295.3" fill="#e0fbfc" font-size="11">IncrementalPCA</text></a>
+<a href="../../vision/motion/" target="_top"><title>Motion: open vision/motion.md</title><rect class="card" x="410" y="311.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="327.5" fill="#e0fbfc" font-size="13" font-weight="700">Motion</text><text x="424" y="342.5" fill="#94a3b8" font-size="9.5">5 classes</text></a>
+<a href="../../vision/motion/" target="_top"><title>5 classes: MotionEnergy, GlobalMotion  +3: open vision/motion.md</title><rect class="card" x="678" y="320.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="334.3" fill="#e0fbfc" font-size="11">5 classes: MotionEnergy, GlobalMotion  +3</text></a>
+<a href="../../vision/tracking/" target="_top"><title>Tracking: open vision/tracking.md</title><rect class="card" x="410" y="388.0" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="404.0" fill="#e0fbfc" font-size="13" font-weight="700">Tracking</text><text x="424" y="419.0" fill="#94a3b8" font-size="9.5">4 classes</text></a>
+<a href="../../vision/tracking/" target="_top"><title>TrackToSignal: open vision/tracking.md</title><rect class="card" x="678" y="359.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="373.3" fill="#e0fbfc" font-size="11">TrackToSignal</text></a>
+<a href="../../vision/tracking/" target="_top"><title>FeatureToSignal: open vision/tracking.md</title><rect class="card" x="678" y="384.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="398.3" fill="#e0fbfc" font-size="11">FeatureToSignal</text></a>
+<a href="../../vision/tracking/" target="_top"><title>FrameJointFusion: open vision/tracking.md</title><rect class="card" x="678" y="409.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="423.3" fill="#e0fbfc" font-size="11">FrameJointFusion</text></a>
+<a href="../../vision/tracking/" target="_top"><title>MovingObjectTracker: open vision/tracking.md</title><rect class="card" x="678" y="434.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="448.3" fill="#e0fbfc" font-size="11">MovingObjectTracker</text></a>
+<a href="../../vision/kinematics/" target="_top"><title>Kinematics: open vision/kinematics.md</title><rect class="card" x="410" y="464.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="480.5" fill="#e0fbfc" font-size="13" font-weight="700">Kinematics</text><text x="424" y="495.5" fill="#94a3b8" font-size="9.5">6 classes</text></a>
+<a href="../../vision/kinematics/" target="_top"><title>6 classes: LandmarkStream, LandmarkCleaner  +4: open vision/kinematics.md</title><rect class="card" x="678" y="473.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="487.3" fill="#e0fbfc" font-size="11">6 classes: LandmarkStream, LandmarkCleaner  +4</text></a>
+<a href="../../vision/quality/" target="_top"><title>Quality: open vision/quality.md</title><rect class="card" x="410" y="503.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="519.5" fill="#e0fbfc" font-size="13" font-weight="700">Quality</text><text x="424" y="534.5" fill="#94a3b8" font-size="9.5">6 classes</text></a>
+<a href="../../vision/quality/" target="_top"><title>6 classes: FrameQuality, Sync, EventFrame  +3: open vision/quality.md</title><rect class="card" x="678" y="512.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="526.3" fill="#e0fbfc" font-size="11">6 classes: FrameQuality, Sync, EventFrame  +3</text></a>
+<a href="../../vision/patches/" target="_top"><title>Patches: open vision/patches.md</title><rect class="card" x="410" y="555.0" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="571.0" fill="#e0fbfc" font-size="13" font-weight="700">Patches</text><text x="424" y="586.0" fill="#94a3b8" font-size="9.5">2 classes</text></a>
+<a href="../../vision/patches/" target="_top"><title>PatchFeatures: open vision/patches.md</title><rect class="card" x="678" y="551.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="565.3" fill="#e0fbfc" font-size="11">PatchFeatures</text></a>
+<a href="../../vision/patches/" target="_top"><title>PatchMemory: open vision/patches.md</title><rect class="card" x="678" y="576.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="590.3" fill="#e0fbfc" font-size="11">PatchMemory</text></a>
+<a href="../../vision/video_input/" target="_top"><title>Video into any primitive: open vision/video_input.md</title><rect class="card" x="410" y="606.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="622.5" fill="#e0fbfc" font-size="13" font-weight="700">Video into any primitive</text><text x="424" y="637.5" fill="#94a3b8" font-size="9.5">1 class</text></a>
+<a href="../../vision/video_input/" target="_top"><title>VideoInput: open vision/video_input.md</title><rect class="card" x="678" y="615.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="629.3" fill="#e0fbfc" font-size="11">VideoInput</text></a>
+<a href="../../vision/#classes-documented-on-other-pages" target="_top"><title>Classes documented on other pages: open vision/index.md#classes-documented-on-other-pages</title><rect class="card" x="410" y="670.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="686.5" fill="#e0fbfc" font-size="13" font-weight="700">Classes documented on other pages</text><text x="424" y="701.5" fill="#94a3b8" font-size="9.5">3 more</text></a>
+<a href="../../vision/#classes-documented-on-other-pages" target="_top"><title>FrameNormalizer: open vision/index.md#classes-documented-on-other-pages</title><rect class="card" x="678" y="654.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="668.3" fill="#e0fbfc" font-size="11">FrameNormalizer</text></a>
+<a href="../../vision/#classes-documented-on-other-pages" target="_top"><title>VideoStream: open vision/index.md#classes-documented-on-other-pages</title><rect class="card" x="678" y="679.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="693.3" fill="#e0fbfc" font-size="11">VideoStream</text></a>
+<a href="../../vision/#classes-documented-on-other-pages" target="_top"><title>BagOfVisualWords: open vision/index.md#classes-documented-on-other-pages</title><rect class="card" x="678" y="704.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="718.3" fill="#e0fbfc" font-size="11">BagOfVisualWords</text></a>
+<text x="500" y="769" fill="#94a3b8" font-size="10.5" text-anchor="middle">C classifier, R regressor; jobs: dense_armor/usable/ontology.json; classes: dense_armor.usable.catalog; drawn by docs/assets/maps/make_signals_sections_maps.py</text>
+</svg>

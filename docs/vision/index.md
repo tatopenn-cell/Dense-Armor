@@ -3,6 +3,12 @@
 Dense-Armor sees a video the way it reads a robot's joints: one frame
 at a time, in fixed memory, with no pretrained model.
 
+## The map of vision
+
+Click a page to open it, or the job on the left (or the button at the top) to go back to the [map of the library](../index.md#the-library-folder-by-folder).
+
+<object type="image/svg+xml" data="../assets/maps/vision.svg" style="width:100%"></object>
+
 The pages, in order:
 
 1. [Frames](frames.md): every source gives the same `Frame` with the image and the timestamp.
@@ -50,6 +56,14 @@ What all these ideas share is a willingness to throw information away: a
 frame becomes a hundred numbers, a hundred numbers become four, four become
 one anomaly score. The trick is doing it without losing what matters, and
 four decades of mathematics went into making that possible.
+
+## Classes documented on other pages
+
+These classes of the folder have no page of this group.
+
+- `FrameNormalizer`: brings a frame into `[0, 1]` and flags the difficult cases. On [Vision: the algorithms](../ml/vision.md).
+- `VideoStream`: the common interface of the frame sources; it is in the [API reference](#api-reference) below.
+- `BagOfVisualWords`: a visual vocabulary over image patches and a histogram per frame. On [BagOfVisualWords](../cluster/visual_vocabulary.md).
 
 ## API reference
 

@@ -46,7 +46,7 @@ The mean is 100.0 and the variance 212.5 (the variance of a sample, with the div
 | Page | What it is for |
 |---|---|
 | [Streams](../stream/index.md) | CSV files, ROS bags and arrays as one stream of readings, merged by time |
-| [Datasets](../stream/datasets.md) | streams whose change or fault happens at a known moment, to test a model |
+| [Datasets](../datasets/index.md) | streams whose change or fault happens at a known moment, to test a model |
 | [Statistics](../stats/index.md) | running moments, quantiles, sketches and the other numbers that summarise a stream |
 | [Preprocessing](../preprocessing/index.md) | raw readings on a common scale, and speed, acceleration and power from them |
 | [Vision](../vision/index.md) | a video read one frame at a time, in fixed memory, with no pretrained model |

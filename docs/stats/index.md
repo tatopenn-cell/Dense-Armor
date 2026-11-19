@@ -2,6 +2,12 @@
 
 When readings never stop arriving, you cannot keep all of them to compute averages afterwards. These tools keep a few numbers that summarise everything seen so far and update them with every new reading.
 
+## The map of statistics
+
+Click a page to open it, or the job on the left (or the button at the top) to go back to the [map of the library](../index.md#the-library-folder-by-folder).
+
+<object type="image/svg+xml" data="../assets/maps/stats.svg" style="width:100%"></object>
+
 ## What this is
 
 A robot reads its own joints sixty times a second. A server watches the
@@ -244,6 +250,14 @@ dense_armor/core/signals/stats/sketches.py       CountMinSketch, HyperLogLog, Bl
 Every class inherits from `dense_armor.roles.Transformer`, passes
 `dense_armor.checks.check_estimator`, and carries a runnable doctest in
 its docstring.
+
+## Classes documented on other pages
+
+These classes of the folder have no page of this group; each is described where it is used.
+
+- `SDFT`: the sliding DFT, the N-point DFT of the last N samples, O(N) per update. On [Sound, files and frequency](../audio/sound.md).
+- `OnlineShrinkageCovariance`: an online covariance with linear shrinkage toward `(1/p) I`. On [Portfolio](../finance/portfolio.md).
+- `SparseCosineIndex`: a sparse index of documents for cosine ranking, built once. On [Text vectorizer](../preprocessing/text_vectorizer.md).
 
 ## See also
 
