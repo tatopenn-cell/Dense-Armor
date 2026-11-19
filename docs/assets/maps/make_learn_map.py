@@ -11,7 +11,7 @@ from make_tree_map import CYAN, HERE, ORANGE, PINK, draw
 
 PAGES = [
     (
-        "Calibration",
+        "Platt scaling",
         "honest probabilities",
         "learn/calibration.md",
         CYAN,
@@ -46,22 +46,46 @@ PAGES = [
         ["POLA"],
     ),
     (
-        "Online classifiers",
-        "a state that follows the data",
-        "learn/online_classifiers.md",
+        "OnlineGaussianNB",
+        "a mean and a variance per class",
+        "learn/gaussian_nb.md",
         PINK,
-        ["OnlineGaussianNB", "OnlineSoftmaxRegression", "DriftAdaptiveClassifier"],
+        ["OnlineGaussianNB"],
     ),
     (
-        "Online dynamics",
-        "what the formula misses",
-        "learn/online_dynamics.md",
+        "OnlineSoftmaxRegression",
+        "a border that moves",
+        "learn/softmax.md",
+        PINK,
+        ["OnlineSoftmaxRegression"],
+    ),
+    (
+        "DriftAdaptiveClassifier",
+        "a substitute on the bench",
+        "learn/drift_adaptive.md",
+        PINK,
+        ["DriftAdaptiveClassifier"],
+    ),
+    (
+        "RecursiveLeastSquares",
+        "a line that keeps up",
+        "learn/recursive_least_squares.md",
         CYAN,
-        [
-            "RecursiveLeastSquares",
-            "ResidualDynamicsLearner",
-            "DriftAwareResidualDynamicsLearner",
-        ],
+        ["RecursiveLeastSquares"],
+    ),
+    (
+        "ResidualDynamicsLearner",
+        "the torque the model misses",
+        "learn/residual_dynamics.md",
+        CYAN,
+        ["ResidualDynamicsLearner"],
+    ),
+    (
+        "DriftAwareResidualDynamicsLearner",
+        "forget faster when it changes",
+        "learn/drift_aware.md",
+        CYAN,
+        ["DriftAwareResidualDynamicsLearner"],
     ),
 ]
 

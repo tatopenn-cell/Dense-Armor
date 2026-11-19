@@ -11,6 +11,18 @@ trick.
 `DriftAdaptiveClassifier` wraps either of them with a drift detector on its own
 prediction loss and swaps in a fresh copy when the old one goes stale.
 
+## Gamestory
+
+London, deep night. The mysterious thief has targeted the city's bank accounts. The young detective has to check the payments one by one, in real time, and decide on the fly: "Is this payment honest or is it a scam?".
+
+At first it seems easy: the thief always makes giant withdrawals (400 pounds), while normal citizens spend very little (60 pounds). But in the middle of the night, the thief suddenly changes his trick: he starts making tiny withdrawals so as not to draw attention, right when citizens are making big purchases! To avoid getting fooled by the rule change, the detective uses three special helper programs called Online Classifiers:
+
+- **1. The little program that never forgets (OnlineGaussianNB):** It learns one payment at a time. But if you don't tell it to forget the past, it stays stuck on the old rules: when the thief changes his trick, it keeps blocking honest citizens and lets the thief get away!
+- **2. The short-memory programs (alpha and OnlineSoftmaxRegression):** To avoid getting stuck in the past, these helpers give more weight to the latest clues and slowly forget the old ones (thanks to a trick called alpha), or redraw the borders between honest people and thieves on the fly (OnlineSoftmaxRegression). That way they adapt right away to the new moves!
+- **3. The Detective with the Substitute on the bench (DriftAdaptiveClassifier):** This is the smartest system of all! The main program works connected to an alarm. When the thief changes his trick and the program starts making too many mistakes, the siren goes off: immediately a backup program starts up and studies only the new clues. As soon as the backup proves it can guess better than the old program, it takes over command!
+
+In the end, what are Online Classifiers? They are computer "brains" that don't need to study thousands of books before starting: they learn one clue at a time while things are happening, and know how to change their minds on the fly when the bad guys change the rules of the game!
+
 ## A first example: fraudsters change habit
 
 Half of the payments are fraud. At first a fraud is a large payment (around 400) and a normal one is small (around 60). After 3000 payments the fraudsters change habit: they now make small test charges, while the customers' payments grow. The meaning of the amount flips. Three classifiers are tested on each payment before learning it: a Gaussian naive Bayes that never forgets, one with a fixed forgetting factor (`alpha=0.1`), and the `DriftAdaptiveClassifier` that wraps the first and swaps in a fresh copy when its own error jumps.
@@ -49,80 +61,15 @@ The three columns are the accuracy before the change, over the 200 payments afte
 
 ![Accuracy over the last 200 payments of three classifiers when the meaning of the amount flips at payment 3000: the one that never forgets falls to zero and stays low, alpha=0.1 barely dips, the drift-adaptive one falls and returns to 1.0 after its alarm.](../assets/learn/classifier_drift.png)
 
-## 1. Gaussian naive Bayes, one sample at a time
+## The three classifiers, one page each
 
-For each class and each feature, the classifier keeps a running mean and variance,
-updated by Welford's algorithm:
+| Page | Class | What it is for |
+|---|---|---|
+| [OnlineGaussianNB](gaussian_nb.md) | `OnlineGaussianNB` | a mean and a variance per class and column, with an optional forgetting factor |
+| [OnlineSoftmaxRegression](softmax.md) | `OnlineSoftmaxRegression` | a border between the classes that moves a little at every mistake, with a step that shrinks by itself |
+| [DriftAdaptiveClassifier](drift_adaptive.md) | `DriftAdaptiveClassifier` | a wrapper with an alarm and a backup, for when you cannot know how fast the world changes |
 
-```
-n ← n + 1
-δ = v − m
-m ← m + δ / n
-M2 ← M2 + δ (v − m)
-variance = M2 / n
-```
-
-**Hand case.** Three values `2, 4, 6`:
-
-```
-v = 2: n = 1, m = 2, M2 = 0
-v = 4: n = 2, m = 3, M2 = 2
-v = 6: n = 3, m = 4, M2 = 8
-```
-
-Mean 4, variance `8 / 3 = 2.667`.
-
-The classifier picks the class with the highest
-
-```
-log prior + Σ log N(x_i; m_i, var_i)
-```
-
-With `alpha = 0`, the statistics equal the batch MLE of a Gaussian NB on the observed
-samples; the wrapper matches a batch Gaussian NB to numerical precision (max difference
-1.8e-15 on 500 samples). With `alpha > 0`, the statistics **forget** exponentially:
-old counts are multiplied by `(1 − α)` before the new sample is added, so the classifier
-adapts when the class-conditional distributions change.
-
-## 2. The drift-adaptive wrapper
-
-`DriftAdaptiveClassifier` wraps any classifier with a drift detector on the classifier's
-own prediction loss. Per sample:
-
-1. Predict, then compute the log-loss `−log p(y)`.
-2. Feed the **50-sample rolling mean** of the log-loss to the detector.
-3. Learn.
-4. If the detector fires, start a **background copy** trained only on new samples.
-5. When the background's accuracy over the last 50 samples beats the main classifier's
-   over the same window, **promote** the background to main.
-
-The 50-sample rolling mean is not optional in practice: the raw log-loss is near zero
-on most samples, so its robust scale (MAD) is tiny and a CUSUM fed with the raw value
-fires on almost every error — hundreds of alarms in 6,000 samples. The rolling mean
-gives the detector a stable scale.
-
-## 3. The softmax regression alternative
-
-`OnlineSoftmaxRegression` is a multinomial logistic regression with AdaGrad. It uses
-the same interface and is often better when the class boundaries are not Gaussian.
-
-### The formula, symbol by symbol
-
-Probabilities are `softmax(W z)` where `z = [features..., 1]`. The gradient for class
-`c` on sample `(z, y)` is
-
-```
-(p_c − [c = y]) · z
-```
-
-with `p_c` the softmax output for class `c` and `[c = y]` equal to 1 when `c` is the
-true label and 0 otherwise. The AdaGrad step is `η / √G` where `G` is the running sum of
-squared gradients, updated as `G ← G + g²` before the parameter step. `η` is the base
-learning rate (default 0.1); `l2` adds a small penalty.
-
-Classes are added on the fly when a new label arrives.
-
-## 4. Cost
+## Cost
 
 Per sample, on one CPU core:
 
@@ -135,24 +82,6 @@ Per sample, on one CPU core:
 At 100 Hz the loop has 10 ms per cycle: all three fit with three orders of magnitude
 to spare. The wrapper is 7× the bare NB because it runs a background copy in parallel
 after each drift alarm.
-
-## float32
-
-`OnlineGaussianNB(dtype=numpy.float32)` keeps per-class and per-feature
-state in float32 and applies the shifted-data algorithm with
-``K = x[0]`` (Healy 2022, Algorithm 2) online: two TwoSum sums per
-feature and the two-term variance. Relative error of the variance
-against the float64 reference on N(1e3, 0.01), 100,000 samples, seed 0:
-6.2e-8. On a constant stream at 1e10 and 1e38 the variance is exactly
-0.0. With this mode ``alpha`` must be 0 (the exponential decay is not
-compatible with a fixed shift).
-
-Cost, median of 7 runs of one update over 20,000 samples, one CPU thread: default 0.010826 ms (IQR 0.000569), float32 0.020122 ms (IQR 0.007959). The claim that the float32
-path is at most as slow as the default is not met: on a scalar loop the
-numpy float32 arithmetic is slower than the Python float64 arithmetic.
-The float32 speed of these classes is not measured; no class in this
-batch has a `learn_many` on which the float32 blocks of the T3 kernel
-could be timed.
 
 ## The robot example
 
