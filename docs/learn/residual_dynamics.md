@@ -4,6 +4,20 @@
 
 This class needs a rigid-body model of a robot, so its example is a robot arm. The same idea with money, a fee formula that is missing a fixed charge and whose commission changes, is on the [RecursiveLeastSquares](recursive_least_squares.md) page.
 
+## Gamestory
+
+London Theater, deep night. Second night of the show. The young puppeteer has found the maker's official instruction manual inside the puppet's box.
+
+Everything is written down to the letter in the manual: "To lift the arm, pull the string with strength 10". The puppeteer trusts it and pulls with exact strength 10, but on stage a disaster happens: the arm barely rises and gets stuck halfway! Why? The maker had written the manual by testing a brand-new puppet in a workshop. He couldn't know that the wooden hinges had gotten rusty and that, for tonight's scene, the puppeteer had put a super-heavy apple in the puppet's hand!
+
+So the puppeteer calls his loyal assistant with pen and little sheet back behind the curtains to put the ResidualDynamicsLearner method into action:
+
+- Instead of throwing away the official manual, the puppeteer decides to use it as a base: "You just watch what is missing!" he tells the assistant. The manual says to pull 10, but to actually make the arm rise it takes 16. Those 6 extra points of strength are the "leftover" part the manual doesn't know about.
+- The assistant prepares a small sheet for every single hinge of the arm (one for the shoulder and one for the elbow) and, move after move, jots down only that extra strength by watching 5 exact clues: how fast the arm snaps, at what speed it moves, which way it turns, how much the apple pulls downward, and a tiny fixed friction of the wood.
+- On every tug, the puppeteer does a lightning addition: he takes the number written in the official manual and adds the extra strength just written on the assistant's little sheet. Within seconds the puppet's arm moves as light and accurate as a feather!
+
+In the end, what is ResidualDynamicsLearner? It is a smart method that doesn't redo all the math from scratch, but pairs the official manual with a small helper for each hinge that learns only the "extra" strength needed to overcome weight, friction, and real-life surprises!
+
 ## The two torques
 
 A joint reports what it actually applied: the measured torque `tau_measured`. The URDF
