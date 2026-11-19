@@ -18,7 +18,7 @@ from dense_armor.usable.catalog import get_catalog
 SECTIONS = {
     "stats": ("Statistics", "THE MAP OF STATISTICS"),
     "preprocessing": ("Preprocessing", "THE MAP OF PREPROCESSING"),
-    "vision": ("Vision", "THE MAP OF VISION"),
+    "vision": ("Video", "THE MAP OF VIDEO"),
 }
 DEPRECATED = {"Metro"}
 FUNCTIONS = {"Stable variance in float32": "stable_var, stable_moments"}

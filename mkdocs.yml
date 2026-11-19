@@ -343,7 +343,7 @@ nav:
       - Separating sources: audio/analysis.md
       - Events and streams: audio/events.md
       - Sources and checks: audio/sources.md
-  - Vision:
+  - Video:
       - vision/index.md
       - Frames: vision/frames.md
       - Features: vision/features.md
