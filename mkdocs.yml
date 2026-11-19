@@ -198,18 +198,6 @@ nav:
           - Text vectorizer: preprocessing/text_vectorizer.md
           - Text into any primitive: preprocessing/text_input.md
           - Features and rare events: preprocessing/features.md
-      - Vision:
-          - vision/index.md
-          - Frames: vision/frames.md
-          - Features: vision/features.md
-          - Flow: vision/flow.md
-          - Reduce: vision/reduce.md
-          - Motion: vision/motion.md
-          - Tracking: vision/tracking.md
-          - Kinematics: vision/kinematics.md
-          - Quality: vision/quality.md
-          - Patches: vision/patches.md
-          - Video into any primitive: vision/video_input.md
   - Machine learning:
       - Overview: ml/index.md
       - scikit-learn tools: ml/sklearn.md
@@ -355,6 +343,18 @@ nav:
       - Separating sources: audio/analysis.md
       - Events and streams: audio/events.md
       - Sources and checks: audio/sources.md
+  - Vision:
+      - vision/index.md
+      - Frames: vision/frames.md
+      - Features: vision/features.md
+      - Flow: vision/flow.md
+      - Reduce: vision/reduce.md
+      - Motion: vision/motion.md
+      - Tracking: vision/tracking.md
+      - Kinematics: vision/kinematics.md
+      - Quality: vision/quality.md
+      - Patches: vision/patches.md
+      - Video into any primitive: vision/video_input.md
   - Ontology:
       - Overview: ontology/index.md
       - Types, rules and actions: ontology/typed.md
