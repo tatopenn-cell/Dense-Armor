@@ -52,6 +52,94 @@ print(f"{ref:.4f} {naive:.4f} {float(stable_var(x)):.4f}")
 
 The textbook formula returns `0.0000`: the quotes are around 4500, their squares are of the order of twenty million, and the variance of a quarter of a euro is below the last digits of that number, so it disappears in the subtraction. A volatility of zero on a moving market is the kind of answer that nothing in the number says is wrong. `stable_var` returns `0.2528`, equal to the reference.
 
+## A deep learning example: the gradient of a normalisation layer
+
+A normalisation layer divides each row of activations by the square root of its variance. When the activations of a row sit around a large offset with a small spread, the variance and the subtraction of the mean in `float32` lose the digits of the spread, and the gradient that goes back to the earlier layers inherits the error. The test takes 64 rows of 1024 values around 1000 with a spread of 0.004 and applies three layers: the usual one, with `jnp.mean` and `jnp.var`; one that takes only the variance from `stable_var`; and one that takes the variance from `stable_var` and subtracts the mean on the data shifted by the first element, `(x - x[0]) - mean(x - x[0])`. The output and the gradient (by `jax.grad`) of each are compared with the same layer in float64:
+
+```python
+import jax
+import jax.numpy as jnp
+import numpy as np
+from dense_armor.core.signals.stats.stable import stable_var
+
+EPS = 1e-6
+
+
+def usual(x):
+    mean = jnp.mean(x, axis=-1, keepdims=True)
+    var = jnp.var(x, axis=-1, keepdims=True)
+    return (x - mean) / jnp.sqrt(var + EPS)
+
+
+def stable_variance_only(x):
+    mean = jnp.mean(x, axis=-1, keepdims=True)
+    var = stable_var(x, axis=-1, keepdims=True)
+    return (x - mean) / jnp.sqrt(var + EPS)
+
+
+def stable(x):
+    y = x - x[..., :1]
+    d = y - jnp.mean(y, axis=-1, keepdims=True)
+    return d / jnp.sqrt(stable_var(x, axis=-1, keepdims=True) + EPS)
+
+
+rng = np.random.default_rng(0)
+x = rng.normal(1000.0, 0.004, (64, 1024)).astype(np.float32)
+g = rng.normal(0.0, 1.0, (64, 1024)).astype(np.float32)
+x64, g64 = x.astype(np.float64), g.astype(np.float64)
+inv = 1.0 / np.sqrt(x64.var(-1, keepdims=True) + EPS)
+xh = (x64 - x64.mean(-1, keepdims=True)) * inv
+dx = inv * (g64 - g64.mean(-1, keepdims=True) - xh * (g64 * xh).mean(-1, keepdims=True))
+for name, layer in (
+    ("usual", usual),
+    ("stable variance only", stable_variance_only),
+    ("stable", stable),
+):
+    out = np.asarray(layer(jnp.asarray(x)), np.float64)
+    grad = np.asarray(jax.grad(lambda a: jnp.sum(g * layer(a)))(jnp.asarray(x)), np.float64)
+    print(f"{name:22s} output {np.abs(out - xh).max():.1e}  gradient {np.abs(grad - dx).max():.1e}")
+print(f"largest true gradient {np.abs(dx).max():.0f}")
+```
+
+```
+usual                  output 1.9e-02  gradient 8.8e-01
+stable variance only   output 1.9e-02  gradient 7.8e-01
+stable                 output 3.5e-07  gradient 5.1e-03
+largest true gradient 1122
+```
+
+The usual layer is wrong in the output by `1.9e-02` and in the gradient by `0.88`, on a largest true gradient of 1122. Taking only the variance from `stable_var` changes nothing (`1.9e-02` and `0.78`): the digits are lost in the subtraction `x - mean`, not in the variance. When the layer also subtracts the mean on the shifted data, the output error falls to `3.5e-07` and the gradient error to `5.1e-03`, that is `4.5e-06` of the largest gradient against `7.8e-04` for the usual layer: about 170 times smaller. `stable_var` can be differentiated by `jax.grad`, and no gradient in this test is `NaN`.
+
+This is one layer, in one setting, in `float32`; it is not a training run, and the page does not measure the accuracy of a trained network.
+
+### How many layers
+
+The same layer was stacked, `L` times: each layer is `x = 1000 + 0.004 * tanh(LN(x) @ W)`, with `W` orthogonal (times 0.7), 128 rows of 512 values, so that every layer receives an offset of 1000 and a spread of about 0.004. The test is `benchmarks/stable_variance_depth.py`, run on a Kaggle GPU with JAX 0.11.1 (the matrix products at the highest precision, one of the two visible devices in use). For each depth the gradient of the output with respect to the input is computed in `float32` by `jax.grad` and, as a reference, in float64 by replaying the backward pass on the same `float32` inputs. The table gives the relative error of the gradient and the time of one forward and backward step (median of 11 runs):
+
+![The relative error of the gradient and the time of one forward and backward step against the number of layers, for the usual layer normalisation and for the one with stable_var: the usual layer is at 0.4 % with one layer, above 1 % from 4 layers and at 20 % with 1024; with stable_var the error goes from 3e-07 to 6e-05; the step takes between 1.2 and 3 times as long.](../assets/stable_variance/depth_gradient.png)
+
+| layers | gradient error, usual layer | gradient error, `stable_var` | step time, usual | step time, `stable_var` | time ratio |
+|---|---|---|---|---|---|
+| 1 | 3.66e-03 | 3.45e-07 | 0.31 ms | 0.37 ms | 1.20 |
+| 2 | 7.87e-03 | 4.88e-07 | 0.57 ms | 0.74 ms | 1.29 |
+| 4 | 1.11e-02 | 6.95e-07 | 0.96 ms | 1.37 ms | 1.43 |
+| 8 | 1.77e-02 | 1.04e-06 | 1.71 ms | 2.46 ms | 1.44 |
+| 16 | 2.54e-02 | 1.62e-06 | 3.15 ms | 4.56 ms | 1.45 |
+| 32 | 3.74e-02 | 2.65e-06 | 4.36 ms | 8.83 ms | 2.03 |
+| 64 | 5.35e-02 | 4.54e-06 | 8.05 ms | 17.42 ms | 2.17 |
+| 128 | 7.58e-02 | 8.33e-06 | 11.71 ms | 34.56 ms | 2.95 |
+| 256 | 1.06e-01 | 1.56e-05 | 23.34 ms | 35.78 ms | 1.53 |
+| 512 | 1.50e-01 | 3.06e-05 | 47.30 ms | 63.16 ms | 1.34 |
+| 1024 | 2.04e-01 | 5.91e-05 | 95.30 ms | 127.99 ms | 1.34 |
+
+With the usual layer the gradient is wrong by 0.37 % in a single layer, by 1.1 % at 4 layers and by 20 % at 1024. With `stable_var` it is wrong by 3.5e-07 in a single layer and by 5.9e-05 at 1024: between 3450 and 16900 times smaller at every depth tested. The largest error of the output of one normalisation, against float64 on the same input, is between 1.9e-02 and 5.3e-02 for the usual layer and 4.2e-07 for the layer with `stable_var`, at every depth. No gradient is `NaN` or infinite in either variant.
+
+If a gradient error of 1 % is the most that can be accepted, the usual layer reaches it at 4 layers (1.1 %; at 2 layers it is 0.79 %); with `stable_var` the error is still 5.9e-05 at 1024 layers, the deepest tested. So the number of layers that can be built is at least 256 times larger, 1024 against 4, and this test did not find the limit with `stable_var`.
+
+The price is time. A step with the layer that uses `stable_var` takes between 1.2 and 3.0 times as long as one with the usual layer on this GPU, and 1.34 times at 1024 layers (128.0 ms against 95.3 ms). The ratio at 128 layers (2.95) is out of line with its neighbours (1.53 at 256), and was not investigated. For activations with a large offset and a small spread, where the usual layer gives gradients that are wrong by 1 % to 20 %, a step that takes at most three times as long and a gradient that is 3450 to 16900 times more accurate is a good price; for activations without a large offset this test says nothing, because it was not run.
+
+This is one synthetic stack, one GPU session and one size (128 rows of 512 values). In this stack the gradient grows with the depth, up to about 1e15 at 1024 layers, and stays finite in `float32`; it is not a trained network, and the page does not measure the accuracy of one.
+
 ## 1. The failure
 
 The variance of a sample is the average of the squared distances from the
@@ -342,3 +430,7 @@ array sizes.
 ### The figure at the top
 
 The image `docs/assets/stable_variance/stable_variance_3d.png` is generated by `docs/assets/stable_variance/make_stable_variance_3d.py`. For 12 offsets and 7 spreads it draws 1000 float32 values, computes the variance by the textbook formula and by `stable_var`, and compares both with the float64 variance of the same values; when the exact variance is 0, any other answer counts as an error of 100 %.
+
+### The depth test
+
+`benchmarks/stable_variance_depth.py` writes `benchmarks/stable_variance_depth.json`; the GPU numbers on this page are in `benchmarks/stable_variance_depth_gpu.json`, obtained with the same script, with `stable.py` and the script unchanged, in a Kaggle session with a GPU. The image `docs/assets/stable_variance/depth_gradient.png` is made from that file by `docs/assets/stable_variance/make_depth_figure.py`.
