@@ -42,7 +42,7 @@ print(tree.n_nodes_, tree.predict_proba_one({"amount": 420.0, "hour": 2.0}))
 
 The tree has 3 nodes: one question, *is the amount above 232.61?*, and two leaves. The threshold lies between the usual amounts and the suspicious ones, and the hour was not needed. `predict_proba_one` gives the probability of each class (here the tree is sure), and `explain_one` the path of questions behind an answer. When to split, and why the tree can be trusted to do so, is in the next section.
 
-## 2. For experts: a tree that learns a robot state
+## 2. A tree that learns a robot state
 
 Two states of an arm: idle (0) and carrying a load (1). The load raises the joint torque
 `tau`; the velocity `qd` says nothing about it.
@@ -85,7 +85,7 @@ falls as the leaf sees more samples. Right: the accuracy of the last 100 predict
 before the tree learns each sample; the first split comes at sample 100, the first moment the
 tree is allowed to check (`grace_period=100`).
 
-## 3. For experts: predicting a number, `HoeffdingTreeRegressor`
+## 3. Predicting a number: `HoeffdingTreeRegressor`
 
 The same idea for a number: a split is made when it lowers the variance of the target enough,
 by the same bound. It predicts the gravity torque of the first joint of a two-link arm from the

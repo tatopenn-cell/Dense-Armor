@@ -91,9 +91,9 @@ model with an uncertainty, at about 1 ms per sample; the stochastic gradient tre
 cheapest regressor. Accuracy "with a change" counts the whole stream, before and after the
 change.
 
-## For experts: the robot examples
+## The robot examples
 
-The examples on the pages below are mostly about a robot arm, which asks for a little more background.
+Further down, the pages use a robot arm as their example.
 
 A decision tree makes choices by asking a chain of questions (for example, "Is the joint torque above 3.5 N·m?"), allowing humans to easily understand the reasoning behind its decisions.
 Traditionally, these trees are trained in batches, meaning they require all the data to be available at once. In contrast, the trees described in this section grow dynamically—one single sample at a time—while the robot is actively working. They create a new branch (split a leaf) only when they have gathered enough data to prove the change is statistically accurate.
