@@ -20,6 +20,17 @@ the data arrive. It uses one of three algorithms ported from their papers:
 - **LEGO** (Jain et al. 2008) — LogDet-regularized Mahalanobis matrix from pairs with a target distance.
 - **POLA** (Shalev-Shwartz et al. 2004) — pseudo-metric from similar / dissimilar pairs, kept positive semi-definite.
 
+## Gamestory
+
+London, deep night. The police archive is full of thousands of old cases, and the young detective must figure out which ones look most like tonight's investigation.
+
+While comparing the files, he discovers that using a normal mathematical ruler is a disaster: giant numbers (like thousands of stolen pounds) hide small but decisive clues (like the suspect's age). To not be fooled by noise, the detective decides to build a custom-made ruler that adapts in real time as new clues arrive, choosing among three special techniques:
+
+- **The triplet method (OASIS):** The detective compares three files at a time: a main suspect, an accomplice of his, and an innocent citizen. He learns to adjust his ruler so that the accomplice always turns out much "closer" than the innocent person.
+- **The target distance method (LEGO):** Here the detective works in pairs and sets himself a precise goal: if two suspects are part of the same gang, their distance must become tiny; if they are strangers, it must become huge.
+- **The threshold method (POLA):** The detective observes two files at a time receiving only a "same" or "different". Every time he makes a wrong prediction, he recalibrates the ruler and moves a safety threshold to separate accomplices from innocents.
+- **The window memory (MetricKNNClassifier):** As the investigation goes on, the detective keeps on his desk only the latest most recent cases. When a new suspect pops up, he measures him with his freshly updated ruler, looks at the most similar "neighbors," and immediately discovers which gang he belongs to!
+
 ## A first example: which customers look alike?
 
 A bank has customers of two groups, young (around 30 years old) and older (around 50). Besides the age it knows three columns that tell nothing about the group but have big numbers: the monthly spending (about 500), the balance (about 3000) and the number of visits (about 20). With the plain Euclidean distance these numbers drown the age. `MetricKNNClassifier` learns a better distance while it classifies: each customer is first predicted from the closest past customers, and then learned.
@@ -112,16 +123,6 @@ print(hits / len(y))
 Two classes that differ only in the first feature; the k-NN learns its similarity with OASIS while it
 classifies, and gets 93.75 % of the 400 samples right, each predicted before it is learned.
 
-The same advantage on robot data: three robot states told apart by two joint features, plus three
-noisy features with a much larger range that dominate the plain Euclidean distance.
-
-![Prequential accuracy of a k-NN with Euclidean distance and with distances learned online by OASIS, LEGO and POLA](../assets/metric_learning/robot_states.png)
-
-With the Euclidean distance the k-NN is right half of the time (0.50); learning the metric while
-classifying lifts it to 0.89 (OASIS), 0.92 (LEGO) and 0.74 (POLA) after 600 samples: the learned
-metric learns to ignore the noisy features. In the original paper OASIS already beat LEGO and the
-Euclidean metric on image retrieval (Chechik et al. 2009, Figure 2).
-
 ## 4. Results on streams from an existing online-learning library
 
 `progressive_val_score` (predict, then learn), `StandardScaler` in front, k = 5,
@@ -135,6 +136,18 @@ Euclidean metric on image retrieval (Chechik et al. 2009, Figure 2).
 On ImageSegments (7 classes, 18 features) all three learned metrics beat the Euclidean
 k-NN by about 4 points; on Phishing the gains are under one point and LEGO is level with
 the baseline.
+
+## The robot example
+
+The same advantage on robot data: three robot states told apart by two joint features, plus three
+noisy features with a much larger range that dominate the plain Euclidean distance.
+
+![Prequential accuracy of a k-NN with Euclidean distance and with distances learned online by OASIS, LEGO and POLA](../assets/metric_learning/robot_states.png)
+
+With the Euclidean distance the k-NN is right half of the time (0.50); learning the metric while
+classifying lifts it to 0.89 (OASIS), 0.92 (LEGO) and 0.74 (POLA) after 600 samples: the learned
+metric learns to ignore the noisy features. In the original paper OASIS already beat LEGO and the
+Euclidean metric on image retrieval (Chechik et al. 2009, Figure 2).
 
 ## API reference
 

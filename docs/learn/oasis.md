@@ -6,6 +6,26 @@ the same kind, a customer of a different kind). It learns one triplet at a time,
 light: one rank-one update per triplet and no eigendecomposition.
 The other two are [LEGO](lego.md) and [POLA](pola.md); the overview is on [Metric learning](metric_learning.md).
 
+## Gamestory
+
+London, deep night. The mysterious thief has just robbed a bank. The young detective has to figure out which of the city's two gangs pulled off the heist: the Wolves or the Foxes.
+
+The problem is that the thieves use a thousand tricks to confuse him: sometimes they steal a lot, sometimes very little, sometimes they smash windows, sometimes they don't. So the detective invents a lightning-fast rule called OASIS, which works like a card game with three cards at a time:
+
+1. **Three cards on the table:** The detective takes three robberies:
+    - Card A: tonight's robbery.
+    - Card B: a robbery definitely done by the Wolves.
+    - Card C: a robbery definitely done by the Foxes.
+2. **The blunt question:** He looks at the three cards and asks himself: "Does tonight's robbery look more like the Wolves' one or the Foxes' one?".
+3. **Fixing the mistake on the fly:** At first, the detective only looks at how much money was stolen, so he gets it wrong a lot. Every time he messes up, he slaps his forehead and changes his rule: "Stop looking at the money, it has nothing to do with it! From now on I only look at the time the alarm goes off!".
+4. **Don't overdo it (the C rule):** Even when he is wrong, he doesn't throw away everything he has learned so far: he only makes a small adjustment (called C), so a single lucky trick by the thieves doesn't mess up his brain.
+
+By the end of the game, the detective has cracked the trick: the Wolves always strike at 3 AM, while the Foxes strike at dawn. All the other clues were just a smokescreen!
+
+![The share of the distance that OASIS gives to each of the four columns of a customer while it sees triplets: the age rises from 25 percent to 93 percent and the other three columns fall to 2 or 3 percent; four snapshots of the matrix W are on the right.](../assets/learn/oasis_learning.png)
+
+Triplet after triplet, OASIS moves almost the whole distance onto the one column that tells the groups apart. Left: the share of the distance (the diagonal of `WᵀW`) that each column gets, from the 25 % each of the Euclidean distance to 93 % for the age after 2000 triplets. Right: the matrix `W` itself after 1, 50, 500 and 2000 triplets: it starts as the identity and ends with one strong entry on the age.
+
 ## A first example: which columns matter?
 
 A bank has two kinds of customers, young and older. For each customer it knows four numbers, already put on the same scale: the age, which tells the two kinds apart, and the spending, the balance and the number of visits, which tell nothing about the group. With the plain Euclidean distance the three useless columns weigh three times as much as the useful one. OASIS sees 2000 triplets and learns a weight for each column; then it is tested on 600 new
@@ -44,6 +64,10 @@ The first line is the weight that the learned distance gives to each column (the
 `WᵀW`, with the columns in alphabetical order: `age`, `balance`, `spend`, `visits`): the age weighs 5.49 and the three useless columns about 0.1 to 0.2. The second line is the
 share of test triplets in which the anchor is closer to the customer of its own kind: 74.7 % with the
 Euclidean distance, 94.8 % with the distance learned by OASIS.
+
+![Two panels with the same customers: on the left the Euclidean distance draws circles around a customer, on the right the distance learned by OASIS draws almost vertical stripes, so that only the age counts.](../assets/learn/oasis_geometry.png)
+
+The picture shows the same thing with two columns only (the age and the spending). The pink lines join the points at the same distance from the white customer. With the Euclidean distance they are circles: a difference in the useless column costs as much as one in the age. With the learned distance they become stripes that cut the age axis and run along the useless column: customers that differ only in the spending are close, customers of the two groups are far.
 
 ## How it learns
 
@@ -140,6 +164,8 @@ We measured it on text, 20 newsgroups with 500 word features, 20,000 triplets, k
 | sci.space vs comp.graphics | 0.1 | 0.5255 | 0.6922 | **0.8588** |
 | comp.sys.ibm.pc.hardware vs sci.electronics | 0.01 | 0.5051 | 0.5356 | 0.5593 |
 | comp.sys.ibm.pc.hardware vs sci.electronics | 0.1 | 0.5051 | 0.6085 | **0.7831** |
+
+![Bar chart of the accuracy of a k-nearest-neighbours classifier on two pairs of newsgroups at C 0.01 and 0.1 with the Euclidean distance, the symmetrised W and W transpose W: W transpose W is the highest in all four cases, 0.86 and 0.78 at C 0.1.](../assets/learn/oasis_vs_sym.png)
 
 At `C = 0.1`, `WᵀW` beats the symmetrised `W` by 17 points on both pairs. A plausible reason: `(W + Wᵀ)/2`
 can have negative eigenvalues, so `(u − v)ᵀ M (u − v)` stops being a distance.

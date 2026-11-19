@@ -7,6 +7,21 @@ wrong. The correction has two steps, and the second one, which keeps the matrix 
 what makes POLA the most expensive of the three. The other two learners are [OASIS](oasis.md) and
 [LEGO](lego.md); the overview is on [Metric learning](metric_learning.md).
 
+## Gamestory
+
+London, late at night. The mysterious thief strikes again, but this time he has left confusing traces all over the city.
+
+While analyzing the files on his desk, the young detective realizes that the thief never acts alone: he has a network of accomplices hidden among the citizens. To unmask them, he cannot use a normal yardstick of judgment, because the flashiest details are just traps to throw him off the scent. So he decides to apply the POLA method, a rapid training based on pairwise comparison:
+
+- **The "Similar or Different" game:** The police informant puts two files on the table at a time. He doesn't reveal who the culprits are, but gives a single blunt clue: "These two suspects work together" or "These two have nothing to do with each other".
+- **Uncovering the decoy clues:** Each file has four pieces of data: the money in the bank account, museum visits, store spending, and age. At first, the detective looks at everything the same way, but he realizes that the money or spending change at random and only cause confusion.
+- **Adjusting aim with every mistake:** Every time the detective is wrong about whether two suspects are accomplices, POLA makes him recalibrate his "investigation ruler". Slowly, he zeroes out the weight of useless details and focuses all his attention on the only clue that really matters: age (the thief only recruits the very young!).
+- **The capture threshold:** At the end of the training, the detective has built a perfect ruler and a safety threshold. When he crosses paths with two new suspects on the street, he measures their "distance" with this new ruler: if they are closer than the threshold, the handcuffs snap shut!
+
+![Left: the average squared distance of 200 fresh pairs over 10 runs, for pairs of the same kind (staying below the threshold) and of different kinds (well above it), and the threshold b rising from 1 to about 1.6. Right: the number of times a negative eigenvalue of the matrix A was cut back to zero, about 500 in 2000 pairs.](../assets/learn/pola_learning.png)
+
+Pair after pair, POLA moves the matrix and the threshold. Left: the squared distance of 200 fresh pairs, on average, over 10 runs (line: median, band: quartiles). The threshold `b` starts at 1 and rises to about 1.64; the pairs of the same kind stay below it (a median of 1.10 at the end) and the pairs of different kinds climb well above it (5.34). Right: how many times, in 2000 pairs, the correction would have made `A` lose positive semi-definiteness (a negative eigenvalue), and the projection cut it back to zero: about 500 times. That projection is what makes POLA more expensive than the other two learners.
+
 ## A first example: similar or different
 
 A bank has two kinds of customers, young and older. For each customer it knows four numbers, already put on the same scale: the age, which tells the two kinds apart, and the spending, the balance and the number of visits, which tell nothing about the group. With the plain Euclidean distance the three useless columns weigh three times as much as the useful one. POLA sees 2000 pairs, half of customers of the same kind (`+1`) and half of different kinds
@@ -50,6 +65,10 @@ line is the share of 600 test triplets in which the anchor is closer to the cust
 75.8 % with the Euclidean distance, 86.0 % with POLA: with the same 2000 pairs it gets less far than
 OASIS and LEGO in this example. POLA moves only when a pair is on the wrong side of the threshold, or
 closer to it than the margin of 1.
+
+![Two panels with the same customers: on the left the Euclidean distance draws circles around a customer, on the right the distance learned by POLA draws stripes that cut the age axis.](../assets/learn/pola_geometry.png)
+
+The pink lines join the points at the same distance from the white customer, in a version of the example with two columns only (the age and the spending): the circles become stripes that follow the age.
 
 ## How it learns
 

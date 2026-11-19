@@ -1,12 +1,11 @@
 # Online classifiers: non-stationary state estimation and drift-adaptive architectures
 
-These tools tell, sample by sample, which state a system is in (a payment that is normal or fraud, a robot that moves freely or touches something). Rather than failing when external conditions change, these models continuously adapt their internal statistics or deploy background copies to keep the state estimate usable.
+These tools tell, sample by sample, which state a system is in (for example a payment that is normal or fraud). Rather than failing when external conditions change, these models continuously adapt their internal statistics or deploy background copies to keep the state estimate usable.
 
 
 A bank has to tell, payment by payment, whether a payment is normal or fraud, from a few numbers.
 It has to keep doing it right when the world changes: customers change habit, fraudsters change
-trick. The same happens to a robot that has to tell, from its joint signals, whether it moves
-freely or touches something, when its load or its gripper changes.
+trick.
 
 `OnlineGaussianNB` and `OnlineSoftmaxRegression` learn one sample at a time.
 `DriftAdaptiveClassifier` wraps either of them with a drift detector on its own
@@ -50,19 +49,7 @@ The three columns are the accuracy before the change, over the 200 payments afte
 
 ![Accuracy over the last 200 payments of three classifiers when the meaning of the amount flips at payment 3000: the one that never forgets falls to zero and stays low, alpha=0.1 barely dips, the drift-adaptive one falls and returns to 1.0 after its alarm.](../assets/learn/classifier_drift.png)
 
-## 1. The data
-
-6,000 samples, 3 states from a Markov chain (stay probability 0.95, mean dwell 20
-samples), 4 joint features with unit noise:
-
-- **free**: `(0, 0, 0, 0)`
-- **contact**: `(2, 2, 0, 0)`
-- **collision**: `(4, 4, 4, 4)`
-
-From sample 3000 the contact load **moves to the other two joints**: contact becomes
-`(0, 0, 2, 2)`. The classifier was trained on the old signature.
-
-## 2. Gaussian naive Bayes, one sample at a time
+## 1. Gaussian naive Bayes, one sample at a time
 
 For each class and each feature, the classifier keeps a running mean and variance,
 updated by Welford's algorithm:
@@ -97,57 +84,7 @@ samples; the wrapper matches a batch Gaussian NB to numerical precision (max dif
 old counts are multiplied by `(1 − α)` before the new sample is added, so the classifier
 adapts when the class-conditional distributions change.
 
-```python
-import numpy as np
-from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB
-
-rng = np.random.default_rng(42)
-s = np.zeros(6000, int)
-for t in range(1, 6000):
-    s[t] = s[t - 1] if rng.random() < 0.95 else (s[t - 1] + rng.integers(1, 3)) % 3
-mu = np.array([[0, 0, 0, 0], [2, 2, 0, 0], [4, 4, 4, 4]], float)
-X = mu[s] + rng.standard_normal((6000, 4))
-X[3000:][s[3000:] == 1] += [-2, -2, 2, 2]
-clf, hit = OnlineGaussianNB(), []
-for x, y in zip(X, s):
-    f = dict(zip("abcd", x)); hit.append(clf.predict_one(f) == y); clf.learn_one(f, y)
-print(np.mean(hit[500:3000]).round(3), np.mean(hit[3000:3200]).round(3), np.mean(hit[5000:5900]).round(3))
-```
-
-```
-0.952 0.48 0.879
-```
-
-Prequential accuracy (predict first, then learn) before the change, right after it, and late.
-
-## 3. What happens when the signature changes
-
-The contact state moves from joints 0–1 to joints 2–3 at sample 3000. A classifier
-without forgetting keeps the old contact mean and gets every post-change contact sample
-wrong. Prequential accuracy over `[500, 3000)` (pre), `[3000, 3200)` (post), and
-`[5000, 5900)` (late):
-
-| Classifier | pre | post | late | recovery |
-|---|---|---|---|---|
-| `OnlineGaussianNB(alpha=0)` | 0.952 | 0.480 | 0.879 | 617 |
-| `OnlineGaussianNB(alpha=0.01)` | 0.952 | 0.790 | 0.941 | 59 |
-| `OnlineGaussianNB(alpha=0.1)` | 0.950 | 0.925 | 0.913 | 0 |
-| `OnlineSoftmaxRegression(eta=0.1, l2=1e-4)` | 0.934 | 0.565 | 0.919 | 213 |
-| `DriftAdaptiveClassifier(OnlineGaussianNB(alpha=0))` | 0.952 | 0.480 | 0.931 | 145 |
-| `DriftAdaptiveClassifier(OnlineSoftmaxRegression)` | 0.912 | 0.775 | 0.904 | 38 |
-
-"Recovery" is the number of samples after 3000 until the 200-sample accuracy is back
-within 0.05 of pre.
-
-Without forgetting, Gaussian NB goes from 0.952 to 0.480 at the change and needs **617
-samples** to recover. A fixed forgetting factor reacts faster if you already know how
-fast the world changes — `alpha = 0.1` never loses accuracy, at the cost of a noisier
-late phase (0.913 instead of 0.941).
-
-The drift-adaptive wrapper is the third option: it does not need a forgetting factor
-chosen in advance.
-
-## 4. The drift-adaptive wrapper
+## 2. The drift-adaptive wrapper
 
 `DriftAdaptiveClassifier` wraps any classifier with a drift detector on the classifier's
 own prediction loss. Per sample:
@@ -164,35 +101,7 @@ on most samples, so its robust scale (MAD) is tiny and a CUSUM fed with the raw 
 fires on almost every error — hundreds of alarms in 6,000 samples. The rolling mean
 gives the detector a stable scale.
 
-```python
-import numpy as np
-from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB, DriftAdaptiveClassifier
-from dense_armor.core.online.drift.detector import CUSUMDriftDetector
-
-rng = np.random.default_rng(42)
-s = np.zeros(6000, int)
-for t in range(1, 6000):
-    s[t] = s[t - 1] if rng.random() < 0.95 else (s[t - 1] + rng.integers(1, 3)) % 3
-mu = np.array([[0, 0, 0, 0], [2, 2, 0, 0], [4, 4, 4, 4]], float)
-X = mu[s] + rng.standard_normal((6000, 4))
-X[3000:][s[3000:] == 1] += [-2, -2, 2, 2]
-det = CUSUMDriftDetector(reference="fixed", radius=20, ref_mult=5, two_sided=False)
-clf, hit = DriftAdaptiveClassifier(OnlineGaussianNB(), det, window=50, smooth_window=50), []
-for x, y in zip(X, s):
-    f = dict(zip("abcd", x)); hit.append(clf.predict_one(f) == y); clf.learn_one(f, y)
-print(np.mean(hit[500:3000]).round(3), np.mean(hit[3000:3200]).round(3), np.mean(hit[5000:5900]).round(3))
-```
-
-```
-0.952 0.48 0.931
-```
-
-On the running data the wrapper leaves its pre-drift accuracy untouched (0.952), fires
-about 55 samples after the change, and recovers in 145 samples. It reaches 0.931 in the
-late phase — better than the no-forgetting baseline (0.879) and close to the tuned
-`alpha = 0.1` (0.913).
-
-## 5. The softmax regression alternative
+## 3. The softmax regression alternative
 
 `OnlineSoftmaxRegression` is a multinomial logistic regression with AdaGrad. It uses
 the same interface and is often better when the class boundaries are not Gaussian.
@@ -213,7 +122,7 @@ learning rate (default 0.1); `l2` adds a small penalty.
 
 Classes are added on the fly when a new label arrives.
 
-## 6. Cost
+## 4. Cost
 
 Per sample, on one CPU core:
 
@@ -244,6 +153,104 @@ numpy float32 arithmetic is slower than the Python float64 arithmetic.
 The float32 speed of these classes is not measured; no class in this
 batch has a `learn_many` on which the float32 blocks of the T3 kernel
 could be timed.
+
+## The robot example
+
+The same classifiers on a robot that has to tell, sample by sample, whether it moves freely, touches something or collides, from its joint signals, and that has to keep doing it right when its load or its gripper changes.
+
+### The data
+
+6,000 samples, 3 states from a Markov chain (stay probability 0.95, mean dwell 20
+samples), 4 joint features with unit noise:
+
+- **free**: `(0, 0, 0, 0)`
+- **contact**: `(2, 2, 0, 0)`
+- **collision**: `(4, 4, 4, 4)`
+
+From sample 3000 the contact load **moves to the other two joints**: contact becomes
+`(0, 0, 2, 2)`. The classifier was trained on the old signature.
+
+### Gaussian naive Bayes on the robot data
+
+```python
+import numpy as np
+from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB
+
+rng = np.random.default_rng(42)
+s = np.zeros(6000, int)
+for t in range(1, 6000):
+    s[t] = s[t - 1] if rng.random() < 0.95 else (s[t - 1] + rng.integers(1, 3)) % 3
+mu = np.array([[0, 0, 0, 0], [2, 2, 0, 0], [4, 4, 4, 4]], float)
+X = mu[s] + rng.standard_normal((6000, 4))
+X[3000:][s[3000:] == 1] += [-2, -2, 2, 2]
+clf, hit = OnlineGaussianNB(), []
+for x, y in zip(X, s):
+    f = dict(zip("abcd", x)); hit.append(clf.predict_one(f) == y); clf.learn_one(f, y)
+print(np.mean(hit[500:3000]).round(3), np.mean(hit[3000:3200]).round(3), np.mean(hit[5000:5900]).round(3))
+```
+
+```
+0.952 0.48 0.879
+```
+
+Prequential accuracy (predict first, then learn) before the change, right after it, and late.
+
+### What happens when the signature changes
+
+The contact state moves from joints 0–1 to joints 2–3 at sample 3000. A classifier
+without forgetting keeps the old contact mean and gets every post-change contact sample
+wrong. Prequential accuracy over `[500, 3000)` (pre), `[3000, 3200)` (post), and
+`[5000, 5900)` (late):
+
+| Classifier | pre | post | late | recovery |
+|---|---|---|---|---|
+| `OnlineGaussianNB(alpha=0)` | 0.952 | 0.480 | 0.879 | 617 |
+| `OnlineGaussianNB(alpha=0.01)` | 0.952 | 0.790 | 0.941 | 59 |
+| `OnlineGaussianNB(alpha=0.1)` | 0.950 | 0.925 | 0.913 | 0 |
+| `OnlineSoftmaxRegression(eta=0.1, l2=1e-4)` | 0.934 | 0.565 | 0.919 | 213 |
+| `DriftAdaptiveClassifier(OnlineGaussianNB(alpha=0))` | 0.952 | 0.480 | 0.931 | 145 |
+| `DriftAdaptiveClassifier(OnlineSoftmaxRegression)` | 0.912 | 0.775 | 0.904 | 38 |
+
+"Recovery" is the number of samples after 3000 until the 200-sample accuracy is back
+within 0.05 of pre.
+
+Without forgetting, Gaussian NB goes from 0.952 to 0.480 at the change and needs **617
+samples** to recover. A fixed forgetting factor reacts faster if you already know how
+fast the world changes — `alpha = 0.1` never loses accuracy, at the cost of a noisier
+late phase (0.913 instead of 0.941).
+
+The drift-adaptive wrapper is the third option: it does not need a forgetting factor
+chosen in advance.
+
+### The drift-adaptive wrapper on the robot data
+
+```python
+import numpy as np
+from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB, DriftAdaptiveClassifier
+from dense_armor.core.online.drift.detector import CUSUMDriftDetector
+
+rng = np.random.default_rng(42)
+s = np.zeros(6000, int)
+for t in range(1, 6000):
+    s[t] = s[t - 1] if rng.random() < 0.95 else (s[t - 1] + rng.integers(1, 3)) % 3
+mu = np.array([[0, 0, 0, 0], [2, 2, 0, 0], [4, 4, 4, 4]], float)
+X = mu[s] + rng.standard_normal((6000, 4))
+X[3000:][s[3000:] == 1] += [-2, -2, 2, 2]
+det = CUSUMDriftDetector(reference="fixed", radius=20, ref_mult=5, two_sided=False)
+clf, hit = DriftAdaptiveClassifier(OnlineGaussianNB(), det, window=50, smooth_window=50), []
+for x, y in zip(X, s):
+    f = dict(zip("abcd", x)); hit.append(clf.predict_one(f) == y); clf.learn_one(f, y)
+print(np.mean(hit[500:3000]).round(3), np.mean(hit[3000:3200]).round(3), np.mean(hit[5000:5900]).round(3))
+```
+
+```
+0.952 0.48 0.931
+```
+
+On the running data the wrapper leaves its pre-drift accuracy untouched (0.952), fires
+about 55 samples after the change, and recovers in 145 samples. It reaches 0.931 in the
+late phase — better than the no-forgetting baseline (0.879) and close to the tuned
+`alpha = 0.1` (0.913).
 
 ## API reference
 

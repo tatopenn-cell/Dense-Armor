@@ -14,6 +14,10 @@ wraps any classifier from an existing online-learning library and corrects its p
 sample at a time, using the map `sigmoid(a · logit(p) + b)` learned by Online Newton
 Step.
 
+![A three-dimensional surface: the map from the probability announced by the model to the calibrated probability, for the first 4000 payments. At the start it is the identity (dashed line); the surface begins at the 100th payment, when the map has already bent, and keeps moving.](../assets/learn/platt_surface.png)
+
+The picture is the whole idea of Platt scaling. Each slice of the surface is the map from the probability that the model announces (one axis) to the probability that `OnlinePlattScaling` returns (the height), at one moment of the stream (the other axis, from 100 payments on). The first map is the identity, the dashed line; as payments arrive it bends. The surface begins at the 100th payment, when the map has already moved far from the identity, and it keeps moving a little as payments arrive.
+
 ## A first example: a fraud score
 
 A fraud model reads six signals about each payment (the amount, the hour, the country, and so on). The six are not independent: they all say almost the same thing. A naive Bayes model multiplies them as if each one were new information, and becomes far too sure of itself. `OnlinePlattScaling` wraps it and corrects its probabilities one payment at a time. Both are tested on each payment before learning it, and compared by log-loss (lower is better; a confident mistake costs a lot).
@@ -55,6 +59,10 @@ The base classifier's probability `p` is transformed into
 over-confident (probabilities pushed toward 0 and 1), `a < 1` shrinks them toward 0.5.
 If it is under-confident, `a > 1` stretches them out. If it is systematically biased
 toward one side, `b ≠ 0` shifts them. Both numbers adapt as new samples arrive.
+
+![Left: the two parameters of the map, a (the stretch) and b (the shift), from the 100th to the 4000th payment: a goes from 0.35 to 0.28, b wanders between minus 0.49 and 0.39 and ends at 0.04. Right: the identity and the learned map, which pulls probabilities toward 0.5.](../assets/learn/platt_parameters.png)
+
+In the fraud example the two numbers end at `a = 0.28` and `b = 0.04`; `a` is already 0.35 at the 100th payment (it starts at 1). A value of `a` well below 1 says that the naive Bayes was far too sure: the map shrinks its probabilities toward 0.5 (right). `b` moves between −0.49 and 0.39 along the way and ends near zero: in the end the model is over-confident, not biased toward one class.
 
 ## 2. The formula, symbol by symbol
 
