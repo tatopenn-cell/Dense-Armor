@@ -76,6 +76,7 @@ PIECE_PAGES = {
     "data": "api/data_shared.md",
     "neural": "neural/overview.md",
     "kalman": "timeseries/kalman.md",
+    "Armor": "shields/armor.md",
 }
 
 
@@ -172,6 +173,8 @@ def build():
         for s, p in t.get("dense_armor", {}).items()
         if s not in LEFT and s not in IN_CORE
     }
+    if "armor" in rest and "utility" in rest:
+        rest["utility"].update(rest.pop("armor"))
     groups.append(
         (
             "outside",
