@@ -9,6 +9,12 @@ optimizer from `dense_armor.core.online.optim` as the whole learning rule. This
 page shows the two models, the shape of the input they expect, and the
 difference between them.
 
+## The map of the linear models
+
+Click a page to open it, or the job on the left (or the button at the top) to go back to the [map of the library](../index.md#the-library-folder-by-folder).
+
+<object type="image/svg+xml" data="../../assets/maps/linear.svg" style="width:100%"></object>
+
 ## 1. What they do
 
 A linear model predicts a target with a weighted sum of its inputs. The

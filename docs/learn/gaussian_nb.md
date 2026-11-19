@@ -2,6 +2,16 @@
 
 `OnlineGaussianNB` is the simplest of the three online classifiers. For each class and each column it keeps a running mean and variance, updated one sample at a time, and it answers with the class that makes the sample most likely. It never stores the samples. With a forgetting factor (`alpha`) it forgets the old ones exponentially, so it can follow a world that changes. The other two classifiers are [OnlineSoftmaxRegression](softmax.md) and [DriftAdaptiveClassifier](drift_adaptive.md); the overview is on [Online classifiers](online_classifiers.md).
 
+## Gamestory
+
+London, deep night. The young detective is in front of the bank ledger and has to check thousands of payments one after another. So as not to waste time flipping through endless archives, he pulls OnlineGaussianNB out of his pocket, a tiny notebook of averages.
+
+- **1. Writing down only two little numbers on the fly:** Every time a payment goes through, the detective doesn't jot down the whole endless list of the evening (otherwise the notebook would burst!). He updates only two numbers with his pen: how much honest people and thieves spend on average, and how much those numbers bounce around the average.
+- **2. Betting on the most likely:** When a new payment arrives, the detective takes a lightning glance at those two little numbers in his notebook and places his bet: "Does this withdrawal look more like the habits of honest citizens or those of the thief?".
+- **3. The trick to forget (alpha):** If halfway through the night the thief changes habits and switches from big withdrawals to small ones, a normal notebook stays stuck in the past. But if the detective uses the alpha rule, he lets the old notes slowly fade away and gives more weight to the latest payments, getting right back on the right track!
+
+In the end, what is OnlineGaussianNB? It is a super-light and super-fast algorithm that learns one piece of data at a time by calculating constantly updated "averages" without having to save all past data, and thanks to the alpha trick it knows how to forget old rules when things change!
+
 ![Left: the average amount of a fraud as the classifier sees it over 6000 payments, with and without forgetting: at payment 3000 the true value falls from 400 to 60; with alpha 0.1 the belief follows within a few dozen payments, with alpha 0 it slowly drifts toward the average of the two regimes. Right: the probability of fraud given the amount at payment 6000: with alpha 0.1 small payments are frauds, with alpha 0 it is flat at 0.49.](../assets/learn/nb_learning.png)
 
 Left: what the classifier believes the average amount of a fraud is. At payment 3000 the fraudsters change habit and a fraud becomes a small payment (60 instead of 400). With `alpha = 0.1` the belief follows within a few dozen payments; with `alpha = 0` it is the average of everything it has ever seen and drifts slowly toward 230 (226 at payment 6000). Right: the probability of fraud given the amount, at payment 6000. With `alpha = 0.1` it is a sharp border at about 150 (small payments are the frauds now); with `alpha = 0` it is a flat 0.49 whatever the amount: the classifier no longer knows.

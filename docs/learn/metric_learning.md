@@ -4,7 +4,7 @@ To find which past situations look like the current one, you need a way to measu
 
 ## The map of metric learning
 
-Click a page to open it, or the job on the left (or the button at the top) to go back to the [map by job](../index.md#find-a-tool-by-what-you-want-to-do).
+Click a page to open it, or the job on the left (or the button at the top) to go back to the [map of the library](../index.md#the-library-folder-by-folder).
 
 <object type="image/svg+xml" data="../../assets/maps/metric_learning.svg" style="width:100%"></object>
 

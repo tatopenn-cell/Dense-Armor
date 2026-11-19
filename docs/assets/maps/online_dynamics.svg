@@ -3,7 +3,7 @@
 <rect width="1000" height="273" fill="#0d131a" rx="14"/>
 <text x="500" y="38" fill="#e0fbfc" font-size="24" font-weight="700" text-anchor="middle">THE MAP OF ONLINE DYNAMICS</text>
 <text x="500" y="62" fill="#4cc9f0" font-size="12.5" text-anchor="middle">the job, the page of each tool and its classes; pass over a page to light its classes, click to open it</text>
-<a class="back" href="../../#find-a-tool-by-what-you-want-to-do" target="_top"><title>back to the map by job</title><rect class="card" x="20" y="14" width="150" height="30" rx="15" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="95" y="33.5" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">← map by job</text></a>
+<a class="back" href="../../#the-library-folder-by-folder" target="_top"><title>back to the map of the library</title><rect class="card" x="20" y="14" width="150" height="30" rx="15" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="95" y="33.5" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">← map of the library</text></a>
 <text x="24" y="98" fill="#f72585" font-size="12" font-weight="700">01  JOB</text>
 <text x="410" y="98" fill="#f72585" font-size="12" font-weight="700">02  PAGE</text>
 <text x="680" y="98" fill="#f72585" font-size="12" font-weight="700">03  CLASSES OF THE CATALOG</text>
@@ -22,7 +22,7 @@
 <path class="e" d="M626,202.5 C650,202.5 650,202.5 676,202.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
 </g>
 </g>
-<a href="../../#find-a-tool-by-what-you-want-to-do" target="_top"><title>classify: back to the map by job</title><rect class="card" x="20" y="144.5" width="190" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="34" y="161.5" fill="#e0fbfc" font-size="13" font-weight="700">classify</text><text x="34" y="175.5" fill="#94a3b8" font-size="9.5">job of the ontology</text></a>
+<a href="../../#the-library-folder-by-folder" target="_top"><title>classify: back to the map of the library</title><rect class="card" x="20" y="144.5" width="190" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="34" y="161.5" fill="#e0fbfc" font-size="13" font-weight="700">classify</text><text x="34" y="175.5" fill="#94a3b8" font-size="9.5">job of the ontology</text></a>
 <circle cx="330" cy="163.5" r="12" fill="#101a24" stroke="#4cc9f0" stroke-width="2"/><text class="m" x="330" y="193.5" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">learn</text>
 <a href="../../learn/recursive_least_squares/" target="_top"><title>RecursiveLeastSquares: open learn/recursive_least_squares.md</title><rect class="card" x="410" y="105.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="121.5" fill="#e0fbfc" font-size="13" font-weight="700">RecursiveLeastSquares</text><text x="424" y="136.5" fill="#94a3b8" font-size="9.5">a line that keeps up</text></a>
 <a href="../../learn/recursive_least_squares/" target="_top"><title>RecursiveLeastSquares: open learn/recursive_least_squares.md</title><rect class="card" x="678" y="114.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="128.3" fill="#e0fbfc" font-size="11">RecursiveLeastSquares</text><text x="966" y="128.3" fill="#ff9e00" font-size="10" font-weight="700" text-anchor="end">R</text></a>
