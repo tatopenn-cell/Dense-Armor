@@ -8,7 +8,7 @@ particular DriftStream OXT is slower and slightly less accurate
 than MondrianForest.
 
 Stream: ``DriftStream`` with one sudden change at half, 2000 samples, 4
-features, seeds 0 to 4, label as target, prequential protocol. Reported:
+features, the first five seeds for which the change makes a frozen tree wrong (``_drift_seeds.py``), label as target, prequential protocol. Reported:
 median squared error on the 300 samples before the change, on the first 100
 after it and on 300 samples starting 200 after it, the time per sample, and
 for OXT against each competitor the paired Wilcoxon signed-rank p-value
@@ -22,6 +22,7 @@ import statistics
 import time
 
 import numpy as np
+from _drift_seeds import drift_seeds
 from scipy.stats import wilcoxon
 
 from dense_armor.core.online.forest import OnlineExtraTreesRegressor
@@ -59,7 +60,7 @@ def _a12(a, b):
 
 def main() -> None:
     rows = {k: [] for k in LEARNERS}
-    for seed in range(5):
+    for seed in drift_seeds():
         X, y = DriftStream(
             n_samples=N, n_features=D, n_drifts=1, kind="sudden", seed=seed
         ).data()
