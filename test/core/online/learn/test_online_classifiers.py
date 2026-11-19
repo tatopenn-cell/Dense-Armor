@@ -225,3 +225,19 @@ def test_softmax_non_adaptive_step_is_eta():
         est.learn_one({"x": 2.0}, 1)
     proba = est.predict_proba_one({"x": 1.0})
     assert abs(sum(proba.values()) - 1.0) < 1e-9
+
+
+def test_drift_adaptive_second_alarm_does_not_restart_a_running_backup():
+    class AlwaysRings:
+        drift_detected = True
+
+        def update(self, x):
+            return self
+
+    clf = DriftAdaptiveClassifier(OnlineGaussianNB(), AlwaysRings(), window=1000)
+    clf.learn_one({"a": 0.0}, 0)
+    first = clf._bg
+    for _ in range(5):
+        clf.learn_one({"a": 1.0}, 1)
+    assert clf._bg is first
+    assert len(clf._bg_hits) == 6

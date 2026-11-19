@@ -12,9 +12,9 @@ London, deep night. Halfway through the chase, the thief completely flips the ru
 
 In the end, what is DriftAdaptiveClassifier? It is a protective shell that wraps around a normal program: it keeps an eye on its mistakes and, if it realizes the world has changed, trains a fresh substitute on the bench ready to take command!
 
-![Accuracy over the last 200 payments of three classifiers: the one that never forgets, the one with alpha 0.1 and the drift-adaptive wrapper. After the change at payment 3000 the wrapper falls to zero, its backup starts at payment 3013 and takes over at payment 4276, after which it is back at 1.0; alpha 0.1 dips for 200 payments.](../assets/learn/drift_swap.png)
+![Accuracy over the last 200 payments of three classifiers: the one that never forgets, the one with alpha 0.1 and the drift-adaptive wrapper. After the change at payment 3000 the wrapper drops, its backup starts at payment 3013 and takes over at payment 3062, after which it is back at 1.0; alpha 0.1 dips for about 200 payments.](../assets/learn/drift_swap.png)
 
-The figure follows the wrapper through the change at payment 3000. The alarm rings 13 payments after the change and starts the backup; the wrapper keeps answering with the old classifier, which is wrong every time, until the backup takes over at payment 4276; from there it is right again. The classifier with `alpha=0.1` recovers much sooner here, because the change is abrupt and its forgetting rate happens to suit it; the one that never forgets does not recover within the 3000 payments after the change.
+The figure follows the wrapper through the change at payment 3000. The alarm rings 13 payments after the change and starts the backup; until the backup takes over, at payment 3062, the wrapper answers with the old classifier, which is wrong; from there it is right again. The classifier with `alpha=0.1` takes about 200 payments to recover, because its forgetting rate is fixed; the one that never forgets does not recover within the 3000 payments after the change.
 
 ## A first example: payments that change meaning
 
@@ -54,10 +54,10 @@ print(
 ```
 
 ```
-1.0 0.0 1.0
+1.0 0.685 1.0
 ```
 
-The wrapper is perfect before the change, wrong every time in the 200 payments after it (its old classifier is still in command) and perfect again late in the stream.
+The wrapper is perfect before the change, right on 68.5 % of the 200 payments after it (the old classifier is in command for the first 62, and the backup after that) and perfect again late in the stream.
 
 ## How it works
 
@@ -76,9 +76,9 @@ on most samples, so its robust scale (MAD) is tiny and a CUSUM fed with the raw 
 fires on almost every error — hundreds of alarms in 6,000 samples. The rolling mean
 gives the detector a stable scale.
 
-### Why the backup takes so long here
+### Repeated alarms
 
-After the change the detector does not ring once: in this example it rang 170 times between payment 3013 and payment 4279, and every ring starts a new backup (a fresh copy, with an empty record of hits). A backup can take over only after it has seen `window` (50) payments without being replaced, so the takeover came at payment 4276, about 50 payments after the last restart (payment 4227). That is why the wrapper needs 1276 payments to recover from an abrupt change, against about 200 for `alpha=0.1`. The wrapper is the choice when you cannot know the rate of change in advance, not when you know that the change is abrupt.
+After the change the detector rings more than once: in this example it rang 34 times between payment 3014 and payment 3099. A ring while a backup is already running does not restart it: the backup keeps the payments it has already seen, and it takes over as soon as it has `window` (50) of them and beats the main classifier, here at payment 3062. A first version of the wrapper restarted the backup at every ring; in this example it rang 170 times between payment 3013 and payment 4279, the backup never reached 50 payments without being replaced, and the takeover came only at payment 4276, 1276 payments after the change. That was a defect, and it is fixed.
 
 ## The parameters
 
@@ -89,7 +89,7 @@ After the change the detector does not ring once: in this example it rang 170 ti
 | `window` | the number of recent samples over which the backup and the main classifier are compared | 50 |
 | `smooth_window` | the number of recent log-losses averaged before they reach the detector | 50 |
 
-Cost, on one CPU core: about 75.8 µs per sample, 7 times the bare naive Bayes, because it runs a backup in parallel after each alarm.
+Cost, on one CPU core, for a prediction and a learning step of the 6000 payments of the example (best of 3 runs): about 178 µs per payment for the wrapper and 60 µs for the bare naive Bayes, 3 times, because it runs a backup in parallel after an alarm.
 
 ## API reference
 

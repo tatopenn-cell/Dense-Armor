@@ -21,7 +21,7 @@ All the tools of the four groups follow the same [roles](../roles/index.md): `le
 
 The same tab holds the sections that feed and judge the learners:
 
-- [Streams and datasets](../stream/index.md): where the samples come from.
+- [Streams](../stream/index.md) and [datasets](../stream/datasets.md): where the samples come from.
 - [Statistics](../stats/index.md) and [Preprocessing](../preprocessing/index.md): the numbers that a stream is summarised with, and how to scale it.
 - [Metrics and evaluation](../metrics/index.md): how to measure a model while it learns.
 - [Vision](../vision/index.md): frames, features and motion.

@@ -167,6 +167,40 @@ nav:
       - Anomaly and drift detectors: roles/detectors.md
       - Pipelines and wrappers: roles/pipelines.md
       - Write and check a new estimator: roles/new_estimator.md
+  - Signals:
+      - Streams: stream/index.md
+      - Datasets: stream/datasets.md
+      - Statistics:
+          - stats/index.md
+          - Moments: stats/moments.md
+          - Stable variance in float32: stats/stable_variance.md
+          - Robust statistics: stats/robust.md
+          - Student-t: stats/student_t.md
+          - Online Gaussian mixture: stats/mixture.md
+          - Streaming quantiles: stats/streaming.md
+          - Dependence: stats/dependence.md
+          - Sketches: stats/sketches.md
+          - Skyline: stats/skyline.md
+      - Preprocessing:
+          - preprocessing/index.md
+          - Scaling features and joints: preprocessing/scaling.md
+          - Speed, acceleration, jerk and power: preprocessing/signals.md
+          - Text: preprocessing/text.md
+          - Text vectorizer: preprocessing/text_vectorizer.md
+          - Text into any primitive: preprocessing/text_input.md
+          - Features and rare events: preprocessing/features.md
+      - Vision:
+          - vision/index.md
+          - Frames: vision/frames.md
+          - Features: vision/features.md
+          - Flow: vision/flow.md
+          - Reduce: vision/reduce.md
+          - Motion: vision/motion.md
+          - Tracking: vision/tracking.md
+          - Kinematics: vision/kinematics.md
+          - Quality: vision/quality.md
+          - Patches: vision/patches.md
+          - Video into any primitive: vision/video_input.md
   - Machine learning:
       - Overview: ml/index.md
       - scikit-learn tools: ml/sklearn.md
@@ -267,45 +301,6 @@ nav:
           - neighbors/index.md
           - multiclass/index.md
           - multioutput/index.md
-      - Signals:
-          - Streams and datasets: stream/index.md
-          - Shared memory for big datasets: api/data_shared.md
-          - Statistics:
-              - stats/index.md
-              - Moments: stats/moments.md
-              - Robust statistics: stats/robust.md
-              - Student-t: stats/student_t.md
-              - Online Gaussian mixture: stats/mixture.md
-              - Streaming quantiles: stats/streaming.md
-              - Dependence: stats/dependence.md
-              - Sketches: stats/sketches.md
-              - Skyline: stats/skyline.md
-          - Preprocessing:
-              - preprocessing/index.md
-              - Scaling features and joints: preprocessing/scaling.md
-              - Speed, acceleration, jerk and power: preprocessing/signals.md
-              - Text: preprocessing/text.md
-              - Text vectorizer: preprocessing/text_vectorizer.md
-              - Text into any primitive: preprocessing/text_input.md
-              - Features and rare events: preprocessing/features.md
-          - Metrics and evaluation:
-              - metrics/index.md
-              - Pairs, classification, probabilities: metrics/basics.md
-              - Regression and uncertainty: metrics/regression.md
-              - On a stream: metrics/stream.md
-              - Events: metrics/events.md
-      - Vision:
-          - vision/index.md
-          - Frames: vision/frames.md
-          - Features: vision/features.md
-          - Flow: vision/flow.md
-          - Reduce: vision/reduce.md
-          - Motion: vision/motion.md
-          - Tracking: vision/tracking.md
-          - Kinematics: vision/kinematics.md
-          - Quality: vision/quality.md
-          - Patches: vision/patches.md
-          - Video into any primitive: vision/video_input.md
   - Deep learning:
       - Overview: neural/overview.md
       - Foundations: neural/index.md
@@ -329,7 +324,6 @@ nav:
       - Composable attention: neural/composable_attention.md
       - Continual learning: neural/continual_learning.md
       - Mixture of experts and test-time compute: neural/moe_testtime.md
-      - Stable variance in float32: stats/stable_variance.md
   - Audio:
       - Overview: audio/index.md
       - Sound, files and frequency: audio/sound.md
@@ -389,6 +383,13 @@ nav:
           - Hybrid engine: shields/hybrid_engine.md
           - Adaptive engine: shields/engine.md
       - Robot layer (signals, real time, safety): api/robot_roles.md
+      - Shared memory for big datasets: api/data_shared.md
+      - Metrics and evaluation:
+          - metrics/index.md
+          - Pairs, classification, probabilities: metrics/basics.md
+          - Regression and uncertainty: metrics/regression.md
+          - On a stream: metrics/stream.md
+          - Events: metrics/events.md
       - Tools:
           - Toolkit:
               - toolkit/index.md
