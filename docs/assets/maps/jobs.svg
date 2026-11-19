@@ -8,166 +8,160 @@
 <text x="640" y="84" fill="#f72585" font-size="12" font-weight="700">03  CLASSES OF THE CATALOG</text>
 <g class="net">
 <g class="j">
-<circle cx="214" cy="218.5" r="4" fill="#4cc9f0"/>
-<rect x="20" y="201.5" width="190" height="34" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/>
-<text x="32" y="216.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">text_features</text>
-<text x="32" y="229.5" fill="#94a3b8" font-size="9.5">signals.preprocessing.text</text>
+<path class="e" d="M214,240.5 C310,240.5 312,106.5 408,106.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M214,240.5 C310,240.5 312,127.5 408,127.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<circle cx="214" cy="240.5" r="4" fill="#4cc9f0"/>
+<rect x="20" y="223.5" width="190" height="34" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/>
+<text x="32" y="238.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">detect_drift</text>
+<text x="32" y="251.5" fill="#94a3b8" font-size="9.5">DriftDetector</text>
 </g>
 <g class="j">
-<path class="e" d="M214,262.5 C310,262.5 312,106.5 408,106.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
-<path class="e" d="M214,262.5 C310,262.5 312,127.5 408,127.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
-<circle cx="214" cy="262.5" r="4" fill="#ff9e00"/>
-<rect x="20" y="245.5" width="190" height="34" rx="9" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/>
-<text x="32" y="260.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">detect_drift</text>
-<text x="32" y="273.5" fill="#94a3b8" font-size="9.5">DriftDetector</text>
+<path class="e" d="M214,284.5 C310,284.5 312,337.5 408,337.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M214,284.5 C310,284.5 312,295.5 408,295.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M214,284.5 C310,284.5 312,169.5 408,169.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M214,284.5 C310,284.5 312,190.5 408,190.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M214,284.5 C310,284.5 312,421.5 408,421.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M214,284.5 C310,284.5 312,526.5 408,526.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M214,284.5 C310,284.5 312,484.5 408,484.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M214,284.5 C310,284.5 312,316.5 408,316.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M214,284.5 C310,284.5 312,211.5 408,211.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M214,284.5 C310,284.5 312,442.5 408,442.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M214,284.5 C310,284.5 312,253.5 408,253.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M214,284.5 C310,284.5 312,148.5 408,148.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M214,284.5 C310,284.5 312,274.5 408,274.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M214,284.5 C310,284.5 312,232.5 408,232.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M214,284.5 C310,284.5 312,463.5 408,463.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<circle cx="214" cy="284.5" r="4" fill="#ff9e00"/>
+<rect x="20" y="267.5" width="190" height="34" rx="9" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/>
+<text x="32" y="282.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">classify</text>
+<text x="32" y="295.5" fill="#94a3b8" font-size="9.5">Classifier</text>
 </g>
 <g class="j">
-<path class="e" d="M214,306.5 C310,306.5 312,337.5 408,337.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
-<path class="e" d="M214,306.5 C310,306.5 312,295.5 408,295.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
-<path class="e" d="M214,306.5 C310,306.5 312,169.5 408,169.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
-<path class="e" d="M214,306.5 C310,306.5 312,190.5 408,190.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
-<path class="e" d="M214,306.5 C310,306.5 312,421.5 408,421.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
-<path class="e" d="M214,306.5 C310,306.5 312,526.5 408,526.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
-<path class="e" d="M214,306.5 C310,306.5 312,484.5 408,484.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
-<path class="e" d="M214,306.5 C310,306.5 312,316.5 408,316.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
-<path class="e" d="M214,306.5 C310,306.5 312,211.5 408,211.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
-<path class="e" d="M214,306.5 C310,306.5 312,442.5 408,442.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
-<path class="e" d="M214,306.5 C310,306.5 312,253.5 408,253.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
-<path class="e" d="M214,306.5 C310,306.5 312,148.5 408,148.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
-<path class="e" d="M214,306.5 C310,306.5 312,274.5 408,274.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
-<path class="e" d="M214,306.5 C310,306.5 312,232.5 408,232.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
-<path class="e" d="M214,306.5 C310,306.5 312,463.5 408,463.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
-<circle cx="214" cy="306.5" r="4" fill="#f72585"/>
-<rect x="20" y="289.5" width="190" height="34" rx="9" fill="#101a24" stroke="#f72585" stroke-width="1.6"/>
-<text x="32" y="304.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">classify</text>
-<text x="32" y="317.5" fill="#94a3b8" font-size="9.5">Classifier</text>
+<path class="e" d="M214,328.5 C310,328.5 312,127.5 408,127.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M214,328.5 C310,328.5 312,463.5 408,463.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M214,328.5 C310,328.5 312,316.5 408,316.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M214,328.5 C310,328.5 312,442.5 408,442.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M214,328.5 C310,328.5 312,421.5 408,421.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M214,328.5 C310,328.5 312,274.5 408,274.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<circle cx="214" cy="328.5" r="4" fill="#f72585"/>
+<rect x="20" y="311.5" width="190" height="34" rx="9" fill="#101a24" stroke="#f72585" stroke-width="1.6"/>
+<text x="32" y="326.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">detect_anomaly</text>
+<text x="32" y="339.5" fill="#94a3b8" font-size="9.5">AnomalyDetector</text>
 </g>
 <g class="j">
-<path class="e" d="M214,350.5 C310,350.5 312,127.5 408,127.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
-<path class="e" d="M214,350.5 C310,350.5 312,463.5 408,463.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
-<path class="e" d="M214,350.5 C310,350.5 312,316.5 408,316.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
-<path class="e" d="M214,350.5 C310,350.5 312,442.5 408,442.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
-<path class="e" d="M214,350.5 C310,350.5 312,421.5 408,421.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
-<path class="e" d="M214,350.5 C310,350.5 312,274.5 408,274.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
-<circle cx="214" cy="350.5" r="4" fill="#4cc9f0"/>
-<rect x="20" y="333.5" width="190" height="34" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/>
-<text x="32" y="348.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">detect_anomaly</text>
-<text x="32" y="361.5" fill="#94a3b8" font-size="9.5">AnomalyDetector</text>
+<path class="e" d="M214,372.5 C310,372.5 312,337.5 408,337.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M214,372.5 C310,372.5 312,295.5 408,295.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M214,372.5 C310,372.5 312,379.5 408,379.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M214,372.5 C310,372.5 312,505.5 408,505.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M214,372.5 C310,372.5 312,421.5 408,421.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M214,372.5 C310,372.5 312,526.5 408,526.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M214,372.5 C310,372.5 312,484.5 408,484.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M214,372.5 C310,372.5 312,316.5 408,316.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M214,372.5 C310,372.5 312,400.5 408,400.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M214,372.5 C310,372.5 312,358.5 408,358.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M214,372.5 C310,372.5 312,736.5 408,736.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M214,372.5 C310,372.5 312,568.5 408,568.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<circle cx="214" cy="372.5" r="4" fill="#4cc9f0"/>
+<rect x="20" y="355.5" width="190" height="34" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/>
+<text x="32" y="370.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">regress</text>
+<text x="32" y="383.5" fill="#94a3b8" font-size="9.5">Regressor, Transformer</text>
 </g>
 <g class="j">
-<path class="e" d="M214,394.5 C310,394.5 312,337.5 408,337.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
-<path class="e" d="M214,394.5 C310,394.5 312,295.5 408,295.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
-<path class="e" d="M214,394.5 C310,394.5 312,379.5 408,379.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
-<path class="e" d="M214,394.5 C310,394.5 312,505.5 408,505.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
-<path class="e" d="M214,394.5 C310,394.5 312,421.5 408,421.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
-<path class="e" d="M214,394.5 C310,394.5 312,526.5 408,526.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
-<path class="e" d="M214,394.5 C310,394.5 312,484.5 408,484.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
-<path class="e" d="M214,394.5 C310,394.5 312,316.5 408,316.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
-<path class="e" d="M214,394.5 C310,394.5 312,400.5 408,400.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
-<path class="e" d="M214,394.5 C310,394.5 312,358.5 408,358.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
-<path class="e" d="M214,394.5 C310,394.5 312,673.5 408,673.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
-<path class="e" d="M214,394.5 C310,394.5 312,568.5 408,568.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
-<circle cx="214" cy="394.5" r="4" fill="#ff9e00"/>
-<rect x="20" y="377.5" width="190" height="34" rx="9" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/>
-<text x="32" y="392.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">regress</text>
-<text x="32" y="405.5" fill="#94a3b8" font-size="9.5">Regressor, Transformer</text>
+<path class="e" d="M214,416.5 C310,416.5 312,463.5 408,463.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<circle cx="214" cy="416.5" r="4" fill="#ff9e00"/>
+<rect x="20" y="399.5" width="190" height="34" rx="9" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/>
+<text x="32" y="414.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">cluster</text>
+<text x="32" y="427.5" fill="#94a3b8" font-size="9.5">by domain</text>
 </g>
 <g class="j">
-<path class="e" d="M214,438.5 C310,438.5 312,463.5 408,463.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
-<circle cx="214" cy="438.5" r="4" fill="#f72585"/>
-<rect x="20" y="421.5" width="190" height="34" rx="9" fill="#101a24" stroke="#f72585" stroke-width="1.6"/>
-<text x="32" y="436.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">cluster</text>
-<text x="32" y="449.5" fill="#94a3b8" font-size="9.5">by domain</text>
+<path class="e" d="M214,460.5 C310,460.5 312,505.5 408,505.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M214,460.5 C310,460.5 312,547.5 408,547.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M214,460.5 C310,460.5 312,631.5 408,631.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<circle cx="214" cy="460.5" r="4" fill="#f72585"/>
+<rect x="20" y="443.5" width="190" height="34" rx="9" fill="#101a24" stroke="#f72585" stroke-width="1.6"/>
+<text x="32" y="458.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">forecast</text>
+<text x="32" y="471.5" fill="#94a3b8" font-size="9.5">by domain</text>
 </g>
 <g class="j">
-<path class="e" d="M214,482.5 C310,482.5 312,505.5 408,505.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
-<path class="e" d="M214,482.5 C310,482.5 312,547.5 408,547.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
-<path class="e" d="M214,482.5 C310,482.5 312,631.5 408,631.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
-<circle cx="214" cy="482.5" r="4" fill="#4cc9f0"/>
-<rect x="20" y="465.5" width="190" height="34" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/>
-<text x="32" y="480.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">forecast</text>
-<text x="32" y="493.5" fill="#94a3b8" font-size="9.5">by domain</text>
+<path class="e" d="M214,504.5 C310,504.5 312,589.5 408,589.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M214,504.5 C310,504.5 312,652.5 408,652.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M214,504.5 C310,504.5 312,526.5 408,526.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<circle cx="214" cy="504.5" r="4" fill="#4cc9f0"/>
+<rect x="20" y="487.5" width="190" height="34" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/>
+<text x="32" y="502.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">vision_features</text>
+<text x="32" y="515.5" fill="#94a3b8" font-size="9.5">by domain</text>
 </g>
 <g class="j">
-<path class="e" d="M214,526.5 C310,526.5 312,589.5 408,589.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
-<path class="e" d="M214,526.5 C310,526.5 312,652.5 408,652.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
-<path class="e" d="M214,526.5 C310,526.5 312,526.5 408,526.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
-<circle cx="214" cy="526.5" r="4" fill="#ff9e00"/>
-<rect x="20" y="509.5" width="190" height="34" rx="9" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/>
-<text x="32" y="524.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">vision_features</text>
-<text x="32" y="537.5" fill="#94a3b8" font-size="9.5">by domain</text>
+<path class="e" d="M214,548.5 C310,548.5 312,610.5 408,610.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M214,548.5 C310,548.5 312,652.5 408,652.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<circle cx="214" cy="548.5" r="4" fill="#ff9e00"/>
+<rect x="20" y="531.5" width="190" height="34" rx="9" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/>
+<text x="32" y="546.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">audio_features</text>
+<text x="32" y="559.5" fill="#94a3b8" font-size="9.5">by domain</text>
 </g>
 <g class="j">
-<path class="e" d="M214,570.5 C310,570.5 312,610.5 408,610.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
-<path class="e" d="M214,570.5 C310,570.5 312,652.5 408,652.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
-<circle cx="214" cy="570.5" r="4" fill="#f72585"/>
-<rect x="20" y="553.5" width="190" height="34" rx="9" fill="#101a24" stroke="#f72585" stroke-width="1.6"/>
-<text x="32" y="568.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">audio_features</text>
-<text x="32" y="581.5" fill="#94a3b8" font-size="9.5">by domain</text>
+<path class="e" d="M214,592.5 C310,592.5 312,778.5 408,778.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M214,592.5 C310,592.5 312,841.5 408,841.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M214,592.5 C310,592.5 312,421.5 408,421.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M214,592.5 C310,592.5 312,526.5 408,526.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M214,592.5 C310,592.5 312,757.5 408,757.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M214,592.5 C310,592.5 312,442.5 408,442.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M214,592.5 C310,592.5 312,652.5 408,652.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M214,592.5 C310,592.5 312,694.5 408,694.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M214,592.5 C310,592.5 312,715.5 408,715.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M214,592.5 C310,592.5 312,820.5 408,820.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M214,592.5 C310,592.5 312,673.5 408,673.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M214,592.5 C310,592.5 312,799.5 408,799.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M214,592.5 C310,592.5 312,568.5 408,568.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M214,592.5 C310,592.5 312,484.5 408,484.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M214,592.5 C310,592.5 312,463.5 408,463.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<circle cx="214" cy="592.5" r="4" fill="#f72585"/>
+<rect x="20" y="575.5" width="190" height="34" rx="9" fill="#101a24" stroke="#f72585" stroke-width="1.6"/>
+<text x="32" y="590.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">summarize_stream</text>
+<text x="32" y="603.5" fill="#94a3b8" font-size="9.5">by domain</text>
 </g>
 <g class="j">
-<path class="e" d="M214,614.5 C310,614.5 312,778.5 408,778.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
-<path class="e" d="M214,614.5 C310,614.5 312,862.5 408,862.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
-<path class="e" d="M214,614.5 C310,614.5 312,421.5 408,421.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
-<path class="e" d="M214,614.5 C310,614.5 312,526.5 408,526.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
-<path class="e" d="M214,614.5 C310,614.5 312,757.5 408,757.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
-<path class="e" d="M214,614.5 C310,614.5 312,442.5 408,442.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
-<path class="e" d="M214,614.5 C310,614.5 312,652.5 408,652.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
-<path class="e" d="M214,614.5 C310,614.5 312,715.5 408,715.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
-<path class="e" d="M214,614.5 C310,614.5 312,736.5 408,736.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
-<path class="e" d="M214,614.5 C310,614.5 312,820.5 408,820.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
-<path class="e" d="M214,614.5 C310,614.5 312,694.5 408,694.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
-<path class="e" d="M214,614.5 C310,614.5 312,799.5 408,799.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
-<path class="e" d="M214,614.5 C310,614.5 312,568.5 408,568.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
-<path class="e" d="M214,614.5 C310,614.5 312,484.5 408,484.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
-<path class="e" d="M214,614.5 C310,614.5 312,463.5 408,463.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
-<circle cx="214" cy="614.5" r="4" fill="#4cc9f0"/>
-<rect x="20" y="597.5" width="190" height="34" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/>
-<text x="32" y="612.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">summarize_stream</text>
-<text x="32" y="625.5" fill="#94a3b8" font-size="9.5">by domain</text>
+<path class="e" d="M214,636.5 C310,636.5 312,652.5 408,652.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<circle cx="214" cy="636.5" r="4" fill="#4cc9f0"/>
+<rect x="20" y="619.5" width="190" height="34" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/>
+<text x="32" y="634.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">text_features</text>
+<text x="32" y="647.5" fill="#94a3b8" font-size="9.5">signals.preprocessing.text</text>
 </g>
 <g class="j">
-<path class="e" d="M214,658.5 C310,658.5 312,631.5 408,631.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
-<path class="e" d="M214,658.5 C310,658.5 312,883.5 408,883.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
-<path class="e" d="M214,658.5 C310,658.5 312,673.5 408,673.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
-<path class="e" d="M214,658.5 C310,658.5 312,841.5 408,841.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
-<path class="e" d="M214,658.5 C310,658.5 312,904.5 408,904.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
-<circle cx="214" cy="658.5" r="4" fill="#ff9e00"/>
-<rect x="20" y="641.5" width="190" height="34" rx="9" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/>
-<text x="32" y="656.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">robot</text>
-<text x="32" y="669.5" fill="#94a3b8" font-size="9.5">by domain</text>
+<path class="e" d="M214,680.5 C310,680.5 312,631.5 408,631.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M214,680.5 C310,680.5 312,904.5 408,904.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M214,680.5 C310,680.5 312,736.5 408,736.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M214,680.5 C310,680.5 312,862.5 408,862.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M214,680.5 C310,680.5 312,883.5 408,883.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<circle cx="214" cy="680.5" r="4" fill="#ff9e00"/>
+<rect x="20" y="663.5" width="190" height="34" rx="9" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/>
+<text x="32" y="678.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">robot</text>
+<text x="32" y="691.5" fill="#94a3b8" font-size="9.5">by domain</text>
 </g>
 <g class="j">
-<path class="e" d="M214,702.5 C310,702.5 312,883.5 408,883.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
-<path class="e" d="M214,702.5 C310,702.5 312,673.5 408,673.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
-<path class="e" d="M214,702.5 C310,702.5 312,799.5 408,799.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
-<path class="e" d="M214,702.5 C310,702.5 312,820.5 408,820.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
-<path class="e" d="M214,702.5 C310,702.5 312,862.5 408,862.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
-<circle cx="214" cy="702.5" r="4" fill="#f72585"/>
-<rect x="20" y="685.5" width="190" height="34" rx="9" fill="#101a24" stroke="#f72585" stroke-width="1.6"/>
-<text x="32" y="700.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">resources</text>
-<text x="32" y="713.5" fill="#94a3b8" font-size="9.5">utility.memory</text>
+<path class="e" d="M214,724.5 C310,724.5 312,904.5 408,904.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M214,724.5 C310,724.5 312,736.5 408,736.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M214,724.5 C310,724.5 312,799.5 408,799.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M214,724.5 C310,724.5 312,820.5 408,820.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M214,724.5 C310,724.5 312,841.5 408,841.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<circle cx="214" cy="724.5" r="4" fill="#f72585"/>
+<rect x="20" y="707.5" width="190" height="34" rx="9" fill="#101a24" stroke="#f72585" stroke-width="1.6"/>
+<text x="32" y="722.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">resources</text>
+<text x="32" y="735.5" fill="#94a3b8" font-size="9.5">utility.memory</text>
 </g>
 <g class="j">
-<path class="e" d="M214,746.5 C310,746.5 312,904.5 408,904.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
-<circle cx="214" cy="746.5" r="4" fill="#4cc9f0"/>
-<rect x="20" y="729.5" width="190" height="34" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/>
-<text x="32" y="744.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">heal</text>
-<text x="32" y="757.5" fill="#94a3b8" font-size="9.5">utility.engine</text>
+<path class="e" d="M214,768.5 C310,768.5 312,925.5 408,925.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<circle cx="214" cy="768.5" r="4" fill="#4cc9f0"/>
+<rect x="20" y="751.5" width="190" height="34" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/>
+<text x="32" y="766.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">finance_controls</text>
+<text x="32" y="779.5" fill="#94a3b8" font-size="9.5">by domain</text>
 </g>
 <g class="j">
-<path class="e" d="M214,790.5 C310,790.5 312,925.5 408,925.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
-<circle cx="214" cy="790.5" r="4" fill="#ff9e00"/>
-<rect x="20" y="773.5" width="190" height="34" rx="9" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/>
-<text x="32" y="788.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">finance_controls</text>
-<text x="32" y="801.5" fill="#94a3b8" font-size="9.5">by domain</text>
-</g>
-<g class="j">
-<path class="e" d="M214,834.5 C310,834.5 312,946.5 408,946.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
-<circle cx="214" cy="834.5" r="4" fill="#f72585"/>
-<rect x="20" y="817.5" width="190" height="34" rx="9" fill="#101a24" stroke="#f72585" stroke-width="1.6"/>
-<text x="32" y="832.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">interoperate</text>
-<text x="32" y="845.5" fill="#94a3b8" font-size="9.5">by domain</text>
+<path class="e" d="M214,812.5 C310,812.5 312,946.5 408,946.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<circle cx="214" cy="812.5" r="4" fill="#ff9e00"/>
+<rect x="20" y="795.5" width="190" height="34" rx="9" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/>
+<text x="32" y="810.5" fill="#e0fbfc" font-size="13" font-weight="700" class="m">interoperate</text>
+<text x="32" y="823.5" fill="#94a3b8" font-size="9.5">by domain</text>
 </g>
 </g>
 <a href="../../drift/" target="_top"><title>drift: open drift/index.md</title><circle cx="410" cy="106.5" r="3.2" fill="#4cc9f0"/><rect class="pill" x="410" y="97.5" width="214" height="18" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.3"/><text class="dn m" x="422" y="110.1" fill="#e0fbfc" font-size="11" font-weight="700">drift</text><text x="614" y="110.1" fill="#4cc9f0" font-size="10" text-anchor="end">5</text></a>
@@ -224,30 +218,30 @@
 <text x="640" y="635.1" fill="#94a3b8" font-size="9.4" class="m">RigidBodyModel</text>
 <a href="../../preprocessing/" target="_top"><title>preprocessing: open preprocessing/index.md</title><circle cx="410" cy="652.5" r="3.2" fill="#4cc9f0"/><rect class="pill" x="410" y="643.5" width="214" height="18" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.3"/><text class="dn m" x="422" y="656.1" fill="#e0fbfc" font-size="11" font-weight="700">preprocessing</text><text x="614" y="656.1" fill="#4cc9f0" font-size="10" text-anchor="end">16</text></a>
 <text x="640" y="656.1" fill="#94a3b8" font-size="9.4" class="m">QueueResampler, JointDerivatives, JointPower  +13</text>
-<a href="../../optim/" target="_top"><title>optim: open optim/index.md</title><circle cx="410" cy="673.5" r="3.2" fill="#4cc9f0"/><rect class="pill" x="410" y="664.5" width="214" height="18" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.3"/><text class="dn m" x="422" y="677.1" fill="#e0fbfc" font-size="11" font-weight="700">optim</text><text x="614" y="677.1" fill="#4cc9f0" font-size="10" text-anchor="end">7</text></a>
-<text x="640" y="677.1" fill="#94a3b8" font-size="9.4" class="m">AdaGrad, Adam, AdamW, FTRLProximal  +3</text>
-<a href="../../neural/continual_learning/" target="_top"><title>consolidation: open neural/continual_learning.md</title><circle cx="410" cy="694.5" r="3.2" fill="#4cc9f0"/><rect class="pill" x="410" y="685.5" width="214" height="18" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.3"/><text class="dn m" x="422" y="698.1" fill="#e0fbfc" font-size="11" font-weight="700">consolidation</text><text x="614" y="698.1" fill="#4cc9f0" font-size="10" text-anchor="end">7</text></a>
-<text x="640" y="698.1" fill="#94a3b8" font-size="9.4" class="m">ArchivalMemory, LifecycleMemory, DualMemory  +4</text>
-<a href="../../api/data_shared/" target="_top"><title>data: open api/data_shared.md</title><circle cx="410" cy="715.5" r="3.2" fill="#4cc9f0"/><rect class="pill" x="410" y="706.5" width="214" height="18" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.3"/><text class="dn m" x="422" y="719.1" fill="#e0fbfc" font-size="11" font-weight="700">data</text><text x="614" y="719.1" fill="#4cc9f0" font-size="10" text-anchor="end">4</text></a>
-<text x="640" y="719.1" fill="#94a3b8" font-size="9.4" class="m">SharedArray, SharedStrings, SharedList  +1</text>
-<a href="../../stream/" target="_top"><title>datasets: open stream/index.md</title><circle cx="410" cy="736.5" r="3.2" fill="#4cc9f0"/><rect class="pill" x="410" y="727.5" width="214" height="18" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.3"/><text class="dn m" x="422" y="740.1" fill="#e0fbfc" font-size="11" font-weight="700">datasets</text><text x="614" y="740.1" fill="#4cc9f0" font-size="10" text-anchor="end">3</text></a>
-<text x="640" y="740.1" fill="#94a3b8" font-size="9.4" class="m">Casper, DriftStream, SyntheticArm</text>
+<a href="../../neural/continual_learning/" target="_top"><title>consolidation: open neural/continual_learning.md</title><circle cx="410" cy="673.5" r="3.2" fill="#4cc9f0"/><rect class="pill" x="410" y="664.5" width="214" height="18" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.3"/><text class="dn m" x="422" y="677.1" fill="#e0fbfc" font-size="11" font-weight="700">consolidation</text><text x="614" y="677.1" fill="#4cc9f0" font-size="10" text-anchor="end">7</text></a>
+<text x="640" y="677.1" fill="#94a3b8" font-size="9.4" class="m">ArchivalMemory, LifecycleMemory, DualMemory  +4</text>
+<a href="../../api/data_shared/" target="_top"><title>data: open api/data_shared.md</title><circle cx="410" cy="694.5" r="3.2" fill="#4cc9f0"/><rect class="pill" x="410" y="685.5" width="214" height="18" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.3"/><text class="dn m" x="422" y="698.1" fill="#e0fbfc" font-size="11" font-weight="700">data</text><text x="614" y="698.1" fill="#4cc9f0" font-size="10" text-anchor="end">4</text></a>
+<text x="640" y="698.1" fill="#94a3b8" font-size="9.4" class="m">SharedArray, SharedStrings, SharedList  +1</text>
+<a href="../../stream/" target="_top"><title>datasets: open stream/index.md</title><circle cx="410" cy="715.5" r="3.2" fill="#4cc9f0"/><rect class="pill" x="410" y="706.5" width="214" height="18" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.3"/><text class="dn m" x="422" y="719.1" fill="#e0fbfc" font-size="11" font-weight="700">datasets</text><text x="614" y="719.1" fill="#4cc9f0" font-size="10" text-anchor="end">3</text></a>
+<text x="640" y="719.1" fill="#94a3b8" font-size="9.4" class="m">Casper, DriftStream, SyntheticArm</text>
+<a href="../../optim/" target="_top"><title>optim: open optim/index.md</title><circle cx="410" cy="736.5" r="3.2" fill="#4cc9f0"/><rect class="pill" x="410" y="727.5" width="214" height="18" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.3"/><text class="dn m" x="422" y="740.1" fill="#e0fbfc" font-size="11" font-weight="700">optim</text><text x="614" y="740.1" fill="#4cc9f0" font-size="10" text-anchor="end">7</text></a>
+<text x="640" y="740.1" fill="#94a3b8" font-size="9.4" class="m">AdaGrad, Adam, AdamW, FTRLProximal  +3</text>
 <a href="../../roles/" target="_top"><title>roles: open roles/index.md</title><circle cx="410" cy="757.5" r="3.2" fill="#4cc9f0"/><rect class="pill" x="410" y="748.5" width="214" height="18" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.3"/><text class="dn m" x="422" y="761.1" fill="#e0fbfc" font-size="11" font-weight="700">roles</text><text x="614" y="761.1" fill="#4cc9f0" font-size="10" text-anchor="end">3</text></a>
 <text x="640" y="761.1" fill="#94a3b8" font-size="9.4" class="m">UnitCheckedPipeline, TransformerSupervised  +1</text>
 <a href="../../stats/" target="_top"><title>stats: open stats/index.md</title><circle cx="410" cy="778.5" r="3.2" fill="#4cc9f0"/><rect class="pill" x="410" y="769.5" width="214" height="18" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.3"/><text class="dn m" x="422" y="782.1" fill="#e0fbfc" font-size="11" font-weight="700">stats</text><text x="614" y="782.1" fill="#4cc9f0" font-size="10" text-anchor="end">25</text></a>
 <text x="640" y="782.1" fill="#94a3b8" font-size="9.4" class="m">RunningCovariance, RunningCorrelation  +23</text>
-<a href="../../shields/armor/" target="_top"><title>core: open shields/armor.md</title><circle cx="410" cy="799.5" r="3.2" fill="#4cc9f0"/><rect class="pill" x="410" y="790.5" width="214" height="18" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.3"/><text class="dn m" x="422" y="803.1" fill="#e0fbfc" font-size="11" font-weight="700">core</text><text x="614" y="803.1" fill="#4cc9f0" font-size="10" text-anchor="end">1</text></a>
+<a href="../../shields/armor/" target="_top"><title>core: open shields/armor.md</title><circle cx="410" cy="799.5" r="3.2" fill="#4cc9f0"/><rect class="pill" x="410" y="790.5" width="214" height="18" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.3"/><text class="dn m" x="422" y="803.1" fill="#e0fbfc" font-size="11" font-weight="700">armor</text><text x="614" y="803.1" fill="#4cc9f0" font-size="10" text-anchor="end">1</text></a>
 <text x="640" y="803.1" fill="#94a3b8" font-size="9.4" class="m">Armor</text>
 <a href="../../metrics/" target="_top"><title>evaluate: open metrics/index.md</title><circle cx="410" cy="820.5" r="3.2" fill="#4cc9f0"/><rect class="pill" x="410" y="811.5" width="214" height="18" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.3"/><text class="dn m" x="422" y="824.1" fill="#e0fbfc" font-size="11" font-weight="700">evaluate</text><text x="614" y="824.1" fill="#4cc9f0" font-size="10" text-anchor="end">1</text></a>
 <text x="640" y="824.1" fill="#94a3b8" font-size="9.4" class="m">OnlineModelSelection</text>
-<a href="../../ontology/" target="_top"><title>graph: open ontology/index.md</title><circle cx="410" cy="841.5" r="3.2" fill="#4cc9f0"/><rect class="pill" x="410" y="832.5" width="214" height="18" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.3"/><text class="dn m" x="422" y="845.1" fill="#e0fbfc" font-size="11" font-weight="700">graph</text><text x="614" y="845.1" fill="#4cc9f0" font-size="10" text-anchor="end">36</text></a>
-<text x="640" y="845.1" fill="#94a3b8" font-size="9.4" class="m">ActionRejected, Action, AdaCGP, CausalGraph  +32</text>
-<a href="../../metrics/" target="_top"><title>metrics: open metrics/index.md</title><circle cx="410" cy="862.5" r="3.2" fill="#4cc9f0"/><rect class="pill" x="410" y="853.5" width="214" height="18" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.3"/><text class="dn m" x="422" y="866.1" fill="#e0fbfc" font-size="11" font-weight="700">metrics</text><text x="614" y="866.1" fill="#4cc9f0" font-size="10" text-anchor="end">20</text></a>
-<text x="640" y="866.1" fill="#94a3b8" font-size="9.4" class="m">Metric, Accuracy, Precision, Recall, FBeta  +15</text>
-<a href="../../shields/engine/" target="_top"><title>utility: open shields/engine.md</title><circle cx="410" cy="883.5" r="3.2" fill="#4cc9f0"/><rect class="pill" x="410" y="874.5" width="214" height="18" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.3"/><text class="dn m" x="422" y="887.1" fill="#e0fbfc" font-size="11" font-weight="700">utility</text><text x="614" y="887.1" fill="#4cc9f0" font-size="10" text-anchor="end">3</text></a>
-<text x="640" y="887.1" fill="#94a3b8" font-size="9.4" class="m">AdaptiveSignalStabilizer  +2</text>
-<a href="../../protect/" target="_top"><title>protect: open protect/index.md</title><circle cx="410" cy="904.5" r="3.2" fill="#4cc9f0"/><rect class="pill" x="410" y="895.5" width="214" height="18" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.3"/><text class="dn m" x="422" y="908.1" fill="#e0fbfc" font-size="11" font-weight="700">protect</text><text x="614" y="908.1" fill="#4cc9f0" font-size="10" text-anchor="end">3</text></a>
-<text x="640" y="908.1" fill="#94a3b8" font-size="9.4" class="m">Orca, StreamingArbiter, StreamingHealing</text>
+<a href="../../metrics/" target="_top"><title>metrics: open metrics/index.md</title><circle cx="410" cy="841.5" r="3.2" fill="#4cc9f0"/><rect class="pill" x="410" y="832.5" width="214" height="18" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.3"/><text class="dn m" x="422" y="845.1" fill="#e0fbfc" font-size="11" font-weight="700">metrics</text><text x="614" y="845.1" fill="#4cc9f0" font-size="10" text-anchor="end">20</text></a>
+<text x="640" y="845.1" fill="#94a3b8" font-size="9.4" class="m">Metric, Accuracy, Precision, Recall, FBeta  +15</text>
+<a href="../../ontology/" target="_top"><title>graph: open ontology/index.md</title><circle cx="410" cy="862.5" r="3.2" fill="#4cc9f0"/><rect class="pill" x="410" y="853.5" width="214" height="18" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.3"/><text class="dn m" x="422" y="866.1" fill="#e0fbfc" font-size="11" font-weight="700">graph</text><text x="614" y="866.1" fill="#4cc9f0" font-size="10" text-anchor="end">36</text></a>
+<text x="640" y="866.1" fill="#94a3b8" font-size="9.4" class="m">ActionRejected, Action, AdaCGP, CausalGraph  +32</text>
+<a href="../../protect/" target="_top"><title>protect: open protect/index.md</title><circle cx="410" cy="883.5" r="3.2" fill="#4cc9f0"/><rect class="pill" x="410" y="874.5" width="214" height="18" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.3"/><text class="dn m" x="422" y="887.1" fill="#e0fbfc" font-size="11" font-weight="700">protect</text><text x="614" y="887.1" fill="#4cc9f0" font-size="10" text-anchor="end">3</text></a>
+<text x="640" y="887.1" fill="#94a3b8" font-size="9.4" class="m">Orca, StreamingArbiter, StreamingHealing</text>
+<a href="../../shields/engine/" target="_top"><title>utility: open shields/engine.md</title><circle cx="410" cy="904.5" r="3.2" fill="#4cc9f0"/><rect class="pill" x="410" y="895.5" width="214" height="18" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.3"/><text class="dn m" x="422" y="908.1" fill="#e0fbfc" font-size="11" font-weight="700">utility</text><text x="614" y="908.1" fill="#4cc9f0" font-size="10" text-anchor="end">3</text></a>
+<text x="640" y="908.1" fill="#94a3b8" font-size="9.4" class="m">AdaptiveSignalStabilizer  +2</text>
 <a href="../../finance/" target="_top"><title>finance: open finance/index.md</title><circle cx="410" cy="925.5" r="3.2" fill="#4cc9f0"/><rect class="pill" x="410" y="916.5" width="214" height="18" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.3"/><text class="dn m" x="422" y="929.1" fill="#e0fbfc" font-size="11" font-weight="700">finance</text><text x="614" y="929.1" fill="#4cc9f0" font-size="10" text-anchor="end">5</text></a>
 <text x="640" y="929.1" fill="#94a3b8" font-size="9.4" class="m">AuditDB, DecisionLog, Decision  +2</text>
 <a href="../../bridges/" target="_top"><title>bridges: open bridges/index.md</title><circle cx="410" cy="946.5" r="3.2" fill="#4cc9f0"/><rect class="pill" x="410" y="937.5" width="214" height="18" rx="9" fill="#101a24" stroke="#4cc9f0" stroke-width="1.3"/><text class="dn m" x="422" y="950.1" fill="#e0fbfc" font-size="11" font-weight="700">bridges</text><text x="614" y="950.1" fill="#4cc9f0" font-size="10" text-anchor="end">8</text></a>

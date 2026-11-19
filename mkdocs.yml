@@ -189,7 +189,11 @@ nav:
       - Adaptive learners:
           - learn/index.md
           - Calibration: learn/calibration.md
-          - Metric learning: learn/metric_learning.md
+          - Metric learning:
+              - learn/metric_learning.md
+              - OASIS: learn/oasis.md
+              - LEGO: learn/lego.md
+              - POLA: learn/pola.md
           - Online classifiers: learn/online_classifiers.md
           - Online dynamics: learn/online_dynamics.md
       - Optimizers:
