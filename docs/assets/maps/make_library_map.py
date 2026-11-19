@@ -69,7 +69,7 @@ SECTION_PAGES = {
     "transformer": "roles/transformers.md",
 }
 PIECE_PAGES = {
-    "datasets": "stream/datasets.md",
+    "datasets": "datasets/index.md",
     "linear": "linear/index.md",
     "evaluate": "metrics/index.md",
     "compose": "stream/index.md",

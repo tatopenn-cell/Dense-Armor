@@ -3,6 +3,12 @@
 Dense-Armor sees a video the way it reads a robot's joints: one frame
 at a time, in fixed memory, with no pretrained model.
 
+## The map of vision
+
+Click a page to open it, or the job on the left (or the button at the top) to go back to the [map of the library](../index.md#the-library-folder-by-folder).
+
+<object type="image/svg+xml" data="../assets/maps/vision.svg" style="width:100%"></object>
+
 The pages, in order:
 
 1. [Frames](frames.md): every source gives the same `Frame` with the image and the timestamp.

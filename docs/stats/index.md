@@ -2,6 +2,12 @@
 
 When readings never stop arriving, you cannot keep all of them to compute averages afterwards. These tools keep a few numbers that summarise everything seen so far and update them with every new reading.
 
+## The map of statistics
+
+Click a page to open it, or the job on the left (or the button at the top) to go back to the [map of the library](../index.md#the-library-folder-by-folder).
+
+<object type="image/svg+xml" data="../assets/maps/stats.svg" style="width:100%"></object>
+
 ## What this is
 
 A robot reads its own joints sixty times a second. A server watches the

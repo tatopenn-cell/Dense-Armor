@@ -2,6 +2,12 @@
 
 Raw sensor numbers come in different sizes and units. These tools put them on a common scale and turn them into the numbers that matter (such as speed or power), one reading at a time, so that a model can learn from them.
 
+## The map of preprocessing
+
+Click a page to open it, or the job on the left (or the button at the top) to go back to the [map of the library](../index.md#the-library-folder-by-folder).
+
+<object type="image/svg+xml" data="../assets/maps/preprocessing.svg" style="width:100%"></object>
+
 Raw sensor numbers come in different units and sizes — a joint position in radians, a torque in
 newton-metres, a word in a sentence. Before a model can learn from them they are put on a common
 scale, turned into the quantities that matter (speed, power, word weights), filtered, and

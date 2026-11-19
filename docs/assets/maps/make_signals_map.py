@@ -20,7 +20,7 @@ FOLDERS = [
     (
         "Datasets",
         "streams with a known change",
-        "stream/datasets.md",
+        "datasets/index.md",
         ORANGE,
         "datasets",
     ),

@@ -1,50 +1,8 @@
-# Datasets: streams with a known change
+# SyntheticArm: a robot arm with a fault at a known time
 
-The datasets of the library are streams whose rule is known: a binary stream whose concept changes once (`DriftStream`), a Panda arm with a fault at a known time (`SyntheticArm`), and the reader of the CASPER recording of an industrial arm (`Casper`). They are what a drift detector or a protected model is tested on. The streams from files, bags and arrays are on the [Streams](index.md) page.
+`SyntheticArm` makes a labelled joint stream from the URDF of a robot arm, with a fault that starts at a known time. It is a robot dataset by nature, so its examples are robot arms. The overview of the section is on [Datasets](index.md).
 
-## 1. A test stream whose concept changes
-
-To test a drift detector you need a stream whose rule changes at a known place. This binary
-stream changes its concept once, half way, gradually: near the change each sample comes from the
-old or the new concept with a probability that follows a sigmoid.
-
-```python
-from dense_armor.core.signals.datasets import DriftStream
-
-ds = DriftStream(n_samples=20000, n_features=2, n_drifts=1, kind="gradual", spacing=20.0, seed=0)
-ds.data()
-c = ds.concepts_
-print([round(float(c[a:a + 1000].mean()), 2) for a in range(7000, 13000, 1000)])
-```
-
-```
-[0.07, 0.22, 0.42, 0.61, 0.82, 0.92]
-```
-
-A *concept* is the rule that ties the input features to the class. In this generator each
-concept is two Gaussian clusters, one per class, in a random direction; the paper's own
-`StreamGenerator` builds them from `make_classification` and the Madelon rules (section 3,
-page 7). The stream visits one concept, then the next; the change sits at sample 10000. Each
-number in the output is the share of samples from the new concept in a window of 1000, from
-sample 7000 to 13000; it rises smoothly through the change (0.42 just before, 0.61 just
-after).
-
-The weight of the new concept at position $p \in [0, 1]$ of the stream is the sigmoid that
-Ksieniewicz and Zyblewski (2020) introduce for all three drift types in section 3.2.1
-(page 8). The paper does not give its closed form; the generator uses the standard logistic
-form,
-
-$$s(p) = \frac{1}{1 + e^{-\text{spacing}\,(p - d)}}$$
-
-with $p$ the position of the sample as a fraction of the stream, $d = 0.5$ the position of the
-drift (half way) and `spacing` how sharp the change is. At $p = d$ the sigmoid is exactly $0.5$;
-with `spacing` $= 20$ it goes from $0.12$ at $p = 0.4$ to $0.88$ at $p = 0.6$. The same sigmoid
-drives the three drift types of the paper (section 3.2, pages 8–9): `"sudden"` is the limit for
-a large `spacing` and swaps the concept at once, `"gradual"` draws the old or the new concept at
-each sample with probability `s(p)`, `"incremental"` moves the clusters continuously with the
-same weight.
-
-## 2. A robot arm with a fault at a known time
+## A robot arm with a fault at a known time
 
 A labelled joint stream from the real URDF of a Panda arm. *Torque* is the turning force the
 motors apply at each joint; on a moving arm it is not free, it is fixed by the motion through the
@@ -93,7 +51,7 @@ the Jacobian of the link that carries the payload (here `panda_link7`, the flang
 speed of that link for a unit joint velocity. `y` is 0 before the fault and 1 after, so the
 stream also scores detectors.
 
-## 3. A model that does not learn the fault
+## A model that does not learn the fault
 
 A recursive least-squares model estimates the *residual offset*, the constant value the model
 adds to its prediction to best fit the samples it has seen; on a healthy arm it is about zero.
@@ -135,33 +93,17 @@ estimating "normal" while the robot is in trouble.
 
 ## API reference
 
-::: dense_armor.core.signals.datasets
+::: dense_armor.core.signals.datasets.synthetic_arm
 
 ---
 
 ## Details
 
-- `Casper(path).stream(columns, start_h, stop_h)` reads `right_arm.csv` from a local copy of the
-  CASPER dataset (Kayan et al. 2023, section III-A: a UR3e arm logged at about 20 Hz, a 24-hour
-  test with about half of the samples anomalous); hours are counted from the first timestamp.
-  The code repository of the dataset is MIT (https://github.com/hkayann/CASPER-PerCom), the data
-  are CC BY-SA 4.0
-  (https://www.kaggle.com/datasets/hkayan/industrial-robotic-arm-anomaly-detection); the library
-  reads the user's copy and redistributes nothing.
-- `DriftStream`: each concept is two Gaussian clusters, one per class, placed along a random
-  direction; the class of each cluster alternates between concepts, so a model trained on one
-  concept is wrong on the next. Each sample uses the drift nearest to its position, so every
-  transition is continuous on both sides. `"sudden"` is the limit of the sigmoid for a large
-  `spacing` and does not use it; in `"incremental"` the label follows the concept with the larger
-  weight. Implemented from the description in Ksieniewicz and Zyblewski (2020), sections 3.2.1
-  to 3.2.3 (pages 8–9).
 - `SyntheticArm`: sinusoidal joint trajectories at 30 % of each joint's range, inverse dynamics
   with `RigidBodyModel`, compiled once per URDF and process; faults: `"friction"` (viscous
   `b * qd` on one joint) or `"payload"` (a mass on the last link of the longest chain, or on
   `payload_link`).
 - `Protected` passes the timestamp only to models that accept it; `HampelScorer.threshold` is
   its `n_sigmas`, which `AnomalyGate` uses to decide.
-- Sources: Ksieniewicz, P., Zyblewski, P. (2020), "stream-learn — open-source Python library for
-  difficult data stream batch analysis", arXiv:2001.11077. Kayan, H., Rana, O., Burnap, P.,
-  Perera, C. (2023), "CASPER: Context-aware anomaly detection system for industrial robotic
-  arms".
+- `Protected` passes the timestamp only to models that accept it; `HampelScorer.threshold` is
+  its `n_sigmas`, which `AnomalyGate` uses to decide.

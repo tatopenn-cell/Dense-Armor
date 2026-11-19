@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 657" width="100%" role="img" aria-label="The map of statistics">
+<style>text{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif}.m{font-family:ui-monospace,Menlo,Consolas,monospace}.e{opacity:.32;transition:opacity .15s}.net:hover .e{opacity:.06}.net .pg:hover .e{opacity:1;stroke-width:2.2}a:hover .card{fill:#17303f;stroke-width:2.4}a:hover text.dn{fill:#ffffff}.back:hover .card{fill:#17303f}</style>
+<rect width="1000" height="657" fill="#0d131a" rx="14"/>
+<text x="500" y="38" fill="#e0fbfc" font-size="24" font-weight="700" text-anchor="middle">THE MAP OF STATISTICS</text>
+<text x="500" y="62" fill="#4cc9f0" font-size="12.5" text-anchor="middle">the job, the page of each tool and its classes; pass over a page to light it, click to open it</text>
+<a class="back" href="../../#the-library-folder-by-folder" target="_top"><title>back to the map of the library</title><rect class="card" x="20" y="14" width="150" height="30" rx="15" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="95" y="33.5" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">← map of the library</text></a>
+<text x="24" y="98" fill="#f72585" font-size="12" font-weight="700">01  JOB</text>
+<text x="410" y="98" fill="#f72585" font-size="12" font-weight="700">02  PAGE</text>
+<text x="680" y="98" fill="#f72585" font-size="12" font-weight="700">03  CLASSES OF THE CATALOG</text>
+<g class="net">
+<path class="e" d="M214,368.0 C262,368.0 282,368.0 318,368.0" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<g class="pg">
+<path class="e" d="M342,368.0 C382,368.0 366,149.5 408,149.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,149.5 C650,149.5 650,124.5 676,124.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M626,149.5 C650,149.5 650,149.5 676,149.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M626,149.5 C650,149.5 650,174.5 676,174.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,368.0 C382,368.0 366,213.5 408,213.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,213.5 C650,213.5 650,213.5 676,213.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,368.0 C382,368.0 366,252.5 408,252.5" fill="none" stroke="#f72585" stroke-width="1.4"/>
+<path class="e" d="M626,252.5 C650,252.5 650,252.5 676,252.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,368.0 C382,368.0 366,291.5 408,291.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,291.5 C650,291.5 650,291.5 676,291.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,368.0 C382,368.0 366,330.5 408,330.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,330.5 C650,330.5 650,330.5 676,330.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,368.0 C382,368.0 366,382.0 408,382.0" fill="none" stroke="#f72585" stroke-width="1.4"/>
+<path class="e" d="M626,382.0 C650,382.0 650,369.5 676,369.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M626,382.0 C650,382.0 650,394.5 676,394.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,368.0 C382,368.0 366,433.5 408,433.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,433.5 C650,433.5 650,433.5 676,433.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,368.0 C382,368.0 366,510.0 408,510.0" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,510.0 C650,510.0 650,472.5 676,472.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M626,510.0 C650,510.0 650,497.5 676,497.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M626,510.0 C650,510.0 650,522.5 676,522.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M626,510.0 C650,510.0 650,547.5 676,547.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,368.0 C382,368.0 366,586.5 408,586.5" fill="none" stroke="#f72585" stroke-width="1.4"/>
+<path class="e" d="M626,586.5 C650,586.5 650,586.5 676,586.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+</g>
+</g>
+<a href="../../#the-library-folder-by-folder" target="_top"><title>summarize_stream: back to the map of the library</title><rect class="card" x="20" y="349.0" width="190" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="34" y="366.0" fill="#e0fbfc" font-size="13" font-weight="700">summarize_stream</text><text x="34" y="380.0" fill="#94a3b8" font-size="9.5">job of the ontology</text></a>
+<circle cx="330" cy="368.0" r="12" fill="#101a24" stroke="#4cc9f0" stroke-width="2"/><text class="m" x="330" y="398.0" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">stats</text>
+<a href="../../stats/moments/" target="_top"><title>Moments: open stats/moments.md</title><rect class="card" x="410" y="130.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="146.5" fill="#e0fbfc" font-size="13" font-weight="700">Moments</text><text x="424" y="161.5" fill="#94a3b8" font-size="9.5">3 classes</text></a>
+<a href="../../stats/moments/" target="_top"><title>RunningMoments: open stats/moments.md</title><rect class="card" x="678" y="114.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="128.3" fill="#e0fbfc" font-size="11">RunningMoments</text></a>
+<a href="../../stats/moments/" target="_top"><title>RunningMomentsVector: open stats/moments.md</title><rect class="card" x="678" y="139.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="153.3" fill="#e0fbfc" font-size="11">RunningMomentsVector</text></a>
+<a href="../../stats/moments/" target="_top"><title>EWStats: open stats/moments.md</title><rect class="card" x="678" y="164.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="178.3" fill="#e0fbfc" font-size="11">EWStats</text></a>
+<a href="../../stats/stable_variance/" target="_top"><title>Stable variance in float32: open stats/stable_variance.md</title><rect class="card" x="410" y="194.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="210.5" fill="#e0fbfc" font-size="13" font-weight="700">Stable variance in float32</text><text x="424" y="225.5" fill="#94a3b8" font-size="9.5">functions</text></a>
+<a href="../../stats/stable_variance/" target="_top"><title>functions: stable_var, stable_moments: open stats/stable_variance.md</title><rect class="card" x="678" y="203.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="217.3" fill="#e0fbfc" font-size="11">functions: stable_var, stable_moments</text></a>
+<a href="../../stats/robust/" target="_top"><title>Robust statistics: open stats/robust.md</title><rect class="card" x="410" y="233.5" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="249.5" fill="#e0fbfc" font-size="13" font-weight="700">Robust statistics</text><text x="424" y="264.5" fill="#94a3b8" font-size="9.5">5 classes</text></a>
+<a href="../../stats/robust/" target="_top"><title>5 classes: RollingMedian, RollingMAD  +3: open stats/robust.md</title><rect class="card" x="678" y="242.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="256.3" fill="#e0fbfc" font-size="11">5 classes: RollingMedian, RollingMAD  +3</text></a>
+<a href="../../stats/student_t/" target="_top"><title>Student-t: open stats/student_t.md</title><rect class="card" x="410" y="272.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="288.5" fill="#e0fbfc" font-size="13" font-weight="700">Student-t</text><text x="424" y="303.5" fill="#94a3b8" font-size="9.5">1 class</text></a>
+<a href="../../stats/student_t/" target="_top"><title>StudentT: open stats/student_t.md</title><rect class="card" x="678" y="281.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="295.3" fill="#e0fbfc" font-size="11">StudentT</text></a>
+<a href="../../stats/mixture/" target="_top"><title>Online Gaussian mixture: open stats/mixture.md</title><rect class="card" x="410" y="311.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="327.5" fill="#e0fbfc" font-size="13" font-weight="700">Online Gaussian mixture</text><text x="424" y="342.5" fill="#94a3b8" font-size="9.5">1 class</text></a>
+<a href="../../stats/mixture/" target="_top"><title>OnlineGaussianMixture: open stats/mixture.md</title><rect class="card" x="678" y="320.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="334.3" fill="#e0fbfc" font-size="11">OnlineGaussianMixture</text></a>
+<a href="../../stats/streaming/" target="_top"><title>Streaming quantiles: open stats/streaming.md</title><rect class="card" x="410" y="363.0" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="379.0" fill="#e0fbfc" font-size="13" font-weight="700">Streaming quantiles</text><text x="424" y="394.0" fill="#94a3b8" font-size="9.5">2 classes</text></a>
+<a href="../../stats/streaming/" target="_top"><title>DDSketch: open stats/streaming.md</title><rect class="card" x="678" y="359.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="373.3" fill="#e0fbfc" font-size="11">DDSketch</text></a>
+<a href="../../stats/streaming/" target="_top"><title>TDigest: open stats/streaming.md</title><rect class="card" x="678" y="384.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="398.3" fill="#e0fbfc" font-size="11">TDigest</text></a>
+<a href="../../stats/dependence/" target="_top"><title>Dependence: open stats/dependence.md</title><rect class="card" x="410" y="414.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="430.5" fill="#e0fbfc" font-size="13" font-weight="700">Dependence</text><text x="424" y="445.5" fill="#94a3b8" font-size="9.5">5 classes</text></a>
+<a href="../../stats/dependence/" target="_top"><title>5 classes: RunningCovariance  +4: open stats/dependence.md</title><rect class="card" x="678" y="423.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="437.3" fill="#e0fbfc" font-size="11">5 classes: RunningCovariance  +4</text></a>
+<a href="../../stats/sketches/" target="_top"><title>Sketches: open stats/sketches.md</title><rect class="card" x="410" y="491.0" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="507.0" fill="#e0fbfc" font-size="13" font-weight="700">Sketches</text><text x="424" y="522.0" fill="#94a3b8" font-size="9.5">4 classes</text></a>
+<a href="../../stats/sketches/" target="_top"><title>CountMinSketch: open stats/sketches.md</title><rect class="card" x="678" y="462.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="476.3" fill="#e0fbfc" font-size="11">CountMinSketch</text></a>
+<a href="../../stats/sketches/" target="_top"><title>HyperLogLog: open stats/sketches.md</title><rect class="card" x="678" y="487.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="501.3" fill="#e0fbfc" font-size="11">HyperLogLog</text></a>
+<a href="../../stats/sketches/" target="_top"><title>BloomFilter: open stats/sketches.md</title><rect class="card" x="678" y="512.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="526.3" fill="#e0fbfc" font-size="11">BloomFilter</text></a>
+<a href="../../stats/sketches/" target="_top"><title>SpaceSaving: open stats/sketches.md</title><rect class="card" x="678" y="537.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="551.3" fill="#e0fbfc" font-size="11">SpaceSaving</text></a>
+<a href="../../stats/skyline/" target="_top"><title>Skyline: open stats/skyline.md</title><rect class="card" x="410" y="567.5" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="583.5" fill="#e0fbfc" font-size="13" font-weight="700">Skyline</text><text x="424" y="598.5" fill="#94a3b8" font-size="9.5">1 class</text></a>
+<a href="../../stats/skyline/" target="_top"><title>Skyline: open stats/skyline.md</title><rect class="card" x="678" y="576.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="590.3" fill="#e0fbfc" font-size="11">Skyline</text></a>
+<text x="500" y="641" fill="#94a3b8" font-size="10.5" text-anchor="middle">C classifier, R regressor; jobs: dense_armor/usable/ontology.json; classes: dense_armor.usable.catalog; drawn by docs/assets/maps/make_signals_sections_maps.py</text>
+</svg>

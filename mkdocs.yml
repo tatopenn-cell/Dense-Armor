@@ -169,8 +169,16 @@ nav:
       - Write and check a new estimator: roles/new_estimator.md
   - Signals:
       - signals/index.md
-      - Streams: stream/index.md
-      - Datasets: stream/datasets.md
+      - Streams:
+          - stream/index.md
+          - CSV files, ROS bags and arrays: stream/readers.md
+          - Merge by time and shuffle: stream/merge.md
+          - Choosing and reshaping channels: stream/channels.md
+      - Datasets:
+          - datasets/index.md
+          - DriftStream: datasets/drift_stream.md
+          - SyntheticArm: datasets/synthetic_arm.md
+          - Casper: datasets/casper.md
       - Statistics:
           - stats/index.md
           - Moments: stats/moments.md
