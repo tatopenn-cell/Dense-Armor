@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 785" width="100%" role="img" aria-label="The map of vision">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 785" width="100%" role="img" aria-label="The map of video">
 <style>text{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif}.m{font-family:ui-monospace,Menlo,Consolas,monospace}.e{opacity:.32;transition:opacity .15s}.net:hover .e{opacity:.06}.net .pg:hover .e{opacity:1;stroke-width:2.2}a:hover .card{fill:#17303f;stroke-width:2.4}a:hover text.dn{fill:#ffffff}.back:hover .card{fill:#17303f}</style>
 <rect width="1000" height="785" fill="#0d131a" rx="14"/>
-<text x="500" y="38" fill="#e0fbfc" font-size="24" font-weight="700" text-anchor="middle">THE MAP OF VISION</text>
+<text x="500" y="38" fill="#e0fbfc" font-size="24" font-weight="700" text-anchor="middle">THE MAP OF VIDEO</text>
 <text x="500" y="62" fill="#4cc9f0" font-size="12.5" text-anchor="middle">the job, the page of each tool and its classes; pass over a page to light it, click to open it</text>
 <a class="back" href="../../#the-library-folder-by-folder" target="_top"><title>back to the map of the library</title><rect class="card" x="20" y="14" width="150" height="30" rx="15" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="95" y="33.5" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">← map of the library</text></a>
 <text x="24" y="98" fill="#f72585" font-size="12" font-weight="700">01  JOB</text>

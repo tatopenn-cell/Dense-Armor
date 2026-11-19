@@ -44,6 +44,8 @@ COLORS = {
 }
 # folders that sit outside `core` in the package but are drawn inside it
 IN_CORE = ("ml",)
+# folders of `core/signals` that are drawn as a section of their own, like the menu of the docs does
+PROMOTED = ("vision",)
 
 BIG_PAGES = {
     "core": "api/index.md",
@@ -57,6 +59,7 @@ SECTION_PAGES = {
     "deep": "neural/overview.md",
     "signals": "signals/index.md",
     "audio": "audio/index.md",
+    "vision": "vision/index.md",
     "evaluation": "metrics/index.md",
     "finance": "finance/index.md",
     "graph": "ontology/index.md",
@@ -116,6 +119,8 @@ def catalog_tree():
         p = r["module"].removeprefix("dense_armor.").split(".")
         if p[0] == "core" and len(p) > 2:
             big, sec, rest = "core", p[1], p[2:]
+            if sec == "signals" and p[2] in PROMOTED and len(p) > 3:
+                sec, rest = p[2], p[3:]
         else:
             big, sec, rest = "dense_armor", p[0], p[1:] or [p[0]]
         piece = r["class"] if len(p) == 1 else rest[0]

@@ -18,7 +18,7 @@ from dense_armor.usable.catalog import get_catalog
 SECTIONS = {
     "stats": ("Statistics", "THE MAP OF STATISTICS"),
     "preprocessing": ("Preprocessing", "THE MAP OF PREPROCESSING"),
-    "vision": ("Vision", "THE MAP OF VISION"),
+    "vision": ("Video", "THE MAP OF VIDEO"),
 }
 DEPRECATED = {"Metro"}
 FUNCTIONS = {"Stable variance in float32": "stable_var, stable_moments"}
@@ -36,12 +36,12 @@ def short(names, limit=36):
 
 
 def group_pages(nav, name):
-    """[(title, path)] of the group ``name`` inside Signals, without its first page."""
+    """[(title, path)] of the group ``name`` (inside Signals, or a top-level group), without its first page."""
     signals = next(i["Signals"] for i in nav if isinstance(i, dict) and "Signals" in i)
-    group = next(i[name] for i in signals if isinstance(i, dict) and name in i)
-    return [
-        (next(iter(i)), next(iter(i.values()))) for i in group if isinstance(i, dict)
-    ]
+    group = next((i[name] for i in signals if isinstance(i, dict) and name in i), None)
+    if group is None:
+        group = next(i[name] for i in nav if isinstance(i, dict) and name in i)
+    return [(next(iter(i)), next(iter(i.values()))) for i in group if isinstance(i, dict)]
 
 
 def main():
