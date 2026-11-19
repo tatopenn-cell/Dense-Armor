@@ -10,6 +10,48 @@ textbook formula subtracts two almost equal numbers, and the digits of the
 wobble are lost in the subtraction. This page shows the failure, the
 function to call, and what the function does inside.
 
+![A three-dimensional surface: the offset of the data and their spread on the two horizontal axes, the relative error of the variance on the vertical axis. The pink surface of the textbook formula rises to an error of 100 % and more as the offset grows and the spread shrinks; the blue surface of stable_var stays at the floor, about 1e-8.](../assets/stable_variance/stable_variance_3d.png)
+
+The picture is a grid of 84 cases in float32: offsets from 10 to about 3 million, spreads from 0.01 to 10, 1000 values each. The pink surface is the textbook formula `mean(x**2) - mean(x)**2`, the blue one is `stable_var`; both are compared with the float64 variance of the same float32 values. The textbook formula is wrong by more than 0.1 % in 71 of the 84 cases and by 100 % or more in 56; `stable_var` has a largest error of 8.5e-8 over all of them. For example, at an offset of 10^6 and a spread of 1 the relative error of the textbook formula is about 2·10^5 and that of `stable_var` 2·10^-8.
+
+## Gamestory
+
+Saturday afternoon at the market. The young shopkeeper and his assistant are selling a super-rare series of collectible action figures that all cost around 1,000 euros (one costs 1000.00, one 1000.01, one 1000.02).
+
+At the end of the day they want to know how much those few cents varied from one figure to another. But there is a problem: to do the math super fast, the assistant uses a pocket calculator with a short screen (called float32), which can hold at most 7 digits on display!
+
+If the assistant uses the normal textbook formula (mean(x**2) - mean(x)**2), a disaster happens: squaring 1000 creates giant numbers (1,000,000), the short screen cuts off all the cents to fit the zeros, and at the end it spits out a crazy negative number (-196608)! To save the cents from the short screen, the assistant uses the stable_var trick, made of four clever moves:
+
+- **1. Removing the giant weight at the start (y = x - x[0]):** Before doing any math, the assistant takes the price of the first figure (1000.00) and subtracts it from all the others. Only the cents of difference remain on the sheet (0.00, 0.01, 0.02)! That way the short screen no longer wastes space writing the thousand euros that are the same for everyone.
+- **2. Centering the cents (m):** Now he takes the average of only those tiny cents (m): this way every tiny rounding stays super small and never blows up.
+- **3. Catching the crumbs that fall off (TwoSum and kahan):** When adding up lots of tiny cents one after another, on a short-screen calculator some crumbs risk falling off the edge. The assistant uses a special trick (TwoSum and kahan) that catches every single crumb of remainder and puts it back into the final sum, without losing even a thousandth!
+- **4. Exact zero on identical prices (0.0):** In the end, if all the figures had the exact same price ([1e10, 1e10, 1e10]), the stable_var function answers 0.0 exact, without making up fake wobbles.
+
+In the end, what is stable_var (Stable variance in float32)? It is a super-accurate math function that lets computers calculate how much numbers vary while using very little memory (float32), by first removing the giant base value and saving even the tiniest rounding crumbs!
+
+## A first example: the quotes of a stock index
+
+A stock index future is quoted around 4500 euros and moves in steps of 0.25, the tick. A trading desk takes 3000 consecutive quotes, in `float32`, and wants their variance, the first step of a volatility estimate. The first number is the variance in float64 of the same `float32` values (the reference), the second is the textbook formula in `float32`, the third is `stable_var`:
+
+```python
+import numpy as np
+import jax.numpy as jnp
+from dense_armor.core.signals.stats.stable import stable_var
+
+rng = np.random.default_rng(0)
+quotes = np.round(rng.normal(4500.0, 0.5, 3000) * 4.0) / 4.0
+x = jnp.asarray(quotes.astype(np.float32))
+ref = float(np.var(np.asarray(x, dtype=np.float64)))
+naive = float(jnp.mean(x * x) - jnp.mean(x) ** 2)
+print(f"{ref:.4f} {naive:.4f} {float(stable_var(x)):.4f}")
+```
+
+```
+0.2528 0.0000 0.2528
+```
+
+The textbook formula returns `0.0000`: the quotes are around 4500, their squares are of the order of twenty million, and the variance of a quarter of a euro is below the last digits of that number, so it disappears in the subtraction. A volatility of zero on a moving market is the kind of answer that nothing in the number says is wrong. `stable_var` returns `0.2528`, equal to the reference.
+
 ## 1. The failure
 
 The variance of a sample is the average of the squared distances from the
@@ -203,6 +245,28 @@ baseline formula on the CPU (range 3.55 to 4.60) and 2.24 times on the GPU
 and the threshold of the benchmark, 4.0 on the median ratio, was chosen
 after the measurement.
 
+## 6. A robot joint around its home position
+
+A robot joint reports its angle as a `float32` every millisecond. The angle sits around a large offset, the wobble around it is small, and the controller needs the variance of the wobble. Three thousand readings around 1000 with a spread of 0.01, in the same three numbers as above:
+
+```python
+import numpy as np
+import jax.numpy as jnp
+from dense_armor.core.signals.stats.stable import stable_var
+
+rng = np.random.default_rng(0)
+x = jnp.asarray(rng.normal(1000.0, 0.01, 3000).astype(np.float32))
+ref = float(np.var(np.asarray(x, dtype=np.float64)))
+naive = float(jnp.mean(x * x) - jnp.mean(x) ** 2)
+print(f"{ref:.4e} {naive:.4e} {float(stable_var(x)):.4e}")
+```
+
+```
+9.8841e-05 6.2500e-02 9.8841e-05
+```
+
+The textbook formula gives `6.2500e-02`, about 630 times the true variance `9.8841e-05`, and the sign of the error is positive, so nothing in the number says that it is wrong. `stable_var` returns `9.8841e-05`, the same as the reference at the digits shown.
+
 ## Details
 
 ### References
@@ -274,3 +338,7 @@ array sizes.
 `budget_s`, no `memory_class`. The `dtype` keyword of the 11 estimators of
 `dense_armor/core/signals/stats` is described in the CHANGELOG;
 `RunningMoments.learn_many` uses `stable_moments` for a `float32` block.
+
+### The figure at the top
+
+The image `docs/assets/stable_variance/stable_variance_3d.png` is generated by `docs/assets/stable_variance/make_stable_variance_3d.py`. For 12 offsets and 7 spreads it draws 1000 float32 values, computes the variance by the textbook formula and by `stable_var`, and compares both with the float64 variance of the same values; when the exact variance is 0, any other answer counts as an error of 100 %.
