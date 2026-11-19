@@ -10,6 +10,12 @@ Dense-Armor is a library that learns from streams of numbers (and from images an
 
 <object type="image/svg+xml" data="assets/maps/jobs.svg" style="width:100%"></object>
 
+## The library, folder by folder
+
+The same library seen from its folders: on the left the big set `core`, in the middle the sections inside it (and the folders that hold single files, such as `roles`, `ml` or `bridges`), on the right the pieces inside each section with the names of their classes. Pass over a section to light its pieces; click any box to open its page.
+
+<object type="image/svg+xml" data="assets/maps/library.svg" style="width:100%"></object>
+
 *Pass over a job to light its links; click a domain to open its page. The jobs, the domains and the classes are those of `usable`.*
 
 ## The three kinds of learning

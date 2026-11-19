@@ -1,16 +1,54 @@
 # Online classifiers: non-stationary state estimation and drift-adaptive architectures
 
-These tools analyze a robot's real-time joint signals to determine its operational state—such as moving freely, making intentional contact, or experiencing a collision. Rather than failing when external conditions change, these models continuously adapt their internal statistics or deploy background copies to keep the state estimate usable.
+These tools tell, sample by sample, which state a system is in (a payment that is normal or fraud, a robot that moves freely or touches something). Rather than failing when external conditions change, these models continuously adapt their internal statistics or deploy background copies to keep the state estimate usable.
 
 
-A robot has to tell, sample by sample, which state it is in: free motion, contact,
-collision. It has to do this **from its own joint signals**, and it has to keep doing it
-right when the robot's world changes — a different payload, a worn gripper, a slightly
-different surface.
+A bank has to tell, payment by payment, whether a payment is normal or fraud, from a few numbers.
+It has to keep doing it right when the world changes: customers change habit, fraudsters change
+trick. The same happens to a robot that has to tell, from its joint signals, whether it moves
+freely or touches something, when its load or its gripper changes.
 
 `OnlineGaussianNB` and `OnlineSoftmaxRegression` learn one sample at a time.
 `DriftAdaptiveClassifier` wraps either of them with a drift detector on its own
 prediction loss and swaps in a fresh copy when the old one goes stale.
+
+## A first example: fraudsters change habit
+
+Half of the payments are fraud. At first a fraud is a large payment (around 400) and a normal one is small (around 60). After 3000 payments the fraudsters change habit: they now make small test charges, while the customers' payments grow. The meaning of the amount flips. Three classifiers are tested on each payment before learning it: a Gaussian naive Bayes that never forgets, one with a fixed forgetting factor (`alpha=0.1`), and the `DriftAdaptiveClassifier` that wraps the first and swaps in a fresh copy when its own error jumps.
+
+```python
+import numpy as np
+from dense_armor.core.online.drift.detector import CUSUMDriftDetector
+from dense_armor.core.online.learn.online_classifiers import DriftAdaptiveClassifier, OnlineGaussianNB
+
+rng = np.random.default_rng(1)
+models = {
+    "never forgets": OnlineGaussianNB(),
+    "alpha=0.1": OnlineGaussianNB(alpha=0.1),
+    "drift-adaptive": DriftAdaptiveClassifier(OnlineGaussianNB(), CUSUMDriftDetector(reference="fixed", radius=20, ref_mult=5, two_sided=False), window=50, smooth_window=50),
+}
+hits = {k: [] for k in models}
+for i in range(6000):
+    fraud = int(rng.random() < 0.5)
+    big = fraud if i < 3000 else 1 - fraud
+    x = {"amount": rng.normal(400 if big else 60, 60 if big else 20), "hour": rng.normal(14, 3)}
+    for k, m in models.items():
+        hits[k].append(m.predict_one(x) == fraud)
+        m.learn_one(x, fraud)
+for k, h in hits.items():
+    h = np.array(h, float)
+    print(k, h[500:3000].mean().round(3), h[3000:3200].mean().round(3), h[5000:5900].mean().round(3))
+```
+
+```
+never forgets 1.0 0.0 0.046
+alpha=0.1 1.0 0.92 1.0
+drift-adaptive 1.0 0.0 1.0
+```
+
+The three columns are the accuracy before the change, over the 200 payments after it, and late in the stream (payments 5000 to 5900). The classifier that never forgets is perfect before the change, wrong every time right after it, and still wrong at the end (0.046): it keeps the old rule. The one with `alpha=0.1` forgets a little all the time and loses almost nothing (0.92). The drift-adaptive one is wrong right after the change, until its alarm rings and it swaps in the fresh copy, and then it is back at 1.0.
+
+![Accuracy over the last 200 payments of three classifiers when the meaning of the amount flips at payment 3000: the one that never forgets falls to zero and stays low, alpha=0.1 barely dips, the drift-adaptive one falls and returns to 1.0 after its alarm.](../assets/learn/classifier_drift.png)
 
 ## 1. The data
 

@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 554" width="100%" role="img" aria-label="The map of the adaptive learners">
+<style>text{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif}.m{font-family:ui-monospace,Menlo,Consolas,monospace}.e{opacity:.32;transition:opacity .15s}.net:hover .e{opacity:.06}.net .pg:hover .e{opacity:1;stroke-width:2.2}a:hover .card{fill:#17303f;stroke-width:2.4}a:hover text.dn{fill:#ffffff}.back:hover .card{fill:#17303f}</style>
+<rect width="1000" height="554" fill="#0d131a" rx="14"/>
+<text x="500" y="38" fill="#e0fbfc" font-size="24" font-weight="700" text-anchor="middle">THE MAP OF THE ADAPTIVE LEARNERS</text>
+<text x="500" y="62" fill="#4cc9f0" font-size="12.5" text-anchor="middle">the job, the page of each tool and its classes; pass over a page to light its classes, click to open it</text>
+<a class="back" href="../../#find-a-tool-by-what-you-want-to-do" target="_top"><title>back to the map by job</title><rect class="card" x="20" y="14" width="150" height="30" rx="15" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="95" y="33.5" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">← map by job</text></a>
+<text x="24" y="98" fill="#f72585" font-size="12" font-weight="700">01  JOB</text>
+<text x="410" y="98" fill="#f72585" font-size="12" font-weight="700">02  PAGE</text>
+<text x="680" y="98" fill="#f72585" font-size="12" font-weight="700">03  CLASSES OF THE CATALOG</text>
+<g class="net">
+<path class="e" d="M214,291.5 C262,291.5 282,291.5 318,291.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<g class="pg">
+<path class="e" d="M342,291.5 C382,291.5 366,124.5 408,124.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,124.5 C650,124.5 650,124.5 676,124.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,291.5 C382,291.5 366,176.0 408,176.0" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,176.0 C650,176.0 650,163.5 676,163.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M626,176.0 C650,176.0 650,188.5 676,188.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,291.5 C382,291.5 366,227.5 408,227.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,227.5 C650,227.5 650,227.5 676,227.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,291.5 C382,291.5 366,266.5 408,266.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,266.5 C650,266.5 650,266.5 676,266.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,291.5 C382,291.5 366,305.5 408,305.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,305.5 C650,305.5 650,305.5 676,305.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,291.5 C382,291.5 366,369.5 408,369.5" fill="none" stroke="#f72585" stroke-width="1.4"/>
+<path class="e" d="M626,369.5 C650,369.5 650,344.5 676,344.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M626,369.5 C650,369.5 650,369.5 676,369.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M626,369.5 C650,369.5 650,394.5 676,394.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,291.5 C382,291.5 366,458.5 408,458.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,458.5 C650,458.5 650,433.5 676,433.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M626,458.5 C650,458.5 650,458.5 676,458.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M626,458.5 C650,458.5 650,483.5 676,483.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+</g>
+<a href="../../#find-a-tool-by-what-you-want-to-do" target="_top"><title>classify: back to the map by job</title><rect class="card" x="20" y="272.5" width="190" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="34" y="289.5" fill="#e0fbfc" font-size="13" font-weight="700">classify</text><text x="34" y="303.5" fill="#94a3b8" font-size="9.5">job of the ontology</text></a>
+<circle cx="330" cy="291.5" r="12" fill="#101a24" stroke="#4cc9f0" stroke-width="2"/><text class="m" x="330" y="321.5" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">learn</text>
+<a href="../../learn/calibration/" target="_top"><title>Calibration: open learn/calibration.md</title><rect class="card" x="410" y="105.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="121.5" fill="#e0fbfc" font-size="13" font-weight="700">Calibration</text><text x="424" y="136.5" fill="#94a3b8" font-size="9.5">honest probabilities</text></a>
+<a href="../../learn/calibration/" target="_top"><title>OnlinePlattScaling: open learn/calibration.md</title><rect class="card" x="678" y="114.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="128.3" fill="#e0fbfc" font-size="11">OnlinePlattScaling</text><text x="966" y="128.3" fill="#4cc9f0" font-size="10" font-weight="700" text-anchor="end">C</text></a>
+<a href="../../learn/metric_learning/" target="_top"><title>Metric learning: open learn/metric_learning.md</title><rect class="card" x="410" y="157.0" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="173.0" fill="#e0fbfc" font-size="13" font-weight="700">Metric learning</text><text x="424" y="188.0" fill="#94a3b8" font-size="9.5">which customers look alike</text></a>
+<a href="../../learn/metric_learning/" target="_top"><title>MetricKNNClassifier: open learn/metric_learning.md</title><rect class="card" x="678" y="153.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="167.3" fill="#e0fbfc" font-size="11">MetricKNNClassifier</text><text x="966" y="167.3" fill="#4cc9f0" font-size="10" font-weight="700" text-anchor="end">C</text></a>
+<a href="../../learn/metric_learning/" target="_top"><title>MetricLearner: open learn/metric_learning.md</title><rect class="card" x="678" y="178.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="192.3" fill="#e0fbfc" font-size="11">MetricLearner</text></a>
+<a href="../../learn/oasis/" target="_top"><title>OASIS: open learn/oasis.md</title><rect class="card" x="410" y="208.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="224.5" fill="#e0fbfc" font-size="13" font-weight="700">OASIS</text><text x="424" y="239.5" fill="#94a3b8" font-size="9.5">a similarity from triplets</text></a>
+<a href="../../learn/oasis/" target="_top"><title>OASIS: open learn/oasis.md</title><rect class="card" x="678" y="217.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="231.3" fill="#e0fbfc" font-size="11">OASIS</text></a>
+<a href="../../learn/lego/" target="_top"><title>LEGO: open learn/lego.md</title><rect class="card" x="410" y="247.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="263.5" fill="#e0fbfc" font-size="13" font-weight="700">LEGO</text><text x="424" y="278.5" fill="#94a3b8" font-size="9.5">a distance from pairs and targets</text></a>
+<a href="../../learn/lego/" target="_top"><title>LEGO: open learn/lego.md</title><rect class="card" x="678" y="256.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="270.3" fill="#e0fbfc" font-size="11">LEGO</text></a>
+<a href="../../learn/pola/" target="_top"><title>POLA: open learn/pola.md</title><rect class="card" x="410" y="286.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="302.5" fill="#e0fbfc" font-size="13" font-weight="700">POLA</text><text x="424" y="317.5" fill="#94a3b8" font-size="9.5">similar or different pairs</text></a>
+<a href="../../learn/pola/" target="_top"><title>POLA: open learn/pola.md</title><rect class="card" x="678" y="295.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="309.3" fill="#e0fbfc" font-size="11">POLA</text></a>
+<a href="../../learn/online_classifiers/" target="_top"><title>Online classifiers: open learn/online_classifiers.md</title><rect class="card" x="410" y="350.5" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="366.5" fill="#e0fbfc" font-size="13" font-weight="700">Online classifiers</text><text x="424" y="381.5" fill="#94a3b8" font-size="9.5">a state that follows the data</text></a>
+<a href="../../learn/online_classifiers/" target="_top"><title>OnlineGaussianNB: open learn/online_classifiers.md</title><rect class="card" x="678" y="334.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="348.3" fill="#e0fbfc" font-size="11">OnlineGaussianNB</text><text x="966" y="348.3" fill="#4cc9f0" font-size="10" font-weight="700" text-anchor="end">C</text></a>
+<a href="../../learn/online_classifiers/" target="_top"><title>OnlineSoftmaxRegression: open learn/online_classifiers.md</title><rect class="card" x="678" y="359.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="373.3" fill="#e0fbfc" font-size="11">OnlineSoftmaxRegression</text><text x="966" y="373.3" fill="#4cc9f0" font-size="10" font-weight="700" text-anchor="end">C</text></a>
+<a href="../../learn/online_classifiers/" target="_top"><title>DriftAdaptiveClassifier: open learn/online_classifiers.md</title><rect class="card" x="678" y="384.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="398.3" fill="#e0fbfc" font-size="11">DriftAdaptiveClassifier</text><text x="966" y="398.3" fill="#4cc9f0" font-size="10" font-weight="700" text-anchor="end">C</text></a>
+<a href="../../learn/online_dynamics/" target="_top"><title>Online dynamics: open learn/online_dynamics.md</title><rect class="card" x="410" y="439.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="455.5" fill="#e0fbfc" font-size="13" font-weight="700">Online dynamics</text><text x="424" y="470.5" fill="#94a3b8" font-size="9.5">what the formula misses</text></a>
+<a href="../../learn/online_dynamics/" target="_top"><title>RecursiveLeastSquares: open learn/online_dynamics.md</title><rect class="card" x="678" y="423.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="437.3" fill="#e0fbfc" font-size="11">RecursiveLeastSquares</text><text x="966" y="437.3" fill="#ff9e00" font-size="10" font-weight="700" text-anchor="end">R</text></a>
+<a href="../../learn/online_dynamics/" target="_top"><title>ResidualDynamicsLearner: open learn/online_dynamics.md</title><rect class="card" x="678" y="448.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="462.3" fill="#e0fbfc" font-size="11">ResidualDynamicsLearner</text></a>
+<a href="../../learn/online_dynamics/" target="_top"><title>DriftAwareResidualDynamicsLearner: open learn/online_dynamics.md</title><rect class="card" x="678" y="473.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="487.3" fill="#e0fbfc" font-size="11">DriftAwareResidualDynamicsLearner</text></a>
+<text x="500" y="538" fill="#94a3b8" font-size="10.5" text-anchor="middle">C classifier, R regressor; jobs: dense_armor/usable/ontology.json; classes: dense_armor.usable.catalog; drawn by docs/assets/maps/make_learn_map.py</text>
+</svg>

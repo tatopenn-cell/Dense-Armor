@@ -1,18 +1,52 @@
 # Calibration: online Platt scaling via sequential Newton optimization
 
-A model can be great at ranking outcomes but still report the wrong confidence numbers—stating it is 99% sure when it is only right 80% of the time. This tool corrects those probabilities in real time, sample by sample, so that a robot's control policy can rely on probabilities that match how often the model is right.
+A model can be great at ranking outcomes but still report the wrong confidence numbers—stating it is 99% sure when it is only right 80% of the time. This tool corrects those probabilities in real time, sample by sample, so that whoever reads the probabilities, to block a payment or to stop a machine, can rely on numbers that match how often the model is right.
 
 
 A classifier can rank its predictions well and still attach the wrong numbers to them.
 A decision tree that has 80 % accuracy on some region will happily output 0.99 on every
-sample of that region — the ranking is fine, the numbers are lies. On a robot, the
-control policy reads those numbers: a 0.99 that means "80 %" makes the policy act far
-too confidently.
+sample of that region — the ranking is fine, the numbers are lies. A bank that reads
+those numbers to decide which payments to block will block too many or too few: a 0.99
+that means "80 %" makes it act far too confidently.
 
 **Calibration** fixes the numbers without touching the ranking. `OnlinePlattScaling`
 wraps any classifier from an existing online-learning library and corrects its probabilities one
 sample at a time, using the map `sigmoid(a · logit(p) + b)` learned by Online Newton
 Step.
+
+## A first example: a fraud score
+
+A fraud model reads six signals about each payment (the amount, the hour, the country, and so on). The six are not independent: they all say almost the same thing. A naive Bayes model multiplies them as if each one were new information, and becomes far too sure of itself. `OnlinePlattScaling` wraps it and corrects its probabilities one payment at a time. Both are tested on each payment before learning it, and compared by log-loss (lower is better; a confident mistake costs a lot).
+
+```python
+import numpy as np
+from dense_armor.core.evaluation.metrics import LogLoss
+from dense_armor.core.online.learn.calibration import OnlinePlattScaling
+from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB
+
+rng = np.random.default_rng(0)
+raw, cal = OnlineGaussianNB(), OnlinePlattScaling(OnlineGaussianNB())
+ll_raw, ll_cal = LogLoss(), LogLoss()
+for _ in range(4000):
+    fraud = int(rng.random() < 0.5)
+    shared = rng.normal(0, 1)
+    x = {f"s{k}": 0.6 * (2 * fraud - 1) + shared + 0.3 * rng.normal() for k in range(6)}
+    ll_raw.update(fraud, raw.predict_proba_one(x).get(1, 0.5))
+    ll_cal.update(fraud, cal.predict_proba_one(x).get(1, 0.5))
+    raw.learn_one(x, fraud)
+    cal.learn_one(x, fraud)
+print(round(ll_raw.get(), 3), round(ll_cal.get(), 3))
+```
+
+```
+1.271 0.568
+```
+
+The log-loss falls from 1.271 to 0.568. The ranking of the payments is the same; only the numbers became honest: the calibrated model stops saying 0.99 when the six copies of the same signal agree.
+
+![A naive Bayes and the same model with OnlinePlattScaling on a fraud score: the raw model announces 0.99 when fraud happens 76 percent of the time, the calibrated one follows the honest diagonal, and its average log-loss is 0.568 against 1.271.](../assets/learn/calibration_reliability.png)
+
+Left: every dot groups the payments to which the model announced a similar probability, and shows how often they were really fraud. The diagonal is the honest model. The raw model is too sure at both ends (it says 0.01 and fraud happens 23 % of the time; it says 0.99 and fraud happens 76 % of the time); the calibrated one stays on the diagonal. Right: the average log-loss while the 4000 payments arrive.
 
 ## 1. The idea, in one line
 

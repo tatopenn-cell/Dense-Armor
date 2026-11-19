@@ -47,8 +47,35 @@ PAGES = {
 }
 
 
+# jobs that `usable` still lists but the library no longer recommends
+DEPRECATED_JOBS = {"heal"}
+# the catalog calls this domain after its folder; its class is Armor
+DISPLAY = {"core": "armor"}
+
 _TEXTS = {}
 _CLASSES = {}
+
+
+def jobs_of(onto):
+    """The jobs of the ontology without the deprecated ones; a job that lists only modules gets the
+    domains of the classes in those modules."""
+    jobs = {}
+    rows = get_catalog(REPO)
+    for name, job in onto["jobs"].items():
+        if name in DEPRECATED_JOBS:
+            continue
+        job = dict(job)
+        if not job["domains"] and job["modules"]:
+            job["domains"] = sorted(
+                {
+                    r["domain"]
+                    for r in rows
+                    for m in job["modules"]
+                    if r["module"].endswith("." + m) or r["module"] == m
+                }
+            )
+        jobs[name] = job
+    return jobs
 
 
 def _best_page(domain):
@@ -125,7 +152,7 @@ def draw():
     onto = json.loads(
         (REPO / "dense_armor" / "usable" / "ontology.json").read_text(encoding="utf-8")
     )
-    jobs = onto["jobs"]
+    jobs = jobs_of(onto)
     by_domain = defaultdict(list)
     functions = defaultdict(int)
     for i in get_catalog(REPO):
@@ -193,7 +220,7 @@ def draw():
         pill = f'<rect class="pill" x="410" y="{y - 9:.1f}" width="214" height="18" rx="9" fill="{CARD}" stroke="{"#4cc9f0" if rel else "#334155"}" stroke-width="1.3"/>'
         body = (
             f'<circle cx="410" cy="{y:.1f}" r="3.2" fill="#4cc9f0"/>{pill}'
-            f'<text class="dn m" x="422" y="{y + 3.6:.1f}" fill="{TEXT if rel else MUTED}" font-size="11" font-weight="700">{escape(d)}</text>'
+            f'<text class="dn m" x="422" y="{y + 3.6:.1f}" fill="{TEXT if rel else MUTED}" font-size="11" font-weight="700">{escape(DISPLAY.get(d, d))}</text>'
             f'<text x="614" y="{y + 3.6:.1f}" fill="{"#4cc9f0" if rel else MUTED}" font-size="10" text-anchor="end">{len(classes)}{f" + {functions[d]} fn" if functions.get(d) else ""}</text>'
         )
         if rel:
@@ -237,7 +264,7 @@ def readme_block(jobs, order):
         cells = []
         for d in jobs[j]["domains"]:
             rel = page_of(d)
-            cells.append(f"[{d}]({site_url(rel)})" if rel else d)
+            cells.append(f"[{DISPLAY.get(d, d)}]({site_url(rel)})" if rel else d)
         if not cells:
             cells = [f"`{m}`" for m in jobs[j]["modules"]]
         rows.append(f"| `{j}` | {' &middot; '.join(cells)} |")
@@ -267,7 +294,7 @@ def png():
     onto = json.loads(
         (REPO / "dense_armor" / "usable" / "ontology.json").read_text(encoding="utf-8")
     )
-    jobs = onto["jobs"]
+    jobs = jobs_of(onto)
     counts = defaultdict(set)
     fn = defaultdict(int)
     for i in get_catalog(REPO):
@@ -427,8 +454,9 @@ def readme():
     onto = json.loads(
         (REPO / "dense_armor" / "usable" / "ontology.json").read_text(encoding="utf-8")
     )
-    order, _ = order_nodes(onto["jobs"])
-    block = readme_block(onto["jobs"], order)
+    jobs = jobs_of(onto)
+    order, _ = order_nodes(jobs)
+    block = readme_block(jobs, order)
     path = REPO / "README.md"
     text = path.read_text(encoding="utf-8")
     CRLF = chr(13) + chr(10)

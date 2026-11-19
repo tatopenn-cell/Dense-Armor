@@ -3,204 +3,85 @@
 To find which past situations look like the current one, you need a way to measure the distance between them. Instead of assuming standard Euclidean formulas that get confused by noise, this tool learns a custom distance metric in real time from examples, so that situations that behave the same stay close together.
 
 
-A robot arm picks objects. It has seen thousands of grasps: some worked, some did not.
-When a new situation arrives, the first thing any retrieval or imitation step needs to
-answer is **"which past situations look like this one?"**
+A bank has seen thousands of customers: some bought a product, some did not.
+When a new customer arrives, the first thing any recommendation or fraud check needs to
+answer is **"which past customers look like this one?"**
 
 "Look like" is a distance. The default answer is Euclidean distance on the raw feature
-vector. On real robot features it is often the wrong answer: joint angles wrap around,
-velocities matter more than positions for some tasks and less for others, and two
-situations can have very different coordinates and still be the *same* grasp. The
+vector. It is often the wrong answer: a column with big numbers (a balance in euros) drowns a
+column with small ones (an age in years), and two customers can have very different numbers and
+still be the *same* kind of customer. The
 distance has to be **learned from data**, not assumed.
 
 `MetricKNNClassifier` learns that distance online, one triplet or pair at a time, while
-the robot works. It uses one of three algorithms ported from their papers:
+the data arrive. It uses one of three algorithms ported from their papers:
 
 - **OASIS** (Chechik et al. 2009) — bilinear similarity from triplets `(anchor, similar, different)`.
 - **LEGO** (Jain et al. 2008) — LogDet-regularized Mahalanobis matrix from pairs with a target distance.
 - **POLA** (Shalev-Shwartz et al. 2004) — pseudo-metric from similar / dissimilar pairs, kept positive semi-definite.
 
+## A first example: which customers look alike?
+
+A bank has customers of two groups, young (around 30 years old) and older (around 50). Besides the age it knows three columns that tell nothing about the group but have big numbers: the monthly spending (about 500), the balance (about 3000) and the number of visits (about 20). With the plain Euclidean distance these numbers drown the age. `MetricKNNClassifier` learns a better distance while it classifies: each customer is first predicted from the closest past customers, and then learned.
+
+```python
+import numpy as np
+from dense_armor.core.evaluation.metrics import Accuracy
+from dense_armor.core.online.learn.metric_learning import LEGO, OASIS, POLA, MetricKNNClassifier
+
+for name, metric, learn in (("Euclidean", OASIS(C=0.1), False), ("OASIS", OASIS(C=0.1), True), ("LEGO", LEGO(), True), ("POLA", POLA(), True)):
+    rng = np.random.default_rng(0)
+    knn = MetricKNNClassifier(metric, n_neighbors=1, window_size=1000, learn_metric=learn)
+    acc = Accuracy()
+    for _ in range(600):
+        young = int(rng.random() < 0.5)
+        x = {"age": rng.normal(30 if young else 50, 4), "spend": rng.normal(500, 150), "balance": rng.normal(3000, 1000), "visits": rng.normal(20, 8)}
+        acc.update(young, knn.predict_one(x))
+        knn.learn_one(x, young)
+    print(name, round(acc.get(), 3))
+```
+
+```
+Euclidean 0.563
+OASIS 0.806
+LEGO 0.896
+POLA 0.631
+```
+
+With the Euclidean distance the neighbours are right 56 % of the time, little better than a coin. The learned distances find that only the age matters and give less weight to the other three columns: 81 % for OASIS, 90 % for LEGO and 63 % for POLA, on the same 600 customers.
+
+![The share of the distance that OASIS, LEGO and POLA give to each of four columns of a customer when only the age tells the groups apart: about 94 to 96 percent to the age and 0 to 4 percent to each of the other columns, against 25 percent each for the Euclidean distance.](../assets/learn/metric_weights.png)
+
+The figure uses the customers of the first example of each algorithm page, with the columns put on the same scale: all three learn to give almost the whole distance to the age.
+
 ## 1. The data
 
-A stream of grasp features, one per attempt. Each sample is a 2-D vector: two joint
-torques at the moment of contact. Label: which grasp type succeeded.
+A stream of samples, one per customer. Each sample is a 2-D vector, with the label of its group, A or B.
 
 ```python
 import numpy as np
 rng = np.random.default_rng(42)
-grasps_a = rng.normal([1.0, 0.0], 0.1, (200, 2))
-grasps_b = rng.normal([0.0, 1.0], 0.1, (200, 2))
-X = np.vstack([grasps_a, grasps_b])
+group_a = rng.normal([1.0, 0.0], 0.1, (200, 2))
+group_b = rng.normal([0.0, 1.0], 0.1, (200, 2))
+X = np.vstack([group_a, group_b])
 y = np.array(["A"] * 200 + ["B"] * 200)
 ```
 
 Euclidean distance on this data works, because the clusters are far apart. On a real
-robot they are not.
+real data they are often not.
 
-## 2. Learn a distance from triplets: OASIS
+## 2. The three algorithms
 
-OASIS takes three samples at a time: an anchor `xa`, a similar sample `xp`, and a
-different sample `xn`. It learns a matrix `W` such that the bilinear similarity
+| Algorithm | Learns from | Model | Page |
+|---|---|---|---|
+| OASIS | triplets: an anchor, a similar sample, a different one | a bilinear similarity `xᵀ W y`, no constraint | [OASIS](oasis.md) |
+| LEGO | pairs with a target squared distance | a Mahalanobis matrix `A`, kept positive definite by the LogDet step | [LEGO](lego.md) |
+| POLA | pairs labelled similar (+1) or different (−1) | a pseudo-metric `(A, b)`, projected onto the positive semi-definite cone | [POLA](pola.md) |
 
-```
-s(x, x') = xᵀ W x'
-```
+Each page starts from the same example, the customers of the bank, and then goes through the algorithm
+step by step, with the formula symbol by symbol, a hand case and what the original paper says.
 
-is **higher for `(xa, xp)` than for `(xa, xn)` by at least a margin of 1**.
-
-### The formula, symbol by symbol
-
-For an anchor `xa`, a similar `xp`, a different `xn`, define the loss
-
-```
-ℓ = max(0, 1 − s(xa, xp) + s(xa, xn))
-```
-
-If `ℓ > 0` (the constraint is violated), the update is a single rank-one step:
-
-```
-V = xa (xp − xn)ᵀ
-τ = min(C, ℓ / ‖V‖²)
-W ← W + τ V
-```
-
-`C` is the aggressiveness: how large a single step is allowed to be. `V` is the
-rank-one direction that increases similarity to `xp` and decreases similarity to `xn`
-simultaneously. The step size `τ` is the loss divided by the squared gradient magnitude,
-capped at `C`.
-
-### Hand case
-
-Start `W = I`, `C = 0.1`, `xa = (1, 0)`, `xp = (1, 0.2)`, `xn = (0.8, 0)`.
-
-```
-s(xa, xp) = xaᵀ W xp = 1
-s(xa, xn) = xaᵀ W xn = 0.8
-ℓ = max(0, 1 − 1 + 0.8) = 0.8
-xp − xn = (0.2, 0.2)
-V = [[0.2, 0.2], [0, 0]]
-‖V‖² = 0.08
-τ = min(0.1, 0.8 / 0.08) = min(0.1, 10) = 0.1
-W ← I + 0.1 · [[0.2, 0.2], [0, 0]] = [[1.02, 0.02], [0, 1]]
-```
-
-The `(0, 0)` entry of `W` and the off-diagonal entry increased. The next time the same
-triplet arrives, `s(xa, xp)` is `1.02`, `s(xa, xn)` is `0.816`: the margin grew.
-
-```python
-from dense_armor.core.online.learn.metric_learning import OASIS
-
-learner = OASIS(C=0.1)
-learner.learn_triplet({"x0": 1.0, "x1": 0.0},
-                      {"x0": 1.0, "x1": 0.2},
-                      {"x0": 0.8, "x1": 0.0})
-```
-
-OASIS's learned `W` is not required to be symmetric. The distance used downstream is
-built from `M = WᵀW`, which is always positive semi-definite.
-
-## 3. Learn from pairs with a target distance: LEGO
-
-LEGO takes two samples and a target squared distance `y`. It updates a PSD matrix `A`
-toward that target using a LogDet-regularized gradient step.
-
-### The formula, symbol by symbol
-
-For a pair `(u, v)` with squared-distance target `y` and vector `z = u − v`:
-
-```
-ŷ = zᵀ A z                    (current squared distance)
-a = η y ŷ − 1
-ȳ = (a + √(a² + 4η ŷ²)) / (2η ŷ)
-A ← A − η (ȳ − y) (A z)(A z)ᵀ / (1 + η (ȳ − y) ŷ)
-```
-
-`η` is the learning rate; `ȳ` is the *closed-form* optimal post-update distance, derived
-in the paper (Section 2.1). Because `A` is updated through a LogDet-divergence step, it
-stays positive definite by construction: no separate projection needed.
-
-### Hand case
-
-Start `A = I`, `z = (1, 0)`, target `y = 0.5`, learning rate `η = 0.1`.
-
-```
-ŷ = 1
-a = 0.1 · 0.5 · 1 − 1 = −0.95
-ȳ = (−0.95 + √(0.9025 + 0.4)) / 0.2 = 0.9564
-A z = (1, 0)
-(A z)(A z)ᵀ = [[1, 0], [0, 0]]
-A ← I − 0.1 · (0.9564 − 0.5) · [[1, 0], [0, 0]] / (1 + 0.1 · (0.9564 − 0.5) · 1)
-  = I − 0.04364 · [[1, 0], [0, 0]]
-  = [[0.9564, 0], [0, 1]]
-```
-
-`A₀₀` moved from 1 to 0.9564 — toward the target 0.5, but only partway, because the
-LogDet regularizer resists large single steps. This is what makes LEGO's parameter
-updates stable without any tuning of a projection radius.
-
-```python
-from dense_armor.core.online.learn.metric_learning import LEGO
-
-learner = LEGO(eta=0.1)
-learner.learn_pair({"x0": 1.0, "x1": 0.0},
-                   {"x0": 0.0, "x1": 0.0},
-                   0.5)
-```
-
-LEGO needs a target squared distance per pair. `LEGO.percentile_targets` computes the
-5th/95th percentiles of same-class / different-class distances, as in Section 4 of the
-paper.
-
-## 4. Learn a pseudo-metric from similar/dissimilar pairs: POLA
-
-POLA learns a pseudo-metric from a stream of pairs labelled `y = +1` (similar) or
-`y = −1` (different). It keeps a matrix `A` and a threshold `b`; a pair is predicted
-similar when the squared Mahalanobis distance `d = zᵀ A z` is below `b`.
-
-### The formula, symbol by symbol
-
-For a pair with `z = u − v` and label `y ∈ {+1, −1}`:
-
-```
-d = zᵀ A z
-ℓ = max(0, y (d − b) + 1)
-α = ℓ / (1 + ‖z‖⁴)
-A ← A − y α z zᵀ
-b ← b + y α
-```
-
-Then `A` is projected back onto the PSD cone. If `A` still has a negative eigenvalue,
-it is removed (the paper shows only a single eigenvalue can go negative, so removing one
-rank-one direction is enough).
-
-### Hand case
-
-Start `A = I`, `b = 1`, `z = (1, 1)`, label `y = +1`.
-
-```
-d = [1, 1] · I · [1, 1]ᵀ = 2
-ℓ = max(0, 1 · (2 − 1) + 1) = 2
-‖z‖⁴ = (√2)⁴ = 4
-α = 2 / (1 + 4) = 0.4
-A ← I − 1 · 0.4 · [[1, 1], [1, 1]] = [[0.6, −0.4], [−0.4, 0.6]]
-b ← 1 + 0.4 = 1.4
-```
-
-The eigenvalues of the new `A` are 0.2 and 1.0 — both positive, no projection needed.
-The pair was "different" (label +1 means similar, but the distance was above the
-threshold, so the pair was violating), and the update shrank `A` along the direction of
-`z` to make that direction's distance smaller next time.
-
-```python
-from dense_armor.core.online.learn.metric_learning import POLA
-
-learner = POLA()
-learner.learn_pair({"x0": 1.0, "x1": 0.0},
-                   {"x0": 0.0, "x1": 0.0},
-                   1)
-```
-
-## 5. The k-NN classifier that learns its metric
+## 3. The k-NN classifier that learns its metric
 
 A metric learner does not fit the `Classifier` / `Regressor` / `Transformer` types of an existing online-learning library:
 it learns from two or three samples at a time and outputs a distance. `MetricLearner` is
@@ -241,7 +122,7 @@ classifying lifts it to 0.89 (OASIS), 0.92 (LEGO) and 0.74 (POLA) after 600 samp
 metric learns to ignore the noisy features. In the original paper OASIS already beat LEGO and the
 Euclidean metric on image retrieval (Chechik et al. 2009, Figure 2).
 
-## 6. Results on streams from an existing online-learning library
+## 4. Results on streams from an existing online-learning library
 
 `progressive_val_score` (predict, then learn), `StandardScaler` in front, k = 5,
 `window_size=1000`, metric learned online with the default parameters:
