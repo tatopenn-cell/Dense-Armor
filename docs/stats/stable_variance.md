@@ -3,9 +3,12 @@
 How do I compute a variance in float32 that is exactly zero on identical
 values?
 
-A stall sells collectible figures that all cost about 1000 euros, a few cents apart. The prices sit around a large offset, the variation between
-them is small, and the owner needs the variance of that variation. The textbook formula subtracts two almost equal numbers, and the digits of the
-variation are lost in the subtraction. This page shows the failure, the function to call, and what the function does inside.
+A robot joint reports its angle as a `float32` every millisecond. The
+angle sits around a large offset (the home position), the wobble around it
+is small, and the controller needs the variance of the wobble. The
+textbook formula subtracts two almost equal numbers, and the digits of the
+wobble are lost in the subtraction. This page shows the failure, the
+function to call, and what the function does inside.
 
 ![A three-dimensional surface: the offset of the data and their spread on the two horizontal axes, the relative error of the variance on the vertical axis. The pink surface of the textbook formula rises to an error of 100 % and more as the offset grows and the spread shrinks; the blue surface of stable_var stays at the floor, about 1e-8.](../assets/stable_variance/stable_variance_3d.png)
 
@@ -26,26 +29,28 @@ If the assistant uses the normal textbook formula (mean(x**2) - mean(x)**2), a d
 
 In the end, what is stable_var (Stable variance in float32)? It is a super-accurate math function that lets computers calculate how much numbers vary while using very little memory (float32), by first removing the giant base value and saving even the tiniest rounding crumbs!
 
-## A first example: the prices of the figures
+## A first example: the quotes of a stock index
 
-Three figures at 1000.00, 1000.01 and 1000.02 euros, in float32. The first number is the variance of the three prices computed in float64 from the same float32 values (the reference), the second is the textbook formula in float32, the third is `stable_var`:
+A stock index future is quoted around 4500 euros and moves in steps of 0.25, the tick. A trading desk takes 3000 consecutive quotes, in `float32`, and wants their variance, the first step of a volatility estimate. The first number is the variance in float64 of the same `float32` values (the reference), the second is the textbook formula in `float32`, the third is `stable_var`:
 
 ```python
 import numpy as np
 import jax.numpy as jnp
 from dense_armor.core.signals.stats.stable import stable_var
 
-x = jnp.asarray([1000.00, 1000.01, 1000.02], dtype=jnp.float32)
+rng = np.random.default_rng(0)
+quotes = np.round(rng.normal(4500.0, 0.5, 3000) * 4.0) / 4.0
+x = jnp.asarray(quotes.astype(np.float32))
 ref = float(np.var(np.asarray(x, dtype=np.float64)))
 naive = float(jnp.mean(x * x) - jnp.mean(x) ** 2)
-print(f"{ref:.6e} {naive:.6e} {float(stable_var(x)):.6e}")
+print(f"{ref:.4f} {naive:.4f} {float(stable_var(x)):.4f}")
 ```
 
 ```
-6.679694e-05 0.000000e+00 6.679694e-05
+0.2528 0.0000 0.2528
 ```
 
-The textbook formula returns `0.0`: the cents have disappeared in the subtraction of two numbers of the order of a million. `stable_var` returns `6.679694e-05`, equal to the reference at all the digits shown. (The three prices are not stored exactly in float32, so the reference is the variance of the float32 values, not of the decimal ones.)
+The textbook formula returns `0.0000`: the quotes are around 4500, their squares are of the order of twenty million, and the variance of a quarter of a euro is below the last digits of that number, so it disappears in the subtraction. A volatility of zero on a moving market is the kind of answer that nothing in the number says is wrong. `stable_var` returns `0.2528`, equal to the reference.
 
 ## 1. The failure
 
