@@ -259,7 +259,11 @@ nav:
           - Kalman filters: timeseries/kalman.md
           - Cycle residual: timeseries/cycle.md
           - GARCH: timeseries/garch.md
-      - Clustering: cluster/index.md
+      - Clustering:
+          - cluster/index.md
+          - OnlineKMeans: cluster/kmeans.md
+          - DenStream: cluster/denstream.md
+          - Visual vocabulary: cluster/visual_vocabulary.md
       - Trees:
           - tree/index.md
           - Hoeffding tree: tree/hoeffding.md

@@ -139,6 +139,10 @@ def draw(
     assert jobs, f"no job of the ontology reaches the {hub_label} domain"
 
     row, gap, top = 25.0, 14.0, 112.0
+    first_mid = top + row * len(pages[0][4]) / 2
+    last_start = top + sum(row * len(q[4]) + gap for q in pages[:-1])
+    mid0 = (first_mid + last_start + row * len(pages[-1][4]) / 2) / 2
+    top += max(0.0, 100.0 + (len(jobs) - 1) * 28 + 24 - mid0)
     y = top
     groups = []
     for ptitle, sub, rel, col, classes in pages:
@@ -148,6 +152,7 @@ def draw(
     H = y + 44
     W = 1000.0
     mid = (groups[0][6] + groups[-1][6]) / 2
+    H = max(H, mid + (len(jobs) - 1) * 28 + 64)
     hub = (330.0, mid)
     jy = {j: mid + (k - (len(jobs) - 1) / 2) * 56 for k, j in enumerate(jobs)}
 
@@ -162,9 +167,9 @@ def draw(
         f'<a class="back" href="{HOME}" target="_top"><title>back to the map of the library</title>'
         f'<rect class="card" x="20" y="14" width="150" height="30" rx="15" fill="{CARD}" stroke="{PINK}" stroke-width="1.6"/>'
         f'<text class="dn" x="95" y="33.5" fill="{TEXT}" font-size="12" font-weight="700" text-anchor="middle">← map of the library</text></a>',
-        f'<text x="24" y="{top - 14:.0f}" fill="{PINK}" font-size="12" font-weight="700">01  JOB</text>',
-        f'<text x="410" y="{top - 14:.0f}" fill="{PINK}" font-size="12" font-weight="700">02  PAGE</text>',
-        f'<text x="680" y="{top - 14:.0f}" fill="{PINK}" font-size="12" font-weight="700">03  CLASSES OF THE CATALOG</text>',
+        f'<text x="24" y="{98:.0f}" fill="{PINK}" font-size="12" font-weight="700">01  JOB</text>',
+        f'<text x="410" y="{98:.0f}" fill="{PINK}" font-size="12" font-weight="700">02  PAGE</text>',
+        f'<text x="680" y="{98:.0f}" fill="{PINK}" font-size="12" font-weight="700">03  CLASSES OF THE CATALOG</text>',
         '<g class="net">',
     ]
     for j in jobs:
