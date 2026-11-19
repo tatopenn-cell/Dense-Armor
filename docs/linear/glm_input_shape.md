@@ -42,7 +42,7 @@ output is the prediction on the current sample, before the update.
 
 ## Missing values
 
-A sample with a hole does not stop the loop. A feature that is `NaN` or infinite, or a target that is `None`, a word or `NaN`, is counted in `n_missing` and the sample is skipped, without raising. A key that is absent from the dict counts as `0.0` (a sparse input) and the sample is learned. Of the six samples below, one is learned with the key missing, and three have a hole:
+A sample with a hole does not stop the loop. A feature that is `None`, a word, `NaN` or infinite, or a target that is `None`, a word or `NaN`, is counted in `n_missing` and the sample is skipped, without raising. A key that is absent from the dict counts as `0.0` (a sparse input) and the sample is learned. Of the seven samples below, one is learned with the key missing, and four have a hole:
 
 ```python
 from dense_armor.core.online.optim import SGD
@@ -50,16 +50,17 @@ from dense_armor.core.online.linear.glm import LinearRegression
 
 reg = LinearRegression(optimizer=SGD(lr=0.1), intercept=False, feature_keys=["x"])
 reg.learn_one({"x": 1.0}, 3.0)
+reg.learn_one({"x": None}, 3.0)
+reg.learn_one({"x": "two"}, 3.0)
 reg.learn_one({"x": float("nan")}, 3.0)
 reg.learn_one({"x": 2.0}, None)
-reg.learn_one({"x": 2.0}, "six")
 reg.learn_one({}, 3.0)
 reg.learn_one({"x": 2.0}, 6.0)
 print(reg.n_missing)
 ```
 
 ```
-3
+4
 ```
 
-The `NaN` feature, the `None` target and the word `"six"` are counted and skipped (3); the sample with no key (`{}`, learned with `x = 0.0`) and the two normal ones are learned. A `None` as the value of a feature, or `None` instead of the whole dict, is not counted: it raises a `TypeError`.
+The `None`, the word `"two"`, the `NaN` and the `None` target are counted and skipped (4); the sample with no key (`{}`, learned with `x = 0.0`) and the two normal ones are learned. `learn_one(None, y)`, with no dict at all, is counted in the same way.

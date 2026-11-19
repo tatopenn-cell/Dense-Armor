@@ -45,6 +45,14 @@ import numpy as np
 from dense_armor.roles import Estimate, Regressor
 
 
+def _as_float(v) -> float:
+    """float(v), or NaN when v is None or not a number, so that the sample is skipped and counted."""
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return float("nan")
+
+
 class BayesianLinearRegression(Regressor):
     """Online Bayesian linear regression with a conjugate Gaussian prior.
 
@@ -162,7 +170,7 @@ class BayesianLinearRegression(Regressor):
     def _row(self, x) -> np.ndarray:
         x = self._as_dict(x)
         keys = self._resolve_keys(x)
-        xv = np.asarray([float(x.get(k, 0.0)) for k in keys], dtype=float)
+        xv = np.asarray([_as_float(x.get(k, 0.0)) for k in keys], dtype=float)
         if self.intercept:
             return np.concatenate([[1.0], xv])
         return xv
@@ -184,14 +192,18 @@ class BayesianLinearRegression(Regressor):
 
         Args:
             x: feature dict. A key missing from the dict counts as 0.0
-                (sparse input); a NaN or infinite value skips the sample
-                and adds 1 to ``n_missing``.
+                (sparse input); a NaN, infinite, None or non-numeric
+                value, or ``x=None``, skips the sample and adds 1 to
+                ``n_missing``.
             y: target scalar.
             t: optional timestamp, currently unused.
 
         Returns:
             self.
         """
+        if x is None:
+            self.n_missing_ += 1
+            return self
         xv = self._row(x)
         if not np.all(np.isfinite(xv)):
             self.n_missing_ += 1

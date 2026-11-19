@@ -122,11 +122,11 @@ ridge regularization of Hoerl and Kennard (1970).
   the features and learns a bias term together with the weights. Set
   `intercept=False` when the problem is known to pass through the origin
   and the bias should be suppressed.
-- **Missing values counted, not raised.** A `NaN` or infinite feature,
-  or a target that is `None`, a string or `NaN`, makes the sample count
-  in `n_missing` and be skipped. A key absent from the dict counts as
-  `0.0`. A `None` as the value of a feature, or `None` instead of the
-  dict, raises a `TypeError`.
+- **Missing values counted, not raised.** A `None`, a string, `NaN` or
+  infinite value on a feature, or a target that is `None`, a string or
+  `NaN`, makes the sample count in `n_missing` and be skipped.
+  `learn_one(None, y)` does the same. A key absent from the dict counts
+  as `0.0`.
 - **Pure form returns the prediction before the update.** The pair
   `init_state(dim)` and `step(state, v)` returns the new state and the
   prediction on the current sample, computed with the weights the model
