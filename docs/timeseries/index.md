@@ -4,7 +4,7 @@ A time series is a signal that arrives in order, one value after the other: the 
 
 ## The map of the time series
 
-Click a page to open it, or a job on the left (or the button at the top) to go back to the [map by job](../index.md#find-a-tool-by-what-you-want-to-do).
+Click a page to open it, or a job on the left (or the button at the top) to go back to the [map of the library](../index.md#the-library-folder-by-folder).
 
 <object type="image/svg+xml" data="../assets/maps/timeseries.svg" style="width:100%"></object>
 

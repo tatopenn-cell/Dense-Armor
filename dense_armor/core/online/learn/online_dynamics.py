@@ -148,7 +148,7 @@ class ResidualDynamicsLearner:
 
     Parameters
     ----------
-    model : RigidBodyModel
+    model : nominal ``RigidBodyModel``
     lam : float
         Forgetting factor, passed to each per-joint RLS.
     delta : float
@@ -246,7 +246,7 @@ class DriftAwareResidualDynamicsLearner(ResidualDynamicsLearner):
 
     Parameters
     ----------
-    model : RigidBodyModel
+    model : nominal ``RigidBodyModel``
     lam : float
         Slow (steady-state) forgetting factor.
     delta : float

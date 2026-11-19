@@ -1230,7 +1230,7 @@ Public methods:
 *Bases:* AnomalyDetector
 *Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
 
-`StreamingDeviationDetector` as an anomaly detector compatible with an existing online-learning library.
+`StreamingDeviationDetector` as an anomaly detector compatible with river.
 
 Public methods:
 

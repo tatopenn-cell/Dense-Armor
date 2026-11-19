@@ -159,7 +159,7 @@ same data.
 
 - **[Optimizers](optim/index.md)** — SGD, AdaGrad, Adam, FTRLProximal,
   OnlineNewtonStep, each in object and pure JAX form.
-- **[Linear models](linear/glm.md)** — LinearRegression, LogisticRegression,
+- **[Linear models](linear/index.md)** — LinearRegression, LogisticRegression,
   BayesianLinearRegression, PayloadEstimator.
 - **[Calibration](learn/calibration.md)** — online Platt scaling: honest probabilities
   from any classifier.

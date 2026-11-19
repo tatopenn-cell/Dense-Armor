@@ -36,6 +36,14 @@ from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Classifier, Regressor
 
 
+def _as_float(v) -> float:
+    """float(v), or NaN when v is None or not a number, so that the sample is skipped and counted."""
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return float("nan")
+
+
 def _nan_in_input(xv, y) -> bool:
     """True if any feature in xv or the target y is NaN or infinite."""
     if not np.all(np.isfinite(xv)):
@@ -132,7 +140,7 @@ class LinearRegression(Regressor):
     def _row(self, x) -> np.ndarray:
         x = self._as_dict(x)
         keys = self._resolve_keys(x)
-        xv = as_default_array([float(x.get(k, 0.0)) for k in keys])
+        xv = as_default_array([_as_float(x.get(k, 0.0)) for k in keys])
         if self.intercept:
             return np.concatenate([[1.0], xv])
         return xv
@@ -145,13 +153,19 @@ class LinearRegression(Regressor):
         """One gradient step on the squared loss of a single sample.
 
         Args:
-            x: feature dict.
+            x: feature dict. A key missing from the dict counts as 0.0
+                (sparse input); a NaN, infinite, None or non-numeric
+                value, or ``x=None``, skips the sample and adds 1 to
+                ``n_missing``.
             y: target scalar.
             t: optional timestamp, currently unused.
 
         Returns:
             self.
         """
+        if x is None:
+            self.n_missing_ += 1
+            return self
         xv = self._row(x)
         if _nan_in_input(xv, y):
             self.n_missing_ += 1
@@ -324,7 +338,7 @@ class LogisticRegression(Classifier):
     def _row(self, x) -> np.ndarray:
         x = self._as_dict(x)
         keys = self._resolve_keys(x)
-        xv = as_default_array([float(x.get(k, 0.0)) for k in keys])
+        xv = as_default_array([_as_float(x.get(k, 0.0)) for k in keys])
         if self.intercept:
             return np.concatenate([[1.0], xv])
         return xv
@@ -340,14 +354,18 @@ class LogisticRegression(Classifier):
 
         Args:
             x: feature dict. A key missing from the dict counts as 0.0
-                (sparse input); a NaN or infinite value skips the sample
-                and adds 1 to ``n_missing``.
+                (sparse input); a NaN, infinite, None or non-numeric
+                value, or ``x=None``, skips the sample and adds 1 to
+                ``n_missing``.
             y: target in {0, 1}. Any nonzero value is treated as 1.
             t: optional timestamp, currently unused.
 
         Returns:
             self.
         """
+        if x is None:
+            self.n_missing_ += 1
+            return self
         xv = self._row(x)
         if _nan_in_input(xv, y):
             self.n_missing_ += 1

@@ -1,12 +1,28 @@
 # Online classifiers: non-stationary state estimation and drift-adaptive architectures
 
-These tools tell, sample by sample, which state a system is in (a payment that is normal or fraud, a robot that moves freely or touches something). Rather than failing when external conditions change, these models continuously adapt their internal statistics or deploy background copies to keep the state estimate usable.
+These tools tell, sample by sample, which state a system is in (for example a payment that is normal or fraud). Rather than failing when external conditions change, these models continuously adapt their internal statistics or deploy background copies to keep the state estimate usable.
 
+## The map of the online classifiers
+
+Click a page to open it, or the job on the left (or the button at the top) to go back to the [map of the library](../index.md#the-library-folder-by-folder).
+
+<object type="image/svg+xml" data="../../assets/maps/online_classifiers.svg" style="width:100%"></object>
+
+## Gamestory
+
+London, deep night. The mysterious thief has targeted the city's bank accounts. The young detective has to check the payments one by one, in real time, and decide on the fly: "Is this payment honest or is it a scam?".
+
+At first it seems easy: the thief always makes giant withdrawals (400 pounds), while normal citizens spend very little (60 pounds). But in the middle of the night, the thief suddenly changes his trick: he starts making tiny withdrawals so as not to draw attention, right when citizens are making big purchases! To avoid getting fooled by the rule change, the detective uses three special helper programs called Online Classifiers:
+
+- **1. The little program that never forgets (OnlineGaussianNB):** It learns one payment at a time. But if you don't tell it to forget the past, it stays stuck on the old rules: when the thief changes his trick, it keeps blocking honest citizens and lets the thief get away!
+- **2. The short-memory programs (alpha and OnlineSoftmaxRegression):** To avoid getting stuck in the past, these helpers give more weight to the latest clues and slowly forget the old ones (thanks to a trick called alpha), or redraw the borders between honest people and thieves on the fly (OnlineSoftmaxRegression). That way they adapt right away to the new moves!
+- **3. The Detective with the Substitute on the bench (DriftAdaptiveClassifier):** This is the smartest system of all! The main program works connected to an alarm. When the thief changes his trick and the program starts making too many mistakes, the siren goes off: immediately a backup program starts up and studies only the new clues. As soon as the backup proves it can guess better than the old program, it takes over command!
+
+In the end, what are Online Classifiers? They are computer "brains" that don't need to study thousands of books before starting: they learn one clue at a time while things are happening, and know how to change their minds on the fly when the bad guys change the rules of the game!
 
 A bank has to tell, payment by payment, whether a payment is normal or fraud, from a few numbers.
 It has to keep doing it right when the world changes: customers change habit, fraudsters change
-trick. The same happens to a robot that has to tell, from its joint signals, whether it moves
-freely or touches something, when its load or its gripper changes.
+trick.
 
 `OnlineGaussianNB` and `OnlineSoftmaxRegression` learn one sample at a time.
 `DriftAdaptiveClassifier` wraps either of them with a drift detector on its own
@@ -19,25 +35,43 @@ Half of the payments are fraud. At first a fraud is a large payment (around 400)
 ```python
 import numpy as np
 from dense_armor.core.online.drift.detector import CUSUMDriftDetector
-from dense_armor.core.online.learn.online_classifiers import DriftAdaptiveClassifier, OnlineGaussianNB
+from dense_armor.core.online.learn.online_classifiers import (
+    DriftAdaptiveClassifier,
+    OnlineGaussianNB,
+)
 
 rng = np.random.default_rng(1)
 models = {
     "never forgets": OnlineGaussianNB(),
     "alpha=0.1": OnlineGaussianNB(alpha=0.1),
-    "drift-adaptive": DriftAdaptiveClassifier(OnlineGaussianNB(), CUSUMDriftDetector(reference="fixed", radius=20, ref_mult=5, two_sided=False), window=50, smooth_window=50),
+    "drift-adaptive": DriftAdaptiveClassifier(
+        OnlineGaussianNB(),
+        CUSUMDriftDetector(
+            reference="fixed", radius=20, ref_mult=5, two_sided=False
+        ),
+        window=50,
+        smooth_window=50,
+    ),
 }
 hits = {k: [] for k in models}
 for i in range(6000):
     fraud = int(rng.random() < 0.5)
     big = fraud if i < 3000 else 1 - fraud
-    x = {"amount": rng.normal(400 if big else 60, 60 if big else 20), "hour": rng.normal(14, 3)}
+    x = {
+        "amount": rng.normal(400 if big else 60, 60 if big else 20),
+        "hour": rng.normal(14, 3),
+    }
     for k, m in models.items():
         hits[k].append(m.predict_one(x) == fraud)
         m.learn_one(x, fraud)
 for k, h in hits.items():
     h = np.array(h, float)
-    print(k, h[500:3000].mean().round(3), h[3000:3200].mean().round(3), h[5000:5900].mean().round(3))
+    print(
+        k,
+        h[500:3000].mean().round(3),
+        h[3000:3200].mean().round(3),
+        h[5000:5900].mean().round(3),
+    )
 ```
 
 ```
@@ -50,7 +84,33 @@ The three columns are the accuracy before the change, over the 200 payments afte
 
 ![Accuracy over the last 200 payments of three classifiers when the meaning of the amount flips at payment 3000: the one that never forgets falls to zero and stays low, alpha=0.1 barely dips, the drift-adaptive one falls and returns to 1.0 after its alarm.](../assets/learn/classifier_drift.png)
 
-## 1. The data
+## The three classifiers, one page each
+
+| Page | Class | What it is for |
+|---|---|---|
+| [OnlineGaussianNB](gaussian_nb.md) | `OnlineGaussianNB` | a mean and a variance per class and column, with an optional forgetting factor |
+| [OnlineSoftmaxRegression](softmax.md) | `OnlineSoftmaxRegression` | a border between the classes that moves a little at every mistake, with a step that shrinks by itself |
+| [DriftAdaptiveClassifier](drift_adaptive.md) | `DriftAdaptiveClassifier` | a wrapper with an alarm and a backup, for when you cannot know how fast the world changes |
+
+## Cost
+
+Per sample, on one CPU core:
+
+| classifier | µs per sample |
+|---|---|
+| `OnlineGaussianNB` | 10.5 |
+| `OnlineSoftmaxRegression` | 36.8 |
+| `DriftAdaptiveClassifier(OnlineGaussianNB)` | 75.8 |
+
+At 100 Hz the loop has 10 ms per cycle: all three fit with three orders of magnitude
+to spare. The wrapper is 7× the bare NB because it runs a background copy in parallel
+after each drift alarm.
+
+## The robot example
+
+The same classifiers on a robot that has to tell, sample by sample, whether it moves freely, touches something or collides, from its joint signals, and that has to keep doing it right when its load or its gripper changes.
+
+### The data
 
 6,000 samples, 3 states from a Markov chain (stay probability 0.95, mean dwell 20
 samples), 4 joint features with unit noise:
@@ -62,40 +122,7 @@ samples), 4 joint features with unit noise:
 From sample 3000 the contact load **moves to the other two joints**: contact becomes
 `(0, 0, 2, 2)`. The classifier was trained on the old signature.
 
-## 2. Gaussian naive Bayes, one sample at a time
-
-For each class and each feature, the classifier keeps a running mean and variance,
-updated by Welford's algorithm:
-
-```
-n ← n + 1
-δ = v − m
-m ← m + δ / n
-M2 ← M2 + δ (v − m)
-variance = M2 / n
-```
-
-**Hand case.** Three values `2, 4, 6`:
-
-```
-v = 2: n = 1, m = 2, M2 = 0
-v = 4: n = 2, m = 3, M2 = 2
-v = 6: n = 3, m = 4, M2 = 8
-```
-
-Mean 4, variance `8 / 3 = 2.667`.
-
-The classifier picks the class with the highest
-
-```
-log prior + Σ log N(x_i; m_i, var_i)
-```
-
-With `alpha = 0`, the statistics equal the batch MLE of a Gaussian NB on the observed
-samples; the wrapper matches a batch Gaussian NB to numerical precision (max difference
-1.8e-15 on 500 samples). With `alpha > 0`, the statistics **forget** exponentially:
-old counts are multiplied by `(1 − α)` before the new sample is added, so the classifier
-adapts when the class-conditional distributions change.
+### Gaussian naive Bayes on the robot data
 
 ```python
 import numpy as np
@@ -104,14 +131,22 @@ from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB
 rng = np.random.default_rng(42)
 s = np.zeros(6000, int)
 for t in range(1, 6000):
-    s[t] = s[t - 1] if rng.random() < 0.95 else (s[t - 1] + rng.integers(1, 3)) % 3
+    s[t] = (
+        s[t - 1] if rng.random() < 0.95 else (s[t - 1] + rng.integers(1, 3)) % 3
+    )
 mu = np.array([[0, 0, 0, 0], [2, 2, 0, 0], [4, 4, 4, 4]], float)
 X = mu[s] + rng.standard_normal((6000, 4))
 X[3000:][s[3000:] == 1] += [-2, -2, 2, 2]
 clf, hit = OnlineGaussianNB(), []
 for x, y in zip(X, s):
-    f = dict(zip("abcd", x)); hit.append(clf.predict_one(f) == y); clf.learn_one(f, y)
-print(np.mean(hit[500:3000]).round(3), np.mean(hit[3000:3200]).round(3), np.mean(hit[5000:5900]).round(3))
+    f = dict(zip("abcd", x))
+    hit.append(clf.predict_one(f) == y)
+    clf.learn_one(f, y)
+print(
+    np.mean(hit[500:3000]).round(3),
+    np.mean(hit[3000:3200]).round(3),
+    np.mean(hit[5000:5900]).round(3),
+)
 ```
 
 ```
@@ -120,7 +155,7 @@ print(np.mean(hit[500:3000]).round(3), np.mean(hit[3000:3200]).round(3), np.mean
 
 Prequential accuracy (predict first, then learn) before the change, right after it, and late.
 
-## 3. What happens when the signature changes
+### What happens when the signature changes
 
 The contact state moves from joints 0–1 to joints 2–3 at sample 3000. A classifier
 without forgetting keeps the old contact mean and gets every post-change contact sample
@@ -147,40 +182,43 @@ late phase (0.913 instead of 0.941).
 The drift-adaptive wrapper is the third option: it does not need a forgetting factor
 chosen in advance.
 
-## 4. The drift-adaptive wrapper
-
-`DriftAdaptiveClassifier` wraps any classifier with a drift detector on the classifier's
-own prediction loss. Per sample:
-
-1. Predict, then compute the log-loss `−log p(y)`.
-2. Feed the **50-sample rolling mean** of the log-loss to the detector.
-3. Learn.
-4. If the detector fires, start a **background copy** trained only on new samples.
-5. When the background's accuracy over the last 50 samples beats the main classifier's
-   over the same window, **promote** the background to main.
-
-The 50-sample rolling mean is not optional in practice: the raw log-loss is near zero
-on most samples, so its robust scale (MAD) is tiny and a CUSUM fed with the raw value
-fires on almost every error — hundreds of alarms in 6,000 samples. The rolling mean
-gives the detector a stable scale.
+### The drift-adaptive wrapper on the robot data
 
 ```python
 import numpy as np
-from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB, DriftAdaptiveClassifier
+from dense_armor.core.online.learn.online_classifiers import (
+    OnlineGaussianNB,
+    DriftAdaptiveClassifier,
+)
 from dense_armor.core.online.drift.detector import CUSUMDriftDetector
 
 rng = np.random.default_rng(42)
 s = np.zeros(6000, int)
 for t in range(1, 6000):
-    s[t] = s[t - 1] if rng.random() < 0.95 else (s[t - 1] + rng.integers(1, 3)) % 3
+    s[t] = (
+        s[t - 1] if rng.random() < 0.95 else (s[t - 1] + rng.integers(1, 3)) % 3
+    )
 mu = np.array([[0, 0, 0, 0], [2, 2, 0, 0], [4, 4, 4, 4]], float)
 X = mu[s] + rng.standard_normal((6000, 4))
 X[3000:][s[3000:] == 1] += [-2, -2, 2, 2]
-det = CUSUMDriftDetector(reference="fixed", radius=20, ref_mult=5, two_sided=False)
-clf, hit = DriftAdaptiveClassifier(OnlineGaussianNB(), det, window=50, smooth_window=50), []
+det = CUSUMDriftDetector(
+    reference="fixed", radius=20, ref_mult=5, two_sided=False
+)
+clf, hit = (
+    DriftAdaptiveClassifier(
+        OnlineGaussianNB(), det, window=50, smooth_window=50
+    ),
+    [],
+)
 for x, y in zip(X, s):
-    f = dict(zip("abcd", x)); hit.append(clf.predict_one(f) == y); clf.learn_one(f, y)
-print(np.mean(hit[500:3000]).round(3), np.mean(hit[3000:3200]).round(3), np.mean(hit[5000:5900]).round(3))
+    f = dict(zip("abcd", x))
+    hit.append(clf.predict_one(f) == y)
+    clf.learn_one(f, y)
+print(
+    np.mean(hit[500:3000]).round(3),
+    np.mean(hit[3000:3200]).round(3),
+    np.mean(hit[5000:5900]).round(3),
+)
 ```
 
 ```
@@ -192,62 +230,11 @@ about 55 samples after the change, and recovers in 145 samples. It reaches 0.931
 late phase — better than the no-forgetting baseline (0.879) and close to the tuned
 `alpha = 0.1` (0.913).
 
-## 5. The softmax regression alternative
-
-`OnlineSoftmaxRegression` is a multinomial logistic regression with AdaGrad. It uses
-the same interface and is often better when the class boundaries are not Gaussian.
-
-### The formula, symbol by symbol
-
-Probabilities are `softmax(W z)` where `z = [features..., 1]`. The gradient for class
-`c` on sample `(z, y)` is
-
-```
-(p_c − [c = y]) · z
-```
-
-with `p_c` the softmax output for class `c` and `[c = y]` equal to 1 when `c` is the
-true label and 0 otherwise. The AdaGrad step is `η / √G` where `G` is the running sum of
-squared gradients, updated as `G ← G + g²` before the parameter step. `η` is the base
-learning rate (default 0.1); `l2` adds a small penalty.
-
-Classes are added on the fly when a new label arrives.
-
-## 6. Cost
-
-Per sample, on one CPU core:
-
-| classifier | µs per sample |
-|---|---|
-| `OnlineGaussianNB` | 10.5 |
-| `OnlineSoftmaxRegression` | 36.8 |
-| `DriftAdaptiveClassifier(OnlineGaussianNB)` | 75.8 |
-
-At 100 Hz the loop has 10 ms per cycle: all three fit with three orders of magnitude
-to spare. The wrapper is 7× the bare NB because it runs a background copy in parallel
-after each drift alarm.
-
-## float32
-
-`OnlineGaussianNB(dtype=numpy.float32)` keeps per-class and per-feature
-state in float32 and applies the shifted-data algorithm with
-``K = x[0]`` (Healy 2022, Algorithm 2) online: two TwoSum sums per
-feature and the two-term variance. Relative error of the variance
-against the float64 reference on N(1e3, 0.01), 100,000 samples, seed 0:
-6.2e-8. On a constant stream at 1e10 and 1e38 the variance is exactly
-0.0. With this mode ``alpha`` must be 0 (the exponential decay is not
-compatible with a fixed shift).
-
-Cost, median of 7 runs of one update over 20,000 samples, one CPU thread: default 0.010826 ms (IQR 0.000569), float32 0.020122 ms (IQR 0.007959). The claim that the float32
-path is at most as slow as the default is not met: on a scalar loop the
-numpy float32 arithmetic is slower than the Python float64 arithmetic.
-The float32 speed of these classes is not measured; no class in this
-batch has a `learn_many` on which the float32 blocks of the T3 kernel
-could be timed.
-
 ## API reference
 
 ::: dense_armor.core.online.learn.online_classifiers
+    options:
+      docstring_style: numpy
 
 ---
 

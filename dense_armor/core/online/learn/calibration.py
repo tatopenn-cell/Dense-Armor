@@ -1,6 +1,6 @@
 """
 Online Platt scaling (Gupta and Ramdas, ICML 2023, arXiv:2305.00070) as a
-classifier wrapper for an existing online-learning library. Needs the optional dependency: the streaming extra
+classifier wrapper for river. Needs the optional dependency: the streaming extra
 """
 
 import math

@@ -1,7 +1,7 @@
 """The interactive map of the trees: jobs, pages and classes, with the exact names of `usable`.
 
 Draws docs/assets/maps/trees.svg for the first page of the Trees section. The jobs on the left
-(from dense_armor/usable/ontology.json) and the button at the top lead back to the map by job on
+(from dense_armor/usable/ontology.json) and the button at the top lead back to the map of the library on
 the home page; every page card and every class opens the page that documents it.
 
 Run from the repo root:
@@ -21,7 +21,7 @@ OUT = HERE / "trees.svg"
 
 BG, CARD, TEXT, MUTED = "#0d131a", "#101a24", "#e0fbfc", "#94a3b8"
 CYAN, ORANGE, PINK = "#4cc9f0", "#ff9e00", "#f72585"
-HOME = "../../#find-a-tool-by-what-you-want-to-do"
+HOME = "../../#the-library-folder-by-folder"
 
 # page card: (title, subtitle, page, colour, classes in the order shown)
 PAGES = [
@@ -108,8 +108,14 @@ def url(rel):
     )
 
 
-def draw(pages, domains, title, subtitle, out, aria, tags, legend, script):
-    """Draw one map: the jobs of the ontology that reach domains[0], the pages and their classes."""
+def draw(
+    pages, domains, title, subtitle, out, aria, tags, legend, script, partial=False
+):
+    """Draw one map: the jobs of the ontology that reach domains[0], the pages and their classes.
+
+    With partial=True the map is of one section only, so the classes of the domain that are not
+    on its pages are not an error.
+    """
     hub_label = domains[0]
     catalog = {
         i["class"]: i
@@ -120,7 +126,7 @@ def draw(pages, domains, title, subtitle, out, aria, tags, legend, script):
     missing = [c for c in placed if c not in catalog]
     assert not missing, f"not in the catalog of usable: {missing}"
     main_domain = {c for c, i in catalog.items() if i["domain"] == hub_label}
-    assert main_domain <= set(placed), (
+    assert partial or main_domain <= set(placed), (
         f"classes of the {hub_label} domain left out: {main_domain - set(placed)}"
     )
     for _, _, rel, _, _ in pages:
@@ -153,9 +159,9 @@ def draw(pages, domains, title, subtitle, out, aria, tags, legend, script):
         f'<rect width="{W:.0f}" height="{H:.0f}" fill="{BG}" rx="14"/>',
         f'<text x="{W / 2:.0f}" y="38" fill="{TEXT}" font-size="24" font-weight="700" text-anchor="middle">{escape(title)}</text>',
         f'<text x="{W / 2:.0f}" y="62" fill="{CYAN}" font-size="12.5" text-anchor="middle">{escape(subtitle)}</text>',
-        f'<a class="back" href="{HOME}" target="_top"><title>back to the map by job</title>'
+        f'<a class="back" href="{HOME}" target="_top"><title>back to the map of the library</title>'
         f'<rect class="card" x="20" y="14" width="150" height="30" rx="15" fill="{CARD}" stroke="{PINK}" stroke-width="1.6"/>'
-        f'<text class="dn" x="95" y="33.5" fill="{TEXT}" font-size="12" font-weight="700" text-anchor="middle">← map by job</text></a>',
+        f'<text class="dn" x="95" y="33.5" fill="{TEXT}" font-size="12" font-weight="700" text-anchor="middle">← map of the library</text></a>',
         f'<text x="24" y="{top - 14:.0f}" fill="{PINK}" font-size="12" font-weight="700">01  JOB</text>',
         f'<text x="410" y="{top - 14:.0f}" fill="{PINK}" font-size="12" font-weight="700">02  PAGE</text>',
         f'<text x="680" y="{top - 14:.0f}" fill="{PINK}" font-size="12" font-weight="700">03  CLASSES OF THE CATALOG</text>',
@@ -179,7 +185,7 @@ def draw(pages, domains, title, subtitle, out, aria, tags, legend, script):
 
     for j in jobs:
         o.append(
-            f'<a href="{HOME}" target="_top"><title>{escape(j)}: back to the map by job</title>'
+            f'<a href="{HOME}" target="_top"><title>{escape(j)}: back to the map of the library</title>'
             f'<rect class="card" x="20" y="{jy[j] - 19:.1f}" width="190" height="38" rx="10" fill="{CARD}" stroke="{CYAN}" stroke-width="1.6"/>'
             f'<text class="dn m" x="34" y="{jy[j] - 2:.1f}" fill="{TEXT}" font-size="13" font-weight="700">{escape(j)}</text>'
             f'<text x="34" y="{jy[j] + 12:.1f}" fill="{MUTED}" font-size="9.5">job of the ontology</text></a>'

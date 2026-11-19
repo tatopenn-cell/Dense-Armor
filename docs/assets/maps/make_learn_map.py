@@ -11,7 +11,7 @@ from make_tree_map import CYAN, HERE, ORANGE, PINK, draw
 
 PAGES = [
     (
-        "Calibration",
+        "Platt scaling",
         "honest probabilities",
         "learn/calibration.md",
         CYAN,
@@ -46,38 +46,86 @@ PAGES = [
         ["POLA"],
     ),
     (
-        "Online classifiers",
-        "a state that follows the data",
-        "learn/online_classifiers.md",
+        "OnlineGaussianNB",
+        "a mean and a variance per class",
+        "learn/gaussian_nb.md",
         PINK,
-        ["OnlineGaussianNB", "OnlineSoftmaxRegression", "DriftAdaptiveClassifier"],
+        ["OnlineGaussianNB"],
     ),
     (
-        "Online dynamics",
-        "what the formula misses",
-        "learn/online_dynamics.md",
+        "OnlineSoftmaxRegression",
+        "a border that moves",
+        "learn/softmax.md",
+        PINK,
+        ["OnlineSoftmaxRegression"],
+    ),
+    (
+        "DriftAdaptiveClassifier",
+        "a substitute on the bench",
+        "learn/drift_adaptive.md",
+        PINK,
+        ["DriftAdaptiveClassifier"],
+    ),
+    (
+        "RecursiveLeastSquares",
+        "a line that keeps up",
+        "learn/recursive_least_squares.md",
         CYAN,
-        [
-            "RecursiveLeastSquares",
-            "ResidualDynamicsLearner",
-            "DriftAwareResidualDynamicsLearner",
-        ],
+        ["RecursiveLeastSquares"],
+    ),
+    (
+        "ResidualDynamicsLearner",
+        "the torque the model misses",
+        "learn/residual_dynamics.md",
+        CYAN,
+        ["ResidualDynamicsLearner"],
+    ),
+    (
+        "DriftAwareResidualDynamicsLearner",
+        "forget faster when it changes",
+        "learn/drift_aware.md",
+        CYAN,
+        ["DriftAwareResidualDynamicsLearner"],
     ),
 ]
 
 
+SECTIONS = {
+    "learn": (None, "THE MAP OF THE ADAPTIVE LEARNERS"),
+    "metric_learning": (
+        ("Metric learning", "OASIS", "LEGO", "POLA"),
+        "THE MAP OF METRIC LEARNING",
+    ),
+    "online_classifiers": (
+        ("OnlineGaussianNB", "OnlineSoftmaxRegression", "DriftAdaptiveClassifier"),
+        "THE MAP OF THE ONLINE CLASSIFIERS",
+    ),
+    "online_dynamics": (
+        (
+            "RecursiveLeastSquares",
+            "ResidualDynamicsLearner",
+            "DriftAwareResidualDynamicsLearner",
+        ),
+        "THE MAP OF ONLINE DYNAMICS",
+    ),
+}
+
+
 def main():
-    draw(
-        PAGES,
-        ("learn",),
-        "THE MAP OF THE ADAPTIVE LEARNERS",
-        "the job, the page of each tool and its classes; pass over a page to light its classes, click to open it",
-        HERE / "learn.svg",
-        "The map of the adaptive learners",
-        {"Classifier": "C", "Regressor": "R"},
-        "C classifier, R regressor; ",
-        "docs/assets/maps/make_learn_map.py",
-    )
+    for name, (titles, title) in SECTIONS.items():
+        pages = PAGES if titles is None else [p for p in PAGES if p[0] in titles]
+        draw(
+            pages,
+            ("learn",),
+            title,
+            "the job, the page of each tool and its classes; pass over a page to light its classes, click to open it",
+            HERE / f"{name}.svg",
+            title.capitalize(),
+            {"Classifier": "C", "Regressor": "R"},
+            "C classifier, R regressor; ",
+            "docs/assets/maps/make_learn_map.py",
+            partial=titles is not None,
+        )
 
 
 if __name__ == "__main__":

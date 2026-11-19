@@ -2,6 +2,12 @@
 
 When a model learns, it changes its numbers a little after every example. An optimizer is the rule that decides how big each change is. This page compares the five rules in the library and helps you choose one.
 
+## The map of the optimizers
+
+Click a page to open it, or the job on the left (or the button at the top) to go back to the [map of the library](../index.md#the-library-folder-by-folder).
+
+<object type="image/svg+xml" data="../assets/maps/optim.svg" style="width:100%"></object>
+
 An optimizer is the algorithm that decides how much to change the weights of
 a linear model on each new sample. It is the only place where the learning
 rate lives. It is also what separates the five methods in

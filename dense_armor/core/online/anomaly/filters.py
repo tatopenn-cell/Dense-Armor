@@ -11,7 +11,7 @@ robust centre/scale of that window, in the method's own scale.
 
 The four scorers share the interface of
 `river_anomaly.StreamingDeviationScorer` (`learn_one` / `score_one`, feature
-selection, `is_outlier`), so they plug into the pipelines of an existing online-learning library and
+selection, `is_outlier`), so they plug into the pipelines of river and
 `anomaly.ThresholdFilter` the same way, but each uses its own method's scale
 and threshold rather than the median/MAD robust deviation of
 `StreamingDeviationDetector` alone.

@@ -156,3 +156,39 @@ def test_payload_sample_with_non_increasing_time_does_not_learn():
     assert est._m == 0.0
     assert est._prev_t == 0.5
     assert est.n_missing == 0
+
+
+def test_glm_none_or_word_as_a_feature_is_skipped_and_counted():
+    reg = LinearRegression(optimizer=SGD(lr=0.1), intercept=True)
+    clf = LogisticRegression(optimizer=SGD(lr=0.1), intercept=True)
+    for _ in range(5):
+        reg.learn_one({"a": 1.0, "b": 2.0}, 3.0)
+        clf.learn_one({"a": 1.0, "b": 2.0}, 1)
+    w_reg, w_clf = reg._w.copy(), clf._w.copy()
+
+    for bad in (None, "two"):
+        reg.learn_one({"a": bad, "b": 2.0}, 3.0)
+        clf.learn_one({"a": bad, "b": 2.0}, 1)
+    reg.learn_one(None, 3.0)
+    clf.learn_one(None, 1)
+
+    assert reg.n_missing == 3
+    assert clf.n_missing == 3
+    assert np.array_equal(reg._w, w_reg)
+    assert np.array_equal(clf._w, w_clf)
+
+
+def test_bayesian_linear_regression_none_or_word_is_skipped_and_counted():
+    m = BayesianLinearRegression(alpha=1.0, beta=1.0, intercept=True)
+    for _ in range(5):
+        m.learn_one({"a": 1.0, "b": 2.0}, 3.0)
+    m_before = m._m.copy()
+    S_before = m._S.copy()
+
+    m.learn_one({"a": None, "b": 2.0}, 3.0)
+    m.learn_one({"a": "two", "b": 2.0}, 3.0)
+    m.learn_one(None, 3.0)
+
+    assert m.n_missing == 3
+    assert np.array_equal(m._m, m_before)
+    assert np.array_equal(m._S, S_before)

@@ -6,6 +6,21 @@ kinds. Each pair nudges the distance of that pair toward its target, and the upd
 the learned matrix stays a proper distance without any repair. The other two learners are
 [OASIS](oasis.md) and [POLA](pola.md); the overview is on [Metric learning](metric_learning.md).
 
+## Gamestory
+
+London, deep night. To frame the mysterious thief's gang, it is no longer enough for the young detective to say whether two people look alike: he has to decide how close or far apart they should be on his map.
+
+So he draws two targets on the table: a super tight circle called "Friends" and a very distant one called "Strangers". Then he starts the LEGO training:
+
+- **Choosing the right distances:** Before setting off, the detective looks at a small group of old, already-solved cases. He measures how close two real accomplices are (for example, 1 step) and how far apart two complete strangers are (for example, 20 steps). Those become his two targets.
+- **Pushing to the right spot:** The informant puts two new suspects in front of him at a time and tells him: "These two are accomplices, bring them closer to 1 step!" or "These have nothing to do with each other, push them apart to 20 steps!".
+- **Small steps without breaking the ruler:** The detective never moves the suspects all at once, because he would risk making a mess and throwing off all the measurements. He uses a special trick (called eta) to make only small, gentle adjustments, one tiny step at a time, keeping his ruler always perfect without ever having to fix it.
+- **Discovering the real clue:** After trying thousands of pairs, the detective realizes that money in the bank, store spending, and museum visits are useless. The only clue that hits the targets is age: the accomplices are all the same age!
+
+![Left: the average squared distance of 200 fresh pairs over 10 runs, for pairs of the same kind (falling toward the target 1.04) and of different kinds (rising to the target 21), with their quartile bands. Right: the largest and the smallest eigenvalue of the matrix A: the smallest stays above zero.](../assets/learn/lego_learning.png)
+
+Pair after pair, LEGO moves the distances toward the targets. Left: the squared distance of 200 fresh pairs, on average, over 10 runs (line: median, band: quartiles). The pairs of the same kind come down from about 6.6 to about 3.2 (the target is 1.04) and the pairs of different kinds go up from about 11 to about 22 (the target is 21.16); the final medians over the 10 runs are 3.16 and 22.05. Right: the largest and the smallest eigenvalue of `A`. The smallest one goes down, because LEGO squeezes the useless directions, but it stays above zero in every step of every run (the lowest value is 0.023), with no projection.
+
 ## A first example: targets from the data
 
 A bank has two kinds of customers, young and older. For each customer it knows four numbers, already put on the same scale: the age, which tells the two kinds apart, and the spending, the balance and the number of visits, which tell nothing about the group. With the plain Euclidean distance the three useless columns weigh three times as much as the useful one. LEGO needs a target distance for each pair; `LEGO.percentile_targets` computes them from 200
@@ -17,10 +32,20 @@ import numpy as np
 from dense_armor.core.online.learn.metric_learning import LEGO
 
 rng = np.random.default_rng(0)
+
+
 def customer(young):
-    return {"age": rng.normal(-1.0 if young else 1.0, 0.5), "spend": rng.normal(0, 1), "balance": rng.normal(0, 1), "visits": rng.normal(0, 1)}
+    return {
+        "age": rng.normal(-1.0 if young else 1.0, 0.5),
+        "spend": rng.normal(0, 1),
+        "balance": rng.normal(0, 1),
+        "visits": rng.normal(0, 1),
+    }
+
+
 def euclid(u, v):
     return sum((u[k] - v[k]) ** 2 for k in u) ** 0.5
+
 
 labels = rng.random(200) < 0.5
 X = np.array([list(customer(g).values()) for g in labels])
@@ -53,6 +78,10 @@ The targets are 0.95 (same kind) and 21.08 (different kinds), squared distances.
 the diagonal of the learned matrix `A` (columns in alphabetical order, the age first): the age weighs 5.14, the three useless columns 0.06 to 0.12.
 The third line is the share of 600 test triplets in which the anchor is closer to the customer of its
 own kind: 70.2 % with the Euclidean distance, 94.2 % with LEGO.
+
+![Two panels with the same customers: on the left the Euclidean distance draws circles around a customer, on the right the distance learned by LEGO draws stripes that cut the age axis.](../assets/learn/lego_geometry.png)
+
+The pink lines join the points at the same distance from the white customer, in a version of the example with two columns only (the age and the spending). The circles of the Euclidean distance become stripes: LEGO has given a large weight to the age and a small one to the useless column.
 
 ## How it learns
 
@@ -97,9 +126,7 @@ updates stable without any tuning of a projection radius.
 from dense_armor.core.online.learn.metric_learning import LEGO
 
 learner = LEGO(eta=0.1)
-learner.learn_pair({"x0": 1.0, "x1": 0.0},
-                   {"x0": 0.0, "x1": 0.0},
-                   0.5)
+learner.learn_pair({"x0": 1.0, "x1": 0.0}, {"x0": 0.0, "x1": 0.0}, 0.5)
 ```
 
 LEGO needs a target squared distance per pair. `LEGO.percentile_targets` computes the
@@ -151,6 +178,8 @@ few test points (105 and 125 samples): indicative, not decisive.
 ## API reference
 
 ::: dense_armor.core.online.learn.metric_learning.LEGO
+    options:
+      docstring_style: numpy
 
 ---
 
@@ -158,6 +187,7 @@ few test points (105 and 125 samples): indicative, not decisive.
 
 - `learn_pair(x, x2, y)` takes two dicts and the **target squared distance** `y`. A boolean (same kind or
   not) is not a target: an earlier test passed one and pushed every same-kind pair toward a distance of 1.
+- The largest eigenvalue of `A` is not bounded by the update. In 20 runs of the first example it reached between 54 and 697 at some step, and ended between 0.7 and 15; the matrix stays positive definite, but a single pair can move it a long way, so the distance of a fresh pair is noisy from one step to the next (the bands of the first figure).
 - `LEGO.percentile_targets(X, y)` ignores the zero distance of a point with itself on the diagonal, and
   raises `ValueError` if there is no pair of the same kind or no pair of different kinds.
 - Source: Jain, P., Kulis, B., Dhillon, I. S., Grauman, K. (2008), "Online metric learning and fast
