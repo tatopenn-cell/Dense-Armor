@@ -280,7 +280,11 @@ nav:
           - Hoeffding Adaptive tree: tree/adaptive.md
           - Stochastic gradient trees: tree/sgt.md
           - Mondrian forests: tree/mondrian.md
-      - Forests: forest/index.md
+      - Forests:
+          - forest/index.md
+          - AdaptiveRandomForestClassifier: forest/adaptive_random_forest.md
+          - AggregatedMondrianForest: forest/aggregated_mondrian_forest.md
+          - OnlineExtraTreesRegressor: forest/online_extra_trees.md
       - Ensembles: ensemble/index.md
       - Bandits: bandit/index.md
       - Active learning: active/index.md

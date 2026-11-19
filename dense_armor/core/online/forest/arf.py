@@ -99,9 +99,9 @@ class SubspaceHoeffdingTree(HoeffdingTreeClassifier):
         max_depth: maximum depth, or ``None``.
         max_nodes: maximum number of nodes per tree, or ``None`` (default).
         leaf: ``"nb"`` or ``"majority"``.
-        criterion, splitter, n_splits, nominal_attributes, max_active_leaves,
-            memory_period, quantile_radius: as in
-            :class:`HoeffdingTreeClassifier`.
+        criterion: as in :class:`HoeffdingTreeClassifier`, and likewise
+            ``splitter``, ``n_splits``, ``nominal_attributes``,
+            ``max_active_leaves``, ``memory_period`` and ``quantile_radius``.
         max_features: size ``m`` of the subset. ``None`` takes
             ``int(sqrt(M)) + 1`` for ``M`` features.
         seed: seed of the generator that draws the subsets.

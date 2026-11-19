@@ -51,8 +51,11 @@ same weight.
 ## Details
 
 - `DriftStream`: each concept is two Gaussian clusters, one per class, placed along a random
-  direction; the class of each cluster alternates between concepts, so a model trained on one
-  concept is wrong on the next. Each sample uses the drift nearest to its position, so every
+  direction; the class of each cluster alternates between concepts, and each concept draws its own random
+  direction, so a model trained on one concept is wrong on the next only when the new direction lies
+  on the same side as the old one: on 20 seeds, with one drift and 2000 samples, a linear rule fitted
+  before the change had an accuracy below 0.5 after it on 9 seeds with 2 features and on 7 with 4
+  features, and above 0.9 on 10 and on 11. Each sample uses the drift nearest to its position, so every
   transition is continuous on both sides. `"sudden"` is the limit of the sigmoid for a large
   `spacing` and does not use it; in `"incremental"` the label follows the concept with the larger
   weight. Implemented from the description in Ksieniewicz and Zyblewski (2020), sections 3.2.1

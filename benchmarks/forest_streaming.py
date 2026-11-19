@@ -1,7 +1,7 @@
 """New forests against the library learners they compete with.
 
 Stream: ``DriftStream`` with one sudden change at half, 2000 samples,
-4 features, seeds 0 to 4, prequential protocol (predict, then learn).
+4 features, the first five seeds for which the change makes a frozen tree wrong (``_drift_seeds.py``), prequential protocol (predict, then learn).
 Reported, median of the seeds: accuracy (or mean squared error of the
 label for the regressors) on the 300 samples before the change, on the
 first 100 after it, on 300 samples starting 200 after it, and the time
@@ -17,6 +17,7 @@ import statistics
 import time
 
 import numpy as np
+from _drift_seeds import drift_seeds
 
 from dense_armor.core.online.drift.adwin import ADWIN
 from dense_armor.core.online.forest import (
@@ -26,6 +27,7 @@ from dense_armor.core.online.forest import (
 )
 from dense_armor.core.online.tree import (
     HoeffdingAdaptiveTreeClassifier,
+    HoeffdingTreeClassifier,
     MondrianForestClassifier,
     MondrianForestRegressor,
 )
@@ -74,9 +76,25 @@ def _run(est, X, y, regression: bool) -> tuple[dict, float]:
     return {k: float(arr[a:b].mean()) for k, (a, b) in WINDOWS.items()}, per_sample
 
 
+def _run_frozen(X, y) -> dict:
+    """A Hoeffding tree that learns until the change and then only predicts: the control."""
+    names = [f"x{i}" for i in range(D)]
+    tree = HoeffdingTreeClassifier(grace_period=50)
+    score = []
+    for i, (xi, yi) in enumerate(zip(X, y)):
+        d = dict(zip(names, map(float, xi)))
+        score.append(float(tree.predict_one(d) == yi))
+        if i < CUT:
+            tree.learn_one(d, int(yi))
+    arr = np.array(score)
+    return {k: float(arr[a:b].mean()) for k, (a, b) in WINDOWS.items()}
+
+
 def main() -> None:
     rows: dict = {}
-    for seed in range(5):
+    seeds = drift_seeds()
+    print("seeds:", seeds)
+    for seed in seeds:
         X, y = DriftStream(
             n_samples=N, n_features=D, n_drifts=1, kind="sudden", seed=seed
         ).data()
@@ -84,6 +102,9 @@ def main() -> None:
         for name, make in facs.items():
             res, dt = _run(make(seed), X, y, "regressor" in name)
             rows.setdefault(name, []).append((res, dt))
+        rows.setdefault("frozen tree (stops at the change)", []).append(
+            (_run_frozen(X, y), 0.0)
+        )
     print(
         f"{'learner':28s} {'before':>8s} {'first100':>9s} {'after+200':>10s} {'ms/sample':>10s}"
     )
