@@ -12,13 +12,12 @@ Click a page to open it, or the job on the left (or the button at the top) to go
 
 London, deep night. Before the young detective can even solve a case, he has to bring order to the police station's Mailroom: every second, telegrams, recorded tapes, and photos arrive from streets all over the city, all mixed up and one piece at a time!
 
-To prepare the clues before thinking them through, the detective sets up five worktables (Signals):
+To prepare the clues before thinking them through, the detective sets up four worktables (Signals):
 
 - **1. The conveyor belt (Streams):** Messages arrive from different places (old CSV logs, robot ROS tapes, and lists of numbers) at uneven times. This table lines them all up in time order, like a single continuous stream!
 - **2. The practice tracks (Datasets):** Before heading out into the streets, the detective uses specially made fake heists where a breakdown or a trick change happens at exact minute n, to train his reflexes.
 - **3. The summary notebook (Statistics and RunningMoments):** Instead of keeping endless piles of the day's payment receipts (120, 80, 100...), the assistant uses RunningMoments: he glances at each receipt on the fly, updates only two little numbers on his sheet — the average (mean) and how much the numbers bounce around (var) — and immediately tosses the receipt!
 - **4. The scale to put everyone on equal footing (Preprocessing):** One clue talks about millions of pounds and another about a few seconds. On this table they get resized to the same scale, so giant numbers don't hide tiny ones.
-- **5. The magnifying glass on frames (Vision):** When security camera videos arrive, a helper cuts them one frame at a time (frame) to pull out only the useful details (motion, speed, and shapes) without having to rewatch the whole movie.
 
 In the end, what is the Signals (core/signals) section? It is all the prep work that happens before the model's brain: it gathers raw data one piece at a time, puts it in time order, summarizes it without filling up memory, and cleans it up so it is ready to study!
 
