@@ -1,7 +1,7 @@
 """Dark 3D figure for the Moments page, drawn with the library itself.
 
-A stall sells toys all morning at an average receipt of 12 euros; at customer 300 a series of rare cards comes
-out and the average receipt becomes 35. Each curve is the mean of 40 simulated stalls. The surface is the mean that ``EWStats`` reports after every customer,
+A card terminal sees payments with an average amount of 12 euros; at payment 300 the average amount becomes 35.
+Each curve is the mean of 40 simulated streams. The surface is the mean that ``EWStats`` reports after every payment,
 for 40 values of its forgetting factor alpha; the front curve is the mean of ``RunningMoments``, which never
 forgets, and the dashed back curve is the true average of the day.
 
@@ -81,9 +81,9 @@ def main():
     ax.set_zlim(5.0, 45.0)
     ax.view_init(elev=24, azim=-58)
     ax.set_box_aspect((1.35, 1.2, 0.7), zoom=1.1)
-    ax.set_xlabel("customers seen", color=CYAN, labelpad=8)
+    ax.set_xlabel("payments seen", color=CYAN, labelpad=8)
     ax.set_ylabel("forgetting factor alpha (log10)", color=CYAN, labelpad=8)
-    ax.set_zlabel("average receipt, euros", color=CYAN, labelpad=6)
+    ax.set_zlabel("average payment, euros", color=CYAN, labelpad=6)
     ax.tick_params(colors=MUTED, labelsize=8)
     ax.text(
         N * 0.62,
@@ -97,7 +97,7 @@ def main():
     fig.text(
         0.05,
         0.955,
-        "MOMENTS: HOW FAST THE AVERAGE FOLLOWS THE STALL",
+        "MOMENTS: HOW FAST THE AVERAGE FOLLOWS THE PAYMENTS",
         fontsize=21,
         fontweight="bold",
         color=INK,
@@ -105,7 +105,7 @@ def main():
     fig.text(
         0.05,
         0.915,
-        "receipt 12 to 35 euros at customer 300; surface: EWStats for each alpha; front curve: RunningMoments (mean of 40 stalls)",
+        "average payment 12 to 35 euros at payment 300; surface: EWStats for each alpha; front curve: RunningMoments (mean of 40 streams)",
         fontsize=11.5,
         color=CYAN,
     )
@@ -113,14 +113,14 @@ def main():
     plt.close(fig)
     i350, i600 = 349, N - 1
     print(
-        "RunningMoments mean at customer 350 and 600:",
+        "RunningMoments mean at payment 350 and 600:",
         round(run[i350], 1),
         round(run[i600], 1),
     )
     for a in (0.005, 0.05, 0.15):
         k = int(np.argmin(np.abs(alphas - a)))
         print(
-            f"EWStats alpha {alphas[k]:.3f} mean at customer 350 and 600:",
+            f"EWStats alpha {alphas[k]:.3f} mean at payment 350 and 600:",
             round(Z[k, i350], 1),
             round(Z[k, i600], 1),
         )

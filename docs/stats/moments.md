@@ -2,9 +2,9 @@
 
 These tools keep the average, the wobble and a few other summary numbers of a signal, updated with every new reading, without storing the readings.
 
-![A three-dimensional surface: customers seen on one axis, the forgetting factor alpha on another and the average receipt in euros on the vertical axis. The true average jumps from 12 to 35 euros at customer 300; the surface rises after customer 300, faster for a larger alpha, and the front curve of RunningMoments stays far below, at 23.4 euros at customer 600.](../assets/moments/moments_3d.png)
+![A three-dimensional surface: payments seen on one axis, the forgetting factor alpha on another and the average payment in euros on the vertical axis. The true average jumps from 12 to 35 euros at payment 300; the surface rises after payment 300, faster for a larger alpha, and the front curve of RunningMoments stays far below, at 23.4 euros at payment 600.](../assets/moments/moments_3d.png)
 
-The picture is a stall simulated 40 times, the average of the 40 shown. The average receipt is 12 euros until customer 300 and 35 euros after it, and the surface is the mean that `EWStats` reports after each customer, for each forgetting factor `alpha`. At customer 350 `RunningMoments` (the front curve) says 15.2 euros and at customer 600 it says 23.4, still far from 35, because it averages the whole morning with the afternoon. `EWStats` with `alpha` = 0.052 says 33.2 at customer 350 and 34.6 at customer 600; with `alpha` = 0.005 it says 17.1 and 29.8.
+The picture is a stream of card payments simulated 40 times, the average of the 40 shown. The average payment is 12 euros until payment 300 and 35 euros after it, and the surface is the mean that `EWStats` reports after each payment, for each forgetting factor `alpha`. At payment 350 `RunningMoments` (the front curve) says 15.2 euros and at payment 600 it says 23.4, still far from 35, because it averages the whole past with the new regime. `EWStats` with `alpha` = 0.052 says 33.2 at payment 350 and 34.6 at payment 600; with `alpha` = 0.005 it says 17.1 and 29.8.
 
 ## Gamestory
 
@@ -22,9 +22,9 @@ Keeping thousands of paper receipts would be a disaster: they would blow away in
 
 In the end, what are Moments (RunningMoments, RunningMomentsVector, and EWStats)? They are super-light tools that calculate and update in real time the summary numbers of a data stream (average, variation, minimum, and maximum) one purchase at a time in fixed memory, without ever having to keep the whole pile of past receipts!
 
-## A first example: the receipts of a stall
+## A first example: the payments of a card terminal
 
-A stall sells toys all day. Each customer pays one receipt, and the assistant wants the number of receipts, the average, the spread and the smallest and the largest, without keeping the receipts. Five hundred receipts around 12 euros, then three customers who only ask a question and give no amount (`NaN`):
+A payment processor sees card payments one at a time and wants the number of payments, the average, the spread and the smallest and the largest, without storing them. Five hundred payments around 12 euros, then three authorisation requests that were declined and carry no amount (`NaN`):
 
 ```python
 import numpy as np
@@ -43,13 +43,15 @@ print(m.count, round(m.mean, 2), round(m.std, 2), round(m.min, 2), round(m.max, 
 500 11.55 5.65 1.29 36.15 3
 ```
 
-The three customers without an amount are not counted: `count` is 500 and `n_missing` is 3, and they do not change the average. The average receipt is 11.55 euros, the standard deviation 5.65, the smallest receipt 1.29 and the largest 36.15, all from a handful of numbers that were updated one receipt at a time.
+The three declined requests are not counted: `count` is 500 and `n_missing` is 3, and they do not change the average. The average payment is 11.55 euros, the standard deviation 5.65, the smallest payment 1.29 and the largest 36.15, all from a handful of numbers that were updated one payment at a time.
 
 ## What this is
 
-Imagine you are watching the receipts of a stall. You want to know the average receipt, how much the receipts vary, and whether they lean
-towards small or large purchases. You do not want to keep every receipt: the stall runs all day, every day. You want a handful of numbers that
-summarise what has been seen *so far* and update with each new receipt.
+Imagine you are watching a single joint of a robot move. You want to
+know its average angle, how much it wobbles, and whether the wobble is
+symmetric or one-sided. You do not want to keep every reading — the
+robot runs for days. You want a handful of numbers that summarize what
+has been seen *so far* and update with each new reading.
 
 That handful of numbers is what statisticians call the **moments** of a
 distribution: the mean, the variance, the skewness, the kurtosis, plus
@@ -436,4 +438,4 @@ and plots the running mean, the running standard deviation and the
 exponentially weighted mean against the raw trace. The vertical dotted
 line marks the shift.
 
-The image `docs/assets/moments/moments_3d.png` is generated by `docs/assets/moments/make_moments_3d.py`. The script simulates a stall of 600 customers 40 times, with receipts drawn from a gamma distribution whose mean is 12 euros before customer 300 and 35 euros after it, feeds each stream into `RunningMoments` and into `EWStats` for 36 values of `alpha` between 0.005 and 0.15, and draws the mean of the 40 means.
+The image `docs/assets/moments/moments_3d.png` is generated by `docs/assets/moments/make_moments_3d.py`. The script simulates a stream of 600 payments 40 times, with amounts drawn from a gamma distribution whose mean is 12 euros before payment 300 and 35 euros after it, feeds each stream into `RunningMoments` and into `EWStats` for 36 values of `alpha` between 0.005 and 0.15, and draws the mean of the 40 means.
