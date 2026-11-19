@@ -115,8 +115,6 @@ AMF is worse than the Mondrian forest in all five regimes, with a paired p below
 
 The aggregated forests implement the version of Section 2 of the paper, on an unrestricted Mondrian partition (Algorithm 2). The restricted partition of Section 4, which the paper uses in its experiments and for which it states no guarantee, is not implemented. The regret bounds quoted above are those of the implemented version, for a tree below its `max_nodes` (default 10000 per tree); once a tree has that many nodes it stops splitting, and the bounds are not claimed for what it predicts after that.
 
-`OnlineExtraTreesRegressor` and `AMRules` are left out of the package until their papers are available.
-
 ### Checks
 
 - The collapsed weights equal the exponentially weighted sum of equation 6 taken over every pruning of a small tree, with a difference below 1e-9 for `step` from 0.125 to 200 (a leaf of the finished tree stands for all its refinements, which have the same loss, so its prior mass is 1).
