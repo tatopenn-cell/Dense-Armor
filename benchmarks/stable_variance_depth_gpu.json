@@ -1,0 +1,213 @@
+{
+  "jax": "0.11.1",
+  "backend": "gpu",
+  "devices": [
+    "cuda:0",
+    "cuda:1"
+  ],
+  "python": "3.13.16",
+  "batch": 128,
+  "width": 512,
+  "offset": 1000.0,
+  "spread": 0.004,
+  "rows": [
+    {
+      "depth": 1,
+      "usual": {
+        "grad_rel_err": 0.003660092967192562,
+        "grad_norm_reference": 135.84480649559782,
+        "layer_output_max_err": 0.01861708862985001,
+        "nan_or_inf": 0,
+        "ms": 0.3128930000002583
+      },
+      "stable": {
+        "grad_rel_err": 3.4524517931485356e-07,
+        "grad_norm_reference": 135.84480649559782,
+        "layer_output_max_err": 4.208214758882889e-07,
+        "nan_or_inf": 0,
+        "ms": 0.37469800000167197
+      },
+      "ratio_time_stable_over_usual": 1.1975275893080466
+    },
+    {
+      "depth": 2,
+      "usual": {
+        "grad_rel_err": 0.007869276123720993,
+        "grad_norm_reference": 133.6346135104086,
+        "layer_output_max_err": 0.037784564841612855,
+        "nan_or_inf": 0,
+        "ms": 0.5741900000089117
+      },
+      "stable": {
+        "grad_rel_err": 4.882273776933943e-07,
+        "grad_norm_reference": 133.6369383387055,
+        "layer_output_max_err": 4.208214758882889e-07,
+        "nan_or_inf": 0,
+        "ms": 0.739360000011402
+      },
+      "ratio_time_stable_over_usual": 1.2876573956354633
+    },
+    {
+      "depth": 4,
+      "usual": {
+        "grad_rel_err": 0.011134295571170754,
+        "grad_norm_reference": 140.86469622292077,
+        "layer_output_max_err": 0.03490277139277853,
+        "nan_or_inf": 0,
+        "ms": 0.9553430000153185
+      },
+      "stable": {
+        "grad_rel_err": 6.95240309680444e-07,
+        "grad_norm_reference": 140.85696336932173,
+        "layer_output_max_err": 4.208214758882889e-07,
+        "nan_or_inf": 0,
+        "ms": 1.3678530000049705
+      },
+      "ratio_time_stable_over_usual": 1.431792560350615
+    },
+    {
+      "depth": 8,
+      "usual": {
+        "grad_rel_err": 0.017668525207083337,
+        "grad_norm_reference": 158.94350280326782,
+        "layer_output_max_err": 0.04031742129657734,
+        "nan_or_inf": 0,
+        "ms": 1.707766999999194
+      },
+      "stable": {
+        "grad_rel_err": 1.0436226100817742e-06,
+        "grad_norm_reference": 158.95691998568287,
+        "layer_output_max_err": 4.208214758882889e-07,
+        "nan_or_inf": 0,
+        "ms": 2.463070999993988
+      },
+      "ratio_time_stable_over_usual": 1.4422757905470422
+    },
+    {
+      "depth": 16,
+      "usual": {
+        "grad_rel_err": 0.025374223242702953,
+        "grad_norm_reference": 198.86126633854488,
+        "layer_output_max_err": 0.048084334667244155,
+        "nan_or_inf": 0,
+        "ms": 3.153369000017392
+      },
+      "stable": {
+        "grad_rel_err": 1.6188096028130555e-06,
+        "grad_norm_reference": 198.92868078753162,
+        "layer_output_max_err": 4.208214758882889e-07,
+        "nan_or_inf": 0,
+        "ms": 4.562991000000238
+      },
+      "ratio_time_stable_over_usual": 1.4470209480638236
+    },
+    {
+      "depth": 32,
+      "usual": {
+        "grad_rel_err": 0.03744429202105892,
+        "grad_norm_reference": 313.16121369062404,
+        "layer_output_max_err": 0.0449101833522807,
+        "nan_or_inf": 0,
+        "ms": 4.358007999996971
+      },
+      "stable": {
+        "grad_rel_err": 2.652977809941921e-06,
+        "grad_norm_reference": 312.5643530863119,
+        "layer_output_max_err": 4.208214758882889e-07,
+        "nan_or_inf": 0,
+        "ms": 8.826579000015045
+      },
+      "ratio_time_stable_over_usual": 2.0253700773429464
+    },
+    {
+      "depth": 64,
+      "usual": {
+        "grad_rel_err": 0.053493873936287774,
+        "grad_norm_reference": 815.7143791348758,
+        "layer_output_max_err": 0.04536018533154085,
+        "nan_or_inf": 0,
+        "ms": 8.04538599999205
+      },
+      "stable": {
+        "grad_rel_err": 4.543933345537774e-06,
+        "grad_norm_reference": 797.2963033704175,
+        "layer_output_max_err": 4.208214758882889e-07,
+        "nan_or_inf": 0,
+        "ms": 17.419556999982433
+      },
+      "ratio_time_stable_over_usual": 2.1651611246495377
+    },
+    {
+      "depth": 128,
+      "usual": {
+        "grad_rel_err": 0.07577443299477406,
+        "grad_norm_reference": 4947.499729862859,
+        "layer_output_max_err": 0.04906417559088805,
+        "nan_or_inf": 0,
+        "ms": 11.705221999989135
+      },
+      "stable": {
+        "grad_rel_err": 8.333463661363242e-06,
+        "grad_norm_reference": 4935.064048120876,
+        "layer_output_max_err": 4.208214758882889e-07,
+        "nan_or_inf": 0,
+        "ms": 34.56328999999414
+      },
+      "ratio_time_stable_over_usual": 2.9528094383879453
+    },
+    {
+      "depth": 256,
+      "usual": {
+        "grad_rel_err": 0.10550480054407886,
+        "grad_norm_reference": 228513.62918731244,
+        "layer_output_max_err": 0.05035681689828664,
+        "nan_or_inf": 0,
+        "ms": 23.340366000013546
+      },
+      "stable": {
+        "grad_rel_err": 1.56466478033239e-05,
+        "grad_norm_reference": 205825.88151917674,
+        "layer_output_max_err": 4.208214758882889e-07,
+        "nan_or_inf": 0,
+        "ms": 35.78255200000058
+      },
+      "ratio_time_stable_over_usual": 1.533075873787918
+    },
+    {
+      "depth": 512,
+      "usual": {
+        "grad_rel_err": 0.15035017407541165,
+        "grad_norm_reference": 358943222.47033215,
+        "layer_output_max_err": 0.048188186635496066,
+        "nan_or_inf": 0,
+        "ms": 47.30416500001411
+      },
+      "stable": {
+        "grad_rel_err": 3.064326489769194e-05,
+        "grad_norm_reference": 351171623.9360346,
+        "layer_output_max_err": 4.208214758882889e-07,
+        "nan_or_inf": 0,
+        "ms": 63.15832600000704
+      },
+      "ratio_time_stable_over_usual": 1.3351535958829037
+    },
+    {
+      "depth": 1024,
+      "usual": {
+        "grad_rel_err": 0.20396720039443686,
+        "grad_norm_reference": 1066930707986810.4,
+        "layer_output_max_err": 0.05251350717627967,
+        "nan_or_inf": 0,
+        "ms": 95.29755900001646
+      },
+      "stable": {
+        "grad_rel_err": 5.9115044102346286e-05,
+        "grad_norm_reference": 1040333634031148.6,
+        "layer_output_max_err": 4.208214758882889e-07,
+        "nan_or_inf": 0,
+        "ms": 127.98675800002002
+      },
+      "ratio_time_stable_over_usual": 1.3430224167651337
+    }
+  ]
+}
