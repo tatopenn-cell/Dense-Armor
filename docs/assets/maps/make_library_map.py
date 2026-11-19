@@ -70,7 +70,7 @@ SECTION_PAGES = {
 }
 PIECE_PAGES = {
     "datasets": "stream/index.md",
-    "linear": "linear/glm.md",
+    "linear": "linear/index.md",
     "evaluate": "metrics/index.md",
     "compose": "stream/index.md",
     "data": "api/data_shared.md",

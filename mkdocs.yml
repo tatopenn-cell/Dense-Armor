@@ -212,7 +212,11 @@ nav:
           - FTRLProximal: optim/ftrl.md
           - OnlineNewtonStep: optim/newton.md
       - Linear models:
-          - GLM: linear/glm.md
+          - linear/index.md
+          - GLM:
+              - linear/glm.md
+              - The input shape: linear/glm_input_shape.md
+              - The learning rate: linear/glm_learning_rate.md
           - Bayesian linear regression: linear/bayes.md
           - Payload estimator: linear/payload.md
       - Time series:

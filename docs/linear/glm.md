@@ -1,21 +1,8 @@
-# Linear models: first-order online optimization for streaming regression and classification
+# GLM: LinearRegression and LogisticRegression
 
-These are two fundamental prediction tools designed to learn from data one example at a time, without needing a huge offline database. One predicts continuous real numbers by minimizing squared errors, while the other calculates binary probabilities to tell which of two answers is more likely, and how each one learns depends on the optimizer you plug into it.
+`LinearRegression` and `LogisticRegression` are the two supervised models of the package. Both fit a linear function one sample at a time, and both take any optimizer from `dense_armor.core.online.optim` as the whole learning rule. The overview of the section is on [Linear models](index.md); the shape of the input and the learning rate have a page each: [The input shape](glm_input_shape.md) and [The learning rate](glm_learning_rate.md).
 
-
-LinearRegression and LogisticRegression are the two supervised models of the
-package. Both fit a linear function one sample at a time, and both take any
-optimizer from `dense_armor.core.online.optim` as the whole learning rule. This
-page shows the two models, the shape of the input they expect, and the
-difference between them.
-
-## The map of the linear models
-
-Click a page to open it, or the job on the left (or the button at the top) to go back to the [map of the library](../index.md#the-library-folder-by-folder).
-
-<object type="image/svg+xml" data="../../assets/maps/linear.svg" style="width:100%"></object>
-
-## 1. What they do
+## What they do
 
 A linear model predicts a target with a weighted sum of its inputs. The
 weights are updated one sample at a time, by the optimizer. `LinearRegression`
@@ -35,88 +22,46 @@ changes the whole trajectory of the fit; changing `l2` adds a ridge term to
 both models; changing `intercept` decides whether the model learns a bias
 term or is forced through the origin.
 
-A small example with `LinearRegression`, `SGD(lr=0.5)`, no intercept, three
-samples of the line `y = 3 * x`:
-
-    reg = LinearRegression(optimizer=SGD(lr=0.5), intercept=False)
-    for _ in range(50):
-        reg.learn_one({"x": 1.0}, 3.0)
-        reg.learn_one({"x": 2.0}, 6.0)
-        reg.learn_one({"x": 3.0}, 9.0)
-    reg.predict_one({"x": 1.0})  # 3.0000
-
-The weight reaches `3.0` after enough passes, exactly the slope of the
-line. The same body with `LogisticRegression` on a two-feature problem
-that is linearly separable learns to separate the classes:
-
-    clf = LogisticRegression(optimizer=Adam(lr=0.1), intercept=True)
-    for _ in range(200):
-        clf.learn_one({"a": 1.0, "b": 0.5}, 1)
-        clf.learn_one({"a": -1.0, "b": -0.5}, 0)
-    clf.predict_proba_one({"a": 1.0, "b": 0.5})   # {0: 0.0013, 1: 0.9987}
-    clf.predict_proba_one({"a": -1.0, "b": -0.5}) # {0: 0.9987, 1: 0.0013}
-
-The probabilities are symmetric around `0.5`: the model separates the two
-classes with the same confidence on both sides.
-
-## 2. The input shape
-
-Both models read a dict at every sample. The keys of the dict are the feature
-names; the values are the numeric features; the target is passed separately
-as the second argument of `learn_one`. The first sample fixes the order of
-the features: either the explicit `feature_keys` argument, or the sorted
-keys of the first dict. Subsequent samples must have the same keys.
+A small example with `LinearRegression`, `SGD(lr=0.5)`, no intercept, three samples of the line `y = 3 * x`:
 
 ```python
-import numpy as np
-from dense_armor.core.online.optim import SGD
 from dense_armor.core.online.linear.glm import LinearRegression
+from dense_armor.core.online.optim import SGD
 
-reg = LinearRegression(optimizer=SGD(lr=0.1), intercept=False,
-                       feature_keys=["x"])
-state = reg.init_state(1)
-state, out = reg.step(state, {"x": np.asarray(1.0),
-                              "y": np.asarray(3.0)})
-print(out)
+reg = LinearRegression(optimizer=SGD(lr=0.5), intercept=False)
+for _ in range(50):
+    reg.learn_one({"x": 1.0}, 3.0)
+    reg.learn_one({"x": 2.0}, 6.0)
+    reg.learn_one({"x": 3.0}, 9.0)
+print(reg.predict_one({"x": 1.0}))
 ```
 
 ```
-0.0
+3.0
 ```
 
-The pure form takes the same dict, with the target under the key `"y"`. The
-output is the prediction on the current sample, before the update.
+The weight reaches `3.0` after enough passes, exactly the slope of the line. The same body with `LogisticRegression` on a two-feature problem that is linearly separable learns to separate the classes:
 
-A `None` or a non-numeric value on any feature is counted in `n_missing`
-and the sample is skipped, without raising. This keeps the loop alive on a
-stream with missing rows.
+```python
+from dense_armor.core.online.linear.glm import LogisticRegression
+from dense_armor.core.online.optim import Adam
 
-## 3. The learning rate
+clf = LogisticRegression(optimizer=Adam(lr=0.1), intercept=True)
+for _ in range(200):
+    clf.learn_one({"a": 1.0, "b": 0.5}, 1)
+    clf.learn_one({"a": -1.0, "b": -0.5}, 0)
+for x in ({"a": 1.0, "b": 0.5}, {"a": -1.0, "b": -0.5}):
+    print({k: round(float(v), 4) for k, v in clf.predict_proba_one(x).items()})
+```
 
-The learning rate belongs to the optimizer, not to the model. The figure
-shows four runs of `LinearRegression(intercept=False)` on the same one-feature
-problem, target weight `w* = 2`, each with `SGD` at a different `lr`:
+```
+{0: 0.0013, 1: 0.9987}
+{0: 0.9987, 1: 0.0013}
+```
 
-![Trajectory of the weight for four learning rates](../assets/linear/glm_lr_choice.png)
+The probabilities are symmetric around `0.5`: the model separates the two classes with the same confidence on both sides.
 
-| `lr` | weight after 1 step | after 10 | after 30 | after 60 |
-|---|---|---|---|---|
-| `0.01` | `0.0400` | `0.3659` | `0.9090` | `1.4049` |
-| `0.1` | `0.4000` | `1.7853` | `1.9975` | `2.0000` |
-| `0.5` | `2.0000` | `2.0000` | `2.0000` | `2.0000` |
-| `2.0` | `8.0000` | `-118096.0000` | `-4.1e14` | `-8.5e28` |
-
-`lr = 0.5` reaches the target in a single step, because for a one-feature
-quadratic loss the update `w -= lr * 2 * (w - w*)` reaches `w*` exactly
-when `lr = 0.5`. `lr = 2.0` diverges: the same formula has a factor
-`(1 - 2 lr) = -3`, whose absolute value is larger than one.
-
-The safe range of `lr` depends on the curvature of the loss, not on the
-model. With several features, the largest eigenvalue of the covariance
-matrix sets the upper bound. A smaller `lr` is safer, at the cost of
-slower convergence.
-
-## 4. On a real arm
+## The robot example
 
 A `SyntheticArm` from a real Panda URDF gives `q`, `qd`, and `tau` at
 50 Hz. The same `LinearRegression` learns the torque of joint 0 as a
@@ -177,10 +122,11 @@ ridge regularization of Hoerl and Kennard (1970).
   the features and learns a bias term together with the weights. Set
   `intercept=False` when the problem is known to pass through the origin
   and the bias should be suppressed.
-- **Missing values counted, not raised.** A `None`, a string, or any
-  non-numeric value on a feature makes the sample count in `n_missing`
-  and be skipped. `learn_one(None, y)` does the same. This keeps a loop
-  over a real stream alive when the input has holes.
+- **Missing values counted, not raised.** A `NaN` or infinite feature,
+  or a target that is `None`, a string or `NaN`, makes the sample count
+  in `n_missing` and be skipped. A key absent from the dict counts as
+  `0.0`. A `None` as the value of a feature, or `None` instead of the
+  dict, raises a `TypeError`.
 - **Pure form returns the prediction before the update.** The pair
   `init_state(dim)` and `step(state, v)` returns the new state and the
   prediction on the current sample, computed with the weights the model
@@ -198,10 +144,10 @@ matrix-vector product and the outer product, not by the optimizer.
 
 This is the first page that documents two models on the same file. The
 shared body (feature resolution, intercept handling, missing-value
-skipping, pure form) is stated once, in Section 2. The two optimizers
+skipping, pure form) is stated once, on the page of the input shape. The two optimizers
 used in the examples (`SGD`, `Adam`) were chosen because they cover the
 two ends of the first-order spectrum: fixed step and adaptive. The three
-optimizer columns in Section 4 come from the same script that runs the
+optimizer columns in the robot example come from the same script that runs the
 comparison table in `docs/optim/index.md`, so the values here are the
 same as the values there. The figure was regenerated after the first
 attempt placed the script in the wrong directory and the `sys.path`

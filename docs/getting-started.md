@@ -126,7 +126,7 @@ The command is a slow sine with one spike of 1,000,000 at sample 50. The applied
 
 - [Finance pipelines](finance/index.md): nine complete examples on markets, fraud, intrusion and credit scoring, each opening with the question it answers.
 - [Online trees and forests](tree/index.md) and [forests](forest/index.md): models that grow as the data arrives.
-- [Linear models](linear/glm.md) and [calibration](learn/calibration.md): the simplest learners and honest probabilities.
+- [Linear models](linear/index.md) and [calibration](learn/calibration.md): the simplest learners and honest probabilities.
 - [API reference](api/index.md): every class.
 
 ## Details
