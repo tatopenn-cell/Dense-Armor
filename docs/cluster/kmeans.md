@@ -90,6 +90,10 @@ $1 - 2^{-1/h}$ instead of $1 / n_j$, so the influence of a point is halved after
 samples and the centre follows the group rather than averaging over its whole history. The
 final centres end near $x = 5$, where the groups are now.
 
+![The x of the centre of the lower group against the points seen, for two groups that slide from 0 to 5: with the 1/n step the centre ends at 2.51, with a half-life of 50 it ends at 4.81, close to the dashed line that shows where the group is.](../assets/cluster/kmeans_follow.png)
+
+The picture follows the centre of the lower group while the groups slide from x = 0 to x = 5. With the `1/n` step (orange) the centre averages the whole history and ends at 2.51, half way; with `halflife = 50` (blue) it ends at 4.81, close to the group.
+
 ## The parameters
 
 | Parameter | Meaning | Default |

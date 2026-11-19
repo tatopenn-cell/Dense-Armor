@@ -32,6 +32,10 @@ descriptors of the 8×8 patches, so the same estimator can be fed patches from a
 frames without ever storing them; a frame becomes a fixed-length histogram, a signature ready
 for a classifier.
 
+![The two frames, vertical stripes and horizontal stripes, and their histograms over the 4 visual words: the vertical stripes use the words 1 and 3 (0.25 and 0.75), the horizontal stripes the words 0 and 2 (0.25 and 0.75); no word is shared.](../assets/cluster/vocabulary_hist.png)
+
+The picture shows the two frames and their histograms. The vertical stripes use the words 1 and 3 (0.25 and 0.75 of their patches), the horizontal stripes the words 0 and 2 (0.25 and 0.75): no word is shared, so the two signatures do not overlap.
+
 ## The parameters
 
 | Parameter | Meaning | Default |

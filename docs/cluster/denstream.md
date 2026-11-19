@@ -42,6 +42,10 @@ point comes near it. The offline step `macro_clusters()` merges reachable real m
 demand, and the centre of each resulting cluster is the weight-weighted mean of its micro-
 clusters.
 
+![Points of three groups, with the 30 noise points of the stream drawn as crosses, and the three cluster centres that DenStream returns, at (8.0, 0.0), (0.0, 8.0) and (0.0, 0.0).](../assets/cluster/denstream_clusters.png)
+
+The picture shows the 600 points of the example. The 30 noise points (one in twenty, crosses) are scattered over the square; `macro_clusters()` returns three clusters, with centres at (8.0, 0.0), (0.0, 8.0) and (0.0, 0.0), and the isolated points are not in any of them.
+
 ## The parameters
 
 | Parameter | Meaning | Default |
