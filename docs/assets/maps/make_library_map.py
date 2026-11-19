@@ -55,7 +55,7 @@ BIG_PAGES = {
 SECTION_PAGES = {
     "online": "online/index.md",
     "deep": "neural/overview.md",
-    "signals": "preprocessing/index.md",
+    "signals": "signals/index.md",
     "audio": "audio/index.md",
     "evaluation": "metrics/index.md",
     "finance": "finance/index.md",

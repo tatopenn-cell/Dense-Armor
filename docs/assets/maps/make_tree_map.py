@@ -109,14 +109,28 @@ def url(rel):
 
 
 def draw(
-    pages, domains, title, subtitle, out, aria, tags, legend, script, partial=False
+    pages,
+    domains,
+    title,
+    subtitle,
+    out,
+    aria,
+    tags,
+    legend,
+    script,
+    partial=False,
+    jobs=None,
+    hub=None,
+    summaries=None,
 ):
     """Draw one map: the jobs of the ontology that reach domains[0], the pages and their classes.
 
     With partial=True the map is of one section only, so the classes of the domain that are not
-    on its pages are not an error.
+    on its pages are not an error. ``jobs`` and ``hub`` replace the jobs of the ontology and the label of
+    the centre when the section has no domain of its own; ``summaries`` maps a page title to one line of
+    text that stands for all its classes (a page with many of them).
     """
-    hub_label = domains[0]
+    hub_label = hub or domains[0]
     catalog = {
         i["class"]: i
         for i in get_catalog(REPO)
@@ -126,7 +140,7 @@ def draw(
     missing = [c for c in placed if c not in catalog]
     assert not missing, f"not in the catalog of usable: {missing}"
     main_domain = {c for c, i in catalog.items() if i["domain"] == hub_label}
-    assert partial or main_domain <= set(placed), (
+    assert partial or hub or main_domain <= set(placed), (
         f"classes of the {hub_label} domain left out: {main_domain - set(placed)}"
     )
     for _, _, rel, _, _ in pages:
@@ -135,9 +149,13 @@ def draw(
     ontology = json.loads(
         (REPO / "dense_armor" / "usable" / "ontology.json").read_text(encoding="utf-8")
     )
-    jobs = [j for j, v in ontology["jobs"].items() if hub_label in v["domains"]]
+    jobs = jobs or [j for j, v in ontology["jobs"].items() if hub_label in v["domains"]]
     assert jobs, f"no job of the ontology reaches the {hub_label} domain"
 
+    pages = [
+        (t, sub, rel, col, [summaries[t]] if summaries and t in summaries else cl)
+        for t, sub, rel, col, cl in pages
+    ]
     row, gap, top = 25.0, 14.0, 112.0
     first_mid = top + row * len(pages[0][4]) / 2
     last_start = top + sum(row * len(q[4]) + gap for q in pages[:-1])
@@ -207,7 +225,7 @@ def draw(
             f'<text x="424" y="{cy + 12:.1f}" fill="{MUTED}" font-size="9.5">{escape(sub)}</text></a>'
         )
         for name, cy2 in zip(classes, ys):
-            tag = tags.get(catalog[name]["role"], "")
+            tag = tags.get(catalog.get(name, {}).get("role"), "")
             o.append(
                 f'<a href="{url(rel)}" target="_top"><title>{escape(name)}: open {escape(rel)}</title>'
                 f'<rect class="card" x="678" y="{cy2 - 10:.1f}" width="300" height="20" rx="10" fill="{CARD}" stroke="{col}" stroke-width="1.2"/>'

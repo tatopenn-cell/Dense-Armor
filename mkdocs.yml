@@ -168,6 +168,7 @@ nav:
       - Pipelines and wrappers: roles/pipelines.md
       - Write and check a new estimator: roles/new_estimator.md
   - Signals:
+      - signals/index.md
       - Streams: stream/index.md
       - Datasets: stream/datasets.md
       - Statistics:
