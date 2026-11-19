@@ -1,5 +1,5 @@
 """
-Online metric learning: OASIS, LEGO and POLA, as estimators compatible with an existing online-learning library.
+Online metric learning: OASIS, LEGO and POLA, as estimators compatible with river.
 
 Needs the optional dependency: the streaming extra.
 """

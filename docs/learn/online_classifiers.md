@@ -2,14 +2,11 @@
 
 These tools tell, sample by sample, which state a system is in (for example a payment that is normal or fraud). Rather than failing when external conditions change, these models continuously adapt their internal statistics or deploy background copies to keep the state estimate usable.
 
+## The map of the online classifiers
 
-A bank has to tell, payment by payment, whether a payment is normal or fraud, from a few numbers.
-It has to keep doing it right when the world changes: customers change habit, fraudsters change
-trick.
+Click a page to open it, or the job on the left (or the button at the top) to go back to the [map by job](../index.md#find-a-tool-by-what-you-want-to-do).
 
-`OnlineGaussianNB` and `OnlineSoftmaxRegression` learn one sample at a time.
-`DriftAdaptiveClassifier` wraps either of them with a drift detector on its own
-prediction loss and swaps in a fresh copy when the old one goes stale.
+<object type="image/svg+xml" data="../../assets/maps/online_classifiers.svg" style="width:100%"></object>
 
 ## Gamestory
 
@@ -23,6 +20,14 @@ At first it seems easy: the thief always makes giant withdrawals (400 pounds), w
 
 In the end, what are Online Classifiers? They are computer "brains" that don't need to study thousands of books before starting: they learn one clue at a time while things are happening, and know how to change their minds on the fly when the bad guys change the rules of the game!
 
+A bank has to tell, payment by payment, whether a payment is normal or fraud, from a few numbers.
+It has to keep doing it right when the world changes: customers change habit, fraudsters change
+trick.
+
+`OnlineGaussianNB` and `OnlineSoftmaxRegression` learn one sample at a time.
+`DriftAdaptiveClassifier` wraps either of them with a drift detector on its own
+prediction loss and swaps in a fresh copy when the old one goes stale.
+
 ## A first example: fraudsters change habit
 
 Half of the payments are fraud. At first a fraud is a large payment (around 400) and a normal one is small (around 60). After 3000 payments the fraudsters change habit: they now make small test charges, while the customers' payments grow. The meaning of the amount flips. Three classifiers are tested on each payment before learning it: a Gaussian naive Bayes that never forgets, one with a fixed forgetting factor (`alpha=0.1`), and the `DriftAdaptiveClassifier` that wraps the first and swaps in a fresh copy when its own error jumps.
@@ -30,25 +35,43 @@ Half of the payments are fraud. At first a fraud is a large payment (around 400)
 ```python
 import numpy as np
 from dense_armor.core.online.drift.detector import CUSUMDriftDetector
-from dense_armor.core.online.learn.online_classifiers import DriftAdaptiveClassifier, OnlineGaussianNB
+from dense_armor.core.online.learn.online_classifiers import (
+    DriftAdaptiveClassifier,
+    OnlineGaussianNB,
+)
 
 rng = np.random.default_rng(1)
 models = {
     "never forgets": OnlineGaussianNB(),
     "alpha=0.1": OnlineGaussianNB(alpha=0.1),
-    "drift-adaptive": DriftAdaptiveClassifier(OnlineGaussianNB(), CUSUMDriftDetector(reference="fixed", radius=20, ref_mult=5, two_sided=False), window=50, smooth_window=50),
+    "drift-adaptive": DriftAdaptiveClassifier(
+        OnlineGaussianNB(),
+        CUSUMDriftDetector(
+            reference="fixed", radius=20, ref_mult=5, two_sided=False
+        ),
+        window=50,
+        smooth_window=50,
+    ),
 }
 hits = {k: [] for k in models}
 for i in range(6000):
     fraud = int(rng.random() < 0.5)
     big = fraud if i < 3000 else 1 - fraud
-    x = {"amount": rng.normal(400 if big else 60, 60 if big else 20), "hour": rng.normal(14, 3)}
+    x = {
+        "amount": rng.normal(400 if big else 60, 60 if big else 20),
+        "hour": rng.normal(14, 3),
+    }
     for k, m in models.items():
         hits[k].append(m.predict_one(x) == fraud)
         m.learn_one(x, fraud)
 for k, h in hits.items():
     h = np.array(h, float)
-    print(k, h[500:3000].mean().round(3), h[3000:3200].mean().round(3), h[5000:5900].mean().round(3))
+    print(
+        k,
+        h[500:3000].mean().round(3),
+        h[3000:3200].mean().round(3),
+        h[5000:5900].mean().round(3),
+    )
 ```
 
 ```
@@ -108,14 +131,22 @@ from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB
 rng = np.random.default_rng(42)
 s = np.zeros(6000, int)
 for t in range(1, 6000):
-    s[t] = s[t - 1] if rng.random() < 0.95 else (s[t - 1] + rng.integers(1, 3)) % 3
+    s[t] = (
+        s[t - 1] if rng.random() < 0.95 else (s[t - 1] + rng.integers(1, 3)) % 3
+    )
 mu = np.array([[0, 0, 0, 0], [2, 2, 0, 0], [4, 4, 4, 4]], float)
 X = mu[s] + rng.standard_normal((6000, 4))
 X[3000:][s[3000:] == 1] += [-2, -2, 2, 2]
 clf, hit = OnlineGaussianNB(), []
 for x, y in zip(X, s):
-    f = dict(zip("abcd", x)); hit.append(clf.predict_one(f) == y); clf.learn_one(f, y)
-print(np.mean(hit[500:3000]).round(3), np.mean(hit[3000:3200]).round(3), np.mean(hit[5000:5900]).round(3))
+    f = dict(zip("abcd", x))
+    hit.append(clf.predict_one(f) == y)
+    clf.learn_one(f, y)
+print(
+    np.mean(hit[500:3000]).round(3),
+    np.mean(hit[3000:3200]).round(3),
+    np.mean(hit[5000:5900]).round(3),
+)
 ```
 
 ```
@@ -155,21 +186,39 @@ chosen in advance.
 
 ```python
 import numpy as np
-from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB, DriftAdaptiveClassifier
+from dense_armor.core.online.learn.online_classifiers import (
+    OnlineGaussianNB,
+    DriftAdaptiveClassifier,
+)
 from dense_armor.core.online.drift.detector import CUSUMDriftDetector
 
 rng = np.random.default_rng(42)
 s = np.zeros(6000, int)
 for t in range(1, 6000):
-    s[t] = s[t - 1] if rng.random() < 0.95 else (s[t - 1] + rng.integers(1, 3)) % 3
+    s[t] = (
+        s[t - 1] if rng.random() < 0.95 else (s[t - 1] + rng.integers(1, 3)) % 3
+    )
 mu = np.array([[0, 0, 0, 0], [2, 2, 0, 0], [4, 4, 4, 4]], float)
 X = mu[s] + rng.standard_normal((6000, 4))
 X[3000:][s[3000:] == 1] += [-2, -2, 2, 2]
-det = CUSUMDriftDetector(reference="fixed", radius=20, ref_mult=5, two_sided=False)
-clf, hit = DriftAdaptiveClassifier(OnlineGaussianNB(), det, window=50, smooth_window=50), []
+det = CUSUMDriftDetector(
+    reference="fixed", radius=20, ref_mult=5, two_sided=False
+)
+clf, hit = (
+    DriftAdaptiveClassifier(
+        OnlineGaussianNB(), det, window=50, smooth_window=50
+    ),
+    [],
+)
 for x, y in zip(X, s):
-    f = dict(zip("abcd", x)); hit.append(clf.predict_one(f) == y); clf.learn_one(f, y)
-print(np.mean(hit[500:3000]).round(3), np.mean(hit[3000:3200]).round(3), np.mean(hit[5000:5900]).round(3))
+    f = dict(zip("abcd", x))
+    hit.append(clf.predict_one(f) == y)
+    clf.learn_one(f, y)
+print(
+    np.mean(hit[500:3000]).round(3),
+    np.mean(hit[3000:3200]).round(3),
+    np.mean(hit[5000:5900]).round(3),
+)
 ```
 
 ```
@@ -184,6 +233,8 @@ late phase — better than the no-forgetting baseline (0.879) and close to the t
 ## API reference
 
 ::: dense_armor.core.online.learn.online_classifiers
+    options:
+      docstring_style: numpy
 
 ---
 

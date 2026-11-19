@@ -32,10 +32,20 @@ import numpy as np
 from dense_armor.core.online.learn.metric_learning import LEGO
 
 rng = np.random.default_rng(0)
+
+
 def customer(young):
-    return {"age": rng.normal(-1.0 if young else 1.0, 0.5), "spend": rng.normal(0, 1), "balance": rng.normal(0, 1), "visits": rng.normal(0, 1)}
+    return {
+        "age": rng.normal(-1.0 if young else 1.0, 0.5),
+        "spend": rng.normal(0, 1),
+        "balance": rng.normal(0, 1),
+        "visits": rng.normal(0, 1),
+    }
+
+
 def euclid(u, v):
     return sum((u[k] - v[k]) ** 2 for k in u) ** 0.5
+
 
 labels = rng.random(200) < 0.5
 X = np.array([list(customer(g).values()) for g in labels])
@@ -116,9 +126,7 @@ updates stable without any tuning of a projection radius.
 from dense_armor.core.online.learn.metric_learning import LEGO
 
 learner = LEGO(eta=0.1)
-learner.learn_pair({"x0": 1.0, "x1": 0.0},
-                   {"x0": 0.0, "x1": 0.0},
-                   0.5)
+learner.learn_pair({"x0": 1.0, "x1": 0.0}, {"x0": 0.0, "x1": 0.0}, 0.5)
 ```
 
 LEGO needs a target squared distance per pair. `LEGO.percentile_targets` computes the
@@ -170,6 +178,8 @@ few test points (105 and 125 samples): indicative, not decisive.
 ## API reference
 
 ::: dense_armor.core.online.learn.metric_learning.LEGO
+    options:
+      docstring_style: numpy
 
 ---
 

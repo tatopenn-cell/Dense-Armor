@@ -15,16 +15,25 @@ import numpy as np
 from dense_armor.core.online.learn.online_classifiers import OnlineGaussianNB
 
 rng = np.random.default_rng(1)
-models = {"alpha=0": OnlineGaussianNB(), "alpha=0.1": OnlineGaussianNB(alpha=0.1)}
+models = {
+    "alpha=0": OnlineGaussianNB(),
+    "alpha=0.1": OnlineGaussianNB(alpha=0.1),
+}
 for i in range(6000):
     fraud = int(rng.random() < 0.5)
     big = fraud if i < 3000 else 1 - fraud
-    x = {"amount": rng.normal(400 if big else 60, 60 if big else 20), "hour": rng.normal(14, 3)}
+    x = {
+        "amount": rng.normal(400 if big else 60, 60 if big else 20),
+        "hour": rng.normal(14, 3),
+    }
     for m in models.values():
         m.learn_one(x, fraud)
     if i + 1 in (3000, 6000):
         for name, m in models.items():
-            p = [m.predict_proba_one({"amount": a, "hour": 14.0}).get(1, 0.0) for a in (400.0, 60.0)]
+            p = [
+                m.predict_proba_one({"amount": a, "hour": 14.0}).get(1, 0.0)
+                for a in (400.0, 60.0)
+            ]
             print(i + 1, name, [round(v, 2) for v in p])
 ```
 
@@ -94,16 +103,13 @@ against the float64 reference on N(1e3, 0.01), 100,000 samples, seed 0:
 0.0. With this mode ``alpha`` must be 0 (the exponential decay is not
 compatible with a fixed shift).
 
-Cost, median of 7 runs of one update over 20,000 samples, one CPU thread: default 0.010826 ms (IQR 0.000569), float32 0.020122 ms (IQR 0.007959). The claim that the float32
-path is at most as slow as the default is not met: on a scalar loop the
-numpy float32 arithmetic is slower than the Python float64 arithmetic.
-The float32 speed of these classes is not measured; no class in this
-batch has a `learn_many` on which the float32 blocks of the T3 kernel
-could be timed.
+Cost, median of 7 runs of one update over 20,000 samples, one CPU thread: 0.0108 ms for the default mode (IQR 0.0006) and 0.0201 ms for the float32 mode (IQR 0.0080). The float32 mode is about 1.9 times slower here: on a scalar loop the numpy float32 arithmetic is slower than the Python float64 arithmetic, so the goal that it be at most as slow as the default is not met. The speed of the float32 mode on a batch is not measured: these classes have no `learn_many`.
 
 ## API reference
 
 ::: dense_armor.core.online.learn.online_classifiers.OnlineGaussianNB
+    options:
+      docstring_style: numpy
 
 ---
 

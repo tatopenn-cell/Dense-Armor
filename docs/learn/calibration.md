@@ -10,9 +10,21 @@ those numbers to decide which payments to block will block too many or too few: 
 that means "80 %" makes it act far too confidently.
 
 **Calibration** fixes the numbers without touching the ranking. `OnlinePlattScaling`
-wraps any classifier from an existing online-learning library and corrects its probabilities one
+wraps any classifier that returns probabilities and corrects them one
 sample at a time, using the map `sigmoid(a · logit(p) + b)` learned by Online Newton
 Step.
+
+## Gamestory
+
+London, deep night. The young detective has a new helper on the city streets: he has a great nose for telling who is suspicious and who isn't, but he has one giant flaw… he is a terrible braggart!
+
+Every time he spots a suspicious passerby, the helper shouts: "Boss, I'm 99% sure that's the thief!". The problem is that in reality he is only right 7 or 8 times out of 10! If the detective blindly trusted that "99%", he would end up handcuffing lots of innocent citizens. To avoid being fooled by exaggerations, the detective invents an honesty filter called OnlinePlattScaling (or Calibration):
+
+- **1. Forbidden to say "never" or "always" (clip):** First of all, the detective forbids the helper from using 0% or 100%. Nobody is infallible: even when it seems obvious, a tiny margin of doubt always remains.
+- **2. Taking him down a peg after every mistake:** When the helper says "I'm 80% sure he's guilty" and it turns out he was an honest citizen, the detective immediately lowers his score: the next time, when the helper says "80%" again, the filter translates it into a more honest "76%". If instead the helper is too timid, the filter boosts his numbers.
+- **3. Finally sincere numbers:** Case after case, one step at a time, the filter learns to translate the helper's boasts into the truth. In the end, when the filter says "80%", the detective knows he will actually be right 8 times out of 10!
+
+In the end, what is OnlinePlattScaling (Calibration)? It is an "honesty translator" placed in front of another algorithm: it doesn't change who gets picked as a suspect, but fixes the confidence percentages one step at a time, turning exaggerated numbers into sincere probabilities you can truly trust!
 
 ![A three-dimensional surface: the map from the probability announced by the model to the calibrated probability, for the first 4000 payments. At the start it is the identity (dashed line); the surface begins at the 100th payment, when the map has already bent, and keeps moving.](../assets/learn/platt_surface.png)
 
@@ -34,7 +46,10 @@ ll_raw, ll_cal = LogLoss(), LogLoss()
 for _ in range(4000):
     fraud = int(rng.random() < 0.5)
     shared = rng.normal(0, 1)
-    x = {f"s{k}": 0.6 * (2 * fraud - 1) + shared + 0.3 * rng.normal() for k in range(6)}
+    x = {
+        f"s{k}": 0.6 * (2 * fraud - 1) + shared + 0.3 * rng.normal()
+        for k in range(6)
+    }
     ll_raw.update(fraud, raw.predict_proba_one(x).get(1, 0.5))
     ll_cal.update(fraud, cal.predict_proba_one(x).get(1, 0.5))
     raw.learn_one(x, fraud)
@@ -144,7 +159,7 @@ print(round(base_loss.get(), 4), round(cal_loss.get(), 4))
 ```
 
 The calibrated model's log-loss drops from 0.1016 to 0.036. The wrapper
-passes the `check_estimator` of an existing online-learning library.
+passes `check_estimator`, the check of the estimator contract of the library.
 
 ## 5. The parameters
 
@@ -159,6 +174,8 @@ passes the `check_estimator` of an existing online-learning library.
 ## API reference
 
 ::: dense_armor.core.online.learn.calibration
+    options:
+      docstring_style: numpy
 
 ---
 

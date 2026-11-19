@@ -18,6 +18,10 @@ So the puppeteer calls his loyal assistant with pen and little sheet back behind
 
 In the end, what is ResidualDynamicsLearner? It is a smart method that doesn't redo all the math from scratch, but pairs the official manual with a small helper for each hinge that learns only the "extra" strength needed to overcome weight, friction, and real-life surprises!
 
+![The torque error of a 2-link arm with a payload that the URDF does not have: the URDF alone is at 0.497 N·m; the URDF plus ResidualDynamicsLearner is worse for the first ten samples (0.65 to 0.73) and then falls to 0.32 after 12 samples, 0.22 after 40 and 0.21 after 100.](../assets/learn/residual_learning.png)
+
+The picture follows the learner on a 2-link arm that carries a 0.5 kg payload that the URDF does not have. The error is measured on 20 held-out moves: 0.497 N·m for the URDF alone (orange). For the first ten samples the learner is **worse** than the URDF alone, between 0.65 and 0.73: its first weights, with a very large initial covariance, overshoot. After 12 samples it is better (0.32), after 40 it is at 0.22 and after 100 at 0.21.
+
 ## The two torques
 
 A joint reports what it actually applied: the measured torque `tau_measured`. The URDF
@@ -27,16 +31,25 @@ difference is what the learner has to model.
 ```python
 import numpy as np
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.core.online.learn.online_dynamics import ResidualDynamicsLearner, write_minimal_urdf
+from dense_armor.core.online.learn.online_dynamics import (
+    ResidualDynamicsLearner,
+    write_minimal_urdf,
+)
 
 nom = RigidBodyModel(write_minimal_urdf())
 real = RigidBodyModel(write_minimal_urdf(payload_mass=0.5))
-tau = lambda m, q, qd, qdd: np.asarray(m.mass_matrix(q)) @ qdd + np.asarray(m.bias_forces(q, qd))
+tau = lambda m, q, qd, qdd: (
+    np.asarray(m.mass_matrix(q)) @ qdd + np.asarray(m.bias_forces(q, qd))
+)
 learner, rng = ResidualDynamicsLearner(nom), np.random.default_rng(0)
 for q, qd, qdd in rng.uniform(-1, 1, (40, 3, 2)):
     learner.learn_one(q, qd, qdd, tau(real, q, qd, qdd))
 q, qd, qdd = rng.uniform(-1, 1, (3, 2))
-print(np.round(tau(real, q, qd, qdd), 3), np.round(tau(nom, q, qd, qdd), 3), np.round(learner.predict_torque(q, qd, qdd), 3))
+print(
+    np.round(tau(real, q, qd, qdd), 3),
+    np.round(tau(nom, q, qd, qdd), 3),
+    np.round(learner.predict_torque(q, qd, qdd), 3),
+)
 ```
 
 ```
@@ -87,16 +100,28 @@ predicted torques have lower RMSE than the nominal URDF prediction on held-out d
 ```python
 import numpy as np
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.core.online.learn.online_dynamics import ResidualDynamicsLearner, write_minimal_urdf
+from dense_armor.core.online.learn.online_dynamics import (
+    ResidualDynamicsLearner,
+    write_minimal_urdf,
+)
 
-nom, real = RigidBodyModel(write_minimal_urdf()), RigidBodyModel(write_minimal_urdf(payload_mass=0.5))
-tau = lambda m, s: np.asarray(m.mass_matrix(s[0])) @ s[2] + np.asarray(m.bias_forces(s[0], s[1]))
+nom, real = (
+    RigidBodyModel(write_minimal_urdf()),
+    RigidBodyModel(write_minimal_urdf(payload_mass=0.5)),
+)
+tau = lambda m, s: (
+    np.asarray(m.mass_matrix(s[0])) @ s[2]
+    + np.asarray(m.bias_forces(s[0], s[1]))
+)
 learner, rng = ResidualDynamicsLearner(nom), np.random.default_rng(0)
 for s in rng.uniform(-1, 1, (40, 3, 2)):
     learner.learn_one(*s, tau(real, s))
 test = rng.uniform(-1, 1, (20, 3, 2))
 err = lambda f: np.sqrt(np.mean([(tau(real, s) - f(s)) ** 2 for s in test]))
-print(round(err(lambda s: tau(nom, s)), 3), round(err(lambda s: learner.predict_torque(*s)), 3))
+print(
+    round(err(lambda s: tau(nom, s)), 3),
+    round(err(lambda s: learner.predict_torque(*s)), 3),
+)
 ```
 
 ```
@@ -118,7 +143,11 @@ pre-change samples over ~100 samples and tracks the new regime.
 
 ```python
 from dense_armor.dynamics.urdf_dynamics import RigidBodyModel
-from dense_armor.core.online.learn.online_dynamics import ResidualDynamicsLearner, DriftAwareResidualDynamicsLearner, write_minimal_urdf
+from dense_armor.core.online.learn.online_dynamics import (
+    ResidualDynamicsLearner,
+    DriftAwareResidualDynamicsLearner,
+    write_minimal_urdf,
+)
 
 model = RigidBodyModel(write_minimal_urdf())
 fast = ResidualDynamicsLearner(model, lam=0.99, delta=1e6)
@@ -172,6 +201,8 @@ RLS update itself.
 ## API reference
 
 ::: dense_armor.core.online.learn.online_dynamics.ResidualDynamicsLearner
+    options:
+      docstring_style: numpy
 
 ---
 

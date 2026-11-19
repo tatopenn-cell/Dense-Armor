@@ -29,7 +29,10 @@ import numpy as np
 from dense_armor.core.online.learn.online_dynamics import RecursiveLeastSquares
 
 rng = np.random.default_rng(0)
-models = {"lam=1": RecursiveLeastSquares(lam=1.0), "lam=0.99": RecursiveLeastSquares(lam=0.99)}
+models = {
+    "lam=1": RecursiveLeastSquares(lam=1.0),
+    "lam=0.99": RecursiveLeastSquares(lam=0.99),
+}
 for i in range(600):
     amount = rng.uniform(10, 500)
     fee = (0.02 if i < 300 else 0.035) * amount + 0.5 + rng.normal(0, 0.05)
@@ -38,7 +41,11 @@ for i in range(600):
         m.learn_one(x, fee)
     if i + 1 in (300, 600):
         for name, m in models.items():
-            print(i + 1, name, round(m.predict_one({"amount": 100.0, "one": 1.0}), 2))
+            print(
+                i + 1,
+                name,
+                round(m.predict_one({"amount": 100.0, "one": 1.0}), 2),
+            )
 ```
 
 ```
@@ -88,7 +95,10 @@ from dense_armor.core.online.learn.online_dynamics import RecursiveLeastSquares
 
 rls = RecursiveLeastSquares(lam=1.0, delta=1e6)
 rls.learn_one({"a": 1.0, "b": 2.0}, 5.0)
-print(round(rls.predict_one({"a": 1.0, "b": 2.0}), 4), round(rls.predict_one({"a": 1.0, "b": 0.0}), 4))
+print(
+    round(rls.predict_one({"a": 1.0, "b": 2.0}), 4),
+    round(rls.predict_one({"a": 1.0, "b": 0.0}), 4),
+)
 ```
 
 ```
@@ -116,6 +126,8 @@ The choice of `lam` is a trade-off: too small and the learner is noisy (it fits 
 ## API reference
 
 ::: dense_armor.core.online.learn.online_dynamics.RecursiveLeastSquares
+    options:
+      docstring_style: numpy
 
 ---
 

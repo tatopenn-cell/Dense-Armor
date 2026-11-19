@@ -2,6 +2,12 @@
 
 A formula from a manual is almost right. A bank's manual says that a payment costs 2 % of its amount; the real fee has a fixed charge on top, and the commission changes in the middle of the year. A robot's manual says how much torque a move needs; the real robot has friction, wear and a package in its hand. The formula is not wrong, it is missing a piece, and the piece changes. The tools of this section learn that missing piece, one sample at a time, while the system runs, and forget it when it changes.
 
+## The map of online dynamics
+
+Click a page to open it, or the job on the left (or the button at the top) to go back to the [map by job](../index.md#find-a-tool-by-what-you-want-to-do).
+
+<object type="image/svg+xml" data="../../assets/maps/online_dynamics.svg" style="width:100%"></object>
+
 ## Gamestory
 
 London Theater, deep night. The young detective has to move a mechanical puppet from afar by pulling its strings, and the puppet has an arm made of two pieces joined by hinges.
@@ -23,7 +29,10 @@ import numpy as np
 from dense_armor.core.online.learn.online_dynamics import RecursiveLeastSquares
 
 rng = np.random.default_rng(0)
-models = {"lam=1": RecursiveLeastSquares(lam=1.0), "lam=0.99": RecursiveLeastSquares(lam=0.99)}
+models = {
+    "lam=1": RecursiveLeastSquares(lam=1.0),
+    "lam=0.99": RecursiveLeastSquares(lam=0.99),
+}
 for i in range(600):
     amount = rng.uniform(10, 500)
     fee = (0.02 if i < 300 else 0.035) * amount + 0.5 + rng.normal(0, 0.05)
@@ -32,7 +41,11 @@ for i in range(600):
         m.learn_one(x, fee)
     if i + 1 in (300, 600):
         for name, m in models.items():
-            print(i + 1, name, round(m.predict_one({"amount": 100.0, "one": 1.0}), 2))
+            print(
+                i + 1,
+                name,
+                round(m.predict_one({"amount": 100.0, "one": 1.0}), 2),
+            )
 ```
 
 ```
@@ -43,6 +56,8 @@ for i in range(600):
 ```
 
 At payment 300 both have found the fixed charge that the manual does not know (2.50 and 2.49, not 2.00). At payment 600 the one that forgets is at 3.93, close to the new fee of 4.00; the one that weighs every payment the same is at 3.30, held back by the first 300 payments. The same idea, applied to the torque of a robot arm, is on the [ResidualDynamicsLearner](residual_dynamics.md) page.
+
+![The fee that a recursive least squares learner predicts for a payment of 100 over 600 payments, with and without forgetting: both find the real fee of 2.50, which is 0.50 above what the manual says; at payment 300 the real fee jumps to 4.00, lam 0.99 follows and lam 1 is still at 3.30 at payment 600.](../assets/learn/rls_tracking.png)
 
 ## The three classes, one page each
 
@@ -55,7 +70,6 @@ At payment 300 both have found the fixed charge that the manual does not know (2
 ## The robot example
 
 A robot's digital description file is almost always slightly inaccurate because it misses real-world factors like joint friction or a newly picked-up object. This tool continuously learns those missing dynamics in real time, sample by sample, so the control system can add an estimated corrective torque to its command.
-
 
 A robot's URDF file describes its rigid-body dynamics: mass matrix, Coriolis terms,
 gravity. That model is *almost* right. But a real robot also carries a payload in its

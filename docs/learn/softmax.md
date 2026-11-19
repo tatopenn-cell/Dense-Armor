@@ -22,7 +22,9 @@ Half of the payments are fraud. At first a fraud is a large payment (around 400)
 
 ```python
 import numpy as np
-from dense_armor.core.online.learn.online_classifiers import OnlineSoftmaxRegression
+from dense_armor.core.online.learn.online_classifiers import (
+    OnlineSoftmaxRegression,
+)
 
 rng = np.random.default_rng(1)
 sm = OnlineSoftmaxRegression()
@@ -30,11 +32,18 @@ hits = []
 for i in range(6000):
     fraud = int(rng.random() < 0.5)
     big = fraud if i < 3000 else 1 - fraud
-    x = {"amount": rng.normal(400 if big else 60, 60 if big else 20), "hour": rng.normal(14, 3)}
+    x = {
+        "amount": rng.normal(400 if big else 60, 60 if big else 20),
+        "hour": rng.normal(14, 3),
+    }
     hits.append(sm.predict_one(x) == fraud)
     sm.learn_one(x, fraud)
 h = np.array(hits, float)
-print(h[500:3000].mean().round(3), h[3000:3200].mean().round(3), h[5000:5900].mean().round(3))
+print(
+    h[500:3000].mean().round(3),
+    h[3000:3200].mean().round(3),
+    h[5000:5900].mean().round(3),
+)
 ```
 
 ```
@@ -73,6 +82,8 @@ Cost, on one CPU core: about 36.8 µs per sample.
 ## API reference
 
 ::: dense_armor.core.online.learn.online_classifiers.OnlineSoftmaxRegression
+    options:
+      docstring_style: numpy
 
 ---
 

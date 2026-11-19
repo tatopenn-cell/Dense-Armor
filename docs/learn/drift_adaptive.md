@@ -23,20 +23,34 @@ Half of the payments are fraud. At first a fraud is a large payment (around 400)
 ```python
 import numpy as np
 from dense_armor.core.online.drift.detector import CUSUMDriftDetector
-from dense_armor.core.online.learn.online_classifiers import DriftAdaptiveClassifier, OnlineGaussianNB
+from dense_armor.core.online.learn.online_classifiers import (
+    DriftAdaptiveClassifier,
+    OnlineGaussianNB,
+)
 
 rng = np.random.default_rng(1)
-detector = CUSUMDriftDetector(reference="fixed", radius=20, ref_mult=5, two_sided=False)
-clf = DriftAdaptiveClassifier(OnlineGaussianNB(), detector, window=50, smooth_window=50)
+detector = CUSUMDriftDetector(
+    reference="fixed", radius=20, ref_mult=5, two_sided=False
+)
+clf = DriftAdaptiveClassifier(
+    OnlineGaussianNB(), detector, window=50, smooth_window=50
+)
 hits = []
 for i in range(6000):
     fraud = int(rng.random() < 0.5)
     big = fraud if i < 3000 else 1 - fraud
-    x = {"amount": rng.normal(400 if big else 60, 60 if big else 20), "hour": rng.normal(14, 3)}
+    x = {
+        "amount": rng.normal(400 if big else 60, 60 if big else 20),
+        "hour": rng.normal(14, 3),
+    }
     hits.append(clf.predict_one(x) == fraud)
     clf.learn_one(x, fraud)
 h = np.array(hits, float)
-print(h[500:3000].mean().round(3), h[3000:3200].mean().round(3), h[5000:5900].mean().round(3))
+print(
+    h[500:3000].mean().round(3),
+    h[3000:3200].mean().round(3),
+    h[5000:5900].mean().round(3),
+)
 ```
 
 ```
@@ -80,6 +94,8 @@ Cost, on one CPU core: about 75.8 µs per sample, 7 times the bare naive Bayes, 
 ## API reference
 
 ::: dense_armor.core.online.learn.online_classifiers.DriftAdaptiveClassifier
+    options:
+      docstring_style: numpy
 
 ---
 

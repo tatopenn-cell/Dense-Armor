@@ -108,8 +108,14 @@ def url(rel):
     )
 
 
-def draw(pages, domains, title, subtitle, out, aria, tags, legend, script):
-    """Draw one map: the jobs of the ontology that reach domains[0], the pages and their classes."""
+def draw(
+    pages, domains, title, subtitle, out, aria, tags, legend, script, partial=False
+):
+    """Draw one map: the jobs of the ontology that reach domains[0], the pages and their classes.
+
+    With partial=True the map is of one section only, so the classes of the domain that are not
+    on its pages are not an error.
+    """
     hub_label = domains[0]
     catalog = {
         i["class"]: i
@@ -120,7 +126,7 @@ def draw(pages, domains, title, subtitle, out, aria, tags, legend, script):
     missing = [c for c in placed if c not in catalog]
     assert not missing, f"not in the catalog of usable: {missing}"
     main_domain = {c for c, i in catalog.items() if i["domain"] == hub_label}
-    assert main_domain <= set(placed), (
+    assert partial or main_domain <= set(placed), (
         f"classes of the {hub_label} domain left out: {main_domain - set(placed)}"
     )
     for _, _, rel, _, _ in pages:

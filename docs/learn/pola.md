@@ -32,10 +32,20 @@ import numpy as np
 from dense_armor.core.online.learn.metric_learning import POLA
 
 rng = np.random.default_rng(0)
+
+
 def customer(young):
-    return {"age": rng.normal(-1.0 if young else 1.0, 0.5), "spend": rng.normal(0, 1), "balance": rng.normal(0, 1), "visits": rng.normal(0, 1)}
+    return {
+        "age": rng.normal(-1.0 if young else 1.0, 0.5),
+        "spend": rng.normal(0, 1),
+        "balance": rng.normal(0, 1),
+        "visits": rng.normal(0, 1),
+    }
+
+
 def euclid(u, v):
     return sum((u[k] - v[k]) ** 2 for k in u) ** 0.5
+
 
 pola = POLA()
 for _ in range(2000):
@@ -114,9 +124,7 @@ exactly the new `b − 1 = 0.4`, so the pair now just meets the constraint (a lo
 from dense_armor.core.online.learn.metric_learning import POLA
 
 learner = POLA()
-learner.learn_pair({"x0": 1.0, "x1": 0.0},
-                   {"x0": 0.0, "x1": 0.0},
-                   1)
+learner.learn_pair({"x0": 1.0, "x1": 0.0}, {"x0": 0.0, "x1": 0.0}, 1)
 ```
 
 ## What the paper says
@@ -161,6 +169,8 @@ for POLA, against 50,000 for the others, for that reason).
 ## API reference
 
 ::: dense_armor.core.online.learn.metric_learning.POLA
+    options:
+      docstring_style: numpy
 
 ---
 

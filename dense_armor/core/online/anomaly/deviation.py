@@ -1,5 +1,5 @@
 """
-Anomaly detectors compatible with an existing online-learning library, built on Dense-Armor's streaming detectors.
+Anomaly detectors compatible with river, built on Dense-Armor's streaming detectors.
 Needs the optional dependency: the streaming extra
 """
 
@@ -14,7 +14,7 @@ from dense_armor.roles import AnomalyDetector
 
 
 class StreamingDeviationScorer(AnomalyDetector):
-    """`StreamingDeviationDetector` as an anomaly detector of an existing online-learning library.
+    """`StreamingDeviationDetector` as an anomaly detector of river.
 
     `score_one` returns the robust deviation of a value from the causal window of the values
     learned before it: `|x - median| / scale` (median/MAD, as in `arbiter.classify_segments`),

@@ -2,6 +2,22 @@
 
 To find which past situations look like the current one, you need a way to measure the distance between them. Instead of assuming standard Euclidean formulas that get confused by noise, this tool learns a custom distance metric in real time from examples, so that situations that behave the same stay close together.
 
+## The map of metric learning
+
+Click a page to open it, or the job on the left (or the button at the top) to go back to the [map by job](../index.md#find-a-tool-by-what-you-want-to-do).
+
+<object type="image/svg+xml" data="../../assets/maps/metric_learning.svg" style="width:100%"></object>
+
+## Gamestory
+
+London, deep night. The police archive is full of thousands of old cases, and the young detective must figure out which ones look most like tonight's investigation.
+
+While comparing the files, he discovers that using a normal mathematical ruler is a disaster: giant numbers (like thousands of stolen pounds) hide small but decisive clues (like the suspect's age). To not be fooled by noise, the detective decides to build a custom-made ruler that adapts in real time as new clues arrive, choosing among three special techniques:
+
+- **The triplet method (OASIS):** The detective compares three files at a time: a main suspect, an accomplice of his, and an innocent citizen. He learns to adjust his ruler so that the accomplice always turns out much "closer" than the innocent person.
+- **The target distance method (LEGO):** Here the detective works in pairs and sets himself a precise goal: if two suspects are part of the same gang, their distance must become tiny; if they are strangers, it must become huge.
+- **The threshold method (POLA):** The detective observes two files at a time receiving only a "same" or "different". Every time he makes a wrong prediction, he recalibrates the ruler and moves a safety threshold to separate accomplices from innocents.
+- **The window memory (MetricKNNClassifier):** As the investigation goes on, the detective keeps on his desk only the latest most recent cases. When a new suspect pops up, he measures him with his freshly updated ruler, looks at the most similar "neighbors," and immediately discovers which gang he belongs to!
 
 A bank has seen thousands of customers: some bought a product, some did not.
 When a new customer arrives, the first thing any recommendation or fraud check needs to
@@ -20,17 +36,6 @@ the data arrive. It uses one of three algorithms ported from their papers:
 - **LEGO** (Jain et al. 2008) — LogDet-regularized Mahalanobis matrix from pairs with a target distance.
 - **POLA** (Shalev-Shwartz et al. 2004) — pseudo-metric from similar / dissimilar pairs, kept positive semi-definite.
 
-## Gamestory
-
-London, deep night. The police archive is full of thousands of old cases, and the young detective must figure out which ones look most like tonight's investigation.
-
-While comparing the files, he discovers that using a normal mathematical ruler is a disaster: giant numbers (like thousands of stolen pounds) hide small but decisive clues (like the suspect's age). To not be fooled by noise, the detective decides to build a custom-made ruler that adapts in real time as new clues arrive, choosing among three special techniques:
-
-- **The triplet method (OASIS):** The detective compares three files at a time: a main suspect, an accomplice of his, and an innocent citizen. He learns to adjust his ruler so that the accomplice always turns out much "closer" than the innocent person.
-- **The target distance method (LEGO):** Here the detective works in pairs and sets himself a precise goal: if two suspects are part of the same gang, their distance must become tiny; if they are strangers, it must become huge.
-- **The threshold method (POLA):** The detective observes two files at a time receiving only a "same" or "different". Every time he makes a wrong prediction, he recalibrates the ruler and moves a safety threshold to separate accomplices from innocents.
-- **The window memory (MetricKNNClassifier):** As the investigation goes on, the detective keeps on his desk only the latest most recent cases. When a new suspect pops up, he measures him with his freshly updated ruler, looks at the most similar "neighbors," and immediately discovers which gang he belongs to!
-
 ## A first example: which customers look alike?
 
 A bank has customers of two groups, young (around 30 years old) and older (around 50). Besides the age it knows three columns that tell nothing about the group but have big numbers: the monthly spending (about 500), the balance (about 3000) and the number of visits (about 20). With the plain Euclidean distance these numbers drown the age. `MetricKNNClassifier` learns a better distance while it classifies: each customer is first predicted from the closest past customers, and then learned.
@@ -38,15 +43,32 @@ A bank has customers of two groups, young (around 30 years old) and older (aroun
 ```python
 import numpy as np
 from dense_armor.core.evaluation.metrics import Accuracy
-from dense_armor.core.online.learn.metric_learning import LEGO, OASIS, POLA, MetricKNNClassifier
+from dense_armor.core.online.learn.metric_learning import (
+    LEGO,
+    OASIS,
+    POLA,
+    MetricKNNClassifier,
+)
 
-for name, metric, learn in (("Euclidean", OASIS(C=0.1), False), ("OASIS", OASIS(C=0.1), True), ("LEGO", LEGO(), True), ("POLA", POLA(), True)):
+for name, metric, learn in (
+    ("Euclidean", OASIS(C=0.1), False),
+    ("OASIS", OASIS(C=0.1), True),
+    ("LEGO", LEGO(), True),
+    ("POLA", POLA(), True),
+):
     rng = np.random.default_rng(0)
-    knn = MetricKNNClassifier(metric, n_neighbors=1, window_size=1000, learn_metric=learn)
+    knn = MetricKNNClassifier(
+        metric, n_neighbors=1, window_size=1000, learn_metric=learn
+    )
     acc = Accuracy()
     for _ in range(600):
         young = int(rng.random() < 0.5)
-        x = {"age": rng.normal(30 if young else 50, 4), "spend": rng.normal(500, 150), "balance": rng.normal(3000, 1000), "visits": rng.normal(20, 8)}
+        x = {
+            "age": rng.normal(30 if young else 50, 4),
+            "spend": rng.normal(500, 150),
+            "balance": rng.normal(3000, 1000),
+            "visits": rng.normal(20, 8),
+        }
         acc.update(young, knn.predict_one(x))
         knn.learn_one(x, young)
     print(name, round(acc.get(), 3))
@@ -71,6 +93,7 @@ A stream of samples, one per customer. Each sample is a 2-D vector, with the lab
 
 ```python
 import numpy as np
+
 rng = np.random.default_rng(42)
 group_a = rng.normal([1.0, 0.0], 0.1, (200, 2))
 group_b = rng.normal([0.0, 1.0], 0.1, (200, 2))
@@ -89,21 +112,31 @@ real data they are often not.
 | LEGO | pairs with a target squared distance | a Mahalanobis matrix `A`, kept positive definite by the LogDet step | [LEGO](lego.md) |
 | POLA | pairs labelled similar (+1) or different (−1) | a pseudo-metric `(A, b)`, projected onto the positive semi-definite cone | [POLA](pola.md) |
 
+The same customers, the same four columns, and the distance that each algorithm learns (the Euclidean distance on the left of every picture draws circles; the learned distance draws stripes that cut the age axis, so that only the age counts):
+
+![OASIS: on the left the Euclidean distance draws circles around a customer, on the right the distance learned by OASIS draws almost vertical stripes, so that only the age counts.](../assets/learn/oasis_geometry.png)
+
+![LEGO: on the left the Euclidean distance draws circles around a customer, on the right the distance learned by LEGO draws stripes that cut the age axis.](../assets/learn/lego_geometry.png)
+
+![POLA: on the left the Euclidean distance draws circles around a customer, on the right the distance learned by POLA draws stripes that cut the age axis.](../assets/learn/pola_geometry.png)
+
 Each page starts from the same example, the customers of the bank, and then goes through the algorithm
 step by step, with the formula symbol by symbol, a hand case and what the original paper says.
 
 ## 3. The k-NN classifier that learns its metric
 
-A metric learner does not fit the `Classifier` / `Regressor` / `Transformer` types of an existing online-learning library:
+A metric learner does not fit the `Classifier`, `Regressor` or `Transformer` roles of the library:
 it learns from two or three samples at a time and outputs a distance. `MetricLearner` is
-the base class; `MetricKNNClassifier` is a k-NN classifier that uses the base classes of an existing online-learning library that uses the learner
-as its distance and — with `learn_metric=True`, the default — trains it online inside
-`learn_one`. Each new sample is paired with random samples from the window: a triplet
+the base class; `MetricKNNClassifier` is a k-NN classifier that uses a metric learner as its
+distance and, with `learn_metric=True` (the default), trains it online inside `learn_one`. Each new sample is paired with random samples from the window: a triplet
 for OASIS, a similar / dissimilar pair for POLA, a pair with a target distance for LEGO.
 
 ```python
 import numpy as np
-from dense_armor.core.online.learn.metric_learning import MetricKNNClassifier, OASIS
+from dense_armor.core.online.learn.metric_learning import (
+    MetricKNNClassifier,
+    OASIS,
+)
 
 rng = np.random.default_rng(0)
 y = rng.integers(0, 2, 400)
@@ -123,12 +156,12 @@ print(hits / len(y))
 Two classes that differ only in the first feature; the k-NN learns its similarity with OASIS while it
 classifies, and gets 93.75 % of the 400 samples right, each predicted before it is learned.
 
-## 4. Results on streams from an existing online-learning library
+## 4. Results on streams from river
 
 `progressive_val_score` (predict, then learn), `StandardScaler` in front, k = 5,
 `window_size=1000`, metric learned online with the default parameters:
 
-| Stream | the other library's `KNNClassifier` (Euclidean) | OASIS | LEGO | POLA |
+| Stream | `KNNClassifier` of river (Euclidean) | OASIS | LEGO | POLA |
 |---|---|---|---|---|
 | Phishing (1,250 samples) | 0.8823 | **0.8911 (+0.88)** | 0.8815 (−0.08) | 0.8871 (+0.48) |
 | ImageSegments (2,310 samples) | 0.8705 | 0.9082 (+3.77) | 0.9112 (+4.07) | **0.9138 (+4.33)** |
@@ -152,6 +185,8 @@ Euclidean metric on image retrieval (Chechik et al. 2009, Figure 2).
 ## API reference
 
 ::: dense_armor.core.online.learn.metric_learning
+    options:
+      docstring_style: numpy
 
 ---
 
