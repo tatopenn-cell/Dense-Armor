@@ -2,6 +2,49 @@
 
 These tools keep the average, the wobble and a few other summary numbers of a signal, updated with every new reading, without storing the readings.
 
+![A three-dimensional surface: payments seen on one axis, the forgetting factor alpha on another and the average payment in euros on the vertical axis. The true average jumps from 12 to 35 euros at payment 300; the surface rises after payment 300, faster for a larger alpha, and the front curve of RunningMoments stays far below, at 23.4 euros at payment 600.](../assets/moments/moments_3d.png)
+
+The picture is a stream of card payments simulated 40 times, the average of the 40 shown. The average payment is 12 euros until payment 300 and 35 euros after it, and the surface is the mean that `EWStats` reports after each payment, for each forgetting factor `alpha`. At payment 350 `RunningMoments` (the front curve) says 15.2 euros and at payment 600 it says 23.4, still far from 35, because it averages the whole past with the new regime. `EWStats` with `alpha` = 0.052 says 33.2 at payment 350 and 34.6 at payment 600; with `alpha` = 0.005 it says 17.1 and 29.8.
+
+## Gamestory
+
+Saturday morning at the market. The young shopkeeper and his assistant have opened the best-stocked stall in the square: they sell trading card packs, action figures, and toy cars.
+
+At the end of the day the shopkeeper wants to know how it went: how much each customer spent on average, whether prices were all similar or wildly different (someone buying a 2-euro pack and someone buying a giant 100-euro set!) and what the lowest and highest receipts were.
+
+Keeping thousands of paper receipts would be a disaster: they would blow away in the wind! So the assistant uses the RunningMoments trick, keeping only a handful of numbers updated on a small sheet, without saving the old receipts:
+
+- **1. What he jots down on the sheet (RunningMoments):** Every time a customer pays, the assistant updates on the fly: how many customers came by (count), the average spending (mean), how much the receipts vary from the average (var and std), whether there were more small or big purchases (skewness), whether someone suddenly made crazy purchases (kurtosis), and the smallest and biggest receipts (min and max). If a customer just stops by to ask a question without buying (NaN), the assistant adds "+1" on n_missing and doesn't ruin the average!
+- **2. The trick to keep the math clean (Welford):** A careless apprentice would try to calculate the differences by squaring giant numbers, but when everyone buys toys at the exact same price (for example 90€ ± 0.10€) the math goes haywire and gives a negative number! Instead, the assistant uses a clever formula (the Welford method) that adds only the tiny difference from the current average, staying accurate to the cent.
+- **3. Combining the morning and afternoon sheets (merge):** If the assistant jots down the morning sales on one sheet and his friend jots down the afternoon ones on another sheet, at the end of the day they can join them with the merge command and get the exact same result they would have gotten using a single sheet!
+- **4. All toys at once (RunningMomentsVector):** Since at the stall they sell cards, action figures, and toy cars at the same time, instead of going crazy with many scattered sheets, the assistant uses a single table called RunningMomentsVector that updates the averages of all toys together on every sale.
+- **5. Following the latest trends (EWStats and alpha):** What if in the afternoon a new series of super-rare cards comes out and everyone starts spending much more? A sheet that remembers the whole morning stays held back by the old low prices. So the assistant uses EWStats with the alpha rule: he gives more importance to the latest purchases and slowly forgets the morning ones, so the average updates immediately to the new trend!
+
+In the end, what are Moments (RunningMoments, RunningMomentsVector, and EWStats)? They are super-light tools that calculate and update in real time the summary numbers of a data stream (average, variation, minimum, and maximum) one purchase at a time in fixed memory, without ever having to keep the whole pile of past receipts!
+
+## A first example: the payments of a card terminal
+
+A payment processor sees card payments one at a time and wants the number of payments, the average, the spread and the smallest and the largest, without storing them. Five hundred payments around 12 euros, then three authorisation requests that were declined and carry no amount (`NaN`):
+
+```python
+import numpy as np
+from dense_armor.core.signals.stats.moments import RunningMoments
+
+rng = np.random.default_rng(0)
+m = RunningMoments()
+for _ in range(500):
+    m.learn_one({"x": float(rng.gamma(4.0, 3.0))})
+for _ in range(3):
+    m.learn_one({"x": float("nan")})
+print(m.count, round(m.mean, 2), round(m.std, 2), round(m.min, 2), round(m.max, 2), m.n_missing)
+```
+
+```
+500 11.55 5.65 1.29 36.15 3
+```
+
+The three declined requests are not counted: `count` is 500 and `n_missing` is 3, and they do not change the average. The average payment is 11.55 euros, the standard deviation 5.65, the smallest payment 1.29 and the largest 36.15, all from a handful of numbers that were updated one payment at a time.
+
 ## What this is
 
 Imagine you are watching a single joint of a robot move. You want to
@@ -394,3 +437,5 @@ of 400 samples from a Gaussian whose mean shifts from 0 to 3 at sample
 and plots the running mean, the running standard deviation and the
 exponentially weighted mean against the raw trace. The vertical dotted
 line marks the shift.
+
+The image `docs/assets/moments/moments_3d.png` is generated by `docs/assets/moments/make_moments_3d.py`. The script simulates a stream of 600 payments 40 times, with amounts drawn from a gamma distribution whose mean is 12 euros before payment 300 and 35 euros after it, feeds each stream into `RunningMoments` and into `EWStats` for 36 values of `alpha` between 0.005 and 0.15, and draws the mean of the 40 means.
