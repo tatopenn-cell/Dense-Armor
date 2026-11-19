@@ -2,8 +2,13 @@
 
 A single decision tree relies on a single rule, which breaks the moment a robot's conditions change. A forest combines multiple trees to outvote single-tree errors, using background adaptive detectors to replace failing branches or weighting different tree depths based on their recent prediction accuracy to handle noise and sudden shifts.
 
+## The map of forests
 
-## 1. Why a forest
+Click a page to open it, or the job on the left (or the button at the top) to go back to the [map of the library](../index.md#the-library-folder-by-folder).
+
+<object type="image/svg+xml" data="../assets/maps/forest.svg" style="width:100%"></object>
+
+## Gamestory
 
 New Year's Eve in London. A mysterious thief is emptying the banks of the city.
 
@@ -11,146 +16,42 @@ So far on his trail there was only one detective. The problem is that if the thi
 
 For this reason an entire team (a Forest) steps in that splits the risk. Every detective keeps an eye on his own mistakes: when one starts losing ground, he immediately prepares a replacement behind the scenes, while the team keeps chasing the thief with the detectives that still work.
 
-## 2. Adaptive random forest: replace the trees that go wrong
+## A first example: payments whose rule changes
 
-`AdaptiveRandomForestClassifier` is the forest of Gomes and colleagues (2017). It has four ideas, each one simple.
-
-Every tree sees every sample, but with a random weight: a sample counts as many times as a Poisson draw with mean 6, so no two trees train on the same data. Every tree also looks at only a few randomly chosen features when it considers a split, which makes the trees differ from one another. Every tree has two small detectors fed with its own mistakes: a warning detector, which is easy to trigger, and a drift detector, which needs more evidence. A warning starts a second tree in the background that trains on the stream but does not vote. If the drift detector then fires, the background tree takes the place of the old one. Finally the forest votes, and each tree's vote is weighted by its recent accuracy.
+Half of the payments are fraud. At first a fraud is a large payment (around 400) and a normal one is small (around 60); after 750 payments they swap. A forest of 5 trees predicts each payment before it learns it, and the accuracy is counted before the change (payments 500 to 750), over the 100 payments after it, and late in the stream (the last 200).
 
 ```python
 import numpy as np
 from dense_armor.core.online.forest import AdaptiveRandomForestClassifier
 
 rng = np.random.default_rng(0)
-f = AdaptiveRandomForestClassifier(n_models=5, seed=1)
+forest = AdaptiveRandomForestClassifier(n_models=5, seed=1)
+hits = []
 for i in range(1500):
-    x = float(rng.normal(0.0 if rng.random() < 0.5 else 5.0, 0.4))
-    y = int(x > 2.5) if i < 750 else int(x <= 2.5)
-    f.learn_one({"x": x}, y)
-print(f.predict_one({"x": 0.1}), f.predict_one({"x": 5.0}))
-print(f.n_warnings_, f.n_drifts_)
+    fraud = int(rng.random() < 0.5)
+    big = fraud if i < 750 else 1 - fraud
+    amount = float(rng.normal(400 if big else 60, 40 if big else 15))
+    hits.append(forest.predict_one({"amount": amount}) == fraud)
+    forest.learn_one({"amount": amount}, fraud)
+h = np.array(hits, float)
+print(h[500:750].mean().round(3), h[750:850].mean().round(3), h[1300:].mean().round(3))
 ```
 
 ```
-1 0
-8 2
+1.0 0.92 1.0
 ```
 
-The stream gives class 0 to small `x` for the first 750 samples and then swaps the two labels. After the swap the forest answers 1 for `x = 0.1` and 0 for `x = 5.0`, so it has followed the change. Along the way the detectors raised 8 warnings and 2 drifts.
+The three numbers are the accuracy before the change, over the 100 payments after it, and late in the stream. Every tree keeps an eye on its own mistakes; the trees that start to fail are replaced in the background while the others keep voting, which is what the page of the [adaptive random forest](adaptive_random_forest.md) describes.
 
-### Following a sudden change
+## The pages of the section
 
-A longer test makes the effect visible. `DriftStream` produces four numbers per sample and changes its rule at sample 1000. The figure shows the accuracy over the last 50 samples, as the median of five seeds, for one adaptive Hoeffding tree and for the forest of ten trees.
+| Page | Classes | What it is for |
+|---|---|---|
+| [AdaptiveRandomForestClassifier](adaptive_random_forest.md) | `AdaptiveRandomForestClassifier`, `SubspaceHoeffdingTree` | a forest of Hoeffding trees that replaces the trees that go wrong |
+| [AggregatedMondrianForest](aggregated_mondrian_forest.md) | `AggregatedMondrianForestClassifier`, `AggregatedMondrianForestRegressor` | the average of every depth of a tree, each depth weighted by its past loss |
+| [OnlineExtraTreesRegressor](online_extra_trees.md) | `OnlineExtraTreesRegressor` | a regression forest that draws the split at random instead of searching for it |
 
-![Accuracy of one adaptive tree and of the forest around a sudden change](../assets/forest/change_recovery.png)
-
-Both fall when the rule changes, and both come back to 1.0. In the median of the five seeds the forest falls less and returns sooner: in the first 100 samples after the change it is right 0.910 of the time and the single tree 0.540. Seed by seed the forest scores 0.90, 0.98, 0.96, 0.91 and 0.84 and the tree 0.12, 1.00, 0.98, 0.53 and 0.54, so the tree is the better one on two seeds and the difference is not significant (Section 4).
-
-The detectors tell the same story from the inside. The next figure counts, for one seed, how many warnings and drifts the ten trees raised.
-
-![Warnings and drifts raised by the ten trees](../assets/forest/detector_events.png)
-
-Before the change there are two warnings and no drift: a warning alone replaces nothing. At the change the drift line jumps as the trees are replaced one after another. The forest raised 29 warnings and 23 drifts in total on this stream, and a second burst appears between samples 1550 and 1700, when the rule is no longer changing. With the fast detector setting that is the price of reacting quickly: a tree may be replaced without need. Slower detectors, passed as `drift_detector` and `warning_detector`, trade reaction time for fewer false replacements.
-
-The forest costs about 4.3 ms per sample for ten trees against 0.24 ms for the single tree, roughly eighteen times more.
-
-## 3. Aggregated Mondrian forest: average every depth
-
-A tree has to decide how deep to go. A deep tree follows the data closely but memorises noise; a shallow one is steady but misses detail. `AggregatedMondrianForestClassifier` and `AggregatedMondrianForestRegressor` follow Mourtada, Gaiffas and Scornet and skip the decision: the answer is the average of the predictions of every pruning of the tree, each pruning weighted by how well it has predicted up to now. A pruning that has been predicting well counts more; a poor one fades.
-
-There are exponentially many prunings, so the average sounds impossible. The paper shows that with a simple prior, a pruning with `n` nodes starting at weight `2^-n`, the whole sum can be kept as two numbers per node and read along a single path from the leaf to the root. The library implements exactly that, so a prediction costs one walk up the tree.
-
-The library already has a Mondrian forest. It smooths each tree with a fixed prior over where a path leaves the tree, so a node weighs the same whatever it has predicted. The aggregated forest replaces that fixed prior with weights learned from the loss of every node.
-
-```python
-from dense_armor.core.online.forest import AggregatedMondrianForestRegressor
-
-f = AggregatedMondrianForestRegressor(n_trees=10, seed=0)
-for i in range(200):
-    x = (i % 20) / 19.0
-    f.learn_one({"x": x}, 1.0 if x > 0.5 else -1.0)
-print(round(f.predict_one({"x": 0.9}), 2), round(f.predict_one({"x": 0.1}), 2))
-```
-
-```
-0.99 -0.96
-```
-
-The target is -1 on the left half and +1 on the right half; the forest answers 0.99 and -0.96 at `x = 0.9` and `x = 0.1`.
-
-### What the weighting does
-
-The next figure uses a noisy curve. The red line is what the leaf alone predicts, which is the prediction of the deepest tree. The blue line is the weighted average of all prunings.
-
-![A noisy curve, the leaf prediction and the aggregated prediction](../assets/forest/aggregation.png)
-
-The leaf follows every wiggle of the noise. The aggregated line is smooth and follows the curve, at the cost of flattening the peaks: the average also includes shallow prunings, which predict the middle of a broad region. With a larger `step` the weights lean harder on the best pruning, and `predict_unaggregated_one` returns the leaf prediction for comparison.
-
-### What the paper guarantees
-
-The paper bounds how much worse the aggregate can be than any single pruning. For the quadratic loss and targets in `[-B, B]`, with `step = 1 / (8 B^2)`, the loss of the forest exceeds that of any pruning `T` by at most `4 B^2 (|T| + 1) log n`; for classification with the logarithmic loss and `step = 1`, by at most `|T| log 2 + (|T| + 1)(K - 1)/4 * log(4n)`. Against the smallest pruning, the root alone, the bound is just `log 2 / step`.
-
-![Loss of the forest minus loss of the root alone, on two kinds of targets](../assets/forest/regret.png)
-
-On the left the targets are independent of `x`, so the root is the best answer, and the forest stays within a fraction of a unit of it, far below the bound of 5.5. On the right the targets follow a curve of `x`, the aggregate beats the root by more and more, and after 600 samples the difference is between -180 and -225. The bound only limits the damage; it says nothing about how much better the forest can be.
-
-## 4. Online extra trees: draw the split at random
-
-The random forest and the adaptive random forest ask, for every feature of every leaf,
-where the best split would be. That is a search: every observed `(feature, target)` pair
-is stored, sorted, and scanned. A tree with many leaves, on a stream with many samples,
-pays for the search at every attempt.
-
-`OnlineExtraTreesRegressor` (OXT) skips the search. Each leaf draws a small buffer of its
-first `s = 5` observations per candidate feature, takes the minimum and the maximum of
-that buffer, and picks the split point `phi` uniformly in that range. From that sample
-onward, the leaf only keeps two small accumulators, one for the targets below `phi` and
-one for the targets above it, and evaluates the variance reduction from those. One
-candidate per feature, no sorting, no storage of the inputs.
-
-The forest keeps the drift machinery of the adaptive random forest. Every tree sees
-every sample with probability `p = 0.5` (sub-bagging, without replacement). Every tree
-has two detectors on its own absolute error: a warning, easier to trigger, and a drift,
-harder. A warning starts a background tree that trains on the same stream but does not
-vote. If a drift fires, the background tree takes the place of the old one.
-
-```python
-import numpy as np
-from dense_armor.core.online.forest import OnlineExtraTreesRegressor
-
-rng = np.random.default_rng(0)
-f = OnlineExtraTreesRegressor(n_models=5, seed=0)
-for _ in range(1500):
-    a = float(rng.uniform(-1.0, 1.0))
-    b = float(rng.uniform(-1.0, 1.0))
-    f.learn_one({"a": a, "b": b}, 4.0 * (a > 0.0))
-print(round(f.predict_one({"a": 0.5, "b": 0.0}), 1),
-      round(f.predict_one({"a": -0.5, "b": 0.0}), 1))
-```
-
-```
-4.0 0.2
-```
-
-The target is `4` when `a > 0` and `0` when `a < 0`; the feature `b` never matters.
-After 1500 samples the forest answers close to `4` on the positive side and close to
-`0` on the negative side, using only random split points and a buffer of five samples
-per candidate feature.
-
-### What the random split costs and buys
-
-The next figure uses the same `DriftStream` of Section 2, one sudden change at sample
-1000, 2000 samples, four features, median of five seeds. The line is the median
-absolute error, smoothed over 50 samples, for OXT, for `MondrianForestRegressor` with
-ten trees, and for `AMRulesRegressor`.
-
-![Absolute error of OXT, Mondrian forest and AMRules around a sudden change](../assets/forest/oxt_recovery.png)
-
-All three fall when the rule changes. OXT recovers more slowly than the Mondrian forest,
-and its error after the change stays above the Mondrian line. Against AMRules the OXT line stays below the AMRules line both before and after the change.
-
-## 5. Numbers
-
+## The numbers
 
 `DriftStream`, one sudden change at half, 2000 samples, four features, median of five seeds, test-then-train. Accuracy (mean squared error of the label for the regressors) on the 300 samples before the change, on the first 100 after it, and on 300 samples starting 200 after it.
 
