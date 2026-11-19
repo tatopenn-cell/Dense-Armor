@@ -1,5 +1,33 @@
 # AggregatedMondrianForest: average every depth
 
+## A first example: the risk of a loan from a credit score
+
+A bank rates each applicant with a credit score between 0 and 1. Below 0.4 the risk index of the loan is 0.8, above it 0.3, and every observed index carries a noise of 0.15. The forest sees 500 applicants, one at a time, and is then asked the index for six scores. The first line is the answer of the forest, the weighted average of every depth of its trees; the second is what the deepest leaf alone says.
+
+```python
+import numpy as np
+from dense_armor.core.online.forest import AggregatedMondrianForestRegressor
+
+rng = np.random.default_rng(0)
+f = AggregatedMondrianForestRegressor(n_trees=10, seed=0)
+for _ in range(500):
+    score = float(rng.random())
+    risk = 0.8 if score < 0.4 else 0.3
+    f.learn_one({"score": score}, risk + float(rng.normal(0, 0.15)))
+scores = (0.1, 0.2, 0.39, 0.41, 0.6, 0.9)
+print([round(f.predict_one({"score": s}), 2) for s in scores])
+print([round(f.predict_unaggregated_one({"score": s}), 2) for s in scores])
+```
+
+```
+[0.68, 0.66, 0.51, 0.45, 0.4, 0.35]
+[0.08, 0.36, 0.31, 0.2, 0.18, 0.07]
+```
+
+The true indices are 0.8 for the first three scores and 0.3 for the last three. The answer of the forest is smooth: it is high for low scores and low for high ones, and it spreads the step over the neighbourhood of 0.4 instead of cutting it. The leaf alone follows the noise of the few applicants it has seen and is far from the true values.
+
+## How it works
+
 A tree has to decide how deep to go. A deep tree follows the data closely but memorises noise; a shallow one is steady but misses detail. `AggregatedMondrianForestClassifier` and `AggregatedMondrianForestRegressor` follow Mourtada, Gaiffas and Scornet and skip the decision: the answer is the average of the predictions of every pruning of the tree, each pruning weighted by how well it has predicted up to now. A pruning that has been predicting well counts more; a poor one fades.
 
 There are exponentially many prunings, so the average sounds impossible. The paper shows that with a simple prior, a pruning with `n` nodes starting at weight `2^-n`, the whole sum can be kept as two numbers per node and read along a single path from the leaf to the root. The library implements exactly that, so a prediction costs one walk up the tree.

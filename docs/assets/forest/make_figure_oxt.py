@@ -2,12 +2,15 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "benchmarks"))
 
 import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
+
+from _drift_seeds import drift_seeds
 
 from dense_armor.core.online.forest import OnlineExtraTreesRegressor
 from dense_armor.core.online.rules import AMRulesRegressor
@@ -24,7 +27,7 @@ LEARNERS = {
 }
 
 curves = {k: [] for k in LEARNERS}
-for seed in range(5):
+for seed in drift_seeds():
     X, y = DriftStream(n_samples=N, n_features=D, n_drifts=1,
                        kind="sudden", seed=seed).data()
     names = [f"x{i}" for i in range(D)]

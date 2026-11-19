@@ -22,6 +22,9 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 
+sys.path.insert(0, str(ROOT / "benchmarks"))
+from _drift_seeds import drift_seeds  # noqa: E402
+
 from dense_armor.core.online.drift.adwin import ADWIN
 from dense_armor.core.online.forest import (
     AdaptiveRandomForestClassifier,
@@ -43,7 +46,7 @@ def _rolling(a: np.ndarray, w: int = 50) -> np.ndarray:
 
 def _run_classifiers() -> tuple:
     arf_acc, hat_acc, events = [], [], None
-    for seed in range(5):
+    for n_seed, seed in enumerate(drift_seeds()):
         X, y = DriftStream(
             n_samples=N, n_features=D, n_drifts=1, kind="sudden", seed=seed
         ).data()
@@ -60,7 +63,7 @@ def _run_classifiers() -> tuple:
             d.append(arf.n_drifts_)
         arf_acc.append(_rolling(np.array(a)))
         hat_acc.append(_rolling(np.array(h)))
-        if seed == 0:
+        if n_seed == 0:
             events = (np.array(w), np.array(d))
     return np.median(arf_acc, axis=0), np.median(hat_acc, axis=0), events
 

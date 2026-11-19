@@ -1,5 +1,36 @@
 # OnlineExtraTreesRegressor: draw the split at random
 
+## A first example: the cost of an insurance claim
+
+A claim costs 400 more when the amount feature is positive and 100 more when the tenure feature is above 0.5, with a noise of 20; three other features (hour, weekday, channel) have nothing to do with the cost. The forest sees 1500 claims, one at a time, and is asked the cost of three claims, whose true costs are 400, 100 and 500.
+
+```python
+import numpy as np
+from dense_armor.core.online.forest import OnlineExtraTreesRegressor
+
+rng = np.random.default_rng(0)
+forest = OnlineExtraTreesRegressor(n_models=5, seed=0)
+names = ["amount", "tenure", "hour", "weekday", "channel"]
+for _ in range(1500):
+    x = {k: float(rng.uniform(-1.0, 1.0)) for k in names}
+    cost = 400.0 * (x["amount"] > 0.0) + 100.0 * (x["tenure"] > 0.5)
+    forest.learn_one(x, cost + float(rng.normal(0.0, 20.0)))
+rest = {"hour": 0.3, "weekday": -0.2, "channel": 0.9}
+print(round(forest.predict_one({"amount": 0.5, "tenure": 0.0, **rest})))
+print(round(forest.predict_one({"amount": -0.5, "tenure": 0.8, **rest})))
+print(round(forest.predict_one({"amount": 0.5, "tenure": 0.8, **rest})))
+```
+
+```
+394
+93
+409
+```
+
+The three answers are 394, 93 and 409, for true costs of 400, 100 and 500: the first two are close and the third is 91 below the true cost. The forest never searched for a best split: every leaf drew its split point at random in the range of a small buffer of five observations.
+
+## How it works
+
 The random forest and the adaptive random forest ask, for every feature of every leaf,
 where the best split would be. That is a search: every observed `(feature, target)` pair
 is stored, sorted, and scanned. A tree with many leaves, on a stream with many samples,
@@ -44,7 +75,7 @@ per candidate feature.
 ### What the random split costs and buys
 
 The next figure uses the same `DriftStream` of the [adaptive random forest](adaptive_random_forest.md) page, one sudden change at sample
-1000, 2000 samples, four features, median of five seeds. The line is the median
+1000, 2000 samples, four features, median of five seeds. The seeds are those of the adaptive random forest page. The line is the median
 absolute error, smoothed over 50 samples, for OXT, for `MondrianForestRegressor` with
 ten trees, and for `AMRulesRegressor`.
 

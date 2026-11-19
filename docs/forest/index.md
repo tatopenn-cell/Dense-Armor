@@ -53,22 +53,25 @@ The three numbers are the accuracy before the change, over the 100 payments afte
 
 ## The numbers
 
-`DriftStream`, one sudden change at half, 2000 samples, four features, median of five seeds, test-then-train. Accuracy (mean squared error of the label for the regressors) on the 300 samples before the change, on the first 100 after it, and on 300 samples starting 200 after it.
+`DriftStream`, one sudden change at half, 2000 samples, four features, test-then-train, median of five seeds. The seeds are the first five (2, 3, 6, 10 and 12) for which a tree that learns until the change and then stops is wrong after it, with an accuracy below 0.5: that tree is the last row of the table, and it shows that the change makes an old rule wrong. Accuracy (mean squared error of the label for the regressors) on the 300 samples before the change, on the first 100 after it, and on 300 samples starting 200 after it.
 
 | learner | before | first 100 | after + 200 | ms per sample |
 |---|---|---|---|---|
-| AdaptiveRandomForestClassifier | 0.993 | 0.910 | 1.000 | 4.31 |
-| HoeffdingAdaptiveTreeClassifier | 1.000 | 0.540 | 1.000 | 0.24 |
-| AggregatedMondrianForestClassifier | 1.000 | 0.980 | 1.000 | 3.78 |
-| MondrianForestClassifier | 1.000 | 0.980 | 1.000 | 1.39 |
-| AggregatedMondrianForestRegressor (MSE) | 0.002 | 0.084 | 0.009 | 3.26 |
-| MondrianForestRegressor (MSE) | 0.000 | 0.029 | 0.001 | 1.41 |
-| OnlineExtraTreesRegressor (MSE) | 0.004 | 0.053 | 0.007 | 7.44 |
-| AMRulesRegressor (MSE) | 0.019 | 0.213 | 0.151 | 0.08 |
+| AdaptiveRandomForestClassifier | 1.000 | 0.940 | 1.000 | 0.97 |
+| HoeffdingAdaptiveTreeClassifier | 1.000 | 0.740 | 1.000 | 0.11 |
+| AggregatedMondrianForestClassifier | 1.000 | 0.930 | 1.000 | 3.87 |
+| MondrianForestClassifier | 1.000 | 0.940 | 1.000 | 1.77 |
+| AggregatedMondrianForestRegressor (MSE) | 0.001 | 0.157 | 0.015 | 3.25 |
+| MondrianForestRegressor (MSE) | 0.000 | 0.046 | 0.003 | 2.06 |
+| OnlineExtraTreesRegressor (MSE) | 0.002 | 0.049 | 0.006 | 1.22 |
+| AMRulesRegressor (MSE) | 0.039 | 0.249 | 0.047 | 0.11 |
+| a tree that stops learning at the change | 1.000 | 0.240 | 0.183 | |
 
-The adaptive random forest has a higher median accuracy than the single adaptive tree in the first 100 samples after the change, but on five seeds the difference is not significant: the forest is better on three seeds and the tree on two (paired Wilcoxon signed-rank, one-sided, p = 0.156; A12 = 0.62, below the 0.71 of a large effect). The forest also has ten trees against one, which is part of the difference. On this stream the aggregated Mondrian forests score the same as or below the Mondrian forests already in the library and cost more per sample; the aggregation also needs a box around the inputs, taken here from the range of the whole stream.
+The rows of the two regressors OXT and AMRules come from `benchmarks/oxt_streaming.py`, which also runs the Mondrian forest regressor (0.000, 0.046, 0.003 and 1.87 ms per sample); the others come from `benchmarks/forest_streaming.py`.
 
-On the same stream OXT scores slightly above the plain Mondrian forest in every window and costs about five times more per sample (7.44 ms against 1.41 ms, twenty trees against ten). Against AMRules the comparison flips: OXT has a lower error after the change (0.053 against 0.213 in the first 100 samples) but is slower (7.44 ms against 0.08 ms). The Mondrian forest has the lower error on all five seeds (A12 = 0.32 for OXT; one-sided paired Wilcoxon with OXT lower, p = 1.000; with five seeds no two-sided p-value can fall below 0.0625). Against AMRules OXT has the lower error on four seeds out of five (p = 0.094, A12 = 0.72), which is not significant at 0.05. The random split is not the winner on this benchmark; its purpose is to remove the split search, and its cost is visible in the millisecond column.
+On the first 100 samples after the change the adaptive random forest is right 0.94 of the time and the single adaptive tree 0.74; on five seeds the forest is better on four and equal on one (paired one-sided Wilcoxon p = 0.062). The forest has ten trees against one, which is part of the difference and of the cost. The aggregated Mondrian classifier scores 0.93 against 0.94 for the Mondrian forest already in the library, and the aggregated regressor has a mean squared error of 0.157 against 0.046 for the Mondrian regressor; both aggregated forests cost more per sample, and the aggregation needs a box around the inputs, taken here from the range of the whole stream.
+
+OXT has a mean squared error of 0.049 in the first 100 samples after the change against 0.046 for the Mondrian forest, at 1.22 ms against 1.87 ms per sample (the OXT forest has twenty trees, the Mondrian one ten). Seed by seed OXT is lower than the Mondrian forest on three seeds of five (one-sided paired Wilcoxon with OXT lower, p = 0.406). Against AMRules OXT is lower on three seeds of five (p = 0.156), and it is slower (1.22 ms against 0.11 ms); AMRules is far off on one seed (2.592 against 0.060). Neither difference is significant at 0.05, and with five seeds no p-value can fall below 0.031 (one-sided). The random split is not the winner on this benchmark; its purpose is to remove the split search.
 
 ### Go or no-go for AMF and OXT
 
