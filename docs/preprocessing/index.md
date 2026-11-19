@@ -22,6 +22,13 @@ about which features to keep and how to handle rare events.
 - [Text: words, counts, weights and hashing](text.md) (steps 6-7)
 - [Choosing features and rare events](features.md) (steps 8-9)
 
+## Classes documented on other pages
+
+These classes of the folder have no guide page of this group; they are in the [API reference](#api-reference) below.
+
+- `EWScaler`: per-feature standardisation with exponentially weighted statistics.
+- `MinMaxScaler`: rescales each feature to `[0, 1]` with the running minimum and maximum.
+
 ## API reference
 
 ::: dense_armor.core.signals.preprocessing.scale

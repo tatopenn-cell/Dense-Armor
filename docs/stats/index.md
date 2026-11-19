@@ -251,6 +251,14 @@ Every class inherits from `dense_armor.roles.Transformer`, passes
 `dense_armor.checks.check_estimator`, and carries a runnable doctest in
 its docstring.
 
+## Classes documented on other pages
+
+These classes of the folder have no page of this group; each is described where it is used.
+
+- `SDFT`: the sliding DFT, the N-point DFT of the last N samples, O(N) per update. On [Sound, files and frequency](../audio/sound.md).
+- `OnlineShrinkageCovariance`: an online covariance with linear shrinkage toward `(1/p) I`. On [Portfolio](../finance/portfolio.md).
+- `SparseCosineIndex`: a sparse index of documents for cosine ranking, built once. On [Text vectorizer](../preprocessing/text_vectorizer.md).
+
 ## See also
 
 - [`docs/roles/index.md`](../roles/index.md) — the `Base` / `Transformer` interface

@@ -20,6 +20,7 @@ SECTIONS = {
     "preprocessing": ("Preprocessing", "THE MAP OF PREPROCESSING"),
     "vision": ("Vision", "THE MAP OF VISION"),
 }
+DEPRECATED = {"Metro"}
 FUNCTIONS = {"Stable variance in float32": "stable_var, stable_moments"}
 
 
@@ -67,7 +68,7 @@ def main():
             best = max(counts, key=counts.get)
             if counts[best]:
                 owner[c] = best
-        lost = [c for c in classes if c not in owner]
+        lost = [c for c in classes if c not in owner and c not in DEPRECATED]
         print(folder, "classes without a page of the group:", lost)
         rows, summaries = [], {}
         for k, (ptitle, path) in enumerate(pages):
@@ -89,6 +90,19 @@ def main():
                     mine,
                 )
             )
+        if lost:
+            title_more = "Classes documented on other pages"
+            rows.append(
+                (
+                    title_more,
+                    f"{len(lost)} more",
+                    f"{folder}/index.md#classes-documented-on-other-pages",
+                    colours[len(rows) % 3],
+                    lost,
+                )
+            )
+            if len(lost) > 4:
+                summaries[title_more] = f"{len(lost)} classes: {short(lost)}"
         domains = {i["domain"] for i in catalog if i["class"] in classes}
         draw(
             rows,

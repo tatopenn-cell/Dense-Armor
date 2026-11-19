@@ -57,6 +57,14 @@ frame becomes a hundred numbers, a hundred numbers become four, four become
 one anomaly score. The trick is doing it without losing what matters, and
 four decades of mathematics went into making that possible.
 
+## Classes documented on other pages
+
+These classes of the folder have no page of this group.
+
+- `FrameNormalizer`: brings a frame into `[0, 1]` and flags the difficult cases. On [Vision: the algorithms](../ml/vision.md).
+- `VideoStream`: the common interface of the frame sources; it is in the [API reference](#api-reference) below.
+- `BagOfVisualWords`: a visual vocabulary over image patches and a histogram per frame. On [BagOfVisualWords](../cluster/visual_vocabulary.md).
+
 ## API reference
 
 ::: dense_armor.core.signals.vision.streams
