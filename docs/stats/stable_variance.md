@@ -30,6 +30,16 @@ values?
 
 **4. The depth.** The gradient of a stack of normalised layers on a GPU, in `float32`, for 11 depths from 1 to 1024 layers and 6 values of the offset over the spread, 66 stacks in all. The usual layer is wrong by up to 21 % at 1024 layers; with `stable_var` the gradient is wrong by less than 0.006 % in every stack. The largest gain is at 8 layers, where it is 17,447 times closer to the truth. A step with `stable_var` takes between 0.76 and 3.1 times as long as one with the usual layer (median 1.4).
 
+## What is different from the paper
+
+The paper is Healy (2022), arXiv:2206.10662, Algorithm 2: the shifted naive algorithm with K = x[0], Kahan summation and the two-term formula `T/n - (M - K)**2`. `stable_var` starts from it and adds three ideas of the author, Salvatore Pennacchio:
+
+- the local centring `d = y - m` before the squares;
+- a compensated tree of TwoSum (Ogita, Rump and Oishi; Shewchuk) in place of the sequential Kahan sum, with `O(log2(n))` vectorised levels, so it runs on a CPU and on a GPU;
+- the evaluation one slice at a time with `vmap`.
+
+The paper of 1983 by Chan, Golub and LeVeque, which Healy cites for the choice of K, was not read.
+
 ## A deep learning example: the gradient of a normalisation layer
 
 A normalisation layer divides each row of activations by the square root of its variance. When the activations of a row sit around a large offset with a small spread, the variance and the subtraction of the mean in `float32` lose the digits of the spread, and the gradient that goes back to the earlier layers inherits the error. The test takes 64 rows of 1024 values around 1000 with a spread of 0.004 and applies three layers: the usual one, with `jnp.mean` and `jnp.var`; one that takes only the variance from `stable_var`; and one that takes the variance from `stable_var` and subtracts the mean on the data shifted by the first element, `(x - x[0]) - mean(x - x[0])`. The output and the gradient (by `jax.grad`) of each are compared with the same layer in float64:
@@ -132,6 +142,14 @@ If the assistant uses the normal textbook formula (mean(x**2) - mean(x)**2), a d
 - **4. Exact zero on identical prices (0.0):** In the end, if all the figures had the exact same price ([1e10, 1e10, 1e10]), the stable_var function answers 0.0 exact, without making up fake wobbles.
 
 In the end, what is stable_var (Stable variance in float32)? It is a super-accurate math function that lets computers calculate how much numbers vary while using very little memory (float32), by first removing the giant base value and saving even the tiniest rounding crumbs!
+
+## Description
+
+Actually, `stable_var` is useful wherever there is a large number with small variations around it, regardless of the field:
+
+- **In finance:** a stock or an index quoted at 4,500 euros that fluctuates by 25 cents (0.25). With the normal formula in `float32`, the variance comes out `0.0000` (as if the market were completely still!), while `stable_var` finds the exact value (`0.2528`).
+- **In robots and drones:** a joint at rest around 1,000 that vibrates by 0.01. The normal formula is wrong by 630 times, while `stable_var` gives the exact number.
+- **In deep networks in `float32`:** when a signal with a large base value goes through many layers, one after another.
 
 ## A first example: the quotes of a stock index
 
