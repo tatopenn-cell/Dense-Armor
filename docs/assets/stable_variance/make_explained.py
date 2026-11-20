@@ -184,27 +184,37 @@ def panel_twosum(ax):
     ax.bar3d(4.0, 0.2, 0.0, 0.4, 0.4, 0.9, color=PINK, alpha=0.45)
     ax.bar3d(4.8, 0.0, 0.0, 0.9, 0.9, 10.0, color=CYAN, alpha=0.95)
     ax.bar3d(6.4, 0.2, 0.0, 0.4, 0.4, 0.9, color=GOLD, alpha=1.0)
+    ax.bar3d(0.0, 3.0, 0.0, 0.9, 0.9, 10.0, color=CYAN, alpha=0.95)
+    ax.bar3d(2.4, 3.0, 0.0, 0.9, 0.9, 11.92, color=PINK, alpha=0.95)
+    ax.bar3d(4.8, 3.0, 0.0, 0.9, 0.9, 10.0, color=GOLD, alpha=0.95)
     ax.set_xlim(-0.2, 7.2)
-    ax.set_ylim(-0.2, 1.4)
-    ax.set_zlim(0, 12.5)
+    ax.set_ylim(-0.2, 4.2)
+    ax.set_zlim(0, 14.5)
     ax.set_xticks([])
     ax.set_yticks([])
     ax.set_zticks([])
-    ax.view_init(elev=14, azim=-72)
-    ax.set_box_aspect((2.6, 0.6, 1.0), zoom=1.0)
+    ax.view_init(elev=20, azim=-72)
+    ax.set_box_aspect((2.6, 1.3, 1.0), zoom=1.0)
     label(ax, 0.45, 0.45, 10.9, "EXACT: a + b", INK, dy=50)
     label(ax, 2.85, 0.45, 10.0, "PLAIN SUM: a only", INK, dy=60)
     label(ax, 4.2, 0.4, 0.9, "the 1 fell off: LOST", PINK, dx=0, dy=-60)
     label(ax, 5.25, 0.45, 10.0, "TWO-SUM: s", INK, dy=60)
     label(ax, 6.6, 0.4, 0.9, "the 1 is caught: e", GOLD, dx=0, dy=-60)
+    label(ax, 0.45, 3.45, 10.0, "TRUE: 1 + 100000 x 1e-7", INK, dx=-30, dy=55)
+    label(ax, 2.85, 3.45, 11.92, "PLAIN SUM: 1.01192093", PINK, dx=0, dy=45)
+    label(ax, 5.25, 3.45, 10.0, "KAHAN: 1.00999999", GOLD, dx=40, dy=55)
     note(
         ax,
-        f"a big number a = {int(a)} and a small one b = {int(b)}{NL}"
-        f"plain float32 sum: {int(plain)}   the {int(b)} is gone{NL}"
-        f"two-sum: s = {int(s)} and e = {int(e)}   the {int(e)} is kept in a second number{NL}"
-        f"stable_var keeps adding those second numbers back",
+        f"back row, two-sum: a = {int(a)}, b = {int(b)}; plain float32 sum {int(plain)} loses the {int(b)}, two-sum keeps it as e = {int(e)}{NL}"
+        f"front row, Kahan: 100000 additions of 1e-7 to 1.0, the excess over 1 is drawn 1000 times bigger{NL}"
+        f"plain sum 1.01192093 (wrong), Kahan 1.00999999, true 1.01: Kahan carries the crumbs along{NL}"
+        f"stable_var is not classic Kahan: it is a compensated tree of two-sums, the idea and the choice of the author",
     )
-    pane(ax, "3  The two-sum", "when a sum would lose a small piece, catch it")
+    pane(
+        ax,
+        "3  Catching the crumbs: two-sum and Kahan",
+        "when a sum would lose a small piece, catch it",
+    )
 
 
 def panel_depth(ax):
