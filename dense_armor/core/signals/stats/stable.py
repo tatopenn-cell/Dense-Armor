@@ -147,7 +147,7 @@ def _prepare(a, axes):
 
 
 def _two_sum(a, b):
-    """Knuth's ``TwoSum``: ``a + b = s + err``, ``s = fl(a + b)``.
+    """``TwoSum``: ``a + b = s + err``, ``s = fl(a + b)``.
 
     Ogita, Rump, Oishi 2005, Algorithm 3.1, PDF page 7; Shewchuk 1997,
     Theorem 7, PDF page 12.

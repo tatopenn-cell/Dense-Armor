@@ -91,7 +91,7 @@ values?
 
 ![A pillar for a, a small cube for b: the plain float32 sum loses the cube, the TwoSum keeps it as the error e](../assets/stable_variance/stable_var_3_twosum.png)
 
-**3. TwoSum.** Adding a small number to a big one loses the small one: with a = 16777216 and b = 1 in `float32`, the plain sum is 16777216 and the 1 is gone. The TwoSum of Knuth returns the sum `s = 16777216` and also the error `e = 1`, so that `a + b = s + e` exactly; it is `x = fl(a + b)`, `z = fl(x - a)`, `y = fl((a - (x - z)) + (b - z))`, the same function as Algorithm 3.1 of Ogita, Rump and Oishi and as Theorem 7 of Shewchuk.
+**3. TwoSum.** Adding a small number to a big one loses the small one: with a = 16777216 and b = 1 in `float32`, the plain sum is 16777216 and the 1 is gone. The TwoSum returns the sum `s = 16777216` and also the error `e = 1`, so that `a + b = s + e` exactly; it is `x = fl(a + b)`, `z = fl(x - a)`, `y = fl((a - (x - z)) + (b - z))`, the same function as Algorithm 3.1 of Ogita, Rump and Oishi and as Theorem 7 of Shewchuk.
 
 <a id="compensated-tree"></a>
 
@@ -105,7 +105,7 @@ The shift `y = x - x[0]` is the shifted-data algorithm with K = x[0]. Healy (202
 
 ### The TwoSum, against the papers
 
-The function `_two_sum` of the kernel is Knuth's TwoSum, the same three lines as Algorithm 3.1 of Ogita, Rump and Oishi (2005) and as TWO-SUM, Theorem 7, of Shewchuk (1997): `x = fl(a + b)`, `z = fl(x - a)`, `y = fl((a - (x - z)) + (b - z))`, with `a + b = x + y` exactly. In this the kernel is not different from the papers.
+The function `_two_sum` of the kernel is the TwoSum, the same three lines as Algorithm 3.1 of Ogita, Rump and Oishi (2005) and as TWO-SUM, Theorem 7, of Shewchuk (1997): `x = fl(a + b)`, `z = fl(x - a)`, `y = fl((a - (x - z)) + (b - z))`, with `a + b = x + y` exactly. In this the kernel is not different from the papers.
 
 What is different is how the TwoSum is used:
 
