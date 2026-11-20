@@ -114,7 +114,7 @@ def panel_problem(ax, x):
         f"usual formula, float32   {textbook:.4f}   (the market looks still){NL}"
         f"stable_var, float32      {stable:.4f}",
     )
-    pane(ax, "1  The problem", "the usual formula in float32 loses the small wiggle")
+    pane(ax, "The problem", "the usual formula in float32 loses the small wiggle")
 
 
 def panel_shift(ax, x):
@@ -368,13 +368,14 @@ def panel_depth(ax):
             shade=False,
         )
     worst = max(rows, key=lambda r: r["usual"]["grad_rel_err"])
-    best = max(
-        rows, key=lambda r: r["usual"]["grad_rel_err"] / r["stable"]["grad_rel_err"]
+    top = min(spreads)
+    over = min(
+        (r for r in rows if r["spread"] == top and r["usual"]["grad_rel_err"] > 0.01),
+        key=lambda r: r["depth"],
     )
-    k = best["usual"]["grad_rel_err"] / best["stable"]["grad_rel_err"]
-    bx, by = np.log2(best["depth"]), np.log10(d["offset"] / best["spread"])
-    z0, z1 = 100 * best["stable"]["grad_rel_err"], 100 * best["usual"]["grad_rel_err"]
-    ax.plot([bx, bx], [by, by], [z0, z1], color="white", lw=2.2)
+    bx, by = np.log2(over["depth"]), np.log10(d["offset"] / top)
+    z1 = 100 * over["usual"]["grad_rel_err"]
+    ax.plot([bx, bx], [by, by], [0, z1], color="white", lw=2.2)
     ax.scatter([bx], [by], [z1], color="white", s=30)
     ax.set_zlim(0, float(Zu.max()) * 1.05)
     ax.view_init(elev=24, azim=-128)
@@ -386,11 +387,11 @@ def panel_depth(ax):
         f"GPU, float32, {len(rows)} stacks of normalised layers{NL}"
         f"pink: usual layer, wrong by up to {100 * worst['usual']['grad_rel_err']:.0f} % at {worst['depth']} layers{NL}"
         f"blue: stable_var, below {100 * max(r['stable']['grad_rel_err'] for r in rows):.3f} % in every stack{NL}"
-        f"white line: {best['depth']} layers, {k:,.0f} times closer to the truth",
+        f"white line: the usual layer passes 1 % at {over['depth']} layers (offset/spread {d['offset'] / top:.0f})",
     )
     pane(
         ax,
-        "4  The depth",
+        "The depth",
         "the usual layer breaks as layers pile up; stable_var does not",
     )
 

@@ -32,28 +32,28 @@
 </a>
 </g>
 <g class="g"><path class="e" d="M564.0,290.0 C645.0,290.0 645.0,142 726,142" fill="none" stroke="#4cc9f0" stroke-width="2.2"/>
-<a href="../../stats/stable_variance/#gamestory" target="_top"><title>1  Shift: open stats/stable_variance.md#gamestory</title>
+<a href="../../stats/stable_variance/#shift" target="_top"><title>1  Shift: open stats/stable_variance.md#shift</title>
 <rect class="card" x="726" y="104" width="250" height="84" rx="14" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/>
 <text class="dn" x="742" y="132" fill="#e0fbfc" font-size="16" font-weight="700">1  Shift</text>
 <text x="742" y="154" fill="#94a3b8" font-size="12">y = x - x[0], exact when values are close</text>
 </a>
 </g>
 <g class="g"><path class="e" d="M564.0,290.0 C645.0,290.0 645.0,254 726,254" fill="none" stroke="#ff9e00" stroke-width="2.2"/>
-<a href="../../stats/stable_variance/#what-is-different-from-the-paper" target="_top"><title>2  Centre: open stats/stable_variance.md#what-is-different-from-the-paper</title>
+<a href="../../stats/stable_variance/#centre" target="_top"><title>2  Centre: open stats/stable_variance.md#centre</title>
 <rect class="card" x="726" y="216" width="250" height="84" rx="14" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/>
 <text class="dn" x="742" y="244" fill="#e0fbfc" font-size="16" font-weight="700">2  Centre</text>
 <text x="742" y="266" fill="#94a3b8" font-size="12">d = y - m, the local centring</text>
 </a>
 </g>
 <g class="g"><path class="e" d="M564.0,290.0 C645.0,290.0 645.0,366 726,366" fill="none" stroke="#f72585" stroke-width="2.2"/>
-<a href="../../stats/stable_variance/#what-is-different-from-the-paper" target="_top"><title>3  TwoSum: open stats/stable_variance.md#what-is-different-from-the-paper</title>
+<a href="../../stats/stable_variance/#twosum" target="_top"><title>3  TwoSum: open stats/stable_variance.md#twosum</title>
 <rect class="card" x="726" y="328" width="250" height="84" rx="14" fill="#101a24" stroke="#f72585" stroke-width="1.6"/>
 <text class="dn" x="742" y="356" fill="#e0fbfc" font-size="16" font-weight="700">3  TwoSum</text>
 <text x="742" y="378" fill="#94a3b8" font-size="12">a sum and its exact error</text>
 </a>
 </g>
 <g class="g"><path class="e" d="M564.0,290.0 C645.0,290.0 645.0,478 726,478" fill="none" stroke="#ff9e00" stroke-width="2.2"/>
-<a href="../../stats/stable_variance/#3-what-the-function-does" target="_top"><title>4  Compensated tree: open stats/stable_variance.md#3-what-the-function-does</title>
+<a href="../../stats/stable_variance/#compensated-tree" target="_top"><title>4  Compensated tree: open stats/stable_variance.md#compensated-tree</title>
 <rect class="card" x="726" y="440" width="250" height="84" rx="14" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/>
 <text class="dn" x="742" y="468" fill="#e0fbfc" font-size="16" font-weight="700">4  Compensated tree</text>
 <text x="742" y="490" fill="#94a3b8" font-size="12">of Kahan: the author&#x27;s, in pairs</text>

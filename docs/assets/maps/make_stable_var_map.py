@@ -45,25 +45,25 @@ MOVES = [
     (
         "1  Shift",
         "y = x - x[0], exact when values are close",
-        "stats/stable_variance.md#gamestory",
+        "stats/stable_variance.md#shift",
         CYAN,
     ),
     (
         "2  Centre",
         "d = y - m, the local centring",
-        "stats/stable_variance.md#what-is-different-from-the-paper",
+        "stats/stable_variance.md#centre",
         ORANGE,
     ),
     (
         "3  TwoSum",
         "a sum and its exact error",
-        "stats/stable_variance.md#what-is-different-from-the-paper",
+        "stats/stable_variance.md#twosum",
         PINK,
     ),
     (
         "4  Compensated tree",
         "of Kahan: the author's, in pairs",
-        "stats/stable_variance.md#3-what-the-function-does",
+        "stats/stable_variance.md#compensated-tree",
         ORANGE,
     ),
 ]
