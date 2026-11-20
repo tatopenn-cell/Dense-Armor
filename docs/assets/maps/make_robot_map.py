@@ -33,7 +33,6 @@ PARTS = {
     "optim": ("Optimizers", "optim/index.md"),
     "graph": ("Ontology", "ontology/index.md"),
     "protect": ("Shields", "shields/engine.md"),
-    "utility": ("Shield engine", "shields/engine.md"),
 }
 
 
@@ -91,7 +90,7 @@ def main():
         names = [i["class"] for i in rows if i["domain"] == d]
         if title in extra or not names:
             continue
-        pages.append((title, "goes into the robot", rel, colours[k % 3], []))
+        pages.append((title, "", rel, colours[k % 3], []))
         extra[title] = f"{len(names)} classes: {short(names)}"
     summaries = {
         "Control": f"{len(control)} modules: {', '.join(control)}",
