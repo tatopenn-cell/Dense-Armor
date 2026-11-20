@@ -1,10 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="100%" role="img" aria-label="The map of stable_var: the fields where it is needed and the four moves of the kernel">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="100%" role="img" aria-label="The map of stable_var: the fields where it is needed and the moves of the kernel">
 <style>text{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif}.e{opacity:.4;transition:opacity .15s}.net:hover .e{opacity:.08}.net .g:hover .e{opacity:1;stroke-width:3}a:hover .card{fill:#17303f;stroke-width:2.6}a:hover text.dn{fill:#fff}</style>
 <rect width="1000" height="660" fill="#0d131a" rx="14"/>
 <text x="500" y="40" fill="#e0fbfc" font-size="26" font-weight="700" text-anchor="middle">THE MAP OF stable_var</text>
 <text x="500" y="66" fill="#4cc9f0" font-size="13" text-anchor="middle">a big number with small wiggles around it, in float32: where it appears and how the kernel keeps the wiggles; pass over a card to light it, click to open it</text>
 <text x="24" y="104" fill="#f72585" font-size="12" font-weight="700">01  WHERE IT IS NEEDED</text>
-<text x="726" y="88" fill="#f72585" font-size="12" font-weight="700">02  THE FOUR MOVES</text>
+<text x="726" y="88" fill="#f72585" font-size="12" font-weight="700">02  THE MOVES</text>
 <text x="24" y="548" fill="#f72585" font-size="12" font-weight="700">03  THE JOB AND THE CLASS THAT USE IT</text>
 <g class="net">
 <g class="g"><path class="e" d="M274,168 C355.0,168 355.0,290.0 436.0,290.0" fill="none" stroke="#4cc9f0" stroke-width="2.2"/>
@@ -38,26 +38,32 @@
 <text x="742" y="154" fill="#94a3b8" font-size="12">y = x - x[0], exact when values are close</text>
 </a>
 </g>
-<g class="g"><path class="e" d="M564.0,290.0 C645.0,290.0 645.0,254 726,254" fill="none" stroke="#ff9e00" stroke-width="2.2"/>
+<g class="g"><path class="e" d="M564.0,290.0 C645.0,290.0 645.0,242 726,242" fill="none" stroke="#ff9e00" stroke-width="2.2"/>
 <a href="../../stats/stable_variance/#what-is-different-from-the-paper" target="_top"><title>2  Centre: open stats/stable_variance.md#what-is-different-from-the-paper</title>
-<rect class="card" x="726" y="216" width="250" height="76" rx="14" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/>
-<text class="dn" x="742" y="244" fill="#e0fbfc" font-size="16" font-weight="700">2  Centre</text>
-<text x="742" y="266" fill="#94a3b8" font-size="12">d = y - m, the local centring</text>
+<rect class="card" x="726" y="204" width="250" height="76" rx="14" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/>
+<text class="dn" x="742" y="232" fill="#e0fbfc" font-size="16" font-weight="700">2  Centre</text>
+<text x="742" y="254" fill="#94a3b8" font-size="12">d = y - m, the local centring</text>
 </a>
 </g>
-<g class="g"><path class="e" d="M564.0,290.0 C645.0,290.0 645.0,366 726,366" fill="none" stroke="#f72585" stroke-width="2.2"/>
-<a href="../../stats/stable_variance/#3-what-the-function-does" target="_top"><title>3  Compensated tree: open stats/stable_variance.md#3-what-the-function-does</title>
-<rect class="card" x="726" y="328" width="250" height="76" rx="14" fill="#101a24" stroke="#f72585" stroke-width="1.6"/>
-<text class="dn" x="742" y="356" fill="#e0fbfc" font-size="16" font-weight="700">3  Compensated tree</text>
-<text x="742" y="378" fill="#94a3b8" font-size="12">each merge: 3 TwoSum, on sums and carries</text>
-<text x="742" y="404" fill="#f72585" font-size="14" font-weight="700">carry = e1 + e2 + e3</text>
+<g class="g"><path class="e" d="M564.0,290.0 C645.0,290.0 645.0,342 726,342" fill="none" stroke="#f72585" stroke-width="2.2"/>
+<a href="../../stats/stable_variance/#what-is-different-from-the-paper" target="_top"><title>3  TwoSum: open stats/stable_variance.md#what-is-different-from-the-paper</title>
+<rect class="card" x="726" y="304" width="250" height="76" rx="14" fill="#101a24" stroke="#f72585" stroke-width="1.6"/>
+<text class="dn" x="742" y="332" fill="#e0fbfc" font-size="16" font-weight="700">3  TwoSum</text>
+<text x="742" y="354" fill="#94a3b8" font-size="12">a + b = s + err, exactly (Knuth)</text>
 </a>
 </g>
-<g class="g"><path class="e" d="M564.0,290.0 C645.0,290.0 645.0,478 726,478" fill="none" stroke="#4cc9f0" stroke-width="2.2"/>
-<a href="../../stats/stable_variance/#gamestory" target="_top"><title>4  Exact zero: open stats/stable_variance.md#gamestory</title>
-<rect class="card" x="726" y="440" width="250" height="76" rx="14" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/>
-<text class="dn" x="742" y="468" fill="#e0fbfc" font-size="16" font-weight="700">4  Exact zero</text>
-<text x="742" y="490" fill="#94a3b8" font-size="12">identical values give 0.0</text>
+<g class="g"><path class="e" d="M564.0,290.0 C645.0,290.0 645.0,442 726,442" fill="none" stroke="#ff9e00" stroke-width="2.2"/>
+<a href="../../stats/stable_variance/#3-what-the-function-does" target="_top"><title>4  Compensated tree: open stats/stable_variance.md#3-what-the-function-does</title>
+<rect class="card" x="726" y="404" width="250" height="76" rx="14" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/>
+<text class="dn" x="742" y="432" fill="#e0fbfc" font-size="16" font-weight="700">4  Compensated tree</text>
+<text x="742" y="454" fill="#94a3b8" font-size="12">in place of the sequential Kahan sum</text>
+</a>
+</g>
+<g class="g"><path class="e" d="M564.0,290.0 C645.0,290.0 645.0,542 726,542" fill="none" stroke="#4cc9f0" stroke-width="2.2"/>
+<a href="../../stats/stable_variance/#gamestory" target="_top"><title>5  Exact zero: open stats/stable_variance.md#gamestory</title>
+<rect class="card" x="726" y="504" width="250" height="76" rx="14" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/>
+<text class="dn" x="742" y="532" fill="#e0fbfc" font-size="16" font-weight="700">5  Exact zero</text>
+<text x="742" y="554" fill="#94a3b8" font-size="12">identical values give 0.0</text>
 </a>
 </g>
 <g class="g"><path class="e" d="M274,592 C362.0,592 362.0,334.0 450.0,334.0" fill="none" stroke="#ff9e00" stroke-width="2.2"/>
