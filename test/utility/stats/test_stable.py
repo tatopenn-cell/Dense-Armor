@@ -453,8 +453,21 @@ def test_compensated_tree_is_load_bearing_on_d1():
     ref = np.var(data.astype(np.float64), axis=0)
     x = jnp.asarray(data)
     k = np.asarray(jax.jit(lambda a: stable_var(a, axis=0))(x))
-    nc = np.asarray(jax.jit(lambda a: jax.vmap(_kernel_no_compensation,
-                                                in_axes=1, out_axes=0)(a))(x))
+    nc = np.asarray(
+        jax.jit(lambda a: jax.vmap(_kernel_no_compensation, in_axes=1, out_axes=0)(a))(
+            x
+        )
+    )
     e_k = float(np.max(np.abs(k - ref) / np.abs(ref)))
     e_nc = float(np.max(np.abs(nc - ref) / np.abs(ref)))
     assert e_k < e_nc, f"tree {e_k:.2e} not better than jnp.sum {e_nc:.2e} on D1"
+
+
+def test_bfloat16_is_computed_in_float32_and_returned_in_bfloat16():
+    import jax.numpy as jnp
+
+    x = jnp.asarray(np.linspace(0.0, 1.0, 64).reshape(4, 16), jnp.bfloat16)
+    out = stable_var(x, axis=1)
+    ref = np.var(np.asarray(x, np.float64), axis=1)
+    assert out.dtype == jnp.bfloat16
+    assert np.allclose(np.asarray(out, np.float64), ref, rtol=1e-2)
