@@ -2,6 +2,21 @@
 
 <object type="image/svg+xml" data="../../assets/maps/stable_var.svg" style="width:100%"></object>
 
+## Gamestory
+
+Saturday afternoon at the market. The young shopkeeper and his assistant are selling a super-rare series of collectible action figures that all cost around 1,000 euros (one costs 1000.00, one 1000.01, one 1000.02).
+
+At the end of the day they want to know how much those few cents varied from one figure to another. But there is a problem: to do the math super fast, the assistant uses a pocket calculator with a short screen (called float32), which can hold at most 7 digits on display!
+
+If the assistant uses the normal textbook formula (mean(x**2) - mean(x)**2), a disaster happens: squaring 1000 creates giant numbers (1,000,000), the short screen cuts off all the cents to fit the zeros, and at the end it spits out a crazy negative number (-196608)! To save the cents from the short screen, the assistant uses the stable_var trick, made of four clever moves:
+
+- **1. Removing the giant weight at the start (y = x - x[0]):** Before doing any math, the assistant takes the price of the first figure (1000.00) and subtracts it from all the others. Only the cents of difference remain on the sheet (0.00, 0.01, 0.02)! That way the short screen no longer wastes space writing the thousand euros that are the same for everyone.
+- **2. Centering the cents (m):** Now he takes the average of only those tiny cents (m): this way every tiny rounding stays super small and never blows up.
+- **3. Catching the crumbs that fall off (TwoSum and kahan):** When adding up lots of tiny cents one after another, on a short-screen calculator some crumbs risk falling off the edge. The assistant uses a special trick (TwoSum and kahan) that catches every single crumb of remainder and puts it back into the final sum, without losing even a thousandth!
+- **4. Exact zero on identical prices (0.0):** In the end, if all the figures had the exact same price ([1e10, 1e10, 1e10]), the stable_var function answers 0.0 exact, without making up fake wobbles.
+
+In the end, what is stable_var (Stable variance in float32)? It is a super-accurate math function that lets computers calculate how much numbers vary while using very little memory (float32), by first removing the giant base value and saving even the tiniest rounding crumbs!
+
 `stable_var` measures how much a list of numbers wiggles when every number is huge and the wiggle is tiny, and it does not get fooled by the huge part.
 
 Why does it matter? A computer that works in `float32` keeps only about 7 digits of each number. A number like 4500.25 has no room left for a wiggle of a few cents: the usual formula loses the wiggle, as if it had never been there. `stable_var` first takes away the big base number and measures only the wiggle.
@@ -137,21 +152,6 @@ If a gradient error of 1 % is the most that can be accepted, the usual layer rea
 The price is time. A step with the layer that uses `stable_var` takes between 1.2 and 3.0 times as long as one with the usual layer on this GPU, and 1.34 times at 1024 layers (128.0 ms against 95.3 ms). The ratio at 128 layers (2.95) is out of line with its neighbours (1.53 at 256), and was not investigated. For activations with a large offset and a small spread, where the usual layer gives gradients that are wrong by 1 % to 20 %, a step that takes at most three times as long and a gradient that is 3450 to 16900 times more accurate is a good price; for activations without a large offset this test says nothing, because it was not run.
 
 This is one synthetic stack, one GPU session and one size (128 rows of 512 values). In this stack the gradient grows with the depth, up to about 1e15 at 1024 layers, and stays finite in `float32`; it is not a trained network, and the page does not measure the accuracy of one.
-
-## Gamestory
-
-Saturday afternoon at the market. The young shopkeeper and his assistant are selling a super-rare series of collectible action figures that all cost around 1,000 euros (one costs 1000.00, one 1000.01, one 1000.02).
-
-At the end of the day they want to know how much those few cents varied from one figure to another. But there is a problem: to do the math super fast, the assistant uses a pocket calculator with a short screen (called float32), which can hold at most 7 digits on display!
-
-If the assistant uses the normal textbook formula (mean(x**2) - mean(x)**2), a disaster happens: squaring 1000 creates giant numbers (1,000,000), the short screen cuts off all the cents to fit the zeros, and at the end it spits out a crazy negative number (-196608)! To save the cents from the short screen, the assistant uses the stable_var trick, made of four clever moves:
-
-- **1. Removing the giant weight at the start (y = x - x[0]):** Before doing any math, the assistant takes the price of the first figure (1000.00) and subtracts it from all the others. Only the cents of difference remain on the sheet (0.00, 0.01, 0.02)! That way the short screen no longer wastes space writing the thousand euros that are the same for everyone.
-- **2. Centering the cents (m):** Now he takes the average of only those tiny cents (m): this way every tiny rounding stays super small and never blows up.
-- **3. Catching the crumbs that fall off (TwoSum and kahan):** When adding up lots of tiny cents one after another, on a short-screen calculator some crumbs risk falling off the edge. The assistant uses a special trick (TwoSum and kahan) that catches every single crumb of remainder and puts it back into the final sum, without losing even a thousandth!
-- **4. Exact zero on identical prices (0.0):** In the end, if all the figures had the exact same price ([1e10, 1e10, 1e10]), the stable_var function answers 0.0 exact, without making up fake wobbles.
-
-In the end, what is stable_var (Stable variance in float32)? It is a super-accurate math function that lets computers calculate how much numbers vary while using very little memory (float32), by first removing the giant base value and saving even the tiniest rounding crumbs!
 
 ## Description
 
