@@ -52,7 +52,7 @@ If the assistant uses the normal textbook formula (mean(x**2) - mean(x)**2), a d
 
 - **1. Removing the giant weight at the start (y = x - x[0]):** Before doing any math, the assistant takes the price of the first figure (1000.00) and subtracts it from all the others. Only the cents of difference remain on the sheet (0.00, 0.01, 0.02)! That way the short screen no longer wastes space writing the thousand euros that are the same for everyone.
 - **2. Centering the cents (m):** Now he takes the average of only those tiny cents (m): this way every tiny rounding stays super small and never blows up.
-- **3. Catching the crumbs that fall off (TwoSum + compensated Kahan):** When adding up lots of tiny cents one after another, on a short-screen calculator some crumbs risk falling off the edge. The assistant uses a special trick (TwoSum + compensated Kahan) that catches every single crumb of remainder and puts it back into the final sum, without losing even a thousandth!
+- **3. Catching the crumbs that fall off (TwoSum + compensated tree of Kahan):** When adding up lots of tiny cents one after another, on a short-screen calculator some crumbs risk falling off the edge. The assistant uses a special trick (TwoSum + compensated tree of Kahan) that catches every single crumb of remainder and puts it back into the final sum, without losing even a thousandth!
 - **4. Exact zero on identical prices (0.0):** In the end, if all the figures had the exact same price ([1e10, 1e10, 1e10]), the stable_var function answers 0.0 exact, without making up fake wobbles.
 
 In the end, what is stable_var (Stable variance in float32)? It is a super-accurate math function that lets computers calculate how much numbers vary while using very little memory (float32), by first removing the giant base value and saving even the tiniest rounding crumbs!
@@ -97,11 +97,11 @@ values?
 
 ![A tree of eight numbers added in pairs over three levels, with the sums in blue and the carries in gold](../assets/stable_variance/stable_var_4_tree.png)
 
-**4. Compensated tree.** The sum of the squares `d**2` is made by a binary tree of `log2(n)` levels, which adds the pairs at the same time and so runs on a GPU. At each merge, for every pair of partial sums `(S, C)`, there are three TwoSum calls, on the sums, on the carries and on their sum, and the new sum and carry are `S = s3` and `C = e1 + e2 + e3`; the result is `S + C`. The compensation comes from Kahan, and each merge uses TwoSum. It takes the place of the sequential Kahan sum of the paper of Healy, and it is not classic Kahan: it is the idea and the choice of the author. On 8 numbers, 1.0 and seven of 1e-8, the plain `float32` sum is 1.00000000, the compensated tree gives 1.00000012, and the exact sum is 1.00000007, whose nearest `float32` is 1.00000012.
+**4. Compensated tree.** The sum of the squares `d**2` is made by a binary tree of `log2(n)` levels, which adds the pairs at the same time and so runs on a GPU. At each merge, for every pair of partial sums `(S, C)`, there are three TwoSum calls, on the sums, on the carries and on their sum, and the new sum and carry are `S = s3` and `C = e1 + e2 + e3`; the result is `S + C`. It is the compensated tree of Kahan, and each merge uses TwoSum. It takes the place of the sequential Kahan sum of the paper of Healy, and it is not classic Kahan: it is the idea and the choice of the author. On 8 numbers, 1.0 and seven of 1e-8, the plain `float32` sum is 1.00000000, the compensated tree gives 1.00000012, and the exact sum is 1.00000007, whose nearest `float32` is 1.00000012.
 
 ## What is different from the paper
 
-The shift `y = x - x[0]` is the shifted-data algorithm with K = x[0]. Healy (2022), Introduction and Algorithm 2, takes the first observation as K, sums with Kahan's compensation and applies the two-term formula `T/n - (M - K)**2`, and cites Chan, Golub and LeVeque (1983) for the choice of K; the paper of 1983 was not read. This kernel adds to that algorithm the local centring `d = y - m` before the squares, the compensated tree, from Kahan's compensation, where each merge uses TwoSum (Ogita-Rump-Oishi, Shewchuk), in place of the sequential Kahan sum, and the evaluation one slice at a time with `vmap`. These additions are by Salvatore Pennacchio.
+The shift `y = x - x[0]` is the shifted-data algorithm with K = x[0]. Healy (2022), Introduction and Algorithm 2, takes the first observation as K, sums with Kahan's compensation and applies the two-term formula `T/n - (M - K)**2`, and cites Chan, Golub and LeVeque (1983) for the choice of K; the paper of 1983 was not read. This kernel adds to that algorithm the local centring `d = y - m` before the squares, the compensated tree of Kahan, where each merge uses TwoSum (Ogita-Rump-Oishi, Shewchuk), in place of the sequential Kahan sum, and the evaluation one slice at a time with `vmap`. These additions are by Salvatore Pennacchio.
 
 ### The TwoSum, against the papers
 
@@ -480,7 +480,7 @@ The shift `y = x - x[0]` is the shifted-data algorithm with K = x[0]. Healy
 with Kahan's compensation and applies the two-term formula `T/n - (M - K)**2`,
 and cites Chan, Golub and LeVeque (1983) for the choice of K; the paper of 1983
 was not read. This kernel adds to that algorithm the local centring `d = y - m`
-before the squares, the compensated tree, from Kahan's compensation, where each merge uses TwoSum, in place of the sequential
+before the squares, the compensated tree of Kahan, where each merge uses TwoSum, in place of the sequential
 Kahan sum, and the evaluation one slice at a time with `vmap`. These additions
 are by Salvatore Pennacchio.
 

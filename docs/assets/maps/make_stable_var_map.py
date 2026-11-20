@@ -62,7 +62,7 @@ MOVES = [
     ),
     (
         "4  Compensated tree",
-        "from Kahan, in a tree: the author's",
+        "of Kahan: the author's, in pairs",
         "stats/stable_variance.md#compensated-tree",
         ORANGE,
     ),
