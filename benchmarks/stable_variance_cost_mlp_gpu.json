@@ -1,0 +1,30 @@
+{
+  "jax": "0.11.1",
+  "backend": "gpu",
+  "devices": [
+    "cuda:0",
+    "cuda:1"
+  ],
+  "python": "3.13.16",
+  "tokens": 4096,
+  "width": 1024,
+  "hidden": 4096,
+  "layers": 8,
+  "runs": 7,
+  "result": {
+    "usual": {
+      "step_ms": 458.9381069999945,
+      "ln_ms": 0.6102889999795025,
+      "finite_gradient": true,
+      "ln_share_of_step": 0.010638279814572204
+    },
+    "stable": {
+      "step_ms": 465.5972170000098,
+      "ln_ms": 1.2782510000022285,
+      "finite_gradient": true,
+      "ln_share_of_step": 0.02196320688063222
+    },
+    "ratio_step_stable_over_usual": 1.0145098214736292,
+    "ratio_ln_stable_over_usual": 2.094501129866605
+  }
+}

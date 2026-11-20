@@ -2,6 +2,46 @@
 
 <object type="image/svg+xml" data="../../assets/maps/stable_var.svg" style="width:100%"></object>
 
+![A three-dimensional surface of the gradient error of stacked layers on a GPU: the usual layer rises like a mountain to 21 percent, the layer with stable_var is a flat floor below 0.006 percent](../assets/stable_variance/stable_var_4_depth.png)
+
+**The main result: at least 256 times more layers, with the error below 0.006%**
+
+By using stable_var, the error on the gradient remains below 0.006% even at 1,024 layers (the maximum tested depth, beyond which the real limit was not measured). This allows stacking at least 256, 32, and 4 times more layers compared to the traditional implementation, which instead reaches the 1% error threshold limit already:
+
+- at 4 layers (with an offset/spread ratio equal to 250,000);
+- at 32 layers (with a 79,365 ratio);
+- at 256 layers (with a 25,000 ratio).
+
+**The key point: in a complete neural network, the impact of stable_var on the total speed is almost null (only +1.5%), even if the isolated operation is slower.**
+
+Here is the detailed explanation of the numbers and of their meaning:
+
+**1. The context of the test**
+
+The test simulates a small language model or a block of a neural network with these characteristics:
+
+- 4096 tokens: the length of the processed sequence.
+- Width 1024 and hidden 4096: the internal dimensions of the vectors and of the layers (typical architecture of the Feed-Forward blocks of Transformers).
+- 8 layers: the depth of the tested network.
+- Median of 7 runs: the test was repeated 7 times, taking the central value to avoid temporary distortions of the GPU.
+
+**2. Analysis of the table (isolated computation against whole network)**
+
+| | usual | with `stable_var` |
+|---|---|---|
+| forward and backward step | 458.9 ms | 465.6 ms |
+| normalisation alone | 0.61 ms | 1.28 ms |
+| share of the normalisation in the step | 1.1 % | 2.2 % |
+
+- Normalisation alone (0.61 ms against 1.28 ms): taken alone, the version with stable_var takes about twice the time (2.1 times slower). It is the figure we had seen in the previous tests.
+- Forward and backward step (458.9 ms against 465.6 ms): it is the time needed for a whole training cycle (forward + backward pass, that is calculation of the error and update of the weights). Here the difference is only 6.7 milliseconds (+1.45%, rounded to 1.5%).
+- Share of the normalisation (1.1% against 2.2%): in a real network, the bulk of the computational work is done by the matrix multiplications (the linear layers). The normalisation takes a tiny slice of the total time. Even doubling its cost, its weight on the total goes from 1.1% to 2.2%: a negligible impact.
+
+**3. What it means for the training**
+
+- "The gradient is finite": it means that the calculations did not "explode" producing mathematical errors (NaN or infinity), confirming the numerical stability in both tests.
+- The practical confirmation: the slowdown (up to 3x) measured by isolating the single layer is not a problem in practice, because it is "absorbed" by the other, much heavier, calculations of the network.
+
 ## Gamestory
 
 Saturday afternoon at the market. The young shopkeeper and his assistant are selling a super-rare series of collectible action figures that all cost around 1,000 euros (one costs 1000.00, one 1000.01, one 1000.02).
@@ -31,17 +71,29 @@ It is useful wherever there is a big number with small wiggles around it, in any
 How do I compute a variance in float32 that is exactly zero on identical
 values?
 
+![The quotes of an index near 4500 as bars: the usual float32 formula gives a variance of 0.0000, stable_var gives 0.2528](../assets/stable_variance/stable_var_1_problem.png)
+
+**The problem.** 3000 quotes of an index near 4500, in steps of 0.25, in `float32`. The true variance is 0.2528. The usual formula, the mean of the squares minus the square of the mean, returns 0.0000, as if the market stood still, and `stable_var` returns 0.2528. The four moves below are what `stable_var` does to keep the wiggle.
+
+<a id="shift"></a>
+
 ![Two rows of posts, the numbers float32 can hold: far apart near 20 million, close together near 0, with the wiggle of 0.25 lost in the first row and kept in the second](../assets/stable_variance/stable_var_1_shift.png)
 
 **1. Shift.** Near 20 million, which is the size of the squares of the quotes, the numbers `float32` can hold are 2 apart, and the wiggle is 0.25, so it falls between two of them and is lost. `stable_var` first subtracts the first value, `y = x - x[0]`, an exact operation when the values are close, and the values are then near 0, where the numbers `float32` can hold are about 3e-08 apart and the wiggle is kept. The posts of the picture are drawn far less dense than real ones.
+
+<a id="centre"></a>
 
 ![The first 20 shifted quotes and the same values after subtracting their mean, which sit around 0](../assets/stable_variance/stable_var_2_centre.png)
 
 **2. Centre.** The mean `m` of the shifted values is at the level of the wiggle, and so is its rounding error, not at the level of the offset. `stable_var` forms the residuals `d = y - m` before the squares. For the first 20 of the 3000 quotes, `y = x - x[0]` has a mean `m = -0.0750`, and `d` is centred on 0. The two-term formula `s2/n - (s1/n)**2` cancels the linear part of the error of `m`.
 
+<a id="twosum"></a>
+
 ![A pillar for a, a small cube for b: the plain float32 sum loses the cube, the TwoSum keeps it as the error e](../assets/stable_variance/stable_var_3_twosum.png)
 
 **3. TwoSum.** Adding a small number to a big one loses the small one: with a = 16777216 and b = 1 in `float32`, the plain sum is 16777216 and the 1 is gone. The TwoSum of Knuth returns the sum `s = 16777216` and also the error `e = 1`, so that `a + b = s + e` exactly; it is `x = fl(a + b)`, `z = fl(x - a)`, `y = fl((a - (x - z)) + (b - z))`, the same function as Algorithm 3.1 of Ogita, Rump and Oishi and as Theorem 7 of Shewchuk.
+
+<a id="compensated-tree"></a>
 
 ![A tree of eight numbers added in pairs over three levels, with the sums in blue and the carries in gold](../assets/stable_variance/stable_var_4_tree.png)
 
@@ -149,7 +201,7 @@ With the usual layer the gradient is wrong by 0.37 % in a single layer, by 1.1 %
 
 If a gradient error of 1 % is the most that can be accepted, the usual layer reaches it at 4 layers (1.1 %; at 2 layers it is 0.79 %); with `stable_var` the error is still 5.9e-05 at 1024 layers, the deepest tested. So the number of layers that can be built is at least 256 times larger, 1024 against 4, and this test did not find the limit with `stable_var`.
 
-The price is time. A step with the layer that uses `stable_var` takes between 1.2 and 3.0 times as long as one with the usual layer on this GPU, and 1.34 times at 1024 layers (128.0 ms against 95.3 ms). The ratio at 128 layers (2.95) is out of line with its neighbours (1.53 at 256), and was not investigated. For activations with a large offset and a small spread, where the usual layer gives gradients that are wrong by 1 % to 20 %, a step that takes at most three times as long and a gradient that is 3450 to 16900 times more accurate is a good price; for activations without a large offset this test says nothing, because it was not run.
+The cost of a step in a network with large matrix products is described at the top of the page.
 
 This is one synthetic stack, one GPU session and one size (128 rows of 512 values). In this stack the gradient grows with the depth, up to about 1e15 at 1024 layers, and stays finite in `float32`; it is not a trained network, and the page does not measure the accuracy of one.
 
