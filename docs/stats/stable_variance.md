@@ -1,5 +1,7 @@
 # Stable variance in float32
 
+<object type="image/svg+xml" data="../../assets/maps/stable_var.svg" style="width:100%"></object>
+
 `stable_var` measures how much a list of numbers wiggles when every number is huge and the wiggle is tiny, and it does not get fooled by the huge part.
 
 Why does it matter? A computer that works in `float32` keeps only about 7 digits of each number. A number like 4500.25 has no room left for a wiggle of a few cents: the usual formula loses the wiggle, as if it had never been there. `stable_var` first takes away the big base number and measures only the wiggle.
