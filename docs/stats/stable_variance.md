@@ -32,13 +32,7 @@ values?
 
 ## What is different from the paper
 
-The paper is Healy (2022), arXiv:2206.10662, Algorithm 2: the shifted naive algorithm with K = x[0], Kahan summation and the two-term formula `T/n - (M - K)**2`. `stable_var` starts from it and adds three ideas of the author, Salvatore Pennacchio:
-
-- the local centring `d = y - m` before the squares;
-- a compensated tree of TwoSum (Ogita, Rump and Oishi; Shewchuk) in place of the sequential Kahan sum, with `O(log2(n))` vectorised levels, so it runs on a CPU and on a GPU;
-- the evaluation one slice at a time with `vmap`.
-
-The paper of 1983 by Chan, Golub and LeVeque, which Healy cites for the choice of K, was not read.
+The shift `y = x - x[0]` is the shifted-data algorithm with K = x[0]. Healy (2022), Introduction and Algorithm 2, takes the first observation as K, sums with Kahan's compensation and applies the two-term formula `T/n - (M - K)**2`, and cites Chan, Golub and LeVeque (1983) for the choice of K; the paper of 1983 was not read. This kernel adds to that algorithm the local centring `d = y - m` before the squares, the compensated tree of TwoSum (Ogita-Rump-Oishi, Shewchuk) in place of the sequential Kahan sum, and the evaluation one slice at a time with `vmap`. These additions are by Salvatore Pennacchio.
 
 ## A deep learning example: the gradient of a normalisation layer
 
