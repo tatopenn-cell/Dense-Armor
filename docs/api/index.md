@@ -6,9 +6,9 @@ A starting point for finding the right tool. Say what you have in front of you (
 
 The jobs, from what you want to do to the domain that serves it, and the same library seen from its folders. Pass over a job to light its links; click a domain to open its page.
 
-<object type="image/svg+xml" data="../../assets/maps/jobs.svg" style="width:100%"></object>
+<object type="image/svg+xml" data="../assets/maps/jobs.svg" style="width:100%"></object>
 
-<object type="image/svg+xml" data="../../assets/maps/library.svg" style="width:100%"></object>
+<object type="image/svg+xml" data="../assets/maps/library.svg" style="width:100%"></object>
 
 ## The three kinds of learning
 
