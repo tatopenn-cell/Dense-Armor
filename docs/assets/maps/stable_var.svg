@@ -46,11 +46,11 @@
 </a>
 </g>
 <g class="g"><path class="e" d="M564.0,290.0 C645.0,290.0 645.0,366 726,366" fill="none" stroke="#f72585" stroke-width="2.2"/>
-<a href="../../stats/stable_variance/#3-what-the-function-does" target="_top"><title>3  Catch the crumbs: open stats/stable_variance.md#3-what-the-function-does</title>
+<a href="../../stats/stable_variance/#3-what-the-function-does" target="_top"><title>3  Compensated tree: open stats/stable_variance.md#3-what-the-function-does</title>
 <rect class="card" x="726" y="328" width="250" height="76" rx="14" fill="#101a24" stroke="#f72585" stroke-width="1.6"/>
-<text class="dn" x="742" y="356" fill="#e0fbfc" font-size="16" font-weight="700">3  Catch the crumbs</text>
-<text x="742" y="378" fill="#94a3b8" font-size="12">TwoSum: a sum and its exact error</text>
-<text x="742" y="404" fill="#f72585" font-size="14" font-weight="700">the compensated tree carries them</text>
+<text class="dn" x="742" y="356" fill="#e0fbfc" font-size="16" font-weight="700">3  Compensated tree</text>
+<text x="742" y="378" fill="#94a3b8" font-size="12">each merge: 3 TwoSum, on sums and carries</text>
+<text x="742" y="404" fill="#f72585" font-size="14" font-weight="700">carry = e1 + e2 + e3</text>
 </a>
 </g>
 <g class="g"><path class="e" d="M564.0,290.0 C645.0,290.0 645.0,478 726,478" fill="none" stroke="#4cc9f0" stroke-width="2.2"/>

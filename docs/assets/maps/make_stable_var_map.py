@@ -55,8 +55,8 @@ MOVES = [
         ORANGE,
     ),
     (
-        "3  Catch the crumbs",
-        "TwoSum: a sum and its exact error",
+        "3  Compensated tree",
+        "each merge: 3 TwoSum, on sums and carries",
         "stats/stable_variance.md#3-what-the-function-does",
         PINK,
     ),
@@ -128,7 +128,7 @@ def main():
         o.append("</g>")
     for (t, s, href, col), y in zip(MOVES, ys_move):
         o.append(f'<g class="g">{curve(HUB[0] + 64, HUB[1], 726, y + 38, col)}')
-        extra = "the compensated tree carries them" if t.startswith("3") else ""
+        extra = "carry = e1 + e2 + e3" if t.startswith("3") else ""
         o.append(card(726, y, 250, 76, col, t, s, extra, href, "r"))
         o.append("</g>")
     o.append(f'<g class="g">{curve(274, 592, HUB[0] - 50, HUB[1] + 44, ORANGE)}')
