@@ -14,6 +14,7 @@
   <img alt="backend" src="https://img.shields.io/badge/backend-JAX-orange.svg">
   <img alt="nan" src="https://img.shields.io/badge/NaN--safe-yes-brightgreen.svg">
   <a href="https://tatopenn-cell.github.io/Dense-Armor/"><img alt="docs" src="https://img.shields.io/badge/docs-tatopenn--cell.github.io-00e5ff?style=flat-square"></a>
+  <a href="https://pypistats.org/packages/dense-armor"><img alt="PyPI - Downloads" src="https://shields.io/pypi/dm/dense-armor.svg"></a>
 </p>
 
 <h3 align="center">Library of Primitives from__Robot__to__AI__ </h3>
