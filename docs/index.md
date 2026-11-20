@@ -18,6 +18,26 @@ The same library seen from its folders: on the left the big set `core`, in the m
 
 *Pass over a job to light its links; click a domain to open its page. The jobs, the domains and the classes are those of `usable`.*
 
+## The maps of the sections
+
+Every big section has its own interactive map on top of its page: the jobs on the left, the page of each tool and its classes on the right.
+
+| Section | Map |
+|---|---|
+| [Signals](signals/index.md) | the folders of `core/signals` |
+| [Statistics](stats/index.md) | statistics and sketches |
+| [Preprocessing](preprocessing/index.md) | scalers, selection, resampling |
+| [Video](vision/index.md) | frames, features, flow, tracking |
+| [Streams](stream/index.md) | files, bags and arrays |
+| [Datasets](datasets/index.md) | streams with a known change |
+| [Clustering](cluster/index.md) | incremental partitioning and density-based models |
+| [Trees](tree/index.md) | trees that learn as the data arrive |
+| [Forests](forest/index.md) | streaming forests |
+| [Linear models](linear/index.md) | first-order online learning |
+| [Optimizers](optim/index.md) | online optimizers |
+| [Online learning](learn/index.md) | sequential models and incremental architectures |
+| [Time series](timeseries/index.md) | time series |
+
 ## The three kinds of learning
 
 | | Online learning | Machine learning | Deep learning |
