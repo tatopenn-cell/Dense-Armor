@@ -61,13 +61,19 @@ MOVES = [
         PINK,
     ),
     (
-        "4  Compensated tree",
+        "4  Kahan sum",
+        "sequential, in the paper (Healy 2022)",
+        "stats/stable_variance.md#what-is-different-from-the-paper",
+        CYAN,
+    ),
+    (
+        "5  Compensated tree",
         "in place of the sequential Kahan sum",
         "stats/stable_variance.md#3-what-the-function-does",
         ORANGE,
     ),
     (
-        "5  Exact zero",
+        "6  Exact zero",
         "identical values give 0.0",
         "stats/stable_variance.md#gamestory",
         CYAN,
@@ -127,7 +133,7 @@ def main():
         '<g class="net">',
     ]
     ys_use = [120 + 144 * k for k in range(3)]
-    ys_move = [104 + 100 * k for k in range(5)]
+    ys_move = [104 + 90 * k for k in range(6)]
     for (t, s, ex, href, col), y in zip(USES, ys_use):
         o.append(f'<g class="g">{curve(274, y + 48, HUB[0] - 64, HUB[1], col)}')
         o.append(card(24, y, 250, 96, col, t, s, ex, href, "l"))
