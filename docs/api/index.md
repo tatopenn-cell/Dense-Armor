@@ -2,6 +2,14 @@
 
 A starting point for finding the right tool. Say what you have in front of you (an order to check, a stream of returns, a table, a network to train) and this page tells you which part of the library to use. The examples are about finance first, then neural networks.
 
+## The complete map
+
+The jobs, from what you want to do to the domain that serves it, and the same library seen from its folders. Pass over a job to light its links; click a domain to open its page.
+
+<object type="image/svg+xml" data="../../assets/maps/jobs.svg" style="width:100%"></object>
+
+<object type="image/svg+xml" data="../../assets/maps/library.svg" style="width:100%"></object>
+
 ## The three kinds of learning
 
 | | Online learning | Machine learning | Deep learning |
