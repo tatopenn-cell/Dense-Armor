@@ -26,7 +26,10 @@ from scipy.interpolate import RectBivariateSpline
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[2]
 sys.path.insert(0, str(REPO))
-from dense_armor.core.signals.stats.stable import stable_var  # noqa: E402
+from dense_armor.core.signals.stats.stable import (  # noqa: E402
+    _compensated_tree,
+    stable_var,
+)
 
 BG, GRID, PANEL = "#0b1118", "#26364a", "#0f1822"
 INK, MUTED = "#e8fbff", "#8fa3b8"
@@ -171,7 +174,7 @@ def panel_shift(ax, x):
         f"after the shift (x - x[0], exact) the posts are {gap_small:.0e} apart; drawn far less dense than real{NL}"
         f"the wiggle is 0.25: it falls between far posts and is lost, it sits on close ones and is kept",
     )
-    pane(ax, "2  The shift", "take away the big part first, and the small part fits")
+    pane(ax, "1  Shift", "take away the big part first, and the small part fits")
 
 
 def panel_twosum(ax):
@@ -184,36 +187,140 @@ def panel_twosum(ax):
     ax.bar3d(4.0, 0.2, 0.0, 0.4, 0.4, 0.9, color=PINK, alpha=0.45)
     ax.bar3d(4.8, 0.0, 0.0, 0.9, 0.9, 10.0, color=CYAN, alpha=0.95)
     ax.bar3d(6.4, 0.2, 0.0, 0.4, 0.4, 0.9, color=GOLD, alpha=1.0)
-    ax.bar3d(0.0, 3.0, 0.0, 0.9, 0.9, 10.0, color=CYAN, alpha=0.95)
-    ax.bar3d(2.4, 3.0, 0.0, 0.9, 0.9, 11.92, color=PINK, alpha=0.95)
-    ax.bar3d(4.8, 3.0, 0.0, 0.9, 0.9, 10.0, color=GOLD, alpha=0.95)
     ax.set_xlim(-0.2, 7.2)
-    ax.set_ylim(-0.2, 4.2)
-    ax.set_zlim(0, 14.5)
+    ax.set_ylim(-0.2, 1.4)
+    ax.set_zlim(0, 12.5)
     ax.set_xticks([])
     ax.set_yticks([])
     ax.set_zticks([])
-    ax.view_init(elev=20, azim=-72)
-    ax.set_box_aspect((2.6, 1.3, 1.0), zoom=1.0)
+    ax.view_init(elev=14, azim=-72)
+    ax.set_box_aspect((2.6, 0.6, 1.0), zoom=1.0)
     label(ax, 0.45, 0.45, 10.9, "EXACT: a + b", INK, dy=50)
     label(ax, 2.85, 0.45, 10.0, "PLAIN SUM: a only", INK, dy=60)
     label(ax, 4.2, 0.4, 0.9, "the 1 fell off: LOST", PINK, dx=0, dy=-60)
     label(ax, 5.25, 0.45, 10.0, "TWO-SUM: s", INK, dy=60)
     label(ax, 6.6, 0.4, 0.9, "the 1 is caught: e", GOLD, dx=0, dy=-60)
-    label(ax, 0.45, 3.45, 10.0, "TRUE: 1 + 100000 x 1e-7", INK, dx=-30, dy=55)
-    label(ax, 2.85, 3.45, 11.92, "PLAIN SUM: 1.01192093", PINK, dx=0, dy=45)
-    label(ax, 5.25, 3.45, 10.0, "KAHAN: 1.00999999", GOLD, dx=40, dy=55)
     note(
         ax,
-        f"back row, two-sum: a = {int(a)}, b = {int(b)}; plain float32 sum {int(plain)} loses the {int(b)}, two-sum keeps it as e = {int(e)}{NL}"
-        f"front row, Kahan: 100000 additions of 1e-7 to 1.0, the excess over 1 is drawn 1000 times bigger{NL}"
-        f"plain sum 1.01192093 (wrong), Kahan 1.00999999, true 1.01: Kahan carries the crumbs along{NL}"
-        f"stable_var is not classic Kahan: it is a compensated tree of two-sums, the idea and the choice of the author",
+        f"a = {int(a)} and b = {int(b)}, in float32{NL}"
+        f"plain sum: {int(plain)}   the {int(b)} is gone{NL}"
+        f"TwoSum: s = {int(s)} and e = {int(e)}   a + b = s + e exactly{NL}"
+        f"x = fl(a + b),  z = fl(x - a),  y = fl((a - (x - z)) + (b - z))   (Knuth; Ogita, Rump, Oishi, Algorithm 3.1)",
+    )
+    pane(ax, "3  TwoSum", "a sum and its exact error: nothing is lost")
+
+
+def panel_centre(ax, x):
+    n = 20
+    idx = np.arange(n)
+    y = x[:n] - x[0]
+    m = float(np.mean(y))
+    d = y - np.float32(m)
+    ax.bar3d(
+        idx, np.zeros(n), np.zeros(n), 0.7, 0.5, y, color=CYAN, alpha=0.95, shade=True
+    )
+    cols = [CYAN if v >= 0 else PINK for v in d]
+    ax.bar3d(
+        idx,
+        np.full(n, 4.0),
+        np.zeros(n),
+        0.7,
+        0.5,
+        d,
+        color=cols,
+        alpha=0.95,
+        shade=True,
+    )
+    gx, gy = np.meshgrid([-0.5, n], [-0.3, 0.9])
+    ax.plot_surface(
+        gx, gy, np.full_like(gx, m, dtype=float), color=GOLD, alpha=0.4, linewidth=0
+    )
+    ax.set_xlim(-0.5, n)
+    ax.set_ylim(-0.3, 5.0)
+    ax.set_zlim(float(d.min()) * 1.3, float(y.max()) * 1.2)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.view_init(elev=36, azim=-90)
+    ax.set_box_aspect((2.6, 1.4, 0.8), zoom=1.0)
+    label(
+        ax,
+        2.0,
+        0.2,
+        float(y[2]),
+        f"y = x - x[0]: small numbers, but their mean m = {m:.4f} is not 0",
+        CYAN,
+        dx=80,
+        dy=-70,
+    )
+    label(ax, 2.0, 4.2, float(d[2]), "d = y - m: centred on 0", GOLD, dx=80, dy=-70)
+    note(
+        ax,
+        f"the first 20 of the 3000 quotes, after the shift y = x - x[0]{NL}"
+        f"the mean m of the shifted values is at the level of the wiggle, and so is its rounding error,{NL}"
+        f"not at the level of the offset; d = y - m is formed before the squares{NL}"
+        f"the two-term formula  s2/n - (s1/n)**2  cancels the linear part of the error of m",
     )
     pane(
         ax,
-        "3  Catching the crumbs: two-sum and Kahan",
-        "when a sum would lose a small piece, catch it",
+        "2  Centre",
+        "subtract the mean of the small part, so the squares stay small",
+    )
+
+
+def panel_tree(ax):
+    v = jnp.asarray([1.0] + [1e-8] * 7, dtype=jnp.float32)
+    plain = float(jnp.sum(v))
+    tree = float(_compensated_tree(v))
+    exact = float(np.sum(np.asarray(v, dtype=np.float64)))
+    xs = np.arange(8, dtype=float)
+    for lvl, count in enumerate((8, 4, 2, 1)):
+        step = 8 / count
+        for k in range(count):
+            cx = k * step + (step - 1) / 2
+            z = lvl * 3.0
+            ax.bar3d(cx, 0.0, z, 0.6, 0.6, 1.2, color=CYAN, alpha=0.95)
+            ax.bar3d(cx + 0.7, 0.1, z, 0.3, 0.3, 0.45, color=GOLD, alpha=1.0)
+            if lvl:
+                for ch in (2 * k, 2 * k + 1):
+                    px = ch * (step / 2) + (step / 2 - 1) / 2 + 0.3
+                    ax.plot(
+                        [px, cx + 0.3],
+                        [0.3, 0.3],
+                        [z - 3.0 + 1.2, z],
+                        color=MUTED,
+                        lw=1.2,
+                    )
+    ax.set_xlim(-0.5, 9)
+    ax.set_ylim(-0.5, 1.5)
+    ax.set_zlim(0, 11)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.set_zticks([])
+    ax.view_init(elev=16, azim=-78)
+    ax.set_box_aspect((2.4, 0.5, 1.2), zoom=1.0)
+    label(ax, 3.5, 0.3, 0.0, "8 numbers: 1.0 and seven of 1e-8", INK, dy=-70)
+    label(
+        ax,
+        3.5,
+        0.3,
+        3.0,
+        "pairs added: TwoSum on the sums, on the carries, on their sum",
+        INK,
+        dx=-250,
+        dy=70,
+    )
+    label(ax, 3.5, 0.3, 9.0, "S + C, the sum and the carry", INK, dx=170, dy=10)
+    note(
+        ax,
+        f"blue: the partial sums S    gold: the carries C, errors carried up (drawn bigger than real){NL}"
+        f"each merge: (s1, e1) = TwoSum of the sums, (s2, e2) = TwoSum of the carries, (s3, e3) = TwoSum(s1, s2){NL}"
+        f"new sum S = s3, new carry C = e1 + e2 + e3; after log2(n) levels the result is S + C{NL}"
+        f"plain float32 sum {plain:.8f}   compensated tree {tree:.8f}   exact {exact:.8f}",
+    )
+    pane(
+        ax,
+        "4  Compensated tree",
+        "the author's sum: pairs in a tree, the errors carried up",
     )
 
 
@@ -291,9 +398,11 @@ def panel_depth(ax):
 def main():
     x = quotes()
     jobs = [
-        ("stable_var_1_problem.png", lambda ax: panel_problem(ax, x)),
-        ("stable_var_2_shift.png", lambda ax: panel_shift(ax, x)),
+        ("stable_var_1_shift.png", lambda ax: panel_shift(ax, x)),
+        ("stable_var_2_centre.png", lambda ax: panel_centre(ax, x)),
         ("stable_var_3_twosum.png", panel_twosum),
+        ("stable_var_4_tree.png", panel_tree),
+        ("stable_var_1_problem.png", lambda ax: panel_problem(ax, x)),
         ("stable_var_4_depth.png", panel_depth),
     ]
     for name, draw in jobs:
