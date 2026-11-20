@@ -36,6 +36,20 @@ values?
 
 The shift `y = x - x[0]` is the shifted-data algorithm with K = x[0]. Healy (2022), Introduction and Algorithm 2, takes the first observation as K, sums with Kahan's compensation and applies the two-term formula `T/n - (M - K)**2`, and cites Chan, Golub and LeVeque (1983) for the choice of K; the paper of 1983 was not read. This kernel adds to that algorithm the local centring `d = y - m` before the squares, the compensated tree of TwoSum (Ogita-Rump-Oishi, Shewchuk) in place of the sequential Kahan sum, and the evaluation one slice at a time with `vmap`. These additions are by Salvatore Pennacchio.
 
+### The TwoSum, against the papers
+
+The function `_two_sum` of the kernel is Knuth's TwoSum, the same three lines as Algorithm 3.1 of Ogita, Rump and Oishi (2005) and as TWO-SUM, Theorem 7, of Shewchuk (1997): `x = fl(a + b)`, `z = fl(x - a)`, `y = fl((a - (x - z)) + (b - z))`, with `a + b = x + y` exactly. In this the kernel is not different from the papers.
+
+What is different is how the TwoSum is used:
+
+| | Where the pieces are added | What is carried |
+|---|---|---|
+| Kahan summation, in Healy (2022), Algorithm 2 | one after the other, in a loop | one compensation `c` |
+| Ogita, Rump and Oishi, Algorithm 4.1 (the cascaded summation `Sum2s`; the Kahan-Babuska algorithm is the same with FastTwoSum instead of TwoSum) | one after the other, in a loop: `[pi_i, q_i] = TwoSum(pi_(i-1), p_i)`, `sigma_i = fl(sigma_(i-1) + q_i)`, `res = fl(pi_n + sigma_n)` | one running sum of the errors `sigma` |
+| `stable_var`, `_compensated_tree` | in a binary tree of `log2(n)` levels, each level adding pairs at the same time | at each level, for every pair of partial sums `(S, C)`, three TwoSum calls: on the high parts, on the carries, and on their sum; the new carry is `e1 + e2 + e3` |
+
+In the text of the two papers there is no tree of TwoSum: Ogita, Rump and Oishi give compensated sums that run along the elements, and cite parallel summation only in their list of references. The error analysis of the paper is for those sequential algorithms; in the papers there is no proof for this tree, and the carries `e1 + e2 + e3` are added with ordinary floating-point additions. For this reason the accuracy of the tree is shown on this page by measurements, in the benchmarks below.
+
 ## A deep learning example: the gradient of a normalisation layer
 
 A normalisation layer divides each row of activations by the square root of its variance. When the activations of a row sit around a large offset with a small spread, the variance and the subtraction of the mean in `float32` lose the digits of the spread, and the gradient that goes back to the earlier layers inherits the error. The test takes 64 rows of 1024 values around 1000 with a spread of 0.004 and applies three layers: the usual one, with `jnp.mean` and `jnp.var`; one that takes only the variance from `stable_var`; and one that takes the variance from `stable_var` and subtracts the mean on the data shifted by the first element, `(x - x[0]) - mean(x - x[0])`. The output and the gradient (by `jax.grad`) of each are compared with the same layer in float64:
