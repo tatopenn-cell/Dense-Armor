@@ -80,6 +80,7 @@ nav:
   - Home:
       - index.md
       - full API here: api/general.md
+      - stable var here: stats/stable_variance.md
   - Applications:
       - Overview: applications/index.md
       - Finance:
