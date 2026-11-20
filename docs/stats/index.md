@@ -79,7 +79,7 @@ guide page.
 | Student-t | What is the location when a few outliers would ruin the mean, with a full density around it? | `StudentT` |
 | Mixture | What if the samples come from more than one distribution? | `OnlineGaussianMixture` |
 
-Each guide page follows the same structure: an idea in plain words, a
+Each guide page follows the same structure: an idea, a
 short runnable example, the mathematics behind the update, a small case
 worked out by hand, a stream from a robot, and a Details section at the
 bottom with references and design notes.
@@ -218,7 +218,7 @@ Each family guide is written so the first part can be followed by
 someone who has never seen the library, and the last part gives the
 detail a specialist expects. The structure is always the same.
 
-1. **The idea in plain words.** What the statistic does, why it is
+1. **The idea.** What the statistic does, why it is
    needed, on which kind of stream it matters.
 2. **The first estimator.** A short, runnable example. The code comes
    after the explanation, never before, and it is self-contained.

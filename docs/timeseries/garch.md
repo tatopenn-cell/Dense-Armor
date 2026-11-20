@@ -9,7 +9,7 @@ GARCH(1,1) answers the second.
 ## What this is
 
 GARCH stands for Generalized Autoregressive Conditional
-Heteroskedasticity. In plain words: the variance of the series at time
+Heteroskedasticity. The variance of the series at time
 `t` depends on the last squared residual and on the variance at `t-1`.
 A large residual raises the next variance, a small one lowers it, and
 the effect decays over time. The parameters `omega`, `alpha` and `beta`
