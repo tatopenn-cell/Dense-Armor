@@ -78,6 +78,12 @@ plugins:
 
 nav:
   - Home: index.md
+  - API Reference:
+      - api/index.md
+      - General: api/general.md
+      - Robot: api/robot.md
+      - IA: api/ai.md
+      - Neural networks: api/neural.md
   - Applications:
       - Overview: applications/index.md
       - Finance:
@@ -414,11 +420,5 @@ nav:
               - Toolkit: toolkit/toolkit.md
           - Live Demo: demo.md
           - MCP Server: mcp.md
-      - API Reference:
-          - api/index.md
-          - General: api/general.md
-          - Robot: api/robot.md
-          - IA: api/ai.md
-          - Neural networks: api/neural.md
-          - Changelog: changelog.md
-          - License: license.md
+      - Changelog: changelog.md
+      - License: license.md
