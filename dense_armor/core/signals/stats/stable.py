@@ -59,8 +59,9 @@ sums with Kahan's compensation and applies the two-term formula
 ``T/n - (M - K)**2``, and cites Chan, Golub and LeVeque (1983) for the choice
 of K; the paper of 1983 was not read. This kernel adds to that algorithm the
 local centring ``d = y - m`` before the squares, the compensated tree of
-TwoSum (Ogita-Rump-Oishi, Shewchuk) in place of the sequential Kahan sum, and
-the evaluation one slice at a time with ``vmap``. These additions are by
+Kahan, where each merge uses TwoSum (Ogita-Rump-Oishi, Shewchuk), in place of
+the sequential Kahan sum, and the evaluation one slice at a time with
+``vmap``. These additions are by
 Salvatore Pennacchio.
 """
 
@@ -146,7 +147,7 @@ def _prepare(a, axes):
 
 
 def _two_sum(a, b):
-    """Knuth's ``TwoSum``: ``a + b = s + err``, ``s = fl(a + b)``.
+    """``TwoSum``: ``a + b = s + err``, ``s = fl(a + b)``.
 
     Ogita, Rump, Oishi 2005, Algorithm 3.1, PDF page 7; Shewchuk 1997,
     Theorem 7, PDF page 12.
@@ -158,7 +159,7 @@ def _two_sum(a, b):
 
 
 def _compensated_tree(v):
-    """Compensated sum of a 1-D array, by a tree of TwoSum.
+    """Compensated tree of Kahan for a 1-D array: each merge uses TwoSum.
 
     The array is merged in ``log2(n)`` levels; when a level has an odd
     length, one zero is appended. At each level, pairs of partial sums
@@ -243,7 +244,8 @@ def stable_var(x, axis=None, ddof=0, keepdims=False):
     The shift ``y = x - x[0]``, the shifted-data algorithm with K = x[0]
     (Healy 2022, Algorithm 2), comes first. Then ``m = mean(y)``, ``d = y - m`` and ``var = mean(d**2) -
     mean(d)**2``, one slice at a time with ``vmap``, with ``d**2`` summed
-    by a compensated tree of ``TwoSum`` (``log2(n)`` vectorised levels).
+    by a compensated tree of Kahan, where each merge uses
+    ``TwoSum`` (``log2(n)`` vectorised levels).
     The result is exactly ``0.0`` on identical values up to ``1e38``, in
     eager mode and under ``jax.jit``. Complex input gives ``E|z -
     mean(z)|**2``, a real number. Integers, ``float16`` and ``bfloat16``

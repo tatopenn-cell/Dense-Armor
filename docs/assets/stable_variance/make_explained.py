@@ -205,7 +205,7 @@ def panel_twosum(ax):
         f"a = {int(a)} and b = {int(b)}, in float32{NL}"
         f"plain sum: {int(plain)}   the {int(b)} is gone{NL}"
         f"TwoSum: s = {int(s)} and e = {int(e)}   a + b = s + e exactly{NL}"
-        f"x = fl(a + b),  z = fl(x - a),  y = fl((a - (x - z)) + (b - z))   (Knuth; Ogita, Rump, Oishi, Algorithm 3.1)",
+        f"x = fl(a + b),  z = fl(x - a),  y = fl((a - (x - z)) + (b - z))   (Ogita, Rump, Oishi, Algorithm 3.1)",
     )
     pane(ax, "3  TwoSum", "a sum and its exact error: nothing is lost")
 
@@ -320,7 +320,7 @@ def panel_tree(ax):
     pane(
         ax,
         "4  Compensated tree",
-        "the author's sum: pairs in a tree, the errors carried up",
+        "compensated tree of Kahan: each merge uses TwoSum",
     )
 
 

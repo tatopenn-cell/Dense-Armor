@@ -57,7 +57,7 @@
 <rect class="card" x="726" y="440" width="250" height="84" rx="14" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/>
 <text class="dn" x="742" y="468" fill="#e0fbfc" font-size="16" font-weight="700">4  Compensated tree</text>
 <text x="742" y="490" fill="#94a3b8" font-size="12">of Kahan: the author&#x27;s, in pairs</text>
-<text x="742" y="516" fill="#ff9e00" font-size="14" font-weight="700">uses TwoSum, errors carried up</text>
+<text x="742" y="516" fill="#ff9e00" font-size="14" font-weight="700">each merge uses TwoSum</text>
 </a>
 </g>
 <g class="g"><path class="e" d="M274,592 C362.0,592 362.0,334.0 450.0,334.0" fill="none" stroke="#ff9e00" stroke-width="2.2"/>
