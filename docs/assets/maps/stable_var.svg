@@ -1,10 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="100%" role="img" aria-label="The map of stable_var: the fields where it is needed and the four moves of the kernel">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="100%" role="img" aria-label="The map of stable_var: the fields where it is needed and the four moves of the kernel">
 <style>text{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif}.e{opacity:.4;transition:opacity .15s}.net:hover .e{opacity:.08}.net .g:hover .e{opacity:1;stroke-width:3}a:hover .card{fill:#17303f;stroke-width:2.6}a:hover text.dn{fill:#fff}</style>
-<rect width="1000" height="560" fill="#0d131a" rx="14"/>
+<rect width="1000" height="660" fill="#0d131a" rx="14"/>
 <text x="500" y="40" fill="#e0fbfc" font-size="26" font-weight="700" text-anchor="middle">THE MAP OF stable_var</text>
 <text x="500" y="66" fill="#4cc9f0" font-size="13" text-anchor="middle">a big number with small wiggles around it, in float32: where it appears and how the kernel keeps the wiggles; pass over a card to light it, click to open it</text>
 <text x="24" y="104" fill="#f72585" font-size="12" font-weight="700">01  WHERE IT IS NEEDED</text>
 <text x="726" y="88" fill="#f72585" font-size="12" font-weight="700">02  THE FOUR MOVES</text>
+<text x="24" y="548" fill="#f72585" font-size="12" font-weight="700">03  THE JOB AND THE CLASS THAT USE IT</text>
 <g class="net">
 <g class="g"><path class="e" d="M274,168 C355.0,168 355.0,290.0 436.0,290.0" fill="none" stroke="#4cc9f0" stroke-width="2.2"/>
 <a href="../../finance/" target="_top"><title>Finance: open finance/index.md</title>
@@ -58,9 +59,24 @@
 <text x="742" y="490" fill="#94a3b8" font-size="12">identical values give 0.0</text>
 </a>
 </g>
+<g class="g"><path class="e" d="M274,592 C362.0,592 362.0,334.0 450.0,334.0" fill="none" stroke="#ff9e00" stroke-width="2.2"/>
+<a href="../../stats/" target="_top"><title>Job: summarize_stream: open stats/index.md</title>
+<rect class="card" x="24" y="560" width="250" height="64" rx="14" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/>
+<text class="dn" x="40" y="588" fill="#e0fbfc" font-size="16" font-weight="700">Job: summarize_stream</text>
+<text x="40" y="610" fill="#94a3b8" font-size="12">the job of the ontology that reaches statistics</text>
+</a>
 </g>
+<g class="g"><path class="e" d="M500.0,354.0 L500.0,560" fill="none" stroke="#f72585" stroke-width="2.2"/>
+<a href="../../stats/moments/" target="_top"><title>RunningMoments: open stats/moments.md</title>
+<rect class="card" x="375" y="560" width="250" height="64" rx="14" fill="#101a24" stroke="#f72585" stroke-width="1.6"/>
+<text class="dn" x="391" y="588" fill="#e0fbfc" font-size="16" font-weight="700">RunningMoments</text>
+<text x="391" y="610" fill="#94a3b8" font-size="12">the class that calls stable_moments</text>
+</a>
+</g>
+</g>
+<a class="back" href="../../#the-library-folder-by-folder" target="_top"><title>back to the map of the library</title><rect class="card" x="20" y="14" width="150" height="30" rx="15" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="95" y="33.5" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">← map of the library</text></a>
 <circle cx="500.0" cy="290.0" r="64" fill="#101a24" stroke="#f72585" stroke-width="2.4"/>
 <text x="500.0" y="286.0" fill="#e0fbfc" font-size="20" font-weight="700" text-anchor="middle">stable_var</text>
 <text x="500.0" y="308.0" fill="#94a3b8" font-size="11" text-anchor="middle">stable_moments</text>
-<text x="500" y="546" fill="#94a3b8" font-size="10.5" text-anchor="middle">drawn by docs/assets/maps/make_stable_var_map.py; the figures are those of the page</text>
+<text x="500" y="646" fill="#94a3b8" font-size="10.5" text-anchor="middle">drawn by docs/assets/maps/make_stable_var_map.py; the figures are those of the page</text>
 </svg>

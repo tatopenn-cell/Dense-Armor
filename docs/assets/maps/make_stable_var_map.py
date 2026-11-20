@@ -14,7 +14,8 @@ from html import escape
 from make_tree_map import BG, CARD, CYAN, DOCS, HERE, MUTED, ORANGE, PINK, TEXT
 
 OUT = HERE / "stable_var.svg"
-W, H = 1000.0, 560.0
+W, H = 1000.0, 660.0
+HOME = "../../#the-library-folder-by-folder"
 HUB = (500.0, 290.0)
 
 USES = [
@@ -116,6 +117,7 @@ def main():
         f'<text x="{W / 2:.0f}" y="66" fill="{CYAN}" font-size="13" text-anchor="middle">a big number with small wiggles around it, in float32: where it appears and how the kernel keeps the wiggles; pass over a card to light it, click to open it</text>',
         f'<text x="24" y="104" fill="{PINK}" font-size="12" font-weight="700">01  WHERE IT IS NEEDED</text>',
         f'<text x="726" y="88" fill="{PINK}" font-size="12" font-weight="700">02  THE FOUR MOVES</text>',
+        f'<text x="24" y="548" fill="{PINK}" font-size="12" font-weight="700">03  THE JOB AND THE CLASS THAT USE IT</text>',
         '<g class="net">',
     ]
     ys_use = [120 + 144 * k for k in range(3)]
@@ -128,7 +130,46 @@ def main():
         o.append(f'<g class="g">{curve(HUB[0] + 64, HUB[1], 726, y + 38, col)}')
         o.append(card(726, y, 250, 76, col, t, s, "", href, "r"))
         o.append("</g>")
+    o.append(f'<g class="g">{curve(274, 592, HUB[0] - 50, HUB[1] + 44, ORANGE)}')
+    o.append(
+        card(
+            24,
+            560,
+            250,
+            64,
+            ORANGE,
+            "Job: summarize_stream",
+            "the job of the ontology that reaches statistics",
+            "",
+            "stats/index.md",
+            "l",
+        )
+    )
     o.append("</g>")
+    o.append(
+        f'<g class="g"><path class="e" d="M{HUB[0]},{HUB[1] + 64} L{HUB[0]},560" fill="none" stroke="{PINK}" stroke-width="2.2"/>'
+    )
+    o.append(
+        card(
+            375,
+            560,
+            250,
+            64,
+            PINK,
+            "RunningMoments",
+            "the class that calls stable_moments",
+            "",
+            "stats/moments.md",
+            "c",
+        )
+    )
+    o.append("</g>")
+    o.append("</g>")
+    o.append(
+        f'<a class="back" href="{HOME}" target="_top"><title>back to the map of the library</title>'
+        f'<rect class="card" x="20" y="14" width="150" height="30" rx="15" fill="{CARD}" stroke="{PINK}" stroke-width="1.6"/>'
+        f'<text class="dn" x="95" y="33.5" fill="{TEXT}" font-size="12" font-weight="700" text-anchor="middle">← map of the library</text></a>'
+    )
     o.append(
         f'<circle cx="{HUB[0]}" cy="{HUB[1]}" r="64" fill="{CARD}" stroke="{PINK}" stroke-width="2.4"/>'
     )
