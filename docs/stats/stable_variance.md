@@ -15,9 +15,21 @@ So it is not only for deep networks: it works in finance, in robots and in deep 
 How do I compute a variance in float32 that is exactly zero on identical
 values?
 
-![How stable_var works in four three-dimensional panels: 1, quotes of an index near 4500 for which the usual float32 formula gives a variance of 0.0000 while stable_var gives 0.2528; 2, the shift: the error of the squares of the quotes is bigger than the variance, after the shift it is zero; 3, the two-sum: a sum that keeps the error it would lose; 4, the gradient of a stack of layers on a GPU: the usual layer is wrong by up to 21 percent, the layer with stable_var by less than 0.006 percent.](../assets/stable_variance/stable_var_explained.png)
+![The quotes of an index near 4500 as bars: the usual float32 formula gives a variance of 0.0000, stable_var gives 0.2528](../assets/stable_variance/stable_var_1_problem.png)
 
-The picture is the depth test on a GPU in float32, for 11 depths from 1 to 1024 layers and 6 values of the offset over the spread, from 800 to 250000 (66 cells). The pink surface is the gradient error of the usual layer, the blue one is the error of the layer with `stable_var`. The usual layer degrades with the depth and with the offset over the spread, and is at about 20 % at 1024 layers and 250000; the layer with `stable_var` is better in all 66 cells, by a factor between 35 and 17000 (median 960), and goes from 3e-07 to 6e-05. A step with `stable_var` takes between 0.76 and 3.1 times as long as one with the usual layer (median 1.4).
+**1. The problem.** 3000 quotes of an index near 4500, in steps of 0.25, in `float32`. The true variance is 0.2528. The usual formula, the mean of the squares minus the square of the mean, returns 0.0000, as if the market stood still, and `stable_var` returns 0.2528.
+
+![Two rows of posts, the numbers float32 can hold: far apart near 20 million, close together near 0, with the wiggle of 0.25 lost in the first and kept in the second](../assets/stable_variance/stable_var_2_shift.png)
+
+**2. The shift.** Near 20 million, which is the size of the squares of the quotes, the numbers `float32` can hold are 2 apart, and the wiggle is 0.25, so it falls between two of them and is lost. `stable_var` first subtracts the first value, `x - x[0]`, an exact operation for numbers this close, and the values are then near 0, where the numbers `float32` can hold are about 3e-08 apart and the wiggle is kept. The posts of the picture are drawn far less dense than real ones.
+
+![Three pillars: the exact sum, the plain float32 sum that loses the 1, and the two-sum that keeps it in a second number](../assets/stable_variance/stable_var_3_twosum.png)
+
+**3. The two-sum.** Adding a small number to a big one loses the small one: with a = 16777216 and b = 1, the plain `float32` sum is 16777216 and the 1 is gone. The two-sum returns the sum s = 16777216 and also the error e = 1, so nothing is lost; `stable_var` adds these second numbers back when it sums.
+
+![A three-dimensional surface of the gradient error of stacked layers on a GPU: the usual layer rises like a mountain to 21 percent, the layer with stable_var is a flat floor below 0.006 percent](../assets/stable_variance/stable_var_4_depth.png)
+
+**4. The depth.** The gradient of a stack of normalised layers on a GPU, in `float32`, for 11 depths from 1 to 1024 layers and 6 values of the offset over the spread, 66 stacks in all. The usual layer is wrong by up to 21 % at 1024 layers; with `stable_var` the gradient is wrong by less than 0.006 % in every stack. The largest gain is at 8 layers, where it is 17,447 times closer to the truth. A step with `stable_var` takes between 0.76 and 3.1 times as long as one with the usual layer (median 1.4).
 
 ## A deep learning example: the gradient of a normalisation layer
 

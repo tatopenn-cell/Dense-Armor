@@ -20,6 +20,7 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import LightSource, LinearSegmentedColormap
+from mpl_toolkits.mplot3d import proj3d
 from scipy.interpolate import RectBivariateSpline
 
 HERE = Path(__file__).resolve().parent
@@ -39,9 +40,26 @@ def pane(ax, title, sub):
         axis.set_pane_color((0.06, 0.09, 0.13, 1.0))
         axis._axinfo["grid"]["color"] = GRID
         axis.line.set_color(GRID)
-    ax.tick_params(colors=MUTED, labelsize=7)
-    ax.set_title(title, color=INK, fontsize=15, fontweight="bold", loc="left", pad=2)
-    ax.text2D(0.0, 0.93, sub, transform=ax.transAxes, color=CYAN, fontsize=10.5)
+    ax.tick_params(colors=MUTED, labelsize=8)
+    ax.figure.text(0.04, 0.93, title, color=INK, fontsize=26, fontweight="bold")
+    ax.figure.text(0.04, 0.885, sub, color=CYAN, fontsize=15)
+
+
+def label(ax, x, y, z, text, color, dx=0, dy=40):
+    x2, y2, _ = proj3d.proj_transform(x, y, z, ax.get_proj())
+    ax.annotate(
+        text,
+        (x2, y2),
+        xycoords="data",
+        xytext=(dx, dy),
+        textcoords="offset points",
+        color=color,
+        fontsize=13,
+        fontweight="bold",
+        ha="center",
+        bbox={"boxstyle": "round,pad=0.35", "fc": BG, "ec": color, "lw": 1.2},
+        arrowprops={"arrowstyle": "-|>", "color": color, "lw": 1.5},
+    )
 
 
 def note(ax, text):
@@ -51,7 +69,7 @@ def note(ax, text):
         text,
         transform=ax.transAxes,
         color=INK,
-        fontsize=9.5,
+        fontsize=12,
         family="monospace",
         linespacing=1.5,
         va="top",
@@ -97,75 +115,96 @@ def panel_problem(ax, x):
 
 
 def panel_shift(ax, x):
-    n = 24
-    idx = np.arange(n)
-    v = x[:n].astype(np.float64)
-    err_before = np.abs((x[:n] * x[:n]).astype(np.float64) - v * v)
-    d = x[:n] - x[0]
-    err_after = np.abs((d * d).astype(np.float64) - (v - v[0]) ** 2)
-    var = float(np.var(x.astype(np.float64)))
-    ax.bar3d(
-        idx,
-        np.zeros(n),
-        np.zeros(n),
-        0.7,
-        0.5,
-        err_before,
-        color=PINK,
-        alpha=0.95,
-        shade=True,
-    )
-    ax.bar3d(
-        idx,
-        np.full(n, 1.2),
-        np.zeros(n),
-        0.7,
-        0.5,
-        err_after + 0.004,
-        color=GOLD,
-        alpha=0.95,
-        shade=True,
-    )
-    gx, gy = np.meshgrid([0, n], [-0.3, 1.9])
-    ax.plot_surface(
-        gx, gy, np.full_like(gx, var, dtype=float), color=CYAN, alpha=0.35, linewidth=0
-    )
-    ax.set_zlim(0, max(float(err_before.max()), var) * 1.1)
-    ax.view_init(elev=22, azim=-62)
+    big = float(np.float32(4500.0) ** 2)
+    gap_big = float(np.spacing(np.float32(big)))
+    gap_small = float(np.spacing(np.float32(0.25)))
+    unit = 0.25
+    far = gap_big / unit
+    for k in range(4):
+        ax.bar3d(k * far - 0.12, 0.0, 0.0, 0.24, 0.5, 3.0, color=PINK, alpha=0.95)
+    ax.bar3d(2.5, 0.1, 0.0, 1.0, 0.3, 1.4, color=CYAN, alpha=1.0)
+    for k in range(0, int(3 * far / 0.25)):
+        ax.bar3d(k * 0.25 - 0.04, 6.0, 0.0, 0.08, 0.5, 3.0, color=GOLD, alpha=0.95)
+    ax.bar3d(2.5, 6.1, 0.0, 1.0, 0.3, 1.4, color=CYAN, alpha=1.0)
+    ax.set_xlim(-0.5, 3 * far + 0.5)
+    ax.set_ylim(-0.5, 7.0)
+    ax.set_zlim(0, 4.0)
+    ax.set_xticks([])
     ax.set_yticks([])
-    ax.set_xlabel("quote number", color=MUTED, fontsize=8, labelpad=-2)
-    ax.set_zlabel("error of the square", color=MUTED, fontsize=8, labelpad=-2)
+    ax.set_zticks([])
+    ax.view_init(elev=38, azim=-90)
+    ax.set_box_aspect((2.6, 1.4, 0.6), zoom=1.0)
+    label(
+        ax,
+        0.0,
+        0.2,
+        3.0,
+        "BEFORE: numbers near 20 million, 2 apart",
+        PINK,
+        dx=60,
+        dy=-70,
+    )
+    label(
+        ax,
+        0.0,
+        6.2,
+        3.0,
+        "AFTER the shift: numbers near 0, much closer",
+        GOLD,
+        dx=60,
+        dy=55,
+    )
+    label(
+        ax,
+        3.0,
+        0.25,
+        0.0,
+        "the wiggle (0.25) falls between two numbers: LOST",
+        CYAN,
+        dx=40,
+        dy=-75,
+    )
+    label(ax, 3.0, 6.25, 0.0, "the wiggle sits on a number: KEPT", CYAN, dx=330, dy=-95)
     note(
         ax,
-        f"blue plane: the variance to measure, {var:.2f}{NL}"
-        f"pink: error of the squares of the prices in float32, up to {err_before.max():.1f}{NL}"
-        f"gold: the same after the shift x - x[0], error {err_after.max():.1f} (exact){NL}"
-        f"the error was bigger than the wiggle; the shift removes it",
+        f"every number float32 can hold is a post; near 20 million the posts are {gap_big:.0f} apart{NL}"
+        f"after the shift (x - x[0], exact) the posts are {gap_small:.0e} apart; drawn far less dense than real{NL}"
+        f"the wiggle is 0.25: it falls between far posts and is lost, it sits on close ones and is kept",
     )
-    pane(ax, "2  The shift", "take away the big part first: the subtraction is exact")
+    pane(ax, "2  The shift", "take away the big part first, and the small part fits")
 
 
 def panel_twosum(ax):
     a, b = np.float32(16777216.0), np.float32(1.0)
     plain = np.float32(a + b)
     s, e = two_sum(a, b)
-    for x0, top, col in ((0.0, 1.0, GOLD), (1.4, 0.02, PINK), (2.8, 1.0, GOLD)):
-        ax.bar3d([x0], [0], [0], 0.6, 0.6, [10.0], color=CYAN, alpha=0.95)
-        ax.bar3d([x0], [0], [10.0], 0.6, 0.6, [top], color=col, alpha=0.95)
-    ax.set_zlim(0, 13)
-    ax.set_xticks([0.3, 1.7, 3.1])
-    ax.set_xticklabels(["exact", "plain sum", "two-sum"], color=MUTED, fontsize=8)
+    ax.bar3d(0.0, 0.0, 0.0, 0.9, 0.9, 10.0, color=CYAN, alpha=0.95)
+    ax.bar3d(0.25, 0.25, 10.0, 0.4, 0.4, 0.9, color=GOLD, alpha=1.0)
+    ax.bar3d(2.4, 0.0, 0.0, 0.9, 0.9, 10.0, color=CYAN, alpha=0.95)
+    ax.bar3d(4.0, 0.2, 0.0, 0.4, 0.4, 0.9, color=PINK, alpha=0.45)
+    ax.bar3d(4.8, 0.0, 0.0, 0.9, 0.9, 10.0, color=CYAN, alpha=0.95)
+    ax.bar3d(6.4, 0.2, 0.0, 0.4, 0.4, 0.9, color=GOLD, alpha=1.0)
+    ax.set_xlim(-0.2, 7.2)
+    ax.set_ylim(-0.2, 1.4)
+    ax.set_zlim(0, 12.5)
+    ax.set_xticks([])
     ax.set_yticks([])
     ax.set_zticks([])
-    ax.view_init(elev=22, azim=-60)
+    ax.view_init(elev=14, azim=-72)
+    ax.set_box_aspect((2.6, 0.6, 1.0), zoom=1.0)
+    label(ax, 0.45, 0.45, 10.9, "EXACT: a + b", INK, dy=50)
+    label(ax, 2.85, 0.45, 10.0, "PLAIN SUM: a only", INK, dy=60)
+    label(ax, 4.2, 0.4, 0.9, "the 1 fell off: LOST", PINK, dx=0, dy=-60)
+    label(ax, 5.25, 0.45, 10.0, "TWO-SUM: s", INK, dy=60)
+    label(ax, 6.6, 0.4, 0.9, "the 1 is caught: e", GOLD, dx=0, dy=-60)
     note(
         ax,
-        f"a = {int(a)},  b = {int(b)}  (blue: a, gold: b or its error){NL}"
-        f"plain float32 sum  {int(plain)}   the {int(b)} is lost (pink, empty){NL}"
-        f"two-sum  s = {int(s)}  and  e = {int(e)}   nothing is lost{NL}"
-        f"stable_var adds the pieces e back",
+        f"a big number a = {int(a)} and a small one b = {int(b)}{NL}"
+        f"plain float32 sum: {int(plain)}   the {int(b)} is gone{NL}"
+        f"two-sum: s = {int(s)} and e = {int(e)}   the {int(e)} is kept in a second number{NL}"
+        f"stable_var keeps adding those second numbers back",
     )
-    pane(ax, "3  The two-sum", "a sum that also keeps the error it would lose")
+    pane(ax, "3  The two-sum", "when a sum would lose a small piece, catch it")
 
 
 def panel_depth(ax):
@@ -241,36 +280,20 @@ def panel_depth(ax):
 
 def main():
     x = quotes()
-    fig = plt.figure(figsize=(17, 12.5))
-    fig.patch.set_facecolor(BG)
-    fig.text(
-        0.03,
-        0.965,
-        "HOW stable_var WORKS, AND WHERE IT MATTERS",
-        fontsize=24,
-        fontweight="bold",
-        color=INK,
-    )
-    fig.text(
-        0.03,
-        0.935,
-        "a variance, and the gradient of a deep network, when the numbers are big and the wiggle is small, in float32",
-        fontsize=12.5,
-        color=CYAN,
-    )
-    boxes = [
-        (0.02, 0.57, 0.46, 0.3),
-        (0.52, 0.57, 0.46, 0.3),
-        (0.02, 0.1, 0.46, 0.27),
-        (0.52, 0.1, 0.46, 0.27),
+    jobs = [
+        ("stable_var_1_problem.png", lambda ax: panel_problem(ax, x)),
+        ("stable_var_2_shift.png", lambda ax: panel_shift(ax, x)),
+        ("stable_var_3_twosum.png", panel_twosum),
+        ("stable_var_4_depth.png", panel_depth),
     ]
-    axes = [fig.add_axes(b, projection="3d") for b in boxes]
-    panel_problem(axes[0], x)
-    panel_shift(axes[1], x)
-    panel_twosum(axes[2])
-    panel_depth(axes[3])
-    fig.savefig(HERE / "stable_var_explained.png", dpi=130, facecolor=BG)
-    print("written stable_var_explained.png")
+    for name, draw in jobs:
+        fig = plt.figure(figsize=(13, 12))
+        fig.patch.set_facecolor(BG)
+        ax = fig.add_axes((0.0, 0.2, 1.0, 0.66), projection="3d")
+        draw(ax)
+        fig.savefig(HERE / name, dpi=130, facecolor=BG)
+        plt.close(fig)
+        print("written", name)
 
 
 if __name__ == "__main__":
