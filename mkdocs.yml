@@ -79,7 +79,7 @@ plugins:
 nav:
   - Home:
       - index.md
-      - Full API here: api/index.md
+      - full API here: api/general.md
   - Applications:
       - Overview: applications/index.md
       - Finance:
