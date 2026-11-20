@@ -15,6 +15,12 @@ map** shows the physical volume of the robot, so the shape is recognisable
 from any angle. Read them together: the flat map answers *which modules*,
 the 3D map answers *where in space*.
 
+## The map of the robot pages
+
+The pages of the Robot group, with the modules of each. Pass over a page to light it, click to open it.
+
+<object type="image/svg+xml" data="../../assets/maps/robot.svg" style="width:100%"></object>
+
 ## Interactive map
 
 Click a body part to read what it does and which APIs concern it. The side
