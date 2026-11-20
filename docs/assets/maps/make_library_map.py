@@ -63,6 +63,7 @@ SECTION_PAGES = {
     "evaluation": "metrics/index.md",
     "finance": "finance/index.md",
     "graph": "ontology/index.md",
+    "robot": "robot/index.md",
     "infrastructure": "stream/index.md",
     "ml": "ml/index.md",
     "utility": "shields/engine.md",
@@ -166,6 +167,11 @@ def build():
     for sec in IN_CORE:
         if sec in t.get("dense_armor", {}):
             secs[sec] = t["dense_armor"][sec]
+    secs["robot"] = {
+        piece: names
+        for _, pieces in file_sections("core/robot/control")
+        for piece, names in pieces
+    }
     for sec in by_size(secs):
         core.append(
             (sec, sorted(secs[sec].items(), key=lambda kv: (-len(kv[1]), kv[0])))

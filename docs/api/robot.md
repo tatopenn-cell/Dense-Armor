@@ -9,40 +9,11 @@ mapped to the modules that work with it.
 A **joint** is one moving axis of the arm: a motor, a hinge, or a finger.
 This robot has nine of them.
 
-Two maps show the same picture. A **flat interactive map** shows where each
-API touches the body: click a part and read which modules use it. A **3D
-map** shows the physical volume of the robot, so the shape is recognisable
-from any angle. Read them together: the flat map answers *which modules*,
-the 3D map answers *where in space*.
+## The map of the robot pages
 
-## Interactive map
+The pages of the Robot group, with the modules of each. Pass over a page to light it, click to open it.
 
-Click a body part to read what it does and which APIs concern it. The side
-panel does not overlap the image.
-
-<iframe src="../../assets/api/robot_interactive.html"
-        style="width:100%;height:640px;border:0"
-        loading="lazy"></iframe>
-
-## Robot map
-
-Hover a joint to see which modules use it. Rotate with the mouse.
-
-<iframe src="../../assets/api/robot_3d.html"
-        style="width:100%;height:640px;border:0"
-        loading="lazy"></iframe>
-
-To interact with the 3D model:
-
-- Drag with the mouse to rotate.
-- Use the arrow keys (left, right, up, down) to rotate.
-- Use `+` and `-` to zoom in and out.
-- Auto-rotation is on until you interact.
-
-Ignore the colour on the 3D model and look at the silhouette: the separation
-between the two arms, the curvature of the shoulders, the shape of the
-pelvis. The connections that appear in the flat map as lines are, in the 3D
-model, physical extensions of the body.
+<object type="image/svg+xml" data="../../assets/maps/robot.svg" style="width:100%"></object>
 
 ## APIs by joint
 
@@ -286,15 +257,6 @@ For each joint, the modules that work with it, grouped by purpose.
 - [`SafeEstimator`](../api/robot_roles.md)
 
 ## Details
-
-### How the 3D model was made
-
-The geometry was reconstructed from a single 1024×1024 image by Meshy AI.
-The mesh has roughly 59 700 vertices and 119 300 triangles, about half the
-density of the head model on the AI page. The reconstruction is monochrome:
-the source image was not projected onto the surface. This is intentional.
-The coloured flat map is where the API hotspots live; the 3D model is where
-the volume lives.
 
 ### Joint-to-API mapping
 
