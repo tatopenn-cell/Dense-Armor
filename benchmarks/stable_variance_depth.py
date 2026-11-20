@@ -18,6 +18,7 @@ matrix products use the highest precision, so that the layer normalisation is th
 Run:
     python benchmarks/stable_variance_depth.py            full run, writes the json next to this file
     python benchmarks/stable_variance_depth.py --small    small shapes
+    python benchmarks/stable_variance_depth.py --grid     six spreads: the offset over the spread goes from 2.5e5 to 800
 """
 
 import argparse
@@ -53,37 +54,40 @@ def ln_stable(x):
     return d / jnp.sqrt(stable_var(x, axis=-1, keepdims=True) + EPS)
 
 
-def block(x, w, ln):
-    return OFFSET + SPREAD * jnp.tanh(ln(x) @ w)
+def block(x, w, ln, spread):
+    return OFFSET + spread * jnp.tanh(ln(x) @ w)
 
 
-def make_trajectory(ln):
+def make_trajectory(ln, spread):
     def trajectory(x0, W):
         def step(x, w):
-            return block(x, w, ln), x
+            return block(x, w, ln, spread), x
 
         return jax.lax.scan(step, x0, W)
 
     return trajectory
 
 
-def make_grad(ln):
-    traj = make_trajectory(ln)
+def make_grad(ln, spread):
+    traj = make_trajectory(ln, spread)
     return jax.jit(jax.grad(lambda x0, W, c: jnp.sum(c * traj(x0, W)[0])))
 
 
-def make_inputs(ln):
-    traj = make_trajectory(ln)
+def make_inputs(ln, spread):
+    traj = make_trajectory(ln, spread)
     return jax.jit(lambda x0, W: traj(x0, W)[1])
 
 
-@jax.jit
-def reference_grad(xs, W, c):
-    def step(g, inp):
-        x, w = inp
-        return jax.vjp(lambda a: block(a, w, ln_usual), x)[1](g)[0], None
+def make_reference(spread):
+    @jax.jit
+    def reference_grad(xs, W, c):
+        def step(g, inp):
+            x, w = inp
+            return jax.vjp(lambda a: block(a, w, ln_usual, spread), x)[1](g)[0], None
 
-    return jax.lax.scan(step, c, (xs, W), reverse=True)[0]
+        return jax.lax.scan(step, c, (xs, W), reverse=True)[0]
+
+    return reference_grad
 
 
 def orthogonal(rng, L, D):
@@ -104,52 +108,63 @@ def timeit(f, args, runs):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--small", action="store_true")
+    ap.add_argument("--grid", action="store_true")
     args = ap.parse_args()
     if args.small:
         B, D, depths, runs = 16, 64, [1, 2, 4, 8, 16, 32], 3
     else:
         B, D, depths, runs = 128, 512, [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024], 11
-    print(f"jax {jax.__version__}  backend {jax.default_backend()}  B {B} D {D}")
+    spreads = [0.004, 0.0126, 0.04, 0.126, 0.4, 1.26] if args.grid else [SPREAD]
+    if args.grid:
+        runs = 3
+    print(
+        f"jax {jax.__version__}  backend {jax.default_backend()}  B {B} D {D}  spreads {spreads}"
+    )
     rng = np.random.default_rng(0)
-    y0 = rng.normal(OFFSET, SPREAD, (B, D)).astype(np.float32)
     c = rng.normal(0.0, 1.0, (B, D)).astype(np.float32)
     lns = {"usual": ln_usual, "stable": ln_stable}
-    grads = {name: make_grad(ln) for name, ln in lns.items()}
-    inputs = {name: make_inputs(ln) for name, ln in lns.items()}
+    Ws = {L: jnp.asarray(orthogonal(rng, L, D)) for L in depths}
     rows = []
-    for L in depths:
-        W = jnp.asarray(orthogonal(rng, L, D))
-        a = (jnp.asarray(y0), W, jnp.asarray(c))
-        row = {"depth": L}
-        for name in lns:
-            xs = inputs[name](a[0], W)
-            g64 = np.asarray(
-                reference_grad(
-                    xs.astype(jnp.float64),
-                    W.astype(jnp.float64),
-                    a[2].astype(jnp.float64),
+    for spread in spreads:
+        y0 = np.random.default_rng(1).normal(OFFSET, spread, (B, D)).astype(np.float32)
+        grads = {name: make_grad(ln, spread) for name, ln in lns.items()}
+        inputs = {name: make_inputs(ln, spread) for name, ln in lns.items()}
+        reference_grad = make_reference(spread)
+        for L in depths:
+            W = Ws[L]
+            a = (jnp.asarray(y0), W, jnp.asarray(c))
+            row = {"depth": L, "spread": spread, "offset_over_spread": OFFSET / spread}
+            for name in lns:
+                xs = inputs[name](a[0], W)
+                g64 = np.asarray(
+                    reference_grad(
+                        xs.astype(jnp.float64),
+                        W.astype(jnp.float64),
+                        a[2].astype(jnp.float64),
+                    )
                 )
+                g32 = np.asarray(grads[name](*a), np.float64)
+                fwd = np.asarray(jax.vmap(lns[name])(xs), np.float64)
+                fwd64 = np.asarray(jax.vmap(ln_usual)(xs.astype(jnp.float64)))
+                row[name] = {
+                    "grad_rel_err": float(
+                        np.linalg.norm(g32 - g64) / np.linalg.norm(g64)
+                    ),
+                    "grad_norm_reference": float(np.linalg.norm(g64)),
+                    "layer_output_max_err": float(np.max(np.abs(fwd - fwd64))),
+                    "nan_or_inf": int(np.sum(~np.isfinite(g32))),
+                    "ms": timeit(grads[name], a, runs),
+                }
+            row["ratio_time_stable_over_usual"] = (
+                row["stable"]["ms"] / row["usual"]["ms"]
             )
-            g32 = np.asarray(grads[name](*a), np.float64)
-            fwd = np.asarray(jax.vmap(lns[name])(xs), np.float64)
-            fwd64 = np.asarray(jax.vmap(ln_usual)(xs.astype(jnp.float64)))
-            row[name] = {
-                "grad_rel_err": float(np.linalg.norm(g32 - g64) / np.linalg.norm(g64)),
-                "grad_norm_reference": float(np.linalg.norm(g64)),
-                "layer_output_max_err": float(np.max(np.abs(fwd - fwd64))),
-                "nan_or_inf": int(np.sum(~np.isfinite(g32))),
-                "ms": timeit(grads[name], a, runs),
-            }
-        row["ratio_time_stable_over_usual"] = row["stable"]["ms"] / row["usual"]["ms"]
-        rows.append(row)
-        u, s = row["usual"], row["stable"]
-        print(
-            L,
-            f"usual {u['grad_rel_err']:.2e} out {u['layer_output_max_err']:.1e} {u['ms']:.2f} ms"
-            f" | stable {s['grad_rel_err']:.2e} out {s['layer_output_max_err']:.1e} {s['ms']:.2f} ms"
-            f" | x{row['ratio_time_stable_over_usual']:.2f} | |g| {u['grad_norm_reference']:.2e}",
-            flush=True,
-        )
+            rows.append(row)
+            u, v = row["usual"], row["stable"]
+            print(
+                f"spread {spread:g} depth {L}",
+                f"usual {u['grad_rel_err']:.2e} {u['ms']:.2f} ms | stable {v['grad_rel_err']:.2e} {v['ms']:.2f} ms | x{row['ratio_time_stable_over_usual']:.2f}",
+                flush=True,
+            )
     payload = {
         "jax": jax.__version__,
         "backend": jax.default_backend(),
@@ -162,9 +177,13 @@ def main():
         "rows": rows,
     }
     name = (
-        "stable_variance_depth_small.json"
-        if args.small
-        else "stable_variance_depth.json"
+        "stable_variance_depth_grid.json"
+        if args.grid
+        else (
+            "stable_variance_depth_small.json"
+            if args.small
+            else "stable_variance_depth.json"
+        )
     )
     (Path(__file__).resolve().parent / name).write_text(json.dumps(payload, indent=2))
     print("written", name)
