@@ -1,16 +1,12 @@
 # Stable variance in float32
 
-`stable_var` measures how much a list of numbers wiggles when every number is huge and the wiggle is tiny, and it does not get fooled by the huge part.
+Actually, `stable_var` is useful wherever there is a large number with small variations around it, regardless of the field:
 
-Why does it matter? A computer that works in `float32` keeps only about 7 digits of each number. A number like 4500.25 has no room left for a wiggle of a few cents: the usual formula loses the wiggle, as if it had never been there. `stable_var` first takes away the big base number and measures only the wiggle.
+- **In finance:** a stock or an index quoted at 4,500 euros that fluctuates by 25 cents (0.25). With the normal formula in `float32`, the variance comes out `0.0000` (as if the market were completely still!), while `stable_var` finds the exact value (`0.2528`).
+- **In robots and drones:** a joint at rest around 1,000 that vibrates by 0.01. The normal formula is wrong by 630 times, while `stable_var` gives the exact number.
+- **In deep networks in `float32`:** when a signal with a large base value goes through many layers, one after another.
 
-It is useful wherever there is a big number with small wiggles around it, in any field:
-
-- **Finance:** a stock index quoted at about 4,500 euros that moves in steps of 25 cents (0.25). The usual formula in `float32` says the variation is `0.0000`, as if the market were standing still. `stable_var` says `0.2528`, which is the right value.
-- **Robots and drones:** a joint resting around 1,000 that vibrates by 0.01. The usual formula is wrong by about 630 times. `stable_var` gives the right number.
-- **Deep neural networks in `float32`:** a signal with a big base value that goes through many layers, one after the other. With the usual layer the gradient is wrong by up to about 20 out of 100 after 1024 layers; with `stable_var` it stays below 1 in 10,000 in the same test.
-
-So it is not only for deep networks: it works in finance, in robots and in deep networks every time you have "big numbers plus small wiggles" in `float32`.
+So it is not only for deep networks: it holds in finance, in robots and in deep networks every time you have "large numbers + small variations" in `float32`!
 
 How do I compute a variance in float32 that is exactly zero on identical
 values?
