@@ -1,13 +1,5 @@
 # Stable variance in float32
 
-Actually, `stable_var` is useful wherever there is a large number with small variations around it, regardless of the field:
-
-- **In finance:** a stock or an index quoted at 4,500 euros that fluctuates by 25 cents (0.25). With the normal formula in `float32`, the variance comes out `0.0000` (as if the market were completely still!), while `stable_var` finds the exact value (`0.2528`).
-- **In robots and drones:** a joint at rest around 1,000 that vibrates by 0.01. The normal formula is wrong by 630 times, while `stable_var` gives the exact number.
-- **In deep networks in `float32`:** when a signal with a large base value goes through many layers, one after another.
-
-So it is not only for deep networks: it holds in finance, in robots and in deep networks every time you have "large numbers + small variations" in `float32`!
-
 How do I compute a variance in float32 that is exactly zero on identical
 values?
 
@@ -117,6 +109,16 @@ If the assistant uses the normal textbook formula (mean(x**2) - mean(x)**2), a d
 - **4. Exact zero on identical prices (0.0):** In the end, if all the figures had the exact same price ([1e10, 1e10, 1e10]), the stable_var function answers 0.0 exact, without making up fake wobbles.
 
 In the end, what is stable_var (Stable variance in float32)? It is a super-accurate math function that lets computers calculate how much numbers vary while using very little memory (float32), by first removing the giant base value and saving even the tiniest rounding crumbs!
+
+## Description
+
+Actually, `stable_var` is useful wherever there is a large number with small variations around it, regardless of the field:
+
+- **In finance:** a stock or an index quoted at 4,500 euros that fluctuates by 25 cents (0.25). With the normal formula in `float32`, the variance comes out `0.0000` (as if the market were completely still!), while `stable_var` finds the exact value (`0.2528`).
+- **In robots and drones:** a joint at rest around 1,000 that vibrates by 0.01. The normal formula is wrong by 630 times, while `stable_var` gives the exact number.
+- **In deep networks in `float32`:** when a signal with a large base value goes through many layers, one after another.
+
+So it is not only for deep networks: it holds in finance, in robots and in deep networks every time you have "large numbers + small variations" in `float32`!
 
 ## A first example: the quotes of a stock index
 
