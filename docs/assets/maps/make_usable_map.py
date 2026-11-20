@@ -42,7 +42,7 @@ PAGES = {
     "audio": "audio/index.md",
     "vision": "vision/index.md",
     "finance": "finance/index.md",
-    "dynamics": "dynamics/index.md",
+    "dynamics": "robot/index.md",
     "optim": "optim/index.md",
 }
 

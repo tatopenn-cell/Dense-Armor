@@ -128,6 +128,7 @@ nav:
           - Jetson power: drones/jetson_power.md
           - Jetson energy: drones/jetson_energy.md
       - Robot:
+          - robot/index.md
           - Control:
               - control/index.md
               - Rate limiter: control/rate_limiter.md

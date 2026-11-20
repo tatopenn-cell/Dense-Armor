@@ -906,7 +906,21 @@
         "utility",
         "optim",
         "graph",
-        "protect"
+        "protect",
+        "learn",
+        "tree",
+        "forest",
+        "ensemble",
+        "neural",
+        "ml",
+        "timeseries",
+        "anomaly",
+        "drift",
+        "cluster",
+        "vision",
+        "audio",
+        "stats",
+        "preprocessing"
       ],
       "modules": []
     },
