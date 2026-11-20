@@ -320,7 +320,7 @@ def panel_tree(ax):
     pane(
         ax,
         "4  Compensated tree",
-        "the author's sum: pairs in a tree, the errors carried up",
+        "from Kahan's compensation, in a tree: each merge uses TwoSum",
     )
 
 

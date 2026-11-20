@@ -62,7 +62,7 @@ MOVES = [
     ),
     (
         "4  Compensated tree",
-        "of Kahan: the author's, in pairs",
+        "from Kahan, in a tree: the author's",
         "stats/stable_variance.md#compensated-tree",
         ORANGE,
     ),
@@ -128,7 +128,7 @@ def main():
         o.append("</g>")
     for (t, s, href, col), y in zip(MOVES, ys_move):
         o.append(f'<g class="g">{curve(HUB[0] + 64, HUB[1], 726, y + 38, col)}')
-        extra = "uses TwoSum, errors carried up" if t.startswith("4") else ""
+        extra = "each merge uses TwoSum" if t.startswith("4") else ""
         o.append(card(726, y, 250, 84, col, t, s, extra, href, "r"))
         o.append("</g>")
     o.append(f'<g class="g">{curve(274, 592, HUB[0] - 50, HUB[1] + 44, ORANGE)}')
