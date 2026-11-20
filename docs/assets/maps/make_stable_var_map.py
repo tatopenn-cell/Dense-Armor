@@ -55,25 +55,13 @@ MOVES = [
         ORANGE,
     ),
     (
-        "3  TwoSum",
-        "a tool: a sum and its exact error",
-        "stats/stable_variance.md#what-is-different-from-the-paper",
-        PINK,
-    ),
-    (
-        "4  Kahan sum",
-        "the paper's: one by one, keeps lost bits",
-        "stats/stable_variance.md#what-is-different-from-the-paper",
-        CYAN,
-    ),
-    (
-        "5  Compensated tree",
+        "3  Compensated tree",
         "the author's: pairs, errors carried up",
         "stats/stable_variance.md#3-what-the-function-does",
         ORANGE,
     ),
     (
-        "6  Exact zero",
+        "4  Exact zero",
         "identical values give 0.0",
         "stats/stable_variance.md#gamestory",
         CYAN,
@@ -129,18 +117,18 @@ def main():
         f'<text x="{W / 2:.0f}" y="66" fill="{CYAN}" font-size="13" text-anchor="middle">a big number with small wiggles around it, in float32: where it appears and how the kernel keeps the wiggles; pass over a card to light it, click to open it</text>',
         f'<text x="24" y="104" fill="{PINK}" font-size="12" font-weight="700">01  WHERE IT IS NEEDED</text>',
         f'<text x="726" y="88" fill="{PINK}" font-size="12" font-weight="700">02  THE MOVES</text>',
-        f'<text x="24" y="548" fill="{PINK}" font-size="12" font-weight="700">03  THE JOB AND THE CLASS THAT USE IT</text>',
+        f'<text x="24" y="548" fill="{PINK}" font-size="12" font-weight="700">03  THE JOB, THE CLASS AND THE TOOL</text>',
         '<g class="net">',
     ]
     ys_use = [120 + 144 * k for k in range(3)]
-    ys_move = [104 + 90 * k for k in range(6)]
+    ys_move = [104 + 112 * k for k in range(4)]
     for (t, s, ex, href, col), y in zip(USES, ys_use):
         o.append(f'<g class="g">{curve(274, y + 48, HUB[0] - 64, HUB[1], col)}')
         o.append(card(24, y, 250, 96, col, t, s, ex, href, "l"))
         o.append("</g>")
     for (t, s, href, col), y in zip(MOVES, ys_move):
         o.append(f'<g class="g">{curve(HUB[0] + 64, HUB[1], 726, y + 38, col)}')
-        extra = "uses 3, replaces 4" if t.startswith("5") else ""
+        extra = "uses TwoSum, in place of Kahan" if t.startswith("3") else ""
         o.append(card(726, y, 250, 84, col, t, s, extra, href, "r"))
         o.append("</g>")
     o.append(f'<g class="g">{curve(274, 592, HUB[0] - 50, HUB[1] + 44, ORANGE)}')
@@ -177,6 +165,22 @@ def main():
         )
     )
     o.append("</g>")
+    o.append(
+        f'<g class="g">{curve(HUB[0] + 50, HUB[1] + 44, 726, 592, PINK)}'
+        + card(
+            726,
+            560,
+            250,
+            64,
+            PINK,
+            "TwoSum, a tool",
+            "a sum and its exact error",
+            "",
+            "stats/stable_variance.md#what-is-different-from-the-paper",
+            "r",
+        )
+        + "</g>"
+    )
     o.append("</g>")
     o.append(
         f'<a class="back" href="{HOME}" target="_top"><title>back to the map of the library</title>'
