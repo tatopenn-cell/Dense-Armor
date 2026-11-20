@@ -55,16 +55,16 @@ MOVES = [
         ORANGE,
     ),
     (
-        "3  Catch the crumbs",
-        "compensated tree of TwoSum",
-        "stats/stable_variance.md#3-what-the-function-does",
+        "3  TwoSum",
+        "a sum and its exact error",
+        "stats/stable_variance.md#what-is-different-from-the-paper",
         PINK,
     ),
     (
-        "4  Exact zero",
-        "identical values give 0.0",
-        "stats/stable_variance.md#gamestory",
-        CYAN,
+        "4  Compensated tree",
+        "of Kahan: the author's, in pairs",
+        "stats/stable_variance.md#3-what-the-function-does",
+        ORANGE,
     ),
 ]
 
@@ -109,14 +109,14 @@ def curve(x0, y0, x1, y1, col):
 
 def main():
     o = [
-        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W:.0f} {H:.0f}" width="100%" role="img" aria-label="The map of stable_var: the fields where it is needed and the four moves of the kernel">',
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W:.0f} {H:.0f}" width="100%" role="img" aria-label="The map of stable_var: the fields where it is needed and the moves of the kernel">',
         "<style>text{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif}.e{opacity:.4;transition:opacity .15s}"
         ".net:hover .e{opacity:.08}.net .g:hover .e{opacity:1;stroke-width:3}a:hover .card{fill:#17303f;stroke-width:2.6}a:hover text.dn{fill:#fff}</style>",
         f'<rect width="{W:.0f}" height="{H:.0f}" fill="{BG}" rx="14"/>',
         f'<text x="{W / 2:.0f}" y="40" fill="{TEXT}" font-size="26" font-weight="700" text-anchor="middle">THE MAP OF stable_var</text>',
         f'<text x="{W / 2:.0f}" y="66" fill="{CYAN}" font-size="13" text-anchor="middle">a big number with small wiggles around it, in float32: where it appears and how the kernel keeps the wiggles; pass over a card to light it, click to open it</text>',
         f'<text x="24" y="104" fill="{PINK}" font-size="12" font-weight="700">01  WHERE IT IS NEEDED</text>',
-        f'<text x="726" y="88" fill="{PINK}" font-size="12" font-weight="700">02  THE FOUR MOVES</text>',
+        f'<text x="726" y="88" fill="{PINK}" font-size="12" font-weight="700">02  THE MOVES</text>',
         f'<text x="24" y="548" fill="{PINK}" font-size="12" font-weight="700">03  THE JOB AND THE CLASS THAT USE IT</text>',
         '<g class="net">',
     ]
@@ -128,7 +128,8 @@ def main():
         o.append("</g>")
     for (t, s, href, col), y in zip(MOVES, ys_move):
         o.append(f'<g class="g">{curve(HUB[0] + 64, HUB[1], 726, y + 38, col)}')
-        o.append(card(726, y, 250, 76, col, t, s, "", href, "r"))
+        extra = "uses TwoSum, errors carried up" if t.startswith("4") else ""
+        o.append(card(726, y, 250, 84, col, t, s, extra, href, "r"))
         o.append("</g>")
     o.append(f'<g class="g">{curve(274, 592, HUB[0] - 50, HUB[1] + 44, ORANGE)}')
     o.append(

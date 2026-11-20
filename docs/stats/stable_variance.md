@@ -2,6 +2,21 @@
 
 <object type="image/svg+xml" data="../../assets/maps/stable_var.svg" style="width:100%"></object>
 
+## Gamestory
+
+Saturday afternoon at the market. The young shopkeeper and his assistant are selling a super-rare series of collectible action figures that all cost around 1,000 euros (one costs 1000.00, one 1000.01, one 1000.02).
+
+At the end of the day they want to know how much those few cents varied from one figure to another. But there is a problem: to do the math super fast, the assistant uses a pocket calculator with a short screen (called float32), which can hold at most 7 digits on display!
+
+If the assistant uses the normal textbook formula (mean(x**2) - mean(x)**2), a disaster happens: squaring 1000 creates giant numbers (1,000,000), the short screen cuts off all the cents to fit the zeros, and at the end it spits out a crazy negative number (-196608)! To save the cents from the short screen, the assistant uses the stable_var trick, made of four clever moves:
+
+- **1. Removing the giant weight at the start (y = x - x[0]):** Before doing any math, the assistant takes the price of the first figure (1000.00) and subtracts it from all the others. Only the cents of difference remain on the sheet (0.00, 0.01, 0.02)! That way the short screen no longer wastes space writing the thousand euros that are the same for everyone.
+- **2. Centering the cents (m):** Now he takes the average of only those tiny cents (m): this way every tiny rounding stays super small and never blows up.
+- **3. Catching the crumbs that fall off (TwoSum and kahan):** When adding up lots of tiny cents one after another, on a short-screen calculator some crumbs risk falling off the edge. The assistant uses a special trick (TwoSum and kahan) that catches every single crumb of remainder and puts it back into the final sum, without losing even a thousandth!
+- **4. Exact zero on identical prices (0.0):** In the end, if all the figures had the exact same price ([1e10, 1e10, 1e10]), the stable_var function answers 0.0 exact, without making up fake wobbles.
+
+In the end, what is stable_var (Stable variance in float32)? It is a super-accurate math function that lets computers calculate how much numbers vary while using very little memory (float32), by first removing the giant base value and saving even the tiniest rounding crumbs!
+
 `stable_var` measures how much a list of numbers wiggles when every number is huge and the wiggle is tiny, and it does not get fooled by the huge part.
 
 Why does it matter? A computer that works in `float32` keeps only about 7 digits of each number. A number like 4500.25 has no room left for a wiggle of a few cents: the usual formula loses the wiggle, as if it had never been there. `stable_var` first takes away the big base number and measures only the wiggle.
@@ -16,21 +31,21 @@ It is useful wherever there is a big number with small wiggles around it, in any
 How do I compute a variance in float32 that is exactly zero on identical
 values?
 
-![The quotes of an index near 4500 as bars: the usual float32 formula gives a variance of 0.0000, stable_var gives 0.2528](../assets/stable_variance/stable_var_1_problem.png)
+![Two rows of posts, the numbers float32 can hold: far apart near 20 million, close together near 0, with the wiggle of 0.25 lost in the first row and kept in the second](../assets/stable_variance/stable_var_1_shift.png)
 
-**1. The problem.** 3000 quotes of an index near 4500, in steps of 0.25, in `float32`. The true variance is 0.2528. The usual formula, the mean of the squares minus the square of the mean, returns 0.0000, as if the market stood still, and `stable_var` returns 0.2528.
+**1. Shift.** Near 20 million, which is the size of the squares of the quotes, the numbers `float32` can hold are 2 apart, and the wiggle is 0.25, so it falls between two of them and is lost. `stable_var` first subtracts the first value, `y = x - x[0]`, an exact operation when the values are close, and the values are then near 0, where the numbers `float32` can hold are about 3e-08 apart and the wiggle is kept. The posts of the picture are drawn far less dense than real ones.
 
-![Two rows of posts, the numbers float32 can hold: far apart near 20 million, close together near 0, with the wiggle of 0.25 lost in the first and kept in the second](../assets/stable_variance/stable_var_2_shift.png)
+![The first 20 shifted quotes and the same values after subtracting their mean, which sit around 0](../assets/stable_variance/stable_var_2_centre.png)
 
-**2. The shift.** Near 20 million, which is the size of the squares of the quotes, the numbers `float32` can hold are 2 apart, and the wiggle is 0.25, so it falls between two of them and is lost. `stable_var` first subtracts the first value, `x - x[0]`, an exact operation for numbers this close, and the values are then near 0, where the numbers `float32` can hold are about 3e-08 apart and the wiggle is kept. The posts of the picture are drawn far less dense than real ones.
+**2. Centre.** The mean `m` of the shifted values is at the level of the wiggle, and so is its rounding error, not at the level of the offset. `stable_var` forms the residuals `d = y - m` before the squares. For the first 20 of the 3000 quotes, `y = x - x[0]` has a mean `m = -0.0750`, and `d` is centred on 0. The two-term formula `s2/n - (s1/n)**2` cancels the linear part of the error of `m`.
 
-![Three pillars: the exact sum, the plain float32 sum that loses the 1, and the two-sum that keeps it in a second number](../assets/stable_variance/stable_var_3_twosum.png)
+![A pillar for a, a small cube for b: the plain float32 sum loses the cube, the TwoSum keeps it as the error e](../assets/stable_variance/stable_var_3_twosum.png)
 
-**3. Catching the crumbs: two-sum and Kahan.** Adding a small number to a big one loses the small one: with a = 16777216 and b = 1, the plain `float32` sum is 16777216 and the 1 is gone. The two-sum returns the sum s = 16777216 and also the error e = 1, so nothing is lost. Adding 100000 numbers of 1e-7 to 1.0 in `float32` gives 1.01192093 with the plain sum and 1.00999999 with Kahan's sum (the true value is 1.01). `stable_var` is not classic Kahan: it is a compensated tree of two-sums, the idea and the choice of the author, which keeps every crumb and runs on a GPU.
+**3. TwoSum.** Adding a small number to a big one loses the small one: with a = 16777216 and b = 1 in `float32`, the plain sum is 16777216 and the 1 is gone. The TwoSum of Knuth returns the sum `s = 16777216` and also the error `e = 1`, so that `a + b = s + e` exactly; it is `x = fl(a + b)`, `z = fl(x - a)`, `y = fl((a - (x - z)) + (b - z))`, the same function as Algorithm 3.1 of Ogita, Rump and Oishi and as Theorem 7 of Shewchuk.
 
-![A three-dimensional surface of the gradient error of stacked layers on a GPU: the usual layer rises like a mountain to 21 percent, the layer with stable_var is a flat floor below 0.006 percent](../assets/stable_variance/stable_var_4_depth.png)
+![A tree of eight numbers added in pairs over three levels, with the sums in blue and the carries in gold](../assets/stable_variance/stable_var_4_tree.png)
 
-**4. The depth.** The gradient of a stack of normalised layers on a GPU, in `float32`, for 11 depths from 1 to 1024 layers and 6 values of the offset over the spread, 66 stacks in all. The usual layer is wrong by up to 21 % at 1024 layers; with `stable_var` the gradient is wrong by less than 0.006 % in every stack. The largest gain is at 8 layers, where it is 17,447 times closer to the truth. A step with `stable_var` takes between 0.76 and 3.1 times as long as one with the usual layer (median 1.4).
+**4. Compensated tree.** The sum of the squares `d**2` is made by a binary tree of `log2(n)` levels, which adds the pairs at the same time and so runs on a GPU. At each merge, for every pair of partial sums `(S, C)`, there are three TwoSum calls, on the sums, on the carries and on their sum, and the new sum and carry are `S = s3` and `C = e1 + e2 + e3`; the result is `S + C`. It takes the place of the sequential Kahan sum of the paper of Healy, and it is not classic Kahan: it is the idea and the choice of the author. On 8 numbers, 1.0 and seven of 1e-8, the plain `float32` sum is 1.00000000, the compensated tree gives 1.00000012, and the exact sum is 1.00000007, whose nearest `float32` is 1.00000012.
 
 ## What is different from the paper
 
@@ -137,21 +152,6 @@ If a gradient error of 1 % is the most that can be accepted, the usual layer rea
 The price is time. A step with the layer that uses `stable_var` takes between 1.2 and 3.0 times as long as one with the usual layer on this GPU, and 1.34 times at 1024 layers (128.0 ms against 95.3 ms). The ratio at 128 layers (2.95) is out of line with its neighbours (1.53 at 256), and was not investigated. For activations with a large offset and a small spread, where the usual layer gives gradients that are wrong by 1 % to 20 %, a step that takes at most three times as long and a gradient that is 3450 to 16900 times more accurate is a good price; for activations without a large offset this test says nothing, because it was not run.
 
 This is one synthetic stack, one GPU session and one size (128 rows of 512 values). In this stack the gradient grows with the depth, up to about 1e15 at 1024 layers, and stays finite in `float32`; it is not a trained network, and the page does not measure the accuracy of one.
-
-## Gamestory
-
-Saturday afternoon at the market. The young shopkeeper and his assistant are selling a super-rare series of collectible action figures that all cost around 1,000 euros (one costs 1000.00, one 1000.01, one 1000.02).
-
-At the end of the day they want to know how much those few cents varied from one figure to another. But there is a problem: to do the math super fast, the assistant uses a pocket calculator with a short screen (called float32), which can hold at most 7 digits on display!
-
-If the assistant uses the normal textbook formula (mean(x**2) - mean(x)**2), a disaster happens: squaring 1000 creates giant numbers (1,000,000), the short screen cuts off all the cents to fit the zeros, and at the end it spits out a crazy negative number (-196608)! To save the cents from the short screen, the assistant uses the stable_var trick, made of four clever moves:
-
-- **1. Removing the giant weight at the start (y = x - x[0]):** Before doing any math, the assistant takes the price of the first figure (1000.00) and subtracts it from all the others. Only the cents of difference remain on the sheet (0.00, 0.01, 0.02)! That way the short screen no longer wastes space writing the thousand euros that are the same for everyone.
-- **2. Centering the cents (m):** Now he takes the average of only those tiny cents (m): this way every tiny rounding stays super small and never blows up.
-- **3. Catching the crumbs that fall off (TwoSum and kahan):** When adding up lots of tiny cents one after another, on a short-screen calculator some crumbs risk falling off the edge. The assistant uses a special trick (TwoSum and kahan) that catches every single crumb of remainder and puts it back into the final sum, without losing even a thousandth!
-- **4. Exact zero on identical prices (0.0):** In the end, if all the figures had the exact same price ([1e10, 1e10, 1e10]), the stable_var function answers 0.0 exact, without making up fake wobbles.
-
-In the end, what is stable_var (Stable variance in float32)? It is a super-accurate math function that lets computers calculate how much numbers vary while using very little memory (float32), by first removing the giant base value and saving even the tiniest rounding crumbs!
 
 ## Description
 
