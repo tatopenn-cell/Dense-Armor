@@ -20,6 +20,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from dense_armor.core.deep.neural.layers.params import Param
+from dense_armor.core.signals.stats.stable import stable_var
 
 
 class BatchNorm:
@@ -145,6 +146,12 @@ class LayerNorm:
     Args:
         n_features: number of features in the last axis.
         eps: constant added inside the root. Default ``1e-5``.
+        stable: if ``True``, the variance is the one of ``stable_var``
+            and ``x - mu`` is formed on the data shifted by the first
+            feature, ``(x - x[0]) - mean(x - x[0])``. When the features sit
+            around a large offset with a small spread, in float32, this
+            keeps the digits of the spread that the plain formula loses.
+            The backward is the same. Default ``False``.
 
     Examples:
         >>> import jax.numpy as jnp
@@ -154,9 +161,12 @@ class LayerNorm:
         (4, 3)
     """
 
-    def __init__(self, n_features: int, eps: float = 1e-5) -> None:
+    def __init__(
+        self, n_features: int, eps: float = 1e-5, stable: bool = False
+    ) -> None:
         self.n_features = int(n_features)
         self.eps = float(eps)
+        self.stable = bool(stable)
         self.gain = Param(jnp.ones(n_features))
         self.bias = Param(jnp.zeros(n_features))
         self.xhat_: jax.Array | None = None
@@ -166,10 +176,17 @@ class LayerNorm:
         """Return the normalised input; ``training`` is ignored."""
         del training
         x = jnp.asarray(x)
-        mu = jnp.mean(x, axis=-1, keepdims=True)
-        var = jnp.mean((x - mu) ** 2, axis=-1, keepdims=True)
-        std = jnp.sqrt(var + self.eps)
-        xhat = (x - mu) / std
+        if self.stable:
+            y = x - x[..., :1]
+            d = y - jnp.mean(y, axis=-1, keepdims=True)
+            var = stable_var(x, axis=-1, keepdims=True)
+            std = jnp.sqrt(var + self.eps)
+            xhat = d / std
+        else:
+            mu = jnp.mean(x, axis=-1, keepdims=True)
+            var = jnp.mean((x - mu) ** 2, axis=-1, keepdims=True)
+            std = jnp.sqrt(var + self.eps)
+            xhat = (x - mu) / std
         self.xhat_ = xhat
         self.std_ = std
         return self.gain.value * xhat + self.bias.value

@@ -74,6 +74,7 @@ from dense_armor.core.deep.neural.layers.glu import GLUFeedForward  # noqa: E402
 from dense_armor.core.deep.neural.layers import Dense, Embedding  # noqa: E402
 from dense_armor.core.deep.neural.losses.losses_lm import NextTokenLoss  # noqa: E402
 from dense_armor.core.deep.neural.layers.norm_rms import RMSNorm  # noqa: E402
+from dense_armor.core.deep.neural.layers.norm import LayerNorm  # noqa: E402
 from dense_armor.core.deep.neural.training.trainer import Trainer  # noqa: E402
 from dense_armor.core.online.optim.adam import Adam  # noqa: E402
 from dense_armor.core.signals.stats.stable import stable_var  # noqa: E402
@@ -89,6 +90,12 @@ DATA_URL = (
     "master/data/tinyshakespeare/input.txt"
 )
 DATA_SHA256 = "86c4e6aa9db7c042ec79f339dcb96d42b0075e16b8fc2e86bf0ca57e2dc565ed"
+_NORMS = {
+    "rms": RMSNorm,
+    "layer": LayerNorm,
+    "stable": lambda n: LayerNorm(n, stable=True),
+}
+_NORM = {"cls": RMSNorm}
 
 
 class RotaryDecoderBlock(Root):
@@ -96,11 +103,11 @@ class RotaryDecoderBlock(Root):
 
     def __init__(self, d_model, n_heads, d_ff, key):
         k1, k2 = jax.random.split(key)
-        self.norm1 = RMSNorm(d_model)
+        self.norm1 = _NORM["cls"](d_model)
         self.attn = MultiHeadSelfAttention(
             d_model, n_heads, k1, causal=True, rotary=True
         )
-        self.norm2 = RMSNorm(d_model)
+        self.norm2 = _NORM["cls"](d_model)
         self.ffn = GLUFeedForward(d_model, d_ff, "silu", k2)
 
     def forward(self, x, training=True):
@@ -138,7 +145,7 @@ class RotaryDecoder(Root):
             RotaryDecoderBlock(d_model, n_heads, d_ff, keys[i + 1])
             for i in range(n_layers)
         ]
-        self.norm = RMSNorm(d_model)
+        self.norm = _NORM["cls"](d_model)
         self.head = Dense(d_model, vocab, keys[n_layers + 1])
         self.max_len = int(max_len)
 
@@ -581,8 +588,16 @@ def main(argv):
         help="speed sessions (default: 3, 1 on --smoke)",
     )
     ap.add_argument("--json", type=str, default=None)
+    ap.add_argument(
+        "--norm",
+        choices=sorted(_NORMS),
+        default="rms",
+        help="normalisation of the blocks: rms (default), layer, stable",
+    )
     args = ap.parse_args(argv)
+    _NORM["cls"] = _NORMS[args.norm]
     row = _main(args)
+    row["norm"] = args.norm
     out = args.json or (
         "benchmarks/train_small_lm_smoke.json"
         if args.smoke

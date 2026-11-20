@@ -42,6 +42,22 @@ The test simulates a small language model or a block of a neural network with th
 - "The gradient is finite": it means that the calculations did not "explode" producing mathematical errors (NaN or infinity), confirming the numerical stability in both tests.
 - The practical confirmation: the slowdown (up to 3x) measured by isolating the single layer is not a problem in practice, because it is "absorbed" by the other, much heavier, calculations of the network.
 
+**4. The same on a TPU, by width**
+
+The training step of the decoder of `benchmarks/train_small_lm.py`, on one TPU core, in `bfloat16` with `float32` master weights, with the `LayerNorm` of the library and with `LayerNorm(n, stable=True)`. There are 4 blocks, a batch of 8 and 30 steps, and each pair is run twice in turn: the median of the step times.
+
+| width | parameters | step, usual | step, `stable=True` | extra cost | loss of the last 10 steps, usual and stable |
+|---|---|---|---|---|---|
+| 384 | 9.5 M | 6.62 ms | 7.16 ms | +8.2 % | 2.9094 and 2.9094 |
+| 768 | 37.9 M | 10.94 ms | 11.25 ms | +2.8 % | 3.0266 and 3.0250 |
+| 1536 | 151.2 M | 25.04 ms | 25.89 ms | +3.4 % | 3.2563 and 3.2547 |
+
+The extra cost is 8.2 % at width 384 and between 2.8 % and 3.4 % at 768 and 1536; in this test it does not keep falling between 768 and 1536, and beyond 1536 it was not measured. A single run of 50 steps of the 14.2-million-parameter decoder gave 10.89 ms against 11.57 ms (+6 %), and another 10.92 ms against 12.16 ms (+11 %): one run varies by several points. The loss is the same to the second decimal; these are 30 steps and not a converged training. The numbers are in `benchmarks/stable_variance_cost_tpu.json`.
+
+**5. In bfloat16 and float8**
+
+The values are stored in `bfloat16`, `float8_e4m3fn` and `float8_e5m2` (a GPU test, 64 rows of 4096 values `N(offset, 1)`), and the reference is the float64 variance of the stored values. Casting to `float32` and using `jnp.var` has an error between 2.8e-08 and 1.6e-07, and `stable_var` between 0 and 2.2e-08; with the variance computed in the small type the error is about 1e-3 for `bfloat16` and NaN for `float8_e4m3fn`. When the storage has already lost the wiggle, no method can give it back: `bfloat16` at an offset of 1000 keeps 3 distinct values, and `float8` at an offset of 100 keeps 1 or 2. `stable_var` accepts `bfloat16` and returns it in the input dtype. The numbers are in `benchmarks/stable_variance_lowprec_gpu.json`.
+
 ## Gamestory
 
 Saturday afternoon at the market. The young shopkeeper and his assistant are selling a super-rare series of collectible action figures that all cost around 1,000 euros (one costs 1000.00, one 1000.01, one 1000.02).

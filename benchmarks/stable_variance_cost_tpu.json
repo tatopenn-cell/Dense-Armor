@@ -1,0 +1,70 @@
+{
+  "jax": "0.11.2",
+  "backend": "tpu",
+  "device": "one TPU core (Colab)",
+  "note": "bfloat16 compute with float32 master weights; LayerNorm of the library against LayerNorm(n, stable=True); the pair run twice in turn for the width scaling",
+  "training_50_steps_decoder_14_2M": [
+    {
+      "norm": "rms",
+      "steps": 50,
+      "first_loss": 4.8125,
+      "last_loss_mean_20": 2.896875,
+      "median_step_ms": 10.374274000241712,
+      "stable_calls_traced": 0
+    },
+    {
+      "norm": "layer",
+      "steps": 50,
+      "first_loss": 4.8125,
+      "last_loss_mean_20": 2.87265625,
+      "median_step_ms": 10.893484000007447,
+      "stable_calls_traced": 0
+    },
+    {
+      "norm": "layer_stable",
+      "steps": 50,
+      "first_loss": 4.8125,
+      "last_loss_mean_20": 2.8734375,
+      "median_step_ms": 11.570368999855418,
+      "stable_calls_traced": 13
+    }
+  ],
+  "training_50_steps_first_run_with_a_separate_class": {
+    "layer_ms": 10.919379999904777,
+    "stable_ms": 12.16083899998921
+  },
+  "width_scaling": {
+    "layers": 4,
+    "batch": 8,
+    "steps": 30,
+    "rows": [
+      {
+        "width": 384,
+        "params": 9494081,
+        "layer_ms": 6.622594999953435,
+        "stable_ms": 7.164630000033867,
+        "extra_percent": 8.184631554311306,
+        "layer_loss": 2.909375,
+        "stable_loss": 2.909375
+      },
+      {
+        "width": 768,
+        "params": 37862465,
+        "layer_ms": 10.943478999934086,
+        "stable_ms": 11.250173499774974,
+        "extra_percent": 2.8025319904459556,
+        "layer_loss": 3.0265625,
+        "stable_loss": 3.025
+      },
+      {
+        "width": 1536,
+        "params": 151222337,
+        "layer_ms": 25.0449124998795,
+        "stable_ms": 25.89477799983797,
+        "extra_percent": 3.3933658181579007,
+        "layer_loss": 3.25625,
+        "stable_loss": 3.2546875
+      }
+    ]
+  }
+}

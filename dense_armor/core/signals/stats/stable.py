@@ -83,6 +83,8 @@ def _as_float_array(x):
     """
     a = jnp.asarray(x)
     kind = a.dtype.kind
+    if a.dtype == jnp.bfloat16:
+        kind = "f"
     if kind == "c":
         raise TypeError(
             "stable_var: complex input is handled by stable_var and "
@@ -105,7 +107,7 @@ def _result_dtype(original):
         d = np.asarray(original).dtype
     else:
         d = np.dtype(d)
-    if d.kind == "f":
+    if d.kind == "f" or d == jnp.bfloat16:
         return d
     return np.float32
 

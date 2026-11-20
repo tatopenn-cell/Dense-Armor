@@ -1,0 +1,170 @@
+{
+  "jax": "0.11.1",
+  "backend": "gpu",
+  "devices": [
+    "cuda:0",
+    "cuda:1"
+  ],
+  "python": "3.13.16",
+  "variance": [
+    {
+      "type": "bfloat16",
+      "offset": 0.0,
+      "spread": 1.0,
+      "distinct_values": 1327,
+      "low": 0.0010956096912307098,
+      "f32": 2.9444588179727856e-08,
+      "stable": 1.9390377559362504e-08,
+      "reference_variance_median": 0.9990308852186301
+    },
+    {
+      "type": "bfloat16",
+      "offset": 1.0,
+      "spread": 1.0,
+      "distinct_values": 1064,
+      "low": 0.001540991509585656,
+      "f32": 3.0923838601207615e-08,
+      "stable": 2.2365299732600578e-08,
+      "reference_variance_median": 1.0046054457665958
+    },
+    {
+      "type": "bfloat16",
+      "offset": 10.0,
+      "spread": 1.0,
+      "distinct_values": 114,
+      "low": 0.0012631279239495375,
+      "f32": 4.616094229934385e-08,
+      "stable": 1.7349252872007214e-08,
+      "reference_variance_median": 0.9976310470083263
+    },
+    {
+      "type": "bfloat16",
+      "offset": 100.0,
+      "spread": 1.0,
+      "distinct_values": 15,
+      "low": 0.0017518967016598762,
+      "f32": 1.018061908168303e-07,
+      "stable": 1.460978902373405e-08,
+      "reference_variance_median": 1.0225465521216393
+    },
+    {
+      "type": "bfloat16",
+      "offset": 1000.0,
+      "spread": 1.0,
+      "distinct_values": 3,
+      "low": 8.326941742837143e-05,
+      "f32": 1.6408318373337844e-07,
+      "stable": 0.0,
+      "reference_variance_median": 0.7165656089782715
+    },
+    {
+      "type": "float8_e4m3fn",
+      "offset": 0.0,
+      "spread": 1.0,
+      "distinct_values": 138,
+      "low": NaN,
+      "f32": 3.14307140458196e-08,
+      "stable": 1.5779984838885497e-08,
+      "reference_variance_median": 0.9921366366011171
+    },
+    {
+      "type": "float8_e4m3fn",
+      "offset": 1.0,
+      "spread": 1.0,
+      "distinct_values": 140,
+      "low": NaN,
+      "f32": 2.8157296152217125e-08,
+      "stable": 1.5715017510535776e-08,
+      "reference_variance_median": 1.0003520764261111
+    },
+    {
+      "type": "float8_e4m3fn",
+      "offset": 10.0,
+      "spread": 1.0,
+      "distinct_values": 9,
+      "low": NaN,
+      "f32": 5.5981798601947815e-08,
+      "stable": 1.3719899556724887e-08,
+      "reference_variance_median": 1.0870397612452507
+    },
+    {
+      "type": "float8_e4m3fn",
+      "offset": 100.0,
+      "spread": 1.0,
+      "distinct_values": 2,
+      "low": NaN,
+      "f32": 1.1920965903512482e-07,
+      "stable": 0.0,
+      "reference_variance_median": 15.99831771850586
+    },
+    {
+      "type": "float8_e4m3fn",
+      "offset": 1000.0,
+      "spread": 1.0,
+      "distinct_values": 4096,
+      "low": NaN,
+      "f32": NaN,
+      "stable": NaN,
+      "reference_variance_median": NaN
+    },
+    {
+      "type": "float8_e5m2",
+      "offset": 0.0,
+      "spread": 1.0,
+      "distinct_values": 87,
+      "low": 0.014369838702523303,
+      "f32": 2.9627768353876304e-08,
+      "stable": 1.9555289446377163e-08,
+      "reference_variance_median": 0.9958903521855431
+    },
+    {
+      "type": "float8_e5m2",
+      "offset": 1.0,
+      "spread": 1.0,
+      "distinct_values": 82,
+      "low": 0.018356233443703535,
+      "f32": 3.285277185550945e-08,
+      "stable": 1.873629124040041e-08,
+      "reference_variance_median": 0.9981603535913162
+    },
+    {
+      "type": "float8_e5m2",
+      "offset": 10.0,
+      "spread": 1.0,
+      "distinct_values": 6,
+      "low": 0.049648592827337176,
+      "f32": 1.375166153836381e-07,
+      "stable": 0.0,
+      "reference_variance_median": 1.3153030276298523
+    },
+    {
+      "type": "float8_e5m2",
+      "offset": 100.0,
+      "spread": 1.0,
+      "distinct_values": 1,
+      "low": Infinity,
+      "f32": 0.0,
+      "stable": 0.0,
+      "reference_variance_median": 0.0
+    },
+    {
+      "type": "float8_e5m2",
+      "offset": 1000.0,
+      "spread": 1.0,
+      "distinct_values": 1,
+      "low": NaN,
+      "f32": NaN,
+      "stable": NaN,
+      "reference_variance_median": 0.0
+    }
+  ],
+  "time": {
+    "step_ms_usual": 46.493969000039215,
+    "step_ms_stable": 47.34988400002749,
+    "ratio": 1.0184091618417768,
+    "finite_gradient": {
+      "usual": true,
+      "stable": true
+    }
+  }
+}
