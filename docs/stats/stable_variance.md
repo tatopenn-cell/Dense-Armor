@@ -58,6 +58,12 @@ The extra cost is 8.2 % at width 384 and between 2.8 % and 3.4 % at 768 and 1536
 
 The values are stored in `bfloat16`, `float8_e4m3fn` and `float8_e5m2` (a GPU test, 64 rows of 4096 values `N(offset, 1)`), and the reference is the float64 variance of the stored values. Casting to `float32` and using `jnp.var` has an error between 2.8e-08 and 1.6e-07, and `stable_var` between 0 and 2.2e-08; with the variance computed in the small type the error is about 1e-3 for `bfloat16` and NaN for `float8_e4m3fn`. When the storage has already lost the wiggle, no method can give it back: `bfloat16` at an offset of 1000 keeps 3 distinct values, and `float8` at an offset of 100 keeps 1 or 2. `stable_var` accepts `bfloat16` and returns it in the input dtype. The numbers are in `benchmarks/stable_variance_lowprec_gpu.json`.
 
+**6. What this covers and what it does not**
+
+- The large sums of a normalisation are carried out in `float32`, also when the rest of the network is in half precision: Micikevicius et al. (2018) write that large reductions, which come up when the statistics of the normalisation layers are accumulated and in the softmax, should be carried out in FP32. `stable_var` works in `float32` also for `bfloat16` input.
+- RMSNorm (Zhang and Sennrich 2019) does not subtract the mean and divides by the root mean square, so `stable_var`, which is a variance, does not apply to it; it applies to `LayerNorm`.
+- The effect on a real network such as Llama has not been measured.
+
 ## Gamestory
 
 Saturday afternoon at the market. The young shopkeeper and his assistant are selling a super-rare series of collectible action figures that all cost around 1,000 euros (one costs 1000.00, one 1000.01, one 1000.02).
@@ -484,6 +490,8 @@ The textbook formula gives `6.2500e-02`, about 630 times the true variance `9.88
 - Kahan, W. (1965). Further remarks on reducing truncation errors.
   Communications of the ACM 8(1), 40. Bibliographic only, not read: the
   sequential compensated summation of the illustration in step 3.
+- Micikevicius, P. et al. (2018). Mixed Precision Training. ICLR 2018. Section 3.3, the large reductions in FP32.
+- Zhang, B., Sennrich, R. (2019). Root Mean Square Layer Normalization. NeurIPS 2019. RMSNorm has no re-centering.
 - TensorFlow, `tensorflow/python/ops/nn_impl.py`, function `moments`, lines
   1480-1487 (master, read on 2026-10-29): the baseline formula.
 - Issue #117286 of TensorFlow: the inaccuracy of `tf.nn.moments` in
