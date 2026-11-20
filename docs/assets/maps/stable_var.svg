@@ -33,42 +33,43 @@
 </g>
 <g class="g"><path class="e" d="M564.0,290.0 C645.0,290.0 645.0,142 726,142" fill="none" stroke="#4cc9f0" stroke-width="2.2"/>
 <a href="../../stats/stable_variance/#gamestory" target="_top"><title>1  Shift: open stats/stable_variance.md#gamestory</title>
-<rect class="card" x="726" y="104" width="250" height="76" rx="14" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/>
+<rect class="card" x="726" y="104" width="250" height="84" rx="14" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/>
 <text class="dn" x="742" y="132" fill="#e0fbfc" font-size="16" font-weight="700">1  Shift</text>
 <text x="742" y="154" fill="#94a3b8" font-size="12">y = x - x[0], exact when values are close</text>
 </a>
 </g>
 <g class="g"><path class="e" d="M564.0,290.0 C645.0,290.0 645.0,232 726,232" fill="none" stroke="#ff9e00" stroke-width="2.2"/>
 <a href="../../stats/stable_variance/#what-is-different-from-the-paper" target="_top"><title>2  Centre: open stats/stable_variance.md#what-is-different-from-the-paper</title>
-<rect class="card" x="726" y="194" width="250" height="76" rx="14" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/>
+<rect class="card" x="726" y="194" width="250" height="84" rx="14" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/>
 <text class="dn" x="742" y="222" fill="#e0fbfc" font-size="16" font-weight="700">2  Centre</text>
 <text x="742" y="244" fill="#94a3b8" font-size="12">d = y - m, the local centring</text>
 </a>
 </g>
 <g class="g"><path class="e" d="M564.0,290.0 C645.0,290.0 645.0,322 726,322" fill="none" stroke="#f72585" stroke-width="2.2"/>
 <a href="../../stats/stable_variance/#what-is-different-from-the-paper" target="_top"><title>3  TwoSum: open stats/stable_variance.md#what-is-different-from-the-paper</title>
-<rect class="card" x="726" y="284" width="250" height="76" rx="14" fill="#101a24" stroke="#f72585" stroke-width="1.6"/>
+<rect class="card" x="726" y="284" width="250" height="84" rx="14" fill="#101a24" stroke="#f72585" stroke-width="1.6"/>
 <text class="dn" x="742" y="312" fill="#e0fbfc" font-size="16" font-weight="700">3  TwoSum</text>
-<text x="742" y="334" fill="#94a3b8" font-size="12">a + b = s + err, exactly (Knuth)</text>
+<text x="742" y="334" fill="#94a3b8" font-size="12">a tool: a sum and its exact error</text>
 </a>
 </g>
 <g class="g"><path class="e" d="M564.0,290.0 C645.0,290.0 645.0,412 726,412" fill="none" stroke="#4cc9f0" stroke-width="2.2"/>
 <a href="../../stats/stable_variance/#what-is-different-from-the-paper" target="_top"><title>4  Kahan sum: open stats/stable_variance.md#what-is-different-from-the-paper</title>
-<rect class="card" x="726" y="374" width="250" height="76" rx="14" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/>
+<rect class="card" x="726" y="374" width="250" height="84" rx="14" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/>
 <text class="dn" x="742" y="402" fill="#e0fbfc" font-size="16" font-weight="700">4  Kahan sum</text>
-<text x="742" y="424" fill="#94a3b8" font-size="12">sequential, in the paper (Healy 2022)</text>
+<text x="742" y="424" fill="#94a3b8" font-size="12">the paper&#x27;s: one by one, keeps lost bits</text>
 </a>
 </g>
 <g class="g"><path class="e" d="M564.0,290.0 C645.0,290.0 645.0,502 726,502" fill="none" stroke="#ff9e00" stroke-width="2.2"/>
 <a href="../../stats/stable_variance/#3-what-the-function-does" target="_top"><title>5  Compensated tree: open stats/stable_variance.md#3-what-the-function-does</title>
-<rect class="card" x="726" y="464" width="250" height="76" rx="14" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/>
+<rect class="card" x="726" y="464" width="250" height="84" rx="14" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/>
 <text class="dn" x="742" y="492" fill="#e0fbfc" font-size="16" font-weight="700">5  Compensated tree</text>
-<text x="742" y="514" fill="#94a3b8" font-size="12">in place of the sequential Kahan sum</text>
+<text x="742" y="514" fill="#94a3b8" font-size="12">the author&#x27;s: pairs, errors carried up</text>
+<text x="742" y="540" fill="#ff9e00" font-size="14" font-weight="700">uses 3, replaces 4</text>
 </a>
 </g>
 <g class="g"><path class="e" d="M564.0,290.0 C645.0,290.0 645.0,592 726,592" fill="none" stroke="#4cc9f0" stroke-width="2.2"/>
 <a href="../../stats/stable_variance/#gamestory" target="_top"><title>6  Exact zero: open stats/stable_variance.md#gamestory</title>
-<rect class="card" x="726" y="554" width="250" height="76" rx="14" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/>
+<rect class="card" x="726" y="554" width="250" height="84" rx="14" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/>
 <text class="dn" x="742" y="582" fill="#e0fbfc" font-size="16" font-weight="700">6  Exact zero</text>
 <text x="742" y="604" fill="#94a3b8" font-size="12">identical values give 0.0</text>
 </a>

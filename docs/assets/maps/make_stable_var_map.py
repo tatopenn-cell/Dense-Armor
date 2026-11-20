@@ -56,19 +56,19 @@ MOVES = [
     ),
     (
         "3  TwoSum",
-        "a + b = s + err, exactly (Knuth)",
+        "a tool: a sum and its exact error",
         "stats/stable_variance.md#what-is-different-from-the-paper",
         PINK,
     ),
     (
         "4  Kahan sum",
-        "sequential, in the paper (Healy 2022)",
+        "the paper's: one by one, keeps lost bits",
         "stats/stable_variance.md#what-is-different-from-the-paper",
         CYAN,
     ),
     (
         "5  Compensated tree",
-        "in place of the sequential Kahan sum",
+        "the author's: pairs, errors carried up",
         "stats/stable_variance.md#3-what-the-function-does",
         ORANGE,
     ),
@@ -140,7 +140,8 @@ def main():
         o.append("</g>")
     for (t, s, href, col), y in zip(MOVES, ys_move):
         o.append(f'<g class="g">{curve(HUB[0] + 64, HUB[1], 726, y + 38, col)}')
-        o.append(card(726, y, 250, 76, col, t, s, "", href, "r"))
+        extra = "uses 3, replaces 4" if t.startswith("5") else ""
+        o.append(card(726, y, 250, 84, col, t, s, extra, href, "r"))
         o.append("</g>")
     o.append(f'<g class="g">{curve(274, 592, HUB[0] - 50, HUB[1] + 44, ORANGE)}')
     o.append(
