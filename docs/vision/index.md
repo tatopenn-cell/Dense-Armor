@@ -18,6 +18,7 @@ The pages, in order:
 5. [Motion](motion.md): the motion energy, the global shift, the scene changes, the sliding window.
 6. [Tracking](tracking.md): the moving object tracker, the video to signal adapters, the joints to video fusion.
 7. [Kinematics](kinematics.md): landmarks, the cleaner, the joint angles, the registration.
+8. [BatchedLandmarkShield](batched_landmark_shield.md): batched Kalman + Hampel for landmark streams.
 8. [Quality](quality.md): the frame quality, the event frame, the false colour, the overlay, the benchmark.
 9. [Patches](patches.md): patch memory and the RAD benchmark.
 
@@ -70,6 +71,8 @@ These classes of the folder have no page of this group.
 ::: dense_armor.core.signals.vision.streams
 
 ::: dense_armor.core.signals.vision.features
+
+::: dense_armor.core.signals.vision.landmarks
 
 ::: dense_armor.core.signals.vision.reduce
 

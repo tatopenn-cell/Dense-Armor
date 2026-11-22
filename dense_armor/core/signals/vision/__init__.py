@@ -70,6 +70,12 @@ and it prints the score before and after the change.
 """
 
 from dense_armor.core.signals.vision.features import FrameFeatures
+from dense_armor.core.signals.vision.landmarks import (
+    BatchedLandmarkShield,
+    Kinematics,
+    LandmarkCleaner,
+    LandmarkStream,
+)
 from dense_armor.core.signals.vision.motion import (
     GlobalMotion,
     MotionEnergy,
@@ -96,6 +102,7 @@ from dense_armor.core.signals.vision.window import FrameWindow
 
 __all__ = [
     "ArrayStream",
+    "BatchedLandmarkShield",
     "CameraStream",
     "Frame",
     "FrameAnomaly",
@@ -104,6 +111,9 @@ __all__ = [
     "GlobalMotion",
     "ImageFolderStream",
     "IncrementalPCA",
+    "Kinematics",
+    "LandmarkCleaner",
+    "LandmarkStream",
     "MotionEnergy",
     "PatchFeatures",
     "PatchMemory",
