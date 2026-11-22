@@ -72,7 +72,7 @@ These classes of the folder have no page of this group.
 
 ::: dense_armor.core.signals.vision.features
 
-::: dense_armor.core.signals.vision.landmarks
+::: dense_armor.core.signals.vision.landmarks.BatchedLandmarkShield
 
 ::: dense_armor.core.signals.vision.reduce
 

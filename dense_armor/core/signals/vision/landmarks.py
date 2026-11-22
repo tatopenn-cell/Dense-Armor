@@ -26,12 +26,17 @@ running MAD over a causal window, and a value that is more than
 """
 
 from collections import deque
-from typing import Any
+from typing import Any, TypedDict
 
 import numpy as np
 
 from dense_armor._dtype import as_default_array, get_default_dtype
 from dense_armor.roles import Transformer
+
+
+class _BatchedLandmarkShieldOutput(TypedDict):
+    points: np.ndarray
+    cleaned: np.ndarray
 
 _MIN_WINDOW = 3
 _SCALE_EPS = 1e-12
@@ -411,15 +416,6 @@ class BatchedLandmarkShield(Transformer):
             (NaN in ``neutral``) until the point has been measured once, and
             the decay does not apply to it.
 
-    Input:
-        A frame dict with ``"points"`` (N, 2), ``"confidence"`` (N,), and
-        optional ``"t"`` (float timestamp).
-
-    Returns:
-        dict with keys:
-        - "points": cleaned landmarks (N, 2)
-        - "cleaned": int array (N,) count of cleaned coordinates (0, 1, or 2)
-
     References:
         - Thieu, N. & Melnik, R. (2025). Nonlinear Dynamical Systems for
           Automatic Face Annotation in Head Tracking and Pose Estimation.
@@ -563,7 +559,7 @@ class BatchedLandmarkShield(Transformer):
         self.neutral[fresh] = out[fresh]
         self._neutral_valid[fresh] = True
 
-    def transform_one(self, x: dict, t: float | None = None) -> dict:
+    def transform_one(self, x: dict, t: float | None = None) -> "_BatchedLandmarkShieldOutput":
         """Clean one frame.
 
         Args:
@@ -572,7 +568,9 @@ class BatchedLandmarkShield(Transformer):
             t: timestamp in seconds, used when the frame has no "t".
 
         Returns:
-            dict with "points" (N, 2) and "cleaned" (N,).
+            _BatchedLandmarkShieldOutput: dict with keys:
+            - "points": cleaned landmarks (N, 2)
+            - "cleaned": int array (N,) count of cleaned coordinates (0, 1, or 2)
         """
         pts, conf, frame_t = self._frame(x)
         n = pts.shape[0]
