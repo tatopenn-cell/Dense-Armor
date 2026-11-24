@@ -69,7 +69,7 @@ Of the 11 orders sent to Orca, 9 went out smaller. The 5x-10x range is thin on r
 The pipeline is in `pipelines/finance/execution.py`.
 Primitives chained, each with its own page:
 
-- [RunningMoments](../stats/moments.md)
+- [RunningMoments](../stats/moments/index.md)
 - [Orca](../shields/orca.md)
 
 ### References

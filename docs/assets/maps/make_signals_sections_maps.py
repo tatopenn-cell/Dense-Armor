@@ -35,13 +35,21 @@ def short(names, limit=36):
     return ", ".join(shown) + (f"  +{rest}" if rest else "")
 
 
+def first_page(value):
+    """The page of a menu entry: the path itself, or the first page of a nested section."""
+    if isinstance(value, str):
+        return value
+    head = value[0]
+    return head if isinstance(head, str) else first_page(next(iter(head.values())))
+
+
 def group_pages(nav, name):
     """[(title, path)] of the group ``name`` (inside Signals, or a top-level group), without its first page."""
     signals = next(i["Signals"] for i in nav if isinstance(i, dict) and "Signals" in i)
     group = next((i[name] for i in signals if isinstance(i, dict) and name in i), None)
     if group is None:
         group = next(i[name] for i in nav if isinstance(i, dict) and name in i)
-    return [(next(iter(i)), next(iter(i.values()))) for i in group if isinstance(i, dict)]
+    return [(next(iter(i)), first_page(next(iter(i.values())))) for i in group if isinstance(i, dict)]
 
 
 def main():

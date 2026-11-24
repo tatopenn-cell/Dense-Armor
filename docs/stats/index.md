@@ -263,5 +263,5 @@ These classes of the folder have no page of this group; each is described where 
 
 - [`docs/roles/index.md`](../roles/index.md) — the `Base` / `Transformer` interface
   that every statistic in this module shares.
-- `docs/stats/moments.md`, `robust.md`, `quantiles.md`, `dependence.md`,
+- `docs/stats/moments/index.md`, `robust.md`, `quantiles.md`, `dependence.md`,
   `sketches.md` — the family guides.
