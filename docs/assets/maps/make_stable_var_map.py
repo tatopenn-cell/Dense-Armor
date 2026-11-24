@@ -160,7 +160,7 @@ def main():
             "RunningMoments",
             "the class that calls stable_moments",
             "",
-            "stats/moments.md",
+            "stats/moments/index.md",
             "c",
         )
     )

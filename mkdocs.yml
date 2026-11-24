@@ -46,8 +46,14 @@ extra_css:
   - stylesheets/extra.css
   - stylesheets/palette_cyan.css
 
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js
+
 markdown_extensions:
   - md_in_html
+  - pymdownx.arithmatex:
+      generic: true
   - admonition
   - pymdownx.details
   - pymdownx.superfences
@@ -185,7 +191,11 @@ nav:
           - Casper: datasets/casper.md
       - Statistics:
           - stats/index.md
-          - Moments: stats/moments.md
+          - Moments:
+              - stats/moments/index.md
+              - RunningMoments: stats/moments/running_moments.md
+              - Merging and many channels: stats/moments/merge_and_vector.md
+              - EWStats: stats/moments/ewstats.md
           - Stable variance in float32: stats/stable_variance.md
           - Robust statistics: stats/robust.md
           - Student-t: stats/student_t.md

@@ -67,7 +67,7 @@ For each joint, the modules that work with it, grouped by purpose.
 
 **Statistics**
 
-- [`RunningMoments`](../stats/moments.md)
+- [`RunningMoments`](../stats/moments/index.md)
 - [`RobustMoments`](../stats/robust.md)
 - [`TDigest`](../stats/streaming.md)
 - [`DDSketch`](../stats/streaming.md)
@@ -107,7 +107,7 @@ For each joint, the modules that work with it, grouped by purpose.
 
 **Statistics**
 
-- [`RunningMoments`](../stats/moments.md)
+- [`RunningMoments`](../stats/moments/index.md)
 - [`RunningCovariance`](../stats/dependence.md)
 
 **Single-channel anomaly**
@@ -134,7 +134,7 @@ For each joint, the modules that work with it, grouped by purpose.
 
 **Statistics**
 
-- [`RunningMoments`](../stats/moments.md)
+- [`RunningMoments`](../stats/moments/index.md)
 - [`RobustMoments`](../stats/robust.md)
 
 **Single-channel anomaly**
@@ -163,7 +163,7 @@ For each joint, the modules that work with it, grouped by purpose.
 
 **Statistics**
 
-- [`RunningMoments`](../stats/moments.md)
+- [`RunningMoments`](../stats/moments/index.md)
 
 **Single-channel anomaly**
 
@@ -188,7 +188,7 @@ For each joint, the modules that work with it, grouped by purpose.
 
 **Statistics**
 
-- [`RunningMoments`](../stats/moments.md)
+- [`RunningMoments`](../stats/moments/index.md)
 - [`TDigest`](../stats/streaming.md)
 
 **Single-channel anomaly**
@@ -211,7 +211,7 @@ For each joint, the modules that work with it, grouped by purpose.
 
 **Statistics**
 
-- [`RunningMoments`](../stats/moments.md)
+- [`RunningMoments`](../stats/moments/index.md)
 
 **Single-channel anomaly**
 
@@ -236,7 +236,7 @@ For each joint, the modules that work with it, grouped by purpose.
 
 **Statistics**
 
-- [`RunningMoments`](../stats/moments.md)
+- [`RunningMoments`](../stats/moments/index.md)
 
 **Single-channel anomaly**
 
