@@ -10,6 +10,23 @@ from dense_armor.core.signals.preprocessing.scale import (
 )
 
 
+@pytest.mark.parametrize(
+    "make, message",
+    [
+        (lambda: EWScaler(alpha=0.0), "alpha must be in"),
+        (lambda: EWScaler(alpha=1.5), "alpha must be in"),
+        (lambda: RobustScaler(window=0), "window must be"),
+        (lambda: StandardScaler(eps=0.0), "eps must be"),
+        (lambda: EWScaler(eps=-1.0), "eps must be"),
+        (lambda: RobustScaler(eps=0.0), "eps must be"),
+        (lambda: MinMaxScaler(eps=-1.0), "eps must be"),
+    ],
+)
+def test_scalers_refuse_invalid_parameters(make, message):
+    with pytest.raises(ValueError, match=message):
+        make()
+
+
 @pytest.mark.usefixtures("float64_default")
 def test_standard_matches_batch():
     rng = np.random.default_rng(0)

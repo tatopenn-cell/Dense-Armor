@@ -4,7 +4,9 @@ Each scaler is a :class:`~dense_armor.roles.Transformer`: ``learn_one``
 updates the running state, ``transform_one`` uses the current state.
 Scalars and vectors are both supported: a scalar keeps one statistic,
 a vector keeps one statistic per joint. A feature never seen, or with
-zero spread, passes through unchanged.
+zero spread, passes through unchanged. The length of a vector feature is
+fixed by the first sample: a vector of another length is not learned and
+passes through unchanged.
 
 The running mean and variance are updated incrementally with the
 stable one-pass formulas of running moments. The exponentially
@@ -57,6 +59,11 @@ def _write_out(values: np.ndarray, is_scalar: bool) -> Any:
     return float(values[0]) if is_scalar else values.tolist()
 
 
+def _check_eps(eps: float) -> None:
+    if eps <= 0.0:
+        raise ValueError(f"eps must be > 0, got {eps}")
+
+
 class StandardScaler(Transformer):
     """Per-feature standardization with running mean and std.
 
@@ -73,6 +80,9 @@ class StandardScaler(Transformer):
         features: explicit feature order. ``None`` sorts the first
             dict's keys.
         eps: std floor below which the feature is left alone.
+
+    Raises:
+        ValueError: if ``eps`` is not positive.
 
     Examples:
         >>> from dense_armor.core.signals.preprocessing.scale import StandardScaler
@@ -93,6 +103,7 @@ class StandardScaler(Transformer):
     learn_many_columns = True
 
     def __init__(self, features: list[str] | None = None, eps: float = 1e-12) -> None:
+        _check_eps(eps)
         self.features = features
         self.eps = eps
         self.stats_: dict[str, list[RunningMoments]] | None = None
@@ -208,6 +219,10 @@ class EWScaler(Transformer):
         features: explicit feature order.
         eps: std floor.
 
+    Raises:
+        ValueError: if ``alpha`` is not in ``(0, 1]`` or ``eps`` is not
+            positive.
+
     Examples:
         >>> from dense_armor.core.signals.preprocessing.scale import EWScaler
         >>> sc = EWScaler(alpha=0.5)
@@ -227,6 +242,9 @@ class EWScaler(Transformer):
         features: list[str] | None = None,
         eps: float = 1e-12,
     ) -> None:
+        if not 0.0 < alpha <= 1.0:
+            raise ValueError(f"alpha must be in (0, 1], got {alpha}")
+        _check_eps(eps)
         self.alpha = alpha
         self.features = features
         self.eps = eps
@@ -299,6 +317,10 @@ class RobustScaler(Transformer):
         features: explicit feature order.
         eps: MAD floor.
 
+    Raises:
+        ValueError: if ``window`` is smaller than 1 or ``eps`` is not
+            positive.
+
     Examples:
         >>> from dense_armor.core.signals.preprocessing.scale import RobustScaler
         >>> sc = RobustScaler(window=5)
@@ -317,6 +339,9 @@ class RobustScaler(Transformer):
         features: list[str] | None = None,
         eps: float = 1e-12,
     ) -> None:
+        if window < 1:
+            raise ValueError(f"window must be >= 1, got {window}")
+        _check_eps(eps)
         self.window = window
         self.features = features
         self.eps = eps
@@ -390,13 +415,22 @@ class MinMaxScaler(Transformer):
 
     ``z_i = (x_i - min_i) / (max_i - min_i)`` for each feature and,
     when the value is a vector, for each joint. A feature with
-    ``max == min`` passes through unchanged.
+    ``max == min`` passes through unchanged. The result is in ``[0, 1]``
+    for a value inside the range seen so far; a value beyond it is not
+    clipped and gives a result below 0 or above 1 (7.0 after 1 to 5 gives
+    1.5).
 
-    Memory grows with the number of features: each keeps two floats.
+    Memory grows with the number of features: each keeps one
+    :class:`~dense_armor.core.signals.stats.moments.RunningMoments`, of
+    which only the minimum and the maximum are read, so the total is
+    ``O(d)`` for ``d`` scalar features.
 
     Args:
         features: explicit feature order.
         eps: spread floor below which the feature is left alone.
+
+    Raises:
+        ValueError: if ``eps`` is not positive.
 
     Examples:
         >>> from dense_armor.core.signals.preprocessing.scale import MinMaxScaler
@@ -411,6 +445,7 @@ class MinMaxScaler(Transformer):
     memory_class = "O(1)"
 
     def __init__(self, features: list[str] | None = None, eps: float = 1e-12) -> None:
+        _check_eps(eps)
         self.features = features
         self.eps = eps
         self.stats_: dict[str, list[RunningMoments]] | None = None
