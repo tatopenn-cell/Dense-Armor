@@ -65,9 +65,11 @@ def test_an_empty_block_changes_nothing(block):
     assert s.stats_ is None
 
 
-def test_a_missing_or_reshaped_column_is_skipped():
+def test_a_missing_column_is_skipped_and_a_wider_one_grows_the_joints():
     s = StandardScaler().learn_many({"x": [1.0, 2.0, 3.0], "y": [4.0, 5.0, 6.0]})
     s.learn_many({"x": [4.0, 5.0]})
     s.learn_many({"x": [6.0], "y": [[1.0, 2.0]]})
     assert s.stats_["x"][0].count == 6
-    assert s.stats_["y"][0].count == 3
+    assert s.stats_["y"][0].count == 4
+    assert len(s.stats_["y"]) == 2
+    assert s.stats_["y"][1].count == 1
