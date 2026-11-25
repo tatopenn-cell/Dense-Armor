@@ -252,3 +252,61 @@ def test_validate_of_some_nodes_lists_only_their_relations():
     assert g.validate(nodes=["c"]) == []
     assert g.validate(nodes=["b"]) == [("a", "b", "feeds")]
     assert g.validate(nodes=["zzz"]) == []
+
+
+BLOCK_SCHEMA = {"task": {"status": str}, "blocker": {"resolved": bool}, "note": {"resolved": bool}}
+
+
+def _task_graph():
+    g = TypedGraph(schema=BLOCK_SCHEMA)
+    g.add_node("t", "task", status="in_review")
+    g.add_node("b", "blocker", resolved=False)
+    g.add_edge("t", "b", "has_blocker")
+    return g
+
+
+def _deliver():
+    return Action(
+        name="deliver",
+        preconditions=[("t", "status", "==", "in_review")],
+        effects=[("t", "status", "set", "delivered")],
+        forbidden=[("t", "has_blocker", "blocker", "resolved", "==", False)],
+    )
+
+
+def test_forbidden_pattern_refuses_and_leaves_graph_unchanged():
+    g = _task_graph()
+    with pytest.raises(ActionRejected) as exc:
+        apply_action(g, _deliver())
+    assert any("forbidden pattern present at 'b'" in str(f) for f in exc.value.failed)
+    assert g.graph.nodes["t"]["state"]["status"] == "in_review"
+
+
+def test_forbidden_pattern_absent_after_the_blocker_is_closed():
+    g = _task_graph()
+    g.update("b", resolved=True)
+    assert apply_action(g, _deliver()).graph.nodes["t"]["state"]["status"] == "delivered"
+
+
+def test_forbidden_pattern_matches_only_its_relation_and_node_type():
+    g = _task_graph()
+    g.add_node("n", "note", resolved=False)
+    g.add_edge("t", "n", "has_blocker")
+    g.add_node("b2", "blocker", resolved=False)
+    g.add_edge("t", "b2", "mentions")
+    g.update("b", resolved=True)
+    assert apply_action(g, _deliver()).graph.nodes["t"]["state"]["status"] == "delivered"
+
+
+def test_forbidden_pattern_missing_node_violates_nothing_and_params_resolve():
+    g = _task_graph()
+    free = Action("noop", forbidden=[("ghost", "has_blocker", "blocker", "resolved", "==", False)])
+    assert free.check(g) == []
+    by_param = Action("p", forbidden=[("who", "has_blocker", "blocker", "resolved", "==", False)])
+    assert len(by_param.check(g, {"who": "t"})) == 1
+
+
+def test_action_without_forbidden_keeps_working_with_positional_arguments():
+    a = Action("x", [("t", "status", "==", "in_review")], [("t", "status", "set", "done")])
+    assert a.forbidden == []
+    assert apply_action(_task_graph(), a).graph.nodes["t"]["state"]["status"] == "done"
