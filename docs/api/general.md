@@ -1516,7 +1516,7 @@ Public methods:
 *Bases:* Classifier
 *Guide:* [fit.md](../fit.md)
 
-Batch CART classifier.
+Batch CART classifier, in the online package (`dense_armor.core.online.tree.batch`). The version that grows a gini tree on the whole table is `dense_armor.ml.tree`.
 
 Public methods:
 
@@ -2081,7 +2081,7 @@ Public methods:
 
 
 *Module:* `dense_armor.core.online.multioutput.multioutput`
-*Bases:* Classifier
+*Bases:* `_BaseMultiOutput`, `Classifier`
 *Guide:* [multioutput/index.md](../multioutput/index.md)
 
 One binary classifier per target, learned independently.
@@ -2108,7 +2108,7 @@ Public methods:
 
 
 *Module:* `dense_armor.core.online.multioutput.multioutput`
-*Bases:* Regressor
+*Bases:* `_BaseMultiOutput`, `Regressor`
 *Guide:* [multioutput/index.md](../multioutput/index.md)
 
 One regressor per target, learned independently.
@@ -2133,7 +2133,7 @@ Public methods:
 
 
 *Module:* `dense_armor.core.online.multioutput.multioutput`
-*Bases:* Classifier
+*Bases:* `_BaseMultiOutput`, `Classifier`
 *Guide:* [multioutput/index.md](../multioutput/index.md)
 
 Classifier chain: chained binary classifiers.
@@ -2160,7 +2160,7 @@ Public methods:
 
 
 *Module:* `dense_armor.core.online.multioutput.multioutput`
-*Bases:* Regressor
+*Bases:* `_BaseMultiOutput`, `Regressor`
 *Guide:* [multioutput/index.md](../multioutput/index.md)
 
 Regressor chain: chained regressors.
@@ -2185,7 +2185,7 @@ Public methods:
 
 
 *Module:* `dense_armor.core.online.multioutput.multioutput`
-*Bases:* Classifier
+*Bases:* `_BaseMultiOutput`, `Classifier`
 *Guide:* [multioutput/index.md](../multioutput/index.md)
 
 Probabilistic classifier chain (Bayes-optimal for 0/1 subset loss).
@@ -2242,7 +2242,7 @@ Public methods:
 
 
 *Module:* `dense_armor.core.online.forest.amf`
-*Bases:* Classifier
+*Bases:* `_Forest`, `Classifier`
 *Guide:* [forest/index.md](../forest/index.md)
 
 Aggregated Mondrian forest classifier (Mourtada et al.).
@@ -2270,7 +2270,7 @@ Public methods:
 
 
 *Module:* `dense_armor.core.online.forest.amf`
-*Bases:* Regressor
+*Bases:* `_Forest`, `Regressor`
 *Guide:* [forest/index.md](../forest/index.md)
 
 Aggregated Mondrian forest regressor (Mourtada et al.).
@@ -2388,6 +2388,7 @@ Public methods:
 - `clone(new_params: dict[str, typing.Any] | None = None, include_attributes: bool = False)`
 - `describe()`
 - `fit(X, y=None, t=None, epochs: int = 1, shuffle: bool = False, seed: int | None = None)`
+- `fit_batch(X: list, y: list, seed: int | None = None) -> "OnlineBaggingClassifier"`
 - `get_params(deep: bool = True)`
 - `learn_many(X, y, t=None)`
 - `learn_one(x, y, t: float | None = None)`
@@ -4070,7 +4071,7 @@ Public methods:
 *Bases:* Transformer
 *Guide:* [preprocessing/text_vectorizer.md](../preprocessing/text_vectorizer.md)
 
-TF-IDF vectorizer with a fixed vocabulary, batch or online.
+TF-IDF vectorizer with a fixed vocabulary, batch or online (from `dense_armor.core.signals.preprocessing.vectorizer`; a separate version exists in `dense_armor.ml.preprocessing`).
 
 Public methods:
 
@@ -4305,7 +4306,7 @@ Iterate over a multi-channel cube ``(T, H, W, C)``.
 *Module:* `dense_armor.core.signals.vision.dense`
 *Bases:* Transformer
 
-Dense optical flow with the Horn-Schunck iteration.
+Dense optical flow with the Horn-Schunck iteration (from `dense_armor.core.signals.vision.dense`; a separate batch version exists in `dense_armor.ml.vision`).
 
 Public methods:
 
@@ -4584,7 +4585,7 @@ Public methods:
 *Bases:* Transformer
 *Guide:* [vision/motion.md](../vision/motion.md)
 
-Estimate the global scene shift with phase correlation.
+Estimate the global scene shift with phase correlation (from `dense_armor.core.signals.vision.motion`; a separate batch version exists in `dense_armor.ml.vision`).
 
 Public methods:
 
@@ -4716,7 +4717,7 @@ Public methods:
 *Module:* `dense_armor.core.signals.vision.dense`
 *Bases:* Transformer
 
-Boolean mask of the pixels whose residual flow is large.
+Boolean mask of the pixels whose residual flow is large (from `dense_armor.core.signals.vision.dense`; a separate batch version exists in `dense_armor.ml.vision`).
 
 Public methods:
 
@@ -5609,7 +5610,7 @@ Public methods:
 *Bases:* Layer
 *Guide:* [bridges/tensorflow.md](../bridges/tensorflow.md)
 
-A Dense-Armor model as a ``tf.keras.layers.Layer``.
+A Dense-Armor model as a ``tf.keras.layers.Layer`` (requires `tensorflow` extra, not installed by default).
 
 Public methods:
 
@@ -5620,7 +5621,7 @@ Public methods:
 
 *Module:* `dense_armor.bridges.tensorflow`
 
-A ``tf.keras`` model usable inside Dense-Armor.
+A ``tf.keras`` model usable inside Dense-Armor (requires `tensorflow` extra, not installed by default).
 
 Public methods:
 
@@ -7174,7 +7175,7 @@ Public methods:
 *Bases:* Regressor
 *Guide:* [linear/bayes.md](../linear/bayes.md)
 
-Online Bayesian linear regression with a conjugate Gaussian prior.
+Online Bayesian linear regression with a conjugate Gaussian prior (from `dense_armor.core.online.linear.bayes`; a separate batch version exists in `dense_armor.ml.linear`).
 
 Public methods:
 
@@ -7199,7 +7200,7 @@ Public methods:
 *Bases:* Regressor
 *Guide:* [linear/glm.md](../linear/glm.md)
 
-Online linear regression with squared loss.
+Online linear regression with squared loss (from `dense_armor.core.online.linear.glm`; a separate batch version exists in `dense_armor.ml.linear`).
 
 Public methods:
 
@@ -7226,7 +7227,7 @@ Public methods:
 *Bases:* Classifier
 *Guide:* [linear/glm.md](../linear/glm.md)
 
-Online binary logistic regression with log loss.
+Online binary logistic regression with log loss (from `dense_armor.core.online.linear.glm`; a separate batch version exists in `dense_armor.ml.linear`).
 
 Public methods:
 
@@ -7307,7 +7308,7 @@ Public methods:
 *Bases:* MLBase
 *Guide:* [ml/tree.md](../ml/tree.md)
 
-Binary decision tree with the gini impurity, grown recursively on the whole table.
+Binary decision tree with the gini impurity, grown recursively on the whole table (`dense_armor.ml.tree`). The CART classifier of the online package is `dense_armor.core.online.tree.batch`.
 
 Public methods:
 
@@ -7332,7 +7333,7 @@ Public methods:
 *Bases:* MLBase
 *Guide:* [ml/linear.md](../ml/linear.md)
 
-Bayesian linear regression with a Gaussian prior, in closed form.
+Bayesian linear regression with a Gaussian prior, in closed form (batch version from `dense_armor.ml.linear`; a separate online version exists in `dense_armor.core.online.linear.bayes`).
 
 Public methods:
 
@@ -7499,7 +7500,7 @@ Public methods:
 *Bases:* MLBase
 *Guide:* [ml/vision.md](../ml/vision.md)
 
-Horn-Schunck optical flow between two frames.
+Horn-Schunck optical flow between two frames (batch version from `dense_armor.ml.vision`; a separate online version exists in `dense_armor.core.signals.vision.dense`).
 
 Public methods:
 
@@ -7570,7 +7571,7 @@ Public methods:
 *Bases:* MLBase
 *Guide:* [ml/vision.md](../ml/vision.md)
 
-Global shift between two frames by phase correlation.
+Global shift between two frames by phase correlation (batch version from `dense_armor.ml.vision`; a separate online version exists in `dense_armor.core.signals.vision.motion`).
 
 Public methods:
 
@@ -7593,7 +7594,7 @@ Public methods:
 *Bases:* MLBase
 *Guide:* [ml/multioutput.md](../ml/multioutput.md)
 
-Ridge regression in closed form.
+Ridge regression in closed form (batch version from `dense_armor.ml.linear`; a separate online version exists in `dense_armor.core.online.linear.glm`).
 
 Public methods:
 
@@ -7617,7 +7618,7 @@ Public methods:
 *Bases:* MLBase
 *Guide:* [ml/linear.md](../ml/linear.md)
 
-Binary logistic regression by Newton steps on the mean log loss.
+Binary logistic regression by Newton steps on the mean log loss (batch version from `dense_armor.ml.linear`; a separate online version exists in `dense_armor.core.online.linear.glm`).
 
 Public methods:
 
@@ -7688,7 +7689,7 @@ Public methods:
 *Bases:* MLBase
 *Guide:* [ml/vision.md](../ml/vision.md)
 
-Mask of the pixels whose flow magnitude is large, from the two components of a flow field.
+Mask of the pixels whose flow magnitude is large, from the two components of a flow field (batch version from `dense_armor.ml.vision`; a separate online version exists in `dense_armor.core.signals.vision.dense`).
 
 Public methods:
 
@@ -7783,7 +7784,7 @@ Public methods:
 *Bases:* MLBase
 *Guide:* [ml/preprocessing.md](../ml/preprocessing.md)
 
-TF-IDF matrix of a corpus with a fixed vocabulary.
+TF-IDF matrix of a corpus with a fixed vocabulary (batch version from `dense_armor.ml.preprocessing`; a separate online version exists in `dense_armor.core.signals.preprocessing.vectorizer`).
 
 Public methods:
 
