@@ -4,10 +4,7 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
-### Changed
-- Documentation: the metrics guide describes `ConfusionMatrix`, `BalancedAccuracy`, `MeanSquaredError` and `EventWindow`, and every metric on the API page links to its guide.
-
-## [1.8.0] - 2026-11-25
+## [1.7.2] - 2026-11-25
 
 This release makes the roles and the preprocessing safe in the stream (a value that cannot be used gives `None` or a neutral value, never an error) and adds negative application conditions to `Action`.
 
@@ -15,6 +12,7 @@ This release makes the roles and the preprocessing safe in the stream (a value t
 - `Action(forbidden=[...])`: negative application conditions. The action is refused when a node has a link of a given relation to a node of a given type whose field passes a test (for example a task with an unresolved blocker). Existing actions keep working.
 
 ### Changed
+- Documentation: the metrics guide describes `ConfusionMatrix`, `BalancedAccuracy`, `MeanSquaredError` and `EventWindow`, and every metric on the API page links to its guide.
 - In the stream (`learn_one`, `predict_one`, `transform_one`, `score_one` and the helpers they call) the roles never raise: `Root` skips a time stamp that does not increase, `SignalBatch.row` gives `None` out of range, `Signal.from_dict` ignores units that are not a dict, and a pipeline lets pass a step that has no `transform_one`.
 - The parameters of the scalers (`alpha`, `eps`, `window`) and of `AdaptiveConformalRegressor` are kept as given; an invalid value is replaced where it is used, never in the constructor and never with an error.
 - A pipeline exposes only the methods of its last step.
