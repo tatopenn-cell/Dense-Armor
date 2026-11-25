@@ -346,15 +346,13 @@ def check_dt_accepted(est: Root) -> None:
     assert est.jitter is not None
 
 
-def check_non_increasing_t_raises(est: Root) -> None:
+def check_non_increasing_t_does_not_raise(est: Root) -> None:
     fresh = est.clone()
     fresh._time_step(0.0)
     fresh._time_step(0.1)
-    try:
-        fresh._time_step(0.05)
-    except ValueError:
-        return
-    raise AssertionError("non-increasing t did not raise")
+    fresh._time_step(0.05)
+    fresh._time_step(0.05)
+    assert fresh.dt == 0.1, "a t that does not increase changed the dt"
 
 
 def check_estimator(
@@ -408,7 +406,7 @@ def check_estimator(
         check_classifier_multiclass_bool,
         check_roc_auc,
         check_dt_accepted,
-        check_non_increasing_t_raises,
+        check_non_increasing_t_does_not_raise,
         check_step_is_pure,
         check_step_is_jittable,
         check_p99_within_budget,

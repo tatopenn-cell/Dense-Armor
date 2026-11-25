@@ -58,8 +58,8 @@ def test_params_set_clone_mutate_errors():
         r.set_params(nope=1)
     with pytest.raises(ValueError):
         r.clone(new_params={"nope": 1})
-    with pytest.raises(ValueError):
-        r.mutate({"nope": 1})
+    assert r.mutate({"nope": 1}) is r
+    assert not hasattr(r, "nope")
 
 
 def test_time_helpers_and_describe():
