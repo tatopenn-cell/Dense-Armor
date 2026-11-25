@@ -257,8 +257,11 @@ class SignalBatch:
     def __len__(self) -> int:
         return int(self.array.shape[0])
 
-    def row(self, i: int) -> Signal:
-        """Sample ``i`` as a :class:`Signal`."""
+    def row(self, i: int) -> Signal | None:
+        """Sample ``i`` as a :class:`Signal`, or ``None`` if ``i`` is out of range."""
+        n = len(self)
+        if not -n <= i < n:
+            return None
         return Signal(
             values=self.array[i],
             names=self.names,
