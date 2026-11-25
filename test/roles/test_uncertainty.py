@@ -154,3 +154,43 @@ def test_oplatt_is_reexported():
 
 def test_doctests():
     assert doctest.testmod(unc_mod).failed == 0
+
+
+class _Silent(Regressor):
+    """A model that has no prediction yet: predict_one gives None."""
+
+    def __init__(self) -> None:
+        self.seen = 0
+
+    def learn_one(self, x, y, t=None):
+        self.seen += 1
+        return self
+
+    def predict_one(self, x, t=None):
+        return None
+
+
+@pytest.mark.parametrize(
+    "kw", [{"alpha": 1.5}, {"alpha": 0.0}, {"gamma": -0.1}, {"window": 0}, {"window": -3}]
+)
+def test_conformal_never_raises_on_invalid_parameters(kw):
+    a = AdaptiveConformalRegressor(_Mean(), **kw)
+    for v in (1.0, 2.0, 3.0, 4.0):
+        a.learn_one({"x": v}, v)
+    interval = a.predict_interval({"x": 1.0})
+    assert interval is not None and interval[0] <= interval[1]
+    for name, value in kw.items():
+        assert getattr(a, name) == value
+
+
+def test_conformal_gives_none_when_the_model_has_no_prediction():
+    m = _Silent()
+    a = AdaptiveConformalRegressor(m)
+    assert a.learn_one({"x": 1.0}, 2.0) is a
+    assert a.learn_one({"x": 1.0}, None) is a
+    assert m.seen == 1
+    assert a.n_ == 0
+    assert a.predict_one({"x": 1.0}) is None
+    assert a.predict_one({"x": 1.0}, return_std=True) is None
+    assert a.predict_interval({"x": 1.0}) is None
+    assert a.transform_one({"x": 1.0})["lo"] is None

@@ -134,15 +134,19 @@ class AdaptiveConformalRegressor(Regressor):
         window: int = 200,
     ) -> None:
         self.model = model
-        self.alpha = min(max(alpha, 1e-6), 1.0 - 1e-6)
-        self.gamma = max(gamma, 0.0)
-        self.window = max(1, int(window))
-        self.alpha_t_ = self.alpha
-        self.residuals_: deque[float] = deque(maxlen=self.window)
+        self.alpha = alpha
+        self.gamma = gamma
+        self.window = window
+        self.alpha_t_ = self._target()
+        self.residuals_: deque[float] = deque(maxlen=max(1, int(window)))
         self.n_ = 0
         self.n_miss_ = 0
         self._last_lo_: float | None = None
         self._last_hi_: float | None = None
+
+    def _target(self) -> float:
+        """The target miscoverage ``alpha``, clipped into ``(0, 1)``."""
+        return min(max(self.alpha, 1e-6), 1.0 - 1e-6)
 
     @property
     def budget_s(self) -> float | None:
@@ -203,24 +207,34 @@ class AdaptiveConformalRegressor(Regressor):
             alpha_{t+1} = alpha_t + gamma * (alpha - err_t)
         """
         self._time_step(t)
-        yhat = float(call_with_t(self.model.predict_one, x, t=t))
-        q = self._quantile(1.0 - self.alpha_t_)
-        lo, hi = yhat - q, yhat + q
-        err = 0.0 if lo <= float(y) <= hi else 1.0
-        self.n_miss_ += int(err)
-        self.alpha_t_ = self.alpha_t_ + self.gamma * (self.alpha - err)
-        self.alpha_t_ = min(1.0, max(0.0, self.alpha_t_))
-        self.residuals_.append(abs(float(y) - yhat))
+        if y is None:
+            return self
+        pred = call_with_t(self.model.predict_one, x, t=t)
+        if pred is not None:
+            yhat = float(pred)
+            q = self._quantile(1.0 - self.alpha_t_)
+            lo, hi = yhat - q, yhat + q
+            err = 0.0 if lo <= float(y) <= hi else 1.0
+            self.n_miss_ += int(err)
+            step = max(self.gamma, 0.0) * (self._target() - err)
+            self.alpha_t_ = min(1.0, max(0.0, self.alpha_t_ + step))
+            self.residuals_.append(abs(float(y) - yhat))
+            self.n_ += 1
         call_with_t(self.model.learn_one, x, y, t=t)
-        self.n_ += 1
         return self
 
     def predict_interval(
         self, x: Signal | dict, t: float | None = None
-    ) -> tuple[float, float]:
-        """Return the current conformal interval ``(lo, hi)``."""
+    ) -> tuple[float, float] | None:
+        """Return the current conformal interval ``(lo, hi)``.
+
+        ``None`` if the wrapped model gives no prediction.
+        """
         self._time_step(t)
-        yhat = float(call_with_t(self.model.predict_one, x, t=t))
+        pred = call_with_t(self.model.predict_one, x, t=t)
+        if pred is None:
+            return None
+        yhat = float(pred)
         q = self._quantile(1.0 - self.alpha_t_)
         lo, hi = yhat - q, yhat + q
         self._last_lo_, self._last_hi_ = lo, hi
@@ -255,7 +269,10 @@ class AdaptiveConformalRegressor(Regressor):
             The mean, the pair ``(mean, std)`` or an :class:`Estimate`.
         """
         self._time_step(t)
-        mean = float(call_with_t(self.model.predict_one, x, t=t))
+        pred = call_with_t(self.model.predict_one, x, t=t)
+        if pred is None:
+            return None
+        mean = float(pred)
         if return_estimate or return_std:
             var = self._residual_mean_square()
             if return_estimate:
@@ -286,7 +303,8 @@ class AdaptiveConformalRegressor(Regressor):
             current miscoverage level) and ``coverage`` (see
             :attr:`coverage`).
         """
-        lo, hi = self.predict_interval(x, t=t)
+        interval = self.predict_interval(x, t=t)
+        lo, hi = interval if interval is not None else (None, None)
         return {
             "lo": lo,
             "hi": hi,
