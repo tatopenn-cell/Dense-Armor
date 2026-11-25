@@ -117,6 +117,11 @@ class AdaptiveConformalRegressor(Regressor):
             values (0.005 in their experiments). Larger values adapt
             faster but produce noisier intervals.
         window: number of past residuals used to compute ``Q_t``.
+
+    Raises:
+        ValueError: if ``alpha`` is not in ``(0, 1)``, if ``gamma`` is not
+            positive, or if ``window`` is smaller than 1. With an empty
+            window the interval would always have zero width.
     """
 
     _CONFORMAL_OVERHEAD_S: float = 5e-4
@@ -128,6 +133,12 @@ class AdaptiveConformalRegressor(Regressor):
         gamma: float = 0.005,
         window: int = 200,
     ) -> None:
+        if not 0.0 < alpha < 1.0:
+            raise ValueError(f"alpha must be in (0, 1), got {alpha}")
+        if gamma <= 0.0:
+            raise ValueError(f"gamma must be > 0, got {gamma}")
+        if window < 1:
+            raise ValueError(f"window must be >= 1, got {window}")
         self.model = model
         self.alpha = alpha
         self.gamma = gamma
@@ -206,10 +217,7 @@ class AdaptiveConformalRegressor(Regressor):
         self.alpha_t_ = self.alpha_t_ + self.gamma * (self.alpha - err)
         self.alpha_t_ = min(1.0, max(0.0, self.alpha_t_))
         self.residuals_.append(abs(float(y) - yhat))
-        try:
-            call_with_t(self.model.learn_one, x, y, t=t)
-        except TypeError:
-            self.model.learn_one(x, y)
+        call_with_t(self.model.learn_one, x, y, t=t)
         self.n_ += 1
         return self
 
@@ -218,9 +226,9 @@ class AdaptiveConformalRegressor(Regressor):
     ) -> tuple[float, float]:
         """Return the current conformal interval ``(lo, hi)``."""
         self._time_step(t)
-        proba = float(call_with_t(self.model.predict_one, x, t=t))
+        yhat = float(call_with_t(self.model.predict_one, x, t=t))
         q = self._quantile(1.0 - self.alpha_t_)
-        lo, hi = proba - q, proba + q
+        lo, hi = yhat - q, yhat + q
         self._last_lo_, self._last_hi_ = lo, hi
         return lo, hi
 
@@ -241,6 +249,7 @@ class AdaptiveConformalRegressor(Regressor):
         empty. The paper (Gibbs and Candes 2021) has intervals and no
         variance, so this is our choice; the conformal half-width ``Q_t``
         is not a standard deviation and is given by :meth:`predict_interval`.
+        If both flags are set, ``return_estimate`` wins.
 
         Args:
             x: the input.
@@ -262,12 +271,27 @@ class AdaptiveConformalRegressor(Regressor):
 
     @property
     def coverage(self) -> float:
-        """Empirical coverage over the samples seen so far."""
+        """Share of the samples seen so far whose interval held ``y``.
+
+        It is ``0.0`` before the first sample, when there is nothing to
+        count; read ``n_`` to tell that case from a model that always missed.
+        """
         if self.n_ == 0:
             return 0.0
         return 1.0 - self.n_miss_ / self.n_
 
     def transform_one(self, x: Signal | dict, t: float | None = None) -> dict:
+        """Return the current interval and the state of the coverage.
+
+        This only reads: it does not learn, so ``alpha_t``, the residuals,
+        ``n_`` and the wrapped model are left as they are. The sample is
+        learned by :meth:`learn_one`.
+
+        Returns:
+            A dict with ``lo`` and ``hi`` (the interval), ``alpha_t`` (the
+            current miscoverage level) and ``coverage`` (see
+            :attr:`coverage`).
+        """
         lo, hi = self.predict_interval(x, t=t)
         return {
             "lo": lo,
