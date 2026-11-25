@@ -63,9 +63,12 @@ def _write_out(values: np.ndarray, is_scalar: bool) -> Any:
     return float(values[0]) if is_scalar else values.tolist()
 
 
-def _check_eps(eps: float) -> None:
-    if eps <= 0.0:
-        raise ValueError(f"eps must be > 0, got {eps}")
+_DEFAULT_EPS = 1e-12
+
+
+def _positive_eps(eps: float) -> float:
+    """``eps`` if it is positive, the default floor otherwise."""
+    return eps if eps > 0.0 else _DEFAULT_EPS
 
 
 def _grow_stats(stats: dict, x: dict, features: list[str] | None, make) -> None:
@@ -104,8 +107,7 @@ class StandardScaler(Transformer):
             that shows up, in sorted order.
         eps: std floor below which the feature is left alone.
 
-    Raises:
-        ValueError: if ``eps`` is not positive.
+    Nothing raises: a non-positive ``eps`` is replaced by ``1e-12``.
 
     Examples:
         >>> from dense_armor.core.signals.preprocessing.scale import StandardScaler
@@ -126,7 +128,6 @@ class StandardScaler(Transformer):
     learn_many_columns = True
 
     def __init__(self, features: list[str] | None = None, eps: float = 1e-12) -> None:
-        _check_eps(eps)
         self.features = features
         self.eps = eps
         self.stats_: dict[str, list[RunningMoments]] | None = None
@@ -213,7 +214,7 @@ class StandardScaler(Transformer):
             res = vec.copy()
             for i in range(min(vec.size, len(s_list))):
                 s = s_list[i]
-                if s.count >= 2 and s.std > self.eps:
+                if s.count >= 2 and s.std > _positive_eps(self.eps):
                     res[i] = (vec[i] - s.mean) / s.std
             out[k] = _write_out(res, is_scalar)
         return out
@@ -234,9 +235,8 @@ class EWScaler(Transformer):
         features: explicit feature order.
         eps: std floor.
 
-    Raises:
-        ValueError: if ``alpha`` is not in ``(0, 1]`` or ``eps`` is not
-            positive.
+    Nothing raises: an ``alpha`` outside ``(0, 1]`` is clipped into it and a
+    non-positive ``eps`` is replaced by ``1e-12``.
 
     Examples:
         >>> from dense_armor.core.signals.preprocessing.scale import EWScaler
@@ -257,9 +257,6 @@ class EWScaler(Transformer):
         features: list[str] | None = None,
         eps: float = 1e-12,
     ) -> None:
-        if not 0.0 < alpha <= 1.0:
-            raise ValueError(f"alpha must be in (0, 1], got {alpha}")
-        _check_eps(eps)
         self.alpha = alpha
         self.features = features
         self.eps = eps
@@ -268,7 +265,12 @@ class EWScaler(Transformer):
     def _ensure(self, x: dict) -> dict[str, list[EWStats]]:
         if self.stats_ is None:
             self.stats_ = {}
-        _grow_stats(self.stats_, x, self.features, lambda: EWStats(alpha=self.alpha))
+        _grow_stats(
+            self.stats_,
+            x,
+            self.features,
+            lambda: EWStats(alpha=min(max(self.alpha, _DEFAULT_EPS), 1.0)),
+        )
         return self.stats_
 
     def _update(self, d: dict, t: float | None) -> None:
@@ -303,7 +305,7 @@ class EWScaler(Transformer):
             res = vec.copy()
             for i in range(min(vec.size, len(s_list))):
                 s = s_list[i]
-                if s.count >= 1 and s.std > self.eps:
+                if s.count >= 1 and s.std > _positive_eps(self.eps):
                     res[i] = (vec[i] - s.mean) / s.std
             out[k] = _write_out(res, is_scalar)
         return out
@@ -324,9 +326,8 @@ class RobustScaler(Transformer):
         features: explicit feature order.
         eps: MAD floor.
 
-    Raises:
-        ValueError: if ``window`` is smaller than 1 or ``eps`` is not
-            positive.
+    Nothing raises: a ``window`` below 1 is taken as 1 and a non-positive
+    ``eps`` is replaced by ``1e-12``.
 
     Examples:
         >>> from dense_armor.core.signals.preprocessing.scale import RobustScaler
@@ -346,9 +347,6 @@ class RobustScaler(Transformer):
         features: list[str] | None = None,
         eps: float = 1e-12,
     ) -> None:
-        if window < 1:
-            raise ValueError(f"window must be >= 1, got {window}")
-        _check_eps(eps)
         self.window = window
         self.features = features
         self.eps = eps
@@ -362,10 +360,16 @@ class RobustScaler(Transformer):
             self.medians_ = {}
             self.mads_ = {}
         _grow_stats(
-            self.medians_, x, self.features, lambda: RollingMedian(window=self.window)
+            self.medians_,
+            x,
+            self.features,
+            lambda: RollingMedian(window=max(1, int(self.window))),
         )
         _grow_stats(
-            self.mads_, x, self.features, lambda: RollingMAD(window=self.window)
+            self.mads_,
+            x,
+            self.features,
+            lambda: RollingMAD(window=max(1, int(self.window))),
         )
         return self.medians_, self.mads_
 
@@ -405,7 +409,7 @@ class RobustScaler(Transformer):
             for i in range(min(vec.size, len(med_list))):
                 med = med_list[i]
                 mad = mad_list[i].value
-                if med.count >= 1 and mad > self.eps:
+                if med.count >= 1 and mad > _positive_eps(self.eps):
                     res[i] = (vec[i] - med.value) / mad
             out[k] = _write_out(res, is_scalar)
         return out
@@ -430,8 +434,7 @@ class MinMaxScaler(Transformer):
         features: explicit feature order.
         eps: spread floor below which the feature is left alone.
 
-    Raises:
-        ValueError: if ``eps`` is not positive.
+    Nothing raises: a non-positive ``eps`` is replaced by ``1e-12``.
 
     Examples:
         >>> from dense_armor.core.signals.preprocessing.scale import MinMaxScaler
@@ -446,7 +449,6 @@ class MinMaxScaler(Transformer):
     memory_class = "O(1)"
 
     def __init__(self, features: list[str] | None = None, eps: float = 1e-12) -> None:
-        _check_eps(eps)
         self.features = features
         self.eps = eps
         self.stats_: dict[str, list[RunningMoments]] | None = None
@@ -492,7 +494,7 @@ class MinMaxScaler(Transformer):
                 if lo is None or hi is None:
                     continue
                 spread = hi - lo
-                if spread > self.eps:
+                if spread > _positive_eps(self.eps):
                     res[i] = (vec[i] - lo) / spread
             out[k] = _write_out(res, is_scalar)
         return out
