@@ -4,8 +4,22 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-11-25
+
+This release makes the roles and the preprocessing safe in the stream (a value that cannot be used gives `None` or a neutral value, never an error) and adds negative application conditions to `Action`.
+
 ### Added
 - `Action(forbidden=[...])`: negative application conditions. The action is refused when a node has a link of a given relation to a node of a given type whose field passes a test (for example a task with an unresolved blocker). Existing actions keep working.
+
+### Changed
+- In the stream (`learn_one`, `predict_one`, `transform_one`, `score_one` and the helpers they call) the roles never raise: `Root` skips a time stamp that does not increase, `SignalBatch.row` gives `None` out of range, `Signal.from_dict` ignores units that are not a dict, and a pipeline lets pass a step that has no `transform_one`.
+- The parameters of the scalers (`alpha`, `eps`, `window`) and of `AdaptiveConformalRegressor` are kept as given; an invalid value is replaced where it is used, never in the constructor and never with an error.
+- A pipeline exposes only the methods of its last step.
+
+### Fixed
+- The scalers learn the features and the joints as they appear, and a vector of another length no longer breaks them.
+- `AdaptiveConformalRegressor`: the docstrings for the coverage and the parameters say what the code does.
+- `BatchedLandmarkShield` keeps its learned state in attributes that end with an underscore, so `state_dict` and `load_state_dict` keep it; it has a link in the `usable` catalog.
 
 ## [1.7.0] - 2026-11-18
 
