@@ -210,13 +210,11 @@ class Root:
         """Change declared-mutable attributes in place.
 
         Recursive into nested estimators. Names not listed in
-        ``_mutable_attributes``, or missing, raise ``ValueError``.
+        ``_mutable_attributes``, or missing, are left alone: nothing raises.
         """
         for k, v in new_attrs.items():
-            if k not in self._mutable_attributes:
-                raise ValueError(f"{type(self).__name__}: {k!r} is not mutable")
-            if not hasattr(self, k):
-                raise ValueError(f"{type(self).__name__}: {k!r} does not exist")
+            if k not in self._mutable_attributes or not hasattr(self, k):
+                continue
             cur = getattr(self, k)
             if isinstance(cur, Root) and isinstance(v, dict):
                 cur.mutate(v)
@@ -410,11 +408,15 @@ class Root:
 
     # ── learned-state detection ───────────────────────────────────
     def _has_learned(self) -> bool:
-        """True if any instance attribute has a trailing underscore."""
-        for k in self.__dict__:
+        """True if any instance attribute has a trailing underscore and a value.
+
+        An attribute that is still ``None`` (``stats_ = None`` before the
+        first sample) is not learned state.
+        """
+        for k, v in self.__dict__.items():
             if k.startswith("__") and k.endswith("__"):
                 continue
-            if k.endswith("_"):
+            if k.endswith("_") and v is not None:
                 return True
         return False
 
@@ -472,18 +474,21 @@ class Root:
     _DT_N = 64
 
     def _time_step(self, t: float | None) -> float | None:
-        """Record a timestamp; return the running median dt (or None)."""
+        """Record a timestamp; return the running median dt (or None).
+
+        A ``t`` that does not increase is not an error: its interval is not
+        recorded and the stream goes on from that ``t``.
+        """
         if t is None:
             return None
         buf = self.__dict__.setdefault("_dt_buf", [])
         last = self.__dict__.get("_t_last")
         if last is not None:
             dt = t - last
-            if dt <= 0:
-                raise ValueError(f"non-increasing t: previous {last}, got {t}")
-            buf.append(dt)
-            if len(buf) > self._DT_N:
-                del buf[: len(buf) - self._DT_N]
+            if dt > 0:
+                buf.append(dt)
+                if len(buf) > self._DT_N:
+                    del buf[: len(buf) - self._DT_N]
         self.__dict__["_t_last"] = t
         return self.dt
 

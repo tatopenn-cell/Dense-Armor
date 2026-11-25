@@ -476,7 +476,7 @@ def checks():
                 "check_classifier_multiclass_bool",
                 "check_roc_auc",
                 "check_dt_accepted",
-                "check_non_increasing_t_raises",
+                "check_non_increasing_t_does_not_raise",
             ],
         ),
         (

@@ -146,8 +146,7 @@ def test_base_params_clone_mutate_pickle_state():
     assert c.n_ == 0 and c.shrink == 0.2
     assert r.clone(include_attributes=True).n_ == 1
     r.mutate({"shrink": 0.3})
-    with pytest.raises(ValueError):
-        r.mutate({"nope": 1})
+    assert r.mutate({"nope": 1}) is r
     r2 = pickle.loads(pickle.dumps(r))
     assert r2.predict_one({}) == r.predict_one({})
     m = MeanReg().load_state_dict(r.state_dict())
@@ -169,9 +168,18 @@ def test_time_step_dt_rate_jitter_and_windows():
     assert b.rate == pytest.approx(100.0)
     assert b.jitter == pytest.approx(0.0, abs=1e-12)
     assert b.window_samples(0.5) == 50
-    with pytest.raises(ValueError):
-        b._time_step(0.0)
+    assert b._time_step(0.0) == pytest.approx(0.01)
+    assert b._time_step(0.0) == pytest.approx(0.01)
+    assert b._time_step(0.01) == pytest.approx(0.01)
     assert MeanReg().dt is None
+
+
+def test_a_fresh_estimator_with_an_empty_slot_has_not_learned():
+    b = Root()
+    b.stats_ = None
+    assert not b._has_learned()
+    b.stats_ = {"x": 1}
+    assert b._has_learned()
 
 
 def test_repr_floats_nested_and_stochastic():
