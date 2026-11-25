@@ -45,11 +45,18 @@ class Action:
         preconditions: list of ``(node, field, op, value)``.
         effects: list of ``(node, field, kind, value)``, ``kind`` in
             ``{"set", "add", "delete"}``.
+        forbidden: list of ``(node, relation, node_type, field, op, value)``,
+            negative application conditions (Heckel, "Graph Transformation in
+            a Nutshell", Section 3.3). The action is refused when ``node`` has an
+            outgoing edge with ``relation`` to a node of ``node_type`` whose
+            ``field`` satisfies ``op value``: the rule applies only if that
+            pattern does NOT exist. A missing ``node`` violates nothing.
     """
 
     name: str
     preconditions: list[tuple] = field(default_factory=list)
     effects: list[tuple] = field(default_factory=list)
+    forbidden: list[tuple] = field(default_factory=list)
 
     def check(
         self, graph: TypedGraph, params: dict[str, Any] | None = None
@@ -65,6 +72,22 @@ class Action:
             actual = graph.graph.nodes[node_name]["state"].get(field_name)
             if not _cmp(actual, op, value):
                 failed.append((node_name, field_name, op, value, actual))
+        for node, relation, node_type, field_name, op, value in self.forbidden:
+            node_name = params.get(node, node) if node in params else node
+            if node_name not in graph.graph:
+                continue
+            for _u, other, data in graph.graph.out_edges(node_name, data=True):
+                if data.get("relation") != relation:
+                    continue
+                attrs = graph.graph.nodes[other]
+                if attrs.get("type") != node_type:
+                    continue
+                actual = attrs["state"].get(field_name)
+                if _cmp(actual, op, value):
+                    failed.append(
+                        (node_name, relation, node_type, field_name, op, value,
+                         f"forbidden pattern present at {other!r}")
+                    )
         return failed
 
     def apply(

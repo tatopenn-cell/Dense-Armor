@@ -4,6 +4,9 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- `Action(forbidden=[...])`: negative application conditions. The action is refused when a node has a link of a given relation to a node of a given type whose field passes a test (for example a task with an unresolved blocker). Existing actions keep working.
+
 ## [1.7.0] - 2026-11-18
 
 This release completes the Hoeffding trees (a regressor, categorical splits, three more splitters, the Gini criterion and the deactivation of the least promising leaves), lightens the base install (`osqp` and `xacro` move to the extra `dynamics`), splits the neural package into sections, brings the fixes of the reviews of the core and of Armor, and renews the documentation: a new look, a Roles section, a main page and a map for the main tabs, and a map by job drawn from `usable`.

@@ -114,6 +114,7 @@ An action is a change with conditions. It has two lists:
 
 - **preconditions**, what must be true before: `(part, value, test, expected)`, with `test` one of `==`, `!=`, `<`, `>`, `<=`, `>=`;
 - **effects**, what changes: `(part, value, how, new_value)`, with `how` equal to `"set"`, `"add"` or `"delete"` (the last two are for a list).
+- **forbidden** (optional), what must NOT exist: `(part, relation, node_type, value, test, expected)`. The action is refused if `part` has a link named `relation` to a node of type `node_type` whose `value` passes the test. For example, a delivery is refused while a blocker that is not resolved is linked to the task. A `part` that does not exist breaks nothing.
 
 The names inside an action are placeholders. `params` says which part each one stands for, so one action works for every service. The idea comes from STRIPS (Fikes and Nilsson 1971).
 
