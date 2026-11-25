@@ -6,6 +6,7 @@ import pytest
 from dense_armor.checks import check_estimator
 from dense_armor.roles import Classifier, Regressor, SafeEstimator, Transformer
 from dense_armor.roles import root as root_mod
+from dense_armor.roles.estimator import _Pipeline
 
 
 class _Reg(Regressor):
@@ -84,7 +85,28 @@ def test_pipeline_paths():
     assert t2.transform_one({"x": 1.0}) == {"x": 4.0}
     assert _Reg().__or__(object()) is NotImplemented
     assert p.__or__(object()) is NotImplemented
-    assert (p | _Reg()).steps[-1][0] == "_Reg"
+    assert ((_Double() | _Double()) | _Reg()).steps[-1][0] == "_Reg"
+
+
+def test_pipeline_exposes_only_what_the_last_step_has():
+    reg = _Double() | _Reg()
+    assert hasattr(reg, "predict_one")
+    assert not hasattr(reg, "transform_one")
+    assert not hasattr(reg, "predict_proba_one")
+    with pytest.raises(AttributeError, match="has no transform_one"):
+        reg.transform_one({"x": 1.0})
+    tr = _Double() | _Double()
+    assert hasattr(tr, "transform_one")
+    assert not hasattr(tr, "predict_one")
+
+
+def test_pipeline_refuses_a_model_before_the_last_step_and_an_empty_one():
+    with pytest.raises(TypeError, match="put the model last"):
+        _Reg() | _Double()
+    with pytest.raises(TypeError, match="put the model last"):
+        (_Double() | _Reg()) | _Double()
+    with pytest.raises(ValueError, match="at least one step"):
+        _Pipeline([])
 
 
 class _OldSig:
