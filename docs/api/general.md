@@ -494,6 +494,7 @@ Input and output units of an estimator, as ``{name: unit}`` dicts.
 
 *Module:* `dense_armor.core.evaluation.metrics.classification`
 *Bases:* Metric
+*Guide:* [metrics/basics.md](../metrics/basics.md)
 
 Fraction of samples where ``y_pred == y_true``.
 
@@ -510,6 +511,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.classification`
 *Bases:* Metric
+*Guide:* [metrics/basics.md](../metrics/basics.md)
 
 Mean of the per-class recall.
 
@@ -526,6 +528,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.classification`
 *Bases:* Metric
+*Guide:* [metrics/basics.md](../metrics/basics.md)
 
 Mean squared error of predicted probabilities.
 
@@ -542,6 +545,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.classification`
 *Bases:* Metric
+*Guide:* [metrics/basics.md](../metrics/basics.md)
 
 Cohen's kappa: agreement corrected for chance.
 
@@ -558,6 +562,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.classification`
 *Bases:* Metric
+*Guide:* [metrics/basics.md](../metrics/basics.md)
 
 Multiclass confusion matrix.
 
@@ -573,6 +578,7 @@ Public methods:
 
 
 *Module:* `dense_armor.core.evaluation.metrics.events`
+*Guide:* [metrics/events.md](../metrics/events.md)
 
 Collect the event metrics for a stream of alarms.
 
@@ -593,6 +599,7 @@ Public methods:
 
 
 *Module:* `dense_armor.core.evaluation.metrics.events`
+*Guide:* [metrics/events.md](../metrics/events.md)
 
 A labelled event interval.
 
@@ -606,6 +613,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.classification`
 *Bases:* FBeta
+*Guide:* [metrics/basics.md](../metrics/basics.md)
 
 F1 score: the harmonic mean of precision and recall.
 
@@ -622,6 +630,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.classification`
 *Bases:* _PRFBase
+*Guide:* [metrics/basics.md](../metrics/basics.md)
 
 Weighted harmonic mean of precision and recall.
 
@@ -638,6 +647,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.regression`
 *Bases:* Metric
+*Guide:* [metrics/regression.md](../metrics/regression.md)
 
 Gaussian negative log-likelihood.
 
@@ -654,6 +664,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.regression`
 *Bases:* Metric
+*Guide:* [metrics/regression.md](../metrics/regression.md)
 
 Fraction of true labels inside a prediction interval.
 
@@ -670,6 +681,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.classification`
 *Bases:* Metric
+*Guide:* [metrics/basics.md](../metrics/basics.md)
 
 Binary log-loss (cross-entropy).
 
@@ -686,6 +698,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.regression`
 *Bases:* Metric
+*Guide:* [metrics/regression.md](../metrics/regression.md)
 
 Mean absolute error, one sample at a time.
 
@@ -702,6 +715,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.regression`
 *Bases:* Metric
+*Guide:* [metrics/regression.md](../metrics/regression.md)
 
 Mean width of a prediction interval.
 
@@ -718,6 +732,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.regression`
 *Bases:* Metric
+*Guide:* [metrics/regression.md](../metrics/regression.md)
 
 Mean squared error, one sample at a time.
 
@@ -733,6 +748,7 @@ Public methods:
 
 
 *Module:* `dense_armor.core.evaluation.metrics.base`
+*Guide:* [metrics/basics.md](../metrics/basics.md)
 
 Base class for online metrics.
 
@@ -749,6 +765,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.events`
 *Bases:* Metric
+*Guide:* [metrics/events.md](../metrics/events.md)
 
 Point-adjusted F1 (Xu et al. 2018).
 
@@ -765,6 +782,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.classification`
 *Bases:* _PRFBase
+*Guide:* [metrics/basics.md](../metrics/basics.md)
 
 Fraction of predicted positives that are correct.
 
@@ -781,6 +799,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.regression`
 *Bases:* Metric
+*Guide:* [metrics/regression.md](../metrics/regression.md)
 
 Coefficient of determination, Welford running mean.
 
@@ -797,6 +816,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.classification`
 *Bases:* _PRFBase
+*Guide:* [metrics/basics.md](../metrics/basics.md)
 
 Fraction of true positives that are detected.
 
@@ -813,6 +833,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.rolling`
 *Bases:* Metric
+*Guide:* [metrics/stream.md](../metrics/stream.md)
 
 Rolling window over any metric with ``revert``.
 
@@ -829,6 +850,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.roc_auc`
 *Bases:* Metric
+*Guide:* [metrics/stream.md](../metrics/stream.md)
 
 Rolling ROC-AUC, exact on the last ``window`` samples.
 
@@ -845,6 +867,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.regression`
 *Bases:* MeanSquaredError
+*Guide:* [metrics/regression.md](../metrics/regression.md)
 
 Square root of the mean squared error.
 

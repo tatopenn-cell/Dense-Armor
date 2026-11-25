@@ -4,6 +4,9 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- Documentation: the metrics guide describes `ConfusionMatrix`, `BalancedAccuracy`, `MeanSquaredError` and `EventWindow`, and every metric on the API page links to its guide.
+
 ## [1.8.0] - 2026-11-25
 
 This release makes the roles and the preprocessing safe in the stream (a value that cannot be used gives `None` or a neutral value, never an error) and adds negative application conditions to `Action`.
