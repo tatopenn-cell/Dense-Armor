@@ -29,7 +29,31 @@ class _Pipeline(Root):
     _is_pipeline = True
 
     def __init__(self, steps: list[tuple[str, Root]]):
-        self.steps = list(steps)
+        steps = list(steps)
+        if not steps:
+            raise ValueError("a pipeline needs at least one step")
+        for name, step in steps[:-1]:
+            if not hasattr(step, "transform_one"):
+                raise TypeError(
+                    f"step {name!r} ({type(step).__name__}) comes before the last "
+                    f"step, so it must have transform_one; put the model last"
+                )
+        self.steps = steps
+
+    def _capability(self, name: str):
+        """The method ``name`` of the pipeline, if the last step has it.
+
+        A pipeline is a classifier, a regressor or a transformer according
+        to its last step, so ``hasattr(pipeline, name)`` is true only when
+        the last step has ``name``.
+        """
+        last = self.steps[-1][1]
+        if not hasattr(last, name):
+            raise AttributeError(
+                f"the last step of this pipeline, {type(last).__name__}, "
+                f"has no {name}"
+            )
+        return getattr(self, "_" + name)
 
     def __or__(self, other) -> '_Pipeline':
         if not hasattr(other, "learn_one"):
@@ -71,21 +95,36 @@ class _Pipeline(Root):
             call_with_t(last.learn_one, h, y, t=t)
         return self
 
-    def predict_one(self, x: dict, t: float | None = None):
+    def _predict_one(self, x: dict, t: float | None = None):
         h = self._forward(x, t=t)
         last: Any = self.steps[-1][1]
         return call_with_t(last.predict_one, h, t=t)
 
-    def predict_proba_one(self, x: dict, t: float | None = None):
+    def _predict_proba_one(self, x: dict, t: float | None = None):
         h = self._forward(x, t=t)
         last: Any = self.steps[-1][1]
         return call_with_t(last.predict_proba_one, h, t=t)
 
-    def transform_one(self, x: dict, t: float | None = None) -> dict:
+    def _transform_one(self, x: dict, t: float | None = None) -> dict:
         for _, s in self.steps:
             s_any: Any = s
             x = call_with_t(s_any.transform_one, x, t=t)
         return x
+
+    @property
+    def predict_one(self):
+        """``predict_one`` of the last step, after the transformers."""
+        return self._capability("predict_one")
+
+    @property
+    def predict_proba_one(self):
+        """``predict_proba_one`` of the last step, after the transformers."""
+        return self._capability("predict_proba_one")
+
+    @property
+    def transform_one(self):
+        """``transform_one`` of every step; only if the last step has it."""
+        return self._capability("transform_one")
 
     def __repr__(self) -> str:
         return " | ".join(f"{name}({type(s).__name__})" for name, s in self.steps)
