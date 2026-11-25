@@ -108,7 +108,8 @@ class Signal(dict):
             x: the feature dict. ``None`` values are stored as ``nan``
                 and flagged in the mask.
             units: optional ``{name: unit}`` mapping. Names not present
-                use ``""``.
+                use ``""``. Anything that is not a dict is ignored and
+                every unit is ``""``; nothing raises.
             t: timestamp.
             names: explicit channel order. ``None`` uses the sorted keys
                 so the result is deterministic.
@@ -124,7 +125,8 @@ class Signal(dict):
             else:
                 vals.append(float(v))
                 mask.append(False)
-        units_list = [(units or {}).get(name, "") for name in names]
+        known = units if isinstance(units, dict) else {}
+        units_list = [known.get(name, "") for name in names]
         return cls(
             values=jnp.asarray(vals),
             names=names,
@@ -252,7 +254,10 @@ class SignalBatch:
         self.units: list[str] = units
         self.mask: jnp.ndarray = mask
         self.times: tuple[float | None, ...] = ts
-        self.t: float | None = ts[0] if ts and all(tt == ts[0] for tt in ts) else None
+        t0 = ts[0] if ts else None
+        self.t: float | None = None
+        if t0 is not None and all(tt == t0 for tt in ts):
+            self.t = float(t0)
 
     def __len__(self) -> int:
         return int(self.array.shape[0])

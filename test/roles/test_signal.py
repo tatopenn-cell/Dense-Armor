@@ -114,6 +114,21 @@ def test_signal_batch_row_gives_the_sample_with_its_mask_and_time():
     assert "n=2" in repr(batch)
 
 
+def test_signal_from_dict_ignores_units_that_are_not_a_dict():
+    s = Signal.from_dict({"a": 1.0, "b": 2.0}, units=["m"])
+    assert s.units == ["", ""]
+    assert Signal.from_dict({"a": 1.0}, units={"a": "m"}).units == ["m"]
+    assert Signal.from_dict({"a": 1.0}, units=None).units == [""]
+
+
+def test_signal_batch_shared_time_is_a_float():
+    v = jnp.zeros((2, 1))
+    assert SignalBatch(v, ["a"], [""], times=(1, 1.0)).t == 1.0
+    assert isinstance(SignalBatch(v, ["a"], [""], times=(1, 1)).t, float)
+    assert SignalBatch(v, ["a"], [""], times=(1, 2)).t is None
+    assert SignalBatch(v, ["a"], [""], times=(None, None)).t is None
+
+
 def test_signal_stacked_rejects_mismatch():
     a = Signal(values=[1.0], names=["x"], units=["m"])
     b = Signal(values=[2.0], names=["x"], units=["s"])
