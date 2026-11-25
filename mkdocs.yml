@@ -366,6 +366,7 @@ nav:
       - Motion: vision/motion.md
       - Tracking: vision/tracking.md
       - Kinematics: vision/kinematics.md
+      - BatchedLandmarkShield: vision/batched_landmark_shield.md
       - Quality: vision/quality.md
       - Patches: vision/patches.md
       - Video into any primitive: vision/video_input.md
