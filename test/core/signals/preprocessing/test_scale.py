@@ -10,6 +10,40 @@ from dense_armor.core.signals.preprocessing.scale import (
 )
 
 
+@pytest.mark.parametrize(
+    "make, message",
+    [
+        (lambda: EWScaler(alpha=0.0), "alpha must be in"),
+        (lambda: EWScaler(alpha=1.5), "alpha must be in"),
+        (lambda: RobustScaler(window=0), "window must be"),
+        (lambda: StandardScaler(eps=0.0), "eps must be"),
+        (lambda: EWScaler(eps=-1.0), "eps must be"),
+        (lambda: RobustScaler(eps=0.0), "eps must be"),
+        (lambda: MinMaxScaler(eps=-1.0), "eps must be"),
+    ],
+)
+def test_scalers_refuse_invalid_parameters(make, message):
+    with pytest.raises(ValueError, match=message):
+        make()
+
+
+@pytest.mark.parametrize("scaler", [StandardScaler, EWScaler, RobustScaler, MinMaxScaler])
+def test_scalers_learn_features_and_joints_as_they_appear(scaler):
+    s = scaler()
+    for q in ([1.0, 2.0], [2.0, 3.0], [3.0, 5.0]):
+        s.learn_one({"q": q})
+    s.learn_one({"q": [9.0]})
+    s.learn_one({"q": [4.0, 6.0, 7.0]})
+    s.learn_one({"nuova": 2.0, "q": [5.0, 7.0, 8.0]})
+    s.learn_one({"nuova": 4.0})
+    short = s.transform_one({"q": [3.0]})["q"]
+    long = s.transform_one({"q": [3.0, 4.0, 5.0, 99.0]})["q"]
+    assert len(short) == 1
+    assert len(long) == 4
+    assert long[3] == 99.0
+    assert s.transform_one({"mai_vista": 1.0})["mai_vista"] == 1.0
+
+
 @pytest.mark.usefixtures("float64_default")
 def test_standard_matches_batch():
     rng = np.random.default_rng(0)
