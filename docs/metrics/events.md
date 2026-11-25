@@ -24,6 +24,36 @@ event has no alarm: missed. The alarms at 5 s and 30 s are outside every event: 
 alarms over one hour of normal operation, 2 per hour. `dt` is the sample period, used in step
 10 to count the points of a window.
 
+### The event window
+
+`EventMetrics` and `evaluate_events` take a list of `(start, end)` tuples. Internally these
+are validated as `EventWindow` objects: a frozen dataclass with `start` and `end` (seconds),
+where `end >= start` is enforced. It provides `contains(t)` to test whether a timestamp falls
+inside, and `n_points(dt)` to compute how many discrete samples the window covers at a given
+sample period `dt`.
+
+```python
+from dense_armor.core.evaluation.metrics import EventWindow
+
+ew = EventWindow(start=10.0, end=20.0)
+print(f"contains(15.0): {ew.contains(15.0)}")
+print(f"n_points(dt=1.0): {ew.n_points(1.0)}")
+```
+
+```
+contains(15.0): True
+n_points(dt=1.0): 11
+```
+
+Count by hand: a window from 10.0 to 20.0 s at `dt=1.0` covers the points 10.0, 11.0, …,
+20.0 — that is 11 points. At `dt=0.5` it would be 21 points. The formula is
+`round((end - start) / dt) + 1`, with a minimum of 1.
+
+`EventWindow` raises `ValueError` if `end < start` or if `n_points` is called with
+`dt <= 0`. It is a plain data carrier; `EventMetrics` builds a list of `EventWindow`
+objects from the input tuples and uses their `contains` and `n_points` methods for all
+range-based calculations.
+
 ## 10. How much of the event was caught
 
 Tatbul et al. (2018) extend precision and recall to ranges. The recall of one real event mixes

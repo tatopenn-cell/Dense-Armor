@@ -59,6 +59,62 @@ FP = 1, FN = 1, so F1 = 0.5, and the macro F1 is (0.75 + 0.5) / 2 = 0.625. `"mic
 counts of all classes, `"weighted"` weights each class by how often it occurs; `FBeta(beta=2)`
 weights recall more than precision.
 
+### The confusion matrix
+
+Precision, recall and F1 summarise the confusion matrix, but the matrix itself is sometimes
+needed in full: it counts how many times each true class was predicted as each class.
+`ConfusionMatrix` returns a nested dict `{y_true: {y_pred: count}}`; it is the one metric
+whose `get()` returns a dict instead of a float.
+
+```python
+from dense_armor.core.evaluation.metrics import ConfusionMatrix
+
+m = ConfusionMatrix()
+for a, b in [(0, 0), (0, 1), (1, 1)]:
+    m.update(a, b)
+print(m.get())
+```
+
+```
+{0: {0: 1.0, 1: 1.0}, 1: {1: 1.0}}
+```
+
+Count by hand: true class 0 was predicted as 0 once and as 1 once; true class 1 was
+predicted as 1 once. The entry `m.get()[0][1]` is 1.0, meaning one sample of true class 0
+was predicted as class 1.
+
+The matrix lets you compute precision, recall or F1 for any class after the stream ends,
+and `merge` lets you combine partial matrices from different workers.
+
+### Balanced accuracy for imbalanced streams
+
+When one class is rare, accuracy can be misleading: a model that always predicts the
+majority class reaches high accuracy but finds no rare events. **Balanced accuracy** is the
+mean of the per-class recall. For binary classes 0 and 1 it equals
+`(TPR + TNR) / 2`, where TNR is the recall of the negative class. A model that always
+guesses the majority class scores 0.5, not 0.9.
+
+```python
+from dense_armor.core.evaluation.metrics import BalancedAccuracy
+
+m = BalancedAccuracy()
+for a, b in [(0, 0), (0, 1), (1, 1), (1, 1)]:
+    m.update(a, b)
+print(round(m.get(), 4))
+```
+
+```
+0.75
+```
+
+Count by hand:
+- Class 0: one true positive (first sample), one false negative (second) → recall = 1/2 = 0.5
+- Class 1: two true positives (third and fourth), zero false negatives → recall = 2/2 = 1.0
+Balanced accuracy = (0.5 + 1.0) / 2 = 0.75.
+
+A model that always guesses the majority class on a 90/10 split reaches 0.9 accuracy but
+only 0.5 balanced accuracy, exposing the imbalance.
+
 ## 3. Agreement beyond chance and probabilities
 
 Accuracy can look good by chance when one class is common. **Cohen's kappa** subtracts the

@@ -48,6 +48,31 @@ print(m.get())
 
 Joint 0 is off by 0.5 both times; joint 1 by 0.5 and then 1.0, mean 0.75.
 
+### Mean squared error
+
+The **MSE** (mean squared error) is the mean of $(\tau - \hat\tau)^2$ without the square root.
+It is the quantity that RMSE takes the square root of: `RMSE = sqrt(MSE)`. MSE is useful when
+you need the raw squared error for gradient-based optimisation or for combining with other
+squared-error terms; RMSE is easier to interpret because it has the same units as the target.
+
+```python
+from dense_armor.core.evaluation.metrics import MeanSquaredError, RootMeanSquaredError
+
+mse, rmse = MeanSquaredError(), RootMeanSquaredError()
+for a, b in [(1.0, 1.5), (2.0, 2.5), (3.0, 2.5)]:
+    mse.update(a, b)
+    rmse.update(a, b)
+print(f"MSE: {mse.get()}, RMSE: {rmse.get()}")
+```
+
+```
+MSE: 0.25, RMSE: 0.5
+```
+
+Count by hand:
+$(1.0-1.5)^2 = 0.25$, $(2.0-2.5)^2 = 0.25$, $(3.0-2.5)^2 = 0.25$.
+MSE $= (0.25+0.25+0.25)/3 = 0.25$. RMSE $= \sqrt{0.25} = 0.5$.
+
 ## 5. Scoring the uncertainty
 
 A prediction with an interval is useful only if the interval is honest. Two numbers check it:
