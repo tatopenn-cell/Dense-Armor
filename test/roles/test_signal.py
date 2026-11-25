@@ -133,8 +133,16 @@ def test_signal_batch_empty_is_valid_and_t_is_none():
     assert batch.mask.shape == (0, 3)
     assert batch.names == ["a", "b", "c"]
     assert batch.units == ["", "", ""]
-    with pytest.raises(IndexError):
-        batch.row(0)
+    assert batch.row(0) is None
+
+
+def test_signal_batch_row_out_of_range_gives_none():
+    batch = SignalBatch(jnp.arange(6.0).reshape(3, 2), ["a", "b"], ["", ""])
+    assert batch.row(3) is None
+    assert batch.row(5) is None
+    assert batch.row(-4) is None
+    assert batch.row(-1)["a"] == 4.0
+    assert batch.row(2)["b"] == 5.0
 
 
 def test_signal_batch_empty_is_not_a_dict():
