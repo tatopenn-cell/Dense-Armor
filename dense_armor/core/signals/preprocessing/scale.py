@@ -4,9 +4,13 @@ Each scaler is a :class:`~dense_armor.roles.Transformer`: ``learn_one``
 updates the running state, ``transform_one`` uses the current state.
 Scalars and vectors are both supported: a scalar keeps one statistic,
 a vector keeps one statistic per joint. A feature never seen, or with
-zero spread, passes through unchanged. The length of a vector feature is
-fixed by the first sample: a vector of another length is not learned and
-passes through unchanged.
+zero spread, passes through unchanged.
+
+Features and joints are learned as they appear: a feature that shows up
+later, or a vector longer than before, gets its statistics from that
+sample on, and a shorter vector updates its first joints. A joint that has
+no statistics yet passes through unchanged. A vector of another length
+never raises and never warns.
 
 The running mean and variance are updated incrementally with the
 stable one-pass formulas of running moments. The exponentially
@@ -64,6 +68,25 @@ def _check_eps(eps: float) -> None:
         raise ValueError(f"eps must be > 0, got {eps}")
 
 
+def _grow_stats(stats: dict, x: dict, features: list[str] | None, make) -> None:
+    """Give each feature of ``x`` one accumulator per joint, as they appear.
+
+    A feature met for the first time, or a vector longer than before, gets
+    the accumulators it lacks; the ones that exist are left alone. With
+    ``features`` only those keys are followed; with ``None`` every key is.
+    """
+    keys = list(features) if features is not None else sorted(x)
+    for k in keys:
+        if k not in x:
+            continue
+        vec, _ = _to_vec(x[k])
+        if vec is None:
+            continue
+        s_list = stats.setdefault(k, [])
+        while len(s_list) < vec.size:
+            s_list.append(make())
+
+
 class StandardScaler(Transformer):
     """Per-feature standardization with running mean and std.
 
@@ -77,8 +100,8 @@ class StandardScaler(Transformer):
     scalar features.
 
     Args:
-        features: explicit feature order. ``None`` sorts the first
-            dict's keys.
+        features: the features to follow. ``None`` follows every feature
+            that shows up, in sorted order.
         eps: std floor below which the feature is left alone.
 
     Raises:
@@ -110,15 +133,8 @@ class StandardScaler(Transformer):
 
     def _ensure(self, x: dict) -> dict[str, list[RunningMoments]]:
         if self.stats_ is None:
-            keys = list(self.features) if self.features is not None else sorted(x)
             self.stats_ = {}
-            for k in keys:
-                if k not in x:
-                    continue
-                vec, _ = _to_vec(x[k])
-                if vec is None:
-                    continue
-                self.stats_[k] = [RunningMoments() for _ in range(vec.size)]
+        _grow_stats(self.stats_, x, self.features, RunningMoments)
         return self.stats_
 
     def _update(self, d: dict, t: float | None) -> None:
@@ -128,10 +144,10 @@ class StandardScaler(Transformer):
             if k not in d:
                 continue
             vec, _ = _to_vec(d[k])
-            if vec is None or vec.size != len(s_list):
+            if vec is None:
                 continue
-            for i, s in enumerate(s_list):
-                s.learn_one({"_v": float(vec[i])})
+            for i in range(vec.size):
+                s_list[i].learn_one({"_v": float(vec[i])})
 
     def learn_one(
         self, x: Any, y: Any = None, t: float | None = None
@@ -176,10 +192,10 @@ class StandardScaler(Transformer):
         stats = self._ensure(first)
         for k, s_list in stats.items():
             v = cols.get(k)
-            if v is None or v.shape[1] != len(s_list):
+            if v is None:
                 continue
-            for j, s in enumerate(s_list):
-                s.learn_many(v[:, j])
+            for j in range(v.shape[1]):
+                s_list[j].learn_many(v[:, j])
         return self
 
     def transform_one(self, x: Any, t: float | None = None) -> dict:
@@ -192,14 +208,13 @@ class StandardScaler(Transformer):
             if k not in out:
                 continue
             vec, is_scalar = _to_vec(out[k])
-            if vec is None or vec.size != len(s_list):
+            if vec is None:
                 continue
-            res = np.empty(vec.size, dtype=get_default_dtype())
-            for i, s in enumerate(s_list):
+            res = vec.copy()
+            for i in range(min(vec.size, len(s_list))):
+                s = s_list[i]
                 if s.count >= 2 and s.std > self.eps:
                     res[i] = (vec[i] - s.mean) / s.std
-                else:
-                    res[i] = vec[i]
             out[k] = _write_out(res, is_scalar)
         return out
 
@@ -252,15 +267,8 @@ class EWScaler(Transformer):
 
     def _ensure(self, x: dict) -> dict[str, list[EWStats]]:
         if self.stats_ is None:
-            keys = list(self.features) if self.features is not None else sorted(x)
             self.stats_ = {}
-            for k in keys:
-                if k not in x:
-                    continue
-                vec, _ = _to_vec(x[k])
-                if vec is None:
-                    continue
-                self.stats_[k] = [EWStats(alpha=self.alpha) for _ in range(vec.size)]
+        _grow_stats(self.stats_, x, self.features, lambda: EWStats(alpha=self.alpha))
         return self.stats_
 
     def _update(self, d: dict, t: float | None) -> None:
@@ -270,10 +278,10 @@ class EWScaler(Transformer):
             if k not in d:
                 continue
             vec, _ = _to_vec(d[k])
-            if vec is None or vec.size != len(s_list):
+            if vec is None:
                 continue
-            for i, s in enumerate(s_list):
-                s.learn_one({"_v": float(vec[i])})
+            for i in range(vec.size):
+                s_list[i].learn_one({"_v": float(vec[i])})
 
     def learn_one(self, x: Any, y: Any = None, t: float | None = None) -> "EWScaler":
         """Update the exponentially weighted stats per feature."""
@@ -290,14 +298,13 @@ class EWScaler(Transformer):
             if k not in out:
                 continue
             vec, is_scalar = _to_vec(out[k])
-            if vec is None or vec.size != len(s_list):
+            if vec is None:
                 continue
-            res = np.empty(vec.size, dtype=get_default_dtype())
-            for i, s in enumerate(s_list):
+            res = vec.copy()
+            for i in range(min(vec.size, len(s_list))):
+                s = s_list[i]
                 if s.count >= 1 and s.std > self.eps:
                     res[i] = (vec[i] - s.mean) / s.std
-                else:
-                    res[i] = vec[i]
             out[k] = _write_out(res, is_scalar)
         return out
 
@@ -352,19 +359,14 @@ class RobustScaler(Transformer):
         self, x: dict
     ) -> tuple[dict[str, list[RollingMedian]], dict[str, list[RollingMAD]]]:
         if self.medians_ is None or self.mads_ is None:
-            keys = list(self.features) if self.features is not None else sorted(x)
-            meds: dict[str, list[RollingMedian]] = {}
-            mads: dict[str, list[RollingMAD]] = {}
-            for k in keys:
-                if k not in x:
-                    continue
-                vec, _ = _to_vec(x[k])
-                if vec is None:
-                    continue
-                meds[k] = [RollingMedian(window=self.window) for _ in range(vec.size)]
-                mads[k] = [RollingMAD(window=self.window) for _ in range(vec.size)]
-            self.medians_ = meds
-            self.mads_ = mads
+            self.medians_ = {}
+            self.mads_ = {}
+        _grow_stats(
+            self.medians_, x, self.features, lambda: RollingMedian(window=self.window)
+        )
+        _grow_stats(
+            self.mads_, x, self.features, lambda: RollingMAD(window=self.window)
+        )
         return self.medians_, self.mads_
 
     def learn_one(
@@ -378,7 +380,7 @@ class RobustScaler(Transformer):
             if k not in d:
                 continue
             vec, _ = _to_vec(d[k])
-            if vec is None or vec.size != len(med_list):
+            if vec is None:
                 continue
             mad_list = mad[k]
             for i in range(vec.size):
@@ -396,16 +398,15 @@ class RobustScaler(Transformer):
             if k not in out:
                 continue
             vec, is_scalar = _to_vec(out[k])
-            if vec is None or vec.size != len(med_list):
+            if vec is None:
                 continue
             mad_list = self.mads_[k]
-            res = np.empty(vec.size, dtype=get_default_dtype())
-            for i, med in enumerate(med_list):
+            res = vec.copy()
+            for i in range(min(vec.size, len(med_list))):
+                med = med_list[i]
                 mad = mad_list[i].value
                 if med.count >= 1 and mad > self.eps:
                     res[i] = (vec[i] - med.value) / mad
-                else:
-                    res[i] = vec[i]
             out[k] = _write_out(res, is_scalar)
         return out
 
@@ -452,15 +453,8 @@ class MinMaxScaler(Transformer):
 
     def _ensure(self, x: dict) -> dict[str, list[RunningMoments]]:
         if self.stats_ is None:
-            keys = list(self.features) if self.features is not None else sorted(x)
             self.stats_ = {}
-            for k in keys:
-                if k not in x:
-                    continue
-                vec, _ = _to_vec(x[k])
-                if vec is None:
-                    continue
-                self.stats_[k] = [RunningMoments() for _ in range(vec.size)]
+        _grow_stats(self.stats_, x, self.features, RunningMoments)
         return self.stats_
 
     def learn_one(
@@ -474,10 +468,10 @@ class MinMaxScaler(Transformer):
             if k not in d:
                 continue
             vec, _ = _to_vec(d[k])
-            if vec is None or vec.size != len(s_list):
+            if vec is None:
                 continue
-            for i, s in enumerate(s_list):
-                s.learn_one({"_v": float(vec[i])})
+            for i in range(vec.size):
+                s_list[i].learn_one({"_v": float(vec[i])})
         return self
 
     def transform_one(self, x: Any, t: float | None = None) -> dict:
@@ -490,18 +484,15 @@ class MinMaxScaler(Transformer):
             if k not in out:
                 continue
             vec, is_scalar = _to_vec(out[k])
-            if vec is None or vec.size != len(s_list):
+            if vec is None:
                 continue
-            res = np.empty(vec.size, dtype=get_default_dtype())
-            for i, s in enumerate(s_list):
-                lo, hi = s.min, s.max
+            res = vec.copy()
+            for i in range(min(vec.size, len(s_list))):
+                lo, hi = s_list[i].min, s_list[i].max
                 if lo is None or hi is None:
-                    res[i] = vec[i]
                     continue
                 spread = hi - lo
                 if spread > self.eps:
                     res[i] = (vec[i] - lo) / spread
-                else:
-                    res[i] = vec[i]
             out[k] = _write_out(res, is_scalar)
         return out
