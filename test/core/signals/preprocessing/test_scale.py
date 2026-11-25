@@ -11,20 +11,27 @@ from dense_armor.core.signals.preprocessing.scale import (
 
 
 @pytest.mark.parametrize(
-    "make, message",
+    "make, attr, value",
     [
-        (lambda: EWScaler(alpha=0.0), "alpha must be in"),
-        (lambda: EWScaler(alpha=1.5), "alpha must be in"),
-        (lambda: RobustScaler(window=0), "window must be"),
-        (lambda: StandardScaler(eps=0.0), "eps must be"),
-        (lambda: EWScaler(eps=-1.0), "eps must be"),
-        (lambda: RobustScaler(eps=0.0), "eps must be"),
-        (lambda: MinMaxScaler(eps=-1.0), "eps must be"),
+        (lambda: EWScaler(alpha=0.0), "alpha", 0.0),
+        (lambda: EWScaler(alpha=1.5), "alpha", 1.5),
+        (lambda: EWScaler(alpha=-0.2), "alpha", -0.2),
+        (lambda: RobustScaler(window=0), "window", 0),
+        (lambda: RobustScaler(window=-5), "window", -5),
+        (lambda: StandardScaler(eps=0.0), "eps", 0.0),
+        (lambda: EWScaler(eps=-1.0), "eps", -1.0),
+        (lambda: RobustScaler(eps=0.0), "eps", 0.0),
+        (lambda: MinMaxScaler(eps=-1.0), "eps", -1.0),
     ],
 )
-def test_scalers_refuse_invalid_parameters(make, message):
-    with pytest.raises(ValueError, match=message):
-        make()
+def test_scalers_keep_the_parameters_and_never_raise_on_invalid_ones(
+    make, attr, value
+):
+    s = make()
+    assert getattr(s, attr) == value
+    s.learn_one({"x": 3.0})
+    s.learn_one({"x": 3.0})
+    assert np.isfinite(s.transform_one({"x": 3.0})["x"])
 
 
 @pytest.mark.parametrize("scaler", [StandardScaler, EWScaler, RobustScaler, MinMaxScaler])
