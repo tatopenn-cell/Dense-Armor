@@ -881,10 +881,13 @@ Public methods:
 
 ## Evaluate
 
+This package has one class and four functions. The functions follow the class.
+
 ### OnlineModelSelection
 
 
 *Module:* `dense_armor.core.evaluation.evaluate.model_selection`
+*Guide:* [metrics/stream.md](../metrics/stream.md)
 
 Track several models on a stream and expose the current best.
 
@@ -894,6 +897,42 @@ Public methods:
 - `current_best()`
 - `run(stream: Iterable)`
 - `scores()`
+
+### progressive_val_score
+
+*Function in:* `dense_armor.core.evaluation.evaluate.prequential`
+*Guide:* [metrics/stream.md](../metrics/stream.md)
+
+Score a model on a stream, test first, then train.
+
+Signature: `progressive_val_score(stream, model, metric, delay=None, every=None)`
+
+### progressive_val_proba_score
+
+*Function in:* `dense_armor.core.evaluation.evaluate.prequential`
+*Guide:* [metrics/stream.md](../metrics/stream.md)
+
+Same as `progressive_val_score`, but scores a probability.
+
+Signature: `progressive_val_proba_score(stream, classifier, metric, delay=None, every=None)`
+
+### best_of
+
+*Function in:* `dense_armor.core.evaluation.evaluate.model_selection`
+*Guide:* [metrics/stream.md](../metrics/stream.md)
+
+Return an `OnlineModelSelection` for the given models.
+
+Signature: `best_of(models, metric_factory, stream=None, delay=None)`
+
+### evaluate_events
+
+*Function in:* `dense_armor.core.evaluation.evaluate.events`
+*Guide:* [metrics/events.md](../metrics/events.md)
+
+Run a detector on a stream and report the event metrics.
+
+Signature: `evaluate_events(stream, detector, events, **kwargs)`
 
 ## Core
 
