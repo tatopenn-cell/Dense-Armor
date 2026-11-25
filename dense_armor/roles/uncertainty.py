@@ -118,10 +118,10 @@ class AdaptiveConformalRegressor(Regressor):
             faster but produce noisier intervals.
         window: number of past residuals used to compute ``Q_t``.
 
-    Raises:
-        ValueError: if ``alpha`` is not in ``(0, 1)``, if ``gamma`` is not
-            positive, or if ``window`` is smaller than 1. With an empty
-            window the interval would always have zero width.
+    Nothing raises: an ``alpha`` outside ``(0, 1)`` is clipped into it, a
+    negative ``gamma`` is taken as 0 (the level does not adapt) and a
+    ``window`` below 1 as 1, since an empty window would give an interval of
+    zero width.
     """
 
     _CONFORMAL_OVERHEAD_S: float = 5e-4
@@ -133,18 +133,12 @@ class AdaptiveConformalRegressor(Regressor):
         gamma: float = 0.005,
         window: int = 200,
     ) -> None:
-        if not 0.0 < alpha < 1.0:
-            raise ValueError(f"alpha must be in (0, 1), got {alpha}")
-        if gamma <= 0.0:
-            raise ValueError(f"gamma must be > 0, got {gamma}")
-        if window < 1:
-            raise ValueError(f"window must be >= 1, got {window}")
         self.model = model
-        self.alpha = alpha
-        self.gamma = gamma
-        self.window = window
-        self.alpha_t_ = alpha
-        self.residuals_: deque[float] = deque(maxlen=window)
+        self.alpha = min(max(alpha, 1e-6), 1.0 - 1e-6)
+        self.gamma = max(gamma, 0.0)
+        self.window = max(1, int(window))
+        self.alpha_t_ = self.alpha
+        self.residuals_: deque[float] = deque(maxlen=self.window)
         self.n_ = 0
         self.n_miss_ = 0
         self._last_lo_: float | None = None

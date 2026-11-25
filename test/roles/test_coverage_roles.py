@@ -100,13 +100,16 @@ def test_pipeline_exposes_only_what_the_last_step_has():
     assert not hasattr(tr, "predict_one")
 
 
-def test_pipeline_refuses_a_model_before_the_last_step_and_an_empty_one():
-    with pytest.raises(TypeError, match="put the model last"):
-        _Reg() | _Double()
-    with pytest.raises(TypeError, match="put the model last"):
-        (_Double() | _Reg()) | _Double()
-    with pytest.raises(ValueError, match="at least one step"):
-        _Pipeline([])
+def test_pipeline_never_raises_on_a_model_before_the_last_step_or_when_empty():
+    odd = _Reg() | _Double()
+    assert odd.learn_one({"x": 1.0}, 2.0) is odd
+    assert odd.transform_one({"x": 1.0}) == {"x": 2.0}
+    chain = (_Double() | _Reg()) | _Double()
+    assert chain.learn_one({"x": 1.0}, 2.0) is chain
+    assert chain.transform_one({"x": 1.0}) == {"x": 4.0}
+    empty = _Pipeline([])
+    assert empty.learn_one({"x": 1.0}) is empty
+    assert not hasattr(empty, "predict_one")
 
 
 class _OldSig:

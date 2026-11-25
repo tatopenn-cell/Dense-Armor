@@ -7,7 +7,12 @@ arXiv:2012.04740) and the parameter / clone / inspect contract of a general-purp
 
 from typing import Any
 
-from dense_armor.roles._util import call_with_t, sum_budgets, worst_memory_class
+from dense_armor.roles._util import (
+    call_learn_one,
+    call_with_t,
+    sum_budgets,
+    worst_memory_class,
+)
 from dense_armor.roles.root import Root
 
 
@@ -29,16 +34,13 @@ class _Pipeline(Root):
     _is_pipeline = True
 
     def __init__(self, steps: list[tuple[str, Root]]):
-        steps = list(steps)
-        if not steps:
-            raise ValueError("a pipeline needs at least one step")
-        for name, step in steps[:-1]:
-            if not hasattr(step, "transform_one"):
-                raise TypeError(
-                    f"step {name!r} ({type(step).__name__}) comes before the last "
-                    f"step, so it must have transform_one; put the model last"
-                )
-        self.steps = steps
+        self.steps = list(steps)
+
+    @staticmethod
+    def _through(step: Any, x: dict, t: float | None) -> dict:
+        """``x`` after ``step``; a step with no ``transform_one`` lets it pass."""
+        fn = getattr(step, "transform_one", None)
+        return x if fn is None else call_with_t(fn, x, t=t)
 
     def _capability(self, name: str):
         """The method ``name`` of the pipeline, if the last step has it.
@@ -47,12 +49,9 @@ class _Pipeline(Root):
         to its last step, so ``hasattr(pipeline, name)`` is true only when
         the last step has ``name``.
         """
-        last = self.steps[-1][1]
-        if not hasattr(last, name):
-            raise AttributeError(
-                f"the last step of this pipeline, {type(last).__name__}, "
-                f"has no {name}"
-            )
+        last = self.steps[-1][1] if self.steps else None
+        if last is None or not hasattr(last, name):
+            raise AttributeError(f"the last step of this pipeline has no {name}")
         return getattr(self, "_" + name)
 
     def __or__(self, other) -> '_Pipeline':
@@ -62,8 +61,7 @@ class _Pipeline(Root):
 
     def _forward(self, x: dict, t: float | None = None) -> dict:
         for _, s in self.steps[:-1]:
-            s_any: Any = s
-            x = call_with_t(s_any.transform_one, x, t=t)
+            x = self._through(s, x, t)
         return x
 
     @property
@@ -81,14 +79,18 @@ class _Pipeline(Root):
         return worst_memory_class([s for _, s in self.steps])
 
     def learn_one(self, x: dict, y: Any = None, t: float | None = None) -> '_Pipeline':
+        if not self.steps:
+            return self
         h = x
         for _, s in self.steps[:-1]:
             s_any: Any = s
-            out = call_with_t(s_any.transform_one, h, t=t)
+            out = self._through(s_any, h, t)
             if hasattr(s_any, "learn_one"):
-                call_with_t(s_any.learn_one, h, t=t)
+                call_learn_one(s_any.learn_one, h, y, t=t)
             h = out
         last: Any = self.steps[-1][1]
+        if not hasattr(last, "learn_one"):
+            return self
         if y is None:
             call_with_t(last.learn_one, h, t=t)
         else:
@@ -107,8 +109,7 @@ class _Pipeline(Root):
 
     def _transform_one(self, x: dict, t: float | None = None) -> dict:
         for _, s in self.steps:
-            s_any: Any = s
-            x = call_with_t(s_any.transform_one, x, t=t)
+            x = self._through(s, x, t)
         return x
 
     @property
