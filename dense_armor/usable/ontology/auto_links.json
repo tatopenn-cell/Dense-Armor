@@ -334,6 +334,15 @@
    }
   ],
   [
+   "vision",
+   "BatchedLandmarkShield",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
    "bandit",
    "BayesUCB",
    0.25,

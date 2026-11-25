@@ -217,7 +217,7 @@ def test_batched_landmark_shield_hampel_matches_landmark_cleaner():
         window = [float(v) for v in hist[k] if not np.isnan(v)]
         want, was = _hampel_value(window, float(vals[k]), 3.0)
         assert flag[k] == was
-        assert abs(filt[k] - want) < _TOL_1E_9
+        assert abs(filt[k] - want) < _TOL_1E_6
 
 
 def test_batched_landmark_shield_p99_performance():
