@@ -38,6 +38,7 @@ class _BatchedLandmarkShieldOutput(TypedDict):
     points: np.ndarray
     cleaned: np.ndarray
 
+
 _MIN_WINDOW = 3
 _SCALE_EPS = 1e-12
 _DEV_EPS = 1e-9
@@ -50,7 +51,9 @@ _R = np.diag([1e-3, 1e-3])
 _P_INIT = np.diag([1e-6, 1e-6, 1e-2, 1e-2])
 
 
-def _hampel_value(window: list[float], value: float, n_sigmas: float) -> tuple[float, bool]:
+def _hampel_value(
+    window: list[float], value: float, n_sigmas: float
+) -> tuple[float, bool]:
     """Causal Hampel filter on a 1D window, following dense_armor LandmarkCleaner.
 
     Returns (filtered_value, was_outlier).
@@ -93,20 +96,6 @@ def _hampel_batch(
         out[rows] = flag
         filt[rows] = np.where(flag, med, vals[rows])
     return filt, out
-
-
-def _angle(a, b, c) -> float:
-    if len(window) < 3:
-        return value, False
-    arr = as_default_array(window)
-    med = float(np.median(arr))
-    mad = float(np.median(np.abs(arr - med)))
-    scale = 1.4826 * mad
-    if scale <= 1e-12:
-        return med, abs(value - med) > 1e-9
-    if abs(value - med) > n_sigmas * scale:
-        return med, True
-    return value, False
 
 
 def _angle(a, b, c) -> float:
@@ -401,11 +390,14 @@ class BatchedLandmarkShield(Transformer):
       again after an occlusion.
     - The time step comes from the frame timestamps; the first frame uses 1/30 s.
 
-    This implementation follows the linear Kalman filter equations (special case
-    of EKF with constant F and H) from Thieu & Melnik (2025, arXiv:2502.15179),
-    §2.1 pp. 4-5 (EKF equations) and §4.2 p. 13 (constant-velocity motion model
-    x_{k+1} = x_k + v_k dt + w_k). The outlier test is the causal Hampel rule
-    following dense_armor's LandmarkCleaner (Pearson et al. 2016).
+    The prediction and update steps are the Kalman filter equations of Thieu &
+    Melnik (2025, arXiv:2502.15179), §2.1 pp. 4-5, with F and H constant (the
+    linear case of their EKF). The motion model is the one of their §4.2 p. 13,
+    x_{k+1} = x_k + v_k dt + w_k, with two differences: here the velocity is
+    kept in the state (x, y, vx, vy), while the paper models it as random
+    noise, and the points are 2D, while the paper tracks 3D points. The
+    outlier test is the Hampel rule of Pearson et al. (2016), eq. (3)-(4), on a
+    causal window, as in dense_armor's LandmarkCleaner.
 
     Args:
         window: causal window size for Hampel filter (default 7).
@@ -420,15 +412,19 @@ class BatchedLandmarkShield(Transformer):
         - Thieu, N. & Melnik, R. (2025). Nonlinear Dynamical Systems for
           Automatic Face Annotation in Head Tracking and Pose Estimation.
           arXiv:2502.15179. EKF equations §2.1 pp. 4-5; motion model §4.2 p. 13.
-        - Zhu, X. et al. (2021). Reasoning Structural Relation for
+        - Zhu, C. et al. (2021). Reasoning Structural Relation for
           Occlusion-Robust Facial Landmark Localization. arXiv:2112.10087.
-          Test protocol: dynamic occlusion moving across face.
-        - Pearson, R. et al. (2016). Robust outlier detection using the
-          Hampel filter. In *Data Mining and Knowledge Discovery*.
+          Dynamic occlusion: an occlusion that moves from frame to frame
+          (§3.2), which the moving occluder of the tests imitates.
+        - Pearson, R. K., Neuvo, Y., Astola, J. & Gabbouj, M. (2016).
+          Generalized Hampel Filters. EURASIP Journal on Advances in Signal
+          Processing 2016:87. Eq. (3)-(4): replace by the median a value more
+          than t scaled MADs away, with scale 1.4826 x MAD; the window of the
+          paper is symmetric, the one here is causal.
     """
 
     budget_s: float = 3.5e-2
-    memory_class: str = 'O(N * window)'
+    memory_class: str = "O(window)"
 
     def __init__(
         self,
@@ -447,6 +443,12 @@ class BatchedLandmarkShield(Transformer):
         self.n_sigmas = float(n_sigmas)
         self.max_gap = int(max_gap)
         self.neutral = np.asarray(neutral, dtype=float) if neutral is not None else None
+        if self.neutral is not None and (
+            self.neutral.ndim != 2 or self.neutral.shape[1] != 2
+        ):
+            raise ValueError(
+                f"neutral must have shape (N, 2), got {self.neutral.shape}"
+            )
         self._neutral_given = neutral is not None
         self._x: np.ndarray | None = None
         self._p: np.ndarray | None = None
@@ -473,6 +475,10 @@ class BatchedLandmarkShield(Transformer):
         self._gap = np.zeros(n, dtype=int)
         self._initialized = np.zeros(n, dtype=bool)
         if self._neutral_given and self.neutral is not None:
+            if self.neutral.shape[0] != n:
+                raise ValueError(
+                    f"neutral has {self.neutral.shape[0]} points but the frame has {n}"
+                )
             self._neutral_valid = np.ones(n, dtype=bool)
         else:
             self.neutral = np.full((n, 2), np.nan, dtype=float)
@@ -489,15 +495,19 @@ class BatchedLandmarkShield(Transformer):
             self._f[0, 2] = self._f[1, 3] = dt
 
     def _frame(self, x: dict) -> tuple[np.ndarray, np.ndarray, float | None]:
-        if 'points' in x:
-            pts = as_default_array(x['points'])
-            conf = as_default_array(x.get('confidence', np.ones(pts.shape[0])))
-            t = x.get('t')
+        if "points" in x:
+            pts = as_default_array(x["points"])
+            if pts.ndim != 2 or pts.shape[1] != 2:
+                raise ValueError(f"points must have shape (N, 2), got {pts.shape}")
+            conf = as_default_array(x.get("confidence", np.ones(pts.shape[0])))
+            t = x.get("t")
             return pts, conf, None if t is None else float(t)
-        keys = sorted(k for k in x if k != 't')
+        keys = sorted(k for k in x if k != "t")
         vals = np.array([float(x[k]) for k in keys], dtype=float)
-        pts = np.stack([vals, np.zeros_like(vals)], axis=1) if keys else np.zeros((0, 2))
-        t = x.get('t')
+        pts = (
+            np.stack([vals, np.zeros_like(vals)], axis=1) if keys else np.zeros((0, 2))
+        )
+        t = x.get("t")
         return pts, np.ones(len(keys)), None if t is None else float(t)
 
     def _update(self, pts: np.ndarray, ok: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
@@ -540,7 +550,9 @@ class BatchedLandmarkShield(Transformer):
             out[upd] = self._x[upd, :2]
         new = ok & ~init
         if new.any():
-            self._x[new] = np.concatenate([pts[new], np.zeros((int(new.sum()), 2))], axis=1)
+            self._x[new] = np.concatenate(
+                [pts[new], np.zeros((int(new.sum()), 2))], axis=1
+            )
             self._p[new] = _P_INIT
             self._initialized[new] = True
             out[new] = pts[new]
@@ -559,7 +571,9 @@ class BatchedLandmarkShield(Transformer):
         self.neutral[fresh] = out[fresh]
         self._neutral_valid[fresh] = True
 
-    def transform_one(self, x: dict, t: float | None = None) -> "_BatchedLandmarkShieldOutput":
+    def transform_one(
+        self, x: dict, t: float | None = None
+    ) -> "_BatchedLandmarkShieldOutput":
         """Clean one frame.
 
         Args:
@@ -575,15 +589,17 @@ class BatchedLandmarkShield(Transformer):
         pts, conf, frame_t = self._frame(x)
         n = pts.shape[0]
         if n == 0:
-            return {'points': pts.copy(), 'cleaned': np.zeros(0, dtype=int)}
+            return {"points": pts.copy(), "cleaned": np.zeros(0, dtype=int)}
         self._ensure_state(n)
         self._step_time(frame_t if frame_t is not None else t)
         measured = (conf > 0.0) & np.all(np.isfinite(pts), axis=1)
         out, cleaned = self._update(pts.astype(float), measured)
         self._learn_neutral(out, measured)
-        return {'points': out, 'cleaned': cleaned}
+        return {"points": out, "cleaned": cleaned}
 
-    def learn_one(self, x: dict, y: Any = None, t: float | None = None) -> "BatchedLandmarkShield":
+    def learn_one(
+        self, x: dict, y: Any = None, t: float | None = None
+    ) -> "BatchedLandmarkShield":
         self.transform_one(x, t)
         return self
 
@@ -591,15 +607,28 @@ class BatchedLandmarkShield(Transformer):
         params = super().get_params(deep)
         params.update(
             {
-                'window': self.window,
-                'n_sigmas': self.n_sigmas,
-                'max_gap': self.max_gap,
-                'neutral': self.neutral.tolist()
+                "window": self.window,
+                "n_sigmas": self.n_sigmas,
+                "max_gap": self.max_gap,
+                "neutral": self.neutral.tolist()
                 if self._neutral_given and self.neutral is not None
                 else None,
             }
         )
         return params  # type: ignore[no-any-return]
+
+    @property
+    def _raw_memory_usage(self) -> int:
+        arrays = (
+            self._x,
+            self._p,
+            self._hist,
+            self._gap,
+            self._initialized,
+            self._neutral_valid,
+            self.neutral,
+        )
+        return int(sum(a.nbytes for a in arrays if a is not None))
 
     def _unit_test_skips(self) -> set:
         return set()

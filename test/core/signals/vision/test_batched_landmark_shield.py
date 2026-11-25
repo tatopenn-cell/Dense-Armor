@@ -1,12 +1,13 @@
 """Tests for BatchedLandmarkShield."""
 
 import numpy as np
+
 from dense_armor.checks import check_estimator
 from dense_armor.core.online.timeseries.kalman import KalmanFilter
 from dense_armor.core.signals.vision.landmarks import (
     BatchedLandmarkShield,
-    LandmarkCleaner,
-    LandmarkStream,
+    _hampel_batch,
+    _hampel_value,
 )
 
 _TOL_1E_9 = 1e-9
@@ -16,7 +17,7 @@ _CLEANED_BOTH = 2
 
 
 def _frame(pts, conf, i, fps=30.0):
-    return {'points': pts, 'confidence': conf, 't': float(i) / fps}
+    return {"points": pts, "confidence": conf, "t": float(i) / fps}
 
 
 def test_batched_landmark_shield_clean_stream():
@@ -26,8 +27,8 @@ def test_batched_landmark_shield_clean_stream():
     conf = np.ones(n, dtype=np.float32)
     for i in range(20):
         out = shield.transform_one(_frame(pts, conf, i))
-        assert np.abs(out['points'] - pts).max() < _TOL_1E_6
-        assert out['cleaned'].sum() == 0
+        assert np.abs(out["points"] - pts).max() < _TOL_1E_6
+        assert out["cleaned"].sum() == 0
 
 
 def test_batched_landmark_shield_one_frame_outlier():
@@ -39,8 +40,8 @@ def test_batched_landmark_shield_one_frame_outlier():
     bad = base.copy()
     bad[2] = [999.0, 999.0]
     out = shield.transform_one(_frame(bad, conf, 10))
-    assert np.abs(out['points'][2] - base[2]).max() < _OUTLIER_TOL
-    assert out['cleaned'][2] == _CLEANED_BOTH
+    assert np.abs(out["points"][2] - base[2]).max() < _OUTLIER_TOL
+    assert out["cleaned"][2] == _CLEANED_BOTH
 
 
 def test_batched_landmark_shield_moving_occluder_static_face():
@@ -59,8 +60,8 @@ def test_batched_landmark_shield_moving_occluder_static_face():
         c[s + 1] = 0.0
         out = shield.transform_one(_frame(base, c, 10 + k))
         for p in (s, s + 1):
-            max_err = max(max_err, float(np.linalg.norm(out['points'][p] - base[p])))
-            assert out['cleaned'][p] == _CLEANED_BOTH
+            max_err = max(max_err, float(np.linalg.norm(out["points"][p] - base[p])))
+            assert out["cleaned"][p] == _CLEANED_BOTH
     assert max_err < 1.0
 
 
@@ -68,11 +69,15 @@ def test_batched_landmark_shield_constant_velocity_during_gap():
     shield = BatchedLandmarkShield(window=7, n_sigmas=3.0, max_gap=10)
     conf = np.ones(1, dtype=np.float32)
     for i in range(60):
-        shield.transform_one(_frame(np.array([[i * 3.0, 0.0]], dtype=np.float32), conf, i))
+        shield.transform_one(
+            _frame(np.array([[i * 3.0, 0.0]], dtype=np.float32), conf, i)
+        )
     off = np.zeros(1, dtype=np.float32)
     for i in range(10):
-        out = shield.transform_one(_frame(np.array([[0.0, 0.0]], dtype=np.float32), off, 60 + i))
-        assert abs(out['points'][0, 0] - (177.0 + (i + 1) * 3.0)) < 1.0
+        out = shield.transform_one(
+            _frame(np.array([[0.0, 0.0]], dtype=np.float32), off, 60 + i)
+        )
+        assert abs(out["points"][0, 0] - (177.0 + (i + 1) * 3.0)) < 1.0
 
 
 def test_batched_landmark_shield_variable_fps():
@@ -85,7 +90,7 @@ def test_batched_landmark_shield_variable_fps():
     for i in range(5):
         pt = np.array([[0.0, 0.0]], dtype=np.float32)
         out = shield.transform_one(_frame(pt, off, 60 + i, fps=15.0))
-        assert abs(out['points'][0, 0] - (177.0 + (i + 1) * 3.0)) < 1.0
+        assert abs(out["points"][0, 0] - (177.0 + (i + 1) * 3.0)) < 1.0
 
 
 def test_batched_landmark_shield_gap_decays_to_neutral():
@@ -103,8 +108,8 @@ def test_batched_landmark_shield_gap_decays_to_neutral():
         out = shield.transform_one(_frame(moved, off, 15 + i))
         if i > 3:
             for p in range(3):
-                d = float(np.linalg.norm(out['points'][p] - neutral[p]))
-                assert d < float(np.linalg.norm(out['points'][p] - moved[p]))
+                d = float(np.linalg.norm(out["points"][p] - neutral[p]))
+                assert d < float(np.linalg.norm(out["points"][p] - moved[p]))
                 if prev[p] is not None and prev[p] > 1e-3:
                     assert d < prev[p] - _TOL_1E_9
                 prev[p] = d
@@ -125,7 +130,7 @@ def test_batched_landmark_shield_neutral_partial_occlusion():
     out = shield.transform_one(_frame(base, conf, 0))
     assert np.isnan(shield.neutral[0]).all()
     assert np.allclose(shield.neutral[1:], base[1:], atol=_TOL_1E_6)
-    assert np.allclose(out['points'][0], base[0])
+    assert np.allclose(out["points"][0], base[0])
     shield.transform_one(_frame(base, np.ones(3, dtype=np.float32), 1))
     assert np.allclose(shield.neutral[0], base[0], atol=_TOL_1E_6)
 
@@ -134,7 +139,7 @@ def test_batched_landmark_shield_point_occluded_before_first_measurement():
     shield = BatchedLandmarkShield()
     pts = np.array([[50.0, 60.0], [10.0, 3.0]], dtype=np.float32)
     out = shield.transform_one(_frame(pts, np.array([0.0, 1.0], dtype=np.float32), 0))
-    assert np.allclose(out['points'][0], [50.0, 60.0])
+    assert np.allclose(out["points"][0], [50.0, 60.0])
 
 
 def test_batched_landmark_shield_clone_with_neutral_then_long_gap():
@@ -144,7 +149,10 @@ def test_batched_landmark_shield_clone_with_neutral_then_long_gap():
     for i in range(5):
         shield.transform_one(_frame(pts, np.ones(3, dtype=np.float32), i))
     for i in range(6):
-        shield.transform_one(_frame(pts, np.zeros(3, dtype=np.float32), 5 + i))
+        out = shield.transform_one(_frame(pts, np.zeros(3, dtype=np.float32), 5 + i))
+    d_neutral = np.linalg.norm(out["points"] - neutral, axis=1)
+    d_last = np.linalg.norm(out["points"] - pts, axis=1)
+    assert np.all(d_neutral < d_last)
 
 
 def test_batched_landmark_shield_hampel_history_reset_after_gap():
@@ -156,15 +164,17 @@ def test_batched_landmark_shield_hampel_history_reset_after_gap():
     for i in range(10):
         shield.transform_one(_frame(at, np.zeros(1, dtype=np.float32), 10 + i))
     out = shield.transform_one(_frame(far, np.ones(1, dtype=np.float32), 20))
-    assert out['cleaned'][0] == 0
+    assert out["cleaned"][0] == 0
 
 
 def test_check_estimator_batched_landmark_shield():
     shield = BatchedLandmarkShield()
     result = check_estimator(shield)
-    print(f"check_estimator result: failed={result['failed']}, not_applicable={result['not_applicable']}, skipped={result['skipped']}")
-    assert result['failed'] == [], result['failed']
-    assert result['not_applicable'] == [], result['not_applicable']
+    print(
+        f"check_estimator result: failed={result['failed']}, not_applicable={result['not_applicable']}, skipped={result['skipped']}"
+    )
+    assert result["failed"] == [], result["failed"]
+    assert result["not_applicable"] == [], result["not_applicable"]
     assert shield._unit_test_skips() == set()
 
 
@@ -178,15 +188,20 @@ def test_batched_landmark_shield_matches_dense_armor_kalman_filter():
     track = np.cumsum(rng.normal(0.5, 0.05, size=(60, 2)), axis=0)
     shield = BatchedLandmarkShield(n_sigmas=1e9)
     kf = KalmanFilter(
-        F=f, H=h, Q=q, R=r, x0=np.r_[track[0], 0.0, 0.0], P0=np.diag([1e-6, 1e-6, 1e-2, 1e-2])
+        F=f,
+        H=h,
+        Q=q,
+        R=r,
+        x0=np.r_[track[0], 0.0, 0.0],
+        P0=np.diag([1e-6, 1e-6, 1e-2, 1e-2]),
     )
-    kf.learn_one({'x': track[0, 0], 'y': track[0, 1]})
+    kf.learn_one({"x": track[0, 0], "y": track[0, 1]})
     kf._x = np.r_[track[0], 0.0, 0.0]
     kf._P = np.diag([1e-6, 1e-6, 1e-2, 1e-2])
     for i, pt in enumerate(track):
-        out = shield.transform_one(_frame(pt[None, :], np.ones(1), i))['points'][0]
+        out = shield.transform_one(_frame(pt[None, :], np.ones(1), i))["points"][0]
         if i:
-            kf.learn_one({'x': pt[0], 'y': pt[1]})
+            kf.learn_one({"x": pt[0], "y": pt[1]})
             assert np.abs(out - kf._x[:2]).max() < 1e-3
 
 
@@ -197,19 +212,12 @@ def test_batched_landmark_shield_hampel_matches_landmark_cleaner():
     hist[:5, :5] = np.nan
     hist[5:10] = 2.0
     vals = rng.normal(0.0, 4.0, size=40)
-
-    shield = BatchedLandmarkShield(window=7, n_sigmas=3.0)
-    # Initialize with some frames
-    base = np.zeros((5, 2))
-    conf = np.ones(5)
-    for i in range(10):
-        shield.transform_one({'points': base, 'confidence': conf, 't': float(i)})
-
-    # Test batch Hampel
-    # We need to set up the internal state to match the test
-    # This is a simplified comparison - the exact internal state is complex
-    # Just verify the class can be imported and used
-    assert True
+    filt, flag = _hampel_batch(hist, vals, 3.0)
+    for k in range(40):
+        window = [float(v) for v in hist[k] if not np.isnan(v)]
+        want, was = _hampel_value(window, float(vals[k]), 3.0)
+        assert flag[k] == was
+        assert abs(filt[k] - want) < _TOL_1E_9
 
 
 def test_batched_landmark_shield_p99_performance():
@@ -219,16 +227,17 @@ def test_batched_landmark_shield_p99_performance():
     shield = BatchedLandmarkShield(window=7, n_sigmas=3.0, max_gap=5)
     base = np.random.randn(68, 2).astype(np.float32)
     conf = np.ones(68, dtype=np.float32)
-    times = np.arange(100) / 30.0
-
     latencies = []
     for i in range(100):
-        frame = {'points': base + 0.01 * np.random.randn(68, 2).astype(np.float32),
-                 'confidence': conf, 't': float(i) / 30.0}
+        frame = {
+            "points": base + 0.01 * np.random.randn(68, 2).astype(np.float32),
+            "confidence": conf,
+            "t": float(i) / 30.0,
+        }
         t0 = time.perf_counter()
         shield.transform_one(frame)
         latencies.append(time.perf_counter() - t0)
 
     p99 = np.percentile(latencies, 99)
     print(f"BatchedLandmarkShield p99: {p99:.6f} s")
-    assert p99 < 0.05  # Well within 50ms budget
+    assert p99 < shield.budget_s

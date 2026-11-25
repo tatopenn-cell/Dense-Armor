@@ -15,7 +15,6 @@ pose. A point that jumps far from its recent median is replaced by that median.
 import numpy as np
 from dense_armor.core.signals.vision.landmarks import BatchedLandmarkShield, LandmarkStream
 
-# Synthetic 68-point face
 base = np.random.randn(68, 2).astype(np.float32)
 conf = np.ones(68, dtype=np.float32)
 times = np.arange(100) / 30.0
@@ -25,8 +24,9 @@ stream = LandmarkStream(np.tile(base, (100, 1, 1)), np.tile(conf, (100, 1)), tim
 shield = BatchedLandmarkShield(window=7, n_sigmas=3.0, max_gap=5)
 for frame in stream:
     out = shield.transform_one(frame)
-    # out['points'] has cleaned landmarks, out['cleaned'] has per-point counts
 ```
+
+For every frame, `out["points"]` holds the cleaned landmarks and `out["cleaned"]` holds, per point, how many coordinates were replaced (0, 1 or 2); a point with confidence 0 is also reported as 2.
 
 ## 2. How it works
 
@@ -95,7 +95,7 @@ BatchedLandmarkShield(
 **Attributes**
 
 - `budget_s`: 3.5e-2 (p99 latency bound)
-- `memory_class`: "O(N * window)"
+- `memory_class`: "O(window)", the state is a fixed number of arrays for the N points of the first frame
 
 ### LandmarkStream
 
@@ -125,7 +125,7 @@ Measured on a Kaggle CPU (Intel Xeon), 2000 frames of 68 landmarks:
 | p99 latency | 2.6 ms |
 | median latency | 1.4 ms |
 | `budget_s` | 35 ms |
-| `memory_class` | O(N * window) |
+| `memory_class` | O(window) |
 
 The p99 is well within the declared 35 ms budget.
 
@@ -133,12 +133,19 @@ The p99 is well within the declared 35 ms budget.
 
 - Thieu, N. & Melnik, R. (2025). *Nonlinear Dynamical Systems for Automatic
   Face Annotation in Head Tracking and Pose Estimation*. arXiv:2502.15179.
-  EKF equations §2.1 pp. 4-5; constant-velocity motion model §4.2 p. 13.
-- Zhu, X. et al. (2021). *Reasoning Structural Relation for
+  The Kalman equations are those of §2.1 pp. 4-5. The motion model is
+  $x_{k+1} = x_k + v_k \Delta t + w_k$ of §4.2 p. 13, with two differences:
+  here the velocity is part of the state, while the paper models it as
+  random noise, and the points are 2D, while the paper tracks 3D points.
+- Zhu, C. et al. (2021). *Reasoning Structural Relation for
   Occlusion-Robust Facial Landmark Localization*. arXiv:2112.10087.
-  Test protocol: dynamic occlusion moving across face.
-- Pearson, R. et al. (2016). *Robust outlier detection using the Hampel filter*.
-  In *Data Mining and Knowledge Discovery*.
+  The dynamic occlusion of §3.2 is an occlusion that moves from frame to
+  frame; the moving occluder of the tests imitates it.
+- Pearson, R. K., Neuvo, Y., Astola, J. & Gabbouj, M. (2016). *Generalized
+  Hampel Filters*. EURASIP Journal on Advances in Signal Processing 2016:87.
+  Equations (3) and (4): a value more than $t$ scaled MADs from the median
+  is replaced by the median, with scale $1.4826 \times \mathrm{MAD}$. The
+  window of the paper is symmetric; the one here is causal.
 
 ## 7. Development diary
 
@@ -147,7 +154,9 @@ The p99 is well within the declared 35 ms budget.
 - The original per-point loop version had p99 ~17 ms; batched NumPy brought
   it to ~3 ms.
 - An occlusion first appeared as a Kalman update with measurement (0, 0),
-  because `KalmanFilter.learn_one` treats empty dict as zero measurement.
-  The shield now calls it with `None` for predict-only.
-- The Hampel batch rule was validated against `LandmarkCleaner`'s per-point
-  rule on random streams.
+  because `KalmanFilter.learn_one` treats an empty dict as a zero measurement.
+  The shield now runs the predict step alone for an occluded point, and a test
+  compares its output with `KalmanFilter` on a clean track.
+- The Hampel rule of the batch is compared with the per-point rule used by
+  `LandmarkCleaner` in a test, on a random history that includes rows with too
+  few values and rows with a zero spread.

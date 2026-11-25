@@ -19,8 +19,8 @@ The pages, in order:
 6. [Tracking](tracking.md): the moving object tracker, the video to signal adapters, the joints to video fusion.
 7. [Kinematics](kinematics.md): landmarks, the cleaner, the joint angles, the registration.
 8. [BatchedLandmarkShield](batched_landmark_shield.md): batched Kalman + Hampel for landmark streams.
-8. [Quality](quality.md): the frame quality, the event frame, the false colour, the overlay, the benchmark.
-9. [Patches](patches.md): patch memory and the RAD benchmark.
+9. [Quality](quality.md): the frame quality, the event frame, the false colour, the overlay, the benchmark.
+10. [Patches](patches.md): patch memory and the RAD benchmark.
 
 ## The ideas, and where they come from
 
