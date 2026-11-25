@@ -29,6 +29,7 @@ import hmac
 import io
 import pickle
 import time
+from collections import deque
 from collections.abc import Callable
 from enum import Enum
 from pathlib import Path
@@ -43,6 +44,8 @@ from dense_armor.roles._util import (
 )
 
 CHECKPOINT_VERSION = 1
+
+_BASELINE_FLOOR = 1e-9
 
 
 class _EnvelopeUnpickler(pickle.Unpickler):
@@ -74,6 +77,11 @@ class HealthMonitor(Root):
     - if it is beyond ``drift_mult``: ``drifting``;
     - if it is beyond ``degraded_mult``: ``degraded``.
 
+    The baseline is compared as ``max(baseline, 1e-9)``, so a baseline of
+    exactly zero (a model that was perfect while it warmed up) does not turn
+    the rounding noise of a later residual into ``degraded``; the stored
+    ``baseline_`` is not changed.
+
     Args:
         window: size of the recent-residual window.
         warmup: samples before the state can leave ``warming_up``.
@@ -93,7 +101,7 @@ class HealthMonitor(Root):
         self.warmup = warmup
         self.drift_mult = drift_mult
         self.degraded_mult = degraded_mult
-        self.recent_: list[float] = []
+        self.recent_: deque[float] = deque(maxlen=window)
         self.baseline_: float | None = None
         self.n_ = 0
 
@@ -103,6 +111,7 @@ class HealthMonitor(Root):
         baseline = self.baseline_
         if baseline is None or not self.recent_:
             return Health.NOMINAL
+        baseline = max(baseline, _BASELINE_FLOOR)
         recent_mean = sum(self.recent_) / len(self.recent_)
         if recent_mean > self.degraded_mult * baseline:
             return Health.DEGRADED
@@ -113,9 +122,9 @@ class HealthMonitor(Root):
     def update(self, residual: float) -> Health:
         """Feed one residual and return the current :class:`Health`."""
         self.n_ += 1
+        if self.recent_.maxlen != self.window:
+            self.recent_ = deque(self.recent_, maxlen=self.window)
         self.recent_.append(abs(residual))
-        if len(self.recent_) > self.window:
-            self.recent_.pop(0)
         state = self._state_from_window()
         if state is Health.NOMINAL and self.baseline_ is None and self.n_ > self.warmup:
             self.baseline_ = sum(self.recent_) / len(self.recent_)
@@ -208,10 +217,11 @@ class SafeEstimator(Estimator):
         predicts before it learns, because the residual (or the miss, for a
         classifier) is what the health monitor reads. A call therefore costs
         one ``predict_one`` and one ``learn_one`` of the wrapped model, about
-        twice its ``learn_one``. The wrapper declares no ``budget_s`` of its
-        own, so a :class:`~dense_armor.roles.realtime.RealtimePipeline` with
-        ``require_budget=True`` refuses it until a budget that accounts for
-        this cost is set.
+        twice its ``learn_one``. The ``budget_s`` of the wrapper accounts for
+        this cost (two budgets of the model), and it is ``None`` when the
+        model declares none, in which case a
+        :class:`~dense_armor.roles.realtime.RealtimePipeline` with
+        ``require_budget=True`` refuses the wrapper.
         """
         self._time_step(t)
         if self.is_flagged(x):
