@@ -227,14 +227,14 @@ class LandmarkCleaner(Transformer):
         self.window = int(window)
         self.n_sigmas = float(n_sigmas)
         self.max_gap = int(max_gap)
-        self._hist: dict = {}
+        self.hist_: dict = {}
         self._last: np.ndarray | None = None
-        self._gap: np.ndarray | None = None
+        self.gap_: np.ndarray | None = None
 
     def _reset(self) -> None:
-        self._hist = {}
+        self.hist_ = {}
         self._last = None
-        self._gap = None
+        self.gap_ = None
 
     def _unit_test_skips(self) -> set:
         return set()
@@ -254,26 +254,26 @@ class LandmarkCleaner(Transformer):
 
         if self._last is None or self._last.shape[0] != n:
             self._last = pts.copy()
-            self._gap = np.zeros(n, dtype=int)
+            self.gap_ = np.zeros(n, dtype=int)
 
         out = as_default_array(pts, copy=True)
         cleaned = np.zeros(n, dtype=int)
 
         for i in range(n):
             if conf[i] <= 0.0 or not np.all(np.isfinite(out[i])):
-                self._gap[i] += 1
+                self.gap_[i] += 1
                 out[i] = self._last[i]
                 cleaned[i] = 1
                 continue
-            self._gap[i] = 0
+            self.gap_[i] = 0
 
         for i in range(n):
             for d in range(out.shape[1]):
                 key = (i, d)
-                buf = self._hist.get(key)
+                buf = self.hist_.get(key)
                 if buf is None:
                     buf = []
-                    self._hist[key] = buf
+                    self.hist_[key] = buf
                 v = out[i, d]
                 if len(buf) > self.window:
                     buf.pop(0)
@@ -433,72 +433,72 @@ class BatchedLandmarkShield(Transformer):
         max_gap: int = 5,
         neutral: np.ndarray | None = None,
     ) -> None:
-        if window < 3:
-            raise ValueError(f"window must be >= 3, got {window}")
-        if n_sigmas <= 0:
-            raise ValueError(f"n_sigmas must be > 0, got {n_sigmas}")
-        if max_gap < 0:
-            raise ValueError(f"max_gap must be >= 0, got {max_gap}")
-        self.window = int(window)
-        self.n_sigmas = float(n_sigmas)
-        self.max_gap = int(max_gap)
+        self.window = window
+        self.n_sigmas = n_sigmas
+        self.max_gap = max_gap
         self.neutral = np.asarray(neutral, dtype=float) if neutral is not None else None
-        if self.neutral is not None and (
-            self.neutral.ndim != 2 or self.neutral.shape[1] != 2
-        ):
-            raise ValueError(
-                f"neutral must have shape (N, 2), got {self.neutral.shape}"
-            )
-        self._neutral_given = neutral is not None
-        self._x: np.ndarray | None = None
-        self._p: np.ndarray | None = None
-        self._hist: np.ndarray | None = None
-        self._gap: np.ndarray | None = None
-        self._initialized: np.ndarray | None = None
-        self._f = np.eye(4)
-        self._neutral_valid: np.ndarray | None = None
-        self._n: int | None = None
-        self._dt: float = 1.0 / 30.0
-        self._last_t: float | None = None
+        self.x_: np.ndarray | None = None
+        self.p_: np.ndarray | None = None
+        self.hist_: np.ndarray | None = None
+        self.gap_: np.ndarray | None = None
+        self.initialized_: np.ndarray | None = None
+        self.f_: np.ndarray | None = None
+        self.neutral_: np.ndarray | None = None
+        self.neutral_valid_: np.ndarray | None = None
+        self.neutral_fixed_: bool | None = None
+        self.n_: int | None = None
+        self.dt_: float | None = None
+        self.last_t_: float | None = None
+
+    def _window(self) -> int:
+        return max(_MIN_WINDOW, int(self.window))
+
+    def _sigmas(self) -> float:
+        return self.n_sigmas if self.n_sigmas > 0 else 3.0
+
+    def _gap_limit(self) -> int:
+        return max(0, int(self.max_gap))
 
     def _ensure_state(self, n: int) -> None:
-        if self._x is not None and self._n == n:
+        if self.x_ is not None and self.n_ == n:
             return
-        self._n = n
-        self._dt = 1.0 / 30.0
-        self._last_t = None
-        self._f = np.eye(4)
-        self._f[0, 2] = self._f[1, 3] = self._dt
-        self._x = np.zeros((n, 4))
-        self._p = np.tile(_P_INIT, (n, 1, 1))
-        self._hist = np.full((n, 2, self.window), np.nan)
-        self._gap = np.zeros(n, dtype=int)
-        self._initialized = np.zeros(n, dtype=bool)
-        if self._neutral_given and self.neutral is not None:
-            if self.neutral.shape[0] != n:
-                raise ValueError(
-                    f"neutral has {self.neutral.shape[0]} points but the frame has {n}"
-                )
-            self._neutral_valid = np.ones(n, dtype=bool)
+        self.n_ = n
+        self.dt_ = 1.0 / 30.0
+        self.last_t_ = None
+        self.f_ = np.eye(4)
+        self.f_[0, 2] = self.f_[1, 3] = self.dt_
+        self.x_ = np.zeros((n, 4))
+        self.p_ = np.tile(_P_INIT, (n, 1, 1))
+        self.hist_ = np.full((n, 2, self._window()), np.nan)
+        self.gap_ = np.zeros(n, dtype=int)
+        self.initialized_ = np.zeros(n, dtype=bool)
+        neutral = self.neutral
+        if neutral is not None and neutral.shape == (n, 2):
+            self.neutral_fixed_ = True
+            self.neutral_ = neutral.copy()
+            self.neutral_valid_ = np.ones(n, dtype=bool)
         else:
-            self.neutral = np.full((n, 2), np.nan, dtype=float)
-            self._neutral_valid = np.zeros(n, dtype=bool)
+            self.neutral_fixed_ = False
+            self.neutral_ = np.full((n, 2), np.nan, dtype=float)
+            self.neutral_valid_ = np.zeros(n, dtype=bool)
 
     def _step_time(self, current_t: float | None) -> None:
-        dt = self._dt
+        assert self.dt_ is not None
+        assert self.f_ is not None
+        dt = self.dt_
         if current_t is not None:
-            if self._last_t is not None and current_t - self._last_t > 0:
-                dt = current_t - self._last_t
-            self._last_t = current_t
-        if abs(dt - self._dt) > _DT_EPS:
-            self._dt = dt
-            self._f[0, 2] = self._f[1, 3] = dt
+            if self.last_t_ is not None and current_t - self.last_t_ > 0:
+                dt = current_t - self.last_t_
+            self.last_t_ = current_t
+        if abs(dt - self.dt_) > _DT_EPS:
+            self.dt_ = dt
+            self.f_[0, 2] = self.f_[1, 3] = dt
 
-    def _frame(self, x: dict) -> tuple[np.ndarray, np.ndarray, float | None]:
+    def _frame(self, x: dict) -> tuple[np.ndarray, np.ndarray, float | None] | None:
         if "points" in x:
             pts = as_default_array(x["points"])
             if pts.ndim != 2 or pts.shape[1] != 2:
-                raise ValueError(f"points must have shape (N, 2), got {pts.shape}")
+                return None
             conf = as_default_array(x.get("confidence", np.ones(pts.shape[0])))
             t = x.get("t")
             return pts, conf, None if t is None else float(t)
@@ -511,69 +511,71 @@ class BatchedLandmarkShield(Transformer):
         return pts, np.ones(len(keys)), None if t is None else float(t)
 
     def _update(self, pts: np.ndarray, ok: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-        assert self._x is not None
-        assert self._p is not None
-        assert self._hist is not None
-        assert self._gap is not None
-        assert self._initialized is not None
-        assert self._neutral_valid is not None
-        assert self.neutral is not None
+        assert self.x_ is not None
+        assert self.p_ is not None
+        assert self.hist_ is not None
+        assert self.gap_ is not None
+        assert self.initialized_ is not None
+        assert self.neutral_valid_ is not None
+        assert self.neutral_ is not None
+        assert self.f_ is not None
         n = len(pts)
         out = np.where(np.isfinite(pts), pts, 0.0).astype(float)
         cleaned = np.where(ok, 0, 2)
-        xp = self._x @ self._f.T
-        pp = self._f @ self._p @ self._f.T + _Q
-        init = self._initialized
+        xp = self.x_ @ self.f_.T
+        pp = self.f_ @ self.p_ @ self.f_.T + _Q
+        init = self.initialized_
 
         occ = ~ok & init
-        self._x[occ] = xp[occ]
-        self._p[occ] = pp[occ]
-        self._gap[occ] += 1
+        self.x_[occ] = xp[occ]
+        self.p_[occ] = pp[occ]
+        self.gap_[occ] += 1
         out[occ] = xp[occ, :2]
-        decay = occ & (self._gap > self.max_gap) & self._neutral_valid
-        a = np.minimum(1.0, (self._gap[decay] - self.max_gap) * _DECAY_STEP)[:, None]
-        out[decay] = (1 - a) * out[decay] + a * self.neutral[decay]
+        limit = self._gap_limit()
+        decay = occ & (self.gap_ > limit) & self.neutral_valid_
+        a = np.minimum(1.0, (self.gap_[decay] - limit) * _DECAY_STEP)[:, None]
+        out[decay] = (1 - a) * out[decay] + a * self.neutral_[decay]
 
-        self._hist[ok & (self._gap > 0)] = np.nan
+        self.hist_[ok & (self.gap_ > 0)] = np.nan
         upd = ok & init
         if upd.any():
-            fx, ox = _hampel_batch(self._hist[upd, 0], pts[upd, 0], self.n_sigmas)
-            fy, oy = _hampel_batch(self._hist[upd, 1], pts[upd, 1], self.n_sigmas)
+            fx, ox = _hampel_batch(self.hist_[upd, 0], pts[upd, 0], self._sigmas())
+            fy, oy = _hampel_batch(self.hist_[upd, 1], pts[upd, 1], self._sigmas())
             cleaned[upd] = ox.astype(int) + oy.astype(int)
             pu = pp[upd]
             s_inv = np.linalg.inv(pu[:, :2, :2] + _R)
             gain = pu[:, :, :2] @ s_inv
             innov = np.stack([fx, fy], axis=1) - xp[upd, :2]
-            self._x[upd] = xp[upd] + (gain @ innov[..., None])[..., 0]
+            self.x_[upd] = xp[upd] + (gain @ innov[..., None])[..., 0]
             p_new = (np.eye(4) - gain @ _H) @ pu
-            self._p[upd] = 0.5 * (p_new + p_new.transpose(0, 2, 1))
-            out[upd] = self._x[upd, :2]
+            self.p_[upd] = 0.5 * (p_new + p_new.transpose(0, 2, 1))
+            out[upd] = self.x_[upd, :2]
         new = ok & ~init
         if new.any():
-            self._x[new] = np.concatenate(
+            self.x_[new] = np.concatenate(
                 [pts[new], np.zeros((int(new.sum()), 2))], axis=1
             )
-            self._p[new] = _P_INIT
-            self._initialized[new] = True
+            self.p_[new] = _P_INIT
+            self.initialized_[new] = True
             out[new] = pts[new]
-        self._gap[ok] = 0
-        self._hist[ok, :, :-1] = self._hist[ok, :, 1:]
-        self._hist[ok, :, -1] = pts[ok]
+        self.gap_[ok] = 0
+        self.hist_[ok, :, :-1] = self.hist_[ok, :, 1:]
+        self.hist_[ok, :, -1] = pts[ok]
         assert len(out) == n
         return out, cleaned
 
     def _learn_neutral(self, out: np.ndarray, measured: np.ndarray) -> None:
-        if self._neutral_given:
+        if self.neutral_fixed_:
             return
-        assert self._neutral_valid is not None
-        assert self.neutral is not None
-        fresh = measured & ~self._neutral_valid
-        self.neutral[fresh] = out[fresh]
-        self._neutral_valid[fresh] = True
+        assert self.neutral_valid_ is not None
+        assert self.neutral_ is not None
+        fresh = measured & ~self.neutral_valid_
+        self.neutral_[fresh] = out[fresh]
+        self.neutral_valid_[fresh] = True
 
     def transform_one(
         self, x: dict, t: float | None = None
-    ) -> "_BatchedLandmarkShieldOutput":
+    ) -> "_BatchedLandmarkShieldOutput | None":
         """Clean one frame.
 
         Args:
@@ -585,8 +587,14 @@ class BatchedLandmarkShield(Transformer):
             _BatchedLandmarkShieldOutput: dict with keys:
             - "points": cleaned landmarks (N, 2)
             - "cleaned": int array (N,) count of cleaned coordinates (0, 1, or 2)
+
+            ``None`` if "points" is not an array of shape (N, 2); nothing
+            raises and the state is left as it was.
         """
-        pts, conf, frame_t = self._frame(x)
+        frame = self._frame(x)
+        if frame is None:
+            return None
+        pts, conf, frame_t = frame
         n = pts.shape[0]
         if n == 0:
             return {"points": pts.copy(), "cleaned": np.zeros(0, dtype=int)}
@@ -610,9 +618,7 @@ class BatchedLandmarkShield(Transformer):
                 "window": self.window,
                 "n_sigmas": self.n_sigmas,
                 "max_gap": self.max_gap,
-                "neutral": self.neutral.tolist()
-                if self._neutral_given and self.neutral is not None
-                else None,
+                "neutral": self.neutral.tolist() if self.neutral is not None else None,
             }
         )
         return params  # type: ignore[no-any-return]
@@ -620,13 +626,14 @@ class BatchedLandmarkShield(Transformer):
     @property
     def _raw_memory_usage(self) -> int:
         arrays = (
-            self._x,
-            self._p,
-            self._hist,
-            self._gap,
-            self._initialized,
-            self._neutral_valid,
-            self.neutral,
+            self.x_,
+            self.p_,
+            self.hist_,
+            self.gap_,
+            self.initialized_,
+            self.neutral_valid_,
+            self.neutral_,
+            self.f_,
         )
         return int(sum(a.nbytes for a in arrays if a is not None))
 

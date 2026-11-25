@@ -1,6 +1,7 @@
 """Tests for BatchedLandmarkShield."""
 
 import numpy as np
+import pytest
 
 from dense_armor.checks import check_estimator
 from dense_armor.core.online.timeseries.kalman import KalmanFilter
@@ -119,7 +120,7 @@ def test_batched_landmark_shield_neutral_first_frame():
     shield = BatchedLandmarkShield()
     base = np.array([[5.0, 7.0], [10.0, 3.0], [20.0, 9.0]], dtype=np.float32)
     shield.transform_one(_frame(base, np.ones(3, dtype=np.float32), 0))
-    assert np.allclose(shield.neutral, base, atol=_TOL_1E_6)
+    assert np.allclose(shield.neutral_, base, atol=_TOL_1E_6)
 
 
 def test_batched_landmark_shield_neutral_partial_occlusion():
@@ -128,11 +129,11 @@ def test_batched_landmark_shield_neutral_partial_occlusion():
     conf = np.ones(3, dtype=np.float32)
     conf[0] = 0.0
     out = shield.transform_one(_frame(base, conf, 0))
-    assert np.isnan(shield.neutral[0]).all()
-    assert np.allclose(shield.neutral[1:], base[1:], atol=_TOL_1E_6)
+    assert np.isnan(shield.neutral_[0]).all()
+    assert np.allclose(shield.neutral_[1:], base[1:], atol=_TOL_1E_6)
     assert np.allclose(out["points"][0], base[0])
     shield.transform_one(_frame(base, np.ones(3, dtype=np.float32), 1))
-    assert np.allclose(shield.neutral[0], base[0], atol=_TOL_1E_6)
+    assert np.allclose(shield.neutral_[0], base[0], atol=_TOL_1E_6)
 
 
 def test_batched_landmark_shield_point_occluded_before_first_measurement():
@@ -241,3 +242,42 @@ def test_batched_landmark_shield_p99_performance():
     p99 = np.percentile(latencies, 99)
     print(f"BatchedLandmarkShield p99: {p99:.6f} s")
     assert p99 < shield.budget_s
+
+
+def test_batched_landmark_shield_state_dict_restores_what_was_learned():
+    rng = np.random.default_rng(3)
+    base = rng.uniform(0, 100, size=(6, 2))
+    a = BatchedLandmarkShield()
+    for i in range(12):
+        a.transform_one(_frame(base + 0.01 * i, np.ones(6), i))
+    state = a.state_dict()
+    assert {"x_", "p_", "hist_", "gap_", "initialized_"} <= set(state)
+    b = BatchedLandmarkShield()
+    b.load_state_dict(state)
+    nxt = _frame(base + 0.12, np.ones(6), 12)
+    assert np.allclose(a.transform_one(nxt)["points"], b.transform_one(nxt)["points"])
+
+
+@pytest.mark.parametrize("points", [np.zeros((4, 3)), np.zeros(4), np.zeros((2, 2, 2))])
+def test_batched_landmark_shield_gives_none_for_points_that_are_not_n_by_2(points):
+    shield = BatchedLandmarkShield()
+    assert (
+        shield.transform_one({"points": points, "confidence": np.ones(4), "t": 0.0})
+        is None
+    )
+    assert shield.learn_one({"points": points}) is shield
+    assert shield.x_ is None
+
+
+def test_batched_landmark_shield_never_raises_on_odd_parameters_or_neutral():
+    base = np.arange(10, dtype=float).reshape(5, 2)
+    shield = BatchedLandmarkShield(
+        window=1, n_sigmas=-2.0, max_gap=-1, neutral=np.zeros((3, 2))
+    )
+    for i in range(10):
+        out = shield.transform_one(_frame(base, np.ones(5), i))
+        assert out is not None and np.isfinite(out["points"]).all()
+    for i in range(10, 16):
+        out = shield.transform_one(_frame(base, np.zeros(5), i))
+        assert np.isfinite(out["points"]).all()
+    assert shield.window == 1 and shield.max_gap == -1
