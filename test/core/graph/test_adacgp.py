@@ -145,12 +145,12 @@ def test_clone_forgets_and_state_dict_restores():
     assert np.allclose(c.psi, m.psi) and c.steps_ == 20
 
 
-def test_time_stamps_must_increase():
+def test_a_time_stamp_that_does_not_increase_is_skipped_and_never_raises():
     m = AdaCGP()
     m.learn_one([1.0, 2.0], t=0.0)
     m.learn_one([1.0, 2.0], t=0.1)
-    with pytest.raises(ValueError):
-        m.learn_one([1.0, 2.0], t=0.05)
+    assert m.learn_one([1.0, 2.0], t=0.05) is m
+    assert m.dt == pytest.approx(0.1)
 
 
 def test_the_declared_budget_and_memory_class():
