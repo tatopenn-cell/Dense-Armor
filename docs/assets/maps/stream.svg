@@ -1,40 +1,42 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 323" width="100%" role="img" aria-label="The map of streams">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 312" width="100%" role="img" aria-label="The map of the stream pages">
 <style>text{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif}.m{font-family:ui-monospace,Menlo,Consolas,monospace}.e{opacity:.32;transition:opacity .15s}.net:hover .e{opacity:.06}.net .pg:hover .e{opacity:1;stroke-width:2.2}a:hover .card{fill:#17303f;stroke-width:2.4}a:hover text.dn{fill:#ffffff}.back:hover .card{fill:#17303f}</style>
-<rect width="1000" height="323" fill="#0d131a" rx="14"/>
-<text x="500" y="38" fill="#e0fbfc" font-size="24" font-weight="700" text-anchor="middle">THE MAP OF STREAMS</text>
-<text x="500" y="62" fill="#4cc9f0" font-size="12.5" text-anchor="middle">the job, the page of each tool and what it holds; pass over a page to light it, click to open it</text>
+<rect width="1000" height="312" fill="#0d131a" rx="14"/>
+<text x="500" y="38" fill="#e0fbfc" font-size="24" font-weight="700" text-anchor="middle">THE MAP OF THE STREAM PAGES</text>
+<text x="500" y="62" fill="#4cc9f0" font-size="12.5" text-anchor="middle">the job, the page of each tool and its classes; pass over a page to light its classes, click to open it</text>
 <a class="back" href="../../#the-library-folder-by-folder" target="_top"><title>back to the map of the library</title><rect class="card" x="20" y="14" width="150" height="30" rx="15" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="95" y="33.5" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">← map of the library</text></a>
 <text x="24" y="98" fill="#f72585" font-size="12" font-weight="700">01  JOB</text>
 <text x="410" y="98" fill="#f72585" font-size="12" font-weight="700">02  PAGE</text>
 <text x="680" y="98" fill="#f72585" font-size="12" font-weight="700">03  CLASSES OF THE CATALOG</text>
 <g class="net">
-<path class="e" d="M214,148.0 C262,148.0 282,176.0 318,176.0" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
-<path class="e" d="M214,204.0 C262,204.0 282,176.0 318,176.0" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M214,155.0 C262,155.0 282,183.0 318,183.0" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M214,211.0 C262,211.0 282,183.0 318,183.0" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
 <g class="pg">
-<path class="e" d="M342,176.0 C382,176.0 366,124.5 408,124.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M342,183.0 C382,183.0 366,124.5 408,124.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
 <path class="e" d="M626,124.5 C650,124.5 650,124.5 676,124.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
 </g>
 <g class="pg">
-<path class="e" d="M342,176.0 C382,176.0 366,163.5 408,163.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M342,183.0 C382,183.0 366,163.5 408,163.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
 <path class="e" d="M626,163.5 C650,163.5 650,163.5 676,163.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
 </g>
 <g class="pg">
-<path class="e" d="M342,176.0 C382,176.0 366,227.5 408,227.5" fill="none" stroke="#f72585" stroke-width="1.4"/>
-<path class="e" d="M626,227.5 C650,227.5 650,202.5 676,202.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
-<path class="e" d="M626,227.5 C650,227.5 650,227.5 676,227.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
-<path class="e" d="M626,227.5 C650,227.5 650,252.5 676,252.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M342,183.0 C382,183.0 366,202.5 408,202.5" fill="none" stroke="#f72585" stroke-width="1.4"/>
+<path class="e" d="M626,202.5 C650,202.5 650,202.5 676,202.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,183.0 C382,183.0 366,241.5 408,241.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,241.5 C650,241.5 650,241.5 676,241.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
 </g>
 </g>
-<a href="../../#the-library-folder-by-folder" target="_top"><title>regress: back to the map of the library</title><rect class="card" x="20" y="129.0" width="190" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="34" y="146.0" fill="#e0fbfc" font-size="13" font-weight="700">regress</text><text x="34" y="160.0" fill="#94a3b8" font-size="9.5">job of the ontology</text></a>
-<a href="../../#the-library-folder-by-folder" target="_top"><title>summarize_stream: back to the map of the library</title><rect class="card" x="20" y="185.0" width="190" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="34" y="202.0" fill="#e0fbfc" font-size="13" font-weight="700">summarize_stream</text><text x="34" y="216.0" fill="#94a3b8" font-size="9.5">job of the ontology</text></a>
-<circle cx="330" cy="176.0" r="12" fill="#101a24" stroke="#4cc9f0" stroke-width="2"/><text class="m" x="330" y="206.0" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">stream</text>
-<a href="../../stream/readers/" target="_top"><title>CSV files, ROS bags and arrays: open stream/readers.md</title><rect class="card" x="410" y="105.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="121.5" fill="#e0fbfc" font-size="13" font-weight="700">CSV files, ROS bags and arrays</text><text x="424" y="136.5" fill="#94a3b8" font-size="9.5">the readers</text></a>
-<a href="../../stream/readers/" target="_top"><title>iter_csv, iter_rosbag, iter_array: open stream/readers.md</title><rect class="card" x="678" y="114.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="128.3" fill="#e0fbfc" font-size="11">iter_csv, iter_rosbag, iter_array</text></a>
-<a href="../../stream/merge/" target="_top"><title>Merge by time and shuffle: open stream/merge.md</title><rect class="card" x="410" y="144.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="160.5" fill="#e0fbfc" font-size="13" font-weight="700">Merge by time and shuffle</text><text x="424" y="175.5" fill="#94a3b8" font-size="9.5">several streams, one timeline</text></a>
-<a href="../../stream/merge/" target="_top"><title>merge_by_time, shuffle: open stream/merge.md</title><rect class="card" x="678" y="153.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="167.3" fill="#e0fbfc" font-size="11">merge_by_time, shuffle</text></a>
-<a href="../../stream/channels/" target="_top"><title>Choosing and reshaping channels: open stream/channels.md</title><rect class="card" x="410" y="208.5" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="224.5" fill="#e0fbfc" font-size="13" font-weight="700">Choosing and reshaping channels</text><text x="424" y="239.5" fill="#94a3b8" font-size="9.5">keep, drop and change channels</text></a>
-<a href="../../stream/channels/" target="_top"><title>Select: open stream/channels.md</title><rect class="card" x="678" y="192.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="206.3" fill="#e0fbfc" font-size="11">Select</text></a>
-<a href="../../stream/channels/" target="_top"><title>Discard: open stream/channels.md</title><rect class="card" x="678" y="217.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="231.3" fill="#e0fbfc" font-size="11">Discard</text></a>
-<a href="../../stream/channels/" target="_top"><title>FuncTransformer: open stream/channels.md</title><rect class="card" x="678" y="242.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="256.3" fill="#e0fbfc" font-size="11">FuncTransformer</text></a>
-<text x="500" y="307" fill="#94a3b8" font-size="10.5" text-anchor="middle">C classifier, R regressor; jobs: dense_armor/usable/ontology.json; classes: dense_armor.usable.catalog; drawn by docs/assets/maps/make_stream_map.py</text>
+<a href="../../#the-library-folder-by-folder" target="_top"><title>summarize_stream: back to the map of the library</title><rect class="card" x="20" y="136.0" width="190" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="34" y="153.0" fill="#e0fbfc" font-size="13" font-weight="700">summarize_stream</text><text x="34" y="167.0" fill="#94a3b8" font-size="9.5">job of the ontology</text></a>
+<a href="../../#the-library-folder-by-folder" target="_top"><title>resources: back to the map of the library</title><rect class="card" x="20" y="192.0" width="190" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="34" y="209.0" fill="#e0fbfc" font-size="13" font-weight="700">resources</text><text x="34" y="223.0" fill="#94a3b8" font-size="9.5">job of the ontology</text></a>
+<circle cx="330" cy="183.0" r="12" fill="#101a24" stroke="#4cc9f0" stroke-width="2"/><text class="m" x="330" y="213.0" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">metrics</text>
+<a href="../../metrics/stream/rolling/" target="_top"><title>Rolling window: open metrics/stream/rolling.md</title><rect class="card" x="410" y="105.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="121.5" fill="#e0fbfc" font-size="13" font-weight="700">Rolling window</text><text x="424" y="136.5" fill="#94a3b8" font-size="9.5">only the recent past</text></a>
+<a href="../../metrics/stream/rolling/" target="_top"><title>Rolling: open metrics/stream/rolling.md</title><rect class="card" x="678" y="114.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="128.3" fill="#e0fbfc" font-size="11">Rolling</text></a>
+<a href="../../metrics/stream/rolling_auc/" target="_top"><title>Rolling AUC: open metrics/stream/rolling_auc.md</title><rect class="card" x="410" y="144.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="160.5" fill="#e0fbfc" font-size="13" font-weight="700">Rolling AUC</text><text x="424" y="175.5" fill="#94a3b8" font-size="9.5">exact, on the window</text></a>
+<a href="../../metrics/stream/rolling_auc/" target="_top"><title>RollingAUC: open metrics/stream/rolling_auc.md</title><rect class="card" x="678" y="153.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="167.3" fill="#e0fbfc" font-size="11">RollingAUC</text></a>
+<a href="../../metrics/stream/predict_then_learn/" target="_top"><title>Predict, then learn: open metrics/stream/predict_then_learn.md</title><rect class="card" x="410" y="183.5" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="199.5" fill="#e0fbfc" font-size="13" font-weight="700">Predict, then learn</text><text x="424" y="214.5" fill="#94a3b8" font-size="9.5">score before learning</text></a>
+<a href="../../metrics/stream/predict_then_learn/" target="_top"><title>progressive_val_score, progressive_val_proba_score: open metrics/stream/predict_then_learn.md</title><rect class="card" x="678" y="192.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="206.3" fill="#e0fbfc" font-size="11">progressive_val_score, progressive_val_proba_score</text></a>
+<a href="../../metrics/stream/model_selection/" target="_top"><title>Choosing a model: open metrics/stream/model_selection.md</title><rect class="card" x="410" y="222.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="238.5" fill="#e0fbfc" font-size="13" font-weight="700">Choosing a model</text><text x="424" y="253.5" fill="#94a3b8" font-size="9.5">who is ahead today</text></a>
+<a href="../../metrics/stream/model_selection/" target="_top"><title>best_of, OnlineModelSelection: open metrics/stream/model_selection.md</title><rect class="card" x="678" y="231.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="245.3" fill="#e0fbfc" font-size="11">best_of, OnlineModelSelection</text></a>
+<text x="500" y="296" fill="#94a3b8" font-size="10.5" text-anchor="middle">jobs: dense_armor/usable/ontology.json; classes: dense_armor.usable.catalog; drawn by docs/assets/maps/make_stream_map.py</text>
 </svg>

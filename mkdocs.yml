@@ -210,7 +210,12 @@ nav:
           - Interval coverage: metrics/uncertainty/coverage.md
           - Interval width: metrics/uncertainty/width.md
           - Gaussian NLL: metrics/uncertainty/gaussian_nll.md
-      - On a stream: metrics/stream.md
+      - On a stream:
+          - metrics/stream/index.md
+          - Rolling window: metrics/stream/rolling.md
+          - Rolling AUC: metrics/stream/rolling_auc.md
+          - Predict, then learn: metrics/stream/predict_then_learn.md
+          - Choosing a model: metrics/stream/model_selection.md
       - Events: metrics/events.md
   - Signals:
       - signals/index.md

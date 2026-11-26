@@ -833,7 +833,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.rolling`
 *Bases:* Metric
-*Guide:* [metrics/stream.md](../metrics/stream.md)
+*Guide:* [metrics/stream/rolling.md](../metrics/stream/rolling.md)
 
 Rolling window over any metric with ``revert``.
 
@@ -850,7 +850,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.roc_auc`
 *Bases:* Metric
-*Guide:* [metrics/stream.md](../metrics/stream.md)
+*Guide:* [metrics/stream/rolling_auc.md](../metrics/stream/rolling_auc.md)
 
 Rolling ROC-AUC, exact on the last ``window`` samples.
 
@@ -887,7 +887,7 @@ This package has one class and four functions. The functions follow the class.
 
 
 *Module:* `dense_armor.core.evaluation.evaluate.model_selection`
-*Guide:* [metrics/stream.md](../metrics/stream.md)
+*Guide:* [metrics/stream/model_selection.md](../metrics/stream/model_selection.md)
 
 Track several models on a stream and expose the current best.
 
@@ -901,7 +901,7 @@ Public methods:
 ### progressive_val_score
 
 *Function in:* `dense_armor.core.evaluation.evaluate.prequential`
-*Guide:* [metrics/stream.md](../metrics/stream.md)
+*Guide:* [metrics/stream/predict_then_learn.md](../metrics/stream/predict_then_learn.md)
 
 Score a model on a stream, test first, then train.
 
@@ -910,7 +910,7 @@ Signature: `progressive_val_score(stream, model, metric, delay=None, every=None)
 ### progressive_val_proba_score
 
 *Function in:* `dense_armor.core.evaluation.evaluate.prequential`
-*Guide:* [metrics/stream.md](../metrics/stream.md)
+*Guide:* [metrics/stream/predict_then_learn.md](../metrics/stream/predict_then_learn.md)
 
 Same as `progressive_val_score`, but scores a probability.
 
@@ -919,7 +919,7 @@ Signature: `progressive_val_proba_score(stream, classifier, metric, delay=None, 
 ### best_of
 
 *Function in:* `dense_armor.core.evaluation.evaluate.model_selection`
-*Guide:* [metrics/stream.md](../metrics/stream.md)
+*Guide:* [metrics/stream/model_selection.md](../metrics/stream/model_selection.md)
 
 Return an `OnlineModelSelection` for the given models.
 
