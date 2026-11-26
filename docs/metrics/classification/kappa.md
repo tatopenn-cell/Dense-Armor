@@ -6,12 +6,6 @@ A forecast that always says "the index goes up" is right on most days when the i
 
 ![The running Accuracy and CohenKappa of a forecast that always says up, for up shares from 50% to 95%.](../../assets/metrics/kappa_3d.png)
 
-The picture follows the same 300 trading days for 25 up shares between 50% and 95%, with a forecast that always says "up". The cyan surface is the `Accuracy`, the pink one the `CohenKappa`. After 300 days the accuracy reads 0.43 when 50% of the days are up, 0.743 at 80% and 0.937 at 95%; the kappa reads 0.0 in all three cases.
-
-| class | what it does |
-|---|---|
-| `CohenKappa` | agreement between the forecast and the truth, corrected for chance |
-
 ## 1. A first example: a forecast that always says up
 
 Ten trading days: 1 is an up day and 0 a down day. The forecast says 1 every day.
@@ -37,6 +31,12 @@ Count by hand. The forecast is right on the 8 up days: the observed agreement is
 ![A stock index over 250 trading days: the running Accuracy and CohenKappa of a forecast that always says up.](../../assets/metrics/kappa_finance.png)
 
 On 250 trading days with 193 up days the forecast reads 0.772 for the accuracy and 0.0 for the kappa.
+
+The picture follows the same 300 trading days for 25 up shares between 50% and 95%, with a forecast that always says "up". The cyan surface is the `Accuracy`, the pink one the `CohenKappa`. After 300 days the accuracy reads 0.43 when 50% of the days are up, 0.743 at 80% and 0.937 at 95%; the kappa reads 0.0 in all three cases.
+
+| class | what it does |
+|---|---|
+| `CohenKappa` | agreement between the forecast and the truth, corrected for chance |
 
 ## 2. What the metric keeps
 

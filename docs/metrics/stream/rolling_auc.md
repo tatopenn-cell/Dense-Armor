@@ -6,12 +6,6 @@ A crash alarm gives a score each day, and the trader chooses a threshold later. 
 
 ![The running RollingAUC of a crash score on a stock index, for 25 values of the separation between crash days and normal days.](../../assets/metrics/rolling_auc_3d.png)
 
-The picture follows 400 days with a crash on 30% of the days and a score that is higher by delta on the crash days, with noise of size 1, over a window of 100 days, for 25 values of delta between 0 and 2.5. Each point of the surface is the `RollingAUC` after that many days. At day 400 the AUC reads 0.495 for delta 0, 0.772 for delta 1.04 and 0.92 for delta 1.98, close to the long-run values 0.5, 0.769 and 0.919, which are $\Phi(\delta/\sqrt{2})$.
-
-| class | what it does |
-|---|---|
-| `RollingAUC` | the exact ROC-AUC over the last `window` pairs |
-
 ## 1. A first example: a crash score on a stock index
 
 Ten days: 1 is a crash day and 0 a normal day, and the alarm gives a score each day.
@@ -36,6 +30,12 @@ Count by hand. The three crash days score 0.9, 0.8 and 0.4, and the seven normal
 ![A crash score on a stock index: the running RollingAUC over a window of 100 days for three separations.](../../assets/metrics/rolling_auc_finance.png)
 
 On 400 days the score with delta 0.5 reads 0.6293 at day 150, 0.6995 at day 250 and 0.6343 at day 400; delta 1.0 reads 0.7352, 0.8065 and 0.7605; delta 2.0 reads 0.9113, 0.9542 and 0.9214. The long-run values are 0.638, 0.760 and 0.921, and a window of 100 days jumps around them by a few hundredths.
+
+The picture follows 400 days with a crash on 30% of the days and a score that is higher by delta on the crash days, with noise of size 1, over a window of 100 days, for 25 values of delta between 0 and 2.5. Each point of the surface is the `RollingAUC` after that many days. At day 400 the AUC reads 0.495 for delta 0, 0.772 for delta 1.04 and 0.92 for delta 1.98, close to the long-run values 0.5, 0.769 and 0.919, which are $\Phi(\delta/\sqrt{2})$.
+
+| class | what it does |
+|---|---|
+| `RollingAUC` | the exact ROC-AUC over the last `window` pairs |
 
 ## 2. What the metric keeps
 

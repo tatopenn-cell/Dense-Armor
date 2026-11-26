@@ -578,7 +578,7 @@ Public methods:
 
 
 *Module:* `dense_armor.core.evaluation.metrics.events`
-*Guide:* [metrics/events.md](../metrics/events.md)
+*Guide:* [metrics/events/delays.md](../metrics/events/delays.md)
 
 Collect the event metrics for a stream of alarms.
 
@@ -599,7 +599,7 @@ Public methods:
 
 
 *Module:* `dense_armor.core.evaluation.metrics.events`
-*Guide:* [metrics/events.md](../metrics/events.md)
+*Guide:* [metrics/events/delays.md](../metrics/events/delays.md)
 
 A labelled event interval.
 
@@ -765,7 +765,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.events`
 *Bases:* Metric
-*Guide:* [metrics/events.md](../metrics/events.md)
+*Guide:* [metrics/events/point_adjusted_f1.md](../metrics/events/point_adjusted_f1.md)
 
 Point-adjusted F1 (Xu et al. 2018).
 
@@ -928,7 +928,7 @@ Signature: `best_of(models, metric_factory, stream=None, delay=None)`
 ### evaluate_events
 
 *Function in:* `dense_armor.core.evaluation.evaluate.events`
-*Guide:* [metrics/events.md](../metrics/events.md)
+*Guide:* [metrics/events/evaluate_events.md](../metrics/events/evaluate_events.md)
 
 Run a detector on a stream and report the event metrics.
 

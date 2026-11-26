@@ -6,12 +6,6 @@ A trading model quotes the default probability of a corporate bond. The Brier sc
 
 ![The running BrierScore of a constant quoted default probability for 25 quotes from 1% to 30%: the surface is lowest near the real default rate.](../../assets/metrics/probabilities_brier_score_3d.png)
 
-The picture follows the same 300 bonds, each defaulting with probability 5% (24 of them defaulted), for 25 constant quotes between 1% and 30%. Each point of the surface is the `BrierScore` after that many bonds. After 300 bonds the best quote is 0.082 and reads 0.0736; the quote of 1% reads 0.0785 and the quote of 30% reads 0.122.
-
-| class | what it does |
-|---|---|
-| `BrierScore` | the mean squared distance between the probability and what happened |
-
 ## 1. A first example: the default probability of a bond
 
 Five bonds are quoted, and then we learn which ones defaulted: 1 is a default and 0 is no default.
@@ -36,6 +30,12 @@ Count by hand. The squared distances are $0.05^2 = 0.0025$, $0.80^2 = 0.64$, $0.
 ![Bonds that default 5% of the time: the running BrierScore of three quotes over 250 bonds.](../../assets/metrics/probabilities_brier_score_finance.png)
 
 On 250 bonds, 8 of them defaulted. The honest quote of 5% reads 0.0313 after 250 bonds, the quote of 0.5% (too sure) reads 0.0317 and the quote of 50% reads 0.25, the score of a constant 0.5 forecast.
+
+The picture follows the same 300 bonds, each defaulting with probability 5% (24 of them defaulted), for 25 constant quotes between 1% and 30%. Each point of the surface is the `BrierScore` after that many bonds. After 300 bonds the best quote is 0.082 and reads 0.0736; the quote of 1% reads 0.0785 and the quote of 30% reads 0.122.
+
+| class | what it does |
+|---|---|
+| `BrierScore` | the mean squared distance between the probability and what happened |
 
 ## 2. What the metric keeps
 

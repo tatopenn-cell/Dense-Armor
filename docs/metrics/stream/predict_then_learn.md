@@ -6,13 +6,6 @@ On a stream the honest way to score a model is to ask it for its answer before i
 
 ![The running accuracy of the forecast "the same as the last label I know" on a stock direction that repeats the day before 90% of the time, for 25 label delays from 0 to 24 samples.](../../assets/metrics/predict_then_learn_3d.png)
 
-The picture follows 300 days of a stock index whose direction repeats the day before 90% of the time, scored with a forecast that says the last direction it knows, for 25 label delays between 0 and 24 samples. Each point of the surface is the running accuracy after that many days. With no delay the accuracy reads 0.89 at day 100 and 0.9133 at day 300; with a delay of 5 samples it reads 0.6632 and 0.7017; with a delay of 24 samples it reads 0.3816 and 0.413. The later the label, the worse the forecast, and with a delay of about 20 samples the last label known no longer says anything about today: on this stream it reads below 0.5.
-
-| function | what it does |
-|---|---|
-| `progressive_val_score` | scores a model on a stream, test first, then train, with an optional label delay |
-| `progressive_val_proba_score` | the same, for a metric that needs a probability |
-
 ## 1. A first example: the direction of a stock index
 
 Ten days of the direction of a stock index, 1 for up and 0 for down. The model says the last direction it knows, and it starts by saying 0.
@@ -51,6 +44,13 @@ Count by hand. With no delay the model learns each day right after predicting it
 ![A stock direction over 250 days: the running accuracy of the forecast "the last label I know" with no delay and with labels 5 and 20 samples late.](../../assets/metrics/predict_then_learn_finance.png)
 
 On 250 days the forecast with no delay reads 0.89 at day 100 and 0.908 at day 250. With labels 5 samples late it reads 0.6632 and 0.7061, and with labels 20 samples late 0.45 and 0.4478.
+
+The picture follows 300 days of a stock index whose direction repeats the day before 90% of the time, scored with a forecast that says the last direction it knows, for 25 label delays between 0 and 24 samples. Each point of the surface is the running accuracy after that many days. With no delay the accuracy reads 0.89 at day 100 and 0.9133 at day 300; with a delay of 5 samples it reads 0.6632 and 0.7017; with a delay of 24 samples it reads 0.3816 and 0.413. The later the label, the worse the forecast, and with a delay of about 20 samples the last label known no longer says anything about today: on this stream it reads below 0.5.
+
+| function | what it does |
+|---|---|
+| `progressive_val_score` | scores a model on a stream, test first, then train, with an optional label delay |
+| `progressive_val_proba_score` | the same, for a metric that needs a probability |
 
 ## 2. What the protocol does
 

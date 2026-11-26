@@ -6,12 +6,6 @@ A forecast that was good last month may be bad today: the accuracy of all the da
 
 ![The running Rolling accuracy of a stock index forecast that is right 80% of the days and then 50%, for 25 window sizes from 10 to 200 days.](../../assets/metrics/rolling_3d.png)
 
-The picture follows 400 days of a forecast of a stock index that is right on 80% of the days for the first 200 days and on 50% after that, for 25 window sizes. Each point of the surface is the `Rolling` accuracy after that many days. At day 400 the window of 97 days reads 0.4536 and the window of 200 days reads 0.49, both close to the 0.5 of the last 200 days, while the window of 10 days reads 0.6. At day 250, 50 days after the change, the window of 97 days has already fallen to 0.6907 and the window of 200 days is still at 0.725.
-
-| class | what it does |
-|---|---|
-| `Rolling` | any metric that can undo an update, over the last samples or the last seconds |
-
 ## 1. A first example: the forecast of a stock index
 
 Ten days of an alarm for the crash days of a stock index, scored on all the days and on a window of five.
@@ -37,6 +31,12 @@ Count by hand. The alarm is right on days 1, 3, 4, 5, 6, 7 and 9, and wrong on d
 ![A stock index forecast over 400 days: the accuracy of all the days and of windows of 100 and of 20 days, with the change at day 200.](../../assets/metrics/rolling_finance.png)
 
 On the same 400 days the accuracy of all the days reads 0.78 at day 150, 0.744 at day 250 and 0.635 at day 400. The window of 100 days reads 0.76, 0.69 and 0.46, and the window of 20 days reads 0.75, 0.65 and 0.55. The dashed line is the change at day 200: at day 400 the accuracy of all the days still says 0.635 although the forecast has been right on half the days for 200 days.
+
+The picture follows 400 days of a forecast of a stock index that is right on 80% of the days for the first 200 days and on 50% after that, for 25 window sizes. Each point of the surface is the `Rolling` accuracy after that many days. At day 400 the window of 97 days reads 0.4536 and the window of 200 days reads 0.49, both close to the 0.5 of the last 200 days, while the window of 10 days reads 0.6. At day 250, 50 days after the change, the window of 97 days has already fallen to 0.6907 and the window of 200 days is still at 0.725.
+
+| class | what it does |
+|---|---|
+| `Rolling` | any metric that can undo an update, over the last samples or the last seconds |
 
 ## 2. What the metric keeps
 

@@ -471,6 +471,15 @@ class CohenKappa(Metric):
     marginal label frequencies. ``1.0`` is perfect, ``0.0`` is chance,
     negative is worse than chance.
 
+    Examples:
+        >>> from dense_armor.core.evaluation.metrics import CohenKappa
+        >>> stock_up = [1, 1, 0, 1, 1, 1, 0, 1, 1, 1]
+        >>> m = CohenKappa()
+        >>> for y in stock_up:
+        ...     _ = m.update(y, 1)
+        >>> m.get()
+        0.0
+
     References:
         Cohen, J. (1960). Educational and Psychological Measurement
         20(1), 37-46.

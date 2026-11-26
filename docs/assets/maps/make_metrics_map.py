@@ -66,7 +66,7 @@ PAGES = [
     (
         "Events",
         "delay, false alarms",
-        "metrics/events.md",
+        "metrics/events/index.md",
         PINK,
         ["EventMetrics", "EventWindow", "PointAdjustedF1"],
     ),
