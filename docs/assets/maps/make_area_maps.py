@@ -639,96 +639,11 @@ def audio_map():
     )
 
 
-def applications_map():
-    pages = nav_pages("Applications")
-    assert set(pages) == {"Finance", "Drones", "Robot", "IoT", "Biomedical", "ARC"}, (
-        pages
-    )
-    scripts = {
-        d.name: sum(1 for f in d.glob("*.py") if f.name != "__init__.py")
-        for d in (REPO / "pipelines").iterdir()
-        if d.is_dir() and not d.name.startswith("_")
-    }
-    robot_children = ""
-    for entry in _nav_cfg():
-        if isinstance(entry, dict) and "Applications" in entry:
-            for it in entry["Applications"]:
-                if isinstance(it, dict) and "Robot" in it:
-                    robot_children = ", ".join(
-                        k for child in it["Robot"] for k in child
-                    )
-    fin = classes_of("dense_armor.core.finance", 2)
-    fin_names = sample([n for v in fin.values() for n in v])
-    groups = [
-        (
-            "01",
-            "PIPELINES ON A STREAM",
-            "each page runs a pipeline of the library and prints what it finds",
-            ORANGE,
-            [
-                (
-                    "Finance",
-                    f"{fin_names}; {scripts['finance']} scripts",
-                    pages["Finance"],
-                    plural(pages["Finance"], "page"),
-                ),
-                (
-                    "Drones",
-                    f"faults, battery, safety, landing; {scripts['drones']} scripts",
-                    pages["Drones"],
-                    plural(pages["Drones"], "page"),
-                ),
-                (
-                    "Robot",
-                    robot_children,
-                    pages["Robot"],
-                    plural(pages["Robot"], "page"),
-                ),
-                (
-                    "IoT",
-                    "industrial telemetry guard",
-                    pages["IoT"],
-                    plural(pages["IoT"], "page"),
-                ),
-                (
-                    "Biomedical",
-                    "ECG lead guard, a demonstration, not a device",
-                    pages["Biomedical"],
-                    plural(pages["Biomedical"], "page"),
-                ),
-            ],
-        ),
-        (
-            "02",
-            "A BENCHMARK",
-            "tasks that are easy for a person and hard for a program",
-            CYAN,
-            [
-                (
-                    "ARC",
-                    "grids, objects and programs",
-                    pages["ARC"],
-                    plural(pages["ARC"], "page"),
-                )
-            ],
-        ),
-    ]
-    tree(
-        DOCS / "assets" / "applications" / "map.png",
-        "THE MAP OF THE APPLICATIONS",
-        f"{sum(pages.values())} pages in six applications; the names are those of the menu, the bar is the number of pages",
-        ("applications", "6 applications", f"{sum(pages.values())} pages"),
-        groups,
-        "page counts from the nav of mkdocs.yml, script counts from the folder pipelines/",
-    )
-
-
 MAPS = {
     "online": online_map,
     "ml": ml_map,
     "neural": neural_map,
     "audio": audio_map,
-    "applications": applications_map,
 }
 
 if __name__ == "__main__":
