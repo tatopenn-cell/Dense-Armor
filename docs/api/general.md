@@ -2490,7 +2490,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.bandit.base`
 *Bases:* Root
-*Guide:* [bandit/index.md](../bandit/index.md)
+*Guide:* [bandit/policy.md](../bandit/policy.md)
 
 Base class for bandit policies.
 
@@ -2513,7 +2513,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.bandit.bayes_ucb`
 *Bases:* BanditPolicy
-*Guide:* [bandit/index.md](../bandit/index.md)
+*Guide:* [bandit/bayes_ucb.md](../bandit/bayes_ucb.md)
 
 Bayes-UCB policy.
 
@@ -2536,7 +2536,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.bandit.ucb`
 *Bases:* BanditPolicy
-*Guide:* [bandit/index.md](../bandit/index.md)
+*Guide:* [bandit/epsilon_greedy.md](../bandit/epsilon_greedy.md)
 
 Epsilon-greedy policy.
 
@@ -2559,7 +2559,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.bandit.exp3`
 *Bases:* BanditPolicy
-*Guide:* [bandit/index.md](../bandit/index.md)
+*Guide:* [bandit/exp3.md](../bandit/exp3.md)
 
 Exp3 policy for the non-stochastic multi-armed bandit.
 
@@ -2582,7 +2582,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.bandit.linucb`
 *Bases:* Root
-*Guide:* [bandit/index.md](../bandit/index.md)
+*Guide:* [bandit/linucb.md](../bandit/linucb.md)
 
 LinUCB with disjoint linear models.
 
@@ -2605,7 +2605,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.bandit.robot`
 *Bases:* Root
-*Guide:* [bandit/index.md](../bandit/index.md)
+*Guide:* [bandit/robot_kp_selector.md](../bandit/robot_kp_selector.md)
 
 Choose ``kp`` among a set of values by UCB1 on a robot stream.
 
@@ -2628,7 +2628,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.bandit.ts`
 *Bases:* BanditPolicy
-*Guide:* [bandit/index.md](../bandit/index.md)
+*Guide:* [bandit/thompson.md](../bandit/thompson.md)
 
 Thompson sampling for a Bernoulli or a Gaussian bandit.
 
@@ -2651,7 +2651,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.bandit.ucb`
 *Bases:* BanditPolicy
-*Guide:* [bandit/index.md](../bandit/index.md)
+*Guide:* [bandit/ucb.md](../bandit/ucb.md)
 
 UCB1 policy.
 
@@ -2674,7 +2674,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.bandit.ucb`
 *Bases:* UCB1
-*Guide:* [bandit/index.md](../bandit/index.md)
+*Guide:* [bandit/ucb.md](../bandit/ucb.md)
 
 UCB1-Tuned policy.
 
