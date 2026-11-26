@@ -647,7 +647,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.regression`
 *Bases:* Metric
-*Guide:* [metrics/uncertainty.md](../metrics/uncertainty.md)
+*Guide:* [metrics/uncertainty/gaussian_nll.md](../metrics/uncertainty/gaussian_nll.md)
 
 Gaussian negative log-likelihood.
 
@@ -664,7 +664,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.regression`
 *Bases:* Metric
-*Guide:* [metrics/uncertainty.md](../metrics/uncertainty.md)
+*Guide:* [metrics/uncertainty/coverage.md](../metrics/uncertainty/coverage.md)
 
 Fraction of true labels inside a prediction interval.
 
@@ -715,7 +715,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.regression`
 *Bases:* Metric
-*Guide:* [metrics/uncertainty.md](../metrics/uncertainty.md)
+*Guide:* [metrics/uncertainty/width.md](../metrics/uncertainty/width.md)
 
 Mean width of a prediction interval.
 

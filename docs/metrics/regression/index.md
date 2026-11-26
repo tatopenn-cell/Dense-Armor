@@ -66,7 +66,7 @@ Count: MAE is the mean of $|p - \hat{p}|$, RMSE is $\sqrt{\text{mean of } (p - \
 | [MSE and RMSE](mse_rmse.md) | `MeanSquaredError`, `RootMeanSquaredError` | the average squared miss, and its square root, which punish large misses |
 | [R²](r2.md) | `R2Score` | how much better the model is than always guessing the mean |
 
-The metrics that read an interval around the number are in [Uncertainty](../uncertainty.md).
+The metrics that read an interval around the number are in [Uncertainty](../uncertainty/index.md).
 
 ---
 

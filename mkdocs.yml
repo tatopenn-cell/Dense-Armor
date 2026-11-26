@@ -205,7 +205,11 @@ nav:
           - Mean absolute error: metrics/regression/mae.md
           - MSE and RMSE: metrics/regression/mse_rmse.md
           - R squared: metrics/regression/r2.md
-      - Uncertainty: metrics/uncertainty.md
+      - Uncertainty:
+          - metrics/uncertainty/index.md
+          - Interval coverage: metrics/uncertainty/coverage.md
+          - Interval width: metrics/uncertainty/width.md
+          - Gaussian NLL: metrics/uncertainty/gaussian_nll.md
       - On a stream: metrics/stream.md
       - Events: metrics/events.md
   - Signals:

@@ -52,7 +52,7 @@ PAGES = [
     (
         "Uncertainty",
         "intervals",
-        "metrics/uncertainty.md",
+        "metrics/uncertainty/index.md",
         CYAN,
         ["GaussianNLL", "IntervalCoverage", "MeanIntervalWidth"],
     ),
