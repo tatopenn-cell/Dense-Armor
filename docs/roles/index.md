@@ -1,5 +1,11 @@
 # Roles
 
+## The map of the roles
+
+Click a page to open it, or the job on the left (or the button at the top) to go back to the [map of the library](../index.md#the-library-folder-by-folder).
+
+<object type="image/svg+xml" data="../assets/maps/roles.svg" style="width:100%"></object>
+
 A role is the short list of methods that a kind of learning tool must have. A classifier learns from one labelled sample and answers with probabilities; an anomaly detector learns from one sample and answers with a score. Almost every tool of Dense-Armor plays one of these roles, so you can swap a tool for another of the same role without touching the code around it.
 
 ![One loop, three roles: the surfaces of a classifier, a regressor and an anomaly detector trained on the same stream](../assets/roles/overview.png)

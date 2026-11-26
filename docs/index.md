@@ -41,6 +41,7 @@ Every big section has its own interactive map on top of its page: the jobs on th
 | [Ensembles](ensemble/index.md) | voting, bagging, boosting, a weighted average and stacking |
 | [Applications](applications/index.md) | the six applications, their sections and every page |
 | [Ontology](ontology/index.md) | the graph part: types and rules, grids, programs, spectra, recovery, causality |
+| [Roles](roles/index.md) | the six roles and the pages that teach them |
 | [Metric](metrics/index.md) | the scores, by kind of model |
 | [Classification](metrics/classification/index.md) | precision, recall, F1, confusion matrix, kappa |
 | [Probabilities](metrics/probabilities/index.md) | log loss and the Brier score |
