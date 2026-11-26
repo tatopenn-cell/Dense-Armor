@@ -92,7 +92,7 @@ class ExponentiallyWeightedAverageRegressor(Regressor):
     budget_s = 1e-3
     memory_class = "O(n_models)"
 
-    def __init__(self, models, eta: float = 0.5, loss=None) -> None:
+    def __init__(self, models: Any, eta: float = 0.5, loss: Any = None) -> None:
         if eta <= 0.0:
             raise ValueError(f"eta must be > 0, got {eta}")
         if not models:
