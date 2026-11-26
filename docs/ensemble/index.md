@@ -1,183 +1,60 @@
 # Ensembles: many models that answer together
 
+## The map of ensembles
+
+Click a page to open it, or the job on the left (or the button at the top) to go back to the [map of the library](../index.md#the-library-folder-by-folder).
+
+<object type="image/svg+xml" data="../assets/maps/ensemble.svg" style="width:100%"></object>
+
 One model can be wrong in one direction, another in the opposite one, and a vote over both is
 more reliable than either alone. An ensemble trains a group of models on the same stream and
 combines their answers: by a vote, by an average, or by a weight that grows with how well each
 member has done so far.
 
-## 1. Why an ensemble
+## Why an ensemble
 
 A single decision tree learns the rule of the stream one sample at a time. When the rule changes,
 the tree has to notice, forget and relearn, and until it does it answers with the old rule. A
 group of trees can recover faster: each one makes a different mistake, and the vote of the group
 is right more often than any single member.
 
-The rest of this page shows the five ensembles of the library, from the simplest (a vote) to
+The pages below show the five ensembles of the library, from the simplest (a vote) to
 the one with a second model on top (stacking). Each step starts from a model the reader already
-has (the tree of the forests pages), says what the ensemble adds, and shows the code. Section 7
+has (the tree of the forests pages), says what the ensemble adds, and shows the code. the last section of this page
 measures what the ensembles gain and what they cost on a stream with a sudden change.
 
-## 2. Voting: the majority decides
+## A first example: a vote on a stock signal
 
-`VotingClassifier` trains a list of classifiers on the same stream and returns the class that
-most members predict. In `"hard"` mode each member is one vote, whatever confidence it has; in
-`"soft"` mode each member returns a probability for every class and the ensemble averages them.
+A desk gets a signal between 0 and 1 for a stock every day, and buys when the signal is above 0.5. Three trees learn that rule from the stream, one sample at a time, and they vote: the class that most of them predict wins.
 
 ```python
 from dense_armor.core.online.ensemble import VotingClassifier
 from dense_armor.core.online.tree.hoeffding import HoeffdingTreeClassifier
 
-v = VotingClassifier(
-    [HoeffdingTreeClassifier(grace_period=20),
-     HoeffdingTreeClassifier(grace_period=50),
-     HoeffdingTreeClassifier(grace_period=100)],
-    mode="hard")
+vote = VotingClassifier([HoeffdingTreeClassifier(grace_period=g) for g in (20, 50, 100)], mode="hard")
 for i in range(200):
-    x = (i % 20) / 19.0
-    v.learn_one({"x": x}, 1 if x > 0.5 else 0)
-print(v.predict_one({"x": 0.9}))
+    signal = (i % 20) / 19.0
+    vote.learn_one({"signal": signal}, 1 if signal > 0.5 else 0)
+print(vote.predict_one({"signal": 0.9}), vote.predict_one({"signal": 0.1}))
 ```
 
 ```
-1
+1 0
 ```
 
-The three members differ in how often they reconsider a split, so they make different mistakes,
-and the majority cancels some of them. A vote of three identical members cannot help: they would
-all be wrong together. The members here differ by `grace_period`, which is enough on this
-stream.
+A signal of 0.9 is above 0.5, so the vote says 1 (buy); a signal of 0.1 says 0. The three trees differ in how often they reconsider a split (`grace_period` 20, 50 and 100), so they make different mistakes, and the majority cancels some of them.
 
-## 3. Bagging: a different sample for every member
+## The pages of the section
 
-`OnlineBaggingClassifier` follows Oza and Russell (2001), Section 2. Every member sees every
-sample, but for each arriving sample it draws `k` from a `Poisson(1)` distribution and trains on
-the sample `k` times. On average a sample reaches each member once, and a few samples reach it
-twice or not at all, which is what a bootstrap sample of the batch algorithm does in the limit.
+| Page | Class | What it is for |
+|---|---|---|
+| [Voting](voting.md) | `VotingClassifier` | two or more classifiers; hard vote or averaged probability |
+| [Bagging](bagging.md) | `OnlineBaggingClassifier` | members that train each sample a Poisson number of times |
+| [Boosting](boosting.md) | `OnlineBoostingClassifier` | members that pass their mistakes to the next one |
+| [Exponentially weighted average](ewa.md) | `ExponentiallyWeightedAverageRegressor` | the weighted average of regressors, with a bound on its loss |
+| [Stacking](stacking.md) | `StackingClassifier` | a meta-model that learns from the predictions of the members |
 
-```python
-import numpy as np
-from dense_armor.core.online.ensemble import OnlineBaggingClassifier
-from dense_armor.core.online.tree.hoeffding import HoeffdingTreeClassifier
-
-rng = np.random.default_rng(0)
-bag = OnlineBaggingClassifier(
-    lambda: HoeffdingTreeClassifier(grace_period=20), n_models=5, seed=1)
-for _ in range(500):
-    x = float(rng.normal(0.0 if rng.random() < 0.5 else 4.0, 0.5))
-    bag.learn_one({"x": x}, int(x > 2.0))
-print(bag.predict_one({"x": 0.1}), bag.predict_one({"x": 4.0}))
-```
-
-```
-0 1
-```
-
-The Poisson draw is what makes the members differ. On the drifted stream of Section 7 the bag of
-five trees answers correctly more often than one tree in the median of 20 seeds (0.947 against
-0.942, paired p = 0.003). The gain is small on this stream: the members share the same data,
-and the diversity the Poisson draw gives is limited.
-
-## 4. Boosting: weight the samples the members miss
-
-`OnlineBoostingClassifier` follows the same paper, Section 3 and Figure 2. Each member has two
-counters, one for the samples it classified correctly and one for the wrong ones. The weight of
-the incoming sample for the next member grows with the fraction of its mistakes, so a sample a
-member got wrong reaches the next member more often. The final vote weights each member by
-`log(1 / beta_m)`, with `beta_m = eps_m / (1 - eps_m)` and `eps_m` the error rate of that member.
-
-```python
-import numpy as np
-from dense_armor.core.online.ensemble import OnlineBoostingClassifier
-from dense_armor.core.online.tree.hoeffding import HoeffdingTreeClassifier
-
-rng = np.random.default_rng(0)
-boost = OnlineBoostingClassifier(
-    lambda: HoeffdingTreeClassifier(grace_period=20), n_models=5, seed=1)
-for _ in range(500):
-    x = float(rng.normal(0.0 if rng.random() < 0.5 else 4.0, 0.5))
-    boost.learn_one({"x": x}, int(x > 2.0))
-print(boost.predict_one({"x": 0.1}), boost.predict_one({"x": 4.0}))
-```
-
-```
-0 1
-```
-
-Boosting is the strongest of the four ensembles of this page on the drifted stream: 0.982
-against 0.942 for the single tree, on 19 seeds out of 20 (Section 7). The price is the highest
-cost per sample of the four, because every member trains on every sample with a weight, and the
-weight depends on the mistakes of the member before it.
-
-## 5. Exponentially weighted average: a regressor
-
-`ExponentiallyWeightedAverageRegressor` is the regression version of the same idea. Each member
-has a cumulative loss, and its weight is `exp(-eta * L_i)`, so a member that has been wrong
-loses weight and its vote counts less. The prediction is the weighted average of the members'
-predictions. This is the Hedge rule of Freund and Schapire (1997), Section 2.1.
-
-```python
-from dense_armor.roles import Regressor
-from dense_armor.core.online.ensemble import ExponentiallyWeightedAverageRegressor
-
-class Const(Regressor):
-    def __init__(self, v):
-        self.v = float(v)
-    def learn_one(self, x, y, t=None):
-        return self
-    def predict_one(self, x, t=None, return_std=False):
-        return self.v
-
-ewa = ExponentiallyWeightedAverageRegressor(
-    [Const(0.0), Const(50.0), Const(90.0)], eta=0.5)
-for _ in range(30):
-    ewa.learn_one({"x": 0.0}, 100.0)
-print(round(ewa.predict_one({"x": 0.0}), 1))
-```
-
-```
-90.0
-```
-
-Three constant members predict 0, 50 and 90 and the truth is 100. The simple average would give
-46.7, the weighted average gives 90.0: the best member's weight dominates. The `bound()` method
-returns the bound of equation 9 of the paper, which limits how much worse the ensemble can be
-than its best member. On the regression stream of Section 7 the ensemble's cumulative loss is
-above the best member's and below the bound, which is what the bound promises: it caps the loss,
-it does not promise the ensemble wins.
-
-## 6. Stacking: a second model on top
-
-`StackingClassifier` trains a list of base classifiers and a second classifier, the meta-model,
-on the predictions of the base ones. For each sample the base members predict first, their
-predictions become the input of the meta-model, and only then the members see the label. The
-order matters: if the meta-model saw the labels before the members had predicted, it would learn
-from information the members did not have, and the ensemble would look better on the stream than
-it is.
-
-```python
-import numpy as np
-from dense_armor.core.online.ensemble import StackingClassifier
-from dense_armor.core.online.tree.hoeffding import HoeffdingTreeClassifier
-
-rng = np.random.default_rng(0)
-stack = StackingClassifier(
-    [HoeffdingTreeClassifier(grace_period=20),
-     HoeffdingTreeClassifier(grace_period=100)],
-    HoeffdingTreeClassifier(grace_period=20))
-for _ in range(500):
-    x = float(rng.normal(0.0 if rng.random() < 0.5 else 4.0, 0.5))
-    stack.learn_one({"x": x}, int(x > 2.0))
-print(stack.predict_one({"x": 0.1}), stack.predict_one({"x": 4.0}))
-```
-
-```
-0 1
-```
-
-The meta-model sees only the members' predictions, never the raw `x`. On the drifted stream of
-Section 7 stacking is on par with voting and both are above the single tree.
-
-## 7. What the ensembles cost
+## What the ensembles cost
 
 The four ensembles and the single tree were compared on `DriftStream` with one sudden change, 4
 features, 2000 samples, 20 seeds, prequential (predict first, then learn). Voting and stacking
@@ -217,62 +94,18 @@ upper limit and the ensemble stays well below it.
 - Freund, Y., Schapire, R. E. (1997). A decision-theoretic generalization of on-line learning and an application to boosting. Journal of Computer and System Sciences 55(1), 119-139. Section 2.1 for the Hedge rule, Theorem 2 and equation 9 for the bound of the exponentially weighted average.
 - Kivinen, J., Warmuth, M. K. (1997). Exponentiated gradient versus gradient descent for linear predictors. Information and Computation 132(1), 1-63. The exponentiated gradient gives the same multiplicative update of the weights, `w_i = exp(-eta * L_i)`, from the gradient of the relative entropy.
 
-### What each paper states
-
-The boosting update is the one of Figure 2 of Oza and Russell: the weight of the sample for the
-next member is multiplied by `N / (2 * lambda_s)`, with `N` the number of samples seen so far
-and `lambda_s` the accumulator of the member for the samples it classified correctly or wrongly.
-The paper gives no equivalence and no convergence rate for the boosting weights: it builds the
-algorithm to correspond to batch AdaBoost.M1 and then shows, with experiments, that online
-boosting starts worse and approaches AdaBoost as the number of examples grows (Figure 4). The
-bagging counts are the part for which the paper proves that the expected counts of the online
-and batch algorithms are equal.
-
-The bound of the exponentially weighted average is equation 9 of Freund and Schapire,
-`L_ensemble <= (eta / (1 - exp(-eta))) * min_i L_i + ln(K) / (1 - exp(-eta))`, with `K` the
-number of members. The factor `eta / (1 - exp(-eta))` tends to one as `eta` goes to zero, so a
-small learning rate loses almost nothing over the best member, and the price of a large learning
-rate is the second term. The bound assumes the loss is in `[0, 1]`; the script clips the squared
-error to that interval before summing it, and reports the clipping in the JSON.
-
-Voting and stacking have no paper in the task folder. Their rules are stated in the class
-docstrings and tested.
-
-### Choices the papers do not fix
-
-- **The members of voting and stacking.** The papers give no rule for how different the members
-  should be. Here they differ by `grace_period`; three identical members cannot help, and a test
-  checks that a vote of diverse members is not worse than a single tree.
-- **The Poisson draw of bagging.** The paper draws `Poisson(1)` per member per sample. The class
-  draws one `k` per member and calls `learn_one` `k` times, which is the same rule.
-- **The meta-model of stacking.** The paper gives no rule for what the meta-model sees. Here it
-  sees the members' predicted labels, one key per member, and never the raw input.
-- **The initial weights of the weighted average.** The paper's bound is for uniform initial
-  weights, which is what the class uses.
-
 ### Limits
 
-- The stacking meta-model receives the members' predicted labels, not their probabilities. A
-  meta-model that could see the probabilities would have more to work with; the class does not
-  pass them.
-- The bound of the weighted average needs a loss in `[0, 1]`. A regression stream with squared
-  errors outside that interval has a bound that is not meaningful, and the class does not clip
-  the user's loss for them.
-- An ensemble costs several times a single model. On the benchmark of Section 7 boosting costs
+- An ensemble costs several times a single model. On the benchmark of the last section of this page boosting costs
   about eleven times the single tree per sample.
-- On the regression stream the weighted average does not beat its own best member. The rule of
-  the stream is not hard enough for the weaker members to be useful, and blending them in costs.
-  A stream where every member is wrong in a different way is where the weighted average pays.
 
 ### Checks
 
 - `check_estimator` passes for all five classes with no check skipped.
-- On the drifted stream of Section 7 the four ensembles beat the single tree, every paired
+- On the drifted stream of the last section of this page the four ensembles beat the single tree, every paired
   p-value below 0.01.
 - The bound of the weighted average is verified against equation 9 of the paper by a test that
   fails when `bound()` returns a constant.
-- The stacking order (meta-model learns before the members see the label) is verified by a test
-  with a spy classifier.
 - Every class counts NaN, `None`, empty dicts and non-dict inputs in `n_missing` and does not
   crash.
 

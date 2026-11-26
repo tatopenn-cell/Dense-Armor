@@ -338,7 +338,13 @@ nav:
           - AdaptiveRandomForestClassifier: forest/adaptive_random_forest.md
           - AggregatedMondrianForest: forest/aggregated_mondrian_forest.md
           - OnlineExtraTreesRegressor: forest/online_extra_trees.md
-      - Ensembles: ensemble/index.md
+      - Ensembles:
+          - ensemble/index.md
+          - Voting: ensemble/voting.md
+          - Bagging: ensemble/bagging.md
+          - Boosting: ensemble/boosting.md
+          - Weighted average: ensemble/ewa.md
+          - Stacking: ensemble/stacking.md
       - Bandits: bandit/index.md
       - Active learning: active/index.md
       - Factorization machines: facto/index.md

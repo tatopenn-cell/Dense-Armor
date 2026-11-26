@@ -38,6 +38,7 @@ Every big section has its own interactive map on top of its page: the jobs on th
 | [Online learning](learn/index.md) | sequential models and incremental architectures |
 | [Time series](timeseries/index.md) | time series |
 | [Finance](finance/index.md) | financial pipelines, in four sections |
+| [Ensembles](ensemble/index.md) | voting, bagging, boosting, a weighted average and stacking |
 | [Metric](metrics/index.md) | the scores, by kind of model |
 | [Classification](metrics/classification/index.md) | precision, recall, F1, confusion matrix, kappa |
 | [Probabilities](metrics/probabilities/index.md) | log loss and the Brier score |
