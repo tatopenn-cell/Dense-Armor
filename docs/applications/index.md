@@ -1,10 +1,12 @@
 # Applications
 
+## The map of the applications
+
+Click a page to open it, or a section to light its pages, or the button at the top to go back to the [map of the library](../index.md#the-library-folder-by-folder). The map is drawn from the menu of the site, so it follows it.
+
+<object type="image/svg+xml" data="../assets/maps/applications.svg" style="width:100%"></object>
+
 An application is a worked pipeline: it takes a stream, runs tools of the library on it, and says what the pipeline finds and how well. The pages of this tab are independent. Open the one that looks like your problem.
-
-![The map of the applications: finance, drones, robot, IoT, biomedical and ARC-AGI, with the number of pages and scripts of each](../assets/applications/map.png)
-
-*The six applications. The page counts come from the menu of the site and the script counts from the folder `pipelines/`; the figure is drawn by a script, so it follows both.*
 
 ## 1. The six applications
 
@@ -23,5 +25,5 @@ Each page takes data (real or synthetic), says which tools of the library it use
 
 ## Details
 
-- The page counts of the figure come from `mkdocs.yml` and the script counts from the folders of `pipelines/` (finance, drones, IoT and biomedical). ARC-AGI has no folder there: its code is in the library.
-- The script `docs/assets/maps/make_area_maps.py` stops if an application is added to the menu and not to the figure.
+- The page counts of the map come from `mkdocs.yml` and the script counts from the folders of `pipelines/` (finance, drones, IoT and biomedical). ARC-AGI has no folder there: its code is in the library.
+- The interactive map at the top is drawn by `docs/assets/maps/make_applications_map.py` from the same menu: the applications, their sections and every page, each one a link.
