@@ -1,8 +1,7 @@
 """The interactive map of the Regression pages, with the exact names of `usable`.
 
 Draws docs/assets/maps/regression.svg with the same drawing as the other section maps (make_tree_map.py).
-MeanAbsoluteError, MeanSquaredError and RootMeanSquaredError are not in the catalog of `usable`, so their pages
-are drawn with a summary line (``summaries``) and only R2Score is checked against the catalog.
+All the classes are checked against the catalog of `usable`.
 
 Run from the repo root:
     python docs/assets/maps/make_regression_map.py
@@ -38,12 +37,6 @@ PAGES = [
     ),
 ]
 
-SUMMARIES = {
-    "Mean absolute error": "MeanAbsoluteError",
-    "MSE and RMSE": "MeanSquaredError, RootMeanSquaredError",
-}
-
-
 def main():
     draw(
         PAGES,
@@ -56,7 +49,6 @@ def main():
         "",
         "docs/assets/maps/make_regression_map.py",
         partial=True,
-        summaries=SUMMARIES,
     )
 
 

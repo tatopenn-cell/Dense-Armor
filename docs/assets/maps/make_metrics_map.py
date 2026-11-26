@@ -47,7 +47,7 @@ PAGES = [
         "error, R2",
         "metrics/regression/index.md",
         CYAN,
-        ["R2Score"],
+        ["MeanAbsoluteError", "MeanSquaredError", "RootMeanSquaredError", "R2Score"],
     ),
     (
         "Uncertainty",

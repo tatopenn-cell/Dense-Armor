@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import builtins
 import importlib.util
 import json
 import os
@@ -47,7 +48,7 @@ ABSTRACT = {
 
 ROLES = ABSTRACT - {"Estimator", "Root", "Signal"}
 
-SKIP_SUFFIX = ("Error", "Config")
+SKIP_SUFFIX = ("Config",)
 
 NEURAL_SECTIONS = (
     "layers",
@@ -155,6 +156,17 @@ def build_catalog(repo: Path) -> list[dict]:
                     return value
         return None
 
+    def is_exception(node, seen=()):
+        """True for an exception or a warning: a base that is a built-in exception, directly or through a class of the package.
+        The name of the class is not read: MeanAbsoluteError is a metric, and so is the class that derives from it."""
+        for bn in bases(node):
+            builtin = getattr(builtins, bn, None)
+            if isinstance(builtin, type) and issubclass(builtin, BaseException):
+                return True
+            if bn in idx and bn not in seen and is_exception(idx[bn][1], seen + (bn,)):
+                return True
+        return False
+
     def role_of(node, seen=()):
         for bn in bases(node):
             if bn in ROLES:
@@ -187,7 +199,7 @@ def build_catalog(repo: Path) -> list[dict]:
     rows = []
     for p, n in classes:
         name = n.name
-        if name.startswith("_") or name in ABSTRACT or name.endswith(SKIP_SUFFIX):
+        if name.startswith("_") or name in ABSTRACT or name.endswith(SKIP_SUFFIX) or is_exception(n):
             continue
         rel = p.relative_to(repo).parts
         sub = rel[rel.index("core") + 1 : -1] if "core" in rel else rel[1:-1]
@@ -263,11 +275,11 @@ def get_catalog(repo: Path, refresh: bool = False) -> list[dict]:
         sha = ""
     if cache.exists() and not refresh and sha:
         d = json.loads(cache.read_text(encoding="utf-8"))
-        if d.get("sha") == sha and d.get("v") == 8:
+        if d.get("sha") == sha and d.get("v") == 9:
             return d["rows"]
     rows = build_catalog(repo)
     if sha:
         cache.write_text(
-            json.dumps({"v": 8, "sha": sha, "rows": rows}), encoding="utf-8"
+            json.dumps({"v": 9, "sha": sha, "rows": rows}), encoding="utf-8"
         )
     return rows
