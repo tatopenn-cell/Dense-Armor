@@ -136,7 +136,7 @@ def draw(
         for i in get_catalog(REPO)
         if i.get("kind", "class") == "class" and i["domain"] in domains
     }
-    placed = [c for p in pages for c in p[4]]
+    placed = [c for p in pages for c in p[4] if not (summaries and p[0] in summaries)]
     missing = [c for c in placed if c not in catalog]
     assert not missing, f"not in the catalog of usable: {missing}"
     main_domain = {c for c, i in catalog.items() if i["domain"] == hub_label}

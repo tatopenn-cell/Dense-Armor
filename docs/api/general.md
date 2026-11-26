@@ -647,7 +647,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.regression`
 *Bases:* Metric
-*Guide:* [metrics/regression.md](../metrics/regression.md)
+*Guide:* [metrics/uncertainty.md](../metrics/uncertainty.md)
 
 Gaussian negative log-likelihood.
 
@@ -664,7 +664,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.regression`
 *Bases:* Metric
-*Guide:* [metrics/regression.md](../metrics/regression.md)
+*Guide:* [metrics/uncertainty.md](../metrics/uncertainty.md)
 
 Fraction of true labels inside a prediction interval.
 
@@ -698,7 +698,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.regression`
 *Bases:* Metric
-*Guide:* [metrics/regression.md](../metrics/regression.md)
+*Guide:* [metrics/regression/mae.md](../metrics/regression/mae.md)
 
 Mean absolute error, one sample at a time.
 
@@ -715,7 +715,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.regression`
 *Bases:* Metric
-*Guide:* [metrics/regression.md](../metrics/regression.md)
+*Guide:* [metrics/uncertainty.md](../metrics/uncertainty.md)
 
 Mean width of a prediction interval.
 
@@ -732,7 +732,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.regression`
 *Bases:* Metric
-*Guide:* [metrics/regression.md](../metrics/regression.md)
+*Guide:* [metrics/regression/mse_rmse.md](../metrics/regression/mse_rmse.md)
 
 Mean squared error, one sample at a time.
 
@@ -799,7 +799,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.regression`
 *Bases:* Metric
-*Guide:* [metrics/regression.md](../metrics/regression.md)
+*Guide:* [metrics/regression/r2.md](../metrics/regression/r2.md)
 
 Coefficient of determination, Welford running mean.
 
@@ -867,7 +867,7 @@ Public methods:
 
 *Module:* `dense_armor.core.evaluation.metrics.regression`
 *Bases:* MeanSquaredError
-*Guide:* [metrics/regression.md](../metrics/regression.md)
+*Guide:* [metrics/regression/mse_rmse.md](../metrics/regression/mse_rmse.md)
 
 Square root of the mean squared error.
 
