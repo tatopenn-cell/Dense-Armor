@@ -49,9 +49,22 @@ class FixedUncertainty(ActiveStrategy):
         budget: kept for interface, not enforced.
         seed: seed of the random generator.
 
+    Raises:
+        ValueError: if ``theta`` is outside ``(0, 1)`` or ``budget`` is
+            outside ``(0, 1]``.
+
     References:
         Zliobaite et al. (2011). Algorithm 3, page 4.
     """
+
+    _mutable_attributes = frozenset({"budget", "theta"})
+
+    def _check_setting(self, name: str, value: Any) -> Any:
+        if name == "theta":
+            if not 0.0 < float(value) < 1.0:
+                raise ValueError("theta must be in (0, 1)")
+            return float(value)
+        return super()._check_setting(name, value)
 
     def __init__(self, theta: float = 0.5, budget: float = 0.1, seed: int = 0) -> None:
         """Initialise the strategy.
@@ -62,6 +75,8 @@ class FixedUncertainty(ActiveStrategy):
             seed: seed of the random generator.
         """
         super().__init__(budget=budget, seed=seed)
+        if not 0.0 < float(theta) < 1.0:
+            raise ValueError("theta must be in (0, 1)")
         self.theta = float(theta)
 
     def should_label(self, x: dict, model: Any) -> bool:
@@ -100,9 +115,21 @@ class VariableUncertainty(ActiveStrategy):
         s: adjusting step, small positive float.
         seed: seed of the random generator.
 
+    Raises:
+        ValueError: if ``s <= 0`` or ``budget`` is outside ``(0, 1]``.
+
     References:
         Zliobaite et al. (2011). Algorithm 4, page 5.
     """
+
+    _mutable_attributes = frozenset({"budget", "s"})
+
+    def _check_setting(self, name: str, value: Any) -> Any:
+        if name == "s":
+            if float(value) <= 0.0:
+                raise ValueError("s must be positive")
+            return float(value)
+        return super()._check_setting(name, value)
 
     def __init__(self, budget: float = 0.1, s: float = 0.01, seed: int = 0) -> None:
         """Initialise the strategy.
@@ -113,6 +140,8 @@ class VariableUncertainty(ActiveStrategy):
             seed: seed of the random generator.
         """
         super().__init__(budget=budget, seed=seed)
+        if float(s) <= 0.0:
+            raise ValueError("s must be positive")
         self.s = float(s)
         self.theta_ = 1.0
 
@@ -162,6 +191,15 @@ class VariableRandomizedUncertainty(VariableUncertainty):
     References:
         Zliobaite et al. (2011). Algorithm 5, page 6.
     """
+
+    _mutable_attributes = frozenset({"budget", "s", "delta"})
+
+    def _check_setting(self, name: str, value: Any) -> Any:
+        if name == "delta":
+            if float(value) <= 0.0:
+                raise ValueError("delta must be positive")
+            return float(value)
+        return super()._check_setting(name, value)
 
     def __init__(
         self,
