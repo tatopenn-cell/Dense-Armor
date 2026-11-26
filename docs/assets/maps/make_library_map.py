@@ -72,10 +72,19 @@ SECTION_PAGES = {
     "drift_detector": "roles/detectors.md",
     "transformer": "roles/transformers.md",
 }
+# the files of core/evaluation/metrics are drawn as pieces of their own and open the page of their section
+METRIC_FILE_PAGES = {
+    "base": "metrics/basics.md",
+    "classification": "metrics/classification/index.md",
+    "regression": "metrics/regression/index.md",
+    "events": "metrics/events/index.md",
+    "rolling": "metrics/stream/index.md",
+    "roc_auc": "metrics/stream/rolling_auc.md",
+}
 PIECE_PAGES = {
     "datasets": "datasets/index.md",
     "linear": "linear/index.md",
-    "evaluate": "metrics/index.md",
+    "evaluate": "metrics/stream/index.md",
     "compose": "stream/index.md",
     "data": "api/data_shared.md",
     "neural": "neural/overview.md",
@@ -125,6 +134,8 @@ def catalog_tree():
         else:
             big, sec, rest = "dense_armor", p[0], p[1:] or [p[0]]
         piece = r["class"] if len(p) == 1 else rest[0]
+        if sec == "evaluation" and rest[0] == "metrics" and len(rest) > 1:
+            piece = rest[1]
         if r["class"] not in t[big][sec][piece]:
             t[big][sec][piece].append(r["class"])
     return t
@@ -286,7 +297,12 @@ def main():
             )
             for piece, names, py in pieces:
                 n_pieces += 1
-                prel = page(PIECE_PAGES.get(piece)) or page(f"{piece}/index.md") or rel
+                prel = (
+                    page(METRIC_FILE_PAGES.get(piece) if sec == "evaluation" else None)
+                    or page(PIECE_PAGES.get(piece))
+                    or page(f"{piece}/index.md")
+                    or rel
+                )
                 single = names == [piece] or names == ["function"]
                 pbody = (
                     f'<rect class="card" x="492" y="{py - 8.5:.1f}" width="486" height="17" rx="8.5" fill="{CARD}" stroke="{col}" stroke-width="1.1"/>'
