@@ -162,13 +162,24 @@ nav:
           - Overview: arc/index.md
           - Start here: arc/start_here.md
           - Limits: arc/limits.md
-  - Bridges:
-      - Overview: bridges/index.md
-      - scikit-learn: bridges/sklearn.md
-      - PyTorch: bridges/torch.md
-      - TensorFlow: bridges/tensorflow.md
-      - river: bridges/river.md
-      - LLM agents: bridges/llm.md
+  - Ontology:
+      - Overview: ontology/index.md
+      - Types, rules and actions: ontology/typed.md
+      - Grids and objects: ontology/grids.md
+      - Typed grid graph: ontology/grid_graph.md
+      - Transformations: ontology/transformations.md
+      - Program search: ontology/program_search.md
+      - Rule synthesis: ontology/rule_synthesis.md
+      - Vector Symbolic Algebras: ontology/vsa.md
+      - Graph and spectrum: ontology/spectral.md
+      - Filters: ontology/filters.md
+      - Execution DAG: ontology/dag.md
+      - Provenance: ontology/provenance.md
+      - Anomaly detection: ontology/anomaly.md
+      - Recovering a signal: ontology/recovery.md
+      - Learning a graph: ontology/learning.md
+      - Following a graph online: ontology/online.md
+      - Causality: ontology/causal.md
   - Roles:
       - Overview: roles/index.md
       - The base (Root): roles/base.md
@@ -383,24 +394,13 @@ nav:
       - Quality: vision/quality.md
       - Patches: vision/patches.md
       - Video into any primitive: vision/video_input.md
-  - Ontology:
-      - Overview: ontology/index.md
-      - Types, rules and actions: ontology/typed.md
-      - Grids and objects: ontology/grids.md
-      - Typed grid graph: ontology/grid_graph.md
-      - Transformations: ontology/transformations.md
-      - Program search: ontology/program_search.md
-      - Rule synthesis: ontology/rule_synthesis.md
-      - Vector Symbolic Algebras: ontology/vsa.md
-      - Graph and spectrum: ontology/spectral.md
-      - Filters: ontology/filters.md
-      - Execution DAG: ontology/dag.md
-      - Provenance: ontology/provenance.md
-      - Anomaly detection: ontology/anomaly.md
-      - Recovering a signal: ontology/recovery.md
-      - Learning a graph: ontology/learning.md
-      - Following a graph online: ontology/online.md
-      - Causality: ontology/causal.md
+  - Bridges:
+      - Overview: bridges/index.md
+      - scikit-learn: bridges/sklearn.md
+      - PyTorch: bridges/torch.md
+      - TensorFlow: bridges/tensorflow.md
+      - river: bridges/river.md
+      - LLM agents: bridges/llm.md
   - Library:
       - Getting Started: getting-started.md
       - Speed: speed.md
