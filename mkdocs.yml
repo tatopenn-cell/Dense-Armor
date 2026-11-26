@@ -200,7 +200,11 @@ nav:
           - metrics/probabilities/index.md
           - Log loss: metrics/probabilities/log_loss.md
           - Brier score: metrics/probabilities/brier_score.md
-      - Regression: metrics/regression.md
+      - Regression:
+          - metrics/regression/index.md
+          - Mean absolute error: metrics/regression/mae.md
+          - MSE and RMSE: metrics/regression/mse_rmse.md
+          - R squared: metrics/regression/r2.md
       - Uncertainty: metrics/uncertainty.md
       - On a stream: metrics/stream.md
       - Events: metrics/events.md

@@ -23,7 +23,7 @@ PAGES = [
     ("docs/proba/index.md", "Gaussian"),
     ("docs/learn/online_classifiers.md", "OnlineGaussianNB"),
     ("docs/preprocessing/features.md", "SelectKBest"),
-    ("docs/metrics/regression.md", "R2Score"),
+    ("docs/metrics/regression/r2.md", "R2Score"),
 ]
 
 PREFIX = "Cost, median of"

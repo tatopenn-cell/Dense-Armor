@@ -45,7 +45,7 @@ PAGES = [
     (
         "Regression",
         "error, R2",
-        "metrics/regression.md",
+        "metrics/regression/index.md",
         CYAN,
         ["R2Score"],
     ),
