@@ -37,6 +37,13 @@ Every big section has its own interactive map on top of its page: the jobs on th
 | [Optimizers](optim/index.md) | online optimizers |
 | [Online learning](learn/index.md) | sequential models and incremental architectures |
 | [Time series](timeseries/index.md) | time series |
+| [Metric](metrics/index.md) | the scores, by kind of model |
+| [Classification](metrics/classification/index.md) | precision, recall, F1, confusion matrix, kappa |
+| [Probabilities](metrics/probabilities/index.md) | log loss and the Brier score |
+| [Regression](metrics/regression/index.md) | MAE, MSE, RMSE and R² |
+| [Uncertainty](metrics/uncertainty/index.md) | interval coverage, width and the Gaussian NLL |
+| [On a stream](metrics/stream/index.md) | windows, predict then learn, model choice |
+| [Events](metrics/events/index.md) | delay, false alarms, range metrics, NAB |
 
 ## The three kinds of learning
 
