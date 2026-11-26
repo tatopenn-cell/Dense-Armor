@@ -345,7 +345,17 @@ nav:
           - Boosting: ensemble/boosting.md
           - Weighted average: ensemble/ewa.md
           - Stacking: ensemble/stacking.md
-      - Bandits: bandit/index.md
+      - Bandits:
+          - bandit/index.md
+          - Epsilon-greedy: bandit/epsilon_greedy.md
+          - UCB1 and UCB1-Tuned: bandit/ucb.md
+          - Thompson sampling: bandit/thompson.md
+          - Bayes-UCB: bandit/bayes_ucb.md
+          - Exp3: bandit/exp3.md
+          - LinUCB: bandit/linucb.md
+          - Offline replay: bandit/offline_replay.md
+          - RobotKpSelector: bandit/robot_kp_selector.md
+          - The shared methods: bandit/policy.md
       - Active learning: active/index.md
       - Factorization machines: facto/index.md
       - Recommenders: reco/index.md

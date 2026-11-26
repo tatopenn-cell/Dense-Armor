@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 532" width="100%" role="img" aria-label="The map of bandits">
+<style>text{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif}.m{font-family:ui-monospace,Menlo,Consolas,monospace}.e{opacity:.32;transition:opacity .15s}.net:hover .e{opacity:.06}.net .pg:hover .e{opacity:1;stroke-width:2.2}a:hover .card{fill:#17303f;stroke-width:2.4}a:hover text.dn{fill:#ffffff}.back:hover .card{fill:#17303f}</style>
+<rect width="1000" height="532" fill="#0d131a" rx="14"/>
+<text x="500" y="38" fill="#e0fbfc" font-size="24" font-weight="700" text-anchor="middle">THE MAP OF BANDITS</text>
+<text x="500" y="62" fill="#4cc9f0" font-size="12.5" text-anchor="middle">the job, the page of each policy and its classes; pass over a page to light its classes, click to open it</text>
+<a class="back" href="../../#the-library-folder-by-folder" target="_top"><title>back to the map of the library</title><rect class="card" x="20" y="14" width="150" height="30" rx="15" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="95" y="33.5" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">← map of the library</text></a>
+<text x="24" y="98" fill="#f72585" font-size="12" font-weight="700">01  JOB</text>
+<text x="410" y="98" fill="#f72585" font-size="12" font-weight="700">02  PAGE</text>
+<text x="680" y="98" fill="#f72585" font-size="12" font-weight="700">03  CLASSES OF THE CATALOG</text>
+<g class="net">
+<path class="e" d="M214,293.0 C262,293.0 282,293.0 318,293.0" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<g class="pg">
+<path class="e" d="M342,293.0 C382,293.0 366,124.5 408,124.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,124.5 C650,124.5 650,124.5 676,124.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,293.0 C382,293.0 366,176.0 408,176.0" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,176.0 C650,176.0 650,163.5 676,163.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M626,176.0 C650,176.0 650,188.5 676,188.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,293.0 C382,293.0 366,227.5 408,227.5" fill="none" stroke="#f72585" stroke-width="1.4"/>
+<path class="e" d="M626,227.5 C650,227.5 650,227.5 676,227.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,293.0 C382,293.0 366,266.5 408,266.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,266.5 C650,266.5 650,266.5 676,266.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,293.0 C382,293.0 366,305.5 408,305.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,305.5 C650,305.5 650,305.5 676,305.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,293.0 C382,293.0 366,344.5 408,344.5" fill="none" stroke="#f72585" stroke-width="1.4"/>
+<path class="e" d="M626,344.5 C650,344.5 650,344.5 676,344.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,293.0 C382,293.0 366,383.5 408,383.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,383.5 C650,383.5 650,383.5 676,383.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,293.0 C382,293.0 366,422.5 408,422.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,422.5 C650,422.5 650,422.5 676,422.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,293.0 C382,293.0 366,461.5 408,461.5" fill="none" stroke="#f72585" stroke-width="1.4"/>
+<path class="e" d="M626,461.5 C650,461.5 650,461.5 676,461.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+</g>
+</g>
+<a href="../../#the-library-folder-by-folder" target="_top"><title>classify: back to the map of the library</title><rect class="card" x="20" y="274.0" width="190" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="34" y="291.0" fill="#e0fbfc" font-size="13" font-weight="700">classify</text><text x="34" y="305.0" fill="#94a3b8" font-size="9.5">job of the ontology</text></a>
+<circle cx="330" cy="293.0" r="12" fill="#101a24" stroke="#4cc9f0" stroke-width="2"/><text class="m" x="330" y="323.0" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">bandit</text>
+<a href="../../bandit/epsilon_greedy/" target="_top"><title>Epsilon-greedy: open bandit/epsilon_greedy.md</title><rect class="card" x="410" y="105.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="121.5" fill="#e0fbfc" font-size="13" font-weight="700">Epsilon-greedy</text><text x="424" y="136.5" fill="#94a3b8" font-size="9.5">explore with a fixed probability</text></a>
+<a href="../../bandit/epsilon_greedy/" target="_top"><title>EpsilonGreedy: open bandit/epsilon_greedy.md</title><rect class="card" x="678" y="114.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="128.3" fill="#e0fbfc" font-size="11">EpsilonGreedy</text></a>
+<a href="../../bandit/ucb/" target="_top"><title>UCB1 and UCB1-Tuned: open bandit/ucb.md</title><rect class="card" x="410" y="157.0" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="173.0" fill="#e0fbfc" font-size="13" font-weight="700">UCB1 and UCB1-Tuned</text><text x="424" y="188.0" fill="#94a3b8" font-size="9.5">the mean plus a bonus</text></a>
+<a href="../../bandit/ucb/" target="_top"><title>UCB1: open bandit/ucb.md</title><rect class="card" x="678" y="153.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="167.3" fill="#e0fbfc" font-size="11">UCB1</text></a>
+<a href="../../bandit/ucb/" target="_top"><title>UCB1Tuned: open bandit/ucb.md</title><rect class="card" x="678" y="178.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="192.3" fill="#e0fbfc" font-size="11">UCB1Tuned</text></a>
+<a href="../../bandit/thompson/" target="_top"><title>Thompson sampling: open bandit/thompson.md</title><rect class="card" x="410" y="208.5" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="224.5" fill="#e0fbfc" font-size="13" font-weight="700">Thompson sampling</text><text x="424" y="239.5" fill="#94a3b8" font-size="9.5">draw from what you believe</text></a>
+<a href="../../bandit/thompson/" target="_top"><title>ThompsonSampling: open bandit/thompson.md</title><rect class="card" x="678" y="217.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="231.3" fill="#e0fbfc" font-size="11">ThompsonSampling</text></a>
+<a href="../../bandit/bayes_ucb/" target="_top"><title>Bayes-UCB: open bandit/bayes_ucb.md</title><rect class="card" x="410" y="247.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="263.5" fill="#e0fbfc" font-size="13" font-weight="700">Bayes-UCB</text><text x="424" y="278.5" fill="#94a3b8" font-size="9.5">the highest quantile</text></a>
+<a href="../../bandit/bayes_ucb/" target="_top"><title>BayesUCB: open bandit/bayes_ucb.md</title><rect class="card" x="678" y="256.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="270.3" fill="#e0fbfc" font-size="11">BayesUCB</text></a>
+<a href="../../bandit/exp3/" target="_top"><title>Exp3: open bandit/exp3.md</title><rect class="card" x="410" y="286.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="302.5" fill="#e0fbfc" font-size="13" font-weight="700">Exp3</text><text x="424" y="317.5" fill="#94a3b8" font-size="9.5">no assumption on the rewards</text></a>
+<a href="../../bandit/exp3/" target="_top"><title>Exp3: open bandit/exp3.md</title><rect class="card" x="678" y="295.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="309.3" fill="#e0fbfc" font-size="11">Exp3</text></a>
+<a href="../../bandit/linucb/" target="_top"><title>LinUCB: open bandit/linucb.md</title><rect class="card" x="410" y="325.5" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="341.5" fill="#e0fbfc" font-size="13" font-weight="700">LinUCB</text><text x="424" y="356.5" fill="#94a3b8" font-size="9.5">use a context</text></a>
+<a href="../../bandit/linucb/" target="_top"><title>LinUCBDisjoint: open bandit/linucb.md</title><rect class="card" x="678" y="334.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="348.3" fill="#e0fbfc" font-size="11">LinUCBDisjoint</text></a>
+<a href="../../bandit/offline_replay/" target="_top"><title>Offline replay: open bandit/offline_replay.md</title><rect class="card" x="410" y="364.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="380.5" fill="#e0fbfc" font-size="13" font-weight="700">Offline replay</text><text x="424" y="395.5" fill="#94a3b8" font-size="9.5">judge a policy on a log</text></a>
+<a href="../../bandit/offline_replay/" target="_top"><title>offline_replay: open bandit/offline_replay.md</title><rect class="card" x="678" y="373.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="387.3" fill="#e0fbfc" font-size="11">offline_replay</text></a>
+<a href="../../bandit/robot_kp_selector/" target="_top"><title>RobotKpSelector: open bandit/robot_kp_selector.md</title><rect class="card" x="410" y="403.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="419.5" fill="#e0fbfc" font-size="13" font-weight="700">RobotKpSelector</text><text x="424" y="434.5" fill="#94a3b8" font-size="9.5">choose a controller gain</text></a>
+<a href="../../bandit/robot_kp_selector/" target="_top"><title>RobotKpSelector: open bandit/robot_kp_selector.md</title><rect class="card" x="678" y="412.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="426.3" fill="#e0fbfc" font-size="11">RobotKpSelector</text></a>
+<a href="../../bandit/policy/" target="_top"><title>The shared methods: open bandit/policy.md</title><rect class="card" x="410" y="442.5" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="458.5" fill="#e0fbfc" font-size="13" font-weight="700">The shared methods</text><text x="424" y="473.5" fill="#94a3b8" font-size="9.5">what every policy inherits</text></a>
+<a href="../../bandit/policy/" target="_top"><title>BanditPolicy: open bandit/policy.md</title><rect class="card" x="678" y="451.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="465.3" fill="#e0fbfc" font-size="11">BanditPolicy</text></a>
+<text x="500" y="516" fill="#94a3b8" font-size="10.5" text-anchor="middle">jobs: dense_armor/usable/ontology.json; classes: dense_armor.usable.catalog; drawn by docs/assets/maps/make_bandit_map.py</text>
+</svg>

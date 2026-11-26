@@ -1,134 +1,59 @@
 # Bandits: try one option, learn from the reward
 
+## The map of bandits
+
+Click a page to open it, or the job on the left (or the button at the top) to go back to the [map of the library](../index.md#the-library-folder-by-folder).
+
+<object type="image/svg+xml" data="../assets/maps/bandit.svg" style="width:100%"></object>
+
 A robot that tunes a controller gain has a small set of options and a reward
 after every try. Which gain to try next is a bandit problem: try the one that
-looks best, or try the ones you know less about, and learn from both. This
-page shows the seven bandit policies of the library, from the simplest
+looks best, or try the ones you know less about, and learn from both. The pages below show the eight bandit policies of the library, from the simplest
 (explore with probability epsilon) to the contextual one, plus the offline
 evaluation of a policy on logged data.
 
-## 1. The problem, in one line
+## The problem, in one line
 
 You have K arms. At each step you pick one arm, see a reward, and update what
 you know. You want the sum of rewards to be close to the sum of rewards of the
 best arm in hindsight.
 
-## 2. Epsilon-greedy: explore with a fixed probability
+## A first example: three execution algorithms
 
-With probability `1 - epsilon` play the arm with the highest running mean;
-otherwise play a uniformly random arm. Every arm is played once first, so an
-arm has at least one sample before the comparison.
+A desk can send an order through three execution algorithms. A fill is good with probability 0.2, 0.5 and 0.8, and the desk does not know it. After each order it learns the reward, and the policy chooses the algorithm for the next one.
 
 ```python
 import numpy as np
-from dense_armor.core.online.bandit import EpsilonGreedy
-
-rng = np.random.default_rng(0)
-p = EpsilonGreedy(arms=["cold", "warm", "hot"], epsilon=0.1, seed=0)
-for _ in range(500):
-    a = p.pull()
-    r = float(rng.binomial(1, {"cold": 0.2, "warm": 0.5, "hot": 0.8}[a]))
-    _ = p.update(a, r)
-print(p.pull())
-```
-
-```
-hot
-```
-
-A constant `epsilon` never stops exploring: the regret grows linearly with
-the number of plays (Auer et al. 2002, page 5).
-
-
-## 3. UCB1
-Index: mean + sqrt(2 ln n / n_j). Theorem 1 (page 3) bounds the regret.
-
-```python
 from dense_armor.core.online.bandit import UCB1
-p = UCB1(arms=["cold", "warm", "hot"], seed=0)
-for _ in range(500):
-    a = p.pull()
-    r = float(rng.binomial(1, {"cold": 0.2, "warm": 0.5, "hot": 0.8}[a]))
-    _ = p.update(a, r)
-print(p.pull())
-```
 
-```
-hot
-```
-
-## 4. Thompson sampling
-Sample Beta(1 + S_j, 1 + F_j) per arm (Chapelle-Li 2011, Algorithm 2, page 3).
-
-```python
-from dense_armor.core.online.bandit import ThompsonSampling
-p = ThompsonSampling(arms=["cold", "warm", "hot"], family="bernoulli", seed=0)
-for _ in range(500):
-    a = p.pull()
-    r = float(rng.binomial(1, {"cold": 0.2, "warm": 0.5, "hot": 0.8}[a]))
-    _ = p.update(a, r)
-print(p.pull())
-```
-
-```
-hot
-```
-
-## 5. Contextual: LinUCBDisjoint
-Index theta_a^T x + alpha * sqrt(x^T A_a^{-1} x) (Li et al. 2010, Algorithm 1, page 4).
-
-```python
-from dense_armor.core.online.bandit import LinUCBDisjoint
 rng = np.random.default_rng(0)
-p = LinUCBDisjoint(arms=["left", "right"], alpha=0.1, feature_keys=("side", "bias"))
-for _ in range(300):
-    s = float(rng.uniform(-1.0, 1.0))
-    x = {"side": s, "bias": 1.0}
-    a = p.pull(context=x)
-    r = (1.0 + s) if a == "right" else (1.0 - s)
-    _ = p.update(a, r, context=x)
-print(p.pull(context={"side": -0.5, "bias": 1.0}))
-print(p.pull(context={"side": 0.5, "bias": 1.0}))
+rate = {"twap": 0.2, "vwap": 0.5, "pov": 0.8}
+desk = UCB1(arms=["twap", "vwap", "pov"], seed=0)
+for _ in range(500):
+    arm = desk.pull()
+    desk.update(arm, float(rng.binomial(1, rate[arm])))
+print(desk.pull())
 ```
 
 ```
-left
-right
+pov
 ```
 
-## 6. Offline evaluation
-Keep the events whose arm matches the policy, average the rewards (Li et al. 2011, Theorem 1, page 4).
+After 500 orders the policy chooses the third algorithm, `pov`, the one that fills well 80% of the time. The pages below show every policy on the same problem.
 
-```python
-import numpy as np
-from dense_armor.core.online.bandit import offline_replay
-rng = np.random.default_rng(0)
-log = []
-for _ in range(3000):
-    ctx = {"x": float(rng.uniform())}
-    arm = int(rng.integers(2))
-    log.append((ctx, arm, float(rng.binomial(1, [0.7, 0.2][arm]))))
-out = offline_replay(log, lambda c: 0, seed=0)
-print(round(out["mean"], 3), out["ci_low"] < 0.7 < out["ci_high"])
-```
+## The pages of the section
 
-```
-0.694 True
-```
-
-## 7. Robot test: choose a controller gain
-
-```python
-from dense_armor.core.online.bandit import RobotKpSelector
-sel = RobotKpSelector(arms=[0.5, 8.0, 30.0], period_s=0.5, n_cycles=2, seed=0)
-for _ in range(9):
-    sel.run_round()
-print(sel.best_gain(), dict(sel.counts_))
-```
-
-```
-8.0 {0.5: 3, 8.0: 3, 30.0: 3}
-```
+| Page | Classes | What it is for |
+|---|---|---|
+| [Epsilon-greedy](epsilon_greedy.md) | `EpsilonGreedy` | explore with a fixed probability |
+| [UCB1 and UCB1-Tuned](ucb.md) | `UCB1`, `UCB1Tuned` | the mean plus a bonus for the arms tried few times |
+| [Thompson sampling](thompson.md) | `ThompsonSampling` | draw from what you believe about each arm |
+| [Bayes-UCB](bayes_ucb.md) | `BayesUCB` | play the arm with the highest quantile of its posterior |
+| [Exp3](exp3.md) | `Exp3` | no assumption on how the rewards are produced |
+| [LinUCB](linucb.md) | `LinUCBDisjoint` | use a context to choose the arm |
+| [Offline replay](offline_replay.md) | `offline_replay` | judge a policy on a log, without running it |
+| [RobotKpSelector](robot_kp_selector.md) | `RobotKpSelector` | choose a controller gain with UCB1 on a simulated arm |
+| [The shared methods](policy.md) | `BanditPolicy` | the counters, the saved state, the settings and `fit`, which every policy inherits |
 
 ## 8. What the numbers say
 
