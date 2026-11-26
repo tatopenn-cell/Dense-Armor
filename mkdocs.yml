@@ -91,38 +91,42 @@ nav:
       - Overview: applications/index.md
       - Finance:
           - finance/index.md
-          - Primitives map: finance/PRIMITIVES.md
-          - Surveillance: finance/surveillance.md
-          - Risk: finance/risk.md
-          - Execution: finance/execution.md
-          - Schedules: finance/schedule.md
-          - Pre-trade limits: finance/pretrade.md
-          - Trading guard: finance/trading_guard.md
-          - ITCH messages: finance/itch.md
-          - Ring buffer: finance/ring.md
-          - Configuration: finance/config.md
-          - Decision log: finance/decision_log.md
-          - Feed file: finance/feed.md
-          - Status: finance/status.md
-          - Synthetic feed: finance/synthetic.md
-          - Demo: finance/demo.md
-          - Audit table: finance/audit_db.md
-          - Dashboard: finance/dashboard.md
-          - Red button: finance/emergency.md
-          - FIX gateway: finance/fix_gateway.md
-          - Single ticker: finance/single_ticker.md
-          - Static vs online: finance/static_vs_online.md
-          - Fraud detection: finance/fraud.md
-          - Unsupervised fraud: finance/unsupervised_fraud.md
-          - Intrusion detection: finance/intrusion.md
-          - Credit scoring: finance/credit_scoring.md
-          - Regime: finance/regime.md
-          - Drift vs noise: finance/drift_vs_noise.md
-          - Portfolio: finance/portfolio.md
-          - Order book: finance/order_book.md
-          - Stress: finance/stress.md
-          - Streaming: finance/streaming.md
-          - Timing: finance/timing.md
+          - Markets and risk:
+              - Surveillance: finance/surveillance.md
+              - Risk: finance/risk.md
+              - Regime: finance/regime.md
+              - Drift vs noise: finance/drift_vs_noise.md
+              - Single ticker: finance/single_ticker.md
+              - Static vs online: finance/static_vs_online.md
+              - Order book: finance/order_book.md
+              - Portfolio: finance/portfolio.md
+              - Stress: finance/stress.md
+          - Orders and execution:
+              - Execution: finance/execution.md
+              - Schedules: finance/schedule.md
+              - Pre-trade limits: finance/pretrade.md
+              - Trading guard: finance/trading_guard.md
+              - FIX gateway: finance/fix_gateway.md
+              - ITCH messages: finance/itch.md
+              - Feed file: finance/feed.md
+              - Synthetic feed: finance/synthetic.md
+          - Fraud, intrusion and credit:
+              - Fraud detection: finance/fraud.md
+              - Unsupervised fraud: finance/unsupervised_fraud.md
+              - Intrusion detection: finance/intrusion.md
+              - Credit scoring: finance/credit_scoring.md
+          - Running the desk:
+              - Configuration: finance/config.md
+              - Decision log: finance/decision_log.md
+              - Audit table: finance/audit_db.md
+              - Status: finance/status.md
+              - Dashboard: finance/dashboard.md
+              - Red button: finance/emergency.md
+              - Demo: finance/demo.md
+              - Timing: finance/timing.md
+              - Ring buffer: finance/ring.md
+              - Streaming: finance/streaming.md
+              - Primitives map: finance/PRIMITIVES.md
       - Drones:
           - Overview: drones/index.md
           - Actuator fault: drones/actuator_fault.md

@@ -1,0 +1,208 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1404" width="100%" role="img" aria-label="The map of finance">
+<style>text{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif}.m{font-family:ui-monospace,Menlo,Consolas,monospace}.e{opacity:.32;transition:opacity .15s}.net:hover .e{opacity:.06}.net .pg:hover .e{opacity:1;stroke-width:2.2}a:hover .card{fill:#17303f;stroke-width:2.4}a:hover text.dn{fill:#ffffff}.back:hover .card{fill:#17303f}</style>
+<rect width="1000" height="1404" fill="#0d131a" rx="14"/>
+<text x="500" y="38" fill="#e0fbfc" font-size="24" font-weight="700" text-anchor="middle">THE MAP OF FINANCE</text>
+<text x="500" y="62" fill="#4cc9f0" font-size="12.5" text-anchor="middle">the job, the page of each finance pipeline in its section and the classes it uses; pass over a page to light it, click to open it</text>
+<a class="back" href="../../#the-library-folder-by-folder" target="_top"><title>back to the map of the library</title><rect class="card" x="20" y="14" width="150" height="30" rx="15" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="95" y="33.5" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">← map of the library</text></a>
+<text x="24" y="98" fill="#f72585" font-size="12" font-weight="700">01  JOB</text>
+<text x="410" y="98" fill="#f72585" font-size="12" font-weight="700">02  PAGE</text>
+<text x="680" y="98" fill="#f72585" font-size="12" font-weight="700">03  CLASSES OF THE CATALOG</text>
+<g class="net">
+<path class="e" d="M214,729.0 C262,729.0 282,729.0 318,729.0" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,124.5 408,124.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,124.5 C650,124.5 650,124.5 676,124.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,163.5 408,163.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,163.5 C650,163.5 650,163.5 676,163.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,202.5 408,202.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,202.5 C650,202.5 650,202.5 676,202.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,241.5 408,241.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,241.5 C650,241.5 650,241.5 676,241.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,280.5 408,280.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,280.5 C650,280.5 650,280.5 676,280.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,319.5 408,319.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,319.5 C650,319.5 650,319.5 676,319.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,358.5 408,358.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,358.5 C650,358.5 650,358.5 676,358.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,397.5 408,397.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,397.5 C650,397.5 650,397.5 676,397.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,436.5 408,436.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,436.5 C650,436.5 650,436.5 676,436.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,475.5 408,475.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,475.5 C650,475.5 650,475.5 676,475.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,514.5 408,514.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,514.5 C650,514.5 650,514.5 676,514.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,553.5 408,553.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,553.5 C650,553.5 650,553.5 676,553.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,592.5 408,592.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,592.5 C650,592.5 650,592.5 676,592.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,631.5 408,631.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,631.5 C650,631.5 650,631.5 676,631.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,670.5 408,670.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,670.5 C650,670.5 650,670.5 676,670.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,709.5 408,709.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,709.5 C650,709.5 650,709.5 676,709.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,748.5 408,748.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,748.5 C650,748.5 650,748.5 676,748.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,787.5 408,787.5" fill="none" stroke="#f72585" stroke-width="1.4"/>
+<path class="e" d="M626,787.5 C650,787.5 650,787.5 676,787.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,826.5 408,826.5" fill="none" stroke="#f72585" stroke-width="1.4"/>
+<path class="e" d="M626,826.5 C650,826.5 650,826.5 676,826.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,865.5 408,865.5" fill="none" stroke="#f72585" stroke-width="1.4"/>
+<path class="e" d="M626,865.5 C650,865.5 650,865.5 676,865.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,904.5 408,904.5" fill="none" stroke="#f72585" stroke-width="1.4"/>
+<path class="e" d="M626,904.5 C650,904.5 650,904.5 676,904.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,943.5 408,943.5" fill="none" stroke="#64748b" stroke-width="1.4"/>
+<path class="e" d="M626,943.5 C650,943.5 650,943.5 676,943.5" fill="none" stroke="#64748b" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,982.5 408,982.5" fill="none" stroke="#64748b" stroke-width="1.4"/>
+<path class="e" d="M626,982.5 C650,982.5 650,982.5 676,982.5" fill="none" stroke="#64748b" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,1021.5 408,1021.5" fill="none" stroke="#64748b" stroke-width="1.4"/>
+<path class="e" d="M626,1021.5 C650,1021.5 650,1021.5 676,1021.5" fill="none" stroke="#64748b" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,1060.5 408,1060.5" fill="none" stroke="#64748b" stroke-width="1.4"/>
+<path class="e" d="M626,1060.5 C650,1060.5 650,1060.5 676,1060.5" fill="none" stroke="#64748b" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,1099.5 408,1099.5" fill="none" stroke="#64748b" stroke-width="1.4"/>
+<path class="e" d="M626,1099.5 C650,1099.5 650,1099.5 676,1099.5" fill="none" stroke="#64748b" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,1138.5 408,1138.5" fill="none" stroke="#64748b" stroke-width="1.4"/>
+<path class="e" d="M626,1138.5 C650,1138.5 650,1138.5 676,1138.5" fill="none" stroke="#64748b" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,1177.5 408,1177.5" fill="none" stroke="#64748b" stroke-width="1.4"/>
+<path class="e" d="M626,1177.5 C650,1177.5 650,1177.5 676,1177.5" fill="none" stroke="#64748b" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,1216.5 408,1216.5" fill="none" stroke="#64748b" stroke-width="1.4"/>
+<path class="e" d="M626,1216.5 C650,1216.5 650,1216.5 676,1216.5" fill="none" stroke="#64748b" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,1255.5 408,1255.5" fill="none" stroke="#64748b" stroke-width="1.4"/>
+<path class="e" d="M626,1255.5 C650,1255.5 650,1255.5 676,1255.5" fill="none" stroke="#64748b" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,1294.5 408,1294.5" fill="none" stroke="#64748b" stroke-width="1.4"/>
+<path class="e" d="M626,1294.5 C650,1294.5 650,1294.5 676,1294.5" fill="none" stroke="#64748b" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,729.0 C382,729.0 366,1333.5 408,1333.5" fill="none" stroke="#64748b" stroke-width="1.4"/>
+<path class="e" d="M626,1333.5 C650,1333.5 650,1333.5 676,1333.5" fill="none" stroke="#64748b" stroke-width="1.2"/>
+</g>
+</g>
+<a href="../../#the-library-folder-by-folder" target="_top"><title>finance_controls: back to the map of the library</title><rect class="card" x="20" y="710.0" width="190" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="34" y="727.0" fill="#e0fbfc" font-size="13" font-weight="700">finance_controls</text><text x="34" y="741.0" fill="#94a3b8" font-size="9.5">job of the ontology</text></a>
+<circle cx="330" cy="729.0" r="12" fill="#101a24" stroke="#4cc9f0" stroke-width="2"/><text class="m" x="330" y="759.0" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">finance</text>
+<a href="../../finance/surveillance/" target="_top"><title>Surveillance: open finance/surveillance.md</title><rect class="card" x="410" y="105.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="121.5" fill="#e0fbfc" font-size="13" font-weight="700">Surveillance</text><text x="424" y="136.5" fill="#94a3b8" font-size="9.5">Markets and risk</text></a>
+<a href="../../finance/surveillance/" target="_top"><title>Multi-stage statistical processing and online ano...: open finance/surveillance.md</title><rect class="card" x="678" y="114.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="128.3" fill="#e0fbfc" font-size="11">Multi-stage statistical processing and online ano...</text></a>
+<a href="../../finance/risk/" target="_top"><title>Risk: open finance/risk.md</title><rect class="card" x="410" y="144.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="160.5" fill="#e0fbfc" font-size="13" font-weight="700">Risk</text><text x="424" y="175.5" fill="#94a3b8" font-size="9.5">Markets and risk</text></a>
+<a href="../../finance/risk/" target="_top"><title>Sequential quantile sketch architectures for stre...: open finance/risk.md</title><rect class="card" x="678" y="153.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="167.3" fill="#e0fbfc" font-size="11">Sequential quantile sketch architectures for stre...</text></a>
+<a href="../../finance/regime/" target="_top"><title>Regime: open finance/regime.md</title><rect class="card" x="410" y="183.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="199.5" fill="#e0fbfc" font-size="13" font-weight="700">Regime</text><text x="424" y="214.5" fill="#94a3b8" font-size="9.5">Markets and risk</text></a>
+<a href="../../finance/regime/" target="_top"><title>1 class: BayesianOnlineChangepoint: open finance/regime.md</title><rect class="card" x="678" y="192.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="206.3" fill="#e0fbfc" font-size="11">1 class: BayesianOnlineChangepoint</text></a>
+<a href="../../finance/drift_vs_noise/" target="_top"><title>Drift vs noise: open finance/drift_vs_noise.md</title><rect class="card" x="410" y="222.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="238.5" fill="#e0fbfc" font-size="13" font-weight="700">Drift vs noise</text><text x="424" y="253.5" fill="#94a3b8" font-size="9.5">Markets and risk</text></a>
+<a href="../../finance/drift_vs_noise/" target="_top"><title>1 class: CUSUMDriftDetector: open finance/drift_vs_noise.md</title><rect class="card" x="678" y="231.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="245.3" fill="#e0fbfc" font-size="11">1 class: CUSUMDriftDetector</text></a>
+<a href="../../finance/single_ticker/" target="_top"><title>Single ticker: open finance/single_ticker.md</title><rect class="card" x="410" y="261.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="277.5" fill="#e0fbfc" font-size="13" font-weight="700">Single ticker</text><text x="424" y="292.5" fill="#94a3b8" font-size="9.5">Markets and risk</text></a>
+<a href="../../finance/single_ticker/" target="_top"><title>Dual-model online anomaly isolation for individua...: open finance/single_ticker.md</title><rect class="card" x="678" y="270.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="284.3" fill="#e0fbfc" font-size="11">Dual-model online anomaly isolation for individua...</text></a>
+<a href="../../finance/static_vs_online/" target="_top"><title>Static vs online: open finance/static_vs_online.md</title><rect class="card" x="410" y="300.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="316.5" fill="#e0fbfc" font-size="13" font-weight="700">Static vs online</text><text x="424" y="331.5" fill="#94a3b8" font-size="9.5">Markets and risk</text></a>
+<a href="../../finance/static_vs_online/" target="_top"><title>Statistical divergence benchmarking between fixed...: open finance/static_vs_online.md</title><rect class="card" x="678" y="309.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="323.3" fill="#e0fbfc" font-size="11">Statistical divergence benchmarking between fixed...</text></a>
+<a href="../../finance/order_book/" target="_top"><title>Order book: open finance/order_book.md</title><rect class="card" x="410" y="339.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="355.5" fill="#e0fbfc" font-size="13" font-weight="700">Order book</text><text x="424" y="370.5" fill="#94a3b8" font-size="9.5">Markets and risk</text></a>
+<a href="../../finance/order_book/" target="_top"><title>Order flow imbalance and the linear price impact...: open finance/order_book.md</title><rect class="card" x="678" y="348.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="362.3" fill="#e0fbfc" font-size="11">Order flow imbalance and the linear price impact...</text></a>
+<a href="../../finance/portfolio/" target="_top"><title>Portfolio: open finance/portfolio.md</title><rect class="card" x="410" y="378.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="394.5" fill="#e0fbfc" font-size="13" font-weight="700">Portfolio</text><text x="424" y="409.5" fill="#94a3b8" font-size="9.5">Markets and risk</text></a>
+<a href="../../finance/portfolio/" target="_top"><title>2 classes: OnlineShrinkageCovariance  +1: open finance/portfolio.md</title><rect class="card" x="678" y="387.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="401.3" fill="#e0fbfc" font-size="11">2 classes: OnlineShrinkageCovariance  +1</text></a>
+<a href="../../finance/stress/" target="_top"><title>Stress: open finance/stress.md</title><rect class="card" x="410" y="417.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="433.5" fill="#e0fbfc" font-size="13" font-weight="700">Stress</text><text x="424" y="448.5" fill="#94a3b8" font-size="9.5">Markets and risk</text></a>
+<a href="../../finance/stress/" target="_top"><title>1 class: LODA: open finance/stress.md</title><rect class="card" x="678" y="426.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="440.3" fill="#e0fbfc" font-size="11">1 class: LODA</text></a>
+<a href="../../finance/execution/" target="_top"><title>Execution: open finance/execution.md</title><rect class="card" x="410" y="456.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="472.5" fill="#e0fbfc" font-size="13" font-weight="700">Execution</text><text x="424" y="487.5" fill="#94a3b8" font-size="9.5">Orders and execution</text></a>
+<a href="../../finance/execution/" target="_top"><title>High-frequency pre-trade risk validation and auto...: open finance/execution.md</title><rect class="card" x="678" y="465.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="479.3" fill="#e0fbfc" font-size="11">High-frequency pre-trade risk validation and auto...</text></a>
+<a href="../../finance/schedule/" target="_top"><title>Schedules: open finance/schedule.md</title><rect class="card" x="410" y="495.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="511.5" fill="#e0fbfc" font-size="13" font-weight="700">Schedules</text><text x="424" y="526.5" fill="#94a3b8" font-size="9.5">Orders and execution</text></a>
+<a href="../../finance/schedule/" target="_top"><title>TWAP and VWAP split of a parent order across time...: open finance/schedule.md</title><rect class="card" x="678" y="504.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="518.3" fill="#e0fbfc" font-size="11">TWAP and VWAP split of a parent order across time...</text></a>
+<a href="../../finance/pretrade/" target="_top"><title>Pre-trade limits: open finance/pretrade.md</title><rect class="card" x="410" y="534.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="550.5" fill="#e0fbfc" font-size="13" font-weight="700">Pre-trade limits</text><text x="424" y="565.5" fill="#94a3b8" font-size="9.5">Orders and execution</text></a>
+<a href="../../finance/pretrade/" target="_top"><title>1 class: Decision: open finance/pretrade.md</title><rect class="card" x="678" y="543.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="557.3" fill="#e0fbfc" font-size="11">1 class: Decision</text></a>
+<a href="../../finance/trading_guard/" target="_top"><title>Trading guard: open finance/trading_guard.md</title><rect class="card" x="410" y="573.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="589.5" fill="#e0fbfc" font-size="13" font-weight="700">Trading guard</text><text x="424" y="604.5" fill="#94a3b8" font-size="9.5">Orders and execution</text></a>
+<a href="../../finance/trading_guard/" target="_top"><title>5 classes: PreTradeChecker, LinearRegression, SGD  +2: open finance/trading_guard.md</title><rect class="card" x="678" y="582.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="596.3" fill="#e0fbfc" font-size="11">5 classes: PreTradeChecker, LinearRegression, SGD  +2</text></a>
+<a href="../../finance/fix_gateway/" target="_top"><title>FIX gateway: open finance/fix_gateway.md</title><rect class="card" x="410" y="612.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="628.5" fill="#e0fbfc" font-size="13" font-weight="700">FIX gateway</text><text x="424" y="643.5" fill="#94a3b8" font-size="9.5">Orders and execution</text></a>
+<a href="../../finance/fix_gateway/" target="_top"><title>FIX 4.4 initiator that sends limit orders to a te...: open finance/fix_gateway.md</title><rect class="card" x="678" y="621.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="635.3" fill="#e0fbfc" font-size="11">FIX 4.4 initiator that sends limit orders to a te...</text></a>
+<a href="../../finance/itch/" target="_top"><title>ITCH messages: open finance/itch.md</title><rect class="card" x="410" y="651.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="667.5" fill="#e0fbfc" font-size="13" font-weight="700">ITCH messages</text><text x="424" y="682.5" fill="#94a3b8" font-size="9.5">Orders and execution</text></a>
+<a href="../../finance/itch/" target="_top"><title>Decode the seven order messages of Nasdaq TotalVi...: open finance/itch.md</title><rect class="card" x="678" y="660.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="674.3" fill="#e0fbfc" font-size="11">Decode the seven order messages of Nasdaq TotalVi...</text></a>
+<a href="../../finance/feed/" target="_top"><title>Feed file: open finance/feed.md</title><rect class="card" x="410" y="690.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="706.5" fill="#e0fbfc" font-size="13" font-weight="700">Feed file</text><text x="424" y="721.5" fill="#94a3b8" font-size="9.5">Orders and execution</text></a>
+<a href="../../finance/feed/" target="_top"><title>Framed Nasdaq ITCH messages read one record at a...: open finance/feed.md</title><rect class="card" x="678" y="699.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="713.3" fill="#e0fbfc" font-size="11">Framed Nasdaq ITCH messages read one record at a...</text></a>
+<a href="../../finance/synthetic/" target="_top"><title>Synthetic feed: open finance/synthetic.md</title><rect class="card" x="410" y="729.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="745.5" fill="#e0fbfc" font-size="13" font-weight="700">Synthetic feed</text><text x="424" y="760.5" fill="#94a3b8" font-size="9.5">Orders and execution</text></a>
+<a href="../../finance/synthetic/" target="_top"><title>ITCH messages from a seed, byte-identical on ever...: open finance/synthetic.md</title><rect class="card" x="678" y="738.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="752.3" fill="#e0fbfc" font-size="11">ITCH messages from a seed, byte-identical on ever...</text></a>
+<a href="../../finance/fraud/" target="_top"><title>Fraud detection: open finance/fraud.md</title><rect class="card" x="410" y="768.5" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="784.5" fill="#e0fbfc" font-size="13" font-weight="700">Fraud detection</text><text x="424" y="799.5" fill="#94a3b8" font-size="9.5">Fraud, intrusion and credit</text></a>
+<a href="../../finance/fraud/" target="_top"><title>Real-time transaction classification via sequenti...: open finance/fraud.md</title><rect class="card" x="678" y="777.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="791.3" fill="#e0fbfc" font-size="11">Real-time transaction classification via sequenti...</text></a>
+<a href="../../finance/unsupervised_fraud/" target="_top"><title>Unsupervised fraud: open finance/unsupervised_fraud.md</title><rect class="card" x="410" y="807.5" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="823.5" fill="#e0fbfc" font-size="13" font-weight="700">Unsupervised fraud</text><text x="424" y="838.5" fill="#94a3b8" font-size="9.5">Fraud, intrusion and credit</text></a>
+<a href="../../finance/unsupervised_fraud/" target="_top"><title>Multi-model anomalous transaction profiling deplo...: open finance/unsupervised_fraud.md</title><rect class="card" x="678" y="816.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="830.3" fill="#e0fbfc" font-size="11">Multi-model anomalous transaction profiling deplo...</text></a>
+<a href="../../finance/intrusion/" target="_top"><title>Intrusion detection: open finance/intrusion.md</title><rect class="card" x="410" y="846.5" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="862.5" fill="#e0fbfc" font-size="13" font-weight="700">Intrusion detection</text><text x="424" y="877.5" fill="#94a3b8" font-size="9.5">Fraud, intrusion and credit</text></a>
+<a href="../../finance/intrusion/" target="_top"><title>Drift-adaptive streaming tree architectures for r...: open finance/intrusion.md</title><rect class="card" x="678" y="855.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="869.3" fill="#e0fbfc" font-size="11">Drift-adaptive streaming tree architectures for r...</text></a>
+<a href="../../finance/credit_scoring/" target="_top"><title>Credit scoring: open finance/credit_scoring.md</title><rect class="card" x="410" y="885.5" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="901.5" fill="#e0fbfc" font-size="13" font-weight="700">Credit scoring</text><text x="424" y="916.5" fill="#94a3b8" font-size="9.5">Fraud, intrusion and credit</text></a>
+<a href="../../finance/credit_scoring/" target="_top"><title>Ensemble online tree models for real-time custome...: open finance/credit_scoring.md</title><rect class="card" x="678" y="894.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="908.3" fill="#e0fbfc" font-size="11">Ensemble online tree models for real-time custome...</text></a>
+<a href="../../finance/config/" target="_top"><title>Configuration: open finance/config.md</title><rect class="card" x="410" y="924.5" width="216" height="38" rx="10" fill="#101a24" stroke="#64748b" stroke-width="1.6"/><text class="dn" x="424" y="940.5" fill="#e0fbfc" font-size="13" font-weight="700">Configuration</text><text x="424" y="955.5" fill="#94a3b8" font-size="9.5">Running the desk</text></a>
+<a href="../../finance/config/" target="_top"><title>1 class: PreTradeChecker: open finance/config.md</title><rect class="card" x="678" y="933.5" width="300" height="20" rx="10" fill="#101a24" stroke="#64748b" stroke-width="1.2"/><text class="dn m" x="692" y="947.3" fill="#e0fbfc" font-size="11">1 class: PreTradeChecker</text></a>
+<a href="../../finance/decision_log/" target="_top"><title>Decision log: open finance/decision_log.md</title><rect class="card" x="410" y="963.5" width="216" height="38" rx="10" fill="#101a24" stroke="#64748b" stroke-width="1.6"/><text class="dn" x="424" y="979.5" fill="#e0fbfc" font-size="13" font-weight="700">Decision log</text><text x="424" y="994.5" fill="#94a3b8" font-size="9.5">Running the desk</text></a>
+<a href="../../finance/decision_log/" target="_top"><title>1 class: DecisionLog: open finance/decision_log.md</title><rect class="card" x="678" y="972.5" width="300" height="20" rx="10" fill="#101a24" stroke="#64748b" stroke-width="1.2"/><text class="dn m" x="692" y="986.3" fill="#e0fbfc" font-size="11">1 class: DecisionLog</text></a>
+<a href="../../finance/audit_db/" target="_top"><title>Audit table: open finance/audit_db.md</title><rect class="card" x="410" y="1002.5" width="216" height="38" rx="10" fill="#101a24" stroke="#64748b" stroke-width="1.6"/><text class="dn" x="424" y="1018.5" fill="#e0fbfc" font-size="13" font-weight="700">Audit table</text><text x="424" y="1033.5" fill="#94a3b8" font-size="9.5">Running the desk</text></a>
+<a href="../../finance/audit_db/" target="_top"><title>2 classes: AuditDB, DecisionLog: open finance/audit_db.md</title><rect class="card" x="678" y="1011.5" width="300" height="20" rx="10" fill="#101a24" stroke="#64748b" stroke-width="1.2"/><text class="dn m" x="692" y="1025.3" fill="#e0fbfc" font-size="11">2 classes: AuditDB, DecisionLog</text></a>
+<a href="../../finance/status/" target="_top"><title>Status: open finance/status.md</title><rect class="card" x="410" y="1041.5" width="216" height="38" rx="10" fill="#101a24" stroke="#64748b" stroke-width="1.6"/><text class="dn" x="424" y="1057.5" fill="#e0fbfc" font-size="13" font-weight="700">Status</text><text x="424" y="1072.5" fill="#94a3b8" font-size="9.5">Running the desk</text></a>
+<a href="../../finance/status/" target="_top"><title>1 class: DecisionLog: open finance/status.md</title><rect class="card" x="678" y="1050.5" width="300" height="20" rx="10" fill="#101a24" stroke="#64748b" stroke-width="1.2"/><text class="dn m" x="692" y="1064.3" fill="#e0fbfc" font-size="11">1 class: DecisionLog</text></a>
+<a href="../../finance/dashboard/" target="_top"><title>Dashboard: open finance/dashboard.md</title><rect class="card" x="410" y="1080.5" width="216" height="38" rx="10" fill="#101a24" stroke="#64748b" stroke-width="1.6"/><text class="dn" x="424" y="1096.5" fill="#e0fbfc" font-size="13" font-weight="700">Dashboard</text><text x="424" y="1111.5" fill="#94a3b8" font-size="9.5">Running the desk</text></a>
+<a href="../../finance/dashboard/" target="_top"><title>1 class: DecisionLog: open finance/dashboard.md</title><rect class="card" x="678" y="1089.5" width="300" height="20" rx="10" fill="#101a24" stroke="#64748b" stroke-width="1.2"/><text class="dn m" x="692" y="1103.3" fill="#e0fbfc" font-size="11">1 class: DecisionLog</text></a>
+<a href="../../finance/emergency/" target="_top"><title>Red button: open finance/emergency.md</title><rect class="card" x="410" y="1119.5" width="216" height="38" rx="10" fill="#101a24" stroke="#64748b" stroke-width="1.6"/><text class="dn" x="424" y="1135.5" fill="#e0fbfc" font-size="13" font-weight="700">Red button</text><text x="424" y="1150.5" fill="#94a3b8" font-size="9.5">Running the desk</text></a>
+<a href="../../finance/emergency/" target="_top"><title>`GET /` serves a single HTML page with a red butt...: open finance/emergency.md</title><rect class="card" x="678" y="1128.5" width="300" height="20" rx="10" fill="#101a24" stroke="#64748b" stroke-width="1.2"/><text class="dn m" x="692" y="1142.3" fill="#e0fbfc" font-size="11">`GET /` serves a single HTML page with a red butt...</text></a>
+<a href="../../finance/demo/" target="_top"><title>Demo: open finance/demo.md</title><rect class="card" x="410" y="1158.5" width="216" height="38" rx="10" fill="#101a24" stroke="#64748b" stroke-width="1.6"/><text class="dn" x="424" y="1174.5" fill="#e0fbfc" font-size="13" font-weight="700">Demo</text><text x="424" y="1189.5" fill="#94a3b8" font-size="9.5">Running the desk</text></a>
+<a href="../../finance/demo/" target="_top"><title>A feed, a checker and a log in one command; one J...: open finance/demo.md</title><rect class="card" x="678" y="1167.5" width="300" height="20" rx="10" fill="#101a24" stroke="#64748b" stroke-width="1.2"/><text class="dn m" x="692" y="1181.3" fill="#e0fbfc" font-size="11">A feed, a checker and a log in one command; one J...</text></a>
+<a href="../../finance/timing/" target="_top"><title>Timing: open finance/timing.md</title><rect class="card" x="410" y="1197.5" width="216" height="38" rx="10" fill="#101a24" stroke="#64748b" stroke-width="1.6"/><text class="dn" x="424" y="1213.5" fill="#e0fbfc" font-size="13" font-weight="700">Timing</text><text x="424" y="1228.5" fill="#94a3b8" font-size="9.5">Running the desk</text></a>
+<a href="../../finance/timing/" target="_top"><title>Median, IQR, p99 and p99/median of the time per s...: open finance/timing.md</title><rect class="card" x="678" y="1206.5" width="300" height="20" rx="10" fill="#101a24" stroke="#64748b" stroke-width="1.2"/><text class="dn m" x="692" y="1220.3" fill="#e0fbfc" font-size="11">Median, IQR, p99 and p99/median of the time per s...</text></a>
+<a href="../../finance/ring/" target="_top"><title>Ring buffer: open finance/ring.md</title><rect class="card" x="410" y="1236.5" width="216" height="38" rx="10" fill="#101a24" stroke="#64748b" stroke-width="1.6"/><text class="dn" x="424" y="1252.5" fill="#e0fbfc" font-size="13" font-weight="700">Ring buffer</text><text x="424" y="1267.5" fill="#94a3b8" font-size="9.5">Running the desk</text></a>
+<a href="../../finance/ring/" target="_top"><title>1 class: RingBuffer: open finance/ring.md</title><rect class="card" x="678" y="1245.5" width="300" height="20" rx="10" fill="#101a24" stroke="#64748b" stroke-width="1.2"/><text class="dn m" x="692" y="1259.3" fill="#e0fbfc" font-size="11">1 class: RingBuffer</text></a>
+<a href="../../finance/streaming/" target="_top"><title>Streaming: open finance/streaming.md</title><rect class="card" x="410" y="1275.5" width="216" height="38" rx="10" fill="#101a24" stroke="#64748b" stroke-width="1.6"/><text class="dn" x="424" y="1291.5" fill="#e0fbfc" font-size="13" font-weight="700">Streaming</text><text x="424" y="1306.5" fill="#94a3b8" font-size="9.5">Running the desk</text></a>
+<a href="../../finance/streaming/" target="_top"><title>A bounded queue with three policies and two lazy...: open finance/streaming.md</title><rect class="card" x="678" y="1284.5" width="300" height="20" rx="10" fill="#101a24" stroke="#64748b" stroke-width="1.2"/><text class="dn m" x="692" y="1298.3" fill="#e0fbfc" font-size="11">A bounded queue with three policies and two lazy...</text></a>
+<a href="../../finance/PRIMITIVES/" target="_top"><title>Primitives map: open finance/PRIMITIVES.md</title><rect class="card" x="410" y="1314.5" width="216" height="38" rx="10" fill="#101a24" stroke="#64748b" stroke-width="1.6"/><text class="dn" x="424" y="1330.5" fill="#e0fbfc" font-size="13" font-weight="700">Primitives map</text><text x="424" y="1345.5" fill="#94a3b8" font-size="9.5">Running the desk</text></a>
+<a href="../../finance/PRIMITIVES/" target="_top"><title>5 classes: AuditDB, DecisionLog, Decision  +2: open finance/PRIMITIVES.md</title><rect class="card" x="678" y="1323.5" width="300" height="20" rx="10" fill="#101a24" stroke="#64748b" stroke-width="1.2"/><text class="dn m" x="692" y="1337.3" fill="#e0fbfc" font-size="11">5 classes: AuditDB, DecisionLog, Decision  +2</text></a>
+<text x="500" y="1388" fill="#94a3b8" font-size="10.5" text-anchor="middle">jobs: dense_armor/usable/ontology.json; classes: dense_armor.usable.catalog; drawn by docs/assets/maps/make_finance_map.py</text>
+</svg>
