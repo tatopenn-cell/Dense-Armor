@@ -6,11 +6,7 @@ Click a page to open it, or the job on the left (or the button at the top) to go
 
 <object type="image/svg+xml" data="../assets/maps/bandit.svg" style="width:100%"></object>
 
-A robot that tunes a controller gain has a small set of options and a reward
-after every try. Which gain to try next is a bandit problem: try the one that
-looks best, or try the ones you know less about, and learn from both. The pages below show the eight bandit policies of the library, from the simplest
-(explore with probability epsilon) to the contextual one, plus the offline
-evaluation of a policy on logged data.
+A desk that sends orders through several execution algorithms has a small set of options and a reward after every try: the fill is good or it is not. Which algorithm to try next is a bandit problem: try the one that looks best, or try the ones you know less about, and learn from both. The pages below show the eight bandit policies of the library, from the simplest (explore with probability epsilon) to the contextual one, plus the offline evaluation of a policy on logged data and the methods that every policy shares.
 
 ## The problem, in one line
 
@@ -52,10 +48,10 @@ After 500 orders the policy chooses the third algorithm, `pov`, the one that fil
 | [Exp3](exp3.md) | `Exp3` | no assumption on how the rewards are produced |
 | [LinUCB](linucb.md) | `LinUCBDisjoint` | use a context to choose the arm |
 | [Offline replay](offline_replay.md) | `offline_replay` | judge a policy on a log, without running it |
-| [RobotKpSelector](robot_kp_selector.md) | `RobotKpSelector` | choose a controller gain with UCB1 on a simulated arm |
 | [The shared methods](policy.md) | `BanditPolicy` | the counters, the saved state, the settings and `fit`, which every policy inherits |
+| [RobotKpSelector](robot_kp_selector.md) | `RobotKpSelector` | choose a controller gain with UCB1 on a simulated arm |
 
-## 8. What the numbers say
+## What the numbers say
 
 ![Regret against the oracle, per policy](../assets/bandit/bandit/regret_per_policy.png)
 
@@ -68,6 +64,12 @@ Median regret against the oracle, 20 seeds: BayesUCB 74.0, UCB1Tuned 112.0, UCB1
 On the contextual stream LinUCBDisjoint gets 205.5, worse than UCB1 at 114.5 with the two-feature context used here. Reported, not hidden: the model needs a richer context to beat the context-free baseline on this stream.
 
 Robot test: UCB1 picked kp = 8.0 on all 20 seeds, median regret against the best fixed gain 0.0, median time per decision 0.54 s (dominated by the simulation).
+
+## The same problem on a robot
+
+A robot that tunes a controller gain has a small set of options and a reward
+after every try. Which gain to try next is a bandit problem: try the one that
+looks best, or try the ones you know less about, and learn from both. [RobotKpSelector](robot_kp_selector.md) runs it on a simulated arm: each round it picks a gain, tracks a trajectory with it and takes the negated tracking error as the reward.
 
 ## Details
 

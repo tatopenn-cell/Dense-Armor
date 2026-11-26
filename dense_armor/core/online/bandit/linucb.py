@@ -13,10 +13,10 @@ from typing import Any
 import numpy as np
 
 from dense_armor.core.online.linear.bayes import BayesianLinearRegression
-from dense_armor.roles import Root
+from dense_armor.core.online.bandit.base import _PullPolicy
 
 
-class LinUCBDisjoint(Root):
+class LinUCBDisjoint(_PullPolicy):
     """LinUCB with disjoint linear models.
 
     Each arm has its own Bayesian linear regression. At each step the
@@ -72,6 +72,14 @@ class LinUCBDisjoint(Root):
 
     budget_s = 1e-3
     memory_class = "O(n_arms * d^2)"
+    _mutable_attributes = frozenset({"alpha"})
+
+    def _check_setting(self, name: str, value: Any) -> Any:
+        if name == "alpha":
+            if float(value) <= 0.0:
+                raise ValueError("alpha must be positive")
+            return float(value)
+        return value
 
     def __init__(
         self,

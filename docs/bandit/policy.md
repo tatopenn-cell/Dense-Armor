@@ -2,7 +2,7 @@
 
 [← Bandits](index.md)
 
-Every bandit policy of the library comes from one base class, `BanditPolicy`, and inherits a set of methods that no page showed. They decide what a policy counts as a reward, how it is saved and copied, how its settings are changed, and one of them, `fit`, does not work on a bandit. A robot that tunes a controller gain uses the same methods, in the last section.
+Every bandit policy of the library comes from one base class, `BanditPolicy`, and inherits a set of methods that no page showed. They decide what a policy counts as a reward, how it is saved and copied, how its settings are changed, and one of them, `fit`, refuses a table and says how to learn. A robot that tunes a controller gain uses the same methods, in the last section.
 
 ![The mean regret per day of UCB1 over 1000 days, for 2 to 12 arms.](../assets/bandit/bandit_policy_3d.png)
 
@@ -61,9 +61,9 @@ print(copy.n_seen_, copy.get_params()["epsilon"])
 
 The clone starts with `n_seen_` equal to 0 and the same `epsilon`; after `load_state_dict` it has the 3 rewards of the saved policy.
 
-## 3. Change a setting: `set_params`, not `mutate`
+## 3. Change a setting: `mutate` or `set_params`
 
-`get_params()` returns the settings (the constructor parameters) and `set_params()` changes them in place and returns the policy. `mutate()` is for attributes that the class declares mutable, and a bandit policy declares none.
+`get_params()` returns the settings (the constructor parameters). `set_params()` changes them in place and returns the policy. `mutate()` changes, in place and after the same check as the constructor, the settings that the policy reads at every decision: `epsilon` of `EpsilonGreedy`, `alpha` of `LinUCBDisjoint`, `c`, `horizon` and `sigma` of `BayesUCB` and `sigma` of `ThompsonSampling`. A value that the constructor would refuse raises `ValueError` and changes nothing.
 
 ```python
 from dense_armor.core.online.bandit import EpsilonGreedy
@@ -71,16 +71,21 @@ from dense_armor.core.online.bandit import EpsilonGreedy
 desk = EpsilonGreedy(arms=["twap", "vwap", "pov"], epsilon=0.1, seed=0)
 desk.mutate({"epsilon": 0.2})
 print(desk.epsilon)
+try:
+    desk.mutate({"epsilon": 5})
+except ValueError as e:
+    print(e, desk.epsilon)
 desk.set_params(epsilon=0.3)
 print(desk.epsilon)
 ```
 
 ```
-0.1
+0.2
+epsilon must be in [0, 1] 0.2
 0.3
 ```
 
-`mutate({"epsilon": 0.2})` does nothing and does not raise: the names that the class does not list as mutable are left alone, so `epsilon` stays at 0.1. `set_params(epsilon=0.3)` changes it.
+`mutate({"epsilon": 0.2})` changes `epsilon` to 0.2. `mutate({"epsilon": 5})` is refused, as the constructor refuses it, and `epsilon` stays at 0.2. The names that a policy does not list as mutable, such as `seed`, `arms` or what it has learned, are left alone and nothing raises. `UCB1`, `UCB1Tuned` and `Exp3` list no mutable setting, so `mutate` leaves them as they are.
 
 ## 4. Describe the policy, and the window
 
@@ -102,9 +107,9 @@ EpsilonGreedy ['arms', 'epsilon', 'seed'] ['update']
 
 The description lists the parameters (`arms`, `epsilon`, `seed`) and the learning method, `update`. A window of 2 seconds is 2 samples: when the policy has no sample period (`dt`), `window_samples` counts one sample per second. `budget_s` is the time budget of one call, 0.001 s, and `memory_class` says that the memory grows with the number of arms.
 
-## 5. `fit` does not work on a bandit
+## 5. `fit` refuses a table and says how to learn
 
-Every estimator of the library inherits `fit`, which feeds a whole table to `learn_one` row by row. A bandit policy has `pull` and `update`, and no `learn_one`, so `fit` stops with an error.
+Every estimator of the library has `fit`, which feeds a whole table to `learn_one` row by row. A bandit policy learns one reward at a time, with `pull` and `update`, so `fit` stops with an error that says so.
 
 ```python
 from dense_armor.core.online.bandit import EpsilonGreedy
@@ -117,10 +122,10 @@ except TypeError as e:
 ```
 
 ```
-EpsilonGreedy has no learn_one
+EpsilonGreedy is not fitted on a table: learn with pull() and update(arm, reward), or judge a policy on a log with offline_replay
 ```
 
-Use a loop of `pull` and `update`, as on the other pages, or `offline_replay` on a log.
+Use a loop of `pull` and `update`, as on the other pages, or `offline_replay` on a log. `RobotKpSelector` gives the same error and names its own way to learn, `run_round()`.
 
 ## 6. The same methods on a controller gain
 
@@ -152,5 +157,7 @@ The gain 99.0 is not one of the arms, so it is counted in `n_missing_`: 1. The c
 
 ### Choices
 
-- **What is shown here is the behaviour of the code:** the three zero results (`mutate` changes nothing, `fit` raises, a reward for an unknown arm is counted and dropped) are printed by the examples above, not stated from the docstrings.
+- **What is shown here is the behaviour of the code:** the outputs above are printed by the examples, not stated from the docstrings.
+- **`fit` and `mutate` are shared with two classes that are not `BanditPolicy`:** `LinUCBDisjoint` and `RobotKpSelector` come from the same base, `_PullPolicy`, so they refuse a table in the same way and check a mutable setting (`alpha` of `LinUCBDisjoint`) in the same way.
+- **History:** before this change `fit` failed with `EpsilonGreedy has no learn_one`, an accident of inheriting `Root.fit`, and `mutate` changed nothing on any policy because none declared a mutable setting.
 - **The figures** are drawn with the library by `docs/assets/bandit/make_bandit_style_figures.py`.
