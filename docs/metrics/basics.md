@@ -1,15 +1,125 @@
-# Metrics: pairs, classification and probabilities
+# Metrics: a score that updates one pair at a time
 
-## 1. A metric, one pair at a time
+[← Metrics](index.md)
 
-A metric reads one pair `(y_true, y_pred)` with `update` and answers `get()` at any moment.
+A metric answers one question about a model that keeps learning: how well is it doing so far? Each evening a trader compares what the forecast said about a stock index with what the index really did. The metric reads that pair, updates its score and forgets the pair. A robot controller can do the same with its fault flags.
+
+![The running Accuracy of a daily stock index forecast for hit rates from 50% to 90%: it jumps for a few dozen days and then settles.](../assets/metrics/basics_3d.png)
+
+The picture follows the same 300 trading days for 25 forecasts, right from 50% to 90% of the days. Each point of the surface is the `Accuracy` after that many pairs. The forecast that is right 90% of the days reads 0.80 after 10 pairs, 0.88 after 50 and 0.907 after 300. The forecast of the first example, right 55% of the days, reads 0.60, 0.62 and 0.583, and between pair 20 and pair 300 it stays between 0.552 and 0.648: a few dozen pairs are needed before the score stops jumping.
+
+| class | what it does |
+|---|---|
+| `Metric` | the base of every online metric: `update`, `get`, `revert`, `merge`, `works_with` |
+| `Accuracy` | the share of right answers, the metric used on this page |
+
+## 1. A first example: does a stock index move today as it moved yesterday?
+
+Each evening the direction of the day is written as 1 (up) or 0 (down). The forecast is the simplest one: tomorrow moves like today. Eight days make seven pairs.
+
+```python
+from dense_armor.core.evaluation.metrics import Accuracy
+
+stock_up = [1, 1, 0, 1, 0, 0, 1, 1]
+m = Accuracy()
+for yesterday, today in zip(stock_up[:-1], stock_up[1:]):
+    m.update(today, yesterday)
+print(round(m.get(), 3), m.n)
+```
+
+```
+0.429 7
+```
+
+Count by hand. The pairs (truth, forecast) are (1, 1) right, (0, 1) wrong, (1, 0) wrong, (0, 1) wrong, (0, 0) right, (1, 0) wrong and (1, 1) right: three right out of seven, 3/7 = 0.429.
+
+![A stock index over 250 trading days: the running Accuracy of the forecast "tomorrow moves like today" against a coin toss at 0.50.](../assets/metrics/basics_finance.png)
+
+On 250 trading days (249 pairs) the same forecast reads 0.400 after 10 pairs, 0.580 after 50, 0.570 after 100 and 0.518 after 249. The dashed line is a coin toss, 0.50: the forecast does hardly better.
+
+## 2. What the metric keeps
+
+The metric keeps two numbers: how many pairs were right and how many pairs it has seen. The score is their ratio, and after a million pairs it still keeps two numbers, not the list of pairs.
+
+$$A = \frac{1}{n} \sum_{i=1}^{n} [y_i = \hat{y}_i]$$
+
+Here $n$ is the number of pairs, $y_i$ is what really happened, $\hat{y}_i$ is what the forecast said, and $[P]$ is 1 when $P$ is true and 0 otherwise. In the example the sum is 3 and $n$ is 7, so $A = 3/7$.
+
+**Source:** the docstring of `Accuracy` cites no paper. The metric is the fraction of samples where `y_pred == y_true`, and the base class `Metric` (module `dense_armor.core.evaluation.metrics.base`) only checks the pair, counts it and keeps the time stamps.
+
+## 3. A pair that cannot be used
+
+A day without a value (`None` or `NaN`) is skipped: it is counted in `n_missing` and the score does not change.
 
 ```python
 from dense_armor.core.evaluation.metrics import Accuracy
 
 m = Accuracy()
-for y, p in [(0, 0), (1, 1), (0, 1), (1, 1)]:
-    m.update(y, p)
+m.update(1, 1)
+m.update(None, 1)
+print(m.get(), m.n, m.n_missing)
+```
+
+```
+1.0 1 1
+```
+
+## 4. Undo and combine
+
+`revert` removes a pair that was added before; the rolling windows of the stream page use it. `merge` joins two metrics that read different parts of the stream.
+
+```python
+from dense_armor.core.evaluation.metrics import Accuracy
+
+m = Accuracy()
+m.update(1, 1)
+m.update(0, 1)
+m.revert(0, 1)
+print(m.get(), m.n)
+```
+
+```
+1.0 1
+```
+
+```python
+from dense_armor.core.evaluation.metrics import Accuracy
+
+a, b = Accuracy(), Accuracy()
+a.update(1, 1)
+b.update(0, 1)
+print(a.merge(b).get())
+```
+
+```
+0.5
+```
+
+The first metric has one right pair and the second one a wrong pair, so together they are right once out of two: 0.5.
+
+## 5. The parameters
+
+`Accuracy()` takes no parameters. A pair is added with `update(y_true, y_pred, t=None, w=1.0)`:
+
+| Parameter | Meaning | Default |
+|---|---|---|
+| `y_true` | what really happened | none |
+| `y_pred` | what the forecast said | none |
+| `t` | the time stamp of the pair | `None` |
+| `w` | the weight of the pair | `1.0` |
+
+`revert(y_true, y_pred, w=1.0)` undoes one pair, `merge(other)` combines two metrics, and `works_with(model)` tells whether the metric fits the role of the model.
+
+## 6. The same score on a robot joint
+
+A joint controller flags a fault with 1 and no fault with 0, and the maintenance log says what was true. The same metric reads the pairs.
+
+```python
+from dense_armor.core.evaluation.metrics import Accuracy
+
+m = Accuracy()
+for fault, flag in [(0, 0), (1, 1), (0, 1), (1, 1)]:
+    m.update(fault, flag)
 print(m.get(), m.n)
 ```
 
@@ -17,144 +127,17 @@ print(m.get(), m.n)
 0.75 4
 ```
 
-Three of the four predictions are right, so the accuracy is 3/4 = 0.75. The metric keeps two
-running sums (hits and total), not the list of pairs, so its memory stays the same after a
-million samples. Every metric on this page has the same members:
+Three of the four flags are right, so the accuracy is 3/4 = 0.75.
 
-- `update(y_true, y_pred, t=None, w=1.0)` adds a pair, with an optional timestamp and weight;
-- `revert(y_true, y_pred)` removes a pair added before (used by the rolling windows of step 6);
-- `merge(other)` combines two metrics computed on different parts of the stream;
-- `n` counts the pairs used, `n_missing` the pairs skipped because one side was `None` or `NaN`;
-- `works_with(model)` tells whether the metric fits the model's role (classifier or regressor).
+## API reference
 
-## 2. Classification: precision, recall, F1
+::: dense_armor.core.evaluation.metrics.base.Metric
 
-When the model says "positive", how often is it right (**precision**)? Of the real positives,
-how many did it find (**recall**)? **F1** is their harmonic mean.
+---
 
-```python
-from dense_armor.core.evaluation.metrics import F1, Precision, Recall
+## Details
 
-y = [1, 0, 1, 1, 0, 1]
-p = [1, 1, 1, 0, 0, 1]
-ms = [Precision(positive=1), Recall(positive=1), F1(positive=1), F1(average="macro")]
-for a, b in zip(y, p):
-    for m in ms:
-        m.update(a, b)
-print([round(m.get(), 3) for m in ms])
-```
+### Choices
 
-```
-[0.75, 0.75, 0.75, 0.625]
-```
-
-Count by hand for class 1: true positives TP = 3 (positions 0, 2, 5), one false positive FP
-(position 1), one false negative FN (position 3).
-
-$$P = \frac{TP}{TP + FP} = \frac{3}{4}, \qquad R = \frac{TP}{TP + FN} = \frac{3}{4}, \qquad
-F_1 = \frac{2PR}{P + R} = 0.75.$$
-
-`average="macro"` computes F1 for every class and takes the plain mean: class 0 has TP = 1,
-FP = 1, FN = 1, so F1 = 0.5, and the macro F1 is (0.75 + 0.5) / 2 = 0.625. `"micro"` pools the
-counts of all classes, `"weighted"` weights each class by how often it occurs; `FBeta(beta=2)`
-weights recall more than precision.
-
-### The confusion matrix
-
-Precision, recall and F1 summarise the confusion matrix, but the matrix itself is sometimes
-needed in full: it counts how many times each true class was predicted as each class.
-`ConfusionMatrix` returns a nested dict `{y_true: {y_pred: count}}`; it is the one metric
-whose `get()` returns a dict instead of a float.
-
-```python
-from dense_armor.core.evaluation.metrics import ConfusionMatrix
-
-m = ConfusionMatrix()
-for a, b in [(0, 0), (0, 1), (1, 1)]:
-    m.update(a, b)
-print(m.get())
-```
-
-```
-{0: {0: 1.0, 1: 1.0}, 1: {1: 1.0}}
-```
-
-Count by hand: true class 0 was predicted as 0 once and as 1 once; true class 1 was
-predicted as 1 once. The entry `m.get()[0][1]` is 1.0, meaning one sample of true class 0
-was predicted as class 1.
-
-The matrix lets you compute precision, recall or F1 for any class after the stream ends,
-and `merge` lets you combine partial matrices from different workers.
-
-### Balanced accuracy for imbalanced streams
-
-When one class is rare, accuracy can be misleading: a model that always predicts the
-majority class reaches high accuracy but finds no rare events. **Balanced accuracy** is the
-mean of the per-class recall. For binary classes 0 and 1 it equals
-`(TPR + TNR) / 2`, where TNR is the recall of the negative class. A model that always
-guesses the majority class scores 0.5, not 0.9.
-
-```python
-from dense_armor.core.evaluation.metrics import BalancedAccuracy
-
-m = BalancedAccuracy()
-for a, b in [(0, 0), (0, 1), (1, 1), (1, 1)]:
-    m.update(a, b)
-print(round(m.get(), 4))
-```
-
-```
-0.75
-```
-
-Count by hand:
-- Class 0: one true positive (first sample), one false negative (second) → recall = 1/2 = 0.5
-- Class 1: two true positives (third and fourth), zero false negatives → recall = 2/2 = 1.0
-Balanced accuracy = (0.5 + 1.0) / 2 = 0.75.
-
-A model that always guesses the majority class on a 90/10 split reaches 0.9 accuracy but
-only 0.5 balanced accuracy, exposing the imbalance.
-
-## 3. Agreement beyond chance and probabilities
-
-Accuracy can look good by chance when one class is common. **Cohen's kappa** subtracts the
-agreement expected by chance.
-
-```python
-from dense_armor.core.evaluation.metrics import CohenKappa
-
-m = CohenKappa()
-for a, b in zip([1, 0, 1, 1, 0, 1], [1, 1, 1, 0, 0, 1]):
-    m.update(a, b)
-print(round(m.get(), 3))
-```
-
-```
-0.25
-```
-
-$$\kappa = \frac{p_o - p_e}{1 - p_e}$$
-
-where $p_o$ is the observed agreement (4 of 6) and $p_e$ the agreement two independent guessers
-with the same label frequencies would reach: both say 1 four times out of six and 0 twice, so
-$p_e = (4 \cdot 4 + 2 \cdot 2)/36 = 0.556$ and $\kappa = (0.667 - 0.556)/(1 - 0.556) = 0.25$.
-
-When the model gives a probability instead of a label, score the probability itself.
-
-```python
-from dense_armor.core.evaluation.metrics import BrierScore, LogLoss
-
-ll, br = LogLoss(), BrierScore()
-for y, p in [(1, 0.9), (0, 0.2), (1, 0.6)]:
-    ll.update(y, p)
-    br.update(y, p)
-print(round(ll.get(), 4), round(br.get(), 4))
-```
-
-```
-0.2798 0.07
-```
-
-The **log-loss** is the mean of $-\ln p$ given to what happened: $-(\ln 0.9 + \ln 0.8 + \ln 0.6)/3
-= 0.2798$. The **Brier score** is the mean squared distance between probability and outcome:
-$(0.1^2 + 0.2^2 + 0.4^2)/3 = 0.07$. Both are lower for better forecasts.
+- **What `Accuracy` keeps:** the number of right pairs (`hits_`) and the number of pairs (`total_`). `merge` adds both, and `revert` subtracts the pair that is undone.
+- **The figures** are drawn with the library by `docs/assets/metrics/make_basics_figures.py`. The surface uses one stream of 300 days: the same random draws compared with 25 hit rates. The second figure uses 250 days in which the direction repeats the day before with probability 0.55, so the forecast "tomorrow moves like today" is right 55% of the days.
