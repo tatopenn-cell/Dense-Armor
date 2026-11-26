@@ -26,6 +26,8 @@ Every big section has its own interactive map on top of its page: the jobs on th
 |---|---|
 | [Signals](signals/index.md) | the folders of `core/signals` |
 | [Statistics](stats/index.md) | statistics and sketches |
+| [Moments](stats/moments/index.md) | the average and the wobble of a stream |
+| [Stable variance](stats/stable_variance.md) | variance in float32 |
 | [Preprocessing](preprocessing/index.md) | scalers, selection, resampling |
 | [Video](vision/index.md) | frames, features, flow, tracking |
 | [Streams](stream/index.md) | files, bags and arrays |
@@ -36,7 +38,12 @@ Every big section has its own interactive map on top of its page: the jobs on th
 | [Linear models](linear/index.md) | first-order online learning |
 | [Optimizers](optim/index.md) | online optimizers |
 | [Online learning](learn/index.md) | sequential models and incremental architectures |
+| [Online metric learning](learn/metric_learning.md) | sequential Mahalanobis distance optimization |
+| [Online classifiers](learn/online_classifiers.md) | non-stationary state estimation and drift-adaptive architectures |
+| [Online dynamics](learn/online_dynamics.md) | learn the difference between the formula and reality |
 | [Time series](timeseries/index.md) | time series |
+| [Robot](robot/index.md) | control, dynamics and benchmarks |
+| [API: Robot](api/robot.md) | the robot part of the API |
 | [Finance](finance/index.md) | financial pipelines, in four sections |
 | [Ensembles](ensemble/index.md) | voting, bagging, boosting, a weighted average and stacking |
 | [Applications](applications/index.md) | the six applications, their sections and every page |

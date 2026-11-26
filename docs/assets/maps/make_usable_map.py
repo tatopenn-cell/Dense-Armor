@@ -31,7 +31,7 @@ PAGES = {
     "datasets": "datasets/index.md",
     "linear": "linear/index.md",
     "graph": "ontology/index.md",
-    "evaluate": "metrics/index.md",
+    "evaluate": "metrics/stream/index.md",
     "neural": "neural/overview.md",
     "kalman": "timeseries/kalman.md",
     "ml": "ml/index.md",
