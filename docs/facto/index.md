@@ -1,14 +1,113 @@
 # Factorization machines, field-aware and higher-order
 
-A factorization machine predicts a target from a sparse vector of features by learning, for
-each feature, a short vector of latent factors; the interaction between two features is the
-dot product of their factors. On a stream, each sample updates `w0`, `w` and the factor
-matrix `V` one step of gradient descent at a time.
+## The map of factorization machines
 
-This page follows the four models of the task, from the plain FM to the field-aware, the
-field-weighted and the higher-order versions, then compares them on a stream with a sudden
-change. Every number and every figure comes from `benchmarks/facto_quality.py` and
-`docs/assets/facto/make_figures.py` (see `## Details` at the bottom).
+Click a page to open it, or the job on the left (or the button at the top) to go back to the [map of the library](../index.md#the-library-folder-by-folder).
+
+<object type="image/svg+xml" data="../assets/maps/facto.svg" style="width:100%"></object>
+
+## Gamestory
+
+### The Great Sandwich Contest
+
+Once upon a time there was the Great Sandwich Contest, a tournament in which four very special judges had to guess how good a sandwich would be by looking only at the list of ingredients (features) on the table.
+
+The problem was this: if you put ham (good, grade +5) and mozzarella (good, grade +5) in the sandwich, the result was a marvel. But if you put Nutella (grade +5) and anchovies (grade +5) in it, taken alone they were delicious, but put together they gave a stomachache!
+
+To win the contest, the judges had to learn to give a grade not only to the single ingredients, but above all to how well or poorly they went together (interaction).
+
+### The secret of the flavor label
+
+Instead of carrying around a giant recipe book with all the possible pairs in the world, the head of the judges (Factorization Machine) had a brilliant idea: he stuck a small "flavor label" (latent factor vector) on each ingredient with only three numbers: how sweet it was, how salty it was, and how crunchy it was.
+
+To understand if two ingredients got along, it was enough to quickly compare their labels (dot product). And in order not to waste hours checking a hundred ingredients two at a time, a village mathematician invented a magic shortcut (Lemma 3.1 / O(kn) form) that did all the math in the blink of an eye.
+
+### The four judges of the contest
+
+At that point, the four judges of the contest entered the scene, each with their own style for evaluating the sandwich:
+
+- The first judge was the simplest (FM / FMRegressor). He took the sandwich, read the flavor label of each ingredient, and calculated on the fly how they paired with each other. Simple, fast, and reliable.
+- The second judge was a true perfectionist (FFM / FFMClassifier). He had divided the table into departments, called fields: the Cured Meats department, the Cheeses department, and the Sauces department. For him, every ingredient changed face depending on its neighbor: ham had one flavor when it touched cheese, and another when it touched a sauce. Unfortunately, the contest organizers played a nasty trick on him: they forbade him from giving a grade to the single ingredients alone (linear terms). So, poor thing, he looked only at the pairings, forgetting whether an ingredient by itself was good or bad, ending up getting almost everything wrong (0.504).
+- The third judge was the smartest (FwFM / FwFMClassifier). He used only one label per ingredient to stay fast, but he had a secret table with an importance multiplier (scalar weight r) for each pair of departments. He knew very well that the pairing "Cheese + Sauce" could save or ruin the sandwich much more than the pairing "Bread + Lettuce".
+- The fourth judge had a superpower (HOFM / HOFMRegressor). While the other judges managed to evaluate ingredients only in pairs (two at a time), he managed to sense the harmony of three or more ingredients all together (degree m), like the perfect trio tomato + mozzarella + basil. And thanks to a mathematical spell (ANOVA kernel), he succeeded without taking forever.
+
+### The grand finale
+
+The moment of the final test arrived: the chefs began changing the ingredients and tastes suddenly (DriftStream), to put the judges in difficulty.
+
+The second judge, the one from whom they had taken away the grades on single ingredients, panicked and guessed at random. But the other three judges — the simple one, the smart one, and the one with the superpower — were not caught by surprise: they guessed the goodness of almost every single sandwich (0.999), winning together the cup of the Great Sandwich Contest!
+
+## The problem, in one line
+
+A desk wants to predict whether a fill will be good from the venue, the algorithm and the time slot of an order. Often a feature says nothing alone and the **pair** (or the triple) of features says everything: venue A with the algorithm twap is good, venue A with pov is not. A **factorization machine** predicts a target from a sparse vector of features by learning, for each feature, a short vector of latent factors; the interaction of two features is the dot product of their vectors. On a stream, each sample updates the bias `w0`, the weights `w` and the factor matrix `V` one step of gradient descent at a time.
+
+## The words
+
+| Word | What it means here | In the example |
+|---|---|---|
+| feature | one number that describes the sample; here a one-hot feature is 1 when the value is present | `venue=A`, `algo=twap` |
+| interaction | the effect of two (or more) features together, that no feature has alone | venue A with twap is good, A with pov is not |
+| latent factors | the short vector of `k` numbers that a feature learns | `k = 4` |
+| field | a group of features | the venue, the algorithm, the slot |
+| degree | how many features an interaction can have at most | 2 for the plain machine, `m` for the higher-order one |
+
+## A first example: five models on the same orders
+
+An order has a venue, an algorithm and a time slot, each one-hot. The fill is good when the venue and the algorithm match (A with twap, B with pov); the slot does not matter. The five models see the same 1500 orders and each predicts an order before it learns it. The number is the share of orders predicted right.
+
+```python
+import numpy as np
+from dense_armor.core.online.facto import FFMClassifier, FMClassifier, FwFMClassifier, HOFMClassifier
+from dense_armor.core.online.linear.glm import LogisticRegression
+from dense_armor.core.online.optim import SGD
+
+fields = {"venue=A": "venue", "venue=B": "venue", "algo=twap": "algo", "algo=pov": "algo", "slot=open": "slot", "slot=close": "slot"}
+rng = np.random.default_rng(0)
+models = {
+    "LogisticRegression": LogisticRegression(optimizer=SGD(lr=0.05)),
+    "FMClassifier": FMClassifier(optimizer=SGD(lr=0.2), k=4, init_scale=0.3, seed=0),
+    "FFMClassifier": FFMClassifier(fields=fields, k=2, lr=0.5, seed=0),
+    "FwFMClassifier": FwFMClassifier(optimizer=SGD(lr=0.2), fields=fields, k=2, init_scale=0.3, seed=0),
+    "HOFMClassifier": HOFMClassifier(optimizer=SGD(lr=0.2), m=3, k=4, init_scale=0.3, seed=0),
+}
+hits = {name: 0 for name in models}
+for _ in range(1500):
+    v, a, s = int(rng.integers(2)), int(rng.integers(2)), int(rng.integers(2))
+    x = {"venue=" + "AB"[v]: 1.0, "algo=" + ["twap", "pov"][a]: 1.0, "slot=" + ["open", "close"][s]: 1.0}
+    y = v ^ a
+    for name, m in models.items():
+        p = m.predict_proba_one(x)
+        hits[name] += int((max(p, key=p.get) if p else 0) == y)
+        m.learn_one(x, y)
+for name, h in hits.items():
+    print(name, round(h / 1500, 3))
+```
+
+```
+LogisticRegression 0.472
+FMClassifier 0.963
+FFMClassifier 0.741
+FwFMClassifier 0.959
+HOFMClassifier 0.97
+```
+
+The logistic regression, which gives a grade to each feature, stays near one half: no grade of a venue and no grade of an algorithm can say that a pair matches. The plain factorization machine, the field-weighted one and the higher-order one learn the pair. The field-aware machine learns about three quarters of it on this stream, and the page of the field-aware machine says what was measured. The pages below show each model alone, with its figure and its parameters.
+
+## The pages of the section
+
+| Page | Classes | What it does |
+|---|---|---|
+| [Factorization machine](fm.md) | `FMClassifier`, `FMRegressor` | a short vector per feature; the pair is the dot product |
+| [Field-aware](ffm.md) | `FFMClassifier`, `FFMRegressor` | a vector per feature and per field, no linear terms |
+| [Field-weighted](fwfm.md) | `FwFMClassifier`, `FwFMRegressor` | one vector per feature and a weight per pair of fields |
+| [Higher-order](hofm.md) | `HOFMClassifier`, `HOFMRegressor` | interactions of up to `m` features at once |
+
+
+## The same problem on a robot
+
+A robot has a joint, a load and a speed, and a run tracks well or badly depending on the combination: the load alone or the joint alone say nothing. The four models are the same, and each page ends with the same code written for a robot. The older comparison above, on a drifting stream, is the one of the benchmark.
+
+## Details` at the bottom).
 
 ## 1. The plain FM
 
