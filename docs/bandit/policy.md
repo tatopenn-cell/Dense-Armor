@@ -63,7 +63,7 @@ The clone starts with `n_seen_` equal to 0 and the same `epsilon`; after `load_s
 
 ## 3. Change a setting: `mutate` or `set_params`
 
-`get_params()` returns the settings (the constructor parameters). `set_params()` changes them in place and returns the policy. `mutate()` changes, in place and after the same check as the constructor, the settings that the policy reads at every decision: `epsilon` of `EpsilonGreedy`, `alpha` of `LinUCBDisjoint`, `c`, `horizon` and `sigma` of `BayesUCB` and `sigma` of `ThompsonSampling`. A value that the constructor would refuse raises `ValueError` and changes nothing.
+`get_params()` returns the settings (the constructor parameters). `set_params()` changes them in place and returns the policy, and it checks the settings that `mutate` may change in the same way (a value that does not pass raises `ValueError` and nothing changes). `mutate()` changes, in place and after the same check as the constructor, the settings that the policy reads at every decision: `epsilon` of `EpsilonGreedy`, `alpha` of `LinUCBDisjoint`, `c`, `horizon` and `sigma` of `BayesUCB` and `sigma` of `ThompsonSampling`. A value that the constructor would refuse raises `ValueError` and changes nothing.
 
 ```python
 from dense_armor.core.online.bandit import EpsilonGreedy

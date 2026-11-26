@@ -1,75 +1,90 @@
 # Recommenders and small structures
 
-A recommender predicts what score a user would give to an item, from the ratings the user has
-already given to other items. On a stream, each (user, item, rating) updates the model one
-step of stochastic gradient descent.
+## The map of recommenders
 
-This page covers the three recommenders of the task, the `rank` method that turns scores
-into an ordered list, and two small structures that use the same sliding-window idea:
-the sliding DFT and the sliding-window skyline. Every number and every figure comes from
-`benchmarks/facto_quality.py` and `docs/assets/facto/make_figures.py` (see `## Details`).
+Click a page to open it, or the job on the left (or the button at the top) to go back to the [map of the library](../index.md#the-library-folder-by-folder).
 
-## 1. The baseline
+<object type="image/svg+xml" data="../assets/maps/reco.svg" style="width:100%"></object>
 
-The simplest recommender predicts a global mean plus a per-user and a per-item bias::
+## Gamestory
 
-    y_hat(u, i) = mu + b_u + b_i
+### The fortune-teller waiter
 
-where `mu` is the running mean of the ratings seen so far, `b_u` the bias of the user and
-`b_i` the bias of the item. A rating updates the two biases one step of SGD with L2.
+Once upon a time there was a waiter who read minds (Recommender): every time you walked into the pizzeria, he guessed what grade (rating) you would give to a pizza even before you ate it.
 
-~~~python
-from dense_armor.core.online.reco import Baseline
+To succeed, he used three little secrets:
 
-b = Baseline(lr=0.05, l2=0.0, seed=0)
-for _ in range(200):
-    for u in range(5):
-        for i in range(5):
-            _ = b.learn_one(u, i, 3.5 + 0.3 * (u - i))
-round(b.predict_one(0, 0), 2)
-~~~
+- **The secret of tastes (Baseline and BiasedMF):** First he looked at your character — whether you were someone who always gave good grades (user bias) — and whether the pizza was famous (item bias). Then he peeked at your secret tastes card (p_u) and the pizza's card (q_i), like "loves crunchy + crunchy pizza = grade 10!". (A colleague of his, FunkMF, used only the tastes cards, not caring at all whether the pizza was famous or not).
+- **The secret of the ranking (rank / top-k):** When you were undecided in front of the menu, he calculated the grades of all the pizzas on the fly, lined them up from best to worst, and told you: "In my opinion, the 3 best ones for you are these!".
+- **The secret of the last pizzas (Sliding window):** In the kitchen there was a golden rule: they looked only at the last pizzas that came out of the oven, forgetting the old ones. Thus one helper listened to the rhythm of the oven (SDFT), while another set aside only the "unbeatable" pizzas, meaning the tastiest and cheapest ones of all (Skyline).
 
-~~~
-3.5
-~~~
+And so, thanks to the fortune-teller waiter, nobody ever left the pizzeria disappointed!
 
-The baseline captures the level of a rating (the mean) and the systematic deviation of a
-user or of an item, without any interaction. It is the model of Koren (2009, Section
-"Adding biases", page 4), with the SGD update of the same page.
+## The problem, in one line
 
-## 2. Biased matrix factorization
+A bank has desks and execution algorithms, and each desk has rated some algorithms with a score. A **recommender** predicts the score a desk would give to an algorithm it has never rated, from the scores already given, and can then list the best algorithms for a desk. On a stream, each (user, item, rating) updates the model one step of stochastic gradient descent.
 
-The `BiasedMF` adds a latent factor vector per user and per item on top of the biases::
+## The words
 
-    y_hat(u, i) = mu + b_u + b_i + <p_u, q_i>
+| Word | What it means here | In the example |
+|---|---|---|
+| user, item | the one who rates and the thing that is rated | a desk, an execution algorithm |
+| rating | the score that a user gave to an item | the fill quality, around 3.5 |
+| bias | how much a user rates above average, or an item is liked above average | a desk that rates everything high |
+| latent factors | the short vector of `k` numbers that a user or an item learns | `k = 3` hidden traits |
+| top-k | the `k` items with the highest predicted rating for a user | the three best algorithms of a desk |
+| window | the last few samples, the older ones being forgotten | the last 8 days, the last 5 points |
 
-A rating updates `mu` (running mean), `b_u`, `b_i`, `p_u` and `q_i` one step of SGD.
+## A first example: three recommenders on the same scores
 
-~~~python
+The bank has 20 desks and 15 algorithms. The scores come from a hidden structure: each desk and each algorithm has three hidden traits, and the score is 3.5 plus the match of the two sets of traits and a small noise. The models see 180 of the 300 pairs and are judged on the 120 pairs that they never saw. The number is the root mean squared error: a lower number is a better guess.
+
+```python
 import numpy as np
-from dense_armor.core.online.reco import BiasedMF
+from dense_armor.core.online.reco import Baseline, BiasedMF, FunkMF
 
 rng = np.random.default_rng(0)
-P = rng.normal(size=(10, 3))
-Q = rng.normal(size=(8, 3))
-mu = 3.5
-m = BiasedMF(k=3, lr=0.02, l2=0.001, seed=0)
-for _ in range(60):
-    for u in range(10):
-        for i in range(8):
-            r = mu + float(P[u] @ Q[i]) + float(rng.normal(0, 0.01))
-            _ = m.learn_one(u, i, r)
-round(m.predict_one(0, 0), 2)
-~~~
+P = rng.normal(size=(20, 3))
+Q = rng.normal(size=(15, 3))
+R = 3.5 + P @ Q.T + rng.normal(0, 0.1, size=(20, 15))
+pairs = [(u, i) for u in range(20) for i in range(15)]
+rng.shuffle(pairs)
+train, test = pairs[:180], pairs[180:]
+models = {
+    "Baseline": Baseline(lr=0.05, l2=0.02, seed=0),
+    "FunkMF": FunkMF(k=3, lr=0.02, l2=0.3, init_scale=0.3, seed=0),
+    "BiasedMF": BiasedMF(k=3, lr=0.02, l2=0.001, seed=0),
+}
+mean = float(np.mean([R[u, i] for u, i in train]))
+print("average of the scores", round(float(np.sqrt(np.mean([(mean - R[u, i]) ** 2 for u, i in test]))), 3))
+for name, m in models.items():
+    for _ in range(100):
+        for u, i in train:
+            m.learn_one(u, i, float(R[u, i]))
+    err = [(m.predict_one(u, i) - R[u, i]) ** 2 for u, i in test]
+    print(name, round(float(np.sqrt(np.mean(err))), 3))
+```
 
-~~~
-3.79
-~~~
+```
+average of the scores 1.687
+Baseline 1.885
+FunkMF 1.159
+BiasedMF 0.353
+```
 
-This is the "Improved regularized SVD" of Paterek (2007, eq. (2), page 2), with the SGD and
-the bias update of Koren (2009, page 4).
+The average of the scores, which knows nothing about the desks, is wrong by about 1.7. The baseline, which adds a bias for each desk and each algorithm, is wrong by more than that on this split. The plain factorization and the biased one learn the match between the traits and predict the unseen pairs better, and the biased one is the best here by a wide margin. The pages below show each model alone, with its figure and its parameters.
 
-## 3. Recovery of a planted low-rank matrix
+## The pages of the section
+
+| Page | Classes | What it does |
+|---|---|---|
+| [Baseline](baseline.md) | `Baseline` | the mean plus a bias for each user and each item |
+| [Biased matrix factorization](biased_mf.md) | `BiasedMF` | biases and a short vector for each user and item |
+| [Plain matrix factorization](funk_mf.md) | `FunkMF` | only the vectors, no biases |
+| [Top-k recommendations](rank.md) | the `rank` method | the best items for a user |
+| [Two sliding-window structures](windows.md) | `SDFT`, `Skyline` | the spectrum of the last samples and the points that nothing beats |
+
+## What the numbers say: recovery of a planted matrix
 
 ![Recovery on a planted matrix](../assets/facto/reco/recovery.png)
 
@@ -80,120 +95,10 @@ the noise floor of `0.01` (dashed line). The recovery is the property the task a
 (check 3 of the task), and it is checked by the test
 `test_biased_mf_recovers_planted_low_rank` in `test/core/online/reco/test_reco.py`.
 
-## 4. Plain matrix factorization
 
-`FunkMF` keeps the same factor model without the biases::
+## The same problem on a robot
 
-    y_hat(u, i) = mu + <p_u, q_i>
-
-~~~python
-import numpy as np
-from dense_armor.core.online.reco import FunkMF
-
-rng = np.random.default_rng(0)
-P = rng.normal(size=(10, 3))
-Q = rng.normal(size=(8, 3))
-mu = 3.5
-m = FunkMF(k=3, lr=0.02, l2=0.001, seed=0)
-for _ in range(60):
-    for u in range(10):
-        for i in range(8):
-            r = mu + float(P[u] @ Q[i]) + float(rng.normal(0, 0.01))
-            _ = m.learn_one(u, i, r)
-round(m.predict_one(0, 0), 2)
-~~~
-
-~~~
-3.03
-~~~
-
-This is eq. (1) of Paterek (2007), page 2, with the mean added so the prediction is on the
-same scale as the ratings (Paterek's formula has no mean and no bias; the mean is my choice,
-documented in the class docstring).
-
-## 5. Top-k recommendations
-
-`rank` takes a user and a list of items, predicts a score for each pair, and returns the
-items sorted by decreasing predicted score::
-
-    top = model.rank(user, items, top_k=k)
-
-~~~python
-import numpy as np
-from dense_armor.core.online.reco import BiasedMF
-
-rng = np.random.default_rng(0)
-P = rng.normal(size=(10, 3))
-Q = rng.normal(size=(8, 3))
-mu = 3.5
-m = BiasedMF(k=3, lr=0.02, l2=0.001, seed=0)
-for _ in range(60):
-    for u in range(10):
-        for i in range(8):
-            r = mu + float(P[u] @ Q[i]) + float(rng.normal(0, 0.01))
-            _ = m.learn_one(u, i, r)
-m.rank(0, list(range(8)), top_k=3)
-~~~
-
-~~~
-[3, 1, 4]
-~~~
-
-![Rank against the true top-k](../assets/facto/reco/rank.png)
-
-The figure is the precision@k of the predicted top-k against the true top-k, over 20 users.
-The dashed line is the precision of a random ranking (`k/n_items`). Above `k = 5` the
-precision drops because the model has only seen the sampled ratings, not all of them.
-
-## 6. Two sliding-window structures
-
-The same sliding-window idea appears in two other classes: the sliding DFT updates the
-spectrum of the last `n` samples in `O(n)` per sample, and the sliding-window skyline keeps
-the non-dominated points of the last `w` points.
-
-![SDFT vs numpy.fft, and the skyline at two times](../assets/facto/reco/sdft_skyline.png)
-
-Panel (a) compares the SDFT with `numpy.fft.fft` on the same window. The two agree to
-machine precision (max absolute difference `4.24e-15` in the check below).
-
-~~~python
-import numpy as np
-from dense_armor.core.signals.stats.sdft import SDFT
-
-rng = np.random.default_rng(42)
-vals = rng.normal(size=20)
-s = SDFT(n=8)
-for v in vals:
-    _ = s.update(v)
-float(np.max(np.abs(s.X - np.fft.fft(vals[-8:]))))
-~~~
-
-~~~
-4.242156220644677e-15
-~~~
-
-Panel (b) shows the skyline of a sliding window of 20 points, at two different times.
-The dots are the points of the window, the blue squares the skyline after 20 points, the
-orange triangles the skyline after 40 points. The skyline is the set of points not dominated
-by any other point of the window (Börzsönyi et al. 2001, Section 2, page 2).
-
-~~~python
-from dense_armor.core.signals.stats.skyline import Skyline
-
-s = Skyline(window=5)
-for p in [{"x": 1.0, "y": 5.0}, {"x": 3.0, "y": 3.0},
-          {"x": 5.0, "y": 1.0}, {"x": 0.5, "y": 0.5}]:
-    _ = s.update(p)
-sorted(s.skyline())
-~~~
-
-~~~
-[3]
-~~~
-
-Only `(0.5, 0.5)` is not dominated in the window: it is smaller than the other three points
-in both coordinates, so it dominates each of them. The indices returned by `skyline()` are
-positions in the current window, from `0` (oldest) to `len(window) - 1` (newest).
+A robot controller has tasks and gains, and each task has a hidden preference for a gain: the score is how well the run tracks. The recommenders are the same, and each page ends with the same code written for a robot, with 12 tasks and 10 gains.
 
 ## Details
 
