@@ -200,7 +200,6 @@ nav:
           - metrics/probabilities/index.md
           - Log loss: metrics/probabilities/log_loss.md
           - Brier score: metrics/probabilities/brier_score.md
-          - How it works: metrics/probabilities/how_it_works.md
       - Regression: metrics/regression.md
       - Uncertainty: metrics/uncertainty.md
       - On a stream: metrics/stream.md

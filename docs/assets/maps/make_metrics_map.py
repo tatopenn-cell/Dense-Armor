@@ -38,7 +38,7 @@ PAGES = [
     (
         "Probabilities",
         "log-loss, Brier score",
-        "metrics/probabilities.md",
+        "metrics/probabilities/index.md",
         PINK,
         ["LogLoss", "BrierScore"],
     ),
