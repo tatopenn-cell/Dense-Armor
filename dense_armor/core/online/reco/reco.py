@@ -5,10 +5,10 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor.roles import Root
+from dense_armor.core.online.pull_base import _PullPolicy
 
 
-class _RecoBase(Root):
+class _RecoBase(_PullPolicy):
     """Common code for Baseline, BiasedMF and FunkMF.
 
     These classes do not subclass ``Classifier`` or ``Regressor`` because
@@ -24,6 +24,20 @@ class _RecoBase(Root):
         seed: seed of the initialiser.
         init_scale: standard deviation of the latent-factor initialiser.
     """
+
+    _mutable_attributes = frozenset({"lr", "l2"})
+    _fit_hint = "learn with learn_one(user, item, rating)"
+
+    def _check_setting(self, name: str, value: Any) -> Any:
+        if name == "lr":
+            if float(value) <= 0.0:
+                raise ValueError(f"lr must be > 0, got {value}")
+            return float(value)
+        if name == "l2":
+            if float(value) < 0.0:
+                raise ValueError(f"l2 must be >= 0, got {value}")
+            return float(value)
+        return value
 
     def __init__(
         self,

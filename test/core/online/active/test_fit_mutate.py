@@ -73,3 +73,11 @@ def test_constructors_check_theta_and_s():
 @pytest.mark.parametrize("s", _all(), ids=lambda s: type(s).__name__)
 def test_mutate_is_idempotent_for_every_strategy(s):
     check_mutate_idempotent(s)
+
+
+@pytest.mark.parametrize("s", _all(), ids=lambda s: type(s).__name__)
+def test_set_params_checks_the_budget_and_changes_nothing_on_error(s):
+    with pytest.raises(ValueError, match="budget"):
+        s.set_params(budget=2.0)
+    assert s.budget == 0.1
+    assert s.set_params(budget=0.2).budget == 0.2
