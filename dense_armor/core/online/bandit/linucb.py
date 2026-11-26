@@ -13,7 +13,7 @@ from typing import Any
 import numpy as np
 
 from dense_armor.core.online.linear.bayes import BayesianLinearRegression
-from dense_armor.core.online.bandit.base import _PullPolicy
+from dense_armor.core.online.pull_base import _PullPolicy
 
 
 class LinUCBDisjoint(_PullPolicy):

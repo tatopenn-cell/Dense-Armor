@@ -356,7 +356,13 @@ nav:
           - Offline replay: bandit/offline_replay.md
           - The shared methods: bandit/policy.md
           - RobotKpSelector: bandit/robot_kp_selector.md
-      - Active learning: active/index.md
+      - Active learning:
+          - active/index.md
+          - Random labelling: active/random_strategy.md
+          - Fixed threshold: active/fixed_uncertainty.md
+          - Variable threshold: active/variable_uncertainty.md
+          - Randomised threshold: active/randomized_uncertainty.md
+          - The shared methods: active/strategy.md
       - Factorization machines: facto/index.md
       - Recommenders: reco/index.md
       - Fit, the whole dataset at once: fit.md

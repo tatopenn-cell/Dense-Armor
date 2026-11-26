@@ -16,7 +16,7 @@ from dense_armor.core.robot.control.kinematic_controller import (
     kinematic_tracking_controller,
 )
 from dense_armor.core.signals.datasets import SyntheticArm
-from dense_armor.core.online.bandit.base import _PullPolicy
+from dense_armor.core.online.pull_base import _PullPolicy
 
 
 def _episode(
@@ -84,8 +84,7 @@ class RobotKpSelector(_PullPolicy):
 
     budget_s = 1.0
     memory_class = "O(n_arms)"
-    _learn_with = "run_round()"
-    _fit_tail = ""
+    _fit_hint = "learn with run_round()"
 
     def __init__(
         self,

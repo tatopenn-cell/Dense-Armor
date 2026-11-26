@@ -4,10 +4,10 @@ from typing import Any
 
 import numpy as np
 
-from dense_armor.roles import Root
+from dense_armor.core.online.pull_base import _PullPolicy
 
 
-class ActiveStrategy(Root):
+class ActiveStrategy(_PullPolicy):
     """Base class for active learning strategies on a stream.
 
     An active strategy decides, for each arriving instance, whether to
@@ -25,6 +25,15 @@ class ActiveStrategy(Root):
 
     budget_s = 1e-3
     memory_class = "O(1)"
+    _mutable_attributes = frozenset({"budget"})
+    _fit_hint = "it decides with should_label(x, model) and does not learn from labels"
+
+    def _check_setting(self, name: str, value: Any) -> Any:
+        if name == "budget":
+            if not 0.0 < float(value) <= 1.0:
+                raise ValueError("budget must be in (0, 1]")
+            return float(value)
+        return value
 
     def __init__(self, budget: float = 0.1, seed: int = 0) -> None:
         """Initialise the strategy.
