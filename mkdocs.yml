@@ -354,8 +354,8 @@ nav:
           - Exp3: bandit/exp3.md
           - LinUCB: bandit/linucb.md
           - Offline replay: bandit/offline_replay.md
-          - RobotKpSelector: bandit/robot_kp_selector.md
           - The shared methods: bandit/policy.md
+          - RobotKpSelector: bandit/robot_kp_selector.md
       - Active learning: active/index.md
       - Factorization machines: facto/index.md
       - Recommenders: reco/index.md

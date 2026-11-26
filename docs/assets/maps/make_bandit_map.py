@@ -17,8 +17,8 @@ PAGES = [
     ("Exp3", "no assumption on the rewards", "bandit/exp3.md", ORANGE, ["Exp3"]),
     ("LinUCB", "use a context", "bandit/linucb.md", PINK, ["LinUCBDisjoint"]),
     ("Offline replay", "judge a policy on a log", "bandit/offline_replay.md", CYAN, ["offline_replay"]),
-    ("RobotKpSelector", "choose a controller gain", "bandit/robot_kp_selector.md", ORANGE, ["RobotKpSelector"]),
-    ("The shared methods", "what every policy inherits", "bandit/policy.md", PINK, ["BanditPolicy"]),
+    ("The shared methods", "what every policy inherits", "bandit/policy.md", ORANGE, ["BanditPolicy"]),
+    ("RobotKpSelector", "choose a controller gain", "bandit/robot_kp_selector.md", PINK, ["RobotKpSelector"]),
 ]
 
 SUMMARIES = {"Offline replay": "offline_replay"}
