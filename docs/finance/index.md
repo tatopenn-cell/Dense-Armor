@@ -12,6 +12,7 @@ This page serves as the index for nine analytical pipelines, and for the parts o
 | **Algorithmic Execution** | High-frequency pre-trade risk validation and automated order damping. | [Execution](execution.md) |
 | **Execution Schedules** | TWAP and VWAP split of a parent order across time buckets. | [Schedules](schedule.md) |
 | **Pre-trade limits** | Five controls of SEC Rule 15c3-5 (c)(1): size, price band, duplicate, rate, notional. | [Pre-trade limits](pretrade.md) |
+| **Trading guard** | An online model stopped by a guard when the last tick jumps, with the pre-trade checker on the orders that remain. | [Trading guard](trading_guard.md) |
 | **ITCH messages** | Decode the seven order messages of Nasdaq TotalView-ITCH 5.0. | [ITCH messages](itch.md) |
 | **Ring buffer** | Fixed-capacity queue with preallocated storage; cost against `BoundedStream`. | [Ring buffer](ring.md) |
 | **Configuration** | One TOML file with the parameters of the four blocks; frozen dataclasses, paths resolved against the file. | [Configuration](config.md) |

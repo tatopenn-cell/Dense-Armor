@@ -97,6 +97,7 @@ nav:
           - Execution: finance/execution.md
           - Schedules: finance/schedule.md
           - Pre-trade limits: finance/pretrade.md
+          - Trading guard: finance/trading_guard.md
           - ITCH messages: finance/itch.md
           - Ring buffer: finance/ring.md
           - Configuration: finance/config.md
