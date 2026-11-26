@@ -40,7 +40,7 @@ The alarm is right on 7 days out of 10, so the accuracy is 0.7. It caught 2 of t
 | [Confusion matrix and balanced accuracy](confusion_matrix.md) | `ConfusionMatrix`, `BalancedAccuracy` | every kind of answer counted, and a score that does not favour the common class |
 | [Cohen's kappa](kappa.md) | `CohenKappa` | agreement with the truth beyond what chance gives |
 
-The metrics that read a probability instead of a class are in [Probabilities](../probabilities.md).
+The metrics that read a probability instead of a class are in [Probabilities](../probabilities/index.md).
 
 ---
 
