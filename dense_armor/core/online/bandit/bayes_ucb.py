@@ -66,6 +66,17 @@ class BayesUCB(BanditPolicy):
             Student-t posteriors on page 4.
     """
 
+    _mutable_attributes = frozenset({"c", "horizon", "sigma"})
+
+    def _check_setting(self, name: str, value: Any) -> Any:
+        if name == "c":
+            return float(value)
+        if name == "sigma":
+            if self.family == "gaussian" and float(value) <= 0.0:
+                raise ValueError("sigma must be positive for gaussian")
+            return float(value)
+        return value
+
     def __init__(
         self,
         arms: Sequence[Any],

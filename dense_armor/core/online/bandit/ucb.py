@@ -49,6 +49,15 @@ class EpsilonGreedy(BanditPolicy):
             ``epsilon_n = cK / (d^2 n)`` on page 10.
     """
 
+    _mutable_attributes = frozenset({"epsilon"})
+
+    def _check_setting(self, name: str, value: Any) -> Any:
+        if name == "epsilon":
+            if not 0.0 <= float(value) <= 1.0:
+                raise ValueError("epsilon must be in [0, 1]")
+            return float(value)
+        return value
+
     def __init__(
         self,
         arms: Sequence[Any],

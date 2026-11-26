@@ -16,7 +16,7 @@ from dense_armor.core.robot.control.kinematic_controller import (
     kinematic_tracking_controller,
 )
 from dense_armor.core.signals.datasets import SyntheticArm
-from dense_armor.roles import Root
+from dense_armor.core.online.bandit.base import _PullPolicy
 
 
 def _episode(
@@ -57,7 +57,7 @@ def _episode(
     return -float(np.mean(errs))
 
 
-class RobotKpSelector(Root):
+class RobotKpSelector(_PullPolicy):
     """Choose ``kp`` among a set of values by UCB1 on a robot stream.
 
     Each round the policy picks a gain, runs a tracking episode with that
@@ -84,6 +84,8 @@ class RobotKpSelector(Root):
 
     budget_s = 1.0
     memory_class = "O(n_arms)"
+    _learn_with = "run_round()"
+    _fit_tail = ""
 
     def __init__(
         self,
