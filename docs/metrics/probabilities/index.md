@@ -10,10 +10,8 @@ Click a page to open it, or the button at the top to go back to the [map of the 
 
 <object type="image/svg+xml" data="../assets/maps/probabilities.svg" style="width:100%"></object>
 
-## What this is
+## Pages
 
-`LogLoss` accumulates $-\ln p$ when the true label is 1 and $-\ln(1-p)$ when it is 0, then returns the mean.
-
-`BrierScore` accumulates $(1-p)^2$ when the true label is 1 and $p^2$ when it is 0, then returns the mean.
-
-Both are proper scoring rules: they are minimized when the predicted probabilities equal the true class probabilities.
+1. [Log loss](log_loss.md): $-\ln p$ scoring for hard predictions with confidence
+2. [Brier score](brier_score.md): mean squared distance between probability and outcome
+3. [How it works](how_it_works.md): proper scoring rules, parameters, API reference
