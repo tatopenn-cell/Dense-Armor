@@ -1,68 +1,68 @@
-"""The interactive map of the Streams section: the readers, the merge and the channels of a sample.
+"""The interactive map of the "On a stream" pages, with the exact names of `usable`.
 
-Draws docs/assets/maps/stream.svg with the same drawing as the other section maps (make_tree_map.py). The
-readers and the merge are functions, so they are one line each; the classes of the channels are those of
-the catalog of `usable`.
+Draws docs/assets/maps/stream.svg with the same drawing as the other section maps (make_tree_map.py).
+The functions of the evaluation module (progressive_val_score, best_of, ...) are not classes of the catalog of `usable`, so
+their pages are drawn with a summary line (``summaries``); Rolling and RollingAUC are checked against the catalog.
 
 Run from the repo root:
     python docs/assets/maps/make_stream_map.py
 """
 
-import json
+import sys
 
-from make_tree_map import CYAN, HERE, ORANGE, PINK, REPO, draw
+sys.path.insert(0, ".")
+
+from make_tree_map import CYAN, HERE, ORANGE, PINK, draw
 
 PAGES = [
     (
-        "CSV files, ROS bags and arrays",
-        "the readers",
-        "stream/readers.md",
+        "Rolling window",
+        "only the recent past",
+        "metrics/stream/rolling.md",
         CYAN,
-        [],
+        ["Rolling"],
     ),
     (
-        "Merge by time and shuffle",
-        "several streams, one timeline",
-        "stream/merge.md",
+        "Rolling AUC",
+        "exact, on the window",
+        "metrics/stream/rolling_auc.md",
         ORANGE,
-        [],
+        ["RollingAUC"],
     ),
     (
-        "Choosing and reshaping channels",
-        "keep, drop and change channels",
-        "stream/channels.md",
+        "Predict, then learn",
+        "score before learning",
+        "metrics/stream/predict_then_learn.md",
         PINK,
-        ["Select", "Discard", "FuncTransformer"],
+        ["progressive_val_score", "progressive_val_proba_score"],
+    ),
+    (
+        "Choosing a model",
+        "who is ahead today",
+        "metrics/stream/model_selection.md",
+        CYAN,
+        ["best_of", "OnlineModelSelection"],
     ),
 ]
+
 SUMMARIES = {
-    "CSV files, ROS bags and arrays": "iter_csv, iter_rosbag, iter_array",
-    "Merge by time and shuffle": "merge_by_time, shuffle",
+    "Predict, then learn": "progressive_val_score, progressive_val_proba_score",
+    "Choosing a model": "best_of, OnlineModelSelection",
 }
 
 
 def main():
-    ontology = json.loads(
-        (REPO / "dense_armor" / "usable" / "ontology.json").read_text(encoding="utf-8")
-    )
-    jobs = [
-        j
-        for j, v in ontology["jobs"].items()
-        if {"compose", "data"} & set(v["domains"])
-    ]
     draw(
         PAGES,
-        ("compose",),
-        "THE MAP OF STREAMS",
-        "the job, the page of each tool and what it holds; pass over a page to light it, click to open it",
+        ("metrics",),
+        "THE MAP OF THE STREAM PAGES",
+        "the job, the page of each tool and its classes; pass over a page to light its classes, click to open it",
         HERE / "stream.svg",
-        "The map of streams",
-        {"Classifier": "C", "Regressor": "R"},
-        "C classifier, R regressor; ",
+        "The map of the stream pages",
+        {},
+        "",
         "docs/assets/maps/make_stream_map.py",
         partial=True,
-        jobs=jobs,
-        hub="stream",
         summaries=SUMMARIES,
     )
 
