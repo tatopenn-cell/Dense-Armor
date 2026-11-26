@@ -59,7 +59,7 @@ PAGES = [
     (
         "Stream",
         "windows, rolling",
-        "metrics/stream.md",
+        "metrics/stream/index.md",
         ORANGE,
         ["Rolling", "RollingAUC"],
     ),
