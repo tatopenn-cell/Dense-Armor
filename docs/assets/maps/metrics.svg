@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 754" width="100%" role="img" aria-label="The map of metrics">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 829" width="100%" role="img" aria-label="The map of metrics">
 <style>text{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif}.m{font-family:ui-monospace,Menlo,Consolas,monospace}.e{opacity:.32;transition:opacity .15s}.net:hover .e{opacity:.06}.net .pg:hover .e{opacity:1;stroke-width:2.2}a:hover .card{fill:#17303f;stroke-width:2.4}a:hover text.dn{fill:#ffffff}.back:hover .card{fill:#17303f}</style>
-<rect width="1000" height="754" fill="#0d131a" rx="14"/>
+<rect width="1000" height="829" fill="#0d131a" rx="14"/>
 <text x="500" y="38" fill="#e0fbfc" font-size="24" font-weight="700" text-anchor="middle">THE MAP OF METRICS</text>
 <text x="500" y="62" fill="#4cc9f0" font-size="12.5" text-anchor="middle">the job, the page of each metric and its classes; pass over a page to light its classes, click to open it</text>
 <a class="back" href="../../#the-library-folder-by-folder" target="_top"><title>back to the map of the library</title><rect class="card" x="20" y="14" width="150" height="30" rx="15" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="95" y="33.5" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">← map of the library</text></a>
@@ -8,14 +8,14 @@
 <text x="410" y="98" fill="#f72585" font-size="12" font-weight="700">02  PAGE</text>
 <text x="680" y="98" fill="#f72585" font-size="12" font-weight="700">03  CLASSES OF THE CATALOG</text>
 <g class="net">
-<path class="e" d="M214,363.5 C262,363.5 282,391.5 318,391.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
-<path class="e" d="M214,419.5 C262,419.5 282,391.5 318,391.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M214,401.0 C262,401.0 282,429.0 318,429.0" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M214,457.0 C262,457.0 282,429.0 318,429.0" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
 <g class="pg">
-<path class="e" d="M342,391.5 C382,391.5 366,124.5 408,124.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M342,429.0 C382,429.0 366,124.5 408,124.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
 <path class="e" d="M626,124.5 C650,124.5 650,124.5 676,124.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
 </g>
 <g class="pg">
-<path class="e" d="M342,391.5 C382,391.5 366,251.0 408,251.0" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M342,429.0 C382,429.0 366,251.0 408,251.0" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
 <path class="e" d="M626,251.0 C650,251.0 650,163.5 676,163.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
 <path class="e" d="M626,251.0 C650,251.0 650,188.5 676,188.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
 <path class="e" d="M626,251.0 C650,251.0 650,213.5 676,213.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
@@ -26,35 +26,38 @@
 <path class="e" d="M626,251.0 C650,251.0 650,338.5 676,338.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
 </g>
 <g class="pg">
-<path class="e" d="M342,391.5 C382,391.5 366,390.0 408,390.0" fill="none" stroke="#f72585" stroke-width="1.4"/>
+<path class="e" d="M342,429.0 C382,429.0 366,390.0 408,390.0" fill="none" stroke="#f72585" stroke-width="1.4"/>
 <path class="e" d="M626,390.0 C650,390.0 650,377.5 676,377.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
 <path class="e" d="M626,390.0 C650,390.0 650,402.5 676,402.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
 </g>
 <g class="pg">
-<path class="e" d="M342,391.5 C382,391.5 366,441.5 408,441.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
-<path class="e" d="M626,441.5 C650,441.5 650,441.5 676,441.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M342,429.0 C382,429.0 366,479.0 408,479.0" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,479.0 C650,479.0 650,441.5 676,441.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M626,479.0 C650,479.0 650,466.5 676,466.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M626,479.0 C650,479.0 650,491.5 676,491.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M626,479.0 C650,479.0 650,516.5 676,516.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
 </g>
 <g class="pg">
-<path class="e" d="M342,391.5 C382,391.5 366,505.5 408,505.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
-<path class="e" d="M626,505.5 C650,505.5 650,480.5 676,480.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
-<path class="e" d="M626,505.5 C650,505.5 650,505.5 676,505.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
-<path class="e" d="M626,505.5 C650,505.5 650,530.5 676,530.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M342,429.0 C382,429.0 366,580.5 408,580.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,580.5 C650,580.5 650,555.5 676,555.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M626,580.5 C650,580.5 650,580.5 676,580.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M626,580.5 C650,580.5 650,605.5 676,605.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
 </g>
 <g class="pg">
-<path class="e" d="M342,391.5 C382,391.5 366,582.0 408,582.0" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
-<path class="e" d="M626,582.0 C650,582.0 650,569.5 676,569.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
-<path class="e" d="M626,582.0 C650,582.0 650,594.5 676,594.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M342,429.0 C382,429.0 366,657.0 408,657.0" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,657.0 C650,657.0 650,644.5 676,644.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M626,657.0 C650,657.0 650,669.5 676,669.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
 </g>
 <g class="pg">
-<path class="e" d="M342,391.5 C382,391.5 366,658.5 408,658.5" fill="none" stroke="#f72585" stroke-width="1.4"/>
-<path class="e" d="M626,658.5 C650,658.5 650,633.5 676,633.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
-<path class="e" d="M626,658.5 C650,658.5 650,658.5 676,658.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
-<path class="e" d="M626,658.5 C650,658.5 650,683.5 676,683.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M342,429.0 C382,429.0 366,733.5 408,733.5" fill="none" stroke="#f72585" stroke-width="1.4"/>
+<path class="e" d="M626,733.5 C650,733.5 650,708.5 676,708.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M626,733.5 C650,733.5 650,733.5 676,733.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M626,733.5 C650,733.5 650,758.5 676,758.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
 </g>
 </g>
-<a href="../../#the-library-folder-by-folder" target="_top"><title>summarize_stream: back to the map of the library</title><rect class="card" x="20" y="344.5" width="190" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="34" y="361.5" fill="#e0fbfc" font-size="13" font-weight="700">summarize_stream</text><text x="34" y="375.5" fill="#94a3b8" font-size="9.5">job of the ontology</text></a>
-<a href="../../#the-library-folder-by-folder" target="_top"><title>resources: back to the map of the library</title><rect class="card" x="20" y="400.5" width="190" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="34" y="417.5" fill="#e0fbfc" font-size="13" font-weight="700">resources</text><text x="34" y="431.5" fill="#94a3b8" font-size="9.5">job of the ontology</text></a>
-<circle cx="330" cy="391.5" r="12" fill="#101a24" stroke="#4cc9f0" stroke-width="2"/><text class="m" x="330" y="421.5" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">metrics</text>
+<a href="../../#the-library-folder-by-folder" target="_top"><title>summarize_stream: back to the map of the library</title><rect class="card" x="20" y="382.0" width="190" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="34" y="399.0" fill="#e0fbfc" font-size="13" font-weight="700">summarize_stream</text><text x="34" y="413.0" fill="#94a3b8" font-size="9.5">job of the ontology</text></a>
+<a href="../../#the-library-folder-by-folder" target="_top"><title>resources: back to the map of the library</title><rect class="card" x="20" y="438.0" width="190" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="34" y="455.0" fill="#e0fbfc" font-size="13" font-weight="700">resources</text><text x="34" y="469.0" fill="#94a3b8" font-size="9.5">job of the ontology</text></a>
+<circle cx="330" cy="429.0" r="12" fill="#101a24" stroke="#4cc9f0" stroke-width="2"/><text class="m" x="330" y="459.0" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">metrics</text>
 <a href="../../metrics/basics/" target="_top"><title>Metrics: pairs: open metrics/basics.md</title><rect class="card" x="410" y="105.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="121.5" fill="#e0fbfc" font-size="13" font-weight="700">Metrics: pairs</text><text x="424" y="136.5" fill="#94a3b8" font-size="9.5">one pair at a time</text></a>
 <a href="../../metrics/basics/" target="_top"><title>Metric: open metrics/basics.md</title><rect class="card" x="678" y="114.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="128.3" fill="#e0fbfc" font-size="11">Metric</text></a>
 <a href="../../metrics/classification/" target="_top"><title>Classification: open metrics/classification/index.md</title><rect class="card" x="410" y="232.0" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="248.0" fill="#e0fbfc" font-size="13" font-weight="700">Classification</text><text x="424" y="263.0" fill="#94a3b8" font-size="9.5">precision, recall, F1</text></a>
@@ -69,18 +72,21 @@
 <a href="../../metrics/probabilities/" target="_top"><title>Probabilities: open metrics/probabilities/index.md</title><rect class="card" x="410" y="371.0" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="387.0" fill="#e0fbfc" font-size="13" font-weight="700">Probabilities</text><text x="424" y="402.0" fill="#94a3b8" font-size="9.5">log-loss, Brier score</text></a>
 <a href="../../metrics/probabilities/" target="_top"><title>LogLoss: open metrics/probabilities/index.md</title><rect class="card" x="678" y="367.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="381.3" fill="#e0fbfc" font-size="11">LogLoss</text></a>
 <a href="../../metrics/probabilities/" target="_top"><title>BrierScore: open metrics/probabilities/index.md</title><rect class="card" x="678" y="392.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="406.3" fill="#e0fbfc" font-size="11">BrierScore</text></a>
-<a href="../../metrics/regression/" target="_top"><title>Regression: open metrics/regression/index.md</title><rect class="card" x="410" y="422.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="438.5" fill="#e0fbfc" font-size="13" font-weight="700">Regression</text><text x="424" y="453.5" fill="#94a3b8" font-size="9.5">error, R2</text></a>
-<a href="../../metrics/regression/" target="_top"><title>R2Score: open metrics/regression/index.md</title><rect class="card" x="678" y="431.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="445.3" fill="#e0fbfc" font-size="11">R2Score</text></a>
-<a href="../../metrics/uncertainty/" target="_top"><title>Uncertainty: open metrics/uncertainty/index.md</title><rect class="card" x="410" y="486.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="502.5" fill="#e0fbfc" font-size="13" font-weight="700">Uncertainty</text><text x="424" y="517.5" fill="#94a3b8" font-size="9.5">intervals</text></a>
-<a href="../../metrics/uncertainty/" target="_top"><title>GaussianNLL: open metrics/uncertainty/index.md</title><rect class="card" x="678" y="470.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="484.3" fill="#e0fbfc" font-size="11">GaussianNLL</text></a>
-<a href="../../metrics/uncertainty/" target="_top"><title>IntervalCoverage: open metrics/uncertainty/index.md</title><rect class="card" x="678" y="495.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="509.3" fill="#e0fbfc" font-size="11">IntervalCoverage</text></a>
-<a href="../../metrics/uncertainty/" target="_top"><title>MeanIntervalWidth: open metrics/uncertainty/index.md</title><rect class="card" x="678" y="520.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="534.3" fill="#e0fbfc" font-size="11">MeanIntervalWidth</text></a>
-<a href="../../metrics/stream/" target="_top"><title>Stream: open metrics/stream.md</title><rect class="card" x="410" y="563.0" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="579.0" fill="#e0fbfc" font-size="13" font-weight="700">Stream</text><text x="424" y="594.0" fill="#94a3b8" font-size="9.5">windows, rolling</text></a>
-<a href="../../metrics/stream/" target="_top"><title>Rolling: open metrics/stream.md</title><rect class="card" x="678" y="559.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="573.3" fill="#e0fbfc" font-size="11">Rolling</text></a>
-<a href="../../metrics/stream/" target="_top"><title>RollingAUC: open metrics/stream.md</title><rect class="card" x="678" y="584.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="598.3" fill="#e0fbfc" font-size="11">RollingAUC</text></a>
-<a href="../../metrics/events/" target="_top"><title>Events: open metrics/events.md</title><rect class="card" x="410" y="639.5" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="655.5" fill="#e0fbfc" font-size="13" font-weight="700">Events</text><text x="424" y="670.5" fill="#94a3b8" font-size="9.5">delay, false alarms</text></a>
-<a href="../../metrics/events/" target="_top"><title>EventMetrics: open metrics/events.md</title><rect class="card" x="678" y="623.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="637.3" fill="#e0fbfc" font-size="11">EventMetrics</text></a>
-<a href="../../metrics/events/" target="_top"><title>EventWindow: open metrics/events.md</title><rect class="card" x="678" y="648.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="662.3" fill="#e0fbfc" font-size="11">EventWindow</text></a>
-<a href="../../metrics/events/" target="_top"><title>PointAdjustedF1: open metrics/events.md</title><rect class="card" x="678" y="673.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="687.3" fill="#e0fbfc" font-size="11">PointAdjustedF1</text></a>
-<text x="500" y="738" fill="#94a3b8" font-size="10.5" text-anchor="middle">jobs: dense_armor/usable/ontology.json; classes: dense_armor.usable.catalog; drawn by docs/assets/maps/make_metrics_map.py</text>
+<a href="../../metrics/regression/" target="_top"><title>Regression: open metrics/regression/index.md</title><rect class="card" x="410" y="460.0" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="476.0" fill="#e0fbfc" font-size="13" font-weight="700">Regression</text><text x="424" y="491.0" fill="#94a3b8" font-size="9.5">error, R2</text></a>
+<a href="../../metrics/regression/" target="_top"><title>MeanAbsoluteError: open metrics/regression/index.md</title><rect class="card" x="678" y="431.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="445.3" fill="#e0fbfc" font-size="11">MeanAbsoluteError</text></a>
+<a href="../../metrics/regression/" target="_top"><title>MeanSquaredError: open metrics/regression/index.md</title><rect class="card" x="678" y="456.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="470.3" fill="#e0fbfc" font-size="11">MeanSquaredError</text></a>
+<a href="../../metrics/regression/" target="_top"><title>RootMeanSquaredError: open metrics/regression/index.md</title><rect class="card" x="678" y="481.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="495.3" fill="#e0fbfc" font-size="11">RootMeanSquaredError</text></a>
+<a href="../../metrics/regression/" target="_top"><title>R2Score: open metrics/regression/index.md</title><rect class="card" x="678" y="506.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="520.3" fill="#e0fbfc" font-size="11">R2Score</text></a>
+<a href="../../metrics/uncertainty/" target="_top"><title>Uncertainty: open metrics/uncertainty/index.md</title><rect class="card" x="410" y="561.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="577.5" fill="#e0fbfc" font-size="13" font-weight="700">Uncertainty</text><text x="424" y="592.5" fill="#94a3b8" font-size="9.5">intervals</text></a>
+<a href="../../metrics/uncertainty/" target="_top"><title>GaussianNLL: open metrics/uncertainty/index.md</title><rect class="card" x="678" y="545.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="559.3" fill="#e0fbfc" font-size="11">GaussianNLL</text></a>
+<a href="../../metrics/uncertainty/" target="_top"><title>IntervalCoverage: open metrics/uncertainty/index.md</title><rect class="card" x="678" y="570.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="584.3" fill="#e0fbfc" font-size="11">IntervalCoverage</text></a>
+<a href="../../metrics/uncertainty/" target="_top"><title>MeanIntervalWidth: open metrics/uncertainty/index.md</title><rect class="card" x="678" y="595.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="609.3" fill="#e0fbfc" font-size="11">MeanIntervalWidth</text></a>
+<a href="../../metrics/stream/" target="_top"><title>Stream: open metrics/stream.md</title><rect class="card" x="410" y="638.0" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="654.0" fill="#e0fbfc" font-size="13" font-weight="700">Stream</text><text x="424" y="669.0" fill="#94a3b8" font-size="9.5">windows, rolling</text></a>
+<a href="../../metrics/stream/" target="_top"><title>Rolling: open metrics/stream.md</title><rect class="card" x="678" y="634.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="648.3" fill="#e0fbfc" font-size="11">Rolling</text></a>
+<a href="../../metrics/stream/" target="_top"><title>RollingAUC: open metrics/stream.md</title><rect class="card" x="678" y="659.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="673.3" fill="#e0fbfc" font-size="11">RollingAUC</text></a>
+<a href="../../metrics/events/" target="_top"><title>Events: open metrics/events.md</title><rect class="card" x="410" y="714.5" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="730.5" fill="#e0fbfc" font-size="13" font-weight="700">Events</text><text x="424" y="745.5" fill="#94a3b8" font-size="9.5">delay, false alarms</text></a>
+<a href="../../metrics/events/" target="_top"><title>EventMetrics: open metrics/events.md</title><rect class="card" x="678" y="698.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="712.3" fill="#e0fbfc" font-size="11">EventMetrics</text></a>
+<a href="../../metrics/events/" target="_top"><title>EventWindow: open metrics/events.md</title><rect class="card" x="678" y="723.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="737.3" fill="#e0fbfc" font-size="11">EventWindow</text></a>
+<a href="../../metrics/events/" target="_top"><title>PointAdjustedF1: open metrics/events.md</title><rect class="card" x="678" y="748.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="762.3" fill="#e0fbfc" font-size="11">PointAdjustedF1</text></a>
+<text x="500" y="813" fill="#94a3b8" font-size="10.5" text-anchor="middle">jobs: dense_armor/usable/ontology.json; classes: dense_armor.usable.catalog; drawn by docs/assets/maps/make_metrics_map.py</text>
 </svg>

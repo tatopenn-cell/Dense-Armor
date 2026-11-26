@@ -55,15 +55,6 @@
    }
   ],
   [
-   "graph",
-   "ActionRejected",
-   0.25,
-   {
-    "source": "catalog domain of the class",
-    "license": "Dense-Armor"
-   }
-  ],
-  [
    "active",
    "ActiveStrategy",
    0.25,
@@ -543,15 +534,6 @@
   [
    "graph",
    "Constraint",
-   0.25,
-   {
-    "source": "catalog domain of the class",
-    "license": "Dense-Armor"
-   }
-  ],
-  [
-   "graph",
-   "ConstraintViolation",
    0.25,
    {
     "source": "catalog domain of the class",
@@ -1730,6 +1712,15 @@
   ],
   [
    "metrics",
+   "MeanAbsoluteError",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "metrics",
    "MeanIntervalWidth",
    0.25,
    {
@@ -1740,6 +1731,15 @@
   [
    "neural",
    "MeanOverTime",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "metrics",
+   "MeanSquaredError",
    0.25,
    {
     "source": "catalog domain of the class",
@@ -1929,15 +1929,6 @@
   [
    "ml",
    "MultinomialNB",
-   0.25,
-   {
-    "source": "catalog domain of the class",
-    "license": "Dense-Armor"
-   }
-  ],
-  [
-   "audio",
-   "NeedsLabels",
    0.25,
    {
     "source": "catalog domain of the class",
@@ -2703,6 +2694,15 @@
   [
    "stats",
    "RollingMedian",
+   0.25,
+   {
+    "source": "catalog domain of the class",
+    "license": "Dense-Armor"
+   }
+  ],
+  [
+   "metrics",
+   "RootMeanSquaredError",
    0.25,
    {
     "source": "catalog domain of the class",

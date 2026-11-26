@@ -1,5 +1,6 @@
 """Tests for the catalog (item D)."""
 import ast
+import builtins
 import time
 from pathlib import Path
 
@@ -20,7 +21,7 @@ def _independent_count(repo: Path) -> int:
         "AnomalyDetector", "DriftDetector", "Root", "Signal",
     }
     ROLES = ABSTRACT - {"Estimator", "Root", "Signal"}
-    SKIP_SUFFIX = ("Error", "Config")
+    SKIP_SUFFIX = ("Config",)
     classes = []
     idx: dict[str, ast.ClassDef] = {}
     for p in sorted((repo / "dense_armor").rglob("*.py")):
@@ -51,10 +52,25 @@ def _independent_count(repo: Path) -> int:
                     return found
         return None
 
+    def is_exc(node: ast.ClassDef, seen: tuple = ()) -> bool:
+        for b in node.bases:
+            name = b.id if isinstance(b, ast.Name) else getattr(b, "attr", None)
+            builtin = getattr(builtins, name, None) if name else None
+            if isinstance(builtin, type) and issubclass(builtin, BaseException):
+                return True
+            if name in idx and name not in seen and is_exc(idx[name], seen + (name,)):
+                return True
+        return False
+
     n = 0
     for p, node in classes:
         name = node.name
-        if name.startswith("_") or name in ABSTRACT or name.endswith(SKIP_SUFFIX):
+        if (
+            name.startswith("_")
+            or name in ABSTRACT
+            or name.endswith(SKIP_SUFFIX)
+            or is_exc(node)
+        ):
             continue
         rel = p.relative_to(repo).parts
         sub = rel[rel.index("core") + 1 : -1] if "core" in rel else rel[1:-1]
@@ -161,13 +177,13 @@ def test_cache_warm_under_500ms():
 # --------------------------------------------------------------
 # Cache invalidated when the SHA changes
 # --------------------------------------------------------------
-def test_cache_version_is_v8():
-    """The cache version is 8 after the removal of mentions."""
+def test_cache_version_is_v9():
+    """The cache version is 9 after the exceptions are told by their bases, not by their names."""
     cache = ct.HERE / "catalog.json"
     if cache.exists():
         import json
         d = json.loads(cache.read_text(encoding="utf-8"))
-        assert d.get("v") == 8, f"v: {d.get('v')} (atteso 8)"
+        assert d.get("v") == 9, f"v: {d.get('v')} (atteso 9)"
 
 
 def test_cache_invalidated_on_refresh():
@@ -186,3 +202,15 @@ def test_audio_functions_are_listed_with_their_kind():
     assert len(funcs) >= 60 and {r["domain"] for r in funcs} == {"audio"}
     assert {"stft", "lowpass", "get_window"} <= {r["class"] for r in funcs}
     assert all(r.get("kind") == "class" for r in cat if r not in funcs)
+
+
+# --------------------------------------------------------------
+# An exception is told by its bases, not by the name of the class
+# --------------------------------------------------------------
+def test_catalog_lists_the_error_metrics_and_no_exceptions():
+    """MeanAbsoluteError, MeanSquaredError and RootMeanSquaredError are metrics; ActionRejected, ConstraintViolation and NeedsLabels are exceptions."""
+    names = {r["class"] for r in ct.get_catalog(REPO, refresh=True)}
+    for metric in ("MeanAbsoluteError", "MeanSquaredError", "RootMeanSquaredError"):
+        assert metric in names, f"{metric} manca dal catalogo"
+    for exc in ("ActionRejected", "ConstraintViolation", "NeedsLabels", "MemoryPressureError"):
+        assert exc not in names, f"{exc} e' un'eccezione e non deve essere nel catalogo"
