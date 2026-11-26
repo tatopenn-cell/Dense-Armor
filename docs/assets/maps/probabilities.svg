@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 754" width="100%" role="img" aria-label="The map of probabilities">
+<style>text{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif}.m{font-family:ui-monospace,Menlo,Consolas,monospace}.e{opacity:.32;transition:opacity .15s}.net:hover .e{opacity:.06}.net .pg:hover .e{opacity:1;stroke-width:2.2}a:hover .card{fill:#17303f;stroke-width:2.4}a:hover text.dn{fill:#ffffff}.back:hover .card{fill:#17303f}</style>
+<rect width="1000" height="754" fill="#0d131a" rx="14"/>
+<text x="500" y="38" fill="#e0fbfc" font-size="24" font-weight="700" text-anchor="middle">THE MAP OF PROBABILITIES</text>
+<text x="500" y="62" fill="#4cc9f0" font-size="12.5" text-anchor="middle">log loss and Brier score — click a page to open it</text>
+<a class="back" href="../../../metrics/index.md" target="_top"><title>back to the map of metrics</title><rect class="card" x="20" y="14" width="150" height="30" rx="15" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="95" y="33.5" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">← map of metrics</text></a>
+<text x="24" y="98" fill="#f72585" font-size="12" font-weight="700">01  INDEX</text>
+<text x="410" y="98" fill="#f72585" font-size="12" font-weight="700">02  PAGES</text>
+<text x="680" y="98" fill="#f72585" font-size="12" font-weight="700">03  CLASSES</text>
+
+<!-- Index page -->
+<g class="net">
+  <a class="pg" href="index.md" target="_self">
+    <rect class="card" x="80" y="130" width="260" height="90" rx="15" fill="#101a24" stroke="#4cc9f0" stroke-width="2"/>
+    <text x="210" y="165" fill="#e0fbfc" font-size="18" font-weight="700" text-anchor="middle">index</text>
+    <text x="210" y="190" fill="#94a3b8" font-size="11" text-anchor="middle">probabilities/index.md</text>
+    <rect class="e" x="90" y="205" width="40" height="20" rx="8" fill="#4cc9f0"/>
+    <rect class="e" x="140" y="205" width="40" height="20" rx="8" fill="#4cc9f0"/>
+    <rect class="e" x="190" y="205" width="40" height="20" rx="8" fill="#4cc9f0"/>
+  </a>
+</g>
+
+<!-- Log loss page -->
+<g class="net">
+  <a class="pg" href="log_loss.md" target="_self">
+    <rect class="card" x="400" y="130" width="260" height="90" rx="15" fill="#101a24" stroke="#f72585" stroke-width="2"/>
+    <text x="530" y="165" fill="#e0fbfc" font-size="18" font-weight="700" text-anchor="middle">log_loss</text>
+    <text x="530" y="190" fill="#94a3b8" font-size="11" text-anchor="middle">probabilities/log_loss.md</text>
+    <rect class="e" x="410" y="205" width="45" height="20" rx="8" fill="#f72585"/>
+    <rect class="e" x="460" y="205" width="35" height="20" rx="8" fill="#f72585"/>
+    <rect class="e" x="500" y="205" width="40" height="20" rx="8" fill="#f72585"/>
+  </a>
+</g>
+
+<!-- Brier score page -->
+<g class="net">
+  <a class="pg" href="brier_score.md" target="_self">
+    <rect class="card" x="400" y="280" width="260" height="90" rx="15" fill="#101a24" stroke="#f72585" stroke-width="2"/>
+    <text x="530" y="315" fill="#e0fbfc" font-size="18" font-weight="700" text-anchor="middle">brier_score</text>
+    <text x="530" y="340" fill="#94a3b8" font-size="11" text-anchor="middle">probabilities/brier_score.md</text>
+    <rect class="e" x="410" y="355" width="45" height="20" rx="8" fill="#f72585"/>
+    <rect class="e" x="460" y="355" width="35" height="20" rx="8" fill="#f72585"/>
+    <rect class="e" x="500" y="355" width="40" height="20" rx="8" fill="#f72585"/>
+  </a>
+</g>
+
+<!-- How it works page -->
+<g class="net">
+  <a class="pg" href="how_it_works.md" target="_self">
+    <rect class="card" x="400" y="430" width="260" height="90" rx="15" fill="#101a24" stroke="#f72585" stroke-width="2"/>
+    <text x="530" y="465" fill="#e0fbfc" font-size="18" font-weight="700" text-anchor="middle">how_it_works</text>
+    <text x="530" y="490" fill="#94a3b8" font-size="11" text-anchor="middle">probabilities/how_it_works.md</text>
+    <rect class="e" x="410" y="505" width="45" height="20" rx="8" fill="#f72585"/>
+    <rect class="e" x="460" y="505" width="35" height="20" rx="8" fill="#f72585"/>
+    <rect class="e" x="500" y="505" width="40" height="20" rx="8" fill="#f72585"/>
+  </a>
+</g>
+</svg>

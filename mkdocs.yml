@@ -196,7 +196,11 @@ nav:
           - Precision, recall and F1: metrics/classification/precision_recall_f1.md
           - Confusion matrix and balanced accuracy: metrics/classification/confusion_matrix.md
           - Cohen's kappa: metrics/classification/kappa.md
-      - Probabilities: metrics/probabilities.md
+      - Probabilities:
+          - metrics/probabilities/index.md
+          - Log loss: metrics/probabilities/log_loss.md
+          - Brier score: metrics/probabilities/brier_score.md
+          - How it works: metrics/probabilities/how_it_works.md
       - Regression: metrics/regression.md
       - Uncertainty: metrics/uncertainty.md
       - On a stream: metrics/stream.md
