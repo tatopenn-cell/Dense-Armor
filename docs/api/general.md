@@ -2353,7 +2353,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.ensemble.ewa`
 *Bases:* Regressor
-*Guide:* [ensemble/index.md](../ensemble/index.md)
+*Guide:* [ensemble/ewa.md](../ensemble/ewa.md)
 
 Weighted average of regressors with the Hedge rule (Freund and Schapire 1997).
 
@@ -2379,7 +2379,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.ensemble.bagging`
 *Bases:* Classifier
-*Guide:* [ensemble/index.md](../ensemble/index.md)
+*Guide:* [ensemble/bagging.md](../ensemble/bagging.md)
 
 Bagging of online classifiers with a Poisson(1) resample (Oza and Russell 2001).
 
@@ -2407,7 +2407,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.ensemble.boosting`
 *Bases:* Classifier
-*Guide:* [ensemble/index.md](../ensemble/index.md)
+*Guide:* [ensemble/boosting.md](../ensemble/boosting.md)
 
 Online AdaBoost with a Poisson resample and sample weights (Oza and Russell 2001, Section 3).
 
@@ -2434,7 +2434,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.ensemble.stacking`
 *Bases:* Classifier
-*Guide:* [ensemble/index.md](../ensemble/index.md)
+*Guide:* [ensemble/stacking.md](../ensemble/stacking.md)
 
 Stacking of a meta-model on top of a list of base classifiers.
 
@@ -2461,7 +2461,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.ensemble.voting`
 *Bases:* Classifier
-*Guide:* [ensemble/index.md](../ensemble/index.md)
+*Guide:* [ensemble/voting.md](../ensemble/voting.md)
 
 Hard vote or mean of probabilities over a fixed list of classifiers.
 
