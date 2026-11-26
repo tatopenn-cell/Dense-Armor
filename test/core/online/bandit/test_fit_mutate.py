@@ -88,3 +88,15 @@ def test_mutate_leaves_the_rest_alone():
 @pytest.mark.parametrize("policy", _policies(), ids=lambda p: type(p).__name__)
 def test_mutate_is_idempotent_for_every_policy(policy):
     check_mutate_idempotent(policy)
+
+
+def test_set_params_checks_the_mutable_settings_and_changes_nothing_on_error():
+    p = EpsilonGreedy(ARMS, epsilon=0.1, seed=0)
+    with pytest.raises(ValueError, match="epsilon"):
+        p.set_params(epsilon=5)
+    assert p.epsilon == 0.1
+    assert p.set_params(epsilon=0.3).epsilon == 0.3
+    a = LinUCBDisjoint(ARMS, alpha=0.3)
+    with pytest.raises(ValueError, match="alpha"):
+        a.set_params(alpha=0.0)
+    assert a.alpha == 0.3

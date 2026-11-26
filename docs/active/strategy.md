@@ -98,7 +98,7 @@ except ValueError as e:
 budget must be in (0, 1] 0.3
 ```
 
-`set_params(budget=0.2)` changes the budget to 0.2. `mutate` changes, in place and after the same check as the constructor, the settings that the strategy reads at every decision: the `budget` of every strategy, the `theta` of `FixedUncertainty`, the step `s` of the variable strategies and the `delta` of the randomised one. `mutate({"budget": 0.3})` sets 0.3, and `mutate({"budget": 0.0})` is refused as the constructor refuses it, so the budget stays 0.3. The names that are not mutable, such as `seed` or the counts, are left alone and nothing raises.
+`set_params(budget=0.2)` changes the budget to 0.2, and it checks the settings that `mutate` may change in the same way. `mutate` changes, in place and after the same check as the constructor, the settings that the strategy reads at every decision: the `budget` of every strategy, the `theta` of `FixedUncertainty`, the step `s` of the variable strategies and the `delta` of the randomised one. `mutate({"budget": 0.3})` sets 0.3, and `mutate({"budget": 0.0})` is refused as the constructor refuses it, so the budget stays 0.3. The names that are not mutable, such as `seed` or the counts, are left alone and nothing raises.
 
 ## 4. Save and copy
 
@@ -229,5 +229,5 @@ print(strategy.n_seen_, strategy.n_labelled_)
 ### Choices
 
 - **What is shown here is the behaviour of the code:** the outputs above are printed by the examples, not stated from the docstrings.
-- **`fit` and `mutate` share a base with the bandit policies:** `ActiveStrategy` comes from `_PullPolicy`, the same base as `BanditPolicy`, `LinUCBDisjoint` and `RobotKpSelector`. Before pull request 480 `fit` failed with "has no learn_one", an accident of inheriting `Root.fit`, and `mutate` changed nothing because no class declared a mutable setting.
+- **`fit` and `mutate` share a base with the bandit policies:** `ActiveStrategy` comes from `_PullPolicy`, the same base as `BanditPolicy`, `LinUCBDisjoint` and `RobotKpSelector`. Before pull request 483 `set_params` accepted a budget outside `(0, 1]`. Before pull request 480 `fit` failed with "has no learn_one", an accident of inheriting `Root.fit`, and `mutate` changed nothing because no class declared a mutable setting.
 - **The figures** are drawn with the library by `docs/assets/active/make_active_figures.py` on the stream of the first page.

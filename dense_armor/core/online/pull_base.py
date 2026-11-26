@@ -62,6 +62,31 @@ class _PullPolicy(Root):
         super().mutate(clean)
         return self
 
+    def set_params(self, **params: Any) -> "_PullPolicy":
+        """Set hyper-parameters in place, checking the mutable ones.
+
+        The names a class lists in ``_mutable_attributes`` are checked as in
+        the constructor before anything is set, so a value that does not pass
+        raises ``ValueError`` and nothing changes. The other names are set as
+        in ``Root.set_params``.
+
+        Args:
+            **params: the parameters to set.
+
+        Returns:
+            The object itself.
+
+        Raises:
+            ValueError: if a mutable setting gets a value that the
+                constructor would refuse, or a name is not a parameter.
+        """
+        checked = {
+            name: self._check_setting(name, value) if name in self._mutable_attributes else value
+            for name, value in params.items()
+        }
+        super().set_params(**checked)
+        return self
+
     def _check_setting(self, name: str, value: Any) -> Any:
         """Check the new value of a mutable setting and return the value to store."""
         return value
