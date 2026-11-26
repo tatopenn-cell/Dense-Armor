@@ -6,12 +6,6 @@ Coverage alone can be cheated: an interval from minus infinity to plus infinity 
 
 ![The running MeanIntervalWidth of bands of k times the recent volatility on the daily returns of a stock index, for 25 values of k from 0.5 to 3.](../../assets/metrics/uncertainty_width_3d.png)
 
-The picture follows the same 300 days of returns of a stock index, 140 calm days and then 160 stormy ones, for 25 bands from −k to +k times the standard deviation s of the 20 days before. Each point of the surface is the `MeanIntervalWidth` after that many days. After 300 days the width reads 0.0202 for k = 1.02, 0.0326 for k = 1.65 and 0.0594 for k = 3.0: it grows with k, and it jumps when the stormy days start.
-
-| class | what it does |
-|---|---|
-| `MeanIntervalWidth` | the mean of the width `hi - lo` of the interval |
-
 ## 1. A first example: the daily return of a stock index
 
 A risk desk quotes the band from −0.015 to 0.015 for six days.
@@ -35,6 +29,12 @@ Count by hand. Every day the width is 0.015 − (−0.015) = 0.03, so the mean o
 ![Stock index: the running MeanIntervalWidth of the bands of k times the recent volatility over 250 days.](../../assets/metrics/uncertainty_width_finance.png)
 
 On the first 250 of the 300 days the band k = 1 reads 0.0091 after 10 days, 0.0089 after 50, 0.0087 after 100 and 0.018 after 250. The band k = 1.645 reads 0.015, 0.0147, 0.0143 and 0.0296, and the band k = 3 reads 0.0273, 0.0268, 0.0261 and 0.054. The width doubles once the stormy days start, because the bands follow the recent volatility.
+
+The picture follows the same 300 days of returns of a stock index, 140 calm days and then 160 stormy ones, for 25 bands from −k to +k times the standard deviation s of the 20 days before. Each point of the surface is the `MeanIntervalWidth` after that many days. After 300 days the width reads 0.0202 for k = 1.02, 0.0326 for k = 1.65 and 0.0594 for k = 3.0: it grows with k, and it jumps when the stormy days start.
+
+| class | what it does |
+|---|---|
+| `MeanIntervalWidth` | the mean of the width `hi - lo` of the interval |
 
 ## 2. What the metric keeps
 

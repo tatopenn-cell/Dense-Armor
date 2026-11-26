@@ -115,7 +115,7 @@ def progressive_val_score(
             ``delay`` is negative, or if ``delay`` is in seconds and a
             sample has no timestamp.
 
-    Example:
+    Examples:
         >>> from dense_armor.core.evaluation.evaluate import progressive_val_score
         >>> from dense_armor.core.evaluation.metrics import Accuracy
         >>> class LastValue:
@@ -182,6 +182,20 @@ def progressive_val_proba_score(
         ValueError: if ``every`` is given and is not positive, if
             ``delay`` is negative, or if ``delay`` is in seconds and a
             sample has no timestamp.
+
+    Examples:
+        >>> from dense_armor.core.evaluation.evaluate import progressive_val_proba_score
+        >>> from dense_armor.core.evaluation.metrics import LogLoss
+        >>> class Quote:
+        ...     def learn_one(self, x, y, t=None):
+        ...         return self
+        ...     def predict_proba_one(self, x, t=None):
+        ...         return {1: 0.2, 0: 0.8}
+        >>> bond_default = [0, 1, 0, 0, 1]
+        >>> stream = [({}, y) for y in bond_default]
+        >>> m = progressive_val_proba_score(stream, Quote(), LogLoss())
+        >>> round(m.get(), 4)
+        0.7777
     """
     _check_delay(delay)
     if every is not None and every < 1:

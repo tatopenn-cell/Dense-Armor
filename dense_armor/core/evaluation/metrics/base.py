@@ -47,6 +47,15 @@ class Metric:
         supports_revert: ``False`` for a metric that cannot undo one
             ``update`` (``R2Score``, ``RollingAUC``); ``Rolling`` refuses
             such a metric when it is built.
+
+    Examples:
+        >>> from dense_armor.core.evaluation.metrics import Accuracy
+        >>> stock_up = [1, 1, 0, 1, 0, 0, 1, 1]
+        >>> m = Accuracy()
+        >>> for today, tomorrow in zip(stock_up[:-1], stock_up[1:]):
+        ...     _ = m.update(tomorrow, today)
+        >>> round(m.get(), 3), m.n
+        (0.429, 7)
     """
 
     role_: Any = None

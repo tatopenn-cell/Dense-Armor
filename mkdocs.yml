@@ -216,7 +216,13 @@ nav:
           - Rolling AUC: metrics/stream/rolling_auc.md
           - Predict, then learn: metrics/stream/predict_then_learn.md
           - Choosing a model: metrics/stream/model_selection.md
-      - Events: metrics/events.md
+      - Events:
+          - metrics/events/index.md
+          - Delay and false alarms: metrics/events/delays.md
+          - Range precision and recall: metrics/events/range.md
+          - The NAB score: metrics/events/nab.md
+          - A detector on a stream: metrics/events/evaluate_events.md
+          - Point-adjusted F1: metrics/events/point_adjusted_f1.md
   - Signals:
       - signals/index.md
       - Streams:

@@ -6,12 +6,6 @@ The mean absolute error is the average size of the miss, in the units of the num
 
 ![The running MAE of a forecast of the daily returns of a stock index, for 25 sizes of forecast noise from 0.1 to 1.4.](../../assets/metrics/regression_mae_3d.png)
 
-The picture follows the same 300 daily returns (in percent) of a stock index for 25 forecasts, each the true return plus a noise of a different size. Each point of the surface is the `MeanAbsoluteError` after that many days. After 300 days the MAE reads 0.089 for the noise 0.1, 0.426 for 0.48, 0.908 for 1.02 and 1.245 for 1.4: it grows with the size of the noise, and it needs a few dozen days to settle.
-
-| class | what it does |
-|---|---|
-| `MeanAbsoluteError` | the mean of the absolute miss, one sample at a time |
-
 ## 1. A first example: forecasting a stock price
 
 Six daily prices make five pairs. The forecast of each day is the price of the day before.
@@ -35,6 +29,12 @@ Count by hand. The pairs (what happened, forecast) are (101, 100), (99.5, 101), 
 ![A stock price over 250 trading days: the running MAE of the forecast "tomorrow equals today".](../../assets/metrics/regression_mae_finance.png)
 
 On 250 trading days of a price that moves by about 1 each day, the same forecast reads 1.0 after 10 pairs, 0.806 after 50, 0.771 after 100 and 0.826 after 250.
+
+The picture follows the same 300 daily returns (in percent) of a stock index for 25 forecasts, each the true return plus a noise of a different size. Each point of the surface is the `MeanAbsoluteError` after that many days. After 300 days the MAE reads 0.089 for the noise 0.1, 0.426 for 0.48, 0.908 for 1.02 and 1.245 for 1.4: it grows with the size of the noise, and it needs a few dozen days to settle.
+
+| class | what it does |
+|---|---|
+| `MeanAbsoluteError` | the mean of the absolute miss, one sample at a time |
 
 ## 2. What the metric keeps
 

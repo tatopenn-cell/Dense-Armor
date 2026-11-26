@@ -6,13 +6,6 @@ When crashes are rare, an alarm that never rings is right almost every day, and 
 
 ![The running Accuracy and BalancedAccuracy of a model that never flags a crash, for crash shares from 1% to 50%.](../../assets/metrics/confusion_matrix_3d.png)
 
-The picture follows the same 300 trading days for 25 crash shares between 1% and 50%, with a model that never flags a crash. The cyan surface is the `Accuracy`, the pink one the `BalancedAccuracy`. After 300 days the accuracy reads 0.99 when 1% of the days are crashes, 0.937 at 10% and 0.537 at 50%; the balanced accuracy reads 0.5 in all three cases.
-
-| class | what it does |
-|---|---|
-| `ConfusionMatrix` | counts every (true class, predicted class) pair |
-| `BalancedAccuracy` | the mean of the recall of each class |
-
 ## 1. A first example: the same alarm, counted in full
 
 Ten trading days: 1 is a crash day and 0 is a normal day, and the alarm rings (1) or stays quiet (0).
@@ -60,6 +53,13 @@ print(acc.get(), bal.get())
 ```
 
 The accuracy is 7/10 = 0.7 because 7 days are normal. The recall of the normal days is 1.0 and the recall of the crash days is 0.0, so the balanced accuracy is 0.5: the score of a model that knows nothing.
+
+The picture follows the same 300 trading days for 25 crash shares between 1% and 50%, with a model that never flags a crash. The cyan surface is the `Accuracy`, the pink one the `BalancedAccuracy`. After 300 days the accuracy reads 0.99 when 1% of the days are crashes, 0.937 at 10% and 0.537 at 50%; the balanced accuracy reads 0.5 in all three cases.
+
+| class | what it does |
+|---|---|
+| `ConfusionMatrix` | counts every (true class, predicted class) pair |
+| `BalancedAccuracy` | the mean of the recall of each class |
 
 ## 2. What the metric keeps
 

@@ -6,12 +6,6 @@ An interval is a promise: "the truth will be in here". Coverage is how often the
 
 ![The running IntervalCoverage of bands of k times the recent volatility on the daily returns of a stock index, for 25 values of k from 0.5 to 3.](../../assets/metrics/uncertainty_coverage_3d.png)
 
-The picture follows the same 300 days of returns of a stock index, 140 calm days and then 160 stormy ones, for 25 bands. The band of each day goes from −k to +k times the standard deviation s of the 20 days before. Each point of the surface is the `IntervalCoverage` after that many days. After 300 days the coverage reads 0.62 for k = 1.02, 0.87 for k = 1.65 and 0.9867 for k = 3.0: it grows with the size of the band.
-
-| class | what it does |
-|---|---|
-| `IntervalCoverage` | the share of days when the true value is inside the interval |
-
 ## 1. A first example: the daily return of a stock index
 
 A risk desk quotes the band from −0.015 to 0.015 for six days, and then the true returns are known.
@@ -35,6 +29,12 @@ Count by hand. The returns 0.004, −0.012, 0.008 and −0.003 are between −0.
 ![Stock index: the running IntervalCoverage of the bands of k times the recent volatility over 250 days, against the target 0.9.](../../assets/metrics/uncertainty_coverage_finance.png)
 
 On the first 250 of the 300 days the band k = 1 reads 0.9 after 10 days, 0.66 after 50, 0.61 after 100 and 0.592 after 250. The band k = 1.645, which would cover 90% of the days if the returns were Gaussian with the volatility of the day before, reads 0.9, 0.84, 0.86 and 0.86: below the dashed target of 0.9 because the volatility changes after day 140. The band k = 3 reads 1.0 after 100 days and 0.984 after 250.
+
+The picture follows the same 300 days of returns of a stock index, 140 calm days and then 160 stormy ones, for 25 bands. The band of each day goes from −k to +k times the standard deviation s of the 20 days before. Each point of the surface is the `IntervalCoverage` after that many days. After 300 days the coverage reads 0.62 for k = 1.02, 0.87 for k = 1.65 and 0.9867 for k = 3.0: it grows with the size of the band.
+
+| class | what it does |
+|---|---|
+| `IntervalCoverage` | the share of days when the true value is inside the interval |
 
 ## 2. What the metric keeps
 

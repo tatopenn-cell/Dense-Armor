@@ -64,6 +64,12 @@ class EventWindow:
 
     Raises:
         ValueError: if ``end < start``.
+
+    Examples:
+        >>> from dense_armor.core.evaluation.metrics import EventWindow
+        >>> w = EventWindow(start=10.0, end=20.0)
+        >>> w.contains(15.0), w.n_points(1.0)
+        (True, 11)
     """
 
     start: float
@@ -184,6 +190,14 @@ class EventMetrics:
     Raises:
         ValueError: on a bad bias, an empty ``events``, or out-of-range
             weights.
+
+    Examples:
+        >>> from dense_armor.core.evaluation.metrics import EventMetrics
+        >>> m = EventMetrics([(10.0, 20.0), (40.0, 45.0)], dt=0.5, normal_time_s=3600.0)
+        >>> for t in (5.0, 12.0, 12.5, 30.0):
+        ...     _ = m.add_alarm(t)
+        >>> m.detection_delays_s(), m.missed_events(), m.false_alarms()
+        ([2.0, None], 1, 2)
     """
 
     def __init__(
@@ -493,6 +507,16 @@ class PointAdjustedF1(Metric):
         positive: the label treated as the positive class.
         warn: whether to emit a ``UserWarning`` the first time the
             metric is scored. Default ``True``.
+
+    Examples:
+        >>> from dense_armor.core.evaluation.metrics import PointAdjustedF1
+        >>> crash = [0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1]
+        >>> flag = [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+        >>> m = PointAdjustedF1(positive=1, warn=False)
+        >>> for a, b in zip(crash, flag):
+        ...     _ = m.update(a, b)
+        >>> round(m.get(), 3)
+        0.667
 
     References:
         Xu, H. et al. (2018). In WWW.

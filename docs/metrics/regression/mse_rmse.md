@@ -6,13 +6,6 @@ The mean squared error squares each miss before it takes the mean, so a miss of 
 
 ![The running MSE and RMSE of a forecast of the daily returns of a stock index, for 25 sizes of forecast noise from 0.1 to 1.4.](../../assets/metrics/regression_mse_rmse_3d.png)
 
-The picture follows the same 300 daily returns (in percent) of a stock index for 25 forecasts, each the true return plus a noise of a different size. The cyan surface is the `MeanSquaredError`, the pink one the `RootMeanSquaredError`. After 300 days the MSE reads 0.012, 0.285, 1.294 and 2.434 for the noise 0.1, 0.48, 1.02 and 1.4, and the RMSE reads 0.111, 0.534, 1.137 and 1.56. Below 1 the square makes the MSE smaller than the RMSE, above 1 larger.
-
-| class | what it does |
-|---|---|
-| `MeanSquaredError` | the mean of the squared miss |
-| `RootMeanSquaredError` | the square root of the mean squared error |
-
 ## 1. A first example: forecasting a stock price
 
 Six daily prices make five pairs. The forecast of each day is the price of the day before.
@@ -37,6 +30,13 @@ Count by hand. The misses are 1.0, 1.5, 2.5, 1.5 and 1.0, so their squares are 1
 ![A stock price over 250 trading days: the running MSE and RMSE of the forecast "tomorrow equals today".](../../assets/metrics/regression_mse_rmse_finance.png)
 
 On 250 trading days of a price that moves by about 1 each day, the same forecast reads MSE 1.564 and RMSE 1.251 after 10 pairs, 1.015 and 1.007 after 50, 0.891 and 0.944 after 100, and 1.042 and 1.021 after 250.
+
+The picture follows the same 300 daily returns (in percent) of a stock index for 25 forecasts, each the true return plus a noise of a different size. The cyan surface is the `MeanSquaredError`, the pink one the `RootMeanSquaredError`. After 300 days the MSE reads 0.012, 0.285, 1.294 and 2.434 for the noise 0.1, 0.48, 1.02 and 1.4, and the RMSE reads 0.111, 0.534, 1.137 and 1.56. Below 1 the square makes the MSE smaller than the RMSE, above 1 larger.
+
+| class | what it does |
+|---|---|
+| `MeanSquaredError` | the mean of the squared miss |
+| `RootMeanSquaredError` | the square root of the mean squared error |
 
 ## 2. What the metric keeps
 

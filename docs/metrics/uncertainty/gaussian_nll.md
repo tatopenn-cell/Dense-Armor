@@ -6,12 +6,6 @@ When a model says "tomorrow's return will be 0%, give or take 1%" it gives a mea
 
 ![The running GaussianNLL of a forecast with standard deviation m times the recent volatility on the daily returns of a stock index, for 25 values of m from 0.5 to 3.](../../assets/metrics/uncertainty_gaussian_nll_3d.png)
 
-The picture follows the same 300 days of returns of a stock index, 140 calm days and then 160 stormy ones, for 25 forecasts with mean 0 and a standard deviation of m times the standard deviation of the 20 days before. Each point of the surface is the `GaussianNLL` after that many days. After 300 days the score reads −3.2568 for m = 1.02, −3.1462 for m = 1.65 and −2.7063 for m = 3.0, and the lowest of the 25 is −3.265 for m = 1.125: a forecast that quotes about the real volatility scores best.
-
-| class | what it does |
-|---|---|
-| `GaussianNLL` | the mean of the negative log of the Gaussian density at the true value |
-
 ## 1. A first example: the daily return of a stock index
 
 Six days of returns are scored against a forecast with mean 0 and variance 0.0001, a standard deviation of 1%.
@@ -37,6 +31,12 @@ With the same returns, a forecast that is too sure (variance 0.000004, a standar
 ![Stock index: the running GaussianNLL of a forecast with a standard deviation of m times the recent volatility over 250 days.](../../assets/metrics/uncertainty_gaussian_nll_finance.png)
 
 On the first 250 of the 300 days the forecast m = 1 reads −4.0611 after 10 days, −3.9691 after 50, −3.9548 after 100 and −3.3252 after 250. The forecast m = 0.5 (too sure) reads −3.5179, −3.0797, −2.9474 and −2.0446, and the forecast m = 2 (too vague) reads −3.6771, −3.6716, −3.6868 and −3.1254. All three get worse when the stormy days start, but the honest one stays the lowest.
+
+The picture follows the same 300 days of returns of a stock index, 140 calm days and then 160 stormy ones, for 25 forecasts with mean 0 and a standard deviation of m times the standard deviation of the 20 days before. Each point of the surface is the `GaussianNLL` after that many days. After 300 days the score reads −3.2568 for m = 1.02, −3.1462 for m = 1.65 and −2.7063 for m = 3.0, and the lowest of the 25 is −3.265 for m = 1.125: a forecast that quotes about the real volatility scores best.
+
+| class | what it does |
+|---|---|
+| `GaussianNLL` | the mean of the negative log of the Gaussian density at the true value |
 
 ## 2. What the metric keeps
 

@@ -6,16 +6,6 @@ An alarm says "a crash is coming" or says nothing. Precision tells how often the
 
 ![The running F1 of a crash alarm on a stock index for 25 alarm thresholds: it jumps for a few dozen days and then settles.](../../assets/metrics/f1_3d.png)
 
-The picture follows the same 400 trading days for 25 alarms that ring when a score passes a threshold between 0 and 3. Each point of the surface is the `F1` after that many days. After 400 days the alarm with threshold 1.62 reads 0.553, the best of the 25; the alarm that rings every day (threshold 0.0) reads 0.315, and the alarm that almost never rings (threshold 3.0) reads 0.12.
-
-| class | what it does |
-|---|---|
-| `Precision` | of the days the alarm rang, the share that really were crashes |
-| `Recall` | of the crash days, the share the alarm caught |
-| `F1` | the harmonic mean of precision and recall |
-| `FBeta` | the same mean with a weight `beta` on recall |
-| `Accuracy` | the share of right answers, the metric of the page before this one |
-
 ## 1. A first example: an alarm for the crash days of a stock index
 
 Ten trading days: 1 is a crash day and 0 is a normal day. The alarm rings (1) or stays quiet (0).
@@ -41,6 +31,16 @@ Count by hand. The alarm rang on days 2, 3, 6 and 8. On days 3 and 6 there was a
 ![A stock index over 250 trading days: the running Precision, Recall and F1 of a crash alarm at threshold 1.0.](../../assets/metrics/f1_finance.png)
 
 On 250 trading days with 18 crash days the same kind of alarm rang 55 times. After 250 days the precision reads 0.236, the recall 0.722 and the F1 0.356: the alarm catches most crashes, but most of its rings are false.
+
+The picture follows the same 400 trading days for 25 alarms that ring when a score passes a threshold between 0 and 3. Each point of the surface is the `F1` after that many days. After 400 days the alarm with threshold 1.62 reads 0.553, the best of the 25; the alarm that rings every day (threshold 0.0) reads 0.315, and the alarm that almost never rings (threshold 3.0) reads 0.12.
+
+| class | what it does |
+|---|---|
+| `Precision` | of the days the alarm rang, the share that really were crashes |
+| `Recall` | of the crash days, the share the alarm caught |
+| `F1` | the harmonic mean of precision and recall |
+| `FBeta` | the same mean with a weight `beta` on recall |
+| `Accuracy` | the share of right answers, the metric of the page before this one |
 
 ## 2. What the metric keeps
 

@@ -6,12 +6,6 @@ A trading model quotes the default probability of a corporate bond. Log loss tel
 
 ![The running LogLoss of a constant quoted default probability for 25 quotes from 1% to 30%: the surface is lowest near the real default rate.](../../assets/metrics/probabilities_log_loss_3d.png)
 
-The picture follows the same 300 bonds, each defaulting with probability 5% (24 of them defaulted), for 25 constant quotes between 1% and 30%. Each point of the surface is the `LogLoss` after that many bonds. After 300 bonds the best quote is 0.082 and reads 0.2788, close to the share of bonds that defaulted (24/300 = 0.08); the quote of 1% reads 0.3777 and the quote of 30% reads 0.4245.
-
-| class | what it does |
-|---|---|
-| `LogLoss` | the mean of $-\ln$ of the probability given to what happened |
-
 ## 1. A first example: the default probability of a bond
 
 Five bonds are quoted, and then we learn which ones defaulted: 1 is a default and 0 is no default.
@@ -36,6 +30,12 @@ Count by hand. The probability given to what happened is 0.95, 0.20, 0.97, 0.98 
 ![Bonds that default 5% of the time: the running LogLoss of three quotes over 250 bonds.](../../assets/metrics/probabilities_log_loss_finance.png)
 
 On 250 bonds, 8 of them defaulted. The honest quote of 5% reads 0.1455 after 250 bonds, the quote of 0.5% (too sure) reads 0.1744 and the quote of 50% (a model that knows nothing) reads 0.6931, which is $\ln 2$.
+
+The picture follows the same 300 bonds, each defaulting with probability 5% (24 of them defaulted), for 25 constant quotes between 1% and 30%. Each point of the surface is the `LogLoss` after that many bonds. After 300 bonds the best quote is 0.082 and reads 0.2788, close to the share of bonds that defaulted (24/300 = 0.08); the quote of 1% reads 0.3777 and the quote of 30% reads 0.4245.
+
+| class | what it does |
+|---|---|
+| `LogLoss` | the mean of $-\ln$ of the probability given to what happened |
 
 ## 2. What the metric keeps
 

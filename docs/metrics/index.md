@@ -22,6 +22,6 @@ The power is in the update: every time a new pair arrives, the metric adjusts it
 4. [Regression](regression/index.md): MAE, MSE, RMSE, R², interval metrics for uncertainty
 5. [Uncertainty](uncertainty/index.md): interval coverage, mean interval width, Gaussian NLL
 6. [Stream](stream/index.md): rolling windows, ROC AUC for streaming evaluation
-7. [Events](events.md): detection delay, false alarms, NAB score for anomaly detection
+7. [Events](events/index.md): detection delay, false alarms, NAB score for anomaly detection
 
 In the end, what are the metrics (Metric, Accuracy, F1, LogLoss, MeanAbsoluteError, Rolling, EventMetrics)? They are super-light tools that calculate and update in real time the score of a predictive model one prediction at a time, in fixed memory, without ever having to keep the whole pile of past predictions.

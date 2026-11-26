@@ -6,13 +6,6 @@ Which of several models is better today? `best_of` runs the models on the same s
 
 ![The running accuracy of 25 forecasters that say up when a noisy signal passes a threshold c, for thresholds from -1.2 to 1.2.](../../assets/metrics/model_selection_3d.png)
 
-The picture follows 300 days of a stock index. A noisy signal (the true return plus a noise of 0.7) is available each day, and 25 forecasters say "up" when the signal is above a threshold c between −1.2 and 1.2. Each point of the surface is the running accuracy of one forecaster after that many days. At day 300 the best forecaster is the one with the threshold 0.0 and it reads 0.813, while the threshold −1.2 reads 0.643 and the threshold 1.2 reads 0.683.
-
-| class or function | what it does |
-|---|---|
-| `best_of` | runs several models on a stream and returns the selection |
-| `OnlineModelSelection` | tracks several models on a stream and exposes the current best |
-
 ## 1. A first example: two forecasts of a stock index
 
 Ten days of the direction of a stock index, 1 for up and 0 for down. Two models: one says the last direction it knows, the other says always up.
@@ -57,6 +50,13 @@ Count by hand. The model that says the last direction is right on 5 days out of 
 ![Three forecasters on the same stock index over 250 days: the running accuracy of the thresholds -1, 0 and 1.](../../assets/metrics/model_selection_finance.png)
 
 On 250 days the forecaster with the threshold −1.0 reads 0.69 at day 100 and 0.684 at day 250, the one with the threshold 0.0 reads 0.81 and 0.816, and the one with the threshold 1.0 reads 0.71 and 0.728: the threshold 0.0 is ahead at both days.
+
+The picture follows 300 days of a stock index. A noisy signal (the true return plus a noise of 0.7) is available each day, and 25 forecasters say "up" when the signal is above a threshold c between −1.2 and 1.2. Each point of the surface is the running accuracy of one forecaster after that many days. At day 300 the best forecaster is the one with the threshold 0.0 and it reads 0.813, while the threshold −1.2 reads 0.643 and the threshold 1.2 reads 0.683.
+
+| class or function | what it does |
+|---|---|
+| `best_of` | runs several models on a stream and returns the selection |
+| `OnlineModelSelection` | tracks several models on a stream and exposes the current best |
 
 ## 2. What the selection keeps
 

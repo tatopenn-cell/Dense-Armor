@@ -29,6 +29,29 @@ class OnlineModelSelection:
 
     Raises:
         ValueError: if ``models`` is empty.
+
+    Examples:
+        >>> from dense_armor.core.evaluation.evaluate import OnlineModelSelection
+        >>> from dense_armor.core.evaluation.metrics import Accuracy
+        >>> class LastValue:
+        ...     def __init__(self):
+        ...         self.last = 0
+        ...     def learn_one(self, x, y, t=None):
+        ...         self.last = y
+        ...         return self
+        ...     def predict_one(self, x, t=None):
+        ...         return self.last
+        >>> class AlwaysUp:
+        ...     def learn_one(self, x, y, t=None):
+        ...         return self
+        ...     def predict_one(self, x, t=None):
+        ...         return 1
+        >>> stock_up = [1, 1, 0, 1, 0, 0, 1, 1, 1, 1]
+        >>> stream = [({}, y) for y in stock_up]
+        >>> sel = OnlineModelSelection([LastValue(), AlwaysUp()], Accuracy)
+        >>> _ = sel.run(stream)
+        >>> [round(v, 3) for v in sel.scores()], sel.current_best()
+        ([0.5, 0.7], 1)
     """
 
     def __init__(
@@ -112,6 +135,28 @@ def best_of(
 
     Returns:
         The :class:`OnlineModelSelection`.
+
+    Examples:
+        >>> from dense_armor.core.evaluation.evaluate import best_of
+        >>> from dense_armor.core.evaluation.metrics import Accuracy
+        >>> class LastValue:
+        ...     def __init__(self):
+        ...         self.last = 0
+        ...     def learn_one(self, x, y, t=None):
+        ...         self.last = y
+        ...         return self
+        ...     def predict_one(self, x, t=None):
+        ...         return self.last
+        >>> class AlwaysUp:
+        ...     def learn_one(self, x, y, t=None):
+        ...         return self
+        ...     def predict_one(self, x, t=None):
+        ...         return 1
+        >>> stock_up = [1, 1, 0, 1, 0, 0, 1, 1, 1, 1]
+        >>> stream = [({}, y) for y in stock_up]
+        >>> sel = best_of([LastValue(), AlwaysUp()], Accuracy, stream=stream)
+        >>> [round(v, 3) for v in sel.scores()], sel.current_best()
+        ([0.5, 0.7], 1)
     """
     sel = OnlineModelSelection(models, metric_factory, delay=delay)
     if stream is not None:

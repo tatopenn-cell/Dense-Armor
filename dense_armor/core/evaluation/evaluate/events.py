@@ -78,7 +78,7 @@ def evaluate_events(
         TypeError: if the detector exposes neither interface.
         ValueError: if an anomaly detector has no ``score_threshold``.
 
-    Example:
+    Examples:
         >>> from dense_armor.core.evaluation.evaluate import evaluate_events
         >>> class TriggerAt:
         ...     def __init__(self, at):
