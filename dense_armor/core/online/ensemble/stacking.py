@@ -64,7 +64,7 @@ class StackingClassifier(Classifier):
     budget_s = 5e-3
     memory_class = "O(n_models * window)"
 
-    def __init__(self, models, meta_model) -> None:
+    def __init__(self, models: Any, meta_model: Any) -> None:
         if not models:
             raise ValueError("models must not be empty")
         self.models = list(models)

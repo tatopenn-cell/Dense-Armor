@@ -61,7 +61,7 @@ class VotingClassifier(Classifier):
     budget_s = 5e-3
     memory_class = "O(n_models * window)"
 
-    def __init__(self, models, mode: str = "hard", weights=None) -> None:
+    def __init__(self, models: Any, mode: str = "hard", weights: Any = None) -> None:
         if mode not in ("hard", "soft"):
             raise ValueError(f"mode must be 'hard' or 'soft', got {mode!r}")
         if not models:

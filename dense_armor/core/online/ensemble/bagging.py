@@ -67,7 +67,7 @@ class OnlineBaggingClassifier(Classifier):
     budget_s = 5e-3
     memory_class = "O(n_models * window)"
 
-    def __init__(self, model, n_models: int = 10, seed: int | None = None) -> None:
+    def __init__(self, model: Any, n_models: int = 10, seed: int | None = None) -> None:
         if n_models < 1:
             raise ValueError(f"n_models must be >= 1, got {n_models}")
         self.model = model
