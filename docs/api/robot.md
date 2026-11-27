@@ -1,4 +1,4 @@
-﻿# API — Robot
+# API — Robot
 
 A map of the robot arm used in the examples, showing which parts of the library work with each joint. A joint is one moving part of the arm: a motor, a hinge or a finger.
 

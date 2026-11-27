@@ -1,4 +1,4 @@
-﻿# Robust filters (standalone detectors)
+# Robust filters (standalone detectors)
 
 You already have a recorded series: a joint velocity at 100 Hz, a temperature log, a
 sensor reading. A few samples in it are wrong, and you want to know which ones and to see

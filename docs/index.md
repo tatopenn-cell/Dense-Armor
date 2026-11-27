@@ -1,4 +1,4 @@
-﻿<img width="1024" height="1024" alt="d20" src="https://github.com/user-attachments/assets/6aa8e84c-809b-4dee-9f56-76605f98014d" />
+<img width="1024" height="1024" alt="d20" src="https://github.com/user-attachments/assets/6aa8e84c-809b-4dee-9f56-76605f98014d" />
 
 # Dense-Armor
 

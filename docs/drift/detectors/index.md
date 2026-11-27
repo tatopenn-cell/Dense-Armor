@@ -1,4 +1,4 @@
-# Drift detectors: sequential statistical architectures for concept drift isolation
+# Drift detectors
 
 ## The map of the drift detectors
 
@@ -13,6 +13,8 @@ The cost of executing orders can creep up without any single order looking wrong
 The problem is as old as statistical quality control. Shewhart's control chart (1931) watched a single sample against a fixed band and shouted as soon as one of them fell outside it. It worked for large, sudden faults, but it was blind to slow changes, because a small shift in the mean never makes a single sample look unusual. Page (1954) proposed the answer that is still the basis of every detector in this section: instead of judging each sample alone, **accumulate** the small deviations over time, so that a shift too small to notice in one reading still grows into a signal after enough of them.
 
 A drift detector reads one number per sample and answers a single question: *has the behaviour changed?* It must say so quickly, but it must not cry wolf: a detector that fires on every small fluctuation is as useless as one that stays silent. The four detectors use the same interface: `det.update(x)` for one sample, and the flag `det.drift_detected` that becomes `True` on the sample where the detector thinks something changed. Each one trades delay for false alarms in a different way.
+
+Sequential statistical architectures for concept drift isolation.
 
 ## The pages of the section
 

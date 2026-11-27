@@ -12,7 +12,6 @@ Run from the repo root:
 from make_tree_map import CYAN, DOCS, HERE, ORANGE, PINK, draw
 
 PAGES_ALL = [
-    ("Streaming anomaly detection", "a score for every new sample", "anomaly/streaming/index.md", CYAN, ["streamDD"]),
     ("streamDD", "flag a strange sample", "anomaly/streaming/streaming_deviation_detector.md", CYAN, ["streamDD"]),
     ("streamDS", "the score itself", "anomaly/streaming/streaming_deviation_scorer.md", ORANGE, ["streamDS"]),
     ("MultistreamDD", "all the joints at once", "anomaly/streaming/multi_channel_streaming_deviation_detector.md", PINK, ["MultistreamDD"]),

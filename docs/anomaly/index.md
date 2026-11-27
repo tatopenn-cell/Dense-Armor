@@ -1,4 +1,4 @@
-﻿# Anomaly detection
+# Anomaly detection
 
 ## The map of anomaly detection
 
