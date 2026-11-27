@@ -155,24 +155,56 @@ Smaller `max_delay` trades exactness for latency: labels near run boundaries may
 
 ## 7. StreamingHealing
 
-`StreamingHealing` is the same bounded-delay idea applied to the healing filter
-(`dense_armor.core.online.protect.healing.healing_filter`): a point is judged against a wide local
-baseline and replaced when the deviation is not shared by the majority of a narrow
-window of neighbours. Each sample gets its corrected value as soon as the wide symmetric
-window around it is fully available.
+`StreamingHealing` is the one-sample-at-a-time version of `healing_filter` (`dense_armor.core.online.protect.healing`), a filter that replaces an isolated spike with the local baseline and lets a sustained change through.
 
 ```python
 import numpy as np
+from dense_armor.core.online.protect.streaming_arbiter import StreamingHealing
+
 rng = np.random.default_rng(42)
 v = 0.5 + 0.1 * rng.standard_normal(3000)
 v[1500] = 2.5
 v[2000:] += 1.0
-from dense_armor.core.online.protect.streaming_arbiter import StreamingHealing
-
 sh = StreamingHealing(radius=2, wide_mult=3, max_delay=30)
 out = [o for x in v for o in sh.update(x)] + sh.flush()
-print(len(out), out[0])
+print(len(out), round(out[1500][1], 3), round(out[2500][1], 3))
 ```
+
+```
+3000 0.479 1.555
+```
+
+The series has one bad sample at the position 1500 and a jump of the level from the position 2000. The output has one value for each of the 3000 samples. The bad sample comes out near the baseline (0.479, the baseline is 0.5) and a sample after the jump stays at the new level (1.555, the level is about 1.5).
+
+`healing_filter` judges each point against a wide local baseline, the median of a window of `radius * wide_mult` samples on each side. A deviation that the majority of the narrow window of neighbours shares (same sign, amplitude above `sustain_threshold`) is a real change and is left as it is; an isolated deviation is replaced with the baseline. Each sample gets its corrected value as soon as the wide window around it is available, or after `max_delay` samples.
+
+### Known limits
+
+The docstring of `healing_filter` lists the limits that were measured. The main one is that the filter decides point by point, so a collapse that comes back is taken for a real change. Three samples fall to zero on a constant series of 120 and then return; the number is the root mean squared error against the clean series, for `healing_filter` and for the Arbiter:
+
+```python
+import numpy as np
+from dense_armor.core.online.protect.healing import healing_filter
+from dense_armor.core.online.protect.arbiter import route_and_correct
+
+x = np.full(100, 120.0)
+x[50:53] = 0.0
+rmse = lambda a: float(np.sqrt(np.mean((np.asarray(a) - 120.0) ** 2)))
+print(round(rmse(healing_filter(x)), 2), round(rmse(route_and_correct(x)[0]), 2))
+```
+
+```
+20.78 0.0
+```
+
+`healing_filter` lets the collapse through: its error is the one of the raw series. The Arbiter groups the deviating samples into a run, looks at what happens after the run, and rejects the collapse. The docstring says that `healing_filter` would need a change of design to do the same, which has not been made.
+
+The other limits of the docstring:
+
+- The window is centred, so the filter is not causal: it uses the points after the one it judges. `StreamingHealing` has to wait for `radius * wide_mult` samples after a sample before it decides.
+- On a smooth signal with only Gaussian noise and no jump, it loses against a simple moving median at low and medium noise (0 wins out of 30 in both cases) and wins only at high and very high noise. It is meant for signals that have real transitions to keep, not for denoising a stationary signal.
+- With 15 % of spikes instead of 5 %, it wins 30 out of 30, but the size of the advantage varies a lot from one series to another.
+- It is a Python loop of cost O(n × wide) per call: the docstring says that it must be ported to JAX before production.
 
 ## 8. Hand case
 
