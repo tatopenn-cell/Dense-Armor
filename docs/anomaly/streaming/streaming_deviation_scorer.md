@@ -1,6 +1,6 @@
-# Score: how strange a value is, as a number
+# streamDS
 
-[← Stream](index.md)
+[← Streaming anomaly detection](index.md)
 
 You want a number, not just a yes/no flag. On a stream you first ask for a score, then tell the estimator what really happened. `streamDS` returns how unusual a reading is compared with the window of readings it has already learned, in robust standard-deviation units. A score above your chosen `n_sigmas` means the sample would be flagged.
 

@@ -15,7 +15,7 @@ import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
 
 from dense_armor.core.online.anomaly.deviation import streamDS
-from dense_armor.core.online.anomaly.filters import ChauvenetScorer, HampelScorer, SigmaClipScorer, TukeyScorer
+from dense_armor.core.online.anomaly.filters import ChauvenetScorer, HampelFilter, HampelScorer, SigmaClipScorer, TukeyScorer
 from dense_armor.core.online.anomaly.streaming import MultistreamDD
 from dense_armor.core.online.anomaly.streaming import streamDD
 
@@ -288,6 +288,8 @@ def main():
     scorer_finance("chauvenet_scorer", ChauvenetScorer, "threshold", 0.5, "threshold=0.5")
     scorer3d("sigma_clip_scorer", SigmaClipScorer, "n_sigmas", np.linspace(2.0, 6.0, 8), "n_sigmas", "fraction of injected spikes flagged on 20 seeded series; x = spike amplitude (standard deviations), y = n_sigmas", "SigmaClipScorer: fraction of spikes flagged")
     scorer_finance("sigma_clip_scorer", SigmaClipScorer, "n_sigmas", 3.0, "n_sigmas=3.0")
+    scorer3d("hampel_filter", HampelScorer, "n_sigmas", np.linspace(2.0, 6.0, 8), "n_sigmas", "fraction of injected spikes flagged on 20 seeded series; x = spike amplitude (standard deviations), y = n_sigmas", "HampelFilter: fraction of spikes flagged")
+    scorer_finance("hampel_filter", HampelScorer, "n_sigmas", 3.0, "n_sigmas=3.0")
 
 
 if __name__ == "__main__":

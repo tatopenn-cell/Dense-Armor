@@ -34,86 +34,24 @@ past, and a yes/no flag when it is too unusual.
 
 ![A joint velocity stream at 100 Hz with the collision spike flagged](../../assets/streaming/spike.png)
 
-## 6. Two joints that must agree: online robust Mahalanobis
-
-Some faults are visible only in the *combination* of channels: each joint alone looks normal,
-but together they disagree. `OnlineRobustMahalanobis` learns how the channels usually move
-together and scores how far a sample is from that pattern.
-
-```python
-import numpy as np
-from dense_armor.core.online.anomaly.mahalanobis import OnlineRobustMahalanobis
-
-rng = np.random.default_rng(3)
-a = rng.normal(0, 1, 500)
-b = a + 0.1 * rng.normal(0, 1, 500)
-m = OnlineRobustMahalanobis(feature_keys=["a", "b"])
-for x, y in zip(a, b):
-    m.learn_one({"a": float(x), "b": float(y)})
-print(round(m.score_one({"a": 1.0, "b": 1.0}), 1), round(m.score_one({"a": 1.0, "b": -1.0}), 1))
-```
-
-```
-1.5 24.7
-```
-
-Two joints that always move together (`b` follows `a`). The sample `(1, 1)` moves them together:
-score 1.5, normal. The sample `(1, −1)` moves them in opposite directions: each value alone is
-ordinary (one standard deviation), but the pair is unusual, score 24.7.
-
-The score is the Mahalanobis distance
-
-$$D(x) = \sqrt{\sum_{j=1}^{d} \frac{\langle x - \bar m,\; P_j\rangle^2}{\delta_j}},$$
-
-where $\bar m$ is the robust centre (the geometric median, the point with the smallest total
-distance to all samples), $P_j$ are the main directions in which the channels vary together and
-$\delta_j$ how much they vary along each one (eigenvectors and eigenvalues of the *median
-covariation matrix*, a robust version of the covariance). Both are updated at every sample by a
-small step towards the new data:
-
-$$m_{n+1} = m_n + \gamma_{n+1}\,\frac{X_{n+1} - m_n}{\lVert X_{n+1} - m_n\rVert}, \qquad \gamma_n = c_\gamma\,(n + n_0)^{-\gamma},$$
-
-and the same for the covariation matrix with the outer product $(X - m)(X - m)^\top$. Dividing
-by the distance means one absurd sample moves the estimate by at most $\gamma$, whatever its
-size: that is what makes it robust. Source: Guillot, Godichon-Baggioni, Robin and Sansonnet
-(arXiv:2601.03957), the online scheme of section 3.2 (the recursion of the median is equation 8, in Appendix A.1; section numbers are those of arXiv v1).
-
-![Density of the Mahalanobis distance of an outlier under four contamination scenarios, from Guillot et al.](../../assets/streaming/guillot_fig2.png)
-
-*From Guillot et al. (arXiv:2601.03957), Figure 2: density of the (log10) Mahalanobis distance of
-an outlier under four contamination scenarios (A–D); the dotted line is the inlier threshold. The
-further a curve sits to the right of the line, the easier the outlier is to flag. Reproduced under
-the paper's CC BY 4.0 licence.*
-
 ## API reference
 
 
 
-::: dense_armor.core.online.anomaly.mahalanobis
 
 ## Details
 
-- **Online robust Mahalanobis, differences from the paper.** This module is the minimal version
-  of Guillot et al.: it scores with the eigenvalues $\delta_j$ of the median covariation matrix
-  and does not run the Robbins–Monro step that reconstructs the true variances $\lambda_j$, so
-  the scale of the score is larger than the classical chi-squared one (threshold 7.0 by
-  default). It also centres the outer product on the averaged median $\bar m$ and averages with
-  weight $1/n$ (the paper uses $m_n$ and $1/(n+2)$).
-
 ## The pages of the section
-
-Only pages that already exist are linked; pages created in tappa C are added then.
 
 | Page | Object |
 |---|---|
-| [Stream](index.md) | the section index (this page) |
-| [Flag](streaming_deviation_detector.md) | `streamDD` |
-| [Score](streaming_deviation_scorer.md) | `streamDS` |
-| [Multi](multi_channel_streaming_deviation_detector.md) | `MultistreamDD` |
-| class_seg_multi | `class_seg_multi` |
-| [Hampel](hampel_scorer.md) | `HampelScorer` |
-| [Tukey](tukey_scorer.md) | `TukeyScorer` |
-| [Chauvenet](chauvenet_scorer.md) | `ChauvenetScorer` |
-| [Sigma](sigma_clip_scorer.md) | `SigmaClipScorer` |
-| hampel_filter | `HampelFilter` |
-| [OnlineRobustMahalanobis](../mahalanobis.md) | `OnlineRobustMahalanobis`, the full page of the anomaly section |
+| [streamDD](streaming_deviation_detector.md) `streaming_deviation_detector` | `streamDD` |
+| [streamDS](streaming_deviation_scorer.md) `streaming_deviation_scorer` | `streamDS` |
+| [MultistreamDD](multi_channel_streaming_deviation_detector.md) `multi_channel_streaming_deviation_detector` | `MultistreamDD` |
+| [HampelScorer](hampel_scorer.md) `hampel_scorer` | `HampelScorer` |
+| [TukeyScorer](tukey_scorer.md) `tukey_scorer` | `TukeyScorer` |
+| [ChauvenetScorer](chauvenet_scorer.md) `chauvenet_scorer` | `ChauvenetScorer` |
+| [SigmaClipScorer](sigma_clip_scorer.md) `sigma_clip_scorer` | `SigmaClipScorer` |
+| [HampelFilter](hampel_filter.md) `hampel_filter` | `HampelFilter` |
+| [class_seg_multi](class_seg_multi.md) `class_seg_multi` | `class_seg_multi` |
+| [Mahalanobis](../mahalanobis.md) | `OnlineRobustMahalanobis`, moved to `docs/anomaly/mahalanobis.md` |

@@ -191,13 +191,15 @@ nav:
           - anomaly/index.md
           - Streaming:
               - anomaly/streaming/index.md
-              - Flag: anomaly/streaming/streaming_deviation_detector.md
-              - Score: anomaly/streaming/streaming_deviation_scorer.md
-              - Multi: anomaly/streaming/multi_channel_streaming_deviation_detector.md
-              - Hampel: anomaly/streaming/hampel_scorer.md
-              - Tukey: anomaly/streaming/tukey_scorer.md
-              - Chauvenet: anomaly/streaming/chauvenet_scorer.md
-              - Sigma: anomaly/streaming/sigma_clip_scorer.md
+              - streamDD: anomaly/streaming/streaming_deviation_detector.md
+              - streamDS: anomaly/streaming/streaming_deviation_scorer.md
+              - MultistreamDD: anomaly/streaming/multi_channel_streaming_deviation_detector.md
+              - HampelScorer: anomaly/streaming/hampel_scorer.md
+              - HampelFilter: anomaly/streaming/hampel_filter.md
+              - class_seg_multi: anomaly/streaming/class_seg_multi.md
+              - TukeyScorer: anomaly/streaming/tukey_scorer.md
+              - ChauvenetScorer: anomaly/streaming/chauvenet_scorer.md
+              - SigmaClipScorer: anomaly/streaming/sigma_clip_scorer.md
           - Robust filters: anomaly/robust_filters.md
           - Curvature: anomaly/curvature.md
           - Half-Space Trees: anomaly/hst.md

@@ -1,6 +1,6 @@
-# Flag: a yes or no for each new value
+# streamDD
 
-[← Stream](index.md)
+[← Streaming anomaly detection](index.md)
 
 You have a stream of numbers, for example the daily cost of executing an order . You want to know, on the sample that arrives, whether it is too unusual compared with the recent past. `streamDD` reads one value per call, compares it with a robust median and spread of the window of strictly previous samples, and answers `True`, without seeing anything in the future. A robot joint uses the same call inside its control loop.
 
