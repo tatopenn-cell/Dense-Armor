@@ -4,6 +4,9 @@ Formato basato su [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- Four long names of the streaming anomaly detectors are shortened, with no alias for the old names: `StreamingDeviationDetector` is now `streamDD`, `StreamingDeviationScorer` is `streamDS`, `MultiChannelStreamingDeviationDetector` is `MultistreamDD` and `classify_segments_multichannel` is `class_seg_multi`. Code that imported the old names has to use the new ones.
+
 ## [1.7.2] - 2026-11-25
 
 This release makes the roles and the preprocessing safe in the stream (a value that cannot be used gives `None` or a neutral value, never an error) and adds negative application conditions to `Action`.
