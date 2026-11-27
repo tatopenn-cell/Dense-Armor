@@ -60,10 +60,12 @@ EXTRA_GROUP = ("05", "BRING THE DATA", "a whole table, with fit", ORANGE, (("fit
 
 def nav_sections():
     """{title: (index page, [(page title, rel)])} of every section of the Online learning tab, flattened."""
-    tab = None
+    tab = []
     for entry in _nav_cfg():
-        if isinstance(entry, dict) and "Online learning" in entry:
-            tab = entry["Online learning"]
+        if isinstance(entry, dict):
+            for name in ("Online learning", "Detection"):
+                if name in entry:
+                    tab = tab + entry[name]
     out = {}
 
     def walk(items, title, nested=False):

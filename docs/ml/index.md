@@ -21,8 +21,8 @@ Each family below has its own page, with a self-contained block for every class 
 | [Decision trees](tree.md) | A tree asks a series of yes/no questions about the features and ends in a leaf that gives the answer. |
 | [Forests](forest.md) | A forest asks many trees and averages their answers. RandomForestClassifier grows each tree on a bootstrap sample with a random subset of features; ExtraTreesRegressor uses the whole sample and a random threshold at each split. |
 | [Ensembles](ensemble.md) | An ensemble combines several models: bagging and boosting train many copies, voting and stacking combine different models, and the exponentially weighted average follows the member with the smallest loss. |
-| [Anomaly detection](anomaly.md) | An anomaly detector marks the values that do not look like their neighbours. |
-| [Change detection](drift.md) | A change detector reads a series of values and says where its level shifts. |
+| [Anomaly detection](../anomaly/offline.md) | An anomaly detector marks the values that do not look like their neighbours. |
+| [Change detection](../drift/offline.md) | A change detector reads a series of values and says where its level shifts. |
 | [Vision](vision.md) | Vision here works on frames and on tables of features. DenseFlow gives the motion of every pixel between two frames, MotionMask keeps the pixels that move most, GlobalMotion gives the shift of the whole scene, RandomProjection and PCA reduce a table of features to fewer columns. |
 | [Fit on the whole table](fit_batch.md) | A few algorithms need all the rows to start: a decision tree on a whole table, bagging on bootstrap samples, a text vocabulary. They sit next to their online versions. |
 

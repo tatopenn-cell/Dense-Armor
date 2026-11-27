@@ -185,6 +185,28 @@ nav:
       - Learning a graph: ontology/learning.md
       - Following a graph online: ontology/online.md
       - Causality: ontology/causal.md
+  - Detection:
+      - detection/index.md
+      - Anomaly detection:
+          - anomaly/index.md
+          - Streaming: anomaly/streaming.md
+          - Robust filters: anomaly/robust_filters.md
+          - Curvature: anomaly/curvature.md
+          - Half-Space Trees: anomaly/hst.md
+          - LODA: anomaly/loda.md
+          - One-Class SGD (SONAR): anomaly/ocsvm.md
+          - Online Isolation Forest: anomaly/oiforest.md
+          - Online Robust Mahalanobis: anomaly/mahalanobis.md
+          - Local Outlier Factor: anomaly/lof.md
+          - Offline algorithms: anomaly/offline.md
+      - Drift detection:
+          - drift/index.md
+          - CUSUM and ARL theory: drift/cusum.md
+          - Drift detectors: drift/detectors.md
+          - Offline algorithm: drift/offline.md
+      - Protection:
+          - protect/index.md
+          - Arbiter: protect/arbiter.md
   - Roles:
       - Overview: roles/index.md
       - The base (Root): roles/base.md
@@ -266,9 +288,7 @@ nav:
   - Machine learning:
       - Overview: ml/index.md
       - scikit-learn tools: ml/sklearn.md
-      - Anomaly detection: ml/anomaly.md
       - Naive Bayes: ml/bayes.md
-      - Change detection: ml/drift.md
       - Ensembles: ml/ensemble.md
       - Forests: ml/forest.md
       - Linear models: ml/linear.md
@@ -389,25 +409,6 @@ nav:
           - Learn a rule set: rules/learn.md
           - When the world changes: rules/change.md
           - Options: rules/options.md
-      - Detection:
-          - Anomaly detection:
-              - anomaly/index.md
-              - Streaming: anomaly/streaming.md
-              - Robust filters: anomaly/robust_filters.md
-              - Curvature: anomaly/curvature.md
-              - Half-Space Trees: anomaly/hst.md
-              - LODA: anomaly/loda.md
-              - One-Class SGD (SONAR): anomaly/ocsvm.md
-              - Online Isolation Forest: anomaly/oiforest.md
-              - Online Robust Mahalanobis: anomaly/mahalanobis.md
-              - Local Outlier Factor: anomaly/lof.md
-          - Drift detection:
-              - drift/index.md
-              - CUSUM and ARL theory: drift/cusum.md
-              - Drift detectors: drift/detectors.md
-          - Protection:
-              - protect/index.md
-              - Arbiter: protect/arbiter.md
       - Distributions:
           - proba/index.md
       - Classification:

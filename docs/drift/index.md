@@ -1,5 +1,11 @@
 # Drift detection: statistical methods for non-stationary process drift isolation
 
+## The map of drift detection
+
+Click a page to open it, or the job on the left (or the button at the top) to go back to the [map of the library](../index.md#the-library-folder-by-folder).
+
+<object type="image/svg+xml" data="../assets/maps/drift.svg" style="width:100%"></object>
+
 While anomaly detection tools spot a single, sudden weird reading, drift detection tools look at the bigger picture. They notice when the baseline level of a system is slowly drifting over time, accumulating tiny, subtle changes that would look perfectly normal if judged on their own.
 
 

@@ -1,5 +1,11 @@
 # Anomaly detection
 
+## The map of anomaly detection
+
+Click a page to open it, or the job on the left (or the button at the top) to go back to the [map of the library](../index.md#the-library-folder-by-folder).
+
+<object type="image/svg+xml" data="../assets/maps/anomaly.svg" style="width:100%"></object>
+
 This section is about spotting readings that look strange. Each tool learns from the recent readings what is usual, and gives every new reading a score: the higher the score, the less it looks like the recent past.
 
 An anomaly detector gives every sample a score: high means the sample does not look like the
