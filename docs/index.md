@@ -53,6 +53,7 @@ Every big section has its own interactive map on top of its page: the jobs on th
 | [Active learning](active/index.md) | the four labelling strategies with a budget, and the methods they share |
 | [Factorization machines](facto/index.md) | the plain, field-aware, field-weighted and higher-order machines |
 | [Recommenders](reco/index.md) | the baseline, the two matrix factorizations, top-k ranking, the sliding DFT and the skyline |
+| [Fit](fit/index.md) | the same algorithm on a whole table, and LEGO, POLA and OASIS, the online metric learners |
 | [Metric](metrics/index.md) | the scores, by kind of model |
 | [Classification](metrics/classification/index.md) | precision, recall, F1, confusion matrix, kappa |
 | [Probabilities](metrics/probabilities/index.md) | log loss and the Brier score |
