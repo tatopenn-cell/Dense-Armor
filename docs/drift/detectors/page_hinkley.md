@@ -2,6 +2,8 @@
 
 [← Drift detectors](index.md)
 
+![The delay of PageHinkley after a step of the daily cost of executing orders, for 8 sizes of the step and 8 values of the threshold.](../../assets/drift/drift_page_hinkley_3d.png)
+
 `PageHinkley` compares every value with the average of the stream so far, measured in standard deviations, and adds up how far the values stay above it. Because the comparison is in standard deviations, the same settings work whether the stream is a cost in dollars or a tiny squared error.
 
 ## First example

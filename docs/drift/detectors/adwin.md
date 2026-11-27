@@ -2,6 +2,8 @@
 
 [← Drift detectors](index.md)
 
+![The delay of ADWIN after a step of the daily cost of executing orders, for 8 sizes of the step and 8 values of delta.](../../assets/drift/drift_adwin_3d.png)
+
 `ADWIN` keeps the recent values of a stream in a window and, at every step, asks whether an older part of the window and a newer part have the same average. If they do not, it throws the older part away and says that the stream has changed. The window grows while the stream is stable and shrinks when it changes, so you do not have to choose its length.
 
 ## First example

@@ -2,6 +2,8 @@
 
 [← Drift detectors](index.md)
 
+![The delay of KSWIN after a step of the daily cost of executing orders, for 8 sizes of the step and 8 values of alpha.](../../assets/drift/drift_kswin_3d.png)
+
 `KSWIN` compares the newest 30 values with 30 values drawn at random from the older part of a window of 300, using the Kolmogorov–Smirnov test. The test measures how far apart the two cumulative histograms are: a small distance means that the two groups look alike, a large distance means that they do not. After an alarm the detector keeps only the newest values, so a single change gives a single alarm.
 
 ## First example

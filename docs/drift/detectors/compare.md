@@ -2,6 +2,24 @@
 
 [← Drift detectors](index.md)
 
+![The delay of the four detectors after a step of the daily cost of executing orders, for steps of 1 to 4 standard deviations and for one parameter of each detector.](../../assets/drift/drift_four_cubes.png)
+
+The four detectors read the same stream and answer the same question, but not in the same way. The figure shows how long each one takes to flag a step of the daily cost of executing orders. One axis is the size of the step, from 1 to 4 standard deviations; the other is the parameter that decides how cautious the detector is: `h` for CUSUM, the threshold for PageHinkley, `delta` for ADWIN and `alpha` for KSWIN. A low surface is a fast detector.
+
+## The same step, four detectors
+
+CUSUM and PageHinkley are flat and low. A step of 4 standard deviations is flagged after 0 to 8 values by CUSUM and after 0 to 12 by PageHinkley, whatever the parameter. The parameter matters for the small steps: a step of 1 standard deviation takes from 5 to 49 values for CUSUM and from 2 to 51 for PageHinkley as `h` or the threshold go from the lowest value to the highest. The low values are faster and pay for it with more false alarms; the measured cost for CUSUM is on the page [expected_false_alarm_run](../cusum/expected_false_alarm_run.md).
+
+ADWIN is the one with a cliff. When it is cautious (a very small `delta`), a step of 1 or 2 standard deviations is not found at all in the 300 values after it, and the surface climbs to the top of the figure; from about 2.3 standard deviations it falls quickly. KSWIN is low almost everywhere: 6 to 28 values for most of the figure, with one corner where it is blind, a step of 1 standard deviation with the smallest `alpha`, which it does not find.
+
+To compare them fairly, the next figure puts the four detectors with their default settings on the same streams (CUSUM with a fixed reference). The bars are the delay for each size of the step. The columns on the right count the flags when nothing changes, on 20 streams of 3000 normal values.
+
+![The delay of the four detectors with their default settings for steps of 1 to 4 standard deviations, and their flags on streams where nothing changes.](../../assets/drift/drift_race.png)
+
+CUSUM wins the race: it is the fastest at every size of the step, 24 values for a step of 1 standard deviation and 4 for a step of 4, and it flags 9 times on the quiet streams. PageHinkley is slower (47 and 11 values) and is the one that cries wolf the most: 34 flags. ADWIN never cried wolf (0 flags) and pays for it: it does not see the steps below 2 standard deviations, it needs 90 values for a step of 2.3 and 24 for a step of 4. KSWIN is the steady one: 28 values for a step of 1, 18 for a step of 2.3 and 14 for a step of 4, with 4 flags. If a false alarm is expensive and only large changes matter, ADWIN is the quiet choice; if every change has to be seen quickly and a few false alarms can be tolerated, CUSUM is the quick one; KSWIN is the one in between. The figures come from the script `docs/assets/drift/make_compare_figures.py`.
+
+## On a robot stream
+
 The last test runs the four detectors, [CUSUM](../cusum/index.md), [PageHinkley](page_hinkley.md), [ADWIN](adwin.md) and [KSWIN](kswin.md), on the CASPER dataset: a UR3e arm sampled at 20 Hz, with a labelled change somewhere in the recording. The signal used here is the squared shift residual of joint 5, averaged over 76 s with a causal trailing mean; it is the same series the original CASPER benchmark uses. The four detectors are run with their default settings, untouched, through `evaluate_events`.
 
 | detector | delay (s) | missed | false alarms / h |
