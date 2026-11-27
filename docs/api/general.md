@@ -1514,7 +1514,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.tree.batch`
 *Bases:* Classifier
-*Guide:* [fit.md](../fit.md)
+*Guide:* [fit/index.md](../fit/index.md)
 
 Batch CART classifier, in the online package (`dense_armor.core.online.tree.batch`). The version that grows a gini tree on the whole table is `dense_armor.ml.tree`.
 

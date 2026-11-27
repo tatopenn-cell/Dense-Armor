@@ -25,7 +25,7 @@ The same tab holds the sections that feed and judge the learners:
 - [Statistics](../stats/index.md) and [Preprocessing](../preprocessing/index.md): the numbers that a stream is summarised with, and how to scale it.
 - [Metrics and evaluation](../metrics/index.md): how to measure a model while it learns.
 - [Vision](../vision/index.md): frames, features and motion.
-- [Fit, the whole dataset at once](../fit.md): the offline entry point of every online tool.
+- [Fit, the whole dataset at once](../fit/index.md): the offline entry point of every online tool.
 
 ## 3. Where to start
 
