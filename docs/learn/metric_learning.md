@@ -87,23 +87,6 @@ With the Euclidean distance the neighbours are right 56 % of the time, little be
 
 The figure uses the customers of the first example of each algorithm page, with the columns put on the same scale: all three learn to give almost the whole distance to the age.
 
-## 1. The data
-
-A stream of samples, one per customer. Each sample is a 2-D vector, with the label of its group, A or B.
-
-```python
-import numpy as np
-
-rng = np.random.default_rng(42)
-group_a = rng.normal([1.0, 0.0], 0.1, (200, 2))
-group_b = rng.normal([0.0, 1.0], 0.1, (200, 2))
-X = np.vstack([group_a, group_b])
-y = np.array(["A"] * 200 + ["B"] * 200)
-```
-
-Euclidean distance on this data works, because the clusters are far apart. On a real
-real data they are often not.
-
 ## 2. The three algorithms
 
 | Algorithm | Learns from | Model | Page |
@@ -123,70 +106,23 @@ The same customers, the same four columns, and the distance that each algorithm 
 Each page starts from the same example, the customers of the bank, and then goes through the algorithm
 step by step, with the formula symbol by symbol, a hand case and what the original paper says.
 
-## 3. The k-NN classifier that learns its metric
+## The pages of the section
 
-A metric learner does not fit the `Classifier`, `Regressor` or `Transformer` roles of the library:
-it learns from two or three samples at a time and outputs a distance. `MetricLearner` is
-the base class; `MetricKNNClassifier` is a k-NN classifier that uses a metric learner as its
-distance and, with `learn_metric=True` (the default), trains it online inside `learn_one`. Each new sample is paired with random samples from the window: a triplet
-for OASIS, a similar / dissimilar pair for POLA, a pair with a target distance for LEGO.
+| Page | Classes | What it does |
+|---|---|---|
+| [OASIS](oasis.md) | `OASIS` | a similarity learned from triplets: an anchor, a similar sample, a different one |
+| [LEGO](lego.md) | `LEGO` | a Mahalanobis distance learned from pairs with a target distance |
+| [POLA](pola.md) | `POLA` | a pseudo-metric learned from pairs labelled similar or different |
+| [MetricKNNClassifier](metric_knn.md) | `MetricKNNClassifier` | a k-NN that learns its distance while it classifies, with the results on the river streams and the robot example |
+| [MetricLearner](metric_learner.md) | `MetricLearner` | the base of the three: the pair, the triplet and the distance, and the toy data of the old page |
 
-```python
-import numpy as np
-from dense_armor.core.online.learn.metric_learning import (
-    MetricKNNClassifier,
-    OASIS,
-)
+## The same problem on a robot
 
-rng = np.random.default_rng(0)
-y = rng.integers(0, 2, 400)
-X = np.c_[y + 0.3 * rng.standard_normal(400), rng.standard_normal(400)]
-knn = MetricKNNClassifier(OASIS(C=0.1), n_neighbors=1, window_size=1000)
-hits = 0
-for x, t in zip(X, y):
-    hits += knn.predict_one({"x0": x[0], "x1": x[1]}) == t
-    knn.learn_one({"x0": x[0], "x1": x[1]}, t)
-print(hits / len(y))
-```
-
-```
-0.9375
-```
-
-Two classes that differ only in the first feature; the k-NN learns its similarity with OASIS while it
-classifies, and gets 93.75 % of the 400 samples right, each predicted before it is learned.
-
-## 4. Results on streams from river
-
-`progressive_val_score` (predict, then learn), `StandardScaler` in front, k = 5,
-`window_size=1000`, metric learned online with the default parameters:
-
-| Stream | `KNNClassifier` of river (Euclidean) | OASIS | LEGO | POLA |
-|---|---|---|---|---|
-| Phishing (1,250 samples) | 0.8823 | **0.8911 (+0.88)** | 0.8815 (−0.08) | 0.8871 (+0.48) |
-| ImageSegments (2,310 samples) | 0.8705 | 0.9082 (+3.77) | 0.9112 (+4.07) | **0.9138 (+4.33)** |
-
-On ImageSegments (7 classes, 18 features) all three learned metrics beat the Euclidean
-k-NN by about 4 points; on Phishing the gains are under one point and LEGO is level with
-the baseline.
-
-## The robot example
-
-The same advantage on robot data: three robot states told apart by two joint features, plus three
-noisy features with a much larger range that dominate the plain Euclidean distance.
-
-![Prequential accuracy of a k-NN with Euclidean distance and with distances learned online by OASIS, LEGO and POLA](../assets/metric_learning/robot_states.png)
-
-With the Euclidean distance the k-NN is right half of the time (0.50); learning the metric while
-classifying lifts it to 0.89 (OASIS), 0.92 (LEGO) and 0.74 (POLA) after 600 samples: the learned
-metric learns to ignore the noisy features. In the original paper OASIS already beat LEGO and the
-Euclidean metric on image retrieval (Chechik et al. 2009, Figure 2).
+The same advantage on robot data, with three robot states told apart by two joint features and three noisy features, is on the page of [MetricKNNClassifier](metric_knn.md#6-the-same-on-a-robot): with the Euclidean distance the k-NN is right half of the time, and learning the metric while classifying lifts it to 0.89 (OASIS), 0.92 (LEGO) and 0.74 (POLA) after 600 samples.
 
 ## API reference
 
-::: dense_armor.core.online.learn.metric_learning
-    options:
-      docstring_style: numpy
+Each class has its reference on its own page: [OASIS](oasis.md#api-reference), [LEGO](lego.md#api-reference), [POLA](pola.md#api-reference), [MetricKNNClassifier](metric_knn.md#api-reference) and [MetricLearner](metric_learner.md#api-reference).
 
 ---
 
