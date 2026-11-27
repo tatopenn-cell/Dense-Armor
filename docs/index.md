@@ -189,8 +189,8 @@ payload fault no longer poisons the model's state.
 
 **Machine learning** — the classes of `dense_armor.ml`, which read a whole table at once
 with `fit(X, y)`. The [overview](ml/index.md) has one page per family:
-[anomaly detection](ml/anomaly.md), [Naive Bayes](ml/bayes.md),
-[change detection](ml/drift.md), [ensembles](ml/ensemble.md), [forests](ml/forest.md),
+[anomaly detection](anomaly/offline.md), [Naive Bayes](ml/bayes.md),
+[change detection](drift/offline.md), [ensembles](ml/ensemble.md), [forests](ml/forest.md),
 [linear models](ml/linear.md), [multiclass](ml/multiclass.md),
 [multi-output](ml/multioutput.md), [nearest neighbours](ml/neighbors.md),
 [preprocessing](ml/preprocessing.md), [distributions](ml/proba.md),

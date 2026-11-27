@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 721" width="100%" role="img" aria-label="The map of anomaly detection">
+<style>text{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif}.m{font-family:ui-monospace,Menlo,Consolas,monospace}.e{opacity:.32;transition:opacity .15s}.net:hover .e{opacity:.06}.net .pg:hover .e{opacity:1;stroke-width:2.2}a:hover .card{fill:#17303f;stroke-width:2.4}a:hover text.dn{fill:#ffffff}.back:hover .card{fill:#17303f}</style>
+<rect width="1000" height="721" fill="#0d131a" rx="14"/>
+<text x="500" y="38" fill="#e0fbfc" font-size="24" font-weight="700" text-anchor="middle">THE MAP OF ANOMALY DETECTION</text>
+<text x="500" y="62" fill="#4cc9f0" font-size="12.5" text-anchor="middle">the job, the page of each detector and its classes; pass over a page to light its classes, click to open it</text>
+<a class="back" href="../../#the-library-folder-by-folder" target="_top"><title>back to the map of the library</title><rect class="card" x="20" y="14" width="150" height="30" rx="15" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="95" y="33.5" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">← map of the library</text></a>
+<text x="24" y="98" fill="#f72585" font-size="12" font-weight="700">01  JOB</text>
+<text x="410" y="98" fill="#f72585" font-size="12" font-weight="700">02  PAGE</text>
+<text x="680" y="98" fill="#f72585" font-size="12" font-weight="700">03  CLASSES OF THE CATALOG</text>
+<g class="net">
+<path class="e" d="M214,375.2 C262,375.2 282,431.2 318,431.2" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M214,431.2 C262,431.2 282,431.2 318,431.2" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M214,487.2 C262,487.2 282,431.2 318,431.2" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<g class="pg">
+<path class="e" d="M342,431.2 C382,431.2 366,212.0 408,212.0" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,212.0 C650,212.0 650,124.5 676,124.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M626,212.0 C650,212.0 650,149.5 676,149.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M626,212.0 C650,212.0 650,174.5 676,174.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M626,212.0 C650,212.0 650,199.5 676,199.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M626,212.0 C650,212.0 650,224.5 676,224.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M626,212.0 C650,212.0 650,249.5 676,249.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M626,212.0 C650,212.0 650,274.5 676,274.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M626,212.0 C650,212.0 650,299.5 676,299.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,431.2 C382,431.2 366,338.5 408,338.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,338.5 C650,338.5 650,338.5 676,338.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,431.2 C382,431.2 366,377.5 408,377.5" fill="none" stroke="#f72585" stroke-width="1.4"/>
+<path class="e" d="M626,377.5 C650,377.5 650,377.5 676,377.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,431.2 C382,431.2 366,416.5 408,416.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,416.5 C650,416.5 650,416.5 676,416.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,431.2 C382,431.2 366,455.5 408,455.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,455.5 C650,455.5 650,455.5 676,455.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,431.2 C382,431.2 366,494.5 408,494.5" fill="none" stroke="#f72585" stroke-width="1.4"/>
+<path class="e" d="M626,494.5 C650,494.5 650,494.5 676,494.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,431.2 C382,431.2 366,533.5 408,533.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,533.5 C650,533.5 650,533.5 676,533.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,431.2 C382,431.2 366,572.5 408,572.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,572.5 C650,572.5 650,572.5 676,572.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,431.2 C382,431.2 366,611.5 408,611.5" fill="none" stroke="#f72585" stroke-width="1.4"/>
+<path class="e" d="M626,611.5 C650,611.5 650,611.5 676,611.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,431.2 C382,431.2 366,650.5 408,650.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,650.5 C650,650.5 650,650.5 676,650.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+</g>
+<a href="../../#the-library-folder-by-folder" target="_top"><title>detect_drift: back to the map of the library</title><rect class="card" x="20" y="356.2" width="190" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="34" y="373.2" fill="#e0fbfc" font-size="13" font-weight="700">detect_drift</text><text x="34" y="387.2" fill="#94a3b8" font-size="9.5">job of the ontology</text></a>
+<a href="../../#the-library-folder-by-folder" target="_top"><title>detect_anomaly: back to the map of the library</title><rect class="card" x="20" y="412.2" width="190" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="34" y="429.2" fill="#e0fbfc" font-size="13" font-weight="700">detect_anomaly</text><text x="34" y="443.2" fill="#94a3b8" font-size="9.5">job of the ontology</text></a>
+<a href="../../#the-library-folder-by-folder" target="_top"><title>robot: back to the map of the library</title><rect class="card" x="20" y="468.2" width="190" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="34" y="485.2" fill="#e0fbfc" font-size="13" font-weight="700">robot</text><text x="34" y="499.2" fill="#94a3b8" font-size="9.5">job of the ontology</text></a>
+<circle cx="330" cy="431.2" r="12" fill="#101a24" stroke="#4cc9f0" stroke-width="2"/><text class="m" x="330" y="461.2" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">anomaly</text>
+<a href="../../anomaly/streaming/" target="_top"><title>Streaming: open anomaly/streaming.md</title><rect class="card" x="410" y="193.0" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="209.0" fill="#e0fbfc" font-size="13" font-weight="700">Streaming</text><text x="424" y="224.0" fill="#94a3b8" font-size="9.5">a score for every new sample</text></a>
+<a href="../../anomaly/streaming/" target="_top"><title>StreamingDeviationDetector: open anomaly/streaming.md</title><rect class="card" x="678" y="114.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="128.3" fill="#e0fbfc" font-size="11">StreamingDeviationDetector</text></a>
+<a href="../../anomaly/streaming/" target="_top"><title>MultiChannelStreamingDeviationDetector: open anomaly/streaming.md</title><rect class="card" x="678" y="139.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="153.3" fill="#e0fbfc" font-size="11">MultiChannelStreamingDeviationDetector</text></a>
+<a href="../../anomaly/streaming/" target="_top"><title>StreamingDeviationScorer: open anomaly/streaming.md</title><rect class="card" x="678" y="164.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="178.3" fill="#e0fbfc" font-size="11">StreamingDeviationScorer</text></a>
+<a href="../../anomaly/streaming/" target="_top"><title>HampelScorer: open anomaly/streaming.md</title><rect class="card" x="678" y="189.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="203.3" fill="#e0fbfc" font-size="11">HampelScorer</text></a>
+<a href="../../anomaly/streaming/" target="_top"><title>TukeyScorer: open anomaly/streaming.md</title><rect class="card" x="678" y="214.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="228.3" fill="#e0fbfc" font-size="11">TukeyScorer</text></a>
+<a href="../../anomaly/streaming/" target="_top"><title>ChauvenetScorer: open anomaly/streaming.md</title><rect class="card" x="678" y="239.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="253.3" fill="#e0fbfc" font-size="11">ChauvenetScorer</text></a>
+<a href="../../anomaly/streaming/" target="_top"><title>SigmaClipScorer: open anomaly/streaming.md</title><rect class="card" x="678" y="264.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="278.3" fill="#e0fbfc" font-size="11">SigmaClipScorer</text></a>
+<a href="../../anomaly/streaming/" target="_top"><title>HampelFilter: open anomaly/streaming.md</title><rect class="card" x="678" y="289.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="303.3" fill="#e0fbfc" font-size="11">HampelFilter</text></a>
+<a href="../../anomaly/robust_filters/" target="_top"><title>Robust filters: open anomaly/robust_filters.md</title><rect class="card" x="410" y="319.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="335.5" fill="#e0fbfc" font-size="13" font-weight="700">Robust filters</text><text x="424" y="350.5" fill="#94a3b8" font-size="9.5">four detectors on a whole series</text></a>
+<a href="../../anomaly/robust_filters/" target="_top"><title>pressure_valve: open anomaly/robust_filters.md</title><rect class="card" x="678" y="328.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="342.3" fill="#e0fbfc" font-size="11">pressure_valve</text></a>
+<a href="../../anomaly/curvature/" target="_top"><title>Curvature: open anomaly/curvature.md</title><rect class="card" x="410" y="358.5" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="374.5" fill="#e0fbfc" font-size="13" font-weight="700">Curvature</text><text x="424" y="389.5" fill="#94a3b8" font-size="9.5">a proximity score in [0, 1)</text></a>
+<a href="../../anomaly/curvature/" target="_top"><title>curvature: open anomaly/curvature.md</title><rect class="card" x="678" y="367.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="381.3" fill="#e0fbfc" font-size="11">curvature</text></a>
+<a href="../../anomaly/mahalanobis/" target="_top"><title>Online Robust Mahalanobis: open anomaly/mahalanobis.md</title><rect class="card" x="410" y="397.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="413.5" fill="#e0fbfc" font-size="13" font-weight="700">Online Robust Mahalanobis</text><text x="424" y="428.5" fill="#94a3b8" font-size="9.5">distance from a robust median</text></a>
+<a href="../../anomaly/mahalanobis/" target="_top"><title>OnlineRobustMahalanobis: open anomaly/mahalanobis.md</title><rect class="card" x="678" y="406.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="420.3" fill="#e0fbfc" font-size="11">OnlineRobustMahalanobis</text></a>
+<a href="../../anomaly/loda/" target="_top"><title>LODA: open anomaly/loda.md</title><rect class="card" x="410" y="436.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="452.5" fill="#e0fbfc" font-size="13" font-weight="700">LODA</text><text x="424" y="467.5" fill="#94a3b8" font-size="9.5">rare bins in random projections</text></a>
+<a href="../../anomaly/loda/" target="_top"><title>LODA: open anomaly/loda.md</title><rect class="card" x="678" y="445.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="459.3" fill="#e0fbfc" font-size="11">LODA</text></a>
+<a href="../../anomaly/hst/" target="_top"><title>Half-Space Trees: open anomaly/hst.md</title><rect class="card" x="410" y="475.5" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="491.5" fill="#e0fbfc" font-size="13" font-weight="700">Half-Space Trees</text><text x="424" y="506.5" fill="#94a3b8" font-size="9.5">few reference samples in the region</text></a>
+<a href="../../anomaly/hst/" target="_top"><title>HalfSpaceTrees: open anomaly/hst.md</title><rect class="card" x="678" y="484.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="498.3" fill="#e0fbfc" font-size="11">HalfSpaceTrees</text></a>
+<a href="../../anomaly/ocsvm/" target="_top"><title>One-Class SGD (SONAR): open anomaly/ocsvm.md</title><rect class="card" x="410" y="514.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="530.5" fill="#e0fbfc" font-size="13" font-weight="700">One-Class SGD (SONAR)</text><text x="424" y="545.5" fill="#94a3b8" font-size="9.5">distance from a learned boundary</text></a>
+<a href="../../anomaly/ocsvm/" target="_top"><title>OneClassSGD: open anomaly/ocsvm.md</title><rect class="card" x="678" y="523.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="537.3" fill="#e0fbfc" font-size="11">OneClassSGD</text></a>
+<a href="../../anomaly/oiforest/" target="_top"><title>Online Isolation Forest: open anomaly/oiforest.md</title><rect class="card" x="410" y="553.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="569.5" fill="#e0fbfc" font-size="13" font-weight="700">Online Isolation Forest</text><text x="424" y="584.5" fill="#94a3b8" font-size="9.5">depth to isolate a point</text></a>
+<a href="../../anomaly/oiforest/" target="_top"><title>OnlineIsolationForest: open anomaly/oiforest.md</title><rect class="card" x="678" y="562.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="576.3" fill="#e0fbfc" font-size="11">OnlineIsolationForest</text></a>
+<a href="../../anomaly/lof/" target="_top"><title>Local Outlier Factor: open anomaly/lof.md</title><rect class="card" x="410" y="592.5" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="608.5" fill="#e0fbfc" font-size="13" font-weight="700">Local Outlier Factor</text><text x="424" y="623.5" fill="#94a3b8" font-size="9.5">density against the neighbours</text></a>
+<a href="../../anomaly/lof/" target="_top"><title>LocalOutlierFactor: open anomaly/lof.md</title><rect class="card" x="678" y="601.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="615.3" fill="#e0fbfc" font-size="11">LocalOutlierFactor</text></a>
+<a href="../../anomaly/offline/" target="_top"><title>Offline algorithms: open anomaly/offline.md</title><rect class="card" x="410" y="631.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="647.5" fill="#e0fbfc" font-size="13" font-weight="700">Offline algorithms</text><text x="424" y="662.5" fill="#94a3b8" font-size="9.5">five detectors on a whole table</text></a>
+<a href="../../anomaly/offline/" target="_top"><title>offline: open anomaly/offline.md</title><rect class="card" x="678" y="640.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="654.3" fill="#e0fbfc" font-size="11">offline</text></a>
+<text x="500" y="705" fill="#94a3b8" font-size="10.5" text-anchor="middle">jobs: dense_armor/usable/ontology.json; classes: dense_armor.usable.catalog; drawn by docs/assets/maps/make_anomaly_map.py</text>
+</svg>
