@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 2419" width="100%" role="img" aria-label="The map of online learning">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 2459" width="100%" role="img" aria-label="The map of online learning">
 <style>text{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif}.m{font-family:ui-monospace,Menlo,Consolas,monospace}.e{opacity:.35;transition:opacity .15s}.net:hover .e{opacity:.07}.net .s:hover .e{opacity:1;stroke-width:2.2}a:hover .card{fill:#17303f;stroke-width:2.4}a:hover text.dn{fill:#ffffff}</style>
-<rect width="1000" height="2419" fill="#0d131a" rx="14"/>
+<rect width="1000" height="2459" fill="#0d131a" rx="14"/>
 <text x="500" y="38" fill="#e0fbfc" font-size="24" font-weight="700" text-anchor="middle">THE MAP OF ONLINE LEARNING</text>
 <text x="500" y="62" fill="#4cc9f0" font-size="12.5" text-anchor="middle">the groups, the areas and every page of the tab; pass over an area to light its pages, click to open</text>
 <a href="../../index.md#the-library-folder-by-folder" target="_top"><title>back to the map of the library</title><rect class="card" x="20" y="14" width="150" height="30" rx="15" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="95" y="33.5" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">← map of the library</text></a>
@@ -142,7 +142,7 @@
 <path class="e" d="M388,1850.5 C430,1850.5 436,1888.5 490,1888.5" fill="none" stroke="#ff9e00" stroke-width="1.1"/>
 </g>
 <g class="s">
-<path class="e" d="M164,2121.1 C200,2121.1 204,1964.5 238,1964.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M164,2125.1 C200,2125.1 204,1964.5 238,1964.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
 <path class="e" d="M388,1964.5 C430,1964.5 436,1926.5 490,1926.5" fill="none" stroke="#4cc9f0" stroke-width="1.1"/>
 <path class="e" d="M388,1964.5 C430,1964.5 436,1945.5 490,1945.5" fill="none" stroke="#4cc9f0" stroke-width="1.1"/>
 <path class="e" d="M388,1964.5 C430,1964.5 436,1964.5 490,1964.5" fill="none" stroke="#4cc9f0" stroke-width="1.1"/>
@@ -150,11 +150,11 @@
 <path class="e" d="M388,1964.5 C430,1964.5 436,2002.5 490,2002.5" fill="none" stroke="#4cc9f0" stroke-width="1.1"/>
 </g>
 <g class="s">
-<path class="e" d="M164,2121.1 C200,2121.1 204,2035.0 238,2035.0" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M164,2125.1 C200,2125.1 204,2035.0 238,2035.0" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
 <path class="e" d="M388,2035.0 C430,2035.0 436,2035.0 490,2035.0" fill="none" stroke="#4cc9f0" stroke-width="1.1"/>
 </g>
 <g class="s">
-<path class="e" d="M164,2121.1 C200,2121.1 204,2115.0 238,2115.0" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M164,2125.1 C200,2125.1 204,2115.0 238,2115.0" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
 <path class="e" d="M388,2115.0 C430,2115.0 436,2067.5 490,2067.5" fill="none" stroke="#4cc9f0" stroke-width="1.1"/>
 <path class="e" d="M388,2115.0 C430,2115.0 436,2086.5 490,2086.5" fill="none" stroke="#4cc9f0" stroke-width="1.1"/>
 <path class="e" d="M388,2115.0 C430,2115.0 436,2105.5 490,2105.5" fill="none" stroke="#4cc9f0" stroke-width="1.1"/>
@@ -163,21 +163,24 @@
 <path class="e" d="M388,2115.0 C430,2115.0 436,2162.5 490,2162.5" fill="none" stroke="#4cc9f0" stroke-width="1.1"/>
 </g>
 <g class="s">
-<path class="e" d="M164,2121.1 C200,2121.1 204,2215.0 238,2215.0" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M164,2125.1 C200,2125.1 204,2215.0 238,2215.0" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
 <path class="e" d="M388,2215.0 C430,2215.0 436,2186.5 490,2186.5" fill="none" stroke="#4cc9f0" stroke-width="1.1"/>
 <path class="e" d="M388,2215.0 C430,2215.0 436,2205.5 490,2205.5" fill="none" stroke="#4cc9f0" stroke-width="1.1"/>
 <path class="e" d="M388,2215.0 C430,2215.0 436,2224.5 490,2224.5" fill="none" stroke="#4cc9f0" stroke-width="1.1"/>
 <path class="e" d="M388,2215.0 C430,2215.0 436,2243.5 490,2243.5" fill="none" stroke="#4cc9f0" stroke-width="1.1"/>
 </g>
 <g class="s">
-<path class="e" d="M164,2121.1 C200,2121.1 204,2276.0 238,2276.0" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
-<path class="e" d="M388,2276.0 C430,2276.0 436,2276.0 490,2276.0" fill="none" stroke="#4cc9f0" stroke-width="1.1"/>
+<path class="e" d="M164,2125.1 C200,2125.1 204,2296.0 238,2296.0" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M388,2296.0 C430,2296.0 436,2267.5 490,2267.5" fill="none" stroke="#4cc9f0" stroke-width="1.1"/>
+<path class="e" d="M388,2296.0 C430,2296.0 436,2286.5 490,2286.5" fill="none" stroke="#4cc9f0" stroke-width="1.1"/>
+<path class="e" d="M388,2296.0 C430,2296.0 436,2305.5 490,2305.5" fill="none" stroke="#4cc9f0" stroke-width="1.1"/>
+<path class="e" d="M388,2296.0 C430,2296.0 436,2324.5 490,2324.5" fill="none" stroke="#4cc9f0" stroke-width="1.1"/>
 </g>
 <g class="s">
-<path class="e" d="M164,2341.5 C200,2341.5 204,2341.5 238,2341.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
-<path class="e" d="M388,2341.5 C430,2341.5 436,2322.5 490,2322.5" fill="none" stroke="#ff9e00" stroke-width="1.1"/>
-<path class="e" d="M388,2341.5 C430,2341.5 436,2341.5 490,2341.5" fill="none" stroke="#ff9e00" stroke-width="1.1"/>
-<path class="e" d="M388,2341.5 C430,2341.5 436,2360.5 490,2360.5" fill="none" stroke="#ff9e00" stroke-width="1.1"/>
+<path class="e" d="M164,2381.5 C200,2381.5 204,2381.5 238,2381.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M388,2381.5 C430,2381.5 436,2362.5 490,2362.5" fill="none" stroke="#ff9e00" stroke-width="1.1"/>
+<path class="e" d="M388,2381.5 C430,2381.5 436,2381.5 490,2381.5" fill="none" stroke="#ff9e00" stroke-width="1.1"/>
+<path class="e" d="M388,2381.5 C430,2381.5 436,2400.5 490,2400.5" fill="none" stroke="#ff9e00" stroke-width="1.1"/>
 </g>
 </g>
 <a href="../../learn/" target="_top"><title>Predict: a label or a number from the features of a sample</title><rect class="card" x="20" y="721.6" width="144" height="48" rx="12" fill="#101a24" stroke="#4cc9f0" stroke-width="1.8"/><text class="dn m" x="32" y="741.6" fill="#e0fbfc" font-size="12" font-weight="700">PREDICT</text><text x="32" y="759.6" fill="#94a3b8" font-size="9.5">9 areas · 55 classes</text></a>
@@ -284,7 +287,7 @@
 <a href="../../facto/ffm/" target="_top"><title>Field-aware: open facto/ffm.md</title><rect class="card" x="492" y="1842.0" width="486" height="17" rx="8.5" fill="#101a24" stroke="#ff9e00" stroke-width="1.1"/><text class="dn m" x="504" y="1854.1" fill="#e0fbfc" font-size="10.5" font-weight="700">Field-aware</text><text x="966" y="1854.0" fill="#94a3b8" font-size="9.2" class="m" text-anchor="end">facto/ffm.md</text></a>
 <a href="../../facto/fwfm/" target="_top"><title>Field-weighted: open facto/fwfm.md</title><rect class="card" x="492" y="1861.0" width="486" height="17" rx="8.5" fill="#101a24" stroke="#ff9e00" stroke-width="1.1"/><text class="dn m" x="504" y="1873.1" fill="#e0fbfc" font-size="10.5" font-weight="700">Field-weighted</text><text x="966" y="1873.0" fill="#94a3b8" font-size="9.2" class="m" text-anchor="end">facto/fwfm.md</text></a>
 <a href="../../facto/hofm/" target="_top"><title>Higher-order: open facto/hofm.md</title><rect class="card" x="492" y="1880.0" width="486" height="17" rx="8.5" fill="#101a24" stroke="#ff9e00" stroke-width="1.1"/><text class="dn m" x="504" y="1892.1" fill="#e0fbfc" font-size="10.5" font-weight="700">Higher-order</text><text x="966" y="1892.0" fill="#94a3b8" font-size="9.2" class="m" text-anchor="end">facto/hofm.md</text></a>
-<a href="../../timeseries/" target="_top"><title>Model The Stream: time, distributions, the optimizer, the groups and the rules</title><rect class="card" x="20" y="2097.1" width="144" height="48" rx="12" fill="#101a24" stroke="#4cc9f0" stroke-width="1.8"/><text class="dn m" x="32" y="2117.1" fill="#e0fbfc" font-size="12" font-weight="700">MODEL THE STREAM</text><text x="32" y="2135.1" fill="#94a3b8" font-size="9.5">5 areas · 20 classes</text></a>
+<a href="../../timeseries/" target="_top"><title>Model The Stream: time, distributions, the optimizer, the groups and the rules</title><rect class="card" x="20" y="2101.1" width="144" height="48" rx="12" fill="#101a24" stroke="#4cc9f0" stroke-width="1.8"/><text class="dn m" x="32" y="2121.1" fill="#e0fbfc" font-size="12" font-weight="700">MODEL THE STREAM</text><text x="32" y="2139.1" fill="#94a3b8" font-size="9.5">5 areas · 20 classes</text></a>
 <a href="../../timeseries/" target="_top"><title>Time series: open timeseries/index.md</title><rect class="card" x="238" y="1947.5" width="150" height="34" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="250" y="1962.5" fill="#e0fbfc" font-size="12.5" font-weight="700">Time series</text><text x="250" y="1975.5" fill="#94a3b8" font-size="9.5">5 pages · 7 classes</text></a>
 <a href="../../timeseries/" target="_top"><title>Overview: open timeseries/index.md</title><rect class="card" x="492" y="1918.0" width="486" height="17" rx="8.5" fill="#101a24" stroke="#4cc9f0" stroke-width="1.1"/><text class="dn m" x="504" y="1930.1" fill="#e0fbfc" font-size="10.5" font-weight="700">Overview</text><text x="966" y="1930.0" fill="#94a3b8" font-size="9.2" class="m" text-anchor="end">timeseries/index.md</text></a>
 <a href="../../timeseries/ar/" target="_top"><title>Autoregressive models: open timeseries/ar.md</title><rect class="card" x="492" y="1937.0" width="486" height="17" rx="8.5" fill="#101a24" stroke="#4cc9f0" stroke-width="1.1"/><text class="dn m" x="504" y="1949.1" fill="#e0fbfc" font-size="10.5" font-weight="700">Autoregressive models</text><text x="966" y="1949.0" fill="#94a3b8" font-size="9.2" class="m" text-anchor="end">timeseries/ar.md</text></a>
@@ -305,12 +308,15 @@
 <a href="../../cluster/kmeans/" target="_top"><title>OnlineKMeans: open cluster/kmeans.md</title><rect class="card" x="492" y="2197.0" width="486" height="17" rx="8.5" fill="#101a24" stroke="#4cc9f0" stroke-width="1.1"/><text class="dn m" x="504" y="2209.1" fill="#e0fbfc" font-size="10.5" font-weight="700">OnlineKMeans</text><text x="966" y="2209.0" fill="#94a3b8" font-size="9.2" class="m" text-anchor="end">cluster/kmeans.md</text></a>
 <a href="../../cluster/denstream/" target="_top"><title>DenStream: open cluster/denstream.md</title><rect class="card" x="492" y="2216.0" width="486" height="17" rx="8.5" fill="#101a24" stroke="#4cc9f0" stroke-width="1.1"/><text class="dn m" x="504" y="2228.1" fill="#e0fbfc" font-size="10.5" font-weight="700">DenStream</text><text x="966" y="2228.0" fill="#94a3b8" font-size="9.2" class="m" text-anchor="end">cluster/denstream.md</text></a>
 <a href="../../cluster/visual_vocabulary/" target="_top"><title>Visual vocabulary: open cluster/visual_vocabulary.md</title><rect class="card" x="492" y="2235.0" width="486" height="17" rx="8.5" fill="#101a24" stroke="#4cc9f0" stroke-width="1.1"/><text class="dn m" x="504" y="2247.1" fill="#e0fbfc" font-size="10.5" font-weight="700">Visual vocabulary</text><text x="966" y="2247.0" fill="#94a3b8" font-size="9.2" class="m" text-anchor="end">cluster/visual_vocabulary.md</text></a>
-<a href="../../rules/" target="_top"><title>Rules: open rules/index.md</title><rect class="card" x="238" y="2259.0" width="150" height="34" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="250" y="2274.0" fill="#e0fbfc" font-size="12.5" font-weight="700">Rules</text><text x="250" y="2287.0" fill="#94a3b8" font-size="9.5">1 page · 1 class</text></a>
-<a href="../../rules/" target="_top"><title>Rules: open rules/index.md</title><rect class="card" x="492" y="2267.5" width="486" height="17" rx="8.5" fill="#101a24" stroke="#4cc9f0" stroke-width="1.1"/><text class="dn m" x="504" y="2279.6" fill="#e0fbfc" font-size="10.5" font-weight="700">Rules</text><text x="966" y="2279.5" fill="#94a3b8" font-size="9.2" class="m" text-anchor="end">rules/index.md</text></a>
-<a href="../../fit/" target="_top"><title>Bring The Data: a whole table, with fit</title><rect class="card" x="20" y="2317.5" width="144" height="48" rx="12" fill="#101a24" stroke="#ff9e00" stroke-width="1.8"/><text class="dn m" x="32" y="2337.5" fill="#e0fbfc" font-size="12" font-weight="700">BRING THE DATA</text><text x="32" y="2355.5" fill="#94a3b8" font-size="9.5">1 area · 0 classes</text></a>
-<a href="../../fit/" target="_top"><title>Fit: open fit/index.md</title><rect class="card" x="238" y="2324.5" width="150" height="34" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn m" x="250" y="2339.5" fill="#e0fbfc" font-size="12.5" font-weight="700">Fit</text><text x="250" y="2352.5" fill="#94a3b8" font-size="9.5">3 pages</text></a>
-<a href="../../fit/" target="_top"><title>Overview: open fit/index.md</title><rect class="card" x="492" y="2314.0" width="486" height="17" rx="8.5" fill="#101a24" stroke="#ff9e00" stroke-width="1.1"/><text class="dn m" x="504" y="2326.1" fill="#e0fbfc" font-size="10.5" font-weight="700">Overview</text><text x="966" y="2326.0" fill="#94a3b8" font-size="9.2" class="m" text-anchor="end">fit/index.md</text></a>
-<a href="../../fit/estimators/" target="_top"><title>Fit on an estimator: open fit/estimators.md</title><rect class="card" x="492" y="2333.0" width="486" height="17" rx="8.5" fill="#101a24" stroke="#ff9e00" stroke-width="1.1"/><text class="dn m" x="504" y="2345.1" fill="#e0fbfc" font-size="10.5" font-weight="700">Fit on an estimator</text><text x="966" y="2345.0" fill="#94a3b8" font-size="9.2" class="m" text-anchor="end">fit/estimators.md</text></a>
-<a href="../../fit/metric_learners/" target="_top"><title>LEGO, POLA and OASIS: open fit/metric_learners.md</title><rect class="card" x="492" y="2352.0" width="486" height="17" rx="8.5" fill="#101a24" stroke="#ff9e00" stroke-width="1.1"/><text class="dn m" x="504" y="2364.1" fill="#e0fbfc" font-size="10.5" font-weight="700">LEGO, POLA and OASIS</text><text x="966" y="2364.0" fill="#94a3b8" font-size="9.2" class="m" text-anchor="end">fit/metric_learners.md</text></a>
-<text x="500" y="2405" fill="#94a3b8" font-size="10.5" text-anchor="middle">pages: the menu of mkdocs.yml; classes: the catalog of the library (dense_armor.usable.catalog); drawn by docs/assets/maps/make_online_map.py</text>
+<a href="../../rules/" target="_top"><title>Rules: open rules/index.md</title><rect class="card" x="238" y="2279.0" width="150" height="34" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="250" y="2294.0" fill="#e0fbfc" font-size="12.5" font-weight="700">Rules</text><text x="250" y="2307.0" fill="#94a3b8" font-size="9.5">4 pages · 1 class</text></a>
+<a href="../../rules/" target="_top"><title>Overview: open rules/index.md</title><rect class="card" x="492" y="2259.0" width="486" height="17" rx="8.5" fill="#101a24" stroke="#4cc9f0" stroke-width="1.1"/><text class="dn m" x="504" y="2271.1" fill="#e0fbfc" font-size="10.5" font-weight="700">Overview</text><text x="966" y="2271.0" fill="#94a3b8" font-size="9.2" class="m" text-anchor="end">rules/index.md</text></a>
+<a href="../../rules/learn/" target="_top"><title>Learn a rule set: open rules/learn.md</title><rect class="card" x="492" y="2278.0" width="486" height="17" rx="8.5" fill="#101a24" stroke="#4cc9f0" stroke-width="1.1"/><text class="dn m" x="504" y="2290.1" fill="#e0fbfc" font-size="10.5" font-weight="700">Learn a rule set</text><text x="966" y="2290.0" fill="#94a3b8" font-size="9.2" class="m" text-anchor="end">rules/learn.md</text></a>
+<a href="../../rules/change/" target="_top"><title>When the world changes: open rules/change.md</title><rect class="card" x="492" y="2297.0" width="486" height="17" rx="8.5" fill="#101a24" stroke="#4cc9f0" stroke-width="1.1"/><text class="dn m" x="504" y="2309.1" fill="#e0fbfc" font-size="10.5" font-weight="700">When the world changes</text><text x="966" y="2309.0" fill="#94a3b8" font-size="9.2" class="m" text-anchor="end">rules/change.md</text></a>
+<a href="../../rules/options/" target="_top"><title>Options: open rules/options.md</title><rect class="card" x="492" y="2316.0" width="486" height="17" rx="8.5" fill="#101a24" stroke="#4cc9f0" stroke-width="1.1"/><text class="dn m" x="504" y="2328.1" fill="#e0fbfc" font-size="10.5" font-weight="700">Options</text><text x="966" y="2328.0" fill="#94a3b8" font-size="9.2" class="m" text-anchor="end">rules/options.md</text></a>
+<a href="../../fit/" target="_top"><title>Bring The Data: a whole table, with fit</title><rect class="card" x="20" y="2357.5" width="144" height="48" rx="12" fill="#101a24" stroke="#ff9e00" stroke-width="1.8"/><text class="dn m" x="32" y="2377.5" fill="#e0fbfc" font-size="12" font-weight="700">BRING THE DATA</text><text x="32" y="2395.5" fill="#94a3b8" font-size="9.5">1 area · 0 classes</text></a>
+<a href="../../fit/" target="_top"><title>Fit: open fit/index.md</title><rect class="card" x="238" y="2364.5" width="150" height="34" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn m" x="250" y="2379.5" fill="#e0fbfc" font-size="12.5" font-weight="700">Fit</text><text x="250" y="2392.5" fill="#94a3b8" font-size="9.5">3 pages</text></a>
+<a href="../../fit/" target="_top"><title>Overview: open fit/index.md</title><rect class="card" x="492" y="2354.0" width="486" height="17" rx="8.5" fill="#101a24" stroke="#ff9e00" stroke-width="1.1"/><text class="dn m" x="504" y="2366.1" fill="#e0fbfc" font-size="10.5" font-weight="700">Overview</text><text x="966" y="2366.0" fill="#94a3b8" font-size="9.2" class="m" text-anchor="end">fit/index.md</text></a>
+<a href="../../fit/estimators/" target="_top"><title>Fit on an estimator: open fit/estimators.md</title><rect class="card" x="492" y="2373.0" width="486" height="17" rx="8.5" fill="#101a24" stroke="#ff9e00" stroke-width="1.1"/><text class="dn m" x="504" y="2385.1" fill="#e0fbfc" font-size="10.5" font-weight="700">Fit on an estimator</text><text x="966" y="2385.0" fill="#94a3b8" font-size="9.2" class="m" text-anchor="end">fit/estimators.md</text></a>
+<a href="../../fit/metric_learners/" target="_top"><title>LEGO, POLA and OASIS: open fit/metric_learners.md</title><rect class="card" x="492" y="2392.0" width="486" height="17" rx="8.5" fill="#101a24" stroke="#ff9e00" stroke-width="1.1"/><text class="dn m" x="504" y="2404.1" fill="#e0fbfc" font-size="10.5" font-weight="700">LEGO, POLA and OASIS</text><text x="966" y="2404.0" fill="#94a3b8" font-size="9.2" class="m" text-anchor="end">fit/metric_learners.md</text></a>
+<text x="500" y="2445" fill="#94a3b8" font-size="10.5" text-anchor="middle">pages: the menu of mkdocs.yml; classes: the catalog of the library (dense_armor.usable.catalog); drawn by docs/assets/maps/make_online_map.py</text>
 </svg>

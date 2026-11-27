@@ -384,7 +384,11 @@ nav:
           - fit/index.md
           - Fit on an estimator: fit/estimators.md
           - LEGO, POLA and OASIS: fit/metric_learners.md
-      - Rules: rules/index.md
+      - Rules:
+          - rules/index.md
+          - Learn a rule set: rules/learn.md
+          - When the world changes: rules/change.md
+          - Options: rules/options.md
       - Detection:
           - Anomaly detection:
               - anomaly/index.md

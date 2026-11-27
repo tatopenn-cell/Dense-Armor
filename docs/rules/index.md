@@ -1,57 +1,72 @@
 # Rules that learn a number
 
+## The map of rules
+
+Click a page to open it, or the job on the left (or the button at the top) to go back to the [map of the library](../index.md#the-library-folder-by-folder).
+
+<object type="image/svg+xml" data="../assets/maps/rules.svg" style="width:100%"></object>
+
+## Gamestory
+
+### The Lighthouse
+
+Once upon a time there was a lighthouse keeper in the middle of the sea who had to guess how high the water level would be every morning (AMRulesRegressor), looking only at the clouds and the wind.
+
+At first he knew nothing and had written on a sheet of paper a single giant rule that applied to every day (default rule). But after observing the sea for a hundred mornings in a row (n_min), he noticed a trick that was one hundred percent sure (thanks to a special compass called Hoeffding bound that prevented him from guessing at random): when the wind blew from the north, the water always rose by five meters! So he added that new rule to his sheet, becoming very good at making predictions.
+
+One day, however, a sudden storm changed the sea currents forever. The keeper's old rule began to fail badly, but luckily on the table an alarm bell rang immediately (Page-Hinkley test), which warned every time a rule no longer worked. Without losing a second, the keeper tore up the old sheet and wrote a new one for the new currents. And in order never to be confused by the craziest days, he used one last secret: he ignored the waves that were too strange (anomaly_threshold) and kept on the table only very few easy-to-read slips of paper (max_rules), thus guessing the height of the sea every single day.
+
+## The problem, in one line
+
 A rule says "if these conditions hold, the answer is about this number". A set of rules is a model you can read: each rule names the features it looks at and the range where it applies. These rules start with one rule that covers everything, split it into narrower rules as the data shows where the answer changes, and throw away a rule whose predictions start to fail.
 
-## 1. What a rule is
+A desk that wants to predict the slippage of an order wants a model it can read. A **rule** says "if these conditions hold, the answer is about this number", and a set of rules is a model that names the features it looks at and the range where each rule applies. These rules start with one default rule that covers everything and learn one sample at a time, so they follow the stream. `AMRulesRegressor` (Duarte, Gama and Bifet 2016) is the class that does it.
 
-Suppose an AI assistant must predict how many seconds a request will take from a few numbers about it. A rule could read: *if the prompt length is above 300 and the queue is shorter than 4, the answer is about 2.1 seconds*. The part after "if" is a list of conditions on the features; the part after "then" is a small model that predicts the target for the requests the rule covers.
+## The words
 
-`AMRulesRegressor` (Duarte, Gama and Bifet 2016) keeps such a list and learns it one sample at a time.
+| Word | What it means here | In the example |
+|---|---|---|
+| rule | conditions on the features, and the number to answer when they hold | "if the size is above 0, about 5" |
+| default rule | the rule that covers every sample, before any cut | the answer is the mean slippage |
+| expand | add a condition to a rule, after `n_min` samples | the rule is cut at a size of 0 |
+| Page-Hinkley | the test that signals when the error of a rule rises | the rule is dropped when the market changes |
 
-## 2. Learning a rule set
+## A first example: the slippage of an order
 
-The model begins with a default rule that covers every sample. Each new sample updates the rules that cover it, or the default rule when none does. After 200 covered samples (`n_min`) a rule asks one question: is there a condition that splits its samples into two groups with clearly different targets? The answer comes from the *variance ratio* of the best split on each feature, compared with the second best through the Hoeffding bound. When one feature clearly wins, the rule grows a condition on it.
+The slippage is 5 basis points when the size of the order is above 0 and 0 otherwise; the spread and the volatility say nothing. The model sees 1500 orders, and then answers two orders of opposite size and says which conditions its rule found.
 
 ```python
 import numpy as np
 from dense_armor.core.online.rules import AMRulesRegressor
 
 rng = np.random.default_rng(0)
-m = AMRulesRegressor(n_min=100, seed=0)
+model = AMRulesRegressor(n_min=100, seed=0)
 for _ in range(1500):
-    a = float(rng.uniform(-1.0, 1.0))
-    m.learn_one({"a": a, "b": float(rng.uniform(-1.0, 1.0))}, 5.0 * (a > 0.0))
-print(round(m.predict_one({"a": 0.5, "b": 0.0}), 1), round(m.predict_one({"a": -0.5, "b": 0.0}), 1))
-print(m.explain_one({"a": 0.5, "b": 0.0}))
+    size = float(rng.uniform(-1.0, 1.0))
+    row = {"size": size, "spread": float(rng.uniform(-1.0, 1.0)), "vol": float(rng.uniform(-1.0, 1.0))}
+    model.learn_one(row, 5.0 * (size > 0.0) + 0.1 * float(rng.normal()))
+print(round(model.predict_one({"size": 0.5, "spread": 0.0, "vol": 0.0}), 1), round(model.predict_one({"size": -0.5, "spread": 0.0, "vol": 0.0}), 1))
+print(model.explain_one({"size": 0.5, "spread": 0.0, "vol": 0.0}))
 ```
 
 ```
-5.0 0.0
-[[{'feature': 'a', 'op': '>', 'value': -5.4352682762992544e-05}]]
+5.0 -0.0
+[[{'feature': 'size', 'op': '>', 'value': 0.03862887620925903}]]
 ```
 
-The target is 5 when `a` is positive and 0 otherwise; `b` is noise. The model answers 5.0 and 0.0, and `explain_one` lists the conditions of the rules that cover a sample.
+The answer is 5.0 for the positive size and -0.0, which is zero, for the negative one, with a cut at a size of about 0.04 (the slippage changes at 0) and no mention of the spread or the volatility. The pages below take each part in turn.
 
-![A step and the condition the rules found](../assets/rules/step_rules.png)
+## The pages of the section
 
-On a longer stream of the same kind (3000 samples, `n_min=100`) the condition found is `a > -0.0108`: the boundary of the step is at 0, and the rule is placed within 0.011 of it. The model holds 8 rules at the end, more than the step needs.
+| Page | What it shows |
+|---|---|
+| [Learn a rule set](learn.md) | how the rules are cut, `n_min`, and `explain_one`, with the toy stream of the old page |
+| [When the world changes](change.md) | the Page-Hinkley test that drops a rule when its error rises, with the older figure |
+| [Options](options.md) | how a rule predicts, how many rules, and the parameters |
 
-## 3. When the world changes
+## The same problem on a robot
 
-A rule keeps a running record of its own absolute error and watches it with the Page-Hinkley test, which signals when the average of a signal rises. When it signals, the rule is removed and the default rule starts covering that region again.
-
-The next figure swaps the targets after the model has learned the step: the target is now 5 when `a` is not positive.
-
-![Error over the stream after the targets are swapped](../assets/rules/regime_change.png)
-
-The error over the first 100 samples after the swap is 2.93 and over the last 300 of 2000 it is 0.17; the Page-Hinkley test removed 7 rules on the way. The recovery is not smooth: the curve shows bumps while new rules replace the removed ones.
-
-## 4. Options
-
-- **Ordered or unordered.** With `ordered_set=True` the first rule that covers a sample learns and predicts; by default all covering rules learn and their predictions are averaged.
-- **How a rule predicts.** `prediction="mean"` uses the mean of its targets, `"perceptron"` a linear model on the standardised features, `"adaptive"` (default) the one with the lower fading mean absolute error.
-- **Anomalies.** With `anomaly_threshold` set (the paper uses -0.75), a rule ignores a sample whose features are unusual for it, once it has seen `m_min` samples. The score is the mean over features, so it flags a sample that is unusual in most features, not in one of them.
-- **Size.** `max_rules`, `max_literals` and `max_split_points` bound the model.
+A robot that predicts the torque of a joint from its speed, its load and its temperature reads its rules in the same way, and each page ends with the same code written for a robot.
 
 ## Details
 
