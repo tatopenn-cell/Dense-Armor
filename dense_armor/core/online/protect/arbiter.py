@@ -130,7 +130,7 @@ def classify_segments(
       etichette   -- array of strings 'clean'/'spike'/'regime', one per point.
                      A non-finite point is 'clean' and is left out of the
                      reference windows of the following points, as in
-                     StreamingDeviationDetector.
+                     streamDD.
       deviazione  -- |x[i] - reference| / scale (or only |x[i]-reference|
                      if the scale is degenerate), same unit for every point.
       incertezza  -- 0..1, how close the point is to the decision boundary

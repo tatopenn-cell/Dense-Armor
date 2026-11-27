@@ -1,4 +1,4 @@
-# CUSUMDriftDetector: the piggy bank that fills while a stream drifts
+﻿# CUSUMDriftDetector: the piggy bank that fills while a stream drifts
 
 [← CUSUM](index.md)
 
@@ -63,7 +63,7 @@ In the run above the first three values are small, so the fee keeps the total at
 
 ### Where the surprise $z_t$ comes from
 
-The detector measures each value against a window of the recent past, without looking at the future. The centre of the window is its median and its width is $S = 1.4826 \cdot \mathrm{MAD}$ (the median absolute distance from the median; the factor 1.4826 makes $S$ equal to the standard deviation when the noise is normal, see [anomaly detection](../../anomaly/streaming.md)). Then $z_t = (x_t - \text{median}) / S$.
+The detector measures each value against a window of the recent past, without looking at the future. The centre of the window is its median and its width is $S = 1.4826 \cdot \mathrm{MAD}$ (the median absolute distance from the median; the factor 1.4826 makes $S$ equal to the standard deviation when the noise is normal, see [anomaly detection](../../anomaly/streaming/index.md)). Then $z_t = (x_t - \text{median}) / S$.
 
 Two ways to choose the window:
 

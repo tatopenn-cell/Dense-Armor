@@ -4,7 +4,7 @@ import logging
 
 import numpy as np
 
-from dense_armor.core.online.anomaly.streaming import StreamingDeviationDetector
+from dense_armor.core.online.anomaly.streaming import streamDD
 from dense_armor.core.online.protect.arbiter import classify_segments, route_and_correct
 from dense_armor.core.online.protect.healing import healing_filter
 from dense_armor.core.online.protect.orca import Orca
@@ -20,7 +20,7 @@ def test_nonfinite_point_is_clean_and_a_later_spike_is_found():
 
 def test_batch_and_streaming_flags_agree_with_a_nan():
     labels, _, _ = classify_segments(NAN_SERIES, radius=3, ref_mult=2)
-    det = StreamingDeviationDetector(radius=3, ref_mult=2)
+    det = streamDD(radius=3, ref_mult=2)
     streaming = [bool(det.update(v)) for v in NAN_SERIES]
     assert streaming == [lab != "clean" for lab in labels]
 

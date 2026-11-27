@@ -922,7 +922,7 @@ _SIGNAL_CLASSES_EXT = {
     ("distribution", "gmm"): ("dense_armor.core.signals.stats.mixture", "OnlineGaussianMixture"),
     ("distribution", "student_t"): ("dense_armor.core.signals.stats.student_t", "StudentT"),
     # risk anomaly extra
-    ("anomaly", "streaming_dev"): ("dense_armor.core.online.anomaly.deviation", "StreamingDeviationScorer"),
+    ("anomaly", "streaming_dev"): ("dense_armor.core.online.anomaly.deviation", "streamDS"),
 }
 
 

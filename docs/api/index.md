@@ -1,4 +1,4 @@
-# API Reference
+﻿# API Reference
 
 A starting point for finding the right tool. Say what you have in front of you (an order to check, a stream of returns, a table, a network to train) and this page tells you which part of the library to use. The examples are about finance first, then neural networks.
 
@@ -145,7 +145,7 @@ past.
 
 - **[Arbiter](../protect/arbiter.md)** — classifies each point as clean / spike / regime
   against a wide causal reference window, then routes it.
-- **[Streaming](../anomaly/streaming.md)** — a per-sample port of
+- **[Streaming](../anomaly/streaming/index.md)** — a per-sample port of
   Arbiter's causal deviation check, plus native multi-channel wrappers.
 - **[Robust filters](../anomaly/robust_filters.md)** — Chauvenet, Tukey, Hampel, sigma
   clipping on whole series, plus `pressure_valve`.

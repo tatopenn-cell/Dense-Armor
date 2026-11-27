@@ -19,7 +19,7 @@ solvable afterwards); it needs
 classify_segments BEFORE the run-length logic.
 Only this half is brought here.
 
-CORRECTNESS: `StreamingDeviationDetector`, fed one point at a
+CORRECTNESS: `streamDD`, fed one point at a
 time, must reproduce exactly (bit for bit) the internal `deviante` array
 of `classify_segments` -- verified on real data (not only
 synthetic) in Dense-Evolution-Discovery before this promotion,
@@ -36,8 +36,8 @@ justify with greater complexity.
 MULTI-CHANNEL SUPPORT: every real robotic experiment in Dense-
 Evolution-Discovery (the 6 joints of the LeRobot arm, the several axes of
 the IMU) required a manual per-channel loop around functions
-designed for a single 1D signal. `classify_segments_multichannel` and
-`MultiChannelStreamingDeviationDetector` apply the SAME per-channel logic
+designed for a single 1D signal. `class_seg_multi` and
+`MultistreamDD` apply the SAME per-channel logic
 already validated, without requiring that loop -- ergonomics, not
 a new algorithm. Each channel keeps its own reference window and its own
 scale independent by construction (a fast joint and an almost still one
@@ -64,7 +64,7 @@ def _feature_value(x, feature):
     return v if np.isfinite(v) else None
 
 
-class StreamingDeviationDetector:
+class streamDD:
     """Causal zero-latency deviation flag, one point at a time --
     same causal window (radius*ref_mult), same robust median/MAD,
     same degenerate-baseline rule as classify_segments'
@@ -72,12 +72,17 @@ class StreamingDeviationDetector:
     look ahead, it stays a batch/offline question by design, not
     an oversight).
 
-    Examples
-    --------
-    >>> det = StreamingDeviationDetector(radius=5, ref_mult=2, n_sigmas=3.0)
+    Args:
+        radius: half-width unit; the causal window holds `radius * ref_mult` values.
+        ref_mult: window length multiplier.
+        n_sigmas: flag when the deviation is above this many robust sigmas.
+        eps: numerical guard for a degenerate scale.
+
+    Examples:
+    >>> det = streamDD(radius=5, ref_mult=2, n_sigmas=3.0)
     >>> import numpy as np
     >>> rng = np.random.default_rng(0)
-    >>> stream = list(rng.normal(0, 1, 20)) + [50.0]  # one large outlier at the end
+    >>> stream = list(rng.normal(0, 1, 20)) + [50.0]
     >>> flags = [det.update(x) for x in stream]
     >>> flags[-1]
     True
@@ -118,39 +123,68 @@ class StreamingDeviationDetector:
         return deviante
 
 
-class MultiChannelStreamingDeviationDetector:
-    """N independent instances of `StreamingDeviationDetector`, one per
+class MultistreamDD:
+    """N independent instances of `streamDD`, one per
     channel -- the flag of each channel is computed exactly as if
-    `StreamingDeviationDetector` ran on that channel alone (the
-    channels never influence each other)."""
+    `streamDD` ran on that channel alone (the
+    channels never influence each other).
+
+    Args:
+        n_channels: number of independent channels.
+        radius: half-width unit; each channel's window holds `radius * ref_mult` values.
+        ref_mult: window length multiplier.
+        n_sigmas: per-channel flag threshold in robust-sigma units.
+        eps: numerical guard for a degenerate scale.
+
+    Examples:
+    >>> import numpy as np
+    >>> det = MultistreamDD(n_channels=2, radius=5, ref_mult=2, n_sigmas=3.0)
+    >>> _ = [det.update(r) for r in np.zeros((10, 2))]
+    >>> det.update([50.0, 0.0]).tolist()
+    [True, False]
+    """
 
     def __init__(self, n_channels: int, radius: int = 10, ref_mult: int = 3,
                  n_sigmas: float = 3.0, eps: float = 1e-9):
         self.n_channels = n_channels
-        self._detectors: list[StreamingDeviationDetector] = [
-            StreamingDeviationDetector(radius=radius, ref_mult=ref_mult, n_sigmas=n_sigmas, eps=eps)
+        self._detectors: list[streamDD] = [
+            streamDD(radius=radius, ref_mult=ref_mult, n_sigmas=n_sigmas, eps=eps)
             for _ in range(n_channels)
         ]
 
     def update(self, x_vec) -> np.ndarray:
-        """x_vec: length n_channels. Returns a bool array (n_channels,)."""
+        """x_vec: array-like of `n_channels` numbers. Returns a bool array (n_channels,).
+
+        Raises:
+            ValueError: if `x_vec` does not have `n_channels` values.
+        """
         x_vec = as_default_array(x_vec).ravel()
         if x_vec.size != self.n_channels:
             raise ValueError(f"expected {self.n_channels} channels, got {x_vec.size}")
         return np.array([det.update(float(v)) for det, v in zip(self._detectors, x_vec)], dtype=bool)
 
 
-def classify_segments_multichannel(
+def class_seg_multi(
     X: np.ndarray, radius: int = 10, ref_mult: int = 3,
     n_sigmas: float = 3.0, spike_run_max: int = 2, eps: float = 1e-9,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """X: (n_samples, n_channels). Applies `classify_segments` (arbiter.py)
-    independently to each column -- exactly the same result per
-    channel as calling it individually, only stacked instead of
-    requiring a manual loop from the caller.
+    """Apply `classify_segments` (arbiter.py) independently to each column.
 
-    Returns (etichette, deviazione, incertezza), each (n_samples,
-    n_channels)."""
+    Exactly the same result per channel as calling it individually, only
+    stacked instead of requiring a manual loop from the caller.
+
+    Args:
+        X: array of shape (n_samples, n_channels).
+        radius: half-width unit; the causal window holds `radius * ref_mult` values.
+        ref_mult: window length multiplier.
+        n_sigmas: flag threshold in robust-sigma units.
+        spike_run_max: maximum run length counted as a spike.
+        eps: numerical guard for a degenerate scale.
+
+    Returns:
+        A tuple `(labels, deviation, uncertainty)`, each of shape
+        `(n_samples, n_channels)`.
+    """
     X = as_default_array(X)
     n, c = X.shape
     etichette = np.empty((n, c), dtype=object)

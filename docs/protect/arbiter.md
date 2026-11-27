@@ -1,4 +1,4 @@
-# Arbiter (per-point routing)
+﻿# Arbiter (per-point routing)
 
 When a reading looks wrong, there are different right answers: a single glitch should be replaced, a real change should be kept. The Arbiter decides, reading by reading, which case it is, and treats it accordingly.
 
@@ -19,7 +19,7 @@ at sample 1500 and a step to a new level, +1.0, from sample 2000.
 ## 1. The three labels
 
 The Arbiter uses the same robust-deviation score as every other detector in the package
-(see [Streaming](../anomaly/streaming.md)):
+(see [Streaming](../anomaly/streaming/index.md)):
 
 ```
 med = median(window)
@@ -263,7 +263,7 @@ The sample 60 is a spike. The regime labels start at the sample 150, where the l
 | `TukeyScorer` | 3.0 (`n_sigmas`) | spike | 1 | 8 |
 | `ChauvenetScorer` | 0.5 | clean | 205 | 72 |
 | `SigmaClipScorer` | 3.0 (`n_sigmas`) | spike | 7 | 3 |
-| `StreamingDeviationScorer` | 3.0 (`n_sigmas`) | spike | 5 | 23 |
+| `streamDS` | 3.0 (`n_sigmas`) | spike | 5 | 23 |
 | `LODA` | 4 | clean | 19 | 0 |
 | `HalfSpaceTrees` | 1e+09 | clean | 0 | 0 |
 | `LocalOutlierFactor` | 1.5 | spike | 23 | 19 |
@@ -271,7 +271,7 @@ The sample 60 is a spike. The regime labels start at the sample 150, where the l
 | `OneClassSGD` | 1e+09 | clean | 0 | 0 |
 | `OnlineIsolationForest` | 0.6 | spike | 81 | 0 |
 
-With their own threshold, six detectors label the sample 60 as spike (`HampelScorer`, `TukeyScorer`, `SigmaClipScorer`, `StreamingDeviationScorer`, `LocalOutlierFactor` and `OnlineIsolationForest`) and five leave it clean. `HalfSpaceTrees` and `OneClassSGD` have a threshold of 1e9, so no sample deviates, and `OnlineRobustMahalanobis` with 7 flags none either: for them `threshold` must be given. `LODA` (threshold 4) flags 19 samples and not the sample 60, `ChauvenetScorer` (threshold 0.5) flags 205 samples and not the sample 60, `OnlineIsolationForest` (0.6) flags 81 and `LocalOutlierFactor` (1.5) flags 23: their score is not in the unit of a threshold in sigma, so each one needs the threshold of its own page.
+With their own threshold, six detectors label the sample 60 as spike (`HampelScorer`, `TukeyScorer`, `SigmaClipScorer`, `streamDS`, `LocalOutlierFactor` and `OnlineIsolationForest`) and five leave it clean. `HalfSpaceTrees` and `OneClassSGD` have a threshold of 1e9, so no sample deviates, and `OnlineRobustMahalanobis` with 7 flags none either: for them `threshold` must be given. `LODA` (threshold 4) flags 19 samples and not the sample 60, `ChauvenetScorer` (threshold 0.5) flags 205 samples and not the sample 60, `OnlineIsolationForest` (0.6) flags 81 and `LocalOutlierFactor` (1.5) flags 23: their score is not in the unit of a threshold in sigma, so each one needs the threshold of its own page.
 
 ### 9.3 An event detector confirms a regime
 

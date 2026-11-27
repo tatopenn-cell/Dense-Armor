@@ -1,4 +1,4 @@
-# API
+﻿# API
 
 A complete list of everything the library offers: every class, what it does and its methods. When a class has a guide page, the link takes you to it.
 
@@ -1065,7 +1065,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.anomaly.filters`
 *Bases:* AnomalyDetector
-*Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
+*Guide:* [anomaly/streaming/index.md](../anomaly/streaming/index.md)
 
 Chauvenet outlier scorer on the causal window.
 
@@ -1116,7 +1116,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.anomaly.filters`
 *Bases:* Transformer
-*Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
+*Guide:* [anomaly/streaming/index.md](../anomaly/streaming/index.md)
 
 Streaming Hampel filter: replaces outliers with the causal-window median.
 
@@ -1141,7 +1141,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.anomaly.filters`
 *Bases:* AnomalyDetector
-*Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
+*Guide:* [anomaly/streaming/index.md](../anomaly/streaming/index.md)
 
 Hampel outlier scorer on the causal window.
 
@@ -1242,7 +1242,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.anomaly.mahalanobis`
 *Bases:* AnomalyDetector
-*Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
+*Guide:* [anomaly/streaming/index.md](../anomaly/streaming/index.md)
 
 Online robust Mahalanobis scorer for multichannel signals.
 
@@ -1268,7 +1268,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.anomaly.filters`
 *Bases:* AnomalyDetector
-*Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
+*Guide:* [anomaly/streaming/index.md](../anomaly/streaming/index.md)
 
 Iterative sigma-clipping outlier scorer on the causal window.
 
@@ -1289,14 +1289,14 @@ Public methods:
 - `state_dict()`
 - `window_samples(seconds: float)`
 
-### StreamingDeviationScorer
+### streamDS
 
 
 *Module:* `dense_armor.core.online.anomaly.deviation`
 *Bases:* AnomalyDetector
-*Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
+*Guide:* [anomaly/streaming/index.md](../anomaly/streaming/index.md)
 
-`StreamingDeviationDetector` as an anomaly detector compatible with river.
+`streamDD` as an anomaly detector compatible with river.
 
 Public methods:
 
@@ -1319,7 +1319,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.anomaly.filters`
 *Bases:* AnomalyDetector
-*Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
+*Guide:* [anomaly/streaming/index.md](../anomaly/streaming/index.md)
 
 Tukey-fences outlier scorer on the causal window.
 
@@ -1340,23 +1340,23 @@ Public methods:
 - `state_dict()`
 - `window_samples(seconds: float)`
 
-### MultiChannelStreamingDeviationDetector
+### MultistreamDD
 
 
 *Module:* `dense_armor.core.online.anomaly.streaming`
-*Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
+*Guide:* [anomaly/streaming/index.md](../anomaly/streaming/index.md)
 
-N independent ``StreamingDeviationDetector`` instances, one per channel.
+N independent ``streamDD`` instances, one per channel.
 
 Public methods:
 
 - `update(x_vec)`
 
-### StreamingDeviationDetector
+### streamDD
 
 
 *Module:* `dense_armor.core.online.anomaly.streaming`
-*Guide:* [anomaly/streaming.md](../anomaly/streaming.md)
+*Guide:* [anomaly/streaming/index.md](../anomaly/streaming/index.md)
 
 Causal per-sample deviation flag, one point at a time.
 

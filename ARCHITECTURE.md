@@ -50,7 +50,7 @@ graph TD
         LEARN["learn: OnlineGaussianNB,<br/>RecursiveLeastSquares,<br/>OnlinePlattScaling"]
         TREE["tree: HoeffdingTreeClassifier,<br/>MondrianForestClassifier,<br/>SGTRegressor"]
         CLUSTER["cluster: OnlineKMeans, DenStream"]
-        ANOMALY["anomaly: HampelScorer,<br/>OnlineRobustMahalanobis,<br/>StreamingDeviationDetector"]
+        ANOMALY["anomaly: HampelScorer,<br/>OnlineRobustMahalanobis,<br/>streamDD"]
         DRIFT["drift: CUSUMDriftDetector,<br/>ADWIN, KSWIN, PageHinkley"]
         PROTECT["protect: classify_segments,<br/>healing_filter, Orca"]
         VISION["vision: VideoFileStream, FrameFeatures,<br/>MotionEnergy, MovingObjectTracker,<br/>PatchFeatures, PatchMemory"]
@@ -286,7 +286,7 @@ The sections below follow the subpackages; the path of each one is
 | file | public names | what it is |
 |---|---|---|
 | `curvature.py` | `curvature` | curvature measure |
-| `deviation.py` | `StreamingDeviationScorer` | streaming deviation score |
+| `deviation.py` | `streamDS` | streaming deviation score |
 | `filters.py` | `HampelScorer`, `TukeyScorer`, `ChauvenetScorer`, `SigmaClipScorer`, `HampelFilter` | outlier scorers and filter |
 | `hst.py` | `HalfSpaceTrees` | Half-Space Trees for streaming anomaly detection |
 | `loda.py` | `LODA` | lightweight online detector of anomalies |
@@ -297,7 +297,7 @@ The sections below follow the subpackages; the path of each one is
 | `one_sided.py` | `one_sided_upper_filter` | one-sided upper filter |
 | `resonance_search.py` | `apply_fast_resonance`, `smoke_test` | resonance search |
 | `robust_filters.py` | `chauvenet_criterion`, `tukey_fences`, `hampel_filter`, `sigma_clip`, `pressure_valve` | robust filters |
-| `streaming.py` | `StreamingDeviationDetector`, `MultiChannelStreamingDeviationDetector`, `classify_segments_multichannel` | streaming deviation detectors |
+| `streaming.py` | `streamDD`, `MultistreamDD`, `class_seg_multi` | streaming deviation detectors |
 
 ### 2.12 drift
 

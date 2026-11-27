@@ -10,11 +10,11 @@ value being scored (the causal window) and scores the new value against the
 robust centre/scale of that window, in the method's own scale.
 
 The four scorers share the interface of
-`river_anomaly.StreamingDeviationScorer` (`learn_one` / `score_one`, feature
+`river_anomaly.streamDS` (`learn_one` / `score_one`, feature
 selection, `is_outlier`), so they plug into the pipelines of river and
 `anomaly.ThresholdFilter` the same way, but each uses its own method's scale
 and threshold rather than the median/MAD robust deviation of
-`StreamingDeviationDetector` alone.
+`streamDD` alone.
 
 `HampelFilter` is a transformer: `learn_one(x)` then `transform_one(x)`
 returns the value, or the causal-window median when the value is an outlier
@@ -75,8 +75,7 @@ class HampelScorer(AnomalyDetector):
     Gather 1993), applied to the causal window instead of the centred one.
     ``is_outlier`` returns True when the score exceeds ``n_sigmas``.
 
-    Parameters
-    ----------
+    Args:
     radius
         Half-width unit; the causal window holds ``2 * radius`` samples.
     n_sigmas
@@ -89,8 +88,7 @@ class HampelScorer(AnomalyDetector):
         the value actually deviates from the window median (degenerate scale
         is the strongest possible evidence), ``0.0`` when it does not.
 
-    Examples
-    --------
+    Examples:
     >>> from dense_armor.core.online.anomaly.filters import HampelScorer
     >>> import numpy as np
     >>> rng = np.random.default_rng(0)
@@ -102,8 +100,7 @@ class HampelScorer(AnomalyDetector):
     >>> s.is_outlier({"v": 50.0})
     True
 
-    References
-    ----------
+    References:
     Hampel, F. R. (1974). The influence curve and its role in robust
     estimation. JASA 69(346), 383-393.
     Davies, L., Gather, U. (1993). The identification of multiple outliers.
@@ -173,8 +170,7 @@ class TukeyScorer(AnomalyDetector):
     value differs from the degenerate fence and ``0.0`` when it does not,
     matching the batch rule for a flat window.
 
-    Parameters
-    ----------
+    Args:
     radius
         Half-width unit; the causal window holds ``2 * radius`` samples.
     k
@@ -185,8 +181,7 @@ class TukeyScorer(AnomalyDetector):
     eps
         Below this IQR the window is treated as flat.
 
-    Examples
-    --------
+    Examples:
     >>> from dense_armor.core.online.anomaly.filters import TukeyScorer
     >>> import numpy as np
     >>> rng = np.random.default_rng(0)
@@ -196,8 +191,7 @@ class TukeyScorer(AnomalyDetector):
     >>> s.is_outlier({"v": 50.0})
     True
 
-    References
-    ----------
+    References:
     Tukey, J. W. (1977). Exploratory Data Analysis. Addison-Wesley.
     """
 
@@ -286,8 +280,7 @@ class ChauvenetScorer(AnomalyDetector):
     ``SigmaClipScorer`` or ``TukeyScorer`` instead, or call
     :meth:`is_outlier` directly.
 
-    Parameters
-    ----------
+    Args:
     radius
         Half-width unit; the causal window holds ``2 * radius`` samples.
     threshold
@@ -297,8 +290,7 @@ class ChauvenetScorer(AnomalyDetector):
     eps
         Below this scale the window is treated as flat.
 
-    Examples
-    --------
+    Examples:
     >>> from dense_armor.core.online.anomaly.filters import ChauvenetScorer
     >>> import numpy as np
     >>> rng = np.random.default_rng(0)
@@ -308,8 +300,7 @@ class ChauvenetScorer(AnomalyDetector):
     >>> s.is_outlier({"v": 50.0})
     True
 
-    References
-    ----------
+    References:
     Chauvenet, W. (1863). A Manual of Spherical and Practical Astronomy,
     Vol. II, Appendix on the Method of Least Squares.
     """
@@ -380,8 +371,7 @@ class SigmaClipScorer(AnomalyDetector):
     is ``+inf`` when the value deviates from the cleaned mean and ``0.0``
     when it does not.
 
-    Parameters
-    ----------
+    Args:
     radius
         Half-width unit; the causal window holds ``2 * radius`` samples.
     n_sigmas
@@ -393,8 +383,7 @@ class SigmaClipScorer(AnomalyDetector):
     eps
         Below this scale the cleaned window is treated as flat.
 
-    Examples
-    --------
+    Examples:
     >>> from dense_armor.core.online.anomaly.filters import SigmaClipScorer
     >>> import numpy as np
     >>> rng = np.random.default_rng(0)
@@ -404,8 +393,7 @@ class SigmaClipScorer(AnomalyDetector):
     >>> s.is_outlier({"v": 50.0})
     True
 
-    References
-    ----------
+    References:
     Standard in astronomy; see e.g. Akritas, M. G., Bershady, M. A. (1996).
     Linear regression for astronomical data with measurement errors and
     intrinsic scatter. ApJ 470, 706.
@@ -466,8 +454,7 @@ class HampelFilter(Transformer):
     equivalent of the batch ``robust_filters.hampel_filter`` replacement
     rule. Other keys in the input dict are passed through unchanged.
 
-    Parameters
-    ----------
+    Args:
     radius
         Half-width unit; the causal window holds ``2 * radius`` samples.
     n_sigmas
@@ -477,8 +464,7 @@ class HampelFilter(Transformer):
     eps
         Below this scale the window is flat.
 
-    Examples
-    --------
+    Examples:
     >>> from dense_armor.core.online.anomaly.filters import HampelFilter
     >>> import numpy as np
     >>> rng = np.random.default_rng(0)
