@@ -1,4 +1,4 @@
-﻿# API
+# API
 
 A complete list of everything the library offers: every class, what it does and its methods. When a class has a guide page, the link takes you to it.
 

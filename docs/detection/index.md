@@ -1,10 +1,12 @@
-﻿# Detection: what is strange, what has changed, what to keep out of the model
+# Detection
 
 ## The map of detection
 
 Click an area to open its page, or one of its pages on the right, or the button at the top to go back to the [map of the library](../index.md#the-library-folder-by-folder).
 
 <object type="image/svg+xml" data="../assets/maps/detection.svg" style="width:100%"></object>
+
+What is strange, what has changed, what to keep out of the model.
 
 ## The three branches
 

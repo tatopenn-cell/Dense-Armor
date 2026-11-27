@@ -1,4 +1,4 @@
-﻿# Arbiter (per-point routing)
+# Arbiter (per-point routing)
 
 When a reading looks wrong, there are different right answers: a single glitch should be replaced, a real change should be kept. The Arbiter decides, reading by reading, which case it is, and treats it accordingly.
 

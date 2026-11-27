@@ -1,4 +1,4 @@
-﻿# API Reference
+# API Reference
 
 A starting point for finding the right tool. Say what you have in front of you (an order to check, a stream of returns, a table, a network to train) and this page tells you which part of the library to use. The examples are about finance first, then neural networks.
 

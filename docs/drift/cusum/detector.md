@@ -1,4 +1,4 @@
-﻿# CUSUMDriftDetector: the piggy bank that fills while a stream drifts
+# CUSUMDriftDetector: the piggy bank that fills while a stream drifts
 
 [← CUSUM](index.md)
 

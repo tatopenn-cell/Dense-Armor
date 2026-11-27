@@ -1,4 +1,4 @@
-# Drift detection: statistical methods for non-stationary process drift isolation
+# Drift detection
 
 ## The map of drift detection
 
@@ -17,6 +17,8 @@ unusual, but the average has moved. A per-sample detector misses this by constru
 every sample is inside the local window's amplitude, so nothing fires. A drift detector
 accumulates the small deviations and raises one alarm when the accumulated evidence is
 too large to be explained by noise.
+
+Statistical methods for non-stationary process drift isolation.
 
 ## The signal
 
