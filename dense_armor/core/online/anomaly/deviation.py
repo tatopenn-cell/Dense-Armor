@@ -35,14 +35,14 @@ class streamDS(AnomalyDetector):
         Below this scale the window is treated as flat.
 
     Examples:
-    >>> from dense_armor.core.online.anomaly.deviation import streamDS
-    >>> model = streamDS(radius=5, ref_mult=2)
-    >>> for v in [1.0, 1.2, 0.9, 1.1, 1.0, 0.8, 1.05]:
-    ...     model.learn_one({"v": v})
-    >>> model.score_one({"v": 1.0}) < 3.0
-    True
-    >>> model.score_one({"v": 50.0}) > 3.0
-    True
+        >>> from dense_armor.core.online.anomaly.deviation import streamDS
+        >>> model = streamDS(radius=5, ref_mult=2)
+        >>> for v in [1.0, 1.2, 0.9, 1.1, 1.0, 0.8, 1.05]:
+        ...     model.learn_one({"v": v})
+        >>> model.score_one({"v": 1.0}) < 3.0
+        True
+        >>> model.score_one({"v": 50.0}) > 3.0
+        True
     """
 
     def __init__(self, radius: int = 10, ref_mult: int = 3, feature: str | None = None,

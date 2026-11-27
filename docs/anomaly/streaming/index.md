@@ -41,6 +41,10 @@ past, and a yes/no flag when it is too unusual.
 
 ## Details
 
+## What the short names mean
+
+Four objects of this section have a short name: `streamDD` is *stream Deviation Detector*, `streamDS` is *stream Deviation Scorer*, `MultistreamDD` is *Multi-channel stream Deviation Detector* and `class_seg_multi` is *classify segments, multi-channel*. The other five keep their names: `HampelScorer`, `HampelFilter`, `TukeyScorer`, `ChauvenetScorer` and `SigmaClipScorer`.
+
 ## The pages of the section
 
 | Page | Object |

@@ -4,55 +4,59 @@
 
 `ChauvenetScorer` scores a new value with `N * P(|Z| >= z)`, the expected number of observations in a normal sample of size N that would lie at least this far from the mean. Unlike the other scorers, a **low** score means anomalous: `is_outlier` is `True` when the score is below `threshold` (`0.5`). `mu` and `sigma` are the ordinary mean and standard deviation of a causal window of `2 * radius` samples strictly before the value. It is an `AnomalyDetector`, causal.
 
-![On a seeded noise stream with one injected spike, the fraction of injected spikes flagged, for 8 spike amplitudes (2 to 10 standard deviations) and 8 values of threshold (0.1 to 1).](../../assets/streaming/chauvenet_scorer_3d.png)
+It looks only at the `2 * radius` samples before the value being scored, like the other scorers; why the batch versions differ is explained on the page of [HampelScorer](hampel_scorer.md).
 
-On a seeded noise stream with one injected spike, this surface shows how often the spike is flagged. The horizontal axis is the spike amplitude in standard deviations; the other axis is `threshold`. Higher threshold flags more.
+![The base 10 logarithm of the score for 8 values of z from 0.5 to 5 and 8 window sizes from 10 to 300; the orange plane is the threshold 0.5.](../../assets/streaming/chauvenet_scorer_3d.png)
+
+The score is the expected number of values this far from the mean, so it grows with the window size and falls as the value moves away. The same distance is rejected in a short window and kept in a long one.
 
 ## A first example: a daily cost of executing an order
 
-A desk watches the daily cost of executing an order. Each day it tells the scorer the new cost, then asks if the day is an outlier.
+A desk watches the daily cost of executing an order, around 12 with a noise of 1.5. The same cost of 16.5, about 3 standard deviations above, is judged with a window of 30 days and with a window of 300 days.
 
 ```python
 import numpy as np
 from dense_armor.core.online.anomaly.filters import ChauvenetScorer
 
-rng = np.random.default_rng(0)
-cost = 12.0 + 1.5 * rng.standard_normal(500)
-cost[250] = 25.0
-s = ChauvenetScorer(radius=15)
-for v in cost[:250]:
-    s.learn_one({"x": float(v)})
-print(s.is_outlier({"x": float(cost[250])}), round(s.score_one({"x": float(cost[250])}), 2))
+rng = np.random.default_rng(3)
+for radius in (15, 150):
+    c = ChauvenetScorer(radius=radius)
+    for v in rng.normal(12.0, 1.5, 2 * radius):
+        c.learn_one({"x": float(v)})
+    print(2 * radius, round(c.score_one({"x": 16.5}), 2), c.is_outlier({"x": 16.5}))
 ```
 
 ```
-True 0.0
+30 0.29 True
+300 0.89 False
 ```
 
-![The same seeded daily-cost stream, flagged outlier in pink.](../../assets/streaming/chauvenet_scorer_finance.png)
+With 30 days the score is 0.29, below 0.5: Chauvenet rejects the value. With 300 days it is 0.89: the value is kept. The longer the window, the more values this far from the mean are expected, so one such value is less surprising. Remember the direction: for Chauvenet a low score means an outlier.
 
-On the same seeded daily-cost stream, the spike day is flagged; `is_outlier` is `score < threshold`, not `score > threshold`.
+![The expected count N times P as a curve of z for a window of 30 and one of 300 days, with the threshold 0.5 and the two scores of the example as pink points.](../../assets/streaming/chauvenet_scorer_finance.png)
+
+The orange curve is a window of 30 and the blue one a window of 300. The grey line is the threshold 0.5. At z = 3 the orange curve is below it and the blue one above it.
 
 ## The same on a robot
 
 ```python
-import numpy as np
 from dense_armor.core.online.anomaly.filters import ChauvenetScorer
 
-rng = np.random.default_rng(0)
-s = ChauvenetScorer(radius=10)
-for v in rng.normal(0, 1, 20):
-    s.learn_one({"v": float(v)})
-print(s.is_outlier({"v": 50.0}))
+c = ChauvenetScorer(radius=5)
+for v in [10, 11, 9, 10, 12, 10, 11, 9, 10]:
+    c.learn_one({"v": float(v)})
+print(round(c.score_one({"v": 10.0}), 2), round(c.score_one({"v": 14.0}), 4), c.is_outlier({"v": 14.0}))
 ```
 
 ```
-True
+7.28 0.0003 True
 ```
 
-The robot case comes last. A reading of 50 is an outlier because the score is tiny, not large.
+A reading at the centre of the window scores high; a reading far from it scores almost zero and is rejected. A low score is an outlier.
 
 ## How it works
+
+Chauvenet rejects when $N \cdot \mathrm{erfc}(z/\sqrt 2) < 0.5$; its `score_one` returns $N \cdot P$, so for Chauvenet a **low** score means anomalous.
 
 The score is the expected number of points in a normal sample that would be at least this far out; too small means too unlikely. Chauvenet asks: in a normal sample, would we expect less than half a point this far out? If yes, reject. The direction is opposite to the other scorers, which is why `score_is_inverted` is set.
 
