@@ -1,6 +1,6 @@
-# Sigma: clip far points, then score
+# SigmaClipScorer
 
-[← Stream](index.md)
+[← Streaming anomaly detection](index.md)
 
 `SigmaClipScorer` first removes points beyond `n_sigmas`, recomputes the centre and spread of what remains, repeats until stable or `max_iters`, and then scores the new value by how far it is from that cleaned centre in cleaned-standard-deviation units. The window is `2 * radius` samples strictly before the value. `is_outlier` is `True` when the score is above `n_sigmas`. It is an `AnomalyDetector`, causal.
 

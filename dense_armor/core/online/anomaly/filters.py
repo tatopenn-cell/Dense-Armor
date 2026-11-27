@@ -255,8 +255,7 @@ class ChauvenetScorer(AnomalyDetector):
     the batch ``robust_filters.chauvenet_criterion``, applied to the causal
     window.
 
-    Direction of the test
-    ---------------------
+    Direction of the test:
     Unlike the other three scorers, Chauvenet *rejects when the score is
     small*: ``N * P`` counts how many points of a Gaussian sample would be
     at least this far out, and the criterion says "reject when this count

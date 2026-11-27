@@ -1,6 +1,6 @@
-# Chauvenet: how unlikely a value is
+# ChauvenetScorer
 
-[← Stream](index.md)
+[← Streaming anomaly detection](index.md)
 
 `ChauvenetScorer` scores a new value with `N * P(|Z| >= z)`, the expected number of observations in a normal sample of size N that would lie at least this far from the mean. Unlike the other scorers, a **low** score means anomalous: `is_outlier` is `True` when the score is below `threshold` (`0.5`). `mu` and `sigma` are the ordinary mean and standard deviation of a causal window of `2 * radius` samples strictly before the value. It is an `AnomalyDetector`, causal.
 

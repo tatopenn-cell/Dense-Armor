@@ -184,6 +184,13 @@ def class_seg_multi(
     Returns:
         A tuple `(labels, deviation, uncertainty)`, each of shape
         `(n_samples, n_channels)`.
+
+    Examples:
+        >>> import numpy as np
+        >>> X = np.zeros((5, 2))
+        >>> e, d, u = class_seg_multi(X, radius=2, ref_mult=2)
+        >>> e.shape == d.shape == u.shape == (5, 2)
+        True
     """
     X = as_default_array(X)
     n, c = X.shape

@@ -1,6 +1,6 @@
-# Multi: one flag for each channel
+# MultistreamDD
 
-[← Stream](index.md)
+[← Streaming anomaly detection](index.md)
 
 You have several numbers arriving together, for example the cost of executing an order on several markets, or the velocity of every robot joint. `MultistreamDD` reads one vector per call and returns one flag per channel. Each channel is scored exactly as if a `streamDD` ran on that channel alone; channels never influence each other. A channel that is unusual in its own history is flagged, even if the others are normal.
 

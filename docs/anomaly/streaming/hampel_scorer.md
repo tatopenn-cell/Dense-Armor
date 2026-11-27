@@ -1,6 +1,6 @@
-# Hampel: distance from the median
+# HampelScorer
 
-[← Stream](index.md)
+[← Streaming anomaly detection](index.md)
 
 `HampelScorer` scores a new value by how far it is from the median of the recent window, measured in robust standard deviations: the robust spread is `1.4826 * MAD`. This is the classic Hampel rule, applied to a causal window of `2 * radius` samples strictly before the value. `is_outlier` is `True` when the score is above `n_sigmas`. It is an `AnomalyDetector`, and it never sees the future.
 

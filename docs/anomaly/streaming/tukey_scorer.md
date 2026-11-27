@@ -1,6 +1,6 @@
-# Tukey: distance beyond the quartile fences
+# TukeyScorer
 
-[← Stream](index.md)
+[← Streaming anomaly detection](index.md)
 
 `TukeyScorer` scores a new value by how far it lies beyond Tukey's fences, in interquartile-range units. The fences are `[Q1 - k * IQR, Q3 + k * IQR]`, built from the quartiles of a causal window of `2 * radius` samples strictly before the value; `k` is `1.5` for ordinary outliers, `3.0` for extreme ones. The score is `0.0` inside the fences; `is_outlier` is `True` when the score is above `0.0`. It is an `AnomalyDetector`, causal, no future.
 
