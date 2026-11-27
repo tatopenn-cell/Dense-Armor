@@ -26,6 +26,14 @@ from dense_armor.roles import DriftDetector
 class KSWIN(DriftDetector):
     """Kolmogorov-Smirnov Windowing drift detector.
 
+    The test runs only when the window is full, so no flag can come before
+    ``window_size`` samples. After a flag only the last ``stat_size`` samples
+    are kept (the paper does not say what to do): the window has to refill
+    before the test runs again, so one change gives one flag. A value that is
+    not finite is skipped and counted in ``n_missing``. The test compares
+    distributions, but a change of the spread alone is seen only some of the
+    time.
+
     Args:
         alpha: significance level of the two-sample KS test. Default
             ``0.0001`` (the paper's value).
@@ -38,6 +46,15 @@ class KSWIN(DriftDetector):
 
     Raises:
         ValueError: if ``stat_size >= window_size``.
+
+    Examples:
+        >>> import numpy as np
+        >>> from dense_armor.core.online.drift.kswin import KSWIN
+        >>> rng = np.random.default_rng(14)
+        >>> x = list(rng.normal(0, 1, 400)) + list(rng.normal(2.5, 1, 400))
+        >>> det = KSWIN(seed=0)
+        >>> [i for i, v in enumerate(x) if det.update(v).drift_detected]
+        [414]
     """
 
     def __init__(self, alpha: float = 0.0001, window_size: int = 300,

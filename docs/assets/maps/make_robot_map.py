@@ -24,7 +24,7 @@ PARTS = {
     "ml": ("Machine learning", "ml/index.md"),
     "timeseries": ("Time series", "timeseries/index.md"),
     "anomaly": ("Anomaly detection", "anomaly/index.md"),
-    "drift": ("Drift detectors", "drift/detectors.md"),
+    "drift": ("Drift detectors", "drift/detectors/index.md"),
     "cluster": ("Clustering", "cluster/index.md"),
     "vision": ("Video", "vision/index.md"),
     "audio": ("Audio", "audio/index.md"),

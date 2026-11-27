@@ -27,7 +27,7 @@ looks locally coherent the whole time, and only the comparison with a
 historical reference reveals the shift. When the deployment can provide
 `reference=historical_baseline`, the drift becomes visible; without a
 reference, it is not. The drift detectors in
-[drift/detectors.md](drift/detectors.md) are the right tool when slow drift
+[drift/detectors/index.md](drift/detectors/index.md) are the right tool when slow drift
 matters.
 
 **C&W in L-inf norm** (limit 5). Investigated in depth, not yet solved.

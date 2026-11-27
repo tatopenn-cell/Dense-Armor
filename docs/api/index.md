@@ -24,7 +24,7 @@ The three kinds of learning are the core. Finance is the application the example
 ## Start from what you have
 
 - **An order to approve before it leaves** → the [pre-trade checker](../finance/pretrade.md) and the [decision log](../finance/decision_log.md).
-- **A stream of returns or prices** → the [drift detectors](../drift/detectors.md) and the [regime page](../finance/regime.md).
+- **A stream of returns or prices** → the [drift detectors](../drift/detectors/index.md) and the [regime page](../finance/regime.md).
 - **Transactions to screen for fraud, or a stream with strange points** → the [anomaly detectors](../anomaly/index.md).
 - **A whole table** → [machine learning](../ml/index.md), with `fit` and `predict`.
 - **A model that must learn one sample at a time** → [online learning](../online/index.md).
@@ -153,7 +153,7 @@ past.
   [0, 1).
 - **[CUSUM and ARL theory](../drift/cusum/index.md)** — accumulates small, sustained deviations,
   plus a closed-form pre-flight estimate of detection and false-alarm latency.
-- **[Drift detectors](../drift/detectors.md)** — ADWIN, KSWIN, Page–Hinkley, and the CUSUM
+- **[Drift detectors](../drift/detectors/index.md)** — ADWIN, KSWIN, Page–Hinkley, and the CUSUM
   family.
 
 **Multivariate anomaly detectors** — when several channels move together.

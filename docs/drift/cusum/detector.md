@@ -140,6 +140,25 @@ CUSUMDriftDetector 36
 
 `update_many` runs `update` on each value and returns the detector. A value that is not a number (`nan`) raises no alarm: `n_missing_` counts them.
 
+A stream that starts with missing readings does not poison the `fixed` reference: the values that are not finite do not count towards the window, so the reference is measured on the first usable ones.
+
+```python
+import numpy as np
+from dense_armor.core.online.drift.detector import CUSUMDriftDetector
+
+rng = np.random.default_rng(0)
+x = [float("nan")] * 10 + list(rng.normal(0, 1, 300)) + list(rng.normal(3, 1, 300))
+det = CUSUMDriftDetector(reference="fixed", radius=5, ref_mult=4)
+first = next(i for i, v in enumerate(x) if det.update(v).drift_detected)
+print(first, det.n_missing)
+```
+
+```
+315 10
+```
+
+The step starts at index 310 (10 NaN followed by 300 normal samples). The detector raises its first alarm at 315, five samples after the step, and reports ten skipped readings in `n_missing`.
+
 ## The parameters
 
 | Parameter | Default | What it does |
@@ -162,4 +181,6 @@ The reference of `CUSUMDriftDetector` and of the batch functions is on the [inde
 ## Details
 
 - **Sources.** Page, E. S. (1954), "Continuous inspection schemes", *Biometrika* 41, for the CUSUM rule; the `fixed` reference is Page's original scheme. Reynolds, M. R. (1975), *Technometrics* 17(1), for the run length of the two-sided CUSUM.
+- **Optimality.** When the distributions before and after the change are known, Page's CUSUM is asymptotically optimal as the false-alarm rate goes to zero (Lorden 1971) and exactly optimal in Lorden's sense (Moustakides 1986), as recalled by Xie et al. (2021); here the reference is estimated from the first samples, so these results are a guide, not a guarantee.
+- **Missing or flat start.** Before this version a stream that started with missing or flat readings left the detector without a usable reference, and silent forever. Now non-finite samples do not count towards the reference span; the reference is retried on a sliding window of the last `span` finite values until its robust scale is usable.
 - **What is different from the textbook.** The `adaptive` reference is not Page's scheme: it re-measures median and scale on a sliding window, so a sustained shift is caught at its leading edge and the total stops growing when the window has caught up. It is meant for slow drifts, not for a fixed target.

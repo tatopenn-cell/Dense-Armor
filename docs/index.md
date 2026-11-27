@@ -237,7 +237,7 @@ past.
   [0, 1).
 - **[CUSUM and ARL theory](drift/cusum/index.md)** — accumulates small, sustained deviations,
   plus a closed-form pre-flight estimate of detection and false-alarm latency.
-- **[Drift detectors](drift/detectors.md)** — ADWIN, KSWIN, Page–Hinkley, and the CUSUM
+- **[Drift detectors](drift/detectors/index.md)** — ADWIN, KSWIN, Page–Hinkley, and the CUSUM
   family.
 
 **Multivariate anomaly detectors** — when several channels move together.

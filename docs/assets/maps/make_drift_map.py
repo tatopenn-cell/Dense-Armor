@@ -11,7 +11,7 @@ from make_tree_map import CYAN, HERE, ORANGE, PINK, draw
 
 PAGES = [
     ("CUSUM and ARL theory", "accumulate small deviations", "drift/cusum/index.md", CYAN, ["CUSUMDriftDetector"]),
-    ("Drift detectors", "CUSUM, Page-Hinkley, ADWIN, KSWIN", "drift/detectors.md", ORANGE, ["CUSUMDriftDetector", "PageHinkley", "ADWIN", "KSWIN"]),
+    ("Drift detectors", "CUSUM, Page-Hinkley, ADWIN, KSWIN", "drift/detectors/index.md", ORANGE, ["CUSUMDriftDetector", "PageHinkley", "ADWIN", "KSWIN"]),
     ("Offline algorithm", "on a whole series", "drift/offline.md", PINK, ["offline"]),
 ]
 

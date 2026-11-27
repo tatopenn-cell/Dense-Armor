@@ -211,7 +211,12 @@ nav:
               - expected_detection_delay: drift/cusum/expected_detection_delay.md
               - cusum_detector: drift/cusum/cusum_detector.md
               - Results: drift/cusum/results.md
-          - Drift detectors: drift/detectors.md
+          - Drift detectors:
+              - drift/detectors/index.md
+              - PageHinkley: drift/detectors/page_hinkley.md
+              - ADWIN: drift/detectors/adwin.md
+              - KSWIN: drift/detectors/kswin.md
+              - The four side by side: drift/detectors/compare.md
           - Offline algorithm: drift/offline.md
       - Protection:
           - protect/index.md

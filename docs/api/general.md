@@ -1396,7 +1396,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.drift.adwin`
 *Bases:* DriftDetector
-*Guide:* [drift/detectors.md](../drift/detectors.md)
+*Guide:* [drift/detectors/index.md](../drift/detectors/index.md)
 
 Adaptive Windowing drift detector.
 
@@ -1441,7 +1441,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.drift.detector`
 *Bases:* DriftDetector
-*Guide:* [drift/detectors.md](../drift/detectors.md)
+*Guide:* [drift/detectors/index.md](../drift/detectors/index.md)
 
 CUSUM drift detector matching the batch `cusum_detector` behaviour.
 
@@ -1466,7 +1466,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.drift.kswin`
 *Bases:* DriftDetector
-*Guide:* [drift/detectors.md](../drift/detectors.md)
+*Guide:* [drift/detectors/index.md](../drift/detectors/index.md)
 
 Kolmogorov-Smirnov Windowing drift detector.
 
@@ -1489,7 +1489,7 @@ Public methods:
 
 *Module:* `dense_armor.core.online.drift.page_hinkley`
 *Bases:* DriftDetector
-*Guide:* [drift/detectors.md](../drift/detectors.md)
+*Guide:* [drift/detectors/index.md](../drift/detectors/index.md)
 
 Page-Hinkley test for a change in the mean of a scalar stream.
 
