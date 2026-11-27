@@ -6,9 +6,24 @@ Click a module to open its page, or the button at the top to go back to [Detecti
 
 <object type="image/svg+xml" data="../../assets/maps/streaming.svg" style="width:100%"></object>
 
-A streaming anomaly detector reads one sample at a time, compares it with the recent past, and answers at once with a score and a yes/no flag, without seeing what comes next.
+This section explores the ability to detect, at the exact instant a data point arrives, that this value deviates from those that preceded it. It is an indispensable function both for a trading desk that monitors the execution cost of orders, and for a robot that reads the speed of a joint a hundred times per second: in both cases, the system must make an immediate decision based on the single sample, without being able to wait for subsequent data.
 
-A stock-index trading day stream: daily returns in percent around 0.05 with noise 0.8, and one crash day at sample 1000. The detector flags the crash on the same day.
+All the tools presented here follow the same basic logic: they keep in memory a short time window of the most recent values, calculate their reference parameters (the central value and the dispersion), and compare each new data point with this profile. Some return a binary answer (yes/no), while others assign a score: the higher the value, the more anomalous the data point is compared to the recent past. Since they process one sample at a time without ever looking ahead, these algorithms are ideal for running inside a real-time control loop.
+
+The section is organized by individual classes and functions:
+
+- streamDD: is the starting point and returns a yes/no indication on a single data stream.
+- MultistreamDD: extends the same logic by monitoring multiple channels simultaneously.
+- streamDS: provides the same evaluation, but in the form of a numerical score.
+- HampelScorer, TukeyScorer, ChauvenetScorer, and SigmaClipScorer: implement four classic statistical rules to establish when a data point is too distant from the norm, each with its own measurement method.
+- HampelFilter: applies the Hampel rule to correct anomalies, replacing out-of-scale values with the median of the current window.
+- class_seg_multi: operates instead on the entire historical recording to distinguish a simple isolated spike from a lasting regime change.
+
+(Note: the online robust Mahalanobis distance, which analyzes multiple channels jointly, is covered on a dedicated page within the anomalies section).
+
+Each page follows a recurring structure: it opens with an illustrative chart, continues with a use case related to financial execution costs, and concludes with the robot example. The first example below shows the basic usage of streamDD.
+
+Daily trading stream of a stock index: series of daily percentage returns centered around 0.05%, with a background noise of 0.8% and a sudden crash at sample 1000. The detector identifies and flags the anomaly on the very same day.
 
 ```python
 import numpy as np

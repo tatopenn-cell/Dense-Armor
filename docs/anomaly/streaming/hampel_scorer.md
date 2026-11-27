@@ -2,19 +2,19 @@
 
 [← Streaming anomaly detection](index.md)
 
-`HampelScorer` scores a new value by how far it is from the median of the recent window, measured in robust standard deviations: the robust spread is `1.4826 * MAD`. This is the classic Hampel rule, applied to a causal window of `2 * radius` samples strictly before the value. `is_outlier` is `True` when the score is above `n_sigmas`. It is an `AnomalyDetector`, and it never sees the future.
+HampelScorer evaluates each new value by measuring its distance from the median of a recent window, expressed in robust standard deviations (1.4826 * MAD). This is the classic Hampel rule applied to a causal window composed of the 2 * radius samples strictly preceding the current data point. The is_outlier method returns True when the score exceeds the n_sigmas threshold. It is a pure AnomalyDetector and never looks into the future.
 
-`dense_armor.core.online.anomaly.filters` gives the four classic outlier rules as streaming scorers: Hampel, Tukey fences, Chauvenet and sigma clipping.
+The dense_armor.core.online.anomaly.filters module provides the four classic statistical rules for outlier handling as streaming scorers: Hampel, Tukey fences, Chauvenet, and sigma clipping.
 
-Each scorer looks only at the `2 * radius` samples before the value being scored. The batch versions on the [robust filters](../robust_filters.md) page use a window centred on the value, which looks at future samples; a live robot loop cannot, and that is the only difference.
+Each scorer analyzes exclusively the 2 * radius samples preceding the value to be evaluated. The batch counterparts presented on the [robust filters](../robust_filters.md) page instead use a window centered on the sample, also including future data; a real-time robotic control loop cannot afford this, and this is the only substantial difference.
 
-![The score of a spike for 8 spike sizes and 0 to 14 bad values in a window of 30.](../../assets/streaming/hampel_scorer_3d.png)
+![Trend of a spike's score tested across 8 different amplitudes and with a number of anomalous values in the window ranging from 0 to 14 (out of 30 total samples).](../../assets/streaming/hampel_scorer_3d.png)
 
-The score of the same spike goes down as the window fills with bad values: a spike of 8 standard deviations scores 9.3 in a clean window, 6.6 with 6 bad values out of 30, 2.7 with 12 and 1.5 with 14. The median and the MAD resist bad values, but not without limit.
+The score assigned to the same spike progressively decreases as the window becomes contaminated with anomalous values: an 8-standard-deviation spike gets a score of 9.3 in a clean window, 6.6 with 6 outliers out of 30, 2.7 with 12, and 1.5 with 14. The median and MAD offer high resistance to outliers, while still having a physiological breakdown point.
 
-## A first example: a daily cost of executing an order
+## A first example: daily order execution cost
 
-A desk watches the daily cost of executing an order. In the last 30 days four ticks went wrong and were recorded as 40. Today the cost is 25: is it an outlier? The plain rule, the distance from the mean in standard deviations, is the one to beat.
+A trader monitors the daily execution cost of orders. Over the last 30 days, four system errors occurred, recorded with a value of 40. Today the cost is 25: is this an anomaly? The benchmark to beat is the classic rule based on the distance from the mean in standard deviations.
 
 ```python
 import numpy as np
@@ -33,13 +33,13 @@ print(round(h.score_one({"x": 25.0}), 1), round(abs(25.0 - cost.mean()) / cost.s
 11.3 1.0
 ```
 
-`HampelScorer` scores today at 11.3 robust deviations, far above the threshold of 3. The plain rule scores it 1.0 and misses it: the four bad ticks pull the mean up and stretch the standard deviation, so 25 looks ordinary. The median and the MAD of the window ignore the bad ticks.
+HampelScorer assigns today's data point a score of 11.3 robust deviations, well above the threshold of 3. The traditional mean-based rule stops at 1.0 instead and fails to detect the anomaly: the four anomalous values pull the mean upward and stretch the standard deviation, making the value 25 appear completely normal. The median and MAD of the window, conversely, completely ignore the four spurious spikes.
 
-![The 30 days of the window with the four bad ticks in pink, the band of the Hampel rule in orange, the band of the mean rule in grey and today's cost as a diamond.](../../assets/streaming/hampel_scorer_finance.png)
+![The 30 days of the window with the four anomalous spikes highlighted in pink, the Hampel rule band in orange, the mean rule band in gray, and today's cost indicated by a diamond.](../../assets/streaming/hampel_scorer_finance.png)
 
-Orange is the band of the median plus or minus 3 robust deviations (8.8 to 15.6); grey is the band of the mean plus or minus 3 standard deviations (-13.4 to 44.5). Today's cost, 25, is outside the orange band and inside the grey one.
+The orange band marks the interval of the median ± 3 robust standard deviations (from 8.8 to 15.6); the gray band instead marks the mean ± 3 classic standard deviations (from -13.4 to 44.5). Today's cost, equal to 25, falls clearly outside the orange band but remains inside the gray one.
 
-## The same on a robot
+## The same applies to a robot
 
 ```python
 from dense_armor.core.online.anomaly.filters import HampelScorer
@@ -54,45 +54,56 @@ print(s.is_outlier({"v": 50.0}), s.is_outlier({"v": 1.1}))
 True False
 ```
 
-A reading of 50 is an outlier for the joint; a reading of 1.1 is not.
+A reading of 50 is identified as anomalous for the robotic joint (True), while a value of 1.1 falls within the norm (False).
 
 ## How it works
 
-The score is how far the new value is from the usual value, measured in robust standard deviations. The usual value is the median of the recent window; the robust standard deviation is `1.4826 * MAD`. `learn_one` adds a value; `score_one` does not change anything.
+The score quantifies how much the new sample deviates from habitual behavior, expressed in units of robust standard deviation. The reference value is the median of the recent window, while the robust dispersion is given by 1.4826 * MAD. The learn_one method updates the window with the new data point; score_one computes the score without altering the internal state.
 
-The score is
+The formula for the score z is:
 
-$$\text{score} = \frac{|x - \mathrm{med}(w)|}{1.4826 \cdot \mathrm{MAD}(w)},$$
+$$z = \frac{|x - \mathrm{med}(W)|}{1.4826 \cdot \mathrm{MAD}(W)}$$
 
-where $x$ is the new value; $w$ is the recent window; $\mathrm{med}(w)$ is its median; $\mathrm{MAD}(w)$ is the median distance from that median. The window holds `2 * radius` samples strictly before the value being scored; the value itself is never part of its own window. `HampelScorer` uses `2 * radius`; `streamDD` uses `radius * ref_mult`. `is_outlier` returns `True` when `score_one(x)` is above `n_sigmas`. `score_one` returns `0.0` for an unusable value or while fewer than four values have been learned. If the window is flat and the value differs from the median, the score is `positive infinity`, otherwise `0.0`.
+Where:
 
-This is `robust_filters.hampel_filter` applied to a causal window instead of a window centred on the value. `HampelScorer` is the streaming member; batch Hampel is on the robust-filters page.
+- x is the new value to be evaluated;
+- W is the window of recent samples;
+- med(W) is the median of W;
+- $\mathrm{MAD}(W) = \mathrm{median}(|W - \mathrm{med}(W)|)$ is the median absolute deviation.
 
-## Comparison of the four causal scorers
+The window contains exactly 2 * radius samples strictly preceding the current data point (the evaluated sample is never part of its own window). Unlike streamDD, which uses radius * ref_mult, HampelScorer adopts the 2 * radius convention.
 
-Precision and recall on 5,000 seeded samples with 50 spikes of size 5-15 (1% contamination), window 30 (`radius=15`), and cost per sample:
+The is_outlier method returns True when score_one(x) > n_sigmas. score_one returns 0.0 in the presence of invalid values (NaN, inf) or until at least four samples have been learned. If the window is completely flat (scale < eps) and the new value differs from the median, the returned score is +inf (float('inf')); otherwise, it is 0.0.
 
-| Scorer | stationary noise (σ=0.5): precision / recall | sine (amplitude 5, period 500) + same noise: precision / recall | µs per sample |
+This algorithm corresponds to applying robust_filters.hampel_filter on a causal window rather than a centered one: HampelScorer is the streaming variant, while the batch version is documented on the robust filters page.
+
+## Comparison among the four causal scorers
+
+Precision and recall values measured on 5,000 simulated samples with 50 injected spikes of amplitude 5–15 (1% contamination), 30-sample window (radius=15), and computation time per sample:
+
+| Scorer | Stationary noise (σ=0.5): precision / recall | Sine wave (amplitude 5, period 500) + noise: precision / recall | μs per sample |
 |---|---|---|---|
 | HampelScorer | 0.459 / 1.000 | 0.318 / 1.000 | 90 |
 | TukeyScorer | 0.303 / 1.000 | 0.195 / 1.000 | 75 |
 | ChauvenetScorer | 0.282 / 0.980 | 0.167 / 1.000 | 28 |
 | SigmaClipScorer | 0.588 / 1.000 | 0.370 / 1.000 | 72 |
 
-Every scorer catches the spikes; precision is the tuning knob. A trend inside the window and a short noisy window lower precision. Raise `n_sigmas` or combine scores. At 100 Hz the cost is under 1% of the loop budget. This table appears once, here; the other scorer pages link to it. See [TukeyScorer](tukey_scorer.md), [ChauvenetScorer](chauvenet_scorer.md), [SigmaClipScorer](sigma_clip_scorer.md).
+All scorers manage to intercept the spikes; precision represents the main tuning lever. The presence of a steep trend or a window that is too short and noisy reduces precision: in these cases, it is advisable to increase n_sigmas or combine multiple scorers. In a 100 Hz loop (budget of 10,000 µs per iteration), the computational cost is less than 1% of the available time. (This comparative table appears only on this page; the pages of the other scorers refer here: see TukeyScorer, ChauvenetScorer, SigmaClipScorer).
 
 ## The parameters
 
-`HampelScorer` is an `AnomalyDetector`. `learn_one(x)`, `score_one(x)`, `is_outlier(x)`, `threshold`, `n_missing`. Signature:
+HampelScorer is an AnomalyDetector equipped with the learn_one(x), score_one(x), is_outlier(x) methods and the threshold and n_missing attributes.
 
-`(self, radius: int = 10, n_sigmas: float = 3.0, feature: str | None = None, eps: float = 1e-09)`
+Signature:
 
-| Parameter | Default | What it does |
+`HampelScorer(radius: int = 10, n_sigmas: float = 3.0, feature: str | None = None, eps: float = 1e-09)`
+
+| Parameter | Default | Description |
 |---|---|---|
-| `radius` | 10 | with a `2 * radius` causal window |
-| `n_sigmas` | 3.0 | `is_outlier` when the score is above `n_sigmas`; `threshold` returns it |
-| `feature` | `None` | key of the feature to watch; `None` takes the feature with the smallest key, order-independent |
-| `eps` | 1e-9 | below this scale the window is flat |
+| radius | 10 | Half-width unit; defines a causal window of 2 * radius samples. |
+| n_sigmas | 3.0 | Activation threshold: is_outlier returns True when the score exceeds n_sigmas (also exposed by threshold). |
+| feature | None | Key of the feature to monitor; if None, selects the lexicographically smallest key, regardless of order. |
+| eps | 1e-9 | Scale threshold: below this value the window is considered flat. |
 
 ## API reference
 
@@ -100,8 +111,5 @@ Every scorer catches the spikes; precision is the tuning knob. A trend inside th
 
 ## Details
 
-- **Sources.** Hampel, F. R. (1974). The influence curve and its role in robust estimation. *JASA* 69(346), 383-393. Davies, L., Gather, U. (1993). The identification of multiple outliers. *JASA* 88(423), 782-792. Pearson et al. (2016), *Generalized Hampel filters*, for the `1.4826 * MAD` rule. Batch `robust_filters.hampel_filter`.
-- **Causal window.** `2 * radius` samples strictly before; `is_outlier` ↔ batch would flag; batch Hampel uses a window centred on the value (sees future); streaming is causal.
-- **Scale.** robust spread is `1.4826 * MAD`; flat window, `positive infinity` if dev > `eps` `0.0` otherwise. `n_missing` counts values that are not a number or `None`.
-- **Shared interface.** the four scorers share `learn_one` / `score_one`, feature selection, `is_outlier`.
-- **Window size.** A short window reacts faster but its median and MAD are noisier, so more ordinary samples are flagged (the first example of the [streamDD](streaming_deviation_detector.md) page with `radius=5` flags dozens of noise samples; with `radius=30, n_sigmas=4.0` one in 3,000).
+- Sources: Hampel, F. R. (1974), The influence curve and its role in robust estimation, JASA 69(346), 383–393; Davies, L., Gather, U. (1993), The identification of multiple outliers, JASA 88(423), 782–792; Pearson et al. (2016), Generalized Hampel filters, for the 1.4826 * MAD rule; batch version in robust_filters.hampel_filter.
+- Causal window: uses exclusively the 2 * radius strictly preceding samples; is_outlier corresponds to the causal version of batch detection.

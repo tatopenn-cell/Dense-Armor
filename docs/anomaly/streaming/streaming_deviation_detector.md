@@ -2,17 +2,17 @@
 
 [← Streaming anomaly detection](index.md)
 
-You have a stream of numbers, for example the daily cost of executing an order . You want to know, on the sample that arrives, whether it is too unusual compared with the recent past. `streamDD` reads one value per call, compares it with a robust median and spread of the window of strictly previous samples, and answers `True`, without seeing anything in the future. A robot joint uses the same call inside its control loop.
+Imagine having a continuous stream of data, such as the daily execution cost of orders. You want to know, at the very instant a new sample arrives, if that value is too anomalous compared to the recent past. streamDD reads one value per call, compares it with the robust median and the dispersion of a window composed of the strictly preceding samples, and returns True in case of an anomaly, without ever looking into the future. Similarly, a robot joint can use the exact same call inside its real-time control loop.
 
-**The name.** `streamDD` is short for *stream Deviation Detector*: a detector that gets one value at a time from a stream and answers whether that value deviates from the recent past.
+The name streamDD is short for Stream Deviation Detector: a detector that receives one value at a time from a stream and flags if it deviates significantly from recent history.
 
-![A surface showing, for a spike of amplitude x on a seeded noise stream, the fraction of injected spikes flagged on 20 seeded series, for 8 spike amplitudes (2 to 10 standard deviations) and 8 values of n_sigmas (2 to 6).](../../assets/streaming/streaming_deviation_detector_3d.png)
+![Surface showing, for a spike of amplitude x inserted into a noisy stream generated with a fixed seed, the fraction of detected spikes across 20 different series, testing 8 spike amplitudes (from 2 to 10 standard deviations) and 8 values of n_sigmas (from 2 to 6).](../../assets/streaming/streaming_deviation_detector_3d.png)
 
-On a seeded noise stream with one injected spike, this surface shows how often the spike is flagged, on a scale from 0 to 1. The horizontal axis is the spike amplitude in standard deviations; the other axis is `n_sigmas`, the flagging threshold. Higher means the spike is caught more often.
+In a stream with background noise into which a spike is injected, this surface indicates the frequency with which the anomaly is flagged on a scale from 0 to 1. The horizontal axis represents the spike amplitude in standard deviations, while the other axis indicates n_sigmas (the flagging threshold). A higher value indicates greater detection sensitivity.
 
-## A first example: a daily cost of executing an order
+## A first example: daily order execution cost
 
-A desk watches the daily cost of executing an order . Most days are ordinary; one day the cost spikes. The detector flags that day on the same day.
+A trading desk monitors the daily execution cost of orders. On most days the values fall within the norm, but on a specific day the cost experiences a sudden surge. The detector identifies and flags the anomaly on the very same day.
 
 ```python
 import numpy as np
@@ -30,15 +30,15 @@ print(flags)
 [250]
 ```
 
-The stream is 500 days of daily execution cost around 12 with noise 1.5, and one spike at day 250 (value 25.0). The detector flags day 250, nothing else, executed with dense_armor 1.7.2.
+The stream simulates 500 days with an average cost of about 12, a background noise equal to 1.5, and an isolated spike on day 250 (value 25.0). The detector flags exclusively day 250 (run with dense_armor 1.7.2).
 
-![The same seeded daily cost of executing an order stream, with the day flagged by the detector in pink.](../../assets/streaming/streaming_deviation_detector_finance.png)
+![The same daily cost stream generated in the previous code, with the anomaly day highlighted in pink by the detector.](../../assets/streaming/streaming_deviation_detector_finance.png)
 
-On the same seeded daily-cost stream as the code above, one spike day is flagged. The line is the daily cost; the flagged day is marked.
+The line shows the cost trend over time and highlights the identified spike.
 
-## The same on a robot
+## The same applies to a robot
 
-`streamDD` takes one value per call and answers `True` when it deviates.
+streamDD acquires a single value per call and returns True as soon as it detects an anomalous deviation.
 
 ```python
 import numpy as np
@@ -56,18 +56,13 @@ print(np.flatnonzero(flags))
 [   4  949 1500]
 ```
 
-The stream is 30 seconds of a joint velocity around 0.5 with noise 0.1, and one collision at
-sample 1500 (value 2.5). The detector flags sample 1500. The first four samples cannot flag; sample 4 can flag, and here it does. Sample 949 is one
-ordinary noise value that happened to fall far out: one false alarm in 3,000 samples with these
-settings. Each call to `update` looks only at the past, so the answer is available on the same
-sample, inside the control loop.
+The simulation covers 30 seconds (at 100 Hz) of a robotic joint's velocity around 0.5, with noise 0.1 and a collision at sample 1500 (value 2.5). The detector correctly flags sample 1500. The first four samples (indices 0–3) cannot be evaluated due to lack of history; sample 4 is the first evaluable one and, in this case, is flagged. Sample 949, on the other hand, is a particularly extreme normal noise fluctuation: a single false alarm out of 3,000 samples with this configuration. Each call to update examines exclusively the past, making the result available on the sample itself, directly inside the control loop.
 
-![A joint velocity stream at 100 Hz with the collision spike flagged](../../assets/streaming/spike.png)
+![Velocity stream of a robotic joint sampled at 100 Hz, with the collision spike flagged.](../../assets/streaming/spike.png)
 
 ## How it works
 
-The detector compares the new value with the median of a window of past samples, in units of
-the window's own spread.
+The detector compares each new value x with the median of a window of preceding samples, measuring the deviation in units proportional to the dispersion of the window itself.
 
 ```python
 import numpy as np
@@ -84,40 +79,38 @@ print(med, mad, round(s, 4), round(abs(x - med) / s, 2))
 10.0 1.0 1.4826 13.49
 ```
 
-The score is
+The anomaly score z is calculated as:
 
-$$z = \frac{|x - \mathrm{med}(w)|}{S}, \qquad S = 1.4826 \cdot \mathrm{MAD}(w), \qquad \mathrm{MAD}(w) = \mathrm{med}\big(|w - \mathrm{med}(w)|\big),$$
+$$z = \frac{|x - \mathrm{med}|}{s}$$
 
-where:
+Where:
 
-- $w$ is the window of past samples before the new one; it has `radius * ref_mult` values;
-- $\mathrm{med}(w)$ is its median, the "usual" value; unlike the mean, one absurd sample cannot
-  drag it away;
-- $\mathrm{MAD}(w)$ is the median distance of the samples from that median, a robust width;
-- $1.4826$ turns the MAD into the standard deviation when the noise is normal (it is
-  $1/\Phi^{-1}(3/4)$; numerically verified here: `1 / NormalDist().inv_cdf(0.75) = 1.4826`), so $z$ reads as "how many standard deviations away";
-- the sample is flagged when $z$ is larger than `n_sigmas`.
+- w is the window of samples strictly preceding the new value (it contains radius * ref_mult elements).
+- med is the median of w, i.e., the "normal" reference value (unlike the mean, it is not skewed by single anomalous values).
+- MAD is the median absolute deviation ($\mathrm{median}(|w - \mathrm{med}|)$), a robust measure of dispersion.
+- s = 1.4826 × MAD converts the MAD into an estimate of the standard deviation under the assumption of Gaussian noise (the exact factor is 1 / Φ⁻¹(0.75) ≈ 1.4826). In this way, z directly indicates "how many standard deviations away" the sample is located.
+- The sample is flagged as anomalous when z > n_sigmas.
 
-In the example the past window is around 10 with MAD 1, so $S = 1.4826$ and the new value 30 is
-13.49 standard deviations away. This robust score is the Hampel identifier
-(Pearson et al., 2016, "Generalized Hampel filters", *EURASIP J. Adv. Signal Process.*).
+In the example, the preceding window has median 10 and MAD = 1, so s = 1.4826 and the new value 30.0 is located 13.49 standard deviations away. This robust criterion corresponds to the Hampel identifier (Pearson et al., 2016, "Generalized Hampel filters", EURASIP J. Adv. Signal Process.).
 
-The window length is exactly `radius * ref_mult`.
+The maximum window length is exactly radius * ref_mult.
 
 ## The parameters
 
-`streamDD` is NOT an `Estimator`/`AnomalyDetector`: it is a plain class, no `learn_one`/`score_one`; `update(x)` returns a boolean. Signature:
+streamDD does not inherit from Estimator or AnomalyDetector: it is a lightweight class lacking the learn_one and score_one methods, in which update(x) directly returns a boolean.
 
-`(self, radius: int = 10, ref_mult: int = 3, n_sigmas: float = 3.0, eps: float = 1e-09)`
+Signature:
 
-| Parameter | Default | What it does |
+`streamDD(radius: int = 10, ref_mult: int = 3, n_sigmas: float = 3.0, eps: float = 1e-09)`
+
+| Parameter | Default | Description |
 |---|---|---|
-| `radius` | 10 | with `ref_mult`, the window holds `radius * ref_mult` values |
-| `ref_mult` | 3 | see `radius` |
-| `n_sigmas` | 3.0 | flag when `z > n_sigmas` (page examples use 4.0) |
-| `eps` | 1e-9 | `scale < eps` degenerate-scale branch; `deviation > eps`; non-finite never enters buffer |
+| radius | 10 | Base unit of the window; together with ref_mult it determines the capacity (radius * ref_mult). |
+| ref_mult | 3 | Window length multiplier (see radius). |
+| n_sigmas | 3.0 | Activation threshold: flags when z > n_sigmas (in the examples above it is set to 4.0). |
+| eps | 1e-9 | Threshold to handle degenerate scales (scale < eps); non-finite values are ignored. |
 
-`update(x)` returns a boolean. `last_deviation` (`deviation`, or `deviation / scale`, or 0.0) readable after each call.
+After each call to update(x), in addition to the returned boolean value, it is possible to inspect the last_deviation attribute (which contains deviation / scale, or deviation in case of a degenerate scale, or 0.0).
 
 ## API reference
 
@@ -125,13 +118,7 @@ The window length is exactly `radius * ref_mult`.
 
 ## Details
 
-- **Implementation.** `dense_armor/core/online/anomaly/streaming.py`. `update` returns `False` for a non-finite value; while fewer than four values have been seen it appends and returns `False`. Then `deviation = abs(x - med)`. If `scale < eps`, return `deviation`; otherwise return `deviation / scale`. `last_deviation` is informative. `1.4826 * MAD`.
-- **Causality.** `_window_causal` uses only points before `i`, never `i` itself, never after; this class uses `deque(maxlen=_span)`. No look-ahead.
-- **Warm-up.** While fewer than four samples have been seen, no sample can flag; sample 4 can flag.
-- **Provenance.** `streamDD` is the causal per-sample half of the
-  [Arbiter](../../protect/arbiter.md)'s per-point deviation check; the spike-versus-regime label
-  needs to see the end of a run and stays batch-only. It was promoted from
-  Dense-Evolution-Discovery after validation on two real physical domains (SO-101 robot arm,
-  UCI HAR inertial data). Source docstring `streaming.py` (Dense-Evolution-Discovery Experiments 48-49; `classify_segments`; `_window_causal`; `_robust_center_scale`; O(span) not two-heap O(log span); ~18.6 kHz measured in Dense-Evolution-Discovery).
-- **Paper.** Pearson et al. 2016, "Generalized Hampel filters". `1.4826 = 1/\Phi^{-1}(3/4)` numerically verified.
-- **Sources.** `dense_armor/core/online/anomaly/streaming.py`; `dense_armor/core/online/protect/arbiter.py`. 
+- Implementation: defined in dense_armor/core/online/anomaly/streaming.py. The update method returns False if the value is not finite; as long as the buffer contains fewer than four samples, it appends the data point and returns False. Subsequently, it calculates deviation = abs(x - med) and scale = 1.4826 * MAD. If scale < eps, it directly compares deviation > eps (and saves deviation in last_deviation); otherwise, it calculates z = deviation / scale (saved in last_deviation) and compares it with n_sigmas.
+- Causality: replicates the behavior of _window_causal, using only points preceding index i (never i itself nor subsequent points) via a deque(maxlen=_span) structure. No look-ahead.
+- Warm-up phase: until at least four samples have been acquired, no flag is emitted; the fifth sample (index 4) is the first one on which the detector can trigger.
+- Provenance: streamDD represents the causal half (sample by sample) of Arbiter's deviation check (whereas the spike-versus-regime classification requires the end of the sequence and remains batch-only). It was promoted from Dense-Evolution-Discovery after being validated on two real physical domains: the SO-101 robotic arm and UCI HAR inertial data. (Source references: streaming.py, Dense-Evolution-Discovery experiments 48–49; classify_segments; _window_causal; _robust_center_scale; O(span) complexity instead of dual-heap $O(\log \mathrm{span})$; measured throughput of approximately 18.6 kHz).
