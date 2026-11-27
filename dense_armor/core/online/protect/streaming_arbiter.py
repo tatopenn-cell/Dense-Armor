@@ -22,6 +22,7 @@ change (documented in the latency table of `arbiter.md`).
 import numpy as np
 
 from dense_armor._dtype import as_default_array
+from dense_armor.core.online.protect.arbiter import _detector_kind, _detector_threshold
 
 
 def _robust_center_scale(w: np.ndarray) -> tuple[float, float]:
@@ -42,6 +43,11 @@ class StreamingArbiter:
     ----------
     radius, ref_mult, n_sigmas, spike_run_max, eps
         Same meaning and defaults as `arbiter.classify_segments`.
+    detector, threshold
+        Any detector of the library, as in `arbiter.classify_segments`: a point detector (``score_one`` and
+        ``learn_one``) decides which samples deviate, with ``threshold`` (default ``detector.threshold``, else
+        ``n_sigmas``); an event detector (``update`` and ``drift_detected``) turns a run of deviating samples
+        during which it signals a change into 'regime'. The detector is used as given: it learns the stream.
     max_delay
         Maximum number of future samples the streaming version will wait
         before committing to a final label. With ``max_delay`` at least
@@ -67,13 +73,18 @@ class StreamingArbiter:
 
     def __init__(self, radius: int = 10, ref_mult: int = 3,
                  n_sigmas: float = 3.0, spike_run_max: int = 2,
-                 max_delay: int = 40, eps: float = 1e-9):
+                 max_delay: int = 40, eps: float = 1e-9,
+                 detector=None, threshold: float | None = None):
         self.radius = radius
         self.ref_mult = ref_mult
         self.n_sigmas = n_sigmas
         self.spike_run_max = spike_run_max
         self.max_delay = int(max_delay)
         self.eps = eps
+        self.detector = detector
+        self._kind = _detector_kind(detector)
+        self._thr = _detector_threshold(detector, threshold, n_sigmas, eps) if self._kind == "point" else None
+        self._events: list[int] = []
         self._x: list[float] = []
         self._deviante: list[bool] = []
         self._med_rif: list[float] = []
@@ -88,12 +99,23 @@ class StreamingArbiter:
 
     def _compute_deviante(self, i: int) -> None:
         w = self._causal_window(i)
+        score = None
+        if self._kind == "point":
+            score = float(self.detector.score_one({"x": self._x[i]}))
+            self.detector.learn_one({"x": self._x[i]})
+        elif self._kind == "event":
+            self.detector.update(self._x[i])
+            if self.detector.drift_detected:
+                self._events.append(i)
         if w.size < 4:
             self._deviante.append(False)
             self._med_rif.append(0.0)
             return
         med, scale = _robust_center_scale(w)
         self._med_rif.append(med)
+        if score is not None:
+            self._deviante.append(bool(np.isfinite(score) and score > self._thr))
+            return
         scarto = abs(self._x[i] - med)
         if scale < self.eps:
             self._deviante.append(scarto > self.eps)
@@ -102,6 +124,8 @@ class StreamingArbiter:
 
     def _decide_one_run(self, s: int, j: int, H: int) -> str:
         run_len = j - s
+        if any(s <= e < j for e in self._events):
+            return "regime"
         if run_len <= self.spike_run_max:
             return "spike"
         run_vals = as_default_array(self._x[s:j])

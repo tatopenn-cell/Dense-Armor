@@ -80,7 +80,7 @@ v[2000:] += 1.0
 from dense_armor.core.online.protect.arbiter import route_and_correct
 
 corrected, lab, dev = route_and_correct(v, radius=20, ref_mult=3)
-print(round(float(corrected[1500]), 3), np.array_equal(corrected[lab == "regime"], v[lab == "regime"]))
+print(round(float(corrected[1500]), 3), np.allclose(corrected[lab == "regime"], v[lab == "regime"]))
 ```
 
 ```
@@ -93,7 +93,7 @@ print(round(float(corrected[1500]), 3), np.array_equal(corrected[lab == "regime"
 - `regime` → unchanged.
 - `clean` → unchanged.
 
-The collision becomes 0.489, the median before it; regime samples are left exactly as measured.
+The collision becomes 0.489, the median before it; regime samples are left as measured (to the rounding of the default float32).
 
 ## 4. The reference window is causal
 
@@ -192,6 +192,127 @@ Window of 9 samples `[10, 11, 9, 10, 12, 10, 11, 9, 10]`, then a run of 3 sample
 Change the three samples to `[15, 8, 16]`: 15 and 16 deviate, but 8 does not
 (`|8 − 10| / 1.4826 = 1.35 < 3`), so there are two runs of length 1, not one run of three.
 Labels: **spike, clean, spike**: 15 and 16 are replaced by 10, the 8 is kept.
+
+## 9. Any detector of the library
+
+The Arbiter decides with its own window by default; with `detector=` any detector of the library can decide, and the Arbiter keeps its rule on the length of the run.
+
+### 9.1 A point detector decides which samples deviate
+
+A price series with one bad tick at the sample 60 and a jump of the level from the sample 150 to the sample 199. A point detector is one with `score_one` and `learn_one`: a sample deviates when its score is above `threshold`.
+
+```python
+import numpy as np
+from dense_armor.core.online.protect.arbiter import classify_segments
+from dense_armor.core.online.anomaly.filters import HampelScorer
+
+r = np.random.default_rng(0)
+px = r.normal(0, 1, 300)
+px[60] += 15.0
+px[150:200] += 8.0
+lab, dev, unc = classify_segments(px, detector=HampelScorer(), threshold=3.0)
+print([i for i, l in enumerate(lab) if l == 'spike'], [i for i, l in enumerate(lab) if l == 'regime'][:3])
+```
+
+```
+[4, 6, 60, 219, 270, 284] [150, 151, 152]
+```
+
+The sample 60 is a spike. The regime labels start at the sample 150, where the level moved. The detector adapts to the new level, so a run is labelled regime only while its samples still deviate. The window of the Arbiter is not used to decide which samples deviate, but it still gives the reference level that the run is compared with.
+
+### 9.2 The threshold of each detector
+
+`threshold` is the score above which a sample deviates. If it is not given, the Arbiter takes `detector.threshold` when the detector has one, and `n_sigmas` otherwise. The scores of the detectors are not on one scale, so the default is not good for all of them. On the series of 9.1, with the threshold of each detector:
+
+| detector | threshold used | label of the sample 60 | samples labelled spike | samples labelled regime |
+|---|---|---|---|---|
+| none (the window of the Arbiter) | - | spike | 5 | 23 |
+| `HampelScorer` | 3 | spike | 6 | 16 |
+| `TukeyScorer` | 3.0 (`n_sigmas`) | spike | 1 | 8 |
+| `ChauvenetScorer` | 0.5 | clean | 205 | 72 |
+| `SigmaClipScorer` | 3.0 (`n_sigmas`) | spike | 7 | 3 |
+| `StreamingDeviationScorer` | 3.0 (`n_sigmas`) | spike | 5 | 23 |
+| `LODA` | 4 | clean | 19 | 0 |
+| `HalfSpaceTrees` | 1e+09 | clean | 0 | 0 |
+| `LocalOutlierFactor` | 1.5 | spike | 23 | 19 |
+| `OnlineRobustMahalanobis` | 7 | clean | 0 | 0 |
+| `OneClassSGD` | 1e+09 | clean | 0 | 0 |
+| `OnlineIsolationForest` | 0.6 | spike | 81 | 0 |
+
+With their own threshold, six detectors label the sample 60 as spike (`HampelScorer`, `TukeyScorer`, `SigmaClipScorer`, `StreamingDeviationScorer`, `LocalOutlierFactor` and `OnlineIsolationForest`) and five leave it clean. `HalfSpaceTrees` and `OneClassSGD` have a threshold of 1e9, so no sample deviates, and `OnlineRobustMahalanobis` with 7 flags none either: for them `threshold` must be given. `LODA` (threshold 4) flags 19 samples and not the sample 60, `ChauvenetScorer` (threshold 0.5) flags 205 samples and not the sample 60, `OnlineIsolationForest` (0.6) flags 81 and `LocalOutlierFactor` (1.5) flags 23: their score is not in the unit of a threshold in sigma, so each one needs the threshold of its own page.
+
+### 9.3 An event detector confirms a regime
+
+An event detector is one with `update` and `drift_detected`. It decides nothing about single samples: when it signals during a run of deviating samples, that run is a regime, even a short one. The label of the sample 60, with no detector, with `ADWIN` and with `BayesianOnlineChangepoint`:
+
+```python
+import numpy as np
+from dense_armor.core.online.protect.arbiter import classify_segments
+from dense_armor.core.online.drift import ADWIN, BayesianOnlineChangepoint
+
+r = np.random.default_rng(0)
+px = r.normal(0, 1, 300)
+px[60] += 15.0
+px[150:200] += 8.0
+for d in (None, ADWIN(), BayesianOnlineChangepoint()):
+    lab = classify_segments(px, detector=d)[0]
+    print(type(d).__name__, lab[60])
+```
+
+```
+NoneType spike
+ADWIN spike
+BayesianOnlineChangepoint regime
+```
+
+`ADWIN` does not signal during any run, so the labels are those of the Arbiter alone. `BayesianOnlineChangepoint` signals on the single bad tick, so it turns the spike of the sample 60 into a regime: a detector that reacts to one outlier should not be used here.
+
+### 9.4 In a stream
+
+`StreamingArbiter(detector=..., threshold=...)` decides with the same detector. The detector is used as it is given, so it learns the stream; `classify_segments` works on a copy. With `max_delay` large enough the labels are the ones of the batch function:
+
+```python
+import numpy as np
+from dense_armor.core.online.protect.arbiter import classify_segments
+from dense_armor.core.online.anomaly.filters import HampelScorer
+from dense_armor.core.online.protect.streaming_arbiter import StreamingArbiter
+
+r = np.random.default_rng(0)
+px = r.normal(0, 1, 300)
+px[60] += 15.0
+px[150:200] += 8.0
+sa = StreamingArbiter(max_delay=400, detector=HampelScorer(), threshold=3.0)
+out = [e for v in px for e in sa.update(float(v))] + sa.flush()
+batch = classify_segments(px, detector=HampelScorer(), threshold=3.0)[0]
+print([l for _, l, _ in sorted(out)] == list(batch))
+```
+
+```
+True
+```
+
+### 9.5 The same on a robot
+
+An accelerometer channel with one glitch at the sample 60 and a change of level from the sample 150. The code is the same, with the names of the robot.
+
+```python
+import numpy as np
+from dense_armor.core.online.protect.arbiter import classify_segments
+from dense_armor.core.online.anomaly.filters import HampelScorer
+
+r = np.random.default_rng(0)
+ax = r.normal(0, 1, 300)
+ax[60] += 15.0
+ax[150:200] += 8.0
+lab, dev, unc = classify_segments(ax, detector=HampelScorer(), threshold=3.0)
+print([i for i, l in enumerate(lab) if l == 'spike'], [i for i, l in enumerate(lab) if l == 'regime'][:3])
+```
+
+```
+[4, 6, 60, 219, 270, 284] [150, 151, 152]
+```
+
+Any other object is not used: the Arbiter works as if no detector had been given.
 
 ## API reference
 

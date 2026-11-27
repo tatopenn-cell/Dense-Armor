@@ -57,8 +57,8 @@ The list is about the *shields*. It does not cover:
 ### References
 
 The list is distilled from the development diary of the shield engine,
-available in [shields/engine.md](shields/engine.md) and
-[shields/armor.md](shields/armor.md). The adversarial robustness
+available in [protect/engine.md](protect/engine.md) and
+[protect/armor.md](protect/armor.md). The adversarial robustness
 numbers are in [robustness.md](robustness.md). The Kalman comparison is in
 [vs_kalman.md](vs_kalman.md).
 

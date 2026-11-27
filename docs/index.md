@@ -219,10 +219,10 @@ same data.
 
 **Shielding** — the protection that sits between the data and the learning.
 
-- **[Armor](shields/armor.md)** — wearable shield for a single 1D series.
-- **[Orca](shields/orca.md)** — full input + output shield for an entire model.
-- **[Hybrid engine](shields/hybrid_engine.md)** and
-  **[adaptive engine](shields/engine.md)** — the two causal engines the shields sit on.
+- **[Armor](protect/armor.md)** — wearable shield for a single 1D series.
+- **[Orca](protect/orca.md)** — full input + output shield for an entire model.
+- **[Hybrid engine](protect/hybrid_engine.md)** and
+  **[adaptive engine](protect/engine.md)** — the two causal engines the shields sit on.
 
 **Detection** — one number per sample, high means the sample does not look like the recent
 past.
