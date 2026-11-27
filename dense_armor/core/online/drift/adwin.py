@@ -25,6 +25,21 @@ is dropped when
 Both sides carry the units of the data, so the detector is scale-
 invariant.
 
+Differences from the paper. The paper assumes values in [0, 1] (or in a
+known interval [a, b], by rescaling) and gives the rigorous threshold
+sqrt(ln(4/delta') / (2 m)) with delta' = delta / n. It then says that this
+is too conservative and uses in practice (equation 3.1) a threshold with
+the observed variance of the window,
+sqrt(2 var ln(2/delta') / m) + 2 ln(2/delta') / (3 m), with
+delta' = delta / ln(n). This class uses the first form, with the observed
+range R of the window in place of the known interval, and the delta' of the
+second form; it does not use the variance. On seeded streams
+(benchmarks/adwin_threshold.py) it is slower than the threshold of equation
+3.1 with the default window of 200 and with no limit, and one large value
+raises R and can hide a step of 3 standard deviations; with a window of 100
+it finds a step of 4 standard deviations more often. The test compares
+averages, so a change of the variance alone is not seen.
+
 One change can be flagged on several consecutive updates. At each update
 the oldest buckets are dropped while some cut passes the test (Algorithm 1
 of the paper); a change that has only just started leaves part of the old

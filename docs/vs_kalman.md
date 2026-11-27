@@ -100,7 +100,7 @@ section, see [anomaly/mahalanobis.md](anomaly/mahalanobis.md).
   ~7300 is the one a user is likely to see without extra work.
 - **"Blind mode" means no reference.** With `reference=historical_baseline`
   the shield can also track slow drift, see
-  [drift/detectors.md](drift/detectors.md).
+  [drift/detectors/index.md](drift/detectors/index.md).
 
 ### Measured cost
 

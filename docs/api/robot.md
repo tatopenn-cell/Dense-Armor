@@ -82,9 +82,9 @@ For each joint, the modules that work with it, grouped by purpose.
 **Drift**
 
 - [`CUSUMDriftDetector`](../drift/cusum/index.md)
-- [`ADWIN`](../drift/detectors.md)
-- [`KSWIN`](../drift/detectors.md)
-- [`PageHinkley`](../drift/detectors.md)
+- [`ADWIN`](../drift/detectors/index.md)
+- [`KSWIN`](../drift/detectors/index.md)
+- [`PageHinkley`](../drift/detectors/index.md)
 
 **Dynamics**
 
@@ -118,7 +118,7 @@ For each joint, the modules that work with it, grouped by purpose.
 **Drift**
 
 - [`CUSUMDriftDetector`](../drift/cusum/index.md)
-- [`ADWIN`](../drift/detectors.md)
+- [`ADWIN`](../drift/detectors/index.md)
 
 **Dynamics**
 
@@ -144,8 +144,8 @@ For each joint, the modules that work with it, grouped by purpose.
 
 **Drift**
 
-- [`ADWIN`](../drift/detectors.md)
-- [`KSWIN`](../drift/detectors.md)
+- [`ADWIN`](../drift/detectors/index.md)
+- [`KSWIN`](../drift/detectors/index.md)
 
 **Dynamics**
 
@@ -172,7 +172,7 @@ For each joint, the modules that work with it, grouped by purpose.
 
 **Drift**
 
-- [`PageHinkley`](../drift/detectors.md)
+- [`PageHinkley`](../drift/detectors/index.md)
 
 **Control**
 
@@ -199,8 +199,8 @@ For each joint, the modules that work with it, grouped by purpose.
 **Drift**
 
 - [`CUSUMDriftDetector`](../drift/cusum/index.md)
-- [`ADWIN`](../drift/detectors.md)
-- [`PageHinkley`](../drift/detectors.md)
+- [`ADWIN`](../drift/detectors/index.md)
+- [`PageHinkley`](../drift/detectors/index.md)
 
 **Protection**
 
@@ -226,7 +226,7 @@ For each joint, the modules that work with it, grouped by purpose.
 
 **Drift**
 
-- [`ADWIN`](../drift/detectors.md)
+- [`ADWIN`](../drift/detectors/index.md)
 
 **Protection**
 
@@ -250,7 +250,7 @@ For each joint, the modules that work with it, grouped by purpose.
 
 **Drift**
 
-- [`KSWIN`](../drift/detectors.md)
+- [`KSWIN`](../drift/detectors/index.md)
 
 **Protection**
 

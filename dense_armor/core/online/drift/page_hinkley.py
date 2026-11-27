@@ -29,6 +29,14 @@ from dense_armor.roles import DriftDetector
 class PageHinkley(DriftDetector):
     """Page-Hinkley test for a change in the mean of a scalar stream.
 
+    The running mean and the running standard deviation are those of all the
+    samples since the start, not of a window. After a flag only the total that
+    fired (and its minimum) restarts: the mean and the standard deviation are
+    kept, so a step that lasts keeps flagging every few samples (29 flags in
+    the 500 samples after a step of 3 standard deviations, with
+    ``delta=0.05, threshold=20``). A value that is not finite is skipped and
+    counted in ``n_missing``.
+
     Args:
         delta: reference slack, in scale units (multiples of the
             running standard deviation). Classical choice: half the
@@ -37,7 +45,8 @@ class PageHinkley(DriftDetector):
             its running minimum, in scale units. Default ``50.0``.
         two_sided: if ``True`` both upward and downward shifts are
             monitored; if ``False`` only upward. Default ``True``.
-        warmup: number of samples skipped before the first check.
+        warmup: number of samples before the first check. They are not
+            ignored: they feed the running mean and standard deviation.
             Default ``30``.
 
     Examples:

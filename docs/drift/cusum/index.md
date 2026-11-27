@@ -24,7 +24,7 @@ So, in simple words: CUSUM is precisely that smart piggy bank that puts together
 
 This page explains how to detect slow, gradual changes in a system. While a standard detector looks at one reading at a time and misses small shifts, CUSUM accumulates these tiny anomalies over time and triggers an alert as soon as the total deviation confirms a real structural trend.
 
-The cost of executing orders creeps up a little every day. Each single day still looks normal, so a detector that judges one day at a time never complains. Together, though, the days have moved. CUSUM ("cumulative sum") notices this: it keeps a running total of the small surprises, like coins dropped one by one into a piggy bank, and raises an alarm when the bank is full. For the other three detectors and a benchmark on a real robot arm, see [Drift detectors](../detectors.md).
+The cost of executing orders creeps up a little every day. Each single day still looks normal, so a detector that judges one day at a time never complains. Together, though, the days have moved. CUSUM ("cumulative sum") notices this: it keeps a running total of the small surprises, like coins dropped one by one into a piggy bank, and raises an alarm when the bank is full. For the other three detectors and a benchmark on a real robot arm, see [Drift detectors](../detectors/index.md).
 
 ## The pages of the section
 
