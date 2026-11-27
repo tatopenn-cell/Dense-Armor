@@ -35,7 +35,7 @@ Click an area to open its page, or one of its pages on the right, or the button 
 
 | Page | What it shows |
 |---|---|
-| [CUSUM and ARL theory](../drift/cusum.md) | how to detect slow, gradual changes, like a mechanical part wearing out bit by bit: CUSUM accumulates tiny anomalies and triggers an alert when the total deviation confirms a real trend |
+| [CUSUM and ARL theory](../drift/cusum/index.md) | how to detect slow, gradual changes, like a mechanical part wearing out bit by bit: CUSUM accumulates tiny anomalies and triggers an alert when the total deviation confirms a real trend |
 | [Offline algorithm](../drift/offline.md) | the offline side: a change detector reads a series of values and says where its level shifts |
 | [Drift detectors](../drift/detectors.md) | how a system notices slow, gradual changes before an outright failure: four tools that pinpoint when a shift has happened, each trading off reaction delay against false alarms |
 

@@ -84,7 +84,7 @@ The pipeline is in `pipelines/finance/surveillance.py`.
 Primitives chained, each with its own page:
 
 - [Armor](../protect/armor.md)
-- [CUSUM](../drift/cusum.md)
+- [CUSUM](../drift/cusum/index.md)
 - [LODA](../anomaly/loda.md)
 - [Half-Space Trees](../anomaly/hst.md)
 - [Orca](../protect/orca.md)

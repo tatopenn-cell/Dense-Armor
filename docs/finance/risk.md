@@ -80,7 +80,7 @@ The pipeline is in `pipelines/finance/risk.py`.
 Primitives chained, each with its own page:
 
 - [DDSketch](../stats/sketches.md)
-- [CUSUM](../drift/cusum.md)
+- [CUSUM](../drift/cusum/index.md)
 
 ### References
 

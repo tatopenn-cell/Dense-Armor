@@ -163,6 +163,6 @@ bound on how fast the robot can respond, not an estimate of how fast it will.
 
 **See also**: [CBF filter](cbf_filter.md) — the spatial complement (WHERE the command
 can go). [Kinematic controller](kinematic_controller.md) — where the command comes from.
-[CUSUM and ARL theory](../drift/cusum.md) — if the real goal is recovering or
+[CUSUM and ARL theory](../drift/cusum/index.md) — if the real goal is recovering or
 classifying a signal rather than bounding a command's rate of change, a detector is the
 right tool, not this module.

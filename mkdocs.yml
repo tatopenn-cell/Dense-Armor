@@ -201,7 +201,16 @@ nav:
           - Offline algorithms: anomaly/offline.md
       - Drift detection:
           - drift/index.md
-          - CUSUM and ARL theory: drift/cusum.md
+          - CUSUM and ARL theory:
+              - drift/cusum/index.md
+              - CUSUMDriftDetector: drift/cusum/detector.md
+              - one_sided_arl: drift/cusum/one_sided_arl.md
+              - two_sided_arl: drift/cusum/two_sided_arl.md
+              - detectability_report: drift/cusum/detectability_report.md
+              - expected_false_alarm_run: drift/cusum/expected_false_alarm_run.md
+              - expected_detection_delay: drift/cusum/expected_detection_delay.md
+              - cusum_detector: drift/cusum/cusum_detector.md
+              - Results: drift/cusum/results.md
           - Drift detectors: drift/detectors.md
           - Offline algorithm: drift/offline.md
       - Protection:
