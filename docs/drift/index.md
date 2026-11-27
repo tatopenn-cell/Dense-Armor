@@ -29,6 +29,6 @@ detector's.
 
 ## Pages
 
-- **[CUSUM and ARL theory](cusum.md)** — the cumulative-sum detector (accumulate small
+- **[CUSUM and ARL theory](cusum/index.md)** — the cumulative-sum detector (accumulate small
   deviations, alarm when the sum passes a threshold), its streaming version, and how
   long it takes to fire — or to false-alarm — before running it.

@@ -235,7 +235,7 @@ past.
   clipping on whole series, plus `pressure_valve`.
 - **[Curvature](anomaly/curvature.md)** — a bounded proximity-to-reference score in
   [0, 1).
-- **[CUSUM and ARL theory](drift/cusum.md)** — accumulates small, sustained deviations,
+- **[CUSUM and ARL theory](drift/cusum/index.md)** — accumulates small, sustained deviations,
   plus a closed-form pre-flight estimate of detection and false-alarm latency.
 - **[Drift detectors](drift/detectors.md)** — ADWIN, KSWIN, Page–Hinkley, and the CUSUM
   family.

@@ -64,7 +64,7 @@ The consequence, on the running example:
 
 `Armor` is a **point-level** shield. It removes isolated spikes and non-finite values.
 It does not remove a slow drift, and it does not classify a regime change: those need a
-different tool (see [CUSUM](../drift/cusum.md) and [Arbiter](../protect/arbiter.md)).
+different tool (see [CUSUM](../drift/cusum/index.md) and [Arbiter](../protect/arbiter.md)).
 If your signal is a step change that is genuinely intended, `Armor` leaves it alone
 after the first few samples, because after those samples the step is the new local
 baseline.

@@ -82,7 +82,7 @@ cross $h$.
 
 For the full ARL derivation (average run length, how long before an alarm),
 the streaming API and the batch version, see
-[CUSUM and ARL theory](cusum.md).
+[CUSUM and ARL theory](cusum/index.md).
 
 ## 2. Page-Hinkley: the same idea, units do not matter
 
