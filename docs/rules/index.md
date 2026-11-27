@@ -16,57 +16,71 @@ At first he knew nothing and had written on a sheet of paper a single giant rule
 
 One day, however, a sudden storm changed the sea currents forever. The keeper's old rule began to fail badly, but luckily on the table an alarm bell rang immediately (Page-Hinkley test), which warned every time a rule no longer worked. Without losing a second, the keeper tore up the old sheet and wrote a new one for the new currents. And in order never to be confused by the craziest days, he used one last secret: he ignored the waves that were too strange (anomaly_threshold) and kept on the table only very few easy-to-read slips of paper (max_rules), thus guessing the height of the sea every single day.
 
-## The problem, in one line
-
-A rule says "if these conditions hold, the answer is about this number". A set of rules is a model you can read: each rule names the features it looks at and the range where it applies. These rules start with one rule that covers everything, split it into narrower rules as the data shows where the answer changes, and throw away a rule whose predictions start to fail.
-
-A desk that wants to predict the slippage of an order wants a model it can read. A **rule** says "if these conditions hold, the answer is about this number", and a set of rules is a model that names the features it looks at and the range where each rule applies. These rules start with one default rule that covers everything and learn one sample at a time, so they follow the stream. `AMRulesRegressor` (Duarte, Gama and Bifet 2016) is the class that does it.
-
-## The words
-
-| Word | What it means here | In the example |
-|---|---|---|
-| rule | conditions on the features, and the number to answer when they hold | "if the size is above 0, about 5" |
-| default rule | the rule that covers every sample, before any cut | the answer is the mean slippage |
-| expand | add a condition to a rule, after `n_min` samples | the rule is cut at a size of 0 |
-| Page-Hinkley | the test that signals when the error of a rule rises | the rule is dropped when the market changes |
-
 ## A first example: the slippage of an order
 
-The slippage is 5 basis points when the size of the order is above 0 and 0 otherwise; the spread and the volatility say nothing. The model sees 1500 orders, and then answers two orders of opposite size and says which conditions its rule found.
+A desk predicts the slippage of an order, in basis points, from its size and the spread, with rules that it can read.
 
 ```python
 import numpy as np
 from dense_armor.core.online.rules import AMRulesRegressor
 
-rng = np.random.default_rng(0)
-model = AMRulesRegressor(n_min=100, seed=0)
+r = np.random.default_rng(0)
+m = AMRulesRegressor(n_min=100, seed=0)
 for _ in range(1500):
-    size = float(rng.uniform(-1.0, 1.0))
-    row = {"size": size, "spread": float(rng.uniform(-1.0, 1.0)), "vol": float(rng.uniform(-1.0, 1.0))}
-    model.learn_one(row, 5.0 * (size > 0.0) + 0.1 * float(rng.normal()))
-print(round(model.predict_one({"size": 0.5, "spread": 0.0, "vol": 0.0}), 1), round(model.predict_one({"size": -0.5, "spread": 0.0, "vol": 0.0}), 1))
-print(model.explain_one({"size": 0.5, "spread": 0.0, "vol": 0.0}))
+    s = float(r.uniform(-1, 1))
+    m.learn_one({"size": s, "spread": float(r.uniform(-1, 1))}, 5.0 * (s > 0))
+print(round(m.predict_one({"size": 0.5, "spread": 0.0}), 1), round(m.predict_one({"size": -0.5, "spread": 0.0}), 1))
+print(m.explain_one({"size": 0.5, "spread": 0.0}))
 ```
 
 ```
-5.0 -0.0
-[[{'feature': 'size', 'op': '>', 'value': 0.03862887620925903}]]
+5.0 0.0
+[[{'feature': 'size', 'op': '>', 'value': -5.435268394649029e-05}]]
 ```
 
-The answer is 5.0 for the positive size and -0.0, which is zero, for the negative one, with a cut at a size of about 0.04 (the slippage changes at 0) and no mention of the spread or the volatility. The pages below take each part in turn.
+The slippage is 5 when the size is above 0 and 0 otherwise; the spread says nothing. The model answers 5.0 for a positive size and 0.0 for a negative one. `explain_one` lists the conditions of the rule that covers the first order: one condition, on `size`, close to 0. The spread is not in it.
 
 ## The pages of the section
 
 | Page | What it shows |
 |---|---|
-| [Learn a rule set](learn.md) | how the rules are cut, `n_min`, and `explain_one`, with the toy stream of the old page |
-| [When the world changes](change.md) | the Page-Hinkley test that drops a rule when its error rises, with the older figure |
-| [Options](options.md) | how a rule predicts, how many rules, and the parameters |
+| [Learn a rule set](learn.md) | the default rule, `n_min`, the margin of certainty, the new rule and who answers |
+| [When the world changes](change.md) | the Page-Hinkley alarm that removes a rule |
+| [Options](options.md) | the strange orders, the number of rules, the way a rule predicts, the parameters |
 
-## The same problem on a robot
+## The words
 
-A robot that predicts the torque of a joint from its speed, its load and its temperature reads its rules in the same way, and each page ends with the same code written for a robot.
+| Word | What it means |
+|---|---|
+| rule | conditions on the features, and the number to answer when they hold |
+| default rule | the rule with no conditions: it learns the orders that no other rule covers |
+| `n_min` | orders a rule sees before it asks for a cut |
+| Page-Hinkley | the test that removes a rule whose error keeps rising |
+| `anomaly_threshold` | the score under which an order is ignored by the rule that covers it |
+
+## The same on a robot
+
+A robot predicts the torque of a joint, in newton-metres, from its speed and its load.
+
+```python
+import numpy as np
+from dense_armor.core.online.rules import AMRulesRegressor
+
+r = np.random.default_rng(1)
+m = AMRulesRegressor(n_min=100, seed=0)
+for _ in range(1500):
+    v = float(r.uniform(-1, 1))
+    m.learn_one({"speed": v, "load": float(r.uniform(-1, 1))}, 5.0 * (v > 0))
+print(round(m.predict_one({"speed": 0.5, "load": 0.0}), 1), round(m.predict_one({"speed": -0.5, "load": 0.0}), 1))
+print(m.explain_one({"speed": 0.5, "load": 0.0}))
+```
+
+```
+5.0 0.0
+[[{'feature': 'speed', 'op': '>', 'value': -0.0030808348674327135}, {'feature': 'speed', 'op': '>', 'value': 0.005520971026271582}]]
+```
+
+The torque is 5 when the speed is above 0 and 0 otherwise; the load says nothing. The model answers 5.0 and 0.0, and the conditions that cover the first sample are both on `speed`.
 
 ## Details
 
@@ -89,3 +103,14 @@ p99 of one `learn_one` plus one `predict_one` over 3000 samples with four featur
 - `check_estimator` passes with no check skipped; the tests cover every line of the module.
 - The variance ratio of a hand case (targets 0, 2, 4, 6 split after the second) is 0.8, and 1.0 for a perfect split.
 - Two identical features tie: the tie threshold `tau` decides the split only once `n` is large enough that the Hoeffding bound falls below it (3224 samples for the defaults, `ln(1/delta) / (2 tau^2) = 3223.6`).
+
+### The text of the older page
+
+Suppose an AI assistant must predict how many seconds a request will take from a few numbers about it. A rule could read: *if the prompt length is above 300 and the queue is shorter than 4, the answer is about 2.1 seconds*. The part after "if" is a list of conditions on the features; the part after "then" is a small model that predicts the target for the requests the rule covers.
+
+`AMRulesRegressor` (Duarte, Gama and Bifet 2016) keeps such a list and learns it one sample at a time.
+
+- **Ordered or unordered.** With `ordered_set=True` the first rule that covers a sample learns and predicts; by default all covering rules learn and their predictions are averaged.
+- **How a rule predicts.** `prediction="mean"` uses the mean of its targets, `"perceptron"` a linear model on the standardised features, `"adaptive"` (default) the one with the lower fading mean absolute error.
+- **Anomalies.** With `anomaly_threshold` set (the paper uses -0.75), a rule ignores a sample whose features are unusual for it, once it has seen `m_min` samples. The score is the mean over features, so it flags a sample that is unusual in most features, not in one of them.
+- **Size.** `max_rules`, `max_literals` and `max_split_points` bound the model.
