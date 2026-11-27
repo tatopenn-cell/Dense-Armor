@@ -101,7 +101,7 @@ print(anomalie)
 [3, 5]
 ```
 
-The names are Italian: `analizza` is "analyse", `livello_ia=0.0` means the shield filters actively (1.0 only marks, and the 9999 stays in the series). It returns three things: the cleaned series, `K`, and the list `anomalie` of replaced positions, here 3 (the 9999) and 5 (the `NaN`). Both are replaced and the series keeps its length. `K` is the flag of the internal trigger, one per sample, and it is not the same list: the `NaN` is cleaned before the trigger, so `K` is 0 at position 5, and the trigger also marks positions 2 and 7. The sample at position 2 is replaced by the local median (1.2 becomes 1.05) without being listed in `anomalie`. The [Armor page](shields/armor.md) explains the trigger. [Shields](shields/index.md) shows the others, including `Orca`, which wraps a whole model.
+The names are Italian: `analizza` is "analyse", `livello_ia=0.0` means the shield filters actively (1.0 only marks, and the 9999 stays in the series). It returns three things: the cleaned series, `K`, and the list `anomalie` of replaced positions, here 3 (the 9999) and 5 (the `NaN`). Both are replaced and the series keeps its length. `K` is the flag of the internal trigger, one per sample, and it is not the same list: the `NaN` is cleaned before the trigger, so `K` is 0 at position 5, and the trigger also marks positions 2 and 7. The sample at position 2 is replaced by the local median (1.2 becomes 1.05) without being listed in `anomalie`. The [Armor page](protect/armor.md) explains the trigger. [Shields](protect/shields.md) shows the others, including `Orca`, which wraps a whole model.
 
 ## 6. Keep a command from jumping
 

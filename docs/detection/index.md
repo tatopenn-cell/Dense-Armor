@@ -44,6 +44,11 @@ Click an area to open its page, or one of its pages on the right, or the button 
 | Page | What it shows |
 |---|---|
 | [Arbiter](../protect/arbiter.md) | per-point routing: it decides, reading by reading, whether a glitch should be replaced or a real change kept, and treats it accordingly |
+| [Shields](../protect/shields.md) | a shield cleans a series of numbers or a model |
+| [Orca (online)](../protect/orca.md) | protects a whole model: it cleans the input, runs the model, and checks the answer |
+| [Adaptive engine (online)](../protect/engine.md) | follows a signal that drifts slowly, so that a slow drift is not mistaken for a glitch |
+| [Armor (offline)](../protect/armor.md) | cleans one series of numbers: it finds the readings that are obviously broken and replaces them |
+| [Hybrid engine (offline)](../protect/hybrid_engine.md) | the part inside Armor that decides whether a value is genuine or broken |
 
 ## Details
 

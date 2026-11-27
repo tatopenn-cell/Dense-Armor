@@ -3,7 +3,7 @@
 A set of general-purpose helpers for fast number-crunching programs, usable on their own. This page shows each one with an example.
 
 A second part of the package, under `core/` and `utility/`, independent of
-[`Armor`](../shields/armor.md) and [`Orca`](../shields/orca.md) — none of it
+[`Armor`](../protect/armor.md) and [`Orca`](../protect/orca.md) — none of it
 participates in the anomaly shield. Generic tools for JAX / NumPy pipelines.
 
 Every example below was run before being written down. Each module is tested on its
@@ -58,7 +58,7 @@ is in the thousands. Treat it as a starting guess, not a guarantee.
 
 **`SIGNAL_STABILIZER_PRESETS`** are 4 empirically-calibrated parameter sets
 (`balanced_v2`, `cifar10_best_v1`, `pure_1d_time_v1`, `cifar10_hardened_lyapunov`) for
-[`AdaptiveSignalStabilizer`](../shields/engine.md) (Orca's Stage 1).
+[`AdaptiveSignalStabilizer`](../protect/engine.md) (Orca's Stage 1).
 
 ```python
 from dense_armor.utility.preset import SIGNAL_STABILIZER_PRESETS

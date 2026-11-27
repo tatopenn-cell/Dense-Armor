@@ -83,11 +83,11 @@ For every arriving asset tick, the multi-stage surveillance architecture process
 The pipeline is in `pipelines/finance/surveillance.py`.
 Primitives chained, each with its own page:
 
-- [Armor](../shields/armor.md)
+- [Armor](../protect/armor.md)
 - [CUSUM](../drift/cusum.md)
 - [LODA](../anomaly/loda.md)
 - [Half-Space Trees](../anomaly/hst.md)
-- [Orca](../shields/orca.md)
+- [Orca](../protect/orca.md)
 
 ### References
 

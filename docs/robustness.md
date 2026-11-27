@@ -66,7 +66,7 @@ uses standard implementations of PGD, BIM, MI-FGSM, Carlini-Wagner,
 DeepFool and the Fourier attack; the code is in the repository and can be
 re-run.
 
-The engine itself is documented in [shields/engine.md](shields/engine.md);
+The engine itself is documented in [protect/engine.md](protect/engine.md);
 the toolkit that runs the benchmark is in [toolkit/toolkit.md](toolkit/toolkit.md).
 
 ### Choices stated explicitly
@@ -88,7 +88,7 @@ the toolkit that runs the benchmark is in [toolkit/toolkit.md](toolkit/toolkit.m
 
 Not applicable: the page reports the *robustness* of the engine, not its
 latency. Per-sample latency for `AdaptiveSignalStabilizer` is in
-[shields/engine.md](shields/engine.md).
+[protect/engine.md](protect/engine.md).
 
 ### Development diary
 
