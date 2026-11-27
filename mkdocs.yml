@@ -279,6 +279,7 @@ nav:
       - Distributions: ml/proba.md
       - Statistics and sketches: ml/stats.md
       - Decision trees: ml/tree.md
+      - Fit on the whole table: ml/fit_batch.md
       - Vision: ml/vision.md
   - Online learning:
       - Overview: online/index.md
@@ -376,7 +377,10 @@ nav:
           - Plain matrix factorization: reco/funk_mf.md
           - Top-k recommendations: reco/rank.md
           - Two sliding-window structures: reco/windows.md
-      - Fit, the whole dataset at once: fit.md
+      - Fit, the whole dataset at once:
+          - fit/index.md
+          - Fit on an estimator: fit/estimators.md
+          - LEGO, POLA and OASIS: fit/metric_learners.md
       - Rules: rules/index.md
       - Detection:
           - Anomaly detection:

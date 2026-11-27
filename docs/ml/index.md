@@ -24,5 +24,6 @@ Each family below has its own page, with a self-contained block for every class 
 | [Anomaly detection](anomaly.md) | An anomaly detector marks the values that do not look like their neighbours. |
 | [Change detection](drift.md) | A change detector reads a series of values and says where its level shifts. |
 | [Vision](vision.md) | Vision here works on frames and on tables of features. DenseFlow gives the motion of every pixel between two frames, MotionMask keeps the pixels that move most, GlobalMotion gives the shift of the whole scene, RandomProjection and PCA reduce a table of features to fewer columns. |
+| [Fit on the whole table](fit_batch.md) | A few algorithms need all the rows to start: a decision tree on a whole table, bagging on bootstrap samples, a text vocabulary. They sit next to their online versions. |
 
 A stream that arrives one row at a time is the subject of the tab Online learning; the section Comparisons & limits of the tab Library puts the two side by side.

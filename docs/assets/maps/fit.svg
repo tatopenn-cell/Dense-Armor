@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 398" width="100%" role="img" aria-label="The map of fit">
+<style>text{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif}.m{font-family:ui-monospace,Menlo,Consolas,monospace}.e{opacity:.32;transition:opacity .15s}.net:hover .e{opacity:.06}.net .pg:hover .e{opacity:1;stroke-width:2.2}a:hover .card{fill:#17303f;stroke-width:2.4}a:hover text.dn{fill:#ffffff}.back:hover .card{fill:#17303f}</style>
+<rect width="1000" height="398" fill="#0d131a" rx="14"/>
+<text x="500" y="38" fill="#e0fbfc" font-size="24" font-weight="700" text-anchor="middle">THE MAP OF FIT</text>
+<text x="500" y="62" fill="#4cc9f0" font-size="12.5" text-anchor="middle">the job, the page of each way to give data and its classes; pass over a page to light its classes, click to open it</text>
+<a class="back" href="../../#the-library-folder-by-folder" target="_top"><title>back to the map of the library</title><rect class="card" x="20" y="14" width="150" height="30" rx="15" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="95" y="33.5" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">← map of the library</text></a>
+<text x="24" y="98" fill="#f72585" font-size="12" font-weight="700">01  JOB</text>
+<text x="410" y="98" fill="#f72585" font-size="12" font-weight="700">02  PAGE</text>
+<text x="680" y="98" fill="#f72585" font-size="12" font-weight="700">03  CLASSES OF THE CATALOG</text>
+<g class="net">
+<path class="e" d="M214,219.8 C262,219.8 282,219.8 318,219.8" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<g class="pg">
+<path class="e" d="M342,219.8 C382,219.8 366,137.0 408,137.0" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,137.0 C650,137.0 650,124.5 676,124.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M626,137.0 C650,137.0 650,149.5 676,149.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,219.8 C382,219.8 366,213.5 408,213.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,213.5 C650,213.5 650,188.5 676,188.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M626,213.5 C650,213.5 650,213.5 676,213.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M626,213.5 C650,213.5 650,238.5 676,238.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,219.8 C382,219.8 366,302.5 408,302.5" fill="none" stroke="#f72585" stroke-width="1.4"/>
+<path class="e" d="M626,302.5 C650,302.5 650,277.5 676,277.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M626,302.5 C650,302.5 650,302.5 676,302.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+<path class="e" d="M626,302.5 C650,302.5 650,327.5 676,327.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+</g>
+</g>
+<a href="../../#the-library-folder-by-folder" target="_top"><title>regress: back to the map of the library</title><rect class="card" x="20" y="200.8" width="190" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="34" y="217.8" fill="#e0fbfc" font-size="13" font-weight="700">regress</text><text x="34" y="231.8" fill="#94a3b8" font-size="9.5">job of the ontology</text></a>
+<circle cx="330" cy="219.8" r="12" fill="#101a24" stroke="#4cc9f0" stroke-width="2"/><text class="m" x="330" y="249.8" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">linear</text>
+<a href="../../fit/estimators/" target="_top"><title>Fit on an estimator: open fit/estimators.md</title><rect class="card" x="410" y="118.0" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="134.0" fill="#e0fbfc" font-size="13" font-weight="700">Fit on an estimator</text><text x="424" y="149.0" fill="#94a3b8" font-size="9.5">the same algorithm on the whole table</text></a>
+<a href="../../fit/estimators/" target="_top"><title>LinearRegression: open fit/estimators.md</title><rect class="card" x="678" y="114.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="128.3" fill="#e0fbfc" font-size="11">LinearRegression</text><text x="966" y="128.3" fill="#ff9e00" font-size="10" font-weight="700" text-anchor="end">R</text></a>
+<a href="../../fit/estimators/" target="_top"><title>StandardScaler: open fit/estimators.md</title><rect class="card" x="678" y="139.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="153.3" fill="#e0fbfc" font-size="11">StandardScaler</text></a>
+<a href="../../ml/fit_batch/" target="_top"><title>Whole-table algorithms (Machine learning): open ml/fit_batch.md</title><rect class="card" x="410" y="194.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="210.5" fill="#e0fbfc" font-size="13" font-weight="700">Whole-table algorithms (Machine learning)</text><text x="424" y="225.5" fill="#94a3b8" font-size="9.5">the ones that need all the rows</text></a>
+<a href="../../ml/fit_batch/" target="_top"><title>BatchDecisionTreeClassifier: open ml/fit_batch.md</title><rect class="card" x="678" y="178.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="192.3" fill="#e0fbfc" font-size="11">BatchDecisionTreeClassifier</text><text x="966" y="192.3" fill="#4cc9f0" font-size="10" font-weight="700" text-anchor="end">C</text></a>
+<a href="../../ml/fit_batch/" target="_top"><title>OnlineBaggingClassifier: open ml/fit_batch.md</title><rect class="card" x="678" y="203.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="217.3" fill="#e0fbfc" font-size="11">OnlineBaggingClassifier</text><text x="966" y="217.3" fill="#4cc9f0" font-size="10" font-weight="700" text-anchor="end">C</text></a>
+<a href="../../ml/fit_batch/" target="_top"><title>TextVectorizer: open ml/fit_batch.md</title><rect class="card" x="678" y="228.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="242.3" fill="#e0fbfc" font-size="11">TextVectorizer</text></a>
+<a href="../../fit/metric_learners/" target="_top"><title>LEGO, POLA and OASIS: open fit/metric_learners.md</title><rect class="card" x="410" y="283.5" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="299.5" fill="#e0fbfc" font-size="13" font-weight="700">LEGO, POLA and OASIS</text><text x="424" y="314.5" fill="#94a3b8" font-size="9.5">online metric learning, a pair or a triplet at a time</text></a>
+<a href="../../fit/metric_learners/" target="_top"><title>LEGO: open fit/metric_learners.md</title><rect class="card" x="678" y="267.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="281.3" fill="#e0fbfc" font-size="11">LEGO</text></a>
+<a href="../../fit/metric_learners/" target="_top"><title>POLA: open fit/metric_learners.md</title><rect class="card" x="678" y="292.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="306.3" fill="#e0fbfc" font-size="11">POLA</text></a>
+<a href="../../fit/metric_learners/" target="_top"><title>OASIS: open fit/metric_learners.md</title><rect class="card" x="678" y="317.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="331.3" fill="#e0fbfc" font-size="11">OASIS</text></a>
+<text x="500" y="382" fill="#94a3b8" font-size="10.5" text-anchor="middle">jobs: dense_armor/usable/ontology.json; classes: dense_armor.usable.catalog; drawn by docs/assets/maps/make_fit_map.py</text>
+</svg>
