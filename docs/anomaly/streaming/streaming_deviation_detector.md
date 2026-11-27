@@ -4,6 +4,8 @@
 
 You have a stream of numbers, for example the daily cost of executing an order . You want to know, on the sample that arrives, whether it is too unusual compared with the recent past. `streamDD` reads one value per call, compares it with a robust median and spread of the window of strictly previous samples, and answers `True`, without seeing anything in the future. A robot joint uses the same call inside its control loop.
 
+**The name.** `streamDD` is short for *stream Deviation Detector*: a detector that gets one value at a time from a stream and answers whether that value deviates from the recent past.
+
 ![A surface showing, for a spike of amplitude x on a seeded noise stream, the fraction of injected spikes flagged on 20 seeded series, for 8 spike amplitudes (2 to 10 standard deviations) and 8 values of n_sigmas (2 to 6).](../../assets/streaming/streaming_deviation_detector_3d.png)
 
 On a seeded noise stream with one injected spike, this surface shows how often the spike is flagged, on a scale from 0 to 1. The horizontal axis is the spike amplitude in standard deviations; the other axis is `n_sigmas`, the flagging threshold. Higher means the spike is caught more often.

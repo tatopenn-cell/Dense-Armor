@@ -79,13 +79,13 @@ class streamDD:
         eps: numerical guard for a degenerate scale.
 
     Examples:
-    >>> det = streamDD(radius=5, ref_mult=2, n_sigmas=3.0)
-    >>> import numpy as np
-    >>> rng = np.random.default_rng(0)
-    >>> stream = list(rng.normal(0, 1, 20)) + [50.0]
-    >>> flags = [det.update(x) for x in stream]
-    >>> flags[-1]
-    True
+        >>> det = streamDD(radius=5, ref_mult=2, n_sigmas=3.0)
+        >>> import numpy as np
+        >>> rng = np.random.default_rng(0)
+        >>> stream = list(rng.normal(0, 1, 20)) + [50.0]
+        >>> flags = [det.update(x) for x in stream]
+        >>> flags[-1]
+        True
     """
 
     def __init__(self, radius: int = 10, ref_mult: int = 3, n_sigmas: float = 3.0, eps: float = 1e-9):
@@ -137,11 +137,11 @@ class MultistreamDD:
         eps: numerical guard for a degenerate scale.
 
     Examples:
-    >>> import numpy as np
-    >>> det = MultistreamDD(n_channels=2, radius=5, ref_mult=2, n_sigmas=3.0)
-    >>> _ = [det.update(r) for r in np.zeros((10, 2))]
-    >>> det.update([50.0, 0.0]).tolist()
-    [True, False]
+        >>> import numpy as np
+        >>> det = MultistreamDD(n_channels=2, radius=5, ref_mult=2, n_sigmas=3.0)
+        >>> _ = [det.update(r) for r in np.zeros((10, 2))]
+        >>> det.update([50.0, 0.0]).tolist()
+        [True, False]
     """
 
     def __init__(self, n_channels: int, radius: int = 10, ref_mult: int = 3,

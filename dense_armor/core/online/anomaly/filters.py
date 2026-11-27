@@ -89,16 +89,16 @@ class HampelScorer(AnomalyDetector):
         is the strongest possible evidence), ``0.0`` when it does not.
 
     Examples:
-    >>> from dense_armor.core.online.anomaly.filters import HampelScorer
-    >>> import numpy as np
-    >>> rng = np.random.default_rng(0)
-    >>> s = HampelScorer(radius=5, n_sigmas=3.0)
-    >>> for v in rng.normal(0, 1, 20):
-    ...     _ = s.learn_one({"v": float(v)})
-    >>> s.score_one({"v": 50.0}) > 3.0
-    True
-    >>> s.is_outlier({"v": 50.0})
-    True
+        >>> from dense_armor.core.online.anomaly.filters import HampelScorer
+        >>> import numpy as np
+        >>> rng = np.random.default_rng(0)
+        >>> s = HampelScorer(radius=5, n_sigmas=3.0)
+        >>> for v in rng.normal(0, 1, 20):
+        ...     _ = s.learn_one({"v": float(v)})
+        >>> s.score_one({"v": 50.0}) > 3.0
+        True
+        >>> s.is_outlier({"v": 50.0})
+        True
 
     References:
     Hampel, F. R. (1974). The influence curve and its role in robust
@@ -182,14 +182,14 @@ class TukeyScorer(AnomalyDetector):
         Below this IQR the window is treated as flat.
 
     Examples:
-    >>> from dense_armor.core.online.anomaly.filters import TukeyScorer
-    >>> import numpy as np
-    >>> rng = np.random.default_rng(0)
-    >>> s = TukeyScorer(radius=5)
-    >>> for v in rng.normal(0, 1, 20):
-    ...     _ = s.learn_one({"v": float(v)})
-    >>> s.is_outlier({"v": 50.0})
-    True
+        >>> from dense_armor.core.online.anomaly.filters import TukeyScorer
+        >>> import numpy as np
+        >>> rng = np.random.default_rng(0)
+        >>> s = TukeyScorer(radius=5)
+        >>> for v in rng.normal(0, 1, 20):
+        ...     _ = s.learn_one({"v": float(v)})
+        >>> s.is_outlier({"v": 50.0})
+        True
 
     References:
     Tukey, J. W. (1977). Exploratory Data Analysis. Addison-Wesley.
@@ -290,14 +290,14 @@ class ChauvenetScorer(AnomalyDetector):
         Below this scale the window is treated as flat.
 
     Examples:
-    >>> from dense_armor.core.online.anomaly.filters import ChauvenetScorer
-    >>> import numpy as np
-    >>> rng = np.random.default_rng(0)
-    >>> s = ChauvenetScorer(radius=10)
-    >>> for v in rng.normal(0, 1, 20):
-    ...     _ = s.learn_one({"v": float(v)})
-    >>> s.is_outlier({"v": 50.0})
-    True
+        >>> from dense_armor.core.online.anomaly.filters import ChauvenetScorer
+        >>> import numpy as np
+        >>> rng = np.random.default_rng(0)
+        >>> s = ChauvenetScorer(radius=10)
+        >>> for v in rng.normal(0, 1, 20):
+        ...     _ = s.learn_one({"v": float(v)})
+        >>> s.is_outlier({"v": 50.0})
+        True
 
     References:
     Chauvenet, W. (1863). A Manual of Spherical and Practical Astronomy,
@@ -383,14 +383,14 @@ class SigmaClipScorer(AnomalyDetector):
         Below this scale the cleaned window is treated as flat.
 
     Examples:
-    >>> from dense_armor.core.online.anomaly.filters import SigmaClipScorer
-    >>> import numpy as np
-    >>> rng = np.random.default_rng(0)
-    >>> s = SigmaClipScorer(radius=10, n_sigmas=3.0)
-    >>> for v in rng.normal(0, 1, 20):
-    ...     _ = s.learn_one({"v": float(v)})
-    >>> s.is_outlier({"v": 50.0})
-    True
+        >>> from dense_armor.core.online.anomaly.filters import SigmaClipScorer
+        >>> import numpy as np
+        >>> rng = np.random.default_rng(0)
+        >>> s = SigmaClipScorer(radius=10, n_sigmas=3.0)
+        >>> for v in rng.normal(0, 1, 20):
+        ...     _ = s.learn_one({"v": float(v)})
+        >>> s.is_outlier({"v": 50.0})
+        True
 
     References:
     Standard in astronomy; see e.g. Akritas, M. G., Bershady, M. A. (1996).
@@ -464,15 +464,15 @@ class HampelFilter(Transformer):
         Below this scale the window is flat.
 
     Examples:
-    >>> from dense_armor.core.online.anomaly.filters import HampelFilter
-    >>> import numpy as np
-    >>> rng = np.random.default_rng(0)
-    >>> f = HampelFilter(radius=5)
-    >>> for v in rng.normal(0, 1, 20):
-    ...     _ = f.learn_one({"v": float(v)})
-    >>> out = f.transform_one({"v": 50.0})
-    >>> abs(out["v"]) < 5.0
-    True
+        >>> from dense_armor.core.online.anomaly.filters import HampelFilter
+        >>> import numpy as np
+        >>> rng = np.random.default_rng(0)
+        >>> f = HampelFilter(radius=5)
+        >>> for v in rng.normal(0, 1, 20):
+        ...     _ = f.learn_one({"v": float(v)})
+        >>> out = f.transform_one({"v": 50.0})
+        >>> abs(out["v"]) < 5.0
+        True
     """
 
     def __init__(

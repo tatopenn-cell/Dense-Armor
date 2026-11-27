@@ -4,6 +4,8 @@
 
 You want a number, not just a yes/no flag. On a stream you first ask for a score, then tell the estimator what really happened. `streamDS` returns how unusual a reading is compared with the window of readings it has already learned, in robust standard-deviation units. A score above your chosen `n_sigmas` means the sample would be flagged.
 
+**The name.** `streamDS` is short for *stream Deviation Scorer*: it gives the deviation of a value from the recent past as a number, instead of the yes or no that `streamDD` gives.
+
 ![A surface showing the mean score on an injected spike on a seeded noise stream, for 8 spike amplitudes (2 to 10 standard deviations) and 8 values of radius (3 to 20).](../../assets/streaming/streaming_deviation_scorer_3d.png)
 
 On a seeded noise stream with one injected spike, this surface shows the score on the spike. The horizontal axis is the spike amplitude in standard deviations; the other axis is `radius`, the size of the recent window. Higher means the spike is scored more strongly.

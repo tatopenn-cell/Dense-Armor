@@ -4,53 +4,60 @@
 
 `class_seg_multi` reads a table of readings, one column per channel, and applies `classify_segments` independently to each column. It returns three stacked arrays, one per channel: a label for every sample, a deviation score, and an uncertainty. A spike is a short deviation; a regime is a sustained change. A short batch, offline triage, not the zero-latency streaming flag.
 
-![Fraction of injected spikes flagged on a seeded noise stream, for 8 spike amplitudes (2 to 10 standard deviations) and 8 values of n_sigmas (2 to 6).](../../assets/streaming/class_seg_multi_3d.png)
+**The name.** `class_seg_multi` is short for *classify segments, multi-channel*: it classifies the stretches of a recording, channel by channel, as spike, regime or clean.
 
-On a seeded noise stream with one injected spike, this surface shows how often the spike is flagged. The horizontal axis is the spike amplitude in standard deviations; the other axis is `n_sigmas`. Higher means the spike is caught more often.
+![The share of a shifted run labelled regime for runs of 2 to 60 days and shifts of 3 to 15 standard deviations.](../../assets/streaming/class_seg_multi_3d.png)
 
-## A first example: several order-cost streams
+A short run is a spike, whatever its size. A run becomes a regime only when it lasts: with a shift of 15 standard deviations, runs of 2, 6 and 12 days are spikes, and about half of a run of 24 days is labelled regime (0.53). Later the window learns the new level and the following days are labelled clean, so a run of 60 days has a regime share of 0.21.
 
-A desk watches order-execution cost on several markets. It records a table, one column per market, and wants, for each market, which samples are spikes and which are regimes.
+## A first example: three venues
+
+Three venues, 400 days of the cost of executing an order. Venue A has one bad tick at day 100; venue C moves up by 9 from day 300.
 
 ```python
 import numpy as np
 from dense_armor.core.online.anomaly.streaming import class_seg_multi
 
-rng = np.random.default_rng(0)
-X = 12.0 + 1.5 * rng.standard_normal((200, 3))
-X[100, 0] = 25.0
-e, d, u = class_seg_multi(X, radius=30, ref_mult=3, n_sigmas=4.0)
-print(e[100].tolist(), round(float(d[100, 0]), 2))
+rng = np.random.default_rng(5)
+X = 12.0 + 1.5 * rng.standard_normal((400, 3))
+X[100, 0] = 40.0
+X[300:, 2] += 9.0
+labels = class_seg_multi(X, radius=10)[0]
+for c in range(3):
+    print(c, {k: labels[:, c].tolist().count(k) for k in ("spike", "regime")})
 ```
 
 ```
-['spike', 'clean', 'clean'] 7.75
+0 {'spike': 2, 'regime': 0}
+1 {'spike': 1, 'regime': 0}
+2 {'spike': 10, 'regime': 8}
 ```
 
-![Three seeded order-cost streams, one spike on one channel.](../../assets/streaming/class_seg_multi_finance.png)
+Venue A has 2 days labelled spike, venue B has 1, and venue C, whose level moved, has 10 spike days and 8 regime days. The function labels each channel on its own, as if you had called it once per column.
 
-On three seeded order-cost streams, one spike day on one channel is labelled `spike` on that channel only.
+![The cost of executing an order on three venues; pink days are spikes and orange days are a regime.](../../assets/streaming/class_seg_multi_finance.png)
+
+Venue A has a bad tick, venue B nothing special and venue C a jump of the level.
 
 ## The same on a robot
 
-A robot logs every joint into a table; `class_seg_multi` labels each joint independently.
-
 ```python
 import numpy as np
 from dense_armor.core.online.anomaly.streaming import class_seg_multi
 
 rng = np.random.default_rng(0)
-X = 0.1 * rng.standard_normal((500, 6))
-X[300, 2] = 3.0
-e, d, u = class_seg_multi(X, radius=30, ref_mult=3, n_sigmas=4.0)
-print(e[300].tolist())
+X = rng.normal(0.0, 0.1, (300, 2))
+X[100, 0] = 5.0
+X[200:, 1] += 2.0
+labels = class_seg_multi(X, radius=10)[0]
+print([{k: labels[:, c].tolist().count(k) for k in ("spike", "regime")} for c in range(2)])
 ```
 
 ```
-['clean', 'clean', 'spike', 'clean', 'clean', 'clean']
+[{'spike': 4, 'regime': 0}, {'spike': 11, 'regime': 15}]
 ```
 
-The robot case comes last. Joint 2 at sample 300 is labelled `spike`; the others `clean`.
+Joint 1 has one bad reading: 4 samples are labelled spike and none regime. Joint 2 moves to a new level at sample 200: 15 samples are labelled regime, and 11 spike.
 
 ## How it works
 

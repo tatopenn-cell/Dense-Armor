@@ -4,6 +4,8 @@
 
 You have several numbers arriving together, for example the cost of executing an order on several markets, or the velocity of every robot joint. `MultistreamDD` reads one vector per call and returns one flag per channel. Each channel is scored exactly as if a `streamDD` ran on that channel alone; channels never influence each other. A channel that is unusual in its own history is flagged, even if the others are normal.
 
+**The name.** `MultistreamDD` is short for *Multi-channel stream Deviation Detector*: one `streamDD` for each channel of a vector, such as the joints of a robot or the venues of a desk.
+
 ![A surface showing, on seeded three-channel noise streams, how often an injected spike on one channel is flagged on that channel, for 8 spike amplitudes (2 to 10 standard deviations) and 8 values of n_sigmas (2 to 6).](../../assets/streaming/multi_channel_streaming_deviation_detector_3d.png)
 
 On a seeded noise stream with one injected spike on one channel, this surface shows how often the spike is flagged on that channel, on a scale from 0 to 1. The horizontal axis is the spike amplitude in standard deviations; the other axis is `n_sigmas`, the flagging threshold. Higher means the spike is caught more often.

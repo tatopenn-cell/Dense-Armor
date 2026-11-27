@@ -4,34 +4,40 @@
 
 `HampelScorer` scores a new value by how far it is from the median of the recent window, measured in robust standard deviations: the robust spread is `1.4826 * MAD`. This is the classic Hampel rule, applied to a causal window of `2 * radius` samples strictly before the value. `is_outlier` is `True` when the score is above `n_sigmas`. It is an `AnomalyDetector`, and it never sees the future.
 
-![On a seeded noise stream with one injected spike, the fraction of injected spikes flagged, for 8 spike amplitudes (2 to 10 standard deviations) and 8 values of n_sigmas (2 to 6).](../../assets/streaming/hampel_scorer_3d.png)
+`dense_armor.core.online.anomaly.filters` gives the four classic outlier rules as streaming scorers: Hampel, Tukey fences, Chauvenet and sigma clipping.
 
-On a seeded noise stream with one injected spike, this surface shows how often the spike is flagged. The horizontal axis is the spike amplitude in standard deviations; the other axis is `n_sigmas`, the flagging threshold. Higher means the spike is caught more often.
+Each scorer looks only at the `2 * radius` samples before the value being scored. The batch versions on the [robust filters](../robust_filters.md) page use a window centred on the value, which looks at future samples; a live robot loop cannot, and that is the only difference.
+
+![The score of a spike for 8 spike sizes and 0 to 14 bad values in a window of 30.](../../assets/streaming/hampel_scorer_3d.png)
+
+The score of the same spike goes down as the window fills with bad values: a spike of 8 standard deviations scores 9.3 in a clean window, 6.6 with 6 bad values out of 30, 2.7 with 12 and 1.5 with 14. The median and the MAD resist bad values, but not without limit.
 
 ## A first example: a daily cost of executing an order
 
-A desk watches the daily cost of executing an order. Each day it tells the scorer the new cost, then asks if the day is an outlier.
+A desk watches the daily cost of executing an order. In the last 30 days four ticks went wrong and were recorded as 40. Today the cost is 25: is it an outlier? The plain rule, the distance from the mean in standard deviations, is the one to beat.
 
 ```python
 import numpy as np
 from dense_armor.core.online.anomaly.filters import HampelScorer
 
-rng = np.random.default_rng(0)
-cost = 12.0 + 1.5 * rng.standard_normal(500)
-cost[250] = 25.0
-s = HampelScorer(radius=15)
-for v in cost[:250]:
-    s.learn_one({"x": float(v)})
-print(s.is_outlier({"x": float(cost[250])}), round(s.score_one({"x": float(cost[250])}), 2))
+rng = np.random.default_rng(1)
+cost = 12.0 + 1.5 * rng.standard_normal(30)
+cost[[5, 11, 17, 23]] = 40.0
+h = HampelScorer(radius=15)
+for v in cost:
+    h.learn_one({"x": float(v)})
+print(round(h.score_one({"x": 25.0}), 1), round(abs(25.0 - cost.mean()) / cost.std(), 1))
 ```
 
 ```
-True 7.92
+11.3 1.0
 ```
 
-![The same seeded daily-cost stream, flagged outlier in pink.](../../assets/streaming/hampel_scorer_finance.png)
+`HampelScorer` scores today at 11.3 robust deviations, far above the threshold of 3. The plain rule scores it 1.0 and misses it: the four bad ticks pull the mean up and stretch the standard deviation, so 25 looks ordinary. The median and the MAD of the window ignore the bad ticks.
 
-On the same seeded daily-cost stream, the spike day is flagged; ordinary days are not.
+![The 30 days of the window with the four bad ticks in pink, the band of the Hampel rule in orange, the band of the mean rule in grey and today's cost as a diamond.](../../assets/streaming/hampel_scorer_finance.png)
+
+Orange is the band of the median plus or minus 3 robust deviations (8.8 to 15.6); grey is the band of the mean plus or minus 3 standard deviations (-13.4 to 44.5). Today's cost, 25, is outside the orange band and inside the grey one.
 
 ## The same on a robot
 
@@ -48,7 +54,7 @@ print(s.is_outlier({"v": 50.0}), s.is_outlier({"v": 1.1}))
 True False
 ```
 
-The robot case comes last. A reading of 50 is an outlier; a reading of 1.1 is ordinary.
+A reading of 50 is an outlier for the joint; a reading of 1.1 is not.
 
 ## How it works
 
@@ -98,3 +104,4 @@ Every scorer catches the spikes; precision is the tuning knob. A trend inside th
 - **Causal window.** `2 * radius` samples strictly before; `is_outlier` ↔ batch would flag; batch Hampel uses a window centred on the value (sees future); streaming is causal.
 - **Scale.** robust spread is `1.4826 * MAD`; flat window, `positive infinity` if dev > `eps` `0.0` otherwise. `n_missing` counts values that are not a number or `None`.
 - **Shared interface.** the four scorers share `learn_one` / `score_one`, feature selection, `is_outlier`.
+- **Window size.** A short window reacts faster but its median and MAD are noisier, so more ordinary samples are flagged (the first example of the [streamDD](streaming_deviation_detector.md) page with `radius=5` flags dozens of noise samples; with `radius=30, n_sigmas=4.0` one in 3,000).
