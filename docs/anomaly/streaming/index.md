@@ -2,7 +2,7 @@
 
 ## The map of streaming anomaly detection
 
-Click a page to open it, or the job on the left (or the button at the top) to go back to the [map of the library](../../index.md#the-library-folder-by-folder).
+Click a module to open its page, or the button at the top to go back to [Detection](../../detection/index.md).
 
 <object type="image/svg+xml" data="../../assets/maps/streaming.svg" style="width:100%"></object>
 
