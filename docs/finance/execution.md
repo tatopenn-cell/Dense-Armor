@@ -70,7 +70,7 @@ The pipeline is in `pipelines/finance/execution.py`.
 Primitives chained, each with its own page:
 
 - [RunningMoments](../stats/moments/index.md)
-- [Orca](../shields/orca.md)
+- [Orca](../protect/orca.md)
 
 ### References
 

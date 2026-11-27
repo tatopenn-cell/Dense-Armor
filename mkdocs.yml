@@ -207,6 +207,11 @@ nav:
       - Protection:
           - protect/index.md
           - Arbiter: protect/arbiter.md
+          - Shields: protect/shields.md
+          - Orca (online): protect/orca.md
+          - Adaptive engine (online): protect/engine.md
+          - Armor (offline): protect/armor.md
+          - Hybrid engine (offline): protect/hybrid_engine.md
   - Roles:
       - Overview: roles/index.md
       - The base (Root): roles/base.md
@@ -493,12 +498,6 @@ nav:
               - Statistics and sketches: compare/stats.md
               - Decision trees: compare/tree.md
               - Vision: compare/vision.md
-      - Shields:
-          - shields/index.md
-          - Armor: shields/armor.md
-          - Orca: shields/orca.md
-          - Hybrid engine: shields/hybrid_engine.md
-          - Adaptive engine: shields/engine.md
       - Robot layer (signals, real time, safety): api/robot_roles.md
       - Shared memory for big datasets: api/data_shared.md
       - Tools:

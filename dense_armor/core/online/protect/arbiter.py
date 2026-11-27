@@ -88,11 +88,44 @@ def _robust_center_scale(w: np.ndarray) -> tuple[float, float]:
     return med, 1.4826 * mad
 
 
+def _detector_kind(detector) -> str | None:
+    """'point' for a detector with ``score_one`` and ``learn_one`` (a score for every point), 'event' for one with
+    ``update`` and ``drift_detected`` (an alarm when the level changes), None for anything else."""
+    if detector is None:
+        return None
+    if hasattr(detector, "score_one") and hasattr(detector, "learn_one"):
+        return "point"
+    if hasattr(detector, "update") and hasattr(detector, "drift_detected"):
+        return "event"
+    return None
+
+
+def _detector_threshold(detector, threshold, n_sigmas: float, eps: float) -> float:
+    """The score above which a point deviates: the given one, else ``detector.threshold``, else ``n_sigmas``."""
+    thr = threshold if threshold is not None else getattr(detector, "threshold", None)
+    try:
+        thr = float(thr)
+    except (TypeError, ValueError):
+        thr = float(n_sigmas)
+    return thr if np.isfinite(thr) and thr > eps else float(n_sigmas)
+
+
 def classify_segments(
     x: np.ndarray, radius: int = 10, ref_mult: int = 3,
     n_sigmas: float = 3.0, spike_run_max: int = 2, eps: float = 1e-9,
+    detector=None, threshold: float | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
+    ``detector`` (default None, the window of this module) can be any detector of the library:
+      - a point detector (it has ``score_one`` and ``learn_one``, like HampelScorer or LODA): its score
+        replaces the 'is this point deviating?' test of the window; a point deviates when the score is
+        above ``threshold`` (default: ``detector.threshold`` if it has one, else ``n_sigmas``). The run
+        length rule that decides spike or regime stays the one of this module;
+      - an event detector (it has ``update`` and ``drift_detected``, like ADWIN or PageHinkley): it replaces
+        nothing; a run of deviating points during which it signals a change is labelled 'regime'.
+    The detector is cloned (if it has ``clone``), so the object given is not changed. Any other object
+    is not used.
+
     Returns (etichette, deviazione, incertezza):
       etichette   -- array of strings 'clean'/'spike'/'regime', one per point.
                      A non-finite point is 'clean' and is left out of the
@@ -112,18 +145,35 @@ def classify_segments(
     scarto_normalizzato = np.zeros(n, dtype=get_default_dtype())  # |dev|/threshold, for the uncertainty
     med_rif = np.zeros(n, dtype=get_default_dtype())  # median of the reference window, per point
 
+    kind = _detector_kind(detector)
+    det = detector.clone() if kind and hasattr(detector, "clone") else detector
+    thr = _detector_threshold(detector, threshold, n_sigmas, eps) if kind == "point" else None
+    events: list[int] = []
     finite_seen: deque = deque(maxlen=radius * ref_mult)
     for i in range(n):
         if not np.isfinite(x[i]):
             continue
         w_rif = np.array(finite_seen, dtype=x.dtype)
         finite_seen.append(x[i])
+        score = None
+        if kind == "point":
+            score = float(det.score_one({"x": float(x[i])}))
+            det.learn_one({"x": float(x[i])})
+        elif kind == "event":
+            det.update(float(x[i]))
+            if det.drift_detected:
+                events.append(i)
         if w_rif.size < 4:
             continue
         med, scala = _robust_center_scale(w_rif)
         med_rif[i] = med
         scarto = abs(x[i] - med)
-        if scala < eps:
+        if score is not None:
+            if np.isfinite(score):
+                deviazione[i] = score
+                deviante[i] = score > thr
+                scarto_normalizzato[i] = score / thr
+        elif scala < eps:
             # Degenerate baseline: no division, "different from constant"
             # is already the answer. scarto_normalizzato saturates at a clearly
             # high/low value (never near the boundary by construction),
@@ -154,7 +204,9 @@ def classify_segments(
         while j < n and deviante[j]:
             j += 1
         run_len = j - i
-        if run_len <= spike_run_max:
+        if any(i <= e < j for e in events):
+            label = "regime"
+        elif run_len <= spike_run_max:
             label = "spike"
         else:
             # A long run is a real regime change only if its points
@@ -206,6 +258,7 @@ def classify_segments(
 def route_and_correct(
     x: np.ndarray, radius: int = 10, ref_mult: int = 3,
     n_sigmas: float = 3.0, spike_run_max: int = 2,
+    detector=None, threshold: float | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Applies the classification and corrects each point according to its label:
@@ -219,7 +272,9 @@ def route_and_correct(
     Returns (pulito, etichette, incertezza)."""
     x = as_default_array(x).ravel()
     n = x.size
-    etichette, _, incertezza = classify_segments(x, radius, ref_mult, n_sigmas, spike_run_max)
+    etichette, _, incertezza = classify_segments(
+        x, radius, ref_mult, n_sigmas, spike_run_max, detector=detector, threshold=threshold
+    )
 
     pulito = np.copy(x)
     for i in range(n):

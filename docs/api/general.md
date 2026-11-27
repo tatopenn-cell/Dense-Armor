@@ -952,7 +952,7 @@ Public methods:
 
 
 *Module:* `dense_armor.utility.engine`
-*Guide:* [shields/engine.md](../shields/engine.md)
+*Guide:* [protect/engine.md](../protect/engine.md)
 
 Adaptive anti-panic filter for chaotic AI signals.
 
@@ -5405,7 +5405,7 @@ Public methods:
 
 
 *Module:* `dense_armor.core.online.protect.orca`
-*Guide:* [shields/orca.md](../shields/orca.md)
+*Guide:* [protect/orca.md](../protect/orca.md)
 
 Public methods:
 
@@ -5633,7 +5633,7 @@ Public methods:
 
 
 *Module:* `dense_armor.armor`
-*Guide:* [shields/armor.md](../shields/armor.md)
+*Guide:* [protect/armor.md](../protect/armor.md)
 
 Wearable shield with universal DYNAMIC CLIP.
 

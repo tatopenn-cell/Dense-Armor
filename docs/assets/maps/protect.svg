@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 440" width="100%" role="img" aria-label="The map of protection">
+<style>text{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif}.m{font-family:ui-monospace,Menlo,Consolas,monospace}.e{opacity:.32;transition:opacity .15s}.net:hover .e{opacity:.06}.net .pg:hover .e{opacity:1;stroke-width:2.2}a:hover .card{fill:#17303f;stroke-width:2.4}a:hover text.dn{fill:#ffffff}.back:hover .card{fill:#17303f}</style>
+<rect width="1000" height="440" fill="#0d131a" rx="14"/>
+<text x="500" y="38" fill="#e0fbfc" font-size="24" font-weight="700" text-anchor="middle">THE MAP OF PROTECTION</text>
+<text x="500" y="62" fill="#4cc9f0" font-size="12.5" text-anchor="middle">the job, the page of each tool and its classes; pass over a page to light its classes, click to open it</text>
+<a class="back" href="../../#the-library-folder-by-folder" target="_top"><title>back to the map of the library</title><rect class="card" x="20" y="14" width="150" height="30" rx="15" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="95" y="33.5" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">← map of the library</text></a>
+<text x="24" y="98" fill="#f72585" font-size="12" font-weight="700">01  JOB</text>
+<text x="410" y="98" fill="#f72585" font-size="12" font-weight="700">02  PAGE</text>
+<text x="680" y="98" fill="#f72585" font-size="12" font-weight="700">03  CLASSES OF THE CATALOG</text>
+<g class="net">
+<path class="e" d="M214,225.2 C262,225.2 282,253.2 318,253.2" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M214,281.2 C262,281.2 282,253.2 318,253.2" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<g class="pg">
+<path class="e" d="M342,253.2 C382,253.2 366,137.0 408,137.0" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,137.0 C650,137.0 650,124.5 676,124.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+<path class="e" d="M626,137.0 C650,137.0 650,149.5 676,149.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,253.2 C382,253.2 366,201.0 408,201.0" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,201.0 C650,201.0 650,188.5 676,188.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+<path class="e" d="M626,201.0 C650,201.0 650,213.5 676,213.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,253.2 C382,253.2 366,252.5 408,252.5" fill="none" stroke="#f72585" stroke-width="1.4"/>
+<path class="e" d="M626,252.5 C650,252.5 650,252.5 676,252.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,253.2 C382,253.2 366,291.5 408,291.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,291.5 C650,291.5 650,291.5 676,291.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,253.2 C382,253.2 366,330.5 408,330.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,330.5 C650,330.5 650,330.5 676,330.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,253.2 C382,253.2 366,369.5 408,369.5" fill="none" stroke="#f72585" stroke-width="1.4"/>
+<path class="e" d="M626,369.5 C650,369.5 650,369.5 676,369.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+</g>
+</g>
+<a href="../../#the-library-folder-by-folder" target="_top"><title>robot: back to the map of the library</title><rect class="card" x="20" y="206.2" width="190" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="34" y="223.2" fill="#e0fbfc" font-size="13" font-weight="700">robot</text><text x="34" y="237.2" fill="#94a3b8" font-size="9.5">job of the ontology</text></a>
+<a href="../../#the-library-folder-by-folder" target="_top"><title>heal: back to the map of the library</title><rect class="card" x="20" y="262.2" width="190" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="34" y="279.2" fill="#e0fbfc" font-size="13" font-weight="700">heal</text><text x="34" y="293.2" fill="#94a3b8" font-size="9.5">job of the ontology</text></a>
+<circle cx="330" cy="253.2" r="12" fill="#101a24" stroke="#4cc9f0" stroke-width="2"/><text class="m" x="330" y="283.2" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">protect</text>
+<a href="../../protect/arbiter/" target="_top"><title>Arbiter: open protect/arbiter.md</title><rect class="card" x="410" y="118.0" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="134.0" fill="#e0fbfc" font-size="13" font-weight="700">Arbiter</text><text x="424" y="149.0" fill="#94a3b8" font-size="9.5">label each point, route it</text></a>
+<a href="../../protect/arbiter/" target="_top"><title>StreamingArbiter: open protect/arbiter.md</title><rect class="card" x="678" y="114.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="128.3" fill="#e0fbfc" font-size="11">StreamingArbiter</text></a>
+<a href="../../protect/arbiter/" target="_top"><title>StreamingHealing: open protect/arbiter.md</title><rect class="card" x="678" y="139.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="153.3" fill="#e0fbfc" font-size="11">StreamingHealing</text></a>
+<a href="../../protect/shields/" target="_top"><title>Shields: open protect/shields.md</title><rect class="card" x="410" y="182.0" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="198.0" fill="#e0fbfc" font-size="13" font-weight="700">Shields</text><text x="424" y="213.0" fill="#94a3b8" font-size="9.5">one for a series, one for a model</text></a>
+<a href="../../protect/shields/" target="_top"><title>Armor: open protect/shields.md</title><rect class="card" x="678" y="178.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="192.3" fill="#e0fbfc" font-size="11">Armor</text></a>
+<a href="../../protect/shields/" target="_top"><title>Orca: open protect/shields.md</title><rect class="card" x="678" y="203.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="217.3" fill="#e0fbfc" font-size="11">Orca</text></a>
+<a href="../../protect/orca/" target="_top"><title>Orca (online): open protect/orca.md</title><rect class="card" x="410" y="233.5" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="249.5" fill="#e0fbfc" font-size="13" font-weight="700">Orca (online)</text><text x="424" y="264.5" fill="#94a3b8" font-size="9.5">a shield for a whole model</text></a>
+<a href="../../protect/orca/" target="_top"><title>Orca: open protect/orca.md</title><rect class="card" x="678" y="242.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="256.3" fill="#e0fbfc" font-size="11">Orca</text></a>
+<a href="../../protect/engine/" target="_top"><title>Adaptive engine (online): open protect/engine.md</title><rect class="card" x="410" y="272.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="288.5" fill="#e0fbfc" font-size="13" font-weight="700">Adaptive engine (online)</text><text x="424" y="303.5" fill="#94a3b8" font-size="9.5">follows a slow drift</text></a>
+<a href="../../protect/engine/" target="_top"><title>engine: open protect/engine.md</title><rect class="card" x="678" y="281.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="295.3" fill="#e0fbfc" font-size="11">engine</text></a>
+<a href="../../protect/armor/" target="_top"><title>Armor (offline): open protect/armor.md</title><rect class="card" x="410" y="311.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="327.5" fill="#e0fbfc" font-size="13" font-weight="700">Armor (offline)</text><text x="424" y="342.5" fill="#94a3b8" font-size="9.5">a shield for one series</text></a>
+<a href="../../protect/armor/" target="_top"><title>Armor: open protect/armor.md</title><rect class="card" x="678" y="320.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="334.3" fill="#e0fbfc" font-size="11">Armor</text></a>
+<a href="../../protect/hybrid_engine/" target="_top"><title>Hybrid engine (offline): open protect/hybrid_engine.md</title><rect class="card" x="410" y="350.5" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="366.5" fill="#e0fbfc" font-size="13" font-weight="700">Hybrid engine (offline)</text><text x="424" y="381.5" fill="#94a3b8" font-size="9.5">the core of Armor</text></a>
+<a href="../../protect/hybrid_engine/" target="_top"><title>hybrid_engine: open protect/hybrid_engine.md</title><rect class="card" x="678" y="359.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="373.3" fill="#e0fbfc" font-size="11">hybrid_engine</text></a>
+<text x="500" y="424" fill="#94a3b8" font-size="10.5" text-anchor="middle">jobs: dense_armor/usable/ontology.json; classes: dense_armor.usable.catalog; drawn by docs/assets/maps/make_protect_map.py</text>
+</svg>
