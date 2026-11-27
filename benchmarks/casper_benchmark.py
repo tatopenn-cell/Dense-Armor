@@ -18,7 +18,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from dense_armor.core.online.anomaly.deviation import StreamingDeviationScorer
+from dense_armor.core.online.anomaly.deviation import streamDS
 from dense_armor.core.online.anomaly.filters import (
     ChauvenetScorer,
     HampelScorer,
@@ -155,7 +155,7 @@ def run_cusum(series, change_idx, k=CUSUM_K_DEFAULT, h=CUSUM_H_DEFAULT,
 
 def point_scores(x, radius):
     scorers = {
-        "deviation": StreamingDeviationScorer(radius=radius, ref_mult=3),
+        "deviation": streamDS(radius=radius, ref_mult=3),
         "hampel": HampelScorer(radius=radius, n_sigmas=3.0),
         "tukey": TukeyScorer(radius=radius),
         "chauvenet": ChauvenetScorer(radius=radius),

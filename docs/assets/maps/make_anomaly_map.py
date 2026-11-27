@@ -14,12 +14,12 @@ PAGES = [
     (
         "Streaming",
         "a score for every new sample",
-        "anomaly/streaming.md",
+        "anomaly/streaming/",
         CYAN,
         [
-            "StreamingDeviationDetector",
-            "MultiChannelStreamingDeviationDetector",
-            "StreamingDeviationScorer",
+            "streamDD",
+            "MultistreamDD",
+            "streamDS",
             "HampelScorer",
             "TukeyScorer",
             "ChauvenetScorer",

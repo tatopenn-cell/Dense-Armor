@@ -16,9 +16,9 @@ from collections import defaultdict
 import numpy as np
 
 from dense_armor.core.online.anomaly.streaming import (
-    MultiChannelStreamingDeviationDetector,
-    StreamingDeviationDetector,
-    classify_segments_multichannel,
+    MultistreamDD,
+    streamDD,
+    class_seg_multi,
 )
 from dense_armor.core.online.protect.arbiter import classify_segments
 
@@ -58,7 +58,7 @@ def _load_agent_scenarios():
 
 
 def test_detects_a_clear_outlier():
-    det = StreamingDeviationDetector(radius=5, ref_mult=2, n_sigmas=3.0)
+    det = streamDD(radius=5, ref_mult=2, n_sigmas=3.0)
     rng = np.random.default_rng(0)
     stream = list(rng.normal(0, 1, 20)) + [50.0]
     flags = [det.update(x) for x in stream]
@@ -67,13 +67,13 @@ def test_detects_a_clear_outlier():
 
 
 def test_first_points_never_flagged_before_warmup():
-    det = StreamingDeviationDetector(radius=5, ref_mult=2, n_sigmas=3.0)
+    det = streamDD(radius=5, ref_mult=2, n_sigmas=3.0)
     flags = [det.update(x) for x in [1.0, 2.0, 3.0]]
     assert not any(flags), "fewer than 4 buffered points -- no valid reference window yet"
 
 
 def test_degenerate_constant_baseline_flags_any_nonzero_deviation():
-    det = StreamingDeviationDetector(radius=5, ref_mult=2, n_sigmas=3.0)
+    det = streamDD(radius=5, ref_mult=2, n_sigmas=3.0)
     for _ in range(15):
         det.update(5.0)
     assert det.update(5.0) is False
@@ -81,7 +81,7 @@ def test_degenerate_constant_baseline_flags_any_nonzero_deviation():
 
 
 def test_multichannel_wrong_length_raises():
-    det = MultiChannelStreamingDeviationDetector(n_channels=3, radius=5, ref_mult=2, n_sigmas=3.0)
+    det = MultistreamDD(n_channels=3, radius=5, ref_mult=2, n_sigmas=3.0)
     try:
         det.update([1.0, 2.0])
         assert False, "expected ValueError"
@@ -94,7 +94,7 @@ def test_streaming_matches_batch_deviante_on_real_agent_telemetry():
     for scen, records in by_scenario.items():
         x = np.array([r["latency_s"] for r in records])
         batch = _batch_deviante(x)
-        det = StreamingDeviationDetector(radius=RADIUS, ref_mult=REF_MULT, n_sigmas=N_SIGMAS)
+        det = streamDD(radius=RADIUS, ref_mult=REF_MULT, n_sigmas=N_SIGMAS)
         streaming = np.array([det.update(float(v)) for v in x], dtype=bool)
         assert np.array_equal(batch, streaming), f"scenario {scen}: streaming must match batch exactly"
 
@@ -104,12 +104,12 @@ def test_streaming_matches_batch_deviante_on_synthetic_outliers():
     x = rng.normal(0, 1, 200)
     x[[50, 51, 150]] = [30.0, -30.0, 25.0]
     batch = _batch_deviante(x)
-    det = StreamingDeviationDetector(radius=RADIUS, ref_mult=REF_MULT, n_sigmas=N_SIGMAS)
+    det = streamDD(radius=RADIUS, ref_mult=REF_MULT, n_sigmas=N_SIGMAS)
     streaming = np.array([det.update(float(v)) for v in x], dtype=bool)
     assert np.array_equal(batch, streaming)
 
 
-def test_classify_segments_multichannel_matches_per_channel_loop():
+def test_class_seg_multi_matches_per_channel_loop():
     """Real multi-channel data isn't yet in this repo's own fixtures --
     stacking the 4 real agent-telemetry scenarios as 4 independent
     channels is a legitimate way to test WRAPPER correctness (each
@@ -120,7 +120,7 @@ def test_classify_segments_multichannel_matches_per_channel_loop():
     X = np.stack([[r["latency_s"] for r in by_scenario[s]] for s in scenarios], axis=1)
 
     kw = dict(radius=RADIUS, ref_mult=REF_MULT, n_sigmas=N_SIGMAS, spike_run_max=2)
-    etichette_mc, deviazione_mc, incertezza_mc = classify_segments_multichannel(X, **kw)
+    etichette_mc, deviazione_mc, incertezza_mc = class_seg_multi(X, **kw)
     for j, scen in enumerate(scenarios):
         e, d, u = classify_segments(X[:, j], **kw)
         assert np.array_equal(etichette_mc[:, j], e), f"{scen}: label mismatch"
@@ -134,10 +134,10 @@ def test_multichannel_streaming_matches_per_channel_streaming():
     X = np.stack([[r["latency_s"] for r in by_scenario[s]] for s in scenarios], axis=1)
     n, c = X.shape
 
-    mc_det = MultiChannelStreamingDeviationDetector(n_channels=c, radius=RADIUS, ref_mult=REF_MULT, n_sigmas=N_SIGMAS)
+    mc_det = MultistreamDD(n_channels=c, radius=RADIUS, ref_mult=REF_MULT, n_sigmas=N_SIGMAS)
     mc_flags = np.array([mc_det.update(X[i]) for i in range(n)])
 
-    solo = [StreamingDeviationDetector(radius=RADIUS, ref_mult=REF_MULT, n_sigmas=N_SIGMAS) for _ in range(c)]
+    solo = [streamDD(radius=RADIUS, ref_mult=REF_MULT, n_sigmas=N_SIGMAS) for _ in range(c)]
     solo_flags = np.array([[solo[j].update(float(X[i, j])) for j in range(c)] for i in range(n)])
 
     assert np.array_equal(mc_flags, solo_flags)

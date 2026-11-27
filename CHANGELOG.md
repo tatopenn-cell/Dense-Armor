@@ -289,7 +289,7 @@ nine pytest jobs, an ontology and an execution DAG that need no graph package (n
   `a + (b * c)` work (they raised `AttributeError`).
 - `AnomalyGate` takes a `threshold` argument, and raises `ValueError` for a detector that has no `threshold`
   attribute and no argument. The default of `0.0` classified as anomalous every positive score, and with
-  `protect=True` the detector stopped learning after the first sample. `StreamingDeviationScorer`, `PatchMemory`
+  `protect=True` the detector stopped learning after the first sample. `streamDS`, `PatchMemory`
   and `OnlineAutoencoder` need `threshold=`.
 - `AdaptiveConformalRegressor.predict_one(return_std=True)` and `(return_estimate=True)` give the root mean
   square of the residuals of the window, and its square as the variance. They gave the half-width of the
@@ -495,7 +495,7 @@ nine pytest jobs, an ontology and an execution DAG that need no graph package (n
 - Stats: `RunningMoments.learn_many` counts every NaN or infinite value in `n_missing_` (before, 1 only for a block with no finite value) and `RunningMomentsVector.learn_many` counts a channel absent from the dict; `RunningMoments`, `RunningMomentsVector`, the quantile estimators, the robust estimators and `Autocorrelation` count a missing key or a value that is not a number in `n_missing_` instead of raising `KeyError`; `TDigest.quantile(0)` and `quantile(1)` return `min_` and `max_`, as `DDSketch` does; `OnlineShrinkageCovariance.shrinkage` uses the smallest number of complete pairs as `n`, so a sample with a NaN no longer inflates it; the sketch hash accepts a `seed` of `2**32` or more (taken modulo `2**32`).
 - Streams: `iter_csv` raises `ValueError` for `start` or `stop` without `time_col` (before they were ignored); `merge_by_time` refuses a NaN or infinite timestamp as it does `None`; the docstring of `iter_rosbag` states that an unknown topic gives an empty iteration.
 - `n_missing_` with the read-only property `n_missing` (as the rest of the library) in the active-learning strategies, in all the bandit policies, in the factorisation machines, the linear models (`glm`, `bayes`, `payload`), the recommenders, `skyline` and the neural adapter, which had a plain `n_missing` attribute; reads of `n_missing` are unchanged. `VariableUncertainty` loses a condition that was always true; the docstring of `VariableRandomizedUncertainty` states that a large `delta` can give a negative threshold.
-- Anomaly: `StreamingDeviationScorer`, `HampelScorer`, `TukeyScorer`, `ChauvenetScorer`, `SigmaClipScorer` and `HampelFilter` no longer raise `KeyError` on a sample without the watched key (or empty, or with a value that is not a finite number): `learn_one` counts it in `n_missing_`, `score_one` returns the pre-warm-up value, `HampelFilter.transform_one` returns the input unchanged; `StreamingDeviationDetector.update` ignores a non-finite value instead of putting it in the window; the docstrings of `OIForest` (score before `ready`), `OneClassSGD` (meaning of `t`), `MahalanobisDetector` (identity fallback below `d + 1` samples) and `curvature` (not a differential curvature, name kept) state what the code does.
+- Anomaly: `streamDS`, `HampelScorer`, `TukeyScorer`, `ChauvenetScorer`, `SigmaClipScorer` and `HampelFilter` no longer raise `KeyError` on a sample without the watched key (or empty, or with a value that is not a finite number): `learn_one` counts it in `n_missing_`, `score_one` returns the pre-warm-up value, `HampelFilter.transform_one` returns the input unchanged; `streamDD.update` ignores a non-finite value instead of putting it in the window; the docstrings of `OIForest` (score before `ready`), `OneClassSGD` (meaning of `t`), `MahalanobisDetector` (identity fallback below `d + 1` samples) and `curvature` (not a differential curvature, name kept) state what the code does.
 - Bandits: `BayesUCB` keeps the variance of the Gaussian rewards with the Welford update (`m2_`, replacing `sumsq_`), stable for large rewards; `offline_replay` refuses `n_bootstrap < 1`; the docstrings of `BayesUCB` and `ThompsonSampling` state that a reward `>= 0.5` is a success and that the Gaussian posterior of `ThompsonSampling` has a flat prior (not `N(0, 1)`).
 - `CategoricalNB`: `predict_proba_one` counts the categories of each feature once instead of once per class (O(c d) instead of O(c² d) category scans); the docstrings of `CategoricalNB` and `ComplementNB` state how a missing key, a `None` or a non-finite value is handled.
 - `OnlineKMeans`: during the warm-up a point of another dimension is counted in `n_missing_` (before it raised `n_seen_`); the docstring states that the first centre is the point nearest to the mean (PatchCore starts at random) and that `centers_` has fewer than `k` rows with fewer than `k` distinct warm-up points.
@@ -963,7 +963,7 @@ Every commit since 1.1.27 is listed in the release notes on GitHub.
   trivial moving median -- this is a safety bound, not a signal cleaner.
 - **3 new stateful MCP tools** (`dense_armor_stream_start`/`_update`/`_end`,
   `dense_armor.mcp_server`): a real-time streaming session wrapping
-  `MultiChannelStreamingDeviationDetector` -- for a live sensor feed (robot
+  `MultistreamDD` -- for a live sensor feed (robot
   joints, IMU axes) where waiting to collect a full array first isn't an
   option, unlike the existing batch `dense_armor_detect_anomalies` tool.
   One `session_id`-keyed detector instance per session, held in server
@@ -989,8 +989,8 @@ Every commit since 1.1.27 is listed in the release notes on GitHub.
 ## [1.1.14]
 
 ### Added
-- **`utility/streaming.py`** (`StreamingDeviationDetector`,
-  `MultiChannelStreamingDeviationDetector`, `classify_segments_
+- **`utility/streaming.py`** (`streamDD`,
+  `MultistreamDD`, `classify_segments_
   multichannel`): porta a latenza zero solo la meta' causale di
   `classify_segments` (arbiter.py) -- il flag di deviazione per-punto,
   non l'etichetta finale spike/regime, che guarda `radius` punti avanti

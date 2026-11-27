@@ -1,4 +1,4 @@
-<img width="1024" height="1024" alt="d20" src="https://github.com/user-attachments/assets/6aa8e84c-809b-4dee-9f56-76605f98014d" />
+﻿<img width="1024" height="1024" alt="d20" src="https://github.com/user-attachments/assets/6aa8e84c-809b-4dee-9f56-76605f98014d" />
 
 # Dense-Armor
 
@@ -229,7 +229,7 @@ past.
 
 - **[Arbiter](protect/arbiter.md)** — classifies each point as clean / spike / regime
   against a wide causal reference window, then routes it.
-- **[Streaming](anomaly/streaming.md)** — a per-sample port of
+- **[Streaming](anomaly/streaming/index.md)** — a per-sample port of
   Arbiter's causal deviation check, plus native multi-channel wrappers.
 - **[Robust filters](anomaly/robust_filters.md)** — Chauvenet, Tukey, Hampel, sigma
   clipping on whole series, plus `pressure_valve`.

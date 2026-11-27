@@ -1874,7 +1874,7 @@
   ],
   [
    "anomaly",
-   "MultiChannelStreamingDeviationDetector",
+   "MultistreamDD",
    0.25,
    {
     "source": "catalog domain of the class",
@@ -3062,7 +3062,7 @@
   ],
   [
    "anomaly",
-   "StreamingDeviationDetector",
+   "streamDD",
    0.25,
    {
     "source": "catalog domain of the class",
@@ -3071,7 +3071,7 @@
   ],
   [
    "anomaly",
-   "StreamingDeviationScorer",
+   "streamDS",
    0.25,
    {
     "source": "catalog domain of the class",

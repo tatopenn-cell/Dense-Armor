@@ -8,18 +8,18 @@ import pytest
 
 import dense_armor.core.online.anomaly.deviation as river_anomaly  # noqa: E402
 from dense_armor.core.online.anomaly.deviation import (
-    StreamingDeviationScorer,  # noqa: E402
+    streamDS,  # noqa: E402
 )
 from dense_armor.core.online.anomaly.streaming import (
-    StreamingDeviationDetector,  # noqa: E402
+    streamDD,  # noqa: E402
 )
 
 
 def test_score_matches_streaming_detector_flags():
     rng = np.random.default_rng(0)
     stream = list(rng.normal(0, 1, 300)) + [8.0, -9.0] + list(rng.normal(0, 1, 50))
-    det = StreamingDeviationDetector(radius=5, ref_mult=2, n_sigmas=3.0)
-    scorer = StreamingDeviationScorer(radius=5, ref_mult=2)
+    det = streamDD(radius=5, ref_mult=2, n_sigmas=3.0)
+    scorer = streamDS(radius=5, ref_mult=2)
     for v in stream:
         flag = det.update(v)
         assert (scorer.score_one({"v": v}) > 3.0) == flag
@@ -27,21 +27,21 @@ def test_score_matches_streaming_detector_flags():
 
 
 def test_warmup_scores_zero():
-    m = StreamingDeviationScorer()
+    m = streamDS()
     for v in [1.0, 2.0, 3.0]:
         assert m.score_one({"v": v}) == 0.0
         m.learn_one({"v": v})
 
 
 def test_flat_window_uses_absolute_deviation():
-    m = StreamingDeviationScorer()
+    m = streamDS()
     for _ in range(10):
         m.learn_one({"v": 2.0})
     assert m.score_one({"v": 2.5}) == pytest.approx(0.5)
 
 
 def test_feature_selection():
-    m = StreamingDeviationScorer(feature="b")
+    m = streamDS(feature="b")
     for v in range(10):
         m.learn_one({"a": 1000.0 * v, "b": 1.0 + 0.01 * v})
     assert m.score_one({"a": 0.0, "b": 1.05}) < 3.0
@@ -54,6 +54,6 @@ def test_docstring_example():
 def test_check_estimator():
     from dense_armor.checks import check_estimator
 
-    check_estimator(StreamingDeviationScorer())
+    check_estimator(streamDS())
 
 

@@ -43,7 +43,7 @@ STATEFUL = {
     "openWorldHint": False,
 }
 # The 3 streaming session tools below hold real server-side state (a live
-# MultiChannelStreamingDeviationDetector instance per session_id, in a
+# MultistreamDD instance per session_id, in a
 # module-level dict) -- calling dense_armor_stream_update twice with the
 # same arguments does NOT give the same result the second time (the
 # detector's internal buffer has advanced), unlike every other tool above.
@@ -256,7 +256,7 @@ async def dense_armor_heal_series(params: HealSeriesInput) -> str:
 @mcp.tool(name="dense_armor_stream_start", annotations={"title": "Start a real-time multi-channel deviation-detection session", **STATEFUL})
 @catch_errors
 async def dense_armor_stream_start(params: StreamStartInput) -> str:
-    """Open a new streaming session: a live MultiChannelStreamingDeviationDetector
+    """Open a new streaming session: a live MultistreamDD
     kept in server memory, one per session_id, fed one real-time reading at
     a time via dense_armor_stream_update -- for a real sensor stream (robot
     joints, IMU axes) where waiting to collect a full array first isn't an
@@ -278,7 +278,7 @@ async def dense_armor_stream_start(params: StreamStartInput) -> str:
     import uuid
 
     from dense_armor.core.online.anomaly.streaming import (
-        MultiChannelStreamingDeviationDetector,
+        MultistreamDD,
     )
 
     now = time.monotonic()
@@ -289,7 +289,7 @@ async def dense_armor_stream_start(params: StreamStartInput) -> str:
         return f"Error: {MAX_STREAM_SESSIONS} streaming sessions are open -- close one with dense_armor_stream_end"
     session_id = uuid.uuid4().hex
     _STREAM_LAST_SEEN[session_id] = now
-    _STREAM_SESSIONS[session_id] = MultiChannelStreamingDeviationDetector(
+    _STREAM_SESSIONS[session_id] = MultistreamDD(
         n_channels=params.n_channels, radius=params.radius, ref_mult=params.ref_mult, n_sigmas=params.n_sigmas,
     )
     return json.dumps({"session_id": session_id}, indent=2)

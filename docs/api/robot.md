@@ -1,4 +1,4 @@
-# API — Robot
+﻿# API — Robot
 
 A map of the robot arm used in the examples, showing which parts of the library work with each joint. A joint is one moving part of the arm: a motor, a hinge or a finger.
 
@@ -27,7 +27,7 @@ For each joint, the modules that work with it, grouped by purpose.
 
 **Single-channel anomaly**
 
-- [`StreamingDeviationDetector`](../anomaly/streaming.md)
+- [`streamDD`](../anomaly/streaming/index.md)
 
 **Control**
 
@@ -46,7 +46,7 @@ For each joint, the modules that work with it, grouped by purpose.
 
 **Single-channel anomaly**
 
-- [`StreamingDeviationDetector`](../anomaly/streaming.md)
+- [`streamDD`](../anomaly/streaming/index.md)
 
 **Control**
 
@@ -77,7 +77,7 @@ For each joint, the modules that work with it, grouped by purpose.
 - [`ChauvenetScorer`](../anomaly/robust_filters.md)
 - [`HampelScorer`](../anomaly/robust_filters.md)
 - [`SigmaClipScorer`](../anomaly/robust_filters.md)
-- [`StreamingDeviationDetector`](../anomaly/streaming.md)
+- [`streamDD`](../anomaly/streaming/index.md)
 
 **Drift**
 
@@ -113,7 +113,7 @@ For each joint, the modules that work with it, grouped by purpose.
 **Single-channel anomaly**
 
 - [`ChauvenetScorer`](../anomaly/robust_filters.md)
-- [`StreamingDeviationDetector`](../anomaly/streaming.md)
+- [`streamDD`](../anomaly/streaming/index.md)
 
 **Drift**
 

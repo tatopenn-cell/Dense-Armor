@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 507" width="100%" role="img" aria-label="The map of streaming anomaly detection">
+<style>text{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif}.m{font-family:ui-monospace,Menlo,Consolas,monospace}.e{opacity:.32;transition:opacity .15s}.net:hover .e{opacity:.06}.net .pg:hover .e{opacity:1;stroke-width:2.2}a:hover .card{fill:#17303f;stroke-width:2.4}a:hover text.dn{fill:#ffffff}.back:hover .card{fill:#17303f}</style>
+<rect width="1000" height="507" fill="#0d131a" rx="14"/>
+<text x="500" y="38" fill="#e0fbfc" font-size="24" font-weight="700" text-anchor="middle">THE MAP OF STREAMING ANOMALY DETECTION</text>
+<text x="500" y="62" fill="#4cc9f0" font-size="12.5" text-anchor="middle">the job, the page of each part and its classes; pass over a page to light its classes, click to open it</text>
+<a class="back" href="../../#the-library-folder-by-folder" target="_top"><title>back to the map of the library</title><rect class="card" x="20" y="14" width="150" height="30" rx="15" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="95" y="33.5" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">← map of the library</text></a>
+<text x="24" y="98" fill="#f72585" font-size="12" font-weight="700">01  JOB</text>
+<text x="410" y="98" fill="#f72585" font-size="12" font-weight="700">02  PAGE</text>
+<text x="680" y="98" fill="#f72585" font-size="12" font-weight="700">03  CLASSES OF THE CATALOG</text>
+<g class="net">
+<path class="e" d="M214,224.5 C262,224.5 282,280.5 318,280.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M214,280.5 C262,280.5 282,280.5 318,280.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M214,336.5 C262,336.5 282,280.5 318,280.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<g class="pg">
+<path class="e" d="M342,280.5 C382,280.5 366,124.5 408,124.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,124.5 C650,124.5 650,124.5 676,124.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,280.5 C382,280.5 366,163.5 408,163.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,163.5 C650,163.5 650,163.5 676,163.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,280.5 C382,280.5 366,202.5 408,202.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,202.5 C650,202.5 650,202.5 676,202.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,280.5 C382,280.5 366,241.5 408,241.5" fill="none" stroke="#f72585" stroke-width="1.4"/>
+<path class="e" d="M626,241.5 C650,241.5 650,241.5 676,241.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,280.5 C382,280.5 366,280.5 408,280.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,280.5 C650,280.5 650,280.5 676,280.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,280.5 C382,280.5 366,319.5 408,319.5" fill="none" stroke="#f72585" stroke-width="1.4"/>
+<path class="e" d="M626,319.5 C650,319.5 650,319.5 676,319.5" fill="none" stroke="#f72585" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,280.5 C382,280.5 366,358.5 408,358.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,358.5 C650,358.5 650,358.5 676,358.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,280.5 C382,280.5 366,397.5 408,397.5" fill="none" stroke="#ff9e00" stroke-width="1.4"/>
+<path class="e" d="M626,397.5 C650,397.5 650,397.5 676,397.5" fill="none" stroke="#ff9e00" stroke-width="1.2"/>
+</g>
+<g class="pg">
+<path class="e" d="M342,280.5 C382,280.5 366,436.5 408,436.5" fill="none" stroke="#4cc9f0" stroke-width="1.4"/>
+<path class="e" d="M626,436.5 C650,436.5 650,436.5 676,436.5" fill="none" stroke="#4cc9f0" stroke-width="1.2"/>
+</g>
+</g>
+<a href="../../#the-library-folder-by-folder" target="_top"><title>detect_drift: back to the map of the library</title><rect class="card" x="20" y="205.5" width="190" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="34" y="222.5" fill="#e0fbfc" font-size="13" font-weight="700">detect_drift</text><text x="34" y="236.5" fill="#94a3b8" font-size="9.5">job of the ontology</text></a>
+<a href="../../#the-library-folder-by-folder" target="_top"><title>detect_anomaly: back to the map of the library</title><rect class="card" x="20" y="261.5" width="190" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="34" y="278.5" fill="#e0fbfc" font-size="13" font-weight="700">detect_anomaly</text><text x="34" y="292.5" fill="#94a3b8" font-size="9.5">job of the ontology</text></a>
+<a href="../../#the-library-folder-by-folder" target="_top"><title>robot: back to the map of the library</title><rect class="card" x="20" y="317.5" width="190" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn m" x="34" y="334.5" fill="#e0fbfc" font-size="13" font-weight="700">robot</text><text x="34" y="348.5" fill="#94a3b8" font-size="9.5">job of the ontology</text></a>
+<circle cx="330" cy="280.5" r="12" fill="#101a24" stroke="#4cc9f0" stroke-width="2"/><text class="m" x="330" y="310.5" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">anomaly</text>
+<a href="../../anomaly/streaming/" target="_top"><title>Stream: open anomaly/streaming/index.md</title><rect class="card" x="410" y="105.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="121.5" fill="#e0fbfc" font-size="13" font-weight="700">Stream</text><text x="424" y="136.5" fill="#94a3b8" font-size="9.5">a score for every new sample</text></a>
+<a href="../../anomaly/streaming/" target="_top"><title>streamDD: open anomaly/streaming/index.md</title><rect class="card" x="678" y="114.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="128.3" fill="#e0fbfc" font-size="11">streamDD</text></a>
+<a href="../../anomaly/streaming/streaming_deviation_detector/" target="_top"><title>Flag: open anomaly/streaming/streaming_deviation_detector.md</title><rect class="card" x="410" y="144.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="160.5" fill="#e0fbfc" font-size="13" font-weight="700">Flag</text><text x="424" y="175.5" fill="#94a3b8" font-size="9.5">flag a strange sample</text></a>
+<a href="../../anomaly/streaming/streaming_deviation_detector/" target="_top"><title>streamDD: open anomaly/streaming/streaming_deviation_detector.md</title><rect class="card" x="678" y="153.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="167.3" fill="#e0fbfc" font-size="11">streamDD</text></a>
+<a href="../../anomaly/streaming/streaming_deviation_scorer/" target="_top"><title>Score: open anomaly/streaming/streaming_deviation_scorer.md</title><rect class="card" x="410" y="183.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="199.5" fill="#e0fbfc" font-size="13" font-weight="700">Score</text><text x="424" y="214.5" fill="#94a3b8" font-size="9.5">the score itself</text></a>
+<a href="../../anomaly/streaming/streaming_deviation_scorer/" target="_top"><title>streamDS: open anomaly/streaming/streaming_deviation_scorer.md</title><rect class="card" x="678" y="192.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="206.3" fill="#e0fbfc" font-size="11">streamDS</text></a>
+<a href="../../anomaly/streaming/multi_channel_streaming_deviation_detector/" target="_top"><title>Multi: open anomaly/streaming/multi_channel_streaming_deviation_detector.md</title><rect class="card" x="410" y="222.5" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="238.5" fill="#e0fbfc" font-size="13" font-weight="700">Multi</text><text x="424" y="253.5" fill="#94a3b8" font-size="9.5">all the joints at once</text></a>
+<a href="../../anomaly/streaming/multi_channel_streaming_deviation_detector/" target="_top"><title>MultistreamDD: open anomaly/streaming/multi_channel_streaming_deviation_detector.md</title><rect class="card" x="678" y="231.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="245.3" fill="#e0fbfc" font-size="11">MultistreamDD</text></a>
+<a href="../../anomaly/streaming/hampel_scorer/" target="_top"><title>Hampel: open anomaly/streaming/hampel_scorer.md</title><rect class="card" x="410" y="261.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="277.5" fill="#e0fbfc" font-size="13" font-weight="700">Hampel</text><text x="424" y="292.5" fill="#94a3b8" font-size="9.5">Hampel, one sample at a time</text></a>
+<a href="../../anomaly/streaming/hampel_scorer/" target="_top"><title>HampelScorer: open anomaly/streaming/hampel_scorer.md</title><rect class="card" x="678" y="270.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="284.3" fill="#e0fbfc" font-size="11">HampelScorer</text></a>
+<a href="../../anomaly/streaming/tukey_scorer/" target="_top"><title>Tukey: open anomaly/streaming/tukey_scorer.md</title><rect class="card" x="410" y="300.5" width="216" height="38" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="424" y="316.5" fill="#e0fbfc" font-size="13" font-weight="700">Tukey</text><text x="424" y="331.5" fill="#94a3b8" font-size="9.5">Tukey fences, one sample at a time</text></a>
+<a href="../../anomaly/streaming/tukey_scorer/" target="_top"><title>TukeyScorer: open anomaly/streaming/tukey_scorer.md</title><rect class="card" x="678" y="309.5" width="300" height="20" rx="10" fill="#101a24" stroke="#f72585" stroke-width="1.2"/><text class="dn m" x="692" y="323.3" fill="#e0fbfc" font-size="11">TukeyScorer</text></a>
+<a href="../../anomaly/streaming/chauvenet_scorer/" target="_top"><title>Chauvenet: open anomaly/streaming/chauvenet_scorer.md</title><rect class="card" x="410" y="339.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="355.5" fill="#e0fbfc" font-size="13" font-weight="700">Chauvenet</text><text x="424" y="370.5" fill="#94a3b8" font-size="9.5">Chauvenet, one sample at a time</text></a>
+<a href="../../anomaly/streaming/chauvenet_scorer/" target="_top"><title>ChauvenetScorer: open anomaly/streaming/chauvenet_scorer.md</title><rect class="card" x="678" y="348.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="362.3" fill="#e0fbfc" font-size="11">ChauvenetScorer</text></a>
+<a href="../../anomaly/streaming/sigma_clip_scorer/" target="_top"><title>Sigma: open anomaly/streaming/sigma_clip_scorer.md</title><rect class="card" x="410" y="378.5" width="216" height="38" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.6"/><text class="dn" x="424" y="394.5" fill="#e0fbfc" font-size="13" font-weight="700">Sigma</text><text x="424" y="409.5" fill="#94a3b8" font-size="9.5">sigma clipping, one sample at a time</text></a>
+<a href="../../anomaly/streaming/sigma_clip_scorer/" target="_top"><title>SigmaClipScorer: open anomaly/streaming/sigma_clip_scorer.md</title><rect class="card" x="678" y="387.5" width="300" height="20" rx="10" fill="#101a24" stroke="#ff9e00" stroke-width="1.2"/><text class="dn m" x="692" y="401.3" fill="#e0fbfc" font-size="11">SigmaClipScorer</text></a>
+<a href="../../anomaly/mahalanobis/" target="_top"><title>OnlineRobustMahalanobis: open anomaly/mahalanobis.md</title><rect class="card" x="410" y="417.5" width="216" height="38" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.6"/><text class="dn" x="424" y="433.5" fill="#e0fbfc" font-size="13" font-weight="700">OnlineRobustMahalanobis</text><text x="424" y="448.5" fill="#94a3b8" font-size="9.5">the full page of the anomaly section</text></a>
+<a href="../../anomaly/mahalanobis/" target="_top"><title>OnlineRobustMahalanobis: open anomaly/mahalanobis.md</title><rect class="card" x="678" y="426.5" width="300" height="20" rx="10" fill="#101a24" stroke="#4cc9f0" stroke-width="1.2"/><text class="dn m" x="692" y="440.3" fill="#e0fbfc" font-size="11">OnlineRobustMahalanobis</text></a>
+<text x="500" y="491" fill="#94a3b8" font-size="10.5" text-anchor="middle">jobs: dense_armor/usable/ontology.json; classes: dense_armor.usable.catalog; drawn by docs/assets/maps/make_streaming_map.py</text>
+</svg>

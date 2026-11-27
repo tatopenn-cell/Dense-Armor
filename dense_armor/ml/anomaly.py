@@ -32,9 +32,9 @@ __all__ = [
 
 _STREAM = "the reference defines the score on the window of the values learned before the one scored, or on statistics that move at each new value: the algorithm of the reference is written for one example or one window at a time"
 STOPPED = {
-    "StreamingDeviationScorer": _STREAM,
-    "StreamingDeviationDetector": _STREAM,
-    "MultiChannelStreamingDeviationDetector": _STREAM,
+    "streamDS": _STREAM,
+    "streamDD": _STREAM,
+    "MultistreamDD": _STREAM,
     "HampelScorer": "its batch form is HampelFilter, which scores every value on the centred window",
     "HalfSpaceTrees": _STREAM,
     "LODA": _STREAM,

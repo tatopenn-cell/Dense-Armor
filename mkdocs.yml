@@ -1,4 +1,4 @@
-site_name: Dense-Armor
+﻿site_name: Dense-Armor
 site_description: Low-level learning toolkit in JAX on three levels - online, deep and machine learning - with graph ontology, audio, vision and video, robot motion control, drift and anomaly detection, and finance blocks with a verifiable decision log.
 site_url: https://tatopenn-cell.github.io/Dense-Armor/
 repo_url: https://github.com/tatopenn-cell/Dense-Armor
@@ -189,7 +189,15 @@ nav:
       - detection/index.md
       - Anomaly detection:
           - anomaly/index.md
-          - Streaming: anomaly/streaming.md
+          - Streaming:
+              - anomaly/streaming/index.md
+              - Flag: anomaly/streaming/streaming_deviation_detector.md
+              - Score: anomaly/streaming/streaming_deviation_scorer.md
+              - Multi: anomaly/streaming/multi_channel_streaming_deviation_detector.md
+              - Hampel: anomaly/streaming/hampel_scorer.md
+              - Tukey: anomaly/streaming/tukey_scorer.md
+              - Chauvenet: anomaly/streaming/chauvenet_scorer.md
+              - Sigma: anomaly/streaming/sigma_clip_scorer.md
           - Robust filters: anomaly/robust_filters.md
           - Curvature: anomaly/curvature.md
           - Half-Space Trees: anomaly/hst.md

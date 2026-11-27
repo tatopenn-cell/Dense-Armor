@@ -1,4 +1,4 @@
-# Detection: what is strange, what has changed, what to keep out of the model
+﻿# Detection: what is strange, what has changed, what to keep out of the model
 
 ## The map of detection
 
@@ -10,7 +10,7 @@ Click an area to open its page, or one of its pages on the right, or the button 
 
 | Branch | The question | Classes |
 |---|---|---|
-| [Anomaly detection](../anomaly/index.md) | Each tool learns from the recent readings what is usual, and gives every new reading a score: the higher the score, the less it looks like the recent past. | `StreamingDeviationDetector`, `MultiChannelStreamingDeviationDetector`, `StreamingDeviationScorer`, `HampelScorer`, `TukeyScorer`, `ChauvenetScorer`, `SigmaClipScorer`, `HampelFilter`, `OnlineRobustMahalanobis`, `LODA`, `HalfSpaceTrees`, `OneClassSGD`, `OnlineIsolationForest`, `LocalOutlierFactor` |
+| [Anomaly detection](../anomaly/index.md) | Each tool learns from the recent readings what is usual, and gives every new reading a score: the higher the score, the less it looks like the recent past. | `streamDD`, `MultistreamDD`, `streamDS`, `HampelScorer`, `TukeyScorer`, `ChauvenetScorer`, `SigmaClipScorer`, `HampelFilter`, `OnlineRobustMahalanobis`, `LODA`, `HalfSpaceTrees`, `OneClassSGD`, `OnlineIsolationForest`, `LocalOutlierFactor` |
 | [Drift detection](../drift/index.md) | Anomaly detection flags samples. Drift detection flags a change of the average: something that happens over many samples, each of which looks plausible on its own. | `ADWIN`, `BayesianOnlineChangepoint`, `CUSUMDriftDetector`, `KSWIN`, `PageHinkley` |
 | [Protection](../protect/index.md) | Once a sample looks wrong, what do you do with it? | `Orca`, `StreamingArbiter`, `StreamingHealing` |
 
@@ -20,7 +20,7 @@ Click an area to open its page, or one of its pages on the right, or the button 
 
 | Page | What it shows |
 |---|---|
-| [Streaming](../anomaly/streaming.md) | per-sample deviation scores, single and multi-channel, plus causal Hampel, Tukey, Chauvenet, sigma clipping and online robust Mahalanobis |
+| [Streaming](../anomaly/streaming/index.md) | per-sample deviation scores, single and multi-channel, plus causal Hampel, Tukey, Chauvenet, sigma clipping and online robust Mahalanobis |
 | [Robust filters](../anomaly/robust_filters.md) | the four classic detectors on whole series, and the pressure-valve orchestrator |
 | [Curvature](../anomaly/curvature.md) | a bounded proximity-to-reference score in [0, 1) |
 | [Online Robust Mahalanobis](../anomaly/mahalanobis.md) | distance from a robust median under the MCM |

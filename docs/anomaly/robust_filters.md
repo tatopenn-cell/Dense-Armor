@@ -1,4 +1,4 @@
-# Robust filters (standalone detectors)
+﻿# Robust filters (standalone detectors)
 
 You already have a recorded series: a joint velocity at 100 Hz, a temperature log, a
 sensor reading. A few samples in it are wrong, and you want to know which ones and to see
@@ -19,7 +19,7 @@ per sample. The sections below show each method in turn, then the combination.
 
 These filters look at samples after the current one (the window is centred on it). For a
 series that is arriving now, where looking ahead is not allowed, use the causal versions on
-[Streaming](streaming.md).
+[Streaming](streaming/index.md).
 
 ## 1. Hampel filter
 
@@ -55,7 +55,7 @@ the local median. `idx` is the list of flagged positions.
 The rule is `|x_k - m_k| > t * S_k`, where `m_k` is the median of the window centred on
 sample `k`, `S_k = 1.4826 * MAD` is the robust estimate of the standard deviation of that
 window, and `t` is the threshold (Pearson et al., 2016, eqs. 3 and 4; step by step on
-[Streaming](streaming.md)).
+[Streaming](streaming/index.md)).
 
 ## 2. The other three
 

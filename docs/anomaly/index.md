@@ -1,4 +1,4 @@
-# Anomaly detection
+﻿# Anomaly detection
 
 ## The map of anomaly detection
 
@@ -11,7 +11,7 @@ This section is about spotting readings that look strange. Each tool learns from
 An anomaly detector gives every sample a score: high means the sample does not look like the
 recent past. These detectors work one sample at a time, so they run inside a control loop.
 
-- **[Streaming](streaming.md)** — per-sample deviation scores, single and multi-channel,
+- **[Streaming](streaming/index.md)** — per-sample deviation scores, single and multi-channel,
   plus causal Hampel, Tukey, Chauvenet, sigma clipping and online robust Mahalanobis.
 - **[Robust filters](robust_filters.md)** — the four classic detectors on whole series, and
   the pressure-valve orchestrator.

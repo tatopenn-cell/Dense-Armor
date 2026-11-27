@@ -6,23 +6,22 @@ Needs the optional dependency: the streaming extra
 import numpy as np
 
 from dense_armor.core.online.anomaly.streaming import (
-    StreamingDeviationDetector,
+    streamDD,
     _feature_value,
 )
 from dense_armor.core.online.protect.arbiter import _robust_center_scale
 from dense_armor.roles import AnomalyDetector
 
 
-class StreamingDeviationScorer(AnomalyDetector):
-    """`StreamingDeviationDetector` as an anomaly detector of river.
+class streamDS(AnomalyDetector):
+    """`streamDD` as an anomaly detector of river.
 
     `score_one` returns the robust deviation of a value from the causal window of the values
     learned before it: `|x - median| / scale` (median/MAD, as in `arbiter.classify_segments`),
     or `|x - median|` when the window is flat. `learn_one` adds the value to the window. A score
-    above `n_sigmas` is exactly the case where `StreamingDeviationDetector.update` returns True.
+    above `n_sigmas` is exactly the case where `streamDD.update` returns True.
 
-    Parameters
-    ----------
+    Args:
     radius
         Half-width unit of the causal window; the window holds `radius * ref_mult` values.
     ref_mult
@@ -35,10 +34,9 @@ class StreamingDeviationScorer(AnomalyDetector):
     eps
         Below this scale the window is treated as flat.
 
-    Examples
-    --------
-    >>> from dense_armor.core.online.anomaly.deviation import StreamingDeviationScorer
-    >>> model = StreamingDeviationScorer(radius=5, ref_mult=2)
+    Examples:
+    >>> from dense_armor.core.online.anomaly.deviation import streamDS
+    >>> model = streamDS(radius=5, ref_mult=2)
     >>> for v in [1.0, 1.2, 0.9, 1.1, 1.0, 0.8, 1.05]:
     ...     model.learn_one({"v": v})
     >>> model.score_one({"v": 1.0}) < 3.0
@@ -53,7 +51,7 @@ class StreamingDeviationScorer(AnomalyDetector):
         self.ref_mult = ref_mult
         self.feature = feature
         self.eps = eps
-        self._detector = StreamingDeviationDetector(radius=radius, ref_mult=ref_mult, eps=eps)
+        self._detector = streamDD(radius=radius, ref_mult=ref_mult, eps=eps)
 
     n_missing_ = 0
 
