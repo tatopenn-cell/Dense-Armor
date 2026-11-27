@@ -90,10 +90,16 @@ PAGES = [
 ]
 
 
+METRIC_EXTRA = [
+    ("MetricKNNClassifier", "a k-NN that learns its distance", "learn/metric_knn.md", ORANGE, ["MetricKNNClassifier"]),
+    ("MetricLearner", "the pair, the triplet and the distance", "learn/metric_learner.md", ORANGE, ["MetricLearner"]),
+    ("The Mahalanobis distance", "the ruler that the three learn", "learn/mahalanobis.md", ORANGE, ["OASIS", "LEGO", "POLA"]),
+]
+
 SECTIONS = {
     "learn": (None, "THE MAP OF THE ADAPTIVE LEARNERS"),
     "metric_learning": (
-        ("Metric learning", "OASIS", "LEGO", "POLA"),
+        ("OASIS", "LEGO", "POLA"),
         "THE MAP OF METRIC LEARNING",
     ),
     "online_classifiers": (
@@ -114,6 +120,8 @@ SECTIONS = {
 def main():
     for name, (titles, title) in SECTIONS.items():
         pages = PAGES if titles is None else [p for p in PAGES if p[0] in titles]
+        if name == "metric_learning":
+            pages = pages + METRIC_EXTRA
         draw(
             pages,
             ("learn",),
