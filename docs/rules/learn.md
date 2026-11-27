@@ -8,7 +8,7 @@ The model starts with one rule and adds rules where the slippage changes.
 
 ## 1. One rule for everything
 
-At the start there is one rule with no conditions, the default rule.
+The model starts with a single rule that has no conditions: the default rule.
 
 ```python
 import numpy as np
@@ -31,7 +31,7 @@ print(len(m.explain_one({"size": 0.5, "spread": 0.0})), len(m.explain_one({"size
 0 1
 ```
 
-After 1 order and after 99 orders the list has 0 rules: the default rule answers. At the 100th order (`n_min`) the list has 1 rule. Of the two test orders, one is covered by the new rule and the other is answered by the default rule.
+In this example the list is still empty after 1 order and after 99 orders, so the default rule answers. At the 100th order (`n_min`) the first rule appears. Of the two test orders, one is covered by the new rule and the other is still answered by the default rule.
 
 ## 2. Waiting for `n_min` orders
 
@@ -57,7 +57,7 @@ for n in (100, 250):
 250 250
 ```
 
-With `n_min` = 100 the first rule appears at the order 100, with `n_min` = 250 at the order 250. A rule that does not find a cut tries again after `n_min` more orders.
+With `n_min` = 100 the first rule appears at the 100th order, and with `n_min` = 250 at the 250th. If a rule does not find a cut, it tries again after `n_min` more orders.
 
 ## 3. Being sure: the margin and the tie
 
@@ -73,9 +73,11 @@ print(round(math.sqrt(math.log(1 / 1e-7) / (2 * 100)), 3), round(math.log(1 / 1e
 0.284 3223.6
 ```
 
-`eps = sqrt(ln(1/delta) / (2n))` is the margin of the Hoeffding bound. With `delta` = 1e-7 and 100 orders it is 0.284; it falls under `tau` = 0.05 after 3223.6 orders. How much a cut is worth is the variance ratio: one minus the variance of the slippage inside the two groups, weighted, over the variance of all. The rule cuts if the best feature is clearly ahead (the ratio of the second best variance ratio to the best, plus `eps`, is below 1), or if `eps` is under `tau`: then the best is taken anyway. The side of the cut that becomes the condition is a choice of the library; the paper does not fix it.
+The margin `eps = sqrt(ln(1/delta) / (2n))` comes from the Hoeffding bound and shrinks as the rule sees more orders. With `delta` = 1e-7 it is 0.284 after 100 orders, and it falls under `tau` = 0.05 after 3223.6 orders.
 
-Two identical features cannot be told apart:
+To choose where to cut, the rule uses the variance ratio: how much a cut lowers the variance of the slippage inside the two groups, compared with the variance of all the orders. The rule cuts if the best feature is clearly ahead of the second best (the ratio of their variance ratios, plus `eps`, is below 1), or if `eps` has fallen under `tau`: then the two are treated as equal and the best is taken anyway. Which side of the cut becomes the condition is a choice of the library; the paper does not fix it.
+
+With two identical features the rule has no way to choose between them until `eps` falls under `tau`:
 
 ```python
 import numpy as np
@@ -95,7 +97,7 @@ for t in range(1, 4000):
 3300
 ```
 
-The first cut comes at the order 3300, the first multiple of `n_min` after 3223.6.
+In this example the first cut comes at the 3300th order, the first multiple of `n_min` after 3223.6.
 
 ## 4. Who answers
 
@@ -117,13 +119,13 @@ print(len(m.rules_), len(m.explain_one({"size": 0.5, "spread": 0.0})), len(m.exp
 2 1 1
 ```
 
-After 1500 orders there are 2 rules, and each of the two test orders is covered by one of them. When several rules cover an order their answers are averaged (the paper, Section 3.3).
+After 1500 orders there are 2 rules, and each of the two test orders is covered by one of them. When several rules cover the same order, their answers are averaged (the paper, Section 3.3).
 
 ## 5. What `n_min` does to the error
 
 ![The mean absolute error of the slippage for three values of n_min.](../assets/rules/pages/rules_learn_finance.png)
 
-Mean absolute error of the slippage, in basis points, in the block of 100 orders that ends at the order shown (median of 3 streams):
+The table shows the mean absolute error of the slippage, in basis points, over the block of 100 orders that ends at the order in the header (median of 3 streams):
 
 | `n_min` | 100 | 500 | 1000 | 3000 |
 |---|---|---|---|---|
@@ -188,7 +190,7 @@ print(len(m.rules_), len(m.explain_one({"speed": 0.5, "load": 0.0})), len(m.expl
 2 1 1
 ```
 
-There are 2 rules, and each of the two test samples is covered by one.
+Here too there are 2 rules, and each of the two test samples is covered by one of them.
 
 ## API reference
 
@@ -201,4 +203,4 @@ There are 2 rules, and each of the two test samples is covered by one.
 ### Choices
 
 - The figures are drawn by `docs/assets/rules/make_rules_style_figures.py`: orders with three features between -1 and 1, slippage 5 when the size is above 0 plus a noise of 0.1, error of the prediction made before each order is learned, blocks of 100 orders, median of 3 seeds. The value 101 of `n_min` is the nearest to 100 on the grid of 25 values.
-- The older text of the page, with the older toy stream, is in the section 7 and in the Details of the [index](index.md#the-text-of-the-older-page).
+- The older toy stream of the page is in the section 7.
