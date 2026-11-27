@@ -8,7 +8,7 @@ A rule that starts to fail is removed, and the default rule learns again.
 
 ## 1. The alarm
 
-At the order 1500 the slippage rule is swapped: it is 5 when the size is not above 0.
+In this example the rule of the slippage is swapped at the 1500th order: from then on the slippage is 5 when the size is not above 0.
 
 ```python
 import numpy as np
@@ -29,9 +29,9 @@ for t in range(2600):
 2600 2 1
 ```
 
-At the order 1500 the list has 2 rules and none has been removed. At the order 1600, 1 rule has been removed and 1 is left. At the order 2600 there are 2 rules and 1 has been removed.
+At the 1500th order the list has 2 rules and none has been removed. By the 1600th order 1 rule has been removed and 1 is left. At the 2600th order there are 2 rules again, and 1 rule has been removed in total.
 
-Every rule watches its own absolute error on the orders it covers. The Page-Hinkley test adds up, order after order, the gap between the error and the mean error so far, minus a tolerance `phi`; it keeps the lowest value reached by the sum. When the sum is more than `lambda` above that lowest value, the error has been rising for too long to be chance, and the rule is removed (the paper, Section 3.4).
+Every rule keeps count of its own absolute error on the orders it covers. The Page-Hinkley test compares each error with the mean error so far: it adds up the gap, minus a small tolerance `phi`, and remembers the lowest value that the sum has reached. When the sum rises more than `lambda` above that lowest value, the error has been growing for too long to be chance, and the rule is removed (the paper, Section 3.4).
 
 ## 2. The threshold
 
@@ -56,7 +56,7 @@ for lam in (0.5, 35.0, 1e9):
 1000000000.0 0
 ```
 
-With `ph_lambda` = 0.5, 9 rules are removed; with 35, 1; with 1e9, none. A larger `lambda` gives fewer false alarms and may delay the detection of a change (the paper, Section 3.4).
+With `ph_lambda` = 0.5, 9 rules are removed; with 35, 1; with 1e9, none. A larger `lambda` gives fewer false alarms, but it may delay the detection of a change (the paper, Section 3.4).
 
 ## 3. After the alarm
 
@@ -91,7 +91,7 @@ Before the alarm one rule covers the order. After it, none does, and the default
 
 ![The mean absolute error when the rule is swapped, for three values of ph_lambda.](../assets/rules/pages/rules_change_finance.png)
 
-Mean absolute error, in basis points, in the block of 100 orders that ends at the order shown (the rule is swapped after 2000 orders; median of 3 streams):
+The table shows the mean absolute error, in basis points, over the block of 100 orders that ends at the order in the header (the rule is swapped after 2000 orders; median of 3 streams):
 
 | `ph_lambda` | 1900 | 2100 | 2500 | 4000 |
 |---|---|---|---|---|
@@ -140,7 +140,7 @@ for t in range(2600):
 2600 3 2
 ```
 
-At the sample 1500 the list has 2 rules and none has been removed. At the sample 1600, 2 rules have been removed and 1 is left. At the sample 2600 there are 3 rules and 2 have been removed.
+At the 1500th sample the list has 2 rules and none has been removed. By the 1600th sample 2 rules have been removed and 1 is left. At the 2600th sample there are 3 rules, and 2 rules have been removed in total.
 
 ## API reference
 

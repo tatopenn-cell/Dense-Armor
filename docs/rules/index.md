@@ -2,7 +2,7 @@
 
 ## The map of rules
 
-Click a page to open it, or the job on the left (or the button at the top) to go back to the [map of the library](../index.md#the-library-folder-by-folder).
+Click a page to open it, or the item on the left (or the button at the top) to go back to the [map of the library](../index.md#the-library-folder-by-folder).
 
 <object type="image/svg+xml" data="../assets/maps/rules.svg" style="width:100%"></object>
 
@@ -38,7 +38,7 @@ print(m.explain_one({"size": 0.5, "spread": 0.0}))
 [[{'feature': 'size', 'op': '>', 'value': -5.435268394649029e-05}]]
 ```
 
-The slippage is 5 when the size is above 0 and 0 otherwise; the spread says nothing. The model answers 5.0 for a positive size and 0.0 for a negative one. `explain_one` lists the conditions of the rule that covers the first order: one condition, on `size`, close to 0. The spread is not in it.
+In this example, the slippage is equal to 5 for large orders (positive size) and 0 for small ones, while the spread is just background noise and has no effect. After `n_min` orders the model has learned the difference and answers 5.0 in the first case and 0.0 in the second. With `explain_one` we can read the rule it used: it looks only at the size (with a cut close to zero) and completely ignores the spread.
 
 ## The pages of the section
 
@@ -60,7 +60,7 @@ The slippage is 5 when the size is above 0 and 0 otherwise; the spread says noth
 
 ## The same on a robot
 
-A robot predicts the torque of a joint, in newton-metres, from its speed and its load.
+A robot predicts the torque of a joint, in newton-meters, based on its speed and its load.
 
 ```python
 import numpy as np
@@ -80,7 +80,7 @@ print(m.explain_one({"speed": 0.5, "load": 0.0}))
 [[{'feature': 'speed', 'op': '>', 'value': -0.0030808348674327135}, {'feature': 'speed', 'op': '>', 'value': 0.005520971026271582}]]
 ```
 
-The torque is 5 when the speed is above 0 and 0 otherwise; the load says nothing. The model answers 5.0 and 0.0, and the conditions that cover the first sample are both on `speed`.
+In this example, the torque is equal to 5 when the speed is positive and 0 when it is negative, while the load is just background noise and has no effect. After `n_min` orders the model has learned the difference and answers 5.0 in the first case and 0.0 in the second. With `explain_one` we can read the rule it used: both conditions look only at the speed (with a cut close to zero) and completely ignore the load.
 
 ## Details
 
@@ -103,14 +103,3 @@ p99 of one `learn_one` plus one `predict_one` over 3000 samples with four featur
 - `check_estimator` passes with no check skipped; the tests cover every line of the module.
 - The variance ratio of a hand case (targets 0, 2, 4, 6 split after the second) is 0.8, and 1.0 for a perfect split.
 - Two identical features tie: the tie threshold `tau` decides the split only once `n` is large enough that the Hoeffding bound falls below it (3224 samples for the defaults, `ln(1/delta) / (2 tau^2) = 3223.6`).
-
-### The text of the older page
-
-Suppose an AI assistant must predict how many seconds a request will take from a few numbers about it. A rule could read: *if the prompt length is above 300 and the queue is shorter than 4, the answer is about 2.1 seconds*. The part after "if" is a list of conditions on the features; the part after "then" is a small model that predicts the target for the requests the rule covers.
-
-`AMRulesRegressor` (Duarte, Gama and Bifet 2016) keeps such a list and learns it one sample at a time.
-
-- **Ordered or unordered.** With `ordered_set=True` the first rule that covers a sample learns and predicts; by default all covering rules learn and their predictions are averaged.
-- **How a rule predicts.** `prediction="mean"` uses the mean of its targets, `"perceptron"` a linear model on the standardised features, `"adaptive"` (default) the one with the lower fading mean absolute error.
-- **Anomalies.** With `anomaly_threshold` set (the paper uses -0.75), a rule ignores a sample whose features are unusual for it, once it has seen `m_min` samples. The score is the mean over features, so it flags a sample that is unusual in most features, not in one of them.
-- **Size.** `max_rules`, `max_literals` and `max_split_points` bound the model.

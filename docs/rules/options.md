@@ -8,7 +8,7 @@ The model can ignore strange orders, keep a few rules and choose how a rule pred
 
 ## 1. The strange orders
 
-With `anomaly_threshold` set, a rule ignores an order that looks strange to it. Three orders, 20 times each: strange in both features, strange in one, normal.
+With `anomaly_threshold` set, a rule ignores the orders that look strange to it. In this example we try three orders, 20 times each: one that is strange in both features, one that is strange in a single feature, and one that is normal.
 
 ```python
 import numpy as np
@@ -32,7 +32,7 @@ for x in rows:
 0
 ```
 
-20 orders are ignored when both features are strange, 0 when one is, and 0 when the order is normal. The score of an order is the mean over the features of log(P / (1 - P)), where P is the probability of the value of the feature for the rule, from the Cantelli inequality; the order is ignored if the score is under the threshold, and only by a rule that has seen more than `m_min` orders (the paper, Section 3.5). An ignored order is not learned by any rule.
+All 20 orders are ignored when both features are strange, none when only one is, and none when the order is normal. The score of an order is the mean, over the features, of log(P / (1 - P)), where P is the probability of the feature's value for the rule (from the Cantelli inequality). An order is ignored when its score is under the threshold, and only by a rule that has seen more than `m_min` orders (the paper, Section 3.5). An ignored order is not learned by any rule.
 
 ## 2. Few rules
 
@@ -90,7 +90,7 @@ perceptron 0.337
 
 ![The mean absolute error for the three ways a rule predicts.](../assets/rules/pages/rules_options_finance.png)
 
-Mean absolute error, in basis points, in the block of 100 orders that ends at the order shown (median of 3 streams):
+The table shows the mean absolute error of the slippage, in basis points, over the block of 100 orders that ends at the order in the header (median of 3 streams):
 
 | | 100 | 500 | 1000 | 3000 |
 |---|---|---|---|---|
