@@ -147,7 +147,7 @@ past.
   against a wide causal reference window, then routes it.
 - **[Streaming](../anomaly/streaming/index.md)** — a per-sample port of
   Arbiter's causal deviation check, plus native multi-channel wrappers.
-- **[Robust filters](../anomaly/robust_filters.md)** — Chauvenet, Tukey, Hampel, sigma
+- **[Robust filters](../anomaly/robust_filters/index.md)** — Chauvenet, Tukey, Hampel, sigma
   clipping on whole series, plus `pressure_valve`.
 - **[Curvature](../anomaly/curvature.md)** — a bounded proximity-to-reference score in
   [0, 1).

@@ -1,93 +1,63 @@
-# Robust filters (standalone detectors)
+# pressure_valve
 
-You already have a recorded series: a joint velocity at 100 Hz, a temperature log, a
-sensor reading. A few samples in it are wrong, and you want to know which ones and to see
-the series with them replaced. That is what this page does.
-
-<img width="2327" height="1498" alt="Diagram: a recorded series with one spike goes through four filters (Hampel, Tukey fences, Chauvenet, sigma clipping); pressure_valve, with weight 1/scale squared, returns the clean series, the flagged samples and the pressure score against the threshold" src="https://github.com/user-attachments/assets/ee3933b5-d2b3-4025-9590-adcef02ade07" />
-
-
-The library has four classic batch filters for this job: **Hampel**, **Tukey fences**,
-**Chauvenet** and **sigma clipping**. Each one takes the whole series, compares every sample
-with its neighbours, and returns two things: the series with the flagged samples replaced by
-a local estimate, and the list of positions it flagged. The four differ in how they decide
-what "strange" means, so they often disagree on borderline samples.
+[← Robust filters](index.md)
 
 `pressure_valve` settles the disagreement: it runs all four, weighs them by how confident each
 one is, and returns one cleaned series, one list of flagged positions, and one pressure score
-per sample. The sections below show each method in turn, then the combination.
+per sample.
 
-These filters look at samples after the current one (the window is centred on it). For a
-series that is arriving now, where looking ahead is not allowed, use the causal versions on
-[Streaming](streaming/index.md).
+![The number of days flagged out of 500, for 6 values of soglia_pressione and 6 values of k_molla.](../../assets/robust_filters/pressure_valve_3d.png)
 
-## 1. Hampel filter
+The surface shows how many days the function flags out of 500 on the stream of the example, for 6 values of `soglia_pressione`, the base threshold, and 6 values of `k_molla`. The height is the number of days flagged.
 
-The batch Hampel filter uses a window centred on each point (it sees the future) and replaces
-outliers with the window median.
+## A first example: daily order execution cost
+
+The stream is the one of the [first example of the section](index.md#a-first-example-daily-order-execution-cost): 500 days of the cost of executing an order, and one bad day, day 250, at 25.0.
 
 ```python
 import numpy as np
-from dense_armor.core.online.anomaly.robust_filters import hampel_filter
+from dense_armor.core.online.anomaly.robust_filters import pressure_valve
+
+rng = np.random.default_rng(0)
+cost = 12.0 + 1.5 * rng.standard_normal(500)
+cost[250] = 25.0
+clean, idx, p, thr = pressure_valve(cost, radius=15)
+print(idx, round(float(p[250]), 1), round(float(np.median(thr)), 2))
+```
+
+```
+[250, 303, 478] 15.6 8.48
+```
+
+The function flags three days: day 250, the bad one, with a pressure of 15.6, and two ordinary days, 303 and 478. The median of the threshold over the 500 days is 8.48.
+
+![The pressure of each day, the threshold and the flagged days.](../../assets/robust_filters/pressure_valve_finance.png)
+
+The orange line is the pressure of each day, the dashed grey line is the threshold and the pink points are the three flagged days.
+
+## The same on a robot
+
+```python
+import numpy as np
+from dense_armor.core.online.anomaly.robust_filters import pressure_valve
 
 rng = np.random.default_rng(42)
 v = 0.5 + 0.1 * rng.standard_normal(3000)
 v[1500] = 2.5
-clean, idx = hampel_filter(v, radius=15, n_sigmas=3.0)
-print(1500 in idx, round(float(clean[1500]), 3), len(idx))
+clean, idx, p, thr = pressure_valve(v, radius=15)
+print(idx, round(float(p[1500]), 1), round(float(np.median(thr)), 2))
 ```
 
 ```
-True 0.498 35
+[949, 1500, 2707] 42.7 8.46
 ```
 
-The stream is a joint velocity at 100 Hz: a level of 0.5, Gaussian noise with standard
-deviation 0.1, and one collision at sample 1500 that drives the reading to 2.5.
+Of the 3,000 samples, the filter flags three: the collision at 1500 (pressure 42.7) and two
+noise values at 949 and 2707.
 
-The Hampel filter flags the collision and replaces it with the local median, 0.498. It also
-flags 34 ordinary samples: with a 31-point window and a threshold of 3 in the Hampel rule,
-some noise values fall beyond it. The total is 35 flagged positions.
+## How it works
 
-Every function on this page returns two values, `clean` and `idx`. `clean` is the input
-series where every unflagged sample keeps its value and every flagged sample is replaced by
-the local median. `idx` is the list of flagged positions.
-
-The rule is `|x_k - m_k| > t * S_k`, where `m_k` is the median of the window centred on
-sample `k`, `S_k = 1.4826 * MAD` is the robust estimate of the standard deviation of that
-window, and `t` is the threshold (Pearson et al., 2016, eqs. 3 and 4; step by step on
-[Streaming](streaming/index.md)).
-
-## 2. The other three
-
-`tukey_fences`, `chauvenet_criterion` and `sigma_clip` implement the other three classic
-rules, with the same `(clean, idx)` return as `hampel_filter`.
-
-```python
-import numpy as np
-from dense_armor.core.online.anomaly.robust_filters import (
-    hampel_filter, tukey_fences, chauvenet_criterion, sigma_clip)
-
-rng = np.random.default_rng(42)
-v = 0.5 + 0.1 * rng.standard_normal(3000)
-v[1500] = 2.5
-for f in (hampel_filter, tukey_fences, chauvenet_criterion, sigma_clip):
-    clean, idx = f(v, radius=15)
-    print(f.__name__, 1500 in idx, len(idx))
-```
-
-```
-hampel_filter True 35
-tukey_fences True 65
-chauvenet_criterion True 48
-sigma_clip True 24
-```
-
-All four catch the collision; they differ in how many ordinary samples they also flag. Tukey uses
-the quartiles (outside $[Q_1 - 1.5\,\mathrm{IQR},\, Q_3 + 1.5\,\mathrm{IQR}]$), Chauvenet rejects
-when the expected number of samples that far out, $N \cdot P$, is below 0.5, sigma clipping
-removes values beyond `n_sigmas` standard deviations and repeats on what remains.
-
-## 3. pressure_valve: four estimates combined
+Like the four filters it returns the cleaned series and the flagged positions, and also the pressure and the threshold of each sample, as explained on the page of [Robust filters](index.md).
 
 Each of the four methods (Hampel, Tukey fences, Chauvenet, sigma clipping) returns two
 numbers for every sample. The first is a **centre** `c_k`: the method's estimate of the
@@ -140,26 +110,6 @@ gets weight 0.04; the two methods with scale 0.10 get weight 0.36 each. The comb
 above, not numbers chosen by hand. This is the minimum-variance combination of independent
 estimates.
 
-## 4. pressure_valve on the joint signal
-
-```python
-import numpy as np
-from dense_armor.core.online.anomaly.robust_filters import pressure_valve
-
-rng = np.random.default_rng(42)
-v = 0.5 + 0.1 * rng.standard_normal(3000)
-v[1500] = 2.5
-clean, idx, p, thr = pressure_valve(v, radius=15)
-print(idx, round(float(p[1500]), 1), round(float(np.median(thr)), 2))
-```
-
-```
-[949, 1500, 2707] 42.7 8.46
-```
-
-Of the 3,000 samples, the filter flags three: the collision at 1500 (pressure 42.7) and two
-noise values at 949 and 2707.
-
 The threshold is not the same at every sample. At each sample it depends on how different
 the local window looks from a wider reference window of size `radius * ref_mult`. The
 difference is measured by the Jensen–Shannon divergence, a number in `[0, 1]`: near `0` when
@@ -175,11 +125,24 @@ value, 8.0. When they differ, the threshold rises and the filter tolerates a lar
 deviation, so a genuine change of level is not flagged as an anomaly. On the 3,000 samples
 above the median threshold is 8.46.
 
+## The parameters
+
+`pressure_valve(x, radius=10, soglia_pressione=8.0, n_sigmas=3.0, ref_mult=3, k_molla=3.0)`
+
+| Parameter | Default | What it does |
+|---|---|---|
+| `x` | required | the whole series, a one-dimensional array |
+| `radius` | 10 | half-width of the window, which is centred on each sample: `radius = 15` is a window of 31 samples |
+| `soglia_pressione` | 8.0 | the base threshold of the pressure |
+| `n_sigmas` | 3.0 | the parameter of the internal methods |
+| `ref_mult` | 3 | the wider reference window has `radius * ref_mult` samples |
+| `k_molla` | 3.0 | how much the threshold rises when the two windows differ: `threshold = soglia_pressione * (1 + k_molla * JSD)` |
+
+It returns `(clean, idx, pressure, threshold)`: `pressure` is the combined deviation of each sample and `threshold` is the threshold actually applied at that sample.
+
 ## API reference
 
-::: dense_armor.core.online.anomaly.robust_filters
-
----
+::: dense_armor.core.online.anomaly.robust_filters.pressure_valve
 
 ## Details
 
@@ -202,6 +165,4 @@ above the median threshold is 8.46.
   threshold would rise on noise and would not rise near a transition. Adaptive bins fix
   this by sizing the histogram to the range the window actually covers.
 
-- **Sources.** Pearson, R. K. et al. (2016), "Generalized Hampel filters", *EURASIP J.
-  Adv. Signal Process.*, eqs. 3–4. Chauvenet, W. (1863), *A Manual of Spherical and
-  Practical Astronomy*, vol. 2. Tukey, J. W. (1977), *Exploratory Data Analysis*.
+- **Sources.** Pearson, R. K. et al. (2016), "Generalized Hampel filters", *EURASIP J. Adv. Signal Process.*, eqs. 3–4. Chauvenet, W. (1863), *A Manual of Spherical and Practical Astronomy*, vol. 2. Tukey, J. W. (1977), *Exploratory Data Analysis*.

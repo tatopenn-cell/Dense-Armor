@@ -200,7 +200,13 @@ nav:
               - TukeyScorer: anomaly/streaming/tukey_scorer.md
               - ChauvenetScorer: anomaly/streaming/chauvenet_scorer.md
               - SigmaClipScorer: anomaly/streaming/sigma_clip_scorer.md
-          - Robust filters: anomaly/robust_filters.md
+          - Robust filters:
+              - anomaly/robust_filters/index.md
+              - hampel_filter: anomaly/robust_filters/hampel_filter.md
+              - tukey_fences: anomaly/robust_filters/tukey_fences.md
+              - chauvenet_criterion: anomaly/robust_filters/chauvenet_criterion.md
+              - sigma_clip: anomaly/robust_filters/sigma_clip.md
+              - pressure_valve: anomaly/robust_filters/pressure_valve.md
           - Curvature: anomaly/curvature.md
           - Half-Space Trees: anomaly/hst.md
           - LODA: anomaly/loda.md

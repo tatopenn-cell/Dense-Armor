@@ -74,9 +74,9 @@ For each joint, the modules that work with it, grouped by purpose.
 
 **Single-channel anomaly**
 
-- [`ChauvenetScorer`](../anomaly/robust_filters.md)
-- [`HampelScorer`](../anomaly/robust_filters.md)
-- [`SigmaClipScorer`](../anomaly/robust_filters.md)
+- [`ChauvenetScorer`](../anomaly/robust_filters/index.md)
+- [`HampelScorer`](../anomaly/robust_filters/index.md)
+- [`SigmaClipScorer`](../anomaly/robust_filters/index.md)
 - [`streamDD`](../anomaly/streaming/index.md)
 
 **Drift**
@@ -112,7 +112,7 @@ For each joint, the modules that work with it, grouped by purpose.
 
 **Single-channel anomaly**
 
-- [`ChauvenetScorer`](../anomaly/robust_filters.md)
+- [`ChauvenetScorer`](../anomaly/robust_filters/index.md)
 - [`streamDD`](../anomaly/streaming/index.md)
 
 **Drift**
@@ -139,8 +139,8 @@ For each joint, the modules that work with it, grouped by purpose.
 
 **Single-channel anomaly**
 
-- [`HampelScorer`](../anomaly/robust_filters.md)
-- [`TukeyScorer`](../anomaly/robust_filters.md)
+- [`HampelScorer`](../anomaly/robust_filters/index.md)
+- [`TukeyScorer`](../anomaly/robust_filters/index.md)
 
 **Drift**
 
@@ -167,8 +167,8 @@ For each joint, the modules that work with it, grouped by purpose.
 
 **Single-channel anomaly**
 
-- [`TukeyScorer`](../anomaly/robust_filters.md)
-- [`SigmaClipScorer`](../anomaly/robust_filters.md)
+- [`TukeyScorer`](../anomaly/robust_filters/index.md)
+- [`SigmaClipScorer`](../anomaly/robust_filters/index.md)
 
 **Drift**
 
@@ -193,8 +193,8 @@ For each joint, the modules that work with it, grouped by purpose.
 
 **Single-channel anomaly**
 
-- [`ChauvenetScorer`](../anomaly/robust_filters.md)
-- [`HampelScorer`](../anomaly/robust_filters.md)
+- [`ChauvenetScorer`](../anomaly/robust_filters/index.md)
+- [`HampelScorer`](../anomaly/robust_filters/index.md)
 
 **Drift**
 
@@ -215,7 +215,7 @@ For each joint, the modules that work with it, grouped by purpose.
 
 **Single-channel anomaly**
 
-- [`ChauvenetScorer`](../anomaly/robust_filters.md)
+- [`ChauvenetScorer`](../anomaly/robust_filters/index.md)
 
 **Multi-joint anomaly**
 
@@ -240,7 +240,7 @@ For each joint, the modules that work with it, grouped by purpose.
 
 **Single-channel anomaly**
 
-- [`SigmaClipScorer`](../anomaly/robust_filters.md)
+- [`SigmaClipScorer`](../anomaly/robust_filters/index.md)
 
 **Multi-joint anomaly**
 

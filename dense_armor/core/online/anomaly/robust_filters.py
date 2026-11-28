@@ -95,7 +95,19 @@ def chauvenet_criterion(x: np.ndarray, radius: int = 10) -> tuple[np.ndarray, li
     other outliers before even judging point i (known and
     documented limit of the original criterion, not specific to this implementation;
     for windows with multiple outliers prefer hampel_filter or tukey_fences,
-    which use robust statistics)."""
+    which use robust statistics).
+
+    Examples:
+        >>> import numpy as np
+        >>> rng = np.random.default_rng(0)
+        >>> x = rng.normal(0, 1, 60)
+        >>> x[30] = 50.0
+        >>> clean, idx = chauvenet_criterion(x, radius=5)
+        >>> 30 in idx
+        True
+        >>> abs(float(clean[30])) < 5.0
+        True
+"""
     x = as_default_array(x)
     n = len(x)
     out = np.copy(x)
@@ -121,7 +133,19 @@ def tukey_fences(x: np.ndarray, radius: int = 10, k: float = 1.5) -> tuple[np.nd
     Q1/Q3 = 25th/75th percentile of the window, IQR = Q3-Q1. Point i is an
     outlier if outside [Q1 - k*IQR, Q3 + k*IQR] (k=1.5 is the standard, k=3.0
     the "extreme outliers" variant). No assumption on the distribution --
-    the only one of the four that does not presuppose normality."""
+    the only one of the four that does not presuppose normality.
+
+    Examples:
+        >>> import numpy as np
+        >>> rng = np.random.default_rng(0)
+        >>> x = rng.normal(0, 1, 60)
+        >>> x[30] = 50.0
+        >>> clean, idx = tukey_fences(x, radius=5)
+        >>> 30 in idx
+        True
+        >>> abs(float(clean[30])) < 5.0
+        True
+"""
     x = as_default_array(x)
     n = len(x)
     out = np.copy(x)
@@ -149,7 +173,19 @@ def hampel_filter(x: np.ndarray, radius: int = 10, n_sigmas: float = 3.0) -> tup
     used here is already robust, unlike Chauvenet). Outlier if
     |x[i] - median| > n_sigmas * scaled_MAD. When the scaled MAD is below
     1e-12 (a flat window) any point farther than 1e-9 from the median is an
-    outlier."""
+    outlier.
+
+    Examples:
+        >>> import numpy as np
+        >>> rng = np.random.default_rng(0)
+        >>> x = rng.normal(0, 1, 60)
+        >>> x[30] = 50.0
+        >>> clean, idx = hampel_filter(x, radius=5)
+        >>> 30 in idx
+        True
+        >>> abs(float(clean[30])) < 5.0
+        True
+"""
     x = as_default_array(x)
     n = len(x)
     out = np.copy(x)
@@ -181,7 +217,19 @@ def sigma_clip(x: np.ndarray, radius: int = 10, n_sigmas: float = 3.0, max_iters
     mean/std, discards the points beyond n_sigmas, recomputes on the remaining ones,
     repeats until stable or max_iters. Point i is an outlier if outside
     n_sigmas of the FINAL mean/std (cleaned of the other outliers of the
-    window, unlike chauvenet_criterion which uses raw mean/std)."""
+    window, unlike chauvenet_criterion which uses raw mean/std).
+
+    Examples:
+        >>> import numpy as np
+        >>> rng = np.random.default_rng(0)
+        >>> x = rng.normal(0, 1, 60)
+        >>> x[30] = 50.0
+        >>> clean, idx = sigma_clip(x, radius=5)
+        >>> 30 in idx
+        True
+        >>> abs(float(clean[30])) < 5.0
+        True
+"""
     x = as_default_array(x)
     n = len(x)
     out = np.copy(x)
@@ -371,7 +419,19 @@ def pressure_valve(
     Returns (pulito, anomalie, pressione, soglia_effettiva): `pressione` is
     the continuous combined deviation for each point, `soglia_effettiva` the
     threshold actually applied at that point (>= soglia_pressione, it shows
-    where/how much the spring yielded)."""
+    where/how much the spring yielded).
+
+    Examples:
+        >>> import numpy as np
+        >>> rng = np.random.default_rng(0)
+        >>> x = rng.normal(0, 1, 60)
+        >>> x[30] = 50.0
+        >>> clean, idx, p, thr = pressure_valve(x, radius=5)
+        >>> 30 in idx
+        True
+        >>> abs(float(clean[30])) < 5.0
+        True
+"""
     x = as_default_array(x)
     n = len(x)
     pressione = np.zeros(n, dtype=get_default_dtype())
