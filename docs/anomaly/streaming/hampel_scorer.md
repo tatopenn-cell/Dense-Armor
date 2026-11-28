@@ -6,7 +6,7 @@ HampelScorer evaluates each new value by measuring its distance from the median 
 
 The dense_armor.core.online.anomaly.filters module provides the four classic statistical rules for outlier handling as streaming scorers: Hampel, Tukey fences, Chauvenet, and sigma clipping.
 
-Each scorer analyzes exclusively the 2 * radius samples preceding the value to be evaluated. The batch counterparts presented on the [robust filters](../robust_filters.md) page instead use a window centered on the sample, also including future data; a real-time robotic control loop cannot afford this, and this is the only substantial difference.
+Each scorer analyzes exclusively the 2 * radius samples preceding the value to be evaluated. The batch counterparts presented on the [robust filters](../robust_filters/index.md) page instead use a window centered on the sample, also including future data; a real-time robotic control loop cannot afford this, and this is the only substantial difference.
 
 ![Trend of a spike's score tested across 8 different amplitudes and with a number of anomalous values in the window ranging from 0 to 14 (out of 30 total samples).](../../assets/streaming/hampel_scorer_3d.png)
 

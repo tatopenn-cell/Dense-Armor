@@ -29,7 +29,7 @@ A system that reads numbers all day has three questions to ask of them: what is 
 | Page | What it shows |
 |---|---|
 | [Streaming](../anomaly/streaming/index.md) | per-sample deviation scores, single and multi-channel, plus causal Hampel, Tukey, Chauvenet, sigma clipping and online robust Mahalanobis |
-| [Robust filters](../anomaly/robust_filters.md) | the four classic detectors on whole series, and the pressure-valve orchestrator |
+| [Robust filters](../anomaly/robust_filters/index.md) | the four classic detectors on whole series, and the pressure-valve orchestrator |
 | [Curvature](../anomaly/curvature.md) | a bounded proximity-to-reference score in [0, 1) |
 | [Online Robust Mahalanobis](../anomaly/mahalanobis.md) | distance from a robust median under the MCM |
 | [LODA](../anomaly/loda.md) | rare bins in random 1D projections |

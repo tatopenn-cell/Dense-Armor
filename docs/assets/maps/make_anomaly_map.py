@@ -27,7 +27,7 @@ PAGES = [
             "HampelFilter",
         ],
     ),
-    ("Robust filters", "four detectors on a whole series", "anomaly/robust_filters.md", ORANGE, ["pressure_valve"]),
+    ("Robust filters", "four detectors on a whole series", "anomaly/robust_filters/index.md", ORANGE, ["pressure_valve"]),
     ("Curvature", "a proximity score in [0, 1)", "anomaly/curvature.md", PINK, ["curvature"]),
     ("Online Robust Mahalanobis", "distance from a robust median", "anomaly/mahalanobis.md", CYAN, ["OnlineRobustMahalanobis"]),
     ("LODA", "rare bins in random projections", "anomaly/loda.md", ORANGE, ["LODA"]),
