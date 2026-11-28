@@ -66,8 +66,8 @@ SECTION_PAGES = {
     "robot": "robot/index.md",
     "infrastructure": "stream/index.md",
     "ml": "ml/index.md",
-    "utility": "shields/engine.md",
-    "armor": "shields/armor.md",
+    "utility": "protect/engine.md",
+    "armor": "protect/armor.md",
     "anomaly_detector": "roles/detectors.md",
     "drift_detector": "roles/detectors.md",
     "transformer": "roles/transformers.md",
@@ -89,7 +89,7 @@ PIECE_PAGES = {
     "data": "api/data_shared.md",
     "neural": "neural/overview.md",
     "kalman": "timeseries/kalman.md",
-    "Armor": "shields/armor.md",
+    "Armor": "protect/armor.md",
 }
 
 

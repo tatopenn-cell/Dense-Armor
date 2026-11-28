@@ -32,7 +32,7 @@ PARTS = {
     "preprocessing": ("Preprocessing", "preprocessing/index.md"),
     "optim": ("Optimizers", "optim/index.md"),
     "graph": ("Ontology", "ontology/index.md"),
-    "protect": ("Shields", "shields/engine.md"),
+    "protect": ("Shields", "protect/shields.md"),
 }
 
 

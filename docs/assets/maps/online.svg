@@ -3,7 +3,7 @@
 <rect width="1000" height="2991" fill="#0d131a" rx="14"/>
 <text x="500" y="38" fill="#e0fbfc" font-size="24" font-weight="700" text-anchor="middle">THE MAP OF ONLINE LEARNING</text>
 <text x="500" y="62" fill="#4cc9f0" font-size="12.5" text-anchor="middle">the groups, the areas and every page of the tab; pass over an area to light its pages, click to open</text>
-<a href="../../index.md#the-library-folder-by-folder" target="_top"><title>back to the map of the library</title><rect class="card" x="20" y="14" width="150" height="30" rx="15" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="95" y="33.5" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">← map of the library</text></a>
+<a href="../../#the-library-folder-by-folder" target="_top"><title>back to the map of the library</title><rect class="card" x="20" y="14" width="150" height="30" rx="15" fill="#101a24" stroke="#f72585" stroke-width="1.6"/><text class="dn" x="95" y="33.5" fill="#e0fbfc" font-size="12" font-weight="700" text-anchor="middle">← map of the library</text></a>
 <text x="24" y="98" fill="#f72585" font-size="12" font-weight="700">01  GROUP</text>
 <text x="236" y="98" fill="#f72585" font-size="12" font-weight="700">02  AREA</text>
 <text x="500" y="98" fill="#f72585" font-size="12" font-weight="700">03  PAGES</text>
