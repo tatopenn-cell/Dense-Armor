@@ -2,17 +2,17 @@
 
 [← Streaming anomaly detection](index.md)
 
-`HampelFilter` reads one value per call and returns the stream with outliers replaced by a clean value. When a reading is not an outlier it returns the reading unchanged; when it is an outlier it returns the median of the recent past. This is the same Hampel rule as `HampelScorer`, applied to a causal window, but the output is a cleaned series rather than a score. Other keys in the input are passed through unchanged.
+HampelFilter reads one value per call and returns the stream with any anomalies replaced by a clean value. When a reading falls within the norm, the filter returns it unchanged; when it detects an outlier instead, it replaces it with the median of the recent past. It applies the exact same Hampel rule as HampelScorer on a causal window, but produces a cleaned series as output rather than a score. All other keys present in the input dictionary are forwarded without modification.
 
-It looks only at the `2 * radius` samples before the value being scored, like the other scorers; why the batch versions differ is explained on the page of [HampelScorer](hampel_scorer.md).
+Like the other scorers in the library, it examines exclusively the 2 * radius samples preceding the current data point; the reasons for the differences compared to the batch counterparts are illustrated on the [HampelScorer](hampel_scorer.md) page.
 
-![The output of the filter for 9 input values from -10 to 10 standard deviations and 8 values of n_sigmas.](../../assets/streaming/hampel_filter_3d.png)
+![Filter response evaluated across 9 input values ranging from -10 to 10 standard deviations and 8 different values of n_sigmas.](../../assets/streaming/hampel_filter_3d.png)
 
-Inside the band a value comes out unchanged; outside it comes out as the median of the window. With n_sigmas = 3 an input of 6 or of -6 comes out at the median, about -0.06.
+Within the normal band, the output value coincides with the input value; outside of it, it is clamped to the window median. For example, with n_sigmas = 3, an input equal to 6 or -6 is replaced with the window median (approximately -0.06).
 
-## A first example: a daily cost of executing an order
+## A first example: daily order execution cost
 
-The daily cost of executing an order, 500 days around 12, with a spike of 25 at day 250. The filter cleans the stream before a model sees it.
+Let us simulate 500 days of daily execution costs around 12, with an isolated spike equal to 25 on day 250. The filter cleans up the stream in real time before the data point is passed to a downstream model.
 
 ```python
 import numpy as np
@@ -33,13 +33,13 @@ print(round(clean[250], 2), sum(a != b for a, b in zip(clean, cost)))
 11.36 10
 ```
 
-The spike of 25 comes out as 11.36, the median of the 30 days before it. In all, 10 of the 500 days were replaced: the spike and nine ordinary days in the tails of the noise.
+The spike of 25 is replaced with 11.36, which is the median of the preceding 30 days. Overall, out of 500 days, 10 are rectified: the anomalous spike and nine ordinary days that fell into the extreme tails of the noise.
 
-![The raw cost in grey and the cleaned cost in blue between day 200 and day 300; the replaced days are pink dots.](../../assets/streaming/hampel_filter_finance.png)
+![Comparison between raw cost (in gray) and filtered cost (in blue) from day 200 to day 300; replaced samples are marked by pink dots.](../../assets/streaming/hampel_filter_finance.png)
 
-The filter leaves the days it does not flag as they are and swaps the flagged days for the median of the window.
+The filter leaves normal days unaltered and replaces flagged points with the current window median.
 
-## The same on a robot
+## The same applies to a robot
 
 ```python
 from dense_armor.core.online.anomaly.filters import HampelFilter
@@ -54,26 +54,33 @@ print(f.transform_one({"v": 50.0})["v"], f.transform_one({"v": 1.1})["v"])
 1.0 1.1
 ```
 
-A reading of 50 comes out as the median of the window; a reading of 1.1 comes out unchanged.
+A reading equal to 50 is replaced by the window median (1.0), whereas a regular value like 1.1 passes through unaltered.
 
 ## How it works
 
-`HampelFilter` also replaces an outlier with the window median.
+HampelFilter replaces anomalous values with the median of the recent historical window.
 
-`learn_one` adds a value to a short causal window; `transform_one` does not learn. `transform_one` returns the value itself when it is not an outlier, or the median of the `2 * radius` samples strictly before it when it is. The same rule as `HampelScorer`. A missing value is passed through unchanged. Other keys are passed through unchanged. The `HampelFilter` is an `AnomalyDetector`-style `Transformer`; see [HampelScorer](hampel_scorer.md) for the score and `n_sigmas`.
+The operational flow is split between two methods:
+
+- learn_one(x) adds a sample to the short causal window;
+- transform_one(x) does not modify the internal state: it returns the original value if it is not an outlier, or the median of the 2 * radius strictly preceding samples if it exceeds the anomaly threshold.
+
+The detection rule is identical to that of HampelScorer. Missing values (NaN or infinities) are returned as-is, without modification, and increment n_missing. Any other keys present in the dictionary are also left intact. HampelFilter is the Transformer-style equivalent of HampelScorer (see the latter for details on score calculation and the n_sigmas parameter).
 
 ## The parameters
 
-`HampelFilter` is a `Transformer`. `learn_one(x)`, `transform_one(x)`, `n_missing`. Signature:
+HampelFilter is a Transformer equipped with the learn_one(x) and transform_one(x) methods, in addition to the n_missing attribute.
 
-`(self, radius: int = 10, n_sigmas: float = 3.0, feature: str | None = None, eps: float = 1e-09)`
+Signature:
 
-| Parameter | Default | What it does |
+`HampelFilter(radius: int = 10, n_sigmas: float = 3.0, feature: str | None = None, eps: float = 1e-09)`
+
+| Parameter | Default | Description |
 |---|---|---|
-| `radius` | 10 | with a `2 * radius` causal window |
-| `n_sigmas` | 3.0 | outlier when score above `n_sigmas` |
-| `feature` | `None` | key to filter; `None` takes the feature with the smallest key, order-independent |
-| `eps` | 1e-9 | below this scale the window is flat |
+| radius | 10 | Half-width unit; defines a causal window of 2 * radius samples. |
+| n_sigmas | 3.0 | Anomaly threshold: a value is replaced when its score exceeds n_sigmas. |
+| feature | None | Key of the feature to filter; if None, selects the lexicographically smallest key, regardless of order. |
+| eps | 1e-9 | Scale threshold: below this value the window is considered flat. |
 
 ## API reference
 
@@ -81,5 +88,5 @@ A reading of 50 comes out as the median of the window; a reading of 1.1 comes ou
 
 ## Details
 
-- **Sources.** Hampel, F. R. (1974). The influence curve and its role in robust estimation. *JASA* 69(346), 383-393. Davies, L., Gather, U. (1993). The identification of multiple outliers. *JASA* 88(423), 782-792. Batch `robust_filters.hampel_filter`. Same replacement rule as `HampelScorer`.
-- **Causal.** `2 * radius` strictly before; value not part of own window. `n_missing`.
+- Sources: Hampel, F. R. (1974), The influence curve and its role in robust estimation, JASA 69(346), 383–393; Davies, L., Gather, U. (1993), The identification of multiple outliers, JASA 88(423), 782–792; batch counterpart in robust_filters.hampel_filter; uses the same detection rule as HampelScorer.
+- Causality: operates exclusively on the 2 * radius strictly preceding samples; the current value never becomes part of its own evaluation window.

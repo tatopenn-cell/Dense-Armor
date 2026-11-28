@@ -2,17 +2,17 @@
 
 [← Streaming anomaly detection](index.md)
 
-You have several numbers arriving together, for example the cost of executing an order on several markets, or the velocity of every robot joint. `MultistreamDD` reads one vector per call and returns one flag per channel. Each channel is scored exactly as if a `streamDD` ran on that channel alone; channels never influence each other. A channel that is unusual in its own history is flagged, even if the others are normal.
+When receiving multiple numerical streams simultaneously — such as the execution cost of an order across different markets or the velocity of each robot joint — MultistreamDD acquires a vector for each call and returns a boolean flag for each individual channel. Each channel is evaluated exactly as if streamDD were running in isolation on it: channels never influence each other. If a channel exhibits an anomaly compared to its own recent history, it is flagged regardless of whether the other channels remain within the norm.
 
-**The name.** `MultistreamDD` is short for *Multi-channel stream Deviation Detector*: one `streamDD` for each channel of a vector, such as the joints of a robot or the venues of a desk.
+The name MultistreamDD is short for Multi-channel Stream Deviation Detector: a dedicated instance of streamDD for each channel of a vector, such as the joints of a robotic arm or the portfolios of a trading desk.
 
-![A surface showing, on seeded three-channel noise streams, how often an injected spike on one channel is flagged on that channel, for 8 spike amplitudes (2 to 10 standard deviations) and 8 values of n_sigmas (2 to 6).](../../assets/streaming/multi_channel_streaming_deviation_detector_3d.png)
+![Surface showing, on three-channel noise streams generated with a fixed seed, the frequency with which a spike injected on one channel is correctly flagged on that channel, testing 8 spike amplitudes (from 2 to 10 standard deviations) and 8 values of n_sigmas (from 2 to 6).](../../assets/streaming/multi_channel_streaming_deviation_detector_3d.png)
 
-On a seeded noise stream with one injected spike on one channel, this surface shows how often the spike is flagged on that channel, on a scale from 0 to 1. The horizontal axis is the spike amplitude in standard deviations; the other axis is `n_sigmas`, the flagging threshold. Higher means the spike is caught more often.
+On a noisy stream where a spike is injected on a single channel, this surface indicates the detection frequency on a scale from 0 to 1. The horizontal axis represents the spike amplitude in standard deviations, while the other axis indicates n_sigmas (the flagging threshold). A higher value corresponds to greater sensitivity.
 
-## A first example: three daily-cost streams
+## A first example: three daily cost streams
 
-A desk watches the daily cost of executing an order on three markets at once. One day one market's cost spikes; only that channel is flagged.
+A trader simultaneously monitors the daily execution cost of orders across three distinct markets. On a specific day, the cost on one of the markets experiences a sudden surge: the detector flags exclusively that channel.
 
 ```python
 import numpy as np
@@ -30,16 +30,15 @@ print(flags[250], np.argwhere(flags[10:]).tolist())
 [False  True False] [[240, 1]]
 ```
 
-The stream is 500 days, three channels, daily cost around 12 with noise 1.5, and one spike at day 250 (value 25.0) on channel 1. Day 250 flags only channel 1. `np.argwhere(flags[10:])` holds `[sample - 10, channel]`, so `[240, 1]` is day 250 channel 1. `flags[10:]` skips the first ten printed days, not the per-channel warm-up.
+The simulation covers 500 days across three channels, with a daily average cost of about 12, a noise equal to 1.5, and an isolated spike on day 250 (value 25.0) on channel 1. On day 250, only channel 1 is flagged (`[False, True, False]`). The instruction np.argwhere(flags[10:]) returns `[sample - 10, channel]` pairs, so `[[240, 1]]` identifies day 250 on channel 1. The flags[10:] slice serves solely to exclude the first ten days from printing, without altering the internal warm-up phase of each channel.
 
-![Three seeded order-cost streams, one spike on one channel, flagged channel in pink.](../../assets/streaming/multi_channel_streaming_deviation_detector_finance.png)
+![Three simulated daily cost streams, with a spike on one channel highlighted in pink.](../../assets/streaming/multi_channel_streaming_deviation_detector_finance.png)
 
-On three seeded daily-cost streams, one spike day on one channel is flagged on that channel only.
+Across three parallel series, the anomaly is detected and marked exclusively on the affected channel.
 
-## The same on a robot
+## The same applies to a robot
 
-A robot has several joints; `MultistreamDD` watches each one with its
-own window. The measure for each channel is the same `z` as `streamDD`; see [streamDD](streaming_deviation_detector.md).
+A robot has multiple joints: MultistreamDD monitors each one with its own independent window, applying for each channel the same z metric described on the streamDD page.
 
 ```python
 import numpy as np
@@ -57,29 +56,29 @@ print(flags[300], np.argwhere(flags[10:]).tolist())
 [False False  True False False False] [[58, 5], [274, 4], [290, 2]]
 ```
 
-Six joints, one fault on joint 2 at sample 300: row 300 flags only joint 2. `np.argwhere(flags[10:])` holds `[sample - 10, joint]`: `[290, 2]`
-is the fault, and `[58, 5]`, `[274, 4]` are two noise values out of 2,940 checks. Each joint keeps
-its own independent window; no need to write the loop over joints by hand.
+In this scenario with six joints and a fault on joint 2 at sample 300, row 300 flags exclusively joint 2. The output of np.argwhere(flags[10:]) returns indices in the format `[sample - 10, joint]`: `[290, 2]` corresponds to the real fault at sample 300, while `[58, 5]` and `[274, 4]` are two normal extreme noise fluctuations out of a total of 2,940 checks. Each joint maintains its own separate historical window, avoiding the need to manually manage a loop over individual channels.
 
 ## How it works
 
-For each channel the class keeps an independent `streamDD`. On each call it reads the same `n_channels` values, scores each value against that channel's own recent window, and returns a boolean per channel. No channel affects another. The per-channel rule is the `z` score described on the `streamDD` page.
+For each channel, the class instantiates and manages an independent streamDD object. At each call, it reads a vector of n_channels values, compares each element with the recent window of the respective channel, and returns an array of booleans. Channels never interact with each other, and each follows the z-score rule illustrated in the streamDD documentation.
 
-`update(x_vec)` returns a boolean array of length `n_channels`. `n_channels` is required. The input vector must have exactly `n_channels` values. Each channel has its own causal window of `radius * ref_mult` recent values and its own warm-up (`len < 4`, then `False`). The flags list `[sample - offset, channel]` is produced by `numpy.argwhere`, not by the class.
+The update(x_vec) method returns a boolean array of length n_channels (a mandatory parameter, which must match the exact dimension of the input vector). Each channel has its own causal window of radius * ref_mult recent samples and its own warm-up phase (len < 4, during which it always returns False). The `[sample - offset, channel]` coordinates shown in the examples are generated by numpy.argwhere and not directly by the class.
 
 ## The parameters
 
-`MultistreamDD` is not an `Estimator` and not an `AnomalyDetector`: it is a plain class. `update(x_vec)` returns a boolean array. Signature:
+MultistreamDD does not inherit from Estimator nor from AnomalyDetector: it is a lightweight class in which update(x_vec) directly returns a boolean array.
 
-`(self, n_channels: int, radius: int = 10, ref_mult: int = 3, n_sigmas: float = 3.0, eps: float = 1e-09)`
+Signature:
 
-| Parameter | Default | What it does |
+`MultistreamDD(n_channels: int, radius: int = 10, ref_mult: int = 3, n_sigmas: float = 3.0, eps: float = 1e-09)`
+
+| Parameter | Default | Description |
 |---|---|---|
-| `n_channels` | required | number of independent channels; `update` gets a vector of this length |
-| `radius` | 10 | with `ref_mult`, each channel's causal window holds `radius * ref_mult` values |
-| `ref_mult` | 3 | window length multiplier |
-| `n_sigmas` | 3.0 | per-channel flag when `z > n_sigmas` (examples use 4.0) |
-| `eps` | 1e-9 | degenerate-scale branch; below it the window is treated as flat |
+| n_channels | required | Number of independent channels; update expects a vector of this length. |
+| radius | 10 | Base unit of the window; together with ref_mult it defines the capacity per channel (radius * ref_mult). |
+| ref_mult | 3 | Window length multiplier. |
+| n_sigmas | 3.0 | Activation threshold per channel when z > n_sigmas (in the examples it is set to 4.0). |
+| eps | 1e-9 | Threshold for degenerate scale; below this value the window is treated as flat. |
 
 ## API reference
 
@@ -87,8 +86,8 @@ For each channel the class keeps an independent `streamDD`. On each call it read
 
 ## Details
 
-- **Implementation.** `dense_armor/core/online/anomaly/streaming.py`. `update` converts `x_vec` to `as_default_array(...).ravel()`; `x_vec.size != self.n_channels` raises `ValueError("expected N channels, got ...")`. `_detectors` is a list of `streamDD(radius, ref_mult, n_sigmas, eps)`, one per channel. `n_sigmas`, `eps` passed through. (`MultiChannel...` itself never reads `n_missing`; per-channel missing handling is in `streamDD`.)
-- **Per-channel independence.** a fast joint and an almost still one have different natural noise scales; a shared scale would desensitise the slow one or give false alarms on the active one. Same rule as `streamDD`, no new algorithm; ergonomics, not a new algorithm. `class_seg_multi` applies `classify_segments` per column separately; not this class.
-- **Causality.** per channel `_window_causal`, only past values, no look-ahead.
-- **Warm-up.** `flags[10:]` in the examples only skips printing; per-channel `len < 4`, then `False`.
-- **Source.** `dense_armor/core/online/anomaly/streaming.py`. Output `[False False  True False False False] [[58, 5], [274, 4], [290, 2]]` ; `[False  True False] [[240, 1]]` . Provenance for `streamDD` (Arbiter, Dense-Evolution-Discovery) is on the page of that object.
+- Implementation: defined in dense_armor/core/online/anomaly/streaming.py. The update method converts x_vec via as_default_array(...).ravel(); if x_vec.size != self.n_channels, it raises ValueError("expected N channels, got ..."). The internal attribute _detectors holds a list of streamDD(radius, ref_mult, n_sigmas, eps) instances, one per channel, to which n_sigmas and eps are forwarded. (Note: the multi-channel class does not directly expose n_missing; missing value handling occurs locally inside each streamDD).
+- Per-channel independence: a fast-moving joint and a nearly stationary one exhibit very different natural noise scales; using a shared scale would desensitize the slow joint or generate false alarms on the more active one. The class does not introduce a new algorithm, but offers an ergonomic interface based on the same rule as streamDD. (To apply classify_segments column-wise on an entire offline recording, see class_seg_multi instead).
+- Causality: uses the _window_causal logic on each individual channel, relying exclusively on past samples without any look-ahead.
+- Warm-up phase: in the examples, the flags[10:] slice only filters the printed output; at the algorithmic level, each channel requires at least 4 samples (len < 4) before being able to emit a True flag.
+- Provenance: defined in dense_armor/core/online/anomaly/streaming.py. Reference output of the examples: [False False True False False False] [`[58, 5]`, `[274, 4]`, `[290, 2]`] and [False True False] `[[240, 1]]`. For the evolutionary history of streamDD (Arbiter, Dense-Evolution-Discovery), refer to its respective page.

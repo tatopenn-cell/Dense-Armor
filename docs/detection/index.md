@@ -6,7 +6,13 @@ Click an area to open its page, or one of its pages on the right, or the button 
 
 <object type="image/svg+xml" data="../assets/maps/detection.svg" style="width:100%"></object>
 
-What is strange, what has changed, what to keep out of the model.
+A system that reads numbers all day has three questions to ask of them: what is strange, what has changed, and what to keep out of the model. Detection answers them with three groups of tools.
+
+**Anomaly detection.** This section is about spotting readings that look strange. Each tool learns from the recent readings what is usual, and gives every new reading a score: the higher the score, the less it looks like the recent past.
+
+**Drift detection.** While anomaly detection tools spot a single, sudden weird reading, drift detection tools look at the bigger picture. They notice when the baseline level of a system is slowly drifting over time, accumulating tiny, subtle changes that would look perfectly normal if judged on their own.
+
+**Protection.** When a reading looks wrong, what should you do with it? This section explains the cases (a single glitch, a real change, a slow drift) and which tool handles each.
 
 ## The three branches
 

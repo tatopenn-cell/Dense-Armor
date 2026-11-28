@@ -24,7 +24,7 @@ OUT = HERE / "applications.svg"
 BG, CARD, TEXT, MUTED = "#0d131a", "#101a24", "#e0fbfc", "#94a3b8"
 CYAN, ORANGE, PINK = "#4cc9f0", "#ff9e00", "#f72585"
 COLORS = [ORANGE, CYAN, PINK, ORANGE, CYAN, PINK]
-HOME = "../../index.md#the-library-folder-by-folder"
+HOME = "../../#the-library-folder-by-folder"
 
 
 def url(rel):

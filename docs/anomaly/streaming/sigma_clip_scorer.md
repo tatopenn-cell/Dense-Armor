@@ -2,17 +2,17 @@
 
 [← Streaming anomaly detection](index.md)
 
-`SigmaClipScorer` first removes points beyond `n_sigmas`, recomputes the centre and spread of what remains, repeats until stable or `max_iters`, and then scores the new value by how far it is from that cleaned centre in cleaned-standard-deviation units. The window is `2 * radius` samples strictly before the value. `is_outlier` is `True` when the score is above `n_sigmas`. It is an `AnomalyDetector`, causal.
+SigmaClipScorer first removes samples exceeding n_sigmas standard deviations, recalculates the center and dispersion on the remaining data, and repeats the process until convergence or until max_iters iterations are reached; finally, it evaluates the new sample by measuring its distance from the cleaned center, expressed in units of cleaned standard deviation. The causal window comprises the 2 * radius samples strictly preceding the current value. The is_outlier method returns True when the score exceeds n_sigmas. It is a purely causal AnomalyDetector.
 
-It looks only at the `2 * radius` samples before the value being scored, like the other scorers; why the batch versions differ is explained on the page of [HampelScorer](hampel_scorer.md).
+Like the other scorers in the library, it examines exclusively the 2 * radius samples preceding the value to be evaluated; the reasons for the differences compared to the batch counterparts are illustrated on the [HampelScorer](hampel_scorer.md) page.
 
-![The score of a cost of 18 for 0 to 14 bad ticks in a window of 40 days and 1 to 8 passes of clipping.](../../assets/streaming/sigma_clip_scorer_3d.png)
+![Trend of the score assigned to a cost equal to 18 as the number of anomalous values in the window varies (from 0 to 14 out of 40 days) and as the number of clipping passes varies (from 1 to 8).](../../assets/streaming/sigma_clip_scorer_3d.png)
 
-With four bad ticks one pass is not enough (score 0.52) and two passes clean the window (score 4.32). With six or more bad ticks the passes do not help (score 0.02 with six): the bad ticks stretch the standard deviation so much that none of them is beyond 3 deviations.
+In the presence of four anomalous values in the window, a single pass is not sufficient (score 0.52), whereas two passes completely clean the window (score 4.32). With six or more anomalous values, on the other hand, increasing the passes is not enough (score 0.02 with six outliers): the anomalous elements stretch the initial standard deviation to such an extent that none of them exceeds 3 standard deviations on the first pass anymore.
 
-## A first example: a daily cost of executing an order
+## A first example: daily order execution cost
 
-The window of 40 days holds 5 bad ticks, recorded between 45 and 55. A cost of 18 arrives, about 4 standard deviations above the usual 12.
+A 40-day window contains 5 anomalous spikes, recorded with values between 45 and 55. This is followed by a daily cost equal to 18, roughly 4 standard deviations above the habitual level of 12.
 
 ```python
 import numpy as np
@@ -33,13 +33,13 @@ for passes in (1, 5):
 5 4.13 True
 ```
 
-With one pass the bad ticks are not clipped enough and 18 scores 0.24: it is not an outlier. With five passes the window is cleaned and 18 scores 4.13, above the threshold of 3. The spread of the window, measured at the start of each pass, is 12.5, 10.99 and 9.57, and 1.54 once the three passes that remove days are done.
+With a single pass (max_iters=1), the spurious values are not sufficiently removed and 18 obtains a score of 0.24, turning out normal (False). With five passes (max_iters=5), the window is effectively cleaned and 18 reaches a score of 4.13, well above the threshold of 3 (True). The dispersion of the window, measured at the beginning of each iteration, drops progressively from 12.5 to 10.99, then to 9.57, until stabilizing at 1.54 once the three passes required to remove all anomalous days are completed.
 
-![The 40 days of the window; the bad ticks are coloured by the pass that removes them, and today's cost is a diamond.](../../assets/streaming/sigma_clip_scorer_finance.png)
+![The 40 days of the window; anomalous spikes are colored according to the pass that eliminates them, while today's cost is indicated by a diamond.](../../assets/streaming/sigma_clip_scorer_finance.png)
 
-Cyan days stay. Orange days leave in pass 1, pink days in pass 2 and white days in pass 3.
+Normal days kept are in cyan; days eliminated on the first pass are in orange, those on the second pass in pink, and those on the third pass in white.
 
-## The same on a robot
+## The same applies to a robot
 
 ```python
 from dense_armor.core.online.anomaly.filters import SigmaClipScorer
@@ -54,35 +54,43 @@ print(round(s.score_one({"v": 1.3}), 2), s.is_outlier({"v": 1.3}), s.is_outlier(
 0.3 False True
 ```
 
-The bad reading of 30 in the window is clipped, so a reading of 1.3 is ordinary (score 0.3) and a reading of 50 is an outlier.
+The anomalous value equal to 30.0 present in the window is discarded during clipping: consequently, a reading of 1.3 turns out normal (score 0.3, False), while 50.0 is flagged as an outlier (True).
 
 ## How it works
 
-`SigmaClipScorer` repeatedly removes values beyond `n_sigmas` standard deviations and scores against what remains.
+SigmaClipScorer iteratively removes samples exceeding n_sigmas standard deviations and calculates the score against the surviving data only.
 
-The score is how far the new value is from a cleaned centre, measured in cleaned-standard-deviation units. First it removes obvious outliers from the recent window, then it measures. `learn_one` adds a value; `score_one` does not change anything.
+The score expresses how much the new sample deviates from the cleaned center of the window, in units of cleaned standard deviation: the algorithm first purges the recent window of obvious outliers and then performs the measurement. The learn_one method adds a data point to the window; score_one calculates the score without altering the internal state.
 
-It takes the `2 * radius` samples strictly before the value. The mean and standard deviation are recomputed after removing points beyond `n_sigmas`, repeated until stable or `max_iters`, leaving `mu_clean` and `sigma_clean`. The score is
+The algorithm operates on the 2 * radius samples strictly preceding the value to be evaluated. At each iteration, mean and standard deviation are recalculated by discarding points beyond n_sigmas, until the set stabilizes or max_iters is reached, thus obtaining $\mu_{\mathrm{clean}}$ and $\sigma_{\mathrm{clean}}$. The score z is defined as:
 
-$$\mathrm{score} = \frac{|x - \mu_{\mathrm{clean}}|}{\sigma_{\mathrm{clean}}},$$
+$$z = \frac{|x - \mu_{\mathrm{clean}}|}{\sigma_{\mathrm{clean}}}$$
 
-where $x$ is the new value; $\mu_{\mathrm{clean}}$ is the mean of the cleaned window; $\sigma_{\mathrm{clean}}$ is its standard deviation. `n_sigmas` is both the clipping threshold and the outlier threshold. `is_outlier` is `score_one(x)` above `n_sigmas`. `score_one` returns `0.0` for an unusable value or while fewer than four values have been learned. On a window whose cleaned scale is degenerate, the score is `positive infinity` if the value deviates from `mu_clean`, `0.0` if it does not. `score_one` does not change anything.
+Where:
 
-`SigmaClipScorer` is `robust_filters.sigma_clip` applied to a causal window. See the comparison on [HampelScorer](hampel_scorer.md).
+- x is the new value to be evaluated;
+- μclean is the mean of the cleaned window;
+- σclean is the standard deviation of the cleaned window.
+
+The n_sigmas parameter acts both as an iterative clipping threshold and as a final classification threshold (is_outlier returns True when score_one(x) > n_sigmas). score_one returns 0.0 for invalid values (NaN, inf) or until at least four samples have been learned. If the cleaned window exhibits a degenerate scale (sigma_clean < eps), the score is +inf (float('inf')) whenever the value differs from μclean, otherwise 0.0. score_one never modifies the internal state.
+
+SigmaClipScorer corresponds to applying robust_filters.sigma_clip on a causal window. For the comparative table among the scorers, refer to the [HampelScorer](hampel_scorer.md) page.
 
 ## The parameters
 
-`SigmaClipScorer` is an `AnomalyDetector`. `learn_one(x)`, `score_one(x)`, `is_outlier(x)`, `n_missing`. Signature:
+SigmaClipScorer is an AnomalyDetector equipped with the learn_one(x), score_one(x), is_outlier(x) methods and the n_missing attribute.
 
-`(self, radius: int = 10, n_sigmas: float = 3.0, max_iters: int = 5, feature: str | None = None, eps: float = 1e-09)`
+Signature:
 
-| Parameter | Default | What it does |
+`SigmaClipScorer(radius: int = 10, n_sigmas: float = 3.0, max_iters: int = 5, feature: str | None = None, eps: float = 1e-09)`
+
+| Parameter | Default | Description |
 |---|---|---|
-| `radius` | 10 | with a `2 * radius` causal window |
-| `n_sigmas` | 3.0 | clipping threshold and outlier threshold |
-| `max_iters` | 5 | maximum number of clipping iterations |
-| `feature` | `None` | key of the feature to watch; `None` takes the feature with the smallest key, order-independent |
-| `eps` | 1e-9 | below this scale the cleaned window is treated as flat |
+| radius | 10 | Half-width unit; defines a causal window of 2 * radius samples. |
+| n_sigmas | 3.0 | Iterative clipping threshold and outlier detection threshold. |
+| max_iters | 5 | Maximum number of clipping iterations. |
+| feature | None | Key of the feature to monitor; if None, selects the lexicographically smallest key, regardless of order. |
+| eps | 1e-9 | Scale threshold: below this value the cleaned window is considered flat. |
 
 ## API reference
 
@@ -90,6 +98,6 @@ where $x$ is the new value; $\mu_{\mathrm{clean}}$ is the mean of the cleaned wi
 
 ## Details
 
-- **Sources.** Standard in astronomy; see Akritas, M. G., Bershady, M. A. (1996). Linear regression for astronomical data with measurement errors and intrinsic scatter. *ApJ* 470, 706. Batch `robust_filters.sigma_clip`.
-- **Causal window.** `2 * radius` strictly before; not part of own window.
-- **Comparison.** table on [HampelScorer](hampel_scorer.md).
+- Sources: standard method in astronomy; Akritas, M. G., Bershady, M. A. (1996), Linear Regression for Astronomical Data with Measurement Errors and Intrinsic Scatter, ApJ 470, 706; batch counterpart in robust_filters.sigma_clip.
+- Causal window: uses exclusively the 2 * radius strictly preceding samples; the current value never becomes part of its own window.
+- Comparison: the comparative table with the other scorers is available on the [HampelScorer](hampel_scorer.md) page.
